@@ -1,19 +1,8 @@
 import React, { FunctionComponent } from 'react';
-import {
-  CenterFocusStrongOutlined,
-  PermIdentityOutlined,
-  ReceiptOutlined,
-  LocalPoliceOutlined,
-  SecurityOutlined,
-  AccountBalanceOutlined,
-} from '@mui/icons-material';
+import { CenterFocusStrongOutlined, PermIdentityOutlined, ReceiptOutlined, LocalPoliceOutlined, SecurityOutlined, AccountBalanceOutlined } from '@mui/icons-material';
 import { AccountGroupOutline } from 'mdi-material-ui';
 import NavToolbarMenu, { MenuEntry } from '../common/menus/NavToolbarMenu';
-import useGranted, {
-  VIRTUAL_ORGANIZATION_ADMIN,
-  SETTINGS_SETACCESSES,
-  SETTINGS_SETMARKINGS,
-} from '../../../utils/hooks/useGranted';
+import useGranted, { VIRTUAL_ORGANIZATION_ADMIN, SETTINGS_SETACCESSES, SETTINGS_SETMARKINGS } from '../../../utils/hooks/useGranted';
 
 const AccessesMenu: FunctionComponent = () => {
   const entries: MenuEntry[] = [

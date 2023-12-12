@@ -1,5 +1,14 @@
 import * as R from 'ramda';
-import { batchListThroughGetFrom, batchListThroughGetTo, createRelation, deleteElementById, deleteRelationsByFromAndTo, listThroughGetFrom, patchAttribute, updateAttribute, } from '../database/middleware';
+import {
+  batchListThroughGetFrom,
+  batchListThroughGetTo,
+  createRelation,
+  deleteElementById,
+  deleteRelationsByFromAndTo,
+  listThroughGetFrom,
+  patchAttribute,
+  updateAttribute
+} from '../database/middleware';
 import { internalFindByIds, listEntities, storeLoadById } from '../database/middleware-loader';
 import { BUS_TOPICS } from '../config/conf';
 import { delEditContext, notify, setEditContext } from '../database/redis';

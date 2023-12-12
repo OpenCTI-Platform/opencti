@@ -1,9 +1,5 @@
 import dataComponentTypeDefs from './dataComponent.graphql';
-import {
-  ENTITY_TYPE_ATTACK_PATTERN,
-  ENTITY_TYPE_DATA_COMPONENT,
-  ENTITY_TYPE_DATA_SOURCE
-} from '../../schema/stixDomainObject';
+import { ENTITY_TYPE_ATTACK_PATTERN, ENTITY_TYPE_DATA_COMPONENT, ENTITY_TYPE_DATA_SOURCE } from '../../schema/stixDomainObject';
 import { NAME_FIELD, normalizeName } from '../../schema/identifier';
 import type { StixDataComponent, StoreEntityDataComponent } from './dataComponent-types';
 import { INPUT_DATA_SOURCE } from './dataComponent-types';

@@ -21,9 +21,7 @@ import useAuth from '../../../../utils/hooks/useAuth';
 import Filters from '../lists/Filters';
 import FilterIconButton from '../../../../components/FilterIconButton';
 import { usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStorage';
-import {
-  emptyFilterGroup,
-} from '../../../../utils/filters/filtersUtils';
+import { emptyFilterGroup } from '../../../../utils/filters/filtersUtils';
 import { useFormatter } from '../../../../components/i18n';
 
 const useStyles = makeStyles(() => ({

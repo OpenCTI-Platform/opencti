@@ -7,10 +7,7 @@ import Box from '@mui/material/Box';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
 import StixDomainObjectContent from '../../common/stix_domain_objects/StixDomainObjectContent';
-import {
-  QueryRenderer,
-  requestSubscription,
-} from '../../../../relay/environment';
+import { QueryRenderer, requestSubscription } from '../../../../relay/environment';
 import Grouping from './Grouping';
 import GroupingPopover from './GroupingPopover';
 import GroupingKnowledge from './GroupingKnowledge';

@@ -3,14 +3,7 @@
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-nocheck
 import React, { useMemo } from 'react';
-import {
-  Route,
-  Redirect,
-  Switch,
-  useParams,
-  Link,
-  useLocation,
-} from 'react-router-dom';
+import { Route, Redirect, Switch, useParams, Link, useLocation } from 'react-router-dom';
 import { graphql, usePreloadedQuery, useSubscription } from 'react-relay';
 import { GraphQLSubscriptionConfig } from 'relay-runtime';
 import Box from '@mui/material/Box';

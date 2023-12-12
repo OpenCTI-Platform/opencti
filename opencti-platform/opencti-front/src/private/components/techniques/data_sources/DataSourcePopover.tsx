@@ -15,9 +15,7 @@ import Security from '../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import { DataSourceEditionContainerQuery } from './__generated__/DataSourceEditionContainerQuery.graphql';
-import DataSourceEditionContainer, {
-  dataSourceEditionQuery,
-} from './DataSourceEditionContainer';
+import DataSourceEditionContainer, { dataSourceEditionQuery } from './DataSourceEditionContainer';
 import Transition from '../../../../components/Transition';
 
 const DataSourcePopoverDeletionMutation = graphql`

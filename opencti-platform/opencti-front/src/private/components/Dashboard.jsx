@@ -12,11 +12,7 @@ import Slide from '@mui/material/Slide';
 import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
 import { makeStyles, useTheme } from '@mui/styles';
-import {
-  Database,
-  GraphOutline,
-  HexagonMultipleOutline,
-} from 'mdi-material-ui';
+import { Database, GraphOutline, HexagonMultipleOutline } from 'mdi-material-ui';
 import { assoc, head, last, map, pathOr, pluck } from 'ramda';
 import React, { Suspense } from 'react';
 import { graphql, useFragment, usePreloadedQuery } from 'react-relay';

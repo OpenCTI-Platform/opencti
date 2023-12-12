@@ -22,10 +22,7 @@ import { insertNode } from '../../../../utils/store';
 import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
 import { Theme } from '../../../../components/Theme';
 import { Option } from '../../common/form/ReferenceField';
-import {
-  CampaignCreationMutation,
-  CampaignCreationMutation$variables,
-} from './__generated__/CampaignCreationMutation.graphql';
+import { CampaignCreationMutation, CampaignCreationMutation$variables } from './__generated__/CampaignCreationMutation.graphql';
 import { CampaignsCardsPaginationQuery$variables } from './__generated__/CampaignsCardsPaginationQuery.graphql';
 import CustomFileUploader from '../../common/files/CustomFileUploader';
 

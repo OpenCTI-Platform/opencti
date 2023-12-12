@@ -20,11 +20,7 @@ import StixDomainObjectCreation from '../stix_domain_objects/StixDomainObjectCre
 import { useFormatter } from '../../../../components/i18n';
 import ItemIcon from '../../../../components/ItemIcon';
 import Transition from '../../../../components/Transition';
-import {
-  commitMutation,
-  fetchQuery,
-  MESSAGING$,
-} from '../../../../relay/environment';
+import { commitMutation, fetchQuery, MESSAGING$ } from '../../../../relay/environment';
 
 const useStyles = makeStyles(() => ({
   icon: {

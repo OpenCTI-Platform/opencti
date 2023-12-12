@@ -11,10 +11,7 @@ import ExpandableMarkdown from '../../../../components/ExpandableMarkdown';
 import { useFormatter } from '../../../../components/i18n';
 import StixCoreObjectKillChainPhasesView from '../../common/stix_core_objects/StixCoreObjectKillChainPhasesView';
 import { Theme } from '../../../../components/Theme';
-import {
-  InfrastructureDetails_infrastructure$data,
-  InfrastructureDetails_infrastructure$key,
-} from './__generated__/InfrastructureDetails_infrastructure.graphql';
+import { InfrastructureDetails_infrastructure$data, InfrastructureDetails_infrastructure$key } from './__generated__/InfrastructureDetails_infrastructure.graphql';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   paper: {

@@ -4,13 +4,7 @@ import * as R from 'ramda';
 import { graphql, createRefetchContainer } from 'react-relay';
 import Tooltip from '@mui/material/Tooltip';
 import IconButton from '@mui/material/IconButton';
-import {
-  CheckCircle,
-  Delete,
-  Extension,
-  Refresh,
-  Warning,
-} from '@mui/icons-material';
+import { CheckCircle, Delete, Extension, Refresh, Warning } from '@mui/icons-material';
 import CircularProgress from '@mui/material/CircularProgress';
 import withStyles from '@mui/styles/withStyles';
 import ListItem from '@mui/material/ListItem';

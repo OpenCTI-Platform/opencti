@@ -3,14 +3,8 @@ import { graphql, PreloadedQuery } from 'react-relay';
 import ListLinesContent from '../../../../components/list_lines/ListLinesContent';
 import { ReportLine, ReportLineDummy } from './ReportLine';
 import usePreloadedPaginationFragment from '../../../../utils/hooks/usePreloadedPaginationFragment';
-import {
-  ReportsLinesPaginationQuery,
-  ReportsLinesPaginationQuery$variables,
-} from './__generated__/ReportsLinesPaginationQuery.graphql';
-import {
-  HandleAddFilter,
-  UseLocalStorageHelpers,
-} from '../../../../utils/hooks/useLocalStorage';
+import { ReportsLinesPaginationQuery, ReportsLinesPaginationQuery$variables } from './__generated__/ReportsLinesPaginationQuery.graphql';
+import { HandleAddFilter, UseLocalStorageHelpers } from '../../../../utils/hooks/useLocalStorage';
 import { DataColumns } from '../../../../components/list_lines';
 import { ReportsLines_data$key } from './__generated__/ReportsLines_data.graphql';
 import { ReportLine_node$data } from './__generated__/ReportLine_node.graphql';

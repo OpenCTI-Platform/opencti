@@ -18,18 +18,9 @@ import 'react-pdf/dist/esm/Page/AnnotationLayer.css';
 import ReactMde from 'react-mde';
 import { interval } from 'rxjs';
 import inject18n from '../../../../components/i18n';
-import StixDomainObjectContentFiles, {
-  stixDomainObjectContentFilesUploadStixDomainObjectMutation,
-} from './StixDomainObjectContentFiles';
-import {
-  APP_BASE_PATH,
-  commitMutation,
-  MESSAGING$,
-} from '../../../../relay/environment';
-import {
-  buildViewParamsFromUrlAndStorage,
-  saveViewParameters,
-} from '../../../../utils/ListParameters';
+import StixDomainObjectContentFiles, { stixDomainObjectContentFilesUploadStixDomainObjectMutation } from './StixDomainObjectContentFiles';
+import { APP_BASE_PATH, commitMutation, MESSAGING$ } from '../../../../relay/environment';
+import { buildViewParamsFromUrlAndStorage, saveViewParameters } from '../../../../utils/ListParameters';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import StixDomainObjectContentBar from './StixDomainObjectContentBar';
 import { isEmptyField } from '../../../../utils/utils';

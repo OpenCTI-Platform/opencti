@@ -3,9 +3,7 @@ import Alert from '@mui/material/Alert';
 import makeStyles from '@mui/styles/makeStyles';
 import { QueryRenderer } from '../../../relay/environment';
 import ListLines from '../../../components/list_lines/ListLines';
-import IngestionTaxiiLines, {
-  IngestionTaxiiLinesQuery,
-} from './ingestionTaxii/IngestionTaxiiLines';
+import IngestionTaxiiLines, { IngestionTaxiiLinesQuery } from './ingestionTaxii/IngestionTaxiiLines';
 import IngestionTaxiiCreation from './ingestionTaxii/IngestionTaxiiCreation';
 import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
 import useAuth from '../../../utils/hooks/useAuth';

@@ -7,22 +7,13 @@ import { Route, withRouter } from 'react-router-dom';
 import { propOr } from 'ramda';
 import { QueryRenderer } from '../../../../relay/environment';
 import ContainerHeader from '../../common/containers/ContainerHeader';
-import GroupingKnowledgeGraph, {
-  groupingKnowledgeGraphQuery,
-} from './GroupingKnowledgeGraph';
-import GroupingKnowledgeCorrelation, {
-  groupingKnowledgeCorrelationQuery,
-} from './GroupingKnowledgeCorrelation';
+import GroupingKnowledgeGraph, { groupingKnowledgeGraphQuery } from './GroupingKnowledgeGraph';
+import GroupingKnowledgeCorrelation, { groupingKnowledgeCorrelationQuery } from './GroupingKnowledgeCorrelation';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import GroupingPopover from './GroupingPopover';
 import AttackPatternsMatrix from '../../techniques/attack_patterns/AttackPatternsMatrix';
-import {
-  buildViewParamsFromUrlAndStorage,
-  saveViewParameters,
-} from '../../../../utils/ListParameters';
-import ContainerContent, {
-  containerContentQuery,
-} from '../../common/containers/ContainerContent';
+import { buildViewParamsFromUrlAndStorage, saveViewParameters } from '../../../../utils/ListParameters';
+import ContainerContent, { containerContentQuery } from '../../common/containers/ContainerContent';
 import investigationAddFromContainer from '../../../../utils/InvestigationUtils';
 
 const styles = () => ({

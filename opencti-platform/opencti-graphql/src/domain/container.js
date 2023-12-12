@@ -2,19 +2,8 @@ import * as R from 'ramda';
 import { v4 as uuidv4 } from 'uuid';
 import { RELATION_OBJECT } from '../schema/stixRefRelationship';
 import { listAllThings, listThings } from '../database/middleware';
-import {
-  internalFindByIds,
-  listAllRelations,
-  listEntities,
-  storeLoadById
-} from '../database/middleware-loader';
-import {
-  ABSTRACT_BASIC_RELATIONSHIP,
-  ABSTRACT_STIX_REF_RELATIONSHIP,
-  ABSTRACT_STIX_RELATIONSHIP,
-  buildRefRelationKey,
-  ENTITY_TYPE_CONTAINER
-} from '../schema/general';
+import { internalFindByIds, listAllRelations, listEntities, storeLoadById } from '../database/middleware-loader';
+import { ABSTRACT_BASIC_RELATIONSHIP, ABSTRACT_STIX_REF_RELATIONSHIP, ABSTRACT_STIX_RELATIONSHIP, buildRefRelationKey, ENTITY_TYPE_CONTAINER } from '../schema/general';
 import { isStixDomainObjectContainer } from '../schema/stixDomainObject';
 import { buildPagination, isInferredIndex, READ_INDEX_STIX_DOMAIN_OBJECTS } from '../database/utils';
 import { now } from '../utils/format';

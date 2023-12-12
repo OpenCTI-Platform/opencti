@@ -4,9 +4,7 @@ import EntitySettingHiddenTypesList from '../sub_types/entity_setting/EntitySett
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import { useFormatter } from '../../../../components/i18n';
-import {
-  SettingsOrganizationEntitySettingHiddenTypesListQuery,
-} from './__generated__/SettingsOrganizationEntitySettingHiddenTypesListQuery.graphql';
+import { SettingsOrganizationEntitySettingHiddenTypesListQuery } from './__generated__/SettingsOrganizationEntitySettingHiddenTypesListQuery.graphql';
 
 const settingsOrganizationEntitySettingHiddenTypesListQuery = graphql`
   query SettingsOrganizationEntitySettingHiddenTypesListQuery {

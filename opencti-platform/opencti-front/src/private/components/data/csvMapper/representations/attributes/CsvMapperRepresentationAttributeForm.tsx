@@ -5,16 +5,11 @@ import classNames from 'classnames';
 import CsvMapperRepresentationAttributeOptions from '@components/data/csvMapper/representations/attributes/CsvMapperRepresentationAttributeOptions';
 import { alphabet } from '@components/data/csvMapper/representations/attributes/AttributeUtils';
 import makeStyles from '@mui/styles/makeStyles';
-import {
-  Attribute,
-  AttributeWithMetadata,
-} from '@components/data/csvMapper/representations/attributes/Attribute';
+import { Attribute, AttributeWithMetadata } from '@components/data/csvMapper/representations/attributes/Attribute';
 import { useFormikContext } from 'formik';
 import { CsvMapper } from '@components/data/csvMapper/CsvMapper';
-import CsvMapperRepresentationDialogOption
-  from '@components/data/csvMapper/representations/attributes/CsvMapperRepresentationDialogOption';
-import CsvMapperRepresentionAttributeSelectedConfigurations
-  from '@components/data/csvMapper/representations/attributes/CsvMapperRepresentionAttributeSelectedConfigurations';
+import CsvMapperRepresentationDialogOption from '@components/data/csvMapper/representations/attributes/CsvMapperRepresentationDialogOption';
+import CsvMapperRepresentionAttributeSelectedConfigurations from '@components/data/csvMapper/representations/attributes/CsvMapperRepresentionAttributeSelectedConfigurations';
 import { useFormatter } from '../../../../../../components/i18n';
 import { isEmptyField } from '../../../../../../utils/utils';
 

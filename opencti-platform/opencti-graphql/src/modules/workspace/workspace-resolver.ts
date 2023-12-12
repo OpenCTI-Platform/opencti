@@ -13,7 +13,9 @@ import {
   workspaceEditContext,
   workspaceEditField,
   workspaceImportConfiguration,
-  workspaceImportWidgetConfiguration, generateWorkspaceExportConfiguration, generateWidgetExportConfiguration,
+  workspaceImportWidgetConfiguration,
+  generateWorkspaceExportConfiguration,
+  generateWidgetExportConfiguration
 } from './workspace-domain';
 import { fetchEditContext, pubSubAsyncIterator } from '../../database/redis';
 import { BUS_TOPICS } from '../../config/conf';

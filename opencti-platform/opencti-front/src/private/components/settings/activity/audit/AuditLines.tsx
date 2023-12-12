@@ -2,15 +2,9 @@ import React, { FunctionComponent } from 'react';
 import { graphql, PreloadedQuery } from 'react-relay';
 import { AuditLine, AuditLineDummy } from './AuditLine';
 import { AuditLine_node$data } from './__generated__/AuditLine_node.graphql';
-import {
-  AuditLinesPaginationQuery,
-  AuditLinesPaginationQuery$variables,
-} from './__generated__/AuditLinesPaginationQuery.graphql';
+import { AuditLinesPaginationQuery, AuditLinesPaginationQuery$variables } from './__generated__/AuditLinesPaginationQuery.graphql';
 import { AuditLines_data$key } from './__generated__/AuditLines_data.graphql';
-import {
-  HandleAddFilter,
-  UseLocalStorageHelpers,
-} from '../../../../../utils/hooks/useLocalStorage';
+import { HandleAddFilter, UseLocalStorageHelpers } from '../../../../../utils/hooks/useLocalStorage';
 import { DataColumns } from '../../../../../components/list_lines';
 import usePreloadedPaginationFragment from '../../../../../utils/hooks/usePreloadedPaginationFragment';
 import ListLinesContent from '../../../../../components/list_lines/ListLinesContent';

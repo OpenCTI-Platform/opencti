@@ -6,10 +6,7 @@ import { UseLocalStorageHelpers } from '../../../../utils/hooks/useLocalStorage'
 import usePreloadedPaginationFragment from '../../../../utils/hooks/usePreloadedPaginationFragment';
 import { CaseIncidentLine, CaseIncidentLineDummy } from './CaseIncidentLine';
 import { CaseIncidentsLinesCases_data$key } from './__generated__/CaseIncidentsLinesCases_data.graphql';
-import {
-  CaseIncidentsLinesCasesPaginationQuery,
-  CaseIncidentsLinesCasesPaginationQuery$variables,
-} from './__generated__/CaseIncidentsLinesCasesPaginationQuery.graphql';
+import { CaseIncidentsLinesCasesPaginationQuery, CaseIncidentsLinesCasesPaginationQuery$variables } from './__generated__/CaseIncidentsLinesCasesPaginationQuery.graphql';
 import { CaseIncidentLineCase_node$data } from './__generated__/CaseIncidentLineCase_node.graphql';
 
 const nbOfRowsToLoad = 50;

@@ -1,11 +1,6 @@
 import vocabularyTypeDefs from './vocabulary.graphql';
 import { NAME_FIELD, normalizeName } from '../../schema/identifier';
-import {
-  ENTITY_TYPE_VOCABULARY,
-  type StixVocabulary,
-  type StoreEntityVocabulary,
-  vocabularyDefinitions
-} from './vocabulary-types';
+import { ENTITY_TYPE_VOCABULARY, type StixVocabulary, type StoreEntityVocabulary, vocabularyDefinitions } from './vocabulary-types';
 import vocabularyResolvers from './vocabulary-resolver';
 import convertVocabularyToStix from './vocabulary-converter';
 import { ABSTRACT_STIX_META_OBJECT } from '../../schema/general';

@@ -27,17 +27,12 @@ import {
   reportExpectation,
   updateExpectationsNumber,
   updateProcessedTime,
-  updateReceivedTime, worksForConnector,
+  updateReceivedTime,
+  worksForConnector
 } from '../domain/work';
 import { batchCreator } from '../domain/user';
 import { now } from '../utils/format';
-import {
-  connector,
-  connectors,
-  connectorsForImport,
-  connectorsForNotification,
-  connectorsForWorker
-} from '../database/repository';
+import { connector, connectors, connectorsForImport, connectorsForNotification, connectorsForWorker } from '../database/repository';
 import { batchLoader } from '../database/middleware';
 
 const creatorLoader = batchLoader(batchCreator);

@@ -10,20 +10,13 @@ import { GlobeModel, HexagonOutline } from 'mdi-material-ui';
 import makeStyles from '@mui/styles/makeStyles';
 import { QueryRenderer } from '../../../../relay/environment';
 import { useFormatter } from '../../../../components/i18n';
-import ContainerAddStixCoreObjectsLines, {
-  containerAddStixCoreObjectsLinesQuery,
-} from './ContainerAddStixCoreObjectsLines';
+import ContainerAddStixCoreObjectsLines, { containerAddStixCoreObjectsLinesQuery } from './ContainerAddStixCoreObjectsLines';
 import StixDomainObjectCreation from '../stix_domain_objects/StixDomainObjectCreation';
 import StixCyberObservableCreation from '../../observations/stix_cyber_observables/StixCyberObservableCreation';
 import { stixCyberObservableTypes, stixDomainObjectTypes } from '../../../../utils/hooks/useAttributes';
 import { UserContext } from '../../../../utils/hooks/useAuth';
 import ListLines from '../../../../components/list_lines/ListLines';
-import {
-  constructHandleAddFilter,
-  constructHandleRemoveFilter,
-  filtersAfterSwitchLocalMode,
-  emptyFilterGroup,
-} from '../../../../utils/filters/filtersUtils';
+import { constructHandleAddFilter, constructHandleRemoveFilter, filtersAfterSwitchLocalMode, emptyFilterGroup } from '../../../../utils/filters/filtersUtils';
 import Drawer from '../drawer/Drawer';
 
 const useStyles = makeStyles((theme) => ({

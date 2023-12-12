@@ -21,10 +21,7 @@ import Button from '@mui/material/Button';
 import DialogContentText from '@mui/material/DialogContentText';
 import DialogActions from '@mui/material/DialogActions';
 import { useFormatter } from '../../../../components/i18n';
-import {
-  useIsEnforceReference,
-  useSchemaEditionValidation,
-} from '../../../../utils/hooks/useEntitySettings';
+import { useIsEnforceReference, useSchemaEditionValidation } from '../../../../utils/hooks/useEntitySettings';
 import { SubscriptionFocus } from '../../../../components/Subscription';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import MarkdownField from '../../../../components/MarkdownField';

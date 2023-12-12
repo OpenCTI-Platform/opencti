@@ -1,8 +1,5 @@
 import ListItemIcon from '@mui/material/ListItemIcon';
-import {
-  KeyboardArrowRightOutlined,
-  ShortTextOutlined,
-} from '@mui/icons-material';
+import { KeyboardArrowRightOutlined, ShortTextOutlined } from '@mui/icons-material';
 import ListItemText from '@mui/material/ListItemText';
 import React, { FunctionComponent } from 'react';
 import makeStyles from '@mui/styles/makeStyles';

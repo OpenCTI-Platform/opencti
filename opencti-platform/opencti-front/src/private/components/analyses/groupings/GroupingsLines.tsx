@@ -2,17 +2,11 @@ import React, { FunctionComponent } from 'react';
 import { graphql, PreloadedQuery } from 'react-relay';
 import ListLinesContent from '../../../../components/list_lines/ListLinesContent';
 import { GroupingLine, GroupingLineDummy } from './GroupingLine';
-import {
-  HandleAddFilter,
-  UseLocalStorageHelpers,
-} from '../../../../utils/hooks/useLocalStorage';
+import { HandleAddFilter, UseLocalStorageHelpers } from '../../../../utils/hooks/useLocalStorage';
 import { DataColumns } from '../../../../components/list_lines';
 import usePreloadedPaginationFragment from '../../../../utils/hooks/usePreloadedPaginationFragment';
 import { GroupingLine_node$data } from './__generated__/GroupingLine_node.graphql';
-import {
-  GroupingsLinesPaginationQuery,
-  GroupingsLinesPaginationQuery$variables,
-} from './__generated__/GroupingsLinesPaginationQuery.graphql';
+import { GroupingsLinesPaginationQuery, GroupingsLinesPaginationQuery$variables } from './__generated__/GroupingsLinesPaginationQuery.graphql';
 import { GroupingsLines_data$key } from './__generated__/GroupingsLines_data.graphql';
 
 const nbOfRowsToLoad = 50;

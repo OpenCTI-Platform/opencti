@@ -15,10 +15,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 
 import { getStats } from '../database/engine';
 import { READ_INDEX_FILES } from '../database/utils';
-import {
-  getManagerConfigurationFromCache,
-  managerConfigurationEditField
-} from '../modules/managerConfiguration/managerConfiguration-domain';
+import { getManagerConfigurationFromCache, managerConfigurationEditField } from '../modules/managerConfiguration/managerConfiguration-domain';
 import { FunctionalError } from '../config/errors';
 import { publishUserAction } from '../listener/UserActionListener';
 import { ENTITY_TYPE_MANAGER_CONFIGURATION } from '../modules/managerConfiguration/managerConfiguration-types';

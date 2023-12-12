@@ -20,20 +20,14 @@ import { useTheme } from '@mui/styles';
 import inject18n, { useFormatter } from '../../../components/i18n';
 import TextField from '../../../components/TextField';
 import SelectField from '../../../components/SelectField';
-import {
-  commitMutation,
-  MESSAGING$,
-  QueryRenderer,
-} from '../../../relay/environment';
+import { commitMutation, MESSAGING$, QueryRenderer } from '../../../relay/environment';
 import { OPENCTI_ADMIN_UUID } from '../../../utils/hooks/useGranted';
 import Loader from '../../../components/Loader';
 import { convertOrganizations } from '../../../utils/edition';
 import ObjectOrganizationField from '../common/form/ObjectOrganizationField';
 import PasswordPolicies from '../common/form/PasswordPolicies';
 import { fieldSpacingContainerStyle } from '../../../utils/field';
-import OtpInputField, {
-  OTP_CODE_SIZE,
-} from '../../../public/components/OtpInputField';
+import OtpInputField, { OTP_CODE_SIZE } from '../../../public/components/OtpInputField';
 import ItemCopy from '../../../components/ItemCopy';
 
 const styles = () => ({

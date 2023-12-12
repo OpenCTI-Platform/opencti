@@ -1,34 +1,16 @@
 import * as R from 'ramda';
-import {
-  buildPagination,
-  READ_DATA_INDICES,
-  READ_DATA_INDICES_WITHOUT_INFERRED,
-  READ_ENTITIES_INDICES,
-  READ_RELATIONSHIPS_INDICES,
-} from './utils';
+import { buildPagination, READ_DATA_INDICES, READ_DATA_INDICES_WITHOUT_INFERRED, READ_ENTITIES_INDICES, READ_RELATIONSHIPS_INDICES } from './utils';
 import { elAggregationsList, elCount, elFindByIds, elList, elLoadById, elPaginate } from './engine';
 import { buildRefRelationKey } from '../schema/general';
 import type { AuthContext, AuthUser } from '../types/user';
-import type {
-  BasicStoreBase,
-  BasicStoreCommon,
-  BasicStoreEntity,
-  BasicStoreObject,
-  StoreEntityConnection,
-  StoreProxyRelation
-} from '../types/store';
+import type { BasicStoreBase, BasicStoreCommon, BasicStoreEntity, BasicStoreObject, StoreEntityConnection, StoreProxyRelation } from '../types/store';
 import { FunctionalError, UnsupportedError } from '../config/errors';
 import type { Filter, FilterGroup, InputMaybe, OrderingMode } from '../generated/graphql';
 import { FilterMode, FilterOperator } from '../generated/graphql';
 import { ASSIGNEE_FILTER, CREATOR_FILTER, PARTICIPANT_FILTER } from '../utils/filtering/filtering-constants';
 import { publishUserAction, type UserReadActionContextData } from '../listener/UserActionListener';
 import { extractEntityRepresentativeName } from './entity-representative';
-import {
-  RELATION_CREATED_BY,
-  RELATION_GRANTED_TO,
-  RELATION_OBJECT_LABEL,
-  RELATION_OBJECT_MARKING
-} from '../schema/stixRefRelationship';
+import { RELATION_CREATED_BY, RELATION_GRANTED_TO, RELATION_OBJECT_LABEL, RELATION_OBJECT_MARKING } from '../schema/stixRefRelationship';
 import { ENTITY_TYPE_WORKSPACE } from '../modules/workspace/workspace-types';
 
 export interface FiltersWithNested extends Filter {

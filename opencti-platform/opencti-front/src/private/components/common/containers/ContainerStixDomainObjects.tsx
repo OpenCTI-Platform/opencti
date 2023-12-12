@@ -1,21 +1,15 @@
 import React from 'react';
 import * as R from 'ramda';
 import { graphql, useFragment } from 'react-relay';
-import {
-  ContainerStixDomainObjectLine_node$data,
-} from '@components/common/containers/__generated__/ContainerStixDomainObjectLine_node.graphql';
+import { ContainerStixDomainObjectLine_node$data } from '@components/common/containers/__generated__/ContainerStixDomainObjectLine_node.graphql';
 import {
   ContainerStixDomainObjectsLinesQuery,
   ContainerStixDomainObjectsLinesQuery$variables,
 } from '@components/common/containers/__generated__/ContainerStixDomainObjectsLinesQuery.graphql';
 import { ContainerStixDomainObjectLineDummy } from '@components/common/containers/ContainerStixDomainObjectLine';
-import {
-  ContainerStixDomainObjects_container$key,
-} from '@components/common/containers/__generated__/ContainerStixDomainObjects_container.graphql';
+import { ContainerStixDomainObjects_container$key } from '@components/common/containers/__generated__/ContainerStixDomainObjects_container.graphql';
 import ListLines from '../../../../components/list_lines/ListLines';
-import ContainerStixDomainObjectsLines, {
-  containerStixDomainObjectsLinesQuery,
-} from './ContainerStixDomainObjectsLines';
+import ContainerStixDomainObjectsLines, { containerStixDomainObjectsLinesQuery } from './ContainerStixDomainObjectsLines';
 import StixDomainObjectsRightBar from '../stix_domain_objects/StixDomainObjectsRightBar';
 import ToolBar from '../../data/ToolBar';
 import { usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStorage';

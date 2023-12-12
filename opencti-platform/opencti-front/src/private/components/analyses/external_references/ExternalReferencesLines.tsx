@@ -1,15 +1,9 @@
 import React, { FunctionComponent } from 'react';
 import { graphql, PreloadedQuery } from 'react-relay';
 import ListLinesContent from '../../../../components/list_lines/ListLinesContent';
-import {
-  ExternalReferenceLine,
-  ExternalReferenceLineDummy,
-} from './ExternalReferenceLine';
+import { ExternalReferenceLine, ExternalReferenceLineDummy } from './ExternalReferenceLine';
 import { ExternalReferencesLines_data$key } from './__generated__/ExternalReferencesLines_data.graphql';
-import {
-  ExternalReferencesLinesPaginationQuery,
-  ExternalReferencesLinesPaginationQuery$variables,
-} from './__generated__/ExternalReferencesLinesPaginationQuery.graphql';
+import { ExternalReferencesLinesPaginationQuery, ExternalReferencesLinesPaginationQuery$variables } from './__generated__/ExternalReferencesLinesPaginationQuery.graphql';
 import { ExternalReferenceLine_node$data } from './__generated__/ExternalReferenceLine_node.graphql';
 import { UseLocalStorageHelpers } from '../../../../utils/hooks/useLocalStorage';
 import usePreloadedPaginationFragment from '../../../../utils/hooks/usePreloadedPaginationFragment';

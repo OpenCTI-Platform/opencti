@@ -3,10 +3,7 @@ import * as PropTypes from 'prop-types';
 import { graphql, createPaginationContainer } from 'react-relay';
 import { pathOr } from 'ramda';
 import ListLinesContent from '../../../../components/list_lines/ListLinesContent';
-import {
-  StixCyberObservableLine,
-  StixCyberObservableLineDummy,
-} from './StixCyberObservableLine';
+import { StixCyberObservableLine, StixCyberObservableLineDummy } from './StixCyberObservableLine';
 import { setNumberOfElements } from '../../../../utils/Number';
 
 const nbOfRowsToLoad = 50;

@@ -9,10 +9,7 @@ import UsersLines, { usersLinesQuery } from './users/UsersLines';
 import UserCreation from './users/UserCreation';
 import AccessesMenu from './AccessesMenu';
 import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
-import useGranted, {
-  SETTINGS_SETACCESSES,
-  VIRTUAL_ORGANIZATION_ADMIN,
-} from '../../../utils/hooks/useGranted';
+import useGranted, { SETTINGS_SETACCESSES, VIRTUAL_ORGANIZATION_ADMIN } from '../../../utils/hooks/useGranted';
 import useEnterpriseEdition from '../../../utils/hooks/useEnterpriseEdition';
 
 const useStyles = makeStyles(() => ({

@@ -5,11 +5,7 @@ import { schemaAttributesDefinition } from '../schema/schema-attributes';
 import { buildPagination, isNotEmptyField } from '../database/utils';
 import type { AuthContext, AuthUser } from '../types/user';
 import type { QueryRuntimeAttributesArgs } from '../generated/graphql';
-import {
-  defaultScale,
-  getAttributesConfiguration,
-  getEntitySettingFromCache
-} from '../modules/entitySetting/entitySetting-utils';
+import { defaultScale, getAttributesConfiguration, getEntitySettingFromCache } from '../modules/entitySetting/entitySetting-utils';
 import { schemaRelationsRefDefinition } from '../schema/schema-relationsRef';
 import type { RelationRefDefinition } from '../schema/relationRef-definition';
 import type { BasicStoreEntityEntitySetting } from '../modules/entitySetting/entitySetting-types';

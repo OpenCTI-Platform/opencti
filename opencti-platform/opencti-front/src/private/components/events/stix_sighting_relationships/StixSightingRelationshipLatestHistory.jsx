@@ -2,9 +2,7 @@ import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import Typography from '@mui/material/Typography';
 import inject18n from '../../../../components/i18n';
-import StixSightingRelationshipHistoryLines, {
-  stixCoreObjectHistoryLinesQuery,
-} from './StixSightingRelationshipHistoryLines';
+import StixSightingRelationshipHistoryLines, { stixCoreObjectHistoryLinesQuery } from './StixSightingRelationshipHistoryLines';
 import { QueryRenderer } from '../../../../relay/environment';
 
 class StixSightingRelationshipLatestHistory extends Component {

@@ -13,11 +13,7 @@ import { debounce } from 'rxjs/operators';
 import SpriteText from 'three-spritetext';
 import InvestigationExpandForm from './InvestigationExpandForm';
 import inject18n from '../../../../components/i18n';
-import {
-  commitMutation,
-  fetchQuery,
-  MESSAGING$,
-} from '../../../../relay/environment';
+import { commitMutation, fetchQuery, MESSAGING$ } from '../../../../relay/environment';
 import { hexToRGB } from '../../../../utils/Colors';
 import {
   applyFilters,
@@ -35,10 +31,7 @@ import {
 } from '../../../../utils/Graph';
 import EntitiesDetailsRightsBar from '../../../../utils/graph/EntitiesDetailsRightBar';
 import LassoSelection from '../../../../utils/graph/LassoSelection';
-import {
-  buildViewParamsFromUrlAndStorage,
-  saveViewParameters,
-} from '../../../../utils/ListParameters';
+import { buildViewParamsFromUrlAndStorage, saveViewParameters } from '../../../../utils/ListParameters';
 import { workspaceMutationFieldPatch } from '../WorkspaceEditionOverview';
 import WorkspaceHeader from '../WorkspaceHeader';
 import InvestigationGraphBar from './InvestigationGraphBar';

@@ -4,24 +4,15 @@ import MuiTextField from '@mui/material/TextField';
 import MUIAutocomplete from '@mui/material/Autocomplete';
 import { representationLabel } from '@components/data/csvMapper/representations/RepresentationUtils';
 import * as R from 'ramda';
-import {
-  getBasedOnRepresentations,
-  getInfoForRef,
-} from '@components/data/csvMapper/representations/attributes/AttributeUtils';
+import { getBasedOnRepresentations, getInfoForRef } from '@components/data/csvMapper/representations/attributes/AttributeUtils';
 import makeStyles from '@mui/styles/makeStyles';
-import {
-  Attribute,
-  AttributeWithMetadata,
-} from '@components/data/csvMapper/representations/attributes/Attribute';
+import { Attribute, AttributeWithMetadata } from '@components/data/csvMapper/representations/attributes/Attribute';
 import { Representation } from '@components/data/csvMapper/representations/Representation';
 import { useFormikContext } from 'formik';
 import { CsvMapper } from '@components/data/csvMapper/CsvMapper';
 import { isEmptyField } from '../../../../../../utils/utils';
 import useAuth from '../../../../../../utils/hooks/useAuth';
-import {
-  resolveTypesForRelationship,
-  resolveTypesForRelationshipRef,
-} from '../../../../../../utils/Relation';
+import { resolveTypesForRelationship, resolveTypesForRelationshipRef } from '../../../../../../utils/Relation';
 import { useFormatter } from '../../../../../../components/i18n';
 
 const useStyles = makeStyles(() => ({

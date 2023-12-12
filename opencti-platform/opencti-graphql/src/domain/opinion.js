@@ -1,10 +1,6 @@
 import { assoc, dissoc, pipe } from 'ramda';
 import * as R from 'ramda';
-import {
-  createEntity,
-  distributionEntities,
-  timeSeriesEntities,
-} from '../database/middleware';
+import { createEntity, distributionEntities, timeSeriesEntities } from '../database/middleware';
 import { internalLoadById, listEntities, storeLoadById } from '../database/middleware-loader';
 import { BUS_TOPICS } from '../config/conf';
 import { notify } from '../database/redis';

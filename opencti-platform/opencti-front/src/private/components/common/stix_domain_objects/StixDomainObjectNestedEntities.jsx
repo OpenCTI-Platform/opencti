@@ -10,9 +10,7 @@ import StixNestedRefRelationshipCreationFromEntity from '../stix_nested_ref_rela
 import Security from '../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 import { QueryRenderer } from '../../../../relay/environment';
-import StixDomainObjectNestedEntitiesLines, {
-  stixDomainObjectNestedEntitiesLinesQuery,
-} from './StixDomainObjectNestedEntitiesLines';
+import StixDomainObjectNestedEntitiesLines, { stixDomainObjectNestedEntitiesLinesQuery } from './StixDomainObjectNestedEntitiesLines';
 
 const styles = (theme) => ({
   paper: {

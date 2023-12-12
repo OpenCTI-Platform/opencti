@@ -11,9 +11,7 @@ import StixCoreObjectExternalReferences from '../../analyses/external_references
 import StixCoreObjectLatestHistory from '../../common/stix_core_objects/StixCoreObjectLatestHistory';
 import SimpleStixObjectOrStixRelationshipStixCoreRelationships from '../../common/stix_core_relationships/SimpleStixObjectOrStixRelationshipStixCoreRelationships';
 import LocationMiniMap from '../../common/location/LocationMiniMap';
-import PositionDetails, {
-  positionDetailsLocationRelationshipsLinesQuery,
-} from './PositionDetails';
+import PositionDetails, { positionDetailsLocationRelationshipsLinesQuery } from './PositionDetails';
 import { Position_position$data } from './__generated__/Position_position.graphql';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';

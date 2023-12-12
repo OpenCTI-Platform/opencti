@@ -5,19 +5,14 @@ import Paper from '@mui/material/Paper';
 import makeStyles from '@mui/styles/makeStyles';
 import List from '@mui/material/List';
 import { QueryRenderer } from '../../../../relay/environment';
-import ContainerStixObjectsOrStixRelationshipsLines, {
-  ContainerStixObjectsOrStixRelationshipsLinesQuery,
-} from './ContainerStixObjectsOrStixRelationshipsLines';
+import ContainerStixObjectsOrStixRelationshipsLines, { ContainerStixObjectsOrStixRelationshipsLinesQuery } from './ContainerStixObjectsOrStixRelationshipsLines';
 import { useFormatter } from '../../../../components/i18n';
 import Security from '../../../../utils/Security';
 import ContainerAddStixCoreObjects from './ContainerAddStixCoreObjects';
 import { ContainerStixObjectsOrStixRelationshipsLinesQuery$data } from './__generated__/ContainerStixObjectsOrStixRelationshipsLinesQuery.graphql';
 import { ContainerStixObjectsOrStixRelationships_container$data } from './__generated__/ContainerStixObjectsOrStixRelationships_container.graphql';
 import useAuth, { UserContext } from '../../../../utils/hooks/useAuth';
-import useGranted, {
-  KNOWLEDGE_KNPARTICIPATE,
-  KNOWLEDGE_KNUPDATE,
-} from '../../../../utils/hooks/useGranted';
+import useGranted, { KNOWLEDGE_KNPARTICIPATE, KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 import { ContainerStixObjectOrStixRelationshipLineDummy } from './ContainerStixObjectOrStixRelationshipLine';
 
 const useStyles = makeStyles(() => ({

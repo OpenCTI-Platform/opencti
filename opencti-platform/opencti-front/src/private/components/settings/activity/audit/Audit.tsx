@@ -25,10 +25,7 @@ import { Theme } from '../../../../../components/Theme';
 import ListLines from '../../../../../components/list_lines/ListLines';
 import { usePaginationLocalStorage } from '../../../../../utils/hooks/useLocalStorage';
 import useEntityToggle from '../../../../../utils/hooks/useEntityToggle';
-import {
-  AuditLinesPaginationQuery,
-  AuditLinesPaginationQuery$variables,
-} from './__generated__/AuditLinesPaginationQuery.graphql';
+import { AuditLinesPaginationQuery, AuditLinesPaginationQuery$variables } from './__generated__/AuditLinesPaginationQuery.graphql';
 import useQueryLoading from '../../../../../utils/hooks/useQueryLoading';
 import AuditLines, { AuditLinesQuery } from './AuditLines';
 import { AuditLine_node$data } from './__generated__/AuditLine_node.graphql';

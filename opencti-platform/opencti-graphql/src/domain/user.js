@@ -16,38 +16,50 @@ import {
 } from '../config/conf';
 import { AuthenticationFailure, DatabaseError, ForbiddenAccess, FunctionalError, UnknownError } from '../config/errors';
 import { getEntitiesListFromCache, getEntityFromCache } from '../database/cache';
+import { elFindByIds, elLoadBy, elRawDeleteByQuery } from '../database/engine';
 import {
-  elFindByIds,
-  elLoadBy,
-  elRawDeleteByQuery
-} from '../database/engine';
-import { batchListThroughGetTo, createEntity, createRelation, deleteElementById, deleteRelationsByFromAndTo, listThroughGetFrom, listThroughGetTo, patchAttribute, updateAttribute, updatedInputsToData, } from '../database/middleware';
-import {
-  internalFindByIds,
-  internalLoadById,
-  listAllEntities,
-  listAllEntitiesForFilter,
-  listAllRelations,
-  listEntities,
-  storeLoadById
-} from '../database/middleware-loader';
+  batchListThroughGetTo,
+  createEntity,
+  createRelation,
+  deleteElementById,
+  deleteRelationsByFromAndTo,
+  listThroughGetFrom,
+  listThroughGetTo,
+  patchAttribute,
+  updateAttribute,
+  updatedInputsToData
+} from '../database/middleware';
+import { internalFindByIds, internalLoadById, listAllEntities, listAllEntitiesForFilter, listAllRelations, listEntities, storeLoadById } from '../database/middleware-loader';
 import { delEditContext, delUserContext, notify, setEditContext } from '../database/redis';
 import { findSessionsForUsers, killUserSessions, markSessionForRefresh } from '../database/session';
-import {
-  buildPagination,
-  isEmptyField,
-  isNotEmptyField,
-  READ_INDEX_INTERNAL_OBJECTS
-} from '../database/utils';
+import { buildPagination, isEmptyField, isNotEmptyField, READ_INDEX_INTERNAL_OBJECTS } from '../database/utils';
 import { extractEntityRepresentativeName } from '../database/entity-representative';
 import { publishUserAction } from '../listener/UserActionListener';
 import { ABSTRACT_INTERNAL_RELATIONSHIP, OPENCTI_ADMIN_UUID } from '../schema/general';
 import { generateStandardId } from '../schema/identifier';
 import { ENTITY_TYPE_CAPABILITY, ENTITY_TYPE_GROUP, ENTITY_TYPE_ROLE, ENTITY_TYPE_SETTINGS, ENTITY_TYPE_USER, } from '../schema/internalObject';
-import { isInternalRelationship, RELATION_ACCESSES_TO, RELATION_HAS_CAPABILITY, RELATION_HAS_ROLE, RELATION_MEMBER_OF, RELATION_PARTICIPATE_TO, } from '../schema/internalRelationship';
+import {
+  isInternalRelationship,
+  RELATION_ACCESSES_TO,
+  RELATION_HAS_CAPABILITY,
+  RELATION_HAS_ROLE,
+  RELATION_MEMBER_OF,
+  RELATION_PARTICIPATE_TO
+} from '../schema/internalRelationship';
 import { ENTITY_TYPE_IDENTITY_INDIVIDUAL } from '../schema/stixDomainObject';
 import { ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
-import { BYPASS, executionContext, INTERNAL_USERS, isBypassUser, isUserHasCapability, KNOWLEDGE_ORGANIZATION_RESTRICT, VIRTUAL_ORGANIZATION_ADMIN, REDACTED_USER, SETTINGS_SET_ACCESSES, SYSTEM_USER } from '../utils/access';
+import {
+  BYPASS,
+  executionContext,
+  INTERNAL_USERS,
+  isBypassUser,
+  isUserHasCapability,
+  KNOWLEDGE_ORGANIZATION_RESTRICT,
+  VIRTUAL_ORGANIZATION_ADMIN,
+  REDACTED_USER,
+  SETTINGS_SET_ACCESSES,
+  SYSTEM_USER
+} from '../utils/access';
 import { ASSIGNEE_FILTER, CREATOR_FILTER, PARTICIPANT_FILTER } from '../utils/filtering/filtering-constants';
 import { now, utcDate } from '../utils/format';
 import { addGroup } from './grant';

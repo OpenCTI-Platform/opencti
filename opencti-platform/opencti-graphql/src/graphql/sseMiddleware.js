@@ -24,23 +24,10 @@ import {
   READ_INDEX_STIX_SIGHTING_RELATIONSHIPS,
   READ_STIX_INDICES,
 } from '../database/utils';
-import {
-  BYPASS,
-  computeUserMemberAccessIds,
-  executionContext,
-  isUserCanAccessStixElement,
-  isUserHasCapability,
-  SYSTEM_USER
-} from '../utils/access';
+import { BYPASS, computeUserMemberAccessIds, executionContext, isUserCanAccessStixElement, isUserHasCapability, SYSTEM_USER } from '../utils/access';
 import { FROM_START_STR, utcDate } from '../utils/format';
 import { stixRefsExtractor } from '../schema/stixEmbeddedRelationship';
-import {
-  ABSTRACT_STIX_CORE_RELATIONSHIP,
-  buildRefRelationKey,
-  ENTITY_TYPE_CONTAINER,
-  STIX_TYPE_RELATION,
-  STIX_TYPE_SIGHTING
-} from '../schema/general';
+import { ABSTRACT_STIX_CORE_RELATIONSHIP, buildRefRelationKey, ENTITY_TYPE_CONTAINER, STIX_TYPE_RELATION, STIX_TYPE_SIGHTING } from '../schema/general';
 import { convertStoreToStix } from '../database/stix-converter';
 import { UnsupportedError } from '../config/errors';
 import { MARKING_FILTER } from '../utils/filtering/filtering-constants';

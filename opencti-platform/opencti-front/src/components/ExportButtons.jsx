@@ -1,16 +1,7 @@
 import React, { Component } from 'react';
 import { CSVLink } from 'react-csv';
-import {
-  ContentCopyOutlined,
-  ExploreOutlined,
-  GetAppOutlined,
-  ImageOutlined,
-} from '@mui/icons-material';
-import {
-  FileDelimitedOutline,
-  FileExportOutline,
-  FilePdfBox,
-} from 'mdi-material-ui';
+import { ContentCopyOutlined, ExploreOutlined, GetAppOutlined, ImageOutlined } from '@mui/icons-material';
+import { FileDelimitedOutline, FileExportOutline, FilePdfBox } from 'mdi-material-ui';
 import withTheme from '@mui/styles/withTheme';
 import withStyles from '@mui/styles/withStyles';
 import * as R from 'ramda';

@@ -4,15 +4,9 @@ import Chip from '@mui/material/Chip';
 import ListLines from '../../../components/list_lines/ListLines';
 import { useFormatter } from '../../../components/i18n';
 import LabelsVocabulariesMenu from './LabelsVocabulariesMenu';
-import {
-  useVocabularyCategoryAsQuery,
-  VocabularyDefinition,
-} from '../../../utils/hooks/useVocabularyCategory';
+import { useVocabularyCategoryAsQuery, VocabularyDefinition } from '../../../utils/hooks/useVocabularyCategory';
 import ListLinesContent from '../../../components/list_lines/ListLinesContent';
-import {
-  VocabularyCategoryLine,
-  VocabularyCategoryLineDummy,
-} from './attributes/VocabularyCategoryLine';
+import { VocabularyCategoryLine, VocabularyCategoryLineDummy } from './attributes/VocabularyCategoryLine';
 
 const useStyles = makeStyles(() => ({
   container: {

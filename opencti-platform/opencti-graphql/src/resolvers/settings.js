@@ -2,7 +2,16 @@ import { withFilter } from 'graphql-subscriptions';
 import * as R from 'ramda';
 import nconf from 'nconf';
 import { BUS_TOPICS } from '../config/conf';
-import { getApplicationInfo, getMessages, getSettings, settingDeleteMessage, settingEditMessage, settingsCleanContext, settingsEditContext, settingsEditField, } from '../domain/settings';
+import {
+  getApplicationInfo,
+  getMessages,
+  getSettings,
+  settingDeleteMessage,
+  settingEditMessage,
+  settingsCleanContext,
+  settingsEditContext,
+  settingsEditField
+} from '../domain/settings';
 import { fetchEditContext, pubSubAsyncIterator } from '../database/redis';
 import withCancel from '../graphql/subscriptionWrapper';
 import { ENTITY_TYPE_SETTINGS } from '../schema/internalObject';

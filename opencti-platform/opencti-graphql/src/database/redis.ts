@@ -7,31 +7,14 @@ import * as R from 'ramda';
 import type { ChainableCommander } from 'ioredis/built/utils/RedisCommander';
 import type { ClusterOptions } from 'ioredis/built/cluster/ClusterOptions';
 import conf, { booleanConf, configureCA, DEV_MODE, getStoppingState, loadCert, logApp } from '../config/conf';
-import {
-  EVENT_TYPE_CREATE,
-  EVENT_TYPE_DELETE,
-  EVENT_TYPE_MERGE,
-  EVENT_TYPE_UPDATE,
-  isEmptyField,
-  waitInSec,
-} from './utils';
+import { EVENT_TYPE_CREATE, EVENT_TYPE_DELETE, EVENT_TYPE_MERGE, EVENT_TYPE_UPDATE, isEmptyField, waitInSec } from './utils';
 import { isStixExportableData } from '../schema/stixCoreObject';
 import { DatabaseError, LockTimeoutError, UnsupportedError } from '../config/errors';
 import { mergeDeepRightAll, now, utcDate } from '../utils/format';
 import { convertStoreToStix } from './stix-converter';
 import type { StoreObject, StoreRelation } from '../types/store';
 import type { AuthContext, AuthUser } from '../types/user';
-import type {
-  BaseEvent,
-  CreateEventOpts,
-  DeleteEvent,
-  EventOpts,
-  MergeEvent,
-  SseEvent,
-  StreamDataEvent,
-  UpdateEvent,
-  UpdateEventOpts
-} from '../types/event';
+import type { BaseEvent, CreateEventOpts, DeleteEvent, EventOpts, MergeEvent, SseEvent, StreamDataEvent, UpdateEvent, UpdateEventOpts } from '../types/event';
 import type { StixCoreObject } from '../types/stix-common';
 import type { EditContext } from '../generated/graphql';
 import { telemetry } from '../config/tracing';

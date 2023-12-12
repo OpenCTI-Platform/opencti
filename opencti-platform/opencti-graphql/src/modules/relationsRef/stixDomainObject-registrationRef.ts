@@ -7,7 +7,8 @@ import {
   objectAssignee,
   objectLabel,
   objectMarking,
-  objectOrganization, objectParticipant,
+  objectOrganization,
+  objectParticipant,
   objects,
   operatingSystems,
   samples,
@@ -30,11 +31,7 @@ import {
   ENTITY_TYPE_TOOL
 } from '../../schema/stixDomainObject';
 import { ENTITY_TYPE_CONTAINER_GROUPING } from '../grouping/grouping-types';
-import {
-  ENTITY_HASHED_OBSERVABLE_ARTIFACT,
-  ENTITY_HASHED_OBSERVABLE_STIX_FILE,
-  ENTITY_SOFTWARE
-} from '../../schema/stixCyberObservable';
+import { ENTITY_HASHED_OBSERVABLE_ARTIFACT, ENTITY_HASHED_OBSERVABLE_STIX_FILE, ENTITY_SOFTWARE } from '../../schema/stixCyberObservable';
 
 schemaRelationsRefDefinition.registerRelationsRef(ABSTRACT_STIX_DOMAIN_OBJECT, [createdBy, objectMarking, objectLabel, externalReferences, xOpenctiLinkedTo]);
 

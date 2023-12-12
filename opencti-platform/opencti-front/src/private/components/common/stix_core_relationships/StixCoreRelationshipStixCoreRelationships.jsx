@@ -11,9 +11,7 @@ import ListItemText from '@mui/material/ListItemText';
 import Skeleton from '@mui/material/Skeleton';
 import inject18n from '../../../../components/i18n';
 import { QueryRenderer } from '../../../../relay/environment';
-import StixCoreRelationshipStixCoreRelationshipsLines, {
-  stixCoreRelationshipStixCoreRelationshipsLinesQuery,
-} from './StixCoreRelationshipStixCoreRelationshipsLines';
+import StixCoreRelationshipStixCoreRelationshipsLines, { stixCoreRelationshipStixCoreRelationshipsLinesQuery } from './StixCoreRelationshipStixCoreRelationshipsLines';
 
 const styles = (theme) => ({
   paper: {

@@ -3,15 +3,9 @@ import { graphql, PreloadedQuery } from 'react-relay';
 import ListLinesContent from '../../../../components/list_lines/ListLinesContent';
 import { IndicatorLine, IndicatorLineDummyComponent } from './IndicatorLine';
 import usePreloadedPaginationFragment from '../../../../utils/hooks/usePreloadedPaginationFragment';
-import {
-  HandleAddFilter,
-  UseLocalStorageHelpers,
-} from '../../../../utils/hooks/useLocalStorage';
+import { HandleAddFilter, UseLocalStorageHelpers } from '../../../../utils/hooks/useLocalStorage';
 import { DataColumns } from '../../../../components/list_lines';
-import {
-  IndicatorsLinesPaginationQuery,
-  IndicatorsLinesPaginationQuery$variables,
-} from './__generated__/IndicatorsLinesPaginationQuery.graphql';
+import { IndicatorsLinesPaginationQuery, IndicatorsLinesPaginationQuery$variables } from './__generated__/IndicatorsLinesPaginationQuery.graphql';
 import { IndicatorLine_node$data } from './__generated__/IndicatorLine_node.graphql';
 import { IndicatorsLines_data$key } from './__generated__/IndicatorsLines_data.graphql';
 

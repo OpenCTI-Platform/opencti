@@ -14,13 +14,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 */
 
 import LRU from 'lru-cache';
-import {
-  type ActionHandler,
-  type ActionListener,
-  registerUserActionListener,
-  type UserAction,
-  type UserReadAction,
-} from '../listener/UserActionListener';
+import { type ActionHandler, type ActionListener, registerUserActionListener, type UserAction, type UserReadAction } from '../listener/UserActionListener';
 import conf, { logAudit } from '../config/conf';
 import { isEmptyField } from '../database/utils';
 import type { BasicStoreSettings } from '../types/settings';

@@ -4,10 +4,7 @@ import { Theme } from '../../../components/Theme';
 import ListLines from '../../../components/list_lines/ListLines';
 import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
 import useEntityToggle from '../../../utils/hooks/useEntityToggle';
-import {
-  NotifiersLinesPaginationQuery,
-  NotifiersLinesPaginationQuery$variables,
-} from './notifiers/__generated__/NotifiersLinesPaginationQuery.graphql';
+import { NotifiersLinesPaginationQuery, NotifiersLinesPaginationQuery$variables } from './notifiers/__generated__/NotifiersLinesPaginationQuery.graphql';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
 import NotifiersLines, { NotifiersLinesQuery } from './notifiers/NotifiersLines';
 import { NotifierLine_node$data } from './notifiers/__generated__/NotifierLine_node.graphql';

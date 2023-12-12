@@ -34,13 +34,8 @@ import ObjectMembersField from '../../../common/form/ObjectMembersField';
 import NotifierField from '../../../common/form/NotifierField';
 import { Option } from '../../../common/form/ReferenceField';
 import Filters from '../../../common/lists/Filters';
-import {
-  TriggersLinesPaginationQuery$variables,
-} from '../../../profile/triggers/__generated__/TriggersLinesPaginationQuery.graphql';
-import {
-  AlertLiveCreationActivityMutation,
-  AlertLiveCreationActivityMutation$data,
-} from './__generated__/AlertLiveCreationActivityMutation.graphql';
+import { TriggersLinesPaginationQuery$variables } from '../../../profile/triggers/__generated__/TriggersLinesPaginationQuery.graphql';
+import { AlertLiveCreationActivityMutation, AlertLiveCreationActivityMutation$data } from './__generated__/AlertLiveCreationActivityMutation.graphql';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   drawerPaper: {

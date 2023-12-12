@@ -6,9 +6,7 @@ import makeStyles from '@mui/styles/makeStyles';
 import { useFormatter } from '../../../../../components/i18n';
 import { fetchQuery } from '../../../../../relay/environment';
 import { triggersQueriesActivitySearchQuery } from '../../../profile/triggers/TriggersQueries';
-import {
-  TriggersQueriesSearchActivityQuery$data,
-} from '../../../profile/triggers/__generated__/TriggersQueriesSearchActivityQuery.graphql';
+import { TriggersQueriesSearchActivityQuery$data } from '../../../profile/triggers/__generated__/TriggersQueriesSearchActivityQuery.graphql';
 import { TriggerEventType } from '../../../profile/triggers/__generated__/TriggerLiveCreationKnowledgeMutation.graphql';
 import { TriggerType } from './__generated__/AlertingLine_node.graphql';
 import AutocompleteField from '../../../../../components/AutocompleteField';

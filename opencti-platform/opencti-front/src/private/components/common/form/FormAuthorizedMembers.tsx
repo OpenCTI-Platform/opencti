@@ -6,9 +6,7 @@ import DialogActions from '@mui/material/DialogActions';
 import Button from '@mui/material/Button';
 import React from 'react';
 import { FormikHelpers } from 'formik/dist/types';
-import AuthorizedMembersField, {
-  AuthorizedMembersFieldValue,
-} from '@components/common/form/AuthorizedMembersField';
+import AuthorizedMembersField, { AuthorizedMembersFieldValue } from '@components/common/form/AuthorizedMembersField';
 import Transition from '../../../../components/Transition';
 import { useFormatter } from '../../../../components/i18n';
 import { Creator } from '../../../../utils/authorizedMembers';

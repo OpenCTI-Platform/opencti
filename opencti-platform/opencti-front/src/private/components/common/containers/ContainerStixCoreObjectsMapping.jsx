@@ -2,9 +2,7 @@ import React from 'react';
 import makeStyles from '@mui/styles/makeStyles';
 import { ContainerStixCoreObjectsMappingLineDummy } from './ContainerStixCoreObjectsMappingLine';
 import ListLines from '../../../../components/list_lines/ListLines';
-import ContainerStixCoreObjectsMappingLines, {
-  containerStixCoreObjectsMappingLinesQuery,
-} from './ContainerStixCoreObjectsMappingLines';
+import ContainerStixCoreObjectsMappingLines, { containerStixCoreObjectsMappingLinesQuery } from './ContainerStixCoreObjectsMappingLines';
 import useAuth from '../../../../utils/hooks/useAuth';
 import ContainerAddStixCoreObjects from './ContainerAddStixCoreObjects';
 import { usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStorage';

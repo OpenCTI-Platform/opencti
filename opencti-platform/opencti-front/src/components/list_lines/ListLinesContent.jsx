@@ -3,12 +3,7 @@ import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import * as R from 'ramda';
 import withStyles from '@mui/styles/withStyles';
-import {
-  AutoSizer,
-  InfiniteLoader,
-  List,
-  WindowScroller,
-} from 'react-virtualized';
+import { AutoSizer, InfiniteLoader, List, WindowScroller } from 'react-virtualized';
 import inject18n from '../i18n';
 import { ExportContext } from '../../utils/ExportContextProvider';
 import { isEmptyField } from '../../utils/utils';

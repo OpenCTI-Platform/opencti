@@ -1,8 +1,5 @@
 import { elUpdateMapping, isElkEngine } from '../database/engine';
-import {
-  findByManagerId,
-  managerConfigurationResetSetting
-} from '../modules/managerConfiguration/managerConfiguration-domain';
+import { findByManagerId, managerConfigurationResetSetting } from '../modules/managerConfiguration/managerConfiguration-domain';
 import { executionContext, SYSTEM_USER } from '../utils/access';
 import { logApp } from '../config/conf';
 

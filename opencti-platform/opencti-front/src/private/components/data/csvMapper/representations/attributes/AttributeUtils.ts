@@ -1,9 +1,8 @@
-import {
-  Attribute,
-  AttributeWithMetadata,
-} from '@components/data/csvMapper/representations/attributes/Attribute';
+import { Attribute, AttributeWithMetadata } from '@components/data/csvMapper/representations/attributes/Attribute';
 import { Representation } from '@components/data/csvMapper/representations/Representation';
-import { CsvMapperRepresentationAttributesFormQuery$data } from '@components/data/csvMapper/representations/attributes/__generated__/CsvMapperRepresentationAttributesFormQuery.graphql';
+import {
+  CsvMapperRepresentationAttributesFormQuery$data,
+} from '@components/data/csvMapper/representations/attributes/__generated__/CsvMapperRepresentationAttributesFormQuery.graphql';
 import { isNotEmptyField } from '../../../../../../utils/utils';
 
 export const alphabet = (size = 0) => {

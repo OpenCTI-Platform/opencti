@@ -7,9 +7,7 @@ import { EntitiesStixDomainObjectLineDummy } from '@components/data/entities/Ent
 import { EntitiesStixDomainObjectLine_node$data } from '@components/data/entities/__generated__/EntitiesStixDomainObjectLine_node.graphql';
 import ListLines from '../../../components/list_lines/ListLines';
 import ToolBar from './ToolBar';
-import EntitiesStixDomainObjectsLines, {
-  entitiesStixDomainObjectsLinesQuery,
-} from './entities/EntitiesStixDomainObjectsLines';
+import EntitiesStixDomainObjectsLines, { entitiesStixDomainObjectsLinesQuery } from './entities/EntitiesStixDomainObjectsLines';
 import useAuth from '../../../utils/hooks/useAuth';
 import ExportContextProvider from '../../../utils/ExportContextProvider';
 import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';

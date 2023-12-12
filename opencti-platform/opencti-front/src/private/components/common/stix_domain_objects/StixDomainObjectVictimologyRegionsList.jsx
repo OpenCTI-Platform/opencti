@@ -10,12 +10,7 @@ import ListItemText from '@mui/material/ListItemText';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
 import Collapse from '@mui/material/Collapse';
-import {
-  ExpandLess,
-  ExpandMore,
-  Flag,
-  LocalPlayOutlined,
-} from '@mui/icons-material';
+import { ExpandLess, ExpandMore, Flag, LocalPlayOutlined } from '@mui/icons-material';
 import Tooltip from '@mui/material/Tooltip';
 import { AutoFix } from 'mdi-material-ui';
 import { yearFormat } from '../../../../utils/Time';

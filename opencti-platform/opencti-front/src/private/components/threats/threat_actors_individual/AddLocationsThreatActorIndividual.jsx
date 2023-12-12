@@ -8,9 +8,7 @@ import Drawer from '../../common/drawer/Drawer';
 import inject18n from '../../../../components/i18n';
 import SearchInput from '../../../../components/SearchInput';
 import { QueryRenderer } from '../../../../relay/environment';
-import AddLocationsThreatActorIndividualLines, {
-  addLocationsThreatActorIndividualLinesQuery,
-} from './AddLocationsThreatActorIndividualLines';
+import AddLocationsThreatActorIndividualLines, { addLocationsThreatActorIndividualLinesQuery } from './AddLocationsThreatActorIndividualLines';
 import LocationCreation from '../../common/location/LocationCreation';
 import { insertNode } from '../../../../utils/store';
 

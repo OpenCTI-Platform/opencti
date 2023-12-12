@@ -11,11 +11,7 @@ import Avatar from '@mui/material/Avatar';
 import { Link } from 'react-router-dom';
 import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
 import IconButton from '@mui/material/IconButton';
-import {
-  ExpandLessOutlined,
-  ExpandMoreOutlined,
-  LinkOff,
-} from '@mui/icons-material';
+import { ExpandLessOutlined, ExpandMoreOutlined, LinkOff } from '@mui/icons-material';
 import { graphql, createFragmentContainer } from 'react-relay';
 import * as R from 'ramda';
 import { truncate } from '../../../../utils/String';

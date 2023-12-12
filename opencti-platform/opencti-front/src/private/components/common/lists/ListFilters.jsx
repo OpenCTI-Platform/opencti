@@ -9,10 +9,7 @@ import makeStyles from '@mui/styles/makeStyles';
 import TextField from '@mui/material/TextField';
 import MUIAutocomplete from '@mui/material/Autocomplete';
 import { useFormatter } from '../../../../components/i18n';
-import {
-  directFilters,
-  getDefaultFilterObject,
-} from '../../../../utils/filters/filtersUtils';
+import { directFilters, getDefaultFilterObject } from '../../../../utils/filters/filtersUtils';
 
 const useStyles = makeStyles(() => ({
   container: {

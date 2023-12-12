@@ -1,12 +1,7 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import Button from '@mui/material/Button';
-import {
-  BriefcaseEyeOutline,
-  BriefcaseSearchOutline,
-  BriefcaseRemoveOutline,
-  BriefcaseEditOutline,
-} from 'mdi-material-ui';
+import { BriefcaseEyeOutline, BriefcaseSearchOutline, BriefcaseRemoveOutline, BriefcaseEditOutline } from 'mdi-material-ui';
 import { TaskAltOutlined } from '@mui/icons-material';
 import { makeStyles } from '@mui/styles';
 import { Theme } from '@mui/material/styles/createTheme';

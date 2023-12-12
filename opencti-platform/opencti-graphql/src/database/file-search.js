@@ -17,25 +17,10 @@ import * as R from 'ramda';
 import { now } from '../utils/format';
 import { buildRefRelationKey } from '../schema/general';
 import { RELATION_GRANTED_TO, RELATION_OBJECT_MARKING } from '../schema/stixRefRelationship';
-import {
-  buildPagination,
-  cursorToOffset,
-  INDEX_FILES,
-  READ_DATA_INDICES_WITHOUT_INTERNAL,
-  READ_INDEX_FILES
-} from './utils';
+import { buildPagination, cursorToOffset, INDEX_FILES, READ_DATA_INDICES_WITHOUT_INTERNAL, READ_INDEX_FILES } from './utils';
 import { DatabaseError } from '../config/errors';
 import { logApp } from '../config/conf';
-import {
-  buildDataRestrictions,
-  elFindByIds,
-  elIndex,
-  elRawCount,
-  elRawDeleteByQuery,
-  elRawSearch,
-  elRawUpdateByQuery,
-  ES_IGNORE_THROTTLED
-} from './engine';
+import { buildDataRestrictions, elFindByIds, elIndex, elRawCount, elRawDeleteByQuery, elRawSearch, elRawUpdateByQuery, ES_IGNORE_THROTTLED } from './engine';
 
 const buildIndexFileBody = (documentId, file, entity = null) => {
   const documentBody = {

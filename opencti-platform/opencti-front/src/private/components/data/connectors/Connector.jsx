@@ -24,11 +24,7 @@ import inject18n from '../../../../components/i18n';
 import { FIVE_SECONDS } from '../../../../utils/Time';
 import Security from '../../../../utils/Security';
 import { MODULES_MODMANAGE } from '../../../../utils/hooks/useGranted';
-import {
-  commitMutation,
-  MESSAGING$,
-  QueryRenderer,
-} from '../../../../relay/environment';
+import { commitMutation, MESSAGING$, QueryRenderer } from '../../../../relay/environment';
 import ConnectorWorks, { connectorWorksQuery } from './ConnectorWorks';
 import Loader from '../../../../components/Loader';
 import ItemCopy from '../../../../components/ItemCopy';

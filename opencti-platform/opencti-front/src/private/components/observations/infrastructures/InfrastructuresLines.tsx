@@ -1,17 +1,11 @@
 import React, { FunctionComponent } from 'react';
 import { graphql, PreloadedQuery } from 'react-relay';
 import ListLinesContent from '../../../../components/list_lines/ListLinesContent';
-import {
-  InfrastructureLine,
-  InfrastructureLineDummy,
-} from './InfrastructureLine';
+import { InfrastructureLine, InfrastructureLineDummy } from './InfrastructureLine';
 import { DataColumns } from '../../../../components/list_lines';
 import { HandleAddFilter, UseLocalStorageHelpers } from '../../../../utils/hooks/useLocalStorage';
 import usePreloadedPaginationFragment from '../../../../utils/hooks/usePreloadedPaginationFragment';
-import {
-  InfrastructuresLinesPaginationQuery,
-  InfrastructuresLinesPaginationQuery$variables,
-} from './__generated__/InfrastructuresLinesPaginationQuery.graphql';
+import { InfrastructuresLinesPaginationQuery, InfrastructuresLinesPaginationQuery$variables } from './__generated__/InfrastructuresLinesPaginationQuery.graphql';
 import { InfrastructureLine_node$data } from './__generated__/InfrastructureLine_node.graphql';
 import { InfrastructuresLines_data$key } from './__generated__/InfrastructuresLines_data.graphql';
 

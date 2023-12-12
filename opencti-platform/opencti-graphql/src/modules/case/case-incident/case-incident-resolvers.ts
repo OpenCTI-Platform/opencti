@@ -2,12 +2,7 @@ import type { Resolvers } from '../../../generated/graphql';
 import { buildRefRelationKey } from '../../../schema/general';
 import { RELATION_OBJECT_ASSIGNEE } from '../../../schema/stixRefRelationship';
 import { stixDomainObjectDelete } from '../../../domain/stixDomainObject';
-import {
-  addCaseIncident,
-  caseIncidentContainsStixObjectOrStixRelationship,
-  findAll,
-  findById
-} from './case-incident-domain';
+import { addCaseIncident, caseIncidentContainsStixObjectOrStixRelationship, findAll, findById } from './case-incident-domain';
 
 const caseIncidentResolvers: Resolvers = {
   Query: {

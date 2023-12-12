@@ -3,7 +3,8 @@ import { createEntity, deleteElementById, patchAttribute, updateAttribute } from
 import { notify } from '../../database/redis';
 import { BUS_TOPICS } from '../../config/conf';
 import type {
-  EditInput, FilterGroup,
+  EditInput,
+  FilterGroup,
   QueryNotificationsArgs,
   QueryTriggersActivityArgs,
   QueryTriggersKnowledgeArgs,
@@ -14,12 +15,7 @@ import type {
   TriggerType
 } from '../../generated/graphql';
 import { TriggerType as TriggerTypeValue } from '../../generated/graphql';
-import {
-  internalFindByIds,
-  internalLoadById,
-  listEntitiesPaginated,
-  storeLoadById,
-} from '../../database/middleware-loader';
+import { internalFindByIds, internalLoadById, listEntitiesPaginated, storeLoadById } from '../../database/middleware-loader';
 import {
   type BasicStoreEntityNotification,
   type BasicStoreEntityTrigger,

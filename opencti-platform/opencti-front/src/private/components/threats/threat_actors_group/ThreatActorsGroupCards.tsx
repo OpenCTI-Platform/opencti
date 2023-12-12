@@ -1,25 +1,14 @@
 import React, { FunctionComponent, useState } from 'react';
 import { graphql, PreloadedQuery } from 'react-relay';
-import {
-  StixDomainObjectBookmarksQuery$data,
-} from '@components/common/stix_domain_objects/__generated__/StixDomainObjectBookmarksQuery.graphql';
-import {
-  ThreatActorsGroupCardsPaginationQuery,
-} from '@components/threats/threat_actors_group/__generated__/ThreatActorsGroupCardsPaginationQuery.graphql';
-import {
-  ThreatActorsGroupCards_data$key,
-} from '@components/threats/threat_actors_group/__generated__/ThreatActorsGroupCards_data.graphql';
+import { StixDomainObjectBookmarksQuery$data } from '@components/common/stix_domain_objects/__generated__/StixDomainObjectBookmarksQuery.graphql';
+import { ThreatActorsGroupCardsPaginationQuery } from '@components/threats/threat_actors_group/__generated__/ThreatActorsGroupCardsPaginationQuery.graphql';
+import { ThreatActorsGroupCards_data$key } from '@components/threats/threat_actors_group/__generated__/ThreatActorsGroupCards_data.graphql';
 import ListCardsContent from '../../../../components/list_cards/ListCardsContent';
 import ThreatActorGroupCard from './ThreatActorGroupCard';
 import { GenericAttackCardDummy } from '../../common/cards/GenericAttackCard';
-import StixDomainObjectBookmarks, {
-  stixDomainObjectBookmarksQuery,
-} from '../../common/stix_domain_objects/StixDomainObjectBookmarks';
+import StixDomainObjectBookmarks, { stixDomainObjectBookmarksQuery } from '../../common/stix_domain_objects/StixDomainObjectBookmarks';
 import { QueryRenderer } from '../../../../relay/environment';
-import {
-  HandleAddFilter,
-  UseLocalStorageHelpers,
-} from '../../../../utils/hooks/useLocalStorage';
+import { HandleAddFilter, UseLocalStorageHelpers } from '../../../../utils/hooks/useLocalStorage';
 import usePreloadedPaginationFragment from '../../../../utils/hooks/usePreloadedPaginationFragment';
 
 const nbOfCardsToLoad = 20;

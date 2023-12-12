@@ -6,11 +6,7 @@ import withStyles from '@mui/styles/withStyles';
 import Toolbar from '@mui/material/Toolbar';
 import Typography from '@mui/material/Typography';
 import IconButton from '@mui/material/IconButton';
-import {
-  CenterFocusStrongOutlined,
-  ClearOutlined,
-  DeleteOutlined,
-} from '@mui/icons-material';
+import { CenterFocusStrongOutlined, ClearOutlined, DeleteOutlined } from '@mui/icons-material';
 import Drawer from '@mui/material/Drawer';
 import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';

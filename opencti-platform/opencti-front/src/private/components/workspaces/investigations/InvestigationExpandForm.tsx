@@ -5,12 +5,7 @@ import DialogActions from '@mui/material/DialogActions';
 import Button from '@mui/material/Button';
 import React, { Suspense, useEffect, useState } from 'react';
 import { FormikHelpers } from 'formik/dist/types';
-import {
-  graphql,
-  PreloadedQuery,
-  usePreloadedQuery,
-  useQueryLoader,
-} from 'react-relay';
+import { graphql, PreloadedQuery, usePreloadedQuery, useQueryLoader } from 'react-relay';
 import makeStyles from '@mui/styles/makeStyles';
 import { Option } from '@components/common/form/ReferenceField';
 import SwitchField from '../../../../components/SwitchField';

@@ -2,11 +2,7 @@ import { filter, includes, map, pipe } from 'ramda';
 import { ENTITY_TYPE_CONNECTOR } from '../schema/internalObject';
 import { connectorConfig } from './rabbitmq';
 import { sinceNowInMinutes } from '../utils/format';
-import {
-  CONNECTOR_INTERNAL_ENRICHMENT,
-  CONNECTOR_INTERNAL_IMPORT_FILE,
-  CONNECTOR_INTERNAL_NOTIFICATION
-} from '../schema/general';
+import { CONNECTOR_INTERNAL_ENRICHMENT, CONNECTOR_INTERNAL_IMPORT_FILE, CONNECTOR_INTERNAL_NOTIFICATION } from '../schema/general';
 import { listEntities, storeLoadById } from './middleware-loader';
 import { INTERNAL_PLAYBOOK_QUEUE, INTERNAL_SYNC_QUEUE, isEmptyField } from './utils';
 import { BUILTIN_NOTIFIERS_CONNECTORS } from '../modules/notifier/notifier-statics';

@@ -1,11 +1,5 @@
 import * as R from 'ramda';
-import {
-  createEntity,
-  batchListThroughGetFrom,
-  batchListThroughGetTo,
-  listThroughGetFrom,
-  batchLoadThroughGetTo,
-} from '../database/middleware';
+import { createEntity, batchListThroughGetFrom, batchListThroughGetTo, listThroughGetFrom, batchLoadThroughGetTo } from '../database/middleware';
 import { listEntities, listRelations, storeLoadById } from '../database/middleware-loader';
 import { BUS_TOPICS } from '../config/conf';
 import { notify } from '../database/redis';

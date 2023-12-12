@@ -9,12 +9,7 @@ import Grid from '@mui/material/Grid';
 import Paper from '@mui/material/Paper';
 import Typography from '@mui/material/Typography';
 import Fab from '@mui/material/Fab';
-import {
-  ArrowRightAlt,
-  Edit,
-  ExpandLessOutlined,
-  ExpandMoreOutlined,
-} from '@mui/icons-material';
+import { ArrowRightAlt, Edit, ExpandLessOutlined, ExpandMoreOutlined } from '@mui/icons-material';
 import Button from '@mui/material/Button';
 import Divider from '@mui/material/Divider';
 import Chip from '@mui/material/Chip';
@@ -28,9 +23,7 @@ import { truncate } from '../../../../utils/String';
 import inject18n from '../../../../components/i18n';
 import ItemIcon from '../../../../components/ItemIcon';
 import ItemConfidence from '../../../../components/ItemConfidence';
-import StixCoreRelationshipEdition, {
-  stixCoreRelationshipEditionDeleteMutation,
-} from './StixCoreRelationshipEdition';
+import StixCoreRelationshipEdition, { stixCoreRelationshipEditionDeleteMutation } from './StixCoreRelationshipEdition';
 import { commitMutation } from '../../../../relay/environment';
 import { stixCoreRelationshipEditionFocus } from './StixCoreRelationshipEditionOverview';
 import StixCoreRelationshipStixCoreRelationships from './StixCoreRelationshipStixCoreRelationships';

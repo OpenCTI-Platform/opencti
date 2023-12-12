@@ -19,31 +19,12 @@ import Typography from '@mui/material/Typography';
 import Paper from '@mui/material/Paper';
 import Grid from '@mui/material/Grid';
 import Button from '@mui/material/Button';
-import {
-  ClearOutlined,
-  PauseOutlined,
-  PlayArrowOutlined,
-  SyncDisabledOutlined,
-  SyncOutlined,
-  FolderOutlined,
-  StorageOutlined,
-} from '@mui/icons-material';
-import {
-  graphql,
-  PreloadedQuery,
-  useMutation,
-  usePreloadedQuery,
-  useQueryLoader,
-} from 'react-relay';
-import {
-  fileIndexingConfigurationFieldPatch,
-  fileIndexingResetMutation,
-} from '@components/settings/file_indexing/FileIndexing';
+import { ClearOutlined, PauseOutlined, PlayArrowOutlined, SyncDisabledOutlined, SyncOutlined, FolderOutlined, StorageOutlined } from '@mui/icons-material';
+import { graphql, PreloadedQuery, useMutation, usePreloadedQuery, useQueryLoader } from 'react-relay';
+import { fileIndexingConfigurationFieldPatch, fileIndexingResetMutation } from '@components/settings/file_indexing/FileIndexing';
 import { FileIndexingMonitoringQuery } from '@components/settings/file_indexing/__generated__/FileIndexingMonitoringQuery.graphql';
 import { interval } from 'rxjs';
-import LinearProgress, {
-  linearProgressClasses,
-} from '@mui/material/LinearProgress';
+import LinearProgress, { linearProgressClasses } from '@mui/material/LinearProgress';
 import { FileIndexingConfigurationAndMonitoringQuery$data } from '@components/settings/file_indexing/__generated__/FileIndexingConfigurationAndMonitoringQuery.graphql';
 import { styled } from '@mui/material/styles';
 import Chip from '@mui/material/Chip';

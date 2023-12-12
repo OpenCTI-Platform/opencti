@@ -1,10 +1,7 @@
 import React, { FunctionComponent } from 'react';
 import { graphql, PreloadedQuery } from 'react-relay';
 import { RegionLineComponent, RegionLineDummy } from './RegionLine';
-import {
-  RegionsLinesPaginationQuery,
-  RegionsLinesPaginationQuery$variables,
-} from './__generated__/RegionsLinesPaginationQuery.graphql';
+import { RegionsLinesPaginationQuery, RegionsLinesPaginationQuery$variables } from './__generated__/RegionsLinesPaginationQuery.graphql';
 import { DataColumns } from '../../../../components/list_lines';
 import { UseLocalStorageHelpers } from '../../../../utils/hooks/useLocalStorage';
 import usePreloadedPaginationFragment from '../../../../utils/hooks/usePreloadedPaginationFragment';

@@ -15,10 +15,7 @@ import Slide from '@mui/material/Slide';
 import MoreVert from '@mui/icons-material/MoreVert';
 import { graphql } from 'react-relay';
 import inject18n from '../../../../../components/i18n';
-import {
-  APP_BASE_PATH,
-  commitMutation,
-} from '../../../../../relay/environment';
+import { APP_BASE_PATH, commitMutation } from '../../../../../relay/environment';
 import { resolveLink } from '../../../../../utils/Entity';
 
 const styles = (theme) => ({

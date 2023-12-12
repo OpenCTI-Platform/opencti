@@ -23,9 +23,7 @@ import { truncate } from '../../../../utils/String';
 import inject18n from '../../../../components/i18n';
 import ItemIcon from '../../../../components/ItemIcon';
 import ItemConfidence from '../../../../components/ItemConfidence';
-import StixSightingRelationshipEdition, {
-  stixSightingRelationshipEditionDeleteMutation,
-} from './StixSightingRelationshipEdition';
+import StixSightingRelationshipEdition, { stixSightingRelationshipEditionDeleteMutation } from './StixSightingRelationshipEdition';
 import { commitMutation } from '../../../../relay/environment';
 import { stixSightingRelationshipEditionFocus } from './StixSightingRelationshipEditionOverview';
 import ItemAuthor from '../../../../components/ItemAuthor';

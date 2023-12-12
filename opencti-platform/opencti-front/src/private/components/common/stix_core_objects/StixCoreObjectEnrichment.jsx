@@ -6,9 +6,7 @@ import ToggleButton from '@mui/material/ToggleButton';
 import Drawer from '../drawer/Drawer';
 import { QueryRenderer } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
-import StixCoreObjectEnrichmentLines, {
-  stixCoreObjectEnrichmentLinesQuery,
-} from './StixCoreObjectEnrichmentLines';
+import StixCoreObjectEnrichmentLines, { stixCoreObjectEnrichmentLinesQuery } from './StixCoreObjectEnrichmentLines';
 
 class StixCoreObjectEnrichment extends Component {
   constructor(props) {

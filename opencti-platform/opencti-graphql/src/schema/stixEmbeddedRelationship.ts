@@ -2,13 +2,7 @@ import type { BasicStoreObject } from '../types/store';
 import { buildRefRelationKey, ID_INFERRED, ID_INTERNAL } from './general';
 import { STIX_EXT_OCTI } from '../types/stix-extensions';
 import { schemaRelationsRefDefinition } from './schema-relationsRef';
-import {
-  bodyMultipart,
-  externalReferences,
-  isStixRefRelationship,
-  killChainPhases,
-  objectLabel
-} from './stixRefRelationship';
+import { bodyMultipart, externalReferences, isStixRefRelationship, killChainPhases, objectLabel } from './stixRefRelationship';
 
 export const isSingleRelationsRef = (entityType: string, databaseName: string): boolean => isStixRefRelationship(databaseName)
   && !schemaRelationsRefDefinition.isMultipleDatabaseName(entityType, databaseName);

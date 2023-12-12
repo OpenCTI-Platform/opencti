@@ -5,10 +5,7 @@ import { ChannelLine, ChannelLineDummy } from './ChannelLine';
 import { DataColumns } from '../../../../components/list_lines';
 import { HandleAddFilter, UseLocalStorageHelpers } from '../../../../utils/hooks/useLocalStorage';
 import usePreloadedPaginationFragment from '../../../../utils/hooks/usePreloadedPaginationFragment';
-import {
-  ChannelsLinesPaginationQuery,
-  ChannelsLinesPaginationQuery$variables,
-} from './__generated__/ChannelsLinesPaginationQuery.graphql';
+import { ChannelsLinesPaginationQuery, ChannelsLinesPaginationQuery$variables } from './__generated__/ChannelsLinesPaginationQuery.graphql';
 import { ChannelsLines_data$key } from './__generated__/ChannelsLines_data.graphql';
 
 const nbOfRowsToLoad = 50;

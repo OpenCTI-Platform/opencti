@@ -1,10 +1,5 @@
 import React, { FunctionComponent } from 'react';
-import {
-  graphql,
-  PreloadedQuery,
-  useFragment,
-  usePreloadedQuery,
-} from 'react-relay';
+import { graphql, PreloadedQuery, useFragment, usePreloadedQuery } from 'react-relay';
 import { Field, Form, Formik } from 'formik';
 import Typography from '@mui/material/Typography';
 import IconButton from '@mui/material/IconButton';
@@ -16,28 +11,17 @@ import { FormikConfig } from 'formik/dist/types';
 import { buildDate, formatDate } from '../../../../utils/Time';
 import { useFormatter } from '../../../../components/i18n';
 import MarkdownField from '../../../../components/MarkdownField';
-import {
-  SubscriptionAvatars,
-  SubscriptionFocus,
-} from '../../../../components/Subscription';
+import { SubscriptionAvatars, SubscriptionFocus } from '../../../../components/Subscription';
 import KillChainPhasesField from '../form/KillChainPhasesField';
 import ObjectMarkingField from '../form/ObjectMarkingField';
 import CreatedByField from '../form/CreatedByField';
 import ConfidenceField from '../form/ConfidenceField';
 import CommitMessage from '../form/CommitMessage';
 import { adaptFieldValue } from '../../../../utils/String';
-import {
-  convertCreatedBy,
-  convertKillChainPhases,
-  convertMarkings,
-  convertStatus,
-} from '../../../../utils/edition';
+import { convertCreatedBy, convertKillChainPhases, convertMarkings, convertStatus } from '../../../../utils/edition';
 import StatusField from '../form/StatusField';
 import DateTimePickerField from '../../../../components/DateTimePickerField';
-import {
-  useIsEnforceReference,
-  useSchemaEditionValidation,
-} from '../../../../utils/hooks/useEntitySettings';
+import { useIsEnforceReference, useSchemaEditionValidation } from '../../../../utils/hooks/useEntitySettings';
 import useFormEditor from '../../../../utils/hooks/useFormEditor';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
 import { StixCoreRelationshipEditionOverviewQuery } from './__generated__/StixCoreRelationshipEditionOverviewQuery.graphql';

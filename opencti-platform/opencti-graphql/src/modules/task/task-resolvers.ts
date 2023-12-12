@@ -1,15 +1,5 @@
 import type { Resolvers } from '../../generated/graphql';
-import {
-  batchParticipants,
-  findAll,
-  findById,
-  taskAdd,
-  taskAddRelation,
-  taskContainsStixObjectOrStixRelationship,
-  taskDelete,
-  taskDeleteRelation,
-  taskEdit
-} from './task-domain';
+import { batchParticipants, findAll, findById, taskAdd, taskAddRelation, taskContainsStixObjectOrStixRelationship, taskDelete, taskDeleteRelation, taskEdit } from './task-domain';
 import { batchLoader } from '../../database/middleware';
 
 const participantLoader = batchLoader(batchParticipants);

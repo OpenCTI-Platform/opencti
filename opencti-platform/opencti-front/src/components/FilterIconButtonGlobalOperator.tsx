@@ -2,10 +2,7 @@ import React, { FunctionComponent } from 'react';
 import Box from '@mui/material/Box';
 import { useTheme } from '@mui/material/styles';
 import { useFormatter } from './i18n';
-import {
-  Filter,
-  filtersUsedAsApiParameters,
-} from '../utils/filters/filtersUtils';
+import { Filter, filtersUsedAsApiParameters } from '../utils/filters/filtersUtils';
 
 interface FilterIconButtonGlobalOperatorProps {
   classOperator: string;

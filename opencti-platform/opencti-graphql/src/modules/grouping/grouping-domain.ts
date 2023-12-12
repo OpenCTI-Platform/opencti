@@ -4,24 +4,10 @@ import { createEntity, distributionEntities, timeSeriesEntities } from '../../da
 import { notify } from '../../database/redis';
 import { BUS_TOPICS } from '../../config/conf';
 import { ABSTRACT_STIX_DOMAIN_OBJECT, buildRefRelationKey } from '../../schema/general';
-import type {
-  GroupingAddInput,
-  QueryGroupingsDistributionArgs,
-  QueryGroupingsNumberArgs,
-  QueryGroupingsTimeSeriesArgs,
-} from '../../generated/graphql';
+import type { GroupingAddInput, QueryGroupingsDistributionArgs, QueryGroupingsNumberArgs, QueryGroupingsTimeSeriesArgs } from '../../generated/graphql';
 import { FilterMode } from '../../generated/graphql';
-import {
-  type EntityOptions,
-  internalLoadById,
-  listEntitiesPaginated,
-  storeLoadById
-} from '../../database/middleware-loader';
-import {
-  type BasicStoreEntityGrouping,
-  ENTITY_TYPE_CONTAINER_GROUPING,
-  type GroupingNumberResult
-} from './grouping-types';
+import { type EntityOptions, internalLoadById, listEntitiesPaginated, storeLoadById } from '../../database/middleware-loader';
+import { type BasicStoreEntityGrouping, ENTITY_TYPE_CONTAINER_GROUPING, type GroupingNumberResult } from './grouping-types';
 import { isStixId } from '../../schema/schemaUtils';
 import { RELATION_CREATED_BY, RELATION_OBJECT } from '../../schema/stixRefRelationship';
 import { elCount } from '../../database/engine';

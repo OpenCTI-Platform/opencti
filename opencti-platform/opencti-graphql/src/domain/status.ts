@@ -7,7 +7,8 @@ import { findById as findSubTypeById } from './subType';
 import { ABSTRACT_INTERNAL_OBJECT } from '../schema/general';
 import {
   type EditContext,
-  type EditInput, FilterMode,
+  type EditInput,
+  FilterMode,
   OrderingMode,
   type QueryStatusesArgs,
   type QueryStatusTemplatesArgs,

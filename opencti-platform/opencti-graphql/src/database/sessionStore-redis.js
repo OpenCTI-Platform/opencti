@@ -2,16 +2,7 @@
 import session from 'express-session';
 import LRU from 'lru-cache';
 import AsyncLock from 'async-lock';
-import {
-  clearSessions,
-  extendSession,
-  getSession,
-  getSessionKeys,
-  getSessions,
-  getSessionTtl,
-  killSession,
-  setSession
-} from './redis';
+import { clearSessions, extendSession, getSession, getSessionKeys, getSessions, getSessionTtl, killSession, setSession } from './redis';
 
 const { Store } = session;
 

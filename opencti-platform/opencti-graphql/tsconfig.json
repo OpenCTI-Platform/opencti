@@ -1,5 +1,5 @@
 {
-  "include": ["./*", "./src/**/*", "./tests/**/*", "./script/**/*"],
+  "include": ["./*", "./src/**/*", "./tests/**/*", "./script/**/*", ".eslintrc.js"],
   "files": ["src/generated/graphql.ts"],
   "compilerOptions": {
     "target": "es6",

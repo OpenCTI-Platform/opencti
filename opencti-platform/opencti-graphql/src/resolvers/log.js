@@ -1,12 +1,4 @@
-import {
-  auditsDistribution,
-  auditsMultiTimeSeries,
-  auditsNumber,
-  auditsTimeSeries,
-  findAudits,
-  findHistory,
-  logsWorkerConfig,
-} from '../domain/log';
+import { auditsDistribution, auditsMultiTimeSeries, auditsNumber, auditsTimeSeries, findAudits, findHistory, logsWorkerConfig } from '../domain/log';
 import { batchCreator } from '../domain/user';
 import { storeLoadById } from '../database/middleware-loader';
 import { ENTITY_TYPE_EXTERNAL_REFERENCE } from '../schema/stixMetaObject';

@@ -2,15 +2,7 @@ import * as R from 'ramda';
 import { Dispatch, SetStateAction, SyntheticEvent, useState } from 'react';
 import { v4 as uuid } from 'uuid';
 import { OrderMode, PaginationOptions } from '../../components/list_lines';
-import {
-  extractAllValueFromFilters,
-  Filter,
-  FilterGroup,
-  filtersUsedAsApiParameters,
-  findFilterFromKey,
-  isFilterGroupNotEmpty,
-  isUniqFilter,
-} from '../filters/filtersUtils';
+import { extractAllValueFromFilters, Filter, FilterGroup, filtersUsedAsApiParameters, findFilterFromKey, isFilterGroupNotEmpty, isUniqFilter } from '../filters/filtersUtils';
 import { isEmptyField, isNotEmptyField, removeEmptyFields } from '../utils';
 import { MESSAGING$ } from '../../relay/environment';
 import {
@@ -19,7 +11,8 @@ import {
   handleAddSingleValueFilterUtil,
   handleChangeOperatorFiltersUtil,
   handleRemoveFilterUtil,
-  handleRemoveRepresentationFilterUtil, handleSwitchLocalModeUtil,
+  handleRemoveRepresentationFilterUtil,
+  handleSwitchLocalModeUtil,
 } from '../filters/filtersLocalStorageUtil';
 import { LocalStorage } from './useLocalStorageModel';
 

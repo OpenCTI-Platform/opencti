@@ -12,10 +12,7 @@ import useEntityToggle from '../../../utils/hooks/useEntityToggle';
 import { IncidentLine_node$data } from './incidents/__generated__/IncidentLine_node.graphql';
 import ToolBar from '../data/ToolBar';
 import ExportContextProvider from '../../../utils/ExportContextProvider';
-import {
-  IncidentsLinesPaginationQuery,
-  IncidentsLinesPaginationQuery$variables,
-} from './incidents/__generated__/IncidentsLinesPaginationQuery.graphql';
+import { IncidentsLinesPaginationQuery, IncidentsLinesPaginationQuery$variables } from './incidents/__generated__/IncidentsLinesPaginationQuery.graphql';
 import { filtersWithEntityType, emptyFilterGroup } from '../../../utils/filters/filtersUtils';
 
 export const LOCAL_STORAGE_KEY = 'incidents';

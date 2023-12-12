@@ -16,13 +16,7 @@ import Select from '@mui/material/Select';
 import FormControl from '@mui/material/FormControl';
 import InputLabel from '@mui/material/InputLabel';
 import Slide from '@mui/material/Slide';
-import {
-  AddOutlined,
-  CloseOutlined,
-  MoveToInboxOutlined,
-  LockPersonOutlined,
-  Delete,
-} from '@mui/icons-material';
+import { AddOutlined, CloseOutlined, MoveToInboxOutlined, LockPersonOutlined, Delete } from '@mui/icons-material';
 import { DotsHorizontalCircleOutline } from 'mdi-material-ui';
 import Button from '@mui/material/Button';
 import Tooltip from '@mui/material/Tooltip';
@@ -38,11 +32,7 @@ import Dialog from '@mui/material/Dialog';
 import WorkspaceDuplicationDialog from './WorkspaceDuplicationDialog';
 import handleExportJson from './workspaceExportHandler';
 import WorkspaceTurnToContainerDialog from './WorkspaceTurnToContainerDialog';
-import {
-  commitMutation,
-  fetchQuery,
-  MESSAGING$,
-} from '../../../relay/environment';
+import { commitMutation, fetchQuery, MESSAGING$ } from '../../../relay/environment';
 import Security from '../../../utils/Security';
 import { nowUTC } from '../../../utils/Time';
 import { EXPLORE_EXUPDATE } from '../../../utils/hooks/useGranted';

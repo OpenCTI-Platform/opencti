@@ -12,9 +12,7 @@ import { useNavigate } from 'react-router-dom-v5-compat';
 import { PopoverProps } from '@mui/material/Popover';
 import DialogContentText from '@mui/material/DialogContentText';
 import { useFormatter } from '../../../../components/i18n';
-import IncidentEditionContainer, {
-  IncidentEditionQuery,
-} from './IncidentEditionContainer';
+import IncidentEditionContainer, { IncidentEditionQuery } from './IncidentEditionContainer';
 import Security from '../../../../utils/Security';
 import Transition from '../../../../components/Transition';
 import { KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';

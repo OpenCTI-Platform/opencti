@@ -14,12 +14,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 */
 
 import React, { FunctionComponent, useEffect } from 'react';
-import {
-  graphql,
-  PreloadedQuery,
-  usePreloadedQuery,
-  useQueryLoader,
-} from 'react-relay';
+import { graphql, PreloadedQuery, usePreloadedQuery, useQueryLoader } from 'react-relay';
 import FileIndexingConfigurationAndMonitoring from '@components/settings/file_indexing/FileIndexingConfigurationAndMonitoring';
 import EnterpriseEdition from '@components/common/entreprise_edition/EnterpriseEdition';
 import { interval } from 'rxjs';

@@ -31,10 +31,7 @@ import { generateFileIndexId } from '../schema/identifier';
 import { TYPE_LOCK_ERROR } from '../config/errors';
 import type { SseEvent, StreamDataEvent, UpdateEvent } from '../types/event';
 import { STIX_EXT_OCTI } from '../types/stix-extensions';
-import {
-  getManagerConfigurationFromCache,
-  updateManagerConfigurationLastRun
-} from '../modules/managerConfiguration/managerConfiguration-domain';
+import { getManagerConfigurationFromCache, updateManagerConfigurationLastRun } from '../modules/managerConfiguration/managerConfiguration-domain';
 import { allFilesForPaths, getIndexFromDate } from '../modules/internal/document/document-domain';
 import { buildOptionsFromFileManager } from '../domain/file';
 

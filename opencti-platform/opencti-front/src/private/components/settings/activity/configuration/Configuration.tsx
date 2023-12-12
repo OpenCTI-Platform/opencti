@@ -16,12 +16,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 import React, { FunctionComponent } from 'react';
 import * as R from 'ramda';
 import { Form, Formik } from 'formik';
-import {
-  graphql,
-  usePreloadedQuery,
-  useMutation,
-  PreloadedQuery,
-} from 'react-relay';
+import { graphql, usePreloadedQuery, useMutation, PreloadedQuery } from 'react-relay';
 import makeStyles from '@mui/styles/makeStyles';
 import IconButton from '@mui/material/IconButton';
 import List from '@mui/material/List';

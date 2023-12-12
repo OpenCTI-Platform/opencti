@@ -1,17 +1,7 @@
 import React from 'react';
 import { createFragmentContainer, graphql } from 'react-relay';
 import { Field, Form, Formik } from 'formik';
-import {
-  assoc,
-  difference,
-  filter,
-  fromPairs,
-  head,
-  includes,
-  map,
-  pick,
-  pipe,
-} from 'ramda';
+import { assoc, difference, filter, fromPairs, head, includes, map, pick, pipe } from 'ramda';
 import { useNavigate } from 'react-router-dom-v5-compat';
 import * as R from 'ramda';
 import TextField from '../../../../components/TextField';
@@ -24,13 +14,7 @@ import { buildDate } from '../../../../utils/Time';
 import SwitchField from '../../../../components/SwitchField';
 import MarkdownField from '../../../../components/MarkdownField';
 import DateTimePickerField from '../../../../components/DateTimePickerField';
-import {
-  booleanAttributes,
-  dateAttributes,
-  ignoredAttributes,
-  multipleAttributes,
-  numberAttributes,
-} from '../../../../utils/hooks/useAttributes';
+import { booleanAttributes, dateAttributes, ignoredAttributes, multipleAttributes, numberAttributes } from '../../../../utils/hooks/useAttributes';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import ArtifactField from '../../common/form/ArtifactField';
 import OpenVocabField from '../../common/form/OpenVocabField';

@@ -11,10 +11,7 @@ import useEntityToggle from '../../../utils/hooks/useEntityToggle';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
 import { NoteLineDummy } from './notes/NoteLine';
 import { NoteLine_node$data } from './notes/__generated__/NoteLine_node.graphql';
-import {
-  NotesLinesPaginationQuery,
-  NotesLinesPaginationQuery$variables,
-} from './notes/__generated__/NotesLinesPaginationQuery.graphql';
+import { NotesLinesPaginationQuery, NotesLinesPaginationQuery$variables } from './notes/__generated__/NotesLinesPaginationQuery.graphql';
 import NoteCreation from './notes/NoteCreation';
 import { filtersWithEntityType, emptyFilterGroup } from '../../../utils/filters/filtersUtils';
 

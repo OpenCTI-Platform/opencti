@@ -2,11 +2,7 @@ import React, { FunctionComponent, ReactElement } from 'react';
 import { filter, includes } from 'ramda';
 import { RootPrivateQuery$data } from '../private/__generated__/RootPrivateQuery.graphql';
 import useAuth from './hooks/useAuth';
-import useGranted, {
-  BYPASS,
-  KNOWLEDGE_KNPARTICIPATE,
-  KNOWLEDGE_KNUPDATE_KNORGARESTRICT,
-} from './hooks/useGranted';
+import useGranted, { BYPASS, KNOWLEDGE_KNPARTICIPATE, KNOWLEDGE_KNUPDATE_KNORGARESTRICT } from './hooks/useGranted';
 
 export const CAPABILITY_INFORMATION = {
   [KNOWLEDGE_KNUPDATE_KNORGARESTRICT]:

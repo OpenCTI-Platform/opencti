@@ -1,8 +1,6 @@
 import React, { FunctionComponent } from 'react';
 import ListLines from '../../../components/list_lines/ListLines';
-import AdministrativeAreasLines, {
-  administrativeAreasLinesQuery,
-} from './administrative_areas/AdministrativeAreasLines';
+import AdministrativeAreasLines, { administrativeAreasLinesQuery } from './administrative_areas/AdministrativeAreasLines';
 import AdministrativeAreaCreation from './administrative_areas/AdministrativeAreaCreation';
 import Security from '../../../utils/Security';
 import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';

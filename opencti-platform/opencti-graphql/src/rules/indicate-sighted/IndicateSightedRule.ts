@@ -12,13 +12,7 @@ import { createRuleContent } from '../rules';
 import { createInferredRelation, deleteInferredRuleElement } from '../../database/middleware';
 import { listAllRelations, type RelationOptions } from '../../database/middleware-loader';
 import { RELATION_INDICATES, RELATION_TARGETS } from '../../schema/stixCoreRelationship';
-import {
-  ENTITY_TYPE_CAMPAIGN,
-  ENTITY_TYPE_INCIDENT,
-  ENTITY_TYPE_INTRUSION_SET,
-  ENTITY_TYPE_MALWARE,
-  ENTITY_TYPE_THREAT_ACTOR_GROUP
-} from '../../schema/stixDomainObject';
+import { ENTITY_TYPE_CAMPAIGN, ENTITY_TYPE_INCIDENT, ENTITY_TYPE_INTRUSION_SET, ENTITY_TYPE_MALWARE, ENTITY_TYPE_THREAT_ACTOR_GROUP } from '../../schema/stixDomainObject';
 import type { RuleRuntime } from '../../types/rules';
 import { ENTITY_TYPE_IDENTITY, ENTITY_TYPE_LOCATION } from '../../schema/general';
 import { executionContext, RULE_MANAGER_USER } from '../../utils/access';

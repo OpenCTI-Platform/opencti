@@ -4,10 +4,7 @@ import { DataColumns } from '../../../../components/list_lines';
 import ListLinesContent from '../../../../components/list_lines/ListLinesContent';
 import { CountryLineComponent, CountryLineDummy } from './CountryLine';
 import { CountriesLines_data$key } from './__generated__/CountriesLines_data.graphql';
-import {
-  CountriesLinesPaginationQuery,
-  CountriesLinesPaginationQuery$variables,
-} from './__generated__/CountriesLinesPaginationQuery.graphql';
+import { CountriesLinesPaginationQuery, CountriesLinesPaginationQuery$variables } from './__generated__/CountriesLinesPaginationQuery.graphql';
 import { UseLocalStorageHelpers } from '../../../../utils/hooks/useLocalStorage';
 import usePreloadedPaginationFragment from '../../../../utils/hooks/usePreloadedPaginationFragment';
 

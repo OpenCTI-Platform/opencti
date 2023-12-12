@@ -1,16 +1,8 @@
 import type { JSONSchemaType } from 'ajv';
 import { head } from 'ramda';
-import {
-  ABSTRACT_STIX_CORE_RELATIONSHIP,
-  ABSTRACT_STIX_CYBER_OBSERVABLE,
-  ABSTRACT_STIX_DOMAIN_OBJECT
-} from '../../schema/general';
+import { ABSTRACT_STIX_CORE_RELATIONSHIP, ABSTRACT_STIX_CYBER_OBSERVABLE, ABSTRACT_STIX_DOMAIN_OBJECT } from '../../schema/general';
 import { STIX_SIGHTING_RELATIONSHIP } from '../../schema/stixSightingRelationship';
-import {
-  ENTITY_TYPE_CONTAINER_NOTE,
-  ENTITY_TYPE_CONTAINER_OPINION,
-  isStixDomainObject
-} from '../../schema/stixDomainObject';
+import { ENTITY_TYPE_CONTAINER_NOTE, ENTITY_TYPE_CONTAINER_OPINION, isStixDomainObject } from '../../schema/stixDomainObject';
 import { UnsupportedError } from '../../config/errors';
 import type { AttributeConfiguration, BasicStoreEntityEntitySetting, ScaleConfig } from './entitySetting-types';
 import { ENTITY_TYPE_ENTITY_SETTING } from './entitySetting-types';

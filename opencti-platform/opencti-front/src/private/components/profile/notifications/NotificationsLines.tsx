@@ -4,14 +4,8 @@ import { DataColumns } from '../../../../components/list_lines';
 import ListLinesContent from '../../../../components/list_lines/ListLinesContent';
 import { HandleAddFilter, UseLocalStorageHelpers } from '../../../../utils/hooks/useLocalStorage';
 import usePreloadedPaginationFragment from '../../../../utils/hooks/usePreloadedPaginationFragment';
-import {
-  NotificationLineComponent,
-  NotificationLineDummy,
-} from './NotificationLine';
-import {
-  NotificationsLinesPaginationQuery,
-  NotificationsLinesPaginationQuery$variables,
-} from './__generated__/NotificationsLinesPaginationQuery.graphql';
+import { NotificationLineComponent, NotificationLineDummy } from './NotificationLine';
+import { NotificationsLinesPaginationQuery, NotificationsLinesPaginationQuery$variables } from './__generated__/NotificationsLinesPaginationQuery.graphql';
 import { NotificationsLines_data$key } from './__generated__/NotificationsLines_data.graphql';
 import { NotificationLine_node$data } from './__generated__/NotificationLine_node.graphql';
 

@@ -1,17 +1,6 @@
 import { BUS_TOPICS } from '../../config/conf';
-import {
-  batchListThroughGetFrom,
-  batchListThroughGetTo,
-  createEntity,
-  deleteElementById,
-  updateAttribute
-} from '../../database/middleware';
-import {
-  type EntityOptions,
-  internalLoadById,
-  listEntitiesPaginated,
-  storeLoadById
-} from '../../database/middleware-loader';
+import { batchListThroughGetFrom, batchListThroughGetTo, createEntity, deleteElementById, updateAttribute } from '../../database/middleware';
+import { type EntityOptions, internalLoadById, listEntitiesPaginated, storeLoadById } from '../../database/middleware-loader';
 import { notify } from '../../database/redis';
 import type { DomainFindById } from '../../domain/domainTypes';
 
@@ -20,10 +9,7 @@ import { isStixId } from '../../schema/schemaUtils';
 import { RELATION_OBJECT, RELATION_OBJECT_PARTICIPANT } from '../../schema/stixRefRelationship';
 import type { AuthContext, AuthUser } from '../../types/user';
 import { type BasicStoreEntityTask, ENTITY_TYPE_CONTAINER_TASK } from './task-types';
-import {
-  stixObjectOrRelationshipAddRefRelation,
-  stixObjectOrRelationshipDeleteRefRelation
-} from '../../domain/stixObjectOrStixRelationship';
+import { stixObjectOrRelationshipAddRefRelation, stixObjectOrRelationshipDeleteRefRelation } from '../../domain/stixObjectOrStixRelationship';
 import type { EditInput, StixRefRelationshipAddInput, TaskAddInput } from '../../generated/graphql';
 import { now } from '../../utils/format';
 import { ENTITY_TYPE_USER } from '../../schema/internalObject';

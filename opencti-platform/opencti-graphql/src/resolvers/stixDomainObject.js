@@ -26,11 +26,7 @@ import { pubSubAsyncIterator } from '../database/redis';
 import withCancel from '../graphql/subscriptionWrapper';
 import { ABSTRACT_STIX_DOMAIN_OBJECT } from '../schema/general';
 import { stixDomainObjectOptions as StixDomainObjectsOptions } from '../schema/stixDomainObjectOptions';
-import {
-  stixCoreObjectExportPush,
-  stixCoreObjectImportPush,
-  stixCoreObjectsExportPush
-} from '../domain/stixCoreObject';
+import { stixCoreObjectExportPush, stixCoreObjectImportPush, stixCoreObjectsExportPush } from '../domain/stixCoreObject';
 import { batchLoader } from '../database/middleware';
 import { paginatedForPathsWithEnrichment } from '../modules/internal/document/document-domain';
 

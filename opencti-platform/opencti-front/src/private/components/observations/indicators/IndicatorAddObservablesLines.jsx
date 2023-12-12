@@ -15,9 +15,7 @@ import makeStyles from '@mui/styles/makeStyles';
 import { commitMutation } from '../../../../relay/environment';
 import ItemIcon from '../../../../components/ItemIcon';
 import { useFormatter } from '../../../../components/i18n';
-import StixCoreRelationshipCreationForm, {
-  stixCoreRelationshipBasicShape,
-} from '../../common/stix_core_relationships/StixCoreRelationshipCreationForm';
+import StixCoreRelationshipCreationForm, { stixCoreRelationshipBasicShape } from '../../common/stix_core_relationships/StixCoreRelationshipCreationForm';
 import { deleteNodeFromEdge } from '../../../../utils/store';
 import { useIsEnforceReference, useSchemaCreationValidation } from '../../../../utils/hooks/useEntitySettings';
 import { parse } from '../../../../utils/Time';

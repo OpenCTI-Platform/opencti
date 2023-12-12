@@ -11,9 +11,7 @@ import Skeleton from '@mui/material/Skeleton';
 import { compose } from 'ramda';
 import withStyles from '@mui/styles/withStyles';
 import { QueryRenderer } from '../../../../relay/environment';
-import StixCoreObjectHistoryLines, {
-  stixCoreObjectHistoryLinesQuery,
-} from './StixCoreObjectHistoryLines';
+import StixCoreObjectHistoryLines, { stixCoreObjectHistoryLinesQuery } from './StixCoreObjectHistoryLines';
 import inject18n from '../../../../components/i18n';
 
 const styles = () => ({

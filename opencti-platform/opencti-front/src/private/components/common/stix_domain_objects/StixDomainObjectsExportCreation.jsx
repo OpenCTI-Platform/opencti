@@ -1,16 +1,6 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import {
-  compose,
-  filter,
-  flatten,
-  fromPairs,
-  includes,
-  map,
-  propOr,
-  uniq,
-  zip,
-} from 'ramda';
+import { compose, filter, flatten, fromPairs, includes, map, propOr, uniq, zip } from 'ramda';
 import withStyles from '@mui/styles/withStyles';
 import Dialog from '@mui/material/Dialog';
 import DialogTitle from '@mui/material/DialogTitle';
@@ -26,11 +16,7 @@ import * as Yup from 'yup';
 import Tooltip from '@mui/material/Tooltip';
 import Fab from '@mui/material/Fab';
 import inject18n from '../../../../components/i18n';
-import {
-  commitMutation,
-  MESSAGING$,
-  QueryRenderer,
-} from '../../../../relay/environment';
+import { commitMutation, MESSAGING$, QueryRenderer } from '../../../../relay/environment';
 import { markingDefinitionsLinesSearchQuery } from '../../settings/marking_definitions/MarkingDefinitionsLines';
 import SelectField from '../../../../components/SelectField';
 import Loader from '../../../../components/Loader';

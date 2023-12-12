@@ -5,15 +5,10 @@ import { withRouter } from 'react-router-dom';
 import { graphql } from 'react-relay';
 import withStyles from '@mui/styles/withStyles';
 import { QueryRenderer } from '../../../relay/environment';
-import {
-  buildViewParamsFromUrlAndStorage,
-  saveViewParameters,
-} from '../../../utils/ListParameters';
+import { buildViewParamsFromUrlAndStorage, saveViewParameters } from '../../../utils/ListParameters';
 import inject18n from '../../../components/i18n';
 import ListLines from '../../../components/list_lines/ListLines';
-import KillChainPhasesLines, {
-  killChainPhasesLinesQuery,
-} from './kill_chain_phases/KillChainPhasesLines';
+import KillChainPhasesLines, { killChainPhasesLinesQuery } from './kill_chain_phases/KillChainPhasesLines';
 import KillChainPhaseCreation from './kill_chain_phases/KillChainPhaseCreation';
 import LabelsVocabulariesMenu from './LabelsVocabulariesMenu';
 

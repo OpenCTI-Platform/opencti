@@ -20,15 +20,11 @@ import {
   ENTITY_TYPE_TOOL,
   ENTITY_TYPE_VULNERABILITY,
   isStixDomainObjectIdentity,
-  isStixDomainObjectLocation, isStixDomainObjectThreatActor,
+  isStixDomainObjectLocation,
+  isStixDomainObjectThreatActor
 } from '../schema/stixDomainObject';
 import type * as SDO from '../types/stix-sdo';
-import {
-  ENTITY_TYPE_EXTERNAL_REFERENCE,
-  ENTITY_TYPE_KILL_CHAIN_PHASE,
-  ENTITY_TYPE_LABEL,
-  ENTITY_TYPE_MARKING_DEFINITION
-} from '../schema/stixMetaObject';
+import { ENTITY_TYPE_EXTERNAL_REFERENCE, ENTITY_TYPE_KILL_CHAIN_PHASE, ENTITY_TYPE_LABEL, ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
 import type * as SMO from '../types/stix-smo';
 import {
   ENTITY_AUTONOMOUS_SYSTEM,

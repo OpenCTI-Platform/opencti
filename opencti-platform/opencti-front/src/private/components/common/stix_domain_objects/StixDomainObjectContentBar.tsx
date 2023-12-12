@@ -1,11 +1,6 @@
 import React, { FunctionComponent } from 'react';
 import IconButton from '@mui/material/IconButton';
-import {
-  CloudDownloadOutlined,
-  ZoomInOutlined,
-  ZoomOutOutlined,
-  SaveOutlined,
-} from '@mui/icons-material';
+import { CloudDownloadOutlined, ZoomInOutlined, ZoomOutOutlined, SaveOutlined } from '@mui/icons-material';
 import Drawer from '@mui/material/Drawer';
 import Slide, { SlideProps } from '@mui/material/Slide';
 import { Link } from 'react-router-dom';

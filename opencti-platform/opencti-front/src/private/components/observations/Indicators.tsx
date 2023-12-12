@@ -1,9 +1,7 @@
 import React from 'react';
 import makeStyles from '@mui/styles/makeStyles';
 import ListLines from '../../../components/list_lines/ListLines';
-import IndicatorsLines, {
-  indicatorsLinesQuery,
-} from './indicators/IndicatorsLines';
+import IndicatorsLines, { indicatorsLinesQuery } from './indicators/IndicatorsLines';
 import IndicatorCreation from './indicators/IndicatorCreation';
 import IndicatorsRightBar from './indicators/IndicatorsRightBar';
 import Security from '../../../utils/Security';
@@ -15,10 +13,7 @@ import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage'
 import useEntityToggle from '../../../utils/hooks/useEntityToggle';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
 import { IndicatorLine_node$data } from './indicators/__generated__/IndicatorLine_node.graphql';
-import {
-  IndicatorsLinesPaginationQuery,
-  IndicatorsLinesPaginationQuery$variables,
-} from './indicators/__generated__/IndicatorsLinesPaginationQuery.graphql';
+import { IndicatorsLinesPaginationQuery, IndicatorsLinesPaginationQuery$variables } from './indicators/__generated__/IndicatorsLinesPaginationQuery.graphql';
 import { ModuleHelper } from '../../../utils/platformModulesHelper';
 import { IndicatorLineDummyComponent } from './indicators/IndicatorLine';
 import { filtersWithEntityType, findFilterFromKey, emptyFilterGroup } from '../../../utils/filters/filtersUtils';

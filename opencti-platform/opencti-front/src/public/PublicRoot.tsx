@@ -12,10 +12,7 @@ import logo from '../static/images/logo.png';
 import { Theme } from '../components/Theme';
 import { rootPublicQuery } from './LoginRoot';
 import PublicStreamLines from '../private/components/data/stream/PublicStreamLines';
-import {
-  LoginRootPublicQuery,
-  LoginRootPublicQuery$data,
-} from './__generated__/LoginRootPublicQuery.graphql';
+import { LoginRootPublicQuery, LoginRootPublicQuery$data } from './__generated__/LoginRootPublicQuery.graphql';
 import Message from '../components/Message';
 import PublicTaxiiLines from '../private/components/data/taxii/PublicTaxiiLines';
 

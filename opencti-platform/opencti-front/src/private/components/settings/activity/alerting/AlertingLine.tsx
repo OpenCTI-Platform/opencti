@@ -2,11 +2,7 @@ import React, { FunctionComponent } from 'react';
 import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
-import {
-  BackupTableOutlined,
-  CampaignOutlined,
-  MoreVert,
-} from '@mui/icons-material';
+import { BackupTableOutlined, CampaignOutlined, MoreVert } from '@mui/icons-material';
 import Skeleton from '@mui/material/Skeleton';
 import { graphql, useFragment } from 'react-relay';
 import makeStyles from '@mui/styles/makeStyles';

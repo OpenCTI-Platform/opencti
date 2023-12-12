@@ -1,12 +1,5 @@
 import React from 'react';
-import {
-  Box,
-  Grid,
-  IconButton,
-  Paper,
-  Tooltip,
-  Typography,
-} from '@mui/material';
+import { Box, Grid, IconButton, Paper, Tooltip, Typography } from '@mui/material';
 import { InformationOutline } from 'mdi-material-ui';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';

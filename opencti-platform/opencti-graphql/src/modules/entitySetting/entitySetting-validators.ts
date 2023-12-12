@@ -7,12 +7,7 @@ import { schemaAttributesDefinition } from '../../schema/schema-attributes';
 import { schemaRelationsRefDefinition } from '../../schema/schema-relationsRef';
 import { validateAndFormatSchemaAttribute } from '../../schema/schema-validator';
 import { internalFindByIds } from '../../database/middleware-loader';
-import {
-  availableSettings,
-  getAttributesConfiguration,
-  getAvailableSettings,
-  getDefaultValues
-} from './entitySetting-utils';
+import { availableSettings, getAttributesConfiguration, getAvailableSettings, getDefaultValues } from './entitySetting-utils';
 import { telemetry } from '../../config/tracing';
 import { isEmptyField } from '../../database/utils';
 import { INPUT_MARKINGS } from '../../schema/general';

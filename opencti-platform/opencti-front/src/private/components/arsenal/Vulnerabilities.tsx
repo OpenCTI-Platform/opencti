@@ -6,10 +6,7 @@ import Security from '../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE } from '../../../utils/hooks/useGranted';
 import { VulnerabilityLineDummy } from './vulnerabilities/VulnerabilityLine';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
-import {
-  VulnerabilitiesLinesPaginationQuery,
-  VulnerabilitiesLinesPaginationQuery$variables,
-} from './vulnerabilities/__generated__/VulnerabilitiesLinesPaginationQuery.graphql';
+import { VulnerabilitiesLinesPaginationQuery, VulnerabilitiesLinesPaginationQuery$variables } from './vulnerabilities/__generated__/VulnerabilitiesLinesPaginationQuery.graphql';
 import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
 import useAuth from '../../../utils/hooks/useAuth';
 import { emptyFilterGroup } from '../../../utils/filters/filtersUtils';

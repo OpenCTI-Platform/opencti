@@ -1,14 +1,5 @@
 import React, { Component } from 'react';
-import {
-  compose,
-  pathOr,
-  pipe,
-  map,
-  sortWith,
-  ascend,
-  path,
-  union,
-} from 'ramda';
+import { compose, pathOr, pipe, map, sortWith, ascend, path, union } from 'ramda';
 import { Field } from 'formik';
 import withStyles from '@mui/styles/withStyles';
 import { fetchQuery } from '../../../../relay/environment';

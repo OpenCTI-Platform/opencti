@@ -32,9 +32,7 @@ import {
 } from './__generated__/StixSightingRelationshipEditionOverview_stixSightingRelationship.graphql';
 import CommitMessage from '../../common/form/CommitMessage';
 import { Theme } from '../../../../components/Theme';
-import {
-  StixSightingRelationshipEditionOverviewQuery,
-} from './__generated__/StixSightingRelationshipEditionOverviewQuery.graphql';
+import { StixSightingRelationshipEditionOverviewQuery } from './__generated__/StixSightingRelationshipEditionOverviewQuery.graphql';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   header: {

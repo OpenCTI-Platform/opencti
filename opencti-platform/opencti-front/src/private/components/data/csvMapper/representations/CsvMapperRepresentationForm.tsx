@@ -1,9 +1,7 @@
 import React, { FunctionComponent, useEffect, useState } from 'react';
 import { useFormikContext } from 'formik';
 import { useQueryLoader } from 'react-relay';
-import CsvMapperRepresentationAttributesForm, {
-  schemaAttributesQuery,
-} from '@components/data/csvMapper/representations/attributes/CsvMapperRepresentationAttributesForm';
+import CsvMapperRepresentationAttributesForm, { schemaAttributesQuery } from '@components/data/csvMapper/representations/attributes/CsvMapperRepresentationAttributesForm';
 import MUIAutocomplete from '@mui/material/Autocomplete';
 import { SelectChangeEvent } from '@mui/material/Select';
 import TextField from '@mui/material/TextField';

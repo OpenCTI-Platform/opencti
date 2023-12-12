@@ -21,9 +21,7 @@ import { StixSightingRelationshipSharingQuery$data } from './__generated__/StixS
 import { commitMutation, QueryRenderer } from '../../../../relay/environment';
 import { useFormatter } from '../../../../components/i18n';
 import { truncate } from '../../../../utils/String';
-import useGranted, {
-  KNOWLEDGE_KNUPDATE_KNORGARESTRICT,
-} from '../../../../utils/hooks/useGranted';
+import useGranted, { KNOWLEDGE_KNUPDATE_KNORGARESTRICT } from '../../../../utils/hooks/useGranted';
 import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
 import Transition from '../../../../components/Transition';
 

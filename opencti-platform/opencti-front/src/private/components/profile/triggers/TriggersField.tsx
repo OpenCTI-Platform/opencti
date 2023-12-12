@@ -9,10 +9,7 @@ import { useFormatter } from '../../../../components/i18n';
 import { triggersQueriesKnowledgeSearchQuery } from './TriggersQueries';
 import { TriggersLinesPaginationQuery$variables } from './__generated__/TriggersLinesPaginationQuery.graphql';
 import TriggerLiveCreation from './TriggerLiveCreation';
-import {
-  TriggerEventType,
-  TriggerLiveCreationKnowledgeMutation$data,
-} from './__generated__/TriggerLiveCreationKnowledgeMutation.graphql';
+import { TriggerEventType, TriggerLiveCreationKnowledgeMutation$data } from './__generated__/TriggerLiveCreationKnowledgeMutation.graphql';
 import { TriggerType } from './__generated__/TriggerLine_node.graphql';
 import { TriggersQueriesSearchKnowledgeQuery$data } from './__generated__/TriggersQueriesSearchKnowledgeQuery.graphql';
 

@@ -1,10 +1,5 @@
 /* eslint-disable camelcase */
-import {
-  createInferredEntity,
-  createInferredRelation,
-  deleteInferredRuleElement,
-  stixLoadById,
-} from '../../database/middleware';
+import { createInferredEntity, createInferredRelation, deleteInferredRuleElement, stixLoadById } from '../../database/middleware';
 import def from './SightingIncidentDefinition';
 import { ENTITY_TYPE_INCIDENT, ENTITY_TYPE_INDICATOR } from '../../schema/stixDomainObject';
 import { createRuleContent } from '../rules';

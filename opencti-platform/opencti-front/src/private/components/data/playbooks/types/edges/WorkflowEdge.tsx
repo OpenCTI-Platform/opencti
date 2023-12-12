@@ -1,10 +1,5 @@
 import React from 'react';
-import {
-  EdgeLabelRenderer,
-  EdgeProps,
-  getBezierPath,
-  useReactFlow,
-} from 'reactflow';
+import { EdgeLabelRenderer, EdgeProps, getBezierPath, useReactFlow } from 'reactflow';
 import { makeStyles } from '@mui/styles';
 import { Theme } from '../../../../../../components/Theme';
 

@@ -15,9 +15,7 @@ import Security from '../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
 import { InfrastructureEditionContainerQuery } from './__generated__/InfrastructureEditionContainerQuery.graphql';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
-import InfrastructureEditionContainer, {
-  infrastructureEditionContainerQuery,
-} from './InfrastructureEditionContainer';
+import InfrastructureEditionContainer, { infrastructureEditionContainerQuery } from './InfrastructureEditionContainer';
 import Transition from '../../../../components/Transition';
 
 const InfrastructurePopoverDeletionMutation = graphql`

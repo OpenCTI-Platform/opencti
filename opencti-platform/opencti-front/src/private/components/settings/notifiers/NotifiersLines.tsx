@@ -2,10 +2,7 @@ import React, { FunctionComponent } from 'react';
 import { graphql, PreloadedQuery } from 'react-relay';
 import { NotifierLine, NotifierLineDummy } from './NotifierLine';
 import { NotifierLine_node$data } from './__generated__/NotifierLine_node.graphql';
-import {
-  NotifiersLinesPaginationQuery,
-  NotifiersLinesPaginationQuery$variables,
-} from './__generated__/NotifiersLinesPaginationQuery.graphql';
+import { NotifiersLinesPaginationQuery, NotifiersLinesPaginationQuery$variables } from './__generated__/NotifiersLinesPaginationQuery.graphql';
 import { NotifiersLines_data$key } from './__generated__/NotifiersLines_data.graphql';
 import { HandleAddFilter, UseLocalStorageHelpers } from '../../../../utils/hooks/useLocalStorage';
 import { DataColumns } from '../../../../components/list_lines';

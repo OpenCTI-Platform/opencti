@@ -7,12 +7,7 @@ import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
-import {
-  ArrowDropDown,
-  ArrowDropUp,
-  FileDownloadOutlined,
-  KeyboardArrowRightOutlined,
-} from '@mui/icons-material';
+import { ArrowDropDown, ArrowDropUp, FileDownloadOutlined, KeyboardArrowRightOutlined } from '@mui/icons-material';
 import makeStyles from '@mui/styles/makeStyles';
 import { Link } from 'react-router-dom';
 import Chip from '@mui/material/Chip';
@@ -31,9 +26,7 @@ import { defaultValue } from '../../utils/Graph';
 import { resolveLink } from '../../utils/Entity';
 import StixCoreObjectLabels from './common/stix_core_objects/StixCoreObjectLabels';
 import StixCoreObjectsExports from './common/stix_core_objects/StixCoreObjectsExports';
-import useGranted, {
-  KNOWLEDGE_KNGETEXPORT,
-} from '../../utils/hooks/useGranted';
+import useGranted, { KNOWLEDGE_KNGETEXPORT } from '../../utils/hooks/useGranted';
 import { hexToRGB, itemColor } from '../../utils/Colors';
 import ItemMarkings from '../../components/ItemMarkings';
 import { export_max_size } from '../../utils/utils';

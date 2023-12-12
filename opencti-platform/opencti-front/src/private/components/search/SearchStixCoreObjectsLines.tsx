@@ -1,14 +1,11 @@
 import React, { FunctionComponent } from 'react';
 import { graphql, PreloadedQuery } from 'react-relay';
+import { SearchStixCoreObjectLine_node$data } from '@components/search/__generated__/SearchStixCoreObjectLine_node.graphql';
 import {
-  SearchStixCoreObjectLine_node$data,
-} from '@components/search/__generated__/SearchStixCoreObjectLine_node.graphql';
-import {
-  SearchStixCoreObjectsLinesPaginationQuery, SearchStixCoreObjectsLinesPaginationQuery$variables,
+  SearchStixCoreObjectsLinesPaginationQuery,
+  SearchStixCoreObjectsLinesPaginationQuery$variables,
 } from '@components/search/__generated__/SearchStixCoreObjectsLinesPaginationQuery.graphql';
-import {
-  SearchStixCoreObjectsLines_data$key,
-} from '@components/search/__generated__/SearchStixCoreObjectsLines_data.graphql';
+import { SearchStixCoreObjectsLines_data$key } from '@components/search/__generated__/SearchStixCoreObjectsLines_data.graphql';
 import ListLinesContent from '../../../components/list_lines/ListLinesContent';
 import { SearchStixCoreObjectLine, SearchStixCoreObjectLineDummy } from './SearchStixCoreObjectLine';
 import usePreloadedPaginationFragment from '../../../utils/hooks/usePreloadedPaginationFragment';

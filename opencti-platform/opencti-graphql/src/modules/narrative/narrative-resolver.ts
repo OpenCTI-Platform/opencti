@@ -1,12 +1,5 @@
 import type { Resolvers } from '../../generated/graphql';
-import {
-  addNarrative,
-  batchIsSubNarrative,
-  batchParentNarratives,
-  batchSubNarratives,
-  findAll,
-  findById
-} from './narrative-domain';
+import { addNarrative, batchIsSubNarrative, batchParentNarratives, batchSubNarratives, findAll, findById } from './narrative-domain';
 import {
   stixDomainObjectAddRelation,
   stixDomainObjectCleanContext,

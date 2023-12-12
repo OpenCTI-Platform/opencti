@@ -2,12 +2,7 @@ import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import Button from '@mui/material/Button';
 import { CityVariantOutline } from 'mdi-material-ui';
-import {
-  PublicOutlined,
-  PlaceOutlined,
-  FlagOutlined,
-  MapOutlined,
-} from '@mui/icons-material';
+import { PublicOutlined, PlaceOutlined, FlagOutlined, MapOutlined } from '@mui/icons-material';
 import { Theme } from '@mui/material/styles/createTheme';
 import makeStyles from '@mui/styles/makeStyles';
 import { useFormatter } from '../../../components/i18n';

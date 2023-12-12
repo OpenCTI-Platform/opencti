@@ -11,9 +11,7 @@ import UserEditionPassword from './UserEditionPassword';
 import UserEditionGroups from './UserEditionGroups';
 import { useFormatter } from '../../../../components/i18n';
 import { UserEdition_user$data } from './__generated__/UserEdition_user.graphql';
-import useGranted, {
-  SETTINGS_SETACCESSES,
-} from '../../../../utils/hooks/useGranted';
+import useGranted, { SETTINGS_SETACCESSES } from '../../../../utils/hooks/useGranted';
 
 interface UserEditionProps {
   handleClose?: () => void;

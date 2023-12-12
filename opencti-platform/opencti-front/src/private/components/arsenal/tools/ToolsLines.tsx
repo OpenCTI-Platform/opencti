@@ -5,10 +5,7 @@ import { ToolLine, ToolLineDummy } from './ToolLine';
 import { DataColumns } from '../../../../components/list_lines';
 import { HandleAddFilter, UseLocalStorageHelpers } from '../../../../utils/hooks/useLocalStorage';
 import usePreloadedPaginationFragment from '../../../../utils/hooks/usePreloadedPaginationFragment';
-import {
-  ToolsLinesPaginationQuery,
-  ToolsLinesPaginationQuery$variables,
-} from './__generated__/ToolsLinesPaginationQuery.graphql';
+import { ToolsLinesPaginationQuery, ToolsLinesPaginationQuery$variables } from './__generated__/ToolsLinesPaginationQuery.graphql';
 import { ToolsLines_data$key } from './__generated__/ToolsLines_data.graphql';
 
 const nbOfRowsToLoad = 50;

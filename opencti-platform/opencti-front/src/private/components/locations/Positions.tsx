@@ -4,10 +4,7 @@ import PositionCreation from './positions/PositionCreation';
 import Security from '../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE } from '../../../utils/hooks/useGranted';
 import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
-import {
-  PositionsLinesPaginationQuery,
-  PositionsLinesPaginationQuery$variables,
-} from './positions/__generated__/PositionsLinesPaginationQuery.graphql';
+import { PositionsLinesPaginationQuery, PositionsLinesPaginationQuery$variables } from './positions/__generated__/PositionsLinesPaginationQuery.graphql';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
 import { PositionLineDummy } from './positions/PositionLine';
 import PositionsLines, { positionsLinesQuery } from './positions/PositionsLines';

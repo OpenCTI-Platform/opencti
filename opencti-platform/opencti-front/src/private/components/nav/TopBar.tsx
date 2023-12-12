@@ -5,24 +5,13 @@ import { Link, useLocation } from 'react-router-dom-v5-compat';
 import AppBar from '@mui/material/AppBar';
 import Toolbar from '@mui/material/Toolbar';
 import IconButton from '@mui/material/IconButton';
-import {
-  AccountCircleOutlined, BiotechOutlined,
-  ContentPasteSearchOutlined,
-  ExploreOutlined,
-  InsertChartOutlined,
-  NotificationsOutlined,
-} from '@mui/icons-material';
+import { AccountCircleOutlined, BiotechOutlined, ContentPasteSearchOutlined, ExploreOutlined, InsertChartOutlined, NotificationsOutlined } from '@mui/icons-material';
 import { DatabaseCogOutline } from 'mdi-material-ui';
 import Menu from '@mui/material/Menu';
 import Divider from '@mui/material/Divider';
 import MenuItem from '@mui/material/MenuItem';
 import Tooltip from '@mui/material/Tooltip';
-import {
-  graphql,
-  PreloadedQuery,
-  usePreloadedQuery,
-  useSubscription,
-} from 'react-relay';
+import { graphql, PreloadedQuery, usePreloadedQuery, useSubscription } from 'react-relay';
 import { useTheme } from '@mui/styles';
 import makeStyles from '@mui/styles/makeStyles';
 import { GraphQLSubscriptionConfig } from 'relay-runtime';
@@ -50,18 +39,11 @@ import TopMenuLocation from './TopMenuLocation';
 import FeedbackCreation from '../cases/feedbacks/FeedbackCreation';
 import TopMenuCases from './TopMenuCases';
 import { Theme } from '../../../components/Theme';
-import {
-  EXPLORE,
-  KNOWLEDGE,
-  KNOWLEDGE_KNASKIMPORT,
-} from '../../../utils/hooks/useGranted';
+import { EXPLORE, KNOWLEDGE, KNOWLEDGE_KNASKIMPORT } from '../../../utils/hooks/useGranted';
 import TopMenuProfile from '../profile/TopMenuProfile';
 import TopMenuNotifications from '../profile/TopMenuNotifications';
 import { TopBarQuery } from './__generated__/TopBarQuery.graphql';
-import {
-  TopBarNotificationNumberSubscription,
-  TopBarNotificationNumberSubscription$data,
-} from './__generated__/TopBarNotificationNumberSubscription.graphql';
+import { TopBarNotificationNumberSubscription, TopBarNotificationNumberSubscription$data } from './__generated__/TopBarNotificationNumberSubscription.graphql';
 import useAuth from '../../../utils/hooks/useAuth';
 import { useSettingsMessagesBannerHeight } from '../settings/settings_messages/SettingsMessagesBanner';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';

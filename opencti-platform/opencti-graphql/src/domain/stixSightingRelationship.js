@@ -1,42 +1,17 @@
 import { assoc, dissoc, pipe } from 'ramda';
 import { delEditContext, notify, setEditContext } from '../database/redis';
-import {
-  batchListThroughGetFrom,
-  batchListThroughGetTo,
-  batchLoadThroughGetTo,
-  createRelation,
-  deleteElementById,
-  updateAttribute,
-} from '../database/middleware';
+import { batchListThroughGetFrom, batchListThroughGetTo, batchLoadThroughGetTo, createRelation, deleteElementById, updateAttribute } from '../database/middleware';
 import { BUS_TOPICS } from '../config/conf';
 import { STIX_SIGHTING_RELATIONSHIP } from '../schema/stixSightingRelationship';
 import { ENTITY_TYPE_CONTAINER, ENTITY_TYPE_IDENTITY } from '../schema/general';
-import {
-  RELATION_CREATED_BY,
-  RELATION_EXTERNAL_REFERENCE,
-  RELATION_OBJECT,
-  RELATION_OBJECT_LABEL,
-  RELATION_OBJECT_MARKING,
-} from '../schema/stixRefRelationship';
-import {
-  ENTITY_TYPE_CONTAINER_NOTE,
-  ENTITY_TYPE_CONTAINER_OPINION,
-  ENTITY_TYPE_CONTAINER_REPORT,
-} from '../schema/stixDomainObject';
-import {
-  ENTITY_TYPE_EXTERNAL_REFERENCE,
-  ENTITY_TYPE_LABEL,
-  ENTITY_TYPE_MARKING_DEFINITION,
-} from '../schema/stixMetaObject';
+import { RELATION_CREATED_BY, RELATION_EXTERNAL_REFERENCE, RELATION_OBJECT, RELATION_OBJECT_LABEL, RELATION_OBJECT_MARKING } from '../schema/stixRefRelationship';
+import { ENTITY_TYPE_CONTAINER_NOTE, ENTITY_TYPE_CONTAINER_OPINION, ENTITY_TYPE_CONTAINER_REPORT } from '../schema/stixDomainObject';
+import { ENTITY_TYPE_EXTERNAL_REFERENCE, ENTITY_TYPE_LABEL, ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
 import { elCount } from '../database/engine';
 import { READ_INDEX_STIX_SIGHTING_RELATIONSHIPS } from '../database/utils';
 import { listRelations, storeLoadById } from '../database/middleware-loader';
 import { ENTITY_TYPE_CONTAINER_CASE } from '../modules/case/case-types';
-import {
-  stixObjectOrRelationshipAddRefRelation,
-  stixObjectOrRelationshipAddRefRelations,
-  stixObjectOrRelationshipDeleteRefRelation
-} from './stixObjectOrStixRelationship';
+import { stixObjectOrRelationshipAddRefRelation, stixObjectOrRelationshipAddRefRelations, stixObjectOrRelationshipDeleteRefRelation } from './stixObjectOrStixRelationship';
 
 export const findAll = async (context, user, args) => {
   return listRelations(context, user, STIX_SIGHTING_RELATIONSHIP, args);

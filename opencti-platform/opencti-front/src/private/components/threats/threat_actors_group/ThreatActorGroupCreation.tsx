@@ -24,10 +24,7 @@ import { ThreatActorsGroupCardsPaginationQuery$variables } from './__generated__
 import { Theme } from '../../../../components/Theme';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
-import {
-  ThreatActorGroupCreationMutation,
-  ThreatActorGroupCreationMutation$variables,
-} from './__generated__/ThreatActorGroupCreationMutation.graphql';
+import { ThreatActorGroupCreationMutation, ThreatActorGroupCreationMutation$variables } from './__generated__/ThreatActorGroupCreationMutation.graphql';
 import CustomFileUploader from '../../common/files/CustomFileUploader';
 
 const useStyles = makeStyles<Theme>((theme) => ({

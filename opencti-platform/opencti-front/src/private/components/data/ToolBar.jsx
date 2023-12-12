@@ -61,32 +61,21 @@ import Checkbox from '@mui/material/Checkbox';
 import TasksFilterValueContainer from '../../../components/TasksFilterValueContainer';
 import inject18n from '../../../components/i18n';
 import { truncate } from '../../../utils/String';
-import {
-  commitMutation,
-  fetchQuery,
-  MESSAGING$,
-} from '../../../relay/environment';
+import { commitMutation, fetchQuery, MESSAGING$ } from '../../../relay/environment';
 import ItemIcon from '../../../components/ItemIcon';
 import { objectMarkingFieldAllowedMarkingsQuery } from '../common/form/ObjectMarkingField';
 import { defaultValue } from '../../../utils/Graph';
 import { identitySearchIdentitiesSearchQuery } from '../common/identities/IdentitySearch';
 import { labelsSearchQuery } from '../settings/LabelsQuery';
 import Security from '../../../utils/Security';
-import {
-  KNOWLEDGE_KNUPDATE,
-  KNOWLEDGE_KNUPDATE_KNDELETE,
-} from '../../../utils/hooks/useGranted';
+import { KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../utils/hooks/useGranted';
 import { UserContext } from '../../../utils/hooks/useAuth';
 import { statusFieldStatusesSearchQuery } from '../common/form/StatusField';
 import { hexToRGB } from '../../../utils/Colors';
 import { externalReferencesQueriesSearchQuery } from '../analyses/external_references/ExternalReferencesQueries';
 import StixDomainObjectCreation from '../common/stix_domain_objects/StixDomainObjectCreation';
 import ItemMarkings from '../../../components/ItemMarkings';
-import {
-  findFilterFromKey,
-  removeIdFromFilterObject,
-  serializeFilterGroupForBackend,
-} from '../../../utils/filters/filtersUtils';
+import { findFilterFromKey, removeIdFromFilterObject, serializeFilterGroupForBackend } from '../../../utils/filters/filtersUtils';
 import { stixCyberObservableTypes } from '../../../utils/hooks/useAttributes';
 
 const styles = (theme) => ({

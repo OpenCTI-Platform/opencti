@@ -3,12 +3,7 @@ import IconButton from '@mui/material/IconButton';
 import makeStyles from '@mui/styles/makeStyles';
 import * as R from 'ramda';
 import React, { useEffect, useLayoutEffect, useMemo, useState } from 'react';
-import {
-  graphql,
-  PreloadedQuery,
-  usePreloadedQuery,
-  useSubscription,
-} from 'react-relay';
+import { graphql, PreloadedQuery, usePreloadedQuery, useSubscription } from 'react-relay';
 import { GraphQLSubscriptionConfig } from 'relay-runtime';
 import { Theme } from '../../../../components/Theme';
 import { generateBannerMessageColors } from '../../../../utils/Colors';

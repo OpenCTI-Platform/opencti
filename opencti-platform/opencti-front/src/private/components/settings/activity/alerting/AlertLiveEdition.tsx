@@ -5,13 +5,7 @@ import makeStyles from '@mui/styles/makeStyles';
 import { Field, Form, Formik } from 'formik';
 import { FormikConfig } from 'formik/dist/types';
 import React, { FunctionComponent } from 'react';
-import {
-  graphql,
-  PreloadedQuery,
-  useFragment,
-  useMutation,
-  usePreloadedQuery,
-} from 'react-relay';
+import { graphql, PreloadedQuery, useFragment, useMutation, usePreloadedQuery } from 'react-relay';
 import FilterIconButton from '../../../../../components/FilterIconButton';
 import { useFormatter } from '../../../../../components/i18n';
 import MarkdownField from '../../../../../components/MarkdownField';

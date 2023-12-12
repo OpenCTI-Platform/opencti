@@ -2,11 +2,7 @@ import React, { FunctionComponent } from 'react';
 import { graphql, useFragment } from 'react-relay';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText/ListItemText';
-import {
-  KeyboardArrowRightOutlined,
-  CheckCircleOutlined,
-  DoNotDisturbOnOutlined,
-} from '@mui/icons-material';
+import { KeyboardArrowRightOutlined, CheckCircleOutlined, DoNotDisturbOnOutlined } from '@mui/icons-material';
 import ListItem from '@mui/material/ListItem';
 import Skeleton from '@mui/material/Skeleton';
 import { ListItemButton } from '@mui/material';

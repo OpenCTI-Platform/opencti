@@ -5,10 +5,7 @@ import { DataColumns } from '../../../../components/list_lines';
 import { UseLocalStorageHelpers } from '../../../../utils/hooks/useLocalStorage';
 import usePreloadedPaginationFragment from '../../../../utils/hooks/usePreloadedPaginationFragment';
 import { FeedbackLine, FeedbackLineDummy } from './FeedbackLine';
-import {
-  FeedbacksLinesPaginationQuery,
-  FeedbacksLinesPaginationQuery$variables,
-} from './__generated__/FeedbacksLinesPaginationQuery.graphql';
+import { FeedbacksLinesPaginationQuery, FeedbacksLinesPaginationQuery$variables } from './__generated__/FeedbacksLinesPaginationQuery.graphql';
 import { FeedbacksLines_data$key } from './__generated__/FeedbacksLines_data.graphql';
 import { FeedbackLine_node$data } from './__generated__/FeedbackLine_node.graphql';
 

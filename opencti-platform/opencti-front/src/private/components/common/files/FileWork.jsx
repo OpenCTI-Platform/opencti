@@ -9,11 +9,7 @@ import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
-import {
-  CheckCircleOutlined,
-  DeleteOutlined,
-  WarningOutlined,
-} from '@mui/icons-material';
+import { CheckCircleOutlined, DeleteOutlined, WarningOutlined } from '@mui/icons-material';
 import IconButton from '@mui/material/IconButton';
 import Tooltip from '@mui/material/Tooltip';
 import * as R from 'ramda';

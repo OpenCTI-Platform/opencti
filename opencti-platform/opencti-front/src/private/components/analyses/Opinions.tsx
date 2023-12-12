@@ -7,10 +7,7 @@ import { KNOWLEDGE_KNPARTICIPATE, KNOWLEDGE_KNUPDATE } from '../../../utils/hook
 import useAuth from '../../../utils/hooks/useAuth';
 import ToolBar from '../data/ToolBar';
 import ExportContextProvider from '../../../utils/ExportContextProvider';
-import {
-  OpinionsLinesPaginationQuery,
-  OpinionsLinesPaginationQuery$variables,
-} from './opinions/__generated__/OpinionsLinesPaginationQuery.graphql';
+import { OpinionsLinesPaginationQuery, OpinionsLinesPaginationQuery$variables } from './opinions/__generated__/OpinionsLinesPaginationQuery.graphql';
 import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
 import useEntityToggle from '../../../utils/hooks/useEntityToggle';
 import { OpinionLine_node$data } from './opinions/__generated__/OpinionLine_node.graphql';

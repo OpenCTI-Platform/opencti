@@ -1,12 +1,5 @@
 import type { Moment } from 'moment';
-import {
-  MARKING_TLP_AMBER,
-  MARKING_TLP_AMBER_STRICT,
-  MARKING_TLP_CLEAR,
-  MARKING_TLP_GREEN,
-  MARKING_TLP_RED,
-  STATIC_MARKING_IDS
-} from '../schema/identifier';
+import { MARKING_TLP_AMBER, MARKING_TLP_AMBER_STRICT, MARKING_TLP_CLEAR, MARKING_TLP_GREEN, MARKING_TLP_RED, STATIC_MARKING_IDS } from '../schema/identifier';
 import { getEntitiesMapFromCache } from '../database/cache';
 import { ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
 import type { AuthContext, AuthUser } from '../types/user';

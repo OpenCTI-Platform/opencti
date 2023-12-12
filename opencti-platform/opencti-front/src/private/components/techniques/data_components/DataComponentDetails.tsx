@@ -6,10 +6,7 @@ import Grid from '@mui/material/Grid';
 import makeStyles from '@mui/styles/makeStyles';
 import ExpandableMarkdown from '../../../../components/ExpandableMarkdown';
 import { useFormatter } from '../../../../components/i18n';
-import {
-  DataComponentDetails_dataComponent$data,
-  DataComponentDetails_dataComponent$key,
-} from './__generated__/DataComponentDetails_dataComponent.graphql';
+import { DataComponentDetails_dataComponent$data, DataComponentDetails_dataComponent$key } from './__generated__/DataComponentDetails_dataComponent.graphql';
 import DataComponentDataSource from './DataComponentDataSource';
 import DataComponentAttackPatterns from './DataComponentAttackPatterns';
 

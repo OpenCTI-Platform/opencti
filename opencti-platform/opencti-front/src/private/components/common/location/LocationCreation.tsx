@@ -13,7 +13,8 @@ import Drawer, { DrawerVariant } from '@components/common/drawer/Drawer';
 import makeStyles from '@mui/styles/makeStyles';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
 import {
-  LocationCreationMutation, LocationCreationMutation$data,
+  LocationCreationMutation,
+  LocationCreationMutation$data,
   LocationCreationMutation$variables,
 } from '@components/common/location/__generated__/LocationCreationMutation.graphql';
 import { FormikConfig } from 'formik/dist/types';

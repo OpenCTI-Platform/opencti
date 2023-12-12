@@ -4,10 +4,7 @@ import { compose, propOr } from 'ramda';
 import { withRouter } from 'react-router-dom';
 import withStyles from '@mui/styles/withStyles';
 import { QueryRenderer } from '../../../relay/environment';
-import {
-  buildViewParamsFromUrlAndStorage,
-  saveViewParameters,
-} from '../../../utils/ListParameters';
+import { buildViewParamsFromUrlAndStorage, saveViewParameters } from '../../../utils/ListParameters';
 import inject18n from '../../../components/i18n';
 import SectorsLines, { sectorsLinesQuery } from './sectors/SectorsLines';
 import SectorCreation from './sectors/SectorCreation';

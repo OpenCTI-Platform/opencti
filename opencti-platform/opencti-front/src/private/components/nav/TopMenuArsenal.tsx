@@ -1,11 +1,7 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import Button from '@mui/material/Button';
-import {
-  BugReportOutlined,
-  SurroundSoundOutlined,
-  WebAssetOutlined,
-} from '@mui/icons-material';
+import { BugReportOutlined, SurroundSoundOutlined, WebAssetOutlined } from '@mui/icons-material';
 import { Biohazard } from 'mdi-material-ui';
 import makeStyles from '@mui/styles/makeStyles';
 import { Theme } from '@mui/material/styles/createTheme';

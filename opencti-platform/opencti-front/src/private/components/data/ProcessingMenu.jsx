@@ -9,11 +9,7 @@ import EEMenu from '../common/entreprise_edition/EEMenu';
 import { useFormatter } from '../../../components/i18n';
 import useAuth from '../../../utils/hooks/useAuth';
 import { useSettingsMessagesBannerHeight } from '../settings/settings_messages/SettingsMessagesBanner';
-import useGranted, {
-  KNOWLEDGE_KNUPDATE,
-  SETTINGS_SETACCESSES,
-  TAXIIAPI_SETCSVMAPPERS,
-} from '../../../utils/hooks/useGranted';
+import useGranted, { KNOWLEDGE_KNUPDATE, SETTINGS_SETACCESSES, TAXIIAPI_SETCSVMAPPERS } from '../../../utils/hooks/useGranted';
 
 const useStyles = makeStyles((theme) => ({
   drawer: {

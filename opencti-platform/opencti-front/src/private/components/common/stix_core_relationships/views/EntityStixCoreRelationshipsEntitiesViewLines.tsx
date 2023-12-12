@@ -3,10 +3,7 @@ import { graphql, PreloadedQuery } from 'react-relay';
 import ListLinesContent from '../../../../../components/list_lines/ListLinesContent';
 import { DataColumns } from '../../../../../components/list_lines';
 import type { UseEntityToggle } from '../../../../../utils/hooks/useEntityToggle';
-import {
-  EntityStixCoreRelationshipsEntitiesLineDummy,
-  EntityStixCoreRelationshipsEntitiesViewLine,
-} from './EntityStixCoreRelationshipsEntitiesViewLine';
+import { EntityStixCoreRelationshipsEntitiesLineDummy, EntityStixCoreRelationshipsEntitiesViewLine } from './EntityStixCoreRelationshipsEntitiesViewLine';
 import useQueryLoading from '../../../../../utils/hooks/useQueryLoading';
 import Loader, { LoaderVariant } from '../../../../../components/Loader';
 import usePreloadedPaginationFragment from '../../../../../utils/hooks/usePreloadedPaginationFragment';
@@ -15,9 +12,7 @@ import {
   EntityStixCoreRelationshipsEntitiesViewLinesPaginationQuery,
   EntityStixCoreRelationshipsEntitiesViewLinesPaginationQuery$variables,
 } from './__generated__/EntityStixCoreRelationshipsEntitiesViewLinesPaginationQuery.graphql';
-import {
-  EntityStixCoreRelationshipsEntitiesViewLines_data$key,
-} from './__generated__/EntityStixCoreRelationshipsEntitiesViewLines_data.graphql';
+import { EntityStixCoreRelationshipsEntitiesViewLines_data$key } from './__generated__/EntityStixCoreRelationshipsEntitiesViewLines_data.graphql';
 
 const nbOfRowsToLoad = 50;
 

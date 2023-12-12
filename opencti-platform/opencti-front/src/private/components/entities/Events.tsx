@@ -1,8 +1,5 @@
 import React from 'react';
-import {
-  EventsLinesPaginationQuery,
-  EventsLinesPaginationQuery$variables,
-} from '@components/entities/events/__generated__/EventsLinesPaginationQuery.graphql';
+import { EventsLinesPaginationQuery, EventsLinesPaginationQuery$variables } from '@components/entities/events/__generated__/EventsLinesPaginationQuery.graphql';
 import { EventLineDummy } from '@components/entities/events/EventLine';
 import ListLines from '../../../components/list_lines/ListLines';
 import EventsLines, { eventsLinesQuery } from './events/EventsLines';

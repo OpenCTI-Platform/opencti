@@ -12,12 +12,7 @@ import {
   INPUT_OBJECTS,
   INPUT_PARTICIPANT
 } from '../schema/general';
-import {
-  ENTITY_TYPE_EXTERNAL_REFERENCE,
-  ENTITY_TYPE_KILL_CHAIN_PHASE,
-  ENTITY_TYPE_LABEL,
-  ENTITY_TYPE_MARKING_DEFINITION
-} from '../schema/stixMetaObject';
+import { ENTITY_TYPE_EXTERNAL_REFERENCE, ENTITY_TYPE_KILL_CHAIN_PHASE, ENTITY_TYPE_LABEL, ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
 import { ENTITY_TYPE_USER } from '../schema/internalObject';
 import { schemaTypesMapping } from '../domain/stixRelationship';
 

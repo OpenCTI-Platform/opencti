@@ -1,18 +1,14 @@
 import crypto from 'node:crypto';
 import validator from 'validator';
-import {
-  ENTITY_HASHED_OBSERVABLE_STIX_FILE,
-  ENTITY_IPV4_ADDR,
-  ENTITY_IPV6_ADDR,
-  isStixCyberObservable
-} from './stixCyberObservable';
+import { ENTITY_HASHED_OBSERVABLE_STIX_FILE, ENTITY_IPV4_ADDR, ENTITY_IPV6_ADDR, isStixCyberObservable } from './stixCyberObservable';
 import {
   ENTITY_TYPE_THREAT_ACTOR_GROUP,
   isStixDomainObject,
   isStixDomainObjectCase,
   isStixDomainObjectContainer,
   isStixDomainObjectIdentity,
-  isStixDomainObjectLocation, isStixDomainObjectThreatActor,
+  isStixDomainObjectLocation,
+  isStixDomainObjectThreatActor
 } from './stixDomainObject';
 import { DatabaseError } from '../config/errors';
 import { isStixMetaObject } from './stixMetaObject';

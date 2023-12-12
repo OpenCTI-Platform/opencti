@@ -1,8 +1,4 @@
-import {
-  PreloadedQuery,
-  usePaginationFragment,
-  usePreloadedQuery,
-} from 'react-relay';
+import { PreloadedQuery, usePaginationFragment, usePreloadedQuery } from 'react-relay';
 import { useEffect } from 'react';
 import { FragmentType, GraphQLTaggedNode, OperationType } from 'relay-runtime';
 import { UseLocalStorageHelpers } from './useLocalStorage';

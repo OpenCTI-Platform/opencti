@@ -1,11 +1,4 @@
-import {
-  Add,
-  ArrowDropDown,
-  ArrowDropUp,
-  CheckCircleOutlined,
-  DeleteOutlined,
-  DoubleArrow,
-} from '@mui/icons-material';
+import { Add, ArrowDropDown, ArrowDropUp, CheckCircleOutlined, DeleteOutlined, DoubleArrow } from '@mui/icons-material';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Checkbox from '@mui/material/Checkbox';
@@ -45,30 +38,12 @@ import StixItemLabels from '../../../../../components/StixItemLabels';
 import StixItemMarkings from '../../../../../components/StixItemMarkings';
 import SwitchField from '../../../../../components/SwitchField';
 import TextField from '../../../../../components/TextField';
-import {
-  APP_BASE_PATH,
-  commitMutation,
-  MESSAGING$,
-  QueryRenderer,
-} from '../../../../../relay/environment';
-import {
-  observableValue,
-  resolveIdentityClass,
-  resolveIdentityType,
-  resolveLink,
-  resolveLocationType,
-  resolveThreatActorType,
-} from '../../../../../utils/Entity';
+import { APP_BASE_PATH, commitMutation, MESSAGING$, QueryRenderer } from '../../../../../relay/environment';
+import { observableValue, resolveIdentityClass, resolveIdentityType, resolveLink, resolveLocationType, resolveThreatActorType } from '../../../../../utils/Entity';
 import { defaultKey, defaultValue } from '../../../../../utils/Graph';
 import useAttributes from '../../../../../utils/hooks/useAttributes';
 import useVocabularyCategory from '../../../../../utils/hooks/useVocabularyCategory';
-import {
-  computeDuplicates,
-  convertFromStixType,
-  convertToStixType,
-  truncate,
-  uniqWithByFields,
-} from '../../../../../utils/String';
+import { computeDuplicates, convertFromStixType, convertToStixType, truncate, uniqWithByFields } from '../../../../../utils/String';
 import { buildDate, now } from '../../../../../utils/Time';
 import { isEmptyField, isNotEmptyField } from '../../../../../utils/utils';
 import { stixCyberObservablesLinesSearchQuery } from '../../../observations/stix_cyber_observables/StixCyberObservablesLines';

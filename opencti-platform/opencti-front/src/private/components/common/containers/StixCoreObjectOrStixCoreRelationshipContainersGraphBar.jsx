@@ -5,21 +5,8 @@ import { Link } from 'react-router-dom';
 import withTheme from '@mui/styles/withTheme';
 import withStyles from '@mui/styles/withStyles';
 import IconButton from '@mui/material/IconButton';
-import {
-  AspectRatio,
-  FilterListOutlined,
-  AccountBalanceOutlined,
-  CenterFocusStrongOutlined,
-  ScatterPlotOutlined,
-  DateRangeOutlined,
-} from '@mui/icons-material';
-import {
-  Video3d,
-  SelectAll,
-  SelectGroup,
-  AutoFix,
-  FamilyTree,
-} from 'mdi-material-ui';
+import { AspectRatio, FilterListOutlined, AccountBalanceOutlined, CenterFocusStrongOutlined, ScatterPlotOutlined, DateRangeOutlined } from '@mui/icons-material';
+import { Video3d, SelectAll, SelectGroup, AutoFix, FamilyTree } from 'mdi-material-ui';
 import Tooltip from '@mui/material/Tooltip';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
@@ -30,13 +17,7 @@ import Drawer from '@mui/material/Drawer';
 import Popover from '@mui/material/Popover';
 import Divider from '@mui/material/Divider';
 import TimeRange from 'react-timeline-range-slider';
-import {
-  ResponsiveContainer,
-  Scatter,
-  ScatterChart,
-  YAxis,
-  ZAxis,
-} from 'recharts';
+import { ResponsiveContainer, Scatter, ScatterChart, YAxis, ZAxis } from 'recharts';
 import Slide from '@mui/material/Slide';
 import inject18n from '../../../../components/i18n';
 import { dateFormat } from '../../../../utils/Time';

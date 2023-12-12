@@ -1,14 +1,9 @@
 import React from 'react';
 import Grid from '@mui/material/Grid';
 import { GenericAttackCardDummy } from '@components/common/cards/GenericAttackCard';
-import {
-  CampaignsCardsPaginationQuery$variables,
-  CampaignsCardsPaginationQuery,
-} from './campaigns/__generated__/CampaignsCardsPaginationQuery.graphql';
+import { CampaignsCardsPaginationQuery$variables, CampaignsCardsPaginationQuery } from './campaigns/__generated__/CampaignsCardsPaginationQuery.graphql';
 import ListCards from '../../../components/list_cards/ListCards';
-import CampaignsCards, {
-  campaignsCardsQuery,
-} from './campaigns/CampaignsCards';
+import CampaignsCards, { campaignsCardsQuery } from './campaigns/CampaignsCards';
 import CampaignCreation from './campaigns/CampaignCreation';
 import Security from '../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE } from '../../../utils/hooks/useGranted';

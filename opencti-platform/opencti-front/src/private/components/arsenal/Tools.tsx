@@ -7,10 +7,7 @@ import { KNOWLEDGE_KNUPDATE } from '../../../utils/hooks/useGranted';
 import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
 import { ToolLineDummy } from './tools/ToolLine';
-import {
-  ToolsLinesPaginationQuery,
-  ToolsLinesPaginationQuery$variables,
-} from './tools/__generated__/ToolsLinesPaginationQuery.graphql';
+import { ToolsLinesPaginationQuery, ToolsLinesPaginationQuery$variables } from './tools/__generated__/ToolsLinesPaginationQuery.graphql';
 import { emptyFilterGroup } from '../../../utils/filters/filtersUtils';
 
 const LOCAL_STORAGE_KEY = 'tools';

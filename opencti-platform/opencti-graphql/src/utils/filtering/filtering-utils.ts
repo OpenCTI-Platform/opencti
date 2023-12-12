@@ -15,7 +15,8 @@ import {
   internalFilterKeys,
   MEMBERS_GROUP_FILTER,
   MEMBERS_ORGANIZATION_FILTER,
-  MEMBERS_USER_FILTER, nestedFilterKeys,
+  MEMBERS_USER_FILTER,
+  nestedFilterKeys,
   SIGHTED_BY_FILTER,
   specialFilterKeys
 } from './filtering-constants';

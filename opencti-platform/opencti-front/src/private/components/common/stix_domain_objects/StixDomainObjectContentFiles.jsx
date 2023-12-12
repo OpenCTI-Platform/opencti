@@ -8,13 +8,7 @@ import ListItemText from '@mui/material/ListItemText';
 import Drawer from '@mui/material/Drawer';
 import ListSubheader from '@mui/material/ListSubheader';
 import ListItemIcon from '@mui/material/ListItemIcon';
-import {
-  FilePdfBox,
-  LanguageHtml5,
-  NoteTextOutline,
-  FileOutline,
-  LanguageMarkdownOutline,
-} from 'mdi-material-ui';
+import { FilePdfBox, LanguageHtml5, NoteTextOutline, FileOutline, LanguageMarkdownOutline } from 'mdi-material-ui';
 import moment from 'moment';
 import IconButton from '@mui/material/IconButton';
 import { DeleteOutlined, AddOutlined } from '@mui/icons-material';
@@ -32,8 +26,7 @@ import FileUploader from '../files/FileUploader';
 import FileLine, { FileLineDeleteMutation } from '../files/FileLine';
 import { commitMutation } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
-import withHooksSettingsMessagesBannerHeight
-  from '../../settings/settings_messages/withHooksSettingsMessagesBannerHeight';
+import withHooksSettingsMessagesBannerHeight from '../../settings/settings_messages/withHooksSettingsMessagesBannerHeight';
 
 const styles = (theme) => ({
   drawerPaper: {

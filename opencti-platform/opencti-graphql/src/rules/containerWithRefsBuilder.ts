@@ -13,11 +13,7 @@ import type { BasicStoreObject, BasicStoreRelation, StoreObject } from '../types
 import { STIX_EXT_OCTI } from '../types/stix-extensions';
 import { internalFindByIds, internalLoadById, listAllRelations } from '../database/middleware-loader';
 import type { RelationCreation, UpdateEvent } from '../types/event';
-import {
-  READ_DATA_INDICES,
-  UPDATE_OPERATION_ADD,
-  UPDATE_OPERATION_REMOVE
-} from '../database/utils';
+import { READ_DATA_INDICES, UPDATE_OPERATION_ADD, UPDATE_OPERATION_REMOVE } from '../database/utils';
 import type { AuthContext } from '../types/user';
 import { executionContext, RULE_MANAGER_USER } from '../utils/access';
 import { buildStixUpdateEvent, publishStixToStream } from '../database/redis';

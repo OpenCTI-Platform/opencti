@@ -5,14 +5,7 @@ import { generateFileIndexId } from '../../../schema/identifier';
 import { ENTITY_TYPE_INTERNAL_FILE } from '../../../schema/internalObject';
 import { elCount, elDeleteInstances, elIndex } from '../../../database/engine';
 import { INDEX_INTERNAL_OBJECTS, isEmptyField, READ_INDEX_INTERNAL_OBJECTS } from '../../../database/utils';
-import {
-  type EntityOptions,
-  type FilterGroupWithNested,
-  internalLoadById,
-  listAllEntities,
-  listEntitiesPaginated,
-  storeLoadById
-} from '../../../database/middleware-loader';
+import { type EntityOptions, type FilterGroupWithNested, internalLoadById, listAllEntities, listEntitiesPaginated, storeLoadById } from '../../../database/middleware-loader';
 import type { AuthContext, AuthUser } from '../../../types/user';
 import { type DomainFindById } from '../../../domain/domainTypes';
 import type { BasicStoreEntityDocument } from './document-types';

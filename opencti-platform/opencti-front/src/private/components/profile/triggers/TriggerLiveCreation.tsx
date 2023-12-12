@@ -38,15 +38,9 @@ import {
 import { insertNode } from '../../../../utils/store';
 import NotifierField from '../../common/form/NotifierField';
 import { Option } from '../../common/form/ReferenceField';
-import FilterAutocomplete, {
-  FilterAutocompleteInputValue,
-} from '../../common/lists/FilterAutocomplete';
+import FilterAutocomplete, { FilterAutocompleteInputValue } from '../../common/lists/FilterAutocomplete';
 import Filters from '../../common/lists/Filters';
-import {
-  TriggerEventType,
-  TriggerLiveCreationKnowledgeMutation,
-  TriggerLiveCreationKnowledgeMutation$data,
-} from './__generated__/TriggerLiveCreationKnowledgeMutation.graphql';
+import { TriggerEventType, TriggerLiveCreationKnowledgeMutation, TriggerLiveCreationKnowledgeMutation$data } from './__generated__/TriggerLiveCreationKnowledgeMutation.graphql';
 import { TriggersLinesPaginationQuery$variables } from './__generated__/TriggersLinesPaginationQuery.graphql';
 
 const useStyles = makeStyles<Theme>((theme) => ({

@@ -38,7 +38,10 @@ module.exports = {
     'jest.file.transform.js',
     'jest.relay.transform.js',
   ],
-  plugins: ['custom-rules'],
+  plugins: [
+    'import-newlines',
+    'custom-rules',
+  ],
   rules: {
     'custom-rules/classes-rule': 1,
     'no-restricted-syntax': 0,
@@ -75,6 +78,7 @@ module.exports = {
         caughtErrorsIgnorePattern: '^_',
       },
     ],
+    'import-newlines/enforce': ['error', { items: 20, 'max-len': 180 }],
     'react/jsx-indent': [2, 2],
     'react/jsx-indent-props': [2, 2],
     'react/jsx-closing-bracket-location': 'error',

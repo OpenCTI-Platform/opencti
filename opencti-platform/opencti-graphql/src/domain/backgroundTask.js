@@ -7,13 +7,7 @@ import { resolveFilterGroupValuesWithCache } from '../utils/filtering/filtering-
 import { getUserAccessRight, MEMBER_ACCESS_RIGHT_ADMIN, SYSTEM_USER } from '../utils/access';
 import { ABSTRACT_STIX_DOMAIN_OBJECT, RULE_PREFIX } from '../schema/general';
 import { buildEntityFilters, listEntities, storeLoadById } from '../database/middleware-loader';
-import {
-  checkActionValidity,
-  createDefaultTask,
-  isTaskEnabledEntity,
-  TASK_TYPE_QUERY,
-  TASK_TYPE_RULE
-} from './backgroundTask-common';
+import { checkActionValidity, createDefaultTask, isTaskEnabledEntity, TASK_TYPE_QUERY, TASK_TYPE_RULE } from './backgroundTask-common';
 import { publishUserAction } from '../listener/UserActionListener';
 import { ForbiddenAccess } from '../config/errors';
 

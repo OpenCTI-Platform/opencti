@@ -5,10 +5,7 @@ import { useFormikContext } from 'formik';
 
 import CsvMapperRepresentationAttributeForm from '@components/data/csvMapper/representations/attributes/CsvMapperRepresentationAttributeForm';
 
-import {
-  getAttributeLabel,
-  convertFromSchemaAttribute,
-} from '@components/data/csvMapper/representations/attributes/AttributeUtils';
+import { getAttributeLabel, convertFromSchemaAttribute } from '@components/data/csvMapper/representations/attributes/AttributeUtils';
 import { CsvMapperRepresentationAttributesFormQuery } from '@components/data/csvMapper/representations/attributes/__generated__/CsvMapperRepresentationAttributesFormQuery.graphql';
 import { CsvMapper } from '@components/data/csvMapper/CsvMapper';
 import CsvMapperRepresentationAttributeRefForm from '@components/data/csvMapper/representations/attributes/CsvMapperRepresentationAttributeRefForm';

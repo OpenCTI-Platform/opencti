@@ -12,13 +12,8 @@ import { truncate } from '../../../../utils/String';
 import ItemIcon from '../../../../components/ItemIcon';
 import { deleteNodeFromEdge } from '../../../../utils/store';
 import { useFormatter } from '../../../../components/i18n';
-import {
-  useIsEnforceReference,
-  useSchemaCreationValidation,
-} from '../../../../utils/hooks/useEntitySettings';
-import StixCoreRelationshipCreationForm, {
-  stixCoreRelationshipBasicShape,
-} from './StixCoreRelationshipCreationForm';
+import { useIsEnforceReference, useSchemaCreationValidation } from '../../../../utils/hooks/useEntitySettings';
+import StixCoreRelationshipCreationForm, { stixCoreRelationshipBasicShape } from './StixCoreRelationshipCreationForm';
 import { formatDate } from '../../../../utils/Time';
 import { APP_BASE_PATH } from '../../../../relay/environment';
 

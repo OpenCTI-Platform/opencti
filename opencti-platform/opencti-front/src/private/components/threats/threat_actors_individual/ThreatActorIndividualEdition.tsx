@@ -2,9 +2,7 @@ import React from 'react';
 import { useMutation } from 'react-relay';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
-import ThreatActorIndividualEditionContainer, {
-  ThreatActorIndividualEditionQuery,
-} from './ThreatActorIndividualEditionContainer';
+import ThreatActorIndividualEditionContainer, { ThreatActorIndividualEditionQuery } from './ThreatActorIndividualEditionContainer';
 import { ThreatActorIndividualEditionOverviewFocusMutation } from './__generated__/ThreatActorIndividualEditionOverviewFocusMutation.graphql';
 import { ThreatActorIndividualEditionContainerQuery } from './__generated__/ThreatActorIndividualEditionContainerQuery.graphql';
 import { ThreatActorIndividualEditionOverviewFocus } from './ThreatActorIndividualEditionOverview';

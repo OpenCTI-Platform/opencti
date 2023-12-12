@@ -1,11 +1,7 @@
 import { batchListThroughGetFrom, batchListThroughGetTo, createEntity } from '../database/middleware';
 import { BUS_TOPICS } from '../config/conf';
 import { notify } from '../database/redis';
-import {
-  ENTITY_TYPE_ATTACK_PATTERN,
-  ENTITY_TYPE_COURSE_OF_ACTION,
-  ENTITY_TYPE_DATA_COMPONENT
-} from '../schema/stixDomainObject';
+import { ENTITY_TYPE_ATTACK_PATTERN, ENTITY_TYPE_COURSE_OF_ACTION, ENTITY_TYPE_DATA_COMPONENT } from '../schema/stixDomainObject';
 import { ABSTRACT_STIX_DOMAIN_OBJECT } from '../schema/general';
 import { RELATION_DETECTS, RELATION_MITIGATES, RELATION_SUBTECHNIQUE_OF } from '../schema/stixCoreRelationship';
 import { type EntityOptions, listEntities, storeLoadById } from '../database/middleware-loader';

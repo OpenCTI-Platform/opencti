@@ -4,9 +4,7 @@ import * as R from 'ramda';
 import withStyles from '@mui/styles/withStyles';
 import Grid from '@mui/material/Grid';
 import Divider from '@mui/material/Divider';
-import StixDomainObjectVictimologySectors, {
-  stixDomainObjectVictimologySectorsStixCoreRelationshipsQuery,
-} from './StixDomainObjectVictimologySectors';
+import StixDomainObjectVictimologySectors, { stixDomainObjectVictimologySectorsStixCoreRelationshipsQuery } from './StixDomainObjectVictimologySectors';
 import inject18n from '../../../../components/i18n';
 import { QueryRenderer } from '../../../../relay/environment';
 import EntityStixCoreRelationships from '../stix_core_relationships/EntityStixCoreRelationships';

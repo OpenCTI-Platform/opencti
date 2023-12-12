@@ -16,9 +16,7 @@ import Security from '../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 import SearchInput from '../../../../components/SearchInput';
 import { QueryRenderer } from '../../../../relay/environment';
-import StixCyberObservableNestedEntitiesLines, {
-  stixCyberObservableNestedEntitiesLinesQuery,
-} from './StixCyberObservableNestedEntitiesLines';
+import StixCyberObservableNestedEntitiesLines, { stixCyberObservableNestedEntitiesLinesQuery } from './StixCyberObservableNestedEntitiesLines';
 
 const styles = (theme) => ({
   paper: {

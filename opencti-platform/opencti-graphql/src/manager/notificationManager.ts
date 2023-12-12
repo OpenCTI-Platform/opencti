@@ -3,22 +3,10 @@ import { head } from 'ramda';
 import * as jsonpatch from 'fast-json-patch';
 import { clearIntervalAsync, setIntervalAsync, type SetIntervalAsyncTimer } from 'set-interval-async/fixed';
 import type { Moment } from 'moment';
-import {
-  createStreamProcessor,
-  fetchRangeNotifications,
-  lockResource,
-  storeNotificationEvent,
-  type StreamProcessor
-} from '../database/redis';
+import { createStreamProcessor, fetchRangeNotifications, lockResource, storeNotificationEvent, type StreamProcessor } from '../database/redis';
 import conf, { booleanConf, logApp } from '../config/conf';
 import { TYPE_LOCK_ERROR } from '../config/errors';
-import {
-  executionContext,
-  INTERNAL_USERS,
-  isUserCanAccessStixElement,
-  isUserCanAccessStoreElement,
-  SYSTEM_USER
-} from '../utils/access';
+import { executionContext, INTERNAL_USERS, isUserCanAccessStixElement, isUserCanAccessStoreElement, SYSTEM_USER } from '../utils/access';
 import type { DataEvent, SseEvent, StreamNotifEvent, UpdateEvent } from '../types/event';
 import type { AuthContext, AuthUser } from '../types/user';
 import { utcDate } from '../utils/format';
@@ -44,10 +32,7 @@ import type { StixRelation, StixSighting } from '../types/stix-sro';
 import { isStixCoreRelationship } from '../schema/stixCoreRelationship';
 import { isStixMatchFilterGroup } from '../utils/filtering/filtering-stix/stix-filtering';
 import { replaceFilterKey } from '../utils/filtering/filtering-utils';
-import {
-  CONNECTED_TO_INSTANCE_FILTER,
-  CONNECTED_TO_INSTANCE_SIDE_EVENTS_FILTER
-} from '../utils/filtering/filtering-constants';
+import { CONNECTED_TO_INSTANCE_FILTER, CONNECTED_TO_INSTANCE_SIDE_EVENTS_FILTER } from '../utils/filtering/filtering-constants';
 import type { FilterGroup } from '../generated/graphql';
 
 const NOTIFICATION_LIVE_KEY = conf.get('notification_manager:lock_live_key');

@@ -3,10 +3,7 @@ import { graphql, PreloadedQuery } from 'react-relay';
 import ListLinesContent from '../../../../components/list_lines/ListLinesContent';
 import { PositionLine, PositionLineDummy } from './PositionLine';
 import usePreloadedPaginationFragment from '../../../../utils/hooks/usePreloadedPaginationFragment';
-import {
-  PositionsLinesPaginationQuery,
-  PositionsLinesPaginationQuery$variables,
-} from './__generated__/PositionsLinesPaginationQuery.graphql';
+import { PositionsLinesPaginationQuery, PositionsLinesPaginationQuery$variables } from './__generated__/PositionsLinesPaginationQuery.graphql';
 import { PositionsLines_data$key } from './__generated__/PositionsLines_data.graphql';
 import { DataColumns } from '../../../../components/list_lines';
 import { UseLocalStorageHelpers } from '../../../../utils/hooks/useLocalStorage';

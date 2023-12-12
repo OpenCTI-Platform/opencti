@@ -3,10 +3,7 @@ import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage'
 import ListLines from '../../../components/list_lines/ListLines';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
 import TriggersLines, { triggersLinesQuery } from './triggers/TriggersLines';
-import {
-  TriggersLinesPaginationQuery,
-  TriggersLinesPaginationQuery$variables,
-} from './triggers/__generated__/TriggersLinesPaginationQuery.graphql';
+import { TriggersLinesPaginationQuery, TriggersLinesPaginationQuery$variables } from './triggers/__generated__/TriggersLinesPaginationQuery.graphql';
 import { TriggerLineDummy } from './triggers/TriggerLine';
 import TriggerCreation from './triggers/TriggerCreation';
 import { emptyFilterGroup } from '../../../utils/filters/filtersUtils';

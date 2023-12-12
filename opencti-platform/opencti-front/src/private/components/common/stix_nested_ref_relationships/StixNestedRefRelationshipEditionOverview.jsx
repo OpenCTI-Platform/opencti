@@ -13,10 +13,7 @@ import * as R from 'ramda';
 import { buildDate } from '../../../../utils/Time';
 import { resolveLink } from '../../../../utils/Entity';
 import inject18n from '../../../../components/i18n';
-import {
-  commitMutation,
-  requestSubscription,
-} from '../../../../relay/environment';
+import { commitMutation, requestSubscription } from '../../../../relay/environment';
 import { SubscriptionFocus } from '../../../../components/Subscription';
 import DateTimePickerField from '../../../../components/DateTimePickerField';
 

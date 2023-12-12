@@ -1,12 +1,7 @@
 import type { AuthUser } from '../types/user';
 import { extractEntityRepresentativeName } from '../database/entity-representative';
 import type { BasicStoreObject } from '../types/store';
-import {
-  RELATION_CREATED_BY,
-  RELATION_GRANTED_TO,
-  RELATION_OBJECT_LABEL,
-  RELATION_OBJECT_MARKING
-} from '../schema/stixRefRelationship';
+import { RELATION_CREATED_BY, RELATION_GRANTED_TO, RELATION_OBJECT_LABEL, RELATION_OBJECT_MARKING } from '../schema/stixRefRelationship';
 
 interface BasicUserAction {
   user: AuthUser

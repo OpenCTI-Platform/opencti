@@ -23,7 +23,8 @@ import ConfidenceField from '../../common/form/ConfidenceField';
 import { isNotEmptyField } from '../../../../utils/utils';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import {
-  StixCoreObjectOpinionsRadarDialogMyOpinionQuery, StixCoreObjectOpinionsRadarDialogMyOpinionQuery$variables,
+  StixCoreObjectOpinionsRadarDialogMyOpinionQuery,
+  StixCoreObjectOpinionsRadarDialogMyOpinionQuery$variables,
 } from './__generated__/StixCoreObjectOpinionsRadarDialogMyOpinionQuery.graphql';
 
 export const stixCoreObjectOpinionsRadarDialogMyOpinionQuery = graphql`

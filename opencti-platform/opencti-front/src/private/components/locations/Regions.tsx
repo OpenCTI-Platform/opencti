@@ -5,10 +5,7 @@ import useQueryLoading from '../../../utils/hooks/useQueryLoading';
 import ListLines from '../../../components/list_lines/ListLines';
 import Security from '../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE } from '../../../utils/hooks/useGranted';
-import {
-  RegionsLinesPaginationQuery,
-  RegionsLinesPaginationQuery$variables,
-} from './regions/__generated__/RegionsLinesPaginationQuery.graphql';
+import { RegionsLinesPaginationQuery, RegionsLinesPaginationQuery$variables } from './regions/__generated__/RegionsLinesPaginationQuery.graphql';
 import RegionCreation from './regions/RegionCreation';
 import { RegionLineDummy } from './regions/RegionLine';
 import { emptyFilterGroup } from '../../../utils/filters/filtersUtils';

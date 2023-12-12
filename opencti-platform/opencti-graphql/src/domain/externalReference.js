@@ -1,22 +1,11 @@
 import * as R from 'ramda';
 import { delEditContext, notify, setEditContext } from '../database/redis';
-import {
-  createEntity,
-  createRelation,
-  deleteElementById,
-  deleteRelationsByFromAndTo,
-  listThings,
-  paginateAllThings,
-  updateAttribute,
-} from '../database/middleware';
+import { createEntity, createRelation, deleteElementById, deleteRelationsByFromAndTo, listThings, paginateAllThings, updateAttribute } from '../database/middleware';
 import { internalLoadById, listEntities, storeLoadById } from '../database/middleware-loader';
 import conf, { BUS_TOPICS } from '../config/conf';
 import { FunctionalError, ValidationError } from '../config/errors';
 import { ENTITY_TYPE_EXTERNAL_REFERENCE } from '../schema/stixMetaObject';
-import {
-  ABSTRACT_STIX_REF_RELATIONSHIP,
-  buildRefRelationKey
-} from '../schema/general';
+import { ABSTRACT_STIX_REF_RELATIONSHIP, buildRefRelationKey } from '../schema/general';
 import { isStixRefRelationship, RELATION_EXTERNAL_REFERENCE } from '../schema/stixRefRelationship';
 import { isEmptyField } from '../database/utils';
 import { BYPASS, BYPASS_REFERENCE } from '../utils/access';

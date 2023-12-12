@@ -23,13 +23,8 @@ import Security from '../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE } from '../../../utils/hooks/useGranted';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
 import PlaybookCreation from './playbooks/PlaybookCreation';
-import PlaybooksLines, {
-  playbooksLinesQuery,
-} from './playbooks/PlaybooksLines';
-import {
-  PlaybooksLinesPaginationQuery,
-  PlaybooksLinesPaginationQuery$variables,
-} from './playbooks/__generated__/PlaybooksLinesPaginationQuery.graphql';
+import PlaybooksLines, { playbooksLinesQuery } from './playbooks/PlaybooksLines';
+import { PlaybooksLinesPaginationQuery, PlaybooksLinesPaginationQuery$variables } from './playbooks/__generated__/PlaybooksLinesPaginationQuery.graphql';
 import { PlaybookLineDummy } from './playbooks/PlaybookLine';
 import { Theme } from '../../../components/Theme';
 import useEnterpriseEdition from '../../../utils/hooks/useEnterpriseEdition';

@@ -10,18 +10,11 @@ import { truncate } from '../utils/String';
 import { DataColumns } from './list_lines';
 import { useFormatter } from './i18n';
 import { Theme } from './Theme';
-import {
-  Filter,
-  FilterGroup,
-  filtersUsedAsApiParameters,
-} from '../utils/filters/filtersUtils';
+import { Filter, FilterGroup, filtersUsedAsApiParameters } from '../utils/filters/filtersUtils';
 import { filterIconButtonContentQuery } from './FilterIconButtonContent';
 import { FilterIconButtonContentQuery } from './__generated__/FilterIconButtonContentQuery.graphql';
 import FilterValues from './filters/FilterValues';
-import {
-  FilterChipPopover,
-  FilterChipsParameter,
-} from './filters/FilterChipPopover';
+import { FilterChipPopover, FilterChipsParameter } from './filters/FilterChipPopover';
 import DisplayFilterGroup from './filters/DisplayFilterGroup';
 import { UseLocalStorageHelpers } from '../utils/hooks/useLocalStorage';
 import FilterIconButtonGlobalOperator from './FilterIconButtonGlobalOperator';

@@ -11,10 +11,7 @@ import ExportContextProvider from '../../../utils/ExportContextProvider';
 import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
 import useEntityToggle from '../../../utils/hooks/useEntityToggle';
 import { ObservedDataLine_node$data } from './observed_data/__generated__/ObservedDataLine_node.graphql';
-import {
-  ObservedDatasLinesPaginationQuery$data,
-  ObservedDatasLinesPaginationQuery$variables,
-} from './observed_data/__generated__/ObservedDatasLinesPaginationQuery.graphql';
+import { ObservedDatasLinesPaginationQuery$data, ObservedDatasLinesPaginationQuery$variables } from './observed_data/__generated__/ObservedDatasLinesPaginationQuery.graphql';
 import { ModuleHelper } from '../../../utils/platformModulesHelper';
 import { filtersWithEntityType, emptyFilterGroup } from '../../../utils/filters/filtersUtils';
 

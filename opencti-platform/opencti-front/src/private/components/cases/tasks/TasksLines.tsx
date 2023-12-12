@@ -4,10 +4,7 @@ import ListLinesContent from '../../../../components/list_lines/ListLinesContent
 import { UseLocalStorageHelpers } from '../../../../utils/hooks/useLocalStorage';
 import usePreloadedPaginationFragment from '../../../../utils/hooks/usePreloadedPaginationFragment';
 import { tasksDataColumns, TasksLine, TasksLineDummy } from './TasksLine';
-import {
-  TasksLinesPaginationQuery,
-  TasksLinesPaginationQuery$variables,
-} from './__generated__/TasksLinesPaginationQuery.graphql';
+import { TasksLinesPaginationQuery, TasksLinesPaginationQuery$variables } from './__generated__/TasksLinesPaginationQuery.graphql';
 import { TasksLine_node$data } from './__generated__/TasksLine_node.graphql';
 import { TasksLines_data$key } from './__generated__/TasksLines_data.graphql';
 

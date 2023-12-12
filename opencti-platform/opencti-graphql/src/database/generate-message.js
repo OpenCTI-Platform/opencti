@@ -7,13 +7,7 @@ import { isBasicRelationship } from '../schema/stixRelationship';
 import { EVENT_TYPE_CREATE, EVENT_TYPE_DELETE, isNotEmptyField, UPDATE_OPERATION_REPLACE } from './utils';
 import { UnsupportedError } from '../config/errors';
 import { schemaRelationsRefDefinition } from '../schema/schema-relationsRef';
-import {
-  isDateAttribute,
-  isDictionaryAttribute,
-  isJsonAttribute,
-  isObjectAttribute,
-  schemaAttributesDefinition
-} from '../schema/schema-attributes';
+import { isDateAttribute, isDictionaryAttribute, isJsonAttribute, isObjectAttribute, schemaAttributesDefinition } from '../schema/schema-attributes';
 import { truncate } from '../utils/mailData';
 import { creators } from '../schema/attribute-definition';
 import { FROM_START_STR, UNTIL_END_STR } from '../utils/format';

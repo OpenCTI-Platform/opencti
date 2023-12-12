@@ -5,14 +5,9 @@ import { graphql } from 'react-relay';
 import { withRouter } from 'react-router-dom';
 import withStyles from '@mui/styles/withStyles';
 import { QueryRenderer } from '../../../relay/environment';
-import {
-  buildViewParamsFromUrlAndStorage,
-  saveViewParameters,
-} from '../../../utils/ListParameters';
+import { buildViewParamsFromUrlAndStorage, saveViewParameters } from '../../../utils/ListParameters';
 import inject18n from '../../../components/i18n';
-import NarrativesLines, {
-  narrativesLinesQuery,
-} from './narratives/NarrativesLines';
+import NarrativesLines, { narrativesLinesQuery } from './narratives/NarrativesLines';
 import NarrativeCreation from './narratives/NarrativeCreation';
 import SearchInput from '../../../components/SearchInput';
 import Security from '../../../utils/Security';

@@ -1,10 +1,5 @@
 import { BrowserRouter } from 'react-router-dom';
-import {
-  CompatRouter,
-  Route,
-  Routes,
-  Navigate,
-} from 'react-router-dom-v5-compat';
+import { CompatRouter, Route, Routes, Navigate } from 'react-router-dom-v5-compat';
 import React from 'react';
 import { APP_BASE_PATH } from './relay/environment';
 import RedirectManager from './components/RedirectManager';

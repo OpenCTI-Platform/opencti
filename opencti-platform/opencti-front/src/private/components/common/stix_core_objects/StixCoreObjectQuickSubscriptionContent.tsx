@@ -1,8 +1,4 @@
-import {
-  ExpandLess,
-  ExpandMore,
-  NotificationsOutlined,
-} from '@mui/icons-material';
+import { ExpandLess, ExpandMore, NotificationsOutlined } from '@mui/icons-material';
 import Alert from '@mui/material/Alert';
 import Button from '@mui/material/Button';
 import Checkbox from '@mui/material/Checkbox';
@@ -20,12 +16,7 @@ import { Field, Form, Formik } from 'formik';
 import { FormikConfig } from 'formik/dist/types';
 import { pick, uniq } from 'ramda';
 import React, { FunctionComponent, useState } from 'react';
-import {
-  graphql,
-  PreloadedQuery,
-  useMutation,
-  usePreloadedQuery,
-} from 'react-relay';
+import { graphql, PreloadedQuery, useMutation, usePreloadedQuery } from 'react-relay';
 import * as Yup from 'yup';
 import Drawer from '@components/common/drawer/Drawer';
 import AutocompleteField from '../../../../components/AutocompleteField';
@@ -34,22 +25,12 @@ import { useFormatter } from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
 import { Theme } from '../../../../components/Theme';
 import { fetchQuery, MESSAGING$ } from '../../../../relay/environment';
-import {
-  convertEventTypes,
-  convertNotifiers,
-  instanceEventTypesOptions,
-} from '../../../../utils/edition';
+import { convertEventTypes, convertNotifiers, instanceEventTypesOptions } from '../../../../utils/edition';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import { deleteNode, insertNode } from '../../../../utils/store';
-import {
-  TriggerLiveAddInput,
-  TriggerLiveCreationKnowledgeMutation,
-} from '../../profile/triggers/__generated__/TriggerLiveCreationKnowledgeMutation.graphql';
+import { TriggerLiveAddInput, TriggerLiveCreationKnowledgeMutation } from '../../profile/triggers/__generated__/TriggerLiveCreationKnowledgeMutation.graphql';
 import { triggerMutationFieldPatch } from '../../profile/triggers/TriggerEditionOverview';
-import {
-  instanceTriggerDescription,
-  triggerLiveKnowledgeCreationMutation,
-} from '../../profile/triggers/TriggerLiveCreation';
+import { instanceTriggerDescription, triggerLiveKnowledgeCreationMutation } from '../../profile/triggers/TriggerLiveCreation';
 import { TriggerPopoverDeletionMutation } from '../../profile/triggers/TriggerPopover';
 import NotifierField from '../form/NotifierField';
 import { Option } from '../form/ReferenceField';
@@ -58,11 +39,7 @@ import {
   StixCoreObjectQuickSubscriptionContentPaginationQuery$data,
   StixCoreObjectQuickSubscriptionContentPaginationQuery$variables,
 } from './__generated__/StixCoreObjectQuickSubscriptionContentPaginationQuery.graphql';
-import {
-  deserializeFilterGroupForFrontend,
-  findFilterFromKey,
-  serializeFilterGroupForBackend,
-} from '../../../../utils/filters/filtersUtils';
+import { deserializeFilterGroupForFrontend, findFilterFromKey, serializeFilterGroupForBackend } from '../../../../utils/filters/filtersUtils';
 
 export const stixCoreObjectQuickSubscriptionContentQuery = graphql`
   query StixCoreObjectQuickSubscriptionContentPaginationQuery(

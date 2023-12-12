@@ -14,13 +14,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 */
 
 import { clearIntervalAsync, setIntervalAsync, type SetIntervalAsyncTimer } from 'set-interval-async/fixed';
-import {
-  ACTIVITY_STREAM_NAME,
-  createStreamProcessor,
-  lockResource,
-  storeNotificationEvent,
-  type StreamProcessor
-} from '../database/redis';
+import { ACTIVITY_STREAM_NAME, createStreamProcessor, lockResource, storeNotificationEvent, type StreamProcessor } from '../database/redis';
 import conf, { booleanConf, ENABLED_DEMO_MODE, logApp } from '../config/conf';
 import { INDEX_HISTORY, isEmptyField, isNotEmptyField } from '../database/utils';
 import { TYPE_LOCK_ERROR } from '../config/errors';
@@ -28,12 +22,7 @@ import { executionContext, REDACTED_USER, SYSTEM_USER } from '../utils/access';
 import type { SseEvent } from '../types/event';
 import { utcDate } from '../utils/format';
 import { listEntities } from '../database/middleware-loader';
-import {
-  ENTITY_TYPE_ACTIVITY,
-  ENTITY_TYPE_HISTORY,
-  ENTITY_TYPE_SETTINGS,
-  ENTITY_TYPE_USER,
-} from '../schema/internalObject';
+import { ENTITY_TYPE_ACTIVITY, ENTITY_TYPE_HISTORY, ENTITY_TYPE_SETTINGS, ENTITY_TYPE_USER } from '../schema/internalObject';
 import type { AuthContext, AuthUser } from '../types/user';
 import { FilterMode, OrderingMode } from '../generated/graphql';
 import type { HistoryData } from './historyManager';

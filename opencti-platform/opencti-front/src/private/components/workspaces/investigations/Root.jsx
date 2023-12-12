@@ -2,10 +2,7 @@ import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { Route, withRouter } from 'react-router-dom';
 import { graphql } from 'react-relay';
-import {
-  QueryRenderer,
-  requestSubscription,
-} from '../../../../relay/environment';
+import { QueryRenderer, requestSubscription } from '../../../../relay/environment';
 import Investigation from './Investigation';
 import Loader from '../../../../components/Loader';
 import ErrorNotFound from '../../../../components/ErrorNotFound';

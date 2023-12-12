@@ -1,11 +1,5 @@
 import { loadFile } from '../database/file-storage';
-import {
-  askJobImport,
-  deleteImport,
-  filesMetrics,
-  uploadImport,
-  uploadPending
-} from '../domain/file';
+import { askJobImport, deleteImport, filesMetrics, uploadImport, uploadPending } from '../domain/file';
 import { worksForSource } from '../domain/work';
 import { batchLoader } from '../database/middleware';
 import { batchCreator } from '../domain/user';

@@ -25,13 +25,8 @@ import ObjectLabelField from '../../common/form/ObjectLabelField';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import OpenVocabField from '../../common/form/OpenVocabField';
 import { Option } from '../../common/form/ReferenceField';
-import {
-  CaseIncidentAddInput,
-  CaseIncidentCreationCaseMutation,
-} from './__generated__/CaseIncidentCreationCaseMutation.graphql';
-import {
-  CaseIncidentsLinesCasesPaginationQuery$variables,
-} from './__generated__/CaseIncidentsLinesCasesPaginationQuery.graphql';
+import { CaseIncidentAddInput, CaseIncidentCreationCaseMutation } from './__generated__/CaseIncidentCreationCaseMutation.graphql';
+import { CaseIncidentsLinesCasesPaginationQuery$variables } from './__generated__/CaseIncidentsLinesCasesPaginationQuery.graphql';
 import RichTextField from '../../../../components/RichTextField';
 import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
 import ObjectParticipantField from '../../common/form/ObjectParticipantField';

@@ -1,12 +1,7 @@
 import makeStyles from '@mui/styles/makeStyles';
 import Drawer from '@mui/material/Drawer';
 import IconButton from '@mui/material/IconButton';
-import {
-  ClearOutlined,
-  FileOpenOutlined,
-  LocalOfferOutlined,
-  VisibilityOffOutlined,
-} from '@mui/icons-material';
+import { ClearOutlined, FileOpenOutlined, LocalOfferOutlined, VisibilityOffOutlined } from '@mui/icons-material';
 import Typography from '@mui/material/Typography';
 import React, { FunctionComponent, useEffect, useState } from 'react';
 import Toolbar from '@mui/material/Toolbar';

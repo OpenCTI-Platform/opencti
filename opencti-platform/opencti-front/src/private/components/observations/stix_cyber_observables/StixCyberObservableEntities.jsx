@@ -12,9 +12,7 @@ import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
 import { ArrowDropDown, ArrowDropUp } from '@mui/icons-material';
 import { QueryRenderer } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
-import StixCyberObservableEntitiesLines, {
-  stixCyberObservableEntitiesLinesQuery,
-} from './StixCyberObservableEntitiesLines';
+import StixCyberObservableEntitiesLines, { stixCyberObservableEntitiesLinesQuery } from './StixCyberObservableEntitiesLines';
 import StixCoreRelationshipCreationFromEntity from '../../common/stix_core_relationships/StixCoreRelationshipCreationFromEntity';
 import Security from '../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';

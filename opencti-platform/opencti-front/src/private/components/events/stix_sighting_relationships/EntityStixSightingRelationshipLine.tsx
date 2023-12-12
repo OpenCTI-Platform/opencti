@@ -12,9 +12,7 @@ import Skeleton from '@mui/material/Skeleton';
 import Tooltip from '@mui/material/Tooltip';
 import { AutoFix } from 'mdi-material-ui';
 import makeStyles from '@mui/styles/makeStyles';
-import {
-  EntityStixSightingRelationshipLine_node$key,
-} from '@components/events/stix_sighting_relationships/__generated__/EntityStixSightingRelationshipLine_node.graphql';
+import { EntityStixSightingRelationshipLine_node$key } from '@components/events/stix_sighting_relationships/__generated__/EntityStixSightingRelationshipLine_node.graphql';
 import {
   EntityStixSightingRelationshipsLinesPaginationQuery$variables,
 } from '@components/events/stix_sighting_relationships/__generated__/EntityStixSightingRelationshipsLinesPaginationQuery.graphql';

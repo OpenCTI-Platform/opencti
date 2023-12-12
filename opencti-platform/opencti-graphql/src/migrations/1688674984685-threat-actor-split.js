@@ -3,7 +3,8 @@ import { generateStandardId } from '../schema/identifier';
 import { ENTITY_TYPE_THREAT_ACTOR_INDIVIDUAL } from '../modules/threatActorIndividual/threatActorIndividual-types';
 import { elCount, elList, elRawUpdateByQuery } from '../database/engine';
 import {
-  READ_ENTITIES_INDICES, READ_INDEX_INTERNAL_OBJECTS,
+  READ_ENTITIES_INDICES,
+  READ_INDEX_INTERNAL_OBJECTS,
   READ_INDEX_STIX_DOMAIN_OBJECTS,
   READ_INDEX_STIX_META_OBJECTS,
   READ_RELATIONSHIPS_INDICES_WITHOUT_INFERRED

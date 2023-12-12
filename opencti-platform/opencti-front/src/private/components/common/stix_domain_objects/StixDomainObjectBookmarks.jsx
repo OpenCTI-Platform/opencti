@@ -5,10 +5,7 @@ import { graphql, createPaginationContainer } from 'react-relay';
 import withStyles from '@mui/styles/withStyles';
 import Typography from '@mui/material/Typography';
 import * as R from 'ramda';
-import {
-  StixDomainObjectBookmark,
-  StixDomainObjectBookmarkDummy,
-} from './StixDomainObjectBookmark';
+import { StixDomainObjectBookmark, StixDomainObjectBookmarkDummy } from './StixDomainObjectBookmark';
 import inject18n from '../../../../components/i18n';
 import ListCardsContent from '../../../../components/list_cards/ListCardsContent';
 

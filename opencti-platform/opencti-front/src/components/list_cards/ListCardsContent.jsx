@@ -3,13 +3,7 @@ import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import * as R from 'ramda';
 import withStyles from '@mui/styles/withStyles';
-import {
-  AutoSizer,
-  ColumnSizer,
-  InfiniteLoader,
-  Grid,
-  WindowScroller,
-} from 'react-virtualized';
+import { AutoSizer, ColumnSizer, InfiniteLoader, Grid, WindowScroller } from 'react-virtualized';
 import inject18n from '../i18n';
 
 const numberOfCardsPerLine = 4;

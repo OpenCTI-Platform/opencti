@@ -1,21 +1,11 @@
 import React, { ChangeEvent, FunctionComponent, useState } from 'react';
 import { useNavigate } from 'react-router-dom-v5-compat';
 import ListFiltersWithoutLocalStorage from '@components/common/lists/ListFiltersWithoutLocalStorage';
-import {
-  constructHandleAddFilter,
-  constructHandleRemoveFilter,
-  Filter,
-  FilterGroup,
-  FiltersVariant,
-  emptyFilterGroup,
-} from '../../../../utils/filters/filtersUtils';
+import { constructHandleAddFilter, constructHandleRemoveFilter, Filter, FilterGroup, FiltersVariant, emptyFilterGroup } from '../../../../utils/filters/filtersUtils';
 import FiltersElement, { FilterElementsInputValue } from './FiltersElement';
 import ListFilters from './ListFilters';
 import DialogFilters from './DialogFilters';
-import {
-  HandleAddFilter,
-  UseLocalStorageHelpers,
-} from '../../../../utils/hooks/useLocalStorage';
+import { HandleAddFilter, UseLocalStorageHelpers } from '../../../../utils/hooks/useLocalStorage';
 import { setSearchEntitiesScope } from '../../../../utils/filters/SearchEntitiesUtil';
 
 interface FiltersProps {

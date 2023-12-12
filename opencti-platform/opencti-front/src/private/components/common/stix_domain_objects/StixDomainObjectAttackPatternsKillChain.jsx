@@ -4,13 +4,7 @@ import * as R from 'ramda';
 import withStyles from '@mui/styles/withStyles';
 import { createRefetchContainer, graphql } from 'react-relay';
 import Tooltip from '@mui/material/Tooltip';
-import {
-  FileDownloadOutlined,
-  FilterAltOutlined,
-  InvertColorsOffOutlined,
-  ViewColumnOutlined,
-  ViewListOutlined,
-} from '@mui/icons-material';
+import { FileDownloadOutlined, FilterAltOutlined, InvertColorsOffOutlined, ViewColumnOutlined, ViewListOutlined } from '@mui/icons-material';
 import { ProgressWrench } from 'mdi-material-ui';
 import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
 import ToggleButton from '@mui/material/ToggleButton';
@@ -18,10 +12,7 @@ import IconButton from '@mui/material/IconButton';
 import inject18n from '../../../../components/i18n';
 import SearchInput from '../../../../components/SearchInput';
 import Security from '../../../../utils/Security';
-import {
-  KNOWLEDGE_KNGETEXPORT,
-  KNOWLEDGE_KNUPDATE,
-} from '../../../../utils/hooks/useGranted';
+import { KNOWLEDGE_KNGETEXPORT, KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 import StixCoreRelationshipCreationFromEntity from '../stix_core_relationships/StixCoreRelationshipCreationFromEntity';
 import StixDomainObjectAttackPatternsKillChainMatrix from './StixDomainObjectAttackPatternsKillChainMatrix';
 import StixDomainObjectAttackPatternsKillChainLines from './StixDomainObjectAttackPatternsKillChainLines';
