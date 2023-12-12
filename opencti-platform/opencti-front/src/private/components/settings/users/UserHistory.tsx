@@ -56,6 +56,22 @@ const UserHistory: FunctionComponent<UserHistoryProps> = ({
     orderMode: 'desc' as OrderingMode,
     search: entitySearchTerm,
   };
+  const filters = {
+    mode: 'and',
+    filterGroups: [],
+    filters: [
+      {
+        key: 'creator_id',
+        values: [
+          userId,
+        ],
+        operator: 'eq',
+        mode: 'or',
+      },
+    ],
+  };
+
+  const filterString = JSON.stringify(filters);
 
   useEffect(() => {
     loadQuery(queryArgs, { fetchPolicy: 'store-and-network' });
@@ -66,30 +82,52 @@ const UserHistory: FunctionComponent<UserHistoryProps> = ({
   }, [queryRef]);
 
   return (
-      <>
-        <Typography variant="h4" gutterBottom={true} style={{ float: 'left' }}>
-          {t('History')}
-        </Typography>
-        <div style={{ float: 'right', marginTop: -12 }}>
-          <SearchInput
-            variant="thin"
-            onSubmit={handleSearchEntity}
-            keyword={entitySearchTerm}
+    <>
+      <Typography variant="h4" gutterBottom={true} style={{ float: 'left' }}>
+        {t('History')}
+      </Typography>
+      <div style={{ float: 'right', marginTop: -12 }}>
+        <SearchInput
+          variant="thin"
+          onSubmit={handleSearchEntity}
+          keyword={entitySearchTerm}
+        />
+      </div>
+      <Tooltip title={t('See all entities created by user')}>
+        <IconButton
+          className={classes.allEntitiesButton}
+          component={Link}
+          to={`/dashboard/search/knowledge/?filters=${encodeURIComponent(filterString)}`}
+          size="large"
+          color="primary"
+        >
+          <VisibilityOutlinedIcon fontSize="small" />
+        </IconButton>
+      </Tooltip>
+      <Tooltip title={t('See all relationships created by user')}>
+        <IconButton
+          className={classes.allEntitiesButton}
+          component={Link}
+          to={'/dashboard/data/relationships'}
+          size="large"
+          color="primary"
+        >
+          <PolylineOutlinedIcon fontSize="small" />
+        </IconButton>
+      </Tooltip>
+      <div className="clearfix" />
+      {queryRef ? (
+        <React.Suspense fallback={<Loader variant={LoaderVariant.container} />}>
+          <UserHistoryLines
+            queryRef={queryRef}
+            isRelationLog={false}
+            refetch={refetch}
           />
-        </div>
-        <div className="clearfix" />
-        {queryRef ? (
-          <React.Suspense fallback={<Loader variant={LoaderVariant.container} />}>
-            <UserHistoryLines
-              queryRef={queryRef}
-              isRelationLog={false}
-              refetch={refetch}
-            />
-          </React.Suspense>
-        ) : (
-          <Loader variant={LoaderVariant.container} />
-        )}
-      </>
+        </React.Suspense>
+      ) : (
+        <Loader variant={LoaderVariant.container} />
+      )}
+    </>
   );
 };
 
