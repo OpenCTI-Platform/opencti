@@ -408,10 +408,15 @@ const sanitizeFilterGroupKeysForBackend = (
 ): GqlFilterGroup => {
   return {
     ...filterGroup,
-    filters: filterGroup?.filters?.map((f) => ({
-      ...f,
-      key: Array.isArray(f.key) ? f.key : [f.key],
-    })),
+    filters: filterGroup?.filters?.filter((f) => f.values.length > 0)
+      .map((f) => {
+        const transformFilter = {
+          ...f,
+          key: Array.isArray(f.key) ? f.key : [f.key],
+        };
+        delete transformFilter.id;
+        return transformFilter;
+      }),
     filterGroups: filterGroup?.filterGroups?.map((fg) => sanitizeFilterGroupKeysForBackend(fg)),
   } as GqlFilterGroup;
 };
@@ -424,7 +429,9 @@ const sanitizeFilterGroupKeysForFrontend = (
     ...filterGroup,
     filters: filterGroup?.filters?.map((f) => ({
       ...f,
+      id: uuid(),
       key: Array.isArray(f.key) ? f.key[0] : f.key,
+      values: f.values.map((v) => v || 'todo: delete this'),
     })),
     filterGroups: filterGroup?.filterGroups?.map((fg) => sanitizeFilterGroupKeysForFrontend(fg)),
   } as FilterGroup;

@@ -10,16 +10,17 @@ import {
   handleAddRepresentationFilterUtil,
   handleAddSingleValueFilterUtil,
   handleChangeOperatorFiltersUtil,
+  handleClearAllFiltersUtil,
   handleRemoveFilterUtil,
   handleRemoveRepresentationFilterUtil,
   handleSwitchLocalModeUtil,
-} from '../filters/filtersLocalStorageUtil';
+} from '../filters/filtersManageStateUtil';
 import { LocalStorage } from './useLocalStorageModel';
 
 export interface UseLocalStorageHelpers {
   handleSearch: (value: string) => void;
   handleRemoveFilter: (key: string, op?: string, id?: string) => void;
-  handleRemoveFilterById: (id?: string) => void;
+  handleRemoveFilterById: (id: string) => void;
   handleSort: (field: string, order: boolean) => void;
   handleAddFilter: HandleAddFilter;
   handleRemoveRepresentationFilter: (id: string, valueId: string) => void;
@@ -279,8 +280,15 @@ export const usePaginationLocalStorage = <U>(
   );
   const helpers: UseLocalStorageHelpers = {
     handleSearch: (value: string) => setValue((c) => ({ ...c, searchTerm: value })),
-    handleRemoveFilterById: (id?: string) => {
-      handleRemoveFilterUtil({ viewStorage, setValue, id });
+    handleRemoveFilterById: (id: string) => {
+      if (viewStorage?.filters) {
+        const filters = viewStorage?.filters;
+        setValue((c) => ({
+          ...c,
+          filters: handleRemoveFilterUtil({ filters, id }),
+          latestAddFilterId: undefined,
+        }));
+      }
     },
     handleRemoveFilter: (k: string, op = 'eq', id?: string) => {
       if (viewStorage.filters) {
@@ -412,28 +420,54 @@ export const usePaginationLocalStorage = <U>(
       id: string,
       valueId: string,
     ) => {
-      handleRemoveRepresentationFilterUtil({ viewStorage, setValue, id, valueId });
+      if (viewStorage?.filters) {
+        const filters = viewStorage?.filters;
+        setValue((c) => ({
+          ...c,
+          filters: handleRemoveRepresentationFilterUtil({ filters, id, valueId }),
+          latestAddFilterId: undefined,
+        }));
+      }
     },
     handleAddRepresentationFilter: (id: string, valueId: string) => {
       if (valueId === null) { // handle clicking on 'no label' in entities list
         const findCorrespondingFilter = viewStorage.filters?.filters.find((f) => id === f.id);
         if (findCorrespondingFilter && ['objectLabel', 'contextObjectLabel'].includes(findCorrespondingFilter.key)) {
-          handleAddFilterWithEmptyValueUtil({ viewStorage,
-            setValue,
-            filter: {
-              id: uuid(),
-              key: 'objectLabel',
-              operator: findCorrespondingFilter.operator === 'not_eq' ? 'not_nil' : 'nil',
-              values: [],
-              mode: 'and',
-            } });
+          if (viewStorage?.filters) {
+            const filters = viewStorage?.filters;
+            const generateUUID = uuid();
+            setValue((c) => ({
+              ...c,
+              filters: handleAddFilterWithEmptyValueUtil({ filters,
+                filter: {
+                  id: generateUUID,
+                  key: 'objectLabel',
+                  operator: findCorrespondingFilter.operator === 'not_eq' ? 'not_nil' : 'nil',
+                  values: [],
+                  mode: 'and',
+                } }),
+              latestAddFilterId: generateUUID,
+            }));
+          }
         }
-      } else {
-        handleAddRepresentationFilterUtil({ viewStorage, setValue, id, valueId });
+      } else if (viewStorage?.filters) {
+        const filters = viewStorage?.filters;
+        setValue((c) => ({
+          ...c,
+          filters: handleAddRepresentationFilterUtil({ filters, id, valueId }),
+          latestAddFilterId: undefined,
+        }));
       }
     },
     handleAddSingleValueFilter: (id: string, valueId?: string) => {
-      handleAddSingleValueFilterUtil({ viewStorage, setValue, id, valueId });
+      if (viewStorage?.filters) {
+        const filters = viewStorage?.filters;
+        setValue((c) => ({
+          ...c,
+          filters: handleAddSingleValueFilterUtil({ filters, id, valueId }),
+          latestAddFilterId: undefined,
+        }));
+      }
     },
     handleSwitchFilter: (
       k: string,
@@ -494,7 +528,14 @@ export const usePaginationLocalStorage = <U>(
       }
     },
     handleSwitchLocalMode: (filter: Filter) => {
-      handleSwitchLocalModeUtil({ viewStorage, setValue, filter });
+      if (viewStorage?.filters) {
+        const filters = viewStorage?.filters;
+        setValue((c) => ({
+          ...c,
+          filters: handleSwitchLocalModeUtil({ filters, filter }),
+          latestAddFilterId: undefined,
+        }));
+      }
     },
     handleChangeView: (value: string) => setValue((c) => ({ ...c, view: value })),
     handleToggleExports: () => setValue((c) => ({ ...c, openExports: !c.openExports })),
@@ -533,11 +574,7 @@ export const usePaginationLocalStorage = <U>(
     handleClearAllFilters: (filters?: Filter[]) => {
       setValue((c) => ({
         ...c,
-        filters: {
-          filterGroups: [],
-          filters: filters ? [...filters] : [],
-          mode: 'and',
-        },
+        filters: handleClearAllFiltersUtil(filters),
         latestAddFilterId: undefined,
       }));
     },
@@ -555,10 +592,24 @@ export const usePaginationLocalStorage = <U>(
           return;
         }
       }
-      handleAddFilterWithEmptyValueUtil({ viewStorage, setValue, filter });
+      if (viewStorage?.filters) {
+        const filters = viewStorage?.filters;
+        setValue((c) => ({
+          ...c,
+          filters: handleAddFilterWithEmptyValueUtil({ filters, filter }),
+          latestAddFilterId: filter.id,
+        }));
+      }
     },
     handleChangeOperatorFilters: (id: string, operator: string) => {
-      handleChangeOperatorFiltersUtil({ viewStorage, setValue, id, operator });
+      if (viewStorage?.filters) {
+        const filters = viewStorage?.filters;
+        setValue((c) => ({
+          ...c,
+          filters: handleChangeOperatorFiltersUtil({ filters, id, operator }),
+          latestAddFilterId: undefined,
+        }));
+      }
     },
     getLatestAddFilterId: () => {
       return viewStorage.latestAddFilterId;
