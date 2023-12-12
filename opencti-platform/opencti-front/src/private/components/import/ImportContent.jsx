@@ -342,7 +342,7 @@ class ImportContentComponent extends Component {
                 <FileUploader
                   onUploadSuccess={() => relay.refetch()}
                   size="medium"
-                 color={'primary'}
+                  color={'primary'}
                   entityId={''}
                 />
                 <FreeTextUploader

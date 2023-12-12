@@ -44,8 +44,8 @@ import { FileLine_file$data } from './__generated__/FileLine_file.graphql';
 import { isNotEmptyField } from '../../../../utils/utils';
 import { truncate } from '../../../../utils/String';
 
-const Transition = React.forwardRef((props: SlideProps, ref) => (
-  <Slide direction="up" ref={ref} {...props} children={props.children} />
+const Transition = React.forwardRef(({ children, ...otherProps }: SlideProps, ref) => (
+  <Slide direction='up' ref={ref} {...otherProps}>{children}</Slide>
 ));
 Transition.displayName = 'TransitionSlide';
 
