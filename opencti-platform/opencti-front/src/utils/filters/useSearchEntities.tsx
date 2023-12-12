@@ -37,6 +37,7 @@ import { useSearchEntitiesStixCoreObjectsContainersSearchQuery$data } from './__
 import { isNotEmptyField } from '../utils';
 import { useSearchEntitiesSchemaSCOSearchQuery$data } from './__generated__/useSearchEntitiesSchemaSCOSearchQuery.graphql';
 import { Theme } from '../../components/Theme';
+import { useIsAdmin } from '../hooks/useGranted';
 
 const filtersStixCoreObjectsContainersSearchQuery = graphql`
     query useSearchEntitiesStixCoreObjectsContainersSearchQuery(
@@ -291,6 +292,7 @@ const useSearchEntities = ({
   const { t } = useFormatter();
   const { schema } = useAuth();
   const theme = useTheme() as Theme;
+  const isAdmin = useIsAdmin();
 
   const unionSetEntities = (key: string, newEntities: EntityValue[]) => setEntities((c) => ({
     ...c,
@@ -416,6 +418,31 @@ const useSearchEntities = ({
         });
     };
 
+    const buildCachedOptionFromFetchResponse = (
+      key: string,
+      type: string,
+      data: IdentitySearchCreatorsSearchQuery$data['creators'],
+      me: IdentitySearchCreatorsSearchQuery$data['me'],
+    ) => {
+      const items = (data?.edges ?? []).map((n) => ({
+        label: n?.node.name ?? '',
+        value: n?.node.id ?? '',
+        type,
+      }));
+      // always add myself to the possible creators (to be able to add a trigger even if I have not yet created any objects)
+      if (!items.find((usr) => usr.value === me.id)) {
+        items.push({
+          label: me.name,
+          value: me.id,
+          type,
+        });
+      }
+
+      setCacheEntities({ ...cacheEntities, [key]: items });
+      unionSetEntities(filterKey, items);
+    };
+
+    // static list building, no query to run
     const buildOptionsFromList = (key: string, inputList: string[] | EntityValue[], groupedBy: string[] = [], isLabelTranslated = false) => {
       const ungroupedEntities: EntityValue[] = inputList.map((n) => (
         typeof n === 'string' ? {
@@ -438,115 +465,67 @@ const useSearchEntities = ({
     // depending on filter key, fetch the right data and build the options list
     switch (filterKey) {
       // region member global
-      case 'members_user': // All groups, only for granted users
+      case 'members_user':
         runMembersSearchQuery('members_user', ['User']);
         break;
-      case 'members_group': // All groups, only for granted users
+      case 'members_group':
         runMembersSearchQuery('members_group', ['Group']);
         break;
-      case 'members_organization': // All groups, only for granted users
+      case 'members_organization':
         runMembersSearchQuery('members_organization', ['Organization']);
         break;
-        // endregion
-
+      // endregion
       // region user usage (with caching)
       case 'creator_id':
       case 'contextCreator':
-        if (!cacheEntities[filterKey]) {
+        if (isAdmin) {
+          // admins can search over all members
+          runMembersSearchQuery(filterKey, ['User', 'Group', 'Organization']);
+        } else if (!cacheEntities[filterKey]) {
+          // fetch only the identities listed as creator of at least 1 thing + myself
           fetchQuery(identitySearchCreatorsSearchQuery, {
             entityTypes: searchContext?.entityTypes ?? [],
           })
             .toPromise()
-            .then((data) => {
-              const creators = (
-                (data as IdentitySearchCreatorsSearchQuery$data)?.creators
-                  ?.edges ?? []
-              ).map((n) => ({
-                label: n?.node.name ?? '',
-                value: n?.node.id ?? '',
-                type: 'Individual',
-              }));
-              // always add myself to the possible creators (to be able to add a trigger even if I have not yet created any objects)
-              const myself = (data as IdentitySearchCreatorsSearchQuery$data).me;
-              if (!creators.find((usr) => usr.value === myself.id)) {
-                creators.push({
-                  label: myself.name,
-                  value: myself.id,
-                  type: 'Individual',
-                });
-              }
-
-              setCacheEntities({ ...cacheEntities, [filterKey]: creators });
-              unionSetEntities(filterKey, creators);
+            .then((response) => {
+              const data = response as IdentitySearchCreatorsSearchQuery$data;
+              buildCachedOptionFromFetchResponse(filterKey, 'Individual', data?.creators, data.me);
             });
         }
         break;
       case 'objectAssignee':
-        if (!cacheEntities[filterKey]) {
+        if (isAdmin) {
+          // admins can search over all members
+          runMembersSearchQuery(filterKey, ['User', 'Group', 'Organization']);
+        } else if (!cacheEntities[filterKey]) {
+          // fetch only the identities listed as assignee on at least 1 thing + myself
           fetchQuery(objectAssigneeFieldAssigneesSearchQuery, {
             entityTypes: searchContext?.entityTypes ?? [],
           })
             .toPromise()
-            .then((data) => {
-              const objectAssigneeEntities = (
-                (data as ObjectAssigneeFieldAssigneesSearchQuery$data)
-                  ?.assignees?.edges ?? []
-              ).map((n) => ({
-                label: n?.node.name ?? '',
-                value: n?.node.id ?? '',
-                type: 'User',
-              }));
-              // always add myself to the possible assignees (to be able to add a trigger even if I have not yet any assignment)
-              const myself = (data as ObjectAssigneeFieldAssigneesSearchQuery$data).me;
-              if (!objectAssigneeEntities.find((usr) => usr.value === myself.id)) {
-                objectAssigneeEntities.push({
-                  label: myself.name,
-                  value: myself.id,
-                  type: 'User',
-                });
-              }
-              setCacheEntities({
-                ...cacheEntities,
-                [filterKey]: objectAssigneeEntities,
-              });
-              unionSetEntities('objectAssignee', objectAssigneeEntities);
+            .then((response) => {
+              const data = response as ObjectAssigneeFieldAssigneesSearchQuery$data;
+              buildCachedOptionFromFetchResponse(filterKey, 'Individual', data?.assignees, data.me);
             });
         }
         break;
       case 'objectParticipant':
-        if (!cacheEntities[filterKey]) {
+        if (isAdmin) {
+          // admins can search over all members
+          runMembersSearchQuery(filterKey, ['User', 'Group', 'Organization']);
+        } else if (!cacheEntities[filterKey]) {
+          // fetch only the identities listed as participants to at least 1 thing + myself
           fetchQuery(objectParticipantFieldParticipantsSearchQuery, {
             entityTypes: searchContext?.entityTypes ?? [],
           })
             .toPromise()
-            .then((data) => {
-              const participantToEntities = (
-                (data as ObjectParticipantFieldParticipantsSearchQuery$data)
-                  ?.participants?.edges ?? []
-              ).map((n) => ({
-                label: n?.node.name ?? '',
-                value: n?.node.id ?? '',
-                type: 'User',
-              }));
-              // always add myself to the possible participants (to be able to add a trigger even if I am not yet participating to something)
-              const myself = (data as ObjectParticipantFieldParticipantsSearchQuery$data).me;
-              if (!participantToEntities.find((usr) => usr.value === myself.id)) {
-                participantToEntities.push({
-                  label: myself.name,
-                  value: myself.id,
-                  type: 'User',
-                });
-              }
-              setCacheEntities({
-                ...cacheEntities,
-                [filterKey]: participantToEntities,
-              });
-              unionSetEntities('objectParticipant', participantToEntities);
+            .then((response) => {
+              const data = response as ObjectParticipantFieldParticipantsSearchQuery$data;
+              buildCachedOptionFromFetchResponse(filterKey, 'User', data?.participants, data.me);
             });
         }
         break;
         // endregion
-
       case 'createdBy':
       case 'contextCreatedBy':
         runIdentitySearchQuery('contextCreatedBy', ['Organization', 'Individual', 'System']);
@@ -563,8 +542,7 @@ const useSearchEntities = ({
           .toPromise()
           .then((data) => {
             const sightedByEntities = (
-              (data as StixDomainObjectsLinesSearchQuery$data)
-                ?.stixDomainObjects?.edges ?? []
+              (data as StixDomainObjectsLinesSearchQuery$data)?.stixDomainObjects?.edges ?? []
             ).map((n) => ({
               label: n?.node.name,
               value: n?.node.id,
@@ -589,8 +567,7 @@ const useSearchEntities = ({
           .toPromise()
           .then((data) => {
             const elementIdEntities = (
-              (data as useSearchEntitiesStixCoreObjectsSearchQuery$data)
-                ?.stixCoreObjects?.edges ?? []
+              (data as useSearchEntitiesStixCoreObjectsSearchQuery$data)?.stixCoreObjects?.edges ?? []
             ).map((n) => ({
               label: defaultValue(n?.node),
               value: n?.node.id,
@@ -616,9 +593,7 @@ const useSearchEntities = ({
           .toPromise()
           .then((data) => {
             const containerEntities = (
-              (
-                data as useSearchEntitiesStixCoreObjectsContainersSearchQuery$data
-              )?.containers?.edges ?? []
+              (data as useSearchEntitiesStixCoreObjectsContainersSearchQuery$data)?.containers?.edges ?? []
             ).map((n) => ({
               label: n?.node.representative.main,
               value: n?.node.id,
@@ -637,8 +612,7 @@ const useSearchEntities = ({
           .toPromise()
           .then((data) => {
             const markedByEntities = (
-              (data as MarkingDefinitionsLinesSearchQuery$data)
-                ?.markingDefinitions?.edges ?? []
+              (data as MarkingDefinitionsLinesSearchQuery$data)?.markingDefinitions?.edges ?? []
             ).map((n) => ({
               label: n?.node.definition,
               value: n?.node.id,
@@ -656,8 +630,7 @@ const useSearchEntities = ({
           .toPromise()
           .then((data) => {
             const killChainPhaseEntities = (
-              (data as KillChainPhasesLinesSearchQuery$data)?.killChainPhases
-                ?.edges ?? []
+              (data as KillChainPhasesLinesSearchQuery$data)?.killChainPhases?.edges ?? []
             ).map((n) => ({
               label: n
                 ? `[${n.node.kill_chain_name}] ${n.node.phase_name}`
@@ -843,15 +816,13 @@ const useSearchEntities = ({
           filters: isNotEmptyField(entityType) ? {
             mode: 'and',
             filterGroups: [],
-            filters: [{ key: 'type', values: [entityType] },
-            ],
+            filters: [{ key: 'type', values: [entityType] }],
           } : undefined,
         })
           .toPromise()
           .then((data) => {
             const statusEntities = (
-              (data as StatusFieldStatusesSearchQuery$data)?.statuses?.edges
-              ?? []
+              (data as StatusFieldStatusesSearchQuery$data)?.statuses?.edges ?? []
             )
               .filter((n) => !R.isNil(n.node.template))
               .map((n) => ({
