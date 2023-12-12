@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import * as PropTypes from 'prop-types';
 import { Field, Form, Formik } from 'formik';
 import withStyles from '@mui/styles/withStyles';
@@ -16,17 +16,11 @@ import inject18n from '../../../../components/i18n';
 import { commitMutation } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
 import Filters from '../../common/lists/Filters';
-import {
-  constructHandleAddFilter,
-  constructHandleRemoveFilter,
-  filtersAfterSwitchLocalMode,
-  emptyFilterGroup,
-  isFilterGroupNotEmpty,
-  serializeFilterGroupForBackend,
-} from '../../../../utils/filters/filtersUtils';
+import { emptyFilterGroup, isFilterGroupNotEmpty, serializeFilterGroupForBackend } from '../../../../utils/filters/filtersUtils';
 import FilterIconButton from '../../../../components/FilterIconButton';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import Drawer, { DrawerVariant } from '../../common/drawer/Drawer';
+import useFiltersState from '../../../../utils/filters/useFiltersState';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -109,8 +103,7 @@ const sharedUpdater = (store, userId, paginationOptions, newEdge) => {
 
 const TaxiiCollectionCreation = (props) => {
   const { t, classes } = props;
-  const [filters, setFilters] = useState(emptyFilterGroup);
-
+  const [filters, helpers] = useFiltersState(emptyFilterGroup);
   const onSubmit = (values, { setSubmitting, resetForm }) => {
     const jsonFilters = serializeFilterGroupForBackend(filters);
     const authorized_members = values.authorized_members.map(({ value }) => ({
@@ -141,30 +134,11 @@ const TaxiiCollectionCreation = (props) => {
     });
   };
 
-  const handleAddFilter = (k, id, op = 'eq') => {
-    setFilters(constructHandleAddFilter(filters, k, id, op));
-  };
-  const handleRemoveFilter = (k, op = 'eq') => {
-    setFilters(constructHandleRemoveFilter(filters, k, op));
-  };
-
-  const handleSwitchLocalMode = (localFilter) => {
-    setFilters(filtersAfterSwitchLocalMode(filters, localFilter));
-  };
-
-  const handleSwitchGlobalMode = () => {
-    if (filters) {
-      setFilters({
-        ...filters,
-        mode: filters.mode === 'and' ? 'or' : 'and',
-      });
-    }
-  };
-
   return (
     <Drawer
       title={t('Create a TAXII collection')}
       variant={DrawerVariant.createWithPanel}
+      onClose={helpers.handleClearAllFilters}
     >
       {({ onClose }) => (
         <Formik
@@ -223,7 +197,6 @@ const TaxiiCollectionCreation = (props) => {
               </Alert>
               <div style={{ paddingTop: 35 }}>
                 <Filters
-                  variant="text"
                   availableFilterKeys={[
                     'entity_type',
                     'workflow_id',
@@ -247,16 +220,13 @@ const TaxiiCollectionCreation = (props) => {
                     'fromTypes',
                     'toTypes',
                   ]}
-                  handleAddFilter={handleAddFilter}
-                  noDirectFilters={true}
+                  helpers={helpers}
                 />
               </div>
               <div className="clearfix" />
               <FilterIconButton
                 filters={filters}
-                handleRemoveFilter={handleRemoveFilter}
-                handleSwitchGlobalMode={handleSwitchGlobalMode}
-                handleSwitchLocalMode={handleSwitchLocalMode}
+                helpers={helpers}
                 styleNumber={2}
                 redirection
               />
