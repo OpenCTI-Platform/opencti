@@ -316,6 +316,8 @@ export const constructFiltersAndOptions = (
 ) => {
   const { removeTypeAll = false, startDate = null, endDate = null, dateAttribute = 'created_at' } = opts;
   // 01. handle api filters in options
+  // elementId, elementWithTargetTypes, fromId, toId, fromTypes and toTypes should be handle in options, not in filters
+  // relationship_type should be put in options BUT should be kept in filters because this key can have all modes and operators
   let filtersContent = inputFilters?.filters ?? [];
   const dataSelectionElementId = R.head(filtersContent.filter((n) => n.key === 'elementId'))?.values || null;
   const dataSelectionElementWithTargetTypes = R.head(filtersContent.filter((n) => n.key === 'elementWithTargetTypes'))?.values || null;
@@ -329,7 +331,6 @@ export const constructFiltersAndOptions = (
     (o) => ![
       'elementId',
       'elementWithTargetTypes',
-      'relationship_type',
       'fromId',
       'toId',
       'fromTypes',
