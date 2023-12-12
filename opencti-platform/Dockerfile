@@ -37,7 +37,7 @@ COPY opencti-front/.yarn ./.yarn
 COPY opencti-front/patch ./patch
 COPY opencti-front/packages ./packages
 RUN set -ex; \
-    apk add --no-cache git tini gcc g++ make musl-dev cargo python3 python3-dev postfix postfix-pcre \
+    apk add --no-cache git tini gcc g++ make musl-dev cargo python3 python3-dev py3-pip postfix postfix-pcre \
     && npm install -g node-gyp \
 && yarn install
 
@@ -50,10 +50,8 @@ RUN yarn build:standalone
 FROM base AS app
 
 RUN set -ex; \
-    apk add --no-cache git tini gcc g++ make musl-dev cargo python3 python3-dev postfix postfix-pcre \
-    && python3 -m ensurepip \
-    && rm -rv /usr/lib/python*/ensurepip \
-    && pip3 install --no-cache-dir --upgrade pip setuptools wheel \
+    apk add --no-cache git tini gcc g++ make musl-dev cargo python3 python3-dev py3-pip postfix postfix-pcre \
+    && pip3 install --no-cache-dir --upgrade setuptools wheel \
     && ln -sf python3 /usr/bin/python
 WORKDIR /opt/opencti
 
