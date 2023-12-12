@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect } from 'react';
 import * as PropTypes from 'prop-types';
 import { createFragmentContainer, graphql } from 'react-relay';
 import { Field, Form, Formik } from 'formik';
@@ -14,17 +14,11 @@ import inject18n from '../../../../components/i18n';
 import { commitMutation } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
 import Filters from '../../common/lists/Filters';
-import {
-  constructHandleAddFilter,
-  constructHandleRemoveFilter,
-  deserializeFilterGroupForFrontend,
-  filtersAfterSwitchLocalMode,
-  emptyFilterGroup,
-  serializeFilterGroupForBackend,
-} from '../../../../utils/filters/filtersUtils';
+import { deserializeFilterGroupForFrontend, serializeFilterGroupForBackend } from '../../../../utils/filters/filtersUtils';
 import FilterIconButton from '../../../../components/FilterIconButton';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import { convertAuthorizedMembers } from '../../../../utils/edition';
+import useFiltersState from '../../../../utils/filters/useFiltersState';
 
 const styles = (theme) => ({
   header: {
@@ -64,16 +58,16 @@ const styles = (theme) => ({
 });
 
 const taxiiCollectionMutationFieldPatch = graphql`
-    mutation TaxiiCollectionEditionFieldPatchMutation(
-        $id: ID!
-        $input: [EditInput]!
-    ) {
-        taxiiCollectionEdit(id: $id) {
-            fieldPatch(input: $input) {
-                ...TaxiiCollectionEdition_taxiiCollection
-            }
-        }
+  mutation TaxiiCollectionEditionFieldPatchMutation(
+    $id: ID!
+    $input: [EditInput]!
+  ) {
+    taxiiCollectionEdit(id: $id) {
+      fieldPatch(input: $input) {
+        ...TaxiiCollectionEdition_taxiiCollection
+      }
     }
+  }
 `;
 
 const taxiiCollectionValidation = (t) => Yup.object().shape({
@@ -91,7 +85,7 @@ const TaxiiCollectionEditionContainer = (props) => {
     taxii_public: taxiiCollection.taxii_public,
     authorized_members: convertAuthorizedMembers(taxiiCollection),
   };
-  const [filters, setFilters] = useState(deserializeFilterGroupForFrontend(props.taxiiCollection.filters));
+  const [filters, helpers] = useFiltersState(deserializeFilterGroupForFrontend(props.taxiiCollection.filters));
   const handleSubmitField = (name, value) => {
     taxiiCollectionValidation(props.t)
       .validateAt(name, { [name]: value })
@@ -119,23 +113,9 @@ const TaxiiCollectionEditionContainer = (props) => {
       });
     })
     .catch(() => false);
-  const handleAddFilter = (key, id, op = 'eq') => {
-    const newFilters = constructHandleAddFilter(filters, key, id, op);
-    const jsonFilters = serializeFilterGroupForBackend(newFilters);
-    commitMutation({
-      mutation: taxiiCollectionMutationFieldPatch,
-      variables: {
-        id: props.taxiiCollection.id,
-        input: { key: 'filters', value: jsonFilters },
-      },
-      onCompleted: () => {
-        setFilters(newFilters);
-      },
-    });
-  };
-  const handleRemoveFilter = (key, op = 'and') => {
-    const newFilters = constructHandleRemoveFilter(filters, key, op);
-    const jsonFilters = serializeFilterGroupForBackend(newFilters);
+
+  useEffect(() => {
+    const jsonFilters = serializeFilterGroupForBackend(filters);
     const variables = {
       id: props.taxiiCollection.id,
       input: { key: 'filters', value: jsonFilters },
@@ -143,47 +123,8 @@ const TaxiiCollectionEditionContainer = (props) => {
     commitMutation({
       mutation: taxiiCollectionMutationFieldPatch,
       variables,
-      onCompleted: () => {
-        setFilters(newFilters);
-      },
     });
-  };
-
-  const handleSwitchLocalMode = (localFilter) => {
-    const newFilters = filtersAfterSwitchLocalMode(filters, localFilter);
-    const variables = {
-      id: props.taxiiCollection.id,
-      input: { key: 'filters', value: serializeFilterGroupForBackend(newFilters) },
-    };
-    commitMutation({
-      mutation: taxiiCollectionMutationFieldPatch,
-      variables,
-      onCompleted: () => {
-        setFilters(newFilters);
-      },
-    });
-  };
-
-  const handleSwitchGlobalMode = () => {
-    const newFiltersContent = filters
-      ? {
-        ...filters,
-        mode: filters.mode === 'and' ? 'or' : 'and',
-      }
-      : emptyFilterGroup;
-    const variables = {
-      id: props.taxiiCollection.id,
-      input: { key: 'filters', value: serializeFilterGroupForBackend(newFiltersContent) },
-    };
-    commitMutation({
-      mutation: taxiiCollectionMutationFieldPatch,
-      variables,
-      onCompleted: () => {
-        setFilters(newFiltersContent);
-      },
-    });
-  };
-
+  }, [filters]);
   return (
     <Formik
       enableReinitialize={true}
@@ -220,7 +161,7 @@ const TaxiiCollectionEditionContainer = (props) => {
               {t('Make this taxii collection public and available to anyone')}
             </AlertTitle>
             <FormControlLabel
-              control={<Switch defaultChecked={initialValues.taxii_public} />}
+              control={<Switch defaultChecked={initialValues.taxii_public}/>}
               style={{ marginLeft: 1 }}
               onChange={(_, checked) => handleSubmitField('taxii_public', checked.toString())}
               label={t('Public taxii collection')}
@@ -238,7 +179,6 @@ const TaxiiCollectionEditionContainer = (props) => {
           </Alert>
           <div style={{ paddingTop: 35 }}>
             <Filters
-              variant="text"
               availableFilterKeys={[
                 'entity_type',
                 'workflow_id',
@@ -262,16 +202,14 @@ const TaxiiCollectionEditionContainer = (props) => {
                 'fromTypes',
                 'toTypes',
               ]}
-              handleAddFilter={handleAddFilter}
+              helpers={helpers}
               noDirectFilters={true}
             />
           </div>
-          <div className="clearfix" />
+          <div className="clearfix"/>
           <FilterIconButton
             filters={filters}
-            handleRemoveFilter={handleRemoveFilter}
-            handleSwitchLocalMode={handleSwitchLocalMode}
-            handleSwitchGlobalMode={handleSwitchGlobalMode}
+            helpers={helpers}
             styleNumber={2}
             redirection
           />
@@ -293,18 +231,18 @@ const TaxiiCollectionEditionFragment = createFragmentContainer(
   TaxiiCollectionEditionContainer,
   {
     taxiiCollection: graphql`
-            fragment TaxiiCollectionEdition_taxiiCollection on TaxiiCollection {
-                id
-                name
-                description
-                filters
-                taxii_public
-                authorized_members {
-                    id
-                    name
-                }
-            }
-        `,
+      fragment TaxiiCollectionEdition_taxiiCollection on TaxiiCollection {
+        id
+        name
+        description
+        filters
+        taxii_public
+        authorized_members {
+          id
+          name
+        }
+      }
+    `,
   },
 );
 

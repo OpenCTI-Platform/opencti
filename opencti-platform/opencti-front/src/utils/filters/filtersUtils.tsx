@@ -429,7 +429,9 @@ const sanitizeFilterGroupKeysForFrontend = (
     ...filterGroup,
     filters: filterGroup?.filters?.map((f) => ({
       ...f,
+      id: uuid(),
       key: Array.isArray(f.key) ? f.key[0] : f.key,
+      values: f.values.map((v) => v || 'todo: delete this'),
     })),
     filterGroups: filterGroup?.filterGroups?.map((fg) => sanitizeFilterGroupKeysForFrontend(fg)),
   } as FilterGroup;
