@@ -51,7 +51,7 @@ FROM base AS app
 
 RUN set -ex; \
     apk add --no-cache git tini gcc g++ make musl-dev cargo python3 python3-dev py3-pip postfix postfix-pcre \
-    && pip3 install --no-cache-dir --upgrade setuptools wheel \
+    && pip3 install --no-cache-dir --upgrade --break-system-packages setuptools wheel \
     && ln -sf python3 /usr/bin/python
 WORKDIR /opt/opencti
 
