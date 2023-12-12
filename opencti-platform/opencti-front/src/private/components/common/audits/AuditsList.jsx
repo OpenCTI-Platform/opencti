@@ -33,7 +33,7 @@ import useGranted, { SETTINGS } from '../../../../utils/hooks/useGranted';
 import MarkdownDisplay from '../../../../components/MarkdownDisplay';
 import { isNotEmptyField } from '../../../../utils/utils';
 import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
-import { constructFiltersAndOptions, removeAllTypesFromFilter } from '../../../../utils/filters/filtersUtils';
+import { constructFiltersAndOptions } from '../../../../utils/filters/filtersUtils';
 
 const useStyles = makeStyles({
   container: {
