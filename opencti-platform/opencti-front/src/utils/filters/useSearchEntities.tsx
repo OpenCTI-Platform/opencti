@@ -416,6 +416,25 @@ const useSearchEntities = ({
         });
     };
 
+    const buildOptionsFromList = (key: string, inputList: string[] | EntityValue[], groupedBy: string[] = [], isLabelTranslated = false) => {
+      const ungroupedEntities: EntityValue[] = inputList.map((n) => (
+        typeof n === 'string' ? {
+          label: isLabelTranslated ? t(n) : n,
+          value: n,
+          type: 'Vocabulary',
+        } : {
+          label: n.label,
+          value: n.value,
+          type: 'Vocabulary',
+          color: n.color ?? undefined,
+        }));
+      let entitiesToAdd = ungroupedEntities;
+      if (groupedBy.length > 0) {
+        entitiesToAdd = groupedBy.flatMap((group) => ungroupedEntities.map((item) => ({ ...item, group })));
+      }
+      unionSetEntities(key, entitiesToAdd);
+    };
+
     // depending on filter key, fetch the right data and build the options list
     switch (filterKey) {
       // region member global
@@ -447,6 +466,7 @@ const useSearchEntities = ({
                 value: n?.node.id ?? '',
                 type: 'Individual',
               }));
+              // always add myself to the possible creators (to be able to add a trigger even if I have not yet created any objects)
               const myself = (data as IdentitySearchCreatorsSearchQuery$data).me;
               if (!creators.find((usr) => usr.value === myself.id)) {
                 creators.push({
@@ -461,7 +481,7 @@ const useSearchEntities = ({
             });
         }
         break;
-      case 'objectAssignee': // only used
+      case 'objectAssignee':
         if (!cacheEntities[filterKey]) {
           fetchQuery(objectAssigneeFieldAssigneesSearchQuery, {
             entityTypes: searchContext?.entityTypes ?? [],
@@ -493,7 +513,7 @@ const useSearchEntities = ({
             });
         }
         break;
-      case 'objectParticipant': // only used
+      case 'objectParticipant':
         if (!cacheEntities[filterKey]) {
           fetchQuery(objectParticipantFieldParticipantsSearchQuery, {
             entityTypes: searchContext?.entityTypes ?? [],
@@ -508,6 +528,7 @@ const useSearchEntities = ({
                 value: n?.node.id ?? '',
                 type: 'User',
               }));
+              // always add myself to the possible participants (to be able to add a trigger even if I am not yet participating to something)
               const myself = (data as ObjectParticipantFieldParticipantsSearchQuery$data).me;
               if (!participantToEntities.find((usr) => usr.value === myself.id)) {
                 participantToEntities.push({
@@ -675,115 +696,53 @@ const useSearchEntities = ({
           });
         break;
       case 'x_opencti_base_score': {
-        const baseScoreEntities = ['lte', 'gt'].flatMap((group) => baseScores.map((n) => ({
-          label: n,
-          value: n,
-          type: 'Vocabulary',
-          group,
-        })));
-        unionSetEntities('x_opencti_base_score', baseScoreEntities);
+        buildOptionsFromList('x_opencti_base_score', baseScores, ['lte', 'gt']);
         break;
       }
       // region confidence
       case 'confidence': {
-        const confidenceEntities = ['lte', 'gt'].flatMap((group) => confidences.map((n) => ({
-          label: n.label,
-          value: n.value,
-          type: 'Vocabulary',
-          color: n.color,
-          group,
-        })));
-        unionSetEntities('confidence', confidenceEntities);
+        buildOptionsFromList('confidence', confidences, ['lte', 'gt']);
         break;
       }
       case 'confidence_gt': {
-        const confidenceEntitiesGt = confidences.map((n) => ({
-          label: n.label,
-          value: n.value,
-          type: 'Vocabulary',
-          color: n.color,
-        }));
-        unionSetEntities('confidence_gt', confidenceEntitiesGt);
+        buildOptionsFromList('confidence_gt', confidences);
         break;
       }
       case 'confidence_lte': {
-        const confidenceLteEntities = confidences.map((n) => ({
-          label: n.label,
-          value: n.value,
-          type: 'Vocabulary',
-          color: n.color,
-        }));
-        unionSetEntities('confidence_lte', confidenceLteEntities);
+        buildOptionsFromList('confidence_lte', confidences);
         break;
       }
       // endregion
       // region likelihood
       case 'likelihood': {
-        const likelihoodEntities = ['lte', 'gt'].flatMap((group) => likelihoods.map((n) => ({
-          label: n,
-          value: n,
-          type: 'Vocabulary',
-          group,
-        })));
-        unionSetEntities('likelihood', likelihoodEntities);
+        buildOptionsFromList('likelihood', likelihoods, ['lte', 'gt']);
         break;
       }
       case 'likelihood_gt': {
-        const likelihoodEntitiesGt = likelihoods.map((n) => ({
-          label: t(`likelihood_${n.toString()}`),
-          value: n,
-          type: 'Vocabulary',
-        }));
-        unionSetEntities('likelihood_gt', likelihoodEntitiesGt);
+        buildOptionsFromList('likelihood_gt', likelihoods);
         break;
       }
       case 'likelihood_lte': {
-        const likelihoodLteEntities = likelihoods.map((n) => ({
-          label: n,
-          value: n,
-          type: 'Vocabulary',
-        }));
-        unionSetEntities('likelihood_lte', likelihoodLteEntities);
+        buildOptionsFromList('likelihood_lte', likelihoods);
         break;
       }
       // endregion
       // region x_opencti_score
       case 'x_opencti_score': {
-        const scoreEntities = ['lte', 'gt'].flatMap((group) => scores.map((n) => ({
-          label: n,
-          value: n,
-          type: 'Vocabulary',
-          group,
-        })));
-        unionSetEntities('x_opencti_score', scoreEntities);
+        buildOptionsFromList('x_opencti_score', scores, ['lte', 'gt']);
         break;
       }
       case 'x_opencti_score_gt': {
-        const scoreGtEntities = scores.map((n) => ({
-          label: n,
-          value: n,
-          type: 'Vocabulary',
-        }));
-        unionSetEntities('x_opencti_score_gt', scoreGtEntities);
+        buildOptionsFromList('x_opencti_score_gt', scores);
         break;
       }
       case 'x_opencti_score_lte': {
-        const scoreLteEntities = scores.map((n) => ({
-          label: n,
-          value: n,
-          type: 'Vocabulary',
-        }));
-        unionSetEntities('x_opencti_score_lte', scoreLteEntities);
+        buildOptionsFromList('x_opencti_score_lte', scores);
         break;
       }
       // endregion
       case 'x_opencti_detection': {
-        const detectionEntities = ['true', 'false'].map((n) => ({
-          label: t(n),
-          value: n,
-          type: 'Vocabulary',
-        }));
-        unionSetEntities('x_opencti_detection', detectionEntities);
+        buildOptionsFromList('x_opencti_detection', ['true', 'false'], [], true);
         break;
       }
       case 'based-on': {
@@ -810,75 +769,30 @@ const useSearchEntities = ({
         break;
       }
       case 'revoked': {
-        const revokedEntities = ['true', 'false'].map((n) => ({
-          label: t(n),
-          value: n,
-          type: 'Vocabulary',
-        }));
-        unionSetEntities('revoked', revokedEntities);
+        buildOptionsFromList('revoked', ['true', 'false'], [], true);
         break;
       }
       case 'trigger_type': {
-        const isTriggerTypeEntities = ['digest', 'live'].map((n) => ({
-          label: t(n),
-          value: n,
-          type: 'Vocabulary',
-        }));
-        unionSetEntities('trigger_type', isTriggerTypeEntities);
+        buildOptionsFromList('trigger_type', ['digest', 'live'], [], true);
         break;
       }
       case 'instance_trigger': {
-        const isInstanceTrigger = ['true', 'false'].map((n) => ({
-          label: t(n),
-          value: n,
-          type: 'Vocabulary',
-        }));
-        unionSetEntities('instance_trigger', isInstanceTrigger);
+        buildOptionsFromList('instance_trigger', ['true', 'false'], [], true);
         break;
       }
       case 'is_read': {
-        const isReadEntities = ['true', 'false'].map((n) => ({
-          label: t(n),
-          value: n,
-          type: 'Vocabulary',
-        }));
-        unionSetEntities('is_read', isReadEntities);
+        buildOptionsFromList('is_read', ['true', 'false'], [], true);
         break;
       }
       case 'event_type': {
-        const eventTypeEntities = [
-          'authentication',
-          'read',
-          'mutation',
-          'file',
-          'command',
-        ].map((n) => ({
-          label: n,
-          value: n,
-          type: 'Vocabulary',
-        }));
-        unionSetEntities('event_type', eventTypeEntities);
+        buildOptionsFromList('event_type', ['authentication', 'read', 'mutation', 'file', 'command']);
         break;
       }
       case 'event_scope': {
-        const eventScopeEntities = [
-          'create',
-          'update',
-          'delete',
-          'read',
-          'search',
-          'enrich',
-          'download',
-          'import',
-          'export',
-          'login',
-          'logout',
-        ].map((n) => ({
-          label: n,
-          value: n,
-          type: 'Vocabulary',
-        }));
-        unionSetEntities('event_scope', eventScopeEntities);
+        buildOptionsFromList(
+          'event_scope',
+          ['create', 'update', 'delete', 'read', 'search', 'enrich', 'download', 'import', 'export', 'login', 'logout'],
+        );
         break;
       }
       case 'priority':
@@ -972,6 +886,7 @@ const useSearchEntities = ({
           });
         break;
       // region entity and relation types
+      // The options for these filter keys are built thanks to the schema
       case 'contextEntityType': {
         let elementTypeResult = [] as EntityWithLabelValue[];
         elementTypeResult = [
