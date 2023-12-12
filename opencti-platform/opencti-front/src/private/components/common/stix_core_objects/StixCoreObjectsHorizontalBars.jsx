@@ -1,5 +1,4 @@
 import React from 'react';
-import * as R from 'ramda';
 import { graphql } from 'react-relay';
 import CircularProgress from '@mui/material/CircularProgress';
 import Paper from '@mui/material/Paper';
@@ -14,6 +13,7 @@ import { horizontalBarsChartOptions } from '../../../../utils/Charts';
 import { itemColor } from '../../../../utils/Colors';
 import { simpleNumberFormat } from '../../../../utils/Number';
 import { defaultValue } from '../../../../utils/Graph';
+import { constructFiltersAndOptions } from '../../../../utils/filters/filtersUtils';
 
 const useStyles = makeStyles(() => ({
   paper: {
@@ -222,20 +222,13 @@ const StixCoreObjectsHorizontalBars = ({
   const navigate = useNavigate();
   const renderContent = () => {
     const selection = dataSelection[0];
-    let filtersContent = selection.filters?.filters ?? [];
     const dataSelectionTypes = ['Stix-Core-Object'];
-    const dataSelectionObjectId = R.head(filtersContent.filter((n) => n.key === 'elementId'))?.values || null;
-    const dataSelectionToTypes = R.head(filtersContent.filter((n) => n.key === 'toTypes'))?.values || null;
-    filtersContent = filtersContent.filter(
-      (n) => !['elementId', 'toTypes'].includes(
-        n.key,
-      ),
-    );
+    const { filters, dataSelectionElementId, dataSelectionToTypes } = constructFiltersAndOptions(selection.filters);
     return (
       <QueryRenderer
         query={stixCoreObjectsHorizontalBarsDistributionQuery}
         variables={{
-          objectId: dataSelectionObjectId,
+          objectId: dataSelectionElementId,
           toTypes: dataSelectionToTypes,
           types: dataSelectionTypes,
           field: selection.attribute,
@@ -246,7 +239,7 @@ const StixCoreObjectsHorizontalBars = ({
             selection.date_attribute && selection.date_attribute.length > 0
               ? selection.date_attribute
               : 'created_at',
-          filters: selection.filters ? { ...selection.filters, filters: filtersContent } : undefined,
+          filters,
           limit: selection.number ?? 10,
         }}
         render={({ props }) => {

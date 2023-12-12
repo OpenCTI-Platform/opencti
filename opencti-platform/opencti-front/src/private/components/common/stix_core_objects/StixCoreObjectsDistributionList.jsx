@@ -1,5 +1,4 @@
 import React from 'react';
-import * as R from 'ramda';
 import { graphql } from 'react-relay';
 import CircularProgress from '@mui/material/CircularProgress';
 import Paper from '@mui/material/Paper';
@@ -16,6 +15,7 @@ import { useFormatter } from '../../../../components/i18n';
 import { resolveLink } from '../../../../utils/Entity';
 import ItemIcon from '../../../../components/ItemIcon';
 import useGranted, { SETTINGS_SETACCESSES } from '../../../../utils/hooks/useGranted';
+import { constructFiltersAndOptions } from '../../../../utils/filters/filtersUtils';
 
 const useStyles = makeStyles({
   container: {
@@ -136,15 +136,8 @@ const StixCoreObjectsDistributionList = ({
   const hasSetAccess = useGranted([SETTINGS_SETACCESSES]);
   const renderContent = () => {
     const selection = dataSelection[0];
-    let filtersContent = selection.filters?.filters ?? [];
     const dataSelectionTypes = ['Stix-Core-Object'];
-    const dataSelectionObjectId = filtersContent.filter((o) => o.key === 'elementId')?.values || null;
-    const dataSelectionToTypes = R.head(filtersContent.filter((o) => o.key === 'toTypes'))?.values || null;
-    filtersContent = filtersContent.filter(
-      (o) => !['elementId', 'toTypes'].includes(
-        o.key,
-      ),
-    );
+    const { filters, dataSelectionElementId, dataSelectionToTypes } = constructFiltersAndOptions(selection.filters);
     const computeLink = (entry) => {
       const resolution = resolveLink(entry.type);
       if (resolution) {
@@ -157,7 +150,7 @@ const StixCoreObjectsDistributionList = ({
       <QueryRenderer
         query={stixCoreObjectsDistributionListDistributionQuery}
         variables={{
-          objectId: dataSelectionObjectId,
+          objectId: dataSelectionElementId,
           toTypes: dataSelectionToTypes,
           types: dataSelectionTypes,
           field: selection.attribute,
@@ -168,7 +161,7 @@ const StixCoreObjectsDistributionList = ({
             selection.date_attribute && selection.date_attribute.length > 0
               ? selection.date_attribute
               : 'created_at',
-          filters: selection.filters ? { ...selection.filters, filters: filtersContent } : undefined,
+          filters,
           limit: selection.number ?? 10,
         }}
         render={({ props }) => {

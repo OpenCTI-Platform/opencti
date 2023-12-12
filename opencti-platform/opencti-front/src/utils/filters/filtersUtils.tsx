@@ -309,6 +309,55 @@ export const removeAllTypesFromFilter = (inputFilters?: FilterGroup) => {
   return inputFilters;
 };
 
+// construct filters and options for widgets
+export const constructFiltersAndOptions = (
+  inputFilters: FilterGroup | undefined,
+  opts: { removeTypeAll?: boolean, startDate?: string, endDate?: string, dateAttribute?: string },
+) => {
+  const { removeTypeAll = false, startDate = null, endDate = null, dateAttribute = 'created_at' } = opts;
+  // 01. handle api filters in options
+  let filtersContent = inputFilters?.filters ?? [];
+  const dataSelectionElementId = R.head(filtersContent.filter((n) => n.key === 'elementId'))?.values || null;
+  const dataSelectionToTypes = R.head(filtersContent.filter((o) => o.key === 'toTypes'))?.values || null;
+  const dataSelectionElementWithTargetTypes = R.head(filtersContent.filter((n) => n.key === 'elementWithTargetTypes'))?.values || null;
+  filtersContent = filtersContent.filter(
+    (n) => ![
+      'elementId',
+      'toTypes',
+      'elementWithTargetTypes',
+    ].includes(n.key),
+  );
+  let filters = inputFilters ? { ...inputFilters, filters: filtersContent } : undefined;
+  // 02. remove 'all' in filter with key=entity_type
+  if (removeTypeAll) filters = removeAllTypesFromFilter(filters);
+  // 03. handle startDate and endDate options
+  const dateFiltersContent = [];
+  if (startDate) {
+    dateFiltersContent.push({
+      key: dateAttribute,
+      values: [startDate],
+      operator: 'gt',
+      mode: 'or',
+    });
+  }
+  if (endDate) {
+    dateFiltersContent.push({
+      key: dateAttribute,
+      values: [endDate],
+      operator: 'lt',
+      mode: 'or',
+    });
+  }
+  if (dateFiltersContent.length > 0) {
+    filters = {
+      mode: 'and',
+      filters: dateFiltersContent,
+      filterGroups: filters ? [filters] : [],
+    };
+  }
+  return { filters, dataSelectionElementId, dataSelectionToTypes, dataSelectionElementWithTargetTypes };
+};
+
 // return the i18n label corresponding to a value
 export const filterValue = (filterKey: string, value?: string | null) => {
   const { t, nsd } = useFormatter();

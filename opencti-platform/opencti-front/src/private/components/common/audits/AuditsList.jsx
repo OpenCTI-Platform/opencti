@@ -33,7 +33,7 @@ import useGranted, { SETTINGS } from '../../../../utils/hooks/useGranted';
 import MarkdownDisplay from '../../../../components/MarkdownDisplay';
 import { isNotEmptyField } from '../../../../utils/utils';
 import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
-import { removeAllTypesFromFilter } from '../../../../utils/filters/filtersUtils';
+import { constructFiltersAndOptions, removeAllTypesFromFilter } from '../../../../utils/filters/filtersUtils';
 
 const useStyles = makeStyles({
   container: {
@@ -143,30 +143,7 @@ const AuditsList = ({
     const dateAttribute = selection.date_attribute && selection.date_attribute.length > 0
       ? selection.date_attribute
       : 'timestamp';
-    const dateFiltersContent = [];
-    if (startDate) {
-      dateFiltersContent.push({
-        key: dateAttribute,
-        values: [startDate],
-        operator: 'gt',
-      });
-    }
-    if (endDate) {
-      dateFiltersContent.push({
-        key: dateAttribute,
-        values: [endDate],
-        operator: 'lt',
-      });
-    }
-    const cleanedFilters = removeAllTypesFromFilter(selection.filters);
-    let filters = cleanedFilters;
-    if (dateFiltersContent.length > 0) {
-      filters = {
-        mode: 'and',
-        filters: dateFiltersContent,
-        filterGroups: cleanedFilters ? [cleanedFilters] : [],
-      };
-    }
+    const { filters } = constructFiltersAndOptions(selection.filters, { removeTypeAll: true, startDate, endDate, dateAttribute });
     return (
       <QueryRenderer
         query={auditsListQuery}

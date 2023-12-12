@@ -4,11 +4,11 @@ import CircularProgress from '@mui/material/CircularProgress';
 import Paper from '@mui/material/Paper';
 import Typography from '@mui/material/Typography';
 import makeStyles from '@mui/styles/makeStyles';
-import * as R from 'ramda';
 import { QueryRenderer } from '../../../../relay/environment';
 import { useFormatter } from '../../../../components/i18n';
 import ItemNumberDifference from '../../../../components/ItemNumberDifference';
 import { dayAgo } from '../../../../utils/Time';
+import { constructFiltersAndOptions } from "../../../../utils/filters/filtersUtils";
 
 const useStyles = makeStyles({
   paper: {
@@ -63,38 +63,11 @@ const StixCoreObjectsNumber = ({
   const { t, n } = useFormatter();
   const renderContent = () => {
     const selection = dataSelection[0];
-    let filtersContent = selection.filters?.filters ?? [];
     const dataSelectionTypes = ['Stix-Core-Object'];
-    const dataSelectionElementId = R.head(filtersContent.filter((o) => o.key === 'elementId'))?.values || null;
-    filtersContent = filtersContent.filter(
-      (o) => !['elementId'].includes(o.key),
-    );
     const dateAttribute = selection.date_attribute && selection.date_attribute.length > 0
       ? selection.date_attribute
       : 'created_at';
-    const dateFiltersContent = [];
-    if (startDate) {
-      dateFiltersContent.push({
-        key: dateAttribute,
-        values: [startDate],
-        operator: 'gt',
-      });
-    }
-    if (endDate) {
-      dateFiltersContent.push({
-        key: dateAttribute,
-        values: [endDate],
-        operator: 'lt',
-      });
-    }
-    let filters = selection.filters ? { ...selection.filters, filters: filtersContent } : undefined;
-    if (dateFiltersContent.length > 0) {
-      filters = {
-        mode: 'and',
-        filters: dateFiltersContent,
-        filterGroups: filters ? [filters] : [],
-      };
-    }
+    const { filters, dataSelectionElementId } = constructFiltersAndOptions(selection.filters, { startDate, endDate, dateAttribute });
     return (
       <QueryRenderer
         query={stixCoreObjectsNumberNumberQuery}

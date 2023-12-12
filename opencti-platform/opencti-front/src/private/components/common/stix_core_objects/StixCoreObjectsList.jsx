@@ -18,6 +18,7 @@ import { resolveLink } from '../../../../utils/Entity';
 import { defaultValue } from '../../../../utils/Graph';
 import ItemMarkings from '../../../../components/ItemMarkings';
 import ItemStatus from '../../../../components/ItemStatus';
+import { constructFiltersAndOptions } from '../../../../utils/filters/filtersUtils';
 
 const useStyles = makeStyles({
   container: {
@@ -265,38 +266,11 @@ const StixCoreObjectsList = ({
   const { t, fsd } = useFormatter();
   const renderContent = () => {
     const selection = dataSelection[0];
-    let filtersContent = selection.filters?.filters ?? [];
     const dataSelectionTypes = ['Stix-Core-Object'];
-    const dataSelectionElementId = R.head(filtersContent.filter((n) => n.key === 'elementId'))?.values || null;
-    filtersContent = filtersContent.filter(
-      (n) => !['elementId'].includes(n.key),
-    );
     const dateAttribute = selection.date_attribute && selection.date_attribute.length > 0
       ? selection.date_attribute
       : 'created_at';
-    const dateFiltersContent = [];
-    if (startDate) {
-      dateFiltersContent.push({
-        key: dateAttribute,
-        values: [startDate],
-        operator: 'gt',
-      });
-    }
-    if (endDate) {
-      dateFiltersContent.push({
-        key: dateAttribute,
-        values: [endDate],
-        operator: 'lt',
-      });
-    }
-    let filters = selection.filters ? { ...selection.filters, filters: filtersContent } : undefined;
-    if (dateFiltersContent.length > 0) {
-      filters = {
-        mode: 'and',
-        filters: dateFiltersContent,
-        filterGroups: filters ? [filters] : [],
-      };
-    }
+    const { filters, dataSelectionElementId } = constructFiltersAndOptions(selection.filters, { startDate, endDate, dateAttribute });
     return (
       <QueryRenderer
         query={stixCoreObjectsListQuery}
