@@ -329,7 +329,7 @@ const useSearchEntities = ({
     setInputValues([newInputValue]);
 
     // fetches vocabularies by categories and add them to the set
-    const runVocabularySearchQuery = (key: string, filterCategories: string[]) => {
+    const buildOptionsFromVocabularySearchQuery = (key: string, filterCategories: string[]) => {
       const filters = {
         mode: 'or',
         filters: [
@@ -356,7 +356,7 @@ const useSearchEntities = ({
 
     // fetches runtime attributes by name and add them to the set
     // this query returns only the attributes used somewhere
-    const runAttributesSearchQuery = (attributeName: string) => {
+    const buildOptionsFromAttributesSearchQuery = (attributeName: string) => {
       fetchQuery(attributesSearchQuery, {
         attributeName,
         search: event.target.value !== 0 ? event.target.value : '',
@@ -377,7 +377,7 @@ const useSearchEntities = ({
     };
 
     // fetches identities by types and add them to the set
-    const runIdentitySearchQuery = (key: string, types: string[]) => {
+    const buildOptionsFromIdentitySearchQuery = (key: string, types: string[]) => {
       fetchQuery(identitySearchIdentitiesSearchQuery, {
         types,
         search: event.target.value !== 0 ? event.target.value : '',
@@ -398,7 +398,7 @@ const useSearchEntities = ({
     };
 
     // fetches members by types and add them to the set
-    const runMembersSearchQuery = (key: string, entityTypes: string[]) => {
+    const buildOptionsFromMembersSearchQuery = (key: string, entityTypes: string[]) => {
       fetchQuery(objectAssigneeFieldMembersSearchQuery, {
         search: event.target.value !== 0 ? event.target.value : '',
         entityTypes,
@@ -418,7 +418,7 @@ const useSearchEntities = ({
         });
     };
 
-    const buildCachedOptionFromFetchResponse = (
+    const buildCachedOptionsFromGenericFetchResponse = (
       key: string,
       type: string,
       data: IdentitySearchCreatorsSearchQuery$data['creators'],
@@ -443,7 +443,7 @@ const useSearchEntities = ({
     };
 
     // static list building, no query to run
-    const buildOptionsFromList = (key: string, inputList: string[] | EntityValue[], groupedBy: string[] = [], isLabelTranslated = false) => {
+    const buildOptionsFromStaticList = (key: string, inputList: string[] | EntityValue[], groupedBy: string[] = [], isLabelTranslated = false) => {
       const ungroupedEntities: EntityValue[] = inputList.map((n) => (
         typeof n === 'string' ? {
           label: isLabelTranslated ? t(n) : n,
@@ -466,13 +466,13 @@ const useSearchEntities = ({
     switch (filterKey) {
       // region member global
       case 'members_user':
-        runMembersSearchQuery('members_user', ['User']);
+        buildOptionsFromMembersSearchQuery('members_user', ['User']);
         break;
       case 'members_group':
-        runMembersSearchQuery('members_group', ['Group']);
+        buildOptionsFromMembersSearchQuery('members_group', ['Group']);
         break;
       case 'members_organization':
-        runMembersSearchQuery('members_organization', ['Organization']);
+        buildOptionsFromMembersSearchQuery('members_organization', ['Organization']);
         break;
       // endregion
       // region user usage (with caching)
@@ -480,7 +480,7 @@ const useSearchEntities = ({
       case 'contextCreator':
         if (isAdmin) {
           // admins can search over all members
-          runMembersSearchQuery(filterKey, ['User', 'Group', 'Organization']);
+          buildOptionsFromMembersSearchQuery(filterKey, ['User', 'Group', 'Organization']);
         } else if (!cacheEntities[filterKey]) {
           // fetch only the identities listed as creator of at least 1 thing + myself
           fetchQuery(identitySearchCreatorsSearchQuery, {
@@ -489,14 +489,14 @@ const useSearchEntities = ({
             .toPromise()
             .then((response) => {
               const data = response as IdentitySearchCreatorsSearchQuery$data;
-              buildCachedOptionFromFetchResponse(filterKey, 'Individual', data?.creators, data.me);
+              buildCachedOptionsFromGenericFetchResponse(filterKey, 'Individual', data?.creators, data.me);
             });
         }
         break;
       case 'objectAssignee':
         if (isAdmin) {
           // admins can search over all members
-          runMembersSearchQuery(filterKey, ['User', 'Group', 'Organization']);
+          buildOptionsFromMembersSearchQuery(filterKey, ['User', 'Group', 'Organization']);
         } else if (!cacheEntities[filterKey]) {
           // fetch only the identities listed as assignee on at least 1 thing + myself
           fetchQuery(objectAssigneeFieldAssigneesSearchQuery, {
@@ -505,14 +505,14 @@ const useSearchEntities = ({
             .toPromise()
             .then((response) => {
               const data = response as ObjectAssigneeFieldAssigneesSearchQuery$data;
-              buildCachedOptionFromFetchResponse(filterKey, 'Individual', data?.assignees, data.me);
+              buildCachedOptionsFromGenericFetchResponse(filterKey, 'Individual', data?.assignees, data.me);
             });
         }
         break;
       case 'objectParticipant':
         if (isAdmin) {
           // admins can search over all members
-          runMembersSearchQuery(filterKey, ['User', 'Group', 'Organization']);
+          buildOptionsFromMembersSearchQuery(filterKey, ['User', 'Group', 'Organization']);
         } else if (!cacheEntities[filterKey]) {
           // fetch only the identities listed as participants to at least 1 thing + myself
           fetchQuery(objectParticipantFieldParticipantsSearchQuery, {
@@ -521,17 +521,17 @@ const useSearchEntities = ({
             .toPromise()
             .then((response) => {
               const data = response as ObjectParticipantFieldParticipantsSearchQuery$data;
-              buildCachedOptionFromFetchResponse(filterKey, 'User', data?.participants, data.me);
+              buildCachedOptionsFromGenericFetchResponse(filterKey, 'User', data?.participants, data.me);
             });
         }
         break;
         // endregion
       case 'createdBy':
       case 'contextCreatedBy':
-        runIdentitySearchQuery('contextCreatedBy', ['Organization', 'Individual', 'System']);
+        buildOptionsFromIdentitySearchQuery('contextCreatedBy', ['Organization', 'Individual', 'System']);
         break;
       case 'toSightingId':
-        runIdentitySearchQuery('toSightingId', ['Identity']);
+        buildOptionsFromIdentitySearchQuery('toSightingId', ['Identity']);
         break;
       case 'sightedBy':
         fetchQuery(stixDomainObjectsLinesSearchQuery, {
@@ -669,53 +669,53 @@ const useSearchEntities = ({
           });
         break;
       case 'x_opencti_base_score': {
-        buildOptionsFromList('x_opencti_base_score', baseScores, ['lte', 'gt']);
+        buildOptionsFromStaticList('x_opencti_base_score', baseScores, ['lte', 'gt']);
         break;
       }
       // region confidence
       case 'confidence': {
-        buildOptionsFromList('confidence', confidences, ['lte', 'gt']);
+        buildOptionsFromStaticList('confidence', confidences, ['lte', 'gt']);
         break;
       }
       case 'confidence_gt': {
-        buildOptionsFromList('confidence_gt', confidences);
+        buildOptionsFromStaticList('confidence_gt', confidences);
         break;
       }
       case 'confidence_lte': {
-        buildOptionsFromList('confidence_lte', confidences);
+        buildOptionsFromStaticList('confidence_lte', confidences);
         break;
       }
       // endregion
       // region likelihood
       case 'likelihood': {
-        buildOptionsFromList('likelihood', likelihoods, ['lte', 'gt']);
+        buildOptionsFromStaticList('likelihood', likelihoods, ['lte', 'gt']);
         break;
       }
       case 'likelihood_gt': {
-        buildOptionsFromList('likelihood_gt', likelihoods);
+        buildOptionsFromStaticList('likelihood_gt', likelihoods);
         break;
       }
       case 'likelihood_lte': {
-        buildOptionsFromList('likelihood_lte', likelihoods);
+        buildOptionsFromStaticList('likelihood_lte', likelihoods);
         break;
       }
       // endregion
       // region x_opencti_score
       case 'x_opencti_score': {
-        buildOptionsFromList('x_opencti_score', scores, ['lte', 'gt']);
+        buildOptionsFromStaticList('x_opencti_score', scores, ['lte', 'gt']);
         break;
       }
       case 'x_opencti_score_gt': {
-        buildOptionsFromList('x_opencti_score_gt', scores);
+        buildOptionsFromStaticList('x_opencti_score_gt', scores);
         break;
       }
       case 'x_opencti_score_lte': {
-        buildOptionsFromList('x_opencti_score_lte', scores);
+        buildOptionsFromStaticList('x_opencti_score_lte', scores);
         break;
       }
       // endregion
       case 'x_opencti_detection': {
-        buildOptionsFromList('x_opencti_detection', ['true', 'false'], [], true);
+        buildOptionsFromStaticList('x_opencti_detection', ['true', 'false'], [], true);
         break;
       }
       case 'based-on': {
@@ -742,72 +742,72 @@ const useSearchEntities = ({
         break;
       }
       case 'revoked': {
-        buildOptionsFromList('revoked', ['true', 'false'], [], true);
+        buildOptionsFromStaticList('revoked', ['true', 'false'], [], true);
         break;
       }
       case 'trigger_type': {
-        buildOptionsFromList('trigger_type', ['digest', 'live'], [], true);
+        buildOptionsFromStaticList('trigger_type', ['digest', 'live'], [], true);
         break;
       }
       case 'instance_trigger': {
-        buildOptionsFromList('instance_trigger', ['true', 'false'], [], true);
+        buildOptionsFromStaticList('instance_trigger', ['true', 'false'], [], true);
         break;
       }
       case 'is_read': {
-        buildOptionsFromList('is_read', ['true', 'false'], [], true);
+        buildOptionsFromStaticList('is_read', ['true', 'false'], [], true);
         break;
       }
       case 'event_type': {
-        buildOptionsFromList('event_type', ['authentication', 'read', 'mutation', 'file', 'command']);
+        buildOptionsFromStaticList('event_type', ['authentication', 'read', 'mutation', 'file', 'command']);
         break;
       }
       case 'event_scope': {
-        buildOptionsFromList(
+        buildOptionsFromStaticList(
           'event_scope',
           ['create', 'update', 'delete', 'read', 'search', 'enrich', 'download', 'import', 'export', 'login', 'logout'],
         );
         break;
       }
       case 'priority':
-        runVocabularySearchQuery('priority', ['case_priority_ov']);
+        buildOptionsFromVocabularySearchQuery('priority', ['case_priority_ov']);
         break;
       case 'severity':
-        runVocabularySearchQuery('severity', ['case_severity_ov', 'incident_severity_ov']);
+        buildOptionsFromVocabularySearchQuery('severity', ['case_severity_ov', 'incident_severity_ov']);
         break;
       case 'pattern_type':
-        runVocabularySearchQuery('pattern_type', ['pattern_type_ov']);
+        buildOptionsFromVocabularySearchQuery('pattern_type', ['pattern_type_ov']);
         break;
       case 'malware_types':
-        runVocabularySearchQuery('malware_types', ['malware_type_ov']);
+        buildOptionsFromVocabularySearchQuery('malware_types', ['malware_type_ov']);
         break;
       case 'x_opencti_reliability':
       case 'source_reliability':
-        runVocabularySearchQuery('source_reliability', ['reliability_ov']);
+        buildOptionsFromVocabularySearchQuery('source_reliability', ['reliability_ov']);
         break;
       case 'indicator_types':
-        runVocabularySearchQuery('indicator_types', ['indicator_type_ov']);
+        buildOptionsFromVocabularySearchQuery('indicator_types', ['indicator_type_ov']);
         break;
       case 'incident_type':
-        runVocabularySearchQuery('incident_type', ['incident_type_ov']);
+        buildOptionsFromVocabularySearchQuery('incident_type', ['incident_type_ov']);
         break;
       case 'report_types':
-        runVocabularySearchQuery('report_types', ['report_types_ov']);
+        buildOptionsFromVocabularySearchQuery('report_types', ['report_types_ov']);
         break;
       case 'channel_types':
-        runVocabularySearchQuery('channel_types', ['channel_types_ov']);
+        buildOptionsFromVocabularySearchQuery('channel_types', ['channel_types_ov']);
         break;
       case 'event_types':
-        runVocabularySearchQuery('event_types', ['event_type_ov']);
+        buildOptionsFromVocabularySearchQuery('event_types', ['event_type_ov']);
         break;
       case 'context':
-        runVocabularySearchQuery('context', ['grouping_context_ov']);
+        buildOptionsFromVocabularySearchQuery('context', ['grouping_context_ov']);
         break;
 
       case 'x_opencti_base_severity':
       case 'x_opencti_attack_vector':
       case 'x_opencti_organization_type':
       case 'source':
-        runAttributesSearchQuery(filterKey);
+        buildOptionsFromAttributesSearchQuery(filterKey);
         break;
 
       case 'x_opencti_workflow_id':
@@ -1062,7 +1062,7 @@ const useSearchEntities = ({
         break;
       }
       case 'note_types':
-        runVocabularySearchQuery('note_types', ['note_types_ov']);
+        buildOptionsFromVocabularySearchQuery('note_types', ['note_types_ov']);
         break;
       default:
         break;
