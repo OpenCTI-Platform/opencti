@@ -6,19 +6,14 @@ import {
 import { RelationshipsStixCoreRelationshipLine_node$data } from '@components/data/relationships/__generated__/RelationshipsStixCoreRelationshipLine_node.graphql';
 import { RelationshipsStixCoreRelationshipLineDummy } from '@components/data/relationships/RelationshipsStixCoreRelationshipLine';
 import ListLines from '../../../components/list_lines/ListLines';
-import RelationshipsStixCoreRelationshipsLines, {
-  relationshipsStixCoreRelationshipsLinesQuery,
-} from './relationships/RelationshipsStixCoreRelationshipsLines';
+import RelationshipsStixCoreRelationshipsLines, { relationshipsStixCoreRelationshipsLinesQuery } from './relationships/RelationshipsStixCoreRelationshipsLines';
 import useAuth from '../../../utils/hooks/useAuth';
 import ToolBar from './ToolBar';
 import ExportContextProvider from '../../../utils/ExportContextProvider';
 import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
 import useEntityToggle from '../../../utils/hooks/useEntityToggle';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
-import {
-  filtersWithEntityType,
-  emptyFilterGroup,
-} from '../../../utils/filters/filtersUtils';
+import { filtersWithEntityType, emptyFilterGroup } from '../../../utils/filters/filtersUtils';
 
 const LOCAL_STORAGE_KEY = 'relationships';
 

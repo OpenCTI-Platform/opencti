@@ -28,11 +28,7 @@ import { commitMutation, MESSAGING$ } from '../../../../relay/environment';
 import Security from '../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
 import TaskScope from '../../../../components/TaskScope';
-import {
-  deserializeFilterGroupForFrontend,
-  isFilterFormatCorrect,
-  isFilterGroupNotEmpty,
-} from '../../../../utils/filters/filtersUtils';
+import { deserializeFilterGroupForFrontend, isFilterFormatCorrect, isFilterGroupNotEmpty } from '../../../../utils/filters/filtersUtils';
 import { convertFiltersFromOldFormat } from '../../../../utils/filters/filtersFromOldFormat';
 
 const useStyles = makeStyles((theme) => ({

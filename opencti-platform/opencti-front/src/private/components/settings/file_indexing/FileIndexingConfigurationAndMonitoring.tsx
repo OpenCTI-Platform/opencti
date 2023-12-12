@@ -15,12 +15,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 
 import React, { FunctionComponent, useEffect } from 'react';
 import FileIndexingMonitoring from '@components/settings/file_indexing/FileIndexingMonitoring';
-import {
-  graphql,
-  PreloadedQuery,
-  usePreloadedQuery,
-  useQueryLoader,
-} from 'react-relay';
+import { graphql, PreloadedQuery, usePreloadedQuery, useQueryLoader } from 'react-relay';
 import { FileIndexingConfigurationQuery$data } from '@components/settings/file_indexing/__generated__/FileIndexingConfigurationQuery.graphql';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import { FileIndexingConfigurationAndMonitoringQuery } from './__generated__/FileIndexingConfigurationAndMonitoringQuery.graphql';

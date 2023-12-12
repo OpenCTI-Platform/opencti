@@ -13,13 +13,7 @@ import MarkdownField from '../../../../components/MarkdownField';
 import SelectField from '../../../../components/SelectField';
 import TextField from '../../../../components/TextField';
 import TimePickerField from '../../../../components/TimePickerField';
-import {
-  convertEventTypes,
-  convertNotifiers,
-  convertTriggers,
-  filterEventTypesOptions,
-  instanceEventTypesOptions,
-} from '../../../../utils/edition';
+import { convertEventTypes, convertNotifiers, convertTriggers, filterEventTypesOptions, instanceEventTypesOptions } from '../../../../utils/edition';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import {
   constructHandleAddFilter,
@@ -30,16 +24,10 @@ import {
   emptyFilterGroup,
   serializeFilterGroupForBackend,
 } from '../../../../utils/filters/filtersUtils';
-import {
-  dayStartDate,
-  formatTimeForToday,
-  parse,
-} from '../../../../utils/Time';
+import { dayStartDate, formatTimeForToday, parse } from '../../../../utils/Time';
 import NotifierField from '../../common/form/NotifierField';
 import { Option } from '../../common/form/ReferenceField';
-import FilterAutocomplete, {
-  FilterAutocompleteInputValue,
-} from '../../common/lists/FilterAutocomplete';
+import FilterAutocomplete, { FilterAutocompleteInputValue } from '../../common/lists/FilterAutocomplete';
 import Filters from '../../common/lists/Filters';
 import { TriggerEditionOverview_trigger$key } from './__generated__/TriggerEditionOverview_trigger.graphql';
 import { TriggerEventType } from './__generated__/TriggerLiveCreationKnowledgeMutation.graphql';

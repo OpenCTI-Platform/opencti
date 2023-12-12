@@ -15,10 +15,7 @@ import { fetchQuery } from '../../../../relay/environment';
 import { stixDomainObjectsLinesSearchQuery } from '../stix_domain_objects/StixDomainObjectsLines';
 import ItemIcon from '../../../../components/ItemIcon';
 import ItemBoolean from '../../../../components/ItemBoolean';
-import {
-  convertFromStixType,
-  convertToStixType,
-} from '../../../../utils/String';
+import { convertFromStixType, convertToStixType } from '../../../../utils/String';
 import { useFormatter } from '../../../../components/i18n';
 import { defaultValue } from '../../../../utils/Graph';
 

@@ -6,10 +6,7 @@ import { graphql } from 'react-relay';
 import Box from '@mui/material/Box';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
-import {
-  QueryRenderer,
-  requestSubscription,
-} from '../../../../relay/environment';
+import { QueryRenderer, requestSubscription } from '../../../../relay/environment';
 import ThreatActorGroup from './ThreatActorGroup';
 import ThreatActorGroupKnowledge from './ThreatActorGroupKnowledge';
 import Loader from '../../../../components/Loader';

@@ -7,10 +7,7 @@ import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage'
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
 import { CityLineDummy } from './cities/CityLine';
 import { KNOWLEDGE_KNUPDATE } from '../../../utils/hooks/useGranted';
-import {
-  CitiesLinesPaginationQuery,
-  CitiesLinesPaginationQuery$variables,
-} from './cities/__generated__/CitiesLinesPaginationQuery.graphql';
+import { CitiesLinesPaginationQuery, CitiesLinesPaginationQuery$variables } from './cities/__generated__/CitiesLinesPaginationQuery.graphql';
 import { emptyFilterGroup } from '../../../utils/filters/filtersUtils';
 
 const LOCAL_STORAGE_KEY = 'cities';

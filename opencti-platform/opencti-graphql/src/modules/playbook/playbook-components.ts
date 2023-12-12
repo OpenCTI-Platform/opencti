@@ -16,20 +16,8 @@ import * as R from 'ramda';
 import { v4 as uuidv4 } from 'uuid';
 import type { JSONSchemaType } from 'ajv';
 import * as jsonpatch from 'fast-json-patch';
-import {
-  type BasicStoreEntityPlaybook,
-  ENTITY_TYPE_PLAYBOOK,
-  type PlaybookComponent,
-  type PlaybookComponentConfiguration
-} from './playbook-types';
-import {
-  AUTOMATION_MANAGER_USER,
-  AUTOMATION_MANAGER_USER_UUID,
-  executionContext,
-  INTERNAL_USERS,
-  isUserCanAccessStixElement,
-  SYSTEM_USER
-} from '../../utils/access';
+import { type BasicStoreEntityPlaybook, ENTITY_TYPE_PLAYBOOK, type PlaybookComponent, type PlaybookComponentConfiguration } from './playbook-types';
+import { AUTOMATION_MANAGER_USER, AUTOMATION_MANAGER_USER_UUID, executionContext, INTERNAL_USERS, isUserCanAccessStixElement, SYSTEM_USER } from '../../utils/access';
 import { pushToConnector, pushToPlaybook } from '../../database/rabbitmq';
 import {
   ABSTRACT_STIX_CORE_OBJECT,
@@ -47,29 +35,10 @@ import type { BasicStoreRelation, StoreCommon, StoreRelation } from '../../types
 import { generateStandardId } from '../../schema/identifier';
 import { now, observableValue, utcDate } from '../../utils/format';
 import { STIX_SPEC_VERSION } from '../../database/stix';
-import type {
-  StixCampaign,
-  StixContainer,
-  StixIncident,
-  StixIndicator,
-  StixInfrastructure,
-  StixMalware,
-  StixReport,
-  StixThreatActor
-} from '../../types/stix-sdo';
+import type { StixCampaign, StixContainer, StixIncident, StixIndicator, StixInfrastructure, StixMalware, StixReport, StixThreatActor } from '../../types/stix-sdo';
 import { getParentTypes } from '../../schema/schemaUtils';
-import {
-  ENTITY_TYPE_CONTAINER_REPORT,
-  ENTITY_TYPE_INDICATOR,
-  isStixDomainObjectContainer
-} from '../../schema/stixDomainObject';
-import type {
-  StixBundle,
-  StixCoreObject,
-  StixCyberObject,
-  StixDomainObject,
-  StixObject
-} from '../../types/stix-common';
+import { ENTITY_TYPE_CONTAINER_REPORT, ENTITY_TYPE_INDICATOR, isStixDomainObjectContainer } from '../../schema/stixDomainObject';
+import type { StixBundle, StixCoreObject, StixCyberObject, StixDomainObject, StixObject } from '../../types/stix-common';
 import { STIX_EXT_OCTI, STIX_EXT_OCTI_SCO } from '../../types/stix-extensions';
 import { connectorsForPlaybook } from '../../database/repository';
 import { schemaTypesDefinition } from '../../schema/schema-types';
@@ -94,11 +63,7 @@ import { schemaAttributesDefinition } from '../../schema/schema-attributes';
 import { schemaRelationsRefDefinition } from '../../schema/schema-relationsRef';
 import { stixLoadByIds } from '../../database/middleware';
 import { usableNotifiers } from '../notifier/notifier-domain';
-import {
-  convertToNotificationUser,
-  type DigestEvent,
-  EVENT_NOTIFICATION_VERSION,
-} from '../../manager/notificationManager';
+import { convertToNotificationUser, type DigestEvent, EVENT_NOTIFICATION_VERSION } from '../../manager/notificationManager';
 import { storeNotificationEvent } from '../../database/redis';
 import { ENTITY_TYPE_USER } from '../../schema/internalObject';
 import type { AuthUser } from '../../types/user';

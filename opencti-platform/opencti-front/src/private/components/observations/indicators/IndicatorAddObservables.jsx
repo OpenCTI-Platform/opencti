@@ -14,9 +14,7 @@ import Skeleton from '@mui/material/Skeleton';
 import { QueryRenderer } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
 import SearchInput from '../../../../components/SearchInput';
-import IndicatorAddObservablesLines, {
-  indicatorAddObservablesLinesQuery,
-} from './IndicatorAddObservablesLines';
+import IndicatorAddObservablesLines, { indicatorAddObservablesLinesQuery } from './IndicatorAddObservablesLines';
 import StixCyberObservableCreation from '../stix_cyber_observables/StixCyberObservableCreation';
 
 const styles = (theme) => ({

@@ -6,10 +6,7 @@ import { UseLocalStorageHelpers } from '../../../../utils/hooks/useLocalStorage'
 import usePreloadedPaginationFragment from '../../../../utils/hooks/usePreloadedPaginationFragment';
 import { CaseRftLine, CaseRftLineDummy } from './CaseRftLine';
 import { CaseRftLinesCases_data$key } from './__generated__/CaseRftLinesCases_data.graphql';
-import {
-  CaseRftLinesCasesPaginationQuery,
-  CaseRftLinesCasesPaginationQuery$variables,
-} from './__generated__/CaseRftLinesCasesPaginationQuery.graphql';
+import { CaseRftLinesCasesPaginationQuery, CaseRftLinesCasesPaginationQuery$variables } from './__generated__/CaseRftLinesCasesPaginationQuery.graphql';
 import { CaseRftLineCase_node$data } from './__generated__/CaseRftLineCase_node.graphql';
 
 const nbOfRowsToLoad = 50;

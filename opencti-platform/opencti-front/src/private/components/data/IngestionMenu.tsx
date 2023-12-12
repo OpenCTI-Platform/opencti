@@ -1,7 +1,5 @@
 import React from 'react';
-import NavToolbarMenu, {
-  MenuEntry,
-} from '@components/common/menus/NavToolbarMenu';
+import NavToolbarMenu, { MenuEntry } from '@components/common/menus/NavToolbarMenu';
 
 const IngestionMenu = () => {
   const entries: MenuEntry[] = [

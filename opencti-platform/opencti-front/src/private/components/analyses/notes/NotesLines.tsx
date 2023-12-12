@@ -5,10 +5,7 @@ import { NoteLine, NoteLineDummy } from './NoteLine';
 import { HandleAddFilter, UseLocalStorageHelpers } from '../../../../utils/hooks/useLocalStorage';
 import { DataColumns } from '../../../../components/list_lines';
 import usePreloadedPaginationFragment from '../../../../utils/hooks/usePreloadedPaginationFragment';
-import {
-  NotesLinesPaginationQuery,
-  NotesLinesPaginationQuery$variables,
-} from './__generated__/NotesLinesPaginationQuery.graphql';
+import { NotesLinesPaginationQuery, NotesLinesPaginationQuery$variables } from './__generated__/NotesLinesPaginationQuery.graphql';
 import { NoteLine_node$data } from './__generated__/NoteLine_node.graphql';
 import { NotesLines_data$key } from './__generated__/NotesLines_data.graphql';
 

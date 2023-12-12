@@ -2,28 +2,11 @@ import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { compose } from 'ramda';
 import { createFragmentContainer, graphql } from 'react-relay';
-import {
-  deepOrange,
-  deepPurple,
-  green,
-  indigo,
-  pink,
-  red,
-  teal,
-  yellow,
-} from '@mui/material/colors';
+import { deepOrange, deepPurple, green, indigo, pink, red, teal, yellow } from '@mui/material/colors';
 import withStyles from '@mui/styles/withStyles';
 import Paper from '@mui/material/Paper';
 import Avatar from '@mui/material/Avatar';
-import {
-  AddOutlined,
-  DeleteOutlined,
-  EditOutlined,
-  HelpOutlined,
-  LanguageOutlined,
-  LinkOffOutlined,
-  LinkOutlined,
-} from '@mui/icons-material';
+import { AddOutlined, DeleteOutlined, EditOutlined, HelpOutlined, LanguageOutlined, LinkOffOutlined, LinkOutlined } from '@mui/icons-material';
 import { LinkVariantPlus, LinkVariantRemove, Merge } from 'mdi-material-ui';
 import Tooltip from '@mui/material/Tooltip';
 import Dialog from '@mui/material/Dialog';

@@ -5,10 +5,7 @@ import ListLines from '../../../components/list_lines/ListLines';
 import Security from '../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE } from '../../../utils/hooks/useGranted';
 import CountryCreation from './countries/CountryCreation';
-import {
-  CountriesLinesPaginationQuery,
-  CountriesLinesPaginationQuery$variables,
-} from './countries/__generated__/CountriesLinesPaginationQuery.graphql';
+import { CountriesLinesPaginationQuery, CountriesLinesPaginationQuery$variables } from './countries/__generated__/CountriesLinesPaginationQuery.graphql';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
 import { CountryLineDummy } from './countries/CountryLine';
 import { emptyFilterGroup } from '../../../utils/filters/filtersUtils';

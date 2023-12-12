@@ -10,13 +10,7 @@ import ListItemText from '@mui/material/ListItemText';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
 import Collapse from '@mui/material/Collapse';
-import {
-  Domain,
-  ExpandLess,
-  ExpandMore,
-  FileDownloadOutlined,
-  LibraryBooksOutlined,
-} from '@mui/icons-material';
+import { Domain, ExpandLess, ExpandMore, FileDownloadOutlined, LibraryBooksOutlined } from '@mui/icons-material';
 import { AutoFix, FormatListGroup, RelationManyToMany } from 'mdi-material-ui';
 import { createRefetchContainer, graphql } from 'react-relay';
 import Tooltip from '@mui/material/Tooltip';
@@ -29,15 +23,9 @@ import StixCoreRelationshipCreationFromEntity from '../stix_core_relationships/S
 import ItemYears from '../../../../components/ItemYears';
 import SearchInput from '../../../../components/SearchInput';
 import Security from '../../../../utils/Security';
-import {
-  KNOWLEDGE_KNGETEXPORT,
-  KNOWLEDGE_KNUPDATE,
-} from '../../../../utils/hooks/useGranted';
+import { KNOWLEDGE_KNGETEXPORT, KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 import ItemIcon from '../../../../components/ItemIcon';
-import {
-  buildViewParamsFromUrlAndStorage,
-  saveViewParameters,
-} from '../../../../utils/ListParameters';
+import { buildViewParamsFromUrlAndStorage, saveViewParameters } from '../../../../utils/ListParameters';
 import StixCoreRelationshipsExports from '../stix_core_relationships/StixCoreRelationshipsExports';
 import ItemMarkings from '../../../../components/ItemMarkings';
 import { export_max_size } from '../../../../utils/utils';

@@ -1,11 +1,5 @@
 import EventSource from 'eventsource';
-import {
-  createEntity,
-  deleteElementById,
-  internalDeleteElementById,
-  patchAttribute,
-  updateAttribute
-} from '../database/middleware';
+import { createEntity, deleteElementById, internalDeleteElementById, patchAttribute, updateAttribute } from '../database/middleware';
 import { getHttpClient } from '../utils/http-client';
 import { completeConnector, connector, connectors, connectorsFor } from '../database/repository';
 import { registerConnectorQueues, unregisterConnector, unregisterExchanges } from '../database/rabbitmq';

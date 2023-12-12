@@ -3,9 +3,7 @@ import Alert from '@mui/material/Alert';
 import makeStyles from '@mui/styles/makeStyles';
 import { QueryRenderer } from '../../../relay/environment';
 import ListLines from '../../../components/list_lines/ListLines';
-import RetentionLines, {
-  RetentionLinesQuery,
-} from './retention/RetentionLines';
+import RetentionLines, { RetentionLinesQuery } from './retention/RetentionLines';
 import RetentionCreation from './retention/RetentionCreation';
 import useAuth from '../../../utils/hooks/useAuth';
 import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';

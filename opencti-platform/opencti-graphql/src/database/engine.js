@@ -25,13 +25,7 @@ import {
   WRITE_PLATFORM_INDICES,
 } from './utils';
 import conf, { booleanConf, loadCert, logApp } from '../config/conf';
-import {
-  ConfigurationError,
-  DatabaseError,
-  EngineShardsError,
-  FunctionalError,
-  UnsupportedError
-} from '../config/errors';
+import { ConfigurationError, DatabaseError, EngineShardsError, FunctionalError, UnsupportedError } from '../config/errors';
 import {
   isStixRefRelationship,
   RELATION_CREATED_BY,

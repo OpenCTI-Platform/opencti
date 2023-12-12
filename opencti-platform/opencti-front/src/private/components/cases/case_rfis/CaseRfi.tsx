@@ -20,10 +20,7 @@ import CaseRfiDetails from './CaseRfiDetails';
 import CaseRfiEdition from './CaseRfiEdition';
 import { useFormatter } from '../../../../components/i18n';
 import { usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStorage';
-import {
-  CaseTasksLinesQuery,
-  CaseTasksLinesQuery$variables,
-} from '../tasks/__generated__/CaseTasksLinesQuery.graphql';
+import { CaseTasksLinesQuery, CaseTasksLinesQuery$variables } from '../tasks/__generated__/CaseTasksLinesQuery.graphql';
 import ListLines from '../../../../components/list_lines/ListLines';
 import { tasksDataColumns } from '../tasks/TasksLine';
 import { CaseTasksLineDummy } from '../tasks/CaseTasksLine';

@@ -1,9 +1,6 @@
 import React from 'react';
 import { graphql, useFragment } from 'react-relay';
-import {
-  CheckCircleOutlined,
-  DoNotDisturbOnOutlined,
-} from '@mui/icons-material';
+import { CheckCircleOutlined, DoNotDisturbOnOutlined } from '@mui/icons-material';
 import ListLines from '../../../../../components/list_lines/ListLines';
 import { SubType_subType$data } from '../__generated__/SubType_subType.graphql';
 import ErrorNotFound from '../../../../../components/ErrorNotFound';

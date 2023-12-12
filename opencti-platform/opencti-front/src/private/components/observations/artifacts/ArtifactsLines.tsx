@@ -1,9 +1,6 @@
 import React, { FunctionComponent } from 'react';
 import { graphql, PreloadedQuery } from 'react-relay';
-import {
-  ArtifactsLinesPaginationQuery,
-  ArtifactsLinesPaginationQuery$variables,
-} from '@components/observations/artifacts/__generated__/ArtifactsLinesPaginationQuery.graphql';
+import { ArtifactsLinesPaginationQuery, ArtifactsLinesPaginationQuery$variables } from '@components/observations/artifacts/__generated__/ArtifactsLinesPaginationQuery.graphql';
 import { ArtifactsLines_data$key } from '@components/observations/artifacts/__generated__/ArtifactsLines_data.graphql';
 import { ArtifactLine_node$data } from '@components/observations/artifacts/__generated__/ArtifactLine_node.graphql';
 import ListLinesContent from '../../../../components/list_lines/ListLinesContent';

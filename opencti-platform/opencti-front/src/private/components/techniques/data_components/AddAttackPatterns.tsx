@@ -8,7 +8,10 @@ import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import SearchInput from '../../../../components/SearchInput';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import { DataComponentAttackPatterns_dataComponent$data } from './__generated__/DataComponentAttackPatterns_dataComponent.graphql';
-import { AddAttackPatternsLinesToDataComponentQuery, AddAttackPatternsLinesToDataComponentQuery$variables } from './__generated__/AddAttackPatternsLinesToDataComponentQuery.graphql';
+import {
+  AddAttackPatternsLinesToDataComponentQuery,
+  AddAttackPatternsLinesToDataComponentQuery$variables,
+} from './__generated__/AddAttackPatternsLinesToDataComponentQuery.graphql';
 import AddAttackPatternsLines, { addAttackPatternsLinesQuery } from './AddAttackPatternsLines';
 
 const useStyles = makeStyles(() => ({

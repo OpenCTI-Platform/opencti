@@ -6,10 +6,7 @@ import { KNOWLEDGE_KNUPDATE } from '../../../utils/hooks/useGranted';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
 import DataSourceCreation from './data_sources/DataSourceCreation';
 import DataSourcesLines, { dataSourcesLinesQuery } from './data_sources/DataSourcesLines';
-import {
-  DataSourcesLinesPaginationQuery,
-  DataSourcesLinesPaginationQuery$variables,
-} from './data_sources/__generated__/DataSourcesLinesPaginationQuery.graphql';
+import { DataSourcesLinesPaginationQuery, DataSourcesLinesPaginationQuery$variables } from './data_sources/__generated__/DataSourcesLinesPaginationQuery.graphql';
 import { DataSourceLineDummy } from './data_sources/DataSourceLine';
 import { emptyFilterGroup } from '../../../utils/filters/filtersUtils';
 

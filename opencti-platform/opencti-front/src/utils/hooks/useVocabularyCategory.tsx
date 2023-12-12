@@ -1,9 +1,6 @@
 import { graphql, loadQuery, usePreloadedQuery } from 'react-relay';
 import { useState } from 'react';
-import {
-  useVocabularyCategoryQuery,
-  VocabularyCategory,
-} from './__generated__/useVocabularyCategoryQuery.graphql';
+import { useVocabularyCategoryQuery, VocabularyCategory } from './__generated__/useVocabularyCategoryQuery.graphql';
 import { ApplicationError, environment } from '../../relay/environment';
 
 export interface VocabularyDefinition {

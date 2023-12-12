@@ -1,12 +1,7 @@
 import React from 'react';
 import makeStyles from '@mui/styles/makeStyles';
-import CsvMapperLines, {
-  csvMapperLinesQuery,
-} from '@components/data/csvMapper/CsvMapperLines';
-import {
-  CsvMapperLinesPaginationQuery,
-  CsvMapperLinesPaginationQuery$variables,
-} from '@components/data/csvMapper/__generated__/CsvMapperLinesPaginationQuery.graphql';
+import CsvMapperLines, { csvMapperLinesQuery } from '@components/data/csvMapper/CsvMapperLines';
+import { CsvMapperLinesPaginationQuery, CsvMapperLinesPaginationQuery$variables } from '@components/data/csvMapper/__generated__/CsvMapperLinesPaginationQuery.graphql';
 import CsvMapperCreationContainer from '@components/data/csvMapper/CsvMapperCreationContainer';
 import { CsvMapperLine_csvMapper$data } from '@components/data/csvMapper/__generated__/CsvMapperLine_csvMapper.graphql';
 import { CancelOutlined, CheckCircleOutlined } from '@mui/icons-material';

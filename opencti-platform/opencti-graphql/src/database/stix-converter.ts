@@ -38,26 +38,13 @@ import {
   RELATION_GRANTED_TO,
   RELATION_OBJECT_MARKING
 } from '../schema/stixRefRelationship';
-import {
-  ENTITY_TYPE_EXTERNAL_REFERENCE,
-  ENTITY_TYPE_KILL_CHAIN_PHASE,
-  ENTITY_TYPE_LABEL,
-  ENTITY_TYPE_MARKING_DEFINITION,
-  isStixMetaObject
-} from '../schema/stixMetaObject';
+import { ENTITY_TYPE_EXTERNAL_REFERENCE, ENTITY_TYPE_KILL_CHAIN_PHASE, ENTITY_TYPE_LABEL, ENTITY_TYPE_MARKING_DEFINITION, isStixMetaObject } from '../schema/stixMetaObject';
 import type * as S from '../types/stix-common';
 import type * as SDO from '../types/stix-sdo';
 import type * as SRO from '../types/stix-sro';
 import type * as SCO from '../types/stix-sco';
 import type * as SMO from '../types/stix-smo';
-import type {
-  StoreCommon,
-  StoreCyberObservable,
-  StoreEntity,
-  StoreEntityIdentity,
-  StoreObject,
-  StoreRelation
-} from '../types/store';
+import type { StoreCommon, StoreCyberObservable, StoreEntity, StoreEntityIdentity, StoreObject, StoreRelation } from '../types/store';
 import {
   ENTITY_TYPE_ATTACK_PATTERN,
   ENTITY_TYPE_CAMPAIGN,

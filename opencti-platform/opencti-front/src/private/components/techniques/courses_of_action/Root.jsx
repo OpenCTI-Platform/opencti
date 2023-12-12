@@ -6,10 +6,7 @@ import Box from '@mui/material/Box';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
 import * as R from 'ramda';
-import {
-  QueryRenderer,
-  requestSubscription,
-} from '../../../../relay/environment';
+import { QueryRenderer, requestSubscription } from '../../../../relay/environment';
 import CourseOfAction from './CourseOfAction';
 import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
 import FileManager from '../../common/files/FileManager';

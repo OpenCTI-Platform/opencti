@@ -5,9 +5,7 @@ import { graphql, createFragmentContainer } from 'react-relay';
 import withStyles from '@mui/styles/withStyles';
 import { QueryRenderer } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
-import InvestigationKnowledgeGraph, {
-  investigationGraphQuery,
-} from './InvestigationGraph';
+import InvestigationKnowledgeGraph, { investigationGraphQuery } from './InvestigationGraph';
 import Loader from '../../../../components/Loader';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
 

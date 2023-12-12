@@ -1,14 +1,7 @@
 import * as R from 'ramda';
 import { Promise } from 'bluebird';
 import { READ_INDEX_STIX_DOMAIN_OBJECTS, READ_RELATIONSHIPS_INDICES } from '../database/utils';
-import {
-  BULK_TIMEOUT,
-  elBulk,
-  elList,
-  elUpdateByQueryForMigration,
-  ES_MAX_CONCURRENCY,
-  MAX_BULK_OPERATIONS
-} from '../database/engine';
+import { BULK_TIMEOUT, elBulk, elList, elUpdateByQueryForMigration, ES_MAX_CONCURRENCY, MAX_BULK_OPERATIONS } from '../database/engine';
 import { generateStandardId } from '../schema/identifier';
 import { logApp } from '../config/conf';
 import { ENTITY_TYPE_INCIDENT } from '../schema/stixDomainObject';

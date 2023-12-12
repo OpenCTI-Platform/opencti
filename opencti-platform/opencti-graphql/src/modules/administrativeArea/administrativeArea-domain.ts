@@ -5,10 +5,7 @@ import { BUS_TOPICS } from '../../config/conf';
 import { ABSTRACT_STIX_DOMAIN_OBJECT } from '../../schema/general';
 import type { AdministrativeAreaAddInput, QueryAdministrativeAreasArgs } from '../../generated/graphql';
 import { listEntitiesPaginated, storeLoadById } from '../../database/middleware-loader';
-import {
-  type BasicStoreEntityAdministrativeArea,
-  ENTITY_TYPE_LOCATION_ADMINISTRATIVE_AREA
-} from './administrativeArea-types';
+import { type BasicStoreEntityAdministrativeArea, ENTITY_TYPE_LOCATION_ADMINISTRATIVE_AREA } from './administrativeArea-types';
 import { RELATION_LOCATED_AT } from '../../schema/stixCoreRelationship';
 import { ENTITY_TYPE_LOCATION_COUNTRY } from '../../schema/stixDomainObject';
 import type { DomainFindAll, DomainFindById } from '../../domain/domainTypes';

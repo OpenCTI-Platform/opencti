@@ -1,14 +1,5 @@
 import type { Resolvers } from '../../../generated/graphql';
-import {
-  caseTemplateAdd,
-  caseTemplateDelete,
-  caseTemplateEdit,
-  findAll,
-  findById,
-  batchTasks,
-  caseTemplateAddRelation,
-  caseTemplateDeleteRelation
-} from './case-template-domain';
+import { caseTemplateAdd, caseTemplateDelete, caseTemplateEdit, findAll, findById, batchTasks, caseTemplateAddRelation, caseTemplateDeleteRelation } from './case-template-domain';
 import { batchLoader } from '../../../database/middleware';
 
 const taskLoader = batchLoader(batchTasks);

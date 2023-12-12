@@ -5,10 +5,7 @@ import ListLinesContent from '../../../../components/list_lines/ListLinesContent
 import { UseLocalStorageHelpers } from '../../../../utils/hooks/useLocalStorage';
 import usePreloadedPaginationFragment from '../../../../utils/hooks/usePreloadedPaginationFragment';
 import { PlaybookLineComponent, PlaybookLineDummy } from './PlaybookLine';
-import {
-  PlaybooksLinesPaginationQuery,
-  PlaybooksLinesPaginationQuery$variables,
-} from './__generated__/PlaybooksLinesPaginationQuery.graphql';
+import { PlaybooksLinesPaginationQuery, PlaybooksLinesPaginationQuery$variables } from './__generated__/PlaybooksLinesPaginationQuery.graphql';
 import { PlaybooksLines_data$key } from './__generated__/PlaybooksLines_data.graphql';
 
 const nbOfRowsToLoad = 50;

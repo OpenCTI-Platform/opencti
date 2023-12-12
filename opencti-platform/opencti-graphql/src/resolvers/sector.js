@@ -1,12 +1,4 @@
-import {
-  addSector,
-  batchIsSubSector,
-  batchParentSectors,
-  batchSubSectors,
-  findAll,
-  findById,
-  targetedOrganizations,
-} from '../domain/sector';
+import { addSector, batchIsSubSector, batchParentSectors, batchSubSectors, findAll, findById, targetedOrganizations } from '../domain/sector';
 import {
   stixDomainObjectAddRelation,
   stixDomainObjectCleanContext,

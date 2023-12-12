@@ -17,9 +17,7 @@ import { KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted'
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import { RegionEditionContainerQuery } from './__generated__/RegionEditionContainerQuery.graphql';
 import Transition from '../../../../components/Transition';
-import RegionEditionContainer, {
-  regionEditionQuery,
-} from './RegionEditionContainer';
+import RegionEditionContainer, { regionEditionQuery } from './RegionEditionContainer';
 
 const useStyles = makeStyles(() => ({
   container: {

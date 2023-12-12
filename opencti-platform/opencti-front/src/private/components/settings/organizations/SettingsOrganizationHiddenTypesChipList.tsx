@@ -2,9 +2,7 @@ import React from 'react';
 import { graphql, useFragment } from 'react-relay';
 import HiddenTypesChipList from '../hidden_types/HiddenTypesChipList';
 import { SettingsOrganization_organization$data } from './__generated__/SettingsOrganization_organization.graphql';
-import {
-  SettingsOrganizationHiddenTypesChipList_organization$key,
-} from './__generated__/SettingsOrganizationHiddenTypesChipList_organization.graphql';
+import { SettingsOrganizationHiddenTypesChipList_organization$key } from './__generated__/SettingsOrganizationHiddenTypesChipList_organization.graphql';
 
 const settingsOrganizationHiddenTypesChipListFragment = graphql`
   fragment SettingsOrganizationHiddenTypesChipList_organization on Organization {

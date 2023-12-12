@@ -1,9 +1,4 @@
-import {
-  batchCountries,
-  batchLocations,
-  findAll as genericFindAll,
-  findById as genericFindById
-} from '../domain/threatActor';
+import { batchCountries, batchLocations, findAll as genericFindAll, findById as genericFindById } from '../domain/threatActor';
 import { addThreatActorGroup, findAll as groupFindAll, findById as groupFindById } from '../domain/threatActorGroup';
 import {
   stixDomainObjectAddRelation,

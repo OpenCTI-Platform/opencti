@@ -1,16 +1,10 @@
 import React, { FunctionComponent } from 'react';
 import { graphql, PreloadedQuery } from 'react-relay';
 import ListLinesContent from '../../../../components/list_lines/ListLinesContent';
-import {
-  ContainerStixCyberObservableLine,
-  ContainerStixCyberObservableLineDummy,
-} from './ContainerStixCyberObservableLine';
+import { ContainerStixCyberObservableLine, ContainerStixCyberObservableLineDummy } from './ContainerStixCyberObservableLine';
 import Security from '../../../../utils/Security';
 import ContainerAddStixCoreObjects from './ContainerAddStixCoreObjects';
-import {
-  ContainerStixCyberObservablesLinesQuery,
-  ContainerStixCyberObservablesLinesQuery$variables,
-} from './__generated__/ContainerStixCyberObservablesLinesQuery.graphql';
+import { ContainerStixCyberObservablesLinesQuery, ContainerStixCyberObservablesLinesQuery$variables } from './__generated__/ContainerStixCyberObservablesLinesQuery.graphql';
 import { DataColumns } from '../../../../components/list_lines';
 import usePreloadedPaginationFragment from '../../../../utils/hooks/usePreloadedPaginationFragment';
 import { ContainerStixCyberObservablesLines_container$key } from './__generated__/ContainerStixCyberObservablesLines_container.graphql';

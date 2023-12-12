@@ -17,9 +17,7 @@ import { KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted'
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import useDeletion from '../../../../utils/hooks/useDeletion';
 import Transition from '../../../../components/Transition';
-import ThreatActorIndividualEditionContainer, {
-  ThreatActorIndividualEditionQuery,
-} from './ThreatActorIndividualEditionContainer';
+import ThreatActorIndividualEditionContainer, { ThreatActorIndividualEditionQuery } from './ThreatActorIndividualEditionContainer';
 import { ThreatActorIndividualEditionContainerQuery } from './__generated__/ThreatActorIndividualEditionContainerQuery.graphql';
 
 const ThreatActorIndividualPopoverDeletionMutation = graphql`

@@ -13,9 +13,7 @@ import { useNavigate } from 'react-router-dom-v5-compat';
 import { useFormatter } from '../../../../components/i18n';
 import Security from '../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
-import DataComponentEditionContainer, {
-  dataComponentEditionQuery,
-} from './DataComponentEditionContainer';
+import DataComponentEditionContainer, { dataComponentEditionQuery } from './DataComponentEditionContainer';
 import Transition from '../../../../components/Transition';
 import { DataComponentEditionContainerQuery } from './__generated__/DataComponentEditionContainerQuery.graphql';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';

@@ -6,10 +6,7 @@ import Grid from '@mui/material/Grid';
 import makeStyles from '@mui/styles/makeStyles';
 import ExpandableMarkdown from '../../../../components/ExpandableMarkdown';
 import { useFormatter } from '../../../../components/i18n';
-import {
-  DataSourceDetails_dataSource$data,
-  DataSourceDetails_dataSource$key,
-} from './__generated__/DataSourceDetails_dataSource.graphql';
+import { DataSourceDetails_dataSource$data, DataSourceDetails_dataSource$key } from './__generated__/DataSourceDetails_dataSource.graphql';
 import DataSourceDataComponents from './DataSourceDataComponents';
 import ItemOpenVocab from '../../../../components/ItemOpenVocab';
 

@@ -11,11 +11,7 @@ import withTheme from '@mui/styles/withTheme';
 import { withRouter } from 'react-router-dom';
 import RectangleSelection from 'react-rectangle-selection';
 import inject18n from '../../../../components/i18n';
-import {
-  commitMutation,
-  fetchQuery,
-  MESSAGING$,
-} from '../../../../relay/environment';
+import { commitMutation, fetchQuery, MESSAGING$ } from '../../../../relay/environment';
 import {
   buildCaseCorrelationData,
   computeTimeRangeInterval,
@@ -30,10 +26,7 @@ import {
   nodeThreePaint,
 } from '../../../../utils/Graph';
 import LassoSelection from '../../../../utils/graph/LassoSelection';
-import {
-  buildViewParamsFromUrlAndStorage,
-  saveViewParameters,
-} from '../../../../utils/ListParameters';
+import { buildViewParamsFromUrlAndStorage, saveViewParameters } from '../../../../utils/ListParameters';
 import IncidentKnowledgeGraphBar from './IncidentKnowledgeGraphBar';
 import { UserContext } from '../../../../utils/hooks/useAuth';
 import { caseIncidentMutationFieldPatch } from './CaseIncidentEditionOverview';

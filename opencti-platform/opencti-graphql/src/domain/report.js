@@ -1,24 +1,12 @@
 import * as R from 'ramda';
 import { Promise as BluePromise } from 'bluebird';
-import {
-  batchListThroughGetTo,
-  createEntity,
-  distributionEntities,
-  internalDeleteElementById,
-  listAllThings,
-  timeSeriesEntities,
-} from '../database/middleware';
+import { batchListThroughGetTo, createEntity, distributionEntities, internalDeleteElementById, listAllThings, timeSeriesEntities } from '../database/middleware';
 import { countAllThings, internalLoadById, listEntities, storeLoadById } from '../database/middleware-loader';
 import { BUS_TOPICS } from '../config/conf';
 import { notify } from '../database/redis';
 import { ENTITY_TYPE_CONTAINER_REPORT } from '../schema/stixDomainObject';
 import { RELATION_CREATED_BY, RELATION_OBJECT, RELATION_OBJECT_PARTICIPANT } from '../schema/stixRefRelationship';
-import {
-  ABSTRACT_STIX_CORE_OBJECT,
-  ABSTRACT_STIX_DOMAIN_OBJECT,
-  ABSTRACT_STIX_RELATIONSHIP,
-  buildRefRelationKey
-} from '../schema/general';
+import { ABSTRACT_STIX_CORE_OBJECT, ABSTRACT_STIX_DOMAIN_OBJECT, ABSTRACT_STIX_RELATIONSHIP, buildRefRelationKey } from '../schema/general';
 import { elCount, ES_MAX_CONCURRENCY } from '../database/engine';
 import { READ_DATA_INDICES_WITHOUT_INFERRED, READ_INDEX_STIX_DOMAIN_OBJECTS } from '../database/utils';
 import { isStixId } from '../schema/schemaUtils';

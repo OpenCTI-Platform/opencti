@@ -16,12 +16,7 @@ import makeStyles from '@mui/styles/makeStyles';
 import Grid from '@mui/material/Grid';
 import Drawer, { DrawerVariant } from '../../common/drawer/Drawer';
 import { useFormatter } from '../../../../components/i18n';
-import {
-  commitMutation,
-  fetchQuery,
-  handleErrorInForm,
-  MESSAGING$,
-} from '../../../../relay/environment';
+import { commitMutation, fetchQuery, handleErrorInForm, MESSAGING$ } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
 import SwitchField from '../../../../components/SwitchField';
 import DateTimePickerField from '../../../../components/DateTimePickerField';

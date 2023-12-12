@@ -1,6 +1,7 @@
 module.exports = {
   plugins: [
-    '@typescript-eslint/eslint-plugin'
+    '@typescript-eslint/eslint-plugin',
+    'import-newlines'
   ],
   extends: [
     'airbnb-base',
@@ -22,14 +23,14 @@ module.exports = {
   ignorePatterns: [
     '**/build/**',
     '**/builder/**',
-    '**/coverage/**', 
-    '**/node_module/**', 
-    '**/packages/**', 
-    '**/public/**', 
+    '**/coverage/**',
+    '**/node_module/**',
+    '**/packages/**',
+    '**/public/**',
     '**/static/**',
     '**/src/generated/**',
     '**/src/stixpattern/**',
-    'jest.config.js', 
+    'jest.config.js',
     'jest.setup.js',
     'jest.file.transform.js',
     'jest.relay.transform.js'
@@ -39,8 +40,8 @@ module.exports = {
       'error',
       'ignorePackages',
       {
-        'js': 'never',
-        'ts': 'never'
+        js: 'never',
+        ts: 'never'
       }
     ],
     'max-len': [
@@ -48,14 +49,14 @@ module.exports = {
       180,
       2,
       {
-        'ignoreUrls': true,
-        'ignoreComments': false,
-        'ignoreRegExpLiterals': true,
-        'ignoreStrings': true,
-        'ignoreTemplateLiterals': true
+        ignoreUrls: true,
+        ignoreComments: false,
+        ignoreRegExpLiterals: true,
+        ignoreStrings: true,
+        ignoreTemplateLiterals: true
       }
     ],
-    'camelcase': 'off',
+    camelcase: 'off',
     'no-underscore-dangle': 'off',
     'no-await-in-loop': 'off',
     'import/no-import-module-exports': 'off',
@@ -69,22 +70,23 @@ module.exports = {
     '@typescript-eslint/no-unused-vars': [
       'error',
       {
-        'argsIgnorePattern': '^_',
-        'varsIgnorePattern': '^_',
-        'caughtErrorsIgnorePattern': '^_'
+        argsIgnorePattern: '^_',
+        varsIgnorePattern: '^_',
+        caughtErrorsIgnorePattern: '^_'
       }
-    ]
+    ],
+    'import-newlines/enforce': ['error', { items: 20, 'max-len': 180 }],
   },
   overrides: [
     {
-      'files': [
+      files: [
         '*.js'
       ],
-      'rules': {
+      rules: {
         '@typescript-eslint/no-this-alias': 'off',
         '@typescript-eslint/return-await': 'off',
         '@typescript-eslint/no-use-before-define': 'off'
       }
     }
   ]
-}
+};

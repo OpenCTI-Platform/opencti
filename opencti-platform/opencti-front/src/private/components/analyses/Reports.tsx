@@ -7,10 +7,7 @@ import Security from '../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE } from '../../../utils/hooks/useGranted';
 import useAuth from '../../../utils/hooks/useAuth';
 import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
-import {
-  ReportsLinesPaginationQuery,
-  ReportsLinesPaginationQuery$variables,
-} from './reports/__generated__/ReportsLinesPaginationQuery.graphql';
+import { ReportsLinesPaginationQuery, ReportsLinesPaginationQuery$variables } from './reports/__generated__/ReportsLinesPaginationQuery.graphql';
 import { ReportLine_node$data } from './reports/__generated__/ReportLine_node.graphql';
 import useEntityToggle from '../../../utils/hooks/useEntityToggle';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';

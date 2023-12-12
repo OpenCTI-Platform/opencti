@@ -8,12 +8,7 @@ import Typography from '@mui/material/Typography';
 import List from '@mui/material/List';
 import Paper from '@mui/material/Paper';
 import Grid from '@mui/material/Grid';
-import {
-  Add,
-  ArrowDropDown,
-  ArrowDropUp,
-  Extension,
-} from '@mui/icons-material';
+import { Add, ArrowDropDown, ArrowDropUp, Extension } from '@mui/icons-material';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import ListItem from '@mui/material/ListItem';
@@ -30,10 +25,7 @@ import * as Yup from 'yup';
 import Fab from '@mui/material/Fab';
 import SelectField from '../../../components/SelectField';
 import { FIVE_SECONDS } from '../../../utils/Time';
-import {
-  fileManagerAskJobImportMutation,
-  scopesConn,
-} from '../common/files/FileManager';
+import { fileManagerAskJobImportMutation, scopesConn } from '../common/files/FileManager';
 import FileLine from '../common/files/FileLine';
 import inject18n from '../../../components/i18n';
 import FileUploader from '../common/files/FileUploader';

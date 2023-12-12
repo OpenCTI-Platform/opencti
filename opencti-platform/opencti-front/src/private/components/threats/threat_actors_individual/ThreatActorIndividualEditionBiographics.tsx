@@ -3,10 +3,7 @@ import * as Yup from 'yup';
 import { Form, Formik } from 'formik';
 import { graphql, useFragment } from 'react-relay';
 import { useFormatter } from '../../../../components/i18n';
-import {
-  commitMutation,
-  defaultCommitMutation,
-} from '../../../../relay/environment';
+import { commitMutation, defaultCommitMutation } from '../../../../relay/environment';
 import { HeightFieldEdit } from '../../common/form/HeightField';
 import { WeightFieldEdit } from '../../common/form/WeightField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';

@@ -1,12 +1,7 @@
 import React, { useEffect, useMemo } from 'react';
 import * as PropTypes from 'prop-types';
 import { Link, Route, Switch, useParams } from 'react-router-dom';
-import {
-  graphql,
-  usePreloadedQuery,
-  useQueryLoader,
-  useSubscription,
-} from 'react-relay';
+import { graphql, usePreloadedQuery, useQueryLoader, useSubscription } from 'react-relay';
 import Typography from '@mui/material/Typography';
 import Box from '@mui/material/Box';
 import Tabs from '@mui/material/Tabs';
@@ -16,10 +11,7 @@ import makeStyles from '@mui/styles/makeStyles';
 import UserPopover from './UserPopover';
 import AccessesMenu from '../AccessesMenu';
 import Security from '../../../../utils/Security';
-import {
-  VIRTUAL_ORGANIZATION_ADMIN,
-  SETTINGS_SETACCESSES,
-} from '../../../../utils/hooks/useGranted';
+import { VIRTUAL_ORGANIZATION_ADMIN, SETTINGS_SETACCESSES } from '../../../../utils/hooks/useGranted';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import User from './User';

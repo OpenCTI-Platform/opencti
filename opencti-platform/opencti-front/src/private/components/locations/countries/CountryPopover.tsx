@@ -16,9 +16,7 @@ import { KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted'
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import { CountryEditionContainerQuery } from './__generated__/CountryEditionContainerQuery.graphql';
 import Transition from '../../../../components/Transition';
-import CountryEditionContainer, {
-  countryEditionQuery,
-} from './CountryEditionContainer';
+import CountryEditionContainer, { countryEditionQuery } from './CountryEditionContainer';
 
 const CountryPopoverDeletionMutation = graphql`
   mutation CountryPopoverDeletionMutation($id: ID!) {

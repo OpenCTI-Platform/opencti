@@ -1,9 +1,4 @@
-import React, {
-  Dispatch,
-  FunctionComponent,
-  SyntheticEvent,
-  useState,
-} from 'react';
+import React, { Dispatch, FunctionComponent, SyntheticEvent, useState } from 'react';
 import TextField from '@mui/material/TextField';
 import MUIAutocomplete from '@mui/material/Autocomplete';
 import makeStyles from '@mui/styles/makeStyles';
@@ -12,10 +7,7 @@ import { useFormatter } from '../../../../components/i18n';
 import useSearchEntities from '../../../../utils/filters/useSearchEntities';
 import { Theme } from '../../../../components/Theme';
 import SearchScopeElement from './SearchScopeElement';
-import {
-  EqFilters,
-  onlyGroupOrganization,
-} from '../../../../utils/filters/filtersUtils';
+import { EqFilters, onlyGroupOrganization } from '../../../../utils/filters/filtersUtils';
 import { HandleAddFilter } from '../../../../utils/hooks/useLocalStorage';
 import { Option } from '../form/ReferenceField';
 

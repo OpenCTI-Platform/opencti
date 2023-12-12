@@ -2,12 +2,7 @@ import { GraphQLTaggedNode } from 'relay-runtime/lib/query/RelayModernGraphQLTag
 import { useMutation } from 'react-relay';
 import { ObjectSchema, SchemaObjectDescription } from 'yup';
 import { Option } from '../../private/components/common/form/ReferenceField';
-import {
-  convertAssignees,
-  convertExternalReferences,
-  convertKillChainPhases,
-  convertMarkings, convertParticipants,
-} from '../edition';
+import { convertAssignees, convertExternalReferences, convertKillChainPhases, convertMarkings, convertParticipants } from '../edition';
 
 export interface GenericData {
   id: string;

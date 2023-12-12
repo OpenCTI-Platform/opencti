@@ -1,14 +1,6 @@
 import { withFilter } from 'graphql-subscriptions';
 import { BUS_TOPICS } from '../config/conf';
-import {
-  addLabel,
-  findAll,
-  findById,
-  labelCleanContext,
-  labelDelete,
-  labelEditContext,
-  labelEditField,
-} from '../domain/label';
+import { addLabel, findAll, findById, labelCleanContext, labelDelete, labelEditContext, labelEditField } from '../domain/label';
 import { fetchEditContext, pubSubAsyncIterator } from '../database/redis';
 import withCancel from '../graphql/subscriptionWrapper';
 import { ENTITY_TYPE_LABEL } from '../schema/stixMetaObject';

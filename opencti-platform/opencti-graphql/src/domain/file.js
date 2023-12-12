@@ -5,12 +5,7 @@ import { internalLoadById } from '../database/middleware-loader';
 import { buildContextDataForFile, publishUserAction } from '../listener/UserActionListener';
 import { stixCoreObjectImportDelete } from './stixCoreObject';
 import { extractEntityRepresentativeName } from '../database/entity-representative';
-import {
-  RELATION_CREATED_BY,
-  RELATION_GRANTED_TO,
-  RELATION_OBJECT_LABEL,
-  RELATION_OBJECT_MARKING
-} from '../schema/stixRefRelationship';
+import { RELATION_CREATED_BY, RELATION_GRANTED_TO, RELATION_OBJECT_LABEL, RELATION_OBJECT_MARKING } from '../schema/stixRefRelationship';
 import { allFilesForPaths, allRemainingFilesCount } from '../modules/internal/document/document-domain';
 import { getManagerConfigurationFromCache } from '../modules/managerConfiguration/managerConfiguration-domain';
 import { SYSTEM_USER } from '../utils/access';

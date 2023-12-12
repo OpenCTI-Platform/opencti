@@ -3,19 +3,10 @@ import { SubscriptionClient } from 'subscriptions-transport-ws';
 import { Subject, timer } from 'rxjs';
 import { debounce } from 'rxjs/operators';
 import React, { Component } from 'react';
-import {
-  commitLocalUpdate as CLU,
-  commitMutation as CM,
-  QueryRenderer as QR,
-  requestSubscription as RS,
-  fetchQuery as FQ,
-} from 'react-relay';
+import { commitLocalUpdate as CLU, commitMutation as CM, QueryRenderer as QR, requestSubscription as RS, fetchQuery as FQ } from 'react-relay';
 import * as PropTypes from 'prop-types';
 import { map, isEmpty, filter, pathOr, isNil } from 'ramda';
-import {
-  urlMiddleware,
-  RelayNetworkLayer,
-} from 'react-relay-network-modern';
+import { urlMiddleware, RelayNetworkLayer } from 'react-relay-network-modern';
 import * as R from 'ramda';
 import uploadMiddleware from './uploadMiddleware';
 

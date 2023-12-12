@@ -1,9 +1,7 @@
 import React, { FunctionComponent } from 'react';
 import { FormikHelpers } from 'formik/dist/types';
 import { graphql, useFragment, useMutation } from 'react-relay';
-import FormAuthorizedMembers, {
-  FormAuthorizedMembersInputs,
-} from '@components/common/form/FormAuthorizedMembers';
+import FormAuthorizedMembers, { FormAuthorizedMembersInputs } from '@components/common/form/FormAuthorizedMembers';
 import { InvestigationGraph_workspace$data } from '@components/workspaces/investigations/__generated__/InvestigationGraph_workspace.graphql';
 import { WorkspaceManageAccessDialog_authorizedMembers$key } from './__generated__/WorkspaceManageAccessDialog_authorizedMembers.graphql';
 import { handleErrorInForm } from '../../../relay/environment';

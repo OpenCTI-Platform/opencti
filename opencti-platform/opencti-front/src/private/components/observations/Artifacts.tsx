@@ -1,9 +1,6 @@
 import React, { FunctionComponent } from 'react';
 import { ArtifactLine_node$data } from '@components/observations/artifacts/__generated__/ArtifactLine_node.graphql';
-import {
-  ArtifactsLinesPaginationQuery,
-  ArtifactsLinesPaginationQuery$variables,
-} from '@components/observations/artifacts/__generated__/ArtifactsLinesPaginationQuery.graphql';
+import { ArtifactsLinesPaginationQuery, ArtifactsLinesPaginationQuery$variables } from '@components/observations/artifacts/__generated__/ArtifactsLinesPaginationQuery.graphql';
 import { ArtifactLineDummy } from '@components/observations/artifacts/ArtifactLine';
 import ListLines from '../../../components/list_lines/ListLines';
 import Security from '../../../utils/Security';

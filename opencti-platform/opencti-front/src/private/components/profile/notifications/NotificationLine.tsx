@@ -5,18 +5,8 @@ import Tooltip from '@mui/material/Tooltip';
 import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
-import {
-  BellPlusOutline,
-  BellRemoveOutline,
-  BellCogOutline,
-  BellOutline,
-  FileTableBoxMultipleOutline,
-} from 'mdi-material-ui';
-import {
-  CheckCircleOutlined,
-  UnpublishedOutlined,
-  DeleteOutlined,
-} from '@mui/icons-material';
+import { BellPlusOutline, BellRemoveOutline, BellCogOutline, BellOutline, FileTableBoxMultipleOutline } from 'mdi-material-ui';
+import { CheckCircleOutlined, UnpublishedOutlined, DeleteOutlined } from '@mui/icons-material';
 import Skeleton from '@mui/material/Skeleton';
 import { graphql, useFragment, useMutation } from 'react-relay';
 import makeStyles from '@mui/styles/makeStyles';
@@ -34,10 +24,7 @@ import Button from '@mui/material/Button';
 import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
 import IconButton from '@mui/material/IconButton';
 import { DataColumns } from '../../../../components/list_lines';
-import {
-  NotificationLine_node$data,
-  NotificationLine_node$key,
-} from './__generated__/NotificationLine_node.graphql';
+import { NotificationLine_node$data, NotificationLine_node$key } from './__generated__/NotificationLine_node.graphql';
 import { useFormatter } from '../../../../components/i18n';
 import { hexToRGB } from '../../../../utils/Colors';
 import Transition from '../../../../components/Transition';

@@ -2,9 +2,7 @@ import React from 'react';
 import makeStyles from '@mui/styles/makeStyles';
 import Loader from '../../../../components/Loader';
 import { QueryRenderer } from '../../../../relay/environment';
-import StixDomainObjectAttackPatternsKillChain, {
-  stixDomainObjectAttackPatternsKillChainStixCoreRelationshipsQuery,
-} from './StixDomainObjectAttackPatternsKillChain';
+import StixDomainObjectAttackPatternsKillChain, { stixDomainObjectAttackPatternsKillChainStixCoreRelationshipsQuery } from './StixDomainObjectAttackPatternsKillChain';
 import { usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStorage';
 import { emptyFilterGroup } from '../../../../utils/filters/filtersUtils';
 

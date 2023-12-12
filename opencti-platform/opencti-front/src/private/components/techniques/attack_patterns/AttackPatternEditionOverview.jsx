@@ -11,12 +11,7 @@ import CreatedByField from '../../common/form/CreatedByField';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import MarkdownField from '../../../../components/MarkdownField';
 import StatusField from '../../common/form/StatusField';
-import {
-  convertCreatedBy,
-  convertKillChainPhases,
-  convertMarkings,
-  convertStatus,
-} from '../../../../utils/edition';
+import { convertCreatedBy, convertKillChainPhases, convertMarkings, convertStatus } from '../../../../utils/edition';
 import { adaptFieldValue } from '../../../../utils/String';
 import CommitMessage from '../../common/form/CommitMessage';
 import { useSchemaEditionValidation } from '../../../../utils/hooks/useEntitySettings';

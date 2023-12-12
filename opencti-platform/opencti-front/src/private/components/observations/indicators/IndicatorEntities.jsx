@@ -3,9 +3,7 @@ import * as PropTypes from 'prop-types';
 import { UserContext } from '../../../../utils/hooks/useAuth';
 import { QueryRenderer } from '../../../../relay/environment';
 import ListLines from '../../../../components/list_lines/ListLines';
-import IndicatorEntitiesLines, {
-  indicatorEntitiesLinesQuery,
-} from './IndicatorEntitiesLines';
+import IndicatorEntitiesLines, { indicatorEntitiesLinesQuery } from './IndicatorEntitiesLines';
 import StixCoreRelationshipCreationFromEntity from '../../common/stix_core_relationships/StixCoreRelationshipCreationFromEntity';
 import Security from '../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';

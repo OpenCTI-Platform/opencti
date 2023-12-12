@@ -16,11 +16,7 @@ import Dialog from '@mui/material/Dialog';
 import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
 import DialogActions from '@mui/material/DialogActions';
-import {
-  ExpandLessOutlined,
-  ExpandMoreOutlined,
-  OpenInBrowserOutlined,
-} from '@mui/icons-material';
+import { ExpandLessOutlined, ExpandMoreOutlined, OpenInBrowserOutlined } from '@mui/icons-material';
 import Slide from '@mui/material/Slide';
 import { interval } from 'rxjs';
 import Tooltip from '@mui/material/Tooltip';
@@ -32,11 +28,7 @@ import { commitMutation } from '../../../../relay/environment';
 import AddExternalReferences from './AddExternalReferences';
 import { externalReferenceMutationRelationDelete } from './AddExternalReferencesLines';
 import Security from '../../../../utils/Security';
-import {
-  KNOWLEDGE_KNENRICHMENT,
-  KNOWLEDGE_KNUPDATE,
-  KNOWLEDGE_KNUPLOAD,
-} from '../../../../utils/hooks/useGranted';
+import { KNOWLEDGE_KNENRICHMENT, KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNUPLOAD } from '../../../../utils/hooks/useGranted';
 import FileLine from '../../common/files/FileLine';
 import { FIVE_SECONDS } from '../../../../utils/Time';
 import FileUploader from '../../common/files/FileUploader';

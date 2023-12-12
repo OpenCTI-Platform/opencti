@@ -5,11 +5,7 @@ import { graphql, createFragmentContainer } from 'react-relay';
 import withStyles from '@mui/styles/withStyles';
 import IconButton from '@mui/material/IconButton';
 import { FileOutline } from 'mdi-material-ui';
-import {
-  DeleteOutlined,
-  GetAppOutlined,
-  WarningOutlined,
-} from '@mui/icons-material';
+import { DeleteOutlined, GetAppOutlined, WarningOutlined } from '@mui/icons-material';
 import Tooltip from '@mui/material/Tooltip';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
@@ -26,11 +22,7 @@ import Slide from '@mui/material/Slide';
 import Chip from '@mui/material/Chip';
 import FileWork from '../FileWork';
 import inject18n from '../../../../../components/i18n';
-import {
-  APP_BASE_PATH,
-  commitMutation,
-  MESSAGING$,
-} from '../../../../../relay/environment';
+import { APP_BASE_PATH, commitMutation, MESSAGING$ } from '../../../../../relay/environment';
 import { toB64 } from '../../../../../utils/String';
 
 const styles = (theme) => ({

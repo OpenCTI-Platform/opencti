@@ -19,14 +19,7 @@ import {
   ScatterPlotOutlined,
   VisibilityOutlined,
 } from '@mui/icons-material';
-import {
-  AutoFix,
-  FamilyTree,
-  SelectAll,
-  SelectGroup,
-  SelectionDrag,
-  Video3d,
-} from 'mdi-material-ui';
+import { AutoFix, FamilyTree, SelectAll, SelectGroup, SelectionDrag, Video3d } from 'mdi-material-ui';
 import Tooltip from '@mui/material/Tooltip';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
@@ -37,13 +30,7 @@ import Drawer from '@mui/material/Drawer';
 import Popover from '@mui/material/Popover';
 import Divider from '@mui/material/Divider';
 import TimeRange from 'react-timeline-range-slider';
-import {
-  ResponsiveContainer,
-  Scatter,
-  ScatterChart,
-  YAxis,
-  ZAxis,
-} from 'recharts';
+import { ResponsiveContainer, Scatter, ScatterChart, YAxis, ZAxis } from 'recharts';
 import Badge from '@mui/material/Badge';
 import Dialog from '@mui/material/Dialog';
 import DialogContent from '@mui/material/DialogContent';

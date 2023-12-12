@@ -2,19 +2,10 @@ import React, { FunctionComponent, useState } from 'react';
 import { isEmpty } from 'ramda';
 import moment from 'moment';
 import Alert from '@mui/material/Alert';
-import {
-  createFragmentContainer,
-  graphql,
-  GraphQLTaggedNode,
-} from 'react-relay';
+import { createFragmentContainer, graphql, GraphQLTaggedNode } from 'react-relay';
 import IconButton from '@mui/material/IconButton';
 import { FileOutline, ProgressUpload } from 'mdi-material-ui';
-import {
-  DeleteOutlined,
-  DocumentScannerOutlined,
-  GetAppOutlined,
-  WarningOutlined,
-} from '@mui/icons-material';
+import { DeleteOutlined, DocumentScannerOutlined, GetAppOutlined, WarningOutlined } from '@mui/icons-material';
 import Tooltip from '@mui/material/Tooltip';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
@@ -34,11 +25,7 @@ import Menu from '@mui/material/Menu';
 import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
 import FileWork from './FileWork';
 import { useFormatter } from '../../../../components/i18n';
-import {
-  APP_BASE_PATH,
-  commitMutation,
-  MESSAGING$,
-} from '../../../../relay/environment';
+import { APP_BASE_PATH, commitMutation, MESSAGING$ } from '../../../../relay/environment';
 import { Theme } from '../../../../components/Theme';
 import { FileLine_file$data } from './__generated__/FileLine_file.graphql';
 import { isNotEmptyField } from '../../../../utils/utils';

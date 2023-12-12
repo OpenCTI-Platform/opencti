@@ -4,13 +4,9 @@ import {
   EntityStixSightingRelationshipsLinesPaginationQuery$variables,
 } from '@components/events/stix_sighting_relationships/__generated__/EntityStixSightingRelationshipsLinesPaginationQuery.graphql';
 import makeStyles from '@mui/styles/makeStyles';
-import {
-  EntityStixSightingRelationshipLineDummy,
-} from '@components/events/stix_sighting_relationships/EntityStixSightingRelationshipLine';
+import { EntityStixSightingRelationshipLineDummy } from '@components/events/stix_sighting_relationships/EntityStixSightingRelationshipLine';
 import ListLines from '../../../../components/list_lines/ListLines';
-import EntityStixSightingRelationshipsLines, {
-  entityStixSightingRelationshipsLinesQuery,
-} from './EntityStixSightingRelationshipsLines';
+import EntityStixSightingRelationshipsLines, { entityStixSightingRelationshipsLinesQuery } from './EntityStixSightingRelationshipsLines';
 import StixSightingRelationshipCreationFromEntity from './StixSightingRelationshipCreationFromEntity';
 import Security from '../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';

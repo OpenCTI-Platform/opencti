@@ -29,9 +29,7 @@ import TextField from '../../../../components/TextField';
 import SelectField from '../../../../components/SelectField';
 import SwitchField from '../../../../components/SwitchField';
 import useAttributes from '../../../../utils/hooks/useAttributes';
-import {
-  stixCyberObservablesLinesAttributesQuery,
-} from '../../observations/stix_cyber_observables/StixCyberObservablesLines';
+import { stixCyberObservablesLinesAttributesQuery } from '../../observations/stix_cyber_observables/StixCyberObservablesLines';
 import Filters from '../../common/lists/Filters';
 import {
   constructHandleAddFilter,

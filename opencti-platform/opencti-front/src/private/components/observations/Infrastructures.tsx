@@ -6,10 +6,7 @@ import InfrastructureCreation from './infrastructures/InfrastructureCreation';
 import Security from '../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE } from '../../../utils/hooks/useGranted';
 import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
-import {
-  InfrastructuresLinesPaginationQuery,
-  InfrastructuresLinesPaginationQuery$variables,
-} from './infrastructures/__generated__/InfrastructuresLinesPaginationQuery.graphql';
+import { InfrastructuresLinesPaginationQuery, InfrastructuresLinesPaginationQuery$variables } from './infrastructures/__generated__/InfrastructuresLinesPaginationQuery.graphql';
 import useEntityToggle from '../../../utils/hooks/useEntityToggle';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
 import ExportContextProvider from '../../../utils/ExportContextProvider';

@@ -6,10 +6,7 @@ import Grid from '@mui/material/Grid';
 import makeStyles from '@mui/styles/makeStyles';
 import ExpandableMarkdown from '../../../../components/ExpandableMarkdown';
 import { useFormatter } from '../../../../components/i18n';
-import {
-  FeedbackDetails_case$data,
-  FeedbackDetails_case$key,
-} from './__generated__/FeedbackDetails_case.graphql';
+import { FeedbackDetails_case$data, FeedbackDetails_case$key } from './__generated__/FeedbackDetails_case.graphql';
 import RatingField from '../../../../components/RatingField';
 
 const useStyles = makeStyles(() => ({

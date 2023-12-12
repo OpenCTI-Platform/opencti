@@ -5,9 +5,7 @@ import Grid from '@mui/material/Grid';
 import { compose } from 'ramda';
 import withStyles from '@mui/styles/withStyles';
 import inject18n from '../../../../components/i18n';
-import StixCoreObjectHistoryLines, {
-  stixCoreObjectHistoryLinesQuery,
-} from './StixCoreObjectHistoryLines';
+import StixCoreObjectHistoryLines, { stixCoreObjectHistoryLinesQuery } from './StixCoreObjectHistoryLines';
 import { QueryRenderer } from '../../../../relay/environment';
 import SearchInput from '../../../../components/SearchInput';
 import Loader from '../../../../components/Loader';

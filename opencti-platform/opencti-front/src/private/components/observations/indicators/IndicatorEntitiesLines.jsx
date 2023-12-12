@@ -4,10 +4,7 @@ import { interval } from 'rxjs';
 import { pathOr } from 'ramda';
 import { graphql, createPaginationContainer } from 'react-relay';
 import ListLinesContent from '../../../../components/list_lines/ListLinesContent';
-import {
-  IndicatorEntityLine,
-  IndicatorEntityLineDummy,
-} from './IndicatorEntityLine';
+import { IndicatorEntityLine, IndicatorEntityLineDummy } from './IndicatorEntityLine';
 import { TEN_SECONDS } from '../../../../utils/Time';
 
 const interval$ = interval(TEN_SECONDS);

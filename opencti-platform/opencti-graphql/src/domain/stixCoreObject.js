@@ -31,11 +31,12 @@ import {
   RELATION_BORN_IN,
   RELATION_CREATED_BY,
   RELATION_ETHNICITY,
-  RELATION_EXTERNAL_REFERENCE, RELATION_GRANTED_TO,
+  RELATION_EXTERNAL_REFERENCE,
+  RELATION_GRANTED_TO,
   RELATION_KILL_CHAIN_PHASE,
   RELATION_OBJECT,
   RELATION_OBJECT_LABEL,
-  RELATION_OBJECT_MARKING,
+  RELATION_OBJECT_MARKING
 } from '../schema/stixRefRelationship';
 import {
   ENTITY_TYPE_CONTAINER_NOTE,
@@ -45,12 +46,7 @@ import {
   ENTITY_TYPE_LOCATION_COUNTRY,
   isStixDomainObjectContainer,
 } from '../schema/stixDomainObject';
-import {
-  ENTITY_TYPE_EXTERNAL_REFERENCE,
-  ENTITY_TYPE_KILL_CHAIN_PHASE,
-  ENTITY_TYPE_LABEL,
-  ENTITY_TYPE_MARKING_DEFINITION,
-} from '../schema/stixMetaObject';
+import { ENTITY_TYPE_EXTERNAL_REFERENCE, ENTITY_TYPE_KILL_CHAIN_PHASE, ENTITY_TYPE_LABEL, ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
 import { createWork, workToExportFile } from './work';
 import { pushToConnector } from '../database/rabbitmq';
 import { now } from '../utils/format';
@@ -64,11 +60,7 @@ import { isEmptyField, isNotEmptyField, READ_ENTITIES_INDICES, READ_INDEX_INFERR
 import { RELATION_RELATED_TO } from '../schema/stixCoreRelationship';
 import { ENTITY_TYPE_CONTAINER_CASE } from '../modules/case/case-types';
 import { getEntitySettingFromCache } from '../modules/entitySetting/entitySetting-utils';
-import {
-  stixObjectOrRelationshipAddRefRelation,
-  stixObjectOrRelationshipAddRefRelations,
-  stixObjectOrRelationshipDeleteRefRelation
-} from './stixObjectOrStixRelationship';
+import { stixObjectOrRelationshipAddRefRelation, stixObjectOrRelationshipAddRefRelations, stixObjectOrRelationshipDeleteRefRelation } from './stixObjectOrStixRelationship';
 import { buildContextDataForFile, publishUserAction } from '../listener/UserActionListener';
 import { extractEntityRepresentativeName } from '../database/entity-representative';
 import { addFilter, extractFilterGroupValues } from '../utils/filtering/filtering-utils';

@@ -3,9 +3,7 @@ import React from 'react';
 import { PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import Chip from '@mui/material/Chip';
 import makeStyles from '@mui/styles/makeStyles';
-import FilterIconButtonContent, {
-  filterIconButtonContentQuery,
-} from './FilterIconButtonContent';
+import FilterIconButtonContent, { filterIconButtonContentQuery } from './FilterIconButtonContent';
 import { FilterIconButtonContentQuery } from './__generated__/FilterIconButtonContentQuery.graphql';
 import { useFormatter } from './i18n';
 import { FilterGroup } from '../utils/filters/filtersUtils';

@@ -1,29 +1,13 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import {
-  ascend,
-  compose,
-  descend,
-  prop,
-  sortWith,
-  map,
-  assoc,
-  filter,
-  propOr,
-} from 'ramda';
+import { ascend, compose, descend, prop, sortWith, map, assoc, filter, propOr } from 'ramda';
 import { interval } from 'rxjs';
 import withStyles from '@mui/styles/withStyles';
 import Card from '@mui/material/Card';
 import CardHeader from '@mui/material/CardHeader';
 import CardContent from '@mui/material/CardContent';
 import { graphql, createRefetchContainer } from 'react-relay';
-import {
-  ArrowDropDownOutlined,
-  ArrowDropUpOutlined,
-  ExtensionOutlined,
-  DeleteOutlined,
-  PlaylistRemoveOutlined,
-} from '@mui/icons-material';
+import { ArrowDropDownOutlined, ArrowDropUpOutlined, ExtensionOutlined, DeleteOutlined, PlaylistRemoveOutlined } from '@mui/icons-material';
 import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
@@ -37,10 +21,7 @@ import inject18n from '../../../../components/i18n';
 import { commitMutation, MESSAGING$ } from '../../../../relay/environment';
 import Security from '../../../../utils/Security';
 import { MODULES_MODMANAGE } from '../../../../utils/hooks/useGranted';
-import {
-  connectorDeletionMutation,
-  connectorResetStateMutation,
-} from './Connector';
+import { connectorDeletionMutation, connectorResetStateMutation } from './Connector';
 import ItemBoolean from '../../../../components/ItemBoolean';
 
 const interval$ = interval(FIVE_SECONDS);

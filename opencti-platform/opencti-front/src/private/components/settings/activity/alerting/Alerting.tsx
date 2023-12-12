@@ -2,19 +2,12 @@ import React, { FunctionComponent } from 'react';
 import { graphql, PreloadedQuery } from 'react-relay';
 import makeStyles from '@mui/styles/makeStyles';
 import { DataColumns } from '../../../../../components/list_lines';
-import {
-  HandleAddFilter,
-  UseLocalStorageHelpers,
-  usePaginationLocalStorage,
-} from '../../../../../utils/hooks/useLocalStorage';
+import { HandleAddFilter, UseLocalStorageHelpers, usePaginationLocalStorage } from '../../../../../utils/hooks/useLocalStorage';
 import useQueryLoading from '../../../../../utils/hooks/useQueryLoading';
 import ListLines from '../../../../../components/list_lines/ListLines';
 import usePreloadedPaginationFragment from '../../../../../utils/hooks/usePreloadedPaginationFragment';
 import ListLinesContent from '../../../../../components/list_lines/ListLinesContent';
-import {
-  AlertingPaginationQuery,
-  AlertingPaginationQuery$variables,
-} from './__generated__/AlertingPaginationQuery.graphql';
+import { AlertingPaginationQuery, AlertingPaginationQuery$variables } from './__generated__/AlertingPaginationQuery.graphql';
 import AlertCreation from './AlertCreation';
 import ActivityMenu from '../../ActivityMenu';
 import { AlertingLines_data$key } from './__generated__/AlertingLines_data.graphql';

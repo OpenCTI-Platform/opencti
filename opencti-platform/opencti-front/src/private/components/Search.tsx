@@ -1,8 +1,6 @@
 import React from 'react';
 import { SearchStixCoreObjectLineDummy } from '@components/search/SearchStixCoreObjectLine';
-import {
-  SearchStixCoreObjectLine_node$data,
-} from '@components/search/__generated__/SearchStixCoreObjectLine_node.graphql';
+import { SearchStixCoreObjectLine_node$data } from '@components/search/__generated__/SearchStixCoreObjectLine_node.graphql';
 import {
   SearchStixCoreObjectsLinesPaginationQuery,
   SearchStixCoreObjectsLinesPaginationQuery$variables,

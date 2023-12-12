@@ -3,16 +3,10 @@ import { graphql, PreloadedQuery } from 'react-relay';
 import ListLinesContent from '../../../../components/list_lines/ListLinesContent';
 import { IncidentLine, IncidentLineDummy } from './IncidentLine';
 import { DataColumns } from '../../../../components/list_lines';
-import {
-  HandleAddFilter,
-  UseLocalStorageHelpers,
-} from '../../../../utils/hooks/useLocalStorage';
+import { HandleAddFilter, UseLocalStorageHelpers } from '../../../../utils/hooks/useLocalStorage';
 import usePreloadedPaginationFragment from '../../../../utils/hooks/usePreloadedPaginationFragment';
 import { IncidentLine_node$data } from './__generated__/IncidentLine_node.graphql';
-import {
-  IncidentsLinesPaginationQuery,
-  IncidentsLinesPaginationQuery$variables,
-} from './__generated__/IncidentsLinesPaginationQuery.graphql';
+import { IncidentsLinesPaginationQuery, IncidentsLinesPaginationQuery$variables } from './__generated__/IncidentsLinesPaginationQuery.graphql';
 import { IncidentsLines_data$key } from './__generated__/IncidentsLines_data.graphql';
 
 const nbOfRowsToLoad = 50;

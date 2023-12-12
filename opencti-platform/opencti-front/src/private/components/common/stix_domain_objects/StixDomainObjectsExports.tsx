@@ -2,7 +2,10 @@ import React, { FunctionComponent } from 'react';
 import Drawer from '@components/common/drawer/Drawer';
 import { QueryRenderer } from '../../../../relay/environment';
 import StixDomainObjectsExportsContent, { stixDomainObjectsExportsContentQuery } from './StixDomainObjectsExportsContent';
-import { StixDomainObjectsExportsContentRefetchQuery$data, StixDomainObjectsExportsContentRefetchQuery$variables } from './__generated__/StixDomainObjectsExportsContentRefetchQuery.graphql';
+import {
+  StixDomainObjectsExportsContentRefetchQuery$data,
+  StixDomainObjectsExportsContentRefetchQuery$variables,
+} from './__generated__/StixDomainObjectsExportsContentRefetchQuery.graphql';
 import { useFormatter } from '../../../../components/i18n';
 
 interface StixDomainObjectsExportsProps {

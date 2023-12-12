@@ -11,10 +11,7 @@ import IconButton from '@mui/material/IconButton';
 import { LinkOff, StreamOutlined } from '@mui/icons-material';
 import { useFormatter } from '../../../../components/i18n';
 import AddDataSources from './AddDataSources';
-import {
-  DataComponentDataSources_dataComponent$data,
-  DataComponentDataSources_dataComponent$key,
-} from './__generated__/DataComponentDataSources_dataComponent.graphql';
+import { DataComponentDataSources_dataComponent$data, DataComponentDataSources_dataComponent$key } from './__generated__/DataComponentDataSources_dataComponent.graphql';
 import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 import Security from '../../../../utils/Security';
 

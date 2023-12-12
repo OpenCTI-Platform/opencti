@@ -1,8 +1,7 @@
 import React from 'react';
 import * as PropTypes from 'prop-types';
 import { graphql } from 'react-relay';
-import StixCoreObjectOrCoreRelationshipLabelsView
-  from '../stix_core_objects_or_stix_relationships/StixCoreObjectOrCoreRelationshipLabelsView';
+import StixCoreObjectOrCoreRelationshipLabelsView from '../stix_core_objects_or_stix_relationships/StixCoreObjectOrCoreRelationshipLabelsView';
 import { useIsEnforceReference } from '../../../../utils/hooks/useEntitySettings';
 
 const stixCoreRelationshipMutationRelationsAdd = graphql`

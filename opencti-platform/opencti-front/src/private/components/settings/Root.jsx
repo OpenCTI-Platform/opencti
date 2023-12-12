@@ -1,13 +1,6 @@
 import React from 'react';
 import { Redirect, Switch } from 'react-router-dom';
-import {
-  isOnlyOrganizationAdmin,
-  VIRTUAL_ORGANIZATION_ADMIN,
-  SETTINGS,
-  SETTINGS_SETACCESSES,
-  SETTINGS_SETLABELS,
-  SETTINGS_SETMARKINGS,
-} from '../../../utils/hooks/useGranted';
+import { isOnlyOrganizationAdmin, VIRTUAL_ORGANIZATION_ADMIN, SETTINGS, SETTINGS_SETACCESSES, SETTINGS_SETLABELS, SETTINGS_SETMARKINGS } from '../../../utils/hooks/useGranted';
 import Security from '../../../utils/Security';
 import { BoundaryRoute } from '../Error';
 import RootActivity from './activity/Root';

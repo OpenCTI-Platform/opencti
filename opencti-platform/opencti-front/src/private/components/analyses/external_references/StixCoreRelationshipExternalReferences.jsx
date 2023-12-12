@@ -12,9 +12,7 @@ import Avatar from '@mui/material/Avatar';
 import Skeleton from '@mui/material/Skeleton';
 import inject18n from '../../../../components/i18n';
 import { QueryRenderer } from '../../../../relay/environment';
-import StixCoreRelationshipExternalReferencesLines, {
-  stixCoreRelationshipExternalReferencesLinesQuery,
-} from './StixCoreRelationshipExternalReferencesLines';
+import StixCoreRelationshipExternalReferencesLines, { stixCoreRelationshipExternalReferencesLinesQuery } from './StixCoreRelationshipExternalReferencesLines';
 
 const styles = (theme) => ({
   paper: {

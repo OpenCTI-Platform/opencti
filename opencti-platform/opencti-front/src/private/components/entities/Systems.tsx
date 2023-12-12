@@ -1,9 +1,6 @@
 import React from 'react';
 import { SystemLineDummy } from '@components/entities/systems/SystemLine';
-import {
-  SystemsLinesPaginationQuery,
-  SystemsLinesPaginationQuery$variables,
-} from '@components/entities/systems/__generated__/SystemsLinesPaginationQuery.graphql';
+import { SystemsLinesPaginationQuery, SystemsLinesPaginationQuery$variables } from '@components/entities/systems/__generated__/SystemsLinesPaginationQuery.graphql';
 import ListLines from '../../../components/list_lines/ListLines';
 import SystemsLines, { systemsLinesQuery } from './systems/SystemsLines';
 import SystemCreation from './systems/SystemCreation';

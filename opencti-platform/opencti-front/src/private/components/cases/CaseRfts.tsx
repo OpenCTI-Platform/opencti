@@ -9,10 +9,7 @@ import Security from '../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE } from '../../../utils/hooks/useGranted';
 import ExportContextProvider from '../../../utils/ExportContextProvider';
 import CaseRftsLines, { caseRftsLinesQuery } from './case_rfts/CaseRftLines';
-import {
-  CaseRftLinesCasesPaginationQuery,
-  CaseRftLinesCasesPaginationQuery$variables,
-} from './case_rfts/__generated__/CaseRftLinesCasesPaginationQuery.graphql';
+import { CaseRftLinesCasesPaginationQuery, CaseRftLinesCasesPaginationQuery$variables } from './case_rfts/__generated__/CaseRftLinesCasesPaginationQuery.graphql';
 import { CaseRftLineCase_node$data } from './case_rfts/__generated__/CaseRftLineCase_node.graphql';
 import { CaseRftLineDummy } from './case_rfts/CaseRftLine';
 import CaseRftCreation from './case_rfts/CaseRftCreation';

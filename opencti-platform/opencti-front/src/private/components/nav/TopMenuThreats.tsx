@@ -1,12 +1,7 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import Button from '@mui/material/Button';
-import {
-  AccountMultipleOutline,
-  ChessKnight,
-  DiamondOutline,
-  LaptopAccount,
-} from 'mdi-material-ui';
+import { AccountMultipleOutline, ChessKnight, DiamondOutline, LaptopAccount } from 'mdi-material-ui';
 import makeStyles from '@mui/styles/makeStyles';
 import { useFormatter } from '../../../components/i18n';
 import { Theme } from '../../../components/Theme';

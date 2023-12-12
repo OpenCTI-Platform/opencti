@@ -7,31 +7,16 @@ import withStyles from '@mui/styles/withStyles';
 import { Route, withRouter } from 'react-router-dom';
 import { QueryRenderer } from '../../../../relay/environment';
 import ContainerHeader from '../../common/containers/ContainerHeader';
-import IncidentKnowledgeGraph, {
-  incidentKnowledgeGraphQuery,
-} from './IncidentKnowledgeGraph';
-import IncidentKnowledgeCorrelation, {
-  incidentKnowledgeCorrelationQuery,
-} from './IncidentKnowledgeCorrelation';
+import IncidentKnowledgeGraph, { incidentKnowledgeGraphQuery } from './IncidentKnowledgeGraph';
+import IncidentKnowledgeCorrelation, { incidentKnowledgeCorrelationQuery } from './IncidentKnowledgeCorrelation';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import CaseIncidentPopover from './CaseIncidentPopover';
 import AttackPatternsMatrix from '../../techniques/attack_patterns/AttackPatternsMatrix';
-import {
-  buildViewParamsFromUrlAndStorage,
-  saveViewParameters,
-} from '../../../../utils/ListParameters';
-import IncidentKnowledgeTimeLine, {
-  incidentKnowledgeTimeLineQuery,
-} from './IncidentKnowledgeTimeLine';
-import {
-  constructHandleAddFilter,
-  constructHandleRemoveFilter,
-  emptyFilterGroup, filtersAfterSwitchLocalMode,
-} from '../../../../utils/filters/filtersUtils';
+import { buildViewParamsFromUrlAndStorage, saveViewParameters } from '../../../../utils/ListParameters';
+import IncidentKnowledgeTimeLine, { incidentKnowledgeTimeLineQuery } from './IncidentKnowledgeTimeLine';
+import { constructHandleAddFilter, constructHandleRemoveFilter, emptyFilterGroup, filtersAfterSwitchLocalMode } from '../../../../utils/filters/filtersUtils';
 import ContentKnowledgeTimeLineBar from '../../common/containers/ContainertKnowledgeTimeLineBar';
-import ContainerContent, {
-  containerContentQuery,
-} from '../../common/containers/ContainerContent';
+import ContainerContent, { containerContentQuery } from '../../common/containers/ContainerContent';
 import investigationAddFromContainer from '../../../../utils/InvestigationUtils';
 
 const styles = () => ({

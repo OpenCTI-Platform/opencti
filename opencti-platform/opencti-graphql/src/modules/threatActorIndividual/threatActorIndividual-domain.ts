@@ -1,22 +1,14 @@
 import { assoc, isNil, pipe } from 'ramda';
 import type { DomainFindById } from '../../domain/domainTypes';
 import type { AuthContext, AuthUser } from '../../types/user';
-import {
-  type EntityOptions,
-  internalLoadById,
-  listEntitiesPaginated,
-  storeLoadById
-} from '../../database/middleware-loader';
+import { type EntityOptions, internalLoadById, listEntitiesPaginated, storeLoadById } from '../../database/middleware-loader';
 import { createEntity } from '../../database/middleware';
 import { notify } from '../../database/redis';
 import { BUS_TOPICS } from '../../config/conf';
 import { ABSTRACT_STIX_DOMAIN_OBJECT, buildRefRelationKey, } from '../../schema/general';
 import { isStixId } from '../../schema/schemaUtils';
 import { RELATION_OBJECT } from '../../schema/stixRefRelationship';
-import {
-  type BasicStoreEntityThreatActorIndividual,
-  ENTITY_TYPE_THREAT_ACTOR_INDIVIDUAL
-} from './threatActorIndividual-types';
+import { type BasicStoreEntityThreatActorIndividual, ENTITY_TYPE_THREAT_ACTOR_INDIVIDUAL } from './threatActorIndividual-types';
 import type { ThreatActorIndividualAddInput } from '../../generated/graphql';
 import { FROM_START, UNTIL_END } from '../../utils/format';
 import { FilterMode } from '../../generated/graphql';

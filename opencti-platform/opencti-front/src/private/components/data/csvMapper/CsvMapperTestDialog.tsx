@@ -7,9 +7,7 @@ import Tooltip from '@mui/material/Tooltip';
 import { graphql } from 'react-relay';
 import CustomFileUploader from '@components/common/files/CustomFileUploader';
 import CodeBlock from '@components/common/CodeBlock';
-import {
-  CsvMapperTestDialogQuery$data,
-} from '@components/data/csvMapper/__generated__/CsvMapperTestDialogQuery.graphql';
+import { CsvMapperTestDialogQuery$data } from '@components/data/csvMapper/__generated__/CsvMapperTestDialogQuery.graphql';
 import { InformationOutline } from 'mdi-material-ui';
 import Box from '@mui/material/Box';
 import { useFormatter } from '../../../../components/i18n';

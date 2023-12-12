@@ -31,17 +31,12 @@ import {
   storeLoadByIdWithRefs,
 } from '../database/middleware';
 import { now } from '../utils/format';
-import {
-  EVENT_TYPE_CREATE,
-  READ_DATA_INDICES,
-  READ_DATA_INDICES_WITHOUT_INFERRED,
-  UPDATE_OPERATION_ADD,
-  UPDATE_OPERATION_REMOVE,
-} from '../database/utils';
+import { EVENT_TYPE_CREATE, READ_DATA_INDICES, READ_DATA_INDICES_WITHOUT_INFERRED, UPDATE_OPERATION_ADD, UPDATE_OPERATION_REMOVE } from '../database/utils';
 import { elPaginate, elUpdate, ES_MAX_CONCURRENCY } from '../database/engine';
 import { FunctionalError, TYPE_LOCK_ERROR } from '../config/errors';
 import {
-  ABSTRACT_BASIC_RELATIONSHIP, ABSTRACT_STIX_CORE_RELATIONSHIP,
+  ABSTRACT_BASIC_RELATIONSHIP,
+  ABSTRACT_STIX_CORE_RELATIONSHIP,
   ABSTRACT_STIX_RELATIONSHIP,
   buildRefRelationKey,
   ENTITY_TYPE_CONTAINER,
@@ -60,13 +55,7 @@ import { promoteObservableToIndicator } from '../domain/stixCyberObservable';
 import { promoteIndicatorToObservable } from '../domain/indicator';
 import { askElementEnrichmentForConnector } from '../domain/stixCoreObject';
 import { RELATION_GRANTED_TO, RELATION_OBJECT } from '../schema/stixRefRelationship';
-import {
-  ACTION_TYPE_DELETE,
-  ACTION_TYPE_SHARE,
-  ACTION_TYPE_UNSHARE,
-  isTaskEnabledEntity,
-  TASK_TYPE_LIST, TASK_TYPE_QUERY, TASK_TYPE_RULE
-} from '../domain/backgroundTask-common';
+import { ACTION_TYPE_DELETE, ACTION_TYPE_SHARE, ACTION_TYPE_UNSHARE, isTaskEnabledEntity, TASK_TYPE_LIST, TASK_TYPE_QUERY, TASK_TYPE_RULE } from '../domain/backgroundTask-common';
 
 // Task manager responsible to execute long manual tasks
 // Each API will start is task manager.

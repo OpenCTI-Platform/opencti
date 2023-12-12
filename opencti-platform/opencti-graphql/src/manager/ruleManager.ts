@@ -3,24 +3,10 @@ import * as R from 'ramda';
 import type { Operation } from 'fast-json-patch';
 import * as jsonpatch from 'fast-json-patch';
 import { clearIntervalAsync, setIntervalAsync, type SetIntervalAsyncTimer } from 'set-interval-async/fixed';
-import {
-  createStreamProcessor,
-  EVENT_CURRENT_VERSION,
-  lockResource,
-  REDIS_STREAM_NAME,
-  type StreamProcessor
-} from '../database/redis';
+import { createStreamProcessor, EVENT_CURRENT_VERSION, lockResource, REDIS_STREAM_NAME, type StreamProcessor } from '../database/redis';
 import conf, { booleanConf, logApp } from '../config/conf';
 import { createEntity, patchAttribute, stixLoadById, storeLoadByIdWithRefs } from '../database/middleware';
-import {
-  EVENT_TYPE_CREATE,
-  EVENT_TYPE_DELETE,
-  EVENT_TYPE_MERGE,
-  EVENT_TYPE_UPDATE,
-  isEmptyField,
-  isNotEmptyField,
-  READ_DATA_INDICES
-} from '../database/utils';
+import { EVENT_TYPE_CREATE, EVENT_TYPE_DELETE, EVENT_TYPE_MERGE, EVENT_TYPE_UPDATE, isEmptyField, isNotEmptyField, READ_DATA_INDICES } from '../database/utils';
 import { RULE_PREFIX } from '../schema/general';
 import { ENTITY_TYPE_RULE_MANAGER } from '../schema/internalObject';
 import { ALREADY_DELETED_ERROR, TYPE_LOCK_ERROR } from '../config/errors';
@@ -35,15 +21,7 @@ import type { RuleManager } from '../generated/graphql';
 import type { StixCoreObject } from '../types/stix-common';
 import { STIX_EXT_OCTI } from '../types/stix-extensions';
 import type { StixRelation, StixSighting } from '../types/stix-sro';
-import type {
-  BaseEvent,
-  DataEvent,
-  DeleteEvent,
-  MergeEvent,
-  SseEvent,
-  StreamDataEvent,
-  UpdateEvent
-} from '../types/event';
+import type { BaseEvent, DataEvent, DeleteEvent, MergeEvent, SseEvent, StreamDataEvent, UpdateEvent } from '../types/event';
 import { getActivatedRules, RULES_DECLARATION } from '../domain/rules';
 import { executionContext, RULE_MANAGER_USER } from '../utils/access';
 import { isModuleActivated } from '../domain/settings';

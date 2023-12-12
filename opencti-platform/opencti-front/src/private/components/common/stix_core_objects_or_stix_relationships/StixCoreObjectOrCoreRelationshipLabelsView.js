@@ -1,17 +1,7 @@
 import React, { useState } from 'react';
 import * as PropTypes from 'prop-types';
 import * as R from 'ramda';
-import {
-  append,
-  ascend,
-  filter,
-  map,
-  pathOr,
-  pipe,
-  prop,
-  sortWith,
-  union,
-} from 'ramda';
+import { append, ascend, filter, map, pathOr, pipe, prop, sortWith, union } from 'ramda';
 import { Field, Form, Formik } from 'formik';
 import Typography from '@mui/material/Typography';
 import Chip from '@mui/material/Chip';
@@ -33,10 +23,7 @@ import LabelCreation from '../../settings/labels/LabelCreation';
 import Security from '../../../../utils/Security';
 import { hexToRGB } from '../../../../utils/Colors';
 import { truncate } from '../../../../utils/String';
-import useGranted, {
-  KNOWLEDGE_KNUPDATE,
-  SETTINGS_SETLABELS,
-} from '../../../../utils/hooks/useGranted';
+import useGranted, { KNOWLEDGE_KNUPDATE, SETTINGS_SETLABELS } from '../../../../utils/hooks/useGranted';
 import CommitMessage from '../form/CommitMessage';
 import Transition from '../../../../components/Transition';
 

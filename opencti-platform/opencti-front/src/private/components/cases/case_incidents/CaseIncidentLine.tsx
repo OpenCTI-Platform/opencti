@@ -16,10 +16,7 @@ import ItemStatus from '../../../../components/ItemStatus';
 import StixCoreObjectLabels from '../../common/stix_core_objects/StixCoreObjectLabels';
 import ItemMarkings from '../../../../components/ItemMarkings';
 import ItemIcon from '../../../../components/ItemIcon';
-import {
-  CaseIncidentLineCase_node$data,
-  CaseIncidentLineCase_node$key,
-} from './__generated__/CaseIncidentLineCase_node.graphql';
+import { CaseIncidentLineCase_node$data, CaseIncidentLineCase_node$key } from './__generated__/CaseIncidentLineCase_node.graphql';
 import ItemSeverity from '../../../../components/ItemSeverity';
 import ItemPriority from '../../../../components/ItemPriority';
 

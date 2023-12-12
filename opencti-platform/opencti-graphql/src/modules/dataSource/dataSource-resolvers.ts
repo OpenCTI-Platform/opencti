@@ -1,12 +1,5 @@
 import type { Resolvers } from '../../generated/graphql';
-import {
-  batchDataComponents,
-  dataSourceAdd,
-  dataSourceDataComponentAdd,
-  dataSourceDataComponentDelete,
-  findAll,
-  findById
-} from './dataSource-domain';
+import { batchDataComponents, dataSourceAdd, dataSourceDataComponentAdd, dataSourceDataComponentDelete, findAll, findById } from './dataSource-domain';
 import {
   stixDomainObjectAddRelation,
   stixDomainObjectCleanContext,

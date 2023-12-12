@@ -10,9 +10,7 @@ import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
 import MoreVert from '@mui/icons-material/MoreVert';
 import { useFormatter } from '../../../../components/i18n';
-import SubTypeWorkflowStatusEdit, {
-  statusEditQuery,
-} from './SubTypeWorkflowStatusEdit';
+import SubTypeWorkflowStatusEdit, { statusEditQuery } from './SubTypeWorkflowStatusEdit';
 import Transition from '../../../../components/Transition';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import { SubTypeWorkflowStatusEditQuery } from './__generated__/SubTypeWorkflowStatusEditQuery.graphql';

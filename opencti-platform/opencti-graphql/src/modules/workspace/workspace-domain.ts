@@ -2,54 +2,31 @@ import * as R from 'ramda';
 import type { FileHandle } from 'fs/promises';
 import { v4 as uuidv4 } from 'uuid';
 import pjson from '../../../package.json';
-import {
-  createEntity,
-  deleteElementById,
-  listThings,
-  paginateAllThings,
-  patchAttribute,
-  updateAttribute,
-} from '../../database/middleware';
-import {
-  internalFindByIds,
-  listEntitiesPaginated,
-  storeLoadById,
-} from '../../database/middleware-loader';
+import { createEntity, deleteElementById, listThings, paginateAllThings, patchAttribute, updateAttribute } from '../../database/middleware';
+import { internalFindByIds, listEntitiesPaginated, storeLoadById } from '../../database/middleware-loader';
 import { BUS_TOPICS } from '../../config/conf';
 import { delEditContext, notify, setEditContext } from '../../database/redis';
-import {
-  ENTITY_TYPE_WORKSPACE,
-  type BasicStoreEntityWorkspace,
-} from './workspace-types';
+import { ENTITY_TYPE_WORKSPACE, type BasicStoreEntityWorkspace } from './workspace-types';
 import { FunctionalError } from '../../config/errors';
 import type { AuthContext, AuthUser } from '../../types/user';
 import type {
   EditContext,
-  EditInput, FilterGroup,
+  EditInput,
+  FilterGroup,
   ImportWidgetInput,
   InputMaybe,
   MemberAccessInput,
   QueryWorkspacesArgs,
   WorkspaceAddInput,
   WorkspaceDuplicateInput,
-  WorkspaceObjectsArgs,
+  WorkspaceObjectsArgs
 } from '../../generated/graphql';
-import {
-  getUserAccessRight,
-  isValidMemberAccessRight,
-  MEMBER_ACCESS_RIGHT_ADMIN,
-} from '../../utils/access';
+import { getUserAccessRight, isValidMemberAccessRight, MEMBER_ACCESS_RIGHT_ADMIN } from '../../utils/access';
 import { publishUserAction } from '../../listener/UserActionListener';
 import { containsValidAdmin } from '../../utils/authorizedMembers';
 import { elFindByIds } from '../../database/engine';
 import type { BasicStoreEntity, BasicStoreObject } from '../../types/store';
-import {
-  buildPagination,
-  fromBase64,
-  isEmptyField, isNotEmptyField,
-  READ_DATA_INDICES_WITHOUT_INTERNAL,
-  toBase64,
-} from '../../database/utils';
+import { buildPagination, fromBase64, isEmptyField, isNotEmptyField, READ_DATA_INDICES_WITHOUT_INTERNAL, toBase64 } from '../../database/utils';
 import { addFilter } from '../../utils/filtering/filtering-utils';
 import { extractContentFrom } from '../../utils/fileToContent';
 import { isInternalId, isStixId } from '../../schema/schemaUtils';

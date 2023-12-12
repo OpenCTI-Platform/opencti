@@ -5,15 +5,7 @@ import { ApolloArmor } from '@escape.tech/graphql-armor';
 import { dissocPath } from 'ramda';
 import ConstraintDirectiveError from 'graphql-constraint-directive/lib/error';
 import createSchema from './schema';
-import {
-  basePath,
-  DEV_MODE,
-  PLAYGROUND_INTROSPECTION_DISABLED,
-  ENABLED_TRACING,
-  PLAYGROUND_ENABLED,
-  GRAPHQL_ARMOR_ENABLED,
-  logApp
-} from '../config/conf';
+import { basePath, DEV_MODE, PLAYGROUND_INTROSPECTION_DISABLED, ENABLED_TRACING, PLAYGROUND_ENABLED, GRAPHQL_ARMOR_ENABLED, logApp } from '../config/conf';
 import { authenticateUserFromRequest, userWithOrigin } from '../domain/user';
 import { ForbiddenAccess, ValidationError } from '../config/errors';
 import loggerPlugin from './loggerPlugin';

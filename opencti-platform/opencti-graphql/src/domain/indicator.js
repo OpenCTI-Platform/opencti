@@ -1,13 +1,6 @@
 import * as R from 'ramda';
 import { Promise } from 'bluebird';
-import {
-  batchListThroughGetTo,
-  createEntity,
-  createRelation,
-  distributionEntities,
-  storeLoadByIdWithRefs,
-  timeSeriesEntities,
-} from '../database/middleware';
+import { batchListThroughGetTo, createEntity, createRelation, distributionEntities, storeLoadByIdWithRefs, timeSeriesEntities } from '../database/middleware';
 import { listEntities, storeLoadById } from '../database/middleware-loader';
 import { BUS_TOPICS, logApp } from '../config/conf';
 import { notify } from '../database/redis';
@@ -18,7 +11,8 @@ import { isStixCyberObservable } from '../schema/stixCyberObservable';
 import { RELATION_BASED_ON, RELATION_INDICATES } from '../schema/stixCoreRelationship';
 import {
   ABSTRACT_STIX_CYBER_OBSERVABLE,
-  ABSTRACT_STIX_DOMAIN_OBJECT, buildRefRelationKey,
+  ABSTRACT_STIX_DOMAIN_OBJECT,
+  buildRefRelationKey,
   INPUT_CREATED_BY,
   INPUT_EXTERNAL_REFS,
   INPUT_LABELS,

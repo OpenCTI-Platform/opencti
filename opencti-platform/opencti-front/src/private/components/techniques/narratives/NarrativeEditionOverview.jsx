@@ -12,11 +12,7 @@ import MarkdownField from '../../../../components/MarkdownField';
 import CommitMessage from '../../common/form/CommitMessage';
 import { adaptFieldValue } from '../../../../utils/String';
 import StatusField from '../../common/form/StatusField';
-import {
-  convertCreatedBy,
-  convertMarkings,
-  convertStatus,
-} from '../../../../utils/edition';
+import { convertCreatedBy, convertMarkings, convertStatus } from '../../../../utils/edition';
 import { useSchemaEditionValidation } from '../../../../utils/hooks/useEntitySettings';
 import useFormEditor from '../../../../utils/hooks/useFormEditor';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';

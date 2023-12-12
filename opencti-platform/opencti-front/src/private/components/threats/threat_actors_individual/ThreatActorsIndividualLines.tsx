@@ -4,10 +4,7 @@ import { DataColumns } from '../../../../components/list_lines';
 import { UseLocalStorageHelpers } from '../../../../utils/hooks/useLocalStorage';
 import usePreloadedPaginationFragment from '../../../../utils/hooks/usePreloadedPaginationFragment';
 import ListLinesContent from '../../../../components/list_lines/ListLinesContent';
-import {
-  ThreatActorIndividualLine,
-  ThreatActorIndividualLineDummy,
-} from './ThreatActorIndividualLine';
+import { ThreatActorIndividualLine, ThreatActorIndividualLineDummy } from './ThreatActorIndividualLine';
 import {
   ThreatActorsIndividualLinesPaginationQuery,
   ThreatActorsIndividualLinesPaginationQuery$variables,

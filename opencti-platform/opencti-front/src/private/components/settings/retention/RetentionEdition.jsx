@@ -16,7 +16,8 @@ import Filters from '../../common/lists/Filters';
 import { adaptFieldValue } from '../../../../utils/String';
 import {
   constructHandleAddFilter,
-  constructHandleRemoveFilter, deserializeFilterGroupForFrontend,
+  constructHandleRemoveFilter,
+  deserializeFilterGroupForFrontend,
   filtersAfterSwitchLocalMode,
   serializeFilterGroupForBackend,
 } from '../../../../utils/filters/filtersUtils';

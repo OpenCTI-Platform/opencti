@@ -8,12 +8,7 @@ import Paper from '@mui/material/Paper';
 import ForceGraph2D from 'react-force-graph-2d';
 import { withRouter } from 'react-router-dom';
 import inject18n from '../../../../components/i18n';
-import {
-  buildGraphData,
-  linkPaint,
-  nodeAreaPaint,
-  nodePaint,
-} from '../../../../utils/Graph';
+import { buildGraphData, linkPaint, nodeAreaPaint, nodePaint } from '../../../../utils/Graph';
 import { resolveLink } from '../../../../utils/Entity';
 import { isEmptyField } from '../../../../utils/utils';
 import MarkdownDisplay from '../../../../components/MarkdownDisplay';

@@ -9,29 +9,14 @@ import { QueryRenderer } from '../../../../relay/environment';
 import ContainerHeader from '../../common/containers/ContainerHeader';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import AttackPatternsMatrix from '../../techniques/attack_patterns/AttackPatternsMatrix';
-import {
-  buildViewParamsFromUrlAndStorage,
-  saveViewParameters,
-} from '../../../../utils/ListParameters';
-import {
-  constructHandleAddFilter,
-  constructHandleRemoveFilter,
-  emptyFilterGroup, filtersAfterSwitchLocalMode,
-} from '../../../../utils/filters/filtersUtils';
+import { buildViewParamsFromUrlAndStorage, saveViewParameters } from '../../../../utils/ListParameters';
+import { constructHandleAddFilter, constructHandleRemoveFilter, emptyFilterGroup, filtersAfterSwitchLocalMode } from '../../../../utils/filters/filtersUtils';
 import CaseRfiPopover from './CaseRfiPopover';
-import CaseRfiKnowledgeGraph, {
-  caseRfiKnowledgeGraphQuery,
-} from './CaseRfiKnowledgeGraph';
-import CaseRfiKnowledgeTimeLine, {
-  caseRfiKnowledgeTimeLineQuery,
-} from './CaseRfiKnowledgeTimeLine';
-import CaseRfiKnowledgeCorrelation, {
-  caseRfiKnowledgeCorrelationQuery,
-} from './CaseRfiKnowledgeCorrelation';
+import CaseRfiKnowledgeGraph, { caseRfiKnowledgeGraphQuery } from './CaseRfiKnowledgeGraph';
+import CaseRfiKnowledgeTimeLine, { caseRfiKnowledgeTimeLineQuery } from './CaseRfiKnowledgeTimeLine';
+import CaseRfiKnowledgeCorrelation, { caseRfiKnowledgeCorrelationQuery } from './CaseRfiKnowledgeCorrelation';
 import ContentKnowledgeTimeLineBar from '../../common/containers/ContainertKnowledgeTimeLineBar';
-import ContainerContent, {
-  containerContentQuery,
-} from '../../common/containers/ContainerContent';
+import ContainerContent, { containerContentQuery } from '../../common/containers/ContainerContent';
 import investigationAddFromContainer from '../../../../utils/InvestigationUtils';
 
 const styles = () => ({

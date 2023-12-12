@@ -1,9 +1,6 @@
 import React, { FunctionComponent } from 'react';
 import { graphql, PreloadedQuery } from 'react-relay';
-import {
-  SystemsLinesPaginationQuery,
-  SystemsLinesPaginationQuery$variables,
-} from '@components/entities/systems/__generated__/SystemsLinesPaginationQuery.graphql';
+import { SystemsLinesPaginationQuery, SystemsLinesPaginationQuery$variables } from '@components/entities/systems/__generated__/SystemsLinesPaginationQuery.graphql';
 import { SystemsLines_data$key } from '@components/entities/systems/__generated__/SystemsLines_data.graphql';
 import ListLinesContent from '../../../../components/list_lines/ListLinesContent';
 import { SystemLine, SystemLineDummy } from './SystemLine';

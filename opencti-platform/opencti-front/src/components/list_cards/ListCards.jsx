@@ -8,13 +8,7 @@ import InputLabel from '@mui/material/InputLabel';
 import Select from '@mui/material/Select';
 import Tooltip from '@mui/material/Tooltip';
 import MenuItem from '@mui/material/MenuItem';
-import {
-  ArrowDownward,
-  ArrowUpward,
-  FileDownloadOutlined,
-  ViewListOutlined,
-  ViewModuleOutlined,
-} from '@mui/icons-material';
+import { ArrowDownward, ArrowUpward, FileDownloadOutlined, ViewListOutlined, ViewModuleOutlined } from '@mui/icons-material';
 import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
 import ToggleButton from '@mui/material/ToggleButton';
 import Filters from '../../private/components/common/lists/Filters';

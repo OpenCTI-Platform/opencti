@@ -1,11 +1,4 @@
-import {
-  containersObjectsOfObject,
-  findAll,
-  findById,
-  knowledgeAddFromInvestigation,
-  objects,
-  relatedContainers
-} from '../domain/container';
+import { containersObjectsOfObject, findAll, findById, knowledgeAddFromInvestigation, objects, relatedContainers } from '../domain/container';
 import {
   stixDomainObjectAddRelation,
   stixDomainObjectCleanContext,

@@ -1,11 +1,10 @@
 import React, { FunctionComponent } from 'react';
 import { graphql, PreloadedQuery } from 'react-relay';
 import {
-  AttackPatternsLinesPaginationQuery, AttackPatternsLinesPaginationQuery$variables,
+  AttackPatternsLinesPaginationQuery,
+  AttackPatternsLinesPaginationQuery$variables,
 } from '@components/techniques/attack_patterns/__generated__/AttackPatternsLinesPaginationQuery.graphql';
-import {
-  AttackPatternsLines_data$key,
-} from '@components/techniques/attack_patterns/__generated__/AttackPatternsLines_data.graphql';
+import { AttackPatternsLines_data$key } from '@components/techniques/attack_patterns/__generated__/AttackPatternsLines_data.graphql';
 import ListLinesContent from '../../../../components/list_lines/ListLinesContent';
 import { AttackPatternLine, AttackPatternLineDummy } from './AttackPatternLine';
 import { DataColumns } from '../../../../components/list_lines';

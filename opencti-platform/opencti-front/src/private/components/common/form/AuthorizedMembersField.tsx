@@ -15,13 +15,7 @@ import { FormikHelpers } from 'formik/dist/types';
 import AuthorizedMembersFieldListItem from '@components/common/form/AuthorizedMembersFieldListItem';
 import SelectField from '../../../../components/SelectField';
 import { useFormatter } from '../../../../components/i18n';
-import {
-  AccessRight,
-  ALL_MEMBERS_AUTHORIZED_CONFIG,
-  AuthorizedMemberOption,
-  Creator,
-  CREATOR_AUTHORIZED_CONFIG,
-} from '../../../../utils/authorizedMembers';
+import { AccessRight, ALL_MEMBERS_AUTHORIZED_CONFIG, AuthorizedMemberOption, Creator, CREATOR_AUTHORIZED_CONFIG } from '../../../../utils/authorizedMembers';
 import SwitchField from '../../../../components/SwitchField';
 
 /**

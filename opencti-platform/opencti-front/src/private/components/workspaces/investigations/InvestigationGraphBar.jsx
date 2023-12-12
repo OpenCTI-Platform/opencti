@@ -32,25 +32,12 @@ import Slide from '@mui/material/Slide';
 import Tooltip from '@mui/material/Tooltip';
 import withStyles from '@mui/styles/withStyles';
 import withTheme from '@mui/styles/withTheme';
-import {
-  AutoFix,
-  FamilyTree,
-  SelectAll,
-  SelectGroup,
-  SelectionDrag,
-  Video3d,
-} from 'mdi-material-ui';
+import { AutoFix, FamilyTree, SelectAll, SelectGroup, SelectionDrag, Video3d } from 'mdi-material-ui';
 import * as PropTypes from 'prop-types';
 import * as R from 'ramda';
 import React, { Component } from 'react';
 import TimeRange from 'react-timeline-range-slider';
-import {
-  ResponsiveContainer,
-  Scatter,
-  ScatterChart,
-  YAxis,
-  ZAxis,
-} from 'recharts';
+import { ResponsiveContainer, Scatter, ScatterChart, YAxis, ZAxis } from 'recharts';
 import InvestigationAddStixCoreObjects from './InvestigationAddStixCoreObjects';
 import inject18n from '../../../../components/i18n';
 import SearchInput from '../../../../components/SearchInput';

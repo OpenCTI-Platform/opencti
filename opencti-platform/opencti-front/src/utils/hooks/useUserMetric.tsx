@@ -3,9 +3,7 @@ import convert, { Length, Mass } from 'convert';
 import {
   ThreatActorIndividualEditionBiographics_ThreatActorIndividual$data,
 } from '@components/threats/threat_actors_individual/__generated__/ThreatActorIndividualEditionBiographics_ThreatActorIndividual.graphql';
-import {
-  MeasureInput,
-} from '@components/threats/threat_actors_individual/__generated__/ThreatActorIndividualCreationMutation.graphql';
+import { MeasureInput } from '@components/threats/threat_actors_individual/__generated__/ThreatActorIndividualCreationMutation.graphql';
 import useAuth from './useAuth';
 import { UnitSystem } from '../../private/__generated__/RootPrivateQuery.graphql';
 import { DEFAULT_LANG, LANGUAGES } from '../BrowserLanguage';

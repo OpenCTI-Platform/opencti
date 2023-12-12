@@ -1,10 +1,6 @@
 import React, { FunctionComponent, useState } from 'react';
 import { includes } from 'ramda';
-import {
-  createPaginationContainer,
-  graphql,
-  RelayPaginationProp,
-} from 'react-relay';
+import { createPaginationContainer, graphql, RelayPaginationProp } from 'react-relay';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
 import Paper from '@mui/material/Paper';
 import Typography from '@mui/material/Typography';
@@ -18,11 +14,7 @@ import Dialog from '@mui/material/Dialog';
 import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
 import DialogActions from '@mui/material/DialogActions';
-import {
-  ExpandLessOutlined,
-  ExpandMoreOutlined,
-  OpenInBrowserOutlined,
-} from '@mui/icons-material';
+import { ExpandLessOutlined, ExpandMoreOutlined, OpenInBrowserOutlined } from '@mui/icons-material';
 import Slide, { SlideProps } from '@mui/material/Slide';
 import { Field, Form, Formik } from 'formik';
 import DialogTitle from '@mui/material/DialogTitle';
@@ -38,20 +30,13 @@ import { commitMutation, MESSAGING$ } from '../../../../relay/environment';
 import AddExternalReferences from './AddExternalReferences';
 import { externalReferenceMutationRelationDelete } from './AddExternalReferencesLines';
 import Security from '../../../../utils/Security';
-import {
-  KNOWLEDGE_KNENRICHMENT,
-  KNOWLEDGE_KNUPDATE,
-  KNOWLEDGE_KNUPLOAD,
-} from '../../../../utils/hooks/useGranted';
+import { KNOWLEDGE_KNENRICHMENT, KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNUPLOAD } from '../../../../utils/hooks/useGranted';
 import ExternalReferenceEnrichment from './ExternalReferenceEnrichment';
 import FileLine from '../../common/files/FileLine';
 import FileUploader from '../../common/files/FileUploader';
 import ExternalReferencePopover from './ExternalReferencePopover';
 import SelectField from '../../../../components/SelectField';
-import {
-  scopesConn,
-  stixCoreObjectFilesAndHistoryAskJobImportMutation,
-} from '../../common/stix_core_objects/StixCoreObjectFilesAndHistory';
+import { scopesConn, stixCoreObjectFilesAndHistoryAskJobImportMutation } from '../../common/stix_core_objects/StixCoreObjectFilesAndHistory';
 import { Theme } from '../../../../components/Theme';
 import { useFormatter } from '../../../../components/i18n';
 import { deleteNodeFromId } from '../../../../utils/store';

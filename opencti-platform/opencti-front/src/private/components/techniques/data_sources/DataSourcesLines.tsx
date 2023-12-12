@@ -5,10 +5,7 @@ import ListLinesContent from '../../../../components/list_lines/ListLinesContent
 import { HandleAddFilter, UseLocalStorageHelpers } from '../../../../utils/hooks/useLocalStorage';
 import usePreloadedPaginationFragment from '../../../../utils/hooks/usePreloadedPaginationFragment';
 import { DataSourceLineComponent, DataSourceLineDummy } from './DataSourceLine';
-import {
-  DataSourcesLinesPaginationQuery,
-  DataSourcesLinesPaginationQuery$variables,
-} from './__generated__/DataSourcesLinesPaginationQuery.graphql';
+import { DataSourcesLinesPaginationQuery, DataSourcesLinesPaginationQuery$variables } from './__generated__/DataSourcesLinesPaginationQuery.graphql';
 import { DataSourcesLines_data$key } from './__generated__/DataSourcesLines_data.graphql';
 
 const nbOfRowsToLoad = 50;

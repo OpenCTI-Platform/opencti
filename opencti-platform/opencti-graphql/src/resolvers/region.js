@@ -1,12 +1,4 @@
-import {
-  addRegion,
-  batchCountries,
-  batchIsSubRegion,
-  batchParentRegions,
-  batchSubRegions,
-  findAll,
-  findById,
-} from '../domain/region';
+import { addRegion, batchCountries, batchIsSubRegion, batchParentRegions, batchSubRegions, findAll, findById } from '../domain/region';
 import {
   stixDomainObjectAddRelation,
   stixDomainObjectCleanContext,

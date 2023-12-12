@@ -5,11 +5,7 @@ import { ThemeOptions } from '@mui/material/styles/createTheme';
 import { UserContext, UserContextType } from '../utils/hooks/useAuth';
 import themeDark from './ThemeDark';
 import themeLight from './ThemeLight';
-import {
-  useDocumentFaviconModifier,
-  useDocumentModifier,
-  useDocumentThemeModifier,
-} from '../utils/hooks/useDocumentModifier';
+import { useDocumentFaviconModifier, useDocumentModifier, useDocumentThemeModifier } from '../utils/hooks/useDocumentModifier';
 import { AppThemeProvider_settings$data } from './__generated__/AppThemeProvider_settings.graphql';
 
 interface AppThemeProviderProps {

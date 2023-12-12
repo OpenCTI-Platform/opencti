@@ -1,9 +1,7 @@
 import React, { FunctionComponent, useCallback, useEffect } from 'react';
 import { graphql, PreloadedQuery, usePreloadedQuery, useQueryLoader } from 'react-relay';
 import Typography from '@mui/material/Typography';
-import StixCoreObjectOpinionsRadar, {
-  stixCoreObjectOpinionsRadarDistributionQuery,
-} from './StixCoreObjectOpinionsRadar';
+import StixCoreObjectOpinionsRadar, { stixCoreObjectOpinionsRadarDistributionQuery } from './StixCoreObjectOpinionsRadar';
 import useVocabularyCategory from '../../../../utils/hooks/useVocabularyCategory';
 import {
   StixCoreObjectOpinionsRadarDistributionQuery,

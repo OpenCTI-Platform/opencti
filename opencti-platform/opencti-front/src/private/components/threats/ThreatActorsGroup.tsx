@@ -6,9 +6,7 @@ import {
   ThreatActorsGroupCardsPaginationQuery$variables,
 } from '@components/threats/threat_actors_group/__generated__/ThreatActorsGroupCardsPaginationQuery.graphql';
 import ListCards from '../../../components/list_cards/ListCards';
-import ThreatActorsGroupCards, {
-  threatActorsGroupCardsQuery,
-} from './threat_actors_group/ThreatActorsGroupCards';
+import ThreatActorsGroupCards, { threatActorsGroupCardsQuery } from './threat_actors_group/ThreatActorsGroupCards';
 import ThreatActorGroupCreation from './threat_actors_group/ThreatActorGroupCreation';
 import Security from '../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE } from '../../../utils/hooks/useGranted';

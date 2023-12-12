@@ -4,9 +4,7 @@ import Chip from '@mui/material/Chip';
 import { useParams } from 'react-router-dom';
 import ListLines from '../../../components/list_lines/ListLines';
 import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
-import VocabulariesLines, {
-  vocabulariesLinesQuery,
-} from './attributes/VocabulariesLines';
+import VocabulariesLines, { vocabulariesLinesQuery } from './attributes/VocabulariesLines';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
 import { VocabulariesLines_DataQuery$variables } from './attributes/__generated__/VocabulariesLines_DataQuery.graphql';
 import { VocabulariesLinesPaginationQuery } from './attributes/__generated__/VocabulariesLinesPaginationQuery.graphql';

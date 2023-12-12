@@ -1,10 +1,5 @@
 import React, { FunctionComponent } from 'react';
-import {
-  createFragmentContainer,
-  graphql,
-  useMutation,
-  usePreloadedQuery,
-} from 'react-relay';
+import { createFragmentContainer, graphql, useMutation, usePreloadedQuery } from 'react-relay';
 import * as R from 'ramda';
 import ListItem from '@mui/material/ListItem';
 import ListItemText from '@mui/material/ListItemText';

@@ -1,8 +1,6 @@
 import React, { FunctionComponent } from 'react';
 import { graphql, PreloadedQuery } from 'react-relay';
-import {
-  EventsLinesPaginationQuery, EventsLinesPaginationQuery$variables,
-} from '@components/entities/events/__generated__/EventsLinesPaginationQuery.graphql';
+import { EventsLinesPaginationQuery, EventsLinesPaginationQuery$variables } from '@components/entities/events/__generated__/EventsLinesPaginationQuery.graphql';
 import { EventsLines_data$key } from '@components/entities/events/__generated__/EventsLines_data.graphql';
 import ListLinesContent from '../../../../components/list_lines/ListLinesContent';
 import { EventLine, EventLineDummy } from './EventLine';

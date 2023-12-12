@@ -15,10 +15,7 @@ import MarkdownField from '../../../../components/MarkdownField';
 import TextField from '../../../../components/TextField';
 import { fetchQuery, handleErrorInForm } from '../../../../relay/environment';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
-import {
-  TaskTemplateAddInput,
-  CaseTemplateTasksCreationMutation,
-} from './__generated__/CaseTemplateTasksCreationMutation.graphql';
+import { TaskTemplateAddInput, CaseTemplateTasksCreationMutation } from './__generated__/CaseTemplateTasksCreationMutation.graphql';
 import { CaseTemplateTasksSearchQuery$data } from './__generated__/CaseTemplateTasksSearchQuery.graphql';
 import { Option } from './ReferenceField';
 import ItemIcon from '../../../../components/ItemIcon';

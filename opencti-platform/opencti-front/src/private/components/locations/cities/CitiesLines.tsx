@@ -5,10 +5,7 @@ import { CityLine, CityLineDummy } from './CityLine';
 import { DataColumns } from '../../../../components/list_lines';
 import { UseLocalStorageHelpers } from '../../../../utils/hooks/useLocalStorage';
 import usePreloadedPaginationFragment from '../../../../utils/hooks/usePreloadedPaginationFragment';
-import {
-  CitiesLinesPaginationQuery,
-  CitiesLinesPaginationQuery$variables,
-} from './__generated__/CitiesLinesPaginationQuery.graphql';
+import { CitiesLinesPaginationQuery, CitiesLinesPaginationQuery$variables } from './__generated__/CitiesLinesPaginationQuery.graphql';
 import { CitiesLines_data$key } from './__generated__/CitiesLines_data.graphql';
 
 const nbOfRowsToLoad = 50;

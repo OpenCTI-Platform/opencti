@@ -4,10 +4,7 @@ import ListLinesContent from '../../../../components/list_lines/ListLinesContent
 import { DataColumns } from '../../../../components/list_lines';
 import { UseLocalStorageHelpers } from '../../../../utils/hooks/useLocalStorage';
 import usePreloadedPaginationFragment from '../../../../utils/hooks/usePreloadedPaginationFragment';
-import {
-  CaseRfiLinesCasesPaginationQuery,
-  CaseRfiLinesCasesPaginationQuery$variables,
-} from './__generated__/CaseRfiLinesCasesPaginationQuery.graphql';
+import { CaseRfiLinesCasesPaginationQuery, CaseRfiLinesCasesPaginationQuery$variables } from './__generated__/CaseRfiLinesCasesPaginationQuery.graphql';
 import { CaseRfiLineCase_node$data } from './__generated__/CaseRfiLineCase_node.graphql';
 import { CaseRfiLinesCases_data$key } from './__generated__/CaseRfiLinesCases_data.graphql';
 import { CaseRfiLine, CaseRfiLineDummy } from './CaseRfiLine';

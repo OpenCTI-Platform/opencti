@@ -1,11 +1,4 @@
-import {
-  checkRetentionRule,
-  createRetentionRule,
-  deleteRetentionRule,
-  findAll,
-  findById,
-  retentionRuleEditField,
-} from '../domain/retentionRule';
+import { checkRetentionRule, createRetentionRule, deleteRetentionRule, findAll, findById, retentionRuleEditField } from '../domain/retentionRule';
 
 const retentionResolvers = {
   Query: {

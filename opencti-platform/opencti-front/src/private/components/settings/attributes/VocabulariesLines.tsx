@@ -3,10 +3,7 @@ import { graphql, PreloadedQuery } from 'react-relay';
 import ListLinesContent from '../../../../components/list_lines/ListLinesContent';
 import { VocabularyLine, VocabularyLineDummy } from './VocabularyLine';
 import { DataColumns } from '../../../../components/list_lines';
-import {
-  VocabulariesLines_DataQuery,
-  VocabulariesLines_DataQuery$variables,
-} from './__generated__/VocabulariesLines_DataQuery.graphql';
+import { VocabulariesLines_DataQuery, VocabulariesLines_DataQuery$variables } from './__generated__/VocabulariesLines_DataQuery.graphql';
 import { VocabulariesLines_data$key } from './__generated__/VocabulariesLines_data.graphql';
 import { VocabulariesLinesPaginationQuery } from './__generated__/VocabulariesLinesPaginationQuery.graphql';
 import { useVocabularyCategory_Vocabularynode$data } from '../../../../utils/hooks/__generated__/useVocabularyCategory_Vocabularynode.graphql';

@@ -4,7 +4,10 @@ import ListLines from '../../../components/list_lines/ListLines';
 import SettingsOrganizationsLines, { settingsOrganizationsLinesQuery } from './organizations/SettingsOrganizationsLines';
 import Loader, { LoaderVariant } from '../../../components/Loader';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
-import { SettingsOrganizationsLinesPaginationQuery, SettingsOrganizationsLinesPaginationQuery$variables } from './organizations/__generated__/SettingsOrganizationsLinesPaginationQuery.graphql';
+import {
+  SettingsOrganizationsLinesPaginationQuery,
+  SettingsOrganizationsLinesPaginationQuery$variables,
+} from './organizations/__generated__/SettingsOrganizationsLinesPaginationQuery.graphql';
 import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
 import AccessesMenu from './AccessesMenu';
 import { useFormatter } from '../../../components/i18n';

@@ -8,9 +8,7 @@ import { KeyboardArrowRight } from '@mui/icons-material';
 import Skeleton from '@mui/material/Skeleton';
 import makeStyles from '@mui/styles/makeStyles';
 import { Theme } from '@mui/material/styles/createTheme';
-import {
-  AttackPatternLine_node$key,
-} from '@components/techniques/attack_patterns/__generated__/AttackPatternLine_node.graphql';
+import { AttackPatternLine_node$key } from '@components/techniques/attack_patterns/__generated__/AttackPatternLine_node.graphql';
 import { useFormatter } from '../../../../components/i18n';
 import StixCoreObjectLabels from '../../common/stix_core_objects/StixCoreObjectLabels';
 import ItemIcon from '../../../../components/ItemIcon';

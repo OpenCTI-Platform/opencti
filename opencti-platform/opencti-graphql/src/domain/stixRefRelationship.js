@@ -1,10 +1,5 @@
 import { dissoc, propOr } from 'ramda';
-import {
-  deleteElementById,
-  storeLoadByIdWithRefs,
-  updateAttribute,
-  updateAttributeFromLoadedWithRefs
-} from '../database/middleware';
+import { deleteElementById, storeLoadByIdWithRefs, updateAttribute, updateAttributeFromLoadedWithRefs } from '../database/middleware';
 import { BUS_TOPICS } from '../config/conf';
 import { notify } from '../database/redis';
 import { ABSTRACT_STIX_REF_RELATIONSHIP, ABSTRACT_STIX_RELATIONSHIP } from '../schema/general';
@@ -16,11 +11,7 @@ import { schemaTypesDefinition } from '../schema/schema-types';
 import { schemaRelationsRefDefinition } from '../schema/schema-relationsRef';
 import { findById as findStixObjectOrStixRelationshipById } from './stixObjectOrStixRelationship';
 import { elCount } from '../database/engine';
-import {
-  READ_INDEX_STIX_CYBER_OBSERVABLE_RELATIONSHIPS,
-  READ_INDEX_STIX_META_RELATIONSHIPS,
-  UPDATE_OPERATION_ADD
-} from '../database/utils';
+import { READ_INDEX_STIX_CYBER_OBSERVABLE_RELATIONSHIPS, READ_INDEX_STIX_META_RELATIONSHIPS, UPDATE_OPERATION_ADD } from '../database/utils';
 
 // Query
 

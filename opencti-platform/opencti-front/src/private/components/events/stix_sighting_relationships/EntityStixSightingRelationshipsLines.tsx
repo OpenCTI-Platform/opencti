@@ -1,17 +1,12 @@
 import React, { FunctionComponent } from 'react';
 import { graphql, PreloadedQuery } from 'react-relay';
-import {
-  EntityStixSightingRelationshipsLines_data$key,
-} from '@components/events/stix_sighting_relationships/__generated__/EntityStixSightingRelationshipsLines_data.graphql';
+import { EntityStixSightingRelationshipsLines_data$key } from '@components/events/stix_sighting_relationships/__generated__/EntityStixSightingRelationshipsLines_data.graphql';
 import {
   EntityStixSightingRelationshipsLinesPaginationQuery,
   EntityStixSightingRelationshipsLinesPaginationQuery$variables,
 } from '@components/events/stix_sighting_relationships/__generated__/EntityStixSightingRelationshipsLinesPaginationQuery.graphql';
 import ListLinesContent from '../../../../components/list_lines/ListLinesContent';
-import {
-  EntityStixSightingRelationshipLine,
-  EntityStixSightingRelationshipLineDummy,
-} from './EntityStixSightingRelationshipLine';
+import { EntityStixSightingRelationshipLine, EntityStixSightingRelationshipLineDummy } from './EntityStixSightingRelationshipLine';
 import usePreloadedPaginationFragment from '../../../../utils/hooks/usePreloadedPaginationFragment';
 import { DataColumns } from '../../../../components/list_lines';
 import { HandleAddFilter, UseLocalStorageHelpers } from '../../../../utils/hooks/useLocalStorage';

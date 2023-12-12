@@ -13,7 +13,8 @@ import { resolveLink } from '../../../../../../utils/Entity';
 import ItemIcon from '../../../../../../components/ItemIcon';
 import { Theme } from '../../../../../../components/Theme';
 import {
-  EntityStixCoreRelationshipsIndicatorsContextualViewLine_node$data, EntityStixCoreRelationshipsIndicatorsContextualViewLine_node$key,
+  EntityStixCoreRelationshipsIndicatorsContextualViewLine_node$data,
+  EntityStixCoreRelationshipsIndicatorsContextualViewLine_node$key,
 } from './__generated__/EntityStixCoreRelationshipsIndicatorsContextualViewLine_node.graphql';
 
 const useStyles = makeStyles<Theme>((theme) => ({

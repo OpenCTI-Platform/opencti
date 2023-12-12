@@ -1,11 +1,4 @@
-import {
-  addIncident,
-  batchParticipants,
-  findAll,
-  findById,
-  incidentsTimeSeries,
-  incidentsTimeSeriesByEntity
-} from '../domain/incident';
+import { addIncident, batchParticipants, findAll, findById, incidentsTimeSeries, incidentsTimeSeriesByEntity } from '../domain/incident';
 import {
   stixDomainObjectAddRelation,
   stixDomainObjectCleanContext,

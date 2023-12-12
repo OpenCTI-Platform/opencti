@@ -11,10 +11,7 @@ import ExportContextProvider from '../../../utils/ExportContextProvider';
 import CaseRfiCreation from './case_rfis/CaseRfiCreation';
 import CaseRfisLines, { caseRfisLinesQuery } from './case_rfis/CaseRfiLines';
 import { CaseRfiLineDummy } from './case_rfis/CaseRfiLine';
-import {
-  CaseRfiLinesCasesPaginationQuery,
-  CaseRfiLinesCasesPaginationQuery$variables,
-} from './case_rfis/__generated__/CaseRfiLinesCasesPaginationQuery.graphql';
+import { CaseRfiLinesCasesPaginationQuery, CaseRfiLinesCasesPaginationQuery$variables } from './case_rfis/__generated__/CaseRfiLinesCasesPaginationQuery.graphql';
 import { CaseRfiLineCase_node$data } from './case_rfis/__generated__/CaseRfiLineCase_node.graphql';
 import { filtersWithEntityType, emptyFilterGroup } from '../../../utils/filters/filtersUtils';
 

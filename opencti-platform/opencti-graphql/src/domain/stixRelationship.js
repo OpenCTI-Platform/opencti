@@ -1,18 +1,8 @@
 import * as R from 'ramda';
-import {
-  batchListThroughGetTo,
-  buildDynamicFilterArgs,
-  deleteElementById,
-  distributionRelations,
-  timeSeriesRelations
-} from '../database/middleware';
+import { batchListThroughGetTo, buildDynamicFilterArgs, deleteElementById, distributionRelations, timeSeriesRelations } from '../database/middleware';
 import { ABSTRACT_STIX_CORE_OBJECT, ABSTRACT_STIX_RELATIONSHIP, ENTITY_TYPE_IDENTITY } from '../schema/general';
 import { buildEntityFilters, listEntities, listRelations, storeLoadById } from '../database/middleware-loader';
-import {
-  READ_INDEX_INFERRED_RELATIONSHIPS,
-  READ_INDEX_STIX_CORE_RELATIONSHIPS,
-  READ_INDEX_STIX_SIGHTING_RELATIONSHIPS
-} from '../database/utils';
+import { READ_INDEX_INFERRED_RELATIONSHIPS, READ_INDEX_STIX_CORE_RELATIONSHIPS, READ_INDEX_STIX_SIGHTING_RELATIONSHIPS } from '../database/utils';
 import { elCount } from '../database/engine';
 import { RELATION_CREATED_BY, RELATION_OBJECT_MARKING } from '../schema/stixRefRelationship';
 import { ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';

@@ -1,12 +1,6 @@
 import { RELATION_RELATED_TO } from '../../schema/stixCoreRelationship';
 import { ABSTRACT_STIX_CYBER_OBSERVABLE } from '../../schema/general';
-import {
-  ENTITY_TYPE_CAMPAIGN,
-  ENTITY_TYPE_INCIDENT,
-  ENTITY_TYPE_INTRUSION_SET,
-  ENTITY_TYPE_MALWARE,
-  ENTITY_TYPE_THREAT_ACTOR_GROUP,
-} from '../../schema/stixDomainObject';
+import { ENTITY_TYPE_CAMPAIGN, ENTITY_TYPE_INCIDENT, ENTITY_TYPE_INTRUSION_SET, ENTITY_TYPE_MALWARE, ENTITY_TYPE_THREAT_ACTOR_GROUP } from '../../schema/stixDomainObject';
 import type { RuleDefinition } from '../../types/rules';
 
 const id = 'observable_related';

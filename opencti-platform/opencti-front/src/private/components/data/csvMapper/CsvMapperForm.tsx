@@ -9,9 +9,7 @@ import { InformationOutline } from 'mdi-material-ui';
 import Tooltip from '@mui/material/Tooltip';
 import { FormikHelpers } from 'formik/dist/types';
 import { SelectChangeEvent } from '@mui/material/Select';
-import CsvMapperRepresentationForm, {
-  RepresentationFormEntityOption,
-} from '@components/data/csvMapper/representations/CsvMapperRepresentationForm';
+import CsvMapperRepresentationForm, { RepresentationFormEntityOption } from '@components/data/csvMapper/representations/CsvMapperRepresentationForm';
 import { CsvMapper } from '@components/data/csvMapper/CsvMapper';
 import TextField from 'src/components/TextField';
 import classNames from 'classnames';

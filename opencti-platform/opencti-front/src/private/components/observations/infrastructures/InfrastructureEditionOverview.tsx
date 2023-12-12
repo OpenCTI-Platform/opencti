@@ -12,12 +12,7 @@ import MarkdownField from '../../../../components/MarkdownField';
 import DateTimePickerField from '../../../../components/DateTimePickerField';
 import KillChainPhasesField from '../../common/form/KillChainPhasesField';
 import OpenVocabField from '../../common/form/OpenVocabField';
-import {
-  convertCreatedBy,
-  convertKillChainPhases,
-  convertMarkings,
-  convertStatus,
-} from '../../../../utils/edition';
+import { convertCreatedBy, convertKillChainPhases, convertMarkings, convertStatus } from '../../../../utils/edition';
 import StatusField from '../../common/form/StatusField';
 import { buildDate, formatDate } from '../../../../utils/Time';
 import { adaptFieldValue } from '../../../../utils/String';
@@ -26,9 +21,7 @@ import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import ConfidenceField from '../../common/form/ConfidenceField';
 import { useSchemaEditionValidation } from '../../../../utils/hooks/useEntitySettings';
 import useFormEditor from '../../../../utils/hooks/useFormEditor';
-import {
-  InfrastructureEditionOverview_infrastructure$key,
-} from './__generated__/InfrastructureEditionOverview_infrastructure.graphql';
+import { InfrastructureEditionOverview_infrastructure$key } from './__generated__/InfrastructureEditionOverview_infrastructure.graphql';
 import { Option } from '../../common/form/ReferenceField';
 
 const infrastructureMutationFieldPatch = graphql`

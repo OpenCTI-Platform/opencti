@@ -47,16 +47,7 @@ import Unknown from '../static/images/entities/unknown.svg';
 import StixCyberObservable from '../static/images/entities/stix-cyber-observable.svg';
 import relationship from '../static/images/entities/relationship.svg';
 import { itemColor } from './Colors';
-import {
-  dateFormat,
-  dayEndDate,
-  daysAfter,
-  daysAgo,
-  jsDate,
-  minutesBefore,
-  minutesBetweenDates,
-  timestamp,
-} from './Time';
+import { dateFormat, dayEndDate, daysAfter, daysAgo, jsDate, minutesBefore, minutesBetweenDates, timestamp } from './Time';
 import { isDateStringNone, isNone } from '../components/i18n';
 import { fileUri } from '../relay/environment';
 import { isNotEmptyField } from './utils';

@@ -1,26 +1,17 @@
 import React from 'react';
 import { QueryRenderer } from '../../../relay/environment';
 import ListLines from '../../../components/list_lines/ListLines';
-import StixSightingRelationshipsLines, {
-  stixSightingRelationshipsLinesQuery,
-} from './stix_sighting_relationships/StixSightingRelationshipsLines';
+import StixSightingRelationshipsLines, { stixSightingRelationshipsLinesQuery } from './stix_sighting_relationships/StixSightingRelationshipsLines';
 import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
 import {
   StixSightingRelationshipsLinesPaginationQuery$data,
   StixSightingRelationshipsLinesPaginationQuery$variables,
 } from './stix_sighting_relationships/__generated__/StixSightingRelationshipsLinesPaginationQuery.graphql';
 import useEntityToggle from '../../../utils/hooks/useEntityToggle';
-import {
-  StixSightingRelationshipLine_node$data,
-} from './stix_sighting_relationships/__generated__/StixSightingRelationshipLine_node.graphql';
+import { StixSightingRelationshipLine_node$data } from './stix_sighting_relationships/__generated__/StixSightingRelationshipLine_node.graphql';
 import ToolBar from '../data/ToolBar';
 import ExportContextProvider from '../../../utils/ExportContextProvider';
-import {
-  filtersWithEntityType,
-  findFilterFromKey,
-  GqlFilterGroup,
-  emptyFilterGroup,
-} from '../../../utils/filters/filtersUtils';
+import { filtersWithEntityType, findFilterFromKey, GqlFilterGroup, emptyFilterGroup } from '../../../utils/filters/filtersUtils';
 
 const dataColumns = {
   x_opencti_negative: {

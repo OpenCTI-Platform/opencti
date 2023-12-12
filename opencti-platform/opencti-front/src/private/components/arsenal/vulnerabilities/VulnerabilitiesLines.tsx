@@ -4,10 +4,7 @@ import ListLinesContent from '../../../../components/list_lines/ListLinesContent
 import { VulnerabilityLine, VulnerabilityLineDummy } from './VulnerabilityLine';
 import { DataColumns } from '../../../../components/list_lines';
 import { HandleAddFilter, UseLocalStorageHelpers } from '../../../../utils/hooks/useLocalStorage';
-import {
-  VulnerabilitiesLinesPaginationQuery,
-  VulnerabilitiesLinesPaginationQuery$variables,
-} from './__generated__/VulnerabilitiesLinesPaginationQuery.graphql';
+import { VulnerabilitiesLinesPaginationQuery, VulnerabilitiesLinesPaginationQuery$variables } from './__generated__/VulnerabilitiesLinesPaginationQuery.graphql';
 import usePreloadedPaginationFragment from '../../../../utils/hooks/usePreloadedPaginationFragment';
 import { VulnerabilitiesLines_data$key } from './__generated__/VulnerabilitiesLines_data.graphql';
 

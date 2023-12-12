@@ -1,15 +1,6 @@
 import React, { useState } from 'react';
 import * as PropTypes from 'prop-types';
-import {
-  compose,
-  filter,
-  flatten,
-  fromPairs,
-  includes,
-  map,
-  uniq,
-  zip,
-} from 'ramda';
+import { compose, filter, flatten, fromPairs, includes, map, uniq, zip } from 'ramda';
 import * as Yup from 'yup';
 import Grid from '@mui/material/Grid';
 import withStyles from '@mui/styles/withStyles';
@@ -26,11 +17,7 @@ import * as R from 'ramda';
 import FileExportViewer from '../files/FileExportViewer';
 import FileImportViewer from '../files/FileImportViewer';
 import SelectField from '../../../../components/SelectField';
-import {
-  commitMutation,
-  MESSAGING$,
-  QueryRenderer,
-} from '../../../../relay/environment';
+import { commitMutation, MESSAGING$, QueryRenderer } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
 import { markingDefinitionsLinesSearchQuery } from '../../settings/marking_definitions/MarkingDefinitionsLines';
 import Loader from '../../../../components/Loader';

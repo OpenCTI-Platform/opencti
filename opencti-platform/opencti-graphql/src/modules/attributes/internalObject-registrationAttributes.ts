@@ -18,7 +18,9 @@ import {
   ENTITY_TYPE_SYNC,
   ENTITY_TYPE_BACKGROUND_TASK,
   ENTITY_TYPE_TAXII_COLLECTION,
-  ENTITY_TYPE_USER, ENTITY_TYPE_FEED, ENTITY_TYPE_HISTORY,
+  ENTITY_TYPE_USER,
+  ENTITY_TYPE_FEED,
+  ENTITY_TYPE_HISTORY
 } from '../../schema/internalObject';
 import { settingsMessages } from '../../domain/settings';
 

@@ -6,10 +6,7 @@ import CountryField from '@components/common/form/CountryField';
 import { Option } from '@components/common/form/ReferenceField';
 import { useFormatter } from '../../../../components/i18n';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
-import {
-  commitMutation,
-  defaultCommitMutation,
-} from '../../../../relay/environment';
+import { commitMutation, defaultCommitMutation } from '../../../../relay/environment';
 import DatePickerField from '../../../../components/DatePickerField';
 import { SubscriptionFocus } from '../../../../components/Subscription';
 import MarkdownField from '../../../../components/MarkdownField';

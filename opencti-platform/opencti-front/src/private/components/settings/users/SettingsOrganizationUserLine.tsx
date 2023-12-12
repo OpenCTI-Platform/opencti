@@ -3,18 +3,11 @@ import { graphql, useFragment } from 'react-relay';
 import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
-import {
-  AccountCircleOutlined,
-  AdminPanelSettingsOutlined,
-  KeyboardArrowRightOutlined,
-  PersonOutlined,
-} from '@mui/icons-material';
+import { AccountCircleOutlined, AdminPanelSettingsOutlined, KeyboardArrowRightOutlined, PersonOutlined } from '@mui/icons-material';
 import { Link } from 'react-router-dom';
 import Skeleton from '@mui/material/Skeleton';
 import makeStyles from '@mui/styles/makeStyles';
-import {
-  SettingsOrganizationUserLine_node$key,
-} from '@components/settings/users/__generated__/SettingsOrganizationUserLine_node.graphql';
+import { SettingsOrganizationUserLine_node$key } from '@components/settings/users/__generated__/SettingsOrganizationUserLine_node.graphql';
 import { ListItemSecondaryAction } from '@mui/material';
 import Tooltip from '@mui/material/Tooltip';
 import { DataColumns } from '../../../../components/list_lines';

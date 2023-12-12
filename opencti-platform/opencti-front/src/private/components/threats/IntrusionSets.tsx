@@ -1,14 +1,9 @@
 import React from 'react';
 import Grid from '@mui/material/Grid';
 import { GenericAttackCardDummy } from '@components/common/cards/GenericAttackCard';
-import {
-  IntrusionSetsCardsPaginationQuery,
-  IntrusionSetsCardsPaginationQuery$variables,
-} from './intrusion_sets/__generated__/IntrusionSetsCardsPaginationQuery.graphql';
+import { IntrusionSetsCardsPaginationQuery, IntrusionSetsCardsPaginationQuery$variables } from './intrusion_sets/__generated__/IntrusionSetsCardsPaginationQuery.graphql';
 import ListCards from '../../../components/list_cards/ListCards';
-import IntrusionSetsCards, {
-  intrusionSetsCardsQuery,
-} from './intrusion_sets/IntrusionSetsCards';
+import IntrusionSetsCards, { intrusionSetsCardsQuery } from './intrusion_sets/IntrusionSetsCards';
 import IntrusionSetCreation from './intrusion_sets/IntrusionSetCreation';
 import Security from '../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE } from '../../../utils/hooks/useGranted';

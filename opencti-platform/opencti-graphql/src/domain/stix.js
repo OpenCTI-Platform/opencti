@@ -9,18 +9,8 @@ import { findById as findMarkingDefinitionById } from './markingDefinition';
 import { now, observableValue } from '../utils/format';
 import { createWork } from './work';
 import { pushToConnector } from '../database/rabbitmq';
-import {
-  RELATION_CREATED_BY,
-  RELATION_GRANTED_TO,
-  RELATION_OBJECT_LABEL,
-  RELATION_OBJECT_MARKING
-} from '../schema/stixRefRelationship';
-import {
-  ENTITY_TYPE_CONTAINER_NOTE,
-  ENTITY_TYPE_CONTAINER_OPINION,
-  isStixDomainObjectShareableContainer,
-  STIX_ORGANIZATIONS_UNRESTRICTED,
-} from '../schema/stixDomainObject';
+import { RELATION_CREATED_BY, RELATION_GRANTED_TO, RELATION_OBJECT_LABEL, RELATION_OBJECT_MARKING } from '../schema/stixRefRelationship';
+import { ENTITY_TYPE_CONTAINER_NOTE, ENTITY_TYPE_CONTAINER_OPINION, isStixDomainObjectShareableContainer, STIX_ORGANIZATIONS_UNRESTRICTED } from '../schema/stixDomainObject';
 import {
   ABSTRACT_STIX_CORE_OBJECT,
   ABSTRACT_STIX_CYBER_OBSERVABLE,

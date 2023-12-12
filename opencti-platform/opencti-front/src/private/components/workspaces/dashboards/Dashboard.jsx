@@ -5,19 +5,11 @@ import RGL, { WidthProvider } from 'react-grid-layout';
 import Paper from '@mui/material/Paper';
 import makeStyles from '@mui/styles/makeStyles';
 import { v4 as uuid } from 'uuid';
-import {
-  daysAgo,
-  dayStartDate,
-  monthsAgo,
-  parse,
-  yearsAgo,
-} from '../../../../utils/Time';
+import { daysAgo, dayStartDate, monthsAgo, parse, yearsAgo } from '../../../../utils/Time';
 import WorkspaceHeader from '../WorkspaceHeader';
 import { commitMutation } from '../../../../relay/environment';
 import { workspaceMutationFieldPatch } from '../WorkspaceEditionOverview';
-import useGranted, {
-  EXPLORE_EXUPDATE,
-} from '../../../../utils/hooks/useGranted';
+import useGranted, { EXPLORE_EXUPDATE } from '../../../../utils/hooks/useGranted';
 import WidgetPopover from './WidgetPopover';
 import { fromB64, toB64 } from '../../../../utils/String';
 import WidgetConfig from './WidgetConfig';
@@ -62,10 +54,7 @@ import AuditsMultiHeatMap from '../../common/audits/AuditsMultiHeatMap';
 import AuditsTreeMap from '../../common/audits/AuditsTreeMap';
 import AuditsDistributionList from '../../common/audits/AuditsDistributionList';
 import { ErrorBoundary, SimpleError } from '../../Error';
-import {
-  deserializeDashboardManifestForFrontend,
-  serializeDashboardManifestForBackend,
-} from '../../../../utils/filters/filtersUtils';
+import { deserializeDashboardManifestForFrontend, serializeDashboardManifestForBackend } from '../../../../utils/filters/filtersUtils';
 
 const useStyles = makeStyles(() => ({
   container: {

@@ -3,8 +3,7 @@ import * as PropTypes from 'prop-types';
 import { createPaginationContainer, graphql } from 'react-relay';
 import { compose } from 'ramda';
 import inject18n from '../../../../components/i18n';
-import StixCoreRelationshipCreationFromEntityList
-  from '../../common/stix_core_relationships/StixCoreRelationshipCreationFromEntityList';
+import StixCoreRelationshipCreationFromEntityList from '../../common/stix_core_relationships/StixCoreRelationshipCreationFromEntityList';
 
 class StixCyberObservableAddIndicatorsLinesContainer extends Component {
   render() {

@@ -6,22 +6,7 @@ import Button from '@mui/material/Button';
 import IconButton from '@mui/material/IconButton';
 import Fab from '@mui/material/Fab';
 import { Add, Close } from '@mui/icons-material';
-import {
-  assoc,
-  compose,
-  dissoc,
-  filter,
-  fromPairs,
-  includes,
-  map,
-  pipe,
-  pluck,
-  prop,
-  propOr,
-  sortBy,
-  toLower,
-  toPairs,
-} from 'ramda';
+import { assoc, compose, dissoc, filter, fromPairs, includes, map, pipe, pluck, prop, propOr, sortBy, toLower, toPairs } from 'ramda';
 import * as Yup from 'yup';
 import { graphql } from 'react-relay';
 import DialogTitle from '@mui/material/DialogTitle';
@@ -31,31 +16,18 @@ import List from '@mui/material/List';
 import ListItemText from '@mui/material/ListItemText';
 import makeStyles from '@mui/styles/makeStyles';
 import { ListItemButton } from '@mui/material';
-import {
-  commitMutation,
-  handleErrorInForm,
-  QueryRenderer,
-} from '../../../../relay/environment';
+import { commitMutation, handleErrorInForm, QueryRenderer } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
 import SwitchField from '../../../../components/SwitchField';
 import CreatedByField from '../../common/form/CreatedByField';
 import ObjectLabelField from '../../common/form/ObjectLabelField';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
-import {
-  stixCyberObservablesLinesAttributesQuery,
-  stixCyberObservablesLinesSubTypesQuery,
-} from './StixCyberObservablesLines';
+import { stixCyberObservablesLinesAttributesQuery, stixCyberObservablesLinesSubTypesQuery } from './StixCyberObservablesLines';
 import { parse } from '../../../../utils/Time';
 import MarkdownField from '../../../../components/MarkdownField';
 import { ExternalReferencesField } from '../../common/form/ExternalReferencesField';
 import DateTimePickerField from '../../../../components/DateTimePickerField';
-import {
-  booleanAttributes,
-  dateAttributes,
-  ignoredAttributes,
-  multipleAttributes,
-  numberAttributes,
-} from '../../../../utils/hooks/useAttributes';
+import { booleanAttributes, dateAttributes, ignoredAttributes, multipleAttributes, numberAttributes } from '../../../../utils/hooks/useAttributes';
 import ArtifactField from '../../common/form/ArtifactField';
 import OpenVocabField from '../../common/form/OpenVocabField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';

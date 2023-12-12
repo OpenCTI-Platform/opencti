@@ -2,12 +2,8 @@ import React, { FunctionComponent } from 'react';
 import ToggleButton from '@mui/material/ToggleButton';
 import { NotificationsOutlined } from '@mui/icons-material';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
-import {
-  StixCoreObjectQuickSubscriptionContentPaginationQuery,
-} from './__generated__/StixCoreObjectQuickSubscriptionContentPaginationQuery.graphql';
-import StixCoreObjectQuickSubscriptionContent, {
-  stixCoreObjectQuickSubscriptionContentQuery,
-} from './StixCoreObjectQuickSubscriptionContent';
+import { StixCoreObjectQuickSubscriptionContentPaginationQuery } from './__generated__/StixCoreObjectQuickSubscriptionContentPaginationQuery.graphql';
+import StixCoreObjectQuickSubscriptionContent, { stixCoreObjectQuickSubscriptionContentQuery } from './StixCoreObjectQuickSubscriptionContent';
 import { GqlFilterGroup } from '../../../../utils/filters/filtersUtils';
 
 interface StixCoreObjectQuickSubscriptionProps {

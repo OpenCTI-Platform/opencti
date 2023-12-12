@@ -1,9 +1,6 @@
 import React, { FunctionComponent } from 'react';
 import { graphql, PreloadedQuery } from 'react-relay';
-import {
-  WorkspacesLinesPaginationQuery,
-  WorkspacesLinesPaginationQuery$variables,
-} from '@components/workspaces/__generated__/WorkspacesLinesPaginationQuery.graphql';
+import { WorkspacesLinesPaginationQuery, WorkspacesLinesPaginationQuery$variables } from '@components/workspaces/__generated__/WorkspacesLinesPaginationQuery.graphql';
 import { WorkspacesLines_data$key } from '@components/workspaces/__generated__/WorkspacesLines_data.graphql';
 import ListLinesContent from '../../../components/list_lines/ListLinesContent';
 import { WorkspaceLine, WorkspaceLineDummy } from './WorkspaceLine';

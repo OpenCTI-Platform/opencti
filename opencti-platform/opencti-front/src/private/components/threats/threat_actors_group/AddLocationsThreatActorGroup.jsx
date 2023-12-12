@@ -9,9 +9,7 @@ import inject18n from '../../../../components/i18n';
 import SearchInput from '../../../../components/SearchInput';
 import { QueryRenderer } from '../../../../relay/environment';
 import LocationCreation from '../../common/location/LocationCreation';
-import AddLocationsThreatActorGroupLines, {
-  addLocationsThreatActorGroupLinesQuery,
-} from './AddLocationsThreatActorGroupLines';
+import AddLocationsThreatActorGroupLines, { addLocationsThreatActorGroupLinesQuery } from './AddLocationsThreatActorGroupLines';
 import { insertNode } from '../../../../utils/store';
 
 const styles = () => ({

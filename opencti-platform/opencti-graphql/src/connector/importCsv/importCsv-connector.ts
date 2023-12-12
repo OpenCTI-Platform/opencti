@@ -5,12 +5,7 @@ import { executionContext } from '../../utils/access';
 import type { AuthContext } from '../../types/user';
 import { consumeQueue, pushToSync, registerConnectorQueues } from '../../database/rabbitmq';
 import { downloadFile, upload } from '../../database/file-storage';
-import {
-  reportExpectation,
-  updateExpectationsNumber,
-  updateProcessedTime,
-  updateReceivedTime
-} from '../../domain/work';
+import { reportExpectation, updateExpectationsNumber, updateProcessedTime, updateReceivedTime } from '../../domain/work';
 import { bundleProcess } from '../../parser/csv-bundler';
 import { OPENCTI_SYSTEM_UUID } from '../../schema/general';
 import { resolveUserById } from '../../domain/user';

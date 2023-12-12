@@ -27,13 +27,7 @@ import type { AuthContext } from '../types/user';
 import { executionContext, SYSTEM_USER } from '../utils/access';
 import { now } from '../utils/format';
 import type { NotificationData } from '../utils/publisher-mock';
-import {
-  type ActivityNotificationEvent,
-  type DigestEvent,
-  getNotifications,
-  type KnowledgeNotificationEvent,
-  type NotificationUser,
-} from './notificationManager';
+import { type ActivityNotificationEvent, type DigestEvent, getNotifications, type KnowledgeNotificationEvent, type NotificationUser } from './notificationManager';
 import { getHttpClient } from '../utils/http-client';
 
 const DOC_URI = 'https://filigran.notion.site/OpenCTI-Public-Knowledge-Base-d411e5e477734c59887dad3649f20518';

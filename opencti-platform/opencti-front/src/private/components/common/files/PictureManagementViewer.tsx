@@ -7,10 +7,7 @@ import { graphql, useFragment } from 'react-relay';
 import List from '@mui/material/List';
 import { useFormatter } from '../../../../components/i18n';
 import PictureLine from './PictureLine';
-import {
-  PictureManagementViewer_entity$data,
-  PictureManagementViewer_entity$key,
-} from './__generated__/PictureManagementViewer_entity.graphql';
+import { PictureManagementViewer_entity$data, PictureManagementViewer_entity$key } from './__generated__/PictureManagementViewer_entity.graphql';
 import ColumnsLinesTitles from '../../../../components/ColumnsLinesTitles';
 
 const useStyles = makeStyles(() => ({

@@ -1,15 +1,11 @@
 import React, { FunctionComponent } from 'react';
 import { graphql, PreloadedQuery } from 'react-relay';
-import {
-  ContainerStixDomainObjectLine_node$data,
-} from '@components/common/containers/__generated__/ContainerStixDomainObjectLine_node.graphql';
+import { ContainerStixDomainObjectLine_node$data } from '@components/common/containers/__generated__/ContainerStixDomainObjectLine_node.graphql';
 import {
   ContainerStixDomainObjectsLinesQuery,
   ContainerStixDomainObjectsLinesQuery$variables,
 } from '@components/common/containers/__generated__/ContainerStixDomainObjectsLinesQuery.graphql';
-import {
-  ContainerStixDomainObjectsLines_container$key,
-} from '@components/common/containers/__generated__/ContainerStixDomainObjectsLines_container.graphql';
+import { ContainerStixDomainObjectsLines_container$key } from '@components/common/containers/__generated__/ContainerStixDomainObjectsLines_container.graphql';
 import ListLinesContent from '../../../../components/list_lines/ListLinesContent';
 import { ContainerStixDomainObjectLine, ContainerStixDomainObjectLineDummy } from './ContainerStixDomainObjectLine';
 import Security from '../../../../utils/Security';

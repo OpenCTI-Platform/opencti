@@ -1,15 +1,13 @@
 import React, { FunctionComponent, useState } from 'react';
 import * as R from 'ramda';
 import {
-  StixDomainObjectIndicatorsLinesQuery$data, StixDomainObjectIndicatorsLinesQuery$variables,
+  StixDomainObjectIndicatorsLinesQuery$data,
+  StixDomainObjectIndicatorsLinesQuery$variables,
 } from '@components/observations/indicators/__generated__/StixDomainObjectIndicatorsLinesQuery.graphql';
-import StixDomainObjectIndicatorsLines, {
-  stixDomainObjectIndicatorsLinesQuery,
-} from './StixDomainObjectIndicatorsLines';
+import StixDomainObjectIndicatorsLines, { stixDomainObjectIndicatorsLinesQuery } from './StixDomainObjectIndicatorsLines';
 import ListLines from '../../../../components/list_lines/ListLines';
 import { QueryRenderer } from '../../../../relay/environment';
-import StixCoreRelationshipCreationFromEntity
-  from '../../common/stix_core_relationships/StixCoreRelationshipCreationFromEntity';
+import StixCoreRelationshipCreationFromEntity from '../../common/stix_core_relationships/StixCoreRelationshipCreationFromEntity';
 import IndicatorsRightBar from './IndicatorsRightBar';
 import Security from '../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';

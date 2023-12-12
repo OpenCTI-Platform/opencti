@@ -28,12 +28,7 @@ import { utcDate } from '../utils/format';
 import { findById } from '../modules/playbook/playbook-domain';
 import type { StreamConfiguration } from '../modules/playbook/playbook-components';
 import { PLAYBOOK_COMPONENTS } from '../modules/playbook/playbook-components';
-import type {
-  BasicStoreEntityPlaybook,
-  ComponentDefinition,
-  PlaybookExecution,
-  PlaybookExecutionStep
-} from '../modules/playbook/playbook-types';
+import type { BasicStoreEntityPlaybook, ComponentDefinition, PlaybookExecution, PlaybookExecutionStep } from '../modules/playbook/playbook-types';
 import { ENTITY_TYPE_PLAYBOOK } from '../modules/playbook/playbook-types';
 import { isNotEmptyField } from '../database/utils';
 import type { BasicStoreSettings } from '../types/settings';

@@ -11,13 +11,9 @@ import StixCoreRelationship from '../../common/stix_core_relationships/StixCoreR
 import StixCoreObjectKnowledgeBar from '../../common/stix_core_objects/StixCoreObjectKnowledgeBar';
 import EntityStixSightingRelationships from '../../events/stix_sighting_relationships/EntityStixSightingRelationships';
 import StixSightingRelationship from '../../events/stix_sighting_relationships/StixSightingRelationship';
-import EntityStixCoreRelationshipsIndicators
-  from '../../common/stix_core_relationships/views/indicators/EntityStixCoreRelationshipsIndicators';
-import EntityStixCoreRelationshipsStixCyberObservable
-  from '../../common/stix_core_relationships/views/stix_cyber_observable/EntityStixCoreRelationshipsStixCyberObservable';
-import {
-  InfrastructureKnowledge_infrastructure$key,
-} from './__generated__/InfrastructureKnowledge_infrastructure.graphql';
+import EntityStixCoreRelationshipsIndicators from '../../common/stix_core_relationships/views/indicators/EntityStixCoreRelationshipsIndicators';
+import EntityStixCoreRelationshipsStixCyberObservable from '../../common/stix_core_relationships/views/stix_cyber_observable/EntityStixCoreRelationshipsStixCyberObservable';
+import { InfrastructureKnowledge_infrastructure$key } from './__generated__/InfrastructureKnowledge_infrastructure.graphql';
 
 const infrastructureKnowledgeFragment = graphql`
   fragment InfrastructureKnowledge_infrastructure on Infrastructure {

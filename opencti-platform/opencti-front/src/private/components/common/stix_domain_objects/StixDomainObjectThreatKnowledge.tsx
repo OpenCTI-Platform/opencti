@@ -5,11 +5,7 @@ import Card from '@mui/material/Card';
 import CardContent from '@mui/material/CardContent';
 import Grid from '@mui/material/Grid';
 import { HexagonMultipleOutline, ShieldSearch } from 'mdi-material-ui';
-import {
-  DescriptionOutlined,
-  DeviceHubOutlined,
-  SettingsOutlined,
-} from '@mui/icons-material';
+import { DescriptionOutlined, DeviceHubOutlined, SettingsOutlined } from '@mui/icons-material';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
 import IconButton from '@mui/material/IconButton';
@@ -21,8 +17,12 @@ import MenuItem from '@mui/material/MenuItem';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import Switch from '@mui/material/Switch';
 import makeStyles from '@mui/styles/makeStyles';
-import { StixDomainObjectThreatKnowledgeReportsNumberQuery$data } from '@components/common/stix_domain_objects/__generated__/StixDomainObjectThreatKnowledgeReportsNumberQuery.graphql';
-import { StixDomainObjectThreatKnowledgeStixCoreRelationshipsNumberQuery$data } from '@components/common/stix_domain_objects/__generated__/StixDomainObjectThreatKnowledgeStixCoreRelationshipsNumberQuery.graphql';
+import {
+  StixDomainObjectThreatKnowledgeReportsNumberQuery$data,
+} from '@components/common/stix_domain_objects/__generated__/StixDomainObjectThreatKnowledgeReportsNumberQuery.graphql';
+import {
+  StixDomainObjectThreatKnowledgeStixCoreRelationshipsNumberQuery$data,
+} from '@components/common/stix_domain_objects/__generated__/StixDomainObjectThreatKnowledgeStixCoreRelationshipsNumberQuery.graphql';
 import {
   StixDomainObjectThreatKnowledgeQueryStixRelationshipsQuery$data,
   StixDomainObjectThreatKnowledgeQueryStixRelationshipsQuery$variables,
@@ -42,12 +42,7 @@ import ExportButtons from '../../../../components/ExportButtons';
 import Filters from '../lists/Filters';
 import { usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStorage';
 import { Theme } from '../../../../components/Theme';
-import {
-  emptyFilterGroup,
-  removeFilter,
-  removeIdFromFilterObject,
-  extractAllValueFromFilters,
-} from '../../../../utils/filters/filtersUtils';
+import { emptyFilterGroup, removeFilter, removeIdFromFilterObject, extractAllValueFromFilters } from '../../../../utils/filters/filtersUtils';
 import FilterIconButton from '../../../../components/FilterIconButton';
 
 const useStyles = makeStyles<Theme>((theme) => ({

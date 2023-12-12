@@ -4,7 +4,21 @@ import { elBatchIds } from '../database/engine';
 import { batchLoader } from '../database/middleware';
 import { fetchEditContext, pubSubAsyncIterator } from '../database/redis';
 import { addGroup } from '../domain/grant';
-import { batchMarkingDefinitions, batchMembers, batchRoles, defaultMarkingDefinitions, findAll, findById, groupAddRelation, groupCleanContext, groupDelete, groupDeleteRelation, groupEditContext, groupEditDefaultMarking, groupEditField, } from '../domain/group';
+import {
+  batchMarkingDefinitions,
+  batchMembers,
+  batchRoles,
+  defaultMarkingDefinitions,
+  findAll,
+  findById,
+  groupAddRelation,
+  groupCleanContext,
+  groupDelete,
+  groupDeleteRelation,
+  groupEditContext,
+  groupEditDefaultMarking,
+  groupEditField
+} from '../domain/group';
 import withCancel from '../graphql/subscriptionWrapper';
 import { ENTITY_TYPE_GROUP } from '../schema/internalObject';
 

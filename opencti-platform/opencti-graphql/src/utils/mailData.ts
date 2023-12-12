@@ -1,15 +1,7 @@
 // noinspection CssInvalidPropertyValue
 
 import { observableValue, prepareDate } from './format';
-import type {
-  BasicStoreCyberObservable,
-  BasicStoreEntity,
-  BasicStoreObject,
-  BasicStoreRelation,
-  StoreCyberObservable,
-  StoreEntity,
-  StoreRelation
-} from '../types/store';
+import type { BasicStoreCyberObservable, BasicStoreEntity, BasicStoreObject, BasicStoreRelation, StoreCyberObservable, StoreEntity, StoreRelation } from '../types/store';
 import { isStixDomainObject } from '../schema/stixDomainObject';
 import { isStixRelationship } from '../schema/stixRelationship';
 import { isStixCyberObservable } from '../schema/stixCyberObservable';

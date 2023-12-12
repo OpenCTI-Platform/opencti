@@ -89,16 +89,7 @@ import {
   X_DETECTION,
   X_WORKFLOW_ID,
 } from '../schema/identifier';
-import {
-  lockResource,
-  notify,
-  redisAddDeletions,
-  storeCreateEntityEvent,
-  storeCreateRelationEvent,
-  storeDeleteEvent,
-  storeMergeEvent,
-  storeUpdateEvent,
-} from './redis';
+import { lockResource, notify, redisAddDeletions, storeCreateEntityEvent, storeCreateRelationEvent, storeDeleteEvent, storeMergeEvent, storeUpdateEvent } from './redis';
 import { cleanStixIds, STIX_SPEC_VERSION, } from './stix';
 import {
   ABSTRACT_BASIC_RELATIONSHIP,
@@ -162,23 +153,9 @@ import {
 } from '../schema/stixDomainObject';
 import { ENTITY_TYPE_EXTERNAL_REFERENCE, ENTITY_TYPE_LABEL, isStixMetaObject } from '../schema/stixMetaObject';
 import { isStixSightingRelationship } from '../schema/stixSightingRelationship';
-import {
-  ENTITY_HASHED_OBSERVABLE_ARTIFACT,
-  ENTITY_HASHED_OBSERVABLE_STIX_FILE,
-  isStixCyberObservable,
-  isStixCyberObservableHashedObservable,
-} from '../schema/stixCyberObservable';
+import { ENTITY_HASHED_OBSERVABLE_ARTIFACT, ENTITY_HASHED_OBSERVABLE_STIX_FILE, isStixCyberObservable, isStixCyberObservableHashedObservable } from '../schema/stixCyberObservable';
 import conf, { BUS_TOPICS, logApp } from '../config/conf';
-import {
-  FROM_START,
-  FROM_START_STR,
-  mergeDeepRightAll,
-  now,
-  prepareDate,
-  UNTIL_END,
-  UNTIL_END_STR,
-  utcDate,
-} from '../utils/format';
+import { FROM_START, FROM_START_STR, mergeDeepRightAll, now, prepareDate, UNTIL_END, UNTIL_END_STR, utcDate } from '../utils/format';
 import { checkObservableSyntax } from '../utils/syntax';
 import { deleteAllObjectFiles, storeFileConverter, upload } from './file-storage';
 import {
@@ -213,12 +190,7 @@ import { checkRelationConsistency, isRelationConsistent } from '../utils/modelCo
 import { getEntitiesListFromCache } from './cache';
 import { ACTION_TYPE_SHARE, ACTION_TYPE_UNSHARE, createListTask } from '../domain/backgroundTask-common';
 import { ENTITY_TYPE_VOCABULARY, vocabularyDefinitions } from '../modules/vocabulary/vocabulary-types';
-import {
-  getVocabulariesCategories,
-  getVocabularyCategoryForField,
-  isEntityFieldAnOpenVocabulary,
-  updateElasticVocabularyValue
-} from '../modules/vocabulary/vocabulary-utils';
+import { getVocabulariesCategories, getVocabularyCategoryForField, isEntityFieldAnOpenVocabulary, updateElasticVocabularyValue } from '../modules/vocabulary/vocabulary-utils';
 import {
   depsKeysRegister,
   isBooleanAttribute,
@@ -229,11 +201,7 @@ import {
   isObjectAttribute,
   schemaAttributesDefinition
 } from '../schema/schema-attributes';
-import {
-  getAttributesConfiguration,
-  getDefaultValues,
-  getEntitySettingFromCache
-} from '../modules/entitySetting/entitySetting-utils';
+import { getAttributesConfiguration, getDefaultValues, getEntitySettingFromCache } from '../modules/entitySetting/entitySetting-utils';
 import { schemaRelationsRefDefinition } from '../schema/schema-relationsRef';
 import { extractSchemaDefFromPath, validateInputCreation, validateInputUpdate } from '../schema/schema-validator';
 import { getMandatoryAttributesForSetting } from '../domain/attribute';

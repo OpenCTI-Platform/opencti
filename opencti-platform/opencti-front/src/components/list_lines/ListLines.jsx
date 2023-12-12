@@ -8,26 +8,12 @@ import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
-import {
-  ArrowDropDown,
-  ArrowDropUp,
-  FileDownloadOutlined,
-  LibraryBooksOutlined,
-  SettingsOutlined,
-  ViewListOutlined,
-  ViewModuleOutlined,
-} from '@mui/icons-material';
+import { ArrowDropDown, ArrowDropUp, FileDownloadOutlined, LibraryBooksOutlined, SettingsOutlined, ViewListOutlined, ViewModuleOutlined } from '@mui/icons-material';
 import ToggleButton from '@mui/material/ToggleButton';
 import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
 import Checkbox from '@mui/material/Checkbox';
 import Alert from '@mui/material/Alert';
-import {
-  FormatListGroup,
-  RelationManyToMany,
-  VectorPolygon,
-  Group,
-  FileDelimitedOutline,
-} from 'mdi-material-ui';
+import { FormatListGroup, RelationManyToMany, VectorPolygon, Group, FileDelimitedOutline } from 'mdi-material-ui';
 import DialogTitle from '@mui/material/DialogTitle';
 import FormControl from '@mui/material/FormControl';
 import InputLabel from '@mui/material/InputLabel';

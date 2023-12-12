@@ -7,10 +7,7 @@ import ToolBar from '../data/ToolBar';
 import ExportContextProvider from '../../../utils/ExportContextProvider';
 import TasksLines, { tasksLinesQuery } from './tasks/TasksLines';
 import { tasksDataColumns, TasksLineDummy } from './tasks/TasksLine';
-import {
-  TasksLinesPaginationQuery,
-  TasksLinesPaginationQuery$variables,
-} from './tasks/__generated__/TasksLinesPaginationQuery.graphql';
+import { TasksLinesPaginationQuery, TasksLinesPaginationQuery$variables } from './tasks/__generated__/TasksLinesPaginationQuery.graphql';
 import { TasksLine_node$data } from './tasks/__generated__/TasksLine_node.graphql';
 import { filtersWithEntityType, emptyFilterGroup } from '../../../utils/filters/filtersUtils';
 

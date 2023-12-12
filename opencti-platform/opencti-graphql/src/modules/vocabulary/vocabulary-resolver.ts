@@ -1,12 +1,5 @@
 import type { Resolvers, VocabularyDefinition } from '../../generated/graphql';
-import {
-  addVocabulary,
-  deleteVocabulary,
-  editVocabulary,
-  findAll,
-  findById,
-  getVocabularyUsages,
-} from './vocabulary-domain';
+import { addVocabulary, deleteVocabulary, editVocabulary, findAll, findById, getVocabularyUsages } from './vocabulary-domain';
 import { getVocabulariesCategories } from './vocabulary-utils';
 
 const vocabularyResolvers: Resolvers = {

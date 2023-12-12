@@ -5,9 +5,7 @@ import withStyles from '@mui/styles/withStyles';
 import Slide from '@mui/material/Slide';
 import Drawer from '@mui/material/Drawer';
 import { QueryRenderer } from '../../../../relay/environment';
-import StixCyberObservablesExportsContent, {
-  stixCyberObservablesExportsContentQuery,
-} from './StixCyberObservablesExportsContent';
+import StixCyberObservablesExportsContent, { stixCyberObservablesExportsContentQuery } from './StixCyberObservablesExportsContent';
 
 const Transition = React.forwardRef((props, ref) => (
   <Slide direction="up" ref={ref} {...props} />

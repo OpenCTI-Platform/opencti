@@ -1,9 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import IconButton from '@mui/material/IconButton';
-import {
-  RelationManyToMany,
-  CalendarMultiselectOutline,
-} from 'mdi-material-ui';
+import { RelationManyToMany, CalendarMultiselectOutline } from 'mdi-material-ui';
 import Tooltip from '@mui/material/Tooltip';
 import Drawer from '@mui/material/Drawer';
 import Divider from '@mui/material/Divider';

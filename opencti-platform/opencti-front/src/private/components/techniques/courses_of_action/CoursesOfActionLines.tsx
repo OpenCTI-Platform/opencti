@@ -1,11 +1,10 @@
 import React, { FunctionComponent } from 'react';
 import { graphql, PreloadedQuery } from 'react-relay';
 import {
-  CoursesOfActionLinesPaginationQuery, CoursesOfActionLinesPaginationQuery$variables,
+  CoursesOfActionLinesPaginationQuery,
+  CoursesOfActionLinesPaginationQuery$variables,
 } from '@components/techniques/courses_of_action/__generated__/CoursesOfActionLinesPaginationQuery.graphql';
-import {
-  CoursesOfActionLines_data$key,
-} from '@components/techniques/courses_of_action/__generated__/CoursesOfActionLines_data.graphql';
+import { CoursesOfActionLines_data$key } from '@components/techniques/courses_of_action/__generated__/CoursesOfActionLines_data.graphql';
 import ListLinesContent from '../../../../components/list_lines/ListLinesContent';
 import { CourseOfActionLine, CourseOfActionLineDummy } from './CourseOfActionLine';
 import { DataColumns } from '../../../../components/list_lines';

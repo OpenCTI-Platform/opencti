@@ -6,10 +6,7 @@ import LineDummy from '@components/common/LineDummy';
 import { DataColumns } from '../../../../components/list_lines';
 import usePreloadedPaginationFragment from '../../../../utils/hooks/usePreloadedPaginationFragment';
 import ListLinesContent from '../../../../components/list_lines/ListLinesContent';
-import {
-  CsvMapperLinesPaginationQuery,
-  CsvMapperLinesPaginationQuery$variables,
-} from './__generated__/CsvMapperLinesPaginationQuery.graphql';
+import { CsvMapperLinesPaginationQuery, CsvMapperLinesPaginationQuery$variables } from './__generated__/CsvMapperLinesPaginationQuery.graphql';
 
 export const csvMapperLinesQuery = graphql`
   query CsvMapperLinesPaginationQuery(

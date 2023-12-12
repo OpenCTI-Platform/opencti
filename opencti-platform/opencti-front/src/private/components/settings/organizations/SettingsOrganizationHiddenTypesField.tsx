@@ -1,9 +1,7 @@
 import React from 'react';
 import { graphql, useFragment, useMutation } from 'react-relay';
 import HiddenTypesField from '../hidden_types/HiddenTypesField';
-import {
-  SettingsOrganizationHiddenTypesField_organization$key,
-} from './__generated__/SettingsOrganizationHiddenTypesField_organization.graphql';
+import { SettingsOrganizationHiddenTypesField_organization$key } from './__generated__/SettingsOrganizationHiddenTypesField_organization.graphql';
 
 const settingsOrganizationHiddenTypesFieldPatch = graphql`
   mutation SettingsOrganizationHiddenTypesFieldPatchMutation(

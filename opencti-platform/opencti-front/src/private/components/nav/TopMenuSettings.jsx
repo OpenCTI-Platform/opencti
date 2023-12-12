@@ -4,13 +4,7 @@ import Button from '@mui/material/Button';
 import makeStyles from '@mui/styles/makeStyles';
 import { useFormatter } from '../../../components/i18n';
 import Security from '../../../utils/Security';
-import {
-  SETTINGS,
-  SETTINGS_SETACCESSES,
-  SETTINGS_SETLABELS,
-  SETTINGS_SETMARKINGS,
-  VIRTUAL_ORGANIZATION_ADMIN,
-} from '../../../utils/hooks/useGranted';
+import { SETTINGS, SETTINGS_SETACCESSES, SETTINGS_SETLABELS, SETTINGS_SETMARKINGS, VIRTUAL_ORGANIZATION_ADMIN } from '../../../utils/hooks/useGranted';
 import useEnterpriseEdition from '../../../utils/hooks/useEnterpriseEdition';
 import EEChip from '../common/entreprise_edition/EEChip';
 

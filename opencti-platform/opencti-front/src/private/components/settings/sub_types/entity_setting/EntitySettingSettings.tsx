@@ -14,8 +14,7 @@ import { SETTINGS_SETACCESSES } from '../../../../../utils/hooks/useGranted';
 import GroupEntitySettingHiddenTypesList from '../../groups/GroupEntitySettingHiddenTypesList';
 import Security from '../../../../../utils/Security';
 import { EntitySettingSettings_entitySetting$key } from './__generated__/EntitySettingSettings_entitySetting.graphql';
-import SettingsOrganizationEntitySettingHiddenTypesList
-  from '../../organizations/SettingsOrganizationEntitySettingHiddenTypesList';
+import SettingsOrganizationEntitySettingHiddenTypesList from '../../organizations/SettingsOrganizationEntitySettingHiddenTypesList';
 
 const entitySettingFragment = graphql`
   fragment EntitySettingSettings_entitySetting on EntitySetting {

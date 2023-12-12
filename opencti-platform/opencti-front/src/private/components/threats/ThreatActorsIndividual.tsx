@@ -6,9 +6,7 @@ import useQueryLoading from '../../../utils/hooks/useQueryLoading';
 import { KNOWLEDGE_KNUPDATE } from '../../../utils/hooks/useGranted';
 import Security from '../../../utils/Security';
 import { GenericAttackCardDummy } from '../common/cards/GenericAttackCard';
-import ThreatActorsIndividualCards, {
-  threatActorsIndividualCardsPaginationQuery,
-} from './threat_actors_individual/ThreatActorsIndividualCards';
+import ThreatActorsIndividualCards, { threatActorsIndividualCardsPaginationQuery } from './threat_actors_individual/ThreatActorsIndividualCards';
 import {
   ThreatActorsIndividualCardsPaginationQuery,
   ThreatActorsIndividualCardsPaginationQuery$variables,

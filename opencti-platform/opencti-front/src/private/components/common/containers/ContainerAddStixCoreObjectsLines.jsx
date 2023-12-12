@@ -6,15 +6,9 @@ import withStyles from '@mui/styles/withStyles';
 import { ConnectionHandler } from 'relay-runtime';
 import { commitMutation } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
-import {
-  reportKnowledgeGraphMutationRelationDeleteMutation,
-  reportKnowledgeGraphtMutationRelationAddMutation,
-} from '../../analyses/reports/ReportKnowledgeGraphQuery';
+import { reportKnowledgeGraphMutationRelationDeleteMutation, reportKnowledgeGraphtMutationRelationAddMutation } from '../../analyses/reports/ReportKnowledgeGraphQuery';
 import ListLinesContent from '../../../../components/list_lines/ListLinesContent';
-import {
-  ContainerAddStixCoreObjecstLineDummy,
-  ContainerAddStixCoreObjectsLine,
-} from './ContainerAddStixCoreObjectsLine';
+import { ContainerAddStixCoreObjecstLineDummy, ContainerAddStixCoreObjectsLine } from './ContainerAddStixCoreObjectsLine';
 import { setNumberOfElements } from '../../../../utils/Number';
 import { insertNode } from '../../../../utils/store';
 

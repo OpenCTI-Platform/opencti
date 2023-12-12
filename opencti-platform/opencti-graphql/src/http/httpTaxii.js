@@ -4,13 +4,7 @@ import { authenticateUserFromRequest, TAXIIAPI } from '../domain/user';
 import { basePath, getBaseUrl } from '../config/conf';
 import { AuthRequired, ForbiddenAccess, UnsupportedError } from '../config/errors';
 import { STIX_EXT_OCTI } from '../types/stix-extensions';
-import {
-  findById,
-  restAllCollections, restBuildCollection,
-  restCollectionManifest,
-  restCollectionStix,
-  getCollectionById,
-} from '../domain/taxii';
+import { findById, restAllCollections, restBuildCollection, restCollectionManifest, restCollectionStix, getCollectionById } from '../domain/taxii';
 import { BYPASS, executionContext, SYSTEM_USER } from '../utils/access';
 
 const TAXII_VERSION = 'application/taxii+json;version=2.1';

@@ -1,9 +1,5 @@
 import caseIncidentTypeDefs from './case-incident.graphql';
-import {
-  ENTITY_TYPE_CONTAINER_CASE_INCIDENT,
-  type StixCaseIncident,
-  type StoreEntityCaseIncident
-} from './case-incident-types';
+import { ENTITY_TYPE_CONTAINER_CASE_INCIDENT, type StixCaseIncident, type StoreEntityCaseIncident } from './case-incident-types';
 import { ENTITY_TYPE_CONTAINER_CASE } from '../case-types';
 import { NAME_FIELD, normalizeName } from '../../../schema/identifier';
 import type { ModuleDefinition } from '../../../schema/module';

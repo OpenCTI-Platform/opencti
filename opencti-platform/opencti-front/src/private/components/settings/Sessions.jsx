@@ -9,10 +9,7 @@ import inject18n from '../../../components/i18n';
 import { QueryRenderer } from '../../../relay/environment';
 import SessionsList, { sessionsListQuery } from './SessionsList';
 import SearchInput from '../../../components/SearchInput';
-import {
-  buildViewParamsFromUrlAndStorage,
-  saveViewParameters,
-} from '../../../utils/ListParameters';
+import { buildViewParamsFromUrlAndStorage, saveViewParameters } from '../../../utils/ListParameters';
 
 const Transition = React.forwardRef((props, ref) => (
   <Slide direction="up" ref={ref} {...props} />

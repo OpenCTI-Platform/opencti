@@ -14,19 +14,9 @@ import {
 import { BUS_TOPICS } from '../config/conf';
 import { FunctionalError } from '../config/errors';
 import { elCount } from '../database/engine';
-import {
-  isNotEmptyField,
-  READ_INDEX_INFERRED_RELATIONSHIPS,
-  READ_INDEX_STIX_CORE_RELATIONSHIPS
-} from '../database/utils';
+import { isNotEmptyField, READ_INDEX_INFERRED_RELATIONSHIPS, READ_INDEX_STIX_CORE_RELATIONSHIPS } from '../database/utils';
 import { isStixCoreRelationship, stixCoreRelationshipOptions } from '../schema/stixCoreRelationship';
-import {
-  ABSTRACT_STIX_CORE_OBJECT,
-  ABSTRACT_STIX_CORE_RELATIONSHIP,
-  buildRefRelationKey,
-  ENTITY_TYPE_CONTAINER,
-  ENTITY_TYPE_IDENTITY
-} from '../schema/general';
+import { ABSTRACT_STIX_CORE_OBJECT, ABSTRACT_STIX_CORE_RELATIONSHIP, buildRefRelationKey, ENTITY_TYPE_CONTAINER, ENTITY_TYPE_IDENTITY } from '../schema/general';
 import {
   RELATION_CREATED_BY,
   RELATION_EXTERNAL_REFERENCE,
@@ -35,31 +25,13 @@ import {
   RELATION_OBJECT_LABEL,
   RELATION_OBJECT_MARKING,
 } from '../schema/stixRefRelationship';
-import {
-  ENTITY_TYPE_CONTAINER_NOTE,
-  ENTITY_TYPE_CONTAINER_OPINION,
-  ENTITY_TYPE_CONTAINER_REPORT,
-} from '../schema/stixDomainObject';
-import {
-  ENTITY_TYPE_EXTERNAL_REFERENCE,
-  ENTITY_TYPE_KILL_CHAIN_PHASE,
-  ENTITY_TYPE_LABEL,
-  ENTITY_TYPE_MARKING_DEFINITION,
-} from '../schema/stixMetaObject';
-import {
-  buildEntityFilters,
-  listEntities,
-  listRelations,
-  storeLoadById
-} from '../database/middleware-loader';
+import { ENTITY_TYPE_CONTAINER_NOTE, ENTITY_TYPE_CONTAINER_OPINION, ENTITY_TYPE_CONTAINER_REPORT } from '../schema/stixDomainObject';
+import { ENTITY_TYPE_EXTERNAL_REFERENCE, ENTITY_TYPE_KILL_CHAIN_PHASE, ENTITY_TYPE_LABEL, ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
+import { buildEntityFilters, listEntities, listRelations, storeLoadById } from '../database/middleware-loader';
 import { askListExport, exportTransformFilters } from './stix';
 import { workToExportFile } from './work';
 import { ENTITY_TYPE_CONTAINER_CASE } from '../modules/case/case-types';
-import {
-  stixObjectOrRelationshipAddRefRelation,
-  stixObjectOrRelationshipAddRefRelations,
-  stixObjectOrRelationshipDeleteRefRelation
-} from './stixObjectOrStixRelationship';
+import { stixObjectOrRelationshipAddRefRelation, stixObjectOrRelationshipAddRefRelations, stixObjectOrRelationshipDeleteRefRelation } from './stixObjectOrStixRelationship';
 import { addFilter, isFilterGroupNotEmpty } from '../utils/filtering/filtering-utils';
 
 export const findAll = async (context, user, args) => {

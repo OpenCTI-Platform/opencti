@@ -26,12 +26,7 @@ import {
 } from '../domain/stixCyberObservable';
 import { pubSubAsyncIterator } from '../database/redis';
 import withCancel from '../graphql/subscriptionWrapper';
-import {
-  stixCoreObjectExportPush,
-  stixCoreObjectImportPush,
-  stixCoreObjectsExportPush,
-  stixCoreRelationships
-} from '../domain/stixCoreObject';
+import { stixCoreObjectExportPush, stixCoreObjectImportPush, stixCoreObjectsExportPush, stixCoreRelationships } from '../domain/stixCoreObject';
 import { ABSTRACT_STIX_CYBER_OBSERVABLE } from '../schema/general';
 import { stixHashesToInput } from '../schema/fieldDataAdapter';
 import { stixCyberObservableOptions } from '../schema/stixCyberObservable';

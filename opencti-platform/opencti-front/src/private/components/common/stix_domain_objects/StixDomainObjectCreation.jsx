@@ -36,19 +36,14 @@ import { SystemCreationForm } from '../../entities/systems/SystemCreation';
 import { ThreatActorGroupCreationForm } from '../../threats/threat_actors_group/ThreatActorGroupCreation';
 import { ToolCreationForm } from '../../arsenal/tools/ToolCreation';
 import { VulnerabilityCreationForm } from '../../arsenal/vulnerabilities/VulnerabilityCreation';
-import {
-  OpinionCreationFormKnowledgeEditor,
-  OpinionCreationFormKnowledgeParticipant,
-} from '../../analyses/opinions/OpinionCreation';
+import { OpinionCreationFormKnowledgeEditor, OpinionCreationFormKnowledgeParticipant } from '../../analyses/opinions/OpinionCreation';
 import { NarrativeCreationForm } from '../../techniques/narratives/NarrativeCreation';
 import { DataSourceCreationForm } from '../../techniques/data_sources/DataSourceCreation';
 import { DataComponentCreationForm } from '../../techniques/data_components/DataComponentCreation';
 import { CourseOfActionCreationForm } from '../../techniques/courses_of_action/CourseOfActionCreation';
 import { NoteCreationForm } from '../../analyses/notes/NoteCreation';
 import { CaseIncidentCreationForm } from '../../cases/case_incidents/CaseIncidentCreation';
-import useGranted, {
-  KNOWLEDGE_KNUPDATE,
-} from '../../../../utils/hooks/useGranted';
+import useGranted, { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 import { CaseRfiCreationForm } from '../../cases/case_rfis/CaseRfiCreation';
 import { CaseRftCreationForm } from '../../cases/case_rfts/CaseRftCreation';
 import { ThreatActorIndividualCreationForm } from '../../threats/threat_actors_individual/ThreatActorIndividualCreation';

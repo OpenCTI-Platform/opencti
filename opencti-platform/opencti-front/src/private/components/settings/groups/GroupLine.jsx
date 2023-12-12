@@ -6,11 +6,7 @@ import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
-import {
-  CheckCircleOutlined,
-  DoNotDisturbOnOutlined,
-  KeyboardArrowRightOutlined,
-} from '@mui/icons-material';
+import { CheckCircleOutlined, DoNotDisturbOnOutlined, KeyboardArrowRightOutlined } from '@mui/icons-material';
 import { compose } from 'ramda';
 import Skeleton from '@mui/material/Skeleton';
 import { Link } from 'react-router-dom';

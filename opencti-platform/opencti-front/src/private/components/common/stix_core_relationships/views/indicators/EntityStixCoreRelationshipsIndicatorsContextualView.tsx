@@ -7,13 +7,10 @@ import {
   EntityStixCoreRelationshipsIndicatorsContextualViewLinesQuery$variables,
 } from '@components/common/stix_core_relationships/views/indicators/__generated__/EntityStixCoreRelationshipsIndicatorsContextualViewLinesQuery.graphql';
 import ItemPatternType from '../../../../../../components/ItemPatternType';
-import EntityStixCoreRelationshipsIndicatorsContextualViewLines
-  from './EntityStixCoreRelationshipsIndicatorsContextualViewLines';
+import EntityStixCoreRelationshipsIndicatorsContextualViewLines from './EntityStixCoreRelationshipsIndicatorsContextualViewLines';
 import { DataColumns, PaginationOptions } from '../../../../../../components/list_lines';
 import { isEmptyField, isNotEmptyField } from '../../../../../../utils/utils';
-import {
-  EntityStixCoreRelationshipsIndicatorsContextualViewQuery,
-} from './__generated__/EntityStixCoreRelationshipsIndicatorsContextualViewQuery.graphql';
+import { EntityStixCoreRelationshipsIndicatorsContextualViewQuery } from './__generated__/EntityStixCoreRelationshipsIndicatorsContextualViewQuery.graphql';
 import { PaginationLocalStorage } from '../../../../../../utils/hooks/useLocalStorage';
 import { useFormatter } from '../../../../../../components/i18n';
 import usePreloadedFragment from '../../../../../../utils/hooks/usePreloadedFragment';
@@ -21,9 +18,7 @@ import {
   EntityStixCoreRelationshipsIndicatorsContextualViewFragment_stixDomainObject$key,
 } from './__generated__/EntityStixCoreRelationshipsIndicatorsContextualViewFragment_stixDomainObject.graphql';
 import useEntityToggle from '../../../../../../utils/hooks/useEntityToggle';
-import {
-  EntityStixCoreRelationshipsIndicatorsContextualViewLine_node$data,
-} from './__generated__/EntityStixCoreRelationshipsIndicatorsContextualViewLine_node.graphql';
+import { EntityStixCoreRelationshipsIndicatorsContextualViewLine_node$data } from './__generated__/EntityStixCoreRelationshipsIndicatorsContextualViewLine_node.graphql';
 import useAuth from '../../../../../../utils/hooks/useAuth';
 import { defaultValue } from '../../../../../../utils/Graph';
 import StixCoreObjectLabels from '../../../stix_core_objects/StixCoreObjectLabels';
@@ -32,18 +27,10 @@ import ListLines from '../../../../../../components/list_lines/ListLines';
 import Loader, { LoaderVariant } from '../../../../../../components/Loader';
 import ToolBar from '../../../../data/ToolBar';
 import useQueryLoading from '../../../../../../utils/hooks/useQueryLoading';
-import {
-  EntityStixCoreRelationshipsContextualViewLine_node$data,
-} from '../__generated__/EntityStixCoreRelationshipsContextualViewLine_node.graphql';
+import { EntityStixCoreRelationshipsContextualViewLine_node$data } from '../__generated__/EntityStixCoreRelationshipsContextualViewLine_node.graphql';
 import { resolveLink } from '../../../../../../utils/Entity';
 import { Theme } from '../../../../../../components/Theme';
-import {
-  addFilter, cleanFilters,
-  Filter,
-  filtersWithEntityType,
-  findFilterFromKey,
-  removeFilter,
-} from '../../../../../../utils/filters/filtersUtils';
+import { addFilter, cleanFilters, Filter, filtersWithEntityType, findFilterFromKey, removeFilter } from '../../../../../../utils/filters/filtersUtils';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   chip: {

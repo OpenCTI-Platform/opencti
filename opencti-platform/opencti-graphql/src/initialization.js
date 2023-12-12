@@ -18,24 +18,11 @@ import { applyMigration, lastAvailableMigrationTime } from './database/migration
 import { createEntity, loadEntity } from './database/middleware';
 import { INDEX_INTERNAL_OBJECTS, INTERNAL_PLAYBOOK_QUEUE, INTERNAL_SYNC_QUEUE } from './database/utils';
 import { ConfigurationError, LockTimeoutError, TYPE_LOCK_ERROR, UnknownError, UnsupportedError } from './config/errors';
-import {
-  BYPASS,
-  BYPASS_REFERENCE,
-  executionContext,
-  ROLE_ADMINISTRATOR,
-  ROLE_DEFAULT,
-  SYSTEM_USER
-} from './utils/access';
+import { BYPASS, BYPASS_REFERENCE, executionContext, ROLE_ADMINISTRATOR, ROLE_DEFAULT, SYSTEM_USER } from './utils/access';
 import { smtpIsAlive } from './database/smtp';
 import { createStatus, createStatusTemplate } from './domain/status';
 import { ENTITY_TYPE_CONTAINER_REPORT } from './schema/stixDomainObject';
-import {
-  KNOWLEDGE_COLLABORATION,
-  KNOWLEDGE_DELETE,
-  KNOWLEDGE_MANAGE_AUTH_MEMBERS,
-  KNOWLEDGE_ORGANIZATION_RESTRICT,
-  KNOWLEDGE_UPDATE
-} from './schema/general';
+import { KNOWLEDGE_COLLABORATION, KNOWLEDGE_DELETE, KNOWLEDGE_MANAGE_AUTH_MEMBERS, KNOWLEDGE_ORGANIZATION_RESTRICT, KNOWLEDGE_UPDATE } from './schema/general';
 import { VocabularyCategory } from './generated/graphql';
 import { addVocabulary } from './modules/vocabulary/vocabulary-domain';
 import { builtInOv, openVocabularies } from './modules/vocabulary/vocabulary-utils';

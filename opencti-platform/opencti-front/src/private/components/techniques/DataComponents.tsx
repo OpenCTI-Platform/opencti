@@ -5,10 +5,7 @@ import { KNOWLEDGE_KNUPDATE } from '../../../utils/hooks/useGranted';
 import DataComponentCreation from './data_components/DataComponentCreation';
 import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
 import ListLines from '../../../components/list_lines/ListLines';
-import {
-  DataComponentsLinesPaginationQuery,
-  DataComponentsLinesPaginationQuery$variables,
-} from './data_components/__generated__/DataComponentsLinesPaginationQuery.graphql';
+import { DataComponentsLinesPaginationQuery, DataComponentsLinesPaginationQuery$variables } from './data_components/__generated__/DataComponentsLinesPaginationQuery.graphql';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
 import DataComponentLineDummy from './data_components/DataComponentLineDummy';
 import { emptyFilterGroup } from '../../../utils/filters/filtersUtils';

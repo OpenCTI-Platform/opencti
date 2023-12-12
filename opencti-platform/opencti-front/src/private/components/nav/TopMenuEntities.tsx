@@ -1,13 +1,7 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import Button from '@mui/material/Button';
-import {
-  AccountBalanceOutlined,
-  DomainOutlined,
-  EventOutlined,
-  PersonOutlined,
-  StorageOutlined,
-} from '@mui/icons-material';
+import { AccountBalanceOutlined, DomainOutlined, EventOutlined, PersonOutlined, StorageOutlined } from '@mui/icons-material';
 import makeStyles from '@mui/styles/makeStyles';
 import { Theme } from '@mui/material/styles/createTheme';
 import { useFormatter } from '../../../components/i18n';

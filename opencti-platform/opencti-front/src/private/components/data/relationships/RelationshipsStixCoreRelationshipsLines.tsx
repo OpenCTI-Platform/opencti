@@ -1,20 +1,13 @@
 import React, { FunctionComponent } from 'react';
 import { graphql, PreloadedQuery } from 'react-relay';
-import {
-  RelationshipsStixCoreRelationshipLine_node$data,
-} from '@components/data/relationships/__generated__/RelationshipsStixCoreRelationshipLine_node.graphql';
+import { RelationshipsStixCoreRelationshipLine_node$data } from '@components/data/relationships/__generated__/RelationshipsStixCoreRelationshipLine_node.graphql';
 import {
   RelationshipsStixCoreRelationshipsLinesPaginationQuery,
   RelationshipsStixCoreRelationshipsLinesPaginationQuery$variables,
 } from '@components/data/relationships/__generated__/RelationshipsStixCoreRelationshipsLinesPaginationQuery.graphql';
-import {
-  RelationshipsStixCoreRelationshipsLines_data$key,
-} from '@components/data/relationships/__generated__/RelationshipsStixCoreRelationshipsLines_data.graphql';
+import { RelationshipsStixCoreRelationshipsLines_data$key } from '@components/data/relationships/__generated__/RelationshipsStixCoreRelationshipsLines_data.graphql';
 import ListLinesContent from '../../../../components/list_lines/ListLinesContent';
-import {
-  RelationshipsStixCoreRelationshipLine,
-  RelationshipsStixCoreRelationshipLineDummy,
-} from './RelationshipsStixCoreRelationshipLine';
+import { RelationshipsStixCoreRelationshipLine, RelationshipsStixCoreRelationshipLineDummy } from './RelationshipsStixCoreRelationshipLine';
 import usePreloadedPaginationFragment from '../../../../utils/hooks/usePreloadedPaginationFragment';
 import { HandleAddFilter, UseLocalStorageHelpers } from '../../../../utils/hooks/useLocalStorage';
 import { DataColumns } from '../../../../components/list_lines';

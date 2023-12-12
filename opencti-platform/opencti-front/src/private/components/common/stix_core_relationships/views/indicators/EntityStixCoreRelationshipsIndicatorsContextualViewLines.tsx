@@ -1,7 +1,8 @@
 import React, { FunctionComponent } from 'react';
 import { graphql, PreloadedQuery } from 'react-relay';
 import {
-  EntityStixCoreRelationshipsIndicatorsContextualViewLinesQuery, EntityStixCoreRelationshipsIndicatorsContextualViewLinesQuery$variables,
+  EntityStixCoreRelationshipsIndicatorsContextualViewLinesQuery,
+  EntityStixCoreRelationshipsIndicatorsContextualViewLinesQuery$variables,
 } from './__generated__/EntityStixCoreRelationshipsIndicatorsContextualViewLinesQuery.graphql';
 import { DataColumns } from '../../../../../../components/list_lines';
 import { UseEntityToggle } from '../../../../../../utils/hooks/useEntityToggle';

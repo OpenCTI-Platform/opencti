@@ -14,12 +14,7 @@ import MarkdownField from '../../../../components/MarkdownField';
 import StatusField from '../../common/form/StatusField';
 import CommitMessage from '../../common/form/CommitMessage';
 import { adaptFieldValue } from '../../../../utils/String';
-import {
-  convertAssignees,
-  convertCreatedBy,
-  convertMarkings, convertParticipants,
-  convertStatus,
-} from '../../../../utils/edition';
+import { convertAssignees, convertCreatedBy, convertMarkings, convertParticipants, convertStatus } from '../../../../utils/edition';
 import DateTimePickerField from '../../../../components/DateTimePickerField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import OpenVocabField from '../../common/form/OpenVocabField';

@@ -15,18 +15,8 @@ import {
   INPUT_OBJECTS,
   INPUT_PARTICIPANT
 } from './general';
-import {
-  ENTITY_TYPE_LOCATION_COUNTRY,
-  isStixDomainObjectContainer,
-  isStixDomainObjectIdentity,
-  isStixDomainObjectLocation
-} from './stixDomainObject';
-import {
-  ENTITY_TYPE_EXTERNAL_REFERENCE,
-  ENTITY_TYPE_KILL_CHAIN_PHASE,
-  ENTITY_TYPE_LABEL,
-  ENTITY_TYPE_MARKING_DEFINITION
-} from './stixMetaObject';
+import { ENTITY_TYPE_LOCATION_COUNTRY, isStixDomainObjectContainer, isStixDomainObjectIdentity, isStixDomainObjectLocation } from './stixDomainObject';
+import { ENTITY_TYPE_EXTERNAL_REFERENCE, ENTITY_TYPE_KILL_CHAIN_PHASE, ENTITY_TYPE_LABEL, ENTITY_TYPE_MARKING_DEFINITION } from './stixMetaObject';
 import { ENTITY_TYPE_EVENT } from '../modules/event/event-types';
 import { ENTITY_TYPE_USER } from './internalObject';
 import { schemaTypesDefinition } from './schema-types';

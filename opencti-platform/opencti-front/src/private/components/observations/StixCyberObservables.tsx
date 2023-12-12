@@ -4,10 +4,7 @@ import StixCyberObservableCreation from './stix_cyber_observables/StixCyberObser
 import Security from '../../../utils/Security';
 import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
 import ListLines from '../../../components/list_lines/ListLines';
-import StixCyberObservablesLines, {
-  stixCyberObservablesLinesQuery,
-  stixCyberObservablesLinesSearchQuery,
-} from './stix_cyber_observables/StixCyberObservablesLines';
+import StixCyberObservablesLines, { stixCyberObservablesLinesQuery, stixCyberObservablesLinesSearchQuery } from './stix_cyber_observables/StixCyberObservablesLines';
 import ToolBar from '../data/ToolBar';
 import { StixCyberObservablesLinesPaginationQuery$data } from './stix_cyber_observables/__generated__/StixCyberObservablesLinesPaginationQuery.graphql';
 import { QueryRenderer } from '../../../relay/environment';
@@ -18,10 +15,7 @@ import { KNOWLEDGE_KNUPDATE } from '../../../utils/hooks/useGranted';
 import ExportContextProvider from '../../../utils/ExportContextProvider';
 import useEntityToggle from '../../../utils/hooks/useEntityToggle';
 import { StixCyberObservableLine_node$data } from './stix_cyber_observables/__generated__/StixCyberObservableLine_node.graphql';
-import {
-  filtersWithEntityType,
-  emptyFilterGroup,
-} from '../../../utils/filters/filtersUtils';
+import { filtersWithEntityType, emptyFilterGroup } from '../../../utils/filters/filtersUtils';
 
 const LOCAL_STORAGE_KEY = 'stixCyberObservables';
 

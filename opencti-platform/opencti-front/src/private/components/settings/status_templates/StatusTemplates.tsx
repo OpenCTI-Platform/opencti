@@ -2,16 +2,11 @@ import React from 'react';
 import makeStyles from '@mui/styles/makeStyles';
 import ListLines from '../../../../components/list_lines/ListLines';
 import StatusTemplateCreation from './StatusTemplateCreation';
-import StatusTemplatesLines, {
-  statusTemplatesLinesQuery,
-} from './StatusTemplatesLines';
+import StatusTemplatesLines, { statusTemplatesLinesQuery } from './StatusTemplatesLines';
 import { usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStorage';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import StatusTemplateLineDummy from './StatusTemplateLineDummy';
-import {
-  StatusTemplatesLinesPaginationQuery,
-  StatusTemplatesLinesPaginationQuery$variables,
-} from './__generated__/StatusTemplatesLinesPaginationQuery.graphql';
+import { StatusTemplatesLinesPaginationQuery, StatusTemplatesLinesPaginationQuery$variables } from './__generated__/StatusTemplatesLinesPaginationQuery.graphql';
 import LabelsVocabulariesMenu from '../LabelsVocabulariesMenu';
 
 const useStyles = makeStyles(() => ({

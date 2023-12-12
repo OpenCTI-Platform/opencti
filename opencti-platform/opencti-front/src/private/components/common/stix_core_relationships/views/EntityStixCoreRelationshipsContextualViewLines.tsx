@@ -8,7 +8,8 @@ import ListLinesContent from '../../../../../components/list_lines/ListLinesCont
 import Loader, { LoaderVariant } from '../../../../../components/Loader';
 import { DataColumns } from '../../../../../components/list_lines';
 import {
-  EntityStixCoreRelationshipsContextualViewLinesQuery, EntityStixCoreRelationshipsContextualViewLinesQuery$variables,
+  EntityStixCoreRelationshipsContextualViewLinesQuery,
+  EntityStixCoreRelationshipsContextualViewLinesQuery$variables,
 } from './__generated__/EntityStixCoreRelationshipsContextualViewLinesQuery.graphql';
 import { EntityStixCoreRelationshipsContextualViewLine_node$data } from './__generated__/EntityStixCoreRelationshipsContextualViewLine_node.graphql';
 import { EntityStixCoreRelationshipsContextualViewLines_data$key } from './__generated__/EntityStixCoreRelationshipsContextualViewLines_data.graphql';

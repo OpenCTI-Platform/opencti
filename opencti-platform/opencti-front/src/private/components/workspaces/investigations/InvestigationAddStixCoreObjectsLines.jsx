@@ -4,10 +4,7 @@ import { createPaginationContainer, graphql } from 'react-relay';
 import { compose } from 'ramda';
 import withStyles from '@mui/styles/withStyles';
 import * as R from 'ramda';
-import {
-  InvestigationAddStixCoreObjecstLineDummy,
-  InvestigationAddStixCoreObjectsLine,
-} from './InvestigationAddStixCoreObjectsLine';
+import { InvestigationAddStixCoreObjecstLineDummy, InvestigationAddStixCoreObjectsLine } from './InvestigationAddStixCoreObjectsLine';
 import { commitMutation } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
 import ListLinesContent from '../../../../components/list_lines/ListLinesContent';

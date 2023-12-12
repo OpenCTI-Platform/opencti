@@ -10,10 +10,7 @@ import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import GroupUsersLines, { groupUsersLinesQuery } from './GroupUsersLines';
 import SearchInput from '../../../../components/SearchInput';
 import { usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStorage';
-import {
-  GroupUsersLinesQuery,
-  GroupUsersLinesQuery$variables,
-} from './__generated__/GroupUsersLinesQuery.graphql';
+import { GroupUsersLinesQuery, GroupUsersLinesQuery$variables } from './__generated__/GroupUsersLinesQuery.graphql';
 import ColumnsLinesTitles from '../../../../components/ColumnsLinesTitles';
 import { UserLineDummy } from './UserLine';
 

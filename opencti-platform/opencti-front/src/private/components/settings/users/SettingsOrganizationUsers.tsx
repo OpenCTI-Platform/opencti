@@ -11,13 +11,8 @@ import { useFormatter } from '../../../../components/i18n';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import SearchInput from '../../../../components/SearchInput';
 import { usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStorage';
-import {
-  SettingsOrganizationUsersLinesQuery,
-  SettingsOrganizationUsersLinesQuery$variables,
-} from './__generated__/SettingsOrganizationUsersLinesQuery.graphql';
-import SettingsOrganizationUsersLines, {
-  settingsOrganizationUsersLinesQuery,
-} from './SettingsOrganizationUsersLines';
+import { SettingsOrganizationUsersLinesQuery, SettingsOrganizationUsersLinesQuery$variables } from './__generated__/SettingsOrganizationUsersLinesQuery.graphql';
+import SettingsOrganizationUsersLines, { settingsOrganizationUsersLinesQuery } from './SettingsOrganizationUsersLines';
 import { UserLineDummy } from './UserLine';
 import ListLines from '../../../../components/list_lines/ListLines';
 import { DataColumns } from '../../../../components/list_lines';

@@ -1,14 +1,5 @@
 import * as R from 'ramda';
-import {
-  dissoc,
-  head,
-  last,
-  map,
-  mergeLeft,
-  pipe,
-  split,
-  toPairs,
-} from 'ramda';
+import { dissoc, head, last, map, mergeLeft, pipe, split, toPairs } from 'ramda';
 import { APP_BASE_PATH } from '../relay/environment';
 
 const buildParamsFromHistory = (params) => {

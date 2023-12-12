@@ -8,9 +8,7 @@ import { useFormatter } from '../../../../components/i18n';
 import ItemIcon from '../../../../components/ItemIcon';
 import { Theme } from '../../../../components/Theme';
 import { Option } from './ReferenceField';
-import {
-  ObjectParticipantFieldMembersSearchQuery$data,
-} from './__generated__/ObjectParticipantFieldMembersSearchQuery.graphql';
+import { ObjectParticipantFieldMembersSearchQuery$data } from './__generated__/ObjectParticipantFieldMembersSearchQuery.graphql';
 
 const objectParticipantFieldMembersSearchQuery = graphql`
   query ObjectParticipantFieldMembersSearchQuery($search: String, $first: Int, $entityTypes: [MemberType!]) {

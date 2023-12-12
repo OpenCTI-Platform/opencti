@@ -16,7 +16,14 @@ import { MEMBER_ACCESS_RIGHT_VIEW, SYSTEM_USER } from '../../utils/access';
 import { now } from '../../utils/format';
 import { MOCK_NOTIFICATIONS } from '../../utils/publisher-mock';
 import type { BasicStoreEntityTrigger } from '../notification/notification-types';
-import { BUILTIN_NOTIFIERS_CONNECTORS, DEFAULT_TEAM_DIGEST_MESSAGE, DEFAULT_TEAM_MESSAGE, NOTIFIER_CONNECTOR_EMAIL, NOTIFIER_CONNECTOR_UI, STATIC_NOTIFIERS } from './notifier-statics';
+import {
+  BUILTIN_NOTIFIERS_CONNECTORS,
+  DEFAULT_TEAM_DIGEST_MESSAGE,
+  DEFAULT_TEAM_MESSAGE,
+  NOTIFIER_CONNECTOR_EMAIL,
+  NOTIFIER_CONNECTOR_UI,
+  STATIC_NOTIFIERS
+} from './notifier-statics';
 import type { BasicStoreEntityNotifier } from './notifier-types';
 import { ENTITY_TYPE_NOTIFIER } from './notifier-types';
 

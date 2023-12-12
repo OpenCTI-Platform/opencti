@@ -20,30 +20,14 @@ import useQueryLoading from '../../../../../utils/hooks/useQueryLoading';
 import Loader, { LoaderVariant } from '../../../../../components/Loader';
 import usePreloadedFragment from '../../../../../utils/hooks/usePreloadedFragment';
 import { isEmptyField, isNotEmptyField } from '../../../../../utils/utils';
-import {
-  EntityStixCoreRelationshipsContextualViewQuery,
-} from './__generated__/EntityStixCoreRelationshipsContextualViewQuery.graphql';
-import {
-  EntityStixCoreRelationshipsContextualViewFragment_stixDomainObject$key,
-} from './__generated__/EntityStixCoreRelationshipsContextualViewFragment_stixDomainObject.graphql';
-import {
-  EntityStixCoreRelationshipsContextualViewLinesQuery$variables,
-} from './__generated__/EntityStixCoreRelationshipsContextualViewLinesQuery.graphql';
-import {
-  EntityStixCoreRelationshipsContextualViewLine_node$data,
-} from './__generated__/EntityStixCoreRelationshipsContextualViewLine_node.graphql';
+import { EntityStixCoreRelationshipsContextualViewQuery } from './__generated__/EntityStixCoreRelationshipsContextualViewQuery.graphql';
+import { EntityStixCoreRelationshipsContextualViewFragment_stixDomainObject$key } from './__generated__/EntityStixCoreRelationshipsContextualViewFragment_stixDomainObject.graphql';
+import { EntityStixCoreRelationshipsContextualViewLinesQuery$variables } from './__generated__/EntityStixCoreRelationshipsContextualViewLinesQuery.graphql';
+import { EntityStixCoreRelationshipsContextualViewLine_node$data } from './__generated__/EntityStixCoreRelationshipsContextualViewLine_node.graphql';
 import { isStixCoreObjects, isStixCyberObservables } from '../../../../../utils/stixTypeUtils';
 import { Theme } from '../../../../../components/Theme';
 import { resolveLink } from '../../../../../utils/Entity';
-import {
-  addFilter,
-  cleanFilters,
-  removeIdFromFilterObject,
-  Filter,
-  filtersWithEntityType,
-  findFilterFromKey,
-  removeFilter,
-} from '../../../../../utils/filters/filtersUtils';
+import { addFilter, cleanFilters, removeIdFromFilterObject, Filter, filtersWithEntityType, findFilterFromKey, removeFilter } from '../../../../../utils/filters/filtersUtils';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   chipInList: {

@@ -1,9 +1,5 @@
 import { type EntityOptions, listEntitiesPaginated, storeLoadById } from '../../../database/middleware-loader';
-import {
-  type BasicStoreEntityCaseTemplate,
-  ENTITY_TYPE_CASE_TEMPLATE,
-  TEMPLATE_TASK_RELATION
-} from './case-template-types';
+import { type BasicStoreEntityCaseTemplate, ENTITY_TYPE_CASE_TEMPLATE, TEMPLATE_TASK_RELATION } from './case-template-types';
 import type { CaseTemplateAddInput, EditInput, StixRefRelationshipAddInput } from '../../../generated/graphql';
 import type { DomainFindById } from '../../../domain/domainTypes';
 import type { AuthContext, AuthUser } from '../../../types/user';
@@ -12,10 +8,7 @@ import { notify } from '../../../database/redis';
 import { BUS_TOPICS } from '../../../config/conf';
 import { ABSTRACT_INTERNAL_OBJECT } from '../../../schema/general';
 import { publishUserAction } from '../../../listener/UserActionListener';
-import {
-  stixObjectOrRelationshipAddRefRelation,
-  stixObjectOrRelationshipDeleteRefRelation
-} from '../../../domain/stixObjectOrStixRelationship';
+import { stixObjectOrRelationshipAddRefRelation, stixObjectOrRelationshipDeleteRefRelation } from '../../../domain/stixObjectOrStixRelationship';
 import { extractEntityRepresentativeName } from '../../../database/entity-representative';
 import { ENTITY_TYPE_TASK_TEMPLATE } from '../../task/task-template/task-template-types';
 

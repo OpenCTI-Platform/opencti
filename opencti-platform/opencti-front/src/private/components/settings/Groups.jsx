@@ -5,10 +5,7 @@ import { withRouter } from 'react-router-dom';
 import withStyles from '@mui/styles/withStyles';
 import { graphql } from 'react-relay';
 import { QueryRenderer } from '../../../relay/environment';
-import {
-  buildViewParamsFromUrlAndStorage,
-  saveViewParameters,
-} from '../../../utils/ListParameters';
+import { buildViewParamsFromUrlAndStorage, saveViewParameters } from '../../../utils/ListParameters';
 import inject18n from '../../../components/i18n';
 import ListLines from '../../../components/list_lines/ListLines';
 import GroupsLines, { groupsLinesQuery } from './groups/GroupsLines';

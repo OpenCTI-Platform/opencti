@@ -1,8 +1,5 @@
 import React, { FunctionComponent } from 'react';
-import {
-  WorkspacesLinesPaginationQuery,
-  WorkspacesLinesPaginationQuery$variables,
-} from '@components/workspaces/__generated__/WorkspacesLinesPaginationQuery.graphql';
+import { WorkspacesLinesPaginationQuery, WorkspacesLinesPaginationQuery$variables } from '@components/workspaces/__generated__/WorkspacesLinesPaginationQuery.graphql';
 import { WorkspaceLineDummy } from '@components/workspaces/WorkspaceLine';
 import ListLines from '../../../components/list_lines/ListLines';
 import WorkspacesLines, { workspacesLinesQuery } from './WorkspacesLines';

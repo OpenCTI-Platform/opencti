@@ -4,10 +4,7 @@ import * as R from 'ramda';
 import withStyles from '@mui/styles/withStyles';
 import IconButton from '@mui/material/IconButton';
 import Tooltip from '@mui/material/Tooltip';
-import {
-  FilterListOutlined,
-  InvertColorsOffOutlined,
-} from '@mui/icons-material';
+import { FilterListOutlined, InvertColorsOffOutlined } from '@mui/icons-material';
 import Drawer from '@mui/material/Drawer';
 import Select from '@mui/material/Select';
 import MenuItem from '@mui/material/MenuItem';

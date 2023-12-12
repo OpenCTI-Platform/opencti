@@ -9,25 +9,12 @@ import { QueryRenderer } from '../../../../relay/environment';
 import ContainerHeader from '../../common/containers/ContainerHeader';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import AttackPatternsMatrix from '../../techniques/attack_patterns/AttackPatternsMatrix';
-import {
-  buildViewParamsFromUrlAndStorage,
-  saveViewParameters,
-} from '../../../../utils/ListParameters';
-import {
-  constructHandleAddFilter,
-  constructHandleRemoveFilter,
-  emptyFilterGroup, filtersAfterSwitchLocalMode,
-} from '../../../../utils/filters/filtersUtils';
+import { buildViewParamsFromUrlAndStorage, saveViewParameters } from '../../../../utils/ListParameters';
+import { constructHandleAddFilter, constructHandleRemoveFilter, emptyFilterGroup, filtersAfterSwitchLocalMode } from '../../../../utils/filters/filtersUtils';
 import CaseRftPopover from './CaseRftPopover';
-import CaseRftKnowledgeGraph, {
-  caseRftKnowledgeGraphQuery,
-} from './CaseRftKnowledgeGraph';
-import CaseRftKnowledgeTimeLine, {
-  caseRftKnowledgeTimeLineQuery,
-} from './CaseRftKnowledgeTimeLine';
-import CaseRftKnowledgeCorrelation, {
-  caseRftKnowledgeCorrelationQuery,
-} from './CaseRftKnowledgeCorrelation';
+import CaseRftKnowledgeGraph, { caseRftKnowledgeGraphQuery } from './CaseRftKnowledgeGraph';
+import CaseRftKnowledgeTimeLine, { caseRftKnowledgeTimeLineQuery } from './CaseRftKnowledgeTimeLine';
+import CaseRftKnowledgeCorrelation, { caseRftKnowledgeCorrelationQuery } from './CaseRftKnowledgeCorrelation';
 import ContentKnowledgeTimeLineBar from '../../common/containers/ContainertKnowledgeTimeLineBar';
 import investigationAddFromContainer from '../../../../utils/InvestigationUtils';
 

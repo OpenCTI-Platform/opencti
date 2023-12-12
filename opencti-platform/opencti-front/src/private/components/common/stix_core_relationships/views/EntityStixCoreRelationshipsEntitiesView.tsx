@@ -8,24 +8,11 @@ import { useFormatter } from '../../../../../components/i18n';
 import { KNOWLEDGE_KNUPDATE } from '../../../../../utils/hooks/useGranted';
 import StixCoreRelationshipCreationFromEntity from '../StixCoreRelationshipCreationFromEntity';
 import Security from '../../../../../utils/Security';
-import {
-  computeTargetStixCyberObservableTypes,
-  computeTargetStixDomainObjectTypes,
-  isStixCoreObjects,
-  isStixCyberObservables,
-} from '../../../../../utils/stixTypeUtils';
+import { computeTargetStixCyberObservableTypes, computeTargetStixDomainObjectTypes, isStixCoreObjects, isStixCyberObservables } from '../../../../../utils/stixTypeUtils';
 import { PaginationLocalStorage } from '../../../../../utils/hooks/useLocalStorage';
 import { DataColumns, PaginationOptions } from '../../../../../components/list_lines';
-import {
-  EntityStixCoreRelationshipsEntitiesViewLinesPaginationQuery$variables,
-} from './__generated__/EntityStixCoreRelationshipsEntitiesViewLinesPaginationQuery.graphql';
-import {
-  addFilter, cleanFilters,
-  removeIdFromFilterObject,
-  filtersWithEntityType,
-  findFilterFromKey,
-  removeFilter,
-} from '../../../../../utils/filters/filtersUtils';
+import { EntityStixCoreRelationshipsEntitiesViewLinesPaginationQuery$variables } from './__generated__/EntityStixCoreRelationshipsEntitiesViewLinesPaginationQuery.graphql';
+import { addFilter, cleanFilters, removeIdFromFilterObject, filtersWithEntityType, findFilterFromKey, removeFilter } from '../../../../../utils/filters/filtersUtils';
 
 interface EntityStixCoreRelationshipsEntitiesViewProps {
   entityId: string;

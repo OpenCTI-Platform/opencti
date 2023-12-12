@@ -1,10 +1,7 @@
 import React from 'react';
 import { graphql } from 'react-relay';
 import ListLinesContent from '../../../../components/list_lines/ListLinesContent';
-import {
-  ContainerStixCoreObjectsMappingLine,
-  ContainerStixCoreObjectsMappingLineDummy,
-} from './ContainerStixCoreObjectsMappingLine';
+import { ContainerStixCoreObjectsMappingLine, ContainerStixCoreObjectsMappingLineDummy } from './ContainerStixCoreObjectsMappingLine';
 import usePreloadedPaginationFragment from '../../../../utils/hooks/usePreloadedPaginationFragment';
 
 const nbOfRowsToLoad = 50;
