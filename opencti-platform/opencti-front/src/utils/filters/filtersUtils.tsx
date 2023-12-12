@@ -262,6 +262,7 @@ export const findFilterIndexFromKey = (
   return null;
 };
 
+// add entity types context in filters
 export const filtersWithEntityType = (
   filters: FilterGroup | undefined,
   type: string | string[],
@@ -280,6 +281,30 @@ export const filtersWithEntityType = (
       ? [...filters.filters, entityTypeFilter]
       : [entityTypeFilter],
   };
+};
+
+// remove filter with key=entity_type and values contains 'all'
+// because in this case we want everything, so no need for filters
+export const removeAllTypesFromFilter = (inputFilters?: FilterGroup) => {
+  if (inputFilters && isFilterGroupNotEmpty(inputFilters)) {
+    const { filters, filterGroups } = inputFilters;
+    const newFilters: Filter[] = [];
+    const newFilterGroups: FilterGroup[] = [];
+    filters.forEach((filter) => {
+      if (!(filter.key === 'entity_type' && filter.values.includes('all'))) {
+        newFilters.push(filter);
+      }
+    });
+    filterGroups.forEach((group) => {
+      filterGroups.push(removeAllTypesFromFilter(group));
+    });
+    return {
+      mode: inputFilters.mode,
+      filters: newFilters,
+      filterGroups: newFilterGroups,
+    };
+  }
+  return inputFilters;
 };
 
 // return the i18n label corresponding to a value

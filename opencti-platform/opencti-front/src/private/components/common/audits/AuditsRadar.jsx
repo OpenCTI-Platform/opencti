@@ -227,16 +227,11 @@ const AuditsRadar = ({
       );
     }
     const selection = dataSelection[0];
-    let filtersContent = selection.filters?.filters ?? [];
-    const dataSelectionTypes = R.head(
-      filtersContent.filter((n) => n.key === 'entity_type'),
-    )?.values || ['History', 'Activity'];
-    filtersContent = filtersContent.filter((n) => !['entity_type'].includes(n.key));
     return (
       <QueryRenderer
         query={auditsRadarDistributionQuery}
         variables={{
-          types: dataSelectionTypes,
+          types: ['History', 'Activity'],
           field: selection.attribute,
           operation: 'count',
           startDate,
@@ -245,7 +240,7 @@ const AuditsRadar = ({
             selection.date_attribute && selection.date_attribute.length > 0
               ? selection.date_attribute
               : 'timestamp',
-          filters: selection.filters ? { ...selection.filters, filters: filtersContent } : undefined,
+          filters: selection.filters,
           limit: selection.number ?? 10,
         }}
         render={({ props }) => {
