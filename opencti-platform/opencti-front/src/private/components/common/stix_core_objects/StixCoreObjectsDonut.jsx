@@ -211,20 +211,14 @@ const StixCoreObjectsDonut = ({
   const renderContent = () => {
     const selection = dataSelection[0];
     let finalFiltersContent = selection.filters?.filters ?? [];
-    const dataSelectionTypes = R.head(
-      finalFiltersContent.filter((n) => n.key === 'entity_type'),
-    )?.values || ['Stix-Core-Object'];
+    const dataSelectionTypes = ['Stix-Core-Object'];
     const dataSelectionObjectId = R.head(finalFiltersContent.filter((n) => n.key === 'elementId'))?.values || null;
-    const dataSelectionRelationshipType = R.head(finalFiltersContent.filter((n) => n.key === 'relationship_type'))
-      ?.values || null;
     const dataSelectionToTypes = R.head(finalFiltersContent.filter((n) => n.key === 'toTypes'))?.values || null;
     const dataSelectionElementWithTargetTypes = R.head(finalFiltersContent.filter((n) => n.key === 'elementWithTargetTypes'))
       ?.values || null;
     finalFiltersContent = finalFiltersContent.filter(
       (n) => ![
-        'entity_type',
         'elementId',
-        'relationship_type',
         'toTypes',
         'elementWithTargetTypes',
       ].includes(n.key),
@@ -233,7 +227,6 @@ const StixCoreObjectsDonut = ({
       objectId: Array.isArray(dataSelectionObjectId)
         ? R.head(dataSelectionObjectId)
         : dataSelectionObjectId,
-      relationship_type: dataSelectionRelationshipType,
       types: dataSelectionTypes,
       field: selection.attribute,
       operation: 'count',

@@ -192,15 +192,11 @@ const StixCoreObjectsTreeMap = ({
   const renderContent = () => {
     const selection = dataSelection[0];
     let filtersContent = selection.filters?.filters ?? [];
-    const dataSelectionTypes = R.head(
-      filtersContent.filter((n) => n.key === 'entity_type'),
-    )?.values || ['Stix-Core-Object'];
+    const dataSelectionTypes = ['Stix-Core-Object'];
     const dataSelectionObjectId = filtersContent.filter((n) => n.key === 'elementId')?.values || null;
-    const dataSelectionRelationshipType = R.head(filtersContent.filter((n) => n.key === 'relationship_type'))
-      ?.values || null;
     const dataSelectionToTypes = R.head(filtersContent.filter((n) => n.key === 'toTypes'))?.values || null;
     filtersContent = filtersContent.filter(
-      (n) => !['entity_type', 'elementId', 'relationship_type', 'toTypes'].includes(
+      (n) => !['elementId', 'toTypes'].includes(
         n.key,
       ),
     );
@@ -209,7 +205,6 @@ const StixCoreObjectsTreeMap = ({
         query={stixCoreObjectsTreeMapDistributionQuery}
         variables={{
           objectId: dataSelectionObjectId,
-          relationship_type: dataSelectionRelationshipType,
           toTypes: dataSelectionToTypes,
           types: dataSelectionTypes,
           field: selection.attribute,

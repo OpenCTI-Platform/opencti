@@ -64,31 +64,36 @@ const StixCoreObjectsNumber = ({
   const renderContent = () => {
     const selection = dataSelection[0];
     let filtersContent = selection.filters?.filters ?? [];
-    const dataSelectionTypes = R.head(
-      filtersContent.filter((o) => o.key === 'entity_type'),
-    )?.values || ['Stix-Core-Object'];
+    const dataSelectionTypes = ['Stix-Core-Object'];
     const dataSelectionElementId = R.head(filtersContent.filter((o) => o.key === 'elementId'))?.values || null;
-    const dataSelectionRelationshipType = R.head(filtersContent.filter((o) => o.key === 'relationship_type'))
-      ?.values || null;
     filtersContent = filtersContent.filter(
-      (o) => !['entity_type', 'elementId', 'relationship_type'].includes(o.key),
+      (o) => !['elementId'].includes(o.key),
     );
     const dateAttribute = selection.date_attribute && selection.date_attribute.length > 0
       ? selection.date_attribute
       : 'created_at';
+    const dateFiltersContent = [];
     if (startDate) {
-      filtersContent.push({
+      dateFiltersContent.push({
         key: dateAttribute,
         values: [startDate],
         operator: 'gt',
       });
     }
     if (endDate) {
-      filtersContent.push({
+      dateFiltersContent.push({
         key: dateAttribute,
         values: [endDate],
         operator: 'lt',
       });
+    }
+    let filters = selection.filters ? { ...selection.filters, filters: filtersContent } : undefined;
+    if (dateFiltersContent.length > 0) {
+      filters = {
+        mode: 'and',
+        filters: dateFiltersContent,
+        filterGroups: filters ? [filters] : [],
+      };
     }
     return (
       <QueryRenderer
@@ -98,9 +103,8 @@ const StixCoreObjectsNumber = ({
           first: selection.number ?? 10,
           orderBy: dateAttribute,
           orderMode: 'desc',
-          filters: selection.filters ? { ...selection.filters, filters: filtersContent } : undefined,
+          filters,
           elementId: dataSelectionElementId,
-          relationship_type: dataSelectionRelationshipType,
           startDate,
           endDate: dayAgo(),
         }}

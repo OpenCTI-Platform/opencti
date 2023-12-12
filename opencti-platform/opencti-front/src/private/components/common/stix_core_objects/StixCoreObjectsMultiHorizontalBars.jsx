@@ -389,30 +389,21 @@ const stixCoreObjectsMultiHorizontalBars = ({
   const renderContent = () => {
     const selection = dataSelection[0];
     let filtersContent = selection.filters?.filters ?? [];
-    const dataSelectionTypes = R.head(
-      filtersContent.filter((n) => n.key === 'entity_type'),
-    )?.values || ['Stix-Core-Object'];
+    const dataSelectionTypes = ['Stix-Core-Object'];
     const dataSelectionObjectId = filtersContent.filter((n) => n.key === 'elementId')?.values || null;
-    const dataSelectionRelationshipType = R.head(filtersContent.filter((n) => n.key === 'relationship_type'))
-      ?.values || null;
     const dataSelectionToTypes = R.head(filtersContent.filter((n) => n.key === 'toTypes'))?.values || null;
     filtersContent = filtersContent.filter(
-      (n) => !['entity_type', 'elementId', 'relationship_type', 'toTypes'].includes(
+      (n) => !['elementId', 'toTypes'].includes(
         n.key,
       ),
     );
     const subSelection = dataSelection[1];
     let subSelectionFiltersContent = subSelection.filters?.filters ?? [];
-    const subSelectionDataSelectionTypes = R.head(
-      subSelectionFiltersContent.filter((n) => n.key === 'entity_type'),
-    )?.values || ['Stix-Core-Object'];
-    const subSelectionDataSelectionRelationshipType = R.head(
-      subSelectionFiltersContent.filter((n) => n.key === 'relationship_type'),
-    )?.values || null;
+    const subSelectionDataSelectionTypes = ['Stix-Core-Object'];
     const subSelectionDataSelectionToTypes = R.head(subSelectionFiltersContent.filter((n) => n.key === 'toTypes'))
       ?.values || null;
     subSelectionFiltersContent = subSelectionFiltersContent.filter(
-      (n) => !['entity_type', 'elementId', 'relationship_type', 'toTypes'].includes(
+      (n) => !['elementId', 'toTypes'].includes(
         n.key,
       ),
     );
@@ -421,7 +412,6 @@ const stixCoreObjectsMultiHorizontalBars = ({
         query={stixCoreObjectsMultiHorizontalBarsDistributionQuery}
         variables={{
           objectId: dataSelectionObjectId,
-          relationship_type: dataSelectionRelationshipType,
           toTypes: dataSelectionToTypes,
           types: dataSelectionTypes,
           field: selection.attribute,
@@ -436,8 +426,6 @@ const stixCoreObjectsMultiHorizontalBars = ({
             ? { ...selection.filters, filters: filtersContent }
             : undefined,
           limit: selection.number ?? 10,
-          subDistributionRelationshipType:
-            subSelectionDataSelectionRelationshipType,
           subDistributionToTypes: subSelectionDataSelectionToTypes,
           subDistributionField: subSelection.attribute,
           subDistributionStartDate: startDate,

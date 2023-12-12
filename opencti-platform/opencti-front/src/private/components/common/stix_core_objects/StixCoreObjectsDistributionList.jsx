@@ -137,15 +137,11 @@ const StixCoreObjectsDistributionList = ({
   const renderContent = () => {
     const selection = dataSelection[0];
     let filtersContent = selection.filters?.filters ?? [];
-    const dataSelectionTypes = R.head(
-      filtersContent.filter((o) => o.key === 'entity_type'),
-    )?.values || ['Stix-Core-Object'];
+    const dataSelectionTypes = ['Stix-Core-Object'];
     const dataSelectionObjectId = filtersContent.filter((o) => o.key === 'elementId')?.values || null;
-    const dataSelectionRelationshipType = R.head(filtersContent.filter((o) => o.key === 'relationship_type'))
-      ?.values || null;
     const dataSelectionToTypes = R.head(filtersContent.filter((o) => o.key === 'toTypes'))?.values || null;
     filtersContent = filtersContent.filter(
-      (o) => !['entity_type', 'elementId', 'relationship_type', 'toTypes'].includes(
+      (o) => !['elementId', 'toTypes'].includes(
         o.key,
       ),
     );
@@ -162,7 +158,6 @@ const StixCoreObjectsDistributionList = ({
         query={stixCoreObjectsDistributionListDistributionQuery}
         variables={{
           objectId: dataSelectionObjectId,
-          relationship_type: dataSelectionRelationshipType,
           toTypes: dataSelectionToTypes,
           types: dataSelectionTypes,
           field: selection.attribute,

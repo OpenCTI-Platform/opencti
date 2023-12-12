@@ -122,7 +122,7 @@ const AuditsNumber = ({
       filters = {
         mode: 'and',
         filters: dateFiltersContent,
-        filterGroups: [cleanedFilters],
+        filterGroups: cleanedFilters ? [cleanedFilters] : [],
       };
     }
     return (

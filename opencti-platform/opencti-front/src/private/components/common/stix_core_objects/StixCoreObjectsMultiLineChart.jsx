@@ -62,16 +62,13 @@ const StixCoreObjectsMultiLineChart = ({
   const renderContent = () => {
     const timeSeriesParameters = dataSelection.map((selection) => {
       const filtersContent = selection.filters?.filters ?? [];
-      const dataSelectionTypes = findFilterFromKey(filtersContent, 'entity_type', 'eq')?.values ?? ['Stix-Core-Object'];
+      const dataSelectionTypes = ['Stix-Core-Object'];
       const dataSelectionObjectId = findFilterFromKey(filtersContent, 'elementId', 'eq')?.values ?? null;
-      const dataSelectionRelationshipType = findFilterFromKey(filtersContent, 'relationship_type', 'eq')?.values ?? null;
       const finalFilters = selection.filters ? {
         ...selection.filters,
         filters: filtersContent.filter(
           (n) => ![
-            'entity_type',
             'elementId',
-            'relationship_type',
             'toTypes',
           ].includes(n.key),
         ),
@@ -83,7 +80,6 @@ const StixCoreObjectsMultiLineChart = ({
             : 'created_at',
         types: dataSelectionTypes,
         filters: finalFilters,
-        relationship_type: dataSelectionRelationshipType,
         elementId: dataSelectionObjectId,
       };
     });
