@@ -296,7 +296,8 @@ export const removeAllTypesFromFilter = (inputFilters?: FilterGroup) => {
       }
     });
     filterGroups.forEach((group) => {
-      filterGroups.push(removeAllTypesFromFilter(group));
+      const newGroup = removeAllTypesFromFilter(group);
+      if (newGroup) filterGroups.push(newGroup);
     });
     return {
       mode: inputFilters.mode,
