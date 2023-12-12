@@ -348,9 +348,12 @@ const InvestigationExpandFormContent = ({
       .filter(({ value }) => value > 0)
       .sort((a, b) => a.label.localeCompare(b.label));
 
+    // Uses to determine which key of translation to use below.
+    const relNames = ['Part-Of', 'Located-At', 'Indicates', 'Mitigates', 'Targets', 'Uses', 'Related-To', 'Attributed-To'];
+
     setTargets(
       graphDistribution.map(({ label, value }) => ({
-        label: `${t(`entity_${label}`)} (${value})`,
+        label: `${t(relNames.includes(label) ? `rel_investigation_${label}` : `entity_${label}`)} (${value})`,
         value: label,
       })),
     );
