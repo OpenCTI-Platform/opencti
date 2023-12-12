@@ -15,7 +15,6 @@ const Import = () => (
             connectorsImport={props.connectorsForImport}
             importFiles={props.importFiles}
             pendingFiles={props.pendingFiles}
-            navigate={props.navigate}
           />
         );
       }
