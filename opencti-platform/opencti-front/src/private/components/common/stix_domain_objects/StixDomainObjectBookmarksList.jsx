@@ -225,7 +225,7 @@ const StixDomainObjectBookmarksList = ({
     );
     if (entityTypeFilter && entityTypeFilter.values.length > 0) {
       if (entityTypeFilter.values.filter((o) => o === 'all').length === 0) {
-        types = entityTypeFilter;
+        types = entityTypeFilter.values;
       }
     }
     return (

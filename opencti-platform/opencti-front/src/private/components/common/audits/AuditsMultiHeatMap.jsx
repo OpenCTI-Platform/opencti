@@ -133,13 +133,13 @@ const AuditsMultiHeatMap = ({
       );
       if (entityTypeFilter && entityTypeFilter.values.length > 0) {
         if (entityTypeFilter.values.filter((o) => o === 'all').length === 0) {
-          types = entityTypeFilter;
+          types = entityTypeFilter.values;
         }
       }
       const filters = selection.filters
         ? {
           ...selection.filters,
-          filters: (selection.filters.filters ?? []).filter(
+          filters: selection.filters.filters.filter(
             (f) => f.key !== 'entity_type',
           ),
         }

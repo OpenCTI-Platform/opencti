@@ -104,7 +104,7 @@ const AuditsNumber = ({
     );
     if (entityTypeFilter && entityTypeFilter.values.length > 0) {
       if (entityTypeFilter.values.filter((o) => o === 'all').length === 0) {
-        types = entityTypeFilter;
+        types = entityTypeFilter.values;
       }
     }
     const dateAttribute = selection.date_attribute && selection.date_attribute.length > 0
