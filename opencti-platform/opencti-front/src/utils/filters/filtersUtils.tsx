@@ -118,6 +118,7 @@ export const filtersUsedAsApiParameters = [
   'toId',
   'toTypes',
   'elementTargetTypes',
+  'elementId',
 ];
 
 // filters that represents a date, can have lt (end date) or gt (start date) operators
@@ -729,7 +730,6 @@ export const isStixObjectTypes = [
   'toId',
   'objects',
   'targets',
-  'elementId',
   'indicates',
   'contextEntityId',
 ];
