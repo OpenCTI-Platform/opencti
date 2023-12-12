@@ -386,7 +386,7 @@ FileIndexingMonitoringComponentProps
                         style={{ width: '30%' }}
                       />
                       <ListItemText
-                        primary={`~${metrics.count}`}
+                        primary={`${metrics.count}`}
                         className={classes.mimeTypeCount}
                         style={{ width: '30%' }}
                       />
