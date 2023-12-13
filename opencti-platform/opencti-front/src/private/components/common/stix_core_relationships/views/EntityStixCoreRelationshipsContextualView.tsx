@@ -27,7 +27,15 @@ import { EntityStixCoreRelationshipsContextualViewLine_node$data } from './__gen
 import { isStixCoreObjects, isStixCyberObservables } from '../../../../../utils/stixTypeUtils';
 import { Theme } from '../../../../../components/Theme';
 import { resolveLink } from '../../../../../utils/Entity';
-import { addFilter, cleanFilters, removeIdFromFilterObject, Filter, injectEntityTypeFilterInFilterGroup, findFilterFromKey, removeFilter } from '../../../../../utils/filters/filtersUtils';
+import {
+  addFilter,
+  cleanFilters,
+  removeIdFromFilterObject,
+  Filter,
+  injectEntityTypeFilterInFilterGroup,
+  findFilterFromKey,
+  removeFilter,
+} from '../../../../../utils/filters/filtersUtils';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   chipInList: {
