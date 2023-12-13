@@ -24,7 +24,7 @@ const useStyles = makeStyles(() => ({
   },
 }));
 
-const LOCAL_STORAGE_KEY = 'indicators';
+const LOCAL_STORAGE_KEY = 'indicators-list';
 
 const Indicators = () => {
   const classes = useStyles();
