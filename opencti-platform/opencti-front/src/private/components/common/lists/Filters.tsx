@@ -173,6 +173,7 @@ const Filters: FunctionComponent<FiltersProps> = ({
           variant={variant}
           type={type}
           helpers={helpers}
+          noDirectFilters={noDirectFilters}
         />
       ) : (
         <ListFiltersWithoutLocalStorage

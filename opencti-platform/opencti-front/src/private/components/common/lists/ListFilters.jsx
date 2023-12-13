@@ -30,6 +30,7 @@ const ListFilters = ({
   variant,
   type,
   helpers,
+  noDirectFilters,
 }) => {
   const { t } = useFormatter();
   const [inputValue, setInputValue] = React.useState('');
@@ -47,10 +48,14 @@ const ListFilters = ({
     color = 'success';
   }
   const handleClearFilters = () => {
-    const dFilter = availableFilterKeys.filter((n) => directFilters.includes(n));
-    helpers.handleClearAllFilters(
-      dFilter.map((key) => getDefaultFilterObject(key)),
-    );
+    if (noDirectFilters) {
+      helpers.handleClearAllFilters();
+    } else {
+      const dFilter = availableFilterKeys.filter((n) => directFilters.includes(n));
+      helpers.handleClearAllFilters(
+        dFilter.map((key) => getDefaultFilterObject(key)),
+      );
+    }
   };
   const handleChange = (value) => {
     helpers.handleAddFilterWithEmptyValue(getDefaultFilterObject(value));
