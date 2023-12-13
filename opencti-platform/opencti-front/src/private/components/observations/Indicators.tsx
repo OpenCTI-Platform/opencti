@@ -173,7 +173,7 @@ const Indicators = () => {
             'indicates',
             'sightedBy',
             'x_opencti_detection',
-            'basedOn',
+            'based-on',
             'revoked',
             'creator_id',
             'confidence',

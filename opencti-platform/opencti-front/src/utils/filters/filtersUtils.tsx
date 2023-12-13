@@ -140,7 +140,7 @@ const uniqFilters = [
   'x_opencti_negative',
   'x_opencti_score',
   'toSightingId',
-  'basedOn',
+  'based-on',
 ];
 
 // filters that targets entities instances
@@ -292,7 +292,7 @@ export const filterValue = (filterKey: string, value?: string | null) => {
     // TODO: improvement: boolean filters based on schema definition (not an enum)
     return t(value);
   }
-  if (filterKey === 'basedOn') {
+  if (filterKey === 'based-on') {
     return value === 'EXISTS' ? t('Yes') : t('No');
   }
   if (filterKey === 'x_opencti_negative') {

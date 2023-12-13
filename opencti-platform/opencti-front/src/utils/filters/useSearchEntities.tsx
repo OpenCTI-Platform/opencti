@@ -767,14 +767,14 @@ const useSearchEntities = ({
         }));
         unionSetEntities('x_opencti_detection', detectionEntities);
         break;
-      case 'basedOn':
+      case 'based-on':
         // eslint-disable-next-line no-case-declarations
         const basedOnEntities = ['EXISTS', null].map((n) => ({
           label: n === 'EXISTS' ? t('Yes') : t('No'),
           value: n,
           type: 'Vocabulary',
         }));
-        unionSetEntities('basedOn', basedOnEntities);
+        unionSetEntities('based-on', basedOnEntities);
         break;
       case 'revoked':
         // eslint-disable-next-line no-case-declarations

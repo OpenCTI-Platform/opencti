@@ -172,7 +172,7 @@ const StixDomainObjectIndicators: FunctionComponent<StixDomainObjectIndicatorsPr
             'objects',
             'sightedBy',
             'x_opencti_detection',
-            'basedOn',
+            'based-on',
             'revoked',
             'creator_id',
             'confidence',
