@@ -13,7 +13,7 @@ import { itemColor } from '../../../../utils/Colors';
 import { horizontalBarsChartOptions } from '../../../../utils/Charts';
 import { simpleNumberFormat } from '../../../../utils/Number';
 import { defaultValue } from '../../../../utils/Graph';
-import { constructFiltersAndOptions } from '../../../../utils/filters/filtersUtils';
+import { buildFiltersAndOptionsForWidgets } from '../../../../utils/filters/filtersUtils';
 
 const useStyles = makeStyles(() => ({
   paper: {
@@ -242,7 +242,7 @@ const StixRelationshipsHorizontalBars = ({
     if (dataSelection) {
       // eslint-disable-next-line prefer-destructuring
       selection = dataSelection[0];
-      filtersAndOptions = constructFiltersAndOptions(selection.filters);
+      filtersAndOptions = buildFiltersAndOptionsForWidgets(selection.filters);
       dataSelectionDateAttribute = selection.date_attribute && selection.date_attribute.length > 0
         ? selection.date_attribute
         : 'created_at';

@@ -13,7 +13,7 @@ import useEntityToggle from '../../../utils/hooks/useEntityToggle';
 import { OpinionLine_node$data } from './opinions/__generated__/OpinionLine_node.graphql';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
 import { OpinionLineDummy } from './opinions/OpinionLine';
-import { filtersWithEntityType, emptyFilterGroup } from '../../../utils/filters/filtersUtils';
+import { injectEntityTypeFilterInFilterGroup, emptyFilterGroup } from '../../../utils/filters/filtersUtils';
 
 const LOCAL_STORAGE_KEY = 'opinions';
 
@@ -67,7 +67,7 @@ const Opinions: FunctionComponent<OpinionsProps> = ({
     paginationOptions,
   );
   const renderLines = () => {
-    const toolBarFilters = filtersWithEntityType(filters, 'Opinion');
+    const toolBarFilters = injectEntityTypeFilterInFilterGroup(filters, 'Opinion');
     const isRuntimeSort = isRuntimeFieldEnable() ?? false;
     const dataColumns = {
       opinion: {

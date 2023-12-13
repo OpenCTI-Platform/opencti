@@ -15,7 +15,7 @@ import { useFormatter } from '../../../../components/i18n';
 import { resolveLink } from '../../../../utils/Entity';
 import ItemIcon from '../../../../components/ItemIcon';
 import useGranted, { SETTINGS_SETACCESSES } from '../../../../utils/hooks/useGranted';
-import { constructFiltersAndOptions } from '../../../../utils/filters/filtersUtils';
+import { buildFiltersAndOptionsForWidgets } from '../../../../utils/filters/filtersUtils';
 
 const useStyles = makeStyles({
   container: {
@@ -137,7 +137,7 @@ const StixCoreObjectsDistributionList = ({
   const renderContent = () => {
     const selection = dataSelection[0];
     const dataSelectionTypes = ['Stix-Core-Object'];
-    const { filters, dataSelectionElementId, dataSelectionToTypes } = constructFiltersAndOptions(selection.filters);
+    const { filters, dataSelectionElementId, dataSelectionToTypes } = buildFiltersAndOptionsForWidgets(selection.filters);
     const computeLink = (entry) => {
       const resolution = resolveLink(entry.type);
       if (resolution) {

@@ -12,7 +12,7 @@ import useQueryLoading from '../../../utils/hooks/useQueryLoading';
 import { GroupingsLinesPaginationQuery, GroupingsLinesPaginationQuery$variables } from './groupings/__generated__/GroupingsLinesPaginationQuery.graphql';
 import { GroupingLine_node$data } from './groupings/__generated__/GroupingLine_node.graphql';
 import { GroupingLineDummy } from './groupings/GroupingLine';
-import { filtersWithEntityType, emptyFilterGroup } from '../../../utils/filters/filtersUtils';
+import { injectEntityTypeFilterInFilterGroup, emptyFilterGroup } from '../../../utils/filters/filtersUtils';
 
 const LOCAL_STORAGE_KEY = 'groupings';
 
@@ -97,7 +97,7 @@ const Groupings: FunctionComponent<GroupingsProps> = ({
       numberOfSelectedElements = (numberOfElements?.original ?? 0)
         - Object.keys(deSelectedElements || {}).length;
     }
-    const toolBarFilters = filtersWithEntityType(filters, 'Grouping');
+    const toolBarFilters = injectEntityTypeFilterInFilterGroup(filters, 'Grouping');
     const isRuntimeSort = isRuntimeFieldEnable() ?? false;
     const dataColumns = {
       name: {

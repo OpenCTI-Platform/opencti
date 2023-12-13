@@ -13,7 +13,7 @@ import { horizontalBarsChartOptions } from '../../../../utils/Charts';
 import { simpleNumberFormat } from '../../../../utils/Number';
 import { defaultValue } from '../../../../utils/Graph';
 import { itemColor } from '../../../../utils/Colors';
-import { constructFiltersAndOptions } from '../../../../utils/filters/filtersUtils';
+import { buildFiltersAndOptionsForWidgets } from '../../../../utils/filters/filtersUtils';
 
 const useStyles = makeStyles(() => ({
   paper: {
@@ -389,10 +389,10 @@ const stixCoreObjectsMultiHorizontalBars = ({
   const renderContent = () => {
     const selection = dataSelection[0];
     const dataSelectionTypes = ['Stix-Core-Object'];
-    const { filters, dataSelectionElementId, dataSelectionToTypes } = constructFiltersAndOptions(selection.filters);
+    const { filters, dataSelectionElementId, dataSelectionToTypes } = buildFiltersAndOptionsForWidgets(selection.filters);
     const subSelection = dataSelection[1];
     const subSelectionDataSelectionTypes = ['Stix-Core-Object'];
-    const { filters: subSelectionFilters, dataSelectionToTypes: subSelectionDataSelectionToTypes } = constructFiltersAndOptions(subSelection.filters);
+    const { filters: subSelectionFilters, dataSelectionToTypes: subSelectionDataSelectionToTypes } = buildFiltersAndOptionsForWidgets(subSelection.filters);
     return (
       <QueryRenderer
         query={stixCoreObjectsMultiHorizontalBarsDistributionQuery}

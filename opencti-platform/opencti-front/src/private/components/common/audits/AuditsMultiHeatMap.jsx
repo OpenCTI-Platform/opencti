@@ -27,7 +27,7 @@ import { monthsAgo, now } from '../../../../utils/Time';
 import { heatMapOptions } from '../../../../utils/Charts';
 import useGranted, { SETTINGS } from '../../../../utils/hooks/useGranted';
 import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
-import { removeAllTypesFromFilter } from '../../../../utils/filters/filtersUtils';
+import { removeEntityTypeAllFromFilterGroup } from '../../../../utils/filters/filtersUtils';
 
 const useStyles = makeStyles(() => ({
   paper: {
@@ -132,7 +132,7 @@ const AuditsMultiHeatMap = ({
             ? selection.date_attribute
             : 'timestamp',
         types: ['History', 'Activity'],
-        filters: removeAllTypesFromFilter(selection.filters),
+        filters: removeEntityTypeAllFromFilterGroup(selection.filters),
       };
     });
     return (

@@ -9,7 +9,7 @@ import TasksLines, { tasksLinesQuery } from './tasks/TasksLines';
 import { tasksDataColumns, TasksLineDummy } from './tasks/TasksLine';
 import { TasksLinesPaginationQuery, TasksLinesPaginationQuery$variables } from './tasks/__generated__/TasksLinesPaginationQuery.graphql';
 import { TasksLine_node$data } from './tasks/__generated__/TasksLine_node.graphql';
-import { filtersWithEntityType, emptyFilterGroup } from '../../../utils/filters/filtersUtils';
+import { injectEntityTypeFilterInFilterGroup, emptyFilterGroup } from '../../../utils/filters/filtersUtils';
 
 export const LOCAL_STORAGE_KEY_TASKS = 'cases-casesTasks';
 
@@ -51,7 +51,7 @@ const Tasks = () => {
       tasksLinesQuery,
       paginationOptions,
     );
-    const toolBarFilters = filtersWithEntityType(filters, 'Task');
+    const toolBarFilters = injectEntityTypeFilterInFilterGroup(filters, 'Task');
     return (
       <ListLines
         helpers={helpers}

@@ -13,7 +13,7 @@ import { IncidentLine_node$data } from './incidents/__generated__/IncidentLine_n
 import ToolBar from '../data/ToolBar';
 import ExportContextProvider from '../../../utils/ExportContextProvider';
 import { IncidentsLinesPaginationQuery, IncidentsLinesPaginationQuery$variables } from './incidents/__generated__/IncidentsLinesPaginationQuery.graphql';
-import { filtersWithEntityType, emptyFilterGroup } from '../../../utils/filters/filtersUtils';
+import { injectEntityTypeFilterInFilterGroup, emptyFilterGroup } from '../../../utils/filters/filtersUtils';
 
 export const LOCAL_STORAGE_KEY = 'incidents';
 
@@ -102,7 +102,7 @@ const Incidents: FunctionComponent = () => {
     },
   };
   const renderLines = () => {
-    const toolBarFilters = filtersWithEntityType(filters, 'Incident');
+    const toolBarFilters = injectEntityTypeFilterInFilterGroup(filters, 'Incident');
     return (
       <>
         <ListLines

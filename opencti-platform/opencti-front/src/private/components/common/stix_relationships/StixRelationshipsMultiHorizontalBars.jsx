@@ -13,7 +13,7 @@ import { useFormatter } from '../../../../components/i18n';
 import { horizontalBarsChartOptions } from '../../../../utils/Charts';
 import { simpleNumberFormat } from '../../../../utils/Number';
 import { defaultValue } from '../../../../utils/Graph';
-import { constructFiltersAndOptions } from '../../../../utils/filters/filtersUtils';
+import { buildFiltersAndOptionsForWidgets } from '../../../../utils/filters/filtersUtils';
 
 const useStyles = makeStyles(() => ({
   paper: {
@@ -774,11 +774,11 @@ const StixRelationshipsMultiHorizontalBars = ({
       dataSelectionDateAttribute = selection.date_attribute && selection.date_attribute.length > 0
         ? selection.date_attribute
         : 'created_at';
-      filtersAndOptions = constructFiltersAndOptions(selection.filters);
+      filtersAndOptions = buildFiltersAndOptionsForWidgets(selection.filters);
       if (dataSelection.length > 1) {
         // eslint-disable-next-line prefer-destructuring
         subSelection = dataSelection[1];
-        subDistributionFiltersAndOptions = constructFiltersAndOptions(subSelection.filters);
+        subDistributionFiltersAndOptions = buildFiltersAndOptionsForWidgets(subSelection.filters);
         if (subSelection.perspective === 'entities') {
           subDistributionTypes = ['Stix-Core-Object'];
         }

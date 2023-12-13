@@ -8,7 +8,7 @@ import { QueryRenderer } from '../../../../relay/environment';
 import { useFormatter } from '../../../../components/i18n';
 import ItemNumberDifference from '../../../../components/ItemNumberDifference';
 import { dayAgo } from '../../../../utils/Time';
-import { constructFiltersAndOptions } from '../../../../utils/filters/filtersUtils';
+import { buildFiltersAndOptionsForWidgets } from '../../../../utils/filters/filtersUtils';
 
 const useStyles = makeStyles({
   paper: {
@@ -67,7 +67,7 @@ const StixCoreObjectsNumber = ({
     const dateAttribute = selection.date_attribute && selection.date_attribute.length > 0
       ? selection.date_attribute
       : 'created_at';
-    const { filters, dataSelectionElementId } = constructFiltersAndOptions(selection.filters, { startDate, endDate, dateAttribute });
+    const { filters, dataSelectionElementId } = buildFiltersAndOptionsForWidgets(selection.filters, { startDate, endDate, dateAttribute });
     return (
       <QueryRenderer
         query={stixCoreObjectsNumberNumberQuery}

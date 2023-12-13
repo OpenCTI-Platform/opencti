@@ -13,7 +13,7 @@ import ExportContextProvider from '../../../utils/ExportContextProvider';
 import { InfrastructureLineDummy } from './infrastructures/InfrastructureLine';
 import ToolBar from '../data/ToolBar';
 import { InfrastructureLine_node$data } from './infrastructures/__generated__/InfrastructureLine_node.graphql';
-import { filtersWithEntityType, emptyFilterGroup } from '../../../utils/filters/filtersUtils';
+import { injectEntityTypeFilterInFilterGroup, emptyFilterGroup } from '../../../utils/filters/filtersUtils';
 
 export const LOCAL_STORAGE_KEY_INFRASTRUCTURES = 'infrastructures';
 
@@ -55,7 +55,7 @@ const Infrastructures = () => {
       openExports,
       numberOfElements,
     } = viewStorage;
-    const toolBarFilters = filtersWithEntityType(filters, 'Infrastructure');
+    const toolBarFilters = injectEntityTypeFilterInFilterGroup(filters, 'Infrastructure');
     const isRuntimeSort = isRuntimeFieldEnable() ?? false;
     const dataColumns = {
       name: {

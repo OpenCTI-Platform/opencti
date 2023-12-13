@@ -10,7 +10,7 @@ import { QueryRenderer } from '../../../../relay/environment';
 import { useFormatter } from '../../../../components/i18n';
 import { monthsAgo, now } from '../../../../utils/Time';
 import { heatMapOptions } from '../../../../utils/Charts';
-import { constructFiltersAndOptions } from '../../../../utils/filters/filtersUtils';
+import { buildFiltersAndOptionsForWidgets } from '../../../../utils/filters/filtersUtils';
 
 const useStyles = makeStyles(() => ({
   paper: {
@@ -98,7 +98,7 @@ const StixRelationshipsMultiHeatMap = ({
         dataSelectionRelationshipType,
         dataSelectionFromTypes,
         dataSelectionToTypes,
-      } = constructFiltersAndOptions(selection.filters);
+      } = buildFiltersAndOptionsForWidgets(selection.filters);
       return {
         fromId: dataSelectionFromId,
         toId: dataSelectionToId,

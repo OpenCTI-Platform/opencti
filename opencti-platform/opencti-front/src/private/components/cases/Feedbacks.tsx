@@ -10,7 +10,7 @@ import ToolBar from '../data/ToolBar';
 import ExportContextProvider from '../../../utils/ExportContextProvider';
 import { FeedbacksLinesPaginationQuery, FeedbacksLinesPaginationQuery$variables } from './feedbacks/__generated__/FeedbacksLinesPaginationQuery.graphql';
 import { FeedbackLine_node$data } from './feedbacks/__generated__/FeedbackLine_node.graphql';
-import { filtersWithEntityType, emptyFilterGroup } from '../../../utils/filters/filtersUtils';
+import { injectEntityTypeFilterInFilterGroup, emptyFilterGroup } from '../../../utils/filters/filtersUtils';
 
 interface FeedbacksProps {
   inputValue?: string;
@@ -101,7 +101,7 @@ const Feedbacks: FunctionComponent<FeedbacksProps> = () => {
       feedbacksLinesQuery,
       paginationOptions,
     );
-    const toolBarFilters = filtersWithEntityType(filters, 'Feedback');
+    const toolBarFilters = injectEntityTypeFilterInFilterGroup(filters, 'Feedback');
     return (
       <ListLines
         helpers={helpers}

@@ -18,7 +18,7 @@ import { resolveLink } from '../../../../utils/Entity';
 import { defaultValue } from '../../../../utils/Graph';
 import ItemMarkings from '../../../../components/ItemMarkings';
 import ItemStatus from '../../../../components/ItemStatus';
-import { constructFiltersAndOptions } from '../../../../utils/filters/filtersUtils';
+import { buildFiltersAndOptionsForWidgets } from '../../../../utils/filters/filtersUtils';
 
 const useStyles = makeStyles({
   container: {
@@ -270,7 +270,7 @@ const StixCoreObjectsList = ({
     const dateAttribute = selection.date_attribute && selection.date_attribute.length > 0
       ? selection.date_attribute
       : 'created_at';
-    const { filters, dataSelectionElementId } = constructFiltersAndOptions(selection.filters, { startDate, endDate, dateAttribute });
+    const { filters, dataSelectionElementId } = buildFiltersAndOptionsForWidgets(selection.filters, { startDate, endDate, dateAttribute });
     return (
       <QueryRenderer
         query={stixCoreObjectsListQuery}

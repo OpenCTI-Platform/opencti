@@ -30,7 +30,7 @@ import useQueryLoading from '../../../../../../utils/hooks/useQueryLoading';
 import { EntityStixCoreRelationshipsContextualViewLine_node$data } from '../__generated__/EntityStixCoreRelationshipsContextualViewLine_node.graphql';
 import { resolveLink } from '../../../../../../utils/Entity';
 import { Theme } from '../../../../../../components/Theme';
-import { addFilter, cleanFilters, Filter, filtersWithEntityType, findFilterFromKey, removeFilter } from '../../../../../../utils/filters/filtersUtils';
+import { addFilter, cleanFilters, Filter, injectEntityTypeFilterInFilterGroup, findFilterFromKey, removeFilter } from '../../../../../../utils/filters/filtersUtils';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   chip: {
@@ -245,7 +245,7 @@ const EntityStixCoreRelationshipsIndicatorsContextualViewComponent: FunctionComp
     filters: finalFilters,
   } as unknown as EntityStixCoreRelationshipsIndicatorsContextualViewLinesQuery$variables; // Because of FilterMode
 
-  const backgroundTaskFilters = filtersWithEntityType(finalFilters, 'Indicator');
+  const backgroundTaskFilters = injectEntityTypeFilterInFilterGroup(finalFilters, 'Indicator');
 
   const {
     selectedElements,

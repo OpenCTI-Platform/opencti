@@ -33,7 +33,7 @@ import useGranted, { SETTINGS } from '../../../../utils/hooks/useGranted';
 import MarkdownDisplay from '../../../../components/MarkdownDisplay';
 import { isNotEmptyField } from '../../../../utils/utils';
 import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
-import { constructFiltersAndOptions } from '../../../../utils/filters/filtersUtils';
+import { buildFiltersAndOptionsForWidgets } from '../../../../utils/filters/filtersUtils';
 
 const useStyles = makeStyles({
   container: {
@@ -143,7 +143,7 @@ const AuditsList = ({
     const dateAttribute = selection.date_attribute && selection.date_attribute.length > 0
       ? selection.date_attribute
       : 'timestamp';
-    const { filters } = constructFiltersAndOptions(selection.filters, { removeTypeAll: true, startDate, endDate, dateAttribute });
+    const { filters } = buildFiltersAndOptionsForWidgets(selection.filters, { removeTypeAll: true, startDate, endDate, dateAttribute });
     return (
       <QueryRenderer
         query={auditsListQuery}

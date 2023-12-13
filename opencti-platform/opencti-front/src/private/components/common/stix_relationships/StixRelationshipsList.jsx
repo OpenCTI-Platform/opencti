@@ -16,7 +16,7 @@ import { QueryRenderer } from '../../../../relay/environment';
 import { computeLink } from '../../../../utils/Entity';
 import { defaultValue } from '../../../../utils/Graph';
 import ItemMarkings from '../../../../components/ItemMarkings';
-import { constructFiltersAndOptions } from '../../../../utils/filters/filtersUtils';
+import { buildFiltersAndOptionsForWidgets } from '../../../../utils/filters/filtersUtils';
 
 const useStyles = makeStyles((theme) => ({
   container: {
@@ -4522,7 +4522,7 @@ const StixRelationshipsList = ({
       dataSelectionFromTypes: fromTypes,
       dataSelectionToId: toId,
       dataSelectionToTypes: toTypes,
-    } = constructFiltersAndOptions(selection.filters, { startDate, endDate, dateAttribute });
+    } = buildFiltersAndOptionsForWidgets(selection.filters, { startDate, endDate, dateAttribute });
     return (
       <QueryRenderer
         query={stixRelationshipsListQuery}

@@ -19,7 +19,7 @@ import { useFormatter } from '../../../../components/i18n';
 import { QueryRenderer } from '../../../../relay/environment';
 import { itemColor } from '../../../../utils/Colors';
 import MarkdownDisplay from '../../../../components/MarkdownDisplay';
-import { constructFiltersAndOptions } from '../../../../utils/filters/filtersUtils';
+import { buildFiltersAndOptionsForWidgets } from '../../../../utils/filters/filtersUtils';
 
 const useStyles = makeStyles({
   container: {
@@ -1270,7 +1270,7 @@ const StixRelationshipsTimeline = ({
       dataSelectionToTypes: toTypes,
       dataSelectionFromTypes: fromTypes,
       dataSelectionToId: toId,
-    } = constructFiltersAndOptions(selection.filters, { startDate, endDate, dateAttribute });
+    } = buildFiltersAndOptionsForWidgets(selection.filters, { startDate, endDate, dateAttribute });
     return (
       <QueryRenderer
         query={stixRelationshipsTimelineStixRelationshipQuery}

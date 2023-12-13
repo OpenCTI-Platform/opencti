@@ -10,7 +10,7 @@ import { QueryRenderer } from '../../../../relay/environment';
 import { useFormatter } from '../../../../components/i18n';
 import { monthsAgo, now } from '../../../../utils/Time';
 import { heatMapOptions } from '../../../../utils/Charts';
-import { removeAllTypesFromFilter } from '../../../../utils/filters/filtersUtils';
+import { removeEntityTypeAllFromFilterGroup } from '../../../../utils/filters/filtersUtils';
 
 const useStyles = makeStyles(() => ({
   paper: {
@@ -94,7 +94,7 @@ const StixCoreObjectsMultiHeatMap = ({
             ? selection.date_attribute
             : 'created_at',
         types: ['Stix-Core-Object'],
-        filters: removeAllTypesFromFilter(selection.filters),
+        filters: removeEntityTypeAllFromFilterGroup(selection.filters),
       };
     });
     return (

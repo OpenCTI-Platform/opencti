@@ -10,7 +10,7 @@ import { QueryRenderer } from '../../../../relay/environment';
 import { useFormatter } from '../../../../components/i18n';
 import { treeMapOptions } from '../../../../utils/Charts';
 import { defaultValue } from '../../../../utils/Graph';
-import { constructFiltersAndOptions } from '../../../../utils/filters/filtersUtils';
+import { buildFiltersAndOptionsForWidgets } from '../../../../utils/filters/filtersUtils';
 
 const useStyles = makeStyles(() => ({
   paper: {
@@ -192,7 +192,7 @@ const StixCoreObjectsTreeMap = ({
   const renderContent = () => {
     const selection = dataSelection[0];
     const dataSelectionTypes = ['Stix-Core-Object'];
-    const { filters, dataSelectionElementId, dataSelectionToTypes } = constructFiltersAndOptions(selection.filters);
+    const { filters, dataSelectionElementId, dataSelectionToTypes } = buildFiltersAndOptionsForWidgets(selection.filters);
     return (
       <QueryRenderer
         query={stixCoreObjectsTreeMapDistributionQuery}

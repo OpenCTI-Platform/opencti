@@ -16,7 +16,7 @@ import { IndicatorLine_node$data } from './indicators/__generated__/IndicatorLin
 import { IndicatorsLinesPaginationQuery, IndicatorsLinesPaginationQuery$variables } from './indicators/__generated__/IndicatorsLinesPaginationQuery.graphql';
 import { ModuleHelper } from '../../../utils/platformModulesHelper';
 import { IndicatorLineDummyComponent } from './indicators/IndicatorLine';
-import { filtersWithEntityType, findFilterFromKey, emptyFilterGroup } from '../../../utils/filters/filtersUtils';
+import { injectEntityTypeFilterInFilterGroup, findFilterFromKey, emptyFilterGroup } from '../../../utils/filters/filtersUtils';
 
 const useStyles = makeStyles(() => ({
   container: {
@@ -94,7 +94,7 @@ const Indicators = () => {
       numberOfSelectedElements = (numberOfElements?.original ?? 0)
                 - Object.keys(deSelectedElements || {}).length;
     }
-    const toolBarFilters = filtersWithEntityType(filters, 'Indicator');
+    const toolBarFilters = injectEntityTypeFilterInFilterGroup(filters, 'Indicator');
     const isRuntimeSort = platformModuleHelpers?.isRuntimeFieldEnable();
     const dataColumns = {
       pattern_type: {

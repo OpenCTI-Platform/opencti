@@ -15,7 +15,7 @@ import { ExternalReferenceLine_node$data } from './external_references/__generat
 import ToolBar from '../data/ToolBar';
 import { ExternalReferenceLineDummy } from './external_references/ExternalReferenceLine';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
-import { filtersWithEntityType, emptyFilterGroup } from '../../../utils/filters/filtersUtils';
+import { injectEntityTypeFilterInFilterGroup, emptyFilterGroup } from '../../../utils/filters/filtersUtils';
 
 const LOCAL_STORAGE_KEY = 'externalReferences';
 
@@ -80,7 +80,7 @@ const ExternalReferences: FunctionComponent<ExternalReferencesProps> = () => {
     externalReferencesLinesQuery,
     paginationOptions,
   );
-  const toolBarFilters = filtersWithEntityType(filters, 'External-Reference');
+  const toolBarFilters = injectEntityTypeFilterInFilterGroup(filters, 'External-Reference');
   return (
     <>
       <ListLines

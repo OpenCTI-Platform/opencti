@@ -11,7 +11,7 @@ import { useFormatter } from '../../../../components/i18n';
 import { monthsAgo, now } from '../../../../utils/Time';
 import { areaChartOptions } from '../../../../utils/Charts';
 import { simpleNumberFormat } from '../../../../utils/Number';
-import { constructFiltersAndOptions } from '../../../../utils/filters/filtersUtils';
+import { buildFiltersAndOptionsForWidgets } from '../../../../utils/filters/filtersUtils';
 
 const useStyles = makeStyles(() => ({
   paper: {
@@ -71,7 +71,7 @@ const StixRelationshipsMultiAreaChart = ({
         dataSelectionRelationshipType,
         dataSelectionFromTypes,
         dataSelectionToTypes,
-      } = constructFiltersAndOptions(selection.filters);
+      } = buildFiltersAndOptionsForWidgets(selection.filters);
       return {
         fromId: dataSelectionFromId,
         toId: dataSelectionToId,

@@ -8,7 +8,7 @@ import { QueryRenderer } from '../../../../relay/environment';
 import { useFormatter } from '../../../../components/i18n';
 import ItemNumberDifference from '../../../../components/ItemNumberDifference';
 import { dayAgo } from '../../../../utils/Time';
-import { constructFiltersAndOptions } from '../../../../utils/filters/filtersUtils';
+import { buildFiltersAndOptionsForWidgets } from '../../../../utils/filters/filtersUtils';
 
 const useStyles = makeStyles({
   paper: {
@@ -89,7 +89,7 @@ const StixRelationshipsNumber = ({
       dataSelectionToId: toId,
       dataSelectionFromTypes: fromTypes,
       dataSelectionToTypes: toTypes,
-    } = constructFiltersAndOptions(selection.filters);
+    } = buildFiltersAndOptionsForWidgets(selection.filters);
     return (
       <QueryRenderer
         query={stixRelationshipsNumberNumberQuery}

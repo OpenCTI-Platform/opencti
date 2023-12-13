@@ -13,7 +13,7 @@ import Security from '../../../../../utils/Security';
 import { computeTargetStixCyberObservableTypes, computeTargetStixDomainObjectTypes, isStixCyberObservables } from '../../../../../utils/stixTypeUtils';
 import { PaginationLocalStorage } from '../../../../../utils/hooks/useLocalStorage';
 import { DataColumns, PaginationOptions } from '../../../../../components/list_lines';
-import { addFilter, cleanFilters, FilterGroup, filtersWithEntityType, findFilterFromKey, removeFilter } from '../../../../../utils/filters/filtersUtils';
+import { addFilter, cleanFilters, FilterGroup, injectEntityTypeFilterInFilterGroup, findFilterFromKey, removeFilter } from '../../../../../utils/filters/filtersUtils';
 
 interface EntityStixCoreRelationshipsRelationshipsViewProps {
   entityId: string
@@ -139,7 +139,7 @@ const EntityStixCoreRelationshipsRelationshipsView: FunctionComponent<EntityStix
     filters: removeFilter(cleanFilters(filters, availableFilterKeys), ['relationship_type', 'entity_type']),
   } as object;
 
-  let backgroundTaskFilters: FilterGroup | undefined = filtersWithEntityType(
+  let backgroundTaskFilters: FilterGroup | undefined = injectEntityTypeFilterInFilterGroup(
     filters,
     selectedRelationshipTypes.length > 0
       ? selectedRelationshipTypes

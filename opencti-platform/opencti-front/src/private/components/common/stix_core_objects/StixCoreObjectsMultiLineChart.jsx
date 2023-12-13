@@ -11,7 +11,7 @@ import { useFormatter } from '../../../../components/i18n';
 import { monthsAgo, now } from '../../../../utils/Time';
 import { lineChartOptions } from '../../../../utils/Charts';
 import { simpleNumberFormat } from '../../../../utils/Number';
-import { constructFiltersAndOptions } from '../../../../utils/filters/filtersUtils';
+import { buildFiltersAndOptionsForWidgets } from '../../../../utils/filters/filtersUtils';
 
 const useStyles = makeStyles(() => ({
   paper: {
@@ -62,7 +62,7 @@ const StixCoreObjectsMultiLineChart = ({
   const renderContent = () => {
     const timeSeriesParameters = dataSelection.map((selection) => {
       const dataSelectionTypes = ['Stix-Core-Object'];
-      const { filters, dataSelectionElementId } = constructFiltersAndOptions(selection.filters);
+      const { filters, dataSelectionElementId } = buildFiltersAndOptionsForWidgets(selection.filters);
       return {
         field:
           selection.date_attribute && selection.date_attribute.length > 0

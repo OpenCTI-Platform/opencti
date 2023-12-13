@@ -13,7 +13,7 @@ import useEntityToggle from '../../../utils/hooks/useEntityToggle';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
 import { ReportLineDummy } from './reports/ReportLine';
 import ExportContextProvider from '../../../utils/ExportContextProvider';
-import { filtersWithEntityType, emptyFilterGroup } from '../../../utils/filters/filtersUtils';
+import { injectEntityTypeFilterInFilterGroup, emptyFilterGroup } from '../../../utils/filters/filtersUtils';
 
 const LOCAL_STORAGE_KEY = 'reports';
 
@@ -93,7 +93,7 @@ const Reports: FunctionComponent<ReportsProps> = ({
     } else if (authorId) {
       exportContext = `of-entity-${authorId}`;
     }
-    const toolBarFilters = filtersWithEntityType(filters, 'Report');
+    const toolBarFilters = injectEntityTypeFilterInFilterGroup(filters, 'Report');
     const isRuntimeSort = isRuntimeFieldEnable() ?? false;
     const dataColumns = {
       name: {

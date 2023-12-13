@@ -28,7 +28,7 @@ import { verticalBarsChartOptions } from '../../../../utils/Charts';
 import { simpleNumberFormat } from '../../../../utils/Number';
 import useGranted, { SETTINGS } from '../../../../utils/hooks/useGranted';
 import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
-import { removeAllTypesFromFilter } from '../../../../utils/filters/filtersUtils';
+import { removeEntityTypeAllFromFilterGroup } from '../../../../utils/filters/filtersUtils';
 
 const useStyles = makeStyles(() => ({
   paper: {
@@ -105,7 +105,7 @@ const AuditsMultiVerticalBars = ({
             ? selection.date_attribute
             : 'timestamp',
         types: ['History', 'Activity'],
-        filters: removeAllTypesFromFilter(selection.filters),
+        filters: removeEntityTypeAllFromFilterGroup(selection.filters),
       };
     });
     let formatter = fsd;

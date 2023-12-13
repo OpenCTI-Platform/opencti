@@ -12,7 +12,7 @@ import { useFormatter } from '../../../../components/i18n';
 import { donutChartOptions } from '../../../../utils/Charts';
 import { defaultValue } from '../../../../utils/Graph';
 import Chart from '../charts/Chart';
-import { constructFiltersAndOptions } from '../../../../utils/filters/filtersUtils';
+import { buildFiltersAndOptionsForWidgets } from '../../../../utils/filters/filtersUtils';
 
 const useStyles = makeStyles(() => ({
   paper: {
@@ -212,7 +212,7 @@ const StixCoreObjectsDonut = ({
   const renderContent = () => {
     const selection = dataSelection[0];
     const dataSelectionTypes = ['Stix-Core-Object'];
-    const { filters, dataSelectionElementId, dataSelectionToTypes, dataSelectionElementWithTargetTypes } = constructFiltersAndOptions(selection.filters);
+    const { filters, dataSelectionElementId, dataSelectionToTypes, dataSelectionElementWithTargetTypes } = buildFiltersAndOptionsForWidgets(selection.filters);
     const variables = {
       objectId: Array.isArray(dataSelectionElementId)
         ? R.head(dataSelectionElementId)

@@ -13,7 +13,7 @@ import ExportContextProvider from '../../../utils/ExportContextProvider';
 import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
 import useEntityToggle from '../../../utils/hooks/useEntityToggle';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
-import { filtersWithEntityType, emptyFilterGroup } from '../../../utils/filters/filtersUtils';
+import { injectEntityTypeFilterInFilterGroup, emptyFilterGroup } from '../../../utils/filters/filtersUtils';
 
 const LOCAL_STORAGE_KEY = 'artifacts';
 
@@ -105,7 +105,7 @@ const Artifacts: FunctionComponent = () => {
   };
 
   const renderLines = () => {
-    const toolBarFilters = filtersWithEntityType(filters, 'Artifact');
+    const toolBarFilters = injectEntityTypeFilterInFilterGroup(filters, 'Artifact');
 
     return (
       <>

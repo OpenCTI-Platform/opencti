@@ -15,7 +15,7 @@ import { defaultValue } from '../../../../utils/Graph';
 import { resolveLink } from '../../../../utils/Entity';
 import ItemIcon from '../../../../components/ItemIcon';
 import useGranted, { SETTINGS_SETACCESSES } from '../../../../utils/hooks/useGranted';
-import { constructFiltersAndOptions } from '../../../../utils/filters/filtersUtils';
+import { buildFiltersAndOptionsForWidgets } from '../../../../utils/filters/filtersUtils';
 
 const useStyles = makeStyles({
   container: {
@@ -272,7 +272,7 @@ const StixRelationshipsDistributionList = ({
     if (dataSelection) {
       // eslint-disable-next-line prefer-destructuring
       selection = dataSelection[0];
-      filtersAndOptions = constructFiltersAndOptions(selection.filters);
+      filtersAndOptions = buildFiltersAndOptionsForWidgets(selection.filters);
     }
     const finalField = selection.attribute || field || 'entity_type';
     const variables = {

@@ -13,7 +13,7 @@ import ExportContextProvider from '../../../utils/ExportContextProvider';
 import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
 import useEntityToggle from '../../../utils/hooks/useEntityToggle';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
-import { filtersWithEntityType, emptyFilterGroup } from '../../../utils/filters/filtersUtils';
+import { injectEntityTypeFilterInFilterGroup, emptyFilterGroup } from '../../../utils/filters/filtersUtils';
 
 const LOCAL_STORAGE_KEY = 'relationships';
 
@@ -107,7 +107,7 @@ const Relationships = () => {
         width: '8%',
       },
     };
-    const toolBarFilters = filtersWithEntityType(
+    const toolBarFilters = injectEntityTypeFilterInFilterGroup(
       filters,
       'stix-core-relationship',
     );

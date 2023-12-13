@@ -15,7 +15,7 @@ import { KNOWLEDGE_KNUPDATE } from '../../../utils/hooks/useGranted';
 import ExportContextProvider from '../../../utils/ExportContextProvider';
 import useEntityToggle from '../../../utils/hooks/useEntityToggle';
 import { StixCyberObservableLine_node$data } from './stix_cyber_observables/__generated__/StixCyberObservableLine_node.graphql';
-import { filtersWithEntityType, emptyFilterGroup } from '../../../utils/filters/filtersUtils';
+import { injectEntityTypeFilterInFilterGroup, emptyFilterGroup } from '../../../utils/filters/filtersUtils';
 
 const LOCAL_STORAGE_KEY = 'stixCyberObservables';
 
@@ -144,7 +144,7 @@ const StixCyberObservables: FunctionComponent = () => {
 
   const renderLines = () => {
     const finalType = types && types.length > 0 ? types : 'Stix-Cyber-Observable';
-    const toolBarFilters = filtersWithEntityType(filters, finalType);
+    const toolBarFilters = injectEntityTypeFilterInFilterGroup(filters, finalType);
     return (
       <>
         <ListLines

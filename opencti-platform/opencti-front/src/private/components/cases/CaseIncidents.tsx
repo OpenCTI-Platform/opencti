@@ -16,7 +16,7 @@ import {
   CaseIncidentsLinesCasesPaginationQuery$variables,
 } from './case_incidents/__generated__/CaseIncidentsLinesCasesPaginationQuery.graphql';
 import { CaseIncidentLineCase_node$data } from './case_incidents/__generated__/CaseIncidentLineCase_node.graphql';
-import { filtersWithEntityType, emptyFilterGroup } from '../../../utils/filters/filtersUtils';
+import { injectEntityTypeFilterInFilterGroup, emptyFilterGroup } from '../../../utils/filters/filtersUtils';
 
 interface CaseIncidentsProps {
   inputValue?: string;
@@ -114,7 +114,7 @@ const CaseIncidents: FunctionComponent<CaseIncidentsProps> = () => {
       caseIncidentsLinesQuery,
       paginationOptions,
     );
-    const toolBarFilters = filtersWithEntityType(filters, 'Case-Incident');
+    const toolBarFilters = injectEntityTypeFilterInFilterGroup(filters, 'Case-Incident');
     return (
       <ListLines
         helpers={helpers}

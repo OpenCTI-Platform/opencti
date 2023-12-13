@@ -9,7 +9,7 @@ import { useFormatter } from '../../../../components/i18n';
 import LocationMiniMapTargets from '../location/LocationMiniMapTargets';
 import { QueryRenderer } from '../../../../relay/environment';
 import { computeLevel } from '../../../../utils/Number';
-import { constructFiltersAndOptions } from '../../../../utils/filters/filtersUtils';
+import { buildFiltersAndOptionsForWidgets } from '../../../../utils/filters/filtersUtils';
 
 const useStyles = makeStyles(() => ({
   paper: {
@@ -114,7 +114,7 @@ const StixRelationshipsMap = ({
     if (dataSelection) {
       // eslint-disable-next-line prefer-destructuring
       selection = dataSelection[0];
-      filtersAndOptions = constructFiltersAndOptions(selection.filters);
+      filtersAndOptions = buildFiltersAndOptionsForWidgets(selection.filters);
     }
     const finalField = selection.attribute || field || 'entity_type';
     const finalToTypes = filtersAndOptions?.dataSelectionToTypes || toTypes;

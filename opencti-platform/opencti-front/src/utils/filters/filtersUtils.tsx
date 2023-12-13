@@ -264,7 +264,7 @@ export const findFilterIndexFromKey = (
 };
 
 // add entity types context in filters
-export const filtersWithEntityType = (
+export const injectEntityTypeFilterInFilterGroup = (
   filters: FilterGroup | undefined,
   type: string | string[],
 ): FilterGroup => {
@@ -286,11 +286,11 @@ export const filtersWithEntityType = (
 
 // remove filter with key=entity_type and values contains 'all'
 // because in this case we want everything, so no need for filters
-export const removeAllTypesFromFilter = (inputFilters?: FilterGroup) => {
+export const removeEntityTypeAllFromFilterGroup = (inputFilters?: FilterGroup) => {
   if (inputFilters && isFilterGroupNotEmpty(inputFilters)) {
     const { filters, filterGroups } = inputFilters;
     const newFilters = filters.filter((f) => !(f.key === 'entity_type' && f.values.includes('all')));
-    const newFilterGroups = filterGroups.map((group) => removeAllTypesFromFilter(group)) as FilterGroup[];
+    const newFilterGroups = filterGroups.map((group) => removeEntityTypeAllFromFilterGroup(group)) as FilterGroup[];
     return {
       mode: inputFilters.mode,
       filters: newFilters,
@@ -301,7 +301,7 @@ export const removeAllTypesFromFilter = (inputFilters?: FilterGroup) => {
 };
 
 // construct filters and options for widgets
-export const constructFiltersAndOptions = (
+export const buildFiltersAndOptionsForWidgets = (
   inputFilters: FilterGroup | undefined,
   opts: { removeTypeAll?: boolean, startDate?: string, endDate?: string, dateAttribute?: string } = {},
 ) => {
@@ -330,7 +330,7 @@ export const constructFiltersAndOptions = (
   );
   let filters = inputFilters ? { ...inputFilters, filters: filtersContent } : undefined;
   // 02. remove 'all' in filter with key=entity_type
-  if (removeTypeAll) filters = removeAllTypesFromFilter(filters);
+  if (removeTypeAll) filters = removeEntityTypeAllFromFilterGroup(filters);
   // 03. handle startDate and endDate options
   const dateFiltersContent = [];
   if (startDate) {
