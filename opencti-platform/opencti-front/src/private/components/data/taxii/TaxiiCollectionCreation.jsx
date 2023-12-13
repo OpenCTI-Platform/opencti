@@ -11,6 +11,7 @@ import Alert from '@mui/material/Alert';
 import AlertTitle from '@mui/material/AlertTitle';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import Switch from '@mui/material/Switch';
+import Box from '@mui/material/Box';
 import ObjectMembersField from '../../common/form/ObjectMembersField';
 import inject18n from '../../../../components/i18n';
 import { commitMutation } from '../../../../relay/environment';
@@ -195,7 +196,10 @@ const TaxiiCollectionCreation = (props) => {
                   />
                 )}
               </Alert>
-              <div style={{ paddingTop: 35 }}>
+              <Box sx={{ paddingTop: 4,
+                display: 'flex',
+                gap: 1 }}
+              >
                 <Filters
                   availableFilterKeys={[
                     'entity_type',
@@ -221,16 +225,15 @@ const TaxiiCollectionCreation = (props) => {
                     'toTypes',
                   ]}
                   helpers={helpers}
+                  noDirectFilters={true}
                 />
-              </div>
-              <div className="clearfix" />
+              </Box>
               <FilterIconButton
                 filters={filters}
                 helpers={helpers}
                 styleNumber={2}
                 redirection
               />
-              <div className="clearfix" />
               <div className={classes.buttons}>
                 <Button
                   variant="contained"
