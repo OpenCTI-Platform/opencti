@@ -439,6 +439,7 @@ StixDomainObjectThreatKnowledgeProps
             'createdBy',
             'objectLabel',
             'created',
+            'targets',
           ]}
           handleAddFilter={helpers.handleAddFilter}
           allEntityTypes={true}

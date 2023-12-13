@@ -71,7 +71,8 @@ EntityStixCoreRelationshipsEntitiesViewProps
     'creator_id',
     'created',
   ];
-  if ((relationshipTypes ?? []).includes('targets')) {
+  const typesWithTargetsFilter = ['Campaign', 'Threat-Actor', 'Incident', 'Intrusion-Set'];
+  if ((relationshipTypes ?? []).includes('targets') || stixCoreObjectTypes.some((type) => typesWithTargetsFilter.includes(type))) {
     availableFilterKeys = [...availableFilterKeys, 'targets'];
   }
 
