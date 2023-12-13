@@ -8,6 +8,7 @@ import { extractEntityRepresentativeName } from '../database/entity-representati
 import { RELATION_CREATED_BY, RELATION_GRANTED_TO, RELATION_OBJECT_LABEL, RELATION_OBJECT_MARKING } from '../schema/stixRefRelationship';
 import { allFilesForPaths, allRemainingFilesCount } from '../modules/internal/document/document-domain';
 import { getManagerConfigurationFromCache } from '../modules/managerConfiguration/managerConfiguration-domain';
+import { supportedMimeTypes } from '../modules/managerConfiguration/managerConfiguration-utils';
 import { SYSTEM_USER } from '../utils/access';
 import { isEmptyField, isNotEmptyField, READ_INDEX_FILES } from '../database/utils';
 import { getStats } from '../database/engine';
@@ -46,16 +47,16 @@ export const filesMetrics = async (context, user) => {
   const potentialIndexingFiles = await allFilesForPaths(context, user, fileOptions.paths, fileOptions.opts);
   const remainingFilesCount = await allRemainingFilesCount(context, user, fileOptions.paths, fileOptions.opts);
   const metricsByMimeType = [];
-  const filesByMimetype = R.groupBy((f) => f.metaData.mimetype, potentialIndexingFiles);
-  const mimeTypesGroups = Object.keys(filesByMimetype);
-  for (let index = 0; index < mimeTypesGroups.length; index += 1) {
-    const mimeType = mimeTypesGroups[index];
-    metricsByMimeType.push({
-      mimeType,
-      count: filesByMimetype[mimeType].length,
-      size: R.sum(filesByMimetype[mimeType].map((file) => file.size)),
-    });
-  }
+  supportedMimeTypes.forEach((mimeType) => {
+    const mimeTypeFiles = potentialIndexingFiles.filter((file) => file.metaData.mimetype?.startsWith(mimeType));
+    if (mimeTypeFiles.length > 0) {
+      metricsByMimeType.push({
+        mimeType,
+        count: mimeTypeFiles.length,
+        size: R.sum(mimeTypeFiles.map((file) => file.size)),
+      });
+    }
+  });
   return {
     globalCount: indexedFilesCount + remainingFilesCount,
     globalSize: R.sum(potentialIndexingFiles.map((file) => file.size)),

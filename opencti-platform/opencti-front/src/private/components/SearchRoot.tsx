@@ -129,7 +129,7 @@ const SearchRoot = () => {
     search: searchTerm,
   };
   useEffect(() => {
-    if (fileSearchEnabled) {
+    if (fileSearchEnabled && searchTerm) {
       loadQuery(queryArgs, { fetchPolicy: 'store-and-network' });
     }
   }, []);
