@@ -769,12 +769,26 @@ const useSearchEntities = ({
         break;
       case 'based-on':
         // eslint-disable-next-line no-case-declarations
-        const basedOnEntities = ['EXISTS', null].map((n) => ({
-          label: n === 'EXISTS' ? t('Yes') : t('No'),
-          value: n,
-          type: 'Vocabulary',
-        }));
-        unionSetEntities('based-on', basedOnEntities);
+        fetchQuery(filtersStixCoreObjectsSearchQuery, {
+          types: (searchScope && searchScope[filterKey]) || [
+            'Stix-Cyber-Observable',
+          ],
+          search: event.target.value !== 0 ? event.target.value : '',
+          count: 100,
+        })
+          .toPromise()
+          .then((data) => {
+            const elementIdEntities = (
+              (data as useSearchEntitiesStixCoreObjectsSearchQuery$data)
+                ?.stixCoreObjects?.edges ?? []
+            ).map((n) => ({
+              label: defaultValue(n?.node),
+              value: n?.node.id,
+              type: n?.node.entity_type,
+              parentTypes: n?.node.parent_types,
+            }));
+            unionSetEntities(filterKey, elementIdEntities);
+          });
         break;
       case 'revoked':
         // eslint-disable-next-line no-case-declarations
