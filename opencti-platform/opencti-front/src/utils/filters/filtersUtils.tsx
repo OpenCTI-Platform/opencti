@@ -289,17 +289,8 @@ export const filtersWithEntityType = (
 export const removeAllTypesFromFilter = (inputFilters?: FilterGroup) => {
   if (inputFilters && isFilterGroupNotEmpty(inputFilters)) {
     const { filters, filterGroups } = inputFilters;
-    const newFilters: Filter[] = [];
-    const newFilterGroups: FilterGroup[] = [];
-    filters.forEach((filter) => {
-      if (!(filter.key === 'entity_type' && filter.values.includes('all'))) {
-        newFilters.push(filter);
-      }
-    });
-    filterGroups.forEach((group) => {
-      const newGroup = removeAllTypesFromFilter(group);
-      if (newGroup) filterGroups.push(newGroup);
-    });
+    const newFilters = filters.filter((f) => !(f.key === 'entity_type' && f.values.includes('all')));
+    const newFilterGroups = filterGroups.map((group) => removeAllTypesFromFilter(group)) as FilterGroup[];
     return {
       mode: inputFilters.mode,
       filters: newFilters,
