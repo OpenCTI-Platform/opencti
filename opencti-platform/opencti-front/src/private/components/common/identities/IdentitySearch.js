@@ -33,10 +33,5 @@ export const identitySearchCreatorsSearchQuery = graphql`
         }
       }
     }
-    me {
-      id
-      entity_type
-      name
-    }
   }
 `;

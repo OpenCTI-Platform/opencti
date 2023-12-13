@@ -290,7 +290,7 @@ const useSearchEntities = ({
 }) => {
   const [entities, setEntities] = useState<Record<string, EntityValue[]>>({});
   const { t } = useFormatter();
-  const { schema } = useAuth();
+  const { schema, me } = useAuth();
   const theme = useTheme() as Theme;
   const isAdmin = useIsAdmin();
 
@@ -422,7 +422,6 @@ const useSearchEntities = ({
       key: string,
       type: string,
       data: IdentitySearchCreatorsSearchQuery$data['creators'],
-      me: IdentitySearchCreatorsSearchQuery$data['me'],
     ) => {
       const items = (data?.edges ?? []).map((n) => ({
         label: n?.node.name ?? '',
@@ -489,7 +488,7 @@ const useSearchEntities = ({
             .toPromise()
             .then((response) => {
               const data = response as IdentitySearchCreatorsSearchQuery$data;
-              buildCachedOptionsFromGenericFetchResponse(filterKey, 'Individual', data?.creators, data?.me);
+              buildCachedOptionsFromGenericFetchResponse(filterKey, 'Individual', data?.creators);
             });
         }
         break;
@@ -505,7 +504,7 @@ const useSearchEntities = ({
             .toPromise()
             .then((response) => {
               const data = response as ObjectAssigneeFieldAssigneesSearchQuery$data;
-              buildCachedOptionsFromGenericFetchResponse(filterKey, 'Individual', data?.assignees, data?.me);
+              buildCachedOptionsFromGenericFetchResponse(filterKey, 'Individual', data?.assignees);
             });
         }
         break;
@@ -521,7 +520,7 @@ const useSearchEntities = ({
             .toPromise()
             .then((response) => {
               const data = response as ObjectParticipantFieldParticipantsSearchQuery$data;
-              buildCachedOptionsFromGenericFetchResponse(filterKey, 'User', data?.participants, data?.me);
+              buildCachedOptionsFromGenericFetchResponse(filterKey, 'User', data?.participants);
             });
         }
         break;

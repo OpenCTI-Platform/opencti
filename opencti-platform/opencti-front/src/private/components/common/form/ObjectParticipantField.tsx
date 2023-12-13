@@ -35,11 +35,6 @@ export const objectParticipantFieldParticipantsSearchQuery = graphql`
         }
       }
     }
-    me {
-      id
-      entity_type
-      name
-    }
   }
 `;
 

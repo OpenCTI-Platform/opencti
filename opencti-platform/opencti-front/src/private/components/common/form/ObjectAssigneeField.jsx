@@ -37,11 +37,6 @@ export const objectAssigneeFieldAssigneesSearchQuery = graphql`
         }
       }
     }
-    me {
-      id
-      entity_type
-      name
-    }
   }
 `;
 
