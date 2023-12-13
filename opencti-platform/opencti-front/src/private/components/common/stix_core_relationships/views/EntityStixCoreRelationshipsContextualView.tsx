@@ -27,7 +27,15 @@ import { EntityStixCoreRelationshipsContextualViewLine_node$data } from './__gen
 import { isStixCoreObjects, isStixCyberObservables } from '../../../../../utils/stixTypeUtils';
 import { Theme } from '../../../../../components/Theme';
 import { resolveLink } from '../../../../../utils/Entity';
-import { addFilter, cleanFilters, removeIdFromFilterObject, Filter, filtersWithEntityType, findFilterFromKey, removeFilter } from '../../../../../utils/filters/filtersUtils';
+import {
+  addFilter,
+  cleanFilters,
+  removeIdFromFilterObject,
+  Filter,
+  injectEntityTypeFilterInFilterGroup,
+  findFilterFromKey,
+  removeFilter,
+} from '../../../../../utils/filters/filtersUtils';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   chipInList: {
@@ -258,7 +266,7 @@ const EntityStixCoreRelationshipsContextualViewComponent: FunctionComponent<Enti
     filters: removeIdFromFilterObject(finalFilters),
   } as unknown as EntityStixCoreRelationshipsContextualViewLinesQuery$variables; // Because of FilterMode
 
-  const backgroundTaskFilters = filtersWithEntityType(
+  const backgroundTaskFilters = injectEntityTypeFilterInFilterGroup(
     filters,
     selectedTypes.length > 0
       ? selectedTypes

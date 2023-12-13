@@ -13,7 +13,7 @@ import { NoteLineDummy } from './notes/NoteLine';
 import { NoteLine_node$data } from './notes/__generated__/NoteLine_node.graphql';
 import { NotesLinesPaginationQuery, NotesLinesPaginationQuery$variables } from './notes/__generated__/NotesLinesPaginationQuery.graphql';
 import NoteCreation from './notes/NoteCreation';
-import { filtersWithEntityType, emptyFilterGroup } from '../../../utils/filters/filtersUtils';
+import { injectEntityTypeFilterInFilterGroup, emptyFilterGroup } from '../../../utils/filters/filtersUtils';
 
 const LOCAL_STORAGE_KEY = 'notes';
 
@@ -87,7 +87,7 @@ const Notes: FunctionComponent<NotesProps> = ({ objectId, authorId, onChangeOpen
     } else if (authorId) {
       exportContext = `of-entity-${authorId}`;
     }
-    const toolBarFilters = filtersWithEntityType(filters, 'Note');
+    const toolBarFilters = injectEntityTypeFilterInFilterGroup(filters, 'Note');
     const isRuntimeSort = isRuntimeFieldEnable() ?? false;
     const dataColumns = {
       attribute_abstract: {

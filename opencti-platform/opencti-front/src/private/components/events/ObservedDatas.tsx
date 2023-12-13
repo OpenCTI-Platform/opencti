@@ -13,7 +13,7 @@ import useEntityToggle from '../../../utils/hooks/useEntityToggle';
 import { ObservedDataLine_node$data } from './observed_data/__generated__/ObservedDataLine_node.graphql';
 import { ObservedDatasLinesPaginationQuery$data, ObservedDatasLinesPaginationQuery$variables } from './observed_data/__generated__/ObservedDatasLinesPaginationQuery.graphql';
 import { ModuleHelper } from '../../../utils/platformModulesHelper';
-import { filtersWithEntityType, emptyFilterGroup } from '../../../utils/filters/filtersUtils';
+import { injectEntityTypeFilterInFilterGroup, emptyFilterGroup } from '../../../utils/filters/filtersUtils';
 
 const LOCAL_STORAGE_KEY = 'observedDatas';
 
@@ -84,7 +84,7 @@ const ObservedDatas: FunctionComponent<ObservedDatasProps> = ({
     } else if (authorId) {
       exportContext = `of-entity-${authorId}`;
     }
-    const toolBarFilters = filtersWithEntityType(filters, 'Observed-Data');
+    const toolBarFilters = injectEntityTypeFilterInFilterGroup(filters, 'Observed-Data');
     const isRuntimeSort = helper?.isRuntimeFieldEnable();
     const dataColumns = {
       name: {

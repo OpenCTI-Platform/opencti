@@ -118,6 +118,7 @@ export const filtersUsedAsApiParameters = [
   'toId',
   'toTypes',
   'elementTargetTypes',
+  'elementId',
 ];
 
 // filters that represents a date, can have lt (end date) or gt (start date) operators
@@ -262,7 +263,8 @@ export const findFilterIndexFromKey = (
   return null;
 };
 
-export const filtersWithEntityType = (
+// add entity types context in filters
+export const injectEntityTypeFilterInFilterGroup = (
   filters: FilterGroup | undefined,
   type: string | string[],
 ): FilterGroup => {
@@ -279,6 +281,90 @@ export const filtersWithEntityType = (
     filters: filters
       ? [...filters.filters, entityTypeFilter]
       : [entityTypeFilter],
+  };
+};
+
+// remove filter with key=entity_type and values contains 'all'
+// because in this case we want everything, so no need for filters
+export const removeEntityTypeAllFromFilterGroup = (inputFilters?: FilterGroup) => {
+  if (inputFilters && isFilterGroupNotEmpty(inputFilters)) {
+    const { filters, filterGroups } = inputFilters;
+    const newFilters = filters.filter((f) => !(f.key === 'entity_type' && f.values.includes('all')));
+    const newFilterGroups = filterGroups.map((group) => removeEntityTypeAllFromFilterGroup(group)) as FilterGroup[];
+    return {
+      mode: inputFilters.mode,
+      filters: newFilters,
+      filterGroups: newFilterGroups,
+    };
+  }
+  return inputFilters;
+};
+
+// construct filters and options for widgets
+export const buildFiltersAndOptionsForWidgets = (
+  inputFilters: FilterGroup | undefined,
+  opts: { removeTypeAll?: boolean, startDate?: string, endDate?: string, dateAttribute?: string } = {},
+) => {
+  const { removeTypeAll = false, startDate = null, endDate = null, dateAttribute = 'created_at' } = opts;
+  // 01. handle api filters in options
+  // elementId, elementWithTargetTypes, fromId, toId, fromTypes and toTypes should be handle in options, not in filters
+  // relationship_type should be put in options BUT should be kept in filters because this key can have all modes and operators
+  let filtersContent = inputFilters?.filters ?? [];
+  const dataSelectionElementId = R.head(filtersContent.filter((n) => n.key === 'elementId'))?.values || null;
+  const dataSelectionElementWithTargetTypes = R.head(filtersContent.filter((n) => n.key === 'elementWithTargetTypes'))?.values || null;
+  const dataSelectionRelationshipType = R.head(filtersContent.filter((o) => o.key === 'relationship_type'))?.values || null;
+  const dataSelectionFromId = R.head(filtersContent.filter((o) => o.key === 'fromId'))?.values || null;
+  const dataSelectionToId = R.head(filtersContent.filter((o) => o.key === 'toId'))?.values || null;
+  const dataSelectionFromTypes = R.head(filtersContent.filter((o) => o.key === 'fromTypes'))?.values
+    || null;
+  const dataSelectionToTypes = R.head(filtersContent.filter((o) => o.key === 'toTypes'))?.values || null;
+  filtersContent = filtersContent.filter(
+    (o) => ![
+      'elementId',
+      'elementWithTargetTypes',
+      'fromId',
+      'toId',
+      'fromTypes',
+      'toTypes',
+    ].includes(o.key),
+  );
+  let filters = inputFilters ? { ...inputFilters, filters: filtersContent } : undefined;
+  // 02. remove 'all' in filter with key=entity_type
+  if (removeTypeAll) filters = removeEntityTypeAllFromFilterGroup(filters);
+  // 03. handle startDate and endDate options
+  const dateFiltersContent = [];
+  if (startDate) {
+    dateFiltersContent.push({
+      key: dateAttribute,
+      values: [startDate],
+      operator: 'gt',
+      mode: 'or',
+    });
+  }
+  if (endDate) {
+    dateFiltersContent.push({
+      key: dateAttribute,
+      values: [endDate],
+      operator: 'lt',
+      mode: 'or',
+    });
+  }
+  if (dateFiltersContent.length > 0) {
+    filters = {
+      mode: 'and',
+      filters: dateFiltersContent,
+      filterGroups: filters ? [filters] : [],
+    };
+  }
+  return {
+    filters,
+    dataSelectionElementId,
+    dataSelectionElementWithTargetTypes,
+    dataSelectionRelationshipType,
+    dataSelectionFromId,
+    dataSelectionFromTypes,
+    dataSelectionToId,
+    dataSelectionToTypes,
   };
 };
 
@@ -703,7 +789,6 @@ export const isStixObjectTypes = [
   'toId',
   'objects',
   'targets',
-  'elementId',
   'indicates',
   'contextEntityId',
 ];

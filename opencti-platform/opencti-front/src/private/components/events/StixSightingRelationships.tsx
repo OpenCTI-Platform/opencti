@@ -11,7 +11,7 @@ import useEntityToggle from '../../../utils/hooks/useEntityToggle';
 import { StixSightingRelationshipLine_node$data } from './stix_sighting_relationships/__generated__/StixSightingRelationshipLine_node.graphql';
 import ToolBar from '../data/ToolBar';
 import ExportContextProvider from '../../../utils/ExportContextProvider';
-import { filtersWithEntityType, findFilterFromKey, GqlFilterGroup, emptyFilterGroup } from '../../../utils/filters/filtersUtils';
+import { injectEntityTypeFilterInFilterGroup, findFilterFromKey, GqlFilterGroup, emptyFilterGroup } from '../../../utils/filters/filtersUtils';
 
 const dataColumns = {
   x_opencti_negative: {
@@ -100,7 +100,7 @@ const StixSightingRelationships = () => {
   const renderLines = (
     paginationOptions: StixSightingRelationshipsLinesPaginationQuery$variables,
   ) => {
-    const toolBarFilters = filtersWithEntityType(filters, 'stix-sighting-relationship');
+    const toolBarFilters = injectEntityTypeFilterInFilterGroup(filters, 'stix-sighting-relationship');
     return (
       <>
         <ListLines

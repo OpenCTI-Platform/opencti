@@ -11,7 +11,7 @@ import { useFormatter } from '../../../../components/i18n';
 import { monthsAgo, now } from '../../../../utils/Time';
 import { verticalBarsChartOptions } from '../../../../utils/Charts';
 import { simpleNumberFormat } from '../../../../utils/Number';
-import { findFilterFromKey } from '../../../../utils/filters/filtersUtils';
+import { buildFiltersAndOptionsForWidgets } from '../../../../utils/filters/filtersUtils';
 
 const useStyles = makeStyles(() => ({
   paper: {
@@ -61,30 +61,16 @@ const StixCoreObjectsMultiVerticalBars = ({
   const { t, fsd, mtdy, yd } = useFormatter();
   const renderContent = () => {
     const timeSeriesParameters = dataSelection.map((selection) => {
-      const filtersContent = selection.filters?.filters ?? [];
-      const dataSelectionTypes = findFilterFromKey(filtersContent, 'entity_type', 'eq')?.values ?? ['Stix-Core-Object'];
-      const dataSelectionObjectId = findFilterFromKey(filtersContent, 'elementId', 'eq')?.values ?? null;
-      const dataSelectionRelationshipType = findFilterFromKey(filtersContent, 'relationship_type', 'eq')?.values ?? null;
-      const finalFilters = selection.filters ? {
-        ...selection.filters,
-        filters: filtersContent.filter(
-          (n) => ![
-            'entity_type',
-            'elementId',
-            'relationship_type',
-            'toTypes',
-          ].includes(n.key),
-        ),
-      } : undefined;
+      const dataSelectionTypes = ['Stix-Core-Object'];
+      const { filters, dataSelectionElementId } = buildFiltersAndOptionsForWidgets(selection.filters);
       return {
         field:
           selection.date_attribute && selection.date_attribute.length > 0
             ? selection.date_attribute
             : 'created_at',
         types: dataSelectionTypes,
-        filters: finalFilters,
-        relationship_type: dataSelectionRelationshipType,
-        elementId: dataSelectionObjectId,
+        filters,
+        elementId: dataSelectionElementId,
       };
     });
     let formatter = fsd;

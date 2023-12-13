@@ -1,5 +1,4 @@
 import React from 'react';
-import * as R from 'ramda';
 import { graphql } from 'react-relay';
 import CircularProgress from '@mui/material/CircularProgress';
 import Paper from '@mui/material/Paper';
@@ -11,6 +10,7 @@ import { QueryRenderer } from '../../../../relay/environment';
 import { useFormatter } from '../../../../components/i18n';
 import { treeMapOptions } from '../../../../utils/Charts';
 import { defaultValue } from '../../../../utils/Graph';
+import { buildFiltersAndOptionsForWidgets } from '../../../../utils/filters/filtersUtils';
 
 const useStyles = makeStyles(() => ({
   paper: {
@@ -191,25 +191,13 @@ const StixCoreObjectsTreeMap = ({
   const { t } = useFormatter();
   const renderContent = () => {
     const selection = dataSelection[0];
-    let filtersContent = selection.filters?.filters ?? [];
-    const dataSelectionTypes = R.head(
-      filtersContent.filter((n) => n.key === 'entity_type'),
-    )?.values || ['Stix-Core-Object'];
-    const dataSelectionObjectId = filtersContent.filter((n) => n.key === 'elementId')?.values || null;
-    const dataSelectionRelationshipType = R.head(filtersContent.filter((n) => n.key === 'relationship_type'))
-      ?.values || null;
-    const dataSelectionToTypes = R.head(filtersContent.filter((n) => n.key === 'toTypes'))?.values || null;
-    filtersContent = filtersContent.filter(
-      (n) => !['entity_type', 'elementId', 'relationship_type', 'toTypes'].includes(
-        n.key,
-      ),
-    );
+    const dataSelectionTypes = ['Stix-Core-Object'];
+    const { filters, dataSelectionElementId, dataSelectionToTypes } = buildFiltersAndOptionsForWidgets(selection.filters);
     return (
       <QueryRenderer
         query={stixCoreObjectsTreeMapDistributionQuery}
         variables={{
-          objectId: dataSelectionObjectId,
-          relationship_type: dataSelectionRelationshipType,
+          objectId: dataSelectionElementId,
           toTypes: dataSelectionToTypes,
           types: dataSelectionTypes,
           field: selection.attribute,
@@ -220,7 +208,7 @@ const StixCoreObjectsTreeMap = ({
             selection.date_attribute && selection.date_attribute.length > 0
               ? selection.date_attribute
               : 'created_at',
-          filters: selection.filters ? { ...selection.filters, filters: filtersContent } : undefined,
+          filters,
           limit: selection.number ?? 10,
         }}
         render={({ props }) => {

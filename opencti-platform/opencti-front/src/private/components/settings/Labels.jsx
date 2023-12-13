@@ -12,7 +12,7 @@ import LabelsLines, { labelsLinesQuery } from './labels/LabelsLines';
 import LabelCreation from './labels/LabelCreation';
 import LabelsVocabulariesMenu from './LabelsVocabulariesMenu';
 import ToolBar from '../data/ToolBar';
-import { filtersWithEntityType } from '../../../utils/filters/filtersUtils';
+import { injectEntityTypeFilterInFilterGroup } from '../../../utils/filters/filtersUtils';
 
 const styles = () => ({
   container: {
@@ -152,7 +152,7 @@ class Labels extends Component {
       numberOfSelectedElements = numberOfElements.original
         - Object.keys(deSelectedElements || {}).length;
     }
-    const finalFilters = filtersWithEntityType(undefined, 'Label');
+    const finalFilters = injectEntityTypeFilterInFilterGroup(undefined, 'Label');
     const dataColumns = {
       value: {
         label: 'Value',

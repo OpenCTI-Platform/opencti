@@ -4,11 +4,11 @@ import CircularProgress from '@mui/material/CircularProgress';
 import Paper from '@mui/material/Paper';
 import Typography from '@mui/material/Typography';
 import makeStyles from '@mui/styles/makeStyles';
-import * as R from 'ramda';
 import { QueryRenderer } from '../../../../relay/environment';
 import { useFormatter } from '../../../../components/i18n';
 import ItemNumberDifference from '../../../../components/ItemNumberDifference';
 import { dayAgo } from '../../../../utils/Time';
+import { buildFiltersAndOptionsForWidgets } from '../../../../utils/filters/filtersUtils';
 
 const useStyles = makeStyles({
   paper: {
@@ -63,33 +63,11 @@ const StixCoreObjectsNumber = ({
   const { t, n } = useFormatter();
   const renderContent = () => {
     const selection = dataSelection[0];
-    let filtersContent = selection.filters?.filters ?? [];
-    const dataSelectionTypes = R.head(
-      filtersContent.filter((o) => o.key === 'entity_type'),
-    )?.values || ['Stix-Core-Object'];
-    const dataSelectionElementId = R.head(filtersContent.filter((o) => o.key === 'elementId'))?.values || null;
-    const dataSelectionRelationshipType = R.head(filtersContent.filter((o) => o.key === 'relationship_type'))
-      ?.values || null;
-    filtersContent = filtersContent.filter(
-      (o) => !['entity_type', 'elementId', 'relationship_type'].includes(o.key),
-    );
+    const dataSelectionTypes = ['Stix-Core-Object'];
     const dateAttribute = selection.date_attribute && selection.date_attribute.length > 0
       ? selection.date_attribute
       : 'created_at';
-    if (startDate) {
-      filtersContent.push({
-        key: dateAttribute,
-        values: [startDate],
-        operator: 'gt',
-      });
-    }
-    if (endDate) {
-      filtersContent.push({
-        key: dateAttribute,
-        values: [endDate],
-        operator: 'lt',
-      });
-    }
+    const { filters, dataSelectionElementId } = buildFiltersAndOptionsForWidgets(selection.filters, { startDate, endDate, dateAttribute });
     return (
       <QueryRenderer
         query={stixCoreObjectsNumberNumberQuery}
@@ -98,9 +76,8 @@ const StixCoreObjectsNumber = ({
           first: selection.number ?? 10,
           orderBy: dateAttribute,
           orderMode: 'desc',
-          filters: selection.filters ? { ...selection.filters, filters: filtersContent } : undefined,
+          filters,
           elementId: dataSelectionElementId,
-          relationship_type: dataSelectionRelationshipType,
           startDate,
           endDate: dayAgo(),
         }}

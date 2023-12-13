@@ -27,7 +27,7 @@ import { monthsAgo, now } from '../../../../utils/Time';
 import { heatMapOptions } from '../../../../utils/Charts';
 import useGranted, { SETTINGS } from '../../../../utils/hooks/useGranted';
 import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
-import { findFilterFromKey } from '../../../../utils/filters/filtersUtils';
+import { removeEntityTypeAllFromFilterGroup } from '../../../../utils/filters/filtersUtils';
 
 const useStyles = makeStyles(() => ({
   paper: {
@@ -126,31 +126,13 @@ const AuditsMultiHeatMap = ({
       );
     }
     const timeSeriesParameters = dataSelection.map((selection) => {
-      let types = ['History', 'Activity'];
-      const entityTypeFilter = findFilterFromKey(
-        selection.filters?.filters || [],
-        'entity_type',
-      );
-      if (entityTypeFilter && entityTypeFilter.values.length > 0) {
-        if (entityTypeFilter.values.filter((o) => o === 'all').length === 0) {
-          types = entityTypeFilter.values;
-        }
-      }
-      const filters = selection.filters
-        ? {
-          ...selection.filters,
-          filters: selection.filters.filters.filter(
-            (f) => f.key !== 'entity_type',
-          ),
-        }
-        : undefined;
       return {
         field:
           selection.date_attribute && selection.date_attribute.length > 0
             ? selection.date_attribute
             : 'timestamp',
-        types,
-        filters,
+        types: ['History', 'Activity'],
+        filters: removeEntityTypeAllFromFilterGroup(selection.filters),
       };
     });
     return (

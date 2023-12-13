@@ -5,13 +5,13 @@ import Paper from '@mui/material/Paper';
 import Typography from '@mui/material/Typography';
 import makeStyles from '@mui/styles/makeStyles';
 import { useTheme } from '@mui/styles';
-import * as R from 'ramda';
 import Chart from '../charts/Chart';
 import { QueryRenderer } from '../../../../relay/environment';
 import { useFormatter } from '../../../../components/i18n';
 import { monthsAgo, now } from '../../../../utils/Time';
 import { lineChartOptions } from '../../../../utils/Charts';
 import { simpleNumberFormat } from '../../../../utils/Number';
+import { buildFiltersAndOptionsForWidgets } from '../../../../utils/filters/filtersUtils';
 
 const useStyles = makeStyles(() => ({
   paper: {
@@ -61,28 +61,17 @@ const StixRelationshipsMultiLineChart = ({
   const { t, fsd, mtdy, yd } = useFormatter();
   const renderContent = () => {
     const timeSeriesParameters = dataSelection.map((selection) => {
-      const filtersContent = selection.filters?.filters ?? [];
       const dataSelectionDateAttribute = selection.date_attribute && selection.date_attribute.length > 0
         ? selection.date_attribute
         : 'created_at';
-      const dataSelectionRelationshipType = R.head(filtersContent.filter((n) => n.key === 'relationship_type'))?.values
-        || null;
-      const dataSelectionFromId = R.head(filtersContent.filter((n) => n.key === 'fromId'))?.values || null;
-      const dataSelectionToId = R.head(filtersContent.filter((n) => n.key === 'toId'))?.values || null;
-      const dataSelectionFromTypes = R.head(filtersContent.filter((n) => n.key === 'fromTypes'))?.values || null;
-      const dataSelectionToTypes = R.head(filtersContent.filter((n) => n.key === 'toTypes'))?.values || null;
-      const finalFilters = selection.filters ? {
-        ...selection.filters,
-        filters: filtersContent.filter(
-          (n) => ![
-            'relationship_type',
-            'fromId',
-            'toId',
-            'fromTypes',
-            'toTypes',
-          ].includes(n.key),
-        ),
-      } : undefined;
+      const {
+        filters,
+        dataSelectionRelationshipType,
+        dataSelectionFromId,
+        dataSelectionToId,
+        dataSelectionFromTypes,
+        dataSelectionToTypes,
+      } = buildFiltersAndOptionsForWidgets(selection.filters);
       return {
         fromId: dataSelectionFromId,
         toId: dataSelectionToId,
@@ -90,7 +79,7 @@ const StixRelationshipsMultiLineChart = ({
         fromTypes: dataSelectionFromTypes,
         toTypes: dataSelectionToTypes,
         field: dataSelectionDateAttribute,
-        filters: finalFilters,
+        filters,
         dynamicFrom: selection.dynamicFrom,
         dynamicTo: selection.dynamicTo,
       };

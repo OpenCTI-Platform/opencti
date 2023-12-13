@@ -1,5 +1,4 @@
 import React from 'react';
-import * as R from 'ramda';
 import { graphql } from 'react-relay';
 import CircularProgress from '@mui/material/CircularProgress';
 import Paper from '@mui/material/Paper';
@@ -14,6 +13,7 @@ import { horizontalBarsChartOptions } from '../../../../utils/Charts';
 import { itemColor } from '../../../../utils/Colors';
 import { simpleNumberFormat } from '../../../../utils/Number';
 import { defaultValue } from '../../../../utils/Graph';
+import { buildFiltersAndOptionsForWidgets } from '../../../../utils/filters/filtersUtils';
 
 const useStyles = makeStyles(() => ({
   paper: {
@@ -222,25 +222,13 @@ const StixCoreObjectsHorizontalBars = ({
   const navigate = useNavigate();
   const renderContent = () => {
     const selection = dataSelection[0];
-    let filtersContent = selection.filters?.filters ?? [];
-    const dataSelectionTypes = R.head(
-      filtersContent.filter((n) => n.key === 'entity_type'),
-    )?.values || ['Stix-Core-Object'];
-    const dataSelectionObjectId = R.head(filtersContent.filter((n) => n.key === 'elementId'))?.values || null;
-    const dataSelectionRelationshipType = R.head(filtersContent.filter((n) => n.key === 'relationship_type'))
-      ?.values || null;
-    const dataSelectionToTypes = R.head(filtersContent.filter((n) => n.key === 'toTypes'))?.values || null;
-    filtersContent = filtersContent.filter(
-      (n) => !['entity_type', 'elementId', 'relationship_type', 'toTypes'].includes(
-        n.key,
-      ),
-    );
+    const dataSelectionTypes = ['Stix-Core-Object'];
+    const { filters, dataSelectionElementId, dataSelectionToTypes } = buildFiltersAndOptionsForWidgets(selection.filters);
     return (
       <QueryRenderer
         query={stixCoreObjectsHorizontalBarsDistributionQuery}
         variables={{
-          objectId: dataSelectionObjectId,
-          relationship_type: dataSelectionRelationshipType,
+          objectId: dataSelectionElementId,
           toTypes: dataSelectionToTypes,
           types: dataSelectionTypes,
           field: selection.attribute,
@@ -251,7 +239,7 @@ const StixCoreObjectsHorizontalBars = ({
             selection.date_attribute && selection.date_attribute.length > 0
               ? selection.date_attribute
               : 'created_at',
-          filters: selection.filters ? { ...selection.filters, filters: filtersContent } : undefined,
+          filters,
           limit: selection.number ?? 10,
         }}
         render={({ props }) => {

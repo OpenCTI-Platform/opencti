@@ -4,11 +4,11 @@ import CircularProgress from '@mui/material/CircularProgress';
 import Paper from '@mui/material/Paper';
 import Typography from '@mui/material/Typography';
 import makeStyles from '@mui/styles/makeStyles';
-import * as R from 'ramda';
 import { QueryRenderer } from '../../../../relay/environment';
 import { useFormatter } from '../../../../components/i18n';
 import ItemNumberDifference from '../../../../components/ItemNumberDifference';
 import { dayAgo } from '../../../../utils/Time';
+import { buildFiltersAndOptionsForWidgets } from '../../../../utils/filters/filtersUtils';
 
 const useStyles = makeStyles({
   paper: {
@@ -80,25 +80,16 @@ const StixRelationshipsNumber = ({
   const { t, n } = useFormatter();
   const renderContent = () => {
     const selection = dataSelection[0];
-    let filtersContent = selection.filters?.filters ?? [];
-    const relationshipType = R.head(filtersContent.filter((o) => o.key === 'relationship_type'))
-      ?.values || null;
-    const elementId = R.head(filtersContent.filter((o) => o.key === 'elementId'))?.values || null;
-    const elementWithTargetTypes = R.head(filtersContent.filter((o) => o.key === 'elementWithTargetTypes'))
-      ?.values || null;
-    const fromId = R.head(filtersContent.filter((o) => o.key === 'fromId'))?.values || null;
-    const toId = R.head(filtersContent.filter((o) => o.key === 'toId'))?.values || null;
-    const fromTypes = R.head(filtersContent.filter((o) => o.key === 'fromTypes'))?.values || null;
-    const toTypes = R.head(filtersContent.filter((o) => o.key === 'toTypes'))?.values || null;
-    filtersContent = filtersContent.filter(
-      (o) => ![
-        'relationship_type',
-        'fromId',
-        'toId',
-        'fromTypes',
-        'toTypes',
-      ].includes(o.key),
-    );
+    const {
+      filters,
+      dataSelectionRelationshipType: relationship_type,
+      dataSelectionElementId: elementId,
+      dataSelectionElementWithTargetTypes: elementWithTargetTypes,
+      dataSelectionFromId: fromId,
+      dataSelectionToId: toId,
+      dataSelectionFromTypes: fromTypes,
+      dataSelectionToTypes: toTypes,
+    } = buildFiltersAndOptionsForWidgets(selection.filters);
     return (
       <QueryRenderer
         query={stixRelationshipsNumberNumberQuery}
@@ -109,8 +100,8 @@ const StixRelationshipsNumber = ({
           fromTypes,
           toId,
           toTypes,
-          relationship_type: relationshipType,
-          filters: selection.filters ? { ...selection.filters, filters: filtersContent } : undefined,
+          relationship_type,
+          filters,
           startDate,
           endDate: dayAgo(),
           dynamicFrom: selection.dynamicFrom,

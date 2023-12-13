@@ -13,7 +13,7 @@ import { CaseRftLinesCasesPaginationQuery, CaseRftLinesCasesPaginationQuery$vari
 import { CaseRftLineCase_node$data } from './case_rfts/__generated__/CaseRftLineCase_node.graphql';
 import { CaseRftLineDummy } from './case_rfts/CaseRftLine';
 import CaseRftCreation from './case_rfts/CaseRftCreation';
-import { filtersWithEntityType, emptyFilterGroup } from '../../../utils/filters/filtersUtils';
+import { injectEntityTypeFilterInFilterGroup, emptyFilterGroup } from '../../../utils/filters/filtersUtils';
 
 interface CaseRftsProps {
   inputValue?: string;
@@ -109,7 +109,7 @@ const CaseRfts: FunctionComponent<CaseRftsProps> = () => {
       caseRftsLinesQuery,
       paginationOptions,
     );
-    const toolBarFilters = filtersWithEntityType(filters, 'Case-Rft');
+    const toolBarFilters = injectEntityTypeFilterInFilterGroup(filters, 'Case-Rft');
     return (
       <ListLines
         helpers={helpers}

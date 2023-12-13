@@ -10,7 +10,7 @@ import { QueryRenderer } from '../../../../relay/environment';
 import { useFormatter } from '../../../../components/i18n';
 import { monthsAgo, now } from '../../../../utils/Time';
 import { heatMapOptions } from '../../../../utils/Charts';
-import { findFilterFromKey } from '../../../../utils/filters/filtersUtils';
+import { removeEntityTypeAllFromFilterGroup } from '../../../../utils/filters/filtersUtils';
 
 const useStyles = makeStyles(() => ({
   paper: {
@@ -88,29 +88,13 @@ const StixCoreObjectsMultiHeatMap = ({
   const { t, fsd } = useFormatter();
   const renderContent = () => {
     const timeSeriesParameters = dataSelection.map((selection) => {
-      let types = ['Stix-Core-Object'];
-      const entityTypeFilter = findFilterFromKey(
-        selection.filters?.filters ?? [],
-        'entity_type',
-      );
-      if (entityTypeFilter && entityTypeFilter.values.length > 0) {
-        if (entityTypeFilter.values.filter((n) => n === 'all').length === 0) {
-          types = entityTypeFilter.values;
-        }
-      }
-      const filters = selection.filters
-        ? {
-          ...selection.filters,
-          filters: selection.filters.filters.filter((f) => f.key !== 'entity_type'),
-        }
-        : undefined;
       return {
         field:
           selection.date_attribute && selection.date_attribute.length > 0
             ? selection.date_attribute
             : 'created_at',
-        types,
-        filters,
+        types: ['Stix-Core-Object'],
+        filters: removeEntityTypeAllFromFilterGroup(selection.filters),
       };
     });
     return (

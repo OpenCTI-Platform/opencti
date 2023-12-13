@@ -11,7 +11,6 @@ import { Link } from 'react-router-dom';
 import TimelineDot from '@mui/lab/TimelineDot';
 import TimelineConnector from '@mui/lab/TimelineConnector';
 import TimelineContent from '@mui/lab/TimelineContent';
-import * as R from 'ramda';
 import makeStyles from '@mui/styles/makeStyles';
 import { defaultValue } from '../../../../utils/Graph';
 import ItemIcon from '../../../../components/ItemIcon';
@@ -20,6 +19,7 @@ import { useFormatter } from '../../../../components/i18n';
 import { QueryRenderer } from '../../../../relay/environment';
 import { itemColor } from '../../../../utils/Colors';
 import MarkdownDisplay from '../../../../components/MarkdownDisplay';
+import { buildFiltersAndOptionsForWidgets } from '../../../../utils/filters/filtersUtils';
 
 const useStyles = makeStyles({
   container: {
@@ -1260,44 +1260,22 @@ const StixRelationshipsTimeline = ({
   const { t, fldt } = useFormatter();
   const renderContent = () => {
     const selection = dataSelection[0];
-    let filtersContent = selection.filters?.filters ?? [];
-    const relationshipType = R.head(filtersContent.filter((n) => n.key === 'relationship_type'))
-      ?.values || null;
-    const fromId = R.head(filtersContent.filter((n) => n.key === 'fromId'))?.values || null;
-    const toId = R.head(filtersContent.filter((n) => n.key === 'toId'))?.values || null;
-    const fromTypes = R.head(filtersContent.filter((n) => n.key === 'fromTypes'))?.values || null;
-    const toTypes = R.head(filtersContent.filter((n) => n.key === 'toTypes'))?.values || null;
-    filtersContent = filtersContent.filter(
-      (n) => ![
-        'relationship_type',
-        'fromId',
-        'toId',
-        'fromTypes',
-        'toTypes',
-      ].includes(n.key),
-    );
     const dateAttribute = selection.date_attribute && selection.date_attribute.length > 0
       ? selection.date_attribute
       : 'created_at';
-    if (startDate) {
-      filtersContent.push({
-        key: dateAttribute,
-        values: [startDate],
-        operator: 'gt',
-      });
-    }
-    if (endDate) {
-      filtersContent.push({
-        key: dateAttribute,
-        values: [endDate],
-        operator: 'lt',
-      });
-    }
+    const {
+      filters,
+      dataSelectionRelationshipType: relationship_type,
+      dataSelectionFromId: fromId,
+      dataSelectionToTypes: toTypes,
+      dataSelectionFromTypes: fromTypes,
+      dataSelectionToId: toId,
+    } = buildFiltersAndOptionsForWidgets(selection.filters, { startDate, endDate, dateAttribute });
     return (
       <QueryRenderer
         query={stixRelationshipsTimelineStixRelationshipQuery}
         variables={{
-          relationship_type: relationshipType,
+          relationship_type,
           fromId,
           toId,
           fromTypes,
@@ -1305,7 +1283,7 @@ const StixRelationshipsTimeline = ({
           first: 50,
           orderBy: dateAttribute,
           orderMode: 'desc',
-          filters: selection.filters ? { ...selection.filters, filters: filtersContent } : undefined,
+          filters,
         }}
         render={({ props }) => {
           if (

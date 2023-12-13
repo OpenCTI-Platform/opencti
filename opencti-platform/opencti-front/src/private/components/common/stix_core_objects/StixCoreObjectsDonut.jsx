@@ -12,6 +12,7 @@ import { useFormatter } from '../../../../components/i18n';
 import { donutChartOptions } from '../../../../utils/Charts';
 import { defaultValue } from '../../../../utils/Graph';
 import Chart from '../charts/Chart';
+import { buildFiltersAndOptionsForWidgets } from '../../../../utils/filters/filtersUtils';
 
 const useStyles = makeStyles(() => ({
   paper: {
@@ -210,30 +211,12 @@ const StixCoreObjectsDonut = ({
   const { t } = useFormatter();
   const renderContent = () => {
     const selection = dataSelection[0];
-    let finalFiltersContent = selection.filters?.filters ?? [];
-    const dataSelectionTypes = R.head(
-      finalFiltersContent.filter((n) => n.key === 'entity_type'),
-    )?.values || ['Stix-Core-Object'];
-    const dataSelectionObjectId = R.head(finalFiltersContent.filter((n) => n.key === 'elementId'))?.values || null;
-    const dataSelectionRelationshipType = R.head(finalFiltersContent.filter((n) => n.key === 'relationship_type'))
-      ?.values || null;
-    const dataSelectionToTypes = R.head(finalFiltersContent.filter((n) => n.key === 'toTypes'))?.values || null;
-    const dataSelectionElementWithTargetTypes = R.head(finalFiltersContent.filter((n) => n.key === 'elementWithTargetTypes'))
-      ?.values || null;
-    finalFiltersContent = finalFiltersContent.filter(
-      (n) => ![
-        'entity_type',
-        'elementId',
-        'relationship_type',
-        'toTypes',
-        'elementWithTargetTypes',
-      ].includes(n.key),
-    );
+    const dataSelectionTypes = ['Stix-Core-Object'];
+    const { filters, dataSelectionElementId, dataSelectionToTypes, dataSelectionElementWithTargetTypes } = buildFiltersAndOptionsForWidgets(selection.filters);
     const variables = {
-      objectId: Array.isArray(dataSelectionObjectId)
-        ? R.head(dataSelectionObjectId)
-        : dataSelectionObjectId,
-      relationship_type: dataSelectionRelationshipType,
+      objectId: Array.isArray(dataSelectionElementId)
+        ? R.head(dataSelectionElementId)
+        : dataSelectionElementId,
       types: dataSelectionTypes,
       field: selection.attribute,
       operation: 'count',
@@ -243,10 +226,7 @@ const StixCoreObjectsDonut = ({
         selection.date_attribute && selection.date_attribute.length > 0
           ? selection.date_attribute
           : 'created_at',
-      filters: {
-        ...selection.filters,
-        filters: finalFiltersContent,
-      },
+      filters,
       limit: selection.number ?? 10,
     };
     if (dataSelectionToTypes && dataSelectionToTypes.length > 0) {

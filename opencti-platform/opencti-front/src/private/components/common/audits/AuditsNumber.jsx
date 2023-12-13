@@ -25,7 +25,7 @@ import ItemNumberDifference from '../../../../components/ItemNumberDifference';
 import { dayAgo } from '../../../../utils/Time';
 import useGranted, { SETTINGS } from '../../../../utils/hooks/useGranted';
 import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
-import { findFilterFromKey } from '../../../../utils/filters/filtersUtils';
+import { buildFiltersAndOptionsForWidgets } from '../../../../utils/filters/filtersUtils';
 
 const useStyles = makeStyles({
   paper: {
@@ -97,42 +97,11 @@ const AuditsNumber = ({
       );
     }
     const selection = dataSelection[0];
-    let types = ['History', 'Activity'];
-    const entityTypeFilter = findFilterFromKey(
-      selection.filters?.filters ?? [],
-      'entity_type',
-    );
-    if (entityTypeFilter && entityTypeFilter.values.length > 0) {
-      if (entityTypeFilter.values.filter((o) => o === 'all').length === 0) {
-        types = entityTypeFilter.values;
-      }
-    }
+    const types = ['History', 'Activity'];
     const dateAttribute = selection.date_attribute && selection.date_attribute.length > 0
       ? selection.date_attribute
       : 'timestamp';
-    const filtersContent = (selection.filters?.filters ?? []).filter(
-      (f) => f.key !== 'entity_type',
-    );
-    if (startDate) {
-      filtersContent.push({
-        key: dateAttribute,
-        values: [startDate],
-        operator: 'gt',
-      });
-    }
-    if (endDate) {
-      filtersContent.push({
-        key: dateAttribute,
-        values: [endDate],
-        operator: 'lt',
-      });
-    }
-    const filters = selection.filters
-      ? {
-        ...selection.filters,
-        filters: filtersContent,
-      }
-      : undefined;
+    const { filters } = buildFiltersAndOptionsForWidgets(selection.filters, { removeTypeAll: true, startDate, endDate, dateAttribute });
     return (
       <QueryRenderer
         query={auditsNumberNumberQuery}
