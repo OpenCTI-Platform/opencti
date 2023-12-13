@@ -1,33 +1,23 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { compose } from "ramda";
 import inject18n from "../../../../components/i18n";
 import { withRouter } from "react-router-dom";
 import withStyles from "@mui/styles/withStyles";
 import Chart from "react-apexcharts";
 import { now } from "moment";
+import { Field, Form, Formik } from "formik";
+import { FormikValues } from "formik/dist/types";
+import {
+    computeCutOffSerie,
+    computeDecayLiveGraphSerie, computeDecayStableSerie,
+    computeXAxisTimeRange,  DecayModel, GraphData
+} from "@components/settings/decay/decay-domain";
 
 const styles = () => ({
     container: {
         margin: 0
     },
 });
-interface DecayPound {
-    decay_pound_filters: string
-    decay_pound_factor: number
-}
-
-interface Point {
-    x: number
-    y: number
-}
-export interface DecayModel {
-    id: string
-    decay_lifetime: number
-    decay_factor: number
-    decay_pounds: DecayPound[]
-    decay_points: number[]
-    decay_revoked_cutoff: number
-}
 
 const DEFAULT_DECAY_MODEL: DecayModel = {
     id: 'DEFAULT_DECAY_MODEL',
@@ -35,46 +25,84 @@ const DEFAULT_DECAY_MODEL: DecayModel = {
     decay_factor: 3.0,
     decay_pounds: [], // No specific pounds
     decay_points: [60, 40], // 2 decay points
-    decay_revoked_cutoff: 40,
-    // decay_apply_on: // filters
+    decay_revoked_cutoff: 20
 };
 
-export const computeScoreFromExpectedTime = (initialAmount: number, after: number, model: DecayModel, pound: number = 1) => {
-    // Polynomial implementation (MISP approach)
-    if (after > model.decay_lifetime) return 0;
-    if (after <= 0) return initialAmount;
-    return initialAmount * (1 - ((after / model.decay_lifetime) ** (1 / (model.decay_factor * pound))));
+let graphData: GraphData = {
+    timeSerie: [],
+    startDateMs:now(),
+    startScore:100,
+    decayModel: DEFAULT_DECAY_MODEL,
+    pointCount: 30,
+    pound: 1
 };
 
-export const computeTimeFromExpectedScore = (initialAmount: number, score: number, model: DecayModel, pound: number = 1) => {
-    // Polynomial implementation (MISP approach)
-    return (Math.E ** (Math.log(1 - (score / initialAmount)) * (model.decay_factor * pound))) * model.decay_lifetime;
-};
+export const handleSubmit = (values: FormikValues) => {
+    console.log('handleSubmit of ', values);
+    const newStartScore: number = parseInt(values.startScore);
+    if (newStartScore > 0 && newStartScore <=100 ) {
+        graphData.startScore = newStartScore;
+    }
 
+    const newPound: number = parseFloat(values.pound);
+    if (newPound) {
+        graphData.pound = newPound;
+    }
+}
 const Decay = () => {
-    const chartOptions= { chart: {id: 'basic-bar'}, xaxis: {categories: ['1991', '1992', '1993', '1994', '1995', '1996', '1997', '1998', '1999']}};
-    //const series= [{ name: "series-1",data: [30, 40, 45, 50, 49, 60, 70, 91]}];
 
-    const decayScores = [100, 90, 80, 70, 60, 50, 40, 30, 20, 10, 0];
-    const decayData: number[][] = [];
-    decayScores.forEach(function (score) {
-        const point: [number, number] = [ Math.round(computeTimeFromExpectedScore(100, score, DEFAULT_DECAY_MODEL, 1)), score];
-        decayData.push(point);
-    });
-    const series = [{ name: "series-1",data:decayData}];
-    console.log('decayDates', decayData);
-    console.log('decayScores', decayScores);
+    const [refreshMeNow, setRefreshMeNow] = useState(true);
+
+    graphData.timeSerie = computeXAxisTimeRange(graphData);
+
+    const series = [{ name: "Live score", data:computeDecayLiveGraphSerie(graphData), type: 'line'}]
+    series.push({ name: "Trigger point", data:computeDecayStableSerie(graphData), type: 'column'});
+    series.push({ name: "Cut Off", data:computeCutOffSerie(graphData), type: 'column'});
+
+    const chartOptions= {
+        chart: {id: 'Decay graph'},
+        xaxis: { type: 'datetime'},
+        yaxis: {min: 0,max: 100}};
+
     return (
         <div>
-        <span>Coucou</span>
+        <span>This page is a POC for decay formula.</span>
             <div className="app">
                 <div className="row">
                     <div className="mixed-chart">
                         <Chart
-                            options={chartOptions}
                             series={series}
+                            options={chartOptions}
                             type="line"
                             width="500"/>
+                    </div>
+                    <div>
+                        <Formik
+                            initialValues={{
+                                startScore: '',
+                                pound: '',
+                            }}
+                            onSubmit={async (values) => {
+                                handleSubmit(values);
+                                setRefreshMeNow(!refreshMeNow);
+                            }}
+                        >
+                            <Form>
+                                <label htmlFor="startScore">Start score (100-0)</label>
+                                <Field id="startScore" name="startScore" placeholder="100" />
+
+                                <label htmlFor="pound">Pound (ex: 1)</label>
+                                <Field id="pound" name="pound" placeholder="1" />
+                                <button type="submit">Submit</button>
+                            </Form>
+                        </Formik>
+                    </div>
+                    <div>
+                        <div>Model is:- </div>
+                        <div>decay_points: {graphData.decayModel.decay_points}</div>
+                        <div>decay_factor: {graphData.decayModel.decay_factor}</div>
+                        <div>decay_lifetime: {graphData.decayModel.decay_lifetime} day(s)</div>
+                        <div>decay_revoked_cutoff: {graphData.decayModel.decay_revoked_cutoff} day(s)</div>
                     </div>
                 </div>
             </div>
