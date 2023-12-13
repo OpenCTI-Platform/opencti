@@ -489,7 +489,7 @@ const useSearchEntities = ({
             .toPromise()
             .then((response) => {
               const data = response as IdentitySearchCreatorsSearchQuery$data;
-              buildCachedOptionsFromGenericFetchResponse(filterKey, 'Individual', data?.creators, data.me);
+              buildCachedOptionsFromGenericFetchResponse(filterKey, 'Individual', data?.creators, data?.me);
             });
         }
         break;
@@ -505,7 +505,7 @@ const useSearchEntities = ({
             .toPromise()
             .then((response) => {
               const data = response as ObjectAssigneeFieldAssigneesSearchQuery$data;
-              buildCachedOptionsFromGenericFetchResponse(filterKey, 'Individual', data?.assignees, data.me);
+              buildCachedOptionsFromGenericFetchResponse(filterKey, 'Individual', data?.assignees, data?.me);
             });
         }
         break;
@@ -521,7 +521,7 @@ const useSearchEntities = ({
             .toPromise()
             .then((response) => {
               const data = response as ObjectParticipantFieldParticipantsSearchQuery$data;
-              buildCachedOptionsFromGenericFetchResponse(filterKey, 'User', data?.participants, data.me);
+              buildCachedOptionsFromGenericFetchResponse(filterKey, 'User', data?.participants, data?.me);
             });
         }
         break;
