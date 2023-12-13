@@ -56,7 +56,9 @@ const UserHistory: FunctionComponent<UserHistoryProps> = ({
     orderMode: 'desc' as OrderingMode,
     search: entitySearchTerm,
   };
-  const filters = {
+
+  // Entities and relationships redirection filters
+  const technicalCreatorFilters = JSON.stringify({
     mode: 'and',
     filterGroups: [],
     filters: [
@@ -69,9 +71,7 @@ const UserHistory: FunctionComponent<UserHistoryProps> = ({
         mode: 'or',
       },
     ],
-  };
-
-  const filterString = JSON.stringify(filters);
+  });
 
   useEffect(() => {
     loadQuery(queryArgs, { fetchPolicy: 'store-and-network' });
@@ -97,7 +97,7 @@ const UserHistory: FunctionComponent<UserHistoryProps> = ({
         <IconButton
           className={classes.allEntitiesButton}
           component={Link}
-          to={`/dashboard/search/knowledge/?filters=${encodeURIComponent(filterString)}`}
+          to={`/dashboard/search/knowledge/?filters=${encodeURIComponent(technicalCreatorFilters)}`}
           size="large"
           color="primary"
         >
@@ -108,7 +108,7 @@ const UserHistory: FunctionComponent<UserHistoryProps> = ({
         <IconButton
           className={classes.allEntitiesButton}
           component={Link}
-          to={'/dashboard/data/relationships'}
+          to={`/dashboard/data/relationships/?filters=${encodeURIComponent(technicalCreatorFilters)}`}
           size="large"
           color="primary"
         >
