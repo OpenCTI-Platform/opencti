@@ -23,6 +23,7 @@ import Dialog from '@mui/material/Dialog';
 import DialogContent from '@mui/material/DialogContent';
 import DialogActions from '@mui/material/DialogActions';
 import Button from '@mui/material/Button';
+import Box from '@mui/material/Box';
 import Filters from '../../private/components/common/lists/Filters';
 import SearchInput from '../SearchInput';
 import inject18n from '../i18n';
@@ -86,22 +87,19 @@ const styles = (theme) => ({
     paddingLeft: 10,
     textTransform: 'uppercase',
   },
-  sortIcon: {
-    margin: '-3px 0 0 2px',
-  },
   headerItem: {
-    float: 'left',
     display: 'flex',
     fontSize: 12,
     fontWeight: 700,
+    alignItems: 'center',
   },
   sortableHeaderItem: {
-    float: 'left',
     display: 'flex',
     fontSize: 12,
     fontWeight: '700',
     cursor: 'pointer',
     paddingRight: 10,
+    alignItems: 'center',
   },
   headerItemText: {
     whiteSpace: 'nowrap',
@@ -132,7 +130,7 @@ class ListLines extends Component {
   }
 
   renderHeaderElement(field, label, width, isSortable) {
-    const { classes, t, sortBy, orderAsc, handleToggleSelectAll } = this.props;
+    const { classes, t, sortBy, orderAsc } = this.props;
     if (isSortable) {
       const orderComponent = orderAsc ? (
         <ArrowDropDown classes={{ root: classes.sortIcon }} />
@@ -154,7 +152,7 @@ class ListLines extends Component {
     return (
       <div
         className={classes.headerItem}
-        style={{ width, paddingTop: handleToggleSelectAll ? 3 : 0 }}
+        style={{ width }}
         key={field}
       >
         <div className={classes.headerItemText}>{t(label)}</div>
@@ -520,14 +518,14 @@ class ListLines extends Component {
               )}
               <ListItemText
                 primary={
-                  <div>
+                  <Box sx={{ display: 'flex', alignItems: 'center' }}>
                     {toPairs(dataColumns).map((dataColumn) => this.renderHeaderElement(
                       dataColumn[0],
                       dataColumn[1].label,
                       dataColumn[1].width,
                       dataColumn[1].isSortable,
                     ))}
-                  </div>
+                  </Box>
                 }
               />
               {secondaryAction && (
