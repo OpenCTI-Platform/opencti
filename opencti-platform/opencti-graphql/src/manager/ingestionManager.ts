@@ -20,9 +20,10 @@ import { pushToSync } from '../database/rabbitmq';
 import { OPENCTI_SYSTEM_UUID } from '../schema/general';
 import { findAllRssIngestions, patchRssIngestion } from '../modules/ingestion/ingestion-rss-domain';
 import type { AuthContext } from '../types/user';
-import type { BasicStoreEntityIngestionRss, BasicStoreEntityIngestionTaxii } from '../modules/ingestion/ingestion-types';
+import type { BasicStoreEntityIngestionCsv, BasicStoreEntityIngestionRss, BasicStoreEntityIngestionTaxii } from '../modules/ingestion/ingestion-types';
 import { findAllTaxiiIngestions, patchTaxiiIngestion } from '../modules/ingestion/ingestion-taxii-domain';
 import { TaxiiVersion } from '../generated/graphql';
+import { findAllCsvIngestions, patchCsvIngestion } from '../modules/ingestion/ingestion-csv-domain';
 
 // Ingestion manager responsible to cleanup old data
 // Each API will start is ingestion manager.
@@ -276,6 +277,70 @@ const taxiiExecutor = async (context: AuthContext) => {
 };
 // endregion
 
+// region Csv ingestion
+interface CsvResponseData {
+  data: { more: boolean, next: string, objects: object[] },
+  addedLast: string | undefined | null
+}
+const csvHttpGet = async (ingestion: BasicStoreEntityIngestionCsv): Promise<CsvResponseData> => {
+  const headers = new AxiosHeaders();
+  headers.Accept = 'application/csv';
+  if (ingestion.authentication_type === 'basic') {
+    const auth = Buffer.from(ingestion.authentication_value, 'utf-8').toString('base64');
+    headers.Authorization = `Basic ${auth}`;
+  }
+  if (ingestion.authentication_type === 'bearer') {
+    headers.Authorization = `Bearer ${ingestion.authentication_value}`;
+  }
+  let certificates;
+  if (ingestion.authentication_type === 'certificate') {
+    certificates = { cert: ingestion.authentication_value.split(':')[0], key: ingestion.authentication_value.split(':')[1], ca: ingestion.authentication_value.split(':')[0] };
+  }
+  const httpClientOptions: GetHttpClient = { headers, rejectUnauthorized: false, responseType: 'json', certificates };
+  const httpClient = getHttpClient(httpClientOptions);
+
+  const { data, headers: resultHeaders } = await httpClient.get(ingestion.uri);
+  return { data, addedLast: resultHeaders['x-csv-date-added-last'] };
+};
+const csvDataHandler = async (context: AuthContext, ingestion: BasicStoreEntityIngestionCsv) => {
+  const { data, addedLast } = await csvHttpGet(ingestion);
+  if (data.objects && data.objects.length > 0) {
+    logApp.info(`[OPENCTI-MODULE] Csv ingestion execution for ${data.objects.length} items`);
+    const bundle = { type: 'bundle', id: `bundle--${uuidv4()}`, objects: data.objects };
+    // Push the bundle to absorption queue
+    const stixBundle = JSON.stringify(bundle);
+    const content = Buffer.from(stixBundle, 'utf-8').toString('base64');
+    await pushToSync({ type: 'bundle', applicant_id: ingestion.user_id ?? OPENCTI_SYSTEM_UUID, content, update: true });
+    // Update the state
+    await patchCsvIngestion(context, SYSTEM_USER, ingestion.internal_id, {
+      current_state_cursor: data.next ? String(data.next) : undefined,
+      added_after_start: utcDate(addedLast)
+    });
+  } else if (data.objects === undefined) {
+    logApp.error(`[OPENCTI-MODULE] Csv ingestion execution error for ${ingestion.name}`, { error: data });
+  }
+};
+const csvExecutor = async (context: AuthContext) => {
+  const filters = {
+    mode: 'and',
+    filters: [{ key: 'ingestion_running', values: [true] }],
+    filterGroups: [],
+  };
+  const opts = { filters, connectionFormat: false, noFiltersChecking: true };
+  const ingestions = await findAllCsvIngestions(context, SYSTEM_USER, opts);
+  const ingestionPromises = [];
+  for (let i = 0; i < ingestions.length; i += 1) {
+    const ingestion = ingestions[i];
+    const ingestionPromise = csvDataHandler(context, ingestion)
+      .catch((e) => {
+        logApp.error(`[OPENCTI-MODULE] CSV ingestion execution error for ${ingestion.name}`, { error: e });
+      });
+    ingestionPromises.push(ingestionPromise);
+  }
+  return Promise.all(ingestionPromises);
+};
+// endregion
+
 const ingestionHandler = async () => {
   logApp.debug('[OPENCTI-MODULE] Running ingestion manager');
   let lock;
@@ -289,6 +354,7 @@ const ingestionHandler = async () => {
     const ingestionPromises = [];
     ingestionPromises.push(rssExecutor(context, turndownService));
     ingestionPromises.push(taxiiExecutor(context));
+    ingestionPromises.push(csvExecutor(context));
     await Promise.all(ingestionPromises);
   } catch (e: any) {
     // We dont care about failing to get the lock.

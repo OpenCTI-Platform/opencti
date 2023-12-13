@@ -1,0 +1,77 @@
+enum CsvAuthType {
+    none
+    basic
+    bearer
+    certificate
+}
+
+type IngestionCsv implements InternalObject & BasicObject {
+    id: ID!
+    entity_type: String!
+    standard_id: String!
+    parent_types: [String]!
+    created_at: DateTime
+    updated_at: DateTime
+    name: String!
+    description: String
+    uri: String!
+    csvMapper: String!
+    authentication_type: CsvAuthType!
+    authentication_value: String
+    user_id: String!
+    user: Creator
+    ingestion_running: Boolean
+    current_state_date: DateTime
+    test_mapper: String
+}
+
+enum IngestionCsvOrdering {
+    name
+    created_at
+    updated_at
+    uri
+    mapper
+}
+
+type IngestionCsvConnection {
+    pageInfo: PageInfo!
+    edges: [IngestionCsvEdge!]!
+}
+
+type IngestionCsvEdge {
+    cursor: String!
+    node: IngestionCsv!
+}
+
+# Queries
+type Query {
+    ingestionCsv(id: String!): IngestionCsv @auth(for: [SETTINGS])
+    ingestionCsvs(
+        first: Int
+        after: ID
+        orderBy: IngestionCsvOrdering
+        orderMode: OrderingMode
+        filters: FilterGroup
+        includeAuthorities: Boolean
+        search: String
+    ): IngestionCsvConnection @auth(for: [SETTINGS])
+}
+
+# Mutations
+input IngestionCsvAddInput {
+    name: String! @constraint(minLength: 2)
+    description: String
+    authentication_type: CsvAuthType!
+    authentication_value: String
+    current_state_date: DateTime
+    uri: String! @constraint(minLength: 5)
+    csvMapper: String!
+    ingestion_running: Boolean
+    user_id: String!
+}
+
+type Mutation {
+    ingestionCsvAdd(input: IngestionCsvAddInput!): IngestionCsv @auth(for: [SETTINGS])
+    ingestionCsvDelete(id: ID!): ID @auth(for: [SETTINGS])
+    ingestionCsvFieldPatch(id: ID!, input: [EditInput!]!): IngestionCsv @auth(for: [SETTINGS])
+}

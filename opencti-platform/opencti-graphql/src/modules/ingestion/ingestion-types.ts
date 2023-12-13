@@ -71,3 +71,37 @@ export interface StixIngestionTaxii extends StixObject {
   }
 }
 // endregion
+
+// region Csv ingestion
+export const ENTITY_TYPE_INGESTION_CSV = 'IngestionCsv';
+
+export interface BasicStoreEntityIngestionCsv extends BasicStoreEntity {
+  name: string
+  description: string
+  uri: string
+  csvMapper: string[]
+  authentication_type: 'none' | 'basic' | 'bearer' | 'certificate'
+  authentication_value: string
+  user_id: string | undefined
+  ingestion_running: boolean
+}
+
+export interface StoreEntityIngestionCsv extends StoreEntity {
+  name: string
+  description: string
+  uri: string
+  csvMapper: string[]
+  ingestion_running: boolean
+}
+
+export interface StixIngestionCsv extends StixObject {
+  name: string
+  description: string
+  uri: string
+  csvMapper: string[]
+  ingestion_running: boolean
+  extensions: {
+    [STIX_EXT_OCTI]: StixOpenctiExtensionSDO
+  }
+}
+// endregion

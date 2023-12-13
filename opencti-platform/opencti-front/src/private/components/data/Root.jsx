@@ -7,6 +7,7 @@ import Loader from '../../../components/Loader';
 const CsvMappers = lazy(() => import('./CsvMappers'));
 const Security = lazy(() => import('../../../utils/Security'));
 const Connectors = lazy(() => import('./Connectors'));
+const IngestionCsv = lazy(() => import('./IngestionCsv'));
 const Entities = lazy(() => import('./Entities'));
 const Relationships = lazy(() => import('./Relationships'));
 const Tasks = lazy(() => import('./Tasks'));
@@ -70,6 +71,16 @@ const Root = () => {
         />
         <BoundaryRoute
           exact
+          path="/dashboard/data/ingestion/csv"
+          component={IngestionCsv}
+        />
+        <BoundaryRoute
+          exact
+          path="/dashboard/data/ingestion/csv"
+          component={IngestionCsv}
+        />
+        <BoundaryRoute
+          exact
           path="/dashboard/data/sharing"
           render={() => <Redirect to="/dashboard/data/sharing/streams" />}
         />
@@ -120,8 +131,7 @@ const Root = () => {
           path="/dashboard/data/processing/tasks"
           component={Tasks}
         />
-      </Switch>
-    </Suspense>
+      </Switch></Suspense>
   );
 };
 
