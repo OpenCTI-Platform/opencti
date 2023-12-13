@@ -57,14 +57,14 @@ import { elCount, elUpdateElement } from '../database/engine';
 import { generateStandardId, getInstanceIds } from '../schema/identifier';
 import { askEntityExport, askListExport, exportTransformFilters } from './stix';
 import { isEmptyField, isNotEmptyField, READ_ENTITIES_INDICES, READ_INDEX_INFERRED_ENTITIES } from '../database/utils';
-import { RELATION_RELATED_TO } from '../schema/stixCoreRelationship';
+import { RELATION_RELATED_TO, STIX_CORE_RELATIONSHIPS } from '../schema/stixCoreRelationship';
 import { ENTITY_TYPE_CONTAINER_CASE } from '../modules/case/case-types';
 import { getEntitySettingFromCache } from '../modules/entitySetting/entitySetting-utils';
 import { stixObjectOrRelationshipAddRefRelation, stixObjectOrRelationshipAddRefRelations, stixObjectOrRelationshipDeleteRefRelation } from './stixObjectOrStixRelationship';
 import { buildContextDataForFile, publishUserAction } from '../listener/UserActionListener';
 import { extractEntityRepresentativeName } from '../database/entity-representative';
 import { addFilter, extractFilterGroupValues } from '../utils/filtering/filtering-utils';
-import { filterKeysWhoseValueToResolve } from '../utils/filtering/filtering-constants';
+import { specialFilterKeysWhoseValueToResolve } from '../utils/filtering/filtering-constants';
 import { schemaRelationsRefDefinition } from '../schema/schema-relationsRef';
 
 export const findAll = async (context, user, args) => {
@@ -586,7 +586,9 @@ export const stixCoreObjectEditContext = async (context, user, stixCoreObjectId,
 export const findFiltersRepresentatives = async (context, user, inputFilters) => {
   const filtersRepresentatives = [];
   // extract the ids to resolve from inputFilters
-  const keysToResolve = schemaRelationsRefDefinition.getAllInputNames().concat(filterKeysWhoseValueToResolve);
+  const keysToResolve = schemaRelationsRefDefinition.getAllInputNames()
+    .concat(STIX_CORE_RELATIONSHIPS)
+    .concat(specialFilterKeysWhoseValueToResolve);
   const idsToResolve = extractFilterGroupValues(inputFilters, keysToResolve);
   const otherIds = extractFilterGroupValues(inputFilters, keysToResolve, true);
   // resolve the ids

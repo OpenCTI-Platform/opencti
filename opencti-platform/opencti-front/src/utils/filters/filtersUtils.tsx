@@ -292,9 +292,6 @@ export const filterValue = (filterKey: string, value?: string | null) => {
     // TODO: improvement: boolean filters based on schema definition (not an enum)
     return t(value);
   }
-  if (filterKey === 'based-on') {
-    return value === 'EXISTS' ? t('Yes') : t('No');
-  }
   if (filterKey === 'x_opencti_negative') {
     return t(value === 'true' ? 'False positive' : 'True positive');
   }
