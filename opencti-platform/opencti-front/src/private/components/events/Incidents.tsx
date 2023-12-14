@@ -139,6 +139,7 @@ const Incidents: FunctionComponent = () => {
             'creator_id',
             'created',
             'targets',
+            'name',
           ]}
         >
           {queryRef && (

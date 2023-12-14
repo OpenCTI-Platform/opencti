@@ -88,6 +88,7 @@ const Events = () => {
           'createdBy',
           'start_time',
           'stop_time',
+          'name',
         ]}
       >
         {queryRef && (
