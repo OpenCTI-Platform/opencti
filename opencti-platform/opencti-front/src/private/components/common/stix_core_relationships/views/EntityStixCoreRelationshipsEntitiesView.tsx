@@ -132,7 +132,7 @@ EntityStixCoreRelationshipsEntitiesViewProps
               ? sortBy
               : 'name',
     orderMode: orderAsc ? 'asc' : 'desc',
-    filters: cleanFilters(removeIdFromFilterObject(filters), availableFilterKeys),
+    filters: cleanFilters(removeIdFromFilterGroupObject(filters), availableFilterKeys),
   } as unknown as EntityStixCoreRelationshipsEntitiesViewLinesPaginationQuery$variables; // Because of FilterMode
 
   const backgroundTaskFilters = injectEntityTypeFilterInFilterGroup(

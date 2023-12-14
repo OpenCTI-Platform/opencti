@@ -16,7 +16,7 @@ import ExportContextProvider from '../../../../utils/ExportContextProvider';
 import { ContainerStixCyberObservableLineDummy } from './ContainerStixCyberObservableLine';
 import useEntityToggle from '../../../../utils/hooks/useEntityToggle';
 import { ContainerStixCyberObservableLine_node$data } from './__generated__/ContainerStixCyberObservableLine_node.graphql';
-import { GqlFilterGroup, emptyFilterGroup, removeIdFromFilterObject } from '../../../../utils/filters/filtersUtils';
+import { GqlFilterGroup, emptyFilterGroup, removeIdFromFilterGroupObject } from '../../../../utils/filters/filtersUtils';
 
 export const ContainerStixCyberObservablesLinesSearchQuery = graphql`
   query ContainerStixCyberObservablesLinesSearchQuery(
@@ -132,7 +132,7 @@ ContainerStixCyberObservablesComponentProps
   const paginationOptions = {
     ...rawPaginationOptions,
     types: types && types.length > 0 ? types : ['Stix-Cyber-Observable'],
-    filters: removeIdFromFilterObject(filters) as unknown as GqlFilterGroup,
+    filters: removeIdFromFilterGroupObject(filters) as unknown as GqlFilterGroup,
   };
   const exportPaginationOptions = {
     ...rawPaginationOptions,

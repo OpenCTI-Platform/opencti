@@ -42,7 +42,7 @@ import ExportButtons from '../../../../components/ExportButtons';
 import Filters from '../lists/Filters';
 import { usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStorage';
 import { Theme } from '../../../../components/Theme';
-import { emptyFilterGroup, removeFilter, removeIdFromFilterObject, extractAllValueFromFilters } from '../../../../utils/filters/filtersUtils';
+import { emptyFilterGroup, removeFilter, removeIdFromFilterGroupObject, extractAllValueFromFilters } from '../../../../utils/filters/filtersUtils';
 import FilterIconButton from '../../../../components/FilterIconButton';
 
 const useStyles = makeStyles<Theme>((theme) => ({
@@ -234,7 +234,7 @@ StixDomainObjectThreatKnowledgeProps
       elementWithTargetTypes: toTypes.filter(
         (x) => x.toLowerCase() !== stixDomainObjectType,
       ),
-      filters: removeIdFromFilterObject(finalFilters),
+      filters: removeIdFromFilterGroupObject(finalFilters),
     };
     if (viewType === 'timeline') {
       finalPaginationOptions.relationship_type = nestedRelationships
