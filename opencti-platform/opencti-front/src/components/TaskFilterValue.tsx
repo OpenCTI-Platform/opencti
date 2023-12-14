@@ -9,6 +9,7 @@ import { useFormatter } from './i18n';
 import { FilterGroup } from '../utils/filters/filtersUtils';
 import { truncate } from '../utils/String';
 import { Theme } from './Theme';
+import DisplayFilterGroup from './filters/DisplayFilterGroup';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   filter: {
@@ -103,6 +104,23 @@ const TaskFilterValue = ({
           </span>
         );
       })}
+      {filters.filterGroups
+        && filters.filterGroups.length > 0 && ( // if there are filterGroups, we display a warning box // TODO display correctly filterGroups
+        <Chip
+          classes={{ root: classes.filter, label: classes.chipLabel }}
+          color="warning"
+          label={
+            <>
+              {t('Filters are not fully displayed')}
+              <DisplayFilterGroup
+                filtersRepresentativesMap={filtersRepresentativesMap}
+                filterObj={filters}
+                filterMode={filters.mode}
+              />
+            </>
+          }
+        />
+      )}
     </>
   );
 };
