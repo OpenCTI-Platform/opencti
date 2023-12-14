@@ -104,7 +104,9 @@ const UserHistoryLines: FunctionComponent<UserHistoryLinesProps> = ({
       {logs.length > 0 ? (
         logs.map((logEdge) => {
           const log = logEdge?.node;
-          return <UserHistoryLine key={log?.id} node={log} />;
+          return (log
+            && <UserHistoryLine key={log?.id} node={log} />
+          );
         })
       ) : (
         <div style={{ display: 'table', height: '100%', width: '100%' }}>
