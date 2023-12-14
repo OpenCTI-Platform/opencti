@@ -61,8 +61,8 @@ const settingsResolvers = {
   },
   Subscription: {
     settings: {
-      resolve: /* istanbul ignore next */ (payload) => payload.instance,
-      subscribe: /* istanbul ignore next */ (_, { id }, context) => {
+      resolve: /* v8 ignore next */ (payload) => payload.instance,
+      subscribe: /* v8 ignore next */ (_, { id }, context) => {
         settingsEditContext(context, context.user, id);
         const filtering = withFilter(
           () => pubSubAsyncIterator(BUS_TOPICS[ENTITY_TYPE_SETTINGS].EDIT_TOPIC),
@@ -77,8 +77,8 @@ const settingsResolvers = {
       },
     },
     settingsMessages: {
-      resolve: /* istanbul ignore next */ (payload) => payload.instance,
-      subscribe: /* istanbul ignore next */ async (_, __, context) => {
+      resolve: /* v8 ignore next */ (payload) => payload.instance,
+      subscribe: /* v8 ignore next */ async (_, __, context) => {
         const asyncIterator = pubSubAsyncIterator(BUS_TOPICS[ENTITY_TYPE_SETTINGS].EDIT_TOPIC);
         const settings = await getEntityFromCache(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
         const filtering = withFilter(() => asyncIterator, (payload) => {

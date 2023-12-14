@@ -30,10 +30,10 @@ const managerConfigurationResolvers: Resolvers = {
   },
   Subscription: {
     managerConfiguration: {
-      resolve: /* istanbul ignore next */ (payload: any) => {
+      resolve: /* v8 ignore next */ (payload: any) => {
         return payload.instance;
       },
-      subscribe: /* istanbul ignore next */ (_, { id }, __) => {
+      subscribe: /* v8 ignore next */ (_, { id }, __) => {
         const asyncIterator = pubSubAsyncIterator(BUS_TOPICS[ENTITY_TYPE_MANAGER_CONFIGURATION].EDIT_TOPIC);
         const filtering = withFilter(() => asyncIterator, (payload) => {
           return payload.instance.id === id;

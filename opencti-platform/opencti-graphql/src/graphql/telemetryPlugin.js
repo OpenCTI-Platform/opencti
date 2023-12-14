@@ -20,7 +20,7 @@ const getRequestError = (context) => {
 
 // noinspection JSUnusedGlobalSymbols
 export default {
-  requestDidStart: /* istanbul ignore next */ () => {
+  requestDidStart: /* v8 ignore next */ () => {
     let tracingSpan;
     const start = Date.now();
     meterManager.request();

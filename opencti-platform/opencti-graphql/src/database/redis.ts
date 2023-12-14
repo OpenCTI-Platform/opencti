@@ -40,7 +40,7 @@ const redisOptions = (autoReconnect = false): RedisOptions => ({
   username: conf.get('redis:username'),
   password: conf.get('redis:password'),
   tls: USE_SSL ? { ...configureCA(REDIS_CA), servername: conf.get('redis:hostname') } : undefined,
-  retryStrategy: /* istanbul ignore next */ (times) => {
+  retryStrategy: /* v8 ignore next */ (times) => {
     if (getStoppingState()) {
       return null;
     }
@@ -260,7 +260,7 @@ export const getRedisVersion = async () => {
   return versionString.split(':')[1];
 };
 
-/* istanbul ignore next */
+/* v8 ignore next */
 export const notify = async (topic: string, instance: any, user: AuthUser) => {
   // Instance can be empty if user is currently looking for a deleted instance
   if (instance) {

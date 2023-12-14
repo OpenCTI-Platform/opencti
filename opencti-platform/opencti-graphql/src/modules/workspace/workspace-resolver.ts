@@ -74,8 +74,8 @@ const workspaceResolvers: Resolvers = {
   },
   Subscription: {
     workspace: {
-      resolve: /* istanbul ignore next */ (payload: any) => payload.instance,
-      subscribe: /* istanbul ignore next */ (_, { id }, context) => {
+      resolve: /* v8 ignore next */ (payload: any) => payload.instance,
+      subscribe: /* v8 ignore next */ (_, { id }, context) => {
         const asyncIterator = pubSubAsyncIterator(BUS_TOPICS[ENTITY_TYPE_WORKSPACE].EDIT_TOPIC);
         const filtering = withFilter(() => asyncIterator, (payload) => {
           return payload.user.id !== context.user.id && payload.instance.id === id;

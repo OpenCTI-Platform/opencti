@@ -151,7 +151,7 @@ export const fillTimeSeries = (startDate, endDate, interval, data) => {
     case 'month':
       dateFormat = 'YYYY-MM';
       break;
-    /* istanbul ignore next */
+    /* v8 ignore next */
     case 'week':
       dateFormat = 'YYYY-MM-DD';
       startDateParsed = moment.parseZone(getMonday(new Date(startDateParsed.format(dateFormat))).toISOString());

@@ -33,7 +33,7 @@ const API_CALL_MESSAGE = 'API Call'; // If you touch this, you need to change th
 const perfLog = booleanConf('app:performance_logger', false);
 const LOGS_SENSITIVE_FIELDS = conf.get('app:app_logs:logs_redacted_inputs') ?? [];
 export default {
-  requestDidStart: /* istanbul ignore next */ () => {
+  requestDidStart: /* v8 ignore next */ () => {
     const start = Date.now();
     let op;
     return {

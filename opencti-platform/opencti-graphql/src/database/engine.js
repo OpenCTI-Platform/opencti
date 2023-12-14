@@ -176,7 +176,7 @@ export const searchEngineVersion = async () => {
   const searchInfo = await engine.info()
     .then((info) => oebp(info).version)
     .catch(
-      /* istanbul ignore next */ (e) => {
+      /* v8 ignore next */ (e) => {
         throw ConfigurationError('[SEARCH] Search engine seems down', { error: e.message });
       }
     );
@@ -866,7 +866,7 @@ export const elDeleteIndices = async (indexesToDelete) => {
       return engine.indices.delete({ index })
         .then((response) => oebp(response))
         .catch((err) => {
-          /* istanbul ignore next */
+          /* v8 ignore next */
           if (err.meta.body && err.meta.body.error.type !== 'index_not_found_exception') {
             logApp.error('[SEARCH] Delete indices fail', { error: err });
           }
@@ -1361,7 +1361,7 @@ export const elFindByIds = async (context, user, ids, opts = {}) => {
 };
 export const elLoadById = async (context, user, id, opts = {}) => {
   const hits = await elFindByIds(context, user, id, opts);
-  /* istanbul ignore if */
+  //* v8 ignore if */
   if (hits.length > 1) {
     const errorMeta = { id, hits: hits.length };
     throw DatabaseError('[SEARCH] Expect only one response', errorMeta);
@@ -2367,7 +2367,7 @@ export const elPaginate = async (context, user, indexName, options = {}) => {
       return buildSearchResult(data, first, body.search_after, connectionFormat);
     })
     .catch(
-      /* istanbul ignore next */ (err) => {
+      /* v8 ignore next */ (err) => {
         // Because we create the mapping at element creation
         // We log the error only if its not a mapping not found error
         let isTechnicalError = true;
@@ -2502,7 +2502,7 @@ export const elBulk = async (args) => {
     return data;
   });
 };
-/* istanbul ignore next */
+/* v8 ignore next */
 export const elIndex = async (indexName, documentBody, opts = {}) => {
   const { refresh = true, pipeline } = opts;
   const internalId = documentBody.internal_id;
@@ -2523,7 +2523,7 @@ export const elIndex = async (indexName, documentBody, opts = {}) => {
   });
   return documentBody;
 };
-/* istanbul ignore next */
+/* v8 ignore next */
 export const elUpdate = (indexName, documentId, documentBody, retry = ES_RETRY_ON_CONFLICT) => {
   return engine.update({
     id: documentId,

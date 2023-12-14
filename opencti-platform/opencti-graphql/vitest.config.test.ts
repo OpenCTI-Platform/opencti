@@ -14,8 +14,15 @@ export const buildTestConfig = (include: string[]) => defineConfig({
     globalSetup: ['./tests/utils/globalSetup.js'],
     setupFiles: ['./tests/utils/testSetup.js'],
     coverage: {
-      provider: 'istanbul',
+      provider: 'v8',
+      include: ['src/**'],
+      exclude: ['src/generated/**', 'src/migrations/**', 'src/stixpattern/**', 'src/python/**'],
       reporter: ['text', 'json', 'html'],
+    },
+    poolOptions: {
+      threads: {
+        singleThread: true
+      }
     },
     sequence: {
       shuffle: false,

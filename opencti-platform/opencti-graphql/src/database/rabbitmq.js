@@ -201,7 +201,7 @@ export const rabbitMQIsAlive = async () => {
     const assertExchange = util.promisify(channel.assertExchange).bind(channel);
     return assertExchange(CONNECTOR_EXCHANGE, 'direct', { durable: true });
   }).catch(
-    /* istanbul ignore next */ (e) => {
+    /* v8 ignore next */ (e) => {
       throw DatabaseError('RabbitMQ seems down', { error: e.data });
     }
   );
@@ -222,7 +222,7 @@ export const pushToConnector = (connectorId, message) => {
 export const getRabbitMQVersion = (context) => {
   return metrics(context, SYSTEM_USER)
     .then((data) => data.overview.rabbitmq_version)
-    .catch(/* istanbul ignore next */ () => 'Disconnected');
+    .catch(/* v8 ignore next */ () => 'Disconnected');
 };
 
 export const consumeQueue = async (context, connectorId, connectionSetterCallback, callback) => {

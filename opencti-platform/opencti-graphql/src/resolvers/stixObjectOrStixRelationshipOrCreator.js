@@ -39,7 +39,7 @@ const stixObjectOrStixRelationshipOrCreatorResolvers = {
       if (obj.entity_type) {
         return obj.entity_type.replace(/(?:^|-|_)(\w)/g, (matches, letter) => letter.toUpperCase());
       }
-      /* istanbul ignore next */
+      /* v8 ignore next */
       return 'Unknown';
     },
   },

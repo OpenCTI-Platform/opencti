@@ -2323,7 +2323,7 @@ const buildRelationInput = (input) => {
     relationAttributes.description = R.isNil(input.description) ? null : input.description;
     relationAttributes.start_time = R.isNil(input.start_time) ? new Date(FROM_START) : input.start_time;
     relationAttributes.stop_time = R.isNil(input.stop_time) ? new Date(UNTIL_END) : input.stop_time;
-    /* istanbul ignore if */
+    //* v8 ignore if */
     if (relationAttributes.start_time > relationAttributes.stop_time) {
       throw DatabaseError('You cant create a relation with stop_time less than start_time', {
         from: input.fromId,
@@ -2338,7 +2338,7 @@ const buildRelationInput = (input) => {
     relationAttributes.stop_time = R.isNil(input.stop_time) ? new Date(UNTIL_END) : input.stop_time;
     relationAttributes.created = R.isNil(input.created) ? today : input.created;
     relationAttributes.modified = R.isNil(input.modified) ? today : input.modified;
-    /* istanbul ignore if */
+    //* v8 ignore if */
     if (relationAttributes.start_time > relationAttributes.stop_time) {
       throw DatabaseError('You cant create a relation with stop_time less than start_time', {
         from: input.fromId,
@@ -2353,7 +2353,7 @@ const buildRelationInput = (input) => {
     relationAttributes.x_opencti_negative = R.isNil(input.x_opencti_negative) ? false : input.x_opencti_negative;
     relationAttributes.first_seen = R.isNil(input.first_seen) ? new Date(FROM_START) : input.first_seen;
     relationAttributes.last_seen = R.isNil(input.last_seen) ? new Date(UNTIL_END) : input.last_seen;
-    /* istanbul ignore if */
+    //* v8 ignore if */
     if (relationAttributes.first_seen > relationAttributes.last_seen) {
       throw DatabaseError('You cant create a relation with a first_seen greater than the last_seen', {
         from: input.fromId,
@@ -2761,7 +2761,7 @@ export const buildRelationData = async (context, user, input, opts = {}) => {
     data.stop_time = R.isNil(input.stop_time) ? new Date(UNTIL_END) : input.stop_time;
     data.created = R.isNil(input.created) ? today : input.created;
     data.modified = R.isNil(input.modified) ? today : input.modified;
-    /* istanbul ignore if */
+    //* v8 ignore if */
     if (data.start_time > data.stop_time) {
       throw DatabaseError('You cant create a relation with a start_time less than the stop_time', {
         from: input.fromId,
@@ -2774,7 +2774,7 @@ export const buildRelationData = async (context, user, input, opts = {}) => {
     data.description = input.description ? input.description : '';
     data.start_time = isEmptyField(input.start_time) ? new Date(FROM_START) : input.start_time;
     data.stop_time = isEmptyField(input.stop_time) ? new Date(UNTIL_END) : input.stop_time;
-    /* istanbul ignore if */
+    //* v8 ignore if */
     if (data.start_time > data.stop_time) {
       throw DatabaseError('You cant create a relation with a start_time less than the stop_time', {
         from: input.fromId,
@@ -2789,7 +2789,7 @@ export const buildRelationData = async (context, user, input, opts = {}) => {
     data.x_opencti_negative = R.isNil(input.x_opencti_negative) ? false : input.x_opencti_negative;
     data.first_seen = R.isNil(input.first_seen) ? new Date(FROM_START) : input.first_seen;
     data.last_seen = R.isNil(input.last_seen) ? new Date(UNTIL_END) : input.last_seen;
-    /* istanbul ignore if */
+    //* v8 ignore if */
     if (data.first_seen > data.last_seen) {
       throw DatabaseError('You cant create a relation with last_seen less than first_seen', {
         from: input.fromId,
@@ -2852,7 +2852,7 @@ export const createRelationRaw = async (context, user, input, opts = {}) => {
   const { fromId, toId, relationship_type: relationshipType } = input;
   // Pre-check before inputs resolution
   if (fromId === toId) {
-    /* istanbul ignore next */
+    /* v8 ignore next */
     const errorData = { from: input.fromId, relationshipType };
     throw UnsupportedError('Relation cant be created with the same source and target', { error: errorData });
   }
@@ -2870,7 +2870,7 @@ export const createRelationRaw = async (context, user, input, opts = {}) => {
   await checkRelationConsistency(context, user, relationshipType, from, to);
   // In some case from and to can be resolved to the same element (because of automatic merging)
   if (from.internal_id === to.internal_id) {
-    /* istanbul ignore next */
+    /* v8 ignore next */
     if (relationshipType === RELATION_REVOKED_BY) {
       // Because of entity merging, we can receive some revoked-by on the same internal id element
       // In this case we need to revoke the fromId stixId of the relation
@@ -3037,7 +3037,7 @@ export const createInferredRelation = async (context, input, ruleContent, opts =
   logApp.info('Create inferred relation', inputRelation);
   return createRelationRaw(context, RULE_MANAGER_USER, inputRelation, args);
 };
-/* istanbul ignore next */
+/* v8 ignore next */
 export const createRelations = async (context, user, inputs, opts = {}) => {
   const createdRelations = [];
   // Relations cannot be created in parallel. (Concurrent indexing on same key)
@@ -3442,7 +3442,7 @@ export const internalDeleteElementById = async (context, user, id, opts = {}) =>
 };
 export const deleteElementById = async (context, user, elementId, type, opts = {}) => {
   if (R.isNil(type)) {
-    /* istanbul ignore next */
+    /* v8 ignore next */
     throw FunctionalError('You need to specify a type when deleting an entity');
   }
   const { element: deleted } = await internalDeleteElementById(context, user, elementId, opts);
@@ -3504,7 +3504,7 @@ export const deleteInferredRuleElement = async (rule, instance, deletedDependenc
   return false;
 };
 export const deleteRelationsByFromAndTo = async (context, user, fromId, toId, relationshipType, scopeType, opts = {}) => {
-  /* istanbul ignore if */
+  //* v8 ignore if */
   if (R.isNil(scopeType) || R.isNil(fromId) || R.isNil(toId)) {
     throw FunctionalError('You need to specify a scope type when deleting a relation with from and to');
   }

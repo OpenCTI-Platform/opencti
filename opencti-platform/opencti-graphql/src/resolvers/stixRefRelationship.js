@@ -60,8 +60,8 @@ const stixRefRelationshipResolvers = {
   },
   Subscription: {
     stixRefRelationship: {
-      resolve: /* istanbul ignore next */ (payload) => payload.instance,
-      subscribe: /* istanbul ignore next */ (_, { id }, context) => {
+      resolve: /* v8 ignore next */ (payload) => payload.instance,
+      subscribe: /* v8 ignore next */ (_, { id }, context) => {
         stixRefRelationshipEditContext(context, context.user, id);
         const filtering = withFilter(
           () => pubSubAsyncIterator(BUS_TOPICS[ABSTRACT_STIX_REF_RELATIONSHIP].EDIT_TOPIC),

@@ -12,14 +12,14 @@ const internalObjectResolvers = {
       if (obj.entity_type) {
         return obj.entity_type.replace(/(?:^|-|_)(\w)/g, (matches, letter) => letter.toUpperCase());
       }
-      /* istanbul ignore next */
+      /* v8 ignore next */
       return 'Unknown';
     },
   },
   Subscription: {
     internalObject: {
-      resolve: /* istanbul ignore next */ (payload) => payload.instance,
-      subscribe: /* istanbul ignore next */ (_, { id }, context) => {
+      resolve: /* v8 ignore next */ (payload) => payload.instance,
+      subscribe: /* v8 ignore next */ (_, { id }, context) => {
         internalObjectEditContext(context, context.user, id);
         const bus = BUS_TOPICS[ABSTRACT_INTERNAL_OBJECT];
         const filtering = withFilter(

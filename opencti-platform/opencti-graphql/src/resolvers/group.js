@@ -54,8 +54,8 @@ const groupResolvers = {
   },
   Subscription: {
     group: {
-      resolve: /* istanbul ignore next */ (payload) => payload.instance,
-      subscribe: /* istanbul ignore next */ (_, { id }, context) => {
+      resolve: /* v8 ignore next */ (payload) => payload.instance,
+      subscribe: /* v8 ignore next */ (_, { id }, context) => {
         groupEditContext(context, context.user, id);
         const filtering = withFilter(
           () => pubSubAsyncIterator(BUS_TOPICS[ENTITY_TYPE_GROUP].EDIT_TOPIC),
