@@ -15,7 +15,7 @@ import SearchInput from '../../../../components/SearchInput';
 import UserHistoryLines, { userHistoryLinesQuery } from './UserHistoryLines';
 
 const useStyles = makeStyles(() => ({
-  allEntitiesButton: {
+  createdByUserRedirectButton: {
     float: 'left',
     marginTop: -15,
   },
@@ -95,22 +95,22 @@ const UserHistory: FunctionComponent<UserHistoryProps> = ({
       </div>
       <Tooltip title={t('See all entities created by user')}>
         <IconButton
-          className={classes.allEntitiesButton}
+          className={classes.createdByUserRedirectButton}
           component={Link}
           to={`/dashboard/search/knowledge/?filters=${encodeURIComponent(technicalCreatorFilters)}`}
           size="large"
-          color="primary"
+          color="secondary"
         >
           <VisibilityOutlinedIcon fontSize="small" />
         </IconButton>
       </Tooltip>
       <Tooltip title={t('See all relationships created by user')}>
         <IconButton
-          className={classes.allEntitiesButton}
+          className={classes.createdByUserRedirectButton}
           component={Link}
           to={`/dashboard/data/relationships/?filters=${encodeURIComponent(technicalCreatorFilters)}`}
           size="large"
-          color="primary"
+          color="secondary"
         >
           <PolylineOutlinedIcon fontSize="small" />
         </IconButton>
