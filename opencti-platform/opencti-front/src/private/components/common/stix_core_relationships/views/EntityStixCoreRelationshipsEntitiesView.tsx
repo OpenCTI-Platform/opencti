@@ -37,7 +37,7 @@ EntityStixCoreRelationshipsEntitiesViewProps
   defaultStopTime,
   localStorage,
   relationshipTypes,
-  stixCoreObjectTypes,
+  stixCoreObjectTypes = [],
   isRelationReversed,
   currentView,
   enableNestedView,

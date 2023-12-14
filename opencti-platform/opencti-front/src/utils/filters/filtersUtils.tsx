@@ -195,14 +195,11 @@ export const isUniqFilter = (key: string) => uniqFilters.includes(key) || dateFi
 export const findFilterFromKey = (
   filters: Filter[],
   key: string,
-  operator?: string,
+  operator = 'eq',
 ) => {
   for (const filter of filters) {
     if (filter.key === key) {
-      if (operator && filter.operator === operator) {
-        return filter;
-      }
-      if (!operator) {
+      if (filter.operator === operator) {
         return filter;
       }
     }
