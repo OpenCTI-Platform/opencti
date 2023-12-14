@@ -2,18 +2,34 @@ import React, { FunctionComponent } from 'react';
 import useAuth from '../../../../../utils/hooks/useAuth';
 import ListLines from '../../../../../components/list_lines/ListLines';
 import { QueryRenderer } from '../../../../../relay/environment';
-import EntityStixCoreRelationshipsLinesAll, { entityStixCoreRelationshipsLinesAllQuery } from '../EntityStixCoreRelationshipsLinesAll';
-import EntityStixCoreRelationshipsLinesTo, { entityStixCoreRelationshipsLinesToQuery } from '../EntityStixCoreRelationshipsLinesTo';
-import EntityStixCoreRelationshipsLinesFrom, { entityStixCoreRelationshipsLinesFromQuery } from '../EntityStixCoreRelationshipsLinesFrom';
+import EntityStixCoreRelationshipsLinesAll, {
+  entityStixCoreRelationshipsLinesAllQuery
+} from '../EntityStixCoreRelationshipsLinesAll';
+import EntityStixCoreRelationshipsLinesTo, {
+  entityStixCoreRelationshipsLinesToQuery
+} from '../EntityStixCoreRelationshipsLinesTo';
+import EntityStixCoreRelationshipsLinesFrom, {
+  entityStixCoreRelationshipsLinesFromQuery
+} from '../EntityStixCoreRelationshipsLinesFrom';
 import ToolBar from '../../../data/ToolBar';
 import useEntityToggle from '../../../../../utils/hooks/useEntityToggle';
 import { KNOWLEDGE_KNUPDATE } from '../../../../../utils/hooks/useGranted';
 import StixCoreRelationshipCreationFromEntity from '../StixCoreRelationshipCreationFromEntity';
 import Security from '../../../../../utils/Security';
-import { computeTargetStixCyberObservableTypes, computeTargetStixDomainObjectTypes, isStixCyberObservables } from '../../../../../utils/stixTypeUtils';
+import {
+  computeTargetStixCyberObservableTypes,
+  computeTargetStixDomainObjectTypes,
+  isStixCyberObservables
+} from '../../../../../utils/stixTypeUtils';
 import { PaginationLocalStorage } from '../../../../../utils/hooks/useLocalStorage';
 import { DataColumns, PaginationOptions } from '../../../../../components/list_lines';
-import { addFilter, cleanFilters, FilterGroup, injectEntityTypeFilterInFilterGroup, findFilterFromKey, removeFilter } from '../../../../../utils/filters/filtersUtils';
+import {
+  addFilter,
+  cleanFilters,
+  FilterGroup,
+  findFilterFromKey,
+  injectEntityTypeFilterInFilterGroup
+} from '../../../../../utils/filters/filtersUtils';
 
 interface EntityStixCoreRelationshipsRelationshipsViewProps {
   entityId: string
@@ -136,7 +152,7 @@ const EntityStixCoreRelationshipsRelationshipsView: FunctionComponent<EntityStix
     search: searchTerm,
     orderBy: (sortBy && (sortBy in dataColumns) && dataColumns[sortBy].isSortable) ? sortBy : 'relationship_type',
     orderMode: orderAsc ? 'asc' : 'desc',
-    filters: removeFilter(cleanFilters(filters, availableFilterKeys), ['relationship_type', 'entity_type']),
+    filters: cleanFilters(filters, availableFilterKeys),
   } as object;
 
   let backgroundTaskFilters: FilterGroup | undefined = injectEntityTypeFilterInFilterGroup(
