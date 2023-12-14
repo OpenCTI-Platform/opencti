@@ -105,20 +105,13 @@ const TaskFilterValue = ({
         );
       })}
       {filters.filterGroups
-        && filters.filterGroups.length > 0 && ( // if there are filterGroups, we display a warning box // TODO display correctly filterGroups
-        <Chip
-          classes={{ root: classes.filter, label: classes.chipLabel }}
-          color="warning"
-          label={
-            <>
-              {t('Filters are not fully displayed')}
-              <DisplayFilterGroup
-                filtersRepresentativesMap={filtersRepresentativesMap}
-                filterObj={filters}
-                filterMode={filters.mode}
-              />
-            </>
-          }
+        && filters.filterGroups.length > 0 && (
+        <DisplayFilterGroup
+          filtersRepresentativesMap={filtersRepresentativesMap}
+          filterObj={filters}
+          filterMode={filters.mode}
+          classFilter={classes.filter}
+          classChipLabel={classes.chipLabel}
         />
       )}
     </>
