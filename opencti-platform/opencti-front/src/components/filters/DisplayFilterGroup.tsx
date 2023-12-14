@@ -1,6 +1,5 @@
 import React, { Fragment, FunctionComponent, useState } from 'react';
 import DialogTitle from '@mui/material/DialogTitle';
-import IconButton from '@mui/material/IconButton';
 import DialogContent from '@mui/material/DialogContent';
 import { InformationOutline } from 'mdi-material-ui';
 import DialogActions from '@mui/material/DialogActions';
@@ -10,6 +9,7 @@ import Box from '@mui/material/Box';
 import { Stack } from '@mui/material';
 import CodeBlock from '@components/common/CodeBlock';
 import Typography from '@mui/material/Typography';
+import Chip from '@mui/material/Chip';
 import { useFormatter } from '../i18n';
 import { Filter, FilterGroup } from '../../utils/filters/filtersUtils';
 
@@ -17,11 +17,15 @@ interface DisplayFilterGroupProps {
   filterObj: FilterGroup;
   filterMode: string;
   filtersRepresentativesMap: Map<string, string | null>;
+  classFilter: string;
+  classChipLabel: string;
 }
 const DisplayFilterGroup: FunctionComponent<DisplayFilterGroupProps> = ({
   filterObj,
   filterMode,
   filtersRepresentativesMap,
+  classFilter,
+  classChipLabel,
 }) => {
   const { filterGroups } = filterObj;
   const [open, setOpen] = useState(false);
@@ -172,61 +176,62 @@ const DisplayFilterGroup: FunctionComponent<DisplayFilterGroupProps> = ({
 
   return (
     <>
-      <>
-        <IconButton
-          color="primary"
-          aria-label={t('Settings')}
-          onClick={handleClickOpen}
-          size="small"
-        >
-          <InformationOutline
-            fontSize="small"
-            color="secondary"
-            style={{ cursor: 'default' }}
-          />
-        </IconButton>
-        <Dialog
-          open={open}
-          onClose={handleClose}
-          aria-labelledby="filter-groups-dialog-title"
-          aria-describedby="Show Filter groups configuration"
-        >
-          <DialogTitle id="filter-groups-dialog-title">
-            This filter contains imbricated filter groups, that are not fully
-            supported yet in the platform display and can only be edited via the
-            API. They might have been created via the API or a migration from a
-            previous filter format. For your information, here is the content of
-            the filter object
-          </DialogTitle>
-          <DialogContent>
-            <Typography
-              variant="h2"
-              sx={{ textTransform: 'none' }}
-              gutterBottom={true}
-            >
-              Your filter group cannot be modified yet :
-            </Typography>
-            {displayFilterGroups(filterGroups)}
-
-            <Typography
-              variant="h2"
-              sx={{ textTransform: 'none' }}
-              gutterBottom={true}
-            >
-              The complete Filter object is as follows:
-            </Typography>
-            <CodeBlock
-              code={JSON.stringify(filterObj, null, 2)}
-              language={'json'}
+      <Chip
+        classes={{ root: classFilter, label: classChipLabel }}
+        color="warning"
+        onClick={handleClickOpen}
+        label={
+          <>
+            {t('Filters are not fully displayed')}
+            <InformationOutline
+              fontSize="small"
+              color="secondary"
             />
-          </DialogContent>
-          <DialogActions>
-            <Button onClick={handleClose} autoFocus>
-              {t('Close')}
-            </Button>
-          </DialogActions>
-        </Dialog>
-      </>
+          </>
+        }
+      />
+
+      <Dialog
+        open={open}
+        onClose={handleClose}
+        aria-labelledby="filter-groups-dialog-title"
+        aria-describedby="Show Filter groups configuration"
+      >
+        <DialogTitle id="filter-groups-dialog-title">
+          This filter contains imbricated filter groups, that are not fully
+          supported yet in the platform display and can only be edited via the
+          API. They might have been created via the API or a migration from a
+          previous filter format. For your information, here is the content of
+          the filter object
+        </DialogTitle>
+        <DialogContent>
+          <Typography
+            variant="h2"
+            sx={{ textTransform: 'none' }}
+            gutterBottom={true}
+          >
+            Your filter group cannot be modified yet :
+          </Typography>
+          {displayFilterGroups(filterGroups)}
+
+          <Typography
+            variant="h2"
+            sx={{ textTransform: 'none' }}
+            gutterBottom={true}
+          >
+            The complete Filter object is as follows:
+          </Typography>
+          <CodeBlock
+            code={JSON.stringify(filterObj, null, 2)}
+            language={'json'}
+          />
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleClose} autoFocus>
+            {t('Close')}
+          </Button>
+        </DialogActions>
+      </Dialog>
     </>
   );
 };

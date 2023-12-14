@@ -536,20 +536,18 @@ FilterIconButtonContainerProps
       )}
       {filters.filterGroups
         && filters.filterGroups.length > 0 && ( // if there are filterGroups, we display a warning box // TODO display correctly filterGroups
-          <Chip
-            classes={{ root: classFilter, label: classes.chipLabel }}
-            color="warning"
-            label={
-              <>
-                {t('Filters are not fully displayed')}
-                <DisplayFilterGroup
-                  filtersRepresentativesMap={filtersRepresentativesMap}
-                  filterObj={filters}
-                  filterMode={filters.mode}
-                />
-              </>
-            }
-          />
+          <Box style={{
+            padding: '8px 4px',
+          }}
+          >
+            <DisplayFilterGroup
+              filtersRepresentativesMap={filtersRepresentativesMap}
+              filterObj={filters}
+              filterMode={filters.mode}
+              classFilter={classFilter}
+              classChipLabel={classes.chipLabel}
+            />
+          </Box>
       )}
     </Box>
   );
