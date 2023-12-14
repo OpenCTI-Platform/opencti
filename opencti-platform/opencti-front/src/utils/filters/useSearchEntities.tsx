@@ -37,7 +37,6 @@ import { useSearchEntitiesStixCoreObjectsContainersSearchQuery$data } from './__
 import { isNotEmptyField } from '../utils';
 import { useSearchEntitiesSchemaSCOSearchQuery$data } from './__generated__/useSearchEntitiesSchemaSCOSearchQuery.graphql';
 import { Theme } from '../../components/Theme';
-import { useIsAdmin } from '../hooks/useGranted';
 
 const filtersStixCoreObjectsContainersSearchQuery = graphql`
   query useSearchEntitiesStixCoreObjectsContainersSearchQuery(
@@ -292,7 +291,6 @@ const useSearchEntities = ({
   const { t } = useFormatter();
   const { schema, me } = useAuth();
   const theme = useTheme() as Theme;
-  const isAdmin = useIsAdmin();
 
   const unionSetEntities = (key: string, newEntities: EntityValue[]) => setEntities((c) => ({
     ...c,
@@ -482,10 +480,7 @@ const useSearchEntities = ({
       // region user usage (with caching)
       case 'creator_id':
       case 'contextCreator':
-        if (isAdmin) {
-          // admins can search over all members
-          buildOptionsFromMembersSearchQuery(filterKey, ['User', 'Group', 'Organization']);
-        } else if (!cacheEntities[filterKey]) {
+        if (!cacheEntities[filterKey]) {
           // fetch only the identities listed as creator of at least 1 thing + myself
           fetchQuery(identitySearchCreatorsSearchQuery, {
             entityTypes: searchContext?.entityTypes ?? [],
@@ -498,10 +493,7 @@ const useSearchEntities = ({
         }
         break;
       case 'objectAssignee':
-        if (isAdmin) {
-          // admins can search over all members
-          buildOptionsFromMembersSearchQuery(filterKey, ['User', 'Group', 'Organization']);
-        } else if (!cacheEntities[filterKey]) {
+        if (!cacheEntities[filterKey]) {
           // fetch only the identities listed as assignee on at least 1 thing + myself
           fetchQuery(objectAssigneeFieldAssigneesSearchQuery, {
             entityTypes: searchContext?.entityTypes ?? [],
@@ -514,10 +506,7 @@ const useSearchEntities = ({
         }
         break;
       case 'objectParticipant':
-        if (isAdmin) {
-          // admins can search over all members
-          buildOptionsFromMembersSearchQuery(filterKey, ['User', 'Group', 'Organization']);
-        } else if (!cacheEntities[filterKey]) {
+        if (!cacheEntities[filterKey]) {
           // fetch only the identities listed as participants to at least 1 thing + myself
           fetchQuery(objectParticipantFieldParticipantsSearchQuery, {
             entityTypes: searchContext?.entityTypes ?? [],
