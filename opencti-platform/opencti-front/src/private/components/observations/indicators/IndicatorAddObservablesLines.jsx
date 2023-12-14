@@ -102,7 +102,7 @@ const IndicatorAddObservablesLinesContainer = (props) => {
     if (alreadyAdded) {
       commitRelationDelete({
         variables: { ...input },
-        updater: (store) => deleteNodeFromEdge(store, 'observables', indicator.id, stixCyberObservable.id, { first: 200 }),
+        updater: (store) => deleteNodeFromEdge(store, 'observables', indicator.id, stixCyberObservable.id, { first: 25 }),
       });
       // Add with references
     } else if (enableReferences || !stixCoreRelationshipValidator.isValidSync(input)) {

@@ -68,6 +68,7 @@ class AddSoftwares extends Component {
   render() {
     const { t, classes, vulnerability, vulnerabilitySoftwares } = this.props;
     const paginationOptions = {
+      types: ['Software'],
       search: this.state.search,
     };
     return (
@@ -116,6 +117,7 @@ class AddSoftwares extends Component {
           contextual={true}
           inputValue={this.state.search}
           paginationOptions={paginationOptions}
+          paginationKey="Pagination_stixCyberObservables"
           type="Software"
         />
       </div>
