@@ -490,14 +490,9 @@ const StixCoreRelationshipCreationFromEntity = (props) => {
   };
 
   const renderSelectEntity = () => {
-    let finalFilters = filters;
-    const entityTypeFilter = findFilterFromKey(filters?.filters ?? [], 'entity_type');
-    if (entityTypeFilter && actualTypeFilter.length > 0) {
-      finalFilters = addFilter(filters, 'entity_type', actualTypeFilter);
-    }
     const searchPaginationOptions = {
       search: searchTerm,
-      filters: removeIdFromFilterGroupObject(finalFilters),
+      filters: removeIdFromFilterGroupObject(filters),
       orderBy: sortBy,
       orderMode: orderAsc ? 'asc' : 'desc',
     };
