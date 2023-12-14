@@ -1,9 +1,6 @@
-import React, { Component } from 'react';
-import * as PropTypes from 'prop-types';
-import { compose } from 'ramda';
-import { graphql, createFragmentContainer } from 'react-relay';
+import React, { FunctionComponent, useState } from 'react';
+import { graphql, useFragment } from 'react-relay';
 import { green, pink, deepOrange, yellow, teal, deepPurple, indigo, red, lightGreen, orange } from '@mui/material/colors';
-import withStyles from '@mui/styles/withStyles';
 import Paper from '@mui/material/Paper';
 import Avatar from '@mui/material/Avatar';
 import { AddOutlined, EditOutlined, HelpOutlined, LinkOutlined, LinkOffOutlined, DeleteOutlined, VisibilityOutlined, DownloadOutlined } from '@mui/icons-material';
@@ -14,10 +11,13 @@ import DialogTitle from '@mui/material/DialogTitle';
 import DialogContent from '@mui/material/DialogContent';
 import DialogActions from '@mui/material/DialogActions';
 import Button from '@mui/material/Button';
-import inject18n from '../../../../components/i18n';
+import makeStyles from '@mui/styles/makeStyles';
+import { UserHistoryLine_node$key } from '@components/settings/users/__generated__/UserHistoryLine_node.graphql';
+import { useFormatter } from '../../../../components/i18n';
 import MarkdownDisplay from '../../../../components/MarkdownDisplay';
+import { Theme } from '../../../../components/Theme';
 
-const styles = (theme) => ({
+const useStyles = makeStyles<Theme>((theme) => ({
   container: {
     marginBottom: 20,
   },
@@ -64,23 +64,51 @@ const styles = (theme) => ({
     paddingTop: 4,
     fontSize: 11,
   },
-});
+}));
 
-class UserHistoryLineComponent extends Component {
-  constructor(props) {
-    super(props);
-    this.state = { open: false };
+const userHistoryLineFragment = graphql`
+  fragment UserHistoryLine_node on Log {
+    id
+    event_type
+    event_scope
+    timestamp
+    user {
+      name
+    }
+    context_data {
+      message
+      commit
+      external_references {
+        id
+        source_name
+        external_id
+        url
+        description
+      }
+    }
   }
+`;
 
-  handleOpen() {
-    this.setState({ open: true });
-  }
+interface UserHistoryLineProps {
+  node: UserHistoryLine_node$key,
+}
 
-  handleClose() {
-    this.setState({ open: false });
-  }
+const UserHistoryLine: FunctionComponent<UserHistoryLineProps> = ({ node }) => {
+  const classes = useStyles();
+  const { t, nsdt } = useFormatter();
+  const [open, setOpen] = useState(false);
 
-  renderIcon(eventScope, isRelation, eventMessage, commit) {
+  const log = useFragment<UserHistoryLine_node$key>(userHistoryLineFragment, node);
+
+  const handleOpen = () => {
+    setOpen(true);
+  };
+
+  const handleClose = () => {
+    setOpen(false);
+  };
+
+  const renderIcon = (eventScope: string | null, isRelation: boolean, eventMessage: string | undefined, commit: string | null | undefined) => {
     if (isRelation) {
       if (eventScope === 'create') {
         return (
@@ -92,7 +120,7 @@ class UserHistoryLineComponent extends Component {
               color: '#ffffff',
               cursor: commit ? 'pointer' : 'auto',
             }}
-            onClick={() => commit && this.handleOpen()}
+            onClick={() => commit && handleOpen()}
           >
             <LinkOutlined fontSize="small" />
           </Avatar>
@@ -108,7 +136,7 @@ class UserHistoryLineComponent extends Component {
               color: '#ffffff',
               cursor: commit ? 'pointer' : 'auto',
             }}
-            onClick={() => commit && this.handleOpen()}
+            onClick={() => commit && handleOpen()}
           >
             <LinkOffOutlined fontSize="small" />
           </Avatar>
@@ -125,7 +153,7 @@ class UserHistoryLineComponent extends Component {
               color: '#ffffff',
               cursor: commit ? 'pointer' : 'auto',
             }}
-            onClick={() => commit && this.handleOpen()}
+            onClick={() => commit && handleOpen()}
           >
             <AddOutlined fontSize="small" />
           </Avatar>
@@ -141,7 +169,7 @@ class UserHistoryLineComponent extends Component {
               color: '#ffffff',
               cursor: commit ? 'pointer' : 'auto',
             }}
-            onClick={() => commit && this.handleOpen()}
+            onClick={() => commit && handleOpen()}
           >
             <Merge fontSize="small" />
           </Avatar>
@@ -149,7 +177,7 @@ class UserHistoryLineComponent extends Component {
       }
       if (
         eventScope === 'update'
-        && (eventMessage.includes('replaces') || eventMessage.includes('updates'))
+        && (eventMessage?.includes('replaces') || eventMessage?.includes('updates'))
       ) {
         return (
           <Avatar
@@ -160,13 +188,13 @@ class UserHistoryLineComponent extends Component {
               color: '#ffffff',
               cursor: commit ? 'pointer' : 'auto',
             }}
-            onClick={() => commit && this.handleOpen()}
+            onClick={() => commit && handleOpen()}
           >
             <EditOutlined fontSize="small" />
           </Avatar>
         );
       }
-      if (eventScope === 'update' && eventMessage.includes('changes')) {
+      if (eventScope === 'update' && eventMessage?.includes('changes')) {
         return (
           <Avatar
             sx={{
@@ -176,13 +204,13 @@ class UserHistoryLineComponent extends Component {
               color: '#ffffff',
               cursor: commit ? 'pointer' : 'auto',
             }}
-            onClick={() => commit && this.handleOpen()}
+            onClick={() => commit && handleOpen()}
           >
             <EditOutlined fontSize="small" />
           </Avatar>
         );
       }
-      if (eventScope === 'update' && eventMessage.includes('adds')) {
+      if (eventScope === 'update' && eventMessage?.includes('adds')) {
         return (
           <Avatar
             sx={{
@@ -192,13 +220,13 @@ class UserHistoryLineComponent extends Component {
               color: '#ffffff',
               cursor: commit ? 'pointer' : 'auto',
             }}
-            onClick={() => commit && this.handleOpen()}
+            onClick={() => commit && handleOpen()}
           >
             <LinkVariantPlus fontSize="small" />
           </Avatar>
         );
       }
-      if (eventScope === 'update' && eventMessage.includes('removes')) {
+      if (eventScope === 'update' && eventMessage?.includes('removes')) {
         return (
           <Avatar
             sx={{
@@ -208,7 +236,7 @@ class UserHistoryLineComponent extends Component {
               color: '#ffffff',
               cursor: commit ? 'pointer' : 'auto',
             }}
-            onClick={() => commit && this.handleOpen()}
+            onClick={() => commit && handleOpen()}
           >
             <LinkVariantRemove fontSize="small" />
           </Avatar>
@@ -265,109 +293,74 @@ class UserHistoryLineComponent extends Component {
           backgroundColor: yellow[500],
           color: '#ffffff',
         }}
-        onClick={() => commit && this.handleOpen()}
+        onClick={() => commit && handleOpen()}
       >
         <HelpOutlined fontSize="small" />
       </Avatar>
     );
-  }
+  };
 
-  render() {
-    const { nsdt, classes, node, t } = this.props;
-    return (
-      <div className={classes.container}>
-        <div className={classes.avatar}>
-          {this.renderIcon(node.event_scope, false, node.context_data?.message)}
-        </div>
-        <div
-          className={classes.content}
-          style={{
-            height:
-              node.context_data
-              && node.context_data.external_references
-              && node.context_data.external_references.length > 0
+  return (
+    <div className={classes.container}>
+      <div className={classes.avatar}>
+        {renderIcon(log.event_scope, false, log.context_data?.message, log.context_data?.commit)}
+      </div>
+      <div
+        className={classes.content}
+        style={{
+          height:
+              log.context_data
+              && log.context_data.external_references
+              && log.context_data.external_references.length > 0
                 ? 'auto'
                 : 40,
-          }}
-        >
-          <Paper classes={{ root: classes.paper }}>
-            <div className={classes.date}>{nsdt(node.timestamp)}</div>
-            <Tooltip
-              classes={{ tooltip: classes.tooltip }}
-              title={
-                <MarkdownDisplay
-                  content={`\`${node.user.name}\` ${node.context_data?.message}`}
-                  remarkGfmPlugin={true}
-                  commonmark={true}
-                />
+        }}
+      >
+        <Paper classes={{ root: classes.paper }}>
+          <div className={classes.date}>{nsdt(log.timestamp)}</div>
+          <Tooltip
+            classes={{ tooltip: classes.tooltip }}
+            title={
+              <MarkdownDisplay
+                content={`\`${log.user?.name}\` ${log.context_data?.message}`}
+                remarkGfmPlugin={true}
+                commonmark={true}
+              />
               }
-            >
-              <div className={classes.description}>
-                <MarkdownDisplay
-                  content={`\`${node.user.name}\` ${node.context_data?.message}`}
-                  remarkGfmPlugin={true}
-                  commonmark={true}
-                />
-              </div>
-            </Tooltip>
-          </Paper>
-        </div>
-        <div className={classes.line} />
-        <Dialog
-          open={this.state.open}
-          PaperProps={{ elevation: 1 }}
-          onClose={this.handleClose.bind(this)}
-          fullWidth={true}
-        >
-          <DialogTitle>{t('Commit message')}</DialogTitle>
-          <DialogContent>
-            <MarkdownDisplay
-              content={node.context_data?.commit}
-              remarkGfmPlugin={true}
-              commonmark={true}
-            />
-          </DialogContent>
-          <DialogActions>
-            <Button color="primary" onClick={this.handleClose.bind(this)}>
-              {t('Close')}
-            </Button>
-          </DialogActions>
-        </Dialog>
+          >
+            <div className={classes.description}>
+              <MarkdownDisplay
+                content={`\`${log.user?.name}\` ${log.context_data?.message}`}
+                remarkGfmPlugin={true}
+                commonmark={true}
+              />
+            </div>
+          </Tooltip>
+        </Paper>
       </div>
-    );
-  }
-}
-
-UserHistoryLineComponent.propTypes = {
-  node: PropTypes.object,
-  classes: PropTypes.object,
-  t: PropTypes.func,
-  nsdt: PropTypes.func,
+      <div className={classes.line} />
+      <Dialog
+        open={open}
+        PaperProps={{ elevation: 1 }}
+        onClose={handleClose}
+        fullWidth={true}
+      >
+        <DialogTitle>{t('Commit message')}</DialogTitle>
+        <DialogContent>
+          <MarkdownDisplay
+            content={log.context_data?.message ?? '-'}
+            remarkGfmPlugin={true}
+            commonmark={true}
+          />
+        </DialogContent>
+        <DialogActions>
+          <Button color="primary" onClick={handleClose}>
+            {t('Close')}
+          </Button>
+        </DialogActions>
+      </Dialog>
+    </div>
+  );
 };
 
-const UserHistoryLine = createFragmentContainer(UserHistoryLineComponent, {
-  node: graphql`
-    fragment UserHistoryLine_node on Log {
-      id
-      event_type
-      event_scope
-      timestamp
-      user {
-        name
-      }
-      context_data {
-        message
-        commit
-        external_references {
-          id
-          source_name
-          external_id
-          url
-          description
-        }
-      }
-    }
-  `,
-});
-
-export default compose(inject18n, withStyles(styles))(UserHistoryLine);
+export default UserHistoryLine;
