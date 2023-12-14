@@ -86,6 +86,7 @@ const ThreatActorsGroup = () => {
           'created',
           'revoked',
           'targets',
+          'name',
         ]}
       >
         {queryRef && (

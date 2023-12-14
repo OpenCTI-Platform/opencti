@@ -80,6 +80,7 @@ const IntrusionSets = () => {
           'created',
           'revoked',
           'targets',
+          'name',
         ]}
       >
         {queryRef && (

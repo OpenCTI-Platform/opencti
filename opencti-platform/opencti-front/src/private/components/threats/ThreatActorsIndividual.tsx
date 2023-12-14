@@ -85,6 +85,7 @@ const ThreatActorsIndividual = () => {
           'creator_id',
           'created',
           'revoked',
+          'name',
         ]}
       >
         {queryRef && (

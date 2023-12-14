@@ -104,6 +104,7 @@ const Vulnerabilities = () => {
           'x_opencti_attack_vector',
           'creator_id',
           'created',
+          'name',
         ]}
       >
         {queryRef && (

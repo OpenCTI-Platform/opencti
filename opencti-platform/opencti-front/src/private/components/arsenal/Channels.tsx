@@ -92,6 +92,7 @@ const Channels = () => {
           'source_reliability',
           'confidence',
           'created',
+          'name',
         ]}
       >
         {queryRef && (
