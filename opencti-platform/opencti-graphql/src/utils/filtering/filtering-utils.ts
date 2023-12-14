@@ -56,19 +56,20 @@ export const isFilterGroupNotEmpty = (filterGroup?: FilterGroup) => {
  * return the filter corresponding to the specified key (and operator if it is specified)
  * among a list of filters
  */
-export const findFilterFromKey = (filtersList: Filter[], key: string, operator: FilterOperator | null = null) => {
+export const findFiltersFromKey = (filtersList: Filter[], key: string, operator: FilterOperator | null = null) => {
+  const foundFilters = [];
   for (let index = 0; index < filtersList.length; index += 1) {
     const filter = filtersList[index];
     if (filter.key.includes(key)) {
       if (operator && filter.operator === operator) {
-        return filter;
+        foundFilters.push(filter);
       }
       if (!operator) {
-        return filter;
+        foundFilters.push(filter);
       }
     }
   }
-  return null;
+  return foundFilters;
 };
 
 /**

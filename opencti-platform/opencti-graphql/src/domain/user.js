@@ -4,15 +4,15 @@ import * as R from 'ramda';
 import { uniq } from 'ramda';
 import { v4 as uuid } from 'uuid';
 import {
-  BUS_TOPICS,
-  ENABLED_DEMO_MODE,
-  DEFAULT_ACCOUNT_STATUS,
-  logApp,
-  PLATFORM_VERSION,
   ACCOUNT_STATUS_ACTIVE,
   ACCOUNT_STATUS_EXPIRED,
   ACCOUNT_STATUSES,
-  OPENCTI_SESSION
+  BUS_TOPICS,
+  DEFAULT_ACCOUNT_STATUS,
+  ENABLED_DEMO_MODE,
+  logApp,
+  OPENCTI_SESSION,
+  PLATFORM_VERSION
 } from '../config/conf';
 import { AuthenticationFailure, DatabaseError, ForbiddenAccess, FunctionalError, UnknownError } from '../config/errors';
 import { getEntitiesListFromCache, getEntityFromCache } from '../database/cache';
@@ -37,7 +37,7 @@ import { extractEntityRepresentativeName } from '../database/entity-representati
 import { publishUserAction } from '../listener/UserActionListener';
 import { ABSTRACT_INTERNAL_RELATIONSHIP, OPENCTI_ADMIN_UUID } from '../schema/general';
 import { generateStandardId } from '../schema/identifier';
-import { ENTITY_TYPE_CAPABILITY, ENTITY_TYPE_GROUP, ENTITY_TYPE_ROLE, ENTITY_TYPE_SETTINGS, ENTITY_TYPE_USER, } from '../schema/internalObject';
+import { ENTITY_TYPE_CAPABILITY, ENTITY_TYPE_GROUP, ENTITY_TYPE_ROLE, ENTITY_TYPE_SETTINGS, ENTITY_TYPE_USER } from '../schema/internalObject';
 import {
   isInternalRelationship,
   RELATION_ACCESSES_TO,
@@ -55,10 +55,10 @@ import {
   isBypassUser,
   isUserHasCapability,
   KNOWLEDGE_ORGANIZATION_RESTRICT,
-  VIRTUAL_ORGANIZATION_ADMIN,
   REDACTED_USER,
   SETTINGS_SET_ACCESSES,
-  SYSTEM_USER
+  SYSTEM_USER,
+  VIRTUAL_ORGANIZATION_ADMIN
 } from '../utils/access';
 import { ASSIGNEE_FILTER, CREATOR_FILTER, PARTICIPANT_FILTER } from '../utils/filtering/filtering-constants';
 import { now, utcDate } from '../utils/format';
@@ -67,6 +67,8 @@ import { defaultMarkingDefinitionsFromGroups, findAll as findGroups } from './gr
 import { addIndividual } from './individual';
 import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../modules/organization/organization-types';
 import { ENTITY_TYPE_WORKSPACE } from '../modules/workspace/workspace-types';
+import { extractFilterKeys } from '../utils/filtering/filtering-utils';
+import { testFilterGroup, testStringFilter } from '../utils/filtering/boolean-logic-engine';
 
 const BEARER = 'Bearer ';
 const BASIC = 'Basic ';
@@ -652,11 +654,29 @@ export const deleteBookmark = async (context, user, id) => {
   return id;
 };
 
-export const bookmarks = async (context, user, types) => {
+export const bookmarks = async (context, user, args) => {
+  const { types = [], filters = null } = args;
   const currentUser = await storeLoadById(context, user, user.id, ENTITY_TYPE_USER);
-  const bookmarkList = types && types.length > 0
-    ? R.filter((n) => R.includes(n.type, types), currentUser.bookmarks || [])
+  // handle types
+  let bookmarkList = types.length > 0
+    ? (currentUser.bookmarks ?? []).filter((n) => types.includes(n.type))
     : currentUser.bookmarks || [];
+  // handle filters
+  if (filters) {
+    // check filters are supported
+    // i.e. filters can only contains filters with key=entity_type
+    if (extractFilterKeys(filters).filter((f) => f !== 'entity_type').length > 0) {
+      throw Error('Bookmarks widgets only support filter with key=entity_type.');
+    }
+    // filter the bookmark list according to the filters
+    const entityTypeBookmarkTester = {
+      entity_type: (data, filter) => {
+        const values = [data.type]; // data is a bookmark
+        return testStringFilter(filter, values);
+      }
+    };
+    bookmarkList = bookmarkList.filter((mark) => testFilterGroup(mark, filters, entityTypeBookmarkTester));
+  }
   const filteredBookmarks = [];
   // eslint-disable-next-line no-restricted-syntax
   for (const bookmark of bookmarkList) {

@@ -19,7 +19,7 @@ import CardContent from '@mui/material/CardContent';
 import Button from '@mui/material/Button';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import Switch from '@mui/material/Switch';
-import { AddOutlined, CancelOutlined, FormatShapesOutlined, LibraryBooksOutlined, MapOutlined, CloudUploadOutlined, WidgetsOutlined } from '@mui/icons-material';
+import { AddOutlined, CancelOutlined, CloudUploadOutlined, FormatShapesOutlined, LibraryBooksOutlined, MapOutlined, WidgetsOutlined } from '@mui/icons-material';
 import {
   AlignHorizontalLeft,
   ChartAreasplineVariant,
@@ -56,7 +56,7 @@ import Transition from '../../../../components/Transition';
 import { useFormatter } from '../../../../components/i18n';
 import { ignoredAttributesInDashboards } from '../../../../utils/hooks/useAttributes';
 import Filters from '../../common/lists/Filters';
-import { findFilterFromKey, findFilterIndexFromKey, findFiltersFromKeys, emptyFilterGroup, isFilterGroupNotEmpty, isUniqFilter } from '../../../../utils/filters/filtersUtils';
+import { emptyFilterGroup, findFilterFromKey, findFilterIndexFromKey, findFiltersFromKeys, isFilterGroupNotEmpty, isUniqFilter } from '../../../../utils/filters/filtersUtils';
 import { capitalizeFirstLetter, toB64 } from '../../../../utils/String';
 import { handleError, QueryRenderer } from '../../../../relay/environment';
 import { stixCyberObservablesLinesAttributesQuery } from '../../observations/stix_cyber_observables/StixCyberObservablesLines';
@@ -486,8 +486,7 @@ const WidgetConfig = ({ workspace, widget, onComplete, closeMenu }) => {
     const newDataSelection = dataSelection.map((n) => ({
       ...n,
       perspective: selectedPerspective,
-      filters:
-                selectedPerspective === n.perspective ? n.filters : emptyFilterGroup,
+      filters: selectedPerspective === n.perspective ? n.filters : emptyFilterGroup,
     }));
     setDataSelection(newDataSelection);
     setPerspective(selectedPerspective);
@@ -904,13 +903,20 @@ const WidgetConfig = ({ workspace, widget, onComplete, closeMenu }) => {
                             right: 5,
                           }}
                         >
-                          <Filters
-                            availableFilterKeys={availableFilterKeys}
-                            availableEntityTypes={availableEntityTypes}
-                            handleAddFilter={(key, id, op) => handleAddFilter(i, 'filters', key, id, op)
-                            }
-                            noDirectFilters={true}
-                          />
+                          {widget?.type === 'bookmark'
+                            ? <Filters
+                                availableFilterKeys={['entity_type']}
+                                availableEntityTypes={availableEntityTypes}
+                                handleAddFilter={(key, id, op) => handleAddFilter(i, 'filters', key, id, op)}
+                                noDirectFilters={false}
+                              />
+                            : <Filters
+                                availableFilterKeys={availableFilterKeys}
+                                availableEntityTypes={availableEntityTypes}
+                                handleAddFilter={(key, id, op) => handleAddFilter(i, 'filters', key, id, op)}
+                                noDirectFilters={true}
+                              />
+                          }
                           {(dataSelection[i].perspective ?? perspective)
                             === 'relationships' && (
                             <Filters
@@ -948,12 +954,9 @@ const WidgetConfig = ({ workspace, widget, onComplete, closeMenu }) => {
                 {isFilterGroupNotEmpty(dataSelection[i]?.filters) && (
                   <FilterIconButton
                     filters={dataSelection[i].filters}
-                    handleRemoveFilter={(key, op) => handleRemoveFilter(i, 'filters', key, op)
-                    }
-                    handleSwitchLocalMode={(filter) => handleSwitchLocalMode(i, 'filters', filter)
-                    }
-                    handleSwitchGlobalMode={() => handleSwitchGlobalMode(i, 'filters')
-                    }
+                    handleRemoveFilter={(key, op) => handleRemoveFilter(i, 'filters', key, op)}
+                    handleSwitchLocalMode={(filter) => handleSwitchLocalMode(i, 'filters', filter)}
+                    handleSwitchGlobalMode={() => handleSwitchGlobalMode(i, 'filters')}
                     styleNumber={2}
                   />
                 )}
