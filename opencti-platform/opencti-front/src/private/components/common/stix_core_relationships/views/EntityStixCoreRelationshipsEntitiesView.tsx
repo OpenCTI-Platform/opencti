@@ -12,7 +12,11 @@ import { computeTargetStixCyberObservableTypes, computeTargetStixDomainObjectTyp
 import { PaginationLocalStorage } from '../../../../../utils/hooks/useLocalStorage';
 import { DataColumns, PaginationOptions } from '../../../../../components/list_lines';
 import { EntityStixCoreRelationshipsEntitiesViewLinesPaginationQuery$variables } from './__generated__/EntityStixCoreRelationshipsEntitiesViewLinesPaginationQuery.graphql';
-import { cleanFilters, injectEntityTypeFilterInFilterGroup, removeIdFromFilterObject } from '../../../../../utils/filters/filtersUtils';
+import {
+  cleanFilters,
+  removeIdFromFilterGroupObject,
+  injectEntityTypeFilterInFilterGroup,
+} from '../../../../../utils/filters/filtersUtils';
 
 interface EntityStixCoreRelationshipsEntitiesViewProps {
   entityId: string;
