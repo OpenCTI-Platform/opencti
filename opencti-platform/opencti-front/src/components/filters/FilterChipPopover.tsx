@@ -167,7 +167,7 @@ export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({
       ],
     },
   );
-  const [entities, searchEntities] = getUseSearch();
+  const [entities, searchEntities] = getUseSearch(searchScope);
   const { t } = useFormatter();
   const optionValues: OptionValue[] = getOptionsFromEntities(entities, searchScope, filterKey);
   const handleChange = (checked: boolean, value: string) => {

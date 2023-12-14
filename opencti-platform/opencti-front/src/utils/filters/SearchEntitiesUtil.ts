@@ -32,11 +32,12 @@ export const getOptionsFromEntities = (
   return filteredOptions;
 };
 
-export const getUseSearch = () => {
+export const getUseSearch = (searchScope?: Record<string, string[]>) => {
   if (!searchEntitiesScope) {
     return [];
   }
-  return useSearchEntities(searchEntitiesScope) as [
+  const searchEntitiesParams = searchScope ? { ...searchEntitiesScope, searchScope } : searchEntitiesScope;
+  return useSearchEntities(searchEntitiesParams) as [
     Record<string, OptionValue[]>,
     (
       filterKey: string,
