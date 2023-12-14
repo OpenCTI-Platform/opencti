@@ -1,8 +1,4 @@
 import React, { useState } from 'react';
-import { compose } from "ramda";
-import inject18n from "../../../../components/i18n";
-import { withRouter } from "react-router-dom";
-import withStyles from "@mui/styles/withStyles";
 import Chart from "react-apexcharts";
 import { now } from "moment";
 import { Field, Form, Formik } from "formik";
@@ -12,12 +8,7 @@ import {
     computeDecayLiveGraphSerie, computeDecayStableSerie,
     computeXAxisTimeRange,  DecayModel, GraphData
 } from "@components/settings/decay/decay-domain";
-
-const styles = () => ({
-    container: {
-        margin: 0
-    },
-});
+import { ApexOptions } from "apexcharts";
 
 const DEFAULT_DECAY_MODEL: DecayModel = {
     id: 'DEFAULT_DECAY_MODEL',
@@ -66,6 +57,11 @@ export const handleSubmit = (values: FormikValues) => {
     if (newFactor) {
         graphData.decayModel.decay_factor = newFactor;
     }
+
+    const newPointCount: number = parseInt(values.pointcount);
+    if (newPointCount>0) {
+        graphData.pointCount = values.pointcount;
+    }
 }
 const Decay = () => {
 
@@ -75,19 +71,20 @@ const Decay = () => {
 
     const series = [{ name: "Live score", data:computeDecayLiveGraphSerie(graphData), type: 'line'}]
     series.push({ name: "Trigger point", data:computeDecayStableSerie(graphData), type: 'column'});
-    series.push({ name: "Cut Off", data:computeCutOffSerie(graphData), type: 'column'});
+    series.push({ name: "Revoke score", data:computeCutOffSerie(graphData), type: 'column'});
 
-    const chartOptions= {
+    const chartOptions: ApexOptions= {
         chart: {id: 'Decay graph'},
         xaxis: { type: 'datetime'},
-        yaxis: {min: 0,max: 100}};
+        yaxis: {min: 0,max: 100}
+    };
 
     return (
         <div>
         <span>This page is a POC for decay formula.</span>
-            <div className="app">
-                <div className="row">
-                    <div className="mixed-chart">
+            <div>
+                <div>
+                    <div>
                         <Chart
                             series={series}
                             options={chartOptions}
@@ -97,12 +94,13 @@ const Decay = () => {
                     <div>
                         <Formik
                             initialValues={{
-                                startScore: '100',
-                                pound: '1',
-                                lifetime: '30',
-                                reactionPoints:'80;40;20',
-                                cutoff: 20,
-                                factor: 3
+                                startScore: graphData.startScore,
+                                pound: graphData.pound,
+                                lifetime: graphData.decayModel.decay_lifetime,
+                                reactionPoints:'60;40',
+                                cutoff: graphData.decayModel.decay_revoked_cutoff,
+                                factor: graphData.decayModel.decay_factor,
+                                pointcount: graphData.pointCount
                             }}
                             onSubmit={async (values) => {
                                 handleSubmit(values);
@@ -110,13 +108,17 @@ const Decay = () => {
                             }}
                         >
                             <Form>
-                                <h3>Données de l'indicateur</h3>
+                                <div>
+                                    <button type="submit">Update graph</button>
+                                </div>
+
+                                <h3>From Indicator data</h3>
                                 <div>
                                     <label htmlFor="startScore">Start score (100-0):</label>
                                     <Field id="startScore" name="startScore"/>
                                 </div>
 
-                                <h3>Configurable dans les settings</h3>
+                                <h3>Can be customized in Settings</h3>
                                 <div>
                                     <label htmlFor="pound">Pound (ex: 0.8):</label>
                                     <Field id="pound" name="pound" />
@@ -133,19 +135,18 @@ const Decay = () => {
                                 </div>
 
                                 <div>
-                                    <label htmlFor="cutoff">Cut-Off score (ex: 20):</label>
+                                    <label htmlFor="cutoff">Revoke score (ex: 20):</label>
                                     <Field id="cutoff" name="cutoff"/>
                                 </div>
 
-                                <h3>En "dur" dans l'appli</h3>
+                                <h3>Hardcoded (or system parameter)</h3>
                                 <div>
                                     <label htmlFor="factor">Decay factor (ex: 3):</label>
                                     <Field id="factor" name="factor"/>
                                 </div>
-
-                                <h3></h3>
                                 <div>
-                                    <button type="submit">Submit</button>
+                                    <label htmlFor="pointcount">Point count to draw the blue line:</label>
+                                    <Field id="pointcount" name="pointcount"/>
                                 </div>
                             </Form>
                         </Formik>
@@ -155,11 +156,12 @@ const Decay = () => {
                         <div>decay_factor: {graphData.decayModel.decay_factor}</div>
                         <div>decay_lifetime: {graphData.decayModel.decay_lifetime} day(s)</div>
                         <div>decay_revoked_cutoff: {graphData.decayModel.decay_revoked_cutoff} day(s)</div>
+                        <h3></h3>
+                        <div>point count: {graphData.pointCount} points</div>
                     </div>
                 </div>
             </div>
         </div>
 );
 }
-
-export default compose(inject18n, withRouter, withStyles(styles))(Decay);
+export default Decay;
