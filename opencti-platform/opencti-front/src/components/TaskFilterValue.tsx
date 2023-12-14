@@ -9,6 +9,7 @@ import { useFormatter } from './i18n';
 import { FilterGroup } from '../utils/filters/filtersUtils';
 import { truncate } from '../utils/String';
 import { Theme } from './Theme';
+import DisplayFilterGroup from './filters/DisplayFilterGroup';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   filter: {
@@ -18,6 +19,16 @@ const useStyles = makeStyles<Theme>((theme) => ({
     fontFamily: 'Consolas, monaco, monospace',
     backgroundColor: theme.palette.background.accent,
     margin: '5px 10px 5px 0',
+  },
+  chipLabel: {
+    lineHeight: '32px',
+    maxWidth: 400,
+    whiteSpace: 'nowrap',
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
+    display: 'flex',
+    alignItems: 'center',
+    gap: 4,
   },
 }));
 
@@ -103,6 +114,16 @@ const TaskFilterValue = ({
           </span>
         );
       })}
+      {filters.filterGroups
+        && filters.filterGroups.length > 0 && (
+        <DisplayFilterGroup
+          filtersRepresentativesMap={filtersRepresentativesMap}
+          filterObj={filters}
+          filterMode={filters.mode}
+          classFilter={classes.filter}
+          classChipLabel={classes.chipLabel}
+        />
+      )}
     </>
   );
 };

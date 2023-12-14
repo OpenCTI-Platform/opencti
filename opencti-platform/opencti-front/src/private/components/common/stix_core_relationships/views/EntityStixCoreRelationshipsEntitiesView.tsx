@@ -12,7 +12,7 @@ import { computeTargetStixCyberObservableTypes, computeTargetStixDomainObjectTyp
 import { PaginationLocalStorage } from '../../../../../utils/hooks/useLocalStorage';
 import { DataColumns, PaginationOptions } from '../../../../../components/list_lines';
 import { EntityStixCoreRelationshipsEntitiesViewLinesPaginationQuery$variables } from './__generated__/EntityStixCoreRelationshipsEntitiesViewLinesPaginationQuery.graphql';
-import { cleanFilters, injectEntityTypeFilterInFilterGroup, removeIdFromFilterObject } from '../../../../../utils/filters/filtersUtils';
+import { cleanFilters, removeIdFromFilterGroupObject, injectEntityTypeFilterInFilterGroup } from '../../../../../utils/filters/filtersUtils';
 
 interface EntityStixCoreRelationshipsEntitiesViewProps {
   entityId: string;
@@ -132,7 +132,7 @@ EntityStixCoreRelationshipsEntitiesViewProps
               ? sortBy
               : 'name',
     orderMode: orderAsc ? 'asc' : 'desc',
-    filters: cleanFilters(removeIdFromFilterObject(filters), availableFilterKeys),
+    filters: cleanFilters(removeIdFromFilterGroupObject(filters), availableFilterKeys),
   } as unknown as EntityStixCoreRelationshipsEntitiesViewLinesPaginationQuery$variables; // Because of FilterMode
 
   const backgroundTaskFilters = injectEntityTypeFilterInFilterGroup(

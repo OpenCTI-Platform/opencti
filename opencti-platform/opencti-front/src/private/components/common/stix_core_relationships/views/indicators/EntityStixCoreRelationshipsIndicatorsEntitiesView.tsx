@@ -12,7 +12,7 @@ import { DataColumns, PaginationOptions } from '../../../../../../components/lis
 import { StixDomainObjectIndicatorsLinesQuery$data } from '../../../../observations/indicators/__generated__/StixDomainObjectIndicatorsLinesQuery.graphql';
 import useAuth from '../../../../../../utils/hooks/useAuth';
 import { QueryRenderer } from '../../../../../../relay/environment';
-import { addFilter, cleanFilters, FilterGroup, removeIdFromFilterObject } from '../../../../../../utils/filters/filtersUtils';
+import { addFilter, cleanFilters, FilterGroup, removeIdFromFilterGroupObject } from '../../../../../../utils/filters/filtersUtils';
 
 interface EntityStixCoreRelationshipsIndicatorsEntitiesViewProps {
   entityId: string
@@ -121,7 +121,7 @@ const EntityStixCoreRelationshipsIndicatorsEntitiesView: FunctionComponent<Entit
     search: searchTerm,
     orderBy: (sortBy && (sortBy in dataColumns) && dataColumns[sortBy].isSortable) ? sortBy : 'name',
     orderMode: orderAsc ? 'asc' : 'desc',
-    filters: removeIdFromFilterObject(paginationFilters),
+    filters: removeIdFromFilterGroupObject(paginationFilters),
   };
 
   const {

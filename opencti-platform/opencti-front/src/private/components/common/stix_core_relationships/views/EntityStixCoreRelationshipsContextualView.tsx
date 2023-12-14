@@ -30,7 +30,7 @@ import { resolveLink } from '../../../../../utils/Entity';
 import {
   addFilter,
   cleanFilters,
-  removeIdFromFilterObject,
+  removeIdFromFilterGroupObject,
   Filter,
   injectEntityTypeFilterInFilterGroup,
   findFilterFromKey,
@@ -262,7 +262,7 @@ const EntityStixCoreRelationshipsContextualViewComponent: FunctionComponent<Enti
     orderMode: orderAsc ? 'asc' : 'desc',
     types: stixCoreObjectTypes,
     containersIds: containers.map((r) => r.id),
-    filters: removeIdFromFilterObject(finalFilters),
+    filters: removeIdFromFilterGroupObject(finalFilters),
   } as unknown as EntityStixCoreRelationshipsContextualViewLinesQuery$variables; // Because of FilterMode
   const selectedTypes = findFilterFromKey(filters?.filters ?? [], 'entity_type')?.values ?? undefined;
   const backgroundTaskFilters = selectedTypes && selectedTypes.length > 0

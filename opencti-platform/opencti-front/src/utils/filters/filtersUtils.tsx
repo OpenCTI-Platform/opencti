@@ -274,11 +274,9 @@ export const injectEntityTypeFilterInFilterGroup = (
     mode: 'or',
   };
   return {
-    mode: filters?.mode ?? 'and',
-    filterGroups: filters?.filterGroups ?? [],
-    filters: filters
-      ? [...filters.filters, entityTypeFilter]
-      : [entityTypeFilter],
+    mode: 'and',
+    filters: [entityTypeFilter],
+    filterGroups: filters ? [filters] : [],
   };
 };
 
@@ -290,7 +288,7 @@ export const removeEntityTypeAllFromFilterGroup = (inputFilters?: FilterGroup) =
     const newFilters = filters.filter((f) => !(f.key === 'entity_type' && f.values.includes('all')));
     const newFilterGroups = filterGroups.map((group) => removeEntityTypeAllFromFilterGroup(group)) as FilterGroup[];
     return {
-      mode: inputFilters.mode,
+      ...inputFilters,
       filters: newFilters,
       filterGroups: newFilterGroups,
     };
@@ -758,23 +756,22 @@ export const getAvailableOperatorForFilter = (filterKey: string): string[] => {
   return ['eq', 'not_eq', 'nil', 'not_nil'];
 };
 
-export const removeIdFromFilterObject = (
+export const removeIdFromFilterGroupObject = (
   filters?: FilterGroup | null,
 ): FilterGroup | undefined => {
   if (!filters) {
     return undefined;
   }
   return {
-    ...filters,
+    mode: filters.mode,
     filters: filters.filters
-      .filter(
-        (f) => ['nil', 'not_nil'].includes(f.operator) || f.values.length > 0,
-      )
+      .filter((f) => ['nil', 'not_nil'].includes(f.operator) || f.values.length > 0)
       .map((f) => {
         const newFilter = { ...f };
         delete newFilter.id;
         return newFilter;
       }),
+    filterGroups: filters.filterGroups.map((group) => removeIdFromFilterGroupObject(group)) as FilterGroup[],
   };
 };
 

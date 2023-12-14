@@ -24,13 +24,11 @@ import { resolveRelationsTypes } from '../../../../utils/Relation';
 import { UserContext } from '../../../../utils/hooks/useAuth';
 import ListLines from '../../../../components/list_lines/ListLines';
 import {
-  addFilter,
-  removeIdFromFilterObject,
   constructHandleAddFilter,
   constructHandleRemoveFilter,
-  filtersAfterSwitchLocalMode,
-  findFilterFromKey,
   emptyFilterGroup,
+  filtersAfterSwitchLocalMode,
+  removeIdFromFilterGroupObject,
 } from '../../../../utils/filters/filtersUtils';
 import StixCoreRelationshipCreationFromEntityStixCoreObjectsLines, {
   stixCoreRelationshipCreationFromEntityStixCoreObjectsLinesQuery,
@@ -490,14 +488,9 @@ const StixCoreRelationshipCreationFromEntity = (props) => {
   };
 
   const renderSelectEntity = () => {
-    let finalFilters = filters;
-    const entityTypeFilter = findFilterFromKey(filters?.filters ?? [], 'entity_type');
-    if (entityTypeFilter && actualTypeFilter.length > 0) {
-      finalFilters = addFilter(filters, 'entity_type', actualTypeFilter);
-    }
     const searchPaginationOptions = {
       search: searchTerm,
-      filters: removeIdFromFilterObject(finalFilters),
+      filters: removeIdFromFilterGroupObject(filters),
       orderBy: sortBy,
       orderMode: orderAsc ? 'asc' : 'desc',
     };

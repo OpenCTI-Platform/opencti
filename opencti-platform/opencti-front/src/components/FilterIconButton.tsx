@@ -1,7 +1,7 @@
 import React, { FunctionComponent, useRef } from 'react';
 import { ChipOwnProps } from '@mui/material/Chip/Chip';
 import { DataColumns } from './list_lines';
-import { Filter, FilterGroup, GqlFilterGroup, emptyFilterGroup, removeIdFromFilterObject } from '../utils/filters/filtersUtils';
+import { Filter, FilterGroup, GqlFilterGroup, emptyFilterGroup, removeIdFromFilterGroupObject } from '../utils/filters/filtersUtils';
 import { filterIconButtonContentQuery } from './FilterIconButtonContent';
 import useQueryLoading from '../utils/hooks/useQueryLoading';
 import { FilterIconButtonContentQuery } from './__generated__/FilterIconButtonContentQuery.graphql';
@@ -50,7 +50,7 @@ const FilterIconButton: FunctionComponent<FilterIconButtonProps> = ({
   const filtersRepresentativesQueryRef = useQueryLoading<FilterIconButtonContentQuery>(
     filterIconButtonContentQuery,
     {
-      filters: removeIdFromFilterObject(
+      filters: removeIdFromFilterGroupObject(
         displayedFilters,
       ) as unknown as GqlFilterGroup,
     },
