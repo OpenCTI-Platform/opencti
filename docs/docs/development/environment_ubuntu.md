@@ -6,10 +6,14 @@ Development stack require some base software that need to be installed.
 
 Platform dependencies in development are deployed through container management, so you need to install a container stack.
 
-We currently support docker and postman.
+We currently support docker and podman.
 
 ```bash
 $ sudo apt-get install docker docker-compose curl
+```
+
+```bash
+sudo apt-get -y install podman
 ```
 
 As OpenCTI has a dependency to ElasticSearch, you have to set the *vm.max_map_count* before running the containers, as mentioned in the [ElasticSearch documentation](https://www.elastic.co/guide/en/elasticsearch/reference/current/docker.html#docker-cli-run-prod-mode).
