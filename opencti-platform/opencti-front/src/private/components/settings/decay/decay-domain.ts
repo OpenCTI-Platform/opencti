@@ -1,4 +1,3 @@
-import { now } from "moment/moment";
 
 export interface GraphData {
     timeSerie: number[],
