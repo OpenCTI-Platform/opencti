@@ -31,7 +31,7 @@ import { ABSTRACT_STIX_CORE_RELATIONSHIP, buildRefRelationKey, ENTITY_TYPE_CONTA
 import { convertStoreToStix } from '../database/stix-converter';
 import { UnsupportedError } from '../config/errors';
 import { MARKING_FILTER } from '../utils/filtering/filtering-constants';
-import { findFilterFromKey } from '../utils/filtering/filtering-utils';
+import { findFiltersFromKey } from '../utils/filtering/filtering-utils';
 import { convertFiltersToQueryOptions } from '../utils/filtering/filtering-resolution';
 import { getParentTypes } from '../schema/schemaUtils';
 import { STIX_EXT_OCTI } from '../types/stix-extensions';
@@ -138,10 +138,11 @@ const computeUserAndCollection = async (res, { context, user, id }) => {
   }
   // If no marking part of filtering are accessible for the user, return
   // It's better to prevent connection instead of having no events accessible
-  const objectMarkingFilters = findFilterFromKey(streamFilters.filters, MARKING_FILTER, 'eq');
-  if (objectMarkingFilters) {
+  const objectMarkingFilters = findFiltersFromKey(streamFilters.filters, MARKING_FILTER, 'eq');
+  if (objectMarkingFilters.length > 0) {
+    const objectMarkingFilter = objectMarkingFilters[0];
     const userMarkings = (user.allowed_marking || []).map((m) => m.internal_id);
-    const filterMarkings = objectMarkingFilters.values;
+    const filterMarkings = objectMarkingFilter.values;
     const isUserHaveAccess = filterMarkings.some((m) => userMarkings.includes(m));
     if (!isUserHaveAccess) {
       res.statusMessage = 'You need to have access to specific markings for this live stream';
@@ -407,7 +408,8 @@ const createSseMiddleware = () => {
     let match = false;
     const matches = [];
     const fromAllTypes = [type, ...getParentTypes(type)];
-    const entityTypeFilter = findFilterFromKey(filters.filters, 'entity_type', 'eq');
+    const entityTypeFilters = findFiltersFromKey(filters.filters, 'entity_type', 'eq');
+    const entityTypeFilter = entityTypeFilters.length > 0 ? entityTypeFilters[0] : undefined;
     const entityTypeFilterValues = entityTypeFilter?.values ?? [];
     // eslint-disable-next-line no-restricted-syntax
     for (const id of entityTypeFilterValues) {
@@ -442,8 +444,8 @@ const createSseMiddleware = () => {
     const fromId = isRel ? stix.source_ref : stix.sighting_of_ref;
     const toId = isRel ? stix.target_ref : stix.where_sighted_refs[0];
     // Pre-filter by type to prevent resolutions as much as possible.
-    const entityTypeFilters = findFilterFromKey(streamFilters.filters, 'entity_type', 'eq');
-    if (entityTypeFilters && entityTypeFilters.values.length > 0) {
+    const entityTypeFilters = findFiltersFromKey(streamFilters.filters, 'entity_type', 'eq');
+    if (entityTypeFilters.length > 0 && entityTypeFilters[0].values.length > 0) {
       const fromType = isRel ? stix.extensions[STIX_EXT_OCTI].source_type : stix.extensions[STIX_EXT_OCTI].sighting_of_type;
       const matchingFrom = isFiltersEntityTypeMatch(streamFilters, fromType);
       const toType = isRel ? stix.extensions[STIX_EXT_OCTI].target_type : stix.extensions[STIX_EXT_OCTI].where_sighted_types[0];

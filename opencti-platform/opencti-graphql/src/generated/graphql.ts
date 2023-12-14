@@ -17302,6 +17302,7 @@ export type QueryBackgroundTasksArgs = {
 
 export type QueryBookmarksArgs = {
   after?: InputMaybe<Scalars['ID']['input']>;
+  filters?: InputMaybe<FilterGroup>;
   first?: InputMaybe<Scalars['Int']['input']>;
   types?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
 };

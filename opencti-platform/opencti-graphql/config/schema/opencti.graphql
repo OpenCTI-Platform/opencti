@@ -11175,7 +11175,7 @@ type Query {
     relationship_type: [String]
     elementId: String
   ): StixDomainObjectConnection @auth(for: [KNOWLEDGE])
-  bookmarks(first: Int, after: ID, types: [String]): StixDomainObjectConnection @auth(for: [KNOWLEDGE])
+  bookmarks(first: Int, after: ID, types: [String], filters: FilterGroup): StixDomainObjectConnection @auth(for: [KNOWLEDGE])
   stixDomainObjectsExportFiles(first: Int, type: String!): FileConnection @auth(for: [KNOWLEDGE_KNGETEXPORT])
   stixDomainObjectsTimeSeries(
     authorId: String

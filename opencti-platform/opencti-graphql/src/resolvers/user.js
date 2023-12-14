@@ -79,7 +79,7 @@ const userResolvers = {
     sessions: () => findSessions(),
     capabilities: (_, args, context) => findCapabilities(context, context.user, args),
     me: (_, __, context) => findById(context, context.user, context.user.id),
-    bookmarks: (_, { types }, context) => bookmarks(context, context.user, types),
+    bookmarks: (_, args, context) => bookmarks(context, context.user, args),
   },
   User: {
     roles: (current, args, context) => rolesUsersLoader.load(current.id, context, context.user, args),

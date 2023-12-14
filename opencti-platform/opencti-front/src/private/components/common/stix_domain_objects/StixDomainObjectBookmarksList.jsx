@@ -15,7 +15,7 @@ import ItemIcon from '../../../../components/ItemIcon';
 import { useFormatter } from '../../../../components/i18n';
 import { QueryRenderer } from '../../../../relay/environment';
 import { resolveLink } from '../../../../utils/Entity';
-import { findFilterFromKey } from '../../../../utils/filters/filtersUtils';
+import { removeEntityTypeAllFromFilterGroup } from '../../../../utils/filters/filtersUtils';
 
 const useStyles = makeStyles((theme) => ({
   container: {
@@ -51,8 +51,8 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 const stixDomainObjectBookmarksListQuery = graphql`
-  query StixDomainObjectBookmarksListQuery($types: [String], $first: Int) {
-    bookmarks(types: $types, first: $first) {
+  query StixDomainObjectBookmarksListQuery($types: [String], $first: Int, $filters: FilterGroup) {
+    bookmarks(types: $types, first: $first, filters: $filters) {
       edges {
         node {
           id
@@ -218,22 +218,12 @@ const StixDomainObjectBookmarksList = ({
   const { t, fsd } = useFormatter();
   const renderContent = () => {
     const selection = dataSelection[0];
-    let types = [];
-    const entityTypeFilter = findFilterFromKey(
-      selection.filters?.filters || [],
-      'entity_type',
-    );
-    if (entityTypeFilter && entityTypeFilter.values.length > 0) {
-      if (entityTypeFilter.values.filter((o) => o === 'all').length === 0) {
-        types = entityTypeFilter.values;
-      }
-    }
     return (
       <QueryRenderer
         query={stixDomainObjectBookmarksListQuery}
         variables={{
-          types,
           first: 50,
+          filters: removeEntityTypeAllFromFilterGroup(selection.filters),
         }}
         render={({ props }) => {
           if (props && props.bookmarks && props.bookmarks.edges.length > 0) {
