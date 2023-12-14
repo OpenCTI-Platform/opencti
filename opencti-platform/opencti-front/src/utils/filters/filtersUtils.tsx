@@ -765,7 +765,7 @@ export const removeIdFromFilterGroupObject = (
   return {
     mode: filters.mode,
     filters: filters.filters
-      .filter((f) => ['nil', 'not_nil'].includes(f.operator) || f.values.length > 0,)
+      .filter((f) => ['nil', 'not_nil'].includes(f.operator) || f.values.length > 0)
       .map((f) => {
         const newFilter = { ...f };
         delete newFilter.id;
