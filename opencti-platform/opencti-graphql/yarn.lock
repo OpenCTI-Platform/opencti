@@ -1602,13 +1602,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@elastic/elasticsearch@npm:8.10.0":
-  version: 8.10.0
-  resolution: "@elastic/elasticsearch@npm:8.10.0"
+"@elastic/elasticsearch@npm:8.11.0":
+  version: 8.11.0
+  resolution: "@elastic/elasticsearch@npm:8.11.0"
   dependencies:
-    "@elastic/transport": ^8.3.4
+    "@elastic/transport": ^8.4.0
     tslib: ^2.4.0
-  checksum: b980c2634beb74f7c9113f8248640729e73511c8862d0795f827125ea6c49e85840e0b370f7a4e436f05ce80d67103c406be8ea54e777c32bafe4d650c9b4ef2
+  checksum: dceef33d17c177650ce739e44f84aabf6cfcff5ac057f5ecf54d7fd3705a6a44104eec52f6696bf8a8204881c528965595e4f1703c5754b65237ffe2da7f9794
   languageName: node
   linkType: hard
 
@@ -10842,7 +10842,7 @@ __metadata:
     "@aws-sdk/credential-provider-node": 3.465.0
     "@aws-sdk/lib-storage": 3.465.0
     "@aws-sdk/property-provider": 3.374.0
-    "@elastic/elasticsearch": 8.10.0
+    "@elastic/elasticsearch": 8.11.0
     "@elastic/transport": 8.3.4
     "@escape.tech/graphql-armor": 2.3.1
     "@graphql-codegen/cli": 5.0.0
