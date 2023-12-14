@@ -21,7 +21,7 @@ const taskResolvers = {
       if (obj.type === 'QUERY') return 'QueryTask';
       if (obj.type === 'LIST') return 'ListTask';
       if (obj.type === 'RULE') return 'RuleTask';
-      /* istanbul ignore next */
+      /* v8 ignore next */
       return 'Unknown';
     },
     initiator: (task, _, context) => creatorLoader.load(task.initiator_id, context, context.user),

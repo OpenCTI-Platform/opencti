@@ -33,7 +33,7 @@ export const execChildPython = async (context, user, scriptPath, scriptName, arg
       // Messaging is used to get data out of the python process
       let jsonResult = { status: 'success' };
       shell.on('message', (message) => {
-        /* istanbul ignore next */
+        /* v8 ignore next */
         try {
           jsonResult = JSON.parse(message);
         } catch (e) {
@@ -43,7 +43,7 @@ export const execChildPython = async (context, user, scriptPath, scriptName, arg
       shell.on('stderr', (stderr) => {
         logApp.info(`[stderr] ${stderr}`);
         messages.push(stderr);
-        /* istanbul ignore if */
+        //* v8 ignore if */
         if (DEV_MODE && stderr.startsWith('ERROR:')) {
           jsonResult = { status: 'error', message: stderr };
           shell.kill();
@@ -64,7 +64,7 @@ export const execChildPython = async (context, user, scriptPath, scriptName, arg
         resolve(jsonResult);
       });
     }).catch((err) => {
-      /* istanbul ignore next */
+      /* v8 ignore next */
       throw UnknownError(`[BRIDGE] execPythonTesting error > ${err.message}`, { detail: err.message });
     });
   };

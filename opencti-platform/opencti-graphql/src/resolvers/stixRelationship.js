@@ -52,7 +52,7 @@ const stixRelationshipResolvers = {
       if (STIX_SIGHTING_RELATIONSHIP === obj.entity_type) {
         return 'StixSightingRelationship';
       }
-      /* istanbul ignore next */
+      /* v8 ignore next */
       return 'Unknown';
     },
     spec_version: getSpecVersionOrDefault

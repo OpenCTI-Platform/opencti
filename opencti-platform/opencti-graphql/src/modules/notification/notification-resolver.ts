@@ -63,8 +63,8 @@ const notificationResolvers: Resolvers = {
   },
   Subscription: {
     notificationsNumber: {
-      resolve: /* istanbul ignore next */ (payload: any) => payload.instance,
-      subscribe: /* istanbul ignore next */ (_, __, context) => {
+      resolve: /* v8 ignore next */ (payload: any) => payload.instance,
+      subscribe: /* v8 ignore next */ (_, __, context) => {
         const asyncIterator = pubSubAsyncIterator(BUS_TOPICS[NOTIFICATION_NUMBER].EDIT_TOPIC);
         const filtering = withFilter(() => asyncIterator, (payload) => {
           return payload && payload.instance.user_id === context.user.id;
@@ -77,8 +77,8 @@ const notificationResolvers: Resolvers = {
       },
     },
     notification: {
-      resolve: /* istanbul ignore next */ (payload: any) => payload.instance,
-      subscribe: /* istanbul ignore next */ (_, __, context) => {
+      resolve: /* v8 ignore next */ (payload: any) => payload.instance,
+      subscribe: /* v8 ignore next */ (_, __, context) => {
         const asyncIterator = pubSubAsyncIterator(BUS_TOPICS[ENTITY_TYPE_NOTIFICATION].ADDED_TOPIC);
         const filtering = withFilter(() => asyncIterator, (payload) => {
           return payload && payload.instance.user_id === context.user.id;

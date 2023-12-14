@@ -117,8 +117,8 @@ const stixCoreRelationshipResolvers = {
   },
   Subscription: {
     stixCoreRelationship: {
-      resolve: /* istanbul ignore next */ (payload) => payload.instance,
-      subscribe: /* istanbul ignore next */ (_, { id }, context) => {
+      resolve: /* v8 ignore next */ (payload) => payload.instance,
+      subscribe: /* v8 ignore next */ (_, { id }, context) => {
         stixCoreRelationshipEditContext(context, context.user, id);
         const filtering = withFilter(
           () => pubSubAsyncIterator(BUS_TOPICS[ABSTRACT_STIX_CORE_RELATIONSHIP].EDIT_TOPIC),

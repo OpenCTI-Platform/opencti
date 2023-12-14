@@ -19,8 +19,8 @@
     "start-cluster": "NODE_ENV=cluster node build/back.js",
     "serv": "node build/back.js",
     "insert:dev": "node build/script-insert-dataset.js",
-    "test:dev": "vitest --single-thread run --config vitest.config.dev.ts",
-    "test": "vitest --single-thread --silent run --config vitest.config.test.ts --coverage"
+    "test:dev": "vitest --silent run --config vitest.config.dev.ts --coverage",
+    "test": "vitest --silent run --config vitest.config.test.ts --coverage"
   },
   "pkg": {
     "scripts": "dist/**/*.js",
@@ -169,7 +169,7 @@
     "@types/xml2js": "0.4.14",
     "@typescript-eslint/eslint-plugin": "6.14.0",
     "@typescript-eslint/parser": "6.14.0",
-    "@vitest/coverage-istanbul": "0.34.6",
+    "@vitest/coverage-v8": "1.0.4",
     "cross-env": "7.0.3",
     "esbuild": "0.19.8",
     "esbuild-plugin-import-glob": "0.1.1",
@@ -186,7 +186,7 @@
     "graphql-tag": "2.12.6",
     "ts-loader": "9.5.1",
     "typescript": "5.3.3",
-    "vitest": "0.34.6"
+    "vitest": "1.0.4"
   },
   "resolutions": {
     "json5": "2.2.3",
@@ -199,7 +199,8 @@
     "nconf": "patch:nconf@0.12.0#./patch/nconf-0.12.0.patch",
     "ldap-filter": "patch:ldap-filter@0.3.3#./patch/ldap-filter-0.3.3.patch",
     "node-calls-python": "patch:node-calls-python@1.7.7#./patch/node-calls-python-1.7.7.patch",
-    "domino": "patch:domino@2.1.6#./patch/domino-2.1.6.patch"
+    "domino": "patch:domino@2.1.6#./patch/domino-2.1.6.patch",
+    "graphql": "patch:graphql@16.8.1#./patch/graphql-16.8.1.patch"
   },
   "packageManager": "yarn@3.7.0"
 }
