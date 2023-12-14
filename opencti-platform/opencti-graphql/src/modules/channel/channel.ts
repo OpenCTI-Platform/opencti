@@ -1,15 +1,7 @@
 import channelTypeDefs from './channel.graphql';
 import convertChannelToStix from './channel-converter';
 import { NAME_FIELD, normalizeName } from '../../schema/identifier';
-import {
-  RELATION_AMPLIFIES,
-  RELATION_BELONGS_TO,
-  RELATION_DELIVERS,
-  RELATION_DROPS,
-  RELATION_PUBLISHES,
-  RELATION_TARGETS,
-  RELATION_USES
-} from '../../schema/stixCoreRelationship';
+import { RELATION_AMPLIFIES, RELATION_BELONGS_TO, RELATION_DELIVERS, RELATION_DROPS, RELATION_PUBLISHES, RELATION_TARGETS, RELATION_USES } from '../../schema/stixCoreRelationship';
 import {
   ENTITY_TYPE_ATTACK_PATTERN,
   ENTITY_TYPE_IDENTITY_INDIVIDUAL,
