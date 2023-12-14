@@ -297,6 +297,7 @@ const StixCoreObjectsList = ({
                     return (
                       <ListItem
                         key={stixCoreObject.id}
+                        className="noDrag"
                         classes={{ root: classes.item }}
                         divider={true}
                         button={true}

@@ -187,6 +187,7 @@ const AuditsList = ({
                         key={audit.id}
                         dense={true}
                         button={true}
+                        className="noDrag"
                         classes={{ root: classes.item }}
                         divider={true}
                         component={link ? Link : undefined}

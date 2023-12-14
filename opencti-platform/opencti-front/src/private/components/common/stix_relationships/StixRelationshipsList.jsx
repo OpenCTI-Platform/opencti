@@ -4563,6 +4563,7 @@ const StixRelationshipsList = ({
                         key={stixRelationship.id}
                         dense={true}
                         button={true}
+                        className="noDrag"
                         classes={{ root: classes.item }}
                         divider={true}
                         component={Link}

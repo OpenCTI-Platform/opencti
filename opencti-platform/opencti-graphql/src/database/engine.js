@@ -2372,7 +2372,10 @@ export const elPaginate = async (context, user, indexName, options = {}) => {
         // We log the error only if its not a mapping not found error
         let isTechnicalError = true;
         if (isNotEmptyField(err.meta?.body)) {
-          const errorCauses = err.meta.body?.error?.root_cause ?? [];
+          let errorCauses = err.meta.body?.error?.root_cause ?? [];
+          if (typeof errorCauses === 'object') {
+            errorCauses = R.values(errorCauses);
+          }
           const invalidMappingCauses = errorCauses.map((r) => r.reason ?? '')
             .filter((r) => R.includes(NO_MAPPING_FOUND_ERROR, r) || R.includes(NO_SUCH_INDEX_ERROR, r));
           const numberOfCauses = errorCauses.length;
