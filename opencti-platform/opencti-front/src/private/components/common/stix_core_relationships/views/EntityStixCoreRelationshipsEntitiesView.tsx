@@ -12,7 +12,7 @@ import { computeTargetStixCyberObservableTypes, computeTargetStixDomainObjectTyp
 import { PaginationLocalStorage } from '../../../../../utils/hooks/useLocalStorage';
 import { DataColumns, PaginationOptions } from '../../../../../components/list_lines';
 import { EntityStixCoreRelationshipsEntitiesViewLinesPaginationQuery$variables } from './__generated__/EntityStixCoreRelationshipsEntitiesViewLinesPaginationQuery.graphql';
-import { addFilter, cleanFilters, removeIdFromFilterObject, injectEntityTypeFilterInFilterGroup, findFilterFromKey, removeFilter } from '../../../../../utils/filters/filtersUtils';
+import { cleanFilters, injectEntityTypeFilterInFilterGroup, removeIdFromFilterObject } from '../../../../../utils/filters/filtersUtils';
 
 interface EntityStixCoreRelationshipsEntitiesViewProps {
   entityId: string;
@@ -37,7 +37,7 @@ EntityStixCoreRelationshipsEntitiesViewProps
   defaultStopTime,
   localStorage,
   relationshipTypes,
-  stixCoreObjectTypes,
+  stixCoreObjectTypes = [],
   isRelationReversed,
   currentView,
   enableNestedView,
@@ -121,14 +121,10 @@ EntityStixCoreRelationshipsEntitiesViewProps
       width: '10%',
     },
   };
-  const findValuesFromSelectedTypes = findFilterFromKey(filters?.filters ?? [], 'entity_type')?.values;
-  const selectedTypes = findValuesFromSelectedTypes && findValuesFromSelectedTypes.length > 0 ? findValuesFromSelectedTypes : stixCoreObjectTypes;
-  const findValuesFromRelationshipKey = findFilterFromKey(filters?.filters ?? [], 'relationship_type')?.values;
-  const selectedRelationshipTypes = findValuesFromRelationshipKey && findValuesFromRelationshipKey.length > 0 ? findValuesFromRelationshipKey : relationshipTypes;
 
   const paginationOptions = {
-    types: selectedTypes,
-    relationship_type: selectedRelationshipTypes,
+    types: stixCoreObjectTypes,
+    relationship_type: relationshipTypes,
     elementId: entityId,
     search: searchTerm,
     orderBy:
@@ -136,18 +132,12 @@ EntityStixCoreRelationshipsEntitiesViewProps
               ? sortBy
               : 'name',
     orderMode: orderAsc ? 'asc' : 'desc',
-    filters: removeFilter(cleanFilters(removeIdFromFilterObject(filters), availableFilterKeys), ['relationship_type', 'entity_type']),
+    filters: cleanFilters(removeIdFromFilterObject(filters), availableFilterKeys),
   } as unknown as EntityStixCoreRelationshipsEntitiesViewLinesPaginationQuery$variables; // Because of FilterMode
 
-  const backgroundTaskFilters = addFilter(
-    injectEntityTypeFilterInFilterGroup(
-      filters,
-      selectedTypes?.length > 0
-        ? selectedTypes
-        : ['Stix-Core-Object'],
-    ),
-    `rel_${selectedRelationshipTypes.at(0)}.*`,
-    entityId,
+  const backgroundTaskFilters = injectEntityTypeFilterInFilterGroup(
+    filters,
+    ['Stix-Core-Object'],
   );
 
   const {

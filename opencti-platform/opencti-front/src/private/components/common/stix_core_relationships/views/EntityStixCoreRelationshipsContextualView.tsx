@@ -83,20 +83,20 @@ const handleFilterOnContainers = (containers: ({ readonly id: string })[], filte
   if (isEmptyField(containers)) {
     return ['']; // Return nothing
   }
+  const containerIds = containers.map((r) => r.id);
   if (filtersContent.length === 0) {
-    return containers.map((n) => n.id);
+    return containerIds;
   }
 
   const selectedContainers = findFilterFromKey(filtersContent, 'containers')?.values ?? [];
   let filterContainers: string[];
   if (selectedContainers.length > 0) {
-    const containerIds = containers.map((r) => r.id);
     filterContainers = selectedContainers.filter((id) => containerIds.includes(id));
     if (filterContainers.length === 0) {
       filterContainers = ['']; // Return nothing
     }
   } else {
-    filterContainers = containers.map((n) => n.id);
+    filterContainers = containerIds;
   }
   return filterContainers;
 };
@@ -246,7 +246,6 @@ const EntityStixCoreRelationshipsContextualViewComponent: FunctionComponent<Enti
     },
   };
 
-  const selectedTypes = findFilterFromKey(filters?.filters ?? [], 'entity_type')?.values ?? stixCoreObjectTypes;
   const containers = stixDomainObject.containers?.edges?.map((e) => e?.node)
     .filter((r) => isNotEmptyField(r)) as { id: string }[] ?? [];
 
@@ -261,17 +260,19 @@ const EntityStixCoreRelationshipsContextualViewComponent: FunctionComponent<Enti
     search: searchTerm,
     orderBy: (sortBy && (sortBy in dataColumns) && dataColumns[sortBy].isSortable) ? sortBy : 'entity_type',
     orderMode: orderAsc ? 'asc' : 'desc',
-    types: selectedTypes,
+    types: stixCoreObjectTypes,
     containersIds: containers.map((r) => r.id),
     filters: removeIdFromFilterObject(finalFilters),
   } as unknown as EntityStixCoreRelationshipsContextualViewLinesQuery$variables; // Because of FilterMode
-
-  const backgroundTaskFilters = injectEntityTypeFilterInFilterGroup(
-    filters,
-    selectedTypes.length > 0
-      ? selectedTypes
-      : ['Stix-Core-Object'],
-  );
+  const selectedTypes = findFilterFromKey(filters?.filters ?? [], 'entity_type')?.values ?? undefined;
+  const backgroundTaskFilters = selectedTypes && selectedTypes.length > 0
+    ? filters
+    : injectEntityTypeFilterInFilterGroup(
+      filters,
+      stixCoreObjectTypes.length > 0
+        ? stixCoreObjectTypes
+        : ['Stix-Core-Object'],
+    );
 
   const {
     selectedElements,
