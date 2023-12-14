@@ -570,13 +570,20 @@ const PLAYBOOK_UPDATE_KNOWLEDGE_COMPONENT: PlaybookComponent<UpdateConfiguration
       if (all || element.id === dataInstanceId) {
         const { type } = element.extensions[STIX_EXT_OCTI];
         const elementOperations = actions
-          .map((action) => ({
-            action,
-            multiple: isAttributeMultiple(type, action.attribute),
-            path: `/objects/${index}${computeAttributePath(type, action.attribute)}`
-          }))
-          .filter(({ path, multiple }) => multiple !== undefined && isNotEmptyField(path))
-          .map(({ action, path, multiple }) => ({ op: action.op, path, value: multiple ? action.value.map((o) => o.patch_value) : R.head(action.value)?.patch_value }));
+          .map((action) => {
+            const attrPath = computeAttributePath(type, action.attribute);
+            const multiple = isAttributeMultiple(type, action.attribute);
+            return ({ action, multiple, attrPath, path: `/objects/${index}${attrPath}` });
+          })
+          // Unrecognized attributes must be filtered
+          .filter(({ attrPath, multiple }) => isNotEmptyField(multiple) && isNotEmptyField(attrPath))
+          // Map actions to data patches
+          .map(({ action, path, multiple }) => ({
+            op: action.op,
+            path,
+            value: multiple ? action.value.map((o) => o.patch_value) : R.head(action.value)?.patch_value
+          }));
+        // Enlist operations to execute
         patchOperations.push(...elementOperations);
       }
     }
@@ -697,7 +704,7 @@ const PLAYBOOK_RULE_COMPONENT: PlaybookComponent<RuleConfiguration> = {
       if (isStixDomainObjectContainer(type)) {
         // Handle first seen synchro for reports creation / modification
         const container = baseData as StixContainer;
-        if (container.object_refs.length > 0) {
+        if (container.object_refs && container.object_refs.length > 0) {
           const elements = await stixLoadByIds(context, AUTOMATION_MANAGER_USER, container.object_refs);
           if (elements.length > 0) {
             bundle.objects.push(...elements);

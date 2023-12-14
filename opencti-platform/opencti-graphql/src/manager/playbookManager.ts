@@ -164,7 +164,7 @@ export const playbookExecutor = async ({
     } catch (error) {
       // Error executing the step, register
       const executionError = error as Error;
-      logApp.error('Error executing playbook', { error: executionError });
+      logApp.error('[OPENCTI-MODULE] Playbook execution error', { error: executionError, step: instanceWithConfig, bundle: baseBundle });
       const end = utcDate();
       const durationDiff = end.diff(start);
       const duration = moment.duration(durationDiff);
