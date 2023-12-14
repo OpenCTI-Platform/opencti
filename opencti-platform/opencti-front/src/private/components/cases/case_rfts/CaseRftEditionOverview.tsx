@@ -253,7 +253,7 @@ const CaseRftEditionOverview: FunctionComponent<CaseRftEditionOverviewProps> = (
     description: caseData.description,
     created: caseData.created,
     confidence: caseData.confidence,
-    takedown_types: caseData.takedown_types,
+    takedown_types: caseData.takedown_types ?? [],
     severity: caseData.severity,
     priority: caseData.priority,
     createdBy: convertCreatedBy(caseData),

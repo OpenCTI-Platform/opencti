@@ -253,7 +253,7 @@ const CaseRfiEditionOverview: FunctionComponent<CaseRfiEditionOverviewProps> = (
     description: caseData.description,
     created: caseData.created,
     confidence: caseData.confidence,
-    information_types: caseData.information_types,
+    information_types: caseData.information_types ?? [],
     severity: caseData.severity,
     priority: caseData.priority,
     createdBy: convertCreatedBy(caseData) as Option,
