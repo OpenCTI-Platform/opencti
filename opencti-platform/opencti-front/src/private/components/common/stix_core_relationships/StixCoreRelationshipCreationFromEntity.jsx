@@ -24,13 +24,11 @@ import { resolveRelationsTypes } from '../../../../utils/Relation';
 import { UserContext } from '../../../../utils/hooks/useAuth';
 import ListLines from '../../../../components/list_lines/ListLines';
 import {
-  addFilter,
-  removeIdFromFilterGroupObject,
   constructHandleAddFilter,
   constructHandleRemoveFilter,
-  filtersAfterSwitchLocalMode,
-  findFilterFromKey,
   emptyFilterGroup,
+  filtersAfterSwitchLocalMode,
+  removeIdFromFilterGroupObject,
 } from '../../../../utils/filters/filtersUtils';
 import StixCoreRelationshipCreationFromEntityStixCoreObjectsLines, {
   stixCoreRelationshipCreationFromEntityStixCoreObjectsLinesQuery,
