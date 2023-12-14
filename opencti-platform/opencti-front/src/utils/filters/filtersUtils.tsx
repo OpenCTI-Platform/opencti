@@ -288,7 +288,7 @@ export const removeEntityTypeAllFromFilterGroup = (inputFilters?: FilterGroup) =
     const newFilters = filters.filter((f) => !(f.key === 'entity_type' && f.values.includes('all')));
     const newFilterGroups = filterGroups.map((group) => removeEntityTypeAllFromFilterGroup(group)) as FilterGroup[];
     return {
-      mode: inputFilters.mode,
+      ...inputFilters,
       filters: newFilters,
       filterGroups: newFilterGroups,
     };
