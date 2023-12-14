@@ -904,7 +904,7 @@ const WidgetConfig = ({ workspace, widget, onComplete, closeMenu }) => {
                           }}
                         >
                           <Filters
-                            availableFilterKeys={widget?.type === 'bookmark' ? ['entity_type'] : availableFilterKeys}
+                            availableFilterKeys={type === 'bookmark' ? ['entity_type'] : availableFilterKeys}
                             availableEntityTypes={availableEntityTypes}
                             handleAddFilter={(key, id, op) => handleAddFilter(i, 'filters', key, id, op)}
                             noDirectFilters={true}
