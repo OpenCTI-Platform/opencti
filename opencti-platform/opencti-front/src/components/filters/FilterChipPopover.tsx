@@ -167,7 +167,7 @@ export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({
       ],
     },
   );
-  const [entities, searchEntities] = getUseSearch();
+  const [entities, searchEntities] = getUseSearch(searchScope);
   const { t } = useFormatter();
   const optionValues: OptionValue[] = getOptionsFromEntities(entities, searchScope, filterKey);
   const handleChange = (checked: boolean, value: string) => {
@@ -316,7 +316,7 @@ export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({
             renderOption={(props, option) => {
               const checked = filterValues.includes(option.value);
               return (
-                <Tooltip title={option.label}>
+                <Tooltip title={option.label} key={option.label}>
                   <li
                     {...props}
                     onKeyDown={(e) => {
