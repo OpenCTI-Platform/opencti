@@ -198,6 +198,9 @@ const stixCyberObservableMutation = graphql`
           }
         }
       }
+      ... on Software {
+        name
+      }
     }
   }
 `;
