@@ -20,6 +20,7 @@ import { InvestigationExpandFormTargetsDistributionToQuery } from './__generated
 import { InvestigationExpandFormRelDistributionQuery } from './__generated__/InvestigationExpandFormRelDistributionQuery.graphql';
 import CheckboxesField from '../../../../components/CheckboxesField';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
+import useAuth from '../../../../utils/hooks/useAuth';
 
 // The number of elements targeted by the given
 // entities ids, sorted by type of entity.
@@ -134,6 +135,7 @@ const InvestigationExpandFormContent = ({
 }: InvestigationExpandFormContentProps) => {
   const classes = useStyles();
   const { t } = useFormatter();
+  const { schema } = useAuth();
 
   const distributionRel = usePreloadedQuery(
     investigationExpandFormRelDistributionQuery,
@@ -349,13 +351,19 @@ const InvestigationExpandFormContent = ({
       .sort((a, b) => a.label.localeCompare(b.label));
 
     // Uses to determine which key of translation to use below.
-    const relNames = ['Part-Of', 'Located-At', 'Indicates', 'Mitigates', 'Targets', 'Uses', 'Related-To', 'Attributed-To'];
-
+    const relationshipsNames = schema.sros.map(({ label }) => label);
     setTargets(
-      graphDistribution.map(({ label, value }) => ({
-        label: `${t(relNames.includes(label) ? `rel_investigation_${label}` : `entity_${label}`)} (${value})`,
-        value: label,
-      })),
+      graphDistribution.map(({ label, value }) => {
+        const isRelationship = relationshipsNames.includes(label.toLowerCase());
+        let translation = t(`entity_${label}`);
+        if (isRelationship) {
+          translation = `${t(`relationship_${label.toLowerCase()}`)} (${t('Relationship')})`;
+        }
+        return {
+          label: `${translation} (${value})`,
+          value: label,
+        };
+      }),
     );
   }, [
     distributionFrom,
