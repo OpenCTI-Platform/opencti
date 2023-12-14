@@ -19,7 +19,7 @@
     "start-cluster": "NODE_ENV=cluster node build/back.js",
     "serv": "node build/back.js",
     "insert:dev": "node build/script-insert-dataset.js",
-    "test:dev": "vitest --silent run --config vitest.config.dev.ts --coverage",
+    "test:dev": "vitest --silent run --config vitest.config.dev.ts",
     "test": "vitest --silent run --config vitest.config.test.ts --coverage"
   },
   "pkg": {
