@@ -903,20 +903,12 @@ const WidgetConfig = ({ workspace, widget, onComplete, closeMenu }) => {
                             right: 5,
                           }}
                         >
-                          {widget?.type === 'bookmark'
-                            ? <Filters
-                                availableFilterKeys={['entity_type']}
-                                availableEntityTypes={availableEntityTypes}
-                                handleAddFilter={(key, id, op) => handleAddFilter(i, 'filters', key, id, op)}
-                                noDirectFilters={false}
-                              />
-                            : <Filters
-                                availableFilterKeys={availableFilterKeys}
-                                availableEntityTypes={availableEntityTypes}
-                                handleAddFilter={(key, id, op) => handleAddFilter(i, 'filters', key, id, op)}
-                                noDirectFilters={true}
-                              />
-                          }
+                          <Filters
+                            availableFilterKeys={widget?.type === 'bookmark' ? ['entity_type'] : availableFilterKeys}
+                            availableEntityTypes={availableEntityTypes}
+                            handleAddFilter={(key, id, op) => handleAddFilter(i, 'filters', key, id, op)}
+                            noDirectFilters={true}
+                          />
                           {(dataSelection[i].perspective ?? perspective)
                             === 'relationships' && (
                             <Filters
