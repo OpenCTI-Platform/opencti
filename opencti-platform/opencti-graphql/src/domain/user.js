@@ -658,7 +658,7 @@ export const bookmarks = async (context, user, args) => {
   const { types = [], filters = null } = args;
   const currentUser = await storeLoadById(context, user, user.id, ENTITY_TYPE_USER);
   // handle types
-  let bookmarkList = types.length > 0
+  let bookmarkList = types && types.length > 0
     ? (currentUser.bookmarks ?? []).filter((n) => types.includes(n.type))
     : currentUser.bookmarks || [];
   // handle filters
