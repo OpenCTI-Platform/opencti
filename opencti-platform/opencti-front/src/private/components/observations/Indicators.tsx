@@ -24,7 +24,7 @@ const useStyles = makeStyles(() => ({
   },
 }));
 
-const LOCAL_STORAGE_KEY = 'indicators';
+const LOCAL_STORAGE_KEY = 'indicators-list';
 
 const Indicators = () => {
   const classes = useStyles();
@@ -173,7 +173,7 @@ const Indicators = () => {
             'indicates',
             'sightedBy',
             'x_opencti_detection',
-            'basedOn',
+            'based-on',
             'revoked',
             'creator_id',
             'confidence',

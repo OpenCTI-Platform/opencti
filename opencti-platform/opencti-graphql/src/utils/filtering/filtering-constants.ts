@@ -103,7 +103,7 @@ export const internalFilterKeys = [
 
 // list of filter keys that are not relation refs keys but whose values need to be resolved (= values point an entity with an id)
 // used in findFiltersRepresentatives
-export const filterKeysWhoseValueToResolve = [
+export const specialFilterKeysWhoseValueToResolve = [
   SIGHTED_BY_FILTER, // relation between elements linked by a stix sighting relationship
   INSTANCE_FILTER, // element involved in a relationship with the entity
   `rel_${RELATION_OBJECT}`,
