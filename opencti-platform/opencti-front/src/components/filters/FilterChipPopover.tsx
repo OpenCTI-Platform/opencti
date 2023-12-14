@@ -316,7 +316,7 @@ export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({
             renderOption={(props, option) => {
               const checked = filterValues.includes(option.value);
               return (
-                <Tooltip title={option.label}>
+                <Tooltip title={option.label} key={option.label}>
                   <li
                     {...props}
                     onKeyDown={(e) => {
