@@ -122,7 +122,7 @@ const Triggers: FunctionComponent<TriggersProps> = ({
           className={classes.createButton}
           onClick={() => setOpenLive(true)}
           size="large"
-          color="primary"
+          color="secondary"
         >
           <CampaignOutlined fontSize="small" />
         </IconButton>
@@ -139,7 +139,7 @@ const Triggers: FunctionComponent<TriggersProps> = ({
           className={classes.createButton}
           onClick={() => setOpenDigest(true)}
           size="large"
-          color="primary"
+          color="secondary"
         >
           <BackupTableOutlined fontSize="small" />
         </IconButton>
