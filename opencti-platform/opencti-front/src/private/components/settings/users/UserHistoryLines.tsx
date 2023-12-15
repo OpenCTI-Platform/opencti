@@ -2,7 +2,6 @@ import React, { FunctionComponent, useEffect } from 'react';
 import { graphql, PreloadedQuery } from 'react-relay';
 import Paper from '@mui/material/Paper';
 import { interval } from 'rxjs';
-import makeStyles from '@mui/styles/makeStyles';
 import { UserHistoryLinesQuery } from '@components/settings/users/__generated__/UserHistoryLinesQuery.graphql';
 import { UserHistoryLines_data$key } from '@components/settings/users/__generated__/UserHistoryLines_data.graphql';
 import { useFormatter } from '../../../../components/i18n';
@@ -12,15 +11,14 @@ import usePreloadedPaginationFragment from '../../../../utils/hooks/usePreloaded
 
 const interval$ = interval(FIVE_SECONDS);
 
-const useStyles = makeStyles(() => ({
+const style = {
   paper: {
     height: '100%',
     minHeight: '100%',
-    margin: '10px 0 0 0',
     padding: '15px',
     borderRadius: 6,
   },
-}));
+};
 
 export const userHistoryLinesQuery = graphql`
   query UserHistoryLinesQuery(
@@ -74,7 +72,6 @@ const UserHistoryLines: FunctionComponent<UserHistoryLinesProps> = ({
   queryRef,
   refetch,
 }) => {
-  const classes = useStyles();
   const { t } = useFormatter();
 
   const { data } = usePreloadedPaginationFragment<
@@ -100,7 +97,7 @@ const UserHistoryLines: FunctionComponent<UserHistoryLinesProps> = ({
   }, []);
 
   return (
-    <Paper classes={{ root: classes.paper }} variant="outlined">
+    <Paper style={ style.paper } variant="outlined">
       {logs.length > 0 ? (
         logs.map((logEdge) => {
           const log = logEdge?.node;
