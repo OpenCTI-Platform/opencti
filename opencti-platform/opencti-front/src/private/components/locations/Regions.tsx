@@ -79,6 +79,7 @@ const Regions: FunctionComponent = () => {
         availableFilterKeys={[
           'created',
           'createdBy',
+          'name',
         ]}
       >
         {queryRef && (

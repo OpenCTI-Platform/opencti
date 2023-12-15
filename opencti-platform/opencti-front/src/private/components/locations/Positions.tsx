@@ -79,6 +79,7 @@ const Positions: FunctionComponent = () => {
         availableFilterKeys={[
           'created',
           'createdBy',
+          'name',
         ]}
       >
         {queryRef && (

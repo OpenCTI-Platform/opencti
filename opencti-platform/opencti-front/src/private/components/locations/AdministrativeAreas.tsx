@@ -82,6 +82,7 @@ const AdministrativeAreas: FunctionComponent = () => {
         availableFilterKeys={[
           'created',
           'createdBy',
+          'name',
         ]}
       >
         {queryRef && (

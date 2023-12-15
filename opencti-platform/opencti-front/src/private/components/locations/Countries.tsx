@@ -79,6 +79,7 @@ const Countries: FunctionComponent = () => {
         availableFilterKeys={[
           'created',
           'createdBy',
+          'name',
         ]}
       >
         {queryRef && (

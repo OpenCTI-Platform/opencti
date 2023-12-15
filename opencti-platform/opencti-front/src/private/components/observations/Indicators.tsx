@@ -178,6 +178,7 @@ const Indicators = () => {
             'creator_id',
             'confidence',
             'indicator_types',
+            'name',
           ]}
         >
           {queryRef && (

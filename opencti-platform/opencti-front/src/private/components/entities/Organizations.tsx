@@ -92,6 +92,7 @@ const Organizations = () => {
           'createdBy',
           'created',
           'x_opencti_reliability',
+          'name',
         ]}
       >
         {queryRef && (
