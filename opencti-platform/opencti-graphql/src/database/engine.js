@@ -440,6 +440,10 @@ export const elPlatformIndices = async () => {
   const listIndices = await engine.cat.indices({ index: `${ES_INDEX_PREFIX}*`, format: 'JSON' });
   return oebp(listIndices);
 };
+export const elPlatformTemplates = async () => {
+  const listTemplates = await engine.cat.templates({ name: `${ES_INDEX_PREFIX}*`, format: 'JSON' });
+  return oebp(listTemplates);
+};
 const elCreateLifecyclePolicy = async () => {
   if (engine instanceof ElkClient) {
     await engine.ilm.putLifecycle({
@@ -524,19 +528,223 @@ const elCreateCoreSettings = async () => {
     throw DatabaseError('[SEARCH] Error creating component template', { error: e });
   });
 };
-const elCreateIndexTemplate = async (index) => {
-  const isExistByName = await engine.indices.existsIndexTemplate({ name: index }).then((r) => oebp(r));
-  // Compat with platform initiated prior 5.9.X
-  const isExist = await engine.indices.existsIndexTemplate({ name: `${ES_INDEX_PREFIX}-index-template` }).then((r) => oebp(r));
-  if (isExistByName || isExist) {
-    return null;
-  }
-  let settings = {};
-  const componentTemplateExist = await engine.cluster.existsComponentTemplate({ name: `${ES_INDEX_PREFIX}-core-settings` });
-  if (!componentTemplateExist) {
-    await elCreateCoreSettings();
-  } else if (engine instanceof ElkClient) {
-    settings = {
+
+const computePlatformMappings = () => {
+  const flattenedType = isElkEngine() ? 'flattened' : 'flat_object';
+  return {
+    dynamic_templates: [
+      {
+        integers: {
+          match_mapping_type: 'long',
+          mapping: {
+            type: 'integer',
+          },
+        },
+      },
+      {
+        strings: {
+          match_mapping_type: 'string',
+          mapping: {
+            type: 'text',
+            fields: {
+              keyword: {
+                type: 'keyword',
+                normalizer: 'string_normalizer',
+                ignore_above: 512,
+              },
+            },
+          },
+        },
+      },
+    ],
+    properties: {
+      internal_id: {
+        type: 'text',
+        fields: {
+          keyword: {
+            type: 'keyword',
+            normalizer: 'string_normalizer',
+            ignore_above: 512,
+          },
+        },
+      },
+      standard_id: {
+        type: 'text',
+        fields: {
+          keyword: {
+            type: 'keyword',
+            normalizer: 'string_normalizer',
+            ignore_above: 512,
+          },
+        },
+      },
+      name: {
+        type: 'text',
+        fields: {
+          keyword: {
+            type: 'keyword',
+            normalizer: 'string_normalizer',
+            ignore_above: 512,
+          },
+        },
+      },
+      height: {
+        type: 'nested',
+        properties: {
+          measure: { type: 'float' },
+          date_seen: { type: 'date' },
+        },
+      },
+      weight: {
+        type: 'nested',
+        properties: {
+          measure: { type: 'float' },
+          date_seen: { type: 'date' },
+        },
+      },
+      timestamp: {
+        type: 'date',
+      },
+      created: {
+        type: 'date',
+      },
+      created_at: {
+        type: 'date',
+      },
+      modified: {
+        type: 'date',
+      },
+      modified_at: {
+        type: 'date',
+      },
+      indexed_at: {
+        type: 'date',
+      },
+      uploaded_at: {
+        type: 'date',
+      },
+      first_seen: {
+        type: 'date',
+      },
+      last_seen: {
+        type: 'date',
+      },
+      start_time: {
+        type: 'date',
+      },
+      stop_time: {
+        type: 'date',
+      },
+      published: {
+        type: 'date',
+      },
+      valid_from: {
+        type: 'date',
+      },
+      valid_until: {
+        type: 'date',
+      },
+      observable_date: {
+        type: 'date',
+      },
+      event_date: {
+        type: 'date',
+      },
+      received_time: {
+        type: 'date',
+      },
+      processed_time: {
+        type: 'date',
+      },
+      completed_time: {
+        type: 'date',
+      },
+      ctime: {
+        type: 'date',
+      },
+      mtime: {
+        type: 'date',
+      },
+      atime: {
+        type: 'date',
+      },
+      current_state_date: {
+        type: 'date',
+      },
+      confidence: {
+        type: 'integer',
+      },
+      attribute_order: {
+        type: 'integer',
+      },
+      base_score: {
+        type: 'integer',
+      },
+      is_family: {
+        type: 'boolean',
+      },
+      number_observed: {
+        type: 'integer',
+      },
+      x_opencti_negative: {
+        type: 'boolean',
+      },
+      default_assignation: {
+        type: 'boolean',
+      },
+      x_opencti_detection: {
+        type: 'boolean',
+      },
+      x_opencti_order: {
+        type: 'integer',
+      },
+      import_expected_number: {
+        type: 'integer',
+      },
+      import_processed_number: {
+        type: 'integer',
+      },
+      x_opencti_score: {
+        type: 'integer',
+      },
+      connections: {
+        type: 'nested',
+      },
+      manager_setting: {
+        type: flattenedType,
+      },
+      context_data: {
+        properties: {
+          input: { type: flattenedType },
+        },
+      },
+      size: {
+        type: 'integer',
+      },
+      lastModifiedSinceMin: {
+        type: 'integer',
+      },
+      lastModified: {
+        type: 'date',
+      },
+      metaData: {
+        properties: {
+          order: {
+            type: 'integer',
+          },
+          inCarousel: {
+            type: 'boolean',
+          },
+          messages: { type: flattenedType },
+          errors: { type: flattenedType },
+        },
+      }
+    },
+  };
+};
+const computePlatformSettings = (index) => {
+  if (engine instanceof ElkClient) {
+    return {
       index: {
         lifecycle: {
           name: `${ES_INDEX_PREFIX}-ilm-policy`,
@@ -544,233 +752,25 @@ const elCreateIndexTemplate = async (index) => {
         }
       }
     };
-  } else {
-    settings = {
-      plugins: {
-        index_state_management: {
-          rollover_alias: index,
-        }
-      }
-    };
   }
-  const flattenedType = isElkEngine() ? 'flattened' : 'flat_object';
-  const createdTemplate = await engine.indices.putIndexTemplate({
-    name: index,
+  return {
+    plugins: {
+      index_state_management: {
+        rollover_alias: index,
+      }
+    }
+  };
+};
+
+const updateIndexTemplate = async (name) => {
+  return await engine.indices.putIndexTemplate({
+    name,
     create: false,
     body: {
-      index_patterns: [`${index}*`],
+      index_patterns: [`${name}*`],
       template: {
-        settings,
-        mappings: {
-          dynamic_templates: [
-            {
-              integers: {
-                match_mapping_type: 'long',
-                mapping: {
-                  type: 'integer',
-                },
-              },
-            },
-            {
-              strings: {
-                match_mapping_type: 'string',
-                mapping: {
-                  type: 'text',
-                  fields: {
-                    keyword: {
-                      type: 'keyword',
-                      normalizer: 'string_normalizer',
-                      ignore_above: 512,
-                    },
-                  },
-                },
-              },
-            },
-          ],
-          properties: {
-            internal_id: {
-              type: 'text',
-              fields: {
-                keyword: {
-                  type: 'keyword',
-                  normalizer: 'string_normalizer',
-                  ignore_above: 512,
-                },
-              },
-            },
-            standard_id: {
-              type: 'text',
-              fields: {
-                keyword: {
-                  type: 'keyword',
-                  normalizer: 'string_normalizer',
-                  ignore_above: 512,
-                },
-              },
-            },
-            name: {
-              type: 'text',
-              fields: {
-                keyword: {
-                  type: 'keyword',
-                  normalizer: 'string_normalizer',
-                  ignore_above: 512,
-                },
-              },
-            },
-            height: {
-              type: 'nested',
-              properties: {
-                measure: { type: 'float' },
-                date_seen: { type: 'date' },
-              },
-            },
-            weight: {
-              type: 'nested',
-              properties: {
-                measure: { type: 'float' },
-                date_seen: { type: 'date' },
-              },
-            },
-            timestamp: {
-              type: 'date',
-            },
-            created: {
-              type: 'date',
-            },
-            created_at: {
-              type: 'date',
-            },
-            modified: {
-              type: 'date',
-            },
-            modified_at: {
-              type: 'date',
-            },
-            indexed_at: {
-              type: 'date',
-            },
-            uploaded_at: {
-              type: 'date',
-            },
-            first_seen: {
-              type: 'date',
-            },
-            last_seen: {
-              type: 'date',
-            },
-            start_time: {
-              type: 'date',
-            },
-            stop_time: {
-              type: 'date',
-            },
-            published: {
-              type: 'date',
-            },
-            valid_from: {
-              type: 'date',
-            },
-            valid_until: {
-              type: 'date',
-            },
-            observable_date: {
-              type: 'date',
-            },
-            event_date: {
-              type: 'date',
-            },
-            received_time: {
-              type: 'date',
-            },
-            processed_time: {
-              type: 'date',
-            },
-            completed_time: {
-              type: 'date',
-            },
-            ctime: {
-              type: 'date',
-            },
-            mtime: {
-              type: 'date',
-            },
-            atime: {
-              type: 'date',
-            },
-            current_state_date: {
-              type: 'date',
-            },
-            confidence: {
-              type: 'integer',
-            },
-            attribute_order: {
-              type: 'integer',
-            },
-            base_score: {
-              type: 'integer',
-            },
-            is_family: {
-              type: 'boolean',
-            },
-            number_observed: {
-              type: 'integer',
-            },
-            x_opencti_negative: {
-              type: 'boolean',
-            },
-            default_assignation: {
-              type: 'boolean',
-            },
-            x_opencti_detection: {
-              type: 'boolean',
-            },
-            x_opencti_order: {
-              type: 'integer',
-            },
-            import_expected_number: {
-              type: 'integer',
-            },
-            import_processed_number: {
-              type: 'integer',
-            },
-            x_opencti_score: {
-              type: 'integer',
-            },
-            connections: {
-              type: 'nested',
-            },
-            manager_setting: {
-              type: flattenedType,
-            },
-            context_data: {
-              properties: {
-                input: { type: flattenedType },
-              },
-            },
-            size: {
-              type: 'integer',
-            },
-            lastModifiedSinceMin: {
-              type: 'integer',
-            },
-            lastModified: {
-              type: 'date',
-            },
-            metaData: {
-              properties: {
-                order: {
-                  type: 'integer',
-                },
-                inCarousel: {
-                  type: 'boolean',
-                },
-                messages: { type: flattenedType },
-                errors: { type: flattenedType },
-              },
-            }
-          },
-        }
+        settings: computePlatformSettings(name),
+        mappings: computePlatformMappings()
       },
       composed_of: [`${ES_INDEX_PREFIX}-core-settings`],
       version: 3,
@@ -781,18 +781,35 @@ const elCreateIndexTemplate = async (index) => {
   }).catch((e) => {
     throw DatabaseError('[SEARCH] Error creating index template', { error: e });
   });
-  return createdTemplate;
 };
-export const elUpdateMapping = async (properties) => {
+
+const elCreateIndexTemplate = async (index) => {
+  const isExistByName = await engine.indices.existsIndexTemplate({ name: index }).then((r) => oebp(r));
+  // Compat with platform initiated prior 5.9.X
+  const isExist = await engine.indices.existsIndexTemplate({ name: `${ES_INDEX_PREFIX}-index-template` }).then((r) => oebp(r));
+  if (isExistByName || isExist) {
+    return null;
+  }
+  const componentTemplateExist = await engine.cluster.existsComponentTemplate({ name: `${ES_INDEX_PREFIX}-core-settings` });
+  if (!componentTemplateExist) {
+    await elCreateCoreSettings();
+  }
+  return updateIndexTemplate(index);
+};
+export const elUpdateMappingsTemplates = async () => {
+  // Update the current indices
   const indices = await elPlatformIndices();
-  await engine.indices.putMapping({
-    index: indices.map((i) => i.index),
-    body: {
-      properties
-    }
-  }).catch((e) => {
-    throw DatabaseError('[SEARCH] Error updating index mapping', { error: e });
+  const { properties } = computePlatformMappings();
+  const body = { properties };
+  await engine.indices.putMapping({ index: indices.map((i) => i.index), body }).catch((e) => {
+    throw DatabaseError('[SEARCH] Error updating indices mapping', { error: e });
   });
+  // Reset the templates
+  const templates = await elPlatformTemplates();
+  for (let index = 0; index < templates.length; index += 1) {
+    const template = templates[index];
+    await updateIndexTemplate(template.name);
+  }
 };
 export const elConfigureAttachmentProcessor = async () => {
   let success = true;
