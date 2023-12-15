@@ -274,7 +274,7 @@ export const usePaginationLocalStorage = <U>(
     handleSearch: (value: string) => setValue((c) => ({ ...c, searchTerm: value })),
     handleRemoveFilterById: (id: string) => {
       if (viewStorage?.filters) {
-        const filters = viewStorage?.filters;
+        const { filters } = viewStorage;
         setValue((c) => ({
           ...c,
           filters: handleRemoveFilterUtil({ filters, id }),
@@ -451,7 +451,7 @@ export const usePaginationLocalStorage = <U>(
     },
     handleAddSingleValueFilter: (id: string, valueId?: string) => {
       if (viewStorage?.filters) {
-        const filters = viewStorage?.filters;
+        const { filters } = viewStorage;
         setValue((c) => ({
           ...c,
           filters: handleAddSingleValueFilterUtil({ filters, id, valueId }),
@@ -519,7 +519,7 @@ export const usePaginationLocalStorage = <U>(
     },
     handleSwitchLocalMode: (filter: Filter) => {
       if (viewStorage?.filters) {
-        const filters = viewStorage?.filters;
+        const { filters } = viewStorage;
         setValue((c) => ({
           ...c,
           filters: handleSwitchLocalModeUtil({ filters, filter }),
@@ -566,7 +566,7 @@ export const usePaginationLocalStorage = <U>(
     },
     handleAddFilterWithEmptyValue: (filter: Filter) => {
       if (viewStorage?.filters) {
-        const filters = viewStorage?.filters;
+        const { filters } = viewStorage;
         setValue((c) => ({
           ...c,
           filters: handleAddFilterWithEmptyValueUtil({ filters, filter }),
@@ -576,7 +576,7 @@ export const usePaginationLocalStorage = <U>(
     },
     handleChangeOperatorFilters: (id: string, operator: string) => {
       if (viewStorage?.filters) {
-        const filters = viewStorage?.filters;
+        const { filters } = viewStorage;
         setValue((c) => ({
           ...c,
           filters: handleChangeOperatorFiltersUtil({ filters, id, operator }),
