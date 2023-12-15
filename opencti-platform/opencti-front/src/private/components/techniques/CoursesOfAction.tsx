@@ -89,6 +89,7 @@ const CoursesOfAction = () => {
           'creator_id',
           'created',
           'revoked',
+          'name',
         ]}
       >
         {queryRef && (

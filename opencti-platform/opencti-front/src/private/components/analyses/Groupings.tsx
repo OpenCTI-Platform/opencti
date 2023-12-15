@@ -176,6 +176,7 @@ const Groupings: FunctionComponent<GroupingsProps> = ({
             'confidence',
             'creator_id',
             'created',
+            'name',
           ]}
         >
           {queryRef && (

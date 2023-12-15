@@ -83,6 +83,7 @@ const Campaigns = () => {
           'created',
           'revoked',
           'targets',
+          'name',
         ]}
       >
         {queryRef && (

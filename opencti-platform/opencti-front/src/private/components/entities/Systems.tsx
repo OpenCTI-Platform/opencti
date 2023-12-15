@@ -84,6 +84,7 @@ const Systems = () => {
           'created',
           'createdBy',
           'x_opencti_reliability',
+          'name',
         ]}
       >
         {queryRef && (

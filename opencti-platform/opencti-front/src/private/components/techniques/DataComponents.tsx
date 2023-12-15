@@ -91,6 +91,7 @@ const DataComponents: FunctionComponent = () => {
           'confidence',
           'created',
           'revoked',
+          'name',
         ]}
       >
         {queryRef && (

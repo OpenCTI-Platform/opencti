@@ -145,6 +145,7 @@ const CaseRfis: FunctionComponent<CaseRfisProps> = () => {
           'priority',
           'creator_id',
           'created',
+          'name',
         ]}
       >
         {queryRef && (

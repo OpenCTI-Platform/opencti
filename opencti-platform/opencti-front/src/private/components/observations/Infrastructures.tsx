@@ -126,6 +126,7 @@ const Infrastructures = () => {
           'created',
           'createdBy',
           'confidence',
+          'name',
         ]}
       >
         {queryRef && (

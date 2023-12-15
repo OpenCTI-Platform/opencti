@@ -134,6 +134,7 @@ const Feedbacks: FunctionComponent<FeedbacksProps> = () => {
           'objectAssignee',
           'creator_id',
           'created',
+          'name',
         ]}
       >
         {queryRef && (

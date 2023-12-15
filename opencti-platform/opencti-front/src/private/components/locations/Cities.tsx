@@ -79,6 +79,7 @@ const Cities: FunctionComponent = () => {
         availableFilterKeys={[
           'created',
           'createdBy',
+          'name',
         ]}
       >
         {queryRef && (
