@@ -1,7 +1,7 @@
-import { elUpdateMappingsTemplates } from '../database/engine';
+import { elUpdateIndicesMappings } from '../database/engine';
 
 export const up = async (next) => {
-  await elUpdateMappingsTemplates();
+  await elUpdateIndicesMappings(); // Update without params to only reset the templates
   next();
 };
 

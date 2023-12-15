@@ -799,14 +799,15 @@ const elCreateIndexTemplate = async (index) => {
   }
   return updateIndexTemplate(index);
 };
-export const elUpdateMappingsTemplates = async () => {
-  // Update the current indices
-  const indices = await elPlatformIndices();
-  const { properties } = computePlatformMappings();
-  const body = { properties };
-  await engine.indices.putMapping({ index: indices.map((i) => i.index), body }).catch((e) => {
-    throw DatabaseError('[SEARCH] Error updating indices mapping', { error: e });
-  });
+export const elUpdateIndicesMappings = async (properties) => {
+  // Update the current indices if needed
+  if (properties) {
+    const indices = await elPlatformIndices();
+    const body = { properties };
+    await engine.indices.putMapping({ index: indices.map((i) => i.index), body }).catch((e) => {
+      throw DatabaseError('[SEARCH] Error updating indices mapping', { error: e });
+    });
+  }
   // Reset the templates
   const templates = await elPlatformTemplates();
   for (let index = 0; index < templates.length; index += 1) {
