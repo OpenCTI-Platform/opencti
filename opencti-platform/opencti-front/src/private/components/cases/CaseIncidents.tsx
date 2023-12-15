@@ -150,6 +150,7 @@ const CaseIncidents: FunctionComponent<CaseIncidentsProps> = () => {
           'severity',
           'creator_id',
           'created',
+          'name',
         ]}
       >
         {queryRef && (

@@ -145,6 +145,7 @@ const CaseRfts: FunctionComponent<CaseRftsProps> = () => {
           'priority',
           'creator_id',
           'created',
+          'name',
         ]}
       >
         {queryRef && (
