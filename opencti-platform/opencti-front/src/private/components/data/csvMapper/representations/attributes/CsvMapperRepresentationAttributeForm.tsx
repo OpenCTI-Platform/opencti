@@ -44,7 +44,6 @@ const CsvMapperRepresentationAttributeForm: FunctionComponent<
 CsvMapperRepresentationAttributeFormProps
 > = ({ indexRepresentation, attribute, label, handleErrors }) => {
   const classes = useStyles();
-  const [touched, setTouched] = useState(false);
   const { t } = useFormatter();
 
   const formikContext = useFormikContext<CsvMapper>();
@@ -59,9 +58,8 @@ CsvMapperRepresentationAttributeFormProps
 
   const hasError = attribute.mandatory && isEmptyField(attribute.column?.column_name);
   const [errors, setErrors] = useState(hasError);
-  const inputClasses = touched ? classNames({ [classes.inputError]: errors }) : classNames();
   const manageErrors = (value: string | null) => {
-    if (attribute.mandatory && isEmptyField(value) && touched) {
+    if (attribute.mandatory && isEmptyField(value)) {
       setErrors(true);
     } else {
       setErrors(false);
@@ -106,13 +104,7 @@ CsvMapperRepresentationAttributeFormProps
 
     manageErrors(value);
   };
-  const handleFieldTouch = () => {
-    if (!touched) {
-      setTouched(true);
-    } else {
-      setTouched(false);
-    }
-  };
+
   return (
     <div className={classes.container}>
       <div>
@@ -138,10 +130,11 @@ CsvMapperRepresentationAttributeFormProps
               label={t('Column index')}
               variant="outlined"
               size="small"
-              onBlur={handleFieldTouch}
             />
           )}
-          className={inputClasses}
+          className={classNames({
+            [classes.inputError]: errors,
+          })}
         />
       </div>
       <div>
