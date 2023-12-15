@@ -54,7 +54,7 @@
     "react-csv": "2.2.2",
     "react-dom": "18.2.0",
     "react-force-graph-2d": "1.25.3",
-    "react-force-graph-3d": "1.24.0",
+    "react-force-graph-3d": "1.24.1",
     "react-grid-layout": "1.4.4",
     "react-intl": "6.5.5",
     "react-leaflet": "4.2.1",
