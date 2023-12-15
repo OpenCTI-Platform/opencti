@@ -105,7 +105,15 @@ const FilterValues: FunctionComponent<FilterValuesProps> = ({
                 ? classes.inlineOperator
                 : classes.inlineOperatorReadOnly
             }
-            onClick={(isReadWriteFilter && !isFiltersUsedAsApiParameters) ? () => handleSwitchLocalMode?.(currentFilter) : undefined}
+            onClick={ () => {
+              if (isReadWriteFilter && !isFiltersUsedAsApiParameters) {
+                if (helpers) {
+                  helpers.handleSwitchLocalMode(currentFilter);
+                } else {
+                  handleSwitchLocalMode?.(currentFilter);
+                }
+              }
+            }}
           >
             {t((currentFilter.mode ?? 'or').toUpperCase())}
           </div>

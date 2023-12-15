@@ -197,7 +197,7 @@ FilterIconButtonContainerProps
     filterKey: string,
     filterOperator: string,
   ) => {
-    if (helpers) {
+    if (helpers && currentFilterId) {
       helpers?.handleRemoveFilterById(currentFilterId);
     } else if (handleRemoveFilter) {
       handleRemoveFilter(filterKey, filterOperator ?? undefined);
@@ -371,7 +371,13 @@ FilterIconButtonContainerProps
                   displayedFilters={displayedSpecificFilters}
                   classOperator={classOperator}
                   globalMode={globalMode}
-                  handleSwitchGlobalMode={handleSwitchGlobalMode}
+                  handleSwitchGlobalMode={() => {
+                    if (helpers?.handleSwitchGlobalMode) {
+                      helpers.handleSwitchGlobalMode();
+                    } else if (handleSwitchGlobalMode) {
+                      handleSwitchGlobalMode();
+                    }
+                  }}
                 />
               </Box>
             ) : (
@@ -415,7 +421,14 @@ FilterIconButtonContainerProps
             display: 'flex',
           }}
         >
-          <div className={classOperator} onClick={handleSwitchGlobalMode}>
+          <div className={classOperator} onClick={() => {
+            if (helpers?.handleSwitchGlobalMode) {
+              helpers.handleSwitchGlobalMode();
+            } else if (handleSwitchGlobalMode) {
+              handleSwitchGlobalMode();
+            }
+          }}
+          >
             {t(globalMode.toUpperCase())}
           </div>
         </Box>
@@ -517,7 +530,13 @@ FilterIconButtonContainerProps
                   displayedFilters={othersFilters}
                   classOperator={classOperator}
                   globalMode={globalMode}
-                  handleSwitchGlobalMode={handleSwitchGlobalMode}
+                  handleSwitchGlobalMode={() => {
+                    if (helpers?.handleSwitchGlobalMode) {
+                      helpers.handleSwitchGlobalMode();
+                    } else if (handleSwitchGlobalMode) {
+                      handleSwitchGlobalMode();
+                    }
+                  }}
                 />
               </Box>
             )}
