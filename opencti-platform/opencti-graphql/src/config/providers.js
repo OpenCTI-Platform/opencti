@@ -1,7 +1,7 @@
 import * as R from 'ramda';
 import passport from 'passport/lib';
 import GitHub from 'github-api';
-import jwtDecode from 'jwt-decode';
+import { jwtDecode } from 'jwt-decode';
 import FacebookStrategy from 'passport-facebook';
 import GithubStrategy from 'passport-github';
 import LocalStrategy from 'passport-local';
