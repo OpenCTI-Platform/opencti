@@ -763,11 +763,14 @@ const computePlatformSettings = (index) => {
 };
 
 const updateIndexTemplate = async (name) => {
+  // compute pattern to be retro compatible for platform < 5.9
+  // Before 5.9, only one pattern for all indices
+  const index_pattern = name === `${ES_INDEX_PREFIX}-index-template` ? `${ES_INDEX_PREFIX}*` : `${name}*`;
   return await engine.indices.putIndexTemplate({
     name,
     create: false,
     body: {
-      index_patterns: [`${name}*`],
+      index_patterns: [index_pattern],
       template: {
         settings: computePlatformSettings(name),
         mappings: computePlatformMappings()
