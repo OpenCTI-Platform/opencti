@@ -63,6 +63,14 @@ const useFiltersState = (initFilters = emptyFilterGroup) => {
     },
     handleClearAllFilters: (clearFilters: Filter[]) => {
       setFilters(handleClearAllFiltersUtil(clearFilters));
+      setLatestAddFilterId(undefined);
+    },
+    handleSwitchGlobalMode: () => {
+      setFilters({
+        ...filters,
+        mode: filters.mode === 'and' ? 'or' : 'and',
+      });
+      setLatestAddFilterId(undefined);
     },
     getLatestAddFilterId: (): string | undefined => {
       return latestAddFilterId;

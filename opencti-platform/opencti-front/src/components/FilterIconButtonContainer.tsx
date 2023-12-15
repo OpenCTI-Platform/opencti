@@ -192,7 +192,7 @@ FilterIconButtonContainerProps
     filterKey: string,
     filterOperator: string,
   ) => {
-    if (helpers) {
+    if (helpers && currentFilterId) {
       helpers?.handleRemoveFilterById(currentFilterId);
     } else if (handleRemoveFilter) {
       handleRemoveFilter(filterKey, filterOperator ?? undefined);
@@ -357,7 +357,13 @@ FilterIconButtonContainerProps
                 <FilterIconButtonGlobalOperator
                   classOperator={classOperator}
                   globalMode={globalMode}
-                  handleSwitchGlobalMode={handleSwitchGlobalMode}
+                  handleSwitchGlobalMode={() => {
+                    if (helpers?.handleSwitchGlobalMode) {
+                      helpers.handleSwitchGlobalMode();
+                    } else if (handleSwitchGlobalMode) {
+                      handleSwitchGlobalMode();
+                    }
+                  }}
                 />
               </Box>
             )}
