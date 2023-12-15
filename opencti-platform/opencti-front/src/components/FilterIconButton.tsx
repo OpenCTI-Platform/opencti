@@ -1,7 +1,7 @@
 import React, { FunctionComponent, useRef } from 'react';
 import { ChipOwnProps } from '@mui/material/Chip/Chip';
 import { DataColumns } from './list_lines';
-import { Filter, FilterGroup, GqlFilterGroup, emptyFilterGroup, removeIdFromFilterGroupObject } from '../utils/filters/filtersUtils';
+import { Filter, FilterGroup, GqlFilterGroup, isFilterGroupNotEmpty, removeIdFromFilterGroupObject } from '../utils/filters/filtersUtils';
 import { filterIconButtonContentQuery } from './FilterIconButtonContent';
 import useQueryLoading from '../utils/hooks/useQueryLoading';
 import { FilterIconButtonContentQuery } from './__generated__/FilterIconButtonContentQuery.graphql';
@@ -23,9 +23,11 @@ interface FilterIconButtonProps {
   availableRelationFilterTypes?: Record<string, string[]>;
 }
 
-const FilterIconButton: FunctionComponent<FilterIconButtonProps> = ({
-  availableFilterKeys,
-  filters = emptyFilterGroup,
+interface FilterIconButtonIfFiltersProps extends FilterIconButtonProps {
+  filters: FilterGroup,
+}
+const FilterIconButtonWithRepresentativesQuery: FunctionComponent<FilterIconButtonIfFiltersProps> = ({
+  filters,
   handleRemoveFilter,
   handleSwitchGlobalMode,
   handleSwitchLocalMode,
@@ -40,19 +42,11 @@ const FilterIconButton: FunctionComponent<FilterIconButtonProps> = ({
   const setHasRenderedRef = () => {
     hasRenderedRef.current = true;
   };
-  const displayedFilters = {
-    ...filters,
-    filters:
-      filters.filters.filter(
-        (f) => !availableFilterKeys || availableFilterKeys?.some((k) => f.key === k),
-      ) || [],
-  };
+
   const filtersRepresentativesQueryRef = useQueryLoading<FilterIconButtonContentQuery>(
     filterIconButtonContentQuery,
     {
-      filters: removeIdFromFilterGroupObject(
-        displayedFilters,
-      ) as unknown as GqlFilterGroup,
+      filters: removeIdFromFilterGroupObject(filters) as unknown as GqlFilterGroup,
     },
   );
   return (
@@ -67,7 +61,7 @@ const FilterIconButton: FunctionComponent<FilterIconButtonProps> = ({
             chipColor={chipColor}
             disabledPossible={disabledPossible}
             redirection={redirection}
-            filters={displayedFilters}
+            filters={filters}
             filtersRepresentativesQueryRef={filtersRepresentativesQueryRef}
             helpers={helpers}
             hasRenderedRef={hasRenderedRef.current}
@@ -78,6 +72,43 @@ const FilterIconButton: FunctionComponent<FilterIconButtonProps> = ({
       )}
     </>
   );
+};
+
+const FilterIconButton: FunctionComponent<FilterIconButtonProps> = ({
+  availableFilterKeys,
+  filters,
+  handleRemoveFilter,
+  handleSwitchGlobalMode,
+  handleSwitchLocalMode,
+  styleNumber,
+  disabledPossible,
+  redirection,
+  chipColor,
+  helpers,
+  availableRelationFilterTypes,
+}) => {
+  const displayedFilters = filters ? {
+    ...filters,
+    filters:
+      filters.filters.filter((f) => !availableFilterKeys || availableFilterKeys?.some((k) => f.key === k)),
+  } : undefined;
+  if (displayedFilters && isFilterGroupNotEmpty(displayedFilters)) { // to avoid running the FiltersRepresentatives query if filters are empty
+    return (
+      <FilterIconButtonWithRepresentativesQuery
+        filters={displayedFilters}
+        handleRemoveFilter={handleRemoveFilter}
+        handleSwitchGlobalMode={handleSwitchGlobalMode}
+        handleSwitchLocalMode={handleSwitchLocalMode}
+        styleNumber={styleNumber}
+        disabledPossible={disabledPossible}
+        redirection={redirection}
+        chipColor={chipColor}
+        helpers={helpers}
+        availableRelationFilterTypes={availableRelationFilterTypes}
+      />
+    );
+  }
+  return (<></>);
 };
 
 export default FilterIconButton;
