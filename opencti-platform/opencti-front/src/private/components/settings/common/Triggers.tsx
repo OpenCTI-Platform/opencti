@@ -21,13 +21,6 @@ import { TriggerLineDummy } from '../../profile/triggers/TriggerLine';
 import { GqlFilterGroup, emptyFilterGroup } from '../../../../utils/filters/filtersUtils';
 
 const useStyles = makeStyles(() => ({
-  paper: {
-    height: '100%',
-    minHeight: '100%',
-    margin: '10px 0 0 0',
-    padding: '15px',
-    borderRadius: 6,
-  },
   createButton: {
     float: 'left',
     marginTop: -15,
@@ -154,9 +147,16 @@ const Triggers: FunctionComponent<TriggersProps> = ({
       <div className="clearfix" />
       <Paper
         ref={ref}
-        classes={{ root: classes.paper }}
         variant="outlined"
-        style={{ marginTop: 0, maxHeight: 500, overflow: 'auto' }}
+        sx={{ marginTop: 0,
+          maxHeight: 500,
+          overflow: 'auto',
+          height: '100%',
+          minHeight: '100%',
+          margin: '10px 0 0 0',
+          padding: '15px',
+          borderRadius: '6px',
+          listStyleType: 'none' }}
       >
         <ColumnsLinesTitles
           dataColumns={dataColumns}
