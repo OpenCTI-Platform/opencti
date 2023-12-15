@@ -110,7 +110,7 @@ const StixCyberObservables: FunctionComponent = () => {
         isSortable: true,
       },
       observable_value: {
-        label: 'Value',
+        label: 'Representation',
         width: '25%',
         isSortable: isRuntimeSort,
       },
