@@ -4,7 +4,7 @@ import FeedbackCreation from '@components/cases/feedbacks/FeedbackCreation';
 import EnterpriseEditionAgreement from '@components/common/entreprise_edition/EnterpriseEditionAgreement';
 import { useFormatter } from '../../../../components/i18n';
 import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
-import useGranted, { SETTINGS } from '../../../../utils/hooks/useGranted';
+import { useIsAdmin } from '../../../../utils/hooks/useGranted';
 import useAuth from '../../../../utils/hooks/useAuth';
 
 const EETooltip = ({
@@ -16,7 +16,7 @@ const EETooltip = ({
 }) => {
   const { t } = useFormatter();
   const [feedbackCreation, setFeedbackCreation] = useState(false);
-  const isAdmin = useGranted([SETTINGS]);
+  const isAdmin = useIsAdmin();
   const isEnterpriseEdition = useEnterpriseEdition();
   const {
     settings: { id: settingsId },
