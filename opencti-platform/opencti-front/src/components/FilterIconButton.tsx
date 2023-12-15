@@ -26,7 +26,7 @@ interface FilterIconButtonProps {
 interface FilterIconButtonIfFiltersProps extends FilterIconButtonProps {
   filters: FilterGroup,
 }
-const FilterIconButtonIfFilters: FunctionComponent<FilterIconButtonIfFiltersProps> = ({
+const FilterIconButtonWithRepresentativesQuery: FunctionComponent<FilterIconButtonIfFiltersProps> = ({
   filters,
   handleRemoveFilter,
   handleSwitchGlobalMode,
@@ -94,7 +94,7 @@ const FilterIconButton: FunctionComponent<FilterIconButtonProps> = ({
   } : undefined;
   if (displayedFilters && isFilterGroupNotEmpty(displayedFilters)) { // to avoid running the FiltersRepresentatives query if filters are empty
     return (
-      <FilterIconButtonIfFilters
+      <FilterIconButtonWithRepresentativesQuery
         filters={displayedFilters}
         handleRemoveFilter={handleRemoveFilter}
         handleSwitchGlobalMode={handleSwitchGlobalMode}
