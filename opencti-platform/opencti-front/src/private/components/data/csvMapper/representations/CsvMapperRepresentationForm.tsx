@@ -86,20 +86,14 @@ CsvMapperRepresentationFormProps
   // -- EVENTS --
 
   const handleChangeEntityType = async (option: Option | null) => {
-    if (option === null) {
-      // reset this representation
-      await formikContext.setFieldValue(`representations[${index}]`, {
-        ...representation,
-        attributes: [],
-        target: { entity_type: null },
-      });
-    } else {
-      await formikContext.setFieldValue(`representations[${index}]`, {
-        ...representation,
-        attributes: [],
-        target: { entity_type: option.value },
-      });
-    }
+    const updatedRepresentation = {
+      ...representation,
+      attributes: [],
+      target: { entity_type: option?.value ?? null },
+    };
+
+    await formikContext.setFieldValue(`representations[${index}]`, updatedRepresentation);
+    await formikContext.setFieldTouched(`representations[${index}]`, false);
   };
 
   const deletion = useDeletion({});
@@ -212,6 +206,7 @@ CsvMapperRepresentationFormProps
               >
                 <div style={{ marginTop: 20 }}>
                   <CsvMapperRepresentationAttributesForm
+                    key={representation.target.entity_type}
                     index={index}
                     queryRef={queryRef}
                     handleErrors={handleErrors}

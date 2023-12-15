@@ -7,6 +7,7 @@ import {
   entityType,
   files,
   iAliasedIds,
+  identityClass,
   internalId,
   lang,
   modified,
@@ -39,7 +40,7 @@ export const INTERNAL_ATTRIBUTES = [
   'relationship_type',
   specVersion.name,
 
-  'identity_class',
+  identityClass.name,
   creators.name,
   files.name,
   lang.name,
@@ -48,10 +49,12 @@ export const INTERNAL_ATTRIBUTES = [
   entityLocationType.name,
   'i_inference_weight',
   'content_mapping',
-  'casetemplate',
+  'caseTemplate',
   'default_dashboard',
   'default_hidden_types',
-
+  'grantable_groups',
+  'authorized_members',
+  'authorized_authorities',
   // X - Mitre
   'x_mitre_permissions_required',
   'x_mitre_detection',

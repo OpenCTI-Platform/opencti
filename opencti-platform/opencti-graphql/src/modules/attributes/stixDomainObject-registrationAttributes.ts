@@ -107,7 +107,6 @@ const stixDomainObjectsAttributes: { [k: string]: Array<AttributeDefinition> } =
   ],
   [ENTITY_TYPE_CONTAINER_NOTE]: [
     { ...created, mandatoryType: 'external', editDefault: true, label: 'Publication date' },
-    { name: 'abstract', type: 'string', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false },
     {
       name: 'attribute_abstract',
       type: 'string',
