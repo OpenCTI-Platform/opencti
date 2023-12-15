@@ -131,7 +131,7 @@
     "tap": "18.6.1",
     "typescript": "5.3.3",
     "vite-plugin-relay": "2.0.0",
-    "vitest": "0.34.6"
+    "vitest": "1.0.4"
   },
   "engines": {
     "node": ">= 16.*"
