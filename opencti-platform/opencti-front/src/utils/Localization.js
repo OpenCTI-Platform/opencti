@@ -1528,6 +1528,7 @@ const i18n = {
       Key: 'Clave',
       Value: 'Valor',
       value: 'Valor',
+      Representation: 'Representación',
       'Linked threat(s)': 'Amenaza(s) relacionada(s)',
       'Linked threat': 'Amenaza relacionada',
       // Statistics
@@ -3907,6 +3908,7 @@ const i18n = {
       Key: 'Clé',
       Value: 'Valeur',
       value: 'Valeur',
+      Representation: 'Representation',
       'Linked threat(s)': 'Menace(s) liée(s)',
       'Linked threat': 'Menace liée',
       // Statistics
@@ -6209,6 +6211,7 @@ const i18n = {
       Key: 'キー',
       Value: '値',
       value: '値',
+      Representation: '表現',
       'Linked threat(s)': 'リンクされた脅威',
       'Linked threat': 'リンクされた脅威',
       // Statistics
@@ -8385,6 +8388,7 @@ const i18n = {
       Key: '键',
       Value: '值',
       value: '值',
+      Representation: '表示',
       'Linked threat(s)': '链接威胁',
       'Linked threat': '链接威胁',
       // Statistics
