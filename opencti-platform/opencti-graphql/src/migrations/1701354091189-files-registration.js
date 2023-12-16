@@ -1,8 +1,9 @@
+import * as R from 'ramda';
 import { executionContext, SYSTEM_USER } from '../utils/access';
 import { loadedFilesListing } from '../database/file-storage';
 import { logApp } from '../config/conf';
 import { buildFileDataForIndexing } from '../modules/internal/document/document-domain';
-import { elIndexElements } from '../database/engine';
+import { elIndexElements, MAX_BULK_OPERATIONS } from '../database/engine';
 import { INDEX_INTERNAL_OBJECTS } from '../database/utils';
 
 export const up = async (next) => {
@@ -13,7 +14,14 @@ export const up = async (next) => {
   const elements = files.map((file) => {
     return { _index: INDEX_INTERNAL_OBJECTS, ...buildFileDataForIndexing(file) };
   });
-  await elIndexElements(context, SYSTEM_USER, 'Migration files registration', elements);
+  let currentBulkUpdateCount = 0;
+  const elementsBulk = R.splitEvery(MAX_BULK_OPERATIONS, elements);
+  for (let index = 0; index < elementsBulk.length; index += 1) {
+    const indexElements = elementsBulk[index];
+    await elIndexElements(context, SYSTEM_USER, 'Migration files registration', indexElements);
+    currentBulkUpdateCount += indexElements.length;
+    logApp.info(`[MIGRATION] files-registration bulk files ${currentBulkUpdateCount} / ${elements.length}`);
+  }
   logApp.info('[MIGRATION] Done 1701354091161-files-registration.js');
   next();
 };
