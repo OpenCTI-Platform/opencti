@@ -3,7 +3,6 @@ import { Field, Form, Formik } from 'formik';
 import Typography from '@mui/material/Typography';
 import Button from '@mui/material/Button';
 import AccordionDetails from '@mui/material/AccordionDetails';
-import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import * as Yup from 'yup';
 import { graphql } from 'react-relay';
 import * as R from 'ramda';
@@ -368,11 +367,7 @@ const SyncCreation = ({ paginationOptions }) => {
                   label={t('Verify SSL certificate')}
                 />
                 <Accordion>
-                  <AccordionSummary
-                    expandIcon={<ExpandMoreIcon />}
-                    aria-controls="panel1a-content"
-                    id="panel1a-header"
-                  >
+                  <AccordionSummary id="accordion-panel">
                     <Typography>{t('Advanced options')}</Typography>
                   </AccordionSummary>
                   <AccordionDetails>

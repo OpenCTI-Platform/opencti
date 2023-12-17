@@ -11,7 +11,6 @@ import AlertTitle from '@mui/material/AlertTitle';
 import Tooltip from '@mui/material/Tooltip';
 import { InformationOutline } from 'mdi-material-ui';
 import makeStyles from '@mui/styles/makeStyles';
-import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import AccordionDetails from '@mui/material/AccordionDetails';
 import { useFormatter } from '../../../../components/i18n';
 import { commitMutation, fetchQuery, MESSAGING$ } from '../../../../relay/environment';
@@ -263,7 +262,7 @@ const SyncEditionContainer = ({ synchronizer }) => {
             onChange={handleSubmitField}
           />
           <Accordion expanded={openOptions} onChange={() => setOpenOptions(!openOptions)}>
-            <AccordionSummary expandIcon={<ExpandMoreIcon />} id="accordion-panel">
+            <AccordionSummary id="accordion-panel">
               <Typography>{t('Advanced options')}</Typography>
             </AccordionSummary>
             <AccordionDetails>
