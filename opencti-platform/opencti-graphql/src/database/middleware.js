@@ -1929,19 +1929,12 @@ export const updateAttributeMetaResolved = async (context, user, initial, inputs
     if (existingEntities.length > 0) {
       // If stix observable, we can merge. If not throw an error.
       if (isStixCyberObservable(initial.entity_type)) {
-        // There is a potential merge, in this mode we doest not support multi update
-        const noneStandardKeys = Object.keys(elementsByKey).filter((k) => !isFieldContributingToStandardId(initial, [k]));
-        const haveExtraKeys = noneStandardKeys.length > 0;
-        if (haveExtraKeys) {
-          throw UnsupportedError('This update can produce a merge, only one update action supported');
-        }
         // Everything ok, let merge
         hashMergeValidation([updated, ...existingEntities]);
         const sourceEntityIds = existingEntities.map((c) => c.internal_id);
         const merged = await mergeEntities(context, user, updated.internal_id, sourceEntityIds, { locks: participantIds });
-        logApp.info(`[OPENCTI] Success merge of entity ${merged.id}`);
-        // Return merged element after waiting for it.
-        return { element: merged };
+        // Then apply initial updates on merged result
+        return updateAttributeMetaResolved(context, user, merged, updates, { ...opts, locks: participantIds });
       }
       // noinspection ExceptionCaughtLocallyJS
       throw FunctionalError('This update will produce a duplicate', {
