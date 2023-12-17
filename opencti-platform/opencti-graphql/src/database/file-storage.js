@@ -33,6 +33,11 @@ const useSslConnection = booleanConf('minio:use_ssl', false);
 const useAwsRole = booleanConf('minio:use_aws_role', false);
 const isDefaultAwsProvider = booleanConf('minio:use_aws_default_provider', false);
 
+export const specialTypesExtensions = {
+  'application/vnd.oasis.stix+json': 'json',
+  'application/vnd.mitre.navigator+json': 'json',
+};
+
 const credentialProvider = (init) => memoize(
   chain(
     async () => {

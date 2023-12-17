@@ -30,6 +30,7 @@ import { schemaTypesDefinition } from '../schema/schema-types';
 import { publishUserAction } from '../listener/UserActionListener';
 import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../modules/organization/organization-types';
 import { checkAndConvertFilters } from '../utils/filtering/filtering-utils';
+import { specialTypesExtensions } from '../database/file-storage';
 
 export const stixDelete = async (context, user, id) => {
   const element = await internalLoadById(context, user, id);
@@ -52,7 +53,7 @@ export const askListExport = async (context, user, format, entityType, selectedI
   const markingLevel = maxMarkingId ? await findMarkingDefinitionById(context, user, maxMarkingId) : null;
   const entity = listParams.elementId ? await storeLoadById(context, user, listParams.elementId, ABSTRACT_STIX_CORE_OBJECT) : null;
   const toFileName = (connector) => {
-    const fileNamePart = `${entityType}_${type}.${mime.extension(format)}`;
+    const fileNamePart = `${entityType}_${type}.${mime.extension(format) ?? specialTypesExtensions[format] ?? 'unknown'}`;
     return `${now()}_${markingLevel?.definition || 'TLP:ALL'}_(${connector.name})_${fileNamePart}`;
   };
   const baseEvent = {
@@ -121,9 +122,7 @@ export const askEntityExport = async (context, user, format, entity, type = 'sim
   const connectors = await connectorsForExport(context, user, format, true);
   const markingLevel = maxMarkingId ? await findMarkingDefinitionById(context, user, maxMarkingId) : null;
   const toFileName = (connector) => {
-    const fileNamePart = `${entity.entity_type}-${entity.name || observableValue(entity)}_${type}.${mime.extension(
-      format
-    )}`;
+    const fileNamePart = `${entity.entity_type}-${entity.name || observableValue(entity)}_${type}.${mime.extension(format) ?? specialTypesExtensions[format] ?? 'unknown'}`;
     return `${now()}_${markingLevel?.definition || 'TLP:ALL'}_(${connector.name})_${fileNamePart}`;
   };
   const baseEvent = {
