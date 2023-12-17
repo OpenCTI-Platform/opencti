@@ -307,6 +307,10 @@ class ListenQueue(threading.Thread):
                 )
                 self.pika_connection = pika.BlockingConnection(self.pika_parameters)
                 self.channel = self.pika_connection.channel()
+                try:
+                    self.channel.confirm_delivery()
+                except Exception as err:  # pylint: disable=broad-except
+                    LOGGER.error("%s", err)
                 self.channel.basic_qos(prefetch_count=1)
                 assert self.channel is not None
                 self.channel.basic_consume(
