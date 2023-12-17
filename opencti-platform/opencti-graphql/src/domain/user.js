@@ -1286,6 +1286,7 @@ export const authenticateUser = async (context, req, user, provider, opts = {}) 
   return internalAuthenticateUser(context, req, user, provider, opts);
 };
 
+export const HEADERS_AUTHENTICATORS = [];
 export const authenticateUserFromRequest = async (context, req, res, isSessionRefresh = false) => {
   const auth = req.session?.user;
   // If user already have a session
@@ -1352,6 +1353,16 @@ export const authenticateUserFromRequest = async (context, req, res, isSessionRe
       }
     } catch (err) {
       logApp.error(err);
+    }
+  }
+  // If user still not identified, try headers authentication
+  if (HEADERS_AUTHENTICATORS.length > 0) {
+    for (let i = 0; i < HEADERS_AUTHENTICATORS.length; i += 1) {
+      const headProvider = HEADERS_AUTHENTICATORS[i];
+      const user = await headProvider.reqLoginHandler(req);
+      if (user) {
+        return await authenticateUser(context, req, user, headProvider.provider);
+      }
     }
   }
   // No auth, return undefined
