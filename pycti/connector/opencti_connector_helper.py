@@ -310,7 +310,7 @@ class ListenQueue(threading.Thread):
                 try:
                     self.channel.confirm_delivery()
                 except Exception as err:  # pylint: disable=broad-except
-                    LOGGER.error("%s", err)
+                    LOGGER.warning("%s", err)
                 self.channel.basic_qos(prefetch_count=1)
                 assert self.channel is not None
                 self.channel.basic_consume(
@@ -1015,6 +1015,10 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
         )
         pika_connection = pika.BlockingConnection(pika_parameters)
         channel = pika_connection.channel()
+        try:
+            channel.confirm_delivery()
+        except Exception as err:  # pylint: disable=broad-except
+            LOGGER.warning("%s", err)
         for sequence, bundle in enumerate(bundles, start=1):
             self._send_bundle(
                 channel,
