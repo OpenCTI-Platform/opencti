@@ -118,7 +118,7 @@ class Consumer(Thread):  # pylint: disable=too-many-instance-attributes
         try:
             self.channel.confirm_delivery()
         except Exception as err:  # pylint: disable=broad-except
-            self.api.log("error", str(err))
+            self.api.log("warning", str(err))
         self.channel.basic_qos(prefetch_count=1)
         assert self.channel is not None
         self.processing_count: int = 0
