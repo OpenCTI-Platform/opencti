@@ -12,72 +12,106 @@ import {
   handleSwitchLocalModeUtil,
 } from './filtersManageStateUtil';
 
-const useFiltersState = (initFilters = emptyFilterGroup) => {
-  const [filters, setFilters] = useState<FilterGroup>(initFilters);
-  const [latestAddFilterId, setLatestAddFilterId] = useState<string | undefined>(undefined);
+interface useFiltersStateProps {
+  filters: FilterGroup,
+  latestAddFilterId?: string
+}
+const useFiltersState = (initFilters: FilterGroup = emptyFilterGroup) => {
+  const [filtersState, setFiltersState] = useState<useFiltersStateProps>({
+    filters: initFilters,
+    latestAddFilterId: undefined,
+  });
   const helpers = {
     handleAddFilterWithEmptyValue: (filter: Filter) => {
-      setFilters(handleAddFilterWithEmptyValueUtil({ filters, filter }));
-      setLatestAddFilterId(filter.id);
+      setFiltersState({
+        ...filtersState,
+        filters: handleAddFilterWithEmptyValueUtil({ filters: filtersState.filters, filter }),
+        latestAddFilterId: undefined,
+      });
     },
     handleAddRepresentationFilter: (id: string, valueId: string) => {
       if (valueId === null) { // handle clicking on 'no label' in entities list
-        const findCorrespondingFilter = filters?.filters.find((f) => id === f.id);
+        const findCorrespondingFilter = filtersState.filters?.filters.find((f) => id === f.id);
         if (findCorrespondingFilter && ['objectLabel', 'contextObjectLabel'].includes(findCorrespondingFilter.key)) {
-          if (filters) {
-            const noLabelFilter: Filter = {
-              id: uuid(),
-              key: 'objectLabel',
-              operator: findCorrespondingFilter.operator === 'not_eq' ? 'not_nil' : 'nil',
-              values: [],
-              mode: 'and',
-            };
-            setFilters(handleAddFilterWithEmptyValueUtil({ filters, filter: noLabelFilter }));
-            setLatestAddFilterId(noLabelFilter.id);
-          }
+          const noLabelFilter: Filter = {
+            id: uuid(),
+            key: 'objectLabel',
+            operator: findCorrespondingFilter.operator === 'not_eq' ? 'not_nil' : 'nil',
+            values: [],
+            mode: 'and',
+          };
+          setFiltersState({
+            ...filtersState,
+            filters: handleAddFilterWithEmptyValueUtil({ filters: filtersState.filters, filter: noLabelFilter }),
+            latestAddFilterId: noLabelFilter.id,
+          });
         }
-      } else if (filters) {
-        setFilters(handleAddRepresentationFilterUtil({ filters, id, valueId }));
-        setLatestAddFilterId(undefined);
+      } else {
+        setFiltersState({
+          ...filtersState,
+          filters: handleAddRepresentationFilterUtil({ filters: filtersState.filters, id, valueId }),
+          latestAddFilterId: undefined,
+        });
       }
     },
     handleAddSingleValueFilter: (id: string, valueId?: string) => {
-      setFilters(handleAddSingleValueFilterUtil({ filters, id, valueId }));
-      setLatestAddFilterId(undefined);
+      setFiltersState({
+        ...filtersState,
+        filters: handleAddSingleValueFilterUtil({ filters: filtersState.filters, id, valueId }),
+        latestAddFilterId: undefined,
+      });
     },
     handleChangeOperatorFilters: (id: string, operator: string) => {
-      setFilters(handleChangeOperatorFiltersUtil({ filters, id, operator }));
-      setLatestAddFilterId(undefined);
+      setFiltersState({
+        ...filtersState,
+        filters: handleChangeOperatorFiltersUtil({ filters: filtersState.filters, id, operator }),
+        latestAddFilterId: undefined,
+      });
     },
     handleRemoveFilterById: (id: string) => {
-      setFilters(handleRemoveFilterUtil({ filters, id }));
-      setLatestAddFilterId(undefined);
+      setFiltersState({
+        ...filtersState,
+        filters: handleRemoveFilterUtil({ filters: filtersState.filters, id }),
+        latestAddFilterId: undefined,
+      });
     },
     handleRemoveRepresentationFilter: (id: string, valueId: string) => {
-      setFilters(handleRemoveRepresentationFilterUtil({ filters, id, valueId }));
-      setLatestAddFilterId(undefined);
+      setFiltersState({
+        ...filtersState,
+        filters: handleRemoveRepresentationFilterUtil({ filters: filtersState.filters, id, valueId }),
+        latestAddFilterId: undefined,
+      });
     },
     handleSwitchLocalMode: (filter: Filter) => {
-      setFilters(handleSwitchLocalModeUtil({ filters, filter }));
-      setLatestAddFilterId(undefined);
+      setFiltersState({
+        ...filtersState,
+        filters: handleSwitchLocalModeUtil({ filters: filtersState.filters, filter }),
+        latestAddFilterId: undefined,
+      });
     },
     handleClearAllFilters: (clearFilters: Filter[]) => {
-      setFilters(handleClearAllFiltersUtil(clearFilters));
-      setLatestAddFilterId(undefined);
+      setFiltersState({
+        ...filtersState,
+        filters: handleClearAllFiltersUtil(clearFilters),
+        latestAddFilterId: undefined,
+      });
     },
     handleSwitchGlobalMode: () => {
-      setFilters({
-        ...filters,
-        mode: filters.mode === 'and' ? 'or' : 'and',
+      setFiltersState({
+        ...filtersState,
+        filters: {
+          ...filtersState.filters,
+          mode: filtersState.filters.mode === 'and' ? 'or' : 'and',
+        },
+        latestAddFilterId: undefined,
       });
-      setLatestAddFilterId(undefined);
     },
     getLatestAddFilterId: (): string | undefined => {
-      return latestAddFilterId;
+      return filtersState.latestAddFilterId;
     },
   };
 
-  return [filters, helpers];
+  return [filtersState.filters, helpers];
 };
 
 export default useFiltersState;
