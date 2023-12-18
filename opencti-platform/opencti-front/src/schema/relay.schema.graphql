@@ -702,6 +702,7 @@ type SubType {
   label: String!
   statuses: [Status!]!
   workflowEnabled: Boolean
+  overridable: Boolean
   settings: EntitySetting
 }
 

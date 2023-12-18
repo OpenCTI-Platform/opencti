@@ -4,6 +4,8 @@ import Box from '@mui/material/Box';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
 import Drawer, { DrawerVariant } from '@components/common/drawer/Drawer';
+import { usePaginationLocalStorage } from 'src/utils/hooks/useLocalStorage';
+import { DataSourcesLinesPaginationQuery$variables } from '@components/techniques/data_sources/__generated__/DataSourcesLinesPaginationQuery.graphql';
 import RoleEditionOverview from './RoleEditionOverview';
 import RoleEditionCapabilities, { roleEditionCapabilitiesLinesSearch } from './RoleEditionCapabilities';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
@@ -12,7 +14,10 @@ import { useFormatter } from '../../../../components/i18n';
 import { RoleEditionCapabilitiesLinesSearchQuery } from './__generated__/RoleEditionCapabilitiesLinesSearchQuery.graphql';
 import { RoleEdition_role$data } from './__generated__/RoleEdition_role.graphql';
 import RoleEditionOverride from './RoleEditionOverride';
+import { SubTypesLinesQuery } from '../sub_types/__generated__/SubTypesLinesQuery.graphql';
+import { subTypesLinesQuery } from '../sub_types/SubTypesLines';
 
+const LOCAL_STORAGE_KEY_SUB_TYPES = 'sub-types';
 interface RoleEditionProps {
   role: RoleEdition_role$data
   handleClose?: () => void
@@ -29,6 +34,14 @@ const RoleEdition: FunctionComponent<RoleEditionProps> = ({
   const { editContext } = role;
 
   const queryRef = useQueryLoading<RoleEditionCapabilitiesLinesSearchQuery>(roleEditionCapabilitiesLinesSearch);
+  const { paginationOptions } = usePaginationLocalStorage<DataSourcesLinesPaginationQuery$variables>(
+    LOCAL_STORAGE_KEY_SUB_TYPES,
+    { searchTerm: '' },
+  );
+  const subTypesQueryRef = useQueryLoading<SubTypesLinesQuery>(
+    subTypesLinesQuery,
+    paginationOptions,
+  );
 
   return (
     <Drawer
@@ -54,11 +67,15 @@ const RoleEdition: FunctionComponent<RoleEditionProps> = ({
             <RoleEditionCapabilities role={role} queryRef={queryRef} />
           </React.Suspense>
         )}
-        {currentTab === 2 && queryRef && (
+        {currentTab === 2 && queryRef && subTypesQueryRef && (
           <React.Suspense
             fallback={<Loader variant={LoaderVariant.inElement} />}
           >
-            <RoleEditionOverride role={role} queryRef={queryRef} />
+            <RoleEditionOverride
+              role={role}
+              queryRef={queryRef}
+              subTypesQueryRef={subTypesQueryRef}
+            />
           </React.Suspense>
         )}
       </>

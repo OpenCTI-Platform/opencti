@@ -23613,6 +23613,7 @@ export type SubType = {
   __typename?: 'SubType';
   id: Scalars['ID']['output'];
   label: Scalars['String']['output'];
+  overridable?: Maybe<Scalars['Boolean']['output']>;
   settings?: Maybe<EntitySetting>;
   statuses: Array<Status>;
   workflowEnabled?: Maybe<Scalars['Boolean']['output']>;
@@ -36411,6 +36412,7 @@ export type StreamCollectionEditMutationsResolvers<ContextType = any, ParentType
 export type SubTypeResolvers<ContextType = any, ParentType extends ResolversParentTypes['SubType'] = ResolversParentTypes['SubType']> = ResolversObject<{
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   label?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  overridable?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   settings?: Resolver<Maybe<ResolversTypes['EntitySetting']>, ParentType, ContextType>;
   statuses?: Resolver<Array<ResolversTypes['Status']>, ParentType, ContextType>;
   workflowEnabled?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;

@@ -41,7 +41,7 @@ const ReportPopover = ({ id }) => {
   };
   return (
     <div>
-      <KnowledgeSecurity needs={[KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNUPDATE_KNDELETE]} overrideEntity='Report'>
+      <KnowledgeSecurity needs={[KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNUPDATE_KNDELETE]} entity='Report'>
       <ToggleButton
         value="popover"
         size="small"
@@ -50,13 +50,13 @@ const ReportPopover = ({ id }) => {
         <MoreVert fontSize="small" color="primary" />
       </ToggleButton>
         <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleClose}>
-          <KnowledgeSecurity needs={[KNOWLEDGE_KNUPDATE]} overrideEntity='Report'>
+          <KnowledgeSecurity needs={[KNOWLEDGE_KNUPDATE]} entity='Report'>
             <MenuItem onClick={handleOpenEdit}>{t_i18n('Update')}</MenuItem>
           </KnowledgeSecurity>
-          <KnowledgeSecurity needs={[KNOWLEDGE_KNENRICHMENT]} overrideEntity='Report'>
+          <KnowledgeSecurity needs={[KNOWLEDGE_KNENRICHMENT]} entity='Report'>
             <MenuItem onClick={handleOpenEnrichment}>{t_i18n('Enrich')}</MenuItem>
           </KnowledgeSecurity>
-          <KnowledgeSecurity needs={[KNOWLEDGE_KNUPDATE_KNDELETE]} overrideEntity='Report'>
+          <KnowledgeSecurity needs={[KNOWLEDGE_KNUPDATE_KNDELETE]} entity='Report'>
             <MenuItem onClick={handleOpenDelete}>{t_i18n('Delete')}</MenuItem>
           </KnowledgeSecurity>
         </Menu>

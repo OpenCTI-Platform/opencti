@@ -15,12 +15,13 @@ export const subTypesLinesQuery = graphql`
   }
 `;
 
-const subTypesLinesFragment = graphql`
+export const subTypesLinesFragment = graphql`
   fragment SubTypesLines_subTypes on Query {
     subTypes {
       edges {
         node {
           label
+          overridable
           ...SubTypesLine_node
         }
       }

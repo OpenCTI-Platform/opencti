@@ -15,10 +15,10 @@ import { logApp } from '../config/conf';
  * @returns {Record<string | number | symbol, any>} The user's capabilities
  */
 const getUserCapabilities = (user, entityType = null) => {
-  let userCapabilities = map((capability) => capability.name, user.capabilities);
+  let userCapabilities = map((capability) => capability.name, user?.capabilities);
 
   // Handle bypass
-  if (userCapabilities.includes(BYPASS) || user.id === OPENCTI_ADMIN_UUID) {
+  if (userCapabilities.includes(BYPASS) || user?.id === OPENCTI_ADMIN_UUID) {
     return userCapabilities;
   }
 
