@@ -2,18 +2,20 @@
 // TODO Remove this when V6
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-nocheck
-import React from 'react';
+import React, { Suspense, lazy } from 'react';
 import { Switch, Redirect } from 'react-router-dom';
 import { BoundaryRoute } from '../Error';
-import StixCyberObservables from './StixCyberObservables';
-import RootStixCyberObservable from './stix_cyber_observables/Root';
-import Artifacts from './Artifacts';
-import Indicators from './Indicators';
-import RootIndicator from './indicators/Root';
-import RootArtifact from './artifacts/Root';
 import { useIsHiddenEntity } from '../../../utils/hooks/useEntitySettings';
-import Infrastructures from './Infrastructures';
-import RootInfrastructure from './infrastructures/Root';
+import Loader from '../../../components/Loader';
+
+const StixCyberObservables = lazy(() => import('./StixCyberObservables'));
+const RootStixCyberObservable = lazy(() => import('./stix_cyber_observables/Root'));
+const Artifacts = lazy(() => import('./Artifacts'));
+const RootArtifact = lazy(() => import('./artifacts/Root'));
+const Indicators = lazy(() => import('./Indicators'));
+const RootIndicator = lazy(() => import('./indicators/Root'));
+const Infrastructures = lazy(() => import('./Infrastructures'));
+const RootInfrastructure = lazy(() => import('./infrastructures/Root'));
 
 const Root = () => {
   let redirect: string | null = null;
@@ -28,49 +30,51 @@ const Root = () => {
   }
 
   return (
-    <Switch>
-      <BoundaryRoute
-        exact
-        path="/dashboard/observations"
-        render={() => <Redirect to={`/dashboard/observations/${redirect}`} />}
-      />
-      <BoundaryRoute
-        exact
-        path="/dashboard/observations/observables"
-        component={StixCyberObservables}
-      />
-      <BoundaryRoute
-        path="/dashboard/observations/observables/:observableId"
-        component={RootStixCyberObservable}
-      />
-      <BoundaryRoute
-        exact
-        path="/dashboard/observations/artifacts"
-        component={Artifacts}
-      />
-      <BoundaryRoute
-        path="/dashboard/observations/artifacts/:observableId"
-        component={RootArtifact}
-      />
-      <BoundaryRoute
-        exact
-        path="/dashboard/observations/indicators"
-        component={Indicators}
-      />
-      <BoundaryRoute
-        path="/dashboard/observations/indicators/:indicatorId"
-        component={RootIndicator}
-      />
-      <BoundaryRoute
-        exact
-        path="/dashboard/observations/infrastructures"
-        component={Infrastructures}
-      />
-      <BoundaryRoute
-        path="/dashboard/observations/infrastructures/:infrastructureId"
-        component={RootInfrastructure}
-      />
-    </Switch>
+    <Suspense fallback={<Loader />}>
+      <Switch>
+        <BoundaryRoute
+          exact
+          path="/dashboard/observations"
+          render={() => <Redirect to={`/dashboard/observations/${redirect}`} />}
+        />
+        <BoundaryRoute
+          exact
+          path="/dashboard/observations/observables"
+          component={StixCyberObservables}
+        />
+        <BoundaryRoute
+          path="/dashboard/observations/observables/:observableId"
+          component={RootStixCyberObservable}
+        />
+        <BoundaryRoute
+          exact
+          path="/dashboard/observations/artifacts"
+          component={Artifacts}
+        />
+        <BoundaryRoute
+          path="/dashboard/observations/artifacts/:observableId"
+          component={RootArtifact}
+        />
+        <BoundaryRoute
+          exact
+          path="/dashboard/observations/indicators"
+          component={Indicators}
+        />
+        <BoundaryRoute
+          path="/dashboard/observations/indicators/:indicatorId"
+          component={RootIndicator}
+        />
+        <BoundaryRoute
+          exact
+          path="/dashboard/observations/infrastructures"
+          component={Infrastructures}
+        />
+        <BoundaryRoute
+          path="/dashboard/observations/infrastructures/:infrastructureId"
+          component={RootInfrastructure}
+        />
+      </Switch>
+    </Suspense>
   );
 };
 

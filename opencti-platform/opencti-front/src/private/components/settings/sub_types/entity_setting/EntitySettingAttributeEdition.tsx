@@ -6,7 +6,7 @@ import * as Yup from 'yup';
 import makeStyles from '@mui/styles/makeStyles';
 import { FormikConfig } from 'formik/dist/types';
 import { head } from 'ramda';
-import Alert from '@mui/lab/Alert/Alert';
+import Alert from '@mui/lab/Alert';
 import Drawer from '@components/common/drawer/Drawer';
 import AuthorizedMembersField from '@components/common/form/AuthorizedMembersField';
 import { EntitySettingAttributeEditionMembersQuery$data } from '@components/settings/sub_types/entity_setting/__generated__/EntitySettingAttributeEditionMembersQuery.graphql';

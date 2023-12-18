@@ -2,7 +2,7 @@ import { MessageOutlined, MoreVert } from '@mui/icons-material';
 import { ListItemSecondaryAction } from '@mui/material';
 import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
-import ListItemText from '@mui/material/ListItemText/ListItemText';
+import ListItemText from '@mui/material/ListItemText';
 import Skeleton from '@mui/material/Skeleton';
 import { makeStyles } from '@mui/styles';
 import React from 'react';

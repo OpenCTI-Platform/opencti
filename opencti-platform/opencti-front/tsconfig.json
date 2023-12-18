@@ -26,5 +26,10 @@
   },
   "include": [
     "src", "index.d.ts", ".eslintrc.js"
+  ],
+  "references": [
+    {
+      "path": "./tsconfig.node.json"
+    }
   ]
 }

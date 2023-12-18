@@ -7,6 +7,11 @@ module.exports = {
     'plugin:@typescript-eslint/recommended',
     'plugin:react/recommended',
   ],
+  settings: {
+    react: {
+      version: 'detect',
+    },
+  },
   parserOptions: {
     ecmaVersion: 2020,
     project: './tsconfig.json',
@@ -41,6 +46,7 @@ module.exports = {
   plugins: [
     'import-newlines',
     'custom-rules',
+    'react-refresh',
   ],
   rules: {
     'custom-rules/classes-rule': 1,
@@ -82,5 +88,6 @@ module.exports = {
     'react/jsx-indent': [2, 2],
     'react/jsx-indent-props': [2, 2],
     'react/jsx-closing-bracket-location': 'error',
+    'react-refresh/only-export-components': ['warn', { checkJS: true, allowConstantExport: true }],
   },
 };

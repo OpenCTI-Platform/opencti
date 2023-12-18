@@ -1,6 +1,6 @@
 import React, { FunctionComponent, useState } from 'react';
 import { graphql, useFragment } from 'react-relay';
-import ListItemText from '@mui/material/ListItemText/ListItemText';
+import ListItemText from '@mui/material/ListItemText';
 import ListItem from '@mui/material/ListItem';
 import Skeleton from '@mui/material/Skeleton';
 import { ListItemButton, ListItemSecondaryAction } from '@mui/material';

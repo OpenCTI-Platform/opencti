@@ -6,7 +6,7 @@ import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
 import ListItemText from '@mui/material/ListItemText';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import Checkbox from '@mui/material/Checkbox';
-import Alert from '@mui/lab/Alert/Alert';
+import Alert from '@mui/lab/Alert';
 import { CenterFocusStrongOutlined } from '@mui/icons-material';
 import makeStyles from '@mui/styles/makeStyles';
 import { Field, Form, Formik } from 'formik';

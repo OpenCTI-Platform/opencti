@@ -2,7 +2,7 @@ import React, { FunctionComponent } from 'react';
 import { createFragmentContainer, graphql, useMutation } from 'react-relay';
 import Typography from '@mui/material/Typography';
 import List from '@mui/material/List';
-import ListItem from '@mui/material/ListItem/ListItem';
+import ListItem from '@mui/material/ListItem';
 import { Link } from 'react-router-dom';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
