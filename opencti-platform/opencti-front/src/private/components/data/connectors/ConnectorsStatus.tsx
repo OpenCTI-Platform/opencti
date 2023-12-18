@@ -225,7 +225,7 @@ const ConnectorsStatusComponent: FunctionComponent<ConnectorsStatusComponentProp
     };
   }) || [];
 
-  const sortedConnectors = connectorsWithMessages?.sort((a, b) => {
+  const sortedConnectors = connectorsWithMessages.sort((a, b) => {
     let valueA = a[sortBy as keyof typeof connectorsWithMessages[number]];
     let valueB = b[sortBy as keyof typeof connectorsWithMessages[number]];
     // messages are number in string, we shall parse before sorting
