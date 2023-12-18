@@ -13,14 +13,14 @@ import { dateFilters, Filter, getAvailableOperatorForFilter, integerFilters, isS
 import { useFormatter } from '../i18n';
 import ItemIcon from '../ItemIcon';
 import { getOptionsFromEntities, getUseSearch } from '../../utils/filters/SearchEntitiesUtil';
-import { UseLocalStorageHelpers } from '../../utils/hooks/useLocalStorage';
+import { handleFilterHelpers } from '../../utils/hooks/useLocalStorage';
 
 interface FilterChipMenuProps {
   handleClose: () => void;
   open: boolean;
   params: FilterChipsParameter;
   filters: Filter[];
-  helpers?: UseLocalStorageHelpers;
+  helpers?: handleFilterHelpers;
   availableRelationFilterTypes?: Record<string, string[]>;
 }
 
@@ -51,7 +51,7 @@ const OperatorKeyValues: {
 interface BasicNumberInputProps {
   filter?: Filter;
   filterKey: string;
-  helpers?: UseLocalStorageHelpers;
+  helpers?: handleFilterHelpers;
   filterValues: string[];
 }
 const BasicNumberInput: FunctionComponent<BasicNumberInputProps> = ({

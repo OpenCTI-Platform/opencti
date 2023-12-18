@@ -17,18 +17,24 @@ import {
 } from '../filters/filtersManageStateUtil';
 import { LocalStorage } from './useLocalStorageModel';
 
-export interface UseLocalStorageHelpers {
-  handleSearch: (value: string) => void;
-  handleRemoveFilter: (key: string, op?: string, id?: string) => void;
-  handleRemoveFilterById: (id: string) => void;
-  handleSort: (field: string, order: boolean) => void;
-  handleAddFilter: HandleAddFilter;
-  handleRemoveRepresentationFilter: (id: string, valueId: string) => void;
-  handleAddRepresentationFilter: (id: string, valueId: string) => void;
-  handleAddSingleValueFilter: (id: string, valueId?: string) => void;
-  handleSwitchFilter: HandleAddFilter;
+export interface handleFilterHelpers {
   handleSwitchGlobalMode: () => void;
   handleSwitchLocalMode: (filter: Filter) => void;
+  handleRemoveRepresentationFilter: (id: string, valueId: string) => void;
+  handleRemoveFilterById: (id: string) => void;
+  handleChangeOperatorFilters: HandleOperatorFilter;
+  handleAddSingleValueFilter: (id: string, valueId?: string) => void;
+  handleAddRepresentationFilter: (id: string, valueId: string) => void;
+  handleAddFilterWithEmptyValue: (filter: Filter) => void;
+  handleClearAllFilters: (filters?: Filter[]) => void;
+  getLatestAddFilterId: () => string | undefined;
+}
+export interface UseLocalStorageHelpers extends handleFilterHelpers {
+  handleSearch: (value: string) => void;
+  handleRemoveFilter: (key: string, op?: string, id?: string) => void;
+  handleSort: (field: string, order: boolean) => void;
+  handleAddFilter: HandleAddFilter;
+  handleSwitchFilter: HandleAddFilter;
   handleToggleExports: () => void;
   handleSetNumberOfElements: (value: {
     number?: number | string;
@@ -40,9 +46,6 @@ export interface UseLocalStorageHelpers {
   handleAddProperty: (field: string, value: unknown) => void;
   handleChangeView: (value: string) => void;
   handleClearAllFilters: (filters?: Filter[]) => void;
-  handleChangeOperatorFilters: HandleOperatorFilter;
-  handleAddFilterWithEmptyValue: (filter: Filter) => void;
-  getLatestAddFilterId: () => string | undefined;
 }
 
 const localStorageToPaginationOptions = (

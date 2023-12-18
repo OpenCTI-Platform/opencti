@@ -6,7 +6,7 @@ import { filterIconButtonContentQuery } from './FilterIconButtonContent';
 import useQueryLoading from '../utils/hooks/useQueryLoading';
 import { FilterIconButtonContentQuery } from './__generated__/FilterIconButtonContentQuery.graphql';
 import FilterIconButtonContainer from './FilterIconButtonContainer';
-import { UseLocalStorageHelpers } from '../utils/hooks/useLocalStorage';
+import { handleFilterHelpers } from '../utils/hooks/useLocalStorage';
 
 interface FilterIconButtonProps {
   availableFilterKeys?: string[];
@@ -19,7 +19,7 @@ interface FilterIconButtonProps {
   dataColumns?: DataColumns;
   disabledPossible?: boolean;
   redirection?: boolean;
-  helpers?: UseLocalStorageHelpers;
+  helpers?: handleFilterHelpers;
   availableRelationFilterTypes?: Record<string, string[]>;
 }
 
