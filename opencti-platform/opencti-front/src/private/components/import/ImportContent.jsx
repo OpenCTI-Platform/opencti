@@ -20,9 +20,11 @@ import DialogTitle from '@mui/material/DialogTitle';
 import DialogContent from '@mui/material/DialogContent';
 import MenuItem from '@mui/material/MenuItem';
 import DialogActions from '@mui/material/DialogActions';
+import { ListItemButton } from '@mui/material';
 import Button from '@mui/material/Button';
 import * as Yup from 'yup';
 import Fab from '@mui/material/Fab';
+import { withRouter } from 'react-router-dom';
 import SelectField from '../../../components/SelectField';
 import { FIVE_SECONDS } from '../../../utils/Time';
 import { fileManagerAskJobImportMutation, scopesConn } from '../common/files/FileManager';
@@ -34,6 +36,7 @@ import WorkbenchFileLine from '../common/files/workbench/WorkbenchFileLine';
 import FreeTextUploader from '../common/files/FreeTextUploader';
 import WorkbenchFileCreator from '../common/files/workbench/WorkbenchFileCreator';
 import ManageImportConnectorMessage from './ManageImportConnectorMessage';
+import { truncate } from '../../../utils/String';
 
 const interval$ = interval(FIVE_SECONDS);
 
@@ -187,6 +190,10 @@ class ImportContentComponent extends Component {
     this.subscription.unsubscribe();
   }
 
+  handleClickConnector(connectorId) {
+    this.props.history.push(`/dashboard/data/connectors/${connectorId}`);
+  }
+
   handleOpenImport(file) {
     this.setState({ fileToImport: file });
   }
@@ -298,7 +305,6 @@ class ImportContentComponent extends Component {
     const handleSelectConnector = (_, value) => {
       this.setState({ selectedConnector: connectors.find((c) => c.id === value) });
     };
-
     return (
       <div className={classes.container}>
         <Typography
@@ -328,6 +334,8 @@ class ImportContentComponent extends Component {
                 <FileUploader
                   onUploadSuccess={() => relay.refetch()}
                   size="medium"
+                  color={'primary'}
+                  entityId={''}
                 />
                 <FreeTextUploader
                   onUploadSuccess={() => relay.refetch()}
@@ -378,38 +386,43 @@ class ImportContentComponent extends Component {
             >
               {connectors.length ? (
                 <List>
-                  {connectors.map((connector) => (
-                    <ListItem
-                      key={connector.id}
-                      dense={true}
-                      divider={true}
-                      classes={{ root: classes.item }}
-                      button={true}
-                    >
-                      <Tooltip
-                        title={
-                          connector.active
-                            ? t('This connector is active')
-                            : t('This connector is disconnected')
-                        }
+                  {connectors.map((connector) => {
+                    const connectorScope = connector.connector_scope.join(',');
+                    return (
+                      <ListItemButton
+                        key={connector.id}
+                        dense={true}
+                        divider={true}
+                        classes={{ root: classes.item }}
+                        onClick={this.handleClickConnector.bind(this, connector.id)}
                       >
-                        <ListItemIcon
-                          style={{
-                            color: connector.active ? '#4caf50' : '#f44336',
-                          }}
+                        <Tooltip
+                          title={
+                            connector.active
+                              ? t('This connector is active')
+                              : t('This connector is disconnected')
+                          }
                         >
-                          <Extension />
-                        </ListItemIcon>
-                      </Tooltip>
-                      <ListItemText
-                        primary={connector.name}
-                        secondary={R.join(',', connector.connector_scope)}
-                      />
-                      <ListItemSecondaryAction>
-                        <ListItemText primary={nsdt(connector.updated_at)} />
-                      </ListItemSecondaryAction>
-                    </ListItem>
-                  ))}
+                          <ListItemIcon
+                            style={{
+                              color: connector.active ? '#4caf50' : '#f44336',
+                            }}
+                          >
+                            <Extension/>
+                          </ListItemIcon>
+                        </Tooltip>
+                        <Tooltip title={connectorScope}>
+                          <ListItemText
+                            primary={connector.name}
+                            secondary={truncate(connectorScope, 30)}
+                          />
+                        </Tooltip>
+                        {connector.updated_at && (<ListItemSecondaryAction>
+                          <ListItemText primary={nsdt(connector.updated_at)}/>
+                        </ListItemSecondaryAction>)}
+                      </ListItemButton>
+                    );
+                  })}
                 </List>
               ) : (
                 <div
@@ -683,4 +696,4 @@ const ImportContent = createRefetchContainer(
   importContentQuery,
 );
 
-export default R.compose(inject18n, withStyles(styles))(ImportContent);
+export default R.compose(inject18n, withStyles(styles), withRouter)(ImportContent);

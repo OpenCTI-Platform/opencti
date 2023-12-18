@@ -9,7 +9,6 @@ import { DeleteOutlined, DocumentScannerOutlined, GetAppOutlined, WarningOutline
 import Tooltip from '@mui/material/Tooltip';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
-import ListItem from '@mui/material/ListItem';
 import CircularProgress from '@mui/material/CircularProgress';
 import Dialog from '@mui/material/Dialog';
 import DialogContent from '@mui/material/DialogContent';
@@ -23,15 +22,17 @@ import { PopoverProps } from '@mui/material/Popover';
 import MenuItem from '@mui/material/MenuItem';
 import Menu from '@mui/material/Menu';
 import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
+import { ListItemButton } from '@mui/material';
 import FileWork from './FileWork';
 import { useFormatter } from '../../../../components/i18n';
 import { APP_BASE_PATH, commitMutation, MESSAGING$ } from '../../../../relay/environment';
 import { Theme } from '../../../../components/Theme';
 import { FileLine_file$data } from './__generated__/FileLine_file.graphql';
 import { isNotEmptyField } from '../../../../utils/utils';
+import { truncate } from '../../../../utils/String';
 
-const Transition = React.forwardRef((props: SlideProps, ref) => (
-  <Slide direction="up" ref={ref} {...props} />
+const Transition = React.forwardRef(({ children, ...otherProps }: SlideProps, ref) => (
+  <Slide direction='up' ref={ref} {...otherProps}>{children}</Slide>
 ));
 Transition.displayName = 'TransitionSlide';
 
@@ -227,12 +228,12 @@ const FileLineComponent: FunctionComponent<FileLineComponentProps> = ({
   const isWarning = isArtifact
     || encodedFilePath.endsWith('.exe')
     || encodedFilePath.endsWith('.dll');
+  const fileExtension = file?.name.substring(file?.name.lastIndexOf('.'));
   return (
     <>
-      <ListItem
+      <ListItemButton
         divider={true}
         dense={dense}
-        button={true}
         classes={{ root: nested ? classes.itemNested : classes.item }}
         rel="noopener noreferrer"
         onClick={
@@ -263,7 +264,7 @@ const FileLineComponent: FunctionComponent<FileLineComponentProps> = ({
               root: classes.itemText,
               primary: classes.fileName,
             }}
-            primary={file?.name}
+            primary={`${truncate(file?.name, 80)}${fileExtension}`}
             secondary={
               <>
                 {file?.metaData?.mimetype ?? t('Pending')} (
@@ -371,7 +372,7 @@ const FileLineComponent: FunctionComponent<FileLineComponentProps> = ({
             </>
           )}
         </ListItemSecondaryAction>
-      </ListItem>
+      </ListItemButton>
       <FileWork file={file} nested={workNested} />
       <Dialog
         open={displayDelete}
