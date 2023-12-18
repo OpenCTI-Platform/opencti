@@ -19,7 +19,7 @@ interface SecurityProps {
 }
 
 interface KnowledgeSecurityProps extends SecurityProps {
-  overrideEntity: string;
+  entity: string;
 }
 
 interface DataSecurityProps extends SecurityProps {
@@ -66,13 +66,13 @@ const Security: FunctionComponent<SecurityProps> = ({
 
 export const KnowledgeSecurity: FunctionComponent<KnowledgeSecurityProps> = ({
   needs,
-  overrideEntity,
+  entity,
   matchAll = false,
   hasAccess = true,
   children,
   placeholder = <span />,
 }) => {
-  const isGranted = useKnowledgeGranted(needs, overrideEntity, matchAll);
+  const isGranted = useKnowledgeGranted(needs, entity, matchAll);
   return isGranted && hasAccess ? children : placeholder;
 };
 
