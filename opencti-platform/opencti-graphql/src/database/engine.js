@@ -11,7 +11,6 @@ import {
   cursorToOffset,
   ES_INDEX_PREFIX,
   isEmptyField,
-  isEmptyField,
   isInferredIndex,
   isNotEmptyField,
   offsetToCursor,
@@ -76,11 +75,7 @@ import { ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
 import { getEntityFromCache } from './cache';
 import { ENTITY_TYPE_SETTINGS, ENTITY_TYPE_USER } from '../schema/internalObject';
 import { telemetry } from '../config/tracing';
-import {
-  isBooleanAttribute,
-  isDateNumericOrBooleanAttribute,
-  schemaAttributesDefinition
-} from '../schema/schema-attributes';
+import { isBooleanAttribute, isDateAttribute, isDateNumericOrBooleanAttribute, schemaAttributesDefinition } from '../schema/schema-attributes';
 import { convertTypeToStixType } from './stix-converter';
 import { extractEntityRepresentativeName } from './entity-representative';
 import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../modules/organization/organization-types';
@@ -90,7 +85,6 @@ import { FilterMode } from '../generated/graphql';
 import { dateMapping, textMapping } from '../schema/attribute-definition';
 import { INTERNAL_RELATIONSHIPS } from '../schema/internalRelationship';
 import { schemaTypesDefinition } from '../schema/schema-types';
-import { RULES } from '../rules/rules';
 import { STIX_SIGHTING_RELATIONSHIP } from '../schema/stixSightingRelationship';
 
 const ELK_ENGINE = 'elk';
@@ -111,7 +105,7 @@ export const MAX_BULK_OPERATIONS = conf.get('elasticsearch:max_bulk_operations')
 
 const ES_RETRY_ON_CONFLICT = 5;
 const MAX_EVENT_LOOP_PROCESSING_TIME = 50;
-const ES_TOTAL_INDEX_FIELD = 4000;
+// const ES_TOTAL_INDEX_FIELD = 4000;
 export const MAX_TERMS_SPLIT = 65000; // By default, Elasticsearch limits the terms query to a maximum of 65,536 terms. You can change this limit using the index.
 export const BULK_TIMEOUT = '5m';
 const MAX_AGGREGATION_SIZE = 100;
@@ -540,41 +534,42 @@ const elCreateCoreSettings = async () => {
   });
 };
 
+// TODO JRI REACTIVATE
 // Some dynamic mapping are required because key are generated
-const schemaDynamicTemplates = [
-  {
-    accept_rules: {
-      match: 'i_rule_*',
-      mapping: {
-        dynamic: 'strict',
-        properties: {
-          explanation: textMapping,
-          dependencies: textMapping,
-          hash: textMapping,
-          data: { type: 'flattened' },
-        }
-      }
-    }
-  },
-    {
-    accept_denormalize_relations: {
-            match: 'rel_*',
-      mapping: {
-        dynamic: 'strict',
-        properties: {
-          internal_id: textMapping,
-          inferred_id: textMapping,
-        }
-      }
-        }
-  },
-  {
-    reject_others: {
-      match: '*',
-            mapping: { dynamic: 'strict' }
-    }
-  }
-];
+// const schemaDynamicTemplates = [
+//   {
+//     accept_rules: {
+//       match: 'i_rule_*',
+//       mapping: {
+//         dynamic: 'strict',
+//         properties: {
+//           explanation: textMapping,
+//           dependencies: textMapping,
+//           hash: textMapping,
+//           data: { type: 'flattened' },
+//         }
+//       }
+//     }
+//   },
+//   {
+//     accept_denormalize_relations: {
+//       match: 'rel_*',
+//       mapping: {
+//         dynamic: 'strict',
+//         properties: {
+//           internal_id: textMapping,
+//           inferred_id: textMapping,
+//         }
+//       }
+//     }
+//   },
+//   {
+//     reject_others: {
+//       match: '*',
+//       mapping: { dynamic: 'strict' }
+//     }
+//   }
+// ];
 
 // Engine mapping generation on attributes definition
 const attributeMappingGenerator = (entityAttribute) => {
@@ -611,22 +606,24 @@ const attributeMappingGenerator = (entityAttribute) => {
   }
   throw UnsupportedError(`Cant generated mapping based on type ${entityAttribute.type}`);
 };
-const ruleMappingGenerator = () => {
-  const schemaProperties = {};
-  for (let attrIndex = 0; attrIndex < RULES.length; attrIndex += 1) {
-    const rule = RULES[attrIndex];
-    schemaProperties[`i_rule_${rule.id}`] = {
-      dynamic: 'strict',
-      properties: {
-        explanation: textMapping,
-        dependencies: textMapping,
-        hash: textMapping,
-        data: { type: engine instanceof ElkClient ? 'flattened' : 'flat_object' },
-      }
-    };
-  }
-  return schemaProperties;
-};
+
+// TODO JRI TO REACTIVATE
+// const ruleMappingGenerator = () => {
+//   const schemaProperties = {};
+//   for (let attrIndex = 0; attrIndex < RULES_DECLARATION.length; attrIndex += 1) {
+//     const rule = RULES_DECLARATION[attrIndex];
+//     schemaProperties[`i_rule_${rule.id}`] = {
+//       dynamic: 'strict',
+//       properties: {
+//         explanation: textMapping,
+//         dependencies: textMapping,
+//         hash: textMapping,
+//         data: { type: engine instanceof ElkClient ? 'flattened' : 'flat_object' },
+//       }
+//     };
+//   }
+//   return schemaProperties;
+// };
 const denormalizeRelationsMappingGenerator = () => {
   const databaseRelationshipsName = [
     STIX_SIGHTING_RELATIONSHIP,
@@ -657,7 +654,7 @@ const attributesMappingGenerator = () => {
   return schemaProperties;
 };
 export const engineMappingGenerator = () => {
-  return { ...attributesMappingGenerator(), ...ruleMappingGenerator(), ...denormalizeRelationsMappingGenerator() };
+  return { ...attributesMappingGenerator(), /* ...ruleMappingGenerator(), */ ...denormalizeRelationsMappingGenerator() };
 };
 
 const elGetDatabaseTemplates = async () => {
@@ -712,6 +709,7 @@ export const elAddMappingAttribute = async (attribute) => {
   await Promise.all(executions);
 };
 
+/* TODO JRI REACTIVATE
 const elCreateIndexTemplate = async (index) => {
   const settings = {
     index: {
@@ -740,24 +738,24 @@ const elCreateIndexTemplate = async (index) => {
     date_detection: false,
     numeric_detection: false,
     properties: engineMappingGenerator(),
-    };
-    await engine.indices.putIndexTemplate({
-        name: index,
-        create: false,
-        body: {
-            index_patterns: [`${index}*`],
-            template: { settings, mappings },
-            composed_of: [`${ES_INDEX_PREFIX}-core-settings`],
-            version: 3,
-            _meta: {
-                description: 'To generate opencti expected index mappings',
-            },
-        },
-    }).catch((e) => {
-        throw DatabaseError('[SEARCH] Error creating index template', { error: e });
-    });
+  };
+  await engine.indices.putIndexTemplate({
+    name: index,
+    create: false,
+    body: {
+      index_patterns: [`${index}*`],
+      template: { settings, mappings },
+      composed_of: [`${ES_INDEX_PREFIX}-core-settings`],
+      version: 3,
+      _meta: {
+        description: 'To generate opencti expected index mappings',
+      },
+    },
+  }).catch((e) => {
+    throw DatabaseError('[SEARCH] Error creating index template', { error: e });
+  });
 };
-
+*/
 const computePlatformMappings = () => {
   const flattenedType = isElkEngine() ? 'flattened' : 'flat_object';
   return {
@@ -3108,6 +3106,40 @@ const prepareEntity = (thing) => {
     R.dissoc(INTERNAL_FROM_FIELD)
   )(thing);
 };
+
+export const prepareElementForIndexing = (element) => {
+  const thing = {};
+  Object.keys(element).forEach((key) => {
+    const value = element[key];
+    if (Array.isArray(value)) { // Array of Date, objects, string or number
+      const filteredArray = value.filter((i) => i);
+      thing[key] = filteredArray.length > 0 ? filteredArray.map((f) => {
+        if (isDateAttribute(key)) { // Date is an object but natively supported
+          return f;
+        }
+        if (R.is(String, f)) { // For string, trim by default
+          return f.trim();
+        }
+        if (R.is(Object, f) && Object.keys(value).length > 0) { // For complex object, prepare inner elements
+          return prepareElementForIndexing(f);
+        }
+        // For all other types, no transform (list of boolean is not supported)
+        return f;
+      }) : [];
+    } else if (isDateAttribute(key)) { // Date is an object but natively supported
+      thing[key] = value;
+    } else if (isBooleanAttribute(key)) { // Patch field is string generic so need to be cast to boolean
+      thing[key] = typeof value === 'boolean' ? value : value?.toLowerCase() === 'true';
+    } else if (R.is(Object, value) && Object.keys(value).length > 0) { // For complex object, prepare inner elements
+      thing[key] = prepareElementForIndexing(value);
+    } else if (R.is(String, value)) { // For string, trim by default
+      thing[key] = value.trim();
+    } else { // For all other types (numeric, ...), no transform
+      thing[key] = value;
+    }
+  });
+  return thing;
+};
 const prepareIndexingElement = async (thing) => {
   if (thing.base_type === BASE_TYPE_RELATION) {
     const relation = prepareRelation(thing);
@@ -3125,12 +3157,11 @@ const prepareIndexing = async (elements) => {
   }
   return preparedElements;
 };
-export const prepareElementsIndexing = (elements) => elements.map((element) => prepareElementIndexing(element));
 
 export const elIndexElements = async (context, user, message, elements) => {
   const elIndexElementsFn = async () => {
     // 00. Relations must be transformed before indexing.
-    const transformedElements = prepareElementsIndexing(elements);
+    const transformedElements = prepareIndexing(elements);
     // 01. Bulk the indexing of row elements
     const body = transformedElements.flatMap((doc) => [
       { index: { _index: doc._index, _id: doc.internal_id, retry_on_conflict: ES_RETRY_ON_CONFLICT } },
@@ -3291,13 +3322,15 @@ const elUpdateConnectionsOfElement = async (documentId, documentBody) => {
   });
 };
 export const elUpdateElement = async (instance) => {
+  // Update the element it self
+  const esData = prepareElementForIndexing(instance);
   // Set the cache
   const dataToReplace = R.dissoc('representative', esData);
   const replacePromise = elReplace(instance._index, instance.internal_id, { doc: dataToReplace });
   // If entity with a name, must update connections
   let connectionPromise = Promise.resolve();
-  if (instance.name && isStixObject(instance.entity_type)) {
-    connectionPromise = elUpdateConnectionsOfElement(instance.internal_id, { name: instance.representative.main });
+  if (esData.name && isStixObject(instance.entity_type)) {
+    connectionPromise = elUpdateConnectionsOfElement(instance.internal_id, { name: esData.representative.main });
   }
   return Promise.all([replacePromise, connectionPromise]);
 };

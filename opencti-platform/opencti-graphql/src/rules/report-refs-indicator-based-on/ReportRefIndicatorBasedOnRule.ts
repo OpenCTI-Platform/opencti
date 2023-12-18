@@ -4,7 +4,6 @@ import { ABSTRACT_STIX_CYBER_OBSERVABLE } from '../../schema/general';
 import def from './ReportRefIndicatorBasedOnDefinition';
 import buildContainerRefsRule from '../containerWithRefsBuilder';
 import { RELATION_BASED_ON } from '../../schema/stixCoreRelationship';
-import { RULES } from '../rules';
 
 const ReportRefsIndicatorBasedOnRule = buildContainerRefsRule(def, ENTITY_TYPE_CONTAINER_REPORT, {
   leftType: ENTITY_TYPE_INDICATOR,
@@ -12,4 +11,4 @@ const ReportRefsIndicatorBasedOnRule = buildContainerRefsRule(def, ENTITY_TYPE_C
   creationType: RELATION_BASED_ON,
 });
 
-RULES.push(ReportRefsIndicatorBasedOnRule);
+export default ReportRefsIndicatorBasedOnRule;

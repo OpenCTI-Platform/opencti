@@ -18,8 +18,7 @@ type BasicDefinition = {
   label?: string
   multiple: boolean,
   mandatoryType: MandatoryType
-  editDefault: boolean
-  multiple: boolean
+  editDefault?: boolean
   baseSearch?: boolean
   upsert: boolean
   update?: boolean

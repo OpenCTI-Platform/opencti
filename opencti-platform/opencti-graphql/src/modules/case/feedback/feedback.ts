@@ -7,6 +7,7 @@ import { registerDefinition } from '../../../schema/module';
 import feedbackResolvers from './feedback-resolvers';
 import convertFeedbackToStix from './feedback-converter';
 import { createdBy, objectAssignee, objectMarking } from '../../../schema/stixRefRelationship';
+import { authorizedMembers } from '../../../schema/attribute-definition';
 
 const FEEDBACK_DEFINITION: ModuleDefinition<StoreEntityFeedback, StixFeedback> = {
   type: {
@@ -31,7 +32,7 @@ const FEEDBACK_DEFINITION: ModuleDefinition<StoreEntityFeedback, StixFeedback> =
   },
   attributes: [
     { name: 'rating', type: 'numeric', precision: 'integer', mandatoryType: 'external', editDefault: true, multiple: false, upsert: true },
-    { name: 'authorized_members', type: 'json', mandatoryType: 'no', editDefault: true, multiple: true, upsert: false }
+    authorizedMembers
   ],
   relations: [],
   relationsRefs: [

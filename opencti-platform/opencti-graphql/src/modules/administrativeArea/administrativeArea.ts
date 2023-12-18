@@ -10,6 +10,7 @@ import { ENTITY_TYPE_LOCATION } from '../../schema/general';
 import type { StixLocation } from '../../types/stix-sdo';
 import type { ModuleDefinition } from '../../schema/module';
 import { registerDefinition } from '../../schema/module';
+import { entityLocationType } from '../../schema/attribute-definition';
 
 const ADMINISTRATIVE_AREA_DEFINITION: ModuleDefinition<StoreEntityAdministrativeArea, StixLocation> = {
   type: {
@@ -35,8 +36,8 @@ const ADMINISTRATIVE_AREA_DEFINITION: ModuleDefinition<StoreEntityAdministrative
   attributes: [
     { name: 'name', type: 'string', mandatoryType: 'external', editDefault: true, multiple: false, upsert: true },
     { name: 'description', type: 'string', mandatoryType: 'customizable', editDefault: true, multiple: false, upsert: true },
-    { name: 'latitude', type: 'numeric', mandatoryType: 'customizable', editDefault: true, multiple: false, upsert: true },
-    { name: 'longitude', type: 'numeric', mandatoryType: 'customizable', editDefault: true, multiple: false, upsert: true },
+    { name: 'latitude', type: 'numeric', precision: 'float', mandatoryType: 'customizable', editDefault: true, multiple: false, upsert: true },
+    { name: 'longitude', type: 'numeric', precision: 'float', mandatoryType: 'customizable', editDefault: true, multiple: false, upsert: true },
     entityLocationType,
   ],
   relations: [

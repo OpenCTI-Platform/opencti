@@ -1,30 +1,13 @@
 /* eslint-disable camelcase */
-import * as R from 'ramda';
-import { extractEntityRepresentative } from '../database/utils';
-import { ENTITY_TYPE_GROUP, ENTITY_TYPE_STREAM_COLLECTION } from '../schema/internalObject';
-import {
-  createEntity,
-  createRelation,
-  createRelations,
-  deleteElementById,
-  deleteRelationsByFromAndTo,
-  listThroughGetFrom,
-  updateAttribute,
-} from '../database/middleware';
-import { elIndex } from '../database/engine';
-import { INDEX_INTERNAL_OBJECTS } from '../database/utils';
-import { generateInternalId, generateStandardId } from '../schema/identifier';
 import { ENTITY_TYPE_STREAM_COLLECTION } from '../schema/internalObject';
-import { deleteElementById, updateAttribute, } from '../database/middleware';
+import { createEntity, deleteElementById, updateAttribute, } from '../database/middleware';
+import { generateInternalId, generateStandardId } from '../schema/identifier';
 import { listEntities, storeLoadById } from '../database/middleware-loader';
 import { delEditContext, notify, setEditContext } from '../database/redis';
 import { BUS_TOPICS } from '../config/conf';
 import { BASE_TYPE_ENTITY } from '../schema/general';
 import { getParentTypes } from '../schema/schemaUtils';
 import { MEMBER_ACCESS_RIGHT_VIEW, SYSTEM_USER, TAXIIAPI_SETCOLLECTIONS } from '../utils/access';
-import { ABSTRACT_INTERNAL_RELATIONSHIP, buildRefRelationKey } from '../schema/general';
-import { RELATION_ACCESSES_TO } from '../schema/internalRelationship';
-import { isUserHasCapability, SYSTEM_USER, TAXIIAPI_SETCOLLECTIONS } from '../utils/access';
 import { publishUserAction } from '../listener/UserActionListener';
 import { addFilter } from '../utils/filtering/filtering-utils';
 import { validateFilterGroupForStixMatch } from '../utils/filtering/filtering-stix/stix-filtering';

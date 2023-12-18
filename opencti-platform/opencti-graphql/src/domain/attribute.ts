@@ -49,7 +49,7 @@ export const queryAttributesDefinition = async (context: AuthContext, user: Auth
     // From schema attributes
     const attributesDefinition = schemaAttributesDefinition.getAttributes(entitySetting.target_type);
     attributesDefinition.forEach((attr) => {
-      if (attr.editDefault || attr.mandatoryType === 'external' || attr.mandatoryType === 'customizable' && attr.scalable) {
+      if (attr.editDefault || attr.mandatoryType === 'external' || attr.mandatoryType === 'customizable') {
         const attributeConfig: AttributeConfigMeta = {
           name: attr.name,
           label: attr.label,

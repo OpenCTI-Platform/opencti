@@ -1,5 +1,5 @@
 import {
-  AttributeDefinition,
+  type AttributeDefinition,
   baseType,
   createdAt,
   creators,

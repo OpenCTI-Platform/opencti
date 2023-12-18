@@ -2,7 +2,6 @@
 import buildRelationToRelationRule from '../relationToRelationBuilder';
 import { RELATION_ATTRIBUTED_TO } from '../../schema/stixCoreRelationship';
 import def from './AttributedToAttributedDefinition';
-import { RULES } from '../rules';
 
 const AttributedToAttributedRule = buildRelationToRelationRule(def, {
   leftType: RELATION_ATTRIBUTED_TO,
@@ -10,4 +9,4 @@ const AttributedToAttributedRule = buildRelationToRelationRule(def, {
   creationType: RELATION_ATTRIBUTED_TO,
 });
 
-RULES.push(AttributedToAttributedRule);
+export default AttributedToAttributedRule;

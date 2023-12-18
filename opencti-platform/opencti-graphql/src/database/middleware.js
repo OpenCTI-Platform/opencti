@@ -103,7 +103,7 @@ import {
   ID_INTERNAL,
   ID_STANDARD,
   IDS_STIX,
- INPUT_AUTHORIZED_MEMBERS,
+  INPUT_AUTHORIZED_MEMBERS,
   INPUT_EXTERNAL_REFS,
   INPUT_GRANTED_REFS,
   INPUT_LABELS,
@@ -125,11 +125,7 @@ import {
   RELATION_OBJECT_MARKING,
   STIX_REF_RELATIONSHIP_TYPES
 } from '../schema/stixRefRelationship';
-import {
-  ENTITY_TYPE_BACKGROUND_TASK,
-  ENTITY_TYPE_STATUS,
-  ENTITY_TYPE_USER,
-  isDatedInternalObject} from '../schema/internalObject';
+import { ENTITY_TYPE_BACKGROUND_TASK, ENTITY_TYPE_STATUS, ENTITY_TYPE_USER, isDatedInternalObject } from '../schema/internalObject';
 import { isStixCoreObject, isStixObject } from '../schema/stixCoreObject';
 import { isBasicRelationship, isStixRelationshipExceptRef } from '../schema/stixRelationship';
 import {
@@ -193,17 +189,12 @@ import {
 } from './middleware-loader';
 import { checkRelationConsistency, isRelationConsistent } from '../utils/modelConsistency';
 import { getEntitiesListFromCache } from './cache';
-import {
-  ACTION_TYPE_SHARE,
-  ACTION_TYPE_UNSHARE,
-  checkActionValidity,
-  createDefaultTask,
-  TASK_TYPE_LIST
-} from '../domain/backgroundTask-common';
+import { ACTION_TYPE_SHARE, ACTION_TYPE_UNSHARE, checkActionValidity, createDefaultTask, TASK_TYPE_LIST } from '../domain/backgroundTask-common';
 import { ENTITY_TYPE_VOCABULARY, vocabularyDefinitions } from '../modules/vocabulary/vocabulary-types';
 import { getVocabulariesCategories, getVocabularyCategoryForField, isEntityFieldAnOpenVocabulary, updateElasticVocabularyValue } from '../modules/vocabulary/vocabulary-utils';
 import {
   depsKeysRegister,
+  isBooleanAttribute,
   isDateAttribute,
   isDictionaryAttribute,
   isMultipleAttribute,
@@ -213,7 +204,7 @@ import {
 } from '../schema/schema-attributes';
 import { getAttributesConfiguration, getDefaultValues, getEntitySettingFromCache } from '../modules/entitySetting/entitySetting-utils';
 import { schemaRelationsRefDefinition } from '../schema/schema-relationsRef';
-import { extractSchemaDefFromPath, validateInputCreation, validateInputUpdate } from '../schema/schema-validator';
+import { validateInputCreation, validateInputUpdate } from '../schema/schema-validator';
 import { getMandatoryAttributesForSetting } from '../domain/attribute';
 import { telemetry } from '../config/tracing';
 import { cleanMarkings, handleMarkingOperations } from '../utils/markingDefinition-utils';
@@ -966,11 +957,12 @@ const rebuildAndMergeInputFromExistingData = (rawInput, instance) => {
         finalVal = R.filter((n) => !R.includes(n, value), currentValues);
       }
     } else if (isObjectAttribute(key)) {
-      const attributeDefinition = schemaAttributesDefinition.getAttribute(instance.entity_type, key);
-      const pointers = JSONPath({ json: instance, resultType: 'pointer', path: `${key}${object_path ?? ''}` });
-      const patch = pointers.map((p) => ({ op: operation, path: p, value: extractSchemaDefFromPath(attributeDefinition, p, rawInput) }));
-      const patchedInstance = jsonpatch.applyPatch(structuredClone(instance), patch).newDocument;
-      finalVal = patchedInstance[key];
+      // TODO JRI REACTIVATE
+      // const attributeDefinition = schemaAttributesDefinition.getAttribute(instance.entity_type, key);
+      // const pointers = JSONPath({ json: instance, resultType: 'pointer', path: `${key}${object_path ?? ''}` });
+      // const patch = pointers.map((p) => ({ op: operation, path: p, value: extractSchemaDefFromPath(attributeDefinition, p, rawInput) }));
+      // const patchedInstance = jsonpatch.applyPatch(structuredClone(instance), patch).newDocument;
+      finalVal = value; // patchedInstance[key];
     } else { // Replace general
       finalVal = value;
     }

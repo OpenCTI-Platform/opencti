@@ -4,7 +4,6 @@ import { ENTITY_TYPE_LOCATION } from '../../schema/general';
 import def from './ReportRefLocationLocatedAtDefinition';
 import buildContainerRefsRule from '../containerWithRefsBuilder';
 import { RELATION_LOCATED_AT } from '../../schema/stixCoreRelationship';
-import { RULES } from '../rules';
 
 const ReportRefsLocationLocatedAtRule = buildContainerRefsRule(def, ENTITY_TYPE_CONTAINER_REPORT, {
   leftType: ENTITY_TYPE_LOCATION,
@@ -12,4 +11,4 @@ const ReportRefsLocationLocatedAtRule = buildContainerRefsRule(def, ENTITY_TYPE_
   creationType: RELATION_LOCATED_AT,
 });
 
-RULES.push(ReportRefsLocationLocatedAtRule);
+export default ReportRefsLocationLocatedAtRule;

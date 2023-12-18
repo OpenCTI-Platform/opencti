@@ -3,7 +3,7 @@ import { createInferredRelation, deleteInferredRuleElement } from '../../databas
 import { buildPeriodFromDates, computeRangeIntersection } from '../../utils/format';
 import { RELATION_TARGETS } from '../../schema/stixCoreRelationship';
 import def from './LocalizationOfTargetsDefinition';
-import { createRuleContent, RULES } from '../rules';
+import { createRuleContent } from '../rules';
 import { computeAverage } from '../../database/utils';
 import type { StixRelation } from '../../types/stix-sro';
 import { STIX_EXT_OCTI } from '../../types/stix-extensions';
@@ -60,4 +60,4 @@ const ruleLocalizationOfTargetsBuilder = () => {
 };
 const RuleLocalizationOfTargets = ruleLocalizationOfTargetsBuilder();
 
-RULES.push(RuleLocalizationOfTargets);
+export default RuleLocalizationOfTargets;

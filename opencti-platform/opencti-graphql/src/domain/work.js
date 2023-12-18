@@ -9,7 +9,6 @@ import { CONNECTOR_INTERNAL_EXPORT_FILE } from '../schema/general';
 import { publishUserAction } from '../listener/UserActionListener';
 import { AlreadyDeletedError, DatabaseError } from '../config/errors';
 import { addFilter } from '../utils/filtering/filtering-utils';
-import { AlreadyDeletedError } from '../config/errors';
 import { generateWorkId } from '../schema/identifier';
 
 export const workToExportFile = (work) => {

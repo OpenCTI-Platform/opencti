@@ -3,21 +3,11 @@ import { ADMIN_USER, AMBER_STRICT_GROUP } from '../../utils/testQuery';
 import { generateStandardId } from '../../../src/schema/identifier';
 import { ENTITY_TYPE_USER } from '../../../src/schema/internalObject';
 import type { AuthContext, AuthUser } from '../../../src/types/user';
-import {
-  addNotification,
-  addTrigger, myNotificationsFind,
-  triggerGet
-} from '../../../src/modules/notification/notification-domain';
-import type {
-  MemberAccessInput,
-  TriggerLiveAddInput,
-  WorkspaceAddInput
-} from '../../../src/generated/graphql';
+import { addNotification, addTrigger, myNotificationsFind, triggerGet } from '../../../src/modules/notification/notification-domain';
+import type { MemberAccessInput, TriggerLiveAddInput, WorkspaceAddInput } from '../../../src/generated/graphql';
 import { addUser, assignGroupToUser, findById as findUserById, userDelete } from '../../../src/domain/user';
 import { addWorkspace, editAuthorizedMembers, findById as findWorkspaceById } from '../../../src/modules/workspace/workspace-domain';
-import type {
-  NotificationAddInput,
-} from '../../../src/modules/notification/notification-types';
+import type { NotificationAddInput } from '../../../src/modules/notification/notification-types';
 import { TriggerEventType, TriggerType } from '../../../src/generated/graphql';
 
 /**
@@ -51,7 +41,7 @@ const createNotificationForUser = async (context: AuthContext, user: AuthUser) =
   const notificationInput: NotificationAddInput = { is_read: true,
     name: 'notifier-of-iwillbegonesoon',
     notification_type: '',
-    content: [{
+    notification_content: [{
       title: '',
       events: []
     }] };

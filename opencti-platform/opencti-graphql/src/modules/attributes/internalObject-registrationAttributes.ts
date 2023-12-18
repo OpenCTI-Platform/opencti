@@ -1,5 +1,5 @@
 import * as R from 'ramda';
-import type { AttributeDefinition } from '../../schema/attribute-definition';
+import { type AttributeDefinition, authorizedMembers } from '../../schema/attribute-definition';
 import { errors, id } from '../../schema/attribute-definition';
 import { schemaAttributesDefinition } from '../../schema/schema-attributes';
 import {
@@ -132,11 +132,12 @@ const internalObjectsAttributes: { [k: string]: AttributeDefinition[] } = {
     { name: 'name', type: 'string', mandatoryType: 'external', editDefault: true, multiple: false, upsert: false },
     { name: 'description', type: 'string', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true },
     { name: 'default_assignation', type: 'boolean', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false },
-    { name: 'auto_new_marking', type: 'boolean', mandatoryType: 'no', editDefault: false,multiple: false, upsert: false },
+    { name: 'auto_new_marking', type: 'boolean', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false },
     { name: 'default_marking',
       type: 'object',
       mandatoryType: 'no',
-     editDefault: false, multiple: true,
+      editDefault: false,
+      multiple: true,
       upsert: false,
       mappings: [
         { name: 'entity_type', type: 'string', mandatoryType: 'no', multiple: false, upsert: true },
@@ -155,11 +156,12 @@ const internalObjectsAttributes: { [k: string]: AttributeDefinition[] } = {
     { name: 'lastname', type: 'string', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false },
     { name: 'theme', type: 'string', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false },
     { name: 'language', type: 'string', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false },
-    { name: 'external', type: 'boolean', mandatoryType: 'no', editDefault: false,multiple: false, upsert: false },
+    { name: 'external', type: 'boolean', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false },
     { name: 'bookmarks',
       type: 'object',
       mandatoryType: 'no',
-     editDefault: false, multiple: true,
+      editDefault: false,
+      multiple: true,
       upsert: false,
       mappings: [
         { name: 'id:', type: 'string', mandatoryType: 'no', multiple: false, upsert: true },
@@ -210,36 +212,18 @@ const internalObjectsAttributes: { [k: string]: AttributeDefinition[] } = {
     { name: 'description', type: 'string', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true },
     { name: 'filters', type: 'string', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false },
     { name: 'taxii_public', type: 'boolean', mandatoryType: 'external', editDefault: true, multiple: false, upsert: false },
-    { name: 'authorized_members', type: 'json', mandatoryType: 'no', editDefault: false, multiple: true, upsert: false },
+    authorizedMembers
   ],
   [ENTITY_TYPE_FEED]: [
     { name: 'name', type: 'string', mandatoryType: 'external', editDefault: true, multiple: false, upsert: false },
     { name: 'description', type: 'string', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false },
     { name: 'filters', type: 'json', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false },
     { name: 'separator', type: 'string', mandatoryType: 'external', editDefault: true, multiple: false, upsert: false },
-    { name: 'rolling_time', type: 'numeric', mandatoryType: 'external', editDefault: true, multiple: false, upsert: false },
+    { name: 'rolling_time', type: 'numeric', precision: 'long', mandatoryType: 'external', editDefault: true, multiple: false, upsert: false },
     { name: 'include_header', type: 'boolean', mandatoryType: 'external', editDefault: true, multiple: false, upsert: false },
     { name: 'feed_public', type: 'boolean', mandatoryType: 'external', editDefault: true, multiple: false, upsert: false },
     { name: 'feed_types', type: 'string', mandatoryType: 'external', editDefault: true, multiple: true, upsert: false },
     { name: 'feed_date_attribute', type: 'date', mandatoryType: 'external', editDefault: true, multiple: false, upsert: false },
-    { name: 'feed_attributes', type: 'json', mandatoryType: 'no', editDefault: false, multiple: true, upsert: false },
-    { name: 'authorized_members', type: 'json', mandatoryType: 'no', editDefault: false, multiple: true, upsert: false },
-  ],
-  [ENTITY_TYPE_STREAM_COLLECTION]: [
-    { name: 'name', type: 'string', mandatoryType: 'external', editDefault: true, multiple: false, upsert: false },
-    { name: 'description', type: 'string', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true },
-    { name: 'filters', type: 'json', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false },
-    { name: 'stream_public', type: 'boolean', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false },
-    { name: 'stream_live', type: 'boolean', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false },
-    { name: 'authorized_members', type: 'json', mandatoryType: 'no', editDefault: false, multiple: true, upsert: false },
-  ],
-  [ENTITY_TYPE_FEED]: [
-    { name: 'name', type: 'string', mandatoryType: 'external', multiple: false, upsert: false },
-    { name: 'separator', type: 'string', mandatoryType: 'no', multiple: false, upsert: false },
-    { name: 'rolling_time', type: 'numeric', precision: 'integer', mandatoryType: 'no', multiple: false, upsert: false },
-    { name: 'feed_types', type: 'string', mandatoryType: 'no', multiple: true, upsert: false },
-    { name: 'include_header', type: 'boolean', mandatoryType: 'no', multiple: false, upsert: false },
-    { name: 'filters', type: 'json', mandatoryType: 'no', multiple: false, upsert: false },
     {
       name: 'feed_attributes',
       type: 'object',
@@ -259,6 +243,15 @@ const internalObjectsAttributes: { [k: string]: AttributeDefinition[] } = {
           ] },
       ]
     },
+    authorizedMembers
+  ],
+  [ENTITY_TYPE_STREAM_COLLECTION]: [
+    { name: 'name', type: 'string', mandatoryType: 'external', editDefault: true, multiple: false, upsert: false },
+    { name: 'description', type: 'string', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true },
+    { name: 'filters', type: 'json', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false },
+    { name: 'stream_public', type: 'boolean', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false },
+    { name: 'stream_live', type: 'boolean', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false },
+    authorizedMembers
   ],
   [ENTITY_TYPE_STATUS_TEMPLATE]: [
     { name: 'name', type: 'string', mandatoryType: 'external', editDefault: true, multiple: false, upsert: false },

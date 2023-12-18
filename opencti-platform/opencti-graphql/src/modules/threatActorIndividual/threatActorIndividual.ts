@@ -1,4 +1,3 @@
-import type { JSONSchemaType } from 'ajv';
 import threatActorIndividualTypeDefs from './threatActorIndividual.graphql';
 import { ENTITY_TYPE_THREAT_ACTOR } from '../../schema/general';
 import { INNER_TYPE, NAME_FIELD, normalizeName } from '../../schema/identifier';
@@ -49,24 +48,6 @@ import { ENTITY_HASHED_OBSERVABLE_STIX_FILE } from '../../schema/stixCyberObserv
 import { ENTITY_TYPE_LOCATION_ADMINISTRATIVE_AREA } from '../administrativeArea/administrativeArea-types';
 import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../organization/organization-types';
 
-interface Measures {
-  measure: number | null
-  date_seen: object | string | null
-}
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-ignore
-export const schemaMeasure: JSONSchemaType<Measures[]> = {
-  type: 'array',
-  items: {
-    type: 'object',
-    properties: {
-      measure: { type: ['null', 'number'] },
-      date_seen: { type: ['null', 'string', 'object'] },
-    },
-    required: ['measure', 'date_seen']
-  }
-};
-
 const THREAT_ACTOR_INDIVIDUAL_DEFINITION: ModuleDefinition<StoreEntityThreatActorIndividual, StixThreatActorIndividual> = {
   type: {
     id: 'threat-actor-individual',
@@ -116,8 +97,44 @@ const THREAT_ACTOR_INDIVIDUAL_DEFINITION: ModuleDefinition<StoreEntityThreatActo
     { name: 'marital_status', type: 'string', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false },
     { name: 'eye_color', type: 'string', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false },
     { name: 'hair_color', type: 'string', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false },
-    { name: 'height', type: 'object', mandatoryType: 'no', editDefault: false, multiple: true, upsert: true, schemaDef: schemaMeasure },
-    { name: 'weight', type: 'object', mandatoryType: 'no', editDefault: false, multiple: true, upsert: true, schemaDef: schemaMeasure },
+    {
+      name: 'height',
+      type: 'object',
+      mandatoryType: 'no',
+      editDefault: false,
+      multiple: true,
+      upsert: true,
+      mappings: [
+        {
+          name: 'measure',
+          type: 'numeric',
+          mandatoryType: 'external',
+          upsert: true,
+          precision: 'float',
+          editDefault: false,
+          multiple: false
+        },
+        { name: 'date_seen', type: 'date', mandatoryType: 'external', upsert: true, editDefault: false, multiple: false }
+      ]
+    },
+    { name: 'weight',
+      type: 'object',
+      mandatoryType: 'no',
+      editDefault: false,
+      multiple: true,
+      upsert: true,
+      mappings: [
+        {
+          name: 'measure',
+          type: 'numeric',
+          mandatoryType: 'external',
+          upsert: true,
+          precision: 'float',
+          editDefault: false,
+          multiple: false
+        },
+        { name: 'date_seen', type: 'date', mandatoryType: 'external', upsert: true, editDefault: false, multiple: false }
+      ] },
     { name: 'confidence', type: 'numeric', precision: 'integer', mandatoryType: 'no', editDefault: true, multiple: false, upsert: false },
     { name: 'revoked', type: 'boolean', mandatoryType: 'no', editDefault: true, multiple: false, upsert: false },
     { name: 'lang', type: 'string', mandatoryType: 'no', editDefault: true, multiple: false, upsert: true },

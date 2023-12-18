@@ -1,12 +1,6 @@
 import mime from 'mime-types';
 import { invertObj, map } from 'ramda';
-import {
-  batchListThroughGetTo,
-  createEntity,
-  deleteElementById,
-  mergeEntities,
-  updateAttribute
-} from '../database/middleware';
+import { batchListThroughGetTo, createEntity, deleteElementById, mergeEntities, updateAttribute } from '../database/middleware';
 import { isStixObject } from '../schema/stixCoreObject';
 import { isStixRelationship } from '../schema/stixRelationship';
 import { FunctionalError, UnsupportedError } from '../config/errors';

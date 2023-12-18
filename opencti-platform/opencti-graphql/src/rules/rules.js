@@ -9,7 +9,6 @@ import { isBasicRelationship } from '../schema/stixRelationship';
 import { ENTITY_TYPE_INCIDENT } from '../schema/stixDomainObject';
 
 // region definition
-export const RULES = [];
 export const RULES_ATTRIBUTES_BEHAVIOR = {
   OPERATIONS: { MIN: 'MIN', MAX: 'MAX', AVG: 'AVG', SUM: 'SUM', AGG: 'AGG' },
   supportedAttributes(entityType) {

@@ -22,12 +22,11 @@ import type { StixCoreObject } from '../types/stix-common';
 import { STIX_EXT_OCTI } from '../types/stix-extensions';
 import type { StixRelation, StixSighting } from '../types/stix-sro';
 import type { BaseEvent, DataEvent, DeleteEvent, MergeEvent, SseEvent, StreamDataEvent, UpdateEvent } from '../types/event';
-import { getActivatedRules } from '../domain/rules';
+import { getActivatedRules, RULES_DECLARATION } from '../domain/rules';
 import { executionContext, RULE_MANAGER_USER } from '../utils/access';
 import { isModuleActivated } from '../domain/settings';
 import { FilterMode, FilterOperator } from '../generated/graphql';
 import { elList } from '../database/engine';
-import { RULES } from '../rules/rules';
 
 const MIN_LIVE_STREAM_EVENT_VERSION = 4;
 
@@ -170,7 +169,7 @@ const applyCleanupOnDependencyIds = async (deletionIds: Array<string>) => {
   };
   const callback = async (elements: Array<BasicStoreCommon>) => {
     // eslint-disable-next-line @typescript-eslint/no-use-before-define
-    await rulesCleanHandler(context, RULE_MANAGER_USER, elements, RULES, deletionIds);
+    await rulesCleanHandler(context, RULE_MANAGER_USER, elements, RULES_DECLARATION, deletionIds);
   };
   const opts = { filters, noFiltersChecking: true, callback };
   await elList(context, RULE_MANAGER_USER, READ_DATA_INDICES, opts);

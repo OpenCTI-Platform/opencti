@@ -12,7 +12,6 @@ import {
   lang,
   modified,
   revoked,
-  specVersion,
   standardId,
   updatedAt,
   xOpenctiAliases,
@@ -38,7 +37,6 @@ export const INTERNAL_ATTRIBUTES = [
   created.name,
   entityType.name,
   'relationship_type',
-  specVersion.name,
 
   identityClass.name,
   creators.name,

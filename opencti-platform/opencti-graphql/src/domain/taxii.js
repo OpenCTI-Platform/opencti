@@ -12,7 +12,7 @@ import { BUS_TOPICS } from '../config/conf';
 import { addFilter } from '../utils/filtering/filtering-utils';
 import { convertFiltersToQueryOptions } from '../utils/filtering/filtering-resolution';
 import { publishUserAction } from '../listener/UserActionListener';
-import { MEMBER_ACCESS_RIGHT_VIEW, SYSTEM_USER, TAXIIAPI_SETCOLLECTIONS } from '../utils/access';
+import { MEMBER_ACCESS_RIGHT_VIEW, SYSTEM_USER } from '../utils/access';
 
 const MAX_PAGINATION_ELEMENTS = 500;
 const STIX_MEDIA_TYPE = 'application/stix+json;version=2.1';

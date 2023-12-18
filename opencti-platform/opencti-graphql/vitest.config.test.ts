@@ -2,7 +2,6 @@ import type { TestSequencer, WorkspaceSpec } from 'vitest/node';
 import { defineConfig } from 'vitest/config';
 import graphql from '@rollup/plugin-graphql';
 import type { PluginOption } from 'vite';
-import type { TestSequencer, WorkspaceSpec } from 'vitest/node';
 import vitestMigrationPlugin from './builder/plugin/vitestMigrationPlugin';
 
 export const buildTestConfig = (include: string[]) => defineConfig({

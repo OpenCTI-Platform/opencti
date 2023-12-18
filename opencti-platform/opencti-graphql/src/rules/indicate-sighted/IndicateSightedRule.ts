@@ -8,7 +8,7 @@ import { buildPeriodFromDates, computeRangeIntersection } from '../../utils/form
 import type { BasicStoreRelation, StoreObject } from '../../types/store';
 import { RELATION_OBJECT_MARKING } from '../../schema/stixRefRelationship';
 import { computeAverage } from '../../database/utils';
-import { createRuleContent, RULES } from '../rules';
+import { createRuleContent } from '../rules';
 import { createInferredRelation, deleteInferredRuleElement } from '../../database/middleware';
 import { listAllRelations, type RelationOptions } from '../../database/middleware-loader';
 import { RELATION_INDICATES, RELATION_TARGETS } from '../../schema/stixCoreRelationship';
@@ -126,4 +126,4 @@ const indicateSightedRuleBuilder = (): RuleRuntime => {
 };
 const IndicateSightedRule = indicateSightedRuleBuilder();
 
-RULES.push(IndicateSightedRule);
+export default IndicateSightedRule;
