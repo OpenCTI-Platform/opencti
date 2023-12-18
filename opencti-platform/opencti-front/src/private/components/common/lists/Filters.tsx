@@ -5,7 +5,7 @@ import { constructHandleAddFilter, constructHandleRemoveFilter, Filter, FilterGr
 import FiltersElement, { FilterElementsInputValue } from './FiltersElement';
 import ListFilters from './ListFilters';
 import DialogFilters from './DialogFilters';
-import { HandleAddFilter, UseLocalStorageHelpers } from '../../../../utils/hooks/useLocalStorage';
+import { HandleAddFilter, handleFilterHelpers } from '../../../../utils/hooks/useLocalStorage';
 import { setSearchEntitiesScope } from '../../../../utils/filters/SearchEntitiesUtil';
 
 interface FiltersProps {
@@ -29,7 +29,7 @@ interface FiltersProps {
     elementId?: string[];
   };
   type?: string;
-  helpers?: UseLocalStorageHelpers;
+  helpers?: handleFilterHelpers;
 }
 
 const Filters: FunctionComponent<FiltersProps> = ({

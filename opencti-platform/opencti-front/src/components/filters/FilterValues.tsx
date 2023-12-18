@@ -5,7 +5,7 @@ import { useFormatter } from '../i18n';
 import FilterIconButtonContent from '../FilterIconButtonContent';
 import type { Theme } from '../Theme';
 import { Filter, filtersUsedAsApiParameters } from '../../utils/filters/filtersUtils';
-import { UseLocalStorageHelpers } from '../../utils/hooks/useLocalStorage';
+import { handleFilterHelpers, UseLocalStorageHelpers } from '../../utils/hooks/useLocalStorage';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   inlineOperator: {
@@ -47,7 +47,7 @@ interface FilterValuesProps {
   redirection?: boolean;
   handleSwitchLocalMode?: (filter: Filter) => void;
   onClickLabel?: (event: React.MouseEvent<HTMLButtonElement>) => void;
-  helpers?: UseLocalStorageHelpers;
+  helpers?: handleFilterHelpers;
   isReadWriteFilter?: boolean;
 }
 
