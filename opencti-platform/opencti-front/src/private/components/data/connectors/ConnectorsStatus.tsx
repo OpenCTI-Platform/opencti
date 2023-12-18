@@ -390,7 +390,7 @@ const ConnectorsStatusComponent: FunctionComponent<ConnectorsStatusComponentProp
   );
 };
 
-export const ConnectorsStatus = () => {
+const ConnectorsStatus = () => {
   const [queryRef, loadQuery] = useQueryLoader<ConnectorsStatusQuery>(connectorsStatusQuery);
   useEffect(() => {
     loadQuery({}, { fetchPolicy: 'store-and-network' });
