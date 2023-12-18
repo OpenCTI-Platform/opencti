@@ -1253,6 +1253,8 @@ const i18n = {
       'Task end time': 'Hora de fin de la tarea',
       'Operations completed': 'Operaciones terminadas',
       'Total number of operations': 'Número total de operaciones',
+      'See all entities created by user': 'Ver todas las entidades creadas por el usuario',
+      'See all relationships created by user': 'Ver todas las relaciones creadas por el usuario',
       // Properties
       Entity: 'Entidad',
       Widget: 'Elemento gráfico',
@@ -3633,6 +3635,8 @@ const i18n = {
       'Task end time': 'Fin de la tâche',
       'Operations completed': 'Opérations terminées',
       'Total number of operations': "Nombre total d'opérations",
+      'See all entities created by user': 'Voir toutes les entités crées par l\'utilisateur',
+      'See all relationships created by user': 'Voir toutes les relations crées par l\'utilisateur',
       // Properties
       Entity: 'Entité',
       Widget: 'Widget',
@@ -5944,6 +5948,8 @@ const i18n = {
       'Task end time': 'タスク終了時刻',
       'Operations completed': '完了したオペレーションの数',
       'Total number of operations': 'オペレーションの総数',
+      'See all entities created by user': 'ユーザーが作成したすべてのエンティティを見る',
+      'See all relationships created by user': 'ユーザーが作成したすべての関係を見る',
       // Properties
       Entity: 'エンティティ',
       Widget: 'ウィジェット',
@@ -8130,6 +8136,8 @@ const i18n = {
       'Task end time': '任务结束时间',
       'Operations completed': '已完成的操作',
       'Total number of operations': '操作总数',
+      'See all entities created by user': '查看用户创建的所有实体',
+      'See all relationships created by user': '查看用户创建的所有关系',
       // Properties
       Entity: '实体',
       Widget: '控件',
