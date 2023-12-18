@@ -1,19 +1,20 @@
-import React from 'react';
-import * as PropTypes from 'prop-types';
+import React, { FunctionComponent } from 'react';
 import { Field, Form, Formik } from 'formik';
-import withStyles from '@mui/styles/withStyles';
 import Button from '@mui/material/Button';
 import * as Yup from 'yup';
 import { graphql } from 'react-relay';
-import { ConnectionHandler } from 'relay-runtime';
-import * as R from 'ramda';
+import { ConnectionHandler, RecordProxy, RecordSourceSelectorProxy } from 'relay-runtime';
 import Alert from '@mui/material/Alert';
 import AlertTitle from '@mui/material/AlertTitle';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import Switch from '@mui/material/Switch';
 import Box from '@mui/material/Box';
+import makeStyles from '@mui/styles/makeStyles';
+import { FormikConfig } from 'formik/dist/types';
+import { Option } from '@components/common/form/ReferenceField';
+import { Theme } from '../../../../components/Theme';
 import ObjectMembersField from '../../common/form/ObjectMembersField';
-import inject18n from '../../../../components/i18n';
+import { useFormatter } from '../../../../components/i18n';
 import { commitMutation } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
 import Filters from '../../common/lists/Filters';
@@ -22,50 +23,26 @@ import FilterIconButton from '../../../../components/FilterIconButton';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import Drawer, { DrawerVariant } from '../../common/drawer/Drawer';
 import useFiltersState from '../../../../utils/filters/useFiltersState';
+import { PaginationOptions } from '../../../../components/list_lines';
 
-const styles = (theme) => ({
-  drawerPaper: {
-    minHeight: '100vh',
-    width: '50%',
-    position: 'fixed',
-    transition: theme.transitions.create('width', {
-      easing: theme.transitions.easing.sharp,
-      duration: theme.transitions.duration.enteringScreen,
-    }),
-    padding: 0,
-  },
-  createButton: {
-    position: 'fixed',
-    bottom: 30,
-    right: 230,
-  },
+interface TaxiiCollectionCreationProps {
+  paginationOptions: PaginationOptions
+}
+
+interface TaxiiCollectionCreationForm {
+  authorized_members: Option[]
+  taxii_public?: boolean
+  name: string
+  description: string
+}
+
+const useStyles = makeStyles<Theme>((theme) => ({
   buttons: {
     marginTop: 20,
     textAlign: 'right',
   },
   button: {
     marginLeft: theme.spacing(2),
-  },
-  header: {
-    backgroundColor: theme.palette.background.nav,
-    padding: '20px 0px 20px 60px',
-  },
-  closeButton: {
-    position: 'absolute',
-    top: 12,
-    left: 5,
-    color: 'inherit',
-  },
-  importButton: {
-    position: 'absolute',
-    top: 15,
-    right: 20,
-  },
-  container: {
-    padding: '10px 20px 20px 20px',
-  },
-  title: {
-    float: 'left',
   },
   alert: {
     width: '100%',
@@ -75,7 +52,7 @@ const styles = (theme) => ({
     width: '100%',
     overflow: 'hidden',
   },
-});
+}));
 
 const TaxiiCollectionCreationMutation = graphql`
     mutation TaxiiCollectionCreationMutation($input: TaxiiCollectionAddInput!) {
@@ -85,27 +62,30 @@ const TaxiiCollectionCreationMutation = graphql`
     }
 `;
 
-const taxiiCollectionCreationValidation = (t) => Yup.object().shape({
-  name: Yup.string().required(t('This field is required')),
+const taxiiCollectionCreationValidation = (requiredSentence: string) => Yup.object().shape({
+  name: Yup.string().required(requiredSentence),
   description: Yup.string().nullable(),
   authorized_members: Yup.array().nullable(),
   taxii_public: Yup.bool().nullable(),
 });
 
-const sharedUpdater = (store, userId, paginationOptions, newEdge) => {
+const sharedUpdater = (store: RecordSourceSelectorProxy, userId: string, paginationOptions: PaginationOptions, newEdge: RecordProxy) => {
   const userProxy = store.get(userId);
-  const conn = ConnectionHandler.getConnection(
-    userProxy,
-    'Pagination_taxiiCollections',
-    paginationOptions,
-  );
-  ConnectionHandler.insertEdgeBefore(conn, newEdge);
+  if (userProxy) {
+    const conn = ConnectionHandler.getConnection(
+      userProxy,
+      'Pagination_taxiiCollections',
+      paginationOptions,
+    );
+    ConnectionHandler.insertEdgeBefore(conn as RecordProxy, newEdge);
+  }
 };
 
-const TaxiiCollectionCreation = (props) => {
-  const { t, classes } = props;
+const TaxiiCollectionCreation: FunctionComponent<TaxiiCollectionCreationProps> = ({ paginationOptions }) => {
+  const { t } = useFormatter();
+  const classes = useStyles();
   const [filters, helpers] = useFiltersState(emptyFilterGroup);
-  const onSubmit = (values, { setSubmitting, resetForm }) => {
+  const onSubmit: FormikConfig<TaxiiCollectionCreationForm>['onSubmit'] = (values, { setSubmitting, resetForm }) => {
     const jsonFilters = serializeFilterGroupForBackend(filters);
     const authorized_members = values.authorized_members.map(({ value }) => ({
       id: value,
@@ -116,25 +96,27 @@ const TaxiiCollectionCreation = (props) => {
       variables: {
         input: { ...values, filters: jsonFilters, authorized_members },
       },
-      updater: (store) => {
+      updater: (store: RecordSourceSelectorProxy) => {
         const payload = store.getRootField('taxiiCollectionAdd');
-        const newEdge = payload.setLinkedRecord(payload, 'node');
+        const newEdge = payload?.setLinkedRecord(payload, 'node');
         const container = store.getRoot();
         sharedUpdater(
           store,
           container.getDataID(),
-          props.paginationOptions,
-          newEdge,
+          paginationOptions,
+          newEdge as RecordProxy,
         );
       },
-      setSubmitting,
       onCompleted: () => {
         setSubmitting(false);
         resetForm();
       },
+      optimisticUpdater: undefined,
+      optimisticResponse: undefined,
+      onError: undefined,
+      setSubmitting,
     });
   };
-
   return (
     <Drawer
       title={t('Create a TAXII collection')}
@@ -148,7 +130,7 @@ const TaxiiCollectionCreation = (props) => {
             description: '',
             authorized_members: [],
           }}
-          validationSchema={taxiiCollectionCreationValidation(t)}
+          validationSchema={taxiiCollectionCreationValidation(t('This field is required'))}
           onSubmit={onSubmit}
           onReset={onClose}
         >
@@ -186,7 +168,7 @@ const TaxiiCollectionCreation = (props) => {
                   onChange={(_, checked) => setFieldValue('taxii_public', checked)}
                   label={t('Public collection')}
                 />
-                {!values.taxii_public && (
+                {!values?.taxii_public && (
                   <ObjectMembersField
                     label={'Accessible for'}
                     style={fieldSpacingContainerStyle}
@@ -261,14 +243,4 @@ const TaxiiCollectionCreation = (props) => {
   );
 };
 
-TaxiiCollectionCreation.propTypes = {
-  paginationOptions: PropTypes.object,
-  classes: PropTypes.object,
-  theme: PropTypes.object,
-  t: PropTypes.func,
-};
-
-export default R.compose(
-  inject18n,
-  withStyles(styles, { withTheme: true }),
-)(TaxiiCollectionCreation);
+export default TaxiiCollectionCreation;

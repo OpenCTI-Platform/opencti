@@ -14,7 +14,7 @@ import { FilterIconButtonContentQuery } from './__generated__/FilterIconButtonCo
 import FilterValues from './filters/FilterValues';
 import { FilterChipPopover, FilterChipsParameter } from './filters/FilterChipPopover';
 import DisplayFilterGroup from './filters/DisplayFilterGroup';
-import { UseLocalStorageHelpers } from '../utils/hooks/useLocalStorage';
+import { handleFilterHelpers } from '../utils/hooks/useLocalStorage';
 import FilterIconButtonGlobalOperator from './FilterIconButtonGlobalOperator';
 import { filterValuesContentQuery } from './FilterValuesContent';
 
@@ -113,7 +113,7 @@ interface FilterIconButtonContainerProps {
   redirection?: boolean;
   filtersRepresentativesQueryRef: PreloadedQuery<FilterIconButtonContentQuery>;
   chipColor?: ChipOwnProps['color'];
-  helpers?: UseLocalStorageHelpers;
+  helpers?: handleFilterHelpers;
   hasRenderedRef: boolean;
   setHasRenderedRef: () => void;
   availableRelationFilterTypes?: Record<string, string[]>;

@@ -7,7 +7,7 @@ import Chip from '@mui/material/Chip';
 import { useFormatter } from '../i18n';
 import type { Theme } from '../Theme';
 import { Filter } from '../../utils/filters/filtersUtils';
-import { UseLocalStorageHelpers } from '../../utils/hooks/useLocalStorage';
+import { handleFilterHelpers } from '../../utils/hooks/useLocalStorage';
 import { truncate } from '../../utils/String';
 import FilterValuesContent from '../FilterValuesContent';
 
@@ -51,7 +51,7 @@ interface FilterValuesProps {
   redirection?: boolean;
   handleSwitchLocalMode?: (filter: Filter) => void;
   onClickLabel?: (event: React.MouseEvent<HTMLButtonElement>) => void;
-  helpers?: UseLocalStorageHelpers;
+  helpers?: handleFilterHelpers;
   isReadWriteFilter?: boolean;
 }
 

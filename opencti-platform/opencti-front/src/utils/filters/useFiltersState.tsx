@@ -11,17 +11,18 @@ import {
   handleRemoveRepresentationFilterUtil,
   handleSwitchLocalModeUtil,
 } from './filtersManageStateUtil';
+import { handleFilterHelpers } from '../hooks/useLocalStorage';
 
 interface useFiltersStateProps {
   filters: FilterGroup,
   latestAddFilterId?: string
 }
-const useFiltersState = (initFilters: FilterGroup = emptyFilterGroup) => {
+const useFiltersState = (initFilters: FilterGroup = emptyFilterGroup): [FilterGroup, handleFilterHelpers] => {
   const [filtersState, setFiltersState] = useState<useFiltersStateProps>({
     filters: initFilters,
     latestAddFilterId: undefined,
   });
-  const helpers = {
+  const helpers: handleFilterHelpers = {
     handleAddFilterWithEmptyValue: (filter: Filter) => {
       setFiltersState({
         ...filtersState,
@@ -89,7 +90,7 @@ const useFiltersState = (initFilters: FilterGroup = emptyFilterGroup) => {
         latestAddFilterId: undefined,
       });
     },
-    handleClearAllFilters: (clearFilters: Filter[]) => {
+    handleClearAllFilters: (clearFilters?: Filter[]) => {
       setFiltersState({
         ...filtersState,
         filters: handleClearAllFiltersUtil(clearFilters),
