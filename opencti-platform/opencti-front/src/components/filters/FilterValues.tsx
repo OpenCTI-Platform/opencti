@@ -5,7 +5,7 @@ import { useFormatter } from '../i18n';
 import FilterIconButtonContent from '../FilterIconButtonContent';
 import type { Theme } from '../Theme';
 import { Filter, filtersUsedAsApiParameters } from '../../utils/filters/filtersUtils';
-import { handleFilterHelpers, UseLocalStorageHelpers } from '../../utils/hooks/useLocalStorage';
+import { handleFilterHelpers } from '../../utils/hooks/useLocalStorage';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   inlineOperator: {
