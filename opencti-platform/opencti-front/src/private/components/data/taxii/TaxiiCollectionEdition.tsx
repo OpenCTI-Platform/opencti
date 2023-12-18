@@ -1,17 +1,18 @@
-import React, { useEffect } from 'react';
-import * as PropTypes from 'prop-types';
+import React, { FunctionComponent, useEffect } from 'react';
 import { createFragmentContainer, graphql } from 'react-relay';
 import { Field, Form, Formik } from 'formik';
-import withStyles from '@mui/styles/withStyles';
 import * as Yup from 'yup';
-import * as R from 'ramda';
 import Alert from '@mui/material/Alert';
 import AlertTitle from '@mui/material/AlertTitle';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import Switch from '@mui/material/Switch';
 import Box from '@mui/material/Box';
+import makeStyles from '@mui/styles/makeStyles';
+import { Option } from '@components/common/form/ReferenceField';
+import { TaxiiCollectionEdition_taxiiCollection$data } from '@components/data/taxii/__generated__/TaxiiCollectionEdition_taxiiCollection.graphql';
+import { FormikConfig } from 'formik/dist/types';
 import ObjectMembersField from '../../common/form/ObjectMembersField';
-import inject18n from '../../../../components/i18n';
+import { useFormatter } from '../../../../components/i18n';
 import { commitMutation } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
 import Filters from '../../common/lists/Filters';
@@ -21,33 +22,7 @@ import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import { convertAuthorizedMembers } from '../../../../utils/edition';
 import useFiltersState from '../../../../utils/filters/useFiltersState';
 
-const styles = (theme) => ({
-  header: {
-    backgroundColor: theme.palette.background.nav,
-    padding: '20px 0px 20px 60px',
-  },
-  closeButton: {
-    position: 'absolute',
-    top: 12,
-    left: 5,
-    color: 'inherit',
-  },
-  importButton: {
-    position: 'absolute',
-    top: 15,
-    right: 20,
-  },
-  container: {
-    padding: '10px 20px 20px 20px',
-  },
-  appBar: {
-    width: '100%',
-    zIndex: theme.zIndex.drawer + 1,
-    borderBottom: '1px solid #5c5c5c',
-  },
-  title: {
-    float: 'left',
-  },
+const useStyles = makeStyles(() => ({
   alert: {
     width: '100%',
     marginTop: 20,
@@ -56,7 +31,14 @@ const styles = (theme) => ({
     width: '100%',
     overflow: 'hidden',
   },
-});
+}));
+
+interface TaxiiCollectionCreationForm {
+  authorized_members: Option[]
+  taxii_public?: boolean | null
+  name: string | null
+  description: string | null
+}
 
 const taxiiCollectionMutationFieldPatch = graphql`
   mutation TaxiiCollectionEditionFieldPatchMutation(
@@ -71,46 +53,59 @@ const taxiiCollectionMutationFieldPatch = graphql`
   }
 `;
 
-const taxiiCollectionValidation = (t) => Yup.object().shape({
-  name: Yup.string().required(t('This field is required')),
+const taxiiCollectionValidation = (requiredSentence: string) => Yup.object().shape({
+  name: Yup.string().required(requiredSentence),
   description: Yup.string().nullable(),
   authorized_members: Yup.array().nullable(),
   taxii_public: Yup.bool().nullable(),
 });
 
-const TaxiiCollectionEditionContainer = (props) => {
-  const { t, classes, taxiiCollection } = props;
+const TaxiiCollectionEditionContainer: FunctionComponent<{ taxiiCollection: TaxiiCollectionEdition_taxiiCollection$data }> = ({ taxiiCollection }) => {
+  const { t } = useFormatter();
+  const classes = useStyles();
   const initialValues = {
     name: taxiiCollection.name,
     description: taxiiCollection.description,
     taxii_public: taxiiCollection.taxii_public,
     authorized_members: convertAuthorizedMembers(taxiiCollection),
   };
-  const [filters, helpers] = useFiltersState(deserializeFilterGroupForFrontend(props.taxiiCollection.filters));
-  const handleSubmitField = (name, value) => {
-    taxiiCollectionValidation(props.t)
+  const [filters, helpers] = useFiltersState(deserializeFilterGroupForFrontend(taxiiCollection.filters) ?? undefined);
+  const handleSubmitField = (name: string, value: Option[] | string) => {
+    taxiiCollectionValidation(t('This field is required'))
       .validateAt(name, { [name]: value })
       .then(() => {
         commitMutation({
           mutation: taxiiCollectionMutationFieldPatch,
           variables: {
-            id: props.taxiiCollection.id,
+            id: taxiiCollection.id,
             input: { key: name, value: value || '' },
           },
+          setSubmitting: undefined,
+          onCompleted: undefined,
+          onError: undefined,
+          optimisticResponse: undefined,
+          optimisticUpdater: undefined,
+          updater: undefined,
         });
       })
       .catch(() => false);
   };
 
-  const handleSubmitFieldOptions = (name, value) => taxiiCollectionValidation(t)
+  const handleSubmitFieldOptions = (name: string, value: Option[]) => taxiiCollectionValidation(t('This field is required'))
     .validateAt(name, { [name]: value })
     .then(() => {
       commitMutation({
         mutation: taxiiCollectionMutationFieldPatch,
         variables: {
-          id: props.taxiiCollection.id,
+          id: taxiiCollection.id,
           input: { key: name, value: value?.map(({ value: v }) => v) ?? '' },
         },
+        setSubmitting: undefined,
+        onCompleted: undefined,
+        onError: undefined,
+        optimisticResponse: undefined,
+        optimisticUpdater: undefined,
+        updater: undefined,
       });
     })
     .catch(() => false);
@@ -118,19 +113,28 @@ const TaxiiCollectionEditionContainer = (props) => {
   useEffect(() => {
     const jsonFilters = serializeFilterGroupForBackend(filters);
     const variables = {
-      id: props.taxiiCollection.id,
+      id: taxiiCollection.id,
       input: { key: 'filters', value: jsonFilters },
     };
     commitMutation({
       mutation: taxiiCollectionMutationFieldPatch,
       variables,
+      setSubmitting: undefined,
+      onCompleted: undefined,
+      onError: undefined,
+      optimisticResponse: undefined,
+      optimisticUpdater: undefined,
+      updater: undefined,
     });
   }, [filters]);
+  const onSubmit: FormikConfig<TaxiiCollectionCreationForm>['onSubmit'] = () => {};
+
   return (
     <Formik
+      onSubmit={onSubmit}
       enableReinitialize={true}
       initialValues={initialValues}
-      validationSchema={taxiiCollectionValidation(t)}
+      validationSchema={taxiiCollectionValidation(t('This field is required'))}
     >
       {() => (
         <Form style={{ margin: '20px 0 20px 0' }}>
@@ -162,7 +166,7 @@ const TaxiiCollectionEditionContainer = (props) => {
               {t('Make this taxii collection public and available to anyone')}
             </AlertTitle>
             <FormControlLabel
-              control={<Switch defaultChecked={initialValues.taxii_public}/>}
+              control={<Switch defaultChecked={!!initialValues.taxii_public}/>}
               style={{ marginLeft: 1 }}
               onChange={(_, checked) => handleSubmitField('taxii_public', checked.toString())}
               label={t('Public taxii collection')}
@@ -223,14 +227,6 @@ const TaxiiCollectionEditionContainer = (props) => {
   );
 };
 
-TaxiiCollectionEditionContainer.propTypes = {
-  handleClose: PropTypes.func,
-  classes: PropTypes.object,
-  taxiiCollection: PropTypes.object,
-  theme: PropTypes.object,
-  t: PropTypes.func,
-};
-
 const TaxiiCollectionEditionFragment = createFragmentContainer(
   TaxiiCollectionEditionContainer,
   {
@@ -250,7 +246,4 @@ const TaxiiCollectionEditionFragment = createFragmentContainer(
   },
 );
 
-export default R.compose(
-  inject18n,
-  withStyles(styles, { withTheme: true }),
-)(TaxiiCollectionEditionFragment);
+export default TaxiiCollectionEditionFragment;

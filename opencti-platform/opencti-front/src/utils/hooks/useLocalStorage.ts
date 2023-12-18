@@ -436,7 +436,7 @@ export const usePaginationLocalStorage = <U>(
       if (valueId === null) { // handle clicking on 'no label' in entities list
         const findCorrespondingFilter = viewStorage.filters?.filters.find((f) => id === f.id);
         if (findCorrespondingFilter && ['objectLabel', 'contextObjectLabel'].includes(findCorrespondingFilter.key)) {
-          if (viewStorage?.filters) {
+          if (viewStorage.filters) {
             const { filters } = viewStorage;
             const generateUUID = uuid();
             setValue((c) => ({
