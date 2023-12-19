@@ -1,4 +1,4 @@
-import React, { FunctionComponent, useRef } from 'react';
+import React, { FunctionComponent, useEffect, useRef } from 'react';
 import { ChipOwnProps } from '@mui/material/Chip/Chip';
 import { DataColumns } from './list_lines';
 import { Filter, FilterGroup, GqlFilterGroup, isFilterGroupNotEmpty, removeIdFromFilterGroupObject } from '../utils/filters/filtersUtils';
@@ -73,6 +73,13 @@ const FilterIconButtonWithRepresentativesQuery: FunctionComponent<FilterIconButt
   );
 };
 
+const EmptyFilter: FunctionComponent<{ setHasRenderedRef: () => void }> = ({ setHasRenderedRef }) => {
+  useEffect(() => {
+    setHasRenderedRef();
+  }, []);
+  return null;
+};
+
 const FilterIconButton: FunctionComponent<FilterIconButtonProps> = ({
   availableFilterKeys,
   filters,
@@ -113,7 +120,7 @@ const FilterIconButton: FunctionComponent<FilterIconButtonProps> = ({
       />
     );
   }
-  return (<></>);
+  return (<EmptyFilter setHasRenderedRef={setHasRenderedRef}/>);
 };
 
 export default FilterIconButton;
