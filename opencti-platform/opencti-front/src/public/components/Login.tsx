@@ -245,7 +245,7 @@ const Login: FunctionComponent<LoginProps> = ({ type, settings }) => {
           <img
             width={20}
             height={20}
-            src={logo_filigran}
+            src={fileUri(logo_filigran)}
             className={classes.byFiligranLogo}
           />
           <Typography variant="h4" className={classes.byFiligranText}>
