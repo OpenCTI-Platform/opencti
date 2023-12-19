@@ -2,7 +2,7 @@
 import { createInferredRelation, deleteInferredRuleElement, stixLoadById, } from '../../database/middleware';
 import { RELATION_BASED_ON } from '../../schema/stixCoreRelationship';
 import def from './ObserveSightingDefinition';
-import { ENTITY_TYPE_CONTAINER_OBSERVED_DATA, ENTITY_TYPE_INDICATOR } from '../../schema/stixDomainObject';
+import { ENTITY_TYPE_CONTAINER_OBSERVED_DATA } from '../../schema/stixDomainObject';
 import { RELATION_CREATED_BY, RELATION_OBJECT, RELATION_OBJECT_MARKING } from '../../schema/stixRefRelationship';
 import { createRuleContent } from '../rules';
 import { STIX_SIGHTING_RELATIONSHIP } from '../../schema/stixSightingRelationship';
@@ -10,13 +10,14 @@ import { ABSTRACT_STIX_CYBER_OBSERVABLE } from '../../schema/general';
 import { generateInternalType } from '../../schema/schemaUtils';
 import type { RuleRuntime } from '../../types/rules';
 import type { StixDomainObject, StixObject } from '../../types/stix-common';
-import type { StixIndicator, StixObservedData } from '../../types/stix-sdo';
+import type { StixObservedData } from '../../types/stix-sdo';
 import type { StixRelation } from '../../types/stix-sro';
 import type { BasicStoreEntity, BasicStoreRelation, StoreObject } from '../../types/store';
 import { STIX_EXT_OCTI } from '../../types/stix-extensions';
 import { internalLoadById, listAllRelations } from '../../database/middleware-loader';
 import { executionContext, RULE_MANAGER_USER } from '../../utils/access';
 import type { AuthContext } from '../../types/user';
+import { ENTITY_TYPE_INDICATOR, type StixIndicator } from '../../modules/indicator/indicator-types';
 
 // 'If **observed-data A** (`created-by` **identity X**) have `object` **observable B** and **indicator C** ' +
 // 'is `based-on` **observable B**, then **indicator C** is `sighted` in **identity X**.';

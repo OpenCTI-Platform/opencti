@@ -1,7 +1,8 @@
 import { RELATION_BASED_ON } from '../../schema/stixCoreRelationship';
 import { ABSTRACT_STIX_CYBER_OBSERVABLE } from '../../schema/general';
-import { ENTITY_TYPE_CONTAINER_REPORT, ENTITY_TYPE_INDICATOR } from '../../schema/stixDomainObject';
+import { ENTITY_TYPE_CONTAINER_REPORT } from '../../schema/stixDomainObject';
 import type { RuleDefinition, RuleFilters, RuleScope } from '../../types/rules';
+import { ENTITY_TYPE_INDICATOR } from '../../modules/indicator/indicator-types';
 
 const id = 'report_ref_observable_based_on';
 const name = 'Indicators propagation in reports';

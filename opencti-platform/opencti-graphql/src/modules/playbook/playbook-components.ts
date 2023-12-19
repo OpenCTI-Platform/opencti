@@ -35,9 +35,9 @@ import type { BasicStoreRelation, StoreCommon, StoreRelation } from '../../types
 import { generateStandardId } from '../../schema/identifier';
 import { now, observableValue, utcDate } from '../../utils/format';
 import { STIX_SPEC_VERSION } from '../../database/stix';
-import type { StixCampaign, StixContainer, StixIncident, StixIndicator, StixInfrastructure, StixMalware, StixReport, StixThreatActor } from '../../types/stix-sdo';
+import type { StixCampaign, StixContainer, StixIncident, StixInfrastructure, StixMalware, StixReport, StixThreatActor } from '../../types/stix-sdo';
 import { getParentTypes } from '../../schema/schemaUtils';
-import { ENTITY_TYPE_CONTAINER_REPORT, ENTITY_TYPE_INDICATOR, isStixDomainObjectContainer } from '../../schema/stixDomainObject';
+import { ENTITY_TYPE_CONTAINER_REPORT, isStixDomainObjectContainer } from '../../schema/stixDomainObject';
 import type { StixBundle, StixCoreObject, StixCyberObject, StixDomainObject, StixObject } from '../../types/stix-common';
 import { STIX_EXT_OCTI, STIX_EXT_OCTI_SCO } from '../../types/stix-extensions';
 import { connectorsForPlaybook } from '../../database/repository';
@@ -75,6 +75,7 @@ import type { StixRelation } from '../../types/stix-sro';
 import { extractObservablesFromIndicatorPattern } from '../../utils/syntax';
 import { ENTITY_TYPE_CONTAINER_CASE_INCIDENT, type StixCaseIncident } from '../case/case-incident/case-incident-types';
 import { isStixMatchFilterGroup } from '../../utils/filtering/filtering-stix/stix-filtering';
+import { ENTITY_TYPE_INDICATOR, type StixIndicator } from '../indicator/indicator-types';
 
 const extractBundleBaseElement = (instanceId: string, bundle: StixBundle): StixObject => {
   const baseData = bundle.objects.find((o) => o.id === instanceId);

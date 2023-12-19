@@ -53,14 +53,14 @@ const indicatorResolvers: Resolvers = {
     observables: (indicator, _, context) => batchObservablesLoader.load(indicator.id, context, context.user),
   },
   Mutation: {
-    indicatorEdit: (_, { id }, context) => ({
-      delete: () => stixDomainObjectDelete(context, context.user, id),
-      fieldPatch: ({ input, commitMessage, references }) => stixDomainObjectEditField(context, context.user, id, input, { commitMessage, references }),
-      contextPatch: ({ input }) => stixDomainObjectEditContext(context, context.user, id, input),
-      contextClean: () => stixDomainObjectCleanContext(context, context.user, id),
-      relationAdd: ({ input }) => stixDomainObjectAddRelation(context, context.user, id, input),
-      relationDelete: ({ toId, relationship_type: relationshipType }) => stixDomainObjectDeleteRelation(context, context.user, id, toId, relationshipType),
-    }),
+    indicatorDelete: (_, { id }, context) => {
+      return stixDomainObjectDelete(context, context.user, id);
+    },
+    indicatorFieldPatch: (_, { id }, context, { input, commitMessage, references }) => stixDomainObjectEditField(context, context.user, id, input, { commitMessage, references }),
+    indicatorContextPatch: (_, { id }, context, { input }) => stixDomainObjectEditContext(context, context.user, id, input),
+    indicatorContextClean: (_, { id }, context) => stixDomainObjectCleanContext(context, context.user, id),
+    indicatorRelationAdd: (_, { id }, context, { input }) => stixDomainObjectAddRelation(context, context.user, id, input),
+    indicatorRelationDelete: (_, { id }, context, { toId, relationship_type: relationshipType }) => stixDomainObjectDeleteRelation(context, context.user, id, toId, relationshipType),
     indicatorAdd: (_, { input }, context) => addIndicator(context, context.user, input),
   },
 };

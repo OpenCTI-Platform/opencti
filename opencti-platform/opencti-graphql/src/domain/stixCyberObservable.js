@@ -39,12 +39,13 @@ import {
 import { ABSTRACT_STIX_CYBER_OBSERVABLE, buildRefRelationKey, INPUT_CREATED_BY, INPUT_LABELS, INPUT_MARKINGS } from '../schema/general';
 import { RELATION_CONTENT, RELATION_SERVICE_DLL } from '../schema/stixRefRelationship';
 import { RELATION_BASED_ON, RELATION_HAS, RELATION_LOCATED_AT } from '../schema/stixCoreRelationship';
-import { ENTITY_TYPE_INDICATOR, ENTITY_TYPE_LOCATION_COUNTRY, ENTITY_TYPE_VULNERABILITY } from '../schema/stixDomainObject';
+import { ENTITY_TYPE_LOCATION_COUNTRY, ENTITY_TYPE_VULNERABILITY } from '../schema/stixDomainObject';
 import { inputHashesToStix } from '../schema/fieldDataAdapter';
 import { askEntityExport, askListExport, exportTransformFilters } from './stix';
 import { now, observableValue } from '../utils/format';
 import { stixObjectOrRelationshipAddRefRelation, stixObjectOrRelationshipDeleteRefRelation } from './stixObjectOrStixRelationship';
 import { addFilter } from '../utils/filtering/filtering-utils';
+import { ENTITY_TYPE_INDICATOR } from '../modules/indicator/indicator-types';
 
 export const findById = (context, user, stixCyberObservableId) => {
   return storeLoadById(context, user, stixCyberObservableId, ABSTRACT_STIX_CYBER_OBSERVABLE);

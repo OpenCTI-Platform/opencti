@@ -9037,39 +9037,6 @@ export type IndicatorEdge = {
   node: Indicator;
 };
 
-export type IndicatorEditMutations = {
-  __typename?: 'IndicatorEditMutations';
-  contextClean?: Maybe<Indicator>;
-  contextPatch?: Maybe<Indicator>;
-  delete?: Maybe<Scalars['ID']['output']>;
-  fieldPatch?: Maybe<Indicator>;
-  relationAdd?: Maybe<StixRefRelationship>;
-  relationDelete?: Maybe<Indicator>;
-};
-
-
-export type IndicatorEditMutationsContextPatchArgs = {
-  input?: InputMaybe<EditContext>;
-};
-
-
-export type IndicatorEditMutationsFieldPatchArgs = {
-  commitMessage?: InputMaybe<Scalars['String']['input']>;
-  input: Array<InputMaybe<EditInput>>;
-  references?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
-};
-
-
-export type IndicatorEditMutationsRelationAddArgs = {
-  input: StixRefRelationshipAddInput;
-};
-
-
-export type IndicatorEditMutationsRelationDeleteArgs = {
-  relationship_type: Scalars['String']['input'];
-  toId: Scalars['StixRef']['input'];
-};
-
 export enum IndicatorsOrdering {
   Confidence = 'confidence',
   Created = 'created',
@@ -12019,7 +11986,12 @@ export type Mutation = {
   incidentAdd?: Maybe<Incident>;
   incidentEdit?: Maybe<IncidentEditMutations>;
   indicatorAdd?: Maybe<Indicator>;
-  indicatorEdit?: Maybe<IndicatorEditMutations>;
+  indicatorContextClean?: Maybe<Indicator>;
+  indicatorContextPatch?: Maybe<Indicator>;
+  indicatorDelete?: Maybe<Scalars['ID']['output']>;
+  indicatorFieldPatch?: Maybe<Indicator>;
+  indicatorRelationAdd?: Maybe<StixRefRelationship>;
+  indicatorRelationDelete?: Maybe<Indicator>;
   individualAdd?: Maybe<Individual>;
   individualEdit?: Maybe<IndividualEditMutations>;
   infrastructureAdd?: Maybe<Infrastructure>;
@@ -12759,8 +12731,26 @@ export type MutationIndicatorAddArgs = {
 };
 
 
-export type MutationIndicatorEditArgs = {
-  id: Scalars['ID']['input'];
+export type MutationIndicatorContextPatchArgs = {
+  input?: InputMaybe<EditContext>;
+};
+
+
+export type MutationIndicatorFieldPatchArgs = {
+  commitMessage?: InputMaybe<Scalars['String']['input']>;
+  input: Array<InputMaybe<EditInput>>;
+  references?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+};
+
+
+export type MutationIndicatorRelationAddArgs = {
+  input: StixRefRelationshipAddInput;
+};
+
+
+export type MutationIndicatorRelationDeleteArgs = {
+  relationship_type: Scalars['String']['input'];
+  toId: Scalars['StixRef']['input'];
 };
 
 
@@ -27473,7 +27463,6 @@ export type ResolversTypes = ResolversObject<{
   IndicatorAddInput: IndicatorAddInput;
   IndicatorConnection: ResolverTypeWrapper<Omit<IndicatorConnection, 'edges'> & { edges?: Maybe<Array<Maybe<ResolversTypes['IndicatorEdge']>>> }>;
   IndicatorEdge: ResolverTypeWrapper<Omit<IndicatorEdge, 'node'> & { node: ResolversTypes['Indicator'] }>;
-  IndicatorEditMutations: ResolverTypeWrapper<Omit<IndicatorEditMutations, 'contextClean' | 'contextPatch' | 'fieldPatch' | 'relationAdd' | 'relationDelete'> & { contextClean?: Maybe<ResolversTypes['Indicator']>, contextPatch?: Maybe<ResolversTypes['Indicator']>, fieldPatch?: Maybe<ResolversTypes['Indicator']>, relationAdd?: Maybe<ResolversTypes['StixRefRelationship']>, relationDelete?: Maybe<ResolversTypes['Indicator']> }>;
   IndicatorsOrdering: IndicatorsOrdering;
   Individual: ResolverTypeWrapper<Omit<Individual, 'cases' | 'containers' | 'createdBy' | 'groupings' | 'notes' | 'objectOrganization' | 'observedData' | 'opinions' | 'organizations' | 'reports' | 'stixCoreRelationships'> & { cases?: Maybe<ResolversTypes['CaseConnection']>, containers?: Maybe<ResolversTypes['ContainerConnection']>, createdBy?: Maybe<ResolversTypes['Identity']>, groupings?: Maybe<ResolversTypes['GroupingConnection']>, notes?: Maybe<ResolversTypes['NoteConnection']>, objectOrganization?: Maybe<ResolversTypes['OrganizationConnection']>, observedData?: Maybe<ResolversTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversTypes['OpinionConnection']>, organizations?: Maybe<ResolversTypes['OrganizationConnection']>, reports?: Maybe<ResolversTypes['ReportConnection']>, stixCoreRelationships?: Maybe<ResolversTypes['StixCoreRelationshipConnection']> }>;
   IndividualAddInput: IndividualAddInput;
@@ -28174,7 +28163,6 @@ export type ResolversParentTypes = ResolversObject<{
   IndicatorAddInput: IndicatorAddInput;
   IndicatorConnection: Omit<IndicatorConnection, 'edges'> & { edges?: Maybe<Array<Maybe<ResolversParentTypes['IndicatorEdge']>>> };
   IndicatorEdge: Omit<IndicatorEdge, 'node'> & { node: ResolversParentTypes['Indicator'] };
-  IndicatorEditMutations: Omit<IndicatorEditMutations, 'contextClean' | 'contextPatch' | 'fieldPatch' | 'relationAdd' | 'relationDelete'> & { contextClean?: Maybe<ResolversParentTypes['Indicator']>, contextPatch?: Maybe<ResolversParentTypes['Indicator']>, fieldPatch?: Maybe<ResolversParentTypes['Indicator']>, relationAdd?: Maybe<ResolversParentTypes['StixRefRelationship']>, relationDelete?: Maybe<ResolversParentTypes['Indicator']> };
   Individual: Omit<Individual, 'cases' | 'containers' | 'createdBy' | 'groupings' | 'notes' | 'objectOrganization' | 'observedData' | 'opinions' | 'organizations' | 'reports' | 'stixCoreRelationships'> & { cases?: Maybe<ResolversParentTypes['CaseConnection']>, containers?: Maybe<ResolversParentTypes['ContainerConnection']>, createdBy?: Maybe<ResolversParentTypes['Identity']>, groupings?: Maybe<ResolversParentTypes['GroupingConnection']>, notes?: Maybe<ResolversParentTypes['NoteConnection']>, objectOrganization?: Maybe<ResolversParentTypes['OrganizationConnection']>, observedData?: Maybe<ResolversParentTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversParentTypes['OpinionConnection']>, organizations?: Maybe<ResolversParentTypes['OrganizationConnection']>, reports?: Maybe<ResolversParentTypes['ReportConnection']>, stixCoreRelationships?: Maybe<ResolversParentTypes['StixCoreRelationshipConnection']> };
   IndividualAddInput: IndividualAddInput;
   IndividualConnection: Omit<IndividualConnection, 'edges'> & { edges?: Maybe<Array<Maybe<ResolversParentTypes['IndividualEdge']>>> };
@@ -31467,16 +31455,6 @@ export type IndicatorEdgeResolvers<ContextType = any, ParentType extends Resolve
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
-export type IndicatorEditMutationsResolvers<ContextType = any, ParentType extends ResolversParentTypes['IndicatorEditMutations'] = ResolversParentTypes['IndicatorEditMutations']> = ResolversObject<{
-  contextClean?: Resolver<Maybe<ResolversTypes['Indicator']>, ParentType, ContextType>;
-  contextPatch?: Resolver<Maybe<ResolversTypes['Indicator']>, ParentType, ContextType, Partial<IndicatorEditMutationsContextPatchArgs>>;
-  delete?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType>;
-  fieldPatch?: Resolver<Maybe<ResolversTypes['Indicator']>, ParentType, ContextType, RequireFields<IndicatorEditMutationsFieldPatchArgs, 'input'>>;
-  relationAdd?: Resolver<Maybe<ResolversTypes['StixRefRelationship']>, ParentType, ContextType, RequireFields<IndicatorEditMutationsRelationAddArgs, 'input'>>;
-  relationDelete?: Resolver<Maybe<ResolversTypes['Indicator']>, ParentType, ContextType, RequireFields<IndicatorEditMutationsRelationDeleteArgs, 'relationship_type' | 'toId'>>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
-}>;
-
 export type IndividualResolvers<ContextType = any, ParentType extends ResolversParentTypes['Individual'] = ResolversParentTypes['Individual']> = ResolversObject<{
   avatar?: Resolver<Maybe<ResolversTypes['OpenCtiFile']>, ParentType, ContextType>;
   cases?: Resolver<Maybe<ResolversTypes['CaseConnection']>, ParentType, ContextType, Partial<IndividualCasesArgs>>;
@@ -32631,7 +32609,12 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   incidentAdd?: Resolver<Maybe<ResolversTypes['Incident']>, ParentType, ContextType, RequireFields<MutationIncidentAddArgs, 'input'>>;
   incidentEdit?: Resolver<Maybe<ResolversTypes['IncidentEditMutations']>, ParentType, ContextType, RequireFields<MutationIncidentEditArgs, 'id'>>;
   indicatorAdd?: Resolver<Maybe<ResolversTypes['Indicator']>, ParentType, ContextType, RequireFields<MutationIndicatorAddArgs, 'input'>>;
-  indicatorEdit?: Resolver<Maybe<ResolversTypes['IndicatorEditMutations']>, ParentType, ContextType, RequireFields<MutationIndicatorEditArgs, 'id'>>;
+  indicatorContextClean?: Resolver<Maybe<ResolversTypes['Indicator']>, ParentType, ContextType>;
+  indicatorContextPatch?: Resolver<Maybe<ResolversTypes['Indicator']>, ParentType, ContextType, Partial<MutationIndicatorContextPatchArgs>>;
+  indicatorDelete?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType>;
+  indicatorFieldPatch?: Resolver<Maybe<ResolversTypes['Indicator']>, ParentType, ContextType, RequireFields<MutationIndicatorFieldPatchArgs, 'input'>>;
+  indicatorRelationAdd?: Resolver<Maybe<ResolversTypes['StixRefRelationship']>, ParentType, ContextType, RequireFields<MutationIndicatorRelationAddArgs, 'input'>>;
+  indicatorRelationDelete?: Resolver<Maybe<ResolversTypes['Indicator']>, ParentType, ContextType, RequireFields<MutationIndicatorRelationDeleteArgs, 'relationship_type' | 'toId'>>;
   individualAdd?: Resolver<Maybe<ResolversTypes['Individual']>, ParentType, ContextType, RequireFields<MutationIndividualAddArgs, 'input'>>;
   individualEdit?: Resolver<Maybe<ResolversTypes['IndividualEditMutations']>, ParentType, ContextType, RequireFields<MutationIndividualEditArgs, 'id'>>;
   infrastructureAdd?: Resolver<Maybe<ResolversTypes['Infrastructure']>, ParentType, ContextType, RequireFields<MutationInfrastructureAddArgs, 'input'>>;
@@ -36902,7 +36885,6 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   Indicator?: IndicatorResolvers<ContextType>;
   IndicatorConnection?: IndicatorConnectionResolvers<ContextType>;
   IndicatorEdge?: IndicatorEdgeResolvers<ContextType>;
-  IndicatorEditMutations?: IndicatorEditMutationsResolvers<ContextType>;
   Individual?: IndividualResolvers<ContextType>;
   IndividualConnection?: IndividualConnectionResolvers<ContextType>;
   IndividualEdge?: IndividualEdgeResolvers<ContextType>;

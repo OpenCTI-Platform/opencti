@@ -23,7 +23,6 @@ import {
   ENTITY_TYPE_CONTAINER_REPORT,
   ENTITY_TYPE_COURSE_OF_ACTION,
   ENTITY_TYPE_INCIDENT,
-  ENTITY_TYPE_INDICATOR,
   ENTITY_TYPE_INFRASTRUCTURE,
   ENTITY_TYPE_INTRUSION_SET,
   ENTITY_TYPE_MALWARE,
@@ -32,6 +31,7 @@ import {
 } from '../../schema/stixDomainObject';
 import { ENTITY_TYPE_CONTAINER_GROUPING } from '../grouping/grouping-types';
 import { ENTITY_HASHED_OBSERVABLE_ARTIFACT, ENTITY_HASHED_OBSERVABLE_STIX_FILE, ENTITY_SOFTWARE } from '../../schema/stixCyberObservable';
+import { ENTITY_TYPE_INDICATOR } from '../indicator/indicator-types';
 
 schemaRelationsRefDefinition.registerRelationsRef(ABSTRACT_STIX_DOMAIN_OBJECT, [createdBy, objectMarking, objectLabel, externalReferences, xOpenctiLinkedTo]);
 

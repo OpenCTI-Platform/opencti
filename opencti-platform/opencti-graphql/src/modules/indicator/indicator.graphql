@@ -216,15 +216,11 @@ type Query {
 
 type Mutation {
   indicatorAdd(input: IndicatorAddInput!): Indicator @auth(for: [KNOWLEDGE_KNUPDATE])
-  indicatorEdit(id: ID!): IndicatorEditMutations
-}
-
-type IndicatorEditMutations {
-  delete: ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
-  fieldPatch(input: [EditInput]!, commitMessage: String, references: [String]): Indicator
+  indicatorDelete: ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
+  indicatorFieldPatch(input: [EditInput]!, commitMessage: String, references: [String]): Indicator
   @auth(for: [KNOWLEDGE_KNUPDATE])
-  contextPatch(input: EditContext): Indicator @auth(for: [KNOWLEDGE_KNUPDATE])
-  contextClean: Indicator @auth(for: [KNOWLEDGE_KNUPDATE])
-  relationAdd(input: StixRefRelationshipAddInput!): StixRefRelationship @auth(for: [KNOWLEDGE_KNUPDATE])
-  relationDelete(toId: StixRef!, relationship_type: String!): Indicator @auth(for: [KNOWLEDGE_KNUPDATE])
+  indicatorContextPatch(input: EditContext): Indicator @auth(for: [KNOWLEDGE_KNUPDATE])
+  indicatorContextClean: Indicator @auth(for: [KNOWLEDGE_KNUPDATE])
+  indicatorRelationAdd(input: StixRefRelationshipAddInput!): StixRefRelationship @auth(for: [KNOWLEDGE_KNUPDATE])
+  indicatorRelationDelete(toId: StixRef!, relationship_type: String!): Indicator @auth(for: [KNOWLEDGE_KNUPDATE])
 }

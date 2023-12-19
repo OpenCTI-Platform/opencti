@@ -27,7 +27,6 @@ import {
   ENTITY_TYPE_IDENTITY_SECTOR,
   ENTITY_TYPE_IDENTITY_SYSTEM,
   ENTITY_TYPE_INCIDENT,
-  ENTITY_TYPE_INDICATOR,
   ENTITY_TYPE_INFRASTRUCTURE,
   ENTITY_TYPE_INTRUSION_SET,
   ENTITY_TYPE_LOCATION_CITY,
@@ -39,6 +38,7 @@ import {
   ENTITY_TYPE_TOOL,
   ENTITY_TYPE_VULNERABILITY
 } from '../../schema/stixDomainObject';
+import { ENTITY_TYPE_INDICATOR } from '../indicator/indicator-types';
 
 const stixDomainObjectAttributes: Array<AttributeDefinition> = [
   lang,

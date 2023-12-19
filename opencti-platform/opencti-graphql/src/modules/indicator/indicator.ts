@@ -4,6 +4,7 @@ import indicatorTypeDefs from './indicator.graphql';
 import indicatorResolvers from './indicator-resolver';
 import { NAME_FIELD, normalizeName } from '../../schema/identifier';
 import { ENTITY_TYPE_INDICATOR, type StixIndicator, type StoreEntityIndicator } from './indicator-types';
+import convertIndicatorToStix from './indicator-converter';
 
 const INDICATOR_DEFINITION: ModuleDefinition<StoreEntityIndicator, StixIndicator> = {
   type: {

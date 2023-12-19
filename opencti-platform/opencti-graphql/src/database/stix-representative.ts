@@ -13,7 +13,6 @@ import {
   ENTITY_TYPE_CONTAINER_REPORT,
   ENTITY_TYPE_COURSE_OF_ACTION,
   ENTITY_TYPE_INCIDENT,
-  ENTITY_TYPE_INDICATOR,
   ENTITY_TYPE_INFRASTRUCTURE,
   ENTITY_TYPE_INTRUSION_SET,
   ENTITY_TYPE_MALWARE,
@@ -61,6 +60,7 @@ import type * as SCO from '../types/stix-sco';
 import { hashValue } from '../utils/format';
 import { UnsupportedError } from '../config/errors';
 import { isInternalObject } from '../schema/internalObject';
+import { ENTITY_TYPE_INDICATOR, type StixIndicator } from '../modules/indicator/indicator-types';
 
 export const extractStixRepresentative = (
   stix: S.StixObject,
@@ -137,7 +137,7 @@ export const extractStixRepresentative = (
     return (stix as SDO.StixIncident).name;
   }
   if (entityType === ENTITY_TYPE_INDICATOR) {
-    return (stix as SDO.StixIndicator).name;
+    return (stix as StixIndicator).name;
   }
   if (entityType === ENTITY_TYPE_INTRUSION_SET) {
     return (stix as SDO.StixIntrusionSet).name;

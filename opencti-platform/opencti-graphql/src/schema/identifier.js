@@ -29,6 +29,7 @@ import { ENTITY_TYPE_VOCABULARY } from '../modules/vocabulary/vocabulary-types';
 import { isBasicRelationship } from './stixRelationship';
 import { convertTypeToStixType } from '../database/stix-converter';
 import { isStixRefRelationship } from './stixRefRelationship';
+import { ENTITY_TYPE_INDICATOR } from '../modules/indicator/indicator-types';
 
 // region hashes
 const MD5 = 'MD5';
@@ -196,7 +197,7 @@ const stixBaseEntityContribution = {
     [D.ENTITY_TYPE_IDENTITY_INDIVIDUAL]: [{ src: NAME_FIELD }, { src: 'identity_class' }],
     [D.ENTITY_TYPE_IDENTITY_SECTOR]: [{ src: NAME_FIELD }, { src: 'identity_class' }],
     [D.ENTITY_TYPE_IDENTITY_SYSTEM]: [{ src: NAME_FIELD }, { src: 'identity_class' }],
-    [D.ENTITY_TYPE_INDICATOR]: [{ src: 'pattern' }],
+    [ENTITY_TYPE_INDICATOR]: [{ src: 'pattern' }],
     [D.ENTITY_TYPE_INFRASTRUCTURE]: [{ src: NAME_FIELD }],
     [D.ENTITY_TYPE_INTRUSION_SET]: [{ src: NAME_FIELD }],
     [D.ENTITY_TYPE_LOCATION_CITY]: [{ src: NAME_FIELD }, { src: 'x_opencti_location_type' }],
