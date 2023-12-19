@@ -19,7 +19,7 @@ import {
   ABSTRACT_STIX_RELATIONSHIP,
   INPUT_GRANTED_REFS
 } from '../schema/general';
-import { UPDATE_OPERATION_ADD, UPDATE_OPERATION_REMOVE } from '../database/utils';
+import { isNotEmptyField, UPDATE_OPERATION_ADD, UPDATE_OPERATION_REMOVE } from '../database/utils';
 import { extractEntityRepresentativeName } from '../database/entity-representative';
 import { notify } from '../database/redis';
 import { BUS_TOPICS } from '../config/conf';
@@ -53,7 +53,7 @@ export const askListExport = async (context, user, format, entityType, selectedI
   const markingLevel = maxMarkingId ? await findMarkingDefinitionById(context, user, maxMarkingId) : null;
   const entity = listParams.elementId ? await storeLoadById(context, user, listParams.elementId, ABSTRACT_STIX_CORE_OBJECT) : null;
   const toFileName = (connector) => {
-    const fileNamePart = `${entityType}_${type}.${mime.extension(format) ?? specialTypesExtensions[format] ?? 'unknown'}`;
+    const fileNamePart = `${entityType}_${type}.${mime.extension(format) ? mime.extension(format) : specialTypesExtensions[format] ?? 'unknown'}`;
     return `${now()}_${markingLevel?.definition || 'TLP:ALL'}_(${connector.name})_${fileNamePart}`;
   };
   const baseEvent = {
@@ -122,7 +122,7 @@ export const askEntityExport = async (context, user, format, entity, type = 'sim
   const connectors = await connectorsForExport(context, user, format, true);
   const markingLevel = maxMarkingId ? await findMarkingDefinitionById(context, user, maxMarkingId) : null;
   const toFileName = (connector) => {
-    const fileNamePart = `${entity.entity_type}-${entity.name || observableValue(entity)}_${type}.${mime.extension(format) ?? specialTypesExtensions[format] ?? 'unknown'}`;
+    const fileNamePart = `${entity.entity_type}-${entity.name || observableValue(entity)}_${type}.${mime.extension(format) ? mime.extension(format) : specialTypesExtensions[format] ?? 'unknown'}`;
     return `${now()}_${markingLevel?.definition || 'TLP:ALL'}_(${connector.name})_${fileNamePart}`;
   };
   const baseEvent = {

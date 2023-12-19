@@ -279,7 +279,9 @@ const FileLineComponent: FunctionComponent<FileLineComponentProps> = ({
               <span>
                 <IconButton
                   disabled={isProgress || !isImportActive()}
-                  onClick={() => {
+                  onClick={(event) => {
+                    event.preventDefault();
+                    event.stopPropagation();
                     if (handleOpenImport && file) {
                       handleOpenImport(file);
                     }
@@ -299,13 +301,15 @@ const FileLineComponent: FunctionComponent<FileLineComponentProps> = ({
                 <span>
                   <IconButton
                     disabled={isProgress}
-                    onClick={
-                      isWarning
-                        ? handleOpen
-                        : () => handleLink(
-                          `${APP_BASE_PATH}/storage/get/${encodedFilePath}`,
-                        )
-                    }
+                    onClick={(event) => {
+                      event.preventDefault();
+                      event.stopPropagation();
+                      if (isWarning) {
+                        handleOpen(event);
+                      } else {
+                        handleLink(`${APP_BASE_PATH}/storage/get/${encodedFilePath}`);
+                      }
+                    }}
                     aria-haspopup="true"
                     color={nested ? 'inherit' : 'primary'}
                     size="small"
@@ -348,7 +352,11 @@ const FileLineComponent: FunctionComponent<FileLineComponentProps> = ({
                     <IconButton
                       disabled={isProgress}
                       color={nested ? 'inherit' : 'primary'}
-                      onClick={handleOpenRemove}
+                      onClick={(event) => {
+                        event.preventDefault();
+                        event.stopPropagation();
+                        handleOpenRemove();
+                      }}
                       size="small"
                     >
                       <DeleteOutlined fontSize="small" />
@@ -361,7 +369,11 @@ const FileLineComponent: FunctionComponent<FileLineComponentProps> = ({
                     <IconButton
                       disabled={isProgress}
                       color={nested ? 'inherit' : 'primary'}
-                      onClick={handleOpenDelete}
+                      onClick={(event) => {
+                        event.preventDefault();
+                        event.stopPropagation();
+                        handleOpenDelete();
+                      }}
                       size="small"
                     >
                       <DeleteOutlined fontSize="small" />
