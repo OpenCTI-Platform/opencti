@@ -169,7 +169,8 @@ for (let i = 0; i < providerKeys.length; i += 1) {
         const isGroupBaseAccess = (isNotEmptyField(mappedConfig.groups_management) && isNotEmptyField(mappedConfig.groups_management?.groups_mapping)) || isRoleBaseAccess;
         // region roles mapping
         if (isRoleBaseAccess) {
-          logApp.error('Warning: SSO mapping on roles is deprecated, you should clean roles_management in your config and bind on groups.');
+          const reason = 'SSO mapping on roles is deprecated, you should clean roles_management in your config and bind on groups.';
+          logApp.error('SSO_ROLES_MAPPING', { reason });
         }
         // @deprecated: SSO mapping on roles is deprecated but kept to ensure the correct migration
         const computeRolesMapping = () => {
@@ -245,7 +246,8 @@ for (let i = 0; i < providerKeys.length; i += 1) {
         logApp.debug('[SAML] Groups management configuration', { groupsManagement: mappedConfig.groups_management, isRoleBaseAccess });
         // region roles mapping
         if (isRoleBaseAccess) {
-          logApp.error('Warning: SSO mapping on roles is deprecated, you should clean roles_management in your config and bind on groups.');
+          const reason = 'Warning: SSO mapping on roles is deprecated, you should clean roles_management in your config and bind on groups.';
+          logApp.error('SSO_ROLES_MAPPING', { reason });
         }
         const computeRolesMapping = () => {
           const attrRoles = roleAttributes.map((a) => (Array.isArray(profile[a]) ? profile[a] : [profile[a]]));
@@ -327,7 +329,8 @@ for (let i = 0; i < providerKeys.length; i += 1) {
           const isGroupMapping = (isNotEmptyField(mappedConfig.groups_management) && isNotEmptyField(mappedConfig.groups_management?.groups_mapping)) || isRoleBaseAccess;
           // region roles mapping
           if (isRoleBaseAccess) {
-            logApp.error('Warning: SSO mapping on roles is deprecated, you should clean roles_management in your config and bind on groups.');
+            const reason = 'SSO mapping on roles is deprecated, you should clean roles_management in your config and bind on groups.';
+            logApp.error('SSO_ROLES_MAPPING', { reason });
           }
           const computeRolesMapping = () => {
             const token = mappedConfig.roles_management?.token_reference || 'access_token';
@@ -417,7 +420,7 @@ for (let i = 0; i < providerKeys.length; i += 1) {
         passport.use(providerRef, openIDStrategy);
         providers.push({ name: providerName, type: AUTH_SSO, strategy, provider: providerRef });
       }).catch((err) => {
-        logApp.error(`[OPENID] ${providerRef} fail to initialize, provider will be disable`, { error: err });
+        logApp.error('PROVIDER_DISABLE_INITIALIZE', { error: err, provider: providerRef });
       });
     }
     if (strategy === STRATEGY_FACEBOOK) {

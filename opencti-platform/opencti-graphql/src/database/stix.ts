@@ -86,7 +86,7 @@ import type { StoreRelation } from '../types/store';
 import { isInternalRelationship } from '../schema/internalRelationship';
 import { schemaRelationsRefDefinition } from '../schema/schema-relationsRef';
 import { ENTITY_TYPE_CHANNEL } from '../modules/channel/channel-types';
-import { FunctionalError, UnknownError, UnsupportedError } from '../config/errors';
+import { FunctionalError, UnsupportedError } from '../config/errors';
 import { ENTITY_TYPE_THREAT_ACTOR_INDIVIDUAL } from '../modules/threatActorIndividual/threatActorIndividual-types';
 import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../modules/organization/organization-types';
 
@@ -1178,7 +1178,7 @@ export const checkRelationshipRef = (fromType: string, toType: string, relations
     );
   }
   if (relationRefs.length > 1) {
-    throw UnknownError(`Invalid schema from ${fromType} to ${toType} on ${relationshipType}`, { data: relationRefs });
+    throw FunctionalError(`Invalid schema from ${fromType} to ${toType} on ${relationshipType}`, { data: relationRefs });
   }
 
   const checkMetaRelationshipFn = relationRefs[0].checker;

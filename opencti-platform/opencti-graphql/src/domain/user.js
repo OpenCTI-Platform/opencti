@@ -14,7 +14,7 @@ import {
   OPENCTI_SESSION,
   PLATFORM_VERSION
 } from '../config/conf';
-import { AuthenticationFailure, DatabaseError, ForbiddenAccess, FunctionalError, UnknownError } from '../config/errors';
+import { AuthenticationFailure, DatabaseError, ForbiddenAccess, FunctionalError, UnsupportedError } from '../config/errors';
 import { getEntitiesListFromCache, getEntityFromCache } from '../database/cache';
 import { elFindByIds, elLoadBy, elRawDeleteByQuery } from '../database/engine';
 import {
@@ -272,7 +272,7 @@ export const computeAvailableMarkings = (userMarkings, allMarkings) => {
       computedMarkings.push(...lowerMatchingMarkings);
     } else {
       const error = { marking: userMarking, available_markings: allMarkings };
-      throw UnknownError('[ACCESS] USER MARKING INACCESSIBLE', { error });
+      throw UnsupportedError('[ACCESS] USER MARKING INACCESSIBLE', { error });
     }
   }
   return R.uniqBy((m) => m.id, computedMarkings);
@@ -666,7 +666,7 @@ export const bookmarks = async (context, user, args) => {
     // check filters are supported
     // i.e. filters can only contains filters with key=entity_type
     if (extractFilterKeys(filters).filter((f) => f !== 'entity_type').length > 0) {
-      throw Error('Bookmarks widgets only support filter with key=entity_type.');
+      throw UnsupportedError('Bookmarks widgets only support filter with key=entity_type.');
     }
     // filter the bookmark list according to the filters
     const entityTypeBookmarkTester = {
@@ -944,7 +944,7 @@ export const loginFromProvider = async (userInfo, opts = {}) => {
     providerGroups.forEach((groupName) => {
       if (!foundGroupsNames.includes(groupName)) {
         if (!autoCreateGroup) {
-          throw Error('[SSO] Can\'t login. The user has groups that don\'t exist and auto_create_group = false.');
+          throw ForbiddenAccess('[SSO] Can\'t login. The user has groups that don\'t exist and auto_create_group = false.');
         } else {
           newGroupsToCreate.push(addGroup(context, SYSTEM_USER, { name: groupName }));
         }
@@ -957,7 +957,7 @@ export const loginFromProvider = async (userInfo, opts = {}) => {
   const listOpts = { paginate: false };
   const { email, name: providedName, firstname, lastname } = userInfo;
   if (isEmptyField(email)) {
-    throw Error('User email not provided');
+    throw ForbiddenAccess('User email not provided');
   }
   const name = isEmptyField(providedName) ? email : providedName;
   const user = await elLoadBy(context, SYSTEM_USER, 'user_email', email, ENTITY_TYPE_USER);
@@ -1351,7 +1351,7 @@ export const authenticateUserFromRequest = async (context, req, res, isSessionRe
         return await authenticateUser(context, req, user, loginProvider, opts);
       }
     } catch (err) {
-      logApp.error('[OPENCTI] Authentication error', { error: err });
+      logApp.error('AUTHENTICATION_ERROR', { error: err });
     }
   }
   // No auth, return undefined

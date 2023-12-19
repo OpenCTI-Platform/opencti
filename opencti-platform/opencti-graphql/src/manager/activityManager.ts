@@ -129,7 +129,7 @@ const activityStreamHandler = async (streamEvents: Array<SseEvent<ActivityStream
     const context = executionContext('activity_manager');
     await eventsApplyHandler(context, streamEvents);
   } catch (e) {
-    logApp.error('[OPENCTI-MODULE] Error executing activity manager', { error: e });
+    logApp.error('ACTIVITY_MANAGER', { error: e });
   }
 };
 
@@ -163,7 +163,7 @@ const initActivityManager = () => {
       if (e.name === TYPE_LOCK_ERROR) {
         logApp.debug('[OPENCTI-MODULE] Activity manager already started by another API');
       } else {
-        logApp.error('[OPENCTI-MODULE] Activity manager failed to start', { error: e });
+        logApp.error('ACTIVITY_MANAGER', { error: e });
       }
     } finally {
       running = false;

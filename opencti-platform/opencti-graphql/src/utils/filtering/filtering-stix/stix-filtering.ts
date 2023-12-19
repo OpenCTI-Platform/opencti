@@ -8,6 +8,7 @@ import { ENTITY_TYPE_RESOLVED_FILTERS } from '../../../schema/stixDomainObject';
 import type { Filter, FilterGroup } from '../../../generated/graphql';
 import type { FilterResolutionMap } from '../filtering-resolution';
 import { buildResolutionMapForFilterGroup, resolveFilterGroup } from '../filtering-resolution';
+import { UnsupportedError } from '../../../config/errors';
 
 //----------------------------------------------------------------------------------------------------------------------
 
@@ -17,13 +18,14 @@ import { buildResolutionMapForFilterGroup, resolveFilterGroup } from '../filteri
  */
 export const validateFilterForStixMatch = (filter: Filter) => {
   if (!Array.isArray(filter.key)) {
-    throw Error(`The provided filter key is not an array - got ${JSON.stringify(filter.key)}`);
+    throw UnsupportedError('The provided filter key is not an array', { key: JSON.stringify(filter.key) });
   }
   if (filter.key.length !== 1) {
-    throw Error(`Stix filtering can only be executed on a unique filter key - got ${JSON.stringify(filter.key)}`);
+    throw UnsupportedError('Stix filtering can only be executed on a unique filter key', { key: JSON.stringify(filter.key) });
   }
   if (FILTER_KEY_TESTERS_MAP[filter.key[0]] === undefined) {
-    throw Error(`Stix filtering is not compatible with the provided filter key ${JSON.stringify(filter.key)} - available filter keys: ${JSON.stringify(Object.keys(FILTER_KEY_TESTERS_MAP))}`);
+    const availableFilters = JSON.stringify(Object.keys(FILTER_KEY_TESTERS_MAP));
+    throw UnsupportedError('Stix filtering is not compatible with the provided filter key', { key: JSON.stringify(filter.key), availableFilters });
   }
 };
 
@@ -32,7 +34,7 @@ export const validateFilterForStixMatch = (filter: Filter) => {
  */
 export const validateFilterGroupForStixMatch = (filterGroup: FilterGroup) => {
   if (!filterGroup?.filterGroups || !filterGroup?.filters) {
-    throw Error('Unrecognized filter format; expecting FilterGroup');
+    throw UnsupportedError('Unrecognized filter format; expecting FilterGroup');
   }
   filterGroup.filters.forEach((f) => validateFilterForStixMatch(f));
   filterGroup.filterGroups.forEach((fg) => validateFilterGroupForStixMatch(fg));

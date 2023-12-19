@@ -76,7 +76,7 @@ export const addTrigger = async (
   type: TriggerType
 ): Promise<BasicStoreEntityTrigger> => {
   if (type === TriggerTypeValue.Live && (triggerInput as TriggerLiveAddInput).event_types.length === 0) {
-    throw Error('Attribute "trigger_events" of a live trigger should have at least one event.');
+    throw UnsupportedError('Attribute "trigger_events" of a live trigger should have at least one event');
   }
 
   // our stix matching is currently limited, we need to validate the input filters
@@ -200,7 +200,7 @@ export const triggerEdit = async (context: AuthContext, user: AuthUser, triggerI
   if (trigger.trigger_type === TriggerTypeValue.Live) {
     const emptyTriggerEvents = input.filter((editEntry) => editEntry.key === 'event_types' && editEntry.value.length === 0);
     if (emptyTriggerEvents.length > 0) {
-      throw Error('Attribute "trigger_events" of a live trigger should have at least one event.');
+      throw UnsupportedError('Attribute "trigger_events" of a live trigger should have at least one event');
     }
   }
   const { element: updatedElem } = await updateAttribute(context, user, triggerId, ENTITY_TYPE_TRIGGER, input);

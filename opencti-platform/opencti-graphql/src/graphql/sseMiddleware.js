@@ -267,7 +267,7 @@ const createSseMiddleware = () => {
           try {
             res.end();
           } catch (e) {
-            logApp.error('[STREAM] Failing to close client', { clientId: channel.userId, error: e });
+            logApp.error('STREAM_CLIENT', { action: 'close', clientId: channel.userId, error: e });
           }
         }
       },
@@ -682,7 +682,7 @@ const createSseMiddleware = () => {
       // noinspection ES6MissingAwait
       processor.start(isRecoveryMode ? recoverStreamId : startStreamId);
     } catch (e) {
-      logApp.error(`Error executing live stream ${id}`, { error: e });
+      logApp.error('STREAM_LIVE', { id, error: e });
       res.statusMessage = `Error in stream ${id}: ${e.message}`;
       res.status(500).end();
     }

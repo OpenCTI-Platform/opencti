@@ -29,7 +29,7 @@ const tryResolveKeyPromises = async (data) => {
   }
 };
 
-const API_CALL_MESSAGE = 'API Call'; // If you touch this, you need to change the performance agent
+const API_CALL_MESSAGE = 'GRAPHQL_API'; // If you touch this, you need to change the performance agent
 const perfLog = booleanConf('app:performance_logger', false);
 const LOGS_SENSITIVE_FIELDS = conf.get('app:app_logs:logs_redacted_inputs') ?? [];
 export default {
@@ -88,8 +88,6 @@ export default {
         if (isCallError) {
           const currentError = head(context.errors);
           const callError = currentError.originalError ? currentError.originalError : currentError;
-          const { data, path, stack } = callError;
-          const error = { data, path, stacktrace: stack.split('\n').map((line) => line.trim()) };
           const isRetryableCall = isNotEmptyField(origin?.call_retry_number) && callError.name !== UNSUPPORTED_ERROR;
           const isAuthenticationCall = includes(callError.name, [AUTH_REQUIRED]);
           // Don't log for a simple missing authentication
@@ -99,7 +97,7 @@ export default {
           // Authentication problem can be logged in warning (dissoc variables to hide password)
           // If worker is still retrying, this is not yet a problem, can be logged in warning until then.
           if (isRetryableCall) {
-            logApp.warn(API_CALL_MESSAGE, { ...dissoc('variables', callMetaData), error });
+            logApp.warn(API_CALL_MESSAGE, { ...dissoc('variables', callMetaData), error: callError });
           } else if (callError.name === FORBIDDEN_ACCESS) {
             await publishUserAction({
               user: contextUser,
@@ -114,7 +112,7 @@ export default {
             });
           } else {
             // Every other uses cases are logged with error level
-            logApp.error(API_CALL_MESSAGE, { ...callMetaData, error });
+            logApp.error(API_CALL_MESSAGE, { ...callMetaData, error: callError });
           }
         } else if (perfLog) {
           logApp.info(API_CALL_MESSAGE, { ...callMetaData, memory: getMemoryStatistics() });

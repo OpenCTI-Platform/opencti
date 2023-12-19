@@ -85,7 +85,7 @@ const createApolloServer = () => {
           executeContext.user = userWithOrigin(req, user);
         }
       } catch (error) {
-        logApp.error('Error in user context building', { error });
+        logApp.error('GRAPHQL_CONTEXT', { error });
       }
       return executeContext;
     },

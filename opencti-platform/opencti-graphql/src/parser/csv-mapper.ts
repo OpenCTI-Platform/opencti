@@ -13,6 +13,7 @@ import type { BasicStoreEntityCsvMapper, CsvMapperRepresentation } from '../modu
 import { CsvMapperRepresentationType, Operator } from '../modules/internal/csvMapper/csvMapper-types';
 import type { AttributeColumn } from '../generated/graphql';
 import { isValidTargetType } from '../modules/internal/csvMapper/csvMapper-utils';
+import { UnsupportedError } from '../config/errors';
 
 export type InputType = string | string[] | boolean | number | Record<string, any>;
 
@@ -68,7 +69,7 @@ const computeValue = (value: string, column: AttributeColumn, attributeDef: Attr
 const extractValueFromCsv = (record: string[], columnName: string) => {
   const idx = columnNameToIdx(columnName); // Handle letter to idx here & remove headers
   if (isEmptyField(idx)) {
-    throw Error(`Unknown column name ${columnName}`);
+    throw UnsupportedError('Unknown column name', { name: columnName });
   } else {
     return record[idx as number];
   }
@@ -131,7 +132,7 @@ const handleDirectAttribute = (attributeKey: string, column: AttributeColumn, in
   const entity_type = input[entityType.name] as string;
   const attributeDef = schemaAttributesDefinition.getAttribute(entity_type, attributeKey);
   if (!attributeDef) {
-    throw Error(`Invalid attribute ${attributeKey} for this entity ${entity_type}`);
+    throw UnsupportedError('Invalid attribute', { key: attributeKey, type: entity_type });
   }
   const computedValue = computeValue(value, column, attributeDef);
   if (computedValue) {
@@ -159,7 +160,7 @@ const handleBasedOnAttribute = (attributeKey: string, input: Record<string, Inpu
   } else {
     const relationDef = schemaRelationsRefDefinition.getRelationRef(entity_type, attributeKey);
     if (!relationDef) {
-      throw Error(`Invalid attribute ${attributeKey} for this entity ${entity_type}`);
+      throw UnsupportedError('Invalid attribute', { key: attributeKey, type: entity_type });
     } else {
       input[attributeKey] = relationDef.multiple ? entities : entities[0];
     }
@@ -180,7 +181,7 @@ const handleAttributes = (record: string[], representation: CsvMapperRepresentat
       const basedOn = attribute.based_on;
       const entities = basedOn.representations?.map((based) => map.get(based));
       if (isEmptyField(entities)) {
-        throw Error(`Unknown value(s) on ${attribute.key}`);
+        throw UnsupportedError('Unknown value(s)', { key: attribute.key });
       } else {
         const definedEntities = entities?.filter((e) => e !== undefined) as Record<string, InputType>[];
         handleBasedOnAttribute(attribute.key, input, definedEntities);

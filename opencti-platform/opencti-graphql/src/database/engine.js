@@ -250,8 +250,7 @@ export const elRawSearch = (context, user, types, query) => {
         throw EngineShardsError({ shards: parsedSearch._shards });
       } else if (failures.length > 0) {
         // At least log the situation
-        const message = `[SEARCH] Search meet ${failures.length} shards failure, please check your configuration`;
-        logApp.error(message, { shards: parsedSearch._shards });
+        logApp.warn('Search fail execution because of shards problems', { shards: parsedSearch._shards, size: failures.length });
       }
     }
     // Return result of the search if everything goes well
@@ -279,7 +278,7 @@ const elOperationForMigration = (operation) => {
       wait_for_completion: false,
       body
     }).catch((err) => {
-      throw DatabaseError(`${message} > elastic error (migration)`, { error: err });
+      throw DatabaseError('Elastic error (migration)', { migration: message, error: err });
     });
     logApp.info(`${message} > elastic running task ${queryAsync.task}`);
     // Wait 10 seconds for task to initialize
@@ -830,7 +829,7 @@ export const elConfigureAttachmentProcessor = async () => {
         }
       ]
     }).catch((e) => {
-      logApp.error('[SEARCH] Error configure attachment processor', { error: e });
+      logApp.error('ATTACHMENT_CONFIGURATION', { error: e });
       success = false;
     });
   } else {
@@ -852,7 +851,7 @@ export const elConfigureAttachmentProcessor = async () => {
         ]
       }
     }).catch((e) => {
-      logApp.error('[SEARCH] Error configure attachment processor', { error: e });
+      logApp.error('ATTACHMENT_CONFIGURATION', { error: e });
       success = false;
     });
   }
@@ -889,7 +888,7 @@ export const elDeleteIndices = async (indexesToDelete) => {
         .catch((err) => {
           /* v8 ignore next */
           if (err.meta.body && err.meta.body.error.type !== 'index_not_found_exception') {
-            logApp.error('[SEARCH] Delete indices fail', { error: err });
+            logApp.error('ENGINE_INDICES_DELETION', { error: err });
           }
         });
     })
@@ -1384,8 +1383,7 @@ export const elLoadById = async (context, user, id, opts = {}) => {
   const hits = await elFindByIds(context, user, id, opts);
   //* v8 ignore if */
   if (hits.length > 1) {
-    const errorMeta = { id, hits: hits.length };
-    throw DatabaseError('[SEARCH] Expect only one response', errorMeta);
+    throw DatabaseError('[SEARCH] Expect only one response', { id, hits: hits.length });
   }
   return R.head(hits);
 };
@@ -1530,7 +1528,7 @@ const buildLocalMustFilter = async (validFilter) => {
   // See opencti-front\src\private\components\events\StixSightingRelationships.tsx
   if (nested) {
     if (arrayKeys.length > 1) {
-      throw UnsupportedError('[SEARCH] Must have only one field', arrayKeys);
+      throw UnsupportedError('[SEARCH] Must have only one field', { keys: arrayKeys });
     }
     const nestedMust = [];
     const nestedMustNot = [];
@@ -1572,7 +1570,7 @@ const buildLocalMustFilter = async (validFilter) => {
   // 02. Handle nil and not_nil operators
   if (operator === 'nil') {
     if (arrayKeys.length > 1) {
-      throw UnsupportedError('[SEARCH] Must have only one field', arrayKeys);
+      throw UnsupportedError('[SEARCH] Must have only one field', { keys: arrayKeys });
     } else {
       valuesFiltering.push({
         bool: {
@@ -1586,7 +1584,7 @@ const buildLocalMustFilter = async (validFilter) => {
     }
   } else if (operator === 'not_nil') {
     if (arrayKeys.length > 1) {
-      throw UnsupportedError('[SEARCH] Must have only one field', arrayKeys);
+      throw UnsupportedError('[SEARCH] Must have only one field', { keys: arrayKeys });
     } else {
       valuesFiltering.push({ exists: { field: R.head(arrayKeys) } });
     }
@@ -1596,7 +1594,7 @@ const buildLocalMustFilter = async (validFilter) => {
     for (let i = 0; i < values.length; i += 1) {
       if (values[i] === 'EXISTS') {
         if (arrayKeys.length > 1) {
-          throw UnsupportedError('[SEARCH] Must have only one field', arrayKeys);
+          throw UnsupportedError('[SEARCH] Must have only one field', { keys: arrayKeys });
         }
         valuesFiltering.push({ exists: { field: R.head(arrayKeys) } });
       } else if (operator === 'eq' || operator === 'not_eq') {
@@ -1659,7 +1657,7 @@ const buildLocalMustFilter = async (validFilter) => {
         });
       } else {
         if (arrayKeys.length > 1) {
-          throw UnsupportedError('[SEARCH] Must have only one field', arrayKeys);
+          throw UnsupportedError('[SEARCH] Must have only one field', { keys: arrayKeys });
         }
         valuesFiltering.push({ range: { [R.head(arrayKeys)]: { [operator]: values[i] } } });
       }
@@ -1727,7 +1725,7 @@ const adaptFilterToEntityTypeFilterKey = (filter) => {
   const { key, mode = 'or', operator = 'eq' } = filter;
   const arrayKeys = Array.isArray(key) ? key : [key];
   if (arrayKeys[0] !== TYPE_FILTER || arrayKeys.length > 1) {
-    throw Error(`A filter with these multiple keys is not supported: ${arrayKeys}`);
+    throw UnsupportedError('A filter with these multiple keys is not supported', { keys: arrayKeys });
   }
   // at this point arrayKeys === ['entity_type']
 
@@ -1790,10 +1788,10 @@ const adaptFilterToIdsFilterKey = (filter) => {
   const { key, mode = 'or', operator = 'eq' } = filter;
   const arrayKeys = Array.isArray(key) ? key : [key];
   if (arrayKeys[0] !== IDS_FILTER || arrayKeys.length > 1) {
-    throw Error(`A filter with these multiple keys is not supported: ${arrayKeys}`);
+    throw UnsupportedError('A filter with these multiple keys is not supported', { keys: arrayKeys });
   }
   if (filter.mode === 'and') {
-    throw Error('Unsupported filter: \'And\' operator between values of a filter with key = \'ids\' is not supported');
+    throw UnsupportedError('Unsupported filter: \'And\' operator between values of a filter with key = \'ids\' is not supported');
   }
   // at this point arrayKey === ['ids'], and mode is always 'or'
 
@@ -1852,7 +1850,7 @@ const adaptFilterToSourceReliabilityFilterKey = async (context, user, filter) =>
   const { key, mode = 'or', operator = 'eq', values } = filter;
   const arrayKeys = Array.isArray(key) ? key : [key];
   if (arrayKeys[0] !== SOURCE_RELIABILITY_FILTER || arrayKeys.length > 1) {
-    throw Error(`A filter with these multiple keys is not supported: ${arrayKeys}`);
+    throw UnsupportedError('A filter with these multiple keys is not supported', { keys: arrayKeys });
   }
   // at this point arrayKey === ['source_reliability']
 
@@ -2078,7 +2076,7 @@ const elQueryBodyBuilder = async (context, user, options) => {
   if (isNotEmptyField(runtimeMappings)) {
     const isRuntimeSortFeatureEnable = isRuntimeSortEnable();
     if (!isRuntimeSortFeatureEnable) {
-      throw UnsupportedError(`[SEARCH] Sorting of field ${orderBy} is only possible with elastic >=7.12`);
+      throw UnsupportedError('[SEARCH] Runtime mapping is only possible with elastic >=7.12', { order: orderBy });
     }
     body.runtime_mappings = runtimeMappings;
   }
@@ -2119,7 +2117,7 @@ export const elHistogramCount = async (context, user, indexName, options = {}) =
       dateFormat = 'yyyy-MM-dd hh:ii:ss';
       break;
     default:
-      throw FunctionalError('[SEARCH] Unsupported interval, please choose between year, quarter, month, week, day or hour', interval);
+      throw FunctionalError('[SEARCH] Unsupported interval, please choose between year, quarter, month, week, day or hour', { interval });
   }
   body.aggs = {
     count_over_time: {
@@ -2228,7 +2226,7 @@ const buildAggregationRelationFilters = async (context, user, aggregationFilters
 export const elAggregationRelationsCount = async (context, user, indexName, options = {}) => {
   const { types = [], field = null, searchOptions, aggregationOptions, aggregateOnConnections = true } = options;
   if (!R.includes(field, ['entity_type', 'internal_id', 'rel_object-marking.internal_id', 'rel_kill-chain-phase.internal_id', 'creator_id', 'rel_created-by.internal_id', null])) {
-    throw FunctionalError('[SEARCH] Unsupported field', field);
+    throw FunctionalError('[SEARCH] Unsupported field', { field });
   }
   const body = await elQueryBodyBuilder(context, user, { ...searchOptions, noSize: true, noSort: true });
   const aggregationFilters = await buildAggregationRelationFilters(context, user, aggregationOptions);
@@ -2372,8 +2370,8 @@ export const elPaginate = async (context, user, indexName, options = {}) => {
   const { types = null, connectionFormat = true } = options;
   const body = await elQueryBodyBuilder(context, user, options);
   if (body.size > ES_MAX_PAGINATION) {
-    const message = `[SEARCH] You cannot ask for more than ${ES_MAX_PAGINATION} results. If you need more, please use pagination`;
-    throw DatabaseError(message, { body });
+    const message = '[SEARCH] You cannot ask this amount of results. If you need more, please use pagination';
+    throw DatabaseError(message, { maximum: ES_MAX_PAGINATION, body });
   }
   const query = {
     index: indexName,
@@ -2404,8 +2402,7 @@ export const elPaginate = async (context, user, indexName, options = {}) => {
         }
         // If uncontrolled error, log and propagate
         if (isTechnicalError) {
-          logApp.error('[SEARCH] Paginate fail', { error: err, query });
-          throw err;
+          throw DatabaseError('Fail to execute engine pagination', { error: err, query });
         } else {
           return connectionFormat ? buildPagination(0, null, [], 0) : [];
         }
@@ -2456,7 +2453,7 @@ export const elLoadBy = async (context, user, field, value, type = null, indices
   };
   const opts = { filters, connectionFormat: false, types: type ? [type] : [] };
   const hits = await elPaginate(context, user, indices, opts);
-  if (hits.length > 1) throw UnsupportedError(`[SEARCH] Expected only one response, found ${hits.length}`);
+  if (hits.length > 1) throw UnsupportedError('[SEARCH] Expected only one response', { size: hits.length });
   return R.head(hits);
 };
 export const elAttributeValues = async (context, user, field, opts = {}) => {
@@ -2758,11 +2755,12 @@ export const prepareElementForIndexing = (element) => {
 };
 const prepareRelation = (thing) => {
   if (thing.fromRole === undefined || thing.toRole === undefined) {
-    throw DatabaseError(`[SEARCH] Cant index relation ${thing.internal_id} connections without from or to`, thing);
+    throw DatabaseError('[SEARCH] Cant index relation connections without from or to', { relation: thing });
   }
   const connections = [];
   if (!thing.from || !thing.to) {
-    throw DatabaseError(`[SEARCH] Cant index relation ${thing.internal_id}, error resolving dependency IDs`, {
+    throw DatabaseError('[SEARCH] Cant index relation, error resolving dependency IDs', {
+      id: thing.internal_id,
       fromId: thing.fromId,
       toId: thing.toId,
     });

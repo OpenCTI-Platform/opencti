@@ -114,7 +114,7 @@ const handleStreamEvents = async (streamEvents: Array<SseEvent<StreamDataEvent>>
       }
     }
   } catch (e) {
-    logApp.error('[OPENCTI-MODULE] Error executing file index manager stream handler', { error: e });
+    logApp.error('FILE_INDEX_MANAGER', { error: e });
   }
 };
 
@@ -154,7 +154,7 @@ const initFileIndexManager = () => {
         if (e.name === TYPE_LOCK_ERROR) {
           logApp.debug('[OPENCTI-MODULE] File index manager handler already started by another API');
         } else {
-          logApp.error('[OPENCTI-MODULE] File index manager handler failed to start', { error: e });
+          logApp.error('FILE_INDEX_MANAGER', { error: e });
         }
       } finally {
         running = false;
@@ -184,7 +184,7 @@ const initFileIndexManager = () => {
         if (e.name === TYPE_LOCK_ERROR) {
           logApp.debug('[OPENCTI-MODULE] File index manager stream handler already started by another API');
         } else {
-          logApp.error('[OPENCTI-MODULE] File index manager stream handler failed to start', { error: e });
+          logApp.error('FILE_INDEX_MANAGER', { error: e });
         }
       } finally {
         if (streamProcessor) await streamProcessor.shutdown();

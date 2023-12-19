@@ -82,7 +82,7 @@ const migrationStorage = {
       logApp.info(`[MIGRATION] Saving current configuration, ${mig.title}`);
       return fn();
     } catch (err) {
-      logApp.error('[MIGRATION] Error saving the migration state', { error: err });
+      logApp.error('MIGRATION_STATE', { error: err });
       return fn();
     }
   },
@@ -92,7 +92,9 @@ export const applyMigration = (context) => {
   const set = new MigrationSet(migrationStorage);
   return new Promise((resolve, reject) => {
     migrationStorage.load((err, state) => {
-      if (err) throw DatabaseError('[MIGRATION] Error applying migration', err);
+      if (err) {
+        throw DatabaseError('[MIGRATION] Error applying migration', err);
+      }
       // Set last run date on the set
       set.lastRun = state.lastRun;
       // Read migrations from webpack
@@ -121,7 +123,7 @@ export const applyMigration = (context) => {
       // Start the set migration
       set.up((migrationError) => {
         if (migrationError) {
-          logApp.error('[MIGRATION] Error during migration', { error: migrationError });
+          logApp.error('MIGRATION_RUN', { error: migrationError });
           reject(migrationError);
           return;
         }

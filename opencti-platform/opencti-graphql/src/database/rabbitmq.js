@@ -202,7 +202,7 @@ export const rabbitMQIsAlive = async () => {
     return assertExchange(CONNECTOR_EXCHANGE, 'direct', { durable: true });
   }).catch(
     /* v8 ignore next */ (e) => {
-      throw DatabaseError('RabbitMQ seems down', { error: e.data });
+      throw DatabaseError('RabbitMQ seems down', { error: e });
     }
   );
 };

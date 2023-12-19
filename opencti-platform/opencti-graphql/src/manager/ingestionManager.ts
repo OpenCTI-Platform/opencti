@@ -9,7 +9,7 @@ import { AxiosHeaders } from 'axios';
 import type { Moment } from 'moment';
 import { lockResource } from '../database/redis';
 import conf, { booleanConf, logApp } from '../config/conf';
-import { TYPE_LOCK_ERROR, UnsupportedError } from '../config/errors';
+import { TYPE_LOCK_ERROR, UnknownError, UnsupportedError } from '../config/errors';
 import { executionContext, SYSTEM_USER } from '../utils/access';
 import { type GetHttpClient, getHttpClient } from '../utils/http-client';
 import { isEmptyField, isNotEmptyField } from '../database/utils';
@@ -187,7 +187,7 @@ const rssExecutor = async (context: AuthContext, turndownService: TurndownServic
     const ingestion = ingestions[i];
     const ingestionPromise = rssDataHandler(context, httpGet, turndownService, ingestion)
       .catch((e) => {
-        logApp.error(`[OPENCTI-MODULE] Rss ingestion execution error for ${ingestion.name}`, { error: e });
+        logApp.error('INGESTION_MANAGER', { error: e, name: ingestion.name, context: 'Rss ingestion execution' });
       });
     ingestionPromises.push(ingestionPromise);
   }
@@ -240,7 +240,8 @@ const taxiiV21DataHandler: TaxiiHandlerFn = async (context: AuthContext, ingesti
       added_after_start: utcDate(addedLast)
     });
   } else if (data.objects === undefined) {
-    logApp.error(`[OPENCTI-MODULE] Taxii ingestion execution error for ${ingestion.name}`, { error: data });
+    const error = UnknownError('Undefined taxii objects', data);
+    logApp.error('INGESTION_MANAGER', { error, name: ingestion.name, context: 'Taxii 2.1 transform' });
   }
 };
 const TAXII_HANDLERS: { [k: string]: TaxiiHandlerFn } = {
@@ -263,7 +264,7 @@ const taxiiExecutor = async (context: AuthContext) => {
     }
     const ingestionPromise = taxiiHandler(context, ingestion)
       .catch((e) => {
-        logApp.error(`[OPENCTI-MODULE] Taxii ingestion execution error for ${ingestion.name}`, { error: e });
+        logApp.error('INGESTION_MANAGER', { name: ingestion.name, error: e, context: 'Taxii ingestion execution' });
       });
     ingestionPromises.push(ingestionPromise);
   }
@@ -290,7 +291,7 @@ const ingestionHandler = async () => {
     if (e.name === TYPE_LOCK_ERROR) {
       logApp.debug('[OPENCTI-MODULE] Ingestion manager already in progress by another API');
     } else {
-      logApp.error('[OPENCTI-MODULE] Ingestion manager fail to execute', { error: e });
+      logApp.error('INGESTION_MANAGER', { error: e });
     }
   } finally {
     running = false;

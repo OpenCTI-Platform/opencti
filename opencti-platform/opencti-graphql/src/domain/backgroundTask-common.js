@@ -6,7 +6,7 @@ import { ENTITY_TYPE_BACKGROUND_TASK } from '../schema/internalObject';
 import { now } from '../utils/format';
 import { BYPASS, MEMBER_ACCESS_RIGHT_ADMIN, SETTINGS_SET_ACCESSES } from '../utils/access';
 import { isKnowledge, KNOWLEDGE_DELETE, KNOWLEDGE_UPDATE } from '../schema/general';
-import { ForbiddenAccess } from '../config/errors';
+import { ForbiddenAccess, UnsupportedError } from '../config/errors';
 import { elIndex } from '../database/engine';
 import { INDEX_INTERNAL_OBJECTS } from '../database/utils';
 import { ENTITY_TYPE_NOTIFICATION } from '../modules/notification/notification-types';
@@ -71,7 +71,7 @@ export const checkActionValidity = async (context, user, input, scope, taskType)
         throw ForbiddenAccess(undefined, 'The targeted ids are not knowledges.');
       }
     } else {
-      throw Error('A background task should be of type query or list.');
+      throw UnsupportedError('A background task should be of type query or list.');
     }
   } else if (scope === 'USER') { // 02. Background task of scope Notification
     // Check the modified entities are Notifications
@@ -104,10 +104,10 @@ export const checkActionValidity = async (context, user, input, scope, taskType)
         throw ForbiddenAccess();
       }
     } else {
-      throw Error('A background task should be of type query or list.');
+      throw UnsupportedError('A background task should be of type query or list.');
     }
   } else { // 03. Background task with an invalid scope
-    throw Error('A background task should be of scope Settings, Knowledge or User.');
+    throw UnsupportedError('A background task should be of scope Settings, Knowledge or User.');
   }
 };
 

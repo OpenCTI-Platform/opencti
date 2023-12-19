@@ -120,7 +120,7 @@ const connectorHandler = async () => {
     if (e.name === TYPE_LOCK_ERROR) {
       logApp.debug('[OPENCTI-MODULE] Connector manager already started by another API');
     } else {
-      logApp.error('[OPENCTI-MODULE] Connector manager failed to start', { error: e });
+      logApp.error('CONNECTOR_MANAGER', { error: e });
     }
   } finally {
     running = false;
@@ -132,7 +132,7 @@ const connectorHandler = async () => {
 const initConnectorManager = () => {
   let scheduler;
   return {
-    start: () => {
+    start: async () => {
       scheduler = setIntervalAsync(async () => {
         await connectorHandler();
       }, SCHEDULE_TIME);

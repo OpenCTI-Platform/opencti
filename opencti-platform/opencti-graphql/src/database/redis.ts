@@ -99,7 +99,7 @@ export const createRedisClient = (provider: string, autoReconnect = false): Clus
   }
   client.on('close', () => logApp.info(`[REDIS] Redis '${provider}' client closed`));
   client.on('ready', () => logApp.info(`[REDIS] Redis '${provider}' client ready`));
-  client.on('error', (err) => logApp.error(`[REDIS] Redis '${provider}' client error`, { error: err }));
+  client.on('error', (err) => logApp.error('REDIS_CLIENT', { provider, error: err }));
   client.on('reconnecting', () => logApp.info(`[REDIS] '${provider}' Redis client reconnecting`));
   return client;
 };
@@ -146,7 +146,7 @@ export const redisTx = async (client: Cluster | Redis, chain: (tx: ChainableComm
     await chain(tx);
     return await tx.exec();
   } catch (e) {
-    throw DatabaseError('Redis Tx error', { error: e });
+    throw DatabaseError('Redis transaction error', { error: e });
   }
 };
 const updateObjectRaw = async (tx: ChainableCommander, id: string, input: object) => {
@@ -670,7 +670,7 @@ export const createStreamProcessor = <T extends BaseEvent> (
         await processStreamResult([], callback, opts.withInternal);
       }
     } catch (err) {
-      logApp.error(`Error in redis streams read for ${provider}`, { error: err });
+      logApp.error('REDIS_STREAMS', { provider, error: err });
       if (opts.autoReconnect) {
         await waitInSec(2);
       } else {

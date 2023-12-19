@@ -131,7 +131,7 @@ const userResolvers = {
         const { user, provider } = await new Promise((resolve) => {
           passport.authenticate(auth.provider, {}, (err, authUser, info) => {
             if (err || info) {
-              logApp.warn(`[AUTH] ${auth.provider}`, { error: err, info });
+              logApp.warn('AUTHENTICATION', { error: err, info, provider: auth.provider });
             }
             resolve({ user: authUser, provider: auth.provider });
           })({ body });

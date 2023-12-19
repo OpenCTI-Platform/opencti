@@ -5,7 +5,7 @@ import { clearIntervalAsync, setIntervalAsync, type SetIntervalAsyncTimer } from
 import type { Moment } from 'moment';
 import { createStreamProcessor, fetchRangeNotifications, lockResource, storeNotificationEvent, type StreamProcessor } from '../database/redis';
 import conf, { booleanConf, logApp } from '../config/conf';
-import { TYPE_LOCK_ERROR } from '../config/errors';
+import { FunctionalError, TYPE_LOCK_ERROR } from '../config/errors';
 import { executionContext, INTERNAL_USERS, isUserCanAccessStixElement, isUserCanAccessStoreElement, SYSTEM_USER } from '../utils/access';
 import type { DataEvent, SseEvent, StreamNotifEvent, UpdateEvent } from '../types/event';
 import type { AuthContext, AuthUser } from '../types/user';
@@ -385,7 +385,7 @@ const generateNotificationMessageForFilteredSideEvents = async (
   // -- 02. translatedType = update (i.e. event type = update that modify a listened ref and doesn't modify the rights)
   if (translatedType === EVENT_TYPE_UPDATE) {
     if (!updatePatch) {
-      throw Error('An event of type update should have an update patch.');
+      throw FunctionalError('An event of type update should have an update patch');
     }
     const listenedInstancesInPatchIds = filterUpdateInstanceIdsFromUpdatePatch(listenedInstanceIdsMap, updatePatch);
     if (listenedInstancesInPatchIds.length > 0) { // 2.a.--> It's the patch that contains instance(s) of the trigger filters
@@ -526,7 +526,7 @@ const notificationLiveStreamHandler = async (streamEvents: Array<SseEvent<DataEv
       }
     }
   } catch (e) {
-    logApp.error('[OPENCTI-MODULE] Error executing notification manager (live)', { error: e });
+    logApp.error('NOTIFICATION_MANAGER', { error: e });
   }
 };
 
@@ -599,7 +599,7 @@ const initNotificationManager = () => {
       if (e.name === TYPE_LOCK_ERROR) {
         logApp.debug('[OPENCTI-MODULE] Notification manager already started by another API');
       } else {
-        logApp.error('[OPENCTI-MODULE] Notification manager failed to start', { error: e });
+        logApp.error('NOTIFICATION_MANAGER', { error: e });
       }
     } finally {
       if (streamProcessor) await streamProcessor.shutdown();
@@ -624,7 +624,7 @@ const initNotificationManager = () => {
       if (e.name === TYPE_LOCK_ERROR) {
         logApp.debug('[OPENCTI-MODULE] Notification manager (digest) already started by another API');
       } else {
-        logApp.error('[OPENCTI-MODULE] Error executing notification manager (digest)', { error: e });
+        logApp.error('NOTIFICATION_MANAGER', { error: e });
       }
     } finally {
       if (lock) await lock.unlock();

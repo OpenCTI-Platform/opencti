@@ -380,7 +380,7 @@ const createApp = async (app) => {
       const logged = await callbackLogin();
       await authenticateUser(context, req, logged, provider);
     } catch (err) {
-      logApp.error(`Error login through provider ${provider}`, { error: err?.message });
+      logApp.error('LOGIN_PROVIDER', { provider, error: err });
       setCookieError(res, 'Invalid authentication, please ask your administrator');
     } finally {
       res.redirect(referer ?? '/');
@@ -410,7 +410,7 @@ const createApp = async (app) => {
 
   // Error handling
   app.use((err, req, res, next) => {
-    logApp.error('[EXPRESS] Error http call', { error: err, referer: req.headers.referer });
+    logApp.error('GENERIC_HTTP_CALL', { error: err, referer: req.headers.referer });
     res.redirect('/');
     next();
   });

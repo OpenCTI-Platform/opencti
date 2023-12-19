@@ -413,7 +413,7 @@ const entitiesAggregations = [
 export const listAllEntitiesForFilter = async (context: AuthContext, user: AuthUser, filter: string, type: string, args = {}) => {
   const aggregation = entitiesAggregations.find((agg) => agg.name === filter);
   if (!aggregation) {
-    throw FunctionalError(`filter ${filter} is not supported as an aggregation.`);
+    throw FunctionalError('Filter is not supported as an aggregation', { filter });
   }
   const aggregationsList = await elAggregationsList(context, user, READ_DATA_INDICES_WITHOUT_INFERRED, [aggregation], args);
   const values = aggregationsList.find((agg) => agg.name === filter)?.values ?? [];

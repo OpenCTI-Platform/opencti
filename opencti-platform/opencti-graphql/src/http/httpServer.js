@@ -115,7 +115,7 @@ const listenServer = async () => {
         resolve({ server });
       });
     } catch (e) {
-      logApp.error('[OPENCTI] API start fail', { error: e });
+      logApp.error('GRAPHQL_SERVER', { error: e });
       reject(e);
     }
   });
