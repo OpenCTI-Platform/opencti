@@ -31,9 +31,9 @@ const NARRATIVE_DEFINITION: ModuleDefinition<StoreEntityNarrative, StixNarrative
     },
   },
   attributes: [
-    { name: 'name', type: 'string', mandatoryType: 'external', editDefault: true, multiple: false, upsert: true },
-    { name: 'description', type: 'string', mandatoryType: 'customizable', editDefault: true, multiple: false, upsert: true },
-    { name: 'narrative_types', type: 'string', mandatoryType: 'no', editDefault: false, multiple: true, upsert: true, label: 'Narrative types' },
+    { name: 'name', label: 'Name', type: 'string', mandatoryType: 'external', editDefault: true, multiple: false, upsert: true, isFilterable: true },
+    { name: 'description', label: 'Description', type: 'string', mandatoryType: 'customizable', editDefault: true, multiple: false, upsert: true, isFilterable: true },
+    { name: 'narrative_types', label: 'Narrative types', type: 'string', mandatoryType: 'no', editDefault: false, multiple: true, upsert: true, isFilterable: true },
   ],
   relations: [
     {

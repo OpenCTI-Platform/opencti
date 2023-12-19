@@ -29,7 +29,7 @@ const LANGUAGE_DEFINITION: ModuleDefinition<StoreEntityLanguage, StixLanguage> =
     },
   },
   attributes: [
-    { name: 'name', type: 'string', mandatoryType: 'external', editDefault: true, multiple: false, upsert: true },
+    { name: 'name', label: 'Name', type: 'string', mandatoryType: 'external', editDefault: true, multiple: false, upsert: true, isFilterable: true },
   ],
   relations: [], // All relations are from the other side
   representative: (stix: StixLanguage) => {
