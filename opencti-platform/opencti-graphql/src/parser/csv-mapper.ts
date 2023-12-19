@@ -56,7 +56,7 @@ const computeValue = (value: string, column: AttributeColumn, attributeDef: Attr
     return null;
   }
   // Handle multiple
-  if (attributeDef.multiple ?? false) {
+  if (attributeDef.multiple) {
     if (column.configuration?.separator) {
       return value.split(column.configuration.separator).map((v) => formatValue(v, attributeDef.type, column));
     }

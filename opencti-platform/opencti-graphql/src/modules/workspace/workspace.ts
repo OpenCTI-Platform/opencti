@@ -7,6 +7,7 @@ import { ABSTRACT_INTERNAL_OBJECT } from '../../schema/general';
 import type { ModuleDefinition } from '../../schema/module';
 import { registerDefinition } from '../../schema/module';
 import convertWorkspaceToStix from './workspace-converter';
+import { authorizedMembers } from '../../schema/attribute-definition';
 
 const WORKSPACE_DEFINITION: ModuleDefinition<StoreEntityWorkspace, StixWorkspace> = {
   type: {
@@ -35,9 +36,9 @@ const WORKSPACE_DEFINITION: ModuleDefinition<StoreEntityWorkspace, StixWorkspace
     { name: 'manifest', label: 'Manifest', type: 'string', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
     { name: 'type', label: 'Type', type: 'string', mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false, isFilterable: true },
     { name: 'tags', label: 'Tags', type: 'string', mandatoryType: 'no', editDefault: false, multiple: true, upsert: false, isFilterable: true },
-    { name: 'graph_data', label: 'Graph data', type: 'string', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true },
+    { name: 'graph_data', label: 'Graph data', type: 'string', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
     { name: 'investigated_entities_ids', label: 'Investigated entities IDs', type: 'string', mandatoryType: 'no', editDefault: false, multiple: true, upsert: false, isFilterable: false },
-    { name: 'authorized_members', label: 'Authorized members', type: 'json', mandatoryType: 'no', editDefault: false, multiple: true, upsert: false, isFilterable: false },
+    authorizedMembers
   ],
   relations: [],
   representative: (stix: StixWorkspace) => {

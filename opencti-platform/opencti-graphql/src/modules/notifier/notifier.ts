@@ -6,6 +6,7 @@ import { ABSTRACT_INTERNAL_OBJECT } from '../../schema/general';
 import type { ModuleDefinition } from '../../schema/module';
 import { registerDefinition } from '../../schema/module';
 import { convertNotifierToStix } from './notifier-converter';
+import { authorizedAuthorities, authorizedMembers } from '../../schema/attribute-definition';
 
 const NOTIFIER_DEFINITION: ModuleDefinition<StoreEntityNotifier, StixNotifier> = {
   type: {
@@ -24,12 +25,14 @@ const NOTIFIER_DEFINITION: ModuleDefinition<StoreEntityNotifier, StixNotifier> =
   },
   attributes: [
     { name: 'name', label: 'Name', type: 'string', mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false, isFilterable: true },
+    { name: 'created', type: 'date', mandatoryType: 'external', editDefault: false, multiple: false, upsert: true },
+    { name: 'updated', type: 'date', mandatoryType: 'external', editDefault: false, multiple: false, upsert: false },
     { name: 'description', label: 'Description', type: 'string', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true },
     { name: 'built_in', label: 'Built-in', type: 'boolean', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true },
     { name: 'notifier_connector_id', label: 'Connector ID', type: 'string', mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false, isFilterable: false },
     { name: 'notifier_configuration', label: 'Configuration', type: 'json', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
-    { name: 'authorized_members', label: 'Authorized members', type: 'json', mandatoryType: 'no', editDefault: false, multiple: true, upsert: false, isFilterable: false },
-    { name: 'authorized_authorities', label: 'Authorized authorities', type: 'string', mandatoryType: 'no', editDefault: false, multiple: true, upsert: false, isFilterable: false },
+    authorizedMembers,
+    authorizedAuthorities,
   ],
   relations: [],
   representative: (stix: StixNotifier) => {

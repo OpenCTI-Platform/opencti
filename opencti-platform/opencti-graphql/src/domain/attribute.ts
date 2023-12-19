@@ -61,7 +61,7 @@ export const queryAttributesDefinition = async (context: AuthContext, user: Auth
         if (attr.mandatoryType === 'external') {
           attributeConfig.mandatory = true;
         }
-        if (attr.scalable) { // return default scale
+        if (attr.type === 'numeric' && attr.scalable) { // return default scale
           attributeConfig.scale = defaultScale;
         }
         attributesConfiguration.push(attributeConfig);

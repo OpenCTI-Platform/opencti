@@ -12,7 +12,6 @@ import {
   lang,
   modified,
   revoked,
-  specVersion,
   standardId,
   updatedAt,
   xOpenctiAliases,
@@ -27,19 +26,14 @@ export const INTERNAL_ATTRIBUTES = [
   xOpenctiStixIds.name,
   'external_id',
   iAliasedIds.name,
-
   // Auditing
   createdAt.name,
   updatedAt.name,
   modified.name,
-
   // Technical
-
   created.name,
   entityType.name,
   'relationship_type',
-  specVersion.name,
-
   identityClass.name,
   creators.name,
   files.name,
@@ -60,7 +54,6 @@ export const INTERNAL_ATTRIBUTES = [
   'x_mitre_detection',
   'x_mitre_id',
   'x_opencti_graph_data',
-
   // X - OpenCTI
   xOpenctiAliases.name,
   'x_opencti_workflow_id',

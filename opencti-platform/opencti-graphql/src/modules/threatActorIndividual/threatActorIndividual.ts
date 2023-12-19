@@ -91,6 +91,7 @@ const THREAT_ACTOR_INDIVIDUAL_DEFINITION: ModuleDefinition<StoreEntityThreatActo
   attributes: [
     { name: 'name', label: 'Name', type: 'string', mandatoryType: 'external', editDefault: true, multiple: false, upsert: true, isFilterable: true },
     { name: 'description', label: 'Description', type: 'string', mandatoryType: 'customizable', editDefault: true, multiple: false, upsert: true, isFilterable: true },
+    { name: 'aliases', type: 'string', mandatoryType: 'no', editDefault: true, multiple: true, upsert: true },
     { name: 'threat_actor_types', label: 'Threat actor types', type: 'string', mandatoryType: 'customizable', editDefault: true, multiple: true, upsert: false, isFilterable: true },
     { name: 'first_seen', label: 'First seen', type: 'date', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: true },
     { name: 'last_seen', label: 'Last seen', type: 'date', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: true },
@@ -107,8 +108,49 @@ const THREAT_ACTOR_INDIVIDUAL_DEFINITION: ModuleDefinition<StoreEntityThreatActo
     { name: 'marital_status', label: 'Marital status', type: 'string', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true },
     { name: 'eye_color', label: 'Eye color', type: 'string', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true },
     { name: 'hair_color', label: 'Hair color', type: 'string', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true },
-    { name: 'height', label: 'Height', type: 'object', mandatoryType: 'no', editDefault: false, multiple: true, upsert: true, schemaDef: schemaMeasure, isFilterable: false },
-    { name: 'weight', label: 'Weight', type: 'object', mandatoryType: 'no', editDefault: false, multiple: true, upsert: true, schemaDef: schemaMeasure, isFilterable: false },
+    {
+      name: 'height',
+      type: 'object',
+      mandatoryType: 'no',
+      editDefault: false,
+      multiple: true,
+      upsert: true,
+      mappings: [
+        {
+          name: 'measure',
+          type: 'numeric',
+          mandatoryType: 'external',
+          upsert: true,
+          precision: 'float',
+          editDefault: false,
+          multiple: false
+        },
+        { name: 'date_seen', type: 'date', mandatoryType: 'external', upsert: true, editDefault: false, multiple: false }
+      ]
+    },
+    {
+      name: 'weight',
+      type: 'object',
+      mandatoryType: 'no',
+      editDefault: false,
+      multiple: true,
+      upsert: true,
+      mappings: [
+        {
+          name: 'measure',
+          type: 'numeric',
+          mandatoryType: 'external',
+          upsert: true,
+          precision: 'float',
+          editDefault: false,
+          multiple: false
+        },
+        { name: 'date_seen', type: 'date', mandatoryType: 'external', upsert: true, editDefault: false, multiple: false }
+      ]
+    },
+    { name: 'confidence', type: 'numeric', precision: 'integer', mandatoryType: 'no', editDefault: true, multiple: false, upsert: false },
+    { name: 'revoked', type: 'boolean', mandatoryType: 'no', editDefault: true, multiple: false, upsert: false },
+    { name: 'lang', type: 'string', mandatoryType: 'no', editDefault: true, multiple: false, upsert: true },
   ],
   relations: [
     {

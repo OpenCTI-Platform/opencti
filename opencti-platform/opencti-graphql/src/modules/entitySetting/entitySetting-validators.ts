@@ -94,7 +94,7 @@ const attributesConfigurationValidation = async (context: AuthContext, user: Aut
       // Scale
       if (attr.scale) {
         // Relation ref can't be scalable
-        if (!attributeDefinition?.scalable) {
+        if (attributeDefinition?.type === 'numeric' && !attributeDefinition?.scalable) {
           throw ValidationError(attr.name, {
             message: 'This attribute is not scalable for this entity',
             data: { attribute: attr.name, entityType: targetType }

@@ -1,8 +1,6 @@
 import * as R from 'ramda';
 import Ajv from 'ajv';
-import * as jsonpatch from 'fast-json-patch';
 import { SemanticAttributes } from '@opentelemetry/semantic-conventions';
-import { JSONPath } from 'jsonpath-plus';
 import {
   isBooleanAttribute,
   isDateAttribute,
@@ -30,12 +28,13 @@ const ajv = new Ajv();
 
 // -- VALIDATE ATTRIBUTE AVAILABILITY AND FORMAT --
 
-export const extractSchemaDefFromPath = (attributeDefinition: AttributeDefinition, pointer: string, editInput: EditInput): object | object[] => {
-  const configPath = pointer.split('/').filter((a) => isNotEmptyField(a) && a !== editInput.key)
-    .map((t) => (!Number.isNaN(Number(t)) ? 'items' : (`properties.${t}`))).join('.');
-  const configSchema = JSONPath({ json: attributeDefinition.schemaDef as object, resultType: 'value', wrap: false, path: configPath });
-  return configSchema?.type === undefined || configSchema?.type === 'array' ? editInput.value : R.head(editInput.value);
-};
+// TODO JRI 4939 Reintroduce object validation
+// export const extractSchemaDefFromPath = (attributeDefinition: ObjectAttribute, pointer: string, editInput: EditInput): object | object[] => {
+//   const configPath = pointer.split('/').filter((a) => isNotEmptyField(a) && a !== editInput.key)
+//     .map((t) => (!Number.isNaN(Number(t)) ? 'items' : (`properties.${t}`))).join('.');
+//   const configSchema = JSONPath({ json: attributeDefinition.schemaDef as object, resultType: 'value', wrap: false, path: configPath });
+//   return configSchema?.type === undefined || configSchema?.type === 'array' ? editInput.value : R.head(editInput.value);
+// };
 
 export const validateAndFormatSchemaAttribute = (
   instanceType: string,
@@ -52,29 +51,28 @@ export const validateAndFormatSchemaAttribute = (
         data: { attribute: attributeName, entityType: instanceType }
       });
     }
-    if (attributeDefinition.schemaDef) {
+    if (attributeDefinition.type === 'json' && attributeDefinition.schemaDef) {
       const validate = ajv.compile(attributeDefinition.schemaDef);
-      if (isJsonAttribute(attributeName)) {
-        const jsonValue = R.head(editInput.value); // json cannot be multiple
-        const valid = validate(JSON.parse(jsonValue as string));
-        if (!valid) {
-          throw ValidationError(attributeName, { message: 'The JSON schema is not valid', data: validate.errors });
-        }
+      const jsonValue = R.head(editInput.value); // json cannot be multiple
+      const valid = validate(JSON.parse(jsonValue as string));
+      if (!valid) {
+        throw ValidationError(attributeName, { message: 'The JSON schema is not valid', data: validate.errors });
       }
-      if (isObjectAttribute(attributeName)) {
-        let validationValues = editInput.value;
-        if (editInput.object_path) {
-          // If object path is setup, controlling the field is much harder.
-          // Concept here is to apply the partial operation and check if the result comply to the schema
-          const pointers = JSONPath({ json: initial, resultType: 'pointer', path: `${editInput.key}${editInput.object_path}` });
-          const patch = pointers.map((p: string) => ({ op: editInput.operation, path: p, value: extractSchemaDefFromPath(attributeDefinition, p, editInput) }));
-          const patchedInstance = jsonpatch.applyPatch(R.clone(initial), patch).newDocument as any;
-          validationValues = patchedInstance[editInput.key];
-        }
-        const valid = validate(validationValues);
-        if (!valid) {
-          throw ValidationError(attributeName, { message: 'The Object schema is not valid', data: validate.errors });
-        }
+    }
+    if (attributeDefinition.type === 'object') {
+      // TODO JRI 4939 Reintroduce object validation
+      // let validationValues = editInput.value;
+      // if (editInput.object_path) {
+      //   // If object path is setup, controlling the field is much harder.
+      //   // Concept here is to apply the partial operation and check if the result comply to the schema
+      //   const pointers = JSONPath({ json: initial, resultType: 'pointer', path: `${editInput.key}${editInput.object_path}` });
+      //   const patch = pointers.map((p: string) => ({ op: editInput.operation, path: p, value: extractSchemaDefFromPath(attributeDefinition, p, editInput) }));
+      //   const patchedInstance = jsonpatch.applyPatch(R.clone(initial), patch).newDocument as any;
+      //   validationValues = patchedInstance[editInput.key];
+      // }
+      const valid = true; // validate(validationValues);
+      if (!valid) {
+        throw ValidationError(attributeName, { message: 'The Object schema is not valid' });
       }
     }
   }
