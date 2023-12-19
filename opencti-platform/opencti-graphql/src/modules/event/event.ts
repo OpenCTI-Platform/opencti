@@ -32,11 +32,11 @@ const EVENT_DEFINITION: ModuleDefinition<StoreEntityEvent, StixEvent> = {
     },
   },
   attributes: [
-    { name: 'name', type: 'string', mandatoryType: 'external', editDefault: true, multiple: false, upsert: true },
-    { name: 'description', type: 'string', mandatoryType: 'customizable', editDefault: true, multiple: false, upsert: true },
-    { name: 'event_types', type: 'string', mandatoryType: 'customizable', editDefault: true, multiple: true, upsert: true, label: 'Event types' },
-    { name: 'start_time', type: 'date', mandatoryType: 'customizable', editDefault: true, multiple: false, upsert: true, label: 'Start date' },
-    { name: 'stop_time', type: 'date', mandatoryType: 'customizable', editDefault: true, multiple: false, upsert: true, label: 'End date' },
+    { name: 'name', label: 'Name', type: 'string', mandatoryType: 'external', editDefault: true, multiple: false, upsert: true, isFilterable: true },
+    { name: 'description', label: 'Description', type: 'string', mandatoryType: 'customizable', editDefault: true, multiple: false, upsert: true, isFilterable: true },
+    { name: 'event_types', label: 'Event types', type: 'string', mandatoryType: 'customizable', editDefault: true, multiple: true, upsert: true, isFilterable: true },
+    { name: 'start_time', label: 'Start date', type: 'date', mandatoryType: 'customizable', editDefault: true, multiple: false, upsert: true, isFilterable: true },
+    { name: 'stop_time', label: 'End date', type: 'date', mandatoryType: 'customizable', editDefault: true, multiple: false, upsert: true, isFilterable: true },
   ],
   relations: [
     {
