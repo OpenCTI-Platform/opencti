@@ -80,11 +80,7 @@ import { convertTypeToStixType } from './stix-converter';
 import { extractEntityRepresentativeName } from './entity-representative';
 import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../modules/organization/organization-types';
 import { checkAndConvertFilters, isFilterGroupNotEmpty } from '../utils/filtering/filtering-utils';
-import {
-  IDS_FILTER,
-  SOURCE_RELIABILITY_FILTER,
-  TYPE_FILTER, WORKFLOW_FILTER, X_OPENCTI_WORKFLOW_ID
-} from '../utils/filtering/filtering-constants';
+import { IDS_FILTER, SOURCE_RELIABILITY_FILTER, TYPE_FILTER, WORKFLOW_FILTER, X_OPENCTI_WORKFLOW_ID } from '../utils/filtering/filtering-constants';
 import { FilterMode } from '../generated/graphql';
 
 const ELK_ENGINE = 'elk';
@@ -1918,11 +1914,10 @@ const adaptFilterToWorkflowFilterKey = async (context, user, filter) => {
     throw Error(`A filter with these multiple keys is not supported: ${arrayKeys}`);
   }
   if (operator === 'nil' || operator === 'not_nil') { // no status template <-> no status // at least a status template <-> at least a status
-    const newFilter = {
+    return {
       ...filter,
       key: ['x_opencti_workflow_id'], // we just have to change the key
     };
-    return { newFilter, newFilterGroup: undefined };
   }
   if (operator === 'eq' || operator === 'not_eq') {
     let statuses = await getEntitiesListFromCache(context, user, ENTITY_TYPE_STATUS);
@@ -1932,14 +1927,12 @@ const adaptFilterToWorkflowFilterKey = async (context, user, filter) => {
     // !!! it works to do the mode/operator filter on the status (and not on the template)
     // because a status can only have a single template and because the operators are full-match operators (eq/not_eq) !!!
     const statusIds = statuses.length > 0 ? statuses.map((status) => status.internal_id) : ['<no-status-matching-filter>'];
-    const newFilter = {
+    return {
       key: ['x_opencti_workflow_id'],
       values: statusIds,
       mode,
       operator,
     };
-
-    return { newFilter, newFilterGroup: undefined };
   }
   throw Error(`The operators supported for a filter with key=workflow_id are: eq, not_eq, nil, not_nil: ${operator} is not supported.`);
 };
@@ -1997,13 +1990,8 @@ const completeSpecialFilterKeys = async (context, user, inputFilters) => {
     } else if (arrayKeys.includes(WORKFLOW_FILTER) || arrayKeys.includes(X_OPENCTI_WORKFLOW_ID)) {
       // in case we want to filter by status template (template of a workflow status) or status
       // we need to find all statuses filtered by status template and filter on these statuses
-      const { newFilter, newFilterGroup } = await adaptFilterToWorkflowFilterKey(context, user, filter);
-      if (newFilter) {
-        finalFilters.push(newFilter);
-      }
-      if (newFilterGroup) {
-        finalFilterGroups.push(newFilterGroup);
-      }
+      const newFilter = await adaptFilterToWorkflowFilterKey(context, user, filter);
+      finalFilters.push(newFilter);
     } else {
       // not a special case, leave the filter unchanged
       finalFilters.push(filter);

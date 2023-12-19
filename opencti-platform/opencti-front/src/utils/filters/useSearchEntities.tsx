@@ -24,9 +24,7 @@ import { ObjectParticipantFieldParticipantsSearchQuery$data } from '@components/
 import { objectParticipantFieldParticipantsSearchQuery } from '@components/common/form/ObjectParticipantField';
 import { useTheme } from '@mui/styles';
 import { StatusTemplateFieldQuery } from '@components/common/form/StatusTemplateField';
-import {
-  StatusTemplateFieldSearchQuery$data,
-} from '@components/common/form/__generated__/StatusTemplateFieldSearchQuery.graphql';
+import { StatusTemplateFieldSearchQuery$data } from '@components/common/form/__generated__/StatusTemplateFieldSearchQuery.graphql';
 import { buildScaleFilters } from '../hooks/useScale';
 import useAuth from '../hooks/useAuth';
 import { useSearchEntitiesStixCoreObjectsSearchQuery$data } from './__generated__/useSearchEntitiesStixCoreObjectsSearchQuery.graphql';
@@ -35,10 +33,8 @@ import { useFormatter } from '../../components/i18n';
 import { defaultValue } from '../Graph';
 import { fetchQuery } from '../../relay/environment';
 import { useVocabularyCategoryQuery$data } from '../hooks/__generated__/useVocabularyCategoryQuery.graphql';
-import { useSearchEntitiesStixCoreObjectsContainersSearchQuery$data
-} from './__generated__/useSearchEntitiesStixCoreObjectsContainersSearchQuery.graphql';
-import {
-  useSearchEntitiesSchemaSCOSearchQuery$data} from './__generated__/useSearchEntitiesSchemaSCOSearchQuery.graphql';
+import { useSearchEntitiesStixCoreObjectsContainersSearchQuery$data } from './__generated__/useSearchEntitiesStixCoreObjectsContainersSearchQuery.graphql';
+import { useSearchEntitiesSchemaSCOSearchQuery$data } from './__generated__/useSearchEntitiesSchemaSCOSearchQuery.graphql';
 import { Theme } from '../../components/Theme';
 
 const filtersStixCoreObjectsContainersSearchQuery = graphql`
