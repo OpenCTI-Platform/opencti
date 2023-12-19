@@ -2,8 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { useHistory } from 'react-router-dom';
 import { useLocation } from 'react-router-dom-v5-compat';
 import { OrderMode, PaginationOptions } from 'src/components/list_lines';
-import makeStyles from '@mui/styles/makeStyles';
 import { TaxiiLinesPaginationQuery$data } from '@components/data/taxii/__generated__/TaxiiLinesPaginationQuery.graphql';
+import Box from '@mui/material/Box';
 import { QueryRenderer } from '../../../relay/environment';
 import { buildViewParamsFromUrlAndStorage, saveViewParameters } from '../../../utils/ListParameters';
 import ListLines from '../../../components/list_lines/ListLines';
@@ -11,17 +11,9 @@ import TaxiiLines, { TaxiiLinesQuery } from './taxii/TaxiiLines';
 import TaxiiCollectionCreation from './taxii/TaxiiCollectionCreation';
 import SharingMenu from './SharingMenu';
 
-const useStyles = makeStyles(() => ({
-  container: {
-    margin: 0,
-    padding: '0 200px 50px 0',
-  },
-}));
-
 const LOCAL_STORAGE_KEY = 'taxii';
 
 const Taxii = () => {
-  const classes = useStyles();
   const history = useHistory();
   const location = useLocation();
   const params = buildViewParamsFromUrlAndStorage(
@@ -33,7 +25,7 @@ const Taxii = () => {
     orderAsc: params.orderAsc !== false,
     searchTerm: params.searchTerm ?? '',
     view: params.view ?? 'lines',
-    sortBy: '',
+    sortBy: params.sortBy,
   });
 
   const saveView = () => {
@@ -117,11 +109,15 @@ const Taxii = () => {
     orderMode: taxiiState.orderAsc ? OrderMode.asc : OrderMode.desc,
   };
   return (
-    <div className={classes.container}>
+    <Box sx={{
+      margin: 0,
+      padding: '0 200px 50px 0',
+    }}
+    >
       <SharingMenu/>
-      {taxiiState.view === 'lines' ? renderLines(paginationOptions) : ''}
+      {taxiiState.view === 'lines' ? renderLines(paginationOptions) : null}
       <TaxiiCollectionCreation paginationOptions={paginationOptions}/>
-    </div>
+    </Box>
   );
 };
 
