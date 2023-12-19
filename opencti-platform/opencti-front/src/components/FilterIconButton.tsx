@@ -21,12 +21,12 @@ interface FilterIconButtonProps {
   redirection?: boolean;
   helpers?: UseLocalStorageHelpers;
   availableRelationFilterTypes?: Record<string, string[]>;
-  hasRenderedRef: boolean;
-  setHasRenderedRef: () => void;
 }
 
 interface FilterIconButtonIfFiltersProps extends FilterIconButtonProps {
   filters: FilterGroup,
+  hasRenderedRef: boolean;
+  setHasRenderedRef: () => void;
 }
 const FilterIconButtonWithRepresentativesQuery: FunctionComponent<FilterIconButtonIfFiltersProps> = ({
   filters,
