@@ -21,6 +21,8 @@ interface FilterIconButtonProps {
   redirection?: boolean;
   helpers?: UseLocalStorageHelpers;
   availableRelationFilterTypes?: Record<string, string[]>;
+  hasRenderedRef: boolean;
+  setHasRenderedRef: () => void;
 }
 
 interface FilterIconButtonIfFiltersProps extends FilterIconButtonProps {
@@ -37,12 +39,9 @@ const FilterIconButtonWithRepresentativesQuery: FunctionComponent<FilterIconButt
   chipColor,
   helpers,
   availableRelationFilterTypes,
+  hasRenderedRef,
+  setHasRenderedRef,
 }) => {
-  const hasRenderedRef = useRef(false);
-  const setHasRenderedRef = () => {
-    hasRenderedRef.current = true;
-  };
-
   const filtersRepresentativesQueryRef = useQueryLoading<FilterIconButtonContentQuery>(
     filterIconButtonContentQuery,
     {
@@ -64,7 +63,7 @@ const FilterIconButtonWithRepresentativesQuery: FunctionComponent<FilterIconButt
             filters={filters}
             filtersRepresentativesQueryRef={filtersRepresentativesQueryRef}
             helpers={helpers}
-            hasRenderedRef={hasRenderedRef.current}
+            hasRenderedRef={hasRenderedRef}
             setHasRenderedRef={setHasRenderedRef}
             availableRelationFilterTypes={availableRelationFilterTypes}
           />
@@ -87,6 +86,10 @@ const FilterIconButton: FunctionComponent<FilterIconButtonProps> = ({
   helpers,
   availableRelationFilterTypes,
 }) => {
+  const hasRenderedRef = useRef(false);
+  const setHasRenderedRef = () => {
+    hasRenderedRef.current = true;
+  };
   const displayedFilters = filters ? {
     ...filters,
     filters:
@@ -105,6 +108,8 @@ const FilterIconButton: FunctionComponent<FilterIconButtonProps> = ({
         chipColor={chipColor}
         helpers={helpers}
         availableRelationFilterTypes={availableRelationFilterTypes}
+        hasRenderedRef={hasRenderedRef.current}
+        setHasRenderedRef={setHasRenderedRef}
       />
     );
   }
