@@ -282,8 +282,8 @@ export const logApp = {
       // In case of OpenCTI error
       if (meta.error) { // If meta contains an error
         let targetError = meta.error;
-        if (targetError instanceof ApolloError && meta.error?.data?.error) {
-          targetError = meta.error.data.error;
+        if (targetError instanceof ApolloError && targetError.data?.error) {
+          targetError = targetError.data.error;
         }
         const basicError = { error_code: `${message}_${targetError.name}`, stack: targetError.stack };
         const extraInfo = R.dissoc('error', targetError.data);
