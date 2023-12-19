@@ -8,7 +8,7 @@ import {
   indicatorsNumberByEntity,
   indicatorsTimeSeries,
   indicatorsTimeSeriesByEntity,
-} from '../domain/indicator';
+} from './indicator-domain';
 import {
   stixDomainObjectAddRelation,
   stixDomainObjectCleanContext,
@@ -16,15 +16,16 @@ import {
   stixDomainObjectDeleteRelation,
   stixDomainObjectEditContext,
   stixDomainObjectEditField,
-} from '../domain/stixDomainObject';
-import { batchLoader, distributionEntities } from '../database/middleware';
-import { ENTITY_TYPE_INDICATOR } from '../schema/stixDomainObject';
-import { batchKillChainPhases } from '../domain/stixCoreObject';
+} from '../../domain/stixDomainObject';
+import { batchLoader, distributionEntities } from '../../database/middleware';
+import { batchKillChainPhases } from '../../domain/stixCoreObject';
+import type { Resolvers } from '../../generated/graphql';
+import { ENTITY_TYPE_INDICATOR } from './indicator-types';
 
 const killChainPhasesLoader = batchLoader(batchKillChainPhases);
 const batchObservablesLoader = batchLoader(batchObservables);
 
-const indicatorResolvers = {
+const indicatorResolvers: Resolvers = {
   Query: {
     indicator: (_, { id }, context) => findById(context, context.user, id),
     indicators: (_, args, context) => findAll(context, context.user, args),

@@ -4210,189 +4210,6 @@ input SystemAddInput {
   file: Upload
 }
 
-############## Indicators
-enum IndicatorsOrdering {
-  pattern_type
-  pattern_version
-  pattern
-  name
-  indicator_types
-  valid_from
-  valid_until
-  x_opencti_score
-  x_opencti_detection
-  confidence
-  created
-  modified
-  created_at
-  updated_at
-  x_opencti_workflow_id
-  objectMarking
-  creator
-  createdBy
-}
-type IndicatorConnection {
-  pageInfo: PageInfo!
-  edges: [IndicatorEdge]
-}
-type IndicatorEdge {
-  cursor: String!
-  node: Indicator!
-}
-type Indicator implements BasicObject & StixObject & StixCoreObject & StixDomainObject {
-  id: ID! # internal_id
-  standard_id: String!
-  entity_type: String!
-  parent_types: [String]!
-  # StixObject
-  representative: Representative!
-  x_opencti_stix_ids: [StixId]
-  is_inferred: Boolean!
-  spec_version: String!
-  created_at: DateTime!
-  updated_at: DateTime!
-  # inferences
-  x_opencti_inferences: [Inference]
-    # StixCoreObject
-  createdBy: Identity
-  numberOfConnectedElement: Int!
-  objectMarking: MarkingDefinitionConnection
-  objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
-  objectLabel: LabelConnection
-  externalReferences(first: Int): ExternalReferenceConnection
-  containersNumber: Number
-  containers(first: Int, entityTypes: [String!], elementId: [String]): ContainerConnection
-  reports(first: Int): ReportConnection
-  notes(first: Int): NoteConnection
-  opinions(first: Int): OpinionConnection
-  observedData(first: Int): ObservedDataConnection
-  groupings(first: Int): GroupingConnection
-  cases(first: Int): CaseConnection
-  stixCoreRelationships(
-    first: Int
-    after: ID
-    orderBy: StixCoreRelationshipsOrdering
-    orderMode: OrderingMode
-    fromId: StixRef
-    toId: StixRef
-    fromTypes: [String]
-    toTypes: [String]
-    relationship_type: String
-    startTimeStart: DateTime
-    startTimeStop: DateTime
-    stopTimeStart: DateTime
-    stopTimeStop: DateTime
-    firstSeenStart: DateTime
-    firstSeenStop: DateTime
-    lastSeenStart: DateTime
-    lastSeenStop: DateTime
-    confidences: [Int]
-    search: String
-    filters: FilterGroup
-  ): StixCoreRelationshipConnection
-  stixCoreObjectsDistribution(
-    relationship_type: [String]
-    toTypes: [String]
-    field: String!
-    startDate: DateTime
-    endDate: DateTime
-    dateAttribute: String
-    operation: StatsOperation!
-    limit: Int
-    order: String
-    types: [String]
-    filters: FilterGroup
-    search: String
-  ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
-  stixCoreRelationshipsDistribution(
-    field: String!
-    operation: StatsOperation!
-    startDate: DateTime
-    endDate: DateTime
-    dateAttribute: String
-    isTo: Boolean
-    limit: Int
-    order: String
-    elementWithTargetTypes: [String]
-    fromId: [String]
-    fromRole: String
-    fromTypes: [String]
-    toId: [String]
-    toRole: String
-    toTypes: [String]
-    relationship_type: [String]
-    confidences: [Int]
-    search: String
-    filters: FilterGroup
-  ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
-  # StixDomainObject
-  revoked: Boolean!
-  confidence: Int
-  lang: String
-  created: DateTime
-  modified: DateTime
-  x_opencti_graph_data: String
-  objectAssignee: AssigneeConnection
-  avatar: OpenCtiFile
-  # Indicator
-  pattern_type: String
-  pattern_version: String
-  pattern: String
-  name: String!
-  description: String
-  indicator_types: [String]
-  valid_from: DateTime
-  valid_until: DateTime
-  x_opencti_score: Int
-  x_opencti_detection: Boolean
-  x_opencti_main_observable_type: String
-  x_mitre_platforms: [String]
-  killChainPhases: KillChainPhaseConnection
-  observables(first: Int): StixCyberObservableConnection
-  # Technical
-  creators: [Creator!]
-  toStix: String
-  importFiles(first: Int, prefixMimeType: String): FileConnection
-  pendingFiles(first: Int): FileConnection
-  exportFiles(first: Int): FileConnection
-  editContext: [EditUserContext!]
-  connectors(onlyAlive: Boolean): [Connector]
-  jobs(first: Int): [Work]
-  status: Status
-  workflowEnabled: Boolean
-}
-input IndicatorAddInput {
-  stix_id: StixId
-  x_opencti_stix_ids: [StixId!]
-  pattern_type: String!
-  pattern_version: String
-  pattern: String!
-  name: String! @constraint(minLength: 2)
-  description: String
-  indicator_types: [String!]
-  valid_from: DateTime
-  valid_until: DateTime
-  confidence: Int
-  revoked: Boolean
-  lang: String
-  x_opencti_score: Int
-  x_opencti_detection: Boolean
-  x_opencti_main_observable_type: String
-  x_mitre_platforms: [String!]
-  killChainPhases: [String!]
-  createdBy: String
-  objectMarking: [String!]
-  objectLabel: [String!]
-  objectOrganization: [String!]
-  externalReferences: [String!]
-  created: DateTime
-  modified: DateTime
-  clientMutationId: String
-  update: Boolean
-  createObservables: Boolean
-  file: Upload
-}
-
 ############## Infrastructures
 enum InfrastructuresOrdering {
   name
@@ -11444,35 +11261,7 @@ type Query {
     search: String
     toStix: Boolean
   ): SystemConnection @auth(for: [KNOWLEDGE])
-  indicator(id: String!): Indicator @auth(for: [KNOWLEDGE])
-  indicators(
-    first: Int
-    after: ID
-    orderBy: IndicatorsOrdering
-    orderMode: OrderingMode
-    filters: FilterGroup
-    search: String
-  ): IndicatorConnection @auth(for: [KNOWLEDGE])
-  indicatorsTimeSeries(
-    objectId: String
-    field: String!
-    operation: StatsOperation!
-    startDate: DateTime!
-    endDate: DateTime!
-    interval: String!
-    filters: FilterGroup
-  ): [TimeSeries] @auth(for: [KNOWLEDGE])
-  indicatorsNumber(pattern_type: String, objectId: String, endDate: DateTime): Number @auth(for: [KNOWLEDGE])
-  indicatorsDistribution(
-    objectId: String
-    field: String!
-    operation: StatsOperation!
-    limit: Int
-    order: String
-    startDate: DateTime
-    endDate: DateTime
-    dateAttribute: String
-  ): [Distribution] @auth(for: [KNOWLEDGE])
+
   infrastructure(id: String!): Infrastructure @auth(for: [KNOWLEDGE])
   infrastructures(
     first: Int
@@ -12282,15 +12071,7 @@ type SystemEditMutations {
   relationAdd(input: StixRefRelationshipAddInput!): StixRefRelationship @auth(for: [KNOWLEDGE_KNUPDATE])
   relationDelete(toId: StixRef!, relationship_type: String!): System @auth(for: [KNOWLEDGE_KNUPDATE])
 }
-type IndicatorEditMutations {
-  delete: ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
-  fieldPatch(input: [EditInput]!, commitMessage: String, references: [String]): Indicator
-  @auth(for: [KNOWLEDGE_KNUPDATE])
-  contextPatch(input: EditContext): Indicator @auth(for: [KNOWLEDGE_KNUPDATE])
-  contextClean: Indicator @auth(for: [KNOWLEDGE_KNUPDATE])
-  relationAdd(input: StixRefRelationshipAddInput!): StixRefRelationship @auth(for: [KNOWLEDGE_KNUPDATE])
-  relationDelete(toId: StixRef!, relationship_type: String!): Indicator @auth(for: [KNOWLEDGE_KNUPDATE])
-}
+
 type InfrastructureEditMutations {
   delete: ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
   fieldPatch(input: [EditInput]!, commitMessage: String, references: [String]): Infrastructure
@@ -12613,8 +12394,6 @@ type Mutation {
   sectorEdit(id: ID!): SectorEditMutations
   systemAdd(input: SystemAddInput!): System @auth(for: [KNOWLEDGE_KNUPDATE])
   systemEdit(id: ID!): SystemEditMutations
-  indicatorAdd(input: IndicatorAddInput!): Indicator @auth(for: [KNOWLEDGE_KNUPDATE])
-  indicatorEdit(id: ID!): IndicatorEditMutations
   infrastructureAdd(input: InfrastructureAddInput!): Infrastructure @auth(for: [KNOWLEDGE_KNUPDATE])
   infrastructureEdit(id: ID!): InfrastructureEditMutations
   intrusionSetAdd(input: IntrusionSetAddInput!): IntrusionSet @auth(for: [KNOWLEDGE_KNUPDATE])

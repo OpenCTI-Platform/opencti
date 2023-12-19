@@ -52,7 +52,7 @@ import containerResolvers from '../resolvers/container';
 import noteResolvers from '../resolvers/note';
 import observedDataResolvers from '../resolvers/observedData';
 import opinionResolvers from '../resolvers/opinion';
-import indicatorResolvers from '../resolvers/indicator';
+import indicatorResolvers from '../modules/indicator/indicator-resolver';
 import incidentResolvers from '../resolvers/incident';
 import { authDirectiveBuilder } from './authDirective';
 import connectorResolvers from '../resolvers/connector';

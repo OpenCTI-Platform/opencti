@@ -54,7 +54,6 @@ import {
   ENTITY_TYPE_CONTAINER_REPORT,
   ENTITY_TYPE_COURSE_OF_ACTION,
   ENTITY_TYPE_INCIDENT,
-  ENTITY_TYPE_INDICATOR,
   ENTITY_TYPE_INFRASTRUCTURE,
   ENTITY_TYPE_INTRUSION_SET,
   ENTITY_TYPE_LOCATION_CITY,
@@ -265,7 +264,7 @@ export const buildStixObject = (instance: StoreObject): S.StixObject => {
 };
 
 // Meta
-const buildKillChainPhases = (instance: StoreEntity | StoreRelation): Array<SMO.StixInternalKillChainPhase> => {
+export const buildKillChainPhases = (instance: StoreEntity | StoreRelation): Array<SMO.StixInternalKillChainPhase> => {
   return (instance[INPUT_KILLCHAIN] ?? []).map((k) => {
     const data: SMO.StixInternalKillChainPhase = {
       kill_chain_name: k.kill_chain_name,
@@ -531,31 +530,7 @@ const convertIntrusionSetToStix = (instance: StoreEntity, type: string): SDO.Sti
     secondary_motivations: instance.secondary_motivations
   };
 };
-const convertIndicatorToStix = (instance: StoreEntity, type: string): SDO.StixIndicator => {
-  assertType(ENTITY_TYPE_INDICATOR, type);
-  const indicator = buildStixDomain(instance);
-  return {
-    ...indicator,
-    name: instance.name,
-    description: instance.description,
-    indicator_types: instance.indicator_types,
-    pattern: instance.pattern,
-    pattern_type: instance.pattern_type,
-    pattern_version: instance.pattern_version,
-    valid_from: convertToStixDate(instance.valid_from),
-    valid_until: convertToStixDate(instance.valid_until),
-    kill_chain_phases: buildKillChainPhases(instance),
-    extensions: {
-      [STIX_EXT_OCTI]: cleanObject({
-        ...indicator.extensions[STIX_EXT_OCTI],
-        detection: instance.x_opencti_detection,
-        score: instance.x_opencti_score,
-        main_observable_type: instance.x_opencti_main_observable_type
-      }),
-      [STIX_EXT_MITRE]: buildMITREExtensions(instance)
-    }
-  };
-};
+
 const convertCourseOfActionToStix = (instance: StoreEntity, type: string): SDO.StixCourseOfAction => {
   assertType(ENTITY_TYPE_COURSE_OF_ACTION, type);
   const domain = buildStixDomain(instance);
@@ -1404,9 +1379,6 @@ const convertToStix = (instance: StoreCommon): S.StixObject => {
     }
     if (ENTITY_TYPE_INCIDENT === type) {
       return convertIncidentToStix(basic, type);
-    }
-    if (ENTITY_TYPE_INDICATOR === type) {
-      return convertIndicatorToStix(basic, type);
     }
     if (ENTITY_TYPE_INTRUSION_SET === type) {
       return convertIntrusionSetToStix(basic, type);

@@ -24,7 +24,7 @@ import { BUS_TOPICS, logApp } from '../config/conf';
 import { elCount } from '../database/engine';
 import { isEmptyField, isNotEmptyField, READ_INDEX_STIX_CYBER_OBSERVABLES } from '../database/utils';
 import { workToExportFile } from './work';
-import { addIndicator } from './indicator';
+import { addIndicator } from '../modules/indicator/indicator-domain';
 import { FunctionalError } from '../config/errors';
 import { createStixPattern } from '../python/pythonBridge';
 import { checkObservableSyntax, STIX_PATTERN_TYPE } from '../utils/syntax';

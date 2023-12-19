@@ -52,7 +52,7 @@ import { isStixObject } from '../schema/stixCoreObject';
 import { ENTITY_TYPE_INDICATOR } from '../schema/stixDomainObject';
 import { isStixCyberObservable } from '../schema/stixCyberObservable';
 import { promoteObservableToIndicator } from '../domain/stixCyberObservable';
-import { promoteIndicatorToObservable } from '../domain/indicator';
+import { promoteIndicatorToObservable } from '../modules/indicator/indicator-domain';
 import { askElementEnrichmentForConnector } from '../domain/stixCoreObject';
 import { RELATION_GRANTED_TO, RELATION_OBJECT } from '../schema/stixRefRelationship';
 import { ACTION_TYPE_DELETE, ACTION_TYPE_SHARE, ACTION_TYPE_UNSHARE, isTaskEnabledEntity, TASK_TYPE_LIST, TASK_TYPE_QUERY, TASK_TYPE_RULE } from '../domain/backgroundTask-common';

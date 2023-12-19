@@ -41,7 +41,7 @@ import { internalLoadById, listAllRelations, listEntities, listRelations, storeL
 import { addThreatActorGroup } from '../../../src/domain/threatActorGroup';
 import { addMalware } from '../../../src/domain/malware';
 import { addIntrusionSet } from '../../../src/domain/intrusionSet';
-import { addIndicator } from '../../../src/domain/indicator';
+import { addIndicator } from '../../../src/modules/indicator/indicator-domain';
 import { findAll } from '../../../src/domain/subType';
 import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../../../src/modules/organization/organization-types';
 import { addReport } from '../../../src/domain/report';
