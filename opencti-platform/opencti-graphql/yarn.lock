@@ -10579,27 +10579,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"nconf@npm:0.12.0":
-  version: 0.12.0
-  resolution: "nconf@npm:0.12.0"
+"nconf@npm:0.12.1":
+  version: 0.12.1
+  resolution: "nconf@npm:0.12.1"
   dependencies:
     async: ^3.0.0
     ini: ^2.0.0
     secure-keys: ^1.0.0
     yargs: ^16.1.1
-  checksum: 70c1ce82d91149940dbe57555372c99282a9625a961915b302093b34e04ab308d978d1885224b9738a0873c064a0aa48914a7260e67ba312441fc4917221dbd8
-  languageName: node
-  linkType: hard
-
-"nconf@patch:nconf@0.12.0#./patch/nconf-0.12.0.patch::locator=opencti-graphql%40workspace%3A.":
-  version: 0.12.0
-  resolution: "nconf@patch:nconf@npm%3A0.12.0#./patch/nconf-0.12.0.patch::version=0.12.0&hash=86f137&locator=opencti-graphql%40workspace%3A."
-  dependencies:
-    async: ^3.0.0
-    ini: ^2.0.0
-    secure-keys: ^1.0.0
-    yargs: ^16.1.1
-  checksum: cfce943c728358ab81f8419445f54efa8bee4d190f5be17ec2668732b6b9a860f540872bcaaf3a5fc939ef79a6deab3252e1491f3c175badbc8d91f44221c423
+  checksum: e3615d485bca665e2f2fcf7ba4e379e586a3f850d50cdf8fe19a5951399b768d8d39ec9eeb2f6ce91995973cfd9c6bef2bbeff2338807599f2b7368e9283c345
   languageName: node
   linkType: hard
 
@@ -11055,7 +11043,7 @@ __metadata:
     mime-types: 2.1.35
     moment: 2.29.4
     moment-range: 4.0.2
-    nconf: 0.12.0
+    nconf: 0.12.1
     node-calls-python: 1.7.7
     node-fetch: 3.3.2
     nodemailer: 6.9.7
