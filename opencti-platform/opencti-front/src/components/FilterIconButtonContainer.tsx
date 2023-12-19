@@ -150,6 +150,7 @@ FilterIconButtonContainerProps
   );
   const globalMode = filters.mode;
   const itemRefToPopover = useRef(null);
+  const oldItemRefToPopover = useRef(null);
   let classFilter = classes.filter1;
   const filtersRepresentativesMap = new Map(
     filtersRepresentatives.map((n) => [n.id, n.value]),
@@ -163,7 +164,7 @@ FilterIconButtonContainerProps
     // activate popover feature on chip only when "helper" is defined, not the best way to handle but
     // it means that the new filter feature is activated. Will be removed in the next version when we generalize the feature on every filter.
     useEffect(() => {
-      if (hasRenderedRef && itemRefToPopover.current) {
+      if (hasRenderedRef && itemRefToPopover.current && oldItemRefToPopover.current !== itemRefToPopover.current) {
         setFilterChipsParams({
           filterId: helpers?.getLatestAddFilterId(),
           anchorEl: itemRefToPopover.current as unknown as HTMLElement,
@@ -171,6 +172,7 @@ FilterIconButtonContainerProps
       } else {
         setHasRenderedRef();
       }
+      oldItemRefToPopover.current = itemRefToPopover.current;
     }, [displayedFilters]);
   }
   const handleClose = () => {

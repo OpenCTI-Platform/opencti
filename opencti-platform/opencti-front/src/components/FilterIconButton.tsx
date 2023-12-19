@@ -1,4 +1,4 @@
-import React, { FunctionComponent, useRef } from 'react';
+import React, { FunctionComponent, useEffect, useRef } from 'react';
 import { ChipOwnProps } from '@mui/material/Chip/Chip';
 import { DataColumns } from './list_lines';
 import { Filter, FilterGroup, GqlFilterGroup, isFilterGroupNotEmpty, removeIdFromFilterGroupObject } from '../utils/filters/filtersUtils';
@@ -25,6 +25,8 @@ interface FilterIconButtonProps {
 
 interface FilterIconButtonIfFiltersProps extends FilterIconButtonProps {
   filters: FilterGroup,
+  hasRenderedRef: boolean;
+  setHasRenderedRef: () => void;
 }
 const FilterIconButtonWithRepresentativesQuery: FunctionComponent<FilterIconButtonIfFiltersProps> = ({
   filters,
@@ -37,12 +39,9 @@ const FilterIconButtonWithRepresentativesQuery: FunctionComponent<FilterIconButt
   chipColor,
   helpers,
   availableRelationFilterTypes,
+  hasRenderedRef,
+  setHasRenderedRef,
 }) => {
-  const hasRenderedRef = useRef(false);
-  const setHasRenderedRef = () => {
-    hasRenderedRef.current = true;
-  };
-
   const filtersRepresentativesQueryRef = useQueryLoading<FilterIconButtonContentQuery>(
     filterIconButtonContentQuery,
     {
@@ -64,7 +63,7 @@ const FilterIconButtonWithRepresentativesQuery: FunctionComponent<FilterIconButt
             filters={filters}
             filtersRepresentativesQueryRef={filtersRepresentativesQueryRef}
             helpers={helpers}
-            hasRenderedRef={hasRenderedRef.current}
+            hasRenderedRef={hasRenderedRef}
             setHasRenderedRef={setHasRenderedRef}
             availableRelationFilterTypes={availableRelationFilterTypes}
           />
@@ -72,6 +71,13 @@ const FilterIconButtonWithRepresentativesQuery: FunctionComponent<FilterIconButt
       )}
     </>
   );
+};
+
+const EmptyFilter: FunctionComponent<{ setHasRenderedRef: () => void }> = ({ setHasRenderedRef }) => {
+  useEffect(() => {
+    setHasRenderedRef();
+  }, []);
+  return null;
 };
 
 const FilterIconButton: FunctionComponent<FilterIconButtonProps> = ({
@@ -87,6 +93,10 @@ const FilterIconButton: FunctionComponent<FilterIconButtonProps> = ({
   helpers,
   availableRelationFilterTypes,
 }) => {
+  const hasRenderedRef = useRef(false);
+  const setHasRenderedRef = () => {
+    hasRenderedRef.current = true;
+  };
   const displayedFilters = filters ? {
     ...filters,
     filters:
@@ -105,10 +115,12 @@ const FilterIconButton: FunctionComponent<FilterIconButtonProps> = ({
         chipColor={chipColor}
         helpers={helpers}
         availableRelationFilterTypes={availableRelationFilterTypes}
+        hasRenderedRef={hasRenderedRef.current}
+        setHasRenderedRef={setHasRenderedRef}
       />
     );
   }
-  return (<></>);
+  return (<EmptyFilter setHasRenderedRef={setHasRenderedRef}/>);
 };
 
 export default FilterIconButton;
