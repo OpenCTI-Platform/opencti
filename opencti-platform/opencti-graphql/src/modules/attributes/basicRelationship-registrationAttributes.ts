@@ -8,7 +8,7 @@ const basicRelationshipAttributes: Array<AttributeDefinition> = [
   entityType,
   createdAt,
   updatedAt,
-  { name: 'i_inference_weight', type: 'numeric', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false },
+  { name: 'i_inference_weight', label: 'Inference weight', type: 'numeric', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true },
   creators,
 ];
 schemaAttributesDefinition.registerAttributes(ABSTRACT_BASIC_RELATIONSHIP, basicRelationshipAttributes);

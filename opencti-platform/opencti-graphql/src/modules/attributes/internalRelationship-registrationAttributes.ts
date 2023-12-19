@@ -5,12 +5,12 @@ import { RELATION_ALLOWED_BY, RELATION_PARTICIPATE_TO } from '../../schema/inter
 
 export const internalRelationshipsAttributes: { [k: string]: Array<AttributeDefinition> } = {
   [RELATION_PARTICIPATE_TO]: [
-    { name: 'start_time', type: 'date', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false },
-    { name: 'stop_time', type: 'date', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false },
-    { name: 'confidence', type: 'numeric', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false },
+    { name: 'start_time', label: 'First observation', type: 'date', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true },
+    { name: 'stop_time', label: 'Last observation', type: 'date', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true },
+    { name: 'confidence', label: 'Confidence', type: 'numeric', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true },
   ],
   [RELATION_ALLOWED_BY]: [
-    { name: 'grant', type: 'string', mandatoryType: 'no', editDefault: false, multiple: true, upsert: false }
+    { name: 'grant', label: 'Grant', type: 'string', mandatoryType: 'no', editDefault: false, multiple: true, upsert: false, isFilterable: true }
   ],
 };
 R.forEachObjIndexed((value, key) => schemaAttributesDefinition.registerAttributes(key as string, value), internalRelationshipsAttributes);

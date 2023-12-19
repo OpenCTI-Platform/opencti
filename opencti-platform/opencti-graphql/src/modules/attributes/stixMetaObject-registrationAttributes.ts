@@ -5,26 +5,26 @@ import { ENTITY_TYPE_EXTERNAL_REFERENCE, ENTITY_TYPE_KILL_CHAIN_PHASE, ENTITY_TY
 
 const stixMetaObjectsAttributes: { [k: string]: Array<AttributeDefinition> } = {
   [ENTITY_TYPE_MARKING_DEFINITION]: [
-    { name: 'definition_type', type: 'string', mandatoryType: 'external', editDefault: true, multiple: false, upsert: false, label: 'Type' },
-    { name: 'definition', type: 'string', mandatoryType: 'external', editDefault: true, multiple: false, upsert: true, label: 'Definition' },
-    { name: 'x_opencti_order', type: 'numeric', mandatoryType: 'external', editDefault: true, multiple: false, upsert: false, label: 'Order' },
-    { name: 'x_opencti_color', type: 'string', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, label: 'Color' },
+    { name: 'definition_type', label: 'Type', type: 'string', mandatoryType: 'external', editDefault: true, multiple: false, upsert: false, isFilterable: true },
+    { name: 'definition', label: 'Definition', type: 'string', mandatoryType: 'external', editDefault: true, multiple: false, upsert: true, isFilterable: true },
+    { name: 'x_opencti_order', label: 'Order', type: 'numeric', mandatoryType: 'external', editDefault: true, multiple: false, upsert: false, isFilterable: true },
+    { name: 'x_opencti_color', label: 'Color', type: 'string', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
   ],
   [ENTITY_TYPE_LABEL]: [
-    { name: 'value', type: 'string', mandatoryType: 'external', editDefault: true, multiple: false, upsert: true },
-    { name: 'color', type: 'string', mandatoryType: 'external', editDefault: true, multiple: false, upsert: true },
+    { name: 'value', label: 'Value', type: 'string', mandatoryType: 'external', editDefault: true, multiple: false, upsert: true, isFilterable: true },
+    { name: 'color', label: 'Color', type: 'string', mandatoryType: 'external', editDefault: true, multiple: false, upsert: true, isFilterable: false },
   ],
   [ENTITY_TYPE_EXTERNAL_REFERENCE]: [
-    { name: 'source_name', type: 'string', mandatoryType: 'external', editDefault: true, multiple: false, upsert: false, label: 'Source name' },
-    { name: 'description', type: 'string', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true },
-    { name: 'url', type: 'string', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false },
-    { name: 'hash', type: 'string', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false },
-    { name: 'external_id', type: 'string', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false },
+    { name: 'source_name', label: 'Source name', type: 'string', mandatoryType: 'external', editDefault: true, multiple: false, upsert: false, isFilterable: true },
+    { name: 'description', label: 'Description', type: 'string', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: true },
+    { name: 'url', label: 'URL', type: 'string', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true },
+    { name: 'hash', label: 'Hash', type: 'string', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true },
+    { name: 'external_id', label: 'External id', type: 'string', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
   ],
   [ENTITY_TYPE_KILL_CHAIN_PHASE]: [
-    { name: 'kill_chain_name', type: 'string', mandatoryType: 'external', editDefault: true, multiple: false, upsert: false, label: 'Kill chain name' },
-    { name: 'phase_name', type: 'string', mandatoryType: 'external', editDefault: true, multiple: false, upsert: false, label: 'Phase name' },
-    { name: 'x_opencti_order', type: 'numeric', mandatoryType: 'external', editDefault: true, multiple: false, upsert: true, label: 'Order' },
+    { name: 'kill_chain_name', label: 'Kill chain name', type: 'string', mandatoryType: 'external', editDefault: true, multiple: false, upsert: false, isFilterable: true },
+    { name: 'phase_name', label: 'Phase name', type: 'string', mandatoryType: 'external', editDefault: true, multiple: false, upsert: false, isFilterable: true },
+    { name: 'x_opencti_order', label: 'Order', type: 'numeric', mandatoryType: 'external', editDefault: true, multiple: false, upsert: true, isFilterable: true },
   ],
 };
 R.forEachObjIndexed((value, key) => schemaAttributesDefinition.registerAttributes(key as string, value), stixMetaObjectsAttributes);
