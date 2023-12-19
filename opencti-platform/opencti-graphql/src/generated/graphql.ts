@@ -8993,6 +8993,7 @@ export type IndicatorStixCoreRelationshipsDistributionArgs = {
 };
 
 export type IndicatorAddInput = {
+  basedOn?: InputMaybe<Array<Scalars['String']['input']>>;
   clientMutationId?: InputMaybe<Scalars['String']['input']>;
   confidence?: InputMaybe<Scalars['Int']['input']>;
   createObservables?: InputMaybe<Scalars['Boolean']['input']>;

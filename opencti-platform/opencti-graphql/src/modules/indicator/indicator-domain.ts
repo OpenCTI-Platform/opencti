@@ -19,7 +19,7 @@ import {
 import { elCount } from '../../database/engine';
 import { isEmptyField, READ_INDEX_STIX_DOMAIN_OBJECTS } from '../../database/utils';
 import { cleanupIndicatorPattern, extractObservablesFromIndicatorPattern } from '../../utils/syntax';
-import { computeValidPeriod } from '../../utils/indicator-utils';
+import { computeValidPeriod } from './indicator-utils';
 import { addFilter } from '../../utils/filtering/filtering-utils';
 import type { AuthContext, AuthUser } from '../../types/user';
 import { type BasicStoreEntityIndicator, ENTITY_TYPE_INDICATOR } from './indicator-types';
@@ -93,7 +93,7 @@ export const addIndicator = async (context: AuthContext, user: AuthUser, indicat
   if (check === false) {
     throw FunctionalError(`Indicator of type ${indicator.pattern_type} is not correctly formatted.`);
   }
-  const { validFrom, validUntil, revoked } = await computeValidPeriod(context, user, indicator);
+  const { validFrom, validUntil, revoked, validPeriod } = await computeValidPeriod(context, user, indicator);
   const indicatorToCreate = R.pipe(
     R.dissoc('createObservables'),
     R.dissoc('basedOn'),
@@ -106,11 +106,11 @@ export const addIndicator = async (context: AuthContext, user: AuthUser, indicat
     R.assoc('revoked', revoked),
   )(indicator);
   // create the linked observables
-  let observablesToLink = [];
+  let observablesToLink: string[] = [];
   if (indicator.basedOn) {
     observablesToLink = indicator.basedOn;
   }
-  if (indicatorToCreate.valid_from > indicatorToCreate.valid_until) {
+  if (!validPeriod) {
     throw DatabaseError('You cant create an indicator with valid_until less than valid_from', {
       input: indicatorToCreate,
     });

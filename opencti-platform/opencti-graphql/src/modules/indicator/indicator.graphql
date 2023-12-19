@@ -179,6 +179,7 @@ input IndicatorAddInput {
   update: Boolean
   createObservables: Boolean
   file: Upload
+  basedOn: [String!]
 }
 
 type Query {

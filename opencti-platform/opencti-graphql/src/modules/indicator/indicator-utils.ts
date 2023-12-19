@@ -1,12 +1,12 @@
 import type { Moment } from 'moment';
-import { MARKING_TLP_AMBER, MARKING_TLP_AMBER_STRICT, MARKING_TLP_CLEAR, MARKING_TLP_GREEN, MARKING_TLP_RED, STATIC_MARKING_IDS } from '../schema/identifier';
-import { getEntitiesMapFromCache } from '../database/cache';
-import { ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
-import type { AuthContext, AuthUser } from '../types/user';
-import type { IndicatorAddInput } from '../generated/graphql';
-import type { BasicStoreEntity } from '../types/store';
-import { isNotEmptyField } from '../database/utils';
-import { utcDate } from './format';
+import { MARKING_TLP_AMBER, MARKING_TLP_AMBER_STRICT, MARKING_TLP_CLEAR, MARKING_TLP_GREEN, MARKING_TLP_RED, STATIC_MARKING_IDS } from '../../schema/identifier';
+import { getEntitiesMapFromCache } from '../../database/cache';
+import { ENTITY_TYPE_MARKING_DEFINITION } from '../../schema/stixMetaObject';
+import type { AuthContext, AuthUser } from '../../types/user';
+import type { IndicatorAddInput } from '../../generated/graphql';
+import type { BasicStoreEntity } from '../../types/store';
+import { isNotEmptyField } from '../../database/utils';
+import { utcDate } from '../../utils/format';
 
 interface TTL_DEFINITION {
   target: Array<string>;
@@ -89,9 +89,11 @@ const computeValidUntil = async (context: AuthContext, user: AuthUser, indicator
 export const computeValidPeriod = async (context: AuthContext, user: AuthUser, indicator: IndicatorAddInput) => {
   const validFrom = computeValidFrom(indicator);
   const validUntil = await computeValidUntil(context, user, indicator, validFrom);
+
   return {
     validFrom: validFrom.toISOString(),
     validUntil: validUntil.toISOString(),
-    revoked: validUntil.isBefore(utcDate())
+    revoked: validUntil.isBefore(utcDate()),
+    validPeriod: validFrom.isSameOrBefore(validUntil)
   };
 };
