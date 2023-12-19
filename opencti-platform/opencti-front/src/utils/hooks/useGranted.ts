@@ -58,9 +58,4 @@ const useGranted = (capabilities: string[], matchAll = false): boolean => {
   return numberOfAvailableCapabilities > 0;
 };
 
-export const useIsAdmin = () => {
-  // only admins have access to the platform settings, so it's a good shortcut for now
-  return useGranted([SETTINGS]);
-};
-
 export default useGranted;

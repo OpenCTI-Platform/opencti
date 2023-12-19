@@ -5,7 +5,7 @@ import EnterpriseEditionAgreement from '@components/common/entreprise_edition/En
 import { useFormatter } from '../../../../components/i18n';
 import { Theme } from '../../../../components/Theme';
 import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
-import { useIsAdmin } from '../../../../utils/hooks/useGranted';
+import useGranted, { SETTINGS } from '../../../../utils/hooks/useGranted';
 import useAuth from '../../../../utils/hooks/useAuth';
 
 const useStyles = makeStyles<Theme>((theme) => ({
@@ -46,7 +46,7 @@ const EEChip = ({ feature, clickable = true, floating = false }: { feature?: str
   const isEnterpriseEdition = useEnterpriseEdition();
   const { t } = useFormatter();
   const [displayDialog, setDisplayDialog] = useState(false);
-  const isAdmin = useIsAdmin();
+  const isAdmin = useGranted([SETTINGS]);
   const { settings: { id: settingsId } } = useAuth();
   return (!isEnterpriseEdition && (
     <>

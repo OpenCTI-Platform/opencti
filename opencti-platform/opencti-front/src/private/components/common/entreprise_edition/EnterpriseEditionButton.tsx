@@ -6,7 +6,7 @@ import { RocketLaunchOutlined } from '@mui/icons-material';
 import FeedbackCreation from '@components/cases/feedbacks/FeedbackCreation';
 import classNames from 'classnames';
 import { useFormatter } from '../../../../components/i18n';
-import { useIsAdmin } from '../../../../utils/hooks/useGranted';
+import useGranted, { SETTINGS } from '../../../../utils/hooks/useGranted';
 import useAuth from '../../../../utils/hooks/useAuth';
 
 const useStyles = makeStyles({
@@ -33,7 +33,7 @@ const EnterpriseEditionButton = ({
   const {
     settings: { id: settingsId },
   } = useAuth();
-  const isAdmin = useIsAdmin();
+  const isAdmin = useGranted([SETTINGS]);
   return (
     <>
       <EnterpriseEditionAgreement
