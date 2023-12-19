@@ -23,7 +23,7 @@ export interface PaginationOptions {
   toTypes?: string[];
   fromTypes?: string[];
   search?: string;
-  orderBy?: string;
+  orderBy?: string | null;
   orderMode?: OrderMode;
   filters?: FilterGroup;
 }
