@@ -289,8 +289,9 @@ const useSearchEntities = ({
 }) => {
   const [entities, setEntities] = useState<Record<string, EntityValue[]>>({});
   const { t } = useFormatter();
-  const { schema } = useAuth();
+  const { schema, me } = useAuth();
   const theme = useTheme() as Theme;
+
   const unionSetEntities = (key: string, newEntities: EntityValue[]) => setEntities((c) => ({
     ...c,
     [key]: [...newEntities, ...(c[key] ?? [])].filter(
@@ -298,231 +299,243 @@ const useSearchEntities = ({
         === index,
     ),
   }));
+
   const entityType = searchContext?.entityTypes?.length > 0
     ? searchContext.entityTypes[0]
     : null;
   const confidences = buildScaleFilters(entityType, 'confidence');
+
   const searchEntities = (
     filterKey: string,
-    cacheEntities: Record<
-    string,
-    { label: string; value: string; type: string }[]
-    >,
-    setCacheEntities: Dispatch<
-    Record<string, { label: string; value: string; type: string }[]>
-    >,
+    cacheEntities: Record< string, { label: string; value: string; type: string }[] >,
+    setCacheEntities: Dispatch< Record<string, { label: string; value: string; type: string }[]> >,
     event: SelectChangeEvent<string | number>,
   ) => {
-    const baseScores = ['1', '2', '3', '4', '5', '6', '7', '8', '9'];
-    const scores = [
-      '0',
-      '10',
-      '20',
-      '30',
-      '40',
-      '50',
-      '60',
-      '70',
-      '80',
-      '90',
-      '100',
-    ];
-    const likelihoods = ['0', '15', '50', '75', '85'];
     if (!event) {
       return;
     }
+
+    const baseScores = ['1', '2', '3', '4', '5', '6', '7', '8', '9'];
+    const scores = ['0', '10', '20', '30', '40', '50', '60', '70', '80', '90', '100'];
+    const likelihoods = ['0', '15', '50', '75', '85'];
+
     const newInputValue = {
       key: filterKey,
       values: event.target.value && event.target.value !== 0 ? [event.target.value?.toString()] : [],
       operator: 'eq',
     };
     setInputValues([newInputValue]);
+
+    // fetches vocabularies by categories and add them to the set
+    const buildOptionsFromVocabularySearchQuery = (key: string, filterCategories: string[]) => {
+      const filters = {
+        mode: 'or',
+        filters: [
+          { key: 'category', values: filterCategories, operator: 'eq', mode: 'or' },
+        ],
+        filterGroups: [],
+      };
+      fetchQuery(vocabularySearchQuery, {
+        filters,
+        search: event.target.value !== 0 ? event.target.value : '',
+        first: 10,
+      })
+        .toPromise()
+        .then((data) => {
+          const entityValues = (
+            ((data as VocabularyQuery$data)?.vocabularies?.edges ?? []).map((n) => ({
+              label: n?.node.name,
+              value: n?.node.name,
+              type: 'Vocabulary',
+            })));
+          unionSetEntities(key, entityValues);
+        });
+    };
+
+    // fetches runtime attributes by name and add them to the set
+    // this query returns only the attributes used somewhere
+    const buildOptionsFromAttributesSearchQuery = (attributeName: string) => {
+      fetchQuery(attributesSearchQuery, {
+        attributeName,
+        search: event.target.value !== 0 ? event.target.value : '',
+        first: 10,
+      })
+        .toPromise()
+        .then((data) => {
+          const sourceEntities = (
+            (data as AttributesQuerySearchQuery$data)?.runtimeAttributes
+              ?.edges ?? []
+          ).map((n) => ({
+            label: n?.node.value,
+            value: n?.node.value,
+            type: 'Vocabulary',
+          }));
+          unionSetEntities(attributeName, sourceEntities);
+        });
+    };
+
+    // fetches identities by types and add them to the set
+    const buildOptionsFromIdentitySearchQuery = (key: string, types: string[]) => {
+      fetchQuery(identitySearchIdentitiesSearchQuery, {
+        types,
+        search: event.target.value !== 0 ? event.target.value : '',
+        first: 10,
+      })
+        .toPromise()
+        .then((data) => {
+          const createdByEntities = (
+            (data as IdentitySearchIdentitiesSearchQuery$data)?.identities
+              ?.edges ?? []
+          ).map((n) => ({
+            label: n?.node.name,
+            value: n?.node.id,
+            type: n?.node.entity_type,
+          }));
+          unionSetEntities(key, createdByEntities);
+        });
+    };
+
+    // fetches members by types and add them to the set
+    const buildOptionsFromMembersSearchQuery = (key: string, entityTypes: string[]) => {
+      fetchQuery(objectAssigneeFieldMembersSearchQuery, {
+        search: event.target.value !== 0 ? event.target.value : '',
+        entityTypes,
+        first: 10,
+      })
+        .toPromise()
+        .then((data) => {
+          const membersEntities = (
+            (data as ObjectAssigneeFieldMembersSearchQuery$data)?.members
+              ?.edges ?? []
+          ).map((n) => ({
+            label: n?.node.name,
+            value: n?.node.id,
+            type: n?.node.entity_type,
+          }));
+          unionSetEntities(key, membersEntities);
+        });
+    };
+
+    // take the output of a request and add corresponding options in the set (+ cache the options)
+    // it's used for creators, assignee and participants, their query responses are similar
+    const buildCachedOptionsFromGenericFetchResponse = (
+      key: string,
+      type: string,
+      data: IdentitySearchCreatorsSearchQuery$data['creators'], // this type is actually the same for the different queries we use, not only creators
+    ) => {
+      const newOptions = (data?.edges ?? []).map((n) => ({
+        label: n?.node.name ?? '',
+        value: n?.node.id ?? '',
+        type,
+      }));
+      // always add myself to the possible creators (to be able to add a trigger even if I have not yet created any objects)
+      if (!newOptions.find((usr) => usr.value === me.id)) {
+        newOptions.push({
+          label: me.name,
+          value: me.id,
+          type,
+        });
+      }
+
+      setCacheEntities({ ...cacheEntities, [key]: newOptions });
+      unionSetEntities(filterKey, newOptions);
+    };
+
+    // static list building, no query to run
+    // it can take an array of strings or EntityValues as input, for genericity
+    // if groupedBy is set, the possible options will be duplicated for every group
+    // if isLabelTranslated is set, string inputs will be translated to produce the option label
+    const buildOptionsFromStaticList = (key: string, inputList: string[] | EntityValue[], groupedBy: string[] = [], isLabelTranslated = false) => {
+      const ungroupedEntities: EntityValue[] = inputList.map((n) => (
+        typeof n === 'string' ? {
+          label: isLabelTranslated ? t(n) : n,
+          value: n,
+          type: 'Vocabulary',
+        } : {
+          label: n.label, // supposedly already translated, or do not require it
+          value: n.value,
+          type: 'Vocabulary',
+          color: n.color ?? undefined,
+        }));
+      let entitiesToAdd = ungroupedEntities;
+      if (groupedBy.length > 0) {
+        entitiesToAdd = groupedBy.flatMap((group) => ungroupedEntities.map((item) => ({ ...item, group })));
+      }
+      unionSetEntities(key, entitiesToAdd);
+    };
+
+    // depending on filter key, fetch the right data and build the options list
     switch (filterKey) {
-      case 'toSightingId':
-        fetchQuery(identitySearchIdentitiesSearchQuery, {
-          types: ['Identity'],
-          search: event.target.value !== 0 ? event.target.value : '',
-          first: 10,
-        })
-          .toPromise()
-          .then((data) => {
-            const createdByEntities = (
-              (data as IdentitySearchIdentitiesSearchQuery$data)?.identities
-                ?.edges ?? []
-            ).map((n) => ({
-              label: n?.node.name,
-              value: n?.node.id,
-              type: n?.node.entity_type,
-            }));
-            unionSetEntities('toSightingId', createdByEntities);
-          });
-        break;
       // region member global
-      case 'members_user': // All groups, only for granted users
-        fetchQuery(objectAssigneeFieldMembersSearchQuery, {
-          search: event.target.value !== 0 ? event.target.value : '',
-          entityTypes: ['User'],
-          first: 10,
-        })
-          .toPromise()
-          .then((data) => {
-            const membersEntities = (
-              (data as ObjectAssigneeFieldMembersSearchQuery$data)?.members
-                ?.edges ?? []
-            ).map((n) => ({
-              label: n?.node.name,
-              value: n?.node.id,
-              type: n?.node.entity_type,
-            }));
-            unionSetEntities('members_user', membersEntities);
-          });
+      case 'members_user':
+        buildOptionsFromMembersSearchQuery(filterKey, ['User']);
         break;
-      case 'members_group': // All groups, only for granted users
-        fetchQuery(objectAssigneeFieldMembersSearchQuery, {
-          search: event.target.value !== 0 ? event.target.value : '',
-          entityTypes: ['Group'],
-          first: 10,
-        })
-          .toPromise()
-          .then((data) => {
-            const membersEntities = (
-              (data as ObjectAssigneeFieldMembersSearchQuery$data)?.members
-                ?.edges ?? []
-            ).map((n) => ({
-              label: n?.node.name,
-              value: n?.node.id,
-              type: n?.node.entity_type,
-            }));
-            unionSetEntities('members_group', membersEntities);
-          });
+      case 'members_group':
+        buildOptionsFromMembersSearchQuery(filterKey, ['Group']);
         break;
-      case 'members_organization': // All groups, only for granted users
-        fetchQuery(objectAssigneeFieldMembersSearchQuery, {
-          search: event.target.value !== 0 ? event.target.value : '',
-          entityTypes: ['Organization'],
-          first: 10,
-        })
-          .toPromise()
-          .then((data) => {
-            const membersEntities = (
-              (data as ObjectAssigneeFieldMembersSearchQuery$data)?.members
-                ?.edges ?? []
-            ).map((n) => ({
-              label: n?.node.name,
-              value: n?.node.id,
-              type: n?.node.entity_type,
-            }));
-            unionSetEntities('members_organization', membersEntities);
-          });
+      case 'members_organization':
+        buildOptionsFromMembersSearchQuery(filterKey, ['Organization']);
         break;
       // endregion
-      // region user usage
-      case 'creator_id': // only used
-      case 'contextCreator': // only used
+      // region user usage (with caching)
+      case 'creator_id':
+      case 'contextCreator':
         if (!cacheEntities[filterKey]) {
+          // fetch only the identities listed as creator of at least 1 thing + myself
           fetchQuery(identitySearchCreatorsSearchQuery, {
             entityTypes: searchContext?.entityTypes ?? [],
           })
             .toPromise()
-            .then((data) => {
-              const creators = (
-                (data as IdentitySearchCreatorsSearchQuery$data)?.creators
-                  ?.edges ?? []
-              ).map((n) => ({
-                label: n?.node.name ?? '',
-                value: n?.node.id ?? '',
-                type: 'Individual',
-              }));
-              setCacheEntities({ ...cacheEntities, [filterKey]: creators });
-              unionSetEntities(filterKey, creators);
+            .then((response) => {
+              const data = response as IdentitySearchCreatorsSearchQuery$data;
+              buildCachedOptionsFromGenericFetchResponse(filterKey, 'Individual', data?.creators);
             });
         }
         break;
-      case 'objectAssignee': // only used
+      case 'objectAssignee':
         if (!cacheEntities[filterKey]) {
+          // fetch only the identities listed as assignee on at least 1 thing + myself
           fetchQuery(objectAssigneeFieldAssigneesSearchQuery, {
             entityTypes: searchContext?.entityTypes ?? [],
           })
             .toPromise()
-            .then((data) => {
-              const objectAssigneeEntities = (
-                (data as ObjectAssigneeFieldAssigneesSearchQuery$data)
-                  ?.assignees?.edges ?? []
-              ).map((n) => ({
-                label: n?.node.name ?? '',
-                value: n?.node.id ?? '',
-                type: 'User',
-              }));
-              setCacheEntities({
-                ...cacheEntities,
-                [filterKey]: objectAssigneeEntities,
-              });
-              unionSetEntities('objectAssignee', objectAssigneeEntities);
+            .then((response) => {
+              const data = response as ObjectAssigneeFieldAssigneesSearchQuery$data;
+              buildCachedOptionsFromGenericFetchResponse(filterKey, 'Individual', data?.assignees);
             });
         }
         break;
-      case 'objectParticipant': // only used
+      case 'objectParticipant':
         if (!cacheEntities[filterKey]) {
+          // fetch only the identities listed as participants to at least 1 thing + myself
           fetchQuery(objectParticipantFieldParticipantsSearchQuery, {
             entityTypes: searchContext?.entityTypes ?? [],
           })
             .toPromise()
-            .then((data) => {
-              const participantToEntities = (
-                (data as ObjectParticipantFieldParticipantsSearchQuery$data)
-                  ?.participants?.edges ?? []
-              ).map((n) => ({
-                label: n?.node.name ?? '',
-                value: n?.node.id ?? '',
-                type: 'User',
-              }));
-              setCacheEntities({
-                ...cacheEntities,
-                [filterKey]: participantToEntities,
-              });
-              unionSetEntities('objectParticipant', participantToEntities);
+            .then((response) => {
+              const data = response as ObjectParticipantFieldParticipantsSearchQuery$data;
+              buildCachedOptionsFromGenericFetchResponse(filterKey, 'User', data?.participants);
             });
         }
         break;
-      // endregion
+        // endregion
       case 'createdBy':
       case 'contextCreatedBy':
-        fetchQuery(identitySearchIdentitiesSearchQuery, {
-          types: ['Organization', 'Individual', 'System'],
-          search: event.target.value !== 0 ? event.target.value : '',
-          first: 10,
-        })
-          .toPromise()
-          .then((data) => {
-            const createdByEntities = (
-              (data as IdentitySearchIdentitiesSearchQuery$data)?.identities
-                ?.edges ?? []
-            ).map((n) => ({
-              label: n?.node.name,
-              value: n?.node.id,
-              type: n?.node.entity_type,
-            }));
-            unionSetEntities(filterKey, createdByEntities);
-          });
+        buildOptionsFromIdentitySearchQuery(filterKey, ['Organization', 'Individual', 'System']);
+        break;
+      case 'toSightingId':
+        buildOptionsFromIdentitySearchQuery(filterKey, ['Identity']);
         break;
       case 'sightedBy':
         fetchQuery(stixDomainObjectsLinesSearchQuery, {
-          types: [
-            'Sector',
-            'Organization',
-            'Individual',
-            'Region',
-            'Country',
-            'City',
-          ],
+          types: ['Sector', 'Organization', 'Individual', 'Region', 'Country', 'City'],
           search: event.target.value !== 0 ? event.target.value : '',
           count: 10,
         })
           .toPromise()
           .then((data) => {
             const sightedByEntities = (
-              (data as StixDomainObjectsLinesSearchQuery$data)
-                ?.stixDomainObjects?.edges ?? []
+              (data as StixDomainObjectsLinesSearchQuery$data)?.stixDomainObjects?.edges ?? []
             ).map((n) => ({
               label: n?.node.name,
               value: n?.node.id,
@@ -540,17 +553,14 @@ const useSearchEntities = ({
       case 'objects':
       case 'indicates':
         fetchQuery(filtersStixCoreObjectsSearchQuery, {
-          types: (searchScope && searchScope[filterKey]) || [
-            'Stix-Core-Object',
-          ],
+          types: (searchScope && searchScope[filterKey]) || ['Stix-Core-Object'],
           search: event.target.value !== 0 ? event.target.value : '',
           count: 100,
         })
           .toPromise()
           .then((data) => {
             const elementIdEntities = (
-              (data as useSearchEntitiesStixCoreObjectsSearchQuery$data)
-                ?.stixCoreObjects?.edges ?? []
+              (data as useSearchEntitiesStixCoreObjectsSearchQuery$data)?.stixCoreObjects?.edges ?? []
             ).map((n) => ({
               label: defaultValue(n?.node),
               value: n?.node.id,
@@ -576,16 +586,14 @@ const useSearchEntities = ({
           .toPromise()
           .then((data) => {
             const containerEntities = (
-              (
-                data as useSearchEntitiesStixCoreObjectsContainersSearchQuery$data
-              )?.containers?.edges ?? []
+              (data as useSearchEntitiesStixCoreObjectsContainersSearchQuery$data)?.containers?.edges ?? []
             ).map((n) => ({
               label: n?.node.representative.main,
               value: n?.node.id,
               type: n?.node.entity_type,
               parentTypes: n?.node.parent_types,
             }));
-            unionSetEntities('containers', containerEntities);
+            unionSetEntities(filterKey, containerEntities);
           });
         break;
       }
@@ -597,8 +605,7 @@ const useSearchEntities = ({
           .toPromise()
           .then((data) => {
             const markedByEntities = (
-              (data as MarkingDefinitionsLinesSearchQuery$data)
-                ?.markingDefinitions?.edges ?? []
+              (data as MarkingDefinitionsLinesSearchQuery$data)?.markingDefinitions?.edges ?? []
             ).map((n) => ({
               label: n?.node.definition,
               value: n?.node.id,
@@ -616,8 +623,7 @@ const useSearchEntities = ({
           .toPromise()
           .then((data) => {
             const killChainPhaseEntities = (
-              (data as KillChainPhasesLinesSearchQuery$data)?.killChainPhases
-                ?.edges ?? []
+              (data as KillChainPhasesLinesSearchQuery$data)?.killChainPhases?.edges ?? []
             ).map((n) => ({
               label: n
                 ? `[${n.node.kill_chain_name}] ${n.node.phase_name}`
@@ -625,7 +631,7 @@ const useSearchEntities = ({
               value: n?.node.id,
               type: 'Kill-Chain-Phase',
             }));
-            unionSetEntities('killChainPhases', killChainPhaseEntities);
+            unionSetEntities(filterKey, killChainPhaseEntities);
           });
         break;
       case 'objectLabel':
@@ -655,120 +661,57 @@ const useSearchEntities = ({
             ]);
           });
         break;
-      case 'x_opencti_base_score':
-        // eslint-disable-next-line no-case-declarations
-        const baseScoreEntities = ['lte', 'gt'].flatMap((group) => baseScores.map((n) => ({
-          label: n,
-          value: n,
-          type: 'Vocabulary',
-          group,
-        })));
-        unionSetEntities('x_opencti_base_score', baseScoreEntities);
+      case 'x_opencti_base_score': {
+        buildOptionsFromStaticList(filterKey, baseScores, ['lte', 'gt']);
         break;
+      }
       // region confidence
-      case 'confidence':
-        // eslint-disable-next-line no-case-declarations
-        const confidenceEntities = ['lte', 'gt'].flatMap((group) => confidences.map((n) => ({
-          label: n.label,
-          value: n.value,
-          type: 'Vocabulary',
-          color: n.color,
-          group,
-        })));
-        unionSetEntities('confidence', confidenceEntities);
+      case 'confidence': {
+        buildOptionsFromStaticList(filterKey, confidences, ['lte', 'gt']);
         break;
-      case 'confidence_gt':
-        // eslint-disable-next-line no-case-declarations
-        const confidenceEntitiesGt = confidences.map((n) => ({
-          label: n.label,
-          value: n.value,
-          type: 'Vocabulary',
-          color: n.color,
-        }));
-        unionSetEntities('confidence_gt', confidenceEntitiesGt);
+      }
+      case 'confidence_gt': {
+        buildOptionsFromStaticList(filterKey, confidences);
         break;
-      case 'confidence_lte':
-        // eslint-disable-next-line no-case-declarations
-        const confidenceLteEntities = confidences.map((n) => ({
-          label: n.label,
-          value: n.value,
-          type: 'Vocabulary',
-          color: n.color,
-        }));
-        unionSetEntities('confidence_lte', confidenceLteEntities);
+      }
+      case 'confidence_lte': {
+        buildOptionsFromStaticList(filterKey, confidences);
         break;
+      }
       // endregion
       // region likelihood
-      case 'likelihood':
-        // eslint-disable-next-line no-case-declarations
-        const likelihoodEntities = ['lte', 'gt'].flatMap((group) => likelihoods.map((n) => ({
-          label: n,
-          value: n,
-          type: 'Vocabulary',
-          group,
-        })));
-        unionSetEntities('likelihood', likelihoodEntities);
+      case 'likelihood': {
+        buildOptionsFromStaticList(filterKey, likelihoods, ['lte', 'gt']);
         break;
-      case 'likelihood_gt':
-        // eslint-disable-next-line no-case-declarations
-        const likelihoodEntitiesGt = likelihoods.map((n) => ({
-          label: t(`likelihood_${n.toString()}`),
-          value: n,
-          type: 'Vocabulary',
-        }));
-        unionSetEntities('likelihood_gt', likelihoodEntitiesGt);
+      }
+      case 'likelihood_gt': {
+        buildOptionsFromStaticList(filterKey, likelihoods);
         break;
-      case 'likelihood_lte':
-        // eslint-disable-next-line no-case-declarations
-        const likelihoodLteEntities = likelihoods.map((n) => ({
-          label: n,
-          value: n,
-          type: 'Vocabulary',
-        }));
-        unionSetEntities('likelihood_lte', likelihoodLteEntities);
+      }
+      case 'likelihood_lte': {
+        buildOptionsFromStaticList(filterKey, likelihoods);
         break;
+      }
       // endregion
       // region x_opencti_score
-      case 'x_opencti_score':
-        // eslint-disable-next-line no-case-declarations
-        const scoreEntities = ['lte', 'gt'].flatMap((group) => scores.map((n) => ({
-          label: n,
-          value: n,
-          type: 'Vocabulary',
-          group,
-        })));
-        unionSetEntities('x_opencti_score', scoreEntities);
+      case 'x_opencti_score': {
+        buildOptionsFromStaticList(filterKey, scores, ['lte', 'gt']);
         break;
-      case 'x_opencti_score_gt':
-        // eslint-disable-next-line no-case-declarations
-        const scoreGtEntities = scores.map((n) => ({
-          label: n,
-          value: n,
-          type: 'Vocabulary',
-        }));
-        unionSetEntities('x_opencti_score_gt', scoreGtEntities);
+      }
+      case 'x_opencti_score_gt': {
+        buildOptionsFromStaticList(filterKey, scores);
         break;
-      case 'x_opencti_score_lte':
-        // eslint-disable-next-line no-case-declarations
-        const scoreLteEntities = scores.map((n) => ({
-          label: n,
-          value: n,
-          type: 'Vocabulary',
-        }));
-        unionSetEntities('x_opencti_score_lte', scoreLteEntities);
+      }
+      case 'x_opencti_score_lte': {
+        buildOptionsFromStaticList(filterKey, scores);
         break;
+      }
       // endregion
-      case 'x_opencti_detection':
-        // eslint-disable-next-line no-case-declarations
-        const detectionEntities = ['true', 'false'].map((n) => ({
-          label: t(n),
-          value: n,
-          type: 'Vocabulary',
-        }));
-        unionSetEntities('x_opencti_detection', detectionEntities);
+      case 'x_opencti_detection': {
+        buildOptionsFromStaticList(filterKey, ['true', 'false'], [], true);
         break;
-      case 'based-on':
-        // eslint-disable-next-line no-case-declarations
+      }
+      case 'based-on': {
         fetchQuery(filtersStixCoreObjectsSearchQuery, {
           types: (searchScope && searchScope[filterKey]) || [
             'Stix-Cyber-Observable',
@@ -790,209 +733,89 @@ const useSearchEntities = ({
             unionSetEntities(filterKey, elementIdEntities);
           });
         break;
-      case 'revoked':
-        // eslint-disable-next-line no-case-declarations
-        const revokedEntities = ['true', 'false'].map((n) => ({
-          label: t(n),
-          value: n,
-          type: 'Vocabulary',
-        }));
-        unionSetEntities('revoked', revokedEntities);
+      }
+      case 'revoked': {
+        buildOptionsFromStaticList(filterKey, ['true', 'false'], [], true);
         break;
-      case 'trigger_type':
-        // eslint-disable-next-line no-case-declarations
-        const isTriggerTypeEntities = ['digest', 'live'].map((n) => ({
-          label: t(n),
-          value: n,
-          type: 'Vocabulary',
-        }));
-        unionSetEntities('trigger_type', isTriggerTypeEntities);
+      }
+      case 'trigger_type': {
+        buildOptionsFromStaticList(filterKey, ['digest', 'live'], [], true);
         break;
-      case 'instance_trigger':
-        // eslint-disable-next-line no-case-declarations
-        const isInstanceTrigger = ['true', 'false'].map((n) => ({
-          label: t(n),
-          value: n,
-          type: 'Vocabulary',
-        }));
-        unionSetEntities('instance_trigger', isInstanceTrigger);
+      }
+      case 'instance_trigger': {
+        buildOptionsFromStaticList(filterKey, ['true', 'false'], [], true);
         break;
-      case 'is_read':
-        // eslint-disable-next-line no-case-declarations
-        const isReadEntities = ['true', 'false'].map((n) => ({
-          label: t(n),
-          value: n,
-          type: 'Vocabulary',
-        }));
-        unionSetEntities('is_read', isReadEntities);
+      }
+      case 'is_read': {
+        buildOptionsFromStaticList(filterKey, ['true', 'false'], [], true);
         break;
-      case 'event_type':
-        // eslint-disable-next-line no-case-declarations
-        const eventTypeEntities = [
-          'authentication',
-          'read',
-          'mutation',
-          'file',
-          'command',
-        ].map((n) => ({
-          label: n,
-          value: n,
-          type: 'Vocabulary',
-        }));
-        unionSetEntities('event_type', eventTypeEntities);
+      }
+      case 'event_type': {
+        buildOptionsFromStaticList(filterKey, ['authentication', 'read', 'mutation', 'file', 'command']);
         break;
-      case 'event_scope':
-        // eslint-disable-next-line no-case-declarations
-        const eventScopeEntities = [
-          'create',
-          'update',
-          'delete',
-          'read',
-          'search',
-          'enrich',
-          'download',
-          'import',
-          'export',
-          'login',
-          'logout',
-        ].map((n) => ({
-          label: n,
-          value: n,
-          type: 'Vocabulary',
-        }));
-        unionSetEntities('event_scope', eventScopeEntities);
+      }
+      case 'event_scope': {
+        buildOptionsFromStaticList(
+          filterKey,
+          ['create', 'update', 'delete', 'read', 'search', 'enrich', 'download', 'import', 'export', 'login', 'logout'],
+        );
         break;
+      }
       case 'priority':
-        fetchQuery(attributesSearchQuery, {
-          attributeName: 'priority',
-          search: event.target.value !== 0 ? event.target.value : '',
-          first: 10,
-        })
-          .toPromise()
-          .then((data) => {
-            const priorityEntities = (
-              (data as AttributesQuerySearchQuery$data)?.runtimeAttributes
-                ?.edges ?? []
-            ).map((n) => ({
-              label: n?.node.value,
-              value: n?.node.value,
-              type: 'Vocabulary',
-            }));
-            unionSetEntities('priority', priorityEntities);
-          });
+        buildOptionsFromVocabularySearchQuery(filterKey, ['case_priority_ov']);
         break;
       case 'severity':
-        fetchQuery(attributesSearchQuery, {
-          attributeName: 'severity',
-          search: event.target.value !== 0 ? event.target.value : '',
-          first: 10,
-        })
-          .toPromise()
-          .then((data) => {
-            const severityEntities = (
-              (data as AttributesQuerySearchQuery$data)?.runtimeAttributes
-                ?.edges ?? []
-            ).map((n) => ({
-              label: n?.node.value,
-              value: n?.node.value,
-              type: 'Vocabulary',
-            }));
-            unionSetEntities('severity', severityEntities);
-          });
+        buildOptionsFromVocabularySearchQuery(filterKey, ['case_severity_ov', 'incident_severity_ov']);
         break;
       case 'pattern_type':
-        fetchQuery(attributesSearchQuery, {
-          attributeName: 'pattern_type',
-          search: event.target.value !== 0 ? event.target.value : '',
-          first: 10,
-        })
-          .toPromise()
-          .then((data) => {
-            unionSetEntities(
-              'pattern_type',
-              (
-                (data as AttributesQuerySearchQuery$data)?.runtimeAttributes
-                  ?.edges ?? []
-              ).map((n) => ({
-                label: n?.node.value,
-                value: n?.node.value,
-                type: 'Vocabulary',
-              })),
-            );
-          });
-        break;
-      case 'x_opencti_base_severity':
-        fetchQuery(attributesSearchQuery, {
-          attributeName: 'x_opencti_base_severity',
-          search: event.target.value !== 0 ? event.target.value : '',
-          first: 10,
-        })
-          .toPromise()
-          .then((data) => {
-            const severityEntities = (
-              (data as AttributesQuerySearchQuery$data)?.runtimeAttributes
-                ?.edges ?? []
-            ).map((n) => ({
-              label: n?.node.value,
-              value: n?.node.value,
-              type: 'Vocabulary',
-            }));
-            unionSetEntities('x_opencti_base_severity', severityEntities);
-          });
-        break;
-      case 'x_opencti_attack_vector':
-        fetchQuery(attributesSearchQuery, {
-          attributeName: 'x_opencti_attack_vector',
-          search: event.target.value !== 0 ? event.target.value : '',
-          first: 10,
-        })
-          .toPromise()
-          .then((data) => {
-            const attackVectorEntities = (
-              (data as AttributesQuerySearchQuery$data)?.runtimeAttributes
-                ?.edges ?? []
-            ).map((n) => ({
-              label: n?.node.value,
-              value: n?.node.value,
-              type: 'Vocabulary',
-            }));
-            unionSetEntities('x_opencti_attack_vector', attackVectorEntities);
-          });
+        buildOptionsFromVocabularySearchQuery(filterKey, ['pattern_type_ov']);
         break;
       case 'malware_types':
-        fetchQuery(attributesSearchQuery, {
-          attributeName: 'malware_types',
-          search: event.target.value !== 0 ? event.target.value : '',
-          first: 10,
-        })
-          .toPromise()
-          .then((data) => {
-            const attackVectorEntities = (
-              (data as AttributesQuerySearchQuery$data)?.runtimeAttributes
-                ?.edges ?? []
-            ).map((n) => ({
-              label: n?.node.value,
-              value: n?.node.value,
-              type: 'Vocabulary',
-            }));
-            unionSetEntities('malware_types', attackVectorEntities);
-          });
+        buildOptionsFromVocabularySearchQuery(filterKey, ['malware_type_ov']);
         break;
+      case 'x_opencti_reliability':
+      case 'source_reliability':
+        buildOptionsFromVocabularySearchQuery(filterKey, ['reliability_ov']);
+        break;
+      case 'indicator_types':
+        buildOptionsFromVocabularySearchQuery(filterKey, ['indicator_type_ov']);
+        break;
+      case 'incident_type':
+        buildOptionsFromVocabularySearchQuery(filterKey, ['incident_type_ov']);
+        break;
+      case 'report_types':
+        buildOptionsFromVocabularySearchQuery(filterKey, ['report_types_ov']);
+        break;
+      case 'channel_types':
+        buildOptionsFromVocabularySearchQuery(filterKey, ['channel_types_ov']);
+        break;
+      case 'event_types':
+        buildOptionsFromVocabularySearchQuery(filterKey, ['event_type_ov']);
+        break;
+      case 'context':
+        buildOptionsFromVocabularySearchQuery(filterKey, ['grouping_context_ov']);
+        break;
+
+      case 'x_opencti_base_severity':
+      case 'x_opencti_attack_vector':
+      case 'x_opencti_organization_type':
+      case 'source':
+        buildOptionsFromAttributesSearchQuery(filterKey);
+        break;
+
       case 'x_opencti_workflow_id':
         fetchQuery(statusFieldStatusesSearchQuery, {
           first: 500,
           filters: isNotEmptyField(entityType) ? {
             mode: 'and',
             filterGroups: [],
-            filters: [{ key: 'type', values: [entityType] },
-            ],
+            filters: [{ key: 'type', values: [entityType] }],
           } : undefined,
         })
           .toPromise()
           .then((data) => {
             const statusEntities = (
-              (data as StatusFieldStatusesSearchQuery$data)?.statuses?.edges
-              ?? []
+              (data as StatusFieldStatusesSearchQuery$data)?.statuses?.edges ?? []
             )
               .filter((n) => !R.isNil(n.node.template))
               .map((n) => ({
@@ -1005,67 +828,7 @@ const useSearchEntities = ({
               }))
               .sort((a, b) => (a.label ?? '').localeCompare(b.label ?? ''))
               .sort((a, b) => a.group.localeCompare(b.group));
-            unionSetEntities('x_opencti_workflow_id', statusEntities);
-          });
-        break;
-      case 'x_opencti_organization_type':
-        fetchQuery(attributesSearchQuery, {
-          attributeName: 'x_opencti_organization_type',
-          search: event.target.value !== 0 ? event.target.value : '',
-          first: 10,
-        })
-          .toPromise()
-          .then((data) => {
-            const organizationTypeEntities = (
-              (data as AttributesQuerySearchQuery$data)?.runtimeAttributes
-                ?.edges ?? []
-            ).map((n) => ({
-              label: n?.node.value,
-              value: n?.node.value,
-              type: 'Vocabulary',
-            }));
-            unionSetEntities(
-              'x_opencti_organization_type',
-              organizationTypeEntities,
-            );
-          });
-        break;
-      case 'x_opencti_reliability':
-      case 'source_reliability':
-        fetchQuery(vocabularySearchQuery, {
-          category: 'reliability_ov',
-        })
-          .toPromise()
-          .then((data) => {
-            unionSetEntities(
-              filterKey,
-              ((data as VocabularyQuery$data)?.vocabularies?.edges ?? []).map(
-                ({ node }) => ({
-                  label: t(node.name),
-                  value: node.name,
-                  type: 'Vocabulary',
-                }),
-              ),
-            );
-          });
-        break;
-      case 'source':
-        fetchQuery(attributesSearchQuery, {
-          attributeName: 'source',
-          search: event.target.value !== 0 ? event.target.value : '',
-          first: 10,
-        })
-          .toPromise()
-          .then((data) => {
-            const sourceEntities = (
-              (data as AttributesQuerySearchQuery$data)?.runtimeAttributes
-                ?.edges ?? []
-            ).map((n) => ({
-              label: n?.node.value,
-              value: n?.node.value,
-              type: 'Vocabulary',
-            }));
-            unionSetEntities('source', sourceEntities);
+            unionSetEntities(filterKey, statusEntities);
           });
         break;
       case 'x_opencti_main_observable_type':
@@ -1081,120 +844,14 @@ const useSearchEntities = ({
               type: 'Vocabulary',
             }));
             unionSetEntities(
-              'x_opencti_main_observable_type',
+              filterKey,
               mainObservableTypeEntities,
             );
           });
         break;
-      case 'indicator_types':
-        fetchQuery(vocabularySearchQuery, {
-          category: 'indicator_type_ov',
-        })
-          .toPromise()
-          .then((data) => {
-            unionSetEntities(
-              'indicator_types',
-              ((data as VocabularyQuery$data)?.vocabularies?.edges ?? []).map(
-                ({ node }) => ({
-                  label: t(node.name),
-                  value: node.name,
-                  type: 'Vocabulary',
-                }),
-              ),
-            );
-          });
-        break;
-      case 'incident_type':
-        fetchQuery(vocabularySearchQuery, {
-          category: 'incident_type_ov',
-        })
-          .toPromise()
-          .then((data) => {
-            unionSetEntities(
-              'incident_type',
-              ((data as VocabularyQuery$data)?.vocabularies?.edges ?? []).map(
-                ({ node }) => ({
-                  label: t(node.name),
-                  value: node.name,
-                  type: 'Vocabulary',
-                }),
-              ),
-            );
-          });
-        break;
-      case 'report_types':
-        fetchQuery(vocabularySearchQuery, {
-          category: 'report_types_ov',
-        })
-          .toPromise()
-          .then((data) => {
-            unionSetEntities(
-              'report_types',
-              ((data as VocabularyQuery$data)?.vocabularies?.edges ?? []).map(
-                ({ node }) => ({
-                  label: t(node.name),
-                  value: node.name,
-                  type: 'Vocabulary',
-                }),
-              ),
-            );
-          });
-        break;
-      case 'channel_types':
-        fetchQuery(vocabularySearchQuery, {
-          category: 'channel_types_ov',
-        })
-          .toPromise()
-          .then((data) => {
-            unionSetEntities(
-              'channel_types',
-              ((data as VocabularyQuery$data)?.vocabularies?.edges ?? []).map(
-                ({ node }) => ({
-                  label: t(node.name),
-                  value: node.name,
-                  type: 'Vocabulary',
-                }),
-              ),
-            );
-          });
-        break;
-      case 'event_types':
-        fetchQuery(vocabularySearchQuery, {
-          category: 'event_type_ov',
-        })
-          .toPromise()
-          .then((data) => {
-            unionSetEntities(
-              'event_types',
-              ((data as VocabularyQuery$data)?.vocabularies?.edges ?? []).map(
-                ({ node }) => ({
-                  label: t(node.name),
-                  value: node.name,
-                  type: 'Vocabulary',
-                }),
-              ),
-            );
-          });
-        break;
-      case 'context':
-        fetchQuery(vocabularySearchQuery, { category: 'grouping_context_ov' })
-          .toPromise()
-          .then((data) => {
-            unionSetEntities(
-              'context',
-              ((data as VocabularyQuery$data)?.vocabularies?.edges ?? []).map(
-                ({ node }) => ({
-                  label: t(node.name),
-                  value: node.name,
-                  type: 'Vocabulary',
-                }),
-              ),
-            );
-          });
-        break;
       // region entity and relation types
-      case 'contextEntityType':
-        // eslint-disable-next-line no-case-declarations
+      // The options for these filter keys are built thanks to the schema
+      case 'contextEntityType': {
         let elementTypeResult = [] as EntityWithLabelValue[];
         elementTypeResult = [
           ...(schema.scos ?? []).map((n) => ({
@@ -1212,10 +869,10 @@ const useSearchEntities = ({
           })),
           ...elementTypeResult,
         ];
-        // eslint-disable-next-line no-case-declarations
         const elementTypeTypes = elementTypeResult.sort((a, b) => a.label.localeCompare(b.label));
         unionSetEntities(filterKey, elementTypeTypes);
         break;
+      }
       case 'elementTargetTypes':
       case 'entity_type':
       case 'entity_types':
@@ -1315,8 +972,7 @@ const useSearchEntities = ({
           unionSetEntities(filterKey, entitiesTypes);
         }
         break;
-      case 'relationship_type':
-        // eslint-disable-next-line no-case-declarations
+      case 'relationship_type': {
         if (availableRelationshipTypes) {
           const relationshipsTypes = availableRelationshipTypes
             .map((n) => ({
@@ -1325,7 +981,7 @@ const useSearchEntities = ({
               type: n,
             }))
             .sort((a, b) => a.label.localeCompare(b.label));
-          unionSetEntities('relationship_type', relationshipsTypes);
+          unionSetEntities(filterKey, relationshipsTypes);
         } else {
           const relationshipsTypes = (schema.sros ?? [])
             .map((n) => ({
@@ -1346,16 +1002,17 @@ const useSearchEntities = ({
               },
             ])
             .sort((a, b) => a.label.localeCompare(b.label));
-          unionSetEntities('relationship_type', relationshipsTypes);
+          unionSetEntities(filterKey, relationshipsTypes);
         }
         break;
+      }
       // endregion
       case 'category':
         fetchQuery(vocabCategoriesQuery)
           .toPromise()
           .then((data) => {
             unionSetEntities(
-              'category',
+              filterKey,
               (
                 data as useVocabularyCategoryQuery$data
               ).vocabularyCategories.map(({ key }) => ({
@@ -1366,8 +1023,7 @@ const useSearchEntities = ({
             );
           });
         break;
-      case 'container_type':
-        // eslint-disable-next-line no-case-declarations
+      case 'container_type': {
         const containersTypes = [
           'Note',
           'Observed-Data',
@@ -1386,34 +1042,20 @@ const useSearchEntities = ({
             type: n,
           }))
           .sort((a, b) => a.label.localeCompare(b.label));
-        unionSetEntities('container_type', containersTypes);
+        unionSetEntities(filterKey, containersTypes);
         break;
-      case 'x_opencti_negative':
-        // eslint-disable-next-line no-case-declarations
+      }
+      case 'x_opencti_negative': {
         const negativeValue = [true, false].map((n) => ({
           label: t(n ? 'False positive' : 'True positive'),
           value: n.toString(),
           type: 'Vocabulary',
         }));
-        unionSetEntities('x_opencti_negative', negativeValue);
+        unionSetEntities(filterKey, negativeValue);
         break;
+      }
       case 'note_types':
-        fetchQuery(vocabularySearchQuery, {
-          category: 'note_types_ov',
-        })
-          .toPromise()
-          .then((data) => {
-            unionSetEntities(
-              'note_types',
-              ((data as VocabularyQuery$data)?.vocabularies?.edges ?? []).map(
-                ({ node }) => ({
-                  label: t(node.name),
-                  value: node.name,
-                  type: 'Vocabulary',
-                }),
-              ),
-            );
-          });
+        buildOptionsFromVocabularySearchQuery(filterKey, ['note_types_ov']);
         break;
       default:
         break;

@@ -292,7 +292,7 @@ FilterIconButtonContainerProps
         );
         const isNotLastFilter = index < displayedSpecificFilters.length - 1;
         return (
-          <Fragment key={currentFilter.id}>
+          <Fragment key={currentFilter.id ?? `filter-${index}`}>
             <Tooltip
               title={
                 <FilterValues
@@ -442,7 +442,7 @@ FilterIconButtonContainerProps
         );
         const isNotLastFilter = index < othersFilters.length - 1;
         return (
-          <Fragment key={currentFilter.id}>
+          <Fragment key={currentFilter.id ?? `filter-${index}`}>
             <Tooltip
               title={
                 <FilterValues
