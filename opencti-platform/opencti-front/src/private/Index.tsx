@@ -1,37 +1,39 @@
-import React, { useEffect } from 'react';
+import React, { Suspense, lazy, useEffect } from 'react';
 import { Route, Switch } from 'react-router-dom';
 import Box from '@mui/material/Box';
 import CssBaseline from '@mui/material/CssBaseline';
 import { useTheme, makeStyles } from '@mui/styles';
 import { BoundaryRoute, NoMatch } from '@components/Error';
-import SearchRoot from '@components/SearchRoot';
 import TopBar from './components/nav/TopBar';
 import LeftBar from './components/nav/LeftBar';
-import Dashboard from './components/Dashboard';
-import RootImport from './components/import/Root';
-import RootAnalyses from './components/analyses/Root';
-import RootEvents from './components/events/Root';
-import RootObservations from './components/observations/Root';
-import RootThreats from './components/threats/Root';
-import RootArsenal from './components/arsenal/Root';
-import RootTechnique from './components/techniques/Root';
-import RootEntities from './components/entities/Root';
-import RootLocation from './components/locations/Root';
-import RootSettings from './components/settings/Root';
-import RootActivity from './components/settings/activity/Root';
-import RootNotifications from './components/profile/Root';
-import RootData from './components/data/Root';
-import RootWorkspaces from './components/workspaces/Root';
 import Message from '../components/Message';
-import StixObjectOrStixRelationship from './components/StixObjectOrStixRelationship';
-import SearchBulk from './components/SearchBulk';
-import RootCases from './components/cases/Root';
 import SystemBanners from '../public/components/SystemBanners';
 import TimeoutLock from './components/TimeoutLock';
 import useAuth from '../utils/hooks/useAuth';
 import SettingsMessagesBanner, { useSettingsMessagesBannerHeight } from './components/settings/settings_messages/SettingsMessagesBanner';
 import { Theme } from '../components/Theme';
 import { RootSettings$data } from './__generated__/RootSettings.graphql';
+import Loader from '../components/Loader';
+
+const Dashboard = lazy(() => import('./components/Dashboard'));
+const SearchRoot = lazy(() => import('@components/SearchRoot'));
+const StixObjectOrStixRelationship = lazy(() => import('./components/StixObjectOrStixRelationship'));
+const SearchBulk = lazy(() => import('./components/SearchBulk'));
+const RootAnalyses = lazy(() => import('./components/analyses/Root'));
+const RootCases = lazy(() => import('./components/cases/Root'));
+const RootEvents = lazy(() => import('./components/events/Root'));
+const RootObservations = lazy(() => import('./components/observations/Root'));
+const RootThreats = lazy(() => import('./components/threats/Root'));
+const RootArsenal = lazy(() => import('./components/arsenal/Root'));
+const RootTechnique = lazy(() => import('./components/techniques/Root'));
+const RootEntities = lazy(() => import('./components/entities/Root'));
+const RootLocation = lazy(() => import('./components/locations/Root'));
+const RootData = lazy(() => import('./components/data/Root'));
+const RootWorkspaces = lazy(() => import('./components/workspaces/Root'));
+const RootSettings = lazy(() => import('./components/settings/Root'));
+const RootActivity = lazy(() => import('./components/settings/activity/Root'));
+const RootImport = lazy(() => import('./components/import/Root'));
+const RootProfile = lazy(() => import('./components/profile/Root'));
 
 const useStyles = makeStyles((theme: Theme) => ({
   toolbar: theme.mixins.toolbar,
@@ -92,72 +94,74 @@ const Index = ({ settings }: IndexProps) => {
             className={classes.toolbar}
             style={{ marginTop: settingsMessagesBannerHeight }}
           />
-          <Switch>
-            <BoundaryRoute exact path="/dashboard" component={Dashboard} />
-            <BoundaryRoute exact path="/dashboard/search" component={SearchRoot} />
-            <BoundaryRoute exact path="/dashboard/search/:scope" component={SearchRoot} />
-            <BoundaryRoute exact path="/dashboard/search/:scope/:keyword" component={SearchRoot} />
-            <BoundaryRoute
-              exact
-              path="/dashboard/id/:id"
-              component={StixObjectOrStixRelationship}
-            />
-            <BoundaryRoute
-              exact
-              path="/dashboard/search_bulk"
-              component={SearchBulk}
-            />
-            <BoundaryRoute
-              path="/dashboard/analyses"
-              component={RootAnalyses}
-            />
-            <BoundaryRoute path="/dashboard/cases" component={RootCases} />
-            <BoundaryRoute path="/dashboard/events" component={RootEvents} />
-            <Route
-              path="/dashboard/observations"
+          <Suspense fallback={<Loader />}>
+            <Switch>
+              <BoundaryRoute exact path="/dashboard" component={Dashboard} />
+              <BoundaryRoute exact path="/dashboard/search" component={SearchRoot} />
+              <BoundaryRoute exact path="/dashboard/search/:scope" component={SearchRoot} />
+              <BoundaryRoute exact path="/dashboard/search/:scope/:keyword" component={SearchRoot} />
+              <BoundaryRoute
+                exact
+                path="/dashboard/id/:id"
+                component={StixObjectOrStixRelationship}
+              />
+              <BoundaryRoute
+                exact
+                path="/dashboard/search_bulk"
+                component={SearchBulk}
+              />
+              <BoundaryRoute
+                path="/dashboard/analyses"
+                component={RootAnalyses}
+              />
+              <BoundaryRoute path="/dashboard/cases" component={RootCases} />
+              <BoundaryRoute path="/dashboard/events" component={RootEvents} />
+              <Route
+                path="/dashboard/observations"
               // Because mismatch of types between react-router v5 and v6.
               // It uses types of v6, but we are using v5 here and compiler is lost.
               /* eslint-disable-next-line @typescript-eslint/ban-ts-comment */
               /* @ts-ignore */
-              component={RootObservations}
-            />
-            <BoundaryRoute path="/dashboard/threats" component={RootThreats} />
-            <BoundaryRoute path="/dashboard/arsenal" component={RootArsenal} />
-            <BoundaryRoute
-              path="/dashboard/techniques"
-              component={RootTechnique}
-            />
-            <BoundaryRoute
-              path="/dashboard/entities"
-              component={RootEntities}
-            />
-            <BoundaryRoute
-              path="/dashboard/locations"
-              component={RootLocation}
-            />
-            <BoundaryRoute path="/dashboard/data" render={RootData} />
-            <BoundaryRoute
-              path="/dashboard/workspaces"
-              component={RootWorkspaces}
-            />
-            <BoundaryRoute
-              path="/dashboard/settings"
-              component={RootSettings}
-            />
-            <BoundaryRoute path="/dashboard/audits" component={RootActivity} />
-            <BoundaryRoute path="/dashboard/import" component={RootImport} />
-            <BoundaryRoute
-              path="/dashboard/profile"
-              component={RootNotifications}
-            />
-            <Route
+                component={RootObservations}
+              />
+              <BoundaryRoute path="/dashboard/threats" component={RootThreats} />
+              <BoundaryRoute path="/dashboard/arsenal" component={RootArsenal} />
+              <BoundaryRoute
+                path="/dashboard/techniques"
+                component={RootTechnique}
+              />
+              <BoundaryRoute
+                path="/dashboard/entities"
+                component={RootEntities}
+              />
+              <BoundaryRoute
+                path="/dashboard/locations"
+                component={RootLocation}
+              />
+              <BoundaryRoute path="/dashboard/data" component={RootData} />
+              <BoundaryRoute
+                path="/dashboard/workspaces"
+                component={RootWorkspaces}
+              />
+              <BoundaryRoute
+                path="/dashboard/settings"
+                component={RootSettings}
+              />
+              <BoundaryRoute path="/dashboard/audits" component={RootActivity} />
+              <BoundaryRoute path="/dashboard/import" component={RootImport} />
+              <BoundaryRoute
+                path="/dashboard/profile"
+                component={RootProfile}
+              />
+              <Route
               // Because mismatch of types between react-router v5 and v6.
               // It uses types of v6, but we are using v5 here and compiler is lost.
               /* eslint-disable-next-line @typescript-eslint/ban-ts-comment */
               /* @ts-ignore */
-              component={NoMatch}
-            />
-          </Switch>
+                component={NoMatch}
+              />
+            </Switch>
+          </Suspense>
         </Box>
       </Box>
     </>
