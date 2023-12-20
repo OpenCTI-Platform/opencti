@@ -105,7 +105,12 @@ const CsvMapperForm: FunctionComponent<CsvMapperFormProps> = ({ csvMapper, onSub
       ...sro,
       value: sro.id,
       type: 'entity_Stix-Core-Relationship',
-    }));
+    })).concat({
+      id: 'stix-sighting-relationship',
+      label: 'stix-sighting-relationship',
+      value: 'stix-sighting-relationship',
+      type: 'entity_stix-sighting-relationship',
+    });
 
     setAvailableEntityTypes(entityTypes);
     setAvailableRelationshipTypes(relationshipTypes);

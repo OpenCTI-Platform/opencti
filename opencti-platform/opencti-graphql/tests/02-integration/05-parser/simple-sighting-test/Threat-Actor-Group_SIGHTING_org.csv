@@ -1,2 +1,2 @@
-Threat Actor Name;Organization Name;sighting confidence;sighting attribute count
-A threat actor group;Org;0;2
+Threat Actor Name;Organization Name;sighting confidence;sighting attribute count;first seen;last seen
+A threat actor group;Org;0;2;2023-12-18T23:00:00.000Z;2023-12-18T23:00:00.000Z

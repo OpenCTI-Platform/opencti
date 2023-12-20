@@ -7,11 +7,12 @@ import { csvMapperMockSimpleRelationship } from './simple-relationship-test/csv-
 import { csvMapperMockSimpleEntityWithRef } from './simple-entity-with-ref-test/csv-mapper-mock-simple-entity-with-ref';
 import { columnNameToIdx } from '../../../src/parser/csv-helper';
 import { csvMapperMockRealUseCase } from './real-use-case/csv-mapper-mock-real-use-case';
-import { csvMapperMockSimpleDifferentEntities } from '../../data/csv-mapper-mock-simple-different-entities';
+import { csvMapperMockSimpleDifferentEntities } from './simple-different-entities-test/csv-mapper-mock-simple-different-entities';
 import { csvMapperMockSimpleSighting } from './simple-sighting-test/csv-mapper-mock-simple-sighting';
 import { bundleProcess } from '../../../src/parser/csv-bundler';
 import { ADMIN_USER, testContext } from '../../utils/testQuery';
 import { csvMapperMockSimpleSkipLine } from './simple-skip-line-test/csv-mapper-mock-simple-skip-line';
+import { logApp } from '../../../src/config/conf';
 
 describe('CSV-HELPER', () => {
   it('Column name to idx', async () => {
@@ -68,7 +69,7 @@ describe('CSV-PARSER', () => {
   it('Parse CSV - Simple sighting', async () => {
     const filPath = './tests/02-integration/05-parser/simple-sighting-test/Threat-Actor-Group_SIGHTING_org.csv';
     const bundle = await bundleProcess(testContext, ADMIN_USER, filPath, csvMapperMockSimpleSighting);
-
+    logApp.info('[BUNDLE]', bundle);
     const { objects } = bundle;
     expect(objects.length)
       .toBe(3);
@@ -78,6 +79,9 @@ describe('CSV-PARSER', () => {
       .toBe(1);
     expect(objects.filter((o) => o.type === 'sighting').length)
       .toBe(1);
+    const sighting = objects.filter((o) => o.type === 'sighting')[0];
+    expect(sighting.first_seen).not.toBeUndefined();
+    expect(sighting.last_seen).toBeUndefined();
   });
   it('Parse CSV - Simple entity with refs', async () => {
     const filPath = './tests/02-integration/05-parser/simple-entity-with-ref-test/Threat-Actor-Group_with-ref.csv';
