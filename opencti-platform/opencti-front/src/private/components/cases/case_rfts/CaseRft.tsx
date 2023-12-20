@@ -7,7 +7,7 @@ import Paper from '@mui/material/Paper';
 import { convertMarkings } from '../../../../utils/edition';
 import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
-import Security from '../../../../utils/Security';
+import { KnowledgeSecurity } from '../../../../utils/Security';
 import StixCoreObjectExternalReferences from '../../analyses/external_references/StixCoreObjectExternalReferences';
 import StixCoreObjectOrStixCoreRelationshipNotes from '../../analyses/notes/StixCoreObjectOrStixCoreRelationshipNotes';
 import ContainerStixObjectsOrStixRelationships from '../../common/containers/ContainerStixObjectsOrStixRelationships';
@@ -171,9 +171,9 @@ const CaseRftComponent: FunctionComponent<CaseRftProps> = ({ data }) => {
         stixCoreObjectOrStixCoreRelationshipId={caseRftData.id}
         defaultMarkings={caseRftData.objectMarking ?? []}
       />
-      <Security needs={[KNOWLEDGE_KNUPDATE]}>
+      <KnowledgeSecurity needs={[KNOWLEDGE_KNUPDATE]} entity='Case-Rft'>
         <CaseRftEdition caseId={caseRftData.id} />
-      </Security>
+      </KnowledgeSecurity>
     </>
   );
 };

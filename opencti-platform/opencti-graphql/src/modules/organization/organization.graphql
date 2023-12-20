@@ -155,7 +155,7 @@ type OrganizationEdge {
 
 # Queries
 type Query {
-  organization(id: String!): Organization @auth(for: [KNOWLEDGE])
+  organization(id: String!): Organization @auth(for: [KNOWLEDGE], type: Organization)
   organizations(
     first: Int
     after: ID
@@ -164,7 +164,7 @@ type Query {
     filters: FilterGroup
     search: String
     toStix: Boolean
-  ): OrganizationConnection @auth(for: [KNOWLEDGE])
+  ): OrganizationConnection @auth(for: [KNOWLEDGE], type: Organization)
 }
 
 # Mutations
@@ -194,16 +194,16 @@ input OrganizationAddInput {
 }
 
 type Mutation {
-  organizationAdd(input: OrganizationAddInput!): Organization @auth(for: [KNOWLEDGE_KNUPDATE])
-  organizationDelete(id: ID!): ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
-  organizationFieldPatch(id: ID!, input: [EditInput]!, commitMessage: String, references: [String]): Organization @auth(for: [KNOWLEDGE_KNUPDATE])
-  organizationContextPatch(id: ID!, input: EditContext!): Organization @auth(for: [KNOWLEDGE_KNUPDATE])
-  organizationContextClean(id: ID!): Organization @auth(for: [KNOWLEDGE_KNUPDATE])
-  organizationRelationAdd(id: ID!, input: StixRefRelationshipAddInput!): StixRefRelationship @auth(for: [KNOWLEDGE_KNUPDATE])
-  organizationRelationDelete(id: ID!, toId: StixRef!, relationship_type: String!): Organization @auth(for: [KNOWLEDGE_KNUPDATE])
-  organizationEditAuthorizedAuthorities(id: ID!, input:[String!]!): Organization @auth(for: [SETTINGS_SETACCESSES])
-  organizationAdminAdd(id: ID!, memberId:String!): Organization @auth(for: [SETTINGS_SETACCESSES])
-  organizationAdminRemove(id: ID!, memberId:String!): Organization @auth(for: [SETTINGS_SETACCESSES])
+  organizationAdd(input: OrganizationAddInput!): Organization @auth(for: [KNOWLEDGE_KNUPDATE], type: Organization)
+  organizationDelete(id: ID!): ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE], type: Organization)
+  organizationFieldPatch(id: ID!, input: [EditInput]!, commitMessage: String, references: [String]): Organization @auth(for: [KNOWLEDGE_KNUPDATE], type: Organization)
+  organizationContextPatch(id: ID!, input: EditContext!): Organization @auth(for: [KNOWLEDGE_KNUPDATE], type: Organization)
+  organizationContextClean(id: ID!): Organization @auth(for: [KNOWLEDGE_KNUPDATE], type: Organization)
+  organizationRelationAdd(id: ID!, input: StixRefRelationshipAddInput!): StixRefRelationship @auth(for: [KNOWLEDGE_KNUPDATE], type: Organization)
+  organizationRelationDelete(id: ID!, toId: StixRef!, relationship_type: String!): Organization @auth(for: [KNOWLEDGE_KNUPDATE], type: Organization)
+  organizationEditAuthorizedAuthorities(id: ID!, input:[String!]!): Organization @auth(for: [SETTINGS_SETACCESSES], type: Organization)
+  organizationAdminAdd(id: ID!, memberId:String!): Organization @auth(for: [SETTINGS_SETACCESSES], type: Organization)
+  organizationAdminRemove(id: ID!, memberId:String!): Organization @auth(for: [SETTINGS_SETACCESSES], type: Organization)
 }
 
 ################ Me Organizations

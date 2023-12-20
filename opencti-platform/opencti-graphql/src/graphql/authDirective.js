@@ -29,7 +29,7 @@ const getUserCapabilities = (user, entityType = null) => {
 
       // Filter the overrides to be of the specified entity type
       const filteredOverrides = overrides
-        ?.filter((capability) => capability?.entity === entityType);
+        ?.filter((capability) => capability?.entity.replace(/-/g, '') === entityType);
 
       // Map the override capabilities to just their names
       userCapabilities = map(

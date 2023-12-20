@@ -16,6 +16,8 @@ import List from '@mui/material/List';
 import ListItemText from '@mui/material/ListItemText';
 import makeStyles from '@mui/styles/makeStyles';
 import { ListItemButton } from '@mui/material';
+import { KnowledgeSecurity } from '../../../../utils/Security';
+import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 import { commitMutation, handleErrorInForm, QueryRenderer } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
 import SwitchField from '../../../../components/SwitchField';
@@ -352,16 +354,28 @@ const StixCyberObservableCreation = ({
             )(subTypesEdges);
             return (
               <List>
-                {translatedOrderedList.map((subType) => (
-                  <ListItemButton
-                    key={subType.label}
+                {translatedOrderedList.map((subType) => {
+                  const listItem = (<ListItemButton
                     divider={true}
                     dense={true}
+                    key={subType.label}
                     onClick={() => selectType(subType.label)}
-                  >
+                                    >
                     <ListItemText primary={subType.tlabel} />
-                  </ListItemButton>
-                ))}
+                  </ListItemButton>);
+                  if (subType.label === 'Artifact' || subType.label === 'Indicator') {
+                    return (
+                      <KnowledgeSecurity
+                        key={subType.label}
+                        needs={[KNOWLEDGE_KNUPDATE]}
+                        entity={subType.label}
+                      >
+                        {listItem}
+                      </KnowledgeSecurity>
+                    );
+                  }
+                  return listItem;
+                })}
               </List>
             );
           }

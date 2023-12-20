@@ -3,7 +3,7 @@ import useAuth from '../../../utils/hooks/useAuth';
 import ListLines from '../../../components/list_lines/ListLines';
 import InfrastructuresLines, { infrastructuresLinesQuery } from './infrastructures/InfrastructuresLines';
 import InfrastructureCreation from './infrastructures/InfrastructureCreation';
-import Security from '../../../utils/Security';
+import { KnowledgeSecurity } from '../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE } from '../../../utils/hooks/useGranted';
 import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
 import { InfrastructuresLinesPaginationQuery, InfrastructuresLinesPaginationQuery$variables } from './infrastructures/__generated__/InfrastructuresLinesPaginationQuery.graphql';
@@ -174,9 +174,9 @@ const Infrastructures = () => {
     <ExportContextProvider>
       <Breadcrumbs variant="list" elements={[{ label: t_i18n('Observations') }, { label: t_i18n('Infrastructures'), current: true }]} />
       {renderLines()}
-      <Security needs={[KNOWLEDGE_KNUPDATE]}>
+      <KnowledgeSecurity needs={[KNOWLEDGE_KNUPDATE]} entity='Infrastructure'>
         <InfrastructureCreation paginationOptions={queryPaginationOptions} />
-      </Security>
+      </KnowledgeSecurity>
     </ExportContextProvider>
   );
 };

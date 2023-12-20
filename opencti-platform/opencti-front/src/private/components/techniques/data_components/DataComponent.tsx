@@ -2,7 +2,7 @@ import React, { FunctionComponent } from 'react';
 import { graphql, useFragment } from 'react-relay';
 import makeStyles from '@mui/styles/makeStyles';
 import Grid from '@mui/material/Grid';
-import Security from '../../../../utils/Security';
+import { KnowledgeSecurity } from '../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 import DataComponentEdition from './DataComponentEdition';
 import StixDomainObjectOverview from '../../common/stix_domain_objects/StixDomainObjectOverview';
@@ -114,9 +114,9 @@ const DataComponent: FunctionComponent<{
         stixCoreObjectOrStixCoreRelationshipId={dataComponent.id}
         defaultMarkings={dataComponent.objectMarking ?? []}
       />
-      <Security needs={[KNOWLEDGE_KNUPDATE]}>
+      <KnowledgeSecurity needs={[KNOWLEDGE_KNUPDATE]} entity='Data-Component'>
         <DataComponentEdition dataComponentId={dataComponent.id} />
-      </Security>
+      </KnowledgeSecurity>
     </>
   );
 };

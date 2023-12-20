@@ -4,7 +4,7 @@ import Grid from '@mui/material/Grid';
 import { makeStyles } from '@mui/styles';
 import CampaignDetails from './CampaignDetails';
 import CampaignEdition from './CampaignEdition';
-import Security from '../../../../utils/Security';
+import { KnowledgeSecurity } from '../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 import StixCoreObjectOrStixCoreRelationshipNotes from '../../analyses/notes/StixCoreObjectOrStixCoreRelationshipNotes';
 import StixDomainObjectOverview from '../../common/stix_domain_objects/StixDomainObjectOverview';
@@ -116,9 +116,9 @@ const CampaignComponent = ({
         stixCoreObjectOrStixCoreRelationshipId={campaignData.id}
         defaultMarkings={campaignData.objectMarking ?? []}
       />
-      <Security needs={[KNOWLEDGE_KNUPDATE]}>
+      <KnowledgeSecurity needs={[KNOWLEDGE_KNUPDATE]} entity='Campaign'>
         <CampaignEdition campaignId={campaignData.id} />
-      </Security>
+      </KnowledgeSecurity>
     </>
   );
 };

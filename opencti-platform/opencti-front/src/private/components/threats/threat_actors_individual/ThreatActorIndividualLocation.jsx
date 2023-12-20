@@ -17,7 +17,7 @@ import { APP_BASE_PATH, commitMutation } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
 import { resolveLink } from '../../../../utils/Entity';
 import ItemIcon from '../../../../components/ItemIcon';
-import Security from '../../../../utils/Security';
+import { KnowledgeSecurity } from '../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 import { addLocationsThreatActorMutationRelationDelete } from './AddLocationsThreatActorIndividualLines';
 import AddLocationsThreatActorIndividual from './AddLocationsThreatActorIndividual';
@@ -51,8 +51,9 @@ class ThreatActorIndividualLocationsComponent extends Component {
         <Typography variant="h3" gutterBottom={true} style={{ float: 'left' }}>
           {t('Located at')}
         </Typography>
-        <Security
+        <KnowledgeSecurity
           needs={[KNOWLEDGE_KNUPDATE]}
+          entity='Threat-Actor-Individual'
           placeholder={<div style={{ height: 29 }} />}
         >
           <AddLocationsThreatActorIndividual
@@ -61,7 +62,7 @@ class ThreatActorIndividualLocationsComponent extends Component {
               threatActorIndividual.locations.edges
             }
           />
-        </Security>
+        </KnowledgeSecurity>
         <div className="clearfix" />
         <FieldOrEmpty source={threatActorIndividual.locations}>
           <List style={{ marginTop: -10 }}>
@@ -75,43 +76,43 @@ class ThreatActorIndividualLocationsComponent extends Component {
                     (n) => n?.length === 2,
                   ),
                 );
-              return (
-                <ListItem
-                  key={location.id}
-                  dense={true}
-                  divider={true}
-                  button={true}
-                  component={Link}
-                  to={`${link}/${location.id}`}
-                >
-                  <ListItemIcon>
-                    {flag ? (
-                      <img
-                        style={{ width: 20 }}
-                        src={`${APP_BASE_PATH}/static/flags/4x3/${flag.toLowerCase()}.svg`}
-                        alt={location.name}
-                      />
-                    ) : (
-                      <ItemIcon type={location.entity_type} />
-                    )}
-                  </ListItemIcon>
-                  <ListItemText primary={location.name} />
-                  {types.includes('manual') ? (
-                    <ListItemSecondaryAction style={{ right: 0 }} >
-                      <Security needs={[KNOWLEDGE_KNUPDATE]}>
-                        <IconButton
-                          aria-label="Remove"
-                          onClick={() => this.removeLocation(locationEdge)}
-                          size="large"
-                        >
-                          <LinkOff />
-                        </IconButton>
-                      </Security>
-                    </ListItemSecondaryAction>
-                  ) : <AutoFix fontSize="small" style={{ marginRight: 13 }}/>}
-                </ListItem>
-              );
-            })}
+                return (
+                  <ListItem
+                    key={location.id}
+                    dense={true}
+                    divider={true}
+                    button={true}
+                    component={Link}
+                    to={`${link}/${location.id}`}
+                  >
+                    <ListItemIcon>
+                      {flag ? (
+                        <img
+                          style={{ width: 20 }}
+                          src={`${APP_BASE_PATH}/static/flags/4x3/${flag.toLowerCase()}.svg`}
+                          alt={location.name}
+                        />
+                      ) : (
+                        <ItemIcon type={location.entity_type} />
+                      )}
+                    </ListItemIcon>
+                    <ListItemText primary={location.name} />
+                    {types.includes('manual') ? (
+                      <ListItemSecondaryAction style={{ right: 0 }} >
+                        <KnowledgeSecurity needs={[KNOWLEDGE_KNUPDATE]} entity='Threat-Actor-Individual'>
+                          <IconButton
+                            aria-label="Remove"
+                            onClick={() => this.removeLocation(locationEdge)}
+                            size="large"
+                          >
+                            <LinkOff />
+                          </IconButton>
+                          </KnowledgeSecurity>
+                      </ListItemSecondaryAction>
+                    ) : <AutoFix fontSize="small" style={{ marginRight: 13 }}/>}
+                  </ListItem>
+                );
+              })}
           </List>
         </FieldOrEmpty>
       </>

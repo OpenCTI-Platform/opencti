@@ -5,7 +5,7 @@ import makeStyles from '@mui/styles/makeStyles';
 import FeedbackDetails from './FeedbackDetails';
 import StixDomainObjectOverview from '../../common/stix_domain_objects/StixDomainObjectOverview';
 import ContainerStixObjectsOrStixRelationships from '../../common/containers/ContainerStixObjectsOrStixRelationships';
-import Security from '../../../../utils/Security';
+import { KnowledgeSecurity } from '../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 import FeedbackEdition from './FeedbackEdition';
 import StixCoreObjectExternalReferences from '../../analyses/external_references/StixCoreObjectExternalReferences';
@@ -121,9 +121,13 @@ const FeedbackComponent: FunctionComponent<FeedbackProps> = ({ data }) => {
           <StixCoreObjectLatestHistory stixCoreObjectId={feedbackData.id} />
         </Grid>
       </Grid>
-      <Security needs={[KNOWLEDGE_KNUPDATE]} hasAccess={canEdit}>
+      <KnowledgeSecurity
+        needs={[KNOWLEDGE_KNUPDATE]}
+        hasAccess={canEdit}
+        entity='Feedback'
+      >
         <FeedbackEdition feedbackId={feedbackData.id} />
-      </Security>
+      </KnowledgeSecurity>
     </>
   );
 };

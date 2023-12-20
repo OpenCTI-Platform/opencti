@@ -5,7 +5,7 @@ import withStyles from '@mui/styles/withStyles';
 import Grid from '@mui/material/Grid';
 import OrganizationDetails from './OrganizationDetails';
 import OrganizationEdition from './OrganizationEdition';
-import Security from '../../../../utils/Security';
+import { KnowledgeSecurity } from '../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 import StixCoreObjectOrStixCoreRelationshipNotes from '../../analyses/notes/StixCoreObjectOrStixCoreRelationshipNotes';
 import StixDomainObjectOverview from '../../common/stix_domain_objects/StixDomainObjectOverview';
@@ -71,9 +71,9 @@ class OrganizationComponent extends Component {
           stixCoreObjectOrStixCoreRelationshipId={organization.id}
           defaultMarkings={organization.objectMarking ?? []}
         />
-        <Security needs={[KNOWLEDGE_KNUPDATE]}>
+        <KnowledgeSecurity needs={[KNOWLEDGE_KNUPDATE]} entity='Organization'>
           <OrganizationEdition organizationId={organization.id} />
-        </Security>
+        </KnowledgeSecurity>
       </>
     );
   }

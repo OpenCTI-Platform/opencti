@@ -167,7 +167,7 @@ type FeedbackEdge {
 
 # Queries
 type Query {
-  feedback(id: String!): Feedback @auth(for: [KNOWLEDGE])
+  feedback(id: String!): Feedback @auth(for: [KNOWLEDGE], type: Feedback)
   feedbacks(
     first: Int
     after: ID
@@ -176,8 +176,8 @@ type Query {
     filters: FilterGroup
     search: String
     toStix: Boolean
-  ): FeedbackConnection @auth(for: [KNOWLEDGE])
-  feedbackContainsStixObjectOrStixRelationship(id: String!, stixObjectOrStixRelationshipId: String!): Boolean @auth(for: [KNOWLEDGE])
+  ): FeedbackConnection @auth(for: [KNOWLEDGE], type: Feedback)
+  feedbackContainsStixObjectOrStixRelationship(id: String!, stixObjectOrStixRelationshipId: String!): Boolean @auth(for: [KNOWLEDGE], type: Feedback)
 }
 
 # Mutations
@@ -208,7 +208,7 @@ input FeedbackAddInput {
 }
 
 type Mutation {
-  feedbackAdd(input: FeedbackAddInput!): Feedback @auth
-  feedbackDelete(id: ID!): ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
-  feedbackEditAuthorizedMembers(id: ID!, input:[MemberAccessInput!]): Feedback @auth(for: [KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS])
+  feedbackAdd(input: FeedbackAddInput!): Feedback @auth(for: [KNOWLEDGE_KNUPDATE], type: Feedback)
+  feedbackDelete(id: ID!): ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE], type: Feedback)
+  feedbackEditAuthorizedMembers(id: ID!, input:[MemberAccessInput!]): Feedback @auth(for: [KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS], type: Feedback)
 }

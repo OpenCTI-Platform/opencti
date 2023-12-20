@@ -17,8 +17,8 @@ import inject18n from '../../../../components/i18n';
 import { commitMutation, QueryRenderer } from '../../../../relay/environment';
 import { toolEditionQuery } from './ToolEdition';
 import ToolEditionContainer from './ToolEditionContainer';
-import Security from '../../../../utils/Security';
-import { KNOWLEDGE_KNENRICHMENT, KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
+import { KnowledgeSecurity } from '../../../../utils/Security';
+import { KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNENRICHMENT, KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
 import Transition from '../../../../components/Transition';
 
 const ToolPopoverDeletionMutation = graphql`
@@ -94,80 +94,84 @@ class ToolPopover extends Component {
   render() {
     const { t, id } = this.props;
     return (
-      <>
-        <ToggleButton
-          value="popover"
-          size="small"
+      <KnowledgeSecurity needs={[KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNUPDATE_KNDELETE]} entity='Tool'>
+        <>
+          <ToggleButton
+            value="popover"
+            size="small"
 
-          onClick={this.handleOpen.bind(this)}
-        >
-          <MoreVert fontSize="small" color="primary" />
-        </ToggleButton>
-        <Menu
-          anchorEl={this.state.anchorEl}
-          open={Boolean(this.state.anchorEl)}
-          onClose={this.handleClose.bind(this)}
-        >
-          <MenuItem onClick={this.handleOpenEdit.bind(this)}>
-            {t('Update')}
-          </MenuItem>
-          <Security needs={[KNOWLEDGE_KNENRICHMENT]}>
+            onClick={this.handleOpen.bind(this)}
+          >
+            <MoreVert fontSize="small" color="primary" />
+          </ToggleButton>
+          <Menu
+            anchorEl={this.state.anchorEl}
+            open={Boolean(this.state.anchorEl)}
+            onClose={this.handleClose.bind(this)}
+          >
+            <KnowledgeSecurity needs={[KNOWLEDGE_KNUPDATE]} entity='Tool'>
+              <MenuItem onClick={this.handleOpenEdit.bind(this)}>
+                {t('Update')}
+              </MenuItem>
+            </KnowledgeSecurity>
+            <KnowledgeSecurity needs={[KNOWLEDGE_KNENRICHMENT]} entity='Tool'>
             <MenuItem onClick={this.handleOpenEnrichment.bind(this)}>
               {t('Enrich')}
             </MenuItem>
-          </Security>
-          <Security needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}>
-            <MenuItem onClick={this.handleOpenDelete.bind(this)}>
-              {t('Delete')}
-            </MenuItem>
-          </Security>
-        </Menu>
-        <StixCoreObjectEnrichment stixCoreObjectId={id} open={this.state.displayEnrichment} handleClose={this.handleCloseEnrichment.bind(this)} />
+          </KnowledgeSecurity>
+          <KnowledgeSecurity needs={[KNOWLEDGE_KNUPDATE_KNDELETE]} entity='Tool'>
+              <MenuItem onClick={this.handleOpenDelete.bind(this)}>
+                {t('Delete')}
+              </MenuItem>
+            </KnowledgeSecurity>
+          </Menu>
+          <StixCoreObjectEnrichment stixCoreObjectId={id} open={this.state.displayEnrichment} handleClose={this.handleCloseEnrichment.bind(this)} />
         <Dialog
-          PaperProps={{ elevation: 1 }}
-          open={this.state.displayDelete}
-          keepMounted={true}
-          TransitionComponent={Transition}
-          onClose={this.handleCloseDelete.bind(this)}
-        >
-          <DialogContent>
-            <DialogContentText>
-              {t('Do you want to delete this tool?')}
-            </DialogContentText>
-          </DialogContent>
-          <DialogActions>
-            <Button
-              onClick={this.handleCloseDelete.bind(this)}
-              disabled={this.state.deleting}
-            >
-              {t('Cancel')}
-            </Button>
-            <Button
-              color="secondary"
-              onClick={this.submitDelete.bind(this)}
-              disabled={this.state.deleting}
-            >
-              {t('Delete')}
-            </Button>
-          </DialogActions>
-        </Dialog>
-        <QueryRenderer
-          query={toolEditionQuery}
-          variables={{ id }}
-          render={({ props }) => {
-            if (props) {
-              return (
-                <ToolEditionContainer
-                  tool={props.tool}
-                  open={this.state.displayEdit}
-                  handleClose={this.handleCloseEdit.bind(this)}
-                />
-              );
-            }
-            return <div />;
-          }}
-        />
-      </>
+            PaperProps={{ elevation: 1 }}
+            open={this.state.displayDelete}
+            keepMounted={true}
+            TransitionComponent={Transition}
+            onClose={this.handleCloseDelete.bind(this)}
+          >
+            <DialogContent>
+              <DialogContentText>
+                {t('Do you want to delete this tool?')}
+              </DialogContentText>
+            </DialogContent>
+            <DialogActions>
+              <Button
+                onClick={this.handleCloseDelete.bind(this)}
+                disabled={this.state.deleting}
+              >
+                {t('Cancel')}
+              </Button>
+              <Button
+                color="secondary"
+                onClick={this.submitDelete.bind(this)}
+                disabled={this.state.deleting}
+              >
+                {t('Delete')}
+              </Button>
+            </DialogActions>
+          </Dialog>
+          <QueryRenderer
+            query={toolEditionQuery}
+            variables={{ id }}
+            render={({ props }) => {
+              if (props) {
+                return (
+                  <ToolEditionContainer
+                    tool={props.tool}
+                    open={this.state.displayEdit}
+                    handleClose={this.handleCloseEdit.bind(this)}
+                  />
+                );
+              }
+              return <div />;
+            }}
+          />
+        </>
+      </KnowledgeSecurity>
     );
   }
 }
