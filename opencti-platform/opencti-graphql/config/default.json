@@ -56,6 +56,7 @@
       "Locked": "Your account has been locked for security reasons. Please contact your administrator."
     },
     "account_statuses_default": "Active",
+    "user_confidence_level_default": 100,
     "session_idle_timeout": 0,
     "session_manager": "shared",
     "rate_protection": {

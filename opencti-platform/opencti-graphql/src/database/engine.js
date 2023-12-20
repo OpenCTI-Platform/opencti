@@ -601,6 +601,18 @@ const computePlatformMappings = () => {
           date_seen: { type: 'date' },
         },
       },
+      user_confidence_level: {
+        properties: {
+          max_confidence: { type: 'integer' },
+          overrides: {
+            type: 'nested',
+            properties: {
+              entity_type: { type: 'text' },
+              max_confidence: { type: 'integer' },
+            },
+          }
+        },
+      },
       timestamp: {
         type: 'date',
       },

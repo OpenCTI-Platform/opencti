@@ -23,6 +23,7 @@ import {
   ENTITY_TYPE_HISTORY
 } from '../../schema/internalObject';
 import { settingsMessages } from '../../domain/settings';
+import { userConfidenceSchema } from '../../domain/user';
 
 const internalObjectsAttributes: { [k: string]: Array<AttributeDefinition> } = {
   [ENTITY_TYPE_SETTINGS]: [
@@ -93,6 +94,7 @@ const internalObjectsAttributes: { [k: string]: Array<AttributeDefinition> } = {
     { name: 'description', type: 'string', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false },
     { name: 'firstname', type: 'string', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false },
     { name: 'lastname', type: 'string', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false },
+    { name: 'user_confidence_level', type: 'object', mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false, schemaDef: userConfidenceSchema },
     { name: 'theme', type: 'string', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false },
     { name: 'language', type: 'string', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false },
     { name: 'external', type: 'boolean', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false },
