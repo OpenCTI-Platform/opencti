@@ -1000,7 +1000,7 @@ describe('Workspace member access behavior', () => {
     });
     expect(queryResult).not.toBeNull();
     expect(queryResult.errors.length).toEqual(1);
-    expect(queryResult.errors.at(0).name).toEqual('FunctionalError');
+    expect(queryResult.errors.at(0).name).toEqual('FUNCTIONAL_ERROR');
     expect(queryResult.errors.at(0).data.reason).toEqual(
       'Workspace should have at least one admin',
     );
