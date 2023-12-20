@@ -645,7 +645,7 @@ describe('Elasticsearch pagination', () => {
         filterGroups: [],
       },
     });
-    await expect(data).rejects.toThrow('[SEARCH] Must have only one field');
+    await expect(data).rejects.toThrow('Filter must have only one field');
   });
 });
 
