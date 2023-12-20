@@ -1,4 +1,5 @@
 import bcrypt from 'bcryptjs';
+import nconf from 'nconf';
 import { authenticator } from 'otplib';
 import * as R from 'ramda';
 import { uniq } from 'ramda';
@@ -76,6 +77,33 @@ const AUTH_BEARER = 'Bearer';
 const AUTH_BASIC = 'BasicAuth';
 export const TAXIIAPI = 'TAXIIAPI';
 const PLATFORM_ORGANIZATION = 'settings_platform_organization';
+
+export const userConfidenceSchema = {
+  type: 'object',
+  properties: {
+    max_confidence: { type: 'number' },
+    overrides: {
+      type: 'array',
+      items: {
+        type: 'object',
+        properties: {
+          entity_type: { type: 'string' },
+          max_confidence: { type: 'number' }
+        },
+        required: ['entity_type', 'max_confidence']
+      }
+    }
+  },
+  required: ['max_confidence', 'overrides']
+};
+
+/**
+ map: {
+ type: "object",
+ required: [],
+ additionalProperties: {type: "number"},
+ },
+ */
 
 const roleSessionRefresh = async (context, user, roleId) => {
   // Get all groups that have this role
@@ -498,6 +526,7 @@ export const addUser = async (context, user, newUser) => {
     R.assoc('account_status', newUser.account_status ? newUser.account_status : DEFAULT_ACCOUNT_STATUS),
     R.assoc('account_lock_after_date', newUser.account_lock_after_date),
     R.assoc('unit_system', newUser.unit_system),
+    R.assoc('user_confidence_level', { max_confidence: nconf.get('app:user_confidence_level_default') ?? 100, overrides: [] }),
     R.dissoc('roles')
   )(newUser);
   const { element, isCreation } = await createEntity(context, user, userToCreate, ENTITY_TYPE_USER, { complete: true });

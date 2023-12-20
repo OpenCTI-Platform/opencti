@@ -71,7 +71,15 @@ export const validateAndFormatSchemaAttribute = (
           const patchedInstance = jsonpatch.applyPatch(R.clone(initial), patch).newDocument as any;
           validationValues = patchedInstance[editInput.key];
         }
-        const valid = validate(validationValues);
+
+        let valid = false;
+        if (attributeDefinition.multiple) {
+          // schema is supposedly type=array
+          valid = validate(validationValues);
+        } else {
+          // schema is supposedly type=object, no multiple values provided
+          valid = validate(validationValues[0]);
+        }
         if (!valid) {
           throw ValidationError(attributeName, { message: 'The Object schema is not valid', data: validate.errors });
         }
