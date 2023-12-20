@@ -38,7 +38,6 @@ import {
   ENTITY_TYPE_TOOL,
   ENTITY_TYPE_VULNERABILITY
 } from '../../schema/stixDomainObject';
-import { ENTITY_TYPE_INDICATOR } from '../indicator/indicator-types';
 
 const stixDomainObjectAttributes: Array<AttributeDefinition> = [
   lang,
@@ -209,76 +208,6 @@ const stixDomainObjectsAttributes: { [k: string]: Array<AttributeDefinition> } =
     xOpenctiAliases,
     iAliasedIds,
     xOpenctiReliability,
-  ],
-  [ENTITY_TYPE_INDICATOR]: [
-    { name: 'name', type: 'string', mandatoryType: 'external', editDefault: true, multiple: false, upsert: true },
-    { name: 'description', type: 'string', mandatoryType: 'customizable', editDefault: true, multiple: false, upsert: true },
-    {
-      name: 'pattern_type',
-      type: 'string',
-      mandatoryType: 'external',
-      editDefault: true,
-      multiple: false,
-      upsert: false,
-      label: 'Pattern type'
-    },
-    { name: 'pattern_version', type: 'string', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, label: 'Pattern version' },
-    { name: 'pattern', type: 'string', mandatoryType: 'external', editDefault: true, multiple: false, upsert: false },
-    {
-      name: 'indicator_types',
-      type: 'string',
-      mandatoryType: 'customizable',
-      editDefault: true,
-      multiple: true,
-      upsert: true,
-      label: 'Indicator types'
-    },
-    {
-      name: 'valid_from',
-      type: 'date',
-      mandatoryType: 'customizable',
-      editDefault: true,
-      multiple: false,
-      upsert: true,
-      label: 'Valid from'
-    },
-    {
-      name: 'valid_until',
-      type: 'date',
-      mandatoryType: 'customizable',
-      editDefault: true,
-      multiple: false,
-      upsert: true,
-      label: 'Valid until'
-    },
-    {
-      name: 'x_opencti_score',
-      type: 'numeric',
-      mandatoryType: 'customizable',
-      editDefault: true,
-      multiple: false,
-      upsert: true,
-      label: 'Score'
-    },
-    { name: 'x_opencti_detection', type: 'boolean', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true },
-    {
-      name: 'x_opencti_main_observable_type',
-      type: 'string',
-      mandatoryType: 'external',
-      editDefault: true,
-      multiple: false,
-      upsert: true,
-      label: 'Main observable type'
-    },
-    {
-      name: 'x_mitre_platforms',
-      type: 'string',
-      mandatoryType: 'customizable',
-      editDefault: true,
-      multiple: true,
-      upsert: true,
-      label: 'Platforms'
-    },
   ],
   [ENTITY_TYPE_INFRASTRUCTURE]: [
     aliases,

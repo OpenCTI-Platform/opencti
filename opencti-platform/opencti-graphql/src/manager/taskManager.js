@@ -49,7 +49,7 @@ import { buildEntityFilters, internalFindByIds, internalLoadById, listAllRelatio
 import { getActivatedRules, getRule } from '../domain/rules';
 import { isStixRelationship } from '../schema/stixRelationship';
 import { isStixObject } from '../schema/stixCoreObject';
-import { ENTITY_TYPE_INDICATOR } from '../schema/stixDomainObject';
+import { ENTITY_TYPE_INDICATOR } from '../modules/indicator/indicator-types';
 import { isStixCyberObservable } from '../schema/stixCyberObservable';
 import { promoteObservableToIndicator } from '../domain/stixCyberObservable';
 import { promoteIndicatorToObservable } from '../modules/indicator/indicator-domain';

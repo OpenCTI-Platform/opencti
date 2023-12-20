@@ -27,6 +27,7 @@ type IndicatorEdge {
   cursor: String!
   node: Indicator!
 }
+
 type Indicator implements BasicObject & StixObject & StixCoreObject & StixDomainObject {
   id: ID! # internal_id
   standard_id: String!
@@ -149,6 +150,7 @@ type Indicator implements BasicObject & StixObject & StixCoreObject & StixDomain
   status: Status
   workflowEnabled: Boolean
 }
+
 input IndicatorAddInput {
   stix_id: StixId
   x_opencti_stix_ids: [StixId!]
@@ -216,11 +218,11 @@ type Query {
 
 type Mutation {
   indicatorAdd(input: IndicatorAddInput!): Indicator @auth(for: [KNOWLEDGE_KNUPDATE])
-  indicatorDelete: ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
-  indicatorFieldPatch(input: [EditInput]!, commitMessage: String, references: [String]): Indicator
-  @auth(for: [KNOWLEDGE_KNUPDATE])
-  indicatorContextPatch(input: EditContext): Indicator @auth(for: [KNOWLEDGE_KNUPDATE])
-  indicatorContextClean: Indicator @auth(for: [KNOWLEDGE_KNUPDATE])
-  indicatorRelationAdd(input: StixRefRelationshipAddInput!): StixRefRelationship @auth(for: [KNOWLEDGE_KNUPDATE])
-  indicatorRelationDelete(toId: StixRef!, relationship_type: String!): Indicator @auth(for: [KNOWLEDGE_KNUPDATE])
+  # indicatorDelete: ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
+  # indicatorFieldPatch(input: [EditInput]!, commitMessage: String, references: [String]): Indicator
+  # @auth(for: [KNOWLEDGE_KNUPDATE])
+  # indicatorContextPatch(input: EditContext): Indicator @auth(for: [KNOWLEDGE_KNUPDATE])
+  # indicatorContextClean: Indicator @auth(for: [KNOWLEDGE_KNUPDATE])
+  # indicatorRelationAdd(input: StixRefRelationshipAddInput!): StixRefRelationship @auth(for: [KNOWLEDGE_KNUPDATE])
+  # indicatorRelationDelete(toId: StixRef!, relationship_type: String!): Indicator @auth(for: [KNOWLEDGE_KNUPDATE])
 }
