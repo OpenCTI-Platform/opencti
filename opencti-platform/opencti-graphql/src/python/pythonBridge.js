@@ -83,7 +83,7 @@ const createChildStixPattern = async (context, user, observableType, observableV
     );
     return result.data;
   } catch (err) {
-    logApp.warn(`[BRIDGE] createStixPattern error > ${err.message}`);
+    logApp.warn('Python createStixPattern fail', { failure: err.message });
     return null;
   }
 };
@@ -98,7 +98,7 @@ const checkChildIndicatorSyntax = async (context, user, patternType, indicatorVa
     );
     return result.data;
   } catch (err) {
-    logApp.warn(`[BRIDGE] extractObservables error > ${err.message}`);
+    logApp.warn('Python extractObservables fail', { failure: err.message });
     return null;
   }
 };
@@ -127,13 +127,13 @@ const execNativePython = async (context, user, script, ...args) => {
 };
 const createNativeStixPattern = async (context, user, observableType, observableValue) => {
   return execNativePython(context, user, CREATE_PATTERN_SCRIPT, observableType, observableValue).catch((err) => {
-    logApp.warn(`[BRIDGE] createStixPattern error > ${err.message}`);
+    logApp.warn('Python createStixPattern fail', { failure: err.message });
     return null;
   });
 };
 const checkNativeIndicatorSyntax = async (context, user, patternType, indicatorValue) => {
   return execNativePython(context, user, CHECK_INDICATOR_SCRIPT, patternType, indicatorValue).catch((err) => {
-    logApp.warn(`[BRIDGE] checkIndicatorSyntax error > ${err.message}`);
+    logApp.warn('Python checkIndicatorSyntax fail', { failure: err.message });
     return null;
   });
 };

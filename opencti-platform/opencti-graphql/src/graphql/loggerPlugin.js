@@ -97,7 +97,7 @@ export default {
           // Authentication problem can be logged in warning (dissoc variables to hide password)
           // If worker is still retrying, this is not yet a problem, can be logged in warning until then.
           if (isRetryableCall) {
-            logApp.warn(API_CALL_MESSAGE, { ...dissoc('variables', callMetaData), error: callError });
+            logApp.warn(callError, dissoc('variables', callMetaData));
           } else if (callError.name === FORBIDDEN_ACCESS) {
             await publishUserAction({
               user: contextUser,

@@ -65,7 +65,7 @@ if (ENABLED_EVENT_LOOP_MONITORING) {
     // TODO Remove after official release of graphQL 17 and resolvers adaptations
     const stackValue = stack.join();
     if (stackValue.indexOf('executeFields') === -1) {
-      logApp.warn('[OPENCTI-MONITORING] Event loop blocking warning', { time, trace: stackValue });
+      logApp.warn('Event loop blocking warning', { time, trace: stackValue });
     }
   }, { threshold });
 }

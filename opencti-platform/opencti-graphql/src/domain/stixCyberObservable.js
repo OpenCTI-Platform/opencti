@@ -147,7 +147,7 @@ const createIndicatorFromObservable = async (context, user, input, observable) =
       };
       await addIndicator(context, user, indicatorToCreate);
     } else {
-      logApp.warn(`[OPENCTI] Cannot create indicator for ${key} / ${value} - cant generate pattern`);
+      logApp.warn('Cannot create indicator - cant generate pattern', { key, value });
     }
   } catch (err) {
     logApp.info('[OPENCTI] Cannot create indicator', { error: err });

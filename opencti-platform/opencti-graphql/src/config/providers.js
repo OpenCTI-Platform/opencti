@@ -210,7 +210,7 @@ for (let i = 0; i < providerKeys.length; i += 1) {
         const organizationsToAssociate = isOrgaMapping ? computeOrganizationsMapping() : [];
         // endregion
         if (!userMail) {
-          logApp.warn('[LDAP] Configuration error, cant map mail and username', { user, userMail, userName });
+          logApp.warn('LDAP Configuration error, cant map mail and username', { user, userMail, userName });
           done({ message: 'Configuration error, ask your administrator' });
         } else if (!isGroupBaseAccess || groupsToAssociate.length > 0) {
           logApp.debug(`[LDAP] Connecting/creating account with ${userMail} [name=${userName}]`);

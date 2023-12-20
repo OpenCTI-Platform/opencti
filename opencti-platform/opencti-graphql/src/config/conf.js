@@ -301,23 +301,24 @@ export const logApp = {
       appLogger.log(level, message, addBasicMetaInformation(LOG_APP, error, meta));
     }
   },
-  debug: (message, meta = {}) => logApp._log('debug', message, null, meta),
-  info: (message, meta = {}) => logApp._log('info', message, null, meta),
-  warn: (message, meta = {}) => logApp._log('warn', message, null, meta),
-  error: (messageOrError, meta = {}) => {
+  _logWithError: (level, messageOrError, meta = {}) => {
     const isError = messageOrError instanceof Error;
     const message = isError ? messageOrError.message : messageOrError;
     if (isError) {
       if (messageOrError instanceof ApolloError) {
-        logApp._log('error', message, messageOrError, meta);
+        logApp._log(level, message, messageOrError, meta);
       } else {
         const error = UnknownError(message, { cause: messageOrError });
-        logApp._log('error', 'Platform unmanaged direct error', error, meta);
+        logApp._log(level, 'Platform unmanaged direct error', error, meta);
       }
     } else {
-      logApp._log('error', message, null, meta);
+      logApp._log(level, message, null, meta);
     }
-  }
+  },
+  debug: (message, meta = {}) => logApp._log('debug', message, null, meta),
+  info: (message, meta = {}) => logApp._log('info', message, null, meta),
+  warn: (messageOrError, meta = {}) => logApp._logWithError('warn', messageOrError, meta),
+  error: (messageOrError, meta = {}) => logApp._logWithError('error', messageOrError, meta)
 };
 
 const LOG_AUDIT = 'AUDIT';

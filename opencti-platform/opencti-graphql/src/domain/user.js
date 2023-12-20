@@ -1251,7 +1251,7 @@ export const internalAuthenticateUser = async (context, req, user, provider, { t
     if (isBypassUser(logged)) {
       const applicantUser = await resolveUserById(context, applicantId);
       if (isEmptyField(applicantUser)) {
-        logApp.warn(`User ${applicantId} cant be impersonate (not exists)`);
+        logApp.warn('User cant be impersonate (not exists)', { applicantId });
       } else {
         impersonate = applicantUser;
       }

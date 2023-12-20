@@ -122,7 +122,7 @@ const userResolvers = {
       // We need to iterate on each provider to find one that validated the credentials
       const formProviders = R.filter((p) => p.type === 'FORM', PROVIDERS);
       if (formProviders.length === 0) {
-        logApp.warn('[AUTH] Cant authenticate without any form providers');
+        logApp.warn('Cant authenticate without any form providers');
       }
       let loggedUser;
       for (let index = 0; index < formProviders.length; index += 1) {
@@ -131,7 +131,7 @@ const userResolvers = {
         const { user, provider } = await new Promise((resolve) => {
           passport.authenticate(auth.provider, {}, (err, authUser, info) => {
             if (err || info) {
-              logApp.warn('AUTHENTICATION', { error: err, info, provider: auth.provider });
+              logApp.warn(err, { info, provider: auth.provider });
             }
             resolve({ user: authUser, provider: auth.provider });
           })({ body });

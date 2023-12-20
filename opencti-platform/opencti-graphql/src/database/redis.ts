@@ -340,7 +340,7 @@ export const lockResource = async (resources: Array<string>, opts: LockOptions =
     timeout = undefined;
     try {
       if (opts.retryCount !== 0) {
-        logApp.warn('[REDIS] Extending resources for long processing task', { locks, stack: initialCallStack });
+        logApp.warn('Extending resources for long processing task', { locks, stack: initialCallStack });
       }
       lock = await lock.extend(maxTtl);
       queue();
@@ -388,7 +388,7 @@ export const lockResource = async (resources: Array<string>, opts: LockOptions =
         await lock.release();
       } catch (e) {
         // Nothing to do here
-        logApp.warn('[REDIS] Failed to unlock resource', { locks });
+        logApp.warn('Failed to unlock resource', { locks });
       }
     },
   };

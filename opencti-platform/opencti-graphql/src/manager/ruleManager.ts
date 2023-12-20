@@ -260,7 +260,7 @@ export const rulesCleanHandler = async (
         }
       } catch (err: any) {
         if (err.name === ALREADY_DELETED_ERROR) {
-          logApp.warn('Trying to delete an already deleted element', { error: err });
+          logApp.warn(err);
         } else {
           logApp.error(err, { manager: 'RULE_ENGINE' });
         }

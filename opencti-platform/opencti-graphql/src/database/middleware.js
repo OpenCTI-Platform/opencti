@@ -460,8 +460,8 @@ const loadElementsWithDependencies = async (context, user, elements, opts = {}) 
       if (isEmptyField(rawFrom) || isEmptyField(rawTo)) {
         const validFrom = isEmptyField(rawFrom) ? 'invalid' : 'valid';
         const validTo = isEmptyField(rawTo) ? 'invalid' : 'valid';
-        const message = `From ${element.fromId} is ${validFrom}, To ${element.toId} is ${validTo}`;
-        logApp.warn(`Auto delete of invalid relation ${element.id}. ${message}`);
+        const detail = `From ${element.fromId} is ${validFrom}, To ${element.toId} is ${validTo}`;
+        logApp.warn('Auto delete of invalid relation', { id: element.id, detail });
         // Auto deletion of the invalid relation
         await elDeleteElements(context, SYSTEM_USER, [element]);
       } else {
@@ -3488,7 +3488,7 @@ export const deleteInferredRuleElement = async (rule, instance, deletedDependenc
     }
   } catch (err) {
     if (err.name === ALREADY_DELETED_ERROR) {
-      logApp.warn('INFERENCE_DELETION', { error: err });
+      logApp.warn(err);
     } else {
       logApp.error(err);
     }
