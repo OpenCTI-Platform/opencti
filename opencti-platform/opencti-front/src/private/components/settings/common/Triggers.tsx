@@ -105,7 +105,7 @@ const Triggers: FunctionComponent<TriggersProps> = ({
   const [openLive, setOpenLive] = useState(false);
   const [openDigest, setOpenDigest] = useState(false);
   return (
-    <Grid item={true} xs={12} style={{ marginTop: 30 }}>
+    <Grid item={true} xs={12} style={{ marginTop: 30, marginBottom: 15 }}>
       <Typography variant="h4" gutterBottom={true} style={{ float: 'left' }}>
         {t('Triggers and Digests')}
       </Typography>
