@@ -397,6 +397,8 @@ const iconSelector = (type, variant, fontSize, color, isReversed) => {
     case 'bank-account':
     case 'phone-number':
     case 'payment-card':
+    case 'credential':
+    case 'tracking-number':
     case 'media-content':
       return <HexagonOutline style={style} fontSize={fontSize} role="img" />;
     case 'stix-sighting-relationship':

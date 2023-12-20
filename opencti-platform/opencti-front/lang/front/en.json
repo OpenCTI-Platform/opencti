@@ -2673,5 +2673,9 @@
   "Operational": "Operational",
   "Strategic": "Strategic",
   "Link created": "Link created",
-  "Public dashboard": "Public dashboard"
+  "Public dashboard": "Public dashboard",
+  "Credential": "Credential",
+  "Credentials": "Credentials",
+  "entity_Tracking-Number": "Tracking number",
+  "entity_Credential": "Credential"
 }

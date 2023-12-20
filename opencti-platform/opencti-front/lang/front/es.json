@@ -2673,5 +2673,9 @@
   "Strategic": "Estratégico",
   "Link created": "Enlace creado",
   "Public dashboard": "Cuadro de mandos público",
-  "Unless specific groups are selected, user will be created with default groups only.": "A menos que se seleccionen grupos específicos, el usuario se creará sólo con los grupos por defecto."
+  "Unless specific groups are selected, user will be created with default groups only.": "A menos que se seleccionen grupos específicos, el usuario se creará sólo con los grupos por defecto.",
+  "Credential": "Credencial",
+  "Credentials": "Cartas_credenciales",
+  "entity_Tracking-Number": "El número de rastreo",
+  "entity_Credential": "Credencial"
 }

@@ -279,6 +279,7 @@
   "Languages": "Languages",
   "Vendor": "Vendor",
   "Credential": "Credential",
+  "Credentials": "Credentials",
   "Account login": "Account login",
   "Account type": "Account type",
   "Service account": "Service account",
@@ -626,5 +627,6 @@
   "X_Aliases": "X_Aliases",
   "Samples": "Samples",
   "Contains observable": "Contains observable",
-  "Artifact content": "Artifact content"
+  "Artifact content": "Artifact content",
+  "Tracking number": "Tracking number"
 }

@@ -264,6 +264,8 @@ export const itemColor = (type, dark = false, reversed = false) => {
     case 'Text':
     case 'User-Agent':
     case 'Bank-Account':
+    case 'Credential':
+    case 'Tracking-Number':
     case 'Phone-Number':
     case 'Payment-Card':
     case 'Media-Content':

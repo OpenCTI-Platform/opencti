@@ -278,7 +278,8 @@
   "SWID": "SWID",
   "Languages": "言語",
   "Vendor": "ベンダー",
-  "Credential": "資格",
+  "Credential": "資格情報",
+  "Credentials": "資格",
   "Account login": "アカウントログイン",
   "Account type": "アカウントタイプ",
   "Service account": "サービスアカウント",
@@ -626,5 +627,6 @@
   "X_Aliases": "X_エイリアス",
   "Samples": "サンプル",
   "Contains observable": "観測値を含む",
-  "Artifact content": "人工物の内容"
+  "Artifact content": "人工物の内容",
+  "Tracking number": "追跡番号"
 }

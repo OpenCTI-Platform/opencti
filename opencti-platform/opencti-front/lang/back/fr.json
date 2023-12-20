@@ -279,6 +279,7 @@
   "Languages": "Langues",
   "Vendor": "Vendeur",
   "Credential": "Références",
+  "Credentials": "Informations_d'identification",
   "Account login": "Connexion au compte",
   "Account type": "Type de compte",
   "Service account": "Compte de service",
@@ -626,5 +627,6 @@
   "X_Aliases": "X_Aliases",
   "Samples": "Échantillons",
   "Contains observable": "Contient des observables",
-  "Artifact content": "Contenu de l'artefact"
+  "Artifact content": "Contenu de l'artefact",
+  "Tracking number": "Numéro de suivi"
 }
