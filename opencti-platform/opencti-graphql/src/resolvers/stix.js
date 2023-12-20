@@ -2,7 +2,6 @@ import { stixDelete, stixObjectMerge } from '../domain/stix';
 import { batchLoader, stixLoadByIdStringify } from '../database/middleware';
 import { connectorsForEnrichment } from '../database/repository';
 import { batchCreators } from '../domain/user';
-import { getSpecVersionOrDefault } from '../domain/stixRelationship';
 
 const creatorsLoader = batchLoader(batchCreators);
 
@@ -27,7 +26,6 @@ const stixResolvers = {
       return 'Unknown';
     },
     creators: (stix, _, context) => creatorsLoader.load(stix.creator_id, context, context.user),
-    spec_version: getSpecVersionOrDefault
   },
 };
 

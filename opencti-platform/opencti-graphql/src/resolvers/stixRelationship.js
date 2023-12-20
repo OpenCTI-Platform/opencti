@@ -4,11 +4,12 @@ import {
   batchMarkingDefinitions,
   findAll,
   findById,
+  getSpecVersionOrDefault,
   schemaRelationsTypesMapping,
   stixRelationshipDelete,
   stixRelationshipsDistribution,
   stixRelationshipsMultiTimeSeries,
-  stixRelationshipsNumber,
+  stixRelationshipsNumber
 } from '../domain/stixRelationship';
 import { ABSTRACT_STIX_CORE_RELATIONSHIP, } from '../schema/general';
 import { STIX_SIGHTING_RELATIONSHIP } from '../schema/stixSightingRelationship';
@@ -53,7 +54,8 @@ const stixRelationshipResolvers = {
       }
       /* v8 ignore next */
       return 'Unknown';
-    }
+    },
+    spec_version: getSpecVersionOrDefault
   },
   Mutation: {
     stixRelationshipEdit: (_, { id }, context) => ({

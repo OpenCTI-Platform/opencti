@@ -65,6 +65,7 @@ const HistoryDefinition: AttributeDefinition[] = [
       { name: 'connector_name', type: 'string', editDefault: false, mandatoryType: 'no', multiple: false, upsert: true },
       { name: 'marking_definition_ids', type: 'string', editDefault: false, mandatoryType: 'no', multiple: true, upsert: true },
       { name: 'object_marking_refs_ids', type: 'string', editDefault: false, mandatoryType: 'no', multiple: true, upsert: true },
+      { name: 'from_id', type: 'string', editDefault: false, mandatoryType: 'no', multiple: false, upsert: true },
       { name: 'created_by_id', type: 'string', editDefault: false, mandatoryType: 'no', multiple: false, upsert: true },
       { name: 'created_by_ref_id', type: 'string', editDefault: false, mandatoryType: 'no', multiple: false, upsert: true },
       { name: 'creator_ids', type: 'string', editDefault: false, mandatoryType: 'no', multiple: true, upsert: true },

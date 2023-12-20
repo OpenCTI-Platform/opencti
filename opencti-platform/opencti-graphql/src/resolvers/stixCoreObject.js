@@ -47,6 +47,7 @@ import { addOrganizationRestriction, batchObjectOrganizations, removeOrganizatio
 import { stixCoreObjectOptions } from '../schema/stixCoreObject';
 import { numberOfContainersForObject } from '../domain/container';
 import { paginatedForPathsWithEnrichment } from '../modules/internal/document/document-domain';
+import { getSpecVersionOrDefault } from '../domain/stixRelationship';
 
 const createdByLoader = batchLoader(batchCreatedBy);
 const markingDefinitionsLoader = batchLoader(batchMarkingDefinitions);
@@ -127,6 +128,7 @@ const stixCoreObjectResolvers = {
       return paginatedForPathsWithEnrichment(context, context.user, [`export/${stixCoreObject.entity_type}/${stixCoreObject.id}`], { first, entity_id: stixCoreObject.id });
     },
     numberOfConnectedElement: (stixCoreObject) => stixCoreObjectsConnectedNumber(stixCoreObject),
+    spec_version: getSpecVersionOrDefault
   },
   Mutation: {
     stixCoreObjectEdit: (_, { id }, context) => ({
