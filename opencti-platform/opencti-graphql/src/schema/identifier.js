@@ -29,7 +29,6 @@ import { ENTITY_TYPE_VOCABULARY } from '../modules/vocabulary/vocabulary-types';
 import { isBasicRelationship } from './stixRelationship';
 import { convertTypeToStixType } from '../database/stix-converter';
 import { isStixRefRelationship } from './stixRefRelationship';
-import { ENTITY_TYPE_INDICATOR } from '../modules/indicator/indicator-types';
 
 // region hashes
 const MD5 = 'MD5';
