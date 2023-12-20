@@ -92,7 +92,7 @@ const CaseTaskOverview: FunctionComponent<CaseTaskOverviewProps> = ({
             gutterBottom={true}
             style={{ marginTop: 20 }}
           >
-            {t_i18n('Creation date')}
+            {t_i18n('Original creation date')}
           </Typography>
           {fldt(data.created)}
         </Grid>

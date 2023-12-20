@@ -32,7 +32,7 @@ interface NotifierFieldProps {
   onChange: (name: string, value: Option[]) => void;
 }
 
-const NotifierFieldQuery = graphql`
+export const NotifierFieldQuery = graphql`
   query NotifierFieldSearchQuery {
     notificationNotifiers {
       id

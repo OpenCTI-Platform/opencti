@@ -185,10 +185,6 @@ const Alerting: FunctionComponent = () => {
         filters={filters}
         paginationOptions={paginationOptions}
         numberOfElements={numberOfElements}
-        availableFilterKeys={[
-          'trigger_type',
-          'created',
-        ]}
       >
         {queryRef && (
           <React.Suspense

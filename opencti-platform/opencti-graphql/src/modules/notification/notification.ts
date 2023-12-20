@@ -11,8 +11,10 @@ import {
 import { ABSTRACT_INTERNAL_OBJECT } from '../../schema/general';
 import type { ModuleDefinition } from '../../schema/module';
 import { registerDefinition } from '../../schema/module';
-import { authorizedAuthorities, authorizedMembers } from '../../schema/attribute-definition';
-import { ENTITY_TYPE_USER } from '../../schema/internalObject';
+import { authorizedAuthorities, authorizedMembers, created } from '../../schema/attribute-definition';
+import { ENTITY_TYPE_GROUP, ENTITY_TYPE_USER } from '../../schema/internalObject';
+import { ENTITY_TYPE_NOTIFIER } from '../notifier/notifier-types';
+import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../organization/organization-types';
 
 // Outcomes
 // TODO
@@ -31,19 +33,19 @@ const TRIGGER_DEFINITION: ModuleDefinition<StoreEntityTrigger, StixTrigger> = {
   },
   attributes: [
     { name: 'name', label: 'Name', type: 'string', format: 'short', mandatoryType: 'external', editDefault: true, multiple: false, upsert: false, isFilterable: true },
-    { name: 'description', label: 'Description', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true },
-    { name: 'created', label: 'Created', type: 'date', mandatoryType: 'external', editDefault: false, multiple: false, upsert: false, isFilterable: true },
-    { name: 'updated', label: 'Updated', type: 'date', mandatoryType: 'external', editDefault: false, multiple: false, upsert: false, isFilterable: true },
-    { name: 'event_types', label: 'Event types', type: 'string', format: 'short', mandatoryType: 'external', editDefault: true, multiple: true, upsert: false, isFilterable: true },
-    { name: 'trigger_scope', label: 'Trigger scope', type: 'string', format: 'short', mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false, isFilterable: true },
-    { name: 'outcomes', label: 'Outcomes', type: 'string', format: 'short', mandatoryType: 'external', editDefault: false, multiple: true, upsert: false, isFilterable: true },
-    { name: 'notifiers', label: 'Notifiers', type: 'string', format: 'short', mandatoryType: 'external', editDefault: true, multiple: true, upsert: false, isFilterable: true },
-    { name: 'filters', label: 'Filters', type: 'string', format: 'text', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true },
-    { name: 'recipients', label: 'Recipients', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: true, upsert: false, isFilterable: true },
+    { name: 'description', label: 'Description', type: 'string', format: 'text', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true },
+    { ...created, mandatoryType: 'external' },
+    { name: 'updated', label: 'Updated', type: 'date', mandatoryType: 'external', editDefault: false, multiple: false, upsert: false, isFilterable: false },
+    { name: 'event_types', label: 'Event types', type: 'string', format: 'enum', values: ['create', 'update', 'delete'], mandatoryType: 'external', editDefault: true, multiple: true, upsert: false, isFilterable: true },
+    { name: 'trigger_scope', label: 'Trigger scope', type: 'string', format: 'enum', values: ['knowledge', 'activity'], mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false, isFilterable: true },
+    { name: 'outcomes', label: 'Outcomes', type: 'string', format: 'short', mandatoryType: 'external', editDefault: false, multiple: true, upsert: false, isFilterable: false },
+    { name: 'notifiers', label: 'Notifiers', type: 'string', format: 'id', mandatoryType: 'external', editDefault: true, multiple: true, upsert: false, entityTypes: [ENTITY_TYPE_NOTIFIER], isFilterable: true },
+    { name: 'filters', label: 'Filters', type: 'string', format: 'text', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
+    { name: 'recipients', label: 'Recipients', type: 'string', format: 'id', entityTypes: [ENTITY_TYPE_USER, ENTITY_TYPE_GROUP, ENTITY_TYPE_IDENTITY_ORGANIZATION], mandatoryType: 'no', editDefault: false, multiple: true, upsert: false, isFilterable: false },
     { name: 'trigger_ids', label: 'Trigger IDs', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: true, upsert: false, isFilterable: false },
-    { name: 'period', label: 'Period', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true },
-    { name: 'trigger_time', label: 'Trigger time', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true },
-    { name: 'trigger_type', label: 'Trigger type', type: 'string', format: 'short', mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false, isFilterable: true },
+    { name: 'period', label: 'Period', type: 'string', format: 'enum', values: ['hour', 'day', 'week', 'month'], mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true },
+    { name: 'trigger_time', label: 'Trigger time', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
+    { name: 'trigger_type', label: 'Trigger type', type: 'string', format: 'enum', values: ['digest', 'live'], mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false, isFilterable: true },
     { name: 'instance_trigger', label: 'Instance trigger', type: 'boolean', mandatoryType: 'external', editDefault: true, multiple: false, upsert: false, isFilterable: true },
     authorizedMembers,
     authorizedAuthorities,
@@ -69,7 +71,7 @@ const NOTIFICATION_DEFINITION: ModuleDefinition<StoreEntityNotification, StixNot
     },
   },
   attributes: [
-    { name: 'notification_type', label: 'Notification type', type: 'string', format: 'short', mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false, isFilterable: true },
+    { name: 'notification_type', label: 'Notification type', type: 'string', format: 'enum', values: ['live', 'digest'], mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false, isFilterable: true },
     {
       name: 'notification_content',
       type: 'object',
@@ -111,7 +113,7 @@ const NOTIFICATION_DEFINITION: ModuleDefinition<StoreEntityNotification, StixNot
       editDefault: false,
       multiple: false,
       upsert: false,
-      isFilterable: true
+      isFilterable: false
     },
   ],
   relations: [],

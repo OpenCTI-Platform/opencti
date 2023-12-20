@@ -86,7 +86,7 @@ const ExternalReferences: FunctionComponent<ExternalReferencesProps> = () => {
         isSortable: isRuntimeSort,
       },
       created: {
-        label: 'Date',
+        label: 'Original creation date',
         width: '15%',
         isSortable: true,
       },
@@ -113,10 +113,7 @@ const ExternalReferences: FunctionComponent<ExternalReferencesProps> = () => {
           iconExtension={true}
           paginationOptions={queryPaginationOptions}
           numberOfElements={numberOfElements}
-          availableFilterKeys={[
-            'creator_id',
-            'created',
-          ]}
+          entityType={'External-Reference'}
         >
           {queryRef && (
             <React.Suspense

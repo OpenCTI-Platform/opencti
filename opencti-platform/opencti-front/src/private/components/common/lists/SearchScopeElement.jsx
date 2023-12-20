@@ -10,7 +10,7 @@ import ListItemText from '@mui/material/ListItemText';
 import React, { useState } from 'react';
 import makeStyles from '@mui/styles/makeStyles';
 import { useFormatter } from '../../../../components/i18n';
-import useAuth from '../../../../utils/hooks/useAuth';
+import useAttributes from '../../../../utils/hooks/useAttributes';
 
 const useStyles = makeStyles({
   container2: {
@@ -27,7 +27,7 @@ const SearchScopeElement = ({
 }) => {
   const { t_i18n } = useFormatter();
   const classes = useStyles();
-  const { schema } = useAuth();
+  const { stixCoreObjectTypes: entityTypes } = useAttributes();
   const [anchorElSearchScope, setAnchorElSearchScope] = useState();
   const handleOpenSearchScope = (event) => setAnchorElSearchScope(event.currentTarget);
   const handleCloseSearchScope = () => setAnchorElSearchScope(undefined);
@@ -39,7 +39,6 @@ const SearchScopeElement = ({
         : [...(searchScope[key] || []), value],
     }));
   };
-  const entityTypes = [...(schema.sdos ?? []), ...(schema.scos ?? [])].map((o) => o.id);
   const entitiesTypes = R.pipe(
     R.filter((n) => (availableRelationFilterTypes && availableRelationFilterTypes[name]
       ? availableRelationFilterTypes[name].includes(n)

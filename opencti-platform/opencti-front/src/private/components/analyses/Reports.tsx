@@ -72,7 +72,7 @@ const Reports: FunctionComponent = () => {
     const isRuntimeSort = isRuntimeFieldEnable() ?? false;
     const dataColumns = {
       name: {
-        label: 'Title',
+        label: 'Name',
         width: '25%',
         isSortable: true,
       },
@@ -97,7 +97,7 @@ const Reports: FunctionComponent = () => {
         isSortable: false,
       },
       published: {
-        label: 'Date',
+        label: 'Publication date',
         width: '10%',
         isSortable: true,
       },
@@ -137,23 +137,6 @@ const Reports: FunctionComponent = () => {
           paginationOptions={queryPaginationOptions}
           numberOfElements={numberOfElements}
           iconExtension={true}
-          availableFilterKeys={[
-            'workflow_id',
-            'objectLabel',
-            'objectMarking',
-            'createdBy',
-            'x_opencti_reliability',
-            'confidence',
-            'objectAssignee',
-            'objectParticipant',
-            'report_types',
-            'creator_id',
-            'published',
-            'created_at',
-            'objects',
-            'name',
-            'description',
-          ]}
         >
           {queryRef && (
             <React.Suspense

@@ -1,7 +1,7 @@
 import React, { ChangeEvent, FunctionComponent, useState } from 'react';
 import { useNavigate } from 'react-router-dom-v5-compat';
 import ListFiltersWithoutLocalStorage from '@components/common/lists/ListFiltersWithoutLocalStorage';
-import { constructHandleAddFilter, constructHandleRemoveFilter, Filter, FilterGroup, FiltersVariant, emptyFilterGroup } from '../../../../utils/filters/filtersUtils';
+import { constructHandleAddFilter, constructHandleRemoveFilter, emptyFilterGroup, Filter, FilterGroup, FiltersVariant } from '../../../../utils/filters/filtersUtils';
 import FiltersElement, { FilterElementsInputValue } from './FiltersElement';
 import ListFilters from './ListFilters';
 import DialogFilters from './DialogFilters';
@@ -28,6 +28,7 @@ interface FiltersProps {
   };
   type?: string;
   helpers?: handleFilterHelpers;
+  entityType?: string;
 }
 
 const Filters: FunctionComponent<FiltersProps> = ({
@@ -46,7 +47,10 @@ const Filters: FunctionComponent<FiltersProps> = ({
   searchContext,
   type,
   helpers,
+  entityType,
 }) => {
+  console.log('searchContext', searchContext);
+  console.log('entityTYpe', entityType);
   const navigate = useNavigate();
   const [open, setOpen] = useState(false);
   const [anchorEl, setAnchorEl] = useState<Element | null>(null);
@@ -74,8 +78,9 @@ const Filters: FunctionComponent<FiltersProps> = ({
       ],
     },
   );
+  const entityTypes = entityType ? [entityType] : ['Stix-Core-Object'];
   setSearchEntitiesScope({
-    searchContext: searchContext ?? { entityTypes: [] },
+    searchContext: searchContext ?? { entityTypes },
     searchScope,
     setInputValues: setInputValues as (
       value: {
@@ -122,7 +127,7 @@ const Filters: FunctionComponent<FiltersProps> = ({
       variant={variant}
       keyword={keyword}
       availableFilterKeys={availableFilterKeys}
-      searchContext={searchContext ?? { entityTypes: [] }}
+      searchContext={searchContext ?? { entityTypes }}
       handleChangeKeyword={handleChangeKeyword}
       inputValues={inputValues}
       setInputValues={setInputValues}
@@ -130,6 +135,7 @@ const Filters: FunctionComponent<FiltersProps> = ({
       availableEntityTypes={availableEntityTypes}
       availableRelationshipTypes={availableRelationshipTypes}
       availableRelationFilterTypes={availableRelationFilterTypes}
+      entityType={entityType}
     />
   );
   if (variant === FiltersVariant.dialog) {
@@ -165,6 +171,7 @@ const Filters: FunctionComponent<FiltersProps> = ({
           variant={variant}
           type={type}
           helpers={helpers}
+          entityType={entityType}
         />
       ) : (
         <ListFiltersWithoutLocalStorage

@@ -102,7 +102,7 @@ const Artifacts: FunctionComponent = () => {
       isSortable: false,
     },
     created_at: {
-      label: 'Date',
+      label: 'Platform creation date',
       width: '10%',
       isSortable: true,
     },
@@ -137,12 +137,6 @@ const Artifacts: FunctionComponent = () => {
           iconExtension={true}
           paginationOptions={queryPaginationOptions}
           numberOfElements={numberOfElements}
-          availableFilterKeys={[
-            'objectLabel',
-            'objectMarking',
-            'created_at',
-            'createdBy',
-          ]}
         >
           {queryRef && (
           <React.Suspense

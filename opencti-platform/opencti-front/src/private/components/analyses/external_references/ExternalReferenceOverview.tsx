@@ -55,7 +55,7 @@ ExternalReferenceOverviewComponentProps
           </Grid>
           <Grid item={true} xs={6}>
             <Typography variant="h3" gutterBottom={true}>
-              {t_i18n('Creation date')}
+              {t_i18n('Original creation date')}
             </Typography>
             {fldt(externalReference.created)}
             <Typography

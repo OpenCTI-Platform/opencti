@@ -6,8 +6,8 @@ import type { RefAttribute } from './attribute-definition';
 let usageProtection = false;
 export const schemaRelationsRefDefinition = {
   relationsRef: {} as Record<string, Map<string, RefAttribute>>,
-  // allRelationsRef is a list of the names of all the relations ref registered in a schema definition
   allRelationsRef: [] as string[],
+  registeredTypes: [] as string[],
 
   namesCache: new Map<string, string[]>(),
   stixNamesCache: new Map<string, string[]>(),
@@ -26,6 +26,7 @@ export const schemaRelationsRefDefinition = {
     if (usageProtection) {
       throw UnsupportedError('Register relations refs use after usage, please check your imports');
     }
+    this.registeredTypes.push(entityType);
     const directRefs = this.relationsRef[entityType] ?? new Map<string, RefAttribute>();
     // Register given relations ref
     relationsRefDefinition.forEach((relationRefDefinition) => {
@@ -83,6 +84,10 @@ export const schemaRelationsRefDefinition = {
 
   getRelationsRef(entityType: string): RefAttribute[] {
     return this.relationsRefCacheArray.get(this.selectEntityType(entityType)) ?? [];
+  },
+
+  getRegisteredTypes(): string[] {
+    return this.registeredTypes;
   },
 
   getRelationRef(entityType: string, name: string): RefAttribute | null {

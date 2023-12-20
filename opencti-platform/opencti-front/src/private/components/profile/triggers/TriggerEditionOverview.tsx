@@ -332,10 +332,10 @@ TriggerEditionOverviewProps
               label: t_i18n('Triggering on'),
             }}
             options={
-                        trigger.instance_trigger
-                          ? instanceEventTypesOptions
-                          : filterEventTypesOptions
-                      }
+              trigger.instance_trigger
+                ? instanceEventTypesOptions
+                : filterEventTypesOptions
+            }
             onChange={(
               name: string,
               value: { value: string; label: string }[],
@@ -454,6 +454,7 @@ TriggerEditionOverviewProps
                   inputValues={instanceFilters}
                   setInputValues={setInstanceFilters}
                   openOnFocus={true}
+                  filterLabel={t_i18n('connectedToId')}
                 />
               </div>
             ) : (

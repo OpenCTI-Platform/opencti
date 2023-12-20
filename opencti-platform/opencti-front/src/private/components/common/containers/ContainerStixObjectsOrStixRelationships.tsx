@@ -76,7 +76,7 @@ ContainerStixObjectsOrStixRelationshipsComponentProps
       isSortable: false,
     },
     created_at: {
-      label: 'Creation date',
+      label: 'Platform creation date',
       width: '12%',
       isSortable: true,
     },

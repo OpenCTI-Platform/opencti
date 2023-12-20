@@ -2,8 +2,8 @@ import * as R from 'ramda';
 import { v4 as uuid } from 'uuid';
 import { OptionValue } from '@components/common/lists/FilterAutocomplete';
 import { useFormatter } from '../../components/i18n';
-
 import type { FilterGroup as GqlFilterGroup } from './__generated__/useSearchEntitiesStixCoreObjectsContainersSearchQuery.graphql';
+import useAuth, { FilterDefinition } from '../hooks/useAuth';
 import { capitalizeFirstLetter } from '../String';
 import { FilterRepresentative } from '../../components/filters/FiltersModel';
 
@@ -43,114 +43,26 @@ export const FiltersVariant = {
   dialog: 'dialog',
 };
 
-export const inlineFilters = ['is_read', 'trigger_type', 'instance_trigger'];
-
-export const integerFilters = [
-  'x_opencti_cvss_base_score',
-  'x_opencti_score',
-  'confidence',
-  'likelihood',
-];
-
-export const textFilters = [
-  'name',
-  'value',
-  'pattern',
-];
-
-export const longTextFilters = [
-  'description',
-];
-
-// filters that can have 'eq' or 'not_eq' operator
-export const EqFilters = [
-  'objectLabel',
-  'createdBy',
-  'objectMarking',
-  'entity_type',
-  'workflow_id',
-  'malware_types',
-  'incident_type',
-  'context',
-  'pattern_type',
-  'indicator_types',
-  'report_types',
-  'note_types',
-  'channel_types',
-  'event_types',
-  'sightedBy',
-  'relationship_type',
-  'creator_id',
-  'x_opencti_negative',
-  'source',
-  'objects',
-  'indicates',
-  'targets',
-  'x_opencti_main_observable_type',
-  'objectAssignee',
-  'objectParticipant',
-  'killChainPhases',
-  'x_opencti_reliability',
-  'contextEntityId',
-  'event_type',
-  'event_scope',
-  'user_id',
-  'group_ids',
-  'organization_ids',
-];
-
-// filters that represents a date, can have lt (end date) or gt (start date) operators
-export const dateFilters = [
-  'published',
-  'created',
-  'created_at',
-  'modified',
-  'valid_from',
-  'start_time',
-  'stop_time',
-];
-
-const uniqFilters = [
-  'revoked',
-  'x_opencti_detection',
-  'x_opencti_cvss_base_score',
-  'confidence',
-  'likelihood',
-  'x_opencti_negative',
-  'x_opencti_score',
-  'toSightingId',
-  'based-on',
-];
-
-// filters that targets entities instances
-export const entityFilters = [
-  'fromOrToId',
-  'fromId',
-  'toId',
-  'createdBy',
-  'objects',
-  'indicates',
-  'targets',
-  'connectedToId',
-  'contextEntityId',
-  'id',
-];
-
-export const booleanFilters = [
-  'x_opencti_detection',
-  'revoked',
-  'is_read',
-  'x_opencti_reliability',
-  'instance_trigger',
-];
-
+// filters which possible values are entity types or relationship types
 export const entityTypesFilters = [
   'entity_type',
-  'entity_types',
   'fromTypes',
   'toTypes',
-  'relationship_types',
+  'relationship_type', // TODO to remove because is entity_type
   'contextEntityType',
+  'elementWithTargetTypes',
+  'type', // regardingOf subfilter
+  'x_opencti_main_observable_type',
+];
+
+// context filters for audits (filters on the entity involved in an activity/knowledge event)
+export const contextFilters = [
+  'contextCreator',
+  'contextCreatedBy',
+  'contextEntityId',
+  'contextEntityType',
+  'contextObjectLabel',
+  'contextObjectMarking',
 ];
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -168,7 +80,31 @@ export const isFilterFormatCorrect = (stringFilters: string): boolean => {
   return filters.mode && filters.filters && filters.filterGroups;
 };
 
-export const isUniqFilter = (key: string) => uniqFilters.includes(key) || dateFilters.includes(key);
+export const useIsUniqFilter = (key: string) => {
+  const { filterKeysSchema } = useAuth().schema;
+  const filterDefinition = filterKeysSchema.get('Stix-Core-Object')?.get(key);
+  if (filterDefinition && ['boolean', 'date', 'integer', 'float'].includes(filterDefinition.type)) {
+    return true;
+  }
+  return false;
+};
+
+export const isTextFilter = (
+  filterDefinition: FilterDefinition | undefined,
+) => {
+  return filterDefinition
+    && !entityTypesFilters.includes(filterDefinition.filterKey)
+    && (
+      filterDefinition.type === 'string'
+    || filterDefinition.type === 'text'
+    );
+};
+
+export const isNumericFilter = (
+  filterType?: string,
+) => {
+  return filterType === 'integer' || filterType === 'float';
+};
 
 export const findFilterFromKey = (
   filters: Filter[],
@@ -183,21 +119,6 @@ export const findFilterFromKey = (
     }
   }
   return null;
-};
-
-export const extractAllValueFromFilters = (filters: Filter[], key: string): Filter | null => {
-  const extractFilter: Filter = {
-    key,
-    mode: 'or',
-    operator: 'eq',
-    values: [],
-  };
-  filters.forEach((filter) => {
-    if (filter.key === key) {
-      extractFilter.values.push(...filter.values);
-    }
-  });
-  return extractFilter.values.length > 0 ? extractFilter : null;
 };
 
 export const findFiltersFromKeys = (
@@ -296,16 +217,15 @@ export const buildFiltersAndOptionsForWidgets = (
 };
 
 // return the i18n label corresponding to a value
-export const filterValue = (filterKey: string, value?: string | null) => {
+export const filterValue = (filterKey: string, value?: string | null, filterType?: string) => {
   const { t_i18n, nsd } = useFormatter();
   if (filterKey === 'regardingOf') {
     return JSON.stringify(value);
   }
   if (
     value
-    && (booleanFilters.includes(filterKey) || inlineFilters.includes(filterKey))
+    && (filterType === 'boolean' || filterType === 'enum')
   ) {
-    // TODO: improvement: boolean filters based on schema definition (not an enum)
     return t_i18n(value);
   }
   if (filterKey === 'x_opencti_negative') {
@@ -320,8 +240,7 @@ export const filterValue = (filterKey: string, value?: string | null) => {
           : `relationship_${value.toString()}`,
       );
   }
-  if (dateFilters.includes(filterKey)) {
-    // TODO: improvement: date filters based on schema definition (not an enum)
+  if (filterType === 'date') {
     return nsd(value);
   }
   if (filterKey === 'relationship_type' || filterKey === 'type') {
@@ -514,24 +433,6 @@ export const addFilter = (
   };
 };
 
-// forcefully remove a filter into a filterGroup, no check done
-export const removeFilter = (
-  filters: FilterGroup | undefined,
-  key: string | string[],
-) => {
-  if (!filters) {
-    return undefined;
-  }
-  const newFilters = {
-    ...filters,
-    filters: Array.isArray(key)
-      ? filters.filters.filter((f) => !key.includes(f.key))
-      : filters.filters.filter((f) => f.key !== key),
-  };
-
-  return isFilterGroupNotEmpty(newFilters) ? newFilters : undefined;
-};
-
 //----------------------------------------------------------------------------------------------------------------------
 
 // add a filter (k, id, op) in a filterGroup smartly, for usage in forms
@@ -547,7 +448,7 @@ export const constructHandleAddFilter = (
     const filter = findFilterFromKey(filters.filters, k, op);
     let newValues: FilterValue[] = [];
     if (id !== null) {
-      newValues = isUniqFilter(k)
+      newValues = useIsUniqFilter(k)
         ? [id]
         : R.uniq([...(filter?.values ?? []), id]);
     }
@@ -628,20 +529,23 @@ const defaultFilterObject: Filter = {
   operator: '',
   mode: 'or',
 };
-export const getDefaultOperatorFilter = (filterKey: string) => {
-  if (EqFilters.includes(filterKey)) {
+export const getDefaultOperatorFilter = (
+  filterDefinition?: FilterDefinition,
+) => {
+  if (!filterDefinition) {
     return 'eq';
   }
-  if (dateFilters.includes(filterKey)) {
+  const { type } = filterDefinition;
+  if (type === 'date') {
     return 'gte';
   }
-  if (integerFilters.includes(filterKey)) {
+  if (isNumericFilter(type)) {
     return 'gt';
   }
-  if (booleanFilters.includes(filterKey)) {
+  if (type === 'boolean') {
     return 'eq';
   }
-  if (textFilters.includes(filterKey)) {
+  if (isTextFilter(filterDefinition)) {
     return 'starts_with';
   }
   if (longTextFilters.includes(filterKey)) {
@@ -650,17 +554,24 @@ export const getDefaultOperatorFilter = (filterKey: string) => {
   return 'eq';
 };
 
-export const getDefaultFilterObject = (key: string): Filter => {
+export const getDefaultFilterObject = (
+  filterKey: string,
+  filterDefinition?: FilterDefinition,
+): Filter => {
   return {
     ...defaultFilterObject,
     id: uuid(),
-    key,
-    operator: getDefaultOperatorFilter(key),
+    key: filterKey,
+    operator: getDefaultOperatorFilter(filterDefinition),
   };
 };
 
-export const getDefaultFilterObjFromArray = (keys: string[]) => {
-  return keys.map((key) => getDefaultFilterObject(key));
+export const getDefaultFilterObjFromArray = (
+  filtersDefinition: (FilterDefinition | undefined)[],
+) => {
+  return (filtersDefinition
+    .filter((def) => def) as FilterDefinition[])
+    .map((def) => getDefaultFilterObject(def.filterKey, def));
 };
 
 /**
@@ -669,7 +580,7 @@ export const getDefaultFilterObjFromArray = (keys: string[]) => {
  */
 export const getAvailableOperatorForFilterSubKey = (filterKey: string, subKey: string): string[] => {
   if (filterKey === 'regardingOf') {
-    if (subKey === 'id' || subKey === 'type') {
+    if (subKey === 'id' || subKey === 'relationship_type') {
       return ['eq'];
     }
   }
@@ -681,17 +592,26 @@ export const getAvailableOperatorForFilterSubKey = (filterKey: string, subKey: s
  * Operators are restricted depending on the filter key
  * @param filterKey
  */
-export const getAvailableOperatorForFilterKey = (filterKey: string): string[] => {
-  if (dateFilters.includes(filterKey)) {
-    return ['gt', 'gte', 'lt', 'lte'];
+export const getAvailableOperatorForFilterKey = (
+  filterDefinition: FilterDefinition | undefined,
+): string[] => {
+  if (!filterDefinition) {
+    return ['eq'];
   }
-  if (integerFilters.includes(filterKey)) {
-    return ['gt', 'gte', 'lt', 'lte'];
-  }
-  if (booleanFilters.includes(filterKey)) {
+  const { type: filterType } = filterDefinition;
+  if (filterType === 'text') {
     return ['eq', 'not_eq'];
   }
-  if (textFilters.includes(filterKey)) {
+  if (filterType === 'date') {
+    return ['gt', 'gte', 'lt', 'lte'];
+  }
+  if (isNumericFilter(filterType)) {
+    return ['gt', 'gte', 'lt', 'lte'];
+  }
+  if (filterType === 'boolean') {
+    return ['eq', 'not_eq'];
+  }
+  if (isTextFilter(filterDefinition)) {
     return ['eq', 'not_eq', 'nil', 'not_nil', 'contains', 'not_contains',
       'starts_with', 'not_starts_with', 'ends_with', 'not_ends_with'];
   }
@@ -699,12 +619,15 @@ export const getAvailableOperatorForFilterKey = (filterKey: string): string[] =>
     return ['search'];
   }
 
-  return ['eq', 'not_eq', 'nil', 'not_nil'];
+  return ['eq', 'not_eq', 'nil', 'not_nil']; // vocabulary or id
 };
 
-export const getAvailableOperatorForFilter = (filterKey: string, subKey?: string): string[] => {
-  if (subKey) return getAvailableOperatorForFilterSubKey(filterKey, subKey);
-  return getAvailableOperatorForFilterKey(filterKey);
+export const getAvailableOperatorForFilter = (
+  filterDefinition: FilterDefinition | undefined,
+  subKey?: string,
+): string[] => {
+  if (filterDefinition && subKey) return getAvailableOperatorForFilterSubKey(filterDefinition?.filterKey, subKey);
+  return getAvailableOperatorForFilterKey(filterDefinition);
 };
 
 export const removeIdFromFilterGroupObject = (filters?: FilterGroup | null): FilterGroup | undefined => {
@@ -738,6 +661,26 @@ export const buildEntityTypeBasedFilterContext = (entityType: string, filters: F
     ],
     filterGroups: userFilters && isFilterGroupNotEmpty(userFilters) ? [userFilters] : [],
   };
+};
+
+export const useBuildFilterKeysMapFromEntityType = (entityType = 'Stix-Core-Object'): Map<string, FilterDefinition> => {
+  const { filterKeysSchema } = useAuth().schema;
+  const filterKeysMap = filterKeysSchema.get(entityType);
+  return filterKeysMap ?? new Map();
+};
+
+export const useFilterDefinition = (filterKey: string, entityType = 'Stix-Core-Object', subKey?: string): FilterDefinition | undefined => {
+  const filterDefinition = useBuildFilterKeysMapFromEntityType(entityType).get(filterKey);
+  if (subKey) {
+    const subFilterDefinition = filterDefinition?.subFilters
+      ? filterDefinition.subFilters.filter((subFilter: FilterDefinition) => subFilter.filterKey === subKey)
+      : undefined;
+    if (subFilterDefinition && subFilterDefinition.length > 0) {
+      return subFilterDefinition[0];
+    }
+    throw Error(`The ${subKey} sub-filter doesn't exist for the ${filterKey} filter`);
+  }
+  return filterDefinition;
 };
 
 export const isStixObjectTypes = [

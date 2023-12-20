@@ -56,7 +56,7 @@ const RegionOverview: FunctionComponent<RegionOverviewProps> = ({
       </Typography>
       <Paper classes={{ root: classes.paper }} variant="outlined">
         <Typography variant="h3" gutterBottom={true}>
-          {t_i18n('Creation date')}
+          {t_i18n('Original creation date')}
         </Typography>
         {fldt(region.created)}
         <Typography variant="h3" gutterBottom={true} style={{ marginTop: 20 }}>

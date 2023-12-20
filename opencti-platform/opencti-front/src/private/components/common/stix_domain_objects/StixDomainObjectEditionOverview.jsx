@@ -14,13 +14,13 @@ import { useFormatter } from '../../../../components/i18n';
 import { SubscriptionAvatars, SubscriptionFocus } from '../../../../components/Subscription';
 import CreatedByField from '../form/CreatedByField';
 import ObjectMarkingField from '../form/ObjectMarkingField';
-import { typesWithoutName } from '../../../../utils/hooks/useAttributes';
 import CommitMessage from '../form/CommitMessage';
 import { adaptFieldValue } from '../../../../utils/String';
 import { useIsEnforceReference } from '../../../../utils/hooks/useEntitySettings';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import ConfidenceField from '../form/ConfidenceField';
 import { convertMarkings } from '../../../../utils/edition';
+import useAttributes from '../../../../utils/hooks/useAttributes';
 
 const useStyles = makeStyles((theme) => ({
   header: {
@@ -121,6 +121,7 @@ const stixDomainObjectValidation = (t) => Yup.object().shape({
 
 const StixDomainObjectEditionContainer = (props) => {
   const { t_i18n } = useFormatter();
+  const { typesWithoutName } = useAttributes();
   const classes = useStyles();
 
   const { handleClose, stixDomainObject, noStoreUpdate } = props;

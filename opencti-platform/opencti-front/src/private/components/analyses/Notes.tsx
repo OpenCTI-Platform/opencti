@@ -13,7 +13,7 @@ import { NoteLineDummy } from './notes/NoteLine';
 import { NoteLine_node$data } from './notes/__generated__/NoteLine_node.graphql';
 import { NotesLinesPaginationQuery, NotesLinesPaginationQuery$variables } from './notes/__generated__/NotesLinesPaginationQuery.graphql';
 import NoteCreation from './notes/NoteCreation';
-import { buildEntityTypeBasedFilterContext, emptyFilterGroup, getDefaultFilterObjFromArray } from '../../../utils/filters/filtersUtils';
+import { buildEntityTypeBasedFilterContext, emptyFilterGroup, getDefaultFilterObjFromArray, useFilterDefinition } from '../../../utils/filters/filtersUtils';
 import { useFormatter } from '../../../components/i18n';
 import Breadcrumbs from '../../../components/Breadcrumbs';
 
@@ -37,7 +37,7 @@ const Notes: FunctionComponent = () => {
       openExports: false,
       filters: {
         ...emptyFilterGroup,
-        filters: getDefaultFilterObjFromArray(['note_types']),
+        filters: getDefaultFilterObjFromArray([useFilterDefinition('note_types', 'Note')]),
       },
     },
   );
@@ -99,7 +99,7 @@ const Notes: FunctionComponent = () => {
         isSortable: false,
       },
       created: {
-        label: 'Date',
+        label: 'Original creation date',
         width: '10%',
         isSortable: true,
       },
@@ -137,18 +137,6 @@ const Notes: FunctionComponent = () => {
           paginationOptions={queryPaginationOptions}
           numberOfElements={numberOfElements}
           iconExtension={true}
-          availableFilterKeys={[
-            'note_types',
-            'workflow_id',
-            'objectLabel',
-            'objectMarking',
-            'createdBy',
-            'source_reliability',
-            'confidence',
-            'likelihood',
-            'creator_id',
-            'created',
-          ]}
         >
           {queryRef && (
             <React.Suspense

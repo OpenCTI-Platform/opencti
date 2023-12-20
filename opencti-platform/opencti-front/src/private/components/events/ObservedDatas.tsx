@@ -119,15 +119,6 @@ const ObservedDatas: FunctionComponent = () => {
           paginationOptions={queryPaginationOptions}
           numberOfElements={numberOfElements}
           iconExtension={true}
-          availableFilterKeys={[
-            'workflow_id',
-            'objectLabel',
-            'objectMarking',
-            'createdBy',
-            'source_reliability',
-            'confidence',
-            'created',
-          ]}
         >
           <QueryRenderer
             query={observedDatasLinesQuery}

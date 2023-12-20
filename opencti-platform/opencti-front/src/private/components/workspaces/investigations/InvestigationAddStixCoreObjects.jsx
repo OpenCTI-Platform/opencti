@@ -5,10 +5,10 @@ import Tooltip from '@mui/material/Tooltip';
 import InvestigationAddStixCoreObjectsLines, { investigationAddStixCoreObjectsLinesQuery } from './InvestigationAddStixCoreObjectsLines';
 import { QueryRenderer } from '../../../../relay/environment';
 import { useFormatter } from '../../../../components/i18n';
-import { stixCyberObservableTypes, stixDomainObjectTypes } from '../../../../utils/hooks/useAttributes';
+import useAttributes from '../../../../utils/hooks/useAttributes';
 import { UserContext } from '../../../../utils/hooks/useAuth';
 import ListLines from '../../../../components/list_lines/ListLines';
-import { constructHandleAddFilter, constructHandleRemoveFilter, filtersAfterSwitchLocalMode, emptyFilterGroup } from '../../../../utils/filters/filtersUtils';
+import { constructHandleAddFilter, constructHandleRemoveFilter, emptyFilterGroup, filtersAfterSwitchLocalMode } from '../../../../utils/filters/filtersUtils';
 import Drawer from '../../common/drawer/Drawer';
 
 const InvestigationAddStixCoreObjects = (props) => {
@@ -24,6 +24,7 @@ const InvestigationAddStixCoreObjects = (props) => {
     workspaceStixCoreObjects,
   } = props;
   const { t_i18n } = useFormatter();
+  const { stixDomainObjectTypes, stixCyberObservableTypes } = useAttributes();
   const [open, setOpen] = useState(false);
   const [sortBy, setSortBy] = useState('_score');
   const [orderAsc, setOrderAsc] = useState(false);
@@ -216,17 +217,6 @@ const InvestigationAddStixCoreObjects = (props) => {
               parametersWithPadding={true}
               disableExport={true}
               availableEntityTypes={[resolveAvailableTypes()]}
-              availableFilterKeys={[
-                'entity_type',
-                'objectMarking',
-                'objectLabel',
-                'createdBy',
-                'confidence',
-                'x_opencti_organization_type',
-                'created',
-                'created_at',
-                'creator_id',
-              ]}
             >
               <QueryRenderer
                 query={investigationAddStixCoreObjectsLinesQuery}

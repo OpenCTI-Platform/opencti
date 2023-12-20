@@ -9,7 +9,7 @@ import useEntityToggle from '../../../utils/hooks/useEntityToggle';
 import { NotificationLine_node$data } from './notifications/__generated__/NotificationLine_node.graphql';
 import useAuth from '../../../utils/hooks/useAuth';
 import NotificationsToolBar from './notifications/NotificationsToolBar';
-import { emptyFilterGroup, getDefaultFilterObjFromArray, isFilterGroupNotEmpty, removeIdFromFilterGroupObject } from '../../../utils/filters/filtersUtils';
+import { emptyFilterGroup, getDefaultFilterObjFromArray, isFilterGroupNotEmpty, removeIdFromFilterGroupObject, useFilterDefinition } from '../../../utils/filters/filtersUtils';
 import Breadcrumbs from '../../../components/Breadcrumbs';
 import { useFormatter } from '../../../components/i18n';
 
@@ -26,7 +26,7 @@ const Notifications: FunctionComponent = () => {
       orderAsc: false,
       filters: {
         ...emptyFilterGroup,
-        filters: getDefaultFilterObjFromArray(['is_read']),
+        filters: getDefaultFilterObjFromArray([useFilterDefinition('is_read', 'Notification')]),
       },
       numberOfElements: {
         number: 0,
@@ -59,7 +59,7 @@ const Notifications: FunctionComponent = () => {
         isSortable: false,
       },
       created: {
-        label: 'Date',
+        label: 'Original creation date',
         width: '15%',
         isSortable: true,
       },
@@ -118,10 +118,7 @@ const Notifications: FunctionComponent = () => {
         secondaryAction={true}
         paginationOptions={queryPaginationOptions}
         numberOfElements={numberOfElements}
-        availableFilterKeys={[
-          'is_read',
-          'created',
-        ]}
+        entityType={'Notification'}
       >
         {queryRef && (
         <React.Suspense

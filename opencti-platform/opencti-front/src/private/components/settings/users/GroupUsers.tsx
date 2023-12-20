@@ -93,7 +93,7 @@ const GroupUsers: FunctionComponent<GroupUsersProps> = ({ groupId }) => {
       isSortable: false,
     },
     created_at: {
-      label: 'Creation date',
+      label: 'Platform creation date',
       width: '10%',
       isSortable: true,
     },

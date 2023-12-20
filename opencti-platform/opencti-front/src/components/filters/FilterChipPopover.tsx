@@ -9,20 +9,12 @@ import { SelectChangeEvent } from '@mui/material/Select';
 import SearchScopeElement from '@components/common/lists/SearchScopeElement';
 import Chip from '@mui/material/Chip';
 import { OptionValue } from '@components/common/lists/FilterAutocomplete';
-import {
-  dateFilters,
-  Filter,
-  getAvailableOperatorForFilter,
-  getSelectedOptions,
-  integerFilters,
-  isStixObjectTypes,
-  longTextFilters,
-  textFilters,
-} from '../../utils/filters/filtersUtils';
+import { isNumericFilter, isTextFilter, useFilterDefinition, Filter, getAvailableOperatorForFilter, getSelectedOptions, isStixObjectTypes } from '../../utils/filters/filtersUtils';
 import { useFormatter } from '../i18n';
 import ItemIcon from '../ItemIcon';
 import { getOptionsFromEntities, getUseSearch } from '../../utils/filters/SearchEntitiesUtil';
 import { handleFilterHelpers } from '../../utils/hooks/useLocalStorage';
+import { FilterDefinition } from '../../utils/hooks/useAuth';
 import { FilterRepresentative } from './FiltersModel';
 
 interface FilterChipMenuProps {
@@ -33,6 +25,7 @@ interface FilterChipMenuProps {
   helpers?: handleFilterHelpers;
   availableRelationFilterTypes?: Record<string, string[]>;
   filtersRepresentativesMap: Map<string, FilterRepresentative>;
+  entityType?: string;
 }
 
 export interface FilterChipsParameter {
@@ -65,21 +58,22 @@ interface BasicNumberInputProps {
   filterKey: string;
   helpers?: handleFilterHelpers;
   filterValues: string[];
+  label: string;
 }
 const BasicNumberInput: FunctionComponent<BasicNumberInputProps> = ({
   filter,
   filterKey,
   helpers,
   filterValues,
+  label,
 }) => {
-  const { t_i18n } = useFormatter();
   return (
     <TextField
       variant="outlined"
       size="small"
       fullWidth={true}
       id={filter?.id ?? `${filterKey}-id`}
-      label={t_i18n(filterKey)}
+      label={label}
       type="number"
       defaultValue={filterValues[0]}
       autoFocus={true}
@@ -105,15 +99,15 @@ const BasicTextInput: FunctionComponent<BasicNumberInputProps> = ({
   filterKey,
   helpers,
   filterValues,
+  label,
 }) => {
-  const { t_i18n } = useFormatter();
   return (
     <TextField
       variant="outlined"
       size="small"
       fullWidth={true}
       id={filter?.id ?? `${filterKey}-id`}
-      label={t_i18n(filterKey)}
+      label={label}
       defaultValue={filterValues[0]}
       autoFocus={true}
       onKeyDown={(event) => {
@@ -141,11 +135,15 @@ export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({
   helpers,
   availableRelationFilterTypes,
   filtersRepresentativesMap,
+  entityType,
 }) => {
+  const { t_i18n } = useFormatter();
   const filter = filters.find((f) => f.id === params.filterId);
   const filterKey = filter?.key ?? '';
   const filterOperator = filter?.operator ?? '';
   const filterValues = filter?.values ?? [];
+  const filterDefinition = useFilterDefinition(filterKey, entityType);
+  const filterLabel = t_i18n(filterDefinition?.label ?? filterKey);
   const [inputValues, setInputValues] = useState<
   {
     key: string;
@@ -180,8 +178,7 @@ export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({
       ],
     },
   );
-  const [entities, searchEntities] = getUseSearch(searchScope);
-  const { t_i18n } = useFormatter();
+  const [entities, searchEntities] = getUseSearch(searchScope, entityType);
   const handleChange = (checked: boolean, value: string, childKey?: string) => {
     if (childKey) { // case 'regardingOf' filter
       const childFilters = filter?.values.filter((val) => val.key === childKey) as Filter[];
@@ -209,11 +206,12 @@ export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({
     helpers?.handleAddSingleValueFilter(filter?.id ?? '', value);
   };
 
-  const isSpecificFilter = (fKey: string) => {
+  const isSpecificFilter = (fDef?: FilterDefinition) => {
+    const filterType = fDef?.type;
     return (
-      dateFilters.includes(fKey)
-      || integerFilters.includes(fKey)
-      || textFilters.includes(fKey)
+      filterType === 'date'
+      || isNumericFilter(filterType)
+      || isTextFilter(fDef)
       || longTextFilters.includes(fKey)
     );
   };
@@ -225,6 +223,7 @@ export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({
       operator={filterOperator}
       inputValues={inputValues}
       setInputValues={setInputValues}
+      filterLabel={filterLabel}
     />
   );
 
@@ -238,14 +237,14 @@ export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({
     />
   );
 
-  const buildAutocompleteFilter = (fKey: string, subKey?: string): ReactNode => {
+  const buildAutocompleteFilter = (fKey: string, fLabel?: string, subKey?: string): ReactNode => {
     const getOptions = getOptionsFromEntities(entities, searchScope, fKey);
     const optionsValues = subKey ? (filterValues.find((f) => f.key === subKey)?.values ?? []) : filterValues;
     const entitiesOptions = getOptions.filter((option) => !optionsValues.includes(option.value));
     const selectedOptions: OptionValue[] = getSelectedOptions(getOptions, optionsValues, filtersRepresentativesMap, t_i18n);
 
-    const groupByEntities = (option: OptionValue) => {
-      return t_i18n(option?.group ? option?.group : fKey);
+    const groupByEntities = (option: OptionValue, label?: string) => {
+      return t_i18n(option?.group ? option?.group : label);
     };
     return (
       <Autocomplete
@@ -254,7 +253,7 @@ export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({
         getOptionLabel={(option) => option.label ?? ''}
         noOptionsText={t_i18n('No available options')}
         options={[...selectedOptions, ...entitiesOptions]}
-        groupBy={(option) => groupByEntities(option)}
+        groupBy={(option) => groupByEntities(option, fLabel)}
         onInputChange={(event) => searchEntities(fKey, cacheEntities, setCacheEntities, event)}
         renderInput={(paramsInput) => (
           <TextField
@@ -265,7 +264,7 @@ export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({
                 ? renderSearchScopeSelection(fKey)
                 : paramsInput.InputProps.endAdornment,
             }}
-            label={t_i18n(subKey ?? fKey)}
+            label={t_i18n(fLabel)}
             variant="outlined"
             size="small"
             fullWidth={true}
@@ -313,38 +312,38 @@ export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({
       />
     );
   };
-  const getSpecificFilter = (fKey: string): ReactNode => {
-    if (dateFilters.includes(fKey)) {
+  const getSpecificFilter = (fDefinition?: FilterDefinition): ReactNode => {
+    if (fDefinition?.type === 'date') {
       return <BasicFilterDate />;
     }
-    if (integerFilters.includes(fKey)) {
+    if (fDefinition?.type === 'integer' || fDefinition?.type === 'float') {
       return (
         <BasicNumberInput
           filter={filter}
           filterKey={filterKey}
           filterValues={filterValues}
           helpers={helpers}
+          label={filterLabel}
         />
       );
     }
-    if (textFilters.includes(fKey) || longTextFilters.includes(fKey)) {
+    if (isTextFilter(filterDefinition) || longTextFilters.includes(fKey)) {
       return (
         <BasicTextInput
           filter={filter}
           filterKey={filterKey}
           filterValues={filterValues}
           helpers={helpers}
+          label={filterLabel}
         />
       );
     }
     return null;
   };
 
-  const displayOperatorAndFilter = (fKey: string, subKey?: string, aliasSubKey?: string) => {
-    const availableOperators = getAvailableOperatorForFilter(fKey, subKey);
-    // for subkeys, we turn to the behavior of existing filter keys
-    // we might use an alias if the subkey does not match the name of the existing key
-    const finalFilterKey = subKey ? (aliasSubKey ?? subKey) : fKey;
+  const displayOperatorAndFilter = (fKey: string, subKey?: string) => {
+    const availableOperators = getAvailableOperatorForFilter(filterDefinition, subKey);
+    const finalFilterDefinition = useFilterDefinition(fKey, entityType, subKey);
     return (
       <>
         <Select
@@ -362,11 +361,11 @@ export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({
             </MenuItem>
           ))}
         </Select>
-        {noValueOperator && isSpecificFilter(finalFilterKey) && (
-          <>{getSpecificFilter(finalFilterKey)}</>
+        {noValueOperator && isSpecificFilter(finalFilterDefinition) && (
+          <>{getSpecificFilter(finalFilterDefinition)}</>
         )}
-        {noValueOperator && !isSpecificFilter(finalFilterKey) && (
-          <>{buildAutocompleteFilter(finalFilterKey, subKey)}</>
+        {noValueOperator && !isSpecificFilter(finalFilterDefinition) && (
+          <>{buildAutocompleteFilter(subKey ?? fKey, finalFilterDefinition?.label, subKey)}</>
         )}
       </>
     );
@@ -383,14 +382,14 @@ export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({
       }}
       PaperProps={{ elevation: 1, style: { marginTop: 10 } }}
     >
-      {filterKey === 'regardingOf'
+      {filterDefinition?.subFilters && filterDefinition.subFilters.length > 1
         ? <div
             style={{
               width: 250,
               padding: 8,
             }}
           >
-          {displayOperatorAndFilter('regardingOf', 'type', 'relationship_type')}
+          {displayOperatorAndFilter(filterKey, filterDefinition?.subFilters[0].filterKey)}
           <Chip
             style={{
               fontFamily: 'Consolas, monaco, monospace',
@@ -398,7 +397,7 @@ export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({
             }}
             label={t_i18n('WITH')}
           />
-          {displayOperatorAndFilter('regardingOf', 'id')}
+          {displayOperatorAndFilter(filterKey, filterDefinition.subFilters[1].filterKey)}
         </div>
         : <div
             style={{

@@ -449,7 +449,7 @@ export const listEntitiesThroughRelationsPaginated = async <T extends BasicStore
         key: [INSTANCE_REGARDING_OF],
         values: [
           { key: 'id', values: [connectedEntityId] },
-          { key: 'type', values: [relationType] }
+          { key: 'relationship_type', values: [relationType] }
         ]
       }
     ],

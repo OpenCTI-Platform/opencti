@@ -76,7 +76,7 @@ const TaskFragment = graphql`
 
 export const tasksDataColumns: DataColumns = {
   name: {
-    label: 'Title',
+    label: 'Name',
     width: '35%',
     isSortable: true,
     render: (task: TasksLine_node$data) => (

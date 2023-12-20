@@ -115,7 +115,7 @@ const StixCoreObjectOrStixCoreRelationshipContainers = ({
       isSortable: false,
     },
     created: {
-      label: 'Date',
+      label: 'Original creation date',
       width: '10%',
       isSortable: true,
     },
@@ -158,16 +158,6 @@ const StixCoreObjectOrStixCoreRelationshipContainers = ({
         numberOfElements={numberOfElements}
         disableCards={true}
         enableGraph={true}
-        availableFilterKeys={[
-          'report_types',
-          'entity_type',
-          'confidence',
-          'workflow_id',
-          'objectLabel',
-          'createdBy',
-          'objectMarking',
-          'created',
-        ]}
       >
         <QueryRenderer
           query={stixCoreObjectOrStixCoreRelationshipContainersLinesQuery}

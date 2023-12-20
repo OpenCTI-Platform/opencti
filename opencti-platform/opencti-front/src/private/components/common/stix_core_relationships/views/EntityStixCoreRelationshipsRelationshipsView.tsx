@@ -110,7 +110,7 @@ const EntityStixCoreRelationshipsRelationshipsView: FunctionComponent<EntityStix
       isSortable: true,
     },
     created_at: {
-      label: 'Creation date',
+      label: 'Platform creation date',
       width: '8%',
       isSortable: true,
     },

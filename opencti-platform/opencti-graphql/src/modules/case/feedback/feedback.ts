@@ -4,7 +4,7 @@ import { NAME_FIELD, normalizeName } from '../../../schema/identifier';
 import type { ModuleDefinition } from '../../../schema/module';
 import { registerDefinition } from '../../../schema/module';
 import convertFeedbackToStix from './feedback-converter';
-import { createdBy, objectAssignee, objectMarking } from '../../../schema/stixRefRelationship';
+import { createdBy, objectAssignee, objectMarking, objectOrganization } from '../../../schema/stixRefRelationship';
 import { authorizedMembers } from '../../../schema/attribute-definition';
 
 const FEEDBACK_DEFINITION: ModuleDefinition<StoreEntityFeedback, StixFeedback> = {
@@ -33,6 +33,7 @@ const FEEDBACK_DEFINITION: ModuleDefinition<StoreEntityFeedback, StixFeedback> =
     { ...createdBy, mandatoryType: 'no', editDefault: false },
     { ...objectMarking, mandatoryType: 'no', editDefault: false },
     { ...objectAssignee, mandatoryType: 'no', editDefault: false },
+    { ...objectOrganization, isFilterable: false },
   ],
   representative: (stix: StixFeedback) => {
     return stix.name;

@@ -1,4 +1,5 @@
 import { ENTITY_TYPE_USER } from './internalObject';
+import { ABSTRACT_STIX_CORE_OBJECT } from './general';
 
 export const shortMapping = {
   type: 'text',
@@ -48,15 +49,20 @@ export type BooleanAttribute = { type: 'boolean' } & BasicDefinition;
 export type NumericAttribute = { type: 'numeric', precision: 'integer' | 'long' | 'float', scalable?: boolean } & BasicDefinition;
 export type IdAttribute = { type: 'string', format: 'id', entityTypes: string[] } & BasicDefinition;
 export type TextAttribute = { type: 'string', format: 'short' | 'text' } & BasicDefinition;
+export type EnumAttribute = { type: 'string', format: 'enum', values: string[] } & BasicDefinition;
+export type VocabAttribute = { type: 'string', format: 'vocabulary', vocabularyCategory: string } & BasicDefinition;
 export type JsonAttribute = { type: 'string', format: 'json', multiple: false, schemaDef?: Record<string, any> } & BasicDefinition;
 export type FlatObjectAttribute = { type: 'object', format: 'flat' } & BasicDefinition;
 export type ObjectAttribute = { type: 'object', format: 'standard' } & BasicObjectDefinition;
 export type NestedObjectAttribute = { type: 'object', format: 'nested' } & BasicObjectDefinition;
-export type RefAttribute = { type: 'ref', databaseName: string, stixName: string, checker: Checker, datable?: boolean } & BasicDefinition;
-export type StringAttribute = IdAttribute | TextAttribute | JsonAttribute;
+export type RefAttribute = { type: 'ref', databaseName: string, stixName: string, isRefExistingForTypes: Checker, datable?: boolean, toTypes: string[] } & BasicDefinition;
+export type StringAttribute = IdAttribute | TextAttribute | EnumAttribute | VocabAttribute | JsonAttribute;
 export type ComplexAttribute = FlatObjectAttribute | ObjectAttribute | NestedObjectAttribute;
 
 export type AttributeDefinition = NumericAttribute | DateAttribute | BooleanAttribute | StringAttribute | ComplexAttribute | RefAttribute;
+
+export const shortStringFormats = ['id', 'short', 'enum', 'vocabulary'];
+export const longStringFormats = ['text', 'json'];
 
 // -- GLOBAL --
 export const id: AttributeDefinition = {
@@ -76,13 +82,14 @@ export const internalId: AttributeDefinition = {
   name: 'internal_id',
   label: 'Internal id',
   type: 'string',
-  format: 'short',
+  format: 'id',
   update: false,
   mandatoryType: 'no',
   editDefault: false,
   multiple: false,
   upsert: false,
   isFilterable: false,
+  entityTypes: [ABSTRACT_STIX_CORE_OBJECT]
 };
 
 export const creators: AttributeDefinition = {
@@ -122,7 +129,7 @@ export const iAliasedIds: AttributeDefinition = {
   editDefault: false,
   multiple: true,
   upsert: false,
-  isFilterable: true,
+  isFilterable: false,
 };
 
 export const files: AttributeDefinition = {
@@ -135,7 +142,7 @@ export const files: AttributeDefinition = {
   multiple: true,
   upsert: false,
   update: false,
-  isFilterable: true,
+  isFilterable: false,
   mappings: [
     id,
     { name: 'name', label: 'Name', type: 'string', format: 'short', editDefault: false, mandatoryType: 'no', multiple: true, upsert: true, isFilterable: true },
@@ -189,7 +196,7 @@ export const parentTypes: AttributeDefinition = {
   editDefault: false,
   multiple: true,
   upsert: false,
-  isFilterable: true,
+  isFilterable: false,
 };
 
 export const baseType: AttributeDefinition = {
@@ -202,7 +209,7 @@ export const baseType: AttributeDefinition = {
   editDefault: false,
   multiple: false,
   upsert: false,
-  isFilterable: true,
+  isFilterable: false,
 };
 
 export const entityType: AttributeDefinition = {
@@ -215,7 +222,7 @@ export const entityType: AttributeDefinition = {
   editDefault: false,
   multiple: false,
   upsert: false,
-  isFilterable: true,
+  isFilterable: true, // filterable only for abstract types in filterKeysSchema
 };
 
 export const entityLocationType: AttributeDefinition = {
@@ -228,7 +235,7 @@ export const entityLocationType: AttributeDefinition = {
   editDefault: false,
   multiple: false,
   upsert: false,
-  isFilterable: true,
+  isFilterable: false,
 };
 
 export const relationshipType: AttributeDefinition = {
@@ -303,7 +310,7 @@ export const xOpenctiAliases: AttributeDefinition = {
   editDefault: false,
   multiple: true,
   upsert: true,
-  isFilterable: true,
+  isFilterable: false, // special filter key 'alias' (to filer on both 'aliases' and 'x_opencti_aliases') is added in filterKeysSchema
 };
 
 export const aliases: AttributeDefinition = {
@@ -315,14 +322,14 @@ export const aliases: AttributeDefinition = {
   editDefault: false,
   multiple: true,
   upsert: true,
-  isFilterable: true,
+  isFilterable: false, // special filter key 'alias' (to filer on both 'aliases' and 'x_opencti_aliases') is added in filterKeysSchema
 };
 
 // OTHERS
 
 export const created: AttributeDefinition = {
   name: 'created',
-  label: 'Created',
+  label: 'Original creation date',
   type: 'date',
   mandatoryType: 'no',
   editDefault: false,
@@ -338,12 +345,12 @@ export const modified: AttributeDefinition = {
   editDefault: false,
   multiple: false,
   upsert: false,
-  isFilterable: true,
+  isFilterable: false, // use updated_at filter
 };
 
 export const createdAt: AttributeDefinition = {
   name: 'created_at',
-  label: 'Created at',
+  label: 'Platform creation date',
   type: 'date',
   mandatoryType: 'internal',
   update: false,
@@ -354,7 +361,7 @@ export const createdAt: AttributeDefinition = {
 };
 export const updatedAt: AttributeDefinition = {
   name: 'updated_at',
-  label: 'Updated at',
+  label: 'Modification date',
   type: 'date',
   mandatoryType: 'internal',
   update: false,
@@ -372,7 +379,7 @@ export const revoked: AttributeDefinition = {
   editDefault: false,
   multiple: false,
   upsert: true,
-  isFilterable: true,
+  isFilterable: false,
 };
 
 export const confidence: AttributeDefinition = {
@@ -392,12 +399,13 @@ export const xOpenctiReliability: AttributeDefinition = {
   name: 'x_opencti_reliability',
   label: 'Reliability',
   type: 'string',
-  format: 'short',
+  format: 'vocabulary',
+  vocabularyCategory: 'reliability_ov',
   mandatoryType: 'no',
   editDefault: false,
   multiple: false,
   upsert: false,
-  isFilterable: true,
+  isFilterable: false, // use special filter key 'computed_reliability'
 };
 
 export const lang: AttributeDefinition = {
@@ -409,7 +417,7 @@ export const lang: AttributeDefinition = {
   editDefault: false,
   multiple: false,
   upsert: false,
-  isFilterable: true,
+  isFilterable: false,
 };
 
 export const identityClass: AttributeDefinition = {
@@ -422,5 +430,5 @@ export const identityClass: AttributeDefinition = {
   editDefault: false,
   multiple: false,
   upsert: false,
-  isFilterable: true,
+  isFilterable: false,
 };

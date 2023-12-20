@@ -8,7 +8,7 @@ import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage'
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
 import { ChannelLineDummy } from './channels/ChannelLine';
 import { ChannelsLinesPaginationQuery, ChannelsLinesPaginationQuery$variables } from './channels/__generated__/ChannelsLinesPaginationQuery.graphql';
-import { buildEntityTypeBasedFilterContext, emptyFilterGroup, getDefaultFilterObjFromArray } from '../../../utils/filters/filtersUtils';
+import { buildEntityTypeBasedFilterContext, emptyFilterGroup, getDefaultFilterObjFromArray, useFilterDefinition } from '../../../utils/filters/filtersUtils';
 import Breadcrumbs from '../../../components/Breadcrumbs';
 import { useFormatter } from '../../../components/i18n';
 
@@ -25,7 +25,7 @@ const Channels = () => {
       openExports: false,
       filters: {
         ...emptyFilterGroup,
-        filters: getDefaultFilterObjFromArray(['channel_types']),
+        filters: getDefaultFilterObjFromArray([useFilterDefinition('channel_types', 'Channel')]),
       },
     },
   );
@@ -63,7 +63,7 @@ const Channels = () => {
         isSortable: false,
       },
       created: {
-        label: 'Creation date',
+        label: 'Original creation date',
         width: '15%',
         isSortable: true,
       },
@@ -96,17 +96,6 @@ const Channels = () => {
         filters={filters}
         paginationOptions={queryPaginationOptions}
         numberOfElements={numberOfElements}
-        availableFilterKeys={[
-          'channel_types',
-          'workflow_id',
-          'objectLabel',
-          'objectMarking',
-          'createdBy',
-          'source_reliability',
-          'confidence',
-          'created',
-          'name',
-        ]}
       >
         {queryRef && (
           <React.Suspense

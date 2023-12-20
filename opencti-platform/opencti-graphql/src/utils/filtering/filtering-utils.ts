@@ -103,7 +103,7 @@ export const extractFilterGroupValues = (inputFilters: FilterGroup, key: string 
   const ids = [];
   // we need to extract the ids that need representatives resolution
   filteredFilters.forEach((f) => {
-    // regardingOf key is a composite filter id+type, values are [{ key: 'id', ...}, { key: 'type', ... }]
+    // regardingOf key is a composite filter id+type, values are [{ key: 'id', ...}, { key: 'relationship_type', ... }]
     if (f.key.includes(INSTANCE_REGARDING_OF)) {
       const regardingIds = f.values.find((v) => v.key === 'id')?.values ?? [];
       ids.push(...regardingIds);

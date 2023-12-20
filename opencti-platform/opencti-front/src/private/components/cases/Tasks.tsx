@@ -82,15 +82,6 @@ const Tasks = () => {
         paginationOptions={queryPaginationOptions}
         numberOfElements={numberOfElements}
         iconExtension={true}
-        availableFilterKeys={[
-          'workflow_id',
-          'objectAssignee',
-          'objectParticipant',
-          'objectMarking',
-          'objectLabel',
-          'createdBy',
-          'creator_id',
-        ]}
       >
         {queryRef && (
           <>

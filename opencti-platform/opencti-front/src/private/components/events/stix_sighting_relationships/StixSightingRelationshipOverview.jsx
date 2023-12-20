@@ -495,7 +495,7 @@ class StixSightingRelationshipContainer extends Component {
                     gutterBottom={true}
                     style={{ marginTop: 20 }}
                   >
-                    {t('Creation date')}
+                    {t('Original creation date')}
                   </Typography>
                   {nsdt(stixSightingRelationship.created)}
                   <Typography
@@ -525,7 +525,7 @@ class StixSightingRelationshipContainer extends Component {
                     gutterBottom={true}
                     style={{ marginTop: 20 }}
                   >
-                    {t('Creation date (in this platform)')}
+                    {t('Platform creation date')}
                   </Typography>
                   {fldt(stixSightingRelationship.created_at)}
                   <Typography

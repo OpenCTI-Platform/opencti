@@ -1180,8 +1180,8 @@ export const checkRelationshipRef = (fromType: string, toType: string, relations
     throw FunctionalError('Invalid relationship schema', { type: relationshipType, from: fromType, to: toType, data: relationRefs });
   }
 
-  const checkMetaRelationshipFn = relationRefs[0].checker;
-  if (checkMetaRelationshipFn && !checkMetaRelationshipFn(fromType, toType)) {
+  const checkMetaRelationshipFn = relationRefs[0].isRefExistingForTypes;
+  if (checkMetaRelationshipFn && !checkMetaRelationshipFn.bind(this, fromType, toType)) {
     throw FunctionalError('The relationship is not allowed', { type: relationshipType, from: fromType, to: toType });
   }
 };

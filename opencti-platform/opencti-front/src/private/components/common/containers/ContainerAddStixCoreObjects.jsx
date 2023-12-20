@@ -13,11 +13,11 @@ import { useFormatter } from '../../../../components/i18n';
 import ContainerAddStixCoreObjectsLines, { containerAddStixCoreObjectsLinesQuery } from './ContainerAddStixCoreObjectsLines';
 import StixDomainObjectCreation from '../stix_domain_objects/StixDomainObjectCreation';
 import StixCyberObservableCreation from '../../observations/stix_cyber_observables/StixCyberObservableCreation';
-import { stixCyberObservableTypes, stixDomainObjectTypes } from '../../../../utils/hooks/useAttributes';
 import { UserContext } from '../../../../utils/hooks/useAuth';
 import ListLines from '../../../../components/list_lines/ListLines';
-import { constructHandleAddFilter, constructHandleRemoveFilter, filtersAfterSwitchLocalMode, emptyFilterGroup } from '../../../../utils/filters/filtersUtils';
+import { constructHandleAddFilter, constructHandleRemoveFilter, emptyFilterGroup, filtersAfterSwitchLocalMode } from '../../../../utils/filters/filtersUtils';
 import Drawer from '../drawer/Drawer';
+import useAttributes from '../../../../utils/hooks/useAttributes';
 
 const useStyles = makeStyles((theme) => ({
   createButton: {
@@ -78,6 +78,8 @@ const ContainerAddStixCoreObjects = (props) => {
   const [openCreateObservable, setOpenCreateObservable] = useState(false);
   const [sortBy, setSortBy] = useState('_score');
   const [orderAsc, setOrderAsc] = useState(false);
+
+  const { stixDomainObjectTypes, stixCyberObservableTypes } = useAttributes();
 
   const targetEntityTypesFilterGroup = {
     mode: 'and',
@@ -352,17 +354,6 @@ const ContainerAddStixCoreObjects = (props) => {
             parametersWithPadding={true}
             disableExport={true}
             availableEntityTypes={[resolveAvailableTypes()]}
-            availableFilterKeys={[
-              'entity_type',
-              'objectMarking',
-              'objectLabel',
-              'createdBy',
-              'confidence',
-              'x_opencti_organization_type',
-              'created',
-              'created_at',
-              'creator_id',
-            ]}
           >
             <QueryRenderer
               query={containerAddStixCoreObjectsLinesQuery}

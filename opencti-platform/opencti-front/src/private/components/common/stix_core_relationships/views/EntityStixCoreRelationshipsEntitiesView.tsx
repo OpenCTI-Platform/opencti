@@ -111,7 +111,7 @@ EntityStixCoreRelationshipsEntitiesViewProps
       isSortable: false,
     },
     created_at: {
-      label: 'Creation date',
+      label: 'Platform creation date',
       width: '15%',
       isSortable: true,
     },
@@ -134,7 +134,7 @@ EntityStixCoreRelationshipsEntitiesViewProps
         mode: 'and',
         values: [
           { key: 'id', values: [entityId], operator: 'eq', mode: 'or' },
-          { key: 'type', values: relationshipTypes, operator: 'eq', mode: 'or' },
+          { key: 'relationship_type', values: relationshipTypes, operator: 'eq', mode: 'or' },
         ] as unknown as string[], // Workaround for typescript waiting for better solution
       },
     ],

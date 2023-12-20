@@ -49,7 +49,7 @@ const AdministrativeAreas: FunctionComponent = () => {
         isSortable: true,
       },
       created: {
-        label: 'Creation date',
+        label: 'Original creation date',
         width: '15%',
         isSortable: true,
       },
@@ -82,11 +82,6 @@ const AdministrativeAreas: FunctionComponent = () => {
         filters={filters}
         paginationOptions={paginationOptions}
         numberOfElements={numberOfElements}
-        availableFilterKeys={[
-          'created',
-          'createdBy',
-          'name',
-        ]}
       >
         {queryRef && (
           <React.Suspense

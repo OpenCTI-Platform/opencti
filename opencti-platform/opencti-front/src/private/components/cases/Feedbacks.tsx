@@ -85,7 +85,7 @@ const Feedbacks: FunctionComponent<FeedbacksProps> = () => {
         isSortable: false,
       },
       created: {
-        label: 'Date',
+        label: 'Original creation date',
         width: '10%',
         isSortable: true,
       },
@@ -133,18 +133,6 @@ const Feedbacks: FunctionComponent<FeedbacksProps> = () => {
         paginationOptions={queryPaginationOptions}
         numberOfElements={numberOfElements}
         iconExtension={true}
-        availableFilterKeys={[
-          'workflow_id',
-          'objectLabel',
-          'objectMarking',
-          'createdBy',
-          'source_reliability',
-          'confidence',
-          'objectAssignee',
-          'creator_id',
-          'created',
-          'name',
-        ]}
       >
         {queryRef && (
           <Suspense

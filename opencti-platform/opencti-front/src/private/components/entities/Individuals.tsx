@@ -47,7 +47,7 @@ const Individuals = () => {
         isSortable: false,
       },
       created: {
-        label: 'Creation date',
+        label: 'Original creation date',
         width: '15%',
         isSortable: true,
       },
@@ -80,14 +80,6 @@ const Individuals = () => {
         filters={filters}
         paginationOptions={paginationOptions}
         numberOfElements={numberOfElements}
-        availableFilterKeys={[
-          'objectLabel',
-          'objectMarking',
-          'created',
-          'createdBy',
-          'x_opencti_reliability',
-          'name',
-        ]}
       >
         {queryRef && (
           <React.Suspense

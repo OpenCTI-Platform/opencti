@@ -2557,6 +2557,8 @@
   "Marking definitions to use by the csv mapper...": "いくつかのマーキング属性が'ユーザーにマーキング定義を選択させる'にポリシーが設定されている場合にのみ、csvマッパーはマーキング定義を使用します。そうでない場合、このマーキング定義は無視されます。",
   "Option 'Let the user choose marking definitions'...": "オプション 'ユーザーにマーキング定義を選択させる' は、CSVファイルにデータがない場合に適用するマーキング定義を（CSVファイルのインポート時に）ユーザーに選択させます。",
   "Update without references": "参照なしで更新",
+  "Original creation date": "オリジナル作成日",
+  "Platform creation date": "プラットフォーム作成日",
   "Max Confidence Level:": "最大信頼度：",
   "Share as public dashboard": "公開ダッシュボードとして共有",
   "To prevent people seeing all the data...": "公開ダッシュボードのすべてのデータを見られないようにするには、共有データを制限するマーキング定義を選択します。",

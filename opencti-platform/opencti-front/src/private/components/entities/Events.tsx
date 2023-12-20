@@ -58,7 +58,7 @@ const Events = () => {
         isSortable: true,
       },
       created: {
-        label: 'Creation date',
+        label: 'Original creation date',
         width: '15%',
         isSortable: true,
       },
@@ -86,13 +86,6 @@ const Events = () => {
         filters={filters}
         paginationOptions={paginationOptions}
         numberOfElements={numberOfElements}
-        availableFilterKeys={[
-          'event_types',
-          'createdBy',
-          'start_time',
-          'stop_time',
-          'name',
-        ]}
       >
         {queryRef && (
           <React.Suspense

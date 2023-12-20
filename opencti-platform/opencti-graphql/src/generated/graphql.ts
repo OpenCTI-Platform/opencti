@@ -7164,10 +7164,33 @@ export type Filter = {
   values: Array<Scalars['Any']['input']>;
 };
 
+export type FilterDefinition = {
+  __typename?: 'FilterDefinition';
+  elementsForFilterValuesSearch?: Maybe<Array<Scalars['String']['output']>>;
+  filterKey: Scalars['String']['output'];
+  label: Scalars['String']['output'];
+  multiple: Scalars['Boolean']['output'];
+  subEntityTypes: Array<Scalars['String']['output']>;
+  subFilters?: Maybe<Array<FilterDefinition>>;
+  type: Scalars['String']['output'];
+};
+
+export type FilterDefinitionSchema = {
+  __typename?: 'FilterDefinitionSchema';
+  filterDefinition: FilterDefinition;
+  filterKey: Scalars['String']['output'];
+};
+
 export type FilterGroup = {
   filterGroups: Array<FilterGroup>;
   filters: Array<Filter>;
   mode: FilterMode;
+};
+
+export type FilterKeysSchema = {
+  __typename?: 'FilterKeysSchema';
+  entity_type: Scalars['String']['output'];
+  filters_schema: Array<FilterDefinitionSchema>;
 };
 
 export enum FilterMode {
@@ -17435,6 +17458,7 @@ export type Query = {
   feeds?: Maybe<FeedConnection>;
   file?: Maybe<File>;
   filesMetrics?: Maybe<FilesMetrics>;
+  filterKeysSchema: Array<FilterKeysSchema>;
   filtersRepresentatives: Array<RepresentativeWithId>;
   globalSearch?: Maybe<StixCoreObjectConnection>;
   group?: Maybe<Group>;
@@ -27986,7 +28010,10 @@ export type ResolversTypes = ResolversObject<{
   FileMetadata: ResolverTypeWrapper<FileMetadata>;
   FilesMetrics: ResolverTypeWrapper<FilesMetrics>;
   Filter: Filter;
+  FilterDefinition: ResolverTypeWrapper<FilterDefinition>;
+  FilterDefinitionSchema: ResolverTypeWrapper<FilterDefinitionSchema>;
   FilterGroup: FilterGroup;
+  FilterKeysSchema: ResolverTypeWrapper<FilterKeysSchema>;
   FilterMode: FilterMode;
   FilterOperator: FilterOperator;
   Float: ResolverTypeWrapper<Scalars['Float']['output']>;
@@ -28729,7 +28756,10 @@ export type ResolversParentTypes = ResolversObject<{
   FileMetadata: FileMetadata;
   FilesMetrics: FilesMetrics;
   Filter: Filter;
+  FilterDefinition: FilterDefinition;
+  FilterDefinitionSchema: FilterDefinitionSchema;
   FilterGroup: FilterGroup;
+  FilterKeysSchema: FilterKeysSchema;
   Float: Scalars['Float']['output'];
   GetMetrics: GetMetrics;
   Group: Omit<Group, 'default_dashboard' | 'members'> & { default_dashboard?: Maybe<ResolversParentTypes['Workspace']>, members?: Maybe<ResolversParentTypes['UserConnection']> };
@@ -31606,6 +31636,29 @@ export type FilesMetricsResolvers<ContextType = any, ParentType extends Resolver
   globalCount?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   globalSize?: Resolver<ResolversTypes['Float'], ParentType, ContextType>;
   metricsByMimeType?: Resolver<Maybe<Array<ResolversTypes['MetricsByMimeType']>>, ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
+export type FilterDefinitionResolvers<ContextType = any, ParentType extends ResolversParentTypes['FilterDefinition'] = ResolversParentTypes['FilterDefinition']> = ResolversObject<{
+  elementsForFilterValuesSearch?: Resolver<Maybe<Array<ResolversTypes['String']>>, ParentType, ContextType>;
+  filterKey?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  label?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  multiple?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  subEntityTypes?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
+  subFilters?: Resolver<Maybe<Array<ResolversTypes['FilterDefinition']>>, ParentType, ContextType>;
+  type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
+export type FilterDefinitionSchemaResolvers<ContextType = any, ParentType extends ResolversParentTypes['FilterDefinitionSchema'] = ResolversParentTypes['FilterDefinitionSchema']> = ResolversObject<{
+  filterDefinition?: Resolver<ResolversTypes['FilterDefinition'], ParentType, ContextType>;
+  filterKey?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
+export type FilterKeysSchemaResolvers<ContextType = any, ParentType extends ResolversParentTypes['FilterKeysSchema'] = ResolversParentTypes['FilterKeysSchema']> = ResolversObject<{
+  entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  filters_schema?: Resolver<Array<ResolversTypes['FilterDefinitionSchema']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
@@ -34710,6 +34763,7 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   feeds?: Resolver<Maybe<ResolversTypes['FeedConnection']>, ParentType, ContextType, Partial<QueryFeedsArgs>>;
   file?: Resolver<Maybe<ResolversTypes['File']>, ParentType, ContextType, RequireFields<QueryFileArgs, 'id'>>;
   filesMetrics?: Resolver<Maybe<ResolversTypes['FilesMetrics']>, ParentType, ContextType>;
+  filterKeysSchema?: Resolver<Array<ResolversTypes['FilterKeysSchema']>, ParentType, ContextType>;
   filtersRepresentatives?: Resolver<Array<ResolversTypes['RepresentativeWithId']>, ParentType, ContextType, RequireFields<QueryFiltersRepresentativesArgs, 'filters'>>;
   globalSearch?: Resolver<Maybe<ResolversTypes['StixCoreObjectConnection']>, ParentType, ContextType, Partial<QueryGlobalSearchArgs>>;
   group?: Resolver<Maybe<ResolversTypes['Group']>, ParentType, ContextType, RequireFields<QueryGroupArgs, 'id'>>;
@@ -37757,6 +37811,9 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   FileEdge?: FileEdgeResolvers<ContextType>;
   FileMetadata?: FileMetadataResolvers<ContextType>;
   FilesMetrics?: FilesMetricsResolvers<ContextType>;
+  FilterDefinition?: FilterDefinitionResolvers<ContextType>;
+  FilterDefinitionSchema?: FilterDefinitionSchemaResolvers<ContextType>;
+  FilterKeysSchema?: FilterKeysSchemaResolvers<ContextType>;
   GetMetrics?: GetMetricsResolvers<ContextType>;
   Group?: GroupResolvers<ContextType>;
   GroupConnection?: GroupConnectionResolvers<ContextType>;

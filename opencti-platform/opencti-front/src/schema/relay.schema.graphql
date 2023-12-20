@@ -125,6 +125,26 @@ type RepresentativeWithId {
   color: String
 }
 
+type FilterKeysSchema {
+  entity_type: String!
+  filters_schema: [FilterDefinitionSchema!]!
+}
+
+type FilterDefinitionSchema {
+  filterKey: String!
+  filterDefinition: FilterDefinition!
+}
+
+type FilterDefinition {
+  filterKey: String!
+  label: String!
+  type: String!
+  multiple: Boolean!
+  subEntityTypes: [String!]!
+  elementsForFilterValuesSearch: [String!]
+  subFilters: [FilterDefinition!]
+}
+
 enum EditOperation {
   add
   replace
@@ -7243,6 +7263,7 @@ type Query {
   stixRelationshipsNumber(dateAttribute: String, authorId: String, noDirection: Boolean, endDate: DateTime, onlyInferred: Boolean, fromOrToId: [String], elementWithTargetTypes: [String], fromId: [String], fromRole: String, fromTypes: [String], toId: [String], toRole: String, toTypes: [String], relationship_type: [String], confidences: [Int], search: String, filters: FilterGroup, dynamicFrom: FilterGroup, dynamicTo: FilterGroup): Number
   schemaRelationsTypesMapping: [StixRelationshipSchema!]!
   schemaRelationsRefTypesMapping: [StixRelationshipSchema!]!
+  filterKeysSchema: [FilterKeysSchema!]!
   stixCoreRelationship(id: String): StixCoreRelationship
   stixCoreRelationships(first: Int, after: ID, orderBy: StixCoreRelationshipsOrdering, orderMode: OrderingMode, fromOrToId: [String], elementWithTargetTypes: [String], fromId: [String], fromRole: String, fromTypes: [String], toId: [String], toRole: String, toTypes: [String], relationship_type: [String], startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, startDate: DateTime, endDate: DateTime, confidences: [Int], search: String, filters: FilterGroup, stix: Boolean): StixCoreRelationshipConnection
   stixCoreRelationshipsTimeSeries(field: String!, operation: StatsOperation!, startDate: DateTime!, endDate: DateTime, interval: String!, onlyInferred: Boolean, fromOrToId: [String], elementWithTargetTypes: [String], fromId: [String], fromRole: String, fromTypes: [String], toId: [String], toRole: String, toTypes: [String], relationship_type: [String], confidences: [Int], search: String, filters: FilterGroup, dynamicFrom: FilterGroup, dynamicTo: FilterGroup): [TimeSeries]

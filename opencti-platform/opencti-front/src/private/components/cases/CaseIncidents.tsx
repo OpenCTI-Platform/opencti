@@ -110,7 +110,7 @@ const CaseIncidents: FunctionComponent<CaseIncidentsProps> = () => {
         isSortable: false,
       },
       created: {
-        label: 'Date',
+        label: 'Original creation date',
         width: '10%',
         isSortable: true,
       },
@@ -148,21 +148,6 @@ const CaseIncidents: FunctionComponent<CaseIncidentsProps> = () => {
         paginationOptions={queryPaginationOptions}
         numberOfElements={numberOfElements}
         iconExtension={true}
-        availableFilterKeys={[
-          'workflow_id',
-          'objectLabel',
-          'objectMarking',
-          'createdBy',
-          'source_reliability',
-          'confidence',
-          'objectAssignee',
-          'objectParticipant',
-          'priority',
-          'severity',
-          'creator_id',
-          'created',
-          'name',
-        ]}
       >
         {queryRef && (
           <React.Suspense

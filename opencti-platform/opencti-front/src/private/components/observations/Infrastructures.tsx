@@ -95,7 +95,7 @@ const Infrastructures = () => {
         isSortable: false,
       },
       created: {
-        label: 'Date',
+        label: 'Original creation date',
         width: '10%',
         isSortable: true,
       },
@@ -128,14 +128,6 @@ const Infrastructures = () => {
         paginationOptions={queryPaginationOptions}
         numberOfElements={numberOfElements}
         iconExtension={true}
-        availableFilterKeys={[
-          'objectLabel',
-          'objectMarking',
-          'created',
-          'createdBy',
-          'confidence',
-          'name',
-        ]}
       >
         {queryRef && (
           <React.Suspense

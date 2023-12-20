@@ -135,10 +135,10 @@ class StixDomainObjectAttackPatternsKillChainComponent extends Component {
           >
             <Tooltip
               title={
-                                currentModeOnlyActive
-                                  ? t('Display the whole matrix')
-                                  : t('Display only used techniques')
-                            }
+                currentModeOnlyActive
+                  ? t('Display the whole matrix')
+                  : t('Display only used techniques')
+              }
             >
               <span>
                 <IconButton

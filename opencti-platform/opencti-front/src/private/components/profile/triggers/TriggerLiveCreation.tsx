@@ -258,6 +258,7 @@ const TriggerLiveCreation: FunctionComponent<TriggerLiveCreationProps> = ({
               inputValues={instanceFilters}
               setInputValues={setInstanceFilters}
               openOnFocus={true}
+              filterLabel={t_i18n('connectedToId')}
             />
           </div>
         ) : (

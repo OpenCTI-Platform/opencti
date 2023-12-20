@@ -71,7 +71,7 @@ class SimpleStixObjectOrStixRelationshipStixCoreRelationships extends Component 
         isSortable: true,
       },
       created_at: {
-        label: 'Creation date',
+        label: 'Platform creation date',
         width: '12%',
         isSortable: true,
       },

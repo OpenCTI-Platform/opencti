@@ -124,7 +124,7 @@ StixMetaObjectDetailsComponentProps
         label={t_i18n(`entity_${stixMetaObject.entity_type}`)}
       />
       <Typography variant="h3" gutterBottom={true} className={classes.label}>
-        {t_i18n('Creation date')}
+        {t_i18n('Platform creation date')}
       </Typography>
       {fldt(stixMetaObject.created_at)}
       <Typography variant="h3" gutterBottom={true} className={classes.label}>

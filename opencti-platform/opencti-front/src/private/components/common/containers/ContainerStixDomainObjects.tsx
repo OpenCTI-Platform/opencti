@@ -133,7 +133,7 @@ const ContainerStixDomainObjects = ({
       isSortable: isRuntimeSort,
     },
     created_at: {
-      label: 'Creation date',
+      label: 'Platform creation date',
       width: '10%',
       isSortable: true,
     },
@@ -167,12 +167,6 @@ const ContainerStixDomainObjects = ({
       iconExtension={true}
       exportContext={{ entity_id: containerData.id, entity_type: 'Stix-Domain-Object' }}
       filters={filters}
-      availableFilterKeys={[
-        'objectLabel',
-        'objectMarking',
-        'created_at',
-        'createdBy',
-      ]}
       keyword={searchTerm}
       secondaryAction={true}
       numberOfElements={numberOfElements}

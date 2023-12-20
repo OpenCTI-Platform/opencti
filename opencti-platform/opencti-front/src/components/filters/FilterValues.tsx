@@ -7,7 +7,7 @@ import Chip from '@mui/material/Chip';
 import { ChipOwnProps } from '@mui/material/Chip/Chip';
 import { useFormatter } from '../i18n';
 import type { Theme } from '../Theme';
-import { Filter } from '../../utils/filters/filtersUtils';
+import { Filter, useFilterDefinition } from '../../utils/filters/filtersUtils';
 import { handleFilterHelpers } from '../../utils/hooks/useLocalStorage';
 import { truncate } from '../../utils/String';
 import FilterValuesContent from '../FilterValuesContent';
@@ -57,6 +57,7 @@ interface FilterValuesProps {
   isReadWriteFilter?: boolean;
   chipColor?: ChipOwnProps['color'];
   noLabelDisplay?: boolean;
+  entityType?: string;
 }
 
 const FilterValues: FunctionComponent<FilterValuesProps> = ({
@@ -71,6 +72,7 @@ const FilterValues: FunctionComponent<FilterValuesProps> = ({
   isReadWriteFilter,
   chipColor,
   noLabelDisplay,
+  entityType,
 }) => {
   const { t_i18n } = useFormatter();
   const filterKey = currentFilter.key;
@@ -95,6 +97,7 @@ const FilterValues: FunctionComponent<FilterValuesProps> = ({
       </>
     );
   }
+  const filterDefinition = useFilterDefinition(filterKey, entityType);
   const values = filterValues.map((id) => {
     const operatorClassName = (isReadWriteFilter && handleSwitchLocalMode) ? classes.inlineOperator : classes.inlineOperatorReadOnly;
     const operatorOnClick = (isReadWriteFilter && handleSwitchLocalMode) ? () => handleSwitchLocalMode(currentFilter) : undefined;
@@ -106,6 +109,7 @@ const FilterValues: FunctionComponent<FilterValuesProps> = ({
           filterKey={filterKey}
           id={id}
           value={filtersRepresentativesMap.get(id) ? filtersRepresentativesMap.get(id)?.value : id}
+          filterDefinition={filterDefinition}
         />
         {filterKey !== 'regardingOf' && last(filterValues) !== id && (
           <div

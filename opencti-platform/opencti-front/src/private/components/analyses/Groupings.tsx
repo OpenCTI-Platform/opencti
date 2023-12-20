@@ -12,7 +12,7 @@ import useQueryLoading from '../../../utils/hooks/useQueryLoading';
 import { GroupingsLinesPaginationQuery, GroupingsLinesPaginationQuery$variables } from './groupings/__generated__/GroupingsLinesPaginationQuery.graphql';
 import { GroupingLine_node$data } from './groupings/__generated__/GroupingLine_node.graphql';
 import { GroupingLineDummy } from './groupings/GroupingLine';
-import { buildEntityTypeBasedFilterContext, emptyFilterGroup, getDefaultFilterObjFromArray } from '../../../utils/filters/filtersUtils';
+import { buildEntityTypeBasedFilterContext, emptyFilterGroup, getDefaultFilterObjFromArray, useFilterDefinition } from '../../../utils/filters/filtersUtils';
 import { useFormatter } from '../../../components/i18n';
 import ExportContextProvider from '../../../utils/ExportContextProvider';
 import Breadcrumbs from '../../../components/Breadcrumbs';
@@ -28,6 +28,7 @@ const Groupings: FunctionComponent<GroupingsProps> = () => {
   const {
     platformModuleHelpers: { isRuntimeFieldEnable },
   } = useAuth();
+
   const {
     viewStorage,
     paginationOptions,
@@ -38,7 +39,7 @@ const Groupings: FunctionComponent<GroupingsProps> = () => {
       numberOfElements: { number: 0, symbol: '', original: 0 },
       filters: {
         ...emptyFilterGroup,
-        filters: getDefaultFilterObjFromArray(['context']),
+        filters: getDefaultFilterObjFromArray([useFilterDefinition('context', 'Grouping')]),
       },
       searchTerm: '',
       sortBy: 'created',
@@ -108,7 +109,7 @@ const Groupings: FunctionComponent<GroupingsProps> = () => {
         isSortable: false,
       },
       created: {
-        label: 'Date',
+        label: 'Original creation date',
         width: '10%',
         isSortable: true,
       },
@@ -146,18 +147,6 @@ const Groupings: FunctionComponent<GroupingsProps> = () => {
           paginationOptions={queryPaginationOptions}
           numberOfElements={numberOfElements}
           iconExtension={true}
-          availableFilterKeys={[
-            'context',
-            'workflow_id',
-            'objectLabel',
-            'objectMarking',
-            'createdBy',
-            'source_reliability',
-            'confidence',
-            'creator_id',
-            'created',
-            'name',
-          ]}
         >
           {queryRef && (
             <React.Suspense

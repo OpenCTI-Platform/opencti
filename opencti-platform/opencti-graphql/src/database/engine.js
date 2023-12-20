@@ -69,6 +69,8 @@ import { isModifiedObject, isUpdatedAtObject, } from '../schema/fieldDataAdapter
 import { getParentTypes, keepMostRestrictiveTypes } from '../schema/schemaUtils';
 import {
   ATTRIBUTE_ABSTRACT,
+  ATTRIBUTE_ALIASES,
+  ATTRIBUTE_ALIASES_OPENCTI,
   ATTRIBUTE_DESCRIPTION,
   ATTRIBUTE_DESCRIPTION_OPENCTI,
   ATTRIBUTE_EXPLANATION,
@@ -105,7 +107,9 @@ import { extractEntityRepresentativeName } from './entity-representative';
 import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../modules/organization/organization-types';
 import { checkAndConvertFilters, isFilterGroupNotEmpty } from '../utils/filtering/filtering-utils';
 import {
+  ALIAS_FILTER,
   complexConversionFilterKeys,
+  COMPUTED_RELIABILITY_FILTER,
   IDS_FILTER,
   INSTANCE_FILTER_TARGET_TYPES,
   INSTANCE_REGARDING_OF,
@@ -124,7 +128,7 @@ import {
   X_OPENCTI_WORKFLOW_ID
 } from '../utils/filtering/filtering-constants';
 import { FilterMode } from '../generated/graphql';
-import { booleanMapping, dateMapping, numericMapping, shortMapping, textMapping } from '../schema/attribute-definition';
+import { booleanMapping, dateMapping, longStringFormats, numericMapping, shortMapping, shortStringFormats, textMapping } from '../schema/attribute-definition';
 import { schemaTypesDefinition } from '../schema/schema-types';
 import { INTERNAL_RELATIONSHIPS, isInternalRelationship } from '../schema/internalRelationship';
 import { isStixSightingRelationship, STIX_SIGHTING_RELATIONSHIP } from '../schema/stixSightingRelationship';
@@ -585,10 +589,10 @@ const elCreateCoreSettings = async () => {
 // Engine mapping generation on attributes definition
 const attributeMappingGenerator = (entityAttribute) => {
   if (entityAttribute.type === 'string') {
-    if (entityAttribute.format === 'short' || entityAttribute.format === 'id') {
+    if (shortStringFormats.includes(entityAttribute.format)) {
       return shortMapping;
     }
-    if (entityAttribute.format === 'json' || entityAttribute.format === 'text') {
+    if (longStringFormats.includes(entityAttribute.format)) {
       return textMapping;
     }
     throw UnsupportedError('Cant generated string mapping', { format: entityAttribute.format });
@@ -2005,6 +2009,95 @@ const adaptFilterToSourceReliabilityFilterKey = async (context, user, filter) =>
   return { newFilter, newFilterGroup };
 };
 
+const adaptFilterToComputedReliabilityFilterKey = async (context, user, filter) => {
+  const { key, operator = 'eq' } = filter;
+  const arrayKeys = Array.isArray(key) ? key : [key];
+  if (arrayKeys[0] !== COMPUTED_RELIABILITY_FILTER || arrayKeys.length > 1) {
+    throw UnsupportedError('A filter with these multiple keys is not supported', { keys: arrayKeys });
+  }
+  if (!['eq', 'not_eq', 'nil', 'not_nil'].includes(operator)) {
+    throw UnsupportedError('This operator is not supported for this filter key', { keys: arrayKeys, operator });
+  }
+  // at this point arrayKey === ['computed_reliability']
+
+  let newFilterGroup;
+  let newFilter;
+
+  const { newFilter: sourceReliabilityFilter, newFilterGroup: sourceReliabilityFilterGroup } = await adaptFilterToSourceReliabilityFilterKey(
+    context,
+    user,
+    { ...filter, key: SOURCE_RELIABILITY_FILTER }
+  );
+  const isConditionAdditional = operator === 'not_eq' || operator === 'nil'; // if we have one of these operators, the condition on reliability and the condition on source reliability should be both respected
+  // else, (the condition on reliability should be respected) OR (reliability is empty and the condition should be respected on source_reliability)
+
+  if (!isConditionAdditional) {
+    // if !isConditionalAdditional: computed reliability filter = (reliability filter) OR (reliability is empty AND source_reliability filter)
+    // // example: computed reliability filter = (reliability = A) OR (reliability is empty AND source_reliability = A)
+    newFilterGroup = sourceReliabilityFilter ? {
+      mode: 'or',
+      filters: [{
+        ...filter,
+        key: ['x_opencti_reliability'],
+      }],
+      filterGroups: [{
+        mode: 'and',
+        filters: [
+          {
+            key: ['x_opencti_reliability'],
+            values: [],
+            operator: 'nil',
+            mode: 'or',
+          },
+          sourceReliabilityFilter,
+        ],
+        filterGroups: [],
+      }],
+    } : {
+      mode: 'or',
+      filters: [{
+        ...filter,
+        key: ['x_opencti_reliability'],
+      }],
+      filterGroups: [{
+        mode: 'and',
+        filters: [
+          {
+            key: ['x_opencti_reliability'],
+            values: [],
+            operator: 'nil',
+            mode: 'or',
+          }
+        ],
+        filterGroups: [sourceReliabilityFilterGroup],
+      }],
+    };
+  } else {
+    // if isConditionalAdditional: computed reliability filter = (reliability filter) AND (source_reliability filter)
+    // // example: computed reliability filter = (reliability != A) AND (source_reliability != A)
+    newFilterGroup = sourceReliabilityFilter ? {
+      mode: 'and',
+      filters: [
+        {
+          ...filter,
+          key: ['x_opencti_reliability'],
+        },
+        sourceReliabilityFilter
+      ],
+      filterGroups: [],
+    } : {
+      mode: 'and',
+      filters: [{
+        ...filter,
+        key: ['x_opencti_reliability'],
+      }],
+      filterGroups: [sourceReliabilityFilterGroup],
+    };
+  }
+
+  return { newFilter, newFilterGroup };
+};
+
 // workflow_id filter values can be both status ids and status templates ids
 const adaptFilterToWorkflowFilterKey = async (context, user, filter) => {
   const { key, mode = 'or', operator = 'eq', values } = filter;
@@ -2038,10 +2131,13 @@ const adaptFilterToWorkflowFilterKey = async (context, user, filter) => {
 
 /**
  * Complete the filter if needed for several special filter keys
- * 3 keys need this preprocessing before building the query:
- * - entity_type: we need to handle parent types
- * - ids: we will match the ids in filter against internal id, standard id, stix ids,
+ * Some keys need this preprocessing before building the query:
+ * - regardingOf: we need to handle the relationship_type and the element id involved in the relationship
+ * - ids: we will match the ids in filter against internal id, standard id, stix ids
+ * - entity_type / relationship_type: we need to handle parent types
+ * - workflow_id: handle both status and status template of the entity status
  * - source_reliability: created_by (author) can be an individual, organization or a system
+ * - fromOrToId, fromId, toId, fromTypes, toTypes: for relationship, we need to create nested filters
  */
 const completeSpecialFilterKeys = async (context, user, inputFilters) => {
   const { filters = [], filterGroups = [] } = inputFilters;
@@ -2060,12 +2156,13 @@ const completeSpecialFilterKeys = async (context, user, inputFilters) => {
       if (arrayKeys.length > 1) {
         throw UnsupportedError('A filter with these multiple keys is not supported}', { keys: arrayKeys });
       }
-      if (arrayKeys.includes(INSTANCE_REGARDING_OF)) {
+      const filterKey = arrayKeys[0];
+      if (filterKey === INSTANCE_REGARDING_OF) {
         const regardingFilters = [];
         const id = filter.values.find((i) => i.key === 'id');
-        const type = filter.values.find((i) => i.key === 'type');
+        const type = filter.values.find((i) => i.key === 'relationship_type');
         if (!id && !type) {
-          throw UnsupportedError('Id or type are needed for this filtering key', { key: INSTANCE_REGARDING_OF });
+          throw UnsupportedError('Id or relationship type are needed for this filtering key', { key: INSTANCE_REGARDING_OF });
         }
         const ids = id?.values;
         const operator = id?.operator ?? 'eq';
@@ -2087,7 +2184,7 @@ const completeSpecialFilterKeys = async (context, user, inputFilters) => {
           filterGroups: []
         });
       }
-      if (arrayKeys.includes(IDS_FILTER)) {
+      if (filterKey === IDS_FILTER) {
         // the special filter key 'ids' take all the ids into account
         const { newFilter, newFilterGroup } = adaptFilterToIdsFilterKey(filter);
         if (newFilter) {
@@ -2097,7 +2194,7 @@ const completeSpecialFilterKeys = async (context, user, inputFilters) => {
           finalFilterGroups.push(newFilterGroup);
         }
       }
-      if (arrayKeys.includes(TYPE_FILTER) || arrayKeys.includes(RELATION_TYPE_FILTER)) {
+      if (filterKey === TYPE_FILTER || filterKey === RELATION_TYPE_FILTER) {
         // in case we want to filter by entity_type
         // we need to add parent_types checking (in case the given value in type is an abstract type)
         const { newFilter, newFilterGroup } = adaptFilterToEntityTypeFilterKey(filter);
@@ -2108,13 +2205,23 @@ const completeSpecialFilterKeys = async (context, user, inputFilters) => {
           finalFilterGroups.push(newFilterGroup);
         }
       }
-      if (arrayKeys.includes(WORKFLOW_FILTER) || arrayKeys.includes(X_OPENCTI_WORKFLOW_ID)) {
+      if (filterKey === WORKFLOW_FILTER || filterKey === X_OPENCTI_WORKFLOW_ID) {
         // in case we want to filter by status template (template of a workflow status) or status
         // we need to find all statuses filtered by status template and filter on these statuses
         const newFilter = await adaptFilterToWorkflowFilterKey(context, user, filter);
         finalFilters.push(newFilter);
       }
-      if (arrayKeys.includes(SOURCE_RELIABILITY_FILTER)) {
+      if (filterKey === COMPUTED_RELIABILITY_FILTER) {
+        // filter by computed reliability (reliability, or reliability of author if no reliability)
+        const { newFilter, newFilterGroup } = await adaptFilterToComputedReliabilityFilterKey(context, user, filter);
+        if (newFilter) {
+          finalFilters.push(newFilter);
+        }
+        if (newFilterGroup) {
+          finalFilterGroups.push(newFilterGroup);
+        }
+      }
+      if (filterKey === SOURCE_RELIABILITY_FILTER) {
         // in case we want to filter by source reliability (reliability of author)
         // we need to find all authors filtered by reliability and filter on these authors
         const { newFilter, newFilterGroup } = await adaptFilterToSourceReliabilityFilterKey(context, user, filter);
@@ -2125,36 +2232,39 @@ const completeSpecialFilterKeys = async (context, user, inputFilters) => {
           finalFilterGroups.push(newFilterGroup);
         }
       }
-      if (arrayKeys.includes(INSTANCE_RELATION_FILTER)) {
+      if (filterKey === INSTANCE_RELATION_FILTER) {
         const nested = [{ key: 'internal_id', operator: filter.operator, values: filter.values }];
         finalFilters.push({ key: 'connections', nested, mode: filter.mode });
       }
-      if (arrayKeys.includes(RELATION_FROM_FILTER) || arrayKeys.includes(RELATION_TO_FILTER) || arrayKeys.includes(RELATION_TO_SIGHTING_FILTER)) {
-        const side = arrayKeys.includes(RELATION_FROM_FILTER) ? 'from' : 'to';
+      if (filterKey === RELATION_FROM_FILTER || filterKey === RELATION_TO_FILTER || filterKey === RELATION_TO_SIGHTING_FILTER) {
+        const side = filterKey === RELATION_FROM_FILTER ? 'from' : 'to';
         const nested = [
           { key: 'internal_id', operator: filter.operator, values: filter.values },
           { key: 'role', operator: 'wildcard', values: [`*_${side}`] }
         ];
         finalFilters.push({ key: 'connections', nested, mode: filter.mode });
       }
-      if (arrayKeys.includes(RELATION_FROM_TYPES_FILTER) || arrayKeys.includes(RELATION_TO_TYPES_FILTER)) {
-        const side = arrayKeys.includes(RELATION_FROM_TYPES_FILTER) ? 'from' : 'to';
+      if (filterKey === RELATION_FROM_TYPES_FILTER || filterKey === RELATION_TO_TYPES_FILTER) {
+        const side = filterKey === RELATION_FROM_TYPES_FILTER ? 'from' : 'to';
         const nested = [
           { key: 'types', operator: filter.operator, values: filter.values },
           { key: 'role', operator: 'wildcard', values: [`*_${side}`] }
         ];
         finalFilters.push({ key: 'connections', nested, mode: filter.mode });
       }
-      if (arrayKeys.includes(INSTANCE_FILTER_TARGET_TYPES)) {
+      if (filterKey === INSTANCE_FILTER_TARGET_TYPES) {
         const nested = [{ key: 'types', operator: filter.operator, values: filter.values }];
         finalFilters.push({ key: 'connections', nested, mode: filter.mode });
       }
-      if (arrayKeys.includes(RELATION_FROM_ROLE_FILTER) || arrayKeys.includes(RELATION_TO_ROLE_FILTER)) {
-        const side = arrayKeys.includes(RELATION_FROM_ROLE_FILTER) ? 'from' : 'to';
+      if (filterKey === RELATION_FROM_ROLE_FILTER || filterKey === RELATION_TO_ROLE_FILTER) {
+        const side = filterKey === RELATION_FROM_ROLE_FILTER ? 'from' : 'to';
         // Retro compatibility for buildAggregationRelationFilter that use fromRole depending on isTo attribute
         const values = filter.values.map((r) => (!r.endsWith('_from') && !r.endsWith('_to') ? `${r}_${side}` : r));
         const nested = [{ key: 'role', operator: filter.operator, values }];
         finalFilters.push({ key: 'connections', nested, mode: filter.mode });
+      }
+      if (filterKey === ALIAS_FILTER) {
+        finalFilters.push({ ...filter, key: [ATTRIBUTE_ALIASES, ATTRIBUTE_ALIASES_OPENCTI] });
       }
     } else if (arrayKeys.some((fiterKey) => isObjectAttribute(fiterKey)) && !arrayKeys.some((fiterKey) => fiterKey === 'connections')) {
       if (arrayKeys.length > 1) {
@@ -3009,10 +3119,12 @@ const prepareRelation = (thing) => {
     R.dissoc('from'),
     R.dissoc('fromId'),
     R.dissoc('fromRole'),
+    R.dissoc('fromType'),
     // Dissoc to
     R.dissoc('to'),
     R.dissoc('toId'),
-    R.dissoc('toRole')
+    R.dissoc('toRole'),
+    R.dissoc('toType'),
   )(thing);
 };
 const prepareEntity = (thing) => {

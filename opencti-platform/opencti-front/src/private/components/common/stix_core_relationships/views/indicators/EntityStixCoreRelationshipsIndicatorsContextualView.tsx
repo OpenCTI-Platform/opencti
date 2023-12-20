@@ -162,7 +162,7 @@ const EntityStixCoreRelationshipsIndicatorsContextualViewComponent: FunctionComp
       ),
     },
     created_at: {
-      label: 'Creation date',
+      label: 'Platform creation date',
       width: '15%',
       isSortable: true,
       render: (stixCoreObject: EntityStixCoreRelationshipsIndicatorsContextualViewLine_node$data) => nsdt(stixCoreObject.created_at),

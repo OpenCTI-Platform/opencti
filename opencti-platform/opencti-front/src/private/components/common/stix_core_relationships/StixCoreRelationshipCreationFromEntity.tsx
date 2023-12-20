@@ -545,17 +545,6 @@ const StixCoreRelationshipCreationFromEntity: FunctionComponent<StixCoreRelation
                   parametersWithPadding={true}
                   availableEntityTypes={virtualTypeFilter}
                   handleToggleSelectAll="no"
-                  availableFilterKeys={[
-                    'entity_type',
-                    'objectMarking',
-                    'objectLabel',
-                    'createdBy',
-                    'confidence',
-                    'x_opencti_organization_type',
-                    'created',
-                    'created_at',
-                    'creator_id',
-                  ]}
                 >
                   <QueryRenderer
                     query={stixCoreRelationshipCreationFromEntityStixCoreObjectsLinesQuery}

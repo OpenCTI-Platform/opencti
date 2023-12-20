@@ -180,7 +180,7 @@ const EntityStixCoreRelationshipsContextualViewComponent: FunctionComponent<Enti
       ),
     },
     created_at: {
-      label: 'Creation date',
+      label: 'Platform creation date',
       width: '15%',
       isSortable: true,
       render: (stixCoreObject: EntityStixCoreRelationshipsContextualViewLine_node$data) => nsdt(stixCoreObject.created_at),

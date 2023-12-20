@@ -55,7 +55,7 @@ const Organizations = () => {
         isSortable: false,
       },
       created: {
-        label: 'Creation date',
+        label: 'Original creation date',
         width: '15%',
         isSortable: true,
       },
@@ -88,15 +88,6 @@ const Organizations = () => {
         filters={filters}
         paginationOptions={paginationOptions}
         numberOfElements={numberOfElements}
-        availableFilterKeys={[
-          'x_opencti_organization_type',
-          'objectLabel',
-          'objectMarking',
-          'createdBy',
-          'created',
-          'x_opencti_reliability',
-          'name',
-        ]}
       >
         {queryRef && (
           <React.Suspense

@@ -193,7 +193,7 @@ ContainerStixCyberObservablesComponentProps
         isSortable: isRuntimeSort,
       },
       created_at: {
-        label: 'Creation date',
+        label: 'Platform creation date',
         width: '10%',
         isSortable: true,
       },
@@ -238,14 +238,6 @@ ContainerStixCyberObservablesComponentProps
             keyword={searchTerm}
             openExports={openExports}
             filters={filters}
-            availableFilterKeys={[
-              'objectLabel',
-              'objectMarking',
-              'created_at',
-              'x_opencti_score',
-              'createdBy',
-              'sightedBy',
-            ]}
             paginationOptions={queryPaginationOptions}
           >
             {queryRef && (

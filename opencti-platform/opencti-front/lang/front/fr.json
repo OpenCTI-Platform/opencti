@@ -2557,6 +2557,8 @@
   "Marking definitions to use by the csv mapper...": "Les définitions de marquage ne sont utilisées par le mappeur csv que lorsque certains attributs de marquage ont la politique 'Laisser l'utilisateur choisir les définitions de marquage'. Dans le cas contraire, ces définitions de marquage sont ignorées.",
   "Option 'Let the user choose marking definitions'...": "L'option 'Let the user choose marking definitions' demandera à l'utilisateur de choisir (lors de l'importation du fichier CSV) les définitions de marquage à appliquer lorsque les données sont manquantes dans le fichier CSV.",
   "Update without references": "Mise à jour sans références",
+  "Original creation date": "Date de création originale",
+  "Platform creation date": "Date de création de la plate-forme",
   "Max Confidence Level:": "Niveau de confiance maximum :",
   "Share as public dashboard": "Partager comme tableau de bord public",
   "To prevent people seeing all the data...": "Pour empêcher les gens de voir toutes les données du tableau de bord public, sélectionnez une définition de marquage pour restreindre les données partagées.",

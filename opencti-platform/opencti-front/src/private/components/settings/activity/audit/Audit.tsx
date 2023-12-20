@@ -32,7 +32,7 @@ import { AuditLine_node$data } from './__generated__/AuditLine_node.graphql';
 import { AuditLineDummy } from './AuditLine';
 import useAuth from '../../../../../utils/hooks/useAuth';
 import { useFormatter } from '../../../../../components/i18n';
-import { emptyFilterGroup } from '../../../../../utils/filters/filtersUtils';
+import { contextFilters, emptyFilterGroup } from '../../../../../utils/filters/filtersUtils';
 import { fetchQuery } from '../../../../../relay/environment';
 import Breadcrumbs from '../../../../../components/Breadcrumbs';
 
@@ -242,13 +242,7 @@ const Audit = () => {
           'members_organization',
           'members_user',
           'created',
-          'contextEntityId',
-          'contextEntityType',
-          'contextCreatedBy',
-          'contextObjectMarking',
-          'contextObjectLabel',
-          'contextCreator',
-        ]}
+        ].concat(contextFilters)}
       >
         {queryRef && (
           <React.Suspense

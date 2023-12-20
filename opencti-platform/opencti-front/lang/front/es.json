@@ -2557,6 +2557,8 @@
   "Marking definitions to use by the csv mapper...": "Definiciones de marcado utilizadas por el mapeador csv sólo cuando algunos atributos de marcado tienen la política establecida en 'Dejar que el usuario elija las definiciones de marcado'. Si no, estas definiciones de marcado se ignoran.",
   "Option 'Let the user choose marking definitions'...": "La opción 'Dejar que el usuario elija las definiciones de marcado' pedirá al usuario que elija (al importar el archivo CSV) qué definiciones de marcado aplicar cuando falten datos en el archivo CSV.",
   "Update without references": "Actualizar sin referencias",
+  "Original creation date": "Fecha de creación original",
+  "Platform creation date": "Fecha de creación de la plataforma",
   "Max Confidence Level:": "Nivel Máximo de Confianza:",
   "Share as public dashboard": "Compartir como tablero público",
   "To prevent people seeing all the data...": "Para evitar que los usuarios vean todos los datos del panel público, seleccione una definición de marcado para restringir los datos compartidos.",

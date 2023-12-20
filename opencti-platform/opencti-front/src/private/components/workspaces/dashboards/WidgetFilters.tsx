@@ -2,7 +2,7 @@ import Filters from '@components/common/lists/Filters';
 import React, { FunctionComponent, useEffect } from 'react';
 import { Box } from '@mui/material';
 import useFiltersState from '../../../../utils/filters/useFiltersState';
-import { FilterGroup, isFilterGroupNotEmpty } from '../../../../utils/filters/filtersUtils';
+import { contextFilters, FilterGroup, isFilterGroupNotEmpty } from '../../../../utils/filters/filtersUtils';
 import FilterIconButton from '../../../../components/FilterIconButton';
 import { useFormatter } from '../../../../components/i18n';
 
@@ -50,13 +50,7 @@ const auditsFilters = [
   'members_group',
   'members_organization',
   'members_user',
-  'contextEntityId',
-  'contextEntityType',
-  'contextCreatedBy',
-  'contextObjectMarking',
-  'contextObjectLabel',
-  'contextCreator',
-];
+].concat(contextFilters);
 
 interface DataSelection {
   label: string;
@@ -134,7 +128,6 @@ const WidgetFilters: FunctionComponent<WidgetFiltersProps> = ({ perspective, typ
             'Stix-Cyber-Observable',
           ]}
           helpers={helpersDynamicTo}
-
           type="to"
         />
       </Box>

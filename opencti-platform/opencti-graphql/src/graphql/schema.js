@@ -71,6 +71,7 @@ import stixResolvers from '../resolvers/stix';
 import { isSupportedStixType } from '../schema/identifier';
 import stixRefRelationshipResolvers from '../resolvers/stixRefRelationship';
 import stixMetaObjectResolvers from '../resolvers/stixMetaObject';
+import filterKeysSchemaResolver from '../resolvers/filterKeysSchema';
 
 const schemaTypeDefs = [globalTypeDefs];
 
@@ -182,6 +183,7 @@ const schemaResolvers = [
   elasticSearchMetricsResolvers,
   attributeResolvers,
   subTypeResolvers,
+  filterKeysSchemaResolver,
   fileResolvers,
   indexedFileResolvers,
   taskResolvers,

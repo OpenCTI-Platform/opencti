@@ -73,14 +73,16 @@ const useVocabularyCategory = () => {
     return value;
   };
   const fieldToCategory = (
-    entityType: string,
+    entityType: string | undefined,
     field: string,
   ): VocabularyCategory | undefined => {
-    const entityCategories = data.vocabularyCategories.filter((v) => v.entity_types.includes(entityType));
+    const entityCategories = entityType
+      ? data.vocabularyCategories.filter((v) => v.entity_types.includes(entityType))
+      : data.vocabularyCategories;
     const findCategory = entityCategories.find((e) => e.fields.map((f) => f.key).includes(field));
     return findCategory?.key;
   };
-  const isVocabularyField = (entityType: string, field: string): boolean => {
+  const isVocabularyField = (entityType: string | undefined, field: string): boolean => {
     return fieldToCategory(entityType, field) !== undefined;
   };
 

@@ -3,7 +3,7 @@ import TextField from '@mui/material/TextField';
 import React, { FunctionComponent } from 'react';
 import makeStyles from '@mui/styles/makeStyles';
 import { useFormatter } from '../../../../components/i18n';
-import { dateFilters, FiltersVariant } from '../../../../utils/filters/filtersUtils';
+import { useBuildFilterKeysMapFromEntityType, FiltersVariant } from '../../../../utils/filters/filtersUtils';
 import FilterDate from './FilterDate';
 import FilterAutocomplete from './FilterAutocomplete';
 import type { Theme } from '../../../../components/Theme';
@@ -48,6 +48,7 @@ export interface FiltersElementProps {
   availableEntityTypes?: string[];
   availableRelationshipTypes?: string[];
   availableRelationFilterTypes?: Record<string, string[]>;
+  entityType?: string;
 }
 
 const FiltersElement: FunctionComponent<FiltersElementProps> = ({
@@ -62,12 +63,14 @@ const FiltersElement: FunctionComponent<FiltersElementProps> = ({
   availableEntityTypes,
   availableRelationshipTypes,
   availableRelationFilterTypes,
+  entityType,
 }) => {
   const { t_i18n } = useFormatter();
   const classes = useStyles();
+  const filterKeysMap = useBuildFilterKeysMapFromEntityType(entityType);
   const displayedFilters = availableFilterKeys
     .map((key) => {
-      if (dateFilters.includes(key)) {
+      if (filterKeysMap.get(key)?.type === 'date') {
         if (key === 'valid_until') {
           return [{ key, operator: 'lt' }];
         }
@@ -99,22 +102,23 @@ const FiltersElement: FunctionComponent<FiltersElementProps> = ({
         )}
         {displayedFilters.map((filter, index) => {
           const filterKey = filter.key;
-          if (dateFilters.includes(filterKey)) {
+          const isDateFilter = filterKeysMap.get(filterKey)?.type === 'date';
+          const filterLabel = t_i18n(filterKeysMap.get(filterKey)?.label ?? filterKey);
+          if (isDateFilter) {
             return (
               <Grid
-                key={`${filter.key}_${filter.operator}_${index}`}
+                key={`${filterKey}_${index}`}
                 item={true}
                 xs={6}
               >
                 <FilterDate
                   defaultHandleAddFilter={defaultHandleAddFilter}
                   filterKey={filterKey}
-                  operator={filter.operator}
                   inputValues={inputValues}
                   setInputValues={setInputValues}
+                  filterLabel={filterLabel}
                 />
-              </Grid>
-            );
+              </Grid>);
           }
           return (
             <Grid key={filterKey} item={true} xs={6}>
@@ -128,6 +132,7 @@ const FiltersElement: FunctionComponent<FiltersElementProps> = ({
                 availableRelationshipTypes={availableRelationshipTypes}
                 availableRelationFilterTypes={availableRelationFilterTypes}
                 openOnFocus={true}
+                filterLabel={filterLabel}
               />
             </Grid>
           );

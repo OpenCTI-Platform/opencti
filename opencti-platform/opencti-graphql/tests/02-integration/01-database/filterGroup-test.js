@@ -7,7 +7,7 @@ import { ENTITY_TYPE_MARKING_DEFINITION } from '../../../src/schema/stixMetaObje
 import { RELATION_OBJECT_MARKING } from '../../../src/schema/stixRefRelationship';
 import { ABSTRACT_INTERNAL_OBJECT, ABSTRACT_STIX_CORE_OBJECT, ENTITY_TYPE_CONTAINER, ENTITY_TYPE_LOCATION, ID_INTERNAL } from '../../../src/schema/general';
 import { ENTITY_TYPE_CONTAINER_REPORT, ENTITY_TYPE_INTRUSION_SET, ENTITY_TYPE_MALWARE } from '../../../src/schema/stixDomainObject';
-import { IDS_FILTER, SOURCE_RELIABILITY_FILTER } from '../../../src/utils/filtering/filtering-constants';
+import { COMPUTED_RELIABILITY_FILTER, IDS_FILTER, SOURCE_RELIABILITY_FILTER } from '../../../src/utils/filtering/filtering-constants';
 import { storeLoadById } from '../../../src/database/middleware-loader';
 
 // test queries involving dynamic filters
@@ -1164,7 +1164,98 @@ describe('Complex filters combinations for elastic queries', () => {
       } });
     const numberOfEntitiesWithSourceReliabilityNotAOrNotB = queryResult.data.globalSearch.edges.length;
     expect(numberOfEntitiesWithSourceReliabilityNotAOrNotB - numberOfEntitiesWithSourceReliabilityNotAAndNotB).toEqual(9); // number of entities with source_reliability A or B
-    // --- 16. filters with a relationship type key --- //
+    // --- 16. combinations of operators and modes with the special filter key 'computed_reliability' --- //
+    // (computed_reliability is empty)
+    queryResult = await queryAsAdmin({ query: LIST_QUERY,
+      variables: {
+        first: 20,
+        filters: {
+          mode: 'or',
+          filters: [
+            {
+              key: COMPUTED_RELIABILITY_FILTER,
+              operator: 'nil',
+              values: [],
+              mode: 'or',
+            }
+          ],
+          filterGroups: [],
+        },
+      } });
+    expect(queryResult.data.globalSearch.edges.length).toEqual(30); // 41 - 9 with a source reliability - 2 with a reliability (and no source reliability) = 30
+    // (computed_reliability is not empty)
+    queryResult = await queryAsAdmin({ query: LIST_QUERY,
+      variables: {
+        first: 20,
+        filters: {
+          mode: 'or',
+          filters: [
+            {
+              key: COMPUTED_RELIABILITY_FILTER,
+              operator: 'not_nil',
+              values: [],
+              mode: 'or',
+            }
+          ],
+          filterGroups: [],
+        },
+      } });
+    expect(queryResult.data.globalSearch.edges.length).toEqual(11); // 9 entities with a source reliability + 2 entities with a reliability = 11
+    // (computed_reliability = A - Completely reliable)
+    queryResult = await queryAsAdmin({ query: LIST_QUERY,
+      variables: {
+        first: 20,
+        filters: {
+          mode: 'or',
+          filters: [
+            {
+              key: COMPUTED_RELIABILITY_FILTER,
+              operator: 'eq',
+              values: ['A - Completely reliable'],
+              mode: 'or',
+            }
+          ],
+          filterGroups: [],
+        },
+      } });
+    expect(queryResult.data.globalSearch.edges.length).toEqual(7); // 6 entities with source reliability A + 1 entity with reliability A
+    // (computed_reliability = A - Completely reliable OR B - Usually reliable)
+    queryResult = await queryAsAdmin({ query: LIST_QUERY,
+      variables: {
+        first: 10,
+        filters: {
+          mode: 'or',
+          filters: [
+            {
+              key: COMPUTED_RELIABILITY_FILTER,
+              operator: 'eq',
+              values: ['A - Completely reliable', 'B - Usually reliable'],
+              mode: 'or',
+            }
+          ],
+          filterGroups: [],
+        },
+      } });
+    expect(queryResult.data.globalSearch.edges.length).toEqual(11); // 6 with source_reliability A + 3 with source_reliability B + 1 with reliability A + 1 with reliability B
+    // (computed_reliability = A - Completely reliable AND B - Usually reliable)
+    queryResult = await queryAsAdmin({ query: LIST_QUERY,
+      variables: {
+        first: 10,
+        filters: {
+          mode: 'or',
+          filters: [
+            {
+              key: COMPUTED_RELIABILITY_FILTER,
+              operator: 'eq',
+              values: ['A - Completely reliable', 'B - Usually reliable'],
+              mode: 'and',
+            }
+          ],
+          filterGroups: [],
+        },
+      } });
+    expect(queryResult.data.globalSearch.edges.length).toEqual(0);
+    // --- 17. filters with a relationship type key --- //
     const location = await storeLoadById(testContext, ADMIN_USER, 'location--c3794ffd-0e71-4670-aa4d-978b4cbdc72c', ENTITY_TYPE_LOCATION);
     const locationInternalId = location.internal_id;
     const intrusionSet = await storeLoadById(testContext, ADMIN_USER, 'intrusion-set--18854f55-ac7c-4634-bd9a-352dd07613b7', ENTITY_TYPE_INTRUSION_SET);
@@ -1206,7 +1297,7 @@ describe('Complex filters combinations for elastic queries', () => {
       } });
     expect(queryResult.data.globalSearch.edges.length).toEqual(1); // 1 intrusion-set targets this location
     expect(queryResult.data.globalSearch.edges[0].node.id).toEqual(intrusionSetInternalId);
-    // --- 17. filters with not supported keys --- //
+    // --- 18. filters with not supported keys --- //
     // bad_filter_key = XX
     queryResult = await queryAsAdmin({ query: LIST_QUERY,
       variables: {

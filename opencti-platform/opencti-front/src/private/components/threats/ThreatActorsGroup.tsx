@@ -53,7 +53,7 @@ const ThreatActorsGroup = () => {
         label: 'Name',
       },
       created: {
-        label: 'Creation date',
+        label: 'Original creation date',
       },
       modified: {
         label: 'Modification date',
@@ -78,19 +78,6 @@ const ThreatActorsGroup = () => {
         filters={filters}
         paginationOptions={paginationOptions}
         numberOfElements={numberOfElements}
-        availableFilterKeys={[
-          'workflow_id',
-          'objectLabel',
-          'objectMarking',
-          'createdBy',
-          'source_reliability',
-          'confidence',
-          'creator_id',
-          'created',
-          'revoked',
-          'targets',
-          'name',
-        ]}
       >
         {queryRef && (
           <React.Suspense

@@ -47,11 +47,15 @@ export const getOptionsFromEntities = (
     });
 };
 
-export const getUseSearch = (searchScope?: Record<string, string[]>) => {
+export const getUseSearch = (searchScope?: Record<string, string[]>, entityType?: string) => {
   if (!searchEntitiesScope) {
     return [];
   }
-  const searchEntitiesParams = searchScope ? { ...searchEntitiesScope, searchScope } : searchEntitiesScope;
+  const searchEntitiesScopeWithContext = { ...searchEntitiesScope };
+  if (entityType) {
+    searchEntitiesScopeWithContext.searchContext.entityTypes = [entityType];
+  }
+  const searchEntitiesParams = searchScope ? { ...searchEntitiesScopeWithContext, searchScope } : searchEntitiesScopeWithContext;
   return useSearchEntities(searchEntitiesParams) as [
     Record<string, OptionValue[]>,
     (

@@ -2557,6 +2557,8 @@
   "Marking definitions to use by the csv mapper...": "只有当某些标记属性的策略设置为'让用户选择标记定义'时，csv 映射器才会使用标记定义。否则，此标记定义将被忽略。",
   "Option 'Let the user choose marking definitions'...": "选项 '让用户选择标记定义'将要求用户（在导入 CSV 文件时）选择在 CSV 文件中缺少数据时应用哪些标记定义。",
   "Update without references": "无引用更新",
+  "Original creation date": "原始创建日期",
+  "Platform creation date": "平台创建日期",
   "Max Confidence Level:": "最大置信度：",
   "Share as public dashboard": "作为公共仪表板共享",
   "To prevent people seeing all the data...": "要防止他人看到公共仪表板中的所有数据，请选择标记定义来限制共享数据。",

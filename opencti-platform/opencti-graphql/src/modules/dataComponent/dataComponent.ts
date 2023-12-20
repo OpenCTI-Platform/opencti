@@ -15,7 +15,7 @@ const DATA_COMPONENT_DEFINITION: ModuleDefinition<StoreEntityDataComponent, Stix
     id: 'dataComponents',
     name: ENTITY_TYPE_DATA_COMPONENT,
     category: ABSTRACT_STIX_DOMAIN_OBJECT,
-    aliased: true
+    aliased: false
   },
   identifier: {
     definition: {
@@ -29,7 +29,7 @@ const DATA_COMPONENT_DEFINITION: ModuleDefinition<StoreEntityDataComponent, Stix
   },
   attributes: [
     { name: 'name', label: 'Name', type: 'string', format: 'short', mandatoryType: 'external', editDefault: true, multiple: false, upsert: true, isFilterable: true },
-    { name: 'description', label: 'Description', type: 'string', format: 'short', mandatoryType: 'customizable', editDefault: true, multiple: false, upsert: true, isFilterable: true },
+    { name: 'description', label: 'Description', type: 'string', format: 'text', mandatoryType: 'customizable', editDefault: true, multiple: false, upsert: true, isFilterable: true },
   ],
   relations: [
     {
@@ -53,8 +53,11 @@ const DATA_COMPONENT_DEFINITION: ModuleDefinition<StoreEntityDataComponent, Stix
       editDefault: false,
       multiple: false,
       upsert: true,
-      checker: (fromType, toType) => toType === ENTITY_TYPE_DATA_SOURCE,
+      isRefExistingForTypes(_, toType) {
+        return this.toTypes.includes(toType);
+      },
       isFilterable: true,
+      toTypes: [ENTITY_TYPE_DATA_SOURCE],
     },
     objectOrganization
   ],

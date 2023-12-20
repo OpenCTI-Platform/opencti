@@ -42,7 +42,14 @@ import ExportButtons from '../../../../components/ExportButtons';
 import Filters from '../lists/Filters';
 import { usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStorage';
 import type { Theme } from '../../../../components/Theme';
-import { emptyFilterGroup, FilterGroup, getDefaultFilterObject, isFilterGroupNotEmpty, removeIdFromFilterGroupObject } from '../../../../utils/filters/filtersUtils';
+import {
+  emptyFilterGroup,
+  FilterGroup,
+  getDefaultFilterObject,
+  isFilterGroupNotEmpty,
+  removeIdFromFilterGroupObject,
+  useFilterDefinition,
+} from '../../../../utils/filters/filtersUtils';
 import FilterIconButton from '../../../../components/FilterIconButton';
 
 const useStyles = makeStyles<Theme>((theme) => ({
@@ -167,7 +174,6 @@ StixDomainObjectThreatKnowledgeProps
       'Event',
     ];
   }
-
   const {
     viewStorage,
     helpers,
@@ -179,7 +185,7 @@ StixDomainObjectThreatKnowledgeProps
         ...emptyFilterGroup,
         filters: [
           {
-            ...getDefaultFilterObject('elementWithTargetTypes'),
+            ...getDefaultFilterObject('elementWithTargetTypes', useFilterDefinition('elementWithTargetTypes', 'Stix-Core-Object')),
             // For now its impossible to use the current element type for filtering
             // The filter will be always true as the element is always part of the relations
             // TODO Implement a new composite filter for relationships

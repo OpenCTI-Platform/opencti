@@ -88,7 +88,7 @@ MembersListContainerProps
       ),
     },
     created_at: {
-      label: 'Creation date',
+      label: 'Platform creation date',
       width: '10%',
       isSortable: true,
       render: (user, { fd }) => fd(user.created_at),

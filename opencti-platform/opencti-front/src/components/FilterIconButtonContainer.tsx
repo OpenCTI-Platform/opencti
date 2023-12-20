@@ -9,13 +9,13 @@ import { truncate } from '../utils/String';
 import { DataColumns } from './list_lines';
 import { useFormatter } from './i18n';
 import type { Theme } from './Theme';
-import { Filter, FilterGroup } from '../utils/filters/filtersUtils';
+import { Filter, FilterGroup, useFilterDefinition } from '../utils/filters/filtersUtils';
 import { FilterValuesContentQuery } from './__generated__/FilterValuesContentQuery.graphql';
 import FilterValues from './filters/FilterValues';
 import { FilterChipPopover, FilterChipsParameter } from './filters/FilterChipPopover';
 import DisplayFilterGroup from './filters/DisplayFilterGroup';
 import { handleFilterHelpers } from '../utils/hooks/useLocalStorage';
-import FilterIconButtonGlobalOperator from './FilterIconButtonGlobalOperator';
+import FilterIconButtonGlobalMode from './FilterIconButtonGlobalMode';
 import { filterValuesContentQuery } from './FilterValuesContent';
 import { FilterRepresentative } from './filters/FiltersModel';
 
@@ -118,6 +118,7 @@ interface FilterIconButtonContainerProps {
   hasRenderedRef: boolean;
   setHasRenderedRef: () => void;
   availableRelationFilterTypes?: Record<string, string[]>;
+  entityType?: string;
 }
 
 const FilterIconButtonContainer: FunctionComponent<
@@ -136,6 +137,7 @@ FilterIconButtonContainerProps
   hasRenderedRef,
   setHasRenderedRef,
   availableRelationFilterTypes,
+  entityType,
 }) => {
   const { t_i18n } = useFormatter();
   const classes = useStyles();
@@ -265,11 +267,12 @@ FilterIconButtonContainerProps
     >
       {displayedFilters.map((currentFilter, index) => {
         const filterKey = currentFilter.key;
+        const filterLabel = t_i18n(useFilterDefinition(filterKey, entityType)?.label ?? filterKey);
         const filterOperator = currentFilter.operator ?? 'eq';
         const isOperatorDisplayed = operatorIcon.includes(filterOperator ?? 'eq');
         const keyLabel = (
           <>
-            {truncate(t_i18n(filterKey), 20)}
+            {truncate(filterLabel, 20)}
             {!isOperatorDisplayed && (
               <Box
                 component={'span'}
@@ -305,6 +308,7 @@ FilterIconButtonContainerProps
                   filtersRepresentativesMap={filtersRepresentativesMap}
                   helpers={helpers}
                   redirection={redirection}
+                  entityType={entityType}
                 />
               }
             >
@@ -336,6 +340,7 @@ FilterIconButtonContainerProps
                       onClickLabel={(event) => handleChipClick(event, currentFilter?.id)}
                       isReadWriteFilter={isReadWriteFilter}
                       chipColor={chipColor}
+                      entityType={entityType}
                     />
                   }
                   disabled={
@@ -360,7 +365,7 @@ FilterIconButtonContainerProps
                   display: 'flex',
                 }}
               >
-                <FilterIconButtonGlobalOperator
+                <FilterIconButtonGlobalMode
                   classOperator={classOperator}
                   globalMode={globalMode}
                   handleSwitchGlobalMode={() => {
@@ -386,6 +391,7 @@ FilterIconButtonContainerProps
             helpers={helpers}
             filtersRepresentativesMap={filtersRepresentativesMap}
             availableRelationFilterTypes={availableRelationFilterTypes}
+            entityType={entityType}
           />
         </Box>
       )}

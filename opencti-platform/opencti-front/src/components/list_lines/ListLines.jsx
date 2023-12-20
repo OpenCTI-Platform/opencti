@@ -25,6 +25,7 @@ import DialogActions from '@mui/material/DialogActions';
 import Button from '@mui/material/Button';
 import Box from '@mui/material/Box';
 import { ErrorBoundary } from '../../private/components/Error';
+import { UserContext } from '../../utils/hooks/useAuth';
 import Filters from '../../private/components/common/lists/Filters';
 import SearchInput from '../SearchInput';
 import inject18n from '../i18n';
@@ -160,7 +161,7 @@ class ListLines extends Component {
     );
   }
 
-  renderContent(selectedIds = []) {
+  renderContent(availableFilterKeys, selectedIds = []) {
     const {
       t,
       classes,
@@ -187,7 +188,6 @@ class ListLines extends Component {
       children,
       exportContext,
       numberOfElements,
-      availableFilterKeys,
       noHeaders,
       iconExtension,
       searchVariant,
@@ -208,6 +208,8 @@ class ListLines extends Component {
       helpers,
       inline,
     } = this.props;
+    const entityType = exportContext?.entity_type ?? this.props.entityType;
+    const exportEntityType = exportContext?.entity_type;
     const exportDisabled = numberOfElements
       && ((selectedIds.length > export_max_size
         && numberOfElements.number > export_max_size)
@@ -215,7 +217,7 @@ class ListLines extends Component {
           && numberOfElements.number > export_max_size));
     const searchContextFinal = {
       ...(searchContext ?? {}),
-      entityTypes: exportContext?.entity_type ? [exportContext.entity_type] : [],
+      entityTypes: exportEntityType ? [exportEntityType] : [],
     };
     return (
       <div className={noPadding ? classes.containerNoPadding : classes.container}>
@@ -248,6 +250,7 @@ class ListLines extends Component {
                 availableEntityTypes={availableEntityTypes}
                 availableRelationshipTypes={availableRelationshipTypes}
                 availableRelationFilterTypes={availableRelationFilterTypes}
+                entityType={entityType}
               />
             )}
             <div className={classes.filler} />
@@ -440,6 +443,7 @@ class ListLines extends Component {
           handleSwitchLocalMode={handleSwitchLocalMode}
           availableRelationFilterTypes={availableRelationFilterTypes}
           redirection
+          entityType={entityType ?? 'Stix-Core-Object'}
         />
         <ErrorBoundary key={keyword}>
           {message && (
@@ -615,16 +619,25 @@ class ListLines extends Component {
   }
 
   render() {
-    const { disableExport } = this.props;
-    if (disableExport) {
-      return this.renderContent();
-    }
+    const { disableExport, exportContext } = this.props;
+    const entityType = exportContext?.entity_type ?? this.props.entityType;
     return (
-      <ExportContext.Consumer>
-        {({ selectedIds }) => {
-          return this.renderContent(selectedIds);
+      <UserContext.Consumer>
+        {({ schema }) => {
+          const filterKeysMap = schema.filterKeysSchema.get(entityType) ?? new Map();
+          const availableFilterKeys = Array.from(filterKeysMap.keys()); // keys for the entity type according to the schema
+          if (disableExport) {
+            return this.renderContent(availableFilterKeys);
+          }
+          return (
+            <ExportContext.Consumer>
+              {({ selectedIds }) => {
+                return this.renderContent(availableFilterKeys, selectedIds);
+              }}
+            </ExportContext.Consumer>
+          );
         }}
-      </ExportContext.Consumer>
+      </UserContext.Consumer>
     );
   }
 }
@@ -658,7 +671,6 @@ ListLines.propTypes = {
   secondaryAction: PropTypes.bool,
   bottomNav: PropTypes.bool,
   numberOfElements: PropTypes.object,
-  availableFilterKeys: PropTypes.array,
   noHeaders: PropTypes.bool,
   iconExtension: PropTypes.bool,
   searchVariant: PropTypes.string,

@@ -70,10 +70,9 @@ const ThreatActorGroupEditionDetailsComponent = ({
     roles: Yup.array().nullable(),
     primary_motivation: Yup.string().nullable(),
     secondary_motivations: Yup.array().nullable(),
-    personal_motivations: Yup.array().nullable(),
     goals: Yup.string().nullable(),
-    references: Yup.array(),
-  };
+  references: Yup.array(),
+};
   const threatActorGroupValidator = useSchemaEditionValidation(
     'Threat-Actor-Group',
     basicShape,
@@ -168,12 +167,6 @@ const ThreatActorGroupEditionDetailsComponent = ({
         : [],
     ),
     R.assoc(
-      'personal_motivations',
-      threatActorGroup.personal_motivations
-        ? threatActorGroup.personal_motivations
-        : [],
-    ),
-    R.assoc(
       'goals',
       R.join('\n', threatActorGroup.goals ? threatActorGroup.goals : []),
     ),
@@ -185,7 +178,6 @@ const ThreatActorGroupEditionDetailsComponent = ({
       'resource_level',
       'primary_motivation',
       'secondary_motivations',
-      'personal_motivations',
       'goals',
       'roles',
     ]),
@@ -304,18 +296,6 @@ const ThreatActorGroupEditionDetailsComponent = ({
                 multiple={true}
                 editContext={context}
               />
-              <OpenVocabField
-                label={t_i18n('Personal motivations')}
-                type="attack-motivation-ov"
-                name="personal_motivations"
-                onFocus={handleChangeFocus}
-                onChange={(name, value) => setFieldValue(name, value)}
-                onSubmit={handleSubmitField}
-                containerStyle={fieldSpacingContainerStyle}
-                variant="edit"
-                multiple={true}
-                editContext={context}
-              />
               <Field
                 component={TextField}
                 name="goals"
@@ -360,7 +340,6 @@ export default createFragmentContainer(
         resource_level
         primary_motivation
         secondary_motivations
-        personal_motivations
         goals
         roles
         confidence

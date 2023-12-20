@@ -96,7 +96,7 @@ const Incidents: FunctionComponent = () => {
       isSortable: false,
     },
     created: {
-      label: 'Date',
+      label: 'Original creation date',
       width: '10%',
       isSortable: true,
     },
@@ -135,22 +135,6 @@ const Incidents: FunctionComponent = () => {
           paginationOptions={queryPaginationOptions}
           numberOfElements={numberOfElements}
           iconExtension={true}
-          availableFilterKeys={[
-            'incident_type',
-            'objectLabel',
-            'objectMarking',
-            'createdBy',
-            'source_reliability',
-            'confidence',
-            'objectParticipant',
-            'severity',
-            'source',
-            'creator_id',
-            'created',
-            'targets',
-            'name',
-            'regardingOf',
-          ]}
         >
           {queryRef && (
             <React.Suspense

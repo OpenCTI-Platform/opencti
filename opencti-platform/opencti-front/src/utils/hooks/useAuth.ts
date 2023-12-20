@@ -12,6 +12,16 @@ export interface BannerSettings {
   bannerHeightNumber: number;
 }
 
+export type FilterDefinition = {
+  filterKey: string;
+  label: string;
+  type: string; // boolean, date, integer, float, id, string, text, or object
+  multiple: boolean;
+  subEntityTypes: readonly string[];
+  elementsForFilterValuesSearch: string[]; // not empty if type = 'id', type = 'enum' or type = 'vocabulary'
+  subFilters?: FilterDefinition[];
+};
+
 export interface UserContextType {
   me: RootPrivateQuery$data['me'] | undefined;
   settings: RootSettings$data | undefined;
@@ -25,6 +35,7 @@ export interface UserContextType {
     scrs: { id: string, label: string }[]
     schemaRelationsTypesMapping: Map<string, readonly string[]>
     schemaRelationsRefTypesMapping: Map<string, readonly string[]>
+    filterKeysSchema: Map<string, Map<string, FilterDefinition>>
   } | undefined;
 }
 

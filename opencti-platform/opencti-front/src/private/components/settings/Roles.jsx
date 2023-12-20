@@ -68,7 +68,7 @@ class Roles extends Component {
         isSortable: false,
       },
       created_at: {
-        label: 'Creation date',
+        label: 'Platform creation date',
         width: '15%',
         isSortable: true,
       },

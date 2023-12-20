@@ -15,7 +15,7 @@ export const PARTICIPANT_FILTER = 'objectParticipant';
 export const OBJECT_CONTAINS_FILTER = 'objects';
 export const RELATION_TO_SIGHTING_FILTER = 'toSightingId';
 // ---- entities
-export const INSTANCE_REGARDING_OF = 'regardingOf'; // Combination of rel types and id for entity filtering
+export const INSTANCE_REGARDING_OF = 'regardingOf'; // Combination of relationship types and id for entity filtering
 // ---- relationships
 // TODO remove and migration in favor of exploiting directly 'connections' in the relationship model
 export const RELATION_TO_FILTER = 'toId';
@@ -51,6 +51,7 @@ export const CONNECTIONS_FILTER = 'connections';
 export const RULE_FILTER = 'rule';
 export const USER_ID_FILTER = 'user_id';
 export const SOURCE_RELIABILITY_FILTER = 'source_reliability';
+export const COMPUTED_RELIABILITY_FILTER = 'computed_reliability';
 
 // for audit logging (Elastic + Stream)
 export const CONTEXT_ENTITY_ID_FILTER = 'contextEntityId'; // 'context_data.id'
@@ -62,6 +63,7 @@ export const CONTEXT_OBJECT_LABEL_FILTER = 'contextObjectLabel';
 export const MEMBERS_USER_FILTER = 'members_user';
 export const MEMBERS_GROUP_FILTER = 'members_group';
 export const MEMBERS_ORGANIZATION_FILTER = 'members_organization';
+export const ALIAS_FILTER = 'alias'; // handle both 'aliases' and 'x_opencti_aliases' attributes
 
 export const complexConversionFilterKeys = [
   IDS_FILTER, // values should match any id (internal_id, standard_id, or stix_id)
@@ -71,6 +73,7 @@ export const complexConversionFilterKeys = [
   WORKFLOW_FILTER, // values should match the parent workflow pattern id
   X_OPENCTI_WORKFLOW_ID, // values should match the parent workflow pattern id
   SOURCE_RELIABILITY_FILTER, // reliability of the author
+  COMPUTED_RELIABILITY_FILTER, // reliability, or reliabilityof the author if no reliability
   INSTANCE_RELATION_FILTER, // nested relation for the from or to of a relationship
   INSTANCE_FILTER_TARGET_TYPES, // nested relation for the from or type type of a relationship
   RELATION_FROM_FILTER, // nested relation for the from of a relationship
@@ -80,6 +83,7 @@ export const complexConversionFilterKeys = [
   RELATION_TO_TYPES_FILTER, // nested relation for the to type of a relationship
   RELATION_FROM_ROLE_FILTER, // nested relation for the from role of a relationship
   RELATION_TO_ROLE_FILTER, // nested relation for the to role of a relationship
+  ALIAS_FILTER, // key that target both 'aliases' and 'x_opencti_aliases' attributes
 ];
 
 // list of the special filtering keys
@@ -125,4 +129,7 @@ export const specialFilterKeysWhoseValueToResolve = [
   MEMBERS_ORGANIZATION_FILTER,
   RULE_FILTER, // for inference engine rules
   WORKFLOW_FILTER,
+  INSTANCE_RELATION_FILTER,
+  RELATION_FROM_FILTER,
+  RELATION_TO_FILTER
 ];

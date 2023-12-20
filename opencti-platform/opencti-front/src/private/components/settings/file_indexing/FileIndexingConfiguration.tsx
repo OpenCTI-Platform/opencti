@@ -33,8 +33,8 @@ import { handleErrorInForm } from '../../../../relay/environment';
 import SwitchField from '../../../../components/SwitchField';
 import AutocompleteField from '../../../../components/AutocompleteField';
 import ItemIcon from '../../../../components/ItemIcon';
-import useAuth from '../../../../utils/hooks/useAuth';
 import TextField from '../../../../components/TextField';
+import useAttributes from '../../../../utils/hooks/useAttributes';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   paper: {
@@ -67,8 +67,7 @@ const FileIndexingConfiguration: FunctionComponent<
 FileIndexingConfigurationProps
 > = ({ managerConfiguration }) => {
   const { t_i18n } = useFormatter();
-  const { schema } = useAuth();
-  const { sdos, scos } = schema;
+  const { stixCoreObjectTypes: availableEntityTypes } = useAttributes();
   const classes = useStyles();
   const manager_setting = managerConfiguration?.manager_setting;
   const initialValues = {
@@ -77,7 +76,6 @@ FileIndexingConfigurationProps
     max_file_size: manager_setting?.max_file_size,
     entity_types: manager_setting?.entity_types,
   };
-  const availableEntityTypes = sdos.map((sdo) => sdo.id).concat(scos.map((sco) => sco.id));
   const [commitManagerSetting] = useMutation(
     fileIndexingConfigurationFieldPatch,
   );
