@@ -143,7 +143,6 @@ const rssDataHandler = async (context: AuthContext, httpRssGet: Getter, turndown
     const reports = items.map((item) => {
       const report: any = {
         type: 'report',
-        spec_version: '2.1',
         name: item.title,
         labels: item.labels,
         description: item.description,

@@ -1,7 +1,7 @@
 /* eslint-disable camelcase */
 import { createInferredRelation, deleteInferredRuleElement } from '../database/middleware';
 import { buildPeriodFromDates, computeRangeIntersection } from '../utils/format';
-import { createRuleContent } from './rules';
+import { createRuleContent } from './rules-utils';
 import { computeAverage } from '../database/utils';
 import { listAllRelations } from '../database/middleware-loader';
 import type { RelationTypes, RuleDefinition, RuleRuntime } from '../types/rules';

@@ -90,7 +90,7 @@ import {
   X_WORKFLOW_ID,
 } from '../schema/identifier';
 import { lockResource, notify, redisAddDeletions, storeCreateEntityEvent, storeCreateRelationEvent, storeDeleteEvent, storeMergeEvent, storeUpdateEvent } from './redis';
-import { cleanStixIds, STIX_SPEC_VERSION, } from './stix';
+import { cleanStixIds } from './stix';
 import {
   ABSTRACT_BASIC_RELATIONSHIP,
   ABSTRACT_STIX_CORE_OBJECT,
@@ -171,7 +171,7 @@ import {
   userFilterStoreElements,
   validateUserAccessOperation
 } from '../utils/access';
-import { isRuleUser, RULES_ATTRIBUTES_BEHAVIOR } from '../rules/rules';
+import { isRuleUser, RULES_ATTRIBUTES_BEHAVIOR } from '../rules/rules-utils';
 import { instanceMetaRefsExtractor, isSingleRelationsRef, } from '../schema/stixEmbeddedRelationship';
 import { createEntityAutoEnrichment } from '../domain/enrichment';
 import { convertExternalReferenceToStix, convertStoreToStix, isTrustedStixId } from './stix-converter';
@@ -2321,7 +2321,6 @@ const buildRelationInput = (input) => {
       stixIds.push(input.stix_id.toLowerCase());
     }
     relationAttributes.x_opencti_stix_ids = stixIds;
-    relationAttributes.spec_version = STIX_SPEC_VERSION;
     relationAttributes.revoked = R.isNil(input.revoked) ? false : input.revoked;
     relationAttributes.confidence = R.isNil(input.confidence) ? 0 : input.confidence;
     relationAttributes.lang = R.isNil(input.lang) ? 'en' : input.lang;
@@ -2343,7 +2342,6 @@ const buildRelationInput = (input) => {
   }
   // stix-ref-relationship
   if (isStixRefRelationship(relationshipType) && schemaRelationsRefDefinition.isDatable(from.entity_type, relationshipType)) {
-    relationAttributes.spec_version = STIX_SPEC_VERSION;
     relationAttributes.start_time = R.isNil(input.start_time) ? new Date(FROM_START) : input.start_time;
     relationAttributes.stop_time = R.isNil(input.stop_time) ? new Date(UNTIL_END) : input.stop_time;
     relationAttributes.created = R.isNil(input.created) ? today : input.created;
@@ -3098,7 +3096,6 @@ const buildEntityData = async (context, user, input, type, opts = {}) => {
     data = R.pipe(
       R.assoc(IDS_STIX, stixIds),
       R.dissoc('stix_id'),
-      R.assoc('spec_version', STIX_SPEC_VERSION),
       R.assoc('created_at', today),
       R.assoc('updated_at', today)
     )(data);

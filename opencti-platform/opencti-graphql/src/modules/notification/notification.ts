@@ -41,7 +41,6 @@ const TRIGGER_DEFINITION: ModuleDefinition<StoreEntityTrigger, StixTrigger> = {
     { name: 'updated', type: 'date', mandatoryType: 'external', editDefault: false, multiple: false, upsert: false },
     { name: 'event_types', label: 'Event types', type: 'string', mandatoryType: 'external', editDefault: true, multiple: true, upsert: false, isFilterable: true },
     { name: 'trigger_scope', label: 'Trigger scope', type: 'string', mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false, isFilterable: true },
-    { name: 'trigger_type', type: 'string', mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false },
     { name: 'outcomes', type: 'string', mandatoryType: 'external', editDefault: false, multiple: true, upsert: false },
     { name: 'notifiers', label: 'Notifiers', type: 'string', mandatoryType: 'external', editDefault: true, multiple: true, upsert: false, isFilterable: true },
     { name: 'filters', label: 'Filters', type: 'string', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true },

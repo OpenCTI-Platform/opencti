@@ -4,7 +4,6 @@ import {
   batchMarkingDefinitions,
   findAll,
   findById,
-  getSpecVersionOrDefault,
   schemaRelationsTypesMapping,
   stixRelationshipDelete,
   stixRelationshipsDistribution,
@@ -54,8 +53,7 @@ const stixRelationshipResolvers = {
       }
       /* v8 ignore next */
       return 'Unknown';
-    },
-    spec_version: getSpecVersionOrDefault
+    }
   },
   Mutation: {
     stixRelationshipEdit: (_, { id }, context) => ({

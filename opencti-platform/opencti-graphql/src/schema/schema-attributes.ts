@@ -1,3 +1,4 @@
+import * as R from 'ramda';
 import { RULE_PREFIX } from './general';
 import { UnsupportedError } from '../config/errors';
 import type { AttributeDefinition, AttrType } from './attribute-definition';
@@ -93,6 +94,10 @@ export const schemaAttributesDefinition = {
         this.upsertByEntity.set(entityType, [...this.upsertByEntity.get(entityType) ?? [], attr.name]);
       }
     });
+  },
+
+  getAllAttributes() {
+    return R.uniqBy((a) => a.name, Object.values(this.attributes).map((a) => Array.from(a.values())).flat());
   },
 
   getAttributes(entityType: string): Map<string, AttributeDefinition> {

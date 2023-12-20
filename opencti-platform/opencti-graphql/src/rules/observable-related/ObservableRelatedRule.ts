@@ -3,7 +3,7 @@ import { createInferredRelation, deleteInferredRuleElement } from '../../databas
 import { buildPeriodFromDates, computeRangeIntersection } from '../../utils/format';
 import { RELATION_RELATED_TO } from '../../schema/stixCoreRelationship';
 import def from './ObservableRelatedDefinition';
-import { createRuleContent } from '../rules';
+import { createRuleContent } from '../rules-utils';
 import { computeAverage } from '../../database/utils';
 import { listAllRelations } from '../../database/middleware-loader';
 import type { StixRelation } from '../../types/stix-sro';

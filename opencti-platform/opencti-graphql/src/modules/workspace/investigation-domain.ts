@@ -5,7 +5,6 @@ import { FunctionalError } from '../../config/errors';
 import { storeLoadByIdsWithRefs } from '../../database/middleware';
 import { buildStixBundle, convertStoreToStix } from '../../database/stix-converter';
 import { ENTITY_TYPE_CONTAINER_REPORT } from '../../schema/stixDomainObject';
-import { STIX_SPEC_VERSION } from '../../database/stix';
 import { generateStandardId } from '../../schema/identifier';
 import type { StixId, StixObject } from '../../types/stix-common';
 import { internalLoadById } from '../../database/middleware-loader';
@@ -23,7 +22,6 @@ const buildStixReportForExport = (workspace: BasicStoreEntityWorkspace, investig
     standard_id: id,
     name: workspace.name,
     published: workspace.created_at,
-    spec_version: STIX_SPEC_VERSION,
     entity_type: ENTITY_TYPE_CONTAINER_REPORT,
     parent_types: getParentTypes(ENTITY_TYPE_CONTAINER_REPORT),
     objects: investigatedEntities,

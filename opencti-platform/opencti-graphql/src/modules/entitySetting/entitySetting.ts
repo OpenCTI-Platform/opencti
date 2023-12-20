@@ -38,6 +38,7 @@ const ENTITY_SETTING_DEFINITION: ModuleDefinition<StoreEntityEntitySetting, Stix
     { name: 'enforce_reference', label: 'Enforce reference', type: 'boolean', mandatoryType: 'external', editDefault: true, multiple: false, upsert: false, isFilterable: false },
     { name: 'attributes_configuration', label: 'Attributes configuration', type: 'json', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, schemaDef: attributeConfiguration, isFilterable: false },
     { name: 'availableSettings', label: 'Available settings', type: 'string', mandatoryType: 'no', editDefault: false, multiple: true, upsert: false, isFilterable: false },
+    { name: 'workflow_configuration', label: 'Workflow activated', type: 'boolean', mandatoryType: 'external', editDefault: false, multiple: false, upsert: false, isFilterable: false },
   ],
   relations: [],
   validators: {

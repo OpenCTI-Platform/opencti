@@ -3,7 +3,7 @@ import * as jsonpatch from 'fast-json-patch';
 import * as R from 'ramda';
 import { createInferredRelation, deleteInferredRuleElement, stixLoadById, } from '../database/middleware';
 import { RELATION_OBJECT } from '../schema/stixRefRelationship';
-import { createRuleContent } from './rules';
+import { createRuleContent } from './rules-utils';
 import { convertStixToInternalTypes, generateInternalType } from '../schema/schemaUtils';
 import type { RelationTypes, RuleDefinition, RuleRuntime } from '../types/rules';
 import type { StixId, StixObject } from '../types/stix-common';

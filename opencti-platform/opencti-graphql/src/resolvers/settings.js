@@ -45,7 +45,7 @@ const settingsResolvers = {
     password_policy_min_lowercase: (settings) => settings.password_policy_min_lowercase ?? 0,
     password_policy_min_uppercase: (settings) => settings.password_policy_min_uppercase ?? 0,
     editContext: (settings) => fetchEditContext(settings.id),
-    messages: (settings, _, context) => getMessagesFilteredByRecipients(context.user, settings),
+    platform_messages: (settings, _, context) => getMessagesFilteredByRecipients(context.user, settings),
     messages_administration: (settings) => JSON.parse(settings.messages ?? '[]'),
   },
   SettingsMessage: {

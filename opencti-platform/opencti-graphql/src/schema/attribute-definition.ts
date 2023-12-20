@@ -9,6 +9,8 @@ export const textMapping = {
   },
 };
 export const dateMapping = { type: 'date' };
+export const booleanMapping = { type: 'boolean' };
+export const numericMapping = (precision: string) => ({ type: precision, coerce: false });
 
 export type AttrType = 'string' | 'date' | 'numeric' | 'boolean' | 'dictionary' | 'json' | 'object' | 'object_flat';
 export type MandatoryType = 'internal' | 'external' | 'customizable' | 'no';

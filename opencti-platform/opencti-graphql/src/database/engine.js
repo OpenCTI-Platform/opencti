@@ -38,6 +38,7 @@ import {
 } from '../schema/stixRefRelationship';
 import {
   ABSTRACT_BASIC_RELATIONSHIP,
+  ABSTRACT_STIX_REF_RELATIONSHIP,
   BASE_TYPE_RELATION,
   buildRefRelationKey,
   buildRefRelationSearchKey,
@@ -66,7 +67,7 @@ import {
 } from '../schema/stixDomainObject';
 import { isStixObject } from '../schema/stixCoreObject';
 import { isBasicRelationship, isStixRelationshipExceptRef } from '../schema/stixRelationship';
-import { RELATION_INDICATES } from '../schema/stixCoreRelationship';
+import { RELATION_INDICATES, STIX_CORE_RELATIONSHIPS } from '../schema/stixCoreRelationship';
 import { INTERNAL_FROM_FIELD, INTERNAL_TO_FIELD } from '../schema/identifier';
 import { BYPASS, computeUserMemberAccessIds, executionContext, INTERNAL_USERS, isBypassUser, MEMBER_ACCESS_ALL, SYSTEM_USER } from '../utils/access';
 import { isSingleRelationsRef, } from '../schema/stixEmbeddedRelationship';
@@ -75,13 +76,18 @@ import { ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
 import { getEntitiesListFromCache, getEntityFromCache } from './cache';
 import { ENTITY_TYPE_MIGRATION_STATUS, ENTITY_TYPE_SETTINGS, ENTITY_TYPE_STATUS, ENTITY_TYPE_USER } from '../schema/internalObject';
 import { telemetry } from '../config/tracing';
-import { isBooleanAttribute, isDateAttribute, isDateNumericOrBooleanAttribute } from '../schema/schema-attributes';
+import { isBooleanAttribute, isDateAttribute, isDateNumericOrBooleanAttribute, schemaAttributesDefinition } from '../schema/schema-attributes';
 import { convertTypeToStixType } from './stix-converter';
 import { extractEntityRepresentativeName } from './entity-representative';
 import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../modules/organization/organization-types';
 import { checkAndConvertFilters, isFilterGroupNotEmpty } from '../utils/filtering/filtering-utils';
 import { IDS_FILTER, SOURCE_RELIABILITY_FILTER, TYPE_FILTER, WORKFLOW_FILTER, X_OPENCTI_WORKFLOW_ID } from '../utils/filtering/filtering-constants';
 import { FilterMode } from '../generated/graphql';
+import { booleanMapping, dateMapping, numericMapping, textMapping } from '../schema/attribute-definition';
+import { schemaTypesDefinition } from '../schema/schema-types';
+import { INTERNAL_RELATIONSHIPS } from '../schema/internalRelationship';
+import { STIX_SIGHTING_RELATIONSHIP } from '../schema/stixSightingRelationship';
+import { rule_definitions } from '../rules/rules-definition';
 
 const ELK_ENGINE = 'elk';
 const OPENSEARCH_ENGINE = 'opensearch';
@@ -536,223 +542,98 @@ const elCreateCoreSettings = async () => {
   });
 };
 
-const computePlatformMappings = () => {
-  const flattenedType = isElkEngine() ? 'flattened' : 'flat_object';
-  return {
-    dynamic_templates: [
-      {
-        integers: {
-          match_mapping_type: 'long',
-          mapping: {
-            type: 'integer',
-          },
-        },
-      },
-      {
-        strings: {
-          match_mapping_type: 'string',
-          mapping: {
-            type: 'text',
-            fields: {
-              keyword: {
-                type: 'keyword',
-                normalizer: 'string_normalizer',
-                ignore_above: 512,
-              },
-            },
-          },
-        },
-      },
-    ],
-    properties: {
-      internal_id: {
-        type: 'text',
-        fields: {
-          keyword: {
-            type: 'keyword',
-            normalizer: 'string_normalizer',
-            ignore_above: 512,
-          },
-        },
-      },
-      standard_id: {
-        type: 'text',
-        fields: {
-          keyword: {
-            type: 'keyword',
-            normalizer: 'string_normalizer',
-            ignore_above: 512,
-          },
-        },
-      },
-      name: {
-        type: 'text',
-        fields: {
-          keyword: {
-            type: 'keyword',
-            normalizer: 'string_normalizer',
-            ignore_above: 512,
-          },
-        },
-      },
-      height: {
-        type: 'nested',
-        properties: {
-          measure: { type: 'float' },
-          date_seen: { type: 'date' },
-        },
-      },
-      weight: {
-        type: 'nested',
-        properties: {
-          measure: { type: 'float' },
-          date_seen: { type: 'date' },
-        },
-      },
-      timestamp: {
-        type: 'date',
-      },
-      created: {
-        type: 'date',
-      },
-      created_at: {
-        type: 'date',
-      },
-      modified: {
-        type: 'date',
-      },
-      modified_at: {
-        type: 'date',
-      },
-      indexed_at: {
-        type: 'date',
-      },
-      uploaded_at: {
-        type: 'date',
-      },
-      first_seen: {
-        type: 'date',
-      },
-      last_seen: {
-        type: 'date',
-      },
-      start_time: {
-        type: 'date',
-      },
-      stop_time: {
-        type: 'date',
-      },
-      published: {
-        type: 'date',
-      },
-      valid_from: {
-        type: 'date',
-      },
-      valid_until: {
-        type: 'date',
-      },
-      observable_date: {
-        type: 'date',
-      },
-      event_date: {
-        type: 'date',
-      },
-      received_time: {
-        type: 'date',
-      },
-      processed_time: {
-        type: 'date',
-      },
-      completed_time: {
-        type: 'date',
-      },
-      ctime: {
-        type: 'date',
-      },
-      mtime: {
-        type: 'date',
-      },
-      atime: {
-        type: 'date',
-      },
-      current_state_date: {
-        type: 'date',
-      },
-      confidence: {
-        type: 'integer',
-      },
-      attribute_order: {
-        type: 'integer',
-      },
-      base_score: {
-        type: 'integer',
-      },
-      is_family: {
-        type: 'boolean',
-      },
-      number_observed: {
-        type: 'integer',
-      },
-      x_opencti_negative: {
-        type: 'boolean',
-      },
-      default_assignation: {
-        type: 'boolean',
-      },
-      x_opencti_detection: {
-        type: 'boolean',
-      },
-      x_opencti_order: {
-        type: 'integer',
-      },
-      import_expected_number: {
-        type: 'integer',
-      },
-      import_processed_number: {
-        type: 'integer',
-      },
-      x_opencti_score: {
-        type: 'integer',
-      },
-      connections: {
-        type: 'nested',
-      },
-      manager_setting: {
-        type: flattenedType,
-      },
-      context_data: {
-        properties: {
-          input: { type: flattenedType },
-        },
-      },
-      size: {
-        type: 'integer',
-      },
-      lastModifiedSinceMin: {
-        type: 'integer',
-      },
-      lastModified: {
-        type: 'date',
-      },
-      metaData: {
-        properties: {
-          order: {
-            type: 'integer',
-          },
-          inCarousel: {
-            type: 'boolean',
-          },
-          messages: { type: flattenedType },
-          errors: { type: flattenedType },
-        },
+// Engine mapping generation on attributes definition
+const attributeMappingGenerator = (entityAttribute) => {
+  if (entityAttribute.type === 'string') {
+    return textMapping;
+  }
+  if (entityAttribute.type === 'date') {
+    return dateMapping;
+  }
+  if (entityAttribute.type === 'numeric') {
+    return numericMapping(entityAttribute.precision);
+  }
+  if (entityAttribute.type === 'boolean') {
+    return booleanMapping;
+  }
+  if (entityAttribute.type === 'object' || entityAttribute.type === 'dictionary') {
+    const properties = {};
+    for (let i = 0; i < entityAttribute.mappings.length; i += 1) {
+      const mapping = entityAttribute.mappings[i];
+      properties[mapping.name] = attributeMappingGenerator(mapping);
+    }
+    const config = { dynamic: 'strict', properties };
+    if (entityAttribute.nested) {
+      config.type = 'nested';
+    }
+    return config;
+  }
+  if (entityAttribute.type === 'json') {
+    return textMapping;
+  }
+  if (entityAttribute.type === 'object_flat') {
+    // content of dictionary cannot be predicted
+    return { type: engine instanceof ElkClient ? 'flattened' : 'flat_object' };
+  }
+  throw UnsupportedError('Cant generated mapping', { type: entityAttribute.type });
+};
+const ruleMappingGenerator = () => {
+  const schemaProperties = {};
+  for (let attrIndex = 0; attrIndex < rule_definitions.length; attrIndex += 1) {
+    const rule = rule_definitions[attrIndex];
+    schemaProperties[`i_rule_${rule.id}`] = {
+      dynamic: 'strict',
+      properties: {
+        explanation: textMapping,
+        dependencies: textMapping,
+        hash: textMapping,
+        data: { type: engine instanceof ElkClient ? 'flattened' : 'flat_object' },
       }
-    },
-  };
+    };
+  }
+  return schemaProperties;
+};
+const denormalizeRelationsMappingGenerator = () => {
+  const databaseRelationshipsName = [
+    STIX_SIGHTING_RELATIONSHIP,
+    ...STIX_CORE_RELATIONSHIPS,
+    ...INTERNAL_RELATIONSHIPS,
+    ...schemaTypesDefinition.get(ABSTRACT_STIX_REF_RELATIONSHIP)
+  ];
+  const schemaProperties = {};
+  for (let attrIndex = 0; attrIndex < databaseRelationshipsName.length; attrIndex += 1) {
+    const relName = databaseRelationshipsName[attrIndex];
+    schemaProperties[`rel_${relName}`] = {
+      dynamic: 'strict',
+      properties: {
+        internal_id: textMapping,
+        inferred_id: textMapping,
+      }
+    };
+  }
+  return schemaProperties;
+};
+const attributesMappingGenerator = () => {
+  const entityAttributes = schemaAttributesDefinition.getAllAttributes();
+  const schemaProperties = {};
+  for (let attrIndex = 0; attrIndex < entityAttributes.length; attrIndex += 1) {
+    const entityAttribute = entityAttributes[attrIndex];
+    schemaProperties[entityAttribute.name] = attributeMappingGenerator(entityAttribute);
+  }
+  return schemaProperties;
+};
+export const engineMappingGenerator = () => {
+  return { ...attributesMappingGenerator(), ...ruleMappingGenerator(), ...denormalizeRelationsMappingGenerator() };
 };
 const computePlatformSettings = (index) => {
   if (engine instanceof ElkClient) {
     return {
       index: {
+        mapping: {
+          total_fields: {
+            limit: 3000,
+          }
+        },
         lifecycle: {
           name: `${ES_INDEX_PREFIX}-ilm-policy`,
           rollover_alias: index,
@@ -769,7 +650,7 @@ const computePlatformSettings = (index) => {
   };
 };
 
-const updateIndexTemplate = async (name) => {
+const updateIndexTemplate = async (name, mapping_properties) => {
   // compute pattern to be retro compatible for platform < 5.9
   // Before 5.9, only one pattern for all indices
   const index_pattern = name === `${ES_INDEX_PREFIX}-index-template` ? `${ES_INDEX_PREFIX}*` : `${name}*`;
@@ -780,7 +661,13 @@ const updateIndexTemplate = async (name) => {
       index_patterns: [index_pattern],
       template: {
         settings: computePlatformSettings(name),
-        mappings: computePlatformMappings()
+        mappings: {
+          // Global option to prevent elastic to try any magic
+          dynamic: 'strict',
+          date_detection: false,
+          numeric_detection: false,
+          properties: mapping_properties,
+        }
       },
       composed_of: [`${ES_INDEX_PREFIX}-core-settings`],
       version: 3,
@@ -793,7 +680,7 @@ const updateIndexTemplate = async (name) => {
   });
 };
 
-const elCreateIndexTemplate = async (index) => {
+const elCreateIndexTemplate = async (index, mappingProperties) => {
   const isExistByName = await engine.indices.existsIndexTemplate({ name: index }).then((r) => oebp(r));
   // Compat with platform initiated prior 5.9.X
   const isExist = await engine.indices.existsIndexTemplate({ name: `${ES_INDEX_PREFIX}-index-template` }).then((r) => oebp(r));
@@ -804,7 +691,7 @@ const elCreateIndexTemplate = async (index) => {
   if (!componentTemplateExist) {
     await elCreateCoreSettings();
   }
-  return updateIndexTemplate(index);
+  return updateIndexTemplate(index, mappingProperties);
 };
 export const elUpdateIndicesMappings = async (properties) => {
   // Update the current indices if needed
@@ -817,9 +704,10 @@ export const elUpdateIndicesMappings = async (properties) => {
   }
   // Reset the templates
   const templates = await elPlatformTemplates();
+  const mappingProperties = engineMappingGenerator();
   for (let index = 0; index < templates.length; index += 1) {
     const template = templates[index];
-    await updateIndexTemplate(template.name);
+    await updateIndexTemplate(template.name, mappingProperties);
   }
 };
 export const elConfigureAttachmentProcessor = async () => {
@@ -865,13 +753,12 @@ export const elConfigureAttachmentProcessor = async () => {
   }
   return success;
 };
-export const elCreateIndex = async (index) => {
-  await elCreateIndexTemplate(index);
+export const elCreateIndex = async (index, mappingProperties) => {
+  await elCreateIndexTemplate(index, mappingProperties);
   const indexName = `${index}${ES_INDEX_PATTERN_SUFFIX}`;
   const isExist = await engine.indices.exists({ index: indexName }).then((r) => oebp(r));
   if (!isExist) {
-    const createdIndex = await engine.indices.create({ index: indexName, body: { aliases: { [index]: {} } } });
-    return createdIndex;
+    return engine.indices.create({ index: indexName, body: { aliases: { [index]: {} } } });
   }
   return null;
 };
@@ -879,9 +766,10 @@ export const elCreateIndices = async (indexesToCreate = WRITE_PLATFORM_INDICES) 
   await elCreateCoreSettings();
   await elCreateLifecyclePolicy();
   const createdIndices = [];
+  const mappingProperties = engineMappingGenerator();
   for (let i = 0; i < indexesToCreate.length; i += 1) {
     const index = indexesToCreate[i];
-    const createdIndex = await elCreateIndex(index);
+    const createdIndex = await elCreateIndex(index, mappingProperties);
     if (createdIndex) {
       createdIndices.push(oebp(createdIndex));
     }
@@ -1371,7 +1259,6 @@ export const elFindByIds = async (context, user, ids, opts = {}) => {
       const elements = data.hits.hits;
       if (elements.length > 0) {
         const convertedHits = await elConvertHits(elements, { withoutRels, mapWithAllIds, toMap: true });
-        // console.log(convertedHits);
         hits = { ...hits, ...convertedHits };
         if (elements.length < MAX_SEARCH_SIZE) {
           hasNextPage = false;
