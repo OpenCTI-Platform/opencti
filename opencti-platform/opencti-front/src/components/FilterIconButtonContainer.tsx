@@ -5,6 +5,7 @@ import makeStyles from '@mui/styles/makeStyles';
 import { PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import { ChipOwnProps } from '@mui/material/Chip/Chip';
 import Box from '@mui/material/Box';
+import { InformationOutline } from 'mdi-material-ui';
 import { truncate } from '../utils/String';
 import { DataColumns } from './list_lines';
 import { useFormatter } from './i18n';
@@ -366,6 +367,35 @@ FilterIconButtonContainerProps
               />
             </Box>
           )}
+          {
+            <>
+              {!isNotLastFilter && isReadWriteFilter && !isOthers && (
+              <Box
+                sx={{
+                  position: 'relative',
+                  zIndex: 0,
+                }}
+              >
+                <Tooltip
+                  title={t(
+                    'The operators and modes are restricted for these filters.',
+                  )}
+                >
+                  <InformationOutline
+                    fontSize="small"
+                    color="primary"
+                    style={{
+                      position: 'absolute',
+                      zIndex: 1,
+                      top: -10,
+                      left: -10,
+                    }}
+                  />
+                </Tooltip>
+              </Box>
+              )}
+            </>
+          }
         </Fragment>
       );
     });
