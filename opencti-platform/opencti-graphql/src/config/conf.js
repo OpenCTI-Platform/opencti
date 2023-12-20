@@ -273,37 +273,51 @@ const auditLogger = winston.createLogger({
 
 // Specific case to fail any test that produce an error log
 const LOG_APP = 'APP';
-const addBasicMetaInformation = (category, meta) => {
-  return { ...meta, category, version: PLATFORM_VERSION };
+const buildMetaErrors = (error) => {
+  const errors = [];
+  if (error instanceof ApolloError) {
+    const attributes = R.dissoc('cause', error.data);
+    const baseError = { name: error.name, message: error.message, stack: error.stack, attributes };
+    errors.push(baseError);
+    if (error.data.cause && error.data.cause instanceof Error) {
+      errors.push(...buildMetaErrors(error.data.cause));
+    }
+  } else if (error instanceof Error) {
+    const baseError = { name: error.name, message: error.message, stack: error.stack };
+    errors.push(baseError);
+  }
+  return errors;
 };
+const addBasicMetaInformation = (category, error, meta) => {
+  const logMeta = { ...meta };
+  if (error) logMeta.errors = buildMetaErrors(error);
+  return { category, version: PLATFORM_VERSION, ...logMeta };
+};
+
+// {"category":"APP", genre:"TECHNICAL", "level":"info","message":"xxxx","timestamp":"date","version":"5.12.9", "attributes": {}}
 export const logApp = {
-  _log: (level, message, meta = {}) => {
+  _log: (level, message, error, meta = {}) => {
     if (appLogTransports.length > 0) {
-      // In case of OpenCTI error
-      if (meta.error) { // If meta contains an error
-        let targetError = meta.error;
-        if (targetError instanceof ApolloError && targetError.data?.error) {
-          targetError = targetError.data.error;
-        }
-        const basicError = { error_code: `${message}_${targetError.name}`, stack: targetError.stack };
-        const extraInfo = R.dissoc('error', targetError.data);
-        const logData = addBasicMetaInformation(LOG_APP, { ...basicError, ...extraInfo });
-        appLogger.log(level, targetError.message, logData);
-      } else if (level === 'error') {
-        // Error but no error specified in meta information,
-        const basicError = { error_code: 'UNKNOWN_ERROR', stack: 'missing error definition' };
-        const logData = addBasicMetaInformation(LOG_APP, { ...meta, ...basicError });
-        appLogger.log(level, message, logData);
-      } else {
-        const logData = addBasicMetaInformation(LOG_APP, meta);
-        appLogger.log(level, message, logData);
-      }
+      appLogger.log(level, message, addBasicMetaInformation(LOG_APP, error, meta));
     }
   },
-  debug: (message, meta = {}) => logApp._log('debug', message, meta),
-  info: (message, meta = {}) => logApp._log('info', message, meta),
-  warn: (message, meta = {}) => logApp._log('warn', message, meta),
-  error: (message, meta = {}) => logApp._log('error', message, meta),
+  debug: (message, meta = {}) => logApp._log('debug', message, null, meta),
+  info: (message, meta = {}) => logApp._log('info', message, null, meta),
+  warn: (message, meta = {}) => logApp._log('warn', message, null, meta),
+  error: (messageOrError, meta = {}) => {
+    const isError = messageOrError instanceof Error;
+    const message = isError ? messageOrError.message : messageOrError;
+    if (isError) {
+      if (messageOrError instanceof ApolloError) {
+        logApp._log('error', message, messageOrError, meta);
+      } else {
+        const error = UnknownError(message, { cause: messageOrError });
+        logApp._log('error', 'Platform unmanaged direct error', error, meta);
+      }
+    } else {
+      logApp._log('error', message, null, meta);
+    }
+  }
 };
 
 const LOG_AUDIT = 'AUDIT';
@@ -312,7 +326,7 @@ export const logAudit = {
     if (auditLogTransports.length > 0) {
       const metaUser = { email: user.user_email, ...user.origin };
       const logMeta = isEmpty(meta) ? { auth: metaUser } : { resource: meta, auth: metaUser };
-      auditLogger.log(level, operation, addBasicMetaInformation(LOG_AUDIT, logMeta));
+      auditLogger.log(level, operation, addBasicMetaInformation(LOG_AUDIT, null, logMeta));
     }
   },
   info: (user, operation, meta = {}) => logAudit._log('info', user, operation, meta),
@@ -357,7 +371,7 @@ export const configureCA = (certificates) => {
       if (err.code === 'ENOENT') {
         // For this error, try the next one.
       } else {
-        throw UnknownError('Configuration failure of the CA certificate', { error: err });
+        throw UnknownError('Configuration failure of the CA certificate', { cause: err });
       }
     }
   }

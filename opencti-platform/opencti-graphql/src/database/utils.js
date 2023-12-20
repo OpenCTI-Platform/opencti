@@ -240,7 +240,7 @@ export const inferIndexFromConceptType = (conceptType, inferred = false) => {
     if (isStixSightingRelationship(conceptType)) return INDEX_INFERRED_RELATIONSHIPS;
     if (isStixRefRelationship(conceptType)) return INDEX_INFERRED_RELATIONSHIPS;
     if (isInternalRelationship(conceptType)) return INDEX_INFERRED_RELATIONSHIPS;
-    throw DatabaseError(`Cant find inferred index for type ${conceptType}`);
+    throw DatabaseError('Cant find inferred index', { type: conceptType });
   }
   // Entities
   if (isHistoryObject(conceptType)) return INDEX_HISTORY;
@@ -256,7 +256,7 @@ export const inferIndexFromConceptType = (conceptType, inferred = false) => {
   // Use only META Index on new ref relationship
   if (isStixRefRelationship(conceptType)) return INDEX_STIX_META_RELATIONSHIPS;
 
-  throw DatabaseError(`Cant find index for type ${conceptType}`);
+  throw DatabaseError('Cant find index', { type: conceptType });
 };
 
 export const pascalize = (s) => {

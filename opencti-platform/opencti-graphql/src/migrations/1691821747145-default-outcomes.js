@@ -30,7 +30,7 @@ export const up = async (next) => {
     wait_for_completion: true,
     body: updateQuery
   }).catch((err) => {
-    throw DatabaseError('Error updating elastic', { error: err });
+    throw DatabaseError('Error updating elastic', { cause: err });
   });
   await Promise.all([DEFAULT_TEAM_MESSAGE, DEFAULT_TEAM_DIGEST_MESSAGE]
     .map((notifier) => addNotifier(context, SYSTEM_USER, notifier)));

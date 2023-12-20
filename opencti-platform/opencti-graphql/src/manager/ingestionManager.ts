@@ -187,7 +187,7 @@ const rssExecutor = async (context: AuthContext, turndownService: TurndownServic
     const ingestion = ingestions[i];
     const ingestionPromise = rssDataHandler(context, httpGet, turndownService, ingestion)
       .catch((e) => {
-        logApp.error('INGESTION_MANAGER', { error: e, name: ingestion.name, context: 'Rss ingestion execution' });
+        logApp.error(e, { name: ingestion.name, context: 'Rss execution' });
       });
     ingestionPromises.push(ingestionPromise);
   }
@@ -241,7 +241,7 @@ const taxiiV21DataHandler: TaxiiHandlerFn = async (context: AuthContext, ingesti
     });
   } else if (data.objects === undefined) {
     const error = UnknownError('Undefined taxii objects', data);
-    logApp.error('INGESTION_MANAGER', { error, name: ingestion.name, context: 'Taxii 2.1 transform' });
+    logApp.error(error, { name: ingestion.name, context: 'Taxii 2.1 transform' });
   }
 };
 const TAXII_HANDLERS: { [k: string]: TaxiiHandlerFn } = {
@@ -264,7 +264,7 @@ const taxiiExecutor = async (context: AuthContext) => {
     }
     const ingestionPromise = taxiiHandler(context, ingestion)
       .catch((e) => {
-        logApp.error('INGESTION_MANAGER', { name: ingestion.name, error: e, context: 'Taxii ingestion execution' });
+        logApp.error(e, { name: ingestion.name, context: 'Taxii ingestion execution' });
       });
     ingestionPromises.push(ingestionPromise);
   }
@@ -291,7 +291,7 @@ const ingestionHandler = async () => {
     if (e.name === TYPE_LOCK_ERROR) {
       logApp.debug('[OPENCTI-MODULE] Ingestion manager already in progress by another API');
     } else {
-      logApp.error('INGESTION_MANAGER', { error: e });
+      logApp.error(e, { manager: 'INGESTION_MANAGER' });
     }
   } finally {
     running = false;

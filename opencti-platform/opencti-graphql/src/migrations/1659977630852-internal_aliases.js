@@ -15,7 +15,7 @@ export const up = async (next) => {
   };
   await elUpdateByQueryForMigration('[MIGRATION] Rewriting aliases', READ_DATA_INDICES, updateQuery)
     .catch((err) => {
-      throw DatabaseError('Error updating elastic', { error: err });
+      throw DatabaseError('Error updating elastic', { cause: err });
     });
   next();
 };

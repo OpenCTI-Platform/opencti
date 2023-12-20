@@ -14,6 +14,7 @@ import { isStrategyActivated, STRATEGY_CERT } from '../config/providers';
 import { applicationSession } from '../database/session';
 import { checkSystemDependencies } from '../initialization';
 import { executionContext } from '../utils/access';
+import { UnknownError } from '../config/errors';
 
 const MIN_20 = 20 * 60 * 1000;
 const REQ_TIMEOUT = conf.get('app:request_timeout');
@@ -115,7 +116,7 @@ const listenServer = async () => {
         resolve({ server });
       });
     } catch (e) {
-      logApp.error('GRAPHQL_SERVER', { error: e });
+      logApp.error(UnknownError('Http listen server fail', { cause: e }));
       reject(e);
     }
   });

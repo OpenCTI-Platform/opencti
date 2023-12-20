@@ -1,5 +1,4 @@
 import { elUpdateByQueryForMigration } from '../database/engine';
-import { DatabaseError } from '../config/errors';
 import { READ_INDEX_INTERNAL_OBJECTS } from '../database/utils';
 import { logApp } from '../config/conf';
 
@@ -43,9 +42,7 @@ const updateTriggers = async () => {
       }
     }
   };
-  return elUpdateByQueryForMigration(message, READ_INDEX_INTERNAL_OBJECTS, updateQuery).catch((err) => {
-    throw DatabaseError('Error updating elastic', { error: err });
-  });
+  return elUpdateByQueryForMigration(message, READ_INDEX_INTERNAL_OBJECTS, updateQuery);
 };
 export const up = async (next) => {
   logApp.info(message);

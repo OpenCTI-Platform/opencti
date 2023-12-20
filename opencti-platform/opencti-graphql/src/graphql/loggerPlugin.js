@@ -112,7 +112,7 @@ export default {
             });
           } else {
             // Every other uses cases are logged with error level
-            logApp.error(API_CALL_MESSAGE, { ...callMetaData, error: callError });
+            logApp.error(callError, callMetaData);
           }
         } else if (perfLog) {
           logApp.info(API_CALL_MESSAGE, { ...callMetaData, memory: getMemoryStatistics() });

@@ -38,7 +38,7 @@ import { ENABLED_IMPORT_CSV_BUILT_IN_CONNECTOR } from './connector/importCsv/imp
 import playbookManager from './manager/playbookManager';
 import fileIndexManager from './manager/fileIndexManager';
 import { isAttachmentProcessorEnabled } from './database/engine';
-import { UnsupportedError } from './config/errors';
+import { UnknownError } from './config/errors';
 
 // region dynamic modules
 const startModules = async () => {
@@ -233,7 +233,7 @@ export const platformStart = async () => {
     // Init the modules
     await startModules();
   } catch (e) {
-    logApp.error('PLATFORM_START', { error: e });
+    logApp.error(e);
     process.exit(1);
   }
 };
@@ -252,7 +252,7 @@ export const platformStop = async () => {
 
 // region signals management
 process.on('unhandledRejection', (reason, p) => {
-  logApp.error('UNHANDLED_REJECTION', { error: UnsupportedError(reason, p) });
+  logApp.error(UnknownError('Engine unhandled rejection', { reason, promise: p }));
 });
 
 ['SIGTERM', 'SIGINT', 'message'].forEach((signal) => {
@@ -265,7 +265,7 @@ process.on('unhandledRejection', (reason, p) => {
           await platformStop();
           process.exit(0);
         } catch (e) {
-          logApp.error('PLATFORM_STOP', { error: e });
+          logApp.error(e);
           process.exit(1);
         }
       }

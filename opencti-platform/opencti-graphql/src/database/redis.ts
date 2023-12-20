@@ -99,7 +99,7 @@ export const createRedisClient = (provider: string, autoReconnect = false): Clus
   }
   client.on('close', () => logApp.info(`[REDIS] Redis '${provider}' client closed`));
   client.on('ready', () => logApp.info(`[REDIS] Redis '${provider}' client ready`));
-  client.on('error', (err) => logApp.error('REDIS_CLIENT', { provider, error: err }));
+  client.on('error', (err) => logApp.error(DatabaseError('Redis client connection fail', { cause: err, provider })));
   client.on('reconnecting', () => logApp.info(`[REDIS] '${provider}' Redis client reconnecting`));
   return client;
 };
@@ -146,7 +146,7 @@ export const redisTx = async (client: Cluster | Redis, chain: (tx: ChainableComm
     await chain(tx);
     return await tx.exec();
   } catch (e) {
-    throw DatabaseError('Redis transaction error', { error: e });
+    throw DatabaseError('Redis transaction error', { cause: e });
   }
 };
 const updateObjectRaw = async (tx: ChainableCommander, id: string, input: object) => {
@@ -464,7 +464,7 @@ export const storeMergeEvent = async (
     await pushToStream(context, user, getClientBase(), event, opts);
     return event;
   } catch (e) {
-    throw DatabaseError('Error in store merge event', { error: e });
+    throw DatabaseError('Error in store merge event', { cause: e });
   }
 };
 // Update
@@ -510,7 +510,7 @@ export const storeUpdateEvent = async (context: AuthContext, user: AuthUser, pre
     }
     return undefined;
   } catch (e) {
-    throw DatabaseError('Error in store update event', { error: e });
+    throw DatabaseError('Error in store update event', { cause: e });
   }
 };
 // Create
@@ -536,7 +536,7 @@ export const storeCreateRelationEvent = async (context: AuthContext, user: AuthU
     }
     return undefined;
   } catch (e) {
-    throw DatabaseError('Error in store create relation event', { error: e });
+    throw DatabaseError('Error in store create relation event', { cause: e });
   }
 };
 export const storeCreateEntityEvent = async (context: AuthContext, user: AuthUser, instance: StoreObject, message: string, opts: CreateEventOpts = {}) => {
@@ -548,7 +548,7 @@ export const storeCreateEntityEvent = async (context: AuthContext, user: AuthUse
     }
     return undefined;
   } catch (e) {
-    throw DatabaseError('Error in store create entity event', { error: e });
+    throw DatabaseError('Error in store create entity event', { cause: e });
   }
 };
 
@@ -582,7 +582,7 @@ export const storeDeleteEvent = async (context: AuthContext, user: AuthUser, ins
     }
     return undefined;
   } catch (e) {
-    throw DatabaseError('Error in store delete event', { error: e });
+    throw DatabaseError('Error in store delete event', { cause: e });
   }
 };
 
@@ -670,7 +670,7 @@ export const createStreamProcessor = <T extends BaseEvent> (
         await processStreamResult([], callback, opts.withInternal);
       }
     } catch (err) {
-      logApp.error('REDIS_STREAMS', { provider, error: err });
+      logApp.error(DatabaseError('Redis stream consume fail', { cause: err, provider }));
       if (opts.autoReconnect) {
         await waitInSec(2);
       } else {

@@ -117,7 +117,7 @@ export const deleteFile = async (context, user, id) => {
     logApp.info(`[FILE STORAGE] delete file ${id} in index`);
     await elDeleteFilesByIds([id])
       .catch((err) => {
-        logApp.error('FILES_DELETE', { error: err });
+        logApp.error(err);
       });
   }
   return up;
@@ -198,10 +198,7 @@ export const loadFile = async (user, filename) => {
       uploadStatus: 'complete'
     };
   } catch (err) {
-    if (err instanceof s3.NoSuchKey) {
-      throw DatabaseError('File not found', { user_id: user.id, filename });
-    }
-    throw UnsupportedError('Load file from storage fail', { error: err });
+    throw UnsupportedError('Load file from storage fail', { cause: err, user_id: user.id, filename });
   }
 };
 const getFileName = (fileId) => {
@@ -270,7 +267,7 @@ const rawFilesListing = async (directory, opts = {}) => {
         requestParams.ContinuationToken = response.NextContinuationToken;
       }
     } catch (err) {
-      logApp.error('FILES_READING', { error: err });
+      logApp.error(DatabaseError('Storage files read fail', { cause: err }));
       truncated = false;
     }
   }

@@ -82,7 +82,7 @@ const expireHandler = async () => {
     if (e.name === TYPE_LOCK_ERROR) {
       logApp.debug('[OPENCTI-MODULE] Expiration manager already started by another API');
     } else {
-      logApp.error('EXPIRATION_SCHEDULER', { error: e });
+      logApp.error(e, { manager: 'EXPIRATION_SCHEDULER' });
     }
   } finally {
     running = false;

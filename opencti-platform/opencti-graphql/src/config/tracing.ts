@@ -7,7 +7,6 @@ import type { Counter } from '@opentelemetry/api-metrics/build/src/types/Metric'
 import nodeMetrics from 'opentelemetry-node-metrics';
 import type { AuthContext, AuthUser } from '../types/user';
 import { ENABLED_TRACING } from './conf';
-import { UnknownError } from './errors';
 
 class MeterManager {
   meterProvider: MeterProvider;
@@ -80,6 +79,6 @@ export const telemetry = (context: AuthContext, user: AuthUser, spanName: string
   }).catch((err: Error) => {
     tracingSpan.setStatus({ code: 2 });
     tracingSpan.end();
-    throw UnknownError('Error in telemetry execution', { error: err });
+    throw err;
   });
 };

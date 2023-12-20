@@ -22,7 +22,7 @@ export const up = async (next) => {
     wait_for_completion: true,
     body: updateUserQuery
   }).catch((err) => {
-    throw DatabaseError('Error updating elastic', { error: err });
+    throw DatabaseError('Error updating elastic', { cause: err });
   });
   logApp.info(`${message} > done`);
   next();

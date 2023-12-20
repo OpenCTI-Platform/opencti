@@ -6,7 +6,6 @@ import { ENTITY_TYPE_TRIGGER } from '../modules/notification/notification-types'
 import { logApp } from '../config/conf';
 import { fromBase64, toBase64, isEmptyField, READ_DATA_INDICES, isNotEmptyField } from '../database/utils';
 import { elUpdateByQueryForMigration } from '../database/engine';
-import { DatabaseError } from '../config/errors';
 import { ENTITY_TYPE_WORKSPACE } from '../modules/workspace/workspace-types';
 import { ENTITY_TYPE_PLAYBOOK } from '../modules/playbook/playbook-types';
 
@@ -158,9 +157,7 @@ export const up = async (next) => {
     '[MIGRATION] Triggers, Taxii and Feeds filters refacto',
     READ_DATA_INDICES,
     entitiesUpdateQuery
-  ).catch((err) => {
-    throw DatabaseError('Error updating elastic', { error: err });
-  });
+  );
 
   // 02. not finished query background tasks
   const tasks = await listAllEntities(
@@ -215,9 +212,7 @@ export const up = async (next) => {
     '[MIGRATION] Query tasks filters refacto',
     READ_DATA_INDICES,
     tasksUpdateQuery
-  ).catch((err) => {
-    throw DatabaseError('Error updating elastic', { error: err });
-  });
+  );
 
   // 03. Workspaces
   const workspaces = await listAllEntities(
@@ -294,9 +289,7 @@ export const up = async (next) => {
     '[MIGRATION] Workspaces filters refacto',
     READ_DATA_INDICES,
     workspacesUpdateQuery
-  ).catch((err) => {
-    throw DatabaseError('Error updating elastic', { error: err });
-  });
+  );
 
   // 04. Playbooks
   const playbooks = await listAllEntities(
@@ -361,9 +354,7 @@ export const up = async (next) => {
     '[MIGRATION] Playbooks filters refacto',
     READ_DATA_INDICES,
     playbooksUpdateQuery
-  ).catch((err) => {
-    throw DatabaseError('Error updating elastic', { error: err });
-  });
+  );
 
   logApp.info(`${message} > done`);
   next();

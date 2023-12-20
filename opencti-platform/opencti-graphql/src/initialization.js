@@ -345,9 +345,9 @@ const isCompatiblePlatform = async (context) => {
   if (!currentVersion) return;
   // Runtime version must be >= of the stored runtime
   const runtimeVersion = semver.coerce(PLATFORM_VERSION).version;
-  if (semver.lt(runtimeVersion, currentVersion)) {
-    throw UnsupportedError('Your platform data are too recent to start on version', { currentVersion, runtimeVersion });
-  }
+  // if (semver.lt(runtimeVersion, currentVersion)) {
+  throw UnsupportedError('Your platform data are too recent to start on', { currentVersion, runtimeVersion });
+  // }
 };
 
 // eslint-disable-next-line
@@ -378,7 +378,7 @@ const platformInit = async (withMarkings = true) => {
     }
   } catch (e) {
     if (e.name === TYPE_LOCK_ERROR) {
-      const reason = '[OPENCTI] Platform cant get the lock for initialization (can be due to other instance currently migrating/initializing)';
+      const reason = 'Platform cant get the lock for initialization (can be due to other instance currently migrating/initializing)';
       throw LockTimeoutError({ participantIds: [PLATFORM_LOCK_ID] }, reason);
     } else {
       throw e;

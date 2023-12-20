@@ -30,7 +30,7 @@ export const up = async (next) => {
     body: updateEntityQuery
   })
     .catch((err) => {
-      throw DatabaseError('Error updating elastic', { error: err });
+      throw DatabaseError('Error updating elastic', { cause: err });
     });
 
   const defaultVocabularies = new Map((openVocabularies.opinion_ov ?? []).map((v) => [v.key, v]));

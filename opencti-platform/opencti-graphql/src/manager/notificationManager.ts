@@ -526,7 +526,7 @@ const notificationLiveStreamHandler = async (streamEvents: Array<SseEvent<DataEv
       }
     }
   } catch (e) {
-    logApp.error('NOTIFICATION_MANAGER', { error: e });
+    logApp.error(e, { manager: 'NOTIFICATION_MANAGER' });
   }
 };
 
@@ -599,7 +599,7 @@ const initNotificationManager = () => {
       if (e.name === TYPE_LOCK_ERROR) {
         logApp.debug('[OPENCTI-MODULE] Notification manager already started by another API');
       } else {
-        logApp.error('NOTIFICATION_MANAGER', { error: e });
+        logApp.error(e, { manager: 'NOTIFICATION_MANAGER' });
       }
     } finally {
       if (streamProcessor) await streamProcessor.shutdown();
@@ -624,7 +624,7 @@ const initNotificationManager = () => {
       if (e.name === TYPE_LOCK_ERROR) {
         logApp.debug('[OPENCTI-MODULE] Notification manager (digest) already started by another API');
       } else {
-        logApp.error('NOTIFICATION_MANAGER', { error: e });
+        logApp.error(e, { manager: 'NOTIFICATION_MANAGER' });
       }
     } finally {
       if (lock) await lock.unlock();

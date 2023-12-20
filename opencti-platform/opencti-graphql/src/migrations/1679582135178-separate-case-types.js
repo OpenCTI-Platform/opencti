@@ -33,7 +33,7 @@ const updateCaseEntity = async (fromCase, toType, standardId) => {
     wait_for_completion: true,
     body: updateEntityQuery
   }).catch((err) => {
-    throw DatabaseError('Error updating elastic', { error: err });
+    throw DatabaseError('Error updating elastic', { cause: err });
   });
 };
 
@@ -62,7 +62,7 @@ const updateCaseRelationships = async (fromCase, toType) => {
     wait_for_completion: true,
     body: updateRelationsQuery
   }).catch((err) => {
-    throw DatabaseError('Error updating elastic', { error: err });
+    throw DatabaseError('Error updating elastic', { cause: err });
   });
 };
 

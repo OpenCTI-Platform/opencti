@@ -89,7 +89,7 @@ export const elUpdateFilesWithEntityRestrictions = async (entity) => {
       },
     },
   }).catch((err) => {
-    throw DatabaseError('[SEARCH] Error updating elastic (files entity restrictions)', { error: err, entityId: entity.internal_id });
+    throw DatabaseError('Files entity restrictions indexing fail', { cause: err, entityId: entity.internal_id });
   });
 };
 
@@ -201,7 +201,7 @@ export const elSearchFiles = async (context, user, options = {}) => {
       return buildFilesSearchResult(data, first, body.search_after, connectionFormat);
     })
     .catch((err) => {
-      throw DatabaseError('[SEARCH] search files fail', { error: err, query });
+      throw DatabaseError('Files search pagination fail', { cause: err, query });
     });
 };
 
@@ -224,7 +224,7 @@ export const elDeleteFilesByIds = async (fileIds) => {
     refresh: true,
     body: { query },
   }).catch((err) => {
-    throw DatabaseError('Error deleting files by ids', { error: err });
+    throw DatabaseError('Error deleting files by ids', { cause: err });
   });
 };
 
@@ -238,6 +238,6 @@ export const elDeleteAllFiles = async () => {
       }
     },
   }).catch((err) => {
-    throw DatabaseError('Error deleting all files ', { error: err });
+    throw DatabaseError('Error deleting all files ', { cause: err });
   });
 };

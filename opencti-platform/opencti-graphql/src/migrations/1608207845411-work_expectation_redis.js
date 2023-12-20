@@ -12,7 +12,7 @@ export const up = async (next) => {
     refresh: true,
     body: { query },
   }).catch((err) => {
-    throw DatabaseError('Error cleaning the work', { error: err });
+    throw DatabaseError('Error cleaning the work', { cause: err });
   });
   next();
 };

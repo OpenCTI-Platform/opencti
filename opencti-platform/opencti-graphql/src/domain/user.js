@@ -761,7 +761,7 @@ export const deleteAllWorkspaceForUser = async (context, authUser, userId) => {
         }
       }
     }).catch((err) => {
-      throw DatabaseError(`[DELETE] Error deleting Workspace for user ${userId} elastic.`, { error: err });
+      throw DatabaseError('[DELETE] Error deleting Workspace for user ', { cause: err, user_id: userId });
     });
   }
   return true;
@@ -782,7 +782,7 @@ export const deleteAllTriggerAndDigestByUser = async (userId) => {
       }
     }
   }).catch((err) => {
-    throw DatabaseError(`[DELETE] Error deleting Trigger for user ${userId} elastic.`, { error: err });
+    throw DatabaseError('[DELETE] Error deleting Trigger for user', { cause: err, user_id: userId });
   });
 };
 export const deleteAllNotificationByUser = async (userId) => {
@@ -800,7 +800,7 @@ export const deleteAllNotificationByUser = async (userId) => {
       }
     }
   }).catch((err) => {
-    throw DatabaseError(`[DELETE] Error deleting notification for user ${userId} elastic.`, { error: err });
+    throw DatabaseError('[DELETE] Error deleting notification for user', { cause: err, user_id: userId });
   });
 };
 
@@ -1351,7 +1351,7 @@ export const authenticateUserFromRequest = async (context, req, res, isSessionRe
         return await authenticateUser(context, req, user, loginProvider, opts);
       }
     } catch (err) {
-      logApp.error('AUTHENTICATION_ERROR', { error: err });
+      logApp.error(err);
     }
   }
   // No auth, return undefined

@@ -50,7 +50,7 @@ export const up = async (next) => {
         wait_for_completion: true,
         body: updateRelationsQuery
       }).catch((err) => {
-        throw DatabaseError('Error updating elastic', { error: err });
+        throw DatabaseError('Error updating elastic', { cause: err });
       });
       await Promise.all([relationsPromise]);
     }

@@ -426,8 +426,7 @@ const executeProcessing = async (context, user, job) => {
     }
   }
   if (errors.length > 0) {
-    const error = UnknownError('Tasks execution failure', { executions: errors });
-    logApp.error('TASK_MANAGER', { error });
+    logApp.error(UnknownError('Tasks execution failure', { executions: errors }));
   }
   return errors;
 };
@@ -449,8 +448,7 @@ const taskHandler = async () => {
     const isListTask = task.type === TASK_TYPE_LIST;
     const isRuleTask = task.type === TASK_TYPE_RULE;
     if (!isQueryTask && !isListTask && !isRuleTask) {
-      const error = UnsupportedError('Unsupported task type', { type: task.type });
-      logApp.error('TASK_MANAGER', { error });
+      logApp.error(UnsupportedError('Unsupported task type', { type: task.type }));
       return;
     }
     // endregion
@@ -489,7 +487,7 @@ const taskHandler = async () => {
     if (e.name === TYPE_LOCK_ERROR) {
       logApp.debug('[OPENCTI-MODULE] Task manager already in progress by another API');
     } else {
-      logApp.error('TASK_MANAGER', { error: e });
+      logApp.error(e, { manager: 'TASK_MANAGER' });
     }
   } finally {
     running = false;

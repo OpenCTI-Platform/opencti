@@ -177,7 +177,7 @@ export const searchEngineVersion = async () => {
     .then((info) => oebp(info).version)
     .catch(
       /* v8 ignore next */ (e) => {
-        throw ConfigurationError('[SEARCH] Search engine seems down', { error: e.message });
+        throw ConfigurationError('Search engine seems down', { cause: e });
       }
     );
   const searchPlatform = searchInfo.distribution || ELK_ENGINE; // openSearch or elasticSearch
@@ -200,7 +200,7 @@ export const searchEngineInit = async () => {
     engine = elasticSearchClient;
     const searchVersion = await searchEngineVersion();
     if (searchVersion.platform !== ELK_ENGINE) {
-      throw ConfigurationError(`[SEARCH] Invalid Search engine selector, configured to ${engineSelector}, detected to ${searchVersion.platform}`);
+      throw ConfigurationError('Invalid Search engine selector', { configured: engineSelector, detected: searchVersion.platform });
     }
     enginePlatform = ELK_ENGINE;
     engineVersion = searchVersion.version;
@@ -209,7 +209,7 @@ export const searchEngineInit = async () => {
     engine = openSearchClient;
     const searchVersion = await searchEngineVersion();
     if (searchVersion.platform !== OPENSEARCH_ENGINE) {
-      throw ConfigurationError(`[SEARCH] Invalid Search engine selector, configured to ${engineSelector}, detected to ${searchVersion.platform}`);
+      throw ConfigurationError('Invalid Search engine selector', { configured: engineSelector, detected: searchVersion.platform });
     }
     enginePlatform = OPENSEARCH_ENGINE;
     engineVersion = searchVersion.version;
@@ -278,7 +278,7 @@ const elOperationForMigration = (operation) => {
       wait_for_completion: false,
       body
     }).catch((err) => {
-      throw DatabaseError('Elastic error (migration)', { migration: message, error: err });
+      throw DatabaseError('Async engine bulk migration fail', { migration: message, cause: err });
     });
     logApp.info(`${message} > elastic running task ${queryAsync.task}`);
     // Wait 10 seconds for task to initialize
@@ -467,7 +467,7 @@ const elCreateLifecyclePolicy = async () => {
         }
       }
     }).catch((e) => {
-      throw DatabaseError('[SEARCH] Error creating lifecycle policy', { error: e });
+      throw DatabaseError('Creating lifecycle policy fail', { cause: e });
     });
   } else {
     await engine.transport.request({
@@ -496,7 +496,7 @@ const elCreateLifecyclePolicy = async () => {
           }
         }
       } }).catch((e) => {
-      throw DatabaseError('[SEARCH] Error creating lifecycle policy', { error: e });
+      throw DatabaseError('Creating lifecycle policy fail', { cause: e });
     });
   }
 };
@@ -524,7 +524,7 @@ const elCreateCoreSettings = async () => {
       },
     },
   }).catch((e) => {
-    throw DatabaseError('[SEARCH] Error creating component template', { error: e });
+    throw DatabaseError('Creating component template fail', { cause: e });
   });
 };
 
@@ -781,7 +781,7 @@ const updateIndexTemplate = async (name) => {
       },
     },
   }).catch((e) => {
-    throw DatabaseError('[SEARCH] Error creating index template', { error: e });
+    throw DatabaseError('Creating index template fail', { cause: e });
   });
 };
 
@@ -804,7 +804,7 @@ export const elUpdateIndicesMappings = async (properties) => {
     const indices = await elPlatformIndices();
     const body = { properties };
     await engine.indices.putMapping({ index: indices.map((i) => i.index), body }).catch((e) => {
-      throw DatabaseError('[SEARCH] Error updating indices mapping', { error: e });
+      throw DatabaseError('Updating indices mapping fail', { cause: e });
     });
   }
   // Reset the templates
@@ -829,7 +829,7 @@ export const elConfigureAttachmentProcessor = async () => {
         }
       ]
     }).catch((e) => {
-      logApp.error('ATTACHMENT_CONFIGURATION', { error: e });
+      logApp.error(ConfigurationError('Engine attachment processor configuration fail', { cause: e }));
       success = false;
     });
   } else {
@@ -851,7 +851,7 @@ export const elConfigureAttachmentProcessor = async () => {
         ]
       }
     }).catch((e) => {
-      logApp.error('ATTACHMENT_CONFIGURATION', { error: e });
+      logApp.error(ConfigurationError('Engine attachment processor configuration fail', { cause: e }));
       success = false;
     });
   }
@@ -888,7 +888,7 @@ export const elDeleteIndices = async (indexesToDelete) => {
         .catch((err) => {
           /* v8 ignore next */
           if (err.meta.body && err.meta.body.error.type !== 'index_not_found_exception') {
-            logApp.error('ENGINE_INDICES_DELETION', { error: err });
+            logApp.error(DatabaseError('Indices deletion fail', { cause: err }));
           }
         });
     })
@@ -1097,7 +1097,7 @@ const elBuildRelation = (type, connection) => {
 };
 const elMergeRelation = (concept, fromConnection, toConnection) => {
   if (!fromConnection || !toConnection) {
-    throw DatabaseError('[SEARCH] Something failed in reconstruction of the relation', concept.internal_id);
+    throw DatabaseError('Reconstruction of the relation fail', concept.internal_id);
   }
   const from = elBuildRelation('from', fromConnection);
   from.source_ref = `${convertTypeToStixType(from.fromType)}--temporary`;
@@ -1251,7 +1251,7 @@ export const elFindByFromAndTo = async (context, user, fromId, toId, relationshi
     },
   };
   const data = await elRawSearch(context, user, relationshipType, query).catch((e) => {
-    throw DatabaseError('[SEARCH] Find by from and to fail', { error: e, query });
+    throw DatabaseError('Find by from and to fail', { cause: e, query });
   });
   return elConvertHits(data.hits.hits);
 };
@@ -1358,7 +1358,7 @@ export const elFindByIds = async (context, user, ids, opts = {}) => {
       logApp.debug('[SEARCH] elInternalLoadById', { query });
       const searchType = `${ids} (${types ? types.join(', ') : 'Any'})`;
       const data = await elRawSearch(context, user, searchType, query).catch((err) => {
-        throw DatabaseError('[SEARCH] Error loading ids', { error: err, query });
+        throw DatabaseError('Find direct ids fail', { cause: err, query });
       });
       const elements = data.hits.hits;
       if (elements.length > 0) {
@@ -1383,7 +1383,7 @@ export const elLoadById = async (context, user, id, opts = {}) => {
   const hits = await elFindByIds(context, user, id, opts);
   //* v8 ignore if */
   if (hits.length > 1) {
-    throw DatabaseError('[SEARCH] Expect only one response', { id, hits: hits.length });
+    throw DatabaseError('Id loading expect only one response', { id, hits: hits.length });
   }
   return R.head(hits);
 };
@@ -1528,7 +1528,7 @@ const buildLocalMustFilter = async (validFilter) => {
   // See opencti-front\src\private\components\events\StixSightingRelationships.tsx
   if (nested) {
     if (arrayKeys.length > 1) {
-      throw UnsupportedError('[SEARCH] Must have only one field', { keys: arrayKeys });
+      throw UnsupportedError('Filter must have only one field', { keys: arrayKeys });
     }
     const nestedMust = [];
     const nestedMustNot = [];
@@ -1570,7 +1570,7 @@ const buildLocalMustFilter = async (validFilter) => {
   // 02. Handle nil and not_nil operators
   if (operator === 'nil') {
     if (arrayKeys.length > 1) {
-      throw UnsupportedError('[SEARCH] Must have only one field', { keys: arrayKeys });
+      throw UnsupportedError('Filter must have only one field', { keys: arrayKeys });
     } else {
       valuesFiltering.push({
         bool: {
@@ -1584,7 +1584,7 @@ const buildLocalMustFilter = async (validFilter) => {
     }
   } else if (operator === 'not_nil') {
     if (arrayKeys.length > 1) {
-      throw UnsupportedError('[SEARCH] Must have only one field', { keys: arrayKeys });
+      throw UnsupportedError('Filter must have only one field', { keys: arrayKeys });
     } else {
       valuesFiltering.push({ exists: { field: R.head(arrayKeys) } });
     }
@@ -1594,7 +1594,7 @@ const buildLocalMustFilter = async (validFilter) => {
     for (let i = 0; i < values.length; i += 1) {
       if (values[i] === 'EXISTS') {
         if (arrayKeys.length > 1) {
-          throw UnsupportedError('[SEARCH] Must have only one field', { keys: arrayKeys });
+          throw UnsupportedError('Filter must have only one field', { keys: arrayKeys });
         }
         valuesFiltering.push({ exists: { field: R.head(arrayKeys) } });
       } else if (operator === 'eq' || operator === 'not_eq') {
@@ -1657,7 +1657,7 @@ const buildLocalMustFilter = async (validFilter) => {
         });
       } else {
         if (arrayKeys.length > 1) {
-          throw UnsupportedError('[SEARCH] Must have only one field', { keys: arrayKeys });
+          throw UnsupportedError('Filter must have only one field', { keys: arrayKeys });
         }
         valuesFiltering.push({ range: { [R.head(arrayKeys)]: { [operator]: values[i] } } });
       }
@@ -1684,7 +1684,7 @@ const buildLocalMustFilter = async (validFilter) => {
       },
     };
   }
-  throw UnsupportedError('[FILTER] invalid filter', validFilter);
+  throw UnsupportedError('Invalid filter configuration', validFilter);
 };
 
 const buildSubQueryForFilterGroup = async (context, user, inputFilters) => {
@@ -2076,7 +2076,7 @@ const elQueryBodyBuilder = async (context, user, options) => {
   if (isNotEmptyField(runtimeMappings)) {
     const isRuntimeSortFeatureEnable = isRuntimeSortEnable();
     if (!isRuntimeSortFeatureEnable) {
-      throw UnsupportedError('[SEARCH] Runtime mapping is only possible with elastic >=7.12', { order: orderBy });
+      throw UnsupportedError('Runtime mapping is only possible with elastic >=7.12', { order: orderBy });
     }
     body.runtime_mappings = runtimeMappings;
   }
@@ -2117,7 +2117,7 @@ export const elHistogramCount = async (context, user, indexName, options = {}) =
       dateFormat = 'yyyy-MM-dd hh:ii:ss';
       break;
     default:
-      throw FunctionalError('[SEARCH] Unsupported interval, please choose between year, quarter, month, week, day or hour', { interval });
+      throw FunctionalError('Unsupported interval, please choose between year, quarter, month, week, day or hour', { interval });
   }
   body.aggs = {
     count_over_time: {
@@ -2191,7 +2191,7 @@ export const elAggregationCount = async (context, user, indexName, options = {})
       });
     })
     .catch((err) => {
-      throw DatabaseError('[SEARCH] Aggregation fail', { error: err, query });
+      throw DatabaseError('Aggregation computation count fail', { cause: err, query });
     });
 };
 
@@ -2226,7 +2226,7 @@ const buildAggregationRelationFilters = async (context, user, aggregationFilters
 export const elAggregationRelationsCount = async (context, user, indexName, options = {}) => {
   const { types = [], field = null, searchOptions, aggregationOptions, aggregateOnConnections = true } = options;
   if (!R.includes(field, ['entity_type', 'internal_id', 'rel_object-marking.internal_id', 'rel_kill-chain-phase.internal_id', 'creator_id', 'rel_created-by.internal_id', null])) {
-    throw FunctionalError('[SEARCH] Unsupported field', { field });
+    throw FunctionalError('Aggregation computing use and unsupported field', { field });
   }
   const body = await elQueryBodyBuilder(context, user, { ...searchOptions, noSize: true, noSort: true });
   const aggregationFilters = await buildAggregationRelationFilters(context, user, aggregationOptions);
@@ -2310,7 +2310,7 @@ export const elAggregationRelationsCount = async (context, user, indexName, opti
       });
     })
     .catch((e) => {
-      throw DatabaseError('[SEARCH] Fail processing AggregationRelationsCount', { error: e });
+      throw DatabaseError('Processing aggregation relations count fail', { cause: e });
     });
 };
 
@@ -2345,7 +2345,7 @@ export const elAggregationsList = async (context, user, indexName, aggregations,
   };
   const searchType = `Aggregations (${aggregations.map((agg) => agg.field)?.join(', ')})`;
   const data = await elRawSearch(context, user, searchType, query).catch((err) => {
-    throw DatabaseError('[SEARCH] Aggregations list fail', { error: err, query });
+    throw DatabaseError('Aggregations computing list fail', { cause: err, query });
   });
   const aggsMap = Object.keys(data.aggregations);
   const aggsValues = R.uniq(R.flatten(aggsMap.map((agg) => data.aggregations[agg].buckets?.map((b) => b.key))));
@@ -2402,7 +2402,7 @@ export const elPaginate = async (context, user, indexName, options = {}) => {
         }
         // If uncontrolled error, log and propagate
         if (isTechnicalError) {
-          throw DatabaseError('Fail to execute engine pagination', { error: err, query });
+          throw DatabaseError('Fail to execute engine pagination', { cause: err, query });
         } else {
           return connectionFormat ? buildPagination(0, null, [], 0) : [];
         }
@@ -2453,7 +2453,9 @@ export const elLoadBy = async (context, user, field, value, type = null, indices
   };
   const opts = { filters, connectionFormat: false, types: type ? [type] : [] };
   const hits = await elPaginate(context, user, indices, opts);
-  if (hits.length > 1) throw UnsupportedError('[SEARCH] Expected only one response', { size: hits.length });
+  if (hits.length > 1) {
+    throw UnsupportedError('Id loading expected only one response', { size: hits.length });
+  }
   return R.head(hits);
 };
 export const elAttributeValues = async (context, user, field, opts = {}) => {
@@ -2515,7 +2517,7 @@ export const elBulk = async (args) => {
   return elRawBulk(args).then((data) => {
     if (data.errors) {
       const errors = data.items.map((i) => i.index?.error || i.update?.error).filter((f) => f !== undefined);
-      throw DatabaseError('[SEARCH] Error updating elastic (bulk indexing)', { errors });
+      throw DatabaseError('Bulk indexing fail', { errors });
     }
     return data;
   });
@@ -2537,7 +2539,7 @@ export const elIndex = async (indexName, documentBody, opts = {}) => {
     indexParams = { ...indexParams, pipeline };
   }
   await engine.index(indexParams).catch((err) => {
-    throw DatabaseError('[SEARCH] Error updating elastic (index)', { error: err, body: documentBody });
+    throw DatabaseError('Simple indexing fail', { cause: err, body: documentBody });
   });
   return documentBody;
 };
@@ -2551,7 +2553,7 @@ export const elUpdate = (indexName, documentId, documentBody, retry = ES_RETRY_O
     refresh: true,
     body: documentBody,
   }).catch((err) => {
-    throw DatabaseError('[SEARCH] Error updating elastic (update)', { error: err, documentId, body: documentBody });
+    throw DatabaseError('Update indexing fail', { cause: err, documentId, body: documentBody });
   });
 };
 export const elReplace = (indexName, documentId, documentBody) => {
@@ -2579,7 +2581,7 @@ export const elDelete = (indexName, documentId) => {
     timeout: BULK_TIMEOUT,
     refresh: true,
   }).catch((err) => {
-    throw DatabaseError('[SEARCH] Error updating elastic (delete)', { error: err, documentId });
+    throw DatabaseError('Deleting indexing fail', { cause: err, documentId });
   });
 };
 
@@ -2755,11 +2757,11 @@ export const prepareElementForIndexing = (element) => {
 };
 const prepareRelation = (thing) => {
   if (thing.fromRole === undefined || thing.toRole === undefined) {
-    throw DatabaseError('[SEARCH] Cant index relation connections without from or to', { relation: thing });
+    throw DatabaseError('Cant index relation connections without from or to', { relation: thing });
   }
   const connections = [];
   if (!thing.from || !thing.to) {
-    throw DatabaseError('[SEARCH] Cant index relation, error resolving dependency IDs', {
+    throw DatabaseError('Cant index relation, error resolving dependency IDs', {
       id: thing.internal_id,
       fromId: thing.fromId,
       toId: thing.toId,
@@ -2972,7 +2974,7 @@ const elUpdateConnectionsOfElement = async (documentId, documentBody) => {
       },
     },
   }).catch((err) => {
-    throw DatabaseError('[SEARCH] Error updating elastic (connections)', { error: err, documentId, body: documentBody });
+    throw DatabaseError('Error updating connections', { cause: err, documentId, body: documentBody });
   });
 };
 export const elUpdateElement = async (instance) => {

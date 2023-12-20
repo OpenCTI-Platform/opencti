@@ -1455,7 +1455,7 @@ const checkAttributeConsistency = (entityType, key) => {
   }
   const entityAttributes = schemaAttributesDefinition.getAttributeNames(entityType);
   if (!R.includes(masterKey, entityAttributes)) {
-    throw FunctionalError(`This attribute key ${key} is not allowed on the type ${entityType}, please check your registration attribute name`);
+    throw FunctionalError('This attribute key is not allowed, please check your registration attribute name', { key, entity_type: entityType });
   }
 };
 const innerUpdateAttribute = (instance, rawInput) => {
@@ -2846,7 +2846,7 @@ export const createRelationRaw = async (context, user, input, opts = {}) => {
   if (fromId === toId) {
     /* v8 ignore next */
     const errorData = { from: input.fromId, relationshipType };
-    throw UnsupportedError('Relation cant be created with the same source and target', { error: errorData });
+    throw UnsupportedError('Relation cant be created with the same source and target', errorData);
   }
   const entitySetting = await getEntitySettingFromCache(context, relationshipType);
   const filledInput = fillDefaultValues(user, input, entitySetting);
@@ -2869,14 +2869,14 @@ export const createRelationRaw = async (context, user, input, opts = {}) => {
       // TODO Handle RELATION_REVOKED_BY special case
     }
     const errorData = { from: input.fromId, to: input.toId, relationshipType };
-    throw UnsupportedError('Relation cant be created with the same source and target', { error: errorData });
+    throw UnsupportedError('Relation cant be created with the same source and target', errorData);
   }
   // It's not possible to create a single ref relationship if one already exists
   if (isSingleRelationsRef(resolvedInput.from.entity_type, relationshipType)) {
     const key = schemaRelationsRefDefinition.convertDatabaseNameToInputName(resolvedInput.from.entity_type, relationshipType);
     if (isNotEmptyField(resolvedInput.from[key])) {
       const errorData = { from: input.fromId, to: input.toId, relationshipType };
-      throw UnsupportedError('Cant add another relation on single ref', { error: errorData });
+      throw UnsupportedError('Cant add another relation on single ref', errorData);
     }
   }
   // Build lock ids
@@ -2942,7 +2942,7 @@ export const createRelationRaw = async (context, user, input, opts = {}) => {
       // Checking the direction of the relation to allow relationships
       const isReverseRelationConsistent = await isRelationConsistent(context, user, relationshipType, to, from);
       if (toRefs.includes(from.internal_id) && isReverseRelationConsistent) {
-        throw FunctionalError(`You cant create a cyclic relation between ${from.standard_id} and ${to.standard_id}`);
+        throw FunctionalError('You cant create a cyclic relation', { from: from.standard_id, to: to.standard_id });
       }
     }
     // Just build a standard relationship
@@ -3445,7 +3445,7 @@ export const deleteInferredRuleElement = async (rule, instance, deletedDependenc
   // Check if deletion is really targeting an inference
   const isInferred = isInferredIndex(instance._index);
   if (!isInferred) {
-    throw UnsupportedError(`Instance ${instance.id} is not inferred, cant be deleted`);
+    throw UnsupportedError('Instance is not inferred, cant be deleted', { id: instance.id });
   }
   // Delete inference
   const fromRule = RULE_PREFIX + rule;
@@ -3490,7 +3490,7 @@ export const deleteInferredRuleElement = async (rule, instance, deletedDependenc
     if (err.name === ALREADY_DELETED_ERROR) {
       logApp.warn('INFERENCE_DELETION', { error: err });
     } else {
-      logApp.error('INFERENCE_DELETION', { error: err });
+      logApp.error(err);
     }
   }
   return false;

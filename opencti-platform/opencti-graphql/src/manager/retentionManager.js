@@ -39,7 +39,7 @@ const executeProcessing = async (context, retentionRule) => {
       await deleteElementById(context, RETENTION_MANAGER_USER, node.internal_id, node.entity_type);
       logApp.debug(`[OPENCTI] Retention manager deleting ${node.id} after ${humanDuration}`);
     } catch (e) {
-      logApp.error('RETENTION_MANAGER', { id: node.id, error: e });
+      logApp.error(e, { id: node.id, manager: 'RETENTION_MANAGER' });
     }
   }
   // Patch the last execution of the rule
@@ -74,7 +74,7 @@ const retentionHandler = async () => {
     if (e.name === TYPE_LOCK_ERROR) {
       logApp.debug('[OPENCTI-MODULE] Retention manager already in progress by another API');
     } else {
-      logApp.error('RETENTION_MANAGER', { error: e });
+      logApp.error(e, { manager: 'RETENTION_MANAGER' });
     }
   } finally {
     running = false;
