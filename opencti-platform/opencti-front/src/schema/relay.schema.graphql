@@ -7993,12 +7993,12 @@ type Mutation {
   ingestionTaxiiDelete(id: ID!): ID
   ingestionTaxiiFieldPatch(id: ID!, input: [EditInput!]!): IngestionTaxii
   indicatorAdd(input: IndicatorAddInput!): Indicator
-  indicatorDelete: ID
-  indicatorFieldPatch(input: [EditInput]!, commitMessage: String, references: [String]): Indicator
-  indicatorContextPatch(input: EditContext): Indicator
-  indicatorContextClean: Indicator
-  indicatorRelationAdd(input: StixRefRelationshipAddInput!): StixRefRelationship
-  indicatorRelationDelete(toId: StixRef!, relationship_type: String!): Indicator
+  indicatorDelete(id: ID!): ID
+  indicatorFieldPatch(id: ID!, input: [EditInput]!, commitMessage: String, references: [String]): Indicator
+  indicatorContextPatch(id: ID!, input: EditContext): Indicator
+  indicatorContextClean(id: ID!): Indicator
+  indicatorRelationAdd(id: ID!, input: StixRefRelationshipAddInput!): StixRefRelationship
+  indicatorRelationDelete(id: ID!, toId: StixRef!, relationship_type: String!): Indicator
   organizationAdd(input: OrganizationAddInput!): Organization
   organizationDelete(id: ID!): ID
   organizationFieldPatch(id: ID!, input: [EditInput]!, commitMessage: String, references: [String]): Organization

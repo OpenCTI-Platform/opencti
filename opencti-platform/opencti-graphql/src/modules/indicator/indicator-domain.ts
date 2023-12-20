@@ -1,6 +1,6 @@
 import * as R from 'ramda';
 import { batchListThroughGetTo, createEntity, createRelation, distributionEntities, storeLoadByIdWithRefs, timeSeriesEntities } from '../../database/middleware';
-import { listEntities, storeLoadById } from '../../database/middleware-loader';
+import { listEntitiesPaginated, storeLoadById } from '../../database/middleware-loader';
 import { BUS_TOPICS, logApp } from '../../config/conf';
 import { notify } from '../../database/redis';
 import { checkIndicatorSyntax } from '../../python/pythonBridge';
@@ -23,15 +23,15 @@ import { computeValidPeriod } from './indicator-utils';
 import { addFilter } from '../../utils/filtering/filtering-utils';
 import type { AuthContext, AuthUser } from '../../types/user';
 import { type BasicStoreEntityIndicator, ENTITY_TYPE_INDICATOR } from './indicator-types';
-import type { IndicatorAddInput } from '../../generated/graphql';
+import type { IndicatorAddInput, QueryIndicatorsArgs, QueryIndicatorsNumberArgs } from '../../generated/graphql';
 import type { StoreObject } from '../../types/store';
 
 export const findById = (context: AuthContext, user: AuthUser, indicatorId: string) => {
   return storeLoadById<BasicStoreEntityIndicator>(context, user, indicatorId, ENTITY_TYPE_INDICATOR);
 };
 
-export const findAll = (context: AuthContext, user: AuthUser, args: any) => {
-  return listEntities<BasicStoreEntityIndicator>(context, user, [ENTITY_TYPE_INDICATOR], args);
+export const findAll = (context: AuthContext, user: AuthUser, args: QueryIndicatorsArgs) => {
+  return listEntitiesPaginated<BasicStoreEntityIndicator>(context, user, [ENTITY_TYPE_INDICATOR], args);
 };
 
 export const createObservablesFromIndicator = async (context: AuthContext, user: AuthUser, input, indicator) => {
@@ -133,7 +133,7 @@ export const indicatorsTimeSeries = (context: AuthContext, user: AuthUser, args:
   return timeSeriesEntities(context, user, [ENTITY_TYPE_INDICATOR], args);
 };
 
-export const indicatorsNumber = (context: AuthContext, user: AuthUser, args: any) => ({
+export const indicatorsNumber = (context: AuthContext, user: AuthUser, args: QueryIndicatorsNumberArgs) => ({
   count: elCount(context, user, READ_INDEX_STIX_DOMAIN_OBJECTS, { ...args, types: [ENTITY_TYPE_INDICATOR] }),
   total: elCount(
     context,
@@ -149,9 +149,9 @@ export const indicatorsTimeSeriesByEntity = (context: AuthContext, user: AuthUse
   return timeSeriesEntities(context, user, [ENTITY_TYPE_INDICATOR], { ...args, filters });
 };
 
-export const indicatorsNumberByEntity = (context: AuthContext, user: AuthUser, args: any) => {
+export const indicatorsNumberByEntity = (context: AuthContext, user: AuthUser, args: QueryIndicatorsNumberArgs) => {
   const { objectId } = args;
-  const filters = addFilter(args.filters, buildRefRelationKey(RELATION_INDICATES, '*'), objectId);
+  const filters = addFilter(null, buildRefRelationKey(RELATION_INDICATES, '*'), objectId);
   return {
     count: elCount(
       context,

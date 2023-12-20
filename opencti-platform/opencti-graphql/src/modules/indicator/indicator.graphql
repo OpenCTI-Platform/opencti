@@ -218,10 +218,10 @@ type Query {
 
 type Mutation {
   indicatorAdd(input: IndicatorAddInput!): Indicator @auth(for: [KNOWLEDGE_KNUPDATE])
-  indicatorDelete: ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
-  indicatorFieldPatch(input: [EditInput]!, commitMessage: String, references: [String]): Indicator @auth(for: [KNOWLEDGE_KNUPDATE])
-  indicatorContextPatch(input: EditContext): Indicator @auth(for: [KNOWLEDGE_KNUPDATE])
-  indicatorContextClean: Indicator @auth(for: [KNOWLEDGE_KNUPDATE])
-  indicatorRelationAdd(input: StixRefRelationshipAddInput!): StixRefRelationship @auth(for: [KNOWLEDGE_KNUPDATE])
-  indicatorRelationDelete(toId: StixRef!, relationship_type: String!): Indicator @auth(for: [KNOWLEDGE_KNUPDATE])
+  indicatorDelete(id: ID!): ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
+  indicatorFieldPatch(id: ID!, input: [EditInput]!, commitMessage: String, references: [String]): Indicator @auth(for: [KNOWLEDGE_KNUPDATE])
+  indicatorContextPatch(id: ID!, input: EditContext): Indicator @auth(for: [KNOWLEDGE_KNUPDATE])
+  indicatorContextClean(id: ID!): Indicator @auth(for: [KNOWLEDGE_KNUPDATE])
+  indicatorRelationAdd(id: ID!, input: StixRefRelationshipAddInput!): StixRefRelationship @auth(for: [KNOWLEDGE_KNUPDATE])
+  indicatorRelationDelete(id: ID!, toId: StixRef!, relationship_type: String!): Indicator @auth(for: [KNOWLEDGE_KNUPDATE])
 }
