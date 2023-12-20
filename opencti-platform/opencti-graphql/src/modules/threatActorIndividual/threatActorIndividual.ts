@@ -109,47 +109,35 @@ const THREAT_ACTOR_INDIVIDUAL_DEFINITION: ModuleDefinition<StoreEntityThreatActo
     { name: 'hair_color', label: 'Hair color', type: 'string', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true },
     {
       name: 'height',
+      label: 'Height',
       type: 'object',
       mandatoryType: 'no',
       editDefault: false,
       multiple: true,
       upsert: true,
+      isFilterable: true,
       mappings: [
-        {
-          name: 'measure',
-          type: 'numeric',
-          mandatoryType: 'external',
-          upsert: true,
-          precision: 'float',
-          editDefault: false,
-          multiple: false
-        },
-        { name: 'date_seen', type: 'date', mandatoryType: 'external', upsert: true, editDefault: false, multiple: false }
+        { name: 'measure', label: 'Measure', type: 'numeric', mandatoryType: 'external', upsert: true, precision: 'float', editDefault: false, multiple: false, isFilterable: true },
+        { name: 'date_seen', label: 'Measure date', type: 'date', mandatoryType: 'external', upsert: true, editDefault: false, multiple: false, isFilterable: true },
       ]
     },
     {
       name: 'weight',
+      label: 'Weight',
       type: 'object',
       mandatoryType: 'no',
       editDefault: false,
       multiple: true,
       upsert: true,
+      isFilterable: true,
       mappings: [
-        {
-          name: 'measure',
-          type: 'numeric',
-          mandatoryType: 'external',
-          upsert: true,
-          precision: 'float',
-          editDefault: false,
-          multiple: false
-        },
-        { name: 'date_seen', type: 'date', mandatoryType: 'external', upsert: true, editDefault: false, multiple: false }
+        { name: 'measure', label: 'Measure', type: 'numeric', mandatoryType: 'external', upsert: true, precision: 'float', editDefault: false, multiple: false, isFilterable: true },
+        { name: 'date_seen', label: 'Measure date', type: 'date', mandatoryType: 'external', upsert: true, editDefault: false, multiple: false, isFilterable: true }
       ]
     },
-    { name: 'confidence', type: 'numeric', precision: 'integer', mandatoryType: 'no', editDefault: true, multiple: false, upsert: false },
-    { name: 'revoked', type: 'boolean', mandatoryType: 'no', editDefault: true, multiple: false, upsert: false },
-    { name: 'lang', type: 'string', mandatoryType: 'no', editDefault: true, multiple: false, upsert: true },
+    { name: 'confidence', label: 'Confidence', type: 'numeric', precision: 'integer', mandatoryType: 'no', editDefault: true, multiple: false, upsert: false, isFilterable: true },
+    { name: 'revoked', label: 'Revoked', type: 'boolean', mandatoryType: 'no', editDefault: true, multiple: false, upsert: false, isFilterable: true },
+    { name: 'lang', label: 'Lang', type: 'string', mandatoryType: 'no', editDefault: true, multiple: false, upsert: true, isFilterable: true },
   ],
   relations: [
     {

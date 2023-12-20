@@ -17,14 +17,15 @@ export type MandatoryType = 'internal' | 'external' | 'customizable' | 'no';
 
 type BasicDefinition = {
   name: string
-  label?: string
+  label: string
   description?: string
   multiple: boolean,
   mandatoryType: MandatoryType
   editDefault: boolean
   upsert: boolean
   update?: boolean
-  isFilterable?: boolean
+  isFilterable: boolean
+  associatedFilterKeys?: string[]
 };
 
 export type StringAttribute = { type: 'string' } & BasicDefinition;
@@ -42,11 +43,13 @@ NumericAttribute | DateAttribute | BooleanAttribute;
 // -- GLOBAL --
 export const id: AttributeDefinition = {
   name: 'id',
+  label: 'Id',
   type: 'string',
   mandatoryType: 'no',
   multiple: false,
   editDefault: false,
-  upsert: false
+  upsert: false,
+  isFilterable: false,
 };
 
 export const internalId: AttributeDefinition = {
@@ -105,9 +108,9 @@ export const files: AttributeDefinition = {
   isFilterable: false,
   mappings: [
     id,
-    { name: 'name', type: 'string', editDefault: false, mandatoryType: 'no', multiple: true, upsert: true },
-    { name: 'version', type: 'string', editDefault: false, mandatoryType: 'no', multiple: true, upsert: true },
-    { name: 'mime_type', type: 'string', editDefault: false, mandatoryType: 'no', multiple: true, upsert: true },
+    { name: 'name', label: 'Name', type: 'string', editDefault: false, mandatoryType: 'no', multiple: true, upsert: true, isFilterable: true },
+    { name: 'version', label: 'Version', type: 'string', editDefault: false, mandatoryType: 'no', multiple: true, upsert: true, isFilterable: true },
+    { name: 'mime_type', label: 'Mime type', type: 'string', editDefault: false, mandatoryType: 'no', multiple: true, upsert: true, isFilterable: true },
   ]
 };
 
@@ -119,41 +122,48 @@ export const authorizedMembers: AttributeDefinition = {
   editDefault: false,
   multiple: true,
   upsert: false,
+  isFilterable: false,
   mappings: [
     id,
-    { name: 'name', type: 'string', editDefault: false, mandatoryType: 'no', multiple: true, upsert: true },
-    { name: 'entity_type', type: 'string', editDefault: false, mandatoryType: 'no', multiple: true, upsert: true },
-    { name: 'access_right', type: 'string', editDefault: false, mandatoryType: 'no', multiple: true, upsert: true },
+    { name: 'name', label: 'Name', type: 'string', editDefault: false, mandatoryType: 'no', multiple: true, upsert: true, isFilterable: false },
+    { name: 'entity_type', label: 'Entity type', type: 'string', editDefault: false, mandatoryType: 'no', multiple: true, upsert: true, isFilterable: false },
+    { name: 'access_right', label: 'Access right', type: 'string', editDefault: false, mandatoryType: 'no', multiple: true, upsert: true, isFilterable: false },
   ]
 };
 
 export const authorizedAuthorities: AttributeDefinition = {
   name: 'authorized_authorities',
+  label: 'Authorized authorities',
   type: 'string',
   mandatoryType: 'no',
   editDefault: false,
   multiple: true,
-  upsert: false
+  upsert: false,
+  isFilterable: false,
 };
 
 // -- ENTITY TYPE --
 
 export const parentTypes: AttributeDefinition = {
   name: 'parent_types',
+  label: 'Parent types',
   type: 'string',
   mandatoryType: 'internal',
   editDefault: false,
   multiple: true,
-  upsert: false
+  upsert: false,
+  isFilterable: true,
 };
 
 export const baseType: AttributeDefinition = {
   name: 'base_type',
+  label: 'Base type',
   type: 'string',
   mandatoryType: 'internal',
   editDefault: false,
   multiple: false,
-  upsert: false
+  upsert: false,
+  isFilterable: true,
 };
 
 export const entityType: AttributeDefinition = {
@@ -202,17 +212,19 @@ export const xOpenctiType: AttributeDefinition = {
 
 export const errors: AttributeDefinition = {
   name: 'errors',
+  label: 'Errors',
   type: 'object',
   mandatoryType: 'no',
   editDefault: false,
   multiple: true,
   upsert: false,
+  isFilterable: true,
   mappings: [
     id,
-    { name: 'message', type: 'string', editDefault: false, mandatoryType: 'no', multiple: true, upsert: true },
-    { name: 'error', type: 'string', editDefault: false, mandatoryType: 'no', multiple: true, upsert: true },
-    { name: 'source', type: 'string', editDefault: false, mandatoryType: 'no', multiple: true, upsert: true },
-    { name: 'timestamp', type: 'date', editDefault: false, mandatoryType: 'no', multiple: true, upsert: true },
+    { name: 'message', label: 'Message', type: 'string', editDefault: false, mandatoryType: 'no', multiple: true, upsert: true, isFilterable: true },
+    { name: 'error', label: 'Error', type: 'string', editDefault: false, mandatoryType: 'no', multiple: true, upsert: true, isFilterable: true },
+    { name: 'source', label: 'Source', type: 'string', editDefault: false, mandatoryType: 'no', multiple: true, upsert: true, isFilterable: true },
+    { name: 'timestamp', label: 'Timestamp', type: 'date', editDefault: false, mandatoryType: 'no', multiple: true, upsert: true, isFilterable: true },
   ]
 };
 
@@ -335,7 +347,8 @@ export const xOpenctiReliability: AttributeDefinition = {
 };
 
 export const lang: AttributeDefinition = {
-  name: 'lang', // TODO add label
+  name: 'lang',
+  label: 'Lang',
   type: 'string',
   mandatoryType: 'no',
   editDefault: false,

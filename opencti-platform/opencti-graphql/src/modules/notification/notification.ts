@@ -37,11 +37,11 @@ const TRIGGER_DEFINITION: ModuleDefinition<StoreEntityTrigger, StixTrigger> = {
   attributes: [
     { name: 'name', label: 'Name', type: 'string', mandatoryType: 'external', editDefault: true, multiple: false, upsert: false, isFilterable: true },
     { name: 'description', label: 'Description', type: 'string', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true },
-    { name: 'created', type: 'date', mandatoryType: 'external', editDefault: false, multiple: false, upsert: false },
-    { name: 'updated', type: 'date', mandatoryType: 'external', editDefault: false, multiple: false, upsert: false },
+    { name: 'created', label: 'Created', type: 'date', mandatoryType: 'external', editDefault: false, multiple: false, upsert: false, isFilterable: true },
+    { name: 'updated', label: 'Updated', type: 'date', mandatoryType: 'external', editDefault: false, multiple: false, upsert: false, isFilterable: true },
     { name: 'event_types', label: 'Event types', type: 'string', mandatoryType: 'external', editDefault: true, multiple: true, upsert: false, isFilterable: true },
     { name: 'trigger_scope', label: 'Trigger scope', type: 'string', mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false, isFilterable: true },
-    { name: 'outcomes', type: 'string', mandatoryType: 'external', editDefault: false, multiple: true, upsert: false },
+    { name: 'outcomes', label: 'Outcomes', type: 'string', mandatoryType: 'external', editDefault: false, multiple: true, upsert: false, isFilterable: true },
     { name: 'notifiers', label: 'Notifiers', type: 'string', mandatoryType: 'external', editDefault: true, multiple: true, upsert: false, isFilterable: true },
     { name: 'filters', label: 'Filters', type: 'string', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true },
     { name: 'recipients', label: 'Recipients', type: 'string', mandatoryType: 'no', editDefault: false, multiple: true, upsert: false, isFilterable: false },
@@ -78,11 +78,11 @@ const NOTIFICATION_DEFINITION: ModuleDefinition<StoreEntityNotification, StixNot
     },
   },
   attributes: [
-    { name: 'notification_type', type: 'string', mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false },
+    { name: 'notification_type', label: 'Notification type', type: 'string', mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false, isFilterable: true },
     // TODO: modify content to content_notification
     // { name: 'content', type: 'dictionary', mandatoryType: 'internal', multiple: true, upsert: false },
-    { name: 'is_read', type: 'boolean', mandatoryType: 'internal', editDefault: false, multiple: false, upsert: true },
-    { name: 'user_id', type: 'string', mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false },
+    { name: 'is_read', label: 'Is read', type: 'boolean', mandatoryType: 'internal', editDefault: false, multiple: false, upsert: true, isFilterable: true },
+    { name: 'user_id', label: 'User', type: 'string', mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false, isFilterable: true },
   ],
   relations: [],
   representative: (stix: StixNotification) => {

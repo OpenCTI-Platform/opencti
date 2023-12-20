@@ -25,23 +25,25 @@ const basicRelationshipAttributes: Array<AttributeDefinition> = [
   createdAt,
   updatedAt,
   creators,
-  { name: 'fromType', type: 'string', editDefault: false, mandatoryType: 'internal', multiple: false, upsert: false },
-  { name: 'toType', type: 'string', editDefault: false, mandatoryType: 'internal', multiple: false, upsert: false },
-  { name: 'i_inference_weight', type: 'numeric', precision: 'integer', editDefault: false, mandatoryType: 'no', multiple: false, upsert: false },
+  { name: 'fromType', label: 'Source entity', type: 'string', editDefault: false, mandatoryType: 'internal', multiple: false, upsert: false, isFilterable: true }, // TODO to remove ?
+  { name: 'toType', label: 'Target entity', type: 'string', editDefault: false, mandatoryType: 'internal', multiple: false, upsert: false, isFilterable: true }, // TODO to remove?
+  { name: 'i_inference_weight', label: 'Inference weight', type: 'numeric', precision: 'integer', editDefault: false, mandatoryType: 'no', multiple: false, upsert: false, isFilterable: true },
   {
     name: 'connections',
-    type: 'object',
+    label: 'Relations connections',
+    type: 'object', // to complete with business type
     editDefault: false,
     nested: true,
     mandatoryType: 'internal',
     multiple: true,
     upsert: false,
+    isFilterable: true,
     mappings: [
-      internalId,
-      { name: 'name', type: 'string', editDefault: false, mandatoryType: 'no', multiple: true, upsert: true },
-      { name: 'role', type: 'string', editDefault: false, mandatoryType: 'no', multiple: true, upsert: true },
-      { name: 'types', type: 'string', editDefault: false, mandatoryType: 'no', multiple: true, upsert: true },
-    ]
+      { ...internalId, associatedFilterKeys: ['fromId', 'toId', 'elementId'], isFilterable: true },
+      { name: 'name', label: 'Name', type: 'string', editDefault: false, mandatoryType: 'no', multiple: true, upsert: true, isFilterable: false },
+      { name: 'role', label: 'Role', type: 'string', editDefault: false, mandatoryType: 'no', multiple: true, upsert: true, isFilterable: false },
+      { name: 'types', label: 'Types', type: 'string', editDefault: false, mandatoryType: 'no', multiple: true, upsert: true, isFilterable: true, associatedFilterKeys: ['fromTypes', 'toTypes'] },
+    ],
   },
 ];
 schemaAttributesDefinition.registerAttributes(ABSTRACT_BASIC_RELATIONSHIP, basicRelationshipAttributes);
