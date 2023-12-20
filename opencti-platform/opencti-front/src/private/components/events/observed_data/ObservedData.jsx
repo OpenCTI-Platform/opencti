@@ -7,7 +7,7 @@ import ObservedDataDetails from './ObservedDataDetails';
 import ObservedDataEdition from './ObservedDataEdition';
 import StixDomainObjectOverview from '../../common/stix_domain_objects/StixDomainObjectOverview';
 import StixCoreObjectExternalReferences from '../../analyses/external_references/StixCoreObjectExternalReferences';
-import Security from '../../../../utils/Security';
+import { KnowledgeSecurity } from '../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 import StixCoreObjectOrStixCoreRelationshipNotes from '../../analyses/notes/StixCoreObjectOrStixCoreRelationshipNotes';
 import StixCoreObjectLatestHistory from '../../common/stix_core_objects/StixCoreObjectLatestHistory';
@@ -60,9 +60,9 @@ class ObservedDataComponent extends Component {
           stixCoreObjectOrStixCoreRelationshipId={observedData.id}
           defaultMarkings={observedData.objectMarking ?? []}
         />
-        <Security needs={[KNOWLEDGE_KNUPDATE]}>
+        <KnowledgeSecurity needs={[KNOWLEDGE_KNUPDATE]} entity='Observed-Data'>
           <ObservedDataEdition observedDataId={observedData.id} />
-        </Security>
+        </KnowledgeSecurity>
       </>
     );
   }

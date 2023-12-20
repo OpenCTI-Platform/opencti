@@ -137,7 +137,7 @@ type ChannelEdge {
 
 # Queries
 type Query {
-    channel(id: String!): Channel @auth(for: [KNOWLEDGE])
+    channel(id: String!): Channel @auth(for: [KNOWLEDGE], type: Channel)
     channels(
         first: Int
         after: ID
@@ -145,7 +145,7 @@ type Query {
         orderMode: OrderingMode
         filters: FilterGroup
         search: String
-    ): ChannelConnection @auth(for: [KNOWLEDGE])
+    ): ChannelConnection @auth(for: [KNOWLEDGE], type: Channel)
 }
 
 # Mutations
@@ -173,11 +173,11 @@ input ChannelAddInput {
 }
 
 type Mutation {
-    channelAdd(input: ChannelAddInput!): Channel @auth(for: [KNOWLEDGE_KNUPDATE])
-    channelDelete(id: ID!): ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
-    channelFieldPatch(id: ID!, input: [EditInput]!, commitMessage: String, references: [String]): Channel @auth(for: [KNOWLEDGE_KNUPDATE])
-    channelContextPatch(id: ID!, input: EditContext!): Channel @auth(for: [KNOWLEDGE_KNUPDATE])
-    channelContextClean(id: ID!): Channel @auth(for: [KNOWLEDGE_KNUPDATE])
-    channelRelationAdd(id: ID!, input: StixRefRelationshipAddInput!): StixRefRelationship @auth(for: [KNOWLEDGE_KNUPDATE])
-    channelRelationDelete(id: ID!, toId: StixRef!, relationship_type: String!): Channel @auth(for: [KNOWLEDGE_KNUPDATE])
+    channelAdd(input: ChannelAddInput!): Channel @auth(for: [KNOWLEDGE_KNUPDATE], type: Channel)
+    channelDelete(id: ID!): ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE], type: Channel)
+    channelFieldPatch(id: ID!, input: [EditInput]!, commitMessage: String, references: [String]): Channel @auth(for: [KNOWLEDGE_KNUPDATE], type: Channel)
+    channelContextPatch(id: ID!, input: EditContext!): Channel @auth(for: [KNOWLEDGE_KNUPDATE], type: Channel)
+    channelContextClean(id: ID!): Channel @auth(for: [KNOWLEDGE_KNUPDATE], type: Channel)
+    channelRelationAdd(id: ID!, input: StixRefRelationshipAddInput!): StixRefRelationship @auth(for: [KNOWLEDGE_KNUPDATE], type: Channel)
+    channelRelationDelete(id: ID!, toId: StixRef!, relationship_type: String!): Channel @auth(for: [KNOWLEDGE_KNUPDATE], type: Channel)
 }

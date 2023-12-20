@@ -139,7 +139,7 @@ type NarrativeEdge {
 
 # Queries
 type Query {
-    narrative(id: String!): Narrative @auth(for: [KNOWLEDGE])
+    narrative(id: String!): Narrative @auth(for: [KNOWLEDGE], type: Narrative)
     narratives(
         first: Int
         after: ID
@@ -147,7 +147,7 @@ type Query {
         orderMode: OrderingMode
         filters: FilterGroup
         search: String
-    ): NarrativeConnection @auth(for: [KNOWLEDGE])
+    ): NarrativeConnection @auth(for: [KNOWLEDGE], type: Narrative)
 }
 
 # Mutations
@@ -174,11 +174,11 @@ input NarrativeAddInput {
 }
 
 type Mutation {
-    narrativeAdd(input: NarrativeAddInput!): Narrative @auth(for: [KNOWLEDGE_KNUPDATE])
-    narrativeDelete(id: ID!): ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
-    narrativeFieldPatch(id: ID!, input: [EditInput]!, commitMessage: String, references: [String]): Narrative @auth(for: [KNOWLEDGE_KNUPDATE])
-    narrativeContextPatch(id: ID!, input: EditContext!): Narrative @auth(for: [KNOWLEDGE_KNUPDATE])
-    narrativeContextClean(id: ID!): Narrative @auth(for: [KNOWLEDGE_KNUPDATE])
-    narrativeRelationAdd(id: ID!, input: StixRefRelationshipAddInput!): StixRefRelationship @auth(for: [KNOWLEDGE_KNUPDATE])
-    narrativeRelationDelete(id: ID!, toId: StixRef!, relationship_type: String!): Narrative @auth(for: [KNOWLEDGE_KNUPDATE])
+    narrativeAdd(input: NarrativeAddInput!): Narrative @auth(for: [KNOWLEDGE_KNUPDATE], type: Narrative)
+    narrativeDelete(id: ID!): ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE], type: Narrative)
+    narrativeFieldPatch(id: ID!, input: [EditInput]!, commitMessage: String, references: [String]): Narrative @auth(for: [KNOWLEDGE_KNUPDATE], type: Narrative)
+    narrativeContextPatch(id: ID!, input: EditContext!): Narrative @auth(for: [KNOWLEDGE_KNUPDATE], type: Narrative)
+    narrativeContextClean(id: ID!): Narrative @auth(for: [KNOWLEDGE_KNUPDATE], type: Narrative)
+    narrativeRelationAdd(id: ID!, input: StixRefRelationshipAddInput!): StixRefRelationship @auth(for: [KNOWLEDGE_KNUPDATE], type: Narrative)
+    narrativeRelationDelete(id: ID!, toId: StixRef!, relationship_type: String!): Narrative @auth(for: [KNOWLEDGE_KNUPDATE], type: Narrative)
 }

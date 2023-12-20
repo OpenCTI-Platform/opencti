@@ -8,7 +8,7 @@ import { useFormatter } from '../../../../components/i18n';
 import { convertMarkings } from '../../../../utils/edition';
 import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
-import Security from '../../../../utils/Security';
+import { KnowledgeSecurity } from '../../../../utils/Security';
 import StixCoreObjectExternalReferences from '../../analyses/external_references/StixCoreObjectExternalReferences';
 import StixCoreObjectOrStixCoreRelationshipNotes from '../../analyses/notes/StixCoreObjectOrStixCoreRelationshipNotes';
 import ContainerStixObjectsOrStixRelationships from '../../common/containers/ContainerStixObjectsOrStixRelationships';
@@ -185,9 +185,9 @@ const CaseIncidentComponent: FunctionComponent<CaseIncidentProps> = ({ data }) =
         stixCoreObjectOrStixCoreRelationshipId={caseIncidentData.id}
         defaultMarkings={caseIncidentData.objectMarking ?? []}
       />
-      <Security needs={[KNOWLEDGE_KNUPDATE]}>
+      <KnowledgeSecurity needs={[KNOWLEDGE_KNUPDATE]} entity='Case-Incident'>
         <CaseIncidentEdition caseId={caseIncidentData.id} />
-      </Security>
+      </KnowledgeSecurity>
     </>
   );
 };

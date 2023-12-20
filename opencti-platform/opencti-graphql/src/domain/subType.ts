@@ -14,16 +14,13 @@ import { ENTITY_TYPE_EXTERNAL_REFERENCE } from '../schema/stixMetaObject';
 
 // -- ENTITY TYPES --
 
-// TODO: Temporary list of overridable sub types. Remove when support all sub types
-const isOverridable = ['Report'];
-
 export const queryDefaultSubTypes = async (context: AuthContext, user: AuthUser, search : string | null = null) => {
   const queryDefaultSubTypesFn = async () => {
     const sortByLabel = R.sortBy(R.toLower);
     const types = schemaTypesDefinition.get(ABSTRACT_STIX_DOMAIN_OBJECT).filter((n) => n.includes(search ?? ''));
     const finalResult = R.pipe(
       sortByLabel,
-      R.map((n) => ({ node: { id: n, label: n, overridable: isOverridable.includes(n) } })),
+      R.map((n) => ({ node: { id: n, label: n, overridable: true } })),
       R.append({ node: { id: ABSTRACT_STIX_CORE_RELATIONSHIP, label: ABSTRACT_STIX_CORE_RELATIONSHIP, overridable: false } }),
       R.append({ node: { id: STIX_SIGHTING_RELATIONSHIP, label: STIX_SIGHTING_RELATIONSHIP, overridable: false } }),
       R.append({ node: { id: ABSTRACT_STIX_CYBER_OBSERVABLE, label: ABSTRACT_STIX_CYBER_OBSERVABLE, overridable: false } }),
@@ -43,7 +40,7 @@ export const queryDefaultSubTypes = async (context: AuthContext, user: AuthUser,
 const querySubType = async (subTypeId: string) => {
   const attributes = schemaAttributesDefinition.getAttributeNames(subTypeId);
   if (attributes.length > 0) {
-    return { id: subTypeId, label: subTypeId, overridable: isOverridable.includes(subTypeId) };
+    return { id: subTypeId, label: subTypeId, overridable: true };
   }
   return null;
 };
@@ -61,7 +58,7 @@ const querySubTypes = async (context: AuthContext, user: AuthUser, { type = null
   }
   const finalResult = R.pipe(
     sortByLabel,
-    R.map((n) => ({ node: { id: n, label: n, overridable: isOverridable.includes(n) } })),
+    R.map((n) => ({ node: { id: n, label: n, overridable: true } })),
     R.uniqBy(R.path(['node', 'id'])),
   )(types);
   return buildPagination(0, null, finalResult, finalResult.length);

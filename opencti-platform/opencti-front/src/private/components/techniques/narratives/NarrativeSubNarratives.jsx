@@ -15,7 +15,7 @@ import AddSubNarrative from './AddSubNarrative';
 import { addSubNarrativesMutationRelationDelete } from './AddSubNarrativesLines';
 import { commitMutation } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
-import Security from '../../../../utils/Security';
+import { KnowledgeSecurity } from '../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 
 class NarrativeSubNarrativesComponent extends Component {
@@ -48,12 +48,12 @@ class NarrativeSubNarrativesComponent extends Component {
         <Typography variant="h3" gutterBottom={true} style={{ float: 'left' }}>
           {t('Subnarratives')}
         </Typography>
-        <Security needs={[KNOWLEDGE_KNUPDATE]}>
+        <KnowledgeSecurity needs={[KNOWLEDGE_KNUPDATE]} entity='Narrative'>
           <AddSubNarrative
             narrative={narrative}
             narrativeSubNarratives={narrative.subNarratives.edges}
           />
-        </Security>
+        </KnowledgeSecurity>
         <div className="clearfix" />
         <List style={{ marginTop: -10 }}>
           {narrative.subNarratives.edges.map((subNarrativeEdge) => {

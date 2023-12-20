@@ -1,7 +1,7 @@
 import React, { FunctionComponent } from 'react';
 import ListLines from '../../../components/list_lines/ListLines';
 import NotesLines, { notesLinesQuery } from './notes/NotesLines';
-import Security from '../../../utils/Security';
+import { KnowledgeSecurity } from '../../../utils/Security';
 import { KNOWLEDGE_KNPARTICIPATE, KNOWLEDGE_KNUPDATE } from '../../../utils/hooks/useGranted';
 import useAuth from '../../../utils/hooks/useAuth';
 import ToolBar from '../data/ToolBar';
@@ -181,9 +181,12 @@ const Notes: FunctionComponent = () => {
     <ExportContextProvider>
       <Breadcrumbs variant="list" elements={[{ label: t_i18n('Analyses') }, { label: t_i18n('Notes'), current: true }]} />
       {renderLines()}
-      <Security needs={[KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNPARTICIPATE]}>
+      <KnowledgeSecurity
+        needs={[KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNPARTICIPATE]}
+        entity='Note'
+      >
         <NoteCreation paginationOptions={queryPaginationOptions} />
-      </Security>
+      </KnowledgeSecurity>
     </ExportContextProvider>
   );
 };

@@ -3,7 +3,7 @@ import RegionsLines, { regionsLinesQuery } from './regions/RegionsLines';
 import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
 import ListLines from '../../../components/list_lines/ListLines';
-import Security from '../../../utils/Security';
+import { KnowledgeSecurity } from '../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE } from '../../../utils/hooks/useGranted';
 import { RegionsLinesPaginationQuery, RegionsLinesPaginationQuery$variables } from './regions/__generated__/RegionsLinesPaginationQuery.graphql';
 import RegionCreation from './regions/RegionCreation';
@@ -107,9 +107,9 @@ const Regions: FunctionComponent = () => {
     <>
       <Breadcrumbs variant="list" elements={[{ label: t_i18n('Locations') }, { label: t_i18n('Regions'), current: true }]} />
       {renderLines()}
-      <Security needs={[KNOWLEDGE_KNUPDATE]}>
+      <KnowledgeSecurity needs={[KNOWLEDGE_KNUPDATE]} entity='Region'>
         <RegionCreation paginationOptions={paginationOptions} />
-      </Security>
+      </KnowledgeSecurity>
     </>
   );
 };

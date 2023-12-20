@@ -160,7 +160,7 @@ type GroupingEdge {
 
 # Queries
 type Query {
-    grouping(id: String!): Grouping @auth(for: [KNOWLEDGE])
+    grouping(id: String!): Grouping @auth(for: [KNOWLEDGE], type: Grouping)
     groupings(
         first: Int
         after: ID
@@ -169,7 +169,7 @@ type Query {
         filters: FilterGroup
         search: String
         toStix: Boolean
-    ): GroupingConnection @auth(for: [KNOWLEDGE])
+    ): GroupingConnection @auth(for: [KNOWLEDGE], type: Grouping)
     groupingsTimeSeries(
         objectId: String
         authorId: String
@@ -181,14 +181,14 @@ type Query {
         interval: String!
         filters: FilterGroup
         search: String
-    ): [TimeSeries] @auth(for: [KNOWLEDGE, EXPLORE])
+    ): [TimeSeries] @auth(for: [KNOWLEDGE, EXPLORE], type: Grouping)
     groupingsNumber(
         groupingContext: String
         objectId: String
         authorId: String
         endDate: DateTime
         filters: FilterGroup
-    ): Number @auth(for: [KNOWLEDGE, EXPLORE])
+    ): Number @auth(for: [KNOWLEDGE, EXPLORE], type: Grouping)
     groupingsDistribution(
         objectId: String
         authorId: String
@@ -201,9 +201,9 @@ type Query {
         dateAttribute: String
         filters: FilterGroup
         search: String
-    ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
+    ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE], type: Grouping)
     groupingContainsStixObjectOrStixRelationship(id: String!, stixObjectOrStixRelationshipId: String!): Boolean
-    @auth(for: [KNOWLEDGE])
+    @auth(for: [KNOWLEDGE], type: Grouping)
 }
 
 # Mutations
@@ -234,11 +234,11 @@ input GroupingAddInput {
 }
 
 type Mutation {
-    groupingAdd(input: GroupingAddInput!): Grouping @auth(for: [KNOWLEDGE_KNUPDATE])
-    groupingDelete(id: ID!): ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
-    groupingFieldPatch(id: ID!, input: [EditInput]!, commitMessage: String, references: [String]): Grouping @auth(for: [KNOWLEDGE_KNUPDATE])
-    groupingContextPatch(id: ID!, input: EditContext): Grouping @auth(for: [KNOWLEDGE_KNUPDATE])
-    groupingContextClean(id: ID!): Grouping @auth(for: [KNOWLEDGE_KNUPDATE])
-    groupingRelationAdd(id: ID!, input: StixRefRelationshipAddInput): StixRefRelationship @auth(for: [KNOWLEDGE_KNUPDATE])
-    groupingRelationDelete(id: ID!, toId: StixRef!, relationship_type: String!): Grouping @auth(for: [KNOWLEDGE_KNUPDATE])
+    groupingAdd(input: GroupingAddInput!): Grouping @auth(for: [KNOWLEDGE_KNUPDATE], type: Grouping)
+    groupingDelete(id: ID!): ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE], type: Grouping)
+    groupingFieldPatch(id: ID!, input: [EditInput]!, commitMessage: String, references: [String]): Grouping @auth(for: [KNOWLEDGE_KNUPDATE], type: Grouping)
+    groupingContextPatch(id: ID!, input: EditContext): Grouping @auth(for: [KNOWLEDGE_KNUPDATE], type: Grouping)
+    groupingContextClean(id: ID!): Grouping @auth(for: [KNOWLEDGE_KNUPDATE], type: Grouping)
+    groupingRelationAdd(id: ID!, input: StixRefRelationshipAddInput): StixRefRelationship @auth(for: [KNOWLEDGE_KNUPDATE], type: Grouping)
+    groupingRelationDelete(id: ID!, toId: StixRef!, relationship_type: String!): Grouping @auth(for: [KNOWLEDGE_KNUPDATE], type: Grouping)
 }

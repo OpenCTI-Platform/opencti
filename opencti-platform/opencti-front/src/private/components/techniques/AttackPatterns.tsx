@@ -7,7 +7,7 @@ import { AttackPatternLineDummy } from '@components/techniques/attack_patterns/A
 import ListLines from '../../../components/list_lines/ListLines';
 import AttackPatternsLines, { attackPatternsLinesQuery } from './attack_patterns/AttackPatternsLines';
 import AttackPatternCreation from './attack_patterns/AttackPatternCreation';
-import Security from '../../../utils/Security';
+import { KnowledgeSecurity } from '../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE } from '../../../utils/hooks/useGranted';
 import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
@@ -127,9 +127,9 @@ const AttackPatterns = () => {
     <>
       <Breadcrumbs variant="list" elements={[{ label: t_i18n('Techniques') }, { label: t_i18n('Attack patterns'), current: true }]} />
       {renderLines()}
-      <Security needs={[KNOWLEDGE_KNUPDATE]}>
+      <KnowledgeSecurity needs={[KNOWLEDGE_KNUPDATE]} entity='Attack-Pattern'>
         <AttackPatternCreation paginationOptions={paginationOptions} />
-      </Security>
+      </KnowledgeSecurity>
     </>
   );
 };

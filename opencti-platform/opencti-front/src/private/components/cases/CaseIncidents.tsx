@@ -7,7 +7,7 @@ import { CaseIncidentLineDummy } from './case_incidents/CaseIncidentLine';
 import useAuth from '../../../utils/hooks/useAuth';
 import useEntityToggle from '../../../utils/hooks/useEntityToggle';
 import ToolBar from '../data/ToolBar';
-import Security from '../../../utils/Security';
+import { KnowledgeSecurity } from '../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE } from '../../../utils/hooks/useGranted';
 import CaseIncidentCreation from './case_incidents/CaseIncidentCreation';
 import ExportContextProvider from '../../../utils/ExportContextProvider';
@@ -192,9 +192,9 @@ const CaseIncidents: FunctionComponent<CaseIncidentsProps> = () => {
     <ExportContextProvider>
       <Breadcrumbs variant="list" elements={[{ label: t_i18n('Cases') }, { label: t_i18n('Incident responses'), current: true }]} />
       {renderLines()}
-      <Security needs={[KNOWLEDGE_KNUPDATE]}>
+      <KnowledgeSecurity needs={[KNOWLEDGE_KNUPDATE]} entity='Case-Incident'>
         <CaseIncidentCreation paginationOptions={queryPaginationOptions} />
-      </Security>
+      </KnowledgeSecurity>
     </ExportContextProvider>
   );
 };

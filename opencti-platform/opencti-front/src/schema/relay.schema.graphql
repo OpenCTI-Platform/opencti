@@ -80,8 +80,6 @@ enum EntityType {
   Incident
   StixSightingRelationship
   ObservedData
-  StixFile
-  Artifact
   Indicator
   Infrastructure
   ThreatActorGroup
@@ -94,7 +92,7 @@ enum EntityType {
   Vulnerability
   AttackPattern
   Narrative
-  CoursesOfAction
+  CourseOfAction
   DataComponent
   DataSource
   Sector

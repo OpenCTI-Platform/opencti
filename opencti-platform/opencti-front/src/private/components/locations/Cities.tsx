@@ -2,7 +2,7 @@ import React, { FunctionComponent } from 'react';
 import ListLines from '../../../components/list_lines/ListLines';
 import CitiesLines, { citiesLinesQuery } from './cities/CitiesLines';
 import CityCreation from './cities/CityCreation';
-import Security from '../../../utils/Security';
+import { KnowledgeSecurity } from '../../../utils/Security';
 import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
 import { CityLineDummy } from './cities/CityLine';
@@ -107,9 +107,9 @@ const Cities: FunctionComponent = () => {
     <>
       <Breadcrumbs variant="list" elements={[{ label: t_i18n('Locations') }, { label: t_i18n('Cities'), current: true }]} />
       {renderLines()}
-      <Security needs={[KNOWLEDGE_KNUPDATE]}>
+      <KnowledgeSecurity needs={[KNOWLEDGE_KNUPDATE]} entity='City'>
         <CityCreation paginationOptions={paginationOptions} />
-      </Security>
+      </KnowledgeSecurity>
     </>
   );
 };

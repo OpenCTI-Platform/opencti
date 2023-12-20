@@ -17,8 +17,8 @@ import inject18n from '../../../../components/i18n';
 import { commitMutation, QueryRenderer } from '../../../../relay/environment';
 import { positionEditionQuery } from './PositionEdition';
 import PositionEditionContainer from './PositionEditionContainer';
-import Security from '../../../../utils/Security';
-import { KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
+import { KnowledgeSecurity } from '../../../../utils/Security';
+import { KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
 
 const Transition = React.forwardRef((props, ref) => (
   <Slide direction="up" ref={ref} {...props} />
@@ -88,74 +88,78 @@ class PositionPopover extends Component {
   render() {
     const { t, id } = this.props;
     return (
-      <>
-        <ToggleButton
-          value="popover"
-          size="small"
+      <KnowledgeSecurity needs={[KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNUPDATE_KNDELETE]} entity='Position'>
+        <>
+          <ToggleButton
+            value="popover"
+            size="small"
 
-          onClick={this.handleOpen.bind(this)}
-        >
-          <MoreVert fontSize="small" color="primary" />
-        </ToggleButton>
-        <Menu
-          anchorEl={this.state.anchorEl}
-          open={Boolean(this.state.anchorEl)}
-          onClose={this.handleClose.bind(this)}
-        >
-          <MenuItem onClick={this.handleOpenEdit.bind(this)}>
-            {t('Update')}
-          </MenuItem>
-          <Security needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}>
-            <MenuItem onClick={this.handleOpenDelete.bind(this)}>
-              {t('Delete')}
-            </MenuItem>
-          </Security>
-        </Menu>
-        <Dialog
-          PaperProps={{ elevation: 1 }}
-          open={this.state.displayDelete}
-          keepMounted={true}
-          TransitionComponent={Transition}
-          onClose={this.handleCloseDelete.bind(this)}
-        >
-          <DialogContent>
-            <DialogContentText>
-              {t('Do you want to delete this position?')}
-            </DialogContentText>
-          </DialogContent>
-          <DialogActions>
-            <Button
-              onClick={this.handleCloseDelete.bind(this)}
-              disabled={this.state.deleting}
-            >
-              {t('Cancel')}
-            </Button>
-            <Button
-              color="secondary"
-              onClick={this.submitDelete.bind(this)}
-              disabled={this.state.deleting}
-            >
-              {t('Delete')}
-            </Button>
-          </DialogActions>
-        </Dialog>
-        <QueryRenderer
-          query={positionEditionQuery}
-          variables={{ id }}
-          render={({ props }) => {
-            if (props) {
-              return (
-                <PositionEditionContainer
-                  position={props.position}
-                  handleClose={this.handleCloseEdit.bind(this)}
-                  open={this.state.displayEdit}
-                />
-              );
-            }
-            return <div />;
-          }}
-        />
-      </>
+            onClick={this.handleOpen.bind(this)}
+          >
+            <MoreVert fontSize="small" color="primary" />
+          </ToggleButton>
+          <Menu
+            anchorEl={this.state.anchorEl}
+            open={Boolean(this.state.anchorEl)}
+            onClose={this.handleClose.bind(this)}
+          >
+            <KnowledgeSecurity needs={[KNOWLEDGE_KNUPDATE]} entity='Position'>
+              <MenuItem onClick={this.handleOpenEdit.bind(this)}>
+                {t('Update')}
+              </MenuItem>
+            </KnowledgeSecurity>
+            <KnowledgeSecurity needs={[KNOWLEDGE_KNUPDATE_KNDELETE]} entity='Position'>
+              <MenuItem onClick={this.handleOpenDelete.bind(this)}>
+                {t('Delete')}
+              </MenuItem>
+            </KnowledgeSecurity>
+          </Menu>
+          <Dialog
+            PaperProps={{ elevation: 1 }}
+            open={this.state.displayDelete}
+            keepMounted={true}
+            TransitionComponent={Transition}
+            onClose={this.handleCloseDelete.bind(this)}
+          >
+            <DialogContent>
+              <DialogContentText>
+                {t('Do you want to delete this position?')}
+              </DialogContentText>
+            </DialogContent>
+            <DialogActions>
+              <Button
+                onClick={this.handleCloseDelete.bind(this)}
+                disabled={this.state.deleting}
+              >
+                {t('Cancel')}
+              </Button>
+              <Button
+                color="secondary"
+                onClick={this.submitDelete.bind(this)}
+                disabled={this.state.deleting}
+              >
+                {t('Delete')}
+              </Button>
+            </DialogActions>
+          </Dialog>
+          <QueryRenderer
+            query={positionEditionQuery}
+            variables={{ id }}
+            render={({ props }) => {
+              if (props) {
+                return (
+                  <PositionEditionContainer
+                    position={props.position}
+                    handleClose={this.handleCloseEdit.bind(this)}
+                    open={this.state.displayEdit}
+                  />
+                );
+              }
+              return <div />;
+            }}
+          />
+        </>
+      </KnowledgeSecurity>
     );
   }
 }

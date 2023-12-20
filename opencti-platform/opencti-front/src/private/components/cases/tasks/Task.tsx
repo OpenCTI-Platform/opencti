@@ -8,7 +8,7 @@ import StixDomainObjectOverview from '../../common/stix_domain_objects/StixDomai
 import TaskDetails from './TaskDetails';
 import { Tasks_tasks$key } from './__generated__/Tasks_tasks.graphql';
 import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
-import Security from '../../../../utils/Security';
+import { KnowledgeSecurity } from '../../../../utils/Security';
 import TaskEdition from './TaskEdition';
 import ContainerStixObjectsOrStixRelationships from '../../common/containers/ContainerStixObjectsOrStixRelationships';
 
@@ -106,9 +106,9 @@ const TaskComponent = ({ data }: { data: Tasks_tasks$key }) => {
         stixCoreObjectOrStixCoreRelationshipId={task.id}
         defaultMarkings={task.objectMarking ?? []}
       />
-      <Security needs={[KNOWLEDGE_KNUPDATE]}>
+      <KnowledgeSecurity needs={[KNOWLEDGE_KNUPDATE]} entity='Task'>
         <TaskEdition caseId={task.id} />
-      </Security>
+      </KnowledgeSecurity>
     </>
   );
 };

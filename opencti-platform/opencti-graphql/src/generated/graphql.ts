@@ -6404,7 +6404,6 @@ export enum EntitySettingsOrdering {
 
 export enum EntityType {
   AdministrativeArea = 'AdministrativeArea',
-  Artifact = 'Artifact',
   AttackPattern = 'AttackPattern',
   Campaign = 'Campaign',
   CaseIncident = 'CaseIncident',
@@ -6413,7 +6412,7 @@ export enum EntityType {
   Channel = 'Channel',
   City = 'City',
   Country = 'Country',
-  CoursesOfAction = 'CoursesOfAction',
+  CourseOfAction = 'CourseOfAction',
   DataComponent = 'DataComponent',
   DataSource = 'DataSource',
   Event = 'Event',
@@ -6435,7 +6434,6 @@ export enum EntityType {
   Region = 'Region',
   Report = 'Report',
   Sector = 'Sector',
-  StixFile = 'StixFile',
   StixSightingRelationship = 'StixSightingRelationship',
   System = 'System',
   Task = 'Task',

@@ -4,7 +4,7 @@ import { EventLineDummy } from '@components/entities/events/EventLine';
 import ListLines from '../../../components/list_lines/ListLines';
 import EventsLines, { eventsLinesQuery } from './events/EventsLines';
 import EventCreation from './events/EventCreation';
-import Security from '../../../utils/Security';
+import { KnowledgeSecurity } from '../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE } from '../../../utils/hooks/useGranted';
 import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
@@ -117,9 +117,9 @@ const Events = () => {
     <>
       <Breadcrumbs variant="list" elements={[{ label: t_i18n('Entities') }, { label: t_i18n('Events'), current: true }]} />
       {renderLines()}
-      <Security needs={[KNOWLEDGE_KNUPDATE]}>
+      <KnowledgeSecurity needs={[KNOWLEDGE_KNUPDATE]} entity='Event'>
         <EventCreation paginationOptions={paginationOptions} />
-      </Security>
+      </KnowledgeSecurity>
     </>
   );
 };

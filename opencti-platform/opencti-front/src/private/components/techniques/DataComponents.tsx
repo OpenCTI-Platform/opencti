@@ -1,6 +1,6 @@
 import React, { FunctionComponent } from 'react';
 import DataComponentLines, { dataComponentsLinesQuery } from './data_components/DataComponentsLines';
-import Security from '../../../utils/Security';
+import { KnowledgeSecurity } from '../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE } from '../../../utils/hooks/useGranted';
 import DataComponentCreation from './data_components/DataComponentCreation';
 import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
@@ -117,9 +117,9 @@ const DataComponents: FunctionComponent = () => {
     <>
       <Breadcrumbs variant="list" elements={[{ label: t_i18n('Techniques') }, { label: t_i18n('Data components'), current: true }]} />
       {renderLines()}
-      <Security needs={[KNOWLEDGE_KNUPDATE]}>
+      <KnowledgeSecurity needs={[KNOWLEDGE_KNUPDATE]} entity='Data-Components'>
         <DataComponentCreation paginationOptions={paginationOptions} />
-      </Security>
+      </KnowledgeSecurity>
     </>
   );
 };

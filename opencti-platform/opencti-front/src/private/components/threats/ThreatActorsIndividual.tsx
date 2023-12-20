@@ -4,7 +4,7 @@ import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage'
 import ListCards from '../../../components/list_cards/ListCards';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
 import { KNOWLEDGE_KNUPDATE } from '../../../utils/hooks/useGranted';
-import Security from '../../../utils/Security';
+import { KnowledgeSecurity } from '../../../utils/Security';
 import { GenericAttackCardDummy } from '../common/cards/GenericAttackCard';
 import ThreatActorsIndividualCards, { threatActorsIndividualCardsPaginationQuery } from './threat_actors_individual/ThreatActorsIndividualCards';
 import {
@@ -111,9 +111,9 @@ const ThreatActorsIndividual = () => {
     <>
       <Breadcrumbs variant="list" elements={[{ label: t_i18n('Threats') }, { label: t_i18n('Threat actors (individual)'), current: true }]} />
       {renderCards()}
-      <Security needs={[KNOWLEDGE_KNUPDATE]}>
+      <KnowledgeSecurity needs={[KNOWLEDGE_KNUPDATE]} entity='Threat-Actor-Individual'>
         <ThreatActorIndividualCreation paginationOptions={paginationOptions} />
-      </Security>
+      </KnowledgeSecurity>
     </>
   );
 };

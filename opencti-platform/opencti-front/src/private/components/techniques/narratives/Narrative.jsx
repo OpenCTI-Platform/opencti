@@ -5,7 +5,7 @@ import Grid from '@mui/material/Grid';
 import withStyles from '@mui/styles/withStyles';
 import NarrativeDetails from './NarrativeDetails';
 import NarrativeEdition from './NarrativeEdition';
-import Security from '../../../../utils/Security';
+import { KnowledgeSecurity } from '../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 import StixCoreObjectOrStixCoreRelationshipNotes from '../../analyses/notes/StixCoreObjectOrStixCoreRelationshipNotes';
 import StixDomainObjectOverview from '../../common/stix_domain_objects/StixDomainObjectOverview';
@@ -63,9 +63,9 @@ class NarrativeComponent extends Component {
           stixCoreObjectOrStixCoreRelationshipId={narrative.id}
           defaultMarkings={narrative.objectMarking ?? []}
         />
-        <Security needs={[KNOWLEDGE_KNUPDATE]}>
+        <KnowledgeSecurity needs={[KNOWLEDGE_KNUPDATE]} entity='Narrative'>
           <NarrativeEdition narrativeId={narrative.id} />
-        </Security>
+        </KnowledgeSecurity>
       </>
     );
   }

@@ -215,7 +215,7 @@ input IndicatorAddInput {
 }
 
 type Query {
-  indicator(id: String!): Indicator @auth(for: [KNOWLEDGE])
+  indicator(id: String!): Indicator @auth(for: [KNOWLEDGE], type: Indicator)
   indicators(
     first: Int
     after: ID
@@ -223,7 +223,7 @@ type Query {
     orderMode: OrderingMode
     filters: FilterGroup
     search: String
-  ): IndicatorConnection @auth(for: [KNOWLEDGE])
+  ): IndicatorConnection @auth(for: [KNOWLEDGE], type: Indicator)
   indicatorsTimeSeries(
     objectId: String
     field: String!
@@ -232,8 +232,8 @@ type Query {
     endDate: DateTime!
     interval: String!
     filters: FilterGroup
-  ): [TimeSeries] @auth(for: [KNOWLEDGE])
-  indicatorsNumber(pattern_type: String, objectId: String, endDate: DateTime): Number @auth(for: [KNOWLEDGE])
+  ): [TimeSeries] @auth(for: [KNOWLEDGE], type: Indicator)
+  indicatorsNumber(pattern_type: String, objectId: String, endDate: DateTime): Number @auth(for: [KNOWLEDGE], type: Indicator)
   indicatorsDistribution(
     objectId: String
     field: String!
@@ -243,7 +243,7 @@ type Query {
     startDate: DateTime
     endDate: DateTime
     dateAttribute: String
-  ): [Distribution] @auth(for: [KNOWLEDGE])
+  ): [Distribution] @auth(for: [KNOWLEDGE], type: Indicator)
 }
 
 type Mutation {

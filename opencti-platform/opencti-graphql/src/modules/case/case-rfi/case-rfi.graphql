@@ -168,7 +168,7 @@ type CaseRfiEdge {
 
 # Queries
 type Query {
-  caseRfi(id: String!): CaseRfi @auth(for: [KNOWLEDGE])
+  caseRfi(id: String!): CaseRfi @auth(for: [KNOWLEDGE], type: CaseRfi)
   caseRfis(
     first: Int
     after: ID
@@ -178,7 +178,7 @@ type Query {
     search: String
     toStix: Boolean
   ): CaseRfiConnection @auth(for: [KNOWLEDGE])
-  caseRfiContainsStixObjectOrStixRelationship(id: String!, stixObjectOrStixRelationshipId: String!): Boolean @auth(for: [KNOWLEDGE])
+  caseRfiContainsStixObjectOrStixRelationship(id: String!, stixObjectOrStixRelationshipId: String!): Boolean @auth(for: [KNOWLEDGE], type: CaseRfi)
 }
 
 # Mutations
@@ -213,6 +213,6 @@ input CaseRfiAddInput {
 }
 
 type Mutation {
-  caseRfiAdd(input: CaseRfiAddInput!): CaseRfi @auth
-  caseRfiDelete(id: ID!): ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
+  caseRfiAdd(input: CaseRfiAddInput!): CaseRfi @auth(for: [KNOWLEDGE_KNUPDATE], type: CaseRfi)
+  caseRfiDelete(id: ID!): ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE], type: CaseRfi)
 }

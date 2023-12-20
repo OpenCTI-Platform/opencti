@@ -141,7 +141,7 @@ type EventEdge {
 
 # Queries
 type Query {
-    event(id: String!): Event @auth(for: [KNOWLEDGE])
+    event(id: String!): Event @auth(for: [KNOWLEDGE], type: Event)
     events(
         first: Int
         after: ID
@@ -149,7 +149,7 @@ type Query {
         orderMode: OrderingMode
         filters: FilterGroup
         search: String
-    ): EventConnection @auth(for: [KNOWLEDGE])
+    ): EventConnection @auth(for: [KNOWLEDGE], type: Event)
 }
 
 # Mutations
@@ -178,11 +178,11 @@ input EventAddInput {
 }
 
 type Mutation {
-    eventAdd(input: EventAddInput!): Event @auth(for: [KNOWLEDGE_KNUPDATE])
-    eventDelete(id: ID!): ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
-    eventFieldPatch(id: ID!, input: [EditInput]!, commitMessage: String, references: [String]): Event @auth(for: [KNOWLEDGE_KNUPDATE])
-    eventContextPatch(id: ID!, input: EditContext!): Event @auth(for: [KNOWLEDGE_KNUPDATE])
-    eventContextClean(id: ID!): Event @auth(for: [KNOWLEDGE_KNUPDATE])
-    eventRelationAdd(id: ID!, input: StixRefRelationshipAddInput!): StixRefRelationship @auth(for: [KNOWLEDGE_KNUPDATE])
-    eventRelationDelete(id: ID!, toId: StixRef!, relationship_type: String!): Event @auth(for: [KNOWLEDGE_KNUPDATE])
+    eventAdd(input: EventAddInput!): Event @auth(for: [KNOWLEDGE_KNUPDATE], type: Event)
+    eventDelete(id: ID!): ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE], type: Event)
+    eventFieldPatch(id: ID!, input: [EditInput]!, commitMessage: String, references: [String]): Event @auth(for: [KNOWLEDGE_KNUPDATE], type: Event)
+    eventContextPatch(id: ID!, input: EditContext!): Event @auth(for: [KNOWLEDGE_KNUPDATE], type: Event)
+    eventContextClean(id: ID!): Event @auth(for: [KNOWLEDGE_KNUPDATE], type: Event)
+    eventRelationAdd(id: ID!, input: StixRefRelationshipAddInput!): StixRefRelationship @auth(for: [KNOWLEDGE_KNUPDATE], type: Event)
+    eventRelationDelete(id: ID!, toId: StixRef!, relationship_type: String!): Event @auth(for: [KNOWLEDGE_KNUPDATE], type: Event)
 }

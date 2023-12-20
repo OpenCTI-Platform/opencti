@@ -2,7 +2,7 @@ import React from 'react';
 import ListLines from '../../../components/list_lines/ListLines';
 import VulnerabilitiesLines, { vulnerabilitiesLinesQuery } from './vulnerabilities/VulnerabilitiesLines';
 import VulnerabilityCreation from './vulnerabilities/VulnerabilityCreation';
-import Security from '../../../utils/Security';
+import { KnowledgeSecurity } from '../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE } from '../../../utils/hooks/useGranted';
 import { VulnerabilityLineDummy } from './vulnerabilities/VulnerabilityLine';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
@@ -137,9 +137,9 @@ const Vulnerabilities = () => {
     <>
       <Breadcrumbs variant="list" elements={[{ label: t_i18n('Arsenal') }, { label: t_i18n('Vulnerabilities'), current: true }]} />
       {renderLines()}
-      <Security needs={[KNOWLEDGE_KNUPDATE]}>
+      <KnowledgeSecurity needs={[KNOWLEDGE_KNUPDATE]} entity='Vulnerability'>
         <VulnerabilityCreation paginationOptions={queryPaginationOptions} />
-      </Security>
+      </KnowledgeSecurity>
     </>
   );
 };

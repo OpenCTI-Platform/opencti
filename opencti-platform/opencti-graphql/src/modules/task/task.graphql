@@ -160,7 +160,7 @@ type TaskConnection {
 
 # Queries
 type Query {
-  task(id: String!): Task @auth
+  task(id: String!): Task @auth(for: [KNOWLEDGE], type: Task)
   tasks(
     first: Int
     after: ID
@@ -169,8 +169,8 @@ type Query {
     filters: FilterGroup
     search: String
     toStix: Boolean
-  ): TaskConnection @auth
-  taskContainsStixObjectOrStixRelationship(id: String!, stixObjectOrStixRelationshipId: String!): Boolean @auth(for: [KNOWLEDGE])
+  ): TaskConnection @auth(for: [KNOWLEDGE], type: Task)
+  taskContainsStixObjectOrStixRelationship(id: String!, stixObjectOrStixRelationshipId: String!): Boolean @auth(for: [KNOWLEDGE], type: Task)
 }
 
 # Mutations
@@ -191,9 +191,9 @@ input TaskAddInput {
 }
 
 type Mutation {
-  taskAdd(input: TaskAddInput!): Task @auth(for: [KNOWLEDGE_KNUPDATE])
-  taskDelete(id: ID!): ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
-  taskFieldPatch(id: ID!, input: [EditInput!]!, commitMessage: String, references: [String]): Task @auth(for: [KNOWLEDGE_KNUPDATE])
-  taskRelationAdd(id: ID!, input: StixRefRelationshipAddInput!): StixRefRelationship @auth(for: [KNOWLEDGE_KNUPDATE])
-  taskRelationDelete(id: ID!, toId: StixRef!, relationship_type: String!): Task @auth(for: [KNOWLEDGE_KNUPDATE])
+  taskAdd(input: TaskAddInput!): Task @auth(for: [KNOWLEDGE_KNUPDATE], type: Task)
+  taskDelete(id: ID!): ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE], type: Task)
+  taskFieldPatch(id: ID!, input: [EditInput!]!, commitMessage: String, references: [String]): Task @auth(for: [KNOWLEDGE_KNUPDATE], type: Task)
+  taskRelationAdd(id: ID!, input: StixRefRelationshipAddInput!): StixRefRelationship @auth(for: [KNOWLEDGE_KNUPDATE], type: Task)
+  taskRelationDelete(id: ID!, toId: StixRef!, relationship_type: String!): Task @auth(for: [KNOWLEDGE_KNUPDATE], type: Task)
 }

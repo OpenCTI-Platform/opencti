@@ -4,7 +4,7 @@ import Grid from '@mui/material/Grid';
 import makeStyles from '@mui/styles/makeStyles';
 import IntrusionSetDetails from './IntrusionSetDetails';
 import IntrusionSetEdition from './IntrusionSetEdition';
-import Security from '../../../../utils/Security';
+import { KnowledgeSecurity } from '../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 import StixCoreObjectOrStixCoreRelationshipNotes from '../../analyses/notes/StixCoreObjectOrStixCoreRelationshipNotes';
 import StixDomainObjectOverview from '../../common/stix_domain_objects/StixDomainObjectOverview';
@@ -116,9 +116,9 @@ const IntrusionSetComponent = ({
         stixCoreObjectOrStixCoreRelationshipId={intrusionSetData.id}
         defaultMarkings={intrusionSetData.objectMarking ?? []}
       />
-      <Security needs={[KNOWLEDGE_KNUPDATE]}>
+      <KnowledgeSecurity needs={[KNOWLEDGE_KNUPDATE]} entity='Intrusion-Set'>
         <IntrusionSetEdition intrusionSetId={intrusionSetData.id} />
-      </Security>
+      </KnowledgeSecurity>
     </>
   );
 };

@@ -4,7 +4,7 @@ import Grid from '@mui/material/Grid';
 import makeStyles from '@mui/styles/makeStyles';
 import IncidentDetails from './IncidentDetails';
 import IncidentEdition from './IncidentEdition';
-import Security from '../../../../utils/Security';
+import { KnowledgeSecurity } from '../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 import StixCoreObjectOrStixCoreRelationshipNotes from '../../analyses/notes/StixCoreObjectOrStixCoreRelationshipNotes';
 import StixDomainObjectOverview from '../../common/stix_domain_objects/StixDomainObjectOverview';
@@ -130,9 +130,9 @@ const Incident = ({
         stixCoreObjectOrStixCoreRelationshipId={incident.id}
         defaultMarkings={incident.objectMarking ?? []}
       />
-      <Security needs={[KNOWLEDGE_KNUPDATE]}>
+      <KnowledgeSecurity needs={[KNOWLEDGE_KNUPDATE]} entity='Incident'>
         <IncidentEdition incidentId={incident.id} />
-      </Security>
+      </KnowledgeSecurity>
     </>
   );
 };

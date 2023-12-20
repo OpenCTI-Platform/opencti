@@ -13,10 +13,10 @@ import { useNavigate } from 'react-router-dom-v5-compat';
 import { PopoverProps } from '@mui/material/Popover';
 import { useFormatter } from '../../../../components/i18n';
 import AdministrativeAreaEditionContainer, { administrativeAreaEditionQuery } from './AdministrativeAreaEditionContainer';
-import Security from '../../../../utils/Security';
+import { KnowledgeSecurity } from '../../../../utils/Security';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import Transition from '../../../../components/Transition';
-import { KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
+import { KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
 import { AdministrativeAreaEditionContainerQuery } from './__generated__/AdministrativeAreaEditionContainerQuery.graphql';
 import useDeletion from '../../../../utils/hooks/useDeletion';
 
@@ -67,51 +67,55 @@ const AdministrativeAreaPopover = ({ id }: { id: string }) => {
     });
   };
   return (
-    <>
-      <ToggleButton
-        value="popover"
-        size="small"
-        onClick={handleOpen}
-      >
-        <MoreVert fontSize="small" color="primary" />
-      </ToggleButton>
-      <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleClose}>
-        <MenuItem onClick={handleOpenEdit}>{t_i18n('Update')}</MenuItem>
-        <Security needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}>
-          <MenuItem onClick={handleOpenDelete}>{t_i18n('Delete')}</MenuItem>
-        </Security>
-      </Menu>
-      <Dialog
-        PaperProps={{ elevation: 1 }}
-        open={displayDelete}
-        keepMounted={true}
-        TransitionComponent={Transition}
-        onClose={handleCloseDelete}
-      >
-        <DialogContent>
-          <DialogContentText>
-            {t_i18n('Do you want to delete this area?')}
-          </DialogContentText>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={handleCloseDelete} disabled={deleting}>
-            {t_i18n('Cancel')}
-          </Button>
-          <Button color="secondary" onClick={submitDelete} disabled={deleting}>
-            {t_i18n('Delete')}
-          </Button>
-        </DialogActions>
-      </Dialog>
-      {queryRef && (
-        <React.Suspense fallback={<div />}>
-          <AdministrativeAreaEditionContainer
-            queryRef={queryRef}
-            handleClose={handleClose}
-            open={displayEdit}
-          />
-        </React.Suspense>
-      )}
-    </>
+    <KnowledgeSecurity needs={[KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNUPDATE_KNDELETE]} entity='Administrative-Area'>
+      <>
+        <ToggleButton
+          value="popover"
+          size="small"
+          onClick={handleOpen}
+        >
+          <MoreVert fontSize="small" color="primary" />
+        </ToggleButton>
+        <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleClose}>
+          <KnowledgeSecurity needs={[KNOWLEDGE_KNUPDATE]} entity='Administrative-Area'>
+            <MenuItem onClick={handleOpenEdit}>{t_i18n('Update')}</MenuItem>
+          </KnowledgeSecurity>
+          <KnowledgeSecurity needs={[KNOWLEDGE_KNUPDATE_KNDELETE]} entity='Administrative-Area'>
+            <MenuItem onClick={handleOpenDelete}>{t_i18n('Delete')}</MenuItem>
+          </KnowledgeSecurity>
+        </Menu>
+        <Dialog
+          PaperProps={{ elevation: 1 }}
+          open={displayDelete}
+          keepMounted={true}
+          TransitionComponent={Transition}
+          onClose={handleCloseDelete}
+        >
+          <DialogContent>
+            <DialogContentText>
+              {t_i18n('Do you want to delete this area?')}
+            </DialogContentText>
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={handleCloseDelete} disabled={deleting}>
+              {t_i18n('Cancel')}
+            </Button>
+            <Button color="secondary" onClick={submitDelete} disabled={deleting}>
+              {t_i18n('Delete')}
+            </Button>
+          </DialogActions>
+        </Dialog>
+        {queryRef && (
+          <React.Suspense fallback={<div />}>
+            <AdministrativeAreaEditionContainer
+              queryRef={queryRef}
+              handleClose={handleClose}
+              open={displayEdit}
+            />
+          </React.Suspense>
+        )}
+      </>
+    </KnowledgeSecurity>
   );
 };
 

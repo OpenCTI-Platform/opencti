@@ -204,7 +204,7 @@ input ThreatActorIndividualAddInput {
 }
 
 type Query {
-  threatActorIndividual(id: String!): ThreatActorIndividual @auth(for: [KNOWLEDGE])
+  threatActorIndividual(id: String!): ThreatActorIndividual @auth(for: [KNOWLEDGE], type: ThreatActorIndividual)
   threatActorsIndividuals(
     first: Int
     after: ID
@@ -213,16 +213,16 @@ type Query {
     filters: FilterGroup
     search: String
     toStix: Boolean
-  ): ThreatActorIndividualConnection @auth(for: [KNOWLEDGE])
-  threatActorIndividualContainsStixObjectOrStixRelationship(id: String!, stixObjectOrStixRelationshipId: String!): Boolean @auth(for: [KNOWLEDGE])
+  ): ThreatActorIndividualConnection @auth(for: [KNOWLEDGE], type: ThreatActorIndividual)
+  threatActorIndividualContainsStixObjectOrStixRelationship(id: String!, stixObjectOrStixRelationshipId: String!): Boolean @auth(for: [KNOWLEDGE], type: ThreatActorIndividual)
 }
 
 type Mutation {
-  threatActorIndividualAdd(input: ThreatActorIndividualAddInput!): ThreatActorIndividual @auth(for: [KNOWLEDGE_KNUPDATE])
-  threatActorIndividualDelete(id: ID!): ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
-  threatActorIndividualFieldPatch(id: ID!, input: [EditInput]!, commitMessage: String, references: [String]): ThreatActorIndividual @auth(for: [KNOWLEDGE_KNUPDATE])
-  threatActorIndividualContextPatch(id: ID!, input: EditContext): ThreatActorIndividual @auth(for: [KNOWLEDGE_KNUPDATE])
-  threatActorIndividualContextClean(id: ID!): ThreatActorIndividual @auth(for: [KNOWLEDGE_KNUPDATE])
-  threatActorIndividualRelationAdd(id: ID!, input: StixRefRelationshipAddInput!): StixRefRelationship @auth(for: [KNOWLEDGE_KNUPDATE])
-  threatActorIndividualRelationDelete(id: ID!, toId: StixRef!, relationship_type: String!): ThreatActorIndividual @auth(for: [KNOWLEDGE_KNUPDATE])
+  threatActorIndividualAdd(input: ThreatActorIndividualAddInput!): ThreatActorIndividual @auth(for: [KNOWLEDGE_KNUPDATE], type: ThreatActorIndividual)
+  threatActorIndividualDelete(id: ID!): ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE], type: ThreatActorIndividual)
+  threatActorIndividualFieldPatch(id: ID!, input: [EditInput]!, commitMessage: String, references: [String]): ThreatActorIndividual @auth(for: [KNOWLEDGE_KNUPDATE], type: ThreatActorIndividual)
+  threatActorIndividualContextPatch(id: ID!, input: EditContext): ThreatActorIndividual @auth(for: [KNOWLEDGE_KNUPDATE], type: ThreatActorIndividual)
+  threatActorIndividualContextClean(id: ID!): ThreatActorIndividual @auth(for: [KNOWLEDGE_KNUPDATE], type: ThreatActorIndividual)
+  threatActorIndividualRelationAdd(id: ID!, input: StixRefRelationshipAddInput!): StixRefRelationship @auth(for: [KNOWLEDGE_KNUPDATE], type: ThreatActorIndividual)
+  threatActorIndividualRelationDelete(id: ID!, toId: StixRef!, relationship_type: String!): ThreatActorIndividual @auth(for: [KNOWLEDGE_KNUPDATE], type: ThreatActorIndividual)
 }

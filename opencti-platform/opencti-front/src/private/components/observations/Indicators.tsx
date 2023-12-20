@@ -2,7 +2,7 @@ import React from 'react';
 import ListLines from '../../../components/list_lines/ListLines';
 import IndicatorsLines, { indicatorsLinesQuery } from './indicators/IndicatorsLines';
 import IndicatorCreation from './indicators/IndicatorCreation';
-import Security from '../../../utils/Security';
+import { KnowledgeSecurity } from '../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE } from '../../../utils/hooks/useGranted';
 import useAuth from '../../../utils/hooks/useAuth';
 import ToolBar from '../data/ToolBar';
@@ -192,9 +192,9 @@ const Indicators = () => {
       <div>
         <Breadcrumbs variant="list" elements={[{ label: t_i18n('Observations') }, { label: t_i18n('Indicators'), current: true }]} />
         {renderLines()}
-        <Security needs={[KNOWLEDGE_KNUPDATE]}>
+        <KnowledgeSecurity needs={[KNOWLEDGE_KNUPDATE]} entity='Indicator'>
           <IndicatorCreation paginationOptions={queryPaginationOptions}/>
-        </Security>
+        </KnowledgeSecurity>
       </div>
     </ExportContextProvider>
   );

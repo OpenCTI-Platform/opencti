@@ -3,7 +3,7 @@ import { graphql, useFragment } from 'react-relay';
 import Grid from '@mui/material/Grid';
 import makeStyles from '@mui/styles/makeStyles';
 import CityEdition from './CityEdition';
-import Security from '../../../../utils/Security';
+import { KnowledgeSecurity } from '../../../../utils/Security';
 import StixCoreObjectOrStixCoreRelationshipNotes from '../../analyses/notes/StixCoreObjectOrStixCoreRelationshipNotes';
 import StixDomainObjectOverview from '../../common/stix_domain_objects/StixDomainObjectOverview';
 import StixCoreObjectExternalReferences from '../../analyses/external_references/StixCoreObjectExternalReferences';
@@ -121,9 +121,9 @@ const City = ({ cityData }: { cityData: City_city$key }) => {
         stixCoreObjectOrStixCoreRelationshipId={city.id}
         defaultMarkings={city.objectMarking ?? []}
       />
-      <Security needs={[KNOWLEDGE_KNUPDATE]}>
+      <KnowledgeSecurity needs={[KNOWLEDGE_KNUPDATE]} entity='City'>
         <CityEdition cityId={city.id} />
-      </Security>
+      </KnowledgeSecurity>
     </>
   );
 };

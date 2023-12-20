@@ -12,10 +12,10 @@ import { graphql, useMutation } from 'react-relay';
 import { useNavigate } from 'react-router-dom-v5-compat';
 import { PopoverProps } from '@mui/material/Popover';
 import { useFormatter } from '../../../../components/i18n';
-import Security from '../../../../utils/Security';
+import { KnowledgeSecurity } from '../../../../utils/Security';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import Transition from '../../../../components/Transition';
-import { KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
+import { KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
 import useDeletion from '../../../../utils/hooks/useDeletion';
 import CaseIncidentEditionContainer, { caseIncidentEditionQuery } from './CaseIncidentEditionContainer';
 import { CaseIncidentEditionContainerCaseQuery } from './__generated__/CaseIncidentEditionContainerCaseQuery.graphql';
@@ -70,7 +70,11 @@ const CaseIncidentPopover = ({ id }: { id: string }) => {
     });
   };
   return (
-    <>
+    <KnowledgeSecurity
+      needs={[KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNUPDATE_KNDELETE]}
+      entity='Case-Incident'
+    >
+      <>
       <ToggleButton
         value="popover"
         size="small"
@@ -78,45 +82,48 @@ const CaseIncidentPopover = ({ id }: { id: string }) => {
       >
         <MoreVert fontSize="small" color="primary" />
       </ToggleButton>
-      <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleClose}>
-        <MenuItem onClick={handleOpenEdit}>{t_i18n('Update')}</MenuItem>
-        <Security needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}>
-          <MenuItem onClick={handleOpenDelete}>{t_i18n('Delete')}</MenuItem>
-        </Security>
-      </Menu>
-      <Dialog
-        PaperProps={{ elevation: 1 }}
-        open={displayDelete}
-        keepMounted={true}
-        TransitionComponent={Transition}
-        onClose={handleCloseDelete}
-      >
-        <DialogContent>
-          <DialogContentText>
-            {t_i18n('Do you want to delete this incident response?')}
-          </DialogContentText>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={handleCloseDelete} disabled={deleting}>
-            {t_i18n('Cancel')}
-          </Button>
-          <Button color="secondary" onClick={submitDelete} disabled={deleting}>
-            {t_i18n('Delete')}
-          </Button>
-        </DialogActions>
-      </Dialog>
-      {queryRef && (
-        <React.Suspense
-          fallback={<div />}
+        <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleClose}>
+          <KnowledgeSecurity needs={[KNOWLEDGE_KNUPDATE]} entity='Case-Incident'>
+            <MenuItem onClick={handleOpenEdit}>{t_i18n('Update')}</MenuItem>
+          </KnowledgeSecurity>
+          <KnowledgeSecurity needs={[KNOWLEDGE_KNUPDATE_KNDELETE]} entity='Case-Incident'>
+            <MenuItem onClick={handleOpenDelete}>{t_i18n('Delete')}</MenuItem>
+          </KnowledgeSecurity>
+        </Menu>
+        <Dialog
+          PaperProps={{ elevation: 1 }}
+          open={displayDelete}
+          keepMounted={true}
+          TransitionComponent={Transition}
+          onClose={handleCloseDelete}
         >
-          <CaseIncidentEditionContainer
-            queryRef={queryRef}
-            handleClose={handleCloseEdit}
-            open={displayEdit}
-          />
-        </React.Suspense>
-      )}
-    </>
+          <DialogContent>
+            <DialogContentText>
+              {t_i18n('Do you want to delete this incident response?')}
+            </DialogContentText>
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={handleCloseDelete} disabled={deleting}>
+              {t_i18n('Cancel')}
+            </Button>
+            <Button color="secondary" onClick={submitDelete} disabled={deleting}>
+              {t_i18n('Delete')}
+            </Button>
+          </DialogActions>
+        </Dialog>
+        {queryRef && (
+          <React.Suspense
+            fallback={<div />}
+          >
+            <CaseIncidentEditionContainer
+              queryRef={queryRef}
+              handleClose={handleCloseEdit}
+              open={displayEdit}
+            />
+          </React.Suspense>
+        )}
+      </>
+    </KnowledgeSecurity>
   );
 };
 

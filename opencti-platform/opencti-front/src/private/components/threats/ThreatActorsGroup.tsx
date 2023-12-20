@@ -8,7 +8,7 @@ import {
 import ListCards from '../../../components/list_cards/ListCards';
 import ThreatActorsGroupCards, { threatActorsGroupCardsQuery } from './threat_actors_group/ThreatActorsGroupCards';
 import ThreatActorGroupCreation from './threat_actors_group/ThreatActorGroupCreation';
-import Security from '../../../utils/Security';
+import { KnowledgeSecurity } from '../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE } from '../../../utils/hooks/useGranted';
 import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
@@ -112,9 +112,9 @@ const ThreatActorsGroup = () => {
     <>
       <Breadcrumbs variant="list" elements={[{ label: t_i18n('Threats') }, { label: t_i18n('Threat actors (group)'), current: true }]} />
       {renderCards()}
-      <Security needs={[KNOWLEDGE_KNUPDATE]}>
+      <KnowledgeSecurity needs={[KNOWLEDGE_KNUPDATE]} entity='Threat-Actor-Group'>
         <ThreatActorGroupCreation paginationOptions={paginationOptions} />
-      </Security>
+      </KnowledgeSecurity>
     </>
   );
 };

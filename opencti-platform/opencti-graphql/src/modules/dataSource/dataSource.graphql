@@ -137,7 +137,7 @@ type DataSourceEdge {
 
 # Queries
 type Query {
-    dataSource(id: String!): DataSource @auth(for: [KNOWLEDGE])
+    dataSource(id: String!): DataSource @auth(for: [KNOWLEDGE], type: DataSource)
     dataSources(
         first: Int
         after: ID
@@ -145,7 +145,7 @@ type Query {
         orderMode: OrderingMode
         filters: FilterGroup
         search: String
-    ): DataSourceConnection @auth(for: [KNOWLEDGE])
+    ): DataSourceConnection @auth(for: [KNOWLEDGE], type: DataSource)
 }
 
 # Mutations
@@ -174,13 +174,13 @@ input DataSourceAddInput {
 }
 
 type Mutation {
-    dataSourceAdd(input: DataSourceAddInput!): DataSource @auth(for: [KNOWLEDGE_KNUPDATE])
-    dataSourceDelete(id: ID!): ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
-    dataSourceFieldPatch(id: ID!, input: [EditInput]!, commitMessage: String, references: [String]): DataSource @auth(for: [KNOWLEDGE_KNUPDATE])
-    dataSourceContextPatch(id: ID!, input: EditContext!): DataSource @auth(for: [KNOWLEDGE_KNUPDATE])
-    dataSourceContextClean(id: ID!): DataSource @auth(for: [KNOWLEDGE_KNUPDATE])
-    dataSourceRelationAdd(id: ID!, input: StixRefRelationshipAddInput!): StixRefRelationship @auth(for: [KNOWLEDGE_KNUPDATE])
-    dataSourceRelationDelete(id: ID!, toId: StixRef!, relationship_type: String!): DataSource @auth(for: [KNOWLEDGE_KNUPDATE])
-    dataSourceDataComponentAdd(id: ID!, dataComponentId: ID!): DataSource @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
-    dataSourceDataComponentDelete(id: ID!, dataComponentId: ID!): DataSource @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
+    dataSourceAdd(input: DataSourceAddInput!): DataSource @auth(for: [KNOWLEDGE_KNUPDATE], type: DataSource)
+    dataSourceDelete(id: ID!): ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE], type: DataSource)
+    dataSourceFieldPatch(id: ID!, input: [EditInput]!, commitMessage: String, references: [String]): DataSource @auth(for: [KNOWLEDGE_KNUPDATE], type: DataSource)
+    dataSourceContextPatch(id: ID!, input: EditContext!): DataSource @auth(for: [KNOWLEDGE_KNUPDATE], type: DataSource)
+    dataSourceContextClean(id: ID!): DataSource @auth(for: [KNOWLEDGE_KNUPDATE], type: DataSource)
+    dataSourceRelationAdd(id: ID!, input: StixRefRelationshipAddInput!): StixRefRelationship @auth(for: [KNOWLEDGE_KNUPDATE], type: DataSource)
+    dataSourceRelationDelete(id: ID!, toId: StixRef!, relationship_type: String!): DataSource @auth(for: [KNOWLEDGE_KNUPDATE], type: DataSource)
+    dataSourceDataComponentAdd(id: ID!, dataComponentId: ID!): DataSource @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE], type: DataSource)
+    dataSourceDataComponentDelete(id: ID!, dataComponentId: ID!): DataSource @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE], type: DataSource)
 }

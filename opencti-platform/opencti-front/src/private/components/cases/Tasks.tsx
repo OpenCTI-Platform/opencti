@@ -125,9 +125,9 @@ const Tasks = () => {
       <Breadcrumbs variant="list" elements={[{ label: t_i18n('Cases') }, { label: t_i18n('Tasks'), current: true }]} />
       {renderLines()}
       {/* TODO Add task creation when it will be possible to assign a task to something
-           <Security needs={[KNOWLEDGE_KNUPDATE]}>
+           <KnowledgeSecurity needs={[KNOWLEDGE_KNUPDATE]} entity='Task'>
           <TaskCreation paginationOptions={paginationOptions} />
-        </Security> */}
+        </KnowledgeSecurity> */}
     </ExportContextProvider>
   );
 };

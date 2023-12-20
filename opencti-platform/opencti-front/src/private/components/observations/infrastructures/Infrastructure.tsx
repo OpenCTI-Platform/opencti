@@ -4,7 +4,7 @@ import Grid from '@mui/material/Grid';
 import makeStyles from '@mui/styles/makeStyles';
 import InfrastructureDetails from './InfrastructureDetails';
 import InfrastructureEdition from './InfrastructureEdition';
-import Security from '../../../../utils/Security';
+import { KnowledgeSecurity } from '../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 import StixCoreObjectOrStixCoreRelationshipNotes from '../../analyses/notes/StixCoreObjectOrStixCoreRelationshipNotes';
 import StixDomainObjectOverview from '../../common/stix_domain_objects/StixDomainObjectOverview';
@@ -121,9 +121,9 @@ const Infrastructure = ({
         stixCoreObjectOrStixCoreRelationshipId={infrastructureData.id}
         defaultMarkings={infrastructureData.objectMarking ?? []}
       />
-      <Security needs={[KNOWLEDGE_KNUPDATE]}>
+      <KnowledgeSecurity needs={[KNOWLEDGE_KNUPDATE]} entity='Infrastructure'>
         <InfrastructureEdition infrastructureId={infrastructureData.id} />
-      </Security>
+      </KnowledgeSecurity>
     </>
   );
 };

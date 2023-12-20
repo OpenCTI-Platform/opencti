@@ -2,7 +2,7 @@ import React, { FunctionComponent, useState } from 'react';
 import { PreloadedQuery, createFragmentContainer, graphql, useMutation, usePreloadedQuery } from 'react-relay';
 import Loader, { LoaderVariant } from 'src/components/Loader';
 import { useFormatter } from 'src/components/i18n';
-import { Button, Checkbox, IconButton, List, ListItem, ListItemIcon, ListItemSecondaryAction, ListItemText, ListSubheader, MenuItem, Paper, Select } from '@mui/material';
+import { Button, Checkbox, IconButton, List, ListItem, ListItemIcon, ListItemSecondaryAction, ListItemText, ListSubheader, MenuItem, Select } from '@mui/material';
 import { LocalPoliceOutlined } from '@mui/icons-material';
 import { makeStyles } from '@mui/styles';
 import DeleteIcon from '@mui/icons-material/Delete';
@@ -15,12 +15,7 @@ import { subTypesLinesFragment, subTypesLinesQuery } from '../sub_types/SubTypes
 import { SubTypesLines_subTypes$key } from '../sub_types/__generated__/SubTypesLines_subTypes.graphql';
 
 const useStyles = makeStyles(() => ({
-  paper: {
-    height: '25vh',
-    overflow: 'auto',
-    border: '2px solid white',
-    marginBottom: '15px',
-    paddingLeft: '10px',
+  section: {
     display: 'flex',
     flexDirection: 'column',
   },
@@ -184,7 +179,7 @@ RoleEditionOverrideComponentProps
           </Button>
         </ListSubheader>
         {capabilities_overrides?.map((override, i) => (
-          <Paper className={classes.paper} key={i}>
+          <div className={classes.section} key={i}>
             <span className={classes.banner}>
               <p className={classes.subheader}>
                 {override?.entity} entity type capabilities
@@ -264,7 +259,8 @@ RoleEditionOverrideComponentProps
                 return <div key={i} />;
               })}
             </List>
-          </Paper>
+            <hr style={{ width: '100%' }} />
+          </div>
         ))}
       </div>
     );

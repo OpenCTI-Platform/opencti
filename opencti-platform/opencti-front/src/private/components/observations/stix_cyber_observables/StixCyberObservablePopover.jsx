@@ -18,8 +18,8 @@ import inject18n from '../../../../components/i18n';
 import { QueryRenderer, commitMutation } from '../../../../relay/environment';
 import { stixCyberObservableEditionQuery } from './StixCyberObservableEdition';
 import StixCyberObservableEditionContainer from './StixCyberObservableEditionContainer';
-import Security from '../../../../utils/Security';
-import { KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
+import { KnowledgeSecurity } from '../../../../utils/Security';
+import { KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
 import Transition from '../../../../components/Transition';
 
 const styles = (theme) => ({
@@ -103,82 +103,95 @@ class StixCyberObservablePopover extends Component {
   render() {
     const { classes, t, stixCyberObservableId } = this.props;
     return (
-      <>
-        <ToggleButton
-          value="popover"
-          size="small"
+      <KnowledgeSecurity
+        needs={[KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNUPDATE_KNDELETE]}
+        entity='Stix-Cyber-Observable'
+      >
+        <>
+          <ToggleButton
+            value="popover"
+            size="small"
 
-          onClick={this.handleOpen.bind(this)}
-        >
-          <MoreVert fontSize="small" color="primary" />
-        </ToggleButton>
-        <Menu
-          anchorEl={this.state.anchorEl}
-          open={Boolean(this.state.anchorEl)}
-          onClose={this.handleClose.bind(this)}
-        >
-          <MenuItem onClick={this.handleOpenEdit.bind(this)}>
-            {t('Update')}
-          </MenuItem>
-          <Security needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}>
-            <MenuItem onClick={this.handleOpenDelete.bind(this)}>
-              {t('Delete')}
-            </MenuItem>
-          </Security>
-        </Menu>
-        <Dialog
-          open={this.state.displayDelete}
-          PaperProps={{ elevation: 1 }}
-          keepMounted={true}
-          TransitionComponent={Transition}
-          onClose={this.handleCloseDelete.bind(this)}
-        >
-          <DialogContent>
-            <DialogContentText>
-              {t('Do you want to delete this observable?')}
-            </DialogContentText>
-          </DialogContent>
-          <DialogActions>
-            <Button
-              onClick={this.handleCloseDelete.bind(this)}
-              disabled={this.state.deleting}
+            onClick={this.handleOpen.bind(this)}
+          >
+            <MoreVert fontSize="small" color="primary" />
+          </ToggleButton>
+          <Menu
+            anchorEl={this.state.anchorEl}
+            open={Boolean(this.state.anchorEl)}
+            onClose={this.handleClose.bind(this)}
+          >
+            <KnowledgeSecurity
+              needs={[KNOWLEDGE_KNUPDATE]}
+              entity='Stix-Cyber-Observable'
             >
-              {t('Cancel')}
-            </Button>
-            <Button
-              color="secondary"
-              onClick={this.submitDelete.bind(this)}
-              disabled={this.state.deleting}
+              <MenuItem onClick={this.handleOpenEdit.bind(this)}>
+                {t('Update')}
+              </MenuItem>
+            </KnowledgeSecurity>
+            <KnowledgeSecurity
+              needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}
+              entity='Stix-Cyber-Observable'
             >
-              {t('Delete')}
-            </Button>
-          </DialogActions>
-        </Dialog>
-        <Drawer
-          open={this.state.displayEdit}
-          anchor="right"
-          sx={{ zIndex: 1202 }}
-          elevation={1}
-          classes={{ paper: classes.drawerPaper }}
-          onClose={this.handleCloseEdit.bind(this)}
-        >
-          <QueryRenderer
-            query={stixCyberObservableEditionQuery}
-            variables={{ id: stixCyberObservableId }}
-            render={({ props }) => {
-              if (props) {
-                return (
-                  <StixCyberObservableEditionContainer
-                    stixCyberObservable={props.stixCyberObservable}
-                    handleClose={this.handleCloseEdit.bind(this)}
-                  />
-                );
-              }
-              return <div />;
-            }}
-          />
-        </Drawer>
-      </>
+              <MenuItem onClick={this.handleOpenDelete.bind(this)}>
+                {t('Delete')}
+              </MenuItem>
+            </KnowledgeSecurity>
+          </Menu>
+          <Dialog
+            open={this.state.displayDelete}
+            PaperProps={{ elevation: 1 }}
+            keepMounted={true}
+            TransitionComponent={Transition}
+            onClose={this.handleCloseDelete.bind(this)}
+          >
+            <DialogContent>
+              <DialogContentText>
+                {t('Do you want to delete this observable?')}
+              </DialogContentText>
+            </DialogContent>
+            <DialogActions>
+              <Button
+                onClick={this.handleCloseDelete.bind(this)}
+                disabled={this.state.deleting}
+              >
+                {t('Cancel')}
+              </Button>
+              <Button
+                color="secondary"
+                onClick={this.submitDelete.bind(this)}
+                disabled={this.state.deleting}
+              >
+                {t('Delete')}
+              </Button>
+            </DialogActions>
+          </Dialog>
+          <Drawer
+            open={this.state.displayEdit}
+            anchor="right"
+            sx={{ zIndex: 1202 }}
+            elevation={1}
+            classes={{ paper: classes.drawerPaper }}
+            onClose={this.handleCloseEdit.bind(this)}
+          >
+            <QueryRenderer
+              query={stixCyberObservableEditionQuery}
+              variables={{ id: stixCyberObservableId }}
+              render={({ props }) => {
+                if (props) {
+                  return (
+                    <StixCyberObservableEditionContainer
+                      stixCyberObservable={props.stixCyberObservable}
+                      handleClose={this.handleCloseEdit.bind(this)}
+                    />
+                  );
+                }
+                return <div />;
+              }}
+            />
+          </Drawer>
+        </>
+      </KnowledgeSecurity>
     );
   }
 }

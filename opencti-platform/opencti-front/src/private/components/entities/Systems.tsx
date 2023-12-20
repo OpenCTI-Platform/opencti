@@ -4,7 +4,7 @@ import { SystemsLinesPaginationQuery, SystemsLinesPaginationQuery$variables } fr
 import ListLines from '../../../components/list_lines/ListLines';
 import SystemsLines, { systemsLinesQuery } from './systems/SystemsLines';
 import SystemCreation from './systems/SystemCreation';
-import Security from '../../../utils/Security';
+import { KnowledgeSecurity } from '../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE } from '../../../utils/hooks/useGranted';
 import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
@@ -114,9 +114,9 @@ const Systems = () => {
     <>
       <Breadcrumbs variant="list" elements={[{ label: t_i18n('Entities') }, { label: t_i18n('Systems'), current: true }]} />
       {renderLines()}
-      <Security needs={[KNOWLEDGE_KNUPDATE]}>
+      <KnowledgeSecurity needs={[KNOWLEDGE_KNUPDATE]} entity='System'>
         <SystemCreation paginationOptions={paginationOptions} />
-      </Security>
+      </KnowledgeSecurity>
     </>
   );
 };

@@ -9,7 +9,7 @@ import NoteDetails from './NoteDetails';
 import NoteEdition from './NoteEdition';
 import StixDomainObjectOverview from '../../common/stix_domain_objects/StixDomainObjectOverview';
 import StixCoreObjectExternalReferences from '../external_references/StixCoreObjectExternalReferences';
-import { CollaborativeSecurity } from '../../../../utils/Security';
+import { CollaborativeSecurity, KnowledgeSecurity } from '../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 import StixCoreObjectLatestHistory from '../../common/stix_core_objects/StixCoreObjectLatestHistory';
 import ContainerStixObjectsOrStixRelationships from '../../common/containers/ContainerStixObjectsOrStixRelationships';
@@ -63,9 +63,11 @@ class NoteComponent extends Component {
             <StixCoreObjectLatestHistory stixCoreObjectId={note.id} />
           </Grid>
         </Grid>
-        <CollaborativeSecurity data={note} needs={[KNOWLEDGE_KNUPDATE]}>
-          <NoteEdition noteId={note.id} />
-        </CollaborativeSecurity>
+        <KnowledgeSecurity needs={[KNOWLEDGE_KNUPDATE]} entity='Note'>
+          <CollaborativeSecurity data={note} needs={[KNOWLEDGE_KNUPDATE]}>
+            <NoteEdition noteId={note.id} />
+          </CollaborativeSecurity>
+        </KnowledgeSecurity>
       </>
     );
   }
