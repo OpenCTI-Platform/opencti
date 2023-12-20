@@ -34,6 +34,11 @@ export const isValidTargetType = (representation: CsvMapperRepresentation) => {
 };
 
 export const validate = async (context: AuthContext, mapper: BasicStoreEntityCsvMapper) => {
+  // consider empty csv mapper as invalid to avoid being used in the importer
+  if (mapper.representations.length === 0) {
+    throw Error(`CSV Mapper '${mapper.name}' has no representation`);
+  }
+
   await Promise.all(Array.from(mapper.representations.entries()).map(async ([idx, representation]) => {
     // Validate target type
     isValidTargetType(representation);
