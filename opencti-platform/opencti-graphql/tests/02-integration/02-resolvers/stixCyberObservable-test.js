@@ -29,6 +29,13 @@ const LIST_QUERY = `
     }
 `;
 
+// Get an initial qty of current observables for use in expected qty
+const queryResultInitial = await queryAsAdmin({ query: gql(LIST_QUERY), variables: { first: 10 } });
+let initialCount = 0;
+if (queryResultInitial?.data?.stixCyberObservables?.edges?.length) {
+  initialCount = queryResultInitial.data.stixCyberObservables.edges.length;
+}
+
 const READ_QUERY = gql`
     query stixCyberObservable($id: String!) {
         stixCyberObservable(id: $id) {
@@ -39,84 +46,138 @@ const READ_QUERY = gql`
     }
 `;
 
-describe('StixCyberObservable resolver standard behavior', () => {
-  let stixCyberObservableInternalId;
-  let networkTrafficInternalId;
-  const stixCyberObservableStixId = 'ipv4-addr--921c202b-5706-499d-9484-b5cf9bc6f70c';
-  it('should stixCyberObservable created', async () => {
-    const CREATE_QUERY = gql`
-        mutation StixCyberObservableAdd($type: String!, $IPv4Addr: IPv4AddrAddInput) {
-            stixCyberObservableAdd(type: $type, IPv4Addr: $IPv4Addr) {
-                id
-                observable_value
-                ... on IPv4Addr {
-                    value
-                }
-            }
+const observables = {
+  credential: {
+    observableType: 'credential',
+    internalId: null,
+    observableValue: 'USA passport 123456789, issued 1/1/2016, expires 1/1/2026',
+    createQuery: gql`
+      mutation StixCyberObservableAdd($type: String!, $Credential: CredentialAddInput) {
+          stixCyberObservableAdd(type: $type, Credential: $Credential) {
+              id
+              observable_value
+              ... on Credential {
+                  value
+              }
+          }
+      }`,
+    observable() {
+      return {
+        type: 'Credential',
+        Credential: {
+          value: this.observableValue,
+        },
+      };
+    },
+  },
+  ipv4: {
+    observableType: 'ipv4',
+    internalId: null,
+    observableValue: '8.8.8.8',
+    stixId: 'ipv4-addr--921c202b-5706-499d-9484-b5cf9bc6f70c',
+    createQuery: gql`
+      mutation StixCyberObservableAdd($type: String!, $IPv4Addr: IPv4AddrAddInput) {
+          stixCyberObservableAdd(type: $type, IPv4Addr: $IPv4Addr) {
+              id
+              observable_value
+              ... on IPv4Addr {
+                  value
+              }
+          }
+      }`,
+    observable() {
+      return {
+        type: 'IPv4-Addr',
+        stix_id: this.stixId,
+        IPv4Addr: {
+          value: this.observableValue
+        },
+      };
+    },
+  },
+  networkTraffic: {
+    observableType: 'networkTraffic',
+    internalId: null,
+    observableValue: 8090,
+    createQuery: gql`
+    mutation StixCyberObservableAdd($type: String!, $NetworkTraffic: NetworkTrafficAddInput) {
+      stixCyberObservableAdd(type: $type, NetworkTraffic: $NetworkTraffic) {
+        id
+        observable_value
+        ... on NetworkTraffic {
+          dst_port
         }
-    `;
-    // Create the stixCyberObservable
-    const STIX_OBSERVABLE_TO_CREATE = {
-      type: 'IPv4-Addr',
-      stix_id: stixCyberObservableStixId,
-      IPv4Addr: {
-        value: '8.8.8.8',
-      },
-    };
-    const stixCyberObservable = await queryAsAdmin({
-      query: CREATE_QUERY,
-      variables: STIX_OBSERVABLE_TO_CREATE,
-    });
-    expect(stixCyberObservable).not.toBeNull();
-    expect(stixCyberObservable.data.stixCyberObservableAdd).not.toBeNull();
-    expect(stixCyberObservable.data.stixCyberObservableAdd.observable_value).toEqual('8.8.8.8');
-    stixCyberObservableInternalId = stixCyberObservable.data.stixCyberObservableAdd.id;
-  });
-  it('should stixCyberObservable network traffic created', async () => {
-    const CREATE_QUERY = gql`
-      mutation StixCyberObservableAdd($type: String!, $NetworkTraffic: NetworkTrafficAddInput) {
-        stixCyberObservableAdd(type: $type, NetworkTraffic: $NetworkTraffic) {
+      }
+    }
+  `,
+    observable() {
+      return {
+        type: 'Network-Traffic',
+        NetworkTraffic: {
+          dst_port: this.observableValue,
+        },
+      };
+    },
+  },
+  trackingNumber: {
+    observableType: 'trackingNumber',
+    internalId: null,
+    observableValue: '0123 4567 8901 2345 6789 US',
+    createQuery: gql`
+      mutation StixCyberObservableAdd($type: String!, $TrackingNumber: TrackingNumberAddInput) {
+        stixCyberObservableAdd(type: $type, TrackingNumber: $TrackingNumber) {
           id
           observable_value
-          ... on NetworkTraffic {
-            dst_port
+          ... on TrackingNumber {
+            value
           }
         }
       }
-    `;
-    // Create the stixCyberObservable
-    const STIX_OBSERVABLE_TO_CREATE = {
-      type: 'Network-Traffic',
-      NetworkTraffic: {
-        dst_port: 8090,
-      },
-    };
-    const stixCyberObservable = await queryAsAdmin({
-      query: CREATE_QUERY,
-      variables: STIX_OBSERVABLE_TO_CREATE,
+    `,
+    observable() {
+      return {
+        type: 'Tracking-Number',
+        TrackingNumber: {
+          value: this.observableValue,
+        },
+      };
+    },
+  },
+};
+
+describe.sequential('StixCyberObservable resolver standard behavior', () => {
+  it.each(Object.values(observables))('%#. should create $observableType stixCyberObservable with $observableValue value.)', async (observable) => {
+    const queryResult = await queryAsAdmin({
+      query: observable.createQuery,
+      variables: observables[observable.observableType].observable(),
     });
-    expect(stixCyberObservable).not.toBeNull();
-    expect(stixCyberObservable.data.stixCyberObservableAdd).not.toBeNull();
-    expect(stixCyberObservable.data.stixCyberObservableAdd.observable_value).toEqual('8090');
-    networkTrafficInternalId = stixCyberObservable.data.stixCyberObservableAdd.id;
-  });
-  it('should stixCyberObservable loaded by internal id', async () => {
-    const queryResult = await queryAsAdmin({ query: READ_QUERY, variables: { id: stixCyberObservableInternalId } });
+    // eslint-disable-next-line no-param-reassign
+    observable.internalId = queryResult.data.stixCyberObservableAdd.id;
     expect(queryResult).not.toBeNull();
+    expect(observable.internalId).not.toBeNull();
+    expect(queryResult.data.stixCyberObservableAdd).not.toBeNull();
+    expect(queryResult.data.stixCyberObservableAdd.observable_value).toEqual(observable.observableValue.toString());
+  });
+  it.each(Object.values(observables))('%#. should verify with internal id that $observableType stixCyberObservable has been loaded.)', async (observable) => {
+    const queryResult = await queryAsAdmin({ query: READ_QUERY, variables: { id: observable.internalId } });
     expect(queryResult.data.stixCyberObservable).not.toBeNull();
-    expect(queryResult.data.stixCyberObservable.id).toEqual(stixCyberObservableInternalId);
+    expect(queryResult.data.stixCyberObservable.id).toEqual(observable.internalId);
     expect(queryResult.data.stixCyberObservable.toStix.length).toBeGreaterThan(5);
   });
-  it('should list stixCyberObservables', async () => {
+  it('should list stixCyberObservables.', async () => {
     const queryResult = await queryAsAdmin({ query: gql(LIST_QUERY), variables: { first: 10 } });
-    expect(queryResult.data.stixCyberObservables.edges.length).toEqual(4);
+    // Adds any possible stixCyberObservables present before test started to the quantity added for this specific test
+    const resultQty = initialCount + Object.keys(observables).length;
+    expect(queryResult.data.stixCyberObservables.edges.length).toEqual(resultQty);
   });
-  it('should list stixCyberObservables orderBy observable_value', async () => {
+  it('should list stixCyberObservables orderBy observable_value.', async () => {
     const queryResult = await adminQuery(LIST_QUERY, { first: 10, orderBy: 'observable_value', orderMode: 'desc' });
     expect(queryResult.data.stixCyberObservables).not.toBeNull();
-    expect(queryResult.data.stixCyberObservables.edges.length).toEqual(4);
+    // Adds any possible stixCyberObservables present before test started to the quantity added for this specific test
+    const resultQty = initialCount + Object.keys(observables).length;
+    expect(queryResult.data.stixCyberObservables.edges.length).toEqual(resultQty);
   });
-  it('should update stixCyberObservable', async () => {
+  it.each(Object.values(observables))('%#. should update $observableType stixCyberObservable.)', async (observable) => {
     const UPDATE_QUERY = gql`
         mutation StixCyberObservableEdit($id: ID!, $input: [EditInput]!) {
             stixCyberObservableEdit(id: $id) {
@@ -130,13 +191,13 @@ describe('StixCyberObservable resolver standard behavior', () => {
     const queryResult = await queryAsAdmin({
       query: UPDATE_QUERY,
       variables: {
-        id: stixCyberObservableInternalId,
+        id: observable.internalId,
         input: { key: 'x_opencti_score', value: '20' },
       },
     });
     expect(queryResult.data.stixCyberObservableEdit.fieldPatch.x_opencti_score).toEqual(20);
   });
-  it('should context patch stixCyberObservable', async () => {
+  it.each(Object.values(observables))('%#. should context patch $observableType stixCyberObservable.)', async (observable) => {
     const CONTEXT_PATCH_QUERY = gql`
         mutation StixCyberObservableEdit($id: ID!, $input: EditContext) {
             stixCyberObservableEdit(id: $id) {
@@ -148,11 +209,11 @@ describe('StixCyberObservable resolver standard behavior', () => {
     `;
     const queryResult = await queryAsAdmin({
       query: CONTEXT_PATCH_QUERY,
-      variables: { id: stixCyberObservableInternalId, input: { focusOn: 'description' } },
+      variables: { id: observable.internalId, input: { focusOn: 'description' } },
     });
-    expect(queryResult.data.stixCyberObservableEdit.contextPatch.id).toEqual(stixCyberObservableInternalId);
+    expect(queryResult.data.stixCyberObservableEdit.contextPatch.id).toEqual(observable.internalId);
   });
-  it('should context clean stixCyberObservable', async () => {
+  it.each(Object.values(observables))('%#. should clean $observableType stixCyberObservable.)', async (observable) => {
     const CONTEXT_PATCH_QUERY = gql`
         mutation StixCyberObservableEdit($id: ID!) {
             stixCyberObservableEdit(id: $id) {
@@ -164,11 +225,11 @@ describe('StixCyberObservable resolver standard behavior', () => {
     `;
     const queryResult = await queryAsAdmin({
       query: CONTEXT_PATCH_QUERY,
-      variables: { id: stixCyberObservableInternalId },
+      variables: { id: observable.internalId },
     });
-    expect(queryResult.data.stixCyberObservableEdit.contextClean.id).toEqual(stixCyberObservableInternalId);
+    expect(queryResult.data.stixCyberObservableEdit.contextClean.id).toEqual(observable.internalId);
   });
-  it('should add relation in stixCyberObservable', async () => {
+  it.each(Object.values(observables))('%#. should add relation in $observableType stixCyberObservable.)', async (observable) => {
     const RELATION_ADD_QUERY = gql`
         mutation StixCyberObservableEdit($id: ID!, $input: StixRefRelationshipAddInput!) {
             stixCyberObservableEdit(id: $id) {
@@ -188,16 +249,17 @@ describe('StixCyberObservable resolver standard behavior', () => {
     const queryResult = await queryAsAdmin({
       query: RELATION_ADD_QUERY,
       variables: {
-        id: stixCyberObservableInternalId,
+        id: observable.internalId,
         input: {
           toId: 'marking-definition--78ca4366-f5b8-4764-83f7-34ce38198e27',
           relationship_type: 'object-marking',
         },
       },
     });
+    expect(queryResult.data.stixCyberObservableEdit).not.toBeNull();
     expect(queryResult.data.stixCyberObservableEdit.relationAdd.from.objectMarking.length).toEqual(1);
   });
-  it('should delete relation in stixCyberObservable', async () => {
+  it.each(Object.values(observables))('%#. should delete relation in $observableType stixCyberObservable.)', async (observable) => {
     const RELATION_DELETE_QUERY = gql`
         mutation StixCyberObservableEdit($id: ID!, $toId: StixRef!, $relationship_type: String!) {
             stixCyberObservableEdit(id: $id) {
@@ -213,14 +275,14 @@ describe('StixCyberObservable resolver standard behavior', () => {
     const queryResult = await queryAsAdmin({
       query: RELATION_DELETE_QUERY,
       variables: {
-        id: stixCyberObservableInternalId,
+        id: observable.internalId,
         toId: 'marking-definition--78ca4366-f5b8-4764-83f7-34ce38198e27',
         relationship_type: 'object-marking',
       },
     });
     expect(queryResult.data.stixCyberObservableEdit.relationDelete.objectMarking.length).toEqual(0);
   });
-  it('should add observable in note', async () => {
+  it.each(Object.values(observables))('%#. should add $observableType stixCyberObservable in note.)', async (observable) => {
     const CREATE_QUERY = gql`
         mutation NoteAdd($input: NoteAddInput!) {
             noteAdd(input: $input) {
@@ -230,12 +292,12 @@ describe('StixCyberObservable resolver standard behavior', () => {
             }
         }
     `;
-    // Create the note
+      // Create the note
     const NOTE_TO_CREATE = {
       input: {
         attribute_abstract: 'Note description',
         content: 'Test content',
-        objects: [stixCyberObservableInternalId],
+        objects: [observable.internalId],
         createdBy: 'identity--7b82b010-b1c0-4dae-981f-7756374a17df',
       },
     };
@@ -254,7 +316,7 @@ describe('StixCyberObservable resolver standard behavior', () => {
             }
         }
     `;
-    // Delete the note
+      // Delete the note
     await queryAsAdmin({
       query: DELETE_QUERY,
       variables: { id: noteInternalId },
@@ -269,31 +331,27 @@ describe('StixCyberObservable resolver standard behavior', () => {
             }
         }
     `;
-    // Verify is no longer found
+      // Verify is no longer found
     const queryResult = await queryAsAdmin({ query: READ_NOTE_QUERY, variables: { id: noteInternalId } });
     expect(queryResult).not.toBeNull();
     expect(queryResult.data.note).toBeNull();
   });
-  it('should stixCyberObservable deleted', async () => {
+  it.each(Object.values(observables))('%#. should delete $observableType stixCyberObservable.)', async (observable) => {
     const DELETE_QUERY = gql`
-        mutation stixCyberObservableDelete($id: ID!) {
-            stixCyberObservableEdit(id: $id) {
-                delete
-            }
-        }
-    `;
-    // Delete the stixCyberObservable
+          mutation stixCyberObservableDelete($id: ID!) {
+              stixCyberObservableEdit(id: $id) {
+                  delete
+              }
+          }
+      `;
+      // Delete the stixCyberObservable
     await queryAsAdmin({
       query: DELETE_QUERY,
-      variables: { id: stixCyberObservableInternalId },
+      variables: {
+        id: observable.internalId
+      }
     });
-    // delete network traffic
-    await queryAsAdmin({
-      query: DELETE_QUERY,
-      variables: { id: networkTrafficInternalId },
-    });
-    // Verify is no longer found
-    const queryResult = await queryAsAdmin({ query: READ_QUERY, variables: { id: stixCyberObservableStixId } });
+    const queryResult = await queryAsAdmin({ query: READ_QUERY, variables: { id: observable.internalId } });
     expect(queryResult).not.toBeNull();
     expect(queryResult.data.stixCyberObservable).toBeNull();
   });

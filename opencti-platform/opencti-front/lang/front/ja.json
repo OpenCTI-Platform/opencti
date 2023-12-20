@@ -2684,4 +2684,8 @@
   "Testing csv mapper": "csvマッパーのテスト",
   "This operations will only apply on labels or markings added in the context of this playbook such as enrichment or other knowledge manipulations but not if the labels or markings are already written in the platform.": "この操作は、エンリッチメントやその他の知識操作など、このプレイブックのコンテキストで追加されたラベルやマーキングに対してのみ適用されます。",
   "The opinions has no value defined in your vocabulary. Please add them first to be able to add opinions.": "意見には、あなたの語彙で定義された価値はありません。意見を追加できるようにするには、まずそれらを追加してください。"
+  "Credential": "資格情報",
+  "Credentials": "資格",
+  "entity_Tracking-Number": "追跡番号",
+  "entity_Credential": "資格情報"
 }

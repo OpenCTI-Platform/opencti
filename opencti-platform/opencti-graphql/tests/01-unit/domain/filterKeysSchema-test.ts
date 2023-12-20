@@ -29,6 +29,7 @@ import {
   TYPE_FILTER
 } from '../../../src/utils/filtering/filtering-constants';
 import { ENTITY_TYPE_HISTORY } from '../../../src/schema/internalObject';
+import { STIX_CYBER_OBSERVABLES } from '../../../src/schema/stixCyberObservable';
 
 describe('Filter keys schema generation testing', async () => {
   const filterKeysSchemaArray = await generateFilterKeysSchema();
@@ -217,7 +218,7 @@ describe('Filter keys schema generation testing', async () => {
     // Stix Cyber Observables
     filterDefinition = filterKeysSchema.get(ABSTRACT_STIX_CYBER_OBSERVABLE)?.get('x_opencti_score'); // attribute existing for all the observables
     filterDefinition = filterKeysSchema.get(ABSTRACT_STIX_CYBER_OBSERVABLE)?.get(INPUT_LABELS); // ref existing for all the observables
-    expect(filterDefinition?.subEntityTypes.length).toEqual(30); // 29 observables + abstract type 'Stix-Cyber-Observable'
+    expect(filterDefinition?.subEntityTypes.length).toEqual(STIX_CYBER_OBSERVABLES.length + 1); // 31 observables + abstract type 'Stix-Cyber-Observable'
   });
   it('should includes the filters associated to the attributes of the History entity type', () => {
     let filterDefinition = filterKeysSchema.get(ENTITY_TYPE_HISTORY)?.get(CONTEXT_OBJECT_LABEL_FILTER);

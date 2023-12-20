@@ -28,6 +28,7 @@ import type * as SMO from '../types/stix-smo';
 import {
   ENTITY_AUTONOMOUS_SYSTEM,
   ENTITY_BANK_ACCOUNT,
+  ENTITY_CREDENTIAL,
   ENTITY_CRYPTOGRAPHIC_KEY,
   ENTITY_CRYPTOGRAPHIC_WALLET,
   ENTITY_DIRECTORY,
@@ -50,6 +51,7 @@ import {
   ENTITY_PROCESS,
   ENTITY_SOFTWARE,
   ENTITY_TEXT,
+  ENTITY_TRACKING_NUMBER,
   ENTITY_URL,
   ENTITY_USER_ACCOUNT,
   ENTITY_USER_AGENT,
@@ -185,6 +187,12 @@ export const extractStixRepresentative = (
   if (entityType === ENTITY_BANK_ACCOUNT) {
     const bankAccount = stix as SCO.StixBankAccount;
     return bankAccount.iban ?? bankAccount.account_number ?? 'Unknown';
+  }
+  if (entityType === ENTITY_CREDENTIAL) {
+    return (stix as SCO.StixCredential).value ?? 'Unknown';
+  }
+  if (entityType === ENTITY_TRACKING_NUMBER) {
+    return (stix as SCO.StixTrackingNumber).value ?? 'Unknown';
   }
   if (entityType === ENTITY_CRYPTOGRAPHIC_KEY) {
     return (stix as SCO.StixCryptographicKey).value ?? 'Unknown';

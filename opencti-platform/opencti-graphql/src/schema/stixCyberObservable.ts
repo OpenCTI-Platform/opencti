@@ -25,8 +25,10 @@ export const ENTITY_CRYPTOGRAPHIC_KEY = 'Cryptographic-Key'; // Custom
 export const ENTITY_CRYPTOGRAPHIC_WALLET = 'Cryptocurrency-Wallet'; // Custom
 export const ENTITY_HOSTNAME = 'Hostname'; // Custom
 export const ENTITY_TEXT = 'Text'; // Custom
+export const ENTITY_CREDENTIAL = 'Credential'; // Custom
 export const ENTITY_USER_AGENT = 'User-Agent'; // Custom
 export const ENTITY_BANK_ACCOUNT = 'Bank-Account'; // Custom
+export const ENTITY_TRACKING_NUMBER = 'Tracking-Number'; // Custom
 export const ENTITY_PHONE_NUMBER = 'Phone-Number'; // Custom
 export const ENTITY_PAYMENT_CARD = 'Payment-Card'; // Custom
 export const ENTITY_MEDIA_CONTENT = 'Media-Content'; // Custom
@@ -64,7 +66,9 @@ export const STIX_CYBER_OBSERVABLES = [
   ENTITY_USER_AGENT,
   ENTITY_TEXT,
   ENTITY_BANK_ACCOUNT,
+  ENTITY_CREDENTIAL,
   ENTITY_PHONE_NUMBER,
+  ENTITY_TRACKING_NUMBER,
   ENTITY_PAYMENT_CARD,
   ENTITY_MEDIA_CONTENT,
 ];

@@ -47,6 +47,7 @@ import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../../../src/modules/organiza
 import { addReport } from '../../../src/domain/report';
 import { addIndividual } from '../../../src/domain/individual';
 import { addOrganization } from '../../../src/modules/organization/organization-domain';
+import { STIX_CYBER_OBSERVABLES } from '../../../src/schema/stixCyberObservable';
 
 describe('Basic and utils', () => {
   it('should escape according to our needs', () => {
@@ -77,7 +78,7 @@ describe('Loaders', () => {
   it('should load subTypes values', async () => {
     const stixObservableSubTypes = await findAll(testContext, ADMIN_USER, { type: 'Stix-Cyber-Observable' });
     expect(stixObservableSubTypes).not.toBeNull();
-    expect(stixObservableSubTypes.edges.length).toEqual(29);
+    expect(stixObservableSubTypes.edges.length).toEqual(STIX_CYBER_OBSERVABLES.length);
     const subTypeLabels = R.map((e) => e.node.label, stixObservableSubTypes.edges);
     expect(R.includes('IPv4-Addr', subTypeLabels)).toBeTruthy();
     expect(R.includes('IPv6-Addr', subTypeLabels)).toBeTruthy();

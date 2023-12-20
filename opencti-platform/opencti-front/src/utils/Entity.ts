@@ -114,6 +114,8 @@ export const resolveLink = (type = 'unknown'): string | null => {
     case 'Cryptocurrency-Wallet':
     case 'Hostname':
     case 'Text':
+    case 'Credential':
+    case 'Tracking-Number':
     case 'User-Agent':
     case 'Bank-Account':
     case 'Phone-Number':
