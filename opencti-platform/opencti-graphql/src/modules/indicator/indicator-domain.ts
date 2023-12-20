@@ -22,9 +22,9 @@ import { cleanupIndicatorPattern, extractObservablesFromIndicatorPattern } from 
 import { computeValidPeriod } from './indicator-utils';
 import { addFilter } from '../../utils/filtering/filtering-utils';
 import type { AuthContext, AuthUser } from '../../types/user';
-import { type BasicStoreEntityIndicator, ENTITY_TYPE_INDICATOR } from './indicator-types';
+import { type BasicStoreEntityIndicator, ENTITY_TYPE_INDICATOR, type StoreEntityIndicator } from './indicator-types';
 import type { IndicatorAddInput, QueryIndicatorsArgs, QueryIndicatorsNumberArgs } from '../../generated/graphql';
-import type { StoreObject } from '../../types/store';
+import type { NumberResult } from '../../types/store';
 
 export const findById = (context: AuthContext, user: AuthUser, indicatorId: string) => {
   return storeLoadById<BasicStoreEntityIndicator>(context, user, indicatorId, ENTITY_TYPE_INDICATOR);
@@ -34,7 +34,12 @@ export const findAll = (context: AuthContext, user: AuthUser, args: QueryIndicat
   return listEntitiesPaginated<BasicStoreEntityIndicator>(context, user, [ENTITY_TYPE_INDICATOR], args);
 };
 
-export const createObservablesFromIndicator = async (context: AuthContext, user: AuthUser, input, indicator) => {
+export const createObservablesFromIndicator = async (
+  context: AuthContext,
+  user: AuthUser,
+  input: { objectLabel?: string[] | null; objectMarking?: string[] | null; createdBy?: string | null; externalReferences?: string[] | null; },
+  indicator: StoreEntityIndicator,
+) => {
   const { pattern } = indicator;
   const observables = extractObservablesFromIndicatorPattern(pattern);
   const observablesToLink = [];
@@ -68,7 +73,7 @@ export const createObservablesFromIndicator = async (context: AuthContext, user:
 };
 
 export const promoteIndicatorToObservable = async (context: AuthContext, user: AuthUser, indicatorId: string) => {
-  const indicator: StoreObject = await storeLoadByIdWithRefs(context, user, indicatorId) as StoreObject;
+  const indicator: StoreEntityIndicator = await storeLoadByIdWithRefs(context, user, indicatorId) as StoreEntityIndicator;
   const objectLabel = (indicator[INPUT_LABELS] ?? []).map((n) => n.internal_id);
   const objectMarking = (indicator[INPUT_MARKINGS] ?? []).map((n) => n.internal_id);
   const externalReferences = (indicator[INPUT_EXTERNAL_REFS] ?? []).map((n) => n.internal_id);
@@ -133,39 +138,44 @@ export const indicatorsTimeSeries = (context: AuthContext, user: AuthUser, args:
   return timeSeriesEntities(context, user, [ENTITY_TYPE_INDICATOR], args);
 };
 
-export const indicatorsNumber = (context: AuthContext, user: AuthUser, args: QueryIndicatorsNumberArgs) => ({
-  count: elCount(context, user, READ_INDEX_STIX_DOMAIN_OBJECTS, { ...args, types: [ENTITY_TYPE_INDICATOR] }),
-  total: elCount(
-    context,
-    user,
-    READ_INDEX_STIX_DOMAIN_OBJECTS,
-    { ...R.dissoc('endDate', args), types: [ENTITY_TYPE_INDICATOR] }
-  ),
-});
-
 export const indicatorsTimeSeriesByEntity = (context: AuthContext, user: AuthUser, args: any) => {
   const { objectId } = args;
   const filters = addFilter(args.filters, buildRefRelationKey(RELATION_INDICATES, '*'), objectId);
   return timeSeriesEntities(context, user, [ENTITY_TYPE_INDICATOR], { ...args, filters });
 };
 
-export const indicatorsNumberByEntity = (context: AuthContext, user: AuthUser, args: QueryIndicatorsNumberArgs) => {
+export const indicatorsNumber = async (context: AuthContext, user: AuthUser, args: QueryIndicatorsNumberArgs): Promise<NumberResult> => {
+  const countPromise = elCount(context, user, READ_INDEX_STIX_DOMAIN_OBJECTS, {
+    ...args,
+    types: [ENTITY_TYPE_INDICATOR]
+  }) as Promise<number>;
+  const totalPromise = elCount(
+    context,
+    user,
+    READ_INDEX_STIX_DOMAIN_OBJECTS,
+    { ...R.dissoc('endDate', args), types: [ENTITY_TYPE_INDICATOR] }
+  ) as Promise<number>;
+  const [count, total] = await Promise.all([countPromise, totalPromise]);
+  return { count, total };
+};
+
+export const indicatorsNumberByEntity = async (context: AuthContext, user: AuthUser, args: QueryIndicatorsNumberArgs): Promise<NumberResult> => {
   const { objectId } = args;
   const filters = addFilter(null, buildRefRelationKey(RELATION_INDICATES, '*'), objectId);
-  return {
-    count: elCount(
-      context,
-      user,
-      READ_INDEX_STIX_DOMAIN_OBJECTS,
-      { ...args, types: [ENTITY_TYPE_INDICATOR], filters }
-    ),
-    total: elCount(
-      context,
-      user,
-      READ_INDEX_STIX_DOMAIN_OBJECTS,
-      { ...R.dissoc('endDate', args), types: [ENTITY_TYPE_INDICATOR], filters }
-    ),
-  };
+  const countPromise = elCount(
+    context,
+    user,
+    READ_INDEX_STIX_DOMAIN_OBJECTS,
+    { ...args, types: [ENTITY_TYPE_INDICATOR], filters }
+  );
+  const totalPromise = elCount(
+    context,
+    user,
+    READ_INDEX_STIX_DOMAIN_OBJECTS,
+    { ...R.dissoc('endDate', args), types: [ENTITY_TYPE_INDICATOR], filters }
+  );
+  const [count, total] = await Promise.all([countPromise, totalPromise]);
+  return { count, total };
 };
 
 export const indicatorsDistributionByEntity = async (context: AuthContext, user: AuthUser, args: any) => {
