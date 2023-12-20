@@ -983,7 +983,7 @@ describe('Workspace member access behavior', () => {
     ).toEqual(3);
   });
 
-  it("A user can't modifiy authorized_members if the update leads to a workspace with no valid admin", async () => {
+  it("A user can't modify authorized_members if the update leads to a workspace with no valid admin", async () => {
     const authorizedMembersUpdate = [
       {
         id: 'not_existing_id',
@@ -1001,7 +1001,7 @@ describe('Workspace member access behavior', () => {
     expect(queryResult).not.toBeNull();
     expect(queryResult.errors.length).toEqual(1);
     expect(queryResult.errors.at(0).name).toEqual('FUNCTIONAL_ERROR');
-    expect(queryResult.errors.at(0).data.reason).toEqual(
+    expect(queryResult.errors.at(0).message).toEqual(
       'Workspace should have at least one admin',
     );
   });
