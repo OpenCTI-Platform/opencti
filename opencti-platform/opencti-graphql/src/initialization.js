@@ -345,9 +345,9 @@ const isCompatiblePlatform = async (context) => {
   if (!currentVersion) return;
   // Runtime version must be >= of the stored runtime
   const runtimeVersion = semver.coerce(PLATFORM_VERSION).version;
-  // if (semver.lt(runtimeVersion, currentVersion)) {
-  throw UnsupportedError('Your platform data are too recent to start on', { currentVersion, runtimeVersion });
-  // }
+  if (semver.lt(runtimeVersion, currentVersion)) {
+    throw UnsupportedError('Your platform data are too recent to start on', { currentVersion, runtimeVersion });
+  }
 };
 
 // eslint-disable-next-line
