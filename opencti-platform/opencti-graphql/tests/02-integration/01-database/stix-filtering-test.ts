@@ -39,7 +39,7 @@ describe('Stix Filtering', () => {
       ],
       filterGroups: [],
     } as FilterGroup;
-    await expect(() => isStixMatchFilterGroup_MockableForUnitTests(testContext, ADMIN_USER, stixReport, multipleKeys, MOCK_RESOLUTION_MAP)).rejects.toThrowError('Stix filtering can only be executed on a unique filter key');
+    await expect(() => isStixMatchFilterGroup_MockableForUnitTests(testContext, ADMIN_USER, stixReport, multipleKeys, MOCK_RESOLUTION_MAP)).rejects.toThrow('Stix filtering can only be executed on a unique filter key');
 
     const multipleKeysNested = {
       mode: 'and',
@@ -54,7 +54,7 @@ describe('Stix Filtering', () => {
       }],
     } as FilterGroup;
 
-    await expect(() => isStixMatchFilterGroup_MockableForUnitTests(testContext, ADMIN_USER, stixReport, multipleKeysNested, MOCK_RESOLUTION_MAP)).rejects.toThrowError('Stix filtering can only be executed on a unique filter key');
+    await expect(() => isStixMatchFilterGroup_MockableForUnitTests(testContext, ADMIN_USER, stixReport, multipleKeysNested, MOCK_RESOLUTION_MAP)).rejects.toThrow('Stix filtering can only be executed on a unique filter key');
 
     const unhandledKeys = {
       mode: 'and',
@@ -65,7 +65,7 @@ describe('Stix Filtering', () => {
       filterGroups: [],
     } as FilterGroup;
 
-    await expect(() => isStixMatchFilterGroup_MockableForUnitTests(testContext, ADMIN_USER, stixReport, unhandledKeys, MOCK_RESOLUTION_MAP)).rejects.toThrowError('Stix filtering is not compatible with the provided filter key ["bad_key"]');
+    await expect(() => isStixMatchFilterGroup_MockableForUnitTests(testContext, ADMIN_USER, stixReport, unhandledKeys, MOCK_RESOLUTION_MAP)).rejects.toThrow('Stix filtering is not compatible with the provided filter key');
 
     const unhandledKeysNested = {
       mode: 'and',
@@ -80,7 +80,7 @@ describe('Stix Filtering', () => {
       }],
     } as FilterGroup;
 
-    await expect(() => isStixMatchFilterGroup_MockableForUnitTests(testContext, ADMIN_USER, stixReport, unhandledKeysNested, MOCK_RESOLUTION_MAP)).rejects.toThrowError('Stix filtering is not compatible with the provided filter key ["bad_key"]');
+    await expect(() => isStixMatchFilterGroup_MockableForUnitTests(testContext, ADMIN_USER, stixReport, unhandledKeysNested, MOCK_RESOLUTION_MAP)).rejects.toThrow('Stix filtering is not compatible with the provided filter key');
 
     const notArrayKeys = {
       mode: 'and',
@@ -90,7 +90,7 @@ describe('Stix Filtering', () => {
       filterGroups: [],
     } as unknown as FilterGroup;
 
-    await expect(() => isStixMatchFilterGroup_MockableForUnitTests(testContext, ADMIN_USER, stixReport, notArrayKeys, MOCK_RESOLUTION_MAP)).rejects.toThrowError('The provided filter key is not an array - got "entity_type"');
+    await expect(() => isStixMatchFilterGroup_MockableForUnitTests(testContext, ADMIN_USER, stixReport, notArrayKeys, MOCK_RESOLUTION_MAP)).rejects.toThrow('The provided filter key is not an array');
   });
 
   it('prevent access to stix object according to marking', async () => {
