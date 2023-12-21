@@ -31,7 +31,7 @@ const basicRelationshipAttributes: Array<AttributeDefinition> = [
   {
     name: 'connections',
     label: 'Relations connections',
-    type: 'object', // to complete with business type
+    type: 'object',
     editDefault: false,
     nested: true,
     mandatoryType: 'internal',
@@ -39,7 +39,7 @@ const basicRelationshipAttributes: Array<AttributeDefinition> = [
     upsert: false,
     isFilterable: true,
     mappings: [
-      { ...internalId, associatedFilterKeys: ['fromId', 'toId', 'elementId'], isFilterable: true },
+      { ...internalId, isFilterable: true, associatedFilterKeys: ['fromId', 'toId', 'elementId'] },
       { name: 'name', label: 'Name', type: 'string', editDefault: false, mandatoryType: 'no', multiple: true, upsert: true, isFilterable: false },
       { name: 'role', label: 'Role', type: 'string', editDefault: false, mandatoryType: 'no', multiple: true, upsert: true, isFilterable: false },
       { name: 'types', label: 'Types', type: 'string', editDefault: false, mandatoryType: 'no', multiple: true, upsert: true, isFilterable: true, associatedFilterKeys: ['fromTypes', 'toTypes'] },

@@ -31,8 +31,8 @@ const attributes: Array<AttributeDefinition> = [
       { name: 'entity_id', label: 'Related entity', type: 'string', mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false, isFilterable: true },
       { name: 'messages', label: 'File messages', type: 'object_flat', mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false, isFilterable: false },
       { name: 'errors', label: 'File errors', type: 'object_flat', mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false, isFilterable: false },
-      { name: 'inCarousel', label: 'Include in carousel', type: 'boolean', mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false, isFilterable: false },
-      { name: 'order', label: 'Carousel order', type: 'numeric', precision: 'integer', mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false, isFilterable: false },
+      { name: 'inCarousel', label: 'Include in carousel', type: 'boolean', mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false, isFilterable: true },
+      { name: 'order', label: 'Carousel order', type: 'numeric', precision: 'integer', mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false, isFilterable: true },
     ]
   },
   // TODO MOVE THAT PART TO A SPECIFIC Place
@@ -54,7 +54,7 @@ const attributes: Array<AttributeDefinition> = [
       { name: 'author', label: 'Author', type: 'string', mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false, isFilterable: true },
       { name: 'comments', label: 'Comments', type: 'string', mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false, isFilterable: true },
       { name: 'content', label: 'Content', type: 'string', mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false, isFilterable: true },
-      { name: 'content_length', label: 'Content length', type: 'numeric', precision: 'integer', mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false, isFilterable: false },
+      { name: 'content_length', label: 'Content length', type: 'numeric', precision: 'integer', mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false, isFilterable: true },
       { name: 'content_type', label: 'Content type', type: 'string', mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false, isFilterable: true },
       { name: 'creator_tool', label: 'Creator tool', type: 'string', mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false, isFilterable: true },
       { name: 'date', label: 'Created date', type: 'date', mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false, isFilterable: true },

@@ -113,7 +113,7 @@ export const files: AttributeDefinition = {
   multiple: true,
   upsert: false,
   update: false,
-  isFilterable: false,
+  isFilterable: true,
   mappings: [
     id,
     { name: 'name', label: 'Name', type: 'string', editDefault: false, mandatoryType: 'no', multiple: true, upsert: true, isFilterable: true },

@@ -32,9 +32,9 @@ const HistoryDefinition: AttributeDefinition[] = [
   { name: 'event_access', label: 'Event access', type: 'string', editDefault: false, mandatoryType: 'internal', multiple: false, upsert: false, isFilterable: true },
   { name: 'event_scope', label: 'Event scope', type: 'string', editDefault: false, mandatoryType: 'internal', multiple: false, upsert: false, isFilterable: true },
   { name: 'user_id', label: 'User ID', type: 'string', editDefault: false, mandatoryType: 'internal', multiple: false, upsert: false, isFilterable: true },
-  { name: 'applicant_id', label: 'Applicant ID', type: 'string', editDefault: false, mandatoryType: 'no', multiple: false, upsert: false, isFilterable: false },
-  { name: 'group_ids', label: 'Group IDs', type: 'string', editDefault: false, mandatoryType: 'internal', multiple: true, upsert: false, isFilterable: false },
-  { name: 'organization_ids', label: 'Organization IDs', type: 'string', editDefault: false, mandatoryType: 'internal', multiple: true, upsert: false, isFilterable: false },
+  { name: 'applicant_id', label: 'Applicant', type: 'string', editDefault: false, mandatoryType: 'no', multiple: false, upsert: false, isFilterable: false },
+  { name: 'group_ids', label: 'Groups', type: 'string', editDefault: false, mandatoryType: 'internal', multiple: true, upsert: false, isFilterable: false },
+  { name: 'organization_ids', label: 'Organizations', type: 'string', editDefault: false, mandatoryType: 'internal', multiple: true, upsert: false, isFilterable: false },
   { name: 'timestamp', label: 'Timestamp', type: 'date', editDefault: false, mandatoryType: 'internal', multiple: false, upsert: false, isFilterable: true },
   {
     name: 'context_data',

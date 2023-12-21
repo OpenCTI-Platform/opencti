@@ -44,7 +44,7 @@ const TRIGGER_DEFINITION: ModuleDefinition<StoreEntityTrigger, StixTrigger> = {
     { name: 'outcomes', label: 'Outcomes', type: 'string', mandatoryType: 'external', editDefault: false, multiple: true, upsert: false, isFilterable: true },
     { name: 'notifiers', label: 'Notifiers', type: 'string', mandatoryType: 'external', editDefault: true, multiple: true, upsert: false, isFilterable: true },
     { name: 'filters', label: 'Filters', type: 'string', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true },
-    { name: 'recipients', label: 'Recipients', type: 'string', mandatoryType: 'no', editDefault: false, multiple: true, upsert: false, isFilterable: false },
+    { name: 'recipients', label: 'Recipients', type: 'string', mandatoryType: 'no', editDefault: false, multiple: true, upsert: false, isFilterable: true },
     { name: 'trigger_ids', label: 'Trigger IDs', type: 'string', mandatoryType: 'no', editDefault: false, multiple: true, upsert: false, isFilterable: false },
     { name: 'period', label: 'Period', type: 'string', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true },
     { name: 'trigger_time', label: 'Trigger time', type: 'string', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true },
