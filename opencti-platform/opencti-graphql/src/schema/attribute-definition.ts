@@ -12,7 +12,7 @@ export const dateMapping = { type: 'date' };
 export const booleanMapping = { type: 'boolean' };
 export const numericMapping = (precision: string) => ({ type: precision, coerce: false });
 
-export type AttrType = 'string' | 'date' | 'numeric' | 'boolean' | 'dictionary' | 'json' | 'object' | 'object_flat';
+export type AttrType = 'string' | 'date' | 'numeric' | 'boolean' | 'dictionary' | 'json' | 'object' | 'object_flat' | 'binary';
 export type MandatoryType = 'internal' | 'external' | 'customizable' | 'no';
 
 type BasicDefinition = {
@@ -29,6 +29,7 @@ type BasicDefinition = {
 };
 
 export type StringAttribute = { type: 'string' } & BasicDefinition;
+export type BinaryAttribute = { type: 'binary' } & BasicDefinition;
 export type DateAttribute = { type: 'date' } & BasicDefinition;
 export type BooleanAttribute = { type: 'boolean' } & BasicDefinition;
 export type NumericAttribute = { type: 'numeric', precision: 'integer' | 'long' | 'float', scalable?: boolean } & BasicDefinition;
@@ -38,7 +39,7 @@ export type ObjectAttribute = { type: 'object', nested?: boolean, mappings: Attr
 export type ObjectFlatAttribute = { type: 'object_flat' } & BasicDefinition;
 
 export type AttributeDefinition = StringAttribute | JsonAttribute | ObjectAttribute | DictionaryAttribute | ObjectFlatAttribute |
-NumericAttribute | DateAttribute | BooleanAttribute;
+NumericAttribute | DateAttribute | BooleanAttribute | BinaryAttribute;
 
 // -- GLOBAL --
 export const id: AttributeDefinition = {

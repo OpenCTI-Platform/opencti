@@ -556,6 +556,9 @@ const attributeMappingGenerator = (entityAttribute) => {
   if (entityAttribute.type === 'boolean') {
     return booleanMapping;
   }
+  if (entityAttribute.type === 'binary') {
+    return { type: 'binary' };
+  }
   if (entityAttribute.type === 'object' || entityAttribute.type === 'dictionary') {
     const properties = {};
     for (let i = 0; i < entityAttribute.mappings.length; i += 1) {

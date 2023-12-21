@@ -31,8 +31,39 @@ const attributes: Array<AttributeDefinition> = [
       { name: 'entity_id', label: 'Related entity', type: 'string', mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false, isFilterable: true },
       { name: 'messages', label: 'File messages', type: 'object_flat', mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false, isFilterable: false },
       { name: 'errors', label: 'File errors', type: 'object_flat', mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false, isFilterable: false },
+      { name: 'inCarousel', label: 'Include in carousel', type: 'boolean', mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false, isFilterable: false },
+      { name: 'order', label: 'Carousel order', type: 'numeric', precision: 'integer', mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false, isFilterable: false },
     ]
   },
+  // TODO MOVE THAT PART TO A SPECIFIC Place
+  // !! Attachment file plugin !!
+  // This mapping is only valid for FILES INDEX
+  // internalId,
+  // name
+  { name: 'indexed_at', label: 'Index date', type: 'date', mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false, isFilterable: true },
+  {
+    name: 'attachment',
+    label: 'Attachment',
+    type: 'object',
+    mandatoryType: 'internal',
+    editDefault: false,
+    multiple: false,
+    upsert: false,
+    isFilterable: true,
+    mappings: [
+      { name: 'date', label: 'Created date', type: 'date', mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false, isFilterable: true },
+      { name: 'content_type', label: 'Content type', type: 'string', mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false, isFilterable: true },
+      { name: 'format', label: 'Format', type: 'string', mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false, isFilterable: true },
+      { name: 'modified', label: 'Modified date', type: 'date', mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false, isFilterable: true },
+      { name: 'language', label: 'Language', type: 'string', mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false, isFilterable: true },
+      { name: 'creator_tool', label: 'Creator tool', type: 'string', mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false, isFilterable: true },
+      { name: 'content', label: 'Content', type: 'binary', mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false, isFilterable: true },
+      { name: 'content_length', label: 'Content length', type: 'numeric', precision: 'integer', mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false, isFilterable: false },
+    ]
+  },
+  { name: 'uploaded_at', label: 'Upload date', type: 'date', mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false, isFilterable: true },
+  { name: 'file_id', label: 'File identifier', type: 'string', mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false, isFilterable: true },
+  { name: 'entity_id', label: 'Related entity', type: 'string', mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false, isFilterable: true },
 ];
 
 schemaAttributesDefinition.registerAttributes(ENTITY_TYPE_INTERNAL_FILE, attributes);
