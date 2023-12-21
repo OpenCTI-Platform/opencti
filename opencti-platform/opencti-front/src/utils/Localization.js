@@ -275,6 +275,8 @@ const i18n = {
       'This configuration is not available for this entity type':
         'Esta configuración no está disponible para este tipo de entidad',
       'Hidden entity types': 'Tipos de entidad ocultos',
+      'Max Confidence Level': 'Nivel Máximo de Confianza',
+      'This value is overridden for the following entity types': 'Este valor está anulado para los siguientes tipos de entidad',
       'Hidden in ': 'Oculto en ',
       'Hidden in groups': 'Oculto en grupos',
       'Hidden in organizations': 'Oculto en las organizaciones',
@@ -2674,7 +2676,8 @@ const i18n = {
       Language: 'Langue',
       'This configuration is not available for this entity type':
         "Cette configuration n'est pas disponible pour ce type d'entité",
-      'Hidden entity types': "Types d'entité cachés",
+      'Max Confidence Level': 'Niveau de Confiance Max',
+      'This value is overridden for the following entity types': "Cette valeur est remplacée pour les types d'entités suivants",
       'Hidden in ': 'Caché dans ',
       'Hidden in groups': 'Caché dans les groupes',
       'Hidden in organizations': 'Caché dans les organisations',
@@ -5009,6 +5012,8 @@ const i18n = {
       'This configuration is not available for this entity type':
         'この構成は、このエンティティ タイプでは使用できません',
       'Hidden entity types': '非表示のエンティティ種別',
+      'Max Confidence Level': '最大信頼レベル',
+      'This value is overridden for the following entity types': 'この値は、次のエンティティタイプに対して上書きされています',
       'Hidden in ': 'に隠されています',
       'Hidden in groups': 'グループに隠れている',
       'Hidden in organizations': '組織に隠れて',
@@ -7253,6 +7258,8 @@ const i18n = {
       'This configuration is not available for this entity type':
         '此配置不适用于此实体类型',
       'Hidden entity types': '隐藏的实体类型',
+      'Max Confidence Level': '最大信心水平',
+      'This value is overridden for the following entity types': '此值已覆盖以下实体类型',
       'Hidden in ': '隐藏在',
       'Hidden in groups': '隐藏在群体中',
       'Hidden in organizations': '隐藏在组织中',
