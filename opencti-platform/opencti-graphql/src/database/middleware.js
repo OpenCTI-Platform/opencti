@@ -2223,7 +2223,7 @@ const upsertRelationRule = async (context, instance, input, opts = {}) => {
   const ruleInstance = R.mergeRight(instance, rulePatch);
   const innerPatch = createRuleDataPatch(ruleInstance);
   const patch = { ...rulePatch, ...innerPatch };
-  logApp.info('Upsert inferred relation', { relation: patch });
+  logApp.info('Upsert inferred relation', { id: instance.id, relation: patch });
   return await patchAttribute(context, RULE_MANAGER_USER, instance.id, instance.entity_type, patch, opts);
 };
 // endregion
