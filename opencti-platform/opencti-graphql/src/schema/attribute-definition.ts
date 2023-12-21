@@ -16,8 +16,8 @@ export type AttrType = 'string' | 'date' | 'numeric' | 'boolean' | 'dictionary' 
 export type MandatoryType = 'internal' | 'external' | 'customizable' | 'no';
 
 type BasicDefinition = {
-  name: string
-  label: string
+  name: string // name in the database
+  label: string // label for front display
   description?: string
   multiple: boolean,
   mandatoryType: MandatoryType
@@ -25,11 +25,13 @@ type BasicDefinition = {
   upsert: boolean
   update?: boolean
   isFilterable: boolean
-  associatedFilterKeys?: string[]
 };
 type BasicDefinitionWithNested = BasicDefinition & {
   nested?: boolean,
-  mappings: AttributeDefinition[],
+  mappings: (
+    { associatedFilterKeys?: string[] } // key names to add if different from: 'parentAttributeName.nestedAttributeName'
+    & AttributeDefinition
+  )[],
 };
 
 export type StringAttribute = { type: 'string' } & BasicDefinition;
