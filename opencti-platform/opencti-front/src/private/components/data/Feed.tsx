@@ -1,18 +1,18 @@
 import React, { useEffect, useState } from 'react';
-import { useHistory } from 'react-router-dom';
 import { useLocation } from 'react-router-dom-v5-compat';
-import { OrderMode, PaginationOptions } from 'src/components/list_lines';
-import { TaxiiLinesPaginationQuery$data } from '@components/data/taxii/__generated__/TaxiiLinesPaginationQuery.graphql';
 import Box from '@mui/material/Box';
+import { FeedLinesPaginationQuery$data } from '@components/data/feeds/__generated__/FeedLinesPaginationQuery.graphql';
+import { useHistory } from 'react-router-dom';
 import { QueryRenderer } from '../../../relay/environment';
 import { buildViewParamsFromUrlAndStorage, saveViewParameters } from '../../../utils/ListParameters';
 import ListLines from '../../../components/list_lines/ListLines';
-import TaxiiLines, { TaxiiLinesQuery } from './taxii/TaxiiLines';
-import TaxiiCollectionCreation from './taxii/TaxiiCollectionCreation';
+import FeedLines, { FeedLinesQuery } from './feeds/FeedLines';
+import FeedCreation from './feeds/FeedCreation';
 import SharingMenu from './SharingMenu';
+import { OrderMode, PaginationOptions } from '../../../components/list_lines';
 
-const Taxii = () => {
-  const LOCAL_STORAGE_KEY = 'taxii';
+const Feed = () => {
+  const LOCAL_STORAGE_KEY = 'feed';
   const history = useHistory();
   const location = useLocation();
   const params = buildViewParamsFromUrlAndStorage(
@@ -20,60 +20,59 @@ const Taxii = () => {
     location,
     LOCAL_STORAGE_KEY,
   );
-  const [taxiiState, setTaxiiState] = useState<{ orderAsc: boolean, searchTerm: string, view: string, sortBy: string }>({
+  const [feedState, setFeedState] = useState<{ orderAsc: boolean, searchTerm: string, view: string, sortBy: string }>({
     orderAsc: params.orderAsc !== false,
     searchTerm: params.searchTerm ?? '',
     view: params.view ?? 'lines',
     sortBy: params.sortBy,
   });
 
-  const saveView = () => {
+  function saveView() {
     saveViewParameters(
       history,
       location,
       LOCAL_STORAGE_KEY,
-      taxiiState,
+      feedState,
     );
-  };
+  }
 
-  const handleSearch = (value: string) => {
-    setTaxiiState({ ...taxiiState,
-      searchTerm: value,
-    });
-  };
+  function handleSearch(value: string) {
+    setFeedState({ ...feedState, searchTerm: value });
+  }
 
-  const handleSort = (field: string, orderAsc: boolean) => {
-    setTaxiiState({
-      ...taxiiState,
-      sortBy: field,
-      orderAsc });
-  };
+  function handleSort(field: string, orderAsc: boolean) {
+    setFeedState({ ...feedState, sortBy: field, orderAsc });
+  }
 
   useEffect(() => {
     saveView();
-  }, [taxiiState]);
+  }, [feedState]);
 
   function renderLines(paginationOptions: PaginationOptions) {
-    const { sortBy, orderAsc, searchTerm } = taxiiState;
+    const { sortBy, orderAsc } = feedState;
     const dataColumns = {
       name: {
         label: 'Name',
         width: '15%',
         isSortable: true,
       },
-      description: {
-        label: 'Description',
-        width: '15%',
+      feed_types: {
+        label: 'Entity types',
+        width: '20%',
         isSortable: true,
       },
-      id: {
-        label: 'Collection',
-        width: '25%',
+      rolling_time: {
+        label: 'Rolling time',
+        width: '10%',
         isSortable: true,
+      },
+      columns: {
+        label: 'Columns',
+        width: '20%',
       },
       filters: {
         label: 'Filters',
-        width: '45%',
+        width: '30%',
       },
     };
     return (
@@ -85,27 +84,28 @@ const Taxii = () => {
         handleSearch={handleSearch}
         displayImport={false}
         secondaryAction={true}
-        keyword={searchTerm}
+        keyword={feedState.searchTerm}
       >
         <QueryRenderer
-          query={TaxiiLinesQuery}
+          query={FeedLinesQuery}
           variables={{ count: 25, ...paginationOptions }}
-          render={({ props }: { props: TaxiiLinesPaginationQuery$data }) => (
-            <TaxiiLines
+          render={({ props }: { props: FeedLinesPaginationQuery$data }) => (
+            <FeedLines
               data={props}
               paginationOptions={paginationOptions}
               dataColumns={dataColumns}
               initialLoading={props === null}
-            />)}
+            />
+          )}
         />
       </ListLines>
     );
   }
 
   const paginationOptions: PaginationOptions = {
-    search: taxiiState.searchTerm,
-    orderBy: taxiiState.sortBy ? taxiiState.sortBy : null,
-    orderMode: taxiiState.orderAsc ? OrderMode.asc : OrderMode.desc,
+    search: feedState.searchTerm,
+    orderBy: feedState.sortBy ? feedState.sortBy : null,
+    orderMode: feedState.orderAsc ? OrderMode.asc : OrderMode.desc,
   };
   return (
     <Box sx={{
@@ -114,10 +114,10 @@ const Taxii = () => {
     }}
     >
       <SharingMenu/>
-      {taxiiState.view === 'lines' ? renderLines(paginationOptions) : null}
-      <TaxiiCollectionCreation paginationOptions={paginationOptions}/>
+      {feedState.view === 'lines' ? renderLines(paginationOptions) : ''}
+      <FeedCreation paginationOptions={paginationOptions}/>
     </Box>
   );
 };
 
-export default Taxii;
+export default Feed;

@@ -22,6 +22,7 @@ import AlertTitle from '@mui/material/AlertTitle';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import Switch from '@mui/material/Switch';
 import Alert from '@mui/material/Alert';
+import Box from '@mui/material/Box';
 import ObjectMembersField from '../../common/form/ObjectMembersField';
 import inject18n from '../../../../components/i18n';
 import { commitMutation, QueryRenderer } from '../../../../relay/environment';
@@ -31,17 +32,12 @@ import SwitchField from '../../../../components/SwitchField';
 import useAttributes from '../../../../utils/hooks/useAttributes';
 import { stixCyberObservablesLinesAttributesQuery } from '../../observations/stix_cyber_observables/StixCyberObservablesLines';
 import Filters from '../../common/lists/Filters';
-import {
-  constructHandleAddFilter,
-  constructHandleRemoveFilter,
-  filtersAfterSwitchLocalMode,
-  emptyFilterGroup,
-  serializeFilterGroupForBackend,
-} from '../../../../utils/filters/filtersUtils';
+import { emptyFilterGroup, serializeFilterGroupForBackend } from '../../../../utils/filters/filtersUtils';
 import FilterIconButton from '../../../../components/FilterIconButton';
 import { isNotEmptyField } from '../../../../utils/utils';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import Drawer, { DrawerVariant } from '../../common/drawer/Drawer';
+import useFiltersState from '../../../../utils/filters/useFiltersState';
 
 export const feedCreationAllTypesQuery = graphql`
     query FeedCreationAllTypesQuery {
@@ -173,14 +169,14 @@ const sharedUpdater = (store, userId, paginationOptions, newEdge) => {
 const FeedCreation = (props) => {
   const { t, classes } = props;
   const [selectedTypes, setSelectedTypes] = useState([]);
-  const [filters, setFilters] = useState(emptyFilterGroup);
+  const [filters, helpers] = useFiltersState(emptyFilterGroup);
   const [feedAttributes, setFeedAttributes] = useState({ 0: {} });
 
   const { ignoredAttributesInFeeds } = useAttributes();
 
   const handleClose = () => {
     setSelectedTypes([]);
-    setFilters(emptyFilterGroup);
+    helpers.handleClearAllFilters();
     setFeedAttributes({ 0: {} });
   };
 
@@ -301,26 +297,6 @@ const FeedCreation = (props) => {
       feedAttributes[i],
     );
     setFeedAttributes(R.assoc(i, newFeedAttribute, feedAttributes));
-  };
-
-  const handleAddFilter = (k, id, op = 'eq') => {
-    setFilters(constructHandleAddFilter(filters, k, id, op));
-  };
-  const handleRemoveFilter = (k, op = 'eq') => {
-    setFilters(constructHandleRemoveFilter(filters, k, op));
-  };
-
-  const handleSwitchLocalMode = (localFilter) => {
-    setFilters(filtersAfterSwitchLocalMode(filters, localFilter));
-  };
-
-  const handleSwitchGlobalMode = () => {
-    if (filters) {
-      setFilters({
-        ...filters,
-        mode: filters.mode === 'and' ? 'or' : 'and',
-      });
-    }
   };
 
   return (
@@ -491,9 +467,11 @@ const FeedCreation = (props) => {
                         label={t('Include headers in the feed')}
                         containerstyle={{ marginTop: 20 }}
                       />
-                      <div style={{ paddingTop: 35 }}>
+                      <Box sx={{ paddingTop: 4,
+                        display: 'flex',
+                        gap: 1 }}
+                      >
                         <Filters
-                          variant="text"
                           availableFilterKeys={[
                             'workflow_id',
                             'objectAssignee',
@@ -515,16 +493,13 @@ const FeedCreation = (props) => {
                             'fromTypes',
                             'toTypes',
                           ]}
-                          handleAddFilter={handleAddFilter}
+                          helpers={helpers}
                           noDirectFilters={true}
                         />
-                      </div>
-                      <div className="clearfix" />
+                      </Box>
                       <FilterIconButton
                         filters={filters}
-                        handleRemoveFilter={handleRemoveFilter}
-                        handleSwitchLocalMode={handleSwitchLocalMode}
-                        handleSwitchGlobalMode={handleSwitchGlobalMode}
+                        helpers={helpers}
                         styleNumber={2}
                         redirection
                       />

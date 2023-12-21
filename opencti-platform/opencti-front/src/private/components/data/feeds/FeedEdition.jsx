@@ -19,6 +19,7 @@ import Tooltip from '@mui/material/Tooltip';
 import { InformationOutline } from 'mdi-material-ui';
 import Alert from '@mui/material/Alert';
 import AlertTitle from '@mui/material/AlertTitle';
+import Box from '@mui/material/Box';
 import Drawer from '../../common/drawer/Drawer';
 import inject18n from '../../../../components/i18n';
 import { commitMutation, QueryRenderer } from '../../../../relay/environment';
@@ -29,18 +30,13 @@ import { stixCyberObservablesLinesAttributesQuery } from '../../observations/sti
 import Filters from '../../common/lists/Filters';
 import { feedCreationAllTypesQuery } from './FeedCreation';
 import { ignoredAttributesInFeeds } from '../../../../utils/hooks/useAttributes';
-import {
-  constructHandleAddFilter,
-  constructHandleRemoveFilter,
-  deserializeFilterGroupForFrontend,
-  filtersAfterSwitchLocalMode,
-  serializeFilterGroupForBackend,
-} from '../../../../utils/filters/filtersUtils';
+import { deserializeFilterGroupForFrontend, serializeFilterGroupForBackend } from '../../../../utils/filters/filtersUtils';
 import FilterIconButton from '../../../../components/FilterIconButton';
 import { isNotEmptyField } from '../../../../utils/utils';
 import ObjectMembersField from '../../common/form/ObjectMembersField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import { convertAuthorizedMembers } from '../../../../utils/edition';
+import useFiltersState from '../../../../utils/filters/useFiltersState';
 
 const styles = (theme) => ({
   header: {
@@ -148,7 +144,7 @@ const feedValidation = (t) => Yup.object().shape({
 const FeedEditionContainer = (props) => {
   const { t, classes, feed, handleClose, open } = props;
   const [selectedTypes, setSelectedTypes] = useState(feed.feed_types);
-  const [filters, setFilters] = useState(deserializeFilterGroupForFrontend(feed.filters));
+  const [filters, helpers] = useFiltersState(deserializeFilterGroupForFrontend(feed.filters));
   const [feedAttributes, setFeedAttributes] = useState({
     ...feed.feed_attributes.map((n) => R.assoc('mappings', R.indexBy(R.prop('type'), n.mappings), n)),
   });
@@ -262,26 +258,6 @@ const FeedEditionContainer = (props) => {
       feedAttributes[i],
     );
     setFeedAttributes(R.assoc(i, newFeedAttribute, feedAttributes));
-  };
-
-  const handleAddFilter = (k, id, op = 'eq') => {
-    setFilters(constructHandleAddFilter(filters, k, id, op));
-  };
-  const handleRemoveFilter = (k, op = 'eq') => {
-    setFilters(constructHandleRemoveFilter(filters, k, op));
-  };
-
-  const handleSwitchLocalMode = (localFilter) => {
-    setFilters(filtersAfterSwitchLocalMode(filters, localFilter));
-  };
-
-  const handleSwitchGlobalMode = () => {
-    if (filters) {
-      setFilters({
-        ...filters,
-        mode: filters.mode === 'and' ? 'or' : 'and',
-      });
-    }
   };
 
   const initialValues = {
@@ -452,9 +428,11 @@ const FeedEditionContainer = (props) => {
                       label={t('Include headers in the feed')}
                       containerstyle={{ marginTop: 20 }}
                     />
-                    <div style={{ paddingTop: 35 }}>
+                    <Box sx={{ paddingTop: 4,
+                      display: 'flex',
+                      gap: 1 }}
+                    >
                       <Filters
-                        variant="text"
                         availableFilterKeys={[
                           'workflow_id',
                           'objectAssignee',
@@ -477,16 +455,13 @@ const FeedEditionContainer = (props) => {
                           'fromTypes',
                           'toTypes',
                         ]}
-                        handleAddFilter={handleAddFilter}
+                        helpers={helpers}
                         noDirectFilters={true}
                       />
-                    </div>
-                    <div className="clearfix" />
+                    </Box>
                     <FilterIconButton
                       filters={filters}
-                      handleRemoveFilter={handleRemoveFilter}
-                      handleSwitchLocalMode={handleSwitchLocalMode}
-                      handleSwitchGlobalMode={handleSwitchGlobalMode}
+                      helpers={helpers}
                       styleNumber={2}
                       redirection
                     />
