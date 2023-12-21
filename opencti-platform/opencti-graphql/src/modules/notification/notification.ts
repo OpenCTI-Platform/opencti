@@ -79,8 +79,34 @@ const NOTIFICATION_DEFINITION: ModuleDefinition<StoreEntityNotification, StixNot
   },
   attributes: [
     { name: 'notification_type', label: 'Notification type', type: 'string', mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false, isFilterable: true },
-    // TODO: modify content to content_notification
-    // { name: 'content', type: 'dictionary', mandatoryType: 'internal', multiple: true, upsert: false },
+    {
+      name: 'notification_content',
+      type: 'object',
+      label: 'Notification content',
+      mandatoryType: 'internal',
+      editDefault: false,
+      multiple: true,
+      upsert: false,
+      isFilterable: false,
+      mappings: [
+        { name: 'title', label: 'Notification title', type: 'string', mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false, isFilterable: true },
+        {
+          name: 'events',
+          label: 'Notification events',
+          type: 'object',
+          mandatoryType: 'internal',
+          editDefault: false,
+          multiple: false,
+          upsert: false,
+          isFilterable: true,
+          mappings: [
+            { name: 'message', label: 'Notification event message', type: 'string', mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false, isFilterable: true },
+            { name: 'instance_id', label: 'Notification related instance', type: 'string', mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false, isFilterable: true },
+            { name: 'operation', label: 'Notification operation', type: 'string', mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false, isFilterable: true },
+          ]
+        },
+      ]
+    },
     { name: 'is_read', label: 'Is read', type: 'boolean', mandatoryType: 'internal', editDefault: false, multiple: false, upsert: true, isFilterable: true },
     { name: 'user_id', label: 'User', type: 'string', mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false, isFilterable: true },
   ],

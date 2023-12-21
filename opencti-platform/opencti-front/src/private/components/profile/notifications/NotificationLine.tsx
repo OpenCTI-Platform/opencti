@@ -120,7 +120,7 @@ const notificationLineFragment = graphql`
     created
     notification_type
     is_read
-    content {
+    notification_content {
       title
       events {
         message
@@ -149,7 +149,7 @@ NotificationLineProps
   const [open, setOpen] = useState<boolean>(false);
   const [updating, setUpdating] = useState<boolean>(false);
   const data = useFragment(notificationLineFragment, node);
-  const events = data.content.map((n) => n.events).flat();
+  const events = data.notification_content.map((n) => n.events).flat();
   const isDigest = data.notification_type === 'digest';
   const firstEvent = events.at(0);
   const [commitMarkRead] = useMutation(
