@@ -97,14 +97,6 @@ export const userConfidenceSchema = {
   required: ['max_confidence', 'overrides']
 };
 
-/**
- map: {
- type: "object",
- required: [],
- additionalProperties: {type: "number"},
- },
- */
-
 const roleSessionRefresh = async (context, user, roleId) => {
   // Get all groups that have this role
   const groupsRoles = await listAllRelations(context, user, RELATION_HAS_ROLE, { toId: roleId, fromTypes: [ENTITY_TYPE_GROUP] });

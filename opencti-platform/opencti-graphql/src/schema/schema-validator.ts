@@ -74,10 +74,13 @@ export const validateAndFormatSchemaAttribute = (
 
         let valid = false;
         if (attributeDefinition.multiple) {
-          // schema is supposedly type=array
+          // type=object && multiple -> it's an array than can be validated as-is
           valid = validate(validationValues);
         } else {
-          // schema is supposedly type=object, no multiple values provided
+          // object not multiple, only one value to check
+          if (validationValues.length > 1) {
+            throw ValidationError(attributeName, { message: 'Object is not multiple but has more than 1 value', data: { attribute: attributeName } });
+          }
           valid = validate(validationValues[0]);
         }
         if (!valid) {
