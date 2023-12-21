@@ -346,7 +346,7 @@ const InvestigationExpandFormContent = ({
       .sort((a, b) => a.label.localeCompare(b.label));
 
     // Uses to determine which key of translation to use below.
-    const relationshipsNames = schema.sros.map(({ label }) => label);
+    const relationshipsNames = schema.scrs.map(({ label }) => label);
     setTargets(
       graphDistribution.map(({ label, value }) => {
         const isRelationship = relationshipsNames.includes(label.toLowerCase());

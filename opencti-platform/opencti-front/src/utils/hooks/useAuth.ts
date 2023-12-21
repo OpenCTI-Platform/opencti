@@ -22,7 +22,7 @@ export interface UserContextType {
     scos: { id: string, label: string }[]
     sdos: { id: string, label: string }[]
     smos: { id: string, label: string }[]
-    sros: { id: string, label: string }[]
+    scrs: { id: string, label: string }[]
     schemaRelationsTypesMapping: Map<string, readonly string[]>
     schemaRelationsRefTypesMapping: Map<string, readonly string[]>
   } | undefined;
