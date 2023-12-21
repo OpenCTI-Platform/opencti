@@ -140,7 +140,8 @@ const CsvMapperForm: FunctionComponent<CsvMapperFormProps> = ({ csvMapper, onSub
   };
 
   // -- ERRORS --
-  const [hasError, setHasError] = useState<boolean>(false);
+  // on edit mode, csvMapper.errors might be set; on create mode backend validation is not done yet so error is null
+  const [hasError, setHasError] = useState<boolean>(!!csvMapper.errors?.length || csvMapper.representations.length === 0);
   let errors: Map<string, string> = new Map();
   const handleRepresentationErrors = (key: string, value: boolean) => {
     errors = { ...errors, [key]: value };

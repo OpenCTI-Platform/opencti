@@ -1,19 +1,17 @@
 import { describe, expect, it } from 'vitest';
-import { csvMapperMockSimpleEntity } from "./simple-entity-test/csv-mapper-mock-simple-entity";
-import { isNotEmptyField } from "../../../src/database/utils";
+import { csvMapperMockSimpleEntity } from './simple-entity-test/csv-mapper-mock-simple-entity';
+import { isNotEmptyField } from '../../../src/database/utils';
 
 import '../../../src/modules';
-import { csvMapperMockSimpleRelationship } from "./simple-relationship-test/csv-mapper-mock-simple-relationship";
-import { csvMapperMockSimpleEntityWithRef } from "./simple-entity-with-ref-test/csv-mapper-mock-simple-entity-with-ref";
-import { columnNameToIdx } from "../../../src/parser/csv-helper";
-import { csvMapperMockRealUseCase } from "./real-use-case/csv-mapper-mock-real-use-case";
-import {
-  csvMapperMockSimpleDifferentEntities
-} from "./simple-different-entities-test/csv-mapper-mock-simple-different-entities";
-import { csvMapperMockSimpleSighting } from "./simple-sighting-test/csv-mapper-mock-simple-sighting";
-import { bundleProcess } from "../../../src/parser/csv-bundler";
-import { ADMIN_USER, testContext } from "../../utils/testQuery";
-import { csvMapperMockSimpleSkipLine } from "./simple-skip-line-test/csv-mapper-mock-simple-skip-line";
+import { csvMapperMockSimpleRelationship } from './simple-relationship-test/csv-mapper-mock-simple-relationship';
+import { csvMapperMockSimpleEntityWithRef } from './simple-entity-with-ref-test/csv-mapper-mock-simple-entity-with-ref';
+import { columnNameToIdx } from '../../../src/parser/csv-helper';
+import { csvMapperMockRealUseCase } from './real-use-case/csv-mapper-mock-real-use-case';
+import { csvMapperMockSimpleDifferentEntities } from '../../data/csv-mapper-mock-simple-different-entities';
+import { csvMapperMockSimpleSighting } from './simple-sighting-test/csv-mapper-mock-simple-sighting';
+import { bundleProcess } from '../../../src/parser/csv-bundler';
+import { ADMIN_USER, testContext } from '../../utils/testQuery';
+import { csvMapperMockSimpleSkipLine } from './simple-skip-line-test/csv-mapper-mock-simple-skip-line';
 
 describe('CSV-HELPER', () => {
   it('Column name to idx', async () => {
@@ -35,7 +33,7 @@ describe('CSV-HELPER', () => {
     idx = columnNameToIdx('AJD');
     expect(idx)
       .toBe(939);
-  })
+  });
 });
 
 describe('CSV-PARSER', () => {
@@ -43,7 +41,7 @@ describe('CSV-PARSER', () => {
     const filPath = './tests/02-integration/05-parser/simple-entity-test/Threat-Actor-Group_list.csv';
     const bundle = await bundleProcess(testContext, ADMIN_USER, filPath, csvMapperMockSimpleEntity);
 
-    const objects = bundle.objects;
+    const { objects } = bundle;
     expect(objects.length)
       .toBe(5);
     expect(objects.filter((o) => isNotEmptyField(o.name)).length)
@@ -59,7 +57,7 @@ describe('CSV-PARSER', () => {
     const filPath = './tests/02-integration/05-parser/simple-relationship-test/Threat-Actor-Group_PART-OF_list.csv';
     const bundle = await bundleProcess(testContext, ADMIN_USER, filPath, csvMapperMockSimpleRelationship);
 
-    const objects = bundle.objects;
+    const { objects } = bundle;
     expect(objects.length)
       .toBe(6);
     expect(objects.filter((o) => o.type === 'threat-actor').length)
@@ -71,7 +69,7 @@ describe('CSV-PARSER', () => {
     const filPath = './tests/02-integration/05-parser/simple-sighting-test/Threat-Actor-Group_SIGHTING_org.csv';
     const bundle = await bundleProcess(testContext, ADMIN_USER, filPath, csvMapperMockSimpleSighting);
 
-    const objects = bundle.objects;
+    const { objects } = bundle;
     expect(objects.length)
       .toBe(3);
     expect(objects.filter((o) => o.type === 'threat-actor').length)
@@ -85,7 +83,7 @@ describe('CSV-PARSER', () => {
     const filPath = './tests/02-integration/05-parser/simple-entity-with-ref-test/Threat-Actor-Group_with-ref.csv';
     const bundle = await bundleProcess(testContext, ADMIN_USER, filPath, csvMapperMockSimpleEntityWithRef);
 
-    const objects = bundle.objects;
+    const { objects } = bundle;
     expect(objects.length)
       .toBe(3);
     const label = objects.filter((o) => o.type === 'label')[0];
@@ -110,7 +108,7 @@ describe('CSV-PARSER', () => {
     const filPath = './tests/02-integration/05-parser/simple-different-entities-test/Threat-Actor-Group_or_Organization.csv';
     const bundle = await bundleProcess(testContext, ADMIN_USER, filPath, csvMapperMockSimpleDifferentEntities);
 
-    const objects = bundle.objects;
+    const { objects } = bundle;
     expect(objects.length)
       .toBe(2);
     expect(objects.filter((o) => o.type === 'threat-actor').length)
@@ -122,7 +120,7 @@ describe('CSV-PARSER', () => {
     const filPath = './tests/02-integration/05-parser/real-use-case/schema incidents.csv';
     const bundle = await bundleProcess(testContext, ADMIN_USER, filPath, csvMapperMockRealUseCase);
 
-    const objects = bundle.objects;
+    const { objects } = bundle;
     const incidents = objects.filter((o) => o.type === 'incident');
     expect(incidents.length)
       .toBe(118);
@@ -148,7 +146,7 @@ describe('CSV-PARSER', () => {
   it('Parse CSV - Simple skip line test on Simple entity ', async () => {
     const filPath = './tests/02-integration/05-parser/simple-skip-line-test/Threat-Actor-Group_list_skip_line.csv';
     const bundle = await bundleProcess(testContext, ADMIN_USER, filPath, csvMapperMockSimpleSkipLine);
-    const objects = bundle.objects;
+    const { objects } = bundle;
     expect(objects.length)
       .toBe(5);
     expect(objects.filter((o) => isNotEmptyField(o.name)).length)
@@ -160,4 +158,4 @@ describe('CSV-PARSER', () => {
     expect(threatActorWithTypes.threat_actor_types.length)
       .toBe(2);
   });
-})
+});
