@@ -543,7 +543,7 @@ const User: FunctionComponent<UserProps> = ({ data }) => {
           <Paper
             classes={{ root: classes.paper }}
             variant="outlined"
-            style={{ marginTop: 15, minHeight: 500 }}
+            style={{ marginTop: 25, minHeight: 500 }}
           >
             {!isEnterpriseEdition ? (
               <div style={{ display: 'table', height: '100%', width: '100%' }}>

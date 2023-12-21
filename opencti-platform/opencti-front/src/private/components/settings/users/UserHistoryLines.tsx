@@ -17,6 +17,7 @@ const style = {
     minHeight: '100%',
     padding: '15px',
     borderRadius: 6,
+    marginTop: 10,
   },
 };
 
