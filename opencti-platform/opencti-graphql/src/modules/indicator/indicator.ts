@@ -4,6 +4,7 @@ import indicatorTypeDefs from './indicator.graphql';
 import indicatorResolvers from './indicator-resolver';
 import { ENTITY_TYPE_INDICATOR, type StixIndicator, type StoreEntityIndicator } from './indicator-types';
 import convertIndicatorToStix from './indicator-converter';
+import { killChainPhases, objectOrganization } from '../../schema/stixRefRelationship';
 
 const INDICATOR_DEFINITION: ModuleDefinition<StoreEntityIndicator, StixIndicator> = {
   type: {
@@ -20,6 +21,7 @@ const INDICATOR_DEFINITION: ModuleDefinition<StoreEntityIndicator, StixIndicator
     definition: {
       [ENTITY_TYPE_INDICATOR]: [{ src: 'pattern' }]
     },
+    resolvers: {},
   },
   attributes: [
     { name: 'name', type: 'string', mandatoryType: 'external', editDefault: true, multiple: false, upsert: true },
@@ -92,6 +94,7 @@ const INDICATOR_DEFINITION: ModuleDefinition<StoreEntityIndicator, StixIndicator
     },
   ],
   relations: [],
+  relationsRefs: [objectOrganization, killChainPhases],
   representative: (stix: StixIndicator) => {
     return stix.name;
   },

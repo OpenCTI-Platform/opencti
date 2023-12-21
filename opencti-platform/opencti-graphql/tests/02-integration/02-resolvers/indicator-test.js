@@ -104,12 +104,10 @@ describe('Indicator resolver standard behavior', () => {
   });
   it('should update indicator', async () => {
     const UPDATE_QUERY = gql`
-        mutation IndicatorEdit($id: ID!, $input: [EditInput]!) {
-            indicatorEdit(id: $id) {
-                fieldPatch(input: $input) {
-                    id
-                    name
-                }
+        mutation IndicatorFieldPatch($id: ID!, $input: [EditInput]!) {
+            indicatorFieldPatch(id: $id, input: $input) {
+                id
+                name
             }
         }
     `;
@@ -121,11 +119,9 @@ describe('Indicator resolver standard behavior', () => {
   });
   it('should context patch indicator', async () => {
     const CONTEXT_PATCH_QUERY = gql`
-        mutation IndicatorEdit($id: ID!, $input: EditContext) {
-            indicatorEdit(id: $id) {
-                contextPatch(input: $input) {
-                    id
-                }
+        mutation IndicatorContextPatch($id: ID!, $input: EditContext) {
+            indicatorContextPatch(id: $id, input: $input) {
+              id
             }
         }
     `;
@@ -137,11 +133,9 @@ describe('Indicator resolver standard behavior', () => {
   });
   it('should context clean indicator', async () => {
     const CONTEXT_PATCH_QUERY = gql`
-        mutation IndicatorEdit($id: ID!) {
-            indicatorEdit(id: $id) {
-                contextClean {
-                    id
-                }
+        mutation IndicatorContextClean($id: ID!) {
+            indicatorContextClean(id: $id) {
+              id
             }
         }
     `;
@@ -154,16 +148,14 @@ describe('Indicator resolver standard behavior', () => {
   it('should add relation in indicator', async () => {
     const RELATION_ADD_QUERY = gql`
         mutation IndicatorEdit($id: ID!, $input: StixRefRelationshipAddInput!) {
-            indicatorEdit(id: $id) {
-                relationAdd(input: $input) {
-                    id
-                    from {
-                        ... on Indicator {
-                            objectMarking {
-                                edges {
-                                    node {
-                                        id
-                                    }
+            indicatorRelationAdd(id: $id, input: $input) {
+                id
+                from {
+                    ... on Indicator {
+                        objectMarking {
+                            edges {
+                                node {
+                                    id
                                 }
                             }
                         }
@@ -187,14 +179,12 @@ describe('Indicator resolver standard behavior', () => {
   it('should delete relation in indicator', async () => {
     const RELATION_DELETE_QUERY = gql`
         mutation IndicatorEdit($id: ID!, $toId: StixRef!, $relationship_type: String!) {
-            indicatorEdit(id: $id) {
-                relationDelete(toId: $toId, relationship_type: $relationship_type) {
-                    id
-                    objectMarking {
-                        edges {
-                            node {
-                                id
-                            }
+            indicatorRelationDelete(id: $id, toId: $toId, relationship_type: $relationship_type) {
+                id
+                objectMarking {
+                    edges {
+                        node {
+                            id
                         }
                     }
                 }
@@ -214,9 +204,7 @@ describe('Indicator resolver standard behavior', () => {
   it('should indicator deleted', async () => {
     const DELETE_QUERY = gql`
         mutation indicatorDelete($id: ID!) {
-            indicatorEdit(id: $id) {
-                delete
-            }
+            indicatorDelete(id: $id)
         }
     `;
     // Delete the indicator
