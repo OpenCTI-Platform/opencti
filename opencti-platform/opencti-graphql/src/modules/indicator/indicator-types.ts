@@ -29,9 +29,25 @@ export interface StixIndicator extends StixDomainObject {
 }
 
 export interface BasicStoreEntityIndicator extends BasicStoreEntity {
-  // FIXME
+  name: string;
+  description: string;
+  indicator_types : Array<string>;
+  pattern : string;
+  pattern_type : string;
+  pattern_version : string;
+  valid_from : Date;
+  valid_until : Date;
+  kill_chain_phases: Array<StixKillChainPhase>;
 }
 
 export interface StoreEntityIndicator extends StoreEntity {
-  // FIXME
+  name: string;
+  description: string;
+  indicator_types : Array<string>;
+  pattern : string;
+  pattern_type : string;
+  pattern_version : string;
+  valid_from : Date;
+  valid_until : Date;
+  kill_chain_phases: Array<StixKillChainPhase>;
 }
