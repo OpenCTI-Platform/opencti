@@ -58,7 +58,7 @@ const hashDefinition: AttributeDefinition = {
     { name: 'LZJD', label: 'LZJD', type: 'string', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: true },
   ],
   mandatoryType: 'no',
-  isFilterable: false,
+  isFilterable: true,
   multiple: false,
   upsert: true
 };

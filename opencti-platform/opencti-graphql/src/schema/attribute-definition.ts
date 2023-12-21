@@ -27,15 +27,21 @@ type BasicDefinition = {
   isFilterable: boolean
   associatedFilterKeys?: string[]
 };
+type BasicDefinitionWithNested = BasicDefinition & {
+  nested?: boolean,
+  mappings: AttributeDefinition[],
+};
 
 export type StringAttribute = { type: 'string' } & BasicDefinition;
 export type DateAttribute = { type: 'date' } & BasicDefinition;
 export type BooleanAttribute = { type: 'boolean' } & BasicDefinition;
 export type NumericAttribute = { type: 'numeric', precision: 'integer' | 'long' | 'float', scalable?: boolean } & BasicDefinition;
 export type JsonAttribute = { type: 'json', multiple: false, schemaDef?: Record<string, any> } & BasicDefinition;
-export type DictionaryAttribute = { type: 'dictionary', nested?: boolean, mappings: AttributeDefinition[] } & BasicDefinition;
-export type ObjectAttribute = { type: 'object', nested?: boolean, mappings: AttributeDefinition[] } & BasicDefinition;
+export type DictionaryAttribute = { type: 'dictionary' } & BasicDefinitionWithNested;
+export type ObjectAttribute = { type: 'object' } & BasicDefinitionWithNested;
 export type ObjectFlatAttribute = { type: 'object_flat' } & BasicDefinition;
+export const typesAttributeWithNested = ['dictionary', 'object'];
+export type NestedAttribute = DictionaryAttribute | ObjectAttribute;
 
 export type AttributeDefinition = StringAttribute | JsonAttribute | ObjectAttribute | DictionaryAttribute | ObjectFlatAttribute |
 NumericAttribute | DateAttribute | BooleanAttribute;
