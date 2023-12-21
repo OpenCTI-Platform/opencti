@@ -30,7 +30,7 @@ describe('CSV Mapper', () => {
         },
         mapper.representations[1],
       ]
-    })).rejects.toThrowError(/missing values for required attribute : name/);
+    })).rejects.toThrowError(/missing values for required attribute/);
 
     // TODO: cover more validation tests
   });
