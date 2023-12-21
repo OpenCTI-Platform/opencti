@@ -24,7 +24,7 @@ const convertIndicatorToStix = (instance: StoreEntityIndicator): StixIndicator =
       }),
       [STIX_EXT_MITRE]: buildMITREExtensions(instance)
     }
-  };
+  } as StixIndicator;
 };
 
 export default convertIndicatorToStix;
