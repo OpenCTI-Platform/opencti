@@ -22,9 +22,7 @@ import Transition from '../../../../components/Transition';
 
 const IndicatorPopoverDeletionMutation = graphql`
   mutation IndicatorPopoverDeletionMutation($id: ID!) {
-    indicatorEdit(id: $id) {
-      delete
-    }
+    indicatorDelete(id: $id)
   }
 `;
 
