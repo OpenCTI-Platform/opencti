@@ -68,6 +68,7 @@ const HistoryDefinition: AttributeDefinition[] = [
       { name: 'marking_definition_ids', label: 'Marking definition IDs', type: 'string', editDefault: false, mandatoryType: 'no', multiple: true, upsert: true, isFilterable: false },
       { name: 'object_marking_refs_ids', label: 'Marking ref IDs', type: 'string', editDefault: false, mandatoryType: 'no', multiple: true, upsert: true, isFilterable: false },
       { name: 'from_id', label: 'Source entity', type: 'string', editDefault: false, mandatoryType: 'no', multiple: false, upsert: true, isFilterable: false },
+      { name: 'to_id', label: 'Target entity', type: 'string', editDefault: false, mandatoryType: 'no', multiple: false, upsert: true, isFilterable: false },
       { name: 'created_by_id', label: 'Created by', type: 'string', editDefault: false, mandatoryType: 'no', multiple: false, upsert: true, isFilterable: false },
       { name: 'created_by_ref_id', label: 'Created by ref', type: 'string', editDefault: false, mandatoryType: 'no', multiple: false, upsert: true, isFilterable: false },
       { name: 'creator_ids', label: 'Authors', type: 'string', editDefault: false, mandatoryType: 'no', multiple: true, upsert: true, isFilterable: false },
