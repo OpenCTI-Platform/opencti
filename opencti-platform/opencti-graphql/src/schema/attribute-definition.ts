@@ -29,7 +29,7 @@ type BasicDefinition = {
 type BasicDefinitionWithNested = BasicDefinition & {
   nested?: boolean,
   mappings: (
-    { associatedFilterKeys?: string[] } // key names to add if different from: 'parentAttributeName.nestedAttributeName'
+    { associatedFilterKeys?: { key: string, label: string }[] } // filter key and their label, to add if key is different from: 'parentAttributeName.nestedAttributeName'
     & AttributeDefinition
   )[],
 };

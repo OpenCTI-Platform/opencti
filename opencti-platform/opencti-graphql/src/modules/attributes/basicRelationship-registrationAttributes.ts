@@ -39,10 +39,13 @@ const basicRelationshipAttributes: Array<AttributeDefinition> = [
     upsert: false,
     isFilterable: true,
     mappings: [
-      { ...internalId, isFilterable: true, associatedFilterKeys: ['fromId', 'toId', 'elementId'] },
+      { ...internalId,
+        isFilterable: true,
+        associatedFilterKeys: [{ key: 'fromId', label: 'Source entity' }, { key: 'toId', label: 'Target entity' }, { key: 'elementId', label: 'Related entity' }]
+      },
       { name: 'name', label: 'Name', type: 'string', editDefault: false, mandatoryType: 'no', multiple: true, upsert: true, isFilterable: false },
       { name: 'role', label: 'Role', type: 'string', editDefault: false, mandatoryType: 'no', multiple: true, upsert: true, isFilterable: false },
-      { name: 'types', label: 'Types', type: 'string', editDefault: false, mandatoryType: 'no', multiple: true, upsert: true, isFilterable: true, associatedFilterKeys: ['fromTypes', 'toTypes'] },
+      { name: 'types', label: 'Types', type: 'string', editDefault: false, mandatoryType: 'no', multiple: true, upsert: true, isFilterable: true, associatedFilterKeys: [{ key: 'fromTypes', label: 'Source type' }, { key: 'toTypes', label: 'Target type' }] },
     ],
   },
 ];
