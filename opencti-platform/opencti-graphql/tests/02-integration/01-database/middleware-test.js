@@ -27,37 +27,17 @@ import {
   ENTITY_TYPE_THREAT_ACTOR_GROUP,
 } from '../../../src/schema/stixDomainObject';
 import { ABSTRACT_STIX_REF_RELATIONSHIP, buildRefRelationKey } from '../../../src/schema/general';
-import {
-  RELATION_ATTRIBUTED_TO,
-  RELATION_MITIGATES,
-  RELATION_RELATED_TO,
-  RELATION_USES
-} from '../../../src/schema/stixCoreRelationship';
+import { RELATION_ATTRIBUTED_TO, RELATION_MITIGATES, RELATION_RELATED_TO, RELATION_USES } from '../../../src/schema/stixCoreRelationship';
 import { ENTITY_HASHED_OBSERVABLE_STIX_FILE } from '../../../src/schema/stixCyberObservable';
 import { RELATION_OBJECT_LABEL, RELATION_OBJECT_MARKING } from '../../../src/schema/stixRefRelationship';
 import { addLabel } from '../../../src/domain/label';
 import { ENTITY_TYPE_LABEL } from '../../../src/schema/stixMetaObject';
-import {
-  dayFormat,
-  escape,
-  monthFormat,
-  now,
-  prepareDate,
-  sinceNowInMinutes,
-  utcDate,
-  yearFormat,
-} from '../../../src/utils/format';
+import { dayFormat, escape, monthFormat, now, prepareDate, sinceNowInMinutes, utcDate, yearFormat } from '../../../src/utils/format';
 import { READ_DATA_INDICES } from '../../../src/database/utils';
 import { executionContext, SYSTEM_USER } from '../../../src/utils/access';
 import { checkObservableSyntax } from '../../../src/utils/syntax';
 import { FunctionalError } from '../../../src/config/errors';
-import {
-  internalLoadById,
-  listAllRelations,
-  listEntities,
-  listRelations,
-  storeLoadById
-} from '../../../src/database/middleware-loader';
+import { internalLoadById, listAllRelations, listEntities, listRelations, storeLoadById } from '../../../src/database/middleware-loader';
 import { addThreatActorGroup } from '../../../src/domain/threatActorGroup';
 import { addMalware } from '../../../src/domain/malware';
 import { addIntrusionSet } from '../../../src/domain/intrusionSet';
@@ -833,10 +813,7 @@ describe('Upsert and merge entities', () => {
       start_time: '2021-10-11T22:00:00.000Z',
       stop_time: '2021-10-08T22:00:00.000Z',
     });
-    await expect(createBadRelation()).rejects.toHaveProperty(
-      'data.reason',
-      'You cant create a relation with a start_time less than the stop_time'
-    );
+    await expect(createBadRelation()).rejects.toThrow('You cant create a relation with a start_time less than the stop_time');
     const rel = await createRelation(testContext, ADMIN_USER, {
       fromId: target.internal_id,
       toId: malware.internal_id,
@@ -846,10 +823,7 @@ describe('Upsert and merge entities', () => {
     });
     const inputUpdate = { key: 'start_time', value: ['2021-10-20T22:00:00.000Z'] };
     const update = () => updateAttribute(testContext, ADMIN_USER, rel.id, RELATION_USES, [inputUpdate]);
-    await expect(update()).rejects.toHaveProperty(
-      'data.reason',
-      'You cant update an element with stop_time less than start_time'
-    );
+    await expect(update()).rejects.toThrow('You cant update an element with stop_time less than start_time');
     await deleteElementById(testContext, ADMIN_USER, target.id, ENTITY_TYPE_THREAT_ACTOR_GROUP);
     await deleteElementById(testContext, ADMIN_USER, malware.id, ENTITY_TYPE_MALWARE);
   });

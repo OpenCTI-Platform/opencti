@@ -1,7 +1,6 @@
 import { logApp } from '../config/conf';
 import { elUpdateByQueryForMigration } from '../database/engine';
 import { READ_DATA_INDICES } from '../database/utils';
-import { DatabaseError } from '../config/errors';
 
 const message = '[MIGRATION] Adding instance_trigger attribute to triggers';
 
@@ -21,10 +20,7 @@ export const up = async (next) => {
       },
     },
   };
-  await elUpdateByQueryForMigration(message, READ_DATA_INDICES, updateQuery)
-    .catch((err) => {
-      throw DatabaseError('Error updating elastic', { error: err });
-    });
+  await elUpdateByQueryForMigration(message, READ_DATA_INDICES, updateQuery);
 
   // event_types of a trigger should contain at least 1 event
   const source = `if (ctx._source.trigger_type == params.live && ctx._source.event_types.length == params.zero) {
@@ -43,10 +39,7 @@ export const up = async (next) => {
       },
     },
   };
-  await elUpdateByQueryForMigration('[MIGRATION] Trigger event_types attribute modification', READ_DATA_INDICES, eventTypeUpdateQuery)
-    .catch((err) => {
-      throw DatabaseError('Error updating elastic', { error: err });
-    });
+  await elUpdateByQueryForMigration('[MIGRATION] Trigger event_types attribute modification', READ_DATA_INDICES, eventTypeUpdateQuery);
   logApp.info('[MIGRATION] Trigger type modifications done.');
   next();
 };

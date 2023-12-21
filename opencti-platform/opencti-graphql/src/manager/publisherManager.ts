@@ -79,7 +79,7 @@ export const internalProcessNotification = async (
         is_read: false
       };
       addNotification(context, SYSTEM_USER, createNotification).catch((err) => {
-        logApp.error('[OPENCTI-PUBLISHER] Error user interface publication', { error: err });
+        logApp.error(err, { manager: 'PUBLISHER_MANAGER' });
         return { error: err };
       });
     } else if (notifier_connector_id === NOTIFIER_CONNECTOR_EMAIL) {
@@ -88,7 +88,7 @@ export const internalProcessNotification = async (
       const generatedEmail = ejs.render(template, templateData);
       const mail = { from: settings.platform_email, to: user.user_email, subject: generatedTitle, html: generatedEmail };
       await sendMail(mail).catch((err) => {
-        logApp.error('[OPENCTI-PUBLISHER] Error email publication', { error: err });
+        logApp.error(err, { manager: 'PUBLISHER_MANAGER' });
         return { error: err };
       });
     } else if (notifier_connector_id === NOTIFIER_CONNECTOR_SIMPLIFIED_EMAIL) {
@@ -112,7 +112,7 @@ export const internalProcessNotification = async (
       const generatedEmail = ejs.render(SIMPLIFIED_EMAIL_TEMPLATE, finalTemplateData);
       const mail = { from: settings.platform_email, to: user.user_email, subject: generatedTitle, html: generatedEmail };
       await sendMail(mail).catch((err) => {
-        logApp.error('[OPENCTI-PUBLISHER] Error email publication', { error: err });
+        logApp.error(err, { manager: 'PUBLISHER_MANAGER' });
         return { error: err };
       });
     } else if (notifier_connector_id === NOTIFIER_CONNECTOR_WEBHOOK) {
@@ -123,7 +123,7 @@ export const internalProcessNotification = async (
       const dataParameters = R.fromPairs((params ?? []).map((h) => [h.attribute, h.value]));
       const httpClient = getHttpClient({ responseType: 'json', headers: dataHeaders });
       await httpClient({ url, method: verb, params: dataParameters, data: dataJson }).catch((err) => {
-        logApp.error('[OPENCTI-PUBLISHER] Error webhook publication', { error: err });
+        logApp.error(err, { manager: 'PUBLISHER_MANAGER' });
         return { error: err };
       });
     } else {
@@ -196,7 +196,7 @@ const publisherStreamHandler = async (streamEvents: Array<SseEvent<StreamNotifEv
       }
     }
   } catch (e) {
-    logApp.error('[OPENCTI-PUBLISHER] Error executing publisher manager', { error: e });
+    logApp.error(e, { manager: 'PUBLISHER_MANAGER' });
   }
 };
 
@@ -231,7 +231,7 @@ const initPublisherManager = () => {
       if (e.name === TYPE_LOCK_ERROR) {
         logApp.debug('[OPENCTI-PUBLISHER] Publisher manager already started by another API');
       } else {
-        logApp.error('[OPENCTI-PUBLISHER] Publisher manager failed to start', { error: e });
+        logApp.error(e, { manager: 'PUBLISHER_MANAGER' });
       }
     } finally {
       if (streamProcessor) await streamProcessor.shutdown();

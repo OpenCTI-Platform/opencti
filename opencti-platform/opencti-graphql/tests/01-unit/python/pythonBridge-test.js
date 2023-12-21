@@ -1,10 +1,5 @@
 import { expect, it } from 'vitest';
-import {
-  checkIndicatorSyntax,
-  checkPythonAvailability,
-  createStixPattern,
-  execChildPython
-} from '../../../src/python/pythonBridge';
+import { checkIndicatorSyntax, checkPythonAvailability, createStixPattern, execChildPython } from '../../../src/python/pythonBridge';
 import { ADMIN_USER, testContext } from '../../utils/testQuery';
 
 it('Check if python is well configured', async () => {
@@ -12,7 +7,7 @@ it('Check if python is well configured', async () => {
   expect(check).not.toBeNull();
   expect(check).toEqual("[text:value = 'test']");
   // noinspection ES6MissingAwait
-  expect(execChildPython(testContext, ADMIN_USER, '/missing')).rejects.toThrow('An unknown error has occurred');
+  expect(execChildPython(testContext, ADMIN_USER, '/missing')).rejects.toThrow('[BRIDGE] execPythonTesting error');
   // noinspection ES6MissingAwait
   expect(createStixPattern(testContext, ADMIN_USER, 'fail')).resolves.toEqual(null);
 });

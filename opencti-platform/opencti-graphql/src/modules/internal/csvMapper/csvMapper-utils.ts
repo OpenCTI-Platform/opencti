@@ -5,6 +5,7 @@ import { isEmptyField, isNotEmptyField } from '../../../database/utils';
 import { isStixRelationshipExceptRef } from '../../../schema/stixRelationship';
 import { isStixObject } from '../../../schema/stixCoreObject';
 import { CsvMapperRepresentationType } from './csvMapper-types';
+import { FunctionalError } from '../../../config/errors';
 
 const representationLabel = (idx: number, representation: CsvMapperRepresentation) => {
   const number = `#${idx + 1}`;
@@ -24,11 +25,11 @@ export const parseCsvMapper = (entity: any) => {
 export const isValidTargetType = (representation: CsvMapperRepresentation) => {
   if (representation.type === CsvMapperRepresentationType.relationship) {
     if (!isStixRelationshipExceptRef(representation.target.entity_type)) {
-      throw Error(`Unknown relationship ${representation.target.entity_type}`);
+      throw FunctionalError('Unknown relationship', { type: representation.target.entity_type });
     }
   } else if (representation.type === CsvMapperRepresentationType.entity) {
     if (!isStixObject(representation.target.entity_type)) {
-      throw Error(`Unknown entity ${representation.target.entity_type}`);
+      throw FunctionalError('Unknown entity', { type: representation.target.entity_type });
     }
   }
 };
@@ -49,7 +50,7 @@ export const validate = async (context: AuthContext, mapper: BasicStoreEntityCsv
       .forEach((schemaAttribute) => {
         const attribute = representation.attributes.find((a) => schemaAttribute.name === a.key);
         if (isEmptyField(attribute) || (isEmptyField(attribute?.column?.column_name) && isEmptyField(attribute?.based_on?.representations))) {
-          throw Error(`Representation ${representationLabel(idx, representation)} - missing values for required attribute : ${schemaAttribute.name}`);
+          throw FunctionalError('Missing values for required attribute', { representation: representationLabel(idx, representation), attribute: schemaAttribute.name });
         }
       });
 
@@ -60,11 +61,11 @@ export const validate = async (context: AuthContext, mapper: BasicStoreEntityCsv
         const schemaAttribute = schemaAttributes.find((attr) => attr.name === attribute.key);
         // Multiple
         if (!schemaAttribute?.multiple && (attribute.based_on?.representations?.length ?? 0) > 1) {
-          throw Error(`Representation ${representationLabel(idx, representation)} - the following attribute can't be multiple : ${attribute.key}`);
+          throw FunctionalError('Attribute can\'t be multiple', { representation: representationLabel(idx, representation), attribute: attribute.key });
         }
         // Auto reference
         if (attribute.based_on?.representations?.includes(representation.id)) {
-          throw Error(`Representation ${representationLabel(idx, representation)} - you can't reference the representation itself : ${attribute.key}`);
+          throw FunctionalError('Can\'t reference the representation itself', { representation: representationLabel(idx, representation), attribute: attribute.key });
         }
         // Possible cycle
         const representationRefs = mapper.representations.filter((r) => attribute.based_on?.representations?.includes(r.id));
@@ -74,7 +75,7 @@ export const validate = async (context: AuthContext, mapper: BasicStoreEntityCsv
           .flat())
           .flat();
         if (attributeRepresentationRefs.includes(representation.id)) {
-          throw Error(`Representation ${representationLabel(idx, representation)} - reference cycle found`);
+          throw FunctionalError('Reference cycle found', { representation: representationLabel(idx, representation) });
         }
       }
     });

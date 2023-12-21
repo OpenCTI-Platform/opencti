@@ -59,7 +59,7 @@ const syncManagerInstance = (syncId) => {
       logApp.info(`[OPENCTI] Sync ${syncId}: listening ${eventSource.url} with id ${connectionId}`);
     });
     eventSource.on('error', (error) => {
-      logApp.error(`[OPENCTI] Sync ${syncId}: error in sync event`, { error });
+      logApp.error(error, { id: syncId, manager: 'SYNC_MANAGER' });
     });
   };
   const manageBackPressure = async (httpClient, { uri }, currentDelay) => {
@@ -147,7 +147,7 @@ const syncManagerInstance = (syncId) => {
               await saveCurrentState(context, 'event', sync, eventId);
             }
           } catch (e) {
-            logApp.error(`[OPENCTI] Sync ${syncId}: error processing event`, { error: e });
+            logApp.error(e, { id: syncId, manager: 'SYNC_MANAGER' });
           }
         }
         await wait(10);
@@ -223,7 +223,7 @@ const initSyncManager = () => {
       if (e.name === TYPE_LOCK_ERROR) {
         logApp.debug('[OPENCTI-MODULE] Sync manager already in progress by another API');
       } else {
-        logApp.error('[OPENCTI-MODULE] Sync manager failed to start', { error: e });
+        logApp.error(e, { manager: 'SYNC_MANAGER' });
       }
     } finally {
       managerRunning = false;

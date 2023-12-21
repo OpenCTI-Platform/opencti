@@ -54,7 +54,7 @@ export const createObservablesFromIndicator = async (context, user, input, indic
       const createdObservable = await createEntity(context, user, observableInput, observable.type);
       observablesToLink.push(createdObservable.id);
     } catch (err) {
-      logApp.error('Unable to create observable', { error: err, input: observableInput });
+      logApp.error(err, { input: observableInput });
     }
   }
   await Promise.all(

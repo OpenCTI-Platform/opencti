@@ -41,7 +41,7 @@ const entitySettingTypeChange = async () => {
     wait_for_completion: true,
     body: updateQuery
   }).catch((err) => {
-    throw DatabaseError('Error updating elastic', { error: err });
+    throw DatabaseError('Error updating elastic', { cause: err });
   });
 };
 
@@ -66,7 +66,7 @@ const updateOVCategory = async (fromOV, toOV) => {
     wait_for_completion: true,
     body: updateIndividualQuery
   }).catch((err) => {
-    throw DatabaseError('Error updating elastic', { error: err });
+    throw DatabaseError('Error updating elastic', { cause: err });
   });
 };
 
@@ -148,7 +148,7 @@ export const up = async (next) => {
         wait_for_completion: true,
         body: updateEntityQuery
       }).catch((err) => {
-        throw DatabaseError('Error updating elastic', { error: err });
+        throw DatabaseError('Error updating elastic', { cause: err });
       });
       // update the relations
       const updateRelationsQuery = {
@@ -181,7 +181,7 @@ export const up = async (next) => {
         wait_for_completion: true,
         body: updateRelationsQuery
       }).catch((err) => {
-        throw DatabaseError('Error updating elastic', { error: err });
+        throw DatabaseError('Error updating elastic', { cause: err });
       });
       await Promise.all([entityPromise, relationsPromise]);
     }

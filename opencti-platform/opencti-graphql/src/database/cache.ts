@@ -71,7 +71,7 @@ const getEntitiesFromCache = async <T extends BasicStoreIdentifier | StixObject>
   const getEntitiesFromCacheFn = async (): Promise<Array<T> | Map<string, T>> => {
     const fromCache = cache[type];
     if (!fromCache) {
-      throw UnsupportedError(`${type} is not supported in cache configuration`);
+      throw UnsupportedError('Cache configuration type not supported', { type });
     }
     if (!fromCache.values) {
       fromCache.values = await fromCache.fn();

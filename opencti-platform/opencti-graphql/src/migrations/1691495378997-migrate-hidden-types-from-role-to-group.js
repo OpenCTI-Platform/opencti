@@ -43,7 +43,7 @@ export const up = async (next) => {
     body: updateRoleQuery
   })
     .catch((err) => {
-      throw DatabaseError('Error updating elastic', { error: err });
+      throw DatabaseError('Error updating elastic', { cause: err });
     });
 
   logApp.info(`${message} > done`);

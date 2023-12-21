@@ -1,6 +1,5 @@
 import { elUpdateByQueryForMigration } from '../database/engine';
 import { READ_INDEX_INTERNAL_OBJECTS } from '../database/utils';
-import { DatabaseError } from '../config/errors';
 
 export const up = async (next) => {
   const defaultDate = new Date();
@@ -30,9 +29,7 @@ export const up = async (next) => {
         }
       }
     }
-  ).catch((err) => {
-    throw DatabaseError('Error updating elastic', { error: err });
-  });
+  );
 
   next();
 };

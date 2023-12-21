@@ -59,7 +59,7 @@ const createApolloServer = () => {
       if (introspectionPatterns.some((pattern) => request.query.includes(pattern))) {
         // If introspection explicitly disabled or user is not authenticated
         if (!PLAYGROUND_ENABLED || PLAYGROUND_INTROSPECTION_DISABLED || !context.user) {
-          throw ForbiddenAccess({ reason: 'GraphQL introspection not authorized!' });
+          throw ForbiddenAccess('GraphQL introspection not authorized!');
         }
       }
     },
@@ -85,7 +85,7 @@ const createApolloServer = () => {
           executeContext.user = userWithOrigin(req, user);
         }
       } catch (error) {
-        logApp.error('Error in user context building', { error });
+        logApp.error(error);
       }
       return executeContext;
     },

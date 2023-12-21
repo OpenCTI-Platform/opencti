@@ -56,7 +56,7 @@ export const generateUpdateMessage = async (context, entityType, inputs) => {
   const inputsByOperations = R.groupBy((m) => m.operation ?? UPDATE_OPERATION_REPLACE, inputs);
   const patchElements = Object.entries(inputsByOperations);
   if (patchElements.length === 0) {
-    throw UnsupportedError('[OPENCTI] Error generating update message with empty inputs');
+    throw UnsupportedError('Generating update message with empty inputs fail');
   }
 
   const authorizedMembersIds = patchElements.slice(0, 3).flatMap(([,operations]) => {

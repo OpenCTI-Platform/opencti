@@ -411,7 +411,7 @@ const loadElementMetaDependencies = async (context, user, elements, args = {}) =
         }, values).filter((d) => isNotEmptyField(d));
         const metaRefKey = schemaRelationsRefDefinition.getRelationRef(element.entity_type, inputKey);
         if (isEmptyField(metaRefKey)) {
-          throw UnsupportedError('SCHEMA_VALIDATION_ERROR', { key, inputKey, type: element.entity_type });
+          throw UnsupportedError('Schema validation failure when loading dependencies', { key, inputKey, type: element.entity_type });
         }
         const invalidRelations = values.filter((v) => toResolvedElements[v.toId] === undefined);
         if (invalidRelations.length > 0) {
@@ -460,8 +460,8 @@ const loadElementsWithDependencies = async (context, user, elements, opts = {}) 
       if (isEmptyField(rawFrom) || isEmptyField(rawTo)) {
         const validFrom = isEmptyField(rawFrom) ? 'invalid' : 'valid';
         const validTo = isEmptyField(rawTo) ? 'invalid' : 'valid';
-        const message = `From ${element.fromId} is ${validFrom}, To ${element.toId} is ${validTo}`;
-        logApp.warn(`Auto delete of invalid relation ${element.id}. ${message}`);
+        const detail = `From ${element.fromId} is ${validFrom}, To ${element.toId} is ${validTo}`;
+        logApp.warn('Auto delete of invalid relation', { id: element.id, detail });
         // Auto deletion of the invalid relation
         await elDeleteElements(context, SYSTEM_USER, [element]);
       } else {
@@ -779,7 +779,7 @@ const inputResolveRefs = async (context, user, input, type, entitySetting) => {
       existingFields.forEach(({ key, required, multiple }) => {
         const resolvedData = inputResolved[key];
         if (isEmptyField(resolvedData) && required) {
-          throw FunctionalError(`Missing mandatory attribute for vocabulary ${key}`);
+          throw FunctionalError('Missing mandatory attribute for vocabulary', { key });
         }
         if (isNotEmptyField(resolvedData)) {
           const isArrayValues = Array.isArray(resolvedData);
@@ -795,7 +795,7 @@ const inputResolveRefs = async (context, user, input, type, entitySetting) => {
       const inputMarkingIds = inputResolved[INPUT_MARKINGS].map((marking) => marking.internal_id);
       const userMarkingIds = user.allowed_marking.map((marking) => marking.internal_id);
       if (!inputMarkingIds.every((v) => userMarkingIds.includes(v))) {
-        throw MissingReferenceError({ message: 'Missing markings', input });
+        throw MissingReferenceError({ context: 'Missing markings', input });
       }
     }
     return inputResolved;
@@ -1455,7 +1455,7 @@ const checkAttributeConsistency = (entityType, key) => {
   }
   const entityAttributes = schemaAttributesDefinition.getAttributeNames(entityType);
   if (!R.includes(masterKey, entityAttributes)) {
-    throw FunctionalError(`This attribute key ${key} is not allowed on the type ${entityType}, please check your registration attribute name`);
+    throw FunctionalError('This attribute key is not allowed, please check your registration attribute name', { key, entity_type: entityType });
   }
 };
 const innerUpdateAttribute = (instance, rawInput) => {
@@ -1950,8 +1950,7 @@ export const updateAttributeMetaResolved = async (context, user, initial, inputs
     if (isStixCyberObservable(updatedInstance.entity_type)) {
       const observableSyntaxResult = checkObservableSyntax(updatedInstance.entity_type, updatedInstance);
       if (observableSyntaxResult !== true) {
-        const reason = `Observable of type ${updatedInstance.entity_type} is not correctly formatted.`;
-        throw FunctionalError(reason, { id: initial.internal_id, type: initial.entity_type });
+        throw FunctionalError('Observable of is not correctly formatted', { id: initial.internal_id, type: initial.entity_type });
       }
     }
     lock.signal.throwIfAborted();
@@ -2847,7 +2846,7 @@ export const createRelationRaw = async (context, user, input, opts = {}) => {
   if (fromId === toId) {
     /* v8 ignore next */
     const errorData = { from: input.fromId, relationshipType };
-    throw UnsupportedError('Relation cant be created with the same source and target', { error: errorData });
+    throw UnsupportedError('Relation cant be created with the same source and target', errorData);
   }
   const entitySetting = await getEntitySettingFromCache(context, relationshipType);
   const filledInput = fillDefaultValues(user, input, entitySetting);
@@ -2870,14 +2869,14 @@ export const createRelationRaw = async (context, user, input, opts = {}) => {
       // TODO Handle RELATION_REVOKED_BY special case
     }
     const errorData = { from: input.fromId, to: input.toId, relationshipType };
-    throw UnsupportedError('Relation cant be created with the same source and target', { error: errorData });
+    throw UnsupportedError('Relation cant be created with the same source and target', errorData);
   }
   // It's not possible to create a single ref relationship if one already exists
   if (isSingleRelationsRef(resolvedInput.from.entity_type, relationshipType)) {
     const key = schemaRelationsRefDefinition.convertDatabaseNameToInputName(resolvedInput.from.entity_type, relationshipType);
     if (isNotEmptyField(resolvedInput.from[key])) {
       const errorData = { from: input.fromId, to: input.toId, relationshipType };
-      throw UnsupportedError('Cant add another relation on single ref', { error: errorData });
+      throw UnsupportedError('Cant add another relation on single ref', errorData);
     }
   }
   // Build lock ids
@@ -2943,7 +2942,7 @@ export const createRelationRaw = async (context, user, input, opts = {}) => {
       // Checking the direction of the relation to allow relationships
       const isReverseRelationConsistent = await isRelationConsistent(context, user, relationshipType, to, from);
       if (toRefs.includes(from.internal_id) && isReverseRelationConsistent) {
-        throw FunctionalError(`You cant create a cyclic relation between ${from.standard_id} and ${to.standard_id}`);
+        throw FunctionalError('You cant create a cyclic relation', { from: from.standard_id, to: to.standard_id });
       }
     }
     // Just build a standard relationship
@@ -3446,7 +3445,7 @@ export const deleteInferredRuleElement = async (rule, instance, deletedDependenc
   // Check if deletion is really targeting an inference
   const isInferred = isInferredIndex(instance._index);
   if (!isInferred) {
-    throw UnsupportedError(`Instance ${instance.id} is not inferred, cant be deleted`);
+    throw UnsupportedError('Instance is not inferred, cant be deleted', { id: instance.id });
   }
   // Delete inference
   const fromRule = RULE_PREFIX + rule;
@@ -3489,9 +3488,9 @@ export const deleteInferredRuleElement = async (rule, instance, deletedDependenc
     }
   } catch (err) {
     if (err.name === ALREADY_DELETED_ERROR) {
-      logApp.warn('Trying to delete an already deleted inference', { error: err.message });
+      logApp.warn(err);
     } else {
-      logApp.error('Error deleting inference', { error: err });
+      logApp.error(err);
     }
   }
   return false;
@@ -3508,7 +3507,7 @@ export const deleteRelationsByFromAndTo = async (context, user, fromId, toId, re
   if (attributesMandatory.length > 0) {
     const attribute = attributesMandatory.find((attr) => attr === schemaRelationsRefDefinition.convertDatabaseNameToInputName(fromThing.entity_type, relationshipType));
     if (attribute && fromThing[buildRefRelationKey(relationshipType)].length === 1) {
-      throw ValidationError(attribute, { message: 'This attribute is mandatory', attribute });
+      throw ValidationError(attribute, { validation: 'This attribute is mandatory', attribute });
     }
   }
   const toThing = await internalLoadById(context, user, toId, opts);// check if user has "edit" access on from and to

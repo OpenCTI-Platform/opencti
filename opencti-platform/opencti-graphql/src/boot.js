@@ -38,6 +38,7 @@ import { ENABLED_IMPORT_CSV_BUILT_IN_CONNECTOR } from './connector/importCsv/imp
 import playbookManager from './manager/playbookManager';
 import fileIndexManager from './manager/fileIndexManager';
 import { isAttachmentProcessorEnabled } from './database/engine';
+import { UnknownError } from './config/errors';
 
 // region dynamic modules
 const startModules = async () => {
@@ -232,7 +233,7 @@ export const platformStart = async () => {
     // Init the modules
     await startModules();
   } catch (e) {
-    logApp.error('[OPENCTI] Platform start fail', { error: e });
+    logApp.error(e);
     process.exit(1);
   }
 };
@@ -251,7 +252,7 @@ export const platformStop = async () => {
 
 // region signals management
 process.on('unhandledRejection', (reason, p) => {
-  logApp.error('[OPENCTI] Unhandled Rejection', { promise: p, reason });
+  logApp.error(UnknownError('Engine unhandled rejection', { reason, promise: p }));
 });
 
 ['SIGTERM', 'SIGINT', 'message'].forEach((signal) => {
@@ -264,7 +265,7 @@ process.on('unhandledRejection', (reason, p) => {
           await platformStop();
           process.exit(0);
         } catch (e) {
-          logApp.error('[OPENCTI] OpenCTI platform stop error', { error: e });
+          logApp.error(e);
           process.exit(1);
         }
       }

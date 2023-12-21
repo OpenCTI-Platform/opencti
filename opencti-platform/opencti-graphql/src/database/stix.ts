@@ -86,7 +86,7 @@ import type { StoreRelation } from '../types/store';
 import { isInternalRelationship } from '../schema/internalRelationship';
 import { schemaRelationsRefDefinition } from '../schema/schema-relationsRef';
 import { ENTITY_TYPE_CHANNEL } from '../modules/channel/channel-types';
-import { FunctionalError, UnknownError, UnsupportedError } from '../config/errors';
+import { FunctionalError, UnsupportedError } from '../config/errors';
 import { ENTITY_TYPE_THREAT_ACTOR_INDIVIDUAL } from '../modules/threatActorIndividual/threatActorIndividual-types';
 import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../modules/organization/organization-types';
 
@@ -1163,7 +1163,8 @@ export const isRelationBuiltin = (instance: StoreRelation): boolean => {
     }
   }
   // Definition not found, throw exception
-  throw UnsupportedError(`[STIX] Missing definition for ${instance.fromType}<-${instance.entity_type}->${instance.toType}`);
+  const meta = { from: instance.fromType, type: instance.entity_type, to: instance.toType };
+  throw UnsupportedError('[STIX] Missing relation definition', meta);
 };
 
 export const checkRelationshipRef = (fromType: string, toType: string, relationshipType: string) => {
@@ -1173,18 +1174,14 @@ export const checkRelationshipRef = (fromType: string, toType: string, relations
 
   const relationRefs = schemaRelationsRefDefinition.getRelationsRef(fromType).filter((rel) => rel.databaseName === relationshipType);
   if (relationRefs.length === 0) {
-    throw FunctionalError(
-      `The relationship type ${relationshipType} is not allowed between ${fromType} and ${toType}`
-    );
+    throw FunctionalError('The relationship is not allowed', { type: relationshipType, from: fromType, to: toType });
   }
   if (relationRefs.length > 1) {
-    throw UnknownError(`Invalid schema from ${fromType} to ${toType} on ${relationshipType}`, { data: relationRefs });
+    throw FunctionalError('Invalid relationship schema', { type: relationshipType, from: fromType, to: toType, data: relationRefs });
   }
 
   const checkMetaRelationshipFn = relationRefs[0].checker;
   if (checkMetaRelationshipFn && !checkMetaRelationshipFn(fromType, toType)) {
-    throw FunctionalError(
-      `The relationship type ${relationshipType} is not allowed between ${fromType} and ${toType}`
-    );
+    throw FunctionalError('The relationship is not allowed', { type: relationshipType, from: fromType, to: toType });
   }
 };

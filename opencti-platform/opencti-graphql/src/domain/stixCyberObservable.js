@@ -147,7 +147,7 @@ const createIndicatorFromObservable = async (context, user, input, observable) =
       };
       await addIndicator(context, user, indicatorToCreate);
     } else {
-      logApp.warn(`[OPENCTI] Cannot create indicator for ${key} / ${value} - cant generate pattern`);
+      logApp.warn('Cannot create indicator - cant generate pattern', { key, value });
     }
   } catch (err) {
     logApp.info('[OPENCTI] Cannot create indicator', { error: err });
@@ -211,7 +211,7 @@ export const addStixCyberObservable = async (context, user, input) => {
   // Check the consistency of the observable.
   const observableSyntaxResult = checkObservableSyntax(type, observableInput);
   if (observableSyntaxResult !== true) {
-    throw FunctionalError(`Observable of type ${type} is not correctly formatted.`, { observableSyntaxResult });
+    throw FunctionalError('Observable is not correctly formatted', { type, input: observableInput });
   }
   // If everything ok, create adapt/create the observable
   const created = await createEntity(context, user, observableInput, type);

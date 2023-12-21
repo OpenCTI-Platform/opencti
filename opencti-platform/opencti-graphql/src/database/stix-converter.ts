@@ -148,7 +148,7 @@ export const convertTypeToStixType = (type: string): string => {
 };
 const assertType = (type: string, instanceType: string) => {
   if (instanceType !== type) {
-    throw UnsupportedError(`${instanceType} not compatible with ${type}`);
+    throw UnsupportedError('Incompatible type', { instanceType, type });
   }
 };
 const isValidStix = (data: S.StixObject): boolean => {
@@ -360,7 +360,7 @@ const buildStixCyberObservable = (instance: StoreCyberObservable): S.StixCyberOb
 // INTERNAL
 const convertInternalToStix = (instance: StoreEntity, type: string): S.StixInternal => {
   if (!isInternalObject(type)) {
-    throw UnsupportedError(`${instance.entity_type} not compatible with internal`);
+    throw UnsupportedError('Type not compatible with internal', { entity_type: instance.entity_type });
   }
   const internal = buildStixObject(instance);
   return {
@@ -371,7 +371,7 @@ const convertInternalToStix = (instance: StoreEntity, type: string): S.StixInter
 // SDO
 export const convertIdentityToStix = (instance: StoreEntityIdentity, type: string): SDO.StixIdentity => {
   if (!isStixDomainObjectIdentity(type)) {
-    throw UnsupportedError(`${instance.entity_type} not compatible with identity`);
+    throw UnsupportedError('Type not compatible with identity', { entity_type: instance.entity_type });
   }
   const identity = buildStixDomain(instance);
   return {
@@ -395,7 +395,7 @@ export const convertIdentityToStix = (instance: StoreEntityIdentity, type: strin
 };
 export const convertLocationToStix = (instance: StoreEntity, type: string): SDO.StixLocation => {
   if (!isStixDomainObjectLocation(type)) {
-    throw UnsupportedError(`${instance.entity_type} not compatible with location`);
+    throw UnsupportedError('Type not compatible with location', { entity_type: instance.entity_type });
   }
   const location = buildStixDomain(instance);
   return {
@@ -1328,7 +1328,7 @@ export const registerStixMetaConverter = <T extends StoreEntity, Z extends S.Sti
 const convertToStix = (instance: StoreCommon): S.StixObject => {
   const type = instance.entity_type;
   if (!isBasicObject(type) && !isBasicRelationship(type)) {
-    throw UnsupportedError(`Type ${type} cannot be converted to Stix`, { instance });
+    throw UnsupportedError('Type cannot be converted to Stix', { type, instance });
   }
   // SRO: relations and sightings
   if (isBasicRelationship(type)) {
@@ -1342,7 +1342,7 @@ const convertToStix = (instance: StoreCommon): S.StixObject => {
     if (isStixSightingRelationship(type)) {
       return convertSightingToStix(basic);
     }
-    throw UnsupportedError(`No relation converter available for ${type}`);
+    throw UnsupportedError('No relation converter available', { type });
   }
   if (isInternalObject(type)) {
     const internal = instance as StoreEntity;
@@ -1354,7 +1354,7 @@ const convertToStix = (instance: StoreCommon): S.StixObject => {
     if (stixDomainConverters.has(type)) {
       const externalConverter = stixDomainConverters.get(type);
       if (!externalConverter) {
-        throw UnsupportedError(`Converter for type ${type} was declared without a conversion function`);
+        throw UnsupportedError('Converter was declared without a conversion function', { type });
       }
       return externalConverter(basic);
     }

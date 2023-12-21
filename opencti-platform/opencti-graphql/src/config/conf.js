@@ -8,6 +8,7 @@ import ipaddr from 'ipaddr.js';
 import DailyRotateFile from 'winston-daily-rotate-file';
 import { HttpsProxyAgent } from 'https-proxy-agent';
 import { HttpProxyAgent } from 'http-proxy-agent';
+import { ApolloError } from 'apollo-errors';
 import * as O from '../schema/internalObject';
 import * as M from '../schema/stixMetaObject';
 import {
@@ -27,7 +28,7 @@ import { ENTITY_TYPE_ENTITY_SETTING } from '../modules/entitySetting/entitySetti
 import { ENTITY_TYPE_MANAGER_CONFIGURATION } from '../modules/managerConfiguration/managerConfiguration-types';
 import { ENTITY_TYPE_WORKSPACE } from '../modules/workspace/workspace-types';
 import { ENTITY_TYPE_NOTIFIER } from '../modules/notifier/notifier-types';
-import { UnsupportedError } from './errors';
+import { UnknownError, UnsupportedError } from './errors';
 
 // https://golang.org/src/crypto/x509/root_linux.go
 const LINUX_CERTFILES = [
@@ -272,35 +273,52 @@ const auditLogger = winston.createLogger({
 
 // Specific case to fail any test that produce an error log
 const LOG_APP = 'APP';
-const addBasicMetaInformation = (category, meta) => {
-  const logInformation = { ...meta, category, version: PLATFORM_VERSION };
-  const infoEntries = Object.entries(logInformation);
-  const logMeta = {};
-  for (let entry = 0; entry < infoEntries.length; entry += 1) {
-    const [k, v] = infoEntries[entry];
-    if (v instanceof Error) {
-      const basicError = { name: v.name, message: v.message, stack: v.stack };
-      if (v._error) { // Apollo error
-        logMeta[k] = { name: v.name, message: v.message, stack: basicError.stack, context: v.data };
-      } else { // Standard error
-        logMeta[k] = { ...basicError, context: {} };
-      }
-    } else {
-      logMeta[k] = v;
+const buildMetaErrors = (error) => {
+  const errors = [];
+  if (error instanceof ApolloError) {
+    const attributes = R.dissoc('cause', error.data);
+    const baseError = { name: error.name, message: error.message, stack: error.stack, attributes };
+    errors.push(baseError);
+    if (error.data.cause && error.data.cause instanceof Error) {
+      errors.push(...buildMetaErrors(error.data.cause));
     }
+  } else if (error instanceof Error) {
+    const baseError = { name: error.name, message: error.message, stack: error.stack };
+    errors.push(baseError);
   }
-  return logMeta;
+  return errors;
 };
+const addBasicMetaInformation = (category, error, meta) => {
+  const logMeta = { ...meta };
+  if (error) logMeta.errors = buildMetaErrors(error);
+  return { category, version: PLATFORM_VERSION, ...logMeta };
+};
+
+// {"category":"APP", genre:"TECHNICAL", "level":"info","message":"xxxx","timestamp":"date","version":"5.12.9", "attributes": {}}
 export const logApp = {
-  _log: (level, message, meta = {}) => {
+  _log: (level, message, error, meta = {}) => {
     if (appLogTransports.length > 0) {
-      appLogger.log(level, message, addBasicMetaInformation(LOG_APP, meta));
+      appLogger.log(level, message, addBasicMetaInformation(LOG_APP, error, meta));
     }
   },
-  debug: (message, meta = {}) => logApp._log('debug', message, meta),
-  info: (message, meta = {}) => logApp._log('info', message, meta),
-  warn: (message, meta = {}) => logApp._log('warn', message, meta),
-  error: (message, meta = {}) => logApp._log('error', message, meta),
+  _logWithError: (level, messageOrError, meta = {}) => {
+    const isError = messageOrError instanceof Error;
+    const message = isError ? messageOrError.message : messageOrError;
+    if (isError) {
+      if (messageOrError instanceof ApolloError) {
+        logApp._log(level, message, messageOrError, meta);
+      } else {
+        const error = UnknownError(message, { cause: messageOrError });
+        logApp._log(level, 'Platform unmanaged direct error', error, meta);
+      }
+    } else {
+      logApp._log(level, message, null, meta);
+    }
+  },
+  debug: (message, meta = {}) => logApp._log('debug', message, null, meta),
+  info: (message, meta = {}) => logApp._log('info', message, null, meta),
+  warn: (messageOrError, meta = {}) => logApp._logWithError('warn', messageOrError, meta),
+  error: (messageOrError, meta = {}) => logApp._logWithError('error', messageOrError, meta)
 };
 
 const LOG_AUDIT = 'AUDIT';
@@ -309,7 +327,7 @@ export const logAudit = {
     if (auditLogTransports.length > 0) {
       const metaUser = { email: user.user_email, ...user.origin };
       const logMeta = isEmpty(meta) ? { auth: metaUser } : { resource: meta, auth: metaUser };
-      auditLogger.log(level, operation, addBasicMetaInformation(LOG_AUDIT, logMeta));
+      auditLogger.log(level, operation, addBasicMetaInformation(LOG_AUDIT, null, logMeta));
     }
   },
   info: (user, operation, meta = {}) => logAudit._log('info', user, operation, meta),
@@ -354,7 +372,7 @@ export const configureCA = (certificates) => {
       if (err.code === 'ENOENT') {
         // For this error, try the next one.
       } else {
-        throw err;
+        throw UnknownError('Configuration failure of the CA certificate', { cause: err });
       }
     }
   }
@@ -504,7 +522,7 @@ export const computeDefaultAccountStatus = () => {
     if (accountStatus) {
       return defaultConf;
     }
-    throw UnsupportedError(`Invalid default_initialize_account_status configuration ${defaultConf} (${Object.keys(ACCOUNT_STATUSES).join(', ')})`);
+    throw UnsupportedError('Invalid default_initialize_account_status configuration', { default: defaultConf, statuses: ACCOUNT_STATUSES });
   }
   return ACCOUNT_STATUS_ACTIVE;
 };

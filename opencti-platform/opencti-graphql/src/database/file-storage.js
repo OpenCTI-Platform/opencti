@@ -8,7 +8,7 @@ import { defaultProvider } from '@aws-sdk/credential-provider-node/dist-cjs/defa
 import mime from 'mime-types';
 import conf, { booleanConf, ENABLED_FILE_INDEX_MANAGER, logApp } from '../config/conf';
 import { now, sinceNowInMinutes } from '../utils/format';
-import { DatabaseError, FunctionalError } from '../config/errors';
+import { DatabaseError, ForbiddenAccess, FunctionalError, UnsupportedError } from '../config/errors';
 import { createWork, deleteWorkForFile, deleteWorkForSource } from '../domain/work';
 import { isEmptyField, isNotEmptyField } from './utils';
 import { connectorsForImport } from './repository';
@@ -116,8 +116,8 @@ export const deleteFile = async (context, user, id) => {
   if (ENABLED_FILE_INDEX_MANAGER && isAttachmentProcessorEnabled()) {
     logApp.info(`[FILE STORAGE] delete file ${id} in index`);
     await elDeleteFilesByIds([id])
-      .catch((databaseError) => {
-        logApp.error('[FILE STORAGE] Error deleting file in index', { databaseError });
+      .catch((err) => {
+        logApp.error(err);
       });
   }
   return up;
@@ -198,10 +198,7 @@ export const loadFile = async (user, filename) => {
       uploadStatus: 'complete'
     };
   } catch (err) {
-    if (err instanceof s3.NoSuchKey) {
-      throw DatabaseError('File not found', { user_id: user.id, filename });
-    }
-    throw err;
+    throw UnsupportedError('Load file from storage fail', { cause: err, user_id: user.id, filename });
   }
 };
 const getFileName = (fileId) => {
@@ -236,7 +233,7 @@ export const checkFileAccess = async (context, user, scope, loadedFile) => {
         context_data: data
       });
     }
-    throw FunctionalError('FILE_ACCESS', { id: entity_id, file: loadedFile.id });
+    throw ForbiddenAccess('Access to this file is restricted', { id: entity_id, file: loadedFile.id });
   }
   return true;
 };
@@ -270,7 +267,7 @@ const rawFilesListing = async (directory, opts = {}) => {
         requestParams.ContinuationToken = response.NextContinuationToken;
       }
     } catch (err) {
-      logApp.error('[FILE STORAGE] Error loading files list', { error: err });
+      logApp.error(DatabaseError('Storage files read fail', { cause: err }));
       truncated = false;
     }
   }

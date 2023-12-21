@@ -228,7 +228,7 @@ export const checkAndConvertFilters = (filterGroup: FilterGroup | null | undefin
     return undefined;
   }
   if (!isFilterGroupFormatCorrect(filterGroup)) { // detect filters in the old format or in a bad format
-    throw Error(`Incorrect filters format: ${JSON.stringify(filterGroup)}`);
+    throw UnsupportedError('Incorrect filters format', { filter: JSON.stringify(filterGroup) });
   }
   const { noFiltersChecking = false, authorizeNestedFiltersKeys = false } = opts;
   // 01. check filters keys exist in schema

@@ -157,7 +157,7 @@ const isMatchRuleFilters = (rule: RuleDefinition, element: StixCoreObject): bool
 
 const handleRuleError = async (event: BaseEvent, error: unknown) => {
   const { type } = event;
-  logApp.error(`[OPENCTI-MODULE] Rule error applying ${type} event`, { event, error });
+  logApp.error(error, { event, type });
 };
 
 const applyCleanupOnDependencyIds = async (deletionIds: Array<string>) => {
@@ -260,9 +260,9 @@ export const rulesCleanHandler = async (
         }
       } catch (err: any) {
         if (err.name === ALREADY_DELETED_ERROR) {
-          logApp.warn('Trying to delete an already deleted element', { error: err.message });
+          logApp.warn(err);
         } else {
-          logApp.error('Error deleting element', { error: err });
+          logApp.error(err, { manager: 'RULE_ENGINE' });
         }
       }
     }
@@ -328,7 +328,7 @@ const initRuleManager = () => {
       if (e.name === TYPE_LOCK_ERROR) {
         logApp.debug('[OPENCTI-MODULE] Rule engine already started by another API');
       } else {
-        logApp.error('[OPENCTI-MODULE] Rule engine failed to start', { error: e });
+        logApp.error(e, { manager: 'RULE_ENGINE' });
       }
     } finally {
       running = false;

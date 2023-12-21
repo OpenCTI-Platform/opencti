@@ -17,7 +17,7 @@ import { ENTITY_TYPE_MIGRATION_STATUS } from './schema/internalObject';
 import { applyMigration, lastAvailableMigrationTime } from './database/migration';
 import { createEntity, loadEntity } from './database/middleware';
 import { INDEX_INTERNAL_OBJECTS, INTERNAL_PLAYBOOK_QUEUE, INTERNAL_SYNC_QUEUE } from './database/utils';
-import { ConfigurationError, LockTimeoutError, TYPE_LOCK_ERROR, UnknownError, UnsupportedError } from './config/errors';
+import { ConfigurationError, LockTimeoutError, TYPE_LOCK_ERROR, UnsupportedError } from './config/errors';
 import { BYPASS, BYPASS_REFERENCE, executionContext, ROLE_ADMINISTRATOR, ROLE_DEFAULT, SYSTEM_USER } from './utils/access';
 import { smtpIsAlive } from './database/smtp';
 import { createStatus, createStatusTemplate } from './domain/status';
@@ -149,7 +149,7 @@ const initializeSchema = async () => {
   // New platform so delete all indices to prevent conflict
   const isInternalIndexExists = await elIndexExists(INDEX_INTERNAL_OBJECTS);
   if (isInternalIndexExists) {
-    throw ConfigurationError('[INIT] Fail initialize schema, index already exists, previous initialization fail '
+    throw ConfigurationError('Fail initialize schema, index already exists, previous initialization fail '
       + 'because you kill the platform before the end of the initialization. Please remove your '
       + 'elastic/opensearch data and restart.');
   }
@@ -346,9 +346,7 @@ const isCompatiblePlatform = async (context) => {
   // Runtime version must be >= of the stored runtime
   const runtimeVersion = semver.coerce(PLATFORM_VERSION).version;
   if (semver.lt(runtimeVersion, currentVersion)) {
-    throw UnsupportedError(
-      `Your platform data (${currentVersion}) are too recent to start on version ${runtimeVersion}`
-    );
+    throw UnsupportedError('Your platform data are too recent to start on', { currentVersion, runtimeVersion });
   }
 };
 
@@ -380,10 +378,10 @@ const platformInit = async (withMarkings = true) => {
     }
   } catch (e) {
     if (e.name === TYPE_LOCK_ERROR) {
-      const reason = '[OPENCTI] Platform cant get the lock for initialization (can be due to other instance currently migrating/initializing)';
+      const reason = 'Platform cant get the lock for initialization (can be due to other instance currently migrating/initializing)';
       throw LockTimeoutError({ participantIds: [PLATFORM_LOCK_ID] }, reason);
     } else {
-      throw UnknownError('[OPENCTI] Platform initialization fail', { error: e });
+      throw e;
     }
   } finally {
     if (lock) {

@@ -13,7 +13,7 @@ import { OAuth2Strategy as GoogleStrategy } from 'passport-google-oauth';
 import validator from 'validator';
 import { initAdmin, login, loginFromProvider } from '../domain/user';
 import conf, { logApp } from './conf';
-import { AuthenticationFailure, ConfigurationError } from './errors';
+import { AuthenticationFailure, ConfigurationError, UnsupportedError } from './errors';
 import { isNotEmptyField } from '../database/utils';
 
 export const empty = R.anyPass([R.isNil, R.isEmpty]);
@@ -169,7 +169,7 @@ for (let i = 0; i < providerKeys.length; i += 1) {
         const isGroupBaseAccess = (isNotEmptyField(mappedConfig.groups_management) && isNotEmptyField(mappedConfig.groups_management?.groups_mapping)) || isRoleBaseAccess;
         // region roles mapping
         if (isRoleBaseAccess) {
-          logApp.error('Warning: SSO mapping on roles is deprecated, you should clean roles_management in your config and bind on groups.');
+          logApp.error('SSO mapping on roles is deprecated, you should clean roles_management in your config and bind on groups.');
         }
         // @deprecated: SSO mapping on roles is deprecated but kept to ensure the correct migration
         const computeRolesMapping = () => {
@@ -210,7 +210,7 @@ for (let i = 0; i < providerKeys.length; i += 1) {
         const organizationsToAssociate = isOrgaMapping ? computeOrganizationsMapping() : [];
         // endregion
         if (!userMail) {
-          logApp.warn('[LDAP] Configuration error, cant map mail and username', { user, userMail, userName });
+          logApp.warn('LDAP Configuration error, cant map mail and username', { user, userMail, userName });
           done({ message: 'Configuration error, ask your administrator' });
         } else if (!isGroupBaseAccess || groupsToAssociate.length > 0) {
           logApp.debug(`[LDAP] Connecting/creating account with ${userMail} [name=${userName}]`);
@@ -245,7 +245,7 @@ for (let i = 0; i < providerKeys.length; i += 1) {
         logApp.debug('[SAML] Groups management configuration', { groupsManagement: mappedConfig.groups_management, isRoleBaseAccess });
         // region roles mapping
         if (isRoleBaseAccess) {
-          logApp.error('Warning: SSO mapping on roles is deprecated, you should clean roles_management in your config and bind on groups.');
+          logApp.error('SSO mapping on roles is deprecated, you should clean roles_management in your config and bind on groups.');
         }
         const computeRolesMapping = () => {
           const attrRoles = roleAttributes.map((a) => (Array.isArray(profile[a]) ? profile[a] : [profile[a]]));
@@ -327,7 +327,7 @@ for (let i = 0; i < providerKeys.length; i += 1) {
           const isGroupMapping = (isNotEmptyField(mappedConfig.groups_management) && isNotEmptyField(mappedConfig.groups_management?.groups_mapping)) || isRoleBaseAccess;
           // region roles mapping
           if (isRoleBaseAccess) {
-            logApp.error('Warning: SSO mapping on roles is deprecated, you should clean roles_management in your config and bind on groups.');
+            logApp.error('SSO mapping on roles is deprecated, you should clean roles_management in your config and bind on groups.');
           }
           const computeRolesMapping = () => {
             const token = mappedConfig.roles_management?.token_reference || 'access_token';
@@ -417,7 +417,7 @@ for (let i = 0; i < providerKeys.length; i += 1) {
         passport.use(providerRef, openIDStrategy);
         providers.push({ name: providerName, type: AUTH_SSO, strategy, provider: providerRef });
       }).catch((err) => {
-        logApp.error(`[OPENID] ${providerRef} fail to initialize, provider will be disable`, { error: err });
+        logApp.error(UnsupportedError('Error initializing authentication provider', { cause: err, provider: providerRef }));
       });
     }
     if (strategy === STRATEGY_FACEBOOK) {

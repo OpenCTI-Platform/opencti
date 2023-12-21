@@ -6,7 +6,7 @@ import { ENTITY_TYPE_BACKGROUND_TASK } from '../schema/internalObject';
 import { now } from '../utils/format';
 import { BYPASS, MEMBER_ACCESS_RIGHT_ADMIN, SETTINGS_SET_ACCESSES } from '../utils/access';
 import { isKnowledge, KNOWLEDGE_DELETE, KNOWLEDGE_UPDATE } from '../schema/general';
-import { ForbiddenAccess } from '../config/errors';
+import { ForbiddenAccess, UnsupportedError } from '../config/errors';
 import { elIndex } from '../database/engine';
 import { INDEX_INTERNAL_OBJECTS } from '../database/utils';
 import { ENTITY_TYPE_NOTIFICATION } from '../modules/notification/notification-types';
@@ -60,7 +60,7 @@ export const checkActionValidity = async (context, user, input, scope, taskType)
       const parentTypes = typeFiltersValues.map((n) => getParentTypes(n));
       const isNotKnowledges = !areParentTypesKnowledge(parentTypes) || typeFiltersValues.some((type) => type === ENTITY_TYPE_VOCABULARY);
       if (isNotKnowledges) {
-        throw ForbiddenAccess(undefined, 'The targeted ids are not knowledges.');
+        throw ForbiddenAccess('The targeted ids are not knowledges.');
       }
     } else if (taskType === TASK_TYPE_LIST) {
       const objects = await Promise.all(ids.map((id) => internalLoadById(context, user, id)));
@@ -68,10 +68,10 @@ export const checkActionValidity = async (context, user, input, scope, taskType)
         || !areParentTypesKnowledge(objects.map((o) => o.parent_types))
         || objects.some(({ entity_type }) => entity_type === ENTITY_TYPE_VOCABULARY);
       if (isNotKnowledges) {
-        throw ForbiddenAccess(undefined, 'The targeted ids are not knowledges.');
+        throw ForbiddenAccess('The targeted ids are not knowledges.');
       }
     } else {
-      throw Error('A background task should be of type query or list.');
+      throw UnsupportedError('A background task should be of type query or list.');
     }
   } else if (scope === 'USER') { // 02. Background task of scope Notification
     // Check the modified entities are Notifications
@@ -81,7 +81,7 @@ export const checkActionValidity = async (context, user, input, scope, taskType)
         && typeFilters[0].values.length === 1
         && typeFilters[0].values[0] === 'Notification';
       if (!isNotifications) {
-        throw ForbiddenAccess(undefined, 'The targeted ids are not notifications.');
+        throw ForbiddenAccess('The targeted ids are not notifications.');
       }
       const userFilters = filters.filter((f) => f.key === 'user_id');
       const isUserData = userFilters.length > 0
@@ -95,7 +95,7 @@ export const checkActionValidity = async (context, user, input, scope, taskType)
       const objects = await Promise.all(ids.map((id) => storeLoadById(context, user, id, ENTITY_TYPE_NOTIFICATION)));
       const isNotNotifications = objects.includes(undefined);
       if (isNotNotifications) {
-        throw ForbiddenAccess(undefined, 'The targeted ids are not notifications.');
+        throw ForbiddenAccess('The targeted ids are not notifications.');
       }
       const notificationsUsers = uniq(objects.map((o) => o.user_id));
       const isUserData = notificationsUsers.length === 1 && notificationsUsers.includes(user.id);
@@ -104,10 +104,10 @@ export const checkActionValidity = async (context, user, input, scope, taskType)
         throw ForbiddenAccess();
       }
     } else {
-      throw Error('A background task should be of type query or list.');
+      throw UnsupportedError('A background task should be of type query or list.');
     }
   } else { // 03. Background task with an invalid scope
-    throw Error('A background task should be of scope Settings, Knowledge or User.');
+    throw UnsupportedError('A background task should be of scope Settings, Knowledge or User.');
   }
 };
 

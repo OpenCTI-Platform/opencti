@@ -1,13 +1,15 @@
 import LRU from 'lru-cache';
 import session from 'express-session';
+import { UnsupportedError } from '../config/errors';
 
 const ONE_DAY = 86400000;
 
 const getTTL = (options, sess, sid) => {
   if (typeof options.ttl === 'number') return options.ttl;
   if (typeof options.ttl === 'function') return options.ttl(options, sess, sid);
-  if (options.ttl) throw new TypeError('`options.ttl` must be a number or function.');
-
+  if (options.ttl) {
+    throw UnsupportedError('`options.ttl` must be a number or function.');
+  }
   const maxAge = sess && sess.cookie ? sess.cookie.maxAge : null;
   return typeof maxAge === 'number' ? Math.floor(maxAge) : ONE_DAY;
 };

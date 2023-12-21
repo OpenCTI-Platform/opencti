@@ -202,7 +202,7 @@ export const rabbitMQIsAlive = async () => {
     return assertExchange(CONNECTOR_EXCHANGE, 'direct', { durable: true });
   }).catch(
     /* v8 ignore next */ (e) => {
-      throw DatabaseError('RabbitMQ seems down', { error: e.data });
+      throw DatabaseError('RabbitMQ seems down', { cause: e });
     }
   );
 };
@@ -261,7 +261,7 @@ export const consumeQueue = async (context, connectorId, connectionSetterCallbac
                 }
               }, { noAck: true }, (consumeError) => {
                 if (consumeError) {
-                  logApp.error('CONNECTOR_CONSUMER_QUEUE_CONSUME', { error: consumeError });
+                  logApp.error(DatabaseError('Queueing consumption fail', { cause: consumeError }));
                 }
               });
             }

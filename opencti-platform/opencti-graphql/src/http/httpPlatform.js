@@ -27,6 +27,7 @@ import { isNotEmptyField } from '../database/utils';
 import { buildContextDataForFile, publishUserAction } from '../listener/UserActionListener';
 import { internalLoadById } from '../database/middleware-loader';
 import { delUserContext } from '../database/redis';
+import { UnknownError } from '../config/errors';
 
 const setCookieError = (res, message) => {
   res.cookie('opencti_flash', message || 'Unknown error', {
@@ -380,7 +381,7 @@ const createApp = async (app) => {
       const logged = await callbackLogin();
       await authenticateUser(context, req, logged, provider);
     } catch (err) {
-      logApp.error(`Error login through provider ${provider}`, { error: err?.message });
+      logApp.error(err, { provider });
       setCookieError(res, 'Invalid authentication, please ask your administrator');
     } finally {
       res.redirect(referer ?? '/');
@@ -410,7 +411,7 @@ const createApp = async (app) => {
 
   // Error handling
   app.use((err, req, res, next) => {
-    logApp.error('[EXPRESS] Error http call', { error: err, referer: req.headers.referer });
+    logApp.error(UnknownError('Http call interceptor fail', { cause: err, referer: req.headers.referer }));
     res.redirect('/');
     next();
   });

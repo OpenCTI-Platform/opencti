@@ -142,7 +142,7 @@ const historyStreamHandler = async (streamEvents: Array<SseEvent<StreamDataEvent
       await eventsApplyHandler(context, compatibleEvents);
     }
   } catch (e) {
-    logApp.error('[OPENCTI-MODULE] Error executing history manager', { error: e });
+    logApp.error(e, { manager: 'HISTORY_MANAGER' });
   }
 };
 
@@ -175,7 +175,7 @@ const initHistoryManager = () => {
       if (e.name === TYPE_LOCK_ERROR) {
         logApp.debug('[OPENCTI-MODULE] History manager already started by another API');
       } else {
-        logApp.error('[OPENCTI-MODULE] history manager failed to start', { error: e });
+        logApp.error(e, { manager: 'HISTORY_MANAGER' });
       }
     } finally {
       running = false;

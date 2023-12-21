@@ -156,7 +156,7 @@ export const deleteWorkForSource = async (sourceId) => {
       }
     },
   }).catch((err) => {
-    throw DatabaseError('[SEARCH] Error deleting all works ', { sourceId, error: err });
+    throw DatabaseError('[SEARCH] Error deleting all works ', { sourceId, cause: err });
   });
 };
 

@@ -210,7 +210,7 @@ export const fetchRemoteStreams = async (context, user, { uri, token, ssl_verify
     const { data } = await httpClient.post(remoteUri, { query }, { withCredentials: true });
     return data.data.streamCollections.edges.map((e) => e.node);
   } catch (e) {
-    throw ValidationError('uri', { message: 'Error getting the streams from remote OpenCTI', error: e });
+    throw ValidationError('uri', { message: 'Error getting the streams from remote OpenCTI', cause: e });
   }
 };
 export const registerSync = async (context, user, syncData) => {

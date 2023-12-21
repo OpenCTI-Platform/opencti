@@ -266,5 +266,5 @@ export const extractStixRepresentative = (
     return hashValue(x509) ?? x509.subject ?? x509.issuer ?? 'Unknown';
   }
   // endregion
-  throw UnsupportedError(`No representative extractor available for ${entityType}`);
+  throw UnsupportedError('No representative extractor available', { entityType });
 };

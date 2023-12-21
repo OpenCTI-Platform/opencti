@@ -3,14 +3,7 @@ import gql from 'graphql-tag';
 import fs from 'node:fs';
 import path from 'node:path';
 import Upload from 'graphql-upload/Upload.mjs';
-import {
-  ADMIN_USER,
-  editorQuery,
-  getUserIdByEmail,
-  queryAsAdmin,
-  testContext,
-  USER_EDITOR,
-} from '../../utils/testQuery';
+import { ADMIN_USER, editorQuery, getUserIdByEmail, queryAsAdmin, testContext, USER_EDITOR } from '../../utils/testQuery';
 import { elLoadById } from '../../../src/database/engine';
 import { MEMBER_ACCESS_ALL } from '../../../src/utils/access';
 import { toBase64 } from '../../../src/database/utils';
@@ -950,7 +943,7 @@ describe('Workspace member access behavior', () => {
     });
     expect(queryResult).not.toBeNull();
     expect(queryResult.errors.length).toEqual(1);
-    expect(queryResult.errors.at(0).name).toEqual('ForbiddenAccess');
+    expect(queryResult.errors.at(0).name).toEqual('FORBIDDEN_ACCESS');
   });
 
   it('User with edit access right updates workspace2', async () => {
@@ -990,7 +983,7 @@ describe('Workspace member access behavior', () => {
     ).toEqual(3);
   });
 
-  it("A user can't modifiy authorized_members if the update leads to a workspace with no valid admin", async () => {
+  it("A user can't modify authorized_members if the update leads to a workspace with no valid admin", async () => {
     const authorizedMembersUpdate = [
       {
         id: 'not_existing_id',
@@ -1007,8 +1000,8 @@ describe('Workspace member access behavior', () => {
     });
     expect(queryResult).not.toBeNull();
     expect(queryResult.errors.length).toEqual(1);
-    expect(queryResult.errors.at(0).name).toEqual('FunctionalError');
-    expect(queryResult.errors.at(0).data.reason).toEqual(
+    expect(queryResult.errors.at(0).name).toEqual('FUNCTIONAL_ERROR');
+    expect(queryResult.errors.at(0).message).toEqual(
       'Workspace should have at least one admin',
     );
   });
@@ -1030,7 +1023,7 @@ describe('Workspace member access behavior', () => {
     });
     expect(queryResult).not.toBeNull();
     expect(queryResult.errors.length).toEqual(1);
-    expect(queryResult.errors.at(0).name).toEqual('ForbiddenAccess');
+    expect(queryResult.errors.at(0).name).toEqual('FORBIDDEN_ACCESS');
   });
 
   it('User with admin access right deletes workspace1', async () => {

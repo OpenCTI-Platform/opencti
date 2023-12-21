@@ -36,7 +36,7 @@ export const up = async (next) => {
     wait_for_completion: true,
     body: updateQueryForUserQueryTasks
   }).catch((err) => {
-    throw DatabaseError('Error updating elastic for user query tasks', { error: err });
+    throw DatabaseError('Error updating elastic for user query tasks', { cause: err });
   });
   // 1.2. knowledge query tasks
   const updateQueryForKnowledgeQueryTasks = {
@@ -67,7 +67,7 @@ export const up = async (next) => {
     wait_for_completion: true,
     body: updateQueryForKnowledgeQueryTasks
   }).catch((err) => {
-    throw DatabaseError('Error updating elastic for knowledge query tasks', { error: err });
+    throw DatabaseError('Error updating elastic for knowledge query tasks', { cause: err });
   });
 
   // 02. update LIST tasks
@@ -99,7 +99,7 @@ export const up = async (next) => {
     wait_for_completion: true,
     body: updateQueryForUserListTasks
   }).catch((err) => {
-    throw DatabaseError('Error updating elastic for user list tasks', { error: err });
+    throw DatabaseError('Error updating elastic for user list tasks', { cause: err });
   });
   // 2.2 knowledge list tasks
   const updateQueryForKnowledgeListTasks = {
@@ -130,7 +130,7 @@ export const up = async (next) => {
     wait_for_completion: true,
     body: updateQueryForKnowledgeListTasks
   }).catch((err) => {
-    throw DatabaseError('Error updating elastic for knowledge list tasks', { error: err });
+    throw DatabaseError('Error updating elastic for knowledge list tasks', { cause: err });
   });
 
   await Promise.all([query1, query2, query3, query4]);

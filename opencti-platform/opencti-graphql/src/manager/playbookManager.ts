@@ -164,7 +164,7 @@ export const playbookExecutor = async ({
     } catch (error) {
       // Error executing the step, register
       const executionError = error as Error;
-      logApp.error('[OPENCTI-MODULE] Playbook execution error', { error: executionError, step: instanceWithConfig, bundle: baseBundle });
+      logApp.error(error, { step: instanceWithConfig, bundle: baseBundle });
       const end = utcDate();
       const durationDiff = end.diff(start);
       const duration = moment.duration(durationDiff);
@@ -283,7 +283,7 @@ const playbookStreamHandler = async (streamEvents: Array<SseEvent<StreamDataEven
       }
     }
   } catch (e) {
-    logApp.error('[OPENCTI-MODULE] Error executing playbook manager', { error: e });
+    logApp.error(e, { manager: 'PLAYBOOK_MANAGER' });
   }
 };
 
@@ -316,7 +316,7 @@ const initPlaybookManager = () => {
       if (e.name === TYPE_LOCK_ERROR) {
         logApp.debug('[OPENCTI-MODULE] Playbook manager already started by another API');
       } else {
-        logApp.error('[OPENCTI-MODULE] Playbook manager failed to start', { error: e });
+        logApp.error(e, { manager: 'PLAYBOOK_MANAGER' });
       }
     } finally {
       if (streamProcessor) await streamProcessor.shutdown();
