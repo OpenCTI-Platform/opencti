@@ -119,7 +119,7 @@ const WorkspacePopover = ({ workspace, paginationOptions }) => {
         <MenuItem onClick={handleOpenEdit}>{t('Update')}</MenuItem>
         {workspace.type === 'dashboard' && (
         <>
-          < MenuItem onClick={handleDashboardDuplication}>{t('Duplicate')}</MenuItem>
+          <MenuItem onClick={handleDashboardDuplication}>{t('Duplicate')}</MenuItem>
           <MenuItem onClick={() => handleExportJson(workspace)}>{t('Export')}</MenuItem>
         </>
         )}
