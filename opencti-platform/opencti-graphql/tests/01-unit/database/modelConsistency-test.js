@@ -101,7 +101,7 @@ import {
 
 import '../../../src/modules/index';
 import { ADMIN_USER, testContext } from '../../utils/testQuery';
-import { isDateNumericOrBooleanAttribute, isJsonAttribute, isMultipleAttribute, schemaAttributesDefinition } from '../../../src/schema/schema-attributes';
+import { isDateNumericOrBooleanAttribute, isJsonAttribute, isMultipleAttribute, isObjectAttribute, schemaAttributesDefinition } from '../../../src/schema/schema-attributes';
 import { ENTITY_TYPE_ENTITY_SETTING } from '../../../src/modules/entitySetting/entitySetting-types';
 import { ENTITY_TYPE_CHANNEL } from '../../../src/modules/channel/channel-types';
 import { ENTITY_TYPE_INDICATOR } from '../../../src/modules/indicator/indicator-types';
@@ -220,7 +220,7 @@ describe('Testing schema types definition', () => {
 describe('Testing schema attributes definition', () => {
   it('Attributes type testing', () => {
     expect(isJsonAttribute('revoked')).toBe(false);
-    expect(isJsonAttribute('bookmarks')).toBe(true);
+    expect(isObjectAttribute('bookmarks')).toBe(true);
     expect(isDateNumericOrBooleanAttribute('bookmarks')).toBe(false);
     expect(isDateNumericOrBooleanAttribute('attribute_order')).toBe(true);
     expect(isDateNumericOrBooleanAttribute('start_time')).toBe(true);
