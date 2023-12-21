@@ -2,8 +2,8 @@ import { expect, it, describe } from 'vitest';
 import gql from 'graphql-tag';
 import { head } from 'ramda';
 import { queryAsAdmin } from '../../utils/testQuery';
-import { resetCacheForEntity } from "../../../src/database/cache";
-import { ENTITY_TYPE_SETTINGS } from "../../../src/schema/internalObject";
+import { resetCacheForEntity } from '../../../src/database/cache';
+import { ENTITY_TYPE_SETTINGS } from '../../../src/schema/internalObject';
 
 const ABOUT_QUERY = gql`
   query about {
@@ -137,7 +137,7 @@ const READ_MESSAGES_QUERY = gql`
   query settingsMessages {
     settings {
       id
-      messages {
+      platform_messages {
         id
         message
         activated
@@ -152,7 +152,7 @@ const EDIT_MESSAGES_QUERY = gql`
   mutation editMessages($id: ID!, $input: SettingsMessageInput!) {
     settingsEdit(id: $id) {
       editMessage(input: $input) {
-        messages {
+        platform_messages {
           id
           message
           activated
@@ -168,7 +168,7 @@ const REMOVE_MESSAGE_QUERY = gql`
   mutation deleteMessage($id: ID!, $input: String!) {
     settingsEdit(id: $id) {
       deleteMessage(input: $input) {
-        messages {
+        platform_messages {
           id
           message
           activated
@@ -185,7 +185,7 @@ describe('Settings resolver messages behavior', () => {
     // -- PREPARE -
     let queryResult = await queryAsAdmin({ query: READ_MESSAGES_QUERY, variables: {} });
     expect(queryResult).not.toBeNull();
-    let { settings } = queryResult.data;
+    const { settings } = queryResult.data;
     const newMessage = 'This OpenCTI instance will be inaccessible for one hour.';
     let message = { message: newMessage, activated: false, dismissible: false };
 
@@ -194,17 +194,17 @@ describe('Settings resolver messages behavior', () => {
     expect(queryResult).not.toBeNull();
 
     // -- ASSERT --
-    const { messages } = queryResult.data.settingsEdit.editMessage;
-    expect(messages.length).toEqual(1);
-    [message] = messages;
+    const { platform_messages } = queryResult.data.settingsEdit.editMessage;
+    expect(platform_messages.length).toEqual(1);
+    [message] = platform_messages;
     expect(message.message).toEqual(newMessage);
   });
   it('should delete messages', async () => {
     // -- PREPARE -
     let queryResult = await queryAsAdmin({ query: READ_MESSAGES_QUERY, variables: {} });
     expect(queryResult).not.toBeNull();
-    let { settings } = queryResult.data;
-    let [message] = settings.messages;
+    const { settings } = queryResult.data;
+    const [message] = settings.platform_messages;
     resetCacheForEntity(ENTITY_TYPE_SETTINGS);
 
     // -- EXECUTE --
@@ -212,7 +212,7 @@ describe('Settings resolver messages behavior', () => {
     expect(queryResult).not.toBeNull();
 
     // -- ASSERT --
-    const { messages } = queryResult.data.settingsEdit.deleteMessage;
-    expect(messages.length).toEqual(0);
+    const { platform_messages } = queryResult.data.settingsEdit.deleteMessage;
+    expect(platform_messages.length).toEqual(0);
   });
-})
+});

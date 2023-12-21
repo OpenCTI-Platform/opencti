@@ -961,7 +961,10 @@ const rebuildAndMergeInputFromExistingData = (rawInput, instance) => {
       // const pointers = JSONPath({ json: instance, resultType: 'pointer', path: `${key}${object_path ?? ''}` });
       // const patch = pointers.map((p) => ({ op: operation, path: p, value: extractSchemaDefFromPath(attributeDefinition, p, rawInput) }));
       // const patchedInstance = jsonpatch.applyPatch(structuredClone(instance), patch).newDocument;
-      finalVal = R.path(`${key}${object_path ?? ''}`.split('.'), value);
+      if (object_path) {
+        throw UnsupportedError('JRI implements object_path');
+      }
+      finalVal = value;
     } else { // Replace general
       finalVal = value;
     }
