@@ -10,7 +10,8 @@ export interface RelationRefDefinition {
   editDefault: boolean
   multiple: boolean
   checker: Checker
-  label?: string
+  label: string
   description?: string
   datable?: boolean // Allow to update start_time & stop_time attributes
+  isFilterable: boolean
 }

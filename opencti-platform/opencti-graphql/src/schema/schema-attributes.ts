@@ -99,6 +99,10 @@ export const schemaAttributesDefinition = {
     return R.uniqBy((a) => a.name, Object.values(this.attributes).map((a) => Array.from(a.values())).flat());
   },
 
+  getRegisteredTypes(): string[] {
+    return Array.from(this.attributesCache.keys());
+  },
+
   getAttributes(entityType: string): Map<string, AttributeDefinition> {
     this.computeCache(entityType);
     return this.attributesCache.get(entityType) ?? new Map();

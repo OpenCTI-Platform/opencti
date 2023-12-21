@@ -52,12 +52,14 @@ const DATA_COMPONENT_DEFINITION: ModuleDefinition<StoreEntityDataComponent, Stix
   relationsRefs: [
     {
       stixName: ATTRIBUTE_DATA_SOURCE,
+      label: 'Data source',
       inputName: INPUT_DATA_SOURCE,
       databaseName: RELATION_DATA_SOURCE,
       mandatoryType: 'no',
       editDefault: false,
       multiple: false,
-      checker: (fromType, toType) => toType === ENTITY_TYPE_DATA_SOURCE
+      checker: (fromType, toType) => toType === ENTITY_TYPE_DATA_SOURCE,
+      isFilterable: true,
     },
     objectOrganization
   ],

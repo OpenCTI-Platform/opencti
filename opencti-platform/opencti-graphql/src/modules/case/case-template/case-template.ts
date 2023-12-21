@@ -11,6 +11,7 @@ import type { RelationRefDefinition } from '../../../schema/relationRef-definiti
 
 const CaseTemplateToTaskTemplateRelation: RelationRefDefinition = {
   inputName: 'tasks',
+  label: 'Tasks',
   databaseName: TEMPLATE_TASK_RELATION,
   stixName: 'task_refs',
   mandatoryType: 'internal',
@@ -18,6 +19,7 @@ const CaseTemplateToTaskTemplateRelation: RelationRefDefinition = {
   multiple: true,
   checker: (_, toType) => toType === ENTITY_TYPE_TASK_TEMPLATE,
   datable: false,
+  isFilterable: true,
 };
 
 const CASE_TEMPLATE_DEFINITION: ModuleDefinition<StoreEntityCaseTemplate, StixCaseTemplate> = {
