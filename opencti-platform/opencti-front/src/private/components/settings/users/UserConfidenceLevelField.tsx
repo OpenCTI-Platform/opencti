@@ -22,7 +22,7 @@ const UserConfidenceLevelField: React.FC<UserConfidenceLevelFieldProps> = ({ use
       </div>
       <div>
         {
-        userConfidenceLevel?.overrides.length > 0 && (
+        userConfidenceLevel.overrides.length > 0 && (
         <Tooltip title={
           <div style={{ whiteSpace: 'pre-line' }}>
             {`${t('This value is overridden for the following entity types')}\n\n${overrides}`}
