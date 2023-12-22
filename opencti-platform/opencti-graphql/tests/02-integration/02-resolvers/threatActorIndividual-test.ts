@@ -170,6 +170,7 @@ describe('Threat actor individual resolver standard behavior', () => {
       query: UPDATE_QUERY,
       variables: { id: threatActorIndividualInternalId, input: UPDATES },
     });
+    console.log(JSON.stringify(result));
     const threatActorIndividual = result.data?.threatActorIndividualFieldPatch;
     expect(threatActorIndividual).not.toBeNull();
     expect(threatActorIndividual).toBeDefined();
@@ -303,6 +304,7 @@ describe('Threat actor individual resolver standard behavior', () => {
       query: HEIGHT_EDIT,
       variables: { id: threatActorIndividualInternalId, input: [REPLACE_ALL_HEIGHT] },
     });
+    console.log(JSON.stringify(replaceAll));
     let threatActorIndividual = replaceAll?.data?.threatActorIndividualFieldPatch;
     expect(threatActorIndividual).not.toBeNull();
     expect(threatActorIndividual).toBeDefined();
@@ -343,8 +345,6 @@ describe('Threat actor individual resolver standard behavior', () => {
     expect(threatActorIndividual.height).toHaveLength(2);
     expect(threatActorIndividual.height[0]).toEqual(expectedHeights[1]); // 183
     expect(threatActorIndividual.height[1]).toEqual(expectedHeights[3]); // 190
-
-
   });
   it('should update partial height', async () => {
     const HEIGHT_EDIT = gql`

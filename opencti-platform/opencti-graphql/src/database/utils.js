@@ -1,6 +1,6 @@
 import * as R from 'ramda';
 import moment from 'moment';
-import { DatabaseError } from '../config/errors';
+import { DatabaseError, UnsupportedError } from '../config/errors';
 import { isHistoryObject, isInternalObject } from '../schema/internalObject';
 import { isStixMetaObject } from '../schema/stixMetaObject';
 import { isStixDomainObject } from '../schema/stixDomainObject';
@@ -11,6 +11,7 @@ import { isStixSightingRelationship } from '../schema/stixSightingRelationship';
 import conf from '../config/conf';
 import { now } from '../utils/format';
 import { isStixRefRelationship } from '../schema/stixRefRelationship';
+import { schemaAttributesDefinition } from '../schema/schema-attributes';
 
 export const ES_INDEX_PREFIX = conf.get('elasticsearch:index_prefix') || 'opencti';
 const rabbitmqPrefix = conf.get('rabbitmq:queue_prefix');
@@ -284,4 +285,25 @@ export const extractIdsFromStoreObject = (instance) => {
     ids.push(instance.standard_id);
   }
   return ids;
+};
+
+export const isPointersTargetMultipleAttribute = (instance, pointers) => {
+  const pathArray = pointers[0].split('/').filter((p) => isNotEmptyField(p));
+  let currentAttr;
+  for (let i = 0; i < pathArray.length; i += 1) {
+    const arrElement = pathArray[i];
+    if (!currentAttr) {
+      currentAttr = schemaAttributesDefinition.getAttribute(instance.entity_type, arrElement);
+    } else {
+      const mappings = currentAttr.mappings ?? [];
+      const newAttributeMapping = mappings.find((m) => m.name === arrElement);
+      currentAttr = newAttributeMapping || currentAttr;
+    }
+  }
+  if (currentAttr) {
+    // If the last element of the path is a number, this is cancelling the multiple effect
+    const noMultipleRestriction = Number.isNaN(Number(R.last(pathArray)));
+    return currentAttr.multiple && noMultipleRestriction;
+  }
+  throw UnsupportedError('Invalid schema pointer for partial uppdate', { pointer: pointers[0] });
 };

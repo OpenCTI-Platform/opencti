@@ -30,6 +30,7 @@ import {
   isEmptyField,
   isInferredIndex,
   isNotEmptyField,
+  isPointersTargetMultipleAttribute,
   READ_DATA_INDICES,
   READ_DATA_INDICES_INFERRED,
   READ_INDEX_HISTORY,
@@ -40,7 +41,7 @@ import {
   READ_RELATIONSHIPS_INDICES_WITHOUT_INFERRED,
   UPDATE_OPERATION_ADD,
   UPDATE_OPERATION_REMOVE,
-  UPDATE_OPERATION_REPLACE,
+  UPDATE_OPERATION_REPLACE
 } from './utils';
 import {
   elAggregationCount,
@@ -955,16 +956,12 @@ const rebuildAndMergeInputFromExistingData = (rawInput, instance) => {
       } else {
         finalVal = R.filter((n) => !R.includes(n, value), currentValues);
       }
-    } else if (isObjectAttribute(key)) {
-      // TODO JRI 4939 Reintroduce object validation
-      // const attributeDefinition = schemaAttributesDefinition.getAttribute(instance.entity_type, key);
-      // const pointers = JSONPath({ json: instance, resultType: 'pointer', path: `${key}${object_path ?? ''}` });
-      // const patch = pointers.map((p) => ({ op: operation, path: p, value: extractSchemaDefFromPath(attributeDefinition, p, rawInput) }));
-      // const patchedInstance = jsonpatch.applyPatch(structuredClone(instance), patch).newDocument;
-      if (object_path) {
-        throw UnsupportedError('JRI implements object_path');
-      }
-      finalVal = value;
+    } else if (isObjectAttribute(key)) { // REPLACE
+      const pointers = JSONPath({ json: instance, resultType: 'pointer', path: `${key}${object_path ?? ''}` });
+      const targetIsMultiple = isPointersTargetMultipleAttribute(instance, pointers);
+      const patch = pointers.map((p) => ({ op: operation, path: p, value: targetIsMultiple ? value : R.head(value) }));
+      const patchedInstance = jsonpatch.applyPatch(structuredClone(instance), patch).newDocument;
+      finalVal = patchedInstance[key];
     } else { // Replace general
       finalVal = value;
     }

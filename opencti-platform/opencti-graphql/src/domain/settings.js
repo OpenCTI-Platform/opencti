@@ -152,7 +152,7 @@ export const settingDeleteMessage = async (context, user, settingsId, messageId)
   } else {
     throw UnsupportedError('This message does not exist', { messageId });
   }
-  const patch = { messages: JSON.stringify(messages) };
+  const patch = { platform_messages: JSON.stringify(messages) };
   const { element } = await patchAttribute(context, user, settingsId, ENTITY_TYPE_SETTINGS, patch);
   return notify(BUS_TOPICS[ENTITY_TYPE_SETTINGS].EDIT_TOPIC, element, user);
 };
