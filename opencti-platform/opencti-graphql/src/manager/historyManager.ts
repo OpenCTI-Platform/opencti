@@ -25,6 +25,7 @@ import { extractStixRepresentative } from '../database/stix-representative';
 import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../modules/organization/organization-types';
 
 const HISTORY_ENGINE_KEY = conf.get('history_manager:lock_key');
+const HISTORY_WITH_INFERENCES = booleanConf('history_manager:include_inferences', false);
 const SCHEDULE_TIME = 10000;
 
 interface HistoryContext {
@@ -133,8 +134,10 @@ const historyStreamHandler = async (streamEvents: Array<SseEvent<StreamDataEvent
     // Events must be in a compatible version and not inferences events
     // Inferences directly handle recursively by the manager
     const compatibleEvents = streamEvents.filter((event) => {
+      const isInference = event.data?.data?.extensions[STIX_EXT_OCTI].is_inferred;
+      const validEvent = HISTORY_WITH_INFERENCES || !isInference;
       const eventVersion = parseInt(event.data?.version ?? '0', 10);
-      return eventVersion >= 4;
+      return eventVersion >= 4 && validEvent;
     });
     if (compatibleEvents.length > 0) {
       // Execute the events
