@@ -201,6 +201,11 @@ const StixCoreObjectContainer = ({ elementId }) => {
             }}
           />
           <Autocomplete
+            sx={{
+              '.MuiAutocomplete-inputRoot.MuiInput-root': {
+                pr: '50px',
+              },
+            }}
             size="small"
             fullWidth={true}
             selectOnFocus={true}
