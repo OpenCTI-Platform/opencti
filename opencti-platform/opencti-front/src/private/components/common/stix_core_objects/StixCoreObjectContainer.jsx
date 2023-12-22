@@ -68,6 +68,7 @@ const StixCoreObjectContainer = ({ elementId }) => {
   const [actionsInputs, setActionsInputs] = useState([
     { type: 'ADD', fieldType: 'ATTRIBUTE', field: 'container-object' },
   ]);
+  const [searchInputValue, setSearchInputValue] = useState('');
   const [processing, setProcessing] = useState(false);
   const [containers, setContainers] = useState([]);
   const [displayAddInContainer, setDisplayAddInContainer] = useState(false);
@@ -94,7 +95,9 @@ const StixCoreObjectContainer = ({ elementId }) => {
       ),
     ]);
   };
-  const searchContainers = (newValue) => {
+  const searchContainers = (event, newValue) => {
+    if (!event) return;
+    setSearchInputValue(newValue);
     fetchQuery(stixCoreObjectContainerContainersQuery, {
       search: newValue && newValue.length > 0 ? newValue : '',
     })
@@ -198,6 +201,11 @@ const StixCoreObjectContainer = ({ elementId }) => {
             }}
           />
           <Autocomplete
+            sx={{
+              '.MuiAutocomplete-inputRoot.MuiInput-root': {
+                pr: '50px',
+              },
+            }}
             size="small"
             fullWidth={true}
             selectOnFocus={true}
@@ -211,14 +219,14 @@ const StixCoreObjectContainer = ({ elementId }) => {
                 variant="standard"
                 label={t('Values')}
                 fullWidth={true}
-                onFocus={(_) => searchContainers()}
+                onFocus={(e) => searchContainers(e)}
                 style={{ marginTop: 3 }}
               />
             )}
             noOptionsText={t('No available options')}
             options={containers}
-            onInputChange={(_, value) => searchContainers(value)}
-            inputValue={actionsInputs[0]?.inputValue || ''}
+            onInputChange={(e, value) => searchContainers(e, value)}
+            inputValue={searchInputValue ?? ''}
             onChange={(event, value) => handleChangeActionInputValues(event, value)
             }
             renderOption={(props, option) => (
