@@ -957,11 +957,17 @@ const rebuildAndMergeInputFromExistingData = (rawInput, instance) => {
         finalVal = R.filter((n) => !R.includes(n, value), currentValues);
       }
     } else if (isObjectAttribute(key)) { // REPLACE
-      const pointers = JSONPath({ json: instance, resultType: 'pointer', path: `${key}${object_path ?? ''}` });
-      const targetIsMultiple = isPointersTargetMultipleAttribute(instance, pointers);
-      const patch = pointers.map((p) => ({ op: operation, path: p, value: targetIsMultiple ? value : R.head(value) }));
-      const patchedInstance = jsonpatch.applyPatch(structuredClone(instance), patch).newDocument;
-      finalVal = patchedInstance[key];
+      const path = `${key}${object_path ?? ''}`;
+      const pointers = JSONPath({ json: instance, resultType: 'pointer', path });
+      if (pointers.length === 0) { // If no pointers, target the base attribute
+        const base = schemaAttributesDefinition.getAttribute(instance.entity_type, key);
+        finalVal = base.multiple ? value : R.head(value);
+      } else {
+        const targetIsMultiple = isPointersTargetMultipleAttribute(instance, pointers);
+        const patch = pointers.map((p) => ({ op: operation, path: p, value: targetIsMultiple ? value : R.head(value) }));
+        const patchedInstance = jsonpatch.applyPatch(structuredClone(instance), patch).newDocument;
+        finalVal = patchedInstance[key];
+      }
     } else { // Replace general
       finalVal = value;
     }
