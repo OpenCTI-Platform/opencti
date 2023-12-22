@@ -520,7 +520,6 @@ describe('Workspace resolver standard behavior', () => {
         },
       },
     });
-    console.log(JSON.stringify(queryResult));
 
     expect(
       queryResult.data.workspaceFieldPatch.investigated_entities_ids[0],

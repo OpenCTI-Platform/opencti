@@ -170,7 +170,6 @@ describe('Threat actor individual resolver standard behavior', () => {
       query: UPDATE_QUERY,
       variables: { id: threatActorIndividualInternalId, input: UPDATES },
     });
-    console.log(JSON.stringify(result));
     const threatActorIndividual = result.data?.threatActorIndividualFieldPatch;
     expect(threatActorIndividual).not.toBeNull();
     expect(threatActorIndividual).toBeDefined();
@@ -304,7 +303,6 @@ describe('Threat actor individual resolver standard behavior', () => {
       query: HEIGHT_EDIT,
       variables: { id: threatActorIndividualInternalId, input: [REPLACE_ALL_HEIGHT] },
     });
-    console.log(JSON.stringify(replaceAll));
     let threatActorIndividual = replaceAll?.data?.threatActorIndividualFieldPatch;
     expect(threatActorIndividual).not.toBeNull();
     expect(threatActorIndividual).toBeDefined();
