@@ -164,7 +164,8 @@ class OpenCTIApiClient:
         }
 
         if auth is not None:
-            self.session = requests.session(auth=auth)
+            self.session = requests.session()
+            self.session.auth = auth
         else:
             self.session = requests.session()
 
