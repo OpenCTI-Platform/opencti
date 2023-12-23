@@ -15,6 +15,7 @@ export const containerStixCoreObjectsMappingLinesQuery = graphql`
         $orderBy: StixObjectOrStixRelationshipsOrdering
         $orderMode: OrderingMode
         $filters: FilterGroup
+        $types: [String]
     ) {
         ...ContainerStixCoreObjectsMappingLines_container
         @arguments(
@@ -25,6 +26,7 @@ export const containerStixCoreObjectsMappingLinesQuery = graphql`
             orderBy: $orderBy
             orderMode: $orderMode
             filters: $filters
+            types: $types
         )
     }
 `;
@@ -42,6 +44,7 @@ const ContainerStixCoreObjectsMappingLinesFragment = graphql`
         }
         orderMode: { type: "OrderingMode", defaultValue: asc }
         filters: { type: "FilterGroup" }
+        types: { type: "[String]" }
     )
     @refetchable(queryName: "ContainerStixCoreObjectsMappingLinesRefetchQuery") {
         container(id: $id) {
@@ -53,6 +56,7 @@ const ContainerStixCoreObjectsMappingLinesFragment = graphql`
                 orderBy: $orderBy
                 orderMode: $orderMode
                 filters: $filters
+                types: $types
             ) @connection(key: "Pagination_objects") {
                 edges {
                     types

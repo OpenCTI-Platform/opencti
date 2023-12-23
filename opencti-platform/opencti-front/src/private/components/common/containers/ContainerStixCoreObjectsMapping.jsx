@@ -41,6 +41,7 @@ const ContainerStixCoreObjectsMapping = ({
     LOCAL_STORAGE_KEY,
     {
       id: container.id,
+      types: ['Stix-Core-Object'],
       filters: emptyFilterGroup,
       searchTerm: '',
       sortBy: 'name',
@@ -124,6 +125,7 @@ const ContainerStixCoreObjectsMapping = ({
           'created_at',
           'createdBy',
         ]}
+        availableEntityTypes={['Stix-Core-Object']}
         keyword={searchTerm}
         secondaryAction={true}
         numberOfElements={numberOfElements}
