@@ -41,7 +41,7 @@ class StixDomainObjectsExportsContentComponent extends Component {
     let paginationOptionsForExport = { ...paginationOptions }; // paginationsOptions with correct elementId
     if (paginationOptions?.fromId) {
       // for relationships contained in entity>Knowledge>Sightings
-      const filtersForExport = paginationOptionsForExport?.filters ? {
+      const filtersForExport = paginationOptionsForExport.filters ? {
         mode: paginationOptionsForExport.filters.mode,
         filterGroups: paginationOptionsForExport.filters.filterGroups,
         filters: [

@@ -212,12 +212,12 @@ const ConnectorsStatusComponent: FunctionComponent<ConnectorsStatusComponentProp
     setOrderAsc(!orderAsc);
   };
 
-  const queues = data.rabbitMQMetrics;
+  const queues = data.rabbitMQMetrics?.queues ?? [];
   const connectorsWithMessages = data.connectors?.map((connector) => {
     const queueName = connector?.connector_type === 'INTERNAL_ENRICHMENT'
-      ? `listen_${connector.id}`
+      ? `listen_${connector?.id}`
       : `push_${connector?.id}`;
-    const queue = (Array.isArray(queues) ? queues : []).find((o) => o.name.includes(queueName));
+    const queue = queues.find((o) => o?.name?.includes(queueName));
     const messagesCount = queue ? queue.messages : 0;
     return {
       ...connector,
