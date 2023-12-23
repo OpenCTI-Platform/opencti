@@ -228,7 +228,8 @@ const FileLineComponent: FunctionComponent<FileLineComponentProps> = ({
   const isWarning = isArtifact
     || encodedFilePath.endsWith('.exe')
     || encodedFilePath.endsWith('.dll');
-  const fileExtension = file?.name.substring(file?.name.lastIndexOf('.'));
+  const fileExtension = file?.name.substring(file?.name.lastIndexOf('.')) ?? '';
+  const fileNameWithoutExtension = file?.name.substring(0, file?.name.lastIndexOf('.')) ?? '';
   return (
     <>
       <ListItemButton
@@ -264,7 +265,7 @@ const FileLineComponent: FunctionComponent<FileLineComponentProps> = ({
               root: classes.itemText,
               primary: classes.fileName,
             }}
-            primary={`${truncate(file?.name, 80)}${fileExtension}`}
+            primary={`${truncate(fileNameWithoutExtension, 80)}${fileExtension}`}
             secondary={
               <>
                 {file?.metaData?.mimetype ?? t('Pending')} (
