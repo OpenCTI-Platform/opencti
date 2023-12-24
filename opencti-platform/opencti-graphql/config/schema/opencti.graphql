@@ -10255,6 +10255,7 @@ union StixObjectOrStixRelationshipOrCreator =
   | Group
   | Workspace
   | CsvMapper
+  | Status
 union StixObjectOrStixRelationship =
   MarkingDefinition
   | Label

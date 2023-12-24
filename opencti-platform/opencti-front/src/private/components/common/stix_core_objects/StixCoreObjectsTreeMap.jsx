@@ -171,6 +171,25 @@ const stixCoreObjectsTreeMapDistributionQuery = graphql`
         ... on StixCyberObservable {
           observable_value
         }
+        ... on MarkingDefinition {
+          definition_type
+          definition
+        }
+        ... on KillChainPhase {
+          kill_chain_name
+          phase_name
+        }
+        ... on Creator {
+          name
+        }
+        ... on Label {
+          value
+        }
+        ... on Status {
+          template {
+            name
+          }
+        }
       }
     }
   }

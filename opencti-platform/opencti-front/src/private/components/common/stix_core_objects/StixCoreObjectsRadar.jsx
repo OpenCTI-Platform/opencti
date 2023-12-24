@@ -186,6 +186,11 @@ const stixCoreObjectsRadarDistributionQuery = graphql`
         ... on Label {
           value
         }
+        ... on Status {
+          template {
+            name
+          }
+        }
       }
     }
   }

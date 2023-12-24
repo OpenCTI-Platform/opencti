@@ -1291,6 +1291,9 @@ const WidgetConfig = ({ workspace, widget, onComplete, closeMenu }) => {
                         <MenuItem key="creator_id" value="creator_id">
                           {t('Creator')}
                         </MenuItem>
+                        <MenuItem key="x_opencti_workflow_id" value="x_opencti_workflow_id">
+                          {t('Status')}
+                        </MenuItem>
                       </Select>
                     </FormControl>
                     )}
@@ -1360,6 +1363,9 @@ const WidgetConfig = ({ workspace, widget, onComplete, closeMenu }) => {
                                                               { value: 'object-marking.internal_id' },
                                                               {
                                                                 value: 'kill-chain-phase.internal_id',
+                                                              },
+                                                              {
+                                                                value: 'x_opencti_workflow_id',
                                                               },
                                                             ].map((attribute) => (
                                                               <MenuItem

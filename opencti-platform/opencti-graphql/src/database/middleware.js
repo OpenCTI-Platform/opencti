@@ -608,7 +608,7 @@ export const distributionEntities = async (context, user, types, args) => {
   });
   // Take a maximum amount of distribution depending on the ordering.
   const orderingFunction = order === 'asc' ? R.ascend : R.descend;
-  if (field.includes(ID_INTERNAL) || field === 'creator_id') {
+  if (field.includes(ID_INTERNAL) || field === 'creator_id' || field === 'x_opencti_workflow_id') {
     return convertAggregateDistributions(context, user, limit, orderingFunction, distributionData);
   }
   if (field === 'name') {
@@ -641,7 +641,7 @@ export const distributionRelations = async (context, user, args) => {
   const distributionData = await elAggregationRelationsCount(context, user, args.onlyInferred ? READ_INDEX_INFERRED_RELATIONSHIPS : READ_RELATIONSHIPS_INDICES, distributionArgs);
   // Take a maximum amount of distribution depending on the ordering.
   const orderingFunction = order === 'asc' ? R.ascend : R.descend;
-  if (field.includes(ID_INTERNAL) || field === 'creator_id') {
+  if (field.includes(ID_INTERNAL) || field === 'creator_id' || field === 'x_opencti_workflow_id') {
     return convertAggregateDistributions(context, user, limit, orderingFunction, distributionData);
   }
   return R.take(limit, R.sortWith([orderingFunction(R.prop('value'))])(distributionData));

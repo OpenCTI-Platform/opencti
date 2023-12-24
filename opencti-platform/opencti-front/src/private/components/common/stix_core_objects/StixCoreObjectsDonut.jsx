@@ -191,6 +191,12 @@ const stixCoreObjectsDonutDistributionQuery = graphql`
           value
           color
         }
+        ... on Status {
+          template {
+            name
+            color
+          }
+        }
       }
     }
   }
@@ -267,6 +273,11 @@ const StixCoreObjectsDonut = ({
                 && n.entity.x_opencti_color === '#ffffff'
                 ? '#000000'
                 : n.entity.x_opencti_color));
+            }
+            if (data.at(0)?.entity?.template?.color) {
+              chartColors = data.map((n) => (theme.palette.mode === 'light' && n.entity.template.color === '#ffffff'
+                ? '#000000'
+                : n.entity.template.color));
             }
             return (
               <Chart

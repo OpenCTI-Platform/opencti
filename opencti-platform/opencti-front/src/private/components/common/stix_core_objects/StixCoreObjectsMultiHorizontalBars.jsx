@@ -229,6 +229,12 @@ const stixCoreObjectsMultiHorizontalBarsDistributionQuery = graphql`
               ... on Label {
                 value
               }
+              ... on Status {
+                template {
+                  name
+                  color
+                }
+              }
             }
           }
         }
@@ -367,6 +373,12 @@ const stixCoreObjectsMultiHorizontalBarsDistributionQuery = graphql`
           value
           color
         }
+        ... on Status {
+          template {
+            name
+            color
+          }
+        }
       }
     }
   }
@@ -444,6 +456,12 @@ const stixCoreObjectsMultiHorizontalBars = ({
                   && n.entity.x_opencti_color === '#ffffff'
                   ? '#000000'
                   : n.entity.x_opencti_color;
+              }
+              if (n.entity?.template?.color) {
+                color = theme.palette.mode === 'light'
+                && n.entity.template.color === '#ffffff'
+                  ? '#000000'
+                  : n.entity.template.color;
               }
               return {
                 x:

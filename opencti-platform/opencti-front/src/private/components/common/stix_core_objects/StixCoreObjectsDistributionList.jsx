@@ -112,10 +112,17 @@ const stixCoreObjectsDistributionListDistributionQuery = graphql`
           }
         }
         ... on Label {
+          value
           color
         }
         ... on MarkingDefinition {
           x_opencti_color
+        }
+        ... on Status {
+          template {
+            name
+            color
+          }
         }
       }
     }
