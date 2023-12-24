@@ -292,7 +292,12 @@ class IncidentKnowledgeComponent extends Component {
                     />
                   );
                 }
-                return <Loader />;
+                return (
+                  <Loader
+                    variant={LoaderVariant.inElement}
+                    withTopMargin={true}
+                  />
+                );
               }}
             />
           )}

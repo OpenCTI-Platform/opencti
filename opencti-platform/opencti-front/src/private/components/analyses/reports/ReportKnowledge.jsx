@@ -380,7 +380,12 @@ class ReportKnowledgeComponent extends Component {
                 if (props && props.report) {
                   return <ReportKnowledgeCorrelation report={props.report} />;
                 }
-                return <Loader />;
+                return (
+                  <Loader
+                    variant={LoaderVariant.inElement}
+                    withTopMargin={true}
+                  />
+                );
               }}
             />
           )}
@@ -418,7 +423,12 @@ class ReportKnowledgeComponent extends Component {
                     />
                   );
                 }
-                return <Loader />;
+                return (
+                  <Loader
+                    variant={LoaderVariant.inElement}
+                    withTopMargin={true}
+                  />
+                );
               }}
             />
           )}
