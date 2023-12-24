@@ -57,7 +57,7 @@ const useStyles = makeStyles(() => ({
     margin: '-8px 0 0 5px',
   },
   gridContainer: {
-    marginBottom: 20,
+    marginBottom: 50,
   },
   paper: {
     height: '100%',
@@ -543,7 +543,7 @@ const User: FunctionComponent<UserProps> = ({ data }) => {
           <Paper
             classes={{ root: classes.paper }}
             variant="outlined"
-            style={{ marginTop: 25, minHeight: 500 }}
+            style={{ marginTop: 14, minHeight: 500 }}
           >
             {!isEnterpriseEdition ? (
               <div style={{ display: 'table', height: '100%', width: '100%' }}>

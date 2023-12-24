@@ -4,22 +4,24 @@ import Paper from '@mui/material/Paper';
 import { interval } from 'rxjs';
 import { UserHistoryLinesQuery } from '@components/settings/users/__generated__/UserHistoryLinesQuery.graphql';
 import { UserHistoryLines_data$key } from '@components/settings/users/__generated__/UserHistoryLines_data.graphql';
+import { makeStyles } from '@mui/styles';
 import { useFormatter } from '../../../../components/i18n';
 import UserHistoryLine from './UserHistoryLine';
 import { FIVE_SECONDS } from '../../../../utils/Time';
 import usePreloadedPaginationFragment from '../../../../utils/hooks/usePreloadedPaginationFragment';
+import { Theme } from '../../../../components/Theme';
 
 const interval$ = interval(FIVE_SECONDS);
 
-const style = {
+const useStyles = makeStyles<Theme>((theme) => ({
   paper: {
     height: '100%',
     minHeight: '100%',
-    padding: '15px',
+    marginTop: theme.spacing(1.5),
+    padding: '10px 20px 10px 20px',
     borderRadius: 6,
-    marginTop: 10,
   },
-};
+}));
 
 export const userHistoryLinesQuery = graphql`
   query UserHistoryLinesQuery(
@@ -73,8 +75,8 @@ const UserHistoryLines: FunctionComponent<UserHistoryLinesProps> = ({
   queryRef,
   refetch,
 }) => {
+  const classes = useStyles();
   const { t } = useFormatter();
-
   const { data } = usePreloadedPaginationFragment<
   UserHistoryLinesQuery,
   UserHistoryLines_data$key
@@ -98,7 +100,11 @@ const UserHistoryLines: FunctionComponent<UserHistoryLinesProps> = ({
   }, []);
 
   return (
-    <Paper style={ style.paper } variant="outlined">
+    <Paper
+      classes={{ root: classes.paper }}
+      variant="outlined"
+      style={{ marginTop: 0 }}
+    >
       {logs.length > 0 ? (
         logs.map((logEdge) => {
           const log = logEdge?.node;
