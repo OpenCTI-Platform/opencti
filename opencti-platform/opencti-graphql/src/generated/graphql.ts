@@ -26177,6 +26177,11 @@ export type VulnerabilityReportsArgs = {
 };
 
 
+export type VulnerabilitySoftwaresArgs = {
+  first?: InputMaybe<Scalars['Int']['input']>;
+};
+
+
 export type VulnerabilityStixCoreObjectsDistributionArgs = {
   dateAttribute?: InputMaybe<Scalars['String']['input']>;
   endDate?: InputMaybe<Scalars['DateTime']['input']>;
@@ -36419,7 +36424,7 @@ export type VulnerabilityResolvers<ContextType = any, ParentType extends Resolve
   reports?: Resolver<Maybe<ResolversTypes['ReportConnection']>, ParentType, ContextType, Partial<VulnerabilityReportsArgs>>;
   representative?: Resolver<ResolversTypes['Representative'], ParentType, ContextType>;
   revoked?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
-  softwares?: Resolver<Maybe<ResolversTypes['StixCyberObservableConnection']>, ParentType, ContextType>;
+  softwares?: Resolver<Maybe<ResolversTypes['StixCyberObservableConnection']>, ParentType, ContextType, Partial<VulnerabilitySoftwaresArgs>>;
   spec_version?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   status?: Resolver<Maybe<ResolversTypes['Status']>, ParentType, ContextType>;

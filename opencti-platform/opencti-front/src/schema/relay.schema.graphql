@@ -4701,7 +4701,7 @@ type Vulnerability implements BasicObject & StixObject & StixCoreObject & StixDo
   x_opencti_integrity_impact: String
   x_opencti_availability_impact: String
   x_opencti_confidentiality_impact: String
-  softwares: StixCyberObservableConnection
+  softwares(first: Int): StixCyberObservableConnection
   creators: [Creator!]
   toStix: String
   importFiles(first: Int, prefixMimeType: String): FileConnection
