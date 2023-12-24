@@ -230,7 +230,7 @@ const StixCyberObservableCreation = ({
   const [status, setStatus] = useState({ open: false, type: type ?? null });
 
   const handleOpen = () => setStatus({ open: true, type: status.type });
-  const localHandleClose = () => setStatus({ open: false, type: null });
+  const localHandleClose = () => setStatus({ open: false, type: type ?? null });
   const selectType = (selected) => setStatus({ open: status.open, type: selected });
 
   const onSubmit = (values, { setSubmitting, setErrors, resetForm }) => {
