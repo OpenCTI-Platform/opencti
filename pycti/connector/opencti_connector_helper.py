@@ -906,17 +906,21 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
     def get_connector(self) -> OpenCTIConnector:
         return self.connector
 
-    def log_error(self, msg: str) -> None:
-        LOGGER.error(msg)
+    def log_error(self, msg: str, meta=None) -> None:
+        extra = None if meta is None else {"attributes": meta}
+        LOGGER.error(msg, exc_info=1, extra=extra)
 
-    def log_info(self, msg: str) -> None:
-        LOGGER.info(msg)
+    def log_info(self, msg: str, meta=None) -> None:
+        extra = None if meta is None else {"attributes": meta}
+        LOGGER.info(msg, extra=extra)
 
-    def log_debug(self, msg: str) -> None:
-        LOGGER.debug(msg)
+    def log_debug(self, msg: str, meta=None) -> None:
+        extra = None if meta is None else {"attributes": meta}
+        LOGGER.debug(msg, extra=extra)
 
-    def log_warning(self, msg: str) -> None:
-        LOGGER.warning(msg)
+    def log_warning(self, msg: str, meta=None) -> None:
+        extra = None if meta is None else {"attributes": meta}
+        LOGGER.warning(msg, extra=extra)
 
     def date_now(self) -> str:
         """get the current date (UTC)
