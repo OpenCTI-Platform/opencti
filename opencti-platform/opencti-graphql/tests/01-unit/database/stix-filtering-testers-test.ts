@@ -1,4 +1,6 @@
 import { describe, expect, it } from 'vitest';
+// import modules to be able to test correctly types
+import '../../../src/modules/index';
 
 // basic set
 // import stixBundle from '../../data/DATA-TEST-STIX2_v2.json';
