@@ -1,6 +1,6 @@
 {
   "name": "opencti-front",
-  "version": "5.12.13",
+  "version": "5.12.14",
   "private": true,
   "main": "src/front.tsx",
   "dependencies": {
