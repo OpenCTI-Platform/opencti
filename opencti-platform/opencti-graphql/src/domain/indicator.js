@@ -76,10 +76,13 @@ export const promoteIndicatorToObservable = async (context, user, indicatorId) =
 };
 
 export const addIndicator = async (context, user, indicator) => {
-  const observableType = isEmptyField(indicator.x_opencti_main_observable_type) ? 'Unknown' : indicator.x_opencti_main_observable_type;
+  let observableType = isEmptyField(indicator.x_opencti_main_observable_type) ? 'Unknown' : indicator.x_opencti_main_observable_type;
+  if (observableType === 'File') {
+    observableType = 'StixFile';
+  }
   const isKnownObservable = observableType !== 'Unknown';
-  if (isKnownObservable && !isStixCyberObservable(indicator.x_opencti_main_observable_type)) {
-    throw FunctionalError(`Observable type ${indicator.x_opencti_main_observable_type} is not supported.`);
+  if (isKnownObservable && !isStixCyberObservable(observableType)) {
+    throw FunctionalError(`Observable type ${observableType} is not supported.`);
   }
   // check indicator syntax
   const patternType = indicator.pattern_type.toLowerCase();

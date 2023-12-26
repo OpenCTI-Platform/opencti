@@ -10,7 +10,6 @@ import TriggerLiveCreation from '../../profile/triggers/TriggerLiveCreation';
 import ColumnsLinesTitles from '../../../../components/ColumnsLinesTitles';
 import TriggersLines, { triggersLinesQuery } from '../../profile/triggers/TriggersLines';
 import TriggerDigestCreation from '../../profile/triggers/TriggerDigestCreation';
-
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import { useFormatter } from '../../../../components/i18n';
 import { TriggersLinesPaginationQuery, TriggersLinesPaginationQuery$variables } from '../../profile/triggers/__generated__/TriggersLinesPaginationQuery.graphql';

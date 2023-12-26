@@ -1,12 +1,14 @@
 export const supportedMimeTypes = [
   'application/pdf',
+  'application/json',
   'text/plain',
+  'text/markdown',
   'text/csv',
+  'text/html',
   'application/vnd.ms-excel',
   'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
   'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
   'application/vnd.oasis.opendocument.text',
-  'text/html'
 ];
 const defaultManagerConfigurations = [
   {
