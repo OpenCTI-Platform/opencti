@@ -13,7 +13,7 @@ import ExportContextProvider from '../../../utils/ExportContextProvider';
 import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
 import useEntityToggle from '../../../utils/hooks/useEntityToggle';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
-import { emptyFilterGroup } from '../../../utils/filters/filtersUtils';
+import { emptyFilterGroup, injectEntityTypeFilterInFilterGroup } from '../../../utils/filters/filtersUtils';
 
 const LOCAL_STORAGE_KEY = 'entities';
 
@@ -55,6 +55,7 @@ const Entities = () => {
     entitiesStixDomainObjectsLinesQuery,
     paginationOptions,
   );
+  const toolBarFilters = injectEntityTypeFilterInFilterGroup(filters, 'Stix-Domain-Object');
   const renderLines = () => {
     const isRuntimeSort = isRuntimeFieldEnable() ?? false;
     const dataColumns = {
@@ -164,7 +165,7 @@ const Entities = () => {
                 numberOfSelectedElements={numberOfSelectedElements}
                 selectAll={selectAll}
                 search={searchTerm}
-                filters={filters}
+                filters={toolBarFilters}
                 handleClearSelectedElements={handleClearSelectedElements}
               />
             </React.Suspense>
