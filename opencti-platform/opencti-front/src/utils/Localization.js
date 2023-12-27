@@ -9225,6 +9225,7 @@ const i18n = {
       entity_All: 'All entities',
       'entity_Stix-Domain-Object': 'Entity',
       'entity_Stix-Domain-Objects': 'Entities',
+      'entity_Stix-Core-Object': 'Entity and observable',
       'entity_Stix-Core-Objects': 'Entities and observables',
       'entity_Stix-Core-Relationship': 'Relationships',
       'entity_stix-core-relationship': 'Relationships',
