@@ -25,10 +25,8 @@ from opentelemetry.sdk.resources import SERVICE_NAME, Resource
 from pika.adapters.blocking_connection import BlockingChannel
 from prometheus_client import start_http_server
 from pycti import OpenCTIApiClient
-from pycti.connector.opencti_connector_helper import (
-    create_mq_ssl_context,
-    get_config_variable,
-)
+from pycti.connector.opencti_connector_helper import (create_mq_ssl_context,
+                                                      get_config_variable)
 from requests.exceptions import RequestException, Timeout
 
 PROCESSING_COUNT: int = 4
@@ -94,6 +92,7 @@ class Consumer(Thread):  # pylint: disable=too-many-instance-attributes
             ssl_verify=self.ssl_verify,
             json_logging=self.json_logging,
         )
+        self.worker_logger = self.api.logger_class("worker")
         self.queue_name = self.connector["config"]["push"]
         self.pika_credentials = pika.PlainCredentials(
             self.connector["config"]["connection"]["user"],
@@ -118,7 +117,7 @@ class Consumer(Thread):  # pylint: disable=too-many-instance-attributes
         try:
             self.channel.confirm_delivery()
         except Exception as err:  # pylint: disable=broad-except
-            self.api.log("warning", str(err))
+            self.worker_logger.warning(str(err))
         self.channel.basic_qos(prefetch_count=1)
         assert self.channel is not None
         self.processing_count: int = 0
@@ -141,34 +140,24 @@ class Consumer(Thread):  # pylint: disable=too-many-instance-attributes
         )
         if res > 1:
             ctypes.pythonapi.PyThreadState_SetAsyncExc(thread_id, 0)
-            self.api.log("info", "Unable to kill the thread")
+            self.worker_logger.info("Unable to kill the thread")
 
     def nack_message(self, channel: BlockingChannel, delivery_tag: int) -> None:
         if channel.is_open:
-            self.api.log(
-                "info", "Message (delivery_tag=" + str(delivery_tag) + ") rejected"
-            )
+            self.worker_logger.info("Message rejected", {"tag": delivery_tag})
             channel.basic_nack(delivery_tag)
         else:
-            self.api.log(
-                "info",
-                "Message (delivery_tag="
-                + str(delivery_tag)
-                + ") NOT rejected (channel closed)",
+            self.worker_logger.info(
+                "Message NOT rejected (channel closed)", {"tag": delivery_tag}
             )
 
     def ack_message(self, channel: BlockingChannel, delivery_tag: int) -> None:
         if channel.is_open:
-            self.api.log(
-                "info", "Message (delivery_tag=" + str(delivery_tag) + ") acknowledged"
-            )
+            self.worker_logger.info("Message acknowledged", {"tag": delivery_tag})
             channel.basic_ack(delivery_tag)
         else:
-            self.api.log(
-                "info",
-                "Message (delivery_tag="
-                + str(delivery_tag)
-                + ") NOT acknowledged (channel closed)",
+            self.worker_logger.info(
+                "Message NOT acknowledged (channel closed)", {"tag": delivery_tag}
             )
 
     def stop_consume(self, channel: BlockingChannel) -> None:
@@ -184,11 +173,9 @@ class Consumer(Thread):  # pylint: disable=too-many-instance-attributes
         body: str,
     ) -> None:
         data = json.loads(body)
-        self.api.log(
-            "info",
-            "Processing a new message (delivery_tag="
-            + str(method.delivery_tag)
-            + "), launching a thread...",
+        self.worker_logger.info(
+            "Processing a new message, launching a thread...",
+            {"tag": method.delivery_tag},
         )
         thread = Thread(
             target=self.data_handler,
@@ -197,7 +184,7 @@ class Consumer(Thread):  # pylint: disable=too-many-instance-attributes
         thread.start()
         while thread.is_alive():  # Loop while the thread is processing
             self.pika_connection.sleep(0.05)
-        self.api.log("info", "Message processed, thread terminated")
+        self.worker_logger.info("Message processed, thread terminated")
 
     # Data handling
     def data_handler(  # pylint: disable=too-many-statements, too-many-locals
@@ -279,29 +266,19 @@ class Consumer(Thread):  # pylint: disable=too-many-instance-attributes
             else:
                 # Unknown type, just move on.
                 return True
-        except Timeout as ex:
-            error = str(ex)
+        except Timeout:
             bundles_timeout_error_counter.add(1)
-            self.api.log(
-                "warning", "A connection timeout occurred: {{ " + error + " }}"
-            )
+            self.worker_logger.warning("A connection timeout occurred")
             time.sleep(60)
             # Platform is under heavy load: wait for unlock & retry almost indefinitely.
             sleep_jitter = round(random.uniform(10, 30), 2)
             time.sleep(sleep_jitter)
             self.data_handler(connection, channel, delivery_tag, data)
             return True
-        except RequestException as ex:
-            error = str(ex)
+        except RequestException:
             bundles_request_error_counter.add(1, {"origin": "opencti-worker"})
-            self.api.log(
-                "error", "A connection error occurred: {{ " + error + " }}"
-            )
-            self.api.log(
-                "info",
-                "Message (delivery_tag="
-                + str(delivery_tag)
-                + ") NOT acknowledged (RequestException)",
+            self.worker_logger.error(
+                "Message NOT acknowledged (RequestException)", {"tag": delivery_tag}
             )
             cb = functools.partial(self.nack_message, channel, delivery_tag)
             connection.add_callback_threadsafe(cb)
@@ -328,17 +305,13 @@ class Consumer(Thread):  # pylint: disable=too-many-instance-attributes
                 # In case of missing reference, wait & retry
                 sleep_jitter = round(random.uniform(1, 3), 2)
                 time.sleep(sleep_jitter)
-                self.api.log(
-                    "info",
-                    "Message (delivery_tag="
-                    + str(delivery_tag)
-                    + ") reprocess (retry nb: "
-                    + str(self.processing_count)
-                    + ")",
+                self.worker_logger.info(
+                    "Message reprocess",
+                    {"tag": delivery_tag, "count": self.processing_count},
                 )
                 self.data_handler(connection, channel, delivery_tag, data)
             elif "MissingReferenceError" in error_msg:
-                self.api.log("warning", error_msg)
+                self.worker_logger.warning(error_msg)
                 self.processing_count = 0
                 cb = functools.partial(self.ack_message, channel, delivery_tag)
                 connection.add_callback_threadsafe(cb)
@@ -355,15 +328,10 @@ class Consumer(Thread):  # pylint: disable=too-many-instance-attributes
                 return False
             elif "Bad Gateway" in error_msg:
                 bundles_bad_gateway_error_counter.add(1)
-                self.api.log(
-                    "error", "A connection error occurred: {{ " + error + " }}"
-                )
+                self.worker_logger.error("A connection error occurred")
                 time.sleep(60)
-                self.api.log(
-                    "info",
-                    "Message (delivery_tag="
-                    + str(delivery_tag)
-                    + ") NOT acknowledged (Bad Gateway)",
+                self.worker_logger.info(
+                    "Message NOT acknowledged (Bad Gateway)", {"tag": delivery_tag}
                 )
                 cb = functools.partial(self.nack_message, channel, delivery_tag)
                 connection.add_callback_threadsafe(cb)
@@ -373,7 +341,7 @@ class Consumer(Thread):  # pylint: disable=too-many-instance-attributes
                 bundles_technical_error_counter.add(1)
                 # Platform does not know what to do and raises an error:
                 # fail and acknowledge the message.
-                self.api.log("error", error_msg)
+                self.worker_logger.error(error)
                 self.processing_count = 0
                 cb = functools.partial(self.ack_message, channel, delivery_tag)
                 connection.add_callback_threadsafe(cb)
@@ -397,7 +365,9 @@ class Consumer(Thread):  # pylint: disable=too-many-instance-attributes
     def run(self) -> None:
         try:
             # Consume the queue
-            self.api.log("info", "Thread for queue " + self.queue_name + " started")
+            self.worker_logger.info(
+                "Thread for queue started", {"queue": self.queue_name}
+            )
             self.channel.basic_consume(
                 queue=self.queue_name,
                 on_message_callback=self._process_message,
@@ -405,7 +375,9 @@ class Consumer(Thread):  # pylint: disable=too-many-instance-attributes
             self.channel.start_consuming()
         finally:
             self.channel.stop_consuming()
-            self.api.log("info", "Thread for queue " + self.queue_name + " terminated")
+            self.worker_logger.info(
+                "Thread for queue terminated", {"queue": self.queue_name}
+            )
 
 
 @dataclass(unsafe_hash=True)
@@ -484,7 +456,7 @@ class Worker:  # pylint: disable=too-few-public-methods, too-many-instance-attri
             ssl_verify=self.opencti_ssl_verify,
             json_logging=self.opencti_json_logging,
         )
-
+        self.worker_logger = self.api.logger_class("worker")
         # Initialize variables
         self.connectors: List[Any] = []
         self.queues: List[Any] = []
@@ -505,11 +477,9 @@ class Worker:  # pylint: disable=too-few-public-methods, too-many-instance-attri
                     queue = connector["config"]["push"]
                     if queue in self.consumer_threads:
                         if not self.consumer_threads[queue].is_alive():
-                            self.api.log(
-                                "info",
-                                "Thread for queue "
-                                + queue
-                                + " not alive, creating a new one...",
+                            self.worker_logger.info(
+                                "Thread for queue not alive, creating a new one...",
+                                {"queue": queue},
                             )
                             self.consumer_threads[queue] = Consumer(
                                 connector,
@@ -536,19 +506,17 @@ class Worker:  # pylint: disable=too-few-public-methods, too-many-instance-attri
                 # Check if some threads must be stopped
                 for thread in list(self.consumer_threads):
                     if thread not in self.queues:
-                        self.api.log(
-                            "info",
-                            "Queue " + thread + " no longer exists, killing thread...",
+                        self.worker_logger.info(
+                            "Queue no longer exists, killing thread...",
+                            {"thread": thread},
                         )
                         try:
                             self.consumer_threads[thread].terminate()
                             self.consumer_threads.pop(thread, None)
                         except:
-                            self.api.log(
-                                "info",
-                                "Unable to kill the thread for queue "
-                                + thread
-                                + ", an operation is running, keep trying...",
+                            self.worker_logger.info(
+                                "Unable to kill the thread for queue, an operation is running, keep trying...",
+                                {"thread": thread},
                             )
                 time.sleep(sleep_delay)
             except KeyboardInterrupt:
@@ -558,8 +526,7 @@ class Worker:  # pylint: disable=too-few-public-methods, too-many-instance-attri
                         self.consumer_threads[thread].terminate()
                 sys.exit(0)
             except Exception as e:  # pylint: disable=broad-except
-                error_msg = traceback.format_exc()
-                self.api.log("error", error_msg)
+                self.worker_logger.error(str(e))
                 time.sleep(60)
 
 
