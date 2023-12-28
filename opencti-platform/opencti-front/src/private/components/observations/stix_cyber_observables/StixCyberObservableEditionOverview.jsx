@@ -279,7 +279,7 @@ const StixCyberObservableEditionOverviewComponent = ({
                 map((n) => [n.algorithm, n.hash]),
                 fromPairs,
               )(stixCyberObservable.hashes);
-              initialValues['hashes.MD5'] = hashes.MD5;
+              initialValues.hashes_MD5 = hashes.MD5;
               initialValues['hashes_SHA-1'] = hashes['SHA-1'];
               initialValues['hashes_SHA-256'] = hashes['SHA-256'];
               initialValues['hashes_SHA-512'] = hashes['SHA-512'];
@@ -335,7 +335,7 @@ const StixCyberObservableEditionOverviewComponent = ({
                           <Field
                             component={TextField}
                             variant="standard"
-                            name="hashes.MD5"
+                            name="hashes_MD5"
                             label={t('hash_md5')}
                             fullWidth={true}
                             style={{ marginTop: 20 }}
@@ -344,7 +344,7 @@ const StixCyberObservableEditionOverviewComponent = ({
                             helperText={
                               <SubscriptionFocus
                                 context={context}
-                                fieldName="hashes.MD5"
+                                fieldName="hashes_MD5"
                               />
                             }
                           />
