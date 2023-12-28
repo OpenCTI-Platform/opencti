@@ -891,9 +891,6 @@ const rebuildAndMergeInputFromExistingData = (rawInput, instance) => {
   if (isDictionaryAttribute(key) && isNotEmptyField(R.head(value))) { // Only allow full cleanup
     throw UnsupportedError('Dictionary attribute cant be updated directly', { rawInput });
   }
-  if (!isMultiple && isObjectAttribute(key)) {
-    throw UnsupportedError('Object update only available for array attributes', { rawInput });
-  }
   // region rebuild input values consistency
   if (key.includes('.')) {
     // In case of dict attributes, patching the content is possible through first level path
