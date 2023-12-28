@@ -1,7 +1,7 @@
 import * as R from 'ramda';
 import { Promise } from 'bluebird';
 import { READ_DATA_INDICES } from '../database/utils';
-import { ENTITY_TYPE_INDICATOR } from '../schema/stixDomainObject';
+import { ENTITY_TYPE_INDICATOR } from '../modules/indicator/indicator-types';
 import { BULK_TIMEOUT, elBulk, elList, ES_MAX_CONCURRENCY, MAX_BULK_OPERATIONS } from '../database/engine';
 import { logApp } from '../config/conf';
 import { ABSTRACT_STIX_CORE_OBJECT, ABSTRACT_STIX_CORE_RELATIONSHIP, buildRefRelationKey } from '../schema/general';

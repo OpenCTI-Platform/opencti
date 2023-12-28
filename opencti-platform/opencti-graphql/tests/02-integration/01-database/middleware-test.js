@@ -21,7 +21,6 @@ import {
   ENTITY_TYPE_CONTAINER_OBSERVED_DATA,
   ENTITY_TYPE_CONTAINER_REPORT,
   ENTITY_TYPE_IDENTITY_INDIVIDUAL,
-  ENTITY_TYPE_INDICATOR,
   ENTITY_TYPE_INTRUSION_SET,
   ENTITY_TYPE_MALWARE,
   ENTITY_TYPE_THREAT_ACTOR_GROUP,
@@ -41,7 +40,8 @@ import { internalLoadById, listAllRelations, listEntities, listRelations, storeL
 import { addThreatActorGroup } from '../../../src/domain/threatActorGroup';
 import { addMalware } from '../../../src/domain/malware';
 import { addIntrusionSet } from '../../../src/domain/intrusionSet';
-import { addIndicator } from '../../../src/domain/indicator';
+import { ENTITY_TYPE_INDICATOR } from '../../../src/modules/indicator/indicator-types';
+import { addIndicator } from '../../../src/modules/indicator/indicator-domain';
 import { findAll } from '../../../src/domain/subType';
 import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../../../src/modules/organization/organization-types';
 import { addReport } from '../../../src/domain/report';

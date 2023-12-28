@@ -1,11 +1,7 @@
 import { expect, it, describe } from 'vitest';
 import { FIVE_MINUTES, TEN_SECONDS, testContext } from '../utils/testQuery';
 import { activateRule, disableRule, getInferences, inferenceLookup } from '../utils/rule-utils';
-import {
-  createRelation,
-  deleteElementById,
-  deleteRelationsByFromAndTo,
-} from '../../src/database/middleware';
+import { createRelation, deleteElementById, deleteRelationsByFromAndTo } from '../../src/database/middleware';
 import { SYSTEM_USER } from '../../src/utils/access';
 import { RELATION_BASED_ON } from '../../src/schema/stixCoreRelationship';
 import { RELATION_OBJECT } from '../../src/schema/stixRefRelationship';
@@ -17,9 +13,8 @@ import { listEntities } from '../../src/database/middleware-loader';
 import { ENTITY_TYPE_CONTAINER_REPORT } from '../../src/schema/stixDomainObject';
 import { addStixCyberObservable } from '../../src/domain/stixCyberObservable';
 import { ENTITY_IPV4_ADDR } from '../../src/schema/stixCyberObservable';
-import { addIndicator } from '../../src/domain/indicator';
-import ReportRefsObservableBasedOnRule
-  from '../../src/rules/report-refs-observable-based-on/ReportRefObservableBasedOnRule';
+import { addIndicator } from '../../src/modules/indicator/indicator-domain';
+import ReportRefsObservableBasedOnRule from '../../src/rules/report-refs-observable-based-on/ReportRefObservableBasedOnRule';
 
 describe('Report refs observable rule', () => {
   it(

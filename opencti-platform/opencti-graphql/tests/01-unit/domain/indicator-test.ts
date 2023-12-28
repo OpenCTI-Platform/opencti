@@ -1,11 +1,7 @@
 import { describe, expect, it } from 'vitest';
-import {
-  cleanupIndicatorPattern,
-  extractObservablesFromIndicatorPattern,
-  STIX_PATTERN_TYPE
-} from '../../../src/utils/syntax';
+import { cleanupIndicatorPattern, extractObservablesFromIndicatorPattern, STIX_PATTERN_TYPE } from '../../../src/utils/syntax';
 import * as C from '../../../src/schema/stixCyberObservable';
-import { computeValidPeriod, computeValidTTL, DEFAULT_INDICATOR_TTL } from '../../../src/utils/indicator-utils';
+import { computeValidPeriod, computeValidTTL, DEFAULT_INDICATOR_TTL } from '../../../src/modules/indicator/indicator-utils';
 import { ADMIN_USER, testContext } from '../../utils/testQuery';
 import { MARKING_TLP_AMBER, MARKING_TLP_GREEN, MARKING_TLP_RED } from '../../../src/schema/identifier';
 

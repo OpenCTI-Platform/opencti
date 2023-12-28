@@ -1,8 +1,8 @@
 import { ABSTRACT_STIX_CYBER_OBSERVABLE, ENTITY_TYPE_IDENTITY, ENTITY_TYPE_LOCATION } from '../../schema/general';
-import { ENTITY_TYPE_INDICATOR } from '../../schema/stixDomainObject';
 import { STIX_SIGHTING_RELATIONSHIP } from '../../schema/stixSightingRelationship';
 import type { RuleDefinition } from '../../types/rules';
 import { RELATION_BASED_ON } from '../../schema/stixCoreRelationship';
+import { ENTITY_TYPE_INDICATOR } from '../../modules/indicator/indicator-types';
 
 const id = 'sighting_indicator';
 const name = 'Sightings propagation from indicator';

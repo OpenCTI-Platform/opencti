@@ -11,7 +11,6 @@ import {
   ENTITY_TYPE_CONTAINER_NOTE,
   ENTITY_TYPE_CONTAINER_REPORT,
   ENTITY_TYPE_IDENTITY_SECTOR,
-  ENTITY_TYPE_INDICATOR,
   isStixDomainObject,
   isStixDomainObjectIdentity,
   isStixDomainObjectLocation,
@@ -30,6 +29,7 @@ import { stixObjectOrRelationshipAddRefRelation, stixObjectOrRelationshipDeleteR
 import { entityLocationType, xOpenctiType, identityClass } from '../schema/attribute-definition';
 import { usersSessionRefresh } from './user';
 import { addFilter } from '../utils/filtering/filtering-utils';
+import { ENTITY_TYPE_INDICATOR } from '../modules/indicator/indicator-types';
 
 export const findAll = async (context, user, args) => {
   let types = [];

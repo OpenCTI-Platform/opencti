@@ -49,6 +49,7 @@ import './threatActorIndividual/threatActorIndividual';
 import './playbook/playbook';
 import './ingestion/ingestion-rss';
 import './ingestion/ingestion-taxii';
+import './indicator/indicator';
 import './organization/organization';
 import './internal/csvMapper/csvMapper';
 import './internal/document/document';

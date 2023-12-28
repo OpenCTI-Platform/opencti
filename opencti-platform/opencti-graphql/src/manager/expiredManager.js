@@ -6,11 +6,11 @@ import { READ_DATA_INDICES, READ_INDEX_INTERNAL_OBJECTS } from '../database/util
 import { prepareDate } from '../utils/format';
 import { patchAttribute } from '../database/middleware';
 import conf, { ACCOUNT_STATUS_EXPIRED, booleanConf, logApp } from '../config/conf';
-import { ENTITY_TYPE_INDICATOR } from '../schema/stixDomainObject';
 import { executionContext, SYSTEM_USER } from '../utils/access';
 import { TYPE_LOCK_ERROR } from '../config/errors';
 import { ENTITY_TYPE_USER } from '../schema/internalObject';
 import { userEditField } from '../domain/user';
+import { ENTITY_TYPE_INDICATOR } from '../modules/indicator/indicator-types';
 
 // Expired manager responsible to monitor expired elements
 // In order to change the revoked attribute to true

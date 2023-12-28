@@ -1,14 +1,12 @@
 import * as R from 'ramda';
-import { Promise } from 'bluebird';
-import { batchListThroughGetTo, createEntity, createRelation, distributionEntities, storeLoadByIdWithRefs, timeSeriesEntities } from '../database/middleware';
-import { listEntities, storeLoadById } from '../database/middleware-loader';
-import { BUS_TOPICS, logApp } from '../config/conf';
-import { notify } from '../database/redis';
-import { checkIndicatorSyntax } from '../python/pythonBridge';
-import { DatabaseError, FunctionalError } from '../config/errors';
-import { ENTITY_TYPE_INDICATOR } from '../schema/stixDomainObject';
-import { isStixCyberObservable } from '../schema/stixCyberObservable';
-import { RELATION_BASED_ON, RELATION_INDICATES } from '../schema/stixCoreRelationship';
+import { batchListThroughGetTo, createEntity, createRelation, distributionEntities, storeLoadByIdWithRefs, timeSeriesEntities } from '../../database/middleware';
+import { listEntitiesPaginated, storeLoadById } from '../../database/middleware-loader';
+import { BUS_TOPICS, logApp } from '../../config/conf';
+import { notify } from '../../database/redis';
+import { checkIndicatorSyntax } from '../../python/pythonBridge';
+import { DatabaseError, FunctionalError } from '../../config/errors';
+import { isStixCyberObservable } from '../../schema/stixCyberObservable';
+import { RELATION_BASED_ON, RELATION_INDICATES } from '../../schema/stixCoreRelationship';
 import {
   ABSTRACT_STIX_CYBER_OBSERVABLE,
   ABSTRACT_STIX_DOMAIN_OBJECT,
@@ -17,22 +15,31 @@ import {
   INPUT_EXTERNAL_REFS,
   INPUT_LABELS,
   INPUT_MARKINGS
-} from '../schema/general';
-import { elCount } from '../database/engine';
-import { isEmptyField, READ_INDEX_STIX_DOMAIN_OBJECTS } from '../database/utils';
-import { cleanupIndicatorPattern, extractObservablesFromIndicatorPattern } from '../utils/syntax';
-import { computeValidPeriod } from '../utils/indicator-utils';
-import { addFilter } from '../utils/filtering/filtering-utils';
+} from '../../schema/general';
+import { elCount } from '../../database/engine';
+import { isEmptyField, READ_INDEX_STIX_DOMAIN_OBJECTS } from '../../database/utils';
+import { cleanupIndicatorPattern, extractObservablesFromIndicatorPattern } from '../../utils/syntax';
+import { computeValidPeriod } from './indicator-utils';
+import { addFilter } from '../../utils/filtering/filtering-utils';
+import type { AuthContext, AuthUser } from '../../types/user';
+import { type BasicStoreEntityIndicator, ENTITY_TYPE_INDICATOR, type StoreEntityIndicator } from './indicator-types';
+import type { IndicatorAddInput, QueryIndicatorsArgs, QueryIndicatorsNumberArgs } from '../../generated/graphql';
+import type { NumberResult } from '../../types/store';
 
-export const findById = (context, user, indicatorId) => {
-  return storeLoadById(context, user, indicatorId, ENTITY_TYPE_INDICATOR);
+export const findById = (context: AuthContext, user: AuthUser, indicatorId: string) => {
+  return storeLoadById<BasicStoreEntityIndicator>(context, user, indicatorId, ENTITY_TYPE_INDICATOR);
 };
 
-export const findAll = (context, user, args) => {
-  return listEntities(context, user, [ENTITY_TYPE_INDICATOR], args);
+export const findAll = (context: AuthContext, user: AuthUser, args: QueryIndicatorsArgs) => {
+  return listEntitiesPaginated<BasicStoreEntityIndicator>(context, user, [ENTITY_TYPE_INDICATOR], args);
 };
 
-export const createObservablesFromIndicator = async (context, user, input, indicator) => {
+export const createObservablesFromIndicator = async (
+  context: AuthContext,
+  user: AuthUser,
+  input: { objectLabel?: string[] | null; objectMarking?: string[] | null; createdBy?: string | null; externalReferences?: string[] | null; },
+  indicator: StoreEntityIndicator,
+) => {
   const { pattern } = indicator;
   const observables = extractObservablesFromIndicatorPattern(pattern);
   const observablesToLink = [];
@@ -65,8 +72,8 @@ export const createObservablesFromIndicator = async (context, user, input, indic
   );
 };
 
-export const promoteIndicatorToObservable = async (context, user, indicatorId) => {
-  const indicator = await storeLoadByIdWithRefs(context, user, indicatorId);
+export const promoteIndicatorToObservable = async (context: AuthContext, user: AuthUser, indicatorId: string) => {
+  const indicator: StoreEntityIndicator = await storeLoadByIdWithRefs(context, user, indicatorId) as StoreEntityIndicator;
   const objectLabel = (indicator[INPUT_LABELS] ?? []).map((n) => n.internal_id);
   const objectMarking = (indicator[INPUT_MARKINGS] ?? []).map((n) => n.internal_id);
   const externalReferences = (indicator[INPUT_EXTERNAL_REFS] ?? []).map((n) => n.internal_id);
@@ -75,8 +82,8 @@ export const promoteIndicatorToObservable = async (context, user, indicatorId) =
   return createObservablesFromIndicator(context, user, input, indicator);
 };
 
-export const addIndicator = async (context, user, indicator) => {
-  let observableType = isEmptyField(indicator.x_opencti_main_observable_type) ? 'Unknown' : indicator.x_opencti_main_observable_type;
+export const addIndicator = async (context: AuthContext, user: AuthUser, indicator: IndicatorAddInput) => {
+  let observableType: string = isEmptyField(indicator.x_opencti_main_observable_type) ? 'Unknown' : indicator.x_opencti_main_observable_type as string;
   if (observableType === 'File') {
     observableType = 'StixFile';
   }
@@ -91,7 +98,7 @@ export const addIndicator = async (context, user, indicator) => {
   if (check === false) {
     throw FunctionalError(`Indicator of type ${indicator.pattern_type} is not correctly formatted.`);
   }
-  const { validFrom, validUntil, revoked } = await computeValidPeriod(context, user, indicator);
+  const { validFrom, validUntil, revoked, validPeriod } = await computeValidPeriod(context, user, indicator);
   const indicatorToCreate = R.pipe(
     R.dissoc('createObservables'),
     R.dissoc('basedOn'),
@@ -104,11 +111,11 @@ export const addIndicator = async (context, user, indicator) => {
     R.assoc('revoked', revoked),
   )(indicator);
   // create the linked observables
-  let observablesToLink = [];
+  let observablesToLink: string[] = [];
   if (indicator.basedOn) {
     observablesToLink = indicator.basedOn;
   }
-  if (indicatorToCreate.valid_from > indicatorToCreate.valid_until) {
+  if (!validPeriod) {
     throw DatabaseError('You cant create an indicator with valid_until less than valid_from', {
       input: indicatorToCreate,
     });
@@ -127,52 +134,57 @@ export const addIndicator = async (context, user, indicator) => {
 };
 
 // region series
-export const indicatorsTimeSeries = (context, user, args) => {
+export const indicatorsTimeSeries = (context: AuthContext, user: AuthUser, args: any) => {
   return timeSeriesEntities(context, user, [ENTITY_TYPE_INDICATOR], args);
 };
 
-export const indicatorsNumber = (context, user, args) => ({
-  count: elCount(context, user, READ_INDEX_STIX_DOMAIN_OBJECTS, { ...args, types: [ENTITY_TYPE_INDICATOR] }),
-  total: elCount(
-    context,
-    user,
-    READ_INDEX_STIX_DOMAIN_OBJECTS,
-    { ...R.dissoc('endDate', args), types: [ENTITY_TYPE_INDICATOR] }
-  ),
-});
-
-export const indicatorsTimeSeriesByEntity = (context, user, args) => {
+export const indicatorsTimeSeriesByEntity = (context: AuthContext, user: AuthUser, args: any) => {
   const { objectId } = args;
   const filters = addFilter(args.filters, buildRefRelationKey(RELATION_INDICATES, '*'), objectId);
   return timeSeriesEntities(context, user, [ENTITY_TYPE_INDICATOR], { ...args, filters });
 };
 
-export const indicatorsNumberByEntity = (context, user, args) => {
-  const { objectId } = args;
-  const filters = addFilter(args.filters, buildRefRelationKey(RELATION_INDICATES, '*'), objectId);
-  return {
-    count: elCount(
-      context,
-      user,
-      READ_INDEX_STIX_DOMAIN_OBJECTS,
-      { ...args, types: [ENTITY_TYPE_INDICATOR], filters }
-    ),
-    total: elCount(
-      context,
-      user,
-      READ_INDEX_STIX_DOMAIN_OBJECTS,
-      { ...R.dissoc('endDate', args), types: [ENTITY_TYPE_INDICATOR], filters }
-    ),
-  };
+export const indicatorsNumber = async (context: AuthContext, user: AuthUser, args: QueryIndicatorsNumberArgs): Promise<NumberResult> => {
+  const countPromise = elCount(context, user, READ_INDEX_STIX_DOMAIN_OBJECTS, {
+    ...args,
+    types: [ENTITY_TYPE_INDICATOR]
+  }) as Promise<number>;
+  const totalPromise = elCount(
+    context,
+    user,
+    READ_INDEX_STIX_DOMAIN_OBJECTS,
+    { ...R.dissoc('endDate', args), types: [ENTITY_TYPE_INDICATOR] }
+  ) as Promise<number>;
+  const [count, total] = await Promise.all([countPromise, totalPromise]);
+  return { count, total };
 };
 
-export const indicatorsDistributionByEntity = async (context, user, args) => {
+export const indicatorsNumberByEntity = async (context: AuthContext, user: AuthUser, args: QueryIndicatorsNumberArgs): Promise<NumberResult> => {
+  const { objectId } = args;
+  const filters = addFilter(null, buildRefRelationKey(RELATION_INDICATES, '*'), objectId);
+  const countPromise = elCount(
+    context,
+    user,
+    READ_INDEX_STIX_DOMAIN_OBJECTS,
+    { ...args, types: [ENTITY_TYPE_INDICATOR], filters }
+  );
+  const totalPromise = elCount(
+    context,
+    user,
+    READ_INDEX_STIX_DOMAIN_OBJECTS,
+    { ...R.dissoc('endDate', args), types: [ENTITY_TYPE_INDICATOR], filters }
+  );
+  const [count, total] = await Promise.all([countPromise, totalPromise]);
+  return { count, total };
+};
+
+export const indicatorsDistributionByEntity = async (context: AuthContext, user: AuthUser, args: any) => {
   const { objectId } = args;
   const filters = addFilter(args.filters, buildRefRelationKey(RELATION_INDICATES, '*'), objectId);
   return distributionEntities(context, user, [ENTITY_TYPE_INDICATOR], { ...args, filters });
 };
 // endregion
 
-export const batchObservables = (context, user, indicatorIds) => {
+export const batchObservables = (context: AuthContext, user: AuthUser, indicatorIds: string[]) => {
   return batchListThroughGetTo(context, user, indicatorIds, RELATION_BASED_ON, ABSTRACT_STIX_CYBER_OBSERVABLE);
 };

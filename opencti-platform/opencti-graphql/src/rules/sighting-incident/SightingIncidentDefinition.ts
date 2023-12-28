@@ -1,7 +1,7 @@
 import { ENTITY_TYPE_IDENTITY } from '../../schema/general';
-import { ENTITY_TYPE_INDICATOR } from '../../schema/stixDomainObject';
 import { STIX_SIGHTING_RELATIONSHIP } from '../../schema/stixSightingRelationship';
 import type { RuleDefinition } from '../../types/rules';
+import { ENTITY_TYPE_INDICATOR } from '../../modules/indicator/indicator-types';
 
 const id = 'sighting_incident';
 const name = 'Raise incident based on sighting';

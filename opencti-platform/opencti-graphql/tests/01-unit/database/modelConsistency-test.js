@@ -69,14 +69,15 @@ import {
   ENTITY_TYPE_CONTAINER_REPORT,
   ENTITY_TYPE_COURSE_OF_ACTION,
   ENTITY_TYPE_INCIDENT,
-  ENTITY_TYPE_INDICATOR,
   ENTITY_TYPE_MALWARE,
   ENTITY_TYPE_TOOL,
   ENTITY_TYPE_VULNERABILITY
 } from '../../../src/schema/stixDomainObject';
 import { ENTITY_TYPE_LABEL, ENTITY_TYPE_MARKING_DEFINITION } from '../../../src/schema/stixMetaObject';
 import {
-  isStixCoreRelationship, RELATION_COMMUNICATES_WITH, RELATION_CONSISTS_OF,
+  isStixCoreRelationship,
+  RELATION_COMMUNICATES_WITH,
+  RELATION_CONSISTS_OF,
   RELATION_DERIVED_FROM,
   RELATION_DETECTS,
   RELATION_HOSTS,
@@ -100,14 +101,10 @@ import {
 
 import '../../../src/modules/index';
 import { ADMIN_USER, testContext } from '../../utils/testQuery';
-import {
-  isDateNumericOrBooleanAttribute,
-  isJsonAttribute,
-  isMultipleAttribute,
-  schemaAttributesDefinition
-} from '../../../src/schema/schema-attributes';
+import { isDateNumericOrBooleanAttribute, isJsonAttribute, isMultipleAttribute, schemaAttributesDefinition } from '../../../src/schema/schema-attributes';
 import { ENTITY_TYPE_ENTITY_SETTING } from '../../../src/modules/entitySetting/entitySetting-types';
 import { ENTITY_TYPE_CHANNEL } from '../../../src/modules/channel/channel-types';
+import { ENTITY_TYPE_INDICATOR } from '../../../src/modules/indicator/indicator-types';
 import { stixRefsExtractor } from '../../../src/schema/stixEmbeddedRelationship';
 import { generateStandardId } from '../../../src/schema/identifier';
 import { schemaRelationsRefDefinition } from '../../../src/schema/schema-relationsRef';

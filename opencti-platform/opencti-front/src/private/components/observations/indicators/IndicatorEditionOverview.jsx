@@ -31,15 +31,9 @@ const indicatorMutationFieldPatch = graphql`
     $commitMessage: String
     $references: [String]
   ) {
-    indicatorEdit(id: $id) {
-      fieldPatch(
-        input: $input
-        commitMessage: $commitMessage
-        references: $references
-      ) {
-        ...IndicatorEditionOverview_indicator
-        ...Indicator_indicator
-      }
+    indicatorFieldPatch(id: $id, input: $input, commitMessage: $commitMessage, references: $references) {
+      ...IndicatorEditionOverview_indicator
+      ...Indicator_indicator
     }
   }
 `;
@@ -49,10 +43,8 @@ export const indicatorEditionOverviewFocus = graphql`
     $id: ID!
     $input: EditContext!
   ) {
-    indicatorEdit(id: $id) {
-      contextPatch(input: $input) {
-        id
-      }
+    indicatorContextPatch(id: $id, input: $input) {
+      id
     }
   }
 `;
@@ -62,11 +54,9 @@ const indicatorMutationRelationAdd = graphql`
     $id: ID!
     $input: StixRefRelationshipAddInput!
   ) {
-    indicatorEdit(id: $id) {
-      relationAdd(input: $input) {
-        from {
-          ...IndicatorEditionOverview_indicator
-        }
+    indicatorRelationAdd(id: $id, input: $input) {
+      from {
+        ...IndicatorEditionOverview_indicator
       }
     }
   }
@@ -78,10 +68,8 @@ const indicatorMutationRelationDelete = graphql`
     $toId: StixRef!
     $relationship_type: String!
   ) {
-    indicatorEdit(id: $id) {
-      relationDelete(toId: $toId, relationship_type: $relationship_type) {
-        ...IndicatorEditionOverview_indicator
-      }
+    indicatorRelationDelete(id: $id, toId: $toId, relationship_type: $relationship_type) {
+      ...IndicatorEditionOverview_indicator
     }
   }
 `;

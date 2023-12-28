@@ -144,7 +144,6 @@ import {
   ENTITY_TYPE_CONTAINER_OBSERVED_DATA,
   ENTITY_TYPE_CONTAINER_REPORT,
   ENTITY_TYPE_IDENTITY_INDIVIDUAL,
-  ENTITY_TYPE_INDICATOR,
   isStixDomainObject,
   isStixDomainObjectShareableContainer,
   isStixObjectAliased,
@@ -209,6 +208,7 @@ import { telemetry } from '../config/tracing';
 import { cleanMarkings, handleMarkingOperations } from '../utils/markingDefinition-utils';
 import { generateCreateMessage, generateUpdateMessage } from './generate-message';
 import { confidence } from '../schema/attribute-definition';
+import { ENTITY_TYPE_INDICATOR } from '../modules/indicator/indicator-types';
 
 // region global variables
 const MAX_BATCH_SIZE = 300;

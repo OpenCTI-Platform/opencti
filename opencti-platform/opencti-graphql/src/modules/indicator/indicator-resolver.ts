@@ -8,7 +8,7 @@ import {
   indicatorsNumberByEntity,
   indicatorsTimeSeries,
   indicatorsTimeSeriesByEntity,
-} from '../domain/indicator';
+} from './indicator-domain';
 import {
   stixDomainObjectAddRelation,
   stixDomainObjectCleanContext,
@@ -16,15 +16,16 @@ import {
   stixDomainObjectDeleteRelation,
   stixDomainObjectEditContext,
   stixDomainObjectEditField,
-} from '../domain/stixDomainObject';
-import { batchLoader, distributionEntities } from '../database/middleware';
-import { ENTITY_TYPE_INDICATOR } from '../schema/stixDomainObject';
-import { batchKillChainPhases } from '../domain/stixCoreObject';
+} from '../../domain/stixDomainObject';
+import { batchLoader, distributionEntities } from '../../database/middleware';
+import { batchKillChainPhases } from '../../domain/stixCoreObject';
+import type { Resolvers } from '../../generated/graphql';
+import { ENTITY_TYPE_INDICATOR } from './indicator-types';
 
 const killChainPhasesLoader = batchLoader(batchKillChainPhases);
 const batchObservablesLoader = batchLoader(batchObservables);
 
-const indicatorResolvers = {
+const indicatorResolvers: Resolvers = {
   Query: {
     indicator: (_, { id }, context) => findById(context, context.user, id),
     indicators: (_, args, context) => findAll(context, context.user, args),
@@ -52,15 +53,15 @@ const indicatorResolvers = {
     observables: (indicator, _, context) => batchObservablesLoader.load(indicator.id, context, context.user),
   },
   Mutation: {
-    indicatorEdit: (_, { id }, context) => ({
-      delete: () => stixDomainObjectDelete(context, context.user, id),
-      fieldPatch: ({ input, commitMessage, references }) => stixDomainObjectEditField(context, context.user, id, input, { commitMessage, references }),
-      contextPatch: ({ input }) => stixDomainObjectEditContext(context, context.user, id, input),
-      contextClean: () => stixDomainObjectCleanContext(context, context.user, id),
-      relationAdd: ({ input }) => stixDomainObjectAddRelation(context, context.user, id, input),
-      relationDelete: ({ toId, relationship_type: relationshipType }) => stixDomainObjectDeleteRelation(context, context.user, id, toId, relationshipType),
-    }),
     indicatorAdd: (_, { input }, context) => addIndicator(context, context.user, input),
+    indicatorDelete: (_, { id }, context) => {
+      return stixDomainObjectDelete(context, context.user, id);
+    },
+    indicatorFieldPatch: (_, { id, input, commitMessage, references }, context) => stixDomainObjectEditField(context, context.user, id, input, { commitMessage, references }),
+    indicatorContextPatch: (_, { id, input }, context) => stixDomainObjectEditContext(context, context.user, id, input),
+    indicatorContextClean: (_, { id }, context) => stixDomainObjectCleanContext(context, context.user, id),
+    indicatorRelationAdd: (_, { id, input }, context) => stixDomainObjectAddRelation(context, context.user, id, input),
+    indicatorRelationDelete: (_, { id, toId, relationship_type: relationshipType }, context) => stixDomainObjectDeleteRelation(context, context.user, id, toId, relationshipType),
   },
 };
 

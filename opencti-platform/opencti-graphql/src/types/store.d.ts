@@ -68,6 +68,11 @@ interface InternalEditInput {
   value: (string | object | null)[];
 }
 
+interface NumberResult {
+  count: number;
+  total: number;
+}
+
 interface StoreFile {
   id: string;
   name: string;

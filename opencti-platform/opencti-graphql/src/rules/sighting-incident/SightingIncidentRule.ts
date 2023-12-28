@@ -1,19 +1,20 @@
 /* eslint-disable camelcase */
 import { createInferredEntity, createInferredRelation, deleteInferredRuleElement, stixLoadById } from '../../database/middleware';
 import def from './SightingIncidentDefinition';
-import { ENTITY_TYPE_INCIDENT, ENTITY_TYPE_INDICATOR } from '../../schema/stixDomainObject';
+import { ENTITY_TYPE_INCIDENT } from '../../schema/stixDomainObject';
 import { createRuleContent } from '../rules';
 import { STIX_SIGHTING_RELATIONSHIP } from '../../schema/stixSightingRelationship';
 import { ENTITY_TYPE_IDENTITY } from '../../schema/general';
 import { generateInternalType } from '../../schema/schemaUtils';
 import { RELATION_RELATED_TO, RELATION_TARGETS } from '../../schema/stixCoreRelationship';
 import { listAllRelations } from '../../database/middleware-loader';
-import type { StixIndicator } from '../../types/stix-sdo';
 import type { StixSighting } from '../../types/stix-sro';
 import { STIX_EXT_OCTI } from '../../types/stix-extensions';
 import type { BasicStoreRelation, StoreObject } from '../../types/store';
 import { executionContext, RULE_MANAGER_USER } from '../../utils/access';
 import type { AuthContext } from '../../types/user';
+import type { StixIndicator } from '../../modules/indicator/indicator-types';
+import { ENTITY_TYPE_INDICATOR } from '../../modules/indicator/indicator-types';
 
 // 'If **indicator A** has `revoked` **false** and **indicator A** is `sighted` in ' +
 // '**identity B**, then create **Incident C** `related-to` **indicator A** and ' +
