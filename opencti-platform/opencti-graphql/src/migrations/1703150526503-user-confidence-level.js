@@ -10,7 +10,7 @@ export const up = async (next) => {
         overrides: {
           type: 'nested',
           properties: {
-            entity_type: { type: 'text' },
+            entity_type: { type: 'keyword' },
             max_confidence: { type: 'integer' },
           },
         }
