@@ -2,6 +2,8 @@ import type { StixDate, StixDomainObject, StixMitreExtension, StixOpenctiExtensi
 import type { StixKillChainPhase } from '../../types/stix-smo';
 import { STIX_EXT_MITRE, STIX_EXT_OCTI } from '../../types/stix-extensions';
 import type { BasicStoreEntity, StoreEntity } from '../../types/store';
+import type { DecayHistory } from './decay-domain';
+import type { DecayRule } from '../../generated/graphql';
 
 export const ENTITY_TYPE_INDICATOR = 'Indicator';
 
@@ -31,23 +33,31 @@ export interface StixIndicator extends StixDomainObject {
 export interface BasicStoreEntityIndicator extends BasicStoreEntity {
   name: string;
   description: string;
-  indicator_types : Array<string>;
-  pattern : string;
-  pattern_type : string;
-  pattern_version : string;
-  valid_from : Date;
-  valid_until : Date;
+  indicator_types: Array<string>;
+  pattern: string;
+  pattern_type: string;
+  pattern_version: string;
+  valid_from: Date;
+  valid_until: Date;
   kill_chain_phases: Array<StixKillChainPhase>;
+  x_opencti_decay_rule: DecayRule;
+  x_opencti_decay_history: Array<DecayHistory>;
+  x_opencti_base_score: number;
+  x_opencti_base_score_date: Date;
 }
 
 export interface StoreEntityIndicator extends StoreEntity {
   name: string;
   description: string;
-  indicator_types : Array<string>;
-  pattern : string;
-  pattern_type : string;
-  pattern_version : string;
-  valid_from : Date;
-  valid_until : Date;
+  indicator_types: Array<string>;
+  pattern: string;
+  pattern_type: string;
+  pattern_version: string;
+  valid_from: Date;
+  valid_until: Date;
   kill_chain_phases: Array<StixKillChainPhase>;
+  x_opencti_decay_rule: DecayRule;
+  x_opencti_decay_history: Array<DecayHistory>;
+  x_opencti_base_score: number;
+  x_opencti_base_score_date: Date;
 }

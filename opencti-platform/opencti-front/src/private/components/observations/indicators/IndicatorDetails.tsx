@@ -1,4 +1,4 @@
-import React, { FunctionComponent } from 'react';
+import React, { FunctionComponent, useState } from 'react';
 import { createFragmentContainer, graphql } from 'react-relay';
 import Paper from '@mui/material/Paper';
 import Typography from '@mui/material/Typography';
@@ -6,12 +6,19 @@ import Grid from '@mui/material/Grid';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
-import { SettingsApplications } from '@mui/icons-material';
+import { SettingsApplications, TroubleshootOutlined } from '@mui/icons-material';
 import ListItemText from '@mui/material/ListItemText';
 import Chip from '@mui/material/Chip';
 import Divider from '@mui/material/Divider';
 import makeStyles from '@mui/styles/makeStyles';
 import { IndicatorDetails_indicator$data } from '@components/observations/indicators/__generated__/IndicatorDetails_indicator.graphql';
+import { InformationOutline } from 'mdi-material-ui';
+import Tooltip from '@mui/material/Tooltip';
+import Button from '@mui/material/Button';
+import Dialog from '@mui/material/Dialog';
+import DecayDialogContent from '@components/observations/indicators/DecayDialog';
+import DialogActions from '@mui/material/DialogActions';
+import DialogTitle from '@mui/material/DialogTitle';
 import ItemScore from '../../../../components/ItemScore';
 import IndicatorObservables from './IndicatorObservables';
 import ExpandableMarkdown from '../../../../components/ExpandableMarkdown';
@@ -20,6 +27,7 @@ import ItemBoolean from '../../../../components/ItemBoolean';
 import StixCoreObjectKillChainPhasesView from '../../common/stix_core_objects/StixCoreObjectKillChainPhasesView';
 import { useFormatter } from '../../../../components/i18n';
 import type { Theme } from '../../../../components/Theme';
+import Transition from '../../../../components/Transition';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   paper: {
@@ -48,7 +56,15 @@ const IndicatorDetailsComponent: FunctionComponent<IndicatorDetailsComponentProp
   indicator,
 }) => {
   const { t_i18n, fldt } = useFormatter();
+  const [isLifecycleOpen, setIsLifecycleOpen] = useState(false);
   const classes = useStyles();
+  const onDecayLifecycleClose = () => {
+    setIsLifecycleOpen(false);
+  };
+
+  const openLifecycleDialog = () => {
+    setIsLifecycleOpen(true);
+  };
   return (
     <div style={{ height: '100%' }} className="break">
       <Typography variant="h4" gutterBottom={true}>
@@ -71,14 +87,52 @@ const IndicatorDetailsComponent: FunctionComponent<IndicatorDetailsComponentProp
             <Chip classes={{ root: classes.chip }}
               label={fldt(indicator.valid_from)}
             />
-            <Typography
-              variant="h3"
-              gutterBottom={true}
-              style={{ marginTop: 20 }}
-            >
-              {t_i18n('Score')}
-            </Typography>
-            <ItemScore score={indicator.x_opencti_score} />
+            <Grid container columnSpacing={1} style={{ marginTop: 20 }}>
+              <Grid item xs={4}>
+
+                <Typography variant="h3" gutterBottom={true}>
+                  <div style = {{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                    <div>{t_i18n('Score')}</div>
+                    {indicator.x_opencti_decay_rule && (
+                      <Tooltip title={t_i18n('This score is updated with the decay rule applied to this indicator.')}>
+                        <InformationOutline fontSize="small" color="primary" />
+                      </Tooltip>
+                    )}
+                  </div>
+                </Typography>
+                <ItemScore score={indicator.x_opencti_score} />
+              </Grid>
+              {indicator.x_opencti_decay_rule && (
+              <Grid item xs={8}>
+                <Button
+                  size="small"
+                  variant="outlined"
+                  onClick={openLifecycleDialog}
+                  startIcon={<TroubleshootOutlined />}
+                  style={{ marginTop: 22 }}
+                >
+                  {t_i18n('Lifecycle')}
+                </Button>
+                <Dialog
+                  PaperProps={{ elevation: 1 }}
+                  open={isLifecycleOpen}
+                  keepMounted={true}
+                  TransitionComponent={Transition}
+                  onClose={onDecayLifecycleClose}
+                  fullWidth
+                  maxWidth="md"
+                >
+                  <DialogTitle>{t_i18n('Lifecycle details')}</DialogTitle>
+                  <DecayDialogContent indicator={indicator} />
+                  <DialogActions>
+                    <Button onClick={onDecayLifecycleClose}>
+                      {t_i18n('Close')}
+                    </Button>
+                  </DialogActions>
+                </Dialog>
+              </Grid>
+              )}
+            </Grid>
             <Typography
               variant="h3"
               gutterBottom={true}
@@ -158,9 +212,28 @@ const IndicatorDetails = createFragmentContainer(IndicatorDetailsComponent, {
       valid_from
       valid_until
       x_opencti_score
+      x_opencti_base_score
       x_opencti_detection
       x_mitre_platforms
       indicator_types
+      x_opencti_decay_history {
+        score
+        updated_at
+      }
+      x_opencti_decay_rule {
+        decay_lifetime
+        decay_pound
+        decay_points
+        decay_revoke_score
+        indicator_types
+      }
+      decayLiveDetails {
+        live_score
+        live_points {
+          score
+          updated_at
+        }
+      }
       objectLabel {
         edges {
           node {

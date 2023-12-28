@@ -28,6 +28,27 @@ type IndicatorEdge {
   node: Indicator!
 }
 
+type DecayHistory {
+  updated_at: DateTime!
+  score: Int!
+}
+
+type DecayRule {
+  id: String!
+  decay_lifetime: Int!
+  decay_pound: Float!
+  decay_points: [Int!]
+  decay_revoke_score: Int!
+  indicator_types: [String!]
+  order: Int!
+  enabled: Boolean!
+}
+
+type DecayLiveDetails {
+  live_score: Int!
+  live_points: [DecayHistory!]
+}
+
 type Indicator implements BasicObject & StixObject & StixCoreObject & StixDomainObject {
   id: ID! # internal_id
   standard_id: String!
@@ -133,11 +154,17 @@ type Indicator implements BasicObject & StixObject & StixCoreObject & StixDomain
   valid_from: DateTime
   valid_until: DateTime
   x_opencti_score: Int
+  x_opencti_base_score: Int
+  x_opencti_base_score_date: DateTime
   x_opencti_detection: Boolean
   x_opencti_main_observable_type: String
   x_mitre_platforms: [String]
   killChainPhases: KillChainPhaseConnection
   observables(first: Int): StixCyberObservableConnection
+  #Decay
+  x_opencti_decay_rule: DecayRule
+  x_opencti_decay_history: [DecayHistory!]
+  decayLiveDetails: DecayLiveDetails
   # Technical
   creators: [Creator!]
   toStix: String

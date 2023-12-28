@@ -1,6 +1,7 @@
 import { expect, it, describe } from 'vitest';
 import gql from 'graphql-tag';
 import { queryAsAdmin } from '../../utils/testQuery';
+// import type { Indicator } from '../../../src/generated/graphql';
 
 const LIST_QUERY = gql`
     query indicators(
@@ -85,6 +86,59 @@ describe('Indicator resolver standard behavior', () => {
     expect(indicator.data?.indicatorAdd.observables.edges.length).toEqual(0);
     indicatorInternalId = indicator.data?.indicatorAdd.id;
   });
+  /* it('should indicator be merged', async () => {
+    const CREATE_QUERY = gql`
+          mutation IndicatorAdd($input: IndicatorAddInput!) {
+            indicatorAdd(input: $input) {
+              id
+              name
+              description
+              x_opencti_score
+              x_opencti_base_score
+              x_opencti_decay_rule {
+                id
+              }
+              x_opencti_decay_history {
+                date
+                score
+              }
+              observables {
+                edges {
+                  node {
+                    id
+                    standard_id
+                  }
+                }
+              }
+            }
+          }
+        `;
+    // Create the indicator
+    const INDICATOR_TO_CREATE = {
+      input: {
+        name: 'Indicator',
+        confidence: 50,
+        stix_id: indicatorStixId,
+        description: 'Indicator description should be merged',
+        pattern: "[domain-name:value = 'www.payah.rest']",
+        pattern_type: 'stix',
+        x_opencti_main_observable_type: 'Domain-Name',
+        x_opencti_score: 80,
+      },
+    };
+    const indicator = await queryAsAdmin({
+      query: CREATE_QUERY,
+      variables: INDICATOR_TO_CREATE,
+    });
+    expect(indicator).not.toBeNull();
+    const createdIndicator: Indicator = indicator.data?.indicatorAdd;
+    expect(createdIndicator).not.toBeNull();
+    expect(createdIndicator.name).toEqual('Indicator');
+    expect(createdIndicator.observables?.edges.length).toEqual(0);
+    expect(createdIndicator.x_opencti_score, 'Stable score should be reset to 80').toEqual(80);
+    expect(createdIndicator.x_opencti_base_score, 'Base score should be reset to 80').toEqual(80);
+    expect(createdIndicator.x_opencti_decay_history?.length).toEqual(2);
+  }); */
   it('should indicator loaded by internal id', async () => {
     const queryResult = await queryAsAdmin({ query: READ_QUERY, variables: { id: indicatorInternalId } });
     expect(queryResult).not.toBeNull();

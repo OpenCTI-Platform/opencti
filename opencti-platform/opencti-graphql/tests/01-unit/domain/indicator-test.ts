@@ -4,6 +4,7 @@ import * as C from '../../../src/schema/stixCyberObservable';
 import { computeValidPeriod, computeValidTTL, DEFAULT_INDICATOR_TTL } from '../../../src/modules/indicator/indicator-utils';
 import { ADMIN_USER, testContext } from '../../utils/testQuery';
 import { MARKING_TLP_AMBER, MARKING_TLP_GREEN, MARKING_TLP_RED } from '../../../src/schema/identifier';
+import { FALLBACK_DECAY_RULE } from '../../../src/modules/indicator/decay-domain';
 
 const DEFAULT_PARAM = { name: 'indicator', pattern_type: 'stix', pattern: 'undefined' };
 
@@ -83,25 +84,25 @@ describe('indicator utils', () => {
     );
   });
   it('should valid_from default', async () => {
-    const { validFrom } = await computeValidPeriod(testContext, ADMIN_USER, { ...DEFAULT_PARAM });
+    const { validFrom } = await computeValidPeriod({ ...DEFAULT_PARAM }, FALLBACK_DECAY_RULE);
     expect(validFrom).toBeDefined();
   });
   it('should valid_from created', async () => {
-    const { validFrom, validUntil } = await computeValidPeriod(testContext, ADMIN_USER, {
+    const { validFrom, validUntil } = await computeValidPeriod({
       ...DEFAULT_PARAM,
       created: '2023-01-21T17:57:09.266Z'
-    });
-    expect(validFrom).toBe('2023-01-21T17:57:09.266Z');
-    expect(validUntil).toBe('2024-01-21T17:57:09.266Z');
+    }, FALLBACK_DECAY_RULE);
+    expect(validFrom.toISOString()).toBe('2023-01-21T17:57:09.266Z');
+    expect(validUntil.toISOString()).toBe('2024-01-21T17:57:09.266Z');
   });
   it('should valid_from itself', async () => {
-    const { validFrom, validUntil } = await computeValidPeriod(testContext, ADMIN_USER, {
+    const { validFrom, validUntil } = await computeValidPeriod({
       ...DEFAULT_PARAM,
       valid_from: '2023-02-21T17:57:09.266Z',
       created: '2023-01-21T17:57:09.266Z'
-    });
-    expect(validFrom).toBe('2023-02-21T17:57:09.266Z');
-    expect(validUntil).toBe('2024-02-21T17:57:09.266Z');
+    }, FALLBACK_DECAY_RULE);
+    expect(validFrom.toISOString()).toBe('2023-02-21T17:57:09.266Z');
+    expect(validUntil.toISOString()).toBe('2024-02-21T17:57:09.266Z');
   });
   it('should ttl default', async () => {
     let ttl = await computeValidTTL(testContext, ADMIN_USER, { ...DEFAULT_PARAM });
