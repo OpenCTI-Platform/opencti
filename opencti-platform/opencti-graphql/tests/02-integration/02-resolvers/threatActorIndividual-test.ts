@@ -267,28 +267,28 @@ describe('Threat actor individual resolver standard behavior', () => {
     ];
     const REPLACE_ALL_HEIGHT: EditInput = {
       key: 'height',
-      object_path: 'height[0]',
+      object_path: '/height/0',
       value: [{ measure: 182, date_seen: DATES[0] }],
       operation: EditOperation.Replace,
     };
     const ADD_HEIGHTS: EditInput = {
       key: 'height',
       value: [
-        { measure: 190, date_seen: DATES[2] },
         { measure: 189, date_seen: DATES[1] },
+        { measure: 190, date_seen: DATES[2] },
       ],
       operation: EditOperation.Add,
     };
     const REPLACE_INDEX_HEIGHT: EditInput = {
       key: 'height',
-      object_path: 'height[0]',
+      object_path: '/height/0',
       value: [{ measure: 183, date_seen: DATES[0] }],
       operation: EditOperation.Replace,
     };
     const REMOVE_INDEX_HEIGHT: EditInput = {
       key: 'height',
       value: [],
-      object_path: 'height[2]',
+      object_path: '/height/2',
       operation: EditOperation.Remove,
     };
 
@@ -342,7 +342,7 @@ describe('Threat actor individual resolver standard behavior', () => {
     expect(threatActorIndividual).toBeDefined();
     expect(threatActorIndividual.height).toHaveLength(2);
     expect(threatActorIndividual.height[0]).toEqual(expectedHeights[1]); // 183
-    expect(threatActorIndividual.height[1]).toEqual(expectedHeights[3]); // 190
+    expect(threatActorIndividual.height[1]).toEqual(expectedHeights[2]); // 189
   });
   it('should update partial height', async () => {
     const HEIGHT_EDIT = gql`
@@ -357,7 +357,7 @@ describe('Threat actor individual resolver standard behavior', () => {
         `;
     const REPLACE_MEASURE_ONLY: EditInput = {
       key: 'height',
-      object_path: 'height[0].measure',
+      object_path: '/height/0/measure',
       value: [283],
       operation: EditOperation.Replace,
     };
@@ -385,7 +385,7 @@ describe('Threat actor individual resolver standard behavior', () => {
     const REMOVE_ALL_HEIGHTS: EditInput = {
       key: 'height',
       value: [],
-      object_path: 'height[*]',
+      object_path: '/height',
       operation: EditOperation.Remove,
     };
     const removeAll = await queryAsAdmin({
@@ -428,20 +428,19 @@ describe('Threat actor individual resolver standard behavior', () => {
     };
     const REPLACE_INDEX_WEIGHT: EditInput = {
       key: 'weight',
-      object_path: 'weight[0]',
+      object_path: '/weight/0',
       value: [{ measure: 183, date_seen: DATES[0] }],
       operation: EditOperation.Replace,
     };
     const REMOVE_INDEX_WEIGHT: EditInput = {
       key: 'weight',
       value: [],
-      object_path: 'weight[2]',
+      object_path: '/weight/2',
       operation: EditOperation.Remove,
     };
     const REMOVE_ALL_WEIGHTS: EditInput = {
       key: 'weight',
       value: [],
-      object_path: 'weight[*]',
       operation: EditOperation.Remove,
     };
     const expectedWeights = [

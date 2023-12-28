@@ -287,11 +287,9 @@ export const extractIdsFromStoreObject = (instance) => {
   return ids;
 };
 
-export const isPointersTargetMultipleAttribute = (instance, pointers) => {
-  if (isEmptyField(pointers)) {
-    throw UnsupportedError('Target multiple required pointers');
-  }
-  const pathArray = pointers[0].split('/').filter((p) => isNotEmptyField(p));
+export const isObjectPathTargetMultipleAttribute = (instance, object_path) => {
+  const preparedPath = object_path.startsWith('/') ? object_path : `/${object_path}`;
+  const pathArray = preparedPath.split('/').filter((p) => isNotEmptyField(p));
   let currentAttr;
   for (let i = 0; i < pathArray.length; i += 1) {
     const arrElement = pathArray[i];
@@ -308,5 +306,5 @@ export const isPointersTargetMultipleAttribute = (instance, pointers) => {
     const noMultipleRestriction = Number.isNaN(Number(R.last(pathArray)));
     return currentAttr.multiple && noMultipleRestriction;
   }
-  throw UnsupportedError('Invalid schema pointer for partial update', { pointer: pointers[0] });
+  throw UnsupportedError('Invalid schema pointer for partial update', { path: object_path });
 };

@@ -4,7 +4,6 @@ import DataLoader from 'dataloader';
 import { Promise } from 'bluebird';
 import { compareUnsorted } from 'js-deep-equals';
 import { SemanticAttributes } from '@opentelemetry/semantic-conventions';
-import { JSONPath } from 'jsonpath-plus';
 import * as jsonpatch from 'fast-json-patch';
 
 import {
@@ -30,7 +29,7 @@ import {
   isEmptyField,
   isInferredIndex,
   isNotEmptyField,
-  isPointersTargetMultipleAttribute,
+  isObjectPathTargetMultipleAttribute,
   READ_DATA_INDICES,
   READ_DATA_INDICES_INFERRED,
   READ_INDEX_HISTORY,
@@ -907,8 +906,12 @@ const rebuildAndMergeInputFromExistingData = (rawInput, instance) => {
     if (operation === UPDATE_OPERATION_ADD) {
       if (isObjectAttribute(key)) {
         const path = object_path ?? key;
-        const pointers = JSONPath({ json: instance, resultType: 'pointer', path });
-        const patch = pointers.map((p) => ({ op: operation, path: p, value }));
+        const preparedPath = path.startsWith('/') ? path : `/${path}`;
+        const instanceKeyValues = jsonpatch.getValueByPointer(instance, preparedPath) ?? [];
+        const patch = value.map((v, index) => {
+          const afterIndex = index + instanceKeyValues.length;
+          return { op: operation, path: `${preparedPath}/${afterIndex}`, value: v };
+        });
         const patchedInstance = jsonpatch.applyPatch(structuredClone(instance), patch).newDocument;
         finalVal = patchedInstance[key];
       } else {
@@ -918,8 +921,8 @@ const rebuildAndMergeInputFromExistingData = (rawInput, instance) => {
     if (operation === UPDATE_OPERATION_REMOVE) {
       if (isObjectAttribute(key)) {
         const path = object_path ?? key;
-        const pointers = JSONPath({ json: instance, resultType: 'pointer', path }).reverse();
-        const patch = pointers.map((p) => ({ op: operation, path: p }));
+        const preparedPath = path.startsWith('/') ? path : `/${path}`;
+        const patch = [{ op: operation, path: preparedPath }];
         const patchedInstance = jsonpatch.applyPatch(structuredClone(instance), patch).newDocument;
         finalVal = patchedInstance[key];
       } else {
@@ -927,18 +930,13 @@ const rebuildAndMergeInputFromExistingData = (rawInput, instance) => {
       }
     }
     if (operation === UPDATE_OPERATION_REPLACE) {
-      if (isObjectAttribute(key)) { // REPLACE
+      if (isObjectAttribute(key)) {
         const path = object_path ?? key;
-        const pointers = JSONPath({ json: instance, resultType: 'pointer', path });
-        if (pointers.length === 0) { // If no pointers, target the base attribute
-          const base = schemaAttributesDefinition.getAttribute(instance.entity_type, key);
-          finalVal = base.multiple ? value : R.head(value);
-        } else {
-          const targetIsMultiple = isPointersTargetMultipleAttribute(instance, pointers);
-          const patch = pointers.map((p) => ({ op: operation, path: p, value: targetIsMultiple ? value : R.head(value) }));
-          const patchedInstance = jsonpatch.applyPatch(structuredClone(instance), patch).newDocument;
-          finalVal = patchedInstance[key];
-        }
+        const preparedPath = path.startsWith('/') ? path : `/${path}`;
+        const targetIsMultiple = isObjectPathTargetMultipleAttribute(instance, preparedPath);
+        const patch = [{ op: operation, path: preparedPath, value: targetIsMultiple ? value : R.head(value) }];
+        const patchedInstance = jsonpatch.applyPatch(structuredClone(instance), patch).newDocument;
+        finalVal = patchedInstance[key];
       } else { // Replace general
         finalVal = value;
       }
@@ -946,30 +944,28 @@ const rebuildAndMergeInputFromExistingData = (rawInput, instance) => {
     if (compareUnsorted(finalVal ?? [], currentValues)) {
       return {}; // No need to update the attribute
     }
+  } else if (isObjectAttribute(key) && object_path) {
+    const preparedPath = object_path.startsWith('/') ? object_path : `/${object_path}`;
+    const targetIsMultiple = isObjectPathTargetMultipleAttribute(instance, preparedPath);
+    const patch = [{ op: operation, path: preparedPath, value: targetIsMultiple ? value : R.head(value) }];
+    const patchedInstance = jsonpatch.applyPatch(structuredClone(instance), patch).newDocument;
+    finalVal = [patchedInstance[key]];
   } else {
     const evaluateValue = value ? R.head(value) : null;
-    if (isObjectAttribute(key) && object_path) {
-      const pointers = JSONPath({ json: instance, resultType: 'pointer', path: object_path });
-      const targetIsMultiple = isPointersTargetMultipleAttribute(instance, pointers);
-      const patch = pointers.map((p) => ({ op: operation, path: p, value: targetIsMultiple ? value : R.head(value) }));
-      const patchedInstance = jsonpatch.applyPatch(structuredClone(instance), patch).newDocument;
-      finalVal = [patchedInstance[key]];
-    } else {
-      if (isDateAttribute(key)) {
-        if (isEmptyField(evaluateValue)) {
-          if (instance[key] === FROM_START_STR || instance[key] === UNTIL_END_STR) {
-            return {};
-          }
-        }
-        if (utcDate(instance[key]).isSame(utcDate(evaluateValue))) {
+    if (isDateAttribute(key)) {
+      if (isEmptyField(evaluateValue)) {
+        if (instance[key] === FROM_START_STR || instance[key] === UNTIL_END_STR) {
           return {};
         }
       }
-      if (R.equals(instance[key], evaluateValue) || (isEmptyField(instance[key]) && isEmptyField(evaluateValue))) {
-        return {}; // No need to update the attribute
+      if (utcDate(instance[key]).isSame(utcDate(evaluateValue))) {
+        return {};
       }
-      finalVal = value;
     }
+    if (R.equals(instance[key], evaluateValue) || (isEmptyField(instance[key]) && isEmptyField(evaluateValue))) {
+      return {}; // No need to update the attribute
+    }
+    finalVal = value;
   }
   // endregion
   // region cleanup cases
@@ -1291,7 +1287,9 @@ const mergeEntitiesRaw = async (context, user, targetEntity, sourceEntities, tar
     if (isObjectAttribute(targetFieldKey)) {
       // Special case of object that need to be merged
       const mergedDict = R.mergeAll([...fieldValues, mergedEntityCurrentFieldValue]);
-      updateAttributes.push({ key: targetFieldKey, value: mergedDict });
+      if (isNotEmptyField(mergedDict)) {
+        updateAttributes.push({ key: targetFieldKey, value: [mergedDict] });
+      }
     } else if (isMultipleAttribute(targetType, targetFieldKey)) {
       const sourceValues = fieldValues || [];
       // For aliased entities, get name of the source to add it as alias of the target
