@@ -343,8 +343,6 @@ describe('Threat actor individual resolver standard behavior', () => {
     expect(threatActorIndividual.height).toHaveLength(2);
     expect(threatActorIndividual.height[0]).toEqual(expectedHeights[1]); // 183
     expect(threatActorIndividual.height[1]).toEqual(expectedHeights[3]); // 190
-
-
   });
   it('should update partial height', async () => {
     const HEIGHT_EDIT = gql`
