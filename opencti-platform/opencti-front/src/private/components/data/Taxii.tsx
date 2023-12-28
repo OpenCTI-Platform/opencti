@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useHistory } from 'react-router-dom';
 import { useLocation } from 'react-router-dom-v5-compat';
-import { OrderMode, PaginationOptions } from 'src/components/list_lines';
 import { TaxiiLinesPaginationQuery$data } from '@components/data/taxii/__generated__/TaxiiLinesPaginationQuery.graphql';
 import Box from '@mui/material/Box';
 import { QueryRenderer } from '../../../relay/environment';
@@ -10,6 +9,7 @@ import ListLines from '../../../components/list_lines/ListLines';
 import TaxiiLines, { TaxiiLinesQuery } from './taxii/TaxiiLines';
 import TaxiiCollectionCreation from './taxii/TaxiiCollectionCreation';
 import SharingMenu from './SharingMenu';
+import { OrderMode, PaginationOptions } from '../../../components/list_lines';
 
 const Taxii = () => {
   const LOCAL_STORAGE_KEY = 'taxii';
