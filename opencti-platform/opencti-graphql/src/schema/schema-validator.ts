@@ -62,6 +62,11 @@ export const validateAndFormatSchemaAttribute = (
         }
       }
       if (isObjectAttribute(attributeName)) {
+        // current limitation: field patch is only possible with arrays
+        if (editInput.object_path && !attributeDefinition.multiple) {
+          throw ValidationError(attributeName, { message: `Attribute ${attributeName} is not multiple, object_path cannot be used`, data: editInput });
+        }
+
         let validationValues = editInput.value;
         if (editInput.object_path) {
           // If object path is setup, controlling the field is much harder.
@@ -79,7 +84,7 @@ export const validateAndFormatSchemaAttribute = (
         } else {
           // object not multiple, only one value to check
           if (validationValues.length > 1) {
-            throw ValidationError(attributeName, { message: 'Object is not multiple but has more than 1 value', data: { attribute: attributeName } });
+            throw ValidationError(attributeName, { message: `Attribute ${attributeName} cannot be multiple`, data: editInput });
           }
           valid = validate(validationValues[0]);
         }
