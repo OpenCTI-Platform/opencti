@@ -82,6 +82,7 @@ const NOTIFICATION_DEFINITION: ModuleDefinition<StoreEntityNotification, StixNot
     {
       name: 'notification_content',
       type: 'object',
+      format: 'standard',
       label: 'Notification content',
       mandatoryType: 'internal',
       editDefault: false,
@@ -94,6 +95,7 @@ const NOTIFICATION_DEFINITION: ModuleDefinition<StoreEntityNotification, StixNot
           name: 'events',
           label: 'Notification events',
           type: 'object',
+          format: 'standard',
           mandatoryType: 'internal',
           editDefault: false,
           multiple: false,

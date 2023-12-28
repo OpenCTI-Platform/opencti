@@ -1,4 +1,4 @@
-export const textMapping = {
+export const stringMapping = {
   type: 'text',
   fields: {
     keyword: {
@@ -8,11 +8,14 @@ export const textMapping = {
     },
   },
 };
+export const textMapping = {
+  type: 'text'
+};
 export const dateMapping = { type: 'date' };
 export const booleanMapping = { type: 'boolean' };
 export const numericMapping = (precision: string) => ({ type: precision, coerce: false });
 
-export type AttrType = 'string' | 'date' | 'numeric' | 'boolean' | 'dictionary' | 'json' | 'object' | 'object_flat';
+export type AttrType = 'string' | 'date' | 'numeric' | 'boolean' | 'json' | 'object';
 export type MandatoryType = 'internal' | 'external' | 'customizable' | 'no';
 
 type BasicDefinition = {
@@ -26,9 +29,16 @@ type BasicDefinition = {
   update?: boolean
   isFilterable: boolean
 };
-type BasicDefinitionWithNested = BasicDefinition & {
-  nested?: boolean,
+type BasicObjectDefinition = BasicDefinition & {
   mappings: (
+    { associatedFilterKeys?: { key: string, label: string }[] } // filter key and their label, to add if key is different from: 'parentAttributeName.nestedAttributeName'
+    & AttributeDefinition
+  )[],
+};
+
+// TODO JRI Flat object must also define their mappings??
+type FlatBasicObjectDefinition = BasicDefinition & {
+  mappings?: (
     { associatedFilterKeys?: { key: string, label: string }[] } // filter key and their label, to add if key is different from: 'parentAttributeName.nestedAttributeName'
     & AttributeDefinition
   )[],
@@ -39,14 +49,13 @@ export type DateAttribute = { type: 'date' } & BasicDefinition;
 export type BooleanAttribute = { type: 'boolean' } & BasicDefinition;
 export type NumericAttribute = { type: 'numeric', precision: 'integer' | 'long' | 'float', scalable?: boolean } & BasicDefinition;
 export type JsonAttribute = { type: 'json', multiple: false, schemaDef?: Record<string, any> } & BasicDefinition;
-export type DictionaryAttribute = { type: 'dictionary' } & BasicDefinitionWithNested;
-export type ObjectAttribute = { type: 'object' } & BasicDefinitionWithNested;
-export type ObjectFlatAttribute = { type: 'object_flat' } & BasicDefinition;
-export const typesAttributeWithNested = ['dictionary', 'object'];
-export type NestedAttribute = DictionaryAttribute | ObjectAttribute;
+export type FlatObjectAttribute = { type: 'object', format: 'flat' } & FlatBasicObjectDefinition;
+export type ObjectAttribute = { type: 'object', format: 'standard' } & BasicObjectDefinition;
+export type NestedObjectAttribute = { type: 'object', format: 'nested' } & BasicObjectDefinition;
+export type ComplexAttribute = FlatObjectAttribute | ObjectAttribute | NestedObjectAttribute;
 
-export type AttributeDefinition = StringAttribute | JsonAttribute | ObjectAttribute | DictionaryAttribute | ObjectFlatAttribute |
-NumericAttribute | DateAttribute | BooleanAttribute;
+export type AttributeDefinition = StringAttribute | JsonAttribute | ObjectAttribute | FlatObjectAttribute |
+NumericAttribute | DateAttribute | BooleanAttribute | NestedObjectAttribute;
 
 // -- GLOBAL --
 export const id: AttributeDefinition = {
@@ -108,6 +117,7 @@ export const files: AttributeDefinition = {
   name: 'x_opencti_files',
   label: 'Files',
   type: 'object',
+  format: 'standard',
   mandatoryType: 'no',
   editDefault: false,
   multiple: true,
@@ -126,6 +136,7 @@ export const authorizedMembers: AttributeDefinition = {
   name: 'authorized_members',
   label: 'Authorized members',
   type: 'object',
+  format: 'standard',
   mandatoryType: 'no',
   editDefault: false,
   multiple: true,
@@ -222,6 +233,7 @@ export const errors: AttributeDefinition = {
   name: 'errors',
   label: 'Errors',
   type: 'object',
+  format: 'standard',
   mandatoryType: 'no',
   editDefault: false,
   multiple: true,

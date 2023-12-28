@@ -172,7 +172,7 @@ export const WeightFieldEdit: FunctionComponent<WeightFieldEditProps> = ({
                             input: {
                               key: 'weight',
                               value: [weightToPivotFormat(measure)],
-                              object_path: `[${weight.index}].measure`,
+                              object_path: `weight[${weight.index}].measure`,
                               operation: 'replace',
                             },
                           },
@@ -192,7 +192,7 @@ export const WeightFieldEdit: FunctionComponent<WeightFieldEditProps> = ({
                             input: {
                               key: 'weight',
                               value: [date_seen],
-                              object_path: `[${weight.index}].date_seen`,
+                              object_path: `weight[${weight.index}].date_seen`,
                               operation: 'replace',
                             },
                           },
@@ -222,7 +222,7 @@ export const WeightFieldEdit: FunctionComponent<WeightFieldEditProps> = ({
                           id,
                           input: {
                             key: 'weight',
-                            object_path: `[${weight.index}]`,
+                            object_path: `weight[${weight.index}]`,
                             value: [],
                             operation: 'remove',
                           },

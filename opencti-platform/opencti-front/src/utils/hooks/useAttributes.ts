@@ -2,6 +2,9 @@ import useVocabularyCategory from './useVocabularyCategory';
 
 // TODO remove export when every usage is pure Function and use the hook
 export const ignoredAttributes = [
+  'id',
+  'parent_types',
+  'base_type',
   'internal_id',
   'standard_id',
   'x_opencti_description',

@@ -43,7 +43,8 @@ schemaAttributesDefinition.registerAttributes(ABSTRACT_STIX_CYBER_OBSERVABLE, st
 const hashDefinition: AttributeDefinition = {
   name: 'hashes',
   label: 'Hashes',
-  type: 'dictionary',
+  type: 'object',
+  format: 'standard',
   editDefault: false,
   mappings: [
     { name: 'MD5', label: 'MD5', type: 'string', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: true },

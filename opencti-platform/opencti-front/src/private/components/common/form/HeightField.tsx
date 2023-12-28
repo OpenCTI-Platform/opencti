@@ -85,7 +85,7 @@ export const HeightFieldEdit: FunctionComponent<HeightFieldEditProps> = ({
                             input: {
                               key: 'height',
                               value: [heightToPivotFormat(measure)],
-                              object_path: `[${height.index}].measure`,
+                              object_path: `height[${height.index}].measure`,
                               operation: 'replace',
                             },
                           },
@@ -105,7 +105,7 @@ export const HeightFieldEdit: FunctionComponent<HeightFieldEditProps> = ({
                             input: {
                               key: 'height',
                               value: [date_seen],
-                              object_path: `[${height.index}].date_seen`,
+                              object_path: `height[${height.index}].date_seen`,
                               operation: 'replace',
                             },
                           },
@@ -135,7 +135,7 @@ export const HeightFieldEdit: FunctionComponent<HeightFieldEditProps> = ({
                           id,
                           input: {
                             key: 'height',
-                            object_path: `[${height.index}]`,
+                            object_path: `height[${height.index}]`,
                             value: [],
                             operation: 'remove',
                           },

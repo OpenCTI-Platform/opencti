@@ -195,7 +195,6 @@ import {
   depsKeysRegister,
   isBooleanAttribute,
   isDateAttribute,
-  isDictionaryAttribute,
   isMultipleAttribute,
   isNumericAttribute,
   isObjectAttribute,
@@ -903,117 +902,98 @@ const rebuildAndMergeInputFromExistingData = (rawInput, instance) => {
   const { key, value, object_path, operation = UPDATE_OPERATION_REPLACE } = rawInput; // value can be multi valued
   const isMultiple = isMultipleAttribute(instance.entity_type, key);
   let finalVal;
-  let finalKey = key;
-  // TODO Add support for these restrictions
-  // TODO Change R.head(value) limitation
-  if (isDictionaryAttribute(key) && isNotEmptyField(R.head(value))) { // Only allow full cleanup
-    throw UnsupportedError('Dictionary attribute cant be updated directly', { rawInput });
-  }
-  if (!isMultiple && isObjectAttribute(key)) {
-    throw UnsupportedError('Object update only available for array attributes', { rawInput });
-  }
-  // region rebuild input values consistency
-  if (key.includes('.')) {
-    // In case of dict attributes, patching the content is possible through first level path
-    const splitKey = key.split('.');
-    if (splitKey.length > 2) {
-      throw UnsupportedError('Multiple path follow is not supported', { rawInput });
-    }
-    const [baseKey, targetKey] = splitKey;
-    if (!isDictionaryAttribute(baseKey)) {
-      throw UnsupportedError('Path update only available for dictionary attributes', { rawInput });
-    }
-    finalKey = baseKey;
-    const currentJson = instance[baseKey];
-    const valueToTake = R.head(value);
-    const compareValue = R.isEmpty(valueToTake) || R.isNil(valueToTake) ? undefined : valueToTake;
-    if (currentJson && currentJson[targetKey] === compareValue) {
-      return []; // No need to update the attribute
-    }
-    // If data is empty, remove the key
-    if (R.isEmpty(valueToTake) || R.isNil(valueToTake)) {
-      finalVal = [R.dissoc(targetKey, currentJson)];
-    } else {
-      finalVal = [R.assoc(targetKey, valueToTake, currentJson)];
-    }
-  } else if (isMultiple) {
+  if (isMultiple) {
     const currentValues = (Array.isArray(instance[key]) ? instance[key] : [instance[key]]) ?? [];
     if (operation === UPDATE_OPERATION_ADD) {
-      if (isObjectAttribute(key) && object_path) {
-        const pointers = JSONPath({ json: instance, resultType: 'pointer', path: `${key}${object_path}` });
+      if (isObjectAttribute(key)) {
+        const path = object_path ?? key;
+        const pointers = JSONPath({ json: instance, resultType: 'pointer', path });
         const patch = pointers.map((p) => ({ op: operation, path: p, value }));
         const patchedInstance = jsonpatch.applyPatch(structuredClone(instance), patch).newDocument;
         finalVal = patchedInstance[key];
       } else {
         finalVal = R.uniq([...currentValues, value].flat().filter((v) => isNotEmptyField(v)));
       }
-    } else if (operation === UPDATE_OPERATION_REMOVE) {
+    }
+    if (operation === UPDATE_OPERATION_REMOVE) {
       if (isObjectAttribute(key)) {
-        const pointers = JSONPath({ json: instance, resultType: 'pointer', path: `${key}${object_path}` }).reverse();
+        const path = object_path ?? key;
+        const pointers = JSONPath({ json: instance, resultType: 'pointer', path }).reverse();
         const patch = pointers.map((p) => ({ op: operation, path: p }));
         const patchedInstance = jsonpatch.applyPatch(structuredClone(instance), patch).newDocument;
         finalVal = patchedInstance[key];
       } else {
         finalVal = R.filter((n) => !R.includes(n, value), currentValues);
       }
-    } else if (isObjectAttribute(key)) { // REPLACE
-      const path = `${key}${object_path ?? ''}`;
-      const pointers = JSONPath({ json: instance, resultType: 'pointer', path });
-      if (pointers.length === 0) { // If no pointers, target the base attribute
-        const base = schemaAttributesDefinition.getAttribute(instance.entity_type, key);
-        finalVal = base.multiple ? value : R.head(value);
-      } else {
-        const targetIsMultiple = isPointersTargetMultipleAttribute(instance, pointers);
-        const patch = pointers.map((p) => ({ op: operation, path: p, value: targetIsMultiple ? value : R.head(value) }));
-        const patchedInstance = jsonpatch.applyPatch(structuredClone(instance), patch).newDocument;
-        finalVal = patchedInstance[key];
+    }
+    if (operation === UPDATE_OPERATION_REPLACE) {
+      if (isObjectAttribute(key)) { // REPLACE
+        const path = object_path ?? key;
+        const pointers = JSONPath({ json: instance, resultType: 'pointer', path });
+        if (pointers.length === 0) { // If no pointers, target the base attribute
+          const base = schemaAttributesDefinition.getAttribute(instance.entity_type, key);
+          finalVal = base.multiple ? value : R.head(value);
+        } else {
+          const targetIsMultiple = isPointersTargetMultipleAttribute(instance, pointers);
+          const patch = pointers.map((p) => ({ op: operation, path: p, value: targetIsMultiple ? value : R.head(value) }));
+          const patchedInstance = jsonpatch.applyPatch(structuredClone(instance), patch).newDocument;
+          finalVal = patchedInstance[key];
+        }
+      } else { // Replace general
+        finalVal = value;
       }
-    } else { // Replace general
-      finalVal = value;
     }
     if (compareUnsorted(finalVal ?? [], currentValues)) {
       return {}; // No need to update the attribute
     }
   } else {
-    finalVal = value;
-    const isDate = isDateAttribute(key);
     const evaluateValue = value ? R.head(value) : null;
-    if (isDate) {
-      if (isEmptyField(evaluateValue)) {
-        if (instance[key] === FROM_START_STR || instance[key] === UNTIL_END_STR) {
+    if (isObjectAttribute(key) && object_path) {
+      const pointers = JSONPath({ json: instance, resultType: 'pointer', path: object_path });
+      const targetIsMultiple = isPointersTargetMultipleAttribute(instance, pointers);
+      const patch = pointers.map((p) => ({ op: operation, path: p, value: targetIsMultiple ? value : R.head(value) }));
+      const patchedInstance = jsonpatch.applyPatch(structuredClone(instance), patch).newDocument;
+      finalVal = [patchedInstance[key]];
+    } else {
+      if (isDateAttribute(key)) {
+        if (isEmptyField(evaluateValue)) {
+          if (instance[key] === FROM_START_STR || instance[key] === UNTIL_END_STR) {
+            return {};
+          }
+        }
+        if (utcDate(instance[key]).isSame(utcDate(evaluateValue))) {
           return {};
         }
-      } else if (utcDate(instance[key]).isSame(utcDate(evaluateValue))) {
-        return {};
       }
-    }
-    if (R.equals(instance[key], evaluateValue) || (isEmptyField(instance[key]) && isEmptyField(evaluateValue))) {
-      return {}; // No need to update the attribute
+      if (R.equals(instance[key], evaluateValue) || (isEmptyField(instance[key]) && isEmptyField(evaluateValue))) {
+        return {}; // No need to update the attribute
+      }
+      finalVal = value;
     }
   }
   // endregion
   // region cleanup cases
-  if (finalKey === IDS_STIX) {
+  if (key === IDS_STIX) {
     // Special stixIds uuid v1 cleanup.
     finalVal = cleanStixIds(finalVal);
   }
   // endregion
-  if (isDateAttribute(finalKey)) {
+  if (isDateAttribute(key)) {
     const finalValElement = R.head(finalVal);
     if (isEmptyField(finalValElement)) {
       finalVal = [null];
     }
   }
-  if (dateForLimitsAttributes.includes(finalKey)) {
+  if (dateForLimitsAttributes.includes(key)) {
     const finalValElement = R.head(finalVal);
-    if (dateForStartAttributes.includes(finalKey) && isEmptyField(finalValElement)) {
+    if (dateForStartAttributes.includes(key) && isEmptyField(finalValElement)) {
       finalVal = [FROM_START_STR];
     }
-    if (dateForEndAttributes.includes(finalKey) && isEmptyField(finalValElement)) {
+    if (dateForEndAttributes.includes(key) && isEmptyField(finalValElement)) {
       finalVal = [UNTIL_END_STR];
     }
   }
-  return { key: finalKey, value: finalVal, operation };
+  return { key, value: finalVal, operation };
 };
 const mergeInstanceWithUpdateInputs = (instance, inputs) => {
   const updates = Array.isArray(inputs) ? inputs : [inputs];
@@ -1308,14 +1288,10 @@ const mergeEntitiesRaw = async (context, user, targetEntity, sourceEntities, tar
     const sourceFieldValue = takenFrom[targetFieldKey];
     const fieldValues = R.flatten(sourceEntities.map((s) => s[targetFieldKey])).filter((s) => isNotEmptyField(s));
     // Check if we need to do something
-    if (isDictionaryAttribute(targetFieldKey)) {
-      // Special case of dictionary
+    if (isObjectAttribute(targetFieldKey)) {
+      // Special case of object that need to be merged
       const mergedDict = R.mergeAll([...fieldValues, mergedEntityCurrentFieldValue]);
-      const dictInputs = Object.entries(mergedDict).map(([k, v]) => ({
-        key: `${targetFieldKey}.${k}`,
-        value: [v],
-      }));
-      updateAttributes.push(...dictInputs);
+      updateAttributes.push({ key: targetFieldKey, value: mergedDict });
     } else if (isMultipleAttribute(targetType, targetFieldKey)) {
       const sourceValues = fieldValues || [];
       // For aliased entities, get name of the source to add it as alias of the target
@@ -1472,13 +1448,8 @@ const checkAttributeConsistency = (entityType, key) => {
   if (key === 'creator_id') {
     return;
   }
-  let masterKey = key;
-  if (key.includes('.')) {
-    const [firstPart] = key.split('.');
-    masterKey = firstPart;
-  }
   const entityAttributes = schemaAttributesDefinition.getAttributeNames(entityType);
-  if (!R.includes(masterKey, entityAttributes)) {
+  if (!R.includes(key, entityAttributes)) {
     throw FunctionalError('This attribute key is not allowed, please check your registration attribute name', { key, entity_type: entityType });
   }
 };
@@ -2438,29 +2409,18 @@ const computeExtendedDateValues = (newValue, currentValue, mode) => {
 const buildAttributeUpdate = (isFullSync, attribute, currentData, inputData) => {
   const inputs = [];
   const fieldKey = attribute.name;
-  if (isDictionaryAttribute(fieldKey)) {
-    if (isNotEmptyField(inputData)) {
-      // In standard mode, just patch inner dictionary keys
-      const inputEntries = Object.entries(inputData);
-      inputEntries.forEach(([k, v]) => {
-        inputs.push({ key: `${fieldKey}.${k}`, value: [v] });
-      });
-      if (isFullSync && isNotEmptyField(currentData)) {
-        const inputDictMap = new Map(inputEntries);
-        Object.entries(currentData).forEach(([k]) => {
-          if (!inputDictMap.has(k)) { // If known, replace
-            inputs.push({ key: `${fieldKey}.${k}`, value: [null] });
-          }
-        });
-      }
-    } else if (isFullSync) { // We only allowed removal for full synchronization
-      inputs.push({ key: fieldKey, value: [inputData] });
-    }
-  } else if (attribute.multiple) {
+  if (attribute.multiple) {
     const operation = isFullSync ? UPDATE_OPERATION_REPLACE : UPDATE_OPERATION_ADD;
     // Only add input in case of replace or when we really need to add something
     if (operation === UPDATE_OPERATION_REPLACE || (operation === UPDATE_OPERATION_ADD && isNotEmptyField(inputData))) {
       inputs.push({ key: fieldKey, value: inputData, operation });
+    }
+  } else if (isObjectAttribute(fieldKey)) {
+    if (isNotEmptyField(inputData)) {
+      const mergedDict = R.mergeAll([currentData, inputData]);
+      inputs.push({ key: fieldKey, value: [mergedDict] });
+    } else if (isFullSync) { // We only allowed removal for full synchronization
+      inputs.push({ key: fieldKey, value: [inputData] });
     }
   } else {
     inputs.push({ key: fieldKey, value: [inputData] });

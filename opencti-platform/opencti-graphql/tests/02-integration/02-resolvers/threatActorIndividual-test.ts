@@ -267,7 +267,7 @@ describe('Threat actor individual resolver standard behavior', () => {
     ];
     const REPLACE_ALL_HEIGHT: EditInput = {
       key: 'height',
-      object_path: '[0]',
+      object_path: 'height[0]',
       value: [{ measure: 182, date_seen: DATES[0] }],
       operation: EditOperation.Replace,
     };
@@ -281,14 +281,14 @@ describe('Threat actor individual resolver standard behavior', () => {
     };
     const REPLACE_INDEX_HEIGHT: EditInput = {
       key: 'height',
-      object_path: '[0]',
+      object_path: 'height[0]',
       value: [{ measure: 183, date_seen: DATES[0] }],
       operation: EditOperation.Replace,
     };
     const REMOVE_INDEX_HEIGHT: EditInput = {
       key: 'height',
       value: [],
-      object_path: '[2]',
+      object_path: 'height[2]',
       operation: EditOperation.Remove,
     };
 
@@ -357,7 +357,7 @@ describe('Threat actor individual resolver standard behavior', () => {
         `;
     const REPLACE_MEASURE_ONLY: EditInput = {
       key: 'height',
-      object_path: '[0].measure',
+      object_path: 'height[0].measure',
       value: [283],
       operation: EditOperation.Replace,
     };
@@ -385,7 +385,7 @@ describe('Threat actor individual resolver standard behavior', () => {
     const REMOVE_ALL_HEIGHTS: EditInput = {
       key: 'height',
       value: [],
-      object_path: '[*]',
+      object_path: 'height[*]',
       operation: EditOperation.Remove,
     };
     const removeAll = await queryAsAdmin({
@@ -428,20 +428,20 @@ describe('Threat actor individual resolver standard behavior', () => {
     };
     const REPLACE_INDEX_WEIGHT: EditInput = {
       key: 'weight',
-      object_path: '[0]',
+      object_path: 'weight[0]',
       value: [{ measure: 183, date_seen: DATES[0] }],
       operation: EditOperation.Replace,
     };
     const REMOVE_INDEX_WEIGHT: EditInput = {
       key: 'weight',
       value: [],
-      object_path: '[2]',
+      object_path: 'weight[2]',
       operation: EditOperation.Remove,
     };
     const REMOVE_ALL_WEIGHTS: EditInput = {
       key: 'weight',
       value: [],
-      object_path: '[*]',
+      object_path: 'weight[*]',
       operation: EditOperation.Remove,
     };
     const expectedWeights = [

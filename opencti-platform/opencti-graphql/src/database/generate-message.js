@@ -7,7 +7,7 @@ import { isBasicRelationship } from '../schema/stixRelationship';
 import { EVENT_TYPE_CREATE, EVENT_TYPE_DELETE, isNotEmptyField, UPDATE_OPERATION_REPLACE } from './utils';
 import { UnsupportedError } from '../config/errors';
 import { schemaRelationsRefDefinition } from '../schema/schema-relationsRef';
-import { isDateAttribute, isDictionaryAttribute, isJsonAttribute, isObjectAttribute, schemaAttributesDefinition } from '../schema/schema-attributes';
+import { isDateAttribute, isJsonAttribute, isObjectAttribute, schemaAttributesDefinition } from '../schema/schema-attributes';
 import { truncate } from '../utils/mailData';
 import { creators } from '../schema/attribute-definition';
 import { FROM_START_STR, UNTIL_END_STR } from '../utils/format';
@@ -97,8 +97,6 @@ export const generateUpdateMessage = async (context, entityType, inputs) => {
             const member = members.find(({ internal_id }) => internal_id === id);
             return `${member?.name ?? id} (${access_right})`;
           }).join(', ');
-        } else if (isDictionaryAttribute(key)) {
-          message = Object.entries(R.head(values)).map(([k, v]) => truncate(`${k}:${v}`)).join(', ');
         } else if (isJsonAttribute(key)) {
           message = values.map((v) => truncate(JSON.stringify(v)));
         } else if (isDateAttribute(key)) {

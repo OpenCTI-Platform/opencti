@@ -83,7 +83,7 @@ import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../modules/organization/organ
 import { checkAndConvertFilters, isFilterGroupNotEmpty } from '../utils/filtering/filtering-utils';
 import { IDS_FILTER, SOURCE_RELIABILITY_FILTER, TYPE_FILTER, WORKFLOW_FILTER, X_OPENCTI_WORKFLOW_ID } from '../utils/filtering/filtering-constants';
 import { FilterMode } from '../generated/graphql';
-import { booleanMapping, dateMapping, numericMapping, textMapping } from '../schema/attribute-definition';
+import { booleanMapping, dateMapping, numericMapping, stringMapping, textMapping } from '../schema/attribute-definition';
 import { schemaTypesDefinition } from '../schema/schema-types';
 import { INTERNAL_RELATIONSHIPS } from '../schema/internalRelationship';
 import { STIX_SIGHTING_RELATIONSHIP } from '../schema/stixSightingRelationship';
@@ -545,7 +545,7 @@ const elCreateCoreSettings = async () => {
 // Engine mapping generation on attributes definition
 const attributeMappingGenerator = (entityAttribute) => {
   if (entityAttribute.type === 'string') {
-    return textMapping;
+    return stringMapping;
   }
   if (entityAttribute.type === 'date') {
     return dateMapping;
@@ -556,24 +556,26 @@ const attributeMappingGenerator = (entityAttribute) => {
   if (entityAttribute.type === 'boolean') {
     return booleanMapping;
   }
-  if (entityAttribute.type === 'object' || entityAttribute.type === 'dictionary') {
+  if (entityAttribute.type === 'json') {
+    return textMapping;
+  }
+  if (entityAttribute.type === 'object') {
+    // For flat object
+    if (entityAttribute.format === 'flat') {
+      return { type: engine instanceof ElkClient ? 'flattened' : 'flat_object' };
+    }
+    // For standard object
     const properties = {};
     for (let i = 0; i < entityAttribute.mappings.length; i += 1) {
       const mapping = entityAttribute.mappings[i];
       properties[mapping.name] = attributeMappingGenerator(mapping);
     }
     const config = { dynamic: 'strict', properties };
-    if (entityAttribute.nested) {
+    // Add nested option if needed
+    if (entityAttribute.format === 'nested') {
       config.type = 'nested';
     }
     return config;
-  }
-  if (entityAttribute.type === 'json') {
-    return textMapping;
-  }
-  if (entityAttribute.type === 'object_flat') {
-    // content of dictionary cannot be predicted
-    return { type: engine instanceof ElkClient ? 'flattened' : 'flat_object' };
   }
   throw UnsupportedError('Cant generated mapping', { type: entityAttribute.type });
 };
@@ -584,9 +586,9 @@ const ruleMappingGenerator = () => {
     schemaProperties[`i_rule_${rule.id}`] = {
       dynamic: 'strict',
       properties: {
-        explanation: textMapping,
-        dependencies: textMapping,
-        hash: textMapping,
+        explanation: stringMapping,
+        dependencies: stringMapping,
+        hash: stringMapping,
         data: { type: engine instanceof ElkClient ? 'flattened' : 'flat_object' },
       }
     };
@@ -606,8 +608,8 @@ const denormalizeRelationsMappingGenerator = () => {
     schemaProperties[`rel_${relName}`] = {
       dynamic: 'strict',
       properties: {
-        internal_id: textMapping,
-        inferred_id: textMapping,
+        internal_id: stringMapping,
+        inferred_id: stringMapping,
       }
     };
   }

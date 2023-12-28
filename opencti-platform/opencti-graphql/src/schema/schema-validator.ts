@@ -1,15 +1,7 @@
 import * as R from 'ramda';
 import Ajv from 'ajv';
 import { SemanticAttributes } from '@opentelemetry/semantic-conventions';
-import {
-  isBooleanAttribute,
-  isDateAttribute,
-  isDictionaryAttribute,
-  isJsonAttribute,
-  isNumericAttribute,
-  isStringAttribute,
-  schemaAttributesDefinition
-} from './schema-attributes';
+import { isBooleanAttribute, isDateAttribute, isJsonAttribute, isNumericAttribute, isObjectAttribute, isStringAttribute, schemaAttributesDefinition } from './schema-attributes';
 import { UnsupportedError, ValidationError } from '../config/errors';
 import type { BasicStoreEntityEntitySetting } from '../modules/entitySetting/entitySetting-types';
 import { isNotEmptyField } from '../database/utils';
@@ -97,16 +89,8 @@ export const validateAndFormatSchemaAttribute = (
       });
     }
     // Test dictionary (partial patch only with string)
-    if (isDictionaryAttribute(attributeName)) {
-      editInput.value.forEach((value) => {
-        if (editInput.key.includes('.')) { // Partial patch, must be a string for now
-          if (value && !R.is(String, value)) {
-            throw ValidationError(attributeName, { message: `Attribute ${attributeName} must be a string`, data: editInput });
-          }
-        } else if (value && !R.is(Object, value) && Object.keys(value).length === 0) { // Complete patch, must be an object
-          throw ValidationError(attributeName, { message: `Attribute ${attributeName} must be an object`, data: editInput });
-        }
-      });
+    if (isObjectAttribute(attributeName)) {
+      // TODO JRI Implements a checker
     }
   }
 };
