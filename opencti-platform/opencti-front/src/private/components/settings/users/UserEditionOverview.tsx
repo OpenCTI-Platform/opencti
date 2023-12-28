@@ -5,6 +5,7 @@ import * as R from 'ramda';
 import { pick } from 'ramda';
 import * as Yup from 'yup';
 import MenuItem from '@mui/material/MenuItem';
+import ConfidenceField from '@components/common/form/ConfidenceField';
 import TextField from '../../../../components/TextField';
 import SelectField from '../../../../components/SelectField';
 import { SubscriptionFocus } from '../../../../components/Subscription';
@@ -16,7 +17,7 @@ import { UserEditionOverview_user$data } from './__generated__/UserEditionOvervi
 import DateTimePickerField from '../../../../components/DateTimePickerField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import useAuth from '../../../../utils/hooks/useAuth';
-import { isOnlyOrganizationAdmin } from '../../../../utils/hooks/useGranted';
+import useGranted, { isOnlyOrganizationAdmin, SETTINGS_SETACCESSES } from '../../../../utils/hooks/useGranted';
 
 const userMutationFieldPatch = graphql`
   mutation UserEditionOverviewFieldPatchMutation(
@@ -76,6 +77,10 @@ const userValidation = (t: (value: string) => string, userIsOnlyOrganizationAdmi
   account_status: Yup.string(),
   account_lock_after_date: Yup.date().nullable(),
   objectOrganization: userIsOnlyOrganizationAdmin ? Yup.array().min(1, t('Minimum one organization')).required(t('This field is required')) : Yup.array(),
+  max_confidence: Yup.number()
+    .required(t('This field is required'))
+    .min(0, t('The value must be greater than or equal to 0'))
+    .max(100, t('The value must be less than or equal to 100')),
 });
 
 interface UserEditionOverviewComponentProps {
@@ -93,6 +98,8 @@ UserEditionOverviewComponentProps
 > = ({ user, context }) => {
   const { t } = useFormatter();
   const { me, settings } = useAuth();
+  const hasSetAccess = useGranted([SETTINGS_SETACCESSES]);
+
   const [commitFocus] = useMutation(userEditionOverviewFocus);
   const [commitFieldPatch] = useMutation(userMutationFieldPatch);
   const [commitGroupAdd] = useMutation(userMutationGroupAdd);
@@ -102,24 +109,29 @@ UserEditionOverviewComponentProps
   const external = user.external === true;
   const objectOrganization = convertOrganizations(user);
 
-  const initialValues = pick(
-    [
-      'name',
-      'user_email',
-      'firstname',
-      'lastname',
-      'language',
-      'api_token',
-      'objectOrganization',
-      'description',
-      'account_status',
-      'account_lock_after_date',
-    ],
-    {
-      ...user,
-      objectOrganization,
-    },
-  );
+  const initialValues = {
+    // extract flat attributes
+    ...pick(
+      [
+        'name',
+        'user_email',
+        'firstname',
+        'lastname',
+        'language',
+        'api_token',
+        'objectOrganization',
+        'description',
+        'account_status',
+        'account_lock_after_date',
+      ],
+      {
+        ...user,
+        objectOrganization,
+      },
+    ),
+    // extract object attribute
+    max_confidence: user.user_confidence_level.max_confidence,
+  };
 
   const handleChangeFocus = (name: string) => {
     commitFocus({
@@ -132,16 +144,31 @@ UserEditionOverviewComponentProps
     });
   };
 
-  const handleSubmitField = (name: string, value: string | Date) => {
+  const handleSubmitField = (name: string, value: string) => {
     userValidation(t, userIsOnlyOrganizationAdmin)
       .validateAt(name, { [name]: value })
       .then(() => {
-        commitFieldPatch({
-          variables: {
-            id: user.id,
-            input: { key: name, value: value || '' },
-          },
-        });
+        // specific case for user confidence level that must be updated as a full object (we cannot field patch non-multiple objects for now)
+        // We pass the existing overrides for this user so they are unchanged
+        if (name === 'max_confidence') {
+          commitFieldPatch({
+            variables: {
+              id: user.id,
+              input: {
+                key: 'user_confidence_level',
+                value: { max_confidence: parseInt(value, 10), overrides: user.user_confidence_level.overrides },
+              },
+            },
+          });
+        } else {
+          // simple case for all flat attributes
+          commitFieldPatch({
+            variables: {
+              id: user.id,
+              input: { key: name, value: value || '' },
+            },
+          });
+        }
       })
       .catch(() => false);
   };
@@ -320,6 +347,20 @@ UserEditionOverviewComponentProps
             onFocus={handleChangeFocus}
             onChange={handleSubmitField}
           />
+          {
+            hasSetAccess && (
+              <ConfidenceField
+                name="max_confidence"
+                label={t('Max Confidence Level')}
+                onFocus={handleChangeFocus}
+                onSubmit={handleSubmitField}
+                entityType="User"
+                containerStyle={fieldSpacingContainerStyle}
+                editContext={context}
+                variant="edit"
+              />
+            )
+          }
         </Form>
       )}
     </Formik>
@@ -351,6 +392,13 @@ const UserEditionOverview = createFragmentContainer(
         otp_qr
         account_status
         account_lock_after_date
+        user_confidence_level {
+          max_confidence
+          overrides {
+            entity_type
+            max_confidence
+          }
+        }
         roles(orderBy: $rolesOrderBy, orderMode: $rolesOrderMode) {
           id
           name
