@@ -4,8 +4,6 @@ import { Field, Form, Formik } from 'formik';
 import * as R from 'ramda';
 import * as Yup from 'yup';
 import MenuItem from '@mui/material/MenuItem';
-import OptionalConfidenceLevelField from '@components/common/form/OptionalConfidenceLevelField';
-import FormHelperText from '@mui/material/FormHelperText';
 import TextField from '../../../../components/TextField';
 import SelectField from '../../../../components/SelectField';
 import { SubscriptionFocus } from '../../../../components/Subscription';
@@ -134,7 +132,7 @@ UserEditionOverviewComponentProps
     });
   };
 
-  const handleSubmitField = (name: string, value: string | null) => {
+  const handleSubmitField = (name: string, value: string | Date | null) => {
     userValidation(t_i18n, userIsOnlyOrganizationAdmin)
       .validateAt(name, { [name]: value })
       .then(() => {
