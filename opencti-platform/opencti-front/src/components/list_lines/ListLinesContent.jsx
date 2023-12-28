@@ -268,7 +268,7 @@ class ListLinesContent extends Component {
                           registerChild(ref);
                         }}
                         autoHeight={true}
-                        height={height}
+                        height={height || 0}
                         onRowsRendered={onRowsRendered}
                         isScrolling={isScrolling}
                         onScroll={onChildScroll}
