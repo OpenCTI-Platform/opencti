@@ -12,7 +12,7 @@ import StixCoreRelationshipCreationFromEntity from '../StixCoreRelationshipCreat
 import Security from '../../../../../utils/Security';
 import { computeTargetStixCyberObservableTypes, computeTargetStixDomainObjectTypes, isStixCyberObservables } from '../../../../../utils/stixTypeUtils';
 import { PaginationLocalStorage } from '../../../../../utils/hooks/useLocalStorage';
-import { DataColumns, PaginationOptions } from '../../../../../components/list_lines';
+import { DataColumns, PaginationOptions } from '../../../../../components/list_lines/model';
 import { addFilter, cleanFilters, FilterGroup, findFilterFromKey, injectEntityTypeFilterInFilterGroup } from '../../../../../utils/filters/filtersUtils';
 
 interface EntityStixCoreRelationshipsRelationshipsViewProps {

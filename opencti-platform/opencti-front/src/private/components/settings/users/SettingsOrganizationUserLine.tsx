@@ -10,7 +10,7 @@ import makeStyles from '@mui/styles/makeStyles';
 import { SettingsOrganizationUserLine_node$key } from '@components/settings/users/__generated__/SettingsOrganizationUserLine_node.graphql';
 import { ListItemSecondaryAction } from '@mui/material';
 import Tooltip from '@mui/material/Tooltip';
-import { DataColumns } from '../../../../components/list_lines';
+import { DataColumns } from '../../../../components/list_lines/model';
 import { Theme } from '../../../../components/Theme';
 import { useFormatter } from '../../../../components/i18n';
 

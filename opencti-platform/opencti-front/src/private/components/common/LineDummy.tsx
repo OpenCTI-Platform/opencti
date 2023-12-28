@@ -6,7 +6,7 @@ import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
 import { MoreVertOutlined } from '@mui/icons-material';
 import React from 'react';
 import makeStyles from '@mui/styles/makeStyles';
-import { DataColumns } from '../../../components/list_lines';
+import { DataColumns } from '../../../components/list_lines/model';
 import { Theme } from '../../../components/Theme';
 
 const useStyles = makeStyles<Theme>((theme) => ({

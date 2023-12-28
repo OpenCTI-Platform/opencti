@@ -7,7 +7,7 @@ import ListItem from '@mui/material/ListItem';
 import Skeleton from '@mui/material/Skeleton';
 import makeStyles from '@mui/styles/makeStyles';
 import { Theme } from '../../../../../components/Theme';
-import { DataColumns } from '../../../../../components/list_lines';
+import { DataColumns } from '../../../../../components/list_lines/model';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   item: {

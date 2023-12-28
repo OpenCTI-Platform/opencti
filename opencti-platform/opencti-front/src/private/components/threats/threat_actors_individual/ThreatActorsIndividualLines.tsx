@@ -1,6 +1,6 @@
 import React, { FunctionComponent } from 'react';
 import { graphql, PreloadedQuery } from 'react-relay';
-import { DataColumns } from '../../../../components/list_lines';
+import { DataColumns } from '../../../../components/list_lines/model';
 import { UseLocalStorageHelpers } from '../../../../utils/hooks/useLocalStorage';
 import usePreloadedPaginationFragment from '../../../../utils/hooks/usePreloadedPaginationFragment';
 import ListLinesContent from '../../../../components/list_lines/ListLinesContent';

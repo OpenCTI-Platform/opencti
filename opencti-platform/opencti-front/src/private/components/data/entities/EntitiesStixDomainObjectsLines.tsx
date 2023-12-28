@@ -10,7 +10,7 @@ import ListLinesContent from '../../../../components/list_lines/ListLinesContent
 import { EntitiesStixDomainObjectLine, EntitiesStixDomainObjectLineDummy } from './EntitiesStixDomainObjectLine';
 import usePreloadedPaginationFragment from '../../../../utils/hooks/usePreloadedPaginationFragment';
 import { HandleAddFilter, UseLocalStorageHelpers } from '../../../../utils/hooks/useLocalStorage';
-import { DataColumns } from '../../../../components/list_lines';
+import { DataColumns } from '../../../../components/list_lines/model';
 
 const nbOfRowsToLoad = 50;
 

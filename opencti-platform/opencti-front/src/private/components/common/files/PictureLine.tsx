@@ -9,7 +9,7 @@ import { NorthEastOutlined } from '@mui/icons-material';
 import Drawer from '@components/common/drawer/Drawer';
 import { Theme } from '../../../../components/Theme';
 import { getFileUri } from '../../../../utils/utils';
-import { DataColumns } from '../../../../components/list_lines';
+import { DataColumns } from '../../../../components/list_lines/model';
 import PictureManagementEdition from './PictureManagementEdition';
 import { pictureManagementUtilsFragment } from './PictureManagementUtils';
 import { PictureManagementUtils_node$key } from './__generated__/PictureManagementUtils_node.graphql';

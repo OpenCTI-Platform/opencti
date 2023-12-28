@@ -15,7 +15,7 @@ import { SettingsOrganizationUsersLinesQuery, SettingsOrganizationUsersLinesQuer
 import SettingsOrganizationUsersLines, { settingsOrganizationUsersLinesQuery } from './SettingsOrganizationUsersLines';
 import { UserLineDummy } from './UserLine';
 import ListLines from '../../../../components/list_lines/ListLines';
-import { DataColumns } from '../../../../components/list_lines';
+import { DataColumns } from '../../../../components/list_lines/model';
 
 const useStyles = makeStyles<Theme>(() => ({
   paper: {

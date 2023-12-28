@@ -1,5 +1,5 @@
 import React from 'react';
-import { DataColumns } from '../../../../../components/list_lines';
+import { DataColumns } from '../../../../../components/list_lines/model';
 import EntitySettingAttributeLine, { EntitySettingAttributeLineDummy } from './EntitySettingAttributeLine';
 import ListLinesContent from '../../../../../components/list_lines/ListLinesContent';
 import { useFormatter } from '../../../../../components/i18n';

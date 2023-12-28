@@ -6,7 +6,7 @@ import ListItemText from '@mui/material/ListItemText';
 import Skeleton from '@mui/material/Skeleton';
 import makeStyles from '@mui/styles/makeStyles';
 import React, { FunctionComponent } from 'react';
-import { DataColumns } from '../../../../components/list_lines';
+import { DataColumns } from '../../../../components/list_lines/model';
 import { Theme } from '../../../../components/Theme';
 
 const useStyles = makeStyles<Theme>((theme) => ({

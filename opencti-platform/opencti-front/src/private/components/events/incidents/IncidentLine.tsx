@@ -16,7 +16,7 @@ import ItemStatus from '../../../../components/ItemStatus';
 import ItemSeverity from '../../../../components/ItemSeverity';
 import ItemIcon from '../../../../components/ItemIcon';
 import { Theme } from '../../../../components/Theme';
-import { DataColumns } from '../../../../components/list_lines';
+import { DataColumns } from '../../../../components/list_lines/model';
 import { IncidentLine_node$data, IncidentLine_node$key } from './__generated__/IncidentLine_node.graphql';
 
 const useStyles = makeStyles<Theme>((theme) => ({

@@ -4,7 +4,7 @@ import { SystemsLinesPaginationQuery, SystemsLinesPaginationQuery$variables } fr
 import { SystemsLines_data$key } from '@components/entities/systems/__generated__/SystemsLines_data.graphql';
 import ListLinesContent from '../../../../components/list_lines/ListLinesContent';
 import { SystemLine, SystemLineDummy } from './SystemLine';
-import { DataColumns } from '../../../../components/list_lines';
+import { DataColumns } from '../../../../components/list_lines/model';
 import { HandleAddFilter, UseLocalStorageHelpers } from '../../../../utils/hooks/useLocalStorage';
 import usePreloadedPaginationFragment from '../../../../utils/hooks/usePreloadedPaginationFragment';
 

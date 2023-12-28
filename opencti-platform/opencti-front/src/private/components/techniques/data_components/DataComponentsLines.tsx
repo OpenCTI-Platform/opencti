@@ -1,7 +1,7 @@
 import React, { FunctionComponent } from 'react';
 import { graphql, PreloadedQuery } from 'react-relay';
 import { DataComponentsLines_data$key } from './__generated__/DataComponentsLines_data.graphql';
-import { DataColumns } from '../../../../components/list_lines';
+import { DataColumns } from '../../../../components/list_lines/model';
 import ListLinesContent from '../../../../components/list_lines/ListLinesContent';
 import { DataComponentsLinesPaginationQuery, DataComponentsLinesPaginationQuery$variables } from './__generated__/DataComponentsLinesPaginationQuery.graphql';
 import DataComponentLineDummy from './DataComponentLineDummy';

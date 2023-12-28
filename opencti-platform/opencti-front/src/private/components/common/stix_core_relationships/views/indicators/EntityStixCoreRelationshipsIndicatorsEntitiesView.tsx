@@ -8,7 +8,7 @@ import Security from '../../../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE } from '../../../../../../utils/hooks/useGranted';
 import StixCoreRelationshipCreationFromEntity from '../../StixCoreRelationshipCreationFromEntity';
 import { PaginationLocalStorage } from '../../../../../../utils/hooks/useLocalStorage';
-import { DataColumns, PaginationOptions } from '../../../../../../components/list_lines';
+import { DataColumns, PaginationOptions } from '../../../../../../components/list_lines/model';
 import { StixDomainObjectIndicatorsLinesQuery$data } from '../../../../observations/indicators/__generated__/StixDomainObjectIndicatorsLinesQuery.graphql';
 import useAuth from '../../../../../../utils/hooks/useAuth';
 import { QueryRenderer } from '../../../../../../relay/environment';

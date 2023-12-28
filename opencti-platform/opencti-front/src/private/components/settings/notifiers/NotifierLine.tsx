@@ -7,7 +7,7 @@ import makeStyles from '@mui/styles/makeStyles';
 import React, { FunctionComponent } from 'react';
 import { graphql, useFragment } from 'react-relay';
 import ItemIcon from '../../../../components/ItemIcon';
-import { DataColumns } from '../../../../components/list_lines';
+import { DataColumns } from '../../../../components/list_lines/model';
 import { Theme } from '../../../../components/Theme';
 import { NotifierLine_node$key, NotifierLine_node$data } from './__generated__/NotifierLine_node.graphql';
 import { NotifiersLinesPaginationQuery$variables } from './__generated__/NotifiersLinesPaginationQuery.graphql';

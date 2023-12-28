@@ -7,7 +7,7 @@ import { ExternalReferencesLinesPaginationQuery, ExternalReferencesLinesPaginati
 import { ExternalReferenceLine_node$data } from './__generated__/ExternalReferenceLine_node.graphql';
 import { UseLocalStorageHelpers } from '../../../../utils/hooks/useLocalStorage';
 import usePreloadedPaginationFragment from '../../../../utils/hooks/usePreloadedPaginationFragment';
-import { DataColumns } from '../../../../components/list_lines';
+import { DataColumns } from '../../../../components/list_lines/model';
 
 const nbOfRowsToLoad = 50;
 

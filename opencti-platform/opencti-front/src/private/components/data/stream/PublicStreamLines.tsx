@@ -14,7 +14,7 @@ import { PublicStreamLinesQuery } from './__generated__/PublicStreamLinesQuery.g
 import ListLines from '../../../../components/list_lines/ListLines';
 import ListLinesContent from '../../../../components/list_lines/ListLinesContent';
 import { StreamLineDummy } from './StreamLine';
-import { DataColumns } from '../../../../components/list_lines';
+import { DataColumns } from '../../../../components/list_lines/model';
 import { useFormatter } from '../../../../components/i18n';
 import { PublicStreamLines_node$key } from './__generated__/PublicStreamLines_node.graphql';
 import FilterIconButton from '../../../../components/FilterIconButton';

@@ -10,7 +10,7 @@ import makeStyles from '@mui/styles/makeStyles';
 import { useFormatter } from '../../../../components/i18n';
 import StixCoreObjectLabels from '../../common/stix_core_objects/StixCoreObjectLabels';
 import ItemIcon from '../../../../components/ItemIcon';
-import { DataColumns } from '../../../../components/list_lines';
+import { DataColumns } from '../../../../components/list_lines/model';
 import { Theme } from '../../../../components/Theme';
 import { ChannelLine_node$key } from './__generated__/ChannelLine_node.graphql';
 import { HandleAddFilter } from '../../../../utils/hooks/useLocalStorage';

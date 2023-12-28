@@ -9,7 +9,7 @@ import makeStyles from '@mui/styles/makeStyles';
 import { Theme } from '@mui/material/styles/createTheme';
 import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
 import Chip from '@mui/material/Chip';
-import { DataColumns } from '../../../../components/list_lines';
+import { DataColumns } from '../../../../components/list_lines/model';
 import { TriggerLine_node$key } from './__generated__/TriggerLine_node.graphql';
 import FilterIconButton from '../../../../components/FilterIconButton';
 import { useFormatter } from '../../../../components/i18n';

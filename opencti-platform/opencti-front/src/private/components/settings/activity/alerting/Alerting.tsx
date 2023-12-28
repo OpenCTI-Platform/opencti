@@ -1,7 +1,7 @@
 import React, { FunctionComponent } from 'react';
 import { graphql, PreloadedQuery } from 'react-relay';
 import makeStyles from '@mui/styles/makeStyles';
-import { DataColumns } from '../../../../../components/list_lines';
+import { DataColumns } from '../../../../../components/list_lines/model';
 import { HandleAddFilter, UseLocalStorageHelpers, usePaginationLocalStorage } from '../../../../../utils/hooks/useLocalStorage';
 import useQueryLoading from '../../../../../utils/hooks/useQueryLoading';
 import ListLines from '../../../../../components/list_lines/ListLines';

@@ -10,7 +10,7 @@ import makeStyles from '@mui/styles/makeStyles';
 import { useFormatter } from '../../../../components/i18n';
 import ItemIcon from '../../../../components/ItemIcon';
 import { Theme } from '../../../../components/Theme';
-import { DataColumns } from '../../../../components/list_lines';
+import { DataColumns } from '../../../../components/list_lines/model';
 import { CountryLine_node$key } from '../countries/__generated__/CountryLine_node.graphql';
 
 const useStyles = makeStyles<Theme>((theme) => ({

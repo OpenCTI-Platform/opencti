@@ -23,7 +23,7 @@ import DialogActions from '@mui/material/DialogActions';
 import Button from '@mui/material/Button';
 import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
 import IconButton from '@mui/material/IconButton';
-import { DataColumns } from '../../../../components/list_lines';
+import { DataColumns } from '../../../../components/list_lines/model';
 import { NotificationLine_node$data, NotificationLine_node$key } from './__generated__/NotificationLine_node.graphql';
 import { useFormatter } from '../../../../components/i18n';
 import { hexToRGB } from '../../../../utils/Colors';

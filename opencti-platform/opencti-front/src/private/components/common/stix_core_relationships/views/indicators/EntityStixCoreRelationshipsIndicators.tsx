@@ -4,7 +4,7 @@ import ExportContextProvider from '../../../../../../utils/ExportContextProvider
 import { usePaginationLocalStorage } from '../../../../../../utils/hooks/useLocalStorage';
 import EntityStixCoreRelationshipsRelationshipsView from '../EntityStixCoreRelationshipsRelationshipsView';
 import EntityStixCoreRelationshipsIndicatorsEntitiesView from './EntityStixCoreRelationshipsIndicatorsEntitiesView';
-import { PaginationOptions } from '../../../../../../components/list_lines';
+import { PaginationOptions } from '../../../../../../components/list_lines/model';
 import EntityStixCoreRelationshipsIndicatorsContextualView from './EntityStixCoreRelationshipsIndicatorsContextualView';
 import { emptyFilterGroup } from '../../../../../../utils/filters/filtersUtils';
 

@@ -1,7 +1,7 @@
 import { GridTypeMap } from '@mui/material';
 import React, { FunctionComponent, MutableRefObject } from 'react';
 import { graphql, PreloadedQuery } from 'react-relay';
-import { DataColumns } from '../../../../components/list_lines';
+import { DataColumns } from '../../../../components/list_lines/model';
 import ListLinesContent from '../../../../components/list_lines/ListLinesContent';
 import { HandleAddFilter, UseLocalStorageHelpers } from '../../../../utils/hooks/useLocalStorage';
 import usePreloadedPaginationFragment from '../../../../utils/hooks/usePreloadedPaginationFragment';

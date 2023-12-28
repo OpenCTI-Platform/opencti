@@ -4,7 +4,7 @@ import {
   EntityStixCoreRelationshipsIndicatorsContextualViewLinesQuery,
   EntityStixCoreRelationshipsIndicatorsContextualViewLinesQuery$variables,
 } from './__generated__/EntityStixCoreRelationshipsIndicatorsContextualViewLinesQuery.graphql';
-import { DataColumns } from '../../../../../../components/list_lines';
+import { DataColumns } from '../../../../../../components/list_lines/model';
 import { UseEntityToggle } from '../../../../../../utils/hooks/useEntityToggle';
 import { EntityStixCoreRelationshipsIndicatorsContextualViewLine_node$data } from './__generated__/EntityStixCoreRelationshipsIndicatorsContextualViewLine_node.graphql';
 import { UseLocalStorageHelpers } from '../../../../../../utils/hooks/useLocalStorage';

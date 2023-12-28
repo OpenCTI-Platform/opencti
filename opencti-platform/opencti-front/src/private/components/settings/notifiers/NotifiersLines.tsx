@@ -5,7 +5,7 @@ import { NotifierLine_node$data } from './__generated__/NotifierLine_node.graphq
 import { NotifiersLinesPaginationQuery, NotifiersLinesPaginationQuery$variables } from './__generated__/NotifiersLinesPaginationQuery.graphql';
 import { NotifiersLines_data$key } from './__generated__/NotifiersLines_data.graphql';
 import { HandleAddFilter, UseLocalStorageHelpers } from '../../../../utils/hooks/useLocalStorage';
-import { DataColumns } from '../../../../components/list_lines';
+import { DataColumns } from '../../../../components/list_lines/model';
 import usePreloadedPaginationFragment from '../../../../utils/hooks/usePreloadedPaginationFragment';
 import ListLinesContent from '../../../../components/list_lines/ListLinesContent';
 

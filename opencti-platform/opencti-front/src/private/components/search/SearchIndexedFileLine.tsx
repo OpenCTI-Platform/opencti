@@ -26,7 +26,7 @@ import IconButton from '@mui/material/IconButton';
 import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
 import Tooltip from '@mui/material/Tooltip';
 import Skeleton from '@mui/material/Skeleton';
-import { DataColumns } from '../../../components/list_lines';
+import { DataColumns } from '../../../components/list_lines/model';
 import { Theme } from '../../../components/Theme';
 import { useFormatter } from '../../../components/i18n';
 import ItemIcon from '../../../components/ItemIcon';

@@ -8,7 +8,7 @@ import { graphql, useFragment } from 'react-relay';
 import Tooltip from '@mui/material/Tooltip';
 import { SettingsMessagesLine_settingsMessage$data } from '@components/settings/settings_messages/__generated__/SettingsMessagesLine_settingsMessage.graphql';
 import { useFormatter } from '../../../../components/i18n';
-import { DataColumns } from '../../../../components/list_lines';
+import { DataColumns } from '../../../../components/list_lines/model';
 import ListLines from '../../../../components/list_lines/ListLines';
 import { Theme } from '../../../../components/Theme';
 import { generateBannerMessageColors } from '../../../../utils/Colors';

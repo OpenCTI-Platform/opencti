@@ -6,7 +6,7 @@ import useQueryLoading from '../../../../../utils/hooks/useQueryLoading';
 import usePreloadedPaginationFragment from '../../../../../utils/hooks/usePreloadedPaginationFragment';
 import ListLinesContent from '../../../../../components/list_lines/ListLinesContent';
 import Loader, { LoaderVariant } from '../../../../../components/Loader';
-import { DataColumns } from '../../../../../components/list_lines';
+import { DataColumns } from '../../../../../components/list_lines/model';
 import {
   EntityStixCoreRelationshipsContextualViewLinesQuery,
   EntityStixCoreRelationshipsContextualViewLinesQuery$variables,

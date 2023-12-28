@@ -7,7 +7,7 @@ import {
 import { OrganizationsLines_data$key } from '@components/entities/organizations/__generated__/OrganizationsLines_data.graphql';
 import ListLinesContent from '../../../../components/list_lines/ListLinesContent';
 import { OrganizationLine, OrganizationLineDummy } from './OrganizationLine';
-import { DataColumns } from '../../../../components/list_lines';
+import { DataColumns } from '../../../../components/list_lines/model';
 import { HandleAddFilter, UseLocalStorageHelpers } from '../../../../utils/hooks/useLocalStorage';
 import usePreloadedPaginationFragment from '../../../../utils/hooks/usePreloadedPaginationFragment';
 

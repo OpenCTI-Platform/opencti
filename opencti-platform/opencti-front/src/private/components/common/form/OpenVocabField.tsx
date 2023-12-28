@@ -9,7 +9,7 @@ import AutocompleteField from '../../../../components/AutocompleteField';
 import { OpenVocabFieldQuery } from './__generated__/OpenVocabFieldQuery.graphql';
 import useVocabularyCategory from '../../../../utils/hooks/useVocabularyCategory';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
-import { RenderOption } from '../../../../components/list_lines';
+import { RenderOption } from '../../../../components/list_lines/model';
 
 interface OpenVocabProps {
   type: string;

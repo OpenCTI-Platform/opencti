@@ -15,7 +15,7 @@ import StixCoreObjectLabels from '../../stix_core_objects/StixCoreObjectLabels';
 import { Theme } from '../../../../../components/Theme';
 import { resolveLink } from '../../../../../utils/Entity';
 import { useFormatter } from '../../../../../components/i18n';
-import { DataColumns } from '../../../../../components/list_lines';
+import { DataColumns } from '../../../../../components/list_lines/model';
 import { UseEntityToggle } from '../../../../../utils/hooks/useEntityToggle';
 import ItemIcon from '../../../../../components/ItemIcon';
 import { defaultValue } from '../../../../../utils/Graph';

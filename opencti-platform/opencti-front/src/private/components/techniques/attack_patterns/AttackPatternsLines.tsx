@@ -7,7 +7,7 @@ import {
 import { AttackPatternsLines_data$key } from '@components/techniques/attack_patterns/__generated__/AttackPatternsLines_data.graphql';
 import ListLinesContent from '../../../../components/list_lines/ListLinesContent';
 import { AttackPatternLine, AttackPatternLineDummy } from './AttackPatternLine';
-import { DataColumns } from '../../../../components/list_lines';
+import { DataColumns } from '../../../../components/list_lines/model';
 import { HandleAddFilter, UseLocalStorageHelpers } from '../../../../utils/hooks/useLocalStorage';
 import usePreloadedPaginationFragment from '../../../../utils/hooks/usePreloadedPaginationFragment';
 

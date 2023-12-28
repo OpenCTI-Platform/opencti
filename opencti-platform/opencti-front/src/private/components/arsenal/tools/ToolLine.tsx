@@ -11,7 +11,7 @@ import { Theme } from '@mui/material/styles/createTheme';
 import { useFormatter } from '../../../../components/i18n';
 import StixCoreObjectLabels from '../../common/stix_core_objects/StixCoreObjectLabels';
 import ItemIcon from '../../../../components/ItemIcon';
-import { DataColumns } from '../../../../components/list_lines';
+import { DataColumns } from '../../../../components/list_lines/model';
 import { ToolLine_node$key } from './__generated__/ToolLine_node.graphql';
 
 const useStyles = makeStyles<Theme>((theme) => ({

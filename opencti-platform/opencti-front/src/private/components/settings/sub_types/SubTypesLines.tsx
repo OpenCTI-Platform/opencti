@@ -5,7 +5,7 @@ import { useFormatter } from '../../../../components/i18n';
 import SubTypeLine from './SubTypesLine';
 import { SubTypesLinesQuery } from './__generated__/SubTypesLinesQuery.graphql';
 import { SubTypesLines_subTypes$key } from './__generated__/SubTypesLines_subTypes.graphql';
-import { DataColumns } from '../../../../components/list_lines';
+import { DataColumns } from '../../../../components/list_lines/model';
 import ListLinesContent from '../../../../components/list_lines/ListLinesContent';
 import { UseLocalStorageHelpers } from '../../../../utils/hooks/useLocalStorage';
 

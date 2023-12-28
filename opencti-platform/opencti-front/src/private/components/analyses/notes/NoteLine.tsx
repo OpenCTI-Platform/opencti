@@ -16,7 +16,7 @@ import { truncate } from '../../../../utils/String';
 import ItemMarkings from '../../../../components/ItemMarkings';
 import ItemIcon from '../../../../components/ItemIcon';
 import ItemStatus from '../../../../components/ItemStatus';
-import { DataColumns } from '../../../../components/list_lines';
+import { DataColumns } from '../../../../components/list_lines/model';
 import { Theme } from '../../../../components/Theme';
 import { HandleAddFilter } from '../../../../utils/hooks/useLocalStorage';
 

@@ -2,7 +2,7 @@ import React, { FunctionComponent } from 'react';
 import { graphql, PreloadedQuery } from 'react-relay';
 import { UserLine, UserLineDummy } from './UserLine';
 import { GroupUsersLinesQuery, GroupUsersLinesQuery$variables } from './__generated__/GroupUsersLinesQuery.graphql';
-import { DataColumns } from '../../../../components/list_lines';
+import { DataColumns } from '../../../../components/list_lines/model';
 import usePreloadedPaginationFragment from '../../../../utils/hooks/usePreloadedPaginationFragment';
 import ListLinesContent from '../../../../components/list_lines/ListLinesContent';
 import { GroupUsersLines_data$key } from './__generated__/GroupUsersLines_data.graphql';

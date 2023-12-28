@@ -10,7 +10,7 @@ import Checkbox from '@mui/material/Checkbox';
 import Skeleton from '@mui/material/Skeleton';
 import { useFormatter } from '../../../../components/i18n';
 import { Theme } from '../../../../components/Theme';
-import { DataColumns } from '../../../../components/list_lines';
+import { DataColumns } from '../../../../components/list_lines/model';
 import ItemIcon from '../../../../components/ItemIcon';
 import { ThreatActorIndividualLine_node$data, ThreatActorIndividualLine_node$key } from './__generated__/ThreatActorIndividualLine_node.graphql';
 

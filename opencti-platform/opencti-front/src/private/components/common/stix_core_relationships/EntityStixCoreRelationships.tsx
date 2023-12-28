@@ -4,7 +4,7 @@ import ExportContextProvider from '../../../../utils/ExportContextProvider';
 import EntityStixCoreRelationshipsRelationshipsView from './views/EntityStixCoreRelationshipsRelationshipsView';
 import EntityStixCoreRelationshipsEntitiesView from './views/EntityStixCoreRelationshipsEntitiesView';
 import { usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStorage';
-import { PaginationOptions } from '../../../../components/list_lines';
+import { PaginationOptions } from '../../../../components/list_lines/model';
 import { emptyFilterGroup } from '../../../../utils/filters/filtersUtils';
 
 const useStyles = makeStyles(() => ({

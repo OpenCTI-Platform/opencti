@@ -3,7 +3,7 @@ import { graphql, PreloadedQuery } from 'react-relay';
 import ListLinesContent from '../../../../components/list_lines/ListLinesContent';
 import { NoteLine, NoteLineDummy } from './NoteLine';
 import { HandleAddFilter, UseLocalStorageHelpers } from '../../../../utils/hooks/useLocalStorage';
-import { DataColumns } from '../../../../components/list_lines';
+import { DataColumns } from '../../../../components/list_lines/model';
 import usePreloadedPaginationFragment from '../../../../utils/hooks/usePreloadedPaginationFragment';
 import { NotesLinesPaginationQuery, NotesLinesPaginationQuery$variables } from './__generated__/NotesLinesPaginationQuery.graphql';
 import { NoteLine_node$data } from './__generated__/NoteLine_node.graphql';

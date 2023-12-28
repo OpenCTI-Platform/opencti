@@ -9,7 +9,7 @@ import Skeleton from '@mui/material/Skeleton';
 import makeStyles from '@mui/styles/makeStyles';
 import Checkbox from '@mui/material/Checkbox';
 import VocabularyPopover from './VocabularyPopover';
-import { DataColumns } from '../../../../components/list_lines';
+import { DataColumns } from '../../../../components/list_lines/model';
 import { Theme } from '../../../../components/Theme';
 import { vocabFragment } from '../../../../utils/hooks/useVocabularyCategory';
 import {

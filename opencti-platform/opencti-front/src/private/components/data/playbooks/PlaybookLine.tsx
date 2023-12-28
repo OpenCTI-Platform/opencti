@@ -8,7 +8,7 @@ import Skeleton from '@mui/material/Skeleton';
 import { graphql, useFragment } from 'react-relay';
 import makeStyles from '@mui/styles/makeStyles';
 import { Theme } from '@mui/material/styles/createTheme';
-import { DataColumns } from '../../../../components/list_lines';
+import { DataColumns } from '../../../../components/list_lines/model';
 import { PlaybookLine_node$key } from './__generated__/PlaybookLine_node.graphql';
 import ItemIcon from '../../../../components/ItemIcon';
 import ItemBoolean from '../../../../components/ItemBoolean';

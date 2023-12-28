@@ -11,7 +11,7 @@ import { Theme } from '@mui/material/styles/createTheme';
 import { EventLine_node$key } from '@components/entities/events/__generated__/EventLine_node.graphql';
 import ItemIcon from '../../../../components/ItemIcon';
 import { useFormatter } from '../../../../components/i18n';
-import { DataColumns } from '../../../../components/list_lines';
+import { DataColumns } from '../../../../components/list_lines/model';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   item: {

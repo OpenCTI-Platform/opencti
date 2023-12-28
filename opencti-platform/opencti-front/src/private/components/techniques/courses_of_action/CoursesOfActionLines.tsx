@@ -7,7 +7,7 @@ import {
 import { CoursesOfActionLines_data$key } from '@components/techniques/courses_of_action/__generated__/CoursesOfActionLines_data.graphql';
 import ListLinesContent from '../../../../components/list_lines/ListLinesContent';
 import { CourseOfActionLine, CourseOfActionLineDummy } from './CourseOfActionLine';
-import { DataColumns } from '../../../../components/list_lines';
+import { DataColumns } from '../../../../components/list_lines/model';
 import { HandleAddFilter, UseLocalStorageHelpers } from '../../../../utils/hooks/useLocalStorage';
 import usePreloadedPaginationFragment from '../../../../utils/hooks/usePreloadedPaginationFragment';
 

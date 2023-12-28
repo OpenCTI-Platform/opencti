@@ -2,7 +2,7 @@ import React, { FunctionComponent } from 'react';
 import makeStyles from '@mui/styles/makeStyles';
 import EntityStixCoreRelationshipsContextualView from '../EntityStixCoreRelationshipsContextualView';
 import { usePaginationLocalStorage } from '../../../../../../utils/hooks/useLocalStorage';
-import { PaginationOptions } from '../../../../../../components/list_lines';
+import { PaginationOptions } from '../../../../../../components/list_lines/model';
 import EntityStixCoreRelationshipsEntitiesView from '../EntityStixCoreRelationshipsEntitiesView';
 import EntityStixCoreRelationshipsRelationshipsView from '../EntityStixCoreRelationshipsRelationshipsView';
 import ExportContextProvider from '../../../../../../utils/ExportContextProvider';

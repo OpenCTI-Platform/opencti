@@ -7,7 +7,7 @@ import { ChipOwnProps } from '@mui/material/Chip/Chip';
 import Box from '@mui/material/Box';
 import { InformationOutline } from 'mdi-material-ui';
 import { truncate } from '../utils/String';
-import { DataColumns } from './list_lines';
+import { DataColumns } from './list_lines/model';
 import { useFormatter } from './i18n';
 import { Theme } from './Theme';
 import { Filter, FilterGroup, filtersUsedAsApiParameters } from '../utils/filters/filtersUtils';

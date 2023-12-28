@@ -1,6 +1,6 @@
 import React, { FunctionComponent } from 'react';
 import { graphql, PreloadedQuery } from 'react-relay';
-import { DataColumns } from '../../../../components/list_lines';
+import { DataColumns } from '../../../../components/list_lines/model';
 import usePreloadedPaginationFragment from '../../../../utils/hooks/usePreloadedPaginationFragment';
 import { SettingsOrganizationsLines_data$key } from './__generated__/SettingsOrganizationsLines_data.graphql';
 import { SettingsOrganizationsLinesPaginationQuery, SettingsOrganizationsLinesPaginationQuery$variables } from './__generated__/SettingsOrganizationsLinesPaginationQuery.graphql';

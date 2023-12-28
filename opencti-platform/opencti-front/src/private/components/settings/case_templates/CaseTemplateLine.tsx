@@ -8,7 +8,7 @@ import { Link } from 'react-router-dom';
 import ListItem from '@mui/material/ListItem';
 import { Theme } from '../../../../components/Theme';
 import { CaseTemplateLine_node$key } from './__generated__/CaseTemplateLine_node.graphql';
-import { DataColumns } from '../../../../components/list_lines';
+import { DataColumns } from '../../../../components/list_lines/model';
 import ItemIcon from '../../../../components/ItemIcon';
 
 const useStyles = makeStyles<Theme>({

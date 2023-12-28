@@ -1,6 +1,6 @@
 import React, { FunctionComponent, useEffect, useRef } from 'react';
 import { ChipOwnProps } from '@mui/material/Chip/Chip';
-import { DataColumns } from './list_lines';
+import { DataColumns } from './list_lines/model';
 import { Filter, FilterGroup, GqlFilterGroup, isFilterGroupNotEmpty, removeIdFromFilterGroupObject } from '../utils/filters/filtersUtils';
 import { filterIconButtonContentQuery } from './FilterIconButtonContent';
 import useQueryLoading from '../utils/hooks/useQueryLoading';

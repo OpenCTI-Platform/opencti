@@ -2,7 +2,7 @@ import React, { FunctionComponent } from 'react';
 import { createPaginationContainer, graphql } from 'react-relay';
 import List from '@mui/material/List';
 import { ContainerStixObjectOrStixRelationshipLine } from './ContainerStixObjectOrStixRelationshipLine';
-import { DataColumns } from '../../../../components/list_lines';
+import { DataColumns } from '../../../../components/list_lines/model';
 import { ContainerStixObjectsOrStixRelationshipsLines_container$data } from './__generated__/ContainerStixObjectsOrStixRelationshipsLines_container.graphql';
 import { ContainerStixObjectsOrStixRelationshipsLinesQuery$variables } from './__generated__/ContainerStixObjectsOrStixRelationshipsLinesQuery.graphql';
 import { useFormatter } from '../../../../components/i18n';

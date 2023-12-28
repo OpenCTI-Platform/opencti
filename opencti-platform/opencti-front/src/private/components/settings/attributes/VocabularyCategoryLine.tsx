@@ -7,7 +7,7 @@ import { ListItem } from '@mui/material';
 import Skeleton from '@mui/material/Skeleton';
 import { Link } from 'react-router-dom';
 import { Theme } from '../../../../components/Theme';
-import { DataColumns } from '../../../../components/list_lines';
+import { DataColumns } from '../../../../components/list_lines/model';
 import { VocabularyDefinition } from '../../../../utils/hooks/useVocabularyCategory';
 
 const useStyles = makeStyles<Theme>((theme) => ({

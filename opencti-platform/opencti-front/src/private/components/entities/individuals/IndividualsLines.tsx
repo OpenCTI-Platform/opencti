@@ -5,7 +5,7 @@ import { IndividualsLines_data$key } from '@components/entities/individuals/__ge
 import ListLinesContent from '../../../../components/list_lines/ListLinesContent';
 import { IndividualLine, IndividualLineDummy } from './IndividualLine';
 import usePreloadedPaginationFragment from '../../../../utils/hooks/usePreloadedPaginationFragment';
-import { DataColumns } from '../../../../components/list_lines';
+import { DataColumns } from '../../../../components/list_lines/model';
 import { HandleAddFilter, UseLocalStorageHelpers } from '../../../../utils/hooks/useLocalStorage';
 
 const nbOfRowsToLoad = 50;

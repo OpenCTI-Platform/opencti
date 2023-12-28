@@ -1,5 +1,5 @@
 import React from 'react';
-import { DataColumns } from '../../../../components/list_lines';
+import { DataColumns } from '../../../../components/list_lines/model';
 import ListLinesContent from '../../../../components/list_lines/ListLinesContent';
 import SettingsMessagesLine, { SettingsMessagesLineDummy } from './SettingsMessagesLine';
 import { SettingsMessagesLine_settingsMessage$key } from './__generated__/SettingsMessagesLine_settingsMessage.graphql';

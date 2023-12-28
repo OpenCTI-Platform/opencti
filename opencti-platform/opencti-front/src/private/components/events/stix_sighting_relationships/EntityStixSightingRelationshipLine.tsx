@@ -21,7 +21,7 @@ import ItemIcon from '../../../../components/ItemIcon';
 import ItemConfidence from '../../../../components/ItemConfidence';
 import StixSightingRelationshipPopover from './StixSightingRelationshipPopover';
 import { resolveLink } from '../../../../utils/Entity';
-import { DataColumns } from '../../../../components/list_lines';
+import { DataColumns } from '../../../../components/list_lines/model';
 import { Theme } from '../../../../components/Theme';
 
 const useStyles = makeStyles<Theme>((theme) => ({

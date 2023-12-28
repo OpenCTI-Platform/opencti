@@ -1,7 +1,7 @@
 import React, { FunctionComponent } from 'react';
 import { graphql, PreloadedQuery } from 'react-relay';
 import ListLinesContent from '../../../../../components/list_lines/ListLinesContent';
-import { DataColumns } from '../../../../../components/list_lines';
+import { DataColumns } from '../../../../../components/list_lines/model';
 import type { UseEntityToggle } from '../../../../../utils/hooks/useEntityToggle';
 import { EntityStixCoreRelationshipsEntitiesLineDummy, EntityStixCoreRelationshipsEntitiesViewLine } from './EntityStixCoreRelationshipsEntitiesViewLine';
 import useQueryLoading from '../../../../../utils/hooks/useQueryLoading';

@@ -7,7 +7,7 @@ import { ArrowDropDown, ArrowDropUp } from '@mui/icons-material';
 import { toPairs } from 'ramda';
 import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
 import { useFormatter } from './i18n';
-import { DataColumns } from './list_lines';
+import { DataColumns } from './list_lines/model';
 
 const useStyles = makeStyles(() => ({
   item: {

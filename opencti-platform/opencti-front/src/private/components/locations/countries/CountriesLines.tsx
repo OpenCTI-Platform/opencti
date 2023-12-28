@@ -1,6 +1,6 @@
 import React, { FunctionComponent } from 'react';
 import { graphql, PreloadedQuery } from 'react-relay';
-import { DataColumns } from '../../../../components/list_lines';
+import { DataColumns } from '../../../../components/list_lines/model';
 import ListLinesContent from '../../../../components/list_lines/ListLinesContent';
 import { CountryLineComponent, CountryLineDummy } from './CountryLine';
 import { CountriesLines_data$key } from './__generated__/CountriesLines_data.graphql';

@@ -11,7 +11,7 @@ import * as R from 'ramda';
 import { Theme } from '../../../../components/Theme';
 import { useFormatter } from '../../../../components/i18n';
 import { CountryLine_node$key } from './__generated__/CountryLine_node.graphql';
-import { DataColumns } from '../../../../components/list_lines';
+import { DataColumns } from '../../../../components/list_lines/model';
 import { APP_BASE_PATH } from '../../../../relay/environment';
 import ItemIcon from '../../../../components/ItemIcon';
 

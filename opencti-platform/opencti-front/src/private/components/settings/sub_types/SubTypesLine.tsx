@@ -10,7 +10,7 @@ import { Link } from 'react-router-dom';
 import Checkbox from '@mui/material/Checkbox';
 import makeStyles from '@mui/styles/makeStyles';
 import ItemIcon from '../../../../components/ItemIcon';
-import { DataColumns } from '../../../../components/list_lines';
+import { DataColumns } from '../../../../components/list_lines/model';
 import { useFormatter } from '../../../../components/i18n';
 import { Theme } from '../../../../components/Theme';
 import { SubTypesLine_node$key } from './__generated__/SubTypesLine_node.graphql';

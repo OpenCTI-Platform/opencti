@@ -13,7 +13,7 @@ import { useFormatter } from '../../../../components/i18n';
 import StixCoreObjectLabels from '../../common/stix_core_objects/StixCoreObjectLabels';
 import ItemIcon from '../../../../components/ItemIcon';
 import ItemMarkings from '../../../../components/ItemMarkings';
-import { DataColumns } from '../../../../components/list_lines';
+import { DataColumns } from '../../../../components/list_lines/model';
 import { InfrastructureLine_node$data, InfrastructureLine_node$key } from './__generated__/InfrastructureLine_node.graphql';
 import { Theme } from '../../../../components/Theme';
 import { emptyFilled } from '../../../../utils/String';

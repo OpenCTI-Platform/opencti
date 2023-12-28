@@ -2,7 +2,7 @@ import React, { FunctionComponent } from 'react';
 import { graphql, PreloadedQuery } from 'react-relay';
 import ListLinesContent from '../../../../components/list_lines/ListLinesContent';
 import { AdministrativeAreaLine, AdministrativeAreaLineDummy } from './AdministrativeAreaLine';
-import { DataColumns } from '../../../../components/list_lines';
+import { DataColumns } from '../../../../components/list_lines/model';
 import usePreloadedPaginationFragment from '../../../../utils/hooks/usePreloadedPaginationFragment';
 import { AdministrativeAreasLinesPaginationQuery, AdministrativeAreasLinesPaginationQuery$variables } from './__generated__/AdministrativeAreasLinesPaginationQuery.graphql';
 import { AdministrativeAreasLines_data$key } from './__generated__/AdministrativeAreasLines_data.graphql';

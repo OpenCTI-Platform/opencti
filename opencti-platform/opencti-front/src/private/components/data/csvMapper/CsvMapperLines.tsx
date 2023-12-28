@@ -3,7 +3,7 @@ import { graphql, PreloadedQuery } from 'react-relay';
 import { CsvMapperLines_csvMapper$key } from '@components/data/csvMapper/__generated__/CsvMapperLines_csvMapper.graphql';
 import CsvMapperLine from '@components/data/csvMapper/CsvMapperLine';
 import LineDummy from '@components/common/LineDummy';
-import { DataColumns } from '../../../../components/list_lines';
+import { DataColumns } from '../../../../components/list_lines/model';
 import usePreloadedPaginationFragment from '../../../../utils/hooks/usePreloadedPaginationFragment';
 import ListLinesContent from '../../../../components/list_lines/ListLinesContent';
 import { CsvMapperLinesPaginationQuery, CsvMapperLinesPaginationQuery$variables } from './__generated__/CsvMapperLinesPaginationQuery.graphql';

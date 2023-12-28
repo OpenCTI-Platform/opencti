@@ -14,7 +14,7 @@ import { useFormatter } from '../../../../../components/i18n';
 import { defaultValue } from '../../../../../utils/Graph';
 import StixCoreObjectLabels from '../../stix_core_objects/StixCoreObjectLabels';
 import ItemMarkings from '../../../../../components/ItemMarkings';
-import { DataColumns, PaginationOptions } from '../../../../../components/list_lines';
+import { DataColumns, PaginationOptions } from '../../../../../components/list_lines/model';
 import ToolBar from '../../../data/ToolBar';
 import useQueryLoading from '../../../../../utils/hooks/useQueryLoading';
 import Loader, { LoaderVariant } from '../../../../../components/Loader';

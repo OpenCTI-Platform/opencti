@@ -8,7 +8,7 @@ import makeStyles from '@mui/styles/makeStyles';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import { LockPersonOutlined, NorthEastOutlined, ShortTextOutlined } from '@mui/icons-material';
 import EEChip from '@components/common/entreprise_edition/EEChip';
-import { DataColumns } from '../../../../../components/list_lines';
+import { DataColumns } from '../../../../../components/list_lines/model';
 import { Theme } from '../../../../../components/Theme';
 import ErrorNotFound from '../../../../../components/ErrorNotFound';
 import EntitySettingAttributeEdition from './EntitySettingAttributeEdition';

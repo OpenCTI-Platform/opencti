@@ -10,7 +10,7 @@ import { useFormatter } from '../../../../components/i18n';
 import { DataComponentLine_node$key } from './__generated__/DataComponentLine_node.graphql';
 import { Theme } from '../../../../components/Theme';
 import StixCoreObjectLabels from '../../common/stix_core_objects/StixCoreObjectLabels';
-import { DataColumns } from '../../../../components/list_lines';
+import { DataColumns } from '../../../../components/list_lines/model';
 import ItemIcon from '../../../../components/ItemIcon';
 
 const useStyles = makeStyles<Theme>((theme) => ({

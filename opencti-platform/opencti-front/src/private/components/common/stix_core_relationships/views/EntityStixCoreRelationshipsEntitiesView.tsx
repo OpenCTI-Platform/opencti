@@ -10,7 +10,7 @@ import StixCoreRelationshipCreationFromEntity from '../StixCoreRelationshipCreat
 import Security from '../../../../../utils/Security';
 import { computeTargetStixCyberObservableTypes, computeTargetStixDomainObjectTypes, isStixCoreObjects, isStixCyberObservables } from '../../../../../utils/stixTypeUtils';
 import { PaginationLocalStorage } from '../../../../../utils/hooks/useLocalStorage';
-import { DataColumns, PaginationOptions } from '../../../../../components/list_lines';
+import { DataColumns, PaginationOptions } from '../../../../../components/list_lines/model';
 import { EntityStixCoreRelationshipsEntitiesViewLinesPaginationQuery$variables } from './__generated__/EntityStixCoreRelationshipsEntitiesViewLinesPaginationQuery.graphql';
 import { cleanFilters, removeIdFromFilterGroupObject, injectEntityTypeFilterInFilterGroup } from '../../../../../utils/filters/filtersUtils';
 

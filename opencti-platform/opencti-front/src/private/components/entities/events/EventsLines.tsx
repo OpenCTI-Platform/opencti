@@ -4,7 +4,7 @@ import { EventsLinesPaginationQuery, EventsLinesPaginationQuery$variables } from
 import { EventsLines_data$key } from '@components/entities/events/__generated__/EventsLines_data.graphql';
 import ListLinesContent from '../../../../components/list_lines/ListLinesContent';
 import { EventLine, EventLineDummy } from './EventLine';
-import { DataColumns } from '../../../../components/list_lines';
+import { DataColumns } from '../../../../components/list_lines/model';
 import { UseLocalStorageHelpers } from '../../../../utils/hooks/useLocalStorage';
 import usePreloadedPaginationFragment from '../../../../utils/hooks/usePreloadedPaginationFragment';
 

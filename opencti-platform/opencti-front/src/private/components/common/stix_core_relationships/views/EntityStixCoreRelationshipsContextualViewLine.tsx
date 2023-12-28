@@ -9,7 +9,7 @@ import { graphql, useFragment } from 'react-relay';
 import { ListItemButton } from '@mui/material';
 import { Theme } from '../../../../../components/Theme';
 import { UseEntityToggle } from '../../../../../utils/hooks/useEntityToggle';
-import { DataColumns } from '../../../../../components/list_lines';
+import { DataColumns } from '../../../../../components/list_lines/model';
 import { resolveLink } from '../../../../../utils/Entity';
 import ItemIcon from '../../../../../components/ItemIcon';
 import {

@@ -10,7 +10,7 @@ import { CsvMapperLine_csvMapper$key } from '@components/data/csvMapper/__genera
 import CsvMapperPopover from '@components/data/csvMapper/CsvMapperPopover';
 import { CsvMapperLinesPaginationQuery$variables } from '@components/data/csvMapper/__generated__/CsvMapperLinesPaginationQuery.graphql';
 import { Theme } from '../../../../components/Theme';
-import { DataColumns } from '../../../../components/list_lines';
+import { DataColumns } from '../../../../components/list_lines/model';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
 
 const useStyles = makeStyles<Theme>((theme) => ({

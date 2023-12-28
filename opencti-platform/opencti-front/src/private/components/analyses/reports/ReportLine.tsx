@@ -16,7 +16,7 @@ import StixCoreObjectLabels from '../../common/stix_core_objects/StixCoreObjectL
 import ItemMarkings from '../../../../components/ItemMarkings';
 import ItemIcon from '../../../../components/ItemIcon';
 import { Theme } from '../../../../components/Theme';
-import { DataColumns } from '../../../../components/list_lines';
+import { DataColumns } from '../../../../components/list_lines/model';
 import { ReportLine_node$data } from './__generated__/ReportLine_node.graphql';
 import { emptyFilled } from '../../../../utils/String';
 import { HandleAddFilter } from '../../../../utils/hooks/useLocalStorage';

@@ -5,7 +5,7 @@ import { WorkspacesLines_data$key } from '@components/workspaces/__generated__/W
 import ListLinesContent from '../../../components/list_lines/ListLinesContent';
 import { WorkspaceLine, WorkspaceLineDummy } from './WorkspaceLine';
 import { UseLocalStorageHelpers } from '../../../utils/hooks/useLocalStorage';
-import { DataColumns } from '../../../components/list_lines';
+import { DataColumns } from '../../../components/list_lines/model';
 import usePreloadedPaginationFragment from '../../../utils/hooks/usePreloadedPaginationFragment';
 
 const nbOfRowsToLoad = 50;

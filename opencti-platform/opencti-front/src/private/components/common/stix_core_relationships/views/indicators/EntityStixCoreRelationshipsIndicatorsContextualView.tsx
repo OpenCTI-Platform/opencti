@@ -8,7 +8,7 @@ import {
 } from '@components/common/stix_core_relationships/views/indicators/__generated__/EntityStixCoreRelationshipsIndicatorsContextualViewLinesQuery.graphql';
 import ItemPatternType from '../../../../../../components/ItemPatternType';
 import EntityStixCoreRelationshipsIndicatorsContextualViewLines from './EntityStixCoreRelationshipsIndicatorsContextualViewLines';
-import { DataColumns, PaginationOptions } from '../../../../../../components/list_lines';
+import { DataColumns, PaginationOptions } from '../../../../../../components/list_lines/model';
 import { isEmptyField, isNotEmptyField } from '../../../../../../utils/utils';
 import { EntityStixCoreRelationshipsIndicatorsContextualViewQuery } from './__generated__/EntityStixCoreRelationshipsIndicatorsContextualViewQuery.graphql';
 import { PaginationLocalStorage } from '../../../../../../utils/hooks/useLocalStorage';

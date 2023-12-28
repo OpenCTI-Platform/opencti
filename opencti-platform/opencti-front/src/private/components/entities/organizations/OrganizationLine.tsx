@@ -12,7 +12,7 @@ import { OrganizationLine_node$key } from '@components/entities/organizations/__
 import { useFormatter } from '../../../../components/i18n';
 import StixCoreObjectLabels from '../../common/stix_core_objects/StixCoreObjectLabels';
 import ItemIcon from '../../../../components/ItemIcon';
-import { DataColumns } from '../../../../components/list_lines';
+import { DataColumns } from '../../../../components/list_lines/model';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   item: {

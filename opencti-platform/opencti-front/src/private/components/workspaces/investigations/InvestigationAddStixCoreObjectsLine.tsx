@@ -15,7 +15,7 @@ import ItemMarkings from '../../../../components/ItemMarkings';
 import { defaultValue } from '../../../../utils/Graph';
 import { hexToRGB, itemColor } from '../../../../utils/Colors';
 import { Theme } from '../../../../components/Theme';
-import { DataColumns } from '../../../../components/list_lines';
+import { DataColumns } from '../../../../components/list_lines/model';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   item: {

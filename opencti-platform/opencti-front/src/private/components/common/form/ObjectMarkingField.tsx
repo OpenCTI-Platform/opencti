@@ -11,7 +11,7 @@ import useAuth from '../../../../utils/hooks/useAuth';
 import ItemIcon from '../../../../components/ItemIcon';
 import Transition from '../../../../components/Transition';
 import AutocompleteField from '../../../../components/AutocompleteField';
-import { RenderOption } from '../../../../components/list_lines';
+import { RenderOption } from '../../../../components/list_lines/model';
 import { useFormatter } from '../../../../components/i18n';
 import { convertMarking } from '../../../../utils/edition';
 import { Option } from './ReferenceField';

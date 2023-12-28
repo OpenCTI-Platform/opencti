@@ -13,7 +13,7 @@ import StixCoreObjectLabels from '../../common/stix_core_objects/StixCoreObjectL
 import ItemMarkings from '../../../../components/ItemMarkings';
 import ItemIcon from '../../../../components/ItemIcon';
 import { Theme } from '../../../../components/Theme';
-import { DataColumns } from '../../../../components/list_lines';
+import { DataColumns } from '../../../../components/list_lines/model';
 import { useFormatter } from '../../../../components/i18n';
 
 const useStyles = makeStyles<Theme>((theme) => ({

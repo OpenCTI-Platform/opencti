@@ -10,7 +10,7 @@ import { Theme } from '@mui/material/styles/createTheme';
 import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
 import Chip from '@mui/material/Chip';
 import IconButton from '@mui/material/IconButton';
-import { DataColumns } from '../../../../../components/list_lines';
+import { DataColumns } from '../../../../../components/list_lines/model';
 import FilterIconButton from '../../../../../components/FilterIconButton';
 import { useFormatter } from '../../../../../components/i18n';
 import { dayStartDate } from '../../../../../utils/Time';

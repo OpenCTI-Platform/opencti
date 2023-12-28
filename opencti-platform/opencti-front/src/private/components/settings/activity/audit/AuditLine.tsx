@@ -9,7 +9,7 @@ import ListItemText from '@mui/material/ListItemText';
 import Skeleton from '@mui/material/Skeleton';
 import makeStyles from '@mui/styles/makeStyles';
 import Drawer from '@components/common/drawer/Drawer';
-import { DataColumns } from '../../../../../components/list_lines';
+import { DataColumns } from '../../../../../components/list_lines/model';
 import { AuditLine_node$key } from './__generated__/AuditLine_node.graphql';
 import { Theme } from '../../../../../components/Theme';
 import { useFormatter } from '../../../../../components/i18n';
