@@ -141,7 +141,7 @@ const computeQueryTaskElements = async (context, user, task) => {
   // Apply the actions for each element
   for (let elementIndex = 0; elementIndex < elements.length; elementIndex += 1) {
     const element = elements[elementIndex];
-    if (!task_excluded_ids.includes(element.node.id)) {
+    if (!task_excluded_ids.includes(element.node.id) && isTaskEnabledEntity(element.node.entity_type)) {
       processingElements.push({ element: element.node, next: element.cursor });
     }
   }
