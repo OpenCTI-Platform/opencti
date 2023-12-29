@@ -165,8 +165,10 @@ describe('CSV-PARSER', () => {
     const bundle = await bundleProcess(testContext, ADMIN_USER, filPath, csvMapperMalware);
     const { objects } = bundle;
 
-    expect(objects.length).toBe(2);
+    expect(objects.length).toBe(4);
     expect(objects[0].is_family).toBe(true);
     expect(objects[1].is_family).toBe(false);
+    expect(objects[2].is_family).toBe(true);
+    expect(objects[3].is_family).toBe(true);
   });
 });
