@@ -47,7 +47,7 @@ import { TopBarNotificationNumberSubscription, TopBarNotificationNumberSubscript
 import useAuth from '../../../utils/hooks/useAuth';
 import { useSettingsMessagesBannerHeight } from '../settings/settings_messages/SettingsMessagesBanner';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
-import { handleSearchByKeyword } from '../../../utils/SearchUtils';
+import { decodeSearchKeyword, handleSearchByKeyword } from '../../../utils/SearchUtils';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   appBar: {
@@ -213,7 +213,7 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
   };
 
   // global search keyword
-  const keyword = location.pathname.match(/(?:\/([a-zA-Z]+)){4}/)?.[1] ?? '';
+  const keyword = decodeSearchKeyword(location.pathname.match(/(?:\/dashboard\/search\/(?:knowledge|files)\/(.*))/)?.[1] ?? '');
 
   const extractId = (path = '') => location.pathname.split(path)[1].split('/')[0];
   const [routePath, routeFn] = Object.entries(routes).find(([path]) => location.pathname.includes(path))
