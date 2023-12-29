@@ -14,6 +14,7 @@ import type { AttributeDefinition } from './attribute-definition';
 import type { EditInput } from '../generated/graphql';
 import { EditOperation } from '../generated/graphql';
 import { utcDate } from '../utils/format';
+import { isBasicRelationship } from './stixRelationship';
 
 const ajv = new Ajv();
 
@@ -90,12 +91,17 @@ export const validateAndFormatSchemaAttribute = (
   }
 };
 
+const VIRTUAL_RELATION_INPUTS = ['fromId', 'toId'];
 const validateFormatSchemaAttributes = async (context: AuthContext, user: AuthUser, instanceType: string, editInputs: EditInput[]) => {
   const validateFormatSchemaAttributesFn = async () => {
     const availableAttributes = schemaAttributesDefinition.getAttributes(instanceType);
     editInputs.forEach((editInput) => {
       const attributeDefinition = availableAttributes.get(editInput.key);
-      validateAndFormatSchemaAttribute(instanceType, editInput.key, attributeDefinition, editInput);
+      if (isBasicRelationship(instanceType) && VIRTUAL_RELATION_INPUTS.includes(editInput.key)) {
+        // Virtual inputs like fromId are not declared in the schema
+      } else {
+        validateAndFormatSchemaAttribute(instanceType, editInput.key, attributeDefinition, editInput);
+      }
     });
   };
   return telemetry(context, user, 'SCHEMA ATTRIBUTES VALIDATION', {
