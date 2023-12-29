@@ -1599,6 +1599,7 @@ const i18n = {
       'Distribution of entities': 'Distribución de entidades',
       'Entities distribution': 'Distribución de entidades',
       'Distribution of opinions': 'Distribución de opiniones',
+      'There are no opinions. You should create some before.': 'There are no opinions. You should create some before.',
       'Observables distribution': 'Distribución de observables',
       'Distribution of relations (including inferred)':
         'Distribución de reñacopmes (incluyendo inferencias)',
@@ -3982,6 +3983,7 @@ const i18n = {
       'Distribution of entities': 'Distribution des entités',
       'Entities distribution': 'Distribution des entités',
       'Distribution of opinions': 'Distribution des opinions',
+      'There are no opinions. You should create some before.': 'Il n’y a pas d’opinions. Vous devriez en créer avant.',
       'Observables distribution': 'Distribution des observables',
       'Distribution of relations (including inferred)':
         'Répartition des relations (inférences incluses)',
@@ -6294,6 +6296,7 @@ const i18n = {
       'Distribution of entities': 'エンティティの分布',
       'Entities distribution': 'エンティティの分布',
       'Distribution of opinions': 'オピニオンの分布',
+      'There are no opinions. You should create some before.': '意見はありません。事前にいくつか作成する必要があります。',
       'Observables distribution': '観測結果の分布',
       'Distribution of relations (including inferred)':
         'リレーション(推論を含む)の分布',
@@ -8480,6 +8483,7 @@ const i18n = {
       'Distribution of entities': '实体分布',
       'Entities distribution': '实体分布',
       'Distribution of opinions': '意见分布',
+      'There are no opinions. You should create some before.': '沒有意見。你應該先創建一些。',
       'Observables distribution': '可观测数据分布',
       'Distribution of relations (including inferred)': '关系分布(包含推理)',
       'Distribution of relations': '关系分布',

@@ -5,7 +5,6 @@ import { ThumbsUpDownOutlined } from '@mui/icons-material';
 import DialogTitle from '@mui/material/DialogTitle';
 import DialogContent from '@mui/material/DialogContent';
 import DialogActions from '@mui/material/DialogActions';
-import { Link } from 'react-router-dom';
 import Button from '@mui/material/Button';
 import Dialog from '@mui/material/Dialog';
 import { Field, Form, Formik } from 'formik';
@@ -89,11 +88,7 @@ StixCoreObjectOpinionsRadarDialogProps
     } else {
       MESSAGING$.notifyError(
         <span>
-          {t('There are no opinions. You can create some ')}{' '}
-          <Link to="/dashboard/settings/vocabularies/fields/opinion_ov">
-            {t('in this page')}
-          </Link>
-          .
+          {t('There are no opinions. You should create some before.')}
         </span>,
       );
     }
