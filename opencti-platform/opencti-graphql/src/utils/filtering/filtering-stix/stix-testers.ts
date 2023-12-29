@@ -2,7 +2,6 @@ import { STIX_EXT_OCTI, STIX_EXT_OCTI_SCO } from '../../../types/stix-extensions
 import { generateInternalType, getParentTypes } from '../../../schema/schemaUtils';
 import { STIX_TYPE_RELATION, STIX_TYPE_SIGHTING } from '../../../schema/general';
 import { stixRefsExtractor } from '../../../schema/stixEmbeddedRelationship';
-import { generateStandardId } from '../../../schema/identifier';
 import { testStringFilter, testNumericFilter, toValidArray, testBooleanFilter } from '../boolean-logic-engine';
 import type { TesterFunction } from '../boolean-logic-engine';
 
@@ -267,15 +266,6 @@ export const testRelationToTypes = (stix: any, filter: Filter) => {
 };
 
 /**
- * REFS
- * - uses a refs extractor using the standardId generator
- */
-export const testRefs = (stix: any, filter: Filter) => {
-  const stixValues: string[] = stixRefsExtractor(stix, generateStandardId);
-  return testStringFilter(filter, stixValues);
-};
-
-/**
  * CONNECTED TO for DIRECT EVENTS ONLY
  * test if the stix is directly related to the instance id
  */
@@ -310,7 +300,7 @@ export const testConnectedToSideEvents = (stix: any, filter: Filter) => {
     aggregatedStixValues.push(...toValidArray(stix.sighting_of_ref)); // from
   }
   // refs
-  aggregatedStixValues.push(...stixRefsExtractor(stix, generateStandardId));
+  aggregatedStixValues.push(...stixRefsExtractor(stix));
 
   return testStringFilter(filter, aggregatedStixValues);
 };

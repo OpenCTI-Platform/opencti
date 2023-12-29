@@ -101,7 +101,7 @@ import {
 
 import '../../../src/modules/index';
 import { ADMIN_USER, testContext } from '../../utils/testQuery';
-import { isDateNumericOrBooleanAttribute, isJsonAttribute, isMultipleAttribute, isObjectAttribute, schemaAttributesDefinition } from '../../../src/schema/schema-attributes';
+import { isDateNumericOrBooleanAttribute, isMultipleAttribute, isObjectAttribute, schemaAttributesDefinition } from '../../../src/schema/schema-attributes';
 import { ENTITY_TYPE_ENTITY_SETTING } from '../../../src/modules/entitySetting/entitySetting-types';
 import { ENTITY_TYPE_CHANNEL } from '../../../src/modules/channel/channel-types';
 import { ENTITY_TYPE_INDICATOR } from '../../../src/modules/indicator/indicator-types';
@@ -219,7 +219,6 @@ describe('Testing schema types definition', () => {
 
 describe('Testing schema attributes definition', () => {
   it('Attributes type testing', () => {
-    expect(isJsonAttribute('revoked')).toBe(false);
     expect(isObjectAttribute('bookmarks')).toBe(true);
     expect(isDateNumericOrBooleanAttribute('bookmarks')).toBe(false);
     expect(isDateNumericOrBooleanAttribute('attribute_order')).toBe(true);
@@ -260,8 +259,8 @@ describe('Testing schema relations ref definition', () => {
     expect(schemaRelationsRefDefinition.getRelationRef(ENTITY_TYPE_CONTAINER_REPORT, createdBy.inputName).inputName === createdBy.inputName).toBe(true);
     expect(schemaRelationsRefDefinition.getInputNames(ENTITY_TYPE_CONTAINER_REPORT).includes(objectMarking.inputName)).toBe(true);
     expect(schemaRelationsRefDefinition.getStixNames(ENTITY_TYPE_CONTAINER_REPORT).includes(objectLabel.stixName)).toBe(true);
-    expect(schemaRelationsRefDefinition.isMultipleDatabaseName(ENTITY_TYPE_CONTAINER_REPORT, externalReferences.databaseName)).toBe(true);
-    expect(schemaRelationsRefDefinition.convertDatabaseNameToInputName(ENTITY_TYPE_CONTAINER_REPORT, externalReferences.databaseName) === externalReferences.inputName).toBe(true);
+    expect(schemaRelationsRefDefinition.isMultipleDatabaseName(ENTITY_TYPE_CONTAINER_REPORT, externalReferences.name)).toBe(true);
+    expect(schemaRelationsRefDefinition.convertDatabaseNameToInputName(ENTITY_TYPE_CONTAINER_REPORT, externalReferences.name) === externalReferences.inputName).toBe(true);
     expect(schemaRelationsRefDefinition.convertStixNameToInputName(ENTITY_TYPE_CONTAINER_REPORT, externalReferences.stixName) === externalReferences.inputName).toBe(true);
   });
   it('Relations Cyber Observable testing', () => {

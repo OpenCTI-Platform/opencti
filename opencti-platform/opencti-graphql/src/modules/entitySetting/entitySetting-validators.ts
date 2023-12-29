@@ -109,10 +109,10 @@ const attributesConfigurationValidation = async (context: AuthContext, user: Aut
           if (defaultValues) {
             const checkValues = Array.isArray(defaultValues) ? defaultValues : [defaultValues];
             const checkInput: EditInput = { operation: EditOperation.Replace, key: attributeDefinition.name, value: checkValues };
-            validateAndFormatSchemaAttribute(targetType, attr.name, attributeDefinition, input, checkInput);
+            validateAndFormatSchemaAttribute(targetType, attr.name, attributeDefinition, checkInput);
           }
         } else if (relationRefDefinition) {
-          if (relationRefDefinition.inputName === INPUT_MARKINGS) {
+          if (relationRefDefinition.name === INPUT_MARKINGS) {
             if (getDefaultValues(attr, false) !== 'false' && getDefaultValues(attr, false) !== 'true') {
               throw ValidationError(attr.name, {
                 message: 'This field is not supported to declare a default value. You can only activate/deactivate the possibility to have a default value.',

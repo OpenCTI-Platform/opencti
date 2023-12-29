@@ -1,4 +1,3 @@
-import type { Checker, RelationRefDefinition } from './relationRef-definition';
 import {
   ABSTRACT_STIX_CYBER_OBSERVABLE_RELATIONSHIP,
   ABSTRACT_STIX_META_RELATIONSHIP,
@@ -22,6 +21,7 @@ import { ENTITY_TYPE_USER } from './internalObject';
 import { schemaTypesDefinition } from './schema-types';
 import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../modules/organization/organization-types';
 import { ENTITY_TYPE_THREAT_ACTOR_INDIVIDUAL } from '../modules/threatActorIndividual/threatActorIndividual-types';
+import type { Checker, RefAttribute } from './attribute-definition';
 
 export const ABSTRACT_STIX_NESTED_REF_RELATIONSHIP = 'stix-nested-ref-relationship'; // Only for front usage
 
@@ -87,330 +87,388 @@ export const RELATION_SERVICE_DLL = 'service-dll';
 
 // -- RELATIONS REF ---
 
-export const operatingSystems: Omit<RelationRefDefinition, 'checker'> = {
-  inputName: INPUT_OPERATING_SYSTEM,
+export const operatingSystems: Omit<RefAttribute, 'checker'> = {
+  name: INPUT_OPERATING_SYSTEM,
+  type: 'ref',
   databaseName: RELATION_OPERATING_SYSTEM,
   stixName: 'operating_system_refs',
   mandatoryType: 'no',
   editDefault: false,
   multiple: true,
+  upsert: true,
   datable: true,
   label: 'Operating System',
   isFilterable: true,
 };
 
-export const samples: Omit<RelationRefDefinition, 'checker'> = {
-  inputName: INPUT_SAMPLE,
+export const samples: Omit<RefAttribute, 'checker'> = {
+  name: INPUT_SAMPLE,
+  type: 'ref',
   databaseName: RELATION_SAMPLE,
   stixName: 'sample_refs',
   mandatoryType: 'no',
   editDefault: false,
   multiple: true,
+  upsert: true,
   datable: true,
   label: 'Sample',
   isFilterable: true,
 };
 
-export const contains: Omit<RelationRefDefinition, 'checker'> = {
-  inputName: INPUT_CONTAINS,
-  label: 'Contains',
+export const contains: Omit<RefAttribute, 'checker'> = {
+  name: INPUT_CONTAINS,
+  type: 'ref',
   databaseName: RELATION_CONTAINS,
+  label: 'Contains',
   stixName: 'contains_refs',
   mandatoryType: 'no',
   editDefault: false,
   multiple: true,
+  upsert: true,
   datable: true,
   isFilterable: true,
 };
-export const resolvesTo: Omit<RelationRefDefinition, 'checker'> = {
-  inputName: INPUT_RESOLVES_TO,
-  label: 'Resolves to',
+export const resolvesTo: Omit<RefAttribute, 'checker'> = {
+  name: INPUT_RESOLVES_TO,
+  type: 'ref',
   databaseName: RELATION_RESOLVES_TO,
+  label: 'Resolves to',
   stixName: 'resolves_to_refs',
   mandatoryType: 'no',
   editDefault: false,
   multiple: true,
+  upsert: true,
   datable: true,
   isFilterable: true,
 };
-export const belongsTo: Omit<RelationRefDefinition, 'checker'> = {
-  inputName: INPUT_BELONGS_TO,
-  label: 'Belongs to',
+export const belongsTo: Omit<RefAttribute, 'checker'> = {
+  name: INPUT_BELONGS_TO,
+  type: 'ref',
   databaseName: RELATION_BELONGS_TO,
+  label: 'Belongs to',
   stixName: 'belongs_to_refs',
   mandatoryType: 'no',
   editDefault: false,
   multiple: true,
+  upsert: true,
   datable: true,
   isFilterable: true,
 };
-export const from: Omit<RelationRefDefinition, 'checker'> = {
-  inputName: INPUT_FROM,
-  label: 'From',
+export const from: Omit<RefAttribute, 'checker'> = {
+  name: INPUT_FROM,
+  type: 'ref',
   databaseName: RELATION_FROM,
+  label: 'From',
   stixName: 'from_ref',
   mandatoryType: 'no',
   editDefault: false,
   multiple: false,
+  upsert: true,
   datable: true,
   isFilterable: true,
 };
-export const sender: Omit<RelationRefDefinition, 'checker'> = {
-  inputName: INPUT_SENDER,
-  label: 'Sender',
+export const sender: Omit<RefAttribute, 'checker'> = {
+  name: INPUT_SENDER,
+  type: 'ref',
   databaseName: RELATION_SENDER,
+  label: 'Sender',
   stixName: 'sender_ref',
   mandatoryType: 'no',
   editDefault: false,
   multiple: false,
+  upsert: true,
   datable: true,
   isFilterable: true,
 };
-export const to: Omit<RelationRefDefinition, 'checker'> = {
-  inputName: INPUT_TO,
-  label: 'To',
+export const to: Omit<RefAttribute, 'checker'> = {
+  name: INPUT_TO,
+  type: 'ref',
   databaseName: RELATION_TO,
+  label: 'To',
   stixName: 'to_refs',
   mandatoryType: 'no',
   editDefault: false,
   multiple: true,
+  upsert: true,
   datable: true,
   isFilterable: true,
 };
-export const cc: Omit<RelationRefDefinition, 'checker'> = {
-  inputName: INPUT_CC,
-  label: 'CC',
+export const cc: Omit<RefAttribute, 'checker'> = {
+  name: INPUT_CC,
+  type: 'ref',
   databaseName: RELATION_CC,
+  label: 'CC',
   stixName: 'cc_refs',
   mandatoryType: 'no',
   editDefault: false,
   multiple: true,
+  upsert: true,
   datable: true,
   isFilterable: true,
 };
-export const bcc: Omit<RelationRefDefinition, 'checker'> = {
-  inputName: INPUT_BCC,
-  label: 'BCC',
+export const bcc: Omit<RefAttribute, 'checker'> = {
+  name: INPUT_BCC,
+  type: 'ref',
   databaseName: RELATION_BCC,
+  label: 'BCC',
   stixName: 'bcc_refs',
   mandatoryType: 'no',
   editDefault: false,
   multiple: true,
+  upsert: true,
   datable: true,
   isFilterable: true,
 };
-export const rawEmail: Omit<RelationRefDefinition, 'checker'> = {
-  inputName: INPUT_RAW_EMAIL,
-  label: 'Raw email',
+export const rawEmail: Omit<RefAttribute, 'checker'> = {
+  name: INPUT_RAW_EMAIL,
+  type: 'ref',
   databaseName: RELATION_RAW_EMAIL,
+  label: 'Raw email',
   stixName: 'raw_email_ref',
   mandatoryType: 'no',
   editDefault: false,
   multiple: false,
+  upsert: true,
   datable: true,
   isFilterable: true,
 };
-export const bodyRaw: Omit<RelationRefDefinition, 'checker'> = {
-  inputName: INPUT_BODY_RAW,
-  label: 'Body raw reference',
+export const bodyRaw: Omit<RefAttribute, 'checker'> = {
+  name: INPUT_BODY_RAW,
+  type: 'ref',
   databaseName: RELATION_BODY_RAW,
+  label: 'Body raw reference',
   stixName: 'body_raw_ref',
   mandatoryType: 'no',
   editDefault: false,
   multiple: false,
+  upsert: true,
   datable: true,
   isFilterable: true,
 };
-export const parentDirectory: Omit<RelationRefDefinition, 'checker'> = {
-  inputName: INPUT_PARENT_DIRECTORY,
-  label: 'Parent directory',
+export const parentDirectory: Omit<RefAttribute, 'checker'> = {
+  name: INPUT_PARENT_DIRECTORY,
+  type: 'ref',
   databaseName: RELATION_PARENT_DIRECTORY,
+  label: 'Parent directory',
   stixName: 'parent_directory_ref',
   mandatoryType: 'no',
   editDefault: false,
   multiple: false,
+  upsert: true,
   datable: true,
   isFilterable: true,
 };
-export const obsContent: Omit<RelationRefDefinition, 'checker'> = {
-  inputName: INPUT_CONTENT,
-  label: 'Content',
+export const obsContent: Omit<RefAttribute, 'checker'> = {
+  name: INPUT_CONTENT,
+  type: 'ref',
   databaseName: RELATION_CONTENT,
+  label: 'Content',
   stixName: 'content_ref',
   mandatoryType: 'no',
   editDefault: false,
   multiple: false,
+  upsert: true,
   datable: true,
   isFilterable: true,
 };
-export const src: Omit<RelationRefDefinition, 'checker'> = {
-  inputName: INPUT_SRC,
-  label: 'SRC',
+export const src: Omit<RefAttribute, 'checker'> = {
+  name: INPUT_SRC,
+  type: 'ref',
   databaseName: RELATION_SRC,
+  label: 'SRC',
   stixName: 'src_ref',
   mandatoryType: 'no',
   editDefault: false,
   multiple: false,
+  upsert: true,
   datable: true,
   isFilterable: true,
 };
-export const dst: Omit<RelationRefDefinition, 'checker'> = {
-  inputName: INPUT_DST,
-  label: 'DST',
+export const dst: Omit<RefAttribute, 'checker'> = {
+  name: INPUT_DST,
+  type: 'ref',
   databaseName: RELATION_DST,
+  label: 'DST',
   stixName: 'dst_ref',
   mandatoryType: 'no',
   editDefault: false,
   multiple: false,
+  upsert: true,
   datable: true,
   isFilterable: true,
 };
-export const srcPayload: Omit<RelationRefDefinition, 'checker'> = {
-  inputName: INPUT_SRC_PAYLOAD,
-  label: 'SRC Payload',
+export const srcPayload: Omit<RefAttribute, 'checker'> = {
+  name: INPUT_SRC_PAYLOAD,
+  type: 'ref',
   databaseName: RELATION_SRC_PAYLOAD,
+  label: 'SRC Payload',
   stixName: 'src_payload_ref',
   mandatoryType: 'no',
   editDefault: false,
   multiple: false,
+  upsert: true,
   datable: true,
   isFilterable: true,
 };
-export const dstPayload: Omit<RelationRefDefinition, 'checker'> = {
-  inputName: INPUT_DST_PAYLOAD,
-  label: 'DST Payload',
+export const dstPayload: Omit<RefAttribute, 'checker'> = {
+  name: INPUT_DST_PAYLOAD,
+  type: 'ref',
   databaseName: RELATION_DST_PAYLOAD,
+  label: 'DST Payload',
   stixName: 'dst_payload_ref',
   mandatoryType: 'no',
   editDefault: false,
   multiple: false,
+  upsert: true,
   datable: true,
   isFilterable: true,
 };
-export const encapsulates: Omit<RelationRefDefinition, 'checker'> = {
-  inputName: INPUT_ENCAPSULATES,
-  label: 'Encapsulates',
+export const encapsulates: Omit<RefAttribute, 'checker'> = {
+  name: INPUT_ENCAPSULATES,
+  type: 'ref',
   databaseName: RELATION_ENCAPSULATES,
+  label: 'Encapsulates',
   stixName: 'encapsulates_refs',
   mandatoryType: 'no',
   editDefault: false,
   multiple: true,
+  upsert: true,
   datable: true,
   isFilterable: true,
 };
-export const encapsulatedBy: Omit<RelationRefDefinition, 'checker'> = {
-  inputName: INPUT_ENCAPSULATED_BY,
-  label: 'Encaspulated by',
+export const encapsulatedBy: Omit<RefAttribute, 'checker'> = {
+  name: INPUT_ENCAPSULATED_BY,
+  type: 'ref',
   databaseName: RELATION_ENCAPSULATED_BY,
+  label: 'Encaspulated by',
   stixName: 'encapsulated_by_ref',
   mandatoryType: 'no',
   editDefault: false,
   multiple: false,
+  upsert: true,
   datable: true,
   isFilterable: true,
 };
-export const openedConnections: Omit<RelationRefDefinition, 'checker'> = {
-  inputName: INPUT_OPENED_CONNECTION,
-  label: 'Opened connection',
+export const openedConnections: Omit<RefAttribute, 'checker'> = {
+  name: INPUT_OPENED_CONNECTION,
+  type: 'ref',
   databaseName: RELATION_OPENED_CONNECTION,
+  label: 'Opened connection',
   stixName: 'opened_connection_refs',
   mandatoryType: 'no',
   editDefault: false,
   multiple: true,
+  upsert: true,
   datable: true,
   isFilterable: true,
 };
-export const creatorUser: Omit<RelationRefDefinition, 'checker'> = {
-  inputName: INPUT_CREATOR_USER,
-  label: 'User creator',
+export const creatorUser: Omit<RefAttribute, 'checker'> = {
+  name: INPUT_CREATOR_USER,
+  type: 'ref',
   databaseName: RELATION_CREATOR_USER,
+  label: 'User creator',
   stixName: 'creator_user_ref',
   mandatoryType: 'no',
   editDefault: false,
   multiple: false,
+  upsert: true,
   datable: true,
   isFilterable: true,
 };
-export const image: Omit<RelationRefDefinition, 'checker'> = {
-  inputName: INPUT_IMAGE,
-  label: 'Image',
+export const image: Omit<RefAttribute, 'checker'> = {
+  name: INPUT_IMAGE,
+  type: 'ref',
   databaseName: RELATION_IMAGE,
+  label: 'Image',
   stixName: 'image_ref',
   mandatoryType: 'no',
   editDefault: false,
   multiple: false,
+  upsert: true,
   datable: true,
   isFilterable: true,
 };
-export const parent: Omit<RelationRefDefinition, 'checker'> = {
-  inputName: INPUT_PARENT,
-  label: 'Parent',
+export const parent: Omit<RefAttribute, 'checker'> = {
+  name: INPUT_PARENT,
+  type: 'ref',
   databaseName: RELATION_PARENT,
+  label: 'Parent',
   stixName: 'parent_ref',
   mandatoryType: 'no',
   editDefault: false,
   multiple: false,
+  upsert: true,
   datable: true,
   isFilterable: true,
 };
-export const child: Omit<RelationRefDefinition, 'checker'> = {
-  inputName: INPUT_CHILD,
-  label: 'Child',
+export const child: Omit<RefAttribute, 'checker'> = {
+  name: INPUT_CHILD,
+  type: 'ref',
   databaseName: RELATION_CHILD,
+  label: 'Child',
   stixName: 'child_refs',
   mandatoryType: 'no',
   editDefault: false,
   multiple: true,
+  upsert: true,
   datable: true,
   isFilterable: true,
 };
-export const bodyMultipart: Omit<RelationRefDefinition, 'checker'> = {
-  inputName: INPUT_BODY_MULTIPART,
-  label: 'Body multiplart',
+export const bodyMultipart: Omit<RefAttribute, 'checker'> = {
+  name: INPUT_BODY_MULTIPART,
+  type: 'ref',
   databaseName: RELATION_BODY_MULTIPART,
+  label: 'Body multiplart',
   stixName: 'body_multipart',
   mandatoryType: 'no',
   editDefault: false,
   multiple: true,
+  upsert: true,
   datable: true,
   isFilterable: true,
 };
-export const values: Omit<RelationRefDefinition, 'checker'> = {
-  inputName: INPUT_VALUES,
-  label: 'Values',
+export const values: Omit<RefAttribute, 'checker'> = {
+  name: INPUT_VALUES,
+  type: 'ref',
   databaseName: RELATION_VALUES,
+  label: 'Values',
   stixName: 'values_refs',
   mandatoryType: 'no',
   editDefault: false,
   multiple: true,
+  upsert: true,
   datable: true,
   isFilterable: true,
 };
-export const xOpenctiLinkedTo: RelationRefDefinition = {
-  inputName: INPUT_LINKED,
-  label: 'Linked to',
+export const xOpenctiLinkedTo: RefAttribute = {
+  name: INPUT_LINKED,
+  type: 'ref',
   databaseName: RELATION_LINKED,
+  label: 'Linked to',
   stixName: 'x_opencti_linked_to_refs',
   mandatoryType: 'no',
   editDefault: false,
   multiple: true,
+  upsert: true,
   checker: () => true,
   datable: true,
   isFilterable: true,
 };
-export const serviceDlls: Omit<RelationRefDefinition, 'checker'> = {
-  inputName: INPUT_SERVICE_DLL,
-  label: 'DLL service',
+export const serviceDlls: Omit<RefAttribute, 'checker'> = {
+  name: INPUT_SERVICE_DLL,
+  type: 'ref',
   databaseName: RELATION_SERVICE_DLL,
+  label: 'DLL service',
   stixName: 'service_dll_refs',
   mandatoryType: 'no',
   editDefault: false,
   multiple: true,
+  upsert: true,
   datable: true,
   isFilterable: true,
 };
 
-export const STIX_REF_RELATIONSHIPS: Omit<RelationRefDefinition, 'checker'>[] = [
+export const STIX_REF_RELATIONSHIPS: Omit<RefAttribute, 'checker'>[] = [
   operatingSystems,
   samples,
   contains,
@@ -459,92 +517,106 @@ export const RELATION_ETHNICITY = 'of-ethnicity'; // Extension (TIM)
 
 // EXTERNAL
 
-export const createdBy: RelationRefDefinition = {
-  inputName: INPUT_CREATED_BY,
+export const createdBy: RefAttribute = {
+  name: INPUT_CREATED_BY,
+  type: 'ref',
   databaseName: RELATION_CREATED_BY,
   stixName: 'created_by_ref',
   mandatoryType: 'customizable',
   editDefault: true,
   multiple: false,
+  upsert: true,
   checker: (_, toType) => isStixDomainObjectIdentity(toType),
   label: 'Author',
   datable: false,
   isFilterable: true,
 };
 
-export const objectMarking: RelationRefDefinition = {
-  inputName: INPUT_MARKINGS,
+export const objectMarking: RefAttribute = {
+  name: INPUT_MARKINGS,
+  type: 'ref',
   databaseName: RELATION_OBJECT_MARKING,
   stixName: 'object_marking_refs',
   mandatoryType: 'customizable',
   editDefault: true,
   multiple: true,
+  upsert: true,
   checker: (_, toType) => ENTITY_TYPE_MARKING_DEFINITION === toType,
   label: 'Markings',
   datable: false,
   isFilterable: true,
 };
 
-export const objects: RelationRefDefinition = {
-  inputName: INPUT_OBJECTS,
-  label: 'Contains',
+export const objects: RefAttribute = {
+  name: INPUT_OBJECTS,
+  type: 'ref',
   databaseName: RELATION_OBJECT,
+  label: 'Contains',
   stixName: 'object_refs',
   mandatoryType: 'internal',
   editDefault: false,
   multiple: true,
+  upsert: true,
   checker: (fromType,) => isStixDomainObjectContainer(fromType),
   datable: false,
   isFilterable: true,
 };
 
-export const objectOrganization: RelationRefDefinition = {
-  inputName: INPUT_GRANTED_REFS,
-  label: 'Granted by',
+export const objectOrganization: RefAttribute = {
+  name: INPUT_GRANTED_REFS,
+  type: 'ref',
   databaseName: RELATION_GRANTED_TO,
+  label: 'Granted by',
   stixName: 'granted_refs',
   mandatoryType: 'no',
   editDefault: false,
   multiple: true,
+  upsert: true,
   checker: (fromType, toType) => !(fromType === ENTITY_TYPE_EVENT || isStixDomainObjectIdentity(fromType)
       || isStixDomainObjectLocation(fromType)) && ENTITY_TYPE_IDENTITY_ORGANIZATION === toType,
   datable: false,
   isFilterable: true,
 };
 
-export const objectAssignee: RelationRefDefinition = {
-  inputName: INPUT_ASSIGNEE,
+export const objectAssignee: RefAttribute = {
+  name: INPUT_ASSIGNEE,
+  type: 'ref',
   databaseName: RELATION_OBJECT_ASSIGNEE,
   stixName: 'object_assignee_refs',
   mandatoryType: 'customizable',
   editDefault: true,
   multiple: true,
+  upsert: true,
   checker: (_, toType) => ENTITY_TYPE_USER === toType,
   label: 'Assignees',
   datable: false,
   isFilterable: true,
 };
 
-export const objectParticipant: RelationRefDefinition = {
-  inputName: INPUT_PARTICIPANT,
+export const objectParticipant: RefAttribute = {
+  name: INPUT_PARTICIPANT,
+  type: 'ref',
   databaseName: RELATION_OBJECT_PARTICIPANT,
   stixName: 'object_participant_refs',
   mandatoryType: 'customizable',
   editDefault: true,
   multiple: true,
+  upsert: true,
   checker: (_, toType) => ENTITY_TYPE_USER === toType,
   label: 'Participants',
   datable: false,
   isFilterable: true,
 };
 
-export const bornIn: RelationRefDefinition = {
-  inputName: INPUT_BORN_IN,
+export const bornIn: RefAttribute = {
+  name: INPUT_BORN_IN,
+  type: 'ref',
   databaseName: RELATION_BORN_IN,
   stixName: 'born_in_ref',
   mandatoryType: 'no',
   editDefault: false,
   multiple: false,
+  upsert: true,
   checker: (fromType, toType) => ENTITY_TYPE_THREAT_ACTOR_INDIVIDUAL === fromType
     && ENTITY_TYPE_LOCATION_COUNTRY === toType,
   label: 'Born In',
@@ -552,13 +624,15 @@ export const bornIn: RelationRefDefinition = {
   isFilterable: true,
 };
 
-export const ethnicity: RelationRefDefinition = {
-  inputName: INPUT_ETHNICITY,
+export const ethnicity: RefAttribute = {
+  name: INPUT_ETHNICITY,
+  type: 'ref',
   databaseName: RELATION_ETHNICITY,
   stixName: 'ethnicity_ref',
   mandatoryType: 'no',
   editDefault: false,
   multiple: false,
+  upsert: true,
   checker: (fromType, toType) => ENTITY_TYPE_THREAT_ACTOR_INDIVIDUAL === fromType
     && ENTITY_TYPE_LOCATION_COUNTRY === toType,
   label: 'Ethnicity',
@@ -568,45 +642,51 @@ export const ethnicity: RelationRefDefinition = {
 
 // INTERNAL
 
-export const objectLabel: RelationRefDefinition = {
-  inputName: INPUT_LABELS,
+export const objectLabel: RefAttribute = {
+  name: INPUT_LABELS,
+  type: 'ref',
   databaseName: RELATION_OBJECT_LABEL,
   stixName: 'labels',
   mandatoryType: 'no',
   editDefault: false,
   multiple: true,
+  upsert: true,
   checker: (_, toType) => toType === ENTITY_TYPE_LABEL,
   label: 'Label',
   datable: false,
   isFilterable: true,
 };
 
-export const externalReferences: RelationRefDefinition = {
-  inputName: INPUT_EXTERNAL_REFS,
+export const externalReferences: RefAttribute = {
+  name: INPUT_EXTERNAL_REFS,
+  type: 'ref',
   databaseName: RELATION_EXTERNAL_REFERENCE,
   stixName: 'external_references',
   mandatoryType: 'no',
   editDefault: false,
   multiple: true,
+  upsert: true,
   checker: (_, toType) => toType === ENTITY_TYPE_EXTERNAL_REFERENCE,
   label: 'External reference',
   datable: false,
   isFilterable: true,
 };
-export const killChainPhases: RelationRefDefinition = {
-  inputName: INPUT_KILLCHAIN,
+export const killChainPhases: RefAttribute = {
+  name: INPUT_KILLCHAIN,
+  type: 'ref',
   databaseName: RELATION_KILL_CHAIN_PHASE,
   stixName: 'kill_chain_phases',
   mandatoryType: 'customizable',
   editDefault: true,
   multiple: true,
+  upsert: true,
   checker: (_, toType) => toType === ENTITY_TYPE_KILL_CHAIN_PHASE,
   label: 'Kill chain phase',
   datable: false,
   isFilterable: true,
 };
 
-export const META_RELATIONS: RelationRefDefinition[] = [
+export const META_RELATIONS: RefAttribute[] = [
   objectLabel,
   externalReferences,
   killChainPhases,
@@ -623,12 +703,12 @@ export const META_RELATIONS: RelationRefDefinition[] = [
 // Register
 schemaTypesDefinition.register(
   ABSTRACT_STIX_REF_RELATIONSHIP,
-  [...STIX_REF_RELATIONSHIPS, ...META_RELATIONS].map((arr) => arr.databaseName)
+  [...STIX_REF_RELATIONSHIPS, ...META_RELATIONS].map((arr) => arr.name)
 );
 
 export const isStixRefRelationship = (type: string) => schemaTypesDefinition.isTypeIncludedIn(type, ABSTRACT_STIX_REF_RELATIONSHIP) || type === ABSTRACT_STIX_REF_RELATIONSHIP;
 
-export const buildRelationRef = (relationRef: Omit<RelationRefDefinition, 'checker'>, checker: Checker): RelationRefDefinition => {
+export const buildRelationRef = (relationRef: Omit<RefAttribute, 'checker'>, checker: Checker): RefAttribute => {
   return {
     ...relationRef,
     checker

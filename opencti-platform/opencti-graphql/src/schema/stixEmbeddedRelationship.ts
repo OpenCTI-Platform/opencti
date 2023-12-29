@@ -20,7 +20,7 @@ const RELATIONS_EMBEDDED_STIX_ATTRIBUTES = [
   externalReferences.stixName, killChainPhases.stixName, objectLabel.stixName, bodyMultipart.stixName
 ];
 // eslint-disable-next-line
-export const stixRefsExtractor = (data: any, idGenerator?: (key: string, data: unknown) => string) => {
+export const stixRefsExtractor = (data: any) => {
   if (!data.extensions?.[STIX_EXT_OCTI]?.type) {
     return [];
   }
@@ -34,20 +34,4 @@ export const stixRefsExtractor = (data: any, idGenerator?: (key: string, data: u
     }
     return data[key] || [];
   }).flat();
-};
-
-export const resolvedRefsExtractor = (data: any) => {
-  const { type } = data.extensions[STIX_EXT_OCTI];
-  const stixNames = schemaRelationsRefDefinition.getStixNames(type)
-    .filter((key) => !RELATIONS_EMBEDDED_STIX_ATTRIBUTES.includes(key))
-    .concat(RELATIONS_STIX_ATTRIBUTES);
-  const mapContent = stixNames.map((key) => {
-    if (key === 'granted_refs' && data.extensions[STIX_EXT_OCTI][key]) {
-      return [data.extensions[STIX_EXT_OCTI][key], schemaRelationsRefDefinition.relationsRefMap(type).get(key)];
-    }
-    return data[key] && schemaRelationsRefDefinition.relationsRefMap(type).has(key)
-      ? [data[key], schemaRelationsRefDefinition.relationsRefMap(type).get(key)]
-      : undefined;
-  }).filter((n) => n) as [string, string | undefined][];
-  return new Map(mapContent);
 };

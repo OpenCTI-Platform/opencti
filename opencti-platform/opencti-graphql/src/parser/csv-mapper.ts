@@ -110,7 +110,7 @@ const isValidInput = (input: Record<string, InputType>) => {
     .map((attr) => attr.name);
   const mandatoryRefs = schemaRelationsRefDefinition.getRelationsRef(input[entityType.name] as string)
     .filter((ref) => ref.mandatoryType === 'external')
-    .map((ref) => ref.inputName);
+    .map((ref) => ref.name);
 
   return [...mandatoryAttributes, ...mandatoryRefs].every((key) => isNotEmptyField(input[key]));
 };

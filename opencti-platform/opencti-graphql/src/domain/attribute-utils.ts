@@ -73,6 +73,6 @@ export const INTERNAL_ATTRIBUTES = [
 ];
 
 export const INTERNAL_REFS = [
-  xOpenctiLinkedTo.inputName,
+  xOpenctiLinkedTo.name,
   'objectOrganization'
 ];

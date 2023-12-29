@@ -35,8 +35,8 @@ const DATA_COMPONENT_DEFINITION: ModuleDefinition<StoreEntityDataComponent, Stix
     },
   },
   attributes: [
-    { name: 'name', label: 'Name', type: 'string', mandatoryType: 'external', editDefault: true, multiple: false, upsert: true, isFilterable: true },
-    { name: 'description', label: 'Description', type: 'string', mandatoryType: 'customizable', editDefault: true, multiple: false, upsert: true, isFilterable: true },
+    { name: 'name', label: 'Name', type: 'string', format: 'short', mandatoryType: 'external', editDefault: true, multiple: false, upsert: true, isFilterable: true },
+    { name: 'description', label: 'Description', type: 'string', format: 'short', mandatoryType: 'customizable', editDefault: true, multiple: false, upsert: true, isFilterable: true },
   ],
   relations: [
     {
@@ -51,13 +51,15 @@ const DATA_COMPONENT_DEFINITION: ModuleDefinition<StoreEntityDataComponent, Stix
   ],
   relationsRefs: [
     {
+      name: INPUT_DATA_SOURCE,
+      type: 'ref',
+      databaseName: RELATION_DATA_SOURCE,
       stixName: ATTRIBUTE_DATA_SOURCE,
       label: 'Data source',
-      inputName: INPUT_DATA_SOURCE,
-      databaseName: RELATION_DATA_SOURCE,
       mandatoryType: 'no',
       editDefault: false,
       multiple: false,
+      upsert: true,
       checker: (fromType, toType) => toType === ENTITY_TYPE_DATA_SOURCE,
       isFilterable: true,
     },

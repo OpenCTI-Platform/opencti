@@ -7,7 +7,7 @@ import { isBasicRelationship } from '../schema/stixRelationship';
 import { EVENT_TYPE_CREATE, EVENT_TYPE_DELETE, isNotEmptyField, UPDATE_OPERATION_REPLACE } from './utils';
 import { UnsupportedError } from '../config/errors';
 import { schemaRelationsRefDefinition } from '../schema/schema-relationsRef';
-import { isDateAttribute, isJsonAttribute, isObjectAttribute, schemaAttributesDefinition } from '../schema/schema-attributes';
+import { schemaAttributesDefinition } from '../schema/schema-attributes';
 import { truncate } from '../utils/mailData';
 import { creators } from '../schema/attribute-definition';
 import { FROM_START_STR, UNTIL_END_STR } from '../utils/format';
@@ -78,10 +78,10 @@ export const generateUpdateMessage = async (context, entityType, inputs) => {
       let message = 'nothing';
       let convertedKey;
       const relationsRefDefinition = schemaRelationsRefDefinition.getRelationRef(entityType, key);
+      const attributeDefinition = schemaAttributesDefinition.getAttribute(entityType, key);
       if (relationsRefDefinition) {
         convertedKey = relationsRefDefinition.label ?? relationsRefDefinition.stixName;
       } else {
-        const attributeDefinition = schemaAttributesDefinition.getAttribute(entityType, key);
         convertedKey = attributeDefinition.label ?? attributeDefinition.name;
       }
       const fromArray = Array.isArray(value) ? value : [value];
@@ -97,11 +97,11 @@ export const generateUpdateMessage = async (context, entityType, inputs) => {
             const member = members.find(({ internal_id }) => internal_id === id);
             return `${member?.name ?? id} (${access_right})`;
           }).join(', ');
-        } else if (isJsonAttribute(key)) {
+        } else if (attributeDefinition.type === 'string' && attributeDefinition.format === 'json') {
           message = values.map((v) => truncate(JSON.stringify(v)));
-        } else if (isDateAttribute(key)) {
+        } else if (attributeDefinition.type === 'date') {
           message = values.map((v) => ((v === FROM_START_STR || v === UNTIL_END_STR) ? 'nothing' : v));
-        } else if (isObjectAttribute(key)) {
+        } else if (attributeDefinition.type === 'object') {
           message = jsonToPlainText(values, { color: false, spacing: false });
         } else {
           // If standard primitive data, just join the values

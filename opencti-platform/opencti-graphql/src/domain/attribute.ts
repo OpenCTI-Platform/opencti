@@ -7,13 +7,13 @@ import type { AuthContext, AuthUser } from '../types/user';
 import type { QueryRuntimeAttributesArgs } from '../generated/graphql';
 import { defaultScale, getAttributesConfiguration, getEntitySettingFromCache } from '../modules/entitySetting/entitySetting-utils';
 import { schemaRelationsRefDefinition } from '../schema/schema-relationsRef';
-import type { RelationRefDefinition } from '../schema/relationRef-definition';
 import type { BasicStoreEntityEntitySetting } from '../modules/entitySetting/entitySetting-types';
 import { internalFindByIds } from '../database/middleware-loader';
 import { extractRepresentative } from '../database/entity-representative';
 import { telemetry } from '../config/tracing';
 import { INTERNAL_ATTRIBUTES, INTERNAL_REFS } from './attribute-utils';
 import { isStixCoreRelationship } from '../schema/stixCoreRelationship';
+import type { RefAttribute } from '../schema/attribute-definition';
 
 interface ScaleAttribute {
   name: string
@@ -69,11 +69,11 @@ export const queryAttributesDefinition = async (context: AuthContext, user: Auth
     });
 
     // From schema relations ref
-    const relationsRef: RelationRefDefinition[] = schemaRelationsRefDefinition.getRelationsRef(entitySetting.target_type);
+    const relationsRef: RefAttribute[] = schemaRelationsRefDefinition.getRelationsRef(entitySetting.target_type);
     relationsRef.forEach((rel) => {
       if (rel.mandatoryType === 'external' || rel.mandatoryType === 'customizable') {
         const attributeConfig: AttributeConfigMeta = {
-          name: rel.inputName,
+          name: rel.name,
           label: rel.label,
           type: 'string',
           mandatoryType: rel.mandatoryType,
@@ -107,7 +107,7 @@ export const queryAttributesDefinition = async (context: AuthContext, user: Auth
     // Resolve default values ref
     const resolveRef = (attributes: AttributeConfigMeta[]) => {
       return Promise.all(attributes.map((attr) => {
-        if (attr.name !== 'objectMarking' && relationsRef.map((ref) => ref.inputName).includes(attr.name)) {
+        if (attr.name !== 'objectMarking' && relationsRef.map((ref) => ref.name).includes(attr.name)) {
           return internalFindByIds(context, user, attr.defaultValues?.map((v) => v.id) ?? [])
             .then((data) => ({
               ...attr,
@@ -180,9 +180,9 @@ export const getSchemaAttributes = async (context: AuthContext, entityType: stri
   // Handle ref
   const refs = schemaRelationsRefDefinition.getRelationsRef(entityType);
   const resultRefs: AttributeConfigMeta[] = refs
-    .filter((ref) => !INTERNAL_REFS.includes(ref.inputName))
+    .filter((ref) => !INTERNAL_REFS.includes(ref.name))
     .map((ref) => ({
-      name: ref.inputName,
+      name: ref.name,
       label: ref.label,
       type: 'ref',
       mandatoryType: ref.mandatoryType,

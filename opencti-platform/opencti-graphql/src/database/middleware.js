@@ -190,15 +190,7 @@ import { getEntitiesListFromCache } from './cache';
 import { ACTION_TYPE_SHARE, ACTION_TYPE_UNSHARE, createListTask } from '../domain/backgroundTask-common';
 import { ENTITY_TYPE_VOCABULARY, vocabularyDefinitions } from '../modules/vocabulary/vocabulary-types';
 import { getVocabulariesCategories, getVocabularyCategoryForField, isEntityFieldAnOpenVocabulary, updateElasticVocabularyValue } from '../modules/vocabulary/vocabulary-utils';
-import {
-  depsKeysRegister,
-  isBooleanAttribute,
-  isDateAttribute,
-  isMultipleAttribute,
-  isNumericAttribute,
-  isObjectAttribute,
-  schemaAttributesDefinition
-} from '../schema/schema-attributes';
+import { depsKeysRegister, isDateAttribute, isMultipleAttribute, isNumericAttribute, isObjectAttribute, schemaAttributesDefinition } from '../schema/schema-attributes';
 import { getAttributesConfiguration, getDefaultValues, getEntitySettingFromCache } from '../modules/entitySetting/entitySetting-utils';
 import { schemaRelationsRefDefinition } from '../schema/schema-relationsRef';
 import { validateInputCreation, validateInputUpdate } from '../schema/schema-validator';
@@ -1468,8 +1460,9 @@ const innerUpdateAttribute = (instance, rawInput) => {
 const prepareAttributesForUpdate = (instance, elements, upsert) => {
   const instanceType = instance.entity_type;
   return elements.map((input) => {
+    const def = schemaAttributesDefinition.getAttribute(instance.entity_type, input.key);
     // Check integer
-    if (isNumericAttribute(input.key)) {
+    if (def.type === 'numeric') {
       return {
         key: input.key,
         value: R.map((value) => {
@@ -1481,7 +1474,7 @@ const prepareAttributesForUpdate = (instance, elements, upsert) => {
       };
     }
     // Check boolean
-    if (isBooleanAttribute(input.key)) {
+    if (def.type === 'boolean') {
       return {
         key: input.key,
         value: R.map((value) => {
@@ -1490,19 +1483,21 @@ const prepareAttributesForUpdate = (instance, elements, upsert) => {
       };
     }
     // Check dates for empty values
-    if (dateForStartAttributes.includes(input.key)) {
-      const emptyValue = isEmptyField(input.value) || isEmptyField(input.value.at(0));
-      return {
-        key: input.key,
-        value: emptyValue ? [FROM_START_STR] : input.value,
-      };
-    }
-    if (dateForEndAttributes.includes(input.key)) {
-      const emptyValue = isEmptyField(input.value) || isEmptyField(input.value.at(0));
-      return {
-        key: input.key,
-        value: emptyValue ? [UNTIL_END_STR] : input.value,
-      };
+    if (def.type === 'date') {
+      if (dateForStartAttributes.includes(input.key)) {
+        const emptyValue = isEmptyField(input.value) || isEmptyField(input.value.at(0));
+        return {
+          key: input.key,
+          value: emptyValue ? [FROM_START_STR] : input.value,
+        };
+      }
+      if (dateForEndAttributes.includes(input.key)) {
+        const emptyValue = isEmptyField(input.value) || isEmptyField(input.value.at(0));
+        return {
+          key: input.key,
+          value: emptyValue ? [UNTIL_END_STR] : input.value,
+        };
+      }
     }
     // Specific case for Label
     if (input.key === VALUE_FIELD && instanceType === ENTITY_TYPE_LABEL) {
@@ -2621,7 +2616,7 @@ const upsertElement = async (context, user, element, type, updatePatch, opts = {
     }
   }
   // -- Upsert refs
-  const metaInputFields = schemaRelationsRefDefinition.getRelationsRef(element.entity_type).map((ref) => ref.inputName);
+  const metaInputFields = schemaRelationsRefDefinition.getRelationsRef(element.entity_type).map((ref) => ref.name);
   for (let fieldIndex = 0; fieldIndex < metaInputFields.length; fieldIndex += 1) {
     const inputField = metaInputFields[fieldIndex];
     const relDef = schemaRelationsRefDefinition.getRelationRef(element.entity_type, inputField);
@@ -3142,7 +3137,7 @@ const buildEntityData = async (context, user, input, type, opts = {}) => {
   const inputFields = schemaRelationsRefDefinition.getRelationsRef(input.entity_type);
   for (let fieldIndex = 0; fieldIndex < inputFields.length; fieldIndex += 1) {
     const inputField = inputFields[fieldIndex];
-    await appendMetaRelationships(inputField.inputName, inputField.databaseName);
+    await appendMetaRelationships(inputField.name, inputField.databaseName);
   }
 
   // Transaction succeed, complete the result to send it back

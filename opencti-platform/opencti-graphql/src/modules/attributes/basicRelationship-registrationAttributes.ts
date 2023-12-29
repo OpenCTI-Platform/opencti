@@ -25,8 +25,8 @@ const basicRelationshipAttributes: Array<AttributeDefinition> = [
   createdAt,
   updatedAt,
   creators,
-  { name: 'fromType', label: 'Source entity', type: 'string', editDefault: false, mandatoryType: 'internal', multiple: false, upsert: false, isFilterable: true }, // TODO to remove ?
-  { name: 'toType', label: 'Target entity', type: 'string', editDefault: false, mandatoryType: 'internal', multiple: false, upsert: false, isFilterable: true }, // TODO to remove?
+  { name: 'fromType', label: 'Source entity', type: 'string', format: 'short', editDefault: false, mandatoryType: 'internal', multiple: false, upsert: false, isFilterable: true }, // TODO to remove ?
+  { name: 'toType', label: 'Target entity', type: 'string', format: 'short', editDefault: false, mandatoryType: 'internal', multiple: false, upsert: false, isFilterable: true }, // TODO to remove?
   { name: 'i_inference_weight', label: 'Inference weight', type: 'numeric', precision: 'integer', editDefault: false, mandatoryType: 'no', multiple: false, upsert: false, isFilterable: true },
   {
     name: 'connections',
@@ -43,9 +43,9 @@ const basicRelationshipAttributes: Array<AttributeDefinition> = [
         isFilterable: true,
         associatedFilterKeys: [{ key: 'fromId', label: 'Source entity' }, { key: 'toId', label: 'Target entity' }, { key: 'elementId', label: 'Related entity' }]
       },
-      { name: 'name', label: 'Name', type: 'string', editDefault: false, mandatoryType: 'no', multiple: true, upsert: true, isFilterable: false },
-      { name: 'role', label: 'Role', type: 'string', editDefault: false, mandatoryType: 'no', multiple: true, upsert: true, isFilterable: false },
-      { name: 'types', label: 'Types', type: 'string', editDefault: false, mandatoryType: 'no', multiple: true, upsert: true, isFilterable: true, associatedFilterKeys: [{ key: 'fromTypes', label: 'Source type' }, { key: 'toTypes', label: 'Target type' }] },
+      { name: 'name', label: 'Name', type: 'string', format: 'short', editDefault: false, mandatoryType: 'no', multiple: true, upsert: true, isFilterable: false },
+      { name: 'role', label: 'Role', type: 'string', format: 'short', editDefault: false, mandatoryType: 'no', multiple: true, upsert: true, isFilterable: false },
+      { name: 'types', label: 'Types', type: 'string', format: 'short', editDefault: false, mandatoryType: 'no', multiple: true, upsert: true, isFilterable: true, associatedFilterKeys: [{ key: 'fromTypes', label: 'Source type' }, { key: 'toTypes', label: 'Target type' }] },
     ],
   },
 ];

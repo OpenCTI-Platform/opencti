@@ -3,6 +3,7 @@ import { RULE_PREFIX } from './general';
 import { UnsupportedError } from '../config/errors';
 import type { AttributeDefinition, AttrType } from './attribute-definition';
 import { getParentTypes } from './schemaUtils';
+import { schemaRelationsRefDefinition } from './schema-relationsRef';
 
 export const depsKeysRegister = {
   deps: [] as { src: string, types?: string[] }[],
@@ -27,9 +28,7 @@ export const schemaAttributesDefinition = {
     date: new Map<string, void>(),
     numeric: new Map<string, void>(),
     boolean: new Map<string, void>(),
-    json: new Map<string, void>(),
     object: new Map<string, void>(),
-    object_flat: new Map<string, void>(),
   } as Record<AttrType, Map<string, void>>,
   upsertByEntity: new Map<string, string[]>(),
 
@@ -42,11 +41,39 @@ export const schemaAttributesDefinition = {
     attributes.forEach((attribute) => {
       // Check the homogeneity of attribute types
       const existingAttribute = allAttributes.find((a) => a.get(attribute.name))?.get(attribute.name); // Maybe better way ?
-      if (existingAttribute && existingAttribute.type !== attribute.type) {
-        throw UnsupportedError('You can\'t have two attributes with the same name and a different type in the platform', {
-          existingAttribute,
-          attribute,
-        });
+      if (existingAttribute) {
+        if (existingAttribute.type === 'string') {
+          if (existingAttribute.type !== attribute.type || existingAttribute.format !== attribute.format) {
+            throw UnsupportedError('You can\'t have two attributes with the same name and a different type in the platform', {
+              existingAttribute,
+              attribute,
+            });
+          }
+        }
+        if (existingAttribute.type === 'numeric') {
+          if (existingAttribute.type !== attribute.type || existingAttribute.precision !== attribute.precision) {
+            throw UnsupportedError('You can\'t have two attributes with the same name and a different type in the platform', {
+              existingAttribute,
+              attribute,
+            });
+          }
+        }
+        if (existingAttribute.type === 'object') {
+          if (existingAttribute.type !== attribute.type || existingAttribute.format !== attribute.format) {
+            throw UnsupportedError('You can\'t have two attributes with the same name and a different type in the platform', {
+              existingAttribute,
+              attribute,
+            });
+          }
+        }
+        if (existingAttribute.type === 'date' || existingAttribute.type === 'boolean') {
+          if (existingAttribute.type !== attribute.type) {
+            throw UnsupportedError('You can\'t have two attributes with the same name and a different type in the platform', {
+              existingAttribute,
+              attribute,
+            });
+          }
+        }
       }
       // Check duplicate attributes
       if (directAttributes.has(attribute.name)) {
@@ -55,7 +82,6 @@ export const schemaAttributesDefinition = {
           entityType
         });
       }
-
       directAttributes.set(attribute.name, attribute);
       // add the attribute name and type in the map of all the attributes
       // to do so, we overwrite an eventual attribute having the same name for an other entity type
@@ -104,7 +130,9 @@ export const schemaAttributesDefinition = {
 
   getAttributes(entityType: string): Map<string, AttributeDefinition> {
     this.computeCache(entityType);
-    return this.attributesCache.get(entityType) ?? new Map();
+    const attributesRefs = schemaRelationsRefDefinition.relationsRefMap(entityType) ?? new Map();
+    const attributes = this.attributesCache.get(entityType) ?? new Map();
+    return new Map([...attributesRefs, ...attributes]);
   },
 
   getAllAttributesNames(): Array<string> {
@@ -118,7 +146,11 @@ export const schemaAttributesDefinition = {
 
   getAttribute(entityType: string, name: string): AttributeDefinition | null {
     this.computeCache(entityType);
-    return this.getAttributes(entityType)?.get(name) ?? null;
+    const attributeDefinition = this.getAttributes(entityType)?.get(name);
+    if (!attributeDefinition) {
+      throw UnsupportedError('Cant get definition for attribute', { type: entityType, name });
+    }
+    return attributeDefinition;
   },
 
   getUpsertAttributeNames(entityType: string): string[] {
@@ -138,9 +170,6 @@ export const schemaAttributesDefinition = {
 };
 
 // -- TYPE --
-export const isStringAttribute = (k: string): boolean => (
-  schemaAttributesDefinition.isSpecificTypeAttribute(k, 'string')
-);
 export const isBooleanAttribute = (k: string): boolean => (
   schemaAttributesDefinition.isSpecificTypeAttribute(k, 'boolean')
 );
@@ -149,9 +178,6 @@ export const isDateAttribute = (k: string): boolean => (
 );
 export const isObjectAttribute = (k: string): boolean => (
   schemaAttributesDefinition.isSpecificTypeAttribute(k, 'object')
-);
-export const isJsonAttribute = (k: string): boolean => (
-  schemaAttributesDefinition.isSpecificTypeAttribute(k, 'json')
 );
 export const isNumericAttribute = (k: string): boolean => (
   schemaAttributesDefinition.isSpecificTypeAttribute(k, 'numeric')
