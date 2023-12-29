@@ -12,6 +12,7 @@ import { csvMapperMockSimpleSighting } from './simple-sighting-test/csv-mapper-m
 import { bundleProcess } from '../../../src/parser/csv-bundler';
 import { ADMIN_USER, testContext } from '../../utils/testQuery';
 import { csvMapperMockSimpleSkipLine } from './simple-skip-line-test/csv-mapper-mock-simple-skip-line';
+import { csvMapperMalware } from './entities-with-booleans/mapper';
 
 describe('CSV-HELPER', () => {
   it('Column name to idx', async () => {
@@ -157,5 +158,16 @@ describe('CSV-PARSER', () => {
       .toBeNull();
     expect(threatActorWithTypes.threat_actor_types.length)
       .toBe(2);
+  });
+
+  it('Parse CSV - manage boolean values', async () => {
+    const filPath = './tests/02-integration/05-parser/entities-with-booleans/malwares.csv';
+    const bundle = await bundleProcess(testContext, ADMIN_USER, filPath, csvMapperMalware);
+    const { objects } = bundle;
+
+    expect(objects.length).toBe(2);
+    expect(objects[0].is_family).toBe(true);
+    expect(objects.length).toBe(2);
+    expect(objects[1].is_family).toBe(false);
   });
 });
