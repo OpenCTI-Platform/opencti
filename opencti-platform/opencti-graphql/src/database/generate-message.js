@@ -74,7 +74,7 @@ export const generateUpdateMessage = async (context, entityType, inputs) => {
 
   // noinspection UnnecessaryLocalVariableJS
   const generatedMessage = patchElements.slice(0, 3).map(([type, operations]) => {
-    return `${type}s ${operations.slice(0, 3).map(({ key, value }) => {
+    return `${type}s ${operations.slice(0, 3).map(({ key, value, object_path }) => {
       let message = 'nothing';
       let convertedKey;
       const relationsRefDefinition = schemaRelationsRefDefinition.getRelationRef(entityType, key);
@@ -82,7 +82,7 @@ export const generateUpdateMessage = async (context, entityType, inputs) => {
       if (relationsRefDefinition) {
         convertedKey = relationsRefDefinition.label ?? relationsRefDefinition.stixName;
       } else {
-        convertedKey = attributeDefinition.label ?? attributeDefinition.name;
+        convertedKey = object_path ?? attributeDefinition.label ?? attributeDefinition.name;
       }
       const fromArray = Array.isArray(value) ? value : [value];
       const values = fromArray.slice(0, 3).filter((v) => isNotEmptyField(v));

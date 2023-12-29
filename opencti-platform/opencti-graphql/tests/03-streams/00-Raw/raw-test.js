@@ -41,7 +41,7 @@ describe('Raw streams tests', () => {
       expect(updateEventsByTypes['marking-definition'].length).toBe(2);
       expect(updateEventsByTypes['campaign'].length).toBe(7);
       expect(updateEventsByTypes['relationship'].length).toBe(7);
-      expect(updateEventsByTypes['identity'].length).toBe(12);
+      expect(updateEventsByTypes['identity'].length).toBe(11);
       expect(updateEventsByTypes['malware'].length).toBe(13);
       expect(updateEventsByTypes['intrusion-set'].length).toBe(4);
       expect(updateEventsByTypes['data-component'].length).toBe(2);

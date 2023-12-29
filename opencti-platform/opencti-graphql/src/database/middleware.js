@@ -142,7 +142,6 @@ import {
   ATTRIBUTE_ALIASES,
   ATTRIBUTE_ALIASES_OPENCTI,
   ENTITY_TYPE_CONTAINER_OBSERVED_DATA,
-  ENTITY_TYPE_CONTAINER_REPORT,
   ENTITY_TYPE_IDENTITY_INDIVIDUAL,
   isStixDomainObject,
   isStixDomainObjectShareableContainer,
@@ -174,7 +173,7 @@ import {
 import { isRuleUser, RULES_ATTRIBUTES_BEHAVIOR } from '../rules/rules-utils';
 import { instanceMetaRefsExtractor, isSingleRelationsRef, } from '../schema/stixEmbeddedRelationship';
 import { createEntityAutoEnrichment } from '../domain/enrichment';
-import { convertExternalReferenceToStix, convertStoreToStix, isTrustedStixId } from './stix-converter';
+import { convertExternalReferenceToStix, convertStoreToStix } from './stix-converter';
 import {
   buildAggregationRelationFilter,
   buildEntityFilters,
@@ -1451,14 +1450,14 @@ const innerUpdateAttribute = (instance, rawInput) => {
   // Check consistency
   checkAttributeConsistency(instance.entity_type, key);
   const input = rebuildAndMergeInputFromExistingData(rawInput, instance);
-  if (R.isEmpty(input)) return [];
-  const updatedInputs = [input];
-  // Specific case for Report
-  if (instance.entity_type === ENTITY_TYPE_CONTAINER_REPORT && key === 'published') {
-    const createdInput = { key: 'created', value: input.value };
-    updatedInputs.push(createdInput);
-  }
-  return updatedInputs;
+  if (R.isEmpty(input)) return undefined;
+  // const updatedInputs = [input];
+  // // Specific case for Report
+  // if (instance.entity_type === ENTITY_TYPE_CONTAINER_REPORT && key === 'published') {
+  //   const createdInput = { key: 'created', value: input.value };
+  //   updatedInputs.push(createdInput);
+  // }
+  return input;
 };
 const prepareAttributesForUpdate = (instance, elements, upsert) => {
   const instanceType = instance.entity_type;
@@ -1566,7 +1565,7 @@ const updateAttributeRaw = async (context, user, instance, inputs, opts = {}) =>
   // Prepare attributes
   const preparedElements = prepareAttributesForUpdate(instance, elements, upsert);
   // region Check date range
-  const inputKeys = inputs.map((i) => i.key);
+  const inputKeys = elements.map((i) => i.key);
   if (inputKeys.includes(START_TIME) || inputKeys.includes(STOP_TIME)) {
     updateDateRangeValidation(instance, preparedElements, START_TIME, STOP_TIME);
   }
@@ -1728,63 +1727,38 @@ const updateAttributeRaw = async (context, user, instance, inputs, opts = {}) =>
   for (let index = 0; index < preparedElements.length; index += 1) {
     const input = preparedElements[index];
     const ins = innerUpdateAttribute(instance, input);
-    if (ins.length > 0) {
-      const filteredIns = ins.filter((o) => {
-        if (o.key === IDS_STIX) {
-          const previous = getPreviousInstanceValue(o.key, instance);
-          if (o.operation === UPDATE_OPERATION_ADD) {
-            const newValues = o.value.filter((p) => !(previous || []).includes(p));
-            return newValues.filter((p) => isTrustedStixId(p)).length > 0;
-          }
-          if (o.operation === UPDATE_OPERATION_REMOVE) {
-            const newValues = (previous || []).filter((p) => !o.value.includes(p));
-            return newValues.filter((p) => isTrustedStixId(p)).length > 0;
-          }
-          return o.value.filter((p) => isTrustedStixId(p)).length > 0;
-        }
-        // Updated inputs must not be internals
-        return !o.key.startsWith('i_') && o.key !== 'x_opencti_graph_data';
-      });
-      if (filteredIns.length > 0) {
-        const updatedInputsFiltered = filteredIns.map((filteredInput) => {
-          // TODO JRI Rework that part
-          const previous = getPreviousInstanceValue(filteredInput.key, instance);
+    if (ins) { // If update will really produce a data change
+      impactedInputs.push(ins);
+      // region Compute the update to push in the stream
+      if (!input.key.startsWith('i_') && input.key !== 'x_opencti_graph_data') {
+        const previous = getPreviousInstanceValue(input.key, instance);
+        if (input.operation === UPDATE_OPERATION_ADD || input.operation === UPDATE_OPERATION_REMOVE) {
+          // Check symmetric difference for add and remove
+          updatedInputs.push({
+            operation: input.operation,
+            key: input.key,
+            value: R.symmetricDifference(previous ?? [], input.value ?? []),
+            previous,
+          });
+        } else { // REPLACE
           // Specific input resolution for workflow
-          if (filteredInput.key === X_WORKFLOW_ID) {
+          // eslint-disable-next-line no-lonely-if
+          if (input.key === X_WORKFLOW_ID) {
             // workflow_id is not a relation but message must contain the name and not the internal id
-            const workflowId = R.head(filteredInput.value);
+            const workflowId = R.head(input.value);
             const workflowStatus = workflowId ? platformStatuses.find((p) => p.id === workflowId) : workflowId;
-            return {
-              operation: filteredInput.operation,
-              key: filteredInput.key,
+            updatedInputs.push({
+              operation: input.operation,
+              key: input.key,
               value: [workflowStatus ? workflowStatus.name : null],
               previous,
-            };
+            });
+          } else {
+            updatedInputs.push({ ...input, previous });
           }
-          // Check symmetric difference for add and remove
-          if (filteredInput.operation === UPDATE_OPERATION_ADD || filteredInput.operation === UPDATE_OPERATION_REMOVE) {
-            return {
-              operation: filteredInput.operation,
-              key: filteredInput.key,
-              value: R.symmetricDifference(previous ?? [], filteredInput.value ?? []),
-              previous,
-            };
-          }
-          // For replace, if its a complex object, do a simple diff
-          if (filteredInput.operation === UPDATE_OPERATION_REPLACE && isObjectAttribute(filteredInput.key)) {
-            return {
-              operation: filteredInput.operation,
-              key: filteredInput.key,
-              value: R.difference(filteredInput.value ?? [], previous ?? []),
-              previous,
-            };
-          }
-          // For simple values, just keep everything in the replace
-          return { ...filteredInput, previous };
-        });
-        updatedInputs.push(...updatedInputsFiltered);
+        }
       }
-      impactedInputs.push(...ins);
+      // endregion
     }
   }
   // Impact the updated_at only if stix data is impacted
