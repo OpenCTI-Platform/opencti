@@ -8,9 +8,7 @@ export const stringMapping = {
     },
   },
 };
-export const textMapping = {
-  type: 'text'
-};
+export const textMapping = { type: 'text' };
 export const dateMapping = { type: 'date' };
 export const booleanMapping = { type: 'boolean' };
 export const numericMapping = (precision: string) => ({ type: precision, coerce: false });
