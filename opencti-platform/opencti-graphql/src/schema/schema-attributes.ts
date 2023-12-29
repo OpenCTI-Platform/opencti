@@ -144,13 +144,14 @@ export const schemaAttributesDefinition = {
     return Array.from(this.getAttributes(entityType).keys());
   },
 
-  getAttribute(entityType: string, name: string): AttributeDefinition | null {
+  getAttribute(entityType: string, name: string): AttributeDefinition | undefined {
     this.computeCache(entityType);
-    const attributeDefinition = this.getAttributes(entityType)?.get(name);
-    if (!attributeDefinition) {
-      throw UnsupportedError('Cant get definition for attribute', { type: entityType, name });
-    }
-    return attributeDefinition;
+    return this.getAttributes(entityType)?.get(name);
+    // if (!attributeDefinition) {
+    //   console.log({ type: entityType, name });
+    //   throw UnsupportedError('Cant get definition for attribute', { type: entityType, name });
+    // }
+    // return attributeDefinition;
   },
 
   getUpsertAttributeNames(entityType: string): string[] {
