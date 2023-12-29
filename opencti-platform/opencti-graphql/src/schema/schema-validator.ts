@@ -14,29 +14,21 @@ import type { AttributeDefinition } from './attribute-definition';
 import type { EditInput } from '../generated/graphql';
 import { EditOperation } from '../generated/graphql';
 import { utcDate } from '../utils/format';
-import { isBasicRelationship } from './stixRelationship';
 
 const ajv = new Ajv();
 
 // -- VALIDATE ATTRIBUTE AVAILABILITY AND FORMAT --
 export const validateAndFormatSchemaAttribute = (
-  instanceType: string,
   attributeName: string,
   attributeDefinition: AttributeDefinition | undefined,
   editInput: EditInput
 ) => {
   // Basic validation
-  if (!attributeDefinition) {
-    throw ValidationError(attributeName, {
-      message: 'This attribute is not declared for this type',
-      data: { attribute: attributeName, entityType: instanceType }
-    });
+  if (!attributeDefinition || isEmptyField(editInput.value)) {
+    return;
   }
   if (!attributeDefinition.multiple && editInput.value.length > 1) {
     throw ValidationError(attributeName, { message: `Attribute ${attributeName} cannot be multiple`, data: editInput });
-  }
-  if (isEmptyField(editInput.value)) {
-    return;
   }
   // Data validation
   if (attributeDefinition.type === 'string') {
@@ -91,17 +83,12 @@ export const validateAndFormatSchemaAttribute = (
   }
 };
 
-const VIRTUAL_RELATION_INPUTS = ['fromId', 'toId'];
 const validateFormatSchemaAttributes = async (context: AuthContext, user: AuthUser, instanceType: string, editInputs: EditInput[]) => {
   const validateFormatSchemaAttributesFn = async () => {
     const availableAttributes = schemaAttributesDefinition.getAttributes(instanceType);
     editInputs.forEach((editInput) => {
       const attributeDefinition = availableAttributes.get(editInput.key);
-      if (isBasicRelationship(instanceType) && VIRTUAL_RELATION_INPUTS.includes(editInput.key)) {
-        // Virtual inputs like fromId are not declared in the schema
-      } else {
-        validateAndFormatSchemaAttribute(instanceType, editInput.key, attributeDefinition, editInput);
-      }
+      validateAndFormatSchemaAttribute(editInput.key, attributeDefinition, editInput);
     });
   };
   return telemetry(context, user, 'SCHEMA ATTRIBUTES VALIDATION', {

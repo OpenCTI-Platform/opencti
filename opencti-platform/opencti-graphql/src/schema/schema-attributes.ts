@@ -3,7 +3,6 @@ import { RULE_PREFIX } from './general';
 import { UnsupportedError } from '../config/errors';
 import type { AttributeDefinition, AttrType } from './attribute-definition';
 import { getParentTypes } from './schemaUtils';
-import { schemaRelationsRefDefinition } from './schema-relationsRef';
 
 export const depsKeysRegister = {
   deps: [] as { src: string, types?: string[] }[],
@@ -130,9 +129,10 @@ export const schemaAttributesDefinition = {
 
   getAttributes(entityType: string): Map<string, AttributeDefinition> {
     this.computeCache(entityType);
-    const attributesRefs = schemaRelationsRefDefinition.relationsRefMap(entityType) ?? new Map();
-    const attributes = this.attributesCache.get(entityType) ?? new Map();
-    return new Map([...attributesRefs, ...attributes]);
+    // const attributesRefs = schemaRelationsRefDefinition.relationsRefMap(entityType) ?? new Map();
+    // const attributes = this.attributesCache.get(entityType) ?? new Map();
+    // return new Map([...attributesRefs, ...attributes]);
+    return this.attributesCache.get(entityType) ?? new Map();
   },
 
   getAllAttributesNames(): Array<string> {

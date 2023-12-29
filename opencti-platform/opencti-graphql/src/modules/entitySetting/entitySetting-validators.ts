@@ -109,7 +109,7 @@ const attributesConfigurationValidation = async (context: AuthContext, user: Aut
           if (defaultValues) {
             const checkValues = Array.isArray(defaultValues) ? defaultValues : [defaultValues];
             const checkInput: EditInput = { operation: EditOperation.Replace, key: attributeDefinition.name, value: checkValues };
-            validateAndFormatSchemaAttribute(targetType, attr.name, attributeDefinition, checkInput);
+            validateAndFormatSchemaAttribute(attr.name, attributeDefinition, checkInput);
           }
         } else if (relationRefDefinition) {
           if (relationRefDefinition.name === INPUT_MARKINGS) {
