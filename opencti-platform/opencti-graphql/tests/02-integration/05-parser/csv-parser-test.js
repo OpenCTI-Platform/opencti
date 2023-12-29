@@ -167,7 +167,6 @@ describe('CSV-PARSER', () => {
 
     expect(objects.length).toBe(2);
     expect(objects[0].is_family).toBe(true);
-    expect(objects.length).toBe(2);
     expect(objects[1].is_family).toBe(false);
   });
 });
