@@ -223,7 +223,6 @@ const StreamCollectionCreation: FunctionComponent<StreamCollectionCreationProps>
                 styleNumber={2}
                 redirection
               />
-              <div className="clearfix" />
               <div className={classes.buttons}>
                 <Button
                   variant="contained"
