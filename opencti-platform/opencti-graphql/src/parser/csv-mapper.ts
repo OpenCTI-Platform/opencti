@@ -135,7 +135,7 @@ const handleDirectAttribute = (attributeKey: string, column: AttributeColumn, in
     throw UnsupportedError('Invalid attribute', { key: attributeKey, type: entity_type });
   }
   const computedValue = computeValue(value, column, attributeDef);
-  if (computedValue) {
+  if (computedValue !== null && computedValue !== undefined) {
     input[attributeKey] = computedValue;
   }
 };
