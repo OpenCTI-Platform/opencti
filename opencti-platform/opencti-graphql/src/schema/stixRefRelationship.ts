@@ -703,7 +703,7 @@ export const META_RELATIONS: RefAttribute[] = [
 // Register
 schemaTypesDefinition.register(
   ABSTRACT_STIX_REF_RELATIONSHIP,
-  [...STIX_REF_RELATIONSHIPS, ...META_RELATIONS].map((arr) => arr.name)
+  [...STIX_REF_RELATIONSHIPS, ...META_RELATIONS].map((arr) => arr.databaseName)
 );
 
 export const isStixRefRelationship = (type: string) => schemaTypesDefinition.isTypeIncludedIn(type, ABSTRACT_STIX_REF_RELATIONSHIP) || type === ABSTRACT_STIX_REF_RELATIONSHIP;
