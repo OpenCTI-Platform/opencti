@@ -1,0 +1,13 @@
+{
+  "Organizations restriction": "Restricción de organizaciones",
+  "You are about to change the marking with another rank.": "Estás a punto de cambiar la marca con otro rango.",
+  "Are you sure you want to make the change?": "¿Estás seguro de que quieres hacer el cambio?",
+  "Password security policies": "Políticas de seguridad de contraseñas",
+  "Number of chars must be greater or equals to": "El número de caracteres debe ser mayor o igual a",
+  "Number of chars must be lower or equals to": "El número de caracteres debe ser inferior o igual a",
+  "Number of symbols must be greater or equals to": "El número de símbolos debe ser mayor o igual que",
+  "Number of digits must be greater or equals to": "El número de dígitos debe ser mayor o igual que",
+  "Number of words (split on hyphen, space) must be greater or equals to": "El número de palabras (separadas por guión o espacio) debe ser igual o superior a",
+  "Number of lowercase chars must be greater or equals to": "El número de minúsculas debe ser igual o superior a",
+  "Number of uppercase chars must be greater or equals to": "El número de mayúsculas debe ser igual o superior a"
+}

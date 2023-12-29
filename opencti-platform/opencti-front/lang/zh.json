@@ -1,0 +1,13 @@
+{
+  "Organizations restriction": "组织限制",
+  "You are about to change the marking with another rank.": "您将使用另一个等级更改标记。",
+  "Are you sure you want to make the change?": "您确定要更改吗？",
+  "Password security policies": "密码安全策略",
+  "Number of chars must be greater or equals to": "字符数必须大于或等于",
+  "Number of chars must be lower or equals to": "字符数必须小于或等于",
+  "Number of symbols must be greater or equals to": "符号数必须大于或等于",
+  "Number of digits must be greater or equals to": "位数必须大于或等于",
+  "Number of words (split on hyphen, space) must be greater or equals to": "单词数（以连字符、空格分割）必须大于或等于",
+  "Number of lowercase chars must be greater or equals to": "小写字符数必须大于或等于",
+  "Number of uppercase chars must be greater or equals to": "大写字符数必须大于或等于"
+}

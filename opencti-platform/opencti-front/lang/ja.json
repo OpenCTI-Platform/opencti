@@ -1,0 +1,13 @@
+{
+  "Organizations restriction": "組織の制限",
+  "You are about to change the marking with another rank.": "別のランクにマークを変更しようとしています。",
+  "Are you sure you want to make the change?": "本当に変更しますか？",
+  "Password security policies": "パスワードのセキュリティポリシー",
+  "Number of chars must be greater or equals to": "文字数は以下でなければなりません。",
+  "Number of chars must be lower or equals to": "文字数は以下でなければならない",
+  "Number of symbols must be greater or equals to": "記号の数は以下でなければならない",
+  "Number of digits must be greater or equals to": "桁数は以下でなければならない",
+  "Number of words (split on hyphen, space) must be greater or equals to": "単語数（ハイフン、スペースで分割）は以下の値以上でなければなりません。",
+  "Number of lowercase chars must be greater or equals to": "小文字の数は",
+  "Number of uppercase chars must be greater or equals to": "以上でなければなりません。"
+}

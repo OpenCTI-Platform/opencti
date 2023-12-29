@@ -1,0 +1,13 @@
+{
+  "Organizations restriction": "Organizations restriction",
+  "You are about to change the marking with another rank.": "You are about to change the marking with another rank.",
+  "Are you sure you want to make the change?": "Are you sure you want to make the change?",
+  "Password security policies": "Password security policies",
+  "Number of chars must be greater or equals to": "Number of chars must be greater or equals to",
+  "Number of chars must be lower or equals to": "Number of chars must be lower or equals to",
+  "Number of symbols must be greater or equals to": "Number of symbols must be greater or equals to",
+  "Number of digits must be greater or equals to": "Number of digits must be greater or equals to",
+  "Number of words (split on hyphen, space) must be greater or equals to": "Number of words (split on hyphen, space) must be greater or equals to",
+  "Number of lowercase chars must be greater or equals to": "Number of lowercase chars must be greater or equals to",
+  "Number of uppercase chars must be greater or equals to": "Number of uppercase chars must be greater or equals to"
+}
