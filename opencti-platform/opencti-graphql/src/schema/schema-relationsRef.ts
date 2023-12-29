@@ -72,9 +72,9 @@ export const schemaRelationsRefDefinition = {
     const computedWithParentsRefsArray = Array.from(computedWithParentsRefs.values());
     this.relationsRefCacheArray.set(entityType, computedWithParentsRefsArray);
     this.stixNamesCache.set(entityType, computedWithParentsRefsArray.map((rel) => rel.stixName));
-    this.databaseNameMultipleCache.set(entityType, computedWithParentsRefsArray.filter((rel) => rel.multiple).map((rel) => rel.name));
-    computedWithParentsRefsArray.forEach((ref) => this.nameToDatabaseName.set(ref.name, ref.name));
-    this.databaseNameToInputNameCache.set(entityType, new Map(computedWithParentsRefsArray.map((ref) => [ref.name, ref.name])));
+    this.databaseNameMultipleCache.set(entityType, computedWithParentsRefsArray.filter((rel) => rel.multiple).map((rel) => rel.databaseName));
+    computedWithParentsRefsArray.forEach((ref) => this.nameToDatabaseName.set(ref.name, ref.databaseName));
+    this.databaseNameToInputNameCache.set(entityType, new Map(computedWithParentsRefsArray.map((ref) => [ref.databaseName, ref.name])));
     this.stixNameToInputNameCache.set(entityType, new Map(computedWithParentsRefsArray.map((ref) => [ref.stixName, ref.name])));
   },
 
