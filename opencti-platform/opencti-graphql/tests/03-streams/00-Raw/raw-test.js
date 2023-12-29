@@ -14,7 +14,7 @@ describe('Raw streams tests', () => {
       // Read all events from the beginning.
       const events = await fetchStreamEvents(`http://localhost:${PORT}/stream`, { from: '0' });
       // Check the number of events
-      // 01 - CHECK CREATE EVENTS
+      // 01 - CHECK CREATE EVENTS.
       const createEvents = events.filter((e) => e.type === EVENT_TYPE_CREATE);
       // Check some events count
       const createEventsByTypes = R.groupBy((e) => e.data.data.type, createEvents);
@@ -35,7 +35,7 @@ describe('Raw streams tests', () => {
         expect(origin).toBeDefined();
         checkStreamGenericContent(type, insideData);
       }
-      // 02 - CHECK UPDATE EVENTS
+      // 02 - CHECK UPDATE EVENTS.
       const updateEvents = events.filter((e) => e.type === EVENT_TYPE_UPDATE);
       const updateEventsByTypes = R.groupBy((e) => e.data.data.type, updateEvents);
       expect(updateEventsByTypes['marking-definition'].length).toBe(2);
