@@ -214,7 +214,6 @@ const TaxiiCollectionEditionContainer: FunctionComponent<{ taxiiCollection: Taxi
               noDirectFilters={true}
             />
           </Box>
-          <div className="clearfix"/>
           <FilterIconButton
             filters={filters}
             helpers={helpers}
