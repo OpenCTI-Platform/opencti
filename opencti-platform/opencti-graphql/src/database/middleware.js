@@ -941,6 +941,9 @@ const rebuildAndMergeInputFromExistingData = (rawInput, instance) => {
     const targetIsMultiple = isObjectPathTargetMultipleAttribute(instance, preparedPath);
     const patch = [{ op: operation, path: preparedPath, value: targetIsMultiple ? value : R.head(value) }];
     const patchedInstance = jsonpatch.applyPatch(structuredClone(instance), patch).newDocument;
+    if (compareUnsorted(patchedInstance[key], instance[key])) {
+      return {}; // No need to update the attribute
+    }
     finalVal = [patchedInstance[key]];
   } else {
     const evaluateValue = value ? R.head(value) : null;
@@ -1286,11 +1289,11 @@ const mergeEntitiesRaw = async (context, user, targetEntity, sourceEntities, tar
       const sourceValues = fieldValues || [];
       // For aliased entities, get name of the source to add it as alias of the target
       if (targetFieldKey === ATTRIBUTE_ALIASES || targetFieldKey === ATTRIBUTE_ALIASES_OPENCTI) {
-        sourceValues.push(...sourceEntities.map((s) => s.name));
+        sourceValues.push(...sourceEntities.map((s) => s.name).filter((n) => isNotEmptyField(n)));
       }
       // For x_opencti_additional_names exists, add the source name inside
       if (targetFieldKey === ATTRIBUTE_ADDITIONAL_NAMES) {
-        sourceValues.push(...sourceEntities.map((s) => s.name));
+        sourceValues.push(...sourceEntities.map((s) => s.name).filter((n) => isNotEmptyField(n)));
       }
       // standard_id of merged entities must be kept in x_opencti_stix_ids
       if (targetFieldKey === IDS_STIX) {
@@ -1461,6 +1464,9 @@ const prepareAttributesForUpdate = (instance, elements, upsert) => {
   const instanceType = instance.entity_type;
   return elements.map((input) => {
     const def = schemaAttributesDefinition.getAttribute(instance.entity_type, input.key);
+    if (!def) {
+      throw UnsupportedError('Cant prepare attribute for update', { type: instance.entity_type, name: input.key });
+    }
     // Check integer
     if (def.type === 'numeric') {
       return {
