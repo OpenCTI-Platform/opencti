@@ -4,7 +4,7 @@ from prometheus_client import Counter, Enum, start_http_server
 
 
 class OpenCTIMetricHandler:
-    def __init__(self, logger, activated: bool = False, port: int = 9095):
+    def __init__(self, connector_logger, activated: bool = False, port: int = 9095):
         """
         Init of OpenCTIMetricHandler class.
 
@@ -16,9 +16,9 @@ class OpenCTIMetricHandler:
             Port for prometheus server.
         """
         self.activated = activated
-        self.logger = logger
+        self.connector_logger = connector_logger
         if self.activated:
-            logger.info(f"Exposing metrics on port {port}")
+            self.connector_logger.info("Exposing metrics on port", {"port": port})
             start_http_server(port)
             self._metrics = {
                 "bundle_send": Counter(
@@ -75,10 +75,10 @@ class OpenCTIMetricHandler:
             True if the metric exists and is of the correct type else False.
         """
         if name not in self._metrics:
-            self.logger.error("Metric does not exist.", {"name": name})
+            self.connector_logger.error("Metric does not exist.", {"name": name})
             return False
         if not isinstance(self._metrics[name], expected_type):
-            self.logger.error(
+            self.connector_logger.error(
                 "Metric not of expected type",
                 {"name": name, "expected_type": expected_type},
             )
