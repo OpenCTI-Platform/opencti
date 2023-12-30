@@ -1462,6 +1462,11 @@ const innerUpdateAttribute = (instance, rawInput) => {
 const prepareAttributesForUpdate = (instance, elements, upsert) => {
   const instanceType = instance.entity_type;
   return elements.map((input) => {
+    // Dynamic cases, attributes not defined in the schema
+    if (input.key.startsWith(RULE_PREFIX) || input.key.startsWith(REL_INDEX_PREFIX)) {
+      return input;
+    }
+    // Fixed cases in schema definition
     const def = schemaAttributesDefinition.getAttribute(instance.entity_type, input.key);
     if (!def) {
       throw UnsupportedError('Cant prepare attribute for update', { type: instance.entity_type, name: input.key });
