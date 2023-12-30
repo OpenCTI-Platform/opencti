@@ -5,8 +5,6 @@ import uuid
 
 from stix2.canonicalization.Canonicalize import canonicalize
 
-from pycti.entities import LOGGER
-
 
 class StixSightingRelationship:
     def __init__(self, opencti):
@@ -328,9 +326,9 @@ class StixSightingRelationship:
         if get_all:
             first = 100
 
-        LOGGER.info(
-            "Listing stix_sighting with {type: stix_sighting, from_id: %s, to_id: %s}",
-            *(from_id, to_id),
+        self.opencti.app_logger.info(
+            "Listing stix_sighting with {type: stix_sighting}",
+            {"from_id": from_id, "to_id": to_id},
         )
         query = (
             """
@@ -385,7 +383,9 @@ class StixSightingRelationship:
                 after = result["data"]["stixSightingRelationships"]["pageInfo"][
                     "endCursor"
                 ]
-                LOGGER.info("Listing StixSightingRelationships after " + after)
+                self.opencti.app_logger.info(
+                    "Listing StixSightingRelationships", {"after": after}
+                )
                 result = self.opencti.query(
                     query,
                     {
@@ -439,7 +439,7 @@ class StixSightingRelationship:
         last_seen_stop = kwargs.get("lastSeenStop", None)
         custom_attributes = kwargs.get("customAttributes", None)
         if id is not None:
-            LOGGER.info("Reading stix_sighting {%s}.", id)
+            self.opencti.app_logger.info("Reading stix_sighting", {"id": id})
             query = (
                 """
                     query StixSightingRelationship($id: String!) {
@@ -474,7 +474,7 @@ class StixSightingRelationship:
             else:
                 return None
         else:
-            LOGGER.error("Missing parameters: id or from_id and to_id")
+            self.opencti.app_logger.error("Missing parameters: id or from_id and to_id")
             return None
 
     """
@@ -503,7 +503,9 @@ class StixSightingRelationship:
         x_opencti_stix_ids = kwargs.get("x_opencti_stix_ids", None)
         update = kwargs.get("update", False)
 
-        LOGGER.info("Creating stix_sighting {%s, %s}.", from_id, to_id)
+        self.opencti.app_logger.info(
+            "Creating stix_sighting", {"from_id": from_id, "to_id": to_id}
+        )
         query = """
                 mutation StixSightingRelationshipAdd($input: StixSightingRelationshipAddInput!) {
                     stixSightingRelationshipAdd(input: $input) {
@@ -554,7 +556,7 @@ class StixSightingRelationship:
         id = kwargs.get("id", None)
         input = kwargs.get("input", None)
         if id is not None and input is not None:
-            LOGGER.info("Updating stix_sighting {%s}.", id)
+            self.opencti.app_logger.info("Updating stix_sighting", {"id": id})
             query = """
                     mutation StixSightingRelationshipEdit($id: ID!, $input: [EditInput]!) {
                         stixSightingRelationshipEdit(id: $id) {
@@ -575,7 +577,7 @@ class StixSightingRelationship:
                 result["data"]["stixSightingRelationshipEdit"]["fieldPatch"]
             )
         else:
-            LOGGER.error(
+            self.opencti.app_logger.error(
                 "[opencti_stix_sighting] Missing parameters: id and key and value"
             )
             return None
@@ -614,14 +616,16 @@ class StixSightingRelationship:
                 id=id, customAttributes=custom_attributes
             )
             if stix_core_relationship is None:
-                LOGGER.error("Cannot add Marking-Definition, entity not found")
+                self.opencti.app_logger.error(
+                    "Cannot add Marking-Definition, entity not found"
+                )
                 return False
             if marking_definition_id in stix_core_relationship["objectMarkingIds"]:
                 return True
             else:
-                LOGGER.info(
-                    "Adding Marking-Definition {%s} to stix_sighting_relationship {%s}",
-                    *(marking_definition_id, id),
+                self.opencti.app_logger.info(
+                    "Adding Marking-Definition to stix_sighting_relationship",
+                    {"marking_definition_id": marking_definition_id, "id": id},
                 )
                 query = """
                    mutation StixSightingRelationshipEdit($id: ID!, $input: StixRefRelationshipAddInput!) {
@@ -644,7 +648,9 @@ class StixSightingRelationship:
                 )
                 return True
         else:
-            LOGGER.error("Missing parameters: id and marking_definition_id")
+            self.opencti.app_logger.error(
+                "Missing parameters: id and marking_definition_id"
+            )
             return False
 
     """
@@ -659,9 +665,9 @@ class StixSightingRelationship:
         id = kwargs.get("id", None)
         marking_definition_id = kwargs.get("marking_definition_id", None)
         if id is not None and marking_definition_id is not None:
-            LOGGER.info(
-                "Removing Marking-Definition {%s} from stix_sighting_relationship {%s}",
-                *(marking_definition_id, id),
+            self.opencti.app_logger.info(
+                "Removing Marking-Definition from stix_sighting_relationship",
+                {"marking_definition_id": marking_definition_id, "id": id},
             )
             query = """
                mutation StixSightingRelationshipEdit($id: ID!, $toId: StixRef!, $relationship_type: String!) {
@@ -682,7 +688,7 @@ class StixSightingRelationship:
             )
             return True
         else:
-            LOGGER.error("Missing parameters: id and label_id")
+            self.opencti.app_logger.error("Missing parameters: id and label_id")
             return False
 
     """
@@ -697,9 +703,9 @@ class StixSightingRelationship:
         id = kwargs.get("id", None)
         identity_id = kwargs.get("identity_id", None)
         if id is not None:
-            LOGGER.info(
-                "Updating author of stix_sighting_relationship {%s} with Identity {%s}",
-                *(id, identity_id),
+            self.opencti.app_logger.info(
+                "Updating author of stix_sighting_relationship with Identity",
+                {"id": id, "identity_id": identity_id},
             )
             custom_attributes = """
                 id
@@ -764,7 +770,7 @@ class StixSightingRelationship:
                 }
                 self.opencti.query(query, variables)
         else:
-            LOGGER.error("Missing parameters: id")
+            self.opencti.app_logger.error("Missing parameters: id")
             return False
 
     """
@@ -777,7 +783,7 @@ class StixSightingRelationship:
     def delete(self, **kwargs):
         id = kwargs.get("id", None)
         if id is not None:
-            LOGGER.info("Deleting stix_sighting {%s}.", id)
+            self.opencti.app_logger.info("Deleting stix_sighting", {"id": id})
             query = """
                 mutation StixSightingRelationshipEdit($id: ID!) {
                     stixSightingRelationshipEdit(id: $id) {
@@ -787,5 +793,7 @@ class StixSightingRelationship:
             """
             self.opencti.query(query, {"id": id})
         else:
-            LOGGER.error("[opencti_stix_sighting] Missing parameters: id")
+            self.opencti.app_logger.error(
+                "[opencti_stix_sighting] Missing parameters: id"
+            )
             return None

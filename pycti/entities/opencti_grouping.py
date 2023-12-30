@@ -5,8 +5,6 @@ import uuid
 
 from stix2.canonicalization.Canonicalize import canonicalize
 
-from pycti.entities import LOGGER
-
 
 class Grouping:
     def __init__(self, opencti):
@@ -443,7 +441,9 @@ class Grouping:
         if get_all:
             first = 100
 
-        LOGGER.info("Listing Groupings with filters %s.", json.dumps(filters))
+        self.opencti.app_logger.info(
+            "Listing Groupings with filters", {"filters": json.dumps(filters)}
+        )
         query = (
             """
             query Groupings($filters: FilterGroup, $search: String, $first: Int, $after: ID, $orderBy: GroupingsOrdering, $orderMode: OrderingMode) {
@@ -487,7 +487,7 @@ class Grouping:
             final_data = final_data + data
             while result["data"]["groupings"]["pageInfo"]["hasNextPage"]:
                 after = result["data"]["groupings"]["pageInfo"]["endCursor"]
-                LOGGER.info("Listing Groupings after " + after)
+                self.opencti.app_logger.info("Listing Groupings", {"after": after})
                 result = self.opencti.query(
                     query,
                     {
@@ -521,7 +521,7 @@ class Grouping:
         custom_attributes = kwargs.get("customAttributes", None)
         with_files = kwargs.get("withFiles", False)
         if id is not None:
-            LOGGER.info("Reading Grouping {%s}.", id)
+            self.opencti.app_logger.info("Reading Grouping", {"id": id})
             query = (
                 """
                 query Grouping($id: String!) {
@@ -591,9 +591,9 @@ class Grouping:
             "stixObjectOrStixRelationshipId", None
         )
         if id is not None and stix_object_or_stix_relationship_id is not None:
-            LOGGER.info(
-                "Checking StixObjectOrStixRelationship {%s} in Grouping {%s}",
-                *(stix_object_or_stix_relationship_id, id),
+            self.opencti.app_logger.info(
+                "Checking StixObjectOrStixRelationship in Grouping",
+                {"id": stix_object_or_stix_relationship_id, "grouping": id},
             )
             query = """
                 query GroupingContainsStixObjectOrStixRelationship($id: String!, $stixObjectOrStixRelationshipId: String!) {
@@ -609,7 +609,7 @@ class Grouping:
             )
             return result["data"]["groupingContainsStixObjectOrStixRelationship"]
         else:
-            LOGGER.error(
+            self.opencti.app_logger.error(
                 "[opencti_grouping] Missing parameters: id or stixObjectOrStixRelationshipId"
             )
 
@@ -641,7 +641,7 @@ class Grouping:
         update = kwargs.get("update", False)
 
         if name is not None and context is not None:
-            LOGGER.info("Creating Grouping {%s}.", name)
+            self.opencti.app_logger.info("Creating Grouping", {"name": name})
             query = """
                 mutation GroupingAdd($input: GroupingAddInput!) {
                     groupingAdd(input: $input) {
@@ -679,7 +679,7 @@ class Grouping:
             )
             return self.opencti.process_multiple_fields(result["data"]["groupingAdd"])
         else:
-            LOGGER.error(
+            self.opencti.app_logger.error(
                 "[opencti_grouping] Missing parameters: name and description and context"
             )
 
@@ -697,9 +697,9 @@ class Grouping:
             "stixObjectOrStixRelationshipId", None
         )
         if id is not None and stix_object_or_stix_relationship_id is not None:
-            LOGGER.info(
-                "Adding StixObjectOrStixRelationship {%s} to Grouping {%s}",
-                *(stix_object_or_stix_relationship_id, id),
+            self.opencti.app_logger.info(
+                "Adding StixObjectOrStixRelationship to Grouping",
+                {"id": stix_object_or_stix_relationship_id, "grouping": id},
             )
             query = """
                mutation GroupingEditRelationAdd($id: ID!, $input: StixRefRelationshipAddInput!) {
@@ -720,7 +720,7 @@ class Grouping:
             )
             return True
         else:
-            LOGGER.error(
+            self.opencti.app_logger.error(
                 "[opencti_grouping] Missing parameters: id and stixObjectOrStixRelationshipId",
             )
             return False
@@ -739,9 +739,9 @@ class Grouping:
             "stixObjectOrStixRelationshipId", None
         )
         if id is not None and stix_object_or_stix_relationship_id is not None:
-            LOGGER.info(
-                "Removing StixObjectOrStixRelationship {%s} to {%s}",
-                *(stix_object_or_stix_relationship_id, Grouping),
+            self.opencti.app_logger.info(
+                "Removing StixObjectOrStixRelationship to Grouping",
+                {"id": stix_object_or_stix_relationship_id, "grouping": id},
             )
             query = """
                mutation GroupingEditRelationDelete($id: ID!, $toId: StixRef!, $relationship_type: String!) {
@@ -760,7 +760,7 @@ class Grouping:
             )
             return True
         else:
-            LOGGER.error(
+            self.opencti.app_logger.error(
                 "[opencti_grouping] Missing parameters: id and stixObjectOrStixRelationshipId",
             )
             return False
@@ -830,4 +830,6 @@ class Grouping:
                 update=update,
             )
         else:
-            LOGGER.error("[opencti_grouping] Missing parameters: stixObject")
+            self.opencti.app_logger.error(
+                "[opencti_grouping] Missing parameters: stixObject"
+            )

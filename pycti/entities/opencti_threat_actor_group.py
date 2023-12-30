@@ -6,8 +6,6 @@ from typing import Union
 
 from stix2.canonicalization.Canonicalize import canonicalize
 
-from pycti.entities import LOGGER
-
 
 class ThreatActorGroup:
     """Main ThreatActorGroup class for OpenCTI
@@ -182,7 +180,9 @@ class ThreatActorGroup:
         if get_all:
             first = 500
 
-        LOGGER.info("Listing Threat-Actors-Group with filters %s.", json.dumps(filters))
+        self.opencti.app_logger.info(
+            "Listing Threat-Actors-Group with filters", {"filters": json.dumps(filters)}
+        )
         query = (
             """
             query ThreatActorsGroup($filters: FilterGroup, $search: String, $first: Int, $after: ID, $orderBy: ThreatActorsOrdering, $orderMode: OrderingMode) {
@@ -238,7 +238,7 @@ class ThreatActorGroup:
         filters = kwargs.get("filters", None)
         custom_attributes = kwargs.get("customAttributes", None)
         if id is not None:
-            LOGGER.info("Reading Threat-Actor-Group {%s}.", id)
+            self.opencti.app_logger.info("Reading Threat-Actor-Group", {"id": id})
             query = (
                 """
                 query ThreatActorGroup($id: String!) {
@@ -265,7 +265,7 @@ class ThreatActorGroup:
             else:
                 return None
         else:
-            LOGGER.error(
+            self.opencti.app_logger.error(
                 "[opencti_threat_actor_group] Missing parameters: id or filters"
             )
             return None
@@ -334,7 +334,7 @@ class ThreatActorGroup:
         update = kwargs.get("update", False)
 
         if name is not None:
-            LOGGER.info("Creating Threat-Actor-Group {%s}.", name)
+            self.opencti.app_logger.info("Creating Threat-Actor-Group", {"name": name})
             query = """
                 mutation ThreatActorGroupAdd($input: ThreatActorGroupAddInput!) {
                     threatActorGroupAdd(input: $input) {
@@ -381,7 +381,7 @@ class ThreatActorGroup:
                 result["data"]["threatActorGroupAdd"]
             )
         else:
-            LOGGER.error(
+            self.opencti.app_logger.error(
                 "[opencti_threat_actor_group] Missing parameters: name and description"
             )
 
@@ -469,4 +469,6 @@ class ThreatActorGroup:
                 update=update,
             )
         else:
-            LOGGER.error("[opencti_threat_actor_group] Missing parameters: stixObject")
+            self.opencti.app_logger.error(
+                "[opencti_threat_actor_group] Missing parameters: stixObject"
+            )

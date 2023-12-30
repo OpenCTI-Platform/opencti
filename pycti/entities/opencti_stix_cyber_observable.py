@@ -6,8 +6,6 @@ import os
 
 import magic
 
-from pycti.entities import LOGGER
-
 
 class StixCyberObservable:
     def __init__(self, opencti, file):
@@ -647,8 +645,9 @@ class StixCyberObservable:
         if get_all:
             first = 100
 
-        LOGGER.info(
-            "Listing StixCyberObservables with filters %s.", json.dumps(filters)
+        self.opencti.app_logger.info(
+            "Listing StixCyberObservables with filters",
+            {"filters": json.dumps(filters)},
         )
         query = (
             """
@@ -695,7 +694,9 @@ class StixCyberObservable:
             final_data = final_data + data
             while result["data"]["stixCyberObservables"]["pageInfo"]["hasNextPage"]:
                 after = result["data"]["stixCyberObservables"]["pageInfo"]["endCursor"]
-                LOGGER.info("Listing StixCyberObservables after " + after)
+                self.opencti.app_logger.info(
+                    "Listing StixCyberObservables", {"after": after}
+                )
                 result = self.opencti.query(
                     query,
                     {
@@ -732,7 +733,7 @@ class StixCyberObservable:
         custom_attributes = kwargs.get("customAttributes", None)
         with_files = kwargs.get("withFiles", False)
         if id is not None:
-            LOGGER.info("Reading StixCyberObservable {%s}.", id)
+            self.opencti.app_logger.info("Reading StixCyberObservable", {"id": id})
             query = (
                 """
                     query StixCyberObservable($id: String!) {
@@ -759,7 +760,7 @@ class StixCyberObservable:
             else:
                 return None
         else:
-            LOGGER.error(
+            self.opencti.app_logger.error(
                 "[opencti_stix_cyber_observable] Missing parameters: id or filters"
             )
             return None
@@ -797,10 +798,9 @@ class StixCyberObservable:
                     mime_type = "application/json"
                 else:
                     mime_type = magic.from_file(file_name, mime=True)
-            LOGGER.info(
-                "Uploading a file {%s} in Stix-Cyber-Observable {%s}.",
-                final_file_name,
-                id,
+            self.opencti.app_logger.info(
+                "Uploading a file in Stix-Cyber-Observable",
+                {"file": final_file_name, "id": id},
             )
             return self.opencti.query(
                 query,
@@ -813,7 +813,7 @@ class StixCyberObservable:
                 },
             )
         else:
-            LOGGER.error(
+            self.opencti.app_logger.error(
                 "[opencti_stix_cyber_observable Missing parameters: id or file_name"
             )
             return None
@@ -927,10 +927,9 @@ class StixCyberObservable:
                 hashes.append({"algorithm": key, "hash": value})
 
         if type is not None:
-            LOGGER.info(
-                "Creating Stix-Cyber-Observable {%s} with indicator at %s.",
-                type,
-                create_indicator,
+            self.opencti.app_logger.info(
+                "Creating Stix-Cyber-Observable with indicator",
+                {"type": type, "create_indicator": create_indicator},
             )
             input_variables = {
                 "type": type,
@@ -1494,7 +1493,7 @@ class StixCyberObservable:
                 result["data"]["stixCyberObservableAdd"]
             )
         else:
-            LOGGER.error("Missing parameters: type")
+            self.opencti.app_logger.error("Missing parameters: type")
 
     """
         Upload an artifact
@@ -1515,9 +1514,9 @@ class StixCyberObservable:
 
         if file_name is not None and mime_type is not None:
             final_file_name = os.path.basename(file_name)
-            LOGGER.info(
-                "Creating Stix-Cyber-Observable {artifact} with indicator at %s.",
-                create_indicator,
+            self.opencti.app_logger.info(
+                "Creating Stix-Cyber-Observable {artifact} with indicator",
+                {"create_indicator": create_indicator},
             )
             query = """
                 mutation ArtifactImport($file: Upload!, $x_opencti_description: String, $createdBy: String, $objectMarking: [String], $objectLabel: [String]) {
@@ -1656,7 +1655,7 @@ class StixCyberObservable:
                 result["data"]["artifactImport"]
             )
         else:
-            LOGGER.error("Missing parameters: type")
+            self.opencti.app_logger.error("Missing parameters: type")
 
     """
         Update a Stix-Observable object field
@@ -1670,7 +1669,7 @@ class StixCyberObservable:
         id = kwargs.get("id", None)
         input = kwargs.get("input", None)
         if id is not None and input is not None:
-            LOGGER.info("Updating Stix-Observable {%s}.", id)
+            self.opencti.app_logger.info("Updating Stix-Observable", {"id": id})
             query = """
                 mutation StixCyberObservableEdit($id: ID!, $input: [EditInput]!) {
                     stixCyberObservableEdit(id: $id) {
@@ -1693,7 +1692,7 @@ class StixCyberObservable:
                 result["data"]["stixCyberObservableEdit"]["fieldPatch"]
             )
         else:
-            LOGGER.error(
+            self.opencti.app_logger.error(
                 "[opencti_stix_cyber_observable_update_field] Missing parameters: id and input",
             )
             return None
@@ -1710,7 +1709,7 @@ class StixCyberObservable:
         custom_attributes = kwargs.get("customAttributes", None)
         with_files = kwargs.get("withFiles", False)
         if id is not None:
-            LOGGER.info("Promoting Stix-Observable {" + id + "}.")
+            self.opencti.app_logger.info("Promoting Stix-Observable", {"id": id})
             query = (
                 """
                     mutation StixCyberObservableEdit($id: ID!) {
@@ -1733,7 +1732,7 @@ class StixCyberObservable:
                 result["data"]["stixCyberObservableEdit"]["promote"]
             )
         else:
-            LOGGER.error(
+            self.opencti.app_logger.error(
                 "[opencti_stix_cyber_observable_promote] Missing parameters: id"
             )
             return None
@@ -1748,7 +1747,7 @@ class StixCyberObservable:
     def delete(self, **kwargs):
         id = kwargs.get("id", None)
         if id is not None:
-            LOGGER.info("Deleting Stix-Observable {%s}.", id)
+            self.opencti.app_logger.info("Deleting Stix-Observable", {"id": id})
             query = """
                  mutation StixCyberObservableEdit($id: ID!) {
                      stixCyberObservableEdit(id: $id) {
@@ -1758,7 +1757,7 @@ class StixCyberObservable:
              """
             self.opencti.query(query, {"id": id})
         else:
-            LOGGER.error(
+            self.opencti.app_logger.error(
                 "[opencti_stix_cyber_observable_delete] Missing parameters: id"
             )
             return None
@@ -1775,10 +1774,9 @@ class StixCyberObservable:
         id = kwargs.get("id", None)
         identity_id = kwargs.get("identity_id", None)
         if id is not None:
-            LOGGER.info(
-                "Updating author of Stix-Cyber-Observable {%s} with Identity {%s}",
-                id,
-                identity_id,
+            self.opencti.app_logger.info(
+                "Updating author of Stix-Cyber-Observable with Identity",
+                {"id": id, "identity_id": identity_id},
             )
             custom_attributes = """
                 id
@@ -1843,7 +1841,7 @@ class StixCyberObservable:
                 }
                 self.opencti.query(query, variables)
         else:
-            LOGGER.error("Missing parameters: id")
+            self.opencti.app_logger.error("Missing parameters: id")
             return False
 
     """
@@ -1878,14 +1876,16 @@ class StixCyberObservable:
             """
             stix_cyber_observable = self.read(id=id, customAttributes=custom_attributes)
             if stix_cyber_observable is None:
-                LOGGER.error("Cannot add Marking-Definition, entity not found")
+                self.opencti.app_logger.error(
+                    "Cannot add Marking-Definition, entity not found"
+                )
                 return False
             if marking_definition_id in stix_cyber_observable["objectMarkingIds"]:
                 return True
             else:
-                LOGGER.info(
-                    "Adding Marking-Definition {%s} to Stix-Cyber-Observable {%s}",
-                    *(marking_definition_id, id),
+                self.opencti.app_logger.info(
+                    "Adding Marking-Definition to Stix-Cyber-Observable",
+                    {"marking_definition_id": marking_definition_id, "id": id},
                 )
                 query = """
                    mutation StixCyberObservableAddRelation($id: ID!, $input: StixRefRelationshipAddInput!) {
@@ -1908,7 +1908,9 @@ class StixCyberObservable:
                 )
                 return True
         else:
-            LOGGER.error("Missing parameters: id and marking_definition_id")
+            self.opencti.app_logger.error(
+                "Missing parameters: id and marking_definition_id"
+            )
             return False
 
     """
@@ -1923,9 +1925,9 @@ class StixCyberObservable:
         id = kwargs.get("id", None)
         marking_definition_id = kwargs.get("marking_definition_id", None)
         if id is not None and marking_definition_id is not None:
-            LOGGER.info(
-                "Removing Marking-Definition {%s} from Stix-Cyber-Observable {%s}",
-                *(marking_definition_id, id),
+            self.opencti.app_logger.info(
+                "Removing Marking-Definition from Stix-Cyber-Observable",
+                {"marking_definition_id": marking_definition_id, "id": id},
             )
             query = """
                mutation StixCyberObservableRemoveRelation($id: ID!, $toId: StixRef!, $relationship_type: String!) {
@@ -1946,7 +1948,7 @@ class StixCyberObservable:
             )
             return True
         else:
-            LOGGER.error("Missing parameters: id and label_id")
+            self.opencti.app_logger.error("Missing parameters: id and label_id")
             return False
 
     """
@@ -1975,7 +1977,10 @@ class StixCyberObservable:
                 label = self.opencti.label.create(value=label_name)
                 label_id = label["id"]
         if id is not None and label_id is not None:
-            LOGGER.info("Adding label {%s} to Stix-Cyber-Observable {%s}", label_id, id)
+            self.opencti.app_logger.info(
+                "Adding label to Stix-Cyber-Observable",
+                {"label_id": label_id, "id": id},
+            )
             query = """
                mutation StixCyberObservableAddRelation($id: ID!, $input: StixRefRelationshipAddInput!) {
                    stixCyberObservableEdit(id: $id) {
@@ -1997,7 +2002,7 @@ class StixCyberObservable:
             )
             return True
         else:
-            LOGGER.error("Missing parameters: id and label_id")
+            self.opencti.app_logger.error("Missing parameters: id and label_id")
             return False
 
     """
@@ -2023,8 +2028,9 @@ class StixCyberObservable:
             if label:
                 label_id = label["id"]
         if id is not None and label_id is not None:
-            LOGGER.info(
-                "Removing label {%s} from Stix-Cyber-Observable {%s}", label_id, id
+            self.opencti.app_logger.info(
+                "Removing label from Stix-Cyber-Observable",
+                {"label_id": label_id, "id": id},
             )
             query = """
                mutation StixCyberObservableRemoveRelation($id: ID!, $toId: StixRef!, $relationship_type: String!) {
@@ -2045,7 +2051,7 @@ class StixCyberObservable:
             )
             return True
         else:
-            LOGGER.error("Missing parameters: id and label_id")
+            self.opencti.app_logger.error("Missing parameters: id and label_id")
             return False
 
     """
@@ -2081,14 +2087,16 @@ class StixCyberObservable:
             """
             stix_domain_object = self.read(id=id, customAttributes=custom_attributes)
             if stix_domain_object is None:
-                LOGGER.error("Cannot add External-Reference, entity not found")
+                self.opencti.app_logger.error(
+                    "Cannot add External-Reference, entity not found"
+                )
                 return False
             if external_reference_id in stix_domain_object["externalReferencesIds"]:
                 return True
             else:
-                LOGGER.info(
-                    "Adding External-Reference {%s} to Stix-Cyber-Observable {%s}",
-                    *(external_reference_id, id),
+                self.opencti.app_logger.info(
+                    "Adding External-Reference to Stix-Cyber-Observable",
+                    {"external_reference_id": external_reference_id, "id": id},
                 )
                 query = """
                    mutation StixCyberObservabletEditRelationAdd($id: ID!, $input: StixRefRelationshipAddInput!) {
@@ -2111,7 +2119,9 @@ class StixCyberObservable:
                 )
                 return True
         else:
-            LOGGER.error("Missing parameters: id and external_reference_id")
+            self.opencti.app_logger.error(
+                "Missing parameters: id and external_reference_id"
+            )
             return False
 
     """
@@ -2126,9 +2136,9 @@ class StixCyberObservable:
         id = kwargs.get("id", None)
         external_reference_id = kwargs.get("external_reference_id", None)
         if id is not None and external_reference_id is not None:
-            LOGGER.info(
-                "Removing External-Reference {%s} from Stix-Cyber-Observable {%s}",
-                *(external_reference_id, id),
+            self.opencti.app_logger.info(
+                "Removing External-Reference from Stix-Cyber-Observable",
+                {"external_reference_id": external_reference_id, "id": id},
             )
             query = """
                mutation StixCyberObservableRemoveRelation($id: ID!, $toId: StixRef!, $relationship_type: String!) {
@@ -2149,7 +2159,7 @@ class StixCyberObservable:
             )
             return True
         else:
-            LOGGER.error("Missing parameters: id and label_id")
+            self.opencti.app_logger.error("Missing parameters: id and label_id")
             return False
 
     def push_list_export(self, file_name, data, list_filters="", mime_type=None):
@@ -2175,7 +2185,7 @@ class StixCyberObservable:
         connector_id = kwargs.get("connector_id", None)
 
         if id is None or connector_id is None:
-            LOGGER.error("Missing parameters: id and connector_id")
+            self.opencti.app_logger.error("Missing parameters: id and connector_id")
             return ""
 
         query = """
@@ -2208,7 +2218,9 @@ class StixCyberObservable:
     def reports(self, **kwargs):
         id = kwargs.get("id", None)
         if id is not None:
-            LOGGER.info("Getting reports of the Stix-Cyber-Observable {%s}.", id)
+            self.opencti.app_logger.info(
+                "Getting reports of the Stix-Cyber-Observable", {"id": id}
+            )
             query = """
                 query StixCyberObservable($id: String!) {
                     stixCyberObservable(id: $id) {
@@ -2332,7 +2344,7 @@ class StixCyberObservable:
             else:
                 return []
         else:
-            LOGGER.error("Missing parameters: id")
+            self.opencti.app_logger.error("Missing parameters: id")
             return None
 
     """
@@ -2345,7 +2357,9 @@ class StixCyberObservable:
     def notes(self, **kwargs):
         id = kwargs.get("id", None)
         if id is not None:
-            LOGGER.info("Getting notes of the Stix-Cyber-Observable {%s}.", id)
+            self.opencti.app_logger.info(
+                "Getting notes of the Stix-Cyber-Observable", {"id": id}
+            )
             query = """
                 query StixCyberObservable($id: String!) {
                     stixCyberObservable(id: $id) {
@@ -2470,7 +2484,7 @@ class StixCyberObservable:
             else:
                 return []
         else:
-            LOGGER.error("Missing parameters: id")
+            self.opencti.app_logger.error("Missing parameters: id")
             return None
 
     """
@@ -2483,7 +2497,9 @@ class StixCyberObservable:
     def observed_data(self, **kwargs):
         id = kwargs.get("id", None)
         if id is not None:
-            LOGGER.info("Getting Observed-Data of the Stix-Cyber-Observable {%s}.", id)
+            self.opencti.app_logger.info(
+                "Getting Observed-Data of the Stix-Cyber-Observable", {"id": id}
+            )
             query = """
                     query StixCyberObservable($id: String!) {
                         stixCyberObservable(id: $id) {
@@ -2619,5 +2635,5 @@ class StixCyberObservable:
             else:
                 return []
         else:
-            LOGGER.error("Missing parameters: id")
+            self.opencti.app_logger.error("Missing parameters: id")
             return None

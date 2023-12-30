@@ -1,8 +1,3 @@
-# coding: utf-8
-
-from pycti.entities import LOGGER
-
-
 class Stix:
     def __init__(self, opencti):
         self.opencti = opencti
@@ -17,7 +12,7 @@ class Stix:
     def delete(self, **kwargs):
         id = kwargs.get("id", None)
         if id is not None:
-            LOGGER.info("Deleting Stix element {%s}.", id)
+            self.opencti.app_logger.info("Deleting Stix element", {"id": id})
             query = """
                  mutation StixEdit($id: ID!) {
                      stixEdit(id: $id) {
@@ -27,7 +22,7 @@ class Stix:
              """
             self.opencti.query(query, {"id": id})
         else:
-            LOGGER.error("[opencti_stix] Missing parameters: id")
+            self.opencti.app_logger.error("[opencti_stix] Missing parameters: id")
             return None
 
     """
@@ -40,16 +35,11 @@ class Stix:
         """
 
     def merge(self, **kwargs):
-        id = kwargs.get("id", None)
-        stix_objects_ids = kwargs.get("object_ids", None)
+        id = kwargs.get("id")
+        stix_objects_ids = kwargs.get("object_ids")
         if id is not None and stix_objects_ids is not None:
-            self.opencti.log(
-                "info",
-                "Merging Stix object {"
-                + id
-                + "} with {"
-                + ",".join(stix_objects_ids)
-                + "}.",
+            self.opencti.app_logger.info(
+                "Merging Stix object", {"id": id, "sources": ",".join(stix_objects_ids)}
             )
             query = """
                         mutation StixEdit($id: ID!, $stixObjectsIds: [String]!) {
@@ -73,8 +63,7 @@ class Stix:
                 result["data"]["stixEdit"]["merge"]
             )
         else:
-            self.opencti.log(
-                "error",
-                "[opencti_stix] Missing parameters: id and object_ids",
+            self.opencti.app_logger.error(
+                "[opencti_stix] Missing parameters: id and object_ids"
             )
             return None

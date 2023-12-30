@@ -5,8 +5,6 @@ import uuid
 
 from stix2.canonicalization.Canonicalize import canonicalize
 
-from pycti.entities import LOGGER
-
 
 class DataComponent:
     def __init__(self, opencti):
@@ -286,7 +284,9 @@ class DataComponent:
         if get_all:
             first = 100
 
-        LOGGER.info("Listing Data-Components with filters " + json.dumps(filters) + ".")
+        self.opencti.app_logger.info(
+            "Listing Data-Components with filters", {"filters": json.dumps(filters)}
+        )
         query = (
             """
             query DataComponents($filters: FilterGroup, $search: String, $first: Int, $after: ID, $orderBy: DataComponentsOrdering, $orderMode: OrderingMode) {
@@ -330,7 +330,9 @@ class DataComponent:
             final_data = final_data + data
             while result["data"]["dataComponents"]["pageInfo"]["hasNextPage"]:
                 after = result["data"]["dataComponents"]["pageInfo"]["endCursor"]
-                LOGGER.info("Listing Data-Components after " + after)
+                self.opencti.app_logger.info(
+                    "Listing Data-Components", {"after": after}
+                )
                 result = self.opencti.query(
                     query,
                     {
@@ -364,7 +366,7 @@ class DataComponent:
         custom_attributes = kwargs.get("customAttributes", None)
         with_files = kwargs.get("withFiles", False)
         if id is not None:
-            self.opencti.log("info", "Reading Data-Component {" + id + "}.")
+            self.opencti.app_logger.info("Reading Data-Component", {"id": id})
             query = (
                 """
                 query DataComponent($id: String!) {
@@ -389,8 +391,8 @@ class DataComponent:
             else:
                 return None
         else:
-            self.opencti.log(
-                "error", "[opencti_data_component] Missing parameters: id or filters"
+            self.opencti.app_logger.error(
+                "[opencti_data_component] Missing parameters: id or filters"
             )
             return None
 
@@ -421,8 +423,10 @@ class DataComponent:
         update = kwargs.get("update", False)
 
         if name is not None:
-            self.opencti.log("info", "Creating Data Component {" + name + "}.")
-            self.opencti.log("info", "Creating Data Component {" + str(kwargs) + "}.")
+            self.opencti.app_logger.info("Creating Data Component", {"name": name})
+            self.opencti.app_logger.info(
+                "Creating Data Component", {"data": str(kwargs)}
+            )
             query = """
                 mutation DataComponentAdd($input: DataComponentAddInput!) {
                     dataComponentAdd(input: $input) {
@@ -461,9 +465,8 @@ class DataComponent:
                 result["data"]["dataComponentAdd"]
             )
         else:
-            self.opencti.log(
-                "error",
-                "[opencti_data_component] Missing parameters: name and description",
+            self.opencti.app_logger.error(
+                "[opencti_data_component] Missing parameters: name and description"
             )
 
     """
@@ -541,8 +544,8 @@ class DataComponent:
                 update=update,
             )
         else:
-            self.opencti.log(
-                "error", "[opencti_data_source] Missing parameters: stixObject"
+            self.opencti.app_logger.error(
+                "[opencti_data_source] Missing parameters: stixObject"
             )
 
     def process_multiple_fields(self, data):

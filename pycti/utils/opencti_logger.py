@@ -1,0 +1,58 @@
+import datetime
+import logging
+
+from pythonjsonlogger import jsonlogger
+
+
+class CustomJsonFormatter(jsonlogger.JsonFormatter):
+    def add_fields(self, log_record, record, message_dict):
+        super(CustomJsonFormatter, self).add_fields(log_record, record, message_dict)
+        if not log_record.get("timestamp"):
+            # This doesn't use record.created, so it is slightly off
+            now = datetime.datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%S.%fZ")
+            log_record["timestamp"] = now
+        if log_record.get("level"):
+            log_record["level"] = log_record["level"].upper()
+        else:
+            log_record["level"] = record.levelname
+
+
+def logger(level, json_logging=True):
+    logging.getLogger("urllib3").setLevel(logging.WARNING)
+    logging.getLogger("pika").setLevel(logging.ERROR)
+    if json_logging:
+        log_handler = logging.StreamHandler()
+        log_handler.setLevel(level)
+        formatter = CustomJsonFormatter("%(timestamp)s %(level)s %(name)s %(message)s")
+        log_handler.setFormatter(formatter)
+        logging.basicConfig(handlers=[log_handler], level=level, force=True)
+    else:
+        logging.basicConfig(level=level)
+
+    class AppLogger:
+        def __init__(self, name):
+            self.local_logger = logging.getLogger(name)
+
+        @staticmethod
+        def prepare_meta(meta=None):
+            return None if meta is None else {"attributes": meta}
+
+        def debug(self, message, meta=None):
+            self.local_logger.debug(message, extra=AppLogger.prepare_meta(meta))
+
+        def info(self, message, meta=None):
+            self.local_logger.info(message, extra=AppLogger.prepare_meta(meta))
+
+        def warning(self, message, meta=None):
+            self.local_logger.warning(message, extra=AppLogger.prepare_meta(meta))
+
+        def error(self, message, meta=None):
+            # noinspection PyTypeChecker
+            self.local_logger.error(
+                message, exc_info=1, extra=AppLogger.prepare_meta(meta)
+            )
+
+    return AppLogger
+
+
+test_logger = logger("INFO")("test")

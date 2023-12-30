@@ -6,8 +6,6 @@ from typing import Union
 
 from stix2.canonicalization.Canonicalize import canonicalize
 
-from pycti.entities import LOGGER
-
 
 class ThreatActorIndividual:
     """Main ThreatActorIndividual class for OpenCTI
@@ -182,8 +180,9 @@ class ThreatActorIndividual:
         if get_all:
             first = 500
 
-        LOGGER.info(
-            "Listing Threat-Actors-Individual with filters %s.", json.dumps(filters)
+        self.opencti.app_logger.info(
+            "Listing Threat-Actors-Individual with filters",
+            {"filters": json.dumps(filters)},
         )
         query = (
             """
@@ -240,7 +239,7 @@ class ThreatActorIndividual:
         filters = kwargs.get("filters", None)
         custom_attributes = kwargs.get("customAttributes", None)
         if id is not None:
-            LOGGER.info("Reading Threat-Actor-Individual {%s}.", id)
+            self.opencti.app_logger.info("Reading Threat-Actor-Individual", {"id": id})
             query = (
                 """
                     query ThreatActorIndividual($id: String!) {
@@ -267,7 +266,7 @@ class ThreatActorIndividual:
             else:
                 return None
         else:
-            LOGGER.error(
+            self.opencti.app_logger.error(
                 "[opencti_threat_actor_individual] Missing parameters: id or filters"
             )
             return None
@@ -336,7 +335,9 @@ class ThreatActorIndividual:
         update = kwargs.get("update", False)
 
         if name is not None:
-            LOGGER.info("Creating Threat-Actor-Individual {%s}.", name)
+            self.opencti.app_logger.info(
+                "Creating Threat-Actor-Individual", {"name": name}
+            )
             query = """
                 mutation ThreatActorIndividualAdd($input: ThreatActorIndividualAddInput!) {
                     threatActorIndividualAdd(input: $input) {
@@ -383,7 +384,7 @@ class ThreatActorIndividual:
                 result["data"]["threatActorIndividualAdd"]
             )
         else:
-            LOGGER.error(
+            self.opencti.app_logger.error(
                 "[opencti_threat_actor_individual] Missing parameters: name and description"
             )
 
@@ -471,6 +472,6 @@ class ThreatActorIndividual:
                 update=update,
             )
         else:
-            LOGGER.error(
+            self.opencti.app_logger.error(
                 "[opencti_threat_actor_individual] Missing parameters: stixObject"
             )

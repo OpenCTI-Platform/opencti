@@ -5,8 +5,6 @@ import uuid
 
 from stix2.canonicalization.Canonicalize import canonicalize
 
-from pycti.entities import LOGGER
-
 
 class MarkingDefinition:
     def __init__(self, opencti):
@@ -54,7 +52,9 @@ class MarkingDefinition:
         if get_all:
             first = 500
 
-        LOGGER.info("Listing Marking-Definitions with filters %s.", json.dumps(filters))
+        self.opencti.app_logger.info(
+            "Listing Marking-Definitions with filters", {"filters": json.dumps(filters)}
+        )
         query = (
             """
             query MarkingDefinitions($filters: FilterGroup, $first: Int, $after: ID, $orderBy: MarkingDefinitionsOrdering, $orderMode: OrderingMode) {
@@ -103,7 +103,7 @@ class MarkingDefinition:
         id = kwargs.get("id", None)
         filters = kwargs.get("filters", None)
         if id is not None:
-            LOGGER.info("Reading Marking-Definition {%s}.", id)
+            self.opencti.app_logger.info("Reading Marking-Definition", {"id": id})
             query = (
                 """
                 query MarkingDefinition($id: String!) {
@@ -126,7 +126,7 @@ class MarkingDefinition:
             else:
                 return None
         else:
-            LOGGER.error(
+            self.opencti.app_logger.error(
                 "[opencti_marking_definition] Missing parameters: id or filters"
             )
             return None
@@ -182,7 +182,7 @@ class MarkingDefinition:
                 result["data"]["markingDefinitionAdd"]
             )
         else:
-            LOGGER.error(
+            self.opencti.app_logger.error(
                 "[opencti_marking_definition] Missing parameters: definition and definition_type",
             )
 
@@ -198,7 +198,7 @@ class MarkingDefinition:
         id = kwargs.get("id", None)
         input = kwargs.get("input", None)
         if id is not None and input is not None:
-            LOGGER.info("Updating Marking Definition {%s}.", id)
+            self.opencti.app_logger.info("Updating Marking Definition", {"id": id})
             query = """
                     mutation MarkingDefinitionEdit($id: ID!, $input: [EditInput]!) {
                         markingDefinitionEdit(id: $id) {
@@ -221,7 +221,7 @@ class MarkingDefinition:
                 result["data"]["markingDefinitionEdit"]["fieldPatch"]
             )
         else:
-            LOGGER.error(
+            self.opencti.app_logger.error(
                 "[opencti_marking_definition] Missing parameters: id and key and value"
             )
             return None
@@ -321,12 +321,14 @@ class MarkingDefinition:
                 update=update,
             )
         else:
-            LOGGER.error("[opencti_marking_definition] Missing parameters: stixObject")
+            self.opencti.app_logger.error(
+                "[opencti_marking_definition] Missing parameters: stixObject"
+            )
 
     def delete(self, **kwargs):
         id = kwargs.get("id", None)
         if id is not None:
-            LOGGER.info("Deleting Marking-Definition {%s}.", id)
+            self.opencti.app_logger.info("Deleting Marking-Definition", {"id": id})
             query = """
                  mutation MarkingDefinitionEdit($id: ID!) {
                      markingDefinitionEdit(id: $id) {
@@ -336,5 +338,7 @@ class MarkingDefinition:
              """
             self.opencti.query(query, {"id": id})
         else:
-            LOGGER.error("[opencti_marking_definition] Missing parameters: id")
+            self.opencti.app_logger.error(
+                "[opencti_marking_definition] Missing parameters: id"
+            )
             return None

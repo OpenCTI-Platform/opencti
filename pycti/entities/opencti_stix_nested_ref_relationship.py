@@ -1,8 +1,3 @@
-# coding: utf-8
-
-from pycti.entities import LOGGER
-
-
 class StixNestedRefRelationship:
     def __init__(self, opencti):
         self.opencti = opencti
@@ -102,9 +97,13 @@ class StixNestedRefRelationship:
         if get_all:
             first = 500
 
-        LOGGER.info(
-            "Listing stix_nested_ref_relationships with {type: %s, from_id: %s, to_id: %s}",
-            *(relationship_type, from_id, to_id),
+        self.opencti.app_logger.info(
+            "Listing stix_nested_ref_relationships",
+            {
+                "relationship_type": relationship_type,
+                "from_id": from_id,
+                "to_id": to_id,
+            },
         )
         query = (
             """
@@ -180,7 +179,9 @@ class StixNestedRefRelationship:
         stop_time_stop = kwargs.get("stopTimeStop", None)
         custom_attributes = kwargs.get("customAttributes", None)
         if id is not None:
-            LOGGER.info("Reading stix_observable_relationship {%s}.", id)
+            self.opencti.app_logger.info(
+                "Reading stix_observable_relationship", {"id": id}
+            )
             query = (
                 """
                 query StixRefRelationship($id: String!) {
@@ -244,9 +245,13 @@ class StixNestedRefRelationship:
         elif relationship_type == "content":
             relationship_type = "obs_content"
 
-        LOGGER.info(
-            "Creating stix_observable_relationship '%s' {%s, %s}.",
-            *(relationship_type, from_id, to_id),
+        self.opencti.app_logger.info(
+            "Creating stix_observable_relationship",
+            {
+                "relationship_type": relationship_type,
+                "from_id": from_id,
+                "to_id": to_id,
+            },
         )
         query = """
                 mutation StixRefRelationshipAdd($input: StixRefRelationshipAddInput!) {
@@ -293,7 +298,9 @@ class StixNestedRefRelationship:
         id = kwargs.get("id", None)
         input = kwargs.get("input", None)
         if id is not None and input is not None:
-            LOGGER.info("Updating stix_observable_relationship {%s}.", id)
+            self.opencti.app_logger.info(
+                "Updating stix_observable_relationship", {"id": id}
+            )
             query = (
                 """
                 mutation StixRefRelationshipEdit($id: ID!, $input: [EditInput]!) {
@@ -312,5 +319,5 @@ class StixNestedRefRelationship:
                 result["data"]["stixRefRelationshipEdit"]["fieldPatch"]
             )
         else:
-            LOGGER.error("Missing parameters: id and key and value")
+            self.opencti.app_logger.error("Missing parameters: id and key and value")
             return None

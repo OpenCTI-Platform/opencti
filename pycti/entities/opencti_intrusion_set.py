@@ -5,8 +5,6 @@ import uuid
 
 from stix2.canonicalization.Canonicalize import canonicalize
 
-from pycti.entities import LOGGER
-
 
 class IntrusionSet:
     def __init__(self, opencti):
@@ -262,7 +260,9 @@ class IntrusionSet:
         if get_all:
             first = 500
 
-        LOGGER.info("Listing Intrusion-Sets with filters %s.", json.dumps(filters))
+        self.opencti.app_logger.info(
+            "Listing Intrusion-Sets with filters", {"filters": json.dumps(filters)}
+        )
         query = (
             """
             query IntrusionSets($filters: FilterGroup, $search: String, $first: Int, $after: ID, $orderBy: IntrusionSetsOrdering, $orderMode: OrderingMode) {
@@ -318,7 +318,7 @@ class IntrusionSet:
         custom_attributes = kwargs.get("customAttributes", None)
         with_files = kwargs.get("withFiles", False)
         if id is not None:
-            LOGGER.info("Reading Intrusion-Set {%s}.", id)
+            self.opencti.app_logger.info("Reading Intrusion-Set", {"id": id})
             query = (
                 """
                 query IntrusionSet($id: String!) {
@@ -343,7 +343,9 @@ class IntrusionSet:
             else:
                 return None
         else:
-            LOGGER.error("[opencti_intrusion_set] Missing parameters: id or filters")
+            self.opencti.app_logger.error(
+                "[opencti_intrusion_set] Missing parameters: id or filters"
+            )
             return None
 
     """
@@ -378,7 +380,7 @@ class IntrusionSet:
         update = kwargs.get("update", False)
 
         if name is not None:
-            LOGGER.info("Creating Intrusion-Set {%s}.", name)
+            self.opencti.app_logger.info("Creating Intrusion-Set", {"name": name})
             query = """
                 mutation IntrusionSetAdd($input: IntrusionSetAddInput!) {
                     intrusionSetAdd(input: $input) {
@@ -422,7 +424,7 @@ class IntrusionSet:
                 result["data"]["intrusionSetAdd"]
             )
         else:
-            LOGGER.error(
+            self.opencti.app_logger.error(
                 "[opencti_intrusion_set] Missing parameters: name and description"
             )
 
@@ -501,4 +503,6 @@ class IntrusionSet:
                 update=update,
             )
         else:
-            LOGGER.error("[opencti_intrusion_set] Missing parameters: stixObject")
+            self.opencti.app_logger.error(
+                "[opencti_intrusion_set] Missing parameters: stixObject"
+            )

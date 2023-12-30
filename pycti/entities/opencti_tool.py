@@ -5,8 +5,6 @@ import uuid
 
 from stix2.canonicalization.Canonicalize import canonicalize
 
-from pycti.entities import LOGGER
-
 
 class Tool:
     def __init__(self, opencti):
@@ -175,7 +173,9 @@ class Tool:
         if get_all:
             first = 100
 
-        LOGGER.info("Listing Tools with filters %s.", json.dumps(filters))
+        self.opencti.app_logger.info(
+            "Listing Tools with filters", {"filters": json.dumps(filters)}
+        )
         query = (
             """
             query Tools($filters: FilterGroup, $search: String, $first: Int, $after: ID, $orderBy: ToolsOrdering, $orderMode: OrderingMode) {
@@ -215,7 +215,7 @@ class Tool:
             final_data = final_data + data
             while result["data"]["tools"]["pageInfo"]["hasNextPage"]:
                 after = result["data"]["tools"]["pageInfo"]["endCursor"]
-                LOGGER.info("Listing Tools after " + after)
+                self.opencti.app_logger.info("Listing Tools", {"after": after})
                 result = self.opencti.query(
                     query,
                     {
@@ -248,7 +248,7 @@ class Tool:
         filters = kwargs.get("filters", None)
         custom_attributes = kwargs.get("customAttributes", None)
         if id is not None:
-            LOGGER.info("Reading Tool {%s}.", id)
+            self.opencti.app_logger.info("Reading Tool", {"id": id})
             query = (
                 """
                 query Tool($id: String!) {
@@ -273,7 +273,9 @@ class Tool:
             else:
                 return None
         else:
-            LOGGER.error("[opencti_tool] Missing parameters: id or filters")
+            self.opencti.app_logger.error(
+                "[opencti_tool] Missing parameters: id or filters"
+            )
             return None
 
     """
@@ -305,7 +307,7 @@ class Tool:
         update = kwargs.get("update", False)
 
         if name is not None:
-            LOGGER.info("Creating Tool {%s}.", name)
+            self.opencti.app_logger.info("Creating Tool", {"name": name})
             query = """
                 mutation ToolAdd($input: ToolAddInput!) {
                     toolAdd(input: $input) {
@@ -344,7 +346,9 @@ class Tool:
             )
             return self.opencti.process_multiple_fields(result["data"]["toolAdd"])
         else:
-            LOGGER.error("[opencti_tool] Missing parameters: name and description")
+            self.opencti.app_logger.error(
+                "[opencti_tool] Missing parameters: name and description"
+            )
 
     """
         Import an Tool object from a STIX2 object
@@ -414,4 +418,6 @@ class Tool:
                 update=update,
             )
         else:
-            LOGGER.error("[opencti_tool] Missing parameters: stixObject")
+            self.opencti.app_logger.error(
+                "[opencti_tool] Missing parameters: stixObject"
+            )

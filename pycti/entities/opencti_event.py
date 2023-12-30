@@ -5,8 +5,6 @@ import uuid
 
 from stix2.canonicalization.Canonicalize import canonicalize
 
-from pycti.entities import LOGGER
-
 
 class Event:
     def __init__(self, opencti):
@@ -256,7 +254,9 @@ class Event:
         if get_all:
             first = 100
 
-        LOGGER.info("Listing Events with filters %s", json.dumps(filters))
+        self.opencti.app_logger.info(
+            "Listing Events with filters", {"filters": json.dumps(filters)}
+        )
         query = (
             """
             query Events($filters: FilterGroup, $search: String, $first: Int, $after: ID, $orderBy: EventsOrdering, $orderMode: OrderingMode) {
@@ -300,7 +300,7 @@ class Event:
             final_data = final_data + data
             while result["data"]["events"]["pageInfo"]["hasNextPage"]:
                 after = result["data"]["events"]["pageInfo"]["endCursor"]
-                LOGGER.info("Listing Events after %s", after)
+                self.opencti.app_logger.info("Listing Events", {"after": after})
                 result = self.opencti.query(
                     query,
                     {
@@ -334,7 +334,7 @@ class Event:
         custom_attributes = kwargs.get("customAttributes", None)
         with_files = kwargs.get("withFiles", False)
         if id is not None:
-            LOGGER.info("Reading Event {%s}.", id)
+            self.opencti.app_logger.info("Reading Event", {"id": id})
             query = (
                 """
                 query Event($id: String!) {
@@ -359,7 +359,9 @@ class Event:
             else:
                 return None
         else:
-            LOGGER.error("[opencti_event] Missing parameters: id or filters")
+            self.opencti.app_logger.error(
+                "[opencti_event] Missing parameters: id or filters"
+            )
             return None
 
     """
@@ -390,7 +392,7 @@ class Event:
         update = kwargs.get("update", False)
 
         if name is not None:
-            LOGGER.info("Creating Event {%s}.", name)
+            self.opencti.app_logger.info("Creating Event", {"name": name})
             query = """
                 mutation EventAdd($input: EventAddInput!) {
                     eventAdd(input: $input) {
@@ -428,7 +430,9 @@ class Event:
             )
             return self.opencti.process_multiple_fields(result["data"]["eventAdd"])
         else:
-            LOGGER.error("[opencti_event] Missing parameters: name and description")
+            self.opencti.app_logger.error(
+                "[opencti_event] Missing parameters: name and description"
+            )
 
     """
         Import an Event object from a STIX2 object
@@ -495,4 +499,6 @@ class Event:
                 update=update,
             )
         else:
-            LOGGER.error("[opencti_event] Missing parameters: stixObject")
+            self.opencti.app_logger.error(
+                "[opencti_event] Missing parameters: stixObject"
+            )

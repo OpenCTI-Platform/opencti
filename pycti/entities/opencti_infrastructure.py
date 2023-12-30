@@ -5,8 +5,6 @@ import uuid
 
 from stix2.canonicalization.Canonicalize import canonicalize
 
-from pycti.entities import LOGGER
-
 
 class Infrastructure:
     """Main Infrastructure class for OpenCTI
@@ -293,7 +291,9 @@ class Infrastructure:
         if get_all:
             first = 500
 
-        LOGGER.info("Listing Infrastructures with filters %s.", json.dumps(filters))
+        self.opencti.app_logger.info(
+            "Listing Infrastructures with filters", {"filters": json.dumps(filters)}
+        )
         query = (
             """
             query Infrastructures($filters: FilterGroup, $search: String, $first: Int, $after: ID, $orderBy: InfrastructuresOrdering, $orderMode: OrderingMode) {
@@ -338,7 +338,9 @@ class Infrastructure:
             final_data = final_data + data
             while result["data"]["infrastructures"]["pageInfo"]["hasNextPage"]:
                 after = result["data"]["infrastructures"]["pageInfo"]["endCursor"]
-                LOGGER.info("Listing Infrastructures after " + after)
+                self.opencti.app_logger.info(
+                    "Listing Infrastructures", {"after": after}
+                )
                 result = self.opencti.query(
                     query,
                     {
@@ -377,7 +379,7 @@ class Infrastructure:
         custom_attributes = kwargs.get("customAttributes", None)
         with_files = kwargs.get("withFiles", False)
         if id is not None:
-            LOGGER.info("Reading Infrastructure {%s}.", id)
+            self.opencti.app_logger.info("Reading Infrastructure", {"id": id})
             query = (
                 """
                 query Infrastructure($id: String!) {
@@ -404,7 +406,9 @@ class Infrastructure:
             else:
                 return None
         else:
-            LOGGER.error("[opencti_infrastructure] Missing parameters: id or filters")
+            self.opencti.app_logger.error(
+                "[opencti_infrastructure] Missing parameters: id or filters"
+            )
             return None
 
     """
@@ -437,7 +441,7 @@ class Infrastructure:
         update = kwargs.get("update", False)
 
         if name is not None:
-            LOGGER.info("Creating Infrastructure {%s}.", name)
+            self.opencti.app_logger.info("Creating Infrastructure", {"name": name})
             query = """
                 mutation InfrastructureAdd($input: InfrastructureAddInput!) {
                     infrastructureAdd(input: $input) {
@@ -479,7 +483,7 @@ class Infrastructure:
                 result["data"]["infrastructureAdd"]
             )
         else:
-            LOGGER.error(
+            self.opencti.app_logger.error(
                 "[opencti_infrastructure] Missing parameters: "
                 "name and infrastructure_pattern and main_observable_type"
             )
@@ -555,4 +559,6 @@ class Infrastructure:
                 update=update,
             )
         else:
-            LOGGER.error("[opencti_infrastructure] Missing parameters: stixObject")
+            self.opencti.app_logger.error(
+                "[opencti_infrastructure] Missing parameters: stixObject"
+            )

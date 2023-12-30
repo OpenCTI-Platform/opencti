@@ -15,7 +15,6 @@ from pycti import (
     get_config_variable,
 )
 from pycti.utils.constants import ContainerTypes, IdentityTypes
-from tests import LOGGER
 
 
 class SimpleConnectorTest:
@@ -252,7 +251,7 @@ class InternalImportConnector:
         file_uri = self.helper.opencti_url + file_fetch
 
         # Downloading and saving file to connector
-        LOGGER.info("Importing the file %s", file_uri)
+        self.helper.connector_logger.info("Importing the file", {"file_uri": file_uri})
 
         # observable = SimpleObservable(
         #    id=OpenCTIStix2Utils.generate_random_stix_id("x-opencti-simple-observable"),

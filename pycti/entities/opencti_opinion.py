@@ -3,8 +3,6 @@
 import json
 import uuid
 
-from pycti.entities import LOGGER
-
 
 class Opinion:
     def __init__(self, opencti):
@@ -251,7 +249,9 @@ class Opinion:
         if get_all:
             first = 100
 
-        LOGGER.info("Listing Opinions with filters %s.", json.dumps(filters))
+        self.opencti.app_logger.info(
+            "Listing Opinions with filters", {"filters": json.dumps(filters)}
+        )
         query = (
             """
             query Opinions($filters: FilterGroup, $search: String, $first: Int, $after: ID, $orderBy: OpinionsOrdering, $orderMode: OrderingMode) {
@@ -291,7 +291,7 @@ class Opinion:
             final_data = final_data + data
             while result["data"]["opinions"]["pageInfo"]["hasNextPage"]:
                 after = result["data"]["opinions"]["pageInfo"]["endCursor"]
-                LOGGER.info("Listing Opinions after " + after)
+                self.opencti.app_logger.info("Listing Opinions", {"after": after})
                 result = self.opencti.query(
                     query,
                     {
@@ -324,7 +324,7 @@ class Opinion:
         filters = kwargs.get("filters", None)
         custom_attributes = kwargs.get("customAttributes", None)
         if id is not None:
-            LOGGER.info("Reading Opinion {%s}.", id)
+            self.opencti.app_logger.info("Reading Opinion", {"id": id})
             query = (
                 """
                 query Opinion($id: String!) {
@@ -361,9 +361,12 @@ class Opinion:
             "stixObjectOrStixRelationshipId", None
         )
         if id is not None and stix_object_or_stix_relationship_id is not None:
-            LOGGER.info(
-                "Checking StixObjectOrStixRelationship {%s} in Opinion {%s}",
-                *(stix_object_or_stix_relationship_id, id),
+            self.opencti.app_logger.info(
+                "Checking StixObjectOrStixRelationship in Opinion",
+                {
+                    "id": id,
+                    "stixObjectOrStixRelationshipId": stix_object_or_stix_relationship_id,
+                },
             )
             query = """
                 query OpinionContainsStixObjectOrStixRelationship($id: String!, $stixObjectOrStixRelationshipId: String!) {
@@ -379,7 +382,9 @@ class Opinion:
             )
             return result["data"]["opinionContainsStixObjectOrStixRelationship"]
         else:
-            LOGGER.error("[opencti_opinion] Missing parameters: id or entity_id")
+            self.opencti.app_logger.error(
+                "[opencti_opinion] Missing parameters: id or entity_id"
+            )
 
     """
         Create a Opinion object
@@ -408,7 +413,7 @@ class Opinion:
         update = kwargs.get("update", False)
 
         if opinion is not None:
-            LOGGER.info("Creating Opinion {%s}.", opinion)
+            self.opencti.app_logger.info("Creating Opinion", {"opinion": opinion})
             query = """
                 mutation OpinionAdd($input: OpinionAddInput!) {
                     opinionAdd(input: $input) {
@@ -445,7 +450,9 @@ class Opinion:
             )
             return self.opencti.process_multiple_fields(result["data"]["opinionAdd"])
         else:
-            LOGGER.error("[opencti_opinion] Missing parameters: content")
+            self.opencti.app_logger.error(
+                "[opencti_opinion] Missing parameters: content"
+            )
 
     """
         Add a Stix-Entity object to Opinion object (object_refs)
@@ -466,9 +473,12 @@ class Opinion:
                 stixObjectOrStixRelationshipId=stix_object_or_stix_relationship_id,
             ):
                 return True
-            LOGGER.info(
-                "Adding StixObjectOrStixRelationship {%s} to Opinion {%s}",
-                *(stix_object_or_stix_relationship_id, id),
+            self.opencti.app_logger.info(
+                "Adding StixObjectOrStixRelationship to Opinion",
+                {
+                    "id": id,
+                    "stixObjectOrStixRelationshipId": stix_object_or_stix_relationship_id,
+                },
             )
             query = """
                mutation OpinionEdit($id: ID!, $input: StixRefRelationshipAddInput!) {
@@ -491,7 +501,7 @@ class Opinion:
             )
             return True
         else:
-            LOGGER.error(
+            self.opencti.app_logger.error(
                 "[opencti_opinion] Missing parameters: id and stix_object_or_stix_relationship_id",
             )
             return False
@@ -510,9 +520,12 @@ class Opinion:
             "stixObjectOrStixRelationshipId", None
         )
         if id is not None and stix_object_or_stix_relationship_id is not None:
-            LOGGER.info(
-                "Removing StixObjectOrStixRelationship {%s} to Opinion {%s}",
-                *(stix_object_or_stix_relationship_id, id),
+            self.opencti.app_logger.info(
+                "Removing StixObjectOrStixRelationship to Opinion",
+                {
+                    "id": id,
+                    "stixObjectOrStixRelationshipId": stix_object_or_stix_relationship_id,
+                },
             )
             query = """
                mutation OpinionEditRelationDelete($id: ID!, $toId: StixRef!, $relationship_type: String!) {
@@ -533,7 +546,9 @@ class Opinion:
             )
             return True
         else:
-            LOGGER.error("[opencti_opinion] Missing parameters: id and entity_id")
+            self.opencti.app_logger.error(
+                "[opencti_opinion] Missing parameters: id and entity_id"
+            )
             return False
 
     """
@@ -596,4 +611,6 @@ class Opinion:
                 update=update,
             )
         else:
-            LOGGER.error("[opencti_opinion] Missing parameters: stixObject")
+            self.opencti.app_logger.error(
+                "[opencti_opinion] Missing parameters: stixObject"
+            )

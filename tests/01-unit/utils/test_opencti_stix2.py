@@ -14,7 +14,7 @@ def test_unknown_type(opencti_stix2: OpenCTIStix2, caplog):
     opencti_stix2.unknown_type({"type": "foo"})
     for record in caplog.records:
         assert record.levelname == "ERROR"
-    assert 'Unknown object type "foo", doing nothing...' in caplog.text
+    assert "Unknown object type, doing nothing..." in caplog.text
 
 
 def test_convert_markdown(opencti_stix2: OpenCTIStix2):

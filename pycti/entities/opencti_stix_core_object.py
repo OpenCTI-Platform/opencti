@@ -1,8 +1,6 @@
 # coding: utf-8
 import json
 
-from pycti.entities import LOGGER
-
 
 class StixCoreObject:
     def __init__(self, opencti, file):
@@ -1347,7 +1345,9 @@ class StixCoreObject:
         if get_all:
             first = 100
 
-        LOGGER.info("Listing Stix-Core-Objects with filters %s.", json.dumps(filters))
+        self.opencti.app_logger.info(
+            "Listing Stix-Core-Objects with filters", {"filters": json.dumps(filters)}
+        )
         query = (
             """
                     query StixCoreObjects($types: [String], $filters: FilterGroup, $search: String, $relationship_type: [String], $elementId: [String], $first: Int, $after: ID, $orderBy: StixCoreObjectsOrdering, $orderMode: OrderingMode) {
@@ -1395,7 +1395,9 @@ class StixCoreObject:
             final_data = final_data + data
             while result["data"]["stixCoreObjects"]["pageInfo"]["hasNextPage"]:
                 after = result["data"]["stixCoreObjects"]["pageInfo"]["endCursor"]
-                LOGGER.info("Listing Stix-Core-Objects after " + after)
+                self.opencti.app_logger.info(
+                    "Listing Stix-Core-Objects", {"after": after}
+                )
                 result = self.opencti.query(
                     query,
                     {
@@ -1434,7 +1436,7 @@ class StixCoreObject:
         custom_attributes = kwargs.get("customAttributes", None)
         with_files = kwargs.get("withFiles", False)
         if id is not None:
-            LOGGER.info("Reading Stix-Core-Object {%s}.", id)
+            self.opencti.app_logger.info("Reading Stix-Core-Object", {"id": id})
             query = (
                 """
                         query StixCoreObject($id: String!) {
@@ -1463,12 +1465,14 @@ class StixCoreObject:
             else:
                 return None
         else:
-            LOGGER.error("[opencti_stix_core_object] Missing parameters: id or filters")
+            self.opencti.app_logger.error(
+                "[opencti_stix_core_object] Missing parameters: id or filters"
+            )
             return None
 
     def list_files(self, **kwargs):
         id = kwargs.get("id", None)
-        LOGGER.info("Listing files of Stix-Core-Object {%s}.", id)
+        self.opencti.app_logger.info("Listing files of Stix-Core-Object", {"id": id})
         query = """
                     query StixCoreObject($id: String!) {
                         stixCoreObject(id: $id) {
@@ -1523,7 +1527,9 @@ class StixCoreObject:
     def reports(self, **kwargs):
         id = kwargs.get("id", None)
         if id is not None:
-            LOGGER.info("Getting reports of the Stix-Core-Object {%s}.", id)
+            self.opencti.app_logger.info(
+                "Getting reports of the Stix-Core-Object", {"id": id}
+            )
             query = """
                 query StixCoreObject($id: String!) {
                     stixCoreObject(id: $id) {
@@ -1647,5 +1653,5 @@ class StixCoreObject:
             else:
                 return []
         else:
-            LOGGER.error("Missing parameters: id")
+            self.opencti.app_logger.error("Missing parameters: id")
             return None

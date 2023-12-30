@@ -6,7 +6,6 @@ from typing import Union
 
 from stix2.canonicalization.Canonicalize import canonicalize
 
-from pycti.entities import LOGGER
 from pycti.entities.opencti_threat_actor_group import ThreatActorGroup
 from pycti.entities.opencti_threat_actor_individual import ThreatActorIndividual
 
@@ -185,7 +184,9 @@ class ThreatActor:
         if get_all:
             first = 500
 
-        LOGGER.info("Listing Threat-Actors with filters %s.", json.dumps(filters))
+        self.opencti.app_logger.info(
+            "Listing Threat-Actors with filters", {"filters": json.dumps(filters)}
+        )
         query = (
             """
                 query ThreatActors($filters: FilterGroup, $search: String, $first: Int, $after: ID, $orderBy: ThreatActorsOrdering, $orderMode: OrderingMode) {
@@ -241,7 +242,7 @@ class ThreatActor:
         filters = kwargs.get("filters", None)
         custom_attributes = kwargs.get("customAttributes", None)
         if id is not None:
-            LOGGER.info("Reading Threat-Actor {%s}.", id)
+            self.opencti.app_logger.info("Reading Threat-Actor", {"id": id})
             query = (
                 """
                     query ThreatActor($id: String!) {
@@ -266,7 +267,9 @@ class ThreatActor:
             else:
                 return None
         else:
-            LOGGER.error("[opencti_threat_actor] Missing parameters: id or filters")
+            self.opencti.app_logger.error(
+                "[opencti_threat_actor] Missing parameters: id or filters"
+            )
             return None
 
     @DeprecationWarning
