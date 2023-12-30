@@ -18,8 +18,10 @@ class CustomJsonFormatter(jsonlogger.JsonFormatter):
 
 
 def logger(level, json_logging=True):
+    # Exceptions
     logging.getLogger("urllib3").setLevel(logging.WARNING)
     logging.getLogger("pika").setLevel(logging.ERROR)
+    # Exceptions
     if json_logging:
         log_handler = logging.StreamHandler()
         log_handler.setLevel(level)
@@ -36,6 +38,10 @@ def logger(level, json_logging=True):
         @staticmethod
         def prepare_meta(meta=None):
             return None if meta is None else {"attributes": meta}
+
+        @staticmethod
+        def setup_logger_level(lib, log_level):
+            logging.getLogger(lib).setLevel(log_level)
 
         def debug(self, message, meta=None):
             self.local_logger.debug(message, extra=AppLogger.prepare_meta(meta))
