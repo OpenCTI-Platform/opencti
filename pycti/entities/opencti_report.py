@@ -685,6 +685,7 @@ class Report:
         modified = kwargs.get("modified", None)
         name = kwargs.get("name", None)
         description = kwargs.get("description", None)
+        content = kwargs.get("content", None)
         report_types = kwargs.get("report_types", None)
         published = kwargs.get("published", None)
         x_opencti_reliability = kwargs.get("x_opencti_reliability", None)
@@ -722,6 +723,7 @@ class Report:
                         "modified": modified,
                         "name": name,
                         "description": description,
+                        "content": content,
                         "report_types": report_types,
                         "published": published,
                         "x_opencti_reliability": x_opencti_reliability,
@@ -882,6 +884,9 @@ class Report:
                     stix_object["description"]
                 )
                 if "description" in stix_object
+                else None,
+                content=self.opencti.stix2.convert_markdown(stix_object["content"])
+                if "content" in stix_object
                 else None,
                 report_types=stix_object["report_types"]
                 if "report_types" in stix_object
