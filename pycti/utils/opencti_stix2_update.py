@@ -1,8 +1,5 @@
 # coding: utf-8
 
-import traceback
-
-from pycti.api import LOGGER as API_LOGGER
 from pycti.utils.constants import StixCyberObservableTypes
 
 
@@ -300,6 +297,5 @@ class OpenCTIStix2Update:
                             )
                             inputs.append({"key": key, "value": values})
             self.update_attribute(data["type"], data["id"], inputs)
-        except Exception:
-            error_msg = traceback.format_exc()
-            API_LOGGER.error(error_msg)
+        except Exception as err:
+            self.opencti.app_logger.error(str(err))

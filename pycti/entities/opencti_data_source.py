@@ -5,8 +5,6 @@ import uuid
 
 from stix2.canonicalization.Canonicalize import canonicalize
 
-from pycti.entities import LOGGER
-
 
 class DataSource:
     def __init__(self, opencti):
@@ -254,9 +252,8 @@ class DataSource:
         if get_all:
             first = 100
 
-        self.opencti.log(
-            "info",
-            "Listing Data-Sources with filters " + json.dumps(filters) + ".",
+        self.opencti.app_logger.info(
+            "Listing Data-Sources with filters", {"filters": json.dumps(filters)}
         )
         query = (
             """
@@ -301,7 +298,7 @@ class DataSource:
             final_data = final_data + data
             while result["data"]["dataSources"]["pageInfo"]["hasNextPage"]:
                 after = result["data"]["dataSources"]["pageInfo"]["endCursor"]
-                LOGGER.info("Listing Data-Sources after " + after)
+                self.opencti.app_logger.info("Listing Data-Sources", {"after": after})
                 result = self.opencti.query(
                     query,
                     {
@@ -335,7 +332,7 @@ class DataSource:
         custom_attributes = kwargs.get("customAttributes", None)
         with_files = kwargs.get("withFiles", False)
         if id is not None:
-            self.opencti.log("info", "Reading Data-Source {" + id + "}.")
+            self.opencti.app_logger.info("Reading Data-Source", {"id": id})
             query = (
                 """
                 query DataSource($id: String!) {
@@ -360,8 +357,8 @@ class DataSource:
             else:
                 return None
         else:
-            self.opencti.log(
-                "error", "[opencti_data_source] Missing parameters: id or filters"
+            self.opencti.app_logger.error(
+                "[opencti_data_source] Missing parameters: id or filters"
             )
             return None
 
@@ -393,8 +390,8 @@ class DataSource:
         update = kwargs.get("update", False)
 
         if name is not None:
-            self.opencti.log("info", "Creating Data Source {" + name + "}.")
-            self.opencti.log("info", "Creating Data Source {" + str(kwargs) + "}.")
+            self.opencti.app_logger.info("Creating Data Source", {"name": name})
+            self.opencti.app_logger.info("Creating Data Source", {"data": str(kwargs)})
             query = """
                 mutation DataSourceAdd($input: DataSourceAddInput!) {
                     dataSourceAdd(input: $input) {
@@ -432,9 +429,8 @@ class DataSource:
             )
             return self.opencti.process_multiple_fields(result["data"]["dataSourceAdd"])
         else:
-            self.opencti.log(
-                "error",
-                "[opencti_data_source] Missing parameters: name and description",
+            self.opencti.app_logger.error(
+                "[opencti_data_source] Missing parameters: name and description"
             )
 
     """
@@ -517,6 +513,6 @@ class DataSource:
                 update=update,
             )
         else:
-            self.opencti.log(
-                "error", "[opencti_data_source] Missing parameters: stixObject"
+            self.opencti.app_logger.error(
+                "[opencti_data_source] Missing parameters: stixObject"
             )

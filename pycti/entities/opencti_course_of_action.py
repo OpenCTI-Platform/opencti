@@ -5,8 +5,6 @@ import uuid
 
 from stix2.canonicalization.Canonicalize import canonicalize
 
-from pycti.entities import LOGGER
-
 
 class CourseOfAction:
     def __init__(self, opencti):
@@ -255,7 +253,9 @@ class CourseOfAction:
         if get_all:
             first = 100
 
-        LOGGER.info("Listing Courses-Of-Action with filters %s.", json.dumps(filters))
+        self.opencti.app_logger.info(
+            "Listing Courses-Of-Action with filters", {"filters": json.dumps(filters)}
+        )
         query = (
             """
             query CoursesOfAction($filters: FilterGroup, $search: String, $first: Int, $after: ID, $orderBy: CoursesOfActionOrdering, $orderMode: OrderingMode) {
@@ -299,7 +299,9 @@ class CourseOfAction:
             final_data = final_data + data
             while result["data"]["coursesOfAction"]["pageInfo"]["hasNextPage"]:
                 after = result["data"]["coursesOfAction"]["pageInfo"]["endCursor"]
-                LOGGER.info("Listing Courses-Of-Action after " + after)
+                self.opencti.app_logger.info(
+                    "Listing Courses-Of-Action", {"after": after}
+                )
                 result = self.opencti.query(
                     query,
                     {
@@ -333,7 +335,7 @@ class CourseOfAction:
         custom_attributes = kwargs.get("customAttributes", None)
         with_files = kwargs.get("withFiles", False)
         if id is not None:
-            LOGGER.info("Reading Course-Of-Action {%s}.", id)
+            self.opencti.app_logger.info("Reading Course-Of-Action", {"id": id})
             query = (
                 """
                 query CourseOfAction($id: String!) {
@@ -360,7 +362,9 @@ class CourseOfAction:
             else:
                 return None
         else:
-            LOGGER.error("[opencti_course_of_action] Missing parameters: id or filters")
+            self.opencti.app_logger.error(
+                "[opencti_course_of_action] Missing parameters: id or filters"
+            )
             return None
 
     """
@@ -390,7 +394,7 @@ class CourseOfAction:
         update = kwargs.get("update", False)
 
         if name is not None:
-            LOGGER.info("Creating Course Of Action {%s}.", name)
+            self.opencti.app_logger.info("Creating Course Of Action", {"name": name})
             query = """
                 mutation CourseOfActionAdd($input: CourseOfActionAddInput!) {
                     courseOfActionAdd(input: $input) {
@@ -429,7 +433,7 @@ class CourseOfAction:
                 result["data"]["courseOfActionAdd"]
             )
         else:
-            LOGGER.error(
+            self.opencti.app_logger.error(
                 "[opencti_course_of_action] Missing parameters: name and description"
             )
 
@@ -518,4 +522,6 @@ class CourseOfAction:
                 update=update,
             )
         else:
-            LOGGER.error("[opencti_course_of_action] Missing parameters: stixObject")
+            self.opencti.app_logger.error(
+                "[opencti_course_of_action] Missing parameters: stixObject"
+            )

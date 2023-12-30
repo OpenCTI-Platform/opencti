@@ -5,8 +5,6 @@ import uuid
 from dateutil.parser import parse
 from stix2.canonicalization.Canonicalize import canonicalize
 
-from pycti.entities import LOGGER
-
 
 class Task:
     def __init__(self, opencti):
@@ -271,7 +269,9 @@ class Task:
         if get_all:
             first = 500
 
-        LOGGER.info("Listing Tasks with filters " + json.dumps(filters) + ".")
+        self.opencti.app_logger.info(
+            "Listing Tasks with filters", {"filters": json.dumps(filters)}
+        )
         query = (
             """
         query tasks($filters: FilterGroup, $search: String, $first: Int, $after: ID, $orderBy: TasksOrdering, $orderMode: OrderingMode) {
@@ -311,7 +311,7 @@ class Task:
             final_data = final_data + data
             while result["data"]["tasks"]["pageInfo"]["hasNextPage"]:
                 after = result["date"]["tasks"]["pageInfo"]["endCursor"]
-                self.opencti.log("info", "Listing Tasks after " + after)
+                self.opencti.app_logger.info("Listing Tasks", {"after": after})
                 result = self.opencti.query(
                     query,
                     {
@@ -344,7 +344,7 @@ class Task:
         filters = kwargs.get("filters", None)
         custom_attributes = kwargs.get("customAttributes", None)
         if id is not None:
-            self.opencti.log("info", "Reading Task { " + id + "}.")
+            self.opencti.app_logger.info("Reading Task", {"id": id})
             query = (
                 """
                                     query task($id: String!) {
@@ -415,13 +415,12 @@ class Task:
             "stixObjectOrStixRelationshipId", None
         )
         if id is not None and stix_object_or_stix_relationship_id is not None:
-            self.opencti.log(
-                "info",
-                "Checking StixObjectOrStixRelationship {"
-                + stix_object_or_stix_relationship_id
-                + "} in Task {"
-                + id
-                + "}",
+            self.opencti.app_logger.info(
+                "Checking StixObjectOrStixRelationship in Task",
+                {
+                    "stix_object_or_stix_relationship_id": stix_object_or_stix_relationship_id,
+                    "id": id,
+                },
             )
             query = """
                 query taskContainsStixObjectOrStixRelationship($id: String!, $stixObjectOrStixRelationshipId: String!) {
@@ -437,9 +436,8 @@ class Task:
             )
             return result["data"]["taskContainsStixObjectOrStixRelationship"]
         else:
-            self.opencti.log(
-                "error",
-                "[opencti_Task] Missing parameters: id or stixObjectOrStixRelationshipId",
+            self.opencti.app_logger.error(
+                "[opencti_Task] Missing parameters: id or stixObjectOrStixRelationshipId"
             )
 
     """
@@ -464,7 +462,7 @@ class Task:
         update = kwargs.get("update", False)
 
         if name is not None:
-            self.opencti.log("info", "Creating Task {" + name + "}.")
+            self.opencti.app_logger.info("Creating Task", {"name": name})
             query = """
                 mutation TaskAdd($input: TaskAddInput!) {
                     taskAdd(input: $input) {
@@ -496,13 +494,10 @@ class Task:
             )
             return self.opencti.process_multiple_fields(result["data"]["taskAdd"])
         else:
-            self.opencti.log(
-                "error",
-                "[opencti_task] Missing parameters: name",
-            )
+            self.opencti.app_logger.error("[opencti_task] Missing parameters: name")
 
     def update_field(self, **kwargs):
-        self.opencti.log("info", "Updating Task {%s}.", json.dumps(kwargs))
+        self.opencti.app_logger.info("Updating Task", {"data": json.dumps(kwargs)})
         id = kwargs.get("id", None)
         input = kwargs.get("input", None)
         if id is not None and input is not None:
@@ -520,8 +515,8 @@ class Task:
                 result["data"]["taskFieldPatch"]
             )
         else:
-            self.opencti.log(
-                "error", "[opencti_Task] Missing parameters: id and key and value"
+            self.opencti.app_logger.error(
+                "[opencti_Task] Missing parameters: id and key and value"
             )
             return None
 
@@ -539,13 +534,12 @@ class Task:
             "stixObjectOrStixRelationshipId", None
         )
         if id is not None and stix_object_or_stix_relationship_id is not None:
-            self.opencti.log(
-                "info",
-                "Adding StixObjectOrStixRelationship {"
-                + stix_object_or_stix_relationship_id
-                + "} to Task {"
-                + id
-                + "}",
+            self.opencti.app_logger.info(
+                "Adding StixObjectOrStixRelationship in Task",
+                {
+                    "stix_object_or_stix_relationship_id": stix_object_or_stix_relationship_id,
+                    "id": id,
+                },
             )
             query = """
                mutation taskEditRelationAdd($id: ID!, $input: StixMetaRelationshipAddInput) {
@@ -566,8 +560,7 @@ class Task:
             )
             return True
         else:
-            self.opencti.log(
-                "error",
+            self.opencti.app_logger.error(
                 "[opencti_task] Missing parameters: id and stixObjectOrStixRelationshipId",
             )
             return False
@@ -586,13 +579,12 @@ class Task:
             "stixObjectOrStixRelationshipId", None
         )
         if id is not None and stix_object_or_stix_relationship_id is not None:
-            self.opencti.log(
-                "info",
-                "Removing StixObjectOrStixRelationship {"
-                + stix_object_or_stix_relationship_id
-                + "} to Task {"
-                + id
-                + "}",
+            self.opencti.app_logger.info(
+                "Removing StixObjectOrStixRelationship in Task",
+                {
+                    "stix_object_or_stix_relationship_id": stix_object_or_stix_relationship_id,
+                    "id": id,
+                },
             )
             query = """
                mutation taskEditRelationDelete($id: ID!, $toId: StixRef!, $relationship_type: String!) {
@@ -611,8 +603,7 @@ class Task:
             )
             return True
         else:
-            self.opencti.log(
-                "error",
+            self.opencti.app_logger.error(
                 "[opencti_task] Missing parameters: id and stixObjectOrStixRelationshipId",
             )
             return False
@@ -681,12 +672,14 @@ class Task:
                 update=update,
             )
         else:
-            self.opencti.log("error", "[opencti_task] Missing parameters: stixObject")
+            self.opencti.app_logger.error(
+                "[opencti_task] Missing parameters: stixObject"
+            )
 
     def delete(self, **kwargs):
         id = kwargs.get("id", None)
         if id is not None:
-            LOGGER.info("Deleting Task {%s}.", id)
+            self.opencti.app_logger.info("Deleting Task", {"id": id})
             query = """
                  mutation TaskDelete($id: ID!) {
                      taskDelete(id: $id)
@@ -694,5 +687,5 @@ class Task:
              """
             self.opencti.query(query, {"id": id})
         else:
-            LOGGER.error("[opencti_task] Missing parameters: id")
+            self.opencti.app_logger.error("[opencti_task] Missing parameters: id")
             return None

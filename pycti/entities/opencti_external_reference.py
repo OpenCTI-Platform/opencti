@@ -7,8 +7,6 @@ import uuid
 import magic
 from stix2.canonicalization.Canonicalize import canonicalize
 
-from pycti.entities import LOGGER
-
 
 class ExternalReference:
     def __init__(self, opencti, file):
@@ -92,7 +90,9 @@ class ExternalReference:
         if get_all:
             first = 100
 
-        LOGGER.info("Listing External-Reference with filters %s.", json.dumps(filters))
+        self.opencti.app_logger.info(
+            "Listing External-Reference with filters", {"filters": json.dumps(filters)}
+        )
         query = (
             """
             query ExternalReferences($filters: FilterGroup, $first: Int, $after: ID, $orderBy: ExternalReferencesOrdering, $orderMode: OrderingMode) {
@@ -135,7 +135,9 @@ class ExternalReference:
             final_data = final_data + data
             while result["data"]["externalReferences"]["pageInfo"]["hasNextPage"]:
                 after = result["data"]["externalReferences"]["pageInfo"]["endCursor"]
-                LOGGER.info("Listing External-References after " + after)
+                self.opencti.app_logger.info(
+                    "Listing External-References", {"after": after}
+                )
                 result = self.opencti.query(
                     query,
                     {
@@ -168,7 +170,7 @@ class ExternalReference:
         id = kwargs.get("id", None)
         filters = kwargs.get("filters", None)
         if id is not None:
-            LOGGER.info("Reading External-Reference {%s}.", id)
+            self.opencti.app_logger.info("Reading External-Reference", {"id": id})
             query = (
                 """
                 query ExternalReference($id: String!) {
@@ -191,7 +193,7 @@ class ExternalReference:
             else:
                 return None
         else:
-            LOGGER.error(
+            self.opencti.app_logger.error(
                 "[opencti_external_reference] Missing parameters: id or filters"
             )
             return None
@@ -215,7 +217,9 @@ class ExternalReference:
         update = kwargs.get("update", False)
 
         if source_name is not None or url is not None:
-            LOGGER.info("Creating External Reference {%s}.", source_name)
+            self.opencti.app_logger.info(
+                "Creating External Reference", {"source_name": source_name}
+            )
             query = (
                 """
                 mutation ExternalReferenceAdd($input: ExternalReferenceAddInput!) {
@@ -247,7 +251,7 @@ class ExternalReference:
                 result["data"]["externalReferenceAdd"]
             )
         else:
-            LOGGER.error(
+            self.opencti.app_logger.error(
                 "[opencti_external_reference] Missing parameters: source_name and url"
             )
 
@@ -284,8 +288,9 @@ class ExternalReference:
                     mime_type = "application/json"
                 else:
                     mime_type = magic.from_file(file_name, mime=True)
-            LOGGER.info(
-                "Uploading a file {%s} in Stix-Domain-Object {%s}.", final_file_name, id
+            self.opencti.app_logger.info(
+                "Uploading a file in Stix-Domain-Object",
+                {"file": final_file_name, "id": id},
             )
             return self.opencti.query(
                 query,
@@ -298,7 +303,7 @@ class ExternalReference:
                 },
             )
         else:
-            LOGGER.error(
+            self.opencti.app_logger.error(
                 "[opencti_stix_domain_object] Missing parameters: id or file_name"
             )
             return None
@@ -315,7 +320,7 @@ class ExternalReference:
         id = kwargs.get("id", None)
         input = kwargs.get("input", None)
         if id is not None and input is not None:
-            LOGGER.info("Updating External-Reference {%s}.", id)
+            self.opencti.app_logger.info("Updating External-Reference", {"id": id})
             query = """
                     mutation ExternalReferenceEdit($id: ID!, $input: [EditInput]!) {
                         externalReferenceEdit(id: $id) {
@@ -330,13 +335,13 @@ class ExternalReference:
                 result["data"]["externalReferenceEdit"]["fieldPatch"]
             )
         else:
-            LOGGER.error(
+            self.opencti.app_logger.error(
                 "[opencti_external_reference] Missing parameters: id and key and value"
             )
             return None
 
     def delete(self, id):
-        LOGGER.info("Deleting External-Reference " + id + "...")
+        self.opencti.app_logger.info("Deleting External-Reference", {"id": id})
         query = """
              mutation ExternalReferenceEdit($id: ID!) {
                  externalReferenceEdit(id: $id) {
@@ -348,7 +353,7 @@ class ExternalReference:
 
     def list_files(self, **kwargs):
         id = kwargs.get("id", None)
-        LOGGER.info("Listing files of External-Reference { " + id + " }")
+        self.opencti.app_logger.info("Listing files of External-Reference", {"id": id})
         query = """
             query externalReference($id: String!) {
                 externalReference(id: $id) {

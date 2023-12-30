@@ -1,11 +1,10 @@
-import logging
 from typing import Type, Union
 
 from prometheus_client import Counter, Enum, start_http_server
 
 
 class OpenCTIMetricHandler:
-    def __init__(self, activated: bool = False, port: int = 9095):
+    def __init__(self, logger, activated: bool = False, port: int = 9095):
         """
         Init of OpenCTIMetricHandler class.
 
@@ -17,8 +16,9 @@ class OpenCTIMetricHandler:
             Port for prometheus server.
         """
         self.activated = activated
+        self.logger = logger
         if self.activated:
-            logging.info(f"Exposing metrics on port {port}")
+            logger.info(f"Exposing metrics on port {port}")
             start_http_server(port)
             self._metrics = {
                 "bundle_send": Counter(
@@ -75,10 +75,13 @@ class OpenCTIMetricHandler:
             True if the metric exists and is of the correct type else False.
         """
         if name not in self._metrics:
-            logging.error(f"Metric {name} does not exist.")
+            self.logger.error("Metric does not exist.", {"name": name})
             return False
         if not isinstance(self._metrics[name], expected_type):
-            logging.error(f"Metric {name} is not of expected type {expected_type}.")
+            self.logger.error(
+                "Metric not of expected type",
+                {"name": name, "expected_type": expected_type},
+            )
             return False
         return True
 

@@ -5,8 +5,6 @@ import uuid
 
 from stix2.canonicalization.Canonicalize import canonicalize
 
-from pycti.entities import LOGGER
-
 
 class AttackPattern:
     def __init__(self, opencti):
@@ -289,7 +287,9 @@ class AttackPattern:
         if get_all:
             first = 500
 
-        LOGGER.info("Listing Attack-Patterns with filters %s.", json.dumps(filters))
+        self.opencti.app_logger.info(
+            "Listing Attack-Patterns with filters", {"filters": json.dumps(filters)}
+        )
         query = (
             """
             query AttackPatterns($filters: FilterGroup, $search: String, $first: Int, $after: ID, $orderBy: AttackPatternsOrdering, $orderMode: OrderingMode) {
@@ -333,7 +333,9 @@ class AttackPattern:
             final_data = final_data + data
             while result["data"]["attackPatterns"]["pageInfo"]["hasNextPage"]:
                 after = result["data"]["attackPatterns"]["pageInfo"]["endCursor"]
-                LOGGER.info("Listing Attack-Patterns after " + after)
+                self.opencti.app_logger.info(
+                    "Listing Attack-Patterns", {"after": after}
+                )
                 result = self.opencti.query(
                     query,
                     {
@@ -367,7 +369,7 @@ class AttackPattern:
         custom_attributes = kwargs.get("customAttributes", None)
         with_files = kwargs.get("withFiles", False)
         if id is not None:
-            LOGGER.info("Reading Attack-Pattern {%s}.", id)
+            self.opencti.app_logger.info("Reading Attack-Pattern", {"id": id})
             query = (
                 """
                 query AttackPattern($id: String!) {
@@ -392,7 +394,9 @@ class AttackPattern:
             else:
                 return None
         else:
-            LOGGER.error("[opencti_attack_pattern] Missing parameters: id or filters")
+            self.opencti.app_logger.error(
+                "[opencti_attack_pattern] Missing parameters: id or filters"
+            )
             return None
 
     """
@@ -426,7 +430,7 @@ class AttackPattern:
         update = kwargs.get("update", False)
 
         if name is not None:
-            LOGGER.info("Creating Attack-Pattern {%s}.", name)
+            self.opencti.app_logger.info("Creating Attack-Pattern", {"name": name})
             query = """
                 mutation AttackPatternAdd($input: AttackPatternAddInput!) {
                     attackPatternAdd(input: $input) {
@@ -469,7 +473,7 @@ class AttackPattern:
                 result["data"]["attackPatternAdd"]
             )
         else:
-            LOGGER.error(
+            self.opencti.app_logger.error(
                 "[opencti_attack_pattern] Missing parameters: name and description"
             )
 
@@ -598,12 +602,14 @@ class AttackPattern:
                 update=update,
             )
         else:
-            LOGGER.error("[opencti_attack_pattern] Missing parameters: stixObject")
+            self.opencti.app_logger.error(
+                "[opencti_attack_pattern] Missing parameters: stixObject"
+            )
 
     def delete(self, **kwargs):
         id = kwargs.get("id", None)
         if id is not None:
-            LOGGER.info("Deleting Attack Pattern {%s}.", id)
+            self.opencti.app_logger.info("Deleting Attack Pattern", {"id": id})
             query = """
                  mutation AttackPatternEdit($id: ID!) {
                      attackPatternEdit(id: $id) {
@@ -613,5 +619,5 @@ class AttackPattern:
              """
             self.opencti.query(query, {"id": id})
         else:
-            LOGGER.error("[attack_pattern] Missing parameters: id")
+            self.opencti.app_logger.error("[attack_pattern] Missing parameters: id")
             return None

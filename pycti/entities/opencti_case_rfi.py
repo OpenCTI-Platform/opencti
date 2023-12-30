@@ -5,8 +5,6 @@ import uuid
 from dateutil.parser import parse
 from stix2.canonicalization.Canonicalize import canonicalize
 
-from pycti.entities import LOGGER
-
 
 class CaseRfi:
     def __init__(self, opencti):
@@ -495,9 +493,8 @@ class CaseRfi:
         if get_all:
             first = 500
 
-        self.opencti.log(
-            "info",
-            "Listing Case Rfis with filters " + json.dumps(filters) + ".",
+        self.opencti.app_logger.info(
+            "Listing Case Rfis with filters", {"filters": json.dumps(filters)}
         )
         query = (
             """
@@ -542,7 +539,7 @@ class CaseRfi:
             final_data = final_data + data
             while result["data"]["caseRfis"]["pageInfo"]["hasNextPage"]:
                 after = result["date"]["caseRfis"]["pageInfo"]["endCursor"]
-                self.opencti.log("info", "Listing Case Rfis after " + after)
+                self.opencti.app_logger.info("Listing Case Rfis", {"after": after})
                 result = self.opencti.query(
                     query,
                     {
@@ -576,7 +573,7 @@ class CaseRfi:
         custom_attributes = kwargs.get("customAttributes", None)
         with_files = kwargs.get("withFiles", False)
         if id is not None:
-            self.opencti.log("info", "Reading Case Rfi { " + id + "}.")
+            self.opencti.app_logger.info("Reading Case Rfi", {"id": id})
             query = (
                 """
                         query CaseRfi($id: String!) {
@@ -647,13 +644,12 @@ class CaseRfi:
             "stixObjectOrStixRelationshipId", None
         )
         if id is not None and stix_object_or_stix_relationship_id is not None:
-            self.opencti.log(
-                "info",
-                "Checking StixObjectOrStixRelationship {"
-                + stix_object_or_stix_relationship_id
-                + "} in CaseRfi {"
-                + id
-                + "}",
+            self.opencti.app_logger.info(
+                "Checking StixObjectOrStixRelationship in CaseRfi",
+                {
+                    "stix_object_or_stix_relationship_id": stix_object_or_stix_relationship_id,
+                    "id": id,
+                },
             )
             query = """
                 query CaseRfiContainsStixObjectOrStixRelationship($id: String!, $stixObjectOrStixRelationshipId: String!) {
@@ -669,9 +665,8 @@ class CaseRfi:
             )
             return result["data"]["caseRfiContainsStixObjectOrStixRelationship"]
         else:
-            self.opencti.log(
-                "error",
-                "[opencti_caseRfi] Missing parameters: id or stixObjectOrStixRelationshipId",
+            self.opencti.app_logger.error(
+                "[opencti_caseRfi] Missing parameters: id or stixObjectOrStixRelationshipId"
             )
 
     """
@@ -701,7 +696,7 @@ class CaseRfi:
         information_types = kwargs.get("information_types", None)
 
         if name is not None:
-            self.opencti.log("info", "Creating Case Rfi {" + name + "}.")
+            self.opencti.app_logger.info("Creating Case Rfi", {"name": name})
             query = """
                 mutation CaseRfiAdd($input: CaseRfiAddInput!) {
                     caseRfiAdd(input: $input) {
@@ -738,10 +733,7 @@ class CaseRfi:
             )
             return self.opencti.process_multiple_fields(result["data"]["caseRfiAdd"])
         else:
-            self.opencti.log(
-                "error",
-                "[opencti_caseRfi] Missing parameters: name",
-            )
+            self.opencti.app_logger.error("[opencti_caseRfi] Missing parameters: name")
 
         """
         Add a Stix-Entity object to Case Rfi object (object_refs)
@@ -757,13 +749,12 @@ class CaseRfi:
             "stixObjectOrStixRelationshipId", None
         )
         if id is not None and stix_object_or_stix_relationship_id is not None:
-            self.opencti.log(
-                "info",
-                "Adding StixObjectOrStixRelationship {"
-                + stix_object_or_stix_relationship_id
-                + "} to CaseRfi {"
-                + id
-                + "}",
+            self.opencti.app_logger.info(
+                "Adding StixObjectOrStixRelationship in CaseRfi",
+                {
+                    "stix_object_or_stix_relationship_id": stix_object_or_stix_relationship_id,
+                    "id": id,
+                },
             )
             query = """
                mutation CaseRfiEditRelationAdd($id: ID!, $input: StixRefRelationshipAddInput) {
@@ -786,9 +777,8 @@ class CaseRfi:
             )
             return True
         else:
-            self.opencti.log(
-                "error",
-                "[opencti_caseRfi] Missing parameters: id and stixObjectOrStixRelationshipId",
+            self.opencti.app_logger.info(
+                "[opencti_caseRfi] Missing parameters: id and stixObjectOrStixRelationshipId"
             )
             return False
 
@@ -806,13 +796,12 @@ class CaseRfi:
             "stixObjectOrStixRelationshipId", None
         )
         if id is not None and stix_object_or_stix_relationship_id is not None:
-            self.opencti.log(
-                "info",
-                "Removing StixObjectOrStixRelationship {"
-                + stix_object_or_stix_relationship_id
-                + "} to CaseRfi {"
-                + id
-                + "}",
+            self.opencti.app_logger.info(
+                "Removing StixObjectOrStixRelationship in CaseRfi",
+                {
+                    "stix_object_or_stix_relationship_id": stix_object_or_stix_relationship_id,
+                    "id": id,
+                },
             )
             query = """
                mutation CaseRfiEditRelationDelete($id: ID!, $toId: StixRef!, $relationship_type: String!) {
@@ -833,9 +822,8 @@ class CaseRfi:
             )
             return True
         else:
-            self.opencti.log(
-                "error",
-                "[opencti_caseRfi] Missing parameters: id and stixObjectOrStixRelationshipId",
+            self.opencti.app_logger.error(
+                "[opencti_caseRfi] Missing parameters: id and stixObjectOrStixRelationshipId"
             )
             return False
 
@@ -901,14 +889,14 @@ class CaseRfi:
                 else None,
             )
         else:
-            self.opencti.log(
-                "error", "[opencti_caseRfi] Missing parameters: stixObject"
+            self.opencti.app_logger.error(
+                "[opencti_caseRfi] Missing parameters: stixObject"
             )
 
     def delete(self, **kwargs):
         id = kwargs.get("id", None)
         if id is not None:
-            LOGGER.info("Deleting Case RFI {%s}.", id)
+            self.opencti.app_logger.info("Deleting Case RFI", {"id": id})
             query = """
                  mutation CaseRFIDelete($id: ID!) {
                      stixDomainObjectEdit(id: $id) {
@@ -918,5 +906,5 @@ class CaseRfi:
              """
             self.opencti.query(query, {"id": id})
         else:
-            LOGGER.error("[opencti_case_rfi] Missing parameters: id")
+            self.opencti.app_logger.error("[opencti_case_rfi] Missing parameters: id")
             return None

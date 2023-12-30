@@ -3,7 +3,6 @@ import base64
 import copy
 import datetime
 import json
-import logging
 import os
 import queue
 import signal
@@ -22,15 +21,12 @@ from filigran_sseclient import SSEClient
 from pika.exceptions import NackError, UnroutableError
 
 from pycti.api.opencti_api_client import OpenCTIApiClient
-from pycti.connector import LOGGER
 from pycti.connector.opencti_connector import OpenCTIConnector
 from pycti.connector.opencti_metric_handler import OpenCTIMetricHandler
 from pycti.utils.opencti_stix2_splitter import OpenCTIStix2Splitter
 
 TRUTHY: List[str] = ["yes", "true", "True"]
 FALSY: List[str] = ["no", "false", "False"]
-
-logging.getLogger("pika").setLevel(logging.ERROR)
 
 
 def killProgramHook(etype, value, tb):
@@ -220,7 +216,7 @@ class ListenQueue(threading.Thread):
         # Not ACK the message here may lead to infinite re-deliver if the connector is broken
         # Also ACK, will not have any impact on the blocking aspect of the following functions
         channel.basic_ack(delivery_tag=method.delivery_tag)
-        LOGGER.info("Message (delivery_tag=%s) ack", method.delivery_tag)
+        self.helper.connector_logger.info("Message ack", {"tag": method.delivery_tag})
 
         self.thread = threading.Thread(target=self._data_handler, args=[json_data])
         self.thread.start()
@@ -237,9 +233,9 @@ class ListenQueue(threading.Thread):
             else:
                 time_wait += 1
             time.sleep(1)
-        LOGGER.info(
-            "Message (delivery_tag=%s) processed, thread terminated",
-            method.delivery_tag,
+        self.helper.connector_logger.info(
+            "Message processed, thread terminated",
+            {"tag": method.delivery_tag},
         )
 
     def _data_handler(self, json_data) -> None:
@@ -281,13 +277,17 @@ class ListenQueue(threading.Thread):
                 self.helper.api.work.to_processed(work_id, message)
         except Exception as e:  # pylint: disable=broad-except
             self.helper.metric.inc("error_count")
-            LOGGER.exception("Error in message processing, reporting error to API")
+            self.helper.connector_logger.error(
+                "Error in message processing, reporting error to API"
+            )
             if work_id:
                 try:
                     self.helper.api.work.to_processed(work_id, str(e), True)
                 except:  # pylint: disable=bare-except
                     self.helper.metric.inc("error_count")
-                    LOGGER.error("Failing reporting the processing")
+                    self.helper.connector_logger.error(
+                        "Failing reporting the processing"
+                    )
 
     def run(self) -> None:
         while not self.exit_event.is_set():
@@ -310,7 +310,7 @@ class ListenQueue(threading.Thread):
                 try:
                     self.channel.confirm_delivery()
                 except Exception as err:  # pylint: disable=broad-except
-                    LOGGER.warning("%s", err)
+                    self.helper.connector_logger.warning(str(err))
                 self.channel.basic_qos(prefetch_count=1)
                 assert self.channel is not None
                 self.channel.basic_consume(
@@ -320,11 +320,11 @@ class ListenQueue(threading.Thread):
             except (KeyboardInterrupt, SystemExit):
                 self.channel.stop_consuming()
                 self.pika_connection.close()
-                LOGGER.info("Connector stop")
+                self.helper.connector_logger.info("Connector stop")
                 sys.exit(0)
             except Exception as err:  # pylint: disable=broad-except
                 self.pika_connection.close()
-                LOGGER.error("%s", err)
+                self.helper.connector_logger.error(str(err))
                 sys.exit(1)
 
     def stop(self):
@@ -335,8 +335,11 @@ class ListenQueue(threading.Thread):
 
 
 class PingAlive(threading.Thread):
-    def __init__(self, connector_id, api, get_state, set_state, metric) -> None:
+    def __init__(
+        self, connector_logger, connector_id, api, get_state, set_state, metric
+    ) -> None:
         threading.Thread.__init__(self)
+        self.connector_logger = connector_logger
         self.connector_id = connector_id
         self.in_error = False
         self.api = api
@@ -358,38 +361,39 @@ class PingAlive(threading.Thread):
                 )
                 if initial_state != remote_state:
                     self.set_state(result["connector_state"])
-                    LOGGER.info(
-                        'Connector state has been remotely reset to: "%s"',
-                        self.get_state(),
+                    self.connector_logger.info(
+                        "Connector state has been remotely reset",
+                        {"state": self.get_state()},
                     )
                 if self.in_error:
                     self.in_error = False
-                    LOGGER.error("API Ping back to normal")
+                    self.connector_logger.error("API Ping back to normal")
                 self.metric.inc("ping_api_count")
             except Exception:  # pylint: disable=broad-except
                 self.in_error = True
                 self.metric.inc("ping_api_error")
-                LOGGER.error("Error pinging the API")
+                self.connector_logger.error("Error pinging the API")
             self.exit_event.wait(40)
 
     def run(self) -> None:
-        LOGGER.info("Starting ping alive thread")
+        self.connector_logger.info("Starting ping alive thread")
         self.ping()
 
     def stop(self) -> None:
-        LOGGER.info("Preparing for clean shutdown")
+        self.connector_logger.info("Preparing for clean shutdown")
         self.exit_event.set()
 
 
 class StreamAlive(threading.Thread):
-    def __init__(self, q) -> None:
+    def __init__(self, helper, q) -> None:
         threading.Thread.__init__(self)
+        self.helper = helper
         self.q = q
         self.exit_event = threading.Event()
 
     def run(self) -> None:
         try:
-            LOGGER.info("Starting stream alive thread")
+            self.helper.connector_logger.info("Starting stream alive thread")
             time_since_last_heartbeat = 0
             while not self.exit_event.is_set():
                 time.sleep(5)
@@ -399,7 +403,7 @@ class StreamAlive(threading.Thread):
                 except queue.Empty:
                     time_since_last_heartbeat = time_since_last_heartbeat + 5
                     if time_since_last_heartbeat > 45:
-                        LOGGER.error(
+                        self.helper.connector_logger.error(
                             "Time since last heartbeat exceeded 45s, stopping the connector"
                         )
                         break
@@ -408,7 +412,7 @@ class StreamAlive(threading.Thread):
             sys.excepthook(*sys.exc_info())
 
     def stop(self) -> None:
-        LOGGER.info("Preparing for clean shutdown")
+        self.helper.connector_logger.info("Preparing for clean shutdown")
         self.exit_event.set()
 
 
@@ -474,7 +478,7 @@ class ListenStream(threading.Thread):
 
             # Start the stream alive watchdog
             q = Queue(maxsize=1)
-            stream_alive = StreamAlive(q)
+            stream_alive = StreamAlive(self.helper, q)
             stream_alive.start()
             # Computing args building
             live_stream_url = self.url
@@ -491,10 +495,14 @@ class ListenStream(threading.Thread):
             listen_delete = str(self.listen_delete).lower()
             no_dependencies = str(self.no_dependencies).lower()
             with_inferences = str(self.with_inferences).lower()
-            LOGGER.info(
-                'Starting to listen stream events on "%s" '
-                "(listen-delete: %s, no-dependencies: %s, with-inferences: %s)",
-                *(live_stream_url, listen_delete, no_dependencies, with_inferences),
+            self.helper.connector_logger.info(
+                "Starting to listen stream events",
+                {
+                    "live_stream_url": live_stream_url,
+                    "listen_delete": listen_delete,
+                    "no_dependencies": no_dependencies,
+                    "with_inferences": with_inferences,
+                },
             )
             messages = SSEClient(
                 live_stream_url,
@@ -660,10 +668,6 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
         metrics_port = get_config_variable(
             "CONNECTOR_METRICS_PORT", ["connector", "metrics_port"], config, True, 9095
         )
-        self.metric = OpenCTIMetricHandler(expose_metrics, metrics_port)
-
-        # Configure logger
-        logging.basicConfig(level=self.log_level)
 
         # Initialize configuration
         # - Classic API that will be directly attached to the connector rights
@@ -681,7 +685,17 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
             self.log_level,
             json_logging=self.opencti_json_logging,
         )
+        self.connector_logger = self.api.logger_class(self.connect_name)
+        # For retro compatibility
+        self.log_debug = self.connector_logger.debug
+        self.log_info = self.connector_logger.info
+        self.log_warning = self.connector_logger.warning
+        self.log_error = self.connector_logger.warning
+        # For retro compatibility
 
+        self.metric = OpenCTIMetricHandler(
+            self.connector_logger, expose_metrics, metrics_port
+        )
         # Register the connector in OpenCTI
         self.connector = OpenCTIConnector(
             self.connect_id,
@@ -693,7 +707,9 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
             playbook_compatible,
         )
         connector_configuration = self.api.connector.register(self.connector)
-        LOGGER.info("Connector registered with ID: %s", self.connect_id)
+        self.connector_logger.info(
+            "Connector registered with ID", {"id": self.connect_id}
+        )
         self.connector_id = connector_configuration["id"]
         self.work_id = None
         self.playbook = None
@@ -704,7 +720,12 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
         # Start ping thread
         if not self.connect_run_and_terminate:
             self.ping = PingAlive(
-                self.connector.id, self.api, self.get_state, self.set_state, self.metric
+                self.connector_logger,
+                self.connector.id,
+                self.api,
+                self.get_state,
+                self.set_state,
+                self.metric,
             )
             self.ping.start()
 
@@ -799,7 +820,7 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
                 self.api.connector.ping(self.connector_id, initial_state)
         except Exception:  # pylint: disable=broad-except
             self.metric.inc("error_count")
-            LOGGER.error("Error pinging the API")
+            self.connector_logger.error("Error pinging the API")
 
     def listen(self, message_callback: Callable[[Dict], str]) -> None:
         """listen for messages and register callback function
@@ -906,22 +927,6 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
     def get_connector(self) -> OpenCTIConnector:
         return self.connector
 
-    def log_error(self, msg: str, meta=None) -> None:
-        extra = None if meta is None else {"attributes": meta}
-        LOGGER.error(msg, exc_info=1, extra=extra)
-
-    def log_info(self, msg: str, meta=None) -> None:
-        extra = None if meta is None else {"attributes": meta}
-        LOGGER.info(msg, extra=extra)
-
-    def log_debug(self, msg: str, meta=None) -> None:
-        extra = None if meta is None else {"attributes": meta}
-        LOGGER.debug(msg, extra=extra)
-
-    def log_warning(self, msg: str, meta=None) -> None:
-        extra = None if meta is None else {"attributes": meta}
-        LOGGER.warning(msg, extra=extra)
-
     def date_now(self) -> str:
         """get the current date (UTC)
         :return: current datetime for utc
@@ -1022,7 +1027,7 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
         try:
             channel.confirm_delivery()
         except Exception as err:  # pylint: disable=broad-except
-            LOGGER.warning("%s", err)
+            self.connector_logger.warning(str(err))
         for sequence, bundle in enumerate(bundles, start=1):
             self._send_bundle(
                 channel,
@@ -1086,10 +1091,10 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
                     delivery_mode=2, content_encoding="utf-8"  # make message persistent
                 ),
             )
-            LOGGER.debug("Bundle has been sent")
+            self.connector_logger.debug("Bundle has been sent")
             self.metric.inc("bundle_send")
-        except (UnroutableError, NackError) as e:
-            LOGGER.error("Unable to send bundle, retry...%s", e)
+        except (UnroutableError, NackError):
+            self.connector_logger.error("Unable to send bundle, retry...")
             self.metric.inc("error_count")
             self._send_bundle(channel, bundle, **kwargs)
 

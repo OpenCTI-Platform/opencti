@@ -5,8 +5,6 @@ import uuid
 
 from stix2.canonicalization.Canonicalize import canonicalize
 
-from pycti.entities import LOGGER
-
 
 class Label:
     def __init__(self, opencti):
@@ -49,7 +47,9 @@ class Label:
         if get_all:
             first = 100
 
-        LOGGER.info("Listing Labels with filters %s.", json.dumps(filters))
+        self.opencti.app_logger.info(
+            "Listing Labels with filters", {"filters": json.dumps(filters)}
+        )
         query = (
             """
             query Labels($filters: FilterGroup, $search: String, $first: Int, $after: ID, $orderBy: LabelsOrdering, $orderMode: OrderingMode) {
@@ -89,7 +89,7 @@ class Label:
             final_data = final_data + data
             while result["data"]["labels"]["pageInfo"]["hasNextPage"]:
                 after = result["data"]["labels"]["pageInfo"]["endCursor"]
-                LOGGER.info("Listing Labels after " + after)
+                self.opencti.app_logger.info("Listing Labels", {"after": after})
                 result = self.opencti.query(
                     query,
                     {
@@ -121,7 +121,7 @@ class Label:
         id = kwargs.get("id", None)
         filters = kwargs.get("filters", None)
         if id is not None:
-            LOGGER.info("Reading label {%s}.", id)
+            self.opencti.app_logger.info("Reading label", {"id": id})
             query = (
                 """
                 query Label($id: String!) {
@@ -142,7 +142,9 @@ class Label:
             else:
                 return None
         else:
-            LOGGER.error("[opencti_label] Missing parameters: id or filters")
+            self.opencti.app_logger.error(
+                "[opencti_label] Missing parameters: id or filters"
+            )
             return None
 
     """
@@ -161,7 +163,7 @@ class Label:
         update = kwargs.get("update", False)
 
         if value is not None:
-            LOGGER.info("Creating Label {%s}.", value)
+            self.opencti.app_logger.info("Creating Label", {"value": value})
             query = (
                 """
                 mutation LabelAdd($input: LabelAddInput!) {
@@ -187,7 +189,7 @@ class Label:
             )
             return self.opencti.process_multiple_fields(result["data"]["labelAdd"])
         else:
-            LOGGER.error("[opencti_label] Missing parameters: value")
+            self.opencti.app_logger.error("[opencti_label] Missing parameters: value")
 
     """
         Read or create a Label
@@ -223,7 +225,7 @@ class Label:
         id = kwargs.get("id", None)
         input = kwargs.get("input", None)
         if id is not None and input is not None:
-            LOGGER.info("Updating Label {%s}.", id)
+            self.opencti.app_logger.info("Updating Label", {"id": id})
             query = """
                     mutation LabelEdit($id: ID!, $input: [EditInput]!) {
                         labelEdit(id: $id) {
@@ -246,13 +248,15 @@ class Label:
                 result["data"]["labelEdit"]["fieldPatch"]
             )
         else:
-            LOGGER.error("[opencti_label] Missing parameters: id and key and value")
+            self.opencti.app_logger.error(
+                "[opencti_label] Missing parameters: id and key and value"
+            )
             return None
 
     def delete(self, **kwargs):
         id = kwargs.get("id", None)
         if id is not None:
-            LOGGER.info("Deleting Label {%s}.", id)
+            self.opencti.app_logger.info("Deleting Label", {"id": id})
             query = """
                  mutation LabelEdit($id: ID!) {
                      labelEdit(id: $id) {
@@ -262,5 +266,5 @@ class Label:
              """
             self.opencti.query(query, {"id": id})
         else:
-            LOGGER.error("[opencti_label] Missing parameters: id")
+            self.opencti.app_logger.error("[opencti_label] Missing parameters: id")
             return None

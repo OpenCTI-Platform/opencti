@@ -12,7 +12,6 @@ import dateutil.parser
 import pytz
 from cachetools import LRUCache
 
-from pycti.api import LOGGER as API_LOGGER
 from pycti.entities.opencti_identity import Identity
 from pycti.utils.constants import (
     IdentityTypes,
@@ -55,8 +54,8 @@ class OpenCTIStix2:
     ######### UTILS
     # region utils
     def unknown_type(self, stix_object: Dict) -> None:
-        API_LOGGER.error(
-            'Unknown object type "%s", doing nothing...', stix_object["type"]
+        self.opencti.app_logger.error(
+            "Unknown object type, doing nothing...", {"type": stix_object["type"]}
         )
 
     def convert_markdown(self, text: str) -> str:
@@ -93,7 +92,7 @@ class OpenCTIStix2:
             date_value = datetime.datetime.utcnow()
 
         if not date_value.tzinfo:
-            API_LOGGER.info("No timezone found. Setting to UTC")
+            self.opencti.app_logger.info("No timezone found. Setting to UTC")
             date_value = date_value.replace(tzinfo=datetime.timezone.utc)
 
         return date_value.isoformat(timespec="milliseconds").replace("+00:00", "Z")
@@ -188,7 +187,7 @@ class OpenCTIStix2:
         :rtype: List
         """
         if not os.path.isfile(file_path):
-            API_LOGGER.error("The bundle file does not exists")
+            self.opencti.app_logger.error("The bundle file does not exists")
             return None
         with open(os.path.join(file_path), encoding="utf-8") as file:
             data = json.load(file)
@@ -679,7 +678,7 @@ class OpenCTIStix2:
                         )
                         reports[external_reference_id] = report
                 except:
-                    API_LOGGER.warn("Cannot generate external reference")
+                    self.opencti.app_logger.warn("Cannot generate external reference")
         elif "x_opencti_external_references" in stix_object:
             for external_reference in stix_object["x_opencti_external_references"]:
                 url = external_reference["url"] if "url" in external_reference else None
@@ -775,8 +774,9 @@ class OpenCTIStix2:
         :rtype: list
         """
 
-        API_LOGGER.info(
-            "Importing a %s (id: %s)", stix_object["type"], stix_object["id"]
+        self.opencti.app_logger.info(
+            "Importing an object",
+            {"type": stix_object["type"], "id": stix_object["id"]},
         )
 
         # Extract
@@ -1196,7 +1196,9 @@ class OpenCTIStix2:
             if stix_object_result is not None:
                 final_from_id = stix_object_result["id"]
             else:
-                API_LOGGER.error("From ref of the sighting not found, doing nothing...")
+                self.opencti.app_logger.error(
+                    "From ref of the sighting not found, doing nothing..."
+                )
                 return None
 
         ### Get the TO
@@ -1211,7 +1213,7 @@ class OpenCTIStix2:
                 if stix_object_result is not None:
                     final_to_id = stix_object_result["id"]
                 else:
-                    API_LOGGER.error(
+                    self.opencti.app_logger.error(
                         "To ref of the sighting not found, doing nothing..."
                     )
                     return None
@@ -1481,9 +1483,9 @@ class OpenCTIStix2:
             )
             is False
         ):
-            API_LOGGER.info(
-                "Marking definitions of %s are less than max definition, not exporting.",
-                entity["type"],
+            self.opencti.app_logger.info(
+                "Marking definitions are less than max definition, not exporting.",
+                {"type": entity["type"]},
             )
             return []
         result = []
@@ -1828,13 +1830,13 @@ class OpenCTIStix2:
                     uuids = uuids + [x["id"] for x in relation_object_bundle]
                     result = result + relation_object_bundle
                 else:
-                    API_LOGGER.info(
-                        'Marking definitions of %s "%s" are less than max definition, '
+                    self.opencti.app_logger.info(
+                        "Marking definitions are less than max definition, "
                         "not exporting the relation AND the target entity.",
-                        *(
-                            stix_core_relationship["entity_type"],
-                            stix_core_relationship["id"],
-                        ),
+                        {
+                            "type": stix_core_relationship["entity_type"],
+                            "id": stix_core_relationship["id"],
+                        },
                     )
             # Get sighting
             stix_sighting_relationships = self.opencti.stix_sighting_relationship.list(
@@ -1865,11 +1867,13 @@ class OpenCTIStix2:
                     uuids = uuids + [x["id"] for x in relation_object_bundle]
                     result = result + relation_object_bundle
                 else:
-                    API_LOGGER.info(
-                        'Marking definitions of %s "%s" are less than max definition, '
+                    self.opencti.app_logger.info(
+                        "Marking definitions are less than max definition, "
                         "not exporting the relation AND the target entity.",
-                        stix_sighting_relationship["entity_type"],
-                        stix_sighting_relationship["id"],
+                        {
+                            "type": stix_sighting_relationship["entity_type"],
+                            "id": stix_sighting_relationship["id"],
+                        },
                     )
             if no_custom_attributes:
                 del entity["x_opencti_id"]
@@ -2086,7 +2090,9 @@ class OpenCTIStix2:
         )
         entity = do_read(id=entity_id)
         if entity is None:
-            API_LOGGER.error("Cannot export entity (not found)")
+            self.opencti.app_logger.error(
+                "Cannot export entity (not found)", {"id": entity_id}
+            )
             return bundle
         entity_standard_id = entity["standard_id"]
         stix_objects = self.prepare_export(

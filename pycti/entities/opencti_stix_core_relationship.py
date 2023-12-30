@@ -5,8 +5,6 @@ import uuid
 
 from stix2.canonicalization.Canonicalize import canonicalize
 
-from pycti.entities import LOGGER
-
 
 class StixCoreRelationship:
     def __init__(self, opencti):
@@ -408,11 +406,17 @@ class StixCoreRelationship:
         if get_all:
             first = 100
 
-        LOGGER.info(
-            "Listing stix_core_relationships with {type: %s, element_id: %s, from_id: %s, "
-            "to_id: %s, element_with_target_types: %s, from_types: %s, to_types: %s}",
-            *(relationship_type, element_id, from_id),
-            *(to_id, element_with_target_types, from_types, to_types),
+        self.opencti.app_logger.info(
+            "Listing stix_core_relationships",
+            {
+                "relationship_type": relationship_type,
+                "element_id": element_id,
+                "from_id": from_id,
+                "to_id": to_id,
+                "element_with_target_types": element_with_target_types,
+                "from_types": from_types,
+                "to_types": to_types,
+            },
         )
         query = (
             """
@@ -465,7 +469,9 @@ class StixCoreRelationship:
             final_data = final_data + data
             while result["data"]["stixCoreRelationships"]["pageInfo"]["hasNextPage"]:
                 after = result["data"]["stixCoreRelationships"]["pageInfo"]["endCursor"]
-                LOGGER.info("Listing StixCoreRelationships after " + after)
+                self.opencti.app_logger.info(
+                    "Listing StixCoreRelationships", {"after": after}
+                )
                 result = self.opencti.query(
                     query,
                     {
@@ -524,7 +530,7 @@ class StixCoreRelationship:
         stop_time_stop = kwargs.get("stopTimeStop", None)
         custom_attributes = kwargs.get("customAttributes", None)
         if id is not None:
-            LOGGER.info("Reading stix_core_relationship {%s}.", id)
+            self.opencti.app_logger.info("Reading stix_core_relationship", {"id": id})
             query = (
                 """
                     query StixCoreRelationship($id: String!) {
@@ -560,7 +566,7 @@ class StixCoreRelationship:
             else:
                 return None
         else:
-            LOGGER.error("Missing parameters: id or from_id and to_id")
+            self.opencti.app_logger.error("Missing parameters: id or from_id and to_id")
             return None
 
     """
@@ -591,11 +597,13 @@ class StixCoreRelationship:
         granted_refs = kwargs.get("objectOrganization", None)
         update = kwargs.get("update", False)
 
-        LOGGER.info(
-            "Creating stix_core_relationship '%s' {%s, %s}.",
-            relationship_type,
-            from_id,
-            to_id,
+        self.opencti.app_logger.info(
+            "Creating stix_core_relationship",
+            {
+                "relationship_type": relationship_type,
+                "from_id": from_id,
+                "to_id": to_id,
+            },
         )
         query = """
                 mutation StixCoreRelationshipAdd($input: StixCoreRelationshipAddInput!) {
@@ -649,7 +657,7 @@ class StixCoreRelationship:
         id = kwargs.get("id", None)
         input = kwargs.get("input", None)
         if id is not None and input is not None:
-            LOGGER.info("Updating stix_core_relationship {%s}.", id)
+            self.opencti.app_logger.info("Updating stix_core_relationship", {"id": id})
             query = """
                     mutation StixCoreRelationshipEdit($id: ID!, $input: [EditInput]!) {
                         stixCoreRelationshipEdit(id: $id) {
@@ -672,7 +680,7 @@ class StixCoreRelationship:
                 result["data"]["stixCoreRelationshipEdit"]["fieldPatch"]
             )
         else:
-            LOGGER.error(
+            self.opencti.app_logger.error(
                 "[opencti_stix_core_relationship] Missing parameters: id and key and value",
             )
             return None
@@ -687,7 +695,7 @@ class StixCoreRelationship:
     def delete(self, **kwargs):
         id = kwargs.get("id", None)
         if id is not None:
-            LOGGER.info("Deleting stix_core_relationship {%s}.", id)
+            self.opencti.app_logger.info("Deleting stix_core_relationship", {"id": id})
             query = """
                 mutation StixCoreRelationshipEdit($id: ID!) {
                     stixCoreRelationshipEdit(id: $id) {
@@ -697,7 +705,9 @@ class StixCoreRelationship:
             """
             self.opencti.query(query, {"id": id})
         else:
-            LOGGER.error("[opencti_stix_core_relationship] Missing parameters: id")
+            self.opencti.app_logger.error(
+                "[opencti_stix_core_relationship] Missing parameters: id"
+            )
             return None
 
     """
@@ -734,14 +744,16 @@ class StixCoreRelationship:
                 id=id, customAttributes=custom_attributes
             )
             if stix_core_relationship is None:
-                LOGGER.error("Cannot add Marking-Definition, entity not found")
+                self.opencti.app_logger.error(
+                    "Cannot add Marking-Definition, entity not found"
+                )
                 return False
             if marking_definition_id in stix_core_relationship["objectMarkingIds"]:
                 return True
             else:
-                LOGGER.info(
-                    "Adding Marking-Definition {%s} to Stix-Domain-Object {%s}",
-                    *(marking_definition_id, id),
+                self.opencti.app_logger.info(
+                    "Adding Marking-Definition to Stix-Domain-Object",
+                    {"id": id, "marking_definition_id": marking_definition_id},
                 )
                 query = """
                    mutation StixCoreRelationshipAddRelation($id: ID!, $input: StixRefRelationshipAddInput!) {
@@ -764,7 +776,9 @@ class StixCoreRelationship:
                 )
                 return True
         else:
-            LOGGER.error("Missing parameters: id and marking_definition_id")
+            self.opencti.app_logger.error(
+                "Missing parameters: id and marking_definition_id"
+            )
             return False
 
     """
@@ -779,9 +793,9 @@ class StixCoreRelationship:
         id = kwargs.get("id", None)
         marking_definition_id = kwargs.get("marking_definition_id", None)
         if id is not None and marking_definition_id is not None:
-            LOGGER.info(
-                "Removing Marking-Definition {%s} from stix_core_relationship {%s}",
-                *(marking_definition_id, id),
+            self.opencti.app_logger.info(
+                "Removing Marking-Definition from stix_core_relationship",
+                {"id": id, "marking_definition_id": marking_definition_id},
             )
             query = """
                mutation StixCoreRelationshipRemoveRelation($id: ID!, $toId: StixRef!, $relationship_type: String!) {
@@ -802,7 +816,7 @@ class StixCoreRelationship:
             )
             return True
         else:
-            LOGGER.error("Missing parameters: id and label_id")
+            self.opencti.app_logger.error("Missing parameters: id and label_id")
             return False
 
     """
@@ -831,8 +845,9 @@ class StixCoreRelationship:
                 label = self.opencti.label.create(value=label_name)
                 label_id = label["id"]
         if id is not None and label_id is not None:
-            LOGGER.info(
-                "Adding label {%s} to stix-core-relationship {%s}", label_id, id
+            self.opencti.app_logger.info(
+                "Adding label to stix-core-relationship",
+                {"label_id": label_id, "id": id},
             )
             query = """
                mutation StixCoreRelationshipAddRelation($id: ID!, $input: StixRefRelationshipAddInput!) {
@@ -855,7 +870,7 @@ class StixCoreRelationship:
             )
             return True
         else:
-            LOGGER.error("Missing parameters: id and label_id")
+            self.opencti.app_logger.error("Missing parameters: id and label_id")
             return False
 
     """
@@ -870,9 +885,9 @@ class StixCoreRelationship:
         id = kwargs.get("id", None)
         external_reference_id = kwargs.get("external_reference_id", None)
         if id is not None and external_reference_id is not None:
-            LOGGER.info(
-                "Adding External-Reference {%s} to stix-core-relationship {%s}",
-                *(external_reference_id, id),
+            self.opencti.app_logger.info(
+                "Adding External-Reference to stix-core-relationship",
+                {"external_reference_id": external_reference_id, "id": id},
             )
             query = """
                mutation StixCoreRelationshipEditRelationAdd($id: ID!, $input: StixRefRelationshipAddInput!) {
@@ -895,7 +910,9 @@ class StixCoreRelationship:
             )
             return True
         else:
-            LOGGER.error("Missing parameters: id and external_reference_id")
+            self.opencti.app_logger.error(
+                "Missing parameters: id and external_reference_id"
+            )
             return False
 
     """
@@ -910,9 +927,9 @@ class StixCoreRelationship:
         id = kwargs.get("id", None)
         external_reference_id = kwargs.get("external_reference_id", None)
         if id is not None and external_reference_id is not None:
-            LOGGER.info(
-                "Removing External-Reference {%s} from stix_core_relationship {%s}",
-                *(external_reference_id, id),
+            self.opencti.app_logger.info(
+                "Removing External-Reference from stix_core_relationship",
+                {"external_reference_id": external_reference_id, "id": id},
             )
             query = """
                mutation StixCoreRelationshipRemoveRelation($id: ID!, $toId: StixRef!, $relationship_type: String!) {
@@ -933,7 +950,7 @@ class StixCoreRelationship:
             )
             return True
         else:
-            LOGGER.error("Missing parameters: id and label_id")
+            self.opencti.app_logger.error("Missing parameters: id and label_id")
             return False
 
     """
@@ -948,9 +965,9 @@ class StixCoreRelationship:
         id = kwargs.get("id", None)
         kill_chain_phase_id = kwargs.get("kill_chain_phase_id", None)
         if id is not None and kill_chain_phase_id is not None:
-            LOGGER.info(
-                "Adding Kill-Chain-Phase {%s} to stix-core-relationship {%s}",
-                *(kill_chain_phase_id, id),
+            self.opencti.app_logger.info(
+                "Adding Kill-Chain-Phase to stix-core-relationship",
+                {"kill_chain_phase_id": kill_chain_phase_id, "id": id},
             )
             query = """
                mutation StixCoreRelationshipAddRelation($id: ID!, $input: StixRefRelationshipAddInput!) {
@@ -973,7 +990,7 @@ class StixCoreRelationship:
             )
             return True
         else:
-            LOGGER.error(
+            self.opencti.app_logger.error(
                 "[opencti_stix_core_relationship] Missing parameters: id and kill_chain_phase_id",
             )
             return False
@@ -990,9 +1007,9 @@ class StixCoreRelationship:
         id = kwargs.get("id", None)
         kill_chain_phase_id = kwargs.get("kill_chain_phase_id", None)
         if id is not None and kill_chain_phase_id is not None:
-            LOGGER.info(
-                "Removing Kill-Chain-Phase {%s} from stix_core_relationship {%s}",
-                *(kill_chain_phase_id, id),
+            self.opencti.app_logger.info(
+                "Removing Kill-Chain-Phase from stix_core_relationship",
+                {"kill_chain_phase_id": kill_chain_phase_id, "id": id},
             )
             query = """
                mutation StixCoreRelationshipRemoveRelation($id: ID!, $toId: StixRef!, $relationship_type: String!) {
@@ -1013,7 +1030,7 @@ class StixCoreRelationship:
             )
             return True
         else:
-            LOGGER.error(
+            self.opencti.app_loggererror(
                 "[stix_core_relationship] Missing parameters: id and kill_chain_phase_id"
             )
             return False
@@ -1030,9 +1047,9 @@ class StixCoreRelationship:
         id = kwargs.get("id", None)
         identity_id = kwargs.get("identity_id", None)
         if id is not None:
-            LOGGER.info(
-                "Updating author of stix_core_relationship {%s} with Identity {%s}",
-                *(id, identity_id),
+            self.opencti.app_logger.info(
+                "Updating author of stix_core_relationship with Identity",
+                {"id": id, "identity_id": identity_id},
             )
             custom_attributes = """
                 id
@@ -1097,7 +1114,7 @@ class StixCoreRelationship:
                 }
                 self.opencti.query(query, variables)
         else:
-            LOGGER.error("Missing parameters: id")
+            self.opencti.app_logger.error("Missing parameters: id")
             return False
 
     """
@@ -1171,6 +1188,6 @@ class StixCoreRelationship:
                 update=update,
             )
         else:
-            LOGGER.error(
+            self.opencti.app_logger.error(
                 "[opencti_stix_core_relationship] Missing parameters: stixObject"
             )

@@ -5,8 +5,6 @@ import uuid
 from dateutil.parser import parse
 from stix2.canonicalization.Canonicalize import canonicalize
 
-from pycti.entities import LOGGER
-
 
 class CaseIncident:
     def __init__(self, opencti):
@@ -499,7 +497,9 @@ class CaseIncident:
         if get_all:
             first = 500
 
-        LOGGER.info("Listing Case Incidents with filters " + json.dumps(filters) + ".")
+        self.opencti.app_logger.info(
+            "Listing Case Incidents with filters", {"filters": json.dumps(filters)}
+        )
         query = (
             """
                 query CaseIncidents($filters: FilterGroup, $search: String, $first: Int, $after: ID, $orderBy: CaseIncidentsOrdering, $orderMode: OrderingMode) {
@@ -543,7 +543,7 @@ class CaseIncident:
             final_data = final_data + data
             while result["data"]["caseIncidents"]["pageInfo"]["hasNextPage"]:
                 after = result["date"]["caseIncidents"]["pageInfo"]["endCursor"]
-                self.opencti.log("info", "Listing Case Incidents after " + after)
+                self.opencti.app_logger.info("Listing Case Incidents", {"after": after})
                 result = self.opencti.query(
                     query,
                     {
@@ -577,7 +577,7 @@ class CaseIncident:
         custom_attributes = kwargs.get("customAttributes", None)
         with_files = kwargs.get("withFiles", False)
         if id is not None:
-            self.opencti.log("info", "Reading Case Incident { " + id + "}.")
+            self.opencti.app_logger.info("Reading Case Incident", {"id": id})
             query = (
                 """
                     query CaseIncident($id: String!) {
@@ -648,13 +648,12 @@ class CaseIncident:
             "stixObjectOrStixRelationshipId", None
         )
         if id is not None and stix_object_or_stix_relationship_id is not None:
-            self.opencti.log(
-                "info",
-                "Checking StixObjectOrStixRelationship {"
-                + stix_object_or_stix_relationship_id
-                + "} in CaseIncident {"
-                + id
-                + "}",
+            self.opencti.app_logger.info(
+                "Checking StixObjectOrStixRelationship in CaseIncident",
+                {
+                    "stix_object_or_stix_relationship_id": stix_object_or_stix_relationship_id,
+                    "id": id,
+                },
             )
             query = """
                 query CaseIncidentContainsStixObjectOrStixRelationship($id: String!, $stixObjectOrStixRelationshipId: String!) {
@@ -670,9 +669,8 @@ class CaseIncident:
             )
             return result["data"]["caseIncidentContainsStixObjectOrStixRelationship"]
         else:
-            self.opencti.log(
-                "error",
-                "[opencti_caseIncident] Missing parameters: id or stixObjectOrStixRelationshipId",
+            self.opencti.app_logger.error(
+                "[opencti_caseIncident] Missing parameters: id or stixObjectOrStixRelationshipId"
             )
 
     """
@@ -706,7 +704,7 @@ class CaseIncident:
         update = kwargs.get("update", False)
 
         if name is not None:
-            self.opencti.log("info", "Creating Case Incident {" + name + "}.")
+            self.opencti.app_logger.info("Creating Case Incident", {"name": name})
             query = """
                 mutation CaseIncidentAdd($input: CaseIncidentAddInput!) {
                     caseIncidentAdd(input: $input) {
@@ -749,9 +747,8 @@ class CaseIncident:
                 result["data"]["caseIncidentAdd"]
             )
         else:
-            self.opencti.log(
-                "error",
-                "[opencti_caseIncident] Missing parameters: name",
+            self.opencti.app_logger.error(
+                "[opencti_caseIncident] Missing parameters: name"
             )
 
         """
@@ -768,14 +765,14 @@ class CaseIncident:
             "stixObjectOrStixRelationshipId", None
         )
         if id is not None and stix_object_or_stix_relationship_id is not None:
-            self.opencti.log(
-                "info",
-                "Adding StixObjectOrStixRelationship {"
-                + stix_object_or_stix_relationship_id
-                + "} to CaseIncident {"
-                + id
-                + "}",
+            self.opencti.app_logger.info(
+                "Adding StixObjectOrStixRelationship to CaseIncident",
+                {
+                    "stix_object_or_stix_relationship_id": stix_object_or_stix_relationship_id,
+                    "id": id,
+                },
             )
+
             query = """
                mutation CaseIncidentEditRelationAdd($id: ID!, $input: StixRefRelationshipAddInput!) {
                     stixDomainObjectEdit(id: $id) {
@@ -797,9 +794,8 @@ class CaseIncident:
             )
             return True
         else:
-            self.opencti.log(
-                "error",
-                "[opencti_caseIncident] Missing parameters: id and stixObjectOrStixRelationshipId",
+            self.opencti.app_logger.error(
+                "[opencti_caseIncident] Missing parameters: id and stixObjectOrStixRelationshipId"
             )
             return False
 
@@ -817,13 +813,12 @@ class CaseIncident:
             "stixObjectOrStixRelationshipId", None
         )
         if id is not None and stix_object_or_stix_relationship_id is not None:
-            self.opencti.log(
-                "info",
-                "Removing StixObjectOrStixRelationship {"
-                + stix_object_or_stix_relationship_id
-                + "} to CaseIncident {"
-                + id
-                + "}",
+            self.opencti.app_logger.info(
+                "Removing StixObjectOrStixRelationship to CaseIncident",
+                {
+                    "stix_object_or_stix_relationship_id": stix_object_or_stix_relationship_id,
+                    "id": id,
+                },
             )
             query = """
                mutation CaseIncidentEditRelationDelete($id: ID!, $toId: StixRef!, $relationship_type: String!) {
@@ -844,9 +839,8 @@ class CaseIncident:
             )
             return True
         else:
-            self.opencti.log(
-                "error",
-                "[opencti_caseIncident] Missing parameters: id and stixObjectOrStixRelationshipId",
+            self.opencti.app_logger.error(
+                "[opencti_caseIncident] Missing parameters: id and stixObjectOrStixRelationshipId"
             )
             return False
 
@@ -930,14 +924,14 @@ class CaseIncident:
                 update=update,
             )
         else:
-            self.opencti.log(
-                "error", "[opencti_caseIncident] Missing parameters: stixObject"
+            self.opencti.app_logger.error(
+                "[opencti_caseIncident] Missing parameters: stixObject"
             )
 
     def delete(self, **kwargs):
         id = kwargs.get("id", None)
         if id is not None:
-            self.opencti.log("info", "Deleting Case Incident {%s}.", id)
+            self.opencti.app_logger.info("Deleting Case Incident", {"id": id})
             query = """
                  mutation CaseIncidentDelete($id: ID!) {
                      stixDomainObjectEdit(id: $id) {
@@ -947,5 +941,7 @@ class CaseIncident:
              """
             self.opencti.query(query, {"id": id})
         else:
-            self.opencti.log("error", "[opencti_case_incident] Missing parameters: id")
+            self.opencti.app_logger.error(
+                "[opencti_case_incident] Missing parameters: id"
+            )
             return None

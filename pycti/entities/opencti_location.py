@@ -5,8 +5,6 @@ import uuid
 
 from stix2.canonicalization.Canonicalize import canonicalize
 
-from pycti.entities import LOGGER
-
 
 class Location:
     def __init__(self, opencti):
@@ -261,7 +259,9 @@ class Location:
         if get_all:
             first = 500
 
-        LOGGER.info("Listing Locations with filters %s.", json.dumps(filters))
+        self.opencti.app_logger.info(
+            "Listing Locations with filters", {"filters": json.dumps(filters)}
+        )
         query = (
             """
             query Locations($types: [String], $filters: FilterGroup, $search: String, $first: Int, $after: ID, $orderBy: LocationsOrdering, $orderMode: OrderingMode) {
@@ -318,7 +318,7 @@ class Location:
         custom_attributes = kwargs.get("customAttributes", None)
         with_files = kwargs.get("withFiles", False)
         if id is not None:
-            LOGGER.info("Reading Location {%s}.", id)
+            self.opencti.app_logger.info("Reading Location", {"id": id})
             query = (
                 """
                 query Location($id: String!) {
@@ -343,7 +343,9 @@ class Location:
             else:
                 return None
         else:
-            LOGGER.error("[opencti_location] Missing parameters: id or filters")
+            self.opencti.app_logger.error(
+                "[opencti_location] Missing parameters: id or filters"
+            )
             return None
 
     """
@@ -375,7 +377,7 @@ class Location:
         update = kwargs.get("update", False)
 
         if name is not None:
-            LOGGER.info("Creating Location {%s}.", name)
+            self.opencti.app_logger.info("Creating Location", {"name": name})
             query = """
                 mutation LocationAdd($input: LocationAddInput!) {
                     locationAdd(input: $input) {
@@ -414,7 +416,7 @@ class Location:
             )
             return self.opencti.process_multiple_fields(result["data"]["locationAdd"])
         else:
-            LOGGER.error("Missing parameters: name")
+            self.opencti.app_logger.error("Missing parameters: name")
 
     """
         Import an Location object from a STIX2 object
@@ -436,7 +438,7 @@ class Location:
         elif "region" in stix_object:
             name = stix_object["region"]
         else:
-            LOGGER.error("[opencti_location] Missing name")
+            self.opencti.app_logger.error("[opencti_location] Missing name")
             return
         if "x_opencti_location_type" in stix_object:
             type = stix_object["x_opencti_location_type"]
@@ -504,4 +506,6 @@ class Location:
                 update=update,
             )
         else:
-            LOGGER.error("[opencti_location] Missing parameters: stixObject")
+            self.opencti.app_logger.error(
+                "[opencti_location] Missing parameters: stixObject"
+            )

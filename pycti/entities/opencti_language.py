@@ -5,8 +5,6 @@ import uuid
 
 from stix2.canonicalization.Canonicalize import canonicalize
 
-from pycti.entities import LOGGER
-
 
 class Language:
     def __init__(self, opencti):
@@ -274,7 +272,9 @@ class Language:
         if get_all:
             first = 100
 
-        LOGGER.info("Listing Languages with filters %s.", json.dumps(filters))
+        self.opencti.app_logger.info(
+            "Listing Languages with filters", {"filters": json.dumps(filters)}
+        )
         query = (
             """
             query Languages($filters: FilterGroup, $search: String, $first: Int, $after: ID, $orderBy: LanguagesOrdering, $orderMode: OrderingMode) {
@@ -318,7 +318,7 @@ class Language:
             final_data = final_data + data
             while result["data"]["languages"]["pageInfo"]["hasNextPage"]:
                 after = result["data"]["languages"]["pageInfo"]["endCursor"]
-                LOGGER.info("Listing Languages after " + after)
+                self.opencti.app_logger.info("Listing Languages", {"after": after})
                 result = self.opencti.query(
                     query,
                     {
@@ -352,7 +352,7 @@ class Language:
         custom_attributes = kwargs.get("customAttributes", None)
         with_files = kwargs.get("withFiles", False)
         if id is not None:
-            LOGGER.info("Reading Language {%s}.", id)
+            self.opencti.app_logger.info("Reading Language", {"id": id})
             query = (
                 """
                 query Language($id: String!) {
@@ -377,7 +377,9 @@ class Language:
             else:
                 return None
         else:
-            LOGGER.error("[opencti_language] Missing parameters: id or filters")
+            self.opencti.app_logger.error(
+                "[opencti_language] Missing parameters: id or filters"
+            )
             return None
 
     """
@@ -404,7 +406,7 @@ class Language:
         update = kwargs.get("update", False)
 
         if name is not None:
-            LOGGER.info("Creating Language {%s}.", name)
+            self.opencti.app_logger.info("Creating Language", {"name": name})
             query = """
                 mutation LanguageAdd($input: LanguageAddInput!) {
                     languageAdd(input: $input) {
@@ -438,7 +440,7 @@ class Language:
             )
             return self.opencti.process_multiple_fields(result["data"]["languageAdd"])
         else:
-            LOGGER.error("[opencti_language] Missing parameters: name")
+            self.opencti.app_logger.error("[opencti_language] Missing parameters: name")
 
     """
         Import an Language object from a STIX2 object
@@ -491,4 +493,6 @@ class Language:
                 update=update,
             )
         else:
-            LOGGER.error("[opencti_language] Missing parameters: stixObject")
+            self.opencti.app_logger.error(
+                "[opencti_language] Missing parameters: stixObject"
+            )

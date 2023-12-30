@@ -1,8 +1,3 @@
-# coding: utf-8
-
-from pycti.entities import LOGGER
-
-
 class StixObjectOrStixRelationship:
     def __init__(self, opencti):
         self.opencti = opencti
@@ -511,7 +506,9 @@ class StixObjectOrStixRelationship:
         id = kwargs.get("id", None)
         custom_attributes = kwargs.get("customAttributes", None)
         if id is not None:
-            LOGGER.info("Reading StixObjectOrStixRelationship {%s}.", id)
+            self.opencti.app_logger.info(
+                "Reading StixObjectOrStixRelationship", {"id": id}
+            )
             query = (
                 """
                 query StixObjectOrStixRelationship($id: String!) {
@@ -532,5 +529,5 @@ class StixObjectOrStixRelationship:
                 result["data"]["stixObjectOrStixRelationship"]
             )
         else:
-            LOGGER.error("Missing parameters: id")
+            self.opencti.app_logger.error("Missing parameters: id")
             return None

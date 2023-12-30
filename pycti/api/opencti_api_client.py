@@ -3,16 +3,12 @@ import base64
 import datetime
 import io
 import json
-import logging
 from typing import Union
 
 import magic
 import requests
-import urllib3
-from pythonjsonlogger import jsonlogger
 
 from pycti import __version__
-from pycti.api import LOGGER
 from pycti.api.opencti_api_connector import OpenCTIApiConnector
 from pycti.api.opencti_api_playbook import OpenCTIApiPlaybook
 from pycti.api.opencti_api_work import OpenCTIApiWork
@@ -65,23 +61,9 @@ from pycti.entities.opencti_threat_actor_individual import ThreatActorIndividual
 from pycti.entities.opencti_tool import Tool
 from pycti.entities.opencti_vocabulary import Vocabulary
 from pycti.entities.opencti_vulnerability import Vulnerability
+from pycti.utils.opencti_logger import logger
 from pycti.utils.opencti_stix2 import OpenCTIStix2
 from pycti.utils.opencti_stix2_utils import OpenCTIStix2Utils
-
-urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
-
-
-class CustomJsonFormatter(jsonlogger.JsonFormatter):
-    def add_fields(self, log_record, record, message_dict):
-        super(CustomJsonFormatter, self).add_fields(log_record, record, message_dict)
-        if not log_record.get("timestamp"):
-            # This doesn't use record.created, so it is slightly off
-            now = datetime.datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%S.%fZ")
-            log_record["timestamp"] = now
-        if log_record.get("level"):
-            log_record["level"] = log_record["level"].upper()
-        else:
-            log_record["level"] = record.levelname
 
 
 class File:
@@ -141,19 +123,8 @@ class OpenCTIApiClient:
             raise ValueError("A TOKEN must be set")
 
         # Configure logger
-        log_level = log_level.upper()
-        LOGGER.setLevel(log_level)
-
-        if json_logging:
-            log_handler = logging.StreamHandler()
-            log_handler.setLevel(log_level)
-            formatter = CustomJsonFormatter(
-                "%(timestamp)s %(level)s %(name)s %(message)s"
-            )
-            log_handler.setFormatter(formatter)
-            logging.basicConfig(handlers=[log_handler], level=log_level, force=True)
-        else:
-            logging.basicConfig(level=log_level)
+        self.logger_class = logger(log_level.upper(), json_logging)
+        self.app_logger = self.logger_class("api")
 
         # Define API
         self.api_token = token
@@ -398,23 +369,6 @@ class OpenCTIApiClient:
             return base64.b64encode(r.text).decode("utf-8")
         return r.text
 
-    def log(self, level, message):
-        """log a message with defined log level
-        :param level: must be a valid logging log level (debug, info, warning, error)
-        :type level: str
-        :param message: the message to log
-        :type message: str
-        """
-
-        if level == "debug":
-            LOGGER.debug(message)
-        elif level == "info":
-            LOGGER.info(message)
-        elif level == "warning":
-            LOGGER.warning(message)
-        elif level == "error":
-            LOGGER.error(message)
-
     def health_check(self):
         """submit an example request to the OpenCTI API.
 
@@ -426,7 +380,7 @@ class OpenCTIApiClient:
             if test is not None:
                 return True
         except Exception as err:  # pylint: disable=broad-except
-            LOGGER.error("%s", err)
+            self.app_logger.error(str(err))
             return False
         return False
 
@@ -437,7 +391,7 @@ class OpenCTIApiClient:
         rtype: dict
         """
 
-        LOGGER.info("Getting logs worker config...")
+        self.app_logger.info("Getting logs worker config...")
         query = """
             query LogsWorkerConfig {
                 logsWorkerConfig {
@@ -638,7 +592,7 @@ class OpenCTIApiClient:
         data = kwargs.get("data", None)
         mime_type = kwargs.get("mime_type", "text/plain")
         if file_name is not None:
-            LOGGER.info("Uploading a file.")
+            self.app_logger.info("Uploading a file.")
             query = """
                 mutation UploadImport($file: Upload!) {
                     uploadImport(file: $file) {
@@ -656,7 +610,7 @@ class OpenCTIApiClient:
 
             return self.query(query, {"file": (File(file_name, data, mime_type))})
         else:
-            LOGGER.error("[upload] Missing parameter: file_name")
+            self.app_logger.error("[upload] Missing parameter: file_name")
             return None
 
     def upload_pending_file(self, **kwargs):
@@ -673,7 +627,7 @@ class OpenCTIApiClient:
         entity_id = kwargs.get("entity_id", None)
 
         if file_name is not None:
-            LOGGER.info("Uploading a file.")
+            self.app_logger.info("Uploading a file.")
             query = """
                     mutation UploadPending($file: Upload!, $entityId: String) {
                         uploadPending(file: $file, entityId: $entityId) {
@@ -693,7 +647,7 @@ class OpenCTIApiClient:
                 {"file": (File(file_name, data, mime_type)), "entityId": entity_id},
             )
         else:
-            LOGGER.error("[upload] Missing parameter: file_name")
+            self.app_logger.error("[upload] Missing parameter: file_name")
             return None
 
     def get_stix_content(self, id):
@@ -703,7 +657,7 @@ class OpenCTIApiClient:
         rtype: dict
         """
 
-        LOGGER.info("Entity in JSON %s", id)
+        self.app_logger.info("Entity in JSON", {"id": id})
         query = """
             query StixQuery($id: String!) {
                 stix(id: $id)

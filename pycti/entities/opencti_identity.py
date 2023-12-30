@@ -5,7 +5,6 @@ import uuid
 
 from stix2.canonicalization.Canonicalize import canonicalize
 
-from pycti.entities import LOGGER
 from pycti.utils.constants import IdentityTypes
 
 
@@ -273,7 +272,9 @@ class Identity:
         if get_all:
             first = 500
 
-        LOGGER.info("Listing Identities with filters %s.", json.dumps(filters))
+        self.opencti.app_logger.info(
+            "Listing Identities with filters", {"filters": json.dumps(filters)}
+        )
         query = (
             """
             query Identities($types: [String], $filters: FilterGroup, $search: String, $first: Int, $after: ID, $orderBy: IdentitiesOrdering, $orderMode: OrderingMode) {
@@ -318,7 +319,7 @@ class Identity:
             final_data = final_data + data
             while result["data"]["identities"]["pageInfo"]["hasNextPage"]:
                 after = result["data"]["identities"]["pageInfo"]["endCursor"]
-                LOGGER.info("Listing Identities after " + after)
+                self.opencti.app_logger.info("Listing Identities", {"after": after})
                 result = self.opencti.query(
                     query,
                     {
@@ -352,7 +353,7 @@ class Identity:
         custom_attributes = kwargs.get("customAttributes", None)
         with_files = kwargs.get("withFiles", False)
         if id is not None:
-            LOGGER.info("Reading Identity {%s}.", id)
+            self.opencti.app_logger.info("Reading Identity", {"id": id})
             query = (
                 """
                 query Identity($id: String!) {
@@ -377,7 +378,9 @@ class Identity:
             else:
                 return None
         else:
-            LOGGER.error("[opencti_identity] Missing parameters: id or filters")
+            self.opencti.app_logger.error(
+                "[opencti_identity] Missing parameters: id or filters"
+            )
             return None
 
     """
@@ -413,7 +416,7 @@ class Identity:
         update = kwargs.get("update", False)
 
         if type is not None and name is not None:
-            LOGGER.info("Creating Identity {%s}.", name)
+            self.opencti.app_logger.info("Creating Identity", {"name": name})
             input_variables = {
                 "stix_id": stix_id,
                 "createdBy": created_by,
@@ -503,7 +506,9 @@ class Identity:
                 result["data"][result_data_field]
             )
         else:
-            LOGGER.error("Missing parameters: type, name and description")
+            self.opencti.app_logger.error(
+                "Missing parameters: type, name and description"
+            )
 
     """
         Import an Identity object from a STIX2 object
@@ -622,4 +627,6 @@ class Identity:
                 update=update,
             )
         else:
-            LOGGER.error("[opencti_identity] Missing parameters: stixObject")
+            self.opencti.app_logger.error(
+                "[opencti_identity] Missing parameters: stixObject"
+            )

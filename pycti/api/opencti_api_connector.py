@@ -1,7 +1,6 @@
 import json
 from typing import Any, Dict
 
-from pycti.api import LOGGER
 from pycti.connector.opencti_connector import OpenCTIConnector
 
 
@@ -18,7 +17,7 @@ class OpenCTIApiConnector:
         :rtype: dict
         """
 
-        LOGGER.info("Getting connectors ...")
+        self.api.app_logger.info("Getting connectors ...")
         query = """
             query GetConnectors {
                 connectorsForWorker {
