@@ -8,7 +8,7 @@ type UserConfidenceLevelFieldProps = {
   userConfidenceLevel: User_user$data['user_confidence_level']
 };
 
-const UserConfidenceLevelField: React.FC<UserConfidenceLevelFieldProps> = ({ userConfidenceLevel }) => {
+const UserConfidenceLevel: React.FC<UserConfidenceLevelFieldProps> = ({ userConfidenceLevel }) => {
   const { t } = useFormatter();
 
   const overrides = userConfidenceLevel.overrides
@@ -41,4 +41,4 @@ const UserConfidenceLevelField: React.FC<UserConfidenceLevelFieldProps> = ({ use
   );
 };
 
-export default UserConfidenceLevelField;
+export default UserConfidenceLevel;

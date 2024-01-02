@@ -20,7 +20,7 @@ import { useTheme } from '@mui/styles';
 import makeStyles from '@mui/styles/makeStyles';
 import { ApexOptions } from 'apexcharts';
 import { SimplePaletteColorOptions } from '@mui/material/styles/createPalette';
-import UserConfidenceLevelField from '@components/settings/users/UserConfidenceLevelField';
+import UserConfidenceLevel from '@components/settings/users/UserConfidenceLevel';
 import FieldOrEmpty from '../../../../components/FieldOrEmpty';
 import { useFormatter } from '../../../../components/i18n';
 import UserEdition from './UserEdition';
@@ -541,11 +541,10 @@ const User: FunctionComponent<UserProps> = ({ data }) => {
                 />
               </Grid>
               <Grid item={true} xs={6}>
-
                 <Typography variant="h3" gutterBottom={true}>
                   {t('Max Confidence Level')}
                 </Typography>
-                <UserConfidenceLevelField userConfidenceLevel={user.user_confidence_level}/>
+                <UserConfidenceLevel userConfidenceLevel={user.user_confidence_level}/>
               </Grid>
             </Grid>
           </Paper>
