@@ -324,7 +324,9 @@ class ListenQueue(threading.Thread):
                 sys.exit(0)
             except Exception as err:  # pylint: disable=broad-except
                 self.pika_connection.close()
-                self.helper.connector_logger.error(str(err))
+                self.helper.connector_logger.error(
+                    type(err).__name__, {"reason": str(err)}
+                )
                 sys.exit(1)
 
     def stop(self):
@@ -367,12 +369,12 @@ class PingAlive(threading.Thread):
                     )
                 if self.in_error:
                     self.in_error = False
-                    self.connector_logger.error("API Ping back to normal")
+                    self.connector_logger.info("API Ping back to normal")
                 self.metric.inc("ping_api_count")
-            except Exception:  # pylint: disable=broad-except
+            except Exception as e:  # pylint: disable=broad-except
                 self.in_error = True
                 self.metric.inc("ping_api_error")
-                self.connector_logger.error("Error pinging the API")
+                self.connector_logger.error("Error pinging the API", {"reason": str(e)})
             self.exit_event.wait(40)
 
     def run(self) -> None:
@@ -818,9 +820,9 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
             )
             if initial_state != remote_state:
                 self.api.connector.ping(self.connector_id, initial_state)
-        except Exception:  # pylint: disable=broad-except
+        except Exception as e:  # pylint: disable=broad-except
             self.metric.inc("error_count")
-            self.connector_logger.error("Error pinging the API")
+            self.connector_logger.error("Error pinging the API", {"reason": str(e)})
 
     def listen(self, message_callback: Callable[[Dict], str]) -> None:
         """listen for messages and register callback function
