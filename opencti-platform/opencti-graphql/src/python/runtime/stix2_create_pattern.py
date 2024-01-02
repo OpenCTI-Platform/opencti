@@ -2,6 +2,8 @@ import sys
 
 from stix2 import (EqualityComparisonExpression, ObjectPath,
                    ObservationExpression, OrBooleanExpression)
+from stix2patterns.validator import run_validator
+
 from utils.runtime_utils import return_data
 
 PATTERN_MAPPING = {
@@ -73,15 +75,20 @@ def stix2_create_pattern(observable_type, observable_value):
         if ece is not None:
             pattern = ObservationExpression(ece)
     if pattern is not None:
-        return {"status": "success", "data": str(pattern)}
+        errors = run_validator(str(pattern))
+        if len(errors) > 0:
+            return {"status": "error", "message": "Invalid generated pattern", "errors": errors}
+        else:
+            return {"status": "success", "data": str(pattern)}
     else:
-        return {"status": "unknown", "data": None}
+        errors = [{"FAIL": f"Cant process type {observable_type}"}]
+        return {"status": "unknown", "message": "Cant generate pattern", "errors": errors}
 
 
 if __name__ == "__main__":
     if len(sys.argv) <= 2:
         return_data(
-            {"status": "error", "message": "Missing argument to the Python script"}
+            {"status": "error", "message": "Missing argument to the Python script", "errors": []}
         )
 
     data = stix2_create_pattern(sys.argv[1], sys.argv[2])

@@ -58,14 +58,10 @@ export const execChildPython = async (context, user, scriptPath, scriptName, arg
           return;
         }
         if (jsonResult.status !== 'success') {
-          reject(jsonResult);
-          return;
+          reject(UnknownError('Error python child execution', jsonResult));
         }
         resolve(jsonResult);
       });
-    }).catch((err) => {
-      /* v8 ignore next */
-      throw UnknownError(`[BRIDGE] execPythonTesting error > ${err.message}`, { detail: err.message });
     });
   };
   return telemetry(context, user, `PYTHON ${scriptName}`, {
@@ -83,7 +79,7 @@ const createChildStixPattern = async (context, user, observableType, observableV
     );
     return result.data;
   } catch (err) {
-    logApp.warn('Python createStixPattern fail', { failure: err.message });
+    logApp.warn(err);
     return null;
   }
 };
@@ -98,7 +94,7 @@ const checkChildIndicatorSyntax = async (context, user, patternType, indicatorVa
     );
     return result.data;
   } catch (err) {
-    logApp.warn('Python extractObservables fail', { failure: err.message });
+    logApp.warn(err);
     return null;
   }
 };
@@ -111,15 +107,11 @@ const checkChildPythonAvailability = async (context, user) => {
 // region native
 const execNativePython = async (context, user, script, ...args) => {
   const execNativePythonFn = async () => {
-    try {
-      const result = py.callSync(script.py, script.fn, ...args);
-      if (result.status === 'success') {
-        return result.data;
-      }
-      throw UnknownError('[BRIDGE] execNativePython error', { detail: result.data });
-    } catch (err) {
-      throw UnknownError(`[BRIDGE] execNativePython error > ${err.message}`, { detail: err.message });
+    const result = py.callSync(script.py, script.fn, ...args);
+    if (result.status === 'success') {
+      return result.data;
     }
+    throw UnknownError('[BRIDGE] execNativePython error', result);
   };
   return telemetry(context, user, `PYTHON ${script.fn}`, {
     [SemanticAttributes.DB_NAME]: 'python_runtime_engine',
@@ -127,13 +119,13 @@ const execNativePython = async (context, user, script, ...args) => {
 };
 const createNativeStixPattern = async (context, user, observableType, observableValue) => {
   return execNativePython(context, user, CREATE_PATTERN_SCRIPT, observableType, observableValue).catch((err) => {
-    logApp.warn('Python createStixPattern fail', { failure: err.message });
+    logApp.warn(err);
     return null;
   });
 };
 const checkNativeIndicatorSyntax = async (context, user, patternType, indicatorValue) => {
   return execNativePython(context, user, CHECK_INDICATOR_SCRIPT, patternType, indicatorValue).catch((err) => {
-    logApp.warn('Python checkIndicatorSyntax fail', { failure: err.message });
+    logApp.warn(err);
     return null;
   });
 };

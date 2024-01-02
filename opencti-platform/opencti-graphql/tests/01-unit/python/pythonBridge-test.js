@@ -17,6 +17,8 @@ it('Check createStixPattern bad pattern', async () => {
   expect(check).toBeNull();
   check = await createStixPattern(testContext, ADMIN_USER, 'File_shaa256', 'c2d6908fe0d2ad04713');
   expect(check).toBeNull();
+  check = await createStixPattern(testContext, ADMIN_USER, 'File_MD5__File_sha256', 'c2d6908fe0d2ad04713__c2d6908fe0d2ad04713');
+  expect(check).toBeNull();
 });
 
 it('Check createStixPattern hash', async () => {
