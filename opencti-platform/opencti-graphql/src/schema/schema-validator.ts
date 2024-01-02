@@ -62,13 +62,13 @@ export const validateAndFormatSchemaAttribute = (
         }
       }
       if (isObjectAttribute(attributeName)) {
-        // current limitation: field patch is only possible with arrays
-        if (editInput.object_path && !attributeDefinition.multiple) {
-          throw ValidationError(attributeName, { message: `Attribute ${attributeName} is not multiple, object_path cannot be used`, data: editInput });
-        }
-
         let validationValues = editInput.value;
         if (editInput.object_path) {
+          // current limitation: field patch is only possible with arrays
+          if (!attributeDefinition.multiple) {
+            throw ValidationError(attributeName, { message: `Attribute ${attributeName} is not multiple, object_path cannot be used`, data: editInput });
+          }
+
           // If object path is setup, controlling the field is much harder.
           // Concept here is to apply the partial operation and check if the result comply to the schema
           const pointers = JSONPath({ json: initial, resultType: 'pointer', path: `${editInput.key}${editInput.object_path}` });
