@@ -21,7 +21,7 @@ import { markingDefinitionsLinesSearchQuery } from '../../settings/marking_defin
 import SelectField from '../../../../components/SelectField';
 import Loader from '../../../../components/Loader';
 import { ExportContext } from '../../../../utils/ExportContextProvider';
-import { addFilter, removeFilter } from '../../../../utils/filters/filtersUtils';
+import { addFilter, emptyFilterGroup, removeIdFromFilterGroupObject } from '../../../../utils/filters/filtersUtils';
 
 const Transition = React.forwardRef((props, ref) => (
   <Slide direction="up" ref={ref} {...props} />
@@ -113,39 +113,29 @@ class StixCoreRelationshipsExportCreationComponent extends Component {
     const maxMarkingDefinition = values.maxMarkingDefinition === 'none'
       ? null
       : values.maxMarkingDefinition;
-    let finalFilters = paginationOptions.filters ?? [];
+    let finalFilters = paginationOptions.filters ?? emptyFilterGroup;
+
+    // TODO API is not accepting theses keys
     if (paginationOptions.relationship_type) {
       finalFilters = addFilter(finalFilters, 'relationship_type', paginationOptions.relationship_type);
     }
     if (paginationOptions.elementId) {
       finalFilters = addFilter(finalFilters, 'elementId', paginationOptions.elementId);
-    } else {
-      finalFilters = removeFilter(finalFilters, 'elementId');
     }
     if (paginationOptions.fromId) {
       finalFilters = addFilter(finalFilters, 'fromId', paginationOptions.fromId);
-    } else {
-      finalFilters = removeFilter(finalFilters, 'fromId');
     }
     if (paginationOptions.toId) {
       finalFilters = addFilter(finalFilters, 'toId', paginationOptions.toId);
-    } else {
-      finalFilters = removeFilter(finalFilters, 'toId');
     }
     if (paginationOptions.elementWithTargetTypes) {
       finalFilters = addFilter(finalFilters, 'elementWithTargetTypes', paginationOptions.elementWithTargetTypes);
-    } else {
-      finalFilters = removeFilter(finalFilters, 'elementWithTargetTypes');
     }
     if (paginationOptions.fromTypes) {
       finalFilters = addFilter(finalFilters, 'fromTypes', paginationOptions.fromTypes);
-    } else {
-      finalFilters = removeFilter(finalFilters, 'fromTypes');
     }
     if (paginationOptions.toTypes) {
       finalFilters = addFilter(finalFilters, 'toTypes', paginationOptions.toTypes);
-    } else {
-      finalFilters = removeFilter(finalFilters, 'toTypes');
     }
     commitMutation({
       mutation: StixCoreRelationshipsExportCreationMutation,
@@ -156,7 +146,7 @@ class StixCoreRelationshipsExportCreationComponent extends Component {
         maxMarkingDefinition,
         context,
         ...paginationOptions,
-        filters: finalFilters,
+        filters: removeIdFromFilterGroupObject(finalFilters),
         selectedIds,
       },
       onCompleted: () => {
