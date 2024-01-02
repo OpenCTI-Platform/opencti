@@ -132,13 +132,13 @@ After changing your `.env` file run `docker-compose` in detached (-d) mode:
 
 ```bash
 $ sudo systemctl start docker.service
-# Run docker-compose in detached 
+# Run docker-compose in detached
 $ docker-compose up -d
 ```
 
 #### Using Docker swarm
 
-In order to have the best experience with Docker, we recommend using the Docker stack feature. In this mode you will have the capacity to easily scale your deployment. 
+In order to have the best experience with Docker, we recommend using the Docker stack feature. In this mode you will have the capacity to easily scale your deployment.
 
 ```bash
 # If your virtual machine is not a part of a Swarm cluster, please use:
@@ -174,7 +174,7 @@ $ sudo apt-get install build-essential nodejs npm python3 python3-pip python3-de
 
 #### Download the application files
 
-First, you have to [download and extract the latest release file](https://github.com/OpenCTI-Platform/opencti/releases). Then select the version to install depending of your operating system: 
+First, you have to [download and extract the latest release file](https://github.com/OpenCTI-Platform/opencti/releases). Then select the version to install depending of your operating system:
 
 **For Linux:**
 
@@ -282,9 +282,9 @@ $ python3 worker.py &
 
     ---
 
-    OpenCTI Helm Charts (may be out of date) for Kubernetes with a global configuration file.
+    OpenCTI Helm Charts for Kubernetes with a global configuration file. More information how to deploy here on [basic installation](https://github.com/devops-ia/helm-charts/blob/main/charts/opencti/docs/configuration.md) and [examples](https://github.com/devops-ia/helm-charts/blob/main/charts/opencti/docs/examples.md).
 
-    [:material-github:{ .middle } GitHub Repository](https://github.com/Ascend-Technologies/OpenCTI-HELM-CHART)
+    [:material-github:{ .middle } GitHub Repository](https://github.com/devops-ia/helm-charts/tree/main/charts/opencti)
 </div>
 
 ### Deploy behind a reverse proxy
