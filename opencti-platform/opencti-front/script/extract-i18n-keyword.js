@@ -9,9 +9,9 @@ const writeFile = util.promisify(fs.writeFile);
 
 const srcDirectory = 'src';
 const englishTranslationFiles = 'lang/en.json';
+const jsxTsxFileExtensions = ['.jsx', '.tsx'];
 const searchPattern = /\{t\('[^']+'\)}/g;
 const extractedValues = {};
-const jsxTsxFileExtensions = ['.jsx', '.tsx'];
 
 function extractValueFromPattern(pattern) {
   const match = /\{t\('([^']+)'\)\}/.exec(pattern);
@@ -49,15 +49,25 @@ async function extractI18nValues(directory) {
   }
 }
 
-async function main() {
-  await extractI18nValues(srcDirectory);
-  
+async function mergeWithExistingData() {
   try {
-    await writeFile(englishTranslationFiles, JSON.stringify(extractedValues, null, 2));
+    const existingData = await readFile(englishTranslationFiles, 'utf8');
+    const existingValues = JSON.parse(existingData);
+    
+    // Merge the existing values with the newly extracted values
+    const mergedValues = {...extractedValues, ...existingValues };
+    
+    // Write the merged values back to the file
+    await writeFile(englishTranslationFiles, JSON.stringify(mergedValues, null, 2));
     console.log('File written successfully');
   } catch (error) {
-    console.error(`Error writing to en.json: ${error.message}`);
+    console.error(`Error merging with existing data: ${error.message}`);
   }
+}
+
+async function main() {
+  await extractI18nValues(srcDirectory);
+  await mergeWithExistingData();
 }
 
 main();
