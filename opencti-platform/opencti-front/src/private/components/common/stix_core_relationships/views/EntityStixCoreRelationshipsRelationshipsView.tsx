@@ -13,7 +13,14 @@ import Security from '../../../../../utils/Security';
 import { computeTargetStixCyberObservableTypes, computeTargetStixDomainObjectTypes, isStixCyberObservables } from '../../../../../utils/stixTypeUtils';
 import { PaginationLocalStorage } from '../../../../../utils/hooks/useLocalStorage';
 import { DataColumns, PaginationOptions } from '../../../../../components/list_lines';
-import { addFilter, cleanFilters, FilterGroup, findFilterFromKey, injectEntityTypeFilterInFilterGroup } from '../../../../../utils/filters/filtersUtils';
+import {
+  addFilter,
+  cleanFilters,
+  FilterGroup,
+  findFilterFromKey,
+  injectEntityTypeFilterInFilterGroup,
+  removeIdFromFilterGroupObject,
+} from '../../../../../utils/filters/filtersUtils';
 
 interface EntityStixCoreRelationshipsRelationshipsViewProps {
   entityId: string
@@ -136,7 +143,7 @@ const EntityStixCoreRelationshipsRelationshipsView: FunctionComponent<EntityStix
     search: searchTerm,
     orderBy: (sortBy && (sortBy in dataColumns) && dataColumns[sortBy].isSortable) ? sortBy : 'relationship_type',
     orderMode: orderAsc ? 'asc' : 'desc',
-    filters: cleanFilters(filters, availableFilterKeys),
+    filters: removeIdFromFilterGroupObject(cleanFilters(filters, availableFilterKeys)),
   } as object;
 
   let backgroundTaskFilters: FilterGroup | undefined = injectEntityTypeFilterInFilterGroup(
