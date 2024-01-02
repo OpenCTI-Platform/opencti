@@ -948,7 +948,7 @@ const useSearchEntities = ({
             || availableEntityTypes.includes('stix-core-relationship')
           ) {
             result = [
-              ...(schema.sros ?? []).map((n) => ({
+              ...(schema.scrs ?? []).map((n) => ({
                 label: t(`relationship_${n.label}`),
                 value: n.label,
                 type: n.label,
@@ -983,7 +983,7 @@ const useSearchEntities = ({
             .sort((a, b) => a.label.localeCompare(b.label));
           unionSetEntities(filterKey, relationshipsTypes);
         } else {
-          const relationshipsTypes = (schema.sros ?? [])
+          const relationshipsTypes = (schema.scrs ?? [])
             .map((n) => ({
               label: t(`relationship_${n.label}`),
               value: n.label,

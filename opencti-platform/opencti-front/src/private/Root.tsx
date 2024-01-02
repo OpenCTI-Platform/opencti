@@ -130,7 +130,7 @@ const rootPrivateQuery = graphql`
         }
       }
     }
-    schemaSROs: subTypes(type: "stix-core-relationship") {
+    schemaSCRs: subTypes(type: "stix-core-relationship") {
       edges {
         node {
           id
@@ -177,13 +177,13 @@ interface RootComponentProps {
 
 const RootComponent: FunctionComponent<RootComponentProps> = ({ queryRef }) => {
   const queryData = usePreloadedQuery(rootPrivateQuery, queryRef);
-  const { me, settings: settingsFragment, entitySettings, schemaSCOs, schemaSDOs, schemaSMOs, schemaSROs, schemaRelationsTypesMapping, schemaRelationsRefTypesMapping } = queryData;
+  const { me, settings: settingsFragment, entitySettings, schemaSCOs, schemaSDOs, schemaSMOs, schemaSCRs, schemaRelationsTypesMapping, schemaRelationsRefTypesMapping } = queryData;
   const settings = useFragment<RootSettings$key>(rootSettingsFragment, settingsFragment);
   const schema = {
     scos: schemaSCOs.edges.map((sco) => sco.node),
     sdos: schemaSDOs.edges.map((sco) => sco.node),
     smos: schemaSMOs.edges.map((smo) => smo.node),
-    sros: schemaSROs.edges.map((sco) => sco.node),
+    scrs: schemaSCRs.edges.map((scr) => scr.node),
     schemaRelationsTypesMapping: new Map(schemaRelationsTypesMapping.map((n) => [n.key, n.values])),
     schemaRelationsRefTypesMapping: new Map(schemaRelationsRefTypesMapping.map((n) => [n.key, n.values])),
   };

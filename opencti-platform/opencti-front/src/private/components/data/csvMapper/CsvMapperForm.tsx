@@ -80,7 +80,7 @@ const CsvMapperForm: FunctionComponent<CsvMapperFormProps> = ({ csvMapper, onSub
 
   // load the available types once in state
   useEffect(() => {
-    const { sdos, scos, smos, sros } = schema;
+    const { sdos, scos, smos, scrs } = schema;
     const entityTypes = sdos
       .map((sdo) => ({
         ...sdo,
@@ -101,11 +101,17 @@ const CsvMapperForm: FunctionComponent<CsvMapperFormProps> = ({ csvMapper, onSub
           type: 'entity_Stix-Meta-Objects',
         })),
       );
-    const relationshipTypes = sros.map((sro) => ({
-      ...sro,
-      value: sro.id,
-      type: 'entity_Stix-Core-Relationship',
-    }));
+    const relationshipTypes = scrs
+      .map((scr) => ({
+        ...scr,
+        value: scr.id,
+        type: 'entity_Stix-Core-Relationship',
+      })).concat({
+        id: 'stix-sighting-relationship',
+        label: 'stix-sighting-relationship',
+        value: 'stix-sighting-relationship',
+        type: 'entity_stix-sighting-relationship',
+      });
 
     setAvailableEntityTypes(entityTypes);
     setAvailableRelationshipTypes(relationshipTypes);

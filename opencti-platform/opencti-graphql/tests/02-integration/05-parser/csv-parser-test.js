@@ -79,6 +79,9 @@ describe('CSV-PARSER', () => {
       .toBe(1);
     expect(objects.filter((o) => o.type === 'sighting').length)
       .toBe(1);
+    const sighting = objects.filter((o) => o.type === 'sighting')[0];
+    expect(sighting.first_seen).not.toBeUndefined();
+    expect(sighting.last_seen).toBeUndefined();
   });
   it('Parse CSV - Simple entity with refs', async () => {
     const filPath = './tests/02-integration/05-parser/simple-entity-with-ref-test/Threat-Actor-Group_with-ref.csv';
