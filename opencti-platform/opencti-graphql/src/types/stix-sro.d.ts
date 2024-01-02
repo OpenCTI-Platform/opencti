@@ -1,7 +1,6 @@
 import type { StixId } from './stix';
-import type { StixRelationshipObject, StixOpenctiExtension, StixDate } from './stix-common';
+import type { StixRelationshipObject, StixOpenctiExtension, StixDate, StixKillChainPhase } from './stix-common';
 import { STIX_EXT_OCTI } from './stix-extensions';
-import type { StixKillChainPhase } from './stix-smo';
 
 // Relationship Specific Properties
 // relationship_type, description, source_ref, target_ref, start_time, stop_time
