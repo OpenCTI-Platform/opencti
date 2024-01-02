@@ -36,7 +36,7 @@ import { useVocabularyCategoryQuery$data } from '../hooks/__generated__/useVocab
 import { useSearchEntitiesStixCoreObjectsContainersSearchQuery$data } from './__generated__/useSearchEntitiesStixCoreObjectsContainersSearchQuery.graphql';
 import { isNotEmptyField } from '../utils';
 import { useSearchEntitiesSchemaSCOSearchQuery$data } from './__generated__/useSearchEntitiesSchemaSCOSearchQuery.graphql';
-import { Theme } from '../../components/Theme';
+import type { Theme } from '../../components/Theme';
 
 const filtersStixCoreObjectsContainersSearchQuery = graphql`
   query useSearchEntitiesStixCoreObjectsContainersSearchQuery(

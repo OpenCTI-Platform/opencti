@@ -41,7 +41,7 @@ import { stixDomainObjectThreatKnowledgeStixRelationshipsQuery } from './StixDom
 import ExportButtons from '../../../../components/ExportButtons';
 import Filters from '../lists/Filters';
 import { usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStorage';
-import { Theme } from '../../../../components/Theme';
+import type { Theme } from '../../../../components/Theme';
 import { emptyFilterGroup, removeFilter, removeIdFromFilterGroupObject, extractAllValueFromFilters } from '../../../../utils/filters/filtersUtils';
 import FilterIconButton from '../../../../components/FilterIconButton';
 

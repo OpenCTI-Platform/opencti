@@ -20,7 +20,7 @@ import TextField from '../../../../components/TextField';
 import MarkdownField from '../../../../components/MarkdownField';
 import { insertNode } from '../../../../utils/store';
 import { ExternalReferencesLinesPaginationQuery$variables } from './__generated__/ExternalReferencesLinesPaginationQuery.graphql';
-import { Theme } from '../../../../components/Theme';
+import type { Theme } from '../../../../components/Theme';
 import { ExternalReferenceAddInput, ExternalReferenceCreationMutation$data } from './__generated__/ExternalReferenceCreationMutation.graphql';
 import CustomFileUploader from '../../common/files/CustomFileUploader';
 

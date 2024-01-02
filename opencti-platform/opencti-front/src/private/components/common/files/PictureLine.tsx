@@ -7,7 +7,7 @@ import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import { NorthEastOutlined } from '@mui/icons-material';
 import Drawer from '@components/common/drawer/Drawer';
-import { Theme } from '../../../../components/Theme';
+import type { Theme } from '../../../../components/Theme';
 import { getFileUri } from '../../../../utils/utils';
 import { DataColumns } from '../../../../components/list_lines';
 import PictureManagementEdition from './PictureManagementEdition';

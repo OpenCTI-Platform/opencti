@@ -13,7 +13,7 @@ import CaseTaskOverview from '@components/cases/tasks/CaseTaskOverview';
 import { NorthEastOutlined } from '@mui/icons-material';
 import { Link } from 'react-router-dom';
 import ItemIcon from '../../../../components/ItemIcon';
-import { Theme } from '../../../../components/Theme';
+import type { Theme } from '../../../../components/Theme';
 import { tasksDataColumns } from './TasksLine';
 import { useFormatter } from '../../../../components/i18n';
 import { CaseTasksLine_data$key } from './__generated__/CaseTasksLine_data.graphql';

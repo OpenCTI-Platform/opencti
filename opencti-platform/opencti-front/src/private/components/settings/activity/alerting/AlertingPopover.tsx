@@ -12,7 +12,7 @@ import MoreVert from '@mui/icons-material/MoreVert';
 import makeStyles from '@mui/styles/makeStyles';
 import { graphql, useMutation, useQueryLoader } from 'react-relay';
 import { useFormatter } from '../../../../../components/i18n';
-import { Theme } from '../../../../../components/Theme';
+import type { Theme } from '../../../../../components/Theme';
 import Transition from '../../../../../components/Transition';
 import { deleteNode } from '../../../../../utils/store';
 import { AlertingPaginationQuery$variables } from './__generated__/AlertingPaginationQuery.graphql';

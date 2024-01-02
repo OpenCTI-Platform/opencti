@@ -8,7 +8,7 @@ import IconButton from '@mui/material/IconButton';
 import { ZoomOutMapOutlined } from '@mui/icons-material';
 import Box from '@mui/material/Box';
 import { convertImagesToCarousel } from '../utils/edition';
-import { Theme } from './Theme';
+import type { Theme } from './Theme';
 import { isNotEmptyField } from '../utils/utils';
 
 const useStyles = makeStyles((theme: Theme) => ({

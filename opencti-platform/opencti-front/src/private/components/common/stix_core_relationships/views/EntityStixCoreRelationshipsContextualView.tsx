@@ -25,7 +25,7 @@ import { EntityStixCoreRelationshipsContextualViewFragment_stixDomainObject$key 
 import { EntityStixCoreRelationshipsContextualViewLinesQuery$variables } from './__generated__/EntityStixCoreRelationshipsContextualViewLinesQuery.graphql';
 import { EntityStixCoreRelationshipsContextualViewLine_node$data } from './__generated__/EntityStixCoreRelationshipsContextualViewLine_node.graphql';
 import { isStixCoreObjects, isStixCyberObservables } from '../../../../../utils/stixTypeUtils';
-import { Theme } from '../../../../../components/Theme';
+import type { Theme } from '../../../../../components/Theme';
 import { resolveLink } from '../../../../../utils/Entity';
 import {
   addFilter,

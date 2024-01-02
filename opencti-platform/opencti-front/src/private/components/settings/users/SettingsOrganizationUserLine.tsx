@@ -11,7 +11,7 @@ import { SettingsOrganizationUserLine_node$key } from '@components/settings/user
 import { ListItemSecondaryAction } from '@mui/material';
 import Tooltip from '@mui/material/Tooltip';
 import { DataColumns } from '../../../../components/list_lines';
-import { Theme } from '../../../../components/Theme';
+import type { Theme } from '../../../../components/Theme';
 import { useFormatter } from '../../../../components/i18n';
 
 const useStyles = makeStyles<Theme>((theme) => ({

@@ -12,14 +12,14 @@ import { SelectChangeEvent } from '@mui/material/Select';
 import CsvMapperRepresentationForm, { RepresentationFormEntityOption } from '@components/data/csvMapper/representations/CsvMapperRepresentationForm';
 import { CsvMapper } from '@components/data/csvMapper/CsvMapper';
 import classNames from 'classnames';
-import { Theme } from '../../../../components/Theme';
+import type { Theme } from '../../../../components/Theme';
 import { useFormatter } from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
 import SwitchField from '../../../../components/SwitchField';
 import useAuth from '../../../../utils/hooks/useAuth';
 import { representationInitialization } from './representations/RepresentationUtils';
 import CsvMapperTestDialog from './CsvMapperTestDialog';
-import { Representation } from './representations/Representation';
+import type { Representation } from './representations/Representation';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   buttons: {

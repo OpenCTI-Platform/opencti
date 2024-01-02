@@ -6,9 +6,9 @@ import { clone } from 'ramda';
 import { Add } from '@mui/icons-material';
 import { FormControl, IconButton, InputLabel, MenuItem, Paper, Select, Typography } from '@mui/material';
 import { useFormatter } from '../../../../../components/i18n';
-import { Theme } from '../../../../../components/Theme';
+import type { Theme } from '../../../../../components/Theme';
 import { allScales, customScaleName, findSelectedScaleName } from '../../../../../utils/hooks/useScale';
-import { ScaleConfig, Tick, UndefinedTick } from './scale';
+import type { ScaleConfig, Tick, UndefinedTick } from './scale';
 import ScaleConfigurationLine from './ScaleConfigurationLine';
 import ScaleBar from './ScaleBar';
 

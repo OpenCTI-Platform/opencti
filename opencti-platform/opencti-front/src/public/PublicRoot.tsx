@@ -9,7 +9,7 @@ import { ConnectedThemeProvider } from '../components/AppThemeProvider';
 import { ConnectedIntlProvider } from '../components/AppIntlProvider';
 import { environment, fileUri } from '../relay/environment';
 import logo from '../static/images/logo.png';
-import { Theme } from '../components/Theme';
+import type { Theme } from '../components/Theme';
 import { rootPublicQuery } from './LoginRoot';
 import PublicStreamLines from '../private/components/data/stream/PublicStreamLines';
 import { LoginRootPublicQuery, LoginRootPublicQuery$data } from './__generated__/LoginRootPublicQuery.graphql';

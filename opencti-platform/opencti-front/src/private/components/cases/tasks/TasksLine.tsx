@@ -10,7 +10,7 @@ import Skeleton from '@mui/material/Skeleton';
 import { KeyboardArrowRightOutlined } from '@mui/icons-material';
 import Tooltip from '@mui/material/Tooltip';
 import ItemIcon from '../../../../components/ItemIcon';
-import { Theme } from '../../../../components/Theme';
+import type { Theme } from '../../../../components/Theme';
 import { TasksLine_node$data, TasksLine_node$key } from './__generated__/TasksLine_node.graphql';
 import { useFormatter } from '../../../../components/i18n';
 import { DataColumns } from '../../../../components/list_lines';

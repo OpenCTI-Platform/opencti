@@ -38,7 +38,7 @@ import TopMenuImport from './TopMenuImport';
 import TopMenuLocation from './TopMenuLocation';
 import FeedbackCreation from '../cases/feedbacks/FeedbackCreation';
 import TopMenuCases from './TopMenuCases';
-import { Theme } from '../../../components/Theme';
+import type { Theme } from '../../../components/Theme';
 import { EXPLORE, KNOWLEDGE, KNOWLEDGE_KNASKIMPORT } from '../../../utils/hooks/useGranted';
 import TopMenuProfile from '../profile/TopMenuProfile';
 import TopMenuNotifications from '../profile/TopMenuNotifications';

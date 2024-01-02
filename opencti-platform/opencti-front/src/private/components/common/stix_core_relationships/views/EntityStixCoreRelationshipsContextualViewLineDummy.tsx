@@ -6,7 +6,7 @@ import { KeyboardArrowRight } from '@mui/icons-material';
 import ListItem from '@mui/material/ListItem';
 import Skeleton from '@mui/material/Skeleton';
 import makeStyles from '@mui/styles/makeStyles';
-import { Theme } from '../../../../../components/Theme';
+import type { Theme } from '../../../../../components/Theme';
 import { DataColumns } from '../../../../../components/list_lines';
 
 const useStyles = makeStyles<Theme>((theme) => ({

@@ -8,7 +8,7 @@ import { FilePdfBox } from 'mdi-material-ui';
 import Tooltip from '@mui/material/Tooltip';
 import makeStyles from '@mui/styles/makeStyles';
 import { createStyles } from '@mui/styles';
-import { Theme } from '../../../../components/Theme';
+import type { Theme } from '../../../../components/Theme';
 import useAuth from '../../../../utils/hooks/useAuth';
 
 const useStyles = makeStyles<Theme, { bannerHeightNumber: number }>(() => createStyles({

@@ -8,7 +8,7 @@ import { KeyboardArrowRight } from '@mui/icons-material';
 import { graphql, useFragment } from 'react-relay';
 import { useFormatter } from '../../../../components/i18n';
 import { DataComponentLine_node$key } from './__generated__/DataComponentLine_node.graphql';
-import { Theme } from '../../../../components/Theme';
+import type { Theme } from '../../../../components/Theme';
 import StixCoreObjectLabels from '../../common/stix_core_objects/StixCoreObjectLabels';
 import { DataColumns } from '../../../../components/list_lines';
 import ItemIcon from '../../../../components/ItemIcon';

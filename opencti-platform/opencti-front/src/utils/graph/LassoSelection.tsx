@@ -3,7 +3,7 @@ import { SimplePaletteColorOptions } from '@mui/material';
 import { useTheme } from '@mui/styles';
 import makeStyles from '@mui/styles/makeStyles';
 import { ForceGraphMethods } from 'react-force-graph-2d';
-import { Theme } from '../../components/Theme';
+import type { Theme } from '../../components/Theme';
 import { pointInPolygon } from '../Graph';
 
 const useStyles = makeStyles({

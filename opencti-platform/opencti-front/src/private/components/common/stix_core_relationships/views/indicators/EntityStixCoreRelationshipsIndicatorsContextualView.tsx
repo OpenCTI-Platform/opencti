@@ -29,7 +29,7 @@ import ToolBar from '../../../../data/ToolBar';
 import useQueryLoading from '../../../../../../utils/hooks/useQueryLoading';
 import { EntityStixCoreRelationshipsContextualViewLine_node$data } from '../__generated__/EntityStixCoreRelationshipsContextualViewLine_node.graphql';
 import { resolveLink } from '../../../../../../utils/Entity';
-import { Theme } from '../../../../../../components/Theme';
+import type { Theme } from '../../../../../../components/Theme';
 import { addFilter, cleanFilters, Filter, injectEntityTypeFilterInFilterGroup, findFilterFromKey, removeFilter } from '../../../../../../utils/filters/filtersUtils';
 
 const useStyles = makeStyles<Theme>((theme) => ({

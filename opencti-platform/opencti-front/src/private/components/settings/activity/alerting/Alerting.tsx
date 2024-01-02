@@ -12,7 +12,7 @@ import AlertCreation from './AlertCreation';
 import ActivityMenu from '../../ActivityMenu';
 import { AlertingLines_data$key } from './__generated__/AlertingLines_data.graphql';
 import { AlertingLineComponent, AlertingLineDummy } from './AlertingLine';
-import { Theme } from '../../../../../components/Theme';
+import type { Theme } from '../../../../../components/Theme';
 import { emptyFilterGroup } from '../../../../../utils/filters/filtersUtils';
 
 export const LOCAL_STORAGE_KEY_DATA_SOURCES = 'alerting';

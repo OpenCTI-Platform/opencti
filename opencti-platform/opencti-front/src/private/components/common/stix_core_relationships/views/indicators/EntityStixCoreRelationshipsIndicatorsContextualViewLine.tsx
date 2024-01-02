@@ -11,7 +11,7 @@ import { DataColumns } from '../../../../../../components/list_lines';
 import { UseEntityToggle } from '../../../../../../utils/hooks/useEntityToggle';
 import { resolveLink } from '../../../../../../utils/Entity';
 import ItemIcon from '../../../../../../components/ItemIcon';
-import { Theme } from '../../../../../../components/Theme';
+import type { Theme } from '../../../../../../components/Theme';
 import {
   EntityStixCoreRelationshipsIndicatorsContextualViewLine_node$data,
   EntityStixCoreRelationshipsIndicatorsContextualViewLine_node$key,

@@ -9,7 +9,7 @@ import { InformationOutline } from 'mdi-material-ui';
 import { truncate } from '../utils/String';
 import { DataColumns } from './list_lines';
 import { useFormatter } from './i18n';
-import { Theme } from './Theme';
+import type { Theme } from './Theme';
 import { Filter, FilterGroup, filtersUsedAsApiParameters } from '../utils/filters/filtersUtils';
 import { filterIconButtonContentQuery } from './FilterIconButtonContent';
 import { FilterIconButtonContentQuery } from './__generated__/FilterIconButtonContentQuery.graphql';

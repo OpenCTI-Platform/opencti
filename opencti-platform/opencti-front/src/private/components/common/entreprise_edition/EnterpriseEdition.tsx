@@ -18,7 +18,7 @@ import makeStyles from '@mui/styles/makeStyles';
 import AlertTitle from '@mui/material/AlertTitle';
 import React from 'react';
 import EnterpriseEditionButton from '@components/common/entreprise_edition/EnterpriseEditionButton';
-import { Theme } from '../../../../components/Theme';
+import type { Theme } from '../../../../components/Theme';
 import { useFormatter } from '../../../../components/i18n';
 
 const useStyles = makeStyles<Theme>((theme) => ({

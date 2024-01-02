@@ -10,7 +10,7 @@ import { CsvMapperRepresentationAttributesFormQuery } from '@components/data/csv
 import { CsvMapper } from '@components/data/csvMapper/CsvMapper';
 import CsvMapperRepresentationAttributeRefForm from '@components/data/csvMapper/representations/attributes/CsvMapperRepresentationAttributeRefForm';
 import { useFormatter } from '../../../../../../components/i18n';
-import { AttributeWithMetadata } from './Attribute';
+import type { AttributeWithMetadata } from './Attribute';
 
 export const schemaAttributesQuery = graphql`
   query CsvMapperRepresentationAttributesFormQuery($entityType: String!) {

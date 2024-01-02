@@ -1,7 +1,7 @@
 import makeStyles from '@mui/styles/makeStyles';
 import React from 'react';
-import { Theme } from '../../../../../components/Theme';
-import { ScaleConfig } from './scale';
+import type { Theme } from '../../../../../components/Theme';
+import type { ScaleConfig } from './scale';
 
 const useStyles = makeStyles<Theme>(() => ({
   railSpan: {

@@ -10,7 +10,7 @@ import Drawer, { DrawerVariant } from '@components/common/drawer/Drawer';
 import { useFormatter } from '../../../../components/i18n';
 import MarkdownField from '../../../../components/MarkdownField';
 import TextField from '../../../../components/TextField';
-import { Theme } from '../../../../components/Theme';
+import type { Theme } from '../../../../components/Theme';
 import { insertNode } from '../../../../utils/store';
 import CaseTemplateTasks from '../../common/form/CaseTemplateTasks';
 import { CaseTemplateAddInput } from './__generated__/CaseTemplateCreationMutation.graphql';

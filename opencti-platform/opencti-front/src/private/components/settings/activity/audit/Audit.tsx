@@ -21,7 +21,7 @@ import Alert from '@mui/material/Alert';
 import { CSVLink } from 'react-csv';
 import { graphql } from 'react-relay';
 import ActivityMenu from '../../ActivityMenu';
-import { Theme } from '../../../../../components/Theme';
+import type { Theme } from '../../../../../components/Theme';
 import ListLines from '../../../../../components/list_lines/ListLines';
 import { usePaginationLocalStorage } from '../../../../../utils/hooks/useLocalStorage';
 import useEntityToggle from '../../../../../utils/hooks/useEntityToggle';

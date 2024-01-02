@@ -8,7 +8,7 @@ import { ObjectSchema } from 'yup';
 import TextField from '../../../../../components/TextField';
 import ColorPickerField from '../../../../../components/ColorPickerField';
 import { useFormatter } from '../../../../../components/i18n';
-import { Tick, UndefinedTick } from './scale';
+import type { Tick, UndefinedTick } from './scale';
 
 const useStyles = makeStyles(() => ({
   button: {

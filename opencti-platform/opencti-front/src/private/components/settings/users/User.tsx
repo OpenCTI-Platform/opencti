@@ -46,7 +46,7 @@ import ItemAccountStatus from '../../../../components/ItemAccountStatus';
 import { BYPASS, SETTINGS } from '../../../../utils/hooks/useGranted';
 import Security from '../../../../utils/Security';
 import useAuth from '../../../../utils/hooks/useAuth';
-import { Theme } from '../../../../components/Theme';
+import type { Theme } from '../../../../components/Theme';
 
 const startDate = yearsAgo(1);
 const endDate = now();

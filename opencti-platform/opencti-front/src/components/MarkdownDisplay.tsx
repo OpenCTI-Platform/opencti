@@ -5,7 +5,7 @@ import { useTheme } from '@mui/styles';
 import { PluggableList } from 'react-markdown/lib';
 import React, { FunctionComponent, SyntheticEvent, useState } from 'react';
 import remarkGfm from 'remark-gfm';
-import { Theme } from './Theme';
+import type { Theme } from './Theme';
 import { truncate } from '../utils/String';
 import ExternalLinkPopover from './ExternalLinkPopover';
 import FieldOrEmpty from './FieldOrEmpty';

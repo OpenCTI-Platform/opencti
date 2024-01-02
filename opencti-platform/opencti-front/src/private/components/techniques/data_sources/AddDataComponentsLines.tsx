@@ -8,7 +8,7 @@ import makeStyles from '@mui/styles/makeStyles';
 import { CheckCircle, SourceOutlined } from '@mui/icons-material';
 import Skeleton from '@mui/material/Skeleton';
 import { truncate } from '../../../../utils/String';
-import { Theme } from '../../../../components/Theme';
+import type { Theme } from '../../../../components/Theme';
 import usePreloadedPaginationFragment from '../../../../utils/hooks/usePreloadedPaginationFragment';
 import { DataSourceDataComponents_dataSource$data } from './__generated__/DataSourceDataComponents_dataSource.graphql';
 import { AddDataComponentsLinesToDataSourceQuery } from './__generated__/AddDataComponentsLinesToDataSourceQuery.graphql';

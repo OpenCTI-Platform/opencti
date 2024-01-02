@@ -16,7 +16,7 @@ import logo_filigran from '../../static/images/logo_filigran.png';
 import LoginForm from './LoginForm';
 import OTPForm from './OTPForm';
 import OtpActivationComponent from './OtpActivation';
-import { Theme } from '../../components/Theme';
+import type { Theme } from '../../components/Theme';
 import { LoginRootPublicQuery$data } from '../__generated__/LoginRootPublicQuery.graphql';
 import { useFormatter } from '../../components/i18n';
 import { isNotEmptyField } from '../../utils/utils';

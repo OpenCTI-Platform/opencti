@@ -5,7 +5,7 @@ import makeStyles from '@mui/styles/makeStyles';
 import ItemIcon from '../../../../components/ItemIcon';
 import { useFormatter } from '../../../../components/i18n';
 import useSearchEntities from '../../../../utils/filters/useSearchEntities';
-import { Theme } from '../../../../components/Theme';
+import type { Theme } from '../../../../components/Theme';
 import SearchScopeElement from './SearchScopeElement';
 import { EqFilters, onlyGroupOrganization } from '../../../../utils/filters/filtersUtils';
 import { HandleAddFilter } from '../../../../utils/hooks/useLocalStorage';

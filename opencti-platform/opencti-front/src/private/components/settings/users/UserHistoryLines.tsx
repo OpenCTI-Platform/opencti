@@ -9,7 +9,7 @@ import { useFormatter } from '../../../../components/i18n';
 import UserHistoryLine from './UserHistoryLine';
 import { FIVE_SECONDS } from '../../../../utils/Time';
 import usePreloadedPaginationFragment from '../../../../utils/hooks/usePreloadedPaginationFragment';
-import { Theme } from '../../../../components/Theme';
+import type { Theme } from '../../../../components/Theme';
 
 const interval$ = interval(FIVE_SECONDS);
 

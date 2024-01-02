@@ -1,6 +1,6 @@
 import { clone } from 'ramda';
 import useEntitySettings from './useEntitySettings';
-import { Scale, ScaleConfig, Tick } from '../../private/components/settings/sub_types/scale_configuration/scale';
+import type { Scale, ScaleConfig, Tick } from '@components/settings/sub_types/scale_configuration/scale';
 
 const admiraltyScale: ScaleConfig = {
   better_side: 'min',

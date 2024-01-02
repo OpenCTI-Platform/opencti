@@ -4,7 +4,7 @@ import Button from '@mui/material/Button';
 import makeStyles from '@mui/styles/makeStyles';
 import Alert from '@mui/material/Alert';
 import { useFormatter } from '../../components/i18n';
-import { Theme } from '../../components/Theme';
+import type { Theme } from '../../components/Theme';
 import OtpInputField, { OTP_CODE_SIZE } from './OtpInputField';
 
 const useStyles = makeStyles<Theme>(() => ({

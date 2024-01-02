@@ -24,7 +24,7 @@ import { useSchemaCreationValidation } from '../../../../utils/hooks/useEntitySe
 import { Option } from '../../common/form/ReferenceField';
 import { GroupingCreationMutation, GroupingCreationMutation$variables } from './__generated__/GroupingCreationMutation.graphql';
 import { GroupingsLinesPaginationQuery$variables } from './__generated__/GroupingsLinesPaginationQuery.graphql';
-import { Theme } from '../../../../components/Theme';
+import type { Theme } from '../../../../components/Theme';
 import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
 import RichTextField from '../../../../components/RichTextField';
 import CustomFileUploader from '../../common/files/CustomFileUploader';

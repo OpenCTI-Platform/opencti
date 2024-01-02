@@ -12,7 +12,7 @@ import makeStyles from '@mui/styles/makeStyles';
 import ItemIcon from '../../../../components/ItemIcon';
 import { DataColumns } from '../../../../components/list_lines';
 import { useFormatter } from '../../../../components/i18n';
-import { Theme } from '../../../../components/Theme';
+import type { Theme } from '../../../../components/Theme';
 import { SubTypesLine_node$key } from './__generated__/SubTypesLine_node.graphql';
 
 const useStyles = makeStyles<Theme>((theme) => ({

@@ -8,7 +8,7 @@ import Loader from '../../components/Loader';
 import { QueryRenderer } from '../../relay/environment';
 import { useFormatter } from '../../components/i18n';
 import { OtpActivationQuery$data } from './__generated__/OtpActivationQuery.graphql';
-import { Theme } from '../../components/Theme';
+import type { Theme } from '../../components/Theme';
 import OtpInputField, { OTP_CODE_SIZE } from './OtpInputField';
 
 const useStyles = makeStyles<Theme>(() => ({

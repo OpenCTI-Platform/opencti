@@ -8,7 +8,7 @@ import { FilterIconButtonContentQuery } from './__generated__/FilterIconButtonCo
 import { useFormatter } from './i18n';
 import { FilterGroup } from '../utils/filters/filtersUtils';
 import { truncate } from '../utils/String';
-import { Theme } from './Theme';
+import type { Theme } from './Theme';
 import DisplayFilterGroup from './filters/DisplayFilterGroup';
 
 const useStyles = makeStyles<Theme>((theme) => ({

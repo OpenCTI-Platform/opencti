@@ -18,7 +18,7 @@ import { useFormatter } from '../../../../components/i18n';
 import ItemIcon from '../../../../components/ItemIcon';
 import ItemMarkings from '../../../../components/ItemMarkings';
 import ItemOpenVocab from '../../../../components/ItemOpenVocab';
-import { Theme } from '../../../../components/Theme';
+import type { Theme } from '../../../../components/Theme';
 import { CaseIncidentDetails_case$key } from './__generated__/CaseIncidentDetails_case.graphql';
 
 const useStyles = makeStyles<Theme>((theme) => ({

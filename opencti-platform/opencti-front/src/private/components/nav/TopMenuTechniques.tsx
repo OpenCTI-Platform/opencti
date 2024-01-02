@@ -5,7 +5,7 @@ import { LockPattern, ProgressWrench } from 'mdi-material-ui';
 import { SpeakerNotesOutlined, StreamOutlined, SourceOutlined } from '@mui/icons-material';
 import makeStyles from '@mui/styles/makeStyles';
 import { useFormatter } from '../../../components/i18n';
-import { Theme } from '../../../components/Theme';
+import type { Theme } from '../../../components/Theme';
 import { useIsHiddenEntity } from '../../../utils/hooks/useEntitySettings';
 
 const useStyles = makeStyles<Theme>((theme) => ({

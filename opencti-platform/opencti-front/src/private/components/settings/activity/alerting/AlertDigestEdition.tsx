@@ -11,7 +11,7 @@ import { useFormatter } from '../../../../../components/i18n';
 import MarkdownField from '../../../../../components/MarkdownField';
 import SelectField from '../../../../../components/SelectField';
 import TextField from '../../../../../components/TextField';
-import { Theme } from '../../../../../components/Theme';
+import type { Theme } from '../../../../../components/Theme';
 import TimePickerField from '../../../../../components/TimePickerField';
 import { convertNotifiers, convertTriggers } from '../../../../../utils/edition';
 import { fieldSpacingContainerStyle } from '../../../../../utils/field';
