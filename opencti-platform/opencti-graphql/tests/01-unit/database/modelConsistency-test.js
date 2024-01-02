@@ -106,7 +106,6 @@ import { ENTITY_TYPE_ENTITY_SETTING } from '../../../src/modules/entitySetting/e
 import { ENTITY_TYPE_CHANNEL } from '../../../src/modules/channel/channel-types';
 import { ENTITY_TYPE_INDICATOR } from '../../../src/modules/indicator/indicator-types';
 import { stixRefsExtractor } from '../../../src/schema/stixEmbeddedRelationship';
-import { generateStandardId } from '../../../src/schema/identifier';
 import { schemaRelationsRefDefinition } from '../../../src/schema/schema-relationsRef';
 import { confidence, created, entityType, xOpenctiStixIds } from '../../../src/schema/attribute-definition';
 import { getParentTypes } from '../../../src/schema/schemaUtils';
@@ -459,7 +458,7 @@ describe('Testing stix ref extractor', () => {
       }],
       name: 'CVE-2023-1292',
     };
-    const refs = stixRefsExtractor(json, generateStandardId);
+    const refs = stixRefsExtractor(json);
     expect(refs.includes('identity--1f02efe5-c752-589e-85d4-a8da3898f690')).toBe(true);
     expect(refs.includes('marking-definition--34098fce-860f-48ae-8e50-ebd3cc5e41da')).toBe(true);
   });
