@@ -87,13 +87,6 @@ export const nestedFilterKeys = [
   RELATION_TO_TYPES_FILTER, // nested relation for the to type of a relationship
 ];
 
-// filter keys that should be in the schema but are not
-// TODO remove this list and register the attributes
-export const internalFilterKeys = [
-  'source_event_id',
-  'tracking',
-];
-
 // list of filter keys that are not relation refs keys but whose values need to be resolved (= values point an entity with an id)
 // used in findFiltersRepresentatives
 export const specialFilterKeysWhoseValueToResolve = [
