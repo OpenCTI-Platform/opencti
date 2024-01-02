@@ -2434,5 +2434,7 @@
   "Task": "Task",
   "Do you want to unlink this task ?": "Do you want to unlink this task ?",
   "CREATE": "CREATE",
-  "entity_Analyses": "entity_Analyses"
+  "entity_Analyses": "entity_Analyses",
+  "There are no opinions. You should create some before.": "There are no opinions. You should create some before.",
+  "workflow_id": "Status"
 }

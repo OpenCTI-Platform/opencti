@@ -2434,5 +2434,7 @@
   "If this field contains multiple values, you can specify the separator used between each values (for instance | or +)": "このフィールドに複数の値が含まれる場合、各値の間に使用される区切り文字を指定できます (たとえば | または +)",
   "Task": "タスク",
   "CREATE": "作成",
-  "entity_Analyses": "エンティティ_分析"
+  "entity_Analyses": "エンティティ_分析",
+  "There are no opinions. You should create some before.": "意見がない。事前にいくつか作っておくべきだ。",
+  "workflow_id": "ステータス"
 }

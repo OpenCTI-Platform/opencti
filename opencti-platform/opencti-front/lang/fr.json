@@ -2434,5 +2434,7 @@
   "infrastructure-operator": "infrastructure-operator",
   "malware-author": "malware-author",
   "sponsor": "sponsor",
-  "valid": "valide"
+  "valid": "valide",
+  "There are no opinions. You should create some before.": "Il n'y a pas d'd’opinions. Vous devriez en créer avant.",
+  "workflow_id": "Statut"
 }

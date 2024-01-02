@@ -10,16 +10,31 @@ import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { LocalizationProvider } from '@mui/x-date-pickers';
 import { createFragmentContainer, graphql } from 'react-relay';
 import locale, { DEFAULT_LANG } from '../utils/BrowserLanguage';
-import i18n from '../utils/Localization';
 import { UserContext } from '../utils/hooks/useAuth';
 import { AppIntlProvider_settings$data } from './__generated__/AppIntlProvider_settings.graphql';
+import messages_es from '../../lang/es.json';
+import messages_fr from '../../lang/fr.json';
+import messages_ja from '../../lang/ja.json';
+import messages_zh from '../../lang/zh.json';
+import messages_en from '../../lang/en.json';
 
+type PlatformLang = 'es-es' | 'fr-fr' | 'ja-jp' | 'zh-cn' | 'en-us';
 const localeMap = {
   'en-us': enLocale,
   'fr-fr': frLocale,
   'es-es': esLocale,
   'ja-jp': jaLocale,
   'zh-cn': cnLocale,
+};
+
+const i18n = {
+  messages: {
+    'es-es': messages_es,
+    'fr-fr': messages_fr,
+    'ja-jp': messages_ja,
+    'zh-cn': messages_zh,
+    'en-us': messages_en,
+  },
 };
 
 interface AppIntlProviderProps {
@@ -33,24 +48,15 @@ const AppIntlProvider: FunctionComponent<AppIntlProviderProps> = ({ settings, ch
   const platformLang = platformLanguage !== null && platformLanguage !== 'auto'
     ? settings.platform_language
     : locale;
-  const lang = (me
-    && me.language !== null
-    && me.language !== undefined
-    && me.language !== 'auto'
-    ? me.language
-    : platformLang) as ('es-es' | 'fr-fr' | 'ja-jp' | 'zh-cn' | 'en-us');
+
+  const lang: PlatformLang = me?.language && me.language !== 'auto' ? me.language : platformLang;
+
   const baseMessages = i18n.messages[lang] || i18n.messages[DEFAULT_LANG as keyof typeof i18n.messages];
-  if (lang === 'fr-fr') {
-    moment.locale('fr-fr');
-  } else if (lang === 'es-es') {
-    moment.locale('es-es');
-  } else if (lang === 'ja-jp') {
-    moment.locale('ja-jp');
-  } else if (lang === 'zh-cn') {
-    moment.locale('zh-cn');
-  } else {
-    moment.locale('en-us');
-  }
+
+  const supportedLocales: PlatformLang[] = ['es-es', 'fr-fr', 'ja-jp', 'zh-cn', 'en-us'];
+  const selectedLocale = supportedLocales.includes(lang) ? lang : 'en-us';
+
+  moment.locale(selectedLocale);
   return (
     <IntlProvider
       locale={lang}

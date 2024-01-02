@@ -2434,5 +2434,7 @@
   "If this field contains multiple values, you can specify the separator used between each values (for instance | or +)": "如果该字段包含多个值，您可以指定每个值之间的分隔符（例如 | 或 +）",
   "Task": "任务",
   "CREATE": "创建",
-  "entity_Analyses": "实体_分析"
+  "entity_Analyses": "实体_分析",
+  "There are no opinions. You should create some before.": "没有意见。你应该先提出一些意见。",
+  "workflow_id": "状态"
 }
