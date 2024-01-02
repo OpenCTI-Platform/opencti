@@ -1,4 +1,4 @@
-import { StixMarkingsObject, StixObject, StixOpenctiExtension, StixOpenctiExtensionSDO } from './stix-common';
+import type { StixMarkingsObject, StixObject, StixOpenctiExtension, StixOpenctiExtensionSDO } from './stix-common';
 import { STIX_EXT_OCTI } from './stix-extensions';
 
 // Marking Definition Specific Properties

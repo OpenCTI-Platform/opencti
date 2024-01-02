@@ -1,6 +1,6 @@
 import type { Operation } from 'fast-json-patch';
-import { StixCoreObject } from './stix-common';
-import { UserOrigin } from './user';
+import type { StixCoreObject } from './stix-common';
+import type { UserOrigin } from './user';
 import type { StoreRelation } from './store';
 
 interface CommitContext {

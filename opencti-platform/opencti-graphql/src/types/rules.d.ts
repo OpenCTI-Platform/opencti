@@ -1,7 +1,7 @@
 import type { StixEntities } from './general';
 import type { StixRelation } from './stix-sro';
 import type { StoreObject } from './store';
-import { UpdateEvent } from './event';
+import type { UpdateEvent } from './event';
 
 interface RuleFilters {
   types: Array<string>;

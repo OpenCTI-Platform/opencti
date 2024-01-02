@@ -1,6 +1,14 @@
-import type { StixDomainObject, StixId, StixKillChainPhase, StixOpenctiExtension, StixMitreExtension, StixContainerExtension } from './stix-common';
+import type {
+  StixDomainObject,
+  StixId,
+  StixOpenctiExtensionSDO,
+  StixDate,
+  StixKillChainPhase,
+  StixOpenctiExtension,
+  StixMitreExtension,
+  StixContainerExtension
+} from './stix-common';
 import { STIX_EXT_MITRE, STIX_EXT_OCTI } from './stix-extensions';
-import { StixOpenctiExtensionSDO, StixDate } from './stix-common';
 
 // Attack Pattern Specific Properties
 // name, description, aliases, kill_chain_phases
