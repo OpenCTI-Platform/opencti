@@ -2,7 +2,6 @@ import React, { FunctionComponent } from 'react';
 import { createFragmentContainer, graphql, useMutation } from 'react-relay';
 import { Field, Form, Formik } from 'formik';
 import * as R from 'ramda';
-import { pick } from 'ramda';
 import * as Yup from 'yup';
 import MenuItem from '@mui/material/MenuItem';
 import ConfidenceField from '@components/common/form/ConfidenceField';
@@ -110,27 +109,17 @@ UserEditionOverviewComponentProps
   const objectOrganization = convertOrganizations(user);
 
   const initialValues = {
-    // extract flat attributes
-    ...pick(
-      [
-        'name',
-        'user_email',
-        'firstname',
-        'lastname',
-        'language',
-        'api_token',
-        'objectOrganization',
-        'description',
-        'account_status',
-        'account_lock_after_date',
-      ],
-      {
-        ...user,
-        objectOrganization,
-      },
-    ),
-    // extract object attribute
+    name: user.name,
+    user_email: user.user_email,
+    firstname: user.firstname,
+    lastname: user.lastname,
+    language: user.language,
+    api_token: user.api_token,
+    description: user.description,
+    account_status: user.account_status,
+    account_lock_after_date: user.account_lock_after_date,
     max_confidence: user.user_confidence_level.max_confidence,
+    objectOrganization,
   };
 
   const handleChangeFocus = (name: string) => {
