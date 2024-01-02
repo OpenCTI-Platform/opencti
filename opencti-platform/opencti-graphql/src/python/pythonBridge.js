@@ -3,9 +3,10 @@ import { SemanticAttributes } from '@opentelemetry/semantic-conventions';
 import * as nodecallspython from 'node-calls-python';
 import nconf from 'nconf';
 import { DEV_MODE, logApp } from '../config/conf';
-import { UnknownError } from '../config/errors';
+import { UnknownError, UnsupportedError } from '../config/errors';
 import { telemetry } from '../config/tracing';
 import { cleanupIndicatorPattern, STIX_PATTERN_TYPE } from '../utils/syntax';
+import { isEmptyField } from '../database/utils';
 
 const PYTHON_EXECUTOR = nconf.get('app:python_execution') ?? 'native';
 const USE_NATIVE_EXEC = PYTHON_EXECUTOR === 'native';
@@ -21,6 +22,9 @@ const CREATE_PATTERN_SCRIPT = { fn: 'stix2_create_pattern', py: pyCreatePattern 
 // region child
 export const execChildPython = async (context, user, scriptPath, scriptName, args, stopCondition) => {
   const execPythonTestingProcessFn = async () => {
+    if (isEmptyField(scriptPath) || isEmptyField(scriptName)) {
+      throw UnsupportedError('Cant exec python with empty script path or name');
+    }
     return new Promise((resolve, reject) => {
       const messages = [];
       const options = {
@@ -41,7 +45,7 @@ export const execChildPython = async (context, user, scriptPath, scriptName, arg
         }
       });
       shell.on('stderr', (stderr) => {
-        logApp.info(`[stderr] ${stderr}`);
+        logApp.error(`[stderr] ${stderr}`);
         messages.push(stderr);
         //* v8 ignore if */
         if (DEV_MODE && stderr.startsWith('ERROR:')) {

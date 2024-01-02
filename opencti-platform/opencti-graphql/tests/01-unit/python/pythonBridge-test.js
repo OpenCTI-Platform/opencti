@@ -7,7 +7,7 @@ it('Check if python is well configured', async () => {
   expect(check).not.toBeNull();
   expect(check).toEqual("[text:value = 'test']");
   // noinspection ES6MissingAwait
-  expect(execChildPython(testContext, ADMIN_USER, '/missing')).rejects.toThrow('[BRIDGE] execPythonTesting error');
+  expect(execChildPython(testContext, ADMIN_USER, '/missing')).rejects.toThrow('Cant exec python with empty script path or name');
   // noinspection ES6MissingAwait
   expect(createStixPattern(testContext, ADMIN_USER, 'fail')).resolves.toEqual(null);
 });
