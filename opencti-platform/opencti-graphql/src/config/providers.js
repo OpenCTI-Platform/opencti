@@ -11,10 +11,10 @@ import { Strategy as SamlStrategy } from 'passport-saml';
 import { custom as OpenIDCustom, Issuer as OpenIDIssuer, Strategy as OpenIDStrategy } from 'openid-client';
 import { OAuth2Strategy as GoogleStrategy } from 'passport-google-oauth';
 import validator from 'validator';
-import { initAdmin, login, loginFromProvider } from '../domain/user';
+import { HEADERS_AUTHENTICATORS, initAdmin, login, loginFromProvider } from '../domain/user';
 import conf, { logApp } from './conf';
 import { AuthenticationFailure, ConfigurationError, UnsupportedError } from './errors';
-import { isNotEmptyField } from '../database/utils';
+import { isEmptyField, isNotEmptyField } from '../database/utils';
 
 export const empty = R.anyPass([R.isNil, R.isEmpty]);
 
@@ -99,6 +99,7 @@ const configRemapping = (config) => {
 export const INTERNAL_SECURITY_PROVIDER = '__internal_security_local_provider__';
 const STRATEGY_LOCAL = 'LocalStrategy';
 export const STRATEGY_CERT = 'ClientCertStrategy';
+const STRATEGY_HEADER = 'HeaderStrategy';
 const STRATEGY_LDAP = 'LdapStrategy';
 const STRATEGY_OPENID = 'OpenIDConnectStrategy';
 const STRATEGY_FACEBOOK = 'FacebookStrategy';
@@ -107,6 +108,7 @@ const STRATEGY_GOOGLE = 'GoogleStrategy';
 const STRATEGY_GITHUB = 'GithubStrategy';
 const STRATEGY_AUTH0 = 'Auth0Strategy';
 const AUTH_SSO = 'SSO';
+const AUTH_REQ = 'REQ';
 const AUTH_FORM = 'FORM';
 
 const providers = [];
@@ -509,6 +511,62 @@ for (let i = 0; i < providerKeys.length; i += 1) {
       const providerRef = identifier || 'cert';
       // This strategy is directly handled by express
       providers.push({ name: providerName, type: AUTH_SSO, strategy, provider: providerRef });
+    }
+    // HEADER Strategies
+    if (strategy === STRATEGY_HEADER) {
+      // This strategy is directly handled on the fly on graphql
+      const providerRef = identifier || 'header';
+      const reqLoginHandler = async (req) => {
+        // Group computations
+        const isGroupMapping = isNotEmptyField(mappedConfig.groups_management) && isNotEmptyField(mappedConfig.groups_management?.groups_mapping);
+        const computeGroupsMapping = () => {
+          const groupsMapping = mappedConfig.groups_management?.groups_mapping || [];
+          const groupsSplitter = mappedConfig.groups_management?.groups_splitter || ',';
+          const availableGroups = (req.headers[mappedConfig.groups_management?.groups_header] ?? '').split(groupsSplitter);
+          const groupsMapper = genConfigMapper(groupsMapping);
+          return availableGroups.map((a) => groupsMapper[a]).filter((r) => isNotEmptyField(r));
+        };
+        const mappedGroups = isGroupMapping ? computeGroupsMapping() : [];
+        // Organization computations
+        const isOrgaMapping = isNotEmptyField(mappedConfig.organizations_default) || isNotEmptyField(mappedConfig.organizations_management);
+        const computeOrganizationsMapping = () => {
+          const orgaDefault = mappedConfig.organizations_default ?? [];
+          const orgasMapping = mappedConfig.organizations_management?.organizations_mapping || [];
+          const orgasSplitter = mappedConfig.organizations_management?.organizations_splitter || ',';
+          const availableOrgas = (req.headers[mappedConfig.organizations_management?.organizations_header] ?? '').split(orgasSplitter);
+          const orgasMapper = genConfigMapper(orgasMapping);
+          return [...orgaDefault, ...availableOrgas.map((a) => orgasMapper[a]).filter((r) => isNotEmptyField(r))];
+        };
+        const organizationsToAssociate = isOrgaMapping ? computeOrganizationsMapping() : [];
+        // Build the user login
+        const email = req.headers[mappedConfig.header_email];
+        if (isEmptyField(email) || !validator.isEmail(email)) {
+          return null;
+        }
+        const name = req.headers[mappedConfig.header_name];
+        const firstname = req.headers[mappedConfig.header_firstname];
+        const lastname = req.headers[mappedConfig.header_lastname];
+        const opts = {
+          providerGroups: mappedGroups,
+          providerOrganizations: organizationsToAssociate,
+          autoCreateGroup: mappedConfig.auto_create_group ?? false,
+        };
+        return new Promise((resolve) => {
+          providerLoginHandler({ email, name, firstname, lastname }, (_, user) => {
+            resolve(user);
+          }, opts);
+        });
+      };
+      const headerProvider = {
+        name: providerName,
+        reqLoginHandler,
+        type: AUTH_REQ,
+        strategy,
+        logout_uri: mappedConfig.logout_uri,
+        provider: providerRef
+      };
+      providers.push(headerProvider);
+      HEADERS_AUTHENTICATORS.push(headerProvider);
     }
   }
   // In case of disable local strategy, setup protected fallback for the admin user
