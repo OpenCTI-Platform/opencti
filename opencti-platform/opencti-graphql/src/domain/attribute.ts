@@ -10,7 +10,7 @@ import { schemaRelationsRefDefinition } from '../schema/schema-relationsRef';
 import type { RelationRefDefinition } from '../schema/relationRef-definition';
 import type { BasicStoreEntityEntitySetting } from '../modules/entitySetting/entitySetting-types';
 import { internalFindByIds } from '../database/middleware-loader';
-import type { BasicStoreEntity } from '../types/store';
+import { extractRepresentative } from '../database/entity-representative';
 import { telemetry } from '../config/tracing';
 import { INTERNAL_ATTRIBUTES, INTERNAL_REFS } from './attribute-utils';
 import { isStixCoreRelationship } from '../schema/stixCoreRelationship';
@@ -113,7 +113,7 @@ export const queryAttributesDefinition = async (context: AuthContext, user: Auth
               ...attr,
               defaultValues: data.map((v) => ({
                 id: v.internal_id,
-                name: (v as BasicStoreEntity).name
+                name: extractRepresentative(v)?.main ?? v.internal_id,
               }))
             }));
         }
