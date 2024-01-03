@@ -2,7 +2,7 @@
 import { v4 as uuidv4 } from 'uuid';
 import semver from 'semver';
 import { logApp, PLATFORM_VERSION } from './config/conf';
-import { elCreateIndices, elIndexExists, searchEngineInit } from './database/engine';
+import { elCreateIndices, elIndexExists, elUpdateIndicesMappings, searchEngineInit } from './database/engine';
 import { initializeAdminUser } from './config/providers';
 import { initializeBucket, isStorageAlive } from './database/file-storage';
 import { rabbitMQIsAlive, registerConnectorQueues } from './database/rabbitmq';
@@ -157,6 +157,10 @@ const initializeSchema = async () => {
   await elCreateIndices();
   logApp.info('[INIT] Search engine indexes loaded');
   return true;
+};
+
+const refreshMappingsAndIndices = async () => {
+  await elUpdateIndicesMappings();
 };
 
 const initializeInternalQueues = async () => {
@@ -369,6 +373,7 @@ const platformInit = async (withMarkings = true) => {
       await initDefaultNotifiers(context);
     } else {
       logApp.info('[INIT] Existing platform detected, initialization...');
+      await refreshMappingsAndIndices();
       await initializeInternalQueues();
       await isCompatiblePlatform(context);
       await initializeAdminUser(context);

@@ -5,6 +5,7 @@ import { Promise as BluePromise } from 'bluebird';
 import * as R from 'ramda';
 import semver from 'semver';
 import { SemanticAttributes } from '@opentelemetry/semantic-conventions';
+import * as jsonpatch from 'fast-json-patch/index';
 import {
   buildPagination,
   cursorToOffset,
@@ -21,8 +22,9 @@ import {
   READ_PLATFORM_INDICES,
   READ_RELATIONSHIPS_INDICES,
   READ_RELATIONSHIPS_INDICES_WITHOUT_INFERRED,
+  UPDATE_OPERATION_ADD,
   waitInSec,
-  WRITE_PLATFORM_INDICES,
+  WRITE_PLATFORM_INDICES
 } from './utils';
 import conf, { booleanConf, loadCert, logApp } from '../config/conf';
 import { ConfigurationError, DatabaseError, EngineShardsError, FunctionalError, UnsupportedError } from '../config/errors';
@@ -96,7 +98,6 @@ export const ES_IGNORE_THROTTLED = conf.get('elasticsearch:search_ignore_throttl
 export const ES_MAX_PAGINATION = conf.get('elasticsearch:max_pagination_result');
 const ES_INDEX_PATTERN_SUFFIX = conf.get('elasticsearch:index_creation_pattern');
 const ES_MAX_RESULT_WINDOW = conf.get('elasticsearch:max_result_window') || 100000;
-const ES_MAX_SHARDS_FAILURE = conf.get('elasticsearch:max_shards_failure') || 0;
 const ES_INDEX_SHARD_NUMBER = conf.get('elasticsearch:number_of_shards');
 const ES_INDEX_REPLICA_NUMBER = conf.get('elasticsearch:number_of_replicas');
 
@@ -250,22 +251,11 @@ export const isRuntimeSortEnable = () => isRuntimeSortingEnable;
 export const elRawSearch = (context, user, types, query) => {
   const elRawSearchFn = async () => engine.search(query).then((r) => {
     const parsedSearch = oebp(r);
-    // If some shards fail
     if (parsedSearch._shards.failed > 0) {
-      // We need to filter "No mapping found" errors that are not real problematic shard problems
-      // As we do not define all mappings and let elastic create it dynamically at first creation
-      // This failure is transient until the first creation of some data
-      const failures = (parsedSearch._shards.failures ?? [])
-        .filter((f) => !f.reason?.reason.includes(NO_MAPPING_FOUND_ERROR));
-      if (failures.length > ES_MAX_SHARDS_FAILURE) {
-        // We do not support response with shards failure.
-        // Result must be always accurate to prevent data duplication and unwanted behaviors
-        // If any shard fail during query, engine throw a lock exception with shards information
-        throw EngineShardsError({ shards: parsedSearch._shards });
-      } else if (failures.length > 0) {
-        // At least log the situation
-        logApp.warn('Search fail execution because of shards problems', { shards: parsedSearch._shards, size: failures.length });
-      }
+      // We do not support response with shards failure.
+      // Result must be always accurate to prevent data duplication and unwanted behaviors
+      // If any shard fail during query, engine throw a shard exception with shards information
+      throw EngineShardsError({ shards: parsedSearch._shards });
     }
     // Return result of the search if everything goes well
     return parsedSearch;
@@ -453,6 +443,10 @@ export const elPlatformIndices = async () => {
   const listIndices = await engine.cat.indices({ index: `${ES_INDEX_PREFIX}*`, format: 'JSON' });
   return oebp(listIndices);
 };
+export const elPlatformMapping = async (index) => {
+  const mapping = await engine.indices.getMapping({ index });
+  return oebp(mapping)[index].mappings.properties;
+};
 export const elPlatformTemplates = async () => {
   const listTemplates = await engine.cat.templates({ name: `${ES_INDEX_PREFIX}*`, format: 'JSON' });
   return oebp(listTemplates);
@@ -627,6 +621,7 @@ const attributesMappingGenerator = () => {
   }
   return schemaProperties;
 };
+
 export const engineMappingGenerator = () => {
   return { ...attributesMappingGenerator(), ...ruleMappingGenerator(), ...denormalizeRelationsMappingGenerator() };
 };
@@ -698,21 +693,32 @@ const elCreateIndexTemplate = async (index, mappingProperties) => {
   }
   return updateIndexTemplate(index, mappingProperties);
 };
-export const elUpdateIndicesMappings = async (properties) => {
-  // Update the current indices if needed
-  if (properties) {
-    const indices = await elPlatformIndices();
-    const body = { properties };
-    await engine.indices.putMapping({ index: indices.map((i) => i.index), body }).catch((e) => {
-      throw DatabaseError('Updating indices mapping fail', { cause: e });
-    });
-  }
+const sortMappingsKeys = (o) => (Object(o) !== o || Array.isArray(o) ? o
+  : Object.keys(o).sort().reduce((a, k) => ({ ...a, [k]: sortMappingsKeys(o[k]) }), {}));
+export const elUpdateIndicesMappings = async () => {
   // Reset the templates
-  const templates = await elPlatformTemplates();
   const mappingProperties = engineMappingGenerator();
+  const templates = await elPlatformTemplates();
   for (let index = 0; index < templates.length; index += 1) {
     const template = templates[index];
     await updateIndexTemplate(template.name, mappingProperties);
+  }
+  // Update the current indices if needed
+  const indices = await elPlatformIndices();
+  for (let indicesIndex = 0; indicesIndex < indices.length; indicesIndex += 1) {
+    const { index } = indices[indicesIndex];
+    const indexMappingProperties = await elPlatformMapping(index);
+    const operations = jsonpatch.compare(sortMappingsKeys(indexMappingProperties), sortMappingsKeys(mappingProperties));
+    // We can only complete new mappings
+    // Replace is not possible for existing ones
+    const addOperations = operations.filter((o) => o.op === UPDATE_OPERATION_ADD);
+    if (addOperations.length > 0) {
+      const properties = jsonpatch.applyPatch(indexMappingProperties, addOperations).newDocument;
+      const body = { properties };
+      await engine.indices.putMapping({ index: indices.map((i) => i.index), body }).catch((e) => {
+        throw DatabaseError('Updating indices mapping fail', { cause: e });
+      });
+    }
   }
 };
 export const elConfigureAttachmentProcessor = async () => {
