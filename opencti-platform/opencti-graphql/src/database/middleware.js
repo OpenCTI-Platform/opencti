@@ -209,7 +209,6 @@ import { cleanMarkings, handleMarkingOperations } from '../utils/markingDefiniti
 import { generateCreateMessage, generateUpdateMessage } from './generate-message';
 import { confidence } from '../schema/attribute-definition';
 import { ENTITY_TYPE_INDICATOR } from '../modules/indicator/indicator-types';
-import { INFERRED_OBJECT, MANUAL_OBJECT } from '../domain/container';
 
 // region global variables
 const MAX_BATCH_SIZE = 300;
