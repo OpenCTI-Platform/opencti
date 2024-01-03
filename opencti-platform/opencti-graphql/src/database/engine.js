@@ -5,7 +5,7 @@ import { Promise as BluePromise } from 'bluebird';
 import * as R from 'ramda';
 import semver from 'semver';
 import { SemanticAttributes } from '@opentelemetry/semantic-conventions';
-import * as jsonpatch from 'fast-json-patch/index';
+import * as jsonpatch from 'fast-json-patch';
 import {
   buildPagination,
   cursorToOffset,
