@@ -39,6 +39,14 @@ const READ_QUERY = gql`
       name
       description
       toStix
+      objectParticipant {
+        edges {
+          node {
+            id
+            name
+          }
+        }
+      }
     }
   }
 `;
@@ -80,6 +88,7 @@ describe('Case resolver standard behavior', () => {
     expect(queryResult.data.case).not.toBeNull();
     expect(queryResult.data.case.id).toEqual(caseInternalId);
     expect(queryResult.data.case.toStix.length).toBeGreaterThan(5);
+    expect(queryResult.data.case.objectParticipant.edges.length).toBe(0);
   });
   it('should case loaded by stix id', async () => {
     const queryResult = await queryAsAdmin({ query: READ_QUERY, variables: { id: caseStixId } });
