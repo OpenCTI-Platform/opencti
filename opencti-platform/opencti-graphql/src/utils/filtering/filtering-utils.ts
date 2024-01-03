@@ -12,7 +12,6 @@ import {
   CONTEXT_OBJECT_LABEL_FILTER,
   CONTEXT_OBJECT_MARKING_FILTER,
   INSTANCE_FILTER,
-  internalFilterKeys,
   MEMBERS_GROUP_FILTER,
   MEMBERS_ORGANIZATION_FILTER,
   MEMBERS_USER_FILTER,
@@ -247,8 +246,7 @@ export const checkAndConvertFilters = (filterGroup: FilterGroup | null | undefin
         .concat(availableConvertedRefRelations)
         .concat(STIX_CORE_RELATIONSHIPS)
         .concat(availableConvertedStixCoreRelationships)
-        .concat(specialFilterKeys)
-        .concat(internalFilterKeys);
+        .concat(specialFilterKeys);
       if (authorizeNestedFiltersKeys) {
         availableKeys = availableKeys.concat(nestedFilterKeys);
       }
