@@ -11,6 +11,7 @@ import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
 import IconButton from '@mui/material/IconButton';
 import { Domain, LinkOff } from '@mui/icons-material';
 import { graphql, createFragmentContainer } from 'react-relay';
+import { AutoFix } from 'mdi-material-ui';
 import AddSubSector from './AddSubSector';
 import { addSubSectorsMutationRelationDelete } from './AddSubSectorsLines';
 import { commitMutation } from '../../../../relay/environment';
@@ -71,7 +72,7 @@ class SectorSubSectorsComponent extends Component {
                   <Domain color="primary" />
                 </ListItemIcon>
                 <ListItemText primary={subSector.name} />
-                {types.includes('manual') && (
+                {types.includes('manual') ? (
                   <ListItemSecondaryAction>
                     <Security needs={[KNOWLEDGE_KNUPDATE]}>
                       <IconButton
@@ -83,7 +84,7 @@ class SectorSubSectorsComponent extends Component {
                       </IconButton>
                     </Security>
                   </ListItemSecondaryAction>
-                )}
+                ) : <AutoFix fontSize="small" style={{ marginRight: 13 }}/>}
               </ListItem>
             );
           })}

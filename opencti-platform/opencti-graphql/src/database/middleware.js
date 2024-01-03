@@ -270,7 +270,7 @@ const batchListThrough = async (context, user, sources, sourceSide, relationType
     filters: filtersContent,
     filterGroups: [],
   };
-  // Resolve all relations
+  // region Resolve all relations (can be inferred or not)
   const indices = withInferences ? READ_RELATIONSHIPS_INDICES : READ_RELATIONSHIPS_INDICES_WITHOUT_INFERRED;
   const relations = await elList(context, user, indices, {
     filters,
@@ -279,44 +279,42 @@ const batchListThrough = async (context, user, sources, sourceSide, relationType
     noFiltersChecking: true,
     search,
   });
-  // For each relation resolved the target entity
+  // endregion
+  // region Resolved all targets for all relations
   // Filter on element id if necessary
+  // TODO replace that post filters by a real filters in previous elList
   let targetIds = R.uniq(relations.map((s) => s[`${opposite}Id`]));
   if (isNotEmptyField(opts.elementId)) {
     const elementIds = Array.isArray(elementId) ? elementId : [elementId];
     targetIds = targetIds.filter((id) => elementIds.includes(id));
   }
   const targets = await elFindByIds(context, user, targetIds, opts);
-  const relationWithTargets = {};
+  // endregion
+  // region Enrich all targets with internal types [manual and/or inferred]
+  const targetsWithTypes = {};
   relations.forEach((relation) => {
-    const tempTarget = targets.find((i) => i.id === relation[`${opposite}Id`]);
+    const relationTarget = targets.find((i) => i.id === relation[`${opposite}Id`]);
     const isInferred = isInferredIndex(relation._index);
-    relationWithTargets[relation.id] = { ...tempTarget, is_from_relation_inferred: isInferred };
+    const targetType = isInferred ? 'inferred' : 'manual';
+    if (targetsWithTypes[relationTarget.id] && !targetsWithTypes[relationTarget.id].i_types.includes(targetType)) {
+      targetsWithTypes[relationTarget.id].i_types.push(targetType);
+    } else {
+      targetsWithTypes[relationTarget.id] = { ...relationTarget, i_types: [targetType] };
+    }
   });
-
+  // endregion
   // Group and rebuild the result
+  const processedTargets = Object.values(targetsWithTypes);
   const elGrouped = R.groupBy((e) => e[`${sourceSide}Id`], relations);
   if (paginate) {
     return ids.map((id) => {
       const values = elGrouped[id];
       const edges = [];
       if (values) {
-        const currentSourceRelations = first ? R.take(first, values) : values;
-        currentSourceRelations.forEach((relation) => {
-          const target = relationWithTargets[relation.id];
-          if (target) {
-            const isRelationInferred = target.is_from_relation_inferred;
-            delete target.is_from_relation_inferred;
-            // Check if multiple target
-            const existingEdge = edges.find((edge) => edge.node.id === target.id);
-            if (existingEdge) {
-              edges[existingEdge].types.push(isRelationInferred ? 'inferred' : 'manual');
-            } else {
-              const edge = { node: target, types: [isRelationInferred ? 'inferred' : 'manual'] };
-              edges.push(edge);
-            }
-          }
-        });
+        const data = first ? R.take(first, values) : values;
+        const filterIds = (data || []).map((i) => i[`${opposite}Id`]);
+        const filteredElements = processedTargets.filter((t) => filterIds.includes(t.internal_id));
+        edges.push(...filteredElements.map((n) => ({ node: n, types: n.i_types })));
       }
       return buildPagination(0, null, edges, edges.length);
     });
@@ -324,17 +322,8 @@ const batchListThrough = async (context, user, sources, sourceSide, relationType
   const elements = ids.map((id) => {
     const values = elGrouped[id];
     const data = first ? R.take(first, values) : values;
-    const filteredElements = [];
-    if (data) {
-      data.forEach((relation) => {
-        const target = relationWithTargets[relation.id];
-        if (target && !filteredElements.some((t) => t.id === target.id)) {
-          delete target.is_from_relation_inferred;
-          filteredElements.push(target);
-        }
-      });
-    }
-    return filteredElements;
+    const filterIds = (data || []).map((i) => i[`${opposite}Id`]);
+    return targets.filter((t) => filterIds.includes(t.internal_id));
   });
   if (batched) {
     return elements;
