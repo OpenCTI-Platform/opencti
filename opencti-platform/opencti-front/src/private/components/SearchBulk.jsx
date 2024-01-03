@@ -291,7 +291,7 @@ const SearchBulk = () => {
                       'x_mitre_id',
                       'value',
                       'subject',
-                      'abstract',
+                      'attribute_abstract',
                       'hashes.MD5',
                       'hashes.SHA-1',
                       'hashes.SHA-256',
