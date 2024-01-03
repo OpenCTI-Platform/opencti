@@ -15,7 +15,7 @@ import rateLimit from 'express-rate-limit';
 import contentDisposition from 'content-disposition';
 import { basePath, booleanConf, DEV_MODE, logApp, OPENCTI_SESSION } from '../config/conf';
 import passport, { empty, isStrategyActivated, STRATEGY_CERT } from '../config/providers';
-import { authenticateUser, authenticateUserFromRequest, loginFromProvider, userWithOrigin } from '../domain/user';
+import { authenticateUser, authenticateUserFromRequest, HEADERS_AUTHENTICATORS, loginFromProvider, userWithOrigin } from '../domain/user';
 import { checkFileAccess, downloadFile, getFileContent, loadFile } from '../database/file-storage';
 import createSseMiddleware from '../graphql/sseMiddleware';
 import initTaxiiApi from './httpTaxii';
@@ -306,7 +306,7 @@ const createApp = async (app) => {
   app.get(`${basePath}/logout`, async (req, res, next) => {
     try {
       const referer = extractRefererPathFromReq(req) ?? '/';
-      const strategy = passport._strategy(req.session.session_provider?.provider);
+      const provider = req.session.session_provider?.provider;
       const { user } = req.session;
       const withOrigin = userWithOrigin(req, user);
       await publishUserAction({
@@ -319,18 +319,28 @@ const createApp = async (app) => {
       await delUserContext(user);
       res.clearCookie(OPENCTI_SESSION);
       req.session.destroy(() => {
-        if (strategy?.logout_remote === true && strategy?.logout) {
-          req.user = user; // Needed for passport
-          strategy.logout(req, (error, request) => {
-            if (error) {
-              setCookieError(res, 'Error generating logout uri');
-              next(error);
-            } else {
-              res.redirect(request);
-            }
-          });
+        const strategy = passport._strategy(provider);
+        if (strategy) {
+          if (strategy.logout_remote === true && strategy.logout) {
+            req.user = user; // Needed for passport
+            strategy.logout(req, (error, request) => {
+              if (error) {
+                setCookieError(res, 'Error generating logout uri');
+                next(error);
+              } else {
+                res.redirect(request);
+              }
+            });
+          } else {
+            res.redirect(referer);
+          }
         } else {
-          res.redirect(referer);
+          const headerStrategy = HEADERS_AUTHENTICATORS.find((h) => h.provider === provider);
+          if (headerStrategy && headerStrategy.logout_uri) {
+            res.redirect(headerStrategy.logout_uri);
+          } else {
+            res.redirect(referer);
+          }
         }
       });
     } catch (e) {

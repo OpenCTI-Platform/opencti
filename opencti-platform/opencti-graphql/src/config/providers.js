@@ -557,7 +557,14 @@ for (let i = 0; i < providerKeys.length; i += 1) {
           }, opts);
         });
       };
-      const headerProvider = { name: providerName, reqLoginHandler, type: AUTH_REQ, strategy, provider: providerRef };
+      const headerProvider = {
+        name: providerName,
+        reqLoginHandler,
+        type: AUTH_REQ,
+        strategy,
+        logout_uri: mappedConfig.logout_uri,
+        provider: providerRef
+      };
       providers.push(headerProvider);
       HEADERS_AUTHENTICATORS.push(headerProvider);
     }
