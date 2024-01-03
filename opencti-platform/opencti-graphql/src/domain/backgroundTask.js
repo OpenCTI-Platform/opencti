@@ -107,7 +107,7 @@ const buildQueryFilters = async (context, user, rawFilters, search, taskPosition
   }
   const newFilters = buildQueryFiltersContent(adaptedFilterGroup);
   // Avoid empty type which will target internal objects and relationships as well
-  const types = newFilters?.filters.filter((f) => f.key === TYPE_FILTER)?.values ?? [ABSTRACT_STIX_DOMAIN_OBJECT];
+  const types = newFilters?.filters.filter((f) => f.key === TYPE_FILTER)?.map((f) => f.values) ?? [ABSTRACT_STIX_DOMAIN_OBJECT];
   return {
     types,
     first: MAX_TASK_ELEMENTS,
