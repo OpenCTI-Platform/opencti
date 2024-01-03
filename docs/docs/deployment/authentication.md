@@ -346,6 +346,39 @@ And then add the `ClientCertStrategy`:
 
 Then when accessing for the first time OCTI, the browser will ask for the certificate you want to use.
 
+### Proxy headers (automatic)
+
+This strategy can authenticate your users with directly from trusted headers
+
+```json
+{
+  "header": {
+    "strategy": "HeaderStrategy",
+    "config": {
+      "disabled": false,
+      "header_email": "auth_email_address",
+      "header_name": "auth_name",
+      "header_firstname": "auth_firstname",
+      "header_lastname": "auth_lastname",
+      "logout_uri": "https://www.filigran.io",
+      "groups_management": {
+        "groups_header": "auth_groups",
+        "groups_splitter": ",",
+        "groups_mapping": ["admin:admin", "root:root"]
+      },
+      "organizations_management": {
+        "organizations_header": "auth_institution",
+        "organizations_splitter": ",",
+        "organizations_mapping": ["test:test"]
+      }
+    }
+  }
+}
+```
+
+If this mode is activated and the headers are available the user will be automatically logged without any action or notice.
+The logout uri will remove the session and redirect the configured uri. If not specified the redirect will be done to the request referer and so the header authentication will be done again.
+
 ## Automatically create group on SSO
 
 The variable **auto_create_group** can be added in the options of some strategies (LDAP, SAML and OpenID). If this variable is true, the groups of a user that logins will automatically be created if they don’t exist.
