@@ -1599,7 +1599,7 @@ const i18n = {
       'Distribution of entities': 'Distribución de entidades',
       'Entities distribution': 'Distribución de entidades',
       'Distribution of opinions': 'Distribución de opiniones',
-      'There are no opinions. You should create some before.': 'There are no opinions. You should create some before.',
+      'There are no opinions. You should create some before.': 'No hay opiniones. Deberías crear algunos antes.',
       'Observables distribution': 'Distribución de observables',
       'Distribution of relations (including inferred)':
         'Distribución de reñacopmes (incluyendo inferencias)',
