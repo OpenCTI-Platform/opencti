@@ -1,7 +1,6 @@
-import type { StixCyberObject, StixDate, StixId } from './stix-common';
-import { CyberObjectExtension, StixOpenctiExtension } from './stix-common';
+import type { CyberObjectExtension, StixOpenctiExtension, StixCyberObject, StixDate, StixId } from './stix-common';
 import { STIX_EXT_OCTI, STIX_EXT_OCTI_SCO } from './stix-extensions';
-import { StixInternalExternalReference } from './stix-smo';
+import type { StixInternalExternalReference } from './stix-smo';
 
 // Artifact Object Specific Properties
 export interface ArtifactExtension extends CyberObjectExtension {

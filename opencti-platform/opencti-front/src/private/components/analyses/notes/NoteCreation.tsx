@@ -23,7 +23,7 @@ import DateTimePickerField from '../../../../components/DateTimePickerField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import useGranted, { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 import OpenVocabField from '../../common/form/OpenVocabField';
-import { Theme } from '../../../../components/Theme';
+import type { Theme } from '../../../../components/Theme';
 import { insertNode } from '../../../../utils/store';
 import { Option } from '../../common/form/ReferenceField';
 import { NotesLinesPaginationQuery$variables } from './__generated__/NotesLinesPaginationQuery.graphql';

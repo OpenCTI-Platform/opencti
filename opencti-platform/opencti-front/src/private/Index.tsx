@@ -11,7 +11,7 @@ import SystemBanners from '../public/components/SystemBanners';
 import TimeoutLock from './components/TimeoutLock';
 import useAuth from '../utils/hooks/useAuth';
 import SettingsMessagesBanner, { useSettingsMessagesBannerHeight } from './components/settings/settings_messages/SettingsMessagesBanner';
-import { Theme } from '../components/Theme';
+import type { Theme } from '../components/Theme';
 import { RootSettings$data } from './__generated__/RootSettings.graphql';
 import Loader from '../components/Loader';
 

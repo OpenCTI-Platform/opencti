@@ -26,7 +26,7 @@ import PlaybookCreation from './playbooks/PlaybookCreation';
 import PlaybooksLines, { playbooksLinesQuery } from './playbooks/PlaybooksLines';
 import { PlaybooksLinesPaginationQuery, PlaybooksLinesPaginationQuery$variables } from './playbooks/__generated__/PlaybooksLinesPaginationQuery.graphql';
 import { PlaybookLineDummy } from './playbooks/PlaybookLine';
-import { Theme } from '../../../components/Theme';
+import type { Theme } from '../../../components/Theme';
 import useEnterpriseEdition from '../../../utils/hooks/useEnterpriseEdition';
 import { useFormatter } from '../../../components/i18n';
 

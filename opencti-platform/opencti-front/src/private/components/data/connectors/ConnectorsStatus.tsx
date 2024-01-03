@@ -23,7 +23,7 @@ import Security from '../../../../utils/Security';
 import { MODULES_MODMANAGE } from '../../../../utils/hooks/useGranted';
 import { connectorDeletionMutation, connectorResetStateMutation } from './Connector';
 import ItemBoolean from '../../../../components/ItemBoolean';
-import { Theme } from '../../../../components/Theme';
+import type { Theme } from '../../../../components/Theme';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import usePreloadedFragment from '../../../../utils/hooks/usePreloadedFragment';
 import SortConnectorsHeader from './SortConnectorsHeader';

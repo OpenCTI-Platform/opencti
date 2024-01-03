@@ -3,7 +3,7 @@ import { last } from 'ramda';
 import makeStyles from '@mui/styles/makeStyles';
 import { useFormatter } from '../i18n';
 import FilterIconButtonContent from '../FilterIconButtonContent';
-import { Theme } from '../Theme';
+import type { Theme } from '../Theme';
 import { Filter, filtersUsedAsApiParameters } from '../../utils/filters/filtersUtils';
 import { UseLocalStorageHelpers } from '../../utils/hooks/useLocalStorage';
 

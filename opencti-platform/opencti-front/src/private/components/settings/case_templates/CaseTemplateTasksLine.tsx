@@ -7,7 +7,7 @@ import makeStyles from '@mui/styles/makeStyles';
 import { graphql, useFragment } from 'react-relay';
 import Checkbox from '@mui/material/Checkbox';
 import Skeleton from '@mui/material/Skeleton';
-import { Theme } from '../../../../components/Theme';
+import type { Theme } from '../../../../components/Theme';
 import { DataColumns } from '../../../../components/list_lines';
 import { CaseTemplateTasksLine_node$key } from './__generated__/CaseTemplateTasksLine_node.graphql';
 import ItemIcon from '../../../../components/ItemIcon';

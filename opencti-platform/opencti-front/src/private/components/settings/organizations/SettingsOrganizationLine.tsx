@@ -11,7 +11,7 @@ import { graphql, useFragment } from 'react-relay';
 import { ListItemButton } from '@mui/material';
 import ItemIcon from '../../../../components/ItemIcon';
 import { DataColumns } from '../../../../components/list_lines';
-import { Theme } from '../../../../components/Theme';
+import type { Theme } from '../../../../components/Theme';
 import { useFormatter } from '../../../../components/i18n';
 import { SettingsOrganizationLine_node$key } from './__generated__/SettingsOrganizationLine_node.graphql';
 

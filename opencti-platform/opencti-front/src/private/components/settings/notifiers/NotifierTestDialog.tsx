@@ -11,7 +11,7 @@ import React, { FunctionComponent, useState } from 'react';
 import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import { useFormatter } from '../../../../components/i18n';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
-import { Theme } from '../../../../components/Theme';
+import type { Theme } from '../../../../components/Theme';
 import { NotifierTestDialogQuery } from './__generated__/NotifierTestDialogQuery.graphql';
 
 const useStyles = makeStyles<Theme>((theme) => ({

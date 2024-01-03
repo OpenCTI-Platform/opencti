@@ -10,7 +10,7 @@ import { SettingsMessagesLine_settingsMessage$data } from '@components/settings/
 import { useFormatter } from '../../../../components/i18n';
 import { DataColumns } from '../../../../components/list_lines';
 import ListLines from '../../../../components/list_lines/ListLines';
-import { Theme } from '../../../../components/Theme';
+import type { Theme } from '../../../../components/Theme';
 import { generateBannerMessageColors } from '../../../../utils/Colors';
 import { SettingsMessages_settingsMessages$key } from './__generated__/SettingsMessages_settingsMessages.graphql';
 import SettingsMessageCreation from './SettingsMessageCreation';

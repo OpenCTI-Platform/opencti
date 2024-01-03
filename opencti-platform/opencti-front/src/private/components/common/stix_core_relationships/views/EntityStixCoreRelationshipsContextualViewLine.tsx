@@ -7,7 +7,7 @@ import { KeyboardArrowRight } from '@mui/icons-material';
 import makeStyles from '@mui/styles/makeStyles';
 import { graphql, useFragment } from 'react-relay';
 import { ListItemButton } from '@mui/material';
-import { Theme } from '../../../../../components/Theme';
+import type { Theme } from '../../../../../components/Theme';
 import { UseEntityToggle } from '../../../../../utils/hooks/useEntityToggle';
 import { DataColumns } from '../../../../../components/list_lines';
 import { resolveLink } from '../../../../../utils/Entity';

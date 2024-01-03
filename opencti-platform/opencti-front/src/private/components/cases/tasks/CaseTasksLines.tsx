@@ -14,7 +14,7 @@ import { graphql, PreloadedQuery, useMutation } from 'react-relay';
 import { GridTypeMap } from '@mui/material';
 import Drawer from '@components/common/drawer/Drawer';
 import { useFormatter } from '../../../../components/i18n';
-import { Theme } from '../../../../components/Theme';
+import type { Theme } from '../../../../components/Theme';
 import { handleErrorInForm } from '../../../../relay/environment';
 import usePreloadedPaginationFragment from '../../../../utils/hooks/usePreloadedPaginationFragment';
 import CaseTemplateField from '../../common/form/CaseTemplateField';

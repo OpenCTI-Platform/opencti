@@ -7,7 +7,7 @@ import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
 import { MoreVert } from '@mui/icons-material';
 import makeStyles from '@mui/styles/makeStyles';
 import IconButton from '@mui/material/IconButton';
-import { Theme } from '../../../../components/Theme';
+import type { Theme } from '../../../../components/Theme';
 import { DataColumnsType } from './StatusTemplateLine';
 
 const useStyles = makeStyles<Theme>((theme) => ({

@@ -1,4 +1,4 @@
-import { AuthContext, AuthUser } from '../types/user';
+import type { AuthContext, AuthUser } from '../types/user';
 import { BasicStoreEntityCsvMapper } from '../modules/internal/csvMapper/csvMapper-types';
 
 export interface ConnectorConfig {

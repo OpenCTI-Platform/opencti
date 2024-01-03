@@ -6,7 +6,7 @@ import SpeedDialAction from '@mui/material/SpeedDialAction';
 import SpeedDial from '@mui/material/SpeedDial';
 import makeStyles from '@mui/styles/makeStyles';
 import { useFormatter } from '../../../../../components/i18n';
-import { Theme } from '../../../../../components/Theme';
+import type { Theme } from '../../../../../components/Theme';
 import AlertLiveCreation from './AlertLiveCreation';
 import { AlertingPaginationQuery$variables } from './__generated__/AlertingPaginationQuery.graphql';
 import { AlertLiveCreationActivityMutation$data } from './__generated__/AlertLiveCreationActivityMutation.graphql';

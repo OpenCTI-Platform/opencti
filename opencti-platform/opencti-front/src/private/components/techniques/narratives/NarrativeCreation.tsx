@@ -22,7 +22,7 @@ import MarkdownField from '../../../../components/MarkdownField';
 import { ExternalReferencesField } from '../../common/form/ExternalReferencesField';
 import { useSchemaCreationValidation } from '../../../../utils/hooks/useEntitySettings';
 import { insertNode } from '../../../../utils/store';
-import { Theme } from '../../../../components/Theme';
+import type { Theme } from '../../../../components/Theme';
 import { Option } from '../../common/form/ReferenceField';
 import { NarrativeCreationMutation, NarrativeCreationMutation$variables } from './__generated__/NarrativeCreationMutation.graphql';
 import { NarrativesLinesPaginationQuery$variables } from './__generated__/NarrativesLinesPaginationQuery.graphql';

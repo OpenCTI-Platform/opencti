@@ -13,7 +13,7 @@ import makeStyles from '@mui/styles/makeStyles';
 import { useFormatter } from '../../../../components/i18n';
 import { QueryRenderer } from '../../../../relay/environment';
 import { stixCyberObservablesLinesSubTypesQuery } from '../stix_cyber_observables/StixCyberObservablesLines';
-import { Theme } from '../../../../components/Theme';
+import type { Theme } from '../../../../components/Theme';
 import { StixCyberObservablesLinesSubTypesQuery$data } from '../stix_cyber_observables/__generated__/StixCyberObservablesLinesSubTypesQuery.graphql';
 import { vocabularyQuery } from '../../common/form/OpenVocabField';
 import { OpenVocabFieldQuery$data } from '../../common/form/__generated__/OpenVocabFieldQuery.graphql';

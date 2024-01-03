@@ -23,7 +23,7 @@ import { useFormatter } from '../../../../../components/i18n';
 import TimePickerField from '../../../../../components/TimePickerField';
 import SelectField from '../../../../../components/SelectField';
 import { fieldSpacingContainerStyle } from '../../../../../utils/field';
-import { Theme } from '../../../../../components/Theme';
+import type { Theme } from '../../../../../components/Theme';
 import TextField from '../../../../../components/TextField';
 import NotifierField from '../../../common/form/NotifierField';
 import AlertsField from './AlertsField';

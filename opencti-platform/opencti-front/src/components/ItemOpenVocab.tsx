@@ -6,7 +6,7 @@ import { InformationOutline } from 'mdi-material-ui';
 import { graphql, usePreloadedQuery } from 'react-relay';
 import { PreloadedQuery } from 'react-relay/relay-hooks/EntryPointTypes';
 import { useFormatter } from './i18n';
-import { Theme } from './Theme';
+import type { Theme } from './Theme';
 import useVocabularyCategory from '../utils/hooks/useVocabularyCategory';
 import { ItemOpenVocabQuery } from './__generated__/ItemOpenVocabQuery.graphql';
 import useQueryLoading from '../utils/hooks/useQueryLoading';

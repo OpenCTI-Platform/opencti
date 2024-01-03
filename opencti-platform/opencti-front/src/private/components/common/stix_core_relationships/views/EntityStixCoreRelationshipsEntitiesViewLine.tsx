@@ -12,7 +12,7 @@ import { graphql, useFragment } from 'react-relay';
 import Chip from '@mui/material/Chip';
 import ItemMarkings from '../../../../../components/ItemMarkings';
 import StixCoreObjectLabels from '../../stix_core_objects/StixCoreObjectLabels';
-import { Theme } from '../../../../../components/Theme';
+import type { Theme } from '../../../../../components/Theme';
 import { resolveLink } from '../../../../../utils/Entity';
 import { useFormatter } from '../../../../../components/i18n';
 import { DataColumns } from '../../../../../components/list_lines';

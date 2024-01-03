@@ -7,6 +7,11 @@ import { AuthorizedMember } from '../utils/access';
 export type StixDate = string | undefined;
 type StixId = `${string}--${v4 | v5}`;
 
+export type StixKillChainPhase = {
+  kill_chain_name: string;
+  phase_name: string;
+};
+
 export type StixBundle = {
   id: string;
   spec_version: string,

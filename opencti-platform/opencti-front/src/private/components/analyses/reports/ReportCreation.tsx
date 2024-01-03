@@ -25,7 +25,7 @@ import ObjectAssigneeField from '../../common/form/ObjectAssigneeField';
 import { useSchemaCreationValidation } from '../../../../utils/hooks/useEntitySettings';
 import { ReportsLinesPaginationQuery$variables } from './__generated__/ReportsLinesPaginationQuery.graphql';
 import { Option } from '../../common/form/ReferenceField';
-import { Theme } from '../../../../components/Theme';
+import type { Theme } from '../../../../components/Theme';
 import { ReportCreationMutation, ReportCreationMutation$variables } from './__generated__/ReportCreationMutation.graphql';
 import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
 import RichTextField from '../../../../components/RichTextField';

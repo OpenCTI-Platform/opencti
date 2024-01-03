@@ -28,7 +28,7 @@ import { fileIndexingConfigurationFieldPatch } from '@components/settings/file_i
 import Checkbox from '@mui/material/Checkbox';
 import * as Yup from 'yup';
 import { useFormatter } from '../../../../components/i18n';
-import { Theme } from '../../../../components/Theme';
+import type { Theme } from '../../../../components/Theme';
 import { handleErrorInForm } from '../../../../relay/environment';
 import SwitchField from '../../../../components/SwitchField';
 import AutocompleteField from '../../../../components/AutocompleteField';

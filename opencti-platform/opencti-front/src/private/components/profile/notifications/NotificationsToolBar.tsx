@@ -25,7 +25,7 @@ import { truncate } from '../../../../utils/String';
 import { MESSAGING$ } from '../../../../relay/environment';
 import { defaultValue } from '../../../../utils/Graph';
 import { useFormatter } from '../../../../components/i18n';
-import { Theme } from '../../../../components/Theme';
+import type { Theme } from '../../../../components/Theme';
 import { NotificationLine_node$data } from './__generated__/NotificationLine_node.graphql';
 import Transition from '../../../../components/Transition';
 import { UserContext } from '../../../../utils/hooks/useAuth';

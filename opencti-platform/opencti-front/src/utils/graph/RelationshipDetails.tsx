@@ -21,7 +21,7 @@ import ItemConfidence from '../../components/ItemConfidence';
 import type { SelectedEntity } from './EntitiesDetailsRightBar';
 import ErrorNotFound from '../../components/ErrorNotFound';
 import RelationShipFromAndTo from './RelationShipFromAndTo';
-import { Theme } from '../../components/Theme';
+import type { Theme } from '../../components/Theme';
 import ItemIcon from '../../components/ItemIcon';
 import { hexToRGB, itemColor } from '../Colors';
 import ItemCreators from '../../components/ItemCreators';

@@ -7,7 +7,7 @@ import IconButton from '@mui/material/IconButton';
 import Tooltip from '@mui/material/Tooltip';
 import { MoreVert, LoginOutlined } from '@mui/icons-material';
 import ItemIcon from '../../../../../../components/ItemIcon';
-import { Theme } from '../../../../../../components/Theme';
+import type { Theme } from '../../../../../../components/Theme';
 import { useFormatter } from '../../../../../../components/i18n';
 
 type node = {

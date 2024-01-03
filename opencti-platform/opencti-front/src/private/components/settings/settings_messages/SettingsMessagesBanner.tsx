@@ -5,7 +5,7 @@ import * as R from 'ramda';
 import React, { useEffect, useLayoutEffect, useMemo, useState } from 'react';
 import { graphql, PreloadedQuery, usePreloadedQuery, useSubscription } from 'react-relay';
 import { GraphQLSubscriptionConfig } from 'relay-runtime';
-import { Theme } from '../../../../components/Theme';
+import type { Theme } from '../../../../components/Theme';
 import { generateBannerMessageColors } from '../../../../utils/Colors';
 import useBus, { dispatch } from '../../../../utils/hooks/useBus';
 import useLocalStorage from '../../../../utils/hooks/useLocalStorage';

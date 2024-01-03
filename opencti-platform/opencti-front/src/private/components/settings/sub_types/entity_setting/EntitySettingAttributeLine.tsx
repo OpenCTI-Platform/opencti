@@ -9,7 +9,7 @@ import ListItemIcon from '@mui/material/ListItemIcon';
 import { LockPersonOutlined, NorthEastOutlined, ShortTextOutlined } from '@mui/icons-material';
 import EEChip from '@components/common/entreprise_edition/EEChip';
 import { DataColumns } from '../../../../../components/list_lines';
-import { Theme } from '../../../../../components/Theme';
+import type { Theme } from '../../../../../components/Theme';
 import ErrorNotFound from '../../../../../components/ErrorNotFound';
 import EntitySettingAttributeEdition from './EntitySettingAttributeEdition';
 import { EntitySettingAttributeLine_attribute$key } from './__generated__/EntitySettingAttributeLine_attribute.graphql';

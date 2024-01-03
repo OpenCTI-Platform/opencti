@@ -7,7 +7,7 @@ import Typography from '@mui/material/Typography';
 import Fab from '@mui/material/Fab';
 import classNames from 'classnames';
 import { createStyles } from '@mui/styles';
-import { Theme } from '../../../../components/Theme';
+import type { Theme } from '../../../../components/Theme';
 import useAuth from '../../../../utils/hooks/useAuth';
 import { SubscriptionAvatars } from '../../../../components/Subscription';
 

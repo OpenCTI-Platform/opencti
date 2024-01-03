@@ -19,7 +19,7 @@ import { useFormatter } from '../../../components/i18n';
 import ItemIcon from '../../../components/ItemIcon';
 import { resolveLink } from '../../../utils/Entity';
 import { handleError } from '../../../relay/environment';
-import { Theme } from '../../../components/Theme';
+import type { Theme } from '../../../components/Theme';
 import useSearchEntities, { EntityValue } from '../../../utils/filters/useSearchEntities';
 
 const useStyles = makeStyles<Theme>((theme) => ({

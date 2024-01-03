@@ -1,7 +1,7 @@
 import React, { FunctionComponent } from 'react';
 import OtpInput from 'react-otp-input';
 import makeStyles from '@mui/styles/makeStyles';
-import { Theme } from '../../components/Theme';
+import type { Theme } from '../../components/Theme';
 
 export const OTP_CODE_SIZE = 6;
 

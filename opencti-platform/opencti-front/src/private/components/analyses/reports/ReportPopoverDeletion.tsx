@@ -15,7 +15,7 @@ import DialogContentText from '@mui/material/DialogContentText';
 import { QueryRenderer } from '../../../../relay/environment';
 import { useFormatter } from '../../../../components/i18n';
 import { ReportPopoverDeletionQuery$data } from './__generated__/ReportPopoverDeletionQuery.graphql';
-import { Theme } from '../../../../components/Theme';
+import type { Theme } from '../../../../components/Theme';
 import Transition from '../../../../components/Transition';
 
 const reportPopoverDeletionQuery = graphql`

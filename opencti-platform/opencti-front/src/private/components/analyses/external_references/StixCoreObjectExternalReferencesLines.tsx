@@ -37,7 +37,7 @@ import FileUploader from '../../common/files/FileUploader';
 import ExternalReferencePopover from './ExternalReferencePopover';
 import SelectField from '../../../../components/SelectField';
 import { scopesConn, stixCoreObjectFilesAndHistoryAskJobImportMutation } from '../../common/stix_core_objects/StixCoreObjectFilesAndHistory';
-import { Theme } from '../../../../components/Theme';
+import type { Theme } from '../../../../components/Theme';
 import { useFormatter } from '../../../../components/i18n';
 import { deleteNodeFromId } from '../../../../utils/store';
 import { StixCoreObjectExternalReferencesLines_data$data } from './__generated__/StixCoreObjectExternalReferencesLines_data.graphql';

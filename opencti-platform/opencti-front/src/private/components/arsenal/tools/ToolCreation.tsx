@@ -23,7 +23,7 @@ import { useSchemaCreationValidation } from '../../../../utils/hooks/useEntitySe
 import { insertNode } from '../../../../utils/store';
 import { Option } from '../../common/form/ReferenceField';
 import { ToolsLinesPaginationQuery$variables } from './__generated__/ToolsLinesPaginationQuery.graphql';
-import { Theme } from '../../../../components/Theme';
+import type { Theme } from '../../../../components/Theme';
 import { ToolCreationMutation, ToolCreationMutation$variables } from './__generated__/ToolCreationMutation.graphql';
 import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
 import CustomFileUploader from '../../common/files/CustomFileUploader';

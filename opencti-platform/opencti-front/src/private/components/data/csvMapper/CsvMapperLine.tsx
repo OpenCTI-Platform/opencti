@@ -9,7 +9,7 @@ import TableViewIcon from '@mui/icons-material/TableView';
 import { CsvMapperLine_csvMapper$key } from '@components/data/csvMapper/__generated__/CsvMapperLine_csvMapper.graphql';
 import CsvMapperPopover from '@components/data/csvMapper/CsvMapperPopover';
 import { CsvMapperLinesPaginationQuery$variables } from '@components/data/csvMapper/__generated__/CsvMapperLinesPaginationQuery.graphql';
-import { Theme } from '../../../../components/Theme';
+import type { Theme } from '../../../../components/Theme';
 import { DataColumns } from '../../../../components/list_lines';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
 

@@ -30,7 +30,7 @@ import Alert from '@mui/material/Alert';
 import Typography from '@mui/material/Typography';
 import Paper from '@mui/material/Paper';
 import ActivityMenu from '../../ActivityMenu';
-import { Theme } from '../../../../../components/Theme';
+import type { Theme } from '../../../../../components/Theme';
 import { useFormatter } from '../../../../../components/i18n';
 import CreatorField from '../../../common/form/CreatorField';
 import useQueryLoading from '../../../../../utils/hooks/useQueryLoading';

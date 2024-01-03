@@ -10,7 +10,7 @@ import { Link } from 'react-router-dom';
 import Tooltip from '@mui/material/Tooltip';
 import makeStyles from '@mui/styles/makeStyles';
 import Checkbox from '@mui/material/Checkbox';
-import { Theme } from '../../../../components/Theme';
+import type { Theme } from '../../../../components/Theme';
 import { useFormatter } from '../../../../components/i18n';
 import { ExternalReferenceLine_node$data } from './__generated__/ExternalReferenceLine_node.graphql';
 import ItemIcon from '../../../../components/ItemIcon';

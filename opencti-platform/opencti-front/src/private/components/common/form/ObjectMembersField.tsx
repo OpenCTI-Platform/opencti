@@ -2,7 +2,7 @@ import { graphql } from 'react-relay';
 import makeStyles from '@mui/styles/makeStyles';
 import React, { FunctionComponent, useState } from 'react';
 import { Field } from 'formik';
-import { Theme } from '../../../../components/Theme';
+import type { Theme } from '../../../../components/Theme';
 import { fetchQuery } from '../../../../relay/environment';
 import { useFormatter } from '../../../../components/i18n';
 import { ObjectMembersFieldSearchQuery$data } from './__generated__/ObjectMembersFieldSearchQuery.graphql';

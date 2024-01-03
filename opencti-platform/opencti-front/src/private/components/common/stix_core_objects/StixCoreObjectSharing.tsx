@@ -23,7 +23,7 @@ import { truncate } from '../../../../utils/String';
 import { StixCoreObjectSharingQuery$data } from './__generated__/StixCoreObjectSharingQuery.graphql';
 import useGranted, { KNOWLEDGE_KNUPDATE_KNORGARESTRICT } from '../../../../utils/hooks/useGranted';
 import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
-import { Theme } from '../../../../components/Theme';
+import type { Theme } from '../../../../components/Theme';
 
 // region types
 interface ContainerHeaderSharedProps {

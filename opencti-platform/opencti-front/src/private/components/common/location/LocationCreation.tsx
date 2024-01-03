@@ -24,7 +24,7 @@ import TextField from '../../../../components/TextField';
 import SelectField from '../../../../components/SelectField';
 import MarkdownField from '../../../../components/MarkdownField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
-import { Theme } from '../../../../components/Theme';
+import type { Theme } from '../../../../components/Theme';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   createButton: {

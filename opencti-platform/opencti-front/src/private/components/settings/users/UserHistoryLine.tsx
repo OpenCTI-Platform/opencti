@@ -15,7 +15,7 @@ import makeStyles from '@mui/styles/makeStyles';
 import { UserHistoryLine_node$key } from '@components/settings/users/__generated__/UserHistoryLine_node.graphql';
 import { useFormatter } from '../../../../components/i18n';
 import MarkdownDisplay from '../../../../components/MarkdownDisplay';
-import { Theme } from '../../../../components/Theme';
+import type { Theme } from '../../../../components/Theme';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   container: {

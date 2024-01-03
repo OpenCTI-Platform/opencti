@@ -10,7 +10,7 @@ import { graphql, PreloadedQuery, useFragment, useMutation, usePreloadedQuery, u
 import * as Yup from 'yup';
 import { useFormatter } from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
-import { Theme } from '../../../../components/Theme';
+import type { Theme } from '../../../../components/Theme';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import NotifierConnectorField from '../../common/form/NotifierConnectorField';
 import ObjectMembersField from '../../common/form/ObjectMembersField';

@@ -9,7 +9,7 @@ import Drawer from '@components/common/drawer/Drawer';
 import ObjectMembersField from '@components/common/form/ObjectMembersField';
 import { Option } from '@components/common/form/ReferenceField';
 import ColorPickerField from '../../../../components/ColorPickerField';
-import { Theme } from '../../../../components/Theme';
+import type { Theme } from '../../../../components/Theme';
 import { useFormatter } from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
 import SwitchField from '../../../../components/SwitchField';

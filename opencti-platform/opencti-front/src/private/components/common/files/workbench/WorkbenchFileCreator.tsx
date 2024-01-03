@@ -15,7 +15,7 @@ import TextField from '../../../../../components/TextField';
 import AutocompleteFreeSoloField from '../../../../../components/AutocompleteFreeSoloField';
 import ItemIcon from '../../../../../components/ItemIcon';
 import { useFormatter } from '../../../../../components/i18n';
-import { Theme } from '../../../../../components/Theme';
+import type { Theme } from '../../../../../components/Theme';
 import { Option } from '../../form/ReferenceField';
 import { WorkbenchFileViewer_entity$data } from './__generated__/WorkbenchFileViewer_entity.graphql';
 import { WorkbenchFileCreatorMutation } from './__generated__/WorkbenchFileCreatorMutation.graphql';

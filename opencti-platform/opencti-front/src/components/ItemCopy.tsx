@@ -3,7 +3,7 @@ import { ContentCopyOutlined } from '@mui/icons-material';
 import makeStyles from '@mui/styles/makeStyles';
 import { useFormatter } from './i18n';
 import { copyToClipboard } from '../utils/utils';
-import { Theme } from './Theme';
+import type { Theme } from './Theme';
 import { truncate } from '../utils/String';
 
 const useStyles = makeStyles<Theme>((theme) => ({

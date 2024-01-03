@@ -10,7 +10,7 @@ import FilterIconButton from '../../../../../components/FilterIconButton';
 import { useFormatter } from '../../../../../components/i18n';
 import MarkdownField from '../../../../../components/MarkdownField';
 import TextField from '../../../../../components/TextField';
-import { Theme } from '../../../../../components/Theme';
+import type { Theme } from '../../../../../components/Theme';
 import { convertNotifiers } from '../../../../../utils/edition';
 import { fieldSpacingContainerStyle } from '../../../../../utils/field';
 import {

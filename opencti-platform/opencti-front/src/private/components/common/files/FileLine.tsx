@@ -26,7 +26,7 @@ import { ListItemButton } from '@mui/material';
 import FileWork from './FileWork';
 import { useFormatter } from '../../../../components/i18n';
 import { APP_BASE_PATH, commitMutation, MESSAGING$ } from '../../../../relay/environment';
-import { Theme } from '../../../../components/Theme';
+import type { Theme } from '../../../../components/Theme';
 import { FileLine_file$data } from './__generated__/FileLine_file.graphql';
 import { isNotEmptyField } from '../../../../utils/utils';
 import { truncate } from '../../../../utils/String';

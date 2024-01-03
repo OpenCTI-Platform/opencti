@@ -21,7 +21,7 @@ import { CsvMapper } from '@components/data/csvMapper/CsvMapper';
 import { useFormatter } from '../../../../../components/i18n';
 import Loader, { LoaderVariant } from '../../../../../components/Loader';
 import ItemIcon from '../../../../../components/ItemIcon';
-import { Theme } from '../../../../../components/Theme';
+import type { Theme } from '../../../../../components/Theme';
 import useDeletion from '../../../../../utils/hooks/useDeletion';
 import DeleteDialog from '../../../../../components/DeleteDialog';
 

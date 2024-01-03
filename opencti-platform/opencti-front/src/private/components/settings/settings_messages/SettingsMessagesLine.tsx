@@ -10,7 +10,7 @@ import { graphql, useFragment } from 'react-relay';
 import IconButton from '@mui/material/IconButton';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
 import { DataColumns } from '../../../../components/list_lines';
-import { Theme } from '../../../../components/Theme';
+import type { Theme } from '../../../../components/Theme';
 import { SettingsMessagesLine_settingsMessage$key } from './__generated__/SettingsMessagesLine_settingsMessage.graphql';
 import SettingsMessagesPopover from './SettingsMessagesPopover';
 

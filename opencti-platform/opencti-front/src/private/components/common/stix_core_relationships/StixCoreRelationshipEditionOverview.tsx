@@ -30,7 +30,7 @@ import {
   StixCoreRelationshipEditionOverview_stixCoreRelationship$key,
 } from './__generated__/StixCoreRelationshipEditionOverview_stixCoreRelationship.graphql';
 import { Option } from '../form/ReferenceField';
-import { Theme } from '../../../../components/Theme';
+import type { Theme } from '../../../../components/Theme';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 
 const useStyles = makeStyles<Theme>((theme) => ({

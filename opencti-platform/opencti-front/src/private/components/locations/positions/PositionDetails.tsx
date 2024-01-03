@@ -8,7 +8,7 @@ import Chip from '@mui/material/Chip';
 import ExpandableMarkdown from '../../../../components/ExpandableMarkdown';
 import { useFormatter } from '../../../../components/i18n';
 import { Position_position$data } from './__generated__/Position_position.graphql';
-import { Theme } from '../../../../components/Theme';
+import type { Theme } from '../../../../components/Theme';
 import { PositionDetailsLocationRelationshipsLinesQueryLinesPaginationQuery } from './__generated__/PositionDetailsLocationRelationshipsLinesQueryLinesPaginationQuery.graphql';
 import usePreloadedFragment from '../../../../utils/hooks/usePreloadedFragment';
 import { PositionDetails_positionRelationships$key } from './__generated__/PositionDetails_positionRelationships.graphql';

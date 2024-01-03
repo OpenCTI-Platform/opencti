@@ -8,7 +8,7 @@ import { KeyboardArrowRightOutlined } from '@mui/icons-material';
 import Skeleton from '@mui/material/Skeleton';
 import makeStyles from '@mui/styles/makeStyles';
 import { useFormatter } from '../../../../components/i18n';
-import { Theme } from '../../../../components/Theme';
+import type { Theme } from '../../../../components/Theme';
 import { DataColumns } from '../../../../components/list_lines';
 import { AdministrativeAreaLine_node$key } from './__generated__/AdministrativeAreaLine_node.graphql';
 import ItemIcon from '../../../../components/ItemIcon';

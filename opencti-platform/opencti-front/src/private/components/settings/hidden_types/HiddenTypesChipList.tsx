@@ -4,7 +4,7 @@ import Chip from '@mui/material/Chip';
 import makeStyles from '@mui/styles/makeStyles';
 import useEntitySettings from '../../../../utils/hooks/useEntitySettings';
 import { useFormatter } from '../../../../components/i18n';
-import { Theme } from '../../../../components/Theme';
+import type { Theme } from '../../../../components/Theme';
 import FieldOrEmpty from '../../../../components/FieldOrEmpty';
 
 const useStyles = makeStyles<Theme>((theme) => ({
