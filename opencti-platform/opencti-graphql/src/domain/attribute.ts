@@ -113,7 +113,7 @@ export const queryAttributesDefinition = async (context: AuthContext, user: Auth
               ...attr,
               defaultValues: data.map((v) => ({
                 id: v.internal_id,
-                name: extractRepresentative(v)?.main ?? v.internal_id,
+                name: extractRepresentative(v).main ?? v.internal_id,
               }))
             }));
         }
