@@ -404,6 +404,9 @@ const createApp = async (app) => {
   app.get(`${basePath}/health`, async (req, res) => {
     try {
       res.set('Cache-Control', 'private, no-cache, no-store, must-revalidate');
+      res.setTimeout(5000, () => {
+        res.status(503).send({ status: 'error', error: 'request timeout' });
+      });
       const configAccessKey = nconf.get('app:health_access_key');
       if (configAccessKey === 'ChangeMe' || isEmptyField(configAccessKey)) {
         res.status(401).send({ status: 'unauthorized' });
