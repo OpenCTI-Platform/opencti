@@ -85,7 +85,7 @@ const Channels = () => {
         numberOfElements={numberOfElements}
         availableFilterKeys={[
           'channel_types',
-          'x_opencti_workflow_id',
+          'workflow_id',
           'objectLabel',
           'objectMarking',
           'createdBy',

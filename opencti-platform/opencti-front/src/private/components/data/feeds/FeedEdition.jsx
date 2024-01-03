@@ -456,7 +456,7 @@ const FeedEditionContainer = (props) => {
                       <Filters
                         variant="text"
                         availableFilterKeys={[
-                          'x_opencti_workflow_id',
+                          'workflow_id',
                           'objectAssignee',
                           'objects',
                           'objectMarking',
@@ -466,7 +466,8 @@ const FeedEditionContainer = (props) => {
                           'priority',
                           'severity',
                           'x_opencti_score',
-                          'x_opencti_detection', 'x_opencti_main_observable_type',
+                          'x_opencti_detection',
+                          'x_opencti_main_observable_type',
                           'revoked',
                           'confidence',
                           'indicator_types',

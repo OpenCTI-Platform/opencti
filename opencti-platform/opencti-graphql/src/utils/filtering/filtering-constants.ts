@@ -26,7 +26,8 @@ export const SCORE_FILTER = 'x_opencti_score';
 export const DETECTION_FILTER = 'x_opencti_detection';
 export const SEVERITY_FILTER = 'severity';
 export const PRIORITY_FILTER = 'priority';
-export const WORKFLOW_FILTER = 'x_opencti_workflow_id';
+export const X_OPENCTI_WORKFLOW_ID = 'x_opencti_workflow_id';
+export const WORKFLOW_FILTER = 'workflow_id';
 export const CONFIDENCE_FILTER = 'confidence';
 export const REVOKED_FILTER = 'revoked';
 export const PATTERN_FILTER = 'pattern_type';
@@ -74,6 +75,7 @@ export const specialFilterKeys = [
   MEMBERS_ORGANIZATION_FILTER,
   RULE_FILTER, // for inference engine rules
   SOURCE_RELIABILITY_FILTER, // reliability of the author
+  WORKFLOW_FILTER,
 ];
 
 // nested filter keys also authorized in some elastic query cases (ex: retention policy query checking)

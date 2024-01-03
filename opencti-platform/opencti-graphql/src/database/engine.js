@@ -72,15 +72,15 @@ import { BYPASS, computeUserMemberAccessIds, INTERNAL_USERS, isBypassUser, MEMBE
 import { isSingleRelationsRef, } from '../schema/stixEmbeddedRelationship';
 import { now, runtimeFieldObservableValueScript } from '../utils/format';
 import { ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
-import { getEntityFromCache } from './cache';
-import { ENTITY_TYPE_SETTINGS, ENTITY_TYPE_USER } from '../schema/internalObject';
+import { getEntitiesListFromCache, getEntityFromCache } from './cache';
+import { ENTITY_TYPE_SETTINGS, ENTITY_TYPE_STATUS, ENTITY_TYPE_USER } from '../schema/internalObject';
 import { telemetry } from '../config/tracing';
 import { isBooleanAttribute, isDateAttribute, isDateNumericOrBooleanAttribute } from '../schema/schema-attributes';
 import { convertTypeToStixType } from './stix-converter';
 import { extractEntityRepresentativeName } from './entity-representative';
 import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../modules/organization/organization-types';
 import { checkAndConvertFilters, isFilterGroupNotEmpty } from '../utils/filtering/filtering-utils';
-import { IDS_FILTER, SOURCE_RELIABILITY_FILTER, TYPE_FILTER } from '../utils/filtering/filtering-constants';
+import { IDS_FILTER, SOURCE_RELIABILITY_FILTER, TYPE_FILTER, WORKFLOW_FILTER, X_OPENCTI_WORKFLOW_ID } from '../utils/filtering/filtering-constants';
 import { FilterMode } from '../generated/graphql';
 
 const ELK_ENGINE = 'elk';
@@ -1871,7 +1871,7 @@ const adaptFilterToSourceReliabilityFilterKey = async (context, user, filter) =>
   };
   const opts = { types: authorTypes, filters: reliabilityFilter, connectionFormat: false };
   const authors = await elList(context, user, READ_INDEX_STIX_DOMAIN_OBJECTS, opts); // the authors with reliability matching the filter
-  // we construct a new filter that will match against the creator internal_id respecting the filtering
+  // we construct a new filter that matches against the creator internal_id respecting the filtering
   const authorIds = authors.length > 0 ? authors.map((author) => author.internal_id) : ['<no-author-matching-filter>'];
   if (operator === 'nil') {
     // the entities we want don't have an author OR have an author that doesn't have a reliability
@@ -1904,6 +1904,37 @@ const adaptFilterToSourceReliabilityFilterKey = async (context, user, filter) =>
   }
 
   return { newFilter, newFilterGroup };
+};
+
+// worflow_id filter values can be both status ids and status templates ids
+const adaptFilterToWorkflowFilterKey = async (context, user, filter) => {
+  const { key, mode = 'or', operator = 'eq', values } = filter;
+  const arrayKeys = Array.isArray(key) ? key : [key];
+  if (arrayKeys[0] !== WORKFLOW_FILTER || arrayKeys.length > 1) {
+    throw Error(`A filter with these multiple keys is not supported: ${arrayKeys}`);
+  }
+  if (operator === 'nil' || operator === 'not_nil') { // no status template <-> no status // at least a status template <-> at least a status
+    return {
+      ...filter,
+      key: ['x_opencti_workflow_id'], // we just have to change the key
+    };
+  }
+  if (operator === 'eq' || operator === 'not_eq') {
+    let statuses = await getEntitiesListFromCache(context, user, ENTITY_TYPE_STATUS);
+    // keep the statuses with their id corresponding to the filter values, or with their template id corresponding to the filter values
+    statuses = statuses.filter((status) => values.includes(status.id) || values.includes(status.template_id));
+    // we construct a new filter that matches against the status internal_id with a template id in the filters values
+    // !!! it works to do the mode/operator filter on the status (and not on the template)
+    // because a status can only have a single template and because the operators are full-match operators (eq/not_eq) !!!
+    const statusIds = statuses.length > 0 ? statuses.map((status) => status.internal_id) : ['<no-status-matching-filter>'];
+    return {
+      key: ['x_opencti_workflow_id'],
+      values: statusIds,
+      mode,
+      operator,
+    };
+  }
+  throw Error(`The operators supported for a filter with key=workflow_id are: eq, not_eq, nil, not_nil: ${operator} is not supported.`);
 };
 
 /**
@@ -1956,6 +1987,11 @@ const completeSpecialFilterKeys = async (context, user, inputFilters) => {
       if (newFilterGroup) {
         finalFilterGroups.push(newFilterGroup);
       }
+    } else if (arrayKeys.includes(WORKFLOW_FILTER) || arrayKeys.includes(X_OPENCTI_WORKFLOW_ID)) {
+      // in case we want to filter by status template (template of a workflow status) or status
+      // we need to find all statuses filtered by status template and filter on these statuses
+      const newFilter = await adaptFilterToWorkflowFilterKey(context, user, filter);
+      finalFilters.push(newFilter);
     } else {
       // not a special case, leave the filter unchanged
       finalFilters.push(filter);

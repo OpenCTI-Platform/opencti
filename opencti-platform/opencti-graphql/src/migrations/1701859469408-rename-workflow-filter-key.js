@@ -1,99 +1,49 @@
-import { head, last, toPairs } from 'ramda';
+import { uniq } from 'ramda';
 import { executionContext, SYSTEM_USER } from '../utils/access';
 import { listAllEntities } from '../database/middleware-loader';
 import { ENTITY_TYPE_BACKGROUND_TASK, ENTITY_TYPE_FEED, ENTITY_TYPE_RETENTION_RULE, ENTITY_TYPE_STREAM_COLLECTION, ENTITY_TYPE_TAXII_COLLECTION } from '../schema/internalObject';
 import { ENTITY_TYPE_TRIGGER } from '../modules/notification/notification-types';
 import { logApp } from '../config/conf';
-import { fromBase64, toBase64, isEmptyField, READ_DATA_INDICES, isNotEmptyField } from '../database/utils';
+import { fromBase64, isNotEmptyField, READ_DATA_INDICES, toBase64 } from '../database/utils';
 import { elUpdateByQueryForMigration } from '../database/engine';
+import { DatabaseError } from '../config/errors';
 import { ENTITY_TYPE_WORKSPACE } from '../modules/workspace/workspace-types';
 import { ENTITY_TYPE_PLAYBOOK } from '../modules/playbook/playbook-types';
+import { isFilterGroupNotEmpty } from '../utils/filtering/filtering-utils';
 
-const message = '[MIGRATION] Stored filters refacto';
+const message = '[MIGRATION] Rename workflow filter key';
 
 export const up = async (next) => {
   logApp.info(`${message} > started`);
   const context = executionContext('migration', SYSTEM_USER);
 
-  // 00. utils
-  const filterKeysConvertor = new Map([
-    ['labelledBy', 'objectLabel'],
-    ['markedBy', 'objectMarking'],
-    ['objectContains', 'objects'],
-    ['killChainPhase', 'killChainPhases'],
-    ['assigneeTo', 'objectAssignee'],
-    ['participant', 'objectParticipant'],
-    ['creator', 'creator_id'],
-    ['hasExternalReference', 'externalReferences'],
-    ['hashes_MD5', 'hashes.MD5'],
-    ['hashes_SHA1', 'hashes.SHA-1'],
-    ['hashes_SHA256', 'hashes.SHA-256'],
-    ['hashes_SHA512', 'hashes.SHA-512'],
-  ]);
-  const convertFilters = (filters, alreadyParsed = false, instance_trigger = false) => {
-    if (isEmptyField(filters)) {
+  const convertWorkflowFilterKeys = (inputFilters, alreadyParsed = false) => {
+    const parsedFilters = alreadyParsed ? inputFilters : JSON.parse(inputFilters);
+    if (!isFilterGroupNotEmpty(parsedFilters)) {
       return undefined;
     }
-    const parsedFilters = alreadyParsed ? filters : JSON.parse(filters);
-    // filters already in new format are not converted again (code protection in case of migration re-run)
-    if (parsedFilters.mode) {
-      return filters;
-    }
+    const { filters, filterGroups } = parsedFilters;
     const newFiltersContent = [];
-    const newFilterGroupsContent = [];
-    toPairs(parsedFilters).forEach((pair) => {
-      let key = head(pair);
-      const values = last(pair);
-      const valIds = values.map((v) => v.id);
-      let operator = 'eq';
-      let mode = 'or';
-      // handle operators contained in the key
-      if (key.endsWith('start_date') || key.endsWith('_gt')) {
-        key = key.replace('_start_date', '').replace('_gt', '');
-        operator = 'gt';
-      } else if (key.endsWith('end_date') || key.endsWith('_lt')) {
-        key = key.replace('_end_date', '').replace('_lt', '');
-        operator = 'lt';
-      } else if (key.endsWith('_lte')) {
-        key = key.replace('_lte', '');
-        operator = 'lte';
-      } else if (key.endsWith('_not_eq')) {
-        key = key.replace('_not_eq', '');
-        operator = 'not_eq';
-        mode = 'and';
-      }
-      // change renamed keys
-      if (filterKeysConvertor.has(key)) {
-        key = filterKeysConvertor.get(key);
-      }
-      // rename element_id key for instance triggers
-      if (instance_trigger && key === 'elementId') {
-        key = 'connectedToId';
-      }
-      if (valIds.includes(null)) { // values cannot contains 'null' anymore, new nil operator
-        const nilOperator = (operator === 'not_eq') ? 'not_nil' : 'nil'; // replace the operator
-        if (valIds.length === 1) { // if there is only 'null' in values
-          newFiltersContent.push({ key: [key], values: [], operator: nilOperator, mode }); // replace by a filter with nil and values = []
-        } else { // if there is other values
-          newFilterGroupsContent.push(
-            {
-              mode,
-              filters: [
-                { key: [key], values: valIds.filter((id) => id !== null), operator, mode }, // remove null id
-                { key: [key], values: [], operator: nilOperator, mode }, // create a filter for the former null id
-              ],
-              filterGroups: [],
-            }
-          );
-        }
+    const newFilterGroups = [];
+    filters.forEach((filter) => {
+      const { key } = filter;
+      const arrayKeys = Array.isArray(key) ? key : [key];
+      if (arrayKeys.includes('x_opencti_workflow_id')) {
+        const newKeys = arrayKeys.filter((k) => k !== 'x_opencti_workflow_id');
+        newKeys.push('workflow_id');
+        newFiltersContent.push({ ...filter, key: uniq(newKeys) });
       } else {
-        newFiltersContent.push({ key: [key], values: valIds, operator, mode });
+        newFiltersContent.push(filter);
       }
     });
+    filterGroups.forEach((group) => {
+      const newGroup = convertWorkflowFilterKeys(group, true);
+      newFilterGroups.push(newGroup);
+    });
     const newFilters = {
-      mode: 'and',
+      mode: parsedFilters.mode,
       filters: newFiltersContent,
-      filterGroups: newFilterGroupsContent,
+      filterGroups: newFilterGroups,
     };
     return alreadyParsed ? newFilters : JSON.stringify(newFilters);
   };
@@ -108,10 +58,9 @@ export const up = async (next) => {
   let entitiesFiltersConvertor = {};
   entitiesToRefacto
     .forEach((n) => {
-      const instance_trigger = n.entity_type === ENTITY_TYPE_TRIGGER && n.instance_trigger === true;
       entitiesFiltersConvertor = {
         ...entitiesFiltersConvertor,
-        [n.internal_id]: convertFilters(n.filters, false, instance_trigger),
+        [n.internal_id]: convertWorkflowFilterKeys(n.filters, false),
       };
     });
 
@@ -154,10 +103,12 @@ export const up = async (next) => {
     }
   };
   await elUpdateByQueryForMigration(
-    '[MIGRATION] Triggers, Taxii, Feeds, Streams and Retention rules filters refacto',
+    '[MIGRATION] Rename workflow filter key for triggers, taxii, feeds, streams and retention rules',
     READ_DATA_INDICES,
     entitiesUpdateQuery
-  );
+  ).catch((err) => {
+    throw DatabaseError('Error updating elastic', { error: err });
+  });
 
   // 02. not finished query background tasks
   const tasks = await listAllEntities(
@@ -189,7 +140,7 @@ export const up = async (next) => {
     .forEach((task) => {
       tasksFiltersConvertor = {
         ...tasksFiltersConvertor,
-        [task.internal_id]: convertFilters(task.task_filters),
+        [task.internal_id]: convertWorkflowFilterKeys(task.task_filters),
       };
     });
 
@@ -209,10 +160,12 @@ export const up = async (next) => {
     }
   };
   await elUpdateByQueryForMigration(
-    '[MIGRATION] Query tasks filters refacto',
+    '[MIGRATION] Rename workflow filter key for query tasks',
     READ_DATA_INDICES,
     tasksUpdateQuery
-  );
+  ).catch((err) => {
+    throw DatabaseError('Error updating elastic', { error: err });
+  });
 
   // 03. Workspaces
   const workspaces = await listAllEntities(
@@ -232,28 +185,22 @@ export const up = async (next) => {
         for (let i = 0; i < widgetEntries.length; i += 1) {
           const [key, value] = widgetEntries[i];
           const { dataSelection } = value;
-          if (dataSelection) {
-            const newDataSelection = dataSelection.map((selection) => {
-              const { filters = null, dynamicFrom = null, dynamicTo = null } = selection;
-              const newFilters = convertFilters(filters, true);
-              const newDynamicFrom = convertFilters(dynamicFrom, true);
-              const newDynamicTo = convertFilters(dynamicTo, true);
-              return {
-                ...selection,
-                filters: newFilters,
-                dynamicFrom: newDynamicFrom,
-                dynamicTo: newDynamicTo,
-              };
-            });
-            newWidgets[key] = {
-              ...value,
-              dataSelection: newDataSelection,
+          const newDataSelection = dataSelection.map((selection) => {
+            const { filters = null, dynamicFrom = null, dynamicTo = null } = selection;
+            const newFilters = convertWorkflowFilterKeys(filters, true);
+            const newDynamicFrom = convertWorkflowFilterKeys(dynamicFrom, true);
+            const newDynamicTo = convertWorkflowFilterKeys(dynamicTo, true);
+            return {
+              ...selection,
+              filters: newFilters,
+              dynamicFrom: newDynamicFrom,
+              dynamicTo: newDynamicTo,
             };
-          } else {
-            newWidgets[key] = {
-              ...value,
-            };
-          }
+          });
+          newWidgets[key] = {
+            ...value,
+            dataSelection: newDataSelection,
+          };
         }
         const newManifest = {
           ...decodedManifest,
@@ -286,10 +233,12 @@ export const up = async (next) => {
     }
   };
   await elUpdateByQueryForMigration(
-    '[MIGRATION] Workspaces filters refacto',
+    '[MIGRATION] Rename workflow filter key for workspaces',
     READ_DATA_INDICES,
     workspacesUpdateQuery
-  );
+  ).catch((err) => {
+    throw DatabaseError('Error updating elastic', { error: err });
+  });
 
   // 04. Playbooks
   const playbooks = await listAllEntities(
@@ -304,12 +253,11 @@ export const up = async (next) => {
       const playbookDefinition = JSON.parse(playbook.playbook_definition);
       const definitionNodes = playbookDefinition.nodes;
       const newDefinitionNodes = [];
-      for (let i = 0; i < definitionNodes.length; i += 1) {
-        const node = definitionNodes[i];
+      definitionNodes.forEach((node) => {
         const nodeConfiguration = JSON.parse(node.configuration);
         const { filters } = nodeConfiguration;
         if (filters) {
-          const newFilters = convertFilters(filters);
+          const newFilters = convertWorkflowFilterKeys(filters);
           const newNode = {
             ...node,
             configuration: JSON.stringify({
@@ -321,7 +269,7 @@ export const up = async (next) => {
         } else { // no conversion to do
           newDefinitionNodes.push(node);
         }
-      }
+      });
       const newPlaybookDefinition = {
         ...playbookDefinition,
         nodes: newDefinitionNodes,
@@ -351,11 +299,12 @@ export const up = async (next) => {
     }
   };
   await elUpdateByQueryForMigration(
-    '[MIGRATION] Playbooks filters refacto',
+    '[MIGRATION] Rename workflow filter key for playbooks',
     READ_DATA_INDICES,
     playbooksUpdateQuery
-  );
-
+  ).catch((err) => {
+    throw DatabaseError('Error updating elastic', { error: err });
+  });
   logApp.info(`${message} > done`);
   next();
 };

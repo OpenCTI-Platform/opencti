@@ -8,7 +8,6 @@ import { stixDomainObjectsLinesSearchQuery } from '@components/common/stix_domai
 import { killChainPhasesLinesSearchQuery } from '@components/settings/kill_chain_phases/KillChainPhasesLines';
 import { labelsSearchQuery } from '@components/settings/LabelsQuery';
 import { attributesSearchQuery } from '@components/settings/AttributesQuery';
-import { statusFieldStatusesSearchQuery } from '@components/common/form/StatusField';
 import { vocabularySearchQuery } from '@components/settings/VocabularyQuery';
 import { objectAssigneeFieldAssigneesSearchQuery, objectAssigneeFieldMembersSearchQuery } from '@components/common/form/ObjectAssigneeField';
 import { IdentitySearchIdentitiesSearchQuery$data } from '@components/common/identities/__generated__/IdentitySearchIdentitiesSearchQuery.graphql';
@@ -19,12 +18,13 @@ import { MarkingDefinitionsLinesSearchQuery$data } from '@components/settings/ma
 import { KillChainPhasesLinesSearchQuery$data } from '@components/settings/kill_chain_phases/__generated__/KillChainPhasesLinesSearchQuery.graphql';
 import { LabelsQuerySearchQuery$data } from '@components/settings/__generated__/LabelsQuerySearchQuery.graphql';
 import { AttributesQuerySearchQuery$data } from '@components/settings/__generated__/AttributesQuerySearchQuery.graphql';
-import { StatusFieldStatusesSearchQuery$data } from '@components/common/form/__generated__/StatusFieldStatusesSearchQuery.graphql';
 import { VocabularyQuery$data } from '@components/settings/__generated__/VocabularyQuery.graphql';
 import { ObjectAssigneeFieldMembersSearchQuery$data } from '@components/common/form/__generated__/ObjectAssigneeFieldMembersSearchQuery.graphql';
 import { ObjectParticipantFieldParticipantsSearchQuery$data } from '@components/common/form/__generated__/ObjectParticipantFieldParticipantsSearchQuery.graphql';
 import { objectParticipantFieldParticipantsSearchQuery } from '@components/common/form/ObjectParticipantField';
 import { useTheme } from '@mui/styles';
+import { StatusTemplateFieldQuery } from '@components/common/form/StatusTemplateField';
+import { StatusTemplateFieldSearchQuery$data } from '@components/common/form/__generated__/StatusTemplateFieldSearchQuery.graphql';
 import { buildScaleFilters } from '../hooks/useScale';
 import useAuth from '../hooks/useAuth';
 import { useSearchEntitiesStixCoreObjectsSearchQuery$data } from './__generated__/useSearchEntitiesStixCoreObjectsSearchQuery.graphql';
@@ -34,7 +34,6 @@ import { defaultValue } from '../Graph';
 import { fetchQuery } from '../../relay/environment';
 import { useVocabularyCategoryQuery$data } from '../hooks/__generated__/useVocabularyCategoryQuery.graphql';
 import { useSearchEntitiesStixCoreObjectsContainersSearchQuery$data } from './__generated__/useSearchEntitiesStixCoreObjectsContainersSearchQuery.graphql';
-import { isNotEmptyField } from '../utils';
 import { useSearchEntitiesSchemaSCOSearchQuery$data } from './__generated__/useSearchEntitiesSchemaSCOSearchQuery.graphql';
 import type { Theme } from '../../components/Theme';
 
@@ -802,33 +801,25 @@ const useSearchEntities = ({
       case 'source':
         buildOptionsFromAttributesSearchQuery(filterKey);
         break;
-
-      case 'x_opencti_workflow_id':
-        fetchQuery(statusFieldStatusesSearchQuery, {
+      case 'workflow_id':
+        fetchQuery(StatusTemplateFieldQuery, {
           first: 500,
-          filters: isNotEmptyField(entityType) ? {
-            mode: 'and',
-            filterGroups: [],
-            filters: [{ key: 'type', values: [entityType] }],
-          } : undefined,
         })
           .toPromise()
           .then((data) => {
-            const statusEntities = (
-              (data as StatusFieldStatusesSearchQuery$data)?.statuses?.edges ?? []
+            const statusTemplateEntities = (
+              (data as StatusTemplateFieldSearchQuery$data)?.statusTemplates?.edges
+              ?? []
             )
-              .filter((n) => !R.isNil(n.node.template))
+              .filter((n) => !R.isNil(n?.node))
               .map((n) => ({
-                label: n.node.template?.name,
-                color: n.node.template?.color,
-                value: n.node.id,
-                order: n.node.order,
-                group: n.node.type,
+                label: n?.node.name,
+                color: n?.node.color,
+                value: n?.node.id,
                 type: 'Vocabulary',
               }))
-              .sort((a, b) => (a.label ?? '').localeCompare(b.label ?? ''))
-              .sort((a, b) => a.group.localeCompare(b.group));
-            unionSetEntities(filterKey, statusEntities);
+              .sort((a, b) => (a.label ?? '').localeCompare(b.label ?? ''));
+            unionSetEntities('workflow_id', statusTemplateEntities);
           });
         break;
       case 'x_opencti_main_observable_type':

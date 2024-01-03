@@ -68,7 +68,8 @@ export const isStixMatchFilterGroup_MockableForUnitTests = async (
   // if no filters and the user has access: the stix always match
   if (!filterGroup) return true;
 
-  const resolvedFilterGroup = resolveFilterGroup(filterGroup, resolutionMap);
+  // replace the ids in values if necessary, to adapt to the stix format
+  const resolvedFilterGroup = await resolveFilterGroup(context, user, filterGroup, resolutionMap);
 
   // then call our boolean engine on the filter group using the stix testers
   return testFilterGroup(stix, resolvedFilterGroup, FILTER_KEY_TESTERS_MAP);

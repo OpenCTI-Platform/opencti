@@ -69,7 +69,7 @@ export const testIndicatorTypes = (stix: any, filter: Filter) => {
 };
 
 /**
- * MARKINGS
+ * WORKFLOWS
  * - x_opencti_workflow_id is workflow_id in stix (in extension)
  */
 export const testWorkflow = (stix: any, filter: Filter) => {
