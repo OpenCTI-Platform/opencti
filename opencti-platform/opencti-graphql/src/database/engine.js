@@ -97,11 +97,11 @@ const ES_INDEX_REPLICA_NUMBER = conf.get('elasticsearch:number_of_replicas');
 const ES_PRIMARY_SHARD_SIZE = conf.get('elasticsearch:max_primary_shard_size') || '50gb';
 const ES_MAX_AGE = conf.get('elasticsearch:max_age') || '365d';
 const ES_MAX_DOCS = conf.get('elasticsearch:max_docs') || 75000000;
+const ES_MAX_BULK_RESOLUTIONS = conf.get('elasticsearch:max_bulk_resolutions') || 500;
 export const MAX_BULK_OPERATIONS = conf.get('elasticsearch:max_bulk_operations') || 5000;
 
 const ES_RETRY_ON_CONFLICT = 5;
 const MAX_EVENT_LOOP_PROCESSING_TIME = 50;
-export const MAX_TERMS_SPLIT = 65000; // By default, Elasticsearch limits the terms query to a maximum of 65,536 terms. You can change this limit using the index.
 export const BULK_TIMEOUT = '5m';
 const MAX_AGGREGATION_SIZE = 100;
 const MAX_JS_PARAMS = 65536; // Too prevent Maximum call stack size exceeded
@@ -1266,7 +1266,7 @@ export const elFindByIds = async (context, user, ids, opts = {}) => {
     return toMap ? {} : [];
   }
   let hits = {};
-  const groupIds = R.splitEvery(MAX_TERMS_SPLIT, idsArray);
+  const groupIds = R.splitEvery(ES_MAX_BULK_RESOLUTIONS, idsArray);
   for (let index = 0; index < groupIds.length; index += 1) {
     const mustTerms = [];
     const workingIds = groupIds[index];

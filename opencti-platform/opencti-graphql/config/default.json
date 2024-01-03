@@ -187,6 +187,7 @@
     "max_pagination_result": 5000,
     "max_concurrency": 4,
     "max_bulk_operations": 5000,
+    "max_bulk_resolutions": 500,
     "engine_selector": "auto"
   },
   "minio": {
