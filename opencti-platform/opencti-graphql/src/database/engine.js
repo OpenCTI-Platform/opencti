@@ -107,6 +107,7 @@ const ES_MAX_DOCS = conf.get('elasticsearch:max_docs') || 75000000;
 const ES_MAX_BULK_RESOLUTIONS = conf.get('elasticsearch:max_bulk_resolutions') || 500;
 export const MAX_BULK_OPERATIONS = conf.get('elasticsearch:max_bulk_operations') || 5000;
 
+const ES_MAX_MAPPINGS = 3000;
 const ES_RETRY_ON_CONFLICT = 5;
 const MAX_EVENT_LOOP_PROCESSING_TIME = 50;
 export const BULK_TIMEOUT = '5m';
@@ -631,7 +632,7 @@ const computePlatformSettings = (index) => {
       index: {
         mapping: {
           total_fields: {
-            limit: 3000,
+            limit: ES_MAX_MAPPINGS,
           }
         },
         lifecycle: {
@@ -642,6 +643,11 @@ const computePlatformSettings = (index) => {
     };
   }
   return {
+    mapping: {
+      total_fields: {
+        limit: ES_MAX_MAPPINGS,
+      }
+    },
     plugins: {
       index_state_management: {
         rollover_alias: index,
@@ -708,6 +714,11 @@ export const elUpdateIndicesMappings = async () => {
   for (let indicesIndex = 0; indicesIndex < indices.length; indicesIndex += 1) {
     const { index } = indices[indicesIndex];
     const indexMappingProperties = await elPlatformMapping(index);
+    // Replace settings with updated ones
+    const platformSettings = computePlatformSettings(index);
+    await engine.indices.putSettings({ index, body: platformSettings }).catch((e) => {
+      throw DatabaseError('Updating index settings fail', { index, cause: e });
+    });
     const operations = jsonpatch.compare(sortMappingsKeys(indexMappingProperties), sortMappingsKeys(mappingProperties));
     // We can only complete new mappings
     // Replace is not possible for existing ones
@@ -715,8 +726,8 @@ export const elUpdateIndicesMappings = async () => {
     if (addOperations.length > 0) {
       const properties = jsonpatch.applyPatch(indexMappingProperties, addOperations).newDocument;
       const body = { properties };
-      await engine.indices.putMapping({ index: indices.map((i) => i.index), body }).catch((e) => {
-        throw DatabaseError('Updating indices mapping fail', { cause: e });
+      await engine.indices.putMapping({ index, body }).catch((e) => {
+        throw DatabaseError('Updating index mapping fail', { index, cause: e });
       });
     }
   }
