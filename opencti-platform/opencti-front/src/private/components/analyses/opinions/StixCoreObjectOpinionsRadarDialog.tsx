@@ -26,6 +26,7 @@ import {
   StixCoreObjectOpinionsRadarDialogMyOpinionQuery,
   StixCoreObjectOpinionsRadarDialogMyOpinionQuery$variables,
 } from './__generated__/StixCoreObjectOpinionsRadarDialogMyOpinionQuery.graphql';
+import { MESSAGING$ } from '../../../../relay/environment';
 
 export const stixCoreObjectOpinionsRadarDialogMyOpinionQuery = graphql`
   query StixCoreObjectOpinionsRadarDialogMyOpinionQuery($id: String!) {
@@ -81,7 +82,17 @@ StixCoreObjectOpinionsRadarDialogProps
     myOpinionValue ?? Math.round(opinionOptions.length / 2),
   );
   const [open, setOpen] = useState(false);
-  const handleOpen = () => setOpen(true);
+  const handleOpen = () => {
+    if (opinionOptions.length > 0) {
+      setOpen(true);
+    } else {
+      MESSAGING$.notifyError(
+        <span>
+          {t('There are no opinions. You should create some before.')}
+        </span>,
+      );
+    }
+  };
   const handleClose = () => setOpen(false);
   const userIsKnowledgeEditor = useGranted([KNOWLEDGE_KNUPDATE]);
   const [commitCreation] = useMutation(
@@ -149,92 +160,94 @@ StixCoreObjectOpinionsRadarDialogProps
         >
           <ThumbsUpDownOutlined fontSize="small" />
         </IconButton>
-        <Dialog
-          PaperProps={{ elevation: 1 }}
-          open={open}
-          onClose={handleClose}
-          fullWidth={true}
-        >
-          <Formik
-            enableReinitialize={true}
-            initialValues={{
-              alreadyExistingOpinion: myOpinion?.id ?? '',
-              explanation: myOpinion?.explanation ?? '',
-              confidence: myOpinion?.confidence ?? 75,
-            }}
-            onSubmit={onSubmit}
-            onReset={handleClose}
-          >
-            {({ submitForm, handleReset, isSubmitting }) => (
-              <Form>
-                <DialogTitle>
-                  {myOpinion ? t('Update opinion') : t('Create an opinion')}
-                </DialogTitle>
-                <DialogContent>
-                  <div style={{ marginLeft: 10, marginRight: 10 }}>
-                    <Slider
-                      sx={{
-                        '& .MuiSlider-markLabel': {
-                          textOverflow: 'ellipsis',
-                          maxWidth: 60,
-                          overflow: 'hidden',
-                        },
-                        '& .MuiSlider-thumb[style*="left: 0%"] .MuiSlider-valueLabelOpen':
+        {opinionOptions.length > 0
+          && <Dialog
+            PaperProps={{ elevation: 1 }}
+            open={open}
+            onClose={handleClose}
+            fullWidth={true}
+             >
+            <Formik
+              enableReinitialize={true}
+              initialValues={{
+                alreadyExistingOpinion: myOpinion?.id ?? '',
+                explanation: myOpinion?.explanation ?? '',
+                confidence: myOpinion?.confidence ?? 75,
+              }}
+              onSubmit={onSubmit}
+              onReset={handleClose}
+            >
+              {({ submitForm, handleReset, isSubmitting }) => (
+                <Form>
+                  <DialogTitle>
+                    {myOpinion ? t('Update opinion') : t('Create an opinion')}
+                  </DialogTitle>
+                  <DialogContent>
+                    <div style={{ marginLeft: 10, marginRight: 10 }}>
+                      <Slider
+                        sx={{
+                          '& .MuiSlider-markLabel': {
+                            textOverflow: 'ellipsis',
+                            maxWidth: 60,
+                            overflow: 'hidden',
+                          },
+                          '& .MuiSlider-thumb[style*="left: 0%"] .MuiSlider-valueLabelOpen':
                           {
                             left: -5,
                             '&:before': {
                               left: '22%',
                             },
                           },
-                        '& .MuiSlider-thumb[style*="left: 100%"] .MuiSlider-valueLabelOpen':
+                          '& .MuiSlider-thumb[style*="left: 100%"] .MuiSlider-valueLabelOpen':
                           {
                             right: -5,
                             '&:before': {
                               left: '88%',
                             },
                           },
-                      }}
-                      style={{ marginTop: 30 }}
-                      value={currentOpinion}
-                      onChange={(_, v) => setCurrentOpinion(v as number)}
-                      valueLabelDisplay="on"
-                      valueLabelFormat={(v) => opinionOptions[v - 1].label}
-                      marks={opinionOptions}
-                      step={1}
-                      min={1}
-                      max={opinionOptions.length}
+                        }}
+                        style={{ marginTop: 30 }}
+                        value={currentOpinion}
+                        onChange={(_, v) => setCurrentOpinion(v as number)}
+                        valueLabelDisplay="on"
+                        valueLabelFormat={(v) => opinionOptions[v - 1].label}
+                        marks={opinionOptions}
+                        step={1}
+                        min={1}
+                        max={opinionOptions.length}
+                      />
+                    </div>
+                    <Field
+                      component={MarkdownField}
+                      name="explanation"
+                      label={t('Explanation')}
+                      fullWidth={true}
+                      multiline={true}
+                      rows="4"
+                      style={fieldSpacingContainerStyle}
                     />
-                  </div>
-                  <Field
-                    component={MarkdownField}
-                    name="explanation"
-                    label={t('Explanation')}
-                    fullWidth={true}
-                    multiline={true}
-                    rows="4"
-                    style={fieldSpacingContainerStyle}
-                  />
-                  <ConfidenceField
-                    entityType="Opinion"
-                    containerStyle={fieldSpacingContainerStyle}
-                  />
-                </DialogContent>
-                <DialogActions>
-                  <Button onClick={handleReset} disabled={isSubmitting}>
-                    {t('Cancel')}
-                  </Button>
-                  <Button
-                    color="secondary"
-                    onClick={submitForm}
-                    disabled={isSubmitting}
-                  >
-                    {myOpinion ? t('Update') : t('Create')}
-                  </Button>
-                </DialogActions>
-              </Form>
-            )}
-          </Formik>
-        </Dialog>
+                    <ConfidenceField
+                      entityType="Opinion"
+                      containerStyle={fieldSpacingContainerStyle}
+                    />
+                  </DialogContent>
+                  <DialogActions>
+                    <Button onClick={handleReset} disabled={isSubmitting}>
+                      {t('Cancel')}
+                    </Button>
+                    <Button
+                      color="secondary"
+                      onClick={submitForm}
+                      disabled={isSubmitting}
+                    >
+                      {myOpinion ? t('Update') : t('Create')}
+                    </Button>
+                  </DialogActions>
+                </Form>
+              )}
+            </Formik>
+          </Dialog>
+        }
       </>
     </Security>
   );
