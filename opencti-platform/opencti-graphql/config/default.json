@@ -48,6 +48,7 @@
         "exporter_prometheus": 14269
       }
     },
+    "health_access_key": "ChangeMe",
     "request_timeout": 1200000,
     "session_timeout": 1200000,
     "session_cookie": false,

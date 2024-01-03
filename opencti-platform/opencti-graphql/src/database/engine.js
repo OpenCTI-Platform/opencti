@@ -68,12 +68,12 @@ import { isStixObject } from '../schema/stixCoreObject';
 import { isBasicRelationship, isStixRelationshipExceptRef } from '../schema/stixRelationship';
 import { RELATION_INDICATES } from '../schema/stixCoreRelationship';
 import { INTERNAL_FROM_FIELD, INTERNAL_TO_FIELD } from '../schema/identifier';
-import { BYPASS, computeUserMemberAccessIds, INTERNAL_USERS, isBypassUser, MEMBER_ACCESS_ALL, } from '../utils/access';
+import { BYPASS, computeUserMemberAccessIds, executionContext, INTERNAL_USERS, isBypassUser, MEMBER_ACCESS_ALL, SYSTEM_USER } from '../utils/access';
 import { isSingleRelationsRef, } from '../schema/stixEmbeddedRelationship';
 import { now, runtimeFieldObservableValueScript } from '../utils/format';
 import { ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
 import { getEntitiesListFromCache, getEntityFromCache } from './cache';
-import { ENTITY_TYPE_SETTINGS, ENTITY_TYPE_STATUS, ENTITY_TYPE_USER } from '../schema/internalObject';
+import { ENTITY_TYPE_MIGRATION_STATUS, ENTITY_TYPE_SETTINGS, ENTITY_TYPE_STATUS, ENTITY_TYPE_USER } from '../schema/internalObject';
 import { telemetry } from '../config/tracing';
 import { isBooleanAttribute, isDateAttribute, isDateNumericOrBooleanAttribute } from '../schema/schema-attributes';
 import { convertTypeToStixType } from './stix-converter';
@@ -190,6 +190,14 @@ export const isElkEngine = () => {
   return engine instanceof ElkClient;
 };
 
+export const isEngineAlive = async () => {
+  const context = executionContext('healthcheck');
+  const options = { types: [ENTITY_TYPE_MIGRATION_STATUS], connectionFormat: false };
+  const migrations = await elPaginate(context, SYSTEM_USER, READ_INDEX_INTERNAL_OBJECTS, options);
+  if (migrations.length === 0) {
+    throw DatabaseError('Invalid database content, missing migration schema');
+  }
+};
 export const searchEngineInit = async () => {
   // Select the correct engine
   const engineSelector = conf.get('elasticsearch:engine_selector') || 'auto';
