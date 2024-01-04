@@ -9709,12 +9709,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"json-to-plain-text@npm:1.1.3":
-  version: 1.1.3
-  resolution: "json-to-plain-text@npm:1.1.3"
+"json-to-plain-text@npm:1.1.4":
+  version: 1.1.4
+  resolution: "json-to-plain-text@npm:1.1.4"
   dependencies:
     chalk: ^4.1.2
-  checksum: 1a322533e24fd548e5178d830eb7e3d4b8d9aec38364fd15c40963a3707f4ace8ee2246e45feb010871011240cb8bb3a81a3ac096e1fe8bbca194e08d5d92491
+  checksum: 44ffed410154073734c820990d932ca8a9ae23d730decd89aeb228bb22180553c7b0350077296f5f94ca4f5f7c8233f1dec011cbe9f04bca90e4aeac2495194b
   languageName: node
   linkType: hard
 
@@ -11027,7 +11027,7 @@ __metadata:
     ipaddr.js: 2.1.0
     iterall: 1.3.0
     js-deep-equals: 2.1.1
-    json-to-plain-text: 1.1.3
+    json-to-plain-text: 1.1.4
     jsonpath-plus: 7.2.0
     jwt-decode: 4.0.0
     lru-cache: 7.18.3
