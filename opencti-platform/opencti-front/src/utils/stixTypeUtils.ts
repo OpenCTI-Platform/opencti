@@ -8,10 +8,10 @@ export const computeTargetStixDomainObjectTypes = (stixCoreObjectTypes: string[]
     ? ['Stix-Domain-Object']
     : stixCoreObjectTypesWithoutObservables;
 };
-export const computeTargetStixCyberObservableTypes = (stixCoreObjectTypes: string[]): string[] | null => {
+export const computeTargetStixCyberObservableTypes = (stixCoreObjectTypes: string[]): string[] => {
   const finalStixCoreObjectTypes = stixCoreObjectTypes || ['Stix-Core-Object'];
   return finalStixCoreObjectTypes.includes('Stix-Core-Object')
   || finalStixCoreObjectTypes.includes('Stix-Cyber-Observable')
     ? ['Stix-Cyber-Observable']
-    : null;
+    : [];
 };

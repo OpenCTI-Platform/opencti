@@ -1,4 +1,5 @@
 import React, { FunctionComponent, useRef, useState } from 'react';
+import { v4 as uuid } from 'uuid';
 import { graphql } from 'react-relay';
 import * as R from 'ramda';
 import Drawer from '@mui/material/Drawer';
@@ -206,14 +207,14 @@ const stixCoreRelationshipCreationFromEntityToMutation = graphql`
 
 interface StixCoreRelationshipCreationFromEntityProps {
   entityId: string;
-  allowedRelationshipTypes: string[];
+  allowedRelationshipTypes?: string[];
   isRelationReversed?: boolean;
-  targetStixDomainObjectTypes: string[];
-  targetStixCyberObservableTypes: string[];
+  targetStixDomainObjectTypes?: string[];
+  targetStixCyberObservableTypes?: string[];
   defaultStartTime: string;
   defaultStopTime: string;
   paginationOptions: unknown;
-  connectionKey: string;
+  connectionKey?: string;
   paddingRight: number;
   variant?: string;
   targetEntities?: TargetEntity[];
@@ -305,6 +306,7 @@ const StixCoreRelationshipCreationFromEntity: FunctionComponent<StixCoreRelation
         mode: 'and',
         filterGroups: [],
         filters: [{
+          id: uuid(),
           key: 'entity_type',
           values: actualTypeFilter,
           operator: 'eq',
