@@ -10649,6 +10649,7 @@ export type LocationEdge = {
   __typename?: 'LocationEdge';
   cursor: Scalars['String']['output'];
   node: Location;
+  types?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
 };
 
 export type LocationEditMutations = {
@@ -20553,6 +20554,7 @@ export type SectorEdge = {
   __typename?: 'SectorEdge';
   cursor: Scalars['String']['output'];
   node: Sector;
+  types?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
 };
 
 export type SectorEditMutations = {
@@ -32047,6 +32049,7 @@ export type LocationConnectionResolvers<ContextType = any, ParentType extends Re
 export type LocationEdgeResolvers<ContextType = any, ParentType extends ResolversParentTypes['LocationEdge'] = ResolversParentTypes['LocationEdge']> = ResolversObject<{
   cursor?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   node?: Resolver<ResolversTypes['Location'], ParentType, ContextType>;
+  types?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
@@ -34519,6 +34522,7 @@ export type SectorConnectionResolvers<ContextType = any, ParentType extends Reso
 export type SectorEdgeResolvers<ContextType = any, ParentType extends ResolversParentTypes['SectorEdge'] = ResolversParentTypes['SectorEdge']> = ResolversObject<{
   cursor?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   node?: Resolver<ResolversTypes['Sector'], ParentType, ContextType>;
+  types?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 

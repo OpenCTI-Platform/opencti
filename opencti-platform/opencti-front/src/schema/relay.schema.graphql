@@ -3189,6 +3189,7 @@ type SectorConnection {
 
 type SectorEdge {
   cursor: String!
+  types: [String]
   node: Sector!
 }
 
@@ -3612,6 +3613,7 @@ type LocationConnection {
 
 type LocationEdge {
   cursor: String!
+  types: [String]
   node: Location!
 }
 

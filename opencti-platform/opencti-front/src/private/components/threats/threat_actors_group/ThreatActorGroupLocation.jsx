@@ -12,6 +12,7 @@ import IconButton from '@mui/material/IconButton';
 import { LinkOff } from '@mui/icons-material';
 import { graphql, createFragmentContainer } from 'react-relay';
 import * as R from 'ramda';
+import { AutoFix } from 'mdi-material-ui';
 import { APP_BASE_PATH, commitMutation } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
 import { resolveLink } from '../../../../utils/Entity';
@@ -66,6 +67,7 @@ class ThreatActorGroupLocationsComponent extends Component {
             </ListItem>
           )}
           {threatActorGroup.locations.edges.map((locationEdge) => {
+            const { types } = locationEdge;
             const location = locationEdge.node;
             const link = resolveLink(location.entity_type);
             const flag = location.entity_type === 'Country'
@@ -97,17 +99,19 @@ class ThreatActorGroupLocationsComponent extends Component {
                   </ListItemIcon>
                 </ListItemIcon>
                 <ListItemText primary={location.name} />
-                <ListItemSecondaryAction>
-                  <Security needs={[KNOWLEDGE_KNUPDATE]}>
-                    <IconButton
-                      aria-label="Remove"
-                      onClick={this.removeLocation.bind(this, locationEdge)}
-                      size="large"
-                    >
-                      <LinkOff />
-                    </IconButton>
-                  </Security>
-                </ListItemSecondaryAction>
+                {types.includes('manual') ? (
+                  <ListItemSecondaryAction>
+                    <Security needs={[KNOWLEDGE_KNUPDATE]}>
+                      <IconButton
+                        aria-label="Remove"
+                        onClick={() => this.removeLocation(locationEdge)}
+                        size="large"
+                      >
+                        <LinkOff />
+                      </IconButton>
+                    </Security>
+                  </ListItemSecondaryAction>
+                ) : <AutoFix fontSize="small" style={{ marginRight: 13 }}/>}
               </ListItem>
             );
           })}
@@ -135,6 +139,7 @@ const ThreatActorGroupLocations = createFragmentContainer(
         entity_type
         locations {
           edges {
+            types
             node {
               id
               parent_types

@@ -11,6 +11,7 @@ import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
 import IconButton from '@mui/material/IconButton';
 import { Domain, LinkOff } from '@mui/icons-material';
 import { graphql, createFragmentContainer } from 'react-relay';
+import { AutoFix } from 'mdi-material-ui';
 import AddSubSector from './AddSubSector';
 import { addSubSectorsMutationRelationDelete } from './AddSubSectorsLines';
 import { commitMutation } from '../../../../relay/environment';
@@ -56,6 +57,7 @@ class SectorSubSectorsComponent extends Component {
         <div className="clearfix" />
         <List style={{ marginTop: -10 }}>
           {sector.subSectors.edges.map((subSectorEdge) => {
+            const { types } = subSectorEdge;
             const subSector = subSectorEdge.node;
             return (
               <ListItem
@@ -70,15 +72,19 @@ class SectorSubSectorsComponent extends Component {
                   <Domain color="primary" />
                 </ListItemIcon>
                 <ListItemText primary={subSector.name} />
-                <ListItemSecondaryAction>
-                  <IconButton
-                    aria-label="Remove"
-                    onClick={this.removeSubSector.bind(this, subSectorEdge)}
-                    size="large"
-                  >
-                    <LinkOff />
-                  </IconButton>
-                </ListItemSecondaryAction>
+                {types.includes('manual') ? (
+                  <ListItemSecondaryAction>
+                    <Security needs={[KNOWLEDGE_KNUPDATE]}>
+                      <IconButton
+                        aria-label="Remove"
+                        onClick={this.removeSubSector.bind(this, subSectorEdge)}
+                        size="large"
+                      >
+                        <LinkOff />
+                      </IconButton>
+                    </Security>
+                  </ListItemSecondaryAction>
+                ) : <AutoFix fontSize="small" style={{ marginRight: 13 }}/>}
               </ListItem>
             );
           })}
@@ -104,6 +110,7 @@ const SectorSubSectors = createFragmentContainer(SectorSubSectorsComponent, {
       entity_type
       subSectors {
         edges {
+          types
           node {
             id
             name
