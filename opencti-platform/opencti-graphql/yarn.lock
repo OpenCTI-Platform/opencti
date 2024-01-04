@@ -5751,10 +5751,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"async-lock@npm:1.4.0":
-  version: 1.4.0
-  resolution: "async-lock@npm:1.4.0"
-  checksum: a71ef9e50dc448a8e8dd6482494210d7b6f556d4815612b1fed5662216cd756c2c8fb9c2153a9a66ea90b36ba7fb18aa568d11813aadc23feb4c5b0b188df614
+"async-lock@npm:1.4.1":
+  version: 1.4.1
+  resolution: "async-lock@npm:1.4.1"
+  checksum: 29e70cd892932b7c202437786cedc39ff62123cb6941014739bd3cabd6106326416e9e7c21285a5d1dc042cad239a0f7ec9c44658491ee4a615fd36a21c1d10a
   languageName: node
   linkType: hard
 
@@ -10975,7 +10975,7 @@ __metadata:
     apollo-server-express: 3.13.0
     archiver: 6.0.1
     archiver-zip-encrypted: 1.0.11
-    async-lock: 1.4.0
+    async-lock: 1.4.1
     axios: 1.6.2
     axios-cookiejar-support: 4.0.7
     bcryptjs: 2.4.3
