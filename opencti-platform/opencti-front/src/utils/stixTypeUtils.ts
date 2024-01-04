@@ -1,14 +1,14 @@
-export const isStixCyberObservables = (stixCoreObjectTypes) => stixCoreObjectTypes?.includes('Stix-Cyber-Observable');
-export const isStixCoreObjects = (stixCoreObjectTypes) => !stixCoreObjectTypes || stixCoreObjectTypes.includes('Stix-Core-Object');
+export const isStixCyberObservables = (stixCoreObjectTypes?: string[]) => stixCoreObjectTypes?.includes('Stix-Cyber-Observable');
+export const isStixCoreObjects = (stixCoreObjectTypes?: string[]) => !stixCoreObjectTypes || stixCoreObjectTypes.includes('Stix-Core-Object');
 
-export const computeTargetStixDomainObjectTypes = (stixCoreObjectTypes) => {
+export const computeTargetStixDomainObjectTypes = (stixCoreObjectTypes: string[]): string[] => {
   const finalStixCoreObjectTypes = stixCoreObjectTypes || ['Stix-Core-Object'];
   const stixCoreObjectTypesWithoutObservables = finalStixCoreObjectTypes.filter((n) => n !== 'Stix-Cyber-Observable');
   return stixCoreObjectTypesWithoutObservables.includes('Stix-Core-Object')
     ? ['Stix-Domain-Object']
     : stixCoreObjectTypesWithoutObservables;
 };
-export const computeTargetStixCyberObservableTypes = (stixCoreObjectTypes) => {
+export const computeTargetStixCyberObservableTypes = (stixCoreObjectTypes: string[]): string[] | null => {
   const finalStixCoreObjectTypes = stixCoreObjectTypes || ['Stix-Core-Object'];
   return finalStixCoreObjectTypes.includes('Stix-Core-Object')
   || finalStixCoreObjectTypes.includes('Stix-Cyber-Observable')
