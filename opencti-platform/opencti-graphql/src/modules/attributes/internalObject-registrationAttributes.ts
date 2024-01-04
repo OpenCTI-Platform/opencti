@@ -24,7 +24,6 @@ import {
   ENTITY_TYPE_WORK,
   ENTITY_TYPE_ACTIVITY
 } from '../../schema/internalObject';
-import { settingsMessages } from '../../domain/settings';
 import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../organization/organization-types';
 
 const HistoryDefinition: AttributeDefinition[] = [
@@ -120,6 +119,7 @@ const HistoryDefinition: AttributeDefinition[] = [
       { name: 'creator_ids', label: 'Authors', type: 'string', format: 'short', editDefault: false, mandatoryType: 'no', multiple: true, upsert: true, isFilterable: false },
       { name: 'granted_refs_ids', label: 'Granted refs', type: 'string', format: 'short', editDefault: false, mandatoryType: 'no', multiple: true, upsert: true, isFilterable: false },
       { name: 'labels_ids', label: 'Label IDs', type: 'string', format: 'short', editDefault: false, mandatoryType: 'no', multiple: true, upsert: true, isFilterable: false },
+      { name: 'workspace_type', label: 'Workspace type', type: 'string', format: 'short', editDefault: false, mandatoryType: 'no', multiple: true, upsert: true, isFilterable: false },
       { name: 'types', label: 'Types', type: 'string', format: 'short', editDefault: false, mandatoryType: 'no', multiple: true, upsert: true, isFilterable: true },
       { name: 'search', label: 'Search', type: 'string', format: 'short', editDefault: false, mandatoryType: 'no', multiple: false, upsert: true, isFilterable: true },
       { name: 'filters', label: 'Filters', type: 'string', format: 'text', editDefault: false, mandatoryType: 'no', multiple: false, upsert: true, isFilterable: true },
@@ -129,6 +129,25 @@ const HistoryDefinition: AttributeDefinition[] = [
     ]
   },
 ];
+
+export const settingsMessages = {
+  type: 'array',
+  items: {
+    type: 'object',
+    properties: {
+      id: {
+        type: 'string',
+        minLength: 1
+      },
+      message: { type: 'string' },
+      activated: { type: 'boolean' },
+      updated_at: { type: 'string' },
+      dismissible: { type: 'boolean' },
+      color: { type: 'string' },
+    },
+    required: ['id', 'message', 'activated', 'updated_at', 'dismissible']
+  },
+};
 
 const internalObjectsAttributes: { [k: string]: Array<AttributeDefinition> } = {
   [ENTITY_TYPE_SETTINGS]: [
@@ -406,6 +425,7 @@ const internalObjectsAttributes: { [k: string]: Array<AttributeDefinition> } = {
     { name: 'task_filters', label: 'Filters', type: 'string', format: 'json', mandatoryType: 'external', editDefault: false, multiple: false, upsert: false, isFilterable: true },
     { name: 'task_search', label: 'Search', type: 'string', format: 'short', mandatoryType: 'external', editDefault: false, multiple: false, upsert: false, isFilterable: true },
     { name: 'task_position', label: 'Position', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true },
+    { name: 'task_ids', label: 'Included IDs', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: true, upsert: false, isFilterable: false },
     { name: 'task_excluded_ids', label: 'Excluded IDs', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: true, upsert: false, isFilterable: false },
     { name: 'task_processed_number', label: 'Processed number', type: 'numeric', precision: 'integer', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
     { name: 'task_expected_number', label: 'Expected number', type: 'numeric', precision: 'integer', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },

@@ -1,7 +1,5 @@
-import administrativeAreaTypeDefs from './administrativeArea.graphql';
 import convertAdministrativeAreaToStix from './administrativeArea-converter';
 import { NAME_FIELD, normalizeName } from '../../schema/identifier';
-import administrativeAreaResolvers from './administrativeArea-resolver';
 import { ENTITY_TYPE_LOCATION_ADMINISTRATIVE_AREA, type StoreEntityAdministrativeArea } from './administrativeArea-types';
 import { REL_BUILT_IN } from '../../database/stix';
 import { RELATION_LOCATED_AT } from '../../schema/stixCoreRelationship';
@@ -18,10 +16,6 @@ const ADMINISTRATIVE_AREA_DEFINITION: ModuleDefinition<StoreEntityAdministrative
     name: ENTITY_TYPE_LOCATION_ADMINISTRATIVE_AREA,
     category: ENTITY_TYPE_LOCATION,
     aliased: true
-  },
-  graphql: {
-    schema: administrativeAreaTypeDefs,
-    resolver: administrativeAreaResolvers,
   },
   identifier: {
     definition: {

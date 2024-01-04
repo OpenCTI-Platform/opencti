@@ -1,25 +1,81 @@
-import type { StixEntitySetting, StoreEntityEntitySetting } from './entitySetting-types';
+import type { JSONSchemaType } from 'ajv';
+import type { AttributeConfiguration, ScaleConfig, StixEntitySetting, StoreEntityEntitySetting } from './entitySetting-types';
 import { ENTITY_TYPE_ENTITY_SETTING } from './entitySetting-types';
 import { ABSTRACT_INTERNAL_OBJECT } from '../../schema/general';
-import entitySettingResolvers from './entitySetting-resolvers';
-import entitySettingTypeDefs from './entitySetting.graphql';
 import convertEntitySettingToStix from './entitySetting-converter';
-import { attributeConfiguration, } from './entitySetting-utils';
 import { type ModuleDefinition, registerDefinition } from '../../schema/module';
 import { validateEntitySettingCreation, validateEntitySettingUpdate } from './entitySetting-validators';
 
 const TARGET_TYPE = 'target_type';
 
-const ENTITY_SETTING_DEFINITION: ModuleDefinition<StoreEntityEntitySetting, StixEntitySetting> = {
+const scaleConfig: JSONSchemaType<ScaleConfig> = {
+  type: 'object',
+  properties: {
+    better_side: { type: 'string' },
+    min: {
+      type: 'object',
+      properties: {
+        value: { type: 'number' },
+        color: { type: 'string', pattern: '#[a-zA-Z0-9]{6}' },
+        label: { type: 'string', minLength: 1 },
+      },
+      required: ['value', 'color', 'label'],
+    },
+    max: {
+      type: 'object',
+      properties: {
+        value: { type: 'number' },
+        color: { type: 'string', pattern: '#[a-zA-Z0-9]{6}' },
+        label: { type: 'string', minLength: 1 },
+      },
+      required: ['value', 'color', 'label'],
+    },
+    ticks: {
+      type: 'array',
+      items: {
+        type: 'object',
+        properties: {
+          value: { type: 'number' },
+          color: { type: 'string', pattern: '#[a-zA-Z0-9]{6}' },
+          label: { type: 'string', minLength: 1 },
+        },
+        required: ['value', 'color', 'label'],
+      }
+    },
+  },
+  required: ['min', 'max'],
+};
+const attributeConfiguration: JSONSchemaType<AttributeConfiguration[]> = {
+  type: 'array',
+  items: {
+    type: 'object',
+    properties: {
+      name: { type: 'string', minLength: 1 },
+      mandatory: { type: 'boolean' },
+      default_values: {
+        type: 'array',
+        nullable: true,
+        items: { type: 'string' }
+      },
+      scale: {
+        type: 'object',
+        properties: {
+          local_config: scaleConfig
+        },
+        nullable: true,
+        required: ['local_config'],
+      }
+    },
+    required: ['name']
+  },
+};
+
+export const ENTITY_SETTING_DEFINITION: ModuleDefinition<StoreEntityEntitySetting, StixEntitySetting> = {
   type: {
     id: 'entitysettings',
     name: ENTITY_TYPE_ENTITY_SETTING,
     category: ABSTRACT_INTERNAL_OBJECT,
     aliased: false
-  },
-  graphql: {
-    schema: entitySettingTypeDefs,
-    resolver: entitySettingResolvers,
   },
   identifier: {
     definition: {

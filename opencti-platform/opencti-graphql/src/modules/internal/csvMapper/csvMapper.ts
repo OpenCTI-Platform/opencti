@@ -3,8 +3,6 @@ import { registerDefinition } from '../../../schema/module';
 import type { StixCsvMapper, StoreEntityCsvMapper } from './csvMapper-types';
 import { ENTITY_TYPE_CSV_MAPPER } from './csvMapper-types';
 import { ABSTRACT_INTERNAL_OBJECT } from '../../../schema/general';
-import csvMapperTypeDefs from './csvMapper.graphql';
-import csvMapperResolvers from './csvMapper-resolvers';
 import { NAME_FIELD, normalizeName } from '../../../schema/identifier';
 import convertCsvMapperToStix from './csvMapper-converter';
 
@@ -14,10 +12,6 @@ const CSV_MAPPER_DEFINITION: ModuleDefinition<StoreEntityCsvMapper, StixCsvMappe
     name: ENTITY_TYPE_CSV_MAPPER,
     category: ABSTRACT_INTERNAL_OBJECT,
     aliased: false
-  },
-  graphql: {
-    schema: csvMapperTypeDefs,
-    resolver: csvMapperResolvers,
   },
   identifier: {
     definition: {

@@ -1,4 +1,3 @@
-import caseRftTypeDefs from './case-rft.graphql';
 import { ENTITY_TYPE_CONTAINER_CASE } from '../case-types';
 import { NAME_FIELD, normalizeName } from '../../../schema/identifier';
 import type { ModuleDefinition } from '../../../schema/module';
@@ -7,7 +6,6 @@ import { createdBy, objectAssignee, objectMarking, objectParticipant } from '../
 import type { StixCaseRft, StoreEntityCaseRft } from './case-rft-types';
 import { ENTITY_TYPE_CONTAINER_CASE_RFT } from './case-rft-types';
 import convertCaseRftToStix from './case-rft-converter';
-import caseRftResolvers from './case-rft-resolvers';
 
 const CASE_RFT_DEFINITION: ModuleDefinition<StoreEntityCaseRft, StixCaseRft> = {
   type: {
@@ -15,10 +13,6 @@ const CASE_RFT_DEFINITION: ModuleDefinition<StoreEntityCaseRft, StixCaseRft> = {
     name: ENTITY_TYPE_CONTAINER_CASE_RFT,
     category: ENTITY_TYPE_CONTAINER_CASE,
     aliased: false
-  },
-  graphql: {
-    schema: caseRftTypeDefs,
-    resolver: caseRftResolvers,
   },
   identifier: {
     definition: {

@@ -3,7 +3,7 @@ import type { RelationDefinition } from '../database/stix';
 import { stixCoreRelationshipsMapping as coreRels } from '../database/stix';
 import type { ConvertFn, RepresentativeFn } from '../database/stix-converter';
 import { registerStixDomainConverter, registerStixMetaConverter, registerStixRepresentativeConverter } from '../database/stix-converter';
-import { registerGraphqlSchema } from '../graphql/schema';
+// import { registerGraphqlSchema } from '../graphql/schema';
 import {
   ABSTRACT_INTERNAL_OBJECT,
   ABSTRACT_STIX_DOMAIN_OBJECT,
@@ -20,7 +20,6 @@ import { depsKeysRegister, schemaAttributesDefinition } from './schema-attribute
 import { STIX_CORE_RELATIONSHIPS } from './stixCoreRelationship';
 import type { ValidatorFn } from './validator-register';
 import { registerEntityValidator } from './validator-register';
-import type { Resolvers } from '../generated/graphql';
 import { schemaRelationsRefDefinition } from './schema-relationsRef';
 import { registerStixDomainAliased, resolveAliasesField } from './stixDomainObject';
 import { registerModelIdentifier } from './identifier';
@@ -34,10 +33,6 @@ export interface ModuleDefinition<T extends StoreEntity, Z extends StixObject> {
     name: string
     aliased?: boolean
     category: 'Case' | 'Container' | 'Location' | 'Identity' | 'Stix-Domain-Object' | 'Stix-Meta-Object' | 'Internal-Object' | 'Threat-Actor'
-  };
-  graphql: {
-    schema: any
-    resolver: Resolvers
   };
   identifier: {
     definition: {
@@ -122,9 +117,6 @@ export const registerDefinition = <T extends StoreEntity, Z extends StixObject>(
     registerEntityValidator(definition.type.name, definition.validators);
   }
 
-  // Register graphQL schema
-  registerGraphqlSchema(definition.graphql);
-
   // Register key identification
   registerModelIdentifier(definition.identifier);
 
@@ -153,6 +145,6 @@ export const registerDefinition = <T extends StoreEntity, Z extends StixObject>(
   // Register relations ref
   schemaRelationsRefDefinition.registerRelationsRef(definition.type.name, definition.relationsRefs || []);
   definition.relationsRefs?.forEach((source) => {
-    schemaTypesDefinition.add(ABSTRACT_STIX_REF_RELATIONSHIP, source.name);
+    schemaTypesDefinition.add(ABSTRACT_STIX_REF_RELATIONSHIP, source.databaseName);
   });
 };

@@ -15,13 +15,14 @@ export const depsKeysRegister = {
   },
 };
 
+let usageProtection = false;
 export const schemaAttributesDefinition = {
-  attributes: {} as Record<string, Map<string, AttributeDefinition>>,
   // allAttributes is a map of the name and type of all the attributes registered in a schema definition
   // !!! don't use this map !!! It is created for the special context of filter keys checking in case no entity types are given
   allAttributes: new Map<string, string>(),
-  attributesCache: new Map<string, Map<string, AttributeDefinition>>(),
 
+  // Basic usages
+  attributes: {} as Record<string, Map<string, AttributeDefinition>>,
   attributesByTypes: {
     string: new Map<string, void>(),
     date: new Map<string, void>(),
@@ -31,10 +32,13 @@ export const schemaAttributesDefinition = {
   } as Record<AttrType, Map<string, void>>,
   upsertByEntity: new Map<string, string[]>(),
 
-  // attributes
+  // attributes registration
   registerAttributes(entityType: string, attributes: AttributeDefinition[]) {
+    // Check if imported before any business code
+    if (usageProtection) {
+      throw UnsupportedError('Register attributes use after usage, please check your imports');
+    }
     const directAttributes = this.attributes[entityType] ?? new Map<string, AttributeDefinition>();
-
     // Register given attribute
     const allAttributes = Object.values(this.attributes);
     attributes.forEach((attribute) => {
@@ -87,28 +91,12 @@ export const schemaAttributesDefinition = {
       // it's not a problem because if 2 attributes have the same name, they also have the same type
       this.allAttributes.set(attribute.name, attribute.type);
     });
-    this.attributes[entityType] = directAttributes;
-    this.computeCache(entityType);
-  },
-
-  // Extract this method to be call in all methods
-  // When an entity not register any relations, the relations for this entity is not computed
-  // Call only in register mechanism when all the entities will be migrated
-  computeCache(entityType: string) {
-    if (this.attributesCache.has(entityType)) return;
-
-    const directAttributes = this.attributes[entityType] ?? [];
-    // Register inheritance attributes
-    const parentAttributes = new Map(
-      getParentTypes(entityType)
-        .map((type) => Array.from((this.attributes[type] ?? new Map()).values()))
-        .flat()
-        .map((e) => [e.name, e])
-    );
+    const parentAttributes = new Map(getParentTypes(entityType)
+      .map((type) => Array.from((this.attributes[type] ?? new Map()).values()))
+      .flat()
+      .map((e) => [e.name, e]));
     const computedWithParentAttributes = new Map([...parentAttributes, ...directAttributes]);
-    this.attributesCache.set(entityType, computedWithParentAttributes);
-
-    // Generate cache map
+    this.attributes[entityType] = computedWithParentAttributes;
     computedWithParentAttributes.forEach((attr) => {
       // Generate map by types
       this.attributesByTypes[attr.type as AttrType].set(attr.name);
@@ -119,55 +107,52 @@ export const schemaAttributesDefinition = {
     });
   },
 
+  // Usage of raw attributes
   getAllAttributes() {
+    usageProtection = true;
     return R.uniqBy((a) => a.name, Object.values(this.attributes).map((a) => Array.from(a.values())).flat());
   },
 
-  getRegisteredTypes(): string[] {
-    return Array.from(this.attributesCache.keys());
-  },
-
+  // Usage of getAttributes
   getAttributes(entityType: string): Map<string, AttributeDefinition> {
-    this.computeCache(entityType);
     // const attributesRefs = schemaRelationsRefDefinition.relationsRefMap(entityType) ?? new Map();
     // const attributes = this.attributesCache.get(entityType) ?? new Map();
     // return new Map([...attributesRefs, ...attributes]);
-    return this.attributesCache.get(entityType) ?? new Map();
+    usageProtection = true;
+    return this.attributes[entityType] ?? new Map();
   },
-
-  getAllAttributesNames(): Array<string> {
-    return Array.from(this.allAttributes.keys());
-  },
-
   getAttributeNames(entityType: string): string[] {
-    this.computeCache(entityType);
     return Array.from(this.getAttributes(entityType).keys());
   },
-
   getAttribute(entityType: string, name: string): AttributeDefinition | undefined {
-    this.computeCache(entityType);
     return this.getAttributes(entityType)?.get(name);
-    // if (!attributeDefinition) {
-    //   console.log({ type: entityType, name });
-    //   throw UnsupportedError('Cant get definition for attribute', { type: entityType, name });
-    // }
-    // return attributeDefinition;
   },
-
-  getUpsertAttributeNames(entityType: string): string[] {
-    this.computeCache(entityType);
-    return this.upsertByEntity.get(entityType) ?? [];
-  },
-
   isMultipleAttribute(entityType: string, attributeName: string): boolean {
-    this.computeCache(entityType);
     return this.getAttribute(entityType, attributeName)?.multiple ?? false;
   },
 
-  isSpecificTypeAttribute(attributeName: string, ...attributeType: AttrType[]): boolean {
-    return attributeType.reduce((r, fn) => this.attributesByTypes[fn].has(attributeName) || r, false);
+  // Usage of allAttributes
+  getAllAttributesNames(): Array<string> {
+    usageProtection = true;
+    return Array.from(this.allAttributes.keys());
   },
 
+  // Usage of upsertByEntity
+  getUpsertAttributeNames(entityType: string): string[] {
+    usageProtection = true;
+    return this.upsertByEntity.get(entityType) ?? [];
+  },
+
+  // Usage of attributesByTypes
+  getAllStringAttributes(excludes: string[] = []) {
+    usageProtection = true;
+    const strings = Array.from(this.attributesByTypes.string.keys());
+    return strings.filter((attr) => !excludes.includes(attr));
+  },
+  isSpecificTypeAttribute(attributeName: string, ...attributeType: AttrType[]): boolean {
+    usageProtection = true;
+    return attributeType.reduce((r, fn) => this.attributesByTypes[fn].has(attributeName) || r, false);
+  },
 };
 
 // -- TYPE --

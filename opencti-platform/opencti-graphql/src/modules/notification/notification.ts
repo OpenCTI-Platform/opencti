@@ -1,7 +1,5 @@
 import { v4 as uuidv4 } from 'uuid';
-import notificationTypeDefs from './notification.graphql';
 import { convertNotificationToStix, convertTriggerToStix } from './notification-converter';
-import notificationResolvers from './notification-resolver';
 import {
   ENTITY_TYPE_NOTIFICATION,
   ENTITY_TYPE_TRIGGER,
@@ -25,10 +23,6 @@ const TRIGGER_DEFINITION: ModuleDefinition<StoreEntityTrigger, StixTrigger> = {
     id: 'triggers',
     name: ENTITY_TYPE_TRIGGER,
     category: ABSTRACT_INTERNAL_OBJECT
-  },
-  graphql: {
-    schema: notificationTypeDefs,
-    resolver: notificationResolvers,
   },
   identifier: {
     definition: {
@@ -68,10 +62,6 @@ const NOTIFICATION_DEFINITION: ModuleDefinition<StoreEntityNotification, StixNot
     id: 'notifications',
     name: ENTITY_TYPE_NOTIFICATION,
     category: ABSTRACT_INTERNAL_OBJECT
-  },
-  graphql: {
-    schema: notificationTypeDefs,
-    resolver: notificationResolvers,
   },
   identifier: {
     definition: {

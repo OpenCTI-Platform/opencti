@@ -3,9 +3,7 @@ import { type ModuleDefinition, registerDefinition } from '../../../schema/modul
 import { ABSTRACT_INTERNAL_OBJECT } from '../../../schema/general';
 import type { StixCaseTemplate, StoreEntityCaseTemplate } from './case-template-types';
 import { ENTITY_TYPE_CASE_TEMPLATE, TEMPLATE_TASK_RELATION } from './case-template-types';
-import caseTemplateTypeDefs from './case-template.graphql';
 import convertCaseTemplateToStix from './case-template-converter';
-import caseTemplateResolvers from './case-template-resolvers';
 import { ENTITY_TYPE_TASK_TEMPLATE } from '../../task/task-template/task-template-types';
 import type { RefAttribute } from '../../../schema/attribute-definition';
 
@@ -29,10 +27,6 @@ const CASE_TEMPLATE_DEFINITION: ModuleDefinition<StoreEntityCaseTemplate, StixCa
     id: 'case-template',
     name: ENTITY_TYPE_CASE_TEMPLATE,
     category: ABSTRACT_INTERNAL_OBJECT
-  },
-  graphql: {
-    schema: caseTemplateTypeDefs,
-    resolver: caseTemplateResolvers,
   },
   identifier: {
     definition: {

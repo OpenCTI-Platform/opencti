@@ -1,10 +1,8 @@
-import feedbackTypeDefs from './feedback.graphql';
 import { ENTITY_TYPE_CONTAINER_FEEDBACK, type StixFeedback, type StoreEntityFeedback } from './feedback-types';
 import { ENTITY_TYPE_CONTAINER_CASE } from '../case-types';
 import { NAME_FIELD, normalizeName } from '../../../schema/identifier';
 import type { ModuleDefinition } from '../../../schema/module';
 import { registerDefinition } from '../../../schema/module';
-import feedbackResolvers from './feedback-resolvers';
 import convertFeedbackToStix from './feedback-converter';
 import { createdBy, objectAssignee, objectMarking } from '../../../schema/stixRefRelationship';
 import { authorizedMembers } from '../../../schema/attribute-definition';
@@ -15,10 +13,6 @@ const FEEDBACK_DEFINITION: ModuleDefinition<StoreEntityFeedback, StixFeedback> =
     name: ENTITY_TYPE_CONTAINER_FEEDBACK,
     category: ENTITY_TYPE_CONTAINER_CASE,
     aliased: false
-  },
-  graphql: {
-    schema: feedbackTypeDefs,
-    resolver: feedbackResolvers,
   },
   identifier: {
     definition: {

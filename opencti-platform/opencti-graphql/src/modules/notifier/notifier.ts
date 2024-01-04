@@ -1,6 +1,4 @@
 import { v4 as uuidv4 } from 'uuid';
-import notificationTypeDefs from './notifier.graphql';
-import webhookResolvers from './notifier-resolver';
 import { ENTITY_TYPE_NOTIFIER, type StixNotifier, type StoreEntityNotifier } from './notifier-types';
 import { ABSTRACT_INTERNAL_OBJECT } from '../../schema/general';
 import type { ModuleDefinition } from '../../schema/module';
@@ -13,10 +11,6 @@ const NOTIFIER_DEFINITION: ModuleDefinition<StoreEntityNotifier, StixNotifier> =
     id: 'notifiers',
     name: ENTITY_TYPE_NOTIFIER,
     category: ABSTRACT_INTERNAL_OBJECT
-  },
-  graphql: {
-    schema: notificationTypeDefs,
-    resolver: webhookResolvers,
   },
   identifier: {
     definition: {

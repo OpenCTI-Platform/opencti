@@ -4,9 +4,7 @@ import type { ModuleDefinition } from '../../schema/module';
 import { registerDefinition } from '../../schema/module';
 import { objectOrganization } from '../../schema/stixRefRelationship';
 import convertCaseToStix from './case-converter';
-import caseResolvers from './case-resolvers';
 import { ENTITY_TYPE_CONTAINER_CASE, type StixCase, type StoreEntityCase } from './case-types';
-import caseTypeDefs from './case.graphql';
 
 const CASE_DEFINITION: ModuleDefinition<StoreEntityCase, StixCase> = {
   type: {
@@ -14,10 +12,6 @@ const CASE_DEFINITION: ModuleDefinition<StoreEntityCase, StixCase> = {
     name: ENTITY_TYPE_CONTAINER_CASE,
     category: ENTITY_TYPE_CONTAINER,
     aliased: false
-  },
-  graphql: {
-    schema: caseTypeDefs,
-    resolver: caseResolvers,
   },
   identifier: {
     definition: {

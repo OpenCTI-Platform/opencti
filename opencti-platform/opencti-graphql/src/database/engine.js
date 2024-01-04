@@ -78,7 +78,7 @@ import { ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
 import { getEntitiesListFromCache, getEntityFromCache } from './cache';
 import { ENTITY_TYPE_MIGRATION_STATUS, ENTITY_TYPE_SETTINGS, ENTITY_TYPE_STATUS, ENTITY_TYPE_USER } from '../schema/internalObject';
 import { telemetry } from '../config/tracing';
-import { isBooleanAttribute, isDateAttribute, isDateNumericOrBooleanAttribute, schemaAttributesDefinition } from '../schema/schema-attributes';
+import { isBooleanAttribute, isDateAttribute, isDateNumericOrBooleanAttribute, isNumericAttribute, schemaAttributesDefinition } from '../schema/schema-attributes';
 import { convertTypeToStixType } from './stix-converter';
 import { extractEntityRepresentativeName } from './entity-representative';
 import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../modules/organization/organization-types';
@@ -1327,8 +1327,14 @@ const BASE_SEARCH_ATTRIBUTES = [
   `${ATTRIBUTE_ABSTRACT}^5`,
   `${ATTRIBUTE_EXPLANATION}^5`,
   // Add all other attributes
-  '*',
+  ...schemaAttributesDefinition.getAllStringAttributes([
+    ATTRIBUTE_NAME,
+    ATTRIBUTE_DESCRIPTION,
+    ATTRIBUTE_ABSTRACT,
+    ATTRIBUTE_EXPLANATION
+  ]),
 ];
+
 export const elGenerateFullTextSearchShould = (search, args = {}) => {
   const { useWildcardPrefix = false, useWildcardSuffix = true } = args;
   let decodedSearch;
@@ -2698,6 +2704,8 @@ export const prepareElementForIndexing = (element) => {
       thing[key] = value;
     } else if (isBooleanAttribute(key)) { // Patch field is string generic so need to be cast to boolean
       thing[key] = typeof value === 'boolean' ? value : value?.toLowerCase() === 'true';
+    } else if (isNumericAttribute(key)) {
+      thing[key] = Number(value);
     } else if (R.is(Object, value) && Object.keys(value).length > 0) { // For complex object, prepare inner elements
       thing[key] = prepareElementForIndexing(value);
     } else if (R.is(String, value)) { // For string, trim by default

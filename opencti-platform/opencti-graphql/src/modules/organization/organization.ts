@@ -2,8 +2,6 @@ import { type ModuleDefinition, registerDefinition } from '../../schema/module';
 import type { StixOrganization, StoreEntityOrganization } from './organization-types';
 import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from './organization-types';
 import { ENTITY_TYPE_IDENTITY } from '../../schema/general';
-import organizationTypeDefs from './organization.graphql';
-import organizationResolvers from './organization-resolver';
 import { NAME_FIELD, normalizeName } from '../../schema/identifier';
 import { iAliasedIds, xOpenctiAliases, xOpenctiReliability } from '../../schema/attribute-definition';
 import { RELATION_LOCATED_AT, RELATION_PART_OF, RELATION_PUBLISHES, RELATION_USES } from '../../schema/stixCoreRelationship';
@@ -25,10 +23,6 @@ const ORGANIZATION_DEFINITION: ModuleDefinition<StoreEntityOrganization, StixOrg
     id: 'organization',
     name: ENTITY_TYPE_IDENTITY_ORGANIZATION,
     category: ENTITY_TYPE_IDENTITY
-  },
-  graphql: {
-    schema: organizationTypeDefs,
-    resolver: organizationResolvers,
   },
   identifier: {
     definition: {

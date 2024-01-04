@@ -7,9 +7,8 @@ import { notify } from '../../database/redis';
 import { BUS_TOPICS } from '../../config/conf';
 import { ABSTRACT_STIX_DOMAIN_OBJECT } from '../../schema/general';
 import { ENTITY_TYPE_DATA_COMPONENT, ENTITY_TYPE_DATA_SOURCE } from '../../schema/stixDomainObject';
-import { RELATION_DATA_SOURCE } from '../dataComponent/dataComponent-domain';
 import { stixDomainObjectEditField } from '../../domain/stixDomainObject';
-import { INPUT_DATA_SOURCE } from '../dataComponent/dataComponent-types';
+import { INPUT_DATA_SOURCE, RELATION_DATA_SOURCE } from '../dataComponent/dataComponent-types';
 import type { DomainFindById } from '../../domain/domainTypes';
 
 export const findById: DomainFindById<BasicStoreEntityDataSource> = (context: AuthContext, user: AuthUser, dataSourceId: string) => {

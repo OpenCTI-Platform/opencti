@@ -3,6 +3,7 @@ import { UnsupportedError } from '../config/errors';
 import { STIX_CORE_RELATIONSHIPS } from './stixCoreRelationship';
 import type { RefAttribute } from './attribute-definition';
 
+let usageProtection = false;
 export const schemaRelationsRefDefinition = {
   relationsRef: {} as Record<string, Map<string, RefAttribute>>,
   // allRelationsRef is a list of the names of all the relations ref registered in a schema definition
@@ -22,8 +23,10 @@ export const schemaRelationsRefDefinition = {
   relationsRefCacheMap: new Map<string, Map<string, RefAttribute>>(),
 
   registerRelationsRef(entityType: string, relationsRefDefinition: RefAttribute[]) {
+    if (usageProtection) {
+      throw UnsupportedError('Register relations refs use after usage, please check your imports');
+    }
     const directRefs = this.relationsRef[entityType] ?? new Map<string, RefAttribute>();
-
     // Register given relations ref
     relationsRefDefinition.forEach((relationRefDefinition) => {
       // Check name collision with STIX_CORE_RELATIONSHIP
@@ -32,7 +35,6 @@ export const schemaRelationsRefDefinition = {
           relationRef: relationRefDefinition.name
         });
       }
-
       // Check duplicate relations ref
       if (directRefs.has(relationRefDefinition.name)) {
         throw UnsupportedError('You can\'t register two relations ref with the same name on an entity', {
@@ -40,30 +42,16 @@ export const schemaRelationsRefDefinition = {
           entityType
         });
       }
-
       directRefs.set(relationRefDefinition.name, relationRefDefinition);
-      if (!this.allRelationsRef.includes(relationRefDefinition.name)) this.allRelationsRef.push(relationRefDefinition.name);
+      if (!this.allRelationsRef.includes(relationRefDefinition.name)) {
+        this.allRelationsRef.push(relationRefDefinition.name);
+      }
     });
-
     this.relationsRef[entityType] = directRefs;
-
-    this.computeCache(entityType);
-  },
-
-  // Extract this method to be call in all methods
-  // When an entity not register any relations, the relations for this entity is not computed
-  // Call only in register mechanism when all the entities will be migrated
-  computeCache(entityType: string) {
-    if (this.relationsRefCacheMap.has(entityType)) return;
-
-    const directRefs = this.relationsRef[entityType] ?? new Map();
     // Register inheritance attributes
-    const parentRefs = new Map(
-      getParentTypes(entityType)
-        .map((type) => Array.from((this.relationsRef[type] ?? new Map()).values()))
-        .flat()
-        .map((e) => [e.name, e])
-    );
+    const parentRefs = new Map(getParentTypes(entityType)
+      .map((type) => Array.from((this.relationsRef[type] ?? new Map()).values()))
+      .flat().map((e) => [e.name, e]));
     const computedWithParentsRefs = new Map([...parentRefs, ...directRefs]);
     this.relationsRefCacheMap.set(entityType, computedWithParentsRefs);
 
@@ -78,47 +66,56 @@ export const schemaRelationsRefDefinition = {
     this.stixNameToInputNameCache.set(entityType, new Map(computedWithParentsRefsArray.map((ref) => [ref.stixName, ref.name])));
   },
 
+  selectEntityType(entityType: string) {
+    usageProtection = true;
+    if (this.relationsRefCacheMap.has(entityType)) {
+      return entityType;
+    }
+    const types = [...getParentTypes(entityType)].reverse();
+    for (let i = 0; i < types.length; i += 1) {
+      const type = types[i];
+      if (this.relationsRefCacheMap.has(type)) {
+        return type;
+      }
+    }
+    throw UnsupportedError('Register relations has no registration for type', { type: entityType });
+  },
+
   getRelationsRef(entityType: string): RefAttribute[] {
-    this.computeCache(entityType);
-    return this.relationsRefCacheArray.get(entityType) ?? [];
+    return this.relationsRefCacheArray.get(this.selectEntityType(entityType)) ?? [];
   },
 
   getRelationRef(entityType: string, name: string): RefAttribute | null {
-    this.computeCache(entityType);
-    return this.relationsRefCacheMap.get(entityType)?.get(name) ?? null;
+    return this.relationsRefCacheMap.get(this.selectEntityType(entityType))?.get(name) ?? null;
   },
 
-  relationsRefMap(entityType: string) {
-    return new Map(schemaRelationsRefDefinition.getRelationsRef(entityType).map((n) => [n.name, n]));
-  },
+  // relationsRefMap(entityType: string) {
+  //   return new Map(schemaRelationsRefDefinition.getRelationsRef(entityType).map((n) => [n.name, n]));
+  // },
 
   getInputNames(entityType: string): string[] {
-    this.computeCache(entityType);
-    return this.namesCache.get(entityType) ?? [];
+    return this.namesCache.get(this.selectEntityType(entityType)) ?? [];
   },
 
   getAllInputNames(): string[] {
+    usageProtection = true;
     return this.allRelationsRef;
   },
 
   getStixNames(entityType: string): string[] {
-    this.computeCache(entityType);
-    return this.stixNamesCache.get(entityType) ?? [];
+    return this.stixNamesCache.get(this.selectEntityType(entityType)) ?? [];
   },
 
   isMultipleDatabaseName(entityType: string, databaseName: string): boolean {
-    this.computeCache(entityType);
-    return this.databaseNameMultipleCache.get(entityType)?.includes(databaseName) ?? false;
+    return this.databaseNameMultipleCache.get(this.selectEntityType(entityType))?.includes(databaseName) ?? false;
   },
 
   convertDatabaseNameToInputName(entityType: string, databaseName: string): string | null {
-    this.computeCache(entityType);
-    return this.databaseNameToInputNameCache.get(entityType)?.get(databaseName) ?? null;
+    return this.databaseNameToInputNameCache.get(this.selectEntityType(entityType))?.get(databaseName) ?? null;
   },
 
   convertStixNameToInputName(entityType: string, stixName: string): string | null {
-    this.computeCache(entityType);
-    return this.stixNameToInputNameCache.get(entityType)?.get(stixName) ?? null;
+    return this.stixNameToInputNameCache.get(this.selectEntityType(entityType))?.get(stixName) ?? null;
   },
 
   isDatable(entityType: string, databaseName: string) : boolean | undefined {
@@ -130,16 +127,19 @@ export const schemaRelationsRefDefinition = {
   },
 
   getDatables() : string[] {
+    usageProtection = true;
     return Array.from(this.relationsRefCacheArray.values()).flat()
       .filter((rel) => rel.datable)
       .map((rel) => rel.name);
   },
 
   getDatabaseName(name: string): string | undefined {
+    usageProtection = true;
     return this.nameToDatabaseName.get(name);
   },
 
   getAllDatabaseName(): string[] {
+    usageProtection = true;
     return this.getAllInputNames()
       .map((name) => this.getDatabaseName(name))
       .filter((n) => n !== undefined) as string[];

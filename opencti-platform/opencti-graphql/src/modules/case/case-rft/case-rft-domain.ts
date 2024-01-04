@@ -35,9 +35,11 @@ export const addCaseRft = async (context: AuthContext, user: AuthUser, caseRftAd
     }
     caseToCreate = { ...caseToCreate, createdBy: individualId };
   }
+  const { caseTemplates } = caseToCreate;
+  delete caseToCreate.caseTemplates;
   const created = await createEntity(context, user, caseToCreate, ENTITY_TYPE_CONTAINER_CASE_RFT);
-  if (caseToCreate.caseTemplates) {
-    await Promise.all(caseToCreate.caseTemplates.map((caseTemplate) => upsertTemplateForCase(context, user, created.id, caseTemplate)));
+  if (caseTemplates) {
+    await Promise.all(caseTemplates.map((caseTemplate) => upsertTemplateForCase(context, user, created.id, caseTemplate)));
   }
   return notify(BUS_TOPICS[ABSTRACT_STIX_DOMAIN_OBJECT].ADDED_TOPIC, created, user);
 };

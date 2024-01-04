@@ -1,4 +1,4 @@
-// region static registration attributes, need to be imported before any other modules
+// region registration attributes, need to be imported before any other modules
 import './attributes/basicObject-registrationAttributes';
 import './attributes/stixObject-registrationAttributes';
 import './attributes/stixCoreObject-registrationAttributes';
@@ -8,20 +8,23 @@ import './attributes/basicRelationship-registrationAttributes';
 import './attributes/internalRelationship-registrationAttributes';
 import './attributes/stixRelationship-registrationAttributes';
 import './attributes/stixCoreRelationship-registrationAttributes';
-import './attributes/stixCyberObservable-registrationAttributes';
 import './attributes/stixRefRelationship-registrationAttributes';
-import './attributes/stixMetaObject-registrationAttributes';
 import './attributes/stixSightingRelationship-registrationAttributes';
+import './attributes/stixCyberObservable-registrationAttributes';
+import './attributes/stixMetaObject-registrationAttributes';
 // endregion
 
-// region static registration ref, need to be imported before any other modules
+// region registration ref, need to be imported before any other modules
 import './relationsRef/stixCoreObject-registrationRef';
-import './relationsRef/stixCyberObservable-registrationRef';
 import './relationsRef/stixDomainObject-registrationRef';
 import './relationsRef/stixRelationship-registrationRef';
+import './relationsRef/internalRelationship-registrationRef';
+import './relationsRef/internalObject-registrationRef';
+import './relationsRef/stixMetaObject-registrationRef';
+import './relationsRef/stixCyberObservable-registrationRef';
 // endregion
 
-// region static graphql modules
+// region registration modules, need to be imported before graphql code registration
 import './channel/channel';
 import './language/language';
 import './event/event';
@@ -53,4 +56,38 @@ import './indicator/indicator';
 import './organization/organization';
 import './internal/csvMapper/csvMapper';
 import './internal/document/document';
+// endregion
+
+// region graphql registration
+import './channel/channel-graphql';
+import './language/language-graphql';
+import './event/event-graphql';
+import './grouping/grouping-graphql';
+import './narrative/narrative-graphql';
+import './notification/notification-graphql';
+import './dataComponent/dataComponent-graphql';
+import './dataSource/dataSource-graphql';
+import './vocabulary/vocabulary-graphql';
+import './administrativeArea/administrativeArea-graphql';
+import './task/task-graphql';
+import './task/task-template/task-template-graphql';
+import './case/case-graphql';
+import './case/case-template/case-template-graphql';
+import './case/case-incident/case-incident-graphql';
+import './case/case-rfi/case-rfi-graphql';
+import './case/case-rft/case-rft-graphql';
+import './case/feedback/feedback-graphql';
+import './entitySetting/entitySetting-graphql';
+import './workspace/workspace-graphql';
+import './malwareAnalysis/malwareAnalysis-graphql';
+import './managerConfiguration/managerConfiguration-graphql';
+import './notifier/notifier-graphql';
+import './threatActorIndividual/threatActorIndividual-graphql';
+import './playbook/playbook-graphql';
+import './ingestion/ingestion-rss-graphql';
+import './ingestion/ingestion-taxii-graphql';
+import './indicator/indicator-graphql';
+import './organization/organization-graphql';
+import './internal/csvMapper/csvMapper-graphql';
+// import './internal/document/document-graphql'; # Not needed as document is not fully registered
 // endregion

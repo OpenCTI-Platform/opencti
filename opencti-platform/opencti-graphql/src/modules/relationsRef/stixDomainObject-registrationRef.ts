@@ -1,5 +1,5 @@
 import { schemaRelationsRefDefinition } from '../../schema/schema-relationsRef';
-import { ABSTRACT_STIX_DOMAIN_OBJECT, ENTITY_TYPE_CONTAINER } from '../../schema/general';
+import { ABSTRACT_STIX_DOMAIN_OBJECT, ENTITY_TYPE_CONTAINER, ENTITY_TYPE_IDENTITY, ENTITY_TYPE_LOCATION } from '../../schema/general';
 import {
   createdBy,
   externalReferences,
@@ -36,17 +36,17 @@ import { ENTITY_HASHED_OBSERVABLE_ARTIFACT, ENTITY_HASHED_OBSERVABLE_STIX_FILE, 
 schemaRelationsRefDefinition.registerRelationsRef(ABSTRACT_STIX_DOMAIN_OBJECT, [createdBy, objectMarking, objectLabel, externalReferences, xOpenctiLinkedTo]);
 
 schemaRelationsRefDefinition.registerRelationsRef(ENTITY_TYPE_CONTAINER, [objects]);
+schemaRelationsRefDefinition.registerRelationsRef(ENTITY_TYPE_IDENTITY, []);
+schemaRelationsRefDefinition.registerRelationsRef(ENTITY_TYPE_LOCATION, []);
 
 schemaRelationsRefDefinition.registerRelationsRef(ENTITY_TYPE_ATTACK_PATTERN, [killChainPhases, objectOrganization]);
 schemaRelationsRefDefinition.registerRelationsRef(ENTITY_TYPE_INFRASTRUCTURE, [killChainPhases, objectOrganization]);
-schemaRelationsRefDefinition.registerRelationsRef(ENTITY_TYPE_MALWARE, [{
-  ...samples,
-  checker: (_, toType) => [ENTITY_HASHED_OBSERVABLE_ARTIFACT, ENTITY_HASHED_OBSERVABLE_STIX_FILE].includes(toType)
-},
-{
-  ...operatingSystems,
-  checker: (_, toType) => ENTITY_SOFTWARE === toType
-}, killChainPhases, objectOrganization]);
+schemaRelationsRefDefinition.registerRelationsRef(ENTITY_TYPE_MALWARE, [
+  { ...samples, checker: (_, toType) => [ENTITY_HASHED_OBSERVABLE_ARTIFACT, ENTITY_HASHED_OBSERVABLE_STIX_FILE].includes(toType) },
+  { ...operatingSystems, checker: (_, toType) => ENTITY_SOFTWARE === toType },
+  killChainPhases,
+  objectOrganization
+]);
 schemaRelationsRefDefinition.registerRelationsRef(ENTITY_TYPE_TOOL, [killChainPhases, objectOrganization]);
 
 schemaRelationsRefDefinition.registerRelationsRef(ENTITY_TYPE_CAMPAIGN, [objectOrganization]);

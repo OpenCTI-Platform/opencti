@@ -6,10 +6,8 @@ import type { AuthContext, AuthUser } from '../../types/user';
 import { schemaAttributesDefinition } from '../../schema/schema-attributes';
 import { schemaRelationsRefDefinition } from '../../schema/schema-relationsRef';
 import { validateAndFormatSchemaAttribute } from '../../schema/schema-validator';
-import { internalFindByIds } from '../../database/middleware-loader';
 import { availableSettings, getAttributesConfiguration, getAvailableSettings, getDefaultValues } from './entitySetting-utils';
 import { telemetry } from '../../config/tracing';
-import { isEmptyField } from '../../database/utils';
 import { INPUT_MARKINGS } from '../../schema/general';
 import type { EditInput } from '../../generated/graphql';
 import { EditOperation } from '../../generated/graphql';
@@ -121,14 +119,6 @@ const attributesConfigurationValidation = async (context: AuthContext, user: Aut
             } else {
               return;
             }
-          }
-          const defaultValues = getDefaultValues(attr, relationRefDefinition.multiple) ?? [];
-          const element = await internalFindByIds(context, user, Array.isArray(defaultValues) ? defaultValues : [defaultValues], { baseData: true });
-          if (isEmptyField(element)) {
-            throw ValidationError(attr.name, {
-              message: 'This value does not exist',
-              data: { attribute: attr.name, entityType: targetType }
-            });
           }
         }
       }

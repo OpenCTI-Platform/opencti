@@ -5,7 +5,7 @@ import { ENTITY_TYPE_CSV_MAPPER } from '../../modules/internal/csvMapper/csvMapp
 import type { Connector } from '../connector';
 import { ENABLED_IMPORT_CSV_BUILT_IN_CONNECTOR } from './importCsv-configuration';
 
-const IMPORT_CSV_CONNECTOR_ID = 'd336676c-4ee5-4257-96ff-b2a86688d4af';
+export const IMPORT_CSV_CONNECTOR_ID = 'd336676c-4ee5-4257-96ff-b2a86688d4af';
 
 export const IMPORT_CSV_CONNECTOR: Connector = {
   id: IMPORT_CSV_CONNECTOR_ID,

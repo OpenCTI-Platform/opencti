@@ -4,8 +4,6 @@ import { ABSTRACT_INTERNAL_OBJECT } from '../../schema/general';
 import { type ModuleDefinition, registerDefinition } from '../../schema/module';
 import { ENTITY_TYPE_INGESTION_TAXII, type StixIngestionTaxii, type StoreEntityIngestionTaxii } from './ingestion-types';
 import { convertIngestionTaxiiToStix } from './ingestion-converter';
-import ingestionTypeDefs from './ingestion-taxii.graphql';
-import ingestionTaxiiResolvers from './ingestion-taxii-resolver';
 import { ENTITY_TYPE_USER } from '../../schema/internalObject';
 
 const INGESTION_DEFINITION: ModuleDefinition<StoreEntityIngestionTaxii, StixIngestionTaxii> = {
@@ -14,10 +12,6 @@ const INGESTION_DEFINITION: ModuleDefinition<StoreEntityIngestionTaxii, StixInge
     name: ENTITY_TYPE_INGESTION_TAXII,
     category: ABSTRACT_INTERNAL_OBJECT,
     aliased: false
-  },
-  graphql: {
-    schema: ingestionTypeDefs,
-    resolver: ingestionTaxiiResolvers,
   },
   identifier: {
     definition: {

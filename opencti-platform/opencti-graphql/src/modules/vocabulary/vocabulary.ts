@@ -1,7 +1,5 @@
-import vocabularyTypeDefs from './vocabulary.graphql';
 import { NAME_FIELD, normalizeName } from '../../schema/identifier';
 import { ENTITY_TYPE_VOCABULARY, type StixVocabulary, type StoreEntityVocabulary, vocabularyDefinitions } from './vocabulary-types';
-import vocabularyResolvers from './vocabulary-resolver';
 import convertVocabularyToStix from './vocabulary-converter';
 import { ABSTRACT_STIX_META_OBJECT } from '../../schema/general';
 import { type ModuleDefinition, registerDefinition } from '../../schema/module';
@@ -17,10 +15,6 @@ const VOCABULARY_DEFINITION: ModuleDefinition<StoreEntityVocabulary, StixVocabul
     name: ENTITY_TYPE_VOCABULARY,
     category: ABSTRACT_STIX_META_OBJECT,
     aliased: true
-  },
-  graphql: {
-    schema: vocabularyTypeDefs,
-    resolver: vocabularyResolvers,
   },
   identifier: {
     definition: {

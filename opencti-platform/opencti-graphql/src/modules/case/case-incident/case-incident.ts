@@ -1,10 +1,8 @@
-import caseIncidentTypeDefs from './case-incident.graphql';
 import { ENTITY_TYPE_CONTAINER_CASE_INCIDENT, type StixCaseIncident, type StoreEntityCaseIncident } from './case-incident-types';
 import { ENTITY_TYPE_CONTAINER_CASE } from '../case-types';
 import { NAME_FIELD, normalizeName } from '../../../schema/identifier';
 import type { ModuleDefinition } from '../../../schema/module';
 import { registerDefinition } from '../../../schema/module';
-import caseIncidentResolvers from './case-incident-resolvers';
 import convertCaseIncidentToStix from './case-incident-converter';
 import { createdBy, objectAssignee, objectMarking, objectParticipant } from '../../../schema/stixRefRelationship';
 
@@ -14,10 +12,6 @@ const CASE_INCIDENT_DEFINITION: ModuleDefinition<StoreEntityCaseIncident, StixCa
     name: ENTITY_TYPE_CONTAINER_CASE_INCIDENT,
     category: ENTITY_TYPE_CONTAINER_CASE,
     aliased: false
-  },
-  graphql: {
-    schema: caseIncidentTypeDefs,
-    resolver: caseIncidentResolvers,
   },
   identifier: {
     definition: {

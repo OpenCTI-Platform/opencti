@@ -156,24 +156,3 @@ export const settingDeleteMessage = async (context, user, settingsId, messageId)
   const { element } = await patchAttribute(context, user, settingsId, ENTITY_TYPE_SETTINGS, patch);
   return notify(BUS_TOPICS[ENTITY_TYPE_SETTINGS].EDIT_TOPIC, element, user);
 };
-
-// -- AJV --
-
-export const settingsMessages = {
-  type: 'array',
-  items: {
-    type: 'object',
-    properties: {
-      id: {
-        type: 'string',
-        minLength: 1
-      },
-      message: { type: 'string' },
-      activated: { type: 'boolean' },
-      updated_at: { type: 'string' },
-      dismissible: { type: 'boolean' },
-      color: { type: 'string' },
-    },
-    required: ['id', 'message', 'activated', 'updated_at', 'dismissible']
-  },
-};

@@ -1,4 +1,3 @@
-import channelTypeDefs from './channel.graphql';
 import convertChannelToStix from './channel-converter';
 import { NAME_FIELD, normalizeName } from '../../schema/identifier';
 import { RELATION_AMPLIFIES, RELATION_BELONGS_TO, RELATION_DELIVERS, RELATION_DROPS, RELATION_PUBLISHES, RELATION_TARGETS, RELATION_USES } from '../../schema/stixCoreRelationship';
@@ -15,7 +14,6 @@ import {
   ENTITY_TYPE_TOOL,
   ENTITY_TYPE_VULNERABILITY
 } from '../../schema/stixDomainObject';
-import channelResolvers from './channel-resolver';
 import { ENTITY_TYPE_CHANNEL, type StixChannel, type StoreEntityChannel } from './channel-types';
 import { ENTITY_TYPE_LANGUAGE } from '../language/language-types';
 import { ENTITY_TYPE_NARRATIVE } from '../narrative/narrative-types';
@@ -36,16 +34,12 @@ import { registerDefinition } from '../../schema/module';
 import { objectOrganization } from '../../schema/stixRefRelationship';
 import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../organization/organization-types';
 
-const CHANNEL_DEFINITION: ModuleDefinition<StoreEntityChannel, StixChannel> = {
+export const CHANNEL_DEFINITION: ModuleDefinition<StoreEntityChannel, StixChannel> = {
   type: {
     id: 'channels',
     name: ENTITY_TYPE_CHANNEL,
     category: ABSTRACT_STIX_DOMAIN_OBJECT,
     aliased: true
-  },
-  graphql: {
-    schema: channelTypeDefs,
-    resolver: channelResolvers,
   },
   identifier: {
     definition: {

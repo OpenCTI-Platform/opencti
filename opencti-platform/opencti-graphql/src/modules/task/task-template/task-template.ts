@@ -2,20 +2,14 @@ import { ABSTRACT_INTERNAL_OBJECT } from '../../../schema/general';
 import { NAME_FIELD, normalizeName } from '../../../schema/identifier';
 import { type ModuleDefinition, registerDefinition } from '../../../schema/module';
 import convertCaseTaskToStix from './task-template-converter';
-import taskTemplateResolvers from './task-template-resolvers';
 import type { StixTaskTemplate, StoreEntityTaskTemplate } from './task-template-types';
 import { ENTITY_TYPE_TASK_TEMPLATE } from './task-template-types';
-import caseTaskTypeDefs from './task-template.graphql';
 
 const TASK_TEMPLATE_DEFINITION: ModuleDefinition<StoreEntityTaskTemplate, StixTaskTemplate> = {
   type: {
     id: 'task-template',
     name: ENTITY_TYPE_TASK_TEMPLATE,
     category: ABSTRACT_INTERNAL_OBJECT
-  },
-  graphql: {
-    schema: caseTaskTypeDefs,
-    resolver: taskTemplateResolvers,
   },
   identifier: {
     definition: {

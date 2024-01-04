@@ -1,5 +1,3 @@
-import managerConfigurationTypeDefs from './managerConfiguration.graphql';
-import managerConfigurationResolvers from './managerConfiguration-resolvers';
 import { type ModuleDefinition, registerDefinition } from '../../schema/module';
 import type { StixManagerConfiguration, StoreEntityManagerConfiguration } from './managerConfiguration-types';
 import { ENTITY_TYPE_MANAGER_CONFIGURATION } from './managerConfiguration-types';
@@ -12,10 +10,6 @@ const MANAGER_CONFIGURATION_DEFINITION: ModuleDefinition<StoreEntityManagerConfi
     name: ENTITY_TYPE_MANAGER_CONFIGURATION,
     category: ABSTRACT_INTERNAL_OBJECT,
     aliased: false
-  },
-  graphql: {
-    schema: managerConfigurationTypeDefs,
-    resolver: managerConfigurationResolvers,
   },
   identifier: {
     definition: {

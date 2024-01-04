@@ -1,13 +1,10 @@
-import dataComponentTypeDefs from './dataComponent.graphql';
 import { ENTITY_TYPE_ATTACK_PATTERN, ENTITY_TYPE_DATA_COMPONENT, ENTITY_TYPE_DATA_SOURCE } from '../../schema/stixDomainObject';
 import { NAME_FIELD, normalizeName } from '../../schema/identifier';
-import type { StixDataComponent, StoreEntityDataComponent } from './dataComponent-types';
+import { ATTRIBUTE_DATA_SOURCE, RELATION_DATA_SOURCE, type StixDataComponent, type StoreEntityDataComponent } from './dataComponent-types';
 import { INPUT_DATA_SOURCE } from './dataComponent-types';
-import dataComponentResolvers from './dataComponent-resolver';
 import convertDataComponentToStix from './dataComponent-converter';
 import { RELATION_DETECTS } from '../../schema/stixCoreRelationship';
 import { REL_EXTENDED } from '../../database/stix';
-import { ATTRIBUTE_DATA_SOURCE, RELATION_DATA_SOURCE } from './dataComponent-domain';
 import { ABSTRACT_STIX_DOMAIN_OBJECT } from '../../schema/general';
 import type { ModuleDefinition } from '../../schema/module';
 import { registerDefinition } from '../../schema/module';
@@ -19,10 +16,6 @@ const DATA_COMPONENT_DEFINITION: ModuleDefinition<StoreEntityDataComponent, Stix
     name: ENTITY_TYPE_DATA_COMPONENT,
     category: ABSTRACT_STIX_DOMAIN_OBJECT,
     aliased: true
-  },
-  graphql: {
-    schema: dataComponentTypeDefs,
-    resolver: dataComponentResolvers,
   },
   identifier: {
     definition: {

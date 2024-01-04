@@ -1,7 +1,5 @@
-import channelTypeDefs from './event.graphql';
 import convertEventToStix from './event-converter';
 import { NAME_FIELD, normalizeName } from '../../schema/identifier';
-import channelResolvers from './event-resolver';
 import { ENTITY_TYPE_EVENT, type StixEvent, type StoreEntityEvent } from './event-types';
 import { RELATION_LOCATED_AT } from '../../schema/stixCoreRelationship';
 import { ENTITY_TYPE_LOCATION_CITY, ENTITY_TYPE_LOCATION_COUNTRY, ENTITY_TYPE_LOCATION_POSITION, ENTITY_TYPE_LOCATION_REGION } from '../../schema/stixDomainObject';
@@ -16,10 +14,6 @@ const EVENT_DEFINITION: ModuleDefinition<StoreEntityEvent, StixEvent> = {
     name: ENTITY_TYPE_EVENT,
     category: ABSTRACT_STIX_DOMAIN_OBJECT,
     aliased: true
-  },
-  graphql: {
-    schema: channelTypeDefs,
-    resolver: channelResolvers,
   },
   identifier: {
     definition: {

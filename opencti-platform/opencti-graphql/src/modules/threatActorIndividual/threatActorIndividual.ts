@@ -1,27 +1,25 @@
 import type { JSONSchemaType } from 'ajv';
-import threatActorIndividualTypeDefs from './threatActorIndividual.graphql';
 import { ENTITY_TYPE_THREAT_ACTOR } from '../../schema/general';
 import { INNER_TYPE, NAME_FIELD, normalizeName } from '../../schema/identifier';
 import { type ModuleDefinition, registerDefinition } from '../../schema/module';
 import { bornIn, ethnicity, objectOrganization } from '../../schema/stixRefRelationship';
 import type { StixThreatActorIndividual, StoreEntityThreatActorIndividual } from './threatActorIndividual-types';
 import { ENTITY_TYPE_THREAT_ACTOR_INDIVIDUAL } from './threatActorIndividual-types';
-import threatActorIndividualResolvers from './threatActorIndividual-resolvers';
 import convertThreatActorIndividualToStix from './threatActorIndividual-converter';
 import {
   RELATION_ATTRIBUTED_TO,
+  RELATION_CITIZEN_OF,
   RELATION_COMPROMISES,
   RELATION_COOPERATES_WITH,
   RELATION_EMPLOYED_BY,
-  RELATION_RESIDES_IN,
-  RELATION_CITIZEN_OF,
-  RELATION_NATIONAL_OF,
   RELATION_HOSTS,
   RELATION_IMPERSONATES,
   RELATION_LOCATED_AT,
+  RELATION_NATIONAL_OF,
   RELATION_OWNS,
   RELATION_PART_OF,
   RELATION_PARTICIPATES_IN,
+  RELATION_RESIDES_IN,
   RELATION_TARGETS,
   RELATION_USES
 } from '../../schema/stixCoreRelationship';
@@ -73,10 +71,6 @@ const THREAT_ACTOR_INDIVIDUAL_DEFINITION: ModuleDefinition<StoreEntityThreatActo
     name: ENTITY_TYPE_THREAT_ACTOR_INDIVIDUAL,
     category: ENTITY_TYPE_THREAT_ACTOR,
     aliased: true,
-  },
-  graphql: {
-    schema: threatActorIndividualTypeDefs,
-    resolver: threatActorIndividualResolvers,
   },
   identifier: {
     definition: {

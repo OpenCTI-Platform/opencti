@@ -99,7 +99,7 @@ interface ThreatActorIndividualAddInput {
   goals: string | null;
   sophistication: Option | null;
   resource_level: Option | null;
-  roles: string[] | null;
+  roles: Option[] | null;
   primary_motivation: Option | null;
   secondary_motivations: Option[] | null;
   personal_motivations: Option[] | null;
@@ -226,7 +226,9 @@ ThreatActorIndividualFormProps
         (v) => v.value,
       ),
       primary_motivation: values?.primary_motivation?.value,
-      roles: values?.roles,
+      roles: (values?.roles ?? []).map(
+        (v) => v.value,
+      ),
       sophistication: values?.sophistication?.value,
       resource_level: values?.resource_level?.value,
       goals: values?.goals?.split('\n') ?? null,

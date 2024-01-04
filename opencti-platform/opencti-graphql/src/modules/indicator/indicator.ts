@@ -1,7 +1,5 @@
 import { type ModuleDefinition, registerDefinition } from '../../schema/module';
 import { ABSTRACT_STIX_DOMAIN_OBJECT } from '../../schema/general';
-import indicatorTypeDefs from './indicator.graphql';
-import indicatorResolvers from './indicator-resolver';
 import { ENTITY_TYPE_INDICATOR, type StixIndicator, type StoreEntityIndicator } from './indicator-types';
 import convertIndicatorToStix from './indicator-converter';
 import { killChainPhases, objectOrganization } from '../../schema/stixRefRelationship';
@@ -12,10 +10,6 @@ const INDICATOR_DEFINITION: ModuleDefinition<StoreEntityIndicator, StixIndicator
     name: ENTITY_TYPE_INDICATOR,
     category: ABSTRACT_STIX_DOMAIN_OBJECT,
     aliased: true
-  },
-  graphql: {
-    schema: indicatorTypeDefs,
-    resolver: indicatorResolvers,
   },
   identifier: {
     definition: {

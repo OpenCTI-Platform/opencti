@@ -1,7 +1,5 @@
-import narrativeTypeDefs from './narrative.graphql';
 import convertNarrativeToStix from './narrative-converter';
 import { NAME_FIELD, normalizeName } from '../../schema/identifier';
-import narrativeResolvers from './narrative-resolver';
 import { ENTITY_TYPE_NARRATIVE, type StixNarrative, type StoreEntityNarrative } from './narrative-types';
 import { REL_NEW } from '../../database/stix';
 import { RELATION_SUBNARRATIVE_OF } from '../../schema/stixCoreRelationship';
@@ -15,10 +13,6 @@ const NARRATIVE_DEFINITION: ModuleDefinition<StoreEntityNarrative, StixNarrative
     name: ENTITY_TYPE_NARRATIVE,
     category: ABSTRACT_STIX_DOMAIN_OBJECT,
     aliased: true
-  },
-  graphql: {
-    schema: narrativeTypeDefs,
-    resolver: narrativeResolvers,
   },
   identifier: {
     definition: {

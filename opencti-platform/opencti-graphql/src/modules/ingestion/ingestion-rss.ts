@@ -4,8 +4,6 @@ import { ABSTRACT_INTERNAL_OBJECT } from '../../schema/general';
 import { type ModuleDefinition, registerDefinition } from '../../schema/module';
 import { ENTITY_TYPE_INGESTION_RSS, type StixIngestionRss, type StoreEntityIngestionRss } from './ingestion-types';
 import { convertIngestionRssToStix } from './ingestion-converter';
-import ingestionTypeDefs from './ingestion-rss.graphql';
-import ingestionRssResolvers from './ingestion-rss-resolver';
 import { ENTITY_TYPE_USER } from '../../schema/internalObject';
 
 const INGESTION_RSS_DEFINITION: ModuleDefinition<StoreEntityIngestionRss, StixIngestionRss> = {
@@ -14,10 +12,6 @@ const INGESTION_RSS_DEFINITION: ModuleDefinition<StoreEntityIngestionRss, StixIn
     name: ENTITY_TYPE_INGESTION_RSS,
     category: ABSTRACT_INTERNAL_OBJECT,
     aliased: false
-  },
-  graphql: {
-    schema: ingestionTypeDefs,
-    resolver: ingestionRssResolvers,
   },
   identifier: {
     definition: {
