@@ -1,8 +1,6 @@
-import React, { Component } from 'react';
-import * as PropTypes from 'prop-types';
-import { compose, propOr } from 'ramda';
+import React, { FunctionComponent } from 'react';
+import { propOr } from 'ramda';
 import { createFragmentContainer, graphql } from 'react-relay';
-import withStyles from '@mui/styles/withStyles';
 import Paper from '@mui/material/Paper';
 import Typography from '@mui/material/Typography';
 import Grid from '@mui/material/Grid';
@@ -13,42 +11,51 @@ import { SettingsApplications } from '@mui/icons-material';
 import ListItemText from '@mui/material/ListItemText';
 import Chip from '@mui/material/Chip';
 import Divider from '@mui/material/Divider';
-import inject18n from '../../../../components/i18n';
+import Box from '@mui/material/Box';
 import ItemScore from '../../../../components/ItemScore';
 import IndicatorObservables from './IndicatorObservables';
 import ExpandableMarkdown from '../../../../components/ExpandableMarkdown';
 import ExpandablePre from '../../../../components/ExpandablePre';
 import ItemBoolean from '../../../../components/ItemBoolean';
 import StixCoreObjectKillChainPhasesView from '../../common/stix_core_objects/StixCoreObjectKillChainPhasesView';
+import { useFormatter } from '../../../../components/i18n';
 
-const styles = (theme) => ({
-  paper: {
-    height: '100%',
-    minHeight: '100%',
-    margin: '10px 0 0 0',
-    padding: '15px',
-    borderRadius: 6,
-  },
-  chip: {
-    fontSize: 12,
-    lineHeight: '12px',
-    backgroundColor: theme.palette.background.accent,
-    borderRadius: 5,
-    color: theme.palette.text.primary,
-    textTransform: 'uppercase',
-    margin: '0 5px 5px 0',
-  },
-});
+export type Indicator = {
+  pattern: string
+  valid_from: string
+  x_opencti_score: string
+  description: string
+  indicator_types: []
+  valid_until: string
+  x_opencti_detection: boolean
+  killChainPhases:
+};
 
-class IndicatorDetailsComponent extends Component {
-  render() {
-    const { t, fldt, classes, indicator } = this.props;
-    return (
-      <div style={{ height: '100%' }} className="break">
-        <Typography variant="h4" gutterBottom={true}>
-          {t('Details')}
-        </Typography>
-        <Paper classes={{ root: classes.paper }} variant="outlined">
+interface IndicatorDetailsComponentProps {
+  indicator: Indicator,
+  classes: string,
+}
+
+const IndicatorDetailsComponent: FunctionComponent<IndicatorDetailsComponentProps> = ({
+  indicator,
+}) => {
+  const { t } = useFormatter();
+  const { fldt } = useFormatter(); //FIXME
+  return (
+    <div style={{ height: '100%' }} className="break">
+      <Typography variant="h4" gutterBottom={true}>
+        {t('Details')}
+      </Typography>
+      <Box
+        sx={{
+          height: '100%',
+          minHeight: '100%',
+          margin: '10px 0 0 0',
+          padding: '15px',
+          borderRadius: 6,
+        }}
+      >
+        <Paper variant="outlined">
           <Typography variant="h3" gutterBottom={true}>
             {t('Indicator pattern')}
           </Typography>
@@ -62,10 +69,18 @@ class IndicatorDetailsComponent extends Component {
               <Typography variant="h3" gutterBottom={true}>
                 {t('Valid from')}
               </Typography>
-              <Chip
-                classes={{ root: classes.chip }}
-                label={fldt(indicator.valid_from)}
-              />
+              <Box sx={{
+                fontSize: 12,
+                lineHeight: '12px',
+                // FIXME backgroundColor: theme.palette.background.accent,
+                borderRadius: 5,
+                // FIXME color: theme.palette.text.primary,
+                textTransform: 'uppercase',
+                margin: '0 5px 5px 0',
+              }}
+              >
+                <Chip label={fldt(indicator.valid_from)}/>
+              </Box>
               <Typography
                 variant="h3"
                 gutterBottom={true}
@@ -90,20 +105,20 @@ class IndicatorDetailsComponent extends Component {
                 {t('Indicator types')}
               </Typography>
               {indicator.indicator_types
-                && indicator.indicator_types.map((indicatorType) => (
-                  <Chip
-                    key={indicatorType}
-                    classes={{ root: classes.chip }}
-                    label={indicatorType}
-                  />
-                ))}
+                    && indicator.indicator_types.map((indicatorType) => (
+                      <Chip
+                        key={indicatorType}
+                        // FIXME classes={{ root: classes.chip }}
+                        label={indicatorType}
+                      />
+                    ))}
             </Grid>
             <Grid item={true} xs={6}>
               <Typography variant="h3" gutterBottom={true}>
                 {t('Valid until')}
               </Typography>
               <Chip
-                classes={{ root: classes.chip }}
+                  // FIXME classes={{ root: classes.chip }}
                 label={fldt(indicator.valid_until)}
               />
               <Typography
@@ -140,16 +155,9 @@ class IndicatorDetailsComponent extends Component {
           <Divider />
           <IndicatorObservables indicator={indicator} />
         </Paper>
-      </div>
-    );
-  }
-}
-
-IndicatorDetailsComponent.propTypes = {
-  indicator: PropTypes.object,
-  classes: PropTypes.object,
-  t: PropTypes.func,
-  fld: PropTypes.func,
+      </Box>
+    </div>
+  );
 };
 
 const IndicatorDetails = createFragmentContainer(IndicatorDetailsComponent, {
@@ -189,4 +197,4 @@ const IndicatorDetails = createFragmentContainer(IndicatorDetailsComponent, {
   `,
 });
 
-export default compose(inject18n, withStyles(styles))(IndicatorDetails);
+export default IndicatorDetails;
