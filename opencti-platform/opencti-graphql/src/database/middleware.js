@@ -199,6 +199,7 @@ import { cleanMarkings, handleMarkingOperations } from '../utils/markingDefiniti
 import { generateCreateMessage, generateUpdateMessage } from './generate-message';
 import { confidence } from '../schema/attribute-definition';
 import { ENTITY_TYPE_INDICATOR } from '../modules/indicator/indicator-types';
+import { FilterOperator } from '../generated/graphql';
 
 // region global variables
 const MAX_BATCH_SIZE = 300;
@@ -1768,11 +1769,13 @@ const updateAttributeRaw = async (context, user, instance, inputs, opts = {}) =>
   }
   // Impact the updated_at only if stix data is impacted
   // In case of upsert, this addition will be supported by the parent function
-  if (impactedInputs.length > 0 && isUpdatedAtObject(instance.entity_type)) {
+  if (impactedInputs.length > 0 && isUpdatedAtObject(instance.entity_type)
+      && !impactedInputs.find((i) => i.key === 'updated_at')) {
     const updatedAtInput = { key: 'updated_at', value: [today] };
     impactedInputs.push(updatedAtInput);
   }
-  if (impactedInputs.length > 0 && isModifiedObject(instance.entity_type)) {
+  if (impactedInputs.length > 0 && isModifiedObject(instance.entity_type)
+      && !impactedInputs.find((i) => i.key === 'modified')) {
     const modifiedAtInput = { key: 'modified', value: [today] };
     impactedInputs.push(modifiedAtInput);
   }
@@ -1827,7 +1830,10 @@ export const updateAttributeMetaResolved = async (context, user, initial, inputs
   }
   // Split attributes and meta
   // Supports inputs meta or stix meta
-  const metaKeys = [...schemaRelationsRefDefinition.getStixNames(initial.entity_type), ...schemaRelationsRefDefinition.getInputNames(initial.entity_type)];
+  const metaKeys = [
+    ...schemaRelationsRefDefinition.getStixNames(initial.entity_type),
+    ...schemaRelationsRefDefinition.getInputNames(initial.entity_type)
+  ];
   const meta = updates.filter((e) => metaKeys.includes(e.key));
   const attributes = updates.filter((e) => !metaKeys.includes(e.key));
   const updated = mergeInstanceWithUpdateInputs(initial, inputs);
@@ -2391,7 +2397,7 @@ const buildAttributeUpdate = (isFullSync, attribute, currentData, inputData) => 
     const operation = isFullSync ? UPDATE_OPERATION_REPLACE : UPDATE_OPERATION_ADD;
     // Only add input in case of replace or when we really need to add something
     if (operation === UPDATE_OPERATION_REPLACE || (operation === UPDATE_OPERATION_ADD && isNotEmptyField(inputData))) {
-      inputs.push({ key: fieldKey, value: inputData, operation });
+      inputs.push({ key: fieldKey, value: inputData ?? [], operation });
     }
   } else if (isObjectAttribute(fieldKey)) {
     if (isNotEmptyField(inputData)) {
@@ -2406,24 +2412,24 @@ const buildAttributeUpdate = (isFullSync, attribute, currentData, inputData) => 
   return inputs;
 };
 const buildTimeUpdate = (input, instance, startField, stopField) => {
-  const inputs = [];
+  const patch = {};
   // If not coming from a rule, compute extended time.
   if (input[startField]) {
     const extendedStart = computeExtendedDateValues(input[startField], instance[startField], ALIGN_OLDEST);
     if (extendedStart) {
-      inputs.push({ key: startField, value: [extendedStart] });
+      patch[startField] = extendedStart;
     }
   }
   if (input[stopField]) {
     const extendedStop = computeExtendedDateValues(input[stopField], instance[stopField], ALIGN_NEWEST);
     if (extendedStop) {
-      inputs.push({ key: stopField, value: [extendedStop] });
+      patch[stopField] = extendedStop;
     }
   }
-  return inputs;
+  return patch;
 };
-const buildRelationDeduplicationFilter = (input) => {
-  const args = {};
+const buildRelationDeduplicationFilters = (input) => {
+  const filters = [];
   const { from, relationship_type: relationshipType, createdBy } = input;
   const deduplicationConfig = conf.get('relations_deduplication') ?? {
     past_days: 30,
@@ -2433,44 +2439,57 @@ const buildRelationDeduplicationFilter = (input) => {
   };
   const config = deduplicationConfig.types_overrides?.[relationshipType] ?? deduplicationConfig;
   if (config.created_by_based && createdBy) {
-    args.relationFilter = { relation: RELATION_CREATED_BY, id: createdBy.id };
+    // args.relationFilter = { relation: RELATION_CREATED_BY, id: createdBy.id };
+    filters.push({ key: [buildRefRelationKey(RELATION_CREATED_BY)], values: [createdBy.id] });
   }
   const prepareBeginning = (key) => prepareDate(moment(input[key]).subtract(config.past_days, 'days').utc());
   const prepareStopping = (key) => prepareDate(moment(input[key]).add(config.next_days, 'days').utc());
   // Prepare for stix core
   if (isStixCoreRelationship(relationshipType)) {
     if (!R.isNil(input.start_time)) {
-      args.startTimeStart = prepareBeginning('start_time');
-      args.startTimeStop = prepareStopping('start_time');
+      // args.startTimeStart = prepareBeginning('start_time');
+      filters.push({ key: ['start_time'], values: [prepareBeginning('start_time')], operator: FilterOperator.Gt });
+      // args.startTimeStop = prepareStopping('start_time');
+      filters.push({ key: ['start_time'], values: [prepareStopping('start_time')], operator: FilterOperator.Lt });
     }
     if (!R.isNil(input.stop_time)) {
-      args.stopTimeStart = prepareBeginning('stop_time');
-      args.stopTimeStop = prepareStopping('stop_time');
+      // args.stopTimeStart = prepareBeginning('stop_time');
+      filters.push({ key: ['stop_time'], values: [prepareBeginning('stop_time')], operator: FilterOperator.Gt });
+      // args.stopTimeStop = prepareStopping('stop_time');
+      filters.push({ key: ['stop_time'], values: [prepareStopping('stop_time')], operator: FilterOperator.Lt });
     }
   }
   // Prepare for stix ref
   if (isStixRefRelationship(relationshipType) && schemaRelationsRefDefinition.isDatable(from.entity_type, relationshipType)) {
     if (!R.isNil(input.start_time)) {
-      args.startTimeStart = prepareBeginning('start_time');
-      args.startTimeStop = prepareStopping('start_time');
+      // args.startTimeStart = prepareBeginning('start_time');
+      filters.push({ key: ['start_time'], values: [prepareBeginning('start_time')], operator: FilterOperator.Gt });
+      // args.startTimeStop = prepareStopping('start_time');
+      filters.push({ key: ['start_time'], values: [prepareStopping('start_time')], operator: FilterOperator.Lt });
     }
     if (!R.isNil(input.stop_time)) {
-      args.stopTimeStart = prepareBeginning('stop_time');
-      args.stopTimeStop = prepareStopping('stop_time');
+      // args.stopTimeStart = prepareBeginning('stop_time');
+      filters.push({ key: ['stop_time'], values: [prepareBeginning('stop_time')], operator: FilterOperator.Gt });
+      // args.stopTimeStop = prepareStopping('stop_time');
+      filters.push({ key: ['stop_time'], values: [prepareStopping('stop_time')], operator: FilterOperator.Lt });
     }
   }
   // Prepare for stix sighting
   if (isStixSightingRelationship(relationshipType)) {
     if (!R.isNil(input.first_seen)) {
-      args.firstSeenStart = prepareBeginning('first_seen');
-      args.firstSeenStop = prepareStopping('first_seen');
+      // args.firstSeenStart = prepareBeginning('first_seen');
+      filters.push({ key: ['first_seen'], values: [prepareBeginning('first_seen')], operator: FilterOperator.Gt });
+      // args.firstSeenStop = prepareStopping('first_seen');
+      filters.push({ key: ['first_seen'], values: [prepareStopping('first_seen')], operator: FilterOperator.Lt });
     }
     if (!R.isNil(input.last_seen)) {
-      args.lastSeenStart = prepareBeginning('last_seen');
-      args.lastSeenStop = prepareStopping('last_seen');
+      // args.lastSeenStart = prepareBeginning('last_seen');
+      filters.push({ key: ['last_seen'], values: [prepareBeginning('last_seen')], operator: FilterOperator.Gt });
+      // args.lastSeenStop = prepareStopping('last_seen');
+      filters.push({ key: ['last_seen'], values: [prepareStopping('last_seen')], operator: FilterOperator.Lt });
     }
   }
-  return args;
+  return filters;
 };
 
 export const buildDynamicFilterArgsContent = (inputFilters) => {
@@ -2522,38 +2541,48 @@ export const buildDynamicFilterArgs = (inputFilters) => {
   return { connectionFormat: false, first: 500, filters };
 };
 
-const upsertElement = async (context, user, element, type, updatePatch, opts = {}) => {
-  const inputs = []; // All inputs impacted by modifications (+inner)
+const upsertElement = async (context, user, element, type, basePatch, opts = {}) => {
   // -- Independent update
+  const updatePatch = { ...basePatch };
   // Handle attributes updates
-  if (isNotEmptyField(updatePatch.stix_id) || isNotEmptyField(updatePatch.x_opencti_stix_ids)) {
-    const ids = [...(updatePatch.x_opencti_stix_ids || [])];
-    if (isNotEmptyField(updatePatch.stix_id) && updatePatch.stix_id !== element.standard_id) {
+  if (isNotEmptyField(basePatch.stix_id) || isNotEmptyField(basePatch.x_opencti_stix_ids)) {
+    const ids = [...(basePatch.x_opencti_stix_ids || [])];
+    if (isNotEmptyField(basePatch.stix_id) && basePatch.stix_id !== element.standard_id) {
       ids.push(updatePatch.stix_id);
     }
     if (ids.length > 0) {
-      inputs.push({ key: 'x_opencti_stix_ids', value: ids, operation: UPDATE_OPERATION_ADD });
+      updatePatch.x_opencti_stix_ids = ids;
     }
   }
-  // Add support for existing creator_id that can be a simple string except of an array
-  const creatorIds = [];
-  if (isNotEmptyField(element.creator_id)) {
-    const idCreators = Array.isArray(element.creator_id) ? element.creator_id : [element.creator_id];
-    creatorIds.push(...idCreators);
-  }
   // Cumulate creator id
-  if (!INTERNAL_USERS[user.id] && !creatorIds.includes(user.id)) {
-    inputs.push({ key: 'creator_id', value: [...creatorIds, user.id], operation: UPDATE_OPERATION_ADD });
+  if (!INTERNAL_USERS[user.id]) {
+    updatePatch.creator_id = [user.id];
   }
   // Upsert observed data count and times extensions
   if (type === ENTITY_TYPE_CONTAINER_OBSERVED_DATA) {
     // Upsert the count only if a time patch is applied.
-    const timePatchInputs = buildTimeUpdate(updatePatch, element, 'first_observed', 'last_observed');
-    if (timePatchInputs.length > 0) {
-      inputs.push(...timePatchInputs);
-      inputs.push({ key: 'number_observed', value: [element.number_observed + updatePatch.number_observed] });
+    const timePatch = buildTimeUpdate(updatePatch, element, 'first_observed', 'last_observed');
+    if (isNotEmptyField(timePatch)) {
+      updatePatch.first_observed = timePatch.first_observed ?? updatePatch.first_observed;
+      updatePatch.last_observed = timePatch.last_observed ?? updatePatch.last_observed;
+      updatePatch.number_observed = element.number_observed + updatePatch.number_observed;
     }
   }
+  // Upsert relations with times extensions
+  if (isStixCoreRelationship(type)) {
+    const timePatch = buildTimeUpdate(updatePatch, element, 'start_time', 'stop_time');
+    updatePatch.first_observed = timePatch.start_time ?? updatePatch.start_time;
+    updatePatch.last_observed = timePatch.stop_time ?? updatePatch.stop_time;
+  }
+  if (isStixSightingRelationship(type)) {
+    const timePatch = buildTimeUpdate(updatePatch, element, 'first_seen', 'last_seen');
+    if (isNotEmptyField(timePatch)) {
+      updatePatch.first_seen = timePatch.first_seen ?? updatePatch.first_seen;
+      updatePatch.last_seen = timePatch.last_seen ?? updatePatch.last_seen;
+      updatePatch.attribute_count = element.attribute_count + updatePatch.attribute_count;
+    }
+  }
+  const inputs = []; // All inputs impacted by modifications (+inner)
   // If file directly attached
   if (!isEmptyField(updatePatch.file)) {
     const path = `import/${element.entity_type}/${element.internal_id}`;
@@ -2562,18 +2591,6 @@ const upsertElement = async (context, user, element, type, updatePatch, opts = {
     // The impact in the database is the completion of the files
     const fileImpact = { key: 'x_opencti_files', value: [...(element.x_opencti_files ?? []), convertedFile] };
     inputs.push(fileImpact);
-  }
-  // Upsert relations with times extensions
-  if (isStixCoreRelationship(type)) {
-    const timePatchInputs = buildTimeUpdate(updatePatch, element, 'start_time', 'stop_time');
-    inputs.push(...timePatchInputs);
-  }
-  if (isStixSightingRelationship(type)) {
-    const timePatchInputs = buildTimeUpdate(updatePatch, element, 'first_seen', 'last_seen');
-    if (timePatchInputs.length > 0) {
-      inputs.push(...timePatchInputs);
-      inputs.push({ key: 'attribute_count', value: [element.attribute_count + updatePatch.attribute_count] });
-    }
   }
   // If confidence is passed at creation, just compare confidence
   const isPatchUpdateOption = updatePatch.update === true;
@@ -2859,8 +2876,36 @@ export const createRelationRaw = async (context, user, input, opts = {}) => {
     } else {
       // In case of direct relation, try to find the relation with time filters
       // Only in standard indices.
-      const timeFilters = buildRelationDeduplicationFilter(resolvedInput);
-      const manualArgs = { ...listingArgs, indices: READ_RELATIONSHIPS_INDICES_WITHOUT_INFERRED, ...timeFilters };
+      const deduplicationFilters = buildRelationDeduplicationFilters(resolvedInput);
+      const searchFilters = {
+        mode: 'or',
+        filters: [{ key: 'ids', values: inputIds }],
+        filterGroups: [{
+          mode: 'and',
+          filters: [
+            {
+              key: ['connections'],
+              nested: [
+                { key: 'internal_id', values: [fromId] },
+                { key: 'role', values: ['*_from'], operator: FilterOperator.Wildcard }
+              ],
+              values: []
+            },
+            {
+              key: ['connections'],
+              nested: [
+                { key: 'internal_id', values: [toId] },
+                { key: 'role', values: ['*_to'], operator: FilterOperator.Wildcard }
+              ],
+              values: []
+            },
+            ...deduplicationFilters
+          ],
+          filterGroups: [],
+        }]
+      };
+      // inputIds
+      const manualArgs = { indices: READ_RELATIONSHIPS_INDICES_WITHOUT_INFERRED, filters: searchFilters, connectionFormat: false };
       const manualRelationships = await listRelations(context, SYSTEM_USER, relationshipType, manualArgs);
       existingRelationships.push(...manualRelationships);
     }

@@ -276,7 +276,7 @@ export const xOpenctiStixIds: AttributeDefinition = {
   mandatoryType: 'no',
   editDefault: false,
   multiple: true,
-  upsert: false,
+  upsert: true,
   isFilterable: false,
 };
 
