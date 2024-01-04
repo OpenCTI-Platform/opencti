@@ -2548,7 +2548,7 @@ const upsertElement = async (context, user, element, type, basePatch, opts = {})
   if (isNotEmptyField(basePatch.stix_id) || isNotEmptyField(basePatch.x_opencti_stix_ids)) {
     const ids = [...(basePatch.x_opencti_stix_ids || [])];
     if (isNotEmptyField(basePatch.stix_id) && basePatch.stix_id !== element.standard_id) {
-      ids.push(updatePatch.stix_id);
+      ids.push(basePatch.stix_id);
     }
     if (ids.length > 0) {
       updatePatch.x_opencti_stix_ids = ids;
@@ -2593,8 +2593,7 @@ const upsertElement = async (context, user, element, type, basePatch, opts = {})
     inputs.push(fileImpact);
   }
   // If confidence is passed at creation, just compare confidence
-  const isPatchUpdateOption = updatePatch.update === true;
-  const isConfidenceMatch = isNotEmptyField(updatePatch.confidence) ? (updatePatch.confidence >= element.confidence) : isPatchUpdateOption;
+  const isConfidenceMatch = (updatePatch.confidence ?? 0) >= (element.confidence ?? 0);
   // -- Upsert attributes
   const attributes = Array.from(schemaAttributesDefinition.getAttributes(type).values());
   for (let attrIndex = 0; attrIndex < attributes.length; attrIndex += 1) {

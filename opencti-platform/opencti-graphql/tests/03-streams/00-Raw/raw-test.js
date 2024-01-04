@@ -29,7 +29,7 @@ describe('Raw streams tests', () => {
       expect(createEventsByTypes.tool.length).toBe(2);
       expect(createEventsByTypes.vocabulary.length).toBe(330); // 328 created at init + 2 created in tests
       expect(createEventsByTypes.vulnerability.length).toBe(7);
-      expect(createEvents.length).toBe(705);
+      expect(createEvents.length).toBe(704);
       for (let createIndex = 0; createIndex < createEvents.length; createIndex += 1) {
         const { data: insideData, origin, type } = createEvents[createIndex];
         expect(origin).toBeDefined();
@@ -61,7 +61,7 @@ describe('Raw streams tests', () => {
       expect(updateEventsByTypes['report'].length).toBe(5);
       expect(updateEventsByTypes['ipv4-addr'].length).toBe(3);
       expect(updateEventsByTypes['tool'].length).toBe(7);
-      expect(updateEventsByTypes['sighting'].length).toBe(4);
+      expect(updateEventsByTypes['sighting'].length).toBe(3);
       expect(updateEventsByTypes['threat-actor'].length).toBe(17);
       expect(updateEventsByTypes['vocabulary'].length).toBe(3);
       expect(updateEventsByTypes['vulnerability'].length).toBe(3);

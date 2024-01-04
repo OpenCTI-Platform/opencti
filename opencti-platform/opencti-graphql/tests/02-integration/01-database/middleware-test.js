@@ -407,7 +407,7 @@ describe('Relations listing', () => {
   it('should list sightings', async () => {
     const stixSightings = await listRelations(testContext, ADMIN_USER, 'stix-sighting-relationship');
     expect(stixSightings).not.toBeNull();
-    expect(stixSightings.edges.length).toEqual(3);
+    expect(stixSightings.edges.length).toEqual(2);
   });
 });
 

@@ -29,7 +29,7 @@ const attributes: Array<AttributeDefinition> = [
       { name: 'mimetype', label: 'Mime type', type: 'string', format: 'short', mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false, isFilterable: true },
       { name: 'labels_text', label: 'Workbench labels', type: 'string', format: 'short', mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false, isFilterable: true },
       { name: 'encoding', label: 'Encoding', type: 'string', format: 'short', mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false, isFilterable: true },
-      { name: 'creator_id', label: 'Related creator', type: 'string', format: 'short', mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false, isFilterable: true },
+      { name: 'creator_id', label: 'Related creator', type: 'string', format: 'short', mandatoryType: 'internal', editDefault: false, multiple: false, upsert: true, isFilterable: true },
       { name: 'entity_id', label: 'Related entity', type: 'string', format: 'short', mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false, isFilterable: true },
       { name: 'messages', label: 'File messages', type: 'object', format: 'flat', mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false, isFilterable: false },
       { name: 'errors', label: 'File errors', type: 'object', format: 'flat', mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false, isFilterable: false },

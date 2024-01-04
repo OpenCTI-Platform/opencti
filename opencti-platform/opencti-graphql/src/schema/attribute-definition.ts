@@ -94,7 +94,7 @@ export const creators: AttributeDefinition = {
   mandatoryType: 'no',
   editDefault: false,
   multiple: true,
-  upsert: false,
+  upsert: true,
   isFilterable: true,
 };
 

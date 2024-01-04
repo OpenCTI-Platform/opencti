@@ -11,18 +11,8 @@ import { ADMINISTRATOR_ROLE, BYPASS, DEFAULT_ROLE, executionContext } from '../.
 import '../../src/modules/index';
 import type { AuthUser } from '../../src/types/user';
 import type { StoreMarkingDefinition } from '../../src/types/store';
-import {
-  generateStandardId,
-  MARKING_TLP_AMBER,
-  MARKING_TLP_AMBER_STRICT,
-  MARKING_TLP_GREEN
-} from '../../src/schema/identifier';
-import {
-  ENTITY_TYPE_CAPABILITY,
-  ENTITY_TYPE_GROUP,
-  ENTITY_TYPE_ROLE,
-  ENTITY_TYPE_USER
-} from '../../src/schema/internalObject';
+import { generateStandardId, MARKING_TLP_AMBER, MARKING_TLP_AMBER_STRICT, MARKING_TLP_GREEN } from '../../src/schema/identifier';
+import { ENTITY_TYPE_CAPABILITY, ENTITY_TYPE_GROUP, ENTITY_TYPE_ROLE, ENTITY_TYPE_USER } from '../../src/schema/internalObject';
 import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../../src/modules/organization/organization-types';
 // endregion
 
@@ -32,7 +22,7 @@ export const SYNC_DIRECT_START_REMOTE_URI = conf.get('app:sync_direct_start_remo
 export const SYNC_RESTORE_START_REMOTE_URI = conf.get('app:sync_restore_start_remote_uri');
 export const SYNC_TEST_REMOTE_URI = `http://api-tests:${PORT}`;
 export const RAW_EVENTS_SIZE = 931;
-export const SYNC_LIVE_EVENTS_SIZE = 590;
+export const SYNC_LIVE_EVENTS_SIZE = 589;
 
 export const PYTHON_PATH = './src/python/testing';
 export const API_URI = `http://localhost:${conf.get('app:port')}`;
