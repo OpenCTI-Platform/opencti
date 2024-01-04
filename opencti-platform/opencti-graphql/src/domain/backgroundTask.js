@@ -33,18 +33,14 @@ export const findAll = (context, user, args) => {
 
 const buildQueryFiltersContent = (adaptedFiltersGroup) => {
   if (!adaptedFiltersGroup) {
-    return {
-      mode: 'and',
-      filters: [],
-      filterGroups: [],
-    };
+    return undefined;
   }
   const { filters, filterGroups = [] } = adaptedFiltersGroup;
   const queryFilterGroups = [];
   for (let index = 0; index < filterGroups.length; index += 1) {
     const currentGroup = filterGroups[index];
     const filtersResult = buildQueryFiltersContent(currentGroup);
-    queryFilterGroups.push(filtersResult);
+    if (filtersResult) queryFilterGroups.push(filtersResult);
   }
   const queryFilters = [];
   const nestedFrom = [];
@@ -52,7 +48,11 @@ const buildQueryFiltersContent = (adaptedFiltersGroup) => {
   let nestedFromRole = false;
   let nestedToRole = false;
   for (let index = 0; index < filters.length; index += 1) {
-    const { key, operator, values, mode } = filters[index];
+    const { key: keys, operator, values, mode } = filters[index];
+    if (keys.length !== 1) {
+      throw Error('Filters in query background tasks only support single keys.');
+    }
+    const key = keys[0];
     if (key === TYPE_FILTER) {
       // filter types to keep only the ones that can be handled by background tasks
       const filteredTypes = values.filter((v) => isTaskEnabledEntity(v));
@@ -107,7 +107,7 @@ const buildQueryFilters = async (context, user, rawFilters, search, taskPosition
   }
   const newFilters = buildQueryFiltersContent(adaptedFilterGroup);
   // Avoid empty type which will target internal objects and relationships as well
-  const types = newFilters.filters.filter((f) => f.key === TYPE_FILTER)?.values ?? [ABSTRACT_STIX_DOMAIN_OBJECT];
+  const types = newFilters?.filters.filter((f) => f.key === TYPE_FILTER)?.map((f) => f.values) ?? [ABSTRACT_STIX_DOMAIN_OBJECT];
   return {
     types,
     first: MAX_TASK_ELEMENTS,
