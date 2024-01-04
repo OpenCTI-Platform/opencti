@@ -10501,7 +10501,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"fs-extra@npm:11.2.0":
+"fs-extra@npm:11.2.0, fs-extra@npm:^11.1.0":
   version: 11.2.0
   resolution: "fs-extra@npm:11.2.0"
   dependencies:
@@ -14850,6 +14850,7 @@ __metadata:
     uuid: 9.0.1
     vite: 5.0.10
     vite-plugin-relay: 2.0.0
+    vite-plugin-static-copy: ^1.0.0
     vitest: 1.0.4
     yup: 1.3.3
   languageName: unknown
@@ -19902,6 +19903,20 @@ __metadata:
     babel-plugin-relay: ^14.1.0
     vite: ">=2.0.0"
   checksum: 123ee9ae0b0da51669a1698f6478e32725971522ccf90b77af678566cb2c23602a687a8caadac6ab25516937d9ff80a77ccae7b8e8a6b4c4f7170b5f5977fc0e
+  languageName: node
+  linkType: hard
+
+"vite-plugin-static-copy@npm:^1.0.0":
+  version: 1.0.0
+  resolution: "vite-plugin-static-copy@npm:1.0.0"
+  dependencies:
+    chokidar: ^3.5.3
+    fast-glob: ^3.2.11
+    fs-extra: ^11.1.0
+    picocolors: ^1.0.0
+  peerDependencies:
+    vite: ^5.0.0
+  checksum: 93fd2167e356b50d1d29f7f8809bb63ef078437f9e13bdaa2fedb1fde73b7488d87ccf1a8115c7616f94327ccbd9188c074a23c18d1264e513aa6f1eb9e10ce9
   languageName: node
   linkType: hard
 

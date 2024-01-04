@@ -2,6 +2,7 @@ import { createLogger, defineConfig, transformWithEsbuild } from 'vite';
 import react from '@vitejs/plugin-react';
 import * as path from 'node:path';
 import relay from 'vite-plugin-relay';
+import { viteStaticCopy } from 'vite-plugin-static-copy'
 
 // to avoid multiple reload when discovering new dependencies after a going on a lazy (not precedently) loaded route we pre optmize these dependencies
 
@@ -182,6 +183,14 @@ export default defineConfig({
   customLogger: logger,
 
   plugins: [
+    viteStaticCopy({
+      targets: [
+        {
+          src: 'src/static/ext/*',
+          dest: 'static/ext'
+        }
+      ]
+    }),
     {
       name: 'html-transform',
       enforce: "pre",
@@ -190,8 +199,8 @@ export default defineConfig({
         return html.replace(/%BASE_PATH%/g, basePath)
           .replace(/%APP_TITLE%/g, "OpenCTI Dev")
           .replace(/%APP_DESCRIPTION%/g, "OpenCTI Development platform")
-          .replace(/%APP_FAVICON%/g, `${basePath}/src/static/ext/favicon.png`)
-          .replace(/%APP_MANIFEST%/g, `${basePath}/src/static/ext/manifest.json`)
+          .replace(/%APP_FAVICON%/g, `${basePath}/static/ext/favicon.png`)
+          .replace(/%APP_MANIFEST%/g, `${basePath}/static/ext/manifest.json`)
       }
     },
     {
