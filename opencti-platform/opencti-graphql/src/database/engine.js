@@ -718,7 +718,9 @@ export const elUpdateIndicesMappings = async () => {
     const operations = jsonpatch.compare(sortMappingsKeys(indexMappingProperties), sortMappingsKeys(mappingProperties));
     // We can only complete new mappings
     // Replace is not possible for existing ones
-    const addOperations = operations.filter((o) => o.op === UPDATE_OPERATION_ADD);
+    const addOperations = operations
+      .filter((o) => o.op === UPDATE_OPERATION_ADD)
+      .filter((o) => R.is(Object, o.value) && (o.value.type || o.value.properties));
     if (addOperations.length > 0) {
       const properties = jsonpatch.applyPatch(indexMappingProperties, addOperations).newDocument;
       const body = { properties };
@@ -2701,7 +2703,7 @@ export const prepareElementForIndexing = (element) => {
     } else if (isBooleanAttribute(key)) { // Patch field is string generic so need to be cast to boolean
       thing[key] = typeof value === 'boolean' ? value : value?.toLowerCase() === 'true';
     } else if (isNumericAttribute(key)) {
-      thing[key] = Number(value);
+      thing[key] = isNotEmptyField(value) ? Number(value) : undefined;
     } else if (R.is(Object, value) && Object.keys(value).length > 0) { // For complex object, prepare inner elements
       thing[key] = prepareElementForIndexing(value);
     } else if (R.is(String, value)) { // For string, trim by default

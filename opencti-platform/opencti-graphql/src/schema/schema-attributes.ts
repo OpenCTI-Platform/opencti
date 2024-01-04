@@ -107,6 +107,21 @@ export const schemaAttributesDefinition = {
     });
   },
 
+  selectEntityType(entityType: string) {
+    usageProtection = true;
+    if (this.attributes[entityType]) {
+      return entityType;
+    }
+    const types = [...getParentTypes(entityType)].reverse();
+    for (let i = 0; i < types.length; i += 1) {
+      const type = types[i];
+      if (this.attributes[type]) {
+        return type;
+      }
+    }
+    throw UnsupportedError('Register relations has no registration for type', { type: entityType });
+  },
+
   // Usage of raw attributes
   getAllAttributes() {
     usageProtection = true;
@@ -118,8 +133,7 @@ export const schemaAttributesDefinition = {
     // const attributesRefs = schemaRelationsRefDefinition.relationsRefMap(entityType) ?? new Map();
     // const attributes = this.attributesCache.get(entityType) ?? new Map();
     // return new Map([...attributesRefs, ...attributes]);
-    usageProtection = true;
-    return this.attributes[entityType] ?? new Map();
+    return this.attributes[this.selectEntityType(entityType)] ?? new Map();
   },
   getAttributeNames(entityType: string): string[] {
     return Array.from(this.getAttributes(entityType).keys());
@@ -139,8 +153,7 @@ export const schemaAttributesDefinition = {
 
   // Usage of upsertByEntity
   getUpsertAttributeNames(entityType: string): string[] {
-    usageProtection = true;
-    return this.upsertByEntity.get(entityType) ?? [];
+    return this.upsertByEntity.get(this.selectEntityType(entityType)) ?? [];
   },
 
   // Usage of attributesByTypes

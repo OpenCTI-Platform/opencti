@@ -117,7 +117,7 @@ export interface StixLocation extends StixDomainObject {
   description: string; // optional
   latitude: number | undefined; // optional
   longitude: number | undefined; // optional
-  precision: number; // optional
+  precision: number | undefined; // optional
   region: string | undefined; // optional
   country: string | undefined; // optional
   city: string | undefined; // optional
