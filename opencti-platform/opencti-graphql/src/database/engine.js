@@ -194,10 +194,6 @@ export const searchEngineVersion = async () => {
   return { platform: searchPlatform, version: searchVersion, engine: localEngine };
 };
 
-export const isElkEngine = () => {
-  return engine instanceof ElkClient;
-};
-
 export const isEngineAlive = async () => {
   const context = executionContext('healthcheck');
   const options = { types: [ENTITY_TYPE_MIGRATION_STATUS], connectionFormat: false };
