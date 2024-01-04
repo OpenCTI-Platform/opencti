@@ -23,16 +23,11 @@ import StixCoreRelationshipCreationForm from './StixCoreRelationshipCreationForm
 import { resolveRelationsTypes } from '../../../../utils/Relation';
 import { UserContext } from '../../../../utils/hooks/useAuth';
 import ListLines from '../../../../components/list_lines/ListLines';
-import {
-  constructHandleAddFilter,
-  constructHandleRemoveFilter,
-  emptyFilterGroup,
-  filtersAfterSwitchLocalMode,
-  removeIdFromFilterGroupObject,
-} from '../../../../utils/filters/filtersUtils';
+import { emptyFilterGroup, removeIdFromFilterGroupObject } from '../../../../utils/filters/filtersUtils';
 import StixCoreRelationshipCreationFromEntityStixCoreObjectsLines, {
   stixCoreRelationshipCreationFromEntityStixCoreObjectsLinesQuery,
 } from './StixCoreRelationshipCreationFromEntityStixCoreObjectsLines';
+import useFiltersState from '../../../../utils/filters/useFiltersState';
 
 const useStyles = makeStyles((theme) => ({
   drawerPaper: {
@@ -266,7 +261,7 @@ const StixCoreRelationshipCreationFromEntity = (props) => {
   const [selectedElements, setSelectedElements] = useState({});
   const [sortBy, setSortBy] = useState('_score');
   const [orderAsc, setOrderAsc] = useState(false);
-  const [filters, setFilters] = useState(
+  const [filters, helpers] = useFiltersState(
     actualTypeFilter.length > 0
       ? {
         mode: 'and',
@@ -410,30 +405,6 @@ const StixCoreRelationshipCreationFromEntity = (props) => {
     setOrderAsc(sortOrderAsc);
   };
 
-  const handleAddFilter = (key, id, op = 'eq', event = null) => {
-    if (event) {
-      event.stopPropagation();
-      event.preventDefault();
-    }
-    setFilters(constructHandleAddFilter(filters, key, id, op));
-  };
-  const handleRemoveFilter = (key, op = 'eq') => {
-    setFilters(constructHandleRemoveFilter(filters, key, op));
-  };
-
-  const handleSwitchLocalMode = (localFilter) => {
-    setFilters(filtersAfterSwitchLocalMode(filters, localFilter));
-  };
-
-  const handleSwitchGlobalMode = () => {
-    if (filters) {
-      setFilters({
-        ...filters,
-        mode: filters.mode === 'and' ? 'or' : 'and',
-      });
-    }
-  };
-
   const handleNextStep = () => {
     setStep(1);
   };
@@ -521,10 +492,7 @@ const StixCoreRelationshipCreationFromEntity = (props) => {
                   handleSearch={setSearchTerm}
                   keyword={searchTerm}
                   handleSort={handleSort}
-                  handleAddFilter={handleAddFilter}
-                  handleRemoveFilter={handleRemoveFilter}
-                  handleSwitchLocalMode={handleSwitchLocalMode}
-                  handleSwitchGlobalMode={handleSwitchGlobalMode}
+                  helpers={helpers}
                   disableCards={true}
                   filters={filters}
                   disableExport={true}
