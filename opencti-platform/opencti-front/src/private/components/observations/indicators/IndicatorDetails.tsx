@@ -69,7 +69,9 @@ const IndicatorDetailsComponent: FunctionComponent<IndicatorDetailsComponentProp
             <Typography variant="h3" gutterBottom={true}>
               {t('Valid from')}
             </Typography>
-            <Chip label={fldt(indicator.valid_from)}/>
+            <Chip classes={{ root: classes.chip }}
+              label={fldt(indicator.valid_from)}
+            />
             <Typography
               variant="h3"
               gutterBottom={true}
