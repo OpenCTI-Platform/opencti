@@ -23,12 +23,15 @@ const useFiltersState = (initFilters: FilterGroup = emptyFilterGroup): [FilterGr
     latestAddFilterId: undefined,
   });
   const helpers: handleFilterHelpers = {
+    getLatestAddFilterId: (): string | undefined => {
+      return filtersState.latestAddFilterId;
+    },
     handleAddFilterWithEmptyValue: (filter: Filter) => {
-      setFiltersState({
-        ...filtersState,
+      setFiltersState((prevState) => ({
+        ...prevState,
         filters: handleAddFilterWithEmptyValueUtil({ filters: filtersState.filters, filter }),
         latestAddFilterId: undefined,
-      });
+      }));
     },
     handleAddRepresentationFilter: (id: string, valueId: string) => {
       if (valueId === null) { // handle clicking on 'no label' in entities list
@@ -41,74 +44,71 @@ const useFiltersState = (initFilters: FilterGroup = emptyFilterGroup): [FilterGr
             values: [],
             mode: 'and',
           };
-          setFiltersState({
-            ...filtersState,
+          setFiltersState((prevState) => ({
+            ...prevState,
             filters: handleAddFilterWithEmptyValueUtil({ filters: filtersState.filters, filter: noLabelFilter }),
             latestAddFilterId: noLabelFilter.id,
-          });
+          }));
         }
       } else {
-        setFiltersState({
-          ...filtersState,
+        setFiltersState((prevState) => ({
+          ...prevState,
           filters: handleAddRepresentationFilterUtil({ filters: filtersState.filters, id, valueId }),
           latestAddFilterId: undefined,
-        });
+        }));
       }
     },
     handleAddSingleValueFilter: (id: string, valueId?: string) => {
-      setFiltersState({
-        ...filtersState,
+      setFiltersState((prevState) => ({
+        ...prevState,
         filters: handleAddSingleValueFilterUtil({ filters: filtersState.filters, id, valueId }),
         latestAddFilterId: undefined,
-      });
+      }));
     },
     handleChangeOperatorFilters: (id: string, operator: string) => {
-      setFiltersState({
-        ...filtersState,
+      setFiltersState((prevState) => ({
+        ...prevState,
         filters: handleChangeOperatorFiltersUtil({ filters: filtersState.filters, id, operator }),
         latestAddFilterId: undefined,
-      });
-    },
-    handleRemoveFilterById: (id: string) => {
-      setFiltersState({
-        ...filtersState,
-        filters: handleRemoveFilterUtil({ filters: filtersState.filters, id }),
-        latestAddFilterId: undefined,
-      });
-    },
-    handleRemoveRepresentationFilter: (id: string, valueId: string) => {
-      setFiltersState({
-        ...filtersState,
-        filters: handleRemoveRepresentationFilterUtil({ filters: filtersState.filters, id, valueId }),
-        latestAddFilterId: undefined,
-      });
-    },
-    handleSwitchLocalMode: (filter: Filter) => {
-      setFiltersState({
-        ...filtersState,
-        filters: handleSwitchLocalModeUtil({ filters: filtersState.filters, filter }),
-        latestAddFilterId: undefined,
-      });
+      }));
     },
     handleClearAllFilters: (clearFilters?: Filter[]) => {
-      setFiltersState({
-        ...filtersState,
+      setFiltersState((prevState) => ({
+        ...prevState,
         filters: handleClearAllFiltersUtil(clearFilters),
         latestAddFilterId: undefined,
-      });
+      }));
+    },
+    handleRemoveFilterById: (id: string) => {
+      setFiltersState((prevState) => ({
+        ...prevState,
+        filters: handleRemoveFilterUtil({ filters: filtersState.filters, id }),
+        latestAddFilterId: undefined,
+      }));
+    },
+    handleRemoveRepresentationFilter: (id: string, valueId: string) => {
+      setFiltersState((prevState) => ({
+        ...prevState,
+        filters: handleRemoveRepresentationFilterUtil({ filters: filtersState.filters, id, valueId }),
+        latestAddFilterId: undefined,
+      }));
     },
     handleSwitchGlobalMode: () => {
-      setFiltersState({
-        ...filtersState,
+      setFiltersState((prevState) => ({
+        ...prevState,
         filters: {
           ...filtersState.filters,
           mode: filtersState.filters.mode === 'and' ? 'or' : 'and',
         },
         latestAddFilterId: undefined,
-      });
+      }));
     },
-    getLatestAddFilterId: (): string | undefined => {
-      return filtersState.latestAddFilterId;
+    handleSwitchLocalMode: (filter: Filter) => {
+      setFiltersState((prevState) => ({
+        ...prevState,
+        filters: handleSwitchLocalModeUtil({ filters: filtersState.filters, filter }),
+        latestAddFilterId: undefined,
+      }));
     },
   };
 
