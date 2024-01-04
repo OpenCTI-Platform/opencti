@@ -14801,7 +14801,7 @@ __metadata:
     mdi-material-ui: 7.7.0
     moment: 2.29.4
     moment-timezone: 0.5.43
-    pdfmake: 0.2.8
+    pdfmake: 0.2.9
     prop-types: 15.8.1
     qrcode: 1.5.3
     ramda: 0.29.1
@@ -15207,15 +15207,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"pdfmake@npm:0.2.8":
-  version: 0.2.8
-  resolution: "pdfmake@npm:0.2.8"
+"pdfmake@npm:0.2.9":
+  version: 0.2.9
+  resolution: "pdfmake@npm:0.2.9"
   dependencies:
     "@foliojs-fork/linebreak": ^1.1.1
     "@foliojs-fork/pdfkit": ^0.14.0
     iconv-lite: ^0.6.3
     xmldoc: ^1.1.2
-  checksum: 35c20e5bae541eeb9e295f2e1ca41e7f7c2dfbe2a659286be27317337d7aa211bc70cda0293fc98615f5004763cc8118bbf12ad2710e50a30eb20b934a2f088e
+  checksum: 77f2706d8470282379962ebe6e5102804ced49b3e432a916d1bfc83e529b9b852e5e1e8ae0889e048c4951e3ab33358e809ab15f08f4531a254d16bac970ac39
   languageName: node
   linkType: hard
 
