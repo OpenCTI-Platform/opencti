@@ -63,7 +63,7 @@ class RedisStore extends Store {
       }
       return extendSession(key, this.ttl).then(((ret) => {
         if (ret !== 1) return done(null, 'EXPIRED');
-        touchCache.set(`touch-${key}`);
+        touchCache.set(`touch-${key}`, 'touched');
         return done(null, 'OK');
       }));
     };

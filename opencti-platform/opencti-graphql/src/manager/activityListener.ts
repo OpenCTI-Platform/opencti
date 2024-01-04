@@ -100,7 +100,7 @@ const initActivityManager = () => {
       const message = `reads \`${entity_name}\` (${entity_type})`;
       const published = await activityLogger(action, message);
       if (published) {
-        activityReadCache.set(identifier, undefined);
+        activityReadCache.set(identifier, 'published');
       }
     }
   };
