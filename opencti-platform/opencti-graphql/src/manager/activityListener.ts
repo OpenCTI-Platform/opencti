@@ -13,7 +13,7 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 */
 
-import LRU from 'lru-cache';
+import { LRUCache } from 'lru-cache';
 import { type ActionHandler, type ActionListener, registerUserActionListener, type UserAction, type UserReadAction } from '../listener/UserActionListener';
 import conf, { logAudit } from '../config/conf';
 import { isEmptyField } from '../database/utils';
@@ -43,7 +43,7 @@ export interface ActivityStreamEvent {
 }
 
 const initActivityManager = () => {
-  const activityReadCache = new LRU({ ttl: 60 * 60 * 1000, max: 5000 }); // Read lifetime is 1 hour
+  const activityReadCache = new LRUCache({ ttl: 60 * 60 * 1000, max: 5000 }); // Read lifetime is 1 hour
   const cleanInputData = (obj: any) => {
     const stack = [obj];
     while (stack.length > 0) {

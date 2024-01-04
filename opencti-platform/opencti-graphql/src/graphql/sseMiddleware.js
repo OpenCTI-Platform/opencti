@@ -1,7 +1,7 @@
 import * as R from 'ramda';
 import * as jsonpatch from 'fast-json-patch';
 import { Promise } from 'bluebird';
-import LRU from 'lru-cache';
+import { LRUCache } from 'lru-cache';
 import conf, { basePath, logApp } from '../config/conf';
 import { authenticateUserFromRequest, TAXIIAPI } from '../domain/user';
 import { createStreamProcessor, EVENT_CURRENT_VERSION } from '../database/redis';
@@ -508,7 +508,7 @@ const createSseMiddleware = () => {
   const liveStreamHandler = async (req, res) => {
     const { id } = req.params;
     try {
-      const cache = new LRU({ max: MAX_CACHE_SIZE, ttl: MAX_CACHE_TIME });
+      const cache = new LRUCache({ max: MAX_CACHE_SIZE, ttl: MAX_CACHE_TIME });
       const context = executionContext('live_stream');
       const { user } = req;
       // If stream is starting after, we need to use the main database to catchup
