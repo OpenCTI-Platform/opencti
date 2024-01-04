@@ -65,7 +65,7 @@
     "apollo-server-express": "3.13.0",
     "archiver": "6.0.1",
     "archiver-zip-encrypted": "1.0.11",
-    "async-lock": "1.4.0",
+    "async-lock": "1.4.1",
     "axios": "1.6.2",
     "axios-cookiejar-support": "4.0.7",
     "bcryptjs": "2.4.3",
