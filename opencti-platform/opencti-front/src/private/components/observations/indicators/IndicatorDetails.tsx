@@ -19,8 +19,7 @@ import ExpandablePre from '../../../../components/ExpandablePre';
 import ItemBoolean from '../../../../components/ItemBoolean';
 import StixCoreObjectKillChainPhasesView from '../../common/stix_core_objects/StixCoreObjectKillChainPhasesView';
 import { useFormatter } from '../../../../components/i18n';
-// eslint-disable-next-line import/extensions -- No idea...
-import { Theme } from '../../../../components/Theme';
+import type { Theme } from '../../../../components/Theme';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   paper: {
@@ -95,14 +94,13 @@ const IndicatorDetailsComponent: FunctionComponent<IndicatorDetailsComponentProp
             >
               {t('Indicator types')}
             </Typography>
-            {indicator.indicator_types
-                    && indicator.indicator_types.map((indicatorType) => (
-                      <Chip
-                        key={indicatorType}
-                        classes={{ root: classes.chip }}
-                        label={indicatorType}
-                      />
-                    ))}
+            {indicator.indicator_types && indicator.indicator_types.map((indicatorType) => (
+              <Chip
+                key={indicatorType}
+                classes={{ root: classes.chip }}
+                label={indicatorType}
+              />
+            ))}
           </Grid>
           <Grid item={true} xs={6}>
             <Typography variant="h3" gutterBottom={true}>
