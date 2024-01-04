@@ -72,7 +72,7 @@ const scaleValidation = (scale: Scale) => {
   }
 };
 
-const attributesConfigurationValidation = async (context: AuthContext, user: AuthUser, targetType: string, input: BasicStoreEntityEntitySetting) => {
+const attributesConfigurationValidation = async (targetType: string, input: BasicStoreEntityEntitySetting) => {
   const attributesConfiguration = getAttributesConfiguration(input);
   if (attributesConfiguration) {
     for (let index = 0; index < attributesConfiguration.length; index += 1) {
@@ -131,7 +131,7 @@ export const validateEntitySettingCreation = async (context: AuthContext, user: 
     const entitySetting = (input as unknown as BasicStoreEntityEntitySetting);
 
     await optionsValidation(entitySetting.target_type, input as unknown as BasicStoreEntityEntitySetting);
-    await attributesConfigurationValidation(context, user, entitySetting.target_type, entitySetting);
+    await attributesConfigurationValidation(entitySetting.target_type, entitySetting);
 
     return true;
   };
@@ -148,7 +148,7 @@ export const validateEntitySettingUpdate = async (context: AuthContext, user: Au
     const entitySettingInitial = (initial as unknown as BasicStoreEntityEntitySetting);
 
     await optionsValidation(entitySettingInitial.target_type, input as unknown as BasicStoreEntityEntitySetting);
-    await attributesConfigurationValidation(context, user, entitySettingInitial.target_type, entitySetting);
+    await attributesConfigurationValidation(entitySettingInitial.target_type, entitySetting);
 
     return true;
   };
