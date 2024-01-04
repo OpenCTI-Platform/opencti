@@ -18,33 +18,39 @@ export const up = async (next) => {
   const context = executionContext('migration', SYSTEM_USER);
 
   const convertWorkflowFilterKeys = (inputFilters, alreadyParsed = false) => {
-    const parsedFilters = alreadyParsed ? inputFilters : JSON.parse(inputFilters);
-    if (!isFilterGroupNotEmpty(parsedFilters)) {
-      return undefined;
-    }
-    const { filters, filterGroups } = parsedFilters;
-    const newFiltersContent = [];
-    const newFilterGroups = [];
-    filters.forEach((filter) => {
-      const { key } = filter;
-      const arrayKeys = Array.isArray(key) ? key : [key];
-      if (arrayKeys.includes('x_opencti_workflow_id')) {
-        const newKeys = arrayKeys.filter((k) => k !== 'x_opencti_workflow_id');
-        newKeys.push('workflow_id');
-        newFiltersContent.push({ ...filter, key: uniq(newKeys) });
-      } else {
-        newFiltersContent.push(filter);
-      }
-    });
-    filterGroups.forEach((group) => {
-      const newGroup = convertWorkflowFilterKeys(group, true);
-      newFilterGroups.push(newGroup);
-    });
-    const newFilters = {
-      mode: parsedFilters.mode,
-      filters: newFiltersContent,
-      filterGroups: newFilterGroups,
+    let newFilters = { // empty filter group
+      mode: 'and',
+      filters: [],
+      filterGroups: [],
     };
+    if (inputFilters) {
+      const parsedFilters = alreadyParsed ? inputFilters : JSON.parse(inputFilters);
+      if (isFilterGroupNotEmpty(parsedFilters)) {
+        const { filters, filterGroups } = parsedFilters;
+        const newFiltersContent = [];
+        const newFilterGroups = [];
+        filters.forEach((filter) => {
+          const { key } = filter;
+          const arrayKeys = Array.isArray(key) ? key : [key];
+          if (arrayKeys.includes('x_opencti_workflow_id')) {
+            const newKeys = arrayKeys.filter((k) => k !== 'x_opencti_workflow_id');
+            newKeys.push('workflow_id');
+            newFiltersContent.push({ ...filter, key: uniq(newKeys) });
+          } else {
+            newFiltersContent.push(filter);
+          }
+        });
+        filterGroups.forEach((group) => {
+          const newGroup = convertWorkflowFilterKeys(group, true);
+          newFilterGroups.push(newGroup);
+        });
+        newFilters = {
+          mode: parsedFilters.mode,
+          filters: newFiltersContent,
+          filterGroups: newFilterGroups,
+        };
+      }
+    }
     return alreadyParsed ? newFilters : JSON.stringify(newFilters);
   };
 
