@@ -27,6 +27,7 @@ const useStyles = makeStyles(() => ({
 interface CreatorFieldProps {
   name: string;
   label: string;
+  isOptionEqualToValue: (option: Option, value: string) => boolean;
   onChange?: (name: string, value: Option) => void;
   containerStyle?: Record<string, string | number>;
   helpertext?: string;
@@ -49,6 +50,7 @@ const CreatorField: FunctionComponent<CreatorFieldProps> = ({
   name,
   label,
   containerStyle,
+  isOptionEqualToValue,
   onChange,
   helpertext,
 }) => {
@@ -62,6 +64,7 @@ const CreatorField: FunctionComponent<CreatorFieldProps> = ({
   >([]);
 
   const searchCreators = (event: React.ChangeEvent<HTMLInputElement>) => {
+    console.log('>>> searchCreators, event', event)
     fetchQuery(CreatorFieldQuery, {
       search: event && event.target.value ? event.target.value : '',
     })
@@ -99,6 +102,7 @@ const CreatorField: FunctionComponent<CreatorFieldProps> = ({
         style={containerStyle}
         noOptionsText={t_i18n('No available options')}
         options={creators}
+        isOptionEqualToValue={isOptionEqualToValue}
         onInputChange={searchCreators}
         renderOption={(
           props: React.HTMLAttributes<HTMLLIElement>,

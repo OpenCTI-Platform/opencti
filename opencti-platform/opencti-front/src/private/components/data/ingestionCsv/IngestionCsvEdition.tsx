@@ -70,7 +70,7 @@ interface IngestionCsvEditionForm {
   authentication_value: string,
   current_state_date: Date | null
   ingestion_running: boolean,
-  csvMapper_id: Option[],
+  csvMapper_id: string | Option,
   user_id: string | Option
 }
 
@@ -96,13 +96,14 @@ const IngestionCsvEdition: FunctionComponent<IngestionCsvEditionProps> = ({
     cert: Yup.string().nullable(),
     key: Yup.string().nullable(),
     ca: Yup.string().nullable(),
-    csvMapper_id: Yup.array().required(t('This field is required')),
+    csvMapper_id: Yup.mixed().required(t('This field is required')),
   };
 
   const ingestionCsvValidator = useSchemaEditionValidation('IngestionCsv', basicShape);
   const [commitUpdate] = useMutation(ingestionCsvEditionPatch);
 
   const onSubmit: FormikConfig<IngestionCsvEditionForm>['onSubmit'] = (values, { setSubmitting }) => {
+    console.log('>>> values =', values)
     const { message, references, ...otherValues } = values;
     const commitMessage = message ?? '';
     const commitReferences = (references ?? []).map(({ value }) => value);
@@ -125,7 +126,7 @@ const IngestionCsvEdition: FunctionComponent<IngestionCsvEditionProps> = ({
 
   const handleSubmitField = (name: string, value: Option | string | string[] | number | number[] | null) => {
     let finalValue = value as string;
-    if (name === 'user_id') {
+    if (name === 'csvMapper_id' || name === 'user_id') {
       finalValue = (value as Option).value;
     }
     ingestionCsvValidator
@@ -148,7 +149,7 @@ const IngestionCsvEdition: FunctionComponent<IngestionCsvEditionProps> = ({
     authentication_value: ingestionCsvData.authentication_value,
     current_state_date: ingestionCsvData.current_state_date,
     ingestion_running: ingestionCsvData.ingestion_running,
-    csvMapper: convertMapper(ingestionCsvData),
+    csvMapper_id: convertMapper(ingestionCsvData),
     user_id: convertUser(ingestionCsvData, 'user'),
   };
 
@@ -208,7 +209,8 @@ const IngestionCsvEdition: FunctionComponent<IngestionCsvEditionProps> = ({
           />
           <CsvMapperField
             name="csvMapper_id"
-            onChange={setFieldValue}
+            isOptionEqualToValue={(option: Option, value: string) => option.value === value}
+            onChange={handleSubmitField}
           />
           <Field
             component={SelectField}
@@ -296,6 +298,7 @@ const IngestionCsvEdition: FunctionComponent<IngestionCsvEditionProps> = ({
           <CreatorField
             name="user_id"
             label={t('User responsible for data creation (empty = System)')}
+            isOptionEqualToValue={(option: Option, value: string) => option.value === value}
             onChange={handleSubmitField}
             containerStyle={fieldSpacingContainerStyle}
           />

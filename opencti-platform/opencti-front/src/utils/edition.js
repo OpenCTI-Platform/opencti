@@ -50,11 +50,6 @@ export const convertOrganizations = (element) => (element?.objectOrganization?.e
   value: n.node.id,
 }));
 
-export const convertMapper = (element) => {
-  const mapper = element?.csvMappers.edges ?? [];
-  return mapper.map((n) => n.value);
-};
-
 export const convertKillChainPhases = (element) => (element?.killChainPhases ?? []).map((n) => ({
   label: `[${n.kill_chain_name}] ${n.phase_name}`,
   value: n.id,
@@ -89,6 +84,13 @@ export const convertCreatedBy = (element, field = 'createdBy') => (isEmptyField(
     type: element[field].entity_type,
   });
 
+export const convertMapper = (element, field = 'csvMapper') => (isEmptyField(element?.[field])
+    ? ''
+    : {
+      label: element[field].name,
+      value: element[field].id,
+      type: element[field].entity_type,
+    });
 export const convertUser = (element, field = 'user') => (isEmptyField(element?.[field])
   ? ''
   : {

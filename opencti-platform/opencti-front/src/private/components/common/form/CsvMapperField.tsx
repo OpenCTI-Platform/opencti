@@ -2,7 +2,7 @@ import { Option } from '@components/common/form/ReferenceField';
 import { graphql } from 'react-relay';
 import React, { FunctionComponent, useState } from 'react';
 import makeStyles from '@mui/styles/makeStyles';
-import { Field } from 'formik';
+import {Field} from 'formik';
 import * as R from 'ramda';
 import { CsvMapperFieldSearchQuery$data } from '@components/common/form/__generated__/CsvMapperFieldSearchQuery.graphql';
 import { fetchQuery } from '../../../../relay/environment';
@@ -28,6 +28,7 @@ const useStyles = makeStyles(() => ({
 
 interface CsvMapperFieldComponentProps {
   name: string;
+  isOptionEqualToValue: (option: Option, value: string) => boolean;
   onChange?: (name: string, value: Option) => void;
 }
 
@@ -46,6 +47,7 @@ const CsvMapperQuery = graphql`
 
 const CsvMapperField: FunctionComponent<CsvMapperFieldComponentProps> = ({
   onChange,
+  isOptionEqualToValue,
   name,
 }) => {
   const classes = useStyles();
@@ -76,7 +78,7 @@ const CsvMapperField: FunctionComponent<CsvMapperFieldComponentProps> = ({
         component={AutocompleteField}
         style={fieldSpacingContainerStyle}
         name={name}
-        multiple={true}
+        multiple={false}
         textfieldprops={{
           variant: 'standard',
           label: t('Csv Mappers'),
@@ -84,6 +86,7 @@ const CsvMapperField: FunctionComponent<CsvMapperFieldComponentProps> = ({
         }}
         noOptionsText={t('No available options')}
         options={csvMappers}
+        isOptionEqualToValue={isOptionEqualToValue}
         onInputChange={searchCsvMappers}
         onChange={onChange}
         classes={{ clearIndicator: classes.autoCompleteIndicator }}
