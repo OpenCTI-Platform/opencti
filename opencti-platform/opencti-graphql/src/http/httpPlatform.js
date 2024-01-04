@@ -16,18 +16,20 @@ import contentDisposition from 'content-disposition';
 import { basePath, booleanConf, DEV_MODE, logApp, OPENCTI_SESSION } from '../config/conf';
 import passport, { empty, isStrategyActivated, STRATEGY_CERT } from '../config/providers';
 import { authenticateUser, authenticateUserFromRequest, HEADERS_AUTHENTICATORS, loginFromProvider, userWithOrigin } from '../domain/user';
-import { checkFileAccess, downloadFile, getFileContent, loadFile } from '../database/file-storage';
+import { checkFileAccess, downloadFile, getFileContent, isStorageAlive, loadFile } from '../database/file-storage';
 import createSseMiddleware from '../graphql/sseMiddleware';
 import initTaxiiApi from './httpTaxii';
 import initHttpRollingFeeds from './httpRollingFeed';
 import { executionContext, SYSTEM_USER } from '../utils/access';
 import { ENTITY_TYPE_SETTINGS } from '../schema/internalObject';
 import { getEntityFromCache } from '../database/cache';
-import { isNotEmptyField } from '../database/utils';
+import { isEmptyField, isNotEmptyField } from '../database/utils';
 import { buildContextDataForFile, publishUserAction } from '../listener/UserActionListener';
 import { internalLoadById } from '../database/middleware-loader';
-import { delUserContext } from '../database/redis';
+import { delUserContext, redisIsAlive } from '../database/redis';
 import { UnknownError } from '../config/errors';
+import { rabbitMQIsAlive } from '../database/rabbitmq';
+import { isEngineAlive } from '../database/engine';
 
 const setCookieError = (res, message) => {
   res.cookie('opencti_flash', message || 'Unknown error', {
@@ -398,8 +400,32 @@ const createApp = async (app) => {
     }
   });
 
+  // -- Healthcheck
+  app.get(`${basePath}/health`, async (req, res) => {
+    try {
+      res.set('Cache-Control', 'private, no-cache, no-store, must-revalidate');
+      res.setTimeout(5000, () => {
+        res.status(503).send({ status: 'error', error: 'request timeout' });
+      });
+      const configAccessKey = nconf.get('app:health_access_key');
+      if (configAccessKey === 'ChangeMe' || isEmptyField(configAccessKey)) {
+        res.status(401).send({ status: 'unauthorized' });
+      } else {
+        const { health_access_key: access_key } = req.query;
+        if (configAccessKey === 'public' || configAccessKey === access_key) {
+          await Promise.all([isEngineAlive(), isStorageAlive(), rabbitMQIsAlive(), redisIsAlive()]);
+          res.status(200).send({ status: 'success' });
+        } else {
+          res.status(401).send({ status: 'unauthorized' });
+        }
+      }
+    } catch (e) {
+      res.status(503).send({ status: 'error', error: e.message });
+    }
+  });
+
   // Other routes - Render index.html
-  app.get('*', async (req, res) => {
+  app.get('*', async (_, res) => {
     const context = executionContext('app_loading');
     const settings = await getEntityFromCache(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
     const data = readFileSync(`${__dirname}/../public/index.html`, 'utf8');

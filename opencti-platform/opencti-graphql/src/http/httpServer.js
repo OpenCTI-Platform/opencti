@@ -12,7 +12,6 @@ import createApp from './httpPlatform';
 import createApolloServer from '../graphql/graphql';
 import { isStrategyActivated, STRATEGY_CERT } from '../config/providers';
 import { applicationSession } from '../database/session';
-import { checkSystemDependencies } from '../initialization';
 import { executionContext } from '../utils/access';
 import { UnknownError } from '../config/errors';
 
@@ -22,8 +21,6 @@ const CERT_KEY_PATH = conf.get('app:https_cert:key');
 const CERT_KEY_CERT = conf.get('app:https_cert:crt');
 const CA_CERTS = conf.get('app:https_cert:ca');
 const rejectUnauthorized = booleanConf('app:https_cert:reject_unauthorized', true);
-
-const onHealthCheck = () => checkSystemDependencies();
 
 const createHttpServer = async () => {
   const app = express();
@@ -97,7 +94,6 @@ const createHttpServer = async () => {
     app,
     cors: true,
     bodyParserConfig: { limit: requestSizeLimit },
-    onHealthCheck,
     path: `${basePath}/graphql`,
   });
   const { sseMiddleware } = await createApp(app);
