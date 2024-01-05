@@ -386,7 +386,7 @@ const createSseMiddleware = () => {
             const origin = { referer: EVENT_TYPE_DEPENDENCIES };
             const content = { data: stixRelation, message, origin, version: EVENT_CURRENT_VERSION };
             channel.sendEvent(eventId, EVENT_TYPE_CREATE, content);
-            cache.set(stixRelation.id, hit);
+            cache.set(stixRelation.id, 'hit');
           }
         }
         // Send the Heartbeat with last event id
