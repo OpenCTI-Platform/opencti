@@ -287,7 +287,7 @@ const taxiiExecutor = async (context: AuthContext) => {
 
 // region Csv ingestion
 interface CsvResponseData {
-  data: { more: boolean, next: string, objects: object[] },
+  data: string,
   addedLast: string | undefined | null
 }
 const csvHttpGet = async (ingestion: BasicStoreEntityIngestionCsv): Promise<CsvResponseData> => {
@@ -310,7 +310,7 @@ const csvHttpGet = async (ingestion: BasicStoreEntityIngestionCsv): Promise<CsvR
   return { data, addedLast: resultHeaders['x-csv-date-added-last'] };
 };
 const csvDataToObjects = async (data: string, ingestion: BasicStoreEntityIngestionCsv, csvMapper: BasicStoreEntityCsvMapper, context: AuthContext) => { // push bundle to queues
-  const entitiesData = data.split(',');
+  const entitiesData = data.split('\n');
   logApp.info(`[OPENCTI-MODULE] CSV ingestion execution for ${entitiesData.length} items`);
   const csvBuffer = await fetchCsvExtractFromUrl(ingestion.uri);
   const { objects } = await bundleProcess(context, context.user ?? SYSTEM_USER, csvBuffer, csvMapper);
@@ -328,13 +328,13 @@ const csvDataHandler = async (context: AuthContext, ingestion: BasicStoreEntityI
     const error = UnknownError('Invalid data from URL', data);
     logApp.error(error, { name: ingestion.name, context: 'CSV transform' });
   }
-  const bundle = { type: 'bundle', id: `bundle--${uuidv4()}`, objects: await csvDataToObjects(JSON.stringify(data), ingestion, csvMapper, context) };
+  const bundle = { type: 'bundle', id: `bundle--${uuidv4()}`, objects: await csvDataToObjects(data, ingestion, csvMapper, context) };
   const stixBundle = JSON.stringify(bundle);
   const content = Buffer.from(stixBundle, 'utf-8').toString('base64');
   await pushToSync({ type: 'bundle', applicant_id: ingestion.user_id ?? OPENCTI_SYSTEM_UUID, content, update: true });
   // Update the state
   await patchCsvIngestion(context, SYSTEM_USER, ingestion.internal_id, {
-    current_state_cursor: data.next ? String(data.next) : undefined,
+    current_state_cursor: data,
     added_after_start: utcDate(addedLast)
   });
 };
@@ -351,7 +351,7 @@ const csvExecutor = async (context: AuthContext) => {
     const ingestion = ingestions[i];
     const ingestionPromise = csvDataHandler(context, ingestion)
       .catch((e) => {
-        logApp.error(`[OPENCTI-MODULE] CSV ingestion execution error for ${ingestion.name}`, { error: e });
+        logApp.error(`[OPENCTI-MODULE] ${e} --- CSV ingestion execution error for ${ingestion.name}`, { error: e });
       });
     ingestionPromises.push(ingestionPromise);
   }

@@ -250,6 +250,7 @@ export const consumeQueue = async (context, connectorId, connectionSetterCallbac
         } else { // Connection success
           logApp.info('Starting connector queue consuming');
           conn.on('error', (onConnectError) => {
+            logApp.info(`[RabbitMQ] onConnectError --- CSV ingestion - RabbitMQ queues consuming`);
             reject(onConnectError);
           });
           connectionSetterCallback(conn);
@@ -262,6 +263,7 @@ export const consumeQueue = async (context, connectorId, connectionSetterCallbac
               });
               channel.consume(listenQueue, (data) => {
                 if (data !== null) {
+                  logApp.info(`[RabbitMQ] ${data.content.toString()} --- CSV ingestion - RabbitMQ queues consuming`);
                   callback(context, data.content.toString());
                 }
               }, { noAck: true }, (consumeError) => {

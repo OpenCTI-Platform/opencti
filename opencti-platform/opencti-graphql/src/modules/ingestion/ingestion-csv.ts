@@ -35,6 +35,8 @@ const INGESTION_CSV_DEFINITION: ModuleDefinition<StoreEntityIngestionCsv, StixIn
     { name: 'user_id', type: 'string', mandatoryType: 'external', editDefault: false, multiple: false, upsert: true },
     { name: 'csvMapper_id', type: 'string', mandatoryType: 'external', editDefault: true, multiple: false, upsert: true },
     { name: 'ingestion_running', type: 'boolean', mandatoryType: 'external', editDefault: true, multiple: false, upsert: true },
+    { name: 'added_after_start', type: 'date', mandatoryType: 'external', editDefault: true, multiple: false, upsert: true },
+    { name: 'current_state_cursor', type: 'string', mandatoryType: 'external', editDefault: true, multiple: false, upsert: true },
   ],
   relations: [],
   representative: (stix: StixIngestionCsv) => {
