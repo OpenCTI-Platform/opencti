@@ -22,7 +22,7 @@ import ObjectMembersField from '../../common/form/ObjectMembersField';
 import Drawer, { DrawerVariant } from '../../common/drawer/Drawer';
 import useFiltersState from '../../../../utils/filters/useFiltersState';
 import { PaginationOptions } from '../../../../components/list_lines';
-import { Theme } from '../../../../components/Theme';
+import type { Theme } from '../../../../components/Theme';
 import { useFormatter } from '../../../../components/i18n';
 
 interface StreamCollectionCreationProps {
