@@ -3,6 +3,11 @@ import { generateStandardId, isFieldContributingToStandardId } from '../../../sr
 import { ENTITY_TYPE_CONTAINER_REPORT } from '../../../src/schema/stixDomainObject';
 import { ENTITY_HASHED_OBSERVABLE_ARTIFACT } from '../../../src/schema/stixCyberObservable';
 import { ENTITY_TYPE_EXTERNAL_REFERENCE } from '../../../src/schema/stixMetaObject';
+import { RELATION_LOCATED_AT } from '../../../src/schema/stixCoreRelationship';
+import { RELATION_MEMBER_OF } from '../../../src/schema/internalRelationship';
+import { RELATION_OBJECT_MARKING } from '../../../src/schema/stixRefRelationship';
+import { STIX_SIGHTING_RELATIONSHIP } from '../../../src/schema/stixSightingRelationship';
+import { UnsupportedError } from '../../../src/config/errors';
 
 it('should report ids stable', () => {
   const data = {
@@ -32,4 +37,22 @@ it('should external reference ids stable', () => {
   const data = { url: 'http://ssss', source_name: 'http://' };
   const reportStandardId = generateStandardId(ENTITY_TYPE_EXTERNAL_REFERENCE, data);
   expect(reportStandardId).toEqual('external-reference--b92c2140-b505-5236-82af-ae4c42146a23');
+});
+
+it('should relation ids be prefixed uuid V4', () => {
+  const data = {}; // irrelevant for relationships; it's supposed to be just uuidv4
+  let standardId = generateStandardId(RELATION_MEMBER_OF, data);
+  expect(standardId).toMatch(/^internal-relationship--[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}$/);
+  standardId = generateStandardId(RELATION_LOCATED_AT, data);
+  expect(standardId).toMatch(/^relationship--[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}$/);
+  standardId = generateStandardId(RELATION_OBJECT_MARKING, data);
+  expect(standardId).toMatch(/^relationship-meta--[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}$/);
+  standardId = generateStandardId(STIX_SIGHTING_RELATIONSHIP, data);
+  expect(standardId).toMatch(/^sighting--[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}$/);
+});
+
+it('should throw an error on unrecognized object type', () => {
+  const data = { foo: 'bar' };
+  const fn = () => { generateStandardId('FooBar', data); };
+  expect(fn).toThrow(UnsupportedError('FooBar is not supported by the platform'));
 });
