@@ -35,7 +35,7 @@ import StixCoreRelationshipCreationFromEntityStixCoreObjectsLines, {
   stixCoreRelationshipCreationFromEntityStixCoreObjectsLinesQuery,
 } from './StixCoreRelationshipCreationFromEntityStixCoreObjectsLines';
 import useFiltersState from '../../../../utils/filters/useFiltersState';
-import { Theme } from '../../../../components/Theme';
+import type { Theme } from '../../../../components/Theme';
 import { ModuleHelper } from '../../../../utils/platformModulesHelper';
 
 const useStyles = makeStyles<Theme>((theme) => ({
