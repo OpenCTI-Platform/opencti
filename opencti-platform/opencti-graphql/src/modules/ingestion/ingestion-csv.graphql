@@ -23,7 +23,6 @@ type IngestionCsv implements InternalObject & BasicObject {
     user: Creator
     ingestion_running: Boolean
     current_state_date: DateTime
-    test_mapper: CsvMapperTestResult
 }
 
 enum IngestionCsvOrdering {
@@ -56,6 +55,10 @@ type Query {
         includeAuthorities: Boolean
         search: String
     ): IngestionCsvConnection @auth(for: [SETTINGS])
+    test_mapper(
+        uri: String!
+        csvMapper_id: String!
+    ): CsvMapperTestResult @auth(for: [SETTINGS])
 }
 
 # Mutations

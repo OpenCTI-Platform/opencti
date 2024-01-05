@@ -9702,7 +9702,6 @@ export type IngestionCsv = BasicObject & InternalObject & {
   name: Scalars['String']['output'];
   parent_types: Array<Maybe<Scalars['String']['output']>>;
   standard_id: Scalars['String']['output'];
-  test_mapper?: Maybe<CsvMapperTestResult>;
   updated_at?: Maybe<Scalars['DateTime']['output']>;
   uri: Scalars['String']['output'];
   user?: Maybe<Creator>;
@@ -17320,6 +17319,7 @@ export type Query = {
   tasks?: Maybe<TaskConnection>;
   taxiiCollection?: Maybe<TaxiiCollection>;
   taxiiCollections?: Maybe<TaxiiCollectionConnection>;
+  test_mapper?: Maybe<CsvMapperTestResult>;
   threatActor?: Maybe<ThreatActor>;
   threatActorGroup?: Maybe<ThreatActorGroup>;
   threatActorIndividual?: Maybe<ThreatActorIndividual>;
@@ -19463,6 +19463,12 @@ export type QueryTaxiiCollectionsArgs = {
   orderBy?: InputMaybe<TaxiiCollectionOrdering>;
   orderMode?: InputMaybe<OrderingMode>;
   search?: InputMaybe<Scalars['String']['input']>;
+};
+
+
+export type QueryTest_MapperArgs = {
+  csvMapper_id: Scalars['String']['input'];
+  uri: Scalars['String']['input'];
 };
 
 
@@ -31933,7 +31939,6 @@ export type IngestionCsvResolvers<ContextType = any, ParentType extends Resolver
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  test_mapper?: Resolver<Maybe<ResolversTypes['CsvMapperTestResult']>, ParentType, ContextType>;
   updated_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   uri?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   user?: Resolver<Maybe<ResolversTypes['Creator']>, ParentType, ContextType>;
@@ -34379,6 +34384,7 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   tasks?: Resolver<Maybe<ResolversTypes['TaskConnection']>, ParentType, ContextType, Partial<QueryTasksArgs>>;
   taxiiCollection?: Resolver<Maybe<ResolversTypes['TaxiiCollection']>, ParentType, ContextType, RequireFields<QueryTaxiiCollectionArgs, 'id'>>;
   taxiiCollections?: Resolver<Maybe<ResolversTypes['TaxiiCollectionConnection']>, ParentType, ContextType, Partial<QueryTaxiiCollectionsArgs>>;
+  test_mapper?: Resolver<Maybe<ResolversTypes['CsvMapperTestResult']>, ParentType, ContextType, RequireFields<QueryTest_MapperArgs, 'csvMapper_id' | 'uri'>>;
   threatActor?: Resolver<Maybe<ResolversTypes['ThreatActor']>, ParentType, ContextType, Partial<QueryThreatActorArgs>>;
   threatActorGroup?: Resolver<Maybe<ResolversTypes['ThreatActorGroup']>, ParentType, ContextType, Partial<QueryThreatActorGroupArgs>>;
   threatActorIndividual?: Resolver<Maybe<ResolversTypes['ThreatActorIndividual']>, ParentType, ContextType, RequireFields<QueryThreatActorIndividualArgs, 'id'>>;

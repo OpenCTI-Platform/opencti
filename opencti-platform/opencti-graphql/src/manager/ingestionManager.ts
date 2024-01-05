@@ -316,7 +316,7 @@ const csvDataToObjects = async (data: string, csvMapper: BasicStoreEntityCsvMapp
 const csvDataHandler = async (context: AuthContext, ingestion: BasicStoreEntityIngestionCsv) => {
   const { data } = await csvHttpGet(ingestion);
   const csvMapper: BasicStoreEntityCsvMapper = await findById(context, context.user ?? SYSTEM_USER, ingestion.csvMapper_id);
-  const csvMappingTestResult = await testCsvIngestionMapping(context, ingestion);
+  const csvMappingTestResult = await testCsvIngestionMapping(context, context.user ?? SYSTEM_USER, ingestion.uri, ingestion.csvMapper_id);
   if (!csvMappingTestResult) {
     const error = UnknownError('Invalid data from URL', data);
     logApp.error(error, { name: ingestion.name, context: 'CSV transform' });

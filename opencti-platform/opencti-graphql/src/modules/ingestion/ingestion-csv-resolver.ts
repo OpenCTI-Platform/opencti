@@ -9,10 +9,10 @@ const ingestionCsvResolvers: Resolvers = {
   Query: {
     ingestionCsv: (_, { id }, context) => findById(context, context.user, id),
     ingestionCsvs: (_, args, context) => findAllPaginated(context, context.user, args),
+    test_mapper: (_, { uri, csvMapper_id }, context) => testCsvIngestionMapping(context, context.user, uri, csvMapper_id),
   },
   IngestionCsv: {
     user: (ingestionCsv, _, context) => creatorLoader.load(ingestionCsv.user_id, context, context.user),
-    test_mapper: (ingestionCsv, _, context) => testCsvIngestionMapping(context, ingestionCsv),
   },
   Mutation: {
     ingestionCsvAdd: (_, { input }, context) => {

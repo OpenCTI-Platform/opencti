@@ -1,4 +1,4 @@
-import React, { FunctionComponent } from 'react';
+import React, { FunctionComponent, useState } from 'react';
 import { Field, Form, Formik } from 'formik';
 import Button from '@mui/material/Button';
 import * as Yup from 'yup';
@@ -10,6 +10,7 @@ import { FormikConfig } from 'formik/dist/types';
 import { Option } from '@components/common/form/ReferenceField';
 import { CsvAuthType } from '@components/data/ingestionCsv/__generated__/IngestionCsvCreationMutation.graphql';
 import CsvMapperField from '@components/common/form/CsvMapperField';
+import IngestionCsvMapperTestDialog from '@components/data/ingestionCsv/IngestionCsvMapperTestDialog';
 import Drawer, { DrawerVariant } from '../../common/drawer/Drawer';
 import { useFormatter } from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
@@ -61,7 +62,7 @@ export interface IngestionCsvCreationForm {
 const IngestionCsvCreation: FunctionComponent<IngestionCsvCreationProps> = ({ paginationOptions }) => {
   const { t } = useFormatter();
   const classes = useStyles();
-
+  const [open, setOpen] = useState(false);
   const ingestionCsvCreationValidation = () => Yup.object().shape({
     name: Yup.string().required(t('This field is required')),
     description: Yup.string().nullable(),
@@ -91,13 +92,12 @@ const IngestionCsvCreation: FunctionComponent<IngestionCsvCreationProps> = ({ pa
     } else if (values.authentication_type === 'certificate') {
       authenticationValue = `${values.cert}:${values.key}:${values.ca}`;
     }
-    const csvMapperId = typeof values.csvMapper_id === 'string' ? values.csvMapper_id : values.csvMapper_id.value;
     const userId = typeof values.user_id === 'string' ? values.user_id : values.user_id.value;
     const input = {
       name: values.name,
       description: values.description,
       uri: values.uri,
-      csvMapper_id: csvMapperId,
+      csvMapper_id: values.csvMapper_id,
       authentication_type: values.authentication_type,
       authentication_value: authenticationValue,
       current_state_date: values.current_state_date,
@@ -147,7 +147,7 @@ const IngestionCsvCreation: FunctionComponent<IngestionCsvCreationProps> = ({ pa
           onSubmit={onSubmit}
           onReset={onClose}
         >
-          {({ submitForm, handleReset, setFieldValue, isSubmitting, values }) => (
+          {({ submitForm, handleReset, isSubmitting, values }) => (
             <Form style={{ margin: '20px 0 20px 0' }}>
               <Field
                 component={TextField}
@@ -274,6 +274,15 @@ const IngestionCsvCreation: FunctionComponent<IngestionCsvCreationProps> = ({ pa
               <div className={classes.buttons}>
                 <Button
                   variant="contained"
+                  color="primary"
+                  onClick={() => setOpen(true)}
+                  classes={{ root: classes.button }}
+                  disabled={!values.uri && values.csvMapper_id?.length === 0}
+                >
+                  {t('Test')}
+                </Button>
+                <Button
+                  variant="contained"
                   onClick={handleReset}
                   disabled={isSubmitting}
                   classes={{ root: classes.button }}
@@ -290,6 +299,12 @@ const IngestionCsvCreation: FunctionComponent<IngestionCsvCreationProps> = ({ pa
                   {t('Create')}
                 </Button>
               </div>
+              <IngestionCsvMapperTestDialog
+                open={open}
+                onClose={() => setOpen(false)}
+                uri={values.uri}
+                csvMapperId={values.csvMapper_id}
+              />
             </Form>
           )}
         </Formik>

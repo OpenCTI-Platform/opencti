@@ -2,7 +2,7 @@ import { Option } from '@components/common/form/ReferenceField';
 import { graphql } from 'react-relay';
 import React, { FunctionComponent, useState } from 'react';
 import makeStyles from '@mui/styles/makeStyles';
-import {Field} from 'formik';
+import { Field } from 'formik';
 import * as R from 'ramda';
 import { CsvMapperFieldSearchQuery$data } from '@components/common/form/__generated__/CsvMapperFieldSearchQuery.graphql';
 import { fetchQuery } from '../../../../relay/environment';

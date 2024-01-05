@@ -84,13 +84,6 @@ export const convertCreatedBy = (element, field = 'createdBy') => (isEmptyField(
     type: element[field].entity_type,
   });
 
-export const convertMapper = (element, field = 'csvMapper') => (isEmptyField(element?.[field])
-    ? ''
-    : {
-      label: element[field].name,
-      value: element[field].id,
-      type: element[field].entity_type,
-    });
 export const convertUser = (element, field = 'user') => (isEmptyField(element?.[field])
   ? ''
   : {

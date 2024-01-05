@@ -10,7 +10,7 @@ import CreatorField from '@components/common/form/CreatorField';
 import CommitMessage from '@components/common/form/CommitMessage';
 import { IngestionCsvEditionFragment_ingestionCsv$key } from '@components/data/ingestionCsv/__generated__/IngestionCsvEditionFragment_ingestionCsv.graphql';
 import CsvMapperField from '@components/common/form/CsvMapperField';
-import {convertMapper, convertUser} from '../../../../utils/edition';
+import { convertUser } from '../../../../utils/edition';
 import { useFormatter } from '../../../../components/i18n';
 import { useSchemaEditionValidation } from '../../../../utils/hooks/useEntitySettings';
 import { adaptFieldValue } from '../../../../utils/String';
@@ -103,7 +103,6 @@ const IngestionCsvEdition: FunctionComponent<IngestionCsvEditionProps> = ({
   const [commitUpdate] = useMutation(ingestionCsvEditionPatch);
 
   const onSubmit: FormikConfig<IngestionCsvEditionForm>['onSubmit'] = (values, { setSubmitting }) => {
-    console.log('>>> values =', values)
     const { message, references, ...otherValues } = values;
     const commitMessage = message ?? '';
     const commitReferences = (references ?? []).map(({ value }) => value);
@@ -149,7 +148,7 @@ const IngestionCsvEdition: FunctionComponent<IngestionCsvEditionProps> = ({
     authentication_value: ingestionCsvData.authentication_value,
     current_state_date: ingestionCsvData.current_state_date,
     ingestion_running: ingestionCsvData.ingestion_running,
-    csvMapper_id: convertMapper(ingestionCsvData),
+    csvMapper_id: ingestionCsvData.csvMapper_id,
     user_id: convertUser(ingestionCsvData, 'user'),
   };
 
@@ -208,7 +207,7 @@ const IngestionCsvEdition: FunctionComponent<IngestionCsvEditionProps> = ({
             }}
           />
           <CsvMapperField
-            name="csvMapper_id"
+            name="csvMapper"
             isOptionEqualToValue={(option: Option, value: string) => option.value === value}
             onChange={handleSubmitField}
           />

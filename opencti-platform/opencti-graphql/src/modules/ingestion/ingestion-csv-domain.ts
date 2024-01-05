@@ -8,7 +8,6 @@ import type { CsvMapperTestResult, EditInput, IngestionCsvAddInput } from '../..
 import { notify } from '../../database/redis';
 import { BUS_TOPICS } from '../../config/conf';
 import { ABSTRACT_INTERNAL_OBJECT } from '../../schema/general';
-import { SYSTEM_USER } from '../../utils/access';
 import type { BasicStoreEntityCsvMapper } from '../internal/csvMapper/csvMapper-types';
 import { bundleProcess } from '../../parser/csv-bundler';
 import { findById as findCsvMapperById } from '../internal/csvMapper/csvMapper-domain';
@@ -78,10 +77,9 @@ export const fetchCsvExtractFromUrl = async (url: string): Promise<Buffer> => {
   return Buffer.from(dataExtract);
 };
 
-export const testCsvIngestionMapping = async (context: AuthContext, ingestionCsv: BasicStoreEntityIngestionCsv): Promise<CsvMapperTestResult> => {
-  const csvBuffer = await fetchCsvExtractFromUrl(ingestionCsv.uri);
-  const user = context.user ?? SYSTEM_USER;
-  const csvMapper: BasicStoreEntityCsvMapper = await findCsvMapperById(context, user, ingestionCsv.csvMapper_id);
+export const testCsvIngestionMapping = async (context: AuthContext, user: AuthUser, uri: string, csvMapper_id: string): Promise<CsvMapperTestResult> => {
+  const csvBuffer = await fetchCsvExtractFromUrl(uri);
+  const csvMapper: BasicStoreEntityCsvMapper = await findCsvMapperById(context, user, csvMapper_id);
   const bundle = await bundleProcess(context, user, csvBuffer, csvMapper);
   return {
     objects: JSON.stringify(bundle.objects, null, 2),

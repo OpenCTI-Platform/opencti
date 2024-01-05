@@ -64,7 +64,6 @@ const CreatorField: FunctionComponent<CreatorFieldProps> = ({
   >([]);
 
   const searchCreators = (event: React.ChangeEvent<HTMLInputElement>) => {
-    console.log('>>> searchCreators, event', event)
     fetchQuery(CreatorFieldQuery, {
       search: event && event.target.value ? event.target.value : '',
     })
