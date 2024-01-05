@@ -246,7 +246,7 @@ const internalObjectsAttributes: { [k: string]: Array<AttributeDefinition> } = {
       upsert: false,
       isFilterable: true,
       mappings: [
-        { name: 'id:', label: 'Id', type: 'string', format: 'short', editDefault: false, mandatoryType: 'no', multiple: false, upsert: true, isFilterable: true },
+        { name: 'id', label: 'Id', type: 'string', format: 'short', editDefault: false, mandatoryType: 'no', multiple: false, upsert: true, isFilterable: true },
         { name: 'type', label: 'Type', type: 'string', format: 'short', editDefault: false, mandatoryType: 'no', multiple: false, upsert: true, isFilterable: true },
       ]
     },
@@ -390,31 +390,12 @@ const internalObjectsAttributes: { [k: string]: Array<AttributeDefinition> } = {
       name: 'actions',
       label: 'Actions',
       type: 'object',
-      format: 'standard',
+      format: 'flat',
       mandatoryType: 'internal',
       multiple: true,
       editDefault: false,
       upsert: false,
-      isFilterable: false,
-      mappings: [
-        { name: 'type', label: 'Type', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: true },
-        {
-          name: 'context',
-          label: 'Context',
-          type: 'object',
-          format: 'standard',
-          editDefault: false,
-          mandatoryType: 'no',
-          multiple: false,
-          upsert: true,
-          isFilterable: false,
-          mappings: [
-            { name: 'field', label: 'Field', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: false },
-            { name: 'type', label: 'Type', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: false },
-            { name: 'values', label: 'Values', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: true, upsert: true, isFilterable: false },
-          ]
-        },
-      ]
+      isFilterable: false
     },
     { name: 'type', label: 'Type', type: 'string', format: 'short', mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false, isFilterable: true },
     { name: 'scope', label: 'Scope', type: 'string', format: 'short', mandatoryType: 'external', editDefault: false, multiple: false, upsert: false, isFilterable: true },
