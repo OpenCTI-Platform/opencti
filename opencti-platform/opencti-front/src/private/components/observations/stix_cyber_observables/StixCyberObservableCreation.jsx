@@ -337,6 +337,7 @@ const StixCyberObservableCreation = ({
   const onReset = () => {
     if (speeddial) {
       handleClose();
+      setStatus({ open: false, type: null });
     } else {
       localHandleClose();
     }
