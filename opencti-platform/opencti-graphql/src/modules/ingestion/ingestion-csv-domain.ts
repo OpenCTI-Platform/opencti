@@ -1,7 +1,11 @@
 import axios from 'axios';
 import type { AuthContext, AuthUser } from '../../types/user';
 import { listAllEntities, listEntitiesPaginated, storeLoadById } from '../../database/middleware-loader';
-import { type BasicStoreEntityIngestionCsv, ENTITY_TYPE_INGESTION_CSV } from './ingestion-types';
+import {
+  type BasicStoreEntityIngestionCsv,
+  ENTITY_TYPE_INGESTION_CSV,
+  ENTITY_TYPE_INGESTION_TAXII
+} from './ingestion-types';
 import { createEntity, deleteElementById, patchAttribute, updateAttribute } from '../../database/middleware';
 import { publishUserAction } from '../../listener/UserActionListener';
 import type { CsvMapperTestResult, EditInput, IngestionCsvAddInput } from '../../generated/graphql';
@@ -68,6 +72,12 @@ export const deleteIngestionCsv = async (context: AuthContext, user: AuthUser, i
     context_data: { id: ingestionId, entity_type: ENTITY_TYPE_INGESTION_CSV, input: deleted }
   });
   return ingestionId;
+};
+
+export const fetchCsvFromUrl = async (url: string): Promise<Buffer> => {
+  const response = await axios.get(url, { responseType: 'arraybuffer' });
+  const dataExtract = response.data;
+  return Buffer.from(dataExtract);
 };
 
 export const fetchCsvExtractFromUrl = async (url: string): Promise<Buffer> => {
