@@ -6,6 +6,10 @@ import { isEmptyField } from '../../utils/utils';
 export const SYSTEM_BANNER_HEIGHT = 20;
 const BANNER_Z_INDEX = 2000;
 
+/* Avoid auto-lint removal using --fix with false positive finding of: */
+/* Styled class is not used in component  custom-rules/classes-rule */
+/* for the banner classes below which are derived in bannerColorClassName() component */
+/* eslint-disable */
 const useStyles = makeStyles(() => ({
   banner: {
     textAlign: 'center',
@@ -27,7 +31,30 @@ const useStyles = makeStyles(() => ({
     padding: '2px 0',
     position: 'relative',
   },
+  /* Avoid auto-lint removal using --fix with false positive finding of: */
+  /* Styled class is not used in component  custom-rules/classes-rule */
+  /* for the banner classes below which are derived in bannerColorClassName() component */
+  bannerGreen: {
+    background: '#00840C',
+  },
+  bannerRed: {
+    background: '#ef0000',
+  },
+  bannerYellow: {
+    background: '#ffff00',
+  },
+  classificationTextGreen: {
+    color: '#ffff00',
+  },
+  classificationTextRed: {
+    color: '#ffffff',
+  },
+  classificationTextYellow: {
+    color: '#000000',
+  },
+  /* end banner classes needing eslint-disable */
 }));
+/* eslint-enable */
 
 const bannerColorClassName = (color, prefix = 'banner') => {
   if (!R.is(String, color)) {
