@@ -97,7 +97,7 @@ const IngestionCsvCreation: FunctionComponent<IngestionCsvCreationProps> = ({ pa
       name: values.name,
       description: values.description,
       uri: values.uri,
-      csvMapper_id: values.csvMapper_id,
+      csvMapper_id: typeof values.csvMapper_id === 'string' ? values.csvMapper_id : values.csvMapper_id.value,
       authentication_type: values.authentication_type,
       authentication_value: authenticationValue,
       current_state_date: values.current_state_date,
@@ -121,6 +121,8 @@ const IngestionCsvCreation: FunctionComponent<IngestionCsvCreationProps> = ({ pa
       },
     });
   };
+
+  const [isCreateDisabled, setIsCreateDisabled] = useState(true)
   return (
     <Drawer
       title={t('Create a CSV ingester')}
@@ -277,7 +279,7 @@ const IngestionCsvCreation: FunctionComponent<IngestionCsvCreationProps> = ({ pa
                   color="primary"
                   onClick={() => setOpen(true)}
                   classes={{ root: classes.button }}
-                  disabled={!values.uri && values.csvMapper_id?.length === 0}
+                  disabled={isSubmitting || (!values.uri && values.csvMapper_id?.length === 0)}
                 >
                   {t('Test')}
                 </Button>
@@ -293,7 +295,7 @@ const IngestionCsvCreation: FunctionComponent<IngestionCsvCreationProps> = ({ pa
                   variant="contained"
                   color="secondary"
                   onClick={submitForm}
-                  disabled={isSubmitting}
+                  disabled={isSubmitting || isCreateDisabled}
                   classes={{ root: classes.button }}
                 >
                   {t('Create')}
@@ -304,6 +306,7 @@ const IngestionCsvCreation: FunctionComponent<IngestionCsvCreationProps> = ({ pa
                 onClose={() => setOpen(false)}
                 uri={values.uri}
                 csvMapperId={values.csvMapper_id}
+                setIsCreateDisabled={setIsCreateDisabled}
               />
             </Form>
           )}

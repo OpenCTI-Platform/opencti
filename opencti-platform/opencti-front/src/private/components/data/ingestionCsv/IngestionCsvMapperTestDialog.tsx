@@ -11,6 +11,7 @@ import { Option } from '@components/common/form/ReferenceField';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import { useFormatter } from '../../../../components/i18n';
 import { fetchQuery, handleError } from '../../../../relay/environment';
+import TextField from "@mui/material/TextField";
 
 const ingestionCsvMapperTestQuery = graphql`
   query IngestionCsvMapperTestDialogQuery($uri: String!, $csvMapper_id: String!) {
@@ -27,6 +28,7 @@ interface IngestionCsvMapperTestDialogProps {
   onClose: () => void
   uri: string
   csvMapperId: string | Option
+  setIsCreateDisabled: React.Dispatch<React.SetStateAction<boolean>>
 }
 
 const IngestionCsvMapperTestDialog: FunctionComponent<IngestionCsvMapperTestDialogProps> = ({
@@ -34,6 +36,7 @@ const IngestionCsvMapperTestDialog: FunctionComponent<IngestionCsvMapperTestDial
   onClose,
   uri,
   csvMapperId,
+  setIsCreateDisabled
 }) => {
   const { t } = useFormatter();
   const [result, setResult] = useState<IngestionCsvMapperTestDialogQuery$data | undefined>(undefined);
@@ -57,6 +60,7 @@ const IngestionCsvMapperTestDialog: FunctionComponent<IngestionCsvMapperTestDial
               ...resultTest,
             },
           });
+          setIsCreateDisabled(false)
         }
         setLoading(false);
       }).catch((error) => {
@@ -69,11 +73,31 @@ const IngestionCsvMapperTestDialog: FunctionComponent<IngestionCsvMapperTestDial
     <Dialog open={open} onClose={handleClose} PaperProps={{ elevation: 1 }}>
       <DialogTitle>{t('Testing csv mapper')}</DialogTitle>
       <DialogContent>
-        <Box>
-
+        <Box
+            sx={{ marginBottom: '12px' }}
+        >
+          <TextField
+              id="outlined-read-only-input"
+              label="CSV feed URL"
+              defaultValue={uri}
+              InputProps={{
+                readOnly: true,
+              }}
+              fullWidth
+              sx={{ marginBottom: '12px' }}
+          />
+          <TextField
+              id="outlined-read-only-input"
+              label="CSV mapper"
+              defaultValue={typeof csvMapperId === 'string' ? csvMapperId : csvMapperId.label}
+              InputProps={{
+                readOnly: true,
+              }}
+              fullWidth
+          />
         </Box>
         <Box
-          sx={{ display: 'inline-flex', textAlign: 'center', marginTop: '8px' }}
+          sx={{ display: 'inline-flex', textAlign: 'center', marginTop: '8px', alignItems: 'baseline' }}
         >
           <Button
             variant="contained"
@@ -87,22 +111,23 @@ const IngestionCsvMapperTestDialog: FunctionComponent<IngestionCsvMapperTestDial
               <Loader variant={LoaderVariant.inElement}/>
             </Box>
           )}
+          {result
+              && <Box
+                  sx={{
+                    paddingTop: '8px',
+                    marginLeft: '12px',
+                    fontSize: '1rem',
+                    gap: '8px',
+                    justifyContent: 'center',
+                    display: 'flex',
+                  }}
+              >
+                <span>{t('Objects found')} : </span>
+                <span><strong>{result?.test_mapper?.nbEntities} </strong> {t('Entities')}</span>
+                <span><strong>{result?.test_mapper?.nbRelationships}</strong> {t('Relationships')}</span>
+              </Box>
+          }
         </Box>
-        {result
-          && <Box
-            sx={{
-              paddingTop: '8px',
-              fontSize: '1rem',
-              gap: '8px',
-              justifyContent: 'center',
-              display: 'flex',
-            }}
-             >
-            <span>{t('Objects found')} : </span>
-            <span><strong>{result?.test_mapper?.nbEntities} </strong> {t('Entities')}</span>
-            <span><strong>{result?.test_mapper?.nbRelationships}</strong> {t('Relationships')}</span>
-          </Box>
-        }
         <Box sx={{ marginTop: '8px' }}>
           <CodeBlock
             code={result?.test_mapper?.objects || t('You will find here the result in JSON format')}
