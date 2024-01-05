@@ -28,6 +28,7 @@ import { isNotEmptyField } from '../../../utils/utils';
 import SettingsMessages from './settings_messages/SettingsMessages';
 import SettingsAnalytics from './settings_analytics/SettingsAnalytics';
 import ItemBoolean from '../../../components/ItemBoolean';
+import { availableLanguage } from '../../../components/AppIntlProvider';
 
 const useStyles = makeStyles(() => ({
   container: {
@@ -397,11 +398,9 @@ const Settings = () => {
                               <MenuItem value="auto">
                                 <em>{t('Automatic')}</em>
                               </MenuItem>
-                              <MenuItem value="en-us">English</MenuItem>
-                              <MenuItem value="fr-fr">Français</MenuItem>
-                              <MenuItem value="es-es">Español</MenuItem>
-                              <MenuItem value="ja-jp">日本語</MenuItem>
-                              <MenuItem value="zh-cn">简化字</MenuItem>
+                              {
+                                availableLanguage.map(({ value, label }) => <MenuItem key={value} value={value}>{label}</MenuItem>)
+                              }
                             </Field>
                             <HiddenTypesField />
                           </Form>
