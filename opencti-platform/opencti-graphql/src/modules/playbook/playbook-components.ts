@@ -30,9 +30,9 @@ import {
   INPUT_LABELS,
   INPUT_MARKINGS,
 } from '../../schema/general';
-import { convertStoreToStix, convertTypeToStixType } from '../../database/stix-converter';
+import { convertStoreToStix } from '../../database/stix-converter';
 import type { BasicStoreRelation, StoreCommon, StoreRelation } from '../../types/store';
-import { generateStandardId } from '../../schema/identifier';
+import { generateInternalId, generateStandardId } from '../../schema/identifier';
 import { now, observableValue, utcDate } from '../../utils/format';
 import { STIX_SPEC_VERSION } from '../../database/stix';
 import type { StixCampaign, StixContainer, StixIncident, StixInfrastructure, StixMalware, StixReport, StixThreatActor } from '../../types/stix-sdo';
@@ -72,7 +72,7 @@ import { createStixPattern } from '../../python/pythonBridge';
 import { generateKeyValueForIndicator } from '../../domain/stixCyberObservable';
 import { RELATION_BASED_ON } from '../../schema/stixCoreRelationship';
 import type { StixRelation } from '../../types/stix-sro';
-import { extractObservablesFromIndicatorPattern } from '../../utils/syntax';
+import { extractObservablesFromIndicatorPattern, STIX_PATTERN_TYPE } from '../../utils/syntax';
 import { ENTITY_TYPE_CONTAINER_CASE_INCIDENT, type StixCaseIncident } from '../case/case-incident/case-incident-types';
 import { isStixMatchFilterGroup } from '../../utils/filtering/filtering-stix/stix-filtering';
 import { ENTITY_TYPE_INDICATOR, type StixIndicator } from '../indicator/indicator-types';
@@ -860,20 +860,24 @@ const PLAYBOOK_CREATE_INDICATOR_COMPONENT: PlaybookComponent<CreateIndicatorConf
           type = 'StixFile';
         }
         const pattern = await createStixPattern(context, AUTOMATION_MANAGER_USER, key, value);
+        const { score } = observable.extensions[STIX_EXT_OCTI_SCO];
         if (pattern) {
           const indicatorData = {
             name: indicatorName,
+            x_opencti_main_observable_type: type,
+            x_opencti_score: score,
             pattern,
+            pattern_type: STIX_PATTERN_TYPE,
             extensions: {
               [STIX_EXT_OCTI]: {
                 main_observable_type: type,
-                score: observable.extensions[STIX_EXT_OCTI_SCO].score
+                score,
               }
             }
           };
           const indicatorStandardId = generateStandardId(ENTITY_TYPE_INDICATOR, indicatorData);
           const storeIndicator = {
-            internal_id: uuidv4(),
+            internal_id: generateInternalId(),
             standard_id: indicatorStandardId,
             entity_type: ENTITY_TYPE_INDICATOR,
             spec_version: STIX_SPEC_VERSION,
@@ -895,7 +899,7 @@ const PLAYBOOK_CREATE_INDICATOR_COMPONENT: PlaybookComponent<CreateIndicatorConf
           }
           bundle.objects.push(indicator);
           const relationship = {
-            id: uuidv4(),
+            id: `relationship--${generateInternalId()}`,
             type: 'relationship',
             source_ref: indicator.id,
             target_ref: observable.id,
@@ -944,17 +948,29 @@ const PLAYBOOK_CREATE_OBSERVABLE_COMPONENT: PlaybookComponent<CreateObservableCo
         const observables = extractObservablesFromIndicatorPattern(indicator.pattern);
         for (let indexObservable = 0; indexObservable < observables.length; indexObservable += 1) {
           const observable = observables[indexObservable];
-          const stixObservable = {
-            ...observable,
-            type: convertTypeToStixType(observable.type),
+          const description = indicator.description ?? `Simple observable of indicator {${indicator.name || indicator.pattern}}`;
+          const { score } = indicator.extensions[STIX_EXT_OCTI];
+          const observableData = {
+            ...R.dissoc('type', observable),
+            x_opencti_score: score,
+            x_opencti_description: description,
             extensions: {
               [STIX_EXT_OCTI_SCO]: {
-                description: indicator.description
-                  ? indicator.description
-                  : `Simple observable of indicator {${indicator.name || indicator.pattern}}`
+                score,
+                description,
               }
             }
-          } as StixCyberObject;
+          };
+          const observableStandardId = generateStandardId(observable.type, observableData);
+          const storeObservable = {
+            internal_id: generateInternalId(),
+            standard_id: observableStandardId,
+            entity_type: observable.type,
+            spec_version: STIX_SPEC_VERSION,
+            parent_types: getParentTypes(observable.type),
+            ...observableData
+          } as StoreCommon;
+          const stixObservable = convertStoreToStix(storeObservable) as StixCyberObject;
           if (indicator.object_marking_refs) {
             stixObservable.object_marking_refs = indicator.object_marking_refs;
           }
@@ -969,7 +985,7 @@ const PLAYBOOK_CREATE_OBSERVABLE_COMPONENT: PlaybookComponent<CreateObservableCo
           }
           bundle.objects.push(stixObservable);
           const relationship = {
-            id: uuidv4(),
+            id: `relationship--${generateInternalId()}`,
             type: 'relationship',
             source_ref: indicator.id,
             target_ref: stixObservable.id,
