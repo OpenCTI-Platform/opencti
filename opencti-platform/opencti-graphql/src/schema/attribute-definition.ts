@@ -136,8 +136,11 @@ export const files: AttributeDefinition = {
   mappings: [
     id,
     { name: 'name', label: 'Name', type: 'string', format: 'short', editDefault: false, mandatoryType: 'no', multiple: true, upsert: true, isFilterable: true },
+    { name: 'description', label: 'Name', type: 'string', format: 'text', editDefault: false, mandatoryType: 'no', multiple: true, upsert: true, isFilterable: true },
+    { name: 'order', label: 'Order in carousel', type: 'numeric', precision: 'integer', editDefault: false, multiple: false, mandatoryType: 'external', upsert: true, isFilterable: true },
     { name: 'version', label: 'Version', type: 'string', format: 'short', editDefault: false, mandatoryType: 'no', multiple: true, upsert: true, isFilterable: true },
     { name: 'mime_type', label: 'Mime type', type: 'string', format: 'short', editDefault: false, mandatoryType: 'no', multiple: true, upsert: true, isFilterable: true },
+    { name: 'inCarousel', label: 'Include in carousel', type: 'boolean', mandatoryType: 'internal', editDefault: false, multiple: false, upsert: true, isFilterable: true },
   ]
 };
 
