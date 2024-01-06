@@ -37,9 +37,9 @@ const ThemeLight = (
       contrastText: '#ffffff',
     },
     background: {
-      default: background || '#f3f6f9',
+      default: background || '#f8f8f8',
       paper: paper || '#ffffff',
-      nav: nav || '#ffffff',
+      nav: nav || '#f5f5f5',
       accent: accent || '#d3eaff',
       shadow: 'rgba(0, 0, 0, .05)',
     },
@@ -102,6 +102,13 @@ const ThemeLight = (
     },
   },
   components: {
+    MuiAccordion: {
+      defaultProps: {
+        TransitionProps: {
+          unmountOnExit: true,
+        },
+      },
+    },
     MuiTooltip: {
       styleOverrides: {
         tooltip: {
@@ -109,13 +116,6 @@ const ThemeLight = (
         },
         arrow: {
           color: 'rgba(0,0,0,0.7)',
-        },
-      },
-    },
-    MuiAccordion: {
-      defaultProps: {
-        TransitionProps: {
-          unmountOnExit: true,
         },
       },
     },
@@ -179,8 +179,9 @@ const ThemeLight = (
             borderTopRightRadius: 'inherit',
           },
           pre: {
-            background: `${accent || '#c0dfff'} !important`,
+            fontFamily: 'Consolas, monaco, monospace',
             color: '#000000 !important',
+            background: `${accent || '#c0dfff'} !important`,
           },
           'pre.light': {
             fontFamily: 'Consolas, monaco, monospace',
@@ -188,8 +189,8 @@ const ThemeLight = (
           },
           code: {
             fontFamily: 'Consolas, monaco, monospace',
-            background: `${accent || '#c0dfff'} !important`,
             color: '#000000 !important',
+            background: `${accent || '#c0dfff'} !important`,
             padding: 3,
             fontSize: 12,
             fontWeight: 400,
@@ -215,9 +216,11 @@ const ThemeLight = (
             color: '#000000 !important',
           },
           '.mde-header-item button': {
+            fontFamily: '"IBM Plex Sans", sans-serif',
             color: '#000000 !important',
           },
           '.mde-tabs button': {
+            fontFamily: '"IBM Plex Sans", sans-serif',
             color: '#000000 !important',
           },
           '.mde-textarea-wrapper textarea': {

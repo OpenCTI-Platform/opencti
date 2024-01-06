@@ -67,7 +67,7 @@ const useStyles = makeStyles<Theme>((theme) => ({
   logoCollapsed: {
     cursor: 'pointer',
     height: 35,
-    marginRight: 10,
+    marginRight: 4,
   },
   menuContainer: {
     float: 'left',

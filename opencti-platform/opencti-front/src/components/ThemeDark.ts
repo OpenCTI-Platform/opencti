@@ -1,7 +1,7 @@
 import type { ExtendedThemeOptions } from './Theme';
+import { fileUri } from '../relay/environment';
 import LogoText from '../static/images/logo_text.png';
 import LogoCollapsed from '../static/images/logo.png';
-import { fileUri } from '../relay/environment';
 import { hexToRGB } from '../utils/Colors';
 
 const EE_COLOR = '#00b1ff';

@@ -129,23 +129,24 @@
     "typescript": "5.3.3",
     "vite": "5.0.10",
     "vite-plugin-relay": "2.0.0",
-    "vite-plugin-static-copy": "^1.0.0",
+    "vite-plugin-static-copy": "1.0.0",
     "vitest": "1.0.4"
   },
   "engines": {
     "node": ">= 16.*"
   },
   "scripts": {
-    "esbuild": "node builder/prod/prod.js",
     "relay": "relay-compiler relay.config.json",
+    "dev": "yarn relay && vite",
+    "start": "yarn relay && node builder/dev/dev.js",
+    "esbuild": "node builder/prod/prod.js",
     "build": "yarn relay && yarn esbuild",
     "build:standalone": "yarn relay && yarn esbuild --keep",
-    "start": "yarn relay && node builder/dev/dev.js",
-    "dev": "yarn relay && vite",
     "lint": "cross-env DEBUG=eslint:cli-engine TIMING=1 eslint --max-warnings 0 --cache -c .eslintrc.js src",
     "control": "yarn audit --groups dependencies --summary",
     "test": "vitest run",
-    "check-ts": "tsc --noEmit"
+    "check-ts": "tsc --noEmit",
+    "i18n-checker": "node i18n-checker.js"
   },
   "resolutions": {
     "eslint-plugin-custom-rules": "0.0.1",

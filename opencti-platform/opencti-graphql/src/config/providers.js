@@ -146,7 +146,7 @@ for (let i = 0; i < providerKeys.length; i += 1) {
       const localStrategy = new LocalStrategy({}, (username, password, done) => {
         return login(username, password)
           .then((info) => {
-            logApp.debug('[LOCAL] Successfully logged', { username });
+            logApp.info('[LOCAL] Successfully logged', { username });
             return done(null, info);
           })
           .catch((err) => {
@@ -162,7 +162,7 @@ for (let i = 0; i < providerKeys.length; i += 1) {
       mappedConfig = R.assoc('tlsOptions', { rejectUnauthorized: !allowSelfSigned }, mappedConfig);
       const ldapOptions = { server: mappedConfig };
       const ldapStrategy = new LdapStrategy(ldapOptions, async (user, done) => {
-        logApp.debug('[LDAP] Successfully logged', { user });
+        logApp.info('[LDAP] Successfully logged', { user });
         const userMail = mappedConfig.mail_attribute ? user[mappedConfig.mail_attribute] : user.mail;
         const userName = mappedConfig.account_attribute ? user[mappedConfig.account_attribute] : user.givenName;
         const firstname = user[mappedConfig.firstname_attribute] || '';
@@ -215,7 +215,7 @@ for (let i = 0; i < providerKeys.length; i += 1) {
           logApp.warn('LDAP Configuration error, cant map mail and username', { user, userMail, userName });
           done({ message: 'Configuration error, ask your administrator' });
         } else if (!isGroupBaseAccess || groupsToAssociate.length > 0) {
-          logApp.debug(`[LDAP] Connecting/creating account with ${userMail} [name=${userName}]`);
+          logApp.info(`[LDAP] Connecting/creating account with ${userMail} [name=${userName}]`);
           const userInfo = { email: userMail, name: userName, firstname, lastname };
           const opts = {
             providerGroups: groupsToAssociate,
@@ -235,7 +235,7 @@ for (let i = 0; i < providerKeys.length; i += 1) {
       const providerRef = identifier || 'saml';
       const samlOptions = { ...mappedConfig };
       const samlStrategy = new SamlStrategy(samlOptions, (profile, done) => {
-        logApp.debug('[SAML] Successfully logged', { profile });
+        logApp.info('[SAML] Successfully logged', { profile });
         const roleAttributes = mappedConfig.roles_management?.role_attributes || ['Role'];
         const groupAttributes = mappedConfig.groups_management?.group_attributes || ['Group'];
         const userName = profile[mappedConfig.account_attribute] || '';
@@ -244,7 +244,7 @@ for (let i = 0; i < providerKeys.length; i += 1) {
         const { nameID, nameIDFormat } = profile;
         const isRoleBaseAccess = isNotEmptyField(mappedConfig.roles_management);
         const isGroupBaseAccess = (isNotEmptyField(mappedConfig.groups_management) && isNotEmptyField(mappedConfig.groups_management?.groups_mapping)) || isRoleBaseAccess;
-        logApp.debug('[SAML] Groups management configuration', { groupsManagement: mappedConfig.groups_management, isRoleBaseAccess });
+        logApp.info('[SAML] Groups management configuration', { groupsManagement: mappedConfig.groups_management, isRoleBaseAccess });
         // region roles mapping
         if (isRoleBaseAccess) {
           logApp.error('SSO mapping on roles is deprecated, you should clean roles_management in your config and bind on groups.');
@@ -284,7 +284,7 @@ for (let i = 0; i < providerKeys.length; i += 1) {
         };
         const organizationsToAssociate = isOrgaMapping ? computeOrganizationsMapping() : [];
         // endregion
-        logApp.debug('[SAML] Login handler', { isGroupBaseAccess, groupsToAssociate });
+        logApp.info('[SAML] Login handler', { isGroupBaseAccess, groupsToAssociate });
         if (!isGroupBaseAccess || groupsToAssociate.length > 0) {
           const { nameID: email } = profile;
           const opts = {
@@ -324,7 +324,7 @@ for (let i = 0; i < providerKeys.length; i += 1) {
         const openIdScope = R.uniq(openIdScopes).join(' ');
         const options = { client, passReqToCallback: true, params: { scope: openIdScope } };
         const openIDStrategy = new OpenIDStrategy(options, (req, tokenset, userinfo, done) => {
-          logApp.debug('[OPENID] Successfully logged', { userinfo });
+          logApp.info('[OPENID] Successfully logged', { userinfo });
           const isRoleBaseAccess = isNotEmptyField(mappedConfig.roles_management);
           const isGroupMapping = (isNotEmptyField(mappedConfig.groups_management) && isNotEmptyField(mappedConfig.groups_management?.groups_mapping)) || isRoleBaseAccess;
           // region roles mapping
@@ -336,7 +336,7 @@ for (let i = 0; i < providerKeys.length; i += 1) {
             const rolesPath = mappedConfig.roles_management?.roles_path || ['roles'];
             const rolesMapping = mappedConfig.roles_management?.roles_mapping || [];
             const decodedUser = jwtDecode(tokenset[token]);
-            logApp.debug(`[OPENID] Roles mapping on decoded ${token}`, { decoded: decodedUser });
+            logApp.info(`[OPENID] Roles mapping on decoded ${token}`, { decoded: decodedUser });
             const availableRoles = R.flatten(rolesPath.map((path) => {
               const value = R.path(path.split('.'), decodedUser) || [];
               return Array.isArray(value) ? value : [value];
@@ -354,7 +354,7 @@ for (let i = 0; i < providerKeys.length; i += 1) {
             const groupsMapping = mappedConfig.groups_management?.groups_mapping || [];
             const decodedUser = jwtDecode(tokenset[token]);
             if (!readUserinfo) {
-              logApp.debug(`[OPENID] Groups mapping on decoded ${token}`, { decoded: decodedUser });
+              logApp.info(`[OPENID] Groups mapping on decoded ${token}`, { decoded: decodedUser });
             }
             const availableGroups = R.flatten(groupsPath.map((path) => {
               const userClaims = (readUserinfo) ? userinfo : decodedUser;
@@ -430,7 +430,7 @@ for (let i = 0; i < providerKeys.length; i += 1) {
         facebookOptions,
         (req, accessToken, refreshToken, profile, done) => {
           const data = profile._json;
-          logApp.debug('[FACEBOOK] Successfully logged', { profile: data });
+          logApp.info('[FACEBOOK] Successfully logged', { profile: data });
           const { email } = data;
           providerLoginHandler({ email, name: data.first_name }, done);
         }
@@ -444,7 +444,7 @@ for (let i = 0; i < providerKeys.length; i += 1) {
       const specificConfig = { scope: ['email', 'profile'] };
       const googleOptions = { passReqToCallback: true, ...mappedConfig, ...specificConfig };
       const googleStrategy = new GoogleStrategy(googleOptions, (req, token, tokenSecret, profile, done) => {
-        logApp.debug('[GOOGLE] Successfully logged', { profile });
+        logApp.info('[GOOGLE] Successfully logged', { profile });
         const email = R.head(profile.emails).value;
         const name = profile.displayName;
         let authorized = true;
@@ -467,7 +467,7 @@ for (let i = 0; i < providerKeys.length; i += 1) {
       const scope = organizations.length > 0 ? 'user:email,read:org' : 'user:email';
       const githubOptions = { passReqToCallback: true, ...mappedConfig, scope };
       const githubStrategy = new GithubStrategy(githubOptions, async (req, token, tokenSecret, profile, done) => {
-        logApp.debug('[GITHUB] Successfully logged', { profile });
+        logApp.info('[GITHUB] Successfully logged', { profile });
         let authorized = true;
         if (organizations.length > 0) {
           const github = new GitHub({ token });
@@ -497,7 +497,7 @@ for (let i = 0; i < providerKeys.length; i += 1) {
       const auth0Strategy = new Auth0Strategy(
         auth0Options,
         (req, accessToken, refreshToken, extraParams, profile, done) => {
-          logApp.debug('[AUTH0] Successfully logged', { profile });
+          logApp.info('[AUTH0] Successfully logged', { profile });
           const email = R.head(profile.emails).value;
           const name = profile.displayName;
           providerLoginHandler({ email, name }, done);
