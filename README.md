@@ -70,7 +70,7 @@ To help you get you familiar with our contribution process, we have a list of [b
 
 ### Development
 
-If you want to actively help OpenCTI, we created a [dedicated documentation](https://docs.opencti.io/latest/development/environment) about the deployment of a development environment and how to start the source code modification.
+If you want to actively help OpenCTI, we created a [dedicated documentation](https://docs.opencti.io/latest/development/environment_ubuntu/) about the deployment of a development environment and how to start the source code modification.
 
 ## Community
 
