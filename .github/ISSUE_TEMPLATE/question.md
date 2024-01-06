@@ -9,7 +9,7 @@ assignees: ''
 
 ## Prerequisites
 
-- [ ] I read the [Deployment and Setup](https://www.notion.so/OpenCTI-Public-Knowledge-Base-d411e5e477734c59887dad3649f20518) section of the OpenCTI documentation as well as the [Troubleshooting](https://www.notion.so/Troubleshooting-ebc8fb04137d495aad917bc20340b9a6) page and didn't find anything relevant to my problem.
+- [ ] I read the [Deployment and Setup](https://docs.opencti.io/latest/deployment/overview) section of the OpenCTI documentation as well as the [Troubleshooting](https://docs.opencti.io/latest/deployment/troubleshooting) page and didn't find anything relevant to my problem.
 - [ ] I went through old GitHub issues and couldn't find anything relevant
 - [ ] I googled the issue and didn't find anything relevant
 
