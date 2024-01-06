@@ -692,7 +692,7 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
         self.log_debug = self.connector_logger.debug
         self.log_info = self.connector_logger.info
         self.log_warning = self.connector_logger.warning
-        self.log_error = self.connector_logger.warning
+        self.log_error = self.connector_logger.error
         # For retro compatibility
 
         self.metric = OpenCTIMetricHandler(
