@@ -1,7 +1,7 @@
 import * as R from 'ramda';
 import * as jsonpatch from 'fast-json-patch';
 import { Promise } from 'bluebird';
-import LRU from 'lru-cache';
+import { LRUCache } from 'lru-cache';
 import conf, { basePath, logApp } from '../config/conf';
 import { authenticateUserFromRequest, TAXIIAPI } from '../domain/user';
 import { createStreamProcessor, EVENT_CURRENT_VERSION } from '../database/redis';
@@ -360,7 +360,7 @@ const createSseMiddleware = () => {
         const origin = { referer: EVENT_TYPE_DEPENDENCIES };
         const content = { data: missingData, message, origin, version: EVENT_CURRENT_VERSION };
         channel.sendEvent(eventId, EVENT_TYPE_CREATE, content);
-        cache.set(missingData.id);
+        cache.set(missingData.id, 'hit');
         await wait(channel.delay);
       }
     }
@@ -386,7 +386,7 @@ const createSseMiddleware = () => {
             const origin = { referer: EVENT_TYPE_DEPENDENCIES };
             const content = { data: stixRelation, message, origin, version: EVENT_CURRENT_VERSION };
             channel.sendEvent(eventId, EVENT_TYPE_CREATE, content);
-            cache.set(stixRelation.id);
+            cache.set(stixRelation.id, 'hit');
           }
         }
         // Send the Heartbeat with last event id
@@ -508,7 +508,7 @@ const createSseMiddleware = () => {
   const liveStreamHandler = async (req, res) => {
     const { id } = req.params;
     try {
-      const cache = new LRU({ max: MAX_CACHE_SIZE, ttl: MAX_CACHE_TIME });
+      const cache = new LRUCache({ max: MAX_CACHE_SIZE, ttl: MAX_CACHE_TIME });
       const context = executionContext('live_stream');
       const { user } = req;
       // If stream is starting after, we need to use the main database to catchup
@@ -563,18 +563,18 @@ const createSseMiddleware = () => {
                   const isPreviouslyVisible = await isStixMatchFilterGroup(context, user, previous, streamFilters);
                   if (isPreviouslyVisible && !isCurrentlyVisible) { // No longer visible
                     client.sendEvent(eventId, EVENT_TYPE_DELETE, eventData);
-                    cache.set(stix.id);
+                    cache.set(stix.id, 'hit');
                   } else if (!isPreviouslyVisible && isCurrentlyVisible) { // Newly visible
                     const isValidResolution = await resolveAndPublishDependencies(context, noDependencies, cache, channel, req, eventId, stix);
                     if (isValidResolution) {
                       client.sendEvent(eventId, EVENT_TYPE_CREATE, eventData);
-                      cache.set(stix.id);
+                      cache.set(stix.id, 'hit');
                     }
                   } else if (isCurrentlyVisible) { // Just an update
                     const isValidResolution = await resolveAndPublishDependencies(context, noDependencies, cache, channel, req, eventId, stix);
                     if (isValidResolution) {
                       client.sendEvent(eventId, event, eventData);
-                      cache.set(stix.id);
+                      cache.set(stix.id, 'hit');
                     }
                   } else if (isRelation && publishDependencies) { // Update but not visible - relation type
                     // In case of relationship publication, from or to can be related to something that
@@ -604,20 +604,20 @@ const createSseMiddleware = () => {
                     if (isContainerMatching) {
                       await resolveAndPublishMissingRefs(context, cache, channel, req, eventId, stix);
                       client.sendEvent(eventId, event, eventData);
-                      cache.set(stix.id);
+                      cache.set(stix.id, 'hit');
                     }
                   }
                 } else if (isCurrentlyVisible) {
                   if (type === EVENT_TYPE_DELETE) {
                     if (publishDeletion) {
                       client.sendEvent(eventId, event, eventData);
-                      cache.set(stix.id);
+                      cache.set(stix.id, 'hit');
                     }
                   } else { // Create and merge
                     const isValidResolution = await resolveAndPublishDependencies(context, noDependencies, cache, channel, req, eventId, stix);
                     if (isValidResolution) {
                       client.sendEvent(eventId, event, eventData);
-                      cache.set(stix.id);
+                      cache.set(stix.id, 'hit');
                     }
                   }
                 } else if (isRelation && publishDependencies) { // Not an update and not visible
@@ -663,7 +663,7 @@ const createSseMiddleware = () => {
                 const origin = { referer: EVENT_TYPE_INIT };
                 const eventData = { data: stixData, message, origin, version: EVENT_CURRENT_VERSION };
                 channel.sendEvent(eventId, EVENT_TYPE_CREATE, eventData);
-                cache.set(stixData.id);
+                cache.set(stixData.id, 'hit');
               }
             } else {
               return channel.connected();

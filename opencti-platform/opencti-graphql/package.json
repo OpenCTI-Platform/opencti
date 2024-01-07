@@ -106,7 +106,7 @@
     "json-to-plain-text": "1.1.4",
     "jsonpath-plus": "7.2.0",
     "jwt-decode": "4.0.0",
-    "lru-cache": "7.18.3",
+    "lru-cache": "10.1.0",
     "merge-graphql-schemas": "1.7.8",
     "migrate": "2.0.1",
     "mime-types": "2.1.35",
