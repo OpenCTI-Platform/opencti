@@ -10,7 +10,7 @@ import type { AuthContext, AuthUser } from '../../../types/user';
 import { type DomainFindById } from '../../../domain/domainTypes';
 import type { BasicStoreEntityDocument } from './document-types';
 import type { BasicStoreCommon } from '../../../types/store';
-import { FilterMode, FilterOperator, OrderingMode, type File } from '../../../generated/graphql';
+import { type File, FilterMode, FilterOperator, OrderingMode } from '../../../generated/graphql';
 import { loadExportWorksAsProgressFiles } from '../../../domain/work';
 import { UnsupportedError } from '../../../config/errors';
 import { elSearchFiles } from '../../../database/file-search';
@@ -40,6 +40,7 @@ export const buildFileDataForIndexing = (file: File) => {
     entity_type: ENTITY_TYPE_INTERNAL_FILE,
   };
 };
+
 export const indexFileToDocument = async (file: any) => {
   const data = buildFileDataForIndexing(file);
   await elIndex(INDEX_INTERNAL_OBJECTS, data);
@@ -56,15 +57,17 @@ export const findById: DomainFindById<BasicStoreEntityDocument> = (context: Auth
   return storeLoadById<BasicStoreEntityDocument>(context, user, fileId, ENTITY_TYPE_INTERNAL_FILE);
 };
 
-interface PrefixOptions<T extends BasicStoreCommon> extends EntityOptions<T> {
+interface FilesOptions<T extends BasicStoreCommon> extends EntityOptions<T> {
   entity_id?: string
   modifiedSince?: string | null
   prefixMimeTypes?: string[]
   maxFileSize?: number
   excludedPaths?: string[]
+  orderBy?: string
+  orderMode?: OrderingMode
 }
 
-const buildFileFilters = (paths: string[], opts?: PrefixOptions<BasicStoreEntityDocument>) => {
+const buildFileFilters = (paths: string[], opts?: FilesOptions<BasicStoreEntityDocument>) => {
   const filters: FilterGroupWithNested = {
     mode: FilterMode.And,
     filters: [{ key: ['internal_id'], values: paths, operator: FilterOperator.StartsWith }],
@@ -90,7 +93,7 @@ const buildFileFilters = (paths: string[], opts?: PrefixOptions<BasicStoreEntity
 
 // List all available files with filtering capabilities
 // Must only be used for internal purpose
-export const allFilesForPaths = async (context: AuthContext, user: AuthUser, paths: string[], opts?: PrefixOptions<BasicStoreEntityDocument>) => {
+export const allFilesForPaths = async (context: AuthContext, user: AuthUser, paths: string[], opts?: FilesOptions<BasicStoreEntityDocument>) => {
   const findOpts: EntityOptions<BasicStoreEntityDocument> = {
     filters: buildFileFilters(paths, opts),
     noFiltersChecking: true // No associated model
@@ -105,7 +108,8 @@ export const allFilesForPaths = async (context: AuthContext, user: AuthUser, pat
   return listAllEntities<BasicStoreEntityDocument>(context, user, [ENTITY_TYPE_INTERNAL_FILE], listOptions);
 };
 
-export const allRemainingFilesCount = async (context: AuthContext, user: AuthUser, paths: string[], opts?: PrefixOptions<BasicStoreEntityDocument>) => {
+// Count remaining files to index
+export const allRemainingFilesCount = async (context: AuthContext, user: AuthUser, paths: string[], opts?: FilesOptions<BasicStoreEntityDocument>) => {
   const modifiedSince = await getIndexFromDate(context);
   const findOpts: EntityOptions<BasicStoreEntityDocument> = {
     filters: buildFileFilters(paths, { ...opts, modifiedSince }),
@@ -118,12 +122,17 @@ export const allRemainingFilesCount = async (context: AuthContext, user: AuthUse
 // Get Files paginated with auto enrichment
 // Images metadata for users
 // In progress virtual files from export
-export const paginatedForPathsWithEnrichment = async (context: AuthContext, user: AuthUser, paths: string[], opts?: PrefixOptions<BasicStoreEntityDocument>) => {
+export const paginatedForPathsWithEnrichment = async (context: AuthContext, user: AuthUser, paths: string[], opts?: FilesOptions<BasicStoreEntityDocument>) => {
   const findOpts: EntityOptions<BasicStoreEntityDocument> = {
     filters: buildFileFilters(paths, opts),
     noFiltersChecking: true // No associated model
   };
-  const listOptions = { ...opts, ...findOpts };
+  const orderOptions: any = {};
+  if (isEmptyField(opts?.orderBy)) {
+    orderOptions.orderBy = 'lastModified';
+    orderOptions.orderMode = OrderingMode.Desc;
+  }
+  const listOptions = { ...opts, ...findOpts, ...orderOptions };
   const pagination = await listEntitiesPaginated<BasicStoreEntityDocument>(context, user, [ENTITY_TYPE_INTERNAL_FILE], listOptions);
   // region enrichment only possible for single path resolution
   // Enrich pagination for import images
