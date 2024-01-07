@@ -1060,8 +1060,9 @@ type SettingsMessage {
   dismissible: Boolean!
   updated_at: DateTime!
   color: String
-  recipients: [Member!]
+  recipients: [Member!] @auth(for: [SETTINGS])
 }
+
 type Settings implements InternalObject & BasicObject {
   id: ID!
   standard_id: String! @auth
@@ -1123,6 +1124,7 @@ type Settings implements InternalObject & BasicObject {
   password_policy_min_lowercase: Int @auth
   password_policy_min_uppercase: Int @auth
   messages: [SettingsMessage!] @auth
+  messages_administration: [SettingsMessage!] @auth(for: [SETTINGS])
   analytics_google_analytics_v4: String @auth
   # Technical
   editContext: [EditUserContext!] @auth(for: [SETTINGS])

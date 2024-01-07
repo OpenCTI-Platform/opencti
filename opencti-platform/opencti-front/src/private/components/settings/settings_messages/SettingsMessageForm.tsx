@@ -33,7 +33,7 @@ const settingsMessageEditionPatch = graphql`
   ) {
     settingsEdit(id: $id) {
       editMessage(input: $input) {
-        messages {
+        messages_administration {
           ...SettingsMessagesLine_settingsMessage
         }
       }

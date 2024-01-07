@@ -4,7 +4,7 @@ import nconf from 'nconf';
 import { BUS_TOPICS } from '../config/conf';
 import {
   getApplicationInfo,
-  getMessages,
+  getMessagesFilteredByRecipients,
   getSettings,
   settingDeleteMessage,
   settingEditMessage,
@@ -45,7 +45,8 @@ const settingsResolvers = {
     password_policy_min_lowercase: (settings) => settings.password_policy_min_lowercase ?? 0,
     password_policy_min_uppercase: (settings) => settings.password_policy_min_uppercase ?? 0,
     editContext: (settings) => fetchEditContext(settings.id),
-    messages: (settings, _, context) => getMessages(context.user, settings),
+    messages: (settings, _, context) => getMessagesFilteredByRecipients(context.user, settings),
+    messages_administration: (settings) => JSON.parse(settings.messages ?? '[]'),
   },
   SettingsMessage: {
     recipients: (message, _, context) => internalFindByIds(context, context.user, message.recipients),
@@ -82,8 +83,8 @@ const settingsResolvers = {
         const asyncIterator = pubSubAsyncIterator(BUS_TOPICS[ENTITY_TYPE_SETTINGS].EDIT_TOPIC);
         const settings = await getEntityFromCache(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
         const filtering = withFilter(() => asyncIterator, (payload) => {
-          const oldMessages = getMessages(context.user, settings);
-          const newMessages = getMessages(context.user, payload.instance);
+          const oldMessages = getMessagesFilteredByRecipients(context.user, settings);
+          const newMessages = getMessagesFilteredByRecipients(context.user, payload.instance);
           // If removed and was activated
           const removedMessage = R.difference(oldMessages, newMessages);
           if (removedMessage.length === 1 && removedMessage[0].activated) {
