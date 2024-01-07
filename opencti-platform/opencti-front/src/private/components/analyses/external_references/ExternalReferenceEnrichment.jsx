@@ -15,7 +15,7 @@ const ExternalReferenceEnrichment = ({ externalReferenceId }) => {
       <Tooltip title={t('Enrichment')}>
         <IconButton
           onClick={() => setOpen(true)}
-          color="inherit"
+          color="primary"
           aria-label="Refresh"
           size="large"
         >

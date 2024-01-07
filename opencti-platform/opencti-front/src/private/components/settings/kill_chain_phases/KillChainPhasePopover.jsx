@@ -11,24 +11,18 @@ import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
-import Slide from '@mui/material/Slide';
 import MoreVert from '@mui/icons-material/MoreVert';
 import { ConnectionHandler } from 'relay-runtime';
 import inject18n from '../../../../components/i18n';
 import { commitMutation, QueryRenderer } from '../../../../relay/environment';
 import KillChainPhaseEdition from './KillChainPhaseEdition';
-import Loader from '../../../../components/Loader';
+import Transition from '../../../../components/Transition';
 
 const styles = () => ({
   container: {
     margin: 0,
   },
 });
-
-const Transition = React.forwardRef((props, ref) => (
-  <Slide direction="up" ref={ref} {...props} />
-));
-Transition.displayName = 'TransitionSlide';
 
 const killChainPhasePopoverDeletionMutation = graphql`
   mutation KillChainPhasePopoverDeletionMutation($id: ID!) {
@@ -116,6 +110,7 @@ class KillChainPhasePopover extends Component {
           onClick={this.handleOpen.bind(this)}
           aria-haspopup="true"
           size="large"
+          color="primary"
         >
           <MoreVert />
         </IconButton>
@@ -145,7 +140,7 @@ class KillChainPhasePopover extends Component {
                 />
               );
             }
-            return <Loader variant="inElement" />;
+            return <div />;
           }}
         />
         <Dialog

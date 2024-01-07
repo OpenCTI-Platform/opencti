@@ -240,7 +240,7 @@ StixCoreObjectOrStixCoreRelationshipNotesCardsProps
       <Security needs={[KNOWLEDGE_KNPARTICIPATE]}>
         <>
           <IconButton
-            color="secondary"
+            color="primary"
             onClick={handleToggleWrite}
             classes={{ root: classes.createButton }}
             size="large"

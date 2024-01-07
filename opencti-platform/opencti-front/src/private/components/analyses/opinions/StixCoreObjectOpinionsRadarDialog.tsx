@@ -149,7 +149,7 @@ StixCoreObjectOpinionsRadarDialogProps
     <Security needs={[KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNPARTICIPATE]}>
       <>
         <IconButton
-          color="secondary"
+          color="primary"
           aria-label="Label"
           onClick={handleOpen}
           style={{

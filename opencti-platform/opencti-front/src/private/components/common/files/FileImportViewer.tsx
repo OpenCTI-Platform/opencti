@@ -68,7 +68,6 @@ FileImportViewerComponentProps
             entityId={id}
             onUploadSuccess={() => relay.refetch({ id })}
             size="medium"
-            color={undefined}
           />
           <FreeTextUploader
             entityId={id}

@@ -254,7 +254,6 @@ class StixSightingRelationshipExternalReferencesLinesContainer extends Component
                                   entityId={externalReference.id}
                                   onUploadSuccess={() => this.props.relay.refetchConnection(200)
                                   }
-                                  color="inherit"
                                 />
                               </Security>
                             )}
@@ -319,7 +318,6 @@ class StixSightingRelationshipExternalReferencesLinesContainer extends Component
                               entityId={externalReference.id}
                               onUploadSuccess={() => this.props.relay.refetchConnection(200)
                               }
-                              color="inherit"
                             />
                           </Security>
                           <Security needs={[KNOWLEDGE_KNUPDATE]}>

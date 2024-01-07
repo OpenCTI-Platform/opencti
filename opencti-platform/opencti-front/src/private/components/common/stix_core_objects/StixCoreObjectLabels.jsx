@@ -4,16 +4,10 @@ import { compose, map, take, sortWith, prop, ascend, pipe } from 'ramda';
 import withTheme from '@mui/styles/withTheme';
 import withStyles from '@mui/styles/withStyles';
 import Chip from '@mui/material/Chip';
-import Slide from '@mui/material/Slide';
 import Tooltip from '@mui/material/Tooltip';
 import inject18n from '../../../../components/i18n';
 import { hexToRGB } from '../../../../utils/Colors';
 import { truncate } from '../../../../utils/String';
-
-const Transition = React.forwardRef((props, ref) => (
-  <Slide direction="up" ref={ref} {...props} />
-));
-Transition.displayName = 'TransitionSlide';
 
 const styles = () => ({
   labels: {

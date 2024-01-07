@@ -334,8 +334,6 @@ class ImportContentComponent extends Component {
                 <FileUploader
                   onUploadSuccess={() => relay.refetch()}
                   size="medium"
-                  color={'primary'}
-                  entityId={''}
                 />
                 <FreeTextUploader
                   onUploadSuccess={() => relay.refetch()}

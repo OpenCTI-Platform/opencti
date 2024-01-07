@@ -63,6 +63,7 @@ const NotifierPopover = ({ data, paginationOptions }: { data: NotifierLine_node$
         aria-haspopup="true"
         style={{ marginTop: 3 }}
         size="large"
+        color="primary"
       >
         <MoreVert />
       </IconButton>

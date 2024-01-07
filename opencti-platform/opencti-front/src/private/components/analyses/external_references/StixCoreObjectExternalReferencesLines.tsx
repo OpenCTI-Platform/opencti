@@ -311,7 +311,6 @@ StixCoreObjectExternalReferencesLinesContainerProps
                               entityId={externalReference.id}
                               onUploadSuccess={() => relay.refetchConnection(200)
                               }
-                              color="inherit"
                               size={undefined}
                             />
                           </Security>
@@ -380,7 +379,6 @@ StixCoreObjectExternalReferencesLinesContainerProps
                               entityId={externalReference.id}
                               onUploadSuccess={() => relay.refetchConnection(200)
                               }
-                              color="inherit"
                               size={undefined}
                             />
                           </Security>

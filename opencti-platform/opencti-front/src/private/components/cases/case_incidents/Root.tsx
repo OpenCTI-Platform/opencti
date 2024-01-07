@@ -95,7 +95,7 @@ const RootCaseIncidentComponent = ({ queryRef, caseId }) => {
         `/dashboard/cases/incidents/${caseData.id}/observables`,
       )
     ) {
-      paddingRight = 260;
+      paddingRight = 250;
     }
     if (
       location.pathname.includes(

@@ -795,7 +795,7 @@ const ContainerHeader = (props) => {
       )}
       {modes && (
         <div className={classes.modes}>
-          <ToggleButtonGroup size="small" color="secondary" exclusive={true}>
+          <ToggleButtonGroup size="small" exclusive={true}>
             {modes.includes('graph') && (
               <Tooltip title={t('Graph view')}>
                 <ToggleButton
@@ -805,7 +805,7 @@ const ContainerHeader = (props) => {
                 >
                   <VectorPolygon
                     fontSize="small"
-                    color={currentMode === 'graph' ? 'secondary' : 'primary'}
+                    color={currentMode === 'graph' ? 'primary' : 'inherit'}
                   />
                 </ToggleButton>
               </Tooltip>
@@ -819,7 +819,7 @@ const ContainerHeader = (props) => {
                 >
                   <DifferenceOutlined
                     fontSize="small"
-                    color={currentMode === 'content' ? 'secondary' : 'primary'}
+                    color={currentMode === 'content' ? 'primary' : 'inherit'}
                   />
                 </ToggleButton>
               </Tooltip>
@@ -833,7 +833,7 @@ const ContainerHeader = (props) => {
                 >
                   <ChartTimeline
                     fontSize="small"
-                    color={currentMode === 'timeline' ? 'secondary' : 'primary'}
+                    color={currentMode === 'timeline' ? 'primary' : 'inherit'}
                   />
                 </ToggleButton>
               </Tooltip>
@@ -848,7 +848,7 @@ const ContainerHeader = (props) => {
                   <VectorLink
                     fontSize="small"
                     color={
-                      currentMode === 'correlation' ? 'secondary' : 'primary'
+                      currentMode === 'correlation' ? 'primary' : 'inherit'
                     }
                   />
                 </ToggleButton>
@@ -863,7 +863,7 @@ const ContainerHeader = (props) => {
                 >
                   <ViewColumnOutlined
                     fontSize="small"
-                    color={currentMode === 'matrix' ? 'secondary' : 'primary'}
+                    color={currentMode === 'matrix' ? 'primary' : 'inherit'}
                   />
                 </ToggleButton>
               </Tooltip>
@@ -889,11 +889,13 @@ const ContainerHeader = (props) => {
           {!knowledge && disableSharing !== true && (
             <StixCoreObjectSharing elementId={container.id} variant="header" />
           )}
+          {!knowledge && (
           <StixCoreObjectFileExport
             id={container.id}
             type={container.entity_type}
             redirectToContent={true}
           />
+          )}
           {enableSuggestions && (
             <QueryRenderer
               query={containerHeaderObjectsQuery}

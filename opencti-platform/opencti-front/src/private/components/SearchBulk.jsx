@@ -442,7 +442,7 @@ const SearchBulk = () => {
       </Typography>
       <ToggleButtonGroup
         size="small"
-        color="secondary"
+        color="primary"
         style={{ float: 'right', marginTop: -5 }}
       >
         {!exportDisabled && (

@@ -106,6 +106,7 @@ ExternalReferencePopoverProps
         aria-haspopup="true"
         style={{ marginTop: 3 }}
         size="large"
+        color="primary"
       >
         <MoreVertOutlined />
       </IconButton>

@@ -37,7 +37,6 @@ const useStyles = makeStyles(() => ({
   },
   title: {
     float: 'left',
-    textTransform: 'uppercase',
   },
   popover: {
     float: 'left',

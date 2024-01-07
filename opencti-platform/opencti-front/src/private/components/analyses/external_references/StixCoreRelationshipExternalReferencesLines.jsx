@@ -257,7 +257,6 @@ class StixCoreRelationshipExternalReferencesLinesContainer extends Component {
                                   entityId={externalReference.id}
                                   onUploadSuccess={() => this.props.relay.refetchConnection(200)
                                   }
-                                  color="inherit"
                                 />
                               </Security>
                             )}

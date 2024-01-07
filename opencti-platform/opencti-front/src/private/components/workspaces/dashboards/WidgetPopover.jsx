@@ -59,6 +59,7 @@ const WidgetPopover = ({
         aria-haspopup="true"
         size="small"
         className="noDrag"
+        color="primary"
       >
         <MoreVert fontSize="small" />
       </IconButton>

@@ -99,6 +99,7 @@ const NotePopover: FunctionComponent<NotePopoverProps> = ({
         aria-haspopup="true"
         size={size || 'large'}
         style={{ marginTop: size === 'small' ? -3 : 3 }}
+        color="primary"
       >
         <MoreVert />
       </IconButton>

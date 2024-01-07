@@ -60,7 +60,6 @@ const ThemeDark = (
     h1: {
       margin: '0 0 10px 0',
       padding: 0,
-      color: primary || '#00b1ff',
       fontWeight: 400,
       fontSize: 22,
     },
@@ -74,7 +73,7 @@ const ThemeDark = (
     h3: {
       margin: '0 0 10px 0',
       padding: 0,
-      color: primary || '#00b1ff',
+      color: '#bebebe',
       fontWeight: 400,
       fontSize: 13,
     },

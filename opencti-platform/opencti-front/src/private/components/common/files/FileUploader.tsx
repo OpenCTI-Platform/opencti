@@ -43,15 +43,6 @@ const fileUploaderEntityMutation = graphql`
 interface FileUploaderProps {
   entityId: string;
   onUploadSuccess: (id?: string) => unknown;
-  color:
-  | 'inherit'
-  | 'primary'
-  | 'secondary'
-  | 'success'
-  | 'error'
-  | 'info'
-  | 'warning'
-  | undefined;
   accept?: string;
   size: 'small' | 'large' | 'medium' | undefined;
   nameInCallback?: boolean;
@@ -60,7 +51,6 @@ interface FileUploaderProps {
 const FileUploader: FunctionComponent<FileUploaderProps> = ({
   entityId,
   onUploadSuccess,
-  color,
   accept,
   size,
   nameInCallback,
@@ -145,7 +135,7 @@ const FileUploader: FunctionComponent<FileUploaderProps> = ({
             <CircularProgress
               size={24}
               thickness={2}
-              color={color || 'primary'}
+              color="primary"
             />
           </IconButton>
         </Tooltip>
@@ -154,7 +144,7 @@ const FileUploader: FunctionComponent<FileUploaderProps> = ({
           <IconButton
             onClick={handleOpenUpload}
             aria-haspopup="true"
-            color={color || 'primary'}
+            color="primary"
             size={size || 'large'}
           >
             <CloudUploadOutlined />

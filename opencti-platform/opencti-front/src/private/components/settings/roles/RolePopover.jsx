@@ -120,6 +120,7 @@ class RolePopover extends Component {
           aria-haspopup="true"
           size="large"
           style={{ marginTop: 3 }}
+          color="primary"
         >
           <MoreVert />
         </IconButton>

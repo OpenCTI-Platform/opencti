@@ -137,7 +137,7 @@ const CaseTemplateTasksPopover: FunctionComponent<CaseTemplateTasksPopoverProps>
 
   return (
     <div className={classes.container}>
-      <IconButton onClick={handleOpen} aria-haspopup="true" size="large">
+      <IconButton onClick={handleOpen} aria-haspopup="true" size="large" color="primary">
         <MoreVert />
       </IconButton>
       <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleClose}>

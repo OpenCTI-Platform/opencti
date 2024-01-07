@@ -125,6 +125,7 @@ class StixCoreRelationshipPopover extends Component {
           aria-haspopup="true"
           disabled={disabled}
           size="large"
+          color="primary"
         >
           <MoreVertOutlined />
         </IconButton>

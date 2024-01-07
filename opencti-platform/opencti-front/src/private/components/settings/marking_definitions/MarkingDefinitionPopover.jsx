@@ -116,6 +116,7 @@ class MarkingDefinitionPopover extends Component {
           onClick={this.handleOpen.bind(this)}
           aria-haspopup="true"
           size="large"
+          color="primary"
         >
           <MoreVert />
         </IconButton>

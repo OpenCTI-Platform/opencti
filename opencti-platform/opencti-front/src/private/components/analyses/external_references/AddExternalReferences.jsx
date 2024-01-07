@@ -51,7 +51,7 @@ const AddExternalReferences = ({
   return (
     <div>
       <IconButton
-        color="secondary"
+        color="primary"
         aria-label="Add"
         onClick={handleOpen}
         classes={{ root: classes.createButton }}

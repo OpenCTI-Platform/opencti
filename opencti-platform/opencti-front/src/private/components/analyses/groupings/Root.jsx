@@ -105,7 +105,7 @@ class RootGrouping extends Component {
                     `/dashboard/analyses/groupings/${grouping.id}/observables`,
                   )
                 ) {
-                  paddingRight = 260;
+                  paddingRight = 250;
                 }
                 if (
                   location.pathname.includes(

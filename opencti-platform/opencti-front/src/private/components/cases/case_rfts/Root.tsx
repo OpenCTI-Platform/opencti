@@ -95,7 +95,7 @@ const RootCaseRftComponent = ({ queryRef, caseId }) => {
         `/dashboard/cases/rfts/${caseData.id}/observables`,
       )
     ) {
-      paddingRight = 260;
+      paddingRight = 250;
     }
     if (
       location.pathname.includes(`/dashboard/cases/rfts/${caseData.id}/content`)

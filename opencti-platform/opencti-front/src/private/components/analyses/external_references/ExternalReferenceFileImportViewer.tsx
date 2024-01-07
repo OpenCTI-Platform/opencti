@@ -154,7 +154,6 @@ ExternalReferenceFileImportViewerBaseProps
                 relay.refetch({ id });
               }
             }}
-            color={undefined}
             size={undefined}
           />
         </div>

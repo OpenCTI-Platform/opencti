@@ -107,6 +107,7 @@ class StixCyberObservableIndicatorPopover extends Component {
           aria-haspopup="true"
           style={{ marginTop: 3 }}
           size="large"
+          color="primary"
         >
           <MoreVert />
         </IconButton>

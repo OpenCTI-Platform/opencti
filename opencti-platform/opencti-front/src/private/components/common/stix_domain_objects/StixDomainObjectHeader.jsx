@@ -461,13 +461,13 @@ const StixDomainObjectHeader = (props) => {
           ) : (
             <IconButton
               style={{ float: 'left', marginTop: -8 }}
-              color={openAlias ? 'primary' : 'secondary'}
+              color="primary"
               aria-label="Alias"
               onClick={handleToggleCreateAlias}
               size="large"
             >
               {openAlias ? (
-                <Close fontSize="small" color="primary" />
+                <Close fontSize="small" />
               ) : (
                 <Add fontSize="small" />
               )}

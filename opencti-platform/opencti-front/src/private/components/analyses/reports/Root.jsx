@@ -105,7 +105,7 @@ class RootReport extends Component {
                     `/dashboard/analyses/reports/${report.id}/observables`,
                   )
                 ) {
-                  paddingRight = 260;
+                  paddingRight = 250;
                 }
                 if (
                   location.pathname.includes(

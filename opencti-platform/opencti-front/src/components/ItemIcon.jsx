@@ -58,6 +58,7 @@ import {
   NotificationsOutlined,
   LinkOutlined,
   VisibilityOutlined,
+  RouteOutlined,
 } from '@mui/icons-material';
 import {
   ArchiveOutline,
@@ -77,7 +78,6 @@ import {
   HexagonOutline,
   LabelOutline,
   LaptopAccount,
-  Launch,
   LockPattern,
   ProgressWrench,
   ShieldSearch,
@@ -277,7 +277,7 @@ const iconSelector = (type, variant, fontSize, color, isReversed) => {
     case 'data-component':
       return <SourceOutlined style={style} fontSize={fontSize} role="img" />;
     case 'kill-chain-phase':
-      return <Launch style={style} fontSize={fontSize} role="img" />;
+      return <RouteOutlined style={style} fontSize={fontSize} role="img" />;
     case 'artifact':
       return <ArchiveOutline style={style} fontSize={fontSize} role="img" />;
     case 'statustemplate':
