@@ -51,20 +51,18 @@ $ cd connectors
 $ git remote add upstream https://github.com/OpenCTI-Platform/connectors.git
 # Create a branch for your feature/fix
 $ git checkout -b [branch-name]
-$ cp -r template $connector_type/$myconnector
+# Copy the appropriate template directory for the connector type
+$ cp -r templates/$connector_type $connector_type/$myconnector
 $ cd $connector_type/$myconnector
-$ tree .
-.
-├── docker-compose.yml
-├── Dockerfile
-├── entrypoint.sh
-├── README.md
-└── src
-    ├── config.yml.sample
-    ├── main.py
-    └── requirements.txt
+$ ls -R
+Dockerfile              docker-compose.yml      requirements.txt
+README.md               entrypoint.sh           src
 
-1 directory, 7 files
+./src:
+lib     main.py
+
+./src/lib:
+$connector_type.py
 ```
 
 ### Changing the template
