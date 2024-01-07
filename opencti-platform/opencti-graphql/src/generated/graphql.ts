@@ -3638,6 +3638,7 @@ export type ContainerEditMutationsRelationDeleteArgs = {
 };
 
 export enum ContainersOrdering {
+  Score = '_score',
   Created = 'created',
   CreatedBy = 'createdBy',
   CreatedAt = 'created_at',

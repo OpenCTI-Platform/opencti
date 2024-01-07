@@ -45,10 +45,7 @@ const stixCoreObjectContainerTaskAddMutation = graphql`
 
 const stixCoreObjectContainerContainersQuery = graphql`
   query StixCoreObjectContainerContainersQuery($search: String) {
-    containers(
-      search: $search
-      filters: { mode: and, filters: [{ key: "entity_type", values: ["Container"] }], filterGroups: [] }
-    ) {
+    containers(search: $search) {
       edges {
         node {
           id
