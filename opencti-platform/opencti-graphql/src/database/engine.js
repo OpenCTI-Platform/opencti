@@ -1969,10 +1969,9 @@ const completeSpecialFilterKeys = async (context, user, inputFilters) => {
       }
       if (arrayKeys.includes(RELATION_FROM_ROLE_FILTER) || arrayKeys.includes(RELATION_TO_ROLE_FILTER)) {
         const side = arrayKeys.includes(RELATION_FROM_ROLE_FILTER) ? 'from' : 'to';
-        const nested = [
-          { key: 'roles', operator: filter.operator, values: filter.values },
-          { key: 'role', operator: 'wildcard', values: [`*_${side}`] }
-        ];
+        // Retro compatibility for buildAggregationRelationFilter that use fromRole depending on isTo attribute
+        const values = filter.values.map((r) => (!r.endsWith('_from') && !r.endsWith('_to') ? `${r}_${side}` : r));
+        const nested = [{ key: 'role', operator: filter.operator, values }];
         finalFilters.push({ key: 'connections', nested });
       }
     } else {

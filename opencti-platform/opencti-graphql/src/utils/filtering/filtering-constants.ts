@@ -71,6 +71,8 @@ export const complexConversionFilterKeys = [
   RELATION_TO_SIGHTING_FILTER, // nested sigthing relation for the to of a sighting
   RELATION_FROM_TYPES_FILTER, // nested relation for the from type of a relationship
   RELATION_TO_TYPES_FILTER, // nested relation for the to type of a relationship
+  RELATION_FROM_ROLE_FILTER, // nested relation for the from role of a relationship
+  RELATION_TO_ROLE_FILTER, // nested relation for the to role of a relationship
 ];
 
 // list of the special filtering keys
