@@ -44,7 +44,7 @@ export const findAll = (context, user, args) => {
   return listEntities(context, user, [ENTITY_TYPE_BACKGROUND_TASK], args);
 };
 
-const buildQueryFilters = async (context, user, rawFilters, search, taskPosition) => {
+const buildQueryFilters = async (rawFilters, search, taskPosition) => {
   // Construct filters
   return {
     types: DEFAULT_ALLOWED_TASK_ENTITY_TYPES,
@@ -57,7 +57,7 @@ const buildQueryFilters = async (context, user, rawFilters, search, taskPosition
   };
 };
 export const executeTaskQuery = async (context, user, filters, search, start = null) => {
-  const options = await buildQueryFilters(context, user, filters, search, start);
+  const options = await buildQueryFilters(filters, search, start);
   return elPaginate(context, user, READ_DATA_INDICES_WITHOUT_INFERRED, options);
 };
 

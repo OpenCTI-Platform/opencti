@@ -213,7 +213,7 @@ export const resolveFiltersMapForUser = async (context: AuthContext, user: AuthU
   return resolveUserMap;
 };
 
-export const convertFiltersToQueryOptions = async (context: AuthContext, user: AuthUser, filters: FilterGroup | null, opts: any = {}) => {
+export const convertFiltersToQueryOptions = async (filters: FilterGroup | null, opts: any = {}) => {
   const { after, before, defaultTypes = [], field = 'updated_at', orderMode = 'asc' } = opts;
   const types = [...defaultTypes];
   let finalFilters = filters;

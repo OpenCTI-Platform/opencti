@@ -672,7 +672,7 @@ const createSseMiddleware = () => {
           await wait(channel.delay);
           return channel.connected();
         };
-        const queryOptions = await convertFiltersToQueryOptions(context, user, streamFilters, {
+        const queryOptions = await convertFiltersToQueryOptions(streamFilters, {
           after: startIsoDate,
           before: recoverIsoDate
         });
