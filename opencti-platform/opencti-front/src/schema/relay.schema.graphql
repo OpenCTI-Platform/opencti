@@ -2349,6 +2349,7 @@ enum ContainersOrdering {
   x_opencti_workflow_id
   creator
   entity_type
+  _score
 }
 
 type ContainerConnection {

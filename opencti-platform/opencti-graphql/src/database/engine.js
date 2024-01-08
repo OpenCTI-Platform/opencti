@@ -2058,6 +2058,9 @@ const elQueryBodyBuilder = async (context, user, options) => {
     }
   }
   // Handle search
+  const orderConfigration = isEmptyField(orderBy) ? [] : orderBy;
+  const orderCriterion = Array.isArray(orderConfigration) ? orderConfigration : [orderConfigration];
+  let scoreSearchOrder = orderMode;
   if (search !== null && search.length > 0) {
     const shouldSearch = elGenerateFullTextSearchShould(search, options);
     const bool = {
@@ -2067,17 +2070,21 @@ const elQueryBodyBuilder = async (context, user, options) => {
       },
     };
     mustFilters.push(bool);
+    // When using a search, we need to force the sort by score first
+    if (!orderCriterion.includes('_score')) {
+      orderCriterion.unshift('_score');
+      scoreSearchOrder = 'desc';
+    }
   }
   // Handle orders
   const runtimeMappings = {};
-  if (isNotEmptyField(orderBy)) {
-    const orderCriterion = Array.isArray(orderBy) ? orderBy : [orderBy];
+  if (isNotEmptyField(orderCriterion)) {
     for (let index = 0; index < orderCriterion.length; index += 1) {
       const orderCriteria = orderCriterion[index];
       const isDateOrNumber = isDateNumericOrBooleanAttribute(orderCriteria);
       const orderKeyword = isDateOrNumber || orderCriteria.startsWith('_') ? orderCriteria : `${orderCriteria}.keyword`;
       if (orderKeyword === '_score') {
-        ordering = R.append({ [orderKeyword]: orderMode }, ordering);
+        ordering = R.append({ [orderKeyword]: scoreSearchOrder }, ordering);
       } else {
         const order = { [orderKeyword]: { order: orderMode, missing: '_last' } };
         ordering = R.append(order, ordering);
