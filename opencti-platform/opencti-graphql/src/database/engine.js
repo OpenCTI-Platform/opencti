@@ -83,7 +83,21 @@ import { convertTypeToStixType } from './stix-converter';
 import { extractEntityRepresentativeName } from './entity-representative';
 import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../modules/organization/organization-types';
 import { checkAndConvertFilters, isFilterGroupNotEmpty } from '../utils/filtering/filtering-utils';
-import { IDS_FILTER, SOURCE_RELIABILITY_FILTER, TYPE_FILTER, WORKFLOW_FILTER, X_OPENCTI_WORKFLOW_ID } from '../utils/filtering/filtering-constants';
+import {
+  complexConversionFilterKeys,
+  IDS_FILTER,
+  INSTANCE_FILTER,
+  INSTANCE_FILTER_TARGET_TYPES,
+  RELATION_FROM_FILTER,
+  RELATION_FROM_TYPES_FILTER,
+  RELATION_TO_FILTER,
+  RELATION_TO_SIGHTING_FILTER,
+  RELATION_TO_TYPES_FILTER,
+  SOURCE_RELIABILITY_FILTER,
+  TYPE_FILTER,
+  WORKFLOW_FILTER,
+  X_OPENCTI_WORKFLOW_ID
+} from '../utils/filtering/filtering-constants';
 import { FilterMode } from '../generated/graphql';
 import { booleanMapping, dateMapping, numericMapping, shortMapping, textMapping } from '../schema/attribute-definition';
 import { schemaTypesDefinition } from '../schema/schema-types';
@@ -1648,7 +1662,7 @@ const buildSubQueryForFilterGroup = async (context, user, inputFilters) => {
 };
 
 // If filter key = entity_type, we should also handle parent_types
-// Exemple: filter = {mode: 'or', operator: 'eq', key: ['entity_type'], values: ['Report', 'Stix-Cyber-Observable']}
+// Example: filter = {mode: 'or', operator: 'eq', key: ['entity_type'], values: ['Report', 'Stix-Cyber-Observable']}
 // we check parent_types because otherwise we would never match Stix-Cyber-Observable which is an abstract parent type
 const adaptFilterToEntityTypeFilterKey = (filter) => {
   const { key, mode = 'or', operator = 'eq' } = filter;
@@ -1712,7 +1726,6 @@ const adaptFilterToEntityTypeFilterKey = (filter) => {
   // depending on the operator (or/and), only one of newFilter and newFilterGroup is defined
   return { newFilter, newFilterGroup };
 };
-
 const adaptFilterToIdsFilterKey = (filter) => {
   const { key, mode = 'or', operator = 'eq' } = filter;
   const arrayKeys = Array.isArray(key) ? key : [key];
@@ -1774,7 +1787,6 @@ const adaptFilterToIdsFilterKey = (filter) => {
   // depending on the operator, only one of new Filter and newFilterGroup is defined
   return { newFilter, newFilterGroup };
 };
-
 const adaptFilterToSourceReliabilityFilterKey = async (context, user, filter) => {
   const { key, mode = 'or', operator = 'eq', values } = filter;
   const arrayKeys = Array.isArray(key) ? key : [key];
@@ -1835,7 +1847,7 @@ const adaptFilterToSourceReliabilityFilterKey = async (context, user, filter) =>
   return { newFilter, newFilterGroup };
 };
 
-// worflow_id filter values can be both status ids and status templates ids
+// workflow_id filter values can be both status ids and status templates ids
 const adaptFilterToWorkflowFilterKey = async (context, user, filter) => {
   const { key, mode = 'or', operator = 'eq', values } = filter;
   const arrayKeys = Array.isArray(key) ? key : [key];
@@ -1886,43 +1898,76 @@ const completeSpecialFilterKeys = async (context, user, inputFilters) => {
     const filter = filters[index];
     const { key } = filter;
     const arrayKeys = Array.isArray(key) ? key : [key];
-
-    if (arrayKeys.includes(TYPE_FILTER)) {
-      // in case we want to filter by entity_type
-      // we need to add parent_types checking (in case the given value in type is an abstract type)
-      const { newFilter, newFilterGroup } = adaptFilterToEntityTypeFilterKey(filter);
-      if (newFilter) {
+    if (arrayKeys.some((fiterKey) => complexConversionFilterKeys.includes(fiterKey))) {
+      if (arrayKeys.length > 1) {
+        throw Error(`A filter with these multiple keys is not supported: ${arrayKeys}`);
+      }
+      if (arrayKeys.includes(IDS_FILTER)) {
+        // the special filter key 'ids' take all the ids into account
+        const { newFilter, newFilterGroup } = adaptFilterToIdsFilterKey(filter);
+        if (newFilter) {
+          finalFilters.push(newFilter);
+        }
+        if (newFilterGroup) {
+          finalFilterGroups.push(newFilterGroup);
+        }
+      }
+      if (arrayKeys.includes(TYPE_FILTER)) {
+        // in case we want to filter by entity_type
+        // we need to add parent_types checking (in case the given value in type is an abstract type)
+        const { newFilter, newFilterGroup } = adaptFilterToEntityTypeFilterKey(filter);
+        if (newFilter) {
+          finalFilters.push(newFilter);
+        }
+        if (newFilterGroup) {
+          finalFilterGroups.push(newFilterGroup);
+        }
+      }
+      if (arrayKeys.includes(WORKFLOW_FILTER) || arrayKeys.includes(X_OPENCTI_WORKFLOW_ID)) {
+        // in case we want to filter by status template (template of a workflow status) or status
+        // we need to find all statuses filtered by status template and filter on these statuses
+        const newFilter = await adaptFilterToWorkflowFilterKey(context, user, filter);
         finalFilters.push(newFilter);
       }
-      if (newFilterGroup) {
-        finalFilterGroups.push(newFilterGroup);
+      if (arrayKeys.includes(SOURCE_RELIABILITY_FILTER)) {
+        // in case we want to filter by source reliability (reliability of author)
+        // we need to find all authors filtered by reliability and filter on these authors
+        const { newFilter, newFilterGroup } = await adaptFilterToSourceReliabilityFilterKey(context, user, filter);
+        if (newFilter) {
+          finalFilters.push(newFilter);
+        }
+        if (newFilterGroup) {
+          finalFilterGroups.push(newFilterGroup);
+        }
       }
-    } else if (arrayKeys.includes(IDS_FILTER)) {
-      // the special filter key 'ids' take all the ids into account
-      const { newFilter, newFilterGroup } = adaptFilterToIdsFilterKey(filter);
-      if (newFilter) {
-        finalFilters.push(newFilter);
+      if (arrayKeys.includes(INSTANCE_FILTER)) {
+        const nested = [{ key: 'internal_id', operator: filter.operator, values: filter.values }];
+        finalFilters.push({ key: 'connections', nested });
       }
-      if (newFilterGroup) {
-        finalFilterGroups.push(newFilterGroup);
+      if (arrayKeys.includes(RELATION_FROM_FILTER) || arrayKeys.includes(RELATION_TO_FILTER)
+          || arrayKeys.includes(RELATION_TO_SIGHTING_FILTER)) {
+        const side = arrayKeys.includes(RELATION_FROM_FILTER) ? 'from' : 'to';
+        const nested = [
+          { key: 'internal_id', operator: filter.operator, values: filter.values },
+          { key: 'role', operator: 'wildcard', values: [`*_${side}`] }
+        ];
+        finalFilters.push({ key: 'connections', nested });
       }
-    } else if (arrayKeys.includes(SOURCE_RELIABILITY_FILTER)) {
-      // in case we want to filter by source reliability (reliability of author)
-      // we need to find all authors filtered by reliability and filter on these authors
-      const { newFilter, newFilterGroup } = await adaptFilterToSourceReliabilityFilterKey(context, user, filter);
-      if (newFilter) {
-        finalFilters.push(newFilter);
+      if (arrayKeys.includes(RELATION_FROM_TYPES_FILTER) || arrayKeys.includes(RELATION_TO_TYPES_FILTER)) {
+        const side = arrayKeys.includes(RELATION_FROM_TYPES_FILTER) ? 'from' : 'to';
+        const nested = [
+          { key: 'types', operator: filter.operator, values: filter.values },
+          { key: 'role', operator: 'wildcard', values: [`*_${side}`] }
+        ];
+        finalFilters.push({ key: 'connections', nested });
       }
-      if (newFilterGroup) {
-        finalFilterGroups.push(newFilterGroup);
+      if (arrayKeys.includes(INSTANCE_FILTER_TARGET_TYPES)) {
+        const nested = [{ key: 'types', operator: filter.operator, values: filter.values }];
+        finalFilters.push({ key: 'connections', nested });
       }
-    } else if (arrayKeys.includes(WORKFLOW_FILTER) || arrayKeys.includes(X_OPENCTI_WORKFLOW_ID)) {
-      // in case we want to filter by status template (template of a workflow status) or status
-      // we need to find all statuses filtered by status template and filter on these statuses
-      const newFilter = await adaptFilterToWorkflowFilterKey(context, user, filter);
-      finalFilters.push(newFilter);
     } else {
       // not a special case, leave the filter unchanged
+      // Of special case but in a multi keys filter but is currently not supported
       finalFilters.push(filter);
     }
   }
@@ -1937,7 +1982,7 @@ const elQueryBodyBuilder = async (context, user, options) => {
   // eslint-disable-next-line no-use-before-define
   const { ids = [], first = 200, after, orderBy = null, orderMode = 'asc', noSize = false, noSort = false, intervalInclude = false } = options;
   const { types = null, search = null } = options;
-  const filters = checkAndConvertFilters(options.filters, { noFiltersChecking: options.noFiltersChecking, authorizeNestedFiltersKeys: options.authorizeNestedFiltersKeys });
+  const filters = checkAndConvertFilters(options.filters, { noFiltersChecking: options.noFiltersChecking });
   const { startDate = null, endDate = null, dateAttribute = null } = options;
   const searchAfter = after ? cursorToOffset(after) : undefined;
   let ordering = [];

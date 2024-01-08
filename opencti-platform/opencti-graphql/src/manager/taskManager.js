@@ -13,10 +13,11 @@ import {
   ACTION_TYPE_RULE_APPLY,
   ACTION_TYPE_RULE_CLEAR,
   ACTION_TYPE_RULE_ELEMENT_RESCAN,
+  DEFAULT_ALLOWED_TASK_ENTITY_TYPES,
   executeTaskQuery,
   findAll,
   MAX_TASK_ELEMENTS,
-  updateTask,
+  updateTask
 } from '../domain/backgroundTask';
 import conf, { booleanConf, logApp } from '../config/conf';
 import { resolveUserById } from '../domain/user';
@@ -55,7 +56,7 @@ import { promoteObservableToIndicator } from '../domain/stixCyberObservable';
 import { promoteIndicatorToObservable } from '../modules/indicator/indicator-domain';
 import { askElementEnrichmentForConnector } from '../domain/stixCoreObject';
 import { RELATION_GRANTED_TO, RELATION_OBJECT } from '../schema/stixRefRelationship';
-import { ACTION_TYPE_DELETE, ACTION_TYPE_SHARE, ACTION_TYPE_UNSHARE, isTaskEnabledEntity, TASK_TYPE_LIST, TASK_TYPE_QUERY, TASK_TYPE_RULE } from '../domain/backgroundTask-common';
+import { ACTION_TYPE_DELETE, ACTION_TYPE_SHARE, ACTION_TYPE_UNSHARE, TASK_TYPE_LIST, TASK_TYPE_QUERY, TASK_TYPE_RULE } from '../domain/backgroundTask-common';
 
 // Task manager responsible to execute long manual tasks
 // Each API will start is task manager.
@@ -141,7 +142,7 @@ const computeQueryTaskElements = async (context, user, task) => {
   // Apply the actions for each element
   for (let elementIndex = 0; elementIndex < elements.length; elementIndex += 1) {
     const element = elements[elementIndex];
-    if (!task_excluded_ids.includes(element.node.id) && isTaskEnabledEntity(element.node.entity_type)) {
+    if (!task_excluded_ids.includes(element.node.id)) {
       processingElements.push({ element: element.node, next: element.cursor });
     }
   }
@@ -156,8 +157,8 @@ const computeListTaskElements = async (context, user, task) => {
   const ids = R.take(MAX_TASK_ELEMENTS, task_ids.slice(startIndex));
   for (let elementId = 0; elementId < ids.length; elementId += 1) {
     const elementToResolve = ids[elementId];
-    const element = await internalLoadById(context, user, elementToResolve);
-    if (element && isTaskEnabledEntity(element.entity_type)) {
+    const element = await internalLoadById(context, user, elementToResolve, { type: DEFAULT_ALLOWED_TASK_ENTITY_TYPES });
+    if (element) {
       processingElements.push({ element, next: element.id });
     }
   }

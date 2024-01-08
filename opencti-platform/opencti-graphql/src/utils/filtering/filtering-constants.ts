@@ -15,7 +15,9 @@ export const PARTICIPANT_FILTER = 'objectParticipant';
 export const OBJECT_CONTAINS_FILTER = 'objects';
 export const RELATION_FROM_FILTER = 'fromId';
 export const RELATION_TO_FILTER = 'toId';
+export const RELATION_TO_SIGHTING_FILTER = 'toSightingId';
 export const INSTANCE_FILTER = 'elementId';
+export const INSTANCE_FILTER_TARGET_TYPES = 'elementWithTargetTypes';
 export const CONNECTED_TO_INSTANCE_FILTER = 'connectedToId';
 export const CONNECTED_TO_INSTANCE_SIDE_EVENTS_FILTER = 'connectedToId_sideEvents';
 
@@ -54,6 +56,21 @@ export const MEMBERS_USER_FILTER = 'members_user';
 export const MEMBERS_GROUP_FILTER = 'members_group';
 export const MEMBERS_ORGANIZATION_FILTER = 'members_organization';
 
+export const complexConversionFilterKeys = [
+  IDS_FILTER, // values should match any id (internal_id, standard_id, or stix_id)
+  TYPE_FILTER, // values should match any parent_types
+  WORKFLOW_FILTER, // values should match the parent workflow pattern id
+  X_OPENCTI_WORKFLOW_ID, // values should match the parent workflow pattern id
+  SOURCE_RELIABILITY_FILTER, // reliability of the author
+  INSTANCE_FILTER, // nested relation for the from or to of a relationship
+  INSTANCE_FILTER_TARGET_TYPES, // nested relation for the from or type type of a relationship
+  RELATION_FROM_FILTER, // nested relation for the from of a relationship
+  RELATION_TO_FILTER, // nested relation for the to of a relationship
+  RELATION_TO_SIGHTING_FILTER, // nested sigthing relation for the to of a sighting
+  RELATION_FROM_TYPES_FILTER, // nested relation for the from type of a relationship
+  RELATION_TO_TYPES_FILTER, // nested relation for the to type of a relationship
+];
+
 // list of the special filtering keys
 // (= key with a complex behavior, not belonging to the schema ref definition or the attribute definitions)
 export const specialFilterKeys = [
@@ -63,7 +80,6 @@ export const specialFilterKeys = [
   `rel_${RELATION_OBJECT}`,
   CREATOR_FILTER, // technical creator
   CONNECTED_TO_INSTANCE_FILTER, // listened instances for an instance trigger
-  IDS_FILTER, // values should match any id (internal_id, standard_id, or stix_id)
   CONTEXT_ENTITY_ID_FILTER,
   CONTEXT_ENTITY_TYPE_FILTER,
   CONTEXT_CREATOR_FILTER,
@@ -74,17 +90,7 @@ export const specialFilterKeys = [
   MEMBERS_GROUP_FILTER,
   MEMBERS_ORGANIZATION_FILTER,
   RULE_FILTER, // for inference engine rules
-  SOURCE_RELIABILITY_FILTER, // reliability of the author
-  WORKFLOW_FILTER,
-];
-
-// nested filter keys also authorized in some elastic query cases (ex: retention policy query checking)
-// but normally not-authorized in elastic queries (because they should be passed in options)
-export const nestedFilterKeys = [
-  RELATION_FROM_FILTER, // nested relation for the from of a relationship
-  RELATION_TO_FILTER, // nested relation for the to of a relationship
-  RELATION_FROM_TYPES_FILTER, // nested relation for the from type of a relationship
-  RELATION_TO_TYPES_FILTER, // nested relation for the to type of a relationship
+  ...complexConversionFilterKeys
 ];
 
 // list of filter keys that are not relation refs keys but whose values need to be resolved (= values point an entity with an id)

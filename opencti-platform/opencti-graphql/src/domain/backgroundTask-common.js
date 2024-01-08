@@ -1,6 +1,5 @@
 import * as R from 'ramda';
 import { uniq } from 'ramda';
-import { ENTITY_TYPE_CASE_TEMPLATE } from '../modules/case/case-template/case-template-types';
 import { generateInternalId, generateStandardId } from '../schema/identifier';
 import { ENTITY_TYPE_BACKGROUND_TASK } from '../schema/internalObject';
 import { now } from '../utils/format';
@@ -10,14 +9,10 @@ import { ForbiddenAccess, UnsupportedError } from '../config/errors';
 import { elIndex } from '../database/engine';
 import { INDEX_INTERNAL_OBJECTS } from '../database/utils';
 import { ENTITY_TYPE_NOTIFICATION } from '../modules/notification/notification-types';
-import { isStixCoreObject } from '../schema/stixCoreObject';
-import { isStixCoreRelationship } from '../schema/stixCoreRelationship';
 import { publishUserAction } from '../listener/UserActionListener';
 import { internalLoadById, storeLoadById } from '../database/middleware-loader';
 import { getParentTypes } from '../schema/schemaUtils';
 import { ENTITY_TYPE_VOCABULARY } from '../modules/vocabulary/vocabulary-types';
-import { ENTITY_TYPE_LABEL } from '../schema/stixMetaObject';
-import { isStixSightingRelationship } from '../schema/stixSightingRelationship';
 
 export const TASK_TYPE_QUERY = 'QUERY';
 export const TASK_TYPE_RULE = 'RULE';
@@ -183,16 +178,4 @@ export const createListTask = async (context, user, input) => {
   });
   await elIndex(INDEX_INTERNAL_OBJECTS, listTask);
   return listTask;
-};
-
-export const isTaskEnabledEntity = (entityType) => {
-  return isStixCoreObject(entityType)
-    || isStixCoreRelationship(entityType)
-    || isStixSightingRelationship(entityType)
-    || [
-      ENTITY_TYPE_VOCABULARY,
-      ENTITY_TYPE_NOTIFICATION,
-      ENTITY_TYPE_CASE_TEMPLATE,
-      ENTITY_TYPE_LABEL
-    ].includes(entityType);
 };

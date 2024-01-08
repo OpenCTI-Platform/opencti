@@ -58,15 +58,6 @@ export const StixCoreRelationshipsExportCreationMutation = graphql`
     $orderMode: OrderingMode
     $filters: FilterGroup
     $selectedIds: [String]
-    $elementId: [String]
-    $elementWithTargetTypes: [String]
-    $fromId: [String]
-    $fromRole: String
-    $fromTypes: [String]
-    $toId: [String]
-    $toRole: String
-    $toTypes: [String]
-    $relationship_type: [String]
   ) {
     stixCoreRelationshipsExportAsk(
       type: $type
@@ -79,15 +70,6 @@ export const StixCoreRelationshipsExportCreationMutation = graphql`
       orderMode: $orderMode
       filters: $filters
       selectedIds: $selectedIds
-      elementId: $elementId
-      elementWithTargetTypes: $elementWithTargetTypes
-      fromId: $fromId
-      fromRole: $fromRole
-      fromTypes: $fromTypes
-      toId: $toId
-      toRole: $toRole
-      toTypes: $toTypes
-      relationship_type: $relationship_type
     ) {
       id
     }
@@ -128,9 +110,29 @@ class StixCoreRelationshipsExportCreationComponent extends Component {
 
   onSubmit(selectedIds, values, { setSubmitting, resetForm }) {
     const { paginationOptions, context } = this.props;
-    const maxMarkingDefinition = values.maxMarkingDefinition === 'none'
-      ? null
-      : values.maxMarkingDefinition;
+    const maxMarkingDefinition = values.maxMarkingDefinition === 'none' ? null : values.maxMarkingDefinition;
+    let finalFilters = paginationOptions.filters ?? emptyFilterGroup;
+    if (paginationOptions.relationship_type) {
+      finalFilters = addFilter(finalFilters, 'relationship_type', paginationOptions.relationship_type);
+    }
+    if (paginationOptions.elementId) {
+      finalFilters = addFilter(finalFilters, 'elementId', paginationOptions.elementId);
+    }
+    if (paginationOptions.fromId) {
+      finalFilters = addFilter(finalFilters, 'fromId', paginationOptions.fromId);
+    }
+    if (paginationOptions.toId) {
+      finalFilters = addFilter(finalFilters, 'toId', paginationOptions.toId);
+    }
+    if (paginationOptions.elementWithTargetTypes) {
+      finalFilters = addFilter(finalFilters, 'elementWithTargetTypes', paginationOptions.elementWithTargetTypes);
+    }
+    if (paginationOptions.fromTypes) {
+      finalFilters = addFilter(finalFilters, 'fromTypes', paginationOptions.fromTypes);
+    }
+    if (paginationOptions.toTypes) {
+      finalFilters = addFilter(finalFilters, 'toTypes', paginationOptions.toTypes);
+    }
     commitMutation({
       mutation: StixCoreRelationshipsExportCreationMutation,
       variables: {
@@ -140,7 +142,7 @@ class StixCoreRelationshipsExportCreationComponent extends Component {
         maxMarkingDefinition,
         context,
         ...paginationOptions,
-        filters: removeIdFromFilterGroupObject(paginationOptions.filters ?? emptyFilterGroup),
+        filters: removeIdFromFilterGroupObject(finalFilters),
         selectedIds,
       },
       onCompleted: () => {

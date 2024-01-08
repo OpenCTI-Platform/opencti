@@ -180,17 +180,6 @@ export const buildResolutionMapForFilterGroup = async (
   return mergeMaps<string, string>([mergeMaps<string, string>(filtersMaps), mergeMaps<string, string>(filterGroupsMaps)]);
 };
 
-/**
- * Resolve some values into what's comparable in stix format using the cache
- * TODO: Not unit-testable for now because of the cache that exists only at runtime (getEntitiesMapFromCache)
- */
-export const resolveFilterGroupValuesWithCache = async (context: AuthContext, user: AuthUser, filterGroup: FilterGroup) => {
-  const cache = await getEntitiesMapFromCache<StixObject>(context, SYSTEM_USER, ENTITY_TYPE_RESOLVED_FILTERS);
-  const resolutionMap = await buildResolutionMapForFilterGroup(context, user, filterGroup, cache);
-
-  return resolveFilterGroup(context, user, filterGroup, resolutionMap);
-};
-
 //----------------------------------------------------------------------------------------------------------------------
 
 /**
@@ -227,9 +216,7 @@ export const resolveFiltersMapForUser = async (context: AuthContext, user: AuthU
 export const convertFiltersToQueryOptions = async (context: AuthContext, user: AuthUser, filters: FilterGroup | null, opts: any = {}) => {
   const { after, before, defaultTypes = [], field = 'updated_at', orderMode = 'asc' } = opts;
   const types = [...defaultTypes];
-  let finalFilters = filters
-    ? await resolveFilterGroupValuesWithCache(context, user, filters)
-    : undefined;
+  let finalFilters = filters;
   if (after || before) {
     const filtersContent = [];
     if (after) {

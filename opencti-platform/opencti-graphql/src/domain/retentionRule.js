@@ -15,12 +15,12 @@ export const checkRetentionRule = async (context, input) => {
   const jsonFilters = filters ? JSON.parse(filters) : null;
   const before = utcDate().subtract(maxDays, 'days');
   const queryOptions = await convertFiltersToQueryOptions(context, RETENTION_MANAGER_USER, jsonFilters, { before });
-  const result = await elPaginate(context, RETENTION_MANAGER_USER, READ_DATA_INDICES_WITHOUT_INFERRED, { ...queryOptions, authorizeNestedFiltersKeys: true });
+  const result = await elPaginate(context, RETENTION_MANAGER_USER, READ_DATA_INDICES_WITHOUT_INFERRED, queryOptions);
   return result.pageInfo.globalCount;
 };
 
 // input { name, filters }
-export const createRetentionRule = async (context, user, input) => {
+export const createRetentionRule = async (_, user, input) => {
   // filters must be a valid json
   const { filters } = input;
   try {
