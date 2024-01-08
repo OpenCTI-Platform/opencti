@@ -114,7 +114,7 @@ export const settingsEditField = async (context, user, settingsId, input) => {
   return notify(BUS_TOPICS.Settings.EDIT_TOPIC, updatedSettings, user);
 };
 
-export const getMessages = (user, settings) => {
+export const getMessagesFilteredByRecipients = (user, settings) => {
   const messages = JSON.parse(settings.messages ?? '[]');
   return messages.filter(({ recipients }) => {
     // eslint-disable-next-line max-len
@@ -128,8 +128,7 @@ export const settingEditMessage = async (context, user, settingsId, message) => 
     updated_at: now()
   };
   const settings = await getEntityFromCache(context, user, ENTITY_TYPE_SETTINGS);
-  const messages = getMessages(user, settings);
-
+  const messages = JSON.parse(settings.messages ?? '[]');
   const existingIdx = messages.findIndex((m) => m.id === message.id);
   if (existingIdx > -1) {
     messages[existingIdx] = messageToStore;
@@ -146,8 +145,7 @@ export const settingEditMessage = async (context, user, settingsId, message) => 
 
 export const settingDeleteMessage = async (context, user, settingsId, messageId) => {
   const settings = await getEntityFromCache(context, user, ENTITY_TYPE_SETTINGS);
-  const messages = getMessages(user, settings);
-
+  const messages = JSON.parse(settings.messages ?? '[]');
   const existingIdx = messages.findIndex((m) => m.id === messageId);
   if (existingIdx > -1) {
     messages.splice(existingIdx, 1);

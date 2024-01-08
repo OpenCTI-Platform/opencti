@@ -1183,6 +1183,7 @@ type Settings implements InternalObject & BasicObject {
   password_policy_min_lowercase: Int
   password_policy_min_uppercase: Int
   messages: [SettingsMessage!]
+  messages_administration: [SettingsMessage!]
   analytics_google_analytics_v4: String
   editContext: [EditUserContext!]
 }
