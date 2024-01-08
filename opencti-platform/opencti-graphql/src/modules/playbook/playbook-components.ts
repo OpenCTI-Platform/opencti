@@ -963,7 +963,6 @@ const PLAYBOOK_CREATE_OBSERVABLE_COMPONENT: PlaybookComponent<CreateObservableCo
             internal_id: generateInternalId(),
             standard_id: observableStandardId,
             entity_type: observable.type,
-            spec_version: STIX_SPEC_VERSION,
             parent_types: getParentTypes(observable.type),
             ...observableData
           } as StoreCommon;
