@@ -21,7 +21,7 @@ import { markingDefinitionsLinesSearchQuery } from '../../settings/marking_defin
 import SelectField from '../../../../components/SelectField';
 import Loader from '../../../../components/Loader';
 import { ExportContext } from '../../../../utils/ExportContextProvider';
-import { addFilter, emptyFilterGroup, removeIdFromFilterGroupObject } from '../../../../utils/filters/filtersUtils';
+import { emptyFilterGroup, removeIdFromFilterGroupObject } from '../../../../utils/filters/filtersUtils';
 
 const Transition = React.forwardRef((props, ref) => (
   <Slide direction="up" ref={ref} {...props} />
@@ -56,8 +56,17 @@ export const StixCoreRelationshipsExportCreationMutation = graphql`
     $search: String
     $orderBy: StixCoreRelationshipsOrdering
     $orderMode: OrderingMode
-    $filters: FilterGroup
     $selectedIds: [String]
+    $elementId: [String]
+    $elementWithTargetTypes: [String]
+    $fromId: [String]
+    $fromRole: String
+    $fromTypes: [String]
+    $toId: [String]
+    $toRole: String
+    $toTypes: [String]
+    $relationship_type: [String]
+    $filters: FilterGroup
   ) {
     stixCoreRelationshipsExportAsk(
       type: $type
@@ -68,8 +77,17 @@ export const StixCoreRelationshipsExportCreationMutation = graphql`
       search: $search
       orderBy: $orderBy
       orderMode: $orderMode
-      filters: $filters
       selectedIds: $selectedIds
+      elementId: $elementId
+      elementWithTargetTypes: $elementWithTargetTypes
+      fromId: $fromId
+      fromRole: $fromRole
+      fromTypes: $fromTypes
+      toId: $toId
+      toRole: $toRole
+      toTypes: $toTypes
+      relationship_type: $relationship_type
+      filters: $filters
     ) {
       id
     }
@@ -111,28 +129,7 @@ class StixCoreRelationshipsExportCreationComponent extends Component {
   onSubmit(selectedIds, values, { setSubmitting, resetForm }) {
     const { paginationOptions, context } = this.props;
     const maxMarkingDefinition = values.maxMarkingDefinition === 'none' ? null : values.maxMarkingDefinition;
-    let finalFilters = paginationOptions.filters ?? emptyFilterGroup;
-    if (paginationOptions.relationship_type) {
-      finalFilters = addFilter(finalFilters, 'relationship_type', paginationOptions.relationship_type);
-    }
-    if (paginationOptions.elementId) {
-      finalFilters = addFilter(finalFilters, 'elementId', paginationOptions.elementId);
-    }
-    if (paginationOptions.fromId) {
-      finalFilters = addFilter(finalFilters, 'fromId', paginationOptions.fromId);
-    }
-    if (paginationOptions.toId) {
-      finalFilters = addFilter(finalFilters, 'toId', paginationOptions.toId);
-    }
-    if (paginationOptions.elementWithTargetTypes) {
-      finalFilters = addFilter(finalFilters, 'elementWithTargetTypes', paginationOptions.elementWithTargetTypes);
-    }
-    if (paginationOptions.fromTypes) {
-      finalFilters = addFilter(finalFilters, 'fromTypes', paginationOptions.fromTypes);
-    }
-    if (paginationOptions.toTypes) {
-      finalFilters = addFilter(finalFilters, 'toTypes', paginationOptions.toTypes);
-    }
+    const finalFilters = paginationOptions.filters ?? emptyFilterGroup;
     commitMutation({
       mutation: StixCoreRelationshipsExportCreationMutation,
       variables: {

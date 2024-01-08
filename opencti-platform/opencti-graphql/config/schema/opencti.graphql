@@ -12509,7 +12509,6 @@ type Mutation {
     search: String
     orderBy: StixCoreRelationshipsOrdering
     orderMode: OrderingMode
-    filters: FilterGroup
     selectedIds: [String]
     elementId: [String]
     elementWithTargetTypes: [String]
@@ -12520,6 +12519,7 @@ type Mutation {
     toRole: String
     toTypes: [String]
     relationship_type: [String]
+    filters: FilterGroup
   ): [File!] @auth(for: [KNOWLEDGE_KNGETEXPORT_KNASKEXPORT])
   stixCoreRelationshipDelete(fromId: StixRef!, toId: StixRef!, relationship_type: String!): Boolean!
   @auth(for: [KNOWLEDGE_KNUPDATE])

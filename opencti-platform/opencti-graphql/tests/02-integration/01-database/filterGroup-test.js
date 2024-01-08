@@ -7,7 +7,7 @@ import { ENTITY_TYPE_MARKING_DEFINITION } from '../../../src/schema/stixMetaObje
 import { RELATION_OBJECT_MARKING } from '../../../src/schema/stixRefRelationship';
 import { ABSTRACT_INTERNAL_OBJECT, ABSTRACT_STIX_CORE_OBJECT, ENTITY_TYPE_CONTAINER, ENTITY_TYPE_LOCATION, ID_INTERNAL } from '../../../src/schema/general';
 import { ENTITY_TYPE_CONTAINER_REPORT, ENTITY_TYPE_INTRUSION_SET, ENTITY_TYPE_MALWARE } from '../../../src/schema/stixDomainObject';
-import { IDS_FILTER, RELATION_FROM_FILTER, SOURCE_RELIABILITY_FILTER } from '../../../src/utils/filtering/filtering-constants';
+import { IDS_FILTER, SOURCE_RELIABILITY_FILTER } from '../../../src/utils/filtering/filtering-constants';
 import { storeLoadById } from '../../../src/database/middleware-loader';
 
 // test queries involving dynamic filters
@@ -1211,26 +1211,8 @@ describe('Complex filters combinations for elastic queries', () => {
         },
       } });
     expect(queryResult.errors.length).toEqual(1);
-    // fromId = XXX (API filters are passed via options)
-    queryResult = await queryAsAdmin({ query: LIST_QUERY,
-      variables: {
-        first: 20,
-        filters: {
-          mode: 'or',
-          filters: [
-            {
-              key: RELATION_FROM_FILTER,
-              operator: 'eq',
-              values: [locationInternalId],
-              mode: 'or',
-            }
-          ],
-          filterGroups: [],
-        },
-      } });
-    expect(queryResult.errors.length).toEqual(1);
   });
-  it.skip('should test environment deleted', async () => {
+  it('should test environment deleted', async () => {
     const DELETE_REPORT_QUERY = gql`
         mutation reportDelete($id: ID!) {
             reportEdit(id: $id) {
