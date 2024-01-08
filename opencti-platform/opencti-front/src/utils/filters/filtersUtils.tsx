@@ -117,7 +117,7 @@ export const filtersUsedAsApiParameters = [
   'fromTypes',
   'toId',
   'toTypes',
-  'elementTargetTypes',
+  'elementWithTargetTypes',
   'elementId',
   'toSightingId',
 ];
@@ -311,8 +311,7 @@ export const buildFiltersAndOptionsForWidgets = (
   const dataSelectionRelationshipType = R.head(filtersContent.filter((o) => o.key === 'relationship_type'))?.values || null;
   const dataSelectionFromId = R.head(filtersContent.filter((o) => o.key === 'fromId'))?.values || null;
   const dataSelectionToId = R.head(filtersContent.filter((o) => o.key === 'toId'))?.values || null;
-  const dataSelectionFromTypes = R.head(filtersContent.filter((o) => o.key === 'fromTypes'))?.values
-    || null;
+  const dataSelectionFromTypes = R.head(filtersContent.filter((o) => o.key === 'fromTypes'))?.values || null;
   const dataSelectionToTypes = R.head(filtersContent.filter((o) => o.key === 'toTypes'))?.values || null;
   filtersContent = filtersContent.filter(
     (o) => ![

@@ -864,7 +864,7 @@ const useSearchEntities = ({
         unionSetEntities(filterKey, elementTypeTypes);
         break;
       }
-      case 'elementTargetTypes':
+      case 'elementWithTargetTypes':
       case 'entity_type':
       case 'entity_types':
       case 'fromTypes':

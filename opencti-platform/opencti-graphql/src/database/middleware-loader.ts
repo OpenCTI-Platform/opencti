@@ -1,5 +1,5 @@
 import * as R from 'ramda';
-import { buildPagination, READ_DATA_INDICES, READ_DATA_INDICES_WITHOUT_INFERRED, READ_ENTITIES_INDICES, READ_RELATIONSHIPS_INDICES } from './utils';
+import { buildPagination, isNotEmptyField, READ_DATA_INDICES, READ_DATA_INDICES_WITHOUT_INFERRED, READ_ENTITIES_INDICES, READ_RELATIONSHIPS_INDICES } from './utils';
 import { elAggregationsList, elCount, elFindByIds, elList, elLoadById, elPaginate } from './engine';
 import { buildRefRelationKey } from '../schema/general';
 import type { AuthContext, AuthUser } from '../types/user';
@@ -185,58 +185,33 @@ export const buildRelationsFilter = <T extends BasicStoreCommon>(relationshipTyp
     }
   }
   // region element filtering
-  const nestedElement = [];
   const optsElementIds = Array.isArray(elementId) ? elementId : [elementId];
+  // TODO elementId is not a rel in this case
+  // This situation doesnt allow use to use a simple key: elementID
+  // We need to change the key and migrate the current elementId stored in the database
   if (elementId && optsElementIds.length > 0) {
-    nestedElement.push({ key: 'internal_id', values: optsElementIds });
+    filtersFromOptionsContent.push({ key: ['connections'], nested: [{ key: 'internal_id', values: optsElementIds }], values: [] });
   }
-  if (nestedElement.length > 0) {
-    filtersFromOptionsContent.push({ key: ['connections'], nested: nestedElement, values: [] });
+  if (elementWithTargetTypes && isNotEmptyField(elementWithTargetTypes)) {
+    filtersFromOptionsContent.push({ key: ['elementWithTargetTypes'], values: elementWithTargetTypes });
   }
-  const nestedElementTypes = [];
-  if (elementWithTargetTypes && elementWithTargetTypes.length > 0) {
-    nestedElementTypes.push({ key: 'types', values: elementWithTargetTypes });
-    // If elementId is setup, we need to extract the element from the result side
-    if (elementId && optsElementIds.length > 0) {
-      nestedElementTypes.push({ key: 'internal_id', values: optsElementIds, operator: FilterOperator.NotEq });
-    }
+  if (fromId && isNotEmptyField(fromId)) {
+    filtersFromOptionsContent.push({ key: ['fromId'], values: Array.isArray(fromId) ? fromId : [fromId] });
   }
-  if (nestedElementTypes.length > 0) {
-    filtersFromOptionsContent.push({ key: ['connections'], nested: nestedElementTypes, values: [] });
+  if (fromRole && isNotEmptyField(fromRole)) {
+    filtersFromOptionsContent.push({ key: ['fromRole'], values: [fromRole] });
   }
-  // endregion
-  // region from filtering
-  const nestedFrom = [];
-  if (fromId) {
-    nestedFrom.push({ key: 'internal_id', values: Array.isArray(fromId) ? fromId : [fromId] });
+  if (fromTypes && isNotEmptyField(fromTypes)) {
+    filtersFromOptionsContent.push({ key: ['fromTypes'], values: fromTypes });
   }
-  if (fromTypes && fromTypes.length > 0) {
-    nestedFrom.push({ key: 'types', values: fromTypes });
+  if (toId && isNotEmptyField(toId)) {
+    filtersFromOptionsContent.push({ key: ['toId'], values: Array.isArray(toId) ? toId : [toId] });
   }
-  if (fromRole) {
-    nestedFrom.push({ key: 'role', values: [fromRole] });
-  } else if (fromId || (fromTypes && fromTypes.length > 0)) {
-    nestedFrom.push({ key: 'role', values: ['*_from'], operator: FilterOperator.Wildcard });
+  if (toRole && isNotEmptyField(toRole)) {
+    filtersFromOptionsContent.push({ key: ['toRole'], values: [toRole] });
   }
-  if (nestedFrom.length > 0) {
-    filtersFromOptionsContent.push({ key: ['connections'], nested: nestedFrom, values: [] });
-  }
-  // endregion
-  // region to filtering
-  const nestedTo = [];
-  if (toId) {
-    nestedTo.push({ key: 'internal_id', values: Array.isArray(toId) ? toId : [toId] });
-  }
-  if (toTypes && toTypes.length > 0) {
-    nestedTo.push({ key: 'types', values: toTypes });
-  }
-  if (toRole) {
-    nestedTo.push({ key: 'role', values: [toRole] });
-  } else if (toId || (toTypes && toTypes.length > 0)) {
-    nestedTo.push({ key: 'role', values: ['*_to'], operator: FilterOperator.Wildcard });
-  }
-  if (nestedTo.length > 0) {
-    filtersFromOptionsContent.push({ key: ['connections'], nested: nestedTo, values: [] });
+  if (toTypes && isNotEmptyField(toTypes)) {
+    filtersFromOptionsContent.push({ key: ['toTypes'], values: toTypes });
   }
   // endregion
   if (startTimeStart) filtersFromOptionsContent.push({ key: ['start_time'], values: [startTimeStart], operator: FilterOperator.Gt });
@@ -254,6 +229,8 @@ export const buildRelationsFilter = <T extends BasicStoreCommon>(relationshipTyp
   }
   // remove options already passed in filters and useless for the next steps
   const cleanedArgs = R.pipe(
+    R.dissoc('elementId'),
+    R.dissoc('elementWithTargetTypes'),
     R.dissoc('fromId'),
     R.dissoc('fromRole'),
     R.dissoc('toId'),
@@ -285,7 +262,6 @@ export const buildRelationsFilter = <T extends BasicStoreCommon>(relationshipTyp
       }
       : filtersFromOptions;
   }
-
   return {
     ...cleanedArgs,
     types: relationsToGet,

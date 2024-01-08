@@ -36,7 +36,8 @@ export const findAll = async (context, user, args) => {
   } else {
     finalArgs = { ...finalArgs, dynamicTo: undefined };
   }
-  return listRelations(context, user, R.propOr(ABSTRACT_STIX_RELATIONSHIP, 'relationship_type', finalArgs), finalArgs);
+  const type = R.propOr(ABSTRACT_STIX_RELATIONSHIP, 'relationship_type', finalArgs);
+  return listRelations(context, user, type, R.dissoc('relationship_type', finalArgs));
 };
 
 export const findById = (context, user, stixRelationshipId) => {

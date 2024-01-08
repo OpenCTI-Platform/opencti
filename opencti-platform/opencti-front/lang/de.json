@@ -1721,7 +1721,7 @@
   "info_authorizedmembers_knowledge_on": "Wenn Sie die Zugriffsbeschränkung aktivieren, wird der Zugriff auf dieses Objekt für alle Benutzer verweigert, unabhängig von ihren globalen Fähigkeiten und Markierungsdefinitionen. Anschließend können Sie weiteren Benutzern, Gruppen oder Organisationen Zugriff gewähren. Diese spezifischen Zugriffe stellen eine zusätzliche Ebene der Zugriffskontrolle dar, d.h. die Benutzer benötigen weiterhin die richtigen Fähigkeiten und Markierungsdefinitionen, um auf das Objekt zugreifen zu können.",
   "info_authorizedmembers_knowledge_off": "Wenn Sie die Zugriffsbeschränkung deaktivieren, werden die von Ihnen erstellten spezifischen Zugriffe entfernt und die Zugriffsbeschränkung für dieses Objekt aufgehoben. Das Objekt unterliegt jedoch weiterhin den Zugriffskontrollen der Markierungsdefinition und der Organisation.",
   "I would like to use a EE feature ...": "Ich würde gerne eine EE-Funktion ({feature}) verwenden, habe aber keine EE aktiviert.\nIch würde gerne mit Ihnen über die Aktivierung von EE diskutieren.",
-  "elementTargetTypes": "Zieltypen",
+  "elementWithTargetTypes": "Zieltypen",
   "starts_with": "beginnt mit",
   "ends_with": "endet mit",
   "not_contains": "enthält nicht",

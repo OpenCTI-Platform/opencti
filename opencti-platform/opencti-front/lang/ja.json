@@ -2050,7 +2050,7 @@
   "Ends with": "で終わる",
   "Not ends with": "で終わらない",
   "Add filter": "フィルターを追加",
-  "elementTargetTypes": "ターゲットタイプ",
+  "elementWithTargetTypes": "ターゲットタイプ",
   "The operators and modes are restricted for these filters.": "これらのフィルタには演算子とモードの制限があります。",
   "contains": "を含む",
   "starts_with": "で始まる",

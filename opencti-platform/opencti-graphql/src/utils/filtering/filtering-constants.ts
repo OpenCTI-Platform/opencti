@@ -35,7 +35,9 @@ export const REVOKED_FILTER = 'revoked';
 export const PATTERN_FILTER = 'pattern_type';
 export const MAIN_OBSERVABLE_TYPE_FILTER = 'x_opencti_main_observable_type';
 export const RELATION_FROM_TYPES_FILTER = 'fromTypes';
+export const RELATION_FROM_ROLE_FILTER = 'fromRole';
 export const RELATION_TO_TYPES_FILTER = 'toTypes';
+export const RELATION_TO_ROLE_FILTER = 'toRole';
 
 // special cases
 export const IDS_FILTER = 'ids';

@@ -89,8 +89,10 @@ import {
   INSTANCE_FILTER,
   INSTANCE_FILTER_TARGET_TYPES,
   RELATION_FROM_FILTER,
+  RELATION_FROM_ROLE_FILTER,
   RELATION_FROM_TYPES_FILTER,
   RELATION_TO_FILTER,
+  RELATION_TO_ROLE_FILTER,
   RELATION_TO_SIGHTING_FILTER,
   RELATION_TO_TYPES_FILTER,
   SOURCE_RELIABILITY_FILTER,
@@ -1963,6 +1965,14 @@ const completeSpecialFilterKeys = async (context, user, inputFilters) => {
       }
       if (arrayKeys.includes(INSTANCE_FILTER_TARGET_TYPES)) {
         const nested = [{ key: 'types', operator: filter.operator, values: filter.values }];
+        finalFilters.push({ key: 'connections', nested });
+      }
+      if (arrayKeys.includes(RELATION_FROM_ROLE_FILTER) || arrayKeys.includes(RELATION_TO_ROLE_FILTER)) {
+        const side = arrayKeys.includes(RELATION_FROM_ROLE_FILTER) ? 'from' : 'to';
+        const nested = [
+          { key: 'roles', operator: filter.operator, values: filter.values },
+          { key: 'role', operator: 'wildcard', values: [`*_${side}`] }
+        ];
         finalFilters.push({ key: 'connections', nested });
       }
     } else {

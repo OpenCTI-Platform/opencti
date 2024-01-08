@@ -1721,7 +1721,7 @@
   "info_authorizedmembers_knowledge_on": "By activating Access Restriction, access to this object will be denied for all users, regardless of their global capabilities and marking definitions. Then, you are able to grant access to more users, groups or organizations. Those specific accesses are an additional layer of access control, this means that users still need the proper capabilities and marking definitions to access the object.",
   "info_authorizedmembers_knowledge_off": "By deactivating Access Restriction, specific accesses you created will be removed and Access Restriction will be lift off for this object. But the object will still be covered by Marking Definition and Organization access controls.",
   "I would like to use a EE feature ...": "I would like to use a EE feature ({feature}) but I don't have EE activated.\nI would like to discuss with you about activating EE.",
-  "elementTargetTypes": "Target Types",
+  "elementWithTargetTypes": "Target Types",
   "starts_with": "starts with",
   "ends_with": "ends with",
   "not_contains": "not contains",

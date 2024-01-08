@@ -2101,7 +2101,7 @@
   "Ends with": "Termina con",
   "Not ends with": "No termina con",
   "Add filter": "Agregar filtro",
-  "elementTargetTypes": "Tipos de objetivo",
+  "elementWithTargetTypes": "Tipos de objetivo",
   "The operators and modes are restricted for these filters.": "Los operadores y modos están restringidos para estos filtros.",
   "contains": "contiene",
   "starts_with": "comienza con",
