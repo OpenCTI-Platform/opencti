@@ -15091,7 +15091,7 @@ __metadata:
     reactflow: 11.10.1
     recharts: 2.10.3
     relay-compiler: 15.0.0
-    relay-runtime: 16.0.0
+    relay-runtime: 16.1.0
     relay-test-utils: 16.0.0
     remark-flexible-markers: 1.0.4
     remark-gfm: 4.0.0
