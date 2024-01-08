@@ -103,7 +103,7 @@
     "@types/relay-test-utils": "14.1.4",
     "@types/uuid": "9.0.7",
     "@vitejs/plugin-react": "4.1.0",
-    "babel-plugin-relay": "16.0.0",
+    "babel-plugin-relay": "16.1.0",
     "chokidar": "3.5.3",
     "compression": "1.7.4",
     "cross-env": "7.0.3",
