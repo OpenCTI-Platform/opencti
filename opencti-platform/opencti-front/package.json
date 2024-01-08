@@ -155,7 +155,6 @@
     "auto-translation:ja": "i18n-auto-translation -a deepl-free -p ./lang/en.json -t ja -k",
     "auto-translation:es": "i18n-auto-translation -a deepl-free -p ./lang/en.json -t es -k",
     "auto-translation:de": "i18n-auto-translation -a deepl-free -p ./lang/en.json -t de -k"
-
   },
   "resolutions": {
     "eslint-plugin-custom-rules": "0.0.1",
