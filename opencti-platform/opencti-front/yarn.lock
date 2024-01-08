@@ -3538,7 +3538,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@mui/utils@npm:^5.10.3, @mui/utils@npm:^5.15.3, @mui/utils@npm:^5.15.5":
+"@mui/utils@npm:^5.15.3, @mui/utils@npm:^5.15.5":
   version: 5.15.5
   resolution: "@mui/utils@npm:5.15.5"
   dependencies:
@@ -5216,7 +5216,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/prop-types@npm:*, @types/prop-types@npm:^15.7.11":
+"@types/prop-types@npm:*, @types/prop-types@npm:^15.7.11, @types/prop-types@npm:^15.7.5":
   version: 15.7.11
   resolution: "@types/prop-types@npm:15.7.11"
   checksum: 7519ff11d06fbf6b275029fe03fff9ec377b4cb6e864cac34d87d7146c7f5a7560fd164bdc1d2dbe00b60c43713631251af1fd3d34d46c69cd354602bc0c7c54
@@ -5259,7 +5259,16 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/react-relay@npm:*, @types/react-relay@npm:16.0.6":
+"@types/react-relay@npm:*, @types/react-is@npm:^18.2.1":
+  version: 18.2.4
+  resolution: "@types/react-is@npm:18.2.4"
+  dependencies:
+    "@types/react": "*"
+  checksum: 2b69293a04609641be4963f5a9127aba3b7576cc15e3234fe6c341a940cbf3979e80bf848a43d93a24fb2ab09ad8faed54ac38c22037b159a0eea852e4dfa6eb
+  languageName: node
+  linkType: hard
+
+"@types/react-relay@npm:16.0.6":
   version: 16.0.6
   resolution: "@types/react-relay@npm:16.0.6"
   dependencies:
