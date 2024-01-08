@@ -92,6 +92,15 @@ export const convertUser = (element, field = 'user') => (isEmptyField(element?.[
     type: element[field].entity_type,
   });
 
+export const convertMapper = (element, field = 'csvMapper') => {
+  return (isEmptyField(element?.[field])
+    ? ''
+    : {
+      label: element[field].name,
+      value: element[field].id,
+    });
+};
+
 export const convertNotifiers = (element) => element?.notifiers?.map(({ id, name }) => ({ value: id, label: name }));
 
 export const filterEventTypesOptions = [

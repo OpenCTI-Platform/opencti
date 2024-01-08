@@ -10,7 +10,7 @@ import CreatorField from '@components/common/form/CreatorField';
 import CommitMessage from '@components/common/form/CommitMessage';
 import { IngestionCsvEditionFragment_ingestionCsv$key } from '@components/data/ingestionCsv/__generated__/IngestionCsvEditionFragment_ingestionCsv.graphql';
 import CsvMapperField from '@components/common/form/CsvMapperField';
-import { convertUser } from '../../../../utils/edition';
+import { convertMapper, convertUser } from '../../../../utils/edition';
 import { useFormatter } from '../../../../components/i18n';
 import { useSchemaEditionValidation } from '../../../../utils/hooks/useEntitySettings';
 import { adaptFieldValue } from '../../../../utils/String';
@@ -37,14 +37,9 @@ const ingestionCsvEditionFragment = graphql`
     authentication_value
     ingestion_running
     current_state_date
-    csvMapper_id
     csvMapper {
-      edges {
-        node {
-          id
-          name
-        }
-      }
+      id
+      name
     }
     user {
       id
@@ -148,7 +143,7 @@ const IngestionCsvEdition: FunctionComponent<IngestionCsvEditionProps> = ({
     authentication_value: ingestionCsvData.authentication_value,
     current_state_date: ingestionCsvData.current_state_date,
     ingestion_running: ingestionCsvData.ingestion_running,
-    csvMapper_id: ingestionCsvData.csvMapper_id,
+    csvMapper_id: convertMapper(ingestionCsvData, 'csvMapper'),
     user_id: convertUser(ingestionCsvData, 'user'),
   };
 
@@ -207,7 +202,7 @@ const IngestionCsvEdition: FunctionComponent<IngestionCsvEditionProps> = ({
             }}
           />
           <CsvMapperField
-            name="csvMapper"
+            name="csvMapper_id"
             isOptionEqualToValue={(option: Option, value: string) => option.value === value}
             onChange={handleSubmitField}
           />

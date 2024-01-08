@@ -1,6 +1,7 @@
 import type { StixObject, StixOpenctiExtensionSDO } from '../../types/stix-common';
 import { STIX_EXT_OCTI } from '../../types/stix-extensions';
 import type { StoreEntity, BasicStoreEntity } from '../../types/store';
+import type { CsvMapper } from '../../generated/graphql';
 
 // region Rss ingestion
 export const ENTITY_TYPE_INGESTION_RSS = 'IngestionRss';
@@ -79,7 +80,7 @@ export interface BasicStoreEntityIngestionCsv extends BasicStoreEntity {
   name: string
   description: string
   uri: string
-  csvMappers: string[]
+  csvMapper: CsvMapper
   csvMapper_id: string
   authentication_type: 'none' | 'basic' | 'bearer' | 'certificate'
   authentication_value: string

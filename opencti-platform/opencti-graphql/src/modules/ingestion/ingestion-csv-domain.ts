@@ -1,18 +1,14 @@
 import axios from 'axios';
 import type { AuthContext, AuthUser } from '../../types/user';
 import { listAllEntities, listEntitiesPaginated, storeLoadById } from '../../database/middleware-loader';
-import {
-  type BasicStoreEntityIngestionCsv,
-  ENTITY_TYPE_INGESTION_CSV,
-  ENTITY_TYPE_INGESTION_TAXII
-} from './ingestion-types';
+import { type BasicStoreEntityIngestionCsv, ENTITY_TYPE_INGESTION_CSV } from './ingestion-types';
 import { createEntity, deleteElementById, patchAttribute, updateAttribute } from '../../database/middleware';
 import { publishUserAction } from '../../listener/UserActionListener';
 import type { CsvMapperTestResult, EditInput, IngestionCsvAddInput } from '../../generated/graphql';
 import { notify } from '../../database/redis';
 import { BUS_TOPICS } from '../../config/conf';
 import { ABSTRACT_INTERNAL_OBJECT } from '../../schema/general';
-import type { BasicStoreEntityCsvMapper } from '../internal/csvMapper/csvMapper-types';
+import { type BasicStoreEntityCsvMapper, ENTITY_TYPE_CSV_MAPPER } from '../internal/csvMapper/csvMapper-types';
 import { bundleProcess } from '../../parser/csv-bundler';
 import { findById as findCsvMapperById } from '../internal/csvMapper/csvMapper-domain';
 
@@ -26,6 +22,10 @@ export const findAllPaginated = async (context: AuthContext, user: AuthUser, opt
 
 export const findAllCsvIngestions = async (context: AuthContext, user: AuthUser, opts = {}) => {
   return listAllEntities<BasicStoreEntityIngestionCsv>(context, user, [ENTITY_TYPE_INGESTION_CSV], opts);
+};
+
+export const findCsvMapperForIngestionById = (context: AuthContext, user: AuthUser, csvMapperId: string) => {
+  return storeLoadById<BasicStoreEntityCsvMapper>(context, user, csvMapperId, ENTITY_TYPE_CSV_MAPPER);
 };
 
 export const addIngestionCsv = async (context: AuthContext, user: AuthUser, input: IngestionCsvAddInput) => {
@@ -72,12 +72,6 @@ export const deleteIngestionCsv = async (context: AuthContext, user: AuthUser, i
     context_data: { id: ingestionId, entity_type: ENTITY_TYPE_INGESTION_CSV, input: deleted }
   });
   return ingestionId;
-};
-
-export const fetchCsvFromUrl = async (url: string): Promise<Buffer> => {
-  const response = await axios.get(url, { responseType: 'arraybuffer' });
-  const dataExtract = response.data;
-  return Buffer.from(dataExtract);
 };
 
 export const fetchCsvExtractFromUrl = async (url: string): Promise<Buffer> => {
