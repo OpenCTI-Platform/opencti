@@ -3,9 +3,10 @@ import { SemanticAttributes } from '@opentelemetry/semantic-conventions';
 import * as nodecallspython from 'node-calls-python';
 import nconf from 'nconf';
 import { DEV_MODE, logApp } from '../config/conf';
-import { UnknownError } from '../config/errors';
+import { UnknownError, UnsupportedError } from '../config/errors';
 import { telemetry } from '../config/tracing';
 import { cleanupIndicatorPattern, STIX_PATTERN_TYPE } from '../utils/syntax';
+import { isEmptyField } from '../database/utils';
 
 const PYTHON_EXECUTOR = nconf.get('app:python_execution') ?? 'native';
 const USE_NATIVE_EXEC = PYTHON_EXECUTOR === 'native';
@@ -21,6 +22,9 @@ const CREATE_PATTERN_SCRIPT = { fn: 'stix2_create_pattern', py: pyCreatePattern 
 // region child
 export const execChildPython = async (context, user, scriptPath, scriptName, args, stopCondition) => {
   const execPythonTestingProcessFn = async () => {
+    if (isEmptyField(scriptPath) || isEmptyField(scriptName)) {
+      throw UnsupportedError('Cannot execute Python with empty script path or name');
+    }
     return new Promise((resolve, reject) => {
       const messages = [];
       const options = {
@@ -41,7 +45,7 @@ export const execChildPython = async (context, user, scriptPath, scriptName, arg
         }
       });
       shell.on('stderr', (stderr) => {
-        logApp.info(`[stderr] ${stderr}`);
+        logApp.error(`[stderr] ${stderr}`);
         messages.push(stderr);
         //* v8 ignore if */
         if (DEV_MODE && stderr.startsWith('ERROR:')) {
@@ -58,14 +62,10 @@ export const execChildPython = async (context, user, scriptPath, scriptName, arg
           return;
         }
         if (jsonResult.status !== 'success') {
-          reject(jsonResult);
-          return;
+          reject(UnknownError('Error python child execution', jsonResult));
         }
         resolve(jsonResult);
       });
-    }).catch((err) => {
-      /* v8 ignore next */
-      throw UnknownError(`[BRIDGE] execPythonTesting error > ${err.message}`, { detail: err.message });
     });
   };
   return telemetry(context, user, `PYTHON ${scriptName}`, {
@@ -83,7 +83,7 @@ const createChildStixPattern = async (context, user, observableType, observableV
     );
     return result.data;
   } catch (err) {
-    logApp.warn('Python createStixPattern fail', { failure: err.message });
+    logApp.warn(err);
     return null;
   }
 };
@@ -98,7 +98,7 @@ const checkChildIndicatorSyntax = async (context, user, patternType, indicatorVa
     );
     return result.data;
   } catch (err) {
-    logApp.warn('Python extractObservables fail', { failure: err.message });
+    logApp.warn(err);
     return null;
   }
 };
@@ -111,15 +111,11 @@ const checkChildPythonAvailability = async (context, user) => {
 // region native
 const execNativePython = async (context, user, script, ...args) => {
   const execNativePythonFn = async () => {
-    try {
-      const result = py.callSync(script.py, script.fn, ...args);
-      if (result.status === 'success') {
-        return result.data;
-      }
-      throw UnknownError('[BRIDGE] execNativePython error', { detail: result.data });
-    } catch (err) {
-      throw UnknownError(`[BRIDGE] execNativePython error > ${err.message}`, { detail: err.message });
+    const result = py.callSync(script.py, script.fn, ...args);
+    if (result.status === 'success') {
+      return result.data;
     }
+    throw UnknownError('[BRIDGE] execNativePython error', result);
   };
   return telemetry(context, user, `PYTHON ${script.fn}`, {
     [SemanticAttributes.DB_NAME]: 'python_runtime_engine',
@@ -127,13 +123,13 @@ const execNativePython = async (context, user, script, ...args) => {
 };
 const createNativeStixPattern = async (context, user, observableType, observableValue) => {
   return execNativePython(context, user, CREATE_PATTERN_SCRIPT, observableType, observableValue).catch((err) => {
-    logApp.warn('Python createStixPattern fail', { failure: err.message });
+    logApp.warn(err);
     return null;
   });
 };
 const checkNativeIndicatorSyntax = async (context, user, patternType, indicatorValue) => {
   return execNativePython(context, user, CHECK_INDICATOR_SCRIPT, patternType, indicatorValue).catch((err) => {
-    logApp.warn('Python checkIndicatorSyntax fail', { failure: err.message });
+    logApp.warn(err);
     return null;
   });
 };

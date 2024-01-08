@@ -278,7 +278,7 @@ class Consumer(Thread):  # pylint: disable=too-many-instance-attributes
         except RequestException:
             bundles_request_error_counter.add(1, {"origin": "opencti-worker"})
             self.worker_logger.error(
-                "Message NOT acknowledged (RequestException)", {"tag": delivery_tag}
+                "Message NOT acknowledged", {"tag": delivery_tag, "type": "RequestException"}
             )
             cb = functools.partial(self.nack_message, channel, delivery_tag)
             connection.add_callback_threadsafe(cb)
@@ -471,7 +471,6 @@ class Worker:  # pylint: disable=too-few-public-methods, too-many-instance-attri
                 self.queues = list(
                     map(lambda x: x["config"]["push"], self.connectors)  # type: ignore
                 )
-
                 # Check if all queues are consumed
                 for connector in self.connectors:
                     queue = connector["config"]["push"]
@@ -526,7 +525,7 @@ class Worker:  # pylint: disable=too-few-public-methods, too-many-instance-attri
                         self.consumer_threads[thread].terminate()
                 sys.exit(0)
             except Exception as e:  # pylint: disable=broad-except
-                self.worker_logger.error(str(e))
+                self.worker_logger.error(type(e).__name__, {"reason": str(e)})
                 time.sleep(60)
 
 

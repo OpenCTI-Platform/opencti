@@ -27,6 +27,7 @@ const parsePattern = (pattern) => {
   const lexer = new STIXPatternLexer(chars);
   const tokens = new antlr4.CommonTokenStream(lexer);
   const parser = new STIXPatternParser(tokens);
+  parser.removeErrorListeners();
   return { parser, parsedPattern: parser.pattern() };
 };
 

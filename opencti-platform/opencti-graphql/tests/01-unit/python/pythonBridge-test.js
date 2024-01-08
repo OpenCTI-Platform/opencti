@@ -7,7 +7,7 @@ it('Check if python is well configured', async () => {
   expect(check).not.toBeNull();
   expect(check).toEqual("[text:value = 'test']");
   // noinspection ES6MissingAwait
-  expect(execChildPython(testContext, ADMIN_USER, '/missing')).rejects.toThrow('[BRIDGE] execPythonTesting error');
+  expect(execChildPython(testContext, ADMIN_USER, '/missing')).rejects.toThrow('Cannot execute Python with empty script path or name');
   // noinspection ES6MissingAwait
   expect(createStixPattern(testContext, ADMIN_USER, 'fail')).resolves.toEqual(null);
 });
@@ -16,6 +16,8 @@ it('Check createStixPattern bad pattern', async () => {
   let check = await createStixPattern(testContext, ADMIN_USER, 'TYPE', 'VALUE');
   expect(check).toBeNull();
   check = await createStixPattern(testContext, ADMIN_USER, 'File_shaa256', 'c2d6908fe0d2ad04713');
+  expect(check).toBeNull();
+  check = await createStixPattern(testContext, ADMIN_USER, 'File_MD5__File_sha256', 'c2d6908fe0d2ad04713__c2d6908fe0d2ad04713');
   expect(check).toBeNull();
 });
 
