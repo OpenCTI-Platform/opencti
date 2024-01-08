@@ -6784,14 +6784,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"babel-plugin-relay@npm:16.0.0":
-  version: 16.0.0
-  resolution: "babel-plugin-relay@npm:16.0.0"
+"babel-plugin-relay@npm:16.1.0":
+  version: 16.1.0
+  resolution: "babel-plugin-relay@npm:16.1.0"
   dependencies:
     babel-plugin-macros: ^2.0.0
     cosmiconfig: ^5.0.5
     graphql: 15.3.0
-  checksum: 63ed6989ec8d513dcac298ecc6452c2d203102e2d4e90e99d858c73b89599eec536397b0f2dfb5ad8a4466a808374e543c1bccc0586bb4fe9af72dc26c359ac0
+  checksum: facccda6f4e76566517c0df399217b0f1fdfcc2753bba944d253b06019fc7e0b6ac756d14af8616b88ef2e7095fe3ccb95c34def416dd92d9ce4506c24b4df33
   languageName: node
   linkType: hard
 
@@ -15018,7 +15018,7 @@ __metadata:
     analytics: 0.8.9
     apexcharts: 3.44.2
     axios: 1.6.4
-    babel-plugin-relay: 16.0.0
+    babel-plugin-relay: 16.1.0
     chokidar: 3.5.3
     ckeditor5-custom-build: 0.0.1
     classnames: 2.3.2
