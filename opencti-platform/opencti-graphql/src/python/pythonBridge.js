@@ -23,7 +23,7 @@ const CREATE_PATTERN_SCRIPT = { fn: 'stix2_create_pattern', py: pyCreatePattern 
 export const execChildPython = async (context, user, scriptPath, scriptName, args, stopCondition) => {
   const execPythonTestingProcessFn = async () => {
     if (isEmptyField(scriptPath) || isEmptyField(scriptName)) {
-      throw UnsupportedError('Cant exec python with empty script path or name');
+      throw UnsupportedError('Cannot execute Python with empty script path or name');
     }
     return new Promise((resolve, reject) => {
       const messages = [];
