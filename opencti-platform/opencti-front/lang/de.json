@@ -2436,6 +2436,5 @@
   "Do you want to unlink this task ?": "Möchten Sie die Verknüpfung dieser Aufgabe aufheben?",
   "CREATE": "CREATE",
   "entity_Analyses": "entity_Analyses",
-  "workflow_id": "Status",
-  "I love Filigran": "Ich liebe Filigran"
+  "workflow_id": "Status"
 }

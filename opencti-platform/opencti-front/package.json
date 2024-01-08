@@ -149,12 +149,13 @@
     "check-ts": "tsc --noEmit",
     "i18n-checker": "node i18n-checker.js",
     "extract-translation": "node script/extract-i18n-keyword.js",
-    "auto-translation:all": "npm run auto-translation:fr && npm run auto-translation:cn && npm run auto-translation:ja && npm run auto-translation:es",
-    "auto-translation:fr": "i18n-auto-translation -a deepl-free -k $SUBSCRIPTION_KEY -p ./lang/en.json -t fr",
-    "auto-translation:cn": "i18n-auto-translation -a deepl-free -k $SUBSCRIPTION_KEY -p ./lang/en.json -t zh",
-    "auto-translation:ja": "i18n-auto-translation -a deepl-free -k $SUBSCRIPTION_KEY -p ./lang/en.json -t ja",
-    "auto-translation:es": "i18n-auto-translation -a deepl-free -k $SUBSCRIPTION_KEY -p ./lang/en.json -t es",
-    "auto-translation:de": "i18n-auto-translation -a deepl-free -k $SUBSCRIPTION_KEY -p ./lang/en.json -t de"
+    "auto-translation:all": "npm run auto-translation:fr $SUBSCRIPTION_KEY && npm run auto-translation:cn $SUBSCRIPTION_KEY && npm run auto-translation:ja $SUBSCRIPTION_KEY && npm run auto-translation:es $SUBSCRIPTION_KEY && npm run auto-translation:de $SUBSCRIPTION_KEY",
+    "auto-translation:fr": "i18n-auto-translation -a deepl-free -p ./lang/en.json -t fr -k",
+    "auto-translation:cn": "i18n-auto-translation -a deepl-free -p ./lang/en.json -t zh -k",
+    "auto-translation:ja": "i18n-auto-translation -a deepl-free -p ./lang/en.json -t ja -k",
+    "auto-translation:es": "i18n-auto-translation -a deepl-free -p ./lang/en.json -t es -k",
+    "auto-translation:de": "i18n-auto-translation -a deepl-free -p ./lang/en.json -t de -k"
+
   },
   "resolutions": {
     "eslint-plugin-custom-rules": "0.0.1",
