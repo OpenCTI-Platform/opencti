@@ -13432,14 +13432,23 @@ export type MutationStixCoreRelationshipEditArgs = {
 
 export type MutationStixCoreRelationshipsExportAskArgs = {
   context?: InputMaybe<Scalars['String']['input']>;
+  elementId?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  elementWithTargetTypes?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   exportType: Scalars['String']['input'];
   filters?: InputMaybe<FilterGroup>;
   format: Scalars['String']['input'];
+  fromId?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  fromRole?: InputMaybe<Scalars['String']['input']>;
+  fromTypes?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   maxMarkingDefinition?: InputMaybe<Scalars['String']['input']>;
   orderBy?: InputMaybe<StixCoreRelationshipsOrdering>;
   orderMode?: InputMaybe<OrderingMode>;
+  relationship_type?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   search?: InputMaybe<Scalars['String']['input']>;
   selectedIds?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  toId?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  toRole?: InputMaybe<Scalars['String']['input']>;
+  toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   type: Scalars['String']['input'];
 };
 

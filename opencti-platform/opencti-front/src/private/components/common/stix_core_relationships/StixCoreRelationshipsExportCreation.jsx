@@ -9,8 +9,8 @@ import DialogActions from '@mui/material/DialogActions';
 import Button from '@mui/material/Button';
 import Slide from '@mui/material/Slide';
 import { Add } from '@mui/icons-material';
-import { graphql, createFragmentContainer } from 'react-relay';
-import { Form, Formik, Field } from 'formik';
+import { createFragmentContainer, graphql } from 'react-relay';
+import { Field, Form, Formik } from 'formik';
 import MenuItem from '@mui/material/MenuItem';
 import * as Yup from 'yup';
 import Tooltip from '@mui/material/Tooltip';
@@ -21,7 +21,7 @@ import { markingDefinitionsLinesSearchQuery } from '../../settings/marking_defin
 import SelectField from '../../../../components/SelectField';
 import Loader from '../../../../components/Loader';
 import { ExportContext } from '../../../../utils/ExportContextProvider';
-import { addFilter, emptyFilterGroup, removeIdFromFilterGroupObject } from '../../../../utils/filters/filtersUtils';
+import { emptyFilterGroup, removeIdFromFilterGroupObject } from '../../../../utils/filters/filtersUtils';
 
 const Transition = React.forwardRef((props, ref) => (
   <Slide direction="up" ref={ref} {...props} />
@@ -58,6 +58,15 @@ export const StixCoreRelationshipsExportCreationMutation = graphql`
     $orderMode: OrderingMode
     $filters: FilterGroup
     $selectedIds: [String]
+    $elementId: [String]
+    $elementWithTargetTypes: [String]
+    $fromId: [String]
+    $fromRole: String
+    $fromTypes: [String]
+    $toId: [String]
+    $toRole: String
+    $toTypes: [String]
+    $relationship_type: [String]
   ) {
     stixCoreRelationshipsExportAsk(
       type: $type
@@ -70,6 +79,15 @@ export const StixCoreRelationshipsExportCreationMutation = graphql`
       orderMode: $orderMode
       filters: $filters
       selectedIds: $selectedIds
+      elementId: $elementId
+      elementWithTargetTypes: $elementWithTargetTypes
+      fromId: $fromId
+      fromRole: $fromRole
+      fromTypes: $fromTypes
+      toId: $toId
+      toRole: $toRole
+      toTypes: $toTypes
+      relationship_type: $relationship_type
     ) {
       id
     }
@@ -113,30 +131,6 @@ class StixCoreRelationshipsExportCreationComponent extends Component {
     const maxMarkingDefinition = values.maxMarkingDefinition === 'none'
       ? null
       : values.maxMarkingDefinition;
-    let finalFilters = paginationOptions.filters ?? emptyFilterGroup;
-
-    // TODO API is not accepting theses keys
-    if (paginationOptions.relationship_type) {
-      finalFilters = addFilter(finalFilters, 'relationship_type', paginationOptions.relationship_type);
-    }
-    if (paginationOptions.elementId) {
-      finalFilters = addFilter(finalFilters, 'elementId', paginationOptions.elementId);
-    }
-    if (paginationOptions.fromId) {
-      finalFilters = addFilter(finalFilters, 'fromId', paginationOptions.fromId);
-    }
-    if (paginationOptions.toId) {
-      finalFilters = addFilter(finalFilters, 'toId', paginationOptions.toId);
-    }
-    if (paginationOptions.elementWithTargetTypes) {
-      finalFilters = addFilter(finalFilters, 'elementWithTargetTypes', paginationOptions.elementWithTargetTypes);
-    }
-    if (paginationOptions.fromTypes) {
-      finalFilters = addFilter(finalFilters, 'fromTypes', paginationOptions.fromTypes);
-    }
-    if (paginationOptions.toTypes) {
-      finalFilters = addFilter(finalFilters, 'toTypes', paginationOptions.toTypes);
-    }
     commitMutation({
       mutation: StixCoreRelationshipsExportCreationMutation,
       variables: {
@@ -146,7 +140,7 @@ class StixCoreRelationshipsExportCreationComponent extends Component {
         maxMarkingDefinition,
         context,
         ...paginationOptions,
-        filters: removeIdFromFilterGroupObject(finalFilters),
+        filters: removeIdFromFilterGroupObject(paginationOptions.filters ?? emptyFilterGroup),
         selectedIds,
       },
       onCompleted: () => {

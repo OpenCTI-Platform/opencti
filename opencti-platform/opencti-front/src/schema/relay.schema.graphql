@@ -7852,7 +7852,7 @@ type Mutation {
   stixRelationshipEdit(id: ID!): StixRelationshipEditMutations
   stixCoreRelationshipAdd(input: StixCoreRelationshipAddInput, reversedReturn: Boolean): StixCoreRelationship
   stixCoreRelationshipEdit(id: ID!): StixCoreRelationshipEditMutations
-  stixCoreRelationshipsExportAsk(type: String!, format: String!, exportType: String!, maxMarkingDefinition: String, context: String, search: String, orderBy: StixCoreRelationshipsOrdering, orderMode: OrderingMode, filters: FilterGroup, selectedIds: [String]): [File!]
+  stixCoreRelationshipsExportAsk(type: String!, format: String!, exportType: String!, maxMarkingDefinition: String, context: String, search: String, orderBy: StixCoreRelationshipsOrdering, orderMode: OrderingMode, filters: FilterGroup, selectedIds: [String], elementId: [String], elementWithTargetTypes: [String], fromId: [String], fromRole: String, fromTypes: [String], toId: [String], toRole: String, toTypes: [String], relationship_type: [String]): [File!]
   stixCoreRelationshipDelete(fromId: StixRef!, toId: StixRef!, relationship_type: String!): Boolean!
   stixCoreRelationshipsExportPush(type: String!, file: Upload!, listFilters: String): Boolean
   stixRefRelationshipAdd(input: StixRefRelationshipAddInput!): StixRefRelationship

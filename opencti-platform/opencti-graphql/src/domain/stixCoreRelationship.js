@@ -208,44 +208,12 @@ export const stixRelations = (context, user, stixCoreObjectId, args) => {
 // region export
 export const stixCoreRelationshipsExportAsk = async (context, user, args) => {
   const { format, type, exportType, maxMarkingDefinition, selectedIds } = args;
+  const { elementId, elementWithTargetTypes, fromId, fromRole, fromTypes, toId, toRole, toTypes, relationship_type } = args;
   const { search, orderBy, orderMode, filters } = args;
   const argsFilters = { search, orderBy, orderMode, filters };
   const ordersOpts = stixCoreRelationshipOptions.StixCoreRelationshipsOrdering;
-  const initialParams = {};
-  const finalArgsFilter = { ...argsFilters, filters: undefined };
-  if (filters?.filters && filters?.filters.length > 0) {
-    const filtersWithoutSpecialKeys = { ...filters };
-    if (filters.filters.filter((n) => n.key.includes('relationship_type')).length > 0) {
-      initialParams.relationship_type = R.head(R.head(filters.filters.filter((n) => n.key.includes('relationship_type'))).values);
-      filtersWithoutSpecialKeys.filters = filtersWithoutSpecialKeys.filters.filter((n) => !n.key.includes('relationship_type'));
-    }
-    if (filters.filters.filter((n) => n.key.includes('elementId')).length > 0) {
-      initialParams.elementId = R.head(R.head(filters.filters.filter((n) => n.key.includes('elementId'))).values);
-      filtersWithoutSpecialKeys.filters = filtersWithoutSpecialKeys.filters.filter((n) => !n.key.includes('elementId'));
-    }
-    if (filters.filters.filter((n) => n.key.includes('fromId')).length > 0) {
-      initialParams.fromId = R.head(R.head(filters.filters.filter((n) => n.key.includes('fromId'))).values);
-      filtersWithoutSpecialKeys.filters = filtersWithoutSpecialKeys.filters.filter((n) => !n.key.includes('fromId'));
-    }
-    if (filters.filters.filter((n) => n.key.includes('toId')).length > 0) {
-      initialParams.toId = R.head(R.head(filters.filters.filter((n) => n.key.includes('toId'))).values);
-      filtersWithoutSpecialKeys.filters = filtersWithoutSpecialKeys.filters.filter((n) => !n.key.includes('toId'));
-    }
-    if (filters.filters.filter((n) => n.key.includes('elementWithTargetTypes')).length > 0) {
-      initialParams.elementWithTargetTypes = R.head(filters.filters.filter((n) => n.key.includes('elementWithTargetTypes'))).values;
-      filtersWithoutSpecialKeys.filters = filtersWithoutSpecialKeys.filters.filter((n) => !n.key.includes('elementWithTargetTypes'));
-    }
-    if (filters.filters.filter((n) => n.key.includes('fromTypes')).length > 0) {
-      initialParams.fromTypes = R.head(filters.filters.filter((n) => n.key.includes('fromTypes'))).values;
-      filtersWithoutSpecialKeys.filters = filtersWithoutSpecialKeys.filters.filter((n) => !n.key.includes('fromTypes'));
-    }
-    if (filters.filters.filter((n) => n.key.includes('toTypes')).length > 0) {
-      initialParams.toTypes = R.head(filters.filters.filter((n) => n.key.includes('toTypes'))).values;
-      filtersWithoutSpecialKeys.filters = filtersWithoutSpecialKeys.filters.filter((n) => !n.key.includes('toTypes'));
-    }
-    finalArgsFilter.filters = filtersWithoutSpecialKeys;
-  }
-  const listParams = { ...initialParams, ...exportTransformFilters(finalArgsFilter, ordersOpts) };
+  const initialParams = { elementId, elementWithTargetTypes, fromId, fromRole, fromTypes, toId, toRole, toTypes, relationship_type };
+  const listParams = { ...initialParams, ...exportTransformFilters(argsFilters, ordersOpts) };
   const works = await askListExport(context, user, format, type, selectedIds, listParams, exportType, maxMarkingDefinition);
   return works.map((w) => workToExportFile(w));
 };

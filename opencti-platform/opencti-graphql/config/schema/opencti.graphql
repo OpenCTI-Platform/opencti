@@ -12511,6 +12511,15 @@ type Mutation {
     orderMode: OrderingMode
     filters: FilterGroup
     selectedIds: [String]
+    elementId: [String]
+    elementWithTargetTypes: [String]
+    fromId: [String]
+    fromRole: String
+    fromTypes: [String]
+    toId: [String]
+    toRole: String
+    toTypes: [String]
+    relationship_type: [String]
   ): [File!] @auth(for: [KNOWLEDGE_KNGETEXPORT_KNASKEXPORT])
   stixCoreRelationshipDelete(fromId: StixRef!, toId: StixRef!, relationship_type: String!): Boolean!
   @auth(for: [KNOWLEDGE_KNUPDATE])
