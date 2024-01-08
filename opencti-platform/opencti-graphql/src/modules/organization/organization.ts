@@ -2,8 +2,6 @@ import { type ModuleDefinition, registerDefinition } from '../../schema/module';
 import type { StixOrganization, StoreEntityOrganization } from './organization-types';
 import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from './organization-types';
 import { ENTITY_TYPE_IDENTITY } from '../../schema/general';
-import organizationTypeDefs from './organization.graphql';
-import organizationResolvers from './organization-resolver';
 import { NAME_FIELD, normalizeName } from '../../schema/identifier';
 import { iAliasedIds, xOpenctiAliases, xOpenctiReliability } from '../../schema/attribute-definition';
 import { RELATION_LOCATED_AT, RELATION_PART_OF, RELATION_PUBLISHES, RELATION_USES } from '../../schema/stixCoreRelationship';
@@ -26,10 +24,6 @@ const ORGANIZATION_DEFINITION: ModuleDefinition<StoreEntityOrganization, StixOrg
     name: ENTITY_TYPE_IDENTITY_ORGANIZATION,
     category: ENTITY_TYPE_IDENTITY
   },
-  graphql: {
-    schema: organizationTypeDefs,
-    resolver: organizationResolvers,
-  },
   identifier: {
     definition: {
       [ENTITY_TYPE_IDENTITY_ORGANIZATION]: [{ src: NAME_FIELD }, { src: 'identity_class' }]
@@ -44,19 +38,11 @@ const ORGANIZATION_DEFINITION: ModuleDefinition<StoreEntityOrganization, StixOrg
     xOpenctiAliases,
     iAliasedIds,
     xOpenctiReliability,
-    { name: 'default_dashboard', type: 'string', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false },
-    {
-      name: 'x_opencti_organization_type',
-      type: 'string',
-      mandatoryType: 'no',
-      editDefault: false,
-      multiple: false,
-      upsert: false,
-      label: 'Organization type'
-    },
-    { name: 'default_hidden_types', type: 'string', mandatoryType: 'no', editDefault: false, multiple: true, upsert: false },
-    { name: 'authorized_authorities', type: 'string', mandatoryType: 'no', editDefault: false, multiple: true, upsert: false },
-    { name: 'grantable_groups', type: 'string', mandatoryType: 'no', editDefault: false, multiple: true, upsert: false },
+    { name: 'default_dashboard', label: 'Default dashboard', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true },
+    { name: 'x_opencti_organization_type', label: 'Organization type', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true },
+    { name: 'default_hidden_types', label: 'Default hidden types', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: true, upsert: false, isFilterable: true },
+    { name: 'authorized_authorities', label: 'Authorized authorities', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: true, upsert: false, isFilterable: false },
+    { name: 'grantable_groups', label: 'Grantable groups', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: true, upsert: false, isFilterable: true },
   ],
   relations: [
     {

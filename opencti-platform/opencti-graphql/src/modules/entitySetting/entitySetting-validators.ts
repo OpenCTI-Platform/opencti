@@ -6,10 +6,8 @@ import type { AuthContext, AuthUser } from '../../types/user';
 import { schemaAttributesDefinition } from '../../schema/schema-attributes';
 import { schemaRelationsRefDefinition } from '../../schema/schema-relationsRef';
 import { validateAndFormatSchemaAttribute } from '../../schema/schema-validator';
-import { internalFindByIds } from '../../database/middleware-loader';
 import { availableSettings, getAttributesConfiguration, getAvailableSettings, getDefaultValues } from './entitySetting-utils';
 import { telemetry } from '../../config/tracing';
-import { isEmptyField } from '../../database/utils';
 import { INPUT_MARKINGS } from '../../schema/general';
 import type { EditInput } from '../../generated/graphql';
 import { EditOperation } from '../../generated/graphql';
@@ -74,7 +72,7 @@ const scaleValidation = (scale: Scale) => {
   }
 };
 
-const attributesConfigurationValidation = async (context: AuthContext, user: AuthUser, targetType: string, input: BasicStoreEntityEntitySetting) => {
+const attributesConfigurationValidation = async (targetType: string, input: BasicStoreEntityEntitySetting) => {
   const attributesConfiguration = getAttributesConfiguration(input);
   if (attributesConfiguration) {
     for (let index = 0; index < attributesConfiguration.length; index += 1) {
@@ -94,7 +92,7 @@ const attributesConfigurationValidation = async (context: AuthContext, user: Aut
       // Scale
       if (attr.scale) {
         // Relation ref can't be scalable
-        if (!attributeDefinition?.scalable) {
+        if (attributeDefinition?.type === 'numeric' && !attributeDefinition?.scalable) {
           throw ValidationError(attr.name, {
             message: 'This attribute is not scalable for this entity',
             data: { attribute: attr.name, entityType: targetType }
@@ -109,10 +107,10 @@ const attributesConfigurationValidation = async (context: AuthContext, user: Aut
           if (defaultValues) {
             const checkValues = Array.isArray(defaultValues) ? defaultValues : [defaultValues];
             const checkInput: EditInput = { operation: EditOperation.Replace, key: attributeDefinition.name, value: checkValues };
-            validateAndFormatSchemaAttribute(targetType, attr.name, attributeDefinition, input, checkInput);
+            validateAndFormatSchemaAttribute(attr.name, attributeDefinition, checkInput);
           }
         } else if (relationRefDefinition) {
-          if (relationRefDefinition.inputName === INPUT_MARKINGS) {
+          if (relationRefDefinition.name === INPUT_MARKINGS) {
             if (getDefaultValues(attr, false) !== 'false' && getDefaultValues(attr, false) !== 'true') {
               throw ValidationError(attr.name, {
                 message: 'This field is not supported to declare a default value. You can only activate/deactivate the possibility to have a default value.',
@@ -121,14 +119,6 @@ const attributesConfigurationValidation = async (context: AuthContext, user: Aut
             } else {
               return;
             }
-          }
-          const defaultValues = getDefaultValues(attr, relationRefDefinition.multiple) ?? [];
-          const element = await internalFindByIds(context, user, Array.isArray(defaultValues) ? defaultValues : [defaultValues], { baseData: true });
-          if (isEmptyField(element)) {
-            throw ValidationError(attr.name, {
-              message: 'This value does not exist',
-              data: { attribute: attr.name, entityType: targetType }
-            });
           }
         }
       }
@@ -141,7 +131,7 @@ export const validateEntitySettingCreation = async (context: AuthContext, user: 
     const entitySetting = (input as unknown as BasicStoreEntityEntitySetting);
 
     await optionsValidation(entitySetting.target_type, input as unknown as BasicStoreEntityEntitySetting);
-    await attributesConfigurationValidation(context, user, entitySetting.target_type, entitySetting);
+    await attributesConfigurationValidation(entitySetting.target_type, entitySetting);
 
     return true;
   };
@@ -158,7 +148,7 @@ export const validateEntitySettingUpdate = async (context: AuthContext, user: Au
     const entitySettingInitial = (initial as unknown as BasicStoreEntityEntitySetting);
 
     await optionsValidation(entitySettingInitial.target_type, input as unknown as BasicStoreEntityEntitySetting);
-    await attributesConfigurationValidation(context, user, entitySettingInitial.target_type, entitySetting);
+    await attributesConfigurationValidation(entitySettingInitial.target_type, entitySetting);
 
     return true;
   };

@@ -1,27 +1,25 @@
 import type { JSONSchemaType } from 'ajv';
-import threatActorIndividualTypeDefs from './threatActorIndividual.graphql';
 import { ENTITY_TYPE_THREAT_ACTOR } from '../../schema/general';
 import { INNER_TYPE, NAME_FIELD, normalizeName } from '../../schema/identifier';
 import { type ModuleDefinition, registerDefinition } from '../../schema/module';
 import { bornIn, ethnicity, objectOrganization } from '../../schema/stixRefRelationship';
 import type { StixThreatActorIndividual, StoreEntityThreatActorIndividual } from './threatActorIndividual-types';
 import { ENTITY_TYPE_THREAT_ACTOR_INDIVIDUAL } from './threatActorIndividual-types';
-import threatActorIndividualResolvers from './threatActorIndividual-resolvers';
 import convertThreatActorIndividualToStix from './threatActorIndividual-converter';
 import {
   RELATION_ATTRIBUTED_TO,
+  RELATION_CITIZEN_OF,
   RELATION_COMPROMISES,
   RELATION_COOPERATES_WITH,
   RELATION_EMPLOYED_BY,
-  RELATION_RESIDES_IN,
-  RELATION_CITIZEN_OF,
-  RELATION_NATIONAL_OF,
   RELATION_HOSTS,
   RELATION_IMPERSONATES,
   RELATION_LOCATED_AT,
+  RELATION_NATIONAL_OF,
   RELATION_OWNS,
   RELATION_PART_OF,
   RELATION_PARTICIPATES_IN,
+  RELATION_RESIDES_IN,
   RELATION_TARGETS,
   RELATION_USES
 } from '../../schema/stixCoreRelationship';
@@ -74,10 +72,6 @@ const THREAT_ACTOR_INDIVIDUAL_DEFINITION: ModuleDefinition<StoreEntityThreatActo
     category: ENTITY_TYPE_THREAT_ACTOR,
     aliased: true,
   },
-  graphql: {
-    schema: threatActorIndividualTypeDefs,
-    resolver: threatActorIndividualResolvers,
-  },
   identifier: {
     definition: {
       [ENTITY_TYPE_THREAT_ACTOR_INDIVIDUAL]: [{ src: NAME_FIELD }, { src: INNER_TYPE }]
@@ -89,34 +83,57 @@ const THREAT_ACTOR_INDIVIDUAL_DEFINITION: ModuleDefinition<StoreEntityThreatActo
     },
   },
   attributes: [
-    { name: 'name', type: 'string', mandatoryType: 'external', editDefault: true, multiple: false, upsert: true },
-    { name: 'description', type: 'string', mandatoryType: 'customizable', editDefault: true, multiple: false, upsert: true },
+    { name: 'name', label: 'Name', type: 'string', format: 'short', mandatoryType: 'external', editDefault: true, multiple: false, upsert: true, isFilterable: true },
+    { name: 'description', label: 'Description', type: 'string', format: 'short', mandatoryType: 'customizable', editDefault: true, multiple: false, upsert: true, isFilterable: true },
+    { name: 'threat_actor_types', label: 'Threat actor types', type: 'string', format: 'short', mandatoryType: 'customizable', editDefault: true, multiple: true, upsert: false, isFilterable: true },
+    { name: 'first_seen', label: 'First seen', type: 'date', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: true },
+    { name: 'last_seen', label: 'Last seen', type: 'date', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: true },
+    { name: 'goals', label: 'Goals', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: true, upsert: true, isFilterable: true },
+    { name: 'roles', label: 'Roles', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: true, upsert: true, isFilterable: true },
+    { name: 'sophistication', label: 'Sophistication', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true },
+    { name: 'resource_level', label: 'Resource level', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: true },
+    { name: 'primary_motivation', label: 'Primary motivation', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: true },
+    { name: 'secondary_motivations', label: 'Secondary motivation', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: true, upsert: true, isFilterable: true },
+    { name: 'personal_motivations', label: 'Personal motivations', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: true, upsert: false, isFilterable: true },
+    { name: 'date_of_birth', label: 'Date of birth', type: 'date', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true },
+    { name: 'gender', label: 'Gender', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true },
+    { name: 'job_title', label: 'Job title', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true },
+    { name: 'marital_status', label: 'Marital status', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true },
+    { name: 'eye_color', label: 'Eye color', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true },
+    { name: 'hair_color', label: 'Hair color', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true },
     {
-      name: 'threat_actor_types',
-      type: 'string',
-      mandatoryType: 'customizable',
-      editDefault: true,
+      name: 'height',
+      label: 'Height',
+      type: 'object',
+      format: 'nested',
+      mandatoryType: 'no',
+      editDefault: false,
       multiple: true,
-      upsert: false,
-      label: 'Threat actor types'
+      upsert: true,
+      isFilterable: true,
+      mappings: [
+        { name: 'measure', label: 'Measure', type: 'numeric', mandatoryType: 'external', upsert: true, precision: 'float', editDefault: false, multiple: false, isFilterable: true },
+        { name: 'date_seen', label: 'Measure date', type: 'date', mandatoryType: 'external', upsert: true, editDefault: false, multiple: false, isFilterable: true },
+      ]
     },
-    { name: 'first_seen', type: 'date', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, label: 'First seen' },
-    { name: 'last_seen', type: 'date', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, label: 'Last seen' },
-    { name: 'goals', type: 'string', mandatoryType: 'no', editDefault: false, multiple: true, upsert: true },
-    { name: 'roles', type: 'string', mandatoryType: 'no', editDefault: false, multiple: true, upsert: true },
-    { name: 'sophistication', type: 'string', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false },
-    { name: 'resource_level', type: 'string', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, label: 'Resource level' },
-    { name: 'primary_motivation', type: 'string', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, label: 'Primary motivation' },
-    { name: 'secondary_motivations', type: 'string', mandatoryType: 'no', editDefault: false, multiple: true, upsert: true, label: 'Secondary motivations' },
-    { name: 'personal_motivations', type: 'string', mandatoryType: 'no', editDefault: false, multiple: true, upsert: false, label: 'Personal motivations' },
-    { name: 'date_of_birth', type: 'date', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false },
-    { name: 'gender', type: 'string', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false },
-    { name: 'job_title', type: 'string', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false },
-    { name: 'marital_status', type: 'string', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false },
-    { name: 'eye_color', type: 'string', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false },
-    { name: 'hair_color', type: 'string', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false },
-    { name: 'height', type: 'object', mandatoryType: 'no', editDefault: false, multiple: true, upsert: true, schemaDef: schemaMeasure },
-    { name: 'weight', type: 'object', mandatoryType: 'no', editDefault: false, multiple: true, upsert: true, schemaDef: schemaMeasure },
+    {
+      name: 'weight',
+      label: 'Weight',
+      type: 'object',
+      format: 'nested',
+      mandatoryType: 'no',
+      editDefault: false,
+      multiple: true,
+      upsert: true,
+      isFilterable: true,
+      mappings: [
+        { name: 'measure', label: 'Measure', type: 'numeric', mandatoryType: 'external', upsert: true, precision: 'float', editDefault: false, multiple: false, isFilterable: true },
+        { name: 'date_seen', label: 'Measure date', type: 'date', mandatoryType: 'external', upsert: true, editDefault: false, multiple: false, isFilterable: true }
+      ]
+    },
+    { name: 'confidence', label: 'Confidence', type: 'numeric', precision: 'integer', mandatoryType: 'no', editDefault: true, multiple: false, upsert: false, isFilterable: true },
+    { name: 'revoked', label: 'Revoked', type: 'boolean', mandatoryType: 'no', editDefault: true, multiple: false, upsert: false, isFilterable: true },
+    { name: 'lang', label: 'Lang', type: 'string', format: 'short', mandatoryType: 'no', editDefault: true, multiple: false, upsert: true, isFilterable: true },
   ],
   relations: [
     {

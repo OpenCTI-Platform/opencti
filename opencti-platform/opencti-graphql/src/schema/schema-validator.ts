@@ -1,21 +1,10 @@
 import * as R from 'ramda';
 import Ajv from 'ajv';
-import * as jsonpatch from 'fast-json-patch';
 import { SemanticAttributes } from '@opentelemetry/semantic-conventions';
-import { JSONPath } from 'jsonpath-plus';
-import {
-  isBooleanAttribute,
-  isDateAttribute,
-  isDictionaryAttribute,
-  isJsonAttribute,
-  isNumericAttribute,
-  isObjectAttribute,
-  isStringAttribute,
-  schemaAttributesDefinition
-} from './schema-attributes';
+import { schemaAttributesDefinition } from './schema-attributes';
 import { UnsupportedError, ValidationError } from '../config/errors';
 import type { BasicStoreEntityEntitySetting } from '../modules/entitySetting/entitySetting-types';
-import { isNotEmptyField } from '../database/utils';
+import { isEmptyField, isNotEmptyField } from '../database/utils';
 import { getEntityValidatorCreation, getEntityValidatorUpdate } from './validator-register';
 import type { AuthContext, AuthUser } from '../types/user';
 import { getAttributesConfiguration } from '../modules/entitySetting/entitySetting-utils';
@@ -29,122 +18,77 @@ import { utcDate } from '../utils/format';
 const ajv = new Ajv();
 
 // -- VALIDATE ATTRIBUTE AVAILABILITY AND FORMAT --
-
-export const extractSchemaDefFromPath = (attributeDefinition: AttributeDefinition, pointer: string, editInput: EditInput): object | object[] => {
-  const configPath = pointer.split('/').filter((a) => isNotEmptyField(a) && a !== editInput.key)
-    .map((t) => (!Number.isNaN(Number(t)) ? 'items' : (`properties.${t}`))).join('.');
-  const configSchema = JSONPath({ json: attributeDefinition.schemaDef as object, resultType: 'value', wrap: false, path: configPath });
-  return configSchema?.type === undefined || configSchema?.type === 'array' ? editInput.value : R.head(editInput.value);
-};
-
 export const validateAndFormatSchemaAttribute = (
-  instanceType: string,
   attributeName: string,
   attributeDefinition: AttributeDefinition | undefined,
-  initial: object,
   editInput: EditInput
 ) => {
-  // Complex object must be completely enforced
-  if (isJsonAttribute(attributeName) || isObjectAttribute(attributeName)) {
-    if (!attributeDefinition) {
-      throw ValidationError(attributeName, {
-        message: 'This attribute is not declared for this type',
-        data: { attribute: attributeName, entityType: instanceType }
-      });
-    }
-    if (attributeDefinition.schemaDef) {
-      const validate = ajv.compile(attributeDefinition.schemaDef);
-      if (isJsonAttribute(attributeName)) {
-        const jsonValue = R.head(editInput.value); // json cannot be multiple
-        const valid = validate(JSON.parse(jsonValue as string));
-        if (!valid) {
-          throw ValidationError(attributeName, { message: 'The JSON schema is not valid', data: validate.errors });
-        }
+  // Basic validation
+  if (!attributeDefinition || isEmptyField(editInput.value)) {
+    return;
+  }
+  if (!attributeDefinition.multiple && editInput.value.length > 1) {
+    throw ValidationError(attributeName, { message: `Attribute ${attributeName} cannot be multiple`, data: editInput });
+  }
+  // Data validation
+  if (attributeDefinition.type === 'string') {
+    const values = [];
+    for (let index = 0; index < editInput.value.length; index += 1) {
+      const value = editInput.value[index];
+      if (value && !R.is(String, value)) {
+        throw ValidationError(attributeName, { message: `Attribute ${attributeName} must be a string`, data: editInput });
+      } else {
+        values.push(value ? value.trim() : value);
       }
-      if (isObjectAttribute(attributeName)) {
-        let validationValues = editInput.value;
-        if (editInput.object_path) {
-          // If object path is setup, controlling the field is much harder.
-          // Concept here is to apply the partial operation and check if the result comply to the schema
-          const pointers = JSONPath({ json: initial, resultType: 'pointer', path: `${editInput.key}${editInput.object_path}` });
-          const patch = pointers.map((p: string) => ({ op: editInput.operation, path: p, value: extractSchemaDefFromPath(attributeDefinition, p, editInput) }));
-          const patchedInstance = jsonpatch.applyPatch(R.clone(initial), patch).newDocument as any;
-          validationValues = patchedInstance[editInput.key];
-        }
-        const valid = validate(validationValues);
-        if (!valid) {
-          throw ValidationError(attributeName, { message: 'The Object schema is not valid', data: validate.errors });
-        }
+    }
+    // This is reference change to trim the input and prevent unuseful stream events
+    // TODO Find a better way to rework the data
+    // eslint-disable-next-line no-param-reassign
+    editInput.value = values;
+    // Special validation for json
+    if (attributeDefinition.format === 'json' && attributeDefinition.schemaDef) {
+      const validate = ajv.compile(attributeDefinition.schemaDef);
+      const jsonValue = R.head(editInput.value); // json cannot be multiple
+      const valid = validate(JSON.parse(jsonValue as string));
+      if (!valid) {
+        throw ValidationError(attributeName, { message: 'The JSON schema is not valid', data: validate.errors });
       }
     }
   }
-  // Simple object must be eventually tested as the model is not complete yet
-  if (attributeDefinition && editInput.value) {
-    // Test multiple for all types
-    if (!attributeDefinition.multiple && editInput.value.length > 1) {
-      throw ValidationError(attributeName, { message: `Attribute ${attributeName} cannot be multiple`, data: editInput });
-    }
-    // Test string value
-    if (isStringAttribute(attributeName)) {
-      const values = [];
-      for (let index = 0; index < editInput.value.length; index += 1) {
-        const value = editInput.value[index];
-        if (value && !R.is(String, value)) {
-          throw ValidationError(attributeName, { message: `Attribute ${attributeName} must be a string`, data: editInput });
-        } else {
-          values.push(value ? value.trim() : value);
-        }
+  if (attributeDefinition.type === 'boolean') {
+    editInput.value.forEach((value) => {
+      if (value && !R.is(Boolean, value) && !R.is(String, value)) {
+        throw ValidationError(attributeName, { message: `Attribute ${attributeName} must be a boolean/string`, data: editInput });
       }
-      // This is reference change to trim the input and prevent unuseful stream events
-      // TODO Find a better way to rework the data
-      // eslint-disable-next-line no-param-reassign
-      editInput.value = values;
-    }
-    // Test boolean value (Accept string)
-    if (isBooleanAttribute(attributeName)) {
-      editInput.value.forEach((value) => {
-        if (value && !R.is(Boolean, value) && !R.is(String, value)) {
-          throw ValidationError(attributeName, { message: `Attribute ${attributeName} must be a boolean/string`, data: editInput });
-        }
-      });
-    }
+    });
+  }
+  if (attributeDefinition.type === 'date') {
     // Test date value (Accept only ISO date string)
-    if (isDateAttribute(attributeName)) {
-      editInput.value.forEach((value) => {
-        if (value && !R.is(String, value) && !utcDate(value).isValid()) {
-          throw ValidationError(attributeName, { message: `Attribute ${attributeName} must be a boolean/string`, data: editInput });
-        }
-      });
-    }
+    editInput.value.forEach((value) => {
+      if (value && !R.is(String, value) && !utcDate(value).isValid()) {
+        throw ValidationError(attributeName, { message: `Attribute ${attributeName} must be a boolean/string`, data: editInput });
+      }
+    });
+  }
+  if (attributeDefinition.type === 'numeric') {
     // Test numeric value (Accept string)
-    if (isNumericAttribute(attributeName)) {
-      editInput.value.forEach((value) => {
-        if (value && Number.isNaN(Number(value))) {
-          throw ValidationError(attributeName, { message: `Attribute ${attributeName} must be a numeric/string`, data: editInput });
-        }
-      });
-    }
-    // Test dictionary (partial patch only with string)
-    if (isDictionaryAttribute(attributeName)) {
-      editInput.value.forEach((value) => {
-        if (editInput.key.includes('.')) { // Partial patch, must be a string for now
-          if (value && !R.is(String, value)) {
-            throw ValidationError(attributeName, { message: `Attribute ${attributeName} must be a string`, data: editInput });
-          }
-        } else if (value && !R.is(Object, value) && Object.keys(value).length === 0) { // Complete patch, must be an object
-          throw ValidationError(attributeName, { message: `Attribute ${attributeName} must be an object`, data: editInput });
-        }
-      });
-    }
+    editInput.value.forEach((value) => {
+      if (value && Number.isNaN(Number(value))) {
+        throw ValidationError(attributeName, { message: `Attribute ${attributeName} must be a numeric/string`, data: editInput });
+      }
+    });
+  }
+  if (attributeDefinition.type === 'object') {
+    // TODO JRI Implements a checker
   }
 };
 
-const validateFormatSchemaAttributes = async (context: AuthContext, user: AuthUser, instanceType: string, initial: Record<string, unknown>, editInputs: EditInput[]) => {
+const validateFormatSchemaAttributes = async (context: AuthContext, user: AuthUser, instanceType: string, editInputs: EditInput[]) => {
   const validateFormatSchemaAttributesFn = async () => {
     const availableAttributes = schemaAttributesDefinition.getAttributes(instanceType);
     editInputs.forEach((editInput) => {
       const attributeDefinition = availableAttributes.get(editInput.key);
-      validateAndFormatSchemaAttribute(instanceType, editInput.key, attributeDefinition, initial, editInput);
+      validateAndFormatSchemaAttribute(editInput.key, attributeDefinition, editInput);
     });
   };
   return telemetry(context, user, 'SCHEMA ATTRIBUTES VALIDATION', {
@@ -168,7 +112,7 @@ const validateMandatoryAttributes = (
   const mandatoryAttributes = attributesConfiguration.filter((attr) => attr.mandatory);
   // In creation if enforce reference is activated, user must provide a least 1 external references
   if (isCreation && entitySetting.enforce_reference) {
-    mandatoryAttributes.push({ name: externalReferences.inputName, mandatory: true });
+    mandatoryAttributes.push({ name: externalReferences.name, mandatory: true });
   }
   const inputKeys = Object.keys(input);
   mandatoryAttributes.forEach((attr) => {
@@ -226,7 +170,7 @@ export const validateInputCreation = async (
     // Generic validator
     const editInputs: EditInput[] = Object.entries(input)
       .map(([k, v]) => ({ operation: EditOperation.Replace, value: Array.isArray(v) ? v : [v], key: k }));
-    await validateFormatSchemaAttributes(context, user, instanceType, input, editInputs);
+    await validateFormatSchemaAttributes(context, user, instanceType, editInputs);
     await validateMandatoryAttributesOnCreation(context, user, input, entitySetting);
     // Functional validator
     const validator = getEntityValidatorCreation(instanceType);
@@ -265,7 +209,7 @@ export const validateInputUpdate = async (
     const instanceFromInputs: Record<string, unknown> = {};
     editInputs.forEach((obj) => { instanceFromInputs[obj.key] = obj.value; });
     // Generic validator
-    await validateFormatSchemaAttributes(context, user, instanceType, initial, editInputs);
+    await validateFormatSchemaAttributes(context, user, instanceType, editInputs);
     await validateMandatoryAttributesOnUpdate(context, user, instanceFromInputs, entitySetting);
     validateUpdatableAttribute(instanceType, instanceFromInputs);
     // Functional validator

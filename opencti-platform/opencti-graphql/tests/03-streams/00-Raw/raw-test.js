@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/dot-notation */
 import { describe, expect, it } from 'vitest';
 import * as R from 'ramda';
 import { FIVE_MINUTES, RAW_EVENTS_SIZE } from '../../utils/testQuery';
@@ -13,7 +14,7 @@ describe('Raw streams tests', () => {
       // Read all events from the beginning.
       const events = await fetchStreamEvents(`http://localhost:${PORT}/stream`, { from: '0' });
       // Check the number of events
-      // 01 - CHECK CREATE EVENTS
+      // 01 - CHECK CREATE EVENTS.
       const createEvents = events.filter((e) => e.type === EVENT_TYPE_CREATE);
       // Check some events count
       const createEventsByTypes = R.groupBy((e) => e.data.data.type, createEvents);
@@ -28,17 +29,43 @@ describe('Raw streams tests', () => {
       expect(createEventsByTypes.tool.length).toBe(2);
       expect(createEventsByTypes.vocabulary.length).toBe(330); // 328 created at init + 2 created in tests
       expect(createEventsByTypes.vulnerability.length).toBe(7);
-      expect(createEvents.length).toBe(705);
+      expect(createEvents.length).toBe(704);
       for (let createIndex = 0; createIndex < createEvents.length; createIndex += 1) {
         const { data: insideData, origin, type } = createEvents[createIndex];
         expect(origin).toBeDefined();
         checkStreamGenericContent(type, insideData);
       }
-      // 02 - CHECK UPDATE EVENTS
+      // 02 - CHECK UPDATE EVENTS.
       const updateEvents = events.filter((e) => e.type === EVENT_TYPE_UPDATE);
-      expect(updateEvents.length).toBe(131);
       const updateEventsByTypes = R.groupBy((e) => e.data.data.type, updateEvents);
-      expect(updateEventsByTypes.report.length).toBe(5);
+      expect(updateEventsByTypes['marking-definition'].length).toBe(2);
+      expect(updateEventsByTypes['campaign'].length).toBe(7);
+      expect(updateEventsByTypes['relationship'].length).toBe(7);
+      expect(updateEventsByTypes['identity'].length).toBe(11);
+      expect(updateEventsByTypes['malware'].length).toBe(13);
+      expect(updateEventsByTypes['intrusion-set'].length).toBe(4);
+      expect(updateEventsByTypes['data-component'].length).toBe(2);
+      expect(updateEventsByTypes['location'].length).toBe(12);
+      expect(updateEventsByTypes['attack-pattern'].length).toBe(3);
+      expect(updateEventsByTypes['feedback'].length).toBe(1);
+      expect(updateEventsByTypes['course-of-action'].length).toBe(3);
+      expect(updateEventsByTypes['data-source'].length).toBe(1);
+      expect(updateEventsByTypes['external-reference'].length).toBe(1);
+      expect(updateEventsByTypes['grouping'].length).toBe(3);
+      expect(updateEventsByTypes['incident'].length).toBe(3);
+      expect(updateEventsByTypes['indicator'].length).toBe(3);
+      expect(updateEventsByTypes['label'].length).toBe(1);
+      expect(updateEventsByTypes['malware-analysis'].length).toBe(3);
+      expect(updateEventsByTypes['note'].length).toBe(3);
+      expect(updateEventsByTypes['opinion'].length).toBe(6);
+      expect(updateEventsByTypes['report'].length).toBe(5);
+      expect(updateEventsByTypes['ipv4-addr'].length).toBe(3);
+      expect(updateEventsByTypes['tool'].length).toBe(7);
+      expect(updateEventsByTypes['sighting'].length).toBe(4);
+      expect(updateEventsByTypes['threat-actor'].length).toBe(17);
+      expect(updateEventsByTypes['vocabulary'].length).toBe(3);
+      expect(updateEventsByTypes['vulnerability'].length).toBe(3);
+      expect(updateEvents.length).toBe(131);
       for (let updateIndex = 0; updateIndex < updateEvents.length; updateIndex += 1) {
         const event = updateEvents[updateIndex];
         const { data: insideData, origin, type } = event;

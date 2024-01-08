@@ -142,8 +142,10 @@ const StixCyberObservableEditionOverviewComponent = ({
     if (!enableReferences) {
       let finalName = name;
       let finalValue = value || '';
+      let object_path = null;
       if (name.includes('hashes')) {
-        finalName = name.replace('hashes_', 'hashes.');
+        finalName = 'hashes';
+        object_path = name;
       }
       if (multipleAttributes.includes(finalName)) {
         if (finalValue.length > 0) {
@@ -156,7 +158,7 @@ const StixCyberObservableEditionOverviewComponent = ({
         mutation: stixCyberObservableMutationFieldPatch,
         variables: {
           id: stixCyberObservable.id,
-          input: { key: finalName, value: finalValue },
+          input: { key: finalName, object_path, value: finalValue },
         },
         onCompleted: (response) => {
           if (
@@ -279,10 +281,10 @@ const StixCyberObservableEditionOverviewComponent = ({
                 map((n) => [n.algorithm, n.hash]),
                 fromPairs,
               )(stixCyberObservable.hashes);
-              initialValues.hashes_MD5 = hashes.MD5;
-              initialValues['hashes_SHA-1'] = hashes['SHA-1'];
-              initialValues['hashes_SHA-256'] = hashes['SHA-256'];
-              initialValues['hashes_SHA-512'] = hashes['SHA-512'];
+              initialValues['/hashes/MD5'] = hashes.MD5;
+              initialValues['/hashes/SHA-1'] = hashes['SHA-1'];
+              initialValues['/hashes/SHA-256'] = hashes['SHA-256'];
+              initialValues['/hashes/SHA-512'] = hashes['SHA-512'];
             } else {
               initialValues[attribute.value] = stixCyberObservable[attribute.value];
             }
@@ -335,7 +337,7 @@ const StixCyberObservableEditionOverviewComponent = ({
                           <Field
                             component={TextField}
                             variant="standard"
-                            name="hashes_MD5"
+                            name="/hashes/MD5"
                             label={t('hash_md5')}
                             fullWidth={true}
                             style={{ marginTop: 20 }}
@@ -344,14 +346,14 @@ const StixCyberObservableEditionOverviewComponent = ({
                             helperText={
                               <SubscriptionFocus
                                 context={context}
-                                fieldName="hashes_MD5"
+                                fieldName="/hashes/MD5"
                               />
                             }
                           />
                           <Field
                             component={TextField}
                             variant="standard"
-                            name="hashes_SHA-1"
+                            name="/hashes/SHA-1"
                             label={t('hash_sha-1')}
                             fullWidth={true}
                             style={{ marginTop: 20 }}
@@ -360,14 +362,14 @@ const StixCyberObservableEditionOverviewComponent = ({
                             helperText={
                               <SubscriptionFocus
                                 context={context}
-                                fieldName="hashes_SHA-1"
+                                fieldName="/hashes/SHA-1"
                               />
                             }
                           />
                           <Field
                             component={TextField}
                             variant="standard"
-                            name="hashes_SHA-256"
+                            name="/hashes/SHA-256"
                             label={t('hash_sha-256')}
                             fullWidth={true}
                             style={{ marginTop: 20 }}
@@ -376,14 +378,14 @@ const StixCyberObservableEditionOverviewComponent = ({
                             helperText={
                               <SubscriptionFocus
                                 context={context}
-                                fieldName="hashes_SHA-256"
+                                fieldName="/hashes/SHA-256"
                               />
                             }
                           />
                           <Field
                             component={TextField}
                             variant="standard"
-                            name="hashes_SHA-512"
+                            name="/hashes/SHA-512"
                             label={t('hash_sha-512')}
                             fullWidth={true}
                             style={{ marginTop: 20 }}
@@ -392,7 +394,7 @@ const StixCyberObservableEditionOverviewComponent = ({
                             helperText={
                               <SubscriptionFocus
                                 context={context}
-                                fieldName="hashes_SHA-512"
+                                fieldName="/hashes/SHA-512"
                               />
                             }
                           />

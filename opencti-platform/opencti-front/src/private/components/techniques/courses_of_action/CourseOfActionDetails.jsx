@@ -60,8 +60,8 @@ class CourseOfActionDetailsComponent extends Component {
               </Typography>
               {courseOfAction.x_opencti_log_sources && (
                 <List>
-                  {courseOfAction.x_opencti_log_sources.map((logSource) => (
-                    <ListItem key={logSource} dense={true} divider={true}>
+                  {courseOfAction.x_opencti_log_sources.map((logSource, index) => (
+                    <ListItem key={`${index}:${logSource}`} dense={true} divider={true}>
                       <ListItemIcon>
                         <PostOutline />
                       </ListItemIcon>

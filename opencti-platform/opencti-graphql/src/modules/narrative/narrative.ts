@@ -1,7 +1,5 @@
-import narrativeTypeDefs from './narrative.graphql';
 import convertNarrativeToStix from './narrative-converter';
 import { NAME_FIELD, normalizeName } from '../../schema/identifier';
-import narrativeResolvers from './narrative-resolver';
 import { ENTITY_TYPE_NARRATIVE, type StixNarrative, type StoreEntityNarrative } from './narrative-types';
 import { REL_NEW } from '../../database/stix';
 import { RELATION_SUBNARRATIVE_OF } from '../../schema/stixCoreRelationship';
@@ -16,10 +14,6 @@ const NARRATIVE_DEFINITION: ModuleDefinition<StoreEntityNarrative, StixNarrative
     category: ABSTRACT_STIX_DOMAIN_OBJECT,
     aliased: true
   },
-  graphql: {
-    schema: narrativeTypeDefs,
-    resolver: narrativeResolvers,
-  },
   identifier: {
     definition: {
       [ENTITY_TYPE_NARRATIVE]: [{ src: NAME_FIELD }]
@@ -31,9 +25,9 @@ const NARRATIVE_DEFINITION: ModuleDefinition<StoreEntityNarrative, StixNarrative
     },
   },
   attributes: [
-    { name: 'name', type: 'string', mandatoryType: 'external', editDefault: true, multiple: false, upsert: true },
-    { name: 'description', type: 'string', mandatoryType: 'customizable', editDefault: true, multiple: false, upsert: true },
-    { name: 'narrative_types', type: 'string', mandatoryType: 'no', editDefault: false, multiple: true, upsert: true, label: 'Narrative types' },
+    { name: 'name', label: 'Name', type: 'string', format: 'short', mandatoryType: 'external', editDefault: true, multiple: false, upsert: true, isFilterable: true },
+    { name: 'description', label: 'Description', type: 'string', format: 'short', mandatoryType: 'customizable', editDefault: true, multiple: false, upsert: true, isFilterable: true },
+    { name: 'narrative_types', label: 'Narrative types', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: true, upsert: true, isFilterable: true },
   ],
   relations: [
     {

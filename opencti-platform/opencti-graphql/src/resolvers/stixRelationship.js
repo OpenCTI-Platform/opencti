@@ -9,7 +9,7 @@ import {
   stixRelationshipDelete,
   stixRelationshipsDistribution,
   stixRelationshipsMultiTimeSeries,
-  stixRelationshipsNumber,
+  stixRelationshipsNumber
 } from '../domain/stixRelationship';
 import { ABSTRACT_STIX_CORE_RELATIONSHIP, } from '../schema/general';
 import { STIX_SIGHTING_RELATIONSHIP } from '../schema/stixSightingRelationship';

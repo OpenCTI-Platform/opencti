@@ -5,7 +5,7 @@ import { LRUCache } from 'lru-cache';
 import conf, { basePath, logApp } from '../config/conf';
 import { authenticateUserFromRequest, TAXIIAPI } from '../domain/user';
 import { createStreamProcessor, EVENT_CURRENT_VERSION } from '../database/redis';
-import { generateInternalId, generateStandardId } from '../schema/identifier';
+import { generateInternalId } from '../schema/identifier';
 import { stixLoadById, storeLoadByIdsWithRefs } from '../database/middleware';
 import { elList } from '../database/engine';
 import {
@@ -195,7 +195,7 @@ const createSseMiddleware = () => {
       const resolvedStoreElements = await storeLoadByIdsWithRefs(context, req.user, refsToResolve);
       missingElements.push(...resolvedStoreElements);
       const resolvedMissingIds = R.uniq(missingElements.map((elem) => extractIdsFromStoreObject(elem)).flat());
-      const parentRefs = resolvedStoreElements.map((r) => stixRefsExtractor(convertStoreToStix(r), generateStandardId))
+      const parentRefs = resolvedStoreElements.map((r) => stixRefsExtractor(convertStoreToStix(r)))
         .flat().filter((parentId) => !resolvedMissingIds.includes(parentId));
       if (parentRefs.length > 0) {
         const newMissing = await resolveMissingReferences(context, req, parentRefs, cache);
@@ -337,7 +337,7 @@ const createSseMiddleware = () => {
     }
   };
   const resolveAndPublishMissingRefs = async (context, cache, channel, req, eventId, stixData) => {
-    const refs = stixRefsExtractor(stixData, generateStandardId);
+    const refs = stixRefsExtractor(stixData);
     const missingInstances = await resolveMissingReferences(context, req, refs, cache);
     // const missingInstances = await storeLoadByIdsWithRefs(context, req.user, missingElements);
     if (stixData.type === STIX_TYPE_RELATION || stixData.type === STIX_TYPE_SIGHTING) {

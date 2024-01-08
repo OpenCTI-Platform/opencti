@@ -1,7 +1,7 @@
 import { batchListThroughGetTo, batchLoadThroughGetTo, createEntity } from '../../database/middleware';
 import { listEntitiesPaginated, storeLoadById } from '../../database/middleware-loader';
 import type { AuthContext, AuthUser } from '../../types/user';
-import type { BasicStoreEntityDataComponent } from './dataComponent-types';
+import { type BasicStoreEntityDataComponent, RELATION_DATA_SOURCE } from './dataComponent-types';
 import type { DataComponentAddInput, QueryDataComponentsArgs } from '../../generated/graphql';
 import { notify } from '../../database/redis';
 import { BUS_TOPICS } from '../../config/conf';
@@ -9,9 +9,6 @@ import { ABSTRACT_STIX_DOMAIN_OBJECT } from '../../schema/general';
 import { ENTITY_TYPE_ATTACK_PATTERN, ENTITY_TYPE_DATA_COMPONENT, ENTITY_TYPE_DATA_SOURCE } from '../../schema/stixDomainObject';
 import { RELATION_DETECTS } from '../../schema/stixCoreRelationship';
 import type { DomainFindById } from '../../domain/domainTypes';
-
-export const ATTRIBUTE_DATA_SOURCE = 'data_source_ref';
-export const RELATION_DATA_SOURCE = 'data-source';
 
 export const findById: DomainFindById<BasicStoreEntityDataComponent> = (context: AuthContext, user: AuthUser, dataComponentId: string) => {
   return storeLoadById(context, user, dataComponentId, ENTITY_TYPE_DATA_COMPONENT);

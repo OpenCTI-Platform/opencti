@@ -180,7 +180,6 @@ interface StoreCommon {
   internal_id: string
   standard_id: StixId;
   entity_type: string
-  spec_version: string
   parent_types: string[];
   // inputs
   [INPUT_LINKED]?: Array<BasicStoreObject>;

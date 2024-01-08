@@ -12,7 +12,7 @@ import { listAllThings } from '../database/middleware';
 import { minutesAgo } from '../utils/format';
 import { isNotEmptyField } from '../database/utils';
 import { convertFiltersToQueryOptions } from '../utils/filtering/filtering-resolution';
-import { isDictionaryAttribute, isMultipleAttribute } from '../schema/schema-attributes';
+import { isMultipleAttribute, isObjectAttribute } from '../schema/schema-attributes';
 
 const SIZE_LIMIT = nconf.get('data_sharing:max_csv_feed_result') || 5000;
 
@@ -88,7 +88,7 @@ const initHttpRollingFeeds = (app: Express.Application) => {
             if (isNotEmptyField(data)) {
               if (isMultipleAttribute(element.entity_type, baseKey)) {
                 dataElements.push(dataFormat(feed.separator, data.join(',')));
-              } else if (isDictionaryAttribute(baseKey)) {
+              } else if (isObjectAttribute(baseKey)) {
                 if (isComplexKey) {
                   const [, innerKey] = mapping.attribute.split('.');
                   const dictInnerData = data[innerKey.toUpperCase()];

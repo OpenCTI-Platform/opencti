@@ -1,4 +1,3 @@
-import caseRfiTypeDefs from './case-rfi.graphql';
 import { ENTITY_TYPE_CONTAINER_CASE } from '../case-types';
 import { NAME_FIELD, normalizeName } from '../../../schema/identifier';
 import type { ModuleDefinition } from '../../../schema/module';
@@ -7,7 +6,6 @@ import { createdBy, objectAssignee, objectMarking, objectParticipant } from '../
 import type { StixCaseRfi, StoreEntityCaseRfi } from './case-rfi-types';
 import { ENTITY_TYPE_CONTAINER_CASE_RFI } from './case-rfi-types';
 import convertCaseRfiToStix from './case-rfi-converter';
-import caseRfiResolvers from './case-rfi-resolvers';
 
 const CASE_RFI_DEFINITION: ModuleDefinition<StoreEntityCaseRfi, StixCaseRfi> = {
   type: {
@@ -15,10 +13,6 @@ const CASE_RFI_DEFINITION: ModuleDefinition<StoreEntityCaseRfi, StixCaseRfi> = {
     name: ENTITY_TYPE_CONTAINER_CASE_RFI,
     category: ENTITY_TYPE_CONTAINER_CASE,
     aliased: false
-  },
-  graphql: {
-    schema: caseRfiTypeDefs,
-    resolver: caseRfiResolvers,
   },
   identifier: {
     definition: {
@@ -31,11 +25,11 @@ const CASE_RFI_DEFINITION: ModuleDefinition<StoreEntityCaseRfi, StixCaseRfi> = {
     },
   },
   attributes: [
-    { name: 'name', type: 'string', mandatoryType: 'external', editDefault: true, multiple: false, upsert: true },
-    { name: 'created', type: 'date', mandatoryType: 'external', editDefault: true, multiple: false, upsert: true },
-    { name: 'information_types', type: 'string', mandatoryType: 'customizable', editDefault: true, multiple: true, upsert: true, label: 'information_types' },
-    { name: 'severity', type: 'string', mandatoryType: 'customizable', editDefault: true, multiple: false, upsert: true },
-    { name: 'priority', type: 'string', mandatoryType: 'customizable', editDefault: true, multiple: false, upsert: true },
+    { name: 'name', label: 'Name', type: 'string', format: 'short', mandatoryType: 'external', editDefault: true, multiple: false, upsert: true, isFilterable: true },
+    { name: 'created', label: 'Created', type: 'date', mandatoryType: 'external', editDefault: true, multiple: false, upsert: true, isFilterable: true },
+    { name: 'information_types', label: 'Information types', type: 'string', format: 'short', mandatoryType: 'customizable', editDefault: true, multiple: true, upsert: true, isFilterable: true },
+    { name: 'severity', label: 'Severity', type: 'string', format: 'short', mandatoryType: 'customizable', editDefault: true, multiple: false, upsert: true, isFilterable: true },
+    { name: 'priority', label: 'Priority', type: 'string', format: 'short', mandatoryType: 'customizable', editDefault: true, multiple: false, upsert: true, isFilterable: true },
   ],
   relations: [],
   relationsRefs: [createdBy, objectMarking, objectAssignee, objectParticipant],

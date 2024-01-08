@@ -1,4 +1,3 @@
-import caseRftTypeDefs from './case-rft.graphql';
 import { ENTITY_TYPE_CONTAINER_CASE } from '../case-types';
 import { NAME_FIELD, normalizeName } from '../../../schema/identifier';
 import type { ModuleDefinition } from '../../../schema/module';
@@ -7,7 +6,6 @@ import { createdBy, objectAssignee, objectMarking, objectParticipant } from '../
 import type { StixCaseRft, StoreEntityCaseRft } from './case-rft-types';
 import { ENTITY_TYPE_CONTAINER_CASE_RFT } from './case-rft-types';
 import convertCaseRftToStix from './case-rft-converter';
-import caseRftResolvers from './case-rft-resolvers';
 
 const CASE_RFT_DEFINITION: ModuleDefinition<StoreEntityCaseRft, StixCaseRft> = {
   type: {
@@ -15,10 +13,6 @@ const CASE_RFT_DEFINITION: ModuleDefinition<StoreEntityCaseRft, StixCaseRft> = {
     name: ENTITY_TYPE_CONTAINER_CASE_RFT,
     category: ENTITY_TYPE_CONTAINER_CASE,
     aliased: false
-  },
-  graphql: {
-    schema: caseRftTypeDefs,
-    resolver: caseRftResolvers,
   },
   identifier: {
     definition: {
@@ -31,11 +25,11 @@ const CASE_RFT_DEFINITION: ModuleDefinition<StoreEntityCaseRft, StixCaseRft> = {
     },
   },
   attributes: [
-    { name: 'name', type: 'string', mandatoryType: 'external', editDefault: true, multiple: false, upsert: true },
-    { name: 'created', type: 'date', mandatoryType: 'external', editDefault: true, multiple: false, upsert: true },
-    { name: 'takedown_types', type: 'string', mandatoryType: 'customizable', editDefault: true, multiple: true, upsert: true, label: 'takedown_types' },
-    { name: 'severity', type: 'string', mandatoryType: 'customizable', editDefault: true, multiple: false, upsert: true },
-    { name: 'priority', type: 'string', mandatoryType: 'customizable', editDefault: true, multiple: false, upsert: true },
+    { name: 'name', label: 'Name', type: 'string', format: 'short', mandatoryType: 'external', editDefault: true, multiple: false, upsert: true, isFilterable: true },
+    { name: 'created', label: 'Created', type: 'date', mandatoryType: 'external', editDefault: true, multiple: false, upsert: true, isFilterable: true },
+    { name: 'takedown_types', label: 'Takedown types', type: 'string', format: 'short', mandatoryType: 'customizable', editDefault: true, multiple: true, upsert: true, isFilterable: true },
+    { name: 'severity', label: 'Severity', type: 'string', format: 'short', mandatoryType: 'customizable', editDefault: true, multiple: false, upsert: true, isFilterable: true },
+    { name: 'priority', label: 'Priority', type: 'string', format: 'short', mandatoryType: 'customizable', editDefault: true, multiple: false, upsert: true, isFilterable: true },
   ],
   relations: [],
   relationsRefs: [createdBy, objectMarking, objectAssignee, objectParticipant],

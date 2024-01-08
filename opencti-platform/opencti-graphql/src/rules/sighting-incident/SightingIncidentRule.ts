@@ -2,7 +2,7 @@
 import { createInferredEntity, createInferredRelation, deleteInferredRuleElement, stixLoadById } from '../../database/middleware';
 import def from './SightingIncidentDefinition';
 import { ENTITY_TYPE_INCIDENT } from '../../schema/stixDomainObject';
-import { createRuleContent } from '../rules';
+import { createRuleContent } from '../rules-utils';
 import { STIX_SIGHTING_RELATIONSHIP } from '../../schema/stixSightingRelationship';
 import { ENTITY_TYPE_IDENTITY } from '../../schema/general';
 import { generateInternalType } from '../../schema/schemaUtils';

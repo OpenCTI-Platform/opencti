@@ -1,7 +1,5 @@
-import administrativeAreaTypeDefs from './administrativeArea.graphql';
 import convertAdministrativeAreaToStix from './administrativeArea-converter';
 import { NAME_FIELD, normalizeName } from '../../schema/identifier';
-import administrativeAreaResolvers from './administrativeArea-resolver';
 import { ENTITY_TYPE_LOCATION_ADMINISTRATIVE_AREA, type StoreEntityAdministrativeArea } from './administrativeArea-types';
 import { REL_BUILT_IN } from '../../database/stix';
 import { RELATION_LOCATED_AT } from '../../schema/stixCoreRelationship';
@@ -19,10 +17,6 @@ const ADMINISTRATIVE_AREA_DEFINITION: ModuleDefinition<StoreEntityAdministrative
     category: ENTITY_TYPE_LOCATION,
     aliased: true
   },
-  graphql: {
-    schema: administrativeAreaTypeDefs,
-    resolver: administrativeAreaResolvers,
-  },
   identifier: {
     definition: {
       [ENTITY_TYPE_LOCATION_ADMINISTRATIVE_AREA]: [{ src: NAME_FIELD }]
@@ -34,10 +28,10 @@ const ADMINISTRATIVE_AREA_DEFINITION: ModuleDefinition<StoreEntityAdministrative
     },
   },
   attributes: [
-    { name: 'name', type: 'string', mandatoryType: 'external', editDefault: true, multiple: false, upsert: true },
-    { name: 'description', type: 'string', mandatoryType: 'customizable', editDefault: true, multiple: false, upsert: true },
-    { name: 'latitude', type: 'numeric', mandatoryType: 'customizable', editDefault: true, multiple: false, upsert: true },
-    { name: 'longitude', type: 'numeric', mandatoryType: 'customizable', editDefault: true, multiple: false, upsert: true },
+    { name: 'name', label: 'Name', type: 'string', format: 'short', mandatoryType: 'external', editDefault: true, multiple: false, upsert: true, isFilterable: true },
+    { name: 'description', label: 'Description', type: 'string', format: 'short', mandatoryType: 'customizable', editDefault: true, multiple: false, upsert: true, isFilterable: true },
+    { name: 'latitude', label: 'Latitude', type: 'numeric', precision: 'float', mandatoryType: 'customizable', editDefault: true, multiple: false, upsert: true, isFilterable: true },
+    { name: 'longitude', label: 'Longitude', type: 'numeric', precision: 'float', mandatoryType: 'customizable', editDefault: true, multiple: false, upsert: true, isFilterable: true },
     entityLocationType,
   ],
   relations: [

@@ -195,8 +195,8 @@ class ThreatActorGroupDetailsComponent extends Component {
               <FieldOrEmpty source={threatActorGroup.goals}>
                 {threatActorGroup.goals && (
                   <List>
-                    {threatActorGroup.goals.map((goal) => (
-                      <ListItem key={goal} dense={true} divider={true}>
+                    {threatActorGroup.goals.map((goal, index) => (
+                      <ListItem key={`${index}:${goal}`} dense={true} divider={true}>
                         <ListItemIcon>
                           <BullseyeArrow />
                         </ListItemIcon>

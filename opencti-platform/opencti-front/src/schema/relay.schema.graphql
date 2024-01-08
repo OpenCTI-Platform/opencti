@@ -1182,7 +1182,7 @@ type Settings implements InternalObject & BasicObject {
   password_policy_min_words: Int
   password_policy_min_lowercase: Int
   password_policy_min_uppercase: Int
-  messages: [SettingsMessage!]
+  platform_messages: [SettingsMessage!]
   messages_administration: [SettingsMessage!]
   analytics_google_analytics_v4: String
   editContext: [EditUserContext!]
@@ -8660,7 +8660,7 @@ type Notification implements InternalObject & BasicObject {
   name: String!
   notification_type: String!
   parent_types: [String]!
-  content: [NotificationContent!]!
+  notification_content: [NotificationContent!]!
   is_read: Boolean!
   user_id: String
   created_at: DateTime

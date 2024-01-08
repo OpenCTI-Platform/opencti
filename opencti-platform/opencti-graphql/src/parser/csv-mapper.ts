@@ -56,7 +56,7 @@ const computeValue = (value: string, column: AttributeColumn, attributeDef: Attr
     return null;
   }
   // Handle multiple
-  if (attributeDef.multiple ?? false) {
+  if (attributeDef.multiple) {
     if (column.configuration?.separator) {
       return value.split(column.configuration.separator).map((v) => formatValue(v, attributeDef.type, column));
     }
@@ -110,7 +110,7 @@ const isValidInput = (input: Record<string, InputType>) => {
     .map((attr) => attr.name);
   const mandatoryRefs = schemaRelationsRefDefinition.getRelationsRef(input[entityType.name] as string)
     .filter((ref) => ref.mandatoryType === 'external')
-    .map((ref) => ref.inputName);
+    .map((ref) => ref.name);
 
   return [...mandatoryAttributes, ...mandatoryRefs].every((key) => isNotEmptyField(input[key]));
 };

@@ -14878,13 +14878,13 @@ export enum NotesOrdering {
 
 export type Notification = BasicObject & InternalObject & {
   __typename?: 'Notification';
-  content: Array<NotificationContent>;
   created?: Maybe<Scalars['DateTime']['output']>;
   created_at?: Maybe<Scalars['DateTime']['output']>;
   entity_type: Scalars['String']['output'];
   id: Scalars['ID']['output'];
   is_read: Scalars['Boolean']['output'];
   name: Scalars['String']['output'];
+  notification_content: Array<NotificationContent>;
   notification_type: Scalars['String']['output'];
   parent_types: Array<Maybe<Scalars['String']['output']>>;
   standard_id: Scalars['String']['output'];
@@ -20619,7 +20619,6 @@ export type Settings = BasicObject & InternalObject & {
   enterprise_edition?: Maybe<Scalars['DateTime']['output']>;
   entity_type: Scalars['String']['output'];
   id: Scalars['ID']['output'];
-  messages?: Maybe<Array<SettingsMessage>>;
   messages_administration?: Maybe<Array<SettingsMessage>>;
   otp_mandatory?: Maybe<Scalars['Boolean']['output']>;
   parent_types: Array<Scalars['String']['output']>;
@@ -20643,6 +20642,7 @@ export type Settings = BasicObject & InternalObject & {
   platform_login_message?: Maybe<Scalars['String']['output']>;
   platform_map_tile_server_dark?: Maybe<Scalars['String']['output']>;
   platform_map_tile_server_light?: Maybe<Scalars['String']['output']>;
+  platform_messages?: Maybe<Array<SettingsMessage>>;
   platform_modules?: Maybe<Array<Module>>;
   platform_organization?: Maybe<Organization>;
   platform_providers: Array<Provider>;
@@ -33085,13 +33085,13 @@ export type NoteEditMutationsResolvers<ContextType = any, ParentType extends Res
 }>;
 
 export type NotificationResolvers<ContextType = any, ParentType extends ResolversParentTypes['Notification'] = ResolversParentTypes['Notification']> = ResolversObject<{
-  content?: Resolver<Array<ResolversTypes['NotificationContent']>, ParentType, ContextType>;
   created?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   created_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   is_read?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  notification_content?: Resolver<Array<ResolversTypes['NotificationContent']>, ParentType, ContextType>;
   notification_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
@@ -34554,7 +34554,6 @@ export type SettingsResolvers<ContextType = any, ParentType extends ResolversPar
   enterprise_edition?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
-  messages?: Resolver<Maybe<Array<ResolversTypes['SettingsMessage']>>, ParentType, ContextType>;
   messages_administration?: Resolver<Maybe<Array<ResolversTypes['SettingsMessage']>>, ParentType, ContextType>;
   otp_mandatory?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   parent_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
@@ -34578,6 +34577,7 @@ export type SettingsResolvers<ContextType = any, ParentType extends ResolversPar
   platform_login_message?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   platform_map_tile_server_dark?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   platform_map_tile_server_light?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  platform_messages?: Resolver<Maybe<Array<ResolversTypes['SettingsMessage']>>, ParentType, ContextType>;
   platform_modules?: Resolver<Maybe<Array<ResolversTypes['Module']>>, ParentType, ContextType>;
   platform_organization?: Resolver<Maybe<ResolversTypes['Organization']>, ParentType, ContextType>;
   platform_providers?: Resolver<Array<ResolversTypes['Provider']>, ParentType, ContextType>;

@@ -5,9 +5,11 @@ import { ADMIN_USER, testContext } from '../../utils/testQuery';
 import data from '../../data/DATA-TEST-STIX2_v2.json';
 import {
   ENTITY_TYPE_CONTAINER_OBSERVED_DATA,
-  ENTITY_TYPE_CONTAINER_REPORT, ENTITY_TYPE_INTRUSION_SET,
+  ENTITY_TYPE_CONTAINER_REPORT,
+  ENTITY_TYPE_INTRUSION_SET,
   ENTITY_TYPE_MALWARE,
-  isStixDomainObject, isStixDomainObjectLocation
+  isStixDomainObject,
+  isStixDomainObjectLocation
 } from '../../../src/schema/stixDomainObject';
 import { isStixRelationship } from '../../../src/schema/stixRelationship';
 import { ENTITY_TYPE_MARKING_DEFINITION } from '../../../src/schema/stixMetaObject';
@@ -113,7 +115,7 @@ describe('Stix opencti converter', () => {
         R.dissoc('region'),
         R.dissoc('country'),
         R.dissoc('city'),
-        )(remainingData);
+      )(remainingData);
     }
     // All remaining data must be extensions
     // const remain = R.mergeAll(

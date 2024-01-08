@@ -5,6 +5,7 @@ import { Promise as BluePromise } from 'bluebird';
 import * as R from 'ramda';
 import semver from 'semver';
 import { SemanticAttributes } from '@opentelemetry/semantic-conventions';
+import * as jsonpatch from 'fast-json-patch';
 import {
   buildPagination,
   cursorToOffset,
@@ -21,8 +22,9 @@ import {
   READ_PLATFORM_INDICES,
   READ_RELATIONSHIPS_INDICES,
   READ_RELATIONSHIPS_INDICES_WITHOUT_INFERRED,
+  UPDATE_OPERATION_ADD,
   waitInSec,
-  WRITE_PLATFORM_INDICES,
+  WRITE_PLATFORM_INDICES
 } from './utils';
 import conf, { booleanConf, loadCert, logApp } from '../config/conf';
 import { ConfigurationError, DatabaseError, EngineShardsError, FunctionalError, UnsupportedError } from '../config/errors';
@@ -38,6 +40,7 @@ import {
 } from '../schema/stixRefRelationship';
 import {
   ABSTRACT_BASIC_RELATIONSHIP,
+  ABSTRACT_STIX_REF_RELATIONSHIP,
   BASE_TYPE_RELATION,
   buildRefRelationKey,
   buildRefRelationSearchKey,
@@ -66,7 +69,7 @@ import {
 } from '../schema/stixDomainObject';
 import { isStixObject } from '../schema/stixCoreObject';
 import { isBasicRelationship, isStixRelationshipExceptRef } from '../schema/stixRelationship';
-import { RELATION_INDICATES } from '../schema/stixCoreRelationship';
+import { RELATION_INDICATES, STIX_CORE_RELATIONSHIPS } from '../schema/stixCoreRelationship';
 import { INTERNAL_FROM_FIELD, INTERNAL_TO_FIELD } from '../schema/identifier';
 import { BYPASS, computeUserMemberAccessIds, executionContext, INTERNAL_USERS, isBypassUser, MEMBER_ACCESS_ALL, SYSTEM_USER } from '../utils/access';
 import { isSingleRelationsRef, } from '../schema/stixEmbeddedRelationship';
@@ -75,13 +78,18 @@ import { ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
 import { getEntitiesListFromCache, getEntityFromCache } from './cache';
 import { ENTITY_TYPE_MIGRATION_STATUS, ENTITY_TYPE_SETTINGS, ENTITY_TYPE_STATUS, ENTITY_TYPE_USER } from '../schema/internalObject';
 import { telemetry } from '../config/tracing';
-import { isBooleanAttribute, isDateAttribute, isDateNumericOrBooleanAttribute } from '../schema/schema-attributes';
+import { isBooleanAttribute, isDateAttribute, isDateNumericOrBooleanAttribute, isNumericAttribute, schemaAttributesDefinition } from '../schema/schema-attributes';
 import { convertTypeToStixType } from './stix-converter';
 import { extractEntityRepresentativeName } from './entity-representative';
 import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../modules/organization/organization-types';
 import { checkAndConvertFilters, isFilterGroupNotEmpty } from '../utils/filtering/filtering-utils';
 import { IDS_FILTER, SOURCE_RELIABILITY_FILTER, TYPE_FILTER, WORKFLOW_FILTER, X_OPENCTI_WORKFLOW_ID } from '../utils/filtering/filtering-constants';
 import { FilterMode } from '../generated/graphql';
+import { booleanMapping, dateMapping, numericMapping, shortMapping, textMapping } from '../schema/attribute-definition';
+import { schemaTypesDefinition } from '../schema/schema-types';
+import { INTERNAL_RELATIONSHIPS } from '../schema/internalRelationship';
+import { STIX_SIGHTING_RELATIONSHIP } from '../schema/stixSightingRelationship';
+import { rule_definitions } from '../rules/rules-definition';
 
 const ELK_ENGINE = 'elk';
 const OPENSEARCH_ENGINE = 'opensearch';
@@ -90,7 +98,6 @@ export const ES_IGNORE_THROTTLED = conf.get('elasticsearch:search_ignore_throttl
 export const ES_MAX_PAGINATION = conf.get('elasticsearch:max_pagination_result');
 const ES_INDEX_PATTERN_SUFFIX = conf.get('elasticsearch:index_creation_pattern');
 const ES_MAX_RESULT_WINDOW = conf.get('elasticsearch:max_result_window') || 100000;
-const ES_MAX_SHARDS_FAILURE = conf.get('elasticsearch:max_shards_failure') || 0;
 const ES_INDEX_SHARD_NUMBER = conf.get('elasticsearch:number_of_shards');
 const ES_INDEX_REPLICA_NUMBER = conf.get('elasticsearch:number_of_replicas');
 
@@ -100,6 +107,7 @@ const ES_MAX_DOCS = conf.get('elasticsearch:max_docs') || 75000000;
 const ES_MAX_BULK_RESOLUTIONS = conf.get('elasticsearch:max_bulk_resolutions') || 500;
 export const MAX_BULK_OPERATIONS = conf.get('elasticsearch:max_bulk_operations') || 5000;
 
+const ES_MAX_MAPPINGS = 3000;
 const ES_RETRY_ON_CONFLICT = 5;
 const MAX_EVENT_LOOP_PROCESSING_TIME = 50;
 export const BULK_TIMEOUT = '5m';
@@ -186,10 +194,6 @@ export const searchEngineVersion = async () => {
   return { platform: searchPlatform, version: searchVersion, engine: localEngine };
 };
 
-export const isElkEngine = () => {
-  return engine instanceof ElkClient;
-};
-
 export const isEngineAlive = async () => {
   const context = executionContext('healthcheck');
   const options = { types: [ENTITY_TYPE_MIGRATION_STATUS], connectionFormat: false };
@@ -244,22 +248,11 @@ export const isRuntimeSortEnable = () => isRuntimeSortingEnable;
 export const elRawSearch = (context, user, types, query) => {
   const elRawSearchFn = async () => engine.search(query).then((r) => {
     const parsedSearch = oebp(r);
-    // If some shards fail
     if (parsedSearch._shards.failed > 0) {
-      // We need to filter "No mapping found" errors that are not real problematic shard problems
-      // As we do not define all mappings and let elastic create it dynamically at first creation
-      // This failure is transient until the first creation of some data
-      const failures = (parsedSearch._shards.failures ?? [])
-        .filter((f) => !f.reason?.reason.includes(NO_MAPPING_FOUND_ERROR));
-      if (failures.length > ES_MAX_SHARDS_FAILURE) {
-        // We do not support response with shards failure.
-        // Result must be always accurate to prevent data duplication and unwanted behaviors
-        // If any shard fail during query, engine throw a lock exception with shards information
-        throw EngineShardsError({ shards: parsedSearch._shards });
-      } else if (failures.length > 0) {
-        // At least log the situation
-        logApp.warn('Search fail execution because of shards problems', { shards: parsedSearch._shards, size: failures.length });
-      }
+      // We do not support response with shards failure.
+      // Result must be always accurate to prevent data duplication and unwanted behaviors
+      // If any shard fail during query, engine throw a shard exception with shards information
+      throw EngineShardsError({ shards: parsedSearch._shards });
     }
     // Return result of the search if everything goes well
     return parsedSearch;
@@ -447,6 +440,10 @@ export const elPlatformIndices = async () => {
   const listIndices = await engine.cat.indices({ index: `${ES_INDEX_PREFIX}*`, format: 'JSON' });
   return oebp(listIndices);
 };
+export const elPlatformMapping = async (index) => {
+  const mapping = await engine.indices.getMapping({ index });
+  return oebp(mapping)[index].mappings.properties;
+};
 export const elPlatformTemplates = async () => {
   const listTemplates = await engine.cat.templates({ name: `${ES_INDEX_PREFIX}*`, format: 'JSON' });
   return oebp(listTemplates);
@@ -536,223 +533,104 @@ const elCreateCoreSettings = async () => {
   });
 };
 
-const computePlatformMappings = () => {
-  const flattenedType = isElkEngine() ? 'flattened' : 'flat_object';
-  return {
-    dynamic_templates: [
-      {
-        integers: {
-          match_mapping_type: 'long',
-          mapping: {
-            type: 'integer',
-          },
-        },
-      },
-      {
-        strings: {
-          match_mapping_type: 'string',
-          mapping: {
-            type: 'text',
-            fields: {
-              keyword: {
-                type: 'keyword',
-                normalizer: 'string_normalizer',
-                ignore_above: 512,
-              },
-            },
-          },
-        },
-      },
-    ],
-    properties: {
-      internal_id: {
-        type: 'text',
-        fields: {
-          keyword: {
-            type: 'keyword',
-            normalizer: 'string_normalizer',
-            ignore_above: 512,
-          },
-        },
-      },
-      standard_id: {
-        type: 'text',
-        fields: {
-          keyword: {
-            type: 'keyword',
-            normalizer: 'string_normalizer',
-            ignore_above: 512,
-          },
-        },
-      },
-      name: {
-        type: 'text',
-        fields: {
-          keyword: {
-            type: 'keyword',
-            normalizer: 'string_normalizer',
-            ignore_above: 512,
-          },
-        },
-      },
-      height: {
-        type: 'nested',
-        properties: {
-          measure: { type: 'float' },
-          date_seen: { type: 'date' },
-        },
-      },
-      weight: {
-        type: 'nested',
-        properties: {
-          measure: { type: 'float' },
-          date_seen: { type: 'date' },
-        },
-      },
-      timestamp: {
-        type: 'date',
-      },
-      created: {
-        type: 'date',
-      },
-      created_at: {
-        type: 'date',
-      },
-      modified: {
-        type: 'date',
-      },
-      modified_at: {
-        type: 'date',
-      },
-      indexed_at: {
-        type: 'date',
-      },
-      uploaded_at: {
-        type: 'date',
-      },
-      first_seen: {
-        type: 'date',
-      },
-      last_seen: {
-        type: 'date',
-      },
-      start_time: {
-        type: 'date',
-      },
-      stop_time: {
-        type: 'date',
-      },
-      published: {
-        type: 'date',
-      },
-      valid_from: {
-        type: 'date',
-      },
-      valid_until: {
-        type: 'date',
-      },
-      observable_date: {
-        type: 'date',
-      },
-      event_date: {
-        type: 'date',
-      },
-      received_time: {
-        type: 'date',
-      },
-      processed_time: {
-        type: 'date',
-      },
-      completed_time: {
-        type: 'date',
-      },
-      ctime: {
-        type: 'date',
-      },
-      mtime: {
-        type: 'date',
-      },
-      atime: {
-        type: 'date',
-      },
-      current_state_date: {
-        type: 'date',
-      },
-      confidence: {
-        type: 'integer',
-      },
-      attribute_order: {
-        type: 'integer',
-      },
-      base_score: {
-        type: 'integer',
-      },
-      is_family: {
-        type: 'boolean',
-      },
-      number_observed: {
-        type: 'integer',
-      },
-      x_opencti_negative: {
-        type: 'boolean',
-      },
-      default_assignation: {
-        type: 'boolean',
-      },
-      x_opencti_detection: {
-        type: 'boolean',
-      },
-      x_opencti_order: {
-        type: 'integer',
-      },
-      import_expected_number: {
-        type: 'integer',
-      },
-      import_processed_number: {
-        type: 'integer',
-      },
-      x_opencti_score: {
-        type: 'integer',
-      },
-      connections: {
-        type: 'nested',
-      },
-      manager_setting: {
-        type: flattenedType,
-      },
-      context_data: {
-        properties: {
-          input: { type: flattenedType },
-        },
-      },
-      size: {
-        type: 'integer',
-      },
-      lastModifiedSinceMin: {
-        type: 'integer',
-      },
-      lastModified: {
-        type: 'date',
-      },
-      metaData: {
-        properties: {
-          order: {
-            type: 'integer',
-          },
-          inCarousel: {
-            type: 'boolean',
-          },
-          messages: { type: flattenedType },
-          errors: { type: flattenedType },
-        },
+// Engine mapping generation on attributes definition
+const attributeMappingGenerator = (entityAttribute) => {
+  if (entityAttribute.type === 'string') {
+    if (entityAttribute.format === 'short' || entityAttribute.format === 'id') {
+      return shortMapping;
+    }
+    if (entityAttribute.format === 'json' || entityAttribute.format === 'text') {
+      return textMapping;
+    }
+    throw UnsupportedError('Cant generated string mapping', { format: entityAttribute.format });
+  }
+  if (entityAttribute.type === 'date') {
+    return dateMapping;
+  }
+  if (entityAttribute.type === 'numeric') {
+    return numericMapping(entityAttribute.precision);
+  }
+  if (entityAttribute.type === 'boolean') {
+    return booleanMapping;
+  }
+  if (entityAttribute.type === 'object') {
+    // For flat object
+    if (entityAttribute.format === 'flat') {
+      return { type: engine instanceof ElkClient ? 'flattened' : 'flat_object' };
+    }
+    // For standard object
+    const properties = {};
+    for (let i = 0; i < entityAttribute.mappings.length; i += 1) {
+      const mapping = entityAttribute.mappings[i];
+      properties[mapping.name] = attributeMappingGenerator(mapping);
+    }
+    const config = { dynamic: 'strict', properties };
+    // Add nested option if needed
+    if (entityAttribute.format === 'nested') {
+      config.type = 'nested';
+    }
+    return config;
+  }
+  throw UnsupportedError('Cant generated mapping', { type: entityAttribute.type });
+};
+const ruleMappingGenerator = () => {
+  const schemaProperties = {};
+  for (let attrIndex = 0; attrIndex < rule_definitions.length; attrIndex += 1) {
+    const rule = rule_definitions[attrIndex];
+    schemaProperties[`i_rule_${rule.id}`] = {
+      dynamic: 'strict',
+      properties: {
+        explanation: shortMapping,
+        dependencies: shortMapping,
+        hash: shortMapping,
+        data: { type: engine instanceof ElkClient ? 'flattened' : 'flat_object' },
       }
-    },
-  };
+    };
+  }
+  return schemaProperties;
+};
+const denormalizeRelationsMappingGenerator = () => {
+  const databaseRelationshipsName = [
+    STIX_SIGHTING_RELATIONSHIP,
+    ...STIX_CORE_RELATIONSHIPS,
+    ...INTERNAL_RELATIONSHIPS,
+    ...schemaTypesDefinition.get(ABSTRACT_STIX_REF_RELATIONSHIP)
+  ];
+  const schemaProperties = {};
+  for (let attrIndex = 0; attrIndex < databaseRelationshipsName.length; attrIndex += 1) {
+    const relName = databaseRelationshipsName[attrIndex];
+    schemaProperties[`rel_${relName}`] = {
+      dynamic: 'strict',
+      properties: {
+        internal_id: shortMapping,
+        inferred_id: shortMapping,
+      }
+    };
+  }
+  return schemaProperties;
+};
+const attributesMappingGenerator = () => {
+  const entityAttributes = schemaAttributesDefinition.getAllAttributes();
+  const schemaProperties = {};
+  for (let attrIndex = 0; attrIndex < entityAttributes.length; attrIndex += 1) {
+    const entityAttribute = entityAttributes[attrIndex];
+    schemaProperties[entityAttribute.name] = attributeMappingGenerator(entityAttribute);
+  }
+  return schemaProperties;
+};
+
+export const engineMappingGenerator = () => {
+  return { ...attributesMappingGenerator(), ...ruleMappingGenerator(), ...denormalizeRelationsMappingGenerator() };
 };
 const computePlatformSettings = (index) => {
   if (engine instanceof ElkClient) {
     return {
       index: {
+        mapping: {
+          total_fields: {
+            limit: ES_MAX_MAPPINGS,
+          }
+        },
         lifecycle: {
           name: `${ES_INDEX_PREFIX}-ilm-policy`,
           rollover_alias: index,
@@ -761,6 +639,11 @@ const computePlatformSettings = (index) => {
     };
   }
   return {
+    mapping: {
+      total_fields: {
+        limit: ES_MAX_MAPPINGS,
+      }
+    },
     plugins: {
       index_state_management: {
         rollover_alias: index,
@@ -769,7 +652,7 @@ const computePlatformSettings = (index) => {
   };
 };
 
-const updateIndexTemplate = async (name) => {
+const updateIndexTemplate = async (name, mapping_properties) => {
   // compute pattern to be retro compatible for platform < 5.9
   // Before 5.9, only one pattern for all indices
   const index_pattern = name === `${ES_INDEX_PREFIX}-index-template` ? `${ES_INDEX_PREFIX}*` : `${name}*`;
@@ -780,7 +663,13 @@ const updateIndexTemplate = async (name) => {
       index_patterns: [index_pattern],
       template: {
         settings: computePlatformSettings(name),
-        mappings: computePlatformMappings()
+        mappings: {
+          // Global option to prevent elastic to try any magic
+          dynamic: 'strict',
+          date_detection: false,
+          numeric_detection: false,
+          properties: mapping_properties,
+        }
       },
       composed_of: [`${ES_INDEX_PREFIX}-core-settings`],
       version: 3,
@@ -793,7 +682,7 @@ const updateIndexTemplate = async (name) => {
   });
 };
 
-const elCreateIndexTemplate = async (index) => {
+const elCreateIndexTemplate = async (index, mappingProperties) => {
   const isExistByName = await engine.indices.existsIndexTemplate({ name: index }).then((r) => oebp(r));
   // Compat with platform initiated prior 5.9.X
   const isExist = await engine.indices.existsIndexTemplate({ name: `${ES_INDEX_PREFIX}-index-template` }).then((r) => oebp(r));
@@ -804,22 +693,41 @@ const elCreateIndexTemplate = async (index) => {
   if (!componentTemplateExist) {
     await elCreateCoreSettings();
   }
-  return updateIndexTemplate(index);
+  return updateIndexTemplate(index, mappingProperties);
 };
-export const elUpdateIndicesMappings = async (properties) => {
-  // Update the current indices if needed
-  if (properties) {
-    const indices = await elPlatformIndices();
-    const body = { properties };
-    await engine.indices.putMapping({ index: indices.map((i) => i.index), body }).catch((e) => {
-      throw DatabaseError('Updating indices mapping fail', { cause: e });
-    });
-  }
+const sortMappingsKeys = (o) => (Object(o) !== o || Array.isArray(o) ? o
+  : Object.keys(o).sort().reduce((a, k) => ({ ...a, [k]: sortMappingsKeys(o[k]) }), {}));
+export const elUpdateIndicesMappings = async () => {
   // Reset the templates
+  const mappingProperties = engineMappingGenerator();
   const templates = await elPlatformTemplates();
   for (let index = 0; index < templates.length; index += 1) {
     const template = templates[index];
-    await updateIndexTemplate(template.name);
+    await updateIndexTemplate(template.name, mappingProperties);
+  }
+  // Update the current indices if needed
+  const indices = await elPlatformIndices();
+  for (let indicesIndex = 0; indicesIndex < indices.length; indicesIndex += 1) {
+    const { index } = indices[indicesIndex];
+    const indexMappingProperties = await elPlatformMapping(index);
+    // Replace settings with updated ones
+    const platformSettings = computePlatformSettings(index);
+    await engine.indices.putSettings({ index, body: platformSettings }).catch((e) => {
+      throw DatabaseError('Updating index settings fail', { index, cause: e });
+    });
+    const operations = jsonpatch.compare(sortMappingsKeys(indexMappingProperties), sortMappingsKeys(mappingProperties));
+    // We can only complete new mappings
+    // Replace is not possible for existing ones
+    const addOperations = operations
+      .filter((o) => o.op === UPDATE_OPERATION_ADD)
+      .filter((o) => R.is(Object, o.value) && (o.value.type || o.value.properties));
+    if (addOperations.length > 0) {
+      const properties = jsonpatch.applyPatch(indexMappingProperties, addOperations).newDocument;
+      const body = { properties };
+      await engine.indices.putMapping({ index, body }).catch((e) => {
+        throw DatabaseError('Updating index mapping fail', { index, cause: e });
+      });
+    }
   }
 };
 export const elConfigureAttachmentProcessor = async () => {
@@ -865,13 +773,12 @@ export const elConfigureAttachmentProcessor = async () => {
   }
   return success;
 };
-export const elCreateIndex = async (index) => {
-  await elCreateIndexTemplate(index);
+export const elCreateIndex = async (index, mappingProperties) => {
+  await elCreateIndexTemplate(index, mappingProperties);
   const indexName = `${index}${ES_INDEX_PATTERN_SUFFIX}`;
   const isExist = await engine.indices.exists({ index: indexName }).then((r) => oebp(r));
   if (!isExist) {
-    const createdIndex = await engine.indices.create({ index: indexName, body: { aliases: { [index]: {} } } });
-    return createdIndex;
+    return engine.indices.create({ index: indexName, body: { aliases: { [index]: {} } } });
   }
   return null;
 };
@@ -879,9 +786,10 @@ export const elCreateIndices = async (indexesToCreate = WRITE_PLATFORM_INDICES) 
   await elCreateCoreSettings();
   await elCreateLifecyclePolicy();
   const createdIndices = [];
+  const mappingProperties = engineMappingGenerator();
   for (let i = 0; i < indexesToCreate.length; i += 1) {
     const index = indexesToCreate[i];
-    const createdIndex = await elCreateIndex(index);
+    const createdIndex = await elCreateIndex(index, mappingProperties);
     if (createdIndex) {
       createdIndices.push(oebp(createdIndex));
     }
@@ -1371,7 +1279,6 @@ export const elFindByIds = async (context, user, ids, opts = {}) => {
       const elements = data.hits.hits;
       if (elements.length > 0) {
         const convertedHits = await elConvertHits(elements, { withoutRels, mapWithAllIds, toMap: true });
-        // console.log(convertedHits);
         hits = { ...hits, ...convertedHits };
         if (elements.length < MAX_SEARCH_SIZE) {
           hasNextPage = false;
@@ -1418,8 +1325,14 @@ const BASE_SEARCH_ATTRIBUTES = [
   `${ATTRIBUTE_ABSTRACT}^5`,
   `${ATTRIBUTE_EXPLANATION}^5`,
   // Add all other attributes
-  '*',
+  ...schemaAttributesDefinition.getAllStringAttributes([
+    ATTRIBUTE_NAME,
+    ATTRIBUTE_DESCRIPTION,
+    ATTRIBUTE_ABSTRACT,
+    ATTRIBUTE_EXPLANATION
+  ]),
 ];
+
 export const elGenerateFullTextSearchShould = (search, args = {}) => {
   const { useWildcardPrefix = false, useWildcardSuffix = true } = args;
   let decodedSearch;
@@ -2796,6 +2709,8 @@ export const prepareElementForIndexing = (element) => {
       thing[key] = value;
     } else if (isBooleanAttribute(key)) { // Patch field is string generic so need to be cast to boolean
       thing[key] = typeof value === 'boolean' ? value : value?.toLowerCase() === 'true';
+    } else if (isNumericAttribute(key)) {
+      thing[key] = isNotEmptyField(value) ? Number(value) : undefined;
     } else if (R.is(Object, value) && Object.keys(value).length > 0) { // For complex object, prepare inner elements
       thing[key] = prepareElementForIndexing(value);
     } else if (R.is(String, value)) { // For string, trim by default

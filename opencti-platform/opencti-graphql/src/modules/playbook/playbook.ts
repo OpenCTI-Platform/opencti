@@ -16,8 +16,6 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 import { v4 as uuidv4 } from 'uuid';
 import { ABSTRACT_INTERNAL_OBJECT } from '../../schema/general';
 import { type ModuleDefinition, registerDefinition } from '../../schema/module';
-import entityPlaybookResolvers from './playbook-resolvers';
-import entityPlaybookTypeDefs from './playbook.graphql';
 import { ENTITY_TYPE_PLAYBOOK, PlayComponentDefinition, type StixPlaybook, type StoreEntityPlaybook } from './playbook-types';
 import convertEntityPlaybookToStix from './playbook-converter';
 
@@ -28,21 +26,17 @@ const ENTITY_PLAYBOOK_DEFINITION: ModuleDefinition<StoreEntityPlaybook, StixPlay
     category: ABSTRACT_INTERNAL_OBJECT,
     aliased: false
   },
-  graphql: {
-    schema: entityPlaybookTypeDefs,
-    resolver: entityPlaybookResolvers,
-  },
   identifier: {
     definition: {
       [ENTITY_TYPE_PLAYBOOK]: () => uuidv4()
     },
   },
   attributes: [
-    { name: 'name', type: 'string', mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false },
-    { name: 'description', type: 'string', mandatoryType: 'customizable', editDefault: true, multiple: false, upsert: false },
-    { name: 'playbook_running', type: 'boolean', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false },
-    { name: 'playbook_start', type: 'string', mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false },
-    { name: 'playbook_definition', type: 'json', mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false, schemaDef: PlayComponentDefinition }
+    { name: 'name', label: 'Name', type: 'string', format: 'short', mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false, isFilterable: true },
+    { name: 'description', label: 'Description', type: 'string', format: 'short', mandatoryType: 'customizable', editDefault: true, multiple: false, upsert: false, isFilterable: true },
+    { name: 'playbook_running', label: 'Running', type: 'boolean', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true },
+    { name: 'playbook_start', label: 'Start', type: 'string', format: 'short', mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false, isFilterable: true },
+    { name: 'playbook_definition', label: 'Definition', type: 'string', format: 'json', mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false, schemaDef: PlayComponentDefinition, isFilterable: false }
   ],
   relations: [],
   representative: (stix: StixPlaybook) => {

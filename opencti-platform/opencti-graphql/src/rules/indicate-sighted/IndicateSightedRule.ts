@@ -8,7 +8,7 @@ import { buildPeriodFromDates, computeRangeIntersection } from '../../utils/form
 import type { BasicStoreRelation, StoreObject } from '../../types/store';
 import { RELATION_OBJECT_MARKING } from '../../schema/stixRefRelationship';
 import { computeAverage } from '../../database/utils';
-import { createRuleContent } from '../rules';
+import { createRuleContent } from '../rules-utils';
 import { createInferredRelation, deleteInferredRuleElement } from '../../database/middleware';
 import { listAllRelations, type RelationOptions } from '../../database/middleware-loader';
 import { RELATION_INDICATES, RELATION_TARGETS } from '../../schema/stixCoreRelationship';

@@ -1,7 +1,5 @@
-import vocabularyTypeDefs from './vocabulary.graphql';
 import { NAME_FIELD, normalizeName } from '../../schema/identifier';
 import { ENTITY_TYPE_VOCABULARY, type StixVocabulary, type StoreEntityVocabulary, vocabularyDefinitions } from './vocabulary-types';
-import vocabularyResolvers from './vocabulary-resolver';
 import convertVocabularyToStix from './vocabulary-converter';
 import { ABSTRACT_STIX_META_OBJECT } from '../../schema/general';
 import { type ModuleDefinition, registerDefinition } from '../../schema/module';
@@ -18,10 +16,6 @@ const VOCABULARY_DEFINITION: ModuleDefinition<StoreEntityVocabulary, StixVocabul
     category: ABSTRACT_STIX_META_OBJECT,
     aliased: true
   },
-  graphql: {
-    schema: vocabularyTypeDefs,
-    resolver: vocabularyResolvers,
-  },
   identifier: {
     definition: {
       [ENTITY_TYPE_VOCABULARY]: [{ src: NAME_FIELD }, { src: 'category' }]
@@ -33,10 +27,11 @@ const VOCABULARY_DEFINITION: ModuleDefinition<StoreEntityVocabulary, StixVocabul
     },
   },
   attributes: [
-    { name: 'name', type: 'string', mandatoryType: 'external', editDefault: true, multiple: false, upsert: true },
-    { name: 'description', type: 'string', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true },
-    { name: 'category', type: 'string', mandatoryType: 'external', editDefault: true, multiple: false, upsert: true },
-    { name: 'order', type: 'numeric', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true },
+    { name: 'name', label: 'Name', type: 'string', format: 'short', mandatoryType: 'external', editDefault: true, multiple: false, upsert: true, isFilterable: true },
+    { name: 'description', label: 'Description', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: true },
+    { name: 'category', label: 'Category', type: 'string', format: 'short', mandatoryType: 'external', editDefault: true, multiple: false, upsert: true, isFilterable: true },
+    { name: 'order', label: 'Order', type: 'numeric', precision: 'integer', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: true },
+    { name: 'builtIn', label: 'Built-in', type: 'boolean', mandatoryType: 'no', editDefault: true, multiple: false, upsert: true, isFilterable: true },
   ],
   relations: [],
   depsKeys: generateInputDependencyKeys(),

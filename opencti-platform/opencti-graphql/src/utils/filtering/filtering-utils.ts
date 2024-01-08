@@ -12,7 +12,6 @@ import {
   CONTEXT_OBJECT_LABEL_FILTER,
   CONTEXT_OBJECT_MARKING_FILTER,
   INSTANCE_FILTER,
-  internalFilterKeys,
   MEMBERS_GROUP_FILTER,
   MEMBERS_ORGANIZATION_FILTER,
   MEMBERS_USER_FILTER,
@@ -197,7 +196,7 @@ const convertRelationRefsFilterKeys = (filterGroup: FilterGroup): FilterGroup =>
         .map((key) => specialFilterKeysConvertor.get(key) ?? key) //  convert special keys
         .map((key) => (STIX_CORE_RELATIONSHIPS.includes(key) ? buildRefRelationKey(key) : key)) // convert relation keys -> rel_X or keep key
         .map((key) => [key, schemaRelationsRefDefinition.getDatabaseName(key) ?? '']) // fetch eventual ref database names
-        .map(([key, databaseName]) => (databaseName ? buildRefRelationKey(databaseName) : key)); // convert databaseName if exists or keep initial key if not
+        .map(([key, name]) => (name ? buildRefRelationKey(name) : key)); // convert databaseName if exists or keep initial key if not
       newFiltersContent.push({ ...f, key: convertedFilterKeys });
     });
     return {
@@ -247,8 +246,7 @@ export const checkAndConvertFilters = (filterGroup: FilterGroup | null | undefin
         .concat(availableConvertedRefRelations)
         .concat(STIX_CORE_RELATIONSHIPS)
         .concat(availableConvertedStixCoreRelationships)
-        .concat(specialFilterKeys)
-        .concat(internalFilterKeys);
+        .concat(specialFilterKeys);
       if (authorizeNestedFiltersKeys) {
         availableKeys = availableKeys.concat(nestedFilterKeys);
       }

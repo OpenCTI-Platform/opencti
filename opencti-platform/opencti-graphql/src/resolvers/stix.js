@@ -26,7 +26,7 @@ const stixResolvers = {
       return 'Unknown';
     },
     creators: (stix, _, context) => creatorsLoader.load(stix.creator_id, context, context.user),
-  }
+  },
 };
 
 export default stixResolvers;

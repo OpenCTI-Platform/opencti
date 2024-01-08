@@ -10,6 +10,7 @@ import { CONNECTOR_INTERNAL_EXPORT_FILE } from '../schema/general';
 import { publishUserAction } from '../listener/UserActionListener';
 import { AlreadyDeletedError, DatabaseError } from '../config/errors';
 import { addFilter } from '../utils/filtering/filtering-utils';
+import { IMPORT_CSV_CONNECTOR, IMPORT_CSV_CONNECTOR_ID } from '../connector/importCsv/importCsv';
 
 export const workToExportFile = (work) => {
   const lastModifiedSinceMin = sinceNowInMinutes(work.updated_at);
@@ -113,7 +114,12 @@ export const pingWork = async (context, user, workId) => {
 };
 
 export const deleteWorkForConnector = async (context, user, connectorId) => {
-  const connector = await elLoadById(context, user, connectorId, { type: ENTITY_TYPE_CONNECTOR });
+  let connector;
+  if (connectorId === IMPORT_CSV_CONNECTOR_ID) {
+    connector = IMPORT_CSV_CONNECTOR;
+  } else {
+    connector = await elLoadById(context, user, connectorId, { type: ENTITY_TYPE_CONNECTOR });
+  }
   if (!connector) {
     throw AlreadyDeletedError({ connectorId });
   }
@@ -128,7 +134,7 @@ export const deleteWorkForConnector = async (context, user, connectorId) => {
     event_scope: 'update',
     event_access: 'administration',
     message: `cleans \`all works\` for connector \`${connector.name}\``,
-    context_data: { id: connectorId, entity_type: ENTITY_TYPE_CONNECTOR, input: connector }
+    context_data: { id: connectorId, entity_type: ENTITY_TYPE_CONNECTOR, input: { id: connectorId } }
   });
   return true;
 };

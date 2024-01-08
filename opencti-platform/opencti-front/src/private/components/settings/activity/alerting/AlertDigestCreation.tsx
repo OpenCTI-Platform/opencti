@@ -16,7 +16,6 @@ import * as Yup from 'yup';
 import makeStyles from '@mui/styles/makeStyles';
 import MarkdownField from '../../../../../components/MarkdownField';
 import { handleErrorInForm } from '../../../../../relay/environment';
-import { convertNotifiers } from '../../../../../utils/edition';
 import { insertNode } from '../../../../../utils/store';
 import { dayStartDate, parse } from '../../../../../utils/Time';
 import { useFormatter } from '../../../../../components/i18n';
@@ -78,7 +77,7 @@ interface TriggerDigestActivityAddInput {
   name: string;
   description: string;
   period: string;
-  notifiers: string[];
+  notifiers: { value: string }[];
   trigger_ids: { value: string }[];
   day: string;
   time: string;
@@ -142,7 +141,7 @@ const AlertDigestCreation: FunctionComponent<TriggerDigestCreationProps> = ({
     }
     const finalValues = {
       name: values.name,
-      notifiers: convertNotifiers(values),
+      notifiers: values.notifiers.map(({ value }) => value),
       description: values.description,
       trigger_ids: values.trigger_ids.map(({ value }) => value),
       period: values.period,

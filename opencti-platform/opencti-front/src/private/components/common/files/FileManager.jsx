@@ -268,7 +268,7 @@ const FileManager = ({
             <Form style={{ margin: '0 0 20px 0' }}>
               <Dialog
                 PaperProps={{ elevation: 1 }}
-                open={fileToImport}
+                open={!!fileToImport}
                 keepMounted={true}
                 onClose={handleCloseImport}
                 fullWidth={true}

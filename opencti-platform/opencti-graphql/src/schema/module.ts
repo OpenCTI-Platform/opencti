@@ -3,7 +3,7 @@ import type { RelationDefinition } from '../database/stix';
 import { stixCoreRelationshipsMapping as coreRels } from '../database/stix';
 import type { ConvertFn, RepresentativeFn } from '../database/stix-converter';
 import { registerStixDomainConverter, registerStixMetaConverter, registerStixRepresentativeConverter } from '../database/stix-converter';
-import { registerGraphqlSchema } from '../graphql/schema';
+// import { registerGraphqlSchema } from '../graphql/schema';
 import {
   ABSTRACT_INTERNAL_OBJECT,
   ABSTRACT_STIX_DOMAIN_OBJECT,
@@ -15,17 +15,15 @@ import {
   ENTITY_TYPE_THREAT_ACTOR,
 } from './general';
 import { UnsupportedError } from '../config/errors';
-import { type AttributeDefinition, iAliasedIds, standardId } from './attribute-definition';
+import { type AttributeDefinition, iAliasedIds, type RefAttribute, standardId } from './attribute-definition';
 import { depsKeysRegister, schemaAttributesDefinition } from './schema-attributes';
 import { STIX_CORE_RELATIONSHIPS } from './stixCoreRelationship';
 import type { ValidatorFn } from './validator-register';
 import { registerEntityValidator } from './validator-register';
-import type { Resolvers } from '../generated/graphql';
 import { schemaRelationsRefDefinition } from './schema-relationsRef';
 import { registerStixDomainAliased, resolveAliasesField } from './stixDomainObject';
 import { registerModelIdentifier } from './identifier';
 import type { StixObject } from '../types/stix-common';
-import type { RelationRefDefinition } from './relationRef-definition';
 import { schemaTypesDefinition } from './schema-types';
 import { ENTITY_TYPE_CONTAINER_CASE } from '../modules/case/case-types';
 
@@ -35,10 +33,6 @@ export interface ModuleDefinition<T extends StoreEntity, Z extends StixObject> {
     name: string
     aliased?: boolean
     category: 'Case' | 'Container' | 'Location' | 'Identity' | 'Stix-Domain-Object' | 'Stix-Meta-Object' | 'Internal-Object' | 'Threat-Actor'
-  };
-  graphql: {
-    schema: any
-    resolver: Resolvers
   };
   identifier: {
     definition: {
@@ -55,7 +49,7 @@ export interface ModuleDefinition<T extends StoreEntity, Z extends StixObject> {
     name: string;
     targets: Array<RelationDefinition>
   }>;
-  relationsRefs?: RelationRefDefinition[]
+  relationsRefs?: RefAttribute[]
   validators?: {
     validatorCreation?: ValidatorFn
     validatorUpdate?: ValidatorFn
@@ -122,9 +116,6 @@ export const registerDefinition = <T extends StoreEntity, Z extends StixObject>(
   if (definition.validators) {
     registerEntityValidator(definition.type.name, definition.validators);
   }
-
-  // Register graphQL schema
-  registerGraphqlSchema(definition.graphql);
 
   // Register key identification
   registerModelIdentifier(definition.identifier);

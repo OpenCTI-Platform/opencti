@@ -4,9 +4,7 @@ import type { ModuleDefinition } from '../../schema/module';
 import { registerDefinition } from '../../schema/module';
 import { objectOrganization } from '../../schema/stixRefRelationship';
 import convertCaseToStix from './case-converter';
-import caseResolvers from './case-resolvers';
 import { ENTITY_TYPE_CONTAINER_CASE, type StixCase, type StoreEntityCase } from './case-types';
-import caseTypeDefs from './case.graphql';
 
 const CASE_DEFINITION: ModuleDefinition<StoreEntityCase, StixCase> = {
   type: {
@@ -14,10 +12,6 @@ const CASE_DEFINITION: ModuleDefinition<StoreEntityCase, StixCase> = {
     name: ENTITY_TYPE_CONTAINER_CASE,
     category: ENTITY_TYPE_CONTAINER,
     aliased: false
-  },
-  graphql: {
-    schema: caseTypeDefs,
-    resolver: caseResolvers,
   },
   identifier: {
     definition: {
@@ -30,11 +24,11 @@ const CASE_DEFINITION: ModuleDefinition<StoreEntityCase, StixCase> = {
     },
   },
   attributes: [
-    { name: 'name', type: 'string', mandatoryType: 'external', editDefault: true, multiple: false, upsert: true },
-    { name: 'description', type: 'string', mandatoryType: 'customizable', editDefault: true, multiple: false, upsert: true },
-    { name: 'content', type: 'string', mandatoryType: 'customizable', editDefault: true, multiple: false, upsert: true },
-    { name: 'content_mapping', type: 'string', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true },
-    { name: 'caseTemplate', type: 'string', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true },
+    { name: 'name', label: 'Name', type: 'string', format: 'short', mandatoryType: 'external', editDefault: true, multiple: false, upsert: true, isFilterable: true },
+    { name: 'description', label: 'Description', type: 'string', format: 'short', mandatoryType: 'customizable', editDefault: true, multiple: false, upsert: true, isFilterable: true },
+    { name: 'content', label: 'Content', type: 'string', format: 'short', mandatoryType: 'customizable', editDefault: true, multiple: false, upsert: true, isFilterable: true },
+    { name: 'content_mapping', label: 'Content mapping', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: true },
+    { name: 'caseTemplate', label: 'Case template', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: true },
   ],
   relations: [],
   relationsRefs: [objectOrganization],

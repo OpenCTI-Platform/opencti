@@ -1,4 +1,3 @@
-import { elUpdateIndicesMappings, isElkEngine } from '../database/engine';
 import { findByManagerId, managerConfigurationResetSetting } from '../modules/managerConfiguration/managerConfiguration-domain';
 import { executionContext, SYSTEM_USER } from '../utils/access';
 import { logApp } from '../config/conf';
@@ -8,15 +7,6 @@ export const up = async (next) => {
   logApp.info(`${message} > started`);
   // update mapping for new field manager_setting that needs to be a flattened type
   const context = executionContext('migration', SYSTEM_USER);
-  const flattenedType = isElkEngine() ? 'flattened' : 'flat_object';
-  await elUpdateIndicesMappings({
-    uploaded_at: {
-      type: 'date',
-    },
-    manager_setting: {
-      type: flattenedType,
-    },
-  });
   const managerConfigurationToUpdate = await findByManagerId(context, context.user, 'FILE_INDEX_MANAGER');
   if (managerConfigurationToUpdate) {
     // reset managerConfiguration

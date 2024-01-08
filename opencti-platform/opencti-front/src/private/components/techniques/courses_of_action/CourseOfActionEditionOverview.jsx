@@ -87,7 +87,7 @@ const CourseOfActionEditionOverviewComponent = (props) => {
     name: Yup.string().min(2).required(t('This field is required')),
     description: Yup.string().nullable(),
     x_opencti_threat_hunting: Yup.string().nullable(),
-    x_opencti_log_sources: Yup.array().nullable(),
+    x_opencti_log_sources: Yup.string().nullable(),
     x_mitre_id: Yup.string().nullable(),
     references: Yup.array(),
     x_opencti_workflow_id: Yup.object(),
@@ -144,7 +144,7 @@ const CourseOfActionEditionOverviewComponent = (props) => {
     if (!enableReferences) {
       let finalValue = value;
       if (name === 'x_opencti_log_sources') {
-        finalValue = R.split('\n', value);
+        finalValue = value && value.length > 0 ? R.split('\n', value) : [];
       }
       if (name === 'x_opencti_workflow_id') {
         finalValue = value.value;
@@ -167,6 +167,10 @@ const CourseOfActionEditionOverviewComponent = (props) => {
     R.assoc('objectMarking', convertMarkings(courseOfAction)),
     R.assoc('x_opencti_workflow_id', convertStatus(t, courseOfAction)),
     R.assoc('references', []),
+    R.assoc(
+      'x_opencti_log_sources',
+      R.join('\n', courseOfAction.x_opencti_log_sources ? courseOfAction.x_opencti_log_sources : []),
+    ),
     R.pick([
       'name',
       'description',

@@ -101,12 +101,11 @@ import {
 
 import '../../../src/modules/index';
 import { ADMIN_USER, testContext } from '../../utils/testQuery';
-import { isDateNumericOrBooleanAttribute, isJsonAttribute, isMultipleAttribute, schemaAttributesDefinition } from '../../../src/schema/schema-attributes';
+import { isDateNumericOrBooleanAttribute, isMultipleAttribute, isObjectAttribute, schemaAttributesDefinition } from '../../../src/schema/schema-attributes';
 import { ENTITY_TYPE_ENTITY_SETTING } from '../../../src/modules/entitySetting/entitySetting-types';
 import { ENTITY_TYPE_CHANNEL } from '../../../src/modules/channel/channel-types';
 import { ENTITY_TYPE_INDICATOR } from '../../../src/modules/indicator/indicator-types';
 import { stixRefsExtractor } from '../../../src/schema/stixEmbeddedRelationship';
-import { generateStandardId } from '../../../src/schema/identifier';
 import { schemaRelationsRefDefinition } from '../../../src/schema/schema-relationsRef';
 import { confidence, created, entityType, xOpenctiStixIds } from '../../../src/schema/attribute-definition';
 import { getParentTypes } from '../../../src/schema/schemaUtils';
@@ -219,8 +218,7 @@ describe('Testing schema types definition', () => {
 
 describe('Testing schema attributes definition', () => {
   it('Attributes type testing', () => {
-    expect(isJsonAttribute('revoked')).toBe(false);
-    expect(isJsonAttribute('bookmarks')).toBe(true);
+    expect(isObjectAttribute('bookmarks')).toBe(true);
     expect(isDateNumericOrBooleanAttribute('bookmarks')).toBe(false);
     expect(isDateNumericOrBooleanAttribute('attribute_order')).toBe(true);
     expect(isDateNumericOrBooleanAttribute('start_time')).toBe(true);
@@ -249,6 +247,7 @@ describe('Testing schema attributes definition', () => {
     expect(schemaAttributesDefinition.getAttributes(ABSTRACT_STIX_REF_RELATIONSHIP).get('stop_time').name === 'stop_time').toBe(true);
   });
 });
+
 describe('Testing schema relations ref definition', () => {
   it('Relations ref inheritance testing', () => {
     const relationsRefSDO = schemaRelationsRefDefinition.getRelationsRef(ABSTRACT_STIX_DOMAIN_OBJECT);
@@ -257,168 +256,168 @@ describe('Testing schema relations ref definition', () => {
     expect(relationsRefSDO.includes(objectAssignee)).toBe(false);
     expect(relationsRefReport.includes(objectAssignee)).toBe(true);
 
-    expect(schemaRelationsRefDefinition.getRelationRef(ENTITY_TYPE_CONTAINER_REPORT, createdBy.inputName).inputName === createdBy.inputName).toBe(true);
-    expect(schemaRelationsRefDefinition.getInputNames(ENTITY_TYPE_CONTAINER_REPORT).includes(objectMarking.inputName)).toBe(true);
+    expect(schemaRelationsRefDefinition.getRelationRef(ENTITY_TYPE_CONTAINER_REPORT, createdBy.name).name === createdBy.name).toBe(true);
+    expect(schemaRelationsRefDefinition.getInputNames(ENTITY_TYPE_CONTAINER_REPORT).includes(objectMarking.name)).toBe(true);
     expect(schemaRelationsRefDefinition.getStixNames(ENTITY_TYPE_CONTAINER_REPORT).includes(objectLabel.stixName)).toBe(true);
     expect(schemaRelationsRefDefinition.isMultipleDatabaseName(ENTITY_TYPE_CONTAINER_REPORT, externalReferences.databaseName)).toBe(true);
-    expect(schemaRelationsRefDefinition.convertDatabaseNameToInputName(ENTITY_TYPE_CONTAINER_REPORT, externalReferences.databaseName) === externalReferences.inputName).toBe(true);
-    expect(schemaRelationsRefDefinition.convertStixNameToInputName(ENTITY_TYPE_CONTAINER_REPORT, externalReferences.stixName) === externalReferences.inputName).toBe(true);
+    expect(schemaRelationsRefDefinition.convertDatabaseNameToInputName(ENTITY_TYPE_CONTAINER_REPORT, externalReferences.databaseName) === externalReferences.name).toBe(true);
+    expect(schemaRelationsRefDefinition.convertStixNameToInputName(ENTITY_TYPE_CONTAINER_REPORT, externalReferences.stixName) === externalReferences.name).toBe(true);
   });
   it('Relations Cyber Observable testing', () => {
     let relationsRef = schemaRelationsRefDefinition.getRelationsRef(ENTITY_DIRECTORY);
-    let [relationRef] = relationsRef.filter((rel) => rel.inputName === INPUT_CONTAINS);
+    let [relationRef] = relationsRef.filter((rel) => rel.name === INPUT_CONTAINS);
     expect(relationRef).not.toBeNull();
     expect(relationRef.checker(ENTITY_DIRECTORY, ENTITY_DIRECTORY)).toBe(true);
     expect(relationRef.checker(ENTITY_DIRECTORY, ENTITY_DOMAIN_NAME)).toBe(false);
 
     relationsRef = schemaRelationsRefDefinition.getRelationsRef(ENTITY_DOMAIN_NAME);
-    [relationRef] = relationsRef.filter((rel) => rel.inputName === INPUT_RESOLVES_TO);
+    [relationRef] = relationsRef.filter((rel) => rel.name === INPUT_RESOLVES_TO);
     expect(relationRef).not.toBeNull();
     expect(relationRef.checker(ENTITY_DIRECTORY, ENTITY_DOMAIN_NAME)).toBe(true);
     expect(relationRef.checker(ENTITY_DIRECTORY, ENTITY_HASHED_OBSERVABLE_STIX_FILE)).toBe(false);
 
     relationsRef = schemaRelationsRefDefinition.getRelationsRef(ENTITY_EMAIL_MESSAGE);
-    [relationRef] = relationsRef.filter((rel) => rel.inputName === INPUT_FROM);
+    [relationRef] = relationsRef.filter((rel) => rel.name === INPUT_FROM);
     expect(relationRef).not.toBeNull();
     expect(relationRef.checker(ENTITY_EMAIL_MESSAGE, ENTITY_EMAIL_ADDR)).toBe(true);
     expect(relationRef.checker(ENTITY_EMAIL_MESSAGE, ENTITY_IPV4_ADDR)).toBe(false);
-    [relationRef] = relationsRef.filter((rel) => rel.inputName === INPUT_SENDER);
+    [relationRef] = relationsRef.filter((rel) => rel.name === INPUT_SENDER);
     expect(relationRef).not.toBeNull();
     expect(relationRef.checker(ENTITY_EMAIL_MESSAGE, ENTITY_EMAIL_ADDR)).toBe(true);
     expect(relationRef.checker(ENTITY_EMAIL_MESSAGE, ENTITY_IPV4_ADDR)).toBe(false);
-    [relationRef] = relationsRef.filter((rel) => rel.inputName === INPUT_TO);
+    [relationRef] = relationsRef.filter((rel) => rel.name === INPUT_TO);
     expect(relationRef).not.toBeNull();
     expect(relationRef.checker(ENTITY_EMAIL_MESSAGE, ENTITY_EMAIL_ADDR)).toBe(true);
     expect(relationRef.checker(ENTITY_EMAIL_MESSAGE, ENTITY_IPV4_ADDR)).toBe(false);
 
     relationsRef = schemaRelationsRefDefinition.getRelationsRef(ENTITY_EMAIL_ADDR);
-    [relationRef] = relationsRef.filter((rel) => rel.inputName === INPUT_BELONGS_TO);
+    [relationRef] = relationsRef.filter((rel) => rel.name === INPUT_BELONGS_TO);
     expect(relationRef).not.toBeNull();
     expect(relationRef.checker(ENTITY_EMAIL_ADDR, ENTITY_USER_ACCOUNT)).toBe(true);
     expect(relationRef.checker(ENTITY_EMAIL_ADDR, ENTITY_IPV4_ADDR)).toBe(false);
 
     relationsRef = schemaRelationsRefDefinition.getRelationsRef(ENTITY_EMAIL_MESSAGE);
-    [relationRef] = relationsRef.filter((rel) => rel.inputName === INPUT_BODY_MULTIPART);
+    [relationRef] = relationsRef.filter((rel) => rel.name === INPUT_BODY_MULTIPART);
     expect(relationRef).not.toBeNull();
     expect(relationRef.checker(ENTITY_EMAIL_MESSAGE, ENTITY_EMAIL_MIME_PART_TYPE)).toBe(true);
     expect(relationRef.checker(ENTITY_EMAIL_MESSAGE, ENTITY_IPV4_ADDR)).toBe(false);
 
     relationsRef = schemaRelationsRefDefinition.getRelationsRef(ENTITY_EMAIL_MESSAGE);
-    [relationRef] = relationsRef.filter((rel) => rel.inputName === INPUT_RAW_EMAIL);
+    [relationRef] = relationsRef.filter((rel) => rel.name === INPUT_RAW_EMAIL);
     expect(relationRef).not.toBeNull();
     expect(relationRef.checker(ENTITY_EMAIL_MESSAGE, ENTITY_HASHED_OBSERVABLE_ARTIFACT)).toBe(true);
     expect(relationRef.checker(ENTITY_EMAIL_MESSAGE, ENTITY_IPV4_ADDR)).toBe(false);
 
     relationsRef = schemaRelationsRefDefinition.getRelationsRef(ENTITY_EMAIL_MIME_PART_TYPE);
-    [relationRef] = relationsRef.filter((rel) => rel.inputName === INPUT_BODY_RAW);
+    [relationRef] = relationsRef.filter((rel) => rel.name === INPUT_BODY_RAW);
     expect(relationRef).not.toBeNull();
     expect(relationRef.checker(ENTITY_EMAIL_MIME_PART_TYPE, ENTITY_HASHED_OBSERVABLE_ARTIFACT)).toBe(true);
     expect(relationRef.checker(ENTITY_EMAIL_MIME_PART_TYPE, ENTITY_HASHED_OBSERVABLE_STIX_FILE)).toBe(true);
     expect(relationRef.checker(ENTITY_EMAIL_MIME_PART_TYPE, ENTITY_EMAIL_MESSAGE)).toBe(false);
 
     relationsRef = schemaRelationsRefDefinition.getRelationsRef(ENTITY_TYPE_MALWARE);
-    [relationRef] = relationsRef.filter((rel) => rel.inputName === INPUT_SAMPLE);
+    [relationRef] = relationsRef.filter((rel) => rel.name === INPUT_SAMPLE);
     expect(relationRef).not.toBeNull();
     expect(relationRef.checker(ENTITY_HASHED_OBSERVABLE_ARTIFACT, ENTITY_HASHED_OBSERVABLE_ARTIFACT)).toBe(true);
     expect(relationRef.checker(ENTITY_HASHED_OBSERVABLE_ARTIFACT, ENTITY_IPV4_ADDR)).toBe(false);
-    [relationRef] = relationsRef.filter((rel) => rel.inputName === INPUT_OPERATING_SYSTEM);
+    [relationRef] = relationsRef.filter((rel) => rel.name === INPUT_OPERATING_SYSTEM);
     expect(relationRef).not.toBeNull();
     expect(relationRef.checker(ENTITY_HASHED_OBSERVABLE_ARTIFACT, ENTITY_SOFTWARE)).toBe(true);
     expect(relationRef.checker(ENTITY_HASHED_OBSERVABLE_ARTIFACT, ENTITY_TYPE_MALWARE)).toBe(false);
 
     relationsRef = schemaRelationsRefDefinition.getRelationsRef(ENTITY_HASHED_OBSERVABLE_STIX_FILE);
-    [relationRef] = relationsRef.filter((rel) => rel.inputName === INPUT_CONTAINS);
+    [relationRef] = relationsRef.filter((rel) => rel.name === INPUT_CONTAINS);
     expect(relationRef).not.toBeNull();
     expect(relationRef.checker(ENTITY_HASHED_OBSERVABLE_ARTIFACT, ABSTRACT_STIX_CYBER_OBSERVABLE)).toBe(true);
     expect(relationRef.checker(ENTITY_HASHED_OBSERVABLE_ARTIFACT, ENTITY_DIRECTORY)).toBe(true);
     relationsRef = schemaRelationsRefDefinition.getRelationsRef(ENTITY_HASHED_OBSERVABLE_STIX_FILE);
-    [relationRef] = relationsRef.filter((rel) => rel.inputName === INPUT_PARENT_DIRECTORY);
+    [relationRef] = relationsRef.filter((rel) => rel.name === INPUT_PARENT_DIRECTORY);
     expect(relationRef).not.toBeNull();
     expect(relationRef.checker(ENTITY_HASHED_OBSERVABLE_ARTIFACT, ENTITY_DIRECTORY)).toBe(true);
     expect(relationRef.checker(ENTITY_HASHED_OBSERVABLE_ARTIFACT, ABSTRACT_STIX_CYBER_OBSERVABLE)).toBe(false);
-    [relationRef] = relationsRef.filter((rel) => rel.inputName === INPUT_CONTENT);
+    [relationRef] = relationsRef.filter((rel) => rel.name === INPUT_CONTENT);
     expect(relationRef).not.toBeNull();
     expect(relationRef.checker(ENTITY_HASHED_OBSERVABLE_ARTIFACT, ENTITY_HASHED_OBSERVABLE_ARTIFACT)).toBe(true);
     expect(relationRef.checker(ENTITY_HASHED_OBSERVABLE_ARTIFACT, ENTITY_DIRECTORY)).toBe(false);
 
     relationsRef = schemaRelationsRefDefinition.getRelationsRef(ENTITY_IPV4_ADDR);
-    [relationRef] = relationsRef.filter((rel) => rel.inputName === INPUT_RESOLVES_TO);
+    [relationRef] = relationsRef.filter((rel) => rel.name === INPUT_RESOLVES_TO);
     expect(relationRef).not.toBeNull();
     expect(relationRef.checker(ENTITY_IPV4_ADDR, ENTITY_MAC_ADDR)).toBe(true);
     expect(relationRef.checker(ENTITY_IPV4_ADDR, ENTITY_AUTONOMOUS_SYSTEM)).toBe(false);
-    [relationRef] = relationsRef.filter((rel) => rel.inputName === INPUT_BELONGS_TO);
+    [relationRef] = relationsRef.filter((rel) => rel.name === INPUT_BELONGS_TO);
     expect(relationRef).not.toBeNull();
     expect(relationRef.checker(ENTITY_IPV4_ADDR, ENTITY_AUTONOMOUS_SYSTEM)).toBe(true);
     expect(relationRef.checker(ENTITY_IPV4_ADDR, ENTITY_MAC_ADDR)).toBe(false);
 
     relationsRef = schemaRelationsRefDefinition.getRelationsRef(ENTITY_IPV6_ADDR);
-    [relationRef] = relationsRef.filter((rel) => rel.inputName === INPUT_RESOLVES_TO);
+    [relationRef] = relationsRef.filter((rel) => rel.name === INPUT_RESOLVES_TO);
     expect(relationRef).not.toBeNull();
     expect(relationRef.checker(ENTITY_IPV6_ADDR, ENTITY_MAC_ADDR)).toBe(true);
     expect(relationRef.checker(ENTITY_IPV6_ADDR, ENTITY_AUTONOMOUS_SYSTEM)).toBe(false);
-    [relationRef] = relationsRef.filter((rel) => rel.inputName === INPUT_BELONGS_TO);
+    [relationRef] = relationsRef.filter((rel) => rel.name === INPUT_BELONGS_TO);
     expect(relationRef).not.toBeNull();
     expect(relationRef.checker(ENTITY_IPV6_ADDR, ENTITY_AUTONOMOUS_SYSTEM)).toBe(true);
     expect(relationRef.checker(ENTITY_IPV6_ADDR, ENTITY_MAC_ADDR)).toBe(false);
 
     relationsRef = schemaRelationsRefDefinition.getRelationsRef(ENTITY_NETWORK_TRAFFIC);
-    [relationRef] = relationsRef.filter((rel) => rel.inputName === INPUT_SRC);
+    [relationRef] = relationsRef.filter((rel) => rel.name === INPUT_SRC);
     expect(relationRef).not.toBeNull();
     expect(relationRef.checker(ENTITY_NETWORK_TRAFFIC, ENTITY_DOMAIN_NAME)).toBe(true);
     expect(relationRef.checker(ENTITY_NETWORK_TRAFFIC, ENTITY_NETWORK_TRAFFIC)).toBe(false);
-    [relationRef] = relationsRef.filter((rel) => rel.inputName === INPUT_DST);
+    [relationRef] = relationsRef.filter((rel) => rel.name === INPUT_DST);
     expect(relationRef).not.toBeNull();
     expect(relationRef.checker(ENTITY_NETWORK_TRAFFIC, ENTITY_IPV4_ADDR)).toBe(true);
     expect(relationRef.checker(ENTITY_NETWORK_TRAFFIC, ENTITY_NETWORK_TRAFFIC)).toBe(false);
-    [relationRef] = relationsRef.filter((rel) => rel.inputName === INPUT_SRC_PAYLOAD);
+    [relationRef] = relationsRef.filter((rel) => rel.name === INPUT_SRC_PAYLOAD);
     expect(relationRef).not.toBeNull();
     expect(relationRef.checker(ENTITY_NETWORK_TRAFFIC, ENTITY_HASHED_OBSERVABLE_ARTIFACT)).toBe(true);
     expect(relationRef.checker(ENTITY_NETWORK_TRAFFIC, ENTITY_IPV4_ADDR)).toBe(false);
-    [relationRef] = relationsRef.filter((rel) => rel.inputName === INPUT_DST_PAYLOAD);
+    [relationRef] = relationsRef.filter((rel) => rel.name === INPUT_DST_PAYLOAD);
     expect(relationRef).not.toBeNull();
     expect(relationRef.checker(ENTITY_NETWORK_TRAFFIC, ENTITY_HASHED_OBSERVABLE_ARTIFACT)).toBe(true);
     expect(relationRef.checker(ENTITY_NETWORK_TRAFFIC, ENTITY_IPV4_ADDR)).toBe(false);
-    [relationRef] = relationsRef.filter((rel) => rel.inputName === INPUT_ENCAPSULATES);
+    [relationRef] = relationsRef.filter((rel) => rel.name === INPUT_ENCAPSULATES);
     expect(relationRef).not.toBeNull();
     expect(relationRef.checker(ENTITY_NETWORK_TRAFFIC, ENTITY_NETWORK_TRAFFIC)).toBe(true);
     expect(relationRef.checker(ENTITY_NETWORK_TRAFFIC, ENTITY_HASHED_OBSERVABLE_ARTIFACT)).toBe(false);
-    [relationRef] = relationsRef.filter((rel) => rel.inputName === INPUT_ENCAPSULATED_BY);
+    [relationRef] = relationsRef.filter((rel) => rel.name === INPUT_ENCAPSULATED_BY);
     expect(relationRef).not.toBeNull();
     expect(relationRef.checker(ENTITY_NETWORK_TRAFFIC, ENTITY_NETWORK_TRAFFIC)).toBe(true);
     expect(relationRef.checker(ENTITY_NETWORK_TRAFFIC, ENTITY_HASHED_OBSERVABLE_ARTIFACT)).toBe(false);
 
     relationsRef = schemaRelationsRefDefinition.getRelationsRef(ENTITY_PROCESS);
-    [relationRef] = relationsRef.filter((rel) => rel.inputName === INPUT_OPENED_CONNECTION);
+    [relationRef] = relationsRef.filter((rel) => rel.name === INPUT_OPENED_CONNECTION);
     expect(relationRef).not.toBeNull();
     expect(relationRef.checker(ENTITY_PROCESS, ENTITY_NETWORK_TRAFFIC)).toBe(true);
     expect(relationRef.checker(ENTITY_PROCESS, ENTITY_HASHED_OBSERVABLE_ARTIFACT)).toBe(false);
-    [relationRef] = relationsRef.filter((rel) => rel.inputName === INPUT_CREATOR_USER);
+    [relationRef] = relationsRef.filter((rel) => rel.name === INPUT_CREATOR_USER);
     expect(relationRef).not.toBeNull();
     expect(relationRef.checker(ENTITY_PROCESS, ENTITY_USER_ACCOUNT)).toBe(true);
     expect(relationRef.checker(ENTITY_PROCESS, ENTITY_NETWORK_TRAFFIC)).toBe(false);
-    [relationRef] = relationsRef.filter((rel) => rel.inputName === INPUT_IMAGE);
+    [relationRef] = relationsRef.filter((rel) => rel.name === INPUT_IMAGE);
     expect(relationRef).not.toBeNull();
     expect(relationRef.checker(ENTITY_PROCESS, ENTITY_HASHED_OBSERVABLE_STIX_FILE)).toBe(true);
     expect(relationRef.checker(ENTITY_PROCESS, ENTITY_NETWORK_TRAFFIC)).toBe(false);
-    [relationRef] = relationsRef.filter((rel) => rel.inputName === INPUT_PARENT);
+    [relationRef] = relationsRef.filter((rel) => rel.name === INPUT_PARENT);
     expect(relationRef).not.toBeNull();
     expect(relationRef.checker(ENTITY_PROCESS, ENTITY_PROCESS)).toBe(true);
     expect(relationRef.checker(ENTITY_PROCESS, ENTITY_NETWORK_TRAFFIC)).toBe(false);
-    [relationRef] = relationsRef.filter((rel) => rel.inputName === INPUT_CHILD);
+    [relationRef] = relationsRef.filter((rel) => rel.name === INPUT_CHILD);
     expect(relationRef).not.toBeNull();
     expect(relationRef.checker(ENTITY_PROCESS, ENTITY_PROCESS)).toBe(true);
     expect(relationRef.checker(ENTITY_PROCESS, ENTITY_NETWORK_TRAFFIC)).toBe(false);
-    [relationRef] = relationsRef.filter((rel) => rel.inputName === INPUT_SERVICE_DLL);
+    [relationRef] = relationsRef.filter((rel) => rel.name === INPUT_SERVICE_DLL);
     expect(relationRef).not.toBeNull();
     expect(relationRef.checker(ENTITY_PROCESS, ENTITY_HASHED_OBSERVABLE_STIX_FILE)).toBe(true);
     expect(relationRef.checker(ENTITY_PROCESS, ENTITY_NETWORK_TRAFFIC)).toBe(false);
 
     relationsRef = schemaRelationsRefDefinition.getRelationsRef(ENTITY_WINDOWS_REGISTRY_KEY);
-    [relationRef] = relationsRef.filter((rel) => rel.inputName === INPUT_VALUES);
+    [relationRef] = relationsRef.filter((rel) => rel.name === INPUT_VALUES);
     expect(relationRef).not.toBeNull();
     expect(relationRef.checker(ENTITY_WINDOWS_REGISTRY_KEY, ENTITY_WINDOWS_REGISTRY_VALUE_TYPE)).toBe(true);
     expect(relationRef.checker(ENTITY_WINDOWS_REGISTRY_KEY, ENTITY_NETWORK_TRAFFIC)).toBe(false);
-    [relationRef] = relationsRef.filter((rel) => rel.inputName === INPUT_CREATOR_USER);
+    [relationRef] = relationsRef.filter((rel) => rel.name === INPUT_CREATOR_USER);
     expect(relationRef).not.toBeNull();
     expect(relationRef.checker(ENTITY_WINDOWS_REGISTRY_KEY, ENTITY_USER_ACCOUNT)).toBe(true);
     expect(relationRef.checker(ENTITY_WINDOWS_REGISTRY_KEY, ENTITY_NETWORK_TRAFFIC)).toBe(false);
@@ -459,7 +458,7 @@ describe('Testing stix ref extractor', () => {
       }],
       name: 'CVE-2023-1292',
     };
-    const refs = stixRefsExtractor(json, generateStandardId);
+    const refs = stixRefsExtractor(json);
     expect(refs.includes('identity--1f02efe5-c752-589e-85d4-a8da3898f690')).toBe(true);
     expect(refs.includes('marking-definition--34098fce-860f-48ae-8e50-ebd3cc5e41da')).toBe(true);
   });

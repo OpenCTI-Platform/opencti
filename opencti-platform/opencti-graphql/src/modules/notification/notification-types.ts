@@ -65,7 +65,7 @@ export interface NotificationAddInput {
   is_read: boolean
   name: string
   notification_type: string
-  content: Array<{
+  notification_content: Array<{
     title: string,
     events: Array<NotificationContentEvent>
   }>

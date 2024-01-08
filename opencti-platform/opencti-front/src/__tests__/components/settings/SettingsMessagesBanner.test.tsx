@@ -88,7 +88,7 @@ describe('Settings Messages', () => {
       return MockPayloadGenerator.generate(operation, {
         Settings() {
           return {
-            messages: [message],
+            platform_messages: [message],
           };
         },
       });
@@ -116,7 +116,7 @@ describe('Settings Messages', () => {
       return MockPayloadGenerator.generate(operation, {
         Settings() {
           return {
-            messages: [message],
+            platform_messages: [message],
           };
         },
       });

@@ -121,7 +121,7 @@ ExternalReferencesFieldProps
     if (id) {
       filters = {
         mode: 'and',
-        filters: [{ key: ['usedBy'], values: [id] }],
+        filters: [{ key: ['externalReferences'], values: [id] }],
         filterGroups: [],
       };
     }

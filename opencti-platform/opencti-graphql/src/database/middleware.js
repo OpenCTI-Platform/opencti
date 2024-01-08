@@ -4,7 +4,6 @@ import DataLoader from 'dataloader';
 import { Promise } from 'bluebird';
 import { compareUnsorted } from 'js-deep-equals';
 import { SemanticAttributes } from '@opentelemetry/semantic-conventions';
-import { JSONPath } from 'jsonpath-plus';
 import * as jsonpatch from 'fast-json-patch';
 
 import {
@@ -30,6 +29,7 @@ import {
   isEmptyField,
   isInferredIndex,
   isNotEmptyField,
+  isObjectPathTargetMultipleAttribute,
   READ_DATA_INDICES,
   READ_DATA_INDICES_INFERRED,
   READ_INDEX_HISTORY,
@@ -40,7 +40,7 @@ import {
   READ_RELATIONSHIPS_INDICES_WITHOUT_INFERRED,
   UPDATE_OPERATION_ADD,
   UPDATE_OPERATION_REMOVE,
-  UPDATE_OPERATION_REPLACE,
+  UPDATE_OPERATION_REPLACE
 } from './utils';
 import {
   elAggregationCount,
@@ -90,7 +90,7 @@ import {
   X_WORKFLOW_ID,
 } from '../schema/identifier';
 import { lockResource, notify, redisAddDeletions, storeCreateEntityEvent, storeCreateRelationEvent, storeDeleteEvent, storeMergeEvent, storeUpdateEvent } from './redis';
-import { cleanStixIds, STIX_SPEC_VERSION, } from './stix';
+import { cleanStixIds } from './stix';
 import {
   ABSTRACT_BASIC_RELATIONSHIP,
   ABSTRACT_STIX_CORE_OBJECT,
@@ -142,7 +142,6 @@ import {
   ATTRIBUTE_ALIASES,
   ATTRIBUTE_ALIASES_OPENCTI,
   ENTITY_TYPE_CONTAINER_OBSERVED_DATA,
-  ENTITY_TYPE_CONTAINER_REPORT,
   ENTITY_TYPE_IDENTITY_INDIVIDUAL,
   isStixDomainObject,
   isStixDomainObjectShareableContainer,
@@ -171,10 +170,10 @@ import {
   userFilterStoreElements,
   validateUserAccessOperation
 } from '../utils/access';
-import { isRuleUser, RULES_ATTRIBUTES_BEHAVIOR } from '../rules/rules';
+import { isRuleUser, RULES_ATTRIBUTES_BEHAVIOR } from '../rules/rules-utils';
 import { instanceMetaRefsExtractor, isSingleRelationsRef, } from '../schema/stixEmbeddedRelationship';
 import { createEntityAutoEnrichment } from '../domain/enrichment';
-import { convertExternalReferenceToStix, convertStoreToStix, isTrustedStixId } from './stix-converter';
+import { convertExternalReferenceToStix, convertStoreToStix } from './stix-converter';
 import {
   buildAggregationRelationFilter,
   buildEntityFilters,
@@ -190,25 +189,17 @@ import { getEntitiesListFromCache } from './cache';
 import { ACTION_TYPE_SHARE, ACTION_TYPE_UNSHARE, createListTask } from '../domain/backgroundTask-common';
 import { ENTITY_TYPE_VOCABULARY, vocabularyDefinitions } from '../modules/vocabulary/vocabulary-types';
 import { getVocabulariesCategories, getVocabularyCategoryForField, isEntityFieldAnOpenVocabulary, updateElasticVocabularyValue } from '../modules/vocabulary/vocabulary-utils';
-import {
-  depsKeysRegister,
-  isBooleanAttribute,
-  isDateAttribute,
-  isDictionaryAttribute,
-  isMultipleAttribute,
-  isNumericAttribute,
-  isObjectAttribute,
-  schemaAttributesDefinition
-} from '../schema/schema-attributes';
+import { depsKeysRegister, isDateAttribute, isMultipleAttribute, isNumericAttribute, isObjectAttribute, schemaAttributesDefinition } from '../schema/schema-attributes';
 import { getAttributesConfiguration, getDefaultValues, getEntitySettingFromCache } from '../modules/entitySetting/entitySetting-utils';
 import { schemaRelationsRefDefinition } from '../schema/schema-relationsRef';
-import { extractSchemaDefFromPath, validateInputCreation, validateInputUpdate } from '../schema/schema-validator';
+import { validateInputCreation, validateInputUpdate } from '../schema/schema-validator';
 import { getMandatoryAttributesForSetting } from '../domain/attribute';
 import { telemetry } from '../config/tracing';
 import { cleanMarkings, handleMarkingOperations } from '../utils/markingDefinition-utils';
 import { generateCreateMessage, generateUpdateMessage } from './generate-message';
 import { confidence } from '../schema/attribute-definition';
 import { ENTITY_TYPE_INDICATOR } from '../modules/indicator/indicator-types';
+import { FilterOperator } from '../generated/graphql';
 
 // region global variables
 const MAX_BATCH_SIZE = 300;
@@ -902,111 +893,105 @@ const rebuildAndMergeInputFromExistingData = (rawInput, instance) => {
   const { key, value, object_path, operation = UPDATE_OPERATION_REPLACE } = rawInput; // value can be multi valued
   const isMultiple = isMultipleAttribute(instance.entity_type, key);
   let finalVal;
-  let finalKey = key;
-  // TODO Add support for these restrictions
-  // TODO Change R.head(value) limitation
-  if (isDictionaryAttribute(key) && isNotEmptyField(R.head(value))) { // Only allow full cleanup
-    throw UnsupportedError('Dictionary attribute cant be updated directly', { rawInput });
-  }
-  if (!isMultiple && isObjectAttribute(key)) {
-    throw UnsupportedError('Object update only available for array attributes', { rawInput });
-  }
-  // region rebuild input values consistency
-  if (key.includes('.')) {
-    // In case of dict attributes, patching the content is possible through first level path
-    const splitKey = key.split('.');
-    if (splitKey.length > 2) {
-      throw UnsupportedError('Multiple path follow is not supported', { rawInput });
-    }
-    const [baseKey, targetKey] = splitKey;
-    if (!isDictionaryAttribute(baseKey)) {
-      throw UnsupportedError('Path update only available for dictionary attributes', { rawInput });
-    }
-    finalKey = baseKey;
-    const currentJson = instance[baseKey];
-    const valueToTake = R.head(value);
-    const compareValue = R.isEmpty(valueToTake) || R.isNil(valueToTake) ? undefined : valueToTake;
-    if (currentJson && currentJson[targetKey] === compareValue) {
-      return []; // No need to update the attribute
-    }
-    // If data is empty, remove the key
-    if (R.isEmpty(valueToTake) || R.isNil(valueToTake)) {
-      finalVal = [R.dissoc(targetKey, currentJson)];
-    } else {
-      finalVal = [R.assoc(targetKey, valueToTake, currentJson)];
-    }
-  } else if (isMultiple) {
+  if (isMultiple) {
     const currentValues = (Array.isArray(instance[key]) ? instance[key] : [instance[key]]) ?? [];
     if (operation === UPDATE_OPERATION_ADD) {
-      if (isObjectAttribute(key) && object_path) {
-        const pointers = JSONPath({ json: instance, resultType: 'pointer', path: `${key}${object_path}` });
-        const patch = pointers.map((p) => ({ op: operation, path: p, value }));
+      if (isObjectAttribute(key)) {
+        const path = object_path ?? key;
+        const preparedPath = path.startsWith('/') ? path : `/${path}`;
+        const instanceKeyValues = jsonpatch.getValueByPointer(instance, preparedPath);
+        let patch;
+        if (instanceKeyValues === undefined) {
+          // if the instance has not yet this key, we need to add the full key as a new array
+          patch = [{ op: operation, path: `${preparedPath}`, value }];
+        } else {
+          // otherwise we need to add the values to the existing array, using jsonpatch indexed path
+          patch = value.map((v, index) => {
+            const afterIndex = index + instanceKeyValues.length;
+            return { op: operation, path: `${preparedPath}/${afterIndex}`, value: v };
+          });
+        }
         const patchedInstance = jsonpatch.applyPatch(structuredClone(instance), patch).newDocument;
         finalVal = patchedInstance[key];
       } else {
         finalVal = R.uniq([...currentValues, value].flat().filter((v) => isNotEmptyField(v)));
       }
-    } else if (operation === UPDATE_OPERATION_REMOVE) {
+    }
+    if (operation === UPDATE_OPERATION_REMOVE) {
       if (isObjectAttribute(key)) {
-        const pointers = JSONPath({ json: instance, resultType: 'pointer', path: `${key}${object_path}` }).reverse();
-        const patch = pointers.map((p) => ({ op: operation, path: p }));
+        const path = object_path ?? key;
+        const preparedPath = path.startsWith('/') ? path : `/${path}`;
+        const patch = [{ op: operation, path: preparedPath }];
         const patchedInstance = jsonpatch.applyPatch(structuredClone(instance), patch).newDocument;
         finalVal = patchedInstance[key];
       } else {
         finalVal = R.filter((n) => !R.includes(n, value), currentValues);
       }
-    } else if (isObjectAttribute(key)) {
-      const attributeDefinition = schemaAttributesDefinition.getAttribute(instance.entity_type, key);
-      const pointers = JSONPath({ json: instance, resultType: 'pointer', path: `${key}${object_path ?? ''}` });
-      const patch = pointers.map((p) => ({ op: operation, path: p, value: extractSchemaDefFromPath(attributeDefinition, p, rawInput) }));
-      const patchedInstance = jsonpatch.applyPatch(structuredClone(instance), patch).newDocument;
-      finalVal = patchedInstance[key];
-    } else { // Replace general
-      finalVal = value;
+    }
+    if (operation === UPDATE_OPERATION_REPLACE) {
+      if (isObjectAttribute(key)) {
+        const path = object_path ?? key;
+        const preparedPath = path.startsWith('/') ? path : `/${path}`;
+        const targetIsMultiple = isObjectPathTargetMultipleAttribute(instance, preparedPath);
+        const patch = [{ op: operation, path: preparedPath, value: targetIsMultiple ? value : R.head(value) }];
+        const patchedInstance = jsonpatch.applyPatch(structuredClone(instance), patch).newDocument;
+        finalVal = patchedInstance[key];
+      } else { // Replace general
+        finalVal = value;
+      }
     }
     if (compareUnsorted(finalVal ?? [], currentValues)) {
       return {}; // No need to update the attribute
     }
+  } else if (isObjectAttribute(key) && object_path) {
+    const preparedPath = object_path.startsWith('/') ? object_path : `/${object_path}`;
+    const targetIsMultiple = isObjectPathTargetMultipleAttribute(instance, preparedPath);
+    const patch = [{ op: operation, path: preparedPath, value: targetIsMultiple ? value : R.head(value) }];
+    const patchedInstance = jsonpatch.applyPatch(structuredClone(instance), patch).newDocument;
+    if (compareUnsorted(patchedInstance[key], instance[key])) {
+      return {}; // No need to update the attribute
+    }
+    finalVal = [patchedInstance[key]];
   } else {
-    finalVal = value;
-    const isDate = isDateAttribute(key);
     const evaluateValue = value ? R.head(value) : null;
-    if (isDate) {
+    if (isDateAttribute(key)) {
       if (isEmptyField(evaluateValue)) {
         if (instance[key] === FROM_START_STR || instance[key] === UNTIL_END_STR) {
           return {};
         }
-      } else if (utcDate(instance[key]).isSame(utcDate(evaluateValue))) {
+      }
+      if (utcDate(instance[key]).isSame(utcDate(evaluateValue))) {
         return {};
       }
     }
     if (R.equals(instance[key], evaluateValue) || (isEmptyField(instance[key]) && isEmptyField(evaluateValue))) {
       return {}; // No need to update the attribute
     }
+    finalVal = value;
   }
   // endregion
   // region cleanup cases
-  if (finalKey === IDS_STIX) {
+  if (key === IDS_STIX) {
     // Special stixIds uuid v1 cleanup.
     finalVal = cleanStixIds(finalVal);
   }
   // endregion
-  if (isDateAttribute(finalKey)) {
+  if (isDateAttribute(key)) {
     const finalValElement = R.head(finalVal);
     if (isEmptyField(finalValElement)) {
       finalVal = [null];
     }
   }
-  if (dateForLimitsAttributes.includes(finalKey)) {
+  if (dateForLimitsAttributes.includes(key)) {
     const finalValElement = R.head(finalVal);
-    if (dateForStartAttributes.includes(finalKey) && isEmptyField(finalValElement)) {
+    if (dateForStartAttributes.includes(key) && isEmptyField(finalValElement)) {
       finalVal = [FROM_START_STR];
     }
-    if (dateForEndAttributes.includes(finalKey) && isEmptyField(finalValElement)) {
+    if (dateForEndAttributes.includes(key) && isEmptyField(finalValElement)) {
       finalVal = [UNTIL_END_STR];
     }
   }
-  return { key: finalKey, value: finalVal, operation };
+  return { key, value: finalVal, operation };
 };
 const mergeInstanceWithUpdateInputs = (instance, inputs) => {
   const updates = Array.isArray(inputs) ? inputs : [inputs];
@@ -1301,23 +1286,21 @@ const mergeEntitiesRaw = async (context, user, targetEntity, sourceEntities, tar
     const sourceFieldValue = takenFrom[targetFieldKey];
     const fieldValues = R.flatten(sourceEntities.map((s) => s[targetFieldKey])).filter((s) => isNotEmptyField(s));
     // Check if we need to do something
-    if (isDictionaryAttribute(targetFieldKey)) {
-      // Special case of dictionary
+    if (isObjectAttribute(targetFieldKey)) {
+      // Special case of object that need to be merged
       const mergedDict = R.mergeAll([...fieldValues, mergedEntityCurrentFieldValue]);
-      const dictInputs = Object.entries(mergedDict).map(([k, v]) => ({
-        key: `${targetFieldKey}.${k}`,
-        value: [v],
-      }));
-      updateAttributes.push(...dictInputs);
+      if (isNotEmptyField(mergedDict)) {
+        updateAttributes.push({ key: targetFieldKey, value: [mergedDict] });
+      }
     } else if (isMultipleAttribute(targetType, targetFieldKey)) {
       const sourceValues = fieldValues || [];
       // For aliased entities, get name of the source to add it as alias of the target
       if (targetFieldKey === ATTRIBUTE_ALIASES || targetFieldKey === ATTRIBUTE_ALIASES_OPENCTI) {
-        sourceValues.push(...sourceEntities.map((s) => s.name));
+        sourceValues.push(...sourceEntities.map((s) => s.name).filter((n) => isNotEmptyField(n)));
       }
       // For x_opencti_additional_names exists, add the source name inside
       if (targetFieldKey === ATTRIBUTE_ADDITIONAL_NAMES) {
-        sourceValues.push(...sourceEntities.map((s) => s.name));
+        sourceValues.push(...sourceEntities.map((s) => s.name).filter((n) => isNotEmptyField(n)));
       }
       // standard_id of merged entities must be kept in x_opencti_stix_ids
       if (targetFieldKey === IDS_STIX) {
@@ -1465,13 +1448,8 @@ const checkAttributeConsistency = (entityType, key) => {
   if (key === 'creator_id') {
     return;
   }
-  let masterKey = key;
-  if (key.includes('.')) {
-    const [firstPart] = key.split('.');
-    masterKey = firstPart;
-  }
   const entityAttributes = schemaAttributesDefinition.getAttributeNames(entityType);
-  if (!R.includes(masterKey, entityAttributes)) {
+  if (!R.includes(key, entityAttributes)) {
     throw FunctionalError('This attribute key is not allowed, please check your registration attribute name', { key, entity_type: entityType });
   }
 };
@@ -1480,20 +1458,29 @@ const innerUpdateAttribute = (instance, rawInput) => {
   // Check consistency
   checkAttributeConsistency(instance.entity_type, key);
   const input = rebuildAndMergeInputFromExistingData(rawInput, instance);
-  if (R.isEmpty(input)) return [];
-  const updatedInputs = [input];
-  // Specific case for Report
-  if (instance.entity_type === ENTITY_TYPE_CONTAINER_REPORT && key === 'published') {
-    const createdInput = { key: 'created', value: input.value };
-    updatedInputs.push(createdInput);
-  }
-  return updatedInputs;
+  if (R.isEmpty(input)) return undefined;
+  // const updatedInputs = [input];
+  // // Specific case for Report
+  // if (instance.entity_type === ENTITY_TYPE_CONTAINER_REPORT && key === 'published') {
+  //   const createdInput = { key: 'created', value: input.value };
+  //   updatedInputs.push(createdInput);
+  // }
+  return input;
 };
 const prepareAttributesForUpdate = (instance, elements, upsert) => {
   const instanceType = instance.entity_type;
   return elements.map((input) => {
+    // Dynamic cases, attributes not defined in the schema
+    if (input.key.startsWith(RULE_PREFIX) || input.key.startsWith(REL_INDEX_PREFIX)) {
+      return input;
+    }
+    // Fixed cases in schema definition
+    const def = schemaAttributesDefinition.getAttribute(instance.entity_type, input.key);
+    if (!def) {
+      throw UnsupportedError('Cant prepare attribute for update', { type: instance.entity_type, name: input.key });
+    }
     // Check integer
-    if (isNumericAttribute(input.key)) {
+    if (def.type === 'numeric') {
       return {
         key: input.key,
         value: R.map((value) => {
@@ -1505,7 +1492,7 @@ const prepareAttributesForUpdate = (instance, elements, upsert) => {
       };
     }
     // Check boolean
-    if (isBooleanAttribute(input.key)) {
+    if (def.type === 'boolean') {
       return {
         key: input.key,
         value: R.map((value) => {
@@ -1514,19 +1501,21 @@ const prepareAttributesForUpdate = (instance, elements, upsert) => {
       };
     }
     // Check dates for empty values
-    if (dateForStartAttributes.includes(input.key)) {
-      const emptyValue = isEmptyField(input.value) || isEmptyField(input.value.at(0));
-      return {
-        key: input.key,
-        value: emptyValue ? [FROM_START_STR] : input.value,
-      };
-    }
-    if (dateForEndAttributes.includes(input.key)) {
-      const emptyValue = isEmptyField(input.value) || isEmptyField(input.value.at(0));
-      return {
-        key: input.key,
-        value: emptyValue ? [UNTIL_END_STR] : input.value,
-      };
+    if (def.type === 'date') {
+      if (dateForStartAttributes.includes(input.key)) {
+        const emptyValue = isEmptyField(input.value) || isEmptyField(input.value.at(0));
+        return {
+          key: input.key,
+          value: emptyValue ? [FROM_START_STR] : input.value,
+        };
+      }
+      if (dateForEndAttributes.includes(input.key)) {
+        const emptyValue = isEmptyField(input.value) || isEmptyField(input.value.at(0));
+        return {
+          key: input.key,
+          value: emptyValue ? [UNTIL_END_STR] : input.value,
+        };
+      }
     }
     // Specific case for Label
     if (input.key === VALUE_FIELD && instanceType === ENTITY_TYPE_LABEL) {
@@ -1589,7 +1578,7 @@ const updateAttributeRaw = async (context, user, instance, inputs, opts = {}) =>
   // Prepare attributes
   const preparedElements = prepareAttributesForUpdate(instance, elements, upsert);
   // region Check date range
-  const inputKeys = inputs.map((i) => i.key);
+  const inputKeys = elements.map((i) => i.key);
   if (inputKeys.includes(START_TIME) || inputKeys.includes(STOP_TIME)) {
     updateDateRangeValidation(instance, preparedElements, START_TIME, STOP_TIME);
   }
@@ -1751,72 +1740,49 @@ const updateAttributeRaw = async (context, user, instance, inputs, opts = {}) =>
   for (let index = 0; index < preparedElements.length; index += 1) {
     const input = preparedElements[index];
     const ins = innerUpdateAttribute(instance, input);
-    if (ins.length > 0) {
-      const filteredIns = ins.filter((o) => {
-        if (o.key === IDS_STIX) {
-          const previous = getPreviousInstanceValue(o.key, instance);
-          if (o.operation === UPDATE_OPERATION_ADD) {
-            const newValues = o.value.filter((p) => !(previous || []).includes(p));
-            return newValues.filter((p) => isTrustedStixId(p)).length > 0;
-          }
-          if (o.operation === UPDATE_OPERATION_REMOVE) {
-            const newValues = (previous || []).filter((p) => !o.value.includes(p));
-            return newValues.filter((p) => isTrustedStixId(p)).length > 0;
-          }
-          return o.value.filter((p) => isTrustedStixId(p)).length > 0;
-        }
-        // Updated inputs must not be internals
-        return !o.key.startsWith('i_') && o.key !== 'x_opencti_graph_data';
-      });
-      if (filteredIns.length > 0) {
-        const updatedInputsFiltered = filteredIns.map((filteredInput) => {
-          // TODO JRI Rework that part
-          const previous = getPreviousInstanceValue(filteredInput.key, instance);
+    if (ins) { // If update will really produce a data change
+      impactedInputs.push(ins);
+      // region Compute the update to push in the stream
+      if (!input.key.startsWith('i_') && input.key !== 'x_opencti_graph_data') {
+        const previous = getPreviousInstanceValue(input.key, instance);
+        if (input.operation === UPDATE_OPERATION_ADD || input.operation === UPDATE_OPERATION_REMOVE) {
+          // Check symmetric difference for add and remove
+          updatedInputs.push({
+            operation: input.operation,
+            key: input.key,
+            value: R.symmetricDifference(previous ?? [], input.value ?? []),
+            previous,
+          });
+        } else { // REPLACE
           // Specific input resolution for workflow
-          if (filteredInput.key === X_WORKFLOW_ID) {
+          // eslint-disable-next-line no-lonely-if
+          if (input.key === X_WORKFLOW_ID) {
             // workflow_id is not a relation but message must contain the name and not the internal id
-            const workflowId = R.head(filteredInput.value);
+            const workflowId = R.head(input.value);
             const workflowStatus = workflowId ? platformStatuses.find((p) => p.id === workflowId) : workflowId;
-            return {
-              operation: filteredInput.operation,
-              key: filteredInput.key,
+            updatedInputs.push({
+              operation: input.operation,
+              key: input.key,
               value: [workflowStatus ? workflowStatus.name : null],
               previous,
-            };
+            });
+          } else {
+            updatedInputs.push({ ...input, previous });
           }
-          // Check symmetric difference for add and remove
-          if (filteredInput.operation === UPDATE_OPERATION_ADD || filteredInput.operation === UPDATE_OPERATION_REMOVE) {
-            return {
-              operation: filteredInput.operation,
-              key: filteredInput.key,
-              value: R.symmetricDifference(previous ?? [], filteredInput.value ?? []),
-              previous,
-            };
-          }
-          // For replace, if its a complex object, do a simple diff
-          if (filteredInput.operation === UPDATE_OPERATION_REPLACE && isObjectAttribute(filteredInput.key)) {
-            return {
-              operation: filteredInput.operation,
-              key: filteredInput.key,
-              value: R.difference(filteredInput.value ?? [], previous ?? []),
-              previous,
-            };
-          }
-          // For simple values, just keep everything in the replace
-          return { ...filteredInput, previous };
-        });
-        updatedInputs.push(...updatedInputsFiltered);
+        }
       }
-      impactedInputs.push(...ins);
+      // endregion
     }
   }
   // Impact the updated_at only if stix data is impacted
   // In case of upsert, this addition will be supported by the parent function
-  if (impactedInputs.length > 0 && isUpdatedAtObject(instance.entity_type)) {
+  if (impactedInputs.length > 0 && isUpdatedAtObject(instance.entity_type)
+      && !impactedInputs.find((i) => i.key === 'updated_at')) {
     const updatedAtInput = { key: 'updated_at', value: [today] };
     impactedInputs.push(updatedAtInput);
   }
-  if (impactedInputs.length > 0 && isModifiedObject(instance.entity_type)) {
+  if (impactedInputs.length > 0 && isModifiedObject(instance.entity_type)
+      && !impactedInputs.find((i) => i.key === 'modified')) {
     const modifiedAtInput = { key: 'modified', value: [today] };
     impactedInputs.push(modifiedAtInput);
   }
@@ -1871,7 +1837,10 @@ export const updateAttributeMetaResolved = async (context, user, initial, inputs
   }
   // Split attributes and meta
   // Supports inputs meta or stix meta
-  const metaKeys = [...schemaRelationsRefDefinition.getStixNames(initial.entity_type), ...schemaRelationsRefDefinition.getInputNames(initial.entity_type)];
+  const metaKeys = [
+    ...schemaRelationsRefDefinition.getStixNames(initial.entity_type),
+    ...schemaRelationsRefDefinition.getInputNames(initial.entity_type)
+  ];
   const meta = updates.filter((e) => metaKeys.includes(e.key));
   const attributes = updates.filter((e) => !metaKeys.includes(e.key));
   const updated = mergeInstanceWithUpdateInputs(initial, inputs);
@@ -2320,7 +2289,6 @@ const buildRelationInput = (input) => {
       stixIds.push(input.stix_id.toLowerCase());
     }
     relationAttributes.x_opencti_stix_ids = stixIds;
-    relationAttributes.spec_version = STIX_SPEC_VERSION;
     relationAttributes.revoked = R.isNil(input.revoked) ? false : input.revoked;
     relationAttributes.confidence = R.isNil(input.confidence) ? 0 : input.confidence;
     relationAttributes.lang = R.isNil(input.lang) ? 'en' : input.lang;
@@ -2342,7 +2310,6 @@ const buildRelationInput = (input) => {
   }
   // stix-ref-relationship
   if (isStixRefRelationship(relationshipType) && schemaRelationsRefDefinition.isDatable(from.entity_type, relationshipType)) {
-    relationAttributes.spec_version = STIX_SPEC_VERSION;
     relationAttributes.start_time = R.isNil(input.start_time) ? new Date(FROM_START) : input.start_time;
     relationAttributes.stop_time = R.isNil(input.stop_time) ? new Date(UNTIL_END) : input.stop_time;
     relationAttributes.created = R.isNil(input.created) ? today : input.created;
@@ -2433,29 +2400,18 @@ const computeExtendedDateValues = (newValue, currentValue, mode) => {
 const buildAttributeUpdate = (isFullSync, attribute, currentData, inputData) => {
   const inputs = [];
   const fieldKey = attribute.name;
-  if (isDictionaryAttribute(fieldKey)) {
-    if (isNotEmptyField(inputData)) {
-      // In standard mode, just patch inner dictionary keys
-      const inputEntries = Object.entries(inputData);
-      inputEntries.forEach(([k, v]) => {
-        inputs.push({ key: `${fieldKey}.${k}`, value: [v] });
-      });
-      if (isFullSync && isNotEmptyField(currentData)) {
-        const inputDictMap = new Map(inputEntries);
-        Object.entries(currentData).forEach(([k]) => {
-          if (!inputDictMap.has(k)) { // If known, replace
-            inputs.push({ key: `${fieldKey}.${k}`, value: [null] });
-          }
-        });
-      }
-    } else if (isFullSync) { // We only allowed removal for full synchronization
-      inputs.push({ key: fieldKey, value: [inputData] });
-    }
-  } else if (attribute.multiple) {
+  if (attribute.multiple) {
     const operation = isFullSync ? UPDATE_OPERATION_REPLACE : UPDATE_OPERATION_ADD;
     // Only add input in case of replace or when we really need to add something
     if (operation === UPDATE_OPERATION_REPLACE || (operation === UPDATE_OPERATION_ADD && isNotEmptyField(inputData))) {
-      inputs.push({ key: fieldKey, value: inputData, operation });
+      inputs.push({ key: fieldKey, value: inputData ?? [], operation });
+    }
+  } else if (isObjectAttribute(fieldKey)) {
+    if (isNotEmptyField(inputData)) {
+      const mergedDict = R.mergeAll([currentData, inputData]);
+      inputs.push({ key: fieldKey, value: [mergedDict] });
+    } else if (isFullSync) { // We only allowed removal for full synchronization
+      inputs.push({ key: fieldKey, value: [inputData] });
     }
   } else {
     inputs.push({ key: fieldKey, value: [inputData] });
@@ -2463,24 +2419,24 @@ const buildAttributeUpdate = (isFullSync, attribute, currentData, inputData) => 
   return inputs;
 };
 const buildTimeUpdate = (input, instance, startField, stopField) => {
-  const inputs = [];
+  const patch = {};
   // If not coming from a rule, compute extended time.
   if (input[startField]) {
     const extendedStart = computeExtendedDateValues(input[startField], instance[startField], ALIGN_OLDEST);
     if (extendedStart) {
-      inputs.push({ key: startField, value: [extendedStart] });
+      patch[startField] = extendedStart;
     }
   }
   if (input[stopField]) {
     const extendedStop = computeExtendedDateValues(input[stopField], instance[stopField], ALIGN_NEWEST);
     if (extendedStop) {
-      inputs.push({ key: stopField, value: [extendedStop] });
+      patch[stopField] = extendedStop;
     }
   }
-  return inputs;
+  return patch;
 };
-const buildRelationDeduplicationFilter = (input) => {
-  const args = {};
+const buildRelationDeduplicationFilters = (input) => {
+  const filters = [];
   const { from, relationship_type: relationshipType, createdBy } = input;
   const deduplicationConfig = conf.get('relations_deduplication') ?? {
     past_days: 30,
@@ -2490,44 +2446,57 @@ const buildRelationDeduplicationFilter = (input) => {
   };
   const config = deduplicationConfig.types_overrides?.[relationshipType] ?? deduplicationConfig;
   if (config.created_by_based && createdBy) {
-    args.relationFilter = { relation: RELATION_CREATED_BY, id: createdBy.id };
+    // args.relationFilter = { relation: RELATION_CREATED_BY, id: createdBy.id };
+    filters.push({ key: [buildRefRelationKey(RELATION_CREATED_BY)], values: [createdBy.id] });
   }
   const prepareBeginning = (key) => prepareDate(moment(input[key]).subtract(config.past_days, 'days').utc());
   const prepareStopping = (key) => prepareDate(moment(input[key]).add(config.next_days, 'days').utc());
   // Prepare for stix core
   if (isStixCoreRelationship(relationshipType)) {
     if (!R.isNil(input.start_time)) {
-      args.startTimeStart = prepareBeginning('start_time');
-      args.startTimeStop = prepareStopping('start_time');
+      // args.startTimeStart = prepareBeginning('start_time');
+      filters.push({ key: ['start_time'], values: [prepareBeginning('start_time')], operator: FilterOperator.Gt });
+      // args.startTimeStop = prepareStopping('start_time');
+      filters.push({ key: ['start_time'], values: [prepareStopping('start_time')], operator: FilterOperator.Lt });
     }
     if (!R.isNil(input.stop_time)) {
-      args.stopTimeStart = prepareBeginning('stop_time');
-      args.stopTimeStop = prepareStopping('stop_time');
+      // args.stopTimeStart = prepareBeginning('stop_time');
+      filters.push({ key: ['stop_time'], values: [prepareBeginning('stop_time')], operator: FilterOperator.Gt });
+      // args.stopTimeStop = prepareStopping('stop_time');
+      filters.push({ key: ['stop_time'], values: [prepareStopping('stop_time')], operator: FilterOperator.Lt });
     }
   }
   // Prepare for stix ref
   if (isStixRefRelationship(relationshipType) && schemaRelationsRefDefinition.isDatable(from.entity_type, relationshipType)) {
     if (!R.isNil(input.start_time)) {
-      args.startTimeStart = prepareBeginning('start_time');
-      args.startTimeStop = prepareStopping('start_time');
+      // args.startTimeStart = prepareBeginning('start_time');
+      filters.push({ key: ['start_time'], values: [prepareBeginning('start_time')], operator: FilterOperator.Gt });
+      // args.startTimeStop = prepareStopping('start_time');
+      filters.push({ key: ['start_time'], values: [prepareStopping('start_time')], operator: FilterOperator.Lt });
     }
     if (!R.isNil(input.stop_time)) {
-      args.stopTimeStart = prepareBeginning('stop_time');
-      args.stopTimeStop = prepareStopping('stop_time');
+      // args.stopTimeStart = prepareBeginning('stop_time');
+      filters.push({ key: ['stop_time'], values: [prepareBeginning('stop_time')], operator: FilterOperator.Gt });
+      // args.stopTimeStop = prepareStopping('stop_time');
+      filters.push({ key: ['stop_time'], values: [prepareStopping('stop_time')], operator: FilterOperator.Lt });
     }
   }
   // Prepare for stix sighting
   if (isStixSightingRelationship(relationshipType)) {
     if (!R.isNil(input.first_seen)) {
-      args.firstSeenStart = prepareBeginning('first_seen');
-      args.firstSeenStop = prepareStopping('first_seen');
+      // args.firstSeenStart = prepareBeginning('first_seen');
+      filters.push({ key: ['first_seen'], values: [prepareBeginning('first_seen')], operator: FilterOperator.Gt });
+      // args.firstSeenStop = prepareStopping('first_seen');
+      filters.push({ key: ['first_seen'], values: [prepareStopping('first_seen')], operator: FilterOperator.Lt });
     }
     if (!R.isNil(input.last_seen)) {
-      args.lastSeenStart = prepareBeginning('last_seen');
-      args.lastSeenStop = prepareStopping('last_seen');
+      // args.lastSeenStart = prepareBeginning('last_seen');
+      filters.push({ key: ['last_seen'], values: [prepareBeginning('last_seen')], operator: FilterOperator.Gt });
+      // args.lastSeenStop = prepareStopping('last_seen');
+      filters.push({ key: ['last_seen'], values: [prepareStopping('last_seen')], operator: FilterOperator.Lt });
     }
   }
-  return args;
+  return filters;
 };
 
 export const buildDynamicFilterArgsContent = (inputFilters) => {
@@ -2579,38 +2548,48 @@ export const buildDynamicFilterArgs = (inputFilters) => {
   return { connectionFormat: false, first: 500, filters };
 };
 
-const upsertElement = async (context, user, element, type, updatePatch, opts = {}) => {
-  const inputs = []; // All inputs impacted by modifications (+inner)
+const upsertElement = async (context, user, element, type, basePatch, opts = {}) => {
   // -- Independent update
+  const updatePatch = { ...basePatch };
   // Handle attributes updates
-  if (isNotEmptyField(updatePatch.stix_id) || isNotEmptyField(updatePatch.x_opencti_stix_ids)) {
-    const ids = [...(updatePatch.x_opencti_stix_ids || [])];
-    if (isNotEmptyField(updatePatch.stix_id) && updatePatch.stix_id !== element.standard_id) {
-      ids.push(updatePatch.stix_id);
+  if (isNotEmptyField(basePatch.stix_id) || isNotEmptyField(basePatch.x_opencti_stix_ids)) {
+    const ids = [...(basePatch.x_opencti_stix_ids || [])];
+    if (isNotEmptyField(basePatch.stix_id) && basePatch.stix_id !== element.standard_id) {
+      ids.push(basePatch.stix_id);
     }
     if (ids.length > 0) {
-      inputs.push({ key: 'x_opencti_stix_ids', value: ids, operation: UPDATE_OPERATION_ADD });
+      updatePatch.x_opencti_stix_ids = ids;
     }
   }
-  // Add support for existing creator_id that can be a simple string except of an array
-  const creatorIds = [];
-  if (isNotEmptyField(element.creator_id)) {
-    const idCreators = Array.isArray(element.creator_id) ? element.creator_id : [element.creator_id];
-    creatorIds.push(...idCreators);
-  }
   // Cumulate creator id
-  if (!INTERNAL_USERS[user.id] && !creatorIds.includes(user.id)) {
-    inputs.push({ key: 'creator_id', value: [...creatorIds, user.id], operation: UPDATE_OPERATION_ADD });
+  if (!INTERNAL_USERS[user.id]) {
+    updatePatch.creator_id = [user.id];
   }
   // Upsert observed data count and times extensions
   if (type === ENTITY_TYPE_CONTAINER_OBSERVED_DATA) {
     // Upsert the count only if a time patch is applied.
-    const timePatchInputs = buildTimeUpdate(updatePatch, element, 'first_observed', 'last_observed');
-    if (timePatchInputs.length > 0) {
-      inputs.push(...timePatchInputs);
-      inputs.push({ key: 'number_observed', value: [element.number_observed + updatePatch.number_observed] });
+    const timePatch = buildTimeUpdate(updatePatch, element, 'first_observed', 'last_observed');
+    if (isNotEmptyField(timePatch)) {
+      updatePatch.first_observed = timePatch.first_observed ?? updatePatch.first_observed;
+      updatePatch.last_observed = timePatch.last_observed ?? updatePatch.last_observed;
+      updatePatch.number_observed = element.number_observed + updatePatch.number_observed;
     }
   }
+  // Upsert relations with times extensions
+  if (isStixCoreRelationship(type)) {
+    const timePatch = buildTimeUpdate(updatePatch, element, 'start_time', 'stop_time');
+    updatePatch.first_observed = timePatch.start_time ?? updatePatch.start_time;
+    updatePatch.last_observed = timePatch.stop_time ?? updatePatch.stop_time;
+  }
+  if (isStixSightingRelationship(type)) {
+    const timePatch = buildTimeUpdate(updatePatch, element, 'first_seen', 'last_seen');
+    if (isNotEmptyField(timePatch)) {
+      updatePatch.first_seen = timePatch.first_seen ?? updatePatch.first_seen;
+      updatePatch.last_seen = timePatch.last_seen ?? updatePatch.last_seen;
+      updatePatch.attribute_count = element.attribute_count + updatePatch.attribute_count;
+    }
+  }
+  const inputs = []; // All inputs impacted by modifications (+inner)
   // If file directly attached
   if (!isEmptyField(updatePatch.file)) {
     const path = `import/${element.entity_type}/${element.internal_id}`;
@@ -2620,21 +2599,8 @@ const upsertElement = async (context, user, element, type, updatePatch, opts = {
     const fileImpact = { key: 'x_opencti_files', value: [...(element.x_opencti_files ?? []), convertedFile] };
     inputs.push(fileImpact);
   }
-  // Upsert relations with times extensions
-  if (isStixCoreRelationship(type)) {
-    const timePatchInputs = buildTimeUpdate(updatePatch, element, 'start_time', 'stop_time');
-    inputs.push(...timePatchInputs);
-  }
-  if (isStixSightingRelationship(type)) {
-    const timePatchInputs = buildTimeUpdate(updatePatch, element, 'first_seen', 'last_seen');
-    if (timePatchInputs.length > 0) {
-      inputs.push(...timePatchInputs);
-      inputs.push({ key: 'attribute_count', value: [element.attribute_count + updatePatch.attribute_count] });
-    }
-  }
   // If confidence is passed at creation, just compare confidence
-  const isPatchUpdateOption = updatePatch.update === true;
-  const isConfidenceMatch = isNotEmptyField(updatePatch.confidence) ? (updatePatch.confidence >= element.confidence) : isPatchUpdateOption;
+  const isConfidenceMatch = (updatePatch.confidence ?? 0) >= (element.confidence ?? 0);
   // -- Upsert attributes
   const attributes = Array.from(schemaAttributesDefinition.getAttributes(type).values());
   for (let attrIndex = 0; attrIndex < attributes.length; attrIndex += 1) {
@@ -2658,7 +2624,7 @@ const upsertElement = async (context, user, element, type, updatePatch, opts = {
     }
   }
   // -- Upsert refs
-  const metaInputFields = schemaRelationsRefDefinition.getRelationsRef(element.entity_type).map((ref) => ref.inputName);
+  const metaInputFields = schemaRelationsRefDefinition.getRelationsRef(element.entity_type).map((ref) => ref.name);
   for (let fieldIndex = 0; fieldIndex < metaInputFields.length; fieldIndex += 1) {
     const inputField = metaInputFields[fieldIndex];
     const relDef = schemaRelationsRefDefinition.getRelationRef(element.entity_type, inputField);
@@ -2916,8 +2882,36 @@ export const createRelationRaw = async (context, user, input, opts = {}) => {
     } else {
       // In case of direct relation, try to find the relation with time filters
       // Only in standard indices.
-      const timeFilters = buildRelationDeduplicationFilter(resolvedInput);
-      const manualArgs = { ...listingArgs, indices: READ_RELATIONSHIPS_INDICES_WITHOUT_INFERRED, ...timeFilters };
+      const deduplicationFilters = buildRelationDeduplicationFilters(resolvedInput);
+      const searchFilters = {
+        mode: 'or',
+        filters: [{ key: 'ids', values: inputIds }],
+        filterGroups: [{
+          mode: 'and',
+          filters: [
+            {
+              key: ['connections'],
+              nested: [
+                { key: 'internal_id', values: [fromId] },
+                { key: 'role', values: ['*_from'], operator: FilterOperator.Wildcard }
+              ],
+              values: []
+            },
+            {
+              key: ['connections'],
+              nested: [
+                { key: 'internal_id', values: [toId] },
+                { key: 'role', values: ['*_to'], operator: FilterOperator.Wildcard }
+              ],
+              values: []
+            },
+            ...deduplicationFilters
+          ],
+          filterGroups: [],
+        }]
+      };
+      // inputIds
+      const manualArgs = { indices: READ_RELATIONSHIPS_INDICES_WITHOUT_INFERRED, filters: searchFilters, connectionFormat: false };
       const manualRelationships = await listRelations(context, SYSTEM_USER, relationshipType, manualArgs);
       existingRelationships.push(...manualRelationships);
     }
@@ -3097,7 +3091,6 @@ const buildEntityData = async (context, user, input, type, opts = {}) => {
     data = R.pipe(
       R.assoc(IDS_STIX, stixIds),
       R.dissoc('stix_id'),
-      R.assoc('spec_version', STIX_SPEC_VERSION),
       R.assoc('created_at', today),
       R.assoc('updated_at', today)
     )(data);
@@ -3180,7 +3173,7 @@ const buildEntityData = async (context, user, input, type, opts = {}) => {
   const inputFields = schemaRelationsRefDefinition.getRelationsRef(input.entity_type);
   for (let fieldIndex = 0; fieldIndex < inputFields.length; fieldIndex += 1) {
     const inputField = inputFields[fieldIndex];
-    await appendMetaRelationships(inputField.inputName, inputField.databaseName);
+    await appendMetaRelationships(inputField.name, inputField.databaseName);
   }
 
   // Transaction succeed, complete the result to send it back

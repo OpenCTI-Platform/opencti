@@ -1,7 +1,5 @@
-import channelTypeDefs from './event.graphql';
 import convertEventToStix from './event-converter';
 import { NAME_FIELD, normalizeName } from '../../schema/identifier';
-import channelResolvers from './event-resolver';
 import { ENTITY_TYPE_EVENT, type StixEvent, type StoreEntityEvent } from './event-types';
 import { RELATION_LOCATED_AT } from '../../schema/stixCoreRelationship';
 import { ENTITY_TYPE_LOCATION_CITY, ENTITY_TYPE_LOCATION_COUNTRY, ENTITY_TYPE_LOCATION_POSITION, ENTITY_TYPE_LOCATION_REGION } from '../../schema/stixDomainObject';
@@ -17,10 +15,6 @@ const EVENT_DEFINITION: ModuleDefinition<StoreEntityEvent, StixEvent> = {
     category: ABSTRACT_STIX_DOMAIN_OBJECT,
     aliased: true
   },
-  graphql: {
-    schema: channelTypeDefs,
-    resolver: channelResolvers,
-  },
   identifier: {
     definition: {
       [ENTITY_TYPE_EVENT]: [{ src: NAME_FIELD }]
@@ -32,11 +26,11 @@ const EVENT_DEFINITION: ModuleDefinition<StoreEntityEvent, StixEvent> = {
     },
   },
   attributes: [
-    { name: 'name', type: 'string', mandatoryType: 'external', editDefault: true, multiple: false, upsert: true },
-    { name: 'description', type: 'string', mandatoryType: 'customizable', editDefault: true, multiple: false, upsert: true },
-    { name: 'event_types', type: 'string', mandatoryType: 'customizable', editDefault: true, multiple: true, upsert: true, label: 'Event types' },
-    { name: 'start_time', type: 'date', mandatoryType: 'customizable', editDefault: true, multiple: false, upsert: true, label: 'Start date' },
-    { name: 'stop_time', type: 'date', mandatoryType: 'customizable', editDefault: true, multiple: false, upsert: true, label: 'End date' },
+    { name: 'name', label: 'Name', type: 'string', format: 'short', mandatoryType: 'external', editDefault: true, multiple: false, upsert: true, isFilterable: true },
+    { name: 'description', label: 'Description', type: 'string', format: 'short', mandatoryType: 'customizable', editDefault: true, multiple: false, upsert: true, isFilterable: true },
+    { name: 'event_types', label: 'Event types', type: 'string', format: 'short', mandatoryType: 'customizable', editDefault: true, multiple: true, upsert: true, isFilterable: true },
+    { name: 'start_time', label: 'Start date', type: 'date', mandatoryType: 'customizable', editDefault: true, multiple: false, upsert: true, isFilterable: true },
+    { name: 'stop_time', label: 'End date', type: 'date', mandatoryType: 'customizable', editDefault: true, multiple: false, upsert: true, isFilterable: true },
   ],
   relations: [
     {

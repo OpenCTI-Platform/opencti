@@ -1,10 +1,9 @@
-import type { JSONSchemaType } from 'ajv';
 import { head } from 'ramda';
 import { ABSTRACT_STIX_CORE_RELATIONSHIP, ABSTRACT_STIX_CYBER_OBSERVABLE, ABSTRACT_STIX_DOMAIN_OBJECT } from '../../schema/general';
 import { STIX_SIGHTING_RELATIONSHIP } from '../../schema/stixSightingRelationship';
 import { ENTITY_TYPE_CONTAINER_NOTE, ENTITY_TYPE_CONTAINER_OPINION, isStixDomainObject } from '../../schema/stixDomainObject';
 import { UnsupportedError } from '../../config/errors';
-import type { AttributeConfiguration, BasicStoreEntityEntitySetting, ScaleConfig } from './entitySetting-types';
+import type { AttributeConfiguration, BasicStoreEntityEntitySetting } from './entitySetting-types';
 import { ENTITY_TYPE_ENTITY_SETTING } from './entitySetting-types';
 import { getEntitiesListFromCache } from '../../database/cache';
 import { SYSTEM_USER } from '../../utils/access';
@@ -110,69 +109,4 @@ export const getDefaultValues = (attributeConfiguration: AttributeConfiguration,
     return head(attributeConfiguration.default_values);
   }
   return undefined;
-};
-
-// -- AJV --
-
-export const scaleConfig: JSONSchemaType<ScaleConfig> = {
-  type: 'object',
-  properties: {
-    better_side: { type: 'string' },
-    min: {
-      type: 'object',
-      properties: {
-        value: { type: 'number' },
-        color: { type: 'string', pattern: '#[a-zA-Z0-9]{6}' },
-        label: { type: 'string', minLength: 1 },
-      },
-      required: ['value', 'color', 'label'],
-    },
-    max: {
-      type: 'object',
-      properties: {
-        value: { type: 'number' },
-        color: { type: 'string', pattern: '#[a-zA-Z0-9]{6}' },
-        label: { type: 'string', minLength: 1 },
-      },
-      required: ['value', 'color', 'label'],
-    },
-    ticks: {
-      type: 'array',
-      items: {
-        type: 'object',
-        properties: {
-          value: { type: 'number' },
-          color: { type: 'string', pattern: '#[a-zA-Z0-9]{6}' },
-          label: { type: 'string', minLength: 1 },
-        },
-        required: ['value', 'color', 'label'],
-      }
-    },
-  },
-  required: ['min', 'max'],
-};
-
-export const attributeConfiguration: JSONSchemaType<AttributeConfiguration[]> = {
-  type: 'array',
-  items: {
-    type: 'object',
-    properties: {
-      name: { type: 'string', minLength: 1 },
-      mandatory: { type: 'boolean' },
-      default_values: {
-        type: 'array',
-        nullable: true,
-        items: { type: 'string' }
-      },
-      scale: {
-        type: 'object',
-        properties: {
-          local_config: scaleConfig
-        },
-        nullable: true,
-        required: ['local_config'],
-      }
-    },
-    required: ['name']
-  },
 };

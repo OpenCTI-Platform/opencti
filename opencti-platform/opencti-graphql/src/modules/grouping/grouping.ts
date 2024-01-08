@@ -1,7 +1,5 @@
-import groupingTypeDefs from './grouping.graphql';
 import convertGroupingToStix from './grouping-converter';
 import { NAME_FIELD, normalizeName } from '../../schema/identifier';
-import groupingResolvers from './grouping-resolver';
 import { ENTITY_TYPE_CONTAINER_GROUPING, type StixGrouping, type StoreEntityGrouping } from './grouping-types';
 import { ABSTRACT_STIX_DOMAIN_OBJECT } from '../../schema/general';
 import { type ModuleDefinition, registerDefinition } from '../../schema/module';
@@ -12,10 +10,6 @@ const GROUPING_DEFINITION: ModuleDefinition<StoreEntityGrouping, StixGrouping> =
     name: ENTITY_TYPE_CONTAINER_GROUPING,
     category: ABSTRACT_STIX_DOMAIN_OBJECT,
     aliased: true
-  },
-  graphql: {
-    schema: groupingTypeDefs,
-    resolver: groupingResolvers,
   },
   identifier: {
     definition: {
@@ -28,11 +22,11 @@ const GROUPING_DEFINITION: ModuleDefinition<StoreEntityGrouping, StixGrouping> =
     },
   },
   attributes: [
-    { name: 'name', type: 'string', mandatoryType: 'external', editDefault: true, multiple: false, upsert: true },
-    { name: 'description', type: 'string', mandatoryType: 'customizable', editDefault: true, multiple: false, upsert: true },
-    { name: 'content', type: 'string', mandatoryType: 'customizable', editDefault: true, multiple: false, upsert: true },
-    { name: 'content_mapping', type: 'string', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true },
-    { name: 'context', type: 'string', mandatoryType: 'external', editDefault: true, multiple: false, upsert: true },
+    { name: 'name', label: 'Name', type: 'string', format: 'short', mandatoryType: 'external', editDefault: true, multiple: false, upsert: true, isFilterable: true },
+    { name: 'description', label: 'Description', type: 'string', format: 'short', mandatoryType: 'customizable', editDefault: true, multiple: false, upsert: true, isFilterable: true },
+    { name: 'content', label: 'Content', type: 'string', format: 'short', mandatoryType: 'customizable', editDefault: true, multiple: false, upsert: true, isFilterable: true },
+    { name: 'content_mapping', label: 'Content mapping', format: 'short', type: 'string', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: true },
+    { name: 'context', label: 'Content', type: 'string', format: 'short', mandatoryType: 'external', editDefault: true, multiple: false, upsert: true, isFilterable: true },
   ],
   relations: [],
   representative: (stix: StixGrouping) => {

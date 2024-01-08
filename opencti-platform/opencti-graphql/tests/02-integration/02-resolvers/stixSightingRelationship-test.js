@@ -81,7 +81,7 @@ describe('stixSightingRelationship resolver standard behavior', () => {
       }
     `;
     const queryResult = await queryAsAdmin({ query: NUMBER_QUERY });
-    expect(queryResult.data.stixSightingRelationshipsNumber.total).toEqual(4);
+    expect(queryResult.data.stixSightingRelationshipsNumber.total).toEqual(3);
   });
   it('should update stixSightingRelationship', async () => {
     const UPDATE_QUERY = gql`

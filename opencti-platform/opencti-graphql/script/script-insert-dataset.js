@@ -1,10 +1,10 @@
 import fetch from 'node-fetch';
+import '../src/modules/index';
 import { executionContext } from '../src/utils/access';
 import { checkPythonAvailability, execChildPython } from '../src/python/pythonBridge';
 import conf, { logApp } from '../src/config/conf';
 import httpServer from '../src/http/httpServer';
 import cacheManager from '../src/manager/cacheManager';
-import '../src/modules/index';
 
 const ADMIN_USER = { id: '88ec0c6a-13ce-5e39-b486-354fe4a7084f' };
 const API_URI = `http://localhost:${conf.get('app:port')}`;
