@@ -899,11 +899,18 @@ const rebuildAndMergeInputFromExistingData = (rawInput, instance) => {
       if (isObjectAttribute(key)) {
         const path = object_path ?? key;
         const preparedPath = path.startsWith('/') ? path : `/${path}`;
-        const instanceKeyValues = jsonpatch.getValueByPointer(instance, preparedPath) ?? [];
-        const patch = value.map((v, index) => {
-          const afterIndex = index + instanceKeyValues.length;
-          return { op: operation, path: `${preparedPath}/${afterIndex}`, value: v };
-        });
+        const instanceKeyValues = jsonpatch.getValueByPointer(instance, preparedPath);
+        let patch;
+        if (instanceKeyValues === undefined) {
+          // if the instance has not yet this key, we need to add the full key as a new array
+          patch = [{ op: operation, path: `${preparedPath}`, value }];
+        } else {
+          // otherwise we need to add the values to the existing array, using jsonpatch indexed path
+          patch = value.map((v, index) => {
+            const afterIndex = index + instanceKeyValues.length;
+            return { op: operation, path: `${preparedPath}/${afterIndex}`, value: v };
+          });
+        }
         const patchedInstance = jsonpatch.applyPatch(structuredClone(instance), patch).newDocument;
         finalVal = patchedInstance[key];
       } else {
