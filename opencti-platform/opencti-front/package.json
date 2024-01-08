@@ -73,7 +73,7 @@
     "react-virtualized": "9.22.5",
     "reactflow": "11.10.1",
     "recharts": "2.10.3",
-    "relay-runtime": "16.0.0",
+    "relay-runtime": "16.1.0",
     "remark-flexible-markers": "1.0.4",
     "remark-gfm": "4.0.0",
     "remark-parse": "11.0.0",

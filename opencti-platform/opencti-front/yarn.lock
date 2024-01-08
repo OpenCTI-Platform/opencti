@@ -15091,7 +15091,7 @@ __metadata:
     reactflow: 11.10.1
     recharts: 2.10.3
     relay-compiler: 15.0.0
-    relay-runtime: 16.0.0
+    relay-runtime: 16.1.0
     relay-test-utils: 16.0.0
     remark-flexible-markers: 1.0.4
     remark-gfm: 4.0.0
@@ -17233,6 +17233,17 @@ __metadata:
     fbjs: ^3.0.2
     invariant: ^2.2.4
   checksum: 2769cb364db0d1106d777e676138c12ec0bfaee373f47d5569d72eb1bf49107dd07d02d5f3a196ce58a5becf01a4a5a8324a40059e9e923d18eb86b634e14207
+  languageName: node
+  linkType: hard
+
+"relay-runtime@npm:16.1.0":
+  version: 16.1.0
+  resolution: "relay-runtime@npm:16.1.0"
+  dependencies:
+    "@babel/runtime": ^7.0.0
+    fbjs: ^3.0.2
+    invariant: ^2.2.4
+  checksum: db44ef328d25eebf28090cd12c5f2d2f0b93b42cb0b60fa828d9fc160dad03f5a42abd1650786ef2d77afa0d4e2b14558a48d0353ca681053f662284262782d8
   languageName: node
   linkType: hard
 
