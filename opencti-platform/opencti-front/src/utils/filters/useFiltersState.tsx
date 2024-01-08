@@ -30,7 +30,7 @@ const useFiltersState = (initFilters: FilterGroup = emptyFilterGroup): [FilterGr
       setFiltersState((prevState) => ({
         ...prevState,
         filters: handleAddFilterWithEmptyValueUtil({ filters: filtersState.filters, filter }),
-        latestAddFilterId: undefined,
+        latestAddFilterId: filter.id,
       }));
     },
     handleAddRepresentationFilter: (id: string, valueId: string) => {
