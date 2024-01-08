@@ -63,6 +63,8 @@ const IngestionCsvCreation: FunctionComponent<IngestionCsvCreationProps> = ({ pa
   const { t } = useFormatter();
   const classes = useStyles();
   const [open, setOpen] = useState(false);
+  const [isCreateDisabled, setIsCreateDisabled] = useState(true);
+
   const ingestionCsvCreationValidation = () => Yup.object().shape({
     name: Yup.string().required(t('This field is required')),
     description: Yup.string().nullable(),
@@ -122,7 +124,6 @@ const IngestionCsvCreation: FunctionComponent<IngestionCsvCreationProps> = ({ pa
     });
   };
 
-  const [isCreateDisabled, setIsCreateDisabled] = useState(true)
   return (
     <Drawer
       title={t('Create a CSV ingester')}
@@ -279,7 +280,7 @@ const IngestionCsvCreation: FunctionComponent<IngestionCsvCreationProps> = ({ pa
                   color="primary"
                   onClick={() => setOpen(true)}
                   classes={{ root: classes.button }}
-                  disabled={isSubmitting || (!values.uri && values.csvMapper_id?.length === 0)}
+                  disabled={!(values.uri && values.csvMapper_id)}
                 >
                   {t('Test')}
                 </Button>

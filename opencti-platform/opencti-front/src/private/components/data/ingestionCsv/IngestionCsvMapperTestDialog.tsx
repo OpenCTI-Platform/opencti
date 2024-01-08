@@ -8,10 +8,10 @@ import Box from '@mui/material/Box';
 import CodeBlock from '@components/common/CodeBlock';
 import { IngestionCsvMapperTestDialogQuery$data } from '@components/data/ingestionCsv/__generated__/IngestionCsvMapperTestDialogQuery.graphql';
 import { Option } from '@components/common/form/ReferenceField';
+import TextField from '@mui/material/TextField';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import { useFormatter } from '../../../../components/i18n';
 import { fetchQuery, handleError } from '../../../../relay/environment';
-import TextField from "@mui/material/TextField";
 
 const ingestionCsvMapperTestQuery = graphql`
   query IngestionCsvMapperTestDialogQuery($uri: String!, $csvMapper_id: String!) {
@@ -36,7 +36,7 @@ const IngestionCsvMapperTestDialog: FunctionComponent<IngestionCsvMapperTestDial
   onClose,
   uri,
   csvMapperId,
-  setIsCreateDisabled
+  setIsCreateDisabled,
 }) => {
   const { t } = useFormatter();
   const [result, setResult] = useState<IngestionCsvMapperTestDialogQuery$data | undefined>(undefined);
@@ -60,7 +60,7 @@ const IngestionCsvMapperTestDialog: FunctionComponent<IngestionCsvMapperTestDial
               ...resultTest,
             },
           });
-          setIsCreateDisabled(false)
+          setIsCreateDisabled(false);
         }
         setLoading(false);
       }).catch((error) => {
@@ -74,26 +74,24 @@ const IngestionCsvMapperTestDialog: FunctionComponent<IngestionCsvMapperTestDial
       <DialogTitle>{t('Testing csv mapper')}</DialogTitle>
       <DialogContent>
         <Box
-            sx={{ marginBottom: '12px' }}
+          sx={{ marginBottom: '12px' }}
         >
           <TextField
-              id="outlined-read-only-input"
-              label="CSV feed URL"
-              defaultValue={uri}
-              InputProps={{
-                readOnly: true,
-              }}
-              fullWidth
-              sx={{ marginBottom: '12px' }}
+            label="CSV feed URL"
+            defaultValue={uri}
+            InputProps={{
+              readOnly: true,
+            }}
+            fullWidth
+            sx={{ marginBottom: '12px' }}
           />
           <TextField
-              id="outlined-read-only-input"
-              label="CSV mapper"
-              defaultValue={typeof csvMapperId === 'string' ? csvMapperId : csvMapperId.label}
-              InputProps={{
-                readOnly: true,
-              }}
-              fullWidth
+            label="CSV mapper"
+            defaultValue={typeof csvMapperId === 'string' ? csvMapperId : csvMapperId.label}
+            InputProps={{
+              readOnly: true,
+            }}
+            fullWidth
           />
         </Box>
         <Box
@@ -112,20 +110,20 @@ const IngestionCsvMapperTestDialog: FunctionComponent<IngestionCsvMapperTestDial
             </Box>
           )}
           {result
-              && <Box
-                  sx={{
-                    paddingTop: '8px',
-                    marginLeft: '12px',
-                    fontSize: '1rem',
-                    gap: '8px',
-                    justifyContent: 'center',
-                    display: 'flex',
-                  }}
-              >
-                <span>{t('Objects found')} : </span>
-                <span><strong>{result?.test_mapper?.nbEntities} </strong> {t('Entities')}</span>
-                <span><strong>{result?.test_mapper?.nbRelationships}</strong> {t('Relationships')}</span>
-              </Box>
+            && <Box
+              sx={{
+                paddingTop: '8px',
+                marginLeft: '12px',
+                fontSize: '1rem',
+                gap: '8px',
+                justifyContent: 'center',
+                display: 'flex',
+              }}
+               >
+              <span>{t('Objects found')} : </span>
+              <span><strong>{result?.test_mapper?.nbEntities} </strong> {t('Entities')}</span>
+              <span><strong>{result?.test_mapper?.nbRelationships}</strong> {t('Relationships')}</span>
+            </Box>
           }
         </Box>
         <Box sx={{ marginTop: '8px' }}>

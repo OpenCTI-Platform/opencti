@@ -16,7 +16,7 @@ type IngestionCsv implements InternalObject & BasicObject {
     description: String
     uri: String!
     csvMapper_id: String!
-    csvMapper: CsvMapperConnection
+    csvMappers: CsvMapperConnection
     authentication_type: CsvAuthType!
     authentication_value: String
     user_id: String!

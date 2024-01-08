@@ -79,7 +79,7 @@ export interface BasicStoreEntityIngestionCsv extends BasicStoreEntity {
   name: string
   description: string
   uri: string
-  csvMapper: string[]
+  csvMappers: string[]
   csvMapper_id: string
   authentication_type: 'none' | 'basic' | 'bearer' | 'certificate'
   authentication_value: string
@@ -91,7 +91,7 @@ export interface StoreEntityIngestionCsv extends StoreEntity {
   name: string
   description: string
   uri: string
-  csvMapper: string[]
+  csvMapper_id: string
   ingestion_running: boolean
 }
 
@@ -99,7 +99,7 @@ export interface StixIngestionCsv extends StixObject {
   name: string
   description: string
   uri: string
-  csvMapper: string[]
+  csvMapper_id: string
   ingestion_running: boolean
   extensions: {
     [STIX_EXT_OCTI]: StixOpenctiExtensionSDO
