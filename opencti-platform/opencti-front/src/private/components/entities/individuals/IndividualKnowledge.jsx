@@ -13,7 +13,7 @@ class IndividualKnowledgeComponent extends Component {
     const { individual, viewAs } = this.props;
     const link = `/dashboard/entities/individuals/${individual.id}/knowledge`;
     return (
-      <div style={{ paddingRight: viewAs === 'knowledge' ? 200 : 0 }}>
+      <>
         <Switch>
           <Route
             exact
@@ -232,7 +232,7 @@ class IndividualKnowledgeComponent extends Component {
             )}
           />
         </Switch>
-      </div>
+      </>
     );
   }
 }

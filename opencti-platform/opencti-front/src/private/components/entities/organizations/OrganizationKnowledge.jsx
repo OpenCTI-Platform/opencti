@@ -13,7 +13,7 @@ class OrganizationKnowledgeComponent extends Component {
     const { organization, viewAs } = this.props;
     const link = `/dashboard/entities/organizations/${organization.id}/knowledge`;
     return (
-      <div style={{ paddingRight: viewAs === 'knowledge' ? 200 : 0 }}>
+      <>
         <Switch>
           <Route
             exact
@@ -289,7 +289,7 @@ class OrganizationKnowledgeComponent extends Component {
             )}
           />
         </Switch>
-      </div>
+      </>
     );
   }
 }
