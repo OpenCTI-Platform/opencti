@@ -43,6 +43,8 @@ const stixRelationshipsTreeMapsDistributionQuery = graphql`
     $confidences: [Int]
     $search: String
     $filters: FilterGroup
+    $dynamicFrom: FilterGroup
+    $dynamicTo: FilterGroup
   ) {
     stixRelationshipsDistribution(
       field: $field
@@ -64,6 +66,8 @@ const stixRelationshipsTreeMapsDistributionQuery = graphql`
       confidences: $confidences
       search: $search
       filters: $filters
+      dynamicFrom: $dynamicFrom
+      dynamicTo: $dynamicTo
     ) {
       label
       value
@@ -253,6 +257,8 @@ const StixRelationshipsTreeMap = ({
       limit: selection.number ?? 10,
       filters: filtersAndOptions?.filters,
       isTo: selection.isTo,
+      dynamicFrom: selection.dynamicFrom,
+      dynamicTo: selection.dynamicTo,
     };
     return (
       <QueryRenderer
