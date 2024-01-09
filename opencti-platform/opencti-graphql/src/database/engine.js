@@ -683,12 +683,13 @@ const updateIndexTemplate = async (name, mapping_properties) => {
 };
 
 const elCreateIndexTemplate = async (index, mappingProperties) => {
-  const isExistByName = await engine.indices.existsIndexTemplate({ name: index }).then((r) => oebp(r));
   // Compat with platform initiated prior 5.9.X
-  const isExist = await engine.indices.existsIndexTemplate({ name: `${ES_INDEX_PREFIX}-index-template` }).then((r) => oebp(r));
-  if (isExistByName || isExist) {
+  const isPriorVersionExist = await engine.indices.existsIndexTemplate({ name: `${ES_INDEX_PREFIX}-index-template` })
+    .then((r) => oebp(r));
+  if (isPriorVersionExist) {
     return null;
   }
+  // Create / update template
   const componentTemplateExist = await engine.cluster.existsComponentTemplate({ name: `${ES_INDEX_PREFIX}-core-settings` });
   if (!componentTemplateExist) {
     await elCreateCoreSettings();
