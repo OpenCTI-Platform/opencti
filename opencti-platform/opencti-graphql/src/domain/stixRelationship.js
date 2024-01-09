@@ -19,6 +19,8 @@ export const findAll = async (context, user, args) => {
       .then((result) => result.map((n) => n.id));
     if (fromIds.length > 0) {
       finalArgs = { ...finalArgs, fromId: args.fromId ? [...fromIds, args.fromId] : fromIds };
+    } else {
+      return { edges: [] };
     }
   } else {
     finalArgs = { ...finalArgs, dynamicFrom: undefined };
@@ -28,6 +30,8 @@ export const findAll = async (context, user, args) => {
       .then((result) => result.map((n) => n.id));
     if (toIds.length > 0) {
       finalArgs = { ...finalArgs, toId: args.toId ? [...toIds, args.toId] : toIds };
+    } else {
+      return { edges: [] };
     }
   } else {
     finalArgs = { ...finalArgs, dynamicTo: undefined };
@@ -53,6 +57,8 @@ export const stixRelationshipsDistribution = async (context, user, args) => {
       .then((result) => result.map((n) => n.id));
     if (fromIds.length > 0) {
       finalArgs = { ...finalArgs, fromId: args.fromId ? [...fromIds, args.fromId] : fromIds };
+    } else {
+      return [];
     }
   } else {
     finalArgs = { ...finalArgs, dynamicFrom: undefined };
@@ -62,6 +68,8 @@ export const stixRelationshipsDistribution = async (context, user, args) => {
       .then((result) => result.map((n) => n.id));
     if (toIds.length > 0) {
       finalArgs = { ...finalArgs, toId: args.toId ? [...toIds, args.toId] : toIds };
+    } else {
+      return [];
     }
   } else {
     finalArgs = { ...finalArgs, dynamicTo: undefined };
