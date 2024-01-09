@@ -74,12 +74,6 @@ export const deleteIngestionCsv = async (context: AuthContext, user: AuthUser, i
   return ingestionId;
 };
 
-export const fetchCsvFromUrl = async (url: string): Promise<Buffer> => {
-  const response = await axios.get(url, { responseType: 'arraybuffer' });
-  const dataExtract = response.data;
-  return Buffer.from(dataExtract);
-};
-
 export const fetchCsvExtractFromUrl = async (url: string): Promise<Buffer> => {
   const response = await axios.get(url, { responseType: 'arraybuffer' });
   const TEST_LIMIT = 50;
