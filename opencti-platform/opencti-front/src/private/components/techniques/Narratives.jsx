@@ -1,7 +1,6 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { compose, propOr } from 'ramda';
-import { graphql } from 'react-relay';
 import { withRouter } from 'react-router-dom';
 import withStyles from '@mui/styles/withStyles';
 import { QueryRenderer } from '../../../relay/environment';
@@ -12,19 +11,6 @@ import NarrativeCreation from './narratives/NarrativeCreation';
 import SearchInput from '../../../components/SearchInput';
 import Security from '../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE } from '../../../utils/hooks/useGranted';
-
-export const narrativesSearchQuery = graphql`
-    query NarrativesSearchQuery($search: String) {
-        narratives(search: $search) {
-            edges {
-                node {
-                    id
-                    name
-                }
-            }
-        }
-    }
-`;
 
 const LOCAL_STORAGE_KEY = 'narratives';
 
