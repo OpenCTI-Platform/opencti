@@ -14,7 +14,7 @@ class SystemKnowledgeComponent extends Component {
     const { system, viewAs } = this.props;
     const link = `/dashboard/entities/systems/${system.id}/knowledge`;
     return (
-      <div style={{ paddingRight: viewAs === 'knowledge' ? 200 : 0 }}>
+      <>
         <Switch>
           <Route
             exact
@@ -244,7 +244,7 @@ class SystemKnowledgeComponent extends Component {
             )}
           />
         </Switch>
-      </div>
+      </>
     );
   }
 }
