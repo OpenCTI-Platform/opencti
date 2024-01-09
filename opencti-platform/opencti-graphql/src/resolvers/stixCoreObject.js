@@ -9,6 +9,8 @@ import {
   findById,
   findFiltersRepresentatives,
   groupingsPaginated,
+  publicStixCoreObjectsMultiTimeSeries,
+  publicStixCoreObjectsNumber,
   notesPaginated,
   observedDataPaginated,
   opinionsPaginated,
@@ -64,7 +66,9 @@ const stixCoreObjectResolvers = {
       return stixCoreObjectsTimeSeries(context, context.user, args);
     },
     stixCoreObjectsMultiTimeSeries: (_, args, context) => stixCoreObjectsMultiTimeSeries(context, context.user, args),
+    publicStixCoreObjectsMultiTimeSeries: (_, args, context) => publicStixCoreObjectsMultiTimeSeries(context, args),
     stixCoreObjectsNumber: (_, args, context) => stixCoreObjectsNumber(context, context.user, args),
+    publicStixCoreObjectsNumber: (_, args, context) => publicStixCoreObjectsNumber(context, args),
     stixCoreObjectsMultiNumber: (_, args, context) => stixCoreObjectsMultiNumber(context, context.user, args),
     stixCoreObjectsDistribution: (_, args, context) => {
       if (args.objectId && args.objectId.length > 0) {
