@@ -444,6 +444,13 @@ export const elPlatformMapping = async (index) => {
   const mapping = await engine.indices.getMapping({ index });
   return oebp(mapping)[index].mappings.properties;
 };
+export const elIndexSetting = async (index) => {
+  const dataIndexSettings = await engine.indices.getSettings({ index });
+  const { settings } = oebp(dataIndexSettings)[index];
+  const rollover_alias = engine instanceof ElkClient ? settings.index.lifecycle.rollover_alias
+    : settings.index.plugins.index_state_management.rollover_alias;
+  return { settings, rollover_alias };
+};
 export const elPlatformTemplates = async () => {
   const listTemplates = await engine.cat.templates({ name: `${ES_INDEX_PREFIX}*`, format: 'JSON' });
   return oebp(listTemplates);
@@ -622,7 +629,7 @@ const attributesMappingGenerator = () => {
 export const engineMappingGenerator = () => {
   return { ...attributesMappingGenerator(), ...ruleMappingGenerator(), ...denormalizeRelationsMappingGenerator() };
 };
-const computePlatformSettings = (index) => {
+const computeIndexSettings = (rolloverAlias) => {
   if (engine instanceof ElkClient) {
     return {
       index: {
@@ -633,7 +640,7 @@ const computePlatformSettings = (index) => {
         },
         lifecycle: {
           name: `${ES_INDEX_PREFIX}-ilm-policy`,
-          rollover_alias: index,
+          rollover_alias: rolloverAlias,
         }
       }
     };
@@ -646,7 +653,7 @@ const computePlatformSettings = (index) => {
     },
     plugins: {
       index_state_management: {
-        rollover_alias: index,
+        rollover_alias: rolloverAlias,
       }
     }
   };
@@ -662,7 +669,7 @@ const updateIndexTemplate = async (name, mapping_properties) => {
     body: {
       index_patterns: [index_pattern],
       template: {
-        settings: computePlatformSettings(name),
+        settings: computeIndexSettings(name),
         mappings: {
           // Global option to prevent elastic to try any magic
           dynamic: 'strict',
@@ -710,9 +717,9 @@ export const elUpdateIndicesMappings = async () => {
   const indices = await elPlatformIndices();
   for (let indicesIndex = 0; indicesIndex < indices.length; indicesIndex += 1) {
     const { index } = indices[indicesIndex];
+    const { rollover_alias } = await elIndexSetting(index);
     const indexMappingProperties = await elPlatformMapping(index);
-    // Replace settings with updated ones
-    const platformSettings = computePlatformSettings(index);
+    const platformSettings = computeIndexSettings(rollover_alias);
     await engine.indices.putSettings({ index, body: platformSettings }).catch((e) => {
       throw DatabaseError('Updating index settings fail', { index, cause: e });
     });
