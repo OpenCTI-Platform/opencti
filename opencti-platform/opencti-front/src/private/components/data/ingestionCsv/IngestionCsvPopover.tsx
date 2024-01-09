@@ -149,19 +149,19 @@ const IngestionCsvPopover: FunctionComponent<IngestionCsvPopoverProps> = ({
         >
           {!running && (
             <MenuItem onClick={handleOpenStart}>
-              {t && t('Start')}
+              {t('Start')}
             </MenuItem>
           )}
           {running && (
             <MenuItem onClick={handleOpenStop}>
-              {t && t('Stop')}
+              {t('Stop')}
             </MenuItem>
           )}
           <MenuItem onClick={handleOpenUpdate}>
-            {t && t('Update')}
+            {t('Update')}
           </MenuItem>
           <MenuItem onClick={handleOpenDelete}>
-            {t && t('Delete')}
+            {t('Delete')}
           </MenuItem>
         </Menu>
         {queryRef && (
@@ -182,7 +182,7 @@ const IngestionCsvPopover: FunctionComponent<IngestionCsvPopoverProps> = ({
         >
           <DialogContent>
             <DialogContentText>
-              {t && t('Do you want to delete this CSV ingester?')}
+              {t('Do you want to delete this CSV ingester?')}
             </DialogContentText>
           </DialogContent>
           <DialogActions>
@@ -190,14 +190,14 @@ const IngestionCsvPopover: FunctionComponent<IngestionCsvPopoverProps> = ({
               onClick={handleCloseDelete}
               disabled={deleting}
             >
-              {t && t('Cancel')}
+              {t('Cancel')}
             </Button>
             <Button
               color="secondary"
               onClick={submitDelete}
               disabled={deleting}
             >
-              {t && t('Delete')}
+              {t('Delete')}
             </Button>
           </DialogActions>
         </Dialog>
