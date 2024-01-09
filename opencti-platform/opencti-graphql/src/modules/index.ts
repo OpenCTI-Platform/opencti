@@ -58,6 +58,7 @@ import './decayRule/decayRule';
 import './organization/organization';
 import './internal/csvMapper/csvMapper';
 import './internal/document/document';
+import './publicDashboard/publicDashboard';
 // endregion
 
 // region graphql registration
@@ -93,6 +94,7 @@ import './indicator/indicator-graphql';
 import './decayRule/decayRule-graphql';
 import './organization/organization-graphql';
 import './internal/csvMapper/csvMapper-graphql';
+import './publicDashboard/publicDashboard-graphql';
 import './ai/ai-graphql';
 // import './internal/document/document-graphql'; # Not needed as document is not fully registered
 // endregion

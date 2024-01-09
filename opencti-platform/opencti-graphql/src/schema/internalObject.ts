@@ -1,6 +1,7 @@
 import { ABSTRACT_INTERNAL_OBJECT } from './general';
 import { schemaTypesDefinition } from './schema-types';
 import { ENTITY_TYPE_WORKSPACE } from '../modules/workspace/workspace-types';
+import { ENTITY_TYPE_PUBLIC_DASHBOARD } from '../modules/publicDashboard/publicDashboard-types';
 
 export const ENTITY_TYPE_SETTINGS = 'Settings';
 export const ENTITY_TYPE_MIGRATION_STATUS = 'MigrationStatus';
@@ -54,6 +55,7 @@ const INTERNAL_OBJECTS = [
   ENTITY_TYPE_CAPABILITY,
   ENTITY_TYPE_CONNECTOR,
   ENTITY_TYPE_WORKSPACE,
+  ENTITY_TYPE_PUBLIC_DASHBOARD,
   ENTITY_TYPE_HISTORY,
   ENTITY_TYPE_ACTIVITY,
   ENTITY_TYPE_INTERNAL_FILE,

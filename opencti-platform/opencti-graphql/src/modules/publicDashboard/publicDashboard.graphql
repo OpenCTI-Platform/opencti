@@ -1,0 +1,65 @@
+type PublicDashboard implements InternalObject & BasicObject {
+  id: ID!
+  entity_type: String!  @auth(for: [KNOWLEDGE, EXPLORE])
+  standard_id: String!  @auth(for: [KNOWLEDGE, EXPLORE])
+  parent_types: [String!]! @auth(for: [KNOWLEDGE, EXPLORE])
+  # PublicDashboard
+  name: String!
+  description: String
+  dashboard_id: String  @auth(for: [KNOWLEDGE, EXPLORE])
+  user_id: String!  @auth(for: [KNOWLEDGE, EXPLORE])
+  public_manifest: String
+  private_manifest: String @auth(for: [KNOWLEDGE, EXPLORE])
+  uri_key: String!
+  max_marking: [MarkingDefinition!]  @auth(for: [KNOWLEDGE, EXPLORE])
+  created_at: DateTime
+  updated_at: DateTime
+  editContext: [EditUserContext!]  @auth(for: [KNOWLEDGE, EXPLORE])
+}
+
+# Ordering
+enum PublicDashboardsOrdering {
+  name
+  created_at
+  updated_at
+  creator
+}
+
+# Relay connections
+type PublicDashboardConnection {
+  pageInfo: PageInfo!
+  edges: [PublicDashboardEdge!]!
+}
+
+# Queries
+type Query {
+  publicDashboard(id: String!): PublicDashboard  @auth(for: [KNOWLEDGE, EXPLORE])
+  publicDashboards(
+    first: Int
+    after: ID
+    orderBy: PublicDashboardsOrdering
+    orderMode: OrderingMode
+    filters: FilterGroup
+    search: String
+  ): PublicDashboardConnection @auth(for: [EXPLORE])
+  publicDashboardPublic(uri_key: String!): PublicDashboard
+}
+
+type PublicDashboardEdge {
+  cursor: String!
+  node: PublicDashboard!
+}
+
+# Mutation
+input PublicDashboardAddInput { # TODO add marking max to input
+  name: String!
+  description: String
+  dashboard_id: String!
+}
+
+type Mutation {
+  publicDashboardAdd(input: PublicDashboardAddInput!): PublicDashboard @auth(for: [EXPLORE_EXUPDATE_PUBLISH])
+  publicDashboardDelete(id: ID!): ID @auth(for: [EXPLORE_EXUPDATE_PUBLISH])
+  publicDashboardFieldPatch(id: ID!, input: [EditInput!]!): PublicDashboard @auth(for: [EXPLORE_EXUPDATE_PUBLISH])
+}
+

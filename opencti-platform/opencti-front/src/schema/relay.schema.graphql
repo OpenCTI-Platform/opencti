@@ -48,6 +48,7 @@ enum Capabilities {
   EXPLORE
   EXPLORE_EXUPDATE
   EXPLORE_EXUPDATE_EXDELETE
+  EXPLORE_EXUPDATE_PUBLISH
   MODULES
   MODULES_MODMANAGE
   SETTINGS
@@ -6673,11 +6674,11 @@ type StixObjectOrStixRelationshipRefEdge {
   node: StixObjectOrStixRelationship!
 }
 
-union StixObjectOrStixRelationshipOrCreator = MarkingDefinition | Label | KillChainPhase | ExternalReference | AttackPattern | Campaign | Channel | Event | Narrative | Note | ObservedData | Opinion | Report | Grouping | CourseOfAction | Individual | Organization | Sector | System | Indicator | Infrastructure | IntrusionSet | Language | City | AdministrativeArea | Country | Region | Position | Malware | MalwareAnalysis | ThreatActorGroup | ThreatActorIndividual | Tool | Vulnerability | Incident | AutonomousSystem | Directory | DomainName | EmailAddr | EmailMessage | EmailMimePartType | Artifact | StixFile | X509Certificate | IPv4Addr | IPv6Addr | MacAddr | Mutex | NetworkTraffic | Process | Software | Url | UserAccount | WindowsRegistryKey | WindowsRegistryValueType | CryptographicKey | CryptocurrencyWallet | Hostname | Text | UserAgent | BankAccount | PhoneNumber | PaymentCard | MediaContent | StixCoreRelationship | StixSightingRelationship | StixRefRelationship | Task | DataComponent | DataSource | CaseIncident | CaseRfi | CaseRft | Feedback | CaseTemplate | EntitySetting | ManagerConfiguration | Creator | Group | Workspace | CsvMapper | Status
+union StixObjectOrStixRelationshipOrCreator = MarkingDefinition | Label | KillChainPhase | ExternalReference | AttackPattern | Campaign | Channel | Event | Narrative | Note | ObservedData | Opinion | Report | Grouping | CourseOfAction | Individual | Organization | Sector | System | Indicator | Infrastructure | IntrusionSet | Language | City | AdministrativeArea | Country | Region | Position | Malware | MalwareAnalysis | ThreatActorGroup | ThreatActorIndividual | Tool | Vulnerability | Incident | AutonomousSystem | Directory | DomainName | EmailAddr | EmailMessage | EmailMimePartType | Artifact | StixFile | X509Certificate | IPv4Addr | IPv6Addr | MacAddr | Mutex | NetworkTraffic | Process | Software | Url | UserAccount | WindowsRegistryKey | WindowsRegistryValueType | CryptographicKey | CryptocurrencyWallet | Hostname | Text | UserAgent | BankAccount | PhoneNumber | PaymentCard | MediaContent | StixCoreRelationship | StixSightingRelationship | StixRefRelationship | Task | DataComponent | DataSource | CaseIncident | CaseRfi | CaseRft | Feedback | CaseTemplate | EntitySetting | ManagerConfiguration | Creator | Group | Workspace | CsvMapper | Status | PublicDashboard
 
-union StixObjectOrStixRelationship = MarkingDefinition | Label | KillChainPhase | ExternalReference | AttackPattern | Campaign | Channel | Event | Narrative | Note | ObservedData | Opinion | Report | Grouping | CourseOfAction | Individual | Organization | Sector | System | Indicator | Infrastructure | IntrusionSet | Language | City | AdministrativeArea | Country | Region | Position | Malware | MalwareAnalysis | ThreatActorGroup | ThreatActorIndividual | Tool | Vulnerability | Incident | AutonomousSystem | Directory | DomainName | EmailAddr | EmailMessage | EmailMimePartType | Artifact | StixFile | X509Certificate | IPv4Addr | IPv6Addr | MacAddr | Mutex | NetworkTraffic | Process | Software | Url | UserAccount | WindowsRegistryKey | WindowsRegistryValueType | CryptographicKey | CryptocurrencyWallet | Hostname | Text | UserAgent | BankAccount | PhoneNumber | PaymentCard | MediaContent | StixCoreRelationship | StixSightingRelationship | StixRefRelationship | DataComponent | DataSource | CaseIncident | CaseRfi | CaseRft | Feedback | CaseTemplate | Task | EntitySetting | ManagerConfiguration | Workspace | CsvMapper
+union StixObjectOrStixRelationship = MarkingDefinition | Label | KillChainPhase | ExternalReference | AttackPattern | Campaign | Channel | Event | Narrative | Note | ObservedData | Opinion | Report | Grouping | CourseOfAction | Individual | Organization | Sector | System | Indicator | Infrastructure | IntrusionSet | Language | City | AdministrativeArea | Country | Region | Position | Malware | MalwareAnalysis | ThreatActorGroup | ThreatActorIndividual | Tool | Vulnerability | Incident | AutonomousSystem | Directory | DomainName | EmailAddr | EmailMessage | EmailMimePartType | Artifact | StixFile | X509Certificate | IPv4Addr | IPv6Addr | MacAddr | Mutex | NetworkTraffic | Process | Software | Url | UserAccount | WindowsRegistryKey | WindowsRegistryValueType | CryptographicKey | CryptocurrencyWallet | Hostname | Text | UserAgent | BankAccount | PhoneNumber | PaymentCard | MediaContent | StixCoreRelationship | StixSightingRelationship | StixRefRelationship | DataComponent | DataSource | CaseIncident | CaseRfi | CaseRft | Feedback | CaseTemplate | Task | EntitySetting | ManagerConfiguration | Workspace | CsvMapper | PublicDashboard
 
-union StixCoreObjectOrStixCoreRelationship = AttackPattern | Campaign | Channel | Event | Note | ObservedData | Opinion | Report | Grouping | CourseOfAction | Individual | Organization | Sector | Indicator | Infrastructure | IntrusionSet | Language | City | AdministrativeArea | Country | Region | Position | Malware | MalwareAnalysis | Narrative | ThreatActorGroup | ThreatActorIndividual | Tool | Vulnerability | Incident | AutonomousSystem | Directory | DomainName | EmailAddr | EmailMessage | EmailMimePartType | Artifact | StixFile | X509Certificate | IPv4Addr | IPv6Addr | MacAddr | Mutex | NetworkTraffic | Process | Software | Url | UserAccount | WindowsRegistryKey | WindowsRegistryValueType | CryptographicKey | CryptocurrencyWallet | Hostname | Text | UserAgent | BankAccount | PhoneNumber | PaymentCard | MediaContent | StixCoreRelationship | DataComponent | DataSource | CaseIncident | CaseRfi | CaseRft | Feedback | CaseTemplate | Task | EntitySetting | ManagerConfiguration | Workspace
+union StixCoreObjectOrStixCoreRelationship = AttackPattern | Campaign | Channel | Event | Note | ObservedData | Opinion | Report | Grouping | CourseOfAction | Individual | Organization | Sector | Indicator | Infrastructure | IntrusionSet | Language | City | AdministrativeArea | Country | Region | Position | Malware | MalwareAnalysis | Narrative | ThreatActorGroup | ThreatActorIndividual | Tool | Vulnerability | Incident | AutonomousSystem | Directory | DomainName | EmailAddr | EmailMessage | EmailMimePartType | Artifact | StixFile | X509Certificate | IPv4Addr | IPv6Addr | MacAddr | Mutex | NetworkTraffic | Process | Software | Url | UserAccount | WindowsRegistryKey | WindowsRegistryValueType | CryptographicKey | CryptocurrencyWallet | Hostname | Text | UserAgent | BankAccount | PhoneNumber | PaymentCard | MediaContent | StixCoreRelationship | DataComponent | DataSource | CaseIncident | CaseRfi | CaseRft | Feedback | CaseTemplate | Task | EntitySetting | ManagerConfiguration | Workspace | PublicDashboard
 
 enum StixRelationshipsOrdering {
   entity_type
@@ -7130,7 +7131,9 @@ type Query {
   stixCoreObjectsExportFiles(first: Int, exportContext: ExportContext!): FileConnection
   stixCoreObjectsTimeSeries(authorId: String, field: String!, operation: StatsOperation!, startDate: DateTime!, endDate: DateTime, interval: String!, onlyInferred: Boolean, types: [String], filters: FilterGroup, search: String): [TimeSeries]
   stixCoreObjectsMultiTimeSeries(operation: StatsOperation!, startDate: DateTime!, endDate: DateTime, interval: String!, onlyInferred: Boolean, timeSeriesParameters: [StixCoreObjectsTimeSeriesParameters]): [MultiTimeSeries]
+  publicStixCoreObjectsMultiTimeSeries(startDate: DateTime!, endDate: DateTime, interval: String!, onlyInferred: Boolean, uriKey: String!, widgetId: String!): [MultiTimeSeries]
   stixCoreObjectsNumber(dateAttribute: String, types: [String], startDate: DateTime, endDate: DateTime, onlyInferred: Boolean, filters: FilterGroup, search: String): Number
+  publicStixCoreObjectsNumber(types: [String], startDate: DateTime, endDate: DateTime, onlyInferred: Boolean, search: String, uriKey: String!, widgetId: String!): Number
   stixCoreObjectsMultiNumber(dateAttribute: String, startDate: DateTime, endDate: DateTime, onlyInferred: Boolean, numberParameters: [StixCoreObjectsNumberParameters]): [Number]
   stixCoreObjectsDistribution(objectId: [String], relationship_type: [String], toTypes: [String], elementWithTargetTypes: [String], field: String!, startDate: DateTime, endDate: DateTime, dateAttribute: String, operation: StatsOperation!, limit: Int, order: String, types: [String], filters: FilterGroup, search: String): [Distribution]
   stixCoreObjectsMultiDistribution(field: String!, startDate: DateTime, endDate: DateTime, dateAttribute: String, operation: StatsOperation!, limit: Int, order: String, distributionParameters: StixCoreObjectsDistributionParameters): [MultiDistribution]
@@ -7337,6 +7340,9 @@ type Query {
   csvMapper(id: String!): CsvMapper
   csvMappers(first: Int, after: ID, orderBy: CsvMapperOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): CsvMapperConnection
   csvMapperTest(configuration: String!, content: String!): CsvMapperTestResult
+  publicDashboard(id: String!): PublicDashboard
+  publicDashboards(first: Int, after: ID, orderBy: PublicDashboardsOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): PublicDashboardConnection
+  publicDashboardPublic(uri_key: String!): PublicDashboard
   csvMapperSchemaAttributes: [CsvMapperSchemaAttributes!]!
 }
 
@@ -8088,6 +8094,9 @@ type Mutation {
   csvMapperAdd(input: CsvMapperAddInput!): CsvMapper
   csvMapperDelete(id: ID!): ID
   csvMapperFieldPatch(id: ID!, input: [EditInput!]!): CsvMapper
+  publicDashboardAdd(input: PublicDashboardAddInput!): PublicDashboard
+  publicDashboardDelete(id: ID!): ID
+  publicDashboardFieldPatch(id: ID!, input: [EditInput!]!): PublicDashboard
   aiContainerGenerateReport(id: ID!, containerId: String!, paragraphs: Int, tone: Tone, format: Format): String
   aiThreatGenerateReport(id: ID!, threatId: String!, paragraphs: Int, tone: Tone, format: Format): String
   aiVictimGenerateReport(id: ID!, victimId: String!, paragraphs: Int, tone: Tone, format: Format): String
@@ -11107,6 +11116,47 @@ input CsvMapperAddInput {
   separator: String!
   representations: String!
   skipLineChar: String
+}
+
+type PublicDashboard implements InternalObject & BasicObject {
+  id: ID!
+  entity_type: String!
+  standard_id: String!
+  parent_types: [String!]!
+  name: String!
+  description: String
+  dashboard_id: String
+  user_id: String!
+  public_manifest: String
+  private_manifest: String
+  uri_key: String!
+  max_marking: [MarkingDefinition!]
+  created_at: DateTime
+  updated_at: DateTime
+  editContext: [EditUserContext!]
+}
+
+enum PublicDashboardsOrdering {
+  name
+  created_at
+  updated_at
+  creator
+}
+
+type PublicDashboardConnection {
+  pageInfo: PageInfo!
+  edges: [PublicDashboardEdge!]!
+}
+
+type PublicDashboardEdge {
+  cursor: String!
+  node: PublicDashboard!
+}
+
+input PublicDashboardAddInput {
+  name: String!
+  description: String
+  dashboard_id: String!
 }
 
 enum Tone {

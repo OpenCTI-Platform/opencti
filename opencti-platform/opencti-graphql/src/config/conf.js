@@ -30,6 +30,7 @@ import { ENTITY_TYPE_MANAGER_CONFIGURATION } from '../modules/managerConfigurati
 import { ENTITY_TYPE_WORKSPACE } from '../modules/workspace/workspace-types';
 import { ENTITY_TYPE_NOTIFIER } from '../modules/notifier/notifier-types';
 import { UnknownError, UnsupportedError } from './errors';
+import { ENTITY_TYPE_PUBLIC_DASHBOARD } from '../modules/publicDashboard/publicDashboard-types';
 import { AI_BUS } from '../modules/ai/ai-types';
 
 // https://golang.org/src/crypto/x509/root_linux.go
@@ -73,6 +74,11 @@ export const BUS_TOPICS = {
   [ENTITY_TYPE_WORKSPACE]: {
     EDIT_TOPIC: `${TOPIC_PREFIX}WORKSPACE_EDIT_TOPIC`,
     ADDED_TOPIC: `${TOPIC_PREFIX}WORKSPACE_ADDED_TOPIC`,
+  },
+  [ENTITY_TYPE_PUBLIC_DASHBOARD]: {
+    EDIT_TOPIC: `${TOPIC_PREFIX}PUBLIC_DASHBOARD_EDIT_TOPIC`,
+    ADDED_TOPIC: `${TOPIC_PREFIX}PUBLIC_DASHBOARD_ADDED_TOPIC`,
+    DELETE_TOPIC: `${TOPIC_PREFIX}PUBLIC_DASHBOARD_DELETE_TOPIC`,
   },
   [M.ENTITY_TYPE_LABEL]: {
     EDIT_TOPIC: `${TOPIC_PREFIX}LABEL_EDIT_TOPIC`,
