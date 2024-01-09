@@ -1535,7 +1535,7 @@ const buildLocalMustFilter = async (validFilter) => {
     }
   }
   // 03. Handle values according to the operator
-  if (operator !== 'nils' && operator !== 'not_nils') {
+  if (operator !== 'nil' && operator !== 'not_nil') {
     for (let i = 0; i < values.length; i += 1) {
       if (values[i] === 'EXISTS') {
         if (arrayKeys.length > 1) {
