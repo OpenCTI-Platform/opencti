@@ -3,9 +3,7 @@ import { type ModuleDefinition, registerDefinition } from '../../schema/module';
 import { ENTITY_TYPE_INGESTION_CSV, type StixIngestionCsv, type StoreEntityIngestionCsv } from './ingestion-types';
 import { ABSTRACT_INTERNAL_OBJECT } from '../../schema/general';
 import { normalizeName } from '../../schema/identifier';
-import ingestionTypeDefs from './ingestion-csv.graphql';
 import { convertIngestionCsvToStix } from './ingestion-converter';
-import ingestionCsvResolvers from './ingestion-csv-resolver';
 
 const INGESTION_CSV_DEFINITION: ModuleDefinition<StoreEntityIngestionCsv, StixIngestionCsv> = {
   type: {
@@ -13,10 +11,6 @@ const INGESTION_CSV_DEFINITION: ModuleDefinition<StoreEntityIngestionCsv, StixIn
     name: ENTITY_TYPE_INGESTION_CSV,
     category: ABSTRACT_INTERNAL_OBJECT,
     aliased: false
-  },
-  graphql: {
-    schema: ingestionTypeDefs,
-    resolver: ingestionCsvResolvers,
   },
   identifier: {
     definition: {
@@ -29,14 +23,14 @@ const INGESTION_CSV_DEFINITION: ModuleDefinition<StoreEntityIngestionCsv, StixIn
     },
   },
   attributes: [
-    { name: 'name', type: 'string', mandatoryType: 'external', editDefault: true, multiple: false, upsert: true },
-    { name: 'description', type: 'string', mandatoryType: 'customizable', editDefault: true, multiple: false, upsert: true },
-    { name: 'uri', type: 'string', mandatoryType: 'customizable', editDefault: true, multiple: false, upsert: true },
-    { name: 'user_id', type: 'string', mandatoryType: 'external', editDefault: false, multiple: false, upsert: true },
-    { name: 'csvMapper_id', type: 'string', mandatoryType: 'external', editDefault: true, multiple: false, upsert: true },
-    { name: 'ingestion_running', type: 'boolean', mandatoryType: 'external', editDefault: true, multiple: false, upsert: true },
-    { name: 'added_after_start', type: 'date', mandatoryType: 'external', editDefault: true, multiple: false, upsert: true },
-    { name: 'current_state_cursor', type: 'string', mandatoryType: 'external', editDefault: true, multiple: false, upsert: true },
+    { name: 'name', label: 'Name', type: 'string', format: 'json', mandatoryType: 'external', editDefault: true, multiple: false, upsert: true, isFilterable: true },
+    { name: 'description', label: 'Description', type: 'string', format: 'json', mandatoryType: 'customizable', editDefault: true, multiple: false, upsert: true, isFilterable: true },
+    { name: 'uri', label: 'Uri', type: 'string', format: 'json', mandatoryType: 'customizable', editDefault: true, multiple: false, upsert: true, isFilterable: true },
+    { name: 'user_id', label: 'User_id', type: 'string', format: 'json', mandatoryType: 'external', editDefault: false, multiple: false, upsert: true, isFilterable: true },
+    { name: 'csvMapper_id', label: 'CsvMapper_id', type: 'string', format: 'json', mandatoryType: 'external', editDefault: true, multiple: false, upsert: true, isFilterable: true },
+    { name: 'ingestion_running', label: 'Ingestion_running', type: 'boolean', mandatoryType: 'external', editDefault: true, multiple: false, upsert: true, isFilterable: true },
+    { name: 'added_after_start', label: 'Added_after_start', type: 'date', mandatoryType: 'external', editDefault: true, multiple: false, upsert: true, isFilterable: true },
+    { name: 'current_state_cursor', label: 'Current_state_cursor', type: 'string', format: 'json', mandatoryType: 'external', editDefault: true, multiple: false, upsert: true, isFilterable: true },
   ],
   relations: [],
   representative: (stix: StixIngestionCsv) => {

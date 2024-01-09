@@ -23,15 +23,10 @@ import type { AuthContext } from '../types/user';
 import type { BasicStoreEntityIngestionCsv, BasicStoreEntityIngestionRss, BasicStoreEntityIngestionTaxii } from '../modules/ingestion/ingestion-types';
 import { findAllTaxiiIngestions, patchTaxiiIngestion } from '../modules/ingestion/ingestion-taxii-domain';
 import { TaxiiVersion } from '../generated/graphql';
-import {
-  fetchCsvExtractFromUrl,
-  findAllCsvIngestions, patchCsvIngestion,
-  testCsvIngestionMapping
-} from '../modules/ingestion/ingestion-csv-domain';
+import { fetchCsvExtractFromUrl, findAllCsvIngestions, patchCsvIngestion, testCsvIngestionMapping } from '../modules/ingestion/ingestion-csv-domain';
 import type { BasicStoreEntityCsvMapper } from '../modules/internal/csvMapper/csvMapper-types';
-import { createEntity } from '../database/middleware';
 import { findById } from '../modules/internal/csvMapper/csvMapper-domain';
-import {bundleProcess} from "../parser/csv-bundler";
+import { bundleProcess } from '../parser/csv-bundler';
 
 // Ingestion manager responsible to cleanup old data
 // Each API will start is ingestion manager.
@@ -324,7 +319,7 @@ const csvDataHandler = async (context: AuthContext, ingestion: BasicStoreEntityI
   const { data, addedLast } = await csvHttpGet(ingestion);
   const csvMapper: BasicStoreEntityCsvMapper = await findById(context, context.user ?? SYSTEM_USER, ingestion.csvMapper_id);
   const csvMappingTestResult = await testCsvIngestionMapping(context, context.user ?? SYSTEM_USER, ingestion.uri, ingestion.csvMapper_id);
-  if (!csvMappingTestResult) {
+  if (!csvMappingTestResult.nbEntities) {
     const error = UnknownError('Invalid data from URL', data);
     logApp.error(error, { name: ingestion.name, context: 'CSV transform' });
   }
@@ -351,7 +346,7 @@ const csvExecutor = async (context: AuthContext) => {
     const ingestion = ingestions[i];
     const ingestionPromise = csvDataHandler(context, ingestion)
       .catch((e) => {
-        logApp.error(`[OPENCTI-MODULE] ${e} --- CSV ingestion execution error for ${ingestion.name}`, { error: e });
+        logApp.error(`[OPENCTI-MODULE] execution error for ${ingestion.name}`, { error: e });
       });
     ingestionPromises.push(ingestionPromise);
   }

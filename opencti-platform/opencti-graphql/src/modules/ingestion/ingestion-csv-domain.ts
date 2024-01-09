@@ -1,11 +1,7 @@
 import axios from 'axios';
 import type { AuthContext, AuthUser } from '../../types/user';
 import { listAllEntities, listEntitiesPaginated, storeLoadById } from '../../database/middleware-loader';
-import {
-  type BasicStoreEntityIngestionCsv,
-  ENTITY_TYPE_INGESTION_CSV,
-  ENTITY_TYPE_INGESTION_TAXII
-} from './ingestion-types';
+import { type BasicStoreEntityIngestionCsv, ENTITY_TYPE_INGESTION_CSV } from './ingestion-types';
 import { createEntity, deleteElementById, patchAttribute, updateAttribute } from '../../database/middleware';
 import { publishUserAction } from '../../listener/UserActionListener';
 import type { CsvMapperTestResult, EditInput, IngestionCsvAddInput } from '../../generated/graphql';
