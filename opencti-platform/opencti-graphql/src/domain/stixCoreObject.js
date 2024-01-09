@@ -1,5 +1,13 @@
 import * as R from 'ramda';
-import { createEntity, createRelationRaw, deleteElementById, distributionEntities, storeLoadByIdWithRefs, timeSeriesEntities } from '../database/middleware';
+import {
+  createEntity,
+  createRelationRaw,
+  deleteElementById,
+  distributionEntities,
+  loadEntity,
+  storeLoadByIdWithRefs,
+  timeSeriesEntities
+} from '../database/middleware';
 import { internalFindByIds, internalLoadById, listEntities, listEntitiesThroughRelationsPaginated, storeLoadById, storeLoadByIds } from '../database/middleware-loader';
 import { findAll as relationFindAll } from './stixCoreRelationship';
 import { delEditContext, lockResource, notify, setEditContext, storeUpdateEvent } from '../database/redis';
@@ -35,13 +43,13 @@ import { ENTITY_TYPE_EXTERNAL_REFERENCE, ENTITY_TYPE_MARKING_DEFINITION } from '
 import { createWork, workToExportFile } from './work';
 import { pushToConnector } from '../database/rabbitmq';
 import { now } from '../utils/format';
-import { ENTITY_TYPE_CONNECTOR } from '../schema/internalObject';
+import { ENTITY_TYPE_CONNECTOR, ENTITY_TYPE_USER } from '../schema/internalObject';
 import { deleteFile, storeFileConverter, upload } from '../database/file-storage';
 import { findById as documentFindById } from '../modules/internal/document/document-domain';
 import { elCount, elUpdateElement } from '../database/engine';
 import { generateStandardId, getInstanceIds } from '../schema/identifier';
 import { askEntityExport, askListExport, exportTransformFilters } from './stix';
-import { isEmptyField, isNotEmptyField, READ_ENTITIES_INDICES, READ_INDEX_INFERRED_ENTITIES } from '../database/utils';
+import { fromBase64, isEmptyField, isNotEmptyField, READ_ENTITIES_INDICES, READ_INDEX_INFERRED_ENTITIES } from '../database/utils';
 import { RELATION_RELATED_TO, STIX_CORE_RELATIONSHIPS } from '../schema/stixCoreRelationship';
 import { ENTITY_TYPE_CONTAINER_CASE } from '../modules/case/case-types';
 import { getEntitySettingFromCache } from '../modules/entitySetting/entitySetting-utils';
@@ -51,6 +59,8 @@ import { extractEntityRepresentativeName } from '../database/entity-representati
 import { addFilter, extractFilterGroupValues, findFiltersFromKey } from '../utils/filtering/filtering-utils';
 import { INSTANCE_REGARDING_OF, specialFilterKeysWhoseValueToResolve } from '../utils/filtering/filtering-constants';
 import { schemaRelationsRefDefinition } from '../schema/schema-relationsRef';
+import { SYSTEM_USER } from '../utils/access';
+import { ENTITY_TYPE_PUBLIC_DASHBOARD } from '../modules/publicDashboard/publicDashboard-types';
 import { getEntitiesMapFromCache } from '../database/cache';
 import { ENTITY_TYPE_CONTAINER_GROUPING } from '../modules/grouping/grouping-types';
 
@@ -254,6 +264,63 @@ export const stixCoreObjectsMultiTimeSeries = (context, user, args) => {
   }));
 };
 
+export const publicStixCoreObjectsMultiTimeSeries = async (context, args) => {
+  // TODO Get User from manifest => user should be added to public manifest => for now manifest is build by front
+
+  // Get public dashboard User id
+  const { id, user_id } = await loadEntity(
+    context,
+    SYSTEM_USER,
+    [ENTITY_TYPE_PUBLIC_DASHBOARD],
+    {
+      filters: {
+        mode: 'and',
+        filters: [
+          { key: ['uri_key'], values: [args.uriKey], mode: 'or', operator: 'eq' }
+        ],
+        filterGroups: [],
+      }
+    },
+  );
+
+  // Get user from cache
+  const platformUsersMap = await getEntitiesMapFromCache(context, SYSTEM_USER, ENTITY_TYPE_USER);
+  const plateformUser = platformUsersMap.get(user_id);
+  const user = { ...plateformUser, origin: { user_id: plateformUser.id, referer: 'public-dashboard' } };
+
+  // Get private manifest
+  const { private_manifest } = await storeLoadById(
+    context,
+    user,
+    id,
+    ENTITY_TYPE_PUBLIC_DASHBOARD,
+  );
+
+  // Get widget query configuration
+  const parsedManifest = JSON.parse(fromBase64(private_manifest) ?? '{}');
+  const { widgets } = parsedManifest;
+  const widgetConfigs = widgets[args.widgetId].dataSelection;
+  const timeSeriesParameters = [];
+  widgetConfigs.map((widgetConfig) => timeSeriesParameters.push({
+    field: widgetConfig.date_attribute,
+    filters: widgetConfig.filters,
+    types: [
+      'Stix-Core-Object' // ?? should be in the manifest
+    ]
+  }));
+
+  const standardArgs = {
+    operation: 'count', // TODO 'count' is harcoded for now but should come from manifest
+    startDate: args.startDate,
+    endDate: args.endDate,
+    interval: args.interval,
+    timeSeriesParameters
+  };
+
+  // Use standard API
+  return stixCoreObjectsMultiTimeSeries(context, user, standardArgs);
+};
+
 export const stixCoreObjectsNumber = (context, user, args) => {
   let types = [];
   if (isNotEmptyField(args.types)) {
@@ -266,6 +333,59 @@ export const stixCoreObjectsNumber = (context, user, args) => {
     count: elCount(context, user, args.onlyInferred ? READ_INDEX_INFERRED_ENTITIES : READ_ENTITIES_INDICES, args),
     total: elCount(context, user, args.onlyInferred ? READ_INDEX_INFERRED_ENTITIES : READ_ENTITIES_INDICES, R.dissoc('endDate', args)),
   };
+};
+
+export const publicStixCoreObjectsNumber = async (context, args) => {
+  // args = {"endDate":"2024-01-18T16:38:08.000Z","filters":{"filterGroups":[],"filters":[],"mode":"and"},"types":["Stix-Core-Object"]}
+
+  // Get public dashboard User id
+  const { id, user_id } = await loadEntity(
+    context,
+    SYSTEM_USER,
+    [ENTITY_TYPE_PUBLIC_DASHBOARD],
+    {
+      filters: {
+        mode: 'and',
+        filters: [
+          { key: ['uri_key'], values: [args.uriKey], mode: 'or', operator: 'eq' }
+        ],
+        filterGroups: [],
+      }
+    },
+  );
+
+  // Get user from cache
+  const platformUsersMap = await getEntitiesMapFromCache(context, SYSTEM_USER, ENTITY_TYPE_USER);
+  const plateformUser = platformUsersMap.get(user_id);
+  const user = { ...plateformUser, origin: { user_id: plateformUser.id, referer: 'public-dashboard' } };
+
+  // Get private manifest
+  const { private_manifest } = await storeLoadById(
+    context,
+    user,
+    id,
+    ENTITY_TYPE_PUBLIC_DASHBOARD,
+  );
+
+  // Get widget query configuration
+  const parsedManifest = JSON.parse(fromBase64(private_manifest) ?? '{}');
+  const { widgets } = parsedManifest;
+  const widgetConfigs = widgets[args.widgetId].dataSelection;
+  const parameters = [];
+  widgetConfigs.map((widgetConfig) => parameters.push({
+    startDate: args.startDate,
+    endDate: args.endDate,
+    filters: widgetConfig.filters,
+    onlyInferred: args.onlyInferred,
+    search: args.search,
+    types: [
+      'Stix-Core-Object' // ?? should be in the manifest
+    ]
+  }));
+
+  const standardArgs = parameters[0];
+  // Use standard API
+  return stixCoreObjectsNumber(context, user, standardArgs);
 };
 
 export const stixCoreObjectsMultiNumber = (context, user, args) => {

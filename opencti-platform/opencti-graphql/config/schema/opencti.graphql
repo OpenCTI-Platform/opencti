@@ -51,6 +51,7 @@ enum Capabilities {
   EXPLORE
   EXPLORE_EXUPDATE
   EXPLORE_EXUPDATE_EXDELETE
+  EXPLORE_EXUPDATE_PUBLISH
   MODULES
   MODULES_MODMANAGE
   SETTINGS
@@ -10128,6 +10129,7 @@ union StixObjectOrStixRelationshipOrCreator =
   | Workspace
   | CsvMapper
   | Status
+  | PublicDashboard
 union StixObjectOrStixRelationship =
   MarkingDefinition
   | Label
@@ -10208,6 +10210,7 @@ union StixObjectOrStixRelationship =
   | ManagerConfiguration
   | Workspace
   | CsvMapper
+  | PublicDashboard
 union StixCoreObjectOrStixCoreRelationship =
 #### Stix Core Objects
 ## Stix Domain Objects
@@ -10282,6 +10285,7 @@ union StixCoreObjectOrStixCoreRelationship =
   | EntitySetting
   | ManagerConfiguration
   | Workspace
+  | PublicDashboard
 
 enum StixRelationshipsOrdering {
   entity_type
@@ -10985,6 +10989,14 @@ type Query {
     onlyInferred: Boolean
     timeSeriesParameters: [StixCoreObjectsTimeSeriesParameters]
   ): [MultiTimeSeries] @auth(for: [KNOWLEDGE, EXPLORE])
+  publicStixCoreObjectsMultiTimeSeries(
+    startDate: DateTime!
+    endDate: DateTime
+    interval: String!
+    onlyInferred: Boolean
+    uriKey: String!
+    widgetId : String!
+  ): [MultiTimeSeries]
   stixCoreObjectsNumber(
     dateAttribute: String
     types: [String]
@@ -10994,6 +11006,15 @@ type Query {
     filters: FilterGroup
     search: String
   ): Number @auth(for: [KNOWLEDGE, EXPLORE])
+  publicStixCoreObjectsNumber(
+    types: [String]
+    startDate: DateTime
+    endDate: DateTime
+    onlyInferred: Boolean
+    search: String
+    uriKey: String!
+    widgetId : String!
+  ): Number
   stixCoreObjectsMultiNumber(
     dateAttribute: String
     startDate: DateTime
