@@ -103,16 +103,14 @@ const Narratives = () => {
         ]}
       >
         {queryRef && (
-        <React.Suspense fallback={ <> {Array(20)
+        <React.Suspense fallback={<> {Array(20)
           .fill(0)
           .map((_, idx) => (
             <NarrativeLine
               key={idx}
               dataColumns={dataColumns}
             />
-          ))}
-        </>
-                }
+          ))}</>}
         >
           <NarrativesLines
             queryRef={queryRef}
