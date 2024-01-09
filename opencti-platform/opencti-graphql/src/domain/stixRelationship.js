@@ -2,7 +2,7 @@ import * as R from 'ramda';
 import { batchListThroughGetTo, buildDynamicFilterArgs, deleteElementById, distributionRelations, timeSeriesRelations } from '../database/middleware';
 import { ABSTRACT_STIX_CORE_OBJECT, ABSTRACT_STIX_RELATIONSHIP, ENTITY_TYPE_IDENTITY } from '../schema/general';
 import { buildEntityFilters, listEntities, listRelations, storeLoadById } from '../database/middleware-loader';
-import { READ_INDEX_INFERRED_RELATIONSHIPS, READ_INDEX_STIX_CORE_RELATIONSHIPS, READ_INDEX_STIX_SIGHTING_RELATIONSHIPS } from '../database/utils';
+import { fillTimeSeries, READ_INDEX_INFERRED_RELATIONSHIPS, READ_INDEX_STIX_CORE_RELATIONSHIPS, READ_INDEX_STIX_SIGHTING_RELATIONSHIPS } from '../database/utils';
 import { elCount } from '../database/engine';
 import { RELATION_CREATED_BY, RELATION_OBJECT_MARKING } from '../schema/stixRefRelationship';
 import { ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
@@ -84,6 +84,11 @@ export const stixRelationshipsNumber = async (context, user, args) => {
       .then((result) => result.map((n) => n.id));
     if (fromIds.length > 0) {
       finalArgs = { ...finalArgs, fromId: args.fromId ? [...fromIds, args.fromId] : fromIds };
+    } else {
+      return {
+        count: 0,
+        total: 0
+      };
     }
   } else {
     finalArgs = { ...finalArgs, dynamicFrom: undefined };
@@ -93,6 +98,11 @@ export const stixRelationshipsNumber = async (context, user, args) => {
       .then((result) => result.map((n) => n.id));
     if (toIds.length > 0) {
       finalArgs = { ...finalArgs, toId: args.toId ? [...toIds, args.toId] : toIds };
+    } else {
+      return {
+        count: 0,
+        total: 0
+      };
     }
   } else {
     finalArgs = { ...finalArgs, dynamicTo: undefined };
@@ -108,12 +118,15 @@ export const stixRelationshipsNumber = async (context, user, args) => {
 export const stixRelationshipsMultiTimeSeries = async (context, user, args) => {
   return Promise.all(args.timeSeriesParameters.map(async (timeSeriesParameter) => {
     const { dynamicFrom, dynamicTo } = timeSeriesParameter;
+    const { startDate, endDate, interval } = args;
     let finalTimeSeriesParameter = timeSeriesParameter;
     if (isFilterGroupNotEmpty(dynamicFrom)) {
       const fromIds = await listEntities(context, user, [ABSTRACT_STIX_CORE_OBJECT], buildDynamicFilterArgs(dynamicFrom))
         .then((result) => result.map((n) => n.id));
       if (fromIds.length > 0) {
         finalTimeSeriesParameter = { ...finalTimeSeriesParameter, fromId: args.fromId ? [...fromIds, args.fromId] : fromIds };
+      } else {
+        return { data: fillTimeSeries(startDate, endDate, interval, []) };
       }
     } else {
       finalTimeSeriesParameter = { ...finalTimeSeriesParameter, dynamicFrom: undefined };
@@ -123,6 +136,8 @@ export const stixRelationshipsMultiTimeSeries = async (context, user, args) => {
         .then((result) => result.map((n) => n.id));
       if (toIds.length > 0) {
         finalTimeSeriesParameter = { ...finalTimeSeriesParameter, toId: args.toId ? [...toIds, args.toId] : toIds };
+      } else {
+        return { data: fillTimeSeries(startDate, endDate, interval, []) };
       }
     } else {
       finalTimeSeriesParameter = { ...finalTimeSeriesParameter, dynamicTo: undefined };
