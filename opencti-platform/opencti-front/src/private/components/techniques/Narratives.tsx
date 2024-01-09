@@ -68,64 +68,62 @@ const Narratives = () => {
     narrativesLinesQuery,
     paginationOptions,
   );
-  return (
-    <ListLines
-      helpers={helpers}
-      sortBy={sortBy}
-      orderAsc={orderAsc}
-      dataColumns={dataColumns}
-      handleSort={helpers.handleSort}
-      handleSearch={helpers.handleSearch}
-      handleAddFilter={helpers.handleAddFilter}
-      handleRemoveFilter={helpers.handleRemoveFilter}
-      handleSwitchGlobalMode={helpers.handleSwitchGlobalMode}
-      handleSwitchLocalMode={helpers.handleSwitchLocalMode}
-      handleToggleExports={helpers.handleToggleExports}
-      openExports={openExports}
-      exportEntityType="Narrative"
-      keyword={searchTerm}
-      filters={filters}
-      paginationOptions={paginationOptions}
-      numberOfElements={numberOfElements}
-      availableFilterKeys={[
-        'workflow_id',
-        'objectLabel',
-        'objectMarking',
-        'createdBy',
-        'source_reliability',
-        'creator_id',
-        'created',
-        'revoked',
-        'killChainPhases',
-        'name',
-      ]}
-    >
-      {queryRef && (
-      <React.Suspense fallback={ <> {Array(20)
-        .fill(0)
-        .map((_, idx) => (
-          <NarrativeLine
-            key={idx}
-            dataColumns={dataColumns}
-          />
-        ))}
-      </>
-                  }
-      >
-        <NarrativesLines
-          queryRef={queryRef}
-          paginationOptions={paginationOptions}
-          dataColumns={dataColumns}
-          onLabelClick={helpers.handleAddFilter}
-          setNumberOfElements={helpers.handleSetNumberOfElements}
-        />
-      </React.Suspense>
-      )}
-    </ListLines>
-  );
 
   return (
     <>
+      <ListLines
+        helpers={helpers}
+        sortBy={sortBy}
+        orderAsc={orderAsc}
+        dataColumns={dataColumns}
+        handleSort={helpers.handleSort}
+        handleSearch={helpers.handleSearch}
+        handleAddFilter={helpers.handleAddFilter}
+        handleRemoveFilter={helpers.handleRemoveFilter}
+        handleSwitchGlobalMode={helpers.handleSwitchGlobalMode}
+        handleSwitchLocalMode={helpers.handleSwitchLocalMode}
+        handleToggleExports={helpers.handleToggleExports}
+        openExports={openExports}
+        exportEntityType="Narrative"
+        keyword={searchTerm}
+        filters={filters}
+        paginationOptions={paginationOptions}
+        numberOfElements={numberOfElements}
+        availableFilterKeys={[
+          'workflow_id',
+          'objectLabel',
+          'objectMarking',
+          'createdBy',
+          'source_reliability',
+          'creator_id',
+          'created',
+          'revoked',
+          'killChainPhases',
+          'name',
+        ]}
+      >
+        {queryRef && (
+        <React.Suspense fallback={ <> {Array(20)
+          .fill(0)
+          .map((_, idx) => (
+            <NarrativeLine
+              key={idx}
+              dataColumns={dataColumns}
+            />
+          ))}
+        </>
+                }
+        >
+          <NarrativesLines
+            queryRef={queryRef}
+            paginationOptions={paginationOptions}
+            dataColumns={dataColumns}
+            onLabelClick={helpers.handleAddFilter}
+            setNumberOfElements={helpers.handleSetNumberOfElements}
+          />
+        </React.Suspense>
+        )}
+      </ListLines>
       <Security needs={[KNOWLEDGE_KNUPDATE]}>
         <NarrativeCreation paginationOptions={paginationOptions} />
       </Security>
