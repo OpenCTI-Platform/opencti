@@ -1,6 +1,7 @@
 import React from 'react';
 import { NarrativesLinesPaginationQuery, NarrativesLinesPaginationQuery$variables } from '@components/techniques/narratives/__generated__/NarrativesLinesPaginationQuery.graphql';
 import { NarrativeLine } from '@components/techniques/narratives/NarrativeLine';
+import { usePreloadedQuery } from 'react-relay';
 import NarrativesLines, { narrativesLinesQuery } from './narratives/NarrativesLines';
 import NarrativeCreation from './narratives/NarrativeCreation';
 import Security from '../../../utils/Security';
@@ -12,6 +13,58 @@ import ListLines from '../../../components/list_lines/ListLines';
 
 const LOCAL_STORAGE_KEY = 'narratives';
 
+const NarrativesComponent = ({ helpers, viewStorage, paginationOptions, dataColumns, queryRef }) => {
+  const {
+    sortBy,
+    orderAsc,
+    searchTerm,
+    filters,
+    openExports,
+    numberOfElements,
+  } = viewStorage;
+  const data = usePreloadedQuery(narrativesLinesQuery, queryRef);
+  return (
+    <ListLines
+      helpers={helpers}
+      sortBy={sortBy}
+      orderAsc={orderAsc}
+      dataColumns={dataColumns}
+      handleSort={helpers.handleSort}
+      handleSearch={helpers.handleSearch}
+      handleAddFilter={helpers.handleAddFilter}
+      handleRemoveFilter={helpers.handleRemoveFilter}
+      handleSwitchGlobalMode={helpers.handleSwitchGlobalMode}
+      handleSwitchLocalMode={helpers.handleSwitchLocalMode}
+      handleToggleExports={helpers.handleToggleExports}
+      openExports={openExports}
+      exportEntityType="Narrative"
+      keyword={searchTerm}
+      filters={filters}
+      paginationOptions={paginationOptions}
+      numberOfElements={numberOfElements}
+      availableFilterKeys={[
+        'workflow_id',
+        'objectLabel',
+        'objectMarking',
+        'createdBy',
+        'source_reliability',
+        'creator_id',
+        'created',
+        'revoked',
+        'killChainPhases',
+        'name',
+      ]}
+    >
+      <NarrativesLines
+        data={data}
+        paginationOptions={paginationOptions}
+        dataColumns={dataColumns}
+        onLabelClick={helpers.handleAddFilter}
+        setNumberOfElements={helpers.handleSetNumberOfElements}
+      />
+    </ListLines>
+  );
+};
 const Narratives = () => {
   const { viewStorage, helpers, paginationOptions } = usePaginationLocalStorage<NarrativesLinesPaginationQuery$variables>(
     LOCAL_STORAGE_KEY,
@@ -23,15 +76,10 @@ const Narratives = () => {
       filters: emptyFilterGroup,
     },
   );
-
-  const {
-    sortBy,
-    orderAsc,
-    searchTerm,
-    filters,
-    openExports,
-    numberOfElements,
-  } = viewStorage;
+  const queryRef = useQueryLoading<NarrativesLinesPaginationQuery>(
+    narrativesLinesQuery,
+    paginationOptions,
+  );
   const dataColumns = {
     killChainPhase: {
       label: 'Kill chain phase',
@@ -64,46 +112,10 @@ const Narratives = () => {
       isSortable: true,
     },
   };
-  const queryRef = useQueryLoading<NarrativesLinesPaginationQuery>(
-    narrativesLinesQuery,
-    paginationOptions,
-  );
-
   return (
     <>
-      <ListLines
-        helpers={helpers}
-        sortBy={sortBy}
-        orderAsc={orderAsc}
-        dataColumns={dataColumns}
-        handleSort={helpers.handleSort}
-        handleSearch={helpers.handleSearch}
-        handleAddFilter={helpers.handleAddFilter}
-        handleRemoveFilter={helpers.handleRemoveFilter}
-        handleSwitchGlobalMode={helpers.handleSwitchGlobalMode}
-        handleSwitchLocalMode={helpers.handleSwitchLocalMode}
-        handleToggleExports={helpers.handleToggleExports}
-        openExports={openExports}
-        exportEntityType="Narrative"
-        keyword={searchTerm}
-        filters={filters}
-        paginationOptions={paginationOptions}
-        numberOfElements={numberOfElements}
-        availableFilterKeys={[
-          'workflow_id',
-          'objectLabel',
-          'objectMarking',
-          'createdBy',
-          'source_reliability',
-          'creator_id',
-          'created',
-          'revoked',
-          'killChainPhases',
-          'name',
-        ]}
-      >
-        {queryRef && (
-        <React.Suspense fallback={<> {Array(20)
+      {queryRef && (
+        <><React.Suspense fallback={<> {Array(20)
           .fill(0)
           .map((_, idx) => (
             <NarrativeLine
@@ -111,22 +123,13 @@ const Narratives = () => {
               dataColumns={dataColumns}
             />
           ))}</>}
-        >
-          <NarrativesLines
-            queryRef={queryRef}
-            paginationOptions={paginationOptions}
-            dataColumns={dataColumns}
-            onLabelClick={helpers.handleAddFilter}
-            setNumberOfElements={helpers.handleSetNumberOfElements}
-          />
-        </React.Suspense>
-        )}
-      </ListLines>
-      <Security needs={[KNOWLEDGE_KNUPDATE]}>
-        <NarrativeCreation paginationOptions={paginationOptions} />
-      </Security>
+          >
+          <NarrativesComponent helpers={helpers} paginationOptions={paginationOptions} viewStorage={viewStorage} dataColumns={dataColumns} queryRef={queryRef}/>
+        </React.Suspense><Security needs={[KNOWLEDGE_KNUPDATE]}>
+          <NarrativeCreation paginationOptions={paginationOptions}/>
+        </Security></>
+      )}
     </>
   );
 };
-
 export default Narratives;
