@@ -169,7 +169,7 @@
     "enabled": true,
     "lock_key": "file_index_manager_lock",
     "stream_lock_key": "file_index_manager_stream_lock",
-    "interval": 6000
+    "interval": 60000
   },
   "redis": {
     "mode": "single",
