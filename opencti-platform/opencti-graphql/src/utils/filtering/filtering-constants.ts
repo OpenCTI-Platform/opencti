@@ -16,8 +16,9 @@ export const OBJECT_CONTAINS_FILTER = 'objects';
 export const RELATION_FROM_FILTER = 'fromId';
 export const RELATION_TO_FILTER = 'toId';
 export const RELATION_TO_SIGHTING_FILTER = 'toSightingId';
-export const INSTANCE_FILTER = 'elementId';
-export const INSTANCE_FILTER_TARGET_TYPES = 'elementWithTargetTypes';
+export const INSTANCE_FILTER = 'elementId'; // TODO Rename/migrate to relatedToId
+export const INSTANCE_RELATION_FILTER = 'fromOrToId';
+export const INSTANCE_FILTER_TARGET_TYPES = 'elementWithTargetTypes'; // TODO Rename/migrate to fromOrToTypes
 export const CONNECTED_TO_INSTANCE_FILTER = 'connectedToId';
 export const CONNECTED_TO_INSTANCE_SIDE_EVENTS_FILTER = 'connectedToId_sideEvents';
 
@@ -48,7 +49,7 @@ export const USER_ID_FILTER = 'user_id';
 export const SOURCE_RELIABILITY_FILTER = 'source_reliability';
 
 // for audit logging (Elastic + Stream)
-export const CONTEXT_ENTITY_ID_FILTER = 'contextEntityId';
+export const CONTEXT_ENTITY_ID_FILTER = 'contextEntityId'; // 'context_data.id'
 export const CONTEXT_ENTITY_TYPE_FILTER = 'contextEntityType';
 export const CONTEXT_CREATOR_FILTER = 'contextCreator';
 export const CONTEXT_CREATED_BY_FILTER = 'contextCreatedBy';
@@ -64,7 +65,7 @@ export const complexConversionFilterKeys = [
   WORKFLOW_FILTER, // values should match the parent workflow pattern id
   X_OPENCTI_WORKFLOW_ID, // values should match the parent workflow pattern id
   SOURCE_RELIABILITY_FILTER, // reliability of the author
-  INSTANCE_FILTER, // nested relation for the from or to of a relationship
+  INSTANCE_RELATION_FILTER, // nested relation for the from or to of a relationship
   INSTANCE_FILTER_TARGET_TYPES, // nested relation for the from or type type of a relationship
   RELATION_FROM_FILTER, // nested relation for the from of a relationship
   RELATION_TO_FILTER, // nested relation for the to of a relationship

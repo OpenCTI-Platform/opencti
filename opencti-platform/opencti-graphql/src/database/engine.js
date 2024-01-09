@@ -86,8 +86,8 @@ import { checkAndConvertFilters, isFilterGroupNotEmpty } from '../utils/filterin
 import {
   complexConversionFilterKeys,
   IDS_FILTER,
-  INSTANCE_FILTER,
   INSTANCE_FILTER_TARGET_TYPES,
+  INSTANCE_RELATION_FILTER,
   RELATION_FROM_FILTER,
   RELATION_FROM_ROLE_FILTER,
   RELATION_FROM_TYPES_FILTER,
@@ -1942,7 +1942,7 @@ const completeSpecialFilterKeys = async (context, user, inputFilters) => {
           finalFilterGroups.push(newFilterGroup);
         }
       }
-      if (arrayKeys.includes(INSTANCE_FILTER)) {
+      if (arrayKeys.includes(INSTANCE_RELATION_FILTER)) {
         const nested = [{ key: 'internal_id', operator: filter.operator, values: filter.values }];
         finalFilters.push({ key: 'connections', nested });
       }

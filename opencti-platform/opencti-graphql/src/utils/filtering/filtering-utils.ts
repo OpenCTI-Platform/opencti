@@ -161,7 +161,7 @@ export const replaceFilterKey = (filterGroup: FilterGroup, oldKey: string, newKe
 // the second element is the converted key used in backend
 const specialFilterKeysConvertor = new Map([
   [SIGHTED_BY_FILTER, buildRefRelationKey(STIX_SIGHTING_RELATIONSHIP)],
-  [INSTANCE_FILTER, buildRefRelationKey('*')],
+  [INSTANCE_FILTER, buildRefRelationKey('*')], // Only used for entities
   [CONTEXT_ENTITY_ID_FILTER, 'context_data.id'],
   [CONTEXT_ENTITY_TYPE_FILTER, 'context_data.entity_type'],
   [CONTEXT_CREATOR_FILTER, 'context_data.creator_id'],

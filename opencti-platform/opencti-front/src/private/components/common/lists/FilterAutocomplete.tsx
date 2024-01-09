@@ -111,7 +111,6 @@ const FilterAutocomplete: FunctionComponent<FilterAutocompleteProps> = (props) =
     'toId',
     'objects',
     'targets',
-    'elementId',
     'indicates',
     'contextEntityId',
   ].includes(filterKey);

@@ -190,7 +190,7 @@ export const buildRelationsFilter = <T extends BasicStoreCommon>(relationshipTyp
   // This situation doesnt allow use to use a simple key: elementID
   // We need to change the key and migrate the current elementId stored in the database
   if (elementId && optsElementIds.length > 0) {
-    filtersFromOptionsContent.push({ key: ['connections'], nested: [{ key: 'internal_id', values: optsElementIds }], values: [] });
+    filtersFromOptionsContent.push({ key: ['fromOrToId'], values: optsElementIds });
   }
   if (elementWithTargetTypes && isNotEmptyField(elementWithTargetTypes)) {
     filtersFromOptionsContent.push({ key: ['elementWithTargetTypes'], values: elementWithTargetTypes });
