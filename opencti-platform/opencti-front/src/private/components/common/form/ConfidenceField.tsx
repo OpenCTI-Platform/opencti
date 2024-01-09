@@ -20,8 +20,10 @@ const useStyles = makeStyles(() => ({
 }));
 
 interface ConfidenceFieldProps {
+  name?: string;
+  label?: string;
   variant?: string;
-  onSubmit?: (name: string, value: string | number | number[]) => void;
+  onSubmit?: (name: string, value: string) => void;
   onFocus?: (name: string, value: string) => void;
   editContext?: readonly (GenericContext | null)[] | null;
   containerStyle?: Record<string, string | number>;
@@ -30,6 +32,8 @@ interface ConfidenceFieldProps {
 }
 
 const ConfidenceField: FunctionComponent<ConfidenceFieldProps> = ({
+  name = 'confidence',
+  label,
   variant,
   onFocus,
   onSubmit,
@@ -39,6 +43,7 @@ const ConfidenceField: FunctionComponent<ConfidenceFieldProps> = ({
   disabled,
 }) => {
   const { t_i18n } = useFormatter();
+  const finalLabel = label || t_i18n('Confidence level');
   const classes = useStyles();
   return (
     <Alert
@@ -54,9 +59,9 @@ const ConfidenceField: FunctionComponent<ConfidenceFieldProps> = ({
         containerstyle={containerStyle}
         fullWidth={true}
         entityType={entityType}
-        attributeName="confidence"
-        name={'confidence'}
-        label={t_i18n('Confidence level')}
+        attributeName={name}
+        name={name}
+        label={finalLabel}
         onFocus={onFocus}
         onSubmit={onSubmit}
         editContext={editContext}

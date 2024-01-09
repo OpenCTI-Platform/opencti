@@ -86,7 +86,7 @@ export const BoundaryRoute = (props) => {
 };
 
 BoundaryRoute.propTypes = {
-  component: PropTypes.func,
+  component: PropTypes.oneOfType([PropTypes.func, PropTypes.object]),
   display: PropTypes.object,
   exact: PropTypes.bool,
   path: PropTypes.string,
