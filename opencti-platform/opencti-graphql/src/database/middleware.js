@@ -200,6 +200,7 @@ import { generateCreateMessage, generateUpdateMessage } from './generate-message
 import { confidence } from '../schema/attribute-definition';
 import { ENTITY_TYPE_INDICATOR } from '../modules/indicator/indicator-types';
 import { FilterOperator } from '../generated/graphql';
+import { INSTANCE_FILTER } from '../utils/filtering/filtering-constants';
 
 // region global variables
 const MAX_BATCH_SIZE = 300;
@@ -2514,16 +2515,16 @@ export const buildDynamicFilterArgsContent = (inputFilters) => {
   // Extract elementId and relationship_type
   const elementId = R.head(filters
     .filter((n) => (Array.isArray(n.key)
-      ? R.head(n.key) === 'rel_*.internal_id'
-      : n.key === 'rel_*.internal_id')))?.values || null;
+      ? R.head(n.key) === INSTANCE_FILTER
+      : n.key === INSTANCE_FILTER)))?.values || null;
   const relationship_type = R.head(filters.filter((n) => (Array.isArray(n.key) ? R.head(n.key) === 'relationship_type' : n.key === 'relationship_type')))?.values || null;
   // Build filter without it
-  let dynamicFilters = filters.filter((n) => !['rel_*.internal_id', 'relationship_type'].includes(Array.isArray(n.key) ? R.head(n.key) : n.key));
+  let dynamicFilters = filters.filter((n) => ![INSTANCE_FILTER, 'relationship_type'].includes(Array.isArray(n.key) ? R.head(n.key) : n.key));
   if (isNotEmptyField(elementId)) {
     // In case of element id, we look for a specific entity used by relationships independent of the direction
     // To do that we need to lookup the element inside the rel_ fields that represent the relationships connections
     // that are denormalized at relation creation.
-    // If relation types are also in the query, we filter on specific rel_[TYPE], if not, using a wilcard.
+    // If relation types are also in the query, we filter on specific rel_[TYPE], if not, using a wildcard.
     if (isNotEmptyField(relationship_type)) {
       const relationshipFilterKeys = relationship_type.map((n) => buildRefRelationKey(n));
       dynamicFilters = [...dynamicFilters, {
