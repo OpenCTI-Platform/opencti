@@ -80,6 +80,8 @@ const StixRelationshipsMultiAreaChart = ({
         toTypes: dataSelectionToTypes,
         field: dataSelectionDateAttribute,
         filters,
+        dynamicFrom: selection.dynamicFrom,
+        dynamicTo: selection.dynamicTo,
       };
     });
     let formatter = fsd;
