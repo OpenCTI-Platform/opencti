@@ -84,11 +84,20 @@ export const findAll = async (context, user, args) => {
     // To do that we need to lookup the element inside the rel_ fields that represent the relationships connections
     // that are denormalized at relation creation.
     // If relation types are also in the query, we filter on specific rel_[TYPE], if not, using a wilcard.
+    // !!! imbricate this contextual filter in a new filter group, mode AND the user's filters !!!
     if (isNotEmptyField(args.relationship_type)) {
       const relationshipFilterKeys = args.relationship_type.map((n) => buildRefRelationKey(n));
-      filters = addFilter(filters, relationshipFilterKeys, args.elementId);
+      filters = {
+        mode: 'and',
+        filters: [{ key: relationshipFilterKeys, values: args.elementId, mode: 'or', operator: 'eq' }],
+        filterGroups: filters ? [filters] : [],
+      };
     } else {
-      filters = addFilter(filters, buildRefRelationKey('*'), args.elementId);
+      filters = {
+        mode: 'and',
+        filters: [{ key: buildRefRelationKey('*'), values: args.elementId, mode: 'or', operator: 'eq' }],
+        filterGroups: filters ? [filters] : [],
+      };
     }
   }
   if (args.globalSearch) {
