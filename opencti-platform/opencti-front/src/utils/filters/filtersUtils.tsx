@@ -361,7 +361,7 @@ const sanitizeFilterGroupKeysForBackend = (
 ): GqlFilterGroup => {
   return {
     ...filterGroup,
-    filters: filterGroup?.filters?.filter((f) => f.values.length > 0)
+    filters: filterGroup?.filters?.filter((f) => f.values.length > 0 || ['nil', 'not_nil'].includes(f.operator))
       .map((f) => {
         const transformFilter = {
           ...f,
