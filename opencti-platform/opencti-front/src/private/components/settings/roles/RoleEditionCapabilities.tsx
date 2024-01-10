@@ -156,8 +156,8 @@ RoleEditionCapabilitiesComponentProps
                   <LocalPoliceOutlined fontSize="small" />
                 </ListItemIcon>
                 <ListItemText primary={t_i18n(capability.description)} />
-                {overrides.length > 0 &&
-                  <Tooltip title={`${t_i18n('Except for')} ${overrides.join(', ')}`} placement='left'>
+                {overrides.length > 0
+                  && <Tooltip title={`${t_i18n('Except for')} ${overrides.join(', ')}`} placement='left'>
                     <ErrorIcon color='error' />
                   </Tooltip>
                 }

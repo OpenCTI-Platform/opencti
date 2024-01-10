@@ -76,43 +76,43 @@ class ThreatActorIndividualLocationsComponent extends Component {
                     (n) => n?.length === 2,
                   ),
                 );
-                return (
-                  <ListItem
-                    key={location.id}
-                    dense={true}
-                    divider={true}
-                    button={true}
-                    component={Link}
-                    to={`${link}/${location.id}`}
-                  >
-                    <ListItemIcon>
-                      {flag ? (
-                        <img
-                          style={{ width: 20 }}
-                          src={`${APP_BASE_PATH}/static/flags/4x3/${flag.toLowerCase()}.svg`}
-                          alt={location.name}
-                        />
-                      ) : (
-                        <ItemIcon type={location.entity_type} />
-                      )}
-                    </ListItemIcon>
-                    <ListItemText primary={location.name} />
-                    {types.includes('manual') ? (
-                      <ListItemSecondaryAction style={{ right: 0 }} >
-                        <KnowledgeSecurity needs={[KNOWLEDGE_KNUPDATE]} entity='Threat-Actor-Individual'>
-                          <IconButton
-                            aria-label="Remove"
-                            onClick={() => this.removeLocation(locationEdge)}
-                            size="large"
-                          >
-                            <LinkOff />
-                          </IconButton>
-                          </KnowledgeSecurity>
-                      </ListItemSecondaryAction>
-                    ) : <AutoFix fontSize="small" style={{ marginRight: 13 }}/>}
-                  </ListItem>
-                );
-              })}
+              return (
+                <ListItem
+                  key={location.id}
+                  dense={true}
+                  divider={true}
+                  button={true}
+                  component={Link}
+                  to={`${link}/${location.id}`}
+                >
+                  <ListItemIcon>
+                    {flag ? (
+                      <img
+                        style={{ width: 20 }}
+                        src={`${APP_BASE_PATH}/static/flags/4x3/${flag.toLowerCase()}.svg`}
+                        alt={location.name}
+                      />
+                    ) : (
+                      <ItemIcon type={location.entity_type} />
+                    )}
+                  </ListItemIcon>
+                  <ListItemText primary={location.name} />
+                  {types.includes('manual') ? (
+                    <ListItemSecondaryAction style={{ right: 0 }} >
+                      <KnowledgeSecurity needs={[KNOWLEDGE_KNUPDATE]} entity='Threat-Actor-Individual'>
+                        <IconButton
+                          aria-label="Remove"
+                          onClick={() => this.removeLocation(locationEdge)}
+                          size="large"
+                        >
+                          <LinkOff />
+                        </IconButton>
+                      </KnowledgeSecurity>
+                    </ListItemSecondaryAction>
+                  ) : <AutoFix fontSize="small" style={{ marginRight: 13 }}/>}
+                </ListItem>
+              );
+            })}
           </List>
         </FieldOrEmpty>
       </>

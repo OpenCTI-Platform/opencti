@@ -74,7 +74,7 @@ class SectorSubSectorsComponent extends Component {
                 <ListItemText primary={subSector.name} />
                 {types.includes('manual') ? (
                   <ListItemSecondaryAction>
-                    <Security needs={[KNOWLEDGE_KNUPDATE]}>
+                    <KnowledgeSecurity needs={[KNOWLEDGE_KNUPDATE]} entity='Sector'>
                       <IconButton
                         aria-label="Remove"
                         onClick={this.removeSubSector.bind(this, subSectorEdge)}
@@ -82,7 +82,7 @@ class SectorSubSectorsComponent extends Component {
                       >
                         <LinkOff />
                       </IconButton>
-                    </Security>
+                    </KnowledgeSecurity>
                   </ListItemSecondaryAction>
                 ) : <AutoFix fontSize="small" style={{ marginRight: 13 }}/>}
               </ListItem>
