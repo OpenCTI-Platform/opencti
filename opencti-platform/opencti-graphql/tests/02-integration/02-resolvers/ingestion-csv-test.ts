@@ -37,7 +37,7 @@ describe('CSV ingestion resolver standard behavior', () => {
         authentication_type: 'none',
         name: 'Single column',
         uri: 'https://lists.blocklist.de/lists/all.txt',
-        csvMapper: [singleColumnCsvMapperId],
+        csvMapper_id: singleColumnCsvMapperId,
         user_id: ADMIN_USER.id
       }
     };
