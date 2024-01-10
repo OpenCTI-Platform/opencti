@@ -9,8 +9,7 @@ import CodeBlock from '@components/common/CodeBlock';
 import { IngestionCsvMapperTestDialogQuery$data } from '@components/data/ingestionCsv/__generated__/IngestionCsvMapperTestDialogQuery.graphql';
 import { Option } from '@components/common/form/ReferenceField';
 import TextField from '@mui/material/TextField';
-import Typography from '@mui/material/Typography';
-import { InformationOutline } from 'mdi-material-ui';
+import Alert from '@mui/material/Alert';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import { useFormatter } from '../../../../components/i18n';
 import { fetchQuery, handleError } from '../../../../relay/environment';
@@ -99,18 +98,15 @@ const IngestionCsvMapperTestDialog: FunctionComponent<IngestionCsvMapperTestDial
           />
         </Box>
         <Box>
-          <Typography
-            variant="h3"
-            gutterBottom={true}
-            style={{ float: 'left' }}
-          >
-            {t('Only the first 50 lines will be tested')}
-          </Typography>
-          <InformationOutline
-            fontSize="small"
-            color="primary"
-            style={{ cursor: 'default', margin: '-2px 0 0 10px' }}
-          />
+          <div style={{ width: '100%', marginTop: 10 }}>
+            <Alert
+              severity="info"
+              variant="outlined"
+              style={{ padding: '0px 10px 0px 10px' }}
+            >
+              {t('Please, note that the test will be run on the 50 first lines')}
+            </Alert>
+          </div>
         </Box>
         <Box
           sx={{ display: 'inline-flex', textAlign: 'center', marginTop: '8px', alignItems: 'baseline' }}
