@@ -30,7 +30,15 @@ import useQueryLoading from '../../../../../../utils/hooks/useQueryLoading';
 import { EntityStixCoreRelationshipsContextualViewLine_node$data } from '../__generated__/EntityStixCoreRelationshipsContextualViewLine_node.graphql';
 import { resolveLink } from '../../../../../../utils/Entity';
 import type { Theme } from '../../../../../../components/Theme';
-import { addFilter, cleanFilters, Filter, injectEntityTypeFilterInFilterGroup, findFilterFromKey, removeFilter } from '../../../../../../utils/filters/filtersUtils';
+import {
+  addFilter,
+  cleanFilters,
+  Filter,
+  injectEntityTypeFilterInFilterGroup,
+  findFilterFromKey,
+  removeFilter,
+  removeIdFromFilterGroupObject,
+} from '../../../../../../utils/filters/filtersUtils';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   chip: {
@@ -126,7 +134,6 @@ const EntityStixCoreRelationshipsIndicatorsContextualViewComponent: FunctionComp
     searchTerm,
     sortBy,
     orderAsc,
-    openExports,
   } = viewStorage;
 
   const availableFilterKeys = [
@@ -230,7 +237,6 @@ const EntityStixCoreRelationshipsIndicatorsContextualViewComponent: FunctionComp
     .filter((r) => isNotEmptyField(r)) as { id: string }[] ?? [];
 
   const cleanedFilters = cleanFilters(filters, availableFilterKeys);
-
   const finalFilters = addFilter(
     removeFilter(cleanedFilters, ['entity_type', 'containers']),
     'objects',
@@ -241,8 +247,7 @@ const EntityStixCoreRelationshipsIndicatorsContextualViewComponent: FunctionComp
     search: searchTerm,
     orderBy: (sortBy && (sortBy in dataColumns) && dataColumns[sortBy].isSortable) ? sortBy : 'name',
     orderMode: orderAsc ? 'asc' : 'desc',
-    containersIds: containers.map((r) => r.id),
-    filters: finalFilters,
+    filters: removeIdFromFilterGroupObject(finalFilters),
   } as unknown as EntityStixCoreRelationshipsIndicatorsContextualViewLinesQuery$variables; // Because of FilterMode
 
   const backgroundTaskFilters = injectEntityTypeFilterInFilterGroup(finalFilters, 'Indicator');
@@ -276,8 +281,6 @@ const EntityStixCoreRelationshipsIndicatorsContextualViewComponent: FunctionComp
         selectAll={selectAll}
         keyword={searchTerm}
         displayImport
-        handleToggleExports={helpers.handleToggleExports}
-        openExports={openExports}
         exportEntityType={'Stix-Core-Object'}
         iconExtension
         filters={cleanedFilters}

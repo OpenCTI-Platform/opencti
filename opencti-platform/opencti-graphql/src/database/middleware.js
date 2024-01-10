@@ -236,7 +236,7 @@ const checkIfInferenceOperationIsValid = (user, element) => {
 
 // Listing handle
 const batchListThrough = async (context, user, sources, sourceSide, relationType, targetEntityType, opts = {}) => {
-  const { paginate = true, withInferences = true, batched = true, first = null, search = null, elementId = null } = opts;
+  const { paginate = true, withInferences = true, batched = true, first = null, search = null } = opts;
   const opposite = sourceSide === 'from' ? 'to' : 'from';
   // USING ELASTIC
   const ids = Array.isArray(sources) ? sources : [sources];
@@ -273,13 +273,7 @@ const batchListThrough = async (context, user, sources, sourceSide, relationType
   });
   // endregion
   // region Resolved all targets for all relations
-  // Filter on element id if necessary
-  // TODO replace that post filters by a real filters in previous elList
-  let targetIds = R.uniq(relations.map((s) => s[`${opposite}Id`]));
-  if (isNotEmptyField(opts.elementId)) {
-    const elementIds = Array.isArray(elementId) ? elementId : [elementId];
-    targetIds = targetIds.filter((id) => elementIds.includes(id));
-  }
+  const targetIds = R.uniq(relations.map((s) => s[`${opposite}Id`]));
   const targets = await elFindByIds(context, user, targetIds, opts);
   // endregion
   // region Enrich all targets with internal types [manual and/or inferred]

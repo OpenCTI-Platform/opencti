@@ -42,7 +42,7 @@ const useStyles = makeStyles<Theme>((theme) => ({
 
 const contextualViewLineFragment = graphql`
   fragment EntityStixCoreRelationshipsContextualViewLine_node on StixCoreObject
-  @argumentDefinitions(containersIds: { type: "[String]" } ) {
+  @argumentDefinitions {
     id
     entity_type
     created_at
@@ -71,7 +71,7 @@ const contextualViewLineFragment = graphql`
       name
     }
     ... on StixCoreObject {
-      containers (elementId: $containersIds) {
+      containers {
         edges {
           node {
             id

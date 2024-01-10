@@ -12,7 +12,8 @@ import { computeTargetStixCyberObservableTypes, computeTargetStixDomainObjectTyp
 import { PaginationLocalStorage } from '../../../../../utils/hooks/useLocalStorage';
 import { DataColumns, PaginationOptions } from '../../../../../components/list_lines';
 import { EntityStixCoreRelationshipsEntitiesViewLinesPaginationQuery$variables } from './__generated__/EntityStixCoreRelationshipsEntitiesViewLinesPaginationQuery.graphql';
-import { cleanFilters, removeIdFromFilterGroupObject, injectEntityTypeFilterInFilterGroup } from '../../../../../utils/filters/filtersUtils';
+import { cleanFilters, removeIdFromFilterGroupObject, injectEntityTypeFilterInFilterGroup, removeFilter, findFilterFromKey } from '../../../../../utils/filters/filtersUtils';
+import { isEmptyField } from '../../../../../utils/utils';
 
 interface EntityStixCoreRelationshipsEntitiesViewProps {
   entityId: string;
@@ -122,23 +123,31 @@ EntityStixCoreRelationshipsEntitiesViewProps
     },
   };
 
+  const typesFromFilter = findFilterFromKey(filters?.filters ?? [], 'relationship_type')?.values;
+  const selectedTypes = isEmptyField(typesFromFilter) ? relationshipTypes : typesFromFilter;
+  const finalFilters = cleanFilters(removeFilter(filters, ['relationship_type']), availableFilterKeys);
+
   const paginationOptions = {
     types: stixCoreObjectTypes,
-    relationship_type: relationshipTypes,
+    relationship_type: selectedTypes,
     elementId: entityId,
     search: searchTerm,
-    orderBy:
-            sortBy && sortBy in dataColumns && dataColumns[sortBy].isSortable
-              ? sortBy
-              : 'name',
+    orderBy: sortBy && sortBy in dataColumns && dataColumns[sortBy].isSortable ? sortBy : 'name',
     orderMode: orderAsc ? 'asc' : 'desc',
-    filters: cleanFilters(removeIdFromFilterGroupObject(filters), availableFilterKeys),
+    filters: removeIdFromFilterGroupObject(finalFilters),
   } as unknown as EntityStixCoreRelationshipsEntitiesViewLinesPaginationQuery$variables; // Because of FilterMode
 
-  const backgroundTaskFilters = injectEntityTypeFilterInFilterGroup(
-    filters,
-    ['Stix-Core-Object'],
-  );
+  // const backgroundTaskFilters = {
+  //     ...filters,
+  //     entity_type:
+  //       selectedTypes?.length > 0
+  //         ? selectedTypes.map((n) => ({ id: n, value: n }))
+  //         : [{ id: 'Stix-Core-Object', value: 'Stix-Core-Object' }],
+  //     [`rel_${selectedRelationshipTypes.at(0)}.*`]: [
+  //       { id: entityId, value: entityId },
+  //     ],
+  //   };
+  const backgroundTaskFilters = injectEntityTypeFilterInFilterGroup(filters, ['Stix-Core-Object']);
 
   const {
     selectedElements,

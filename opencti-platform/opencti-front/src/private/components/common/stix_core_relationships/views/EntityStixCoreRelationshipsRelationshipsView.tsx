@@ -70,7 +70,6 @@ const EntityStixCoreRelationshipsRelationshipsView: FunctionComponent<EntityStix
 
   const availableFilterKeys = [
     'relationship_type',
-    'entity_type',
     'objectMarking',
     'confidence',
     'objectLabel',
@@ -135,7 +134,7 @@ const EntityStixCoreRelationshipsRelationshipsView: FunctionComponent<EntityStix
     },
   };
 
-  const selectedTypes = findFilterFromKey(filters?.filters ?? [], 'entity_type')?.values ?? stixCoreObjectTypes;
+  const selectedTypes = stixCoreObjectTypes;
   const selectedRelationshipTypes = findFilterFromKey(filters?.filters ?? [], 'relationship_type')?.values ?? relationshipTypes;
 
   let paginationOptions = {
@@ -235,9 +234,7 @@ const EntityStixCoreRelationshipsRelationshipsView: FunctionComponent<EntityStix
         openExports={openExports}
         exportEntityType="stix-core-relationship"
         noPadding={true}
-        handleChangeView={
-                    handleChangeView || storageHelpers.handleChangeView
-                }
+        handleChangeView={handleChangeView || storageHelpers.handleChangeView}
         enableNestedView={enableNestedView}
         enableContextualView={enableContextualView}
         disableCards={true}

@@ -556,20 +556,23 @@ export const addFilter = (
   operator = 'eq',
   mode = 'or',
 ): FilterGroup | undefined => {
-  if (!filters) {
-    return undefined;
+  const filterFromParameters = {
+    id: uuid(),
+    key,
+    values: Array.isArray(value) ? value : [value],
+    operator,
+    mode,
+  };
+  if (!filters) { // Add on nothing = create a new filter
+    return {
+      mode,
+      filters: [filterFromParameters],
+      filterGroups: [],
+    };
   }
   return {
     mode: filters?.mode ?? 'and',
-    filters: (filters?.filters ?? []).concat([
-      {
-        id: uuid(),
-        key,
-        values: Array.isArray(value) ? value : [value],
-        operator,
-        mode,
-      },
-    ]),
+    filters: (filters?.filters ?? []).concat([filterFromParameters]),
     filterGroups: filters?.filterGroups ?? [],
   };
 };

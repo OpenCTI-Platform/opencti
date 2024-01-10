@@ -139,7 +139,6 @@ const EntityStixCoreRelationshipsContextualViewComponent: FunctionComponent<Enti
     searchTerm,
     sortBy,
     orderAsc,
-    openExports,
   } = viewStorage;
 
   const availableFilterKeys = [
@@ -250,18 +249,17 @@ const EntityStixCoreRelationshipsContextualViewComponent: FunctionComponent<Enti
     .filter((r) => isNotEmptyField(r)) as { id: string }[] ?? [];
 
   const cleanedFilters = cleanFilters(filters, availableFilterKeys);
+
   const finalFilters = addFilter(
     removeFilter(cleanedFilters, ['entity_type', 'containers']),
     'objects',
     handleFilterOnContainers(containers, cleanedFilters?.filters ?? []),
   );
-
   const paginationOptions = {
     search: searchTerm,
     orderBy: (sortBy && (sortBy in dataColumns) && dataColumns[sortBy].isSortable) ? sortBy : 'entity_type',
     orderMode: orderAsc ? 'asc' : 'desc',
     types: stixCoreObjectTypes,
-    containersIds: containers.map((r) => r.id),
     filters: removeIdFromFilterGroupObject(finalFilters),
   } as unknown as EntityStixCoreRelationshipsContextualViewLinesQuery$variables; // Because of FilterMode
   const selectedTypes = findFilterFromKey(filters?.filters ?? [], 'entity_type')?.values ?? undefined;
@@ -303,8 +301,6 @@ const EntityStixCoreRelationshipsContextualViewComponent: FunctionComponent<Enti
         selectAll={selectAll}
         keyword={searchTerm}
         displayImport={true}
-        handleToggleExports={helpers.handleToggleExports}
-        openExports={openExports}
         exportEntityType={'Stix-Core-Object'}
         iconExtension={true}
         filters={cleanedFilters}

@@ -38,10 +38,13 @@ const StixCoreObjectsExportsContentComponent = ({
   if (paginationOptions?.filters && paginationOptions?.types && paginationOptions.types.length > 0) {
     paginationOptionsForExport = {
       ...paginationOptions,
-      filters: [
-        ...paginationOptionsForExport.filters,
-        { key: 'entity_type', values: paginationOptionsForExport.types },
-      ],
+      filters: {
+        ...paginationOptions.filters,
+        filters: [
+          ...paginationOptions.filters.filters,
+          { key: 'entity_type', values: paginationOptionsForExport.types },
+        ],
+      },
     };
   }
   return (
