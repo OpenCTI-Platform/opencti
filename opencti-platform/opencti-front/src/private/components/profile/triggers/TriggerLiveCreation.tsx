@@ -388,13 +388,13 @@ const TriggerLiveCreation: FunctionComponent<TriggerLiveCreationProps> = ({
       elevation={1}
       sx={{ zIndex: 1202 }}
       classes={{ paper: classes.drawerPaper }}
-      onClose={handleClose}
+      onClose={onReset}
     >
       <div className={classes.header}>
         <IconButton
           aria-label="Close"
           className={classes.closeButton}
-          onClick={handleClose}
+          onClick={onReset}
           size="large"
           color="primary"
         >
@@ -448,7 +448,7 @@ const TriggerLiveCreation: FunctionComponent<TriggerLiveCreationProps> = ({
     <Dialog
       disableRestoreFocus={true}
       open={open ?? false}
-      onClose={handleClose}
+      onClose={onReset}
       PaperProps={{ elevation: 1 }}
     >
       <Formik
