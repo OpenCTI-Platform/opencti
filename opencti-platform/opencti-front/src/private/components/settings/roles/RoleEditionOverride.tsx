@@ -101,7 +101,7 @@ const RoleEditionOverrideComponent: FunctionComponent<
 RoleEditionOverrideComponentProps
 > = ({ role, queryRef, subTypesQueryRef }) => {
   const classes = useStyles();
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   const { capabilities } = usePreloadedQuery<RoleEditionCapabilitiesLinesSearchQuery>(
     roleEditionCapabilitiesLinesSearch,
     queryRef,
@@ -139,7 +139,7 @@ RoleEditionOverrideComponentProps
             backgroundColor: 'transparent',
           }}
         >
-          {t('Override capabilities for ')}
+          {t_i18n('Override capabilities for ')}
           <Select
             style={{ width: '30%' }}
             value={selected}
@@ -227,7 +227,7 @@ RoleEditionOverrideComponentProps
                       <ListItemIcon style={{ minWidth: 32 }}>
                         <LocalPoliceOutlined fontSize="small" />
                       </ListItemIcon>
-                      <ListItemText primary={t(capability.description)} />
+                      <ListItemText primary={t_i18n(capability.description)} />
                       <ListItemSecondaryAction>
                         <Checkbox
                           onChange={(event) => {

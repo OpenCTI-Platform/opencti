@@ -110,7 +110,7 @@ class ThreatActorGroupLocationsComponent extends Component {
                       >
                         <LinkOff />
                       </IconButton>
-                      </KnowledgeSecurity>
+                    </KnowledgeSecurity>
                   </ListItemSecondaryAction>
                 ) : <AutoFix fontSize="small" style={{ marginRight: 13 }}/>}
               </ListItem>
