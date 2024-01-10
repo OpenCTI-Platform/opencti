@@ -128,7 +128,7 @@ const IngestionCsvMapperTestDialog: FunctionComponent<IngestionCsvMapperTestDial
         </Box>
         <Box sx={{ marginTop: '8px' }}>
           <CodeBlock
-            code={result?.test_mapper?.objects || t('You will find here the result in JSON format')}
+            code={result?.test_mapper?.objects || t('You will find here the result of the first 50 lines in JSON format.')}
             language={'json'}
           />
         </Box>
