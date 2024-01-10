@@ -9,20 +9,16 @@ import { graphql } from 'react-relay';
 import * as R from 'ramda';
 import Tooltip from '@mui/material/Tooltip';
 import { InformationOutline } from 'mdi-material-ui';
+import Box from '@mui/material/Box';
 import Drawer, { DrawerVariant } from '../../common/drawer/Drawer';
 import inject18n from '../../../../components/i18n';
 import { commitMutation, MESSAGING$ } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
 import Filters from '../../common/lists/Filters';
-import {
-  constructHandleAddFilter,
-  constructHandleRemoveFilter,
-  filtersAfterSwitchLocalMode,
-  emptyFilterGroup,
-  serializeFilterGroupForBackend,
-} from '../../../../utils/filters/filtersUtils';
+import { serializeFilterGroupForBackend } from '../../../../utils/filters/filtersUtils';
 import FilterIconButton from '../../../../components/FilterIconButton';
 import { insertNode } from '../../../../utils/store';
+import useFiltersState from '../../../../utils/filters/useFiltersState';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -91,7 +87,8 @@ const RetentionCreationValidation = (t) => Yup.object().shape({
 
 const RetentionCreation = (props) => {
   const { t, classes } = props;
-  const [filters, setFilters] = useState(emptyFilterGroup);
+  const [filters, helpers] = useFiltersState();
+
   const [verified, setVerified] = useState(false);
 
   const onSubmit = (values, { setSubmitting, resetForm }) => {
@@ -142,35 +139,11 @@ const RetentionCreation = (props) => {
     });
   };
 
-  const handleAddFilter = (key, id, op = 'eq') => {
-    setVerified(false);
-    setFilters(constructHandleAddFilter(filters, key, id, op));
-  };
-
-  const handleRemoveFilter = (key, op = 'eq') => {
-    setVerified(false);
-    setFilters(constructHandleRemoveFilter(filters, key, op));
-  };
-
-  const handleSwitchLocalMode = (localFilter) => {
-    if (filters) {
-      setFilters(filtersAfterSwitchLocalMode(filters, localFilter));
-    }
-  };
-  const handleSwitchGlobalMode = () => {
-    if (filters) {
-      setFilters({
-        ...filters,
-        mode: filters.mode === 'and' ? 'or' : 'and',
-      });
-    }
-  };
-
   return (
     <Drawer
       title={t('Create a retention policy')}
       variant={DrawerVariant.createWithPanel}
-      onClose={() => setFilters(emptyFilterGroup)}
+      onClose={helpers.handleClearAllFilters}
     >
       {({ onClose }) => (
         <Formik
@@ -214,9 +187,11 @@ const RetentionCreation = (props) => {
                   ),
                 }}
               />
-              <div style={{ paddingTop: 35 }}>
+              <Box sx={{ paddingTop: 4,
+                display: 'flex',
+                gap: 1 }}
+              >
                 <Filters
-                  variant="text"
                   availableFilterKeys={[
                     'entity_type',
                     'workflow_id',
@@ -240,21 +215,15 @@ const RetentionCreation = (props) => {
                     'fromTypes',
                     'toTypes',
                   ]}
-                  currentFilters={[]}
-                  handleAddFilter={handleAddFilter}
+                  helpers={helpers}
                   noDirectFilters={true}
                 />
-              </div>
-              <div className="clearfix" />
+              </Box>
               <FilterIconButton
                 filters={filters}
-                handleRemoveFilter={handleRemoveFilter}
-                handleSwitchGlobalMode={handleSwitchGlobalMode}
-                handleSwitchLocalMode={handleSwitchLocalMode}
-                styleNumber={2}
+                helpers={helpers}
                 redirection
               />
-              <div className="clearfix" />
               <div className={classes.buttons}>
                 <Button
                   variant="contained"
