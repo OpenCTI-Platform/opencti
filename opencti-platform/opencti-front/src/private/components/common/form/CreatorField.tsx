@@ -27,7 +27,7 @@ const useStyles = makeStyles(() => ({
 interface CreatorFieldProps {
   name: string;
   label: string;
-  isOptionEqualToValue: (option: Option, value: string) => boolean;
+  isOptionEqualToValue?: (option: Option, value: string) => boolean;
   onChange?: (name: string, value: Option) => void;
   containerStyle?: Record<string, string | number>;
   helpertext?: string;
