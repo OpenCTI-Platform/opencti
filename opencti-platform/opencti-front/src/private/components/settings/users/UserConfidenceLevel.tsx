@@ -4,11 +4,11 @@ import { InfoOutlined } from '@mui/icons-material';
 import Tooltip from '@mui/material/Tooltip';
 import { useFormatter } from '../../../../components/i18n';
 
-type UserConfidenceLevelFieldProps = {
+type UserConfidenceLevelProps = {
   userConfidenceLevel: User_user$data['user_confidence_level']
 };
 
-const UserConfidenceLevel: React.FC<UserConfidenceLevelFieldProps> = ({ userConfidenceLevel }) => {
+const UserConfidenceLevel: React.FC<UserConfidenceLevelProps> = ({ userConfidenceLevel }) => {
   const { t } = useFormatter();
 
   const overrides = userConfidenceLevel.overrides
