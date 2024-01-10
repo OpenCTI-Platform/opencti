@@ -3,9 +3,10 @@ import ListItemText from '@mui/material/ListItemText';
 import MenuItem from '@mui/material/MenuItem';
 import { Field, Form, Formik } from 'formik';
 import { FormikConfig } from 'formik/dist/types';
-import React, { FunctionComponent, useState } from 'react';
+import React, { FunctionComponent, useEffect } from 'react';
 import { graphql, useFragment, useMutation } from 'react-relay';
 import * as Yup from 'yup';
+import Box from '@mui/material/Box';
 import AutocompleteField from '../../../../components/AutocompleteField';
 import FilterIconButton from '../../../../components/FilterIconButton';
 import { useFormatter } from '../../../../components/i18n';
@@ -15,24 +16,16 @@ import TextField from '../../../../components/TextField';
 import TimePickerField from '../../../../components/TimePickerField';
 import { convertEventTypes, convertNotifiers, convertTriggers, filterEventTypesOptions, instanceEventTypesOptions } from '../../../../utils/edition';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
-import {
-  constructHandleAddFilter,
-  constructHandleRemoveFilter,
-  deserializeFilterGroupForFrontend,
-  Filter,
-  filtersAfterSwitchLocalMode,
-  emptyFilterGroup,
-  serializeFilterGroupForBackend,
-} from '../../../../utils/filters/filtersUtils';
+import { deserializeFilterGroupForFrontend, serializeFilterGroupForBackend } from '../../../../utils/filters/filtersUtils';
 import { dayStartDate, formatTimeForToday, parse } from '../../../../utils/Time';
 import NotifierField from '../../common/form/NotifierField';
 import { Option } from '../../common/form/ReferenceField';
-import FilterAutocomplete, { FilterAutocompleteInputValue } from '../../common/lists/FilterAutocomplete';
 import Filters from '../../common/lists/Filters';
 import { TriggerEditionOverview_trigger$key } from './__generated__/TriggerEditionOverview_trigger.graphql';
 import { TriggerEventType } from './__generated__/TriggerLiveCreationKnowledgeMutation.graphql';
 import { TriggersLinesPaginationQuery$variables } from './__generated__/TriggersLinesPaginationQuery.graphql';
 import TriggersField from './TriggersField';
+import useFiltersState from '../../../../utils/filters/useFiltersState';
 
 export const triggerMutationFieldPatch = graphql`
   mutation TriggerEditionOverviewFieldPatchMutation(
@@ -95,68 +88,21 @@ TriggerEditionOverviewProps
 > = ({ data, handleClose, paginationOptions }) => {
   const { t } = useFormatter();
   const trigger = useFragment(triggerEditionOverviewFragment, data);
-  const filters = deserializeFilterGroupForFrontend(trigger.filters) ?? undefined;
   const [commitFieldPatch] = useMutation(triggerMutationFieldPatch);
-  const [instanceFilters, setInstanceFilters] = useState<
-  FilterAutocompleteInputValue[]
-  >([]);
-  const handleAddFilter = (k: string, id: string, op = 'eq') => {
-    const newBaseFilters = constructHandleAddFilter(filters, k, id, op);
-    commitFieldPatch({
-      variables: {
-        id: trigger.id,
-        input: {
-          key: 'filters',
-          value: serializeFilterGroupForBackend(newBaseFilters),
-        },
-      },
-    });
-  };
-  const handleRemoveFilter = (k: string, op = 'eq') => {
-    const newBaseFilters = constructHandleRemoveFilter(filters, k, op);
-    commitFieldPatch({
-      variables: {
-        id: trigger.id,
-        input: {
-          key: 'filters',
-          value: serializeFilterGroupForBackend(newBaseFilters),
-        },
-      },
-    });
-  };
+  const [filters, helpers] = useFiltersState(deserializeFilterGroupForFrontend(trigger.filters) ?? undefined);
 
-  const handleSwitchLocalMode = (localFilter: Filter) => {
-    const newBaseFilters = filtersAfterSwitchLocalMode(filters, localFilter);
-    if (newBaseFilters) {
-      commitFieldPatch({
-        variables: {
-          id: trigger.id,
-          input: {
-            key: 'filters',
-            value: serializeFilterGroupForBackend(newBaseFilters),
-          },
-        },
-      });
-    }
-  };
-
-  const handleSwitchGlobalMode = () => {
-    const newBaseFilters = filters
-      ? {
-        ...filters,
-        mode: filters.mode === 'and' ? 'or' : 'and',
-      }
-      : emptyFilterGroup;
+  useEffect(() => {
     commitFieldPatch({
       variables: {
         id: trigger.id,
         input: {
           key: 'filters',
-          value: serializeFilterGroupForBackend(newBaseFilters),
+          value: serializeFilterGroupForBackend(filters),
         },
       },
     });
-  };
+  }, [filters]);
+
   const onSubmit: FormikConfig<TriggerEditionFormValues>['onSubmit'] = (
     values,
     { setSubmitting },
@@ -470,66 +416,55 @@ TriggerEditionOverviewProps
           {trigger.trigger_type === 'live' && (
             <span>
               {trigger.instance_trigger ? (
-                <div style={fieldSpacingContainerStyle}>
-                  <FilterAutocomplete
-                    filterKey={'connectedToId'}
+                <Box sx={{ paddingTop: 4,
+                  display: 'flex',
+                  gap: 1 }}
+                >
+                  <Filters
+                    availableFilterKeys={[
+                      'connectedToId',
+                    ]}
                     searchContext={{ entityTypes: ['Stix-Core-Object'] }}
-                    defaultHandleAddFilter={handleAddFilter}
-                    inputValues={instanceFilters}
-                    setInputValues={setInstanceFilters}
-                    openOnFocus={true}
+                    helpers={helpers}
+                    noDirectFilters={true}
                   />
-                </div>
+                </Box>
               ) : (
-                <div>
-                  <div style={{ marginTop: 35 }}>
-                    <Filters
-                      variant="text"
-                      availableFilterKeys={[
-                        'entity_type',
-                        'workflow_id',
-                        'objectAssignee',
-                        'objects',
-                        'objectMarking',
-                        'objectLabel',
-                        'creator_id',
-                        'createdBy',
-                        'priority',
-                        'severity',
-                        'x_opencti_score',
-                        'x_opencti_detection',
-                        'revoked',
-                        'confidence',
-                        'indicator_types',
-                        'pattern_type',
-                        'fromId',
-                        'toId',
-                        'fromTypes',
-                        'toTypes',
-                      ]}
-                      handleAddFilter={handleAddFilter}
-                      handleRemoveFilter={undefined}
-                      handleSwitchFilter={undefined}
-                      noDirectFilters={true}
-                      disabled={undefined}
-                      size={undefined}
-                      fontSize={undefined}
-                      availableEntityTypes={undefined}
-                      availableRelationshipTypes={undefined}
-                      allEntityTypes={undefined}
-                      type={undefined}
-                      availableRelationFilterTypes={undefined}
-                    />
-                  </div>
-                  <div className="clearfix" />
-                </div>
+                <Box sx={{ paddingTop: 4,
+                  display: 'flex',
+                  gap: 1 }}
+                >
+                  <Filters
+                    availableFilterKeys={[
+                      'entity_type',
+                      'workflow_id',
+                      'objectAssignee',
+                      'objects',
+                      'objectMarking',
+                      'objectLabel',
+                      'creator_id',
+                      'createdBy',
+                      'priority',
+                      'severity',
+                      'x_opencti_score',
+                      'x_opencti_detection',
+                      'revoked',
+                      'confidence',
+                      'indicator_types',
+                      'pattern_type',
+                      'fromId',
+                      'toId',
+                      'fromTypes',
+                      'toTypes',
+                    ]}
+                    helpers={helpers}
+                    noDirectFilters={true}
+                  />
+                </Box>
               )}
               <FilterIconButton
                 filters={filters}
-                handleRemoveFilter={handleRemoveFilter}
-                handleSwitchGlobalMode={handleSwitchGlobalMode}
-                handleSwitchLocalMode={handleSwitchLocalMode}
-                styleNumber={2}
+                helpers={helpers}
                 redirection
               />
             </span>
