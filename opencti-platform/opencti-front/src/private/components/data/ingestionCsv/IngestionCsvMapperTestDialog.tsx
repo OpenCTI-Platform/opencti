@@ -9,6 +9,8 @@ import CodeBlock from '@components/common/CodeBlock';
 import { IngestionCsvMapperTestDialogQuery$data } from '@components/data/ingestionCsv/__generated__/IngestionCsvMapperTestDialogQuery.graphql';
 import { Option } from '@components/common/form/ReferenceField';
 import TextField from '@mui/material/TextField';
+import Typography from '@mui/material/Typography';
+import { InformationOutline } from 'mdi-material-ui';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import { useFormatter } from '../../../../components/i18n';
 import { fetchQuery, handleError } from '../../../../relay/environment';
@@ -28,7 +30,7 @@ interface IngestionCsvMapperTestDialogProps {
   onClose: () => void
   uri: string
   csvMapperId: string | Option
-  setIsCreateDisabled: React.Dispatch<React.SetStateAction<boolean>>
+  setIsCreateDisabled?: React.Dispatch<React.SetStateAction<boolean>>
 }
 
 const IngestionCsvMapperTestDialog: FunctionComponent<IngestionCsvMapperTestDialogProps> = ({
@@ -60,7 +62,9 @@ const IngestionCsvMapperTestDialog: FunctionComponent<IngestionCsvMapperTestDial
               ...resultTest,
             },
           });
-          setIsCreateDisabled(false);
+          if (setIsCreateDisabled) {
+            setIsCreateDisabled(false);
+          }
         }
         setLoading(false);
       }).catch((error) => {
@@ -92,6 +96,20 @@ const IngestionCsvMapperTestDialog: FunctionComponent<IngestionCsvMapperTestDial
               readOnly: true,
             }}
             fullWidth
+          />
+        </Box>
+        <Box>
+          <Typography
+            variant="h3"
+            gutterBottom={true}
+            style={{ float: 'left' }}
+          >
+            {t('Only the first 50 lines will be tested')}
+          </Typography>
+          <InformationOutline
+            fontSize="small"
+            color="primary"
+            style={{ cursor: 'default', margin: '-2px 0 0 10px' }}
           />
         </Box>
         <Box
@@ -128,7 +146,7 @@ const IngestionCsvMapperTestDialog: FunctionComponent<IngestionCsvMapperTestDial
         </Box>
         <Box sx={{ marginTop: '8px' }}>
           <CodeBlock
-            code={result?.test_mapper?.objects || t('You will find here the result of the first 50 lines in JSON format.')}
+            code={result?.test_mapper?.objects || t('You will find here the result in JSON format.')}
             language={'json'}
           />
         </Box>

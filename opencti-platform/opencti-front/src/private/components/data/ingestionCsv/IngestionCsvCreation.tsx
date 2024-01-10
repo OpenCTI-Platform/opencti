@@ -277,20 +277,20 @@ const IngestionCsvCreation: FunctionComponent<IngestionCsvCreationProps> = ({ pa
               <div className={classes.buttons}>
                 <Button
                   variant="contained"
-                  color="primary"
-                  onClick={() => setOpen(true)}
-                  classes={{ root: classes.button }}
-                  disabled={!(values.uri && values.csvMapper_id)}
-                >
-                  {t('Test')}
-                </Button>
-                <Button
-                  variant="contained"
                   onClick={handleReset}
                   disabled={isSubmitting}
                   classes={{ root: classes.button }}
                 >
                   {t('Cancel')}
+                </Button>
+                <Button
+                  variant="contained"
+                  color="primary"
+                  onClick={() => setOpen(true)}
+                  classes={{ root: classes.button }}
+                  disabled={!(values.uri && values.csvMapper_id)}
+                >
+                  {t('Verify')}
                 </Button>
                 <Button
                   variant="contained"

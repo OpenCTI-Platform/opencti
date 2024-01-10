@@ -1,5 +1,5 @@
 import { graphql, useFragment, useMutation } from 'react-relay';
-import React, { FunctionComponent } from 'react';
+import React, { FunctionComponent, useState } from 'react';
 import { Option } from '@components/common/form/ReferenceField';
 import * as Yup from 'yup';
 import { FormikConfig } from 'formik/dist/types';
@@ -10,6 +10,9 @@ import CreatorField from '@components/common/form/CreatorField';
 import CommitMessage from '@components/common/form/CommitMessage';
 import { IngestionCsvEditionFragment_ingestionCsv$key } from '@components/data/ingestionCsv/__generated__/IngestionCsvEditionFragment_ingestionCsv.graphql';
 import CsvMapperField from '@components/common/form/CsvMapperField';
+import Button from '@mui/material/Button';
+import IngestionCsvMapperTestDialog from '@components/data/ingestionCsv/IngestionCsvMapperTestDialog';
+import makeStyles from '@mui/styles/makeStyles';
 import { convertMapper, convertUser } from '../../../../utils/edition';
 import { useFormatter } from '../../../../components/i18n';
 import { useSchemaEditionValidation } from '../../../../utils/hooks/useEntitySettings';
@@ -18,6 +21,17 @@ import TextField from '../../../../components/TextField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import SelectField from '../../../../components/SelectField';
 import DateTimePickerField from '../../../../components/DateTimePickerField';
+import type { Theme } from '../../../../components/Theme';
+
+const useStyles = makeStyles<Theme>((theme) => ({
+  buttons: {
+    marginTop: 20,
+    textAlign: 'right',
+  },
+  button: {
+    marginLeft: theme.spacing(2),
+  },
+}));
 
 export const ingestionCsvEditionPatch = graphql`
   mutation IngestionCsvEditionPatchMutation($id: ID!, $input: [EditInput!]!) {
@@ -75,6 +89,8 @@ const IngestionCsvEdition: FunctionComponent<IngestionCsvEditionProps> = ({
   enableReferences = false,
 }) => {
   const { t } = useFormatter();
+  const classes = useStyles();
+  const [open, setOpen] = useState(false);
   const ingestionCsvData = useFragment(ingestionCsvEditionFragment, ingestionCsv);
   const basicShape = {
     name: Yup.string().required(t('This field is required')),
@@ -306,6 +322,23 @@ const IngestionCsvEdition: FunctionComponent<IngestionCsvEditionProps> = ({
               id={ingestionCsvData.id}
             />
           )}
+          <div className={classes.buttons}>
+            <Button
+              variant="contained"
+              color="primary"
+              onClick={() => setOpen(true)}
+              classes={{ root: classes.button }}
+              disabled={!(values.uri && values.csvMapper_id)}
+            >
+              {t('Verify')}
+            </Button>
+          </div>
+          <IngestionCsvMapperTestDialog
+            open={open}
+            onClose={() => setOpen(false)}
+            uri={values.uri}
+            csvMapperId={values.csvMapper_id}
+          />
         </Form>
       )}
     </Formik>
