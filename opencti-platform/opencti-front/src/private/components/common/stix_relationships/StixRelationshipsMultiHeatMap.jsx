@@ -107,6 +107,8 @@ const StixRelationshipsMultiHeatMap = ({
         toTypes: dataSelectionToTypes,
         field: dataSelectionDateAttribute,
         filters,
+        dynamicFrom: selection.dynamicFrom,
+        dynamicTo: selection.dynamicTo,
       };
     });
     return (

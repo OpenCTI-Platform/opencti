@@ -43,6 +43,8 @@ const stixRelationshipsTimelineStixRelationshipQuery = graphql`
     $orderBy: StixRelationshipsOrdering
     $orderMode: OrderingMode
     $filters: FilterGroup
+    $dynamicFrom: FilterGroup
+    $dynamicTo: FilterGroup
     $search: String
   ) {
     stixRelationships(
@@ -56,6 +58,8 @@ const stixRelationshipsTimelineStixRelationshipQuery = graphql`
       orderMode: $orderMode
       filters: $filters
       search: $search
+      dynamicFrom: $dynamicFrom
+      dynamicTo: $dynamicTo
     ) {
       edges {
         node {
@@ -1284,6 +1288,8 @@ const StixRelationshipsTimeline = ({
           orderBy: dateAttribute,
           orderMode: 'desc',
           filters,
+          dynamicFrom: selection.dynamicFrom,
+          dynamicTo: selection.dynamicTo,
         }}
         render={({ props }) => {
           if (
