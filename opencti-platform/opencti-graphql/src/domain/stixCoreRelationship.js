@@ -14,7 +14,7 @@ import {
 import { BUS_TOPICS } from '../config/conf';
 import { FunctionalError } from '../config/errors';
 import { elCount } from '../database/engine';
-import { isNotEmptyField, READ_INDEX_INFERRED_RELATIONSHIPS, READ_INDEX_STIX_CORE_RELATIONSHIPS } from '../database/utils';
+import { fillTimeSeries, isNotEmptyField, READ_INDEX_INFERRED_RELATIONSHIPS, READ_INDEX_STIX_CORE_RELATIONSHIPS } from '../database/utils';
 import { isStixCoreRelationship, stixCoreRelationshipOptions } from '../schema/stixCoreRelationship';
 import { ABSTRACT_STIX_CORE_OBJECT, ABSTRACT_STIX_CORE_RELATIONSHIP, buildRefRelationKey, ENTITY_TYPE_CONTAINER, ENTITY_TYPE_IDENTITY } from '../schema/general';
 import {
@@ -43,7 +43,10 @@ export const findById = (context, user, stixCoreRelationshipId) => {
 };
 
 // region stats
+// TODO future refacto : use the more generic functions of domain/stixRelationship.js
 export const stixCoreRelationshipsDistribution = async (context, user, args) => {
+  // it's not possible to have a dynamicFrom and dynamicTo in args here for the moment
+  // consider adding these fields in opencti.graphql if you want to use them
   const { dynamicFrom, dynamicTo } = args;
   let finalArgs = args;
   if (isFilterGroupNotEmpty(dynamicFrom)) {
@@ -51,6 +54,8 @@ export const stixCoreRelationshipsDistribution = async (context, user, args) => 
       .then((result) => result.map((n) => n.id));
     if (fromIds.length > 0) {
       finalArgs = { ...finalArgs, fromId: args.fromId ? [...fromIds, args.fromId] : fromIds };
+    } else {
+      return [];
     }
   } else {
     finalArgs = { ...finalArgs, dynamicFrom: undefined };
@@ -60,6 +65,8 @@ export const stixCoreRelationshipsDistribution = async (context, user, args) => 
       .then((result) => result.map((n) => n.id));
     if (toIds.length > 0) {
       finalArgs = { ...finalArgs, toId: args.toId ? [...toIds, args.toId] : toIds };
+    } else {
+      return [];
     }
   } else {
     finalArgs = { ...finalArgs, dynamicTo: undefined };
@@ -74,6 +81,11 @@ export const stixCoreRelationshipsNumber = async (context, user, args) => {
       .then((result) => result.map((n) => n.id));
     if (fromIds.length > 0) {
       finalArgs = { ...finalArgs, fromId: args.fromId ? [...fromIds, args.fromId] : fromIds };
+    } else {
+      return {
+        count: 0,
+        total: 0
+      };
     }
   } else {
     finalArgs = { ...finalArgs, dynamicFrom: undefined };
@@ -83,6 +95,11 @@ export const stixCoreRelationshipsNumber = async (context, user, args) => {
       .then((result) => result.map((n) => n.id));
     if (toIds.length > 0) {
       finalArgs = { ...finalArgs, toId: args.toId ? [...toIds, args.toId] : toIds };
+    } else {
+      return {
+        count: 0,
+        total: 0
+      };
     }
   } else {
     finalArgs = { ...finalArgs, dynamicTo: undefined };
@@ -101,12 +118,15 @@ export const stixCoreRelationshipsNumber = async (context, user, args) => {
 export const stixCoreRelationshipsMultiTimeSeries = async (context, user, args) => {
   return Promise.all(args.timeSeriesParameters.map(async (timeSeriesParameter) => {
     const { dynamicFrom, dynamicTo } = timeSeriesParameter;
+    const { startDate, endDate, interval } = args;
     let finalTimeSeriesParameter = timeSeriesParameter;
     if (isFilterGroupNotEmpty(dynamicFrom)) {
       const fromIds = await listEntities(context, user, [ABSTRACT_STIX_CORE_OBJECT], buildDynamicFilterArgs(dynamicFrom))
         .then((result) => result.map((n) => n.id));
       if (fromIds.length > 0) {
         finalTimeSeriesParameter = { ...finalTimeSeriesParameter, fromId: args.fromId ? [...fromIds, args.fromId] : fromIds };
+      } else {
+        return { data: fillTimeSeries(startDate, endDate, interval, []) };
       }
     } else {
       finalTimeSeriesParameter = { ...finalTimeSeriesParameter, dynamicFrom: undefined };
@@ -116,6 +136,8 @@ export const stixCoreRelationshipsMultiTimeSeries = async (context, user, args) 
         .then((result) => result.map((n) => n.id));
       if (toIds.length > 0) {
         finalTimeSeriesParameter = { ...finalTimeSeriesParameter, toId: args.toId ? [...toIds, args.toId] : toIds };
+      } else {
+        return { data: fillTimeSeries(startDate, endDate, interval, []) };
       }
     } else {
       finalTimeSeriesParameter = { ...finalTimeSeriesParameter, dynamicTo: undefined };
