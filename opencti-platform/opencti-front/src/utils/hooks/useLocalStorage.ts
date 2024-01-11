@@ -32,6 +32,7 @@ export interface handleFilterHelpers {
   handleAddFilterWithEmptyValue: (filter: Filter) => void;
   handleClearAllFilters: (filters?: Filter[]) => void;
   getLatestAddFilterId: () => string | undefined;
+  handleChangeRepresentationFilter: (id: string, oldValue: FilterValue, newValue: FilterValue) => void;
 }
 export interface UseLocalStorageHelpers extends handleFilterHelpers {
   handleSearch: (value: string) => void;
