@@ -74,16 +74,23 @@ export const deleteIngestionCsv = async (context: AuthContext, user: AuthUser, i
   return ingestionId;
 };
 
-export const fetchCsvExtractFromUrl = async (url: string): Promise<Buffer> => {
+export const fetchCsvFromUrl = async (url: string, csvMapperSkipLineChar: string): Promise<Buffer> => {
+  const response = await axios.get(url, { responseType: 'arraybuffer' });
+  const dataExtract = response.data.toString().split('\n').filter((line: string) => !line.startsWith(csvMapperSkipLineChar)).join('\n');
+  return Buffer.from(dataExtract);
+};
+
+export const fetchCsvExtractFromUrl = async (url: string, csvMapperSkipLineChar: string): Promise<Buffer> => {
   const response = await axios.get(url, { responseType: 'arraybuffer' });
   const TEST_LIMIT = 50;
-  const dataExtract = response.data.toString().split('\n').slice(0, TEST_LIMIT).join('\n');
+  const dataExtract = response.data.toString().split('\n').filter((line: string) => !line.startsWith(csvMapperSkipLineChar)).slice(0, TEST_LIMIT)
+    .join('\n');
   return Buffer.from(dataExtract);
 };
 
 export const testCsvIngestionMapping = async (context: AuthContext, user: AuthUser, uri: string, csvMapper_id: string): Promise<CsvMapperTestResult> => {
-  const csvBuffer = await fetchCsvExtractFromUrl(uri);
   const csvMapper: BasicStoreEntityCsvMapper = await findCsvMapperById(context, user, csvMapper_id);
+  const csvBuffer = await fetchCsvExtractFromUrl(uri, csvMapper.skipLineChar);
   const bundle = await bundleProcess(context, user, csvBuffer, csvMapper);
   return {
     objects: JSON.stringify(bundle.objects, null, 2),

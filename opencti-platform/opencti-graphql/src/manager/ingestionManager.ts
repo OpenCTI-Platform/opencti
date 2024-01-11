@@ -23,7 +23,7 @@ import type { AuthContext } from '../types/user';
 import type { BasicStoreEntityIngestionCsv, BasicStoreEntityIngestionRss, BasicStoreEntityIngestionTaxii } from '../modules/ingestion/ingestion-types';
 import { findAllTaxiiIngestions, patchTaxiiIngestion } from '../modules/ingestion/ingestion-taxii-domain';
 import { TaxiiVersion } from '../generated/graphql';
-import { fetchCsvExtractFromUrl, findAllCsvIngestions, patchCsvIngestion, testCsvIngestionMapping } from '../modules/ingestion/ingestion-csv-domain';
+import { fetchCsvFromUrl, findAllCsvIngestions, patchCsvIngestion, testCsvIngestionMapping } from '../modules/ingestion/ingestion-csv-domain';
 import type { BasicStoreEntityCsvMapper } from '../modules/internal/csvMapper/csvMapper-types';
 import { findById } from '../modules/internal/csvMapper/csvMapper-domain';
 import { bundleProcess } from '../parser/csv-bundler';
@@ -307,7 +307,7 @@ const csvHttpGet = async (ingestion: BasicStoreEntityIngestionCsv): Promise<CsvR
 const csvDataToObjects = async (data: string, ingestion: BasicStoreEntityIngestionCsv, csvMapper: BasicStoreEntityCsvMapper, context: AuthContext) => { // push bundle to queues
   const entitiesData = data.split('\n');
   logApp.info(`[OPENCTI-MODULE] CSV ingestion execution for ${entitiesData.length} items`);
-  const csvBuffer = await fetchCsvExtractFromUrl(ingestion.uri);
+  const csvBuffer = await fetchCsvFromUrl(ingestion.uri, csvMapper.skipLineChar);
   const { objects } = await bundleProcess(context, context.user ?? SYSTEM_USER, csvBuffer, csvMapper);
   if (objects === undefined) {
     const error = UnknownError('Undefined CSV objects', data);
