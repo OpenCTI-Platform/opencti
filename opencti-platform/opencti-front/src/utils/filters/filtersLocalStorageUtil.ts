@@ -1,5 +1,5 @@
 import { Dispatch, SetStateAction } from 'react';
-import { Filter, FilterGroup, filtersUsedAsApiParameters } from './filtersUtils';
+import { Filter, FilterGroup, filtersUsedAsApiParameters, FilterValue } from './filtersUtils';
 import { LocalStorage } from '../hooks/useLocalStorageModel';
 
 type FiltersLocalStorageUtilProps<U> = {
@@ -66,41 +66,41 @@ export const handleSwitchLocalModeUtil = ({ viewStorage, setValue, filter }: Fil
     : f));
 };
 
-export const handleAddRepresentationFilterUtil = ({ viewStorage, setValue, id, valueId }: FiltersLocalStorageUtilProps<{
+export const handleAddRepresentationFilterUtil = ({ viewStorage, setValue, id, value }: FiltersLocalStorageUtilProps<{
   id: string,
-  valueId: any,
+  value: FilterValue,
 }>) => {
   updateFilters(
     viewStorage,
     setValue,
     (f) => {
       if (f.id === id) {
-        return { ...f, values: [...f.values, valueId] };
+        return { ...f, values: [...f.values, value] };
       }
       return f;
     },
   );
 };
 
-export const handleAddSingleValueFilterUtil = ({ viewStorage, setValue, id, valueId }: FiltersLocalStorageUtilProps<{
+export const handleAddSingleValueFilterUtil = ({ viewStorage, setValue, id, value }: FiltersLocalStorageUtilProps<{
   id: string,
-  valueId?: string
+  value?: FilterValue
 }>) => {
-  if (valueId) {
-    updateFilters(viewStorage, setValue, (f) => (f.id === id ? { ...f, values: [valueId] } : f));
+  if (value) {
+    updateFilters(viewStorage, setValue, (f) => (f.id === id ? { ...f, values: [value] } : f));
   } else {
     updateFilters(viewStorage, setValue, (f) => (f.id === id ? { ...f, values: [] } : f));
   }
 };
 
-export const handleRemoveRepresentationFilterUtil = ({ viewStorage, setValue, id, valueId }: FiltersLocalStorageUtilProps<{
+export const handleRemoveRepresentationFilterUtil = ({ viewStorage, setValue, id, value }: FiltersLocalStorageUtilProps<{
   id: string,
-  valueId: any
+  value: FilterValue
 }>) => {
   updateFilters(viewStorage, setValue, (f) => (f.id === id
     ? {
       ...f,
-      values: f.values.filter((value) => value !== valueId),
+      values: f.values.filter((v) => v !== value),
     }
     : f));
 };

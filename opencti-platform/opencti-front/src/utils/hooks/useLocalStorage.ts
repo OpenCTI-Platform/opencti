@@ -2,7 +2,16 @@ import * as R from 'ramda';
 import { Dispatch, SetStateAction, SyntheticEvent, useState } from 'react';
 import { v4 as uuid } from 'uuid';
 import { OrderMode, PaginationOptions } from '../../components/list_lines';
-import { extractAllValueFromFilters, Filter, FilterGroup, filtersUsedAsApiParameters, findFilterFromKey, isFilterGroupNotEmpty, isUniqFilter } from '../filters/filtersUtils';
+import {
+  extractAllValueFromFilters,
+  Filter,
+  FilterGroup,
+  filtersUsedAsApiParameters,
+  FilterValue,
+  findFilterFromKey,
+  isFilterGroupNotEmpty,
+  isUniqFilter,
+} from '../filters/filtersUtils';
 import { isEmptyField, isNotEmptyField, removeEmptyFields } from '../utils';
 import { MESSAGING$ } from '../../relay/environment';
 import {
@@ -22,9 +31,9 @@ export interface UseLocalStorageHelpers {
   handleRemoveFilterById: (id?: string) => void;
   handleSort: (field: string, order: boolean) => void;
   handleAddFilter: HandleAddFilter;
-  handleRemoveRepresentationFilter: (id: string, valueId: any) => void;
-  handleAddRepresentationFilter: (id: string, valueId: any) => void;
-  handleAddSingleValueFilter: (id: string, valueId?: string) => void;
+  handleRemoveRepresentationFilter: (id: string, value: FilterValue) => void;
+  handleAddRepresentationFilter: (id: string, value: FilterValue) => void;
+  handleAddSingleValueFilter: (id: string, value?: FilterValue) => void;
   handleSwitchFilter: HandleAddFilter;
   handleSwitchGlobalMode: () => void;
   handleSwitchLocalMode: (filter: Filter) => void;
@@ -410,12 +419,12 @@ export const usePaginationLocalStorage = <U>(
     },
     handleRemoveRepresentationFilter: (
       id: string,
-      valueId: any,
+      value: FilterValue,
     ) => {
-      handleRemoveRepresentationFilterUtil({ viewStorage, setValue, id, valueId });
+      handleRemoveRepresentationFilterUtil({ viewStorage, setValue, id, value });
     },
-    handleAddRepresentationFilter: (id: string, valueId: any) => {
-      if (valueId === null) { // handle clicking on 'no label' in entities list
+    handleAddRepresentationFilter: (id: string, value: FilterValue) => {
+      if (value === null) { // handle clicking on 'no label' in entities list
         const findCorrespondingFilter = viewStorage.filters?.filters.find((f) => id === f.id);
         if (findCorrespondingFilter && ['objectLabel', 'contextObjectLabel'].includes(findCorrespondingFilter.key)) {
           handleAddFilterWithEmptyValueUtil({ viewStorage,
@@ -429,11 +438,11 @@ export const usePaginationLocalStorage = <U>(
             } });
         }
       } else {
-        handleAddRepresentationFilterUtil({ viewStorage, setValue, id, valueId });
+        handleAddRepresentationFilterUtil({ viewStorage, setValue, id, value });
       }
     },
-    handleAddSingleValueFilter: (id: string, valueId?: string) => {
-      handleAddSingleValueFilterUtil({ viewStorage, setValue, id, valueId });
+    handleAddSingleValueFilter: (id: string, value?: FilterValue) => {
+      handleAddSingleValueFilterUtil({ viewStorage, setValue, id, value });
     },
     handleSwitchFilter: (
       k: string,

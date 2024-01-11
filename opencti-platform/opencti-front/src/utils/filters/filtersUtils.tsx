@@ -8,6 +8,10 @@ import type { FilterGroup as GqlFilterGroup } from './__generated__/useSearchEnt
 
 export type { FilterGroup as GqlFilterGroup } from './__generated__/useSearchEntitiesStixCoreObjectsContainersSearchQuery.graphql';
 
+// usually string, but can be a combined filter like regardingOf
+// any in gql
+export type FilterValue = any;
+
 export type FilterGroup = {
   mode: string;
   filters: Filter[];
@@ -18,7 +22,7 @@ export type FilterGroup = {
 export type Filter = {
   id?: string;
   key: string; // key is a string in front
-  values: any[];
+  values: FilterValue[];
   operator?: string;
   mode?: string;
 };
@@ -602,7 +606,7 @@ export const constructHandleAddFilter = (
   // if the filter key is already used, update it
   if (filters && findFilterFromKey(filters.filters, k, op)) {
     const filter = findFilterFromKey(filters.filters, k, op);
-    let newValues: string[] = [];
+    let newValues: FilterValue[] = [];
     if (id !== null) {
       newValues = isUniqFilter(k)
         ? [id]
