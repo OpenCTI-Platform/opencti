@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { v4 as uuid } from 'uuid';
-import { emptyFilterGroup, Filter, FilterGroup } from './filtersUtils';
+import { emptyFilterGroup, Filter, FilterGroup, FilterValue } from './filtersUtils';
 import {
   handleAddFilterWithEmptyValueUtil,
   handleAddRepresentationFilterUtil,
@@ -109,6 +109,40 @@ const useFiltersState = (initFilters: FilterGroup = emptyFilterGroup): [FilterGr
         filters: handleSwitchLocalModeUtil({ filters: filtersState.filters, filter }),
         latestAddFilterId: undefined,
       }));
+    },
+    handleChangeRepresentationFilter: (id: string, oldValue: FilterValue, newValue: FilterValue) => {
+      if (oldValue && newValue) {
+        setFiltersState((prevState) => ({
+          ...prevState,
+          filters: {
+            ...prevState.filters,
+            filters: prevState.filters.filters.map((f) => (f.id === id
+              ? { ...f, values: f.values.filter((val) => val !== oldValue).concat([newValue]) }
+              : f)),
+          },
+        }));
+      } else if (oldValue) {
+        setFiltersState((prevState) => ({
+          ...prevState,
+          filters: {
+            ...prevState.filters,
+            filters: prevState.filters.filters.map((f) => (f.id === id
+              ? {
+                ...f,
+                values: f.values.filter((v) => v !== oldValue),
+              }
+              : f)),
+          },
+        }));
+      } else if (newValue) {
+        setFiltersState((prevState) => ({
+          ...prevState,
+          filters: {
+            ...prevState.filters,
+            filters: prevState.filters.filters.map((f) => (f.id === id ? { ...f, values: [...f.values, newValue] } : f)),
+          },
+        }));
+      }
     },
   };
 
