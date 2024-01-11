@@ -1,11 +1,15 @@
 import React, { Fragment, FunctionComponent } from 'react';
 import { last } from 'ramda';
 import makeStyles from '@mui/styles/makeStyles';
+import Tooltip from '@mui/material/Tooltip';
+import Box from '@mui/material/Box';
+import Chip from '@mui/material/Chip';
 import { useFormatter } from '../i18n';
-import FilterIconButtonContent from '../FilterIconButtonContent';
+import FilterValuesContent from '../FilterValuesContent';
 import type { Theme } from '../Theme';
 import { Filter, filtersUsedAsApiParameters } from '../../utils/filters/filtersUtils';
 import { UseLocalStorageHelpers } from '../../utils/hooks/useLocalStorage';
+import { truncate } from '../../utils/String';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   inlineOperator: {
@@ -62,6 +66,7 @@ const FilterValues: FunctionComponent<FilterValuesProps> = ({
   helpers,
   isReadWriteFilter,
 }) => {
+  console.log('currentFilter', currentFilter);
   const { t } = useFormatter();
   const filterKey = currentFilter.key;
   const filterOperator = currentFilter.operator;
@@ -89,14 +94,14 @@ const FilterValues: FunctionComponent<FilterValuesProps> = ({
   const values = filterValues.map((id) => {
     return (
       <Fragment key={id}>
-        <FilterIconButtonContent
+        <FilterValuesContent
           redirection={tooltip ? false : redirection}
           isFilterTooltip={!!tooltip}
           filterKey={filterKey}
           id={id}
           value={filtersRepresentativesMap.get(id) ?? id}
         />
-        {last(filterValues) !== id && (
+        {filterKey !== 'regardingOf' && last(filterValues) !== id && (
           <div
             className={
               (isReadWriteFilter && !isFiltersUsedAsApiParameters)
@@ -112,6 +117,60 @@ const FilterValues: FunctionComponent<FilterValuesProps> = ({
     );
   });
 
+  if (filterKey === 'regardingOf') {
+    return (
+      <>
+        <strong
+          className={deactivatePopoverMenu ? '' : classes.label}
+          onClick={onCLick}
+        >
+          {label}
+        </strong>{' '}
+        {filterValues.map((val) => {
+          const subKey = val.key;
+          const keyLabel = (
+            <>
+              {truncate(t(subKey), 20)}
+              <>&nbsp;=</>
+            </>
+          );
+          return (
+            <Fragment key={'test'}>
+              <Tooltip
+                title={
+                  <FilterValues
+                    label={keyLabel}
+                    tooltip={true}
+                    currentFilter={val}
+                    filtersRepresentativesMap={new Map()}
+                  />
+                  }
+              >
+                <Box
+                  sx={{
+                    padding: '0 4px',
+                    display: 'flex',
+                  }}
+                >
+                  <Chip
+                    label={
+                      <FilterValues
+                        label={keyLabel}
+                        tooltip={false}
+                        currentFilter={val}
+                        filtersRepresentativesMap={new Map()}
+                      />
+                      }
+                  />
+                </Box>
+              </Tooltip>
+            </Fragment>
+          );
+        })
+        }
+      </>
+    );
+  }
   return (
     <>
       <strong

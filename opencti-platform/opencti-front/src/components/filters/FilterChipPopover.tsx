@@ -169,11 +169,12 @@ export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({
   );
   const [entities, searchEntities] = getUseSearch(searchScope);
   const { t } = useFormatter();
-  const handleChange = (checked: boolean, value: string) => {
+  const handleChange = (checked: boolean, value: string, childKey?: string) => {
+    const formattedValue = childKey ? { key: childKey, values: [value] } : value;
     if (checked) {
-      helpers?.handleAddRepresentationFilter(filter?.id ?? '', value);
+      helpers?.handleAddRepresentationFilter(filter?.id ?? '', formattedValue);
     } else {
-      helpers?.handleRemoveRepresentationFilter(filter?.id ?? '', value);
+      helpers?.handleRemoveRepresentationFilter(filter?.id ?? '', formattedValue);
     }
   };
 
@@ -212,7 +213,7 @@ export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({
     />
   );
 
-  const buildAutocompleteFilter = (fKey: string, parentKey?: string): ReactNode => {
+  const buildAutocompleteFilter = (fKey: string, technicalKey?: string): ReactNode => {
     return (
       <MUIAutocomplete
         disableCloseOnSelect
@@ -264,7 +265,7 @@ export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({
                     e.stopPropagation();
                   }
                 }}
-                onClick={() => handleChange(!checked, option.value)}
+                onClick={() => handleChange(!checked, option.value, technicalKey)}
                 style={{
                   whiteSpace: 'nowrap',
                   overflow: 'hidden',
@@ -312,7 +313,7 @@ export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({
     return null;
   };
 
-  const displayOperatorAndFilter = (fKey: string, parentKey?: string) => {
+  const displayOperatorAndFilter = (fKey: string, technicalKey?: string) => {
     return (
       <>
         <Select
@@ -334,7 +335,7 @@ export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({
           <>{getSpecificFilter(fKey)}</>
         )}
         {noValueOperator && !isSpecificFilter(fKey) && (
-          <>{buildAutocompleteFilter(fKey, parentKey)}</>
+          <>{buildAutocompleteFilter(fKey, technicalKey)}</>
         )}
       </>
     );
@@ -358,7 +359,7 @@ export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({
               padding: 8,
             }}
           >
-          {displayOperatorAndFilter('id', filterKey)}
+          {displayOperatorAndFilter('id', 'id')}
           <Chip
             style={{
               fontFamily: 'Consolas, monaco, monospace',
@@ -366,7 +367,7 @@ export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({
             }}
             label={t('WITH')}
           />
-          {displayOperatorAndFilter('relationship_type', filterKey)}
+          {displayOperatorAndFilter('relationship_type', 'type')}
         </div>
         : <div
             style={{

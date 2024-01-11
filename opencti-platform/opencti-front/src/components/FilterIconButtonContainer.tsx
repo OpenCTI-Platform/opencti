@@ -11,7 +11,7 @@ import { DataColumns } from './list_lines';
 import { useFormatter } from './i18n';
 import type { Theme } from './Theme';
 import { Filter, FilterGroup, filtersUsedAsApiParameters } from '../utils/filters/filtersUtils';
-import { filterIconButtonContentQuery } from './FilterIconButtonContent';
+import { filterValuesContentQuery } from './FilterValuesContent';
 import { FilterIconButtonContentQuery } from './__generated__/FilterIconButtonContentQuery.graphql';
 import FilterValues from './filters/FilterValues';
 import { FilterChipPopover, FilterChipsParameter } from './filters/FilterChipPopover';
@@ -140,7 +140,7 @@ FilterIconButtonContainerProps
   const { t } = useFormatter();
   const classes = useStyles();
   const { filtersRepresentatives } = usePreloadedQuery<FilterIconButtonContentQuery>(
-    filterIconButtonContentQuery,
+    filterValuesContentQuery,
     filtersRepresentativesQueryRef,
   );
   const displayedFilters = filters.filters;

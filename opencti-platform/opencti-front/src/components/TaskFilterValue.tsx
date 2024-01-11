@@ -3,7 +3,7 @@ import React from 'react';
 import { PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import Chip from '@mui/material/Chip';
 import makeStyles from '@mui/styles/makeStyles';
-import FilterIconButtonContent, { filterIconButtonContentQuery } from './FilterIconButtonContent';
+import FilterValuesContent, { filterValuesContentQuery } from './FilterValuesContent';
 import { FilterIconButtonContentQuery } from './__generated__/FilterIconButtonContentQuery.graphql';
 import { useFormatter } from './i18n';
 import { FilterGroup } from '../utils/filters/filtersUtils';
@@ -42,7 +42,7 @@ const TaskFilterValue = ({
   const { t } = useFormatter();
   const classes = useStyles();
   const { filtersRepresentatives } = usePreloadedQuery<FilterIconButtonContentQuery>(
-    filterIconButtonContentQuery,
+    filterValuesContentQuery,
     queryRef,
   );
   const filtersRepresentativesMap = new Map(
@@ -90,7 +90,7 @@ const TaskFilterValue = ({
                       );
                       return (
                         <span key={o}>
-                          <FilterIconButtonContent
+                          <FilterValuesContent
                             filterKey={currentFilter.key}
                             id={o}
                             value={filtersRepresentativesMap.get(o)}

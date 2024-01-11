@@ -23,7 +23,7 @@ export interface UseLocalStorageHelpers {
   handleSort: (field: string, order: boolean) => void;
   handleAddFilter: HandleAddFilter;
   handleRemoveRepresentationFilter: (id: string, valueId: string) => void;
-  handleAddRepresentationFilter: (id: string, valueId: string) => void;
+  handleAddRepresentationFilter: (id: string, valueId: string, childKey?: string) => void;
   handleAddSingleValueFilter: (id: string, valueId?: string) => void;
   handleSwitchFilter: HandleAddFilter;
   handleSwitchGlobalMode: () => void;
@@ -414,7 +414,7 @@ export const usePaginationLocalStorage = <U>(
     ) => {
       handleRemoveRepresentationFilterUtil({ viewStorage, setValue, id, valueId });
     },
-    handleAddRepresentationFilter: (id: string, valueId: string) => {
+    handleAddRepresentationFilter: (id: string, valueId: string, childKey?: string) => {
       if (valueId === null) { // handle clicking on 'no label' in entities list
         const findCorrespondingFilter = viewStorage.filters?.filters.find((f) => id === f.id);
         if (findCorrespondingFilter && ['objectLabel', 'contextObjectLabel'].includes(findCorrespondingFilter.key)) {
@@ -429,7 +429,7 @@ export const usePaginationLocalStorage = <U>(
             } });
         }
       } else {
-        handleAddRepresentationFilterUtil({ viewStorage, setValue, id, valueId });
+        handleAddRepresentationFilterUtil({ viewStorage, setValue, id, valueId, childKey });
       }
     },
     handleAddSingleValueFilter: (id: string, valueId?: string) => {

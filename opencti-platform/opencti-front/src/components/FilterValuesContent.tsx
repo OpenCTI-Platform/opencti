@@ -5,15 +5,15 @@ import { entityFilters, filterValue } from '../utils/filters/filtersUtils';
 import { truncate } from '../utils/String';
 import { useFormatter } from './i18n';
 
-export const filterIconButtonContentQuery = graphql`
-  query FilterIconButtonContentQuery($filters: FilterGroup!) {
-    filtersRepresentatives(filters: $filters) {
-      id
-      value
+export const filterValuesContentQuery = graphql`
+    query FilterValuesContentQuery($filters: FilterGroup!) {
+        filtersRepresentatives(filters: $filters) {
+            id
+            value
+        }
     }
-  }
 `;
-interface FilterIconButtonContentProps {
+interface FilterValuesContentProps {
   redirection?: boolean;
   isFilterTooltip?: boolean;
   filterKey: string;
@@ -21,10 +21,11 @@ interface FilterIconButtonContentProps {
   value?: string | null;
 }
 
-const FilterIconButtonContent: FunctionComponent<
-FilterIconButtonContentProps
+const FilterValuesContent: FunctionComponent<
+FilterValuesContentProps
 > = ({ redirection, isFilterTooltip, filterKey, id, value }) => {
   const { t } = useFormatter();
+  console.log('value', value);
   const displayedValue = isFilterTooltip
     ? filterValue(filterKey, value)
     : truncate(filterValue(filterKey, value), 15);
@@ -45,4 +46,4 @@ FilterIconButtonContentProps
   return <span>{displayedValue}</span>;
 };
 
-export default FilterIconButtonContent;
+export default FilterValuesContent;

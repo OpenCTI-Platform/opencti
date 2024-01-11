@@ -2,7 +2,7 @@ import React, { FunctionComponent, useEffect, useRef } from 'react';
 import { ChipOwnProps } from '@mui/material/Chip/Chip';
 import { DataColumns } from './list_lines';
 import { Filter, FilterGroup, GqlFilterGroup, isFilterGroupNotEmpty, removeIdFromFilterGroupObject } from '../utils/filters/filtersUtils';
-import { filterIconButtonContentQuery } from './FilterIconButtonContent';
+import { filterValuesContentQuery } from './FilterValuesContent';
 import useQueryLoading from '../utils/hooks/useQueryLoading';
 import { FilterIconButtonContentQuery } from './__generated__/FilterIconButtonContentQuery.graphql';
 import FilterIconButtonContainer from './FilterIconButtonContainer';
@@ -43,7 +43,7 @@ const FilterIconButtonWithRepresentativesQuery: FunctionComponent<FilterIconButt
   setHasRenderedRef,
 }) => {
   const filtersRepresentativesQueryRef = useQueryLoading<FilterIconButtonContentQuery>(
-    filterIconButtonContentQuery,
+    filterValuesContentQuery,
     {
       filters: removeIdFromFilterGroupObject(filters) as unknown as GqlFilterGroup,
     },
