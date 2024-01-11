@@ -1863,7 +1863,7 @@ class ToolBar extends Component {
                         <ItemIcon type={element.entity_type} />
                       </ListItemIcon>
                       <ListItemText
-                        primary={defaultValue(element)}
+                        primary={truncate(defaultValue(element), 50)}
                         secondary={truncate(
                           element.description
                             || element.x_opencti_description
@@ -1915,7 +1915,7 @@ class ToolBar extends Component {
                 >
                   {t('Name')}
                 </Typography>
-                {defaultValue(keptElement)}
+                {truncate(defaultValue(keptElement), 50)}
                 <Typography
                   variant="h3"
                   gutterBottom={true}
