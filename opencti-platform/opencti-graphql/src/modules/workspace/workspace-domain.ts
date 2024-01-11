@@ -12,6 +12,7 @@ import type { AuthContext, AuthUser } from '../../types/user';
 import type {
   EditContext,
   EditInput,
+  Filter,
   FilterGroup,
   ImportWidgetInput,
   InputMaybe,
@@ -30,6 +31,7 @@ import { buildPagination, fromBase64, isEmptyField, isNotEmptyField, READ_DATA_I
 import { addFilter } from '../../utils/filtering/filtering-utils';
 import { extractContentFrom } from '../../utils/fileToContent';
 import { isInternalId, isStixId } from '../../schema/schemaUtils';
+import { INSTANCE_REGARDING_OF } from '../../utils/filtering/filtering-constants';
 
 export const findById = (
   context: AuthContext,
@@ -302,10 +304,15 @@ export const checkConfigurationImport = (type: string, parsedData: any) => {
 // region workspace ids converter
 // Export => Dashboard filter ids must be converted to standard id
 // Import => Dashboards filter ids must be converted back to internal id
+const toKeys = (k: string | string[]) => (Array.isArray(k) ? k : [k]);
 const extractFiltersIds = (filter: FilterGroup, from: 'internal' | 'stix') => {
   const internalIds: string[] = [];
   filter.filters.forEach((f) => {
-    const ids = f.values.filter((value) => {
+    let innerValues = f.values;
+    if (toKeys(f.key).includes(INSTANCE_REGARDING_OF)) {
+      innerValues = innerValues.find((v) => toKeys(v.key).includes('id'))?.values ?? [];
+    }
+    const ids = innerValues.filter((value) => {
       if (from === 'internal') return isInternalId(value);
       return isStixId(value);
     });
@@ -317,19 +324,31 @@ const extractFiltersIds = (filter: FilterGroup, from: 'internal' | 'stix') => {
   });
   return R.uniq(internalIds);
 };
+
+const filterValuesRemap = (filter: Filter, resolvedMap: { [k: string]: BasicStoreObject }, from: 'internal' | 'stix') => {
+  return filter.values.map((value) => {
+    if (from === 'internal' && isInternalId(value)) {
+      return resolvedMap[value]?.standard_id ?? value;
+    }
+    if (from === 'stix' && isStixId(value)) {
+      return resolvedMap[value]?.internal_id ?? value;
+    }
+    return value;
+  });
+};
 const replaceFiltersIds = (filter: FilterGroup, resolvedMap: { [k: string]: BasicStoreObject }, from: 'internal' | 'stix') => {
   filter.filters.forEach((f) => {
     // Explicit reassign working by references
-    // eslint-disable-next-line no-param-reassign
-    f.values = f.values.map((value) => {
-      if (from === 'internal' && isInternalId(value)) {
-        return resolvedMap[value]?.standard_id ?? value;
-      }
-      if (from === 'stix' && isStixId(value)) {
-        return resolvedMap[value]?.internal_id ?? value;
-      }
-      return value;
-    });
+    if (toKeys(f.key).includes(INSTANCE_REGARDING_OF)) {
+      const idInnerFilter = f.values.find((v) => toKeys(v.key).includes('id'));
+      idInnerFilter.values = filterValuesRemap(idInnerFilter, resolvedMap, from);
+      const typeInnerFilter = f.values.find((v) => toKeys(v.key).includes('type'));
+      // eslint-disable-next-line no-param-reassign
+      f.values = [idInnerFilter, typeInnerFilter];
+    } else {
+      // eslint-disable-next-line no-param-reassign
+      f.values = filterValuesRemap(f, resolvedMap, from);
+    }
   });
   filter.filterGroups.forEach((group) => {
     replaceFiltersIds(group, resolvedMap, from);
