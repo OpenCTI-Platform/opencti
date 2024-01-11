@@ -22,8 +22,8 @@ export interface UseLocalStorageHelpers {
   handleRemoveFilterById: (id?: string) => void;
   handleSort: (field: string, order: boolean) => void;
   handleAddFilter: HandleAddFilter;
-  handleRemoveRepresentationFilter: (id: string, valueId: string) => void;
-  handleAddRepresentationFilter: (id: string, valueId: string) => void;
+  handleRemoveRepresentationFilter: (id: string, valueId: any) => void;
+  handleAddRepresentationFilter: (id: string, valueId: any) => void;
   handleAddSingleValueFilter: (id: string, valueId?: string) => void;
   handleSwitchFilter: HandleAddFilter;
   handleSwitchGlobalMode: () => void;
@@ -410,11 +410,11 @@ export const usePaginationLocalStorage = <U>(
     },
     handleRemoveRepresentationFilter: (
       id: string,
-      valueId: string,
+      valueId: any,
     ) => {
       handleRemoveRepresentationFilterUtil({ viewStorage, setValue, id, valueId });
     },
-    handleAddRepresentationFilter: (id: string, valueId: string) => {
+    handleAddRepresentationFilter: (id: string, valueId: any) => {
       if (valueId === null) { // handle clicking on 'no label' in entities list
         const findCorrespondingFilter = viewStorage.filters?.filters.find((f) => id === f.id);
         if (findCorrespondingFilter && ['objectLabel', 'contextObjectLabel'].includes(findCorrespondingFilter.key)) {

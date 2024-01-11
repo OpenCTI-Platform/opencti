@@ -68,7 +68,7 @@ export const handleSwitchLocalModeUtil = ({ viewStorage, setValue, filter }: Fil
 
 export const handleAddRepresentationFilterUtil = ({ viewStorage, setValue, id, valueId }: FiltersLocalStorageUtilProps<{
   id: string,
-  valueId: string,
+  valueId: any,
 }>) => {
   updateFilters(
     viewStorage,
@@ -95,7 +95,7 @@ export const handleAddSingleValueFilterUtil = ({ viewStorage, setValue, id, valu
 
 export const handleRemoveRepresentationFilterUtil = ({ viewStorage, setValue, id, valueId }: FiltersLocalStorageUtilProps<{
   id: string,
-  valueId: string
+  valueId: any
 }>) => {
   updateFilters(viewStorage, setValue, (f) => (f.id === id
     ? {
