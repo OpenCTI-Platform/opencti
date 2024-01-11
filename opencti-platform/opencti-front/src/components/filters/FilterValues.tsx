@@ -142,7 +142,7 @@ const FilterValues: FunctionComponent<FilterValuesProps> = ({
                     label={keyLabel}
                     tooltip={true}
                     currentFilter={val}
-                    filtersRepresentativesMap={new Map()}
+                    filtersRepresentativesMap={filtersRepresentativesMap}
                   />
                   }
               >
@@ -158,7 +158,7 @@ const FilterValues: FunctionComponent<FilterValuesProps> = ({
                         label={keyLabel}
                         tooltip={false}
                         currentFilter={val}
-                        filtersRepresentativesMap={new Map()}
+                        filtersRepresentativesMap={filtersRepresentativesMap}
                       />
                       }
                   />
