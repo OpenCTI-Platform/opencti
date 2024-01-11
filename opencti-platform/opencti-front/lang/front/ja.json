@@ -2437,6 +2437,13 @@
   "entity_Analyses": "エンティティ_分析",
   "There are no opinions. You should create some before.": "意見がない。事前にいくつか作っておくべきだ。",
   "workflow_id": "ステータス",
+  "Do you want to delete this CSV ingester?": "このCSVインガスターを削除しますか？",
+  "Do you want to start this CSV ingester?": "このCSVインガスターを開始しますか？",
+  "Do you want to stop this CSV ingester?": "このCSVインガスターを停止しますか？",
+  "Create a CSV Ingester": "CSVインガスターを作成する",
+  "Update a CSV Ingester": "CSVインガスターを更新する",
+  "Please, note that the test will be run on the 50 first lines": "50行目までのテストを実行することに注意してください"
+  "workflow_id": "ステータス",
   "regardingOf": "に関しては",
   "WITH": "WITH",
   "Pre-query to get data to be used as source entity of the relationship (limited to 5000)": "リレーションシップのソース・エンティティとして使用されるデータを取得するための事前クエリ（5000個まで）",
