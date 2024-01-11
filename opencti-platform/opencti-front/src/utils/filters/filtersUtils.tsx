@@ -721,6 +721,9 @@ export const getDefaultFilterObject = (key: string): Filter => {
 };
 
 export const getAvailableOperatorForFilter = (filterKey: string): string[] => {
+  if (filterKey === 'id' || filterKey === 'type') { // case subKey of 'regardingOf' filter
+    return ['eq'];
+  }
   if (filtersUsedAsApiParameters.includes(filterKey)) {
     return ['eq'];
   }
