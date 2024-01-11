@@ -9,6 +9,7 @@ import type { Theme } from '../Theme';
 import { Filter, filtersUsedAsApiParameters } from '../../utils/filters/filtersUtils';
 import { UseLocalStorageHelpers } from '../../utils/hooks/useLocalStorage';
 import { truncate } from '../../utils/String';
+import FilterValuesContent from '../FilterValuesContent';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   inlineOperator: {
