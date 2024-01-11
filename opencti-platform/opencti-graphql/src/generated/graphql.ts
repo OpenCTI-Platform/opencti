@@ -10727,7 +10727,10 @@ export type LogEdge = {
 export enum LogsOrdering {
   CreatedAt = 'created_at',
   Event = 'event',
-  Timestamp = 'timestamp'
+  EventScope = 'event_scope',
+  EventType = 'event_type',
+  Timestamp = 'timestamp',
+  User = 'user'
 }
 
 export type LogsWorkerConfig = {

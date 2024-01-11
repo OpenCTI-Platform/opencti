@@ -408,6 +408,9 @@ enum LogsOrdering {
   event
   timestamp
   created_at
+  event_type
+  event_scope
+  user
 }
 
 type LogConnection {
