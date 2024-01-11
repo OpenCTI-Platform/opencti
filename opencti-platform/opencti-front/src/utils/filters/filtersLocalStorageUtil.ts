@@ -79,8 +79,8 @@ export const handleAddRepresentationFilterUtil = ({ viewStorage, setValue, id, v
 
 export const handleChangeRepresentationFilterUtil = ({ viewStorage, setValue, id, oldValue, newValue }: FiltersLocalStorageUtilProps<{
   id: string,
-  oldValue: any,
-  newValue: any,
+  oldValue: FilterValue,
+  newValue: FilterValue,
 }>) => {
   updateFilters(
     viewStorage,
@@ -106,18 +106,12 @@ export const handleRemoveRepresentationFilterUtil = ({ viewStorage, setValue, id
   id: string,
   value: FilterValue
 }>) => {
-  updateFilters(viewStorage, setValue, (f) => {
-    console.log('result', {
+  updateFilters(viewStorage, setValue, (f) => (f.id === id
+    ? {
       ...f,
-      values: f.values.filter((value) => value !== valueId),
-    });
-    return (f.id === id
-      ? {
-        ...f,
-        values: f.values.filter((v) => v !== value),
-      }
-      : f);
-  });
+      values: f.values.filter((v) => v !== value),
+    }
+    : f));
 };
 
 export const handleRemoveFilterUtil = ({ viewStorage, setValue, id }: FiltersLocalStorageUtilProps<{ id?: string }>) => {

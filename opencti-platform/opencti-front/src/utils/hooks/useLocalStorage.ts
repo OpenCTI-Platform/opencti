@@ -34,7 +34,7 @@ export interface UseLocalStorageHelpers {
   handleAddFilter: HandleAddFilter;
   handleRemoveRepresentationFilter: (id: string, value: FilterValue) => void;
   handleAddRepresentationFilter: (id: string, value: FilterValue) => void;
-  handleChangeRepresentationFilter: (id: string, oldValue: any, newValue: any) => void;
+  handleChangeRepresentationFilter: (id: string, oldValue: FilterValue, newValue: FilterValue) => void;
   handleAddSingleValueFilter: (id: string, value?: FilterValue) => void;
   handleSwitchFilter: HandleAddFilter;
   handleSwitchGlobalMode: () => void;
@@ -443,13 +443,13 @@ export const usePaginationLocalStorage = <U>(
         handleAddRepresentationFilterUtil({ viewStorage, setValue, id, value });
       }
     },
-    handleChangeRepresentationFilter: (id: string, oldValue: any, newValue: any) => {
+    handleChangeRepresentationFilter: (id: string, oldValue: FilterValue, newValue: FilterValue) => {
       if (oldValue && newValue) {
         handleChangeRepresentationFilterUtil({ viewStorage, setValue, id, oldValue, newValue });
       } else if (oldValue) {
-        handleRemoveRepresentationFilterUtil({ viewStorage, setValue, id, valueId: oldValue });
+        handleRemoveRepresentationFilterUtil({ viewStorage, setValue, id, value: oldValue });
       } else if (newValue) {
-        handleAddRepresentationFilterUtil({ viewStorage, setValue, id, valueId: newValue });
+        handleAddRepresentationFilterUtil({ viewStorage, setValue, id, value: newValue });
       }
     },
     handleAddSingleValueFilter: (id: string, value?: FilterValue) => {
