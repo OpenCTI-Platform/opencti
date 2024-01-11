@@ -62,7 +62,7 @@ const IngestionCsvMapperTestDialog: FunctionComponent<IngestionCsvMapperTestDial
             },
           });
           if (setIsCreateDisabled) {
-            setIsCreateDisabled(false);
+            setIsCreateDisabled(resultTest.nbEntities === 0);
           }
         }
         setLoading(false);

@@ -74,16 +74,16 @@ export const deleteIngestionCsv = async (context: AuthContext, user: AuthUser, i
   return ingestionId;
 };
 
-export const fetchCsvFromUrl = async (url: string, csvMapperSkipLineChar: string): Promise<Buffer> => {
+export const fetchCsvFromUrl = async (url: string, csvMapperSkipLineChar: string | undefined): Promise<Buffer> => {
   const response = await axios.get(url, { responseType: 'arraybuffer' });
-  const dataExtract = response.data.toString().split('\n').filter((line: string) => !line.startsWith(csvMapperSkipLineChar)).join('\n');
+  const dataExtract = response.data.toString().split('\n').filter((line: string) => ((!!csvMapperSkipLineChar && !line.startsWith(csvMapperSkipLineChar) || !csvMapperSkipLineChar && !!line))).join('\n');
   return Buffer.from(dataExtract);
 };
 
-export const fetchCsvExtractFromUrl = async (url: string, csvMapperSkipLineChar: string): Promise<Buffer> => {
+export const fetchCsvExtractFromUrl = async (url: string, csvMapperSkipLineChar: string | undefined): Promise<Buffer> => {
   const response = await axios.get(url, { responseType: 'arraybuffer' });
   const TEST_LIMIT = 50;
-  const dataExtract = response.data.toString().split('\n').filter((line: string) => !line.startsWith(csvMapperSkipLineChar)).slice(0, TEST_LIMIT)
+  const dataExtract = response.data.toString().split('\n').filter((line: string) => ((!!csvMapperSkipLineChar && !line.startsWith(csvMapperSkipLineChar) || !csvMapperSkipLineChar && !!line))).slice(0, TEST_LIMIT)
     .join('\n');
   return Buffer.from(dataExtract);
 };
