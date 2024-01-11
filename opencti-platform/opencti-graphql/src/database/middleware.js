@@ -200,7 +200,6 @@ import { generateCreateMessage, generateUpdateMessage } from './generate-message
 import { confidence } from '../schema/attribute-definition';
 import { ENTITY_TYPE_INDICATOR } from '../modules/indicator/indicator-types';
 import { FilterOperator } from '../generated/graphql';
-import { INSTANCE_FILTER } from '../utils/filtering/filtering-constants';
 
 // region global variables
 const MAX_BATCH_SIZE = 300;
