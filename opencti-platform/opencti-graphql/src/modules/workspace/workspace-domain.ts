@@ -267,7 +267,7 @@ export const workspaceEditContext = async (
   );
 };
 
-const MINIMAL_COMPATIBLE_VERSION = '5.12.0';
+const MINIMAL_COMPATIBLE_VERSION = '5.12.16';
 const configurationImportTypeValidation = new Map<string, string>();
 configurationImportTypeValidation.set(
   'dashboard',
