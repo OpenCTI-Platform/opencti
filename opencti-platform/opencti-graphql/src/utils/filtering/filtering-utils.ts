@@ -101,13 +101,19 @@ export const extractFilterGroupValues = (inputFilters: FilterGroup, key: string 
   }
 
   const ids = [];
-  if (keysToKeep.includes(INSTANCE_REGARDING_OF)) {
-    const find: Filter = filteredFilters.map((f) => f.values).flat().find((v: any) => v.key === 'id') as unknown as Filter;
+  // regardingOf key is a composite filter id+type, values are [{ key: 'id', ...}, { key: 'type', ... }]
+  // we need to extract the ids that need representatives
+  const hasRegardingOfKey = filteredFilters.some((f) => f.key.includes(INSTANCE_REGARDING_OF)); // this should be the one and only key
+  if (hasRegardingOfKey) {
+    const find: Filter = filteredFilters.map((f) => f.values).flat().find((v: any) => v.key === 'id');
     const regardingIds = find?.values ?? [];
     ids.push(...regardingIds);
   } else {
-    ids.push(...filteredFilters.map((f) => f.values.map((v) => v.values)).flat() ?? []);
+    // classic filter values are directly the ids
+    ids.push(...filteredFilters.map((f) => f.values).flat() ?? []);
   }
+
+  // recurse on filtergroups
   if (filterGroups.length > 0) {
     ids.push(...filterGroups.map((group) => extractFilterGroupValues(group, key, reverse)).flat());
   }
