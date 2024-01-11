@@ -10,7 +10,7 @@ The OpenCTI Enterprise Edition is licensed under the OpenCTI
 Non-Commercial License (the “Non-Commercial License”).
 The source files in this repository have a header indicating which license they are under. If no such header is provided, this means that the file is belonging to the Community Edition under the Apache License, Version 2.0.
 
-We write a complete article to explain the enterprise edition, [feel free to read it to have more information](https://blog.filigran.io/progressive-rollout-of-the-opencti-enterprise-edition-why-what-and-how-1189e9d5603c)
+We wrote a complete article to explain the enterprise edition, [feel free to read it to have more information](https://blog.filigran.io/progressive-rollout-of-the-opencti-enterprise-edition-why-what-and-how-1189e9d5603c)
 
 ## EE Activation
 Enterprise edition is easy to activate. You need to go the the platform settings and click on the Activate button.
@@ -44,7 +44,7 @@ Organizations segregation is a way to segregate your data considering the organi
 
 ## More to come
 
-More feature will be available in OpenCTI in the future. Features like:
+More features will be available in OpenCTI in the future. Features like:
 
 - Full text indexing of documents
 - Generative AI for correlation and content generation.

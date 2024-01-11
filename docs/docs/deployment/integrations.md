@@ -6,7 +6,7 @@ OpenCTI supports multiple ways to integrate with other systems which do not have
 
 !!! note "Connectors list"
     
-    If you are looking to the list of OpenCTI connectors or native integration, please check the [OpenCTI Ecosystem](https://filigran.notion.site/OpenCTI-Ecosystem-868329e9fb734fca89692b2ed6087e76).
+    If you are looking for the list of OpenCTI connectors or native integration, please check the [OpenCTI Ecosystem](https://filigran.notion.site/OpenCTI-Ecosystem-868329e9fb734fca89692b2ed6087e76).
 
 ## Native feeds and streams
 
@@ -16,7 +16,7 @@ To ease integrations with other products, OpenCTI has built-in capabilities to d
 
 It is possible to create as many CSV feeds as needed, based on filters and accessible in HTTP. CSV feeds are available in Data > Data sharing > Feeds (CSV).
 
-When creating a CSV feed, you need to select one or multiple types of entity to make available. For all columns available in the CSV, you've to select which field will be used for each type of entity:
+When creating a CSV feed, you need to select one or multiple types of entities to make available. Then, you must assign a field (of an entity type) to each column in the CSV:
 
 ![CSV Feeds](assets/csv.png)
 
@@ -26,9 +26,9 @@ When creating a CSV feed, you need to select one or multiple types of entity to 
 
 ### TAXII collections
 
-Most of the moden cybersecurity systems such as SIEMs, EDRs, XDRs and even firewalls supports the [TAXII protocol](https://oasis-open.github.io/cti-documentation/taxii/intro.html) which is basically a paginated HTTP STIX feed. OpenCTI implements a [TAXII 2.1](https://docs.oasis-open.org/cti/taxii/v2.1/os/taxii-v2.1-os.html) server with the ability to create as many TAXII collections as needed in Data > Data sharing > TAXII Collections?
+Most of the modern cybersecurity systems such as SIEMs, EDRs, XDRs and even firewalls supports the [TAXII protocol](https://oasis-open.github.io/cti-documentation/taxii/intro.html) which is basically a paginated HTTP STIX feed. OpenCTI implements a [TAXII 2.1](https://docs.oasis-open.org/cti/taxii/v2.1/os/taxii-v2.1-os.html) server with the ability to create as many TAXII collections as needed in Data > Data sharing > TAXII Collections.
 
-TAXII collections are a sub-selection of the knowledge available in the platform and relie on filters. For instance, it is possible to create TAXII collections for pieces of malware with a given label, for indicators with a score greater than *n*, etc.
+TAXII collections are a sub-selection of the knowledge available in the platform and rely on filters. For instance, it is possible to create TAXII collections for pieces of malware with a given label, for indicators with a score greater than *n*, etc.
 
 ![TAXII Feeds](assets/taxii.png)
 
@@ -45,7 +45,7 @@ Live streams are available in Data > Data sharing > Live streams. As TAXII colle
 
 ![Streams](assets/streams.png)
 
-Streams implement the [HTTP SSE (Server-sent events)](https://en.wikipedia.org/wiki/Server-sent_events) protocol and give applications to consume a real time pure STIX 2.1 stream. Stream connectors in the [OpenCTI Ecosystem](https://filigran.notion.site/OpenCTI-Ecosystem-868329e9fb734fca89692b2ed6087e76) are using live streams to consume data and *do* something such as create / update / delete information in SIEMs, XDRs, etc.
+Streams implement the [HTTP SSE (Server-sent events)](https://en.wikipedia.org/wiki/Server-sent_events) protocol and give applications the possibility to consume a real time pure STIX 2.1 stream. Stream connectors in the [OpenCTI Ecosystem](https://filigran.notion.site/OpenCTI-Ecosystem-868329e9fb734fca89692b2ed6087e76) are using live streams to consume data and *do* something such as create / update / delete information in SIEMs, XDRs, etc.
 
 ### Authentication
 

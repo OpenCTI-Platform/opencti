@@ -2,7 +2,7 @@
 
 ## Introduction
 
-OpenCTI is an open and modular platform. A lot of [connectors, plugins and clients](https://filigran.notion.site/OpenCTI-Ecosystem-868329e9fb734fca89692b2ed6087e76)  are created by [Filigran](https://www.filigran.io) and community. You can find here other resources available to complete your OpenCTI journey.
+OpenCTI is an open and modular platform. A lot of [connectors, plugins and clients](https://filigran.notion.site/OpenCTI-Ecosystem-868329e9fb734fca89692b2ed6087e76)  are created by [Filigran](https://www.filigran.io) and by the community. You can find here other resources available to complete your OpenCTI journey.
 
 ## Videos & training
 

@@ -13,11 +13,11 @@ Enabling activity helps your security, auditing, and compliance entities monitor
 
 ## Categories
 
-The activity group 3 different concepts that need to be explains.
+The activity groups 3 different concepts that need to be explained.
 
 ### Basic knowledge
 
-The basic knowledge refers to all stix data knowledge inside OpenCTI. Every create/update/delete actions on that knowledge is accessible through the history.
+The basic knowledge refers to all STIX data knowledge inside OpenCTI. Every create/update/delete actions on that knowledge is accessible through the history.
 That basic activity is handled by the history manager and can be also found directly on each entity.
 
 ### Extended knowledge
@@ -28,7 +28,7 @@ As this kind of tracking is expensive, the tracking will only be done for specif
 ### Audit knowledge
 
 Audit is focusing on user administration or security actions.
-Audit will produces **console/logs** files along with user interface elements.
+Audit will produce **console/logs** files along with user interface elements.
 
 ```json
 {
@@ -50,7 +50,7 @@ Audit will produces **console/logs** files along with user interface elements.
 
 ## Architecture
 
-OpenCTI use different mechanisms to be able to publish actions (audit) or data modification (history)
+OpenCTI uses different mechanisms to be able to publish actions (audit) or data modification (history)
 
 <iframe style="border: 1px solid rgba(0, 0, 0, 0.1);" width="800" height="450" src="https://www.figma.com/embed?embed_host=share&url=https://www.figma.com/file/65JHbbWWKftqLGrQJ0Xhml/Notifications-architecture?type=whiteboard&node-id=0%3A1&t=Q9GJ4psB6cAdQ3uR-1" allowfullscreen></iframe>
 

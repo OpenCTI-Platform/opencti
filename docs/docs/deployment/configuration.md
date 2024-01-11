@@ -178,46 +178,61 @@ Here are the configuration keys, for both containers (environment variables) and
 
 ### Schedules & Engines
 
-| Parameter                          | Environment variable                            | Default value                 | Description                                                                         |
-| :--------------------------------- | :---------------------------------------------- | :---------------------------- | :---------------------------------------------------------------------------------- |
-| rule_engine:enabled                | RULE_ENGINE__ENABLED                            | `true`                        | Enable/disable the rule engine                                                      |
-| rule_engine:lock_key               | RULE_ENGINE__LOCK_KEY                           | rule_engine_lock              | Lock key of the engine in Redis                                                     |
-| -                                  | -                                               | -                             | -                                                                                   |
-| history_manager:enabled            | HISTORY_MANAGER__ENABLED                        | `true`                        | Enable/disable the history manager                                                  |
-| history_manager:lock_key           | HISTORY_MANAGER__LOCK_KEY                       | history_manager_lock          | Lock key for the manager in Redis                                                   |
-| -                                  | -                                               | -                             | -                                                                                   |
-| task_scheduler:enabled             | TASK_SCHEDULER__ENABLED                         | `true`                        | Enable/disable the task scheduler                                                   |
-| task_scheduler:lock_key            | TASK_SCHEDULER__LOCK_KEY                        | task_manager_lock             | Lock key for the scheduler in Redis                                                 |
-| task_scheduler:interval            | TASK_SCHEDULER__INTERVAL                        | 10000                         | Interval to check new task to do (in ms)                                            |
-| -                                  | -                                               | -                             | -                                                                                   |
-| sync_manager:enabled               | SYNC_MANAGER__ENABLED                           | `true`                        | Enable/disable the sync manager                                                     |
-| sync_manager:lock_key              | SYNC_MANAGER__LOCK_KEY                          | sync_manager_lock             | Lock key for the manager in Redis                                                   |
-| sync_manager:interval              | SYNC_MANAGER__INTERVAL                          | 10000                         | Interval to check new sync feeds to consume (in ms)                                 |
-| -                                  | -                                               | -                             | -                                                                                   |
-| expiration_scheduler:enabled       | EXPIRATION_SCHEDULER__ENABLED                   | `true`                        | Enable/disable the scheduler                                                        |
-| expiration_scheduler:lock_key      | EXPIRATION_SCHEDULER__LOCK_KEY                  | expired_manager_lock          | Lock key for the scheduler in Redis                                                 |
-| expiration_scheduler:interval      | EXPIRATION_SCHEDULER__INTERVAL                  | 300000                        | Interval to check expired indicators (in ms)                                        |
-| -                                  | -                                               | -                             | -                                                                                   |
-| retention_manager:enabled          | RETENTION_MANAGER__ENABLED                      | `true`                        | Enable/disable the retention manager                                                |
-| retention_manager:lock_key         | RETENTION_MANAGER__LOCK_KEY                     | retention_manager_lock        | Lock key for the manager in Redis                                                   |
-| retention_manager:interval         | RETENTION_MANAGER__INTERVAL                     | 60000                         | Interval to check items to be deleted (in ms)                                       |
-| -                                  | -                                               | -                             | -                                                                                   |
-| notification_manager:enabled       | NOTIFICATION_MANAGER__ENABLED                   | `true`                        | Enable/disable the notification manager                                             |
-| notification_manager:lock_key      | NOTIFICATION_MANAGER__LOCK_KEY                  | notification_manager_lock     | Lock key for the manager in Redis                                                   |
-| notification_manager:interval      | NOTIFICATION_MANAGER__INTERVAL                  | 10000                         | Interval to push notifications                                                      |
-| -                                  | -                                               | -                             | -                                                                                   |
-| publisher_manager:enabled          | PUBLISHER_MANAGER__ENABLED                      | `true`                        | Enable/disable the publisher manager                                                |
-| publisher_manager:lock_key         | PUBLISHER_MANAGER__LOCK_KEY                     | publisher_manager_lock        | Lock key for the manager in Redis                                                   |
-| publisher_manager:interval         | PUBLISHER_MANAGER__INTERVAL                     | 10000                         | Interval to send notifications / digests (in ms)                                    |
-| -                                  | -                                               | -                             | -                                                                                   |
-| ingestion_manager:enabled          | INGESTION_MANAGER__ENABLED                      | `true`                        | Enable/disable the ingestion manager                                                |
-| ingestion_manager:lock_key         | INGESTION_MANAGER__LOCK_KEY                     | ingestion_manager_lock        | Lock key for the manager in Redis                                                   |
-| ingestion_manager:interval         | INGESTION_MANAGER__INTERVAL                     | 300000                        | Interval to check for new data in remote feeds                                      |
-| -                                  | -                                               | -                             | -                                                                                   |
-| playbook_manager:enabled           | PLAYBOOK_MANAGER__ENABLED                       | `true`                        | Enable/disable the playbook manager                                                 |
-| playbook_manager:lock_key          | PLAYBOOK_MANAGER__LOCK_KEY                      | publisher_manager_lock        | Lock key for the manager in Redis                                                   |
-| playbook_manager:interval          | PLAYBOOK_MANAGER__INTERVAL                      | 60000                         | Interval to check new playbooks                                                     |
-
+| Parameter                                            | Environment variable                         | Default value                    | Description                                         |
+|:-----------------------------------------------------|:---------------------------------------------|:---------------------------------|:----------------------------------------------------|
+| rule_engine:enabled                                  | RULE_ENGINE__ENABLED                         | `true`                           | Enable/disable the rule engine                      |
+| rule_engine:lock_key                                 | RULE_ENGINE__LOCK_KEY                        | rule_engine_lock                 | Lock key of the engine in Redis                     |
+| -                                                    | -                                            | -                                | -                                                   |
+| history_manager:enabled                              | HISTORY_MANAGER__ENABLED                     | `true`                           | Enable/disable the history manager                  |
+| history_manager:lock_key                             | HISTORY_MANAGER__LOCK_KEY                    | history_manager_lock             | Lock key for the manager in Redis                   |
+| -                                                    | -                                            | -                                | -                                                   |
+| task_scheduler:enabled                               | TASK_SCHEDULER__ENABLED                      | `true`                           | Enable/disable the task scheduler                   |
+| task_scheduler:lock_key                              | TASK_SCHEDULER__LOCK_KEY                     | task_manager_lock                | Lock key for the scheduler in Redis                 |
+| task_scheduler:interval                              | TASK_SCHEDULER__INTERVAL                     | 10000                            | Interval to check new task to do (in ms)            |
+| -                                                    | -                                            | -                                | -                                                   |
+| sync_manager:enabled                                 | SYNC_MANAGER__ENABLED                        | `true`                           | Enable/disable the sync manager                     |
+| sync_manager:lock_key                                | SYNC_MANAGER__LOCK_KEY                       | sync_manager_lock                | Lock key for the manager in Redis                   |
+| sync_manager:interval                                | SYNC_MANAGER__INTERVAL                       | 10000                            | Interval to check new sync feeds to consume (in ms) |
+| -                                                    | -                                            | -                                | -                                                   |
+| expiration_scheduler:enabled                         | EXPIRATION_SCHEDULER__ENABLED                | `true`                           | Enable/disable the scheduler                        |
+| expiration_scheduler:lock_key                        | EXPIRATION_SCHEDULER__LOCK_KEY               | expired_manager_lock             | Lock key for the scheduler in Redis                 |
+| expiration_scheduler:interval                        | EXPIRATION_SCHEDULER__INTERVAL               | 300000                           | Interval to check expired indicators (in ms)        |
+| -                                                    | -                                            | -                                | -                                                   |
+| retention_manager:enabled                            | RETENTION_MANAGER__ENABLED                   | `true`                           | Enable/disable the retention manager                |
+| retention_manager:lock_key                           | RETENTION_MANAGER__LOCK_KEY                  | retention_manager_lock           | Lock key for the manager in Redis                   |
+| retention_manager:interval                           | RETENTION_MANAGER__INTERVAL                  | 60000                            | Interval to check items to be deleted (in ms)       |
+| -                                                    | -                                            | -                                | -                                                   |
+| notification_manager:enabled                         | NOTIFICATION_MANAGER__ENABLED                | `true`                           | Enable/disable the notification manager             |
+| notification_manager:lock_live_key                   | NOTIFICATION_MANAGER__LOCK_LIVE_KEY          | notification_live_manager_lock   | Lock live key for the manager in Redis              |
+| notification_manager:lock_digest_key                 | NOTIFICATION_MANAGER__LOCK_DIGEST_KEY        | notification_digest_manager_lock | Lock digest key for the manager in Redis            |
+| notification_manager:interval                        | NOTIFICATION_MANAGER__INTERVAL               | 10000                            | Interval to push notifications                      |
+| -                                                    | -                                            | -                                | -                                                   |
+| publisher_manager:enabled                            | PUBLISHER_MANAGER__ENABLED                   | `true`                           | Enable/disable the publisher manager                |
+| publisher_manager:lock_key                           | PUBLISHER_MANAGER__LOCK_KEY                  | publisher_manager_lock           | Lock key for the manager in Redis                   |
+| publisher_manager:interval                           | PUBLISHER_MANAGER__INTERVAL                  | 10000                            | Interval to send notifications / digests (in ms)    |
+| -                                                    | -                                            | -                                | -                                                   |
+| ingestion_manager:enabled                            | INGESTION_MANAGER__ENABLED                   | `true`                           | Enable/disable the ingestion manager                |
+| ingestion_manager:lock_key                           | INGESTION_MANAGER__LOCK_KEY                  | ingestion_manager_lock           | Lock key for the manager in Redis                   |
+| ingestion_manager:interval                           | INGESTION_MANAGER__INTERVAL                  | 300000                           | Interval to check for new data in remote feeds      |
+| -                                                    | -                                            | -                                | -                                                   |
+| playbook_manager:enabled                             | PLAYBOOK_MANAGER__ENABLED                    | `true`                           | Enable/disable the playbook manager                 |
+| playbook_manager:lock_key                            | PLAYBOOK_MANAGER__LOCK_KEY                   | publisher_manager_lock           | Lock key for the manager in Redis                   |
+| playbook_manager:interval                            | PLAYBOOK_MANAGER__INTERVAL                   | 60000                            | Interval to check new playbooks                     |
+| -                                                    | -                                            | -                                | -                                                   |
+| activity_manager:enabled                             | ACTIVITY_MANAGER__ENABLED                    | `true`                           | Enable/disable the activity manager                 |
+| activity_manager:lock_key                            | ACTIVITY_MANAGER__LOCK_KEY                   | activity_manager_lock            | Lock key for the manager in Redis                   |
+| -                                                    | -                                            | -                                | -                                                   |
+| connector_manager:enabled                            | CONNECTOR_MANAGER__ENABLED                   | `true`                           | Enable/disable the connector manager                |
+| connector_manager:lock_key                           | CONNECTOR_MANAGER__LOCK_KEY                  | connector_manager_lock           | Lock key for the manager in Redis                   |
+| connector_manager:works_day_range                    | CONNECTOR_MANAGER__WORKS_DAY_RANGE           | 7                                | Days range before considering the works as too old  |
+| connector_manager:interval                           | CONNECTOR_MANAGER__INTERVAL                  | 10000                            | Interval to check the state of the works            |
+| -                                                    | -                                            | -                                | -                                                   |
+| import_csv_built_in_connector:enabled                | IMPORT_CSV_CONNECTOR__ENABLED                | `true`                           | Enable/disable the csv import connector             |
+| import_csv_built_in_connector:validate_before_import | IMPORT_CSV_CONNECTOR__VALIDATE_BEFORE_IMPORT | `false`                          | Validates the bundle before importing               |
+| -                                                    | -                                            | -                                | -                                                   |
+| file_index_manager:enabled                           | FILE_INDEX_MANAGER__ENABLED                  | `true`                           | Enable/disable the file indexing manager            |
+| file_index_manager:stream_lock_key                   | FILE_INDEX_MANAGER__STREAM_LOCK              | file_index_manager_stream_lock   | Stream lock key for the manager in Redis            |
+| file_index_manager:interval                          | FILE_INDEX_MANAGER__INTERVAL                 | 60000                            | Interval to check for new files                     |
 !!! note "Default file"
     
     It is possible to check all default parameters implemented in the platform in the [`default.json` file](https://github.com/OpenCTI-Platform/opencti/blob/master/opencti-platform/opencti-graphql/config/default.json).

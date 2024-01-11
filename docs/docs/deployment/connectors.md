@@ -6,7 +6,7 @@
     
     You are looking for the available connectors? The list is in the [OpenCTI Ecosystem](https://filigran.notion.site/OpenCTI-Ecosystem-868329e9fb734fca89692b2ed6087e76).
 
-Connectors are the cornerstone of the OpenCTI platform and allow organizations to easily ingest, enrich or export data in the platform. According to their functionality and use case, they are categorized in following classes.
+Connectors are the cornerstone of the OpenCTI platform and allow organizations to easily ingest, enrich or export data in the platform. According to their functionality and use case, they are categorized in the following classes.
 
 ![Connectors](assets/connectors.png)
 
@@ -33,13 +33,13 @@ Information stored in OpenCTI can be extracted into different file formats like 
 
 ## Connector configuration
 
-All connectors have to be able to access to the OpenCTI API. To allow this connection, they have 2 mandatory configuration parameters, the `OPENCTI_URL` and the `OPENCTI_TOKEN`. In addition of these 2 parameters, connectors have other mandatory parameters that need to be set in order to get them work.
+All connectors have to be able to access the OpenCTI API. To allow this connection, they have 2 mandatory configuration parameters, the `OPENCTI_URL` and the `OPENCTI_TOKEN`. In addition to these 2 parameters, connectors have other mandatory parameters that need to be set in order to get them work.
 
 !!! warning "Connectors tokens"
     
     Be careful, we strongly recommend to use a dedicated token for each connector running in the platform. So you have to [**create a specific user for each of them**](../administration/users.md).
 
-    Also, if all connectors users can run in with a user belonging to the `Connectors` group (with the `Connector` role), the `Internal Export Files` should be run with a user who is Administrator (with bypass capability) because they imperstonate the user requesting the export to avoid data leak.
+    Also, if all connectors users can run in with a user belonging to the `Connectors` group (with the `Connector` role), the `Internal Export Files` should be run with a user who is Administrator (with bypass capability) because they impersonate the user requesting the export to avoid data leak.
 
     | Type                 | Required role       | Used permissions                                                                                  
     | :------------------- | :------------------ | :----------------------------------------------------- |

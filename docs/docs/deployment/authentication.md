@@ -6,22 +6,22 @@ OpenCTI supports several authentication providers. If you configure multiple str
 
 !!! note "Activation"
 
-    You need to configure/activate only that you really want to propose to your users in term of authentication
+    You need to configure/activate only the strategy that you really want to propose to your users in term of authentication
 
-The product proposes two kind of authentication strategy:
+The product proposes two kinds of authentication strategies:
 
 - Form (asking user for a user/password)
 - Buttons (click with authentication on an external system)
 
 ## Supported Strategies
 
-Under the hood we technically use the strategies provided by [PassportJS](http://www.passportjs.org/). We integrate a subset of the strategies available with passport we if you need more we can theatrically integrate all the passport strategies.
+Under the hood we technically use the strategies provided by [PassportJS](http://www.passportjs.org/). We integrate a subset of the strategies available with passport. If you need more, we can integrate other strategies.
 
 ### Local users (form)
 
-This strategy used the OpenCTI database as user management.
+This strategy uses the OpenCTI database as a user management.
 
-OpenCTI use this strategy as the default but its not the one we recommend for security reason.
+OpenCTI use this strategy as the default but its not the one we recommend for security reasons.
 
 ```json
 "local": {
@@ -108,7 +108,7 @@ For the SAML strategy to work:
 
 !!! note "Certificates"
 
-    Be careful to put the `cert` / `private_key`  key in PEM format. Indeed, a lot of systems generally export the the keys in X509 / PCKS12 formats and so you will need to convert them. 
+    Be careful to put the `cert` / `private_key`  key in PEM format. Indeed, a lot of systems generally export the keys in X509 / PCKS12 formats and so you will need to convert them. 
     Here is an example to extract PEM from PCKS12:
     ```bash
     openssl pkcs12 -in keystore.p12 -out newfile.pem -nodes
@@ -118,7 +118,7 @@ Here is an example of SAML configuration using environment variables:
 
 ```yaml
 - PROVIDERS__SAML__STRATEGY=SamlStrategy 
-- "PROVIDERS__SAML__CONFIG__LABEL=Login with SAML"
+- PROVIDERS__SAML__CONFIG__LABEL="Login with SAML"
 - PROVIDERS__SAML__CONFIG__ISSUER=mydomain
 - PROVIDERS__SAML__CONFIG__ENTRY_POINT=https://auth.mydomain.com/auth/realms/mydomain/protocol/saml
 - PROVIDERS__SAML__CONFIG__SAML_CALLBACK_URL=http://opencti.mydomain.com/auth/saml/callback
@@ -126,7 +126,7 @@ Here is an example of SAML configuration using environment variables:
 - PROVIDERS__SAML__CONFIG__LOGOUT_REMOTE=false
 ```
 
-OpenCTI support mapping SAML Roles/Groups on OpenCTI Groups. Here is an example:
+OpenCTI supports mapping SAML Roles/Groups on OpenCTI Groups. Here is an example:
 
 ```json
 "saml": {
@@ -157,8 +157,8 @@ OpenCTI support mapping SAML Roles/Groups on OpenCTI Groups. Here is an example:
 Here is an example of SAML Groups mapping configuration using environment variables:
 
 ```yaml
-- "PROVIDERS__SAML__CONFIG__GROUPS_MANAGEMENT__GROUP_ATTRIBUTES=[\"Group\"]"
-- "PROVIDERS__SAML__CONFIG__GROUPS_MANAGEMENT__GROUPS_MAPPING=[\"SAML_Group_1:OpenCTI_Group_1\", \"SAML_Group_2:OpenCTI_Group_2\", ...]"
+- PROVIDERS__SAML__CONFIG__GROUPS_MANAGEMENT__GROUP_ATTRIBUTES=[\"Group\"]
+- PROVIDERS__SAML__CONFIG__GROUPS_MANAGEMENT__GROUPS_MAPPING=[\"SAML_Group_1:OpenCTI_Group_1\", \"SAML_Group_2:OpenCTI_Group_2\", ...]
 ```
 
 ### Auth0 (button)
@@ -197,7 +197,7 @@ Here is an example of Auth0 configuration using environment variables:
 
 ### OpenID Connect (button)
 
-This strategy allows to use the [OpenID Connect Protocol](https://openid.net/connect) to handle the authentication and is based on [Node OpenID Client](https://github.com/panva/node-openid-client) that is more powerful than the passport one.
+This strategy allows to use the [OpenID Connect Protocol](https://openid.net/connect) to handle the authentication and is based on [Node OpenID Client](https://github.com/panva/node-openid-client) which is more powerful than the passport one.
 
 ```json
 "oic": {
@@ -218,11 +218,11 @@ Here is an example of OpenID configuration using environment variables:
 
 ```yaml
 - PROVIDERS__OPENID__STRATEGY=OpenIDConnectStrategy 
-- "PROVIDERS__OPENID__CONFIG__LABEL=Login with OpenID"
+- PROVIDERS__OPENID__CONFIG__LABEL="Login with OpenID"
 - PROVIDERS__OPENID__CONFIG__ISSUER=https://auth.mydomain.com/auth/realms/xxxx
 - PROVIDERS__OPENID__CONFIG__CLIENT_ID=XXXXXXXXXXXXXXXXXX
 - PROVIDERS__OPENID__CONFIG__CLIENT_SECRET=XXXXXXXXXXXXXXXXXX
-- "PROVIDERS__OPENID__CONFIG__REDIRECT_URIS=[\"https://opencti.mydomain.com/auth/oic/callback\"]"
+- PROVIDERS__OPENID__CONFIG__REDIRECT_URIS=[\"https://opencti.mydomain.com/auth/oic/callback\"]
 - PROVIDERS__OPENID__CONFIG__LOGOUT_REMOTE=false
 ```
 
@@ -251,22 +251,22 @@ OpenCTI support mapping OpenID Claims on OpenCTI Groups (everything is tied to a
 Here is an example of OpenID Groups mapping configuration using environment variables:
 
 ```yaml
-- "PROVIDERS__OPENID__CONFIG__GROUPS_MANAGEMENT__GROUPS_SCOPE=groups"
-- "PROVIDERS__OPENID__CONFIG__GROUPS_MANAGEMENT__GROUPS_PATH=[\"groups\", \"realm_access.groups\", \"resource_access.account.groups\"]"
-- "PROVIDERS__OPENID__CONFIG__GROUPS_MANAGEMENT__GROUPS_MAPPING=[\"OpenID_Group_1:OpenCTI_Group_1\", \"OpenID_Group_2:OpenCTI_Group_2\", ...]"
+- PROVIDERS__OPENID__CONFIG__GROUPS_MANAGEMENT__GROUPS_SCOPE="groups"
+- PROVIDERS__OPENID__CONFIG__GROUPS_MANAGEMENT__GROUPS_PATH=[\"groups\", \"realm_access.groups\", \"resource_access.account.groups\"]
+- PROVIDERS__OPENID__CONFIG__GROUPS_MANAGEMENT__GROUPS_MAPPING=[\"OpenID_Group_1:OpenCTI_Group_1\", \"OpenID_Group_2:OpenCTI_Group_2\", ...]
 ```
 
 By default, the claims are mapped based on the content of the JWT `access_token`. If you want to map claims which are in other JWT (such as `id_token`), you can define the following environment variables:
 
 ```yaml
-- "PROVIDERS__OPENID__CONFIG__GROUPS_MANAGEMENT__TOKEN_REFERENCE=id_token"
-- "PROVIDERS__OPENID__CONFIG__ORGANISATIONS_MANAGEMENT__TOKEN_REFERENCE=id_token"
+- PROVIDERS__OPENID__CONFIG__GROUPS_MANAGEMENT__TOKEN_REFERENCE="id_token"
+- PROVIDERS__OPENID__CONFIG__ORGANISATIONS_MANAGEMENT__TOKEN_REFERENCE="id_token"
 ```
 
 Alternatively, you can request OpenCTI to use claims from the `userinfo` endpoint instead of a JWT.
 ```yaml
-- "PROVIDERS__OPENID__CONFIG__GROUPS_MANAGEMENT__READ_USERINFO=true"
-- "PROVIDERS__OPENID__CONFIG__ORGANISATIONS_MANAGEMENT__READ_USERINFO=true"
+- PROVIDERS__OPENID__CONFIG__GROUPS_MANAGEMENT__READ_USERINFO=true
+- PROVIDERS__OPENID__CONFIG__ORGANISATIONS_MANAGEMENT__READ_USERINFO=true
 ```
 
 ### Facebook (button)
