@@ -29,6 +29,7 @@ import PasswordPolicies from '../common/form/PasswordPolicies';
 import { fieldSpacingContainerStyle } from '../../../utils/field';
 import OtpInputField, { OTP_CODE_SIZE } from '../../../public/components/OtpInputField';
 import ItemCopy from '../../../components/ItemCopy';
+import { availableLanguage } from '../../../components/AppIntlProvider';
 
 const styles = () => ({
   container: {
@@ -360,11 +361,9 @@ const ProfileOverviewComponent = (props) => {
                 onChange={handleSubmitField}
               >
                 <MenuItem value="auto"><em>{t('Automatic')}</em></MenuItem>
-                <MenuItem value="en-us">English</MenuItem>
-                <MenuItem value="fr-fr">Français</MenuItem>
-                <MenuItem value="es-es">Español</MenuItem>
-                <MenuItem value="ja-jp">日本語</MenuItem>
-                <MenuItem value="zh-cn">简化字</MenuItem>
+                {
+                  availableLanguage.map(({ value, label }) => <MenuItem key={value} value={value}>{label}</MenuItem>)
+                }
               </Field>
               <Field
                 component={SelectField}
