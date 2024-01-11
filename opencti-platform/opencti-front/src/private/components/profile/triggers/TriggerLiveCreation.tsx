@@ -27,7 +27,7 @@ import TextField from '../../../../components/TextField';
 import type { Theme } from '../../../../components/Theme';
 import { handleErrorInForm } from '../../../../relay/environment';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
-import { serializeFilterGroupForBackend } from '../../../../utils/filters/filtersUtils';
+import { constructHandleAddFilter, getDefaultFilterObject, serializeFilterGroupForBackend } from '../../../../utils/filters/filtersUtils';
 import { insertNode } from '../../../../utils/store';
 import NotifierField from '../../common/form/NotifierField';
 import { Option } from '../../common/form/ReferenceField';
@@ -35,6 +35,7 @@ import Filters from '../../common/lists/Filters';
 import { TriggerEventType, TriggerLiveCreationKnowledgeMutation, TriggerLiveCreationKnowledgeMutation$data } from './__generated__/TriggerLiveCreationKnowledgeMutation.graphql';
 import { TriggersLinesPaginationQuery$variables } from './__generated__/TriggersLinesPaginationQuery.graphql';
 import useFiltersState from '../../../../utils/filters/useFiltersState';
+import FilterAutocomplete, { FilterAutocompleteInputValue } from '../../common/lists/FilterAutocomplete';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   drawerPaper: {
@@ -149,12 +150,26 @@ const TriggerLiveCreation: FunctionComponent<TriggerLiveCreationProps> = ({
       value: { value: string; label: string }[],
     ) => void,
   ) => {
+    const newInstanceTriggerValue = !instance_trigger;
     setFieldValue(
       'event_types',
-      instance_trigger ? eventTypesOptions : instanceEventTypesOptions,
+      newInstanceTriggerValue ? instanceEventTypesOptions : eventTypesOptions,
     );
-    setInstanceTrigger(!instance_trigger);
-    helpers.handleClearAllFilters();
+
+    if (newInstanceTriggerValue) {
+      helpers.handleClearAllFilters([{
+        ...getDefaultFilterObject('connectedToId'),
+      }]);
+    } else {
+      helpers.handleClearAllFilters();
+    }
+    setInstanceTrigger(newInstanceTriggerValue);
+  };
+
+  const handleAddFilter = (key: string, id: string, operator = 'eq') => {
+    helpers.handleAddFilterWithEmptyValue({
+      ...getDefaultFilterObject(key),
+    });
   };
 
   const [commitLive] = useMutation<TriggerLiveCreationKnowledgeMutation>(
@@ -253,25 +268,11 @@ const TriggerLiveCreation: FunctionComponent<TriggerLiveCreationProps> = ({
           )}
         />
         <NotifierField name="notifiers" onChange={setFieldValue} />
-        {instance_trigger ? (
-          <Box sx={{ paddingTop: 4,
+        {!instance_trigger
+          && <Box sx={{ paddingTop: 4,
             display: 'flex',
             gap: 1 }}
-          >
-            <Filters
-              availableFilterKeys={[
-                'connectedToId',
-              ]}
-              searchContext={{ entityTypes: ['Stix-Core-Object'] }}
-              helpers={helpers}
-              noDirectFilters={true}
-            />
-          </Box>
-        ) : (
-          <Box sx={{ paddingTop: 4,
-            display: 'flex',
-            gap: 1 }}
-          >
+             >
             <Filters
               availableFilterKeys={[
                 'entity_type',
@@ -299,7 +300,7 @@ const TriggerLiveCreation: FunctionComponent<TriggerLiveCreationProps> = ({
               noDirectFilters={true}
             />
           </Box>
-        )}
+        }
       </>
     );
   };
@@ -330,11 +331,22 @@ const TriggerLiveCreation: FunctionComponent<TriggerLiveCreationProps> = ({
         style={{ marginTop: 20 }}
       />
       {renderKnowledgeTrigger(values, setFieldValue)}
-      <FilterIconButton
-        filters={filters}
-        helpers={helpers}
-        redirection
-      />
+      { instance_trigger
+        ? <Box sx={{ paddingTop: 4 }}>
+          <FilterIconButton
+            filters={filters}
+            helpers={helpers}
+            redirection
+          />
+        </Box>
+        : <FilterIconButton
+            filters={filters}
+            helpers={helpers}
+            redirection
+          />
+
+      }
+
     </React.Fragment>
   );
 
