@@ -73,12 +73,21 @@ export const handleAddRepresentationFilterUtil = ({ viewStorage, setValue, id, v
   updateFilters(
     viewStorage,
     setValue,
-    (f) => {
-      if (f.id === id) {
-        return { ...f, values: [...f.values, value] };
-      }
-      return f;
-    },
+    (f) => (f.id === id ? { ...f, values: [...f.values, value] } : f),
+  );
+};
+
+export const handleChangeRepresentationFilterUtil = ({ viewStorage, setValue, id, oldValue, newValue }: FiltersLocalStorageUtilProps<{
+  id: string,
+  oldValue: any,
+  newValue: any,
+}>) => {
+  updateFilters(
+    viewStorage,
+    setValue,
+    (f) => (f.id === id
+      ? { ...f, values: f.values.filter((val) => val !== oldValue).concat([newValue]) }
+      : f),
   );
 };
 
@@ -97,12 +106,18 @@ export const handleRemoveRepresentationFilterUtil = ({ viewStorage, setValue, id
   id: string,
   value: FilterValue
 }>) => {
-  updateFilters(viewStorage, setValue, (f) => (f.id === id
-    ? {
+  updateFilters(viewStorage, setValue, (f) => {
+    console.log('result', {
       ...f,
-      values: f.values.filter((v) => v !== value),
-    }
-    : f));
+      values: f.values.filter((value) => value !== valueId),
+    });
+    return (f.id === id
+      ? {
+        ...f,
+        values: f.values.filter((v) => v !== value),
+      }
+      : f);
+  });
 };
 
 export const handleRemoveFilterUtil = ({ viewStorage, setValue, id }: FiltersLocalStorageUtilProps<{ id?: string }>) => {

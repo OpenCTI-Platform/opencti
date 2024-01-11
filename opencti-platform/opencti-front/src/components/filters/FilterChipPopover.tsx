@@ -170,21 +170,18 @@ export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({
   const [entities, searchEntities] = getUseSearch(searchScope);
   const { t } = useFormatter();
   const handleChange = (checked: boolean, value: string, childKey?: string) => {
-    console.log('checked', checked);
     if (childKey) { // case 'regardingOf' filter
       const childFilters = filter?.values.filter((val) => val.key === childKey) as Filter[];
       const childFilter = childFilters && childFilters.length > 0 ? childFilters[0] : undefined;
-      console.log('childFilter', childFilter);
       const alreadySelectedValues = childFilter?.values ?? [];
-      if (childFilter) helpers?.handleRemoveRepresentationFilter(filter?.id ?? '', childFilter); // remove former value corresponding to childKey
+      let representationToAdd;
       if (checked) {
-        const representationToAdd = { key: childKey, values: [...alreadySelectedValues, value] }; // the representation to add = the former values + the added value
-        helpers?.handleAddRepresentationFilter(filter?.id ?? '', representationToAdd);
+        representationToAdd = { key: childKey, values: [...alreadySelectedValues, value] }; // the representation to add = the former values + the added value
       } else {
         const cleanedValues = alreadySelectedValues.filter((val) => val !== value);
-        const representationToAdd = { key: childKey, values: cleanedValues }; // the representation to add = the former values - the removed value
-        if (cleanedValues.length > 0) helpers?.handleAddRepresentationFilter(filter?.id ?? '', representationToAdd);
+        representationToAdd = cleanedValues.length > 0 ? { key: childKey, values: cleanedValues } : undefined; // the representation to add = the former values - the removed value
       }
+      helpers?.handleChangeRepresentationFilter(filter?.id ?? '', childFilter, representationToAdd);
     } else if (checked) {
       helpers?.handleAddRepresentationFilter(filter?.id ?? '', value);
     } else {
