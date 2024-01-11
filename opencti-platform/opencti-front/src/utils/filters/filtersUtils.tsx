@@ -675,7 +675,7 @@ export const constructHandleRemoveFilter = (
       ...filters,
       filters: filters.filters.filter((f) => f.key !== k || f.operator !== op), // remove filter with key=k and operator=op
     };
-    return isFilterGroupNotEmpty(newBaseFilters) ? newBaseFilters : undefined;
+    return isFilterGroupNotEmpty(newBaseFilters) ? newBaseFilters : emptyFilterGroup;
   }
   return undefined;
 };
