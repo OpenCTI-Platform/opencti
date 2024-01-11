@@ -940,23 +940,40 @@ const DefaultDashboard = ({ timeField }) => {
         <Grid item={true} xs={6}>
           <StixRelationshipsHorizontalBars
             height={400}
-            relationshipType="stix-core-relationship"
-            toTypes={[
-              'Threat-Actor',
-              'Intrusion-Set',
-              'Campaign',
-              'Malware',
-              'Tool',
-              'Vulnerability',
-              'Channel',
-              'Narrative',
-            ]}
-            title={t('Top 10 active entities (3 last months)')}
-            field="internal_id"
-            startDate={monthsAgo(3)}
-            dateAttribute={
-              timeField === 'functional' ? 'start_time' : 'created_at'
+            dataSelection={
+              [
+                {
+                  attribute: 'internal_id',
+                  date_attribute: timeField === 'functional' ? 'start_time' : 'created_at',
+                  filters: {
+                    mode: 'and',
+                    filters: [
+                      {
+                        key: 'entity_type',
+                        values: ['stix-core-relationship'],
+                      },
+                      {
+                        key: 'toTypes',
+                        mode: 'or',
+                        values: [
+                          'Threat-Actor',
+                          'Intrusion-Set',
+                          'Campaign',
+                          'Malware',
+                          'Tool',
+                          'Vulnerability',
+                          'Channel',
+                          'Narrative',
+                        ],
+                      },
+                    ],
+                    filterGroups: [],
+                  },
+                },
+              ]
             }
+            title={t('Top 10 active entities (3 last months)')}
+            startDate={monthsAgo(3)}
           />
         </Grid>
         <Grid item={true} xs={6}>

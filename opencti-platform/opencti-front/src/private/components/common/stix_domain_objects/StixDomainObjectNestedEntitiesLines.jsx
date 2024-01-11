@@ -167,7 +167,7 @@ StixDomainObjectNestedEntitiesLinesComponent.propTypes = {
 
 export const stixDomainObjectNestedEntitiesLinesQuery = graphql`
   query StixDomainObjectNestedEntitiesLinesQuery(
-    $elementId: String
+    $fromOrToId: String
     $search: String
     $count: Int!
     $orderBy: StixRefRelationshipsOrdering
@@ -175,7 +175,7 @@ export const stixDomainObjectNestedEntitiesLinesQuery = graphql`
   ) {
     ...StixDomainObjectNestedEntitiesLines_data
       @arguments(
-        elementId: $elementId
+        fromOrToId: $fromOrToId
         search: $search
         count: $count
         orderBy: $orderBy
@@ -190,14 +190,14 @@ const StixDomainObjectNestedEntitiesLines = createFragmentContainer(
     data: graphql`
       fragment StixDomainObjectNestedEntitiesLines_data on Query
       @argumentDefinitions(
-        elementId: { type: "String" }
+        fromOrToId: { type: "String" }
         search: { type: "String" }
         count: { type: "Int", defaultValue: 25 }
         orderBy: { type: "StixRefRelationshipsOrdering" }
         orderMode: { type: "OrderingMode" }
       ) {
         stixNestedRefRelationships(
-          elementId: $elementId
+          fromOrToId: $fromOrToId
           search: $search
           first: $count
           orderBy: $orderBy

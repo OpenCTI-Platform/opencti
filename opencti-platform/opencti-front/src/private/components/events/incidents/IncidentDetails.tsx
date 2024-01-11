@@ -86,12 +86,11 @@ const IncidentDetails: FunctionComponent<IncidentDetailsProps> = ({
             values: ['Stix-Domain-Object'],
           },
           {
-            key: 'elementId',
-            values: [incident.id],
-          },
-          {
-            key: 'relationship_type',
-            values: ['related-to', 'targets', 'uses', 'attributed-to'],
+            key: 'regardingOf',
+            values: [
+              { key: 'id', values: [incident.id], operator: 'eq' },
+              { key: 'type', values: ['related-to', 'targets', 'uses', 'attributed-to'] },
+            ],
           },
         ],
         filterGroups: [],
@@ -109,12 +108,11 @@ const IncidentDetails: FunctionComponent<IncidentDetailsProps> = ({
             values: ['Stix-Cyber-Observable'],
           },
           {
-            key: 'elementId',
-            values: [incident.id],
-          },
-          {
-            key: 'relationship_type',
-            values: ['related-to'],
+            key: 'regardingOf',
+            values: [
+              { key: 'id', values: [incident.id], operator: 'eq' },
+              { key: 'type', values: ['related-to'], operator: 'eq' },
+            ],
           },
         ],
         filterGroups: [],

@@ -36,8 +36,6 @@ export const FiltersVariant = {
   dialog: 'dialog',
 };
 
-export const onlyGroupOrganization = ['workflow_id'];
-
 export const directFilters = [
   'is_read',
   'channel_types',
@@ -48,7 +46,6 @@ export const directFilters = [
   'x_opencti_negative',
   'fromId',
   'toId',
-  'elementId',
   'contextEntityId',
   'note_types',
   'context',
@@ -302,30 +299,11 @@ export const buildFiltersAndOptionsForWidgets = (
   opts: { removeTypeAll?: boolean, startDate?: string, endDate?: string, dateAttribute?: string } = {},
 ) => {
   const { removeTypeAll = false, startDate = null, endDate = null, dateAttribute = 'created_at' } = opts;
-  // 01. handle api filters in options
-  // elementId, elementWithTargetTypes, fromId, toId, fromTypes and toTypes should be handle in options, not in filters
-  // relationship_type should be put in options BUT should be kept in filters because this key can have all modes and operators
-  let filtersContent = inputFilters?.filters ?? [];
-  const dataSelectionElementId = R.head(filtersContent.filter((n) => n.key === 'elementId'))?.values || null;
-  const dataSelectionElementWithTargetTypes = R.head(filtersContent.filter((n) => n.key === 'elementWithTargetTypes'))?.values || null;
-  const dataSelectionRelationshipType = R.head(filtersContent.filter((o) => o.key === 'relationship_type'))?.values || null;
-  const dataSelectionFromId = R.head(filtersContent.filter((o) => o.key === 'fromId'))?.values || null;
-  const dataSelectionToId = R.head(filtersContent.filter((o) => o.key === 'toId'))?.values || null;
-  const dataSelectionFromTypes = R.head(filtersContent.filter((o) => o.key === 'fromTypes'))?.values || null;
-  const dataSelectionToTypes = R.head(filtersContent.filter((o) => o.key === 'toTypes'))?.values || null;
-  filtersContent = filtersContent.filter(
-    (o) => ![
-      'elementId',
-      'elementWithTargetTypes',
-      'fromId',
-      'toId',
-      'fromTypes',
-      'toTypes',
-    ].includes(o.key),
-  );
-  let filters = inputFilters ? { ...inputFilters, filters: filtersContent } : undefined;
+  let filters = inputFilters;
   // 02. remove 'all' in filter with key=entity_type
-  if (removeTypeAll) filters = removeEntityTypeAllFromFilterGroup(filters);
+  if (removeTypeAll) {
+    filters = removeEntityTypeAllFromFilterGroup(filters);
+  }
   // 03. handle startDate and endDate options
   const dateFiltersContent = [];
   if (startDate) {
@@ -353,13 +331,6 @@ export const buildFiltersAndOptionsForWidgets = (
   }
   return {
     filters,
-    dataSelectionElementId,
-    dataSelectionElementWithTargetTypes,
-    dataSelectionRelationshipType,
-    dataSelectionFromId,
-    dataSelectionFromTypes,
-    dataSelectionToId,
-    dataSelectionToTypes,
   };
 };
 

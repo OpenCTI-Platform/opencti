@@ -40,7 +40,7 @@ interface PositionDetailsProps {
 
 export const positionDetailsLocationRelationshipsLinesQuery = graphql`
   query PositionDetailsLocationRelationshipsLinesQueryLinesPaginationQuery(
-    $elementId: [String]!
+    $fromOrToId: [String]!
     $relationship_type: [String]
     $confidences: [Int]
     $orderBy: StixCoreRelationshipsOrdering
@@ -50,7 +50,7 @@ export const positionDetailsLocationRelationshipsLinesQuery = graphql`
   ) {
     ...PositionDetails_positionRelationships
       @arguments(
-        elementId: $elementId
+        fromOrToId: $fromOrToId
         relationship_type: $relationship_type
         confidences: $confidences
         orderBy: $orderBy
@@ -64,7 +64,7 @@ export const positionDetailsLocationRelationshipsLinesQuery = graphql`
 export const positionDetailsRelationshipsFragment = graphql`
   fragment PositionDetails_positionRelationships on Query
   @argumentDefinitions(
-    elementId: { type: "[String]!" }
+    fromOrToId: { type: "[String]!" }
     relationship_type: { type: "[String]" }
     confidences: { type: "[Int]" }
     orderBy: {
@@ -77,7 +77,7 @@ export const positionDetailsRelationshipsFragment = graphql`
   )
   @refetchable(queryName: "PositionRefetchQuery") {
     stixCoreRelationships(
-      elementId: $elementId
+      fromOrToId: $fromOrToId
       relationship_type: $relationship_type
       confidences: $confidences
       orderBy: $orderBy

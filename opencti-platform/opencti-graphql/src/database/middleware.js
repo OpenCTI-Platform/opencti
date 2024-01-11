@@ -358,12 +358,12 @@ export const loadThroughGetTo = async (context, user, sources, relationType, tar
 // Standard listing
 export const listThings = async (context, user, thingsTypes, args = {}) => {
   const { indices = READ_DATA_INDICES } = args;
-  const paginateArgs = buildEntityFilters({ types: thingsTypes, ...args });
+  const paginateArgs = buildEntityFilters(thingsTypes, args);
   return elPaginate(context, user, indices, paginateArgs);
 };
 export const listAllThings = async (context, user, thingsTypes, args = {}) => {
   const { indices = READ_DATA_INDICES } = args;
-  const paginateArgs = buildEntityFilters({ types: thingsTypes, ...args });
+  const paginateArgs = buildEntityFilters(thingsTypes, args);
   return elList(context, user, indices, paginateArgs);
 };
 export const paginateAllThings = async (context, user, thingsTypes, args = {}) => {
@@ -386,11 +386,11 @@ const loadElementMetaDependencies = async (context, user, elements, args = {}) =
   const { onlyMarking = true } = args;
   const workingElements = Array.isArray(elements) ? elements : [elements];
   const workingElementsMap = new Map(workingElements.map((i) => [i.internal_id, i]));
-  const elementIds = workingElements.map((element) => element.internal_id);
+  const workingIds = workingElements.map((element) => element.internal_id);
   const relTypes = onlyMarking ? [RELATION_OBJECT_MARKING] : STIX_REF_RELATIONSHIP_TYPES;
   // Resolve all relations
   const refIndices = [READ_INDEX_STIX_META_RELATIONSHIPS, READ_INDEX_STIX_CYBER_OBSERVABLE_RELATIONSHIPS, READ_INDEX_INFERRED_RELATIONSHIPS];
-  const refsRelations = await elFindByIds(context, user, elementIds, { type: relTypes, indices: refIndices, onRelationship: 'from' });
+  const refsRelations = await elFindByIds(context, user, workingIds, { type: relTypes, indices: refIndices, onRelationship: 'from' });
   const refsPerElements = R.groupBy((r) => r.fromId, refsRelations);
   // Parallel resolutions
   const toResolvedIds = R.uniq(refsRelations.map((rel) => rel.toId));
@@ -398,8 +398,8 @@ const loadElementMetaDependencies = async (context, user, elements, args = {}) =
   const refEntries = Object.entries(refsPerElements);
   const loadedElementMap = new Map();
   for (let indexRef = 0; indexRef < refEntries.length; indexRef += 1) {
-    const [elementId, dependencies] = refEntries[indexRef];
-    const element = workingElementsMap.get(elementId);
+    const [refId, dependencies] = refEntries[indexRef];
+    const element = workingElementsMap.get(refId);
     // Build flatten view inside the data for stix meta
     const data = {};
     if (element) {
@@ -427,7 +427,7 @@ const loadElementMetaDependencies = async (context, user, elements, args = {}) =
         data[key] = !metaRefKey.multiple ? R.head(resolvedElementsWithRelation)?.internal_id : resolvedElementsWithRelation.map((r) => r.internal_id);
         data[inputKey] = !metaRefKey.multiple ? R.head(resolvedElementsWithRelation) : resolvedElementsWithRelation;
       }
-      loadedElementMap.set(elementId, data);
+      loadedElementMap.set(refId, data);
     }
   }
   return loadedElementMap;
@@ -493,7 +493,7 @@ const loadByIdsWithDependencies = async (context, user, ids, opts = {}) => {
 };
 const loadByFiltersWithDependencies = async (context, user, types, args = {}) => {
   const { indices = READ_DATA_INDICES } = args;
-  const paginateArgs = buildEntityFilters({ types, ...args });
+  const paginateArgs = buildEntityFilters(types, args);
   const elements = await elList(context, user, indices, { ...paginateArgs, withoutRels: true, connectionFormat: false });
   if (elements.length > 0) {
     return loadElementsWithDependencies(context, user, elements, { ...args, onlyMarking: false, withoutRels: true });
@@ -545,7 +545,7 @@ export const timeSeriesHistory = async (context, user, types, args) => {
   return fillTimeSeries(startDate, endDate, interval, histogramData);
 };
 export const timeSeriesEntities = async (context, user, types, args) => {
-  const timeSeriesArgs = buildEntityFilters({ types, ...args });
+  const timeSeriesArgs = buildEntityFilters(types, args);
   const { startDate, endDate, interval } = args;
   const histogramData = await elHistogramCount(context, user, args.onlyInferred ? READ_DATA_INDICES_INFERRED : READ_DATA_INDICES, timeSeriesArgs);
   return fillTimeSeries(startDate, endDate, interval, histogramData);
@@ -553,7 +553,7 @@ export const timeSeriesEntities = async (context, user, types, args) => {
 export const timeSeriesRelations = async (context, user, args) => {
   const { startDate, endDate, relationship_type: relationshipTypes, interval } = args;
   const types = relationshipTypes || ['stix-core-relationship'];
-  const timeSeriesArgs = buildEntityFilters({ types, ...args });
+  const timeSeriesArgs = buildEntityFilters(types, args);
   const histogramData = await elHistogramCount(context, user, args.onlyInferred ? INDEX_INFERRED_RELATIONSHIPS : READ_RELATIONSHIPS_INDICES, timeSeriesArgs);
   return fillTimeSeries(startDate, endDate, interval, histogramData);
 };
@@ -593,7 +593,7 @@ export const distributionHistory = async (context, user, types, args) => {
   return R.take(limit, R.sortWith([orderingFunction(R.prop('value'))])(distributionData));
 };
 export const distributionEntities = async (context, user, types, args) => {
-  const distributionArgs = buildEntityFilters({ types, ...args });
+  const distributionArgs = buildEntityFilters(types, args);
   const { limit = 10, order = 'desc', field } = args;
   if (field.includes('.') && !field.endsWith('internal_id')) {
     throw FunctionalError('Distribution entities does not support relation aggregation field');
@@ -729,8 +729,8 @@ const inputResolveRefs = async (context, user, input, type, entitySetting) => {
       resolvedElements.push(embeddedFrom);
     }
     const resolvedElementWithConfGroup = resolvedElements.map((d) => {
-      const elementIds = getInstanceIds(d);
-      const matchingConfigs = R.filter((a) => elementIds.includes(a.id), fetchingIds);
+      const resolvedIds = getInstanceIds(d);
+      const matchingConfigs = R.filter((a) => resolvedIds.includes(a.id), fetchingIds);
       return matchingConfigs.map((c) => ({ ...d, i_group: c }));
     });
     const allResolvedElements = R.flatten(resolvedElementWithConfGroup);
@@ -2493,7 +2493,7 @@ const buildRelationDeduplicationFilters = (input) => {
   }
   return filters;
 };
-
+/*
 export const buildDynamicFilterArgsContent = (inputFilters) => {
   const { filters = [], filterGroups = [] } = inputFilters;
   // 01. Handle filterGroups
@@ -2538,9 +2538,10 @@ export const buildDynamicFilterArgsContent = (inputFilters) => {
     filterGroups: dynamicFilterGroups,
   };
 };
+*/
 export const buildDynamicFilterArgs = (inputFilters) => {
-  const filters = buildDynamicFilterArgsContent(inputFilters);
-  return { connectionFormat: false, first: 500, filters };
+  // const filters = buildDynamicFilterArgsContent(inputFilters);
+  return { connectionFormat: false, first: 500, filters: inputFilters };
 };
 
 const upsertElement = async (context, user, element, type, basePatch, opts = {}) => {
@@ -3437,12 +3438,12 @@ export const internalDeleteElementById = async (context, user, id, opts = {}) =>
   // - TRANSACTION END
   return { element, event };
 };
-export const deleteElementById = async (context, user, elementId, type, opts = {}) => {
+export const deleteElementById = async (context, user, id, type, opts = {}) => {
   if (R.isNil(type)) {
     /* v8 ignore next */
     throw FunctionalError('You need to specify a type when deleting an entity');
   }
-  const { element: deleted } = await internalDeleteElementById(context, user, elementId, opts);
+  const { element: deleted } = await internalDeleteElementById(context, user, id, opts);
   return deleted;
 };
 export const deleteInferredRuleElement = async (rule, instance, deletedDependencies, opts = {}) => {

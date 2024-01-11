@@ -37,7 +37,7 @@ const StixDomainObjectAttackPatterns = ({
   const { searchTerm, filters, view, openExports } = viewStorage;
 
   const finalPaginationOptions = {
-    elementId: stixDomainObjectId,
+    fromOrToId: stixDomainObjectId,
     elementWithTargetTypes: ['Attack-Pattern'],
     ...rawPaginationOptions,
   };

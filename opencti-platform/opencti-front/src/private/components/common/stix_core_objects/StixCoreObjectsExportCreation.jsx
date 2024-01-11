@@ -40,8 +40,6 @@ export const StixCoreObjectsExportCreationMutation = graphql`
     $orderBy: StixCoreObjectsOrdering
     $orderMode: OrderingMode
     $filters: FilterGroup
-    $relationship_type: [String]
-    $elementId: String
     $selectedIds: [String]
   ) {
     stixCoreObjectsExportAsk(
@@ -54,8 +52,6 @@ export const StixCoreObjectsExportCreationMutation = graphql`
       orderBy: $orderBy
       orderMode: $orderMode
       filters: $filters
-      relationship_type: $relationship_type
-      elementId: $elementId
       selectedIds: $selectedIds
     ) {
       id

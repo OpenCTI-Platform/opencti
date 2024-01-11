@@ -155,11 +155,11 @@ const EntityStixCoreRelationshipsRelationshipsView: FunctionComponent<EntityStix
   if (allDirections) {
     paginationOptions = {
       ...paginationOptions,
-      elementId: entityId,
+      fromOrToId: entityId,
       elementWithTargetTypes: selectedTypes,
     };
     backgroundTaskFilters = addFilter(
-      addFilter(backgroundTaskFilters, 'elementId', entityId),
+      addFilter(backgroundTaskFilters, 'fromOrToId', entityId),
       'elementWithTargetTypes',
       selectedTypes.length > 0
         ? selectedTypes

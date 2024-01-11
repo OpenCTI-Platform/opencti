@@ -65,7 +65,7 @@ export const createRuleTask = async (context, user, ruleDefinition, input) => {
   const { rule, enable } = input;
   const { scan } = ruleDefinition;
   const opts = enable
-    ? buildEntityFilters(scan)
+    ? buildEntityFilters(scan.types, scan)
     : { filters: {
       mode: 'and',
       filters: [{ key: `${RULE_PREFIX}${rule}`, values: ['EXISTS'] }],

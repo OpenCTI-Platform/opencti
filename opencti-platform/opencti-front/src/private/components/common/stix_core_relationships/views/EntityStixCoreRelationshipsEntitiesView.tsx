@@ -12,7 +12,7 @@ import { computeTargetStixCyberObservableTypes, computeTargetStixDomainObjectTyp
 import { PaginationLocalStorage } from '../../../../../utils/hooks/useLocalStorage';
 import { DataColumns, PaginationOptions } from '../../../../../components/list_lines';
 import { EntityStixCoreRelationshipsEntitiesViewLinesPaginationQuery$variables } from './__generated__/EntityStixCoreRelationshipsEntitiesViewLinesPaginationQuery.graphql';
-import { cleanFilters, removeIdFromFilterGroupObject, injectEntityTypeFilterInFilterGroup, removeFilter, findFilterFromKey } from '../../../../../utils/filters/filtersUtils';
+import { addFilter, findFilterFromKey, removeIdFromFilterGroupObject } from '../../../../../utils/filters/filtersUtils';
 import { isEmptyField } from '../../../../../utils/utils';
 
 interface EntityStixCoreRelationshipsEntitiesViewProps {
@@ -63,7 +63,7 @@ EntityStixCoreRelationshipsEntitiesViewProps
   } = viewStorage;
 
   let availableFilterKeys = [
-    'relationship_type',
+    // `regardingOf|fix=id=>${entityId}`,
     'entity_type',
     'objectMarking',
     'confidence',
@@ -123,31 +123,26 @@ EntityStixCoreRelationshipsEntitiesViewProps
     },
   };
 
-  const typesFromFilter = findFilterFromKey(filters?.filters ?? [], 'relationship_type')?.values;
-  const selectedTypes = isEmptyField(typesFromFilter) ? relationshipTypes : typesFromFilter;
-  const finalFilters = cleanFilters(removeFilter(filters, ['relationship_type']), availableFilterKeys);
+  const regardingOfFilter = findFilterFromKey(filters?.filters ?? [], 'regardingOf')?.values;
+  let preparedFilters = filters;
+  if (isEmptyField(regardingOfFilter)) {
+    preparedFilters = addFilter(preparedFilters, 'regardingOf', [
+      { key: 'id', values: [entityId], operator: 'eq', mode: 'or' },
+      { key: 'type', values: relationshipTypes, operator: 'eq', mode: 'or' },
+    ] as unknown as string[]); // Workaround for typescript waiting for better solution
+  }
+  const entityTypeFilter = findFilterFromKey(filters?.filters ?? [], 'entity_type')?.values;
+  if (isEmptyField(entityTypeFilter)) {
+    preparedFilters = addFilter(preparedFilters, 'entity_type', stixCoreObjectTypes);
+  }
+  const finalFilters = removeIdFromFilterGroupObject(preparedFilters);
 
   const paginationOptions = {
-    types: stixCoreObjectTypes,
-    relationship_type: selectedTypes,
-    elementId: entityId,
     search: searchTerm,
     orderBy: sortBy && sortBy in dataColumns && dataColumns[sortBy].isSortable ? sortBy : 'name',
     orderMode: orderAsc ? 'asc' : 'desc',
-    filters: removeIdFromFilterGroupObject(finalFilters),
+    filters: finalFilters,
   } as unknown as EntityStixCoreRelationshipsEntitiesViewLinesPaginationQuery$variables; // Because of FilterMode
-
-  // const backgroundTaskFilters = {
-  //     ...filters,
-  //     entity_type:
-  //       selectedTypes?.length > 0
-  //         ? selectedTypes.map((n) => ({ id: n, value: n }))
-  //         : [{ id: 'Stix-Core-Object', value: 'Stix-Core-Object' }],
-  //     [`rel_${selectedRelationshipTypes.at(0)}.*`]: [
-  //       { id: entityId, value: entityId },
-  //     ],
-  //   };
-  const backgroundTaskFilters = injectEntityTypeFilterInFilterGroup(filters, ['Stix-Core-Object']);
 
   const {
     selectedElements,
@@ -237,7 +232,7 @@ EntityStixCoreRelationshipsEntitiesViewProps
         deSelectedElements={deSelectedElements}
         numberOfSelectedElements={numberOfSelectedElements}
         selectAll={selectAll}
-        filters={backgroundTaskFilters}
+        filters={finalFilters}
         search={searchTerm}
         handleClearSelectedElements={handleClearSelectedElements}
         variant="medium"

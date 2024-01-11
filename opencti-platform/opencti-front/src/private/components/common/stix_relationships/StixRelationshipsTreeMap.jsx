@@ -31,7 +31,7 @@ const stixRelationshipsTreeMapsDistributionQuery = graphql`
     $dateAttribute: String
     $isTo: Boolean
     $limit: Int
-    $elementId: [String]
+    $fromOrToId: [String]
     $elementWithTargetTypes: [String]
     $fromId: [String]
     $fromRole: String
@@ -54,7 +54,7 @@ const stixRelationshipsTreeMapsDistributionQuery = graphql`
       dateAttribute: $dateAttribute
       isTo: $isTo
       limit: $limit
-      elementId: $elementId
+      fromOrToId: $fromOrToId
       elementWithTargetTypes: $elementWithTargetTypes
       fromId: $fromId
       fromRole: $fromRole
@@ -218,9 +218,6 @@ const StixRelationshipsTreeMap = ({
   title,
   variant,
   height,
-  stixCoreObjectId,
-  relationshipType,
-  toTypes,
   field,
   startDate,
   endDate,
@@ -242,13 +239,7 @@ const StixRelationshipsTreeMap = ({
       filtersAndOptions = buildFiltersAndOptionsForWidgets(selection.filters);
     }
     const finalField = selection.attribute || field || 'entity_type';
-    const finalToTypes = filtersAndOptions?.dataSelectionToTypes || toTypes;
     const variables = {
-      fromId: filtersAndOptions?.dataSelectionFromId || stixCoreObjectId,
-      toId: filtersAndOptions?.dataSelectionToId,
-      relationship_type: filtersAndOptions?.dataSelectionRelationshipType || relationshipType,
-      fromTypes: filtersAndOptions?.dataSelectionFromTypes,
-      toTypes: finalToTypes,
       field: finalField,
       operation: 'count',
       startDate,
@@ -275,13 +266,7 @@ const StixRelationshipsTreeMap = ({
               data = R.map(
                 (n) => R.assoc(
                   'label',
-                  `${
-                    finalToTypes && finalToTypes.length > 1
-                      ? `[${t(
-                        `entity_${n.entity.entity_type}`,
-                      )}] ${defaultValue(n.entity)}`
-                      : `${defaultValue(n.entity)}`
-                  }`,
+                  `[${t(`entity_${n.entity.entity_type}`)}] ${defaultValue(n.entity)}`,
                   n,
                 ),
                 props.stixRelationshipsDistribution,

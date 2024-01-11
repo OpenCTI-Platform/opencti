@@ -312,7 +312,7 @@ StixCyberObservableEntitiesLinesComponent.propTypes = {
 
 export const stixCyberObservableEntitiesLinesQuery = graphql`
   query StixCyberObservableEntitiesLinesPaginationQuery(
-    $elementId: [String]
+    $fromOrToId: [String]
     $relationship_type: [String]
     $toTypes: [String]
     $startTimeStart: DateTime
@@ -328,7 +328,7 @@ export const stixCyberObservableEntitiesLinesQuery = graphql`
   ) {
     ...StixCyberObservableEntitiesLines_data
       @arguments(
-        elementId: $elementId
+        fromOrToId: $fromOrToId
         relationship_type: $relationship_type
         toTypes: $toTypes
         startTimeStart: $startTimeStart
@@ -351,7 +351,7 @@ const StixCyberObservableEntitiesLines = createPaginationContainer(
     data: graphql`
       fragment StixCyberObservableEntitiesLines_data on Query
       @argumentDefinitions(
-        elementId: { type: "[String]" }
+        fromOrToId: { type: "[String]" }
         relationship_type: { type: "[String]" }
         toTypes: { type: "[String]" }
         startTimeStart: { type: "DateTime" }
@@ -369,7 +369,7 @@ const StixCyberObservableEntitiesLines = createPaginationContainer(
         orderMode: { type: "OrderingMode" }
       ) {
         stixCoreRelationships(
-          elementId: $elementId
+          fromOrToId: $fromOrToId
           relationship_type: $relationship_type
           toTypes: $toTypes
           startTimeStart: $startTimeStart
@@ -1157,7 +1157,7 @@ const StixCyberObservableEntitiesLines = createPaginationContainer(
     },
     getVariables(props, { count, cursor }, fragmentVariables) {
       return {
-        elementId: fragmentVariables.elementId,
+        fromOrToId: fragmentVariables.fromOrToId,
         toTypes: fragmentVariables.toTypes,
         relationship_type: fragmentVariables.relationship_type,
         startTimeStart: fragmentVariables.startTimeStart,

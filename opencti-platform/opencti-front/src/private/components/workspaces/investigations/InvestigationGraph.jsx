@@ -353,12 +353,12 @@ const investigationGraphCountRelToQuery = graphql`
 
 const investigationGraphStixRelationshipsQuery = graphql`
   query InvestigationGraphStixRelationshipsQuery(
-    $elementId: String!
+    $fromOrToId: String!
     $relationship_type: [String]
     $elementWithTargetTypes: [String]
   ) {
     stixRelationships(
-      elementId: $elementId
+      fromOrToId: $fromOrToId
       relationship_type: $relationship_type
       elementWithTargetTypes: $elementWithTargetTypes
     ) {
@@ -1846,7 +1846,7 @@ class InvestigationGraphComponent extends Component {
       const newElements = await fetchQuery(
         investigationGraphStixRelationshipsQuery,
         {
-          elementId: n,
+          fromOrToId: n,
           relationship_type: filters.relationship_types.map((o) => o.value),
           elementWithTargetTypes: filters.entity_types.map((o) => o.value),
         },

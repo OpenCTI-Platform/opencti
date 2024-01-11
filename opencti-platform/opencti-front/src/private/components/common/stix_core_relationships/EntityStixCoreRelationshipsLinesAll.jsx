@@ -77,7 +77,7 @@ EntityStixCoreRelationshipsLinesAll.propTypes = {
 
 export const entityStixCoreRelationshipsLinesAllQuery = graphql`
   query EntityStixCoreRelationshipsLinesAllPaginationQuery(
-    $elementId: [String]
+    $fromOrToId: [String]
     $elementWithTargetTypes: [String]
     $relationship_type: [String]
     $search: String
@@ -90,7 +90,7 @@ export const entityStixCoreRelationshipsLinesAllQuery = graphql`
   ) {
     ...EntityStixCoreRelationshipsLinesAll_data
       @arguments(
-        elementId: $elementId
+        fromOrToId: $fromOrToId
         elementWithTargetTypes: $elementWithTargetTypes
         relationship_type: $relationship_type
         search: $search
@@ -110,7 +110,7 @@ export default createPaginationContainer(
     data: graphql`
       fragment EntityStixCoreRelationshipsLinesAll_data on Query
       @argumentDefinitions(
-        elementId: { type: "[String]" }
+        fromOrToId: { type: "[String]" }
         elementWithTargetTypes: { type: "[String]" }
         fromTypes: { type: "[String]" }
         relationship_type: { type: "[String]" }
@@ -125,7 +125,7 @@ export default createPaginationContainer(
         filters: { type: "FilterGroup" }
       ) {
         stixCoreRelationships(
-          elementId: $elementId
+          fromOrToId: $fromOrToId
           elementWithTargetTypes: $elementWithTargetTypes
           relationship_type: $relationship_type
           search: $search
@@ -164,7 +164,7 @@ export default createPaginationContainer(
     },
     getVariables(props, { count, cursor }, fragmentVariables) {
       return {
-        elementId: fragmentVariables.elementId,
+        fromOrToId: fragmentVariables.fromOrToId,
         elementWithTargetTypes: fragmentVariables.elementWithTargetTypes,
         relationship_type: fragmentVariables.relationship_type,
         search: fragmentVariables.search,

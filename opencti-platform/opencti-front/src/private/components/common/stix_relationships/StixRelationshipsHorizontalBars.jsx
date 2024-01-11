@@ -33,7 +33,7 @@ const stixRelationshipsHorizontalBarsDistributionQuery = graphql`
     $dateAttribute: String
     $isTo: Boolean
     $limit: Int
-    $elementId: [String]
+    $fromOrToId: [String]
     $elementWithTargetTypes: [String]
     $fromId: [String]
     $fromRole: String
@@ -56,7 +56,7 @@ const stixRelationshipsHorizontalBarsDistributionQuery = graphql`
       dateAttribute: $dateAttribute
       isTo: $isTo
       limit: $limit
-      elementId: $elementId
+      fromOrToId: $fromOrToId
       elementWithTargetTypes: $elementWithTargetTypes
       fromId: $fromId
       fromRole: $fromRole
@@ -219,9 +219,6 @@ const StixRelationshipsHorizontalBars = ({
   title,
   variant,
   height,
-  stixCoreObjectId,
-  relationshipType,
-  toTypes,
   field,
   startDate,
   endDate,
@@ -249,11 +246,6 @@ const StixRelationshipsHorizontalBars = ({
     }
     const finalField = selection.attribute || field || 'entity_type';
     const variables = {
-      fromId: filtersAndOptions?.dataSelectionFromId || stixCoreObjectId,
-      toId: filtersAndOptions?.dataSelectionToId,
-      relationship_type: filtersAndOptions?.dataSelectionRelationshipType || relationshipType,
-      fromTypes: filtersAndOptions?.dataSelectionFromTypes,
-      toTypes: filtersAndOptions?.dataSelectionToTypes || toTypes,
       field: finalField,
       operation: 'count',
       startDate,

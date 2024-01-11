@@ -32,8 +32,6 @@ const stixCoreObjectsNumberNumberQuery = graphql`
     $onlyInferred: Boolean
     $filters: FilterGroup
     $search: String
-    $relationship_type: [String]
-    $elementId: [String]
   ) {
     stixCoreObjectsNumber(
       types: $types
@@ -42,8 +40,6 @@ const stixCoreObjectsNumberNumberQuery = graphql`
       onlyInferred: $onlyInferred
       filters: $filters
       search: $search
-      relationship_type: $relationship_type
-      elementId: $elementId
     ) {
       total
       count
@@ -67,7 +63,7 @@ const StixCoreObjectsNumber = ({
     const dateAttribute = selection.date_attribute && selection.date_attribute.length > 0
       ? selection.date_attribute
       : 'created_at';
-    const { filters, dataSelectionElementId } = buildFiltersAndOptionsForWidgets(selection.filters, { startDate, endDate, dateAttribute });
+    const { filters } = buildFiltersAndOptionsForWidgets(selection.filters, { startDate, endDate, dateAttribute });
     return (
       <QueryRenderer
         query={stixCoreObjectsNumberNumberQuery}
@@ -77,7 +73,6 @@ const StixCoreObjectsNumber = ({
           orderBy: dateAttribute,
           orderMode: 'desc',
           filters,
-          elementId: dataSelectionElementId,
           startDate,
           endDate: dayAgo(),
         }}

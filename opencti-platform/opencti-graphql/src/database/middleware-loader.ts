@@ -1,7 +1,7 @@
 import * as R from 'ramda';
 import { buildPagination, isNotEmptyField, READ_DATA_INDICES, READ_DATA_INDICES_WITHOUT_INFERRED, READ_ENTITIES_INDICES, READ_RELATIONSHIPS_INDICES } from './utils';
 import { elAggregationsList, elCount, elFindByIds, elList, elLoadById, elPaginate } from './engine';
-import { buildRefRelationKey } from '../schema/general';
+import { ABSTRACT_STIX_CORE_OBJECT, buildRefRelationKey } from '../schema/general';
 import type { AuthContext, AuthUser } from '../types/user';
 import type { BasicStoreBase, BasicStoreCommon, BasicStoreEntity, BasicStoreObject, StoreEntityConnection, StoreProxyRelation } from '../types/store';
 import { FunctionalError, UnsupportedError } from '../config/errors';
@@ -38,7 +38,6 @@ export interface ListFilter<T extends BasicStoreCommon> {
   orderMode?: InputMaybe<OrderingMode>;
   filters?: FilterGroupWithNested | null;
   callback?: (result: Array<T>) => Promise<boolean | void>
-  types?: string[]
 }
 
 type InternalListEntities = <T extends BasicStoreCommon>
@@ -47,7 +46,7 @@ type InternalListEntities = <T extends BasicStoreCommon>
 // entities
 interface EntityFilters<T extends BasicStoreCommon> extends ListFilter<T> {
   connectionFormat?: boolean;
-  elementId?: string | Array<string>;
+  fromOrToId?: string | Array<string>;
   fromId?: string | Array<string>;
   fromRole?: string;
   toId?: string | Array<string>;
@@ -55,7 +54,6 @@ interface EntityFilters<T extends BasicStoreCommon> extends ListFilter<T> {
   fromTypes?: Array<string>;
   toTypes?: Array<string>;
   types?: Array<string>;
-  entityTypes?: Array<string>;
   relationshipTypes?: Array<string>;
   elementWithTargetTypes?: Array<string>;
   filters?: FilterGroupWithNested | null;
@@ -77,7 +75,7 @@ interface RelationFilters<T extends BasicStoreCommon> extends ListFilter<T> {
     relationId: string;
   };
   isTo?: boolean | null;
-  elementId?: string | Array<string>;
+  fromOrToId?: string | Array<string>;
   fromId?: string | Array<string>;
   fromRole?: string;
   toId?: string | Array<string>;
@@ -104,14 +102,14 @@ export interface RelationOptions<T extends BasicStoreCommon> extends RelationFil
 }
 
 export const buildAggregationFilter = <T extends BasicStoreCommon>(args: RelationFilters<T>) => {
-  const { elementId = [], isTo = null } = args;
+  const { fromOrToId = [], isTo = null } = args;
   const { fromId, fromRole, fromTypes = [] } = args;
   const { toId, toRole, toTypes = [] } = args;
   const filtersContent = [];
   const nestedElement = [];
-  const optsElementIds = Array.isArray(elementId) ? elementId : [elementId];
-  if (elementId && optsElementIds.length > 0) {
-    nestedElement.push({ key: 'internal_id', values: optsElementIds, operator: 'not_eq' });
+  const optsFromOrToIdIds = Array.isArray(fromOrToId) ? fromOrToId : [fromOrToId];
+  if (fromOrToId && optsFromOrToIdIds.length > 0) {
+    nestedElement.push({ key: 'internal_id', values: optsFromOrToIdIds, operator: 'not_eq' });
     filtersContent.push({ key: 'connections', nested: nestedElement });
   }
   if (isTo === false) {
@@ -152,7 +150,7 @@ export const buildRelationsFilter = <T extends BasicStoreCommon>(relationshipTyp
   const {
     relationFilter,
     filters = undefined,
-    elementId = [],
+    fromOrToId = [],
     fromId,
     fromRole,
     toId,
@@ -185,12 +183,12 @@ export const buildRelationsFilter = <T extends BasicStoreCommon>(relationshipTyp
     }
   }
   // region element filtering
-  const optsElementIds = Array.isArray(elementId) ? elementId : [elementId];
+  const optsFromOrToIds = Array.isArray(fromOrToId) ? fromOrToId : [fromOrToId];
   // TODO elementId is not a rel in this case
   // This situation doesnt allow use to use a simple key: elementID
   // We need to change the key and migrate the current elementId stored in the database
-  if (elementId && optsElementIds.length > 0) {
-    filtersFromOptionsContent.push({ key: ['fromOrToId'], values: optsElementIds });
+  if (fromOrToId && optsFromOrToIds.length > 0) {
+    filtersFromOptionsContent.push({ key: ['fromOrToId'], values: optsFromOrToIds });
   }
   if (elementWithTargetTypes && isNotEmptyField(elementWithTargetTypes)) {
     filtersFromOptionsContent.push({ key: ['elementWithTargetTypes'], values: elementWithTargetTypes });
@@ -288,97 +286,9 @@ export const buildAggregationRelationFilter = <T extends BasicStoreCommon>(relat
 };
 
 // entities
-export const buildEntityFilters = <T extends BasicStoreCommon>(args: EntityFilters<T> = {}) => {
-  const { types = [], entityTypes = [], relationshipTypes = [] } = args;
-  const { elementId, elementWithTargetTypes = [] } = args;
-  const { fromId, fromRole, fromTypes = [] } = args;
-  const { toId, toRole, toTypes = [] } = args;
-  const { filters = null } = args;
-  // Config
-  const customFiltersContent = [];
-  // region element
-  const nestedElement = [];
-  const optsElementIds = Array.isArray(elementId) ? elementId : [elementId];
-  const isElementIdPresent = elementId && optsElementIds.length > 0;
-  if (isElementIdPresent) {
-    nestedElement.push({ key: 'internal_id', values: optsElementIds as string[] });
-  }
-  if (nestedElement.length > 0) {
-    customFiltersContent.push({ key: ['connections'], nested: nestedElement, values: [] });
-  }
-  const nestedElementTypes = [];
-  if (elementWithTargetTypes && elementWithTargetTypes.length > 0) {
-    nestedElementTypes.push({ key: 'types', values: elementWithTargetTypes });
-    // If elementId is setup, we need to extract the element from the result side
-    if (isElementIdPresent) {
-      nestedElementTypes.push({ key: 'internal_id', values: optsElementIds as string[], operator: FilterOperator.NotEq });
-    }
-  }
-  if (nestedElementTypes.length > 0) {
-    customFiltersContent.push({ key: ['connections'], nested: nestedElementTypes, values: [] });
-  }
-  // endregion
-  // region from filtering
-  const nestedFrom = [];
-  if (fromId) {
-    nestedFrom.push({ key: 'internal_id', values: Array.isArray(fromId) ? fromId : [fromId] });
-  }
-  if (fromTypes && fromTypes.length > 0) {
-    nestedFrom.push({ key: 'types', values: fromTypes });
-  }
-  if (fromRole) {
-    nestedFrom.push({ key: 'role', values: [fromRole] });
-  } else if (fromId || (fromTypes && fromTypes.length > 0)) {
-    nestedFrom.push({ key: 'role', values: ['*_from'], operator: FilterOperator.Wildcard });
-  }
-  if (nestedFrom.length > 0) {
-    customFiltersContent.push({ key: ['connections'], nested: nestedFrom, values: [] });
-  }
-  // endregion
-  // region to filtering
-  const nestedTo = [];
-  if (toId) {
-    nestedTo.push({ key: 'internal_id', values: Array.isArray(toId) ? toId : [toId] });
-  }
-  if (toTypes && toTypes.length > 0) {
-    nestedTo.push({ key: 'types', values: toTypes });
-  }
-  if (toRole) {
-    nestedTo.push({ key: 'role', values: [toRole] });
-  } else if (toId || (toTypes && toTypes.length > 0)) {
-    nestedTo.push({ key: 'role', values: ['*_to'], operator: FilterOperator.Wildcard });
-  }
-  if (nestedTo.length > 0) {
-    customFiltersContent.push({ key: ['connections'], nested: nestedTo, values: [] });
-  }
-  // endregion
-  // Remove options passed in filters
-  const builtArgs = R.pipe(
-    R.dissoc('fromId'),
-    R.dissoc('fromRole'),
-    R.dissoc('fromTypes'),
-    R.dissoc('toId'),
-    R.dissoc('toRole'),
-    R.dissoc('toTypes'),
-  )(args);
-  // Override some special filters
-  builtArgs.types = R.uniq([...(types ?? []), ...entityTypes, ...relationshipTypes]);
-  let finalFilters = filters;
-  if (customFiltersContent.length > 0) {
-    const customFilters = {
-      mode: FilterMode.And,
-      filters: customFiltersContent,
-      filterGroups: [],
-    };
-    finalFilters = filters
-      ? {
-        mode: filters.mode,
-        filters: [],
-        filterGroups: [customFilters, filters],
-      }
-      : customFilters;
-  }
-  return { ...builtArgs, filters: finalFilters };
+export const buildEntityFilters = <T extends BasicStoreCommon>(entityTypes: string | Array<string>, args: EntityFilters<T> = {}) => {
+  const types = Array.isArray(entityTypes) ? entityTypes : [entityTypes || ABSTRACT_STIX_CORE_OBJECT];
+  return buildRelationsFilter(types, args);
 };
 
 const entitiesAggregations = [
@@ -405,13 +315,13 @@ export const listEntities: InternalListEntities = async (context, user, entityTy
   // if (connectionFormat !== false) {
   //   throw UnsupportedError('List connection require connectionFormat option to false');
   // }
-  const paginateArgs = buildEntityFilters({ entityTypes, ...args });
+  const paginateArgs = buildEntityFilters(entityTypes, args);
   return elPaginate(context, user, indices, paginateArgs);
 };
 export const listAllEntities = async <T extends BasicStoreEntity>(context: AuthContext, user: AuthUser, entityTypes: Array<string>,
   args: EntityOptions<T> = {}): Promise<Array<T>> => {
   const { indices = READ_ENTITIES_INDICES } = args;
-  const paginateArgs = buildEntityFilters({ entityTypes, ...args });
+  const paginateArgs = buildEntityFilters(entityTypes, args);
   return elList(context, user, indices, paginateArgs);
 };
 
@@ -421,7 +331,7 @@ export const listEntitiesPaginated = async <T extends BasicStoreEntity>(context:
   if (connectionFormat === false) {
     throw UnsupportedError('List connection require connectionFormat option to true');
   }
-  const paginateArgs = buildEntityFilters({ ...args, entityTypes });
+  const paginateArgs = buildEntityFilters(entityTypes, args);
   return elPaginate(context, user, indices, paginateArgs);
 };
 

@@ -101,7 +101,7 @@ const computeRuleTaskElements = async (context, user, task) => {
       orderMode: 'asc',
       orderBy: 'updated_at',
       after: task_position,
-      ...buildEntityFilters(scan),
+      ...buildEntityFilters(scan.types, scan),
     };
     const { edges: elements } = await elPaginate(context, RULE_MANAGER_USER, READ_DATA_INDICES_WITHOUT_INFERRED, options);
     // Apply the actions for each element
@@ -155,8 +155,8 @@ const computeListTaskElements = async (context, user, task) => {
   const isUndefinedPosition = R.isNil(task_position) || R.isEmpty(task_position);
   const startIndex = isUndefinedPosition ? 0 : task_ids.findIndex((id) => task_position === id) + 1;
   const ids = R.take(MAX_TASK_ELEMENTS, task_ids.slice(startIndex));
-  for (let elementId = 0; elementId < ids.length; elementId += 1) {
-    const elementToResolve = ids[elementId];
+  for (let indexId = 0; indexId < ids.length; indexId += 1) {
+    const elementToResolve = ids[indexId];
     const element = await internalLoadById(context, user, elementToResolve, { type: DEFAULT_ALLOWED_TASK_ENTITY_TYPES });
     if (element) {
       processingElements.push({ element, next: element.id });
@@ -361,7 +361,7 @@ const executeProcessing = async (context, user, job) => {
             // For all objects, resolve stix core
             for (let objectIndex = 0; objectIndex < objects.length; objectIndex += 1) {
               const relations = await listAllRelations(context, user, ABSTRACT_STIX_CORE_RELATIONSHIP, {
-                elementId: objects[objectIndex],
+                fromOrToId: objects[objectIndex],
                 baseData: true
               });
               finalObjects = R.uniq(

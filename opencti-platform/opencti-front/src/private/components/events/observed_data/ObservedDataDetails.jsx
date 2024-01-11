@@ -33,12 +33,11 @@ class ObservedDataDetailsComponent extends Component {
               values: 'Stix-Core-Object',
             },
             {
-              key: 'elementId',
-              values: observedData.id,
-            },
-            {
-              key: 'relationship_type',
-              values: 'object',
+              key: 'regardingOf',
+              values: [
+                { key: 'id', values: [observedData.id] },
+                { key: 'type', values: ['object'] },
+              ],
             },
           ],
           filterGroups: [],

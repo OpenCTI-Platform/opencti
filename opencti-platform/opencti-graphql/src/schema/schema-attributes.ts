@@ -17,11 +17,7 @@ export const depsKeysRegister = {
 
 let usageProtection = false;
 export const schemaAttributesDefinition = {
-  // allAttributes is a map of the name and type of all the attributes registered in a schema definition
-  // !!! don't use this map !!! It is created for the special context of filter keys checking in case no entity types are given
-  allAttributes: new Map<string, string>(),
-
-  // Basic usages
+  allAttributes: new Map<string, AttributeDefinition>(),
   attributes: {} as Record<string, Map<string, AttributeDefinition>>,
   attributesByTypes: {
     string: new Map<string, void>(),
@@ -40,10 +36,10 @@ export const schemaAttributesDefinition = {
     }
     const directAttributes = this.attributes[entityType] ?? new Map<string, AttributeDefinition>();
     // Register given attribute
-    const allAttributes = Object.values(this.attributes);
+    const currentAttributes = Object.values(this.attributes);
     attributes.forEach((attribute) => {
       // Check the homogeneity of attribute types
-      const existingAttribute = allAttributes.find((a) => a.get(attribute.name))?.get(attribute.name); // Maybe better way ?
+      const existingAttribute = currentAttributes.find((a) => a.get(attribute.name))?.get(attribute.name); // Maybe better way ?
       if (existingAttribute) {
         if (existingAttribute.type === 'string') {
           if (existingAttribute.type !== attribute.type || existingAttribute.format !== attribute.format) {
@@ -89,7 +85,7 @@ export const schemaAttributesDefinition = {
       // add the attribute name and type in the map of all the attributes
       // to do so, we overwrite an eventual attribute having the same name for an other entity type
       // it's not a problem because if 2 attributes have the same name, they also have the same type
-      this.allAttributes.set(attribute.name, attribute.type);
+      this.allAttributes.set(attribute.name, attribute);
     });
     const parentAttributes = new Map(getParentTypes(entityType)
       .map((type) => Array.from((this.attributes[type] ?? new Map()).values()))
@@ -140,6 +136,9 @@ export const schemaAttributesDefinition = {
   },
   getAttribute(entityType: string, name: string): AttributeDefinition | undefined {
     return this.getAttributes(entityType)?.get(name);
+  },
+  getAttributeByName(name: string): AttributeDefinition | undefined {
+    return this.allAttributes.get(name);
   },
   isMultipleAttribute(entityType: string, attributeName: string): boolean {
     return this.getAttribute(entityType, attributeName)?.multiple ?? false;

@@ -395,7 +395,7 @@ const createSseMiddleware = () => {
         return channel.connected();
       };
       const allRelOptions = {
-        elementId: stix.extensions[STIX_EXT_OCTI].id,
+        fromOrToId: stix.extensions[STIX_EXT_OCTI].id,
         indices: [READ_INDEX_STIX_CORE_RELATIONSHIPS, READ_INDEX_STIX_SIGHTING_RELATIONSHIPS],
         callback: allRelCallback
       };

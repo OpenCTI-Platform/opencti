@@ -87,7 +87,7 @@ class SimpleStixObjectOrStixRelationshipStixCoreRelationships extends Component 
       },
     };
     const paginationOptions = {
-      elementId: stixObjectOrStixRelationshipId,
+      fromOrToId: stixObjectOrStixRelationshipId,
       relationship_type: relationshipType || 'stix-core-relationship',
       orderBy: 'created_at',
       orderMode: 'desc',

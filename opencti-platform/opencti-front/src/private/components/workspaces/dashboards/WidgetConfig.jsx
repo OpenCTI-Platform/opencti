@@ -153,7 +153,6 @@ const useStyles = makeStyles((theme) => ({
 
 const entitiesFilters = [
   'entity_type',
-  'elementId',
   'objectMarking',
   'objectLabel',
   'createdBy',
@@ -170,7 +169,7 @@ const entitiesFilters = [
   'killChainPhases',
   'malware_types',
   'report_types',
-  'relationship_type',
+  'regardingOf',
 ];
 
 const relationshipsFilters = [

@@ -57,7 +57,7 @@ const investigationExpandFormTargetsDistributionToQuery = graphql`
 const investigationExpandFormRelDistributionQuery = graphql`
   query InvestigationExpandFormRelDistributionQuery($ids: [String]) {
     stixRelationshipsDistribution(
-      elementId: $ids
+      fromOrToId: $ids
       operation: count
       field: "entity_type"
       relationship_type: "stix-relationship"

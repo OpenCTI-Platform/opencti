@@ -13,13 +13,22 @@ export const CREATOR_FILTER = 'creator_id';
 export const ASSIGNEE_FILTER = 'objectAssignee';
 export const PARTICIPANT_FILTER = 'objectParticipant';
 export const OBJECT_CONTAINS_FILTER = 'objects';
-export const RELATION_FROM_FILTER = 'fromId';
-export const RELATION_TO_FILTER = 'toId';
 export const RELATION_TO_SIGHTING_FILTER = 'toSightingId';
-export const INSTANCE_FILTER = 'elementId'; // TODO Rename/migrate to relatedToId
-export const INSTANCE_RELATION_FILTER = 'fromOrToId';
-export const INSTANCE_FILTER_TARGET_TYPES = 'elementWithTargetTypes'; // TODO Rename/migrate to fromOrToTypes
-export const CONNECTED_TO_INSTANCE_FILTER = 'connectedToId';
+// region old elementId / elementWithTargetTypes / relationship_type
+// ---- entities
+export const INSTANCE_REGARDING_OF = 'regardingOf'; // Combination of rel types and id for entity filtering
+// ---- relationships
+// TODO remove and migration in favor of exploiting directly 'connections' in the relationship model
+export const RELATION_TO_FILTER = 'toId';
+export const RELATION_FROM_FILTER = 'fromId';
+export const INSTANCE_RELATION_FILTER = 'fromOrToId'; // Use for relationship context, renamed from entityId
+export const RELATION_FROM_ROLE_FILTER = 'fromRole';
+export const RELATION_TO_ROLE_FILTER = 'toRole';
+export const RELATION_FROM_TYPES_FILTER = 'fromTypes';
+export const RELATION_TO_TYPES_FILTER = 'toTypes';
+export const INSTANCE_FILTER_TARGET_TYPES = 'elementWithTargetTypes'; // TODO Rename/migrate to fromOrToType
+// endregion
+export const CONNECTED_TO_INSTANCE_FILTER = 'connectedToId'; // TODO Rename/migrate to triggerListenId
 export const CONNECTED_TO_INSTANCE_SIDE_EVENTS_FILTER = 'connectedToId_sideEvents';
 
 // Values that do not need resolution when matching against stix object
@@ -35,10 +44,6 @@ export const CONFIDENCE_FILTER = 'confidence';
 export const REVOKED_FILTER = 'revoked';
 export const PATTERN_FILTER = 'pattern_type';
 export const MAIN_OBSERVABLE_TYPE_FILTER = 'x_opencti_main_observable_type';
-export const RELATION_FROM_TYPES_FILTER = 'fromTypes';
-export const RELATION_FROM_ROLE_FILTER = 'fromRole';
-export const RELATION_TO_TYPES_FILTER = 'toTypes';
-export const RELATION_TO_ROLE_FILTER = 'toRole';
 
 // special cases
 export const IDS_FILTER = 'ids';
@@ -62,6 +67,7 @@ export const MEMBERS_ORGANIZATION_FILTER = 'members_organization';
 export const complexConversionFilterKeys = [
   IDS_FILTER, // values should match any id (internal_id, standard_id, or stix_id)
   TYPE_FILTER, // values should match any parent_types
+  INSTANCE_REGARDING_OF,
   WORKFLOW_FILTER, // values should match the parent workflow pattern id
   X_OPENCTI_WORKFLOW_ID, // values should match the parent workflow pattern id
   SOURCE_RELIABILITY_FILTER, // reliability of the author
@@ -80,7 +86,6 @@ export const complexConversionFilterKeys = [
 // (= key with a complex behavior, not belonging to the schema ref definition or the attribute definitions)
 export const specialFilterKeys = [
   SIGHTED_BY_FILTER, // relation between elements linked by a stix sighting relationship
-  INSTANCE_FILTER, // element involved in a relationship with the entity
   CONNECTIONS_FILTER, // for nested filters
   `rel_${RELATION_OBJECT}`,
   CREATOR_FILTER, // technical creator
@@ -102,7 +107,7 @@ export const specialFilterKeys = [
 // used in findFiltersRepresentatives
 export const specialFilterKeysWhoseValueToResolve = [
   SIGHTED_BY_FILTER, // relation between elements linked by a stix sighting relationship
-  INSTANCE_FILTER, // element involved in a relationship with the entity
+  INSTANCE_REGARDING_OF,
   `rel_${RELATION_OBJECT}`,
   CREATOR_FILTER, // technical creator
   RELATION_FROM_FILTER, // nested relation for the from of a relationship

@@ -57,8 +57,6 @@ export const StixCyberObservablesExportCreationMutation = graphql`
     $orderBy: StixCyberObservablesOrdering
     $orderMode: OrderingMode
     $filters: FilterGroup
-    $relationship_type: [String]
-    $elementId: String
     $selectedIds: [String]
   ) {
     stixCyberObservablesExportAsk(
@@ -71,8 +69,6 @@ export const StixCyberObservablesExportCreationMutation = graphql`
       orderBy: $orderBy
       orderMode: $orderMode
       filters: $filters
-      relationship_type: $relationship_type
-      elementId: $elementId
       selectedIds: $selectedIds
     ) {
       id

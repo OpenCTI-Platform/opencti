@@ -101,7 +101,7 @@ const stixDomainObjectThreatKnowledgeReportsNumberQuery = graphql`
 
 const stixDomainObjectThreatKnowledgeStixCoreRelationshipsNumberQuery = graphql`
   query StixDomainObjectThreatKnowledgeStixCoreRelationshipsNumberQuery(
-    $elementId: [String]
+    $fromOrToId: [String]
     $elementWithTargetTypes: [String]
     $relationship_type: [String]
     $fromId: [String]
@@ -111,7 +111,7 @@ const stixDomainObjectThreatKnowledgeStixCoreRelationshipsNumberQuery = graphql`
     $endDate: DateTime
   ) {
     stixCoreRelationshipsNumber(
-      elementId: $elementId
+      fromOrToId: $fromOrToId
       elementWithTargetTypes: $elementWithTargetTypes
       relationship_type: $relationship_type
       fromId: $fromId
@@ -230,7 +230,7 @@ StixDomainObjectThreatKnowledgeProps
       : undefined;
     const finalPaginationOptions = {
       ...rawPaginationOptions,
-      elementId: stixDomainObjectId,
+      fromOrToId: stixDomainObjectId,
       elementWithTargetTypes: toTypes.filter(
         (x) => x.toLowerCase() !== stixDomainObjectType,
       ),
@@ -364,7 +364,7 @@ StixDomainObjectThreatKnowledgeProps
                 stixDomainObjectThreatKnowledgeStixCoreRelationshipsNumberQuery
               }
               variables={{
-                elementId: stixDomainObjectId,
+                fromOrToId: stixDomainObjectId,
                 endDate: monthsAgo(1),
               }}
               render={({

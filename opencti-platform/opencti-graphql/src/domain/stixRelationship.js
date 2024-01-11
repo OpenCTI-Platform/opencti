@@ -1,7 +1,7 @@
 import * as R from 'ramda';
 import { batchListThroughGetTo, buildDynamicFilterArgs, deleteElementById, distributionRelations, timeSeriesRelations } from '../database/middleware';
 import { ABSTRACT_STIX_CORE_OBJECT, ABSTRACT_STIX_RELATIONSHIP, ENTITY_TYPE_IDENTITY } from '../schema/general';
-import { buildEntityFilters, listEntities, listRelations, storeLoadById } from '../database/middleware-loader';
+import { buildRelationsFilter, listEntities, listRelations, storeLoadById } from '../database/middleware-loader';
 import { fillTimeSeries, READ_INDEX_INFERRED_RELATIONSHIPS, READ_INDEX_STIX_CORE_RELATIONSHIPS, READ_INDEX_STIX_SIGHTING_RELATIONSHIPS } from '../database/utils';
 import { elCount } from '../database/engine';
 import { RELATION_CREATED_BY, RELATION_OBJECT_MARKING } from '../schema/stixRefRelationship';
@@ -108,7 +108,7 @@ export const stixRelationshipsNumber = async (context, user, args) => {
   } else {
     finalArgs = { ...finalArgs, dynamicTo: undefined };
   }
-  const numberArgs = buildEntityFilters({ ...finalArgs, types: relationship_type });
+  const numberArgs = buildRelationsFilter(relationship_type, finalArgs);
   // eslint-disable-next-line max-len
   const indices = args.onlyInferred ? [READ_INDEX_INFERRED_RELATIONSHIPS] : [READ_INDEX_STIX_CORE_RELATIONSHIPS, READ_INDEX_STIX_SIGHTING_RELATIONSHIPS, READ_INDEX_INFERRED_RELATIONSHIPS];
   return {

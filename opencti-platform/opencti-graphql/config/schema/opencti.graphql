@@ -111,7 +111,7 @@ input FilterGroup {
 }
 input Filter {
   key: [String!]!
-  values: [String!]!
+  values: [Any!]!
   operator: FilterOperator
   mode: FilterMode
 }
@@ -299,12 +299,10 @@ input StixCoreObjectsTimeSeriesParameters {
   types: [String]
   filters: FilterGroup
   search: String
-  relationship_type: [String]
-  elementId: [String]
 }
 input StixRelationshipsTimeSeriesParameters {
   field: String!
-  elementId: [String]
+  fromOrToId: [String]
   elementWithTargetTypes: [String]
   fromId: [String]
   fromRole: String
@@ -321,7 +319,7 @@ input StixRelationshipsTimeSeriesParameters {
 }
 input StixCoreRelationshipsTimeSeriesParameters {
   field: String!
-  elementId: [String]
+  fromOrToId: [String]
   elementWithTargetTypes: [String]
   fromId: [String]
   fromRole: String
@@ -354,7 +352,7 @@ input StixCoreObjectsDistributionParameters {
 }
 input StixCoreRelationshipsDistributionParameters {
   field: String!
-  elementId: [String]
+  fromOrToId: [String]
   elementWithTargetTypes: [String]
   fromId: [String]
   fromRole: String
@@ -375,8 +373,6 @@ input StixCoreObjectsNumberParameters {
   types: [String]
   filters: FilterGroup
   search: String
-  relationship_type: [String]
-  elementId: [String]
 }
 
 ### INTERFACES & TYPES
@@ -9551,7 +9547,7 @@ type BankAccount implements BasicObject & StixObject & StixCoreObject & StixCybe
     isTo: Boolean
     limit: Int
     order: String
-    elementId: [String]
+    fromOrToId: [String]
     elementWithTargetTypes: [String]
     fromId: [String]
     fromRole: String
@@ -10905,8 +10901,6 @@ type Query {
     orderMode: OrderingMode
     filters: FilterGroup
     search: String
-    relationship_type: [String]
-    elementId: [String]
   ): StixCoreObjectConnection @auth(for: [KNOWLEDGE])
   globalSearch(
     first: Int
@@ -10929,8 +10923,6 @@ type Query {
     types: [String]
     filters: FilterGroup
     search: String
-    relationship_type: [String]
-    elementId: [String]
   ): [TimeSeries] @auth(for: [KNOWLEDGE, EXPLORE])
   stixCoreObjectsMultiTimeSeries(
     operation: StatsOperation!
@@ -10947,8 +10939,6 @@ type Query {
     onlyInferred: Boolean
     filters: FilterGroup
     search: String
-    relationship_type: [String]
-    elementId: [String]
   ): Number @auth(for: [KNOWLEDGE, EXPLORE])
   stixCoreObjectsMultiNumber(
     startDate: DateTime
@@ -10995,8 +10985,6 @@ type Query {
     orderMode: OrderingMode
     filters: FilterGroup
     search: String
-    relationship_type: [String]
-    elementId: String
   ): StixDomainObjectConnection @auth(for: [KNOWLEDGE])
   bookmarks(first: Int, after: ID, types: [String], filters: FilterGroup): StixDomainObjectConnection @auth(for: [KNOWLEDGE])
   stixDomainObjectsExportFiles(first: Int, type: String!): FileConnection @auth(for: [KNOWLEDGE_KNGETEXPORT])
@@ -11450,7 +11438,7 @@ type Query {
     after: ID
     orderBy: StixRelationshipsOrdering
     orderMode: OrderingMode
-    elementId: String
+    fromOrToId: String
     elementWithTargetTypes: [String]
     fromId: [String]
     fromRole: String
@@ -11483,7 +11471,7 @@ type Query {
     endDate: DateTime
     interval: String!
     onlyInferred: Boolean
-    elementId: [String]
+    fromOrToId: [String]
     elementWithTargetTypes: [String]
     fromId: [String]
     fromRole: String
@@ -11515,7 +11503,7 @@ type Query {
     isTo: Boolean
     limit: Int
     order: String
-    elementId: [String]
+    fromOrToId: [String]
     elementWithTargetTypes: [String]
     fromId: [String]
     fromRole: String
@@ -11536,7 +11524,7 @@ type Query {
     noDirection: Boolean
     endDate: DateTime
     onlyInferred: Boolean
-    elementId: [String]
+    fromOrToId: [String]
     elementWithTargetTypes: [String]
     fromId: [String]
     fromRole: String
@@ -11562,7 +11550,7 @@ type Query {
     after: ID
     orderBy: StixCoreRelationshipsOrdering
     orderMode: OrderingMode
-    elementId: [String]
+    fromOrToId: [String]
     elementWithTargetTypes: [String]
     fromId: [String]
     fromRole: String
@@ -11593,7 +11581,7 @@ type Query {
     endDate: DateTime
     interval: String!
     onlyInferred: Boolean
-    elementId: [String]
+    fromOrToId: [String]
     elementWithTargetTypes: [String]
     fromId: [String]
     fromRole: String
@@ -11625,7 +11613,7 @@ type Query {
     isTo: Boolean
     limit: Int
     order: String
-    elementId: [String]
+    fromOrToId: [String]
     elementWithTargetTypes: [String]
     fromId: [String]
     fromRole: String
@@ -11646,7 +11634,7 @@ type Query {
     noDirection: Boolean
     endDate: DateTime
     onlyInferred: Boolean
-    elementId: [String]
+    fromOrToId: [String]
     elementWithTargetTypes: [String]
     fromId: [String]
     fromRole: String
@@ -11671,7 +11659,7 @@ type Query {
     after: ID
     orderBy: StixSightingRelationshipsOrdering
     orderMode: OrderingMode
-    elementId: String
+    fromOrToId: String
     fromId: StixRef
     toId: StixRef
     fromTypes: [String]
@@ -11685,7 +11673,7 @@ type Query {
     toStix: Boolean
   ): StixSightingRelationshipConnection @auth(for: [KNOWLEDGE])
   stixSightingRelationshipsTimeSeries(
-    elementId: String
+    fromOrToId: String
     fromId: StixRef
     toId: StixRef
     field: String!
@@ -11699,7 +11687,7 @@ type Query {
     filters: FilterGroup
   ): [TimeSeries] @auth(for: [KNOWLEDGE, EXPLORE])
   stixSightingRelationshipsDistribution(
-    elementId: String
+    fromOrToId: String
     fromId: StixRef
     toId: StixRef
     field: String!
@@ -11715,7 +11703,7 @@ type Query {
     filters: FilterGroup
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
   stixSightingRelationshipsNumber(
-    elementId: String
+    fromOrToId: String
     fromId: StixRef
     toId: StixRef
     endDate: DateTime
@@ -11732,7 +11720,7 @@ type Query {
     after: ID
     orderBy: StixRefRelationshipsOrdering
     orderMode: OrderingMode
-    elementId: String
+    fromOrToId: String
     fromId: StixRef
     toId: StixRef
     fromTypes: [String]
@@ -11751,7 +11739,7 @@ type Query {
     after: ID
     orderBy: StixRefRelationshipsOrdering
     orderMode: OrderingMode
-    elementId: String
+    fromOrToId: String
     fromId: StixRef
     toId: StixRef
     fromTypes: [String]
@@ -12344,8 +12332,6 @@ type Mutation {
     maxMarkingDefinition: String
     context: String
     search: String
-    relationship_type: [String]
-    elementId: String
     orderBy: StixCoreObjectsOrdering
     orderMode: OrderingMode
     filters: FilterGroup
@@ -12364,7 +12350,6 @@ type Mutation {
     context: String
     search: String
     relationship_type: [String]
-    elementId: String
     orderBy: StixDomainObjectsOrdering
     orderMode: OrderingMode
     filters: FilterGroup
@@ -12480,8 +12465,6 @@ type Mutation {
     orderBy: StixCyberObservablesOrdering
     orderMode: OrderingMode
     filters: FilterGroup
-    relationship_type: [String]
-    elementId: String
     selectedIds: [String]
   ): [File!] @auth(for: [KNOWLEDGE_KNGETEXPORT_KNASKEXPORT])
   stixCyberObservablesExportPush(file: Upload!, listFilters: String): Boolean
@@ -12510,7 +12493,7 @@ type Mutation {
     orderBy: StixCoreRelationshipsOrdering
     orderMode: OrderingMode
     selectedIds: [String]
-    elementId: [String]
+    fromOrToId: [String]
     elementWithTargetTypes: [String]
     fromId: [String]
     fromRole: String

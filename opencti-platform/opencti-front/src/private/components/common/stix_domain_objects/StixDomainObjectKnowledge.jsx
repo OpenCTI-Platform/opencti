@@ -73,7 +73,7 @@ const stixDomainObjectKnowledgeReportsNumberQuery = graphql`
 
 const stixDomainObjectKnowledgeStixCoreRelationshipsNumberQuery = graphql`
   query StixDomainObjectKnowledgeStixCoreRelationshipsNumberQuery(
-    $elementId: [String]
+    $fromOrToId: [String]
     $elementWithTargetTypes: [String]
     $relationship_type: [String]
     $fromId: [String]
@@ -81,7 +81,7 @@ const stixDomainObjectKnowledgeStixCoreRelationshipsNumberQuery = graphql`
     $endDate: DateTime
   ) {
     stixCoreRelationshipsNumber(
-      elementId: $elementId
+      fromOrToId: $fromOrToId
       elementWithTargetTypes: $elementWithTargetTypes
       relationship_type: $relationship_type
       fromId: $fromId
@@ -152,7 +152,7 @@ class StixDomainObjectKnowledge extends Component {
                   stixDomainObjectKnowledgeStixCoreRelationshipsNumberQuery
                 }
                 variables={{
-                  elementId: stixDomainObjectId,
+                  fromOrToId: stixDomainObjectId,
                   elementWithTargetTypes: ['Stix-Cyber-Observable'],
                   endDate: monthsAgo(1),
                 }}
@@ -196,7 +196,7 @@ class StixDomainObjectKnowledge extends Component {
                   stixDomainObjectKnowledgeStixCoreRelationshipsNumberQuery
                 }
                 variables={{
-                  elementId: stixDomainObjectId,
+                  fromOrToId: stixDomainObjectId,
                   endDate: monthsAgo(1),
                 }}
                 render={({ props }) => {

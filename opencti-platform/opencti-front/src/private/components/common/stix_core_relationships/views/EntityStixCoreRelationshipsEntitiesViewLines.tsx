@@ -39,8 +39,6 @@ const entityStixCoreRelationshipsEntitiesFragment = graphql`
     orderMode: { type: "OrderingMode", defaultValue: asc }
     filters: { type: "FilterGroup" }
     types: { type: "[String]" }
-    relationship_type: { type: "[String]" }
-    elementId: { type: "[String]" }
   )
   @refetchable(queryName: "EntityStixCoreRelationshipsEntities_refetch") {
     stixCoreObjects(
@@ -51,8 +49,6 @@ const entityStixCoreRelationshipsEntitiesFragment = graphql`
       orderMode: $orderMode
       filters: $filters
       types: $types
-      relationship_type: $relationship_type
-      elementId: $elementId
     ) @connection(key: "Pagination_stixCoreObjects") {
       edges {
         node {
@@ -78,8 +74,6 @@ export const entityStixCoreRelationshipsEntitiesQuery = graphql`
     $orderMode: OrderingMode
     $filters: FilterGroup
     $types: [String]
-    $relationship_type: [String]
-    $elementId: [String]
   ) {
     ...EntityStixCoreRelationshipsEntitiesViewLines_data
     @arguments(
@@ -90,8 +84,6 @@ export const entityStixCoreRelationshipsEntitiesQuery = graphql`
       orderMode: $orderMode
       filters: $filters
       types: $types
-      relationship_type: $relationship_type
-      elementId: $elementId
     )
   }
 `;

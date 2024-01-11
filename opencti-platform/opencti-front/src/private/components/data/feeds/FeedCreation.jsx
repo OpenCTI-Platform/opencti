@@ -505,15 +505,12 @@ const FeedCreation = (props) => {
                             'priority',
                             'severity',
                             'x_opencti_score',
-                            'x_opencti_detection', 'x_opencti_main_observable_type',
+                            'x_opencti_detection',
+                            'x_opencti_main_observable_type',
                             'revoked',
                             'confidence',
                             'indicator_types',
                             'pattern_type',
-                            'fromId',
-                            'toId',
-                            'fromTypes',
-                            'toTypes',
                           ]}
                           handleAddFilter={handleAddFilter}
                           noDirectFilters={true}

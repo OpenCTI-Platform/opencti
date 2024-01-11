@@ -31,7 +31,7 @@ const userEditionOrganizationsAdminAddMutation = graphql`
   mutation UserEditionOrganizationsAdminAddMutation(
     $id: ID!
     $memberId: String!
-    $userEmail: String!
+    $userEmail: Any!
   ) {
     organizationAdminAdd(id: $id, memberId: $memberId) {
       id
@@ -50,7 +50,7 @@ const userEditionOrganizationsAdminRemoveMutation = graphql`
   mutation UserEditionOrganizationsAdminRemoveMutation(
     $id: ID!
     $memberId: String!
-    $userEmail: String!
+    $userEmail: Any!
   ) {
     organizationAdminRemove(id: $id, memberId: $memberId) {
       id

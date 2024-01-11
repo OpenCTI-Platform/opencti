@@ -143,7 +143,6 @@ const EntityStixCoreRelationshipsContextualViewComponent: FunctionComponent<Enti
 
   const availableFilterKeys = [
     'relationship_type',
-    'entity_type',
     'objectMarking',
     'confidence',
     'objectLabel',

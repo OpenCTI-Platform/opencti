@@ -62,7 +62,7 @@ const StixCoreObjectsMultiVerticalBars = ({
   const renderContent = () => {
     const timeSeriesParameters = dataSelection.map((selection) => {
       const dataSelectionTypes = ['Stix-Core-Object'];
-      const { filters, dataSelectionElementId } = buildFiltersAndOptionsForWidgets(selection.filters);
+      const { filters } = buildFiltersAndOptionsForWidgets(selection.filters);
       return {
         field:
           selection.date_attribute && selection.date_attribute.length > 0
@@ -70,7 +70,6 @@ const StixCoreObjectsMultiVerticalBars = ({
             : 'created_at',
         types: dataSelectionTypes,
         filters,
-        elementId: dataSelectionElementId,
       };
     });
     let formatter = fsd;

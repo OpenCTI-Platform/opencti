@@ -11,7 +11,7 @@ import {
   CONTEXT_ENTITY_TYPE_FILTER,
   CONTEXT_OBJECT_LABEL_FILTER,
   CONTEXT_OBJECT_MARKING_FILTER,
-  INSTANCE_FILTER,
+  INSTANCE_REGARDING_OF,
   MEMBERS_GROUP_FILTER,
   MEMBERS_ORGANIZATION_FILTER,
   MEMBERS_USER_FILTER,
@@ -99,9 +99,17 @@ export const extractFilterGroupValues = (inputFilters: FilterGroup, key: string 
   } else {
     filteredFilters = filters;
   }
-  let ids = filteredFilters.map((f) => f.values).flat() ?? [];
+
+  const ids = [];
+  if (keysToKeep.includes(INSTANCE_REGARDING_OF)) {
+    const find: Filter = filteredFilters.map((f) => f.values).flat().find((v: any) => v.key === 'id') as unknown as Filter;
+    const regardingIds = find?.values ?? [];
+    ids.push(...regardingIds);
+  } else {
+    ids.push(...filteredFilters.map((f) => f.values.map((v) => v.values)).flat() ?? []);
+  }
   if (filterGroups.length > 0) {
-    ids = ids.concat(filterGroups.map((group) => extractFilterGroupValues(group, key, reverse)).flat());
+    ids.push(...filterGroups.map((group) => extractFilterGroupValues(group, key, reverse)).flat());
   }
   return uniq(ids);
 };
@@ -161,7 +169,6 @@ export const replaceFilterKey = (filterGroup: FilterGroup, oldKey: string, newKe
 // the second element is the converted key used in backend
 const specialFilterKeysConvertor = new Map([
   [SIGHTED_BY_FILTER, buildRefRelationKey(STIX_SIGHTING_RELATIONSHIP)],
-  [INSTANCE_FILTER, buildRefRelationKey('*')], // Only used for entities
   [CONTEXT_ENTITY_ID_FILTER, 'context_data.id'],
   [CONTEXT_ENTITY_TYPE_FILTER, 'context_data.entity_type'],
   [CONTEXT_CREATOR_FILTER, 'context_data.creator_id'],

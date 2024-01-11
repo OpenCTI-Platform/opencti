@@ -28,7 +28,7 @@ export const stixRelationshipsMapStixRelationshipsDistributionQuery = graphql`
     $dateAttribute: String
     $isTo: Boolean
     $limit: Int
-    $elementId: [String]
+    $fromOrToId: [String]
     $elementWithTargetTypes: [String]
     $fromId: [String]
     $fromRole: String
@@ -51,7 +51,7 @@ export const stixRelationshipsMapStixRelationshipsDistributionQuery = graphql`
       dateAttribute: $dateAttribute
       isTo: $isTo
       limit: $limit
-      elementId: $elementId
+      fromOrToId: $fromOrToId
       elementWithTargetTypes: $elementWithTargetTypes
       fromId: $fromId
       fromRole: $fromRole
@@ -96,9 +96,6 @@ const StixRelationshipsMap = ({
   title,
   variant,
   height,
-  stixCoreObjectId,
-  relationshipType,
-  toTypes,
   field,
   startDate,
   endDate,
@@ -117,13 +114,7 @@ const StixRelationshipsMap = ({
       filtersAndOptions = buildFiltersAndOptionsForWidgets(selection.filters);
     }
     const finalField = selection.attribute || field || 'entity_type';
-    const finalToTypes = filtersAndOptions?.dataSelectionToTypes || toTypes;
     const variables = {
-      fromId: filtersAndOptions?.dataSelectionFromId || stixCoreObjectId,
-      toId: filtersAndOptions?.dataSelectionToId,
-      relationship_type: filtersAndOptions?.dataSelectionRelationshipType || relationshipType,
-      fromTypes: filtersAndOptions?.dataSelectionFromTypes,
-      toTypes: finalToTypes,
       field: finalField,
       operation: 'count',
       startDate,

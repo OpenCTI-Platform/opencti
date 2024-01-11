@@ -1267,23 +1267,12 @@ const StixRelationshipsTimeline = ({
     const dateAttribute = selection.date_attribute && selection.date_attribute.length > 0
       ? selection.date_attribute
       : 'created_at';
-    const {
-      filters,
-      dataSelectionRelationshipType: relationship_type,
-      dataSelectionFromId: fromId,
-      dataSelectionToTypes: toTypes,
-      dataSelectionFromTypes: fromTypes,
-      dataSelectionToId: toId,
-    } = buildFiltersAndOptionsForWidgets(selection.filters, { startDate, endDate, dateAttribute });
+    const { filters } = buildFiltersAndOptionsForWidgets(selection.filters, { startDate, endDate, dateAttribute });
+    const fromId = filters.filters.find((o) => o.key === 'fromId')?.values || null;
     return (
       <QueryRenderer
         query={stixRelationshipsTimelineStixRelationshipQuery}
         variables={{
-          relationship_type,
-          fromId,
-          toId,
-          fromTypes,
-          toTypes,
           first: 50,
           orderBy: dateAttribute,
           orderMode: 'desc',

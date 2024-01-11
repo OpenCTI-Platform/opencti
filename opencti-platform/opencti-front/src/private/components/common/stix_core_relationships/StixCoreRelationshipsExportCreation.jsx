@@ -57,7 +57,7 @@ export const StixCoreRelationshipsExportCreationMutation = graphql`
     $orderBy: StixCoreRelationshipsOrdering
     $orderMode: OrderingMode
     $selectedIds: [String]
-    $elementId: [String]
+    $fromOrToId: [String]
     $elementWithTargetTypes: [String]
     $fromId: [String]
     $fromRole: String
@@ -78,7 +78,7 @@ export const StixCoreRelationshipsExportCreationMutation = graphql`
       orderBy: $orderBy
       orderMode: $orderMode
       selectedIds: $selectedIds
-      elementId: $elementId
+      fromOrToId: $fromOrToId
       elementWithTargetTypes: $elementWithTargetTypes
       fromId: $fromId
       fromRole: $fromRole
