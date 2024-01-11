@@ -70,7 +70,13 @@ export const handleAddRepresentationFilterUtil = ({ viewStorage, setValue, id, v
   id: string,
   valueId: string
 }>) => {
-  updateFilters(viewStorage, setValue, (f) => (f.id === id ? { ...f, values: [...f.values, valueId] } : f));
+  updateFilters(
+    viewStorage,
+    setValue,
+    (f) => (f.id === id
+      ? ({ ...f, values: [...f.values, valueId] })
+      : f),
+  );
 };
 
 export const handleAddSingleValueFilterUtil = ({ viewStorage, setValue, id, valueId }: FiltersLocalStorageUtilProps<{
