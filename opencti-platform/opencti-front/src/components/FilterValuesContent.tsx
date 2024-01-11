@@ -25,7 +25,6 @@ const FilterValuesContent: FunctionComponent<
 FilterValuesContentProps
 > = ({ redirection, isFilterTooltip, filterKey, id, value }) => {
   const { t } = useFormatter();
-  console.log('value', value);
   const displayedValue = isFilterTooltip
     ? filterValue(filterKey, value)
     : truncate(filterValue(filterKey, value), 15);

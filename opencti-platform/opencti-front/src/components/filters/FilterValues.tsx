@@ -5,7 +5,6 @@ import Tooltip from '@mui/material/Tooltip';
 import Box from '@mui/material/Box';
 import Chip from '@mui/material/Chip';
 import { useFormatter } from '../i18n';
-import FilterValuesContent from '../FilterValuesContent';
 import type { Theme } from '../Theme';
 import { Filter, filtersUsedAsApiParameters } from '../../utils/filters/filtersUtils';
 import { UseLocalStorageHelpers } from '../../utils/hooks/useLocalStorage';
@@ -66,7 +65,6 @@ const FilterValues: FunctionComponent<FilterValuesProps> = ({
   helpers,
   isReadWriteFilter,
 }) => {
-  console.log('currentFilter', currentFilter);
   const { t } = useFormatter();
   const filterKey = currentFilter.key;
   const filterOperator = currentFilter.operator;

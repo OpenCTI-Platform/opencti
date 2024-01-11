@@ -66,21 +66,16 @@ export const handleSwitchLocalModeUtil = ({ viewStorage, setValue, filter }: Fil
     : f));
 };
 
-export const handleAddRepresentationFilterUtil = ({ viewStorage, setValue, id, valueId, childKey }: FiltersLocalStorageUtilProps<{
+export const handleAddRepresentationFilterUtil = ({ viewStorage, setValue, id, valueId }: FiltersLocalStorageUtilProps<{
   id: string,
   valueId: string,
-  childKey?: string,
 }>) => {
   updateFilters(
     viewStorage,
     setValue,
     (f) => {
       if (f.id === id) {
-        let values = [...f.values, valueId];
-        if (childKey) {
-          values = [{ key: childKey, values: f.values }, valueId];
-        }
-        return { ...f, values };
+        return { ...f, values: [...f.values, valueId] };
       }
       return f;
     },
