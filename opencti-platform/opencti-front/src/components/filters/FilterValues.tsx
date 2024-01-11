@@ -89,15 +89,13 @@ const FilterValues: FunctionComponent<FilterValuesProps> = ({
   const values = filterValues.map((id) => {
     return (
       <Fragment key={id}>
-        {filtersRepresentativesMap.has(id) && (
-          <FilterIconButtonContent
-            redirection={tooltip ? false : redirection}
-            isFilterTooltip={!!tooltip}
-            filterKey={filterKey}
-            id={id}
-            value={filtersRepresentativesMap.get(id)}
-          />
-        )}
+        <FilterIconButtonContent
+          redirection={tooltip ? false : redirection}
+          isFilterTooltip={!!tooltip}
+          filterKey={filterKey}
+          id={id}
+          value={filtersRepresentativesMap.get(id) ?? id}
+        />
         {last(filterValues) !== id && (
           <div
             className={

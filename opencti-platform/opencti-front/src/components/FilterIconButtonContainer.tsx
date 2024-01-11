@@ -155,6 +155,7 @@ FilterIconButtonContainerProps
   const filtersRepresentativesMap = new Map(
     filtersRepresentatives.map((n) => [n.id, n.value]),
   );
+  console.log(filtersRepresentativesMap);
   const [filterChipsParams, setFilterChipsParams] = React.useState<FilterChipsParameter>({
     filter: undefined,
     anchorEl: undefined,
