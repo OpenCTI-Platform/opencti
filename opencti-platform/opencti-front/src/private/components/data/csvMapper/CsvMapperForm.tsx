@@ -3,7 +3,7 @@ import { Field, FieldArray, Form, Formik } from 'formik';
 import Button from '@mui/material/Button';
 import makeStyles from '@mui/styles/makeStyles';
 import * as Yup from 'yup';
-import { IconButton, Radio, Typography } from '@mui/material';
+import { IconButton, Radio, RadioGroup, Typography } from '@mui/material';
 import { Add } from '@mui/icons-material';
 import { InformationOutline } from 'mdi-material-ui';
 import Tooltip from '@mui/material/Tooltip';
@@ -12,6 +12,7 @@ import { SelectChangeEvent } from '@mui/material/Select';
 import CsvMapperRepresentationForm, { RepresentationFormEntityOption } from '@components/data/csvMapper/representations/CsvMapperRepresentationForm';
 import { CsvMapperFormData } from '@components/data/csvMapper/CsvMapper';
 import classNames from 'classnames';
+import FormControlLabel from '@mui/material/FormControlLabel';
 import { formDataToCsvMapper } from '@components/data/csvMapper/CsvMapperUtils';
 import type { Theme } from '../../../../components/Theme';
 import { useFormatter } from '../../../../components/i18n';
@@ -191,30 +192,29 @@ const CsvMapperForm: FunctionComponent<CsvMapperFormProps> = ({ csvMapper, onSub
               <div className={classes.marginTop}>
                 <Typography>{t_i18n('CSV separator')}</Typography>
                 <div className={classes.center}>
-                  <Field
-                    checked={values.separator !== ';'} // if unset, this is the default option
-                    component={Radio}
-                    type="radio"
+                  <RadioGroup
+                    aria-label="CSV separator"
                     name="separator"
-                    label="Comma"
-                    value=","
-                    onChange={(event: SelectChangeEvent) => setFieldValue('separator', event.target.value)
-                    }
-                  />
-                  <Typography>{t_i18n('Comma')}</Typography>
-                </div>
-                <div className={classes.center}>
-                  <Field
-                    checked={values.separator === ';'}
-                    component={Radio}
-                    type="radio"
-                    name="separator"
-                    label="Semicolon"
-                    value=";"
-                    onChange={(event: SelectChangeEvent) => setFieldValue('separator', event.target.value)
-                    }
-                  />
-                  <Typography>{t_i18n('Semicolon')}</Typography>
+                    style={{ flexDirection: 'row' }}
+                    value={values.separator}
+                    onChange={(event: SelectChangeEvent) => setFieldValue('separator', event.target.value)}
+                  >
+                    <FormControlLabel
+                      value=","
+                      control={<Radio />}
+                      label={t_i18n('Comma')}
+                    />
+                    <FormControlLabel
+                      value=";"
+                      control={<Radio />}
+                      label={t('Semicolon')}
+                    />
+                    <FormControlLabel
+                      value={'|'}
+                      control={<Radio />}
+                      label={t_i18n('Pipe')}
+                    />
+                  </RadioGroup>
                 </div>
               </div>
               <div
