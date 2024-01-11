@@ -2436,5 +2436,6 @@
   "CREATE": "创建",
   "entity_Analyses": "实体_分析",
   "There are no opinions. You should create some before.": "没有意见。你应该先提出一些意见。",
-  "workflow_id": "状态"
+  "workflow_id": "状态",
+  "regardingOf": "关于"
 }

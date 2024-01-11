@@ -2436,5 +2436,6 @@
   "CREATE": "作成",
   "entity_Analyses": "エンティティ_分析",
   "There are no opinions. You should create some before.": "意見がない。事前にいくつか作っておくべきだ。",
-  "workflow_id": "ステータス"
+  "workflow_id": "ステータス",
+  "regardingOf": "に関しては"
 }

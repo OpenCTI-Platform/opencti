@@ -2436,5 +2436,6 @@
   "CREATE": "CREAR",
   "entity_Analyses": "entity_Analyses",
   "There are no opinions. You should create some before.": "No hay opiniones. Deberías crear algunas antes.",
-  "workflow_id": "Estado"
+  "workflow_id": "Estado",
+  "regardingOf": "En cuanto a"
 }

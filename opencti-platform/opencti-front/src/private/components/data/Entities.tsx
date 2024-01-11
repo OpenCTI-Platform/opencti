@@ -123,6 +123,7 @@ const Entities = () => {
           iconExtension={true}
           availableFilterKeys={[
             'entity_type',
+            'regardingOf',
             'objectLabel',
             'objectMarking',
             'createdBy',

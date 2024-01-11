@@ -70,7 +70,7 @@ const FilterValues: FunctionComponent<FilterValuesProps> = ({
   const filterKey = currentFilter.key;
   const filterOperator = currentFilter.operator;
   const filterValues = currentFilter.values;
-  const isOperatorNil = ['nil', 'not_nil'].includes(filterOperator);
+  const isOperatorNil = ['nil', 'not_nil'].includes(filterOperator ?? 'eq');
   const classes = useStyles();
   const deactivatePopoverMenu = !helpers;
   const onCLick = deactivatePopoverMenu ? () => {} : onClickLabel;

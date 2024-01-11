@@ -1,6 +1,5 @@
 import * as R from 'ramda';
 import { v4 as uuid } from 'uuid';
-import { isString } from 'formik';
 import { useFormatter } from '../../components/i18n';
 
 import type { FilterGroup as GqlFilterGroup } from './__generated__/useSearchEntitiesStixCoreObjectsContainersSearchQuery.graphql';
@@ -20,8 +19,8 @@ export type Filter = {
   id?: string;
   key: string; // key is a string in front
   values: any[];
-  operator: string;
-  mode: string;
+  operator?: string;
+  mode?: string;
 };
 
 export const emptyFilterGroup = {
@@ -337,8 +336,6 @@ export const buildFiltersAndOptionsForWidgets = (
 
 // return the i18n label corresponding to a value
 export const filterValue = (filterKey: string, value?: string | null) => {
-  console.log('value in filterValue', value);
-  console.log('isstring', isString(value));
   const { t, nsd } = useFormatter();
   if (filterKey === 'regardingOf') {
     return JSON.stringify(value);
@@ -752,7 +749,7 @@ export const removeIdFromFilterGroupObject = (
   return {
     mode: filters.mode,
     filters: filters.filters
-      .filter((f) => ['nil', 'not_nil'].includes(f.operator) || f.values.length > 0)
+      .filter((f) => ['nil', 'not_nil'].includes(f.operator ?? 'eq') || f.values.length > 0)
       .map((f) => {
         const newFilter = { ...f };
         delete newFilter.id;

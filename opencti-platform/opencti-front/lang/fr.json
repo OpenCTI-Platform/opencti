@@ -2436,5 +2436,6 @@
   "sponsor": "sponsor",
   "valid": "valide",
   "There are no opinions. You should create some before.": "Il n'y a pas d'd’opinions. Vous devriez en créer avant.",
-  "workflow_id": "Statut"
+  "workflow_id": "Statut",
+  "regardingOf": "En ce qui concerne"
 }

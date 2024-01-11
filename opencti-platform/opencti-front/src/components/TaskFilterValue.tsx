@@ -63,7 +63,7 @@ const TaskFilterValue = ({
           20,
         )}`;
         const isOperatorNil = ['nil', 'not_nil'].includes(
-          currentFilter.operator,
+          currentFilter.operator ?? 'eq',
         );
         const DisplayNilLabel = () => {
           if (currentFilter.operator === 'nil') {

@@ -272,7 +272,7 @@ FilterIconButtonContainerProps
     >
       {displayedSpecificFilters.map((currentFilter, index) => {
         const filterKey = currentFilter.key;
-        const filterOperator = currentFilter.operator;
+        const filterOperator = currentFilter.operator ?? 'eq';
         const isOperatorDisplayed = operatorIcon.includes(filterOperator);
         const keyLabel = (
           <>
@@ -422,8 +422,8 @@ FilterIconButtonContainerProps
       )}
       {othersFilters.map((currentFilter, index) => {
         const filterKey = currentFilter.key;
-        const filterOperator = currentFilter.operator;
-        const isOperatorDisplayed = operatorIcon.includes(filterOperator);
+        const filterOperator = currentFilter.operator ?? 'eq';
+        const isOperatorDisplayed = operatorIcon.includes(filterOperator ?? 'eq');
         const keyLabel = (
           <>
             {truncate(t(filterKey), 20)}
@@ -436,7 +436,7 @@ FilterIconButtonContainerProps
               </Box>
             )}
             {isOperatorDisplayed
-              ? convertOperatorToIcon(filterOperator)
+              ? convertOperatorToIcon(filterOperator ?? 'eq')
               : currentFilter.values.length > 0 && ':'}
           </>
         );
@@ -472,7 +472,7 @@ FilterIconButtonContainerProps
                   classes={{ root: classFilter, label: classes.chipLabel }}
                   variant={
                     currentFilter.values.length === 0
-                    && !['nil', 'not_nil'].includes(filterOperator)
+                    && !['nil', 'not_nil'].includes(filterOperator ?? 'eq')
                       ? 'outlined'
                       : 'filled'
                   }
