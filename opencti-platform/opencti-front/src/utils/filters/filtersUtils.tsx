@@ -120,6 +120,7 @@ export const filtersUsedAsApiParameters = [
   'elementTargetTypes',
   'elementId',
   'toSightingId',
+  'connectedToId',
 ];
 
 // filters that represents a date, can have lt (end date) or gt (start date) operators
