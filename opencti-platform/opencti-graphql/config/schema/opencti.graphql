@@ -182,6 +182,12 @@ type AppMemory {
   does_zap_garbage: Float
 }
 
+input ExportContext {
+  entity_id: String
+  entity_type: String!
+  detail: String
+}
+
 type AppDebugDistribution {
   label: String!
   value: Int
@@ -10911,7 +10917,7 @@ type Query {
     orderMode: OrderingMode
     filters: FilterGroup
   ): StixCoreObjectConnection @auth(for: [KNOWLEDGE])
-  stixCoreObjectsExportFiles(first: Int, type: String!): FileConnection @auth(for: [KNOWLEDGE_KNGETEXPORT])
+  stixCoreObjectsExportFiles(first: Int, exportContext: ExportContext!): FileConnection @auth(for: [KNOWLEDGE_KNGETEXPORT])
   stixCoreObjectsTimeSeries(
     authorId: String
     field: String!
@@ -10987,7 +10993,7 @@ type Query {
     search: String
   ): StixDomainObjectConnection @auth(for: [KNOWLEDGE])
   bookmarks(first: Int, after: ID, types: [String], filters: FilterGroup): StixDomainObjectConnection @auth(for: [KNOWLEDGE])
-  stixDomainObjectsExportFiles(first: Int, type: String!): FileConnection @auth(for: [KNOWLEDGE_KNGETEXPORT])
+  stixDomainObjectsExportFiles(first: Int, exportContext: ExportContext!): FileConnection @auth(for: [KNOWLEDGE_KNGETEXPORT])
   stixDomainObjectsTimeSeries(
     authorId: String
     field: String!
@@ -11409,7 +11415,7 @@ type Query {
     search: String
     toStix: Boolean
   ): StixCyberObservableConnection @auth(for: [KNOWLEDGE])
-  stixCyberObservablesExportFiles(first: Int, context: String): FileConnection
+  stixCyberObservablesExportFiles(first: Int, exportContext: ExportContext!): FileConnection
   stixCyberObservablesNumber(
     types: [String]
     authorId: String
@@ -11649,7 +11655,7 @@ type Query {
     dynamicFrom: FilterGroup
     dynamicTo: FilterGroup
   ): Number @auth(for: [KNOWLEDGE, EXPLORE])
-  stixCoreRelationshipsExportFiles(first: Int, type: String!): FileConnection @auth(for: [KNOWLEDGE_KNGETEXPORT])
+  stixCoreRelationshipsExportFiles(first: Int, exportContext: ExportContext!): FileConnection @auth(for: [KNOWLEDGE_KNGETEXPORT])
 
   ######## STIX SIGHTING RELATIONSHIPS
 
@@ -12326,29 +12332,27 @@ type Mutation {
   ######## STIX CORE OBJECT ENTITIES
   stixCoreObjectEdit(id: ID!): StixCoreObjectEditMutations @auth(for: [KNOWLEDGE_KNUPDATE])
   stixCoreObjectsExportAsk(
-    type: String!
     format: String!
     exportType: String!
     maxMarkingDefinition: String
-    context: String
     search: String
+    exportContext: ExportContext
     orderBy: StixCoreObjectsOrdering
     orderMode: OrderingMode
     filters: FilterGroup
     selectedIds: [String]
   ): [File!] @auth(for: [KNOWLEDGE_KNGETEXPORT_KNASKEXPORT])
-  stixCoreObjectsExportPush(type: String!, file: Upload!, listFilters: String): Boolean @auth(for: [CONNECTORAPI])
+  stixCoreObjectsExportPush(entity_id: String, entity_type: String!, file: Upload!, listFilters: String): Boolean @auth(for: [CONNECTORAPI])
 
   ######## STIX DOMAIN OBJECT ENTITIES
   stixDomainObjectAdd(input: StixDomainObjectAddInput!): StixDomainObject @auth(for: [KNOWLEDGE_KNUPDATE])
   stixDomainObjectEdit(id: ID!): StixDomainObjectEditMutations
   stixDomainObjectsExportAsk(
-    type: String!
     format: String!
     exportType: String!
     maxMarkingDefinition: String
-    context: String
     search: String
+    exportContext: ExportContext
     relationship_type: [String]
     orderBy: StixDomainObjectsOrdering
     orderMode: OrderingMode
@@ -12356,7 +12360,7 @@ type Mutation {
     selectedIds: [String]
   ): [File!] @auth(for: [KNOWLEDGE_KNGETEXPORT_KNASKEXPORT])
   stixDomainObjectsDelete(id: [ID]!): [ID]!
-  stixDomainObjectsExportPush(type: String!, file: Upload!, listFilters: String): Boolean @auth(for: [CONNECTORAPI])
+  stixDomainObjectsExportPush(entity_id: String, entity_type: String!, file: Upload!, listFilters: String): Boolean @auth(for: [CONNECTORAPI])
   attackPatternAdd(input: AttackPatternAddInput!): AttackPattern @auth(for: [KNOWLEDGE_KNUPDATE])
   attackPatternEdit(id: ID!): AttackPatternEditMutations
   campaignAdd(input: CampaignAddInput!): Campaign @auth(for: [KNOWLEDGE_KNUPDATE])
@@ -12458,16 +12462,15 @@ type Mutation {
   stixCyberObservablesExportAsk(
     format: String!
     exportType: String!
+    exportContext: ExportContext
     maxMarkingDefinition: String
-    context: String
-    types: [String]
     search: String
     orderBy: StixCyberObservablesOrdering
     orderMode: OrderingMode
     filters: FilterGroup
     selectedIds: [String]
   ): [File!] @auth(for: [KNOWLEDGE_KNGETEXPORT_KNASKEXPORT])
-  stixCyberObservablesExportPush(file: Upload!, listFilters: String): Boolean
+  stixCyberObservablesExportPush(entity_id: String, entity_type: String!, file: Upload!, listFilters: String): Boolean
   artifactImport(
     file: Upload!
     x_opencti_description: String
@@ -12484,11 +12487,10 @@ type Mutation {
   @auth(for: [KNOWLEDGE_KNUPDATE])
   stixCoreRelationshipEdit(id: ID!): StixCoreRelationshipEditMutations @auth(for: [KNOWLEDGE_KNUPDATE])
   stixCoreRelationshipsExportAsk(
-    type: String!
     format: String!
     exportType: String!
     maxMarkingDefinition: String
-    context: String
+    exportContext: ExportContext
     search: String
     orderBy: StixCoreRelationshipsOrdering
     orderMode: OrderingMode
@@ -12506,7 +12508,7 @@ type Mutation {
   ): [File!] @auth(for: [KNOWLEDGE_KNGETEXPORT_KNASKEXPORT])
   stixCoreRelationshipDelete(fromId: StixRef!, toId: StixRef!, relationship_type: String!): Boolean!
   @auth(for: [KNOWLEDGE_KNUPDATE])
-  stixCoreRelationshipsExportPush(type: String!, file: Upload!, listFilters: String): Boolean @auth(for: [CONNECTORAPI])
+  stixCoreRelationshipsExportPush(entity_id: String, entity_type: String!, file: Upload!, listFilters: String): Boolean @auth(for: [CONNECTORAPI])
 
   ######## STIX REF RELATIONSHIPS
   stixRefRelationshipAdd(input: StixRefRelationshipAddInput!): StixRefRelationship

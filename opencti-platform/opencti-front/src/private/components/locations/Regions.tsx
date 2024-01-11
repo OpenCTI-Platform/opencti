@@ -71,7 +71,7 @@ const Regions: FunctionComponent = () => {
         handleSwitchLocalMode={helpers.handleSwitchLocalMode}
         handleToggleExports={helpers.handleToggleExports}
         openExports={openExports}
-        exportEntityType="Region"
+        exportContext={{ entity_type: 'Region' }}
         keyword={searchTerm}
         filters={filters}
         paginationOptions={paginationOptions}

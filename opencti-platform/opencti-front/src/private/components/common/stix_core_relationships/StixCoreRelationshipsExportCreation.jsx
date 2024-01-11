@@ -48,11 +48,10 @@ const styles = () => ({
 
 export const StixCoreRelationshipsExportCreationMutation = graphql`
   mutation StixCoreRelationshipsExportCreationMutation(
-    $type: String!
     $format: String!
     $exportType: String!
     $maxMarkingDefinition: String
-    $context: String
+    $exportContext: ExportContext
     $search: String
     $orderBy: StixCoreRelationshipsOrdering
     $orderMode: OrderingMode
@@ -69,11 +68,10 @@ export const StixCoreRelationshipsExportCreationMutation = graphql`
     $filters: FilterGroup
   ) {
     stixCoreRelationshipsExportAsk(
-      type: $type
       format: $format
       exportType: $exportType
       maxMarkingDefinition: $maxMarkingDefinition
-      context: $context
+      exportContext: $exportContext
       search: $search
       orderBy: $orderBy
       orderMode: $orderMode
@@ -127,17 +125,16 @@ class StixCoreRelationshipsExportCreationComponent extends Component {
   }
 
   onSubmit(selectedIds, values, { setSubmitting, resetForm }) {
-    const { paginationOptions, context } = this.props;
+    const { paginationOptions, exportContext } = this.props;
     const maxMarkingDefinition = values.maxMarkingDefinition === 'none' ? null : values.maxMarkingDefinition;
     const finalFilters = paginationOptions.filters ?? emptyFilterGroup;
     commitMutation({
       mutation: StixCoreRelationshipsExportCreationMutation,
       variables: {
-        type: this.props.exportEntityType,
         format: values.format,
         exportType: 'full',
         maxMarkingDefinition,
-        context,
+        exportContext,
         ...paginationOptions,
         filters: removeIdFromFilterGroupObject(finalFilters),
         selectedIds,
@@ -304,9 +301,8 @@ StixCoreRelationshipsExportCreations.propTypes = {
   classes: PropTypes.object.isRequired,
   t: PropTypes.func,
   data: PropTypes.object,
-  exportEntityType: PropTypes.string.isRequired,
+  exportContext: PropTypes.object,
   paginationOptions: PropTypes.object,
-  context: PropTypes.string,
   onExportAsk: PropTypes.func,
 };
 

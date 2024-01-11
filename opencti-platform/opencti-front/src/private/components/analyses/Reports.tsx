@@ -87,11 +87,11 @@ const Reports: FunctionComponent<ReportsProps> = ({
     paginationOptions,
   );
   const renderLines = () => {
-    let exportContext = null;
+    let detail = null;
     if (objectId) {
-      exportContext = `of-entity-${objectId}`;
+      detail = `of-entity-${objectId}`;
     } else if (authorId) {
-      exportContext = `of-entity-${authorId}`;
+      detail = `of-entity-${authorId}`;
     }
     const toolBarFilters = injectEntityTypeFilterInFilterGroup(filters, 'Report');
     const isRuntimeSort = isRuntimeFieldEnable() ?? false;
@@ -155,8 +155,7 @@ const Reports: FunctionComponent<ReportsProps> = ({
           handleToggleSelectAll={handleToggleSelectAll}
           selectAll={selectAll}
           noPadding={typeof onChangeOpenExports === 'function'}
-          exportEntityType="Report"
-          exportContext={exportContext}
+          exportContext={{ entity_type: 'Report', detail }}
           keyword={searchTerm}
           redirectionMode={redirectionMode}
           handleSwitchRedirectionMode={(value: string) => storageHelpers.handleAddProperty('redirectionMode', value)

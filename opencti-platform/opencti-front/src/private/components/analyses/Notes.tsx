@@ -81,11 +81,11 @@ const Notes: FunctionComponent<NotesProps> = ({ objectId, authorId, onChangeOpen
     paginationOptions,
   );
   const renderLines = () => {
-    let exportContext = null;
+    let detail = null;
     if (objectId) {
-      exportContext = `of-entity-${objectId}`;
+      detail = `of-entity-${objectId}`;
     } else if (authorId) {
-      exportContext = `of-entity-${authorId}`;
+      detail = `of-entity-${authorId}`;
     }
     const toolBarFilters = injectEntityTypeFilterInFilterGroup(filters, 'Note');
     const isRuntimeSort = isRuntimeFieldEnable() ?? false;
@@ -149,8 +149,7 @@ const Notes: FunctionComponent<NotesProps> = ({ objectId, authorId, onChangeOpen
           handleToggleSelectAll={handleToggleSelectAll}
           selectAll={selectAll}
           noPadding={typeof onChangeOpenExports === 'function'}
-          exportEntityType="Note"
-          exportContext={exportContext}
+          exportContext={{ entity_type: 'Note', detail }}
           keyword={searchTerm}
           filters={filters}
           paginationOptions={paginationOptions}

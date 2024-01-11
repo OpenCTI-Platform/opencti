@@ -14,7 +14,6 @@ export const ASSIGNEE_FILTER = 'objectAssignee';
 export const PARTICIPANT_FILTER = 'objectParticipant';
 export const OBJECT_CONTAINS_FILTER = 'objects';
 export const RELATION_TO_SIGHTING_FILTER = 'toSightingId';
-// region old elementId / elementWithTargetTypes / relationship_type
 // ---- entities
 export const INSTANCE_REGARDING_OF = 'regardingOf'; // Combination of rel types and id for entity filtering
 // ---- relationships
@@ -27,7 +26,6 @@ export const RELATION_TO_ROLE_FILTER = 'toRole';
 export const RELATION_FROM_TYPES_FILTER = 'fromTypes';
 export const RELATION_TO_TYPES_FILTER = 'toTypes';
 export const INSTANCE_FILTER_TARGET_TYPES = 'elementWithTargetTypes'; // TODO Rename/migrate to fromOrToType
-// endregion
 export const CONNECTED_TO_INSTANCE_FILTER = 'connectedToId'; // TODO Rename/migrate to triggerListenId
 export const CONNECTED_TO_INSTANCE_SIDE_EVENTS_FILTER = 'connectedToId_sideEvents';
 

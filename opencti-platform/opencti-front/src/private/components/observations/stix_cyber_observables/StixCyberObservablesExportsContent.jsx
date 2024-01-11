@@ -50,9 +50,7 @@ class StixCyberObservablesExportsContentComponent extends Component {
   componentDidMount() {
     this.subscription = interval$.subscribe(() => {
       if (this.props.isOpen) {
-        this.props.relay.refetch({
-          count: 25,
-        });
+        this.props.relay.refetch({ count: 25, exportContext: this.props.exportContext });
       }
     });
   }
@@ -62,7 +60,7 @@ class StixCyberObservablesExportsContentComponent extends Component {
   }
 
   render() {
-    const { classes, t, data, paginationOptions, handleToggle, context } = this.props;
+    const { classes, t, data, paginationOptions, handleToggle, exportContext } = this.props;
     const stixCyberObservablesExportFiles = pathOr(
       [],
       ['stixCyberObservablesExportFiles', 'edges'],
@@ -111,11 +109,8 @@ class StixCyberObservablesExportsContentComponent extends Component {
           <StixCyberObservablesExportCreation
             data={data}
             paginationOptions={paginationOptions}
-            context={context}
-            onExportAsk={() => this.props.relay.refetch({
-              count: 25,
-            })
-            }
+            exportContext={exportContext}
+            onExportAsk={() => this.props.relay.refetch({ count: 25, exportContext: this.props.exportContext })}
           />
         </Security>
       </div>
@@ -124,12 +119,8 @@ class StixCyberObservablesExportsContentComponent extends Component {
 }
 
 export const stixCyberObservablesExportsContentQuery = graphql`
-  query StixCyberObservablesExportsContentRefetchQuery(
-    $count: Int!
-    $context: String
-  ) {
-    ...StixCyberObservablesExportsContent_data
-      @arguments(count: $count, context: $context)
+  query StixCyberObservablesExportsContentRefetchQuery($count: Int!, $exportContext: ExportContext!) {
+    ...StixCyberObservablesExportsContent_data @arguments(count: $count, exportContext: $exportContext)
   }
 `;
 
@@ -140,9 +131,9 @@ const StixCyberObservablesExportsContent = createRefetchContainer(
       fragment StixCyberObservablesExportsContent_data on Query
       @argumentDefinitions(
         count: { type: "Int", defaultValue: 25 }
-        context: { type: "String" }
+        exportContext: { type: "ExportContext!" }
       ) {
-        stixCyberObservablesExportFiles(first: $count, context: $context)
+        stixCyberObservablesExportFiles(first: $count, exportContext: $exportContext)
           @connection(key: "Pagination_stixCyberObservablesExportFiles") {
           edges {
             node {
@@ -166,7 +157,7 @@ StixCyberObservablesExportsContent.propTypes = {
   paginationOptions: PropTypes.object,
   handleApplyListArgs: PropTypes.func,
   isOpen: PropTypes.bool,
-  context: PropTypes.string,
+  exportContext: PropTypes.object,
 };
 
 export default compose(

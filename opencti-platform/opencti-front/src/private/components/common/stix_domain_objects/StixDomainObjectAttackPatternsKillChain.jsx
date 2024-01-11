@@ -317,7 +317,7 @@ class StixDomainObjectAttackPatternsKillChainComponent extends Component {
               open={openExports}
               handleToggle={handleToggleExports.bind(this)}
               paginationOptions={paginationOptions}
-              context={exportContext}
+              exportContext={exportContext}
             />
           </Security>
         </div>

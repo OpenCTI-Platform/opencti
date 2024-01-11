@@ -48,52 +48,48 @@ export const stixObjectMerge = async (context, user, targetId, sourceIds) => {
   return mergeEntities(context, user, targetId, sourceIds);
 };
 
-export const askListExport = async (context, user, format, entityType, selectedIds, listParams, type = 'simple', maxMarkingId = null) => {
+export const askListExport = async (context, user, exportContext, format, selectedIds, listParams, type = 'simple', maxMarkingId = null) => {
   const connectors = await connectorsForExport(context, user, format, true);
+  const { entity_id, entity_type } = exportContext;
   const markingLevel = maxMarkingId ? await findMarkingDefinitionById(context, user, maxMarkingId) : null;
-  const entity = listParams.elementId ? await storeLoadById(context, user, listParams.elementId, ABSTRACT_STIX_CORE_OBJECT) : null;
+  const entity = entity_id ? await storeLoadById(context, user, entity_id, ABSTRACT_STIX_CORE_OBJECT) : null;
   const toFileName = (connector) => {
-    const fileNamePart = `${entityType}_${type}.${mime.extension(format) ? mime.extension(format) : specialTypesExtensions[format] ?? 'unknown'}`;
+    const fileNamePart = `${entity_type}_${type}.${mime.extension(format) ? mime.extension(format) : specialTypesExtensions[format] ?? 'unknown'}`;
     return `${now()}_${markingLevel?.definition || 'TLP:ALL'}_(${connector.name})_${fileNamePart}`;
   };
   const baseEvent = {
-    format,
-    export_scope: 'query', // query or selection or single
-    id: entity?.id,
-    element_id: entity?.id,
-    entity_name: entity ? extractEntityRepresentativeName(entity) : 'global',
-    entity_type: entityType, // Exported entity type
+    format, // extension mime type
     export_type: type, // Simple or full
+    // Related to entity (if export concern, must be hosted on a specific entity)
+    entity_id: entity?.id,
+    entity_name: entity ? extractEntityRepresentativeName(entity) : 'global',
+    entity_type, // Exported entity type
+    // All the params needed to execute the export on python connector
     max_marking: maxMarkingId, // Max marking id
-    list_params: listParams,
   };
   const buildExportMessage = (work, fileName) => {
+    const internal = {
+      work_id: work.id, // Related action for history
+      applicant_id: user.id, // User asking for the import
+    };
     if (selectedIds && selectedIds.length > 0) {
       return {
-        internal: {
-          work_id: work.id, // Related action for history
-          applicant_id: user.id, // User asking for the import
-        },
+        internal,
         event: {
           export_scope: 'selection', // query or selection or single
-          element_id: entity?.id,
-          entity_name: entity ? extractEntityRepresentativeName(entity) : 'global',
-          entity_type: entityType, // Exported entity type
-          export_type: type, // Simple or full
           file_name: fileName, // Export expected file name
-          max_marking: maxMarkingId, // Max marking id
           selected_ids: selectedIds, // ids that are both selected via checkboxes and respect the filtering
+          ...baseEvent,
         },
       };
     }
     return {
-      internal: {
-        work_id: work.id, // Related action for history
-        applicant_id: user.id, // User asking for the import
-      },
+      internal,
       event: {
+        export_scope: 'query', // query or selection or single
         file_name: fileName, // Export expected file name
-        ...baseEvent
+        list_params: listParams,
+        ...baseEvent,
       },
     };
   };
@@ -101,7 +97,7 @@ export const askListExport = async (context, user, format, entityType, selectedI
   const worksForExport = await Promise.all(
     map(async (connector) => {
       const fileIdentifier = toFileName(connector);
-      const path = `export/${entityType}`;
+      const path = `export/${entity_type}${entity ? `/${entity.id}` : ''}`;
       const work = await createWork(context, user, connector, fileIdentifier, path);
       const message = buildExportMessage(work, fileIdentifier);
       await pushToConnector(connector.internal_id, message);
@@ -128,7 +124,6 @@ export const askEntityExport = async (context, user, format, entity, type = 'sim
   const baseEvent = {
     format,
     export_scope: 'single', // query or selection or single
-    id: entity.id, // Location of the file export = the exported element
     entity_id: entity.id, // Location of the file export = the exported element
     entity_name: extractEntityRepresentativeName(entity),
     entity_type: entity.entity_type, // Exported entity type

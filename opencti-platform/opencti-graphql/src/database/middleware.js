@@ -2492,54 +2492,8 @@ const buildRelationDeduplicationFilters = (input) => {
   }
   return filters;
 };
-/*
-export const buildDynamicFilterArgsContent = (inputFilters) => {
-  const { filters = [], filterGroups = [] } = inputFilters;
-  // 01. Handle filterGroups
-  const dynamicFilterGroups = [];
-  for (let index = 0; index < filterGroups.length; index += 1) {
-    const group = filterGroups[index];
-    const dynamicGroup = buildDynamicFilterArgsContent(group);
-    dynamicFilterGroups.push(dynamicGroup);
-  }
-  // 02. Handle filters
-  // Currently, filters are not supported the way we handle elementId and relationship_type in domain/stixCoreObject/findAll
-  // We need to rebuild the filters
-  // Extract elementId and relationship_type
-  const elementId = R.head(filters
-    .filter((n) => (Array.isArray(n.key)
-      ? R.head(n.key) === INSTANCE_FILTER
-      : n.key === INSTANCE_FILTER)))?.values || null;
-  const relationship_type = R.head(filters.filter((n) => (Array.isArray(n.key) ? R.head(n.key) === 'relationship_type' : n.key === 'relationship_type')))?.values || null;
-  // Build filter without it
-  let dynamicFilters = filters.filter((n) => ![INSTANCE_FILTER, 'relationship_type'].includes(Array.isArray(n.key) ? R.head(n.key) : n.key));
-  if (isNotEmptyField(elementId)) {
-    // In case of element id, we look for a specific entity used by relationships independent of the direction
-    // To do that we need to lookup the element inside the rel_ fields that represent the relationships connections
-    // that are denormalized at relation creation.
-    // If relation types are also in the query, we filter on specific rel_[TYPE], if not, using a wildcard.
-    if (isNotEmptyField(relationship_type)) {
-      const relationshipFilterKeys = relationship_type.map((n) => buildRefRelationKey(n));
-      dynamicFilters = [...dynamicFilters, {
-        key: relationshipFilterKeys,
-        values: Array.isArray(elementId) ? elementId : [elementId]
-      }];
-    } else {
-      dynamicFilters = [...dynamicFilters, {
-        key: buildRefRelationKey('*'),
-        values: Array.isArray(elementId) ? elementId : [elementId]
-      }];
-    }
-  }
-  return {
-    mode: inputFilters.mode ?? 'and',
-    filters: dynamicFilters,
-    filterGroups: dynamicFilterGroups,
-  };
-};
-*/
+
 export const buildDynamicFilterArgs = (inputFilters) => {
-  // const filters = buildDynamicFilterArgsContent(inputFilters);
   return { connectionFormat: false, first: 500, filters: inputFilters };
 };
 

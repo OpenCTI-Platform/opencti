@@ -51,8 +51,7 @@ export const StixCyberObservablesExportCreationMutation = graphql`
     $format: String!
     $exportType: String!
     $maxMarkingDefinition: String
-    $context: String
-    $types: [String]
+    $exportContext: ExportContext
     $search: String
     $orderBy: StixCyberObservablesOrdering
     $orderMode: OrderingMode
@@ -63,8 +62,7 @@ export const StixCyberObservablesExportCreationMutation = graphql`
       format: $format
       exportType: $exportType
       maxMarkingDefinition: $maxMarkingDefinition
-      context: $context
-      types: $types
+      exportContext: $exportContext
       search: $search
       orderBy: $orderBy
       orderMode: $orderMode
@@ -111,7 +109,7 @@ class StixCyberObservablesExportCreationComponent extends Component {
   }
 
   onSubmit(selectedIds, values, { setSubmitting, resetForm }) {
-    const { paginationOptions, context } = this.props;
+    const { paginationOptions, exportContext } = this.props;
     const maxMarkingDefinition = values.maxMarkingDefinition === 'none'
       ? null
       : values.maxMarkingDefinition;
@@ -121,7 +119,7 @@ class StixCyberObservablesExportCreationComponent extends Component {
         format: values.format,
         exportType: values.type,
         maxMarkingDefinition,
-        context,
+        exportContext,
         ...paginationOptions,
         selectedIds,
       },
@@ -305,7 +303,7 @@ StixCyberObservablesExportCreations.propTypes = {
   t: PropTypes.func,
   data: PropTypes.object,
   paginationOptions: PropTypes.object,
-  context: PropTypes.string,
+  exportContext: PropTypes.object,
   onExportAsk: PropTypes.func,
 };
 

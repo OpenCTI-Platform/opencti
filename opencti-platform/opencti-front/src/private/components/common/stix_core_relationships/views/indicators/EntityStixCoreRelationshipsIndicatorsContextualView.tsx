@@ -281,7 +281,7 @@ const EntityStixCoreRelationshipsIndicatorsContextualViewComponent: FunctionComp
         selectAll={selectAll}
         keyword={searchTerm}
         displayImport
-        exportEntityType={'Stix-Core-Object'}
+        exportContext={{ entity_id: entityId, entity_type: 'Stix-Core-Object' }}
         iconExtension
         filters={cleanedFilters}
         availableFilterKeys={availableFilterKeys}

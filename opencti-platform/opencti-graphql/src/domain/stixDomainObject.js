@@ -91,12 +91,12 @@ export const stixDomainObjectAvatar = (stixDomainObject) => {
 
 // region export
 export const stixDomainObjectsExportAsk = async (context, user, args) => {
-  const { format, type, exportType, maxMarkingDefinition, selectedIds } = args;
+  const { exportContext, format, exportType, maxMarkingDefinition, selectedIds } = args;
   const { search, orderBy, orderMode, filters } = args;
   const filteringArgs = { search, orderBy, orderMode, filters };
   const ordersOpts = stixDomainObjectOptions.StixDomainObjectsOrdering;
   const listParams = exportTransformFilters(filteringArgs, ordersOpts);
-  const works = await askListExport(context, user, format, type, selectedIds, listParams, exportType, maxMarkingDefinition);
+  const works = await askListExport(context, user, exportContext, format, selectedIds, listParams, exportType, maxMarkingDefinition);
   return works.map((w) => workToExportFile(w));
 };
 export const stixDomainObjectExportAsk = async (context, user, stixDomainObjectId, args) => {

@@ -184,9 +184,6 @@ export const buildRelationsFilter = <T extends BasicStoreCommon>(relationshipTyp
   }
   // region element filtering
   const optsFromOrToIds = Array.isArray(fromOrToId) ? fromOrToId : [fromOrToId];
-  // TODO elementId is not a rel in this case
-  // This situation doesnt allow use to use a simple key: elementID
-  // We need to change the key and migrate the current elementId stored in the database
   if (fromOrToId && optsFromOrToIds.length > 0) {
     filtersFromOptionsContent.push({ key: ['fromOrToId'], values: optsFromOrToIds });
   }

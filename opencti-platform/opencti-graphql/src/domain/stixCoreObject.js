@@ -321,12 +321,12 @@ export const stixCoreObjectsMultiDistribution = (context, user, args) => {
 
 // region export
 export const stixCoreObjectsExportAsk = async (context, user, args) => {
-  const { format, type, exportType, maxMarkingDefinition, selectedIds } = args;
+  const { exportContext, format, exportType, maxMarkingDefinition, selectedIds } = args;
   const { search, orderBy, orderMode, filters } = args;
   const argsFilters = { search, orderBy, orderMode, filters };
   const ordersOpts = stixCoreObjectOptions.StixCoreObjectsOrdering;
   const listParams = exportTransformFilters(argsFilters, ordersOpts);
-  const works = await askListExport(context, user, format, type, selectedIds, listParams, exportType, maxMarkingDefinition);
+  const works = await askListExport(context, user, exportContext, format, selectedIds, listParams, exportType, maxMarkingDefinition);
   return works.map((w) => workToExportFile(w));
 };
 export const stixCoreObjectExportAsk = async (context, user, stixCoreObjectId, args) => {
@@ -336,9 +336,9 @@ export const stixCoreObjectExportAsk = async (context, user, stixCoreObjectId, a
   return works.map((w) => workToExportFile(w));
 };
 
-export const stixCoreObjectsExportPush = async (context, user, type, file, listFilters) => {
+export const stixCoreObjectsExportPush = async (context, user, entity_id, entity_type, file, listFilters) => {
   const meta = { list_filters: listFilters };
-  await upload(context, user, `export/${type}`, file, { meta });
+  await upload(context, user, `export/${entity_type}${entity_id ? `/${entity_id}` : ''}`, file, { meta });
   return true;
 };
 

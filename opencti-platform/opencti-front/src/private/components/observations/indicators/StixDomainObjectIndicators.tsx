@@ -156,9 +156,8 @@ const StixDomainObjectIndicators: FunctionComponent<StixDomainObjectIndicatorsPr
           selectAll={selectAll}
           noPadding={typeof onChangeOpenExports === 'function'}
           paginationOptions={paginationOptions}
-          exportEntityType="Indicator"
+          exportContext={{ entity_id: stixDomainObjectId, entity_type: 'Indicator' }}
           filters={filters}
-          exportContext={`of-entity-${stixDomainObjectId}`}
           keyword={searchTerm}
           iconExtension={true}
           numberOfElements={numberOfElements}

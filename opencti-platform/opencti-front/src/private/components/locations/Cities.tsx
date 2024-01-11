@@ -71,7 +71,7 @@ const Cities: FunctionComponent = () => {
         handleSwitchLocalMode={helpers.handleSwitchLocalMode}
         handleToggleExports={helpers.handleToggleExports}
         openExports={openExports}
-        exportEntityType="City"
+        exportContext={{ entity_type: 'City' }}
         keyword={searchTerm}
         filters={filters}
         paginationOptions={paginationOptions}

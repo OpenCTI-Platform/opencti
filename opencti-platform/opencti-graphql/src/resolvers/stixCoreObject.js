@@ -83,8 +83,9 @@ const stixCoreObjectResolvers = {
       return stixCoreObjectsDistribution(context, context.user, args);
     },
     stixCoreObjectsMultiDistribution: (_, args, context) => stixCoreObjectsMultiDistribution(context, context.user, args),
-    stixCoreObjectsExportFiles: (_, { type, first }, context) => {
-      return paginatedForPathsWithEnrichment(context, context.user, [`export/${type}`], { first });
+    stixCoreObjectsExportFiles: (_, { exportContext, first }, context) => {
+      const path = `export/${exportContext.entity_type}${exportContext.entity_id ? `/${exportContext.entity_id}` : ''}`;
+      return paginatedForPathsWithEnrichment(context, context.user, [path], { first });
     },
     filtersRepresentatives: (_, { filters }, context) => findFiltersRepresentatives(context, context.user, filters),
   },
@@ -145,7 +146,9 @@ const stixCoreObjectResolvers = {
       exportPush: ({ file }) => stixCoreObjectExportPush(context, context.user, id, file),
     }),
     stixCoreObjectsExportAsk: (_, args, context) => stixCoreObjectsExportAsk(context, context.user, args),
-    stixCoreObjectsExportPush: (_, { type, file, listFilters }, context) => stixCoreObjectsExportPush(context, context.user, type, file, listFilters),
+    stixCoreObjectsExportPush: (_, { entity_id, entity_type, file, listFilters }, context) => {
+      return stixCoreObjectsExportPush(context, context.user, entity_id, entity_type, file, listFilters);
+    },
   },
   Subscription: {
     stixCoreObject: {

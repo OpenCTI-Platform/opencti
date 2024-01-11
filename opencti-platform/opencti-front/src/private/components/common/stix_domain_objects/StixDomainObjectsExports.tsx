@@ -9,16 +9,15 @@ import {
 import { useFormatter } from '../../../../components/i18n';
 
 interface StixDomainObjectsExportsProps {
-  exportEntityType: string;
+  exportContext: { entity_id?: string; entity_type: string; detail: string };
   paginationOptions: StixDomainObjectsExportsContentRefetchQuery$variables;
   open: boolean;
   handleToggle: () => void;
-  context: string;
 }
 
 const StixDomainObjectsExports: FunctionComponent<
 StixDomainObjectsExportsProps
-> = ({ exportEntityType, paginationOptions, open, handleToggle, context }) => {
+> = ({ exportContext, paginationOptions, open, handleToggle }) => {
   const { t } = useFormatter();
   return (
     <Drawer
@@ -28,7 +27,7 @@ StixDomainObjectsExportsProps
     >
       <QueryRenderer
         query={stixDomainObjectsExportsContentQuery}
-        variables={{ count: 25, type: exportEntityType, context }}
+        variables={{ count: 25, exportContext }}
         render={({
           props,
         }: {
@@ -38,9 +37,8 @@ StixDomainObjectsExportsProps
             handleToggle={handleToggle}
             data={props}
             paginationOptions={paginationOptions}
-            exportEntityType={exportEntityType}
+            exportContext={exportContext}
             isOpen={open}
-            context={context}
           />
         )}
       />

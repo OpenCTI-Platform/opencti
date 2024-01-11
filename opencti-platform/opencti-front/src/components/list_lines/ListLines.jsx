@@ -13,7 +13,7 @@ import ToggleButton from '@mui/material/ToggleButton';
 import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
 import Checkbox from '@mui/material/Checkbox';
 import Alert from '@mui/material/Alert';
-import { FormatListGroup, RelationManyToMany, VectorPolygon, Group, FileDelimitedOutline } from 'mdi-material-ui';
+import { FileDelimitedOutline, FormatListGroup, Group, RelationManyToMany, VectorPolygon } from 'mdi-material-ui';
 import DialogTitle from '@mui/material/DialogTitle';
 import FormControl from '@mui/material/FormControl';
 import InputLabel from '@mui/material/InputLabel';
@@ -185,7 +185,6 @@ class ListLines extends Component {
       filters,
       bottomNav,
       children,
-      exportEntityType,
       exportContext,
       numberOfElements,
       availableFilterKeys,
@@ -216,7 +215,7 @@ class ListLines extends Component {
           && numberOfElements.number > export_max_size));
     const searchContextFinal = {
       ...(searchContext ?? {}),
-      entityTypes: exportEntityType ? [exportEntityType] : [],
+      entityTypes: exportContext?.entity_type ? [exportContext.entity_type] : [],
     };
     return (
       <div
@@ -535,51 +534,49 @@ class ListLines extends Component {
           )}
           {children}
         </List>
-        {typeof handleToggleExports === 'function'
-          && exportEntityType !== 'Stix-Core-Object'
-          && exportEntityType !== 'Stix-Cyber-Observable'
-          && exportEntityType !== 'stix-core-relationship' && (
+        {typeof handleToggleExports === 'function' && exportContext
+          && exportContext.entity_type !== 'Stix-Core-Object'
+          && exportContext.entity_type !== 'Stix-Cyber-Observable'
+          && exportContext.entity_type !== 'stix-core-relationship' && (
             <Security needs={[KNOWLEDGE_KNGETEXPORT]}>
               <StixDomainObjectsExports
                 open={openExports}
                 handleToggle={handleToggleExports.bind(this)}
                 paginationOptions={paginationOptions}
-                exportEntityType={exportEntityType}
-                context={exportContext}
+                exportContext={exportContext}
               />
             </Security>
         )}
-        {typeof handleToggleExports === 'function'
-          && exportEntityType === 'stix-core-relationship' && (
+        {typeof handleToggleExports === 'function' && exportContext
+          && exportContext.entity_type === 'stix-core-relationship' && (
             <Security needs={[KNOWLEDGE_KNGETEXPORT]}>
               <StixCoreRelationshipsExports
                 open={openExports}
                 handleToggle={handleToggleExports.bind(this)}
                 paginationOptions={paginationOptions}
-                context={exportContext}
+                exportContext={exportContext}
               />
             </Security>
         )}
-        {typeof handleToggleExports === 'function'
-          && exportEntityType === 'Stix-Core-Object' && (
+        {typeof handleToggleExports === 'function' && exportContext
+          && exportContext.entity_type === 'Stix-Core-Object' && (
             <Security needs={[KNOWLEDGE_KNGETEXPORT]}>
               <StixCoreObjectsExports
                 open={openExports}
                 handleToggle={handleToggleExports.bind(this)}
                 paginationOptions={paginationOptions}
-                exportEntityType={exportEntityType}
-                context={exportContext}
+                exportContext={exportContext}
               />
             </Security>
         )}
-        {typeof handleToggleExports === 'function'
-          && exportEntityType === 'Stix-Cyber-Observable' && (
+        {typeof handleToggleExports === 'function' && exportContext
+          && exportContext.entity_type === 'Stix-Cyber-Observable' && (
             <Security needs={[KNOWLEDGE_KNGETEXPORT]}>
               <StixCyberObservablesExports
                 open={openExports}
                 handleToggle={handleToggleExports.bind(this)}
                 paginationOptions={paginationOptions}
-                context={exportContext}
+                exportContext={exportContext}
               />
             </Security>
         )}
@@ -661,8 +658,7 @@ ListLines.propTypes = {
   noPadding: PropTypes.bool,
   noBottomPadding: PropTypes.bool,
   views: PropTypes.array,
-  exportEntityType: PropTypes.string,
-  exportContext: PropTypes.string,
+  exportContext: PropTypes.object,
   keyword: PropTypes.string,
   filters: PropTypes.object,
   sortBy: PropTypes.string,

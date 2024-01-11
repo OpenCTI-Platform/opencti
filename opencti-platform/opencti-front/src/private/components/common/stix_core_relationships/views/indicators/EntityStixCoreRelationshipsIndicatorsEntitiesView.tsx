@@ -156,12 +156,10 @@ const EntityStixCoreRelationshipsIndicatorsEntitiesView: FunctionComponent<Entit
         keyword={searchTerm}
         displayImport
         handleToggleExports={storageHelpers.handleToggleExports}
-        openExports={openExports}
-        exportEntityType={'Stix-Core-Object'}
         iconExtension
         filters={cleanedFilters}
         availableFilterKeys={availableFilterKeys}
-        exportContext={`of-entity-${entityId}`}
+        exportContext={{ entity_id: entityId, entity_type: 'Stix-Core-Object' }}
         numberOfElements={numberOfElements}
         disableCards
         enableEntitiesView

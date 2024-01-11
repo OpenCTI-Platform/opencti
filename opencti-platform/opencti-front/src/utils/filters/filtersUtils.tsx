@@ -9,7 +9,7 @@ import type { FilterGroup as GqlFilterGroup } from './__generated__/useSearchEnt
 export type { FilterGroup as GqlFilterGroup } from './__generated__/useSearchEntitiesStixCoreObjectsContainersSearchQuery.graphql';
 
 // usually string, but can be a combined filter like regardingOf
-// any in gql
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type FilterValue = any;
 
 export type FilterGroup = {

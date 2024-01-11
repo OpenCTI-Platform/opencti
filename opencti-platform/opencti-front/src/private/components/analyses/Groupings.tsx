@@ -86,11 +86,11 @@ const Groupings: FunctionComponent<GroupingsProps> = ({
     paginationOptions,
   );
   const renderLines = () => {
-    let exportContext = null;
+    let detail = null;
     if (objectId) {
-      exportContext = `of-entity-${objectId}`;
+      detail = `of-entity-${objectId}`;
     } else if (authorId) {
-      exportContext = `of-entity-${authorId}`;
+      detail = `of-entity-${authorId}`;
     }
     let numberOfSelectedElements = Object.keys(selectedElements || {}).length;
     if (selectAll) {
@@ -159,8 +159,7 @@ const Groupings: FunctionComponent<GroupingsProps> = ({
           handleToggleSelectAll={handleToggleSelectAll}
           selectAll={selectAll}
           noPadding={typeof onChangeOpenExports === 'function'}
-          exportEntityType="Grouping"
-          exportContext={exportContext}
+          exportContext={{ entity_type: 'Grouping', detail }}
           keyword={searchTerm}
           filters={filters}
           paginationOptions={paginationOptions}

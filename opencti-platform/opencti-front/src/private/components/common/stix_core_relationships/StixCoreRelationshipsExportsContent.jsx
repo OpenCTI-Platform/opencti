@@ -50,7 +50,7 @@ class StixCoreRelationshipsExportsContentComponent extends Component {
     this.subscription = interval$.subscribe(() => {
       if (this.props.isOpen) {
         this.props.relay.refetch({
-          type: this.props.exportEntityType,
+          exportContext: this.props.exportContext,
           count: 25,
         });
       }
@@ -66,10 +66,9 @@ class StixCoreRelationshipsExportsContentComponent extends Component {
       classes,
       t,
       data,
-      exportEntityType,
+      exportContext,
       paginationOptions,
       handleToggle,
-      context,
     } = this.props;
     const stixCoreRelationshipsExportFiles = pathOr(
       [],
@@ -118,14 +117,9 @@ class StixCoreRelationshipsExportsContentComponent extends Component {
         <Security needs={[KNOWLEDGE_KNGETEXPORT_KNASKEXPORT]}>
           <StixCoreRelationshipsExportCreation
             data={data}
-            exportEntityType={exportEntityType}
+            exportContext={exportContext}
             paginationOptions={paginationOptions}
-            context={context}
-            onExportAsk={() => this.props.relay.refetch({
-              type: this.props.exportEntityType,
-              count: 25,
-            })
-            }
+            onExportAsk={() => this.props.relay.refetch({ count: 25, exportContext: this.props.exportContext })}
           />
         </Security>
       </div>
@@ -136,10 +130,10 @@ class StixCoreRelationshipsExportsContentComponent extends Component {
 export const stixCoreRelationshipsExportsContentQuery = graphql`
   query StixCoreRelationshipsExportsContentRefetchQuery(
     $count: Int!
-    $type: String!
+    $exportContext: ExportContext!
   ) {
     ...StixCoreRelationshipsExportsContent_data
-      @arguments(count: $count, type: $type)
+      @arguments(count: $count, exportContext: $exportContext)
   }
 `;
 
@@ -150,9 +144,9 @@ const StixCoreRelationshipsExportsContent = createRefetchContainer(
       fragment StixCoreRelationshipsExportsContent_data on Query
       @argumentDefinitions(
         count: { type: "Int", defaultValue: 25 }
-        type: { type: "String!" }
+        exportContext: { type: "ExportContext!" }
       ) {
-        stixCoreRelationshipsExportFiles(first: $count, type: $type)
+        stixCoreRelationshipsExportFiles(first: $count, exportContext: $exportContext)
           @connection(key: "Pagination_stixCoreRelationshipsExportFiles") {
           edges {
             node {
@@ -173,11 +167,10 @@ StixCoreRelationshipsExportsContent.propTypes = {
   t: PropTypes.func,
   handleToggle: PropTypes.func,
   data: PropTypes.object,
-  exportEntityType: PropTypes.string.isRequired,
+  exportContext: PropTypes.object,
   paginationOptions: PropTypes.object,
   handleApplyListArgs: PropTypes.func,
   isOpen: PropTypes.bool,
-  context: PropTypes.string,
 };
 
 export default compose(

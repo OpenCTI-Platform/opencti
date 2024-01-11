@@ -131,7 +131,7 @@ const CaseIncidents: FunctionComponent<CaseIncidentsProps> = () => {
         handleToggleSelectAll={handleToggleSelectAll}
         selectAll={selectAll}
         openExports={openExports}
-        exportEntityType="Case-Incident"
+        exportContext={{ entity_type: 'Case-Incident' }}
         keyword={searchTerm}
         filters={filters}
         paginationOptions={paginationOptions}

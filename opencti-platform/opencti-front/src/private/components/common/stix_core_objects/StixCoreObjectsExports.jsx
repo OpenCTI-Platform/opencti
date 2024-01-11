@@ -6,11 +6,10 @@ import StixCoreObjectsExportsContent, { stixCoreObjectsExportsContentQuery } fro
 import { useFormatter } from '../../../../components/i18n';
 
 const StixCoreObjectsExports = ({
-  exportEntityType,
+  exportContext,
   paginationOptions,
   open,
   handleToggle,
-  context,
 }) => {
   const { t } = useFormatter();
   return (
@@ -21,15 +20,14 @@ const StixCoreObjectsExports = ({
     >
       <QueryRenderer
         query={stixCoreObjectsExportsContentQuery}
-        variables={{ count: 25, type: exportEntityType, context }}
+        variables={{ count: 25, exportContext }}
         render={({ props }) => (
           <StixCoreObjectsExportsContent
             handleToggle={handleToggle}
             data={props}
             paginationOptions={paginationOptions}
-            exportEntityType={exportEntityType}
+            exportContext={exportContext}
             isOpen={open}
-            context={context}
           />
         )}
       />

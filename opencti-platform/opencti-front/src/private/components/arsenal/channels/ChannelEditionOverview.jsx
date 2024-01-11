@@ -249,10 +249,7 @@ const ChannelEditionOverviewComponent = (props) => {
             name="objectMarking"
             style={fieldSpacingContainerStyle}
             helpertext={
-              <SubscriptionFocus
-                context={context}
-                fieldname="objectMarking"
-              />
+              <SubscriptionFocus context={context} fieldname="objectMarking"/>
             }
             setFieldValue={setFieldValue}
             onChange={editor.changeMarking}

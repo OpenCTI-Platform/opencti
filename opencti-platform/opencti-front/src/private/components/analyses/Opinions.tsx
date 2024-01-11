@@ -124,7 +124,7 @@ const Opinions: FunctionComponent<OpinionsProps> = ({
           selectAll={selectAll}
           openExports={openExports}
           noPadding={typeof onChangeOpenExports === 'function'}
-          exportEntityType="Opinion"
+          exportContext={{ entity_type: 'Opinion' }}
           keyword={searchTerm}
           filters={filters}
           paginationOptions={paginationOptions}

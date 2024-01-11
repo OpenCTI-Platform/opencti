@@ -126,7 +126,7 @@ const CaseRfis: FunctionComponent<CaseRfisProps> = () => {
         handleToggleSelectAll={handleToggleSelectAll}
         selectAll={selectAll}
         openExports={openExports}
-        exportEntityType="Case-Rfi"
+        exportContext={{ entity_type: 'Case-Rfi' }}
         keyword={searchTerm}
         filters={filters}
         paginationOptions={paginationOptions}

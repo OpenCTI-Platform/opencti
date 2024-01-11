@@ -70,7 +70,7 @@ const ThreatActorsIndividual = () => {
         handleSwitchLocalMode={helpers.handleSwitchLocalMode}
         handleToggleExports={helpers.handleToggleExports}
         openExports={openExports}
-        exportEntityType="Threat-Actor-Individual"
+        exportContext={{ entity_type: 'Threat-Actor-Individual' }}
         keyword={searchTerm}
         filters={filters}
         paginationOptions={paginationOptions}

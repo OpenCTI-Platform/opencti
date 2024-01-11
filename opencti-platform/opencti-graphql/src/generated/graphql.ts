@@ -6479,6 +6479,12 @@ export enum EventsOrdering {
   XOpenctiWorkflowId = 'x_opencti_workflow_id'
 }
 
+export type ExportContext = {
+  detail?: InputMaybe<Scalars['String']['input']>;
+  entity_id?: InputMaybe<Scalars['String']['input']>;
+  entity_type: Scalars['String']['input'];
+};
+
 export type ExternalReference = BasicObject & StixMetaObject & StixObject & {
   __typename?: 'ExternalReference';
   connectors?: Maybe<Array<Maybe<Connector>>>;
@@ -13347,7 +13353,7 @@ export type MutationStixCoreObjectEditArgs = {
 
 
 export type MutationStixCoreObjectsExportAskArgs = {
-  context?: InputMaybe<Scalars['String']['input']>;
+  exportContext?: InputMaybe<ExportContext>;
   exportType: Scalars['String']['input'];
   filters?: InputMaybe<FilterGroup>;
   format: Scalars['String']['input'];
@@ -13356,14 +13362,14 @@ export type MutationStixCoreObjectsExportAskArgs = {
   orderMode?: InputMaybe<OrderingMode>;
   search?: InputMaybe<Scalars['String']['input']>;
   selectedIds?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
-  type: Scalars['String']['input'];
 };
 
 
 export type MutationStixCoreObjectsExportPushArgs = {
+  entity_id?: InputMaybe<Scalars['String']['input']>;
+  entity_type: Scalars['String']['input'];
   file: Scalars['Upload']['input'];
   listFilters?: InputMaybe<Scalars['String']['input']>;
-  type: Scalars['String']['input'];
 };
 
 
@@ -13386,8 +13392,8 @@ export type MutationStixCoreRelationshipEditArgs = {
 
 
 export type MutationStixCoreRelationshipsExportAskArgs = {
-  context?: InputMaybe<Scalars['String']['input']>;
   elementWithTargetTypes?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  exportContext?: InputMaybe<ExportContext>;
   exportType: Scalars['String']['input'];
   filters?: InputMaybe<FilterGroup>;
   format: Scalars['String']['input'];
@@ -13404,14 +13410,14 @@ export type MutationStixCoreRelationshipsExportAskArgs = {
   toId?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   toRole?: InputMaybe<Scalars['String']['input']>;
   toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
-  type: Scalars['String']['input'];
 };
 
 
 export type MutationStixCoreRelationshipsExportPushArgs = {
+  entity_id?: InputMaybe<Scalars['String']['input']>;
+  entity_type: Scalars['String']['input'];
   file: Scalars['Upload']['input'];
   listFilters?: InputMaybe<Scalars['String']['input']>;
-  type: Scalars['String']['input'];
 };
 
 
@@ -13466,7 +13472,7 @@ export type MutationStixCyberObservableEditArgs = {
 
 
 export type MutationStixCyberObservablesExportAskArgs = {
-  context?: InputMaybe<Scalars['String']['input']>;
+  exportContext?: InputMaybe<ExportContext>;
   exportType: Scalars['String']['input'];
   filters?: InputMaybe<FilterGroup>;
   format: Scalars['String']['input'];
@@ -13475,11 +13481,12 @@ export type MutationStixCyberObservablesExportAskArgs = {
   orderMode?: InputMaybe<OrderingMode>;
   search?: InputMaybe<Scalars['String']['input']>;
   selectedIds?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
-  types?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
 };
 
 
 export type MutationStixCyberObservablesExportPushArgs = {
+  entity_id?: InputMaybe<Scalars['String']['input']>;
+  entity_type: Scalars['String']['input'];
   file: Scalars['Upload']['input'];
   listFilters?: InputMaybe<Scalars['String']['input']>;
 };
@@ -13501,7 +13508,7 @@ export type MutationStixDomainObjectsDeleteArgs = {
 
 
 export type MutationStixDomainObjectsExportAskArgs = {
-  context?: InputMaybe<Scalars['String']['input']>;
+  exportContext?: InputMaybe<ExportContext>;
   exportType: Scalars['String']['input'];
   filters?: InputMaybe<FilterGroup>;
   format: Scalars['String']['input'];
@@ -13511,14 +13518,14 @@ export type MutationStixDomainObjectsExportAskArgs = {
   relationship_type?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   search?: InputMaybe<Scalars['String']['input']>;
   selectedIds?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
-  type: Scalars['String']['input'];
 };
 
 
 export type MutationStixDomainObjectsExportPushArgs = {
+  entity_id?: InputMaybe<Scalars['String']['input']>;
+  entity_type: Scalars['String']['input'];
   file: Scalars['Upload']['input'];
   listFilters?: InputMaybe<Scalars['String']['input']>;
-  type: Scalars['String']['input'];
 };
 
 
@@ -18550,8 +18557,8 @@ export type QueryStixCoreObjectsDistributionArgs = {
 
 
 export type QueryStixCoreObjectsExportFilesArgs = {
+  exportContext: ExportContext;
   first?: InputMaybe<Scalars['Int']['input']>;
-  type: Scalars['String']['input'];
 };
 
 
@@ -18673,8 +18680,8 @@ export type QueryStixCoreRelationshipsDistributionArgs = {
 
 
 export type QueryStixCoreRelationshipsExportFilesArgs = {
+  exportContext: ExportContext;
   first?: InputMaybe<Scalars['Int']['input']>;
-  type: Scalars['String']['input'];
 };
 
 
@@ -18762,7 +18769,7 @@ export type QueryStixCyberObservablesDistributionArgs = {
 
 
 export type QueryStixCyberObservablesExportFilesArgs = {
-  context?: InputMaybe<Scalars['String']['input']>;
+  exportContext: ExportContext;
   first?: InputMaybe<Scalars['Int']['input']>;
 };
 
@@ -18816,8 +18823,8 @@ export type QueryStixDomainObjectsDistributionArgs = {
 
 
 export type QueryStixDomainObjectsExportFilesArgs = {
+  exportContext: ExportContext;
   first?: InputMaybe<Scalars['Int']['input']>;
-  type: Scalars['String']['input'];
 };
 
 
@@ -27322,6 +27329,7 @@ export type ResolversTypes = ResolversObject<{
   EventConnection: ResolverTypeWrapper<Omit<EventConnection, 'edges'> & { edges?: Maybe<Array<Maybe<ResolversTypes['EventEdge']>>> }>;
   EventEdge: ResolverTypeWrapper<Omit<EventEdge, 'node'> & { node: ResolversTypes['Event'] }>;
   EventsOrdering: EventsOrdering;
+  ExportContext: ExportContext;
   ExternalReference: ResolverTypeWrapper<ExternalReference>;
   ExternalReferenceAddInput: ExternalReferenceAddInput;
   ExternalReferenceConnection: ResolverTypeWrapper<ExternalReferenceConnection>;
@@ -28032,6 +28040,7 @@ export type ResolversParentTypes = ResolversObject<{
   EventAddInput: EventAddInput;
   EventConnection: Omit<EventConnection, 'edges'> & { edges?: Maybe<Array<Maybe<ResolversParentTypes['EventEdge']>>> };
   EventEdge: Omit<EventEdge, 'node'> & { node: ResolversParentTypes['Event'] };
+  ExportContext: ExportContext;
   ExternalReference: ExternalReference;
   ExternalReferenceAddInput: ExternalReferenceAddInput;
   ExternalReferenceConnection: ExternalReferenceConnection;
@@ -32664,22 +32673,22 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   statusTemplateDelete?: Resolver<ResolversTypes['ID'], ParentType, ContextType, RequireFields<MutationStatusTemplateDeleteArgs, 'id'>>;
   statusTemplateFieldPatch?: Resolver<ResolversTypes['StatusTemplate'], ParentType, ContextType, RequireFields<MutationStatusTemplateFieldPatchArgs, 'id' | 'input'>>;
   stixCoreObjectEdit?: Resolver<Maybe<ResolversTypes['StixCoreObjectEditMutations']>, ParentType, ContextType, RequireFields<MutationStixCoreObjectEditArgs, 'id'>>;
-  stixCoreObjectsExportAsk?: Resolver<Maybe<Array<ResolversTypes['File']>>, ParentType, ContextType, RequireFields<MutationStixCoreObjectsExportAskArgs, 'exportType' | 'format' | 'type'>>;
-  stixCoreObjectsExportPush?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationStixCoreObjectsExportPushArgs, 'file' | 'type'>>;
+  stixCoreObjectsExportAsk?: Resolver<Maybe<Array<ResolversTypes['File']>>, ParentType, ContextType, RequireFields<MutationStixCoreObjectsExportAskArgs, 'exportType' | 'format'>>;
+  stixCoreObjectsExportPush?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationStixCoreObjectsExportPushArgs, 'entity_type' | 'file'>>;
   stixCoreRelationshipAdd?: Resolver<Maybe<ResolversTypes['StixCoreRelationship']>, ParentType, ContextType, Partial<MutationStixCoreRelationshipAddArgs>>;
   stixCoreRelationshipDelete?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType, RequireFields<MutationStixCoreRelationshipDeleteArgs, 'fromId' | 'relationship_type' | 'toId'>>;
   stixCoreRelationshipEdit?: Resolver<Maybe<ResolversTypes['StixCoreRelationshipEditMutations']>, ParentType, ContextType, RequireFields<MutationStixCoreRelationshipEditArgs, 'id'>>;
-  stixCoreRelationshipsExportAsk?: Resolver<Maybe<Array<ResolversTypes['File']>>, ParentType, ContextType, RequireFields<MutationStixCoreRelationshipsExportAskArgs, 'exportType' | 'format' | 'type'>>;
-  stixCoreRelationshipsExportPush?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationStixCoreRelationshipsExportPushArgs, 'file' | 'type'>>;
+  stixCoreRelationshipsExportAsk?: Resolver<Maybe<Array<ResolversTypes['File']>>, ParentType, ContextType, RequireFields<MutationStixCoreRelationshipsExportAskArgs, 'exportType' | 'format'>>;
+  stixCoreRelationshipsExportPush?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationStixCoreRelationshipsExportPushArgs, 'entity_type' | 'file'>>;
   stixCyberObservableAdd?: Resolver<Maybe<ResolversTypes['StixCyberObservable']>, ParentType, ContextType, RequireFields<MutationStixCyberObservableAddArgs, 'type'>>;
   stixCyberObservableEdit?: Resolver<Maybe<ResolversTypes['StixCyberObservableEditMutations']>, ParentType, ContextType, RequireFields<MutationStixCyberObservableEditArgs, 'id'>>;
   stixCyberObservablesExportAsk?: Resolver<Maybe<Array<ResolversTypes['File']>>, ParentType, ContextType, RequireFields<MutationStixCyberObservablesExportAskArgs, 'exportType' | 'format'>>;
-  stixCyberObservablesExportPush?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationStixCyberObservablesExportPushArgs, 'file'>>;
+  stixCyberObservablesExportPush?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationStixCyberObservablesExportPushArgs, 'entity_type' | 'file'>>;
   stixDomainObjectAdd?: Resolver<Maybe<ResolversTypes['StixDomainObject']>, ParentType, ContextType, RequireFields<MutationStixDomainObjectAddArgs, 'input'>>;
   stixDomainObjectEdit?: Resolver<Maybe<ResolversTypes['StixDomainObjectEditMutations']>, ParentType, ContextType, RequireFields<MutationStixDomainObjectEditArgs, 'id'>>;
   stixDomainObjectsDelete?: Resolver<Array<Maybe<ResolversTypes['ID']>>, ParentType, ContextType, RequireFields<MutationStixDomainObjectsDeleteArgs, 'id'>>;
-  stixDomainObjectsExportAsk?: Resolver<Maybe<Array<ResolversTypes['File']>>, ParentType, ContextType, RequireFields<MutationStixDomainObjectsExportAskArgs, 'exportType' | 'format' | 'type'>>;
-  stixDomainObjectsExportPush?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationStixDomainObjectsExportPushArgs, 'file' | 'type'>>;
+  stixDomainObjectsExportAsk?: Resolver<Maybe<Array<ResolversTypes['File']>>, ParentType, ContextType, RequireFields<MutationStixDomainObjectsExportAskArgs, 'exportType' | 'format'>>;
+  stixDomainObjectsExportPush?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationStixDomainObjectsExportPushArgs, 'entity_type' | 'file'>>;
   stixEdit?: Resolver<Maybe<ResolversTypes['StixEditMutations']>, ParentType, ContextType, RequireFields<MutationStixEditArgs, 'id'>>;
   stixRefRelationshipAdd?: Resolver<Maybe<ResolversTypes['StixRefRelationship']>, ParentType, ContextType, RequireFields<MutationStixRefRelationshipAddArgs, 'input'>>;
   stixRefRelationshipEdit?: Resolver<Maybe<ResolversTypes['StixRefRelationshipEditMutations']>, ParentType, ContextType, RequireFields<MutationStixRefRelationshipEditArgs, 'id'>>;
@@ -33912,7 +33921,7 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   stixCoreObjectRaw?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType, RequireFields<QueryStixCoreObjectRawArgs, 'id'>>;
   stixCoreObjects?: Resolver<Maybe<ResolversTypes['StixCoreObjectConnection']>, ParentType, ContextType, Partial<QueryStixCoreObjectsArgs>>;
   stixCoreObjectsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<QueryStixCoreObjectsDistributionArgs, 'field' | 'operation'>>;
-  stixCoreObjectsExportFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, RequireFields<QueryStixCoreObjectsExportFilesArgs, 'type'>>;
+  stixCoreObjectsExportFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, RequireFields<QueryStixCoreObjectsExportFilesArgs, 'exportContext'>>;
   stixCoreObjectsMultiDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['MultiDistribution']>>>, ParentType, ContextType, RequireFields<QueryStixCoreObjectsMultiDistributionArgs, 'field' | 'operation'>>;
   stixCoreObjectsMultiNumber?: Resolver<Maybe<Array<Maybe<ResolversTypes['Number']>>>, ParentType, ContextType, Partial<QueryStixCoreObjectsMultiNumberArgs>>;
   stixCoreObjectsMultiTimeSeries?: Resolver<Maybe<Array<Maybe<ResolversTypes['MultiTimeSeries']>>>, ParentType, ContextType, RequireFields<QueryStixCoreObjectsMultiTimeSeriesArgs, 'interval' | 'operation' | 'startDate'>>;
@@ -33921,20 +33930,20 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   stixCoreRelationship?: Resolver<Maybe<ResolversTypes['StixCoreRelationship']>, ParentType, ContextType, Partial<QueryStixCoreRelationshipArgs>>;
   stixCoreRelationships?: Resolver<Maybe<ResolversTypes['StixCoreRelationshipConnection']>, ParentType, ContextType, Partial<QueryStixCoreRelationshipsArgs>>;
   stixCoreRelationshipsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<QueryStixCoreRelationshipsDistributionArgs, 'field' | 'operation'>>;
-  stixCoreRelationshipsExportFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, RequireFields<QueryStixCoreRelationshipsExportFilesArgs, 'type'>>;
+  stixCoreRelationshipsExportFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, RequireFields<QueryStixCoreRelationshipsExportFilesArgs, 'exportContext'>>;
   stixCoreRelationshipsMultiTimeSeries?: Resolver<Maybe<Array<Maybe<ResolversTypes['MultiTimeSeries']>>>, ParentType, ContextType, RequireFields<QueryStixCoreRelationshipsMultiTimeSeriesArgs, 'interval' | 'operation' | 'startDate'>>;
   stixCoreRelationshipsNumber?: Resolver<Maybe<ResolversTypes['Number']>, ParentType, ContextType, Partial<QueryStixCoreRelationshipsNumberArgs>>;
   stixCoreRelationshipsTimeSeries?: Resolver<Maybe<Array<Maybe<ResolversTypes['TimeSeries']>>>, ParentType, ContextType, RequireFields<QueryStixCoreRelationshipsTimeSeriesArgs, 'field' | 'interval' | 'operation' | 'startDate'>>;
   stixCyberObservable?: Resolver<Maybe<ResolversTypes['StixCyberObservable']>, ParentType, ContextType, RequireFields<QueryStixCyberObservableArgs, 'id'>>;
   stixCyberObservables?: Resolver<Maybe<ResolversTypes['StixCyberObservableConnection']>, ParentType, ContextType, Partial<QueryStixCyberObservablesArgs>>;
   stixCyberObservablesDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<QueryStixCyberObservablesDistributionArgs, 'field' | 'operation'>>;
-  stixCyberObservablesExportFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<QueryStixCyberObservablesExportFilesArgs>>;
+  stixCyberObservablesExportFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, RequireFields<QueryStixCyberObservablesExportFilesArgs, 'exportContext'>>;
   stixCyberObservablesNumber?: Resolver<Maybe<ResolversTypes['Number']>, ParentType, ContextType, Partial<QueryStixCyberObservablesNumberArgs>>;
   stixCyberObservablesTimeSeries?: Resolver<Maybe<Array<Maybe<ResolversTypes['TimeSeries']>>>, ParentType, ContextType, Partial<QueryStixCyberObservablesTimeSeriesArgs>>;
   stixDomainObject?: Resolver<Maybe<ResolversTypes['StixDomainObject']>, ParentType, ContextType, RequireFields<QueryStixDomainObjectArgs, 'id'>>;
   stixDomainObjects?: Resolver<Maybe<ResolversTypes['StixDomainObjectConnection']>, ParentType, ContextType, Partial<QueryStixDomainObjectsArgs>>;
   stixDomainObjectsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<QueryStixDomainObjectsDistributionArgs, 'field' | 'operation'>>;
-  stixDomainObjectsExportFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, RequireFields<QueryStixDomainObjectsExportFilesArgs, 'type'>>;
+  stixDomainObjectsExportFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, RequireFields<QueryStixDomainObjectsExportFilesArgs, 'exportContext'>>;
   stixDomainObjectsNumber?: Resolver<Maybe<ResolversTypes['Number']>, ParentType, ContextType, Partial<QueryStixDomainObjectsNumberArgs>>;
   stixDomainObjectsTimeSeries?: Resolver<Maybe<Array<Maybe<ResolversTypes['TimeSeries']>>>, ParentType, ContextType, RequireFields<QueryStixDomainObjectsTimeSeriesArgs, 'field' | 'interval' | 'operation' | 'startDate'>>;
   stixMetaObject?: Resolver<Maybe<ResolversTypes['StixMetaObject']>, ParentType, ContextType, RequireFields<QueryStixMetaObjectArgs, 'id'>>;

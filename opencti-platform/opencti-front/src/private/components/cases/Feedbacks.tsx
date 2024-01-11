@@ -118,7 +118,7 @@ const Feedbacks: FunctionComponent<FeedbacksProps> = () => {
         handleToggleSelectAll={handleToggleSelectAll}
         selectAll={selectAll}
         openExports={openExports}
-        exportEntityType="Feedback"
+        exportContext={{ entity_type: 'Feedback' }}
         keyword={searchTerm}
         filters={filters}
         paginationOptions={paginationOptions}

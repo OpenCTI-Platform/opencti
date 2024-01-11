@@ -196,8 +196,7 @@ const ContainerStixDomainObjects = ({
       handleToggleSelectAll={handleToggleSelectAll}
       selectAll={selectAll}
       iconExtension={true}
-      exportEntityType="Stix-Domain-Object"
-      exportContext={`of-container-${containerData.id}`}
+      exportContext={{ entity_id: containerData.id, entity_type: 'Stix-Domain-Object' }}
       filters={filters}
       availableFilterKeys={[
         'objectLabel',

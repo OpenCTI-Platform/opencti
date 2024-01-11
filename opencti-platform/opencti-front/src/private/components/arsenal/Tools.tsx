@@ -73,7 +73,7 @@ const Tools = () => {
         handleSwitchLocalMode={helpers.handleSwitchLocalMode}
         handleToggleExports={helpers.handleToggleExports}
         openExports={openExports}
-        exportEntityType="Tool"
+        exportContext={{ entity_type: 'Tool' }}
         keyword={searchTerm}
         filters={filters}
         paginationOptions={paginationOptions}

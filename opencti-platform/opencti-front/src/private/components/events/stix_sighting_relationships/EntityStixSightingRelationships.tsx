@@ -134,7 +134,7 @@ const EntityStixSightingRelationships: FunctionComponent<EntityStixSightingRelat
             'x_opencti_negative',
           ]}
           openExports={openExports}
-          exportEntityType="stix-sighting-relationship"
+          exportContext={{ entity_type: 'stix-sighting-relationship' }}
           availableEntityTypes={stixCoreObjectTypes}
           displayImport={true}
           secondaryAction={true}

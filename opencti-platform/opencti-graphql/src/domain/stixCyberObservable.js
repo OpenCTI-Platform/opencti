@@ -307,21 +307,13 @@ export const stixCyberObservableEditContext = (context, user, stixCyberObservabl
 
 // region export
 export const stixCyberObservablesExportAsk = async (context, user, args) => {
-  const { format, exportType, maxMarkingDefinition, selectedIds } = args;
+  const { exportContext, format, exportType, maxMarkingDefinition, selectedIds } = args;
   const { search, orderBy, orderMode, filters, types } = args;
   const argsFilters = { search, orderBy, orderMode, filters, types };
   const ordersOpts = stixCyberObservableOptions.StixCyberObservablesOrdering;
   const listParams = exportTransformFilters(argsFilters, ordersOpts);
-  const works = await askListExport(
-    context,
-    user,
-    format,
-    'Stix-Cyber-Observable',
-    selectedIds,
-    listParams,
-    exportType,
-    maxMarkingDefinition
-  );
+  const observableContext = { ...exportContext, entity_type: exportContext.entity_type ?? 'Stix-Cyber-Observable' };
+  const works = await askListExport(context, user, observableContext, format, selectedIds, listParams, exportType, maxMarkingDefinition);
   return works.map((w) => workToExportFile(w));
 };
 export const stixCyberObservableExportAsk = async (context, user, stixCyberObservableId, args) => {

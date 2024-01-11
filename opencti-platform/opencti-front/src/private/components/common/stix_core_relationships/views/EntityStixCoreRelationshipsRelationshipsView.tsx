@@ -191,7 +191,7 @@ const EntityStixCoreRelationshipsRelationshipsView: FunctionComponent<EntityStix
         availableRelationshipTypes={relationshipTypes}
         handleToggleExports={storageHelpers.handleToggleExports}
         openExports={openExports}
-        exportEntityType="stix-core-relationship"
+        exportContext={{ entity_id: entityId, entity_type: 'stix-core-relationship' }}
         noPadding={true}
         handleChangeView={handleChangeView || storageHelpers.handleChangeView}
         enableNestedView={enableNestedView}

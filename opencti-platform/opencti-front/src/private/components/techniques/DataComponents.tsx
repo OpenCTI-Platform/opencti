@@ -77,7 +77,7 @@ const DataComponents: FunctionComponent = () => {
         handleSwitchLocalMode={helpers.handleSwitchLocalMode}
         handleToggleExports={helpers.handleToggleExports}
         openExports={openExports}
-        exportEntityType="Data-Component"
+        exportContext={{ entity_type: 'Data-Component' }}
         keyword={searchTerm}
         filters={filters}
         paginationOptions={paginationOptions}
