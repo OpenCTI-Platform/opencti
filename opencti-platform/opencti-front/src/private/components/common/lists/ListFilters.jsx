@@ -37,14 +37,17 @@ const ListFilters = ({
   const classes = useStyles();
   let icon = <FilterListOutlined fontSize={fontSize || 'medium'} />;
   let tooltip = t('Filters');
+  let placeholder = t('Add filter');
   let color = 'primary';
   if (type === 'from') {
     icon = <RayStartArrow fontSize={fontSize || 'medium'} />;
     tooltip = t('Dynamic source filters');
+    placeholder = t('Dynamic source filters');
     color = 'warning';
   } else if (type === 'to') {
     icon = <RayEndArrow fontSize={fontSize || 'medium'} />;
     tooltip = t('Dynamic target filters');
+    placeholder = t('Dynamic target filters');
     color = 'success';
   }
   const handleClearFilters = () => {
@@ -101,7 +104,7 @@ const ListFilters = ({
                 {...params}
                 variant="outlined"
                 size="small"
-                label={t('Add filter')}
+                label={placeholder}
               />
             )}
             renderOption={(props, option) => <li {...props}>{option.label}</li>}

@@ -1,0 +1,166 @@
+import Filters from '@components/common/lists/Filters';
+import React, { FunctionComponent, useEffect } from 'react';
+import { Box } from '@mui/material';
+import useFiltersState from '../../../../utils/filters/useFiltersState';
+import { FilterGroup, isFilterGroupNotEmpty } from '../../../../utils/filters/filtersUtils';
+import FilterIconButton from '../../../../components/FilterIconButton';
+
+const entitiesFilters = [
+  'entity_type',
+  'objectMarking',
+  'objectLabel',
+  'createdBy',
+  'creator_id',
+  'workflow_id',
+  'objectAssignee',
+  'objectParticipant',
+  'objects',
+  'x_opencti_score',
+  'x_opencti_detection',
+  'revoked',
+  'confidence',
+  'pattern_type',
+  'killChainPhases',
+  'malware_types',
+  'report_types',
+  'regardingOf',
+];
+
+const relationshipsFilters = [
+  'fromId',
+  'toId',
+  'fromTypes',
+  'toTypes',
+  'relationship_type',
+  'objectMarking',
+  'objectLabel',
+  'createdBy',
+  'confidence',
+  'killChainPhases',
+  'creator_id',
+];
+
+const auditsFilters = [
+  'entity_type',
+  'event_type',
+  'event_scope',
+  'members_group',
+  'members_organization',
+  'members_user',
+  'contextEntityId',
+  'contextEntityType',
+  'contextCreatedBy',
+  'contextObjectMarking',
+  'contextObjectLabel',
+  'contextCreator',
+];
+
+interface DataSelection {
+  label: string;
+  attribute: string;
+  date_attribute: string;
+  perspective: string;
+  filters: FilterGroup,
+  dynamicFrom: FilterGroup,
+  dynamicTo: FilterGroup,
+}
+
+interface WidgetFiltersProps {
+  perspective: string;
+  type: string;
+  dataSelection: DataSelection;
+  setDataSelection: (data: DataSelection) => void;
+}
+
+const WidgetFilters: FunctionComponent<WidgetFiltersProps> = ({ perspective, type, dataSelection, setDataSelection }) => {
+  const [filters, helpers] = useFiltersState(dataSelection.filters);
+  const [filtersDynamicFrom, helpersDynamicFrom] = useFiltersState(dataSelection.dynamicFrom);
+  const [filtersDynamicTo, helpersDynamicTo] = useFiltersState(dataSelection.dynamicTo);
+
+  useEffect(() => {
+    setDataSelection({
+      ...dataSelection,
+      filters,
+      dynamicTo: filtersDynamicTo,
+      dynamicFrom: filtersDynamicFrom,
+    });
+  }, [filters, filtersDynamicFrom, filtersDynamicTo]);
+
+  let availableFilterKeys = entitiesFilters;
+  let availableEntityTypes = [
+    'Stix-Domain-Object',
+    'Stix-Cyber-Observable',
+  ];
+  if (perspective === 'relationships') {
+    availableFilterKeys = relationshipsFilters;
+    availableEntityTypes = [
+      'Stix-Domain-Object',
+      'Stix-Cyber-Observable',
+    ];
+  } else if (perspective === 'audits') {
+    availableFilterKeys = auditsFilters;
+    availableEntityTypes = ['History', 'Activity'];
+  }
+  return <><Box sx={{ display: 'flex', justifyContent: 'space-between', paddingTop: 2 }}>
+    <Box sx={{ display: 'flex', gap: 1 }}>
+      <Filters
+        availableFilterKeys={type === 'bookmark' ? ['entity_type'] : availableFilterKeys}
+        availableEntityTypes={availableEntityTypes}
+        helpers={helpers}
+        noDirectFilters={true}
+      />
+    </Box>
+    { perspective === 'relationships' && (
+    <>
+      <Box sx={{ display: 'flex', gap: 1 }}>
+        <Filters
+          availableFilterKeys={entitiesFilters}
+          availableEntityTypes={[
+            'Stix-Domain-Object',
+            'Stix-Cyber-Observable',
+          ]}
+          helpers={helpersDynamicFrom}
+          noDirectFilters={true}
+          type="from"
+        />
+      </Box>
+      <Box sx={{ display: 'flex', gap: 1 }}>
+        <Filters
+          availableFilterKeys={entitiesFilters}
+          availableEntityTypes={[
+            'Stix-Domain-Object',
+            'Stix-Cyber-Observable',
+          ]}
+          helpers={helpersDynamicTo}
+          noDirectFilters={true}
+          type="to"
+        />
+      </Box>
+    </>)}
+  </Box>
+    <Box sx={{ paddingTop: 1 }}>
+      { isFilterGroupNotEmpty(filters) && (
+      <FilterIconButton
+        filters={filters}
+        helpers={helpers}
+      />
+      ) }
+      { isFilterGroupNotEmpty(filtersDynamicFrom) && (
+      <FilterIconButton
+        filters={filtersDynamicFrom}
+        helpers={helpersDynamicFrom}
+        chipColor={'warning'}
+      />
+      ) }
+      { isFilterGroupNotEmpty(filtersDynamicTo) && (
+      <FilterIconButton
+        filters={filtersDynamicTo}
+        helpers={helpersDynamicTo}
+        chipColor={'success'}
+      />
+      ) }
+    </Box>
+  </>;
+};
+
+export default WidgetFilters;
