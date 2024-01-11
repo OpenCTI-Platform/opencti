@@ -90,7 +90,7 @@ const RootCountryComponent = ({ queryRef, countryId, link }) => {
           }}
         >
           <StixDomainObjectHeader
-            entityType="country"
+            entityType="Country"
             disableSharing={true}
             stixDomainObject={country}
             PopoverComponent={<CountryPopover id={country.id} />}
