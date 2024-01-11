@@ -170,11 +170,22 @@ export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({
   const [entities, searchEntities] = getUseSearch(searchScope);
   const { t } = useFormatter();
   const handleChange = (checked: boolean, value: string, childKey?: string) => {
-    const formattedValue = childKey ? { key: childKey, values: [value] } : value;
-    if (checked) {
-      helpers?.handleAddRepresentationFilter(filter?.id ?? '', formattedValue);
+    if (childKey) { // case 'regardingOf' filter
+      const childFilters = filter?.values.filter((val) => val.key === childKey) as Filter[];
+      const childFilter = childFilters && childFilters.length > 0 ? childFilters[0] : undefined;
+      const alreadySelectedValues = childFilter?.values ?? [];
+      helpers?.handleRemoveRepresentationFilter(filter?.id ?? '', childFilter); // remove former value corresponding to childKey
+      if (checked) {
+        const valueToAdd = { key: childKey, values: [...alreadySelectedValues, value] }; // the new value to add = the former ones + the added one
+        helpers?.handleAddRepresentationFilter(filter?.id ?? '', valueToAdd);
+      } else {
+        // const cleanedValues = alreadySelectedValues.filter((val) => val !== value);
+        // if (cleanedValues.length > 0) helpers?.handleAddRepresentationFilter(filter?.id ?? '', cleanedValues); // add the values without the removed one
+      }
+    } else if (checked) {
+      helpers?.handleAddRepresentationFilter(filter?.id ?? '', value);
     } else {
-      helpers?.handleRemoveRepresentationFilter(filter?.id ?? '', formattedValue);
+      helpers?.handleRemoveRepresentationFilter(filter?.id ?? '', value);
     }
   };
 
@@ -255,7 +266,9 @@ export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({
           />
         )}
         renderOption={(props, option) => {
-          const checked = filterValues.includes(option.value);
+          const checked = technicalKey
+            ? filterValues.filter((fVal) => fVal && fVal.key === technicalKey && fVal.values.includes(option.value)).length > 0
+            : filterValues.includes(option.value);
           return (
             <Tooltip title={option.label} key={option.label}>
               <li
@@ -359,7 +372,7 @@ export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({
               padding: 8,
             }}
           >
-          {displayOperatorAndFilter('id', 'id')}
+          {displayOperatorAndFilter('relationship_type', 'type')}
           <Chip
             style={{
               fontFamily: 'Consolas, monaco, monospace',
@@ -367,7 +380,7 @@ export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({
             }}
             label={t('WITH')}
           />
-          {displayOperatorAndFilter('relationship_type', 'type')}
+          {displayOperatorAndFilter('id', 'id')}
         </div>
         : <div
             style={{
