@@ -76,20 +76,22 @@ const DateTimePickerField = (props) => {
         onAccept={internalOnAccept}
         onChange={internalOnChange}
         views={['year', 'month', 'day', 'hours', 'minutes', 'seconds']}
-        inputFormat={
+        format={
           dateTimeFormatsMapWithSeconds[intl.locale] || 'yyyy-MM-dd hh:mm:ss a'
         }
-        renderInput={(params) => (
-          <TextField
-            {...params}
-            onFocus={internalOnFocus}
-            onBlur={internalOnBlur}
-            error={!R.isNil(meta.error)}
-            helperText={
-              (!R.isNil(meta.error) && meta.error) || TextFieldProps.helperText
-            }
-          />
-        )}
+        slotProps={{
+          textField: (params) => (
+            <TextField
+              {...params}
+              onFocus={internalOnFocus}
+              onBlur={internalOnBlur}
+              error={!R.isNil(meta.error)}
+              helperText={
+                (!R.isNil(meta.error) && meta.error) || TextFieldProps.helperText
+              }
+            />
+          ),
+        }}
       />
     );
   }
@@ -104,17 +106,19 @@ const DateTimePickerField = (props) => {
       onChange={internalOnChange}
       views={['year', 'month', 'day', 'hours', 'minutes']}
       inputFormat={dateTimeFormatsMap[intl.locale] || 'yyyy-MM-dd hh:mm a'}
-      renderInput={(params) => (
-        <TextField
-          {...params}
-          onFocus={internalOnFocus}
-          onBlur={internalOnBlur}
-          error={!R.isNil(meta.error)}
-          helperText={
-            (!R.isNil(meta.error) && meta.error) || TextFieldProps.helperText
-          }
-        />
-      )}
+      slotProps={{
+        textField: (params) => (
+          <TextField
+            {...params}
+            onFocus={internalOnFocus}
+            onBlur={internalOnBlur}
+            error={!R.isNil(meta.error)}
+            helperText={
+              (!R.isNil(meta.error) && meta.error) || TextFieldProps.helperText
+            }
+          />
+        ),
+      }}
     />
   );
 };

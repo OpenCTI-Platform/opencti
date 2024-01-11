@@ -10,10 +10,10 @@ import {
 import Button from '@mui/material/Button';
 import { useFormatter } from '../../../../components/i18n';
 import { SubscriptionFocus } from '../../../../components/Subscription';
-import DatePickerField from '../../../../components/DatePickerField';
 import TextField from '../../../../components/TextField';
 import { commitMutation, defaultCommitMutation } from '../../../../relay/environment';
 import useUserMetric from '../../../../utils/hooks/useUserMetric';
+import DateTimePickerField from '../../../../components/DateTimePickerField';
 import { GenericContext } from '../model/GenericContextModel';
 
 export const individualWeightMutation = graphql`
@@ -69,7 +69,7 @@ export const WeightFieldAdd: FunctionComponent<WeightFieldAddProps> = ({
                     InputProps={{ inputProps: { min: 0 } }}
                   />
                   <Field
-                    component={DatePickerField}
+                    component={DateTimePickerField}
                     name={`${name}.${index}.date_seen`}
                     TextFieldProps={{
                       label: t_i18n('Date Seen'),
@@ -176,7 +176,7 @@ export const WeightFieldEdit: FunctionComponent<WeightFieldEditProps> = ({
                       }}
                     />
                     <Field
-                      component={DatePickerField}
+                      component={DateTimePickerField}
                       name={`${name}.${index}.date_seen`}
                       id={`weight_date_${index}`}
                       onSubmit={(_: string, date_seen: string) => {

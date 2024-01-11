@@ -35,7 +35,6 @@ import {
   ThreatActorIndividualCreationMutation$variables,
 } from './__generated__/ThreatActorIndividualCreationMutation.graphql';
 import { ThreatActorsIndividualCardsPaginationQuery$variables } from './__generated__/ThreatActorsIndividualCardsPaginationQuery.graphql';
-import DatePickerField from '../../../../components/DatePickerField';
 import { HeightFieldAdd } from '../../common/form/HeightField';
 import { WeightFieldAdd } from '../../common/form/WeightField';
 import CustomFileUploader from '../../common/files/CustomFileUploader';
@@ -488,7 +487,7 @@ ThreatActorIndividualFormProps
               />
               <Field
                 id="DateOfBirth"
-                component={DatePickerField}
+                component={DateTimePickerField}
                 name="date_of_birth"
                 onSubmit={setFieldValue}
                 TextFieldProps={{
