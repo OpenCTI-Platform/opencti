@@ -192,7 +192,7 @@ const Incidents: FunctionComponent = () => {
     <ExportContextProvider>
       {renderLines()}
       <Security needs={[KNOWLEDGE_KNUPDATE]}>
-        <IncidentCreation paginationOptions={paginationOptions} />
+        <IncidentCreation paginationOptions={queryPaginationOptions} />
       </Security>
     </ExportContextProvider>
   );

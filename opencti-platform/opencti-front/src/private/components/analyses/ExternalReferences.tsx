@@ -156,7 +156,7 @@ const ExternalReferences: FunctionComponent<ExternalReferencesProps> = () => {
       </ListLines>
       <Security needs={[KNOWLEDGE_KNUPDATE]}>
         <ExternalReferenceCreation
-          paginationOptions={paginationOptions}
+          paginationOptions={queryPaginationOptions}
           openContextual={false}
         />
       </Security>

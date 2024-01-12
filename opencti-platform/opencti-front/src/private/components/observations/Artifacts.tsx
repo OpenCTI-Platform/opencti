@@ -186,7 +186,7 @@ const Artifacts: FunctionComponent = () => {
         {renderLines()}
         <Security needs={[KNOWLEDGE_KNUPDATE]}>
           <ArtifactCreation
-            paginationOptions={paginationOptions}
+            paginationOptions={queryPaginationOptions}
           />
         </Security>
       </div>

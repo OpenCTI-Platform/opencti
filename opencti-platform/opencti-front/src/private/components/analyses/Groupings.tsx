@@ -17,37 +17,13 @@ import { buildEntityTypeBasedFilterContext, emptyFilterGroup } from '../../../ut
 const LOCAL_STORAGE_KEY = 'groupings';
 
 interface GroupingsProps {
-  objectId: string;
-  authorId: string;
-  onChangeOpenExports: () => void;
   match: { params: { groupingContext: string } };
 }
 
-const Groupings: FunctionComponent<GroupingsProps> = ({
-  objectId,
-  authorId,
-  onChangeOpenExports,
-}) => {
+const Groupings: FunctionComponent<GroupingsProps> = () => {
   const {
     platformModuleHelpers: { isRuntimeFieldEnable },
   } = useAuth();
-  const additionnalFilters = [];
-  if (authorId) {
-    additionnalFilters.push({
-      key: 'createdBy',
-      values: [authorId],
-      operator: 'eq',
-      mode: 'or',
-    });
-  }
-  if (objectId) {
-    additionnalFilters.push({
-      key: 'objects',
-      values: [objectId],
-      operator: 'eq',
-      mode: 'or',
-    });
-  }
   const {
     viewStorage,
     paginationOptions,
@@ -63,7 +39,6 @@ const Groupings: FunctionComponent<GroupingsProps> = ({
       openExports: false,
       count: 25,
     },
-    additionnalFilters,
   );
   const {
     numberOfElements,
@@ -159,7 +134,6 @@ const Groupings: FunctionComponent<GroupingsProps> = ({
           openExports={openExports}
           handleToggleSelectAll={handleToggleSelectAll}
           selectAll={selectAll}
-          noPadding={typeof onChangeOpenExports === 'function'}
           exportContext={{ entity_type: 'Grouping' }}
           keyword={searchTerm}
           filters={filters}
@@ -222,7 +196,7 @@ const Groupings: FunctionComponent<GroupingsProps> = ({
     <>
       {renderLines()}
       <Security needs={[KNOWLEDGE_KNUPDATE]}>
-        <GroupingCreation paginationOptions={paginationOptions} />
+        <GroupingCreation paginationOptions={queryPaginationOptions} />
       </Security>
     </>
   );

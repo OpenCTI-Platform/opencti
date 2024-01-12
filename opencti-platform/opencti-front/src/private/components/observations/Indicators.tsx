@@ -236,7 +236,7 @@ const Indicators = () => {
           <div className={classes.container}>
             {renderLines(platformModuleHelpers)}
             <Security needs={[KNOWLEDGE_KNUPDATE]}>
-              <IndicatorCreation paginationOptions={paginationOptions}/>
+              <IndicatorCreation paginationOptions={queryPaginationOptions}/>
             </Security>
             <IndicatorsRightBar
               indicatorTypes={patternTypes}

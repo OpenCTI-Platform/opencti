@@ -39,6 +39,26 @@ const CaseRfts: FunctionComponent<CaseRftsProps> = () => {
       filters: emptyFilterGroup,
     },
   );
+
+  const {
+    sortBy,
+    orderAsc,
+    searchTerm,
+    filters,
+    openExports,
+    numberOfElements,
+  } = viewStorage;
+
+  const contextFilters = buildEntityTypeBasedFilterContext('Case-Rft', filters);
+  const queryPaginationOptions = {
+    ...paginationOptions,
+    filters: contextFilters,
+  } as unknown as CaseRftLinesCasesPaginationQuery$variables;
+  const queryRef = useQueryLoading<CaseRftLinesCasesPaginationQuery>(
+    caseRftsLinesQuery,
+    queryPaginationOptions,
+  );
+
   const {
     onToggleEntity,
     numberOfSelectedElements,
@@ -49,14 +69,6 @@ const CaseRfts: FunctionComponent<CaseRftsProps> = () => {
     selectAll,
   } = useEntityToggle<CaseRftLineCase_node$data>(LOCAL_STORAGE_KEY);
   const renderLines = () => {
-    const {
-      sortBy,
-      orderAsc,
-      searchTerm,
-      filters,
-      openExports,
-      numberOfElements,
-    } = viewStorage;
     const isRuntimeSort = isRuntimeFieldEnable() ?? false;
     const dataColumns = {
       name: {
@@ -105,16 +117,6 @@ const CaseRfts: FunctionComponent<CaseRftsProps> = () => {
         isSortable: isRuntimeSort,
       },
     };
-
-    const contextFilters = buildEntityTypeBasedFilterContext('Case-Rft', filters);
-    const queryPaginationOptions = {
-      ...paginationOptions,
-      filters: contextFilters,
-    } as unknown as CaseRftLinesCasesPaginationQuery$variables;
-    const queryRef = useQueryLoading<CaseRftLinesCasesPaginationQuery>(
-      caseRftsLinesQuery,
-      queryPaginationOptions,
-    );
 
     return (
       <ListLines
@@ -194,7 +196,7 @@ const CaseRfts: FunctionComponent<CaseRftsProps> = () => {
     <ExportContextProvider>
       {renderLines()}
       <Security needs={[KNOWLEDGE_KNUPDATE]}>
-        <CaseRftCreation paginationOptions={paginationOptions} />
+        <CaseRftCreation paginationOptions={queryPaginationOptions} />
       </Security>
     </ExportContextProvider>
   );

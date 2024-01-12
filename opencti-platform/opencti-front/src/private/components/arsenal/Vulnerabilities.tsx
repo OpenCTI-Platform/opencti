@@ -9,7 +9,7 @@ import useQueryLoading from '../../../utils/hooks/useQueryLoading';
 import { VulnerabilitiesLinesPaginationQuery, VulnerabilitiesLinesPaginationQuery$variables } from './vulnerabilities/__generated__/VulnerabilitiesLinesPaginationQuery.graphql';
 import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
 import useAuth from '../../../utils/hooks/useAuth';
-import { emptyFilterGroup } from '../../../utils/filters/filtersUtils';
+import { buildEntityTypeBasedFilterContext, emptyFilterGroup } from '../../../utils/filters/filtersUtils';
 
 const LOCAL_STORAGE_KEY = 'vulnerabilities';
 
@@ -28,15 +28,27 @@ const Vulnerabilities = () => {
       filters: emptyFilterGroup,
     },
   );
+
+  const {
+    sortBy,
+    orderAsc,
+    searchTerm,
+    filters,
+    openExports,
+    numberOfElements,
+  } = viewStorage;
+
+  const contextFilters = buildEntityTypeBasedFilterContext('Vulnerability', filters);
+  const queryPaginationOptions = {
+    ...paginationOptions,
+    filters: contextFilters,
+  } as unknown as VulnerabilitiesLinesPaginationQuery$variables;
+  const queryRef = useQueryLoading<VulnerabilitiesLinesPaginationQuery>(
+    vulnerabilitiesLinesQuery,
+    queryPaginationOptions,
+  );
+
   const renderLines = () => {
-    const {
-      sortBy,
-      orderAsc,
-      searchTerm,
-      filters,
-      openExports,
-      numberOfElements,
-    } = viewStorage;
     const dataColumns = {
       name: {
         label: 'Name',
@@ -69,10 +81,7 @@ const Vulnerabilities = () => {
         isSortable: isRuntimeSort,
       },
     };
-    const queryRef = useQueryLoading<VulnerabilitiesLinesPaginationQuery>(
-      vulnerabilitiesLinesQuery,
-      paginationOptions,
-    );
+
     return (
       <ListLines
         helpers={helpers}
@@ -90,7 +99,7 @@ const Vulnerabilities = () => {
         exportContext={{ entity_type: 'Vulnerability' }}
         keyword={searchTerm}
         filters={filters}
-        paginationOptions={paginationOptions}
+        paginationOptions={queryPaginationOptions}
         numberOfElements={numberOfElements}
         availableFilterKeys={[
           'workflow_id',
@@ -124,7 +133,7 @@ const Vulnerabilities = () => {
           >
             <VulnerabilitiesLines
               queryRef={queryRef}
-              paginationOptions={paginationOptions}
+              paginationOptions={queryPaginationOptions}
               dataColumns={dataColumns}
               onLabelClick={helpers.handleAddFilter}
               setNumberOfElements={helpers.handleSetNumberOfElements}
@@ -139,7 +148,7 @@ const Vulnerabilities = () => {
     <>
       {renderLines()}
       <Security needs={[KNOWLEDGE_KNUPDATE]}>
-        <VulnerabilityCreation paginationOptions={paginationOptions} />
+        <VulnerabilityCreation paginationOptions={queryPaginationOptions} />
       </Security>
     </>
   );

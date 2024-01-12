@@ -36,6 +36,23 @@ const Infrastructures = () => {
     },
   );
   const {
+    sortBy,
+    orderAsc,
+    searchTerm,
+    filters,
+    openExports,
+    numberOfElements,
+  } = viewStorage;
+  const contextFilters = buildEntityTypeBasedFilterContext('Infrastructure', filters);
+  const queryPaginationOptions = {
+    ...paginationOptions,
+    filters: contextFilters,
+  } as unknown as InfrastructuresLinesPaginationQuery$variables;
+  const queryRef = useQueryLoading<InfrastructuresLinesPaginationQuery>(
+    infrastructuresLinesQuery,
+    queryPaginationOptions,
+  );
+  const {
     onToggleEntity,
     numberOfSelectedElements,
     handleClearSelectedElements,
@@ -47,15 +64,6 @@ const Infrastructures = () => {
     LOCAL_STORAGE_KEY_INFRASTRUCTURES,
   );
   const renderLines = () => {
-    const {
-      sortBy,
-      orderAsc,
-      searchTerm,
-      filters,
-      openExports,
-      numberOfElements,
-    } = viewStorage;
-
     const isRuntimeSort = isRuntimeFieldEnable() ?? false;
     const dataColumns = {
       name: {
@@ -94,16 +102,6 @@ const Infrastructures = () => {
         width: '8%',
       },
     };
-
-    const contextFilters = buildEntityTypeBasedFilterContext('Infrastructure', filters);
-    const queryPaginationOptions = {
-      ...paginationOptions,
-      filters: contextFilters,
-    } as unknown as InfrastructuresLinesPaginationQuery$variables;
-    const queryRef = useQueryLoading<InfrastructuresLinesPaginationQuery>(
-      infrastructuresLinesQuery,
-      queryPaginationOptions,
-    );
 
     return (
       <ListLines
@@ -181,7 +179,7 @@ const Infrastructures = () => {
     <ExportContextProvider>
       {renderLines()}
       <Security needs={[KNOWLEDGE_KNUPDATE]}>
-        <InfrastructureCreation paginationOptions={paginationOptions} />
+        <InfrastructureCreation paginationOptions={queryPaginationOptions} />
       </Security>
     </ExportContextProvider>
   );

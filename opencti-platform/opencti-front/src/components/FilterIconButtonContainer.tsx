@@ -283,6 +283,15 @@ FilterIconButtonContainerProps
           </>
         );
         const isNotLastFilter = index < displayedFilters.length - 1;
+
+        const chipVariant = currentFilter.values.length === 0 && !['nil', 'not_nil'].includes(filterOperator ?? 'eq')
+          ? 'outlined'
+          : 'filled';
+        // darken the bg color when filled (quickfix for 'warning' and 'success' chipColor unreadable with regardingOf filter)
+        const chipSx = (chipColor === 'warning' || chipColor === 'success') && chipVariant === 'filled'
+          ? { bgcolor: `${chipColor}.dark` }
+          : undefined;
+
         return (
           <Fragment key={currentFilter.id ?? `filter-${index}`}>
             <Tooltip
@@ -312,12 +321,8 @@ FilterIconButtonContainerProps
                       : null
                   }
                   classes={{ root: classFilter, label: classes.chipLabel }}
-                  variant={
-                    currentFilter.values.length === 0
-                    && !['nil', 'not_nil'].includes(filterOperator ?? 'eq')
-                      ? 'outlined'
-                      : 'filled'
-                  }
+                  variant={chipVariant}
+                  sx={chipSx}
                   label={
                     <FilterValues
                       label={keyLabel}

@@ -59,6 +59,7 @@ export const directFilters = [
   'objectContains',
   'entity_type',
   'container_type',
+  'elementWithTargetTypes',
 ];
 export const inlineFilters = ['is_read', 'trigger_type', 'instance_trigger'];
 

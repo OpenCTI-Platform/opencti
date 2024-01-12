@@ -43,7 +43,6 @@ const vulnerabilityQuery = graphql`
       name
       x_opencti_graph_data
       ...Vulnerability_vulnerability
-      ...VulnerabilityReports_vulnerability
       ...VulnerabilityKnowledge_vulnerability
       ...FileImportViewer_entity
       ...FileExportViewer_entity

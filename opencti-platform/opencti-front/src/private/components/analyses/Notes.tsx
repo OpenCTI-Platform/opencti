@@ -17,33 +17,11 @@ import { buildEntityTypeBasedFilterContext, emptyFilterGroup } from '../../../ut
 
 const LOCAL_STORAGE_KEY = 'notes';
 
-interface NotesProps {
-  objectId: string;
-  authorId: string;
-  onChangeOpenExports: () => void;
-}
-
-const Notes: FunctionComponent<NotesProps> = ({ objectId, authorId, onChangeOpenExports }) => {
+const Notes: FunctionComponent = () => {
   const {
     platformModuleHelpers: { isRuntimeFieldEnable },
   } = useAuth();
-  const additionnalFilters = [];
-  if (authorId) {
-    additionnalFilters.push({
-      key: 'createdBy',
-      values: [authorId],
-      operator: 'eq',
-      mode: 'or',
-    });
-  }
-  if (objectId) {
-    additionnalFilters.push({
-      key: 'objects',
-      values: [objectId],
-      operator: 'eq',
-      mode: 'or',
-    });
-  }
+
   const {
     viewStorage,
     helpers: storageHelpers,
@@ -56,7 +34,6 @@ const Notes: FunctionComponent<NotesProps> = ({ objectId, authorId, onChangeOpen
       openExports: false,
       filters: emptyFilterGroup,
     },
-    additionnalFilters,
   );
   const {
     sortBy,
@@ -148,7 +125,6 @@ const Notes: FunctionComponent<NotesProps> = ({ objectId, authorId, onChangeOpen
           openExports={openExports}
           handleToggleSelectAll={handleToggleSelectAll}
           selectAll={selectAll}
-          noPadding={typeof onChangeOpenExports === 'function'}
           exportContext={{ entity_type: 'Note' }}
           keyword={searchTerm}
           filters={filters}
@@ -211,7 +187,7 @@ const Notes: FunctionComponent<NotesProps> = ({ objectId, authorId, onChangeOpen
     <ExportContextProvider>
       {renderLines()}
       <Security needs={[KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNPARTICIPATE]}>
-        <NoteCreation paginationOptions={paginationOptions} />
+        <NoteCreation paginationOptions={queryPaginationOptions} />
       </Security>
     </ExportContextProvider>
   );
