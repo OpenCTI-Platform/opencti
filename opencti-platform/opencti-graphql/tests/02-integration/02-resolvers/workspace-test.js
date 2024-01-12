@@ -264,7 +264,7 @@ describe('Workspace resolver standard behavior', () => {
     });
 
     expect(queryResult.errors[0].message).toEqual(
-      'Invalid version of the platform. Please upgrade your OpenCTI. Minimal version required: 5.12.0',
+      'Invalid version of the platform. Please upgrade your OpenCTI. Minimal version required: 5.12.16',
     );
   });
 
@@ -468,7 +468,7 @@ describe('Workspace resolver standard behavior', () => {
     });
 
     expect(queryResult.errors[0].message).toEqual(
-      'Invalid version of the platform. Please upgrade your OpenCTI. Minimal version required: 5.12.0'
+      'Invalid version of the platform. Please upgrade your OpenCTI. Minimal version required: 5.12.16'
     );
   });
 

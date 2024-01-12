@@ -145,8 +145,8 @@ export const buildAggregationFilter = <T extends BasicStoreCommon>(args: Relatio
   return { filters: { mode: 'and', filters: filtersContent, filterGroups: [] } };
 };
 
-export const buildRelationsFilter = <T extends BasicStoreCommon>(relationshipTypes: string | Array<string>, args: RelationFilters<T>) => {
-  const relationsToGet = Array.isArray(relationshipTypes) ? relationshipTypes : [relationshipTypes || 'stix-core-relationship'];
+export const buildRelationsFilter = <T extends BasicStoreCommon>(types: string | Array<string>, args: RelationFilters<T>) => {
+  const typesRestriction = Array.isArray(types) ? types : [types ?? 'stix-core-relationship'];
   const {
     relationFilter,
     filters = undefined,
@@ -168,8 +168,6 @@ export const buildRelationsFilter = <T extends BasicStoreCommon>(relationshipTyp
     firstSeenStop,
     lastSeenStart,
     lastSeenStop,
-    startDate,
-    endDate,
     confidences = [],
   } = args;
   // Handle relation type(s)
@@ -208,7 +206,11 @@ export const buildRelationsFilter = <T extends BasicStoreCommon>(relationshipTyp
   if (toTypes && isNotEmptyField(toTypes)) {
     filtersFromOptionsContent.push({ key: ['toTypes'], values: toTypes });
   }
+  if (confidences && confidences.length > 0) {
+    filtersFromOptionsContent.push({ key: ['confidence'], values: confidences });
+  }
   // endregion
+  // region relation filtering
   if (startTimeStart) filtersFromOptionsContent.push({ key: ['start_time'], values: [startTimeStart], operator: FilterOperator.Gt });
   if (startTimeStop) filtersFromOptionsContent.push({ key: ['start_time'], values: [startTimeStop], operator: FilterOperator.Lt });
   if (stopTimeStart) filtersFromOptionsContent.push({ key: ['stop_time'], values: [stopTimeStart], operator: FilterOperator.Gt });
@@ -217,21 +219,19 @@ export const buildRelationsFilter = <T extends BasicStoreCommon>(relationshipTyp
   if (firstSeenStop) filtersFromOptionsContent.push({ key: ['first_seen'], values: [firstSeenStop], operator: FilterOperator.Lt });
   if (lastSeenStart) filtersFromOptionsContent.push({ key: ['last_seen'], values: [lastSeenStart], operator: FilterOperator.Gt });
   if (lastSeenStop) filtersFromOptionsContent.push({ key: ['last_seen'], values: [lastSeenStop], operator: FilterOperator.Lt });
-  if (startDate) filtersFromOptionsContent.push({ key: ['created_at'], values: [startDate], operator: FilterOperator.Gt });
-  if (endDate) filtersFromOptionsContent.push({ key: ['created_at'], values: [endDate], operator: FilterOperator.Lt });
-  if (confidences && confidences.length > 0) {
-    filtersFromOptionsContent.push({ key: ['confidence'], values: confidences });
-  }
+  // if (startDate) filtersFromOptionsContent.push({ key: ['created_at'], values: [startDate], operator: FilterOperator.Gt });
+  // if (endDate) filtersFromOptionsContent.push({ key: ['created_at'], values: [endDate], operator: FilterOperator.Lt });
   // remove options already passed in filters and useless for the next steps
   const cleanedArgs = R.pipe(
-    R.dissoc('elementId'),
-    R.dissoc('elementWithTargetTypes'),
+    R.dissoc('relationFilter'),
+    R.dissoc('fromOrToId'),
     R.dissoc('fromId'),
     R.dissoc('fromRole'),
     R.dissoc('toId'),
     R.dissoc('toRole'),
     R.dissoc('fromTypes'),
     R.dissoc('toTypes'),
+    R.dissoc('elementWithTargetTypes'),
     R.dissoc('startTimeStart'),
     R.dissoc('startTimeStop'),
     R.dissoc('stopTimeStart'),
@@ -254,7 +254,7 @@ export const buildRelationsFilter = <T extends BasicStoreCommon>(relationshipTyp
   }
   return {
     ...cleanedArgs,
-    types: relationsToGet,
+    types: typesRestriction,
     filters: computedFilters,
   };
 };

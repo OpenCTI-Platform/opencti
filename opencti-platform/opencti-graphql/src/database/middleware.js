@@ -546,8 +546,8 @@ export const timeSeriesHistory = async (context, user, types, args) => {
 };
 export const timeSeriesEntities = async (context, user, types, args) => {
   const timeSeriesArgs = buildEntityFilters(types, args);
-  const { startDate, endDate, interval } = args;
   const histogramData = await elHistogramCount(context, user, args.onlyInferred ? READ_DATA_INDICES_INFERRED : READ_DATA_INDICES, timeSeriesArgs);
+  const { startDate, endDate, interval } = args;
   return fillTimeSeries(startDate, endDate, interval, histogramData);
 };
 export const timeSeriesRelations = async (context, user, args) => {

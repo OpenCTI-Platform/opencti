@@ -155,7 +155,7 @@ export const batchKillChainPhases = (context, user, stixCoreObjectIds) => {
 };
 
 export const stixCoreRelationships = (context, user, stixCoreObjectId, args) => {
-  const finalArgs = R.assoc('elementId', stixCoreObjectId, args);
+  const finalArgs = R.assoc('fromOrToId', stixCoreObjectId, args);
   return relationFindAll(context, user, finalArgs);
 };
 

@@ -632,7 +632,7 @@ describe('Relations distribution', () => {
     // const { startDate, endDate, relationship_type, toTypes, fromId, field, operation } = options;
     const malware = await elLoadById(testContext, ADMIN_USER, 'malware--faa5b705-cf44-4e50-8472-29e5fec43c3c');
     const options = {
-      elementId: [malware.internal_id],
+      fromOrToId: [malware.internal_id],
       relationship_type: ['uses'],
       field: 'entity_type',
       operation: 'count',
