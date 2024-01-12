@@ -95,6 +95,8 @@ const FilterValues: FunctionComponent<FilterValuesProps> = ({
     );
   }
   const values = filterValues.map((id) => {
+    const operatorClassName = (isReadWriteFilter && handleSwitchLocalMode) ? classes.inlineOperator : classes.inlineOperatorReadOnly;
+    const operatorOnClick = (isReadWriteFilter && handleSwitchLocalMode) ? () => handleSwitchLocalMode(currentFilter) : undefined;
     return (
       <Fragment key={id}>
         <FilterValuesContent
@@ -105,8 +107,9 @@ const FilterValues: FunctionComponent<FilterValuesProps> = ({
           value={filtersRepresentativesMap.get(id) ?? id}
         />
         {filterKey !== 'regardingOf' && last(filterValues) !== id && (
-          <div className={isReadWriteFilter ? classes.inlineOperator : classes.inlineOperatorReadOnly}
-            onClick={(isReadWriteFilter) ? () => handleSwitchLocalMode?.(currentFilter) : undefined}
+          <div
+            className={operatorClassName}
+            onClick={operatorOnClick}
           >
             {t((currentFilter.mode ?? 'or').toUpperCase())}
           </div>
