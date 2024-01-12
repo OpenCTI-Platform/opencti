@@ -7,7 +7,7 @@ import { RayEndArrow, RayStartArrow } from 'mdi-material-ui';
 import React from 'react';
 import makeStyles from '@mui/styles/makeStyles';
 import { useFormatter } from '../../../../components/i18n';
-import { directFilters, inlineFilters } from '../../../../utils/filters/filtersUtils';
+import { inlineFilters } from '../../../../utils/filters/filtersUtils';
 import FilterAutocomplete from './FilterAutocomplete';
 import InlineFilters from './InlineFilters';
 
@@ -112,37 +112,35 @@ const ListFiltersWithoutLocalStorage = ({
       >
         {filterElement}
       </Popover>
-      {availableFilterKeys
-        .filter((n) => directFilters.includes(n))
-        .map((filterKey) => {
-          if (inlineFilters.includes(filterKey)) {
-            return (
-              <div className={classes.booleanFilter} key={filterKey}>
-                <InlineFilters
-                  filterKey={filterKey}
-                  defaultHandleRemoveFilter={defaultHandleRemoveFilter}
-                  handleSwitchFilter={handleSwitchFilter}
-                />
-              </div>
-            );
-          }
+      {availableFilterKeys.map((filterKey) => {
+        if (inlineFilters.includes(filterKey)) {
           return (
-            <div className={classes.autocomplete} key={filterKey}>
-              <FilterAutocomplete
+            <div className={classes.booleanFilter} key={filterKey}>
+              <InlineFilters
                 filterKey={filterKey}
-                searchContext={searchContext}
-                defaultHandleAddFilter={defaultHandleAddFilter}
-                inputValues={inputValues}
-                setInputValues={setInputValues}
-                availableEntityTypes={availableEntityTypes}
-                availableRelationshipTypes={availableRelationshipTypes}
-                availableRelationFilterTypes={availableRelationFilterTypes}
-                allEntityTypes={allEntityTypes}
-                openOnFocus={false}
+                defaultHandleRemoveFilter={defaultHandleRemoveFilter}
+                handleSwitchFilter={handleSwitchFilter}
               />
             </div>
           );
-        })}
+        }
+        return (
+          <div className={classes.autocomplete} key={filterKey}>
+            <FilterAutocomplete
+              filterKey={filterKey}
+              searchContext={searchContext}
+              defaultHandleAddFilter={defaultHandleAddFilter}
+              inputValues={inputValues}
+              setInputValues={setInputValues}
+              availableEntityTypes={availableEntityTypes}
+              availableRelationshipTypes={availableRelationshipTypes}
+              availableRelationFilterTypes={availableRelationFilterTypes}
+              allEntityTypes={allEntityTypes}
+              openOnFocus={false}
+            />
+          </div>
+        );
+      })}
       <div className="clearfix" />
     </div>
   );

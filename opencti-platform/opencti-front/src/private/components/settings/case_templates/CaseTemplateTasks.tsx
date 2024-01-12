@@ -20,7 +20,7 @@ import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import LabelsVocabulariesMenu from '../LabelsVocabulariesMenu';
 import { CaseTemplateTasksLine_node$data } from './__generated__/CaseTemplateTasksLine_node.graphql';
 import { CaseTemplateTasksLines_DataQuery$variables } from './__generated__/CaseTemplateTasksLines_DataQuery.graphql';
-import { CaseTemplateTasksLinesPaginationQuery } from './__generated__/CaseTemplateTasksLinesPaginationQuery.graphql';
+import { CaseTemplateTasksLinesPaginationQuery, CaseTemplateTasksLinesPaginationQuery$variables } from './__generated__/CaseTemplateTasksLinesPaginationQuery.graphql';
 import CaseTemplateTasksLines, { tasksLinesQuery } from './CaseTemplateTasksLines';
 import { CaseTemplateEditionQuery } from './__generated__/CaseTemplateEditionQuery.graphql';
 import CaseTemplateEdition, { caseTemplateQuery } from './CaseTemplateEdition';
@@ -30,6 +30,7 @@ import { commitMutation } from '../../../../relay/environment';
 import usePreloadedFragment from '../../../../utils/hooks/usePreloadedFragment';
 import { CaseTemplateLine_node$key } from './__generated__/CaseTemplateLine_node.graphql';
 import { CaseTemplateLineFragment } from './CaseTemplateLine';
+import { FilterGroup, isFilterGroupNotEmpty, removeIdFromFilterGroupObject } from '../../../../utils/filters/filtersUtils';
 
 const useStyles = makeStyles(() => ({
   container: {
@@ -177,9 +178,6 @@ const CaseTemplateTasks = () => {
     caseTemplateQuery,
     { id: caseTemplateId },
   );
-  const taskFilters = [
-    { key: 'tasks', values: [caseTemplateId], operator: 'eq', mode: 'or' },
-  ];
   const { viewStorage, paginationOptions, helpers } = usePaginationLocalStorage<CaseTemplateTasksLines_DataQuery$variables>(
     LOCAL_STORAGE_KEY,
     {
@@ -187,12 +185,26 @@ const CaseTemplateTasks = () => {
       orderAsc: true,
       searchTerm: '',
     },
-    taskFilters,
   );
-  const queryRef = useQueryLoading<CaseTemplateTasksLinesPaginationQuery>(
+  const { filters } = viewStorage;
+  const userFilters = removeIdFromFilterGroupObject(filters);
+  const contextTaskFilters: FilterGroup = {
+    mode: 'and',
+    filters: [
+      { key: 'tasks', operator: 'eq', mode: 'or', values: [caseTemplateId] },
+    ],
+    filterGroups: userFilters && isFilterGroupNotEmpty(userFilters) ? [userFilters] : [],
+  };
+  const queryTaskTemplatePaginationOptions = {
+    ...paginationOptions,
+    filters: contextTaskFilters,
+  } as unknown as CaseTemplateTasksLinesPaginationQuery$variables;
+
+  const CaseTemplateTasksLinesQueryRef = useQueryLoading<CaseTemplateTasksLinesPaginationQuery>(
     tasksLinesQuery,
-    paginationOptions,
+    queryTaskTemplatePaginationOptions,
   );
+
   const renderLines = () => {
     const dataColumns = {
       name: {
@@ -213,21 +225,22 @@ const CaseTemplateTasks = () => {
         sortBy={viewStorage.sortBy}
         orderAsc={viewStorage.orderAsc}
         dataColumns={dataColumns}
-        keyword={paginationOptions.search}
+        paginationOptions={queryTaskTemplatePaginationOptions}
+        keyword={queryTaskTemplatePaginationOptions.search}
         filters={viewStorage.filters}
         handleSearch={helpers.handleSearch}
         numberOfElements={viewStorage.numberOfElements}
         handleSort={helpers.handleSort}
         secondaryAction
       >
-        {queryRef && (
+        {CaseTemplateTasksLinesQueryRef && (
           <>
             <React.Suspense
               fallback={<Loader variant={LoaderVariant.inElement} />}
             >
               <CaseTemplateTasksLines
-                queryRef={queryRef}
-                paginationOptions={paginationOptions}
+                queryRef={CaseTemplateTasksLinesQueryRef}
+                paginationOptions={queryTaskTemplatePaginationOptions}
                 dataColumns={dataColumns}
                 setNumberOfElements={helpers.handleSetNumberOfElements}
               />
@@ -246,7 +259,7 @@ const CaseTemplateTasks = () => {
           >
             <CaseHeaderMenu
               caseTemplateId={caseTemplateId}
-              paginationOptions={paginationOptions}
+              paginationOptions={queryTaskTemplatePaginationOptions}
               queryRef={caseTemplateQueryRef}
             />
           </React.Suspense>

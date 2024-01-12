@@ -129,7 +129,7 @@ class IngestionRssPopover extends Component {
       updater: (store) => {
         deleteNode(
           store,
-          'Pagination_ingestionRsss',
+          'Pagination_ingestionRss',
           this.props.paginationOptions,
           this.props.ingestionRssId,
         );

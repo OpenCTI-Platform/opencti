@@ -95,15 +95,9 @@ const CaseTemplateEdition: FunctionComponent<CaseTemplateEditionProps> = ({
       const input = { toId: added.value, relationship_type: 'template-task' };
       commitAddTask({
         variables: { id: caseTemplate.id, input },
-        updater: (store: RecordSourceSelectorProxy) => insertNode(
-          store,
-          'Pagination_caseTemplate__taskTemplates',
-          paginationOptions,
-          'caseTemplateRelationAdd',
-          null,
-          null,
-          input,
-        ),
+        updater: (store: RecordSourceSelectorProxy) => {
+          insertNode(store, 'Pagination_caseTemplate__taskTemplates', paginationOptions, 'caseTemplateRelationAdd');
+        },
       });
     }
     if (removed?.value) {

@@ -96,7 +96,7 @@ const IngestionRssCreation = (props) => {
       updater: (store) => {
         insertNode(
           store,
-          'Pagination_ingestionRsss',
+          'Pagination_ingestionRss',
           props.paginationOptions,
           'ingestionRssAdd',
         );

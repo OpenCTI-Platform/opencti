@@ -40,25 +40,6 @@ export const FiltersVariant = {
   dialog: 'dialog',
 };
 
-export const directFilters = [
-  'is_read',
-  'channel_types',
-  'pattern_type',
-  'sightedBy',
-  'toSightingId',
-  'x_opencti_negative',
-  'fromId',
-  'toId',
-  'contextEntityId',
-  'note_types',
-  'context',
-  'trigger_type',
-  'instance_trigger',
-  'containers',
-  'objectContains',
-  'entity_type',
-  'elementWithTargetTypes',
-];
 export const inlineFilters = ['is_read', 'trigger_type', 'instance_trigger'];
 
 export const integerFilters = [
