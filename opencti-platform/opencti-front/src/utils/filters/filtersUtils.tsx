@@ -146,6 +146,7 @@ export const entityFilters = [
   'targets',
   'connectedToId',
   'contextEntityId',
+  'id',
 ];
 
 export const booleanFilters = [

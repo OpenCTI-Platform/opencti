@@ -114,6 +114,8 @@ const FilterValues: FunctionComponent<FilterValuesProps> = ({
   });
 
   if (filterKey === 'regardingOf') {
+    const sortedFilterValues = [...filterValues].sort((a, b) => -a.key.localeCompare(b.key)); // display type first, then id
+
     return (
       <>
         <strong
@@ -122,48 +124,50 @@ const FilterValues: FunctionComponent<FilterValuesProps> = ({
         >
           {label}
         </strong>{' '}
-        {filterValues.map((val) => {
-          const subKey = val.key;
-          const keyLabel = (
-            <>
-              {truncate(t(subKey), 20)}
-              <>&nbsp;=</>
-            </>
-          );
-          return (
-            <Fragment key={'test'}>
-              <Tooltip
-                title={
-                  <FilterValues
-                    label={keyLabel}
-                    tooltip={true}
-                    currentFilter={val}
-                    filtersRepresentativesMap={filtersRepresentativesMap}
-                  />
+        {sortedFilterValues
+          .map((val) => {
+            const subKey = val.key;
+            const keyLabel = (
+              <>
+                {truncate(t(subKey), 20)}
+                <>&nbsp;=</>
+              </>
+            );
+            return (
+              <Fragment key={'test'}>
+                <Tooltip
+                  title={
+                    <FilterValues
+                      label={keyLabel}
+                      tooltip={true}
+                      currentFilter={val}
+                      filtersRepresentativesMap={filtersRepresentativesMap}
+                    />
                   }
-              >
-                <Box
-                  sx={{
-                    padding: '0 4px',
-                    display: 'flex',
-                  }}
                 >
-                  <Chip
-                    label={
-                      <FilterValues
-                        label={keyLabel}
-                        tooltip={false}
-                        currentFilter={val}
-                        filtersRepresentativesMap={filtersRepresentativesMap}
-                      />
+                  <Box
+                    sx={{
+                      padding: '0 4px',
+                      display: 'flex',
+                    }}
+                  >
+                    <Chip
+                      label={
+                        <FilterValues
+                          label={keyLabel}
+                          tooltip={false}
+                          currentFilter={val}
+                          filtersRepresentativesMap={filtersRepresentativesMap}
+                          redirection
+                        />
                       }
-                    color={chipColor}
-                  />
-                </Box>
-              </Tooltip>
-            </Fragment>
-          );
-        })
+                      color={chipColor}
+                    />
+                  </Box>
+                </Tooltip>
+              </Fragment>
+            );
+          })
         }
       </>
     );
