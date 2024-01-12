@@ -397,6 +397,8 @@ enum LogsOrdering {
   event
   timestamp
   created_at
+  event_type
+  event_scope
 }
 type LogConnection {
   pageInfo: PageInfo!

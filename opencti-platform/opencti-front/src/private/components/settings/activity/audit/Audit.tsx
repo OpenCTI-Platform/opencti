@@ -124,7 +124,7 @@ const Audit = () => {
     user: {
       label: 'User',
       width: '15%',
-      isSortable: true,
+      isSortable: false,
     },
     event_type: {
       label: 'Event type',
