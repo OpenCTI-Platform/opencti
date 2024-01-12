@@ -323,7 +323,7 @@ FilterIconButtonContainerProps
                       label={keyLabel}
                       tooltip={false}
                       currentFilter={currentFilter}
-                      handleSwitchLocalMode={handleSwitchLocalMode}
+                      handleSwitchLocalMode={helpers?.handleSwitchLocalMode ?? handleSwitchLocalMode}
                       filtersRepresentativesMap={filtersRepresentativesMap}
                       redirection={redirection}
                       helpers={helpers}

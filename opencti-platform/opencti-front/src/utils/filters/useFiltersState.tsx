@@ -29,7 +29,7 @@ const useFiltersState = (initFilters: FilterGroup = emptyFilterGroup): [FilterGr
     handleAddFilterWithEmptyValue: (filter: Filter) => {
       setFiltersState((prevState) => ({
         ...prevState,
-        filters: handleAddFilterWithEmptyValueUtil({ filters: filtersState.filters, filter }),
+        filters: handleAddFilterWithEmptyValueUtil({ filters: prevState.filters, filter }),
         latestAddFilterId: filter.id,
       }));
     },
@@ -46,14 +46,14 @@ const useFiltersState = (initFilters: FilterGroup = emptyFilterGroup): [FilterGr
           };
           setFiltersState((prevState) => ({
             ...prevState,
-            filters: handleAddFilterWithEmptyValueUtil({ filters: filtersState.filters, filter: noLabelFilter }),
+            filters: handleAddFilterWithEmptyValueUtil({ filters: prevState.filters, filter: noLabelFilter }),
             latestAddFilterId: noLabelFilter.id,
           }));
         }
       } else {
         setFiltersState((prevState) => ({
           ...prevState,
-          filters: handleAddRepresentationFilterUtil({ filters: filtersState.filters, id, valueId }),
+          filters: handleAddRepresentationFilterUtil({ filters: prevState.filters, id, valueId }),
           latestAddFilterId: undefined,
         }));
       }
@@ -61,14 +61,14 @@ const useFiltersState = (initFilters: FilterGroup = emptyFilterGroup): [FilterGr
     handleAddSingleValueFilter: (id: string, valueId?: string) => {
       setFiltersState((prevState) => ({
         ...prevState,
-        filters: handleAddSingleValueFilterUtil({ filters: filtersState.filters, id, valueId }),
+        filters: handleAddSingleValueFilterUtil({ filters: prevState.filters, id, valueId }),
         latestAddFilterId: undefined,
       }));
     },
     handleChangeOperatorFilters: (id: string, operator: string) => {
       setFiltersState((prevState) => ({
         ...prevState,
-        filters: handleChangeOperatorFiltersUtil({ filters: filtersState.filters, id, operator }),
+        filters: handleChangeOperatorFiltersUtil({ filters: prevState.filters, id, operator }),
         latestAddFilterId: undefined,
       }));
     },
@@ -82,14 +82,14 @@ const useFiltersState = (initFilters: FilterGroup = emptyFilterGroup): [FilterGr
     handleRemoveFilterById: (id: string) => {
       setFiltersState((prevState) => ({
         ...prevState,
-        filters: handleRemoveFilterUtil({ filters: filtersState.filters, id }),
+        filters: handleRemoveFilterUtil({ filters: prevState.filters, id }),
         latestAddFilterId: undefined,
       }));
     },
     handleRemoveRepresentationFilter: (id: string, valueId: string) => {
       setFiltersState((prevState) => ({
         ...prevState,
-        filters: handleRemoveRepresentationFilterUtil({ filters: filtersState.filters, id, valueId }),
+        filters: handleRemoveRepresentationFilterUtil({ filters: prevState.filters, id, valueId }),
         latestAddFilterId: undefined,
       }));
     },
@@ -104,9 +104,11 @@ const useFiltersState = (initFilters: FilterGroup = emptyFilterGroup): [FilterGr
       }));
     },
     handleSwitchLocalMode: (filter: Filter) => {
+      console.log(filter);
+      console.log(handleSwitchLocalModeUtil({ filters: filtersState.filters, filter }));
       setFiltersState((prevState) => ({
         ...prevState,
-        filters: handleSwitchLocalModeUtil({ filters: filtersState.filters, filter }),
+        filters: handleSwitchLocalModeUtil({ filters: prevState.filters, filter }),
         latestAddFilterId: undefined,
       }));
     },

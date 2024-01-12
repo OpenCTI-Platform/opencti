@@ -17,7 +17,7 @@ import { FormikConfig, FormikHelpers } from 'formik/dist/types';
 import React, { FunctionComponent, useState } from 'react';
 import { graphql, useMutation } from 'react-relay';
 import * as Yup from 'yup';
-import Box from '@mui/material/Box';
+import { Box } from '@mui/material';
 import AutocompleteField from '../../../../components/AutocompleteField';
 import FilterIconButton from '../../../../components/FilterIconButton';
 import { useFormatter } from '../../../../components/i18n';
@@ -27,15 +27,23 @@ import TextField from '../../../../components/TextField';
 import type { Theme } from '../../../../components/Theme';
 import { handleErrorInForm } from '../../../../relay/environment';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
-import { constructHandleAddFilter, getDefaultFilterObject, serializeFilterGroupForBackend } from '../../../../utils/filters/filtersUtils';
+import {
+  constructHandleAddFilter,
+  constructHandleRemoveFilter,
+  Filter,
+  FilterGroup,
+  filtersAfterSwitchLocalMode,
+  emptyFilterGroup,
+  serializeFilterGroupForBackend,
+} from '../../../../utils/filters/filtersUtils';
 import { insertNode } from '../../../../utils/store';
 import NotifierField from '../../common/form/NotifierField';
 import { Option } from '../../common/form/ReferenceField';
+import FilterAutocomplete, { FilterAutocompleteInputValue } from '../../common/lists/FilterAutocomplete';
 import Filters from '../../common/lists/Filters';
 import { TriggerEventType, TriggerLiveCreationKnowledgeMutation, TriggerLiveCreationKnowledgeMutation$data } from './__generated__/TriggerLiveCreationKnowledgeMutation.graphql';
 import { TriggersLinesPaginationQuery$variables } from './__generated__/TriggersLinesPaginationQuery.graphql';
 import useFiltersState from '../../../../utils/filters/useFiltersState';
-import FilterAutocomplete, { FilterAutocompleteInputValue } from '../../common/lists/FilterAutocomplete';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   drawerPaper: {
@@ -126,7 +134,11 @@ const TriggerLiveCreation: FunctionComponent<TriggerLiveCreationProps> = ({
   const { t } = useFormatter();
   const classes = useStyles();
   const [filters, helpers] = useFiltersState();
+  const [instanceTriggerFilters, setInstanceTriggerFilters] = useState<FilterGroup | undefined>(emptyFilterGroup);
   const [instance_trigger, setInstanceTrigger] = useState<boolean>(false);
+  const [instanceFilters, setInstanceFilters] = useState<
+  FilterAutocompleteInputValue[]
+  >([]);
   const eventTypesOptions: { value: TriggerEventType; label: string }[] = [
     { value: 'create', label: t('Creation') },
     { value: 'update', label: t('Modification') },
@@ -141,8 +153,10 @@ const TriggerLiveCreation: FunctionComponent<TriggerLiveCreationProps> = ({
   ];
   const onReset = () => {
     handleClose?.();
-    helpers.handleClearAllFilters();
+    setInstanceTriggerFilters(emptyFilterGroup);
     setInstanceTrigger(false);
+    setInstanceFilters([]);
+    helpers.handleClearAllFilters();
   };
   const onChangeInstanceTrigger = (
     setFieldValue: (
@@ -155,21 +169,15 @@ const TriggerLiveCreation: FunctionComponent<TriggerLiveCreationProps> = ({
       'event_types',
       newInstanceTriggerValue ? instanceEventTypesOptions : eventTypesOptions,
     );
-
-    if (newInstanceTriggerValue) {
-      helpers.handleClearAllFilters([{
-        ...getDefaultFilterObject('connectedToId'),
-      }]);
-    } else {
-      helpers.handleClearAllFilters();
-    }
+    helpers.handleClearAllFilters();
+    setInstanceTriggerFilters(emptyFilterGroup);
     setInstanceTrigger(newInstanceTriggerValue);
   };
-
-  const handleAddFilter = (key: string, id: string, operator = 'eq') => {
-    helpers.handleAddFilterWithEmptyValue({
-      ...getDefaultFilterObject(key),
-    });
+  const handleAddFilter = (k: string, id: string, op = 'eq') => {
+    setInstanceTriggerFilters(constructHandleAddFilter(instanceTriggerFilters, k, id, op));
+  };
+  const handleRemoveFilter = (k: string, op = 'eq') => {
+    setInstanceTriggerFilters(constructHandleRemoveFilter(instanceTriggerFilters, k, op));
   };
 
   const [commitLive] = useMutation<TriggerLiveCreationKnowledgeMutation>(
@@ -188,7 +196,7 @@ const TriggerLiveCreation: FunctionComponent<TriggerLiveCreationProps> = ({
     values: TriggerLiveAddInput,
     { setSubmitting, setErrors, resetForm }: FormikHelpers<TriggerLiveAddInput>,
   ) => {
-    const jsonFilters = serializeFilterGroupForBackend(filters);
+    const jsonFilters = instance_trigger ? serializeFilterGroupForBackend(instanceTriggerFilters) : serializeFilterGroupForBackend(filters);
     const finalValues = {
       name: values.name,
       event_types: values.event_types.map((n) => n.value),
@@ -252,7 +260,6 @@ const TriggerLiveCreation: FunctionComponent<TriggerLiveCreationProps> = ({
           options={
             instance_trigger ? instanceEventTypesOptions : eventTypesOptions
           }
-          onChange={setFieldValue}
           renderOption={(
             props: React.HTMLAttributes<HTMLLIElement>,
             option: { value: TriggerEventType; label: string },
@@ -268,39 +275,49 @@ const TriggerLiveCreation: FunctionComponent<TriggerLiveCreationProps> = ({
           )}
         />
         <NotifierField name="notifiers" onChange={setFieldValue} />
-        {!instance_trigger
-          && <Box sx={{ paddingTop: 4,
-            display: 'flex',
-            gap: 1 }}
-             >
-            <Filters
-              availableFilterKeys={[
-                'entity_type',
-                'workflow_id',
-                'objectAssignee',
-                'objects',
-                'objectMarking',
-                'objectLabel',
-                'creator_id',
-                'createdBy',
-                'priority',
-                'severity',
-                'x_opencti_score',
-                'x_opencti_detection',
-                'revoked',
-                'confidence',
-                'indicator_types',
-                'pattern_type',
-                'fromId',
-                'toId',
-                'fromTypes',
-                'toTypes',
-              ]}
-              helpers={helpers}
-              noDirectFilters={true}
+        {instance_trigger ? (
+          <div style={fieldSpacingContainerStyle}>
+            <FilterAutocomplete
+              filterKey={'connectedToId'}
+              searchContext={{ entityTypes: ['Stix-Core-Object'] }}
+              defaultHandleAddFilter={handleAddFilter}
+              inputValues={instanceFilters}
+              setInputValues={setInstanceFilters}
+              openOnFocus={true}
             />
-          </Box>
-        }
+          </div>
+        ) : (<Box sx={{ paddingTop: 4,
+          display: 'flex',
+          gap: 1 }}
+             >
+          <Filters
+            availableFilterKeys={[
+              'entity_type',
+              'workflow_id',
+              'objectAssignee',
+              'objects',
+              'objectMarking',
+              'objectLabel',
+              'creator_id',
+              'createdBy',
+              'priority',
+              'severity',
+              'x_opencti_score',
+              'x_opencti_detection',
+              'revoked',
+              'confidence',
+              'indicator_types',
+              'pattern_type',
+              'fromId',
+              'toId',
+              'fromTypes',
+              'toTypes',
+            ]}
+            helpers={helpers}
+            noDirectFilters={true}
+          />
+        </Box>
+        )}
       </>
     );
   };
@@ -331,20 +348,18 @@ const TriggerLiveCreation: FunctionComponent<TriggerLiveCreationProps> = ({
         style={{ marginTop: 20 }}
       />
       {renderKnowledgeTrigger(values, setFieldValue)}
-      { instance_trigger
-        ? <Box sx={{ paddingTop: 4 }}>
-          <FilterIconButton
-            filters={filters}
-            helpers={helpers}
+      {instance_trigger
+        ? <FilterIconButton
+            filters={instanceTriggerFilters}
+            handleRemoveFilter={handleRemoveFilter}
+            styleNumber={2}
             redirection
           />
-        </Box>
         : <FilterIconButton
             filters={filters}
             helpers={helpers}
             redirection
           />
-
       }
 
     </React.Fragment>
