@@ -544,7 +544,7 @@ const useSearchEntities = ({
           });
         break;
       case 'id':
-      case 'elementId':
+      case 'fromOrToId':
       case 'contextEntityId':
       case 'connectedToId':
       case 'fromId':

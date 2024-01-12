@@ -112,9 +112,6 @@ export const EqFilters = [
   'organization_ids',
 ];
 
-// filters that can only have an 'eq' operator and a 'or' mode
-export const filtersUsedAsApiParameters = ['-'];
-
 // filters that represents a date, can have lt (end date) or gt (start date) operators
 export const dateFilters = [
   'published',
@@ -140,7 +137,7 @@ const uniqFilters = [
 
 // filters that targets entities instances
 export const entityFilters = [
-  'elementId',
+  'fromOrToId',
   'fromId',
   'toId',
   'createdBy',
@@ -726,7 +723,7 @@ export const buildEntityTypeBasedFilterContext = (entityType: string, filters: F
 };
 
 export const isStixObjectTypes = [
-  'elementId',
+  'fromOrToId',
   'fromId',
   'toId',
   'objects',
