@@ -5,7 +5,7 @@ import { Filter, FilterGroup, GqlFilterGroup, isFilterGroupNotEmpty, removeIdFro
 import useQueryLoading from '../utils/hooks/useQueryLoading';
 import { FilterIconButtonContentQuery } from './__generated__/FilterIconButtonContentQuery.graphql';
 import FilterIconButtonContainer from './FilterIconButtonContainer';
-import { UseLocalStorageHelpers } from '../utils/hooks/useLocalStorage';
+import { handleFilterHelpers } from '../utils/hooks/useLocalStorage';
 import { filterValuesContentQuery } from './FilterValuesContent';
 
 interface FilterIconButtonProps {
@@ -19,7 +19,7 @@ interface FilterIconButtonProps {
   dataColumns?: DataColumns;
   disabledPossible?: boolean;
   redirection?: boolean;
-  helpers?: UseLocalStorageHelpers;
+  helpers?: handleFilterHelpers;
   availableRelationFilterTypes?: Record<string, string[]>;
 }
 

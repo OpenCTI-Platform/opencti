@@ -139,12 +139,6 @@ const WidgetFilters: FunctionComponent<WidgetFiltersProps> = ({ perspective, typ
     </>)}
   </Box>
     <Box sx={{ paddingTop: 1 }}>
-      { isFilterGroupNotEmpty(filters) && (
-      <FilterIconButton
-        filters={filters}
-        helpers={helpers}
-      />
-      ) }
       { isFilterGroupNotEmpty(filtersDynamicFrom) && (
       <FilterIconButton
         filters={filtersDynamicFrom}
@@ -158,6 +152,12 @@ const WidgetFilters: FunctionComponent<WidgetFiltersProps> = ({ perspective, typ
         helpers={helpersDynamicTo}
         chipColor={'success'}
       />
+      ) }
+      { isFilterGroupNotEmpty(filters) && (
+        <FilterIconButton
+          filters={filters}
+          helpers={helpers}
+        />
       ) }
     </Box>
   </>;
