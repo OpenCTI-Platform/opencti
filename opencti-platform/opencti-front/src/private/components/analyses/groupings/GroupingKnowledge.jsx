@@ -165,7 +165,7 @@ class GroupingKnowledgeComponent extends Component {
             container={grouping}
             PopoverComponent={<GroupingPopover />}
             link={`/dashboard/analyses/groupings/${grouping.id}/knowledge`}
-            modes={['graph', 'content', 'timeline', 'correlation', 'matrix']}
+            modes={['graph', 'content', 'correlation', 'matrix']}
             currentMode={mode}
             knowledge={true}
             enableSuggestions={true}
