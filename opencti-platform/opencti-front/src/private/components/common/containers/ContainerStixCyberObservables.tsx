@@ -109,6 +109,27 @@ ContainerStixCyberObservablesComponentProps
   } = useEntityToggle<ContainerStixCyberObservableLine_node$data>(
     LOCAL_STORAGE_KEY,
   );
+  const handleClear = () => {
+    handleAddProperty('types', []);
+  };
+  const handleToggle = (type: string) => {
+    if (types?.includes(type)) {
+      handleAddProperty(
+        'types',
+        types.filter((x) => x !== type),
+      );
+    } else {
+      handleAddProperty('types', types ? [...types, type] : [type]);
+    }
+  };
+  const getValuesForCopy = (
+    data: ContainerStixCyberObservablesLinesSearchQuery$data,
+  ) => {
+    return (data.container?.objects?.edges ?? [])
+      .map((o) => ({ id: o?.node.id, value: o?.node.observable_value }))
+      .filter((o) => o.id) as { id: string; value: string }[];
+  };
+
   const userFilters = removeIdFromFilterGroupObject(filters);
   const contextFilters = {
     mode: 'and',
@@ -128,25 +149,11 @@ ContainerStixCyberObservablesComponentProps
     ],
     filterGroups: userFilters && isFilterGroupNotEmpty(userFilters) ? [userFilters] : [],
   };
-  const queryPaginationOptions = { ...paginationOptions, filters: contextFilters };
+  const queryPaginationOptions = {
+    ...paginationOptions,
+    filters: contextFilters,
+  } as unknown as ContainerStixCyberObservablesLinesQuery$variables;
 
-  const handleToggle = (type: string) => {
-    if (types?.includes(type)) {
-      handleAddProperty(
-        'types',
-        types.filter((x) => x !== type),
-      );
-    } else {
-      handleAddProperty('types', types ? [...types, type] : [type]);
-    }
-  };
-  const getValuesForCopy = (
-    data: ContainerStixCyberObservablesLinesSearchQuery$data,
-  ) => {
-    return (data.container?.objects?.edges ?? [])
-      .map((o) => ({ id: o?.node.id, value: o?.node.observable_value }))
-      .filter((o) => o.id) as { id: string; value: string }[];
-  };
   const handleCopy = useCopy<ContainerStixCyberObservablesLinesSearchQuery$data>(
     {
       filters: contextFilters,
@@ -161,9 +168,7 @@ ContainerStixCyberObservablesComponentProps
     },
     selectAll,
   );
-  const handleClear = () => {
-    handleAddProperty('types', []);
-  };
+
   const buildColumns = (platformModuleHelpers: ModuleHelper | undefined) => {
     const isRuntimeSort = platformModuleHelpers?.isRuntimeFieldEnable() ?? false;
     return {
@@ -206,7 +211,7 @@ ContainerStixCyberObservablesComponentProps
   };
   const queryRef = useQueryLoading<ContainerStixCyberObservablesLinesQuery>(
     containerStixCyberObservablesLinesQuery,
-    paginationOptions,
+    queryPaginationOptions,
   );
   return (
     <UserContext.Consumer>
@@ -260,7 +265,7 @@ ContainerStixCyberObservablesComponentProps
               >
                 <ContainerStixCyberObservablesLines
                   queryRef={queryRef}
-                  paginationOptions={paginationOptions}
+                  paginationOptions={queryPaginationOptions}
                   dataColumns={buildColumns(platformModuleHelpers)}
                   onTypesChange={handleToggle}
                   openExports={openExports}
