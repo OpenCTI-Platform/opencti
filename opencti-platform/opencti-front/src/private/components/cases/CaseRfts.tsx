@@ -13,7 +13,7 @@ import { CaseRftLinesCasesPaginationQuery, CaseRftLinesCasesPaginationQuery$vari
 import { CaseRftLineCase_node$data } from './case_rfts/__generated__/CaseRftLineCase_node.graphql';
 import { CaseRftLineDummy } from './case_rfts/CaseRftLine';
 import CaseRftCreation from './case_rfts/CaseRftCreation';
-import { injectEntityTypeFilterInFilterGroup, emptyFilterGroup } from '../../../utils/filters/filtersUtils';
+import { buildEntityTypeBasedFilterContext, emptyFilterGroup } from '../../../utils/filters/filtersUtils';
 
 interface CaseRftsProps {
   inputValue?: string;
@@ -39,6 +39,26 @@ const CaseRfts: FunctionComponent<CaseRftsProps> = () => {
       filters: emptyFilterGroup,
     },
   );
+
+  const {
+    sortBy,
+    orderAsc,
+    searchTerm,
+    filters,
+    openExports,
+    numberOfElements,
+  } = viewStorage;
+
+  const contextFilters = buildEntityTypeBasedFilterContext('Case-Rft', filters);
+  const queryPaginationOptions = {
+    ...paginationOptions,
+    filters: contextFilters,
+  } as unknown as CaseRftLinesCasesPaginationQuery$variables;
+  const queryRef = useQueryLoading<CaseRftLinesCasesPaginationQuery>(
+    caseRftsLinesQuery,
+    queryPaginationOptions,
+  );
+
   const {
     onToggleEntity,
     numberOfSelectedElements,
@@ -49,14 +69,6 @@ const CaseRfts: FunctionComponent<CaseRftsProps> = () => {
     selectAll,
   } = useEntityToggle<CaseRftLineCase_node$data>(LOCAL_STORAGE_KEY);
   const renderLines = () => {
-    const {
-      sortBy,
-      orderAsc,
-      searchTerm,
-      filters,
-      openExports,
-      numberOfElements,
-    } = viewStorage;
     const isRuntimeSort = isRuntimeFieldEnable() ?? false;
     const dataColumns = {
       name: {
@@ -105,11 +117,7 @@ const CaseRfts: FunctionComponent<CaseRftsProps> = () => {
         isSortable: isRuntimeSort,
       },
     };
-    const queryRef = useQueryLoading<CaseRftLinesCasesPaginationQuery>(
-      caseRftsLinesQuery,
-      paginationOptions,
-    );
-    const toolBarFilters = injectEntityTypeFilterInFilterGroup(filters, 'Case-Rft');
+
     return (
       <ListLines
         helpers={helpers}
@@ -126,10 +134,10 @@ const CaseRfts: FunctionComponent<CaseRftsProps> = () => {
         handleToggleSelectAll={handleToggleSelectAll}
         selectAll={selectAll}
         openExports={openExports}
-        exportEntityType="Case-Rft"
+        exportContext={{ entity_type: 'Case-Rft' }}
         keyword={searchTerm}
         filters={filters}
-        paginationOptions={paginationOptions}
+        paginationOptions={queryPaginationOptions}
         numberOfElements={numberOfElements}
         iconExtension={true}
         availableFilterKeys={[
@@ -162,7 +170,7 @@ const CaseRfts: FunctionComponent<CaseRftsProps> = () => {
           >
             <CaseRftsLines
               queryRef={queryRef}
-              paginationOptions={paginationOptions}
+              paginationOptions={queryPaginationOptions}
               dataColumns={dataColumns}
               setNumberOfElements={helpers.handleSetNumberOfElements}
               selectedElements={selectedElements}
@@ -176,7 +184,7 @@ const CaseRfts: FunctionComponent<CaseRftsProps> = () => {
               numberOfSelectedElements={numberOfSelectedElements}
               handleClearSelectedElements={handleClearSelectedElements}
               selectAll={selectAll}
-              filters={toolBarFilters}
+              filters={contextFilters}
               type="Case-Rft"
             />
           </React.Suspense>
@@ -188,7 +196,7 @@ const CaseRfts: FunctionComponent<CaseRftsProps> = () => {
     <ExportContextProvider>
       {renderLines()}
       <Security needs={[KNOWLEDGE_KNUPDATE]}>
-        <CaseRftCreation paginationOptions={paginationOptions} />
+        <CaseRftCreation paginationOptions={queryPaginationOptions} />
       </Security>
     </ExportContextProvider>
   );

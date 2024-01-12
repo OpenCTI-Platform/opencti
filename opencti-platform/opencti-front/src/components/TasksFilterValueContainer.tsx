@@ -1,15 +1,15 @@
 import React from 'react';
 import { FilterGroup, GqlFilterGroup, removeIdFromFilterGroupObject } from '../utils/filters/filtersUtils';
-import { filterIconButtonContentQuery } from './FilterIconButtonContent';
+import { filterValuesContentQuery } from './FilterValuesContent';
 import useQueryLoading from '../utils/hooks/useQueryLoading';
 import TaskFilterValue from './TaskFilterValue';
 import Loader from './Loader';
-import { FilterIconButtonContentQuery } from './__generated__/FilterIconButtonContentQuery.graphql';
+import { FilterValuesContentQuery } from './__generated__/FilterValuesContentQuery.graphql';
 
 const TasksFilterValueContainer = ({ filters }: { filters: FilterGroup }) => {
   const cleanUpFilters = removeIdFromFilterGroupObject(filters) as FilterGroup;
-  const queryRef = useQueryLoading<FilterIconButtonContentQuery>(
-    filterIconButtonContentQuery,
+  const queryRef = useQueryLoading<FilterValuesContentQuery>(
+    filterValuesContentQuery,
     { filters: cleanUpFilters as unknown as GqlFilterGroup },
   );
   return (

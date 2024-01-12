@@ -56,8 +56,9 @@ const stixCyberObservableResolvers = {
       }
       return stixCyberObservableDistribution(context, context.user, args);
     },
-    stixCyberObservablesExportFiles: (_, { first }, context) => {
-      return paginatedForPathsWithEnrichment(context, context.user, ['export/Stix-Cyber-Observable'], { first });
+    stixCyberObservablesExportFiles: (_, { exportContext, first }, context) => {
+      const path = `export/${exportContext.entity_type}${exportContext.entity_id ? `/${exportContext.entity_id}` : ''}`;
+      return paginatedForPathsWithEnrichment(context, context.user, [path], { first });
     },
   },
   StixCyberObservablesOrdering: stixCyberObservableOptions.StixCyberObservablesOrdering,
@@ -118,10 +119,10 @@ const stixCyberObservableResolvers = {
     }),
     stixCyberObservableAdd: (_, args, context) => addStixCyberObservable(context, context.user, args),
     stixCyberObservablesExportAsk: (_, args, context) => stixCyberObservablesExportAsk(context, context.user, args),
-    stixCyberObservablesExportPush: (_, {
-      file,
-      listFilters
-    }, context) => stixCoreObjectsExportPush(context, context.user, 'Stix-Cyber-Observable', file, listFilters),
+    stixCyberObservablesExportPush: (_, { entity_id, entity_type, file, listFilters }, context) => {
+      const entityType = entity_type ?? 'Stix-Cyber-Observable';
+      return stixCoreObjectsExportPush(context, context.user, entity_id, entityType, file, listFilters);
+    },
     artifactImport: (_, args, context) => artifactImport(context, context.user, args),
   },
   Subscription: {

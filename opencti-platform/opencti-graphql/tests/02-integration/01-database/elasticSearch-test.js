@@ -193,7 +193,7 @@ describe('Elasticsearch computation', () => {
     const intrusionSet = await elLoadById(testContext, ADMIN_USER, 'intrusion-set--18854f55-ac7c-4634-bd9a-352dd07613b7');
     // "target_ref": "identity--c017f212-546b-4f21-999d-97d3dc558f7b", organization -> Allied Universal
     const opts = {
-      elementId: intrusionSet.internal_id,
+      fromOrToId: intrusionSet.internal_id,
       start: '2020-02-29T00:00:00Z',
       end: new Date().getTime(),
       elementWithTargetTypes: ['Stix-Domain-Object'],

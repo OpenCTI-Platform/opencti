@@ -340,7 +340,7 @@ const NotificationsToolBar: FunctionComponent<NotificationsToolBarProps> = ({
                         {selectAll ? (
                           <TasksFilterValueContainer
                             filters={filters}
-                          ></TasksFilterValueContainer>
+                          />
                         ) : (
                           <span>
                             {truncate(

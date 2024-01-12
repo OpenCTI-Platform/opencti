@@ -331,7 +331,9 @@ class StixCoreObjectOrStixRelationshipLastContainers extends Component {
         values: ['Report', 'Case', 'Observed-Data', 'Grouping'],
       },
     ];
-    if (authorId) filtersContent.push({ key: 'createdBy', values: [authorId] });
+    if (authorId) {
+      filtersContent.push({ key: 'createdBy', values: [authorId] });
+    }
     if (stixCoreObjectOrStixRelationshipId) {
       filtersContent.push({
         key: 'objects',

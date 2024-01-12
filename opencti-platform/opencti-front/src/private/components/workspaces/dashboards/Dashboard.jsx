@@ -54,7 +54,7 @@ import AuditsMultiHeatMap from '../../common/audits/AuditsMultiHeatMap';
 import AuditsTreeMap from '../../common/audits/AuditsTreeMap';
 import AuditsDistributionList from '../../common/audits/AuditsDistributionList';
 import { ErrorBoundary, SimpleError } from '../../Error';
-import { deserializeDashboardManifestForFrontend, serializeDashboardManifestForBackend } from '../../../../utils/filters/filtersUtils';
+import { deserializeDashboardManifestForFrontend, removeIdFromFilterGroupObject, serializeDashboardManifestForBackend } from '../../../../utils/filters/filtersUtils';
 
 const useStyles = makeStyles(() => ({
   container: {
@@ -752,41 +752,50 @@ const DashboardComponent = ({ workspace, noToolbar }) => {
           onLayoutChange={noToolbar ? () => true : onLayoutChange}
           draggableCancel=".noDrag"
         >
-          {R.values(manifest.widgets).map((widget) => (
-            <Paper
+          {R.values(manifest.widgets).map((widget) => {
+            const removeIdFilterWidget = {
+              ...widget,
+              dataSelection: widget.dataSelection.map((data) => ({
+                ...data,
+                filters: removeIdFromFilterGroupObject(data.filters),
+                dynamicFrom: removeIdFromFilterGroupObject(data.dynamicFrom),
+                dynamicTo: removeIdFromFilterGroupObject(data.dynamicTo),
+              })),
+            };
+            return <Paper
               key={widget.id}
               data-grid={widget.layout}
               classes={{ root: classes.paper }}
               variant="outlined"
-            >
+                   >
               {!noToolbar && (
-                <WidgetPopover
-                  widget={widget}
-                  manifest={manifest}
-                  workspace={workspace}
-                  onUpdate={handleUpdateWidget}
-                  onDuplicate={handleDuplicateWidget}
-                  onDelete={() => handleDeleteWidget(widget.id)}
-                />
+              <WidgetPopover
+                widget={widget}
+                manifest={manifest}
+                workspace={workspace}
+                onUpdate={handleUpdateWidget}
+                onDuplicate={handleDuplicateWidget}
+                onDelete={() => handleDeleteWidget(widget.id)}
+              />
               )}
               <ErrorBoundary
                 display={
                   <div style={{ paddingTop: 28 }}>
-                    <SimpleError />
+                    <SimpleError/>
                   </div>
-                }
+                  }
               >
                 {widget.perspective === 'entities'
-                  && renderEntitiesVisualization(widget, manifest.config)}
+                    && renderEntitiesVisualization(removeIdFilterWidget, manifest.config)}
                 {widget.perspective === 'relationships'
-                  && renderRelationshipsVisualization(widget, manifest.config)}
+                    && renderRelationshipsVisualization(removeIdFilterWidget, manifest.config)}
                 {widget.perspective === 'audits'
-                  && renderAuditsVisualization(widget, manifest.config)}
+                    && renderAuditsVisualization(removeIdFilterWidget, manifest.config)}
                 {widget.perspective === null
-                  && renderRawVisualization(widget, manifest.config)}
+                    && renderRawVisualization(removeIdFilterWidget, manifest.config)}
               </ErrorBoundary>
-            </Paper>
-          ))}
+            </Paper>;
+          })}
         </ReactGridLayout>
       ) : (
         <ReactGridLayout
@@ -798,13 +807,22 @@ const DashboardComponent = ({ workspace, noToolbar }) => {
           isResizable={false}
           draggableCancel=".noDrag"
         >
-          {R.values(manifest.widgets).map((widget) => (
-            <Paper
+          {R.values(manifest.widgets).map((widget) => {
+            const removeIdFilterWidget = {
+              ...widget,
+              dataSelection: widget.dataSelection.map((data) => ({
+                ...data,
+                filters: removeIdFromFilterGroupObject(data.filters),
+                dynamicFrom: removeIdFromFilterGroupObject(data.dynamicFrom),
+                dynamicTo: removeIdFromFilterGroupObject(data.dynamicTo),
+              })),
+            };
+            return <Paper
               key={widget.id}
               data-grid={widget.layout}
               classes={{ root: classes.paper }}
               variant="outlined"
-            >
+                   >
               <ErrorBoundary
                 display={
                   <div style={{ paddingTop: 28 }}>
@@ -813,16 +831,16 @@ const DashboardComponent = ({ workspace, noToolbar }) => {
                 }
               >
                 {widget.perspective === 'entities'
-                  && renderEntitiesVisualization(widget, manifest.config)}
+                  && renderEntitiesVisualization(removeIdFilterWidget, manifest.config)}
                 {widget.perspective === 'relationships'
-                  && renderRelationshipsVisualization(widget, manifest.config)}
+                  && renderRelationshipsVisualization(removeIdFilterWidget, manifest.config)}
                 {widget.perspective === 'audits'
-                  && renderAuditsVisualization(widget, manifest.config)}
+                  && renderAuditsVisualization(removeIdFilterWidget, manifest.config)}
                 {widget.perspective === null
-                  && renderRawVisualization(widget, manifest.config)}
+                  && renderRawVisualization(removeIdFilterWidget, manifest.config)}
               </ErrorBoundary>
-            </Paper>
-          ))}
+            </Paper>;
+          })}
         </ReactGridLayout>
       )}
       {!noToolbar && <WidgetConfig onComplete={handleAddWidget} workspace={workspace} />}

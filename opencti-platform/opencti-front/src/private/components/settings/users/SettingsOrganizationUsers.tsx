@@ -43,7 +43,6 @@ MembersListContainerProps
       sortBy: 'name',
       orderAsc: true,
     },
-    undefined,
     true,
   );
   const { searchTerm, sortBy, orderAsc } = viewStorage;

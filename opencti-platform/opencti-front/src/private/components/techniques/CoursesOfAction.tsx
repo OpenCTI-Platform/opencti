@@ -75,7 +75,7 @@ const CoursesOfAction = () => {
         handleSwitchLocalMode={helpers.handleSwitchLocalMode}
         handleToggleExports={helpers.handleToggleExports}
         openExports={openExports}
-        exportEntityType="Course-Of-Action"
+        exportContext={{ entity_type: 'Course-Of-Action' }}
         keyword={searchTerm}
         filters={filters}
         paginationOptions={paginationOptions}

@@ -106,12 +106,10 @@ const FilterAutocomplete: FunctionComponent<FilterAutocompleteProps> = (props) =
     ) => Record<string, OptionValue[]>,
   ]; // change when useSearchEntities will be in TS
   const isStixObjectTypes = [
-    'elementId',
     'fromId',
     'toId',
     'objects',
     'targets',
-    'elementId',
     'indicates',
     'contextEntityId',
   ].includes(filterKey);

@@ -487,7 +487,7 @@ const SearchBulk = () => {
           open={openExports}
           handleToggle={() => setOpenExports(!openExports)}
           paginationOptions={paginationOptions}
-          exportEntityType="Stix-Core-Object"
+          exportContext={{ entity_type: 'Stix-Core-Object' }}
           variant="persistent"
         />
       )}

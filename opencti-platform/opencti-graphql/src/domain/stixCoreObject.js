@@ -75,22 +75,6 @@ export const findAll = async (context, user, args) => {
   if (types.length === 0) {
     types.push(ABSTRACT_STIX_CORE_OBJECT);
   }
-  if (isNotEmptyField(args.relationship_type) && isEmptyField(args.elementId)) {
-    throw UnsupportedError('Cant find stixCoreObject only based on relationship type, elementId is required');
-  }
-  let { filters } = args;
-  if (isNotEmptyField(args.elementId)) {
-    // In case of element id, we look for a specific entity used by relationships independent of the direction
-    // To do that we need to lookup the element inside the rel_ fields that represent the relationships connections
-    // that are denormalized at relation creation.
-    // If relation types are also in the query, we filter on specific rel_[TYPE], if not, using a wilcard.
-    if (isNotEmptyField(args.relationship_type)) {
-      const relationshipFilterKeys = args.relationship_type.map((n) => buildRefRelationKey(n));
-      filters = addFilter(filters, relationshipFilterKeys, args.elementId);
-    } else {
-      filters = addFilter(filters, buildRefRelationKey('*'), args.elementId);
-    }
-  }
   if (args.globalSearch) {
     const contextData = {
       input: R.omit(['search'], args)
@@ -106,7 +90,7 @@ export const findAll = async (context, user, args) => {
       context_data: contextData,
     });
   }
-  return listEntities(context, user, types, { ...R.omit(['elementId', 'relationship_type'], args), filters });
+  return listEntities(context, user, types, args);
 };
 
 export const findById = async (context, user, stixCoreObjectId) => {
@@ -171,7 +155,7 @@ export const batchKillChainPhases = (context, user, stixCoreObjectIds) => {
 };
 
 export const stixCoreRelationships = (context, user, stixCoreObjectId, args) => {
-  const finalArgs = R.assoc('elementId', stixCoreObjectId, args);
+  const finalArgs = R.assoc('fromOrToId', stixCoreObjectId, args);
   return relationFindAll(context, user, finalArgs);
 };
 
@@ -196,9 +180,9 @@ export const stixCoreObjectDelete = async (context, user, stixCoreObjectId) => {
   return stixCoreObjectId;
 };
 
-export const askElementEnrichmentForConnector = async (context, user, elementId, connectorId) => {
+export const askElementEnrichmentForConnector = async (context, user, enrichedId, connectorId) => {
   const connector = await storeLoadById(context, user, connectorId, ENTITY_TYPE_CONNECTOR);
-  const element = await internalLoadById(context, user, elementId);
+  const element = await internalLoadById(context, user, enrichedId);
   if (!element) {
     throw FunctionalError('Cannot enrich the object, element cannot be found.');
   }
@@ -214,7 +198,7 @@ export const askElementEnrichmentForConnector = async (context, user, elementId,
   };
   await pushToConnector(connector.internal_id, message);
   const contextData = {
-    id: elementId,
+    id: enrichedId,
     connector_id: connectorId,
     connector_name: connector.name,
     entity_name: extractEntityRepresentativeName(element),
@@ -254,23 +238,7 @@ export const stixCoreObjectsTimeSeries = (context, user, args) => {
   if (isEmptyField(types)) {
     types.push(ABSTRACT_STIX_CORE_OBJECT);
   }
-  if (isNotEmptyField(args.relationship_type) && isEmptyField(args.elementId)) {
-    throw UnsupportedError('Cant find stixCoreObject only based on relationship type, elementId is required');
-  }
-  let { filters } = args;
-  if (isNotEmptyField(args.elementId)) {
-    // In case of element id, we look for a specific entity used by relationships independent of the direction
-    // To do that we need to lookup the element inside the rel_ fields that represent the relationships connections
-    // that are denormalized at relation creation.
-    // If relation types are also in the query, we filter on specific rel_[TYPE], if not, using a wilcard.
-    if (isNotEmptyField(args.relationship_type)) {
-      const relationshipFilterKeys = args.relationship_type.map((n) => buildRefRelationKey(n));
-      filters = addFilter(filters, relationshipFilterKeys, args.elementId);
-    } else {
-      filters = addFilter(filters, buildRefRelationKey('*'), args.elementId);
-    }
-  }
-  return timeSeriesEntities(context, user, types, { ...R.omit(['elementId', 'relationship_type'], args), filters });
+  return timeSeriesEntities(context, user, types, args);
 };
 
 export const stixCoreObjectsTimeSeriesByAuthor = (context, user, args) => {
@@ -288,23 +256,7 @@ export const stixCoreObjectsMultiTimeSeries = (context, user, args) => {
     if (isEmptyField(types)) {
       types.push(ABSTRACT_STIX_CORE_OBJECT);
     }
-    if (isNotEmptyField(timeSeriesParameter.relationship_type) && isEmptyField(timeSeriesParameter.elementId)) {
-      throw UnsupportedError('Cant find stixCoreObject only based on relationship type, elementId is required');
-    }
-    let { filters } = timeSeriesParameter;
-    if (isNotEmptyField(timeSeriesParameter.elementId)) {
-      // In case of element id, we look for a specific entity used by relationships independent of the direction
-      // To do that we need to lookup the element inside the rel_ fields that represent the relationships connections
-      // that are denormalized at relation creation.
-      // If relation types are also in the query, we filter on specific rel_[TYPE], if not, using a wilcard.
-      if (isNotEmptyField(timeSeriesParameter.relationship_type)) {
-        const relationshipFilterKeys = timeSeriesParameter.relationship_type.map((n) => buildRefRelationKey(n));
-        filters = addFilter(filters, relationshipFilterKeys, timeSeriesParameter.elementId);
-      } else {
-        filters = addFilter(filters, buildRefRelationKey('*'), timeSeriesParameter.elementId);
-      }
-    }
-    return { data: timeSeriesEntities(context, user, types, { ...args, ...R.omit(['elementId', 'relationship_type'], timeSeriesParameter), filters }) };
+    return { data: timeSeriesEntities(context, user, types, { ...args, ...timeSeriesParameter }) };
   }));
 };
 
@@ -316,25 +268,9 @@ export const stixCoreObjectsNumber = (context, user, args) => {
   if (types.length === 0) {
     types.push(ABSTRACT_STIX_CORE_OBJECT);
   }
-  if (isNotEmptyField(args.relationship_type) && isEmptyField(args.elementId)) {
-    throw UnsupportedError('Cant find stixCoreObject only based on relationship type, elementId is required');
-  }
-  let { filters } = args;
-  if (isNotEmptyField(args.elementId)) {
-    // In case of element id, we look for a specific entity used by relationships independent of the direction
-    // To do that we need to lookup the element inside the rel_ fields that represent the relationships connections
-    // that are denormalized at relation creation.
-    // If relation types are also in the query, we filter on specific rel_[TYPE], if not, using a wilcard.
-    if (isNotEmptyField(args.relationship_type)) {
-      const relationshipFilterKeys = args.relationship_type.map((n) => buildRefRelationKey(n));
-      filters = addFilter(filters, relationshipFilterKeys, args.elementId);
-    } else {
-      filters = addFilter(filters, buildRefRelationKey('*'), args.elementId);
-    }
-  }
   return {
-    count: elCount(context, user, args.onlyInferred ? READ_INDEX_INFERRED_ENTITIES : READ_ENTITIES_INDICES, { ...R.omit(['elementId', 'relationship_type'], args), filters }),
-    total: elCount(context, user, args.onlyInferred ? READ_INDEX_INFERRED_ENTITIES : READ_ENTITIES_INDICES, { ...R.omit(['elementId', 'relationship_type', 'endDate'], args), filters }),
+    count: elCount(context, user, args.onlyInferred ? READ_INDEX_INFERRED_ENTITIES : READ_ENTITIES_INDICES, args),
+    total: elCount(context, user, args.onlyInferred ? READ_INDEX_INFERRED_ENTITIES : READ_ENTITIES_INDICES, args),
   };
 };
 
@@ -347,25 +283,11 @@ export const stixCoreObjectsMultiNumber = (context, user, args) => {
     if (types.length === 0) {
       types.push(ABSTRACT_STIX_CORE_OBJECT);
     }
-    if (isNotEmptyField(args.relationship_type) && isEmptyField(args.elementId)) {
-      throw UnsupportedError('Cant find stixCoreObject only based on relationship type, elementId is required');
-    }
-    let { filters } = numberParameter;
-    if (isNotEmptyField(numberParameter.elementId)) {
-      // In case of element id, we look for a specific entity used by relationships independent of the direction
-      // To do that we need to lookup the element inside the rel_ fields that represent the relationships connections
-      // that are denormalized at relation creation.
-      // If relation types are also in the query, we filter on specific rel_[TYPE], if not, using a wilcard.
-      if (isNotEmptyField(numberParameter.relationship_type)) {
-        const relationshipFilterKeys = numberParameter.relationship_type.map((n) => buildRefRelationKey(n));
-        filters = addFilter(filters, relationshipFilterKeys, numberParameter.elementId);
-      } else {
-        filters = addFilter(filters, buildRefRelationKey('*'), numberParameter.elementId);
-      }
-    }
     return {
-      count: elCount(context, user, args.onlyInferred ? READ_INDEX_INFERRED_ENTITIES : READ_ENTITIES_INDICES, { ...args, ...{ ...R.omit(['elementId', 'relationship_type'], numberParameter), filters } }),
-      total: elCount(context, user, args.onlyInferred ? READ_INDEX_INFERRED_ENTITIES : READ_ENTITIES_INDICES, R.dissoc('endDate', { ...args, ...{ ...R.omit(['elementId', 'relationship_type'], numberParameter), filters } }))
+      count: elCount(context, user, args.onlyInferred ? READ_INDEX_INFERRED_ENTITIES
+        : READ_ENTITIES_INDICES, { ...args, ...numberParameter }),
+      total: elCount(context, user, args.onlyInferred ? READ_INDEX_INFERRED_ENTITIES
+        : READ_ENTITIES_INDICES, R.dissoc('endDate', { ...args, ...numberParameter }))
     };
   }));
 };
@@ -384,7 +306,8 @@ export const stixCoreObjectsDistribution = async (context, user, args) => {
 
 export const stixCoreObjectsDistributionByEntity = async (context, user, args) => {
   const { relationship_type, objectId, types } = args;
-  const filters = addFilter(args.filters, (relationship_type ?? [RELATION_RELATED_TO]).map((n) => buildRefRelationKey(n, '*')), objectId);
+  const filters = addFilter(args.filters, (relationship_type ?? [RELATION_RELATED_TO])
+    .map((n) => buildRefRelationKey(n, '*')), objectId);
   return distributionEntities(context, user, types ?? [ABSTRACT_STIX_CORE_OBJECT], { ...args, filters });
 };
 
@@ -398,12 +321,12 @@ export const stixCoreObjectsMultiDistribution = (context, user, args) => {
 
 // region export
 export const stixCoreObjectsExportAsk = async (context, user, args) => {
-  const { format, type, exportType, maxMarkingDefinition, selectedIds } = args;
-  const { search, orderBy, orderMode, filters, relationship_type, elementId } = args;
-  const argsFilters = { search, orderBy, orderMode, filters, relationship_type, elementId };
+  const { exportContext, format, exportType, maxMarkingDefinition, selectedIds } = args;
+  const { search, orderBy, orderMode, filters } = args;
+  const argsFilters = { search, orderBy, orderMode, filters };
   const ordersOpts = stixCoreObjectOptions.StixCoreObjectsOrdering;
   const listParams = exportTransformFilters(argsFilters, ordersOpts);
-  const works = await askListExport(context, user, format, type, selectedIds, listParams, exportType, maxMarkingDefinition);
+  const works = await askListExport(context, user, exportContext, format, selectedIds, listParams, exportType, maxMarkingDefinition);
   return works.map((w) => workToExportFile(w));
 };
 export const stixCoreObjectExportAsk = async (context, user, stixCoreObjectId, args) => {
@@ -413,9 +336,9 @@ export const stixCoreObjectExportAsk = async (context, user, stixCoreObjectId, a
   return works.map((w) => workToExportFile(w));
 };
 
-export const stixCoreObjectsExportPush = async (context, user, type, file, listFilters) => {
+export const stixCoreObjectsExportPush = async (context, user, entity_id, entity_type, file, listFilters) => {
   const meta = { list_filters: listFilters };
-  await upload(context, user, `export/${type}`, file, { meta });
+  await upload(context, user, `export/${entity_type}${entity_id ? `/${entity_id}` : ''}`, file, { meta });
   return true;
 };
 

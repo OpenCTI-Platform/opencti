@@ -29,7 +29,7 @@ const stixRelationshipsNumberNumberQuery = graphql`
     $noDirection: Boolean
     $endDate: DateTime
     $onlyInferred: Boolean
-    $elementId: [String]
+    $fromOrToId: [String]
     $elementWithTargetTypes: [String]
     $fromId: [String]
     $fromRole: String
@@ -48,7 +48,7 @@ const stixRelationshipsNumberNumberQuery = graphql`
       noDirection: $noDirection
       endDate: $endDate
       onlyInferred: $onlyInferred
-      elementId: $elementId
+      fromOrToId: $fromOrToId
       elementWithTargetTypes: $elementWithTargetTypes
       fromId: $fromId
       fromRole: $fromRole
@@ -80,27 +80,11 @@ const StixRelationshipsNumber = ({
   const { t, n } = useFormatter();
   const renderContent = () => {
     const selection = dataSelection[0];
-    const {
-      filters,
-      dataSelectionRelationshipType: relationship_type,
-      dataSelectionElementId: elementId,
-      dataSelectionElementWithTargetTypes: elementWithTargetTypes,
-      dataSelectionFromId: fromId,
-      dataSelectionToId: toId,
-      dataSelectionFromTypes: fromTypes,
-      dataSelectionToTypes: toTypes,
-    } = buildFiltersAndOptionsForWidgets(selection.filters);
+    const { filters } = buildFiltersAndOptionsForWidgets(selection.filters);
     return (
       <QueryRenderer
         query={stixRelationshipsNumberNumberQuery}
         variables={{
-          elementId,
-          elementWithTargetTypes,
-          fromId,
-          fromTypes,
-          toId,
-          toTypes,
-          relationship_type,
           filters,
           startDate,
           endDate: dayAgo(),

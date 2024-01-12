@@ -317,7 +317,7 @@ class StixDomainObjectAttackPatternsKillChainComponent extends Component {
               open={openExports}
               handleToggle={handleToggleExports.bind(this)}
               paginationOptions={paginationOptions}
-              context={exportContext}
+              exportContext={exportContext}
             />
           </Security>
         </div>
@@ -346,7 +346,7 @@ StixDomainObjectAttackPatternsKillChainComponent.propTypes = {
 
 export const stixDomainObjectAttackPatternsKillChainStixCoreRelationshipsQuery = graphql`
     query StixDomainObjectAttackPatternsKillChainStixCoreRelationshipsQuery(
-        $elementId: [String]
+        $fromOrToId: [String]
         $elementWithTargetTypes: [String]
         $first: Int
         $filters: FilterGroup
@@ -361,7 +361,7 @@ const stixDomainObjectAttackPatternsKillChainLines = createRefetchContainer(
     data: graphql`
             fragment StixDomainObjectAttackPatternsKillChain_data on Query {
                 stixCoreRelationships(
-                    elementId: $elementId
+                    fromOrToId: $fromOrToId
                     elementWithTargetTypes: $elementWithTargetTypes
                     filters: $filters
                     first: $first

@@ -8,6 +8,10 @@ import type { FilterGroup as GqlFilterGroup } from './__generated__/useSearchEnt
 
 export type { FilterGroup as GqlFilterGroup } from './__generated__/useSearchEntitiesStixCoreObjectsContainersSearchQuery.graphql';
 
+// usually string, but can be a combined filter like regardingOf
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export type FilterValue = any;
+
 export type FilterGroup = {
   mode: string;
   filters: Filter[];
@@ -18,9 +22,9 @@ export type FilterGroup = {
 export type Filter = {
   id?: string;
   key: string; // key is a string in front
-  values: string[];
-  operator: string;
-  mode: string;
+  values: FilterValue[];
+  operator?: string;
+  mode?: string;
 };
 
 export const emptyFilterGroup = {
@@ -36,29 +40,6 @@ export const FiltersVariant = {
   dialog: 'dialog',
 };
 
-export const onlyGroupOrganization = ['workflow_id'];
-
-export const directFilters = [
-  'is_read',
-  'channel_types',
-  'pattern_type',
-  'sightedBy',
-  'container_type',
-  'toSightingId',
-  'x_opencti_negative',
-  'fromId',
-  'toId',
-  'elementId',
-  'contextEntityId',
-  'note_types',
-  'context',
-  'trigger_type',
-  'instance_trigger',
-  'containers',
-  'objectContains',
-  'entity_type',
-  'container_type',
-];
 export const inlineFilters = ['is_read', 'trigger_type', 'instance_trigger'];
 
 export const integerFilters = [
@@ -111,17 +92,6 @@ export const EqFilters = [
   'organization_ids',
 ];
 
-// filters that can only have an 'eq' operator and a 'or' mode
-export const filtersUsedAsApiParameters = [
-  'fromId',
-  'fromTypes',
-  'toId',
-  'toTypes',
-  'elementTargetTypes',
-  'elementId',
-  'toSightingId',
-];
-
 // filters that represents a date, can have lt (end date) or gt (start date) operators
 export const dateFilters = [
   'published',
@@ -147,7 +117,7 @@ const uniqFilters = [
 
 // filters that targets entities instances
 export const entityFilters = [
-  'elementId',
+  'fromOrToId',
   'fromId',
   'toId',
   'createdBy',
@@ -156,6 +126,7 @@ export const entityFilters = [
   'targets',
   'connectedToId',
   'contextEntityId',
+  'id',
 ];
 
 export const booleanFilters = [
@@ -172,7 +143,6 @@ export const entityTypesFilters = [
   'fromTypes',
   'toTypes',
   'relationship_types',
-  'container_type',
   'contextEntityType',
 ];
 
@@ -261,25 +231,6 @@ export const findFilterIndexFromKey = (
   return null;
 };
 
-// add entity types context in filters
-export const injectEntityTypeFilterInFilterGroup = (
-  filters: FilterGroup | undefined,
-  type: string | string[],
-): FilterGroup => {
-  const entityTypeFilter: Filter = {
-    id: uuid(),
-    key: 'entity_type',
-    values: Array.isArray(type) ? type : [type],
-    operator: 'eq',
-    mode: 'or',
-  };
-  return {
-    mode: 'and',
-    filters: [entityTypeFilter],
-    filterGroups: filters ? [filters] : [],
-  };
-};
-
 // remove filter with key=entity_type and values contains 'all'
 // because in this case we want everything, so no need for filters
 export const removeEntityTypeAllFromFilterGroup = (inputFilters?: FilterGroup) => {
@@ -302,31 +253,11 @@ export const buildFiltersAndOptionsForWidgets = (
   opts: { removeTypeAll?: boolean, startDate?: string, endDate?: string, dateAttribute?: string } = {},
 ) => {
   const { removeTypeAll = false, startDate = null, endDate = null, dateAttribute = 'created_at' } = opts;
-  // 01. handle api filters in options
-  // elementId, elementWithTargetTypes, fromId, toId, fromTypes and toTypes should be handle in options, not in filters
-  // relationship_type should be put in options BUT should be kept in filters because this key can have all modes and operators
-  let filtersContent = inputFilters?.filters ?? [];
-  const dataSelectionElementId = R.head(filtersContent.filter((n) => n.key === 'elementId'))?.values || null;
-  const dataSelectionElementWithTargetTypes = R.head(filtersContent.filter((n) => n.key === 'elementWithTargetTypes'))?.values || null;
-  const dataSelectionRelationshipType = R.head(filtersContent.filter((o) => o.key === 'relationship_type'))?.values || null;
-  const dataSelectionFromId = R.head(filtersContent.filter((o) => o.key === 'fromId'))?.values || null;
-  const dataSelectionToId = R.head(filtersContent.filter((o) => o.key === 'toId'))?.values || null;
-  const dataSelectionFromTypes = R.head(filtersContent.filter((o) => o.key === 'fromTypes'))?.values
-    || null;
-  const dataSelectionToTypes = R.head(filtersContent.filter((o) => o.key === 'toTypes'))?.values || null;
-  filtersContent = filtersContent.filter(
-    (o) => ![
-      'elementId',
-      'elementWithTargetTypes',
-      'fromId',
-      'toId',
-      'fromTypes',
-      'toTypes',
-    ].includes(o.key),
-  );
-  let filters = inputFilters ? { ...inputFilters, filters: filtersContent } : undefined;
+  let filters = inputFilters;
   // 02. remove 'all' in filter with key=entity_type
-  if (removeTypeAll) filters = removeEntityTypeAllFromFilterGroup(filters);
+  if (removeTypeAll) {
+    filters = removeEntityTypeAllFromFilterGroup(filters);
+  }
   // 03. handle startDate and endDate options
   const dateFiltersContent = [];
   if (startDate) {
@@ -349,24 +280,20 @@ export const buildFiltersAndOptionsForWidgets = (
     filters = {
       mode: 'and',
       filters: dateFiltersContent,
-      filterGroups: filters ? [filters] : [],
+      filterGroups: filters && isFilterGroupNotEmpty(filters) ? [filters] : [],
     };
   }
   return {
     filters,
-    dataSelectionElementId,
-    dataSelectionElementWithTargetTypes,
-    dataSelectionRelationshipType,
-    dataSelectionFromId,
-    dataSelectionFromTypes,
-    dataSelectionToId,
-    dataSelectionToTypes,
   };
 };
 
 // return the i18n label corresponding to a value
 export const filterValue = (filterKey: string, value?: string | null) => {
   const { t, nsd } = useFormatter();
+  if (filterKey === 'regardingOf') {
+    return JSON.stringify(value);
+  }
   if (
     value
     && (booleanFilters.includes(filterKey) || inlineFilters.includes(filterKey))
@@ -390,7 +317,7 @@ export const filterValue = (filterKey: string, value?: string | null) => {
     // TODO: improvement: date filters based on schema definition (not an enum)
     return nsd(value);
   }
-  if (filterKey === 'relationship_type') {
+  if (filterKey === 'relationship_type' || filterKey === 'type') {
     return t(`relationship_${value}`);
   }
   return value;
@@ -411,7 +338,7 @@ const sanitizeFilterGroupKeysForBackend = (
 ): GqlFilterGroup => {
   return {
     ...filterGroup,
-    filters: filterGroup?.filters?.filter((f) => f.values.length > 0)
+    filters: filterGroup?.filters?.filter((f) => f.values.length > 0 || ['nil', 'not_nil'].includes(f.operator ?? 'eq'))
       .map((f) => {
         const transformFilter = {
           ...f,
@@ -432,7 +359,9 @@ const sanitizeFilterGroupKeysForFrontend = (
     ...filterGroup,
     filters: filterGroup?.filters?.map((f) => ({
       ...f,
+      id: uuid(),
       key: Array.isArray(f.key) ? f.key[0] : f.key,
+      values: f.values.map((v) => v || 'todo: delete this'),
     })),
     filterGroups: filterGroup?.filterGroups?.map((fg) => sanitizeFilterGroupKeysForFrontend(fg)),
   } as FilterGroup;
@@ -557,20 +486,23 @@ export const addFilter = (
   operator = 'eq',
   mode = 'or',
 ): FilterGroup | undefined => {
-  if (!filters) {
-    return undefined;
+  const filterFromParameters = {
+    id: uuid(),
+    key,
+    values: Array.isArray(value) ? value : [value],
+    operator,
+    mode,
+  };
+  if (!filters) { // Add on nothing = create a new filter
+    return {
+      mode,
+      filters: [filterFromParameters],
+      filterGroups: [],
+    };
   }
   return {
     mode: filters?.mode ?? 'and',
-    filters: (filters?.filters ?? []).concat([
-      {
-        id: uuid(),
-        key,
-        values: Array.isArray(value) ? value : [value],
-        operator,
-        mode,
-      },
-    ]),
+    filters: (filters?.filters ?? []).concat([filterFromParameters]),
     filterGroups: filters?.filterGroups ?? [],
   };
 };
@@ -593,26 +525,6 @@ export const removeFilter = (
   return isFilterGroupNotEmpty(newFilters) ? newFilters : undefined;
 };
 
-/**
- * remove from filter all keys not listed in availableFilterKeys
- * if filter ends up empty, return undefined
- * Note: This function is not recursive, it only filters the first level filters
- */
-export const cleanFilters = (
-  filters: FilterGroup | undefined,
-  availableFilterKeys: string[],
-) => {
-  if (!filters) {
-    return undefined;
-  }
-  const newFilters = {
-    ...filters,
-    filters: filters.filters.filter((f) => availableFilterKeys.includes(f.key)),
-  };
-
-  return isFilterGroupNotEmpty(newFilters) ? newFilters : undefined;
-};
-
 //----------------------------------------------------------------------------------------------------------------------
 
 // add a filter (k, id, op) in a filterGroup smartly, for usage in forms
@@ -626,7 +538,7 @@ export const constructHandleAddFilter = (
   // if the filter key is already used, update it
   if (filters && findFilterFromKey(filters.filters, k, op)) {
     const filter = findFilterFromKey(filters.filters, k, op);
-    let newValues: string[] = [];
+    let newValues: FilterValue[] = [];
     if (id !== null) {
       newValues = isUniqFilter(k)
         ? [id]
@@ -668,11 +580,7 @@ export const constructHandleAddFilter = (
 
 // remove a filter (k, op, id) in a filterGroup smartly, for usage in forms
 // if the filter ends up empty, return undefined
-export const constructHandleRemoveFilter = (
-  filters: FilterGroup | undefined | null,
-  k: string,
-  op = 'eq',
-) => {
+export const constructHandleRemoveFilter = (filters: FilterGroup | undefined | null, k: string, op = 'eq') => {
   if (filters) {
     const newBaseFilters = {
       ...filters,
@@ -684,10 +592,7 @@ export const constructHandleRemoveFilter = (
 };
 
 // switch the mode inside a specific filter
-export const filtersAfterSwitchLocalMode = (
-  filters: FilterGroup | undefined | null,
-  localFilter: Filter,
-) => {
+export const filtersAfterSwitchLocalMode = (filters: FilterGroup | undefined | null, localFilter: Filter) => {
   if (filters) {
     const filterIndex = findFilterIndexFromKey(
       filters.filters,
@@ -744,10 +649,29 @@ export const getDefaultFilterObject = (key: string): Filter => {
   };
 };
 
-export const getAvailableOperatorForFilter = (filterKey: string): string[] => {
-  if (filtersUsedAsApiParameters.includes(filterKey)) {
-    return ['eq'];
+export const getDefaultFilterObjFromArray = (keys: string[]) => {
+  return keys.map((key) => getDefaultFilterObject(key));
+};
+
+/**
+ * Get the possible operator for a given subkey.
+ * Subkeys are nested inside special filter that combine several fields (filter values is not a string[] but object[])
+ */
+export const getAvailableOperatorForFilterSubKey = (filterKey: string, subKey: string): string[] => {
+  if (filterKey === 'regardingOf') {
+    if (subKey === 'id' || subKey === 'type') {
+      return ['eq'];
+    }
   }
+
+  return ['eq', 'not_eq', 'nil', 'not_nil'];
+};
+
+/**
+ * Operators are restricted depending on the filter key
+ * @param filterKey
+ */
+export const getAvailableOperatorForFilterKey = (filterKey: string): string[] => {
   if (dateFilters.includes(filterKey)) {
     return ['gt', 'gte', 'lt', 'lte'];
   }
@@ -764,16 +688,19 @@ export const getAvailableOperatorForFilter = (filterKey: string): string[] => {
   return ['eq', 'not_eq', 'nil', 'not_nil'];
 };
 
-export const removeIdFromFilterGroupObject = (
-  filters?: FilterGroup | null,
-): FilterGroup | undefined => {
+export const getAvailableOperatorForFilter = (filterKey: string, subKey?: string): string[] => {
+  if (subKey) return getAvailableOperatorForFilterSubKey(filterKey, subKey);
+  return getAvailableOperatorForFilterKey(filterKey);
+};
+
+export const removeIdFromFilterGroupObject = (filters?: FilterGroup | null): FilterGroup | undefined => {
   if (!filters) {
     return undefined;
   }
   return {
     mode: filters.mode,
     filters: filters.filters
-      .filter((f) => ['nil', 'not_nil'].includes(f.operator) || f.values.length > 0)
+      .filter((f) => ['nil', 'not_nil'].includes(f.operator ?? 'eq') || f.values.length > 0)
       .map((f) => {
         const newFilter = { ...f };
         delete newFilter.id;
@@ -783,12 +710,29 @@ export const removeIdFromFilterGroupObject = (
   };
 };
 
+export const buildEntityTypeBasedFilterContext = (entityType: string, filters: FilterGroup | undefined): FilterGroup => {
+  const userFilters = removeIdFromFilterGroupObject(filters);
+  return {
+    mode: 'and',
+    filters: [
+      {
+        key: 'entity_type',
+        values: [entityType],
+        operator: 'eq',
+        mode: 'or',
+      },
+    ],
+    filterGroups: userFilters && isFilterGroupNotEmpty(userFilters) ? [userFilters] : [],
+  };
+};
+
 export const isStixObjectTypes = [
-  'elementId',
+  'fromOrToId',
   'fromId',
   'toId',
   'objects',
   'targets',
   'indicates',
   'contextEntityId',
+  'id',
 ];

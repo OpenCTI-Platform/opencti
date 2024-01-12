@@ -23,10 +23,7 @@ class StixDomainObjectsExportsContentComponent extends Component {
   componentDidMount() {
     this.subscription = interval$.subscribe(() => {
       if (this.props.isOpen) {
-        this.props.relay.refetch({
-          type: this.props.exportEntityType,
-          count: 25,
-        });
+        this.props.relay.refetch({ count: 25, exportContext: this.props.exportContext });
       }
     });
   }
@@ -36,29 +33,8 @@ class StixDomainObjectsExportsContentComponent extends Component {
   }
 
   render() {
-    const { t, data, exportEntityType, paginationOptions, context } = this.props;
+    const { t, data, exportContext, paginationOptions } = this.props;
     const stixDomainObjectsExportFiles = data?.stixDomainObjectsExportFiles?.edges ?? [];
-    let paginationOptionsForExport = { ...paginationOptions }; // paginationsOptions with correct elementId
-    if (paginationOptions?.fromId) {
-      // for relationships contained in entity>Knowledge>Sightings
-      const filtersForExport = paginationOptionsForExport.filters ? {
-        mode: paginationOptionsForExport.filters.mode,
-        filterGroups: paginationOptionsForExport.filters.filterGroups,
-        filters: [
-          ...(paginationOptionsForExport.filters.filters ?? []),
-          {
-            key: 'fromId',
-            values: [paginationOptions.fromId],
-            operator: 'eq',
-            mode: 'or',
-          },
-        ],
-      } : undefined;
-      paginationOptionsForExport = {
-        ...paginationOptions,
-        filters: filtersForExport,
-      };
-    }
     return (
       <div>
         <List>
@@ -91,14 +67,9 @@ class StixDomainObjectsExportsContentComponent extends Component {
         <Security needs={[KNOWLEDGE_KNGETEXPORT_KNASKEXPORT]}>
           <StixDomainObjectsExportCreation
             data={data}
-            exportEntityType={exportEntityType}
-            paginationOptions={paginationOptionsForExport}
-            context={context}
-            onExportAsk={() => this.props.relay.refetch({
-              type: this.props.exportEntityType,
-              count: 25,
-            })
-            }
+            exportContext={exportContext}
+            paginationOptions={paginationOptions}
+            onExportAsk={() => this.props.relay.refetch({ count: 25, exportContext: this.props.exportContext })}
           />
         </Security>
       </div>
@@ -109,10 +80,10 @@ class StixDomainObjectsExportsContentComponent extends Component {
 export const stixDomainObjectsExportsContentQuery = graphql`
   query StixDomainObjectsExportsContentRefetchQuery(
     $count: Int!
-    $type: String!
+    $exportContext: ExportContext!
   ) {
     ...StixDomainObjectsExportsContent_data
-      @arguments(count: $count, type: $type)
+      @arguments(count: $count, exportContext: $exportContext)
   }
 `;
 
@@ -123,9 +94,9 @@ const StixDomainObjectsExportsContent = createRefetchContainer(
       fragment StixDomainObjectsExportsContent_data on Query
       @argumentDefinitions(
         count: { type: "Int", defaultValue: 25 }
-        type: { type: "String!" }
+        exportContext: { type: "ExportContext!" }
       ) {
-        stixDomainObjectsExportFiles(first: $count, type: $type)
+        stixDomainObjectsExportFiles(first: $count, exportContext: $exportContext)
           @connection(key: "Pagination_stixDomainObjectsExportFiles") {
           edges {
             node {
@@ -146,11 +117,10 @@ StixDomainObjectsExportsContent.propTypes = {
   t: PropTypes.func,
   handleToggle: PropTypes.func,
   data: PropTypes.object,
-  exportEntityType: PropTypes.string.isRequired,
+  exportContext: PropTypes.object,
   paginationOptions: PropTypes.object,
   handleApplyListArgs: PropTypes.func,
   isOpen: PropTypes.bool,
-  context: PropTypes.string,
 };
 
 export default compose(inject18n)(StixDomainObjectsExportsContent);

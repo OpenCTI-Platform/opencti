@@ -36,7 +36,7 @@ const PositionComponent: FunctionComponent<PositionComponentProps> = ({
     positionDetailsLocationRelationshipsLinesQuery,
     {
       count: 20,
-      elementId: [position.id],
+      fromOrToId: [position.id],
       relationship_type: ['located-at'],
     },
   );

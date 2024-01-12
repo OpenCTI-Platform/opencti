@@ -48,31 +48,27 @@ const styles = () => ({
 
 export const StixDomainObjectsExportCreationMutation = graphql`
   mutation StixDomainObjectsExportCreationMutation(
-    $type: String!
     $format: String!
     $exportType: String!
     $maxMarkingDefinition: String
-    $context: String
+    $exportContext: ExportContext
     $search: String
     $orderBy: StixDomainObjectsOrdering
     $orderMode: OrderingMode
     $filters: FilterGroup
     $relationship_type: [String]
-    $elementId: String
     $selectedIds: [String]
   ) {
     stixDomainObjectsExportAsk(
-      type: $type
       format: $format
       exportType: $exportType
       maxMarkingDefinition: $maxMarkingDefinition
-      context: $context
+      exportContext: $exportContext
       search: $search
       orderBy: $orderBy
       orderMode: $orderMode
       filters: $filters
       relationship_type: $relationship_type
-      elementId: $elementId
       selectedIds: $selectedIds
     ) {
       id
@@ -115,18 +111,17 @@ class StixDomainObjectsExportCreationComponent extends Component {
   }
 
   onSubmit(selectedIds, values, { setSubmitting, resetForm }) {
-    const { paginationOptions, context } = this.props;
+    const { paginationOptions, exportContext } = this.props;
     const maxMarkingDefinition = values.maxMarkingDefinition === 'none'
       ? null
       : values.maxMarkingDefinition;
     commitMutation({
       mutation: StixDomainObjectsExportCreationMutation,
       variables: {
-        type: this.props.exportEntityType,
         format: values.format,
         exportType: values.type,
         maxMarkingDefinition,
-        context,
+        exportContext,
         ...paginationOptions,
         selectedIds,
       },
@@ -309,9 +304,8 @@ StixDomainObjectsExportCreations.propTypes = {
   classes: PropTypes.object.isRequired,
   t: PropTypes.func,
   data: PropTypes.object,
-  exportEntityType: PropTypes.string.isRequired,
+  exportContext: PropTypes.object,
   paginationOptions: PropTypes.object,
-  context: PropTypes.string,
   onExportAsk: PropTypes.func,
 };
 

@@ -45,7 +45,7 @@ const styles = () => ({
 
 const stixCoreObjectStixCoreRelationshipsCloudDistributionQuery = graphql`
   query StixCoreObjectStixCoreRelationshipsCloudDistributionQuery(
-    $elementId: [String]
+    $fromOrToId: [String]
     $elementWithTargetTypes: [String]
     $fromId: [String]
     $toId: [String]
@@ -59,7 +59,7 @@ const stixCoreObjectStixCoreRelationshipsCloudDistributionQuery = graphql`
     $limit: Int
   ) {
     stixCoreRelationshipsDistribution(
-      elementId: $elementId
+      fromOrToId: $fromOrToId
       elementWithTargetTypes: $elementWithTargetTypes
       fromId: $fromId
       toId: $toId
@@ -94,7 +94,7 @@ class StixCoreObjectStixCoreRelationshipsCloud extends Component {
       noDirection,
     } = this.props;
     const stixCoreRelationshipsDistributionVariables = {
-      elementId: noDirection ? stixCoreObjectId : null,
+      fromOrToId: noDirection ? stixCoreObjectId : null,
       elementWithTargetTypes:
         noDirection && stixCoreObjectType ? [stixCoreObjectType] : null,
       fromId: !isTo && !noDirection ? stixCoreObjectId : null,

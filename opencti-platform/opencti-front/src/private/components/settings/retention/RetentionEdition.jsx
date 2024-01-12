@@ -9,20 +9,16 @@ import InputAdornment from '@mui/material/InputAdornment';
 import Tooltip from '@mui/material/Tooltip';
 import { InformationOutline } from 'mdi-material-ui';
 import Button from '@mui/material/Button';
+import Box from '@mui/material/Box';
 import inject18n from '../../../../components/i18n';
 import { commitMutation, MESSAGING$ } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
 import Filters from '../../common/lists/Filters';
 import { adaptFieldValue } from '../../../../utils/String';
-import {
-  constructHandleAddFilter,
-  constructHandleRemoveFilter,
-  deserializeFilterGroupForFrontend,
-  filtersAfterSwitchLocalMode,
-  serializeFilterGroupForBackend,
-} from '../../../../utils/filters/filtersUtils';
+import { deserializeFilterGroupForFrontend, serializeFilterGroupForBackend } from '../../../../utils/filters/filtersUtils';
 import FilterIconButton from '../../../../components/FilterIconButton';
 import Drawer from '../../common/drawer/Drawer';
+import useFiltersState from '../../../../utils/filters/useFiltersState';
 
 const styles = (theme) => ({
   header: {
@@ -84,7 +80,7 @@ const retentionValidation = (t) => Yup.object().shape({
 const RetentionEditionContainer = (props) => {
   const { t, classes, open, handleClose, retentionRule } = props;
   const initialValues = R.pickAll(['name', 'max_retention'], retentionRule);
-  const [filters, setFilters] = useState(deserializeFilterGroupForFrontend(props.retentionRule.filters));
+  const [filters, helpers] = useFiltersState(deserializeFilterGroupForFrontend(props.retentionRule?.filters ?? undefined));
   const [verified, setVerified] = useState(true);
   const onSubmit = (values, { setSubmitting }) => {
     const inputValues = R.pipe(
@@ -108,27 +104,7 @@ const RetentionEditionContainer = (props) => {
       },
     });
   };
-  const handleAddFilter = (key, id, op = 'eq') => {
-    setVerified(false);
-    setFilters(constructHandleAddFilter(filters, key, id, op));
-  };
-  const handleRemoveFilter = (key, op = 'eq') => {
-    setVerified(false);
-    setFilters(constructHandleRemoveFilter(filters, key, op));
-  };
-  const handleSwitchLocalMode = (localFilter) => {
-    if (filters) {
-      setFilters(filtersAfterSwitchLocalMode(filters, localFilter));
-    }
-  };
-  const handleSwitchGlobalMode = () => {
-    if (filters) {
-      setFilters({
-        ...filters,
-        mode: filters.mode === 'and' ? 'or' : 'and',
-      });
-    }
-  };
+
   const handleVerify = (values) => {
     const finalValues = R.pipe(
       R.assoc('max_retention', Number(values.max_retention)),
@@ -197,9 +173,11 @@ const RetentionEditionContainer = (props) => {
                 ),
               }}
             />
-            <div style={{ paddingTop: 35 }}>
+            <Box sx={{ paddingTop: 4,
+              display: 'flex',
+              gap: 1 }}
+            >
               <Filters
-                variant="text"
                 availableFilterKeys={[
                   'entity_type',
                   'workflow_id',
@@ -223,17 +201,12 @@ const RetentionEditionContainer = (props) => {
                   'fromTypes',
                   'toTypes',
                 ]}
-                handleAddFilter={handleAddFilter}
-                noDirectFilters={true}
+                helpers={helpers}
               />
-            </div>
-            <div className="clearfix" />
+            </Box>
             <FilterIconButton
               filters={filters}
-              handleRemoveFilter={handleRemoveFilter}
-              handleSwitchGlobalMode={handleSwitchGlobalMode}
-              handleSwitchLocalMode={handleSwitchLocalMode}
-              styleNumber={2}
+              helpers={helpers}
               redirection
             />
             <div className={classes.buttons}>

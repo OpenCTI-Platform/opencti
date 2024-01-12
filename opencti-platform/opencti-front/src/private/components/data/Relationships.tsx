@@ -13,7 +13,7 @@ import ExportContextProvider from '../../../utils/ExportContextProvider';
 import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
 import useEntityToggle from '../../../utils/hooks/useEntityToggle';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
-import { injectEntityTypeFilterInFilterGroup, emptyFilterGroup } from '../../../utils/filters/filtersUtils';
+import { buildEntityTypeBasedFilterContext, emptyFilterGroup, getDefaultFilterObjFromArray } from '../../../utils/filters/filtersUtils';
 
 const LOCAL_STORAGE_KEY = 'relationships';
 
@@ -28,7 +28,10 @@ const Relationships = () => {
   } = usePaginationLocalStorage<RelationshipsStixCoreRelationshipsLinesPaginationQuery$variables>(
     LOCAL_STORAGE_KEY,
     {
-      filters: emptyFilterGroup,
+      filters: {
+        ...emptyFilterGroup,
+        filters: getDefaultFilterObjFromArray(['fromId', 'toId']),
+      },
       searchTerm: '',
       sortBy: 'created_at',
       orderAsc: false,
@@ -54,9 +57,15 @@ const Relationships = () => {
   } = useEntityToggle<RelationshipsStixCoreRelationshipLine_node$data>(
     LOCAL_STORAGE_KEY,
   );
+
+  const contextFilters = buildEntityTypeBasedFilterContext('stix-core-relationship', filters);
+  const queryPaginationOptions = {
+    ...paginationOptions,
+    filters: contextFilters,
+  } as unknown as RelationshipsStixCoreRelationshipsLinesPaginationQuery$variables;
   const queryRef = useQueryLoading<RelationshipsStixCoreRelationshipsLinesPaginationQuery>(
     relationshipsStixCoreRelationshipsLinesQuery,
-    paginationOptions,
+    queryPaginationOptions,
   );
   const renderLines = () => {
     const isRuntimeSort = isRuntimeFieldEnable() ?? false;
@@ -107,10 +116,6 @@ const Relationships = () => {
         width: '8%',
       },
     };
-    const toolBarFilters = injectEntityTypeFilterInFilterGroup(
-      filters,
-      'stix-core-relationship',
-    );
     return (
       <>
         <ListLines
@@ -128,13 +133,13 @@ const Relationships = () => {
           openExports={openExports}
           handleToggleSelectAll={handleToggleSelectAll}
           selectAll={selectAll}
-          exportEntityType="stix-core-relationship"
+          exportContext={{ entity_type: 'stix-core-relationship' }}
           disableCards={true}
           iconExtension={true}
           noPadding={true}
           keyword={searchTerm}
           filters={filters}
-          paginationOptions={paginationOptions}
+          paginationOptions={queryPaginationOptions}
           numberOfElements={numberOfElements}
           availableFilterKeys={[
             'relationship_type',
@@ -165,7 +170,7 @@ const Relationships = () => {
             >
               <RelationshipsStixCoreRelationshipsLines
                 queryRef={queryRef}
-                paginationOptions={paginationOptions}
+                paginationOptions={queryPaginationOptions}
                 dataColumns={dataColumns}
                 onLabelClick={storageHelpers.handleAddFilter}
                 selectedElements={selectedElements}
@@ -179,7 +184,7 @@ const Relationships = () => {
                 deSelectedElements={deSelectedElements}
                 numberOfSelectedElements={numberOfSelectedElements}
                 selectAll={selectAll}
-                filters={toolBarFilters}
+                filters={contextFilters}
                 search={searchTerm}
                 handleClearSelectedElements={handleClearSelectedElements}
               />

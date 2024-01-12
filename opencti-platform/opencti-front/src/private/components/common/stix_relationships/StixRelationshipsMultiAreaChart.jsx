@@ -64,20 +64,8 @@ const StixRelationshipsMultiAreaChart = ({
       const dataSelectionDateAttribute = selection.date_attribute && selection.date_attribute.length > 0
         ? selection.date_attribute
         : 'created_at';
-      const {
-        filters,
-        dataSelectionFromId,
-        dataSelectionToId,
-        dataSelectionRelationshipType,
-        dataSelectionFromTypes,
-        dataSelectionToTypes,
-      } = buildFiltersAndOptionsForWidgets(selection.filters);
+      const { filters } = buildFiltersAndOptionsForWidgets(selection.filters);
       return {
-        fromId: dataSelectionFromId,
-        toId: dataSelectionToId,
-        relationship_type: dataSelectionRelationshipType,
-        fromTypes: dataSelectionFromTypes,
-        toTypes: dataSelectionToTypes,
         field: dataSelectionDateAttribute,
         filters,
         dynamicFrom: selection.dynamicFrom,

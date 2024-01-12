@@ -111,7 +111,7 @@ input FilterGroup {
 }
 input Filter {
   key: [String!]!
-  values: [String!]!
+  values: [Any!]!
   operator: FilterOperator
   mode: FilterMode
 }
@@ -180,6 +180,11 @@ type AppMemory {
   malloced_memory: Float
   peak_malloced_memory: Float
   does_zap_garbage: Float
+}
+
+input ExportContext {
+  entity_id: String
+  entity_type: String!
 }
 
 type AppDebugDistribution {
@@ -299,12 +304,10 @@ input StixCoreObjectsTimeSeriesParameters {
   types: [String]
   filters: FilterGroup
   search: String
-  relationship_type: [String]
-  elementId: [String]
 }
 input StixRelationshipsTimeSeriesParameters {
   field: String!
-  elementId: [String]
+  fromOrToId: [String]
   elementWithTargetTypes: [String]
   fromId: [String]
   fromRole: String
@@ -321,7 +324,7 @@ input StixRelationshipsTimeSeriesParameters {
 }
 input StixCoreRelationshipsTimeSeriesParameters {
   field: String!
-  elementId: [String]
+  fromOrToId: [String]
   elementWithTargetTypes: [String]
   fromId: [String]
   fromRole: String
@@ -354,7 +357,7 @@ input StixCoreObjectsDistributionParameters {
 }
 input StixCoreRelationshipsDistributionParameters {
   field: String!
-  elementId: [String]
+  fromOrToId: [String]
   elementWithTargetTypes: [String]
   fromId: [String]
   fromRole: String
@@ -375,8 +378,6 @@ input StixCoreObjectsNumberParameters {
   types: [String]
   filters: FilterGroup
   search: String
-  relationship_type: [String]
-  elementId: [String]
 }
 
 ### INTERFACES & TYPES
@@ -1926,7 +1927,7 @@ interface StixCoreObject {
   objectLabel: LabelConnection
   externalReferences(first: Int): ExternalReferenceConnection
   containersNumber: Number
-  containers(first: Int, entityTypes: [String!], elementId: [String]): ContainerConnection
+  containers(first: Int, entityTypes: [String!]): ContainerConnection
   reports(first: Int): ReportConnection
   notes(first: Int): NoteConnection
   opinions(first: Int): OpinionConnection
@@ -2074,7 +2075,7 @@ interface StixDomainObject {
   objectLabel: LabelConnection
   externalReferences(first: Int): ExternalReferenceConnection
   containersNumber: Number
-  containers(first: Int, entityTypes: [String!], elementId: [String]): ContainerConnection
+  containers(first: Int, entityTypes: [String!]): ContainerConnection
   reports(first: Int): ReportConnection
   notes(first: Int): NoteConnection
   opinions(first: Int): OpinionConnection
@@ -2223,7 +2224,7 @@ type AttackPattern implements BasicObject & StixObject & StixCoreObject & StixDo
   objectLabel: LabelConnection
   externalReferences(first: Int): ExternalReferenceConnection
   containersNumber: Number
-  containers(first: Int, entityTypes: [String!], elementId: [String]): ContainerConnection
+  containers(first: Int, entityTypes: [String!]): ContainerConnection
   reports(first: Int): ReportConnection
   notes(first: Int): NoteConnection
   opinions(first: Int): OpinionConnection
@@ -2391,7 +2392,7 @@ type Campaign implements BasicObject & StixObject & StixCoreObject & StixDomainO
   objectLabel: LabelConnection
   externalReferences(first: Int): ExternalReferenceConnection
   containersNumber: Number
-  containers(first: Int, entityTypes: [String!], elementId: [String]): ContainerConnection
+  containers(first: Int, entityTypes: [String!]): ContainerConnection
   reports(first: Int): ReportConnection
   notes(first: Int): NoteConnection
   opinions(first: Int): OpinionConnection
@@ -2552,7 +2553,7 @@ interface Container {
   objectLabel: LabelConnection
   externalReferences(first: Int): ExternalReferenceConnection
   containersNumber: Number
-  containers(first: Int, entityTypes: [String!], elementId: [String]): ContainerConnection
+  containers(first: Int, entityTypes: [String!]): ContainerConnection
   reports(first: Int): ReportConnection
   notes(first: Int): NoteConnection
   opinions(first: Int): OpinionConnection
@@ -2695,7 +2696,7 @@ type Note implements BasicObject & StixObject & StixCoreObject & StixDomainObjec
   objectLabel: LabelConnection
   externalReferences(first: Int): ExternalReferenceConnection
   containersNumber: Number
-  containers(first: Int, entityTypes: [String!], elementId: [String]): ContainerConnection
+  containers(first: Int, entityTypes: [String!]): ContainerConnection
   reports(first: Int): ReportConnection
   notes(first: Int): NoteConnection
   opinions(first: Int): OpinionConnection
@@ -2895,7 +2896,7 @@ type ObservedData implements BasicObject & StixObject & StixCoreObject & StixDom
   objectLabel: LabelConnection
   externalReferences(first: Int): ExternalReferenceConnection
   containersNumber: Number
-  containers(first: Int, entityTypes: [String!], elementId: [String]): ContainerConnection
+  containers(first: Int, entityTypes: [String!]): ContainerConnection
   reports(first: Int): ReportConnection
   notes(first: Int): NoteConnection
   opinions(first: Int): OpinionConnection
@@ -3071,7 +3072,7 @@ type Opinion implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   objectLabel: LabelConnection
   externalReferences(first: Int): ExternalReferenceConnection
   containersNumber: Number
-  containers(first: Int, entityTypes: [String!], elementId: [String]): ContainerConnection
+  containers(first: Int, entityTypes: [String!]): ContainerConnection
   reports(first: Int): ReportConnection
   notes(first: Int): NoteConnection
   opinions(first: Int): OpinionConnection
@@ -3266,7 +3267,7 @@ type Report implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   objectLabel: LabelConnection
   externalReferences(first: Int): ExternalReferenceConnection
   containersNumber: Number
-  containers(first: Int, entityTypes: [String!], elementId: [String]): ContainerConnection
+  containers(first: Int, entityTypes: [String!]): ContainerConnection
   reports(first: Int): ReportConnection
   notes(first: Int): NoteConnection
   opinions(first: Int): OpinionConnection
@@ -3451,7 +3452,7 @@ type CourseOfAction implements BasicObject & StixObject & StixCoreObject & StixD
   objectLabel: LabelConnection
   externalReferences(first: Int): ExternalReferenceConnection
   containersNumber: Number
-  containers(first: Int, entityTypes: [String!], elementId: [String]): ContainerConnection
+  containers(first: Int, entityTypes: [String!]): ContainerConnection
   reports(first: Int): ReportConnection
   notes(first: Int): NoteConnection
   opinions(first: Int): OpinionConnection
@@ -3610,7 +3611,7 @@ interface Identity {
   objectLabel: LabelConnection
   externalReferences(first: Int): ExternalReferenceConnection
   containersNumber: Number
-  containers(first: Int, entityTypes: [String!], elementId: [String]): ContainerConnection
+  containers(first: Int, entityTypes: [String!]): ContainerConnection
   reports(first: Int): ReportConnection
   notes(first: Int): NoteConnection
   opinions(first: Int): OpinionConnection
@@ -3766,7 +3767,7 @@ type Individual implements BasicObject & StixObject & StixCoreObject & StixDomai
   objectLabel: LabelConnection
   externalReferences(first: Int): ExternalReferenceConnection
   containersNumber: Number
-  containers(first: Int, entityTypes: [String!], elementId: [String]): ContainerConnection
+  containers(first: Int, entityTypes: [String!]): ContainerConnection
   reports(first: Int): ReportConnection
   notes(first: Int): NoteConnection
   opinions(first: Int): OpinionConnection
@@ -3932,7 +3933,7 @@ type Sector implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   objectLabel: LabelConnection
   externalReferences(first: Int): ExternalReferenceConnection
   containersNumber: Number
-  containers(first: Int, entityTypes: [String!], elementId: [String]): ContainerConnection
+  containers(first: Int, entityTypes: [String!]): ContainerConnection
   reports(first: Int): ReportConnection
   notes(first: Int): NoteConnection
   opinions(first: Int): OpinionConnection
@@ -4093,7 +4094,7 @@ type System implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   objectLabel: LabelConnection
   externalReferences(first: Int): ExternalReferenceConnection
   containersNumber: Number
-  containers(first: Int, entityTypes: [String!], elementId: [String]): ContainerConnection
+  containers(first: Int, entityTypes: [String!]): ContainerConnection
   reports(first: Int): ReportConnection
   notes(first: Int): NoteConnection
   opinions(first: Int): OpinionConnection
@@ -4262,7 +4263,7 @@ type Infrastructure implements BasicObject & StixObject & StixCoreObject & StixD
   objectLabel: LabelConnection
   externalReferences(first: Int): ExternalReferenceConnection
   containersNumber: Number
-  containers(first: Int, entityTypes: [String!], elementId: [String]): ContainerConnection
+  containers(first: Int, entityTypes: [String!]): ContainerConnection
   reports(first: Int): ReportConnection
   notes(first: Int): NoteConnection
   opinions(first: Int): OpinionConnection
@@ -4420,7 +4421,7 @@ type IntrusionSet implements BasicObject & StixObject & StixCoreObject & StixDom
   objectLabel: LabelConnection
   externalReferences(first: Int): ExternalReferenceConnection
   containersNumber: Number
-  containers(first: Int, entityTypes: [String!], elementId: [String]): ContainerConnection
+  containers(first: Int, entityTypes: [String!]): ContainerConnection
   reports(first: Int): ReportConnection
   notes(first: Int): NoteConnection
   opinions(first: Int): OpinionConnection
@@ -4584,7 +4585,7 @@ interface Location {
   objectLabel: LabelConnection
   externalReferences(first: Int): ExternalReferenceConnection
   containersNumber: Number
-  containers(first: Int, entityTypes: [String!], elementId: [String]): ContainerConnection
+  containers(first: Int, entityTypes: [String!]): ContainerConnection
   reports(first: Int): ReportConnection
   notes(first: Int): NoteConnection
   opinions(first: Int): OpinionConnection
@@ -4740,7 +4741,7 @@ type Position implements BasicObject & StixObject & StixCoreObject & StixDomainO
   objectLabel: LabelConnection
   externalReferences(first: Int): ExternalReferenceConnection
   containersNumber: Number
-  containers(first: Int, entityTypes: [String!], elementId: [String]): ContainerConnection
+  containers(first: Int, entityTypes: [String!]): ContainerConnection
   reports(first: Int): ReportConnection
   notes(first: Int): NoteConnection
   opinions(first: Int): OpinionConnection
@@ -4904,7 +4905,7 @@ type City implements BasicObject & StixObject & StixCoreObject & StixDomainObjec
   objectLabel: LabelConnection
   externalReferences(first: Int): ExternalReferenceConnection
   containersNumber: Number
-  containers(first: Int, entityTypes: [String!], elementId: [String]): ContainerConnection
+  containers(first: Int, entityTypes: [String!]): ContainerConnection
   reports(first: Int): ReportConnection
   notes(first: Int): NoteConnection
   opinions(first: Int): OpinionConnection
@@ -5061,7 +5062,7 @@ type Country implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   objectLabel: LabelConnection
   externalReferences(first: Int): ExternalReferenceConnection
   containersNumber: Number
-  containers(first: Int, entityTypes: [String!], elementId: [String]): ContainerConnection
+  containers(first: Int, entityTypes: [String!]): ContainerConnection
   reports(first: Int): ReportConnection
   notes(first: Int): NoteConnection
   opinions(first: Int): OpinionConnection
@@ -5218,7 +5219,7 @@ type Region implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   objectLabel: LabelConnection
   externalReferences(first: Int): ExternalReferenceConnection
   containersNumber: Number
-  containers(first: Int, entityTypes: [String!], elementId: [String]): ContainerConnection
+  containers(first: Int, entityTypes: [String!]): ContainerConnection
   reports(first: Int): ReportConnection
   notes(first: Int): NoteConnection
   opinions(first: Int): OpinionConnection
@@ -5383,7 +5384,7 @@ type Malware implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   objectLabel: LabelConnection
   externalReferences(first: Int): ExternalReferenceConnection
   containersNumber: Number
-  containers(first: Int, entityTypes: [String!], elementId: [String]): ContainerConnection
+  containers(first: Int, entityTypes: [String!]): ContainerConnection
   reports(first: Int): ReportConnection
   notes(first: Int): NoteConnection
   opinions(first: Int): OpinionConnection
@@ -5553,7 +5554,7 @@ interface ThreatActor implements BasicObject & StixObject & StixCoreObject & Sti
   objectLabel: LabelConnection
   externalReferences(first: Int): ExternalReferenceConnection
   containersNumber: Number
-  containers(first: Int, entityTypes: [String!], elementId: [String]): ContainerConnection
+  containers(first: Int, entityTypes: [String!]): ContainerConnection
   reports(first: Int): ReportConnection
   notes(first: Int): NoteConnection
   opinions(first: Int): OpinionConnection
@@ -5687,7 +5688,7 @@ type ThreatActorGroup implements BasicObject & StixObject & StixCoreObject & Sti
   objectLabel: LabelConnection
   externalReferences(first: Int): ExternalReferenceConnection
   containersNumber: Number
-  containers(first: Int, entityTypes: [String!], elementId: [String]): ContainerConnection
+  containers(first: Int, entityTypes: [String!]): ContainerConnection
   reports(first: Int): ReportConnection
   notes(first: Int): NoteConnection
   opinions(first: Int): OpinionConnection
@@ -5861,7 +5862,7 @@ type Tool implements BasicObject & StixObject & StixCoreObject & StixDomainObjec
   objectLabel: LabelConnection
   externalReferences(first: Int): ExternalReferenceConnection
   containersNumber: Number
-  containers(first: Int, entityTypes: [String!], elementId: [String]): ContainerConnection
+  containers(first: Int, entityTypes: [String!]): ContainerConnection
   reports(first: Int): ReportConnection
   notes(first: Int): NoteConnection
   opinions(first: Int): OpinionConnection
@@ -6021,7 +6022,7 @@ type Vulnerability implements BasicObject & StixObject & StixCoreObject & StixDo
   objectLabel: LabelConnection
   externalReferences(first: Int): ExternalReferenceConnection
   containersNumber: Number
-  containers(first: Int, entityTypes: [String!], elementId: [String]): ContainerConnection
+  containers(first: Int, entityTypes: [String!]): ContainerConnection
   reports(first: Int): ReportConnection
   notes(first: Int): NoteConnection
   opinions(first: Int): OpinionConnection
@@ -6192,7 +6193,7 @@ type Incident implements BasicObject & StixObject & StixCoreObject & StixDomainO
   objectLabel: LabelConnection
   externalReferences(first: Int): ExternalReferenceConnection
   containersNumber: Number
-  containers(first: Int, entityTypes: [String!], elementId: [String]): ContainerConnection
+  containers(first: Int, entityTypes: [String!]): ContainerConnection
   reports(first: Int): ReportConnection
   notes(first: Int): NoteConnection
   opinions(first: Int): OpinionConnection
@@ -6357,7 +6358,7 @@ interface StixCyberObservable {
   objectLabel: LabelConnection
   externalReferences(first: Int): ExternalReferenceConnection
   containersNumber: Number
-  containers(first: Int, entityTypes: [String!], elementId: [String]): ContainerConnection
+  containers(first: Int, entityTypes: [String!]): ContainerConnection
   reports(first: Int): ReportConnection
   notes(first: Int): NoteConnection
   opinions(first: Int): OpinionConnection
@@ -6458,7 +6459,7 @@ type AutonomousSystem implements BasicObject & StixObject & StixCoreObject & Sti
   objectLabel: LabelConnection
   externalReferences(first: Int): ExternalReferenceConnection
   containersNumber: Number
-  containers(first: Int, entityTypes: [String!], elementId: [String]): ContainerConnection
+  containers(first: Int, entityTypes: [String!]): ContainerConnection
   reports(first: Int): ReportConnection
   notes(first: Int): NoteConnection
   opinions(first: Int): OpinionConnection
@@ -6569,7 +6570,7 @@ type Directory implements BasicObject & StixObject & StixCoreObject & StixCyberO
   objectLabel: LabelConnection
   externalReferences(first: Int): ExternalReferenceConnection
   containersNumber: Number
-  containers(first: Int, entityTypes: [String!], elementId: [String]): ContainerConnection
+  containers(first: Int, entityTypes: [String!]): ContainerConnection
   reports(first: Int): ReportConnection
   notes(first: Int): NoteConnection
   opinions(first: Int): OpinionConnection
@@ -6684,7 +6685,7 @@ type DomainName implements BasicObject & StixObject & StixCoreObject & StixCyber
   objectLabel: LabelConnection
   externalReferences(first: Int): ExternalReferenceConnection
   containersNumber: Number
-  containers(first: Int, entityTypes: [String!], elementId: [String]): ContainerConnection
+  containers(first: Int, entityTypes: [String!]): ContainerConnection
   reports(first: Int): ReportConnection
   notes(first: Int): NoteConnection
   opinions(first: Int): OpinionConnection
@@ -6791,7 +6792,7 @@ type EmailAddr implements BasicObject & StixObject & StixCoreObject & StixCyberO
   objectLabel: LabelConnection
   externalReferences(first: Int): ExternalReferenceConnection
   containersNumber: Number
-  containers(first: Int, entityTypes: [String!], elementId: [String]): ContainerConnection
+  containers(first: Int, entityTypes: [String!]): ContainerConnection
   reports(first: Int): ReportConnection
   notes(first: Int): NoteConnection
   opinions(first: Int): OpinionConnection
@@ -6900,7 +6901,7 @@ type EmailMessage implements BasicObject & StixObject & StixCoreObject & StixCyb
   objectLabel: LabelConnection
   externalReferences(first: Int): ExternalReferenceConnection
   containersNumber: Number
-  containers(first: Int, entityTypes: [String!], elementId: [String]): ContainerConnection
+  containers(first: Int, entityTypes: [String!]): ContainerConnection
   reports(first: Int): ReportConnection
   notes(first: Int): NoteConnection
   opinions(first: Int): OpinionConnection
@@ -7019,7 +7020,7 @@ type EmailMimePartType implements BasicObject & StixObject & StixCoreObject & St
   objectLabel: LabelConnection
   externalReferences(first: Int): ExternalReferenceConnection
   containersNumber: Number
-  containers(first: Int, entityTypes: [String!], elementId: [String]): ContainerConnection
+  containers(first: Int, entityTypes: [String!]): ContainerConnection
   reports(first: Int): ReportConnection
   notes(first: Int): NoteConnection
   opinions(first: Int): OpinionConnection
@@ -7146,7 +7147,7 @@ interface HashedObservable {
   objectLabel: LabelConnection
   externalReferences(first: Int): ExternalReferenceConnection
   containersNumber: Number
-  containers(first: Int, entityTypes: [String!], elementId: [String]): ContainerConnection
+  containers(first: Int, entityTypes: [String!]): ContainerConnection
   reports(first: Int): ReportConnection
   notes(first: Int): NoteConnection
   opinions(first: Int): OpinionConnection
@@ -7249,7 +7250,7 @@ type Artifact implements BasicObject & StixObject & StixCoreObject & StixCyberOb
   objectLabel: LabelConnection
   externalReferences(first: Int): ExternalReferenceConnection
   containersNumber: Number
-  containers(first: Int, entityTypes: [String!], elementId: [String]): ContainerConnection
+  containers(first: Int, entityTypes: [String!]): ContainerConnection
   reports(first: Int): ReportConnection
   notes(first: Int): NoteConnection
   opinions(first: Int): OpinionConnection
@@ -7369,7 +7370,7 @@ type StixFile implements BasicObject & StixObject & StixCoreObject & StixCyberOb
   objectLabel: LabelConnection
   externalReferences(first: Int): ExternalReferenceConnection
   containersNumber: Number
-  containers(first: Int, entityTypes: [String!], elementId: [String]): ContainerConnection
+  containers(first: Int, entityTypes: [String!]): ContainerConnection
   reports(first: Int): ReportConnection
   notes(first: Int): NoteConnection
   opinions(first: Int): OpinionConnection
@@ -7498,7 +7499,7 @@ type X509Certificate implements BasicObject & StixObject & StixCoreObject & Stix
   objectLabel: LabelConnection
   externalReferences(first: Int): ExternalReferenceConnection
   containersNumber: Number
-  containers(first: Int, entityTypes: [String!], elementId: [String]): ContainerConnection
+  containers(first: Int, entityTypes: [String!]): ContainerConnection
   reports(first: Int): ReportConnection
   notes(first: Int): NoteConnection
   opinions(first: Int): OpinionConnection
@@ -7662,7 +7663,7 @@ type IPv4Addr implements BasicObject & StixObject & StixCoreObject & StixCyberOb
   objectLabel: LabelConnection
   externalReferences(first: Int): ExternalReferenceConnection
   containersNumber: Number
-  containers(first: Int, entityTypes: [String!], elementId: [String]): ContainerConnection
+  containers(first: Int, entityTypes: [String!]): ContainerConnection
   reports(first: Int): ReportConnection
   notes(first: Int): NoteConnection
   opinions(first: Int): OpinionConnection
@@ -7772,7 +7773,7 @@ type IPv6Addr implements BasicObject & StixObject & StixCoreObject & StixCyberOb
   objectLabel: LabelConnection
   externalReferences(first: Int): ExternalReferenceConnection
   containersNumber: Number
-  containers(first: Int, entityTypes: [String!], elementId: [String]): ContainerConnection
+  containers(first: Int, entityTypes: [String!]): ContainerConnection
   reports(first: Int): ReportConnection
   notes(first: Int): NoteConnection
   opinions(first: Int): OpinionConnection
@@ -7880,7 +7881,7 @@ type MacAddr implements BasicObject & StixObject & StixCoreObject & StixCyberObs
   objectLabel: LabelConnection
   externalReferences(first: Int): ExternalReferenceConnection
   containersNumber: Number
-  containers(first: Int, entityTypes: [String!], elementId: [String]): ContainerConnection
+  containers(first: Int, entityTypes: [String!]): ContainerConnection
   reports(first: Int): ReportConnection
   notes(first: Int): NoteConnection
   opinions(first: Int): OpinionConnection
@@ -7987,7 +7988,7 @@ type Mutex implements BasicObject & StixObject & StixCoreObject & StixCyberObser
   objectLabel: LabelConnection
   externalReferences(first: Int): ExternalReferenceConnection
   containersNumber: Number
-  containers(first: Int, entityTypes: [String!], elementId: [String]): ContainerConnection
+  containers(first: Int, entityTypes: [String!]): ContainerConnection
   reports(first: Int): ReportConnection
   notes(first: Int): NoteConnection
   opinions(first: Int): OpinionConnection
@@ -8094,7 +8095,7 @@ type NetworkTraffic implements BasicObject & StixObject & StixCoreObject & StixC
   objectLabel: LabelConnection
   externalReferences(first: Int): ExternalReferenceConnection
   containersNumber: Number
-  containers(first: Int, entityTypes: [String!], elementId: [String]): ContainerConnection
+  containers(first: Int, entityTypes: [String!]): ContainerConnection
   reports(first: Int): ReportConnection
   notes(first: Int): NoteConnection
   opinions(first: Int): OpinionConnection
@@ -8222,7 +8223,7 @@ type Process implements BasicObject & StixObject & StixCoreObject & StixCyberObs
   objectLabel: LabelConnection
   externalReferences(first: Int): ExternalReferenceConnection
   containersNumber: Number
-  containers(first: Int, entityTypes: [String!], elementId: [String]): ContainerConnection
+  containers(first: Int, entityTypes: [String!]): ContainerConnection
   reports(first: Int): ReportConnection
   notes(first: Int): NoteConnection
   opinions(first: Int): OpinionConnection
@@ -8375,7 +8376,7 @@ type Software implements BasicObject & StixObject & StixCoreObject & StixCyberOb
   objectLabel: LabelConnection
   externalReferences(first: Int): ExternalReferenceConnection
   containersNumber: Number
-  containers(first: Int, entityTypes: [String!], elementId: [String]): ContainerConnection
+  containers(first: Int, entityTypes: [String!]): ContainerConnection
   reports(first: Int): ReportConnection
   notes(first: Int): NoteConnection
   opinions(first: Int): OpinionConnection
@@ -8501,7 +8502,7 @@ type Url implements BasicObject & StixObject & StixCoreObject & StixCyberObserva
   objectLabel: LabelConnection
   externalReferences(first: Int): ExternalReferenceConnection
   containersNumber: Number
-  containers(first: Int, entityTypes: [String!], elementId: [String]): ContainerConnection
+  containers(first: Int, entityTypes: [String!]): ContainerConnection
   reports(first: Int): ReportConnection
   notes(first: Int): NoteConnection
   opinions(first: Int): OpinionConnection
@@ -8608,7 +8609,7 @@ type UserAccount implements BasicObject & StixObject & StixCoreObject & StixCybe
   objectLabel: LabelConnection
   externalReferences(first: Int): ExternalReferenceConnection
   containersNumber: Number
-  containers(first: Int, entityTypes: [String!], elementId: [String]): ContainerConnection
+  containers(first: Int, entityTypes: [String!]): ContainerConnection
   reports(first: Int): ReportConnection
   notes(first: Int): NoteConnection
   opinions(first: Int): OpinionConnection
@@ -8742,7 +8743,7 @@ type WindowsRegistryKey implements BasicObject & StixObject & StixCoreObject & S
   objectLabel: LabelConnection
   externalReferences(first: Int): ExternalReferenceConnection
   containersNumber: Number
-  containers(first: Int, entityTypes: [String!], elementId: [String]): ContainerConnection
+  containers(first: Int, entityTypes: [String!]): ContainerConnection
   reports(first: Int): ReportConnection
   notes(first: Int): NoteConnection
   opinions(first: Int): OpinionConnection
@@ -8853,7 +8854,7 @@ type WindowsRegistryValueType implements BasicObject & StixObject & StixCoreObje
   objectLabel: LabelConnection
   externalReferences(first: Int): ExternalReferenceConnection
   containersNumber: Number
-  containers(first: Int, entityTypes: [String!], elementId: [String]): ContainerConnection
+  containers(first: Int, entityTypes: [String!]): ContainerConnection
   reports(first: Int): ReportConnection
   notes(first: Int): NoteConnection
   opinions(first: Int): OpinionConnection
@@ -8964,7 +8965,7 @@ type CryptographicKey implements BasicObject & StixObject & StixCoreObject & Sti
   objectLabel: LabelConnection
   externalReferences(first: Int): ExternalReferenceConnection
   containersNumber: Number
-  containers(first: Int, entityTypes: [String!], elementId: [String]): ContainerConnection
+  containers(first: Int, entityTypes: [String!]): ContainerConnection
   reports(first: Int): ReportConnection
   notes(first: Int): NoteConnection
   opinions(first: Int): OpinionConnection
@@ -9071,7 +9072,7 @@ type CryptocurrencyWallet implements BasicObject & StixObject & StixCoreObject &
   objectLabel: LabelConnection
   externalReferences(first: Int): ExternalReferenceConnection
   containersNumber: Number
-  containers(first: Int, entityTypes: [String!], elementId: [String]): ContainerConnection
+  containers(first: Int, entityTypes: [String!]): ContainerConnection
   reports(first: Int): ReportConnection
   notes(first: Int): NoteConnection
   opinions(first: Int): OpinionConnection
@@ -9178,7 +9179,7 @@ type Hostname implements BasicObject & StixObject & StixCoreObject & StixCyberOb
   objectLabel: LabelConnection
   externalReferences(first: Int): ExternalReferenceConnection
   containersNumber: Number
-  containers(first: Int, entityTypes: [String!], elementId: [String]): ContainerConnection
+  containers(first: Int, entityTypes: [String!]): ContainerConnection
   reports(first: Int): ReportConnection
   notes(first: Int): NoteConnection
   opinions(first: Int): OpinionConnection
@@ -9285,7 +9286,7 @@ type Text implements BasicObject & StixObject & StixCoreObject & StixCyberObserv
   objectLabel: LabelConnection
   externalReferences(first: Int): ExternalReferenceConnection
   containersNumber: Number
-  containers(first: Int, entityTypes: [String!], elementId: [String]): ContainerConnection
+  containers(first: Int, entityTypes: [String!]): ContainerConnection
   reports(first: Int): ReportConnection
   notes(first: Int): NoteConnection
   opinions(first: Int): OpinionConnection
@@ -9392,7 +9393,7 @@ type UserAgent implements BasicObject & StixObject & StixCoreObject & StixCyberO
   objectLabel: LabelConnection
   externalReferences(first: Int): ExternalReferenceConnection
   containersNumber: Number
-  containers(first: Int, entityTypes: [String!], elementId: [String]): ContainerConnection
+  containers(first: Int, entityTypes: [String!]): ContainerConnection
   reports(first: Int): ReportConnection
   notes(first: Int): NoteConnection
   opinions(first: Int): OpinionConnection
@@ -9499,7 +9500,7 @@ type BankAccount implements BasicObject & StixObject & StixCoreObject & StixCybe
   objectLabel: LabelConnection
   externalReferences(first: Int): ExternalReferenceConnection
   containersNumber: Number
-  containers(first: Int, entityTypes: [String!], elementId: [String]): ContainerConnection
+  containers(first: Int, entityTypes: [String!]): ContainerConnection
   reports(first: Int): ReportConnection
   notes(first: Int): NoteConnection
   opinions(first: Int): OpinionConnection
@@ -9551,7 +9552,7 @@ type BankAccount implements BasicObject & StixObject & StixCoreObject & StixCybe
     isTo: Boolean
     limit: Int
     order: String
-    elementId: [String]
+    fromOrToId: [String]
     elementWithTargetTypes: [String]
     fromId: [String]
     fromRole: String
@@ -9611,7 +9612,7 @@ type PhoneNumber implements BasicObject & StixObject & StixCoreObject & StixCybe
   objectLabel: LabelConnection
   externalReferences(first: Int): ExternalReferenceConnection
   containersNumber: Number
-  containers(first: Int, entityTypes: [String!], elementId: [String]): ContainerConnection
+  containers(first: Int, entityTypes: [String!]): ContainerConnection
   reports(first: Int): ReportConnection
   notes(first: Int): NoteConnection
   opinions(first: Int): OpinionConnection
@@ -9718,7 +9719,7 @@ type PaymentCard implements BasicObject & StixObject & StixCoreObject & StixCybe
   objectLabel: LabelConnection
   externalReferences(first: Int): ExternalReferenceConnection
   containersNumber: Number
-  containers(first: Int, entityTypes: [String!], elementId: [String]): ContainerConnection
+  containers(first: Int, entityTypes: [String!]): ContainerConnection
   reports(first: Int): ReportConnection
   notes(first: Int): NoteConnection
   opinions(first: Int): OpinionConnection
@@ -9831,7 +9832,7 @@ type MediaContent implements BasicObject & StixObject & StixCoreObject & StixCyb
   objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
   externalReferences(first: Int): ExternalReferenceConnection
   containersNumber: Number
-  containers(first: Int, entityTypes: [String!], elementId: [String]): ContainerConnection
+  containers(first: Int, entityTypes: [String!]): ContainerConnection
   reports(first: Int): ReportConnection
   notes(first: Int): NoteConnection
   opinions(first: Int): OpinionConnection
@@ -10367,7 +10368,7 @@ type StixCoreRelationship implements BasicRelationship & StixRelationship {
   objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
   externalReferences(first: Int): ExternalReferenceConnection
   containersNumber: Number
-  containers(first: Int, entityTypes: [String!], elementId: [String]): ContainerConnection
+  containers(first: Int, entityTypes: [String!]): ContainerConnection
   reports(first: Int): ReportConnection
   notes(first: Int): NoteConnection
   opinions(first: Int): OpinionConnection
@@ -10495,7 +10496,7 @@ type StixSightingRelationship implements BasicRelationship & StixRelationship {
   objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
   externalReferences(first: Int): ExternalReferenceConnection
   containersNumber: Number
-  containers(first: Int, entityTypes: [String!], elementId: [String]): ContainerConnection
+  containers(first: Int, entityTypes: [String!]): ContainerConnection
   reports(first: Int): ReportConnection
   notes(first: Int): NoteConnection
   opinions(first: Int): OpinionConnection
@@ -10586,7 +10587,7 @@ type StixRefRelationship implements BasicRelationship & StixRelationship {
   stop_time: DateTime
   datable: Boolean
   containersNumber: Number
-  containers(first: Int, entityTypes: [String!], elementId: [String]): ContainerConnection
+  containers(first: Int, entityTypes: [String!]): ContainerConnection
   notes(first: Int): NoteConnection
   reports(first: Int): ReportConnection
   opinions(first: Int): OpinionConnection
@@ -10905,8 +10906,6 @@ type Query {
     orderMode: OrderingMode
     filters: FilterGroup
     search: String
-    relationship_type: [String]
-    elementId: [String]
   ): StixCoreObjectConnection @auth(for: [KNOWLEDGE])
   globalSearch(
     first: Int
@@ -10917,7 +10916,7 @@ type Query {
     orderMode: OrderingMode
     filters: FilterGroup
   ): StixCoreObjectConnection @auth(for: [KNOWLEDGE])
-  stixCoreObjectsExportFiles(first: Int, type: String!): FileConnection @auth(for: [KNOWLEDGE_KNGETEXPORT])
+  stixCoreObjectsExportFiles(first: Int, exportContext: ExportContext!): FileConnection @auth(for: [KNOWLEDGE_KNGETEXPORT])
   stixCoreObjectsTimeSeries(
     authorId: String
     field: String!
@@ -10929,8 +10928,6 @@ type Query {
     types: [String]
     filters: FilterGroup
     search: String
-    relationship_type: [String]
-    elementId: [String]
   ): [TimeSeries] @auth(for: [KNOWLEDGE, EXPLORE])
   stixCoreObjectsMultiTimeSeries(
     operation: StatsOperation!
@@ -10947,8 +10944,6 @@ type Query {
     onlyInferred: Boolean
     filters: FilterGroup
     search: String
-    relationship_type: [String]
-    elementId: [String]
   ): Number @auth(for: [KNOWLEDGE, EXPLORE])
   stixCoreObjectsMultiNumber(
     startDate: DateTime
@@ -10995,11 +10990,9 @@ type Query {
     orderMode: OrderingMode
     filters: FilterGroup
     search: String
-    relationship_type: [String]
-    elementId: String
   ): StixDomainObjectConnection @auth(for: [KNOWLEDGE])
   bookmarks(first: Int, after: ID, types: [String], filters: FilterGroup): StixDomainObjectConnection @auth(for: [KNOWLEDGE])
-  stixDomainObjectsExportFiles(first: Int, type: String!): FileConnection @auth(for: [KNOWLEDGE_KNGETEXPORT])
+  stixDomainObjectsExportFiles(first: Int, exportContext: ExportContext!): FileConnection @auth(for: [KNOWLEDGE_KNGETEXPORT])
   stixDomainObjectsTimeSeries(
     authorId: String
     field: String!
@@ -11421,7 +11414,7 @@ type Query {
     search: String
     toStix: Boolean
   ): StixCyberObservableConnection @auth(for: [KNOWLEDGE])
-  stixCyberObservablesExportFiles(first: Int, context: String): FileConnection
+  stixCyberObservablesExportFiles(first: Int, exportContext: ExportContext!): FileConnection
   stixCyberObservablesNumber(
     types: [String]
     authorId: String
@@ -11450,7 +11443,7 @@ type Query {
     after: ID
     orderBy: StixRelationshipsOrdering
     orderMode: OrderingMode
-    elementId: String
+    fromOrToId: String
     elementWithTargetTypes: [String]
     fromId: [String]
     fromRole: String
@@ -11483,7 +11476,7 @@ type Query {
     endDate: DateTime
     interval: String!
     onlyInferred: Boolean
-    elementId: [String]
+    fromOrToId: [String]
     elementWithTargetTypes: [String]
     fromId: [String]
     fromRole: String
@@ -11515,7 +11508,7 @@ type Query {
     isTo: Boolean
     limit: Int
     order: String
-    elementId: [String]
+    fromOrToId: [String]
     elementWithTargetTypes: [String]
     fromId: [String]
     fromRole: String
@@ -11536,7 +11529,7 @@ type Query {
     noDirection: Boolean
     endDate: DateTime
     onlyInferred: Boolean
-    elementId: [String]
+    fromOrToId: [String]
     elementWithTargetTypes: [String]
     fromId: [String]
     fromRole: String
@@ -11562,7 +11555,7 @@ type Query {
     after: ID
     orderBy: StixCoreRelationshipsOrdering
     orderMode: OrderingMode
-    elementId: [String]
+    fromOrToId: [String]
     elementWithTargetTypes: [String]
     fromId: [String]
     fromRole: String
@@ -11593,7 +11586,7 @@ type Query {
     endDate: DateTime
     interval: String!
     onlyInferred: Boolean
-    elementId: [String]
+    fromOrToId: [String]
     elementWithTargetTypes: [String]
     fromId: [String]
     fromRole: String
@@ -11625,7 +11618,7 @@ type Query {
     isTo: Boolean
     limit: Int
     order: String
-    elementId: [String]
+    fromOrToId: [String]
     elementWithTargetTypes: [String]
     fromId: [String]
     fromRole: String
@@ -11646,7 +11639,7 @@ type Query {
     noDirection: Boolean
     endDate: DateTime
     onlyInferred: Boolean
-    elementId: [String]
+    fromOrToId: [String]
     elementWithTargetTypes: [String]
     fromId: [String]
     fromRole: String
@@ -11661,7 +11654,7 @@ type Query {
     dynamicFrom: FilterGroup
     dynamicTo: FilterGroup
   ): Number @auth(for: [KNOWLEDGE, EXPLORE])
-  stixCoreRelationshipsExportFiles(first: Int, type: String!): FileConnection @auth(for: [KNOWLEDGE_KNGETEXPORT])
+  stixCoreRelationshipsExportFiles(first: Int, exportContext: ExportContext!): FileConnection @auth(for: [KNOWLEDGE_KNGETEXPORT])
 
   ######## STIX SIGHTING RELATIONSHIPS
 
@@ -11671,7 +11664,7 @@ type Query {
     after: ID
     orderBy: StixSightingRelationshipsOrdering
     orderMode: OrderingMode
-    elementId: String
+    fromOrToId: String
     fromId: StixRef
     toId: StixRef
     fromTypes: [String]
@@ -11685,7 +11678,7 @@ type Query {
     toStix: Boolean
   ): StixSightingRelationshipConnection @auth(for: [KNOWLEDGE])
   stixSightingRelationshipsTimeSeries(
-    elementId: String
+    fromOrToId: String
     fromId: StixRef
     toId: StixRef
     field: String!
@@ -11699,7 +11692,7 @@ type Query {
     filters: FilterGroup
   ): [TimeSeries] @auth(for: [KNOWLEDGE, EXPLORE])
   stixSightingRelationshipsDistribution(
-    elementId: String
+    fromOrToId: String
     fromId: StixRef
     toId: StixRef
     field: String!
@@ -11715,7 +11708,7 @@ type Query {
     filters: FilterGroup
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
   stixSightingRelationshipsNumber(
-    elementId: String
+    fromOrToId: String
     fromId: StixRef
     toId: StixRef
     endDate: DateTime
@@ -11732,7 +11725,7 @@ type Query {
     after: ID
     orderBy: StixRefRelationshipsOrdering
     orderMode: OrderingMode
-    elementId: String
+    fromOrToId: String
     fromId: StixRef
     toId: StixRef
     fromTypes: [String]
@@ -11751,7 +11744,7 @@ type Query {
     after: ID
     orderBy: StixRefRelationshipsOrdering
     orderMode: OrderingMode
-    elementId: String
+    fromOrToId: String
     fromId: StixRef
     toId: StixRef
     fromTypes: [String]
@@ -12338,40 +12331,35 @@ type Mutation {
   ######## STIX CORE OBJECT ENTITIES
   stixCoreObjectEdit(id: ID!): StixCoreObjectEditMutations @auth(for: [KNOWLEDGE_KNUPDATE])
   stixCoreObjectsExportAsk(
-    type: String!
     format: String!
     exportType: String!
     maxMarkingDefinition: String
-    context: String
     search: String
-    relationship_type: [String]
-    elementId: String
+    exportContext: ExportContext
     orderBy: StixCoreObjectsOrdering
     orderMode: OrderingMode
     filters: FilterGroup
     selectedIds: [String]
   ): [File!] @auth(for: [KNOWLEDGE_KNGETEXPORT_KNASKEXPORT])
-  stixCoreObjectsExportPush(type: String!, file: Upload!, listFilters: String): Boolean @auth(for: [CONNECTORAPI])
+  stixCoreObjectsExportPush(entity_id: String, entity_type: String!, file: Upload!, listFilters: String): Boolean @auth(for: [CONNECTORAPI])
 
   ######## STIX DOMAIN OBJECT ENTITIES
   stixDomainObjectAdd(input: StixDomainObjectAddInput!): StixDomainObject @auth(for: [KNOWLEDGE_KNUPDATE])
   stixDomainObjectEdit(id: ID!): StixDomainObjectEditMutations
   stixDomainObjectsExportAsk(
-    type: String!
     format: String!
     exportType: String!
     maxMarkingDefinition: String
-    context: String
     search: String
+    exportContext: ExportContext
     relationship_type: [String]
-    elementId: String
     orderBy: StixDomainObjectsOrdering
     orderMode: OrderingMode
     filters: FilterGroup
     selectedIds: [String]
   ): [File!] @auth(for: [KNOWLEDGE_KNGETEXPORT_KNASKEXPORT])
   stixDomainObjectsDelete(id: [ID]!): [ID]!
-  stixDomainObjectsExportPush(type: String!, file: Upload!, listFilters: String): Boolean @auth(for: [CONNECTORAPI])
+  stixDomainObjectsExportPush(entity_id: String, entity_type: String!, file: Upload!, listFilters: String): Boolean @auth(for: [CONNECTORAPI])
   attackPatternAdd(input: AttackPatternAddInput!): AttackPattern @auth(for: [KNOWLEDGE_KNUPDATE])
   attackPatternEdit(id: ID!): AttackPatternEditMutations
   campaignAdd(input: CampaignAddInput!): Campaign @auth(for: [KNOWLEDGE_KNUPDATE])
@@ -12473,18 +12461,15 @@ type Mutation {
   stixCyberObservablesExportAsk(
     format: String!
     exportType: String!
+    exportContext: ExportContext
     maxMarkingDefinition: String
-    context: String
-    types: [String]
     search: String
     orderBy: StixCyberObservablesOrdering
     orderMode: OrderingMode
     filters: FilterGroup
-    relationship_type: [String]
-    elementId: String
     selectedIds: [String]
   ): [File!] @auth(for: [KNOWLEDGE_KNGETEXPORT_KNASKEXPORT])
-  stixCyberObservablesExportPush(file: Upload!, listFilters: String): Boolean
+  stixCyberObservablesExportPush(entity_id: String, entity_type: String!, file: Upload!, listFilters: String): Boolean
   artifactImport(
     file: Upload!
     x_opencti_description: String
@@ -12501,20 +12486,28 @@ type Mutation {
   @auth(for: [KNOWLEDGE_KNUPDATE])
   stixCoreRelationshipEdit(id: ID!): StixCoreRelationshipEditMutations @auth(for: [KNOWLEDGE_KNUPDATE])
   stixCoreRelationshipsExportAsk(
-    type: String!
     format: String!
     exportType: String!
     maxMarkingDefinition: String
-    context: String
+    exportContext: ExportContext
     search: String
     orderBy: StixCoreRelationshipsOrdering
     orderMode: OrderingMode
-    filters: FilterGroup
     selectedIds: [String]
+    fromOrToId: [String]
+    elementWithTargetTypes: [String]
+    fromId: [String]
+    fromRole: String
+    fromTypes: [String]
+    toId: [String]
+    toRole: String
+    toTypes: [String]
+    relationship_type: [String]
+    filters: FilterGroup
   ): [File!] @auth(for: [KNOWLEDGE_KNGETEXPORT_KNASKEXPORT])
   stixCoreRelationshipDelete(fromId: StixRef!, toId: StixRef!, relationship_type: String!): Boolean!
   @auth(for: [KNOWLEDGE_KNUPDATE])
-  stixCoreRelationshipsExportPush(type: String!, file: Upload!, listFilters: String): Boolean @auth(for: [CONNECTORAPI])
+  stixCoreRelationshipsExportPush(entity_id: String, entity_type: String!, file: Upload!, listFilters: String): Boolean @auth(for: [CONNECTORAPI])
 
   ######## STIX REF RELATIONSHIPS
   stixRefRelationshipAdd(input: StixRefRelationshipAddInput!): StixRefRelationship

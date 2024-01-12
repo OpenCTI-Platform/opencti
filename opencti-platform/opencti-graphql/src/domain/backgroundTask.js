@@ -2,14 +2,27 @@ import { elIndex, elPaginate } from '../database/engine';
 import { INDEX_INTERNAL_OBJECTS, READ_DATA_INDICES, READ_DATA_INDICES_WITHOUT_INFERRED, } from '../database/utils';
 import { ENTITY_TYPE_BACKGROUND_TASK } from '../schema/internalObject';
 import { deleteElementById, patchAttribute } from '../database/middleware';
-import { TYPE_FILTER } from '../utils/filtering/filtering-constants';
-import { resolveFilterGroupValuesWithCache } from '../utils/filtering/filtering-resolution';
 import { getUserAccessRight, MEMBER_ACCESS_RIGHT_ADMIN, SYSTEM_USER } from '../utils/access';
-import { ABSTRACT_STIX_DOMAIN_OBJECT, RULE_PREFIX } from '../schema/general';
+import { ABSTRACT_STIX_CORE_OBJECT, ABSTRACT_STIX_CORE_RELATIONSHIP, RULE_PREFIX } from '../schema/general';
 import { buildEntityFilters, listEntities, storeLoadById } from '../database/middleware-loader';
-import { checkActionValidity, createDefaultTask, isTaskEnabledEntity, TASK_TYPE_QUERY, TASK_TYPE_RULE } from './backgroundTask-common';
+import { checkActionValidity, createDefaultTask, TASK_TYPE_QUERY, TASK_TYPE_RULE } from './backgroundTask-common';
 import { publishUserAction } from '../listener/UserActionListener';
 import { ForbiddenAccess } from '../config/errors';
+import { STIX_SIGHTING_RELATIONSHIP } from '../schema/stixSightingRelationship';
+import { ENTITY_TYPE_VOCABULARY } from '../modules/vocabulary/vocabulary-types';
+import { ENTITY_TYPE_NOTIFICATION } from '../modules/notification/notification-types';
+import { ENTITY_TYPE_CASE_TEMPLATE } from '../modules/case/case-template/case-template-types';
+import { ENTITY_TYPE_LABEL } from '../schema/stixMetaObject';
+
+export const DEFAULT_ALLOWED_TASK_ENTITY_TYPES = [
+  ABSTRACT_STIX_CORE_OBJECT,
+  ABSTRACT_STIX_CORE_RELATIONSHIP,
+  STIX_SIGHTING_RELATIONSHIP,
+  ENTITY_TYPE_VOCABULARY,
+  ENTITY_TYPE_NOTIFICATION,
+  ENTITY_TYPE_CASE_TEMPLATE,
+  ENTITY_TYPE_LABEL
+];
 
 export const MAX_TASK_ELEMENTS = 500;
 
@@ -31,95 +44,20 @@ export const findAll = (context, user, args) => {
   return listEntities(context, user, [ENTITY_TYPE_BACKGROUND_TASK], args);
 };
 
-const buildQueryFiltersContent = (adaptedFiltersGroup) => {
-  if (!adaptedFiltersGroup) {
-    return undefined;
-  }
-  const { filters, filterGroups = [] } = adaptedFiltersGroup;
-  const queryFilterGroups = [];
-  for (let index = 0; index < filterGroups.length; index += 1) {
-    const currentGroup = filterGroups[index];
-    const filtersResult = buildQueryFiltersContent(currentGroup);
-    if (filtersResult) queryFilterGroups.push(filtersResult);
-  }
-  const queryFilters = [];
-  const nestedFrom = [];
-  const nestedTo = [];
-  let nestedFromRole = false;
-  let nestedToRole = false;
-  for (let index = 0; index < filters.length; index += 1) {
-    const { key: keys, operator, values, mode } = filters[index];
-    if (keys.length !== 1) {
-      throw Error('Filters in query background tasks only support single keys.');
-    }
-    const key = keys[0];
-    if (key === TYPE_FILTER) {
-      // filter types to keep only the ones that can be handled by background tasks
-      const filteredTypes = values.filter((v) => isTaskEnabledEntity(v));
-      queryFilters.push({ key, values: filteredTypes, operator, mode });
-    } else if (key === 'elementId') {
-      const nestedElement = [{ key: 'internal_id', values }];
-      queryFilters.push({ key: 'connections', nested: nestedElement });
-    } else if (key === 'elementWithTargetTypes') {
-      const nestedElementTypes = [{ key: 'types', values }];
-      queryFilters.push({ key: 'connections', nested: nestedElementTypes });
-    } else if (key === 'fromId') {
-      nestedFrom.push({ key: 'internal_id', values });
-      nestedFrom.push({ key: 'role', values: ['*_from'], operator: 'wildcard' });
-      nestedFromRole = true;
-    } else if (key === 'fromTypes') {
-      nestedFrom.push({ key: 'types', values });
-      if (!nestedFromRole) {
-        nestedFrom.push({ key: 'role', values: ['*_from'], operator: 'wildcard' });
-      }
-    } else if (key === 'toId' || key === 'toSightingId') {
-      nestedTo.push({ key: 'internal_id', values });
-      nestedTo.push({ key: 'role', values: ['*_to'], operator: 'wildcard' });
-      nestedToRole = true;
-    } else if (key === 'toTypes') {
-      nestedTo.push({ key: 'types', values });
-      if (!nestedToRole) {
-        nestedTo.push({ key: 'role', values: ['*_to'], operator: 'wildcard' });
-      }
-    } else {
-      queryFilters.push({ key, values, operator, mode });
-    }
-  }
-  if (nestedFrom.length > 0) {
-    queryFilters.push({ key: 'connections', nested: nestedFrom });
-  }
-  if (nestedTo.length > 0) {
-    queryFilters.push({ key: 'connections', nested: nestedTo });
-  }
-  return {
-    mode: adaptedFiltersGroup.mode,
-    filters: queryFilters,
-    filterGroups: queryFilterGroups,
-  };
-};
-
-const buildQueryFilters = async (context, user, rawFilters, search, taskPosition) => {
+const buildQueryFilters = async (rawFilters, search, taskPosition) => {
   // Construct filters
-  let adaptedFilterGroup;
-  const filters = rawFilters ? JSON.parse(rawFilters) : undefined;
-  if (filters) {
-    adaptedFilterGroup = await resolveFilterGroupValuesWithCache(context, user, filters);
-  }
-  const newFilters = buildQueryFiltersContent(adaptedFilterGroup);
-  // Avoid empty type which will target internal objects and relationships as well
-  const types = newFilters?.filters.filter((f) => f.key === TYPE_FILTER)?.map((f) => f.values) ?? [ABSTRACT_STIX_DOMAIN_OBJECT];
   return {
-    types,
+    types: DEFAULT_ALLOWED_TASK_ENTITY_TYPES,
     first: MAX_TASK_ELEMENTS,
     orderMode: 'asc',
     orderBy: 'created_at',
     after: taskPosition,
-    filters: newFilters,
+    filters: rawFilters ? JSON.parse(rawFilters) : undefined,
     search: search && search.length > 0 ? search : null,
   };
 };
 export const executeTaskQuery = async (context, user, filters, search, start = null) => {
-  const options = await buildQueryFilters(context, user, filters, search, start);
+  const options = await buildQueryFilters(filters, search, start);
   return elPaginate(context, user, READ_DATA_INDICES_WITHOUT_INFERRED, options);
 };
 
@@ -127,7 +65,7 @@ export const createRuleTask = async (context, user, ruleDefinition, input) => {
   const { rule, enable } = input;
   const { scan } = ruleDefinition;
   const opts = enable
-    ? buildEntityFilters(scan)
+    ? buildEntityFilters(scan.types, scan)
     : { filters: {
       mode: 'and',
       filters: [{ key: `${RULE_PREFIX}${rule}`, values: ['EXISTS'] }],

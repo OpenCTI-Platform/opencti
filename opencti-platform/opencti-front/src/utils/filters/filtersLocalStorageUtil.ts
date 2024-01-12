@@ -1,5 +1,5 @@
 import { Dispatch, SetStateAction } from 'react';
-import { Filter, FilterGroup, filtersUsedAsApiParameters } from './filtersUtils';
+import { Filter, FilterGroup, FilterValue } from './filtersUtils';
 import { LocalStorage } from '../hooks/useLocalStorageModel';
 
 type FiltersLocalStorageUtilProps<U> = {
@@ -15,16 +15,12 @@ const setFiltersValue = (setValue: Dispatch<SetStateAction<LocalStorage>>, filte
   }));
 };
 
-const sortSpecificFilterAtFirst = (a: Filter, b: Filter) => {
-  return filtersUsedAsApiParameters.indexOf(b.key) - filtersUsedAsApiParameters.indexOf(a.key);
-};
 const updateFilters = (viewStorage: LocalStorage, setValue: Dispatch<SetStateAction<LocalStorage>>, updateFn: (filter: Filter) => Filter) => {
   if (viewStorage.filters) {
     const newBaseFilters: FilterGroup = {
       ...viewStorage.filters,
       filters: viewStorage.filters.filters
-        .map(updateFn)
-        .sort(sortSpecificFilterAtFirst),
+        .map(updateFn),
     };
     setFiltersValue(setValue, newBaseFilters);
   }
@@ -39,7 +35,7 @@ export const handleAddFilterWithEmptyValueUtil = ({ viewStorage, setValue, filte
       filters: [
         ...viewStorage.filters.filters,
         filter,
-      ].sort(sortSpecificFilterAtFirst),
+      ],
     };
     setFiltersValue(setValue, newBaseFilters, filter.id);
   }
@@ -66,32 +62,50 @@ export const handleSwitchLocalModeUtil = ({ viewStorage, setValue, filter }: Fil
     : f));
 };
 
-export const handleAddRepresentationFilterUtil = ({ viewStorage, setValue, id, valueId }: FiltersLocalStorageUtilProps<{
+export const handleAddRepresentationFilterUtil = ({ viewStorage, setValue, id, value }: FiltersLocalStorageUtilProps<{
   id: string,
-  valueId: string
+  value: FilterValue,
 }>) => {
-  updateFilters(viewStorage, setValue, (f) => (f.id === id ? { ...f, values: [...f.values, valueId] } : f));
+  updateFilters(
+    viewStorage,
+    setValue,
+    (f) => (f.id === id ? { ...f, values: [...f.values, value] } : f),
+  );
 };
 
-export const handleAddSingleValueFilterUtil = ({ viewStorage, setValue, id, valueId }: FiltersLocalStorageUtilProps<{
+export const handleChangeRepresentationFilterUtil = ({ viewStorage, setValue, id, oldValue, newValue }: FiltersLocalStorageUtilProps<{
   id: string,
-  valueId?: string
+  oldValue: FilterValue,
+  newValue: FilterValue,
 }>) => {
-  if (valueId) {
-    updateFilters(viewStorage, setValue, (f) => (f.id === id ? { ...f, values: [valueId] } : f));
+  updateFilters(
+    viewStorage,
+    setValue,
+    (f) => (f.id === id
+      ? { ...f, values: f.values.filter((val) => val !== oldValue).concat([newValue]) }
+      : f),
+  );
+};
+
+export const handleAddSingleValueFilterUtil = ({ viewStorage, setValue, id, value }: FiltersLocalStorageUtilProps<{
+  id: string,
+  value?: FilterValue
+}>) => {
+  if (value) {
+    updateFilters(viewStorage, setValue, (f) => (f.id === id ? { ...f, values: [value] } : f));
   } else {
     updateFilters(viewStorage, setValue, (f) => (f.id === id ? { ...f, values: [] } : f));
   }
 };
 
-export const handleRemoveRepresentationFilterUtil = ({ viewStorage, setValue, id, valueId }: FiltersLocalStorageUtilProps<{
+export const handleRemoveRepresentationFilterUtil = ({ viewStorage, setValue, id, value }: FiltersLocalStorageUtilProps<{
   id: string,
-  valueId: string
+  value: FilterValue
 }>) => {
   updateFilters(viewStorage, setValue, (f) => (f.id === id
     ? {
       ...f,
-      values: f.values.filter((value) => value !== valueId),
+      values: f.values.filter((v) => v !== value),
     }
     : f));
 };

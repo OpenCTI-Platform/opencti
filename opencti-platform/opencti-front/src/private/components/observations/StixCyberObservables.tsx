@@ -15,7 +15,7 @@ import { KNOWLEDGE_KNUPDATE } from '../../../utils/hooks/useGranted';
 import ExportContextProvider from '../../../utils/ExportContextProvider';
 import useEntityToggle from '../../../utils/hooks/useEntityToggle';
 import { StixCyberObservableLine_node$data } from './stix_cyber_observables/__generated__/StixCyberObservableLine_node.graphql';
-import { injectEntityTypeFilterInFilterGroup, emptyFilterGroup } from '../../../utils/filters/filtersUtils';
+import { buildEntityTypeBasedFilterContext, emptyFilterGroup, getDefaultFilterObjFromArray } from '../../../utils/filters/filtersUtils';
 
 const LOCAL_STORAGE_KEY = 'stixCyberObservables';
 
@@ -28,12 +28,14 @@ const StixCyberObservables: FunctionComponent = () => {
   const { viewStorage, paginationOptions, helpers } = usePaginationLocalStorage(
     LOCAL_STORAGE_KEY,
     {
-      filters: emptyFilterGroup,
+      filters: {
+        ...emptyFilterGroup,
+        filters: getDefaultFilterObjFromArray(['entity_type', 'sightedBy']),
+      },
       searchTerm: '',
       sortBy: 'created_at',
       orderAsc: false,
       openExports: false,
-      types: [] as string[],
     },
   );
   const {
@@ -43,8 +45,9 @@ const StixCyberObservables: FunctionComponent = () => {
     sortBy,
     orderAsc,
     openExports,
-    types,
   } = viewStorage;
+
+  const contextFilters = buildEntityTypeBasedFilterContext('Stix-Cyber-Observable', filters);
 
   const {
     onToggleEntity,
@@ -56,21 +59,6 @@ const StixCyberObservables: FunctionComponent = () => {
     selectAll,
   } = useEntityToggle<StixCyberObservableLine_node$data>(LOCAL_STORAGE_KEY);
 
-  // const handleToggle = (type: string) => {
-  //   if (types?.includes(type)) {
-  //     helpers.handleAddProperty(
-  //       'types',
-  //       types.filter((x) => x !== type),
-  //     );
-  //   } else {
-  //     helpers.handleAddProperty('types', types ? [...types, type] : [type]);
-  //   }
-  // };
-  //
-  // const handleClear = () => {
-  //   helpers.handleAddProperty('types', []);
-  // };
-
   const getValuesForCopy = (
     data: StixCyberObservablesLinesSearchQuery$data,
   ) => {
@@ -81,16 +69,7 @@ const StixCyberObservables: FunctionComponent = () => {
 
   const handleCopy = useCopy<StixCyberObservablesLinesSearchQuery$data>(
     {
-      filters: {
-        mode: filters?.mode ?? 'and',
-        filters: (filters?.filters ?? []).concat({
-          key: 'entity_type',
-          values: types ?? [],
-          operator: 'eq',
-          mode: 'or',
-        }),
-        filterGroups: filters?.filterGroups ?? [],
-      },
+      filters: contextFilters,
       searchTerm: searchTerm ?? '',
       query: stixCyberObservablesLinesSearchQuery,
       selectedValues: Object.values(selectedElements).map(
@@ -143,8 +122,6 @@ const StixCyberObservables: FunctionComponent = () => {
   };
 
   const renderLines = () => {
-    const finalType = types && types.length > 0 ? types : 'Stix-Cyber-Observable';
-    const toolBarFilters = injectEntityTypeFilterInFilterGroup(filters, finalType);
     return (
       <>
         <ListLines
@@ -162,15 +139,13 @@ const StixCyberObservables: FunctionComponent = () => {
           openExports={openExports}
           handleToggleSelectAll={handleToggleSelectAll}
           selectAll={selectAll}
-          exportEntityType="Stix-Cyber-Observable"
+          exportContext={{ entity_type: 'Stix-Cyber-Observable' }}
           availableEntityTypes={['Stix-Cyber-Observable']}
-          exportContext={null}
           keyword={searchTerm}
           filters={filters}
           iconExtension={true}
           paginationOptions={paginationOptions}
           numberOfElements={numberOfElements}
-          noDirectFilters={true}
           availableFilterKeys={[
             'entity_type',
             'objectLabel',
@@ -211,7 +186,7 @@ const StixCyberObservables: FunctionComponent = () => {
           deSelectedElements={deSelectedElements}
           numberOfSelectedElements={numberOfSelectedElements}
           selectAll={selectAll}
-          filters={toolBarFilters}
+          filters={contextFilters}
           search={searchTerm}
           handleClearSelectedElements={handleClearSelectedElements}
           handleCopy={handleCopy}

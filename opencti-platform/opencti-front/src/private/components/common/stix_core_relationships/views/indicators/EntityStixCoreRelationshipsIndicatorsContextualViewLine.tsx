@@ -41,8 +41,7 @@ const useStyles = makeStyles<Theme>((theme) => ({
 }));
 
 const contextualViewLineFragment = graphql`
-  fragment EntityStixCoreRelationshipsIndicatorsContextualViewLine_node on Indicator
-  @argumentDefinitions(containersIds: { type: "[String]" } ) {
+  fragment EntityStixCoreRelationshipsIndicatorsContextualViewLine_node on Indicator {
     id
     entity_type
     pattern_type
@@ -69,7 +68,7 @@ const contextualViewLineFragment = graphql`
         }
       }
     }
-    containers (elementId: $containersIds) {
+    containers {
       edges {
         node {
           id

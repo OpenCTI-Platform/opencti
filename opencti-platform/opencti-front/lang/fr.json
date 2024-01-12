@@ -2082,7 +2082,7 @@
   "Ends with": "Se termine par",
   "Not ends with": "Ne se termine pas par",
   "Add filter": "Ajouter un filtre",
-  "elementTargetTypes": "Types de cible",
+  "elementWithTargetTypes": "Types de cible",
   "The operators and modes are restricted for these filters.": "Les opérateurs et les modes sont restreints pour ces filtres.",
   "contains": "contient",
   "starts_with": "commence par",
@@ -2436,5 +2436,10 @@
   "sponsor": "sponsor",
   "valid": "valide",
   "There are no opinions. You should create some before.": "Il n'y a pas d'd’opinions. Vous devriez en créer avant.",
-  "workflow_id": "Statut"
+  "workflow_id": "Statut",
+  "regardingOf": "Concernant",
+  "WITH": "AVEC",
+  "Pre-query to get data to be used as source entity of the relationship (limited to 5000)": "Pré-requête pour obtenir les données à utiliser comme entité source de la relation (limité à 5000)",
+  "Pre-query to get data to be used as target entity of the relationship (limited to 5000)": "Pré-requête pour obtenir les données à utiliser comme entité cible de la relation (limité à 5000)",
+  "Result: the relationships with source respecting the source pre-query, target respecting the target pre-query, and matching:": "Résultat : les relations avec la source respectant la pré-requête de la source, la cible respectant la pré-requête de la cible, et les filtres courants :"
 }

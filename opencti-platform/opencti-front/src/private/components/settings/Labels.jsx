@@ -12,7 +12,7 @@ import LabelsLines, { labelsLinesQuery } from './labels/LabelsLines';
 import LabelCreation from './labels/LabelCreation';
 import LabelsVocabulariesMenu from './LabelsVocabulariesMenu';
 import ToolBar from '../data/ToolBar';
-import { injectEntityTypeFilterInFilterGroup } from '../../../utils/filters/filtersUtils';
+import { buildEntityTypeBasedFilterContext } from '../../../utils/filters/filtersUtils';
 
 const styles = () => ({
   container: {
@@ -137,7 +137,7 @@ class Labels extends Component {
     this.setState({ numberOfElements });
   }
 
-  renderLines(paginationOptions) {
+  renderLines(queryPaginationOptions, contextFilters) {
     const {
       sortBy,
       orderAsc,
@@ -152,7 +152,6 @@ class Labels extends Component {
       numberOfSelectedElements = numberOfElements.original
         - Object.keys(deSelectedElements || {}).length;
     }
-    const finalFilters = injectEntityTypeFilterInFilterGroup(undefined, 'Label');
     const dataColumns = {
       value: {
         label: 'Value',
@@ -188,11 +187,11 @@ class Labels extends Component {
         >
           <QueryRenderer
             query={labelsLinesQuery}
-            variables={{ count: 25, ...paginationOptions }}
+            variables={{ count: 25, ...queryPaginationOptions }}
             render={({ props }) => (
               <LabelsLines
                 data={props}
-                paginationOptions={paginationOptions}
+                paginationOptions={queryPaginationOptions}
                 dataColumns={dataColumns}
                 initialLoading={props === null}
                 selectedElements={selectedElements}
@@ -209,7 +208,7 @@ class Labels extends Component {
           deSelectedElements={deSelectedElements}
           numberOfSelectedElements={numberOfSelectedElements}
           selectAll={selectAll}
-          filters={finalFilters}
+          filters={contextFilters}
           search={searchTerm}
           handleClearSelectedElements={this.handleClearSelectedElements.bind(
             this,
@@ -224,15 +223,17 @@ class Labels extends Component {
   render() {
     const { classes } = this.props;
     const { view, sortBy, orderAsc, searchTerm } = this.state;
+    const contextFilters = buildEntityTypeBasedFilterContext('Label', undefined);
     const paginationOptions = {
       search: searchTerm,
       orderBy: sortBy,
       orderMode: orderAsc ? 'asc' : 'desc',
+      filters: contextFilters,
     };
     return (
       <div className={classes.container}>
         <LabelsVocabulariesMenu />
-        {view === 'lines' ? this.renderLines(paginationOptions) : ''}
+        {view === 'lines' ? this.renderLines(paginationOptions, contextFilters) : ''}
         <LabelCreation paginationOptions={paginationOptions} />
       </div>
     );

@@ -12,7 +12,6 @@ import StepButton from '@mui/material/StepButton';
 import StepLabel from '@mui/material/StepLabel';
 import Grid from '@mui/material/Grid';
 import Typography from '@mui/material/Typography';
-import InputAdornment from '@mui/material/InputAdornment';
 import Card from '@mui/material/Card';
 import CardActionArea from '@mui/material/CardActionArea';
 import CardContent from '@mui/material/CardContent';
@@ -51,18 +50,17 @@ import SpeedDial from '@mui/material/SpeedDial';
 import { SpeedDialIcon } from '@mui/material';
 import SpeedDialAction from '@mui/material/SpeedDialAction';
 import { graphql, useMutation } from 'react-relay';
+import WidgetFilters from './WidgetFilters';
 import VisuallyHiddenInput from '../../common/VisuallyHiddenInput';
 import Transition from '../../../../components/Transition';
 import { useFormatter } from '../../../../components/i18n';
 import { ignoredAttributesInDashboards } from '../../../../utils/hooks/useAttributes';
-import Filters from '../../common/lists/Filters';
-import { emptyFilterGroup, findFilterFromKey, findFilterIndexFromKey, findFiltersFromKeys, isFilterGroupNotEmpty, isUniqFilter } from '../../../../utils/filters/filtersUtils';
+import { emptyFilterGroup, findFiltersFromKeys } from '../../../../utils/filters/filtersUtils';
 import { capitalizeFirstLetter, toB64 } from '../../../../utils/String';
 import { handleError, QueryRenderer } from '../../../../relay/environment';
 import { stixCyberObservablesLinesAttributesQuery } from '../../observations/stix_cyber_observables/StixCyberObservablesLines';
 import { isNotEmptyField } from '../../../../utils/utils';
 import MarkdownDisplay from '../../../../components/MarkdownDisplay';
-import FilterIconButton from '../../../../components/FilterIconButton';
 
 const useStyles = makeStyles((theme) => ({
   createButton: {
@@ -150,57 +148,6 @@ const useStyles = makeStyles((theme) => ({
     borderRadius: 5,
   },
 }));
-
-const entitiesFilters = [
-  'entity_type',
-  'elementId',
-  'objectMarking',
-  'objectLabel',
-  'createdBy',
-  'creator_id',
-  'workflow_id',
-  'objectAssignee',
-  'objectParticipant',
-  'objects',
-  'x_opencti_score',
-  'x_opencti_detection',
-  'revoked',
-  'confidence',
-  'pattern_type',
-  'killChainPhases',
-  'malware_types',
-  'report_types',
-  'relationship_type',
-];
-
-const relationshipsFilters = [
-  'fromId',
-  'toId',
-  'fromTypes',
-  'toTypes',
-  'relationship_type',
-  'objectMarking',
-  'objectLabel',
-  'createdBy',
-  'confidence',
-  'killChainPhases',
-  'creator_id',
-];
-
-const auditsFilters = [
-  'entity_type',
-  'event_type',
-  'event_scope',
-  'members_group',
-  'members_organization',
-  'members_user',
-  'contextEntityId',
-  'contextEntityType',
-  'contextCreatedBy',
-  'contextObjectMarking',
-  'contextObjectLabel',
-  'contextCreator',
-];
 
 const visualizationTypes = [
   {
@@ -398,6 +345,9 @@ const WidgetConfig = ({ workspace, widget, onComplete, closeMenu }) => {
   const [parameters, setParameters] = useState(widget?.parameters ?? {});
   const [commitWidgetImportMutation] = useMutation(workspaceImportWidgetMutation);
 
+  const setDataSelectionWithIndex = (data, index) => {
+    setDataSelection([...dataSelection.map((d, i) => (i === index ? data : d))]);
+  };
   const handleWidgetImport = async (event) => {
     const importedWidgetConfiguration = event.target.files[0];
     const emptyDashboardManifest = toB64(JSON.stringify({ widgets: {}, config: {} }));
@@ -532,125 +482,6 @@ const WidgetConfig = ({ workspace, widget, onComplete, closeMenu }) => {
     setDataSelection(newDataSelection);
   };
 
-  const handleAddFilter = (i, filterName, key, id, op = 'eq') => {
-    const newDataSelection = dataSelection.map((data, n) => {
-      if (n === i) {
-        const dataFilters = data[filterName];
-        const filter = findFilterFromKey(dataFilters?.filters ?? [], key, op);
-        if (filter) {
-          if (op === 'nil' || op === 'not_nil') {
-            return { ...data };
-          }
-          const newValues = isUniqFilter(key)
-            ? [id]
-            : R.uniq([...(filter?.values ?? []), id]);
-          const newFilterElement = {
-            key,
-            values: newValues,
-            operator: op,
-            mode: 'or',
-          };
-          const newBaseFilters = {
-            ...(dataFilters ?? {}),
-            filters: [
-              ...(dataFilters?.filters ?? []).filter(
-                (f) => f.key !== key || f.operator !== op,
-              ), // remove filter with k as key
-              newFilterElement, // add new filter
-            ],
-          };
-          return {
-            ...data,
-            [filterName]: newBaseFilters,
-          };
-        }
-        const newFilterElement = {
-          key,
-          values: (op === 'nil' || op === 'not_nil') ? [] : [id],
-          operator: op,
-          mode: 'or',
-        };
-        const newBaseFilters = {
-          ...(dataFilters ?? {}),
-          filters: [...(dataFilters?.filters ?? []), newFilterElement], // add new filter
-        };
-        return {
-          ...data,
-          [filterName]: newBaseFilters,
-        };
-      }
-      return data;
-    });
-    setDataSelection(newDataSelection);
-  };
-  const handleRemoveFilter = (i, filterName, key, op = 'eq') => {
-    const newDataSelection = dataSelection.map((data, n) => {
-      if (n === i) {
-        const dataFilters = data[filterName];
-        const newFilters = {
-          ...(dataFilters ?? {}),
-          filters: (dataFilters?.filters ?? []).filter(
-            (f) => f.key !== key || f.operator !== op,
-          ),
-        };
-        return {
-          ...data,
-          [filterName]: newFilters,
-        };
-      }
-      return data;
-    });
-    setDataSelection(newDataSelection);
-  };
-
-  const handleSwitchLocalMode = (i, filterName, localFilter) => {
-    const newDataSelection = dataSelection.map((data, n) => {
-      if (n === i) {
-        const filters = data[filterName];
-        const filterIndex = findFilterIndexFromKey(
-          filters?.filters ?? [],
-          localFilter.key,
-          localFilter.operator,
-        );
-        if (filterIndex !== null) {
-          const newFiltersContent = [...(filters?.filters ?? [])];
-          newFiltersContent[filterIndex] = {
-            ...localFilter,
-            mode: localFilter.mode === 'and' ? 'or' : 'and',
-          };
-          const newFilters = {
-            ...filters,
-            filters: newFiltersContent,
-          };
-          return {
-            ...data,
-            [filterName]: newFilters,
-          };
-        }
-        return data;
-      }
-      return data;
-    });
-    setDataSelection(newDataSelection);
-  };
-
-  const handleSwitchGlobalMode = (i, filterName) => {
-    const newDataSelection = dataSelection.map((data, n) => {
-      if (n === i) {
-        const filters = data[filterName];
-        const newFilters = {
-          ...filters,
-          mode: filters.mode === 'and' ? 'or' : 'and',
-        };
-        return {
-          ...data,
-          [filterName]: newFilters,
-        };
-      }
-      return data;
-    });
-    setDataSelection(newDataSelection);
-  };
   const handleChangeDataValidationParameter = (
     i,
     key,
@@ -857,22 +688,10 @@ const WidgetConfig = ({ workspace, widget, onComplete, closeMenu }) => {
           .fill(0)
           .map((_, i) => {
             let style = 'step_entity';
-            let availableFilterKeys = entitiesFilters;
-            let availableEntityTypes = [
-              'Stix-Domain-Object',
-              'Stix-Cyber-Observable',
-            ];
             if (dataSelection[i].perspective === 'relationships') {
               style = 'step_relationship';
-              availableFilterKeys = relationshipsFilters;
-              availableEntityTypes = [
-                'Stix-Domain-Object',
-                'Stix-Cyber-Observable',
-              ];
             } else if (dataSelection[i].perspective === 'audits') {
               style = 'step_audit';
-              availableFilterKeys = auditsFilters;
-              availableEntityTypes = ['History', 'Activity'];
             }
             return (
               <div key={i} className={classes[style]}>
@@ -891,93 +710,15 @@ const WidgetConfig = ({ workspace, widget, onComplete, closeMenu }) => {
                     label={`${t('Label')} (${dataSelection[i].perspective})`}
                     fullWidth={true}
                     value={dataSelection[i].label}
-                    onChange={(event) => handleChangeDataValidationLabel(i, event.target.value)
-                    }
-                    InputProps={{
-                      endAdornment: (
-                        <InputAdornment
-                          position="end"
-                          style={{
-                            position: 'absolute',
-                            display: 'flex',
-                            right: 5,
-                          }}
-                        >
-                          <Filters
-                            availableFilterKeys={type === 'bookmark' ? ['entity_type'] : availableFilterKeys}
-                            availableEntityTypes={availableEntityTypes}
-                            handleAddFilter={(key, id, op) => handleAddFilter(i, 'filters', key, id, op)}
-                            noDirectFilters={true}
-                          />
-                          {(dataSelection[i].perspective ?? perspective)
-                            === 'relationships' && (
-                            <Filters
-                              availableFilterKeys={entitiesFilters}
-                              availableEntityTypes={[
-                                'Stix-Domain-Object',
-                                'Stix-Cyber-Observable',
-                              ]}
-                              handleAddFilter={(key, id, op) => handleAddFilter(i, 'dynamicFrom', key, id, op)
-                              }
-                              noDirectFilters={true}
-                              type="from"
-                            />
-                          )}
-                          {(dataSelection[i].perspective ?? perspective)
-                            === 'relationships' && (
-                            <Filters
-                              availableFilterKeys={entitiesFilters}
-                              availableEntityTypes={[
-                                'Stix-Domain-Object',
-                                'Stix-Cyber-Observable',
-                              ]}
-                              handleAddFilter={(key, id, op) => handleAddFilter(i, 'dynamicTo', key, id, op)
-                              }
-                              noDirectFilters={true}
-                              type="to"
-                            />
-                          )}
-                        </InputAdornment>
-                      ),
-                    }}
+                    onChange={(event) => handleChangeDataValidationLabel(i, event.target.value)}
                   />
                 </div>
-                <div className="clearfix" />
-                {isFilterGroupNotEmpty(dataSelection[i]?.filters) && (
-                  <FilterIconButton
-                    filters={dataSelection[i].filters}
-                    handleRemoveFilter={(key, op) => handleRemoveFilter(i, 'filters', key, op)}
-                    handleSwitchLocalMode={(filter) => handleSwitchLocalMode(i, 'filters', filter)}
-                    handleSwitchGlobalMode={() => handleSwitchGlobalMode(i, 'filters')}
-                    styleNumber={2}
-                  />
-                )}
-                {isFilterGroupNotEmpty(dataSelection[i].dynamicFrom) && (
-                  <FilterIconButton
-                    filters={dataSelection[i].dynamicFrom}
-                    handleRemoveFilter={(key, op) => handleRemoveFilter(i, 'dynamicFrom', key, op)
-                    }
-                    handleSwitchLocalMode={(filter) => handleSwitchLocalMode(i, 'dynamicFrom', filter)
-                    }
-                    handleSwitchGlobalMode={() => handleSwitchGlobalMode(i, 'dynamicFrom')
-                    }
-                    styleNumber={2}
-                    chipColor={'warning'}
-                  />
-                )}
-                {isFilterGroupNotEmpty(dataSelection[i].dynamicTo) && (
-                  <FilterIconButton
-                    filters={dataSelection[i].dynamicTo}
-                    handleRemoveFilter={(key, op) => handleRemoveFilter(i, 'dynamicTo', key, op)
-                    }
-                    handleSwitchLocalMode={(filter) => handleSwitchLocalMode(i, 'dynamicTo', filter)
-                    }
-                    handleSwitchGlobalMode={() => handleSwitchGlobalMode(i, 'dynamicTo')
-                    }
-                    styleNumber={2}
-                    chipColor={'success'}
-                  />
-                )}
+                <WidgetFilters
+                  dataSelection={dataSelection[i]}
+                  setDataSelection={(data) => setDataSelectionWithIndex(data, i)}
+                  perspective={dataSelection[i].perspective ?? perspective}
+                  type={type}
+                />
               </div>
             );
           })}

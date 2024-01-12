@@ -39,8 +39,6 @@ const stixCoreObjectsTimelineQuery = graphql`
     $orderBy: StixCoreObjectsOrdering
     $orderMode: OrderingMode
     $filters: FilterGroup
-    $relationship_type: [String]
-    $elementId: [String]
   ) {
     stixCoreObjects(
       types: $types
@@ -48,8 +46,6 @@ const stixCoreObjectsTimelineQuery = graphql`
       orderBy: $orderBy
       orderMode: $orderMode
       filters: $filters
-      relationship_type: $relationship_type
-      elementId: $elementId
     ) {
       edges {
         node {
@@ -239,7 +235,7 @@ const StixCoreObjectsTimeline = ({
     const dateAttribute = selection.date_attribute && selection.date_attribute.length > 0
       ? selection.date_attribute
       : 'created_at';
-    const { filters, dataSelectionElementId } = buildFiltersAndOptionsForWidgets(selection.filters, { startDate, endDate, dateAttribute });
+    const { filters } = buildFiltersAndOptionsForWidgets(selection.filters, { startDate, endDate, dateAttribute });
     return (
       <QueryRenderer
         query={stixCoreObjectsTimelineQuery}
@@ -249,7 +245,6 @@ const StixCoreObjectsTimeline = ({
           orderBy: dateAttribute,
           orderMode: 'desc',
           filters,
-          elementId: dataSelectionElementId,
         }}
         render={({ props }) => {
           if (

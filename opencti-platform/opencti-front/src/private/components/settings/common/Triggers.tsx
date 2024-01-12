@@ -53,7 +53,6 @@ const Triggers: FunctionComponent<TriggersProps> = ({
         symbol: '',
       },
     },
-    undefined,
     true,
   );
   const { searchTerm, sortBy, orderAsc } = viewStorage;

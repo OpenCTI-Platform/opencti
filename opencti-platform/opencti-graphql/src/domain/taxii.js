@@ -118,7 +118,7 @@ export const collectionQuery = async (context, user, collection, args) => {
     throw FunctionalError('Invalid version provided, only \'last\' supported', { version });
   }
   const filters = collection.filters ? JSON.parse(collection.filters) : undefined;
-  const options = await convertFiltersToQueryOptions(context, user, filters, { after: added_after });
+  const options = await convertFiltersToQueryOptions(filters, { after: added_after });
   options.after = next;
   let maxSize = MAX_PAGINATION_ELEMENTS;
   if (limit) {

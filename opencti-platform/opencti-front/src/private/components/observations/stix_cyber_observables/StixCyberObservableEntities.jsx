@@ -206,7 +206,7 @@ class StixCyberObservableEntities extends Component {
     const { sortBy, orderAsc, searchTerm, relationReversed } = this.state;
     const { classes, t, entityId, defaultStartTime, defaultStopTime } = this.props;
     const paginationOptions = {
-      elementId: entityId,
+      fromOrToId: entityId,
       search: searchTerm,
       orderBy: sortBy,
       orderMode: orderAsc ? 'asc' : 'desc',

@@ -100,7 +100,7 @@ SimpleStixObjectOrStixRelationshipStixCoreRelationshipsLinesContainer.propTypes 
 
 export const simpleStixObjectOrStixRelationshipStixCoreRelationshipsLinesQuery = graphql`
   query SimpleStixObjectOrStixRelationshipStixCoreRelationshipsLinesPaginationQuery(
-    $elementId: [String]!
+    $fromOrToId: [String]!
     $relationship_type: [String]
     $startTimeStart: DateTime
     $startTimeStop: DateTime
@@ -114,7 +114,7 @@ export const simpleStixObjectOrStixRelationshipStixCoreRelationshipsLinesQuery =
   ) {
     ...SimpleStixObjectOrStixRelationshipStixCoreRelationshipsLines_data
       @arguments(
-        elementId: $elementId
+        fromOrToId: $fromOrToId
         relationship_type: $relationship_type
         startTimeStart: $startTimeStart
         startTimeStop: $startTimeStop
@@ -135,7 +135,7 @@ const SimpleStixObjectOrStixRelationshipStixCoreRelationshipsLines = createPagin
     data: graphql`
         fragment SimpleStixObjectOrStixRelationshipStixCoreRelationshipsLines_data on Query
         @argumentDefinitions(
-          elementId: { type: "[String]!" }
+          fromOrToId: { type: "[String]!" }
           relationship_type: { type: "[String]" }
           startTimeStart: { type: "DateTime" }
           startTimeStop: { type: "DateTime" }
@@ -151,7 +151,7 @@ const SimpleStixObjectOrStixRelationshipStixCoreRelationshipsLines = createPagin
           cursor: { type: "ID" }
         ) {
           stixCoreRelationships(
-            elementId: $elementId
+            fromOrToId: $fromOrToId
             relationship_type: $relationship_type
             startTimeStart: $startTimeStart
             startTimeStop: $startTimeStop
@@ -185,7 +185,7 @@ const SimpleStixObjectOrStixRelationshipStixCoreRelationshipsLines = createPagin
     },
     getVariables(props, { count, cursor }, fragmentVariables) {
       return {
-        elementId: fragmentVariables.elementId,
+        fromOrToId: fragmentVariables.fromOrToId,
         relationship_type: fragmentVariables.relationship_type,
         startTimeStart: fragmentVariables.startTimeStart,
         startTimeStop: fragmentVariables.startTimeStop,

@@ -383,10 +383,7 @@ const CaseRfiEditionOverview: FunctionComponent<CaseRfiEditionOverviewProps> = (
               setFieldValue={setFieldValue}
               style={fieldSpacingContainerStyle}
               helpertext={
-                <SubscriptionFocus
-                  context={context}
-                  fieldName="x_opencti_workflow_id"
-                />
+                <SubscriptionFocus context={context} fieldName="x_opencti_workflow_id"/>
               }
             />
           )}

@@ -12,7 +12,7 @@ import { DataColumns, PaginationOptions } from '../../../../../../components/lis
 import { StixDomainObjectIndicatorsLinesQuery$data } from '../../../../observations/indicators/__generated__/StixDomainObjectIndicatorsLinesQuery.graphql';
 import useAuth from '../../../../../../utils/hooks/useAuth';
 import { QueryRenderer } from '../../../../../../relay/environment';
-import { addFilter, cleanFilters, FilterGroup, removeIdFromFilterGroupObject } from '../../../../../../utils/filters/filtersUtils';
+import { FilterGroup, isFilterGroupNotEmpty, removeIdFromFilterGroupObject } from '../../../../../../utils/filters/filtersUtils';
 
 interface EntityStixCoreRelationshipsIndicatorsEntitiesViewProps {
   entityId: string
@@ -102,26 +102,21 @@ const EntityStixCoreRelationshipsIndicatorsEntitiesView: FunctionComponent<Entit
     },
   };
 
-  const cleanedFilters = cleanFilters(filters, availableFilterKeys);
-
-  const paginationFilters = addFilter(cleanedFilters, 'indicates', entityId);
-
-  const toolBarFilters: FilterGroup = {
-    ...cleanedFilters,
+  const userFilters = removeIdFromFilterGroupObject(filters);
+  const contextFilters: FilterGroup = {
     mode: 'and',
     filters: [
-      ...(cleanedFilters?.filters ?? []),
       { key: 'entity_type', values: ['Indicator'], mode: 'or', operator: 'eq' },
       { key: 'indicates', values: [entityId], mode: 'or', operator: 'eq' },
     ],
-    filterGroups: (cleanedFilters?.filterGroups ?? []),
+    filterGroups: userFilters && isFilterGroupNotEmpty(userFilters) ? [userFilters] : [],
   };
 
   const paginationOptions = {
     search: searchTerm,
     orderBy: (sortBy && (sortBy in dataColumns) && dataColumns[sortBy].isSortable) ? sortBy : 'name',
     orderMode: orderAsc ? 'asc' : 'desc',
-    filters: removeIdFromFilterGroupObject(paginationFilters),
+    filters: contextFilters,
   };
 
   const {
@@ -156,12 +151,10 @@ const EntityStixCoreRelationshipsIndicatorsEntitiesView: FunctionComponent<Entit
         keyword={searchTerm}
         displayImport
         handleToggleExports={storageHelpers.handleToggleExports}
-        openExports={openExports}
-        exportEntityType={'Stix-Core-Object'}
         iconExtension
-        filters={cleanedFilters}
+        filters={contextFilters}
         availableFilterKeys={availableFilterKeys}
-        exportContext={`of-entity-${entityId}`}
+        exportContext={{ entity_id: entityId, entity_type: 'Stix-Core-Object' }}
         numberOfElements={numberOfElements}
         disableCards
         enableEntitiesView
@@ -193,7 +186,7 @@ const EntityStixCoreRelationshipsIndicatorsEntitiesView: FunctionComponent<Entit
         deSelectedElements={deSelectedElements}
         numberOfSelectedElements={numberOfSelectedElements}
         selectAll={selectAll}
-        filters={toolBarFilters}
+        filters={contextFilters}
         search={searchTerm}
         handleClearSelectedElements={handleClearSelectedElements}
         variant="medium"

@@ -2101,7 +2101,7 @@
   "Ends with": "Termina con",
   "Not ends with": "No termina con",
   "Add filter": "Agregar filtro",
-  "elementTargetTypes": "Tipos de objetivo",
+  "elementWithTargetTypes": "Tipos de objetivo",
   "The operators and modes are restricted for these filters.": "Los operadores y modos están restringidos para estos filtros.",
   "contains": "contiene",
   "starts_with": "comienza con",
@@ -2436,5 +2436,10 @@
   "CREATE": "CREAR",
   "entity_Analyses": "entity_Analyses",
   "There are no opinions. You should create some before.": "No hay opiniones. Deberías crear algunas antes.",
-  "workflow_id": "Estado"
+  "workflow_id": "Estado",
+  "regardingOf": "En cuanto a",
+  "WITH": "CON",
+  "Pre-query to get data to be used as source entity of the relationship (limited to 5000)": "Consulta previa para obtener los datos que se utilizarán como entidad fuente de la relación (limitada a 5000)",
+  "Pre-query to get data to be used as target entity of the relationship (limited to 5000)": "Consulta previa para obtener los datos que se utilizarán como entidad de destino de la relación (limitada a 5000)",
+  "Result: the relationships with source respecting the source pre-query, target respecting the target pre-query, and matching:": "Resultado: las relaciones con origen respetando la preconsulta de origen, destino respetando la preconsulta de destino, y coincidencia:"
 }

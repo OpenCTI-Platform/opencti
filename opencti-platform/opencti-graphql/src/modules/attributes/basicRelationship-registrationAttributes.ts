@@ -13,6 +13,7 @@ import {
 } from '../../schema/attribute-definition';
 import { schemaAttributesDefinition } from '../../schema/schema-attributes';
 import { ABSTRACT_BASIC_RELATIONSHIP } from '../../schema/general';
+import { INSTANCE_RELATION_FILTER } from '../../utils/filtering/filtering-constants';
 
 const basicRelationshipAttributes: Array<AttributeDefinition> = [
   id,
@@ -41,7 +42,11 @@ const basicRelationshipAttributes: Array<AttributeDefinition> = [
     mappings: [
       { ...internalId,
         isFilterable: true,
-        associatedFilterKeys: [{ key: 'fromId', label: 'Source entity' }, { key: 'toId', label: 'Target entity' }, { key: 'elementId', label: 'Related entity' }]
+        associatedFilterKeys: [
+          { key: 'fromId', label: 'Source entity' },
+          { key: 'toId', label: 'Target entity' },
+          { key: INSTANCE_RELATION_FILTER, label: 'Related entity' }
+        ]
       },
       { name: 'name', label: 'Name', type: 'string', format: 'short', editDefault: false, mandatoryType: 'no', multiple: true, upsert: true, isFilterable: false },
       { name: 'role', label: 'Role', type: 'string', format: 'short', editDefault: false, mandatoryType: 'no', multiple: true, upsert: true, isFilterable: false },

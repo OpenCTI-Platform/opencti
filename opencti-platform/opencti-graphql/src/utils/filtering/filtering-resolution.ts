@@ -6,7 +6,7 @@ import {
   CONNECTED_TO_INSTANCE_SIDE_EVENTS_FILTER,
   CREATED_BY_FILTER,
   INDICATOR_FILTER,
-  INSTANCE_FILTER,
+  INSTANCE_REGARDING_OF,
   LABEL_FILTER,
   MARKING_FILTER,
   OBJECT_CONTAINS_FILTER,
@@ -34,7 +34,7 @@ export const RESOLUTION_FILTERS = [
   OBJECT_CONTAINS_FILTER,
   RELATION_FROM_FILTER,
   RELATION_TO_FILTER,
-  INSTANCE_FILTER,
+  INSTANCE_REGARDING_OF,
   CONNECTED_TO_INSTANCE_FILTER,
   CONNECTED_TO_INSTANCE_SIDE_EVENTS_FILTER,
 ];
@@ -180,17 +180,6 @@ export const buildResolutionMapForFilterGroup = async (
   return mergeMaps<string, string>([mergeMaps<string, string>(filtersMaps), mergeMaps<string, string>(filterGroupsMaps)]);
 };
 
-/**
- * Resolve some values into what's comparable in stix format using the cache
- * TODO: Not unit-testable for now because of the cache that exists only at runtime (getEntitiesMapFromCache)
- */
-export const resolveFilterGroupValuesWithCache = async (context: AuthContext, user: AuthUser, filterGroup: FilterGroup) => {
-  const cache = await getEntitiesMapFromCache<StixObject>(context, SYSTEM_USER, ENTITY_TYPE_RESOLVED_FILTERS);
-  const resolutionMap = await buildResolutionMapForFilterGroup(context, user, filterGroup, cache);
-
-  return resolveFilterGroup(context, user, filterGroup, resolutionMap);
-};
-
 //----------------------------------------------------------------------------------------------------------------------
 
 /**
@@ -224,12 +213,10 @@ export const resolveFiltersMapForUser = async (context: AuthContext, user: AuthU
   return resolveUserMap;
 };
 
-export const convertFiltersToQueryOptions = async (context: AuthContext, user: AuthUser, filters: FilterGroup | null, opts: any = {}) => {
+export const convertFiltersToQueryOptions = async (filters: FilterGroup | null, opts: any = {}) => {
   const { after, before, defaultTypes = [], field = 'updated_at', orderMode = 'asc' } = opts;
   const types = [...defaultTypes];
-  let finalFilters = filters
-    ? await resolveFilterGroupValuesWithCache(context, user, filters)
-    : undefined;
+  let finalFilters = filters;
   if (after || before) {
     const filtersContent = [];
     if (after) {

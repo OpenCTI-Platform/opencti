@@ -192,7 +192,7 @@ StixCyberObservableNestedEntitiesLinesComponent.propTypes = {
 
 export const stixCyberObservableNestedEntitiesLinesQuery = graphql`
   query StixCyberObservableNestedEntitiesLinesQuery(
-    $elementId: String
+    $fromOrToId: String
     $search: String
     $count: Int!
     $orderBy: StixRefRelationshipsOrdering
@@ -200,7 +200,7 @@ export const stixCyberObservableNestedEntitiesLinesQuery = graphql`
   ) {
     ...StixCyberObservableNestedEntitiesLines_data
       @arguments(
-        elementId: $elementId
+        fromOrToId: $fromOrToId
         search: $search
         count: $count
         orderBy: $orderBy
@@ -215,14 +215,14 @@ const StixCyberObservableNestedEntitiesLines = createPaginationContainer(
     data: graphql`
       fragment StixCyberObservableNestedEntitiesLines_data on Query
       @argumentDefinitions(
-        elementId: { type: "String" }
+        fromOrToId: { type: "String" }
         search: { type: "String" }
         count: { type: "Int", defaultValue: 25 }
         orderBy: { type: "StixRefRelationshipsOrdering" }
         orderMode: { type: "OrderingMode" }
       ) {
         stixNestedRefRelationships(
-          elementId: $elementId
+          fromOrToId: $fromOrToId
           search: $search
           first: $count
           orderBy: $orderBy
@@ -532,7 +532,7 @@ const StixCyberObservableNestedEntitiesLines = createPaginationContainer(
     },
     getVariables(props, { count, cursor }, fragmentVariables) {
       return {
-        elementId: fragmentVariables.elementId,
+        fromOrToId: fragmentVariables.fromOrToId,
         search: fragmentVariables.search,
         count,
         cursor,

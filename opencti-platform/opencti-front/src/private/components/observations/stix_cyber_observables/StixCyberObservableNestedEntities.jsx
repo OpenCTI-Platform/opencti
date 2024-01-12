@@ -181,7 +181,7 @@ class StixCyberObservableNestedEntities extends Component {
     const { searchTerm, sortBy, orderAsc } = this.state;
     const { entityId, t, entityType, classes } = this.props;
     const paginationOptions = {
-      elementId: entityId,
+      fromOrToId: entityId,
       search: searchTerm,
       orderBy: sortBy,
       orderMode: orderAsc ? 'asc' : 'desc',

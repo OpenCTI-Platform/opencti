@@ -24,6 +24,7 @@ import { CaseTasksLinesQuery, CaseTasksLinesQuery$variables } from '../tasks/__g
 import ListLines from '../../../../components/list_lines/ListLines';
 import { tasksDataColumns } from '../tasks/TasksLine';
 import { CaseTasksLineDummy } from '../tasks/CaseTasksLine';
+import { FilterGroup, isFilterGroupNotEmpty, removeIdFromFilterGroupObject } from '../../../../utils/filters/filtersUtils';
 
 const useStyles = makeStyles(() => ({
   gridContainer: {
@@ -47,14 +48,7 @@ const CaseRfiComponent: FunctionComponent<CaseRfiProps> = ({ data }) => {
   const { t } = useFormatter();
   const ref = useRef(null);
   const caseRfiData = useFragment(caseFragment, data);
-  const tasksFilters = [
-    {
-      key: 'objects',
-      values: [caseRfiData.id],
-      operator: 'eq',
-      mode: 'or',
-    },
-  ];
+
   const LOCAL_STORAGE_KEY = `cases-${caseRfiData.id}-caseTask`;
   const { viewStorage, helpers, paginationOptions } = usePaginationLocalStorage<CaseTasksLinesQuery$variables>(
     LOCAL_STORAGE_KEY,
@@ -63,12 +57,26 @@ const CaseRfiComponent: FunctionComponent<CaseRfiProps> = ({ data }) => {
       sortBy: 'name',
       orderAsc: true,
     },
-    tasksFilters,
   );
-  const { sortBy, orderAsc } = viewStorage;
+  const { sortBy, orderAsc, filters } = viewStorage;
+
+  const userFilters = removeIdFromFilterGroupObject(filters);
+  const contextTaskFilters: FilterGroup = {
+    mode: 'and',
+    filters: [
+      { key: 'entity_type', operator: 'eq', mode: 'or', values: ['Task'] },
+      { key: 'objects', operator: 'eq', mode: 'or', values: [caseRfiData.id] },
+    ],
+    filterGroups: userFilters && isFilterGroupNotEmpty(userFilters) ? [userFilters] : [],
+  };
+
+  const queryTaskPaginationOptions = {
+    ...paginationOptions,
+    filters: contextTaskFilters,
+  } as unknown as CaseTasksLinesQuery$variables;
   const queryRef = useQueryLoading<CaseTasksLinesQuery>(
     caseTasksLinesQuery,
-    paginationOptions,
+    queryTaskPaginationOptions,
   );
   return (
     <>
@@ -121,7 +129,7 @@ const CaseRfiComponent: FunctionComponent<CaseRfiProps> = ({ data }) => {
             >
               <CaseTasksLines
                 queryRef={queryRef}
-                paginationOptions={paginationOptions}
+                paginationOptions={queryTaskPaginationOptions}
                 caseId={caseRfiData.id}
                 sortBy={sortBy}
                 orderAsc={orderAsc}

@@ -13,41 +13,15 @@ import useEntityToggle from '../../../utils/hooks/useEntityToggle';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
 import { ReportLineDummy } from './reports/ReportLine';
 import ExportContextProvider from '../../../utils/ExportContextProvider';
-import { injectEntityTypeFilterInFilterGroup, emptyFilterGroup } from '../../../utils/filters/filtersUtils';
+import { buildEntityTypeBasedFilterContext, emptyFilterGroup } from '../../../utils/filters/filtersUtils';
 
 const LOCAL_STORAGE_KEY = 'reports';
 
-interface ReportsProps {
-  objectId: string;
-  authorId: string;
-  onChangeOpenExports: () => void;
-}
-
-const Reports: FunctionComponent<ReportsProps> = ({
-  objectId,
-  authorId,
-  onChangeOpenExports,
-}) => {
+const Reports: FunctionComponent = () => {
   const {
     platformModuleHelpers: { isRuntimeFieldEnable },
   } = useAuth();
-  const additionnalFilters = [];
-  if (authorId) {
-    additionnalFilters.push({
-      key: 'createdBy',
-      values: [authorId],
-      operator: 'eq',
-      mode: 'or',
-    });
-  }
-  if (objectId) {
-    additionnalFilters.push({
-      key: 'objects',
-      values: [objectId],
-      operator: 'eq',
-      mode: 'or',
-    });
-  }
+
   const {
     viewStorage,
     paginationOptions,
@@ -62,7 +36,6 @@ const Reports: FunctionComponent<ReportsProps> = ({
       openExports: false,
       redirectionMode: 'overview',
     },
-    additionnalFilters,
   );
   const {
     numberOfElements,
@@ -82,18 +55,18 @@ const Reports: FunctionComponent<ReportsProps> = ({
     onToggleEntity,
     numberOfSelectedElements,
   } = useEntityToggle<ReportLine_node$data>(LOCAL_STORAGE_KEY);
+
+  const contextFilters = buildEntityTypeBasedFilterContext('Report', filters);
+  const queryPaginationOptions = {
+    ...paginationOptions,
+    filters: contextFilters,
+  } as unknown as ReportsLinesPaginationQuery$variables;
   const queryRef = useQueryLoading<ReportsLinesPaginationQuery>(
     reportsLinesQuery,
-    paginationOptions,
+    queryPaginationOptions,
   );
+
   const renderLines = () => {
-    let exportContext = null;
-    if (objectId) {
-      exportContext = `of-entity-${objectId}`;
-    } else if (authorId) {
-      exportContext = `of-entity-${authorId}`;
-    }
-    const toolBarFilters = injectEntityTypeFilterInFilterGroup(filters, 'Report');
     const isRuntimeSort = isRuntimeFieldEnable() ?? false;
     const dataColumns = {
       name: {
@@ -154,15 +127,12 @@ const Reports: FunctionComponent<ReportsProps> = ({
           openExports={openExports}
           handleToggleSelectAll={handleToggleSelectAll}
           selectAll={selectAll}
-          noPadding={typeof onChangeOpenExports === 'function'}
-          exportEntityType="Report"
-          exportContext={exportContext}
+          exportContext={{ entity_type: 'Report' }}
           keyword={searchTerm}
           redirectionMode={redirectionMode}
-          handleSwitchRedirectionMode={(value: string) => storageHelpers.handleAddProperty('redirectionMode', value)
-          }
+          handleSwitchRedirectionMode={(value: string) => storageHelpers.handleAddProperty('redirectionMode', value)}
           filters={filters}
-          paginationOptions={paginationOptions}
+          paginationOptions={queryPaginationOptions}
           numberOfElements={numberOfElements}
           iconExtension={true}
           availableFilterKeys={[
@@ -196,7 +166,7 @@ const Reports: FunctionComponent<ReportsProps> = ({
             >
               <ReportsLines
                 queryRef={queryRef}
-                paginationOptions={paginationOptions}
+                paginationOptions={queryPaginationOptions}
                 dataColumns={dataColumns}
                 onLabelClick={storageHelpers.handleAddFilter}
                 selectedElements={selectedElements}
@@ -212,7 +182,7 @@ const Reports: FunctionComponent<ReportsProps> = ({
                 numberOfSelectedElements={numberOfSelectedElements}
                 selectAll={selectAll}
                 search={searchTerm}
-                filters={toolBarFilters}
+                filters={contextFilters}
                 handleClearSelectedElements={handleClearSelectedElements}
                 type="Report"
               />
@@ -226,7 +196,7 @@ const Reports: FunctionComponent<ReportsProps> = ({
     <ExportContextProvider>
       {renderLines()}
       <Security needs={[KNOWLEDGE_KNUPDATE]}>
-        <ReportCreation paginationOptions={paginationOptions} />
+        <ReportCreation paginationOptions={queryPaginationOptions} />
       </Security>
     </ExportContextProvider>
   );

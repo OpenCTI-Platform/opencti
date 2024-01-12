@@ -16,7 +16,7 @@ import { IndicatorLine_node$data } from './indicators/__generated__/IndicatorLin
 import { IndicatorsLinesPaginationQuery, IndicatorsLinesPaginationQuery$variables } from './indicators/__generated__/IndicatorsLinesPaginationQuery.graphql';
 import { ModuleHelper } from '../../../utils/platformModulesHelper';
 import { IndicatorLineDummyComponent } from './indicators/IndicatorLine';
-import { injectEntityTypeFilterInFilterGroup, findFilterFromKey, emptyFilterGroup } from '../../../utils/filters/filtersUtils';
+import { buildEntityTypeBasedFilterContext, emptyFilterGroup, findFilterFromKey, getDefaultFilterObjFromArray } from '../../../utils/filters/filtersUtils';
 
 const useStyles = makeStyles(() => ({
   container: {
@@ -37,7 +37,10 @@ const Indicators = () => {
     LOCAL_STORAGE_KEY,
     {
       numberOfElements: { number: 0, symbol: '', original: 0 },
-      filters: emptyFilterGroup,
+      filters: {
+        ...emptyFilterGroup,
+        filters: getDefaultFilterObjFromArray(['sightedBy']),
+      },
       searchTerm: '',
       sortBy: 'created',
       orderAsc: false,
@@ -62,10 +65,17 @@ const Indicators = () => {
     handleToggleSelectAll,
     onToggleEntity,
   } = useEntityToggle<IndicatorLine_node$data>(LOCAL_STORAGE_KEY);
+
+  const contextFilters = buildEntityTypeBasedFilterContext('Indicator', filters);
+  const queryPaginationOptions = {
+    ...paginationOptions,
+    filters: contextFilters,
+  } as unknown as IndicatorsLinesPaginationQuery$variables;
   const queryRef = useQueryLoading<IndicatorsLinesPaginationQuery>(
     indicatorsLinesQuery,
-    paginationOptions,
+    queryPaginationOptions,
   );
+
   const patternTypes = findFilterFromKey(filters?.filters ?? [], 'pattern_type')?.values ?? [];
   const observableTypes = findFilterFromKey(filters?.filters ?? [], 'x_opencti_main_observable_type')?.values ?? [];
   const handleToggleIndicatorType = (type: string) => {
@@ -94,7 +104,6 @@ const Indicators = () => {
       numberOfSelectedElements = (numberOfElements?.original ?? 0)
                 - Object.keys(deSelectedElements || {}).length;
     }
-    const toolBarFilters = injectEntityTypeFilterInFilterGroup(filters, 'Indicator');
     const isRuntimeSort = platformModuleHelpers?.isRuntimeFieldEnable();
     const dataColumns = {
       pattern_type: {
@@ -155,12 +164,11 @@ const Indicators = () => {
           openExports={openExports}
           handleToggleSelectAll={handleToggleSelectAll}
           selectAll={selectAll}
-          exportEntityType="Indicator"
-          exportContext={null}
+          exportContext={{ entity_type: 'Indicator' }}
           iconExtension={true}
           keyword={searchTerm}
           filters={filters}
-          paginationOptions={paginationOptions}
+          paginationOptions={queryPaginationOptions}
           numberOfElements={numberOfElements}
           availableFilterKeys={[
             'objectLabel',
@@ -198,7 +206,7 @@ const Indicators = () => {
           >
             <IndicatorsLines
               queryRef={queryRef}
-              paginationOptions={paginationOptions}
+              paginationOptions={queryPaginationOptions}
               dataColumns={dataColumns}
               onLabelClick={storageHelpers.handleAddFilter}
               selectedElements={selectedElements}
@@ -215,7 +223,7 @@ const Indicators = () => {
           deSelectedElements={deSelectedElements}
           numberOfSelectedElements={numberOfSelectedElements}
           selectAll={selectAll}
-          filters={toolBarFilters}
+          filters={contextFilters}
           search={searchTerm}
           handleClearSelectedElements={handleClearSelectedElements}
           variant="large"
@@ -231,7 +239,7 @@ const Indicators = () => {
           <div className={classes.container}>
             {renderLines(platformModuleHelpers)}
             <Security needs={[KNOWLEDGE_KNUPDATE]}>
-              <IndicatorCreation paginationOptions={paginationOptions}/>
+              <IndicatorCreation paginationOptions={queryPaginationOptions}/>
             </Security>
             <IndicatorsRightBar
               indicatorTypes={patternTypes}

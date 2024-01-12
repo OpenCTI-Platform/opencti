@@ -201,7 +201,7 @@ const StixDomainObjectTimeline = createRefetchContainer(
     data: graphql`
       fragment StixDomainObjectTimeline_data on Query {
         stixRelationships(
-          elementId: $elementId
+          fromOrToId: $fromOrToId
           elementWithTargetTypes: $elementWithTargetTypes
           relationship_type: $relationship_type
           first: $first

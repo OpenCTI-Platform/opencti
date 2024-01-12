@@ -253,7 +253,7 @@ const StixDomainObjectGlobalKillChain = createRefetchContainer(
     data: graphql`
       fragment StixDomainObjectGlobalKillChain_data on Query {
         stixRelationships(
-          elementId: $elementId
+          fromOrToId: $fromOrToId
           elementWithTargetTypes: $elementWithTargetTypes
           relationship_type: $relationship_type
           first: $first

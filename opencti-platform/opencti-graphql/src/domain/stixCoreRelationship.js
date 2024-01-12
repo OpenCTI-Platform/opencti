@@ -27,7 +27,7 @@ import {
 } from '../schema/stixRefRelationship';
 import { ENTITY_TYPE_CONTAINER_NOTE, ENTITY_TYPE_CONTAINER_OPINION, ENTITY_TYPE_CONTAINER_REPORT } from '../schema/stixDomainObject';
 import { ENTITY_TYPE_EXTERNAL_REFERENCE, ENTITY_TYPE_KILL_CHAIN_PHASE, ENTITY_TYPE_LABEL, ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
-import { buildEntityFilters, listEntities, listRelations, storeLoadById } from '../database/middleware-loader';
+import { buildRelationsFilter, listEntities, listRelations, storeLoadById } from '../database/middleware-loader';
 import { askListExport, exportTransformFilters } from './stix';
 import { workToExportFile } from './work';
 import { ENTITY_TYPE_CONTAINER_CASE } from '../modules/case/case-types';
@@ -108,7 +108,7 @@ export const stixCoreRelationshipsNumber = async (context, user, args) => {
     const filters = addFilter(args.filters, buildRefRelationKey(RELATION_CREATED_BY, '*'), authorId);
     finalArgs = { ...finalArgs, filters };
   }
-  const numberArgs = buildEntityFilters({ ...finalArgs, types: relationship_type });
+  const numberArgs = buildRelationsFilter(relationship_type, finalArgs);
   const indices = args.onlyInferred ? [READ_INDEX_INFERRED_RELATIONSHIPS] : [READ_INDEX_STIX_CORE_RELATIONSHIPS, READ_INDEX_INFERRED_RELATIONSHIPS];
   return {
     count: elCount(context, user, indices, numberArgs),
@@ -207,48 +207,14 @@ export const stixRelations = (context, user, stixCoreObjectId, args) => {
 
 // region export
 export const stixCoreRelationshipsExportAsk = async (context, user, args) => {
-  const { format, type, exportType, maxMarkingDefinition, selectedIds } = args;
+  const { exportContext, format, exportType, maxMarkingDefinition, selectedIds } = args;
+  const { fromOrToId, elementWithTargetTypes, fromId, fromRole, fromTypes, toId, toRole, toTypes, relationship_type } = args;
   const { search, orderBy, orderMode, filters } = args;
   const argsFilters = { search, orderBy, orderMode, filters };
   const ordersOpts = stixCoreRelationshipOptions.StixCoreRelationshipsOrdering;
-  let newArgsFiltersContent = argsFilters.filters;
-  const initialParams = {};
-  if (argsFilters.filters && argsFilters.filters.length > 0) {
-    if (argsFilters.filters.filter((n) => n.key.includes('relationship_type')).length > 0) {
-      initialParams.relationship_type = R.head(R.head(argsFilters.filters.filter((n) => n.key.includes('relationship_type'))).values);
-      newArgsFiltersContent = newArgsFiltersContent.filter((n) => !n.key.includes('relationship_type'));
-    }
-    if (argsFilters.filters.filter((n) => n.key.includes('elementId')).length > 0) {
-      initialParams.elementId = R.head(R.head(argsFilters.filters.filter((n) => n.key.includes('elementId'))).values);
-      newArgsFiltersContent = newArgsFiltersContent.filter((n) => !n.key.includes('elementId'));
-    }
-    if (argsFilters.filters.filter((n) => n.key.includes('fromId')).length > 0) {
-      initialParams.fromId = R.head(R.head(argsFilters.filters.filter((n) => n.key.includes('fromId'))).values);
-      newArgsFiltersContent = newArgsFiltersContent.filter((n) => !n.key.includes('fromId'));
-    }
-    if (argsFilters.filters.filter((n) => n.key.includes('toId')).length > 0) {
-      initialParams.toId = R.head(R.head(argsFilters.filters.filter((n) => n.key.includes('toId'))).values);
-      newArgsFiltersContent = newArgsFiltersContent.filter((n) => !n.key.includes('toId'));
-    }
-    if (argsFilters.filters.filter((n) => n.key.includes('elementWithTargetTypes')).length > 0) {
-      initialParams.elementWithTargetTypes = R.head(argsFilters.filters.filter((n) => n.key.includes('elementWithTargetTypes'))).values;
-      newArgsFiltersContent = newArgsFiltersContent.filter((n) => !n.key.includes('elementWithTargetTypes'));
-    }
-    if (argsFilters.filters.filter((n) => n.key.includes('fromTypes')).length > 0) {
-      initialParams.fromTypes = R.head(argsFilters.filters.filter((n) => n.key.includes('fromTypes'))).values;
-      newArgsFiltersContent = newArgsFiltersContent.filter((n) => !n.key.includes('fromTypes'));
-    }
-    if (argsFilters.filters.filter((n) => n.key.includes('toTypes')).length > 0) {
-      initialParams.toTypes = R.head(argsFilters.filters.filter((n) => n.key.includes('toTypes'))).values;
-      newArgsFiltersContent = newArgsFiltersContent.filter((n) => !n.key.includes('toTypes'));
-    }
-  }
-  const finalArgsFilter = {
-    ...argsFilters,
-    filters: newArgsFiltersContent
-  };
-  const listParams = { ...initialParams, ...exportTransformFilters(finalArgsFilter, ordersOpts) };
-  const works = await askListExport(context, user, format, type, selectedIds, listParams, exportType, maxMarkingDefinition);
+  const initialParams = { fromOrToId, elementWithTargetTypes, fromId, fromRole, fromTypes, toId, toRole, toTypes, relationship_type };
+  const listParams = { ...initialParams, ...exportTransformFilters(argsFilters, ordersOpts) };
+  const works = await askListExport(context, user, exportContext, format, selectedIds, listParams, exportType, maxMarkingDefinition);
   return works.map((w) => workToExportFile(w));
 };
 // endregion

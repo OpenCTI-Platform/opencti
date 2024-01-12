@@ -13,7 +13,7 @@ import ExportContextProvider from '../../../utils/ExportContextProvider';
 import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
 import useEntityToggle from '../../../utils/hooks/useEntityToggle';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
-import { emptyFilterGroup, injectEntityTypeFilterInFilterGroup } from '../../../utils/filters/filtersUtils';
+import { buildEntityTypeBasedFilterContext, emptyFilterGroup, getDefaultFilterObjFromArray } from '../../../utils/filters/filtersUtils';
 
 const LOCAL_STORAGE_KEY = 'entities';
 
@@ -28,7 +28,10 @@ const Entities = () => {
   } = usePaginationLocalStorage<EntitiesStixDomainObjectsLinesPaginationQuery$variables>(
     LOCAL_STORAGE_KEY,
     {
-      filters: emptyFilterGroup,
+      filters: {
+        ...emptyFilterGroup,
+        filters: getDefaultFilterObjFromArray(['entity_type']),
+      },
       sortBy: 'created_at',
       orderAsc: false,
       openExports: false,
@@ -51,11 +54,17 @@ const Entities = () => {
     onToggleEntity,
     numberOfSelectedElements,
   } = useEntityToggle<EntitiesStixDomainObjectLine_node$data>(LOCAL_STORAGE_KEY);
+
+  const contextFilters = buildEntityTypeBasedFilterContext('Stix-Domain-Object', filters);
+  const queryPaginationOptions = {
+    ...paginationOptions,
+    filters: contextFilters,
+  } as unknown as EntitiesStixDomainObjectsLinesPaginationQuery$variables;
   const queryRef = useQueryLoading<EntitiesStixDomainObjectsLinesPaginationQuery>(
     entitiesStixDomainObjectsLinesQuery,
-    paginationOptions,
+    queryPaginationOptions,
   );
-  const toolBarFilters = injectEntityTypeFilterInFilterGroup(filters, 'Stix-Domain-Object');
+
   const renderLines = () => {
     const isRuntimeSort = isRuntimeFieldEnable() ?? false;
     const dataColumns = {
@@ -112,17 +121,18 @@ const Entities = () => {
           openExports={openExports}
           handleToggleSelectAll={handleToggleSelectAll}
           availableEntityTypes={['Stix-Domain-Object']}
-          exportEntityType="Stix-Domain-Object"
+          exportContext={{ entity_type: 'Stix-Domain-Object' }}
           selectAll={selectAll}
           disableCards={true}
           keyword={searchTerm}
           filters={filters}
           noPadding={true}
-          paginationOptions={paginationOptions}
+          paginationOptions={queryPaginationOptions}
           numberOfElements={numberOfElements}
           iconExtension={true}
           availableFilterKeys={[
             'entity_type',
+            'regardingOf',
             'objectLabel',
             'objectMarking',
             'createdBy',
@@ -150,7 +160,7 @@ const Entities = () => {
             >
               <EntitiesStixDomainObjectsLines
                 queryRef={queryRef}
-                paginationOptions={paginationOptions}
+                paginationOptions={queryPaginationOptions}
                 dataColumns={dataColumns}
                 onLabelClick={storageHelpers.handleAddFilter}
                 selectedElements={selectedElements}
@@ -165,7 +175,7 @@ const Entities = () => {
                 numberOfSelectedElements={numberOfSelectedElements}
                 selectAll={selectAll}
                 search={searchTerm}
-                filters={toolBarFilters}
+                filters={contextFilters}
                 handleClearSelectedElements={handleClearSelectedElements}
               />
             </React.Suspense>

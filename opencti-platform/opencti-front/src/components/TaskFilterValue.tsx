@@ -3,8 +3,8 @@ import React from 'react';
 import { PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import Chip from '@mui/material/Chip';
 import makeStyles from '@mui/styles/makeStyles';
-import FilterIconButtonContent, { filterIconButtonContentQuery } from './FilterIconButtonContent';
-import { FilterIconButtonContentQuery } from './__generated__/FilterIconButtonContentQuery.graphql';
+import FilterValuesContent, { filterValuesContentQuery } from './FilterValuesContent';
+import { FilterValuesContentQuery } from './__generated__/FilterValuesContentQuery.graphql';
 import { useFormatter } from './i18n';
 import { FilterGroup } from '../utils/filters/filtersUtils';
 import { truncate } from '../utils/String';
@@ -37,12 +37,12 @@ const TaskFilterValue = ({
   queryRef,
 }: {
   filters: FilterGroup;
-  queryRef: PreloadedQuery<FilterIconButtonContentQuery>;
+  queryRef: PreloadedQuery<FilterValuesContentQuery>;
 }) => {
   const { t } = useFormatter();
   const classes = useStyles();
-  const { filtersRepresentatives } = usePreloadedQuery<FilterIconButtonContentQuery>(
-    filterIconButtonContentQuery,
+  const { filtersRepresentatives } = usePreloadedQuery<FilterValuesContentQuery>(
+    filterValuesContentQuery,
     queryRef,
   );
   const filtersRepresentativesMap = new Map(
@@ -63,7 +63,7 @@ const TaskFilterValue = ({
           20,
         )}`;
         const isOperatorNil = ['nil', 'not_nil'].includes(
-          currentFilter.operator,
+          currentFilter.operator ?? 'eq',
         );
         const DisplayNilLabel = () => {
           if (currentFilter.operator === 'nil') {
@@ -90,7 +90,7 @@ const TaskFilterValue = ({
                       );
                       return (
                         <span key={o}>
-                          <FilterIconButtonContent
+                          <FilterValuesContent
                             filterKey={currentFilter.key}
                             id={o}
                             value={filtersRepresentativesMap.get(o)}

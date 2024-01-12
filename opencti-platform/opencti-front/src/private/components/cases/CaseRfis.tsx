@@ -13,7 +13,7 @@ import CaseRfisLines, { caseRfisLinesQuery } from './case_rfis/CaseRfiLines';
 import { CaseRfiLineDummy } from './case_rfis/CaseRfiLine';
 import { CaseRfiLinesCasesPaginationQuery, CaseRfiLinesCasesPaginationQuery$variables } from './case_rfis/__generated__/CaseRfiLinesCasesPaginationQuery.graphql';
 import { CaseRfiLineCase_node$data } from './case_rfis/__generated__/CaseRfiLineCase_node.graphql';
-import { injectEntityTypeFilterInFilterGroup, emptyFilterGroup } from '../../../utils/filters/filtersUtils';
+import { buildEntityTypeBasedFilterContext, emptyFilterGroup } from '../../../utils/filters/filtersUtils';
 
 interface CaseRfisProps {
   inputValue?: string;
@@ -39,6 +39,25 @@ const CaseRfis: FunctionComponent<CaseRfisProps> = () => {
       filters: emptyFilterGroup,
     },
   );
+
+  const {
+    sortBy,
+    orderAsc,
+    searchTerm,
+    filters,
+    openExports,
+    numberOfElements,
+  } = viewStorage;
+  const contextFilters = buildEntityTypeBasedFilterContext('Case-Rfi', filters);
+  const queryPaginationOptions = {
+    ...paginationOptions,
+    filters: contextFilters,
+  } as unknown as CaseRfiLinesCasesPaginationQuery$variables;
+  const queryRef = useQueryLoading<CaseRfiLinesCasesPaginationQuery>(
+    caseRfisLinesQuery,
+    paginationOptions,
+  );
+
   const {
     onToggleEntity,
     numberOfSelectedElements,
@@ -49,14 +68,6 @@ const CaseRfis: FunctionComponent<CaseRfisProps> = () => {
     selectAll,
   } = useEntityToggle<CaseRfiLineCase_node$data>(LOCAL_STORAGE_KEY);
   const renderLines = () => {
-    const {
-      sortBy,
-      orderAsc,
-      searchTerm,
-      filters,
-      openExports,
-      numberOfElements,
-    } = viewStorage;
     const isRuntimeSort = isRuntimeFieldEnable() ?? false;
     const dataColumns = {
       name: {
@@ -105,11 +116,7 @@ const CaseRfis: FunctionComponent<CaseRfisProps> = () => {
         isSortable: isRuntimeSort,
       },
     };
-    const queryRef = useQueryLoading<CaseRfiLinesCasesPaginationQuery>(
-      caseRfisLinesQuery,
-      paginationOptions,
-    );
-    const toolBarFilters = injectEntityTypeFilterInFilterGroup(filters, 'Case-Rfi');
+
     return (
       <ListLines
         helpers={helpers}
@@ -126,10 +133,10 @@ const CaseRfis: FunctionComponent<CaseRfisProps> = () => {
         handleToggleSelectAll={handleToggleSelectAll}
         selectAll={selectAll}
         openExports={openExports}
-        exportEntityType="Case-Rfi"
+        exportContext={{ entity_type: 'Case-Rfi' }}
         keyword={searchTerm}
         filters={filters}
-        paginationOptions={paginationOptions}
+        paginationOptions={queryPaginationOptions}
         numberOfElements={numberOfElements}
         iconExtension={true}
         availableFilterKeys={[
@@ -162,7 +169,7 @@ const CaseRfis: FunctionComponent<CaseRfisProps> = () => {
           >
             <CaseRfisLines
               queryRef={queryRef}
-              paginationOptions={paginationOptions}
+              paginationOptions={queryPaginationOptions}
               dataColumns={dataColumns}
               setNumberOfElements={helpers.handleSetNumberOfElements}
               selectedElements={selectedElements}
@@ -176,7 +183,7 @@ const CaseRfis: FunctionComponent<CaseRfisProps> = () => {
               numberOfSelectedElements={numberOfSelectedElements}
               handleClearSelectedElements={handleClearSelectedElements}
               selectAll={selectAll}
-              filters={toolBarFilters}
+              filters={contextFilters}
               type="Case-Rfi"
             />
           </React.Suspense>
@@ -188,7 +195,7 @@ const CaseRfis: FunctionComponent<CaseRfisProps> = () => {
     <ExportContextProvider>
       {renderLines()}
       <Security needs={[KNOWLEDGE_KNUPDATE]}>
-        <CaseRfiCreation paginationOptions={paginationOptions} />
+        <CaseRfiCreation paginationOptions={queryPaginationOptions} />
       </Security>
     </ExportContextProvider>
   );

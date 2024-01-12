@@ -78,12 +78,37 @@ import { ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
 import { getEntitiesListFromCache, getEntityFromCache } from './cache';
 import { ENTITY_TYPE_MIGRATION_STATUS, ENTITY_TYPE_SETTINGS, ENTITY_TYPE_STATUS, ENTITY_TYPE_USER } from '../schema/internalObject';
 import { telemetry } from '../config/tracing';
-import { isBooleanAttribute, isDateAttribute, isDateNumericOrBooleanAttribute, isNumericAttribute, schemaAttributesDefinition } from '../schema/schema-attributes';
+import {
+  isBooleanAttribute,
+  isDateAttribute,
+  isDateNumericOrBooleanAttribute,
+  isNumericAttribute,
+  isObjectAttribute,
+  schemaAttributesDefinition
+} from '../schema/schema-attributes';
 import { convertTypeToStixType } from './stix-converter';
 import { extractEntityRepresentativeName } from './entity-representative';
 import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../modules/organization/organization-types';
 import { checkAndConvertFilters, isFilterGroupNotEmpty } from '../utils/filtering/filtering-utils';
-import { IDS_FILTER, SOURCE_RELIABILITY_FILTER, TYPE_FILTER, WORKFLOW_FILTER, X_OPENCTI_WORKFLOW_ID } from '../utils/filtering/filtering-constants';
+import {
+  complexConversionFilterKeys,
+  IDS_FILTER,
+  INSTANCE_FILTER_TARGET_TYPES,
+  INSTANCE_REGARDING_OF,
+  INSTANCE_RELATION_FILTER,
+  RELATION_FROM_FILTER,
+  RELATION_FROM_ROLE_FILTER,
+  RELATION_FROM_TYPES_FILTER,
+  RELATION_TO_FILTER,
+  RELATION_TO_ROLE_FILTER,
+  RELATION_TO_SIGHTING_FILTER,
+  RELATION_TO_TYPES_FILTER,
+  RELATION_TYPE_FILTER,
+  SOURCE_RELIABILITY_FILTER,
+  TYPE_FILTER,
+  WORKFLOW_FILTER,
+  X_OPENCTI_WORKFLOW_ID
+} from '../utils/filtering/filtering-constants';
 import { FilterMode } from '../generated/graphql';
 import { booleanMapping, dateMapping, numericMapping, shortMapping, textMapping } from '../schema/attribute-definition';
 import { schemaTypesDefinition } from '../schema/schema-types';
@@ -1446,6 +1471,7 @@ export const elGenerateFullTextSearchShould = (search, args = {}) => {
 const BASE_FIELDS = ['_index', 'internal_id', 'standard_id', 'sort', 'base_type', 'entity_type',
   'connections', 'first_seen', 'last_seen', 'start_time', 'stop_time'];
 
+const RANGE_OPERATORS = ['gt', 'gte', 'lt', 'lte'];
 const buildLocalMustFilter = async (validFilter) => {
   const valuesFiltering = [];
   const noValuesFiltering = [];
@@ -1473,6 +1499,8 @@ const buildLocalMustFilter = async (validFilter) => {
           nestedShould.push({ query_string: { query: `${nestedSearchValues}`, fields: [nestedFieldKey] } });
         } else if (nestedOperator === 'not_eq') {
           nestedMustNot.push({ match_phrase: { [nestedFieldKey]: nestedSearchValues } });
+        } else if (RANGE_OPERATORS.includes(nestedOperator)) {
+          nestedShould.push({ range: { [nestedFieldKey]: { [nestedOperator]: nestedSearchValues } } });
         } else {
           nestedShould.push({ match_phrase: { [nestedFieldKey]: nestedSearchValues } });
         }
@@ -1519,7 +1547,7 @@ const buildLocalMustFilter = async (validFilter) => {
     }
   }
   // 03. Handle values according to the operator
-  if (operator !== 'nils' && operator !== 'not_nils') {
+  if (operator !== 'nil' && operator !== 'not_nil') {
     for (let i = 0; i < values.length; i += 1) {
       if (values[i] === 'EXISTS') {
         if (arrayKeys.length > 1) {
@@ -1648,12 +1676,12 @@ const buildSubQueryForFilterGroup = async (context, user, inputFilters) => {
 };
 
 // If filter key = entity_type, we should also handle parent_types
-// Exemple: filter = {mode: 'or', operator: 'eq', key: ['entity_type'], values: ['Report', 'Stix-Cyber-Observable']}
+// Example: filter = {mode: 'or', operator: 'eq', key: ['entity_type'], values: ['Report', 'Stix-Cyber-Observable']}
 // we check parent_types because otherwise we would never match Stix-Cyber-Observable which is an abstract parent type
 const adaptFilterToEntityTypeFilterKey = (filter) => {
   const { key, mode = 'or', operator = 'eq' } = filter;
   const arrayKeys = Array.isArray(key) ? key : [key];
-  if (arrayKeys[0] !== TYPE_FILTER || arrayKeys.length > 1) {
+  if (arrayKeys.length > 1) {
     throw UnsupportedError('A filter with these multiple keys is not supported', { keys: arrayKeys });
   }
   // at this point arrayKeys === ['entity_type']
@@ -1712,7 +1740,6 @@ const adaptFilterToEntityTypeFilterKey = (filter) => {
   // depending on the operator (or/and), only one of newFilter and newFilterGroup is defined
   return { newFilter, newFilterGroup };
 };
-
 const adaptFilterToIdsFilterKey = (filter) => {
   const { key, mode = 'or', operator = 'eq' } = filter;
   const arrayKeys = Array.isArray(key) ? key : [key];
@@ -1725,7 +1752,6 @@ const adaptFilterToIdsFilterKey = (filter) => {
   // at this point arrayKey === ['ids'], and mode is always 'or'
 
   // we'll build these new filters or filterGroup, depending on the situation
-  let newFilter;
   let newFilterGroup;
 
   const idsArray = [ID_INTERNAL, ID_STANDARD, IDS_STIX]; // the keys to handle additionally
@@ -1749,11 +1775,11 @@ const adaptFilterToIdsFilterKey = (filter) => {
       ],
       filterGroups: [],
     };
-    return { newFilter, newFilterGroup };
+    return { newFilterGroup };
   }
 
   // at this point, operator !== nil and operator !== not_nil
-
+  let newFilter;
   if (mode === 'or') {
     // elastic multi-key is a 'or'
     newFilter = { ...filter, key: arrayKeys.concat(idsArray) };
@@ -1774,7 +1800,6 @@ const adaptFilterToIdsFilterKey = (filter) => {
   // depending on the operator, only one of new Filter and newFilterGroup is defined
   return { newFilter, newFilterGroup };
 };
-
 const adaptFilterToSourceReliabilityFilterKey = async (context, user, filter) => {
   const { key, mode = 'or', operator = 'eq', values } = filter;
   const arrayKeys = Array.isArray(key) ? key : [key];
@@ -1835,12 +1860,12 @@ const adaptFilterToSourceReliabilityFilterKey = async (context, user, filter) =>
   return { newFilter, newFilterGroup };
 };
 
-// worflow_id filter values can be both status ids and status templates ids
+// workflow_id filter values can be both status ids and status templates ids
 const adaptFilterToWorkflowFilterKey = async (context, user, filter) => {
   const { key, mode = 'or', operator = 'eq', values } = filter;
   const arrayKeys = Array.isArray(key) ? key : [key];
   if (arrayKeys[0] !== WORKFLOW_FILTER || arrayKeys.length > 1) {
-    throw Error(`A filter with these multiple keys is not supported: ${arrayKeys}`);
+    throw UnsupportedError(`A filter with these multiple keys is not supported: ${arrayKeys}`);
   }
   if (operator === 'nil' || operator === 'not_nil') { // no status template <-> no status // at least a status template <-> at least a status
     return {
@@ -1886,43 +1911,128 @@ const completeSpecialFilterKeys = async (context, user, inputFilters) => {
     const filter = filters[index];
     const { key } = filter;
     const arrayKeys = Array.isArray(key) ? key : [key];
-
-    if (arrayKeys.includes(TYPE_FILTER)) {
-      // in case we want to filter by entity_type
-      // we need to add parent_types checking (in case the given value in type is an abstract type)
-      const { newFilter, newFilterGroup } = adaptFilterToEntityTypeFilterKey(filter);
-      if (newFilter) {
+    if (arrayKeys.some((fiterKey) => complexConversionFilterKeys.includes(fiterKey))) {
+      if (arrayKeys.length > 1) {
+        throw UnsupportedError('A filter with these multiple keys is not supported}', { keys: arrayKeys });
+      }
+      if (arrayKeys.includes(INSTANCE_REGARDING_OF)) {
+        const regardingFilters = [];
+        const id = filter.values.find((i) => i.key === 'id');
+        const type = filter.values.find((i) => i.key === 'type');
+        if (!id && !type) {
+          throw UnsupportedError('Id or type are needed for this filtering key', { key: INSTANCE_REGARDING_OF });
+        }
+        const ids = id?.values;
+        const operator = id?.operator ?? 'eq';
+        if (type && type.operator && type.operator !== 'eq') {
+          throw UnsupportedError('regardingOf only support types equality restriction');
+        }
+        const types = type?.values;
+        const keys = isEmptyField(types) ? buildRefRelationKey('*') : types.map((t) => buildRefRelationKey(t));
+        if (isEmptyField(ids)) {
+          keys.forEach((relKey) => {
+            regardingFilters.push({ key: [relKey], operator, values: ['EXISTS'] });
+          });
+        } else {
+          regardingFilters.push({ key: keys, operator, values: ids });
+        }
+        finalFilterGroups.push({
+          mode: filter.mode,
+          filters: regardingFilters,
+          filterGroups: []
+        });
+      }
+      if (arrayKeys.includes(IDS_FILTER)) {
+        // the special filter key 'ids' take all the ids into account
+        const { newFilter, newFilterGroup } = adaptFilterToIdsFilterKey(filter);
+        if (newFilter) {
+          finalFilters.push(newFilter);
+        }
+        if (newFilterGroup) {
+          finalFilterGroups.push(newFilterGroup);
+        }
+      }
+      if (arrayKeys.includes(TYPE_FILTER) || arrayKeys.includes(RELATION_TYPE_FILTER)) {
+        // in case we want to filter by entity_type
+        // we need to add parent_types checking (in case the given value in type is an abstract type)
+        const { newFilter, newFilterGroup } = adaptFilterToEntityTypeFilterKey(filter);
+        if (newFilter) {
+          finalFilters.push(newFilter);
+        }
+        if (newFilterGroup) {
+          finalFilterGroups.push(newFilterGroup);
+        }
+      }
+      if (arrayKeys.includes(WORKFLOW_FILTER) || arrayKeys.includes(X_OPENCTI_WORKFLOW_ID)) {
+        // in case we want to filter by status template (template of a workflow status) or status
+        // we need to find all statuses filtered by status template and filter on these statuses
+        const newFilter = await adaptFilterToWorkflowFilterKey(context, user, filter);
         finalFilters.push(newFilter);
       }
-      if (newFilterGroup) {
-        finalFilterGroups.push(newFilterGroup);
+      if (arrayKeys.includes(SOURCE_RELIABILITY_FILTER)) {
+        // in case we want to filter by source reliability (reliability of author)
+        // we need to find all authors filtered by reliability and filter on these authors
+        const { newFilter, newFilterGroup } = await adaptFilterToSourceReliabilityFilterKey(context, user, filter);
+        if (newFilter) {
+          finalFilters.push(newFilter);
+        }
+        if (newFilterGroup) {
+          finalFilterGroups.push(newFilterGroup);
+        }
       }
-    } else if (arrayKeys.includes(IDS_FILTER)) {
-      // the special filter key 'ids' take all the ids into account
-      const { newFilter, newFilterGroup } = adaptFilterToIdsFilterKey(filter);
-      if (newFilter) {
-        finalFilters.push(newFilter);
+      if (arrayKeys.includes(INSTANCE_RELATION_FILTER)) {
+        const nested = [{ key: 'internal_id', operator: filter.operator, values: filter.values }];
+        finalFilters.push({ key: 'connections', nested });
       }
-      if (newFilterGroup) {
-        finalFilterGroups.push(newFilterGroup);
+      if (arrayKeys.includes(RELATION_FROM_FILTER) || arrayKeys.includes(RELATION_TO_FILTER) || arrayKeys.includes(RELATION_TO_SIGHTING_FILTER)) {
+        const side = arrayKeys.includes(RELATION_FROM_FILTER) ? 'from' : 'to';
+        const nested = [
+          { key: 'internal_id', operator: filter.operator, values: filter.values },
+          { key: 'role', operator: 'wildcard', values: [`*_${side}`] }
+        ];
+        finalFilters.push({ key: 'connections', nested });
       }
-    } else if (arrayKeys.includes(SOURCE_RELIABILITY_FILTER)) {
-      // in case we want to filter by source reliability (reliability of author)
-      // we need to find all authors filtered by reliability and filter on these authors
-      const { newFilter, newFilterGroup } = await adaptFilterToSourceReliabilityFilterKey(context, user, filter);
-      if (newFilter) {
-        finalFilters.push(newFilter);
+      if (arrayKeys.includes(RELATION_FROM_TYPES_FILTER) || arrayKeys.includes(RELATION_TO_TYPES_FILTER)) {
+        const side = arrayKeys.includes(RELATION_FROM_TYPES_FILTER) ? 'from' : 'to';
+        const nested = [
+          { key: 'types', operator: filter.operator, values: filter.values },
+          { key: 'role', operator: 'wildcard', values: [`*_${side}`] }
+        ];
+        finalFilters.push({ key: 'connections', nested });
       }
-      if (newFilterGroup) {
-        finalFilterGroups.push(newFilterGroup);
+      if (arrayKeys.includes(INSTANCE_FILTER_TARGET_TYPES)) {
+        const nested = [{ key: 'types', operator: filter.operator, values: filter.values }];
+        finalFilters.push({ key: 'connections', nested });
       }
-    } else if (arrayKeys.includes(WORKFLOW_FILTER) || arrayKeys.includes(X_OPENCTI_WORKFLOW_ID)) {
-      // in case we want to filter by status template (template of a workflow status) or status
-      // we need to find all statuses filtered by status template and filter on these statuses
-      const newFilter = await adaptFilterToWorkflowFilterKey(context, user, filter);
-      finalFilters.push(newFilter);
+      if (arrayKeys.includes(RELATION_FROM_ROLE_FILTER) || arrayKeys.includes(RELATION_TO_ROLE_FILTER)) {
+        const side = arrayKeys.includes(RELATION_FROM_ROLE_FILTER) ? 'from' : 'to';
+        // Retro compatibility for buildAggregationRelationFilter that use fromRole depending on isTo attribute
+        const values = filter.values.map((r) => (!r.endsWith('_from') && !r.endsWith('_to') ? `${r}_${side}` : r));
+        const nested = [{ key: 'role', operator: filter.operator, values }];
+        finalFilters.push({ key: 'connections', nested });
+      }
+    } else if (arrayKeys.some((fiterKey) => isObjectAttribute(fiterKey)) && !arrayKeys.some((fiterKey) => fiterKey === 'connections')) {
+      if (arrayKeys.length > 1) {
+        throw UnsupportedError('A filter with these multiple keys is not supported', { keys: arrayKeys });
+      }
+      const definition = schemaAttributesDefinition.getAttributeByName(key[0]);
+      if (definition.format === 'standard') {
+        finalFilterGroups.push({
+          mode: filter.mode,
+          filters: filter.values.map((v) => {
+            const filterKeys = Array.isArray(v.key) ? v.key : [v.key];
+            return { ...v, key: filterKeys.map((k) => `${k}.${v.key}`) };
+          }),
+          filterGroups: []
+        });
+      } else if (definition.format === 'nested') {
+        finalFilters.push({ key, operator: filter.operator, nested: filter.values });
+      } else {
+        throw UnsupportedError('Object attribute format is not filterable', { format: definition.format });
+      }
     } else {
       // not a special case, leave the filter unchanged
+      // Of special case but in a multi keys filter but is currently not supported
       finalFilters.push(filter);
     }
   }
@@ -1937,7 +2047,7 @@ const elQueryBodyBuilder = async (context, user, options) => {
   // eslint-disable-next-line no-use-before-define
   const { ids = [], first = 200, after, orderBy = null, orderMode = 'asc', noSize = false, noSort = false, intervalInclude = false } = options;
   const { types = null, search = null } = options;
-  const filters = checkAndConvertFilters(options.filters, { noFiltersChecking: options.noFiltersChecking, authorizeNestedFiltersKeys: options.authorizeNestedFiltersKeys });
+  const filters = checkAndConvertFilters(options.filters, { noFiltersChecking: options.noFiltersChecking });
   const { startDate = null, endDate = null, dateAttribute = null } = options;
   const searchAfter = after ? cursorToOffset(after) : undefined;
   let ordering = [];
@@ -2558,10 +2668,10 @@ export const elDelete = (indexName, documentId) => {
 };
 
 const getRelatedRelations = async (context, user, targetIds, elements, level, cache) => {
-  const elementIds = Array.isArray(targetIds) ? targetIds : [targetIds];
+  const fromOrToIds = Array.isArray(targetIds) ? targetIds : [targetIds];
   const filtersContent = [{
     key: 'connections',
-    nested: [{ key: 'internal_id', values: elementIds }],
+    nested: [{ key: 'internal_id', values: fromOrToIds }],
   }];
   const filters = {
     mode: 'and',
@@ -2612,7 +2722,7 @@ const elRemoveRelationConnection = async (context, user, elementsImpact) => {
     const idsToResolve = impacts.map(([k]) => k);
     const dataIds = await elFindByIds(context, user, idsToResolve);
     const indexCache = R.mergeAll(dataIds.map((element) => ({ [element.internal_id]: element._index })));
-    const bodyUpdateRaw = impacts.map(([elementId, elementMeta]) => {
+    const bodyUpdateRaw = impacts.map(([impactId, elementMeta]) => {
       return Object.entries(elementMeta).map(([typeAndIndex, cleanupIds]) => {
         const [relationType, relationIndex] = typeAndIndex.split('|');
         const refField = isStixRefRelationship(relationType) && isInferredIndex(relationIndex) ? ID_INFERRED : ID_INTERNAL;
@@ -2623,9 +2733,9 @@ const elRemoveRelationConnection = async (context, user, elementsImpact) => {
           source += 'ctx._source[\'updated_at\'] = params.updated_at;';
         }
         const script = { source, params: { cleanupIds, updated_at: now() } };
-        const fromIndex = indexCache[elementId];
+        const fromIndex = indexCache[impactId];
         updates.push([
-          { update: { _index: fromIndex, _id: elementId, retry_on_conflict: ES_RETRY_ON_CONFLICT } },
+          { update: { _index: fromIndex, _id: impactId, retry_on_conflict: ES_RETRY_ON_CONFLICT } },
           { script },
         ]);
         return updates;

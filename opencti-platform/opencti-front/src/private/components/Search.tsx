@@ -17,7 +17,7 @@ import useEntityToggle from '../../utils/hooks/useEntityToggle';
 import useQueryLoading from '../../utils/hooks/useQueryLoading';
 import useAuth from '../../utils/hooks/useAuth';
 import useEnterpriseEdition from '../../utils/hooks/useEnterpriseEdition';
-import { emptyFilterGroup, injectEntityTypeFilterInFilterGroup } from '../../utils/filters/filtersUtils';
+import { buildEntityTypeBasedFilterContext, emptyFilterGroup, getDefaultFilterObjFromArray } from '../../utils/filters/filtersUtils';
 import { decodeSearchKeyword, handleSearchByKeyword } from '../../utils/SearchUtils';
 import { useFormatter } from '../../components/i18n';
 
@@ -38,7 +38,10 @@ const Search = () => {
       sortBy: '_score',
       orderAsc: false,
       openExports: false,
-      filters: emptyFilterGroup,
+      filters: {
+        ...emptyFilterGroup,
+        filters: getDefaultFilterObjFromArray(['entity_type']),
+      },
     },
   );
   const {
@@ -58,12 +61,15 @@ const Search = () => {
     numberOfSelectedElements,
   } = useEntityToggle<SearchStixCoreObjectLine_node$data>(LOCAL_STORAGE_KEY);
 
+  const contextFilters = buildEntityTypeBasedFilterContext('Stix-Core-Object', filters);
+  const queryPaginationOptions = {
+    ...paginationOptions,
+    filters: contextFilters,
+  } as unknown as SearchStixCoreObjectsLinesPaginationQuery$variables;
   const queryRef = useQueryLoading<SearchStixCoreObjectsLinesPaginationQuery>(
     searchStixCoreObjectsLinesQuery,
-    { ...paginationOptions, search: searchTerm },
+    { ...queryPaginationOptions, search: searchTerm },
   );
-
-  const toolBarFilters = injectEntityTypeFilterInFilterGroup(filters, 'Stix-Core-Object');
 
   const handleSearch = (searchKeyword: string) => {
     handleSearchByKeyword(searchKeyword, 'knowledge', history);
@@ -133,7 +139,7 @@ const Search = () => {
           handleToggleSelectAll={handleToggleSelectAll}
           handleToggleExports={storageHelpers.handleToggleExports}
           openExports={openExports}
-          exportEntityType="Stix-Core-Object"
+          exportContext={{ entity_type: 'Stix-Core-Object' }}
           selectAll={selectAll}
           disableCards={true}
           filters={filters}
@@ -168,7 +174,7 @@ const Search = () => {
           >
             <SearchStixCoreObjectsLines
               queryRef={queryRef}
-              paginationOptions={paginationOptions}
+              paginationOptions={queryPaginationOptions}
               dataColumns={dataColumns}
               onLabelClick={storageHelpers.handleAddFilter}
               selectedElements={selectedElements}
@@ -182,7 +188,7 @@ const Search = () => {
               deSelectedElements={deSelectedElements}
               numberOfSelectedElements={numberOfSelectedElements}
               selectAll={selectAll}
-              filters={toolBarFilters}
+              filters={contextFilters}
               search={searchTerm}
               handleClearSelectedElements={handleClearSelectedElements}
             />

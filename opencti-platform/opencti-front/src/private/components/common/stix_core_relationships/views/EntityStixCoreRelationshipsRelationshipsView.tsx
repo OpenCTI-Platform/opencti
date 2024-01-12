@@ -13,14 +13,7 @@ import Security from '../../../../../utils/Security';
 import { computeTargetStixCyberObservableTypes, computeTargetStixDomainObjectTypes, isStixCyberObservables } from '../../../../../utils/stixTypeUtils';
 import { PaginationLocalStorage } from '../../../../../utils/hooks/useLocalStorage';
 import { DataColumns, PaginationOptions } from '../../../../../components/list_lines';
-import {
-  addFilter,
-  cleanFilters,
-  FilterGroup,
-  findFilterFromKey,
-  injectEntityTypeFilterInFilterGroup,
-  removeIdFromFilterGroupObject,
-} from '../../../../../utils/filters/filtersUtils';
+import { FilterGroup, isFilterGroupNotEmpty, removeIdFromFilterGroupObject } from '../../../../../utils/filters/filtersUtils';
 
 interface EntityStixCoreRelationshipsRelationshipsViewProps {
   entityId: string
@@ -69,8 +62,6 @@ const EntityStixCoreRelationshipsRelationshipsView: FunctionComponent<EntityStix
   } = viewStorage;
 
   const availableFilterKeys = [
-    'relationship_type',
-    'entity_type',
     'objectMarking',
     'confidence',
     'objectLabel',
@@ -135,66 +126,33 @@ const EntityStixCoreRelationshipsRelationshipsView: FunctionComponent<EntityStix
     },
   };
 
-  const selectedTypes = findFilterFromKey(filters?.filters ?? [], 'entity_type')?.values ?? stixCoreObjectTypes;
-  const selectedRelationshipTypes = findFilterFromKey(filters?.filters ?? [], 'relationship_type')?.values ?? relationshipTypes;
+  // Filters due to screen context
+  const userFilters = removeIdFromFilterGroupObject(filters);
+  const predefinedFilters = [{ key: 'relationship_type', values: relationshipTypes }];
+  if (allDirections) {
+    predefinedFilters.push({ key: 'fromOrToId', values: [entityId] });
+    predefinedFilters.push({ key: 'elementWithTargetTypes', values: stixCoreObjectTypes });
+  } else if (isRelationReversed) {
+    predefinedFilters.push({ key: 'toId', values: [entityId] });
+    if (role) predefinedFilters.push({ key: 'toRole', values: [role] });
+    predefinedFilters.push({ key: 'fromTypes', values: stixCoreObjectTypes });
+  } else {
+    predefinedFilters.push({ key: 'fromId', values: [entityId] });
+    if (role) predefinedFilters.push({ key: 'fromRole', values: [role] });
+    predefinedFilters.push({ key: 'toTypes', values: stixCoreObjectTypes });
+  }
+  const contextFilters: FilterGroup = {
+    mode: 'and',
+    filters: predefinedFilters,
+    filterGroups: userFilters && isFilterGroupNotEmpty(userFilters) ? [userFilters] : [],
+  };
 
-  let paginationOptions = {
-    relationship_type: selectedRelationshipTypes,
+  const paginationOptions = {
     search: searchTerm,
     orderBy: (sortBy && (sortBy in dataColumns) && dataColumns[sortBy].isSortable) ? sortBy : 'relationship_type',
     orderMode: orderAsc ? 'asc' : 'desc',
-    filters: removeIdFromFilterGroupObject(cleanFilters(filters, availableFilterKeys)),
+    filters: contextFilters,
   } as object;
-
-  let backgroundTaskFilters: FilterGroup | undefined = injectEntityTypeFilterInFilterGroup(
-    filters,
-    selectedRelationshipTypes.length > 0
-      ? selectedRelationshipTypes
-      : ['stix-core-relationship'],
-  );
-
-  if (allDirections) {
-    paginationOptions = {
-      ...paginationOptions,
-      elementId: entityId,
-      elementWithTargetTypes: selectedTypes,
-    };
-    backgroundTaskFilters = addFilter(
-      addFilter(backgroundTaskFilters, 'elementId', entityId),
-      'elementWithTargetTypes',
-      selectedTypes.length > 0
-        ? selectedTypes
-        : ['Stix-Core-Object'],
-    );
-  } else if (isRelationReversed) {
-    paginationOptions = {
-      ...paginationOptions,
-      toId: entityId,
-      toRole: role || null,
-      fromTypes: selectedTypes,
-    };
-    backgroundTaskFilters = addFilter(
-      addFilter(backgroundTaskFilters, 'toId', entityId),
-      'fromTypes',
-      selectedTypes.length > 0
-        ? selectedTypes
-        : ['Stix-Core-Object'],
-    );
-  } else {
-    paginationOptions = {
-      ...paginationOptions,
-      fromId: entityId,
-      fromRole: role || null,
-      toTypes: selectedTypes,
-    };
-    backgroundTaskFilters = addFilter(
-      addFilter(backgroundTaskFilters, 'fromId', entityId),
-      'toTypes',
-      selectedTypes.length > 0
-        ? selectedTypes
-        : ['Stix-Core-Object'],
-    );
-  }
 
   const {
     selectedElements,
@@ -233,11 +191,9 @@ const EntityStixCoreRelationshipsRelationshipsView: FunctionComponent<EntityStix
         availableRelationshipTypes={relationshipTypes}
         handleToggleExports={storageHelpers.handleToggleExports}
         openExports={openExports}
-        exportEntityType="stix-core-relationship"
+        exportContext={{ entity_id: entityId, entity_type: 'stix-core-relationship' }}
         noPadding={true}
-        handleChangeView={
-                    handleChangeView || storageHelpers.handleChangeView
-                }
+        handleChangeView={handleChangeView || storageHelpers.handleChangeView}
         enableNestedView={enableNestedView}
         enableContextualView={enableContextualView}
         disableCards={true}
@@ -306,7 +262,7 @@ const EntityStixCoreRelationshipsRelationshipsView: FunctionComponent<EntityStix
         deSelectedElements={deSelectedElements}
         numberOfSelectedElements={numberOfSelectedElements}
         selectAll={selectAll}
-        filters={backgroundTaskFilters}
+        filters={contextFilters}
         search={searchTerm}
         handleClearSelectedElements={handleClearSelectedElements}
         variant="medium"

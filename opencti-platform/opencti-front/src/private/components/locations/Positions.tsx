@@ -71,7 +71,7 @@ const Positions: FunctionComponent = () => {
         handleSwitchLocalMode={helpers.handleSwitchLocalMode}
         handleToggleExports={helpers.handleToggleExports}
         openExports={openExports}
-        exportEntityType="Position"
+        exportContext={{ entity_type: 'Position' }}
         keyword={searchTerm}
         filters={filters}
         paginationOptions={paginationOptions}

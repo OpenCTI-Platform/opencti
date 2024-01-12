@@ -28,7 +28,7 @@ const styles = (theme) => ({
 
 class StixCyberObservablesExports extends Component {
   render() {
-    const { classes, paginationOptions, open, handleToggle, context } = this.props;
+    const { classes, paginationOptions, open, handleToggle, exportContext } = this.props;
     return (
       <Drawer
         open={open}
@@ -40,14 +40,14 @@ class StixCyberObservablesExports extends Component {
       >
         <QueryRenderer
           query={stixCyberObservablesExportsContentQuery}
-          variables={{ count: 25, context }}
+          variables={{ count: 25, exportContext }}
           render={({ props }) => (
             <StixCyberObservablesExportsContent
               handleToggle={handleToggle.bind(this)}
               data={props}
               paginationOptions={paginationOptions}
               isOpen={open}
-              context={context}
+              exportContext={exportContext}
             />
           )}
         />
@@ -62,7 +62,7 @@ StixCyberObservablesExports.propTypes = {
   handleToggle: PropTypes.func,
   paginationOptions: PropTypes.object,
   handleApplyListArgs: PropTypes.func,
-  context: PropTypes.string,
+  exportContext: PropTypes.object,
 };
 
 export default compose(withStyles(styles))(StixCyberObservablesExports);

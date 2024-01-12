@@ -12,7 +12,7 @@ import { computeTargetStixCyberObservableTypes, computeTargetStixDomainObjectTyp
 import { PaginationLocalStorage } from '../../../../../utils/hooks/useLocalStorage';
 import { DataColumns, PaginationOptions } from '../../../../../components/list_lines';
 import { EntityStixCoreRelationshipsEntitiesViewLinesPaginationQuery$variables } from './__generated__/EntityStixCoreRelationshipsEntitiesViewLinesPaginationQuery.graphql';
-import { cleanFilters, removeIdFromFilterGroupObject, injectEntityTypeFilterInFilterGroup } from '../../../../../utils/filters/filtersUtils';
+import { FilterGroup, isFilterGroupNotEmpty, removeIdFromFilterGroupObject } from '../../../../../utils/filters/filtersUtils';
 
 interface EntityStixCoreRelationshipsEntitiesViewProps {
   entityId: string;
@@ -61,9 +61,9 @@ EntityStixCoreRelationshipsEntitiesViewProps
     openExports,
   } = viewStorage;
 
-  let availableFilterKeys = [
-    'relationship_type',
-    'entity_type',
+  const availableFilterKeys = [
+    // regardingOf|partial|type,
+    // entity_type|readonly,
     'objectMarking',
     'confidence',
     'objectLabel',
@@ -73,7 +73,7 @@ EntityStixCoreRelationshipsEntitiesViewProps
   ];
   const typesWithTargetsFilter = ['Campaign', 'Threat-Actor', 'Incident', 'Intrusion-Set'];
   if ((relationshipTypes ?? []).includes('targets') || stixCoreObjectTypes.some((type) => typesWithTargetsFilter.includes(type))) {
-    availableFilterKeys = [...availableFilterKeys, 'targets'];
+    availableFilterKeys.push('targets');
   }
 
   const { platformModuleHelpers } = useAuth();
@@ -122,23 +122,30 @@ EntityStixCoreRelationshipsEntitiesViewProps
     },
   };
 
-  const paginationOptions = {
-    types: stixCoreObjectTypes,
-    relationship_type: relationshipTypes,
-    elementId: entityId,
-    search: searchTerm,
-    orderBy:
-            sortBy && sortBy in dataColumns && dataColumns[sortBy].isSortable
-              ? sortBy
-              : 'name',
-    orderMode: orderAsc ? 'asc' : 'desc',
-    filters: cleanFilters(removeIdFromFilterGroupObject(filters), availableFilterKeys),
-  } as unknown as EntityStixCoreRelationshipsEntitiesViewLinesPaginationQuery$variables; // Because of FilterMode
+  // Filters due to screen context
+  const userFilters = removeIdFromFilterGroupObject(filters);
+  const contextFilters: FilterGroup = {
+    mode: 'and',
+    filters: [
+      { key: 'entity_type', operator: 'eq', mode: 'or', values: stixCoreObjectTypes },
+      { key: 'regardingOf',
+        operator: 'eq',
+        mode: 'and',
+        values: [
+          { key: 'id', values: [entityId], operator: 'eq', mode: 'or' },
+          { key: 'type', values: relationshipTypes, operator: 'eq', mode: 'or' },
+        ] as unknown as string[], // Workaround for typescript waiting for better solution
+      },
+    ],
+    filterGroups: userFilters && isFilterGroupNotEmpty(userFilters) ? [userFilters] : [],
+  };
 
-  const backgroundTaskFilters = injectEntityTypeFilterInFilterGroup(
-    filters,
-    ['Stix-Core-Object'],
-  );
+  const paginationOptions = {
+    search: searchTerm,
+    orderBy: sortBy && sortBy in dataColumns && dataColumns[sortBy].isSortable ? sortBy : 'name',
+    orderMode: orderAsc ? 'asc' : 'desc',
+    filters: contextFilters,
+  } as unknown as EntityStixCoreRelationshipsEntitiesViewLinesPaginationQuery$variables; // Because of FilterMode
 
   const {
     selectedElements,
@@ -173,7 +180,7 @@ EntityStixCoreRelationshipsEntitiesViewProps
         displayImport={true}
         handleToggleExports={storageHelpers.handleToggleExports}
         openExports={openExports}
-        exportEntityType={'Stix-Core-Object'}
+        exportContext={{ entity_id: entityId, entity_type: 'Stix-Core-Object' }}
         iconExtension={true}
         filters={filters}
         availableFilterKeys={availableFilterKeys}
@@ -228,7 +235,7 @@ EntityStixCoreRelationshipsEntitiesViewProps
         deSelectedElements={deSelectedElements}
         numberOfSelectedElements={numberOfSelectedElements}
         selectAll={selectAll}
-        filters={backgroundTaskFilters}
+        filters={contextFilters}
         search={searchTerm}
         handleClearSelectedElements={handleClearSelectedElements}
         variant="medium"

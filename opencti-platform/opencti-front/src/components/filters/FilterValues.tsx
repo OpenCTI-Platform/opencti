@@ -1,11 +1,16 @@
 import React, { Fragment, FunctionComponent } from 'react';
 import { last } from 'ramda';
 import makeStyles from '@mui/styles/makeStyles';
+import Tooltip from '@mui/material/Tooltip';
+import Box from '@mui/material/Box';
+import Chip from '@mui/material/Chip';
+import { ChipOwnProps } from '@mui/material/Chip/Chip';
 import { useFormatter } from '../i18n';
-import FilterIconButtonContent from '../FilterIconButtonContent';
 import type { Theme } from '../Theme';
-import { Filter, filtersUsedAsApiParameters } from '../../utils/filters/filtersUtils';
-import { UseLocalStorageHelpers } from '../../utils/hooks/useLocalStorage';
+import { Filter } from '../../utils/filters/filtersUtils';
+import { handleFilterHelpers } from '../../utils/hooks/useLocalStorage';
+import { truncate } from '../../utils/String';
+import FilterValuesContent from '../FilterValuesContent';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   inlineOperator: {
@@ -47,8 +52,10 @@ interface FilterValuesProps {
   redirection?: boolean;
   handleSwitchLocalMode?: (filter: Filter) => void;
   onClickLabel?: (event: React.MouseEvent<HTMLButtonElement>) => void;
-  helpers?: UseLocalStorageHelpers;
+  helpers?: handleFilterHelpers;
   isReadWriteFilter?: boolean;
+  chipColor?: ChipOwnProps['color'];
+  noLabelDisplay?: boolean;
 }
 
 const FilterValues: FunctionComponent<FilterValuesProps> = ({
@@ -61,16 +68,17 @@ const FilterValues: FunctionComponent<FilterValuesProps> = ({
   onClickLabel,
   helpers,
   isReadWriteFilter,
+  chipColor,
+  noLabelDisplay,
 }) => {
   const { t } = useFormatter();
   const filterKey = currentFilter.key;
   const filterOperator = currentFilter.operator;
   const filterValues = currentFilter.values;
-  const isOperatorNil = ['nil', 'not_nil'].includes(filterOperator);
+  const isOperatorNil = ['nil', 'not_nil'].includes(filterOperator ?? 'eq');
   const classes = useStyles();
   const deactivatePopoverMenu = !helpers;
   const onCLick = deactivatePopoverMenu ? () => {} : onClickLabel;
-  const isFiltersUsedAsApiParameters = filtersUsedAsApiParameters.includes(filterKey);
   if (isOperatorNil) {
     return (
       <>
@@ -87,25 +95,21 @@ const FilterValues: FunctionComponent<FilterValuesProps> = ({
     );
   }
   const values = filterValues.map((id) => {
+    const operatorClassName = (isReadWriteFilter && handleSwitchLocalMode) ? classes.inlineOperator : classes.inlineOperatorReadOnly;
+    const operatorOnClick = (isReadWriteFilter && handleSwitchLocalMode) ? () => handleSwitchLocalMode(currentFilter) : undefined;
     return (
       <Fragment key={id}>
-        {filtersRepresentativesMap.has(id) && (
-          <FilterIconButtonContent
-            redirection={tooltip ? false : redirection}
-            isFilterTooltip={!!tooltip}
-            filterKey={filterKey}
-            id={id}
-            value={filtersRepresentativesMap.get(id)}
-          />
-        )}
-        {last(filterValues) !== id && (
+        <FilterValuesContent
+          redirection={tooltip ? false : redirection}
+          isFilterTooltip={!!tooltip}
+          filterKey={filterKey}
+          id={id}
+          value={filtersRepresentativesMap.get(id) ?? id}
+        />
+        {filterKey !== 'regardingOf' && last(filterValues) !== id && (
           <div
-            className={
-              (isReadWriteFilter && !isFiltersUsedAsApiParameters)
-                ? classes.inlineOperator
-                : classes.inlineOperatorReadOnly
-            }
-            onClick={(isReadWriteFilter && !isFiltersUsedAsApiParameters) ? () => handleSwitchLocalMode?.(currentFilter) : undefined}
+            className={operatorClassName}
+            onClick={operatorOnClick}
           >
             {t((currentFilter.mode ?? 'or').toUpperCase())}
           </div>
@@ -114,6 +118,73 @@ const FilterValues: FunctionComponent<FilterValuesProps> = ({
     );
   });
 
+  if (filterKey === 'regardingOf') {
+    const sortedFilterValues = [...filterValues].sort((a, b) => -a.key.localeCompare(b.key)); // display type first, then id
+
+    return (
+      <>
+        <strong
+          className={deactivatePopoverMenu ? '' : classes.label}
+          onClick={onCLick}
+        >
+          {label}
+        </strong>{' '}
+        <Box sx={{ display: 'flex', flexDirection: 'row', overflow: 'hidden' }}>
+          {sortedFilterValues
+            .map((val) => {
+              const subKey = val.key;
+              const keyLabel = (
+                <>
+                  {truncate(t(subKey), 20)}
+                  <>&nbsp;=</>
+                </>
+              );
+              return (
+                <Fragment key={val.key}>
+                  <Tooltip
+                    title={
+                      <FilterValues
+                        label={keyLabel}
+                        tooltip={true}
+                        currentFilter={val}
+                        filtersRepresentativesMap={filtersRepresentativesMap}
+                      />
+                    }
+                  >
+                    <Box
+                      sx={{
+                        padding: '0 4px',
+                        display: 'flex',
+                      }}
+                    >
+                      <Chip
+                        label={
+                          <FilterValues
+                            label={keyLabel}
+                            tooltip={false}
+                            currentFilter={val}
+                            filtersRepresentativesMap={filtersRepresentativesMap}
+                            redirection
+                            noLabelDisplay={true}
+                          />
+                        }
+                        color={chipColor}
+                      />
+                    </Box>
+                  </Tooltip>
+                </Fragment>
+              );
+            })
+          }
+        </Box>
+      </>
+    );
+  }
+  if (noLabelDisplay) {
+    return (
+      <>{values}</>
+    );
+  }
   return (
     <>
       <strong

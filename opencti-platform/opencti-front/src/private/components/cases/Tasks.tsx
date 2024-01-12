@@ -9,7 +9,7 @@ import TasksLines, { tasksLinesQuery } from './tasks/TasksLines';
 import { tasksDataColumns, TasksLineDummy } from './tasks/TasksLine';
 import { TasksLinesPaginationQuery, TasksLinesPaginationQuery$variables } from './tasks/__generated__/TasksLinesPaginationQuery.graphql';
 import { TasksLine_node$data } from './tasks/__generated__/TasksLine_node.graphql';
-import { injectEntityTypeFilterInFilterGroup, emptyFilterGroup } from '../../../utils/filters/filtersUtils';
+import { buildEntityTypeBasedFilterContext, emptyFilterGroup } from '../../../utils/filters/filtersUtils';
 
 export const LOCAL_STORAGE_KEY_TASKS = 'cases-casesTasks';
 
@@ -47,11 +47,16 @@ const Tasks = () => {
       numberOfElements,
     } = viewStorage;
 
+    const contextFilters = buildEntityTypeBasedFilterContext('Task', filters);
+    const queryPaginationOptions = {
+      ...paginationOptions,
+      filters: contextFilters,
+    } as unknown as TasksLinesPaginationQuery$variables;
     const queryRef = useQueryLoading<TasksLinesPaginationQuery>(
       tasksLinesQuery,
-      paginationOptions,
+      queryPaginationOptions,
     );
-    const toolBarFilters = injectEntityTypeFilterInFilterGroup(filters, 'Task');
+
     return (
       <ListLines
         helpers={helpers}
@@ -68,10 +73,10 @@ const Tasks = () => {
         dataColumns={tasksDataColumns}
         selectAll={selectAll}
         openExports={openExports}
-        exportEntityType="Task"
+        exportContext={{ entity_type: 'Task' }}
         keyword={searchTerm}
         filters={filters}
-        paginationOptions={paginationOptions}
+        paginationOptions={queryPaginationOptions}
         numberOfElements={numberOfElements}
         iconExtension={true}
         availableFilterKeys={[
@@ -99,7 +104,7 @@ const Tasks = () => {
             >
               <TasksLines
                 queryRef={queryRef}
-                paginationOptions={paginationOptions}
+                paginationOptions={queryPaginationOptions}
                 setNumberOfElements={helpers.handleSetNumberOfElements}
                 selectedElements={selectedElements}
                 deSelectedElements={deSelectedElements}
@@ -113,7 +118,7 @@ const Tasks = () => {
               numberOfSelectedElements={numberOfSelectedElements}
               handleClearSelectedElements={handleClearSelectedElements}
               selectAll={selectAll}
-              filters={toolBarFilters}
+              filters={contextFilters}
               type="Task"
             />
           </>

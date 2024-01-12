@@ -13,38 +13,11 @@ import useEntityToggle from '../../../utils/hooks/useEntityToggle';
 import { ObservedDataLine_node$data } from './observed_data/__generated__/ObservedDataLine_node.graphql';
 import { ObservedDatasLinesPaginationQuery$data, ObservedDatasLinesPaginationQuery$variables } from './observed_data/__generated__/ObservedDatasLinesPaginationQuery.graphql';
 import { ModuleHelper } from '../../../utils/platformModulesHelper';
-import { injectEntityTypeFilterInFilterGroup, emptyFilterGroup } from '../../../utils/filters/filtersUtils';
+import { buildEntityTypeBasedFilterContext, emptyFilterGroup } from '../../../utils/filters/filtersUtils';
 
 const LOCAL_STORAGE_KEY = 'observedDatas';
 
-interface ObservedDatasProps {
-  objectId: string;
-  authorId: string;
-  onChangeOpenExports: () => void;
-}
-
-const ObservedDatas: FunctionComponent<ObservedDatasProps> = ({
-  objectId,
-  authorId,
-  onChangeOpenExports,
-}) => {
-  const additionnalFilters = [];
-  if (authorId) {
-    additionnalFilters.push({
-      key: 'createdBy',
-      values: [authorId],
-      operator: 'eq',
-      mode: 'or',
-    });
-  }
-  if (objectId) {
-    additionnalFilters.push({
-      key: 'objects',
-      values: [objectId],
-      operator: 'eq',
-      mode: 'or',
-    });
-  }
+const ObservedDatas: FunctionComponent = () => {
   const {
     viewStorage,
     helpers: storageHelpers,
@@ -58,7 +31,6 @@ const ObservedDatas: FunctionComponent<ObservedDatasProps> = ({
       openExports: false,
       filters: emptyFilterGroup,
     },
-    additionnalFilters,
   );
   const {
     numberOfElements,
@@ -77,14 +49,13 @@ const ObservedDatas: FunctionComponent<ObservedDatasProps> = ({
     handleToggleSelectAll,
     selectAll,
   } = useEntityToggle<ObservedDataLine_node$data>(LOCAL_STORAGE_KEY);
+
+  const contextFilters = buildEntityTypeBasedFilterContext('Observed-Data', filters);
+  const queryPaginationOptions = {
+    ...paginationOptions, filters: contextFilters,
+  } as unknown as ObservedDatasLinesPaginationQuery$variables;
+
   const renderLines = (helper: ModuleHelper | undefined) => {
-    let exportContext = null;
-    if (objectId) {
-      exportContext = `of-entity-${objectId}`;
-    } else if (authorId) {
-      exportContext = `of-entity-${authorId}`;
-    }
-    const toolBarFilters = injectEntityTypeFilterInFilterGroup(filters, 'Observed-Data');
     const isRuntimeSort = helper?.isRuntimeFieldEnable();
     const dataColumns = {
       name: {
@@ -139,12 +110,10 @@ const ObservedDatas: FunctionComponent<ObservedDatasProps> = ({
           openExports={openExports}
           handleToggleSelectAll={handleToggleSelectAll}
           selectAll={selectAll}
-          noPadding={typeof onChangeOpenExports === 'function'}
-          exportEntityType="Observed-Data"
-          exportContext={exportContext}
+          exportContext={{ entity_type: 'Observed-Data' }}
           keyword={searchTerm}
           filters={filters}
-          paginationOptions={paginationOptions}
+          paginationOptions={queryPaginationOptions}
           numberOfElements={numberOfElements}
           iconExtension={true}
           availableFilterKeys={[
@@ -159,7 +128,7 @@ const ObservedDatas: FunctionComponent<ObservedDatasProps> = ({
         >
           <QueryRenderer
             query={observedDatasLinesQuery}
-            variables={{ ...paginationOptions }}
+            variables={queryPaginationOptions}
             render={({
               props,
             }: {
@@ -167,7 +136,7 @@ const ObservedDatas: FunctionComponent<ObservedDatasProps> = ({
             }) => (
               <ObservedDatasLines
                 data={props}
-                paginationOptions={paginationOptions}
+                paginationOptions={queryPaginationOptions}
                 dataColumns={dataColumns}
                 initialLoading={props === null}
                 onLabelClick={storageHelpers.handleAddFilter}
@@ -186,7 +155,7 @@ const ObservedDatas: FunctionComponent<ObservedDatasProps> = ({
           numberOfSelectedElements={numberOfSelectedElements}
           selectAll={selectAll}
           search={searchTerm}
-          filters={toolBarFilters}
+          filters={contextFilters}
           handleClearSelectedElements={handleClearSelectedElements}
           type="Observed-Data"
         />
@@ -201,7 +170,7 @@ const ObservedDatas: FunctionComponent<ObservedDatasProps> = ({
           <div>
             {renderLines(platformModuleHelpers)}
             <Security needs={[KNOWLEDGE_KNUPDATE]}>
-              <ObservedDataCreation paginationOptions={paginationOptions}/>
+              <ObservedDataCreation paginationOptions={queryPaginationOptions}/>
             </Security>
           </div>
         </ExportContextProvider>

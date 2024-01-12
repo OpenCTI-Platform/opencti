@@ -5,7 +5,7 @@ import { constructHandleAddFilter, constructHandleRemoveFilter, Filter, FilterGr
 import FiltersElement, { FilterElementsInputValue } from './FiltersElement';
 import ListFilters from './ListFilters';
 import DialogFilters from './DialogFilters';
-import { HandleAddFilter, UseLocalStorageHelpers } from '../../../../utils/hooks/useLocalStorage';
+import { HandleAddFilter, handleFilterHelpers } from '../../../../utils/hooks/useLocalStorage';
 import { setSearchEntitiesScope } from '../../../../utils/filters/SearchEntitiesUtil';
 
 interface FiltersProps {
@@ -14,7 +14,6 @@ interface FiltersProps {
   size?: number;
   fontSize?: number;
   availableFilterKeys: string[];
-  noDirectFilters?: boolean;
   availableEntityTypes?: string[];
   availableRelationshipTypes?: string[];
   availableRelationFilterTypes?: Record<string, string[]>;
@@ -29,7 +28,7 @@ interface FiltersProps {
     elementId?: string[];
   };
   type?: string;
-  helpers?: UseLocalStorageHelpers;
+  helpers?: handleFilterHelpers;
 }
 
 const Filters: FunctionComponent<FiltersProps> = ({
@@ -38,7 +37,6 @@ const Filters: FunctionComponent<FiltersProps> = ({
   size,
   fontSize,
   availableFilterKeys,
-  noDirectFilters,
   availableEntityTypes,
   availableRelationshipTypes,
   availableRelationFilterTypes,
@@ -130,7 +128,6 @@ const Filters: FunctionComponent<FiltersProps> = ({
       availableFilterKeys={availableFilterKeys}
       searchContext={searchContext ?? { entityTypes: [] }}
       handleChangeKeyword={handleChangeKeyword}
-      noDirectFilters={noDirectFilters}
       inputValues={inputValues}
       setInputValues={setInputValues}
       defaultHandleAddFilter={defaultHandleAddFilter}
@@ -182,7 +179,6 @@ const Filters: FunctionComponent<FiltersProps> = ({
           handleCloseFilters={handleCloseFilters}
           open={open}
           anchorEl={anchorEl}
-          noDirectFilters={noDirectFilters}
           availableFilterKeys={availableFilterKeys}
           filterElement={filterElement}
           searchContext={searchContext}

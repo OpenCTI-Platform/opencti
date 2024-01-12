@@ -21,7 +21,6 @@ const nbOfRowsToLoad = 50;
 const contextualViewLinesFragment = graphql`
   fragment EntityStixCoreRelationshipsIndicatorsContextualViewLines_data on Query
   @argumentDefinitions(
-    containersIds: { type: "[String]" }
     search: { type: "String" }
     count: { type: "Int", defaultValue: 25 }
     cursor: { type: "ID" }
@@ -40,7 +39,7 @@ const contextualViewLinesFragment = graphql`
     )  @connection(key: "Pagination_indicators") {
       edges {
         node {
-          ...EntityStixCoreRelationshipsIndicatorsContextualViewLine_node @arguments(containersIds: $containersIds)
+          ...EntityStixCoreRelationshipsIndicatorsContextualViewLine_node
         }
       }
       pageInfo {
@@ -54,7 +53,6 @@ const contextualViewLinesFragment = graphql`
 
 export const contextualViewLinesQuery = graphql`
   query EntityStixCoreRelationshipsIndicatorsContextualViewLinesQuery(
-    $containersIds: [String]
     $search: String
     $count: Int!
     $cursor: ID
@@ -64,7 +62,6 @@ export const contextualViewLinesQuery = graphql`
   ) {
     ...EntityStixCoreRelationshipsIndicatorsContextualViewLines_data
     @arguments(
-      containersIds: $containersIds
       search: $search
       count: $count
       cursor: $cursor

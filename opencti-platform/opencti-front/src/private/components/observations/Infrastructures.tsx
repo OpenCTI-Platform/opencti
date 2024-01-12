@@ -13,7 +13,7 @@ import ExportContextProvider from '../../../utils/ExportContextProvider';
 import { InfrastructureLineDummy } from './infrastructures/InfrastructureLine';
 import ToolBar from '../data/ToolBar';
 import { InfrastructureLine_node$data } from './infrastructures/__generated__/InfrastructureLine_node.graphql';
-import { injectEntityTypeFilterInFilterGroup, emptyFilterGroup } from '../../../utils/filters/filtersUtils';
+import { buildEntityTypeBasedFilterContext, emptyFilterGroup } from '../../../utils/filters/filtersUtils';
 
 export const LOCAL_STORAGE_KEY_INFRASTRUCTURES = 'infrastructures';
 
@@ -36,6 +36,23 @@ const Infrastructures = () => {
     },
   );
   const {
+    sortBy,
+    orderAsc,
+    searchTerm,
+    filters,
+    openExports,
+    numberOfElements,
+  } = viewStorage;
+  const contextFilters = buildEntityTypeBasedFilterContext('Infrastructure', filters);
+  const queryPaginationOptions = {
+    ...paginationOptions,
+    filters: contextFilters,
+  } as unknown as InfrastructuresLinesPaginationQuery$variables;
+  const queryRef = useQueryLoading<InfrastructuresLinesPaginationQuery>(
+    infrastructuresLinesQuery,
+    queryPaginationOptions,
+  );
+  const {
     onToggleEntity,
     numberOfSelectedElements,
     handleClearSelectedElements,
@@ -47,15 +64,6 @@ const Infrastructures = () => {
     LOCAL_STORAGE_KEY_INFRASTRUCTURES,
   );
   const renderLines = () => {
-    const {
-      sortBy,
-      orderAsc,
-      searchTerm,
-      filters,
-      openExports,
-      numberOfElements,
-    } = viewStorage;
-    const toolBarFilters = injectEntityTypeFilterInFilterGroup(filters, 'Infrastructure');
     const isRuntimeSort = isRuntimeFieldEnable() ?? false;
     const dataColumns = {
       name: {
@@ -94,10 +102,7 @@ const Infrastructures = () => {
         width: '8%',
       },
     };
-    const queryRef = useQueryLoading<InfrastructuresLinesPaginationQuery>(
-      infrastructuresLinesQuery,
-      paginationOptions,
-    );
+
     return (
       <ListLines
         helpers={helpers}
@@ -114,10 +119,10 @@ const Infrastructures = () => {
         handleToggleSelectAll={handleToggleSelectAll}
         selectAll={selectAll}
         openExports={openExports}
-        exportEntityType="Infrastructure"
+        exportContext={{ entity_type: 'Infrastructure' }}
         keyword={searchTerm}
         filters={filters}
-        paginationOptions={paginationOptions}
+        paginationOptions={queryPaginationOptions}
         numberOfElements={numberOfElements}
         iconExtension={true}
         availableFilterKeys={[
@@ -146,7 +151,7 @@ const Infrastructures = () => {
           >
             <InfrastructuresLines
               queryRef={queryRef}
-              paginationOptions={paginationOptions}
+              paginationOptions={queryPaginationOptions}
               dataColumns={dataColumns}
               onLabelClick={helpers.handleAddFilter}
               setNumberOfElements={helpers.handleSetNumberOfElements}
@@ -162,7 +167,7 @@ const Infrastructures = () => {
               handleClearSelectedElements={handleClearSelectedElements}
               selectAll={selectAll}
               search={searchTerm}
-              filters={toolBarFilters}
+              filters={contextFilters}
               type="Infrastructure"
             />
           </React.Suspense>
@@ -174,7 +179,7 @@ const Infrastructures = () => {
     <ExportContextProvider>
       {renderLines()}
       <Security needs={[KNOWLEDGE_KNUPDATE]}>
-        <InfrastructureCreation paginationOptions={paginationOptions} />
+        <InfrastructureCreation paginationOptions={queryPaginationOptions} />
       </Security>
     </ExportContextProvider>
   );

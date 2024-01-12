@@ -203,7 +203,6 @@ const TriggerActivityLiveCreation: FunctionComponent<TriggerLiveCreationProps> =
             handleAddFilter={handleAddFilter}
             handleRemoveFilter={undefined}
             handleSwitchFilter={undefined}
-            noDirectFilters={true}
             disabled={undefined}
             size={undefined}
             fontSize={undefined}

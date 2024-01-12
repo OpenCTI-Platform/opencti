@@ -49,8 +49,9 @@ const stixDomainObjectResolvers = {
       }
       return [];
     },
-    stixDomainObjectsExportFiles: (_, { type, first }, context) => {
-      return paginatedForPathsWithEnrichment(context, context.user, [`export/${type}`], { first });
+    stixDomainObjectsExportFiles: (_, { exportContext, first }, context) => {
+      const path = `export/${exportContext.entity_type}${exportContext.entity_id ? `/${exportContext.entity_id}` : ''}`;
+      return paginatedForPathsWithEnrichment(context, context.user, [path], { first });
     },
   },
   StixDomainObjectsOrdering: StixDomainObjectsOptions.StixDomainObjectsOrdering,
@@ -85,7 +86,9 @@ const stixDomainObjectResolvers = {
     stixDomainObjectsDelete: (_, { id }, context) => stixDomainObjectsDelete(context, context.user, id),
     stixDomainObjectAdd: (_, { input }, context) => addStixDomainObject(context, context.user, input),
     stixDomainObjectsExportAsk: (_, args, context) => stixDomainObjectsExportAsk(context, context.user, args),
-    stixDomainObjectsExportPush: (_, { type, file, listFilters }, context) => stixCoreObjectsExportPush(context, context.user, type, file, listFilters),
+    stixDomainObjectsExportPush: (_, { entity_id, entity_type, file, listFilters }, context) => {
+      return stixCoreObjectsExportPush(context, context.user, entity_id, entity_type, file, listFilters);
+    },
   },
   Subscription: {
     stixDomainObject: {

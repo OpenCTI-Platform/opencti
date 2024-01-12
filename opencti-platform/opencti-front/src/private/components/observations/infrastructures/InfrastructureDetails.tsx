@@ -89,12 +89,11 @@ const InfrastructureDetails: FunctionComponent<InfrastructureDetailsProps> = ({
             values: 'Stix-Cyber-Observable',
           },
           {
-            key: 'elementId',
-            values: data.id,
-          },
-          {
-            key: 'relationship_type',
-            values: 'consists-of',
+            key: 'regardingOf',
+            values: [
+              { key: 'id', values: [data.id] },
+              { key: 'type', values: ['consists-of'] },
+            ],
           },
         ],
         filterGroups: [],

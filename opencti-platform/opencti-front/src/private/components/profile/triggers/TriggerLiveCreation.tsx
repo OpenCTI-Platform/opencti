@@ -17,6 +17,7 @@ import { FormikConfig, FormikHelpers } from 'formik/dist/types';
 import React, { FunctionComponent, useState } from 'react';
 import { graphql, useMutation } from 'react-relay';
 import * as Yup from 'yup';
+import { Box } from '@mui/material';
 import AutocompleteField from '../../../../components/AutocompleteField';
 import FilterIconButton from '../../../../components/FilterIconButton';
 import { useFormatter } from '../../../../components/i18n';
@@ -42,6 +43,7 @@ import FilterAutocomplete, { FilterAutocompleteInputValue } from '../../common/l
 import Filters from '../../common/lists/Filters';
 import { TriggerEventType, TriggerLiveCreationKnowledgeMutation, TriggerLiveCreationKnowledgeMutation$data } from './__generated__/TriggerLiveCreationKnowledgeMutation.graphql';
 import { TriggersLinesPaginationQuery$variables } from './__generated__/TriggersLinesPaginationQuery.graphql';
+import useFiltersState from '../../../../utils/filters/useFiltersState';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   drawerPaper: {
@@ -131,9 +133,8 @@ const TriggerLiveCreation: FunctionComponent<TriggerLiveCreationProps> = ({
 }) => {
   const { t } = useFormatter();
   const classes = useStyles();
-  const [filters, setFilters] = useState<FilterGroup | undefined>(
-    emptyFilterGroup,
-  );
+  const [filters, helpers] = useFiltersState();
+  const [instanceTriggerFilters, setInstanceTriggerFilters] = useState<FilterGroup | undefined>(emptyFilterGroup);
   const [instance_trigger, setInstanceTrigger] = useState<boolean>(false);
   const [instanceFilters, setInstanceFilters] = useState<
   FilterAutocompleteInputValue[]
@@ -152,9 +153,10 @@ const TriggerLiveCreation: FunctionComponent<TriggerLiveCreationProps> = ({
   ];
   const onReset = () => {
     handleClose?.();
-    setFilters(emptyFilterGroup);
+    setInstanceTriggerFilters(emptyFilterGroup);
     setInstanceTrigger(false);
     setInstanceFilters([]);
+    helpers.handleClearAllFilters();
   };
   const onChangeInstanceTrigger = (
     setFieldValue: (
@@ -162,32 +164,22 @@ const TriggerLiveCreation: FunctionComponent<TriggerLiveCreationProps> = ({
       value: { value: string; label: string }[],
     ) => void,
   ) => {
+    const newInstanceTriggerValue = !instance_trigger;
     setFieldValue(
       'event_types',
-      instance_trigger ? eventTypesOptions : instanceEventTypesOptions,
+      newInstanceTriggerValue ? instanceEventTypesOptions : eventTypesOptions,
     );
-    setInstanceTrigger(!instance_trigger);
-    setFilters(emptyFilterGroup);
+    helpers.handleClearAllFilters();
+    setInstanceTriggerFilters(emptyFilterGroup);
+    setInstanceTrigger(newInstanceTriggerValue);
   };
   const handleAddFilter = (k: string, id: string, op = 'eq') => {
-    setFilters(constructHandleAddFilter(filters, k, id, op));
+    setInstanceTriggerFilters(constructHandleAddFilter(instanceTriggerFilters, k, id, op));
   };
   const handleRemoveFilter = (k: string, op = 'eq') => {
-    setFilters(constructHandleRemoveFilter(filters, k, op));
+    setInstanceTriggerFilters(constructHandleRemoveFilter(instanceTriggerFilters, k, op));
   };
-  const handleSwitchLocalMode = (localFilter: Filter) => {
-    if (filters) {
-      setFilters(filtersAfterSwitchLocalMode(filters, localFilter));
-    }
-  };
-  const handleSwitchGlobalMode = () => {
-    if (filters) {
-      setFilters({
-        ...filters,
-        mode: filters.mode === 'and' ? 'or' : 'and',
-      });
-    }
-  };
+
   const [commitLive] = useMutation<TriggerLiveCreationKnowledgeMutation>(
     triggerLiveKnowledgeCreationMutation,
   );
@@ -204,7 +196,7 @@ const TriggerLiveCreation: FunctionComponent<TriggerLiveCreationProps> = ({
     values: TriggerLiveAddInput,
     { setSubmitting, setErrors, resetForm }: FormikHelpers<TriggerLiveAddInput>,
   ) => {
-    const jsonFilters = serializeFilterGroupForBackend(filters);
+    const jsonFilters = instance_trigger ? serializeFilterGroupForBackend(instanceTriggerFilters) : serializeFilterGroupForBackend(filters);
     const finalValues = {
       name: values.name,
       event_types: values.event_types.map((n) => n.value),
@@ -268,7 +260,6 @@ const TriggerLiveCreation: FunctionComponent<TriggerLiveCreationProps> = ({
           options={
             instance_trigger ? instanceEventTypesOptions : eventTypesOptions
           }
-          onChange={setFieldValue}
           renderOption={(
             props: React.HTMLAttributes<HTMLLIElement>,
             option: { value: TriggerEventType; label: string },
@@ -295,49 +286,36 @@ const TriggerLiveCreation: FunctionComponent<TriggerLiveCreationProps> = ({
               openOnFocus={true}
             />
           </div>
-        ) : (
-          <span>
-            <div style={{ marginTop: 35 }}>
-              <Filters
-                variant="text"
-                availableFilterKeys={[
-                  'entity_type',
-                  'workflow_id',
-                  'objectAssignee',
-                  'objects',
-                  'objectMarking',
-                  'objectLabel',
-                  'creator_id',
-                  'createdBy',
-                  'priority',
-                  'severity',
-                  'x_opencti_score',
-                  'x_opencti_detection',
-                  'revoked',
-                  'confidence',
-                  'indicator_types',
-                  'pattern_type',
-                  'fromId',
-                  'toId',
-                  'fromTypes',
-                  'toTypes',
-                ]}
-                handleAddFilter={handleAddFilter}
-                handleRemoveFilter={undefined}
-                handleSwitchFilter={undefined}
-                noDirectFilters={true}
-                disabled={undefined}
-                size={undefined}
-                fontSize={undefined}
-                availableEntityTypes={undefined}
-                availableRelationshipTypes={undefined}
-                allEntityTypes={undefined}
-                type={undefined}
-                availableRelationFilterTypes={undefined}
-              />
-            </div>
-            <div className="clearfix" />
-          </span>
+        ) : (<Box sx={{ paddingTop: 4,
+          display: 'flex',
+          gap: 1 }}
+             >
+          <Filters
+            availableFilterKeys={[
+              'entity_type',
+              'workflow_id',
+              'objectAssignee',
+              'objects',
+              'objectMarking',
+              'objectLabel',
+              'creator_id',
+              'createdBy',
+              'priority',
+              'severity',
+              'x_opencti_score',
+              'x_opencti_detection',
+              'revoked',
+              'confidence',
+              'indicator_types',
+              'pattern_type',
+              'fromId',
+              'toId',
+              'fromTypes',
+              'toTypes',
+            ]}
+            helpers={helpers}
+          />
+        </Box>
         )}
       </>
     );
@@ -369,14 +347,20 @@ const TriggerLiveCreation: FunctionComponent<TriggerLiveCreationProps> = ({
         style={{ marginTop: 20 }}
       />
       {renderKnowledgeTrigger(values, setFieldValue)}
-      <FilterIconButton
-        filters={filters}
-        handleRemoveFilter={handleRemoveFilter}
-        handleSwitchGlobalMode={handleSwitchGlobalMode}
-        handleSwitchLocalMode={handleSwitchLocalMode}
-        styleNumber={2}
-        redirection
-      />
+      {instance_trigger
+        ? <FilterIconButton
+            filters={instanceTriggerFilters}
+            handleRemoveFilter={handleRemoveFilter}
+            styleNumber={2}
+            redirection
+          />
+        : <FilterIconButton
+            filters={filters}
+            helpers={helpers}
+            redirection
+          />
+      }
+
     </React.Fragment>
   );
 

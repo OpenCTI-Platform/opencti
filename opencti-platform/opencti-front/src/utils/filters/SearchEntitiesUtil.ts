@@ -8,9 +8,6 @@ let searchEntitiesScope: SearchEntitiesProps | undefined;
 export const setSearchEntitiesScope = (searchEntities: SearchEntitiesProps) => {
   searchEntitiesScope = searchEntities;
 };
-export const getSearchEntitiesScope = (): SearchEntitiesProps | undefined => {
-  return searchEntitiesScope;
-};
 
 export const getOptionsFromEntities = (
   entities: Record<string, OptionValue[]>,

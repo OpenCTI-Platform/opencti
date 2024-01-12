@@ -6,7 +6,7 @@ import TriggersLines, { triggersLinesQuery } from './triggers/TriggersLines';
 import { TriggersLinesPaginationQuery, TriggersLinesPaginationQuery$variables } from './triggers/__generated__/TriggersLinesPaginationQuery.graphql';
 import { TriggerLineDummy } from './triggers/TriggerLine';
 import TriggerCreation from './triggers/TriggerCreation';
-import { emptyFilterGroup } from '../../../utils/filters/filtersUtils';
+import { emptyFilterGroup, getDefaultFilterObjFromArray } from '../../../utils/filters/filtersUtils';
 
 export const LOCAL_STORAGE_KEY_TRIGGERS = 'triggers';
 
@@ -17,7 +17,10 @@ const Triggers: FunctionComponent = () => {
       searchTerm: '',
       sortBy: 'name',
       orderAsc: true,
-      filters: emptyFilterGroup,
+      filters: {
+        ...emptyFilterGroup,
+        filters: getDefaultFilterObjFromArray(['trigger_type', 'instance_trigger']),
+      },
       numberOfElements: {
         number: 0,
         symbol: '',

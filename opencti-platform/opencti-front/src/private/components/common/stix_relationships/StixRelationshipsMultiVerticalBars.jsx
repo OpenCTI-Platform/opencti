@@ -64,20 +64,8 @@ const StixRelationshipsMultiVerticalBars = ({
       const dataSelectionDateAttribute = selection.date_attribute && selection.date_attribute.length > 0
         ? selection.date_attribute
         : 'created_at';
-      const {
-        filters,
-        dataSelectionRelationshipType,
-        dataSelectionToTypes,
-        dataSelectionFromTypes,
-        dataSelectionToId,
-        dataSelectionFromId,
-      } = buildFiltersAndOptionsForWidgets(selection.filters);
+      const { filters } = buildFiltersAndOptionsForWidgets(selection.filters);
       return {
-        fromId: dataSelectionFromId,
-        toId: dataSelectionToId,
-        relationship_type: dataSelectionRelationshipType,
-        fromTypes: dataSelectionFromTypes,
-        toTypes: dataSelectionToTypes,
         field: dataSelectionDateAttribute,
         filters,
         dynamicFrom: selection.dynamicFrom,

@@ -31,31 +31,25 @@ const useStyles = makeStyles(() => ({
 
 export const StixCoreObjectsExportCreationMutation = graphql`
   mutation StixCoreObjectsExportCreationMutation(
-    $type: String!
     $format: String!
     $exportType: String!
     $maxMarkingDefinition: String
-    $context: String
+    $exportContext: ExportContext
     $search: String
     $orderBy: StixCoreObjectsOrdering
     $orderMode: OrderingMode
     $filters: FilterGroup
-    $relationship_type: [String]
-    $elementId: String
     $selectedIds: [String]
   ) {
     stixCoreObjectsExportAsk(
-      type: $type
       format: $format
       exportType: $exportType
       maxMarkingDefinition: $maxMarkingDefinition
-      context: $context
+      exportContext: $exportContext
       search: $search
       orderBy: $orderBy
       orderMode: $orderMode
       filters: $filters
-      relationship_type: $relationship_type
-      elementId: $elementId
       selectedIds: $selectedIds
     ) {
       id
@@ -87,8 +81,7 @@ export const scopesConn = (exportConnectors) => {
 
 const StixCoreObjectsExportCreationComponent = ({
   paginationOptions,
-  context,
-  exportEntityType,
+  exportContext,
   onExportAsk,
   data,
 }) => {
@@ -102,13 +95,12 @@ const StixCoreObjectsExportCreationComponent = ({
     commitMutation({
       mutation: StixCoreObjectsExportCreationMutation,
       variables: {
-        type: exportEntityType,
+        exportContext,
         format: values.format,
         exportType: 'full',
-        maxMarkingDefinition,
-        context,
-        ...paginationOptions,
         selectedIds,
+        ...paginationOptions,
+        maxMarkingDefinition,
       },
       onCompleted: () => {
         setSubmitting(false);

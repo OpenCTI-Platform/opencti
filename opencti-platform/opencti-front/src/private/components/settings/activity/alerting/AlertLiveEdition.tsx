@@ -286,7 +286,6 @@ const AlertLiveEdition: FunctionComponent<AlertLiveEditionProps> = ({
                   handleAddFilter={handleAddFilter}
                   handleRemoveFilter={undefined}
                   handleSwitchFilter={undefined}
-                  noDirectFilters={true}
                   disabled={undefined}
                   size={undefined}
                   fontSize={undefined}

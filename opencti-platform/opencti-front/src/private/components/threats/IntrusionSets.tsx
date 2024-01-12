@@ -64,7 +64,7 @@ const IntrusionSets = () => {
         handleSwitchLocalMode={helpers.handleSwitchLocalMode}
         handleToggleExports={helpers.handleToggleExports}
         openExports={openExports}
-        exportEntityType="Intrusion-Set"
+        exportContext={{ entity_type: 'Intrusion-Set' }}
         keyword={searchTerm}
         filters={filters}
         paginationOptions={paginationOptions}

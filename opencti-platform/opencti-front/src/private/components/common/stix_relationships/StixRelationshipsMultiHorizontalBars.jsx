@@ -33,7 +33,7 @@ const stixRelationshipsMultiHorizontalBarsWithRelationshipsDistributionQuery = g
     $dateAttribute: String
     $isTo: Boolean
     $limit: Int
-    $elementId: [String]
+    $fromOrToId: [String]
     $elementWithTargetTypes: [String]
     $fromId: [String]
     $fromRole: String
@@ -74,7 +74,7 @@ const stixRelationshipsMultiHorizontalBarsWithRelationshipsDistributionQuery = g
       dateAttribute: $dateAttribute
       isTo: $isTo
       limit: $limit
-      elementId: $elementId
+      fromOrToId: $fromOrToId
       elementWithTargetTypes: $elementWithTargetTypes
       fromId: $fromId
       fromRole: $fromRole
@@ -399,7 +399,7 @@ const stixRelationshipsMultiHorizontalBarsWithEntitiesDistributionQuery = graphq
     $dateAttribute: String
     $isTo: Boolean
     $limit: Int
-    $elementId: [String]
+    $fromOrToId: [String]
     $elementWithTargetTypes: [String]
     $fromId: [String]
     $fromRole: String
@@ -434,7 +434,7 @@ const stixRelationshipsMultiHorizontalBarsWithEntitiesDistributionQuery = graphq
       dateAttribute: $dateAttribute
       isTo: $isTo
       limit: $limit
-      elementId: $elementId
+      fromOrToId: $fromOrToId
       elementWithTargetTypes: $elementWithTargetTypes
       fromId: $fromId
       fromRole: $fromRole
@@ -745,9 +745,6 @@ const StixRelationshipsMultiHorizontalBars = ({
   title,
   variant,
   height,
-  stixCoreObjectId,
-  relationshipType,
-  toTypes,
   field,
   startDate,
   endDate,
@@ -786,11 +783,6 @@ const StixRelationshipsMultiHorizontalBars = ({
     }
     const finalField = selection.attribute || field || 'entity_type';
     let variables = {
-      fromId: filtersAndOptions?.dataSelectionFromId || stixCoreObjectId,
-      toId: filtersAndOptions?.dataSelectionToId,
-      relationship_type: filtersAndOptions?.dataSelectionRelationshipType || relationshipType,
-      fromTypes: filtersAndOptions?.dataSelectionFromTypes,
-      toTypes: filtersAndOptions?.dataSelectionToTypes || toTypes,
       field: finalField,
       operation: 'count',
       startDate,
@@ -806,8 +798,6 @@ const StixRelationshipsMultiHorizontalBars = ({
     if (subSelection.perspective === 'entities') {
       variables = {
         ...variables,
-        subDistributionRelationshipType: subDistributionFiltersAndOptions?.dataSelectionRelationshipType,
-        subDistributionToTypes: subDistributionFiltersAndOptions?.dataSelectionToTypes,
         subDistributionField: finalSubDistributionField,
         subDistributionStartDate: startDate,
         subDistributionEndDate: endDate,
@@ -833,11 +823,7 @@ const StixRelationshipsMultiHorizontalBars = ({
             : 'created_at',
         subDistributionIsTo: subSelection.isTo,
         subDistributionLimit: subSelection.number ?? 15,
-        subDistributionFromId: subDistributionFiltersAndOptions?.dataSelectionFromId,
-        subDistributionFromTypes: subDistributionFiltersAndOptions?.dataSelectionFromTypes,
-        subDistributionToId: subDistributionFiltersAndOptions?.dataSelectionToId,
-        subDistributionToTypes: subDistributionFiltersAndOptions?.dataSelectionToTypes,
-        subDistributionRelationshipType: subDistributionFiltersAndOptions?.dataSelectionRelationshipType,
+        subDistributionFilters: subDistributionFiltersAndOptions?.filters,
       };
     }
     return (

@@ -41,7 +41,7 @@ class StixCoreRelationshipStixCoreRelationships extends Component {
   render() {
     const { t, classes, entityId, relationshipType } = this.props;
     const paginationOptions = {
-      elementId: entityId,
+      fromOrToId: entityId,
       relationship_type: relationshipType,
       orderBy: 'created_at',
       orderMode: 'desc',

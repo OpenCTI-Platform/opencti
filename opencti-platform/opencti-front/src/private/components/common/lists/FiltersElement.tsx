@@ -3,7 +3,7 @@ import TextField from '@mui/material/TextField';
 import React, { FunctionComponent } from 'react';
 import makeStyles from '@mui/styles/makeStyles';
 import { useFormatter } from '../../../../components/i18n';
-import { dateFilters, directFilters, FiltersVariant } from '../../../../utils/filters/filtersUtils';
+import { dateFilters, FiltersVariant } from '../../../../utils/filters/filtersUtils';
 import FilterDate from './FilterDate';
 import FilterAutocomplete from './FilterAutocomplete';
 import type { Theme } from '../../../../components/Theme';
@@ -32,7 +32,6 @@ export interface FiltersElementProps {
     elementId?: string[];
   };
   handleChangeKeyword: (event: React.ChangeEvent) => void;
-  noDirectFilters?: boolean;
   setInputValues: (
     value: {
       key: string;
@@ -58,7 +57,6 @@ const FiltersElement: FunctionComponent<FiltersElementProps> = ({
   availableFilterKeys,
   searchContext,
   handleChangeKeyword,
-  noDirectFilters,
   setInputValues,
   inputValues,
   defaultHandleAddFilter,
@@ -70,7 +68,6 @@ const FiltersElement: FunctionComponent<FiltersElementProps> = ({
   const { t } = useFormatter();
   const classes = useStyles();
   const displayedFilters = availableFilterKeys
-    .filter((n) => noDirectFilters || !directFilters.includes(n))
     .map((key) => {
       if (dateFilters.includes(key)) {
         if (key === 'valid_until') {

@@ -11,11 +11,10 @@ import {
   CONTEXT_ENTITY_TYPE_FILTER,
   CONTEXT_OBJECT_LABEL_FILTER,
   CONTEXT_OBJECT_MARKING_FILTER,
-  INSTANCE_FILTER,
+  INSTANCE_REGARDING_OF,
   MEMBERS_GROUP_FILTER,
   MEMBERS_ORGANIZATION_FILTER,
   MEMBERS_USER_FILTER,
-  nestedFilterKeys,
   SIGHTED_BY_FILTER,
   specialFilterKeys
 } from './filtering-constants';
@@ -100,9 +99,23 @@ export const extractFilterGroupValues = (inputFilters: FilterGroup, key: string 
   } else {
     filteredFilters = filters;
   }
-  let ids = filteredFilters.map((f) => f.values).flat() ?? [];
+
+  const ids = [];
+  // regardingOf key is a composite filter id+type, values are [{ key: 'id', ...}, { key: 'type', ... }]
+  // we need to extract the ids that need representatives
+  const hasRegardingOfKey = filteredFilters.some((f) => f.key.includes(INSTANCE_REGARDING_OF)); // this should be the one and only key
+  if (hasRegardingOfKey) {
+    const find: Filter = filteredFilters.map((f) => f.values).flat().find((v: any) => v.key === 'id');
+    const regardingIds = find?.values ?? [];
+    ids.push(...regardingIds);
+  } else {
+    // classic filter values are directly the ids
+    ids.push(...filteredFilters.map((f) => f.values).flat() ?? []);
+  }
+
+  // recurse on filtergroups
   if (filterGroups.length > 0) {
-    ids = ids.concat(filterGroups.map((group) => extractFilterGroupValues(group, key, reverse)).flat());
+    ids.push(...filterGroups.map((group) => extractFilterGroupValues(group, key, reverse)).flat());
   }
   return uniq(ids);
 };
@@ -162,7 +175,6 @@ export const replaceFilterKey = (filterGroup: FilterGroup, oldKey: string, newKe
 // the second element is the converted key used in backend
 const specialFilterKeysConvertor = new Map([
   [SIGHTED_BY_FILTER, buildRefRelationKey(STIX_SIGHTING_RELATIONSHIP)],
-  [INSTANCE_FILTER, buildRefRelationKey('*')],
   [CONTEXT_ENTITY_ID_FILTER, 'context_data.id'],
   [CONTEXT_ENTITY_TYPE_FILTER, 'context_data.entity_type'],
   [CONTEXT_CREATOR_FILTER, 'context_data.creator_id'],
@@ -222,14 +234,14 @@ const getConvertedRelationsNames = (relationNames: string[]) => {
  * - check that the key is available with respect to the schema, throws an Error if not
  * - convert relation refs key if any
  */
-export const checkAndConvertFilters = (filterGroup: FilterGroup | null | undefined, opts: { noFiltersChecking?: boolean, authorizeNestedFiltersKeys?: boolean } = {}) => {
+export const checkAndConvertFilters = (filterGroup: FilterGroup | null | undefined, opts: { noFiltersChecking?: boolean } = {}) => {
   if (!filterGroup) {
     return undefined;
   }
   if (!isFilterGroupFormatCorrect(filterGroup)) { // detect filters in the old format or in a bad format
     throw UnsupportedError('Incorrect filters format', { filter: JSON.stringify(filterGroup) });
   }
-  const { noFiltersChecking = false, authorizeNestedFiltersKeys = false } = opts;
+  const { noFiltersChecking = false } = opts;
   // 01. check filters keys exist in schema
   // TODO improvement: check filters keys correspond to the entity types if types is given
   if (!noFiltersChecking && isFilterGroupNotEmpty(filterGroup)) {
@@ -241,15 +253,12 @@ export const checkAndConvertFilters = (filterGroup: FilterGroup | null | undefin
       const availableRefRelations = schemaRelationsRefDefinition.getAllInputNames();
       const availableConvertedRefRelations = getConvertedRelationsNames(schemaRelationsRefDefinition.getAllDatabaseName());
       const availableConvertedStixCoreRelationships = getConvertedRelationsNames(STIX_CORE_RELATIONSHIPS);
-      let availableKeys = availableAttributes
+      const availableKeys = availableAttributes
         .concat(availableRefRelations)
         .concat(availableConvertedRefRelations)
         .concat(STIX_CORE_RELATIONSHIPS)
         .concat(availableConvertedStixCoreRelationships)
         .concat(specialFilterKeys);
-      if (authorizeNestedFiltersKeys) {
-        availableKeys = availableKeys.concat(nestedFilterKeys);
-      }
       keys.forEach((k) => {
         if (availableKeys.includes(k) || k.startsWith(RULE_PREFIX)) {
           incorrectKeys = incorrectKeys.filter((n) => n !== k);

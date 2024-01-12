@@ -61,7 +61,6 @@ const SearchIndexedFilesComponent = () => {
       sortBy: '_score',
       orderAsc: true,
     },
-    undefined,
     true,
   );
 

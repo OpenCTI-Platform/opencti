@@ -1,5 +1,4 @@
 import React from 'react';
-import * as R from 'ramda';
 import { graphql } from 'react-relay';
 import CircularProgress from '@mui/material/CircularProgress';
 import Paper from '@mui/material/Paper';
@@ -12,7 +11,6 @@ import { useFormatter } from '../../../../components/i18n';
 import { donutChartOptions } from '../../../../utils/Charts';
 import { defaultValue } from '../../../../utils/Graph';
 import Chart from '../charts/Chart';
-import { buildFiltersAndOptionsForWidgets } from '../../../../utils/filters/filtersUtils';
 
 const useStyles = makeStyles(() => ({
   paper: {
@@ -218,11 +216,7 @@ const StixCoreObjectsDonut = ({
   const renderContent = () => {
     const selection = dataSelection[0];
     const dataSelectionTypes = ['Stix-Core-Object'];
-    const { filters, dataSelectionElementId, dataSelectionToTypes, dataSelectionElementWithTargetTypes } = buildFiltersAndOptionsForWidgets(selection.filters);
     const variables = {
-      objectId: Array.isArray(dataSelectionElementId)
-        ? R.head(dataSelectionElementId)
-        : dataSelectionElementId,
       types: dataSelectionTypes,
       field: selection.attribute,
       operation: 'count',
@@ -232,18 +226,9 @@ const StixCoreObjectsDonut = ({
         selection.date_attribute && selection.date_attribute.length > 0
           ? selection.date_attribute
           : 'created_at',
-      filters,
+      filters: selection.filters,
       limit: selection.number ?? 10,
     };
-    if (dataSelectionToTypes && dataSelectionToTypes.length > 0) {
-      variables.toTypes = dataSelectionToTypes;
-    }
-    if (
-      dataSelectionElementWithTargetTypes
-      && dataSelectionElementWithTargetTypes.length > 0
-    ) {
-      variables.elementWithTargetTypes = dataSelectionElementWithTargetTypes;
-    }
     return (
       <QueryRenderer
         query={stixCoreObjectsDonutDistributionQuery}

@@ -8,7 +8,7 @@ import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage'
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
 import { ChannelLineDummy } from './channels/ChannelLine';
 import { ChannelsLinesPaginationQuery, ChannelsLinesPaginationQuery$variables } from './channels/__generated__/ChannelsLinesPaginationQuery.graphql';
-import { emptyFilterGroup } from '../../../utils/filters/filtersUtils';
+import { buildEntityTypeBasedFilterContext, emptyFilterGroup, getDefaultFilterObjFromArray } from '../../../utils/filters/filtersUtils';
 
 const LOCAL_STORAGE_KEY = 'channels';
 
@@ -20,19 +20,29 @@ const Channels = () => {
       sortBy: 'name',
       orderAsc: true,
       openExports: false,
-      filters: emptyFilterGroup,
+      filters: {
+        ...emptyFilterGroup,
+        filters: getDefaultFilterObjFromArray(['channel_types']),
+      },
     },
   );
 
+  const {
+    sortBy,
+    orderAsc,
+    searchTerm,
+    filters,
+    openExports,
+    numberOfElements,
+  } = viewStorage;
+
+  const contextFilters = buildEntityTypeBasedFilterContext('Channel', filters);
+  const queryPaginationOptions = {
+    ...paginationOptions,
+    filters: contextFilters,
+  } as unknown as ChannelsLinesPaginationQuery$variables;
+
   const renderLines = () => {
-    const {
-      sortBy,
-      orderAsc,
-      searchTerm,
-      filters,
-      openExports,
-      numberOfElements,
-    } = viewStorage;
     const dataColumns = {
       name: {
         label: 'Name',
@@ -62,7 +72,7 @@ const Channels = () => {
     };
     const queryRef = useQueryLoading<ChannelsLinesPaginationQuery>(
       channelsLinesQuery,
-      paginationOptions,
+      queryPaginationOptions,
     );
     return (
       <ListLines
@@ -78,10 +88,10 @@ const Channels = () => {
         handleSwitchLocalMode={helpers.handleSwitchLocalMode}
         handleToggleExports={helpers.handleToggleExports}
         openExports={openExports}
-        exportEntityType="Channel"
+        exportContext={{ entity_type: 'Channel' }}
         keyword={searchTerm}
         filters={filters}
-        paginationOptions={paginationOptions}
+        paginationOptions={queryPaginationOptions}
         numberOfElements={numberOfElements}
         availableFilterKeys={[
           'channel_types',
@@ -112,7 +122,7 @@ const Channels = () => {
           >
             <ChannelsLines
               queryRef={queryRef}
-              paginationOptions={paginationOptions}
+              paginationOptions={queryPaginationOptions}
               dataColumns={dataColumns}
               onLabelClick={helpers.handleAddFilter}
               setNumberOfElements={helpers.handleSetNumberOfElements}
@@ -127,7 +137,7 @@ const Channels = () => {
     <>
       {renderLines()}
       <Security needs={[KNOWLEDGE_KNUPDATE]}>
-        <ChannelCreation paginationOptions={paginationOptions} />
+        <ChannelCreation paginationOptions={queryPaginationOptions} />
       </Security>
     </>
   );

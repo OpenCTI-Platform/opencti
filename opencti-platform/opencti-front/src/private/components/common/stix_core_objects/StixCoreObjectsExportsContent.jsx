@@ -15,16 +15,15 @@ const StixCoreObjectsExportsContentComponent = ({
   relay,
   isOpen,
   data,
-  exportEntityType,
+  exportContext,
   paginationOptions,
-  context,
 }) => {
   const { t } = useFormatter();
   useEffect(() => {
     const subscription = interval$.subscribe(() => {
       if (isOpen) {
         relay.refetch({
-          type: exportEntityType,
+          exportContext,
           count: 25,
         });
       }
@@ -34,16 +33,6 @@ const StixCoreObjectsExportsContentComponent = ({
     };
   });
   const stixCoreObjectsExportFiles = data?.stixCoreObjectsExportFiles?.edges ?? [];
-  let paginationOptionsForExport = { ...paginationOptions }; // paginationsOptions with correct types filters
-  if (paginationOptions?.filters && paginationOptions?.types && paginationOptions.types.length > 0) {
-    paginationOptionsForExport = {
-      ...paginationOptions,
-      filters: [
-        ...paginationOptionsForExport.filters,
-        { key: 'entity_type', values: paginationOptionsForExport.types },
-      ],
-    };
-  }
   return (
     <>
       <List>
@@ -74,14 +63,9 @@ const StixCoreObjectsExportsContentComponent = ({
       <Security needs={[KNOWLEDGE_KNGETEXPORT_KNASKEXPORT]}>
         <StixCoreObjectsExportCreation
           data={data}
-          exportEntityType={exportEntityType}
-          paginationOptions={paginationOptionsForExport}
-          context={context}
-          onExportAsk={() => relay.refetch({
-            type: exportEntityType,
-            count: 25,
-          })
-          }
+          exportContext={exportContext}
+          paginationOptions={paginationOptions}
+          onExportAsk={() => relay.refetch({ count: 25, exportContext })}
         />
       </Security>
     </>
@@ -91,9 +75,9 @@ const StixCoreObjectsExportsContentComponent = ({
 export const stixCoreObjectsExportsContentQuery = graphql`
   query StixCoreObjectsExportsContentRefetchQuery(
     $count: Int!
-    $type: String!
+    $exportContext: ExportContext!
   ) {
-    ...StixCoreObjectsExportsContent_data @arguments(count: $count, type: $type)
+    ...StixCoreObjectsExportsContent_data @arguments(count: $count, exportContext: $exportContext)
   }
 `;
 
@@ -104,9 +88,9 @@ export default createRefetchContainer(
       fragment StixCoreObjectsExportsContent_data on Query
       @argumentDefinitions(
         count: { type: "Int", defaultValue: 25 }
-        type: { type: "String!" }
+        exportContext: { type: "ExportContext!" }
       ) {
-        stixCoreObjectsExportFiles(first: $count, type: $type)
+        stixCoreObjectsExportFiles(first: $count, exportContext: $exportContext)
         @connection(key: "Pagination_stixCoreObjectsExportFiles") {
           edges {
             node {

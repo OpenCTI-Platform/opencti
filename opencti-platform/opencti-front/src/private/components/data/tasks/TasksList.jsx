@@ -3,6 +3,7 @@ import * as R from 'ramda';
 import { graphql, useFragment } from 'react-relay';
 import Grid from '@mui/material/Grid';
 import Typography from '@mui/material/Typography';
+import Tooltip from '@mui/material/Tooltip';
 import LinearProgress from '@mui/material/LinearProgress';
 import Paper from '@mui/material/Paper';
 import Button from '@mui/material/Button';
@@ -333,7 +334,9 @@ const TasksList = ({ data }) => {
                     <Typography variant="h3" gutterBottom={true}>
                       {t('Initiator')}
                     </Typography>
-                    {task.initiator?.name}
+                    <Tooltip title={task.initiator?.name}>
+                      {truncate(task.initiator?.name, 15)}
+                    </Tooltip>
                   </Grid>
                   <Grid item={true} xs={2}>
                     <Typography variant="h3" gutterBottom={true}>

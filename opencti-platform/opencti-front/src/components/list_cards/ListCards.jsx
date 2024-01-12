@@ -19,7 +19,6 @@ import Security from '../../utils/Security';
 import { KNOWLEDGE_KNGETEXPORT } from '../../utils/hooks/useGranted';
 import FilterIconButton from '../FilterIconButton';
 import { export_max_size } from '../../utils/utils';
-import GenerateDefaultDirectFilters from '../GenerateDefaultDirectFilters';
 
 const styles = () => ({
   parameters: {
@@ -73,7 +72,6 @@ class ListCards extends Component {
       sortBy,
       orderAsc,
       children,
-      exportEntityType,
       exportContext,
       numberOfElements,
       availableFilterKeys,
@@ -96,7 +94,7 @@ class ListCards extends Component {
               handleSwitchGlobalMode={handleSwitchGlobalMode}
               handleSwitchLocalMode={handleSwitchLocalMode}
               searchContext={{
-                entityTypes: exportEntityType ? [exportEntityType] : [],
+                entityTypes: exportContext.entity_type ? [exportContext.entity_type] : [],
               }}
             />
           )}
@@ -207,11 +205,6 @@ class ListCards extends Component {
             )}
           </div>
         </div>
-        <GenerateDefaultDirectFilters
-          filters={filters}
-          availableFilterKeys={availableFilterKeys}
-          helpers={helpers}
-        />
         <FilterIconButton
           helpers={helpers}
           filters={filters}
@@ -226,8 +219,7 @@ class ListCards extends Component {
               open={openExports}
               handleToggle={handleToggleExports.bind(this)}
               paginationOptions={paginationOptions}
-              exportEntityType={exportEntityType}
-              context={exportContext}
+              exportContext={exportContext}
             />
           </Security>
         )}
@@ -249,8 +241,7 @@ ListCards.propTypes = {
   handleToggleExports: PropTypes.func,
   openExports: PropTypes.bool,
   views: PropTypes.array,
-  exportEntityType: PropTypes.string,
-  exportContext: PropTypes.string,
+  exportContext: PropTypes.object,
   keyword: PropTypes.string,
   filters: PropTypes.object,
   sortBy: PropTypes.string.isRequired,

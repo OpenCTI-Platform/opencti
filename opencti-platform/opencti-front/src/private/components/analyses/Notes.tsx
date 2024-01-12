@@ -13,37 +13,15 @@ import { NoteLineDummy } from './notes/NoteLine';
 import { NoteLine_node$data } from './notes/__generated__/NoteLine_node.graphql';
 import { NotesLinesPaginationQuery, NotesLinesPaginationQuery$variables } from './notes/__generated__/NotesLinesPaginationQuery.graphql';
 import NoteCreation from './notes/NoteCreation';
-import { injectEntityTypeFilterInFilterGroup, emptyFilterGroup } from '../../../utils/filters/filtersUtils';
+import { buildEntityTypeBasedFilterContext, emptyFilterGroup, getDefaultFilterObjFromArray } from '../../../utils/filters/filtersUtils';
 
 const LOCAL_STORAGE_KEY = 'notes';
 
-interface NotesProps {
-  objectId: string;
-  authorId: string;
-  onChangeOpenExports: () => void;
-}
-
-const Notes: FunctionComponent<NotesProps> = ({ objectId, authorId, onChangeOpenExports }) => {
+const Notes: FunctionComponent = () => {
   const {
     platformModuleHelpers: { isRuntimeFieldEnable },
   } = useAuth();
-  const additionnalFilters = [];
-  if (authorId) {
-    additionnalFilters.push({
-      key: 'createdBy',
-      values: [authorId],
-      operator: 'eq',
-      mode: 'or',
-    });
-  }
-  if (objectId) {
-    additionnalFilters.push({
-      key: 'objects',
-      values: [objectId],
-      operator: 'eq',
-      mode: 'or',
-    });
-  }
+
   const {
     viewStorage,
     helpers: storageHelpers,
@@ -54,9 +32,11 @@ const Notes: FunctionComponent<NotesProps> = ({ objectId, authorId, onChangeOpen
       sortBy: 'created',
       orderAsc: false,
       openExports: false,
-      filters: emptyFilterGroup,
+      filters: {
+        ...emptyFilterGroup,
+        filters: getDefaultFilterObjFromArray(['note_types']),
+      },
     },
-    additionnalFilters,
   );
   const {
     sortBy,
@@ -76,18 +56,18 @@ const Notes: FunctionComponent<NotesProps> = ({ objectId, authorId, onChangeOpen
     selectAll,
     handleToggleSelectAll,
   } = useEntityToggle<NoteLine_node$data>(LOCAL_STORAGE_KEY);
+
+  const contextFilters = buildEntityTypeBasedFilterContext('Note', filters);
+  const queryPaginationOptions = {
+    ...paginationOptions,
+    filters: contextFilters,
+  } as unknown as NotesLinesPaginationQuery$variables;
   const queryRef = useQueryLoading<NotesLinesPaginationQuery>(
     notesLinesQuery,
-    paginationOptions,
+    queryPaginationOptions,
   );
+
   const renderLines = () => {
-    let exportContext = null;
-    if (objectId) {
-      exportContext = `of-entity-${objectId}`;
-    } else if (authorId) {
-      exportContext = `of-entity-${authorId}`;
-    }
-    const toolBarFilters = injectEntityTypeFilterInFilterGroup(filters, 'Note');
     const isRuntimeSort = isRuntimeFieldEnable() ?? false;
     const dataColumns = {
       attribute_abstract: {
@@ -148,12 +128,10 @@ const Notes: FunctionComponent<NotesProps> = ({ objectId, authorId, onChangeOpen
           openExports={openExports}
           handleToggleSelectAll={handleToggleSelectAll}
           selectAll={selectAll}
-          noPadding={typeof onChangeOpenExports === 'function'}
-          exportEntityType="Note"
-          exportContext={exportContext}
+          exportContext={{ entity_type: 'Note' }}
           keyword={searchTerm}
           filters={filters}
-          paginationOptions={paginationOptions}
+          paginationOptions={queryPaginationOptions}
           numberOfElements={numberOfElements}
           iconExtension={true}
           availableFilterKeys={[
@@ -183,7 +161,7 @@ const Notes: FunctionComponent<NotesProps> = ({ objectId, authorId, onChangeOpen
             >
               <NotesLines
                 queryRef={queryRef}
-                paginationOptions={paginationOptions}
+                paginationOptions={queryPaginationOptions}
                 dataColumns={dataColumns}
                 onLabelClick={storageHelpers.handleAddFilter}
                 selectedElements={selectedElements}
@@ -198,7 +176,7 @@ const Notes: FunctionComponent<NotesProps> = ({ objectId, authorId, onChangeOpen
                 numberOfSelectedElements={numberOfSelectedElements}
                 selectAll={selectAll}
                 search={searchTerm}
-                filters={toolBarFilters}
+                filters={contextFilters}
                 handleClearSelectedElements={handleClearSelectedElements}
                 type="Note"
               />
@@ -212,7 +190,7 @@ const Notes: FunctionComponent<NotesProps> = ({ objectId, authorId, onChangeOpen
     <ExportContextProvider>
       {renderLines()}
       <Security needs={[KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNPARTICIPATE]}>
-        <NoteCreation paginationOptions={paginationOptions} />
+        <NoteCreation paginationOptions={queryPaginationOptions} />
       </Security>
     </ExportContextProvider>
   );

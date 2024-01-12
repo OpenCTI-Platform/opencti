@@ -1,4 +1,5 @@
-import React, { useRef, useState } from 'react';
+import React, { FunctionComponent, useRef, useState } from 'react';
+import { v4 as uuid } from 'uuid';
 import { graphql } from 'react-relay';
 import * as R from 'ramda';
 import Drawer from '@mui/material/Drawer';
@@ -7,12 +8,18 @@ import IconButton from '@mui/material/IconButton';
 import { Add, ChevronRightOutlined, Close } from '@mui/icons-material';
 import Fab from '@mui/material/Fab';
 import CircularProgress from '@mui/material/CircularProgress';
-import { ConnectionHandler } from 'relay-runtime';
+import { ConnectionHandler, RecordSourceSelectorProxy } from 'relay-runtime';
 import makeStyles from '@mui/styles/makeStyles';
 import SpeedDial from '@mui/material/SpeedDial';
 import SpeedDialIcon from '@mui/material/SpeedDialIcon';
 import SpeedDialAction from '@mui/material/SpeedDialAction';
 import { GlobeModel, HexagonOutline } from 'mdi-material-ui';
+import { StixCoreRelationshipCreationFromEntityQuery$data } from '@components/common/stix_core_relationships/__generated__/StixCoreRelationshipCreationFromEntityQuery.graphql';
+import {
+  StixCoreRelationshipCreationFromEntityStixCoreObjectsLinesQuery$data,
+} from '@components/common/stix_core_relationships/__generated__/StixCoreRelationshipCreationFromEntityStixCoreObjectsLinesQuery.graphql';
+import { FormikConfig } from 'formik/dist/types';
+import { Option } from '@components/common/form/ReferenceField';
 import { commitMutation, handleErrorInForm, QueryRenderer } from '../../../../relay/environment';
 import { useFormatter } from '../../../../components/i18n';
 import { formatDate } from '../../../../utils/Time';
@@ -23,18 +30,15 @@ import StixCoreRelationshipCreationForm from './StixCoreRelationshipCreationForm
 import { resolveRelationsTypes } from '../../../../utils/Relation';
 import { UserContext } from '../../../../utils/hooks/useAuth';
 import ListLines from '../../../../components/list_lines/ListLines';
-import {
-  constructHandleAddFilter,
-  constructHandleRemoveFilter,
-  emptyFilterGroup,
-  filtersAfterSwitchLocalMode,
-  removeIdFromFilterGroupObject,
-} from '../../../../utils/filters/filtersUtils';
+import { emptyFilterGroup, removeIdFromFilterGroupObject } from '../../../../utils/filters/filtersUtils';
 import StixCoreRelationshipCreationFromEntityStixCoreObjectsLines, {
   stixCoreRelationshipCreationFromEntityStixCoreObjectsLinesQuery,
 } from './StixCoreRelationshipCreationFromEntityStixCoreObjectsLines';
+import useFiltersState from '../../../../utils/filters/useFiltersState';
+import type { Theme } from '../../../../components/Theme';
+import { ModuleHelper } from '../../../../utils/platformModulesHelper';
 
-const useStyles = makeStyles((theme) => ({
+const useStyles = makeStyles<Theme>((theme) => ({
   drawerPaper: {
     minHeight: '100vh',
     width: '50%',
@@ -201,7 +205,37 @@ const stixCoreRelationshipCreationFromEntityToMutation = graphql`
   }
 `;
 
-const StixCoreRelationshipCreationFromEntity = (props) => {
+interface StixCoreRelationshipCreationFromEntityProps {
+  entityId: string;
+  allowedRelationshipTypes?: string[];
+  isRelationReversed?: boolean;
+  targetStixDomainObjectTypes?: string[];
+  targetStixCyberObservableTypes?: string[];
+  defaultStartTime: string;
+  defaultStopTime: string;
+  paginationOptions: unknown;
+  connectionKey?: string;
+  paddingRight: number;
+  variant?: string;
+  targetEntities?: TargetEntity[];
+  onCreate?: () => void;
+  openExports?: boolean;
+  handleReverseRelation?: () => void;
+}
+interface StixCoreRelationshipCreationFromEntityForm {
+  confidence: string;
+  start_time: string;
+  stop_time: string;
+  createdBy: Option;
+  killChainPhases: Option[];
+  objectMarking: Option[];
+  externalReferences: Option[];
+}
+interface TargetEntity {
+  id: string;
+  entity_type: string;
+}
+const StixCoreRelationshipCreationFromEntity: FunctionComponent<StixCoreRelationshipCreationFromEntityProps> = (props) => {
   const {
     targetEntities: targetEntitiesProps = [],
     entityId,
@@ -212,8 +246,8 @@ const StixCoreRelationshipCreationFromEntity = (props) => {
     allowedRelationshipTypes,
     defaultStartTime,
     defaultStopTime,
-    targetStixDomainObjectTypes = null,
-    targetStixCyberObservableTypes = null,
+    targetStixDomainObjectTypes = [],
+    targetStixCyberObservableTypes = [],
     variant = undefined,
     onCreate = undefined,
     openExports = false,
@@ -266,12 +300,13 @@ const StixCoreRelationshipCreationFromEntity = (props) => {
   const [selectedElements, setSelectedElements] = useState({});
   const [sortBy, setSortBy] = useState('_score');
   const [orderAsc, setOrderAsc] = useState(false);
-  const [filters, setFilters] = useState(
+  const [filters, helpers] = useFiltersState(
     actualTypeFilter.length > 0
       ? {
         mode: 'and',
         filterGroups: [],
         filters: [{
+          id: uuid(),
           key: 'entity_type',
           values: actualTypeFilter,
           operator: 'eq',
@@ -321,50 +356,55 @@ const StixCoreRelationshipCreationFromEntity = (props) => {
     setTargetEntities([]);
   };
 
-  const commit = (finalValues) => {
+  const commit = (finalValues: object) => {
     return new Promise((resolve, reject) => {
       commitMutation({
         mutation: isRelationReversed
           ? stixCoreRelationshipCreationFromEntityToMutation
           : stixCoreRelationshipCreationFromEntityFromMutation,
         variables: { input: finalValues },
-        updater: (store) => {
+        updater: (store: RecordSourceSelectorProxy) => {
           if (typeof onCreate !== 'function') {
             const userProxy = store.get(store.getRoot().getDataID());
             const payload = store.getRootField('stixCoreRelationshipAdd');
-            const createdNode = connectionKey
+
+            const createdNode = connectionKey && payload !== null
               ? payload.getLinkedRecord(isRelationReversed ? 'from' : 'to')
               : payload;
             const connKey = connectionKey || 'Pagination_stixCoreRelationships';
             // When using connectionKey we use less props of PaginationOptions, we need to filter them
-            const conn = ConnectionHandler.getConnection(
-              userProxy,
-              connKey,
-              paginationOptions,
-            );
-            if (
-              !isNodeInConnection(payload, conn)
-                            && !isNodeInConnection(
-                              payload.getLinkedRecord(isRelationReversed ? 'from' : 'to'),
-                              conn,
-                            )
+            let conn;
+            if (userProxy && paginationOptions) {
+              conn = ConnectionHandler.getConnection(
+                userProxy,
+                connKey,
+                paginationOptions,
+              );
+            }
+
+            if (conn && payload !== null
+              && !isNodeInConnection(payload, conn)
+                && !isNodeInConnection(payload.getLinkedRecord(isRelationReversed ? 'from' : 'to'), conn)
             ) {
               const newEdge = payload.setLinkedRecord(createdNode, 'node');
               ConnectionHandler.insertEdgeBefore(conn, newEdge);
             }
           }
         },
-        onError: (error) => {
+        optimisticUpdater: undefined,
+        setSubmitting: undefined,
+        optimisticResponse: undefined,
+        onError: (error: Error) => {
           reject(error);
         },
-        onCompleted: (response) => {
+        onCompleted: (response: Response) => {
           resolve(response);
         },
       });
     });
   };
 
-  const onSubmit = async (values, { setSubmitting, setErrors, resetForm }) => {
+  const onSubmit: FormikConfig<StixCoreRelationshipCreationFromEntityForm>['onSubmit'] = async (values, { setSubmitting, setErrors, resetForm }) => {
     setSubmitting(true);
     for (const targetEntity of targetEntities) {
       const fromEntityId = isRelationReversed ? targetEntity.id : entityId;
@@ -405,42 +445,16 @@ const StixCoreRelationshipCreationFromEntity = (props) => {
     setTargetEntities([]);
   };
 
-  const handleSort = (field, sortOrderAsc) => {
+  const handleSort = (field: string, sortOrderAsc: boolean) => {
     setSortBy(field);
     setOrderAsc(sortOrderAsc);
-  };
-
-  const handleAddFilter = (key, id, op = 'eq', event = null) => {
-    if (event) {
-      event.stopPropagation();
-      event.preventDefault();
-    }
-    setFilters(constructHandleAddFilter(filters, key, id, op));
-  };
-  const handleRemoveFilter = (key, op = 'eq') => {
-    setFilters(constructHandleRemoveFilter(filters, key, op));
-  };
-
-  const handleSwitchLocalMode = (localFilter) => {
-    setFilters(filtersAfterSwitchLocalMode(filters, localFilter));
-  };
-
-  const handleSwitchGlobalMode = () => {
-    if (filters) {
-      setFilters({
-        ...filters,
-        mode: filters.mode === 'and' ? 'or' : 'and',
-      });
-    }
   };
 
   const handleNextStep = () => {
     setStep(1);
   };
 
-  const onToggleEntity = (entity, event) => {
-    event.stopPropagation();
-    event.preventDefault();
+  const onToggleEntity = (entity: TargetEntity) => {
     if (entity.id in (selectedElements || {})) {
       const newSelectedElements = R.omit([entity.id], selectedElements);
       setSelectedElements(newSelectedElements);
@@ -456,8 +470,8 @@ const StixCoreRelationshipCreationFromEntity = (props) => {
     }
   };
 
-  const buildColumns = (platformModuleHelpers) => {
-    const isRuntimeSort = platformModuleHelpers.isRuntimeFieldEnable();
+  const buildColumns = (platformModuleHelpers: ModuleHelper | undefined) => {
+    const isRuntimeSort = platformModuleHelpers?.isRuntimeFieldEnable();
     return {
       entity_type: {
         label: 'Type',
@@ -521,10 +535,7 @@ const StixCoreRelationshipCreationFromEntity = (props) => {
                   handleSearch={setSearchTerm}
                   keyword={searchTerm}
                   handleSort={handleSort}
-                  handleAddFilter={handleAddFilter}
-                  handleRemoveFilter={handleRemoveFilter}
-                  handleSwitchLocalMode={handleSwitchLocalMode}
-                  handleSwitchGlobalMode={handleSwitchGlobalMode}
+                  helpers={helpers}
                   disableCards={true}
                   filters={filters}
                   disableExport={true}
@@ -547,11 +558,9 @@ const StixCoreRelationshipCreationFromEntity = (props) => {
                   ]}
                 >
                   <QueryRenderer
-                    query={
-                                            stixCoreRelationshipCreationFromEntityStixCoreObjectsLinesQuery
-                                        }
+                    query={stixCoreRelationshipCreationFromEntityStixCoreObjectsLinesQuery}
                     variables={{ count: 100, ...searchPaginationOptions }}
-                    render={({ props: renderProps }) => (
+                    render={({ props: renderProps }: { props: StixCoreRelationshipCreationFromEntityStixCoreObjectsLinesQuery$data }) => (
                       <StixCoreRelationshipCreationFromEntityStixCoreObjectsLines
                         data={renderProps}
                         paginationOptions={paginationOptions}
@@ -577,6 +586,13 @@ const StixCoreRelationshipCreationFromEntity = (props) => {
             paginationKey="Pagination_stixCoreObjects"
             paginationOptions={searchPaginationOptions}
             stixDomainObjectTypes={actualTypeFilter}
+            creationCallback={undefined}
+            confidence={undefined}
+            defaultCreatedBy={undefined}
+            defaultMarkingDefinitions={undefined}
+            open={undefined}
+            speeddial={undefined}
+            handleClose={undefined}
           />
           )}
           {targetEntities.length === 0 && isOnlySCOs && (
@@ -586,7 +602,10 @@ const StixCoreRelationshipCreationFromEntity = (props) => {
             inputValue={searchTerm}
             paginationKey="Pagination_stixCoreObjects"
             paginationOptions={searchPaginationOptions}
-            stixCyberObservableObjectTypes={actualTypeFilter}
+            open={undefined}
+            handleClose={undefined}
+            type={undefined}
+            speeddial={undefined}
           />
           )}
           {targetEntities.length === 0 && !isOnlySDOs && !isOnlySCOs && (
@@ -623,12 +642,17 @@ const StixCoreRelationshipCreationFromEntity = (props) => {
             </SpeedDial>
             <StixDomainObjectCreation
               display={open}
-              inputBalue={searchTerm}
+              inputValue={searchTerm}
               paginationKey="Pagination_stixCoreObjects"
               paginationOptions={searchPaginationOptions}
               speeddial={true}
               open={openCreateEntity}
               handleClose={handleCloseCreateEntity}
+              creationCallback={undefined}
+              confidence={undefined}
+              defaultCreatedBy={undefined}
+              defaultMarkingDefinitions={undefined}
+              stixDomainObjectTypes={undefined}
             />
             <StixCyberObservableCreation
               display={open}
@@ -639,6 +663,7 @@ const StixCoreRelationshipCreationFromEntity = (props) => {
               speeddial={true}
               open={openCreateObservable}
               handleClose={handleCloseCreateObservable}
+              type={undefined}
             />
           </>
           )}
@@ -659,7 +684,7 @@ const StixCoreRelationshipCreationFromEntity = (props) => {
     );
   };
 
-  const renderForm = (sourceEntity) => {
+  const renderForm = (sourceEntity: TargetEntity) => {
     let fromEntities = [sourceEntity];
     let toEntities = targetEntities;
     if (isRelationReversed) {
@@ -678,7 +703,7 @@ const StixCoreRelationshipCreationFromEntity = (props) => {
             resolveRelationsTypes(
               fromEntities[0].entity_type,
               toEntities[0].entity_type,
-              schema.schemaRelationsTypesMapping,
+              schema?.schemaRelationsTypesMapping ?? new Map(),
             ),
           ));
           return (
@@ -706,6 +731,9 @@ const StixCoreRelationshipCreationFromEntity = (props) => {
                 handleClose={handleClose}
                 defaultStartTime={defaultStartTime}
                 defaultStopTime={defaultStopTime}
+                defaultConfidence={undefined}
+                defaultCreatedBy={undefined}
+                defaultMarkingDefinitions={undefined}
               />
             </>
           );
@@ -772,7 +800,7 @@ const StixCoreRelationshipCreationFromEntity = (props) => {
         <QueryRenderer
           query={stixCoreRelationshipCreationFromEntityQuery}
           variables={{ id: entityId }}
-          render={({ props: renderProps }) => {
+          render={({ props: renderProps }: ({ props: StixCoreRelationshipCreationFromEntityQuery$data })) => {
             if (renderProps && renderProps.stixCoreObject) {
               return (
                 <div style={{ minHeight: '100%' }}>

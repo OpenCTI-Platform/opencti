@@ -62,8 +62,9 @@ const stixCoreRelationshipResolvers = {
     stixCoreRelationshipsMultiTimeSeries: (_, args, context) => stixCoreRelationshipsMultiTimeSeries(context, context.user, args),
     stixCoreRelationshipsDistribution: (_, args, context) => stixCoreRelationshipsDistribution(context, context.user, args),
     stixCoreRelationshipsNumber: (_, args, context) => stixCoreRelationshipsNumber(context, context.user, args),
-    stixCoreRelationshipsExportFiles: (_, { type, first }, context) => {
-      return paginatedForPathsWithEnrichment(context, context.user, [`export/${type}`], { first });
+    stixCoreRelationshipsExportFiles: (_, { exportContext, first }, context) => {
+      const path = `export/${exportContext.entity_type}${exportContext.entity_id ? `/${exportContext.entity_id}` : ''}`;
+      return paginatedForPathsWithEnrichment(context, context.user, [path], { first });
     },
   },
   StixCoreRelationshipsOrdering: stixCoreRelationshipOptions.StixCoreRelationshipsOrdering,
@@ -108,8 +109,8 @@ const stixCoreRelationshipResolvers = {
     }),
     stixCoreRelationshipAdd: (_, { input }, context) => addStixCoreRelationship(context, context.user, input),
     stixCoreRelationshipsExportAsk: (_, args, context) => stixCoreRelationshipsExportAsk(context, context.user, args),
-    stixCoreRelationshipsExportPush: (_, { type, file, listFilters }, context) => {
-      return stixCoreObjectsExportPush(context, context.user, type, file, listFilters);
+    stixCoreRelationshipsExportPush: (_, { entity_id, entity_type, file, listFilters }, context) => {
+      return stixCoreObjectsExportPush(context, context.user, entity_id, entity_type, file, listFilters);
     },
     stixCoreRelationshipDelete: (_, { fromId, toId, relationship_type: relationshipType }, context) => {
       return stixCoreRelationshipDeleteByFromAndTo(context, context.user, fromId, toId, relationshipType);

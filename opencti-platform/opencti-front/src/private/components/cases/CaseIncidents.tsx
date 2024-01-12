@@ -16,7 +16,7 @@ import {
   CaseIncidentsLinesCasesPaginationQuery$variables,
 } from './case_incidents/__generated__/CaseIncidentsLinesCasesPaginationQuery.graphql';
 import { CaseIncidentLineCase_node$data } from './case_incidents/__generated__/CaseIncidentLineCase_node.graphql';
-import { injectEntityTypeFilterInFilterGroup, emptyFilterGroup } from '../../../utils/filters/filtersUtils';
+import { buildEntityTypeBasedFilterContext, emptyFilterGroup } from '../../../utils/filters/filtersUtils';
 
 interface CaseIncidentsProps {
   inputValue?: string;
@@ -42,6 +42,26 @@ const CaseIncidents: FunctionComponent<CaseIncidentsProps> = () => {
       filters: emptyFilterGroup,
     },
   );
+
+  const {
+    sortBy,
+    orderAsc,
+    searchTerm,
+    filters,
+    openExports,
+    numberOfElements,
+  } = viewStorage;
+
+  const contextFilters = buildEntityTypeBasedFilterContext('Case-Incident', filters);
+  const queryPaginationOptions = {
+    ...paginationOptions,
+    filters: contextFilters,
+  } as unknown as CaseIncidentsLinesCasesPaginationQuery$variables;
+  const queryRef = useQueryLoading<CaseIncidentsLinesCasesPaginationQuery>(
+    caseIncidentsLinesQuery,
+    queryPaginationOptions,
+  );
+
   const {
     onToggleEntity,
     numberOfSelectedElements,
@@ -54,14 +74,6 @@ const CaseIncidents: FunctionComponent<CaseIncidentsProps> = () => {
     LOCAL_STORAGE_KEY_CASE_INCIDENT,
   );
   const renderLines = () => {
-    const {
-      sortBy,
-      orderAsc,
-      searchTerm,
-      filters,
-      openExports,
-      numberOfElements,
-    } = viewStorage;
     const isRuntimeSort = isRuntimeFieldEnable() ?? false;
     const dataColumns = {
       name: {
@@ -110,11 +122,7 @@ const CaseIncidents: FunctionComponent<CaseIncidentsProps> = () => {
         isSortable: isRuntimeSort,
       },
     };
-    const queryRef = useQueryLoading<CaseIncidentsLinesCasesPaginationQuery>(
-      caseIncidentsLinesQuery,
-      paginationOptions,
-    );
-    const toolBarFilters = injectEntityTypeFilterInFilterGroup(filters, 'Case-Incident');
+
     return (
       <ListLines
         helpers={helpers}
@@ -131,10 +139,10 @@ const CaseIncidents: FunctionComponent<CaseIncidentsProps> = () => {
         handleToggleSelectAll={handleToggleSelectAll}
         selectAll={selectAll}
         openExports={openExports}
-        exportEntityType="Case-Incident"
+        exportContext={{ entity_type: 'Case-Incident' }}
         keyword={searchTerm}
         filters={filters}
-        paginationOptions={paginationOptions}
+        paginationOptions={queryPaginationOptions}
         numberOfElements={numberOfElements}
         iconExtension={true}
         availableFilterKeys={[
@@ -170,7 +178,7 @@ const CaseIncidents: FunctionComponent<CaseIncidentsProps> = () => {
           >
             <CaseIncidentsLines
               queryRef={queryRef}
-              paginationOptions={paginationOptions}
+              paginationOptions={queryPaginationOptions}
               dataColumns={dataColumns}
               setNumberOfElements={helpers.handleSetNumberOfElements}
               selectedElements={selectedElements}
@@ -184,7 +192,7 @@ const CaseIncidents: FunctionComponent<CaseIncidentsProps> = () => {
               numberOfSelectedElements={numberOfSelectedElements}
               handleClearSelectedElements={handleClearSelectedElements}
               selectAll={selectAll}
-              filters={toolBarFilters}
+              filters={contextFilters}
               type="Case-Incident"
             />
           </React.Suspense>
@@ -196,7 +204,7 @@ const CaseIncidents: FunctionComponent<CaseIncidentsProps> = () => {
     <ExportContextProvider>
       {renderLines()}
       <Security needs={[KNOWLEDGE_KNUPDATE]}>
-        <CaseIncidentCreation paginationOptions={paginationOptions} />
+        <CaseIncidentCreation paginationOptions={queryPaginationOptions} />
       </Security>
     </ExportContextProvider>
   );

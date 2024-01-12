@@ -2,32 +2,47 @@ import * as R from 'ramda';
 import { Dispatch, SetStateAction, SyntheticEvent, useState } from 'react';
 import { v4 as uuid } from 'uuid';
 import { OrderMode, PaginationOptions } from '../../components/list_lines';
-import { extractAllValueFromFilters, Filter, FilterGroup, filtersUsedAsApiParameters, findFilterFromKey, isFilterGroupNotEmpty, isUniqFilter } from '../filters/filtersUtils';
+import { Filter, FilterGroup, FilterValue, findFilterFromKey, isFilterGroupNotEmpty, isUniqFilter } from '../filters/filtersUtils';
 import { isEmptyField, isNotEmptyField, removeEmptyFields } from '../utils';
 import { MESSAGING$ } from '../../relay/environment';
 import {
   handleAddFilterWithEmptyValueUtil,
-  handleAddRepresentationFilterUtil,
   handleAddSingleValueFilterUtil,
   handleChangeOperatorFiltersUtil,
   handleRemoveFilterUtil,
-  handleRemoveRepresentationFilterUtil,
   handleSwitchLocalModeUtil,
+} from '../filters/filtersManageStateUtil';
+import {
+  handleAddFilterWithEmptyValueUtil as oldHandleAddFilterWithEmptyValueUtil,
+  handleAddRepresentationFilterUtil as oldHandleAddRepresentationFilterUtil,
+  handleChangeRepresentationFilterUtil,
+  handleRemoveRepresentationFilterUtil as oldHandleRemoveRepresentationFilterUtil,
 } from '../filters/filtersLocalStorageUtil';
 import { LocalStorage } from './useLocalStorageModel';
 
-export interface UseLocalStorageHelpers {
-  handleSearch: (value: string) => void;
-  handleRemoveFilter: (key: string, op?: string, id?: string) => void;
-  handleRemoveFilterById: (id?: string) => void;
-  handleSort: (field: string, order: boolean) => void;
-  handleAddFilter: HandleAddFilter;
-  handleRemoveRepresentationFilter: (id: string, valueId: string) => void;
-  handleAddRepresentationFilter: (id: string, valueId: string) => void;
-  handleAddSingleValueFilter: (id: string, valueId?: string) => void;
-  handleSwitchFilter: HandleAddFilter;
+export interface handleFilterHelpers {
   handleSwitchGlobalMode: () => void;
   handleSwitchLocalMode: (filter: Filter) => void;
+  handleRemoveRepresentationFilter: (id: string, valueId: string) => void;
+  handleRemoveFilterById: (id: string) => void;
+  handleChangeOperatorFilters: HandleOperatorFilter;
+  handleAddSingleValueFilter: (id: string, valueId?: string) => void;
+  handleAddRepresentationFilter: (id: string, valueId: string) => void;
+  handleAddFilterWithEmptyValue: (filter: Filter) => void;
+  handleClearAllFilters: (filters?: Filter[]) => void;
+  getLatestAddFilterId: () => string | undefined;
+  handleChangeRepresentationFilter: (id: string, oldValue: FilterValue, newValue: FilterValue) => void;
+}
+export interface UseLocalStorageHelpers extends handleFilterHelpers {
+  handleSearch: (value: string) => void;
+  handleRemoveFilter: (key: string, op?: string, id?: string) => void;
+  handleSort: (field: string, order: boolean) => void;
+  handleAddFilter: HandleAddFilter;
+  handleRemoveRepresentationFilter: (id: string, value: FilterValue) => void;
+  handleAddRepresentationFilter: (id: string, value: FilterValue) => void;
+  handleChangeRepresentationFilter: (id: string, oldValue: FilterValue, newValue: FilterValue) => void;
+  handleAddSingleValueFilter: (id: string, value?: FilterValue) => void;
+  handleSwitchFilter: HandleAddFilter;
   handleToggleExports: () => void;
   handleSetNumberOfElements: (value: {
     number?: number | string;
@@ -38,15 +53,11 @@ export interface UseLocalStorageHelpers {
   handleClearTypes: () => void;
   handleAddProperty: (field: string, value: unknown) => void;
   handleChangeView: (value: string) => void;
-  handleClearAllFilters: (filters?: Filter[]) => void;
-  handleChangeOperatorFilters: HandleOperatorFilter;
-  handleAddFilterWithEmptyValue: (filter: Filter) => void;
-  getLatestAddFilterId: () => string | undefined;
+  handleClearAllFilters: () => void;
 }
 
 const localStorageToPaginationOptions = (
   { searchTerm, filters, sortBy, orderAsc, ...props }: LocalStorage,
-  additionalFilters?: Filter[],
 ): PaginationOptions => {
   // Remove only display options, not query linked
   const localOptions = { ...props };
@@ -69,30 +80,7 @@ const localStorageToPaginationOptions = (
     basePagination.orderMode = orderAsc ? OrderMode.asc : OrderMode.desc;
     basePagination.orderBy = sortBy;
   }
-  let convertedFilters = filters?.filters as Filter[];
-  const fromId = convertedFilters ? extractAllValueFromFilters(convertedFilters, 'fromId')?.values : undefined;
-  const toId = convertedFilters ? extractAllValueFromFilters(convertedFilters, 'toId')?.values : undefined;
-  const fromTypes = convertedFilters ? extractAllValueFromFilters(convertedFilters, 'fromTypes')?.values : undefined;
-  const toTypes = convertedFilters ? extractAllValueFromFilters(convertedFilters, 'toTypes')?.values : undefined;
-  convertedFilters = convertedFilters?.filter(
-    (n) => !['fromId', 'toId', 'fromTypes', 'toTypes'].includes(Array.isArray(n.key) ? n.key[0] : n.key),
-  );
-
-  const paginationFilters = {
-    mode: filters?.mode ?? 'and',
-    filters: convertedFilters ?? [] as Filter[],
-    filterGroups: [] as FilterGroup[],
-  };
-  basePagination.fromId = fromId;
-  basePagination.toId = toId;
-  basePagination.fromTypes = fromTypes;
-  basePagination.toTypes = toTypes;
-  if (additionalFilters && additionalFilters.length > 0) {
-    paginationFilters.filters = paginationFilters.filters.concat(additionalFilters);
-  }
-  basePagination.filters = isFilterGroupNotEmpty(paginationFilters)
-    ? paginationFilters
-    : undefined;
+  basePagination.filters = isFilterGroupNotEmpty(filters) ? filters : undefined;
   return basePagination;
 };
 
@@ -210,6 +198,9 @@ const useLocalStorage = (
       if (isEmptyField(value)) {
         value = initialValue;
       }
+      if (value?.filters?.filters.length === 0) {
+        value = initialValue;
+      }
       // Need to clear the local storage ?
       if (!R.equals(removeEmptyFields(value), value)) {
         const initialState = removeEmptyFields(value);
@@ -269,18 +260,21 @@ export type PaginationLocalStorage<U = Record<string, unknown>> = {
 export const usePaginationLocalStorage = <U>(
   key: string,
   initialValue: LocalStorage,
-  additionalFilters?: Filter[],
   ignoreUri?: boolean,
 ): PaginationLocalStorage<U> => {
   const [viewStorage, setValue] = useLocalStorage(key, initialValue, ignoreUri);
-  const paginationOptions = localStorageToPaginationOptions(
-    { count: 25, ...viewStorage },
-    additionalFilters,
-  );
+  const paginationOptions = localStorageToPaginationOptions({ count: 25, ...viewStorage });
   const helpers: UseLocalStorageHelpers = {
     handleSearch: (value: string) => setValue((c) => ({ ...c, searchTerm: value })),
-    handleRemoveFilterById: (id?: string) => {
-      handleRemoveFilterUtil({ viewStorage, setValue, id });
+    handleRemoveFilterById: (id: string) => {
+      if (viewStorage?.filters) {
+        const { filters } = viewStorage;
+        setValue((c) => ({
+          ...c,
+          filters: handleRemoveFilterUtil({ filters, id }),
+          latestAddFilterId: undefined,
+        }));
+      }
     },
     handleRemoveFilter: (k: string, op = 'eq', id?: string) => {
       if (viewStorage.filters) {
@@ -410,15 +404,23 @@ export const usePaginationLocalStorage = <U>(
     },
     handleRemoveRepresentationFilter: (
       id: string,
-      valueId: string,
+      value: FilterValue,
     ) => {
-      handleRemoveRepresentationFilterUtil({ viewStorage, setValue, id, valueId });
+      oldHandleRemoveRepresentationFilterUtil({ viewStorage, setValue, id, value });
+      // if (viewStorage?.filters) {
+      //     const filters = viewStorage?.filters;
+      //     setValue((c) => ({
+      //         ...c,
+      //         filters: handleRemoveRepresentationFilterUtil({ filters, id, valueId }),
+      //         latestAddFilterId: undefined,
+      //     }));
+      // }
     },
-    handleAddRepresentationFilter: (id: string, valueId: string) => {
-      if (valueId === null) { // handle clicking on 'no label' in entities list
+    handleAddRepresentationFilter: (id: string, value: FilterValue) => {
+      if (value === null) { // handle clicking on 'no label' in entities list
         const findCorrespondingFilter = viewStorage.filters?.filters.find((f) => id === f.id);
         if (findCorrespondingFilter && ['objectLabel', 'contextObjectLabel'].includes(findCorrespondingFilter.key)) {
-          handleAddFilterWithEmptyValueUtil({ viewStorage,
+          oldHandleAddFilterWithEmptyValueUtil({ viewStorage,
             setValue,
             filter: {
               id: uuid(),
@@ -429,11 +431,27 @@ export const usePaginationLocalStorage = <U>(
             } });
         }
       } else {
-        handleAddRepresentationFilterUtil({ viewStorage, setValue, id, valueId });
+        oldHandleAddRepresentationFilterUtil({ viewStorage, setValue, id, value });
+      }
+    },
+    handleChangeRepresentationFilter: (id: string, oldValue: FilterValue, newValue: FilterValue) => {
+      if (oldValue && newValue) {
+        handleChangeRepresentationFilterUtil({ viewStorage, setValue, id, oldValue, newValue });
+      } else if (oldValue) {
+        oldHandleRemoveRepresentationFilterUtil({ viewStorage, setValue, id, value: oldValue });
+      } else if (newValue) {
+        oldHandleAddRepresentationFilterUtil({ viewStorage, setValue, id, value: newValue });
       }
     },
     handleAddSingleValueFilter: (id: string, valueId?: string) => {
-      handleAddSingleValueFilterUtil({ viewStorage, setValue, id, valueId });
+      if (viewStorage?.filters) {
+        const { filters } = viewStorage;
+        setValue((c) => ({
+          ...c,
+          filters: handleAddSingleValueFilterUtil({ filters, id, valueId }),
+          latestAddFilterId: undefined,
+        }));
+      }
     },
     handleSwitchFilter: (
       k: string,
@@ -494,15 +512,18 @@ export const usePaginationLocalStorage = <U>(
       }
     },
     handleSwitchLocalMode: (filter: Filter) => {
-      handleSwitchLocalModeUtil({ viewStorage, setValue, filter });
+      if (viewStorage?.filters) {
+        const { filters } = viewStorage;
+        setValue((c) => ({
+          ...c,
+          filters: handleSwitchLocalModeUtil({ filters, filter }),
+          latestAddFilterId: undefined,
+        }));
+      }
     },
     handleChangeView: (value: string) => setValue((c) => ({ ...c, view: value })),
     handleToggleExports: () => setValue((c) => ({ ...c, openExports: !c.openExports })),
-    handleSetNumberOfElements: (nbElements: {
-      number?: number | string;
-      symbol?: string;
-      original?: number;
-    }) => {
+    handleSetNumberOfElements: (nbElements: { number?: number | string; symbol?: string; original?: number; }) => {
       if (!R.equals(nbElements, viewStorage.numberOfElements)) {
         setValue((c) => {
           const { number, symbol, original } = nbElements;
@@ -530,51 +551,42 @@ export const usePaginationLocalStorage = <U>(
     handleClearTypes: () => {
       setValue((c) => ({ ...c, types: [] }));
     },
-    handleClearAllFilters: (filters?: Filter[]) => {
-      setValue((c) => ({
-        ...c,
-        filters: {
-          filterGroups: [],
-          filters: filters ? [...filters] : [],
-          mode: 'and',
-        },
-        latestAddFilterId: undefined,
-      }));
+    handleClearAllFilters: () => {
+      setValue(initialValue);
     },
     handleAddFilterWithEmptyValue: (filter: Filter) => {
-      if (filtersUsedAsApiParameters.includes(filter.key)) {
-        const existedFilter = viewStorage.filters?.filters.find((f) => f.key === filter.key);
-        // If the specific filter is already defined, set the latestAddFilterId in order to open the menu popover
-        // and return void to finish the task.
-        // In the other side if not existed, create a new one filter
-        if (existedFilter) {
-          setValue({
-            ...viewStorage,
-            latestAddFilterId: existedFilter.id,
-          });
-          return;
-        }
+      if (viewStorage?.filters) {
+        const { filters } = viewStorage;
+        setValue((c) => ({
+          ...c,
+          filters: handleAddFilterWithEmptyValueUtil({ filters, filter }),
+          latestAddFilterId: filter.id,
+        }));
       }
-      handleAddFilterWithEmptyValueUtil({ viewStorage, setValue, filter });
     },
     handleChangeOperatorFilters: (id: string, operator: string) => {
-      handleChangeOperatorFiltersUtil({ viewStorage, setValue, id, operator });
+      if (viewStorage?.filters) {
+        const { filters } = viewStorage;
+        setValue((c) => ({
+          ...c,
+          filters: handleChangeOperatorFiltersUtil({ filters, id, operator }),
+          latestAddFilterId: undefined,
+        }));
+      }
     },
     getLatestAddFilterId: () => {
       return viewStorage.latestAddFilterId;
     },
   };
 
-  const removeEmptyFilter = paginationOptions.filters?.filters?.filter((f) => ['nil', 'not_nil'].includes(f.operator) || f.values.length > 0) ?? [];
+  const removeEmptyFilter = paginationOptions.filters?.filters
+    ?.filter((f) => ['nil', 'not_nil'].includes(f.operator ?? 'eq') || f.values.length > 0) ?? [];
   let filters;
   if (removeEmptyFilter.length > 0) {
     filters = {
       ...paginationOptions.filters,
       filters: removeEmptyFilter.map((filter: Filter) => {
-        const removeIdFromFilter = {
-          ...filter,
-          key: filter.key === 'container_type' ? 'entity_type' : filter.key,
-        };
+        const removeIdFromFilter = { ...filter };
         delete removeIdFromFilter.id;
         return removeIdFromFilter;
       }),

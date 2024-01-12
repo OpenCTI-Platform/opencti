@@ -717,7 +717,7 @@ const PLAYBOOK_RULE_COMPONENT: PlaybookComponent<RuleConfiguration> = {
         context,
         AUTOMATION_MANAGER_USER,
         ABSTRACT_STIX_CORE_RELATIONSHIP,
-        { elementId: id, baseData: true, indices: READ_RELATIONSHIPS_INDICES_WITHOUT_INFERRED }
+        { fromOrToId: id, baseData: true, indices: READ_RELATIONSHIPS_INDICES_WITHOUT_INFERRED }
       ) as StoreRelation[];
       let idsToResolve = R.uniq(
         [

@@ -1,7 +1,7 @@
 import * as R from 'ramda';
 import { BUS_TOPICS } from '../config/conf';
 import { delEditContext, notify, setEditContext } from '../database/redis';
-import { batchListThroughGetTo, createEntity, deleteElementById, distributionEntities, listThroughGetTo, timeSeriesEntities, updateAttribute, } from '../database/middleware';
+import { batchListThroughGetTo, createEntity, deleteElementById, distributionEntities, listThroughGetTo, timeSeriesEntities, updateAttribute } from '../database/middleware';
 import { listEntities, storeLoadById } from '../database/middleware-loader';
 import { elCount, elFindByIds } from '../database/engine';
 import { workToExportFile } from './work';
@@ -26,7 +26,7 @@ import { ENTITY_TYPE_USER } from '../schema/internalObject';
 import { schemaRelationsRefDefinition } from '../schema/schema-relationsRef';
 import { stixDomainObjectOptions } from '../schema/stixDomainObjectOptions';
 import { stixObjectOrRelationshipAddRefRelation, stixObjectOrRelationshipDeleteRefRelation } from './stixObjectOrStixRelationship';
-import { entityLocationType, xOpenctiType, identityClass } from '../schema/attribute-definition';
+import { entityLocationType, identityClass, xOpenctiType } from '../schema/attribute-definition';
 import { usersSessionRefresh } from './user';
 import { addFilter } from '../utils/filtering/filtering-utils';
 import { ENTITY_TYPE_INDICATOR } from '../modules/indicator/indicator-types';
@@ -39,23 +39,7 @@ export const findAll = async (context, user, args) => {
   if (types.length === 0) {
     types.push(ABSTRACT_STIX_DOMAIN_OBJECT);
   }
-  if (isNotEmptyField(args.relationship_type) && isEmptyField(args.elementId)) {
-    throw UnsupportedError('Cant find stixCoreObject only based on relationship type, elementId is required');
-  }
-  let { filters } = args;
-  if (isNotEmptyField(args.elementId)) {
-    // In case of element id, we look for a specific entity used by relationships independent of the direction
-    // To do that we need to lookup the element inside the rel_ fields that represent the relationships connections
-    // that are denormalized at relation creation.
-    // If relation types are also in the query, we filter on specific rel_[TYPE], if not, using a wilcard.
-    if (isNotEmptyField(args.relationship_type)) {
-      const relationshipFilterKeys = args.relationship_type.map((n) => buildRefRelationKey(n));
-      filters = addFilter(filters, relationshipFilterKeys, args.elementId);
-    } else {
-      filters = addFilter(filters, buildRefRelationKey('*'), args.elementId);
-    }
-  }
-  return listEntities(context, user, types, { ...R.omit(['elementId', 'relationship_type'], args), filters });
+  return listEntities(context, user, types, args);
 };
 
 export const findById = async (context, user, stixDomainObjectId) => storeLoadById(context, user, stixDomainObjectId, ABSTRACT_STIX_DOMAIN_OBJECT);
@@ -79,23 +63,7 @@ export const stixDomainObjectsTimeSeries = (context, user, args) => {
   if (types.length === 0) {
     types.push(ABSTRACT_STIX_DOMAIN_OBJECT);
   }
-  if (isNotEmptyField(args.relationship_type) && isEmptyField(args.elementId)) {
-    throw UnsupportedError('Cant find stixCoreObject only based on relationship type, elementId is required');
-  }
-  let { filters } = args;
-  if (isNotEmptyField(args.elementId)) {
-    // In case of element id, we look for a specific entity used by relationships independent of the direction
-    // To do that we need to lookup the element inside the rel_ fields that represent the relationships connections
-    // that are denormalized at relation creation.
-    // If relation types are also in the query, we filter on specific rel_[TYPE], if not, using a wilcard.
-    if (isNotEmptyField(args.relationship_type)) {
-      const relationshipFilterKeys = args.relationship_type.map((n) => buildRefRelationKey(n));
-      filters = addFilter(filters, relationshipFilterKeys, args.elementId);
-    } else {
-      filters = addFilter(filters, buildRefRelationKey('*'), args.elementId);
-    }
-  }
-  return timeSeriesEntities(context, user, types, { ...R.omit(['elementId', 'relationship_type'], args), filters });
+  return timeSeriesEntities(context, user, types, args);
 };
 
 export const stixDomainObjectsTimeSeriesByAuthor = (context, user, args) => {
@@ -123,33 +91,12 @@ export const stixDomainObjectAvatar = (stixDomainObject) => {
 
 // region export
 export const stixDomainObjectsExportAsk = async (context, user, args) => {
-  const { format, type, exportType, maxMarkingDefinition, selectedIds } = args;
-  const { search, orderBy, orderMode, filters, relationship_type, elementId } = args;
-  const filteringArgs = { search, orderBy, orderMode, filters, relationship_type, elementId };
+  const { exportContext, format, exportType, maxMarkingDefinition, selectedIds } = args;
+  const { search, orderBy, orderMode, filters } = args;
+  const filteringArgs = { search, orderBy, orderMode, filters };
   const ordersOpts = stixDomainObjectOptions.StixDomainObjectsOrdering;
-  const argsFiltersContent = filteringArgs.filters?.filters ?? [];
-  let newArgsFiltersContent = filteringArgs.filters?.filters ?? [];
-  const initialParams = {};
-  if (argsFiltersContent.length > 0) {
-    if (argsFiltersContent.filter((n) => n.key.includes('elementId')).length > 0) {
-      initialParams.elementId = R.head(R.head(argsFiltersContent.filter((n) => n.key.includes('elementId'))).values);
-      newArgsFiltersContent = newArgsFiltersContent.filter((n) => !n.key.includes('elementId'));
-    }
-    if (argsFiltersContent.filter((n) => n.key.includes('fromId')).length > 0) {
-      initialParams.fromId = R.head(R.head(argsFiltersContent.filter((n) => n.key.includes('fromId'))).values);
-      newArgsFiltersContent = newArgsFiltersContent.filter((n) => !n.key.includes('fromId'));
-    }
-  }
-  const finalFilteringArgs = {
-    ...filteringArgs,
-    filters: {
-      mode: filteringArgs.filters?.mode ?? 'and',
-      filterGroups: filteringArgs.filters?.filterGroups ?? [],
-      filters: newArgsFiltersContent,
-    },
-  };
-  const listParams = { ...initialParams, ...exportTransformFilters(finalFilteringArgs, ordersOpts) };
-  const works = await askListExport(context, user, format, type, selectedIds, listParams, exportType, maxMarkingDefinition);
+  const listParams = exportTransformFilters(filteringArgs, ordersOpts);
+  const works = await askListExport(context, user, exportContext, format, selectedIds, listParams, exportType, maxMarkingDefinition);
   return works.map((w) => workToExportFile(w));
 };
 export const stixDomainObjectExportAsk = async (context, user, stixDomainObjectId, args) => {
