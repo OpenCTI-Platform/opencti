@@ -338,7 +338,7 @@ export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({
           onChange={handleChangeOperator}
           style={{ marginBottom: 15 }}
         >
-          {getAvailableOperatorForFilter(fKey).map((value) => (
+          {getAvailableOperatorForFilter(technicalKey ?? fKey).map((value) => (
             <MenuItem key={value} value={value}>
               {t(OperatorKeyValues[value])}
             </MenuItem>
