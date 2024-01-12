@@ -42,6 +42,26 @@ const CaseIncidents: FunctionComponent<CaseIncidentsProps> = () => {
       filters: emptyFilterGroup,
     },
   );
+
+  const {
+    sortBy,
+    orderAsc,
+    searchTerm,
+    filters,
+    openExports,
+    numberOfElements,
+  } = viewStorage;
+
+  const contextFilters = buildEntityTypeBasedFilterContext('Case-Incident', filters);
+  const queryPaginationOptions = {
+    ...paginationOptions,
+    filters: contextFilters,
+  } as unknown as CaseIncidentsLinesCasesPaginationQuery$variables;
+  const queryRef = useQueryLoading<CaseIncidentsLinesCasesPaginationQuery>(
+    caseIncidentsLinesQuery,
+    queryPaginationOptions,
+  );
+
   const {
     onToggleEntity,
     numberOfSelectedElements,
@@ -54,14 +74,6 @@ const CaseIncidents: FunctionComponent<CaseIncidentsProps> = () => {
     LOCAL_STORAGE_KEY_CASE_INCIDENT,
   );
   const renderLines = () => {
-    const {
-      sortBy,
-      orderAsc,
-      searchTerm,
-      filters,
-      openExports,
-      numberOfElements,
-    } = viewStorage;
     const isRuntimeSort = isRuntimeFieldEnable() ?? false;
     const dataColumns = {
       name: {
@@ -110,16 +122,6 @@ const CaseIncidents: FunctionComponent<CaseIncidentsProps> = () => {
         isSortable: isRuntimeSort,
       },
     };
-
-    const contextFilters = buildEntityTypeBasedFilterContext('Case-Incident', filters);
-    const queryPaginationOptions = {
-      ...paginationOptions,
-      filters: contextFilters,
-    } as unknown as CaseIncidentsLinesCasesPaginationQuery$variables;
-    const queryRef = useQueryLoading<CaseIncidentsLinesCasesPaginationQuery>(
-      caseIncidentsLinesQuery,
-      queryPaginationOptions,
-    );
 
     return (
       <ListLines
@@ -202,7 +204,7 @@ const CaseIncidents: FunctionComponent<CaseIncidentsProps> = () => {
     <ExportContextProvider>
       {renderLines()}
       <Security needs={[KNOWLEDGE_KNUPDATE]}>
-        <CaseIncidentCreation paginationOptions={paginationOptions} />
+        <CaseIncidentCreation paginationOptions={queryPaginationOptions} />
       </Security>
     </ExportContextProvider>
   );

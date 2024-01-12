@@ -59,7 +59,6 @@ export interface UseLocalStorageHelpers extends handleFilterHelpers {
 
 const localStorageToPaginationOptions = (
   { searchTerm, filters, sortBy, orderAsc, ...props }: LocalStorage,
-  additionalFilters?: Filter[],
 ): PaginationOptions => {
   // Remove only display options, not query linked
   const localOptions = { ...props };
@@ -82,17 +81,7 @@ const localStorageToPaginationOptions = (
     basePagination.orderMode = orderAsc ? OrderMode.asc : OrderMode.desc;
     basePagination.orderBy = sortBy;
   }
-  const paginationFilters = {
-    mode: filters?.mode ?? 'and',
-    filters: filters?.filters ?? [] as Filter[],
-    filterGroups: [] as FilterGroup[],
-  };
-  if (additionalFilters && additionalFilters.length > 0) {
-    paginationFilters.filters = paginationFilters.filters.concat(additionalFilters);
-  }
-  basePagination.filters = isFilterGroupNotEmpty(paginationFilters)
-    ? paginationFilters
-    : undefined;
+  basePagination.filters = isFilterGroupNotEmpty(filters) ? filters : undefined;
   return basePagination;
 };
 
@@ -269,14 +258,10 @@ export type PaginationLocalStorage<U = Record<string, unknown>> = {
 export const usePaginationLocalStorage = <U>(
   key: string,
   initialValue: LocalStorage,
-  additionalFilters?: Filter[],
   ignoreUri?: boolean,
 ): PaginationLocalStorage<U> => {
   const [viewStorage, setValue] = useLocalStorage(key, initialValue, ignoreUri);
-  const paginationOptions = localStorageToPaginationOptions(
-    { count: 25, ...viewStorage },
-    additionalFilters,
-  );
+  const paginationOptions = localStorageToPaginationOptions({ count: 25, ...viewStorage });
   const helpers: UseLocalStorageHelpers = {
     handleSearch: (value: string) => setValue((c) => ({ ...c, searchTerm: value })),
     handleRemoveFilterById: (id: string) => {

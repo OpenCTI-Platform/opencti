@@ -17,25 +17,11 @@ import { buildEntityTypeBasedFilterContext, emptyFilterGroup } from '../../../ut
 
 const LOCAL_STORAGE_KEY = 'reports';
 
-interface ReportsProps {
-  objectId: string;
-}
-
-const Reports: FunctionComponent<ReportsProps> = ({
-  objectId,
-}) => {
+const Reports: FunctionComponent = () => {
   const {
     platformModuleHelpers: { isRuntimeFieldEnable },
   } = useAuth();
-  const additionnalFilters = [];
-  if (objectId) {
-    additionnalFilters.push({
-      key: 'objects',
-      values: [objectId],
-      operator: 'eq',
-      mode: 'or',
-    });
-  }
+
   const {
     viewStorage,
     paginationOptions,
@@ -50,7 +36,6 @@ const Reports: FunctionComponent<ReportsProps> = ({
       openExports: false,
       redirectionMode: 'overview',
     },
-    additionnalFilters,
   );
   const {
     numberOfElements,
@@ -211,7 +196,7 @@ const Reports: FunctionComponent<ReportsProps> = ({
     <ExportContextProvider>
       {renderLines()}
       <Security needs={[KNOWLEDGE_KNUPDATE]}>
-        <ReportCreation paginationOptions={paginationOptions} />
+        <ReportCreation paginationOptions={queryPaginationOptions} />
       </Security>
     </ExportContextProvider>
   );

@@ -8,7 +8,7 @@ import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage'
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
 import { ToolLineDummy } from './tools/ToolLine';
 import { ToolsLinesPaginationQuery, ToolsLinesPaginationQuery$variables } from './tools/__generated__/ToolsLinesPaginationQuery.graphql';
-import { emptyFilterGroup } from '../../../utils/filters/filtersUtils';
+import { buildEntityTypeBasedFilterContext, emptyFilterGroup } from '../../../utils/filters/filtersUtils';
 
 const LOCAL_STORAGE_KEY = 'tools';
 
@@ -24,15 +24,26 @@ const Tools = () => {
     },
   );
 
+  const {
+    sortBy,
+    orderAsc,
+    searchTerm,
+    filters,
+    openExports,
+    numberOfElements,
+  } = viewStorage;
+
+  const contextFilters = buildEntityTypeBasedFilterContext('Tool', filters);
+  const queryPaginationOptions = {
+    ...paginationOptions,
+    filters: contextFilters,
+  } as unknown as ToolsLinesPaginationQuery$variables;
+  const queryRef = useQueryLoading<ToolsLinesPaginationQuery>(
+    toolsLinesQuery,
+    queryPaginationOptions,
+  );
+
   const renderLines = () => {
-    const {
-      sortBy,
-      orderAsc,
-      searchTerm,
-      filters,
-      openExports,
-      numberOfElements,
-    } = viewStorage;
     const dataColumns = {
       name: {
         label: 'Name',
@@ -55,10 +66,7 @@ const Tools = () => {
         isSortable: true,
       },
     };
-    const queryRef = useQueryLoading<ToolsLinesPaginationQuery>(
-      toolsLinesQuery,
-      paginationOptions,
-    );
+
     return (
       <ListLines
         helpers={helpers}
@@ -76,7 +84,7 @@ const Tools = () => {
         exportContext={{ entity_type: 'Tool' }}
         keyword={searchTerm}
         filters={filters}
-        paginationOptions={paginationOptions}
+        paginationOptions={queryPaginationOptions}
         numberOfElements={numberOfElements}
         availableFilterKeys={[
           'workflow_id',
@@ -106,7 +114,7 @@ const Tools = () => {
           >
             <ToolsLines
               queryRef={queryRef}
-              paginationOptions={paginationOptions}
+              paginationOptions={queryPaginationOptions}
               dataColumns={dataColumns}
               onLabelClick={helpers.handleAddFilter}
               setNumberOfElements={helpers.handleSetNumberOfElements}
@@ -120,7 +128,7 @@ const Tools = () => {
     <>
       {renderLines()}
       <Security needs={[KNOWLEDGE_KNUPDATE]}>
-        <ToolCreation paginationOptions={paginationOptions} />
+        <ToolCreation paginationOptions={queryPaginationOptions} />
       </Security>
     </>
   );

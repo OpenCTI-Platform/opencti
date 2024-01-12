@@ -190,7 +190,7 @@ const Opinions: FunctionComponent<OpinionsProps> = ({
     <ExportContextProvider>
       {renderLines()}
       <Security needs={[KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNPARTICIPATE]}>
-        <OpinionCreation paginationOptions={paginationOptions} />
+        <OpinionCreation paginationOptions={queryPaginationOptions} />
       </Security>
     </ExportContextProvider>
   );

@@ -24,6 +24,7 @@ import { usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStora
 import { tasksDataColumns } from '../tasks/TasksLine';
 import ListLines from '../../../../components/list_lines/ListLines';
 import { CaseTasksLineDummy } from '../tasks/CaseTasksLine';
+import { FilterGroup, isFilterGroupNotEmpty, removeIdFromFilterGroupObject } from '../../../../utils/filters/filtersUtils';
 
 const useStyles = makeStyles(() => ({
   gridContainer: {
@@ -42,22 +43,14 @@ interface CaseIncidentProps {
   data: CaseUtils_case$key;
 }
 
-const CaseIncidentComponent: FunctionComponent<CaseIncidentProps> = ({
-  data,
-}) => {
+const CaseIncidentComponent: FunctionComponent<CaseIncidentProps> = ({ data }) => {
   const classes = useStyles();
   const { t } = useFormatter();
   const ref = useRef(null);
   const caseIncidentData = useFragment(caseFragment, data);
-  const additionnalFilters = [
-    {
-      key: 'objects',
-      values: [caseIncidentData.id],
-      operator: 'eq',
-      mode: 'or',
-    },
-  ];
+
   const LOCAL_STORAGE_KEY_CASE_TASKS = `cases-${caseIncidentData.id}-caseTask`;
+
   const { viewStorage, helpers, paginationOptions } = usePaginationLocalStorage<CaseTasksLinesQuery$variables>(
     LOCAL_STORAGE_KEY_CASE_TASKS,
     {
@@ -65,13 +58,26 @@ const CaseIncidentComponent: FunctionComponent<CaseIncidentProps> = ({
       sortBy: 'created',
       orderAsc: false,
     },
-    additionnalFilters,
   );
-  const { sortBy, orderAsc } = viewStorage;
+  const { sortBy, orderAsc, filters } = viewStorage;
+  const userFilters = removeIdFromFilterGroupObject(filters);
+  const contextTaskFilters: FilterGroup = {
+    mode: 'and',
+    filters: [
+      { key: 'entity_type', operator: 'eq', mode: 'or', values: ['Task'] },
+      { key: 'objects', operator: 'eq', mode: 'or', values: [caseIncidentData.id] },
+    ],
+    filterGroups: userFilters && isFilterGroupNotEmpty(userFilters) ? [userFilters] : [],
+  };
+  const queryTaskPaginationOptions = {
+    ...paginationOptions,
+    filters: contextTaskFilters,
+  } as unknown as CaseTasksLinesQuery$variables;
   const queryRef = useQueryLoading<CaseTasksLinesQuery>(
     caseTasksLinesQuery,
-    paginationOptions,
+    queryTaskPaginationOptions,
   );
+
   return (
     <>
       <Grid
@@ -122,7 +128,7 @@ const CaseIncidentComponent: FunctionComponent<CaseIncidentProps> = ({
             >
               <CaseTasksLines
                 queryRef={queryRef}
-                paginationOptions={paginationOptions}
+                paginationOptions={queryTaskPaginationOptions}
                 caseId={caseIncidentData.id}
                 sortBy={sortBy}
                 orderAsc={orderAsc}

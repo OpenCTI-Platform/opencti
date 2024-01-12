@@ -51,7 +51,9 @@ const ObservedDatas: FunctionComponent = () => {
   } = useEntityToggle<ObservedDataLine_node$data>(LOCAL_STORAGE_KEY);
 
   const contextFilters = buildEntityTypeBasedFilterContext('Observed-Data', filters);
-  const queryPaginationOptions = { ...paginationOptions, filters: contextFilters };
+  const queryPaginationOptions = {
+    ...paginationOptions, filters: contextFilters,
+  } as unknown as ObservedDatasLinesPaginationQuery$variables;
 
   const renderLines = (helper: ModuleHelper | undefined) => {
     const isRuntimeSort = helper?.isRuntimeFieldEnable();
@@ -168,7 +170,7 @@ const ObservedDatas: FunctionComponent = () => {
           <div>
             {renderLines(platformModuleHelpers)}
             <Security needs={[KNOWLEDGE_KNUPDATE]}>
-              <ObservedDataCreation paginationOptions={paginationOptions}/>
+              <ObservedDataCreation paginationOptions={queryPaginationOptions}/>
             </Security>
           </div>
         </ExportContextProvider>

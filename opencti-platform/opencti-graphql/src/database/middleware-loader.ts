@@ -242,25 +242,20 @@ export const buildRelationsFilter = <T extends BasicStoreCommon>(relationshipTyp
     R.dissoc('lastSeenStop'),
     R.dissoc('confidences'),
   )(args);
-  let finalFilters = filters;
+
+  let computedFilters = filters;
+  // Args filters must be wrapper on top of api filters
   if (filtersFromOptionsContent.length > 0) {
-    const filtersFromOptions = {
+    computedFilters = {
       mode: FilterMode.And,
       filters: filtersFromOptionsContent,
-      filterGroups: [],
+      filterGroups: filters && isNotEmptyField(filters) ? [filters] : [],
     };
-    finalFilters = filters
-      ? {
-        mode: filters.mode,
-        filters: [],
-        filterGroups: [filters, filtersFromOptions],
-      }
-      : filtersFromOptions;
   }
   return {
     ...cleanedArgs,
     types: relationsToGet,
-    filters: finalFilters,
+    filters: computedFilters,
   };
 };
 export const listRelations = async <T extends StoreProxyRelation>(context: AuthContext, user: AuthUser, type: string | Array<string>,

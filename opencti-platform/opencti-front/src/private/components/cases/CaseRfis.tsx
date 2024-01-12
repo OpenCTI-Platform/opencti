@@ -39,6 +39,25 @@ const CaseRfis: FunctionComponent<CaseRfisProps> = () => {
       filters: emptyFilterGroup,
     },
   );
+
+  const {
+    sortBy,
+    orderAsc,
+    searchTerm,
+    filters,
+    openExports,
+    numberOfElements,
+  } = viewStorage;
+  const contextFilters = buildEntityTypeBasedFilterContext('Case-Rfi', filters);
+  const queryPaginationOptions = {
+    ...paginationOptions,
+    filters: contextFilters,
+  } as unknown as CaseRfiLinesCasesPaginationQuery$variables;
+  const queryRef = useQueryLoading<CaseRfiLinesCasesPaginationQuery>(
+    caseRfisLinesQuery,
+    paginationOptions,
+  );
+
   const {
     onToggleEntity,
     numberOfSelectedElements,
@@ -49,14 +68,6 @@ const CaseRfis: FunctionComponent<CaseRfisProps> = () => {
     selectAll,
   } = useEntityToggle<CaseRfiLineCase_node$data>(LOCAL_STORAGE_KEY);
   const renderLines = () => {
-    const {
-      sortBy,
-      orderAsc,
-      searchTerm,
-      filters,
-      openExports,
-      numberOfElements,
-    } = viewStorage;
     const isRuntimeSort = isRuntimeFieldEnable() ?? false;
     const dataColumns = {
       name: {
@@ -105,16 +116,6 @@ const CaseRfis: FunctionComponent<CaseRfisProps> = () => {
         isSortable: isRuntimeSort,
       },
     };
-
-    const contextFilters = buildEntityTypeBasedFilterContext('Case-Rfi', filters);
-    const queryPaginationOptions = {
-      ...paginationOptions,
-      filters: contextFilters,
-    } as unknown as CaseRfiLinesCasesPaginationQuery$variables;
-    const queryRef = useQueryLoading<CaseRfiLinesCasesPaginationQuery>(
-      caseRfisLinesQuery,
-      paginationOptions,
-    );
 
     return (
       <ListLines
@@ -194,7 +195,7 @@ const CaseRfis: FunctionComponent<CaseRfisProps> = () => {
     <ExportContextProvider>
       {renderLines()}
       <Security needs={[KNOWLEDGE_KNUPDATE]}>
-        <CaseRfiCreation paginationOptions={paginationOptions} />
+        <CaseRfiCreation paginationOptions={queryPaginationOptions} />
       </Security>
     </ExportContextProvider>
   );
