@@ -21,7 +21,7 @@ import useAuth from '../../../../utils/hooks/useAuth';
 import Filters from '../lists/Filters';
 import FilterIconButton from '../../../../components/FilterIconButton';
 import { usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStorage';
-import { emptyFilterGroup } from '../../../../utils/filters/filtersUtils';
+import { emptyFilterGroup, isFilterGroupNotEmpty, removeIdFromFilterGroupObject } from '../../../../utils/filters/filtersUtils';
 import { useFormatter } from '../../../../components/i18n';
 
 const useStyles = makeStyles(() => ({
@@ -49,37 +49,7 @@ const StixCoreObjectOrStixCoreRelationshipContainers = ({
       ? `-${stixDomainObjectOrStixCoreRelationship.id}`
       : `-${authorId}`
   }`;
-  const additionalFilters = [];
-  const reportFilterClass = reportType !== 'all' && reportType !== undefined
-    ? reportType.replace(/_/g, ' ')
-    : '';
-  if (reportFilterClass) {
-    additionalFilters.push({
-      key: 'report_types',
-      values: [reportFilterClass],
-      operator: 'eq',
-      mode: 'or',
-    });
-  }
-  if (authorId) {
-    additionalFilters.push({
-      key: 'createdBy',
-      values: [authorId],
-      operator: 'eq',
-      mode: 'or',
-    });
-  }
-  if (
-    stixDomainObjectOrStixCoreRelationship
-    && stixDomainObjectOrStixCoreRelationship.id
-  ) {
-    additionalFilters.push({
-      key: 'objects',
-      values: [stixDomainObjectOrStixCoreRelationship.id],
-      operator: 'eq',
-      mode: 'or',
-    });
-  }
+
   const { viewStorage, paginationOptions, helpers } = usePaginationLocalStorage(
     LOCAL_STORAGE_KEY,
     {
@@ -91,8 +61,8 @@ const StixCoreObjectOrStixCoreRelationshipContainers = ({
       view: 'lines',
       redirectionMode: 'overview',
     },
-    additionalFilters,
   );
+
   const {
     numberOfElements,
     filters,
@@ -103,6 +73,21 @@ const StixCoreObjectOrStixCoreRelationshipContainers = ({
     view,
     openExports,
   } = viewStorage;
+
+  const reportFilterClass = reportType !== 'all' && reportType !== undefined ? reportType.replace(/_/g, ' ') : '';
+  const userFilters = removeIdFromFilterGroupObject(filters);
+  const contextFilters = {
+    mode: 'and',
+    filters: [
+      { key: 'entity_type', operator: 'eq', mode: 'or', values: ['Container'] },
+      ...(reportFilterClass ? [{ key: 'report_types', values: [reportFilterClass], operator: 'eq', mode: 'or' }] : []),
+      ...(authorId ? [{ key: 'createdBy', values: [authorId], operator: 'eq', mode: 'or' }] : []),
+      ...(stixDomainObjectOrStixCoreRelationship?.id ? [{ key: 'objects', values: [stixDomainObjectOrStixCoreRelationship.id], operator: 'eq', mode: 'or' }] : []),
+    ],
+    filterGroups: userFilters && isFilterGroupNotEmpty(userFilters) ? [userFilters] : [],
+  };
+  const queryPaginationOptions = { ...paginationOptions, filters: contextFilters };
+
   const dataColumns = {
     entity_type: {
       label: 'Type',
@@ -145,6 +130,7 @@ const StixCoreObjectOrStixCoreRelationshipContainers = ({
       isSortable: isRuntimeSort,
     },
   };
+
   const defaultHandleAddFilter = (
     inputKey,
     id,
@@ -154,6 +140,7 @@ const StixCoreObjectOrStixCoreRelationshipContainers = ({
     const key = inputKey === 'container_type' ? 'entity_type' : inputKey;
     helpers.handleAddFilter(key, id, op, event);
   };
+
   const renderLines = () => {
     return (
       <ListLines
@@ -176,7 +163,7 @@ const StixCoreObjectOrStixCoreRelationshipContainers = ({
         handleSwitchRedirectionMode={(value) => helpers.handleAddProperty('redirectionMode', value)}
         redirectionMode={redirectionMode}
         filters={filters}
-        paginationOptions={paginationOptions}
+        paginationOptions={queryPaginationOptions}
         numberOfElements={numberOfElements}
         disableCards={true}
         enableGraph={true}
@@ -193,11 +180,11 @@ const StixCoreObjectOrStixCoreRelationshipContainers = ({
       >
         <QueryRenderer
           query={stixCoreObjectOrStixCoreRelationshipContainersLinesQuery}
-          variables={paginationOptions}
+          variables={queryPaginationOptions}
           render={({ props }) => (
             <StixCoreObjectOrStixCoreRelationshipContainersLines
               data={props}
-              paginationOptions={paginationOptions}
+              paginationOptions={queryPaginationOptions}
               dataColumns={dataColumns}
               initialLoading={props === null}
               onLabelClick={defaultHandleAddFilter}
@@ -329,7 +316,7 @@ const StixCoreObjectOrStixCoreRelationshipContainers = ({
               'belongs-to',
               'related-to',
             ],
-            filters: paginationOptions.filters,
+            filters: queryPaginationOptions.filters,
             search: searchTerm,
           }}
           render={({ props }) => {
