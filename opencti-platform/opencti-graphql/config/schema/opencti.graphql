@@ -185,7 +185,6 @@ type AppMemory {
 input ExportContext {
   entity_id: String
   entity_type: String!
-  detail: String
 }
 
 type AppDebugDistribution {

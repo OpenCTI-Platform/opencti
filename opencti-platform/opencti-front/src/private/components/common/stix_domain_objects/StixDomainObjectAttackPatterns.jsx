@@ -4,7 +4,7 @@ import Loader from '../../../../components/Loader';
 import { QueryRenderer } from '../../../../relay/environment';
 import StixDomainObjectAttackPatternsKillChain, { stixDomainObjectAttackPatternsKillChainStixCoreRelationshipsQuery } from './StixDomainObjectAttackPatternsKillChain';
 import { usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStorage';
-import { emptyFilterGroup } from '../../../../utils/filters/filtersUtils';
+import { emptyFilterGroup, removeIdFromFilterGroupObject } from '../../../../utils/filters/filtersUtils';
 
 const useStyles = makeStyles(() => ({
   container: {
@@ -27,7 +27,7 @@ const StixDomainObjectAttackPatterns = ({
   const {
     viewStorage,
     helpers,
-    paginationOptions: rawPaginationOptions,
+    paginationOptions,
   } = usePaginationLocalStorage(LOCAL_STORAGE_KEY, {
     searchTerm: '',
     openExports: false,
@@ -35,26 +35,28 @@ const StixDomainObjectAttackPatterns = ({
     view: 'matrix',
   });
   const { searchTerm, filters, view, openExports } = viewStorage;
-
-  const finalPaginationOptions = {
-    fromOrToId: stixDomainObjectId,
-    elementWithTargetTypes: ['Attack-Pattern'],
-    ...rawPaginationOptions,
+  const userFilters = removeIdFromFilterGroupObject(filters);
+  const contextFilters = {
+    mode: 'and',
+    filters: [
+      { key: 'elementWithTargetTypes', values: ['Attack-Pattern'] },
+      { key: 'fromOrToId', values: [stixDomainObjectId] },
+    ],
+    filterGroups: userFilters ? [userFilters] : [],
   };
+  const queryPaginationOptions = { ...paginationOptions, filters: contextFilters };
   return (
     <div className={classes.container}>
       <QueryRenderer
-        query={
-          stixDomainObjectAttackPatternsKillChainStixCoreRelationshipsQuery
-        }
-        variables={{ first: 500, ...finalPaginationOptions }}
+        query={stixDomainObjectAttackPatternsKillChainStixCoreRelationshipsQuery}
+        variables={{ first: 500, ...queryPaginationOptions }}
         render={({ props }) => {
           if (props) {
             return (
               <StixDomainObjectAttackPatternsKillChain
                 data={props}
                 entityLink={entityLink}
-                paginationOptions={finalPaginationOptions}
+                paginationOptions={queryPaginationOptions}
                 stixDomainObjectId={stixDomainObjectId}
                 handleChangeView={helpers.handleChangeView}
                 handleSearch={helpers.handleSearch}

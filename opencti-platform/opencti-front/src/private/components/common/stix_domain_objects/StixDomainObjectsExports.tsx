@@ -9,7 +9,7 @@ import {
 import { useFormatter } from '../../../../components/i18n';
 
 interface StixDomainObjectsExportsProps {
-  exportContext: { entity_id?: string; entity_type: string; detail: string };
+  exportContext: { entity_id?: string; entity_type: string };
   paginationOptions: StixDomainObjectsExportsContentRefetchQuery$variables;
   open: boolean;
   handleToggle: () => void;

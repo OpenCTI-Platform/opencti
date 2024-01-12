@@ -16,7 +16,7 @@ import ExportContextProvider from '../../../../utils/ExportContextProvider';
 import { ContainerStixCyberObservableLineDummy } from './ContainerStixCyberObservableLine';
 import useEntityToggle from '../../../../utils/hooks/useEntityToggle';
 import { ContainerStixCyberObservableLine_node$data } from './__generated__/ContainerStixCyberObservableLine_node.graphql';
-import { GqlFilterGroup, emptyFilterGroup, removeIdFromFilterGroupObject } from '../../../../utils/filters/filtersUtils';
+import { emptyFilterGroup, removeIdFromFilterGroupObject } from '../../../../utils/filters/filtersUtils';
 
 export const ContainerStixCyberObservablesLinesSearchQuery = graphql`
   query ContainerStixCyberObservablesLinesSearchQuery(
@@ -63,7 +63,7 @@ ContainerStixCyberObservablesComponentProps
   const LOCAL_STORAGE_KEY = `container-${container.id}-stixCyberObservables`;
   const {
     viewStorage,
-    paginationOptions: rawPaginationOptions,
+    paginationOptions,
     helpers,
   } = usePaginationLocalStorage<ContainerStixCyberObservablesLinesQuery$variables>(
     LOCAL_STORAGE_KEY,
@@ -109,8 +109,8 @@ ContainerStixCyberObservablesComponentProps
   } = useEntityToggle<ContainerStixCyberObservableLine_node$data>(
     LOCAL_STORAGE_KEY,
   );
-    // Format filters Front (object)
-  const toolbarFilters = {
+  const userFilters = removeIdFromFilterGroupObject(filters);
+  const contextFilters = {
     mode: 'and',
     filters: [
       {
@@ -126,19 +126,10 @@ ContainerStixCyberObservablesComponentProps
         mode: 'or',
       },
     ],
-    filterGroups: [],
+    filterGroups: userFilters ? [userFilters] : [],
   };
-    // Format filters query (options + filters)
-  const paginationOptions = {
-    ...rawPaginationOptions,
-    types: types && types.length > 0 ? types : ['Stix-Cyber-Observable'],
-    filters: removeIdFromFilterGroupObject(filters) as unknown as GqlFilterGroup,
-  };
-  const exportPaginationOptions = {
-    ...rawPaginationOptions,
-    types: types && types.length > 0 ? types : ['Stix-Cyber-Observable'],
-    filters: toolbarFilters as unknown as GqlFilterGroup,
-  };
+  const queryPaginationOptions = { ...paginationOptions, filters: contextFilters };
+
   const handleToggle = (type: string) => {
     if (types?.includes(type)) {
       handleAddProperty(
@@ -158,7 +149,7 @@ ContainerStixCyberObservablesComponentProps
   };
   const handleCopy = useCopy<ContainerStixCyberObservablesLinesSearchQuery$data>(
     {
-      filters: toolbarFilters,
+      filters: contextFilters,
       searchTerm: searchTerm ?? '',
       query: ContainerStixCyberObservablesLinesSearchQuery,
       selectedValues: Object.values(selectedElements).map(
@@ -238,7 +229,7 @@ ContainerStixCyberObservablesComponentProps
             selectAll={selectAll}
             iconExtension={true}
             handleToggleExports={handleToggleExports}
-            exportContext={{ entity_type: 'Stix-Cyber-Observable', detail: `of-container-${container.id}` }}
+            exportContext={{ entity_type: 'Stix-Cyber-Observable' }}
             keyword={searchTerm}
             openExports={openExports}
             filters={filters}
@@ -250,7 +241,7 @@ ContainerStixCyberObservablesComponentProps
               'createdBy',
               'sightedBy',
             ]}
-            paginationOptions={exportPaginationOptions}
+            paginationOptions={queryPaginationOptions}
           >
             {queryRef && (
               <React.Suspense
@@ -289,7 +280,7 @@ ContainerStixCyberObservablesComponentProps
             numberOfSelectedElements={numberOfSelectedElements}
             selectAll={selectAll}
             search={searchTerm}
-            filters={toolbarFilters}
+            filters={contextFilters}
             handleClearSelectedElements={handleClearSelectedElements}
             variant="large"
             container={container}

@@ -13,7 +13,7 @@ import CaseRfisLines, { caseRfisLinesQuery } from './case_rfis/CaseRfiLines';
 import { CaseRfiLineDummy } from './case_rfis/CaseRfiLine';
 import { CaseRfiLinesCasesPaginationQuery, CaseRfiLinesCasesPaginationQuery$variables } from './case_rfis/__generated__/CaseRfiLinesCasesPaginationQuery.graphql';
 import { CaseRfiLineCase_node$data } from './case_rfis/__generated__/CaseRfiLineCase_node.graphql';
-import { injectEntityTypeFilterInFilterGroup, emptyFilterGroup } from '../../../utils/filters/filtersUtils';
+import { buildEntityTypeBasedFilterContext, emptyFilterGroup } from '../../../utils/filters/filtersUtils';
 
 interface CaseRfisProps {
   inputValue?: string;
@@ -105,11 +105,17 @@ const CaseRfis: FunctionComponent<CaseRfisProps> = () => {
         isSortable: isRuntimeSort,
       },
     };
+
+    const contextFilters = buildEntityTypeBasedFilterContext('Case-Rfi', filters);
+    const queryPaginationOptions = {
+      ...paginationOptions,
+      filters: contextFilters,
+    } as unknown as CaseRfiLinesCasesPaginationQuery$variables;
     const queryRef = useQueryLoading<CaseRfiLinesCasesPaginationQuery>(
       caseRfisLinesQuery,
       paginationOptions,
     );
-    const toolBarFilters = injectEntityTypeFilterInFilterGroup(filters, 'Case-Rfi');
+
     return (
       <ListLines
         helpers={helpers}
@@ -129,7 +135,7 @@ const CaseRfis: FunctionComponent<CaseRfisProps> = () => {
         exportContext={{ entity_type: 'Case-Rfi' }}
         keyword={searchTerm}
         filters={filters}
-        paginationOptions={paginationOptions}
+        paginationOptions={queryPaginationOptions}
         numberOfElements={numberOfElements}
         iconExtension={true}
         availableFilterKeys={[
@@ -162,7 +168,7 @@ const CaseRfis: FunctionComponent<CaseRfisProps> = () => {
           >
             <CaseRfisLines
               queryRef={queryRef}
-              paginationOptions={paginationOptions}
+              paginationOptions={queryPaginationOptions}
               dataColumns={dataColumns}
               setNumberOfElements={helpers.handleSetNumberOfElements}
               selectedElements={selectedElements}
@@ -176,7 +182,7 @@ const CaseRfis: FunctionComponent<CaseRfisProps> = () => {
               numberOfSelectedElements={numberOfSelectedElements}
               handleClearSelectedElements={handleClearSelectedElements}
               selectAll={selectAll}
-              filters={toolBarFilters}
+              filters={contextFilters}
               type="Case-Rfi"
             />
           </React.Suspense>

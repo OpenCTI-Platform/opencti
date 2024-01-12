@@ -13,7 +13,7 @@ import { CaseRftLinesCasesPaginationQuery, CaseRftLinesCasesPaginationQuery$vari
 import { CaseRftLineCase_node$data } from './case_rfts/__generated__/CaseRftLineCase_node.graphql';
 import { CaseRftLineDummy } from './case_rfts/CaseRftLine';
 import CaseRftCreation from './case_rfts/CaseRftCreation';
-import { injectEntityTypeFilterInFilterGroup, emptyFilterGroup } from '../../../utils/filters/filtersUtils';
+import { buildEntityTypeBasedFilterContext, emptyFilterGroup } from '../../../utils/filters/filtersUtils';
 
 interface CaseRftsProps {
   inputValue?: string;
@@ -105,11 +105,17 @@ const CaseRfts: FunctionComponent<CaseRftsProps> = () => {
         isSortable: isRuntimeSort,
       },
     };
+
+    const contextFilters = buildEntityTypeBasedFilterContext('Case-Rft', filters);
+    const queryPaginationOptions = {
+      ...paginationOptions,
+      filters: contextFilters,
+    } as unknown as CaseRftLinesCasesPaginationQuery$variables;
     const queryRef = useQueryLoading<CaseRftLinesCasesPaginationQuery>(
       caseRftsLinesQuery,
-      paginationOptions,
+      queryPaginationOptions,
     );
-    const toolBarFilters = injectEntityTypeFilterInFilterGroup(filters, 'Case-Rft');
+
     return (
       <ListLines
         helpers={helpers}
@@ -129,7 +135,7 @@ const CaseRfts: FunctionComponent<CaseRftsProps> = () => {
         exportContext={{ entity_type: 'Case-Rft' }}
         keyword={searchTerm}
         filters={filters}
-        paginationOptions={paginationOptions}
+        paginationOptions={queryPaginationOptions}
         numberOfElements={numberOfElements}
         iconExtension={true}
         availableFilterKeys={[
@@ -162,7 +168,7 @@ const CaseRfts: FunctionComponent<CaseRftsProps> = () => {
           >
             <CaseRftsLines
               queryRef={queryRef}
-              paginationOptions={paginationOptions}
+              paginationOptions={queryPaginationOptions}
               dataColumns={dataColumns}
               setNumberOfElements={helpers.handleSetNumberOfElements}
               selectedElements={selectedElements}
@@ -176,7 +182,7 @@ const CaseRfts: FunctionComponent<CaseRftsProps> = () => {
               numberOfSelectedElements={numberOfSelectedElements}
               handleClearSelectedElements={handleClearSelectedElements}
               selectAll={selectAll}
-              filters={toolBarFilters}
+              filters={contextFilters}
               type="Case-Rft"
             />
           </React.Suspense>

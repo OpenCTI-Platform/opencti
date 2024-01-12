@@ -13,7 +13,7 @@ import { IncidentLine_node$data } from './incidents/__generated__/IncidentLine_n
 import ToolBar from '../data/ToolBar';
 import ExportContextProvider from '../../../utils/ExportContextProvider';
 import { IncidentsLinesPaginationQuery, IncidentsLinesPaginationQuery$variables } from './incidents/__generated__/IncidentsLinesPaginationQuery.graphql';
-import { injectEntityTypeFilterInFilterGroup, emptyFilterGroup } from '../../../utils/filters/filtersUtils';
+import { buildEntityTypeBasedFilterContext, emptyFilterGroup } from '../../../utils/filters/filtersUtils';
 
 export const LOCAL_STORAGE_KEY = 'incidents';
 
@@ -48,10 +48,17 @@ const Incidents: FunctionComponent = () => {
     handleToggleSelectAll,
     selectAll,
   } = useEntityToggle<IncidentLine_node$data>(LOCAL_STORAGE_KEY);
+
+  const contextFilters = buildEntityTypeBasedFilterContext('Incident', filters);
+  const queryPaginationOptions = {
+    ...paginationOptions,
+    filters: contextFilters,
+  } as unknown as IncidentsLinesPaginationQuery$variables;
   const queryRef = useQueryLoading<IncidentsLinesPaginationQuery>(
     incidentsLinesPaginationQuery,
-    paginationOptions,
+    queryPaginationOptions,
   );
+
   // eslint-disable-next-line class-methods-use-this
   const isRuntimeSort = isRuntimeFieldEnable() ?? false;
   const dataColumns = {
@@ -102,7 +109,6 @@ const Incidents: FunctionComponent = () => {
     },
   };
   const renderLines = () => {
-    const toolBarFilters = injectEntityTypeFilterInFilterGroup(filters, 'Incident');
     return (
       <>
         <ListLines
@@ -123,7 +129,7 @@ const Incidents: FunctionComponent = () => {
           exportContext={{ entity_type: 'Incident' }}
           keyword={searchTerm}
           filters={filters}
-          paginationOptions={paginationOptions}
+          paginationOptions={queryPaginationOptions}
           numberOfElements={numberOfElements}
           iconExtension={true}
           availableFilterKeys={[
@@ -157,7 +163,7 @@ const Incidents: FunctionComponent = () => {
             >
               <IncidentsLines
                 queryRef={queryRef}
-                paginationOptions={paginationOptions}
+                paginationOptions={queryPaginationOptions}
                 dataColumns={dataColumns}
                 onLabelClick={helpers.handleAddFilter}
                 setNumberOfElements={helpers.handleSetNumberOfElements}
@@ -175,7 +181,7 @@ const Incidents: FunctionComponent = () => {
           numberOfSelectedElements={numberOfSelectedElements}
           selectAll={selectAll}
           search={searchTerm}
-          filters={toolBarFilters}
+          filters={contextFilters}
           handleClearSelectedElements={handleClearSelectedElements}
           type="Incident"
         />

@@ -1,5 +1,4 @@
 import React from 'react';
-import * as R from 'ramda';
 import { graphql, useFragment } from 'react-relay';
 import { ContainerStixDomainObjectLine_node$data } from '@components/common/containers/__generated__/ContainerStixDomainObjectLine_node.graphql';
 import {
@@ -16,7 +15,7 @@ import { usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStora
 import useEntityToggle from '../../../../utils/hooks/useEntityToggle';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import useAuth from '../../../../utils/hooks/useAuth';
-import { emptyFilterGroup } from '../../../../utils/filters/filtersUtils';
+import { emptyFilterGroup, FilterGroup, removeIdFromFilterGroupObject } from '../../../../utils/filters/filtersUtils';
 
 const ContainerStixDomainObjectsFragment = graphql`
     fragment ContainerStixDomainObjects_container on Container {
@@ -80,54 +79,24 @@ const ContainerStixDomainObjects = ({
     openExports,
     types,
   } = viewStorage;
-  const finalPaginationOptions = {
+
+  const userFilters = removeIdFromFilterGroupObject(filters);
+  const contextFilters: FilterGroup = {
+    mode: 'and',
+    filters: [
+      { key: 'objects', values: [containerData.id], operator: 'eq' },
+      { key: 'entity_type', values: types && types.length > 0 ? types : ['Stix-Core-Object'], operator: 'eq' },
+    ],
+    filterGroups: userFilters ? [userFilters] : [],
+  };
+  const queryPaginationOptions = {
     ...paginationOptions,
     id: containerData.id,
-    types: types && types.length > 0 ? types : ['Stix-Domain-Object'],
-  };
-  const exportFilters = {
-    mode: filters?.mode ?? 'and',
-    filters: [
-      {
-        key: 'objects',
-        values: [containerData.id],
-        operator: 'eq',
-      },
-      {
-        key: 'entity_type',
-        values:
-                    types && types.length > 0
-                      ? R.map((n) => ({ id: n, value: n }), types)
-                      : [],
-        operator: 'eq',
-      },
-      ...(filters?.filters ?? []),
-    ],
-    filterGroups: filters?.filterGroups ?? [],
-  };
-  const exportPaginationOptions = {
-    filters: exportFilters,
     orderBy: sortBy,
     orderMode: orderAsc ? 'asc' : 'desc',
     search: searchTerm,
-  };
-  const backgroundTaskFilters = {
-    mode: filters?.mode ?? 'and',
-    filters: [
-      {
-        key: 'objects',
-        values: [containerData.id],
-        operator: 'eq',
-      },
-      {
-        key: 'entity_type',
-        values: types && types.length > 0 ? types : ['Stix-Domain-Object'],
-        operator: 'eq',
-      },
-      ...(filters?.filters ?? []),
-    ],
-    filterGroups: filters?.filterGroups ?? [],
-  };
+    filters: contextFilters,
+  } as unknown as ContainerStixDomainObjectsLinesQuery$variables;
   const {
     selectedElements,
     deSelectedElements,
@@ -139,7 +108,7 @@ const ContainerStixDomainObjects = ({
   } = useEntityToggle<ContainerStixDomainObjectLine_node$data>(LOCAL_STORAGE_KEY);
   const queryRef = useQueryLoading<ContainerStixDomainObjectsLinesQuery>(
     containerStixDomainObjectsLinesQuery,
-    finalPaginationOptions,
+    queryPaginationOptions,
   );
   const isRuntimeSort = isRuntimeFieldEnable() ?? false;
   const dataColumns = {
@@ -207,7 +176,7 @@ const ContainerStixDomainObjects = ({
       keyword={searchTerm}
       secondaryAction={true}
       numberOfElements={numberOfElements}
-      paginationOptions={exportPaginationOptions}
+      paginationOptions={queryPaginationOptions}
     >
       {queryRef && (
         <React.Suspense
@@ -226,7 +195,7 @@ const ContainerStixDomainObjects = ({
         >
           <ContainerStixDomainObjectsLines
             queryRef={queryRef}
-            paginationOptions={finalPaginationOptions}
+            paginationOptions={queryPaginationOptions}
             dataColumns={dataColumns}
             setNumberOfElements={storageHelpers.handleSetNumberOfElements}
             onTypesChange={storageHelpers.handleToggleTypes}
@@ -241,7 +210,7 @@ const ContainerStixDomainObjects = ({
             deSelectedElements={deSelectedElements}
             numberOfSelectedElements={numberOfSelectedElements}
             selectAll={selectAll}
-            filters={backgroundTaskFilters}
+            filters={contextFilters}
             search={searchTerm}
             handleClearSelectedElements={handleClearSelectedElements}
             variant="large"

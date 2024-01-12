@@ -6480,7 +6480,6 @@ export enum EventsOrdering {
 }
 
 export type ExportContext = {
-  detail?: InputMaybe<Scalars['String']['input']>;
   entity_id?: InputMaybe<Scalars['String']['input']>;
   entity_type: Scalars['String']['input'];
 };

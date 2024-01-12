@@ -155,12 +155,6 @@ const StixCoreObjectOrStixCoreRelationshipContainers = ({
     helpers.handleAddFilter(key, id, op, event);
   };
   const renderLines = () => {
-    let detail = null;
-    if (stixDomainObjectOrStixCoreRelationship) {
-      detail = `of-entity-${stixDomainObjectOrStixCoreRelationship.id}`;
-    } else if (authorId) {
-      detail = `of-entity-${authorId}`;
-    }
     return (
       <ListLines
         helpers={helpers}
@@ -177,7 +171,7 @@ const StixCoreObjectOrStixCoreRelationshipContainers = ({
         handleChangeView={helpers.handleChangeView}
         openExports={openExports}
         noPadding={typeof onChangeOpenExports === 'function'}
-        exportContext={{ entity_type: 'Container', detail }}
+        exportContext={{ entity_type: 'Container' }}
         keyword={searchTerm}
         handleSwitchRedirectionMode={(value) => helpers.handleAddProperty('redirectionMode', value)}
         redirectionMode={redirectionMode}

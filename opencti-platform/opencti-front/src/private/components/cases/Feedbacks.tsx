@@ -10,7 +10,7 @@ import ToolBar from '../data/ToolBar';
 import ExportContextProvider from '../../../utils/ExportContextProvider';
 import { FeedbacksLinesPaginationQuery, FeedbacksLinesPaginationQuery$variables } from './feedbacks/__generated__/FeedbacksLinesPaginationQuery.graphql';
 import { FeedbackLine_node$data } from './feedbacks/__generated__/FeedbackLine_node.graphql';
-import { injectEntityTypeFilterInFilterGroup, emptyFilterGroup } from '../../../utils/filters/filtersUtils';
+import { buildEntityTypeBasedFilterContext, emptyFilterGroup } from '../../../utils/filters/filtersUtils';
 
 interface FeedbacksProps {
   inputValue?: string;
@@ -97,11 +97,17 @@ const Feedbacks: FunctionComponent<FeedbacksProps> = () => {
         isSortable: isRuntimeSort,
       },
     };
+
+    const contextFilters = buildEntityTypeBasedFilterContext('Feedback', filters);
+    const queryPaginationOptions = {
+      ...paginationOptions,
+      filters: contextFilters,
+    } as unknown as FeedbacksLinesPaginationQuery$variables;
     const queryRef = useQueryLoading<FeedbacksLinesPaginationQuery>(
       feedbacksLinesQuery,
-      paginationOptions,
+      queryPaginationOptions,
     );
-    const toolBarFilters = injectEntityTypeFilterInFilterGroup(filters, 'Feedback');
+
     return (
       <ListLines
         helpers={helpers}
@@ -121,7 +127,7 @@ const Feedbacks: FunctionComponent<FeedbacksProps> = () => {
         exportContext={{ entity_type: 'Feedback' }}
         keyword={searchTerm}
         filters={filters}
-        paginationOptions={paginationOptions}
+        paginationOptions={queryPaginationOptions}
         numberOfElements={numberOfElements}
         iconExtension={true}
         availableFilterKeys={[
@@ -151,7 +157,7 @@ const Feedbacks: FunctionComponent<FeedbacksProps> = () => {
           >
             <FeedbacksLines
               queryRef={queryRef}
-              paginationOptions={paginationOptions}
+              paginationOptions={queryPaginationOptions}
               dataColumns={dataColumns}
               setNumberOfElements={helpers.handleSetNumberOfElements}
               selectedElements={selectedElements}
@@ -166,7 +172,7 @@ const Feedbacks: FunctionComponent<FeedbacksProps> = () => {
               handleClearSelectedElements={handleClearSelectedElements}
               selectAll={selectAll}
               type="Feedback"
-              filters={toolBarFilters}
+              filters={contextFilters}
             />
           </Suspense>
         )}

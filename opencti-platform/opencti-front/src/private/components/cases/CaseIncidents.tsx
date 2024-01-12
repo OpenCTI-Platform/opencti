@@ -16,7 +16,7 @@ import {
   CaseIncidentsLinesCasesPaginationQuery$variables,
 } from './case_incidents/__generated__/CaseIncidentsLinesCasesPaginationQuery.graphql';
 import { CaseIncidentLineCase_node$data } from './case_incidents/__generated__/CaseIncidentLineCase_node.graphql';
-import { injectEntityTypeFilterInFilterGroup, emptyFilterGroup } from '../../../utils/filters/filtersUtils';
+import { buildEntityTypeBasedFilterContext, emptyFilterGroup } from '../../../utils/filters/filtersUtils';
 
 interface CaseIncidentsProps {
   inputValue?: string;
@@ -110,11 +110,17 @@ const CaseIncidents: FunctionComponent<CaseIncidentsProps> = () => {
         isSortable: isRuntimeSort,
       },
     };
+
+    const contextFilters = buildEntityTypeBasedFilterContext('Case-Incident', filters);
+    const queryPaginationOptions = {
+      ...paginationOptions,
+      filters: contextFilters,
+    } as unknown as CaseIncidentsLinesCasesPaginationQuery$variables;
     const queryRef = useQueryLoading<CaseIncidentsLinesCasesPaginationQuery>(
       caseIncidentsLinesQuery,
-      paginationOptions,
+      queryPaginationOptions,
     );
-    const toolBarFilters = injectEntityTypeFilterInFilterGroup(filters, 'Case-Incident');
+
     return (
       <ListLines
         helpers={helpers}
@@ -134,7 +140,7 @@ const CaseIncidents: FunctionComponent<CaseIncidentsProps> = () => {
         exportContext={{ entity_type: 'Case-Incident' }}
         keyword={searchTerm}
         filters={filters}
-        paginationOptions={paginationOptions}
+        paginationOptions={queryPaginationOptions}
         numberOfElements={numberOfElements}
         iconExtension={true}
         availableFilterKeys={[
@@ -170,7 +176,7 @@ const CaseIncidents: FunctionComponent<CaseIncidentsProps> = () => {
           >
             <CaseIncidentsLines
               queryRef={queryRef}
-              paginationOptions={paginationOptions}
+              paginationOptions={queryPaginationOptions}
               dataColumns={dataColumns}
               setNumberOfElements={helpers.handleSetNumberOfElements}
               selectedElements={selectedElements}
@@ -184,7 +190,7 @@ const CaseIncidents: FunctionComponent<CaseIncidentsProps> = () => {
               numberOfSelectedElements={numberOfSelectedElements}
               handleClearSelectedElements={handleClearSelectedElements}
               selectAll={selectAll}
-              filters={toolBarFilters}
+              filters={contextFilters}
               type="Case-Incident"
             />
           </React.Suspense>

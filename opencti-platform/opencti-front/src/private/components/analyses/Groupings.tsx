@@ -12,7 +12,7 @@ import useQueryLoading from '../../../utils/hooks/useQueryLoading';
 import { GroupingsLinesPaginationQuery, GroupingsLinesPaginationQuery$variables } from './groupings/__generated__/GroupingsLinesPaginationQuery.graphql';
 import { GroupingLine_node$data } from './groupings/__generated__/GroupingLine_node.graphql';
 import { GroupingLineDummy } from './groupings/GroupingLine';
-import { injectEntityTypeFilterInFilterGroup, emptyFilterGroup } from '../../../utils/filters/filtersUtils';
+import { buildEntityTypeBasedFilterContext, emptyFilterGroup } from '../../../utils/filters/filtersUtils';
 
 const LOCAL_STORAGE_KEY = 'groupings';
 
@@ -81,23 +81,24 @@ const Groupings: FunctionComponent<GroupingsProps> = ({
     handleToggleSelectAll,
     onToggleEntity,
   } = useEntityToggle<GroupingLine_node$data>(LOCAL_STORAGE_KEY);
+
+  const contextFilters = buildEntityTypeBasedFilterContext('Grouping', filters);
+  const queryPaginationOptions = {
+    ...paginationOptions,
+    filters: contextFilters,
+  } as unknown as GroupingsLinesPaginationQuery$variables;
   const queryRef = useQueryLoading<GroupingsLinesPaginationQuery>(
     groupingsLinesQuery,
-    paginationOptions,
+    queryPaginationOptions,
   );
+
   const renderLines = () => {
-    let detail = null;
-    if (objectId) {
-      detail = `of-entity-${objectId}`;
-    } else if (authorId) {
-      detail = `of-entity-${authorId}`;
-    }
     let numberOfSelectedElements = Object.keys(selectedElements || {}).length;
     if (selectAll) {
       numberOfSelectedElements = (numberOfElements?.original ?? 0)
         - Object.keys(deSelectedElements || {}).length;
     }
-    const toolBarFilters = injectEntityTypeFilterInFilterGroup(filters, 'Grouping');
+
     const isRuntimeSort = isRuntimeFieldEnable() ?? false;
     const dataColumns = {
       name: {
@@ -159,10 +160,10 @@ const Groupings: FunctionComponent<GroupingsProps> = ({
           handleToggleSelectAll={handleToggleSelectAll}
           selectAll={selectAll}
           noPadding={typeof onChangeOpenExports === 'function'}
-          exportContext={{ entity_type: 'Grouping', detail }}
+          exportContext={{ entity_type: 'Grouping' }}
           keyword={searchTerm}
           filters={filters}
-          paginationOptions={paginationOptions}
+          paginationOptions={queryPaginationOptions}
           numberOfElements={numberOfElements}
           iconExtension={true}
           availableFilterKeys={[
@@ -192,7 +193,7 @@ const Groupings: FunctionComponent<GroupingsProps> = ({
             >
               <GroupingsLines
                 queryRef={queryRef}
-                paginationOptions={paginationOptions}
+                paginationOptions={queryPaginationOptions}
                 dataColumns={dataColumns}
                 onLabelClick={storageHelpers.handleAddFilter}
                 selectedElements={selectedElements}
@@ -210,7 +211,7 @@ const Groupings: FunctionComponent<GroupingsProps> = ({
           numberOfSelectedElements={numberOfSelectedElements}
           selectAll={selectAll}
           search={searchTerm}
-          filters={toolBarFilters}
+          filters={contextFilters}
           handleClearSelectedElements={handleClearSelectedElements}
           type="Grouping"
         />

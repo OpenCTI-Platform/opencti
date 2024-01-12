@@ -9,7 +9,7 @@ import useEntityToggle from '../../../utils/hooks/useEntityToggle';
 import { NotificationLine_node$data } from './notifications/__generated__/NotificationLine_node.graphql';
 import useAuth from '../../../utils/hooks/useAuth';
 import NotificationsToolBar from './notifications/NotificationsToolBar';
-import { addFilter, FilterGroup, injectEntityTypeFilterInFilterGroup, emptyFilterGroup } from '../../../utils/filters/filtersUtils';
+import { emptyFilterGroup, removeIdFromFilterGroupObject } from '../../../utils/filters/filtersUtils';
 
 export const LOCAL_STORAGE_KEY = 'notifiers';
 
@@ -63,11 +63,35 @@ const Notifications: FunctionComponent = () => {
         isSortable: true,
       },
     };
+
+    const userFilters = removeIdFromFilterGroupObject(filters);
+    const contextFilters = {
+      mode: 'and',
+      filters: [
+        {
+          key: 'entity_type',
+          values: ['Notification'],
+          operator: 'eq',
+          mode: 'or',
+        },
+        {
+          key: 'user_id',
+          values: [me.id],
+          operator: 'eq',
+          mode: 'or',
+        },
+      ],
+      filterGroups: userFilters ? [userFilters] : [],
+    };
+    const queryPaginationOptions = {
+      ...paginationOptions,
+      filters: contextFilters,
+    } as unknown as NotificationsLinesPaginationQuery$variables;
     const queryRef = useQueryLoading<NotificationsLinesPaginationQuery>(
       notificationsLinesQuery,
-      paginationOptions,
+      queryPaginationOptions,
     );
-    const toolBarFilters: FilterGroup = addFilter(injectEntityTypeFilterInFilterGroup(filters, 'Notification'), 'user_id', me.id) as FilterGroup;
+
     return (
       <ListLines
         helpers={helpers}
@@ -86,7 +110,7 @@ const Notifications: FunctionComponent = () => {
         filters={filters}
         iconExtension={true}
         secondaryAction={true}
-        paginationOptions={paginationOptions}
+        paginationOptions={queryPaginationOptions}
         numberOfElements={numberOfElements}
         availableFilterKeys={[
           'is_read',
@@ -108,7 +132,7 @@ const Notifications: FunctionComponent = () => {
         >
           <NotificationsLines
             queryRef={queryRef}
-            paginationOptions={paginationOptions}
+            paginationOptions={queryPaginationOptions}
             dataColumns={dataColumns}
             onLabelClick={helpers.handleAddFilter}
             setNumberOfElements={helpers.handleSetNumberOfElements}
@@ -123,7 +147,7 @@ const Notifications: FunctionComponent = () => {
             numberOfSelectedElements={numberOfSelectedElements}
             handleClearSelectedElements={handleClearSelectedElements}
             selectAll={selectAll}
-            filters={toolBarFilters}
+            filters={contextFilters}
           />
         </React.Suspense>
         )}

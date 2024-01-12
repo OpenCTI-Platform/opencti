@@ -11,7 +11,7 @@ import useEntityToggle from '../../../utils/hooks/useEntityToggle';
 import { StixSightingRelationshipLine_node$data } from './stix_sighting_relationships/__generated__/StixSightingRelationshipLine_node.graphql';
 import ToolBar from '../data/ToolBar';
 import ExportContextProvider from '../../../utils/ExportContextProvider';
-import { injectEntityTypeFilterInFilterGroup, findFilterFromKey, GqlFilterGroup, emptyFilterGroup } from '../../../utils/filters/filtersUtils';
+import { buildEntityTypeBasedFilterContext, emptyFilterGroup } from '../../../utils/filters/filtersUtils';
 
 const dataColumns = {
   x_opencti_negative: {
@@ -65,7 +65,7 @@ const LOCAL_STORAGE_KEY = 'stixSightingRelationships';
 const StixSightingRelationships = () => {
   const {
     viewStorage,
-    paginationOptions: rawPaginationOptions,
+    paginationOptions,
     helpers: storageHelpers,
   } = usePaginationLocalStorage<StixSightingRelationshipsLinesPaginationQuery$variables>(
     LOCAL_STORAGE_KEY,
@@ -97,10 +97,10 @@ const StixSightingRelationships = () => {
     selectAll,
   } = useEntityToggle<StixSightingRelationshipLine_node$data>(LOCAL_STORAGE_KEY);
 
-  const renderLines = (
-    paginationOptions: StixSightingRelationshipsLinesPaginationQuery$variables,
-  ) => {
-    const toolBarFilters = injectEntityTypeFilterInFilterGroup(filters, 'stix-sighting-relationship');
+  const contextFilters = buildEntityTypeBasedFilterContext('stix-sighting-relationship', filters);
+  const queryPaginationOptions = { ...paginationOptions, filters: contextFilters };
+
+  const renderLines = () => {
     return (
       <>
         <ListLines
@@ -121,7 +121,7 @@ const StixSightingRelationships = () => {
           exportContext={{ entity_type: 'stix-sighting-relationship' }}
           keyword={searchTerm}
           filters={filters}
-          paginationOptions={paginationOptions}
+          paginationOptions={queryPaginationOptions}
           numberOfElements={numberOfElements}
           secondaryAction={true}
           iconExtension={true}
@@ -139,7 +139,7 @@ const StixSightingRelationships = () => {
         >
           <QueryRenderer
             query={stixSightingRelationshipsLinesQuery}
-            variables={rawPaginationOptions}
+            variables={queryPaginationOptions}
             render={({
               props,
             }: {
@@ -147,7 +147,7 @@ const StixSightingRelationships = () => {
             }) => (
               <StixSightingRelationshipsLines
                 data={props}
-                paginationOptions={paginationOptions}
+                paginationOptions={queryPaginationOptions}
                 dataColumns={dataColumns}
                 initialLoading={props === null}
                 onLabelClick={storageHelpers.handleAddFilter}
@@ -166,7 +166,7 @@ const StixSightingRelationships = () => {
           numberOfSelectedElements={numberOfSelectedElements}
           selectAll={selectAll}
           search={searchTerm}
-          filters={toolBarFilters}
+          filters={contextFilters}
           handleClearSelectedElements={handleClearSelectedElements}
           type="stix-sighting-relationship"
         />
@@ -174,26 +174,9 @@ const StixSightingRelationships = () => {
     );
   };
 
-  // As toSightingId must be converted to a connection nested filter in backend
-  // we need to remove it from the filters and use a specific api parameter instead
-  let toSightingId: string | undefined;
-  let newFilters = filters;
-  const toSightingIdFilter = newFilters?.filters ? findFilterFromKey(newFilters.filters, 'toSightingId') : undefined;
-  if (newFilters && toSightingIdFilter) {
-    toSightingId = String(toSightingIdFilter.values?.[0]);
-    newFilters = {
-      ...newFilters,
-      filters: newFilters.filters.filter((f) => f.key !== 'toSightingId'),
-    };
-  }
-  const enrichedPaginationOptions: StixSightingRelationshipsLinesPaginationQuery$variables = {
-    ...rawPaginationOptions,
-    toId: toSightingId,
-    filters: newFilters as unknown as GqlFilterGroup,
-  };
   return (
     <ExportContextProvider>
-      {renderLines(enrichedPaginationOptions)}
+      {renderLines()}
     </ExportContextProvider>
   );
 };

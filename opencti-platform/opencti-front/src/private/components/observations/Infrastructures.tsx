@@ -13,7 +13,7 @@ import ExportContextProvider from '../../../utils/ExportContextProvider';
 import { InfrastructureLineDummy } from './infrastructures/InfrastructureLine';
 import ToolBar from '../data/ToolBar';
 import { InfrastructureLine_node$data } from './infrastructures/__generated__/InfrastructureLine_node.graphql';
-import { injectEntityTypeFilterInFilterGroup, emptyFilterGroup } from '../../../utils/filters/filtersUtils';
+import { buildEntityTypeBasedFilterContext, emptyFilterGroup } from '../../../utils/filters/filtersUtils';
 
 export const LOCAL_STORAGE_KEY_INFRASTRUCTURES = 'infrastructures';
 
@@ -55,7 +55,7 @@ const Infrastructures = () => {
       openExports,
       numberOfElements,
     } = viewStorage;
-    const toolBarFilters = injectEntityTypeFilterInFilterGroup(filters, 'Infrastructure');
+
     const isRuntimeSort = isRuntimeFieldEnable() ?? false;
     const dataColumns = {
       name: {
@@ -94,10 +94,17 @@ const Infrastructures = () => {
         width: '8%',
       },
     };
+
+    const contextFilters = buildEntityTypeBasedFilterContext('Infrastructure', filters);
+    const queryPaginationOptions = {
+      ...paginationOptions,
+      filters: contextFilters,
+    } as unknown as InfrastructuresLinesPaginationQuery$variables;
     const queryRef = useQueryLoading<InfrastructuresLinesPaginationQuery>(
       infrastructuresLinesQuery,
-      paginationOptions,
+      queryPaginationOptions,
     );
+
     return (
       <ListLines
         helpers={helpers}
@@ -117,7 +124,7 @@ const Infrastructures = () => {
         exportContext={{ entity_type: 'Infrastructure' }}
         keyword={searchTerm}
         filters={filters}
-        paginationOptions={paginationOptions}
+        paginationOptions={queryPaginationOptions}
         numberOfElements={numberOfElements}
         iconExtension={true}
         availableFilterKeys={[
@@ -146,7 +153,7 @@ const Infrastructures = () => {
           >
             <InfrastructuresLines
               queryRef={queryRef}
-              paginationOptions={paginationOptions}
+              paginationOptions={queryPaginationOptions}
               dataColumns={dataColumns}
               onLabelClick={helpers.handleAddFilter}
               setNumberOfElements={helpers.handleSetNumberOfElements}
@@ -162,7 +169,7 @@ const Infrastructures = () => {
               handleClearSelectedElements={handleClearSelectedElements}
               selectAll={selectAll}
               search={searchTerm}
-              filters={toolBarFilters}
+              filters={contextFilters}
               type="Infrastructure"
             />
           </React.Suspense>

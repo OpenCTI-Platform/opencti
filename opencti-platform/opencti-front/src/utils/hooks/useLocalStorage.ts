@@ -2,16 +2,7 @@ import * as R from 'ramda';
 import { Dispatch, SetStateAction, SyntheticEvent, useState } from 'react';
 import { v4 as uuid } from 'uuid';
 import { OrderMode, PaginationOptions } from '../../components/list_lines';
-import {
-  extractAllValueFromFilters,
-  Filter,
-  FilterGroup,
-  filtersUsedAsApiParameters,
-  FilterValue,
-  findFilterFromKey,
-  isFilterGroupNotEmpty,
-  isUniqFilter,
-} from '../filters/filtersUtils';
+import { Filter, FilterGroup, FilterValue, findFilterFromKey, isFilterGroupNotEmpty, isUniqFilter } from '../filters/filtersUtils';
 import { isEmptyField, isNotEmptyField, removeEmptyFields } from '../utils';
 import { MESSAGING$ } from '../../relay/environment';
 import {
@@ -80,24 +71,11 @@ const localStorageToPaginationOptions = (
     basePagination.orderMode = orderAsc ? OrderMode.asc : OrderMode.desc;
     basePagination.orderBy = sortBy;
   }
-  let convertedFilters = filters?.filters as Filter[];
-  const fromId = convertedFilters ? extractAllValueFromFilters(convertedFilters, 'fromId')?.values : undefined;
-  const toId = convertedFilters ? extractAllValueFromFilters(convertedFilters, 'toId')?.values : undefined;
-  const fromTypes = convertedFilters ? extractAllValueFromFilters(convertedFilters, 'fromTypes')?.values : undefined;
-  const toTypes = convertedFilters ? extractAllValueFromFilters(convertedFilters, 'toTypes')?.values : undefined;
-  convertedFilters = convertedFilters?.filter(
-    (n) => !['fromId', 'toId', 'fromTypes', 'toTypes'].includes(Array.isArray(n.key) ? n.key[0] : n.key),
-  );
-
   const paginationFilters = {
     mode: filters?.mode ?? 'and',
-    filters: convertedFilters ?? [] as Filter[],
+    filters: filters?.filters ?? [] as Filter[],
     filterGroups: [] as FilterGroup[],
   };
-  basePagination.fromId = fromId;
-  basePagination.toId = toId;
-  basePagination.fromTypes = fromTypes;
-  basePagination.toTypes = toTypes;
   if (additionalFilters && additionalFilters.length > 0) {
     paginationFilters.filters = paginationFilters.filters.concat(additionalFilters);
   }
@@ -518,11 +496,7 @@ export const usePaginationLocalStorage = <U>(
     },
     handleChangeView: (value: string) => setValue((c) => ({ ...c, view: value })),
     handleToggleExports: () => setValue((c) => ({ ...c, openExports: !c.openExports })),
-    handleSetNumberOfElements: (nbElements: {
-      number?: number | string;
-      symbol?: string;
-      original?: number;
-    }) => {
+    handleSetNumberOfElements: (nbElements: { number?: number | string; symbol?: string; original?: number; }) => {
       if (!R.equals(nbElements, viewStorage.numberOfElements)) {
         setValue((c) => {
           const { number, symbol, original } = nbElements;
@@ -562,19 +536,6 @@ export const usePaginationLocalStorage = <U>(
       }));
     },
     handleAddFilterWithEmptyValue: (filter: Filter) => {
-      if (filtersUsedAsApiParameters.includes(filter.key)) {
-        const existedFilter = viewStorage.filters?.filters.find((f) => f.key === filter.key);
-        // If the specific filter is already defined, set the latestAddFilterId in order to open the menu popover
-        // and return void to finish the task.
-        // In the other side if not existed, create a new one filter
-        if (existedFilter) {
-          setValue({
-            ...viewStorage,
-            latestAddFilterId: existedFilter.id,
-          });
-          return;
-        }
-      }
       handleAddFilterWithEmptyValueUtil({ viewStorage, setValue, filter });
     },
     handleChangeOperatorFilters: (id: string, operator: string) => {

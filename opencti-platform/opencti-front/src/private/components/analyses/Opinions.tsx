@@ -13,7 +13,7 @@ import useEntityToggle from '../../../utils/hooks/useEntityToggle';
 import { OpinionLine_node$data } from './opinions/__generated__/OpinionLine_node.graphql';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
 import { OpinionLineDummy } from './opinions/OpinionLine';
-import { injectEntityTypeFilterInFilterGroup, emptyFilterGroup } from '../../../utils/filters/filtersUtils';
+import { buildEntityTypeBasedFilterContext, emptyFilterGroup } from '../../../utils/filters/filtersUtils';
 
 const LOCAL_STORAGE_KEY = 'opinions';
 
@@ -62,12 +62,17 @@ const Opinions: FunctionComponent<OpinionsProps> = ({
     numberOfSelectedElements,
   } = useEntityToggle<OpinionLine_node$data>(LOCAL_STORAGE_KEY);
 
+  const contextFilters = buildEntityTypeBasedFilterContext('Opinion', filters);
+  const queryPaginationOptions = {
+    ...paginationOptions,
+    filters: contextFilters,
+  } as unknown as OpinionsLinesPaginationQuery$variables;
   const queryRef = useQueryLoading<OpinionsLinesPaginationQuery>(
     opinionsLinesQuery,
-    paginationOptions,
+    queryPaginationOptions,
   );
+
   const renderLines = () => {
-    const toolBarFilters = injectEntityTypeFilterInFilterGroup(filters, 'Opinion');
     const isRuntimeSort = isRuntimeFieldEnable() ?? false;
     const dataColumns = {
       opinion: {
@@ -127,7 +132,7 @@ const Opinions: FunctionComponent<OpinionsProps> = ({
           exportContext={{ entity_type: 'Opinion' }}
           keyword={searchTerm}
           filters={filters}
-          paginationOptions={paginationOptions}
+          paginationOptions={queryPaginationOptions}
           numberOfElements={numberOfElements}
           iconExtension={true}
           availableFilterKeys={[
@@ -155,7 +160,7 @@ const Opinions: FunctionComponent<OpinionsProps> = ({
             >
               <OpinionsLines
                 queryRef={queryRef}
-                paginationOptions={paginationOptions}
+                paginationOptions={queryPaginationOptions}
                 dataColumns={dataColumns}
                 onLabelClick={storageHelpers.handleAddFilter}
                 selectedElements={selectedElements}
@@ -173,7 +178,7 @@ const Opinions: FunctionComponent<OpinionsProps> = ({
           numberOfSelectedElements={numberOfSelectedElements}
           selectAll={selectAll}
           search={searchTerm}
-          filters={toolBarFilters}
+          filters={contextFilters}
           handleClearSelectedElements={handleClearSelectedElements}
           type="Opinion"
         />

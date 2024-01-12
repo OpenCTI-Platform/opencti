@@ -1,5 +1,5 @@
 import { Dispatch, SetStateAction } from 'react';
-import { Filter, FilterGroup, filtersUsedAsApiParameters, FilterValue } from './filtersUtils';
+import { Filter, FilterGroup, FilterValue } from './filtersUtils';
 import { LocalStorage } from '../hooks/useLocalStorageModel';
 
 type FiltersLocalStorageUtilProps<U> = {
@@ -15,16 +15,12 @@ const setFiltersValue = (setValue: Dispatch<SetStateAction<LocalStorage>>, filte
   }));
 };
 
-const sortSpecificFilterAtFirst = (a: Filter, b: Filter) => {
-  return filtersUsedAsApiParameters.indexOf(b.key) - filtersUsedAsApiParameters.indexOf(a.key);
-};
 const updateFilters = (viewStorage: LocalStorage, setValue: Dispatch<SetStateAction<LocalStorage>>, updateFn: (filter: Filter) => Filter) => {
   if (viewStorage.filters) {
     const newBaseFilters: FilterGroup = {
       ...viewStorage.filters,
       filters: viewStorage.filters.filters
-        .map(updateFn)
-        .sort(sortSpecificFilterAtFirst),
+        .map(updateFn),
     };
     setFiltersValue(setValue, newBaseFilters);
   }
@@ -39,7 +35,7 @@ export const handleAddFilterWithEmptyValueUtil = ({ viewStorage, setValue, filte
       filters: [
         ...viewStorage.filters.filters,
         filter,
-      ].sort(sortSpecificFilterAtFirst),
+      ],
     };
     setFiltersValue(setValue, newBaseFilters, filter.id);
   }

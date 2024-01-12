@@ -13,7 +13,7 @@ import ExportContextProvider from '../../../utils/ExportContextProvider';
 import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
 import useEntityToggle from '../../../utils/hooks/useEntityToggle';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
-import { injectEntityTypeFilterInFilterGroup, emptyFilterGroup } from '../../../utils/filters/filtersUtils';
+import { buildEntityTypeBasedFilterContext, emptyFilterGroup } from '../../../utils/filters/filtersUtils';
 
 const LOCAL_STORAGE_KEY = 'artifacts';
 
@@ -51,9 +51,15 @@ const Artifacts: FunctionComponent = () => {
     handleToggleSelectAll,
     selectAll,
   } = useEntityToggle<ArtifactLine_node$data>(LOCAL_STORAGE_KEY);
+
+  const contextFilters = buildEntityTypeBasedFilterContext('Artifact', filters);
+  const queryPaginationOptions = {
+    ...paginationOptions,
+    filters: contextFilters,
+  } as unknown as ArtifactsLinesPaginationQuery$variables;
   const queryRef = useQueryLoading<ArtifactsLinesPaginationQuery>(
     artifactsLinesQuery,
-    paginationOptions,
+    queryPaginationOptions,
   );
 
   const dataColumns = {
@@ -105,8 +111,6 @@ const Artifacts: FunctionComponent = () => {
   };
 
   const renderLines = () => {
-    const toolBarFilters = injectEntityTypeFilterInFilterGroup(filters, 'Artifact');
-
     return (
       <>
         <ListLines
@@ -128,7 +132,7 @@ const Artifacts: FunctionComponent = () => {
           keyword={searchTerm}
           filters={filters}
           iconExtension={true}
-          paginationOptions={paginationOptions}
+          paginationOptions={queryPaginationOptions}
           numberOfElements={numberOfElements}
           availableFilterKeys={[
             'objectLabel',
@@ -151,7 +155,7 @@ const Artifacts: FunctionComponent = () => {
           >
             <ArtifactsLines
               queryRef={queryRef}
-              paginationOptions={paginationOptions}
+              paginationOptions={queryPaginationOptions}
               dataColumns={dataColumns}
               onLabelClick={helpers.handleAddFilter}
               selectedElements={selectedElements}
@@ -165,7 +169,7 @@ const Artifacts: FunctionComponent = () => {
               deSelectedElements={deSelectedElements}
               numberOfSelectedElements={numberOfSelectedElements}
               selectAll={selectAll}
-              filters={toolBarFilters}
+              filters={contextFilters}
               search={searchTerm}
               handleClearSelectedElements={handleClearSelectedElements}
             />

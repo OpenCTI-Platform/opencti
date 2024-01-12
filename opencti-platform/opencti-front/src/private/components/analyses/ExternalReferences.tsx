@@ -15,7 +15,7 @@ import { ExternalReferenceLine_node$data } from './external_references/__generat
 import ToolBar from '../data/ToolBar';
 import { ExternalReferenceLineDummy } from './external_references/ExternalReferenceLine';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
-import { injectEntityTypeFilterInFilterGroup, emptyFilterGroup } from '../../../utils/filters/filtersUtils';
+import { buildEntityTypeBasedFilterContext, emptyFilterGroup } from '../../../utils/filters/filtersUtils';
 
 const LOCAL_STORAGE_KEY = 'externalReferences';
 
@@ -76,11 +76,17 @@ const ExternalReferences: FunctionComponent<ExternalReferencesProps> = () => {
     handleToggleSelectAll,
     selectAll,
   } = useEntityToggle<ExternalReferenceLine_node$data>(LOCAL_STORAGE_KEY);
+
+  const contextFilters = buildEntityTypeBasedFilterContext('External-Reference', filters);
+  const queryPaginationOptions = {
+    ...paginationOptions,
+    filters: contextFilters,
+  } as unknown as ExternalReferencesLinesPaginationQuery$variables;
   const queryRef = useQueryLoading<ExternalReferencesLinesPaginationQuery>(
     externalReferencesLinesQuery,
-    paginationOptions,
+    queryPaginationOptions,
   );
-  const toolBarFilters = injectEntityTypeFilterInFilterGroup(filters, 'External-Reference');
+
   return (
     <>
       <ListLines
@@ -101,7 +107,7 @@ const ExternalReferences: FunctionComponent<ExternalReferencesProps> = () => {
         filters={filters}
         keyword={searchTerm}
         iconExtension={true}
-        paginationOptions={paginationOptions}
+        paginationOptions={queryPaginationOptions}
         numberOfElements={numberOfElements}
         availableFilterKeys={[
           'creator_id',
@@ -126,7 +132,7 @@ const ExternalReferences: FunctionComponent<ExternalReferencesProps> = () => {
             <>
               <ExternalReferencesLines
                 queryRef={queryRef}
-                paginationOptions={paginationOptions}
+                paginationOptions={queryPaginationOptions}
                 dataColumns={dataColumns}
                 setNumberOfElements={helpers.handleSetNumberOfElements}
                 selectedElements={selectedElements}
@@ -141,7 +147,7 @@ const ExternalReferences: FunctionComponent<ExternalReferencesProps> = () => {
                 handleClearSelectedElements={handleClearSelectedElements}
                 selectAll={selectAll}
                 search={searchTerm}
-                filters={toolBarFilters}
+                filters={contextFilters}
                 type="External-Reference"
               />
             </>

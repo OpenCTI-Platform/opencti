@@ -33,19 +33,6 @@ const StixCoreObjectsExportsContentComponent = ({
     };
   });
   const stixCoreObjectsExportFiles = data?.stixCoreObjectsExportFiles?.edges ?? [];
-  let paginationOptionsForExport = { ...paginationOptions }; // paginationsOptions with correct types filters
-  if (paginationOptions?.filters && paginationOptions?.types && paginationOptions.types.length > 0) {
-    paginationOptionsForExport = {
-      ...paginationOptions,
-      filters: {
-        ...paginationOptions.filters,
-        filters: [
-          ...paginationOptions.filters.filters,
-          { key: 'entity_type', values: paginationOptionsForExport.types },
-        ],
-      },
-    };
-  }
   return (
     <>
       <List>
@@ -77,7 +64,7 @@ const StixCoreObjectsExportsContentComponent = ({
         <StixCoreObjectsExportCreation
           data={data}
           exportContext={exportContext}
-          paginationOptions={paginationOptionsForExport}
+          paginationOptions={paginationOptions}
           onExportAsk={() => relay.refetch({ count: 25, exportContext })}
         />
       </Security>

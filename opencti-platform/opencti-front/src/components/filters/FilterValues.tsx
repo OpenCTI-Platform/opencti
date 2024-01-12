@@ -6,7 +6,7 @@ import Box from '@mui/material/Box';
 import Chip from '@mui/material/Chip';
 import { useFormatter } from '../i18n';
 import type { Theme } from '../Theme';
-import { Filter, filtersUsedAsApiParameters } from '../../utils/filters/filtersUtils';
+import { Filter } from '../../utils/filters/filtersUtils';
 import { UseLocalStorageHelpers } from '../../utils/hooks/useLocalStorage';
 import { truncate } from '../../utils/String';
 import FilterValuesContent from '../FilterValuesContent';
@@ -74,7 +74,6 @@ const FilterValues: FunctionComponent<FilterValuesProps> = ({
   const classes = useStyles();
   const deactivatePopoverMenu = !helpers;
   const onCLick = deactivatePopoverMenu ? () => {} : onClickLabel;
-  const isFiltersUsedAsApiParameters = filtersUsedAsApiParameters.includes(filterKey);
   if (isOperatorNil) {
     return (
       <>
@@ -101,13 +100,8 @@ const FilterValues: FunctionComponent<FilterValuesProps> = ({
           value={filtersRepresentativesMap.get(id) ?? id}
         />
         {filterKey !== 'regardingOf' && last(filterValues) !== id && (
-          <div
-            className={
-              (isReadWriteFilter && !isFiltersUsedAsApiParameters)
-                ? classes.inlineOperator
-                : classes.inlineOperatorReadOnly
-            }
-            onClick={(isReadWriteFilter && !isFiltersUsedAsApiParameters) ? () => handleSwitchLocalMode?.(currentFilter) : undefined}
+          <div className={isReadWriteFilter ? classes.inlineOperator : classes.inlineOperatorReadOnly}
+            onClick={(isReadWriteFilter) ? () => handleSwitchLocalMode?.(currentFilter) : undefined}
           >
             {t((currentFilter.mode ?? 'or').toUpperCase())}
           </div>

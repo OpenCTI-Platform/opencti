@@ -113,15 +113,7 @@ export const EqFilters = [
 ];
 
 // filters that can only have an 'eq' operator and a 'or' mode
-export const filtersUsedAsApiParameters = [
-  'fromId',
-  'fromTypes',
-  'toId',
-  'toTypes',
-  'elementWithTargetTypes',
-  'elementId',
-  'toSightingId',
-];
+export const filtersUsedAsApiParameters = ['-'];
 
 // filters that represents a date, can have lt (end date) or gt (start date) operators
 export const dateFilters = [
@@ -260,25 +252,6 @@ export const findFilterIndexFromKey = (
     }
   }
   return null;
-};
-
-// add entity types context in filters
-export const injectEntityTypeFilterInFilterGroup = (
-  filters: FilterGroup | undefined,
-  type: string | string[],
-): FilterGroup => {
-  const entityTypeFilter: Filter = {
-    id: uuid(),
-    key: 'entity_type',
-    values: Array.isArray(type) ? type : [type],
-    operator: 'eq',
-    mode: 'or',
-  };
-  return {
-    mode: 'and',
-    filters: [entityTypeFilter],
-    filterGroups: filters ? [filters] : [],
-  };
 };
 
 // remove filter with key=entity_type and values contains 'all'
@@ -573,26 +546,6 @@ export const removeFilter = (
   return isFilterGroupNotEmpty(newFilters) ? newFilters : undefined;
 };
 
-/**
- * remove from filter all keys not listed in availableFilterKeys
- * if filter ends up empty, return undefined
- * Note: This function is not recursive, it only filters the first level filters
- */
-export const cleanFilters = (
-  filters: FilterGroup | undefined,
-  availableFilterKeys: string[],
-) => {
-  if (!filters) {
-    return undefined;
-  }
-  const newFilters = {
-    ...filters,
-    filters: filters.filters.filter((f) => availableFilterKeys.includes(f.key)),
-  };
-
-  return isFilterGroupNotEmpty(newFilters) ? newFilters : undefined;
-};
-
 //----------------------------------------------------------------------------------------------------------------------
 
 // add a filter (k, id, op) in a filterGroup smartly, for usage in forms
@@ -648,11 +601,7 @@ export const constructHandleAddFilter = (
 
 // remove a filter (k, op, id) in a filterGroup smartly, for usage in forms
 // if the filter ends up empty, return undefined
-export const constructHandleRemoveFilter = (
-  filters: FilterGroup | undefined | null,
-  k: string,
-  op = 'eq',
-) => {
+export const constructHandleRemoveFilter = (filters: FilterGroup | undefined | null, k: string, op = 'eq') => {
   if (filters) {
     const newBaseFilters = {
       ...filters,
@@ -664,10 +613,7 @@ export const constructHandleRemoveFilter = (
 };
 
 // switch the mode inside a specific filter
-export const filtersAfterSwitchLocalMode = (
-  filters: FilterGroup | undefined | null,
-  localFilter: Filter,
-) => {
+export const filtersAfterSwitchLocalMode = (filters: FilterGroup | undefined | null, localFilter: Filter) => {
   if (filters) {
     const filterIndex = findFilterIndexFromKey(
       filters.filters,
@@ -728,9 +674,6 @@ export const getAvailableOperatorForFilter = (filterKey: string): string[] => {
   if (filterKey === 'id' || filterKey === 'type') { // case subKey of 'regardingOf' filter
     return ['eq'];
   }
-  if (filtersUsedAsApiParameters.includes(filterKey)) {
-    return ['eq'];
-  }
   if (dateFilters.includes(filterKey)) {
     return ['gt', 'gte', 'lt', 'lte'];
   }
@@ -747,9 +690,7 @@ export const getAvailableOperatorForFilter = (filterKey: string): string[] => {
   return ['eq', 'not_eq', 'nil', 'not_nil'];
 };
 
-export const removeIdFromFilterGroupObject = (
-  filters?: FilterGroup | null,
-): FilterGroup | undefined => {
+export const removeIdFromFilterGroupObject = (filters?: FilterGroup | null): FilterGroup | undefined => {
   if (!filters) {
     return undefined;
   }
@@ -763,6 +704,22 @@ export const removeIdFromFilterGroupObject = (
         return newFilter;
       }),
     filterGroups: filters.filterGroups.map((group) => removeIdFromFilterGroupObject(group)) as FilterGroup[],
+  };
+};
+
+export const buildEntityTypeBasedFilterContext = (entityType: string, filters: FilterGroup | undefined): FilterGroup => {
+  const userFilters = removeIdFromFilterGroupObject(filters);
+  return {
+    mode: 'and',
+    filters: [
+      {
+        key: 'entity_type',
+        values: [entityType],
+        operator: 'eq',
+        mode: 'or',
+      },
+    ],
+    filterGroups: userFilters ? [userFilters] : [],
   };
 };
 

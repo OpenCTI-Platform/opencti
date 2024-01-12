@@ -9,7 +9,7 @@ import {
 import ItemPatternType from '../../../../../../components/ItemPatternType';
 import EntityStixCoreRelationshipsIndicatorsContextualViewLines from './EntityStixCoreRelationshipsIndicatorsContextualViewLines';
 import { DataColumns, PaginationOptions } from '../../../../../../components/list_lines';
-import { isEmptyField, isNotEmptyField } from '../../../../../../utils/utils';
+import { isNotEmptyField } from '../../../../../../utils/utils';
 import { EntityStixCoreRelationshipsIndicatorsContextualViewQuery } from './__generated__/EntityStixCoreRelationshipsIndicatorsContextualViewQuery.graphql';
 import { PaginationLocalStorage } from '../../../../../../utils/hooks/useLocalStorage';
 import { useFormatter } from '../../../../../../components/i18n';
@@ -30,15 +30,7 @@ import useQueryLoading from '../../../../../../utils/hooks/useQueryLoading';
 import { EntityStixCoreRelationshipsContextualViewLine_node$data } from '../__generated__/EntityStixCoreRelationshipsContextualViewLine_node.graphql';
 import { resolveLink } from '../../../../../../utils/Entity';
 import type { Theme } from '../../../../../../components/Theme';
-import {
-  addFilter,
-  cleanFilters,
-  Filter,
-  injectEntityTypeFilterInFilterGroup,
-  findFilterFromKey,
-  removeFilter,
-  removeIdFromFilterGroupObject,
-} from '../../../../../../utils/filters/filtersUtils';
+import { FilterGroup, removeIdFromFilterGroupObject } from '../../../../../../utils/filters/filtersUtils';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   chip: {
@@ -74,27 +66,6 @@ const contextualViewQuery = graphql`
     }
   }
 `;
-const handleFilterOnContainers = (containers: ({ readonly id: string })[], filters: Filter[]) => {
-  if (isEmptyField(containers)) {
-    return ['']; // Return nothing
-  }
-  if (filters.length === 0) {
-    return containers.map((r) => r.id);
-  }
-
-  const selectedContainers = findFilterFromKey(filters, 'containers')?.values ?? [];
-  let filterContainers;
-  if (selectedContainers.length > 0) {
-    const containerIds = containers.map((r) => r.id);
-    filterContainers = selectedContainers.filter((id) => containerIds.includes(id));
-    if (filterContainers.length === 0) {
-      filterContainers = ['']; // Return nothing
-    }
-  } else {
-    filterContainers = containers.map((r) => r.id);
-  }
-  return filterContainers;
-};
 
 interface EntityStixCoreRelationshipsIndicatorsContextualViewProps {
   queryRef: PreloadedQuery<EntityStixCoreRelationshipsIndicatorsContextualViewQuery>
@@ -236,21 +207,22 @@ const EntityStixCoreRelationshipsIndicatorsContextualViewComponent: FunctionComp
   const containers = stixDomainObject.containers?.edges?.map((e) => e?.node)
     .filter((r) => isNotEmptyField(r)) as { id: string }[] ?? [];
 
-  const cleanedFilters = cleanFilters(filters, availableFilterKeys);
-  const finalFilters = addFilter(
-    removeFilter(cleanedFilters, ['entity_type', 'containers']),
-    'objects',
-    handleFilterOnContainers(containers, cleanedFilters?.filters ?? []),
-  );
+  const userFilters = removeIdFromFilterGroupObject(filters);
+  const contextFilters: FilterGroup = {
+    mode: 'and',
+    filters: [
+      { key: 'entity_type', operator: 'eq', mode: 'or', values: stixCoreObjectTypes },
+      { key: 'objects', operator: 'eq', mode: 'or', values: containers.map((r) => r.id) },
+    ],
+    filterGroups: userFilters ? [userFilters] : [],
+  };
 
   const paginationOptions = {
     search: searchTerm,
     orderBy: (sortBy && (sortBy in dataColumns) && dataColumns[sortBy].isSortable) ? sortBy : 'name',
     orderMode: orderAsc ? 'asc' : 'desc',
-    filters: removeIdFromFilterGroupObject(finalFilters),
+    filters: contextFilters,
   } as unknown as EntityStixCoreRelationshipsIndicatorsContextualViewLinesQuery$variables; // Because of FilterMode
-
-  const backgroundTaskFilters = injectEntityTypeFilterInFilterGroup(finalFilters, 'Indicator');
 
   const {
     selectedElements,
@@ -283,7 +255,7 @@ const EntityStixCoreRelationshipsIndicatorsContextualViewComponent: FunctionComp
         displayImport
         exportContext={{ entity_id: entityId, entity_type: 'Stix-Core-Object' }}
         iconExtension
-        filters={cleanedFilters}
+        filters={contextFilters}
         availableFilterKeys={availableFilterKeys}
         availableRelationshipTypes={relationshipTypes}
         availableEntityTypes={stixCoreObjectTypes}
@@ -316,7 +288,7 @@ const EntityStixCoreRelationshipsIndicatorsContextualViewComponent: FunctionComp
         deSelectedElements={deSelectedElements}
         numberOfSelectedElements={numberOfSelectedElements}
         selectAll={selectAll}
-        filters={backgroundTaskFilters}
+        filters={contextFilters}
         search={searchTerm}
         handleClearSelectedElements={handleClearSelectedElements}
         variant="medium"
