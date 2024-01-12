@@ -6,7 +6,6 @@ import {
   handleAddRepresentationFilterUtil,
   handleAddSingleValueFilterUtil,
   handleChangeOperatorFiltersUtil,
-  handleClearAllFiltersUtil,
   handleRemoveFilterUtil,
   handleRemoveRepresentationFilterUtil,
   handleSwitchLocalModeUtil,

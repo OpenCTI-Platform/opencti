@@ -49,7 +49,6 @@ const GroupUsers: FunctionComponent<GroupUsersProps> = ({ groupId }) => {
         symbol: '',
       },
     },
-    undefined,
     true,
   );
   const { searchTerm, sortBy, orderAsc } = viewStorage;

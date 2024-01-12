@@ -9,15 +9,14 @@ import {
   handleAddFilterWithEmptyValueUtil,
   handleAddSingleValueFilterUtil,
   handleChangeOperatorFiltersUtil,
-  handleClearAllFiltersUtil,
   handleRemoveFilterUtil,
   handleSwitchLocalModeUtil,
 } from '../filters/filtersManageStateUtil';
 import {
-  handleRemoveRepresentationFilterUtil as oldHandleRemoveRepresentationFilterUtil,
-  handleAddRepresentationFilterUtil as oldHandleAddRepresentationFilterUtil,
   handleAddFilterWithEmptyValueUtil as oldHandleAddFilterWithEmptyValueUtil,
+  handleAddRepresentationFilterUtil as oldHandleAddRepresentationFilterUtil,
   handleChangeRepresentationFilterUtil,
+  handleRemoveRepresentationFilterUtil as oldHandleRemoveRepresentationFilterUtil,
 } from '../filters/filtersLocalStorageUtil';
 import { LocalStorage } from './useLocalStorageModel';
 

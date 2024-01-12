@@ -1,6 +1,6 @@
 import { FunctionComponent, useEffect } from 'react';
 import { UseLocalStorageHelpers } from '../utils/hooks/useLocalStorage';
-import { directFilters, FilterGroup, getDefaultFilterObject } from '../utils/filters/filtersUtils';
+import { directFilters, FilterGroup } from '../utils/filters/filtersUtils';
 
 interface GenerateDefaultDirectFiltersProps {
   filters?: FilterGroup;
