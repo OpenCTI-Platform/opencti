@@ -15,7 +15,7 @@ import { usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStora
 import useEntityToggle from '../../../../utils/hooks/useEntityToggle';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import useAuth from '../../../../utils/hooks/useAuth';
-import { emptyFilterGroup, FilterGroup, removeIdFromFilterGroupObject } from '../../../../utils/filters/filtersUtils';
+import { emptyFilterGroup, FilterGroup, isFilterGroupNotEmpty, removeIdFromFilterGroupObject } from '../../../../utils/filters/filtersUtils';
 
 const ContainerStixDomainObjectsFragment = graphql`
     fragment ContainerStixDomainObjects_container on Container {
@@ -87,7 +87,7 @@ const ContainerStixDomainObjects = ({
       { key: 'objects', values: [containerData.id], operator: 'eq' },
       { key: 'entity_type', values: types && types.length > 0 ? types : ['Stix-Core-Object'], operator: 'eq' },
     ],
-    filterGroups: userFilters ? [userFilters] : [],
+    filterGroups: userFilters && isFilterGroupNotEmpty(userFilters) ? [userFilters] : [],
   };
   const queryPaginationOptions = {
     ...paginationOptions,

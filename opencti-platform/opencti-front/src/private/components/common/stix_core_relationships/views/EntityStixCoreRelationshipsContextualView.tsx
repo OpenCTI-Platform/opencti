@@ -27,7 +27,7 @@ import { EntityStixCoreRelationshipsContextualViewLine_node$data } from './__gen
 import { isStixCoreObjects, isStixCyberObservables } from '../../../../../utils/stixTypeUtils';
 import type { Theme } from '../../../../../components/Theme';
 import { resolveLink } from '../../../../../utils/Entity';
-import { FilterGroup, removeIdFromFilterGroupObject } from '../../../../../utils/filters/filtersUtils';
+import { FilterGroup, isFilterGroupNotEmpty, removeIdFromFilterGroupObject } from '../../../../../utils/filters/filtersUtils';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   chipInList: {
@@ -227,7 +227,7 @@ const EntityStixCoreRelationshipsContextualViewComponent: FunctionComponent<Enti
       { key: 'entity_type', operator: 'eq', mode: 'or', values: stixCoreObjectTypes },
       { key: 'objects', operator: 'eq', mode: 'or', values: containers.map((r) => r.id) },
     ],
-    filterGroups: userFilters ? [userFilters] : [],
+    filterGroups: userFilters && isFilterGroupNotEmpty(userFilters) ? [userFilters] : [],
   };
 
   const paginationOptions = {

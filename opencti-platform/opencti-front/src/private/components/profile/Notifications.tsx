@@ -9,7 +9,7 @@ import useEntityToggle from '../../../utils/hooks/useEntityToggle';
 import { NotificationLine_node$data } from './notifications/__generated__/NotificationLine_node.graphql';
 import useAuth from '../../../utils/hooks/useAuth';
 import NotificationsToolBar from './notifications/NotificationsToolBar';
-import { emptyFilterGroup, removeIdFromFilterGroupObject } from '../../../utils/filters/filtersUtils';
+import { emptyFilterGroup, isFilterGroupNotEmpty, removeIdFromFilterGroupObject } from '../../../utils/filters/filtersUtils';
 
 export const LOCAL_STORAGE_KEY = 'notifiers';
 
@@ -81,7 +81,7 @@ const Notifications: FunctionComponent = () => {
           mode: 'or',
         },
       ],
-      filterGroups: userFilters ? [userFilters] : [],
+      filterGroups: userFilters && isFilterGroupNotEmpty(userFilters) ? [userFilters] : [],
     };
     const queryPaginationOptions = {
       ...paginationOptions,

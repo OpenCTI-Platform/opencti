@@ -30,7 +30,7 @@ import useQueryLoading from '../../../../../../utils/hooks/useQueryLoading';
 import { EntityStixCoreRelationshipsContextualViewLine_node$data } from '../__generated__/EntityStixCoreRelationshipsContextualViewLine_node.graphql';
 import { resolveLink } from '../../../../../../utils/Entity';
 import type { Theme } from '../../../../../../components/Theme';
-import { FilterGroup, removeIdFromFilterGroupObject } from '../../../../../../utils/filters/filtersUtils';
+import { FilterGroup, isFilterGroupNotEmpty, removeIdFromFilterGroupObject } from '../../../../../../utils/filters/filtersUtils';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   chip: {
@@ -214,7 +214,7 @@ const EntityStixCoreRelationshipsIndicatorsContextualViewComponent: FunctionComp
       { key: 'entity_type', operator: 'eq', mode: 'or', values: stixCoreObjectTypes },
       { key: 'objects', operator: 'eq', mode: 'or', values: containers.map((r) => r.id) },
     ],
-    filterGroups: userFilters ? [userFilters] : [],
+    filterGroups: userFilters && isFilterGroupNotEmpty(userFilters) ? [userFilters] : [],
   };
 
   const paginationOptions = {

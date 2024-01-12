@@ -4,7 +4,7 @@ import Loader from '../../../../components/Loader';
 import { QueryRenderer } from '../../../../relay/environment';
 import StixDomainObjectAttackPatternsKillChain, { stixDomainObjectAttackPatternsKillChainStixCoreRelationshipsQuery } from './StixDomainObjectAttackPatternsKillChain';
 import { usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStorage';
-import { emptyFilterGroup, removeIdFromFilterGroupObject } from '../../../../utils/filters/filtersUtils';
+import { emptyFilterGroup, isFilterGroupNotEmpty, removeIdFromFilterGroupObject } from '../../../../utils/filters/filtersUtils';
 
 const useStyles = makeStyles(() => ({
   container: {
@@ -42,7 +42,7 @@ const StixDomainObjectAttackPatterns = ({
       { key: 'elementWithTargetTypes', values: ['Attack-Pattern'] },
       { key: 'fromOrToId', values: [stixDomainObjectId] },
     ],
-    filterGroups: userFilters ? [userFilters] : [],
+    filterGroups: userFilters && isFilterGroupNotEmpty(userFilters) ? [userFilters] : [],
   };
   const queryPaginationOptions = { ...paginationOptions, filters: contextFilters };
   return (

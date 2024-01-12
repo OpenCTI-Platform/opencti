@@ -301,7 +301,7 @@ export const buildFiltersAndOptionsForWidgets = (
     filters = {
       mode: 'and',
       filters: dateFiltersContent,
-      filterGroups: filters ? [filters] : [],
+      filterGroups: filters && isFilterGroupNotEmpty(filters) ? [filters] : [],
     };
   }
   return {
@@ -739,7 +739,7 @@ export const buildEntityTypeBasedFilterContext = (entityType: string, filters: F
         mode: 'or',
       },
     ],
-    filterGroups: userFilters ? [userFilters] : [],
+    filterGroups: userFilters && isFilterGroupNotEmpty(userFilters) ? [userFilters] : [],
   };
 };
 
