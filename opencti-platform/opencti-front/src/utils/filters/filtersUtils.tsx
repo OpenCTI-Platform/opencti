@@ -733,4 +733,5 @@ export const isStixObjectTypes = [
   'targets',
   'indicates',
   'contextEntityId',
+  'id',
 ];
