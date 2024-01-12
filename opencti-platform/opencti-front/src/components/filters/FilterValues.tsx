@@ -4,6 +4,7 @@ import makeStyles from '@mui/styles/makeStyles';
 import Tooltip from '@mui/material/Tooltip';
 import Box from '@mui/material/Box';
 import Chip from '@mui/material/Chip';
+import { ChipOwnProps } from '@mui/material/Chip/Chip';
 import { useFormatter } from '../i18n';
 import type { Theme } from '../Theme';
 import { Filter } from '../../utils/filters/filtersUtils';
@@ -53,6 +54,7 @@ interface FilterValuesProps {
   onClickLabel?: (event: React.MouseEvent<HTMLButtonElement>) => void;
   helpers?: handleFilterHelpers;
   isReadWriteFilter?: boolean;
+  chipColor?: ChipOwnProps['color'];
 }
 
 const FilterValues: FunctionComponent<FilterValuesProps> = ({
@@ -65,6 +67,7 @@ const FilterValues: FunctionComponent<FilterValuesProps> = ({
   onClickLabel,
   helpers,
   isReadWriteFilter,
+  chipColor,
 }) => {
   const { t } = useFormatter();
   const filterKey = currentFilter.key;
@@ -154,6 +157,7 @@ const FilterValues: FunctionComponent<FilterValuesProps> = ({
                         filtersRepresentativesMap={filtersRepresentativesMap}
                       />
                       }
+                    color={chipColor}
                   />
                 </Box>
               </Tooltip>

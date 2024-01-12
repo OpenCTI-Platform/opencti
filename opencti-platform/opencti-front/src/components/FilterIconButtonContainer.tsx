@@ -327,9 +327,9 @@ FilterIconButtonContainerProps
                       filtersRepresentativesMap={filtersRepresentativesMap}
                       redirection={redirection}
                       helpers={helpers}
-                      onClickLabel={(event) => handleChipClick(event, currentFilter?.id)
-                      }
+                      onClickLabel={(event) => handleChipClick(event, currentFilter?.id)}
                       isReadWriteFilter={isReadWriteFilter}
+                      chipColor={chipColor}
                     />
                   }
                   disabled={
