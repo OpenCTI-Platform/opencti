@@ -55,6 +55,7 @@ interface FilterValuesProps {
   helpers?: handleFilterHelpers;
   isReadWriteFilter?: boolean;
   chipColor?: ChipOwnProps['color'];
+  noLabelDisplay?: boolean;
 }
 
 const FilterValues: FunctionComponent<FilterValuesProps> = ({
@@ -68,6 +69,7 @@ const FilterValues: FunctionComponent<FilterValuesProps> = ({
   helpers,
   isReadWriteFilter,
   chipColor,
+  noLabelDisplay,
 }) => {
   const { t } = useFormatter();
   const filterKey = currentFilter.key;
@@ -159,6 +161,7 @@ const FilterValues: FunctionComponent<FilterValuesProps> = ({
                           currentFilter={val}
                           filtersRepresentativesMap={filtersRepresentativesMap}
                           redirection
+                          noLabelDisplay={true}
                         />
                       }
                       color={chipColor}
@@ -170,6 +173,11 @@ const FilterValues: FunctionComponent<FilterValuesProps> = ({
           })
         }
       </>
+    );
+  }
+  if (noLabelDisplay) {
+    return (
+      <>{values}</>
     );
   }
   return (
