@@ -390,6 +390,9 @@ export const filterValue = (filterKey: string, value?: string | null) => {
     // TODO: improvement: date filters based on schema definition (not an enum)
     return nsd(value);
   }
+  if (filterKey === 'relationship_type') {
+    return t(`relationship_${value}`);
+  }
   return value;
 };
 
