@@ -14,8 +14,8 @@ observable = opencti_api_client.stix_cyber_observable.create(
         "type": "file",
         "hashes": {
             "md5": "16b3f663d0f0371a4706642c6ac04e42",
-            "sha1": "3a1f908941311fc357051b5c35fd2a4e0c834e37",
-            "sha256": "bcc70a49fab005b4cdbe0cbd87863ec622c6b2c656987d201adbb0e05ec03e56",
+            "sha-1": "3a1f908941311fc357051b5c35fd2a4e0c834e37",
+            "sha-256": "bcc70a49fab005b4cdbe0cbd87863ec622c6b2c656987d201adbb0e05ec03e56",
         },
     }
 )

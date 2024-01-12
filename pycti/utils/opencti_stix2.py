@@ -1805,7 +1805,7 @@ class OpenCTIStix2:
                             )
             # Get extra relations (from AND to)
             stix_core_relationships = self.opencti.stix_core_relationship.list(
-                elementId=entity["x_opencti_id"], getAll=True
+                fromOrToId=entity["x_opencti_id"], getAll=True
             )
             for stix_core_relationship in stix_core_relationships:
                 if self.check_max_marking_definition(
@@ -1840,7 +1840,7 @@ class OpenCTIStix2:
                     )
             # Get sighting
             stix_sighting_relationships = self.opencti.stix_sighting_relationship.list(
-                elementId=entity["x_opencti_id"],
+                fromOrToId=entity["x_opencti_id"],
                 getAll=True,
             )
             for stix_sighting_relationship in stix_sighting_relationships:
@@ -2109,105 +2109,25 @@ class OpenCTIStix2:
             ]
         return bundle
 
-    def export_list(
+    def export_entities_list(
         self,
         entity_type: str,
         search: Dict = None,
         filters: List = None,
-        order_by: str = None,
-        order_mode: str = None,
-        mode: str = "simple",
-        max_marking_definition: Dict = None,
-        types: List = None,
-        elementId: str = None,
-        fromId: str = None,
-        toId: str = None,
-        elementWithTargetTypes: [str] = None,
-        fromTypes: [str] = None,
-        toTypes: [str] = None,
-        relationship_type: [str] = None,
+        orderBy: str = None,
+        orderMode: str = None,
+        getAll: bool = True,
     ) -> Dict:
-        max_marking_definition_entity = (
-            self.opencti.marking_definition.read(id=max_marking_definition)
-            if max_marking_definition is not None
-            else None
-        )
-        bundle = {
-            "type": "bundle",
-            "id": "bundle--" + str(uuid.uuid4()),
-            "objects": [],
-        }
-
         if IdentityTypes.has_value(entity_type):
-            if filters is not None:
-                filters.filters.append({"key": "entity_type", "values": [entity_type]})
-            else:
-                filters = {
-                    "mode": "and",
-                    "filters": [{"key": "entity_type", "values": [entity_type]}],
-                    "filterGroups": [],
-                }
             entity_type = "Identity"
 
         if LocationTypes.has_value(entity_type):
-            if filters is not None:
-                filters.filters.append({"key": "entity_type", "values": [entity_type]})
-            else:
-                filters = {
-                    "mode": "and",
-                    "filters": [{"key": "entity_type", "values": [entity_type]}],
-                    "filterGroups": [],
-                }
             entity_type = "Location"
 
         if StixCyberObservableTypes.has_value(entity_type):
-            if filters is not None:
-                filters.filters.append({"key": "entity_type", "values": [entity_type]})
-            else:
-                filters = {
-                    "mode": "and",
-                    "filters": [{"key": "entity_type", "values": [entity_type]}],
-                    "filterGroups": [],
-                }
             entity_type = "Stix-Cyber-Observable"
 
         if entity_type == "Container":
-            if filters is not None:
-                filters.filters.append(
-                    {
-                        "key": "entity_type",
-                        "values": [
-                            "Report",
-                            "Grouping",
-                            "Note",
-                            "Observed-Data",
-                            "Opinion",
-                            "Case-Incident",
-                            "Case-Rfi",
-                            "Case-Rft",
-                        ],
-                    }
-                )
-            else:
-                filters = {
-                    "mode": "and",
-                    "filters": [
-                        {
-                            "key": "entity_type",
-                            "values": [
-                                "Report",
-                                "Grouping",
-                                "Note",
-                                "Observed-Data",
-                                "Opinion",
-                                "Case-Incident",
-                                "Case-Rfi",
-                                "Case-Rft",
-                            ],
-                        }
-                    ],
-                    "filterGroups": [],
-                }
             entity_type = "Stix-Domain-Object"
 
         # List
@@ -2253,20 +2173,42 @@ class OpenCTIStix2:
         do_list = lister.get(
             entity_type, lambda **kwargs: self.unknown_type({"type": entity_type})
         )
-        entities_list = do_list(
+        # noinspection PyTypeChecker
+        return do_list(
+            search=search,
+            filters=filters,
+            orderBy=orderBy,
+            orderMode=orderMode,
+            getAll=getAll,
+        )
+
+    def export_list(
+        self,
+        entity_type: str,
+        search: Dict = None,
+        filters: List = None,
+        order_by: str = None,
+        order_mode: str = None,
+        mode: str = "simple",
+        max_marking_definition: Dict = None,
+    ) -> Dict:
+        max_marking_definition_entity = (
+            self.opencti.marking_definition.read(id=max_marking_definition)
+            if max_marking_definition is not None
+            else None
+        )
+        bundle = {
+            "type": "bundle",
+            "id": "bundle--" + str(uuid.uuid4()),
+            "objects": [],
+        }
+        entities_list = self.export_entities_list(
+            entity_type=entity_type,
             search=search,
             filters=filters,
             orderBy=order_by,
             orderMode=order_mode,
-            types=types,
             getAll=True,
-            elementId=elementId,
-            fromId=fromId,
-            toId=toId,
-            elementWithTargetTypes=elementWithTargetTypes,
-            fromTypes=fromTypes,
-            toTypes=toTypes,
-            relationship_type=relationship_type,
         )
         if entities_list is not None:
             uuids = []

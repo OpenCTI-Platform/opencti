@@ -76,7 +76,7 @@ class StixNestedRefRelationship:
     """
 
     def list(self, **kwargs):
-        element_id = kwargs.get("elementId", None)
+        from_or_to_id = kwargs.get("fromOrToId", None)
         from_id = kwargs.get("fromId", None)
         from_types = kwargs.get("fromTypes", None)
         to_id = kwargs.get("toId", None)
@@ -107,10 +107,10 @@ class StixNestedRefRelationship:
         )
         query = (
             """
-            query StixNestedRefRelationships($elementId: String, $fromId: StixRef, $fromTypes: [String], $toId: StixRef, $toTypes: [String], $relationship_type: [String], $startTimeStart: DateTime, $startTimeStop: DateTime, $stopTimeStart: DateTime, $stopTimeStop: DateTime, $filters: FilterGroup, $first: Int, $after: ID, $orderBy: StixRefRelationshipsOrdering, $orderMode: OrderingMode) {
-                stixNestedRefRelationships(elementId: $elementId, fromId: $fromId, fromTypes: $fromTypes, toId: $toId, toTypes: $toTypes, relationship_type: $relationship_type, startTimeStart: $startTimeStart, startTimeStop: $startTimeStop, stopTimeStart: $stopTimeStart, stopTimeStop: $stopTimeStop, filters: $filters, first: $first, after: $after, orderBy: $orderBy, orderMode: $orderMode) {
+            query StixNestedRefRelationships($fromOrToId: String, $fromId: StixRef, $fromTypes: [String], $toId: StixRef, $toTypes: [String], $relationship_type: [String], $startTimeStart: DateTime, $startTimeStop: DateTime, $stopTimeStart: DateTime, $stopTimeStop: DateTime, $filters: FilterGroup, $first: Int, $after: ID, $orderBy: StixRefRelationshipsOrdering, $orderMode: OrderingMode) {
+                stixNestedRefRelationships(fromOrToId: $fromOrToId, fromId: $fromId, fromTypes: $fromTypes, toId: $toId, toTypes: $toTypes, relationship_type: $relationship_type, startTimeStart: $startTimeStart, startTimeStop: $startTimeStop, stopTimeStart: $stopTimeStart, stopTimeStop: $stopTimeStop, filters: $filters, first: $first, after: $after, orderBy: $orderBy, orderMode: $orderMode) {
                     edges {
-                        node {
+                         node {
                             """
             + (custom_attributes if custom_attributes is not None else self.properties)
             + """
@@ -131,7 +131,7 @@ class StixNestedRefRelationship:
         result = self.opencti.query(
             query,
             {
-                "elementId": element_id,
+                "fromOrToId": from_or_to_id,
                 "fromId": from_id,
                 "fromTypes": from_types,
                 "toId": to_id,
@@ -169,7 +169,7 @@ class StixNestedRefRelationship:
 
     def read(self, **kwargs):
         id = kwargs.get("id", None)
-        element_id = kwargs.get("elementId", None)
+        from_or_to_id = kwargs.get("fromOrToId", None)
         from_id = kwargs.get("fromId", None)
         to_id = kwargs.get("toId", None)
         relationship_type = kwargs.get("relationship_type", None)
@@ -203,7 +203,7 @@ class StixNestedRefRelationship:
             )
         else:
             result = self.list(
-                elementId=element_id,
+                fromOrToId=from_or_to_id,
                 fromId=from_id,
                 toId=to_id,
                 relationship_type=relationship_type,
