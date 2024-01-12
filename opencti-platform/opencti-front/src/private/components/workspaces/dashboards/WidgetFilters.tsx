@@ -4,6 +4,7 @@ import { Box } from '@mui/material';
 import useFiltersState from '../../../../utils/filters/useFiltersState';
 import { FilterGroup, isFilterGroupNotEmpty } from '../../../../utils/filters/filtersUtils';
 import FilterIconButton from '../../../../components/FilterIconButton';
+import { useFormatter } from '../../../../components/i18n';
 
 const entitiesFilters = [
   'entity_type',
@@ -73,6 +74,7 @@ interface WidgetFiltersProps {
 }
 
 const WidgetFilters: FunctionComponent<WidgetFiltersProps> = ({ perspective, type, dataSelection, setDataSelection }) => {
+  const { t } = useFormatter();
   const [filters, helpers] = useFiltersState(dataSelection.filters);
   const [filtersDynamicFrom, helpersDynamicFrom] = useFiltersState(dataSelection.dynamicFrom);
   const [filtersDynamicTo, helpersDynamicTo] = useFiltersState(dataSelection.dynamicTo);
@@ -139,20 +141,23 @@ const WidgetFilters: FunctionComponent<WidgetFiltersProps> = ({ perspective, typ
     </>)}
   </Box>
     <Box sx={{ paddingTop: 1 }}>
-      { isFilterGroupNotEmpty(filtersDynamicFrom) && (
-      <FilterIconButton
-        filters={filtersDynamicFrom}
-        helpers={helpersDynamicFrom}
-        chipColor={'warning'}
-      />
-      ) }
-      { isFilterGroupNotEmpty(filtersDynamicTo) && (
-      <FilterIconButton
-        filters={filtersDynamicTo}
-        helpers={helpersDynamicTo}
-        chipColor={'success'}
-      />
-      ) }
+      <div style={{ marginTop: 8, color: 'orange' }}>{t('Source matching')}</div>
+      { isFilterGroupNotEmpty(filtersDynamicFrom) ? (
+        <FilterIconButton
+          filters={filtersDynamicFrom}
+          helpers={helpersDynamicFrom}
+          chipColor={'warning'}
+        />
+      ) : '-' }
+      <div style={{ marginTop: 8, color: 'green' }}>{t('AND Target matching')}</div>
+      { isFilterGroupNotEmpty(filtersDynamicTo) ? (
+        <FilterIconButton
+          filters={filtersDynamicTo}
+          helpers={helpersDynamicTo}
+          chipColor={'success'}
+        />
+      ) : '-' }
+      <div style={{ marginTop: 8 }}>{t('AND Relationship matching')}</div>
       { isFilterGroupNotEmpty(filters) && (
         <FilterIconButton
           filters={filters}
