@@ -10695,8 +10695,7 @@ export enum LogsOrdering {
   Event = 'event',
   EventScope = 'event_scope',
   EventType = 'event_type',
-  Timestamp = 'timestamp',
-  User = 'user'
+  Timestamp = 'timestamp'
 }
 
 export type LogsWorkerConfig = {

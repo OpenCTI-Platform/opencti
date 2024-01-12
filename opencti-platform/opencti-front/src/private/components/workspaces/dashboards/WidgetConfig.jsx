@@ -18,15 +18,7 @@ import CardContent from '@mui/material/CardContent';
 import Button from '@mui/material/Button';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import Switch from '@mui/material/Switch';
-import {
-  AddOutlined,
-  CancelOutlined,
-  CloudUploadOutlined,
-  FormatShapesOutlined,
-  LibraryBooksOutlined,
-  MapOutlined,
-  WidgetsOutlined
-} from '@mui/icons-material';
+import { AddOutlined, CancelOutlined, CloudUploadOutlined, FormatShapesOutlined, LibraryBooksOutlined, MapOutlined, WidgetsOutlined } from '@mui/icons-material';
 import {
   AlignHorizontalLeft,
   ChartAreasplineVariant,
@@ -66,9 +58,7 @@ import { ignoredAttributesInDashboards } from '../../../../utils/hooks/useAttrib
 import { emptyFilterGroup, findFiltersFromKeys } from '../../../../utils/filters/filtersUtils';
 import { capitalizeFirstLetter, toB64 } from '../../../../utils/String';
 import { handleError, QueryRenderer } from '../../../../relay/environment';
-import {
-  stixCyberObservablesLinesAttributesQuery
-} from '../../observations/stix_cyber_observables/StixCyberObservablesLines';
+import { stixCyberObservablesLinesAttributesQuery } from '../../observations/stix_cyber_observables/StixCyberObservablesLines';
 import { isNotEmptyField } from '../../../../utils/utils';
 import MarkdownDisplay from '../../../../components/MarkdownDisplay';
 

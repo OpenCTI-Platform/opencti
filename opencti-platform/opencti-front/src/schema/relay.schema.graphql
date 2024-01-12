@@ -411,7 +411,6 @@ enum LogsOrdering {
   created_at
   event_type
   event_scope
-  user
 }
 
 type LogConnection {
