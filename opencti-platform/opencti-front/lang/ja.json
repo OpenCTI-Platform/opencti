@@ -2437,5 +2437,9 @@
   "entity_Analyses": "エンティティ_分析",
   "There are no opinions. You should create some before.": "意見がない。事前にいくつか作っておくべきだ。",
   "workflow_id": "ステータス",
-  "regardingOf": "に関しては"
+  "regardingOf": "に関しては",
+  "WITH": "WITH",
+  "Pre-query to get data to be used as source entity of the relationship (limited to 5000)": "リレーションシップのソース・エンティティとして使用されるデータを取得するための事前クエリ（5000個まで）",
+  "Pre-query to get data to be used as target entity of the relationship (limited to 5000)": "リレーションシップのターゲット・エンティティとして使用されるデータを取得するための事前クエリ（5000個限定）",
+  "Result: the relationships with source respecting the source pre-query, target respecting the target pre-query, and matching:": "結果：ソースがソースの事前クエリを尊重し、ターゲットがターゲットの事前クエリを尊重し、一致するリレーションシップ："
 }

@@ -2437,5 +2437,9 @@
   "entity_Analyses": "实体_分析",
   "There are no opinions. You should create some before.": "没有意见。你应该先提出一些意见。",
   "workflow_id": "状态",
-  "regardingOf": "关于"
+  "regardingOf": "关于",
+  "WITH": "有",
+  "Pre-query to get data to be used as source entity of the relationship (limited to 5000)": "预查询，获取用作关系源实体的数据（限制为 5000）",
+  "Pre-query to get data to be used as target entity of the relationship (limited to 5000)": "用于获取作为关系目标实体的数据的预查询（最多 5000 条）",
+  "Result: the relationships with source respecting the source pre-query, target respecting the target pre-query, and matching:": "结果：源尊重源预查询，目标尊重目标预查询并匹配的关系："
 }

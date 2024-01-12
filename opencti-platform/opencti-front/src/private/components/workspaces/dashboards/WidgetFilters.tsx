@@ -139,7 +139,7 @@ const WidgetFilters: FunctionComponent<WidgetFiltersProps> = ({ perspective, typ
     </>)}
   </Box>
     <Box sx={{ paddingTop: 1 }}>
-      <div style={{ marginTop: 8, color: 'orange' }}>{t('Pre-query to get data to be used as source entity of the relationship')}</div>
+      <div style={{ marginTop: 8, color: 'orange' }}>{t('Pre-query to get data to be used as source entity of the relationship (limited to 5000)')}</div>
       { isFilterGroupNotEmpty(filtersDynamicFrom) ? (
         <FilterIconButton
           filters={filtersDynamicFrom}
@@ -147,7 +147,7 @@ const WidgetFilters: FunctionComponent<WidgetFiltersProps> = ({ perspective, typ
           chipColor={'warning'}
         />
       ) : '-' }
-      <div style={{ marginTop: 8, color: '#03A847' }}>{t('Pre-query to get data to be used as target entity of the relationship')}</div>
+      <div style={{ marginTop: 8, color: '#03A847' }}>{t('Pre-query to get data to be used as target entity of the relationship (limited to 5000)')}</div>
       { isFilterGroupNotEmpty(filtersDynamicTo) ? (
         <FilterIconButton
           filters={filtersDynamicTo}

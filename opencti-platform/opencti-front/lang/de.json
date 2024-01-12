@@ -2437,5 +2437,9 @@
   "CREATE": "CREATE",
   "entity_Analyses": "entity_Analyses",
   "workflow_id": "Status",
-  "regardingOf": "In Bezug auf"
+  "regardingOf": "In Bezug auf",
+  "WITH": "MIT",
+  "Pre-query to get data to be used as source entity of the relationship (limited to 5000)": "Pre-Query, um Daten zu erhalten, die als Quell-Entität der Beziehung verwendet werden sollen (begrenzt auf 5000)",
+  "Pre-query to get data to be used as target entity of the relationship (limited to 5000)": "Pre-Query, um Daten zu erhalten, die als Ziel-Entität der Beziehung verwendet werden sollen (begrenzt auf 5000)",
+  "Result: the relationships with source respecting the source pre-query, target respecting the target pre-query, and matching:": "Ergebnis: die Beziehungen, bei denen die Quelle die Quell-Pre-Query und das Ziel die Ziel-Pre-Query beachtet und übereinstimmt:"
 }
