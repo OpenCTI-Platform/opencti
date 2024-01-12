@@ -19,9 +19,7 @@ const GenerateDefaultDirectFilters: FunctionComponent<GenerateDefaultDirectFilte
     if (displayedFilters.filters.length === 0) {
       const dFilter = availableFilterKeys?.filter((n) => directFilters.includes(n)) ?? [];
       if (dFilter.length > 0) {
-        helpers?.handleClearAllFilters(
-          dFilter.map((key) => getDefaultFilterObject(key)),
-        );
+        helpers?.handleClearAllFilters();
       }
     }
   }, []);

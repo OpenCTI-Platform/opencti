@@ -42,7 +42,7 @@ import ExportButtons from '../../../../components/ExportButtons';
 import Filters from '../lists/Filters';
 import { usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStorage';
 import type { Theme } from '../../../../components/Theme';
-import { emptyFilterGroup, removeFilter, removeIdFromFilterGroupObject, extractAllValueFromFilters } from '../../../../utils/filters/filtersUtils';
+import { emptyFilterGroup, removeFilter, removeIdFromFilterGroupObject, extractAllValueFromFilters, getDefaultFilterObject } from '../../../../utils/filters/filtersUtils';
 import FilterIconButton from '../../../../components/FilterIconButton';
 
 const useStyles = makeStyles<Theme>((theme) => ({
@@ -145,12 +145,21 @@ StixDomainObjectThreatKnowledgeProps
   } = usePaginationLocalStorage<StixDomainObjectThreatKnowledgeQueryStixRelationshipsQuery$variables>(
     LOCAL_STORAGE_KEY,
     {
-      filters: emptyFilterGroup,
+      filters: {
+        ...emptyFilterGroup,
+        filters: [
+          {
+            ...getDefaultFilterObject('elementWithTargetTypes'),
+            values: ['all'],
+          },
+        ],
+      },
       searchTerm: '',
       sortBy: 'created',
       orderAsc: false,
       openExports: false,
     },
+    [],
   );
   const { filters } = viewStorage;
   const [viewType, setViewType] = useState('timeline');

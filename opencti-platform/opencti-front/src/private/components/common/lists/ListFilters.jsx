@@ -9,7 +9,7 @@ import makeStyles from '@mui/styles/makeStyles';
 import TextField from '@mui/material/TextField';
 import MUIAutocomplete from '@mui/material/Autocomplete';
 import { useFormatter } from '../../../../components/i18n';
-import { directFilters, getDefaultFilterObject } from '../../../../utils/filters/filtersUtils';
+import { getDefaultFilterObject } from '../../../../utils/filters/filtersUtils';
 
 const useStyles = makeStyles(() => ({
   container: {
@@ -51,14 +51,7 @@ const ListFilters = ({
     color = 'success';
   }
   const handleClearFilters = () => {
-    if (noDirectFilters) {
-      helpers.handleClearAllFilters();
-    } else {
-      const dFilter = availableFilterKeys.filter((n) => directFilters.includes(n));
-      helpers.handleClearAllFilters(
-        dFilter.map((key) => getDefaultFilterObject(key)),
-      );
-    }
+    helpers.handleClearAllFilters();
   };
   const handleChange = (value) => {
     helpers.handleAddFilterWithEmptyValue(getDefaultFilterObject(value));

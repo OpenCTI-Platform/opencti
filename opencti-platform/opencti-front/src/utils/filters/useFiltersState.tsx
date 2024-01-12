@@ -72,12 +72,10 @@ const useFiltersState = (initFilters: FilterGroup = emptyFilterGroup): [FilterGr
         latestAddFilterId: undefined,
       }));
     },
-    handleClearAllFilters: (clearFilters?: Filter[]) => {
-      setFiltersState((prevState) => ({
-        ...prevState,
-        filters: handleClearAllFiltersUtil(clearFilters),
-        latestAddFilterId: undefined,
-      }));
+    handleClearAllFilters: () => {
+      setFiltersState({
+        filters: initFilters,
+        latestAddFilterId: undefined });
     },
     handleRemoveFilterById: (id: string) => {
       setFiltersState((prevState) => ({

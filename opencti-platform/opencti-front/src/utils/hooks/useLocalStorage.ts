@@ -54,7 +54,7 @@ export interface UseLocalStorageHelpers extends handleFilterHelpers {
   handleClearTypes: () => void;
   handleAddProperty: (field: string, value: unknown) => void;
   handleChangeView: (value: string) => void;
-  handleClearAllFilters: (filters?: Filter[]) => void;
+  handleClearAllFilters: () => void;
 }
 
 const localStorageToPaginationOptions = (
@@ -208,6 +208,9 @@ const useLocalStorage = (
       // Parse stored json or if none return initialValue
       let value = item ? JSON.parse(item) : null;
       if (isEmptyField(value)) {
+        value = initialValue;
+      }
+      if (value?.filters?.filters.length === 0) {
         value = initialValue;
       }
       // Need to clear the local storage ?
@@ -564,12 +567,8 @@ export const usePaginationLocalStorage = <U>(
     handleClearTypes: () => {
       setValue((c) => ({ ...c, types: [] }));
     },
-    handleClearAllFilters: (filters?: Filter[]) => {
-      setValue((c) => ({
-        ...c,
-        filters: handleClearAllFiltersUtil(filters),
-        latestAddFilterId: undefined,
-      }));
+    handleClearAllFilters: () => {
+      setValue(initialValue);
     },
     handleAddFilterWithEmptyValue: (filter: Filter) => {
       if (viewStorage?.filters) {
