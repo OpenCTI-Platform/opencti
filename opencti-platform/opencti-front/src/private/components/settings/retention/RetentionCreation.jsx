@@ -216,7 +216,6 @@ const RetentionCreation = (props) => {
                     'toTypes',
                   ]}
                   helpers={helpers}
-                  noDirectFilters={true}
                 />
               </Box>
               <FilterIconButton

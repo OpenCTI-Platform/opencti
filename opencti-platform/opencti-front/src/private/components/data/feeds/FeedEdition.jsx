@@ -452,7 +452,6 @@ const FeedEditionContainer = (props) => {
                           'pattern_type',
                         ]}
                         helpers={helpers}
-                        noDirectFilters={true}
                       />
                     </Box>
                     <FilterIconButton

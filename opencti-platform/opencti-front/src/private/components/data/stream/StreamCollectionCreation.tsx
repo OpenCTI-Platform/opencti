@@ -214,7 +214,6 @@ const StreamCollectionCreation: FunctionComponent<StreamCollectionCreationProps>
                     'toTypes',
                   ]}
                   helpers={helpers}
-                  noDirectFilters={true}
                 />
               </Box>
               <FilterIconButton

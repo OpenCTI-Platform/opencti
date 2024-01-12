@@ -149,7 +149,6 @@ const ContentKnowledgeTimeLineBar = ({
                       'Stix-Cyber-Observable',
                     ]}
                     handleAddFilter={handleAddTimeLineFilter}
-                    noDirectFilters={true}
                   />
                 </div>
                 <div style={{ paddingTop: 3 }}>

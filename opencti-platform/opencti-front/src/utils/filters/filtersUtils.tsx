@@ -668,6 +668,10 @@ export const getDefaultFilterObject = (key: string): Filter => {
   };
 };
 
+export const getDefaultFilterObjFromArray = (keys: string[]) => {
+  return keys.map((key) => getDefaultFilterObject(key));
+};
+
 /**
  * Get the possible operator for a given subkey.
  * Subkeys are nested inside special filter that combine several fields (filter values is not a string[] but object[])

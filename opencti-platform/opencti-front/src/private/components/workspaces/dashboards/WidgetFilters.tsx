@@ -109,7 +109,6 @@ const WidgetFilters: FunctionComponent<WidgetFiltersProps> = ({ perspective, typ
         availableFilterKeys={type === 'bookmark' ? ['entity_type'] : availableFilterKeys}
         availableEntityTypes={availableEntityTypes}
         helpers={helpers}
-        noDirectFilters={true}
       />
     </Box>
     { perspective === 'relationships' && (
@@ -122,7 +121,6 @@ const WidgetFilters: FunctionComponent<WidgetFiltersProps> = ({ perspective, typ
             'Stix-Cyber-Observable',
           ]}
           helpers={helpersDynamicFrom}
-          noDirectFilters={true}
           type="from"
         />
       </Box>
@@ -134,7 +132,7 @@ const WidgetFilters: FunctionComponent<WidgetFiltersProps> = ({ perspective, typ
             'Stix-Cyber-Observable',
           ]}
           helpers={helpersDynamicTo}
-          noDirectFilters={true}
+
           type="to"
         />
       </Box>

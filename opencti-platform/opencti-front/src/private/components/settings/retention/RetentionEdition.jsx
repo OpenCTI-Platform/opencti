@@ -202,7 +202,6 @@ const RetentionEditionContainer = (props) => {
                   'toTypes',
                 ]}
                 helpers={helpers}
-                noDirectFilters={true}
               />
             </Box>
             <FilterIconButton

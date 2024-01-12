@@ -15,7 +15,7 @@ import { KNOWLEDGE_KNUPDATE } from '../../../utils/hooks/useGranted';
 import ExportContextProvider from '../../../utils/ExportContextProvider';
 import useEntityToggle from '../../../utils/hooks/useEntityToggle';
 import { StixCyberObservableLine_node$data } from './stix_cyber_observables/__generated__/StixCyberObservableLine_node.graphql';
-import { buildEntityTypeBasedFilterContext, emptyFilterGroup } from '../../../utils/filters/filtersUtils';
+import { buildEntityTypeBasedFilterContext, emptyFilterGroup, getDefaultFilterObjFromArray } from '../../../utils/filters/filtersUtils';
 
 const LOCAL_STORAGE_KEY = 'stixCyberObservables';
 
@@ -28,7 +28,10 @@ const StixCyberObservables: FunctionComponent = () => {
   const { viewStorage, paginationOptions, helpers } = usePaginationLocalStorage(
     LOCAL_STORAGE_KEY,
     {
-      filters: emptyFilterGroup,
+      filters: {
+        ...emptyFilterGroup,
+        filters: getDefaultFilterObjFromArray(['entity_type', 'sightedBy']),
+      },
       searchTerm: '',
       sortBy: 'created_at',
       orderAsc: false,
@@ -143,7 +146,6 @@ const StixCyberObservables: FunctionComponent = () => {
           iconExtension={true}
           paginationOptions={paginationOptions}
           numberOfElements={numberOfElements}
-          noDirectFilters={true}
           availableFilterKeys={[
             'entity_type',
             'objectLabel',

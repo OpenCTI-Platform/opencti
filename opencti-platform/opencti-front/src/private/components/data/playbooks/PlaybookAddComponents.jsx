@@ -475,7 +475,6 @@ const PlaybookAddComponentsContent = ({
                               'toTypes',
                             ]}
                             handleAddFilter={handleAddFilter}
-                            noDirectFilters={true}
                           />
                         </div>
                         <div className="clearfix" />

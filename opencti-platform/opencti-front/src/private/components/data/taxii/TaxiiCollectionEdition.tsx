@@ -211,7 +211,6 @@ const TaxiiCollectionEditionContainer: FunctionComponent<{ taxiiCollection: Taxi
                 'toTypes',
               ]}
               helpers={helpers}
-              noDirectFilters={true}
             />
           </Box>
           <FilterIconButton

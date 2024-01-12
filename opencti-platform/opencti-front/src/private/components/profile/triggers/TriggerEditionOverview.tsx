@@ -485,7 +485,6 @@ TriggerEditionOverviewProps
                     'toTypes',
                   ]}
                   helpers={helpers}
-                  noDirectFilters={true}
                 />
               </Box>
             )}

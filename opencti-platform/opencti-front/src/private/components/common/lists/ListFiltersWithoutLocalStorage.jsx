@@ -38,7 +38,6 @@ const ListFiltersWithoutLocalStorage = ({
   handleCloseFilters,
   open,
   anchorEl,
-  noDirectFilters,
   availableFilterKeys,
   filterElement,
   searchContext,
@@ -113,38 +112,37 @@ const ListFiltersWithoutLocalStorage = ({
       >
         {filterElement}
       </Popover>
-      {!noDirectFilters
-        && availableFilterKeys
-          .filter((n) => directFilters.includes(n))
-          .map((filterKey) => {
-            if (inlineFilters.includes(filterKey)) {
-              return (
-                <div className={classes.booleanFilter} key={filterKey}>
-                  <InlineFilters
-                    filterKey={filterKey}
-                    defaultHandleRemoveFilter={defaultHandleRemoveFilter}
-                    handleSwitchFilter={handleSwitchFilter}
-                  />
-                </div>
-              );
-            }
+      {availableFilterKeys
+        .filter((n) => directFilters.includes(n))
+        .map((filterKey) => {
+          if (inlineFilters.includes(filterKey)) {
             return (
-              <div className={classes.autocomplete} key={filterKey}>
-                <FilterAutocomplete
+              <div className={classes.booleanFilter} key={filterKey}>
+                <InlineFilters
                   filterKey={filterKey}
-                  searchContext={searchContext}
-                  defaultHandleAddFilter={defaultHandleAddFilter}
-                  inputValues={inputValues}
-                  setInputValues={setInputValues}
-                  availableEntityTypes={availableEntityTypes}
-                  availableRelationshipTypes={availableRelationshipTypes}
-                  availableRelationFilterTypes={availableRelationFilterTypes}
-                  allEntityTypes={allEntityTypes}
-                  openOnFocus={false}
+                  defaultHandleRemoveFilter={defaultHandleRemoveFilter}
+                  handleSwitchFilter={handleSwitchFilter}
                 />
               </div>
             );
-          })}
+          }
+          return (
+            <div className={classes.autocomplete} key={filterKey}>
+              <FilterAutocomplete
+                filterKey={filterKey}
+                searchContext={searchContext}
+                defaultHandleAddFilter={defaultHandleAddFilter}
+                inputValues={inputValues}
+                setInputValues={setInputValues}
+                availableEntityTypes={availableEntityTypes}
+                availableRelationshipTypes={availableRelationshipTypes}
+                availableRelationFilterTypes={availableRelationFilterTypes}
+                allEntityTypes={allEntityTypes}
+                openOnFocus={false}
+              />
+            </div>
+          );
+        })}
       <div className="clearfix" />
     </div>
   );

@@ -207,7 +207,6 @@ const TaxiiCollectionCreation: FunctionComponent<TaxiiCollectionCreationProps> =
                     'toTypes',
                   ]}
                   helpers={helpers}
-                  noDirectFilters={true}
                 />
               </Box>
               <FilterIconButton

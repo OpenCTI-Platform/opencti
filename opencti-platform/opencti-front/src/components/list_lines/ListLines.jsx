@@ -37,7 +37,6 @@ import FilterIconButton from '../FilterIconButton';
 import { ExportContext } from '../../utils/ExportContextProvider';
 import { export_max_size } from '../../utils/utils';
 import Transition from '../Transition';
-import GenerateDefaultDirectFilters from '../GenerateDefaultDirectFilters';
 
 const styles = (theme) => ({
   container: {
@@ -433,11 +432,6 @@ class ListLines extends Component {
             </div>
           </div>
         )}
-        <GenerateDefaultDirectFilters
-          filters={filters}
-          availableFilterKeys={availableFilterKeys}
-          helpers={helpers}
-        />
         <FilterIconButton
           helpers={helpers}
           availableFilterKeys={availableFilterKeys}

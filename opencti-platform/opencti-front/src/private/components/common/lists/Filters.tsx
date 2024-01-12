@@ -14,7 +14,6 @@ interface FiltersProps {
   size?: number;
   fontSize?: number;
   availableFilterKeys: string[];
-  noDirectFilters?: boolean;
   availableEntityTypes?: string[];
   availableRelationshipTypes?: string[];
   availableRelationFilterTypes?: Record<string, string[]>;
@@ -38,7 +37,6 @@ const Filters: FunctionComponent<FiltersProps> = ({
   size,
   fontSize,
   availableFilterKeys,
-  noDirectFilters,
   availableEntityTypes,
   availableRelationshipTypes,
   availableRelationFilterTypes,
@@ -130,7 +128,6 @@ const Filters: FunctionComponent<FiltersProps> = ({
       availableFilterKeys={availableFilterKeys}
       searchContext={searchContext ?? { entityTypes: [] }}
       handleChangeKeyword={handleChangeKeyword}
-      noDirectFilters={noDirectFilters}
       inputValues={inputValues}
       setInputValues={setInputValues}
       defaultHandleAddFilter={defaultHandleAddFilter}
@@ -173,7 +170,6 @@ const Filters: FunctionComponent<FiltersProps> = ({
           variant={variant}
           type={type}
           helpers={helpers}
-          noDirectFilters={noDirectFilters}
         />
       ) : (
         <ListFiltersWithoutLocalStorage
@@ -183,7 +179,6 @@ const Filters: FunctionComponent<FiltersProps> = ({
           handleCloseFilters={handleCloseFilters}
           open={open}
           anchorEl={anchorEl}
-          noDirectFilters={noDirectFilters}
           availableFilterKeys={availableFilterKeys}
           filterElement={filterElement}
           searchContext={searchContext}

@@ -19,7 +19,6 @@ import Security from '../../utils/Security';
 import { KNOWLEDGE_KNGETEXPORT } from '../../utils/hooks/useGranted';
 import FilterIconButton from '../FilterIconButton';
 import { export_max_size } from '../../utils/utils';
-import GenerateDefaultDirectFilters from '../GenerateDefaultDirectFilters';
 
 const styles = () => ({
   parameters: {
@@ -206,11 +205,6 @@ class ListCards extends Component {
             )}
           </div>
         </div>
-        <GenerateDefaultDirectFilters
-          filters={filters}
-          availableFilterKeys={availableFilterKeys}
-          helpers={helpers}
-        />
         <FilterIconButton
           helpers={helpers}
           filters={filters}

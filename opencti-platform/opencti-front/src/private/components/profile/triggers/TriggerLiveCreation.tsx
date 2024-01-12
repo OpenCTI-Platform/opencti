@@ -314,7 +314,6 @@ const TriggerLiveCreation: FunctionComponent<TriggerLiveCreationProps> = ({
               'toTypes',
             ]}
             helpers={helpers}
-            noDirectFilters={true}
           />
         </Box>
         )}

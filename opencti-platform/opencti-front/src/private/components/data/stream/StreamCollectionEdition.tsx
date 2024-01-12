@@ -202,7 +202,6 @@ const StreamCollectionEditionContainer: FunctionComponent<{ streamCollection: St
                 'toTypes',
               ]}
               helpers={helpers}
-              noDirectFilters={true}
             />
           </Box>
           <FilterIconButton
