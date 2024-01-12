@@ -9,16 +9,7 @@ import { MenuItem, Select } from '@mui/material';
 import { SelectChangeEvent } from '@mui/material/Select';
 import SearchScopeElement from '@components/common/lists/SearchScopeElement';
 import Chip from '@mui/material/Chip';
-import {
-  dateFilters,
-  Filter,
-  getAvailableOperatorForFilter,
-  getAvailableOperatorForFilterKey,
-  getAvailableOperatorForFilterSubKey,
-  integerFilters,
-  isStixObjectTypes,
-  textFilters,
-} from '../../utils/filters/filtersUtils';
+import { dateFilters, Filter, getAvailableOperatorForFilter, integerFilters, isStixObjectTypes, textFilters } from '../../utils/filters/filtersUtils';
 import { useFormatter } from '../i18n';
 import ItemIcon from '../ItemIcon';
 import { getOptionsFromEntities, getUseSearch } from '../../utils/filters/SearchEntitiesUtil';
