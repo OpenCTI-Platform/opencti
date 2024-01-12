@@ -251,7 +251,7 @@ export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({
                 ? renderSearchScopeSelection(fKey)
                 : paramsInput.InputProps.endAdornment,
             }}
-            label={t(fKey)}
+            label={t(subKey ?? fKey)}
             variant="outlined"
             size="small"
             fullWidth={true}
@@ -380,11 +380,11 @@ export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({
           <Chip
             style={{
               fontFamily: 'Consolas, monaco, monospace',
-              margin: '10px 10px 5px 0',
+              margin: '10px 10px 15px 0',
             }}
             label={t('WITH')}
           />
-          {displayOperatorAndFilter('regardingOf', 'id')}
+          {buildAutocompleteFilter('regardingOf', 'id')}
         </div>
         : <div
             style={{

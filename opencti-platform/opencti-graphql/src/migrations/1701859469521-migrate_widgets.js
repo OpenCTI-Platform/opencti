@@ -26,15 +26,16 @@ const convertFilters = (filters, perspective) => {
       const newFilters = keyFilterRemover(filters, ['elementId', 'relationship_type']);
       const regardingOfValues = [];
       if (elementIdFilter && isNotEmptyField(elementIdFilter.values)) {
-        regardingOfValues.push({ key: 'id', values: elementIdFilter.values });
+        regardingOfValues.push({ key: 'id', operator: 'eq', mode: 'or', values: elementIdFilter.values });
       }
       if (relationshipTypeIdFilter && isNotEmptyField(relationshipTypeIdFilter.values)) {
-        regardingOfValues.push({ key: 'type', values: relationshipTypeIdFilter.values });
+        regardingOfValues.push({ key: 'type', operator: 'eq', mode: 'or', values: relationshipTypeIdFilter.values });
       }
       if (regardingOfValues.length > 0) {
         newFilters.push({
           key: 'regardingOf',
           mode: 'and',
+          operator: 'eq',
           values: regardingOfValues,
         });
       }
