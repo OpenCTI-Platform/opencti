@@ -104,8 +104,6 @@ const useFiltersState = (initFilters: FilterGroup = emptyFilterGroup): [FilterGr
       }));
     },
     handleSwitchLocalMode: (filter: Filter) => {
-      console.log(filter);
-      console.log(handleSwitchLocalModeUtil({ filters: filtersState.filters, filter }));
       setFiltersState((prevState) => ({
         ...prevState,
         filters: handleSwitchLocalModeUtil({ filters: prevState.filters, filter }),

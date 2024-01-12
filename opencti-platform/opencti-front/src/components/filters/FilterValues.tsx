@@ -126,52 +126,54 @@ const FilterValues: FunctionComponent<FilterValuesProps> = ({
         >
           {label}
         </strong>{' '}
-        {sortedFilterValues
-          .map((val) => {
-            const subKey = val.key;
-            const keyLabel = (
-              <>
-                {truncate(t(subKey), 20)}
-                <>&nbsp;=</>
-              </>
-            );
-            return (
-              <Fragment key={'test'}>
-                <Tooltip
-                  title={
-                    <FilterValues
-                      label={keyLabel}
-                      tooltip={true}
-                      currentFilter={val}
-                      filtersRepresentativesMap={filtersRepresentativesMap}
-                    />
-                  }
-                >
-                  <Box
-                    sx={{
-                      padding: '0 4px',
-                      display: 'flex',
-                    }}
+        <Box sx={{ display: 'flex', flexDirection: 'row', overflow: 'hidden' }}>
+          {sortedFilterValues
+            .map((val) => {
+              const subKey = val.key;
+              const keyLabel = (
+                <>
+                  {truncate(t(subKey), 20)}
+                  <>&nbsp;=</>
+                </>
+              );
+              return (
+                <Fragment key={val.key}>
+                  <Tooltip
+                    title={
+                      <FilterValues
+                        label={keyLabel}
+                        tooltip={true}
+                        currentFilter={val}
+                        filtersRepresentativesMap={filtersRepresentativesMap}
+                      />
+                    }
                   >
-                    <Chip
-                      label={
-                        <FilterValues
-                          label={keyLabel}
-                          tooltip={false}
-                          currentFilter={val}
-                          filtersRepresentativesMap={filtersRepresentativesMap}
-                          redirection
-                          noLabelDisplay={true}
-                        />
-                      }
-                      color={chipColor}
-                    />
-                  </Box>
-                </Tooltip>
-              </Fragment>
-            );
-          })
-        }
+                    <Box
+                      sx={{
+                        padding: '0 4px',
+                        display: 'flex',
+                      }}
+                    >
+                      <Chip
+                        label={
+                          <FilterValues
+                            label={keyLabel}
+                            tooltip={false}
+                            currentFilter={val}
+                            filtersRepresentativesMap={filtersRepresentativesMap}
+                            redirection
+                            noLabelDisplay={true}
+                          />
+                        }
+                        color={chipColor}
+                      />
+                    </Box>
+                  </Tooltip>
+                </Fragment>
+              );
+            })
+          }
+        </Box>
       </>
     );
   }

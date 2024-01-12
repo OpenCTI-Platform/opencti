@@ -166,7 +166,6 @@ const DashboardComponent = ({ workspace, noToolbar }) => {
     saveManifest(newManifest);
   };
   const handleUpdateWidget = (widgetManifest) => {
-    console.log(widgetManifest);
     const newManifest = {
       ...manifest,
       widgets: { ...manifest.widgets, [widgetManifest.id]: widgetManifest },
@@ -394,7 +393,6 @@ const DashboardComponent = ({ workspace, noToolbar }) => {
     }
   };
   const renderRelationshipsVisualization = (widget, config) => {
-    console.log(widget);
     const { relativeDate } = config;
     const startDate = relativeDate
       ? computerRelativeDate(relativeDate)
