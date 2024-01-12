@@ -9,7 +9,16 @@ import { MenuItem, Select } from '@mui/material';
 import { SelectChangeEvent } from '@mui/material/Select';
 import SearchScopeElement from '@components/common/lists/SearchScopeElement';
 import Chip from '@mui/material/Chip';
-import { dateFilters, Filter, getAvailableOperatorForFilter, integerFilters, isStixObjectTypes, textFilters } from '../../utils/filters/filtersUtils';
+import {
+  dateFilters,
+  Filter,
+  getAvailableOperatorForFilter,
+  getAvailableOperatorForFilterKey,
+  getAvailableOperatorForFilterSubKey,
+  integerFilters,
+  isStixObjectTypes,
+  textFilters,
+} from '../../utils/filters/filtersUtils';
 import { useFormatter } from '../i18n';
 import ItemIcon from '../ItemIcon';
 import { getOptionsFromEntities, getUseSearch } from '../../utils/filters/SearchEntitiesUtil';
@@ -224,7 +233,7 @@ export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({
     />
   );
 
-  const buildAutocompleteFilter = (fKey: string, technicalKey?: string): ReactNode => {
+  const buildAutocompleteFilter = (fKey: string, subKey?: string): ReactNode => {
     return (
       <MUIAutocomplete
         disableCloseOnSelect
@@ -266,8 +275,8 @@ export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({
           />
         )}
         renderOption={(props, option) => {
-          const checked = technicalKey
-            ? filterValues.filter((fVal) => fVal && fVal.key === technicalKey && fVal.values.includes(option.value)).length > 0
+          const checked = subKey
+            ? filterValues.filter((fVal) => fVal && fVal.key === subKey && fVal.values.includes(option.value)).length > 0
             : filterValues.includes(option.value);
           return (
             <Tooltip title={option.label} key={option.label}>
@@ -278,7 +287,7 @@ export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({
                     e.stopPropagation();
                   }
                 }}
-                onClick={() => handleChange(!checked, option.value, technicalKey)}
+                onClick={() => handleChange(!checked, option.value, subKey)}
                 style={{
                   whiteSpace: 'nowrap',
                   overflow: 'hidden',
@@ -326,7 +335,11 @@ export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({
     return null;
   };
 
-  const displayOperatorAndFilter = (fKey: string, technicalKey?: string) => {
+  const displayOperatorAndFilter = (fKey: string, subKey?: string, aliasSubKey?: string) => {
+    const availableOperators = getAvailableOperatorForFilter(fKey, subKey);
+    // for subkeys, we turn to the behavior of existing filter keys
+    // we might use an alias if the subkey does not match the name of the existing key
+    const finalFilterKey = subKey ? (aliasSubKey ?? subKey) : fKey;
     return (
       <>
         <Select
@@ -338,17 +351,17 @@ export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({
           onChange={handleChangeOperator}
           style={{ marginBottom: 15 }}
         >
-          {getAvailableOperatorForFilter(technicalKey ?? fKey).map((value) => (
+          {availableOperators.map((value) => (
             <MenuItem key={value} value={value}>
               {t(OperatorKeyValues[value])}
             </MenuItem>
           ))}
         </Select>
-        {noValueOperator && isSpecificFilter(fKey) && (
-          <>{getSpecificFilter(fKey)}</>
+        {noValueOperator && isSpecificFilter(finalFilterKey) && (
+          <>{getSpecificFilter(finalFilterKey)}</>
         )}
-        {noValueOperator && !isSpecificFilter(fKey) && (
-          <>{buildAutocompleteFilter(fKey, technicalKey)}</>
+        {noValueOperator && !isSpecificFilter(finalFilterKey) && (
+          <>{buildAutocompleteFilter(finalFilterKey, subKey)}</>
         )}
       </>
     );
@@ -372,15 +385,15 @@ export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({
               padding: 8,
             }}
           >
-          {displayOperatorAndFilter('relationship_type', 'type')}
+          {displayOperatorAndFilter('regardingOf', 'type', 'relationship_type')}
           <Chip
             style={{
               fontFamily: 'Consolas, monaco, monospace',
-              margin: '5px 10px 5px 0',
+              margin: '10px 10px 5px 0',
             }}
             label={t('WITH')}
           />
-          {displayOperatorAndFilter('id', 'id')}
+          {displayOperatorAndFilter('regardingOf', 'id')}
         </div>
         : <div
             style={{

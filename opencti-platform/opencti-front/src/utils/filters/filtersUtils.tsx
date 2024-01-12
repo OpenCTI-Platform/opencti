@@ -670,10 +670,25 @@ export const getDefaultFilterObject = (key: string): Filter => {
   };
 };
 
-export const getAvailableOperatorForFilter = (filterKey: string): string[] => {
-  if (filterKey === 'id' || filterKey === 'type') { // case subKey of 'regardingOf' filter
-    return ['eq'];
+/**
+ * Get the possible operator for a given subkey.
+ * Subkeys are nested inside special filter that combine several fields (filter values is not a string[] but object[])
+ */
+export const getAvailableOperatorForFilterSubKey = (filterKey: string, subKey: string): string[] => {
+  if (filterKey === 'regardingOf') {
+    if (subKey === 'id' || subKey === 'type') {
+      return ['eq'];
+    }
   }
+
+  return ['eq', 'not_eq', 'nil', 'not_nil'];
+};
+
+/**
+ * Operators are restricted depending on the filter key
+ * @param filterKey
+ */
+export const getAvailableOperatorForFilterKey = (filterKey: string): string[] => {
   if (dateFilters.includes(filterKey)) {
     return ['gt', 'gte', 'lt', 'lte'];
   }
@@ -688,6 +703,11 @@ export const getAvailableOperatorForFilter = (filterKey: string): string[] => {
       'starts_with', 'not_starts_with', 'ends_with', 'not_ends_with'];
   }
   return ['eq', 'not_eq', 'nil', 'not_nil'];
+};
+
+export const getAvailableOperatorForFilter = (filterKey: string, subKey?: string): string[] => {
+  if (subKey) return getAvailableOperatorForFilterSubKey(filterKey, subKey);
+  return getAvailableOperatorForFilterKey(filterKey);
 };
 
 export const removeIdFromFilterGroupObject = (filters?: FilterGroup | null): FilterGroup | undefined => {
