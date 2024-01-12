@@ -1055,8 +1055,6 @@ class StixDomainObject:
         filters = kwargs.get("filters", None)
         search = kwargs.get("search", None)
         first = kwargs.get("first", 100)
-        relationship_type = kwargs.get("relationship_type", None)
-        element_id = kwargs.get("elementId", None)
         after = kwargs.get("after", None)
         order_by = kwargs.get("orderBy", None)
         order_mode = kwargs.get("orderMode", None)
@@ -1072,8 +1070,8 @@ class StixDomainObject:
         )
         query = (
             """
-                query StixDomainObjects($types: [String], $filters: FilterGroup, $search: String, $relationship_type: [String], $elementId: String, $first: Int, $after: ID, $orderBy: StixDomainObjectsOrdering, $orderMode: OrderingMode) {
-                    stixDomainObjects(types: $types, filters: $filters, search: $search, relationship_type: $relationship_type, elementId: $elementId, first: $first, after: $after, orderBy: $orderBy, orderMode: $orderMode) {
+                query StixDomainObjects($types: [String], $filters: FilterGroup, $search: String, $first: Int, $after: ID, $orderBy: StixDomainObjectsOrdering, $orderMode: OrderingMode) {
+                    stixDomainObjects(types: $types, filters: $filters, search: $search, first: $first, after: $after, orderBy: $orderBy, orderMode: $orderMode) {
                         edges {
                             node {
                                 """
@@ -1102,8 +1100,6 @@ class StixDomainObject:
                 "types": types,
                 "filters": filters,
                 "search": search,
-                "relationship_type": relationship_type,
-                "elementId": element_id,
                 "first": first,
                 "after": after,
                 "orderBy": order_by,
@@ -1126,8 +1122,6 @@ class StixDomainObject:
                         "types": types,
                         "filters": filters,
                         "search": search,
-                        "relationship_type": relationship_type,
-                        "elementId": element_id,
                         "first": first,
                         "after": after,
                         "orderBy": order_by,
@@ -1365,11 +1359,11 @@ class StixDomainObject:
             return None
 
     def push_list_export(
-        self, entity_type, file_name, data, list_filters="", mime_type=None
+        self, entity_id, entity_type, file_name, data, list_filters="", mime_type=None
     ):
         query = """
-            mutation StixDomainObjectsExportPush($type: String!, $file: Upload!, $listFilters: String) {
-                stixDomainObjectsExportPush(type: $type, file: $file, listFilters: $listFilters)
+            mutation StixDomainObjectsExportPush($entity_id: String, $entity_type: String!, $file: Upload!, $listFilters: String) {
+                stixDomainObjectsExportPush(entity_id: $entity_id, entity_type: $entity_type, file: $file, listFilters: $listFilters)
             }
         """
         if mime_type is None:
@@ -1379,7 +1373,8 @@ class StixDomainObject:
         self.opencti.query(
             query,
             {
-                "type": entity_type,
+                "entity_id": entity_id,
+                "entity_type": entity_type,
                 "file": file,
                 "listFilters": list_filters,
             },
