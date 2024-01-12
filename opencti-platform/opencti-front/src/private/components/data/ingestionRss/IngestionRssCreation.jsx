@@ -94,12 +94,7 @@ const IngestionRssCreation = (props) => {
         input,
       },
       updater: (store) => {
-        insertNode(
-          store,
-          'Pagination_ingestionRss',
-          props.paginationOptions,
-          'ingestionRssAdd',
-        );
+        insertNode(store, 'Pagination_ingestionRsss', props.paginationOptions, 'ingestionRssAdd');
       },
       setSubmitting,
       onCompleted: () => {

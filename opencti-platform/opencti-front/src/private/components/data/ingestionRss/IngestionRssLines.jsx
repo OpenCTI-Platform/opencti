@@ -94,7 +94,7 @@ export default createPaginationContainer(
           after: $cursor
           orderBy: $orderBy
           orderMode: $orderMode
-        ) @connection(key: "Pagination_ingestionRss") {
+        ) @connection(key: "Pagination_ingestionRsss") {
           edges {
             node {
               ...IngestionRssLine_node
