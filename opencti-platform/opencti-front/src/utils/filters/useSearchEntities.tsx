@@ -1015,28 +1015,6 @@ const useSearchEntities = ({
             );
           });
         break;
-      case 'container_type': {
-        const containersTypes = [
-          'Note',
-          'Observed-Data',
-          'Opinion',
-          'Report',
-          'Grouping',
-          'Case',
-        ]
-          .map((n) => ({
-            label: t(
-              n.toString()[0] === n.toString()[0].toUpperCase()
-                ? `entity_${n.toString()}`
-                : `relationship_${n.toString()}`,
-            ),
-            value: n,
-            type: n,
-          }))
-          .sort((a, b) => a.label.localeCompare(b.label));
-        unionSetEntities(filterKey, containersTypes);
-        break;
-      }
       case 'x_opencti_negative': {
         const negativeValue = [true, false].map((n) => ({
           label: t(n ? 'False positive' : 'True positive'),

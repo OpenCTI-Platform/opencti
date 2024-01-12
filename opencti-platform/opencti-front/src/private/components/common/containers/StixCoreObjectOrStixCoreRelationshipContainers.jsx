@@ -131,16 +131,6 @@ const StixCoreObjectOrStixCoreRelationshipContainers = ({
     },
   };
 
-  const defaultHandleAddFilter = (
-    inputKey,
-    id,
-    op = 'eq',
-    event = undefined,
-  ) => {
-    const key = inputKey === 'container_type' ? 'entity_type' : inputKey;
-    helpers.handleAddFilter(key, id, op, event);
-  };
-
   const renderLines = () => {
     return (
       <ListLines
@@ -150,7 +140,7 @@ const StixCoreObjectOrStixCoreRelationshipContainers = ({
         dataColumns={dataColumns}
         handleSort={helpers.handleSort}
         handleSearch={helpers.handleSearch}
-        handleAddFilter={defaultHandleAddFilter}
+        handleAddFilter={helpers.handleAddFilter}
         handleRemoveFilter={helpers.handleRemoveFilter}
         handleSwitchGlobalMode={helpers.handleSwitchGlobalMode}
         handleSwitchLocalMode={helpers.handleSwitchLocalMode}
@@ -169,7 +159,7 @@ const StixCoreObjectOrStixCoreRelationshipContainers = ({
         enableGraph={true}
         availableFilterKeys={[
           'report_types',
-          'container_type',
+          'entity_type',
           'confidence',
           'workflow_id',
           'objectLabel',
@@ -187,7 +177,7 @@ const StixCoreObjectOrStixCoreRelationshipContainers = ({
               paginationOptions={queryPaginationOptions}
               dataColumns={dataColumns}
               initialLoading={props === null}
-              onLabelClick={defaultHandleAddFilter}
+              onLabelClick={helpers.handleAddFilter}
               setNumberOfElements={helpers.handleSetNumberOfElements}
               redirectionMode={redirectionMode}
             />
@@ -203,7 +193,7 @@ const StixCoreObjectOrStixCoreRelationshipContainers = ({
       'createdBy',
       'objectMarking',
       'created',
-      'container_type',
+      'entity_type',
       'report_types',
     ];
     return (
@@ -230,7 +220,7 @@ const StixCoreObjectOrStixCoreRelationshipContainers = ({
             <Filters
               helpers={helpers}
               availableFilterKeys={availableFilterKeys}
-              handleAddFilter={defaultHandleAddFilter}
+              handleAddFilter={helpers.handleAddFilter}
             />
           </Box>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>

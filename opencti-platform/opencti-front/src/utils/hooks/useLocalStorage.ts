@@ -586,10 +586,7 @@ export const usePaginationLocalStorage = <U>(
     filters = {
       ...paginationOptions.filters,
       filters: removeEmptyFilter.map((filter: Filter) => {
-        const removeIdFromFilter = {
-          ...filter,
-          key: filter.key === 'container_type' ? 'entity_type' : filter.key,
-        };
+        const removeIdFromFilter = { ...filter };
         delete removeIdFromFilter.id;
         return removeIdFromFilter;
       }),

@@ -45,7 +45,6 @@ export const directFilters = [
   'channel_types',
   'pattern_type',
   'sightedBy',
-  'container_type',
   'toSightingId',
   'x_opencti_negative',
   'fromId',
@@ -58,7 +57,6 @@ export const directFilters = [
   'containers',
   'objectContains',
   'entity_type',
-  'container_type',
   'elementWithTargetTypes',
 ];
 export const inlineFilters = ['is_read', 'trigger_type', 'instance_trigger'];
@@ -164,7 +162,6 @@ export const entityTypesFilters = [
   'fromTypes',
   'toTypes',
   'relationship_types',
-  'container_type',
   'contextEntityType',
 ];
 
