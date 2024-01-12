@@ -31,6 +31,7 @@ export const CONNECTED_TO_INSTANCE_SIDE_EVENTS_FILTER = 'connectedToId_sideEvent
 
 // Values that do not need resolution when matching against stix object
 export const TYPE_FILTER = 'entity_type';
+export const RELATION_TYPE_FILTER = 'relationship_type';
 export const INDICATOR_FILTER = 'indicator_types';
 export const SCORE_FILTER = 'x_opencti_score';
 export const DETECTION_FILTER = 'x_opencti_detection';
@@ -65,6 +66,7 @@ export const MEMBERS_ORGANIZATION_FILTER = 'members_organization';
 export const complexConversionFilterKeys = [
   IDS_FILTER, // values should match any id (internal_id, standard_id, or stix_id)
   TYPE_FILTER, // values should match any parent_types
+  RELATION_TYPE_FILTER, // values should match any parent_types
   INSTANCE_REGARDING_OF,
   WORKFLOW_FILTER, // values should match the parent workflow pattern id
   X_OPENCTI_WORKFLOW_ID, // values should match the parent workflow pattern id

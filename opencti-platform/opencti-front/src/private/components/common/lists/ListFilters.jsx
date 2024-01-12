@@ -30,7 +30,6 @@ const ListFilters = ({
   variant,
   type,
   helpers,
-  noDirectFilters,
 }) => {
   const { t } = useFormatter();
   const [inputValue, setInputValue] = React.useState('');

@@ -42,7 +42,7 @@ import ExportButtons from '../../../../components/ExportButtons';
 import Filters from '../lists/Filters';
 import { usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStorage';
 import type { Theme } from '../../../../components/Theme';
-import { emptyFilterGroup, removeFilter, removeIdFromFilterGroupObject, extractAllValueFromFilters, getDefaultFilterObject } from '../../../../utils/filters/filtersUtils';
+import { emptyFilterGroup, FilterGroup, getDefaultFilterObject, isFilterGroupNotEmpty, removeIdFromFilterGroupObject } from '../../../../utils/filters/filtersUtils';
 import FilterIconButton from '../../../../components/FilterIconButton';
 
 const useStyles = makeStyles<Theme>((theme) => ({
@@ -137,7 +137,37 @@ StixDomainObjectThreatKnowledgeProps
 > = ({ stixDomainObjectId, stixDomainObjectType, displayObservablesStats }) => {
   const classes = useStyles();
   const { n, t } = useFormatter();
+  const [viewType, setViewType] = useState('timeline');
+  const [timeField, setTimeField] = useState('technical');
+  const [nestedRelationships, setNestedRelationships] = useState(false);
+  const [openTimeField, setOpenTimeField] = useState(false);
+  const [anchorEl, setAnchorEl] = useState<Element | null>(null);
+
   const LOCAL_STORAGE_KEY = `stix-domain-object-${stixDomainObjectId}`;
+  const link = `${resolveLink(stixDomainObjectType)}/${stixDomainObjectId}/knowledge`;
+
+  let toTypes = ['Attack-Pattern', 'Malware', 'Tool', 'Vulnerability'];
+  if (viewType === 'timeline') {
+    toTypes = [
+      'Attack-Pattern',
+      'Campaign',
+      'Incident',
+      'Malware',
+      'Tool',
+      'Vulnerability',
+      'Narrative',
+      'Channel',
+      'Sector',
+      'Organization',
+      'Individual',
+      'Region',
+      'Country',
+      'City',
+      'Note',
+      'Event',
+    ];
+  }
+
   const {
     viewStorage,
     helpers,
@@ -150,7 +180,10 @@ StixDomainObjectThreatKnowledgeProps
         filters: [
           {
             ...getDefaultFilterObject('elementWithTargetTypes'),
-            values: ['all'],
+            // For now its impossible to use the current element type for filtering
+            // The filter will be always true as the element is always part of the relations
+            // TODO Implement a new composite filter for relationships
+            values: toTypes.filter((type) => type !== stixDomainObjectType),
           },
         ],
       },
@@ -159,14 +192,8 @@ StixDomainObjectThreatKnowledgeProps
       orderAsc: false,
       openExports: false,
     },
-    [],
   );
   const { filters } = viewStorage;
-  const [viewType, setViewType] = useState('timeline');
-  const [timeField, setTimeField] = useState('technical');
-  const [nestedRelationships, setNestedRelationships] = useState(false);
-  const [openTimeField, setOpenTimeField] = useState(false);
-  const [anchorEl, setAnchorEl] = useState<Element | null>(null);
 
   const handleChangeViewType = (type: string) => {
     if (type) {
@@ -181,9 +208,7 @@ StixDomainObjectThreatKnowledgeProps
     );
   };
 
-  const handleChangeNestedRelationships = (
-    event: React.ChangeEvent<HTMLInputElement>,
-  ) => {
+  const handleChangeNestedRelationships = (event: React.ChangeEvent<HTMLInputElement>) => {
     setNestedRelationships(event.target.checked);
     setTimeField(event.target.checked ? 'technical' : timeField);
   };
@@ -197,66 +222,32 @@ StixDomainObjectThreatKnowledgeProps
     setOpenTimeField(false);
   };
 
-  const link = `${resolveLink(
-    stixDomainObjectType,
-  )}/${stixDomainObjectId}/knowledge`;
-  const buildPaginationOptions = () => {
-    let toTypes: string[];
-    const entityTypeFilters = extractAllValueFromFilters(
-      filters?.filters ?? [],
-      'elementWithTargetTypes',
-    );
-    if (entityTypeFilters && entityTypeFilters.values.length > 0) {
-      if (entityTypeFilters.values.filter((id) => id === 'all').length > 0) {
-        toTypes = [];
-      } else {
-        toTypes = entityTypeFilters.values;
-      }
-    } else if (viewType === 'timeline') {
-      toTypes = [
-        'Attack-Pattern',
-        'Campaign',
-        'Incident',
-        'Malware',
-        'Tool',
-        'Vulnerability',
-        'Narrative',
-        'Channel',
-        'Sector',
-        'Organization',
-        'Individual',
-        'Region',
-        'Country',
-        'City',
-        'Note',
-        'Event',
-      ];
-    } else {
-      toTypes = ['Attack-Pattern', 'Malware', 'Tool', 'Vulnerability'];
-    }
-    const finalFilters = filters
-      ? removeFilter(filters, 'elementWithTargetTypes')
-      : undefined;
-    const finalPaginationOptions = {
-      ...rawPaginationOptions,
-      fromOrToId: stixDomainObjectId,
-      elementWithTargetTypes: toTypes.filter(
-        (x) => x.toLowerCase() !== stixDomainObjectType,
-      ),
-      filters: removeIdFromFilterGroupObject(finalFilters),
-    };
-    if (viewType === 'timeline') {
-      finalPaginationOptions.relationship_type = nestedRelationships
-        ? ['stix-relationship']
-        : ['stix-core-relationship', 'stix-sighting-relationship'];
-      finalPaginationOptions.orderBy = timeField === 'technical' ? 'created_at' : 'start_time';
-      finalPaginationOptions.orderMode = 'desc';
-    } else {
-      finalPaginationOptions.relationship_type = ['uses'];
-    }
-    return finalPaginationOptions;
+  let relationshipTypes = ['uses'];
+  let paginationOrderBy = rawPaginationOptions.orderBy;
+  let paginationOrderMode = rawPaginationOptions.orderMode;
+  if (viewType === 'timeline') {
+    paginationOrderBy = timeField === 'technical' ? 'created_at' : 'start_time';
+    paginationOrderMode = 'desc';
+    relationshipTypes = nestedRelationships
+      ? ['stix-relationship']
+      : ['stix-core-relationship', 'stix-sighting-relationship'];
+  }
+  const userFilters = removeIdFromFilterGroupObject(filters);
+  const contextFilters: FilterGroup = {
+    mode: 'and',
+    filters: [
+      { key: 'relationship_type', operator: 'eq', mode: 'or', values: relationshipTypes },
+      { key: 'fromOrToId', operator: 'eq', mode: 'or', values: [stixDomainObjectId] },
+    ],
+    filterGroups: userFilters && isFilterGroupNotEmpty(userFilters) ? [userFilters] : [],
   };
-  const paginationOptions = buildPaginationOptions();
+  const queryPaginationOptions = {
+    ...rawPaginationOptions,
+    orderMode: paginationOrderMode,
+    orderBy: paginationOrderBy,
+    filters: contextFilters,
+  };
+
   return (
     <>
       <Grid container={true} spacing={3}>
@@ -515,7 +506,7 @@ StixDomainObjectThreatKnowledgeProps
       />
       <QueryRenderer
         query={stixDomainObjectThreatKnowledgeStixRelationshipsQuery}
-        variables={{ first: 500, ...paginationOptions }}
+        variables={{ first: 500, ...queryPaginationOptions }}
         render={({
           props,
         }: {
@@ -527,7 +518,7 @@ StixDomainObjectThreatKnowledgeProps
                 <StixDomainObjectGlobalKillChain
                   data={props}
                   entityLink={link}
-                  paginationOptions={paginationOptions}
+                  paginationOptions={queryPaginationOptions}
                   stixDomainObjectId={stixDomainObjectId}
                 />
               );
@@ -536,7 +527,7 @@ StixDomainObjectThreatKnowledgeProps
               <StixDomainObjectTimeline
                 data={props}
                 entityLink={link}
-                paginationOptions={paginationOptions}
+                paginationOptions={queryPaginationOptions}
                 stixDomainObjectId={stixDomainObjectId}
                 timeField={timeField}
               />

@@ -103,6 +103,7 @@ import {
   RELATION_TO_ROLE_FILTER,
   RELATION_TO_SIGHTING_FILTER,
   RELATION_TO_TYPES_FILTER,
+  RELATION_TYPE_FILTER,
   SOURCE_RELIABILITY_FILTER,
   TYPE_FILTER,
   WORKFLOW_FILTER,
@@ -1680,7 +1681,7 @@ const buildSubQueryForFilterGroup = async (context, user, inputFilters) => {
 const adaptFilterToEntityTypeFilterKey = (filter) => {
   const { key, mode = 'or', operator = 'eq' } = filter;
   const arrayKeys = Array.isArray(key) ? key : [key];
-  if (arrayKeys[0] !== TYPE_FILTER || arrayKeys.length > 1) {
+  if (arrayKeys.length > 1) {
     throw UnsupportedError('A filter with these multiple keys is not supported', { keys: arrayKeys });
   }
   // at this point arrayKeys === ['entity_type']
@@ -1864,7 +1865,7 @@ const adaptFilterToWorkflowFilterKey = async (context, user, filter) => {
   const { key, mode = 'or', operator = 'eq', values } = filter;
   const arrayKeys = Array.isArray(key) ? key : [key];
   if (arrayKeys[0] !== WORKFLOW_FILTER || arrayKeys.length > 1) {
-    throw Error(`A filter with these multiple keys is not supported: ${arrayKeys}`);
+    throw UnsupportedError(`A filter with these multiple keys is not supported: ${arrayKeys}`);
   }
   if (operator === 'nil' || operator === 'not_nil') { // no status template <-> no status // at least a status template <-> at least a status
     return {
@@ -1951,7 +1952,7 @@ const completeSpecialFilterKeys = async (context, user, inputFilters) => {
           finalFilterGroups.push(newFilterGroup);
         }
       }
-      if (arrayKeys.includes(TYPE_FILTER)) {
+      if (arrayKeys.includes(TYPE_FILTER) || arrayKeys.includes(RELATION_TYPE_FILTER)) {
         // in case we want to filter by entity_type
         // we need to add parent_types checking (in case the given value in type is an abstract type)
         const { newFilter, newFilterGroup } = adaptFilterToEntityTypeFilterKey(filter);
