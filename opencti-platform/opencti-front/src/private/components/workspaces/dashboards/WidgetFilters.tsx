@@ -139,7 +139,7 @@ const WidgetFilters: FunctionComponent<WidgetFiltersProps> = ({ perspective, typ
     </>)}
   </Box>
     <Box sx={{ paddingTop: 1 }}>
-      { isFilterGroupNotEmpty(filtersDynamicFrom) ? (
+      { isFilterGroupNotEmpty(filtersDynamicFrom) && (
         <>
           <div style={{
             marginTop: 8,
@@ -152,8 +152,8 @@ const WidgetFilters: FunctionComponent<WidgetFiltersProps> = ({ perspective, typ
             chipColor={'warning'}
           />
         </>
-      ) : '-' }
-      { isFilterGroupNotEmpty(filtersDynamicTo) ? (
+      )}
+      { isFilterGroupNotEmpty(filtersDynamicTo) && (
         <>
           <div style={{
             marginTop: 8,
@@ -166,7 +166,7 @@ const WidgetFilters: FunctionComponent<WidgetFiltersProps> = ({ perspective, typ
             chipColor={'success'}
           />
         </>
-      ) : '-' }
+      )}
       <div style={{ marginTop: 8 }}>{t('Result: the relationships with source respecting the source pre-query, target respecting the target pre-query, and matching:')}</div>
       { isFilterGroupNotEmpty(filters) && (
         <FilterIconButton
