@@ -177,6 +177,7 @@ import { convertExternalReferenceToStix, convertStoreToStix } from './stix-conve
 import {
   buildAggregationRelationFilter,
   buildEntityFilters,
+  buildThingsFilters,
   internalFindByIds,
   internalLoadById,
   listAllRelations,
@@ -357,12 +358,12 @@ export const loadThroughGetTo = async (context, user, sources, relationType, tar
 // Standard listing
 export const listThings = async (context, user, thingsTypes, args = {}) => {
   const { indices = READ_DATA_INDICES } = args;
-  const paginateArgs = buildEntityFilters(thingsTypes, args);
+  const paginateArgs = buildThingsFilters(thingsTypes, args);
   return elPaginate(context, user, indices, paginateArgs);
 };
 export const listAllThings = async (context, user, thingsTypes, args = {}) => {
   const { indices = READ_DATA_INDICES } = args;
-  const paginateArgs = buildEntityFilters(thingsTypes, args);
+  const paginateArgs = buildThingsFilters(thingsTypes, args);
   return elList(context, user, indices, paginateArgs);
 };
 export const paginateAllThings = async (context, user, thingsTypes, args = {}) => {

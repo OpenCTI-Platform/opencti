@@ -1,7 +1,7 @@
 import * as R from 'ramda';
-import { buildPagination, isNotEmptyField, READ_DATA_INDICES, READ_DATA_INDICES_WITHOUT_INFERRED, READ_ENTITIES_INDICES, READ_RELATIONSHIPS_INDICES } from './utils';
+import { buildPagination, isEmptyField, isNotEmptyField, READ_DATA_INDICES, READ_DATA_INDICES_WITHOUT_INFERRED, READ_ENTITIES_INDICES, READ_RELATIONSHIPS_INDICES } from './utils';
 import { elAggregationsList, elCount, elFindByIds, elList, elLoadById, elPaginate } from './engine';
-import { ABSTRACT_STIX_CORE_OBJECT, buildRefRelationKey } from '../schema/general';
+import { ABSTRACT_STIX_CORE_OBJECT, ABSTRACT_STIX_CORE_RELATIONSHIP, ABSTRACT_STIX_OBJECT, ABSTRACT_STIX_RELATIONSHIP, buildRefRelationKey } from '../schema/general';
 import type { AuthContext, AuthUser } from '../types/user';
 import type { BasicStoreBase, BasicStoreCommon, BasicStoreEntity, BasicStoreObject, StoreEntityConnection, StoreProxyRelation } from '../types/store';
 import { FunctionalError, UnsupportedError } from '../config/errors';
@@ -146,8 +146,8 @@ export const buildAggregationFilter = <T extends BasicStoreCommon>(args: Relatio
   return { filters: { mode: 'and', filters: filtersContent, filterGroups: [] } };
 };
 
-export const buildRelationsFilter = <T extends BasicStoreCommon>(types: string | Array<string>, args: RelationFilters<T>) => {
-  const typesRestriction = Array.isArray(types) ? types : [types ?? 'stix-core-relationship'];
+export const buildRelationsFilter = <T extends BasicStoreCommon>(relationTypes: string | Array<string> | undefined, args: RelationFilters<T>) => {
+  const types = !relationTypes || isEmptyField(relationTypes) ? [ABSTRACT_STIX_CORE_RELATIONSHIP] : relationTypes;
   const {
     relationFilter,
     filters = undefined,
@@ -255,7 +255,7 @@ export const buildRelationsFilter = <T extends BasicStoreCommon>(types: string |
   }
   return {
     ...cleanedArgs,
-    types: typesRestriction,
+    types: Array.isArray(types) ? types : [types],
     filters: computedFilters,
   };
 };
@@ -279,8 +279,13 @@ export const buildAggregationRelationFilter = <T extends BasicStoreCommon>(relat
 };
 
 // entities
-export const buildEntityFilters = <T extends BasicStoreCommon>(entityTypes: string | Array<string>, args: EntityFilters<T> = {}) => {
-  const types = Array.isArray(entityTypes) ? entityTypes : [entityTypes || ABSTRACT_STIX_CORE_OBJECT];
+export const buildEntityFilters = <T extends BasicStoreCommon>(entityTypes: string | Array<string> | undefined, args: EntityFilters<T> = {}) => {
+  const types = !entityTypes || isEmptyField(entityTypes) ? [ABSTRACT_STIX_CORE_OBJECT] : entityTypes;
+  return buildRelationsFilter(types, args);
+};
+
+export const buildThingsFilters = <T extends BasicStoreCommon>(thingTypes: string | Array<string> | undefined, args: RelationFilters<T> = {}) => {
+  const types = !thingTypes || isEmptyField(thingTypes) ? [ABSTRACT_STIX_OBJECT, ABSTRACT_STIX_RELATIONSHIP] : thingTypes;
   return buildRelationsFilter(types, args);
 };
 
