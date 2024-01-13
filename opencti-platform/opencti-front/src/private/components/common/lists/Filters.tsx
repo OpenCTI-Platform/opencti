@@ -43,7 +43,6 @@ const Filters: FunctionComponent<FiltersProps> = ({
   allEntityTypes,
   handleAddFilter,
   handleRemoveFilter,
-  handleSwitchFilter,
   handleSwitchGlobalMode,
   handleSwitchLocalMode,
   searchContext,
@@ -179,20 +178,9 @@ const Filters: FunctionComponent<FiltersProps> = ({
           handleCloseFilters={handleCloseFilters}
           open={open}
           anchorEl={anchorEl}
-          availableFilterKeys={availableFilterKeys}
           filterElement={filterElement}
-          searchContext={searchContext}
           variant={variant}
           type={type}
-          inputValues={inputValues}
-          setInputValues={setInputValues}
-          defaultHandleAddFilter={defaultHandleAddFilter}
-          defaultHandleRemoveFilter={defaultHandleRemoveFilter}
-          handleSwitchFilter={handleSwitchFilter}
-          availableEntityTypes={availableEntityTypes}
-          availableRelationshipTypes={availableRelationshipTypes}
-          availableRelationFilterTypes={availableRelationFilterTypes}
-          allEntityTypes={allEntityTypes}
         />
       )}
     </>

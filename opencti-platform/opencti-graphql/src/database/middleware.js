@@ -56,7 +56,6 @@ import {
   elUpdateEntityConnections,
   elUpdateRelationConnections,
   ES_MAX_CONCURRENCY,
-  ES_MAX_PAGINATION,
   isImpactedTypeAndSide,
   MAX_BULK_OPERATIONS,
   ROLE_FROM,
@@ -2492,10 +2491,6 @@ const buildRelationDeduplicationFilters = (input) => {
     }
   }
   return filters;
-};
-
-export const buildDynamicFilterArgs = (inputFilters) => {
-  return { connectionFormat: false, first: ES_MAX_PAGINATION, filters: inputFilters };
 };
 
 const upsertElement = async (context, user, element, type, basePatch, opts = {}) => {

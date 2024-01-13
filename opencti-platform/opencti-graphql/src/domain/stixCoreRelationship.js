@@ -3,7 +3,6 @@ import { delEditContext, notify, setEditContext } from '../database/redis';
 import {
   batchListThroughGetFrom,
   batchListThroughGetTo,
-  buildDynamicFilterArgs,
   createRelation,
   deleteElementById,
   deleteRelationsByFromAndTo,
@@ -16,7 +15,7 @@ import { FunctionalError } from '../config/errors';
 import { elCount } from '../database/engine';
 import { fillTimeSeries, isNotEmptyField, READ_INDEX_INFERRED_RELATIONSHIPS, READ_INDEX_STIX_CORE_RELATIONSHIPS } from '../database/utils';
 import { isStixCoreRelationship, stixCoreRelationshipOptions } from '../schema/stixCoreRelationship';
-import { ABSTRACT_STIX_CORE_OBJECT, ABSTRACT_STIX_CORE_RELATIONSHIP, buildRefRelationKey, ENTITY_TYPE_CONTAINER, ENTITY_TYPE_IDENTITY } from '../schema/general';
+import { ABSTRACT_STIX_CORE_RELATIONSHIP, buildRefRelationKey, ENTITY_TYPE_CONTAINER, ENTITY_TYPE_IDENTITY } from '../schema/general';
 import {
   RELATION_CREATED_BY,
   RELATION_EXTERNAL_REFERENCE,
@@ -27,12 +26,13 @@ import {
 } from '../schema/stixRefRelationship';
 import { ENTITY_TYPE_CONTAINER_NOTE, ENTITY_TYPE_CONTAINER_OPINION, ENTITY_TYPE_CONTAINER_REPORT } from '../schema/stixDomainObject';
 import { ENTITY_TYPE_EXTERNAL_REFERENCE, ENTITY_TYPE_KILL_CHAIN_PHASE, ENTITY_TYPE_LABEL, ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
-import { buildRelationsFilter, listEntities, listRelations, storeLoadById } from '../database/middleware-loader';
+import { buildRelationsFilter, listRelations, storeLoadById } from '../database/middleware-loader';
 import { askListExport, exportTransformFilters } from './stix';
 import { workToExportFile } from './work';
 import { ENTITY_TYPE_CONTAINER_CASE } from '../modules/case/case-types';
 import { stixObjectOrRelationshipAddRefRelation, stixObjectOrRelationshipAddRefRelations, stixObjectOrRelationshipDeleteRefRelation } from './stixObjectOrStixRelationship';
-import { addFilter, isFilterGroupNotEmpty } from '../utils/filtering/filtering-utils';
+import { addFilter } from '../utils/filtering/filtering-utils';
+import { buildArgsFromDynamicFilters } from './stixRelationship';
 
 export const findAll = async (context, user, args) => {
   return listRelations(context, user, R.propOr(ABSTRACT_STIX_CORE_RELATIONSHIP, 'relationship_type', args), args);
@@ -47,63 +47,12 @@ export const findById = (context, user, stixCoreRelationshipId) => {
 export const stixCoreRelationshipsDistribution = async (context, user, args) => {
   // it's not possible to have a dynamicFrom and dynamicTo in args here for the moment
   // consider adding these fields in opencti.graphql if you want to use them
-  const { dynamicFrom, dynamicTo } = args;
-  let finalArgs = args;
-  if (isFilterGroupNotEmpty(dynamicFrom)) {
-    const fromIds = await listEntities(context, user, [ABSTRACT_STIX_CORE_OBJECT], buildDynamicFilterArgs(dynamicFrom))
-      .then((result) => result.map((n) => n.id));
-    if (fromIds.length > 0) {
-      finalArgs = { ...finalArgs, fromId: args.fromId ? [...fromIds, args.fromId] : fromIds };
-    } else {
-      return [];
-    }
-  } else {
-    finalArgs = { ...finalArgs, dynamicFrom: undefined };
-  }
-  if (isFilterGroupNotEmpty(dynamicTo)) {
-    const toIds = await listEntities(context, user, [ABSTRACT_STIX_CORE_OBJECT], buildDynamicFilterArgs(dynamicTo))
-      .then((result) => result.map((n) => n.id));
-    if (toIds.length > 0) {
-      finalArgs = { ...finalArgs, toId: args.toId ? [...toIds, args.toId] : toIds };
-    } else {
-      return [];
-    }
-  } else {
-    finalArgs = { ...finalArgs, dynamicTo: undefined };
-  }
+  const finalArgs = await buildArgsFromDynamicFilters(context, user, args, []);
   return distributionRelations(context, context.user, finalArgs);
 };
 export const stixCoreRelationshipsNumber = async (context, user, args) => {
-  const { relationship_type = [ABSTRACT_STIX_CORE_RELATIONSHIP], dynamicFrom, dynamicTo, authorId } = args;
-  let finalArgs = args;
-  if (isFilterGroupNotEmpty(dynamicFrom)) {
-    const fromIds = await listEntities(context, user, [ABSTRACT_STIX_CORE_OBJECT], buildDynamicFilterArgs(dynamicFrom))
-      .then((result) => result.map((n) => n.id));
-    if (fromIds.length > 0) {
-      finalArgs = { ...finalArgs, fromId: args.fromId ? [...fromIds, args.fromId] : fromIds };
-    } else {
-      return {
-        count: 0,
-        total: 0
-      };
-    }
-  } else {
-    finalArgs = { ...finalArgs, dynamicFrom: undefined };
-  }
-  if (isFilterGroupNotEmpty(dynamicTo)) {
-    const toIds = await listEntities(context, user, [ABSTRACT_STIX_CORE_OBJECT], buildDynamicFilterArgs(dynamicTo))
-      .then((result) => result.map((n) => n.id));
-    if (toIds.length > 0) {
-      finalArgs = { ...finalArgs, toId: args.toId ? [...toIds, args.toId] : toIds };
-    } else {
-      return {
-        count: 0,
-        total: 0
-      };
-    }
-  } else {
-    finalArgs = { ...finalArgs, dynamicTo: undefined };
-  }
+  const { relationship_type = [ABSTRACT_STIX_CORE_RELATIONSHIP], authorId } = args;
+  let finalArgs = await buildArgsFromDynamicFilters(context, user, args, { count: 0, total: 0 });
   if (isNotEmptyField(authorId)) {
     const filters = addFilter(args.filters, buildRefRelationKey(RELATION_CREATED_BY, '*'), authorId);
     finalArgs = { ...finalArgs, filters };
@@ -117,32 +66,10 @@ export const stixCoreRelationshipsNumber = async (context, user, args) => {
 };
 export const stixCoreRelationshipsMultiTimeSeries = async (context, user, args) => {
   return Promise.all(args.timeSeriesParameters.map(async (timeSeriesParameter) => {
-    const { dynamicFrom, dynamicTo } = timeSeriesParameter;
     const { startDate, endDate, interval } = args;
-    let finalTimeSeriesParameter = timeSeriesParameter;
-    if (isFilterGroupNotEmpty(dynamicFrom)) {
-      const fromIds = await listEntities(context, user, [ABSTRACT_STIX_CORE_OBJECT], buildDynamicFilterArgs(dynamicFrom))
-        .then((result) => result.map((n) => n.id));
-      if (fromIds.length > 0) {
-        finalTimeSeriesParameter = { ...finalTimeSeriesParameter, fromId: args.fromId ? [...fromIds, args.fromId] : fromIds };
-      } else {
-        return { data: fillTimeSeries(startDate, endDate, interval, []) };
-      }
-    } else {
-      finalTimeSeriesParameter = { ...finalTimeSeriesParameter, dynamicFrom: undefined };
-    }
-    if (isFilterGroupNotEmpty(dynamicTo)) {
-      const toIds = await listEntities(context, user, [ABSTRACT_STIX_CORE_OBJECT], buildDynamicFilterArgs(dynamicTo))
-        .then((result) => result.map((n) => n.id));
-      if (toIds.length > 0) {
-        finalTimeSeriesParameter = { ...finalTimeSeriesParameter, toId: args.toId ? [...toIds, args.toId] : toIds };
-      } else {
-        return { data: fillTimeSeries(startDate, endDate, interval, []) };
-      }
-    } else {
-      finalTimeSeriesParameter = { ...finalTimeSeriesParameter, dynamicTo: undefined };
-    }
-    return { data: timeSeriesRelations(context, user, { ...args, ...finalTimeSeriesParameter }) };
+    const defaultResult = { data: fillTimeSeries(startDate, endDate, interval, []) };
+    const finalArgs = await buildArgsFromDynamicFilters(context, user, timeSeriesParameter, defaultResult);
+    return { data: timeSeriesRelations(context, user, { ...args, ...finalArgs }) };
   }));
 };
 // endregion

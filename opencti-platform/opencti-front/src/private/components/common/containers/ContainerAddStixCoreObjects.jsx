@@ -94,10 +94,7 @@ const ContainerAddStixCoreObjects = (props) => {
 
   const [filters, setFilters] = useState(
     targetStixCoreObjectTypes
-        && !(
-          targetStixCoreObjectTypes.includes('Stix-Domain-Object')
-            || targetStixCoreObjectTypes.includes('Stix-Cyber-Observable')
-        )
+    && !(targetStixCoreObjectTypes.includes('Stix-Domain-Object') || targetStixCoreObjectTypes.includes('Stix-Cyber-Observable'))
       ? targetEntityTypesFilterGroup
       : emptyFilterGroup,
   );
@@ -162,9 +159,7 @@ const ContainerAddStixCoreObjects = (props) => {
     return (
       <StixDomainObjectCreation
         display={open}
-        inputValue={
-                    mapping && searchTerm.length === 0 ? selectedText : searchTerm
-                }
+        inputValue={mapping && searchTerm.length === 0 ? selectedText : searchTerm}
         paginationKey="Pagination_stixCoreObjects"
         paginationOptions={searchPaginationOptions}
         confidence={confidence}
@@ -183,9 +178,7 @@ const ContainerAddStixCoreObjects = (props) => {
       <StixCyberObservableCreation
         display={open}
         contextual={true}
-        inputValue={
-                    mapping && searchTerm.length === 0 ? selectedText : searchTerm
-                }
+        inputValue={mapping && searchTerm.length === 0 ? selectedText : searchTerm}
         paginationKey="Pagination_stixCoreObjects"
         paginationOptions={searchPaginationOptions}
         defaultCreatedBy={defaultCreatedBy}
@@ -228,9 +221,7 @@ const ContainerAddStixCoreObjects = (props) => {
         </SpeedDial>
         <StixDomainObjectCreation
           display={open}
-          inputValue={
-                        mapping && searchTerm.length === 0 ? selectedText : searchTerm
-                    }
+          inputValue={mapping && searchTerm.length === 0 ? selectedText : searchTerm}
           paginationKey="Pagination_stixCoreObjects"
           paginationOptions={searchPaginationOptions}
           confidence={confidence}
@@ -248,9 +239,7 @@ const ContainerAddStixCoreObjects = (props) => {
         <StixCyberObservableCreation
           display={open}
           contextual={true}
-          inputValue={
-                        mapping && searchTerm.length === 0 ? selectedText : searchTerm
-                    }
+          inputValue={mapping && searchTerm.length === 0 ? selectedText : searchTerm}
           paginationKey="Pagination_stixCoreObjects"
           paginationOptions={searchPaginationOptions}
           defaultCreatedBy={defaultCreatedBy}
@@ -350,9 +339,7 @@ const ContainerAddStixCoreObjects = (props) => {
               orderAsc={orderAsc}
               dataColumns={buildColumns(platformModuleHelpers)}
               handleSearch={setSearchTerm}
-              keyword={
-                                mapping && searchTerm.length === 0 ? selectedText : searchTerm
-                            }
+              keyword={mapping && searchTerm.length === 0 ? selectedText : searchTerm}
               handleSort={handleSort}
               handleAddFilter={handleAddFilter}
               handleRemoveFilter={handleRemoveFilter}
@@ -444,9 +431,7 @@ const ContainerAddStixCoreObjects = (props) => {
         onClick={() => setOpen(true)}
         color="secondary"
         aria-label="Add"
-        className={
-                    withPadding ? classes.createButtonWithPadding : classes.createButton
-                }
+        className={withPadding ? classes.createButtonWithPadding : classes.createButton}
       >
         <Add/>
       </Fab>
@@ -456,10 +441,7 @@ const ContainerAddStixCoreObjects = (props) => {
     setSearchTerm('');
     setFilters(
       targetStixCoreObjectTypes
-            && !(
-              targetStixCoreObjectTypes.includes('Stix-Domain-Object')
-                || targetStixCoreObjectTypes.includes('Stix-Cyber-Observable')
-            )
+            && !(targetStixCoreObjectTypes.includes('Stix-Domain-Object') || targetStixCoreObjectTypes.includes('Stix-Cyber-Observable'))
         ? targetEntityTypesFilterGroup
         : emptyFilterGroup,
     );
