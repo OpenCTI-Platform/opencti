@@ -45,7 +45,6 @@ interface FilterAutocompleteProps {
   availableEntityTypes?: string[];
   availableRelationshipTypes?: string[];
   availableRelationFilterTypes?: Record<string, string[]>;
-  allEntityTypes?: boolean;
   openOnFocus?: boolean;
 }
 
@@ -59,7 +58,6 @@ const FilterAutocomplete: FunctionComponent<FilterAutocompleteProps> = (props) =
     availableEntityTypes,
     availableRelationshipTypes,
     availableRelationFilterTypes,
-    allEntityTypes,
     openOnFocus,
   } = props;
   const { t } = useFormatter();
@@ -90,7 +88,6 @@ const FilterAutocomplete: FunctionComponent<FilterAutocompleteProps> = (props) =
     setInputValues,
     availableEntityTypes,
     availableRelationshipTypes,
-    allEntityTypes,
   }) as [
     Record<string, OptionValue[]>,
     (

@@ -291,7 +291,6 @@ const AlertLiveEdition: FunctionComponent<AlertLiveEditionProps> = ({
                   fontSize={undefined}
                   availableEntityTypes={undefined}
                   availableRelationshipTypes={undefined}
-                  allEntityTypes={undefined}
                   type={undefined}
                   availableRelationFilterTypes={undefined}
                 />

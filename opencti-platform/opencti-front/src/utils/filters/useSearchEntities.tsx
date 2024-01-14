@@ -266,7 +266,6 @@ export interface SearchEntitiesProps {
   searchContext: { entityTypes: string[]; elementId?: string[] };
   searchScope: Record<string, string[]>;
   setInputValues: (value: { key: string, values: string[], operator?: string }[]) => void;
-  allEntityTypes?: boolean;
 }
 
 const useSearchEntities = ({
@@ -275,7 +274,6 @@ const useSearchEntities = ({
   searchContext,
   searchScope,
   setInputValues,
-  allEntityTypes,
 }: {
   availableEntityTypes?: string[];
   availableRelationshipTypes?: string[];
@@ -284,7 +282,6 @@ const useSearchEntities = ({
   setInputValues: (
     value: { key: string; values: string[]; operator?: string }[],
   ) => void;
-  allEntityTypes?: boolean;
 }) => {
   const [entities, setEntities] = useState<Record<string, EntityValue[]>>({});
   const { t } = useFormatter();
@@ -887,13 +884,6 @@ const useSearchEntities = ({
               type: n,
             }))
             .sort((a, b) => a.label.localeCompare(b.label));
-          if (allEntityTypes) {
-            entitiesTypes.unshift({
-              label: t('entity_All'),
-              value: 'all',
-              type: 'entity',
-            });
-          }
           unionSetEntities(filterKey, entitiesTypes);
         } else {
           let result = [] as EntityWithLabelValue[];
@@ -954,13 +944,6 @@ const useSearchEntities = ({
             ];
           }
           const entitiesTypes = result.sort((a, b) => a.label.localeCompare(b.label));
-          if (allEntityTypes) {
-            entitiesTypes.unshift({
-              label: t('entity_All'),
-              value: 'all',
-              type: 'entity',
-            });
-          }
           unionSetEntities(filterKey, entitiesTypes);
         }
         break;

@@ -84,7 +84,6 @@ const WorkspaceTurnToContainerDialog: FunctionComponent<WorkspaceTurnToContainer
       'Case-Rfi',
       'Case-Rft',
     ],
-    allEntityTypes: false,
     availableRelationshipTypes: [],
     searchContext: { entityTypes: ['Container'] },
     searchScope: {},

@@ -17,7 +17,6 @@ interface FiltersProps {
   availableEntityTypes?: string[];
   availableRelationshipTypes?: string[];
   availableRelationFilterTypes?: Record<string, string[]>;
-  allEntityTypes?: boolean;
   handleAddFilter?: HandleAddFilter;
   handleRemoveFilter?: (key: string, id?: string) => void;
   handleSwitchFilter?: HandleAddFilter;
@@ -40,7 +39,6 @@ const Filters: FunctionComponent<FiltersProps> = ({
   availableEntityTypes,
   availableRelationshipTypes,
   availableRelationFilterTypes,
-  allEntityTypes,
   handleAddFilter,
   handleRemoveFilter,
   handleSwitchGlobalMode,
@@ -88,7 +86,6 @@ const Filters: FunctionComponent<FiltersProps> = ({
     ) => void,
     availableEntityTypes,
     availableRelationshipTypes,
-    allEntityTypes,
   });
   const handleOpenFilters = (event: React.SyntheticEvent) => {
     setOpen(true);
@@ -133,7 +130,6 @@ const Filters: FunctionComponent<FiltersProps> = ({
       availableEntityTypes={availableEntityTypes}
       availableRelationshipTypes={availableRelationshipTypes}
       availableRelationFilterTypes={availableRelationFilterTypes}
-      allEntityTypes={allEntityTypes}
     />
   );
   if (variant === FiltersVariant.dialog) {

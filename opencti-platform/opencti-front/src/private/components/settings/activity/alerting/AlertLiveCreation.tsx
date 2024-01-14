@@ -201,16 +201,6 @@ const TriggerActivityLiveCreation: FunctionComponent<TriggerLiveCreationProps> =
               'members_organization',
             ]}
             handleAddFilter={handleAddFilter}
-            handleRemoveFilter={undefined}
-            handleSwitchFilter={undefined}
-            disabled={undefined}
-            size={undefined}
-            fontSize={undefined}
-            availableEntityTypes={undefined}
-            availableRelationshipTypes={undefined}
-            allEntityTypes={undefined}
-            type={undefined}
-            availableRelationFilterTypes={undefined}
           />
         </div>
         <div className="clearfix"/>

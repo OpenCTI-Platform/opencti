@@ -442,7 +442,6 @@ StixDomainObjectThreatKnowledgeProps
             'targets',
           ]}
           handleAddFilter={helpers.handleAddFilter}
-          allEntityTypes={true}
         />
         <IconButton color="primary" onClick={handleOpenTimeField} size="small">
           <SettingsOutlined fontSize="small" />
