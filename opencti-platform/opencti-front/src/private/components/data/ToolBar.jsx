@@ -1863,7 +1863,8 @@ class ToolBar extends Component {
                         <ItemIcon type={element.entity_type} />
                       </ListItemIcon>
                       <ListItemText
-                        primary={truncate(defaultValue(element), 50)}
+                        style={{ overflowX: 'hidden', textOverflow: 'ellipsis' }}
+                        primary={defaultValue(element)}
                         secondary={truncate(
                           element.description
                             || element.x_opencti_description
@@ -1915,7 +1916,9 @@ class ToolBar extends Component {
                 >
                   {t('Name')}
                 </Typography>
-                {truncate(defaultValue(keptElement), 50)}
+                <div style={{ overflowX: 'hidden', textOverflow: 'ellipsis' }}>
+                  {defaultValue(keptElement)}
+                </div>
                 <Typography
                   variant="h3"
                   gutterBottom={true}
