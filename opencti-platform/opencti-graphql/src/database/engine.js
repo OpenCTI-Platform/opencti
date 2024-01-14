@@ -1358,7 +1358,7 @@ const BASE_SEARCH_ATTRIBUTES = [
   `${ATTRIBUTE_ABSTRACT}^5`,
   `${ATTRIBUTE_EXPLANATION}^5`,
   // Add all other attributes
-  ...schemaAttributesDefinition.getAllStringAttributes([
+  ...schemaAttributesDefinition.getSearchAttributes([
     ATTRIBUTE_NAME,
     ATTRIBUTE_DESCRIPTION,
     ATTRIBUTE_ABSTRACT,
@@ -2167,7 +2167,7 @@ const elQueryBodyBuilder = async (context, user, options) => {
   }
   return body;
 };
-export const elRawCount = (query) => {
+export const elRawCount = async (query) => {
   return engine.count(query)
     .then((data) => {
       return oebp(data).count;
