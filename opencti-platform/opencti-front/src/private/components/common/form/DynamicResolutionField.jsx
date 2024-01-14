@@ -18,6 +18,7 @@ import ItemBoolean from '../../../../components/ItemBoolean';
 import { convertFromStixType, convertToStixType } from '../../../../utils/String';
 import { useFormatter } from '../../../../components/i18n';
 import { defaultValue } from '../../../../utils/Graph';
+import { isEmptyField } from '../../../../utils/utils';
 
 const inlineStyles = {
   type: {
@@ -72,14 +73,19 @@ const DynamicResolutionField = ({
           .filter((n) => n.length > 1)
           .map((val) => {
             const filteredStixDomainObjects = stixDomainObjects.filter(
-              (n) => types.includes(convertFromStixType(n.type))
+              (n) => (types.includes(convertFromStixType(n.type))
+                  || types.includes(n.x_opencti_location_type)
+                  || types.includes(n.identity_class))
                 && (n.name === val.trim() || n.value === val.trim()),
             );
+
             if (filteredStixDomainObjects.length > 0) {
               const firstStixDomainObject = R.head(filteredStixDomainObjects);
+              const targetSelectedType = firstStixDomainObject.x_opencti_location_type
+                  ?? filteredStixDomainObjects.identity_class ?? firstStixDomainObject.type;
               return {
                 id: firstStixDomainObject.id,
-                type: convertFromStixType(firstStixDomainObject.type),
+                type: targetSelectedType,
                 name: defaultValue(firstStixDomainObject),
                 in_platform: null,
               };
@@ -215,13 +221,13 @@ const DynamicResolutionField = ({
                         <div style={inlineStyles.in_platform}>
                           <ItemBoolean
                             variant="inList"
-                            status={item.in_platform}
+                            status={isEmptyField(item.in_platform) || item.in_platform}
                             label={
                               // eslint-disable-next-line no-nested-ternary
                               item.in_platform
                                 ? t('In platform')
                                 : item.in_platform === null
-                                  ? t('N/A')
+                                  ? t('In workbench')
                                   : t('To create')
                             }
                           />
