@@ -1,5 +1,6 @@
 import {
   aliases,
+  baseType,
   created,
   createdAt,
   creators,
@@ -7,20 +8,25 @@ import {
   entityType,
   files,
   iAliasedIds,
+  id,
   identityClass,
   internalId,
   lang,
   modified,
+  parentTypes,
+  relationshipType,
   revoked,
   standardId,
   updatedAt,
   xOpenctiAliases,
-  xOpenctiStixIds
+  xOpenctiStixIds,
+  xOpenctiType
 } from '../schema/attribute-definition';
 import { xOpenctiLinkedTo } from '../schema/stixRefRelationship';
 
 export const INTERNAL_ATTRIBUTES = [
   // ID
+  id.name,
   internalId.name,
   standardId.name,
   xOpenctiStixIds.name,
@@ -33,14 +39,17 @@ export const INTERNAL_ATTRIBUTES = [
   // Technical
   created.name,
   entityType.name,
-  'relationship_type',
+  parentTypes.name,
+  entityLocationType.name,
+  baseType.name,
+  relationshipType.name,
+  xOpenctiType.name,
   identityClass.name,
   creators.name,
   files.name,
   lang.name,
   revoked.name,
   aliases.name,
-  entityLocationType.name,
   'i_inference_weight',
   'content_mapping',
   'caseTemplate',
