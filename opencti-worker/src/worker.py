@@ -25,8 +25,10 @@ from opentelemetry.sdk.resources import SERVICE_NAME, Resource
 from pika.adapters.blocking_connection import BlockingChannel
 from prometheus_client import start_http_server
 from pycti import OpenCTIApiClient
-from pycti.connector.opencti_connector_helper import (create_mq_ssl_context,
-                                                      get_config_variable)
+from pycti.connector.opencti_connector_helper import (
+    create_mq_ssl_context,
+    get_config_variable,
+)
 from requests.exceptions import RequestException, Timeout
 
 PROCESSING_COUNT: int = 4
@@ -278,7 +280,8 @@ class Consumer(Thread):  # pylint: disable=too-many-instance-attributes
         except RequestException:
             bundles_request_error_counter.add(1, {"origin": "opencti-worker"})
             self.worker_logger.error(
-                "Message NOT acknowledged", {"tag": delivery_tag, "type": "RequestException"}
+                "Message NOT acknowledged",
+                {"tag": delivery_tag, "type": "RequestException"},
             )
             cb = functools.partial(self.nack_message, channel, delivery_tag)
             connection.add_callback_threadsafe(cb)
@@ -288,7 +291,7 @@ class Consumer(Thread):  # pylint: disable=too-many-instance-attributes
             error = str(ex)
             error_msg = traceback.format_exc()
             if (
-                "LockError" in error_msg
+                "LOCK_ERROR" in error_msg
                 and self.processing_count < MAX_PROCESSING_COUNT
             ):
                 bundles_lock_error_counter.add(1)
@@ -298,7 +301,7 @@ class Consumer(Thread):  # pylint: disable=too-many-instance-attributes
                 time.sleep(sleep_jitter)
                 self.data_handler(connection, channel, delivery_tag, data)
             elif (
-                "MissingReferenceError" in error_msg
+                "MISSING_REFERENCE_ERROR" in error_msg
                 and self.processing_count < PROCESSING_COUNT
             ):
                 bundles_missing_reference_error_counter.add(1)
@@ -310,7 +313,7 @@ class Consumer(Thread):  # pylint: disable=too-many-instance-attributes
                     {"tag": delivery_tag, "count": self.processing_count},
                 )
                 self.data_handler(connection, channel, delivery_tag, data)
-            elif "MissingReferenceError" in error_msg:
+            elif "MISSING_REFERENCE_ERROR" in error_msg:
                 self.worker_logger.warning(error_msg)
                 self.processing_count = 0
                 cb = functools.partial(self.ack_message, channel, delivery_tag)
