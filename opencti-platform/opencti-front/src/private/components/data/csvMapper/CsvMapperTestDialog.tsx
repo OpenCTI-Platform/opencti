@@ -97,10 +97,10 @@ const CsvMapperTestDialog: FunctionComponent<CsvMapperTestDialogProps> = ({
         >
           <CustomFileUploader
             setFieldValue={(field, v) => onChange(field, v)}
-            label={'Your testing file (csv only, max 5MB)'}
+            label={'Your testing file limited to 100 lines (csv only, max 1MB)'}
             acceptMimeTypes={'text/csv'}
             // we limit the file size so the upload does not take too long for a simple test
-            sizeLimit={5000000}
+            sizeLimit={1000000}
           />
           <Tooltip
             title={t(

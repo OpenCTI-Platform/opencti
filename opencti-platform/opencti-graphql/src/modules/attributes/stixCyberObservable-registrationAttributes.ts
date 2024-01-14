@@ -153,16 +153,16 @@ const stixCyberObservablesAttributes: { [k: string]: Array<AttributeDefinition> 
     { name: 'policy_mappings', label: 'Policy mappings', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: true },
   ],
   [ENTITY_IPV4_ADDR]: [
-    { name: 'value', label: 'Value', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: true },
+    { name: 'value', label: 'Value', type: 'string', format: 'short', mandatoryType: 'external', editDefault: false, multiple: false, upsert: true, isFilterable: true },
   ],
   [ENTITY_IPV6_ADDR]: [
-    { name: 'value', label: 'Value', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: true },
+    { name: 'value', label: 'Value', type: 'string', format: 'short', mandatoryType: 'external', editDefault: false, multiple: false, upsert: true, isFilterable: true },
   ],
   [ENTITY_MAC_ADDR]: [
-    { name: 'value', label: 'Value', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: true },
+    { name: 'value', label: 'Value', type: 'string', format: 'short', mandatoryType: 'external', editDefault: false, multiple: false, upsert: true, isFilterable: true },
   ],
   [ENTITY_MUTEX]: [
-    { name: 'name', label: 'Name', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: true },
+    { name: 'name', label: 'Name', type: 'string', format: 'short', mandatoryType: 'external', editDefault: false, multiple: false, upsert: true, isFilterable: true },
   ],
   [ENTITY_NETWORK_TRAFFIC]: [
     { name: 'extensions', label: 'Extensions', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: true },
@@ -254,27 +254,27 @@ const stixCyberObservablesAttributes: { [k: string]: Array<AttributeDefinition> 
     { name: 'data_type', label: 'Data type', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: true },
   ],
   [ENTITY_CRYPTOGRAPHIC_KEY]: [
-    { name: 'value', label: 'Value', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: true },
+    { name: 'value', label: 'Value', type: 'string', format: 'short', mandatoryType: 'external', editDefault: false, multiple: false, upsert: true, isFilterable: true },
   ],
   [ENTITY_CRYPTOGRAPHIC_WALLET]: [
-    { name: 'value', label: 'Value', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: true },
+    { name: 'value', label: 'Value', type: 'string', format: 'short', mandatoryType: 'external', editDefault: false, multiple: false, upsert: true, isFilterable: true },
   ],
   [ENTITY_HOSTNAME]: [
-    { name: 'value', label: 'Value', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: true },
+    { name: 'value', label: 'Value', type: 'string', format: 'short', mandatoryType: 'external', editDefault: false, multiple: false, upsert: true, isFilterable: true },
   ],
   [ENTITY_TEXT]: [
-    { name: 'value', label: 'Value', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: true },
+    { name: 'value', label: 'Value', type: 'string', format: 'short', mandatoryType: 'external', editDefault: false, multiple: false, upsert: true, isFilterable: true },
   ],
   [ENTITY_USER_AGENT]: [
-    { name: 'value', label: 'Value', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: true },
+    { name: 'value', label: 'Value', type: 'string', format: 'short', mandatoryType: 'external', editDefault: false, multiple: false, upsert: true, isFilterable: true },
   ],
   [ENTITY_BANK_ACCOUNT]: [
-    { name: 'iban', label: 'IBAN', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: true },
+    { name: 'iban', label: 'IBAN', type: 'string', format: 'short', mandatoryType: 'external', editDefault: false, multiple: false, upsert: true, isFilterable: true },
     { name: 'bic', label: 'BIC', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: true },
     { name: 'account_number', label: 'Account number', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true },
   ],
   [ENTITY_PHONE_NUMBER]: [
-    { name: 'value', label: 'Value', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: true },
+    { name: 'value', label: 'Value', type: 'string', format: 'short', mandatoryType: 'external', editDefault: false, multiple: false, upsert: true, isFilterable: true },
   ],
   [ENTITY_PAYMENT_CARD]: [
     { name: 'card_number', label: 'Card number', type: 'string', format: 'short', mandatoryType: 'external', editDefault: true, multiple: false, upsert: false, isFilterable: true },

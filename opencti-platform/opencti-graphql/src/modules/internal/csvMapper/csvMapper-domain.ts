@@ -9,17 +9,14 @@ import { parseCsvMapper } from './csvMapper-utils';
 // -- UTILS --
 
 export const csvMapperTest = async (context: AuthContext, user: AuthUser, configuration: string, content: string) => {
-  try {
-    const csvMapper = parseCsvMapper(JSON.parse(configuration));
-    const bundle = await bundleProcess(context, user, Buffer.from(content), csvMapper);
-    return {
-      objects: JSON.stringify(bundle.objects, null, 2),
-      nbRelationships: bundle.objects.filter((object) => object.type === 'relationship').length,
-      nbEntities: bundle.objects.filter((object) => object.type !== 'relationship').length,
-    };
-  } catch (error: any) {
-    return error.stack;
-  }
+  const limitedTestingText = content.split(/\r?\n/).slice(0, 100).join('\n'); // Get 100 lines max
+  const csvMapper = parseCsvMapper(JSON.parse(configuration));
+  const bundle = await bundleProcess(context, user, Buffer.from(limitedTestingText), csvMapper);
+  return {
+    objects: JSON.stringify(bundle.objects, null, 2),
+    nbRelationships: bundle.objects.filter((object) => object.type === 'relationship').length,
+    nbEntities: bundle.objects.filter((object) => object.type !== 'relationship').length,
+  };
 };
 
 // -- CRUD --
