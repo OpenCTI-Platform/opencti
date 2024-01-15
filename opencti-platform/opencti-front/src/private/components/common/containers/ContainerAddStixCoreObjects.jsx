@@ -188,7 +188,7 @@ const ContainerAddStixCoreObjects = (props) => {
   };
   const renderStixCoreObjectCreation = (searchPaginationOptions) => {
     return (
-      <div>
+      <>
         <SpeedDial
           className={classes.createButton}
           ariaLabel="Create"
@@ -248,7 +248,7 @@ const ContainerAddStixCoreObjects = (props) => {
           open={openCreateObservable}
           handleClose={() => handleCloseCreateObservable()}
         />
-      </div>
+      </>
     );
   };
   const resolveAvailableTypes = () => {
@@ -333,60 +333,58 @@ const ContainerAddStixCoreObjects = (props) => {
     return (
       <UserContext.Consumer>
         {({ platformModuleHelpers }) => (
-          <div>
-            <ListLines
-              sortBy={sortBy}
-              orderAsc={orderAsc}
-              dataColumns={buildColumns(platformModuleHelpers)}
-              handleSearch={setSearchTerm}
-              keyword={mapping && searchTerm.length === 0 ? selectedText : searchTerm}
-              handleSort={handleSort}
-              handleAddFilter={handleAddFilter}
-              handleRemoveFilter={handleRemoveFilter}
-              handleSwitchLocalMode={handleSwitchLocalMode}
-              handleSwitchGlobalMode={handleSwitchGlobalMode}
-              disableCards={true}
-              filters={filters}
-              paginationOptions={searchPaginationOptions}
-              numberOfElements={numberOfElements}
-              iconExtension={true}
-              parametersWithPadding={true}
-              disableExport={true}
-              availableEntityTypes={[resolveAvailableTypes()]}
-              availableFilterKeys={[
-                'entity_type',
-                'objectMarking',
-                'objectLabel',
-                'createdBy',
-                'confidence',
-                'x_opencti_organization_type',
-                'created',
-                'created_at',
-                'creator_id',
-              ]}
-            >
-              <QueryRenderer
-                query={containerAddStixCoreObjectsLinesQuery}
-                variables={{ count: 100, ...searchPaginationOptions }}
-                render={({ props: renderProps }) => (
-                  <ContainerAddStixCoreObjectsLines
-                    data={renderProps}
-                    containerId={containerId}
-                    paginationOptions={paginationOptions}
-                    dataColumns={buildColumns(platformModuleHelpers)}
-                    initialLoading={renderProps === null}
-                    knowledgeGraph={knowledgeGraph}
-                    containerStixCoreObjects={containerStixCoreObjects}
-                    onAdd={onAdd}
-                    onDelete={onDelete}
-                    setNumberOfElements={setNumberOfElements}
-                    mapping={mapping}
-                    containerRef={containerRef}
-                  />
-                )}
-              />
-            </ListLines>
-          </div>
+          <ListLines
+            sortBy={sortBy}
+            orderAsc={orderAsc}
+            dataColumns={buildColumns(platformModuleHelpers)}
+            handleSearch={setSearchTerm}
+            keyword={mapping && searchTerm.length === 0 ? selectedText : searchTerm}
+            handleSort={handleSort}
+            handleAddFilter={handleAddFilter}
+            handleRemoveFilter={handleRemoveFilter}
+            handleSwitchLocalMode={handleSwitchLocalMode}
+            handleSwitchGlobalMode={handleSwitchGlobalMode}
+            disableCards={true}
+            filters={filters}
+            paginationOptions={searchPaginationOptions}
+            numberOfElements={numberOfElements}
+            iconExtension={true}
+            parametersWithPadding={true}
+            disableExport={true}
+            availableEntityTypes={[resolveAvailableTypes()]}
+            availableFilterKeys={[
+              'entity_type',
+              'objectMarking',
+              'objectLabel',
+              'createdBy',
+              'confidence',
+              'x_opencti_organization_type',
+              'created',
+              'created_at',
+              'creator_id',
+            ]}
+          >
+            <QueryRenderer
+              query={containerAddStixCoreObjectsLinesQuery}
+              variables={{ count: 100, ...searchPaginationOptions }}
+              render={({ props: renderProps }) => (
+                <ContainerAddStixCoreObjectsLines
+                  data={renderProps}
+                  containerId={containerId}
+                  paginationOptions={paginationOptions}
+                  dataColumns={buildColumns(platformModuleHelpers)}
+                  initialLoading={renderProps === null}
+                  knowledgeGraph={knowledgeGraph}
+                  containerStixCoreObjects={containerStixCoreObjects}
+                  onAdd={onAdd}
+                  onDelete={onDelete}
+                  setNumberOfElements={setNumberOfElements}
+                  mapping={mapping}
+                  containerRef={containerRef}
+                />
+              )}
+            />
+          </ListLines>
         )}
       </UserContext.Consumer>
     );
@@ -447,7 +445,7 @@ const ContainerAddStixCoreObjects = (props) => {
     );
   };
   return (
-    <div>
+    <>
       {!mapping && renderButton()}
       <Drawer
         open={mapping ? openDrawer : open}
@@ -460,13 +458,14 @@ const ContainerAddStixCoreObjects = (props) => {
           }
         }}
         title={t('Add entities')}
+        containerRef={containerRef}
       >
         <>
           {renderSearchResults(searchPaginationOptions)}
           {renderEntityCreation(searchPaginationOptions)}
         </>
       </Drawer>
-    </div>
+    </>
   );
 };
 

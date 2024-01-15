@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import IconButton from '@mui/material/IconButton';
 import { Add } from '@mui/icons-material';
 import Tooltip from '@mui/material/Tooltip';
@@ -48,6 +48,7 @@ const InvestigationAddStixCoreObjects = (props) => {
     symbol: '',
   });
   const [searchTerm, setSearchTerm] = useState('');
+  const containerRef = useRef(null);
   const handleSort = (field, sortOrderAsc) => {
     setSortBy(field);
     setOrderAsc(sortOrderAsc);
@@ -166,7 +167,7 @@ const InvestigationAddStixCoreObjects = (props) => {
   };
 
   return (
-    <div>
+    <>
       {!mapping && (
         <Tooltip title={t('Add an entity to this investigation')}>
           <IconButton
@@ -190,66 +191,67 @@ const InvestigationAddStixCoreObjects = (props) => {
           }
         }}
         title={t('Add entities')}
+        containerRef={containerRef}
       >
         <UserContext.Consumer>
           {({ platformModuleHelpers }) => (
-            <div>
-              <ListLines
-                sortBy={sortBy}
-                orderAsc={orderAsc}
-                dataColumns={buildColumns(platformModuleHelpers)}
-                handleSearch={setSearchTerm}
-                keyword={
+            <ListLines
+              sortBy={sortBy}
+              orderAsc={orderAsc}
+              dataColumns={buildColumns(platformModuleHelpers)}
+              handleSearch={setSearchTerm}
+              keyword={
                   mapping && searchTerm.length === 0 ? selectedText : searchTerm
                 }
-                handleSort={handleSort}
-                handleAddFilter={handleAddFilter}
-                handleRemoveFilter={handleRemoveFilter}
-                handleSwitchLocalMode={handleSwitchLocalMode}
-                handleSwitchGlobalMode={handleSwitchGlobalMode}
-                disableCards={true}
-                filters={filters}
-                paginationOptions={searchPaginationOptions}
-                numberOfElements={numberOfElements}
-                iconExtension={true}
-                parametersWithPadding={true}
-                disableExport={true}
-                availableEntityTypes={[resolveAvailableTypes()]}
-                availableFilterKeys={[
-                  'entity_type',
-                  'objectMarking',
-                  'objectLabel',
-                  'createdBy',
-                  'confidence',
-                  'x_opencti_organization_type',
-                  'created',
-                  'created_at',
-                  'creator_id',
-                ]}
-              >
-                <QueryRenderer
-                  query={investigationAddStixCoreObjectsLinesQuery}
-                  variables={{ count: 100, ...searchPaginationOptions }}
-                  render={({ props: renderProps }) => (
-                    <InvestigationAddStixCoreObjectsLines
-                      data={renderProps}
-                      workspaceId={workspaceId}
-                      dataColumns={buildColumns(platformModuleHelpers)}
-                      initialLoading={renderProps === null}
-                      onAdd={onAdd}
-                      onDelete={onDelete}
-                      mapping={mapping}
-                      setNumberOfElements={setNumberOfElements}
-                      workspaceStixCoreObjects={workspaceStixCoreObjects}
-                    />
-                  )}
-                />
-              </ListLines>
-            </div>
+              handleSort={handleSort}
+              handleAddFilter={handleAddFilter}
+              handleRemoveFilter={handleRemoveFilter}
+              handleSwitchLocalMode={handleSwitchLocalMode}
+              handleSwitchGlobalMode={handleSwitchGlobalMode}
+              disableCards={true}
+              filters={filters}
+              paginationOptions={searchPaginationOptions}
+              numberOfElements={numberOfElements}
+              iconExtension={true}
+              parametersWithPadding={true}
+              disableExport={true}
+              availableEntityTypes={[resolveAvailableTypes()]}
+              availableFilterKeys={[
+                'entity_type',
+                'objectMarking',
+                'objectLabel',
+                'createdBy',
+                'confidence',
+                'x_opencti_organization_type',
+                'created',
+                'created_at',
+                'creator_id',
+              ]}
+            >
+              <QueryRenderer
+                query={investigationAddStixCoreObjectsLinesQuery}
+                variables={{ count: 100, ...searchPaginationOptions }}
+                render={({ props: renderProps }) => (
+                  <InvestigationAddStixCoreObjectsLines
+                    data={renderProps}
+                    workspaceId={workspaceId}
+                    paginationOptions={searchPaginationOptions}
+                    dataColumns={buildColumns(platformModuleHelpers)}
+                    initialLoading={renderProps === null}
+                    workspaceStixCoreObjects={workspaceStixCoreObjects}
+                    onAdd={onAdd}
+                    onDelete={onDelete}
+                    setNumberOfElements={setNumberOfElements}
+                    mapping={mapping}
+                    containerRef={containerRef}
+                  />
+                )}
+              />
+            </ListLines>
           )}
         </UserContext.Consumer>
       </Drawer>
-    </div>
+    </>
   );
 };
 

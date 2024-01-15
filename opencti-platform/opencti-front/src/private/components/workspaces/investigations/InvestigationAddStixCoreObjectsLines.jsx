@@ -154,7 +154,7 @@ class InvestigationAddStixCoreObjectsLinesInvestigation extends Component {
   }
 
   render() {
-    const { initialLoading, relay, dataColumns } = this.props;
+    const { initialLoading, relay, dataColumns, containerRef } = this.props;
     const { addedStixCoreObjects } = this.state;
     return (
       <ListLinesContent
@@ -175,6 +175,7 @@ class InvestigationAddStixCoreObjectsLinesInvestigation extends Component {
         addedElements={addedStixCoreObjects}
         onToggleEntity={this.toggleStixCoreObject.bind(this)}
         disableExport={true}
+        containerRef={containerRef}
       />
     );
   }
@@ -292,6 +293,7 @@ const InvestigationAddStixCoreObjectsLines = createPaginationContainer(
     },
     getVariables(props, { count, cursor }, fragmentVariables) {
       return {
+        search: fragmentVariables.search,
         types: fragmentVariables.types,
         count,
         cursor,

@@ -71,6 +71,7 @@ interface DrawerProps {
   }> | null;
   header?: React.ReactElement;
   controlledDial?: ({ onOpen, onClose }:{ onOpen: () => void, onClose: () => void }) => React.ReactElement;
+  containerRef?: HTMLInputElement;
 }
 
 const Drawer = ({
@@ -82,6 +83,7 @@ const Drawer = ({
   context,
   header,
   controlledDial,
+  containerRef,
 }: DrawerProps) => {
   const {
     bannerSettings: { bannerHeightNumber },
@@ -145,6 +147,9 @@ const Drawer = ({
         sx={{ zIndex: 1202 }}
         classes={{ paper: classes.drawerPaper }}
         onClose={handleClose}
+        PaperProps={{
+          ref: containerRef,
+        }}
       >
         <div className={classes.header}>
           <IconButton
