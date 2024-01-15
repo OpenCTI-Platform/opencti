@@ -99,7 +99,7 @@ jobs:
       - run:
           name: init .pypirc
           command: >
-            printf "[pypi]\nusername = opencti\npassword = %s\n"
+            printf "[pypi]\nusername = __token__\npassword = %s\n"
             "${PYPI_PASSWORD}" >> ~/.pypirc
       - run:
           name: upload to pypi
