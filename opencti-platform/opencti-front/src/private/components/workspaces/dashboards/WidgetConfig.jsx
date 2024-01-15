@@ -383,6 +383,7 @@ const WidgetConfig = ({ workspace, widget, onComplete, closeMenu }) => {
       setStepIndex(2);
     }
     setOpen(false);
+    setDataSelection(widget?.dataSelection ?? [initialSelection]);
   };
   const completeSetup = () => {
     onComplete({
@@ -817,8 +818,7 @@ const WidgetConfig = ({ workspace, widget, onComplete, closeMenu }) => {
                 remarkGfmPlugin={true}
                 commonmark={true}
               />,
-            )
-                            }
+            )}
             l18n={{
               write: t('Write'),
               preview: t('Preview'),
