@@ -167,12 +167,17 @@ const WidgetFilters: FunctionComponent<WidgetFiltersProps> = ({ perspective, typ
           />
         </>
       )}
-      <div style={{ marginTop: 8 }}>{t('Result: the relationships with source respecting the source pre-query, target respecting the target pre-query, and matching:')}</div>
+
       { isFilterGroupNotEmpty(filters) && (
-        <FilterIconButton
-          filters={filters}
-          helpers={helpers}
-        />
+        <>
+          { perspective === 'relationships'
+            && <div style={{ marginTop: 8 }}>{t('Result: the relationships with source respecting the source pre-query, target respecting the target pre-query, and matching:')}</div>
+          }
+          <FilterIconButton
+            filters={filters}
+            helpers={helpers}
+          />
+        </>
       ) }
     </Box>
   </>;
