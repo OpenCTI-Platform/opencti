@@ -56,7 +56,7 @@ interface ExternalReferenceEditionOverviewComponentProps {
 const ExternalReferenceEditionOverviewComponent: FunctionComponent<
 ExternalReferenceEditionOverviewComponentProps
 > = ({ externalReference, context }) => {
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
 
   const [commitMutationExternalReferenceEditionOverviewFocus] = useMutation(
     externalReferenceEditionOverviewFocus,
@@ -82,7 +82,7 @@ ExternalReferenceEditionOverviewComponentProps
   };
 
   const handleSubmitField = (name: string, value: string[]) => {
-    externalReferenceValidation(t)
+    externalReferenceValidation(t_i18n)
       .validateAt(name, { [name]: value })
       .then(() => {
         commitMutationExternalReferenceMutationFieldPatch({
@@ -98,7 +98,7 @@ ExternalReferenceEditionOverviewComponentProps
     <Formik
       enableReinitialize={true}
       initialValues={initialValues}
-      validationSchema={externalReferenceValidation(t)}
+      validationSchema={externalReferenceValidation(t_i18n)}
       onSubmit={() => {}}
     >
       {() => (
@@ -107,7 +107,7 @@ ExternalReferenceEditionOverviewComponentProps
             <Field
               component={TextField}
               name="source_name"
-              label={t('Source name')}
+              label={t_i18n('Source name')}
               fullWidth={true}
               onFocus={handleChangeFocus}
               onSubmit={handleSubmitField}
@@ -118,7 +118,7 @@ ExternalReferenceEditionOverviewComponentProps
             <Field
               component={TextField}
               name="external_id"
-              label={t('External ID')}
+              label={t_i18n('External ID')}
               fullWidth={true}
               style={{ marginTop: 20 }}
               onFocus={handleChangeFocus}
@@ -131,7 +131,7 @@ ExternalReferenceEditionOverviewComponentProps
               component={TextField}
               disabled={externalReference.fileId}
               name="url"
-              label={t('URL')}
+              label={t_i18n('URL')}
               fullWidth={true}
               style={{ marginTop: 20 }}
               onFocus={handleChangeFocus}
@@ -143,7 +143,7 @@ ExternalReferenceEditionOverviewComponentProps
             <Field
               component={MarkdownField}
               name="description"
-              label={t('Description')}
+              label={t_i18n('Description')}
               fullWidth={true}
               multiline={true}
               rows={4}

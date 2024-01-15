@@ -70,7 +70,7 @@ export const StixCoreObjectOrStixCoreRelationshipContainerLineComponent: Functio
 StixCoreObjectOrStixCoreRelationshipContainerLineComponentProps
 > = ({ node, dataColumns, onLabelClick, redirectionMode }) => {
   const classes = useStyles();
-  const { t, fd } = useFormatter();
+  const { t_i18n, fd } = useFormatter();
   return (
     <ListItem
       classes={{ root: classes.item }}
@@ -102,7 +102,7 @@ StixCoreObjectOrStixCoreRelationshipContainerLineComponentProps
                   color: itemColor(node.entity_type),
                   border: `1px solid ${itemColor(node.entity_type)}`,
                 }}
-                label={t(`entity_${node.entity_type}`)}
+                label={t_i18n(`entity_${node.entity_type}`)}
               />
             </div>
             <div

@@ -61,7 +61,7 @@ const stixCoreObjectContainerContainersQuery = graphql`
 
 const StixCoreObjectContainer = ({ elementId }) => {
   const classes = useStyles();
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   const [actionsInputs, setActionsInputs] = useState([
     { type: 'ADD', fieldType: 'ATTRIBUTE', field: 'container-object' },
   ]);
@@ -145,9 +145,9 @@ const StixCoreObjectContainer = ({ elementId }) => {
         ]);
         MESSAGING$.notifySuccess(
           <span>
-            {t('The background task has been executed. You can monitor it on')}{' '}
+            {t_i18n('The background task has been executed. You can monitor it on')}{' '}
             <Link to="/dashboard/data/processing/tasks">
-              {t('the dedicated page')}
+              {t_i18n('the dedicated page')}
             </Link>
             .
           </span>,
@@ -157,7 +157,7 @@ const StixCoreObjectContainer = ({ elementId }) => {
   };
   return (
     <>
-      <Tooltip title={t('Add in container')}>
+      <Tooltip title={t_i18n('Add in container')}>
         <ToggleButton
           onClick={() => setDisplayAddInContainer(true)}
           value="container"
@@ -175,7 +175,7 @@ const StixCoreObjectContainer = ({ elementId }) => {
         open={displayAddInContainer}
         onClose={() => setDisplayAddInContainer(false)}
       >
-        <DialogTitle>{t('Add in container')}</DialogTitle>
+        <DialogTitle>{t_i18n('Add in container')}</DialogTitle>
         <DialogContent>
           <StixDomainObjectCreation
             inputValue={actionsInputs[0]?.inputValue || ''}
@@ -214,13 +214,13 @@ const StixCoreObjectContainer = ({ elementId }) => {
               <TextField
                 {...params}
                 variant="standard"
-                label={t('Values')}
+                label={t_i18n('Values')}
                 fullWidth={true}
                 onFocus={(e) => searchContainers(e)}
                 style={{ marginTop: 3 }}
               />
             )}
-            noOptionsText={t('No available options')}
+            noOptionsText={t_i18n('No available options')}
             options={containers}
             onInputChange={(e, value) => searchContainers(e, value)}
             inputValue={searchInputValue ?? ''}
@@ -245,7 +245,7 @@ const StixCoreObjectContainer = ({ elementId }) => {
                 }
               />
             }
-            label={t('Also include first neighbours')}
+            label={t_i18n('Also include first neighbours')}
           />
           <IconButton
             onClick={() => setContainerCreation(true)}
@@ -258,7 +258,7 @@ const StixCoreObjectContainer = ({ elementId }) => {
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setDisplayAddInContainer(false)}>
-            {t('Cancel')}
+            {t_i18n('Cancel')}
           </Button>
           <Button
             color="secondary"
@@ -267,7 +267,7 @@ const StixCoreObjectContainer = ({ elementId }) => {
               processing || (actionsInputs[0].values ?? []).length === 0
             }
           >
-            {t('Add')}
+            {t_i18n('Add')}
           </Button>
         </DialogActions>
       </Dialog>

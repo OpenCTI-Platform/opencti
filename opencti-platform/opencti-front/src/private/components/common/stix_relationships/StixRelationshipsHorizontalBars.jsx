@@ -230,7 +230,7 @@ const StixRelationshipsHorizontalBars = ({
 }) => {
   const classes = useStyles();
   const theme = useTheme();
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   const navigate = useNavigate();
   const renderContent = () => {
     let selection = {};
@@ -278,7 +278,7 @@ const StixRelationshipsHorizontalBars = ({
                   : n.label,
               ),
             }));
-            const chartData = [{ name: t('Number of relationships'), data }];
+            const chartData = [{ name: t_i18n('Number of relationships'), data }];
             const redirectionUtils = finalField.endsWith('_id')
               ? props.stixRelationshipsDistribution.map((n) => ({
                 id: n.label,
@@ -315,7 +315,7 @@ const StixRelationshipsHorizontalBars = ({
                     textAlign: 'center',
                   }}
                 >
-                  {t('No entities of this type has been found.')}
+                  {t_i18n('No entities of this type has been found.')}
                 </span>
               </div>
             );
@@ -349,7 +349,7 @@ const StixRelationshipsHorizontalBars = ({
           textOverflow: 'ellipsis',
         }}
       >
-        {parameters.title || title || t('Relationships distribution')}
+        {parameters.title || title || t_i18n('Relationships distribution')}
       </Typography>
       {variant !== 'inLine' ? (
         <Paper classes={{ root: classes.paper }} variant="outlined">

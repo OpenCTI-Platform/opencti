@@ -82,7 +82,7 @@ const GroupEditionMarkingsComponent = ({
   group: GroupEditionMarkings_group$data;
 }) => {
   const classes = useStyles();
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   const groupMarkingDefinitions = group.allowed_marking || [];
   const groupDefaultMarkingDefinitions = group.default_marking || [];
   // Handle only GLOBAL entity type for now
@@ -163,10 +163,10 @@ const GroupEditionMarkingsComponent = ({
   return (
     <div>
       <Typography variant="h2" style={{ marginTop: 35 }}>
-        {t('Allowed marking definitions')}
+        {t_i18n('Allowed marking definitions')}
       </Typography>
       <Alert severity="warning" variant="outlined" style={{ marginBottom: 10 }}>
-        {t(
+        {t_i18n(
           'All users of this group will be able to view entities and relationships marked with checked marking definitions, including statements and special markings.',
         )}
       </Alert>
@@ -220,19 +220,19 @@ const GroupEditionMarkingsComponent = ({
                   })}
                 </List>
                 <Typography variant="h2" style={{ marginTop: 30 }}>
-                  {t('Default marking definitions')}
+                  {t_i18n('Default marking definitions')}
                 </Typography>
                 <Alert
                   severity="info"
                   variant="outlined"
                   style={{ marginBottom: 10 }}
                 >
-                  {t(
+                  {t_i18n(
                     'The default marking definitions of a group will be used as default marking when this feature is explicitly enabled in the customization of an entity type.',
                   )}
                   <br />
                   <br />
-                  {t(
+                  {t_i18n(
                     'Please note that only the marking definition with the highest level on each definition type is kept.',
                   )}
                 </Alert>
@@ -252,9 +252,9 @@ const GroupEditionMarkingsComponent = ({
                         multiple={true}
                         textfieldprops={{
                           variant: 'standard',
-                          label: t('Default markings'),
+                          label: t_i18n('Default markings'),
                         }}
-                        noOptionsText={t('No available options')}
+                        noOptionsText={t_i18n('No available options')}
                         options={resolvedGroupMarkingDefinitions}
                         renderOption={(
                           renderProps: React.HTMLAttributes<HTMLLIElement>,

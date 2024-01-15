@@ -212,7 +212,7 @@ Omit<StixCoreRelationshipEditionOverviewProps, 'queryRef'>
 > = ({ handleClose, handleDelete, stixCoreRelationship, noStoreUpdate }) => {
   const stixCoreRelationshipType = 'stix-core-relationship';
 
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   const classes = useStyles();
   const enableReferences = useIsEnforceReference(stixCoreRelationshipType);
 
@@ -221,10 +221,10 @@ Omit<StixCoreRelationshipEditionOverviewProps, 'queryRef'>
   const basicShape = {
     confidence: Yup.number().nullable(),
     start_time: Yup.date()
-      .typeError(t('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)'))
+      .typeError(t_i18n('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)'))
       .nullable(),
     stop_time: Yup.date()
-      .typeError(t('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)'))
+      .typeError(t_i18n('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)'))
       .min(Yup.ref('start_time'), "The end date can't be before start date")
       .nullable(),
     description: Yup.string().nullable(),
@@ -300,7 +300,7 @@ Omit<StixCoreRelationshipEditionOverviewProps, 'queryRef'>
     stop_time: buildDate(stixCoreRelationship.stop_time),
     description: stixCoreRelationship.description,
     killChainPhases: convertKillChainPhases(stixCoreRelationship),
-    x_opencti_workflow_id: convertStatus(t, stixCoreRelationship) as Option,
+    x_opencti_workflow_id: convertStatus(t_i18n, stixCoreRelationship) as Option,
     createdBy: convertCreatedBy(stixCoreRelationship) as Option,
     objectMarking: convertMarkings(stixCoreRelationship),
     references: [],
@@ -318,7 +318,7 @@ Omit<StixCoreRelationshipEditionOverviewProps, 'queryRef'>
           <Close fontSize="small" color="primary" />
         </IconButton>
         <Typography variant="h6" classes={{ root: classes.title }}>
-          {t('Update a relationship')}
+          {t_i18n('Update a relationship')}
         </Typography>
         <SubscriptionAvatars context={editContext} />
         <div className="clearfix" />
@@ -353,7 +353,7 @@ Omit<StixCoreRelationshipEditionOverviewProps, 'queryRef'>
                 onFocus={editor.changeFocus}
                 onSubmit={editor.changeField}
                 TextFieldProps={{
-                  label: t('Start time'),
+                  label: t_i18n('Start time'),
                   variant: 'standard',
                   fullWidth: true,
                   style: { marginTop: 20 },
@@ -371,7 +371,7 @@ Omit<StixCoreRelationshipEditionOverviewProps, 'queryRef'>
                 onFocus={editor.changeFocus}
                 onSubmit={handleSubmitFieldStopTime}
                 TextFieldProps={{
-                  label: t('Stop time'),
+                  label: t_i18n('Stop time'),
                   variant: 'standard',
                   fullWidth: true,
                   style: { marginTop: 20 },
@@ -386,7 +386,7 @@ Omit<StixCoreRelationshipEditionOverviewProps, 'queryRef'>
               <Field
                 component={MarkdownField}
                 name="description"
-                label={t('Description')}
+                label={t_i18n('Description')}
                 fullWidth={true}
                 multiline={true}
                 rows={4}
@@ -472,7 +472,7 @@ Omit<StixCoreRelationshipEditionOverviewProps, 'queryRef'>
             onClick={() => handleDelete()}
             classes={{ root: classes.button }}
           >
-            {t('Delete')}
+            {t_i18n('Delete')}
           </Button>
         )}
       </div>

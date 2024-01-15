@@ -141,12 +141,12 @@ interface DataComponentAddInput {
 const DataComponentEditionOverview: FunctionComponent<
 DataComponentEditionOverviewComponentProps
 > = ({ data, context, enableReferences = false, handleClose }) => {
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
 
   const dataComponent = useFragment(DataComponentEditionOverviewFragment, data);
 
   const basicShape = {
-    name: Yup.string().min(2).required(t('This field is required')),
+    name: Yup.string().min(2).required(t_i18n('This field is required')),
     description: Yup.string().nullable(),
     confidence: Yup.number().nullable(),
     references: Yup.array(),
@@ -228,7 +228,7 @@ DataComponentEditionOverviewComponentProps
     description: dataComponent.description,
     createdBy: convertCreatedBy(dataComponent) as Option,
     objectMarking: convertMarkings(dataComponent),
-    x_opencti_workflow_id: convertStatus(t, dataComponent) as Option,
+    x_opencti_workflow_id: convertStatus(t_i18n, dataComponent) as Option,
     confidence: dataComponent.confidence ?? undefined,
     references: [],
   };
@@ -251,7 +251,7 @@ DataComponentEditionOverviewComponentProps
           <Field
             component={TextField}
             name="name"
-            label={t('Name')}
+            label={t_i18n('Name')}
             fullWidth={true}
             onFocus={editor.changeFocus}
             onSubmit={handleSubmitField}
@@ -270,7 +270,7 @@ DataComponentEditionOverviewComponentProps
           <Field
             component={MarkdownField}
             name="description"
-            label={t('Description')}
+            label={t_i18n('Description')}
             fullWidth={true}
             multiline={true}
             rows="4"

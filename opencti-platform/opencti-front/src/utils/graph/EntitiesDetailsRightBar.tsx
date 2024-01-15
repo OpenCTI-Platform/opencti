@@ -68,7 +68,7 @@ EntityDetailsRightsBarProps
 > = ({ selectedEntities }) => {
   const classes = useStyles();
   const theme = useTheme<Theme>();
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   const uniqSelectedEntities: SelectedEntity[] = selectedEntities
     .filter(
       (item, index) => selectedEntities.findIndex((entity) => entity.id === item.id) === index,
@@ -130,11 +130,11 @@ EntityDetailsRightsBarProps
       >
         <FormControl fullWidth={true} size="small" style={{ flex: 'grow' }}>
           <InputLabel id="label" variant="outlined">
-            {t('Object')}
+            {t_i18n('Object')}
           </InputLabel>
           <Select
             labelId="label"
-            label={t('Object')}
+            label={t_i18n('Object')}
             fullWidth={true}
             onChange={handleSelectEntity}
             value={selectedEntity.id}
@@ -149,7 +149,7 @@ EntityDetailsRightsBarProps
         </FormControl>
         {/* Need to be handle */}
         {hasOverviewPage && (
-          <Tooltip title={t('Open the entity overview in a separated tab')}>
+          <Tooltip title={t_i18n('Open the entity overview in a separated tab')}>
             <div className={classes.external}>
               <IconButton
                 component={Link}

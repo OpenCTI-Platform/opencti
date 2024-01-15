@@ -12,7 +12,7 @@ import { QueryRenderer } from '../../../../relay/environment';
 import ReportPopoverDeletion from './ReportPopoverDeletion';
 
 const ReportPopover = ({ id }) => {
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   const [anchorEl, setAnchorEl] = useState(null);
   const [displayDelete, setDisplayDelete] = useState(false);
   const [displayEdit, setDisplayEdit] = useState(false);
@@ -42,9 +42,9 @@ const ReportPopover = ({ id }) => {
         <MoreVert />
       </IconButton>
       <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleClose}>
-        <MenuItem onClick={handleOpenEdit}>{t('Update')}</MenuItem>
+        <MenuItem onClick={handleOpenEdit}>{t_i18n('Update')}</MenuItem>
         <Security needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}>
-          <MenuItem onClick={handleOpenDelete}>{t('Delete')}</MenuItem>
+          <MenuItem onClick={handleOpenDelete}>{t_i18n('Delete')}</MenuItem>
         </Security>
       </Menu>
       <ReportPopoverDeletion

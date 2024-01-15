@@ -60,14 +60,14 @@ const BasicNumberInput: FunctionComponent<BasicNumberInputProps> = ({
   helpers,
   filterValues,
 }) => {
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   return (
     <TextField
       variant="outlined"
       size="small"
       fullWidth={true}
       id={filter?.id ?? `${filterKey}-id`}
-      label={t(filterKey)}
+      label={t_i18n(filterKey)}
       type="number"
       defaultValue={filterValues[0]}
       autoFocus={true}
@@ -94,14 +94,14 @@ const BasicTextInput: FunctionComponent<BasicNumberInputProps> = ({
   helpers,
   filterValues,
 }) => {
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   return (
     <TextField
       variant="outlined"
       size="small"
       fullWidth={true}
       id={filter?.id ?? `${filterKey}-id`}
-      label={t(filterKey)}
+      label={t_i18n(filterKey)}
       defaultValue={filterValues[0]}
       autoFocus={true}
       onKeyDown={(event) => {
@@ -168,7 +168,7 @@ export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({
     },
   );
   const [entities, searchEntities] = getUseSearch(searchScope);
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   const handleChange = (checked: boolean, value: string, childKey?: string) => {
     if (childKey) { // case 'regardingOf' filter
       const childFilters = filter?.values.filter((val) => val.key === childKey) as Filter[];
@@ -233,12 +233,12 @@ export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({
         autoSelect={false}
         autoHighlight={true}
         getOptionLabel={(option) => option.label ?? ''}
-        noOptionsText={t('No available options')}
+        noOptionsText={t_i18n('No available options')}
         options={getOptionsFromEntities(entities, searchScope, fKey)}
         groupBy={
           isStixObjectTypes.includes(fKey)
             ? (option) => option.type
-            : (option) => t(option.group ? option.group : fKey)
+            : (option) => t_i18n(option.group ? option.group : fKey)
         }
         onInputChange={(event) => searchEntities(fKey, cacheEntities, setCacheEntities, event)
         }
@@ -251,7 +251,7 @@ export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({
                 ? renderSearchScopeSelection(fKey)
                 : paramsInput.InputProps.endAdornment,
             }}
-            label={t(subKey ?? fKey)}
+            label={t_i18n(subKey ?? fKey)}
             variant="outlined"
             size="small"
             fullWidth={true}
@@ -344,7 +344,7 @@ export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({
         >
           {availableOperators.map((value) => (
             <MenuItem key={value} value={value}>
-              {t(OperatorKeyValues[value])}
+              {t_i18n(OperatorKeyValues[value])}
             </MenuItem>
           ))}
         </Select>
@@ -382,7 +382,7 @@ export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({
               fontFamily: 'Consolas, monaco, monospace',
               margin: '10px 10px 15px 0',
             }}
-            label={t('WITH')}
+            label={t_i18n('WITH')}
           />
           {displayOperatorAndFilter('regardingOf', 'id')}
         </div>

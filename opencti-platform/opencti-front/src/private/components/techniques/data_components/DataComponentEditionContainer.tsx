@@ -26,13 +26,13 @@ interface DataComponentEditionContainerProps {
 }
 
 const DataComponentEditionContainer: FunctionComponent<DataComponentEditionContainerProps> = ({ queryRef, handleClose, open }) => {
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   const { dataComponent } = usePreloadedQuery(dataComponentEditionQuery, queryRef);
 
   if (dataComponent) {
     return (
       <Drawer
-        title={t('Update a data component')}
+        title={t_i18n('Update a data component')}
         variant={open == null ? DrawerVariant.update : undefined}
         context={dataComponent.editContext}
         onClose={handleClose}

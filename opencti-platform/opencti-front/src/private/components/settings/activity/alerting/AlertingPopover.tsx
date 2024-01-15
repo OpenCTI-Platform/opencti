@@ -44,7 +44,7 @@ export const alertingPopoverDeletionMutation = graphql`
 `;
 
 const AlertingPopover = ({ data, paginationOptions }: { data: AlertingLine_node$data, paginationOptions?: AlertingPaginationQuery$variables }) => {
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   const classes = useStyles();
   const [queryRef, loadQuery] = useQueryLoader<AlertEditionQuery>(alertEditionQuery);
   const isLiveEdition = data.trigger_type === 'live';
@@ -99,8 +99,8 @@ const AlertingPopover = ({ data, paginationOptions }: { data: AlertingLine_node$
         <MoreVert />
       </IconButton>
       <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleClose}>
-        <MenuItem onClick={handleDisplayEdit}>{t('Update')}</MenuItem>
-        <MenuItem onClick={handleOpenDelete}>{t('Delete')}</MenuItem>
+        <MenuItem onClick={handleDisplayEdit}>{t_i18n('Update')}</MenuItem>
+        <MenuItem onClick={handleOpenDelete}>{t_i18n('Delete')}</MenuItem>
       </Menu>
       <Dialog open={displayDelete}
         keepMounted={true}
@@ -110,15 +110,15 @@ const AlertingPopover = ({ data, paginationOptions }: { data: AlertingLine_node$
       >
         <DialogContent>
           <DialogContentText>
-            {t('Do you want to delete this trigger?')}
+            {t_i18n('Do you want to delete this trigger?')}
           </DialogContentText>
         </DialogContent>
         <DialogActions>
           <Button onClick={handleCloseDelete} disabled={deleting}>
-            {t('Cancel')}
+            {t_i18n('Cancel')}
           </Button>
           <Button color="secondary" onClick={submitDelete} disabled={deleting}>
-            {t('Delete')}
+            {t_i18n('Delete')}
           </Button>
         </DialogActions>
       </Dialog>

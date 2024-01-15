@@ -85,7 +85,7 @@ const ThreatActorIndividualEditionDemographicsComponent = ({
   enableReferences,
   context,
 }: ThreatActorIndividualEditionDemographicsComponentProps) => {
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   const threatActorIndividual = useFragment(
     threatActorIndividualEditionDemographicsFragment,
     threatActorIndividualRef,
@@ -107,7 +107,7 @@ const ThreatActorIndividualEditionDemographicsComponent = ({
     value: string | string[] | Option | null,
     operation: EditOperation = 'replace',
   ) => {
-    threatActorIndividualValidation(t)
+    threatActorIndividualValidation(t_i18n)
       .validateAt(name, { [name]: value })
       .then(() => {
         let finalValue = value;
@@ -150,7 +150,7 @@ const ThreatActorIndividualEditionDemographicsComponent = ({
       <Formik
         enableReinitialize={true}
         initialValues={initialValues}
-        validationSchema={threatActorIndividualValidation(t)}
+        validationSchema={threatActorIndividualValidation(t_i18n)}
         onSubmit={() => {}}
       >
         {({ submitForm, isSubmitting, setFieldValue, isValid, dirty }) => (
@@ -159,7 +159,7 @@ const ThreatActorIndividualEditionDemographicsComponent = ({
               <CountryField
                 id="PlaceOfBirth"
                 name="bornIn"
-                label={t('Place of Birth')}
+                label={t_i18n('Place of Birth')}
                 containerStyle={fieldSpacingContainerStyle}
                 onChange={(name, value) => {
                   setFieldValue(name, value);
@@ -169,7 +169,7 @@ const ThreatActorIndividualEditionDemographicsComponent = ({
               <CountryField
                 id="Ethnicity"
                 name="ethnicity"
-                label={t('Ethnicity')}
+                label={t_i18n('Ethnicity')}
                 containerStyle={fieldSpacingContainerStyle}
                 onChange={(name, value) => {
                   setFieldValue(name, value);
@@ -183,7 +183,7 @@ const ThreatActorIndividualEditionDemographicsComponent = ({
                 onFocus={handleChangeFocus}
                 onSubmit={handleSubmitField}
                 TextFieldProps={{
-                  label: t('Date of Birth'),
+                  label: t_i18n('Date of Birth'),
                   variant: 'standard',
                   fullWidth: true,
                   style: { marginTop: 20 },
@@ -197,7 +197,7 @@ const ThreatActorIndividualEditionDemographicsComponent = ({
               />
               <OpenVocabField
                 name="marital_status"
-                label={t('Marital Status')}
+                label={t_i18n('Marital Status')}
                 type="marital_status_ov"
                 variant="edit"
                 onChange={(name, value) => setFieldValue(name, value)}
@@ -209,7 +209,7 @@ const ThreatActorIndividualEditionDemographicsComponent = ({
               />
               <OpenVocabField
                 name="gender"
-                label={t('Gender')}
+                label={t_i18n('Gender')}
                 type="gender_ov"
                 variant="edit"
                 onChange={(name, value) => setFieldValue(name, value)}
@@ -223,7 +223,7 @@ const ThreatActorIndividualEditionDemographicsComponent = ({
                 component={MarkdownField}
                 name="job_title"
                 id="job_title"
-                label={t('Job Title')}
+                label={t_i18n('Job Title')}
                 fullWidth={true}
                 multiline={false}
                 rows="1"

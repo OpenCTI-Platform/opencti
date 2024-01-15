@@ -41,7 +41,7 @@ const ExportPopover = ({
   series,
 }: ExportPopoverProps) => {
   const classes = useStyles();
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   const [anchorEl, setAnchorEl] = useState<HTMLButtonElement | null>(null);
   const handleExportToSVG = () => {
     setAnchorEl(null);
@@ -82,9 +82,9 @@ const ExportPopover = ({
         onClose={() => setAnchorEl(null)}
         className="noDrag"
       >
-        <MenuItem onClick={handleExportToPng}>{t('Download as PNG')}</MenuItem>
-        <MenuItem onClick={handleExportToSVG}>{t('Download as SVG')}</MenuItem>
-        <MenuItem onClick={handleExportToCSV}>{t('Download as CSV')}</MenuItem>
+        <MenuItem onClick={handleExportToPng}>{t_i18n('Download as PNG')}</MenuItem>
+        <MenuItem onClick={handleExportToSVG}>{t_i18n('Download as SVG')}</MenuItem>
+        <MenuItem onClick={handleExportToCSV}>{t_i18n('Download as CSV')}</MenuItem>
       </Menu>
     </div>
   );

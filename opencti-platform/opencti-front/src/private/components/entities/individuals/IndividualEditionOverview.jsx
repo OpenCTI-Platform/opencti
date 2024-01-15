@@ -82,10 +82,10 @@ const individualMutationRelationDelete = graphql`
 
 const IndividualEditionOverviewComponent = (props) => {
   const { individual, enableReferences, context, handleClose } = props;
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
 
   const basicShape = {
-    name: Yup.string().min(2).required(t('This field is required')),
+    name: Yup.string().min(2).required(t_i18n('This field is required')),
     description: Yup.string().nullable(),
     contact_information: Yup.string().nullable(),
     x_opencti_reliability: Yup.string().nullable(),
@@ -153,7 +153,7 @@ const IndividualEditionOverviewComponent = (props) => {
   const initialValues = R.pipe(
     R.assoc('createdBy', convertCreatedBy(individual)),
     R.assoc('objectMarking', convertMarkings(individual)),
-    R.assoc('x_opencti_workflow_id', convertStatus(t, individual)),
+    R.assoc('x_opencti_workflow_id', convertStatus(t_i18n, individual)),
     R.assoc('references', []),
     R.pick([
       'name',
@@ -186,7 +186,7 @@ const IndividualEditionOverviewComponent = (props) => {
             variant="standard"
             name="name"
             disabled={external}
-            label={t('Name')}
+            label={t_i18n('Name')}
             fullWidth={true}
             onFocus={editor.changeFocus}
             onSubmit={handleSubmitField}
@@ -197,7 +197,7 @@ const IndividualEditionOverviewComponent = (props) => {
           <Field
             component={MarkdownField}
             name="description"
-            label={t('Description')}
+            label={t_i18n('Description')}
             fullWidth={true}
             multiline={true}
             rows="4"
@@ -212,7 +212,7 @@ const IndividualEditionOverviewComponent = (props) => {
             component={TextField}
             variant="standard"
             name="contact_information"
-            label={t('Contact information')}
+            label={t_i18n('Contact information')}
             fullWidth={true}
             multiline={true}
             rows="4"
@@ -224,7 +224,7 @@ const IndividualEditionOverviewComponent = (props) => {
               }
           />
           <OpenVocabField
-            label={t('Reliability')}
+            label={t_i18n('Reliability')}
             type="reliability_ov"
             name="x_opencti_reliability"
             onChange={setFieldValue}

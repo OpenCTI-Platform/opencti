@@ -169,10 +169,10 @@ interface IncidentEditionFormValues {
 const IncidentEditionOverviewComponent: FunctionComponent<
 IncidentEditionOverviewProps
 > = ({ incidentRef, context, enableReferences = false, handleClose }) => {
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   const incident = useFragment(incidentEditionOverviewFragment, incidentRef);
   const basicShape = {
-    name: Yup.string().min(2).required(t('This field is required')),
+    name: Yup.string().min(2).required(t_i18n('This field is required')),
     incident_type: Yup.string().nullable(),
     severity: Yup.string().nullable(),
     confidence: Yup.number().nullable(),
@@ -251,7 +251,7 @@ IncidentEditionOverviewProps
     objectMarking: convertMarkings(incident),
     objectAssignee: convertAssignees(incident),
     objectParticipant: convertParticipants(incident),
-    x_opencti_workflow_id: convertStatus(t, incident) as Option,
+    x_opencti_workflow_id: convertStatus(t_i18n, incident) as Option,
     confidence: incident.confidence,
     references: [],
   };
@@ -275,7 +275,7 @@ IncidentEditionOverviewProps
             component={TextField}
             variant="standard"
             name="name"
-            label={t('Name')}
+            label={t_i18n('Name')}
             fullWidth={true}
             disabled={isInferred}
             onFocus={editor.changeFocus}
@@ -294,7 +294,7 @@ IncidentEditionOverviewProps
             variant="edit"
           />
           <OpenVocabField
-            label={t('Incident type')}
+            label={t_i18n('Incident type')}
             type="incident-type-ov"
             name="incident_type"
             onFocus={editor.changeFocus}
@@ -306,7 +306,7 @@ IncidentEditionOverviewProps
             editContext={context}
           />
           <OpenVocabField
-            label={t('Severity')}
+            label={t_i18n('Severity')}
             type="incident-severity-ov"
             name="severity"
             onFocus={editor.changeFocus}
@@ -320,7 +320,7 @@ IncidentEditionOverviewProps
           <Field
             component={MarkdownField}
             name="description"
-            label={t('Description')}
+            label={t_i18n('Description')}
             fullWidth={true}
             multiline={true}
             disabled={isInferred}

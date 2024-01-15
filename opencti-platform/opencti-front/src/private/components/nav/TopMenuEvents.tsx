@@ -24,7 +24,7 @@ const useStyles = makeStyles<Theme>((theme) => ({
 const TopMenuEvents = () => {
   const classes = useStyles();
   const location = useLocation();
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
 
   return (
     <>
@@ -41,7 +41,7 @@ const TopMenuEvents = () => {
           classes={{ root: classes.button }}
         >
           <Fire className={classes.icon} fontSize="small" />
-          {t('Incidents')}
+          {t_i18n('Incidents')}
         </Button>
       )}
       {!useIsHiddenEntity('stix-sighting-relationship') && (
@@ -57,7 +57,7 @@ const TopMenuEvents = () => {
           classes={{ root: classes.button }}
         >
           <VisibilityOutlined className={classes.icon} fontSize="small" />
-          {t('Sightings')}
+          {t_i18n('Sightings')}
         </Button>
       )}
       {!useIsHiddenEntity('Observed-Data') && (
@@ -73,7 +73,7 @@ const TopMenuEvents = () => {
           classes={{ root: classes.button }}
         >
           <WifiTetheringOutlined className={classes.icon} fontSize="small" />
-          {t('Observed datas')}
+          {t_i18n('Observed datas')}
         </Button>
       )}
     </>

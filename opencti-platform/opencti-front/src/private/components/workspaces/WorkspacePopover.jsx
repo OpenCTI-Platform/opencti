@@ -46,7 +46,7 @@ const WorkspacePopover = ({ workspace, paginationOptions }) => {
   const { id, type } = workspace;
   const navigate = useNavigate();
   const classes = useStyles();
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   const [anchorEl, setAnchorEl] = useState(null);
   const [displayDelete, setDisplayDelete] = useState(false);
   const [displayEdit, setDisplayEdit] = useState(false);
@@ -117,15 +117,15 @@ const WorkspacePopover = ({ workspace, paginationOptions }) => {
         <MoreVert />
       </IconButton>
       <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleClose}>
-        <MenuItem onClick={handleOpenEdit}>{t('Update')}</MenuItem>
+        <MenuItem onClick={handleOpenEdit}>{t_i18n('Update')}</MenuItem>
         {workspace.type === 'dashboard' && (
         <>
-          <MenuItem onClick={handleDashboardDuplication}>{t('Duplicate')}</MenuItem>
-          <MenuItem onClick={() => handleExportJson(workspace)}>{t('Export')}</MenuItem>
+          <MenuItem onClick={handleDashboardDuplication}>{t_i18n('Duplicate')}</MenuItem>
+          <MenuItem onClick={() => handleExportJson(workspace)}>{t_i18n('Export')}</MenuItem>
         </>
         )}
         <Security needs={[EXPLORE_EXUPDATE_EXDELETE]} hasAccess={userCanManage}>
-          <MenuItem onClick={handleOpenDelete}>{t('Delete')}</MenuItem>
+          <MenuItem onClick={handleOpenDelete}>{t_i18n('Delete')}</MenuItem>
         </Security>
       </Menu>
       <WorkspaceDuplicationDialog
@@ -146,15 +146,15 @@ const WorkspacePopover = ({ workspace, paginationOptions }) => {
       >
         <DialogContent>
           <DialogContentText>
-            {t('Do you want to delete this workspace?')}
+            {t_i18n('Do you want to delete this workspace?')}
           </DialogContentText>
         </DialogContent>
         <DialogActions>
           <Button onClick={handleCloseDelete} disabled={deleting}>
-            {t('Cancel')}
+            {t_i18n('Cancel')}
           </Button>
           <Button color="secondary" onClick={submitDelete} disabled={deleting}>
-            {t('Delete')}
+            {t_i18n('Delete')}
           </Button>
         </DialogActions>
       </Dialog>

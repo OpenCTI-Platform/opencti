@@ -36,7 +36,7 @@ interface ContainerStixObjectsOrStixRelationshipsComponentProps {
 const ContainerStixObjectsOrStixRelationshipsComponent: FunctionComponent<
 ContainerStixObjectsOrStixRelationshipsComponentProps
 > = ({ container, isSupportParticipation = false, types, title, variant }) => {
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   const classes = useStyles();
   const userIsKnowledgeEditor = useGranted([KNOWLEDGE_KNUPDATE]);
   const { me } = useContext(UserContext);
@@ -126,7 +126,7 @@ ContainerStixObjectsOrStixRelationshipsComponentProps
         gutterBottom={true}
         style={{ float: 'left', paddingBottom: 11 }}
       >
-        {title ?? t('Related entities')}
+        {title ?? t_i18n('Related entities')}
       </Typography>
       {container && (
         <Security needs={security}>

@@ -16,7 +16,7 @@ const SwitchField = (props) => {
     helpertext,
     tooltip,
   } = props;
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   const internalOnChange = useCallback(
     (event) => {
       const value = event.target.checked ? 'true' : 'false';
@@ -46,7 +46,7 @@ const SwitchField = (props) => {
               <div style={{ display: 'flex' }}>
                 <span>{props.label}</span>
                 <Tooltip
-                  title={t(tooltip)}
+                  title={t_i18n(tooltip)}
                 >
                   <InformationOutline
                     fontSize="small"

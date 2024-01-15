@@ -19,7 +19,7 @@ import { deleteNodeFromEdge } from '../../../../utils/store';
 const AttackPatternDataComponentsComponent: FunctionComponent<{
   attackPattern: AttackPatternDataComponents_attackPattern$data;
 }> = ({ attackPattern }) => {
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
 
   const [commit] = useMutation(addDataComponentsMutationRelationDelete);
 
@@ -46,7 +46,7 @@ const AttackPatternDataComponentsComponent: FunctionComponent<{
       }}
     >
       <Typography variant="h3" gutterBottom={true} style={{ float: 'left' }}>
-        {t('Data components')}
+        {t_i18n('Data components')}
       </Typography>
       <AddDataComponents attackPattern={attackPattern} />
       <div className="clearfix" />

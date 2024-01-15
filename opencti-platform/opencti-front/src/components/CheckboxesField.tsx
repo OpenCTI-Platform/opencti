@@ -20,7 +20,7 @@ const CheckboxesField = ({
   label,
   items,
 }: CheckboxesFieldProps) => {
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
 
   const { setFieldValue } = form;
   const { name, value } = field;
@@ -49,14 +49,14 @@ const CheckboxesField = ({
           variant={(items.length > 0 && value.length === items.length) ? 'contained' : undefined}
           onClick={checkAll}
         >
-          {t('All')}
+          {t_i18n('All')}
         </Button>
         <Button
           disabled={items.length === 0}
           variant={(items.length > 0 && value.length === 0) ? 'contained' : undefined}
           onClick={checkNone}
         >
-          {t('None')}
+          {t_i18n('None')}
         </Button>
       </ButtonGroup>
 

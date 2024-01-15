@@ -79,15 +79,15 @@ export const CityCreationForm: FunctionComponent<CityFormProps> = ({
   defaultMarkingDefinitions,
 }) => {
   const classes = useStyles();
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   const basicShape = {
-    name: Yup.string().min(2).required(t('This field is required')),
+    name: Yup.string().min(2).required(t_i18n('This field is required')),
     description: Yup.string().nullable(),
     latitude: Yup.number()
-      .typeError(t('This field must be a number'))
+      .typeError(t_i18n('This field must be a number'))
       .nullable(),
     longitude: Yup.number()
-      .typeError(t('This field must be a number'))
+      .typeError(t_i18n('This field must be a number'))
       .nullable(),
   };
   const cityValidator = useSchemaCreationValidation(CITY_TYPE, basicShape);
@@ -148,14 +148,14 @@ export const CityCreationForm: FunctionComponent<CityFormProps> = ({
           <Field
             component={TextField}
             name="name"
-            label={t('Name')}
+            label={t_i18n('Name')}
             fullWidth={true}
             detectDuplicate={['City']}
           />
           <Field
             component={MarkdownField}
             name="description"
-            label={t('Description')}
+            label={t_i18n('Description')}
             fullWidth={true}
             multiline={true}
             rows={4}
@@ -164,14 +164,14 @@ export const CityCreationForm: FunctionComponent<CityFormProps> = ({
           <Field
             component={TextField}
             name="latitude"
-            label={t('Latitude')}
+            label={t_i18n('Latitude')}
             fullWidth={true}
             style={{ marginTop: 20 }}
           />
           <Field
             component={TextField}
             name="longitude"
-            label={t('Longitude')}
+            label={t_i18n('Longitude')}
             fullWidth={true}
             style={{ marginTop: 20 }}
           />
@@ -204,7 +204,7 @@ export const CityCreationForm: FunctionComponent<CityFormProps> = ({
               disabled={isSubmitting}
               classes={{ root: classes.button }}
             >
-              {t('Cancel')}
+              {t_i18n('Cancel')}
             </Button>
             <Button
               variant="contained"
@@ -213,7 +213,7 @@ export const CityCreationForm: FunctionComponent<CityFormProps> = ({
               disabled={isSubmitting}
               classes={{ root: classes.button }}
             >
-              {t('Create')}
+              {t_i18n('Create')}
             </Button>
           </div>
         </Form>
@@ -227,11 +227,11 @@ const CityCreation = ({
 }: {
   paginationOptions: CitiesLinesPaginationQuery$variables;
 }) => {
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   const updater = (store: RecordSourceSelectorProxy) => insertNode(store, 'Pagination_cities', paginationOptions, 'cityAdd');
   return (
     <Drawer
-      title={t('Create a city')}
+      title={t_i18n('Create a city')}
       variant={DrawerVariant.create}
     >
       {({ onClose }) => (

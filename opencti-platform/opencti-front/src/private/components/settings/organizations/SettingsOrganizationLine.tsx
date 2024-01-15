@@ -61,7 +61,7 @@ export const SettingsOrganizationLine: FunctionComponent<SettingsOrganizationLin
   dataColumns,
 }) => {
   const classes = useStyles();
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
 
   const organization = useFragment(SettingsOrganizationFragment, node);
   return (
@@ -84,7 +84,7 @@ export const SettingsOrganizationLine: FunctionComponent<SettingsOrganizationLin
                 className={classes.bodyItem}
                 style={{ width: value.width }}
               >
-                {value.render?.(organization, { t, classes })}
+                {value.render?.(organization, { t: t_i18n, classes })}
               </div>
             ))}
           </div>

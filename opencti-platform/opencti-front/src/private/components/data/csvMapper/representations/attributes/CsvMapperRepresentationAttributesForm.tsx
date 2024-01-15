@@ -33,7 +33,7 @@ interface CsvMapperRepresentationAttributesFormProps {
 const CsvMapperRepresentationAttributesForm: FunctionComponent<
 CsvMapperRepresentationAttributesFormProps
 > = ({ index, queryRef, handleErrors }) => {
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
 
   const formikContext = useFormikContext<CsvMapper>();
   const representation = formikContext.values.representations[index];
@@ -101,7 +101,7 @@ CsvMapperRepresentationAttributesFormProps
               key={availableAttribute.key}
               indexRepresentation={index}
               attribute={availableAttribute}
-              label={t(
+              label={t_i18n(
                 getAttributeLabel(availableAttribute, schemaAttributes),
               ).toLowerCase()}
               handleErrors={handleErrors}
@@ -113,7 +113,7 @@ CsvMapperRepresentationAttributesFormProps
             key={availableAttribute.key}
             indexRepresentation={index}
             attribute={availableAttribute}
-            label={t(
+            label={t_i18n(
               getAttributeLabel(availableAttribute, schemaAttributes),
             ).toLowerCase()}
             handleErrors={handleErrors}

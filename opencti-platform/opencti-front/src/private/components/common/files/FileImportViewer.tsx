@@ -46,7 +46,7 @@ FileImportViewerComponentProps
   isArtifact,
 }) => {
   const classes = useStyles();
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   const { id, importFiles } = entity;
   useEffect(() => {
     // Refresh the export viewer every interval
@@ -61,7 +61,7 @@ FileImportViewerComponentProps
     <Grid item={true} xs={6} style={{ paddingTop: 10 }}>
       <div style={{ height: '100%' }} className="break">
         <Typography variant="h4" gutterBottom={true} style={{ float: 'left' }}>
-          {t('Uploaded files')}
+          {t_i18n('Uploaded files')}
         </Typography>
         <div style={{ float: 'left', marginTop: -15 }}>
           <FileUploader
@@ -107,7 +107,7 @@ FileImportViewerComponentProps
                   textAlign: 'center',
                 }}
               >
-                {t('No file for the moment')}
+                {t_i18n('No file for the moment')}
               </span>
             </div>
           )}

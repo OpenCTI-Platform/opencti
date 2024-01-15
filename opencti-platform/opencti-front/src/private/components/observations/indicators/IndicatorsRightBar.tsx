@@ -65,7 +65,7 @@ const IndicatorsRightBar: FunctionComponent<IndicatorsRightBarProps> = ({
   openExports,
 }) => {
   const classes = useStyles();
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   const {
     bannerSettings: { bannerHeightNumber },
   } = useAuth();
@@ -95,7 +95,7 @@ const IndicatorsRightBar: FunctionComponent<IndicatorsRightBarProps> = ({
             <List
               subheader={
                 <ListSubheader component="div">
-                  {t('Pattern type')}
+                  {t_i18n('Pattern type')}
                 </ListSubheader>
               }
             >
@@ -135,14 +135,14 @@ const IndicatorsRightBar: FunctionComponent<IndicatorsRightBarProps> = ({
             const translatedOrderedList = sortByLabel(
               subTypesEdges
                 .map((n) => n.node)
-                .map((n) => assoc('tlabel', t(`entity_${n.label}`), n)),
+                .map((n) => assoc('tlabel', t_i18n(`entity_${n.label}`), n)),
             );
             return (
               <List
                 subheader={
                   <ListSubheader component="div">
-                    {t('Observable type')}
-                    <Tooltip title={t('Clear filters')}>
+                    {t_i18n('Observable type')}
+                    <Tooltip title={t_i18n('Clear filters')}>
                       <IconButton
                         onClick={handleClearObservableTypes}
                         disabled={observableTypes.length === 0}

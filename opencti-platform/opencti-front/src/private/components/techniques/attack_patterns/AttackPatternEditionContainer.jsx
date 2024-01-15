@@ -10,7 +10,7 @@ import { useFormatter } from '../../../../components/i18n';
 import Drawer, { DrawerVariant } from '../../common/drawer/Drawer';
 
 const AttackPatternEditionContainer = (props) => {
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
 
   const { handleClose, attackPattern, open } = props;
   const { editContext } = attackPattern;
@@ -21,7 +21,7 @@ const AttackPatternEditionContainer = (props) => {
 
   return (
     <Drawer
-      title={t('Update an attack pattern')}
+      title={t_i18n('Update an attack pattern')}
       open={open}
       onClose={handleClose}
       variant={open == null ? DrawerVariant.update : undefined}
@@ -30,8 +30,8 @@ const AttackPatternEditionContainer = (props) => {
       <>
         <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
           <Tabs value={currentTab} onChange={handleChangeTab}>
-            <Tab label={t('Overview')} />
-            <Tab label={t('Details')} />
+            <Tab label={t_i18n('Overview')} />
+            <Tab label={t_i18n('Details')} />
           </Tabs>
         </Box>
         {currentTab === 0 && (

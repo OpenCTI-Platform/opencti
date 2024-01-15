@@ -22,7 +22,7 @@ export const notifierPopoverDeletionMutation = graphql`
 `;
 
 const NotifierPopover = ({ data, paginationOptions }: { data: NotifierLine_node$data, paginationOptions?: NotifiersLinesPaginationQuery$variables }) => {
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   const [queryRef, loadQuery] = useQueryLoader<NotifierEditionQuery>(notifierEditionQuery);
   const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
   const [displayEdit, setDisplayEdit] = useState<boolean>(false);
@@ -68,16 +68,16 @@ const NotifierPopover = ({ data, paginationOptions }: { data: NotifierLine_node$
         <MoreVert />
       </IconButton>
       <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleClose}>
-        <MenuItem onClick={handleDisplayEdit}>{t('Update')}</MenuItem>
-        <MenuItem onClick={handleOpenDelete}>{t('Delete')}</MenuItem>
+        <MenuItem onClick={handleDisplayEdit}>{t_i18n('Update')}</MenuItem>
+        <MenuItem onClick={handleOpenDelete}>{t_i18n('Delete')}</MenuItem>
       </Menu>
       <DeleteDialog
-        title={t('Do you want to delete this notifier?')}
+        title={t_i18n('Do you want to delete this notifier?')}
         deletion={deletion}
         submitDelete={submitDelete}
       />
       <Drawer
-        title={t('Notifier edition')}
+        title={t_i18n('Notifier edition')}
         open={displayEdit}
         onClose={() => setDisplayEdit(false)}
       >

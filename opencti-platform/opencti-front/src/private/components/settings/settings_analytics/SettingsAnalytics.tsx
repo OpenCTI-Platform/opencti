@@ -44,26 +44,26 @@ const SettingsAnalytics: FunctionComponent<SettingsAnalyticsProps> = ({
   isEnterpriseEdition,
 }) => {
   const classes = useStyles();
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   const { id, editContext } = settings;
   return (
     <>
       <Typography variant="h4" gutterBottom={true} style={{ float: 'left' }}>
-        {t('Third-party analytics')}
+        {t_i18n('Third-party analytics')}
         <EEChip />
       </Typography>
       <div style={{ float: 'left', margin: '-2px 0 0 10px' }}>
         <Tooltip
           title={
             <>
-              {t('If needed, you can set a')}{' '}
+              {t_i18n('If needed, you can set a')}{' '}
               <Link
                 to={'/dashboard/settings/accesses/policies'}
                 target="_blank"
               >
-                {t('consent message')}
+                {t_i18n('consent message')}
               </Link>{' '}
-              {t('on user login.')}
+              {t_i18n('on user login.')}
             </>
           }
         >
@@ -85,8 +85,8 @@ const SettingsAnalytics: FunctionComponent<SettingsAnalyticsProps> = ({
                   <Field
                     component={TextField}
                     name="analytics_google_analytics_v4"
-                    label={t('Google Analytics (v4)')}
-                    placeholder={t('G-XXXXXXXXXX')}
+                    label={t_i18n('Google Analytics (v4)')}
+                    placeholder={t_i18n('G-XXXXXXXXXX')}
                     InputLabelProps={{
                       shrink: true,
                     }}

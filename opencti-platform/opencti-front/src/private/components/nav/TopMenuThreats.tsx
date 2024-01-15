@@ -22,7 +22,7 @@ const useStyles = makeStyles<Theme>((theme) => ({
 
 const TopMenuThreats = () => {
   const classes = useStyles();
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   const location = useLocation();
 
   return (
@@ -40,7 +40,7 @@ const TopMenuThreats = () => {
           classes={{ root: classes.button }}
         >
           <AccountMultipleOutline className={classes.icon} fontSize="small" />
-          {t('Threat actors (group)')}
+          {t_i18n('Threat actors (group)')}
         </Button>
       )}
       {!useIsHiddenEntity('Threat-Actor-Individual') && (
@@ -58,7 +58,7 @@ const TopMenuThreats = () => {
           classes={{ root: classes.button }}
         >
           <LaptopAccount className={classes.icon} fontSize="small" />
-          {t('Threat actors (individual)')}
+          {t_i18n('Threat actors (individual)')}
         </Button>
       )}
       {!useIsHiddenEntity('Intrusion-Set') && (
@@ -74,7 +74,7 @@ const TopMenuThreats = () => {
           classes={{ root: classes.button }}
         >
           <DiamondOutline className={classes.icon} fontSize="small" />
-          {t('Intrusion sets')}
+          {t_i18n('Intrusion sets')}
         </Button>
       )}
       {!useIsHiddenEntity('Campaign') && (
@@ -90,7 +90,7 @@ const TopMenuThreats = () => {
           classes={{ root: classes.button }}
         >
           <ChessKnight className={classes.icon} fontSize="small" />
-          {t('Campaigns')}
+          {t_i18n('Campaigns')}
         </Button>
       )}
     </>

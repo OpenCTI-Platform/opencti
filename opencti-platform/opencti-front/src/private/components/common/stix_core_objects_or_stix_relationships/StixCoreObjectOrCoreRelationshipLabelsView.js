@@ -47,7 +47,7 @@ const useStyles = makeStyles(() => ({
 
 const StixCoreObjectOrCoreRelationshipLabelsView = (props) => {
   const classes = useStyles();
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   const {
     labels,
     marginTop,
@@ -153,7 +153,7 @@ const StixCoreObjectOrCoreRelationshipLabelsView = (props) => {
   return (
     <div style={{ marginTop: marginTop || 0 }}>
       <Typography variant="h3" gutterBottom={true} style={{ float: 'left' }}>
-        {t('Labels')}
+        {t_i18n('Labels')}
       </Typography>
       <Security needs={[KNOWLEDGE_KNUPDATE]}>
         <IconButton
@@ -246,7 +246,7 @@ const StixCoreObjectOrCoreRelationshipLabelsView = (props) => {
             onClose={handleCloseAdd}
             fullWidth={true}
           >
-            <DialogTitle>{t('Add new labels')}</DialogTitle>
+            <DialogTitle>{t_i18n('Add new labels')}</DialogTitle>
             <DialogContent style={{ overflowY: 'hidden' }}>
               <Form>
                 <Field
@@ -255,10 +255,10 @@ const StixCoreObjectOrCoreRelationshipLabelsView = (props) => {
                   multiple={true}
                   textfieldprops={{
                     variant: 'standard',
-                    label: t('Labels'),
+                    label: t_i18n('Labels'),
                     onFocus: searchLabels,
                   }}
-                  noOptionsText={t('No available options')}
+                  noOptionsText={t_i18n('No available options')}
                   options={stateLabels}
                   onInputChange={searchLabels}
                   openCreate={isLabelManager ? handleOpenCreate : null}
@@ -279,14 +279,14 @@ const StixCoreObjectOrCoreRelationshipLabelsView = (props) => {
             </DialogContent>
             <DialogActions>
               <Button onClick={handleReset} disabled={isSubmitting}>
-                {t('Close')}
+                {t_i18n('Close')}
               </Button>
               <Button
                 onClick={enableReferences ? handleOpenCommitCreate : submitForm}
                 disabled={isSubmitting}
                 color="secondary"
               >
-                {t('Add')}
+                {t_i18n('Add')}
               </Button>
               {enableReferences && (
                 <CommitMessage

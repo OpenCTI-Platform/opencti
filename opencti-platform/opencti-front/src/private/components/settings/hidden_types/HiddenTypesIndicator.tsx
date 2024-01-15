@@ -46,7 +46,7 @@ const HiddenTypesIndicatorComponent: FunctionComponent<HiddenTypesIndicatorCompo
   platformHiddenTargetType,
   queryRef,
 }) => {
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   const classes = useStyles();
 
   const data = usePreloadedQuery<HiddenTypesIndicatorQuery>(hiddenTypesIndicatorQuery, queryRef);
@@ -78,10 +78,10 @@ const HiddenTypesIndicatorComponent: FunctionComponent<HiddenTypesIndicatorCompo
       {(groupsName.length > 0 || orgsName.length > 0)
         && (<span className={classes.indication}>
               &emsp;
-          {`(${t('Hidden in ')}`}
-          {groupsName.length > 0 && `${t('Groups')} : ${groupsName}`}
-          {(groupsName.length > 0 && orgsName.length > 0) && `${t(' & ')}`}
-          {orgsName.length > 0 && `${t('Organizations')} : ${orgsName}`}
+          {`(${t_i18n('Hidden in ')}`}
+          {groupsName.length > 0 && `${t_i18n('Groups')} : ${groupsName}`}
+          {(groupsName.length > 0 && orgsName.length > 0) && `${t_i18n(' & ')}`}
+          {orgsName.length > 0 && `${t_i18n('Organizations')} : ${orgsName}`}
           {')'}
         </span>)
       }

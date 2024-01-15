@@ -89,13 +89,13 @@ export const GroupingCreationForm: FunctionComponent<GroupingFormProps> = ({
   defaultMarkingDefinitions,
 }) => {
   const classes = useStyles();
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   const history = useHistory();
   const [mapAfter, setMapAfter] = useState<boolean>(false);
   const basicShape = {
-    name: Yup.string().min(2).required(t('This field is required')),
+    name: Yup.string().min(2).required(t_i18n('This field is required')),
     confidence: Yup.number().nullable(),
-    context: Yup.string().required(t('This field is required')),
+    context: Yup.string().required(t_i18n('This field is required')),
     description: Yup.string().nullable(),
     content: Yup.string().nullable(),
   };
@@ -173,7 +173,7 @@ export const GroupingCreationForm: FunctionComponent<GroupingFormProps> = ({
           <Field
             component={TextField}
             name="name"
-            label={t('Name')}
+            label={t_i18n('Name')}
             fullWidth={true}
           />
           <ConfidenceField
@@ -181,7 +181,7 @@ export const GroupingCreationForm: FunctionComponent<GroupingFormProps> = ({
             containerStyle={fieldSpacingContainerStyle}
           />
           <OpenVocabField
-            label={t('Context')}
+            label={t_i18n('Context')}
             type="grouping-context-ov"
             name="context"
             multiple={false}
@@ -191,7 +191,7 @@ export const GroupingCreationForm: FunctionComponent<GroupingFormProps> = ({
           <Field
             component={MarkdownField}
             name="description"
-            label={t('Description')}
+            label={t_i18n('Description')}
             fullWidth={true}
             multiline={true}
             rows="4"
@@ -200,7 +200,7 @@ export const GroupingCreationForm: FunctionComponent<GroupingFormProps> = ({
           <Field
             component={RichTextField}
             name="content"
-            label={t('Content')}
+            label={t_i18n('Content')}
             fullWidth={true}
             style={{
               ...fieldSpacingContainerStyle,
@@ -237,7 +237,7 @@ export const GroupingCreationForm: FunctionComponent<GroupingFormProps> = ({
               disabled={isSubmitting}
               classes={{ root: classes.button }}
             >
-              {t('Cancel')}
+              {t_i18n('Cancel')}
             </Button>
             <Button
               variant="contained"
@@ -246,7 +246,7 @@ export const GroupingCreationForm: FunctionComponent<GroupingFormProps> = ({
               disabled={isSubmitting}
               classes={{ root: classes.button }}
             >
-              {t('Create')}
+              {t_i18n('Create')}
             </Button>
             {values.content.length > 0 && (
               <Button
@@ -259,7 +259,7 @@ export const GroupingCreationForm: FunctionComponent<GroupingFormProps> = ({
                 disabled={isSubmitting}
                 classes={{ root: classes.button }}
               >
-                {t('Create and map')}
+                {t_i18n('Create and map')}
               </Button>
             )}
           </div>
@@ -274,11 +274,11 @@ const GroupingCreation = ({
 }: {
   paginationOptions: GroupingsLinesPaginationQuery$variables;
 }) => {
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   const updater = (store: RecordSourceSelectorProxy) => insertNode(store, 'Pagination_groupings', paginationOptions, 'groupingAdd');
   return (
     <Drawer
-      title={t('Create a grouping')}
+      title={t_i18n('Create a grouping')}
       variant={DrawerVariant.create}
     >
       <GroupingCreationForm updater={updater} />

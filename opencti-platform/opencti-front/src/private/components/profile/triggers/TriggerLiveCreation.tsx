@@ -131,7 +131,7 @@ const TriggerLiveCreation: FunctionComponent<TriggerLiveCreationProps> = ({
   creationCallback,
   recipientId,
 }) => {
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   const classes = useStyles();
   const [filters, helpers] = useFiltersState();
   const [instanceTriggerFilters, setInstanceTriggerFilters] = useState<FilterGroup | undefined>(emptyFilterGroup);
@@ -140,16 +140,16 @@ const TriggerLiveCreation: FunctionComponent<TriggerLiveCreationProps> = ({
   FilterAutocompleteInputValue[]
   >([]);
   const eventTypesOptions: { value: TriggerEventType; label: string }[] = [
-    { value: 'create', label: t('Creation') },
-    { value: 'update', label: t('Modification') },
-    { value: 'delete', label: t('Deletion') },
+    { value: 'create', label: t_i18n('Creation') },
+    { value: 'update', label: t_i18n('Modification') },
+    { value: 'delete', label: t_i18n('Deletion') },
   ];
   const instanceEventTypesOptions: {
     value: TriggerEventType;
     label: string;
   }[] = [
-    { value: 'update', label: t('Modification') },
-    { value: 'delete', label: t('Deletion') },
+    { value: 'update', label: t_i18n('Modification') },
+    { value: 'delete', label: t_i18n('Deletion') },
   ];
   const onReset = () => {
     handleClose?.();
@@ -243,7 +243,7 @@ const TriggerLiveCreation: FunctionComponent<TriggerLiveCreationProps> = ({
           component={SwitchField}
           type="checkbox"
           name="instance_trigger"
-          label={t('Instance trigger')}
+          label={t_i18n('Instance trigger')}
           tooltip={instanceTriggerDescription}
           containerstyle={{ marginTop: 20 }}
           onChange={() => onChangeInstanceTrigger(setFieldValue)}
@@ -255,7 +255,7 @@ const TriggerLiveCreation: FunctionComponent<TriggerLiveCreationProps> = ({
           multiple={true}
           textfieldprops={{
             variant: 'standard',
-            label: t('Triggering on'),
+            label: t_i18n('Triggering on'),
           }}
           options={
             instance_trigger ? instanceEventTypesOptions : eventTypesOptions
@@ -334,13 +334,13 @@ const TriggerLiveCreation: FunctionComponent<TriggerLiveCreationProps> = ({
         component={TextField}
         variant="standard"
         name="name"
-        label={t('Name')}
+        label={t_i18n('Name')}
         fullWidth={true}
       />
       <Field
         component={MarkdownField}
         name="description"
-        label={t('Description')}
+        label={t_i18n('Description')}
         fullWidth={true}
         multiline={true}
         rows="4"
@@ -384,12 +384,12 @@ const TriggerLiveCreation: FunctionComponent<TriggerLiveCreationProps> = ({
         >
           <Close fontSize="small" color="primary" />
         </IconButton>
-        <Typography variant="h6">{t('Create a live trigger')}</Typography>
+        <Typography variant="h6">{t_i18n('Create a live trigger')}</Typography>
       </div>
       <div className={classes.container}>
         <Formik<TriggerLiveAddInput>
           initialValues={liveInitialValues}
-          validationSchema={liveTriggerValidation(t)}
+          validationSchema={liveTriggerValidation(t_i18n)}
           onSubmit={onLiveSubmit}
           onReset={onReset}
         >
@@ -409,7 +409,7 @@ const TriggerLiveCreation: FunctionComponent<TriggerLiveCreationProps> = ({
                   disabled={isSubmitting}
                   classes={{ root: classes.button }}
                 >
-                  {t('Cancel')}
+                  {t_i18n('Cancel')}
                 </Button>
                 <Button
                   variant="contained"
@@ -418,7 +418,7 @@ const TriggerLiveCreation: FunctionComponent<TriggerLiveCreationProps> = ({
                   disabled={isSubmitting}
                   classes={{ root: classes.button }}
                 >
-                  {t('Create')}
+                  {t_i18n('Create')}
                 </Button>
               </div>
             </Form>
@@ -437,24 +437,24 @@ const TriggerLiveCreation: FunctionComponent<TriggerLiveCreationProps> = ({
     >
       <Formik
         initialValues={liveInitialValues}
-        validationSchema={liveTriggerValidation(t)}
+        validationSchema={liveTriggerValidation(t_i18n)}
         onSubmit={onLiveSubmit}
         onReset={onReset}
       >
         {({ submitForm, handleReset, isSubmitting, setFieldValue, values }) => (
           <>
-            <DialogTitle>{t('Create a live trigger')}</DialogTitle>
+            <DialogTitle>{t_i18n('Create a live trigger')}</DialogTitle>
             <DialogContent>{liveFields(setFieldValue, values)}</DialogContent>
             <DialogActions classes={{ root: classes.dialogActions }}>
               <Button onClick={handleReset} disabled={isSubmitting}>
-                {t('Cancel')}
+                {t_i18n('Cancel')}
               </Button>
               <Button
                 color="secondary"
                 onClick={submitForm}
                 disabled={isSubmitting}
               >
-                {t('Create')}
+                {t_i18n('Create')}
               </Button>
             </DialogActions>
           </>

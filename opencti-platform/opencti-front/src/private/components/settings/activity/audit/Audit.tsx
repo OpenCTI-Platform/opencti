@@ -95,7 +95,7 @@ const Audit = () => {
   const [loading, setLoading] = useState(true);
   const [data, setData] = useState([]);
   const { settings } = useAuth();
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   const {
     viewStorage,
     paginationOptions,
@@ -210,7 +210,7 @@ const Audit = () => {
       <ActivityMenu />
       {settings.platform_demo && (
         <Alert severity="info" variant="outlined" style={{ marginBottom: 30 }}>
-          {t(
+          {t_i18n(
             'This platform is running in demo mode, all names in the activity and audit logs are redacted.',
           )}
         </Alert>
@@ -274,7 +274,7 @@ const Audit = () => {
           </React.Suspense>
         )}
       </ListLines>
-      <CSVLink filename={`${t('Audit logs')}.csv`} ref={csvLink} data={data} />
+      <CSVLink filename={`${t_i18n('Audit logs')}.csv`} ref={csvLink} data={data} />
     </div>
   );
 };

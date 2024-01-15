@@ -284,7 +284,7 @@ const useSearchEntities = ({
   ) => void;
 }) => {
   const [entities, setEntities] = useState<Record<string, EntityValue[]>>({});
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   const { schema, me } = useAuth();
   const theme = useTheme() as Theme;
 
@@ -444,7 +444,7 @@ const useSearchEntities = ({
     const buildOptionsFromStaticList = (key: string, inputList: string[] | EntityValue[], groupedBy: string[] = [], isLabelTranslated = false) => {
       const ungroupedEntities: EntityValue[] = inputList.map((n) => (
         typeof n === 'string' ? {
-          label: isLabelTranslated ? t(n) : n,
+          label: isLabelTranslated ? t_i18n(n) : n,
           value: n,
           type: 'Vocabulary',
         } : {
@@ -649,7 +649,7 @@ const useSearchEntities = ({
             }));
             unionSetEntities(filterKey, [
               {
-                label: t('No label'),
+                label: t_i18n('No label'),
                 value: null,
                 type: 'Label',
                 color: theme.palette.mode === 'dark' ? '#ffffff' : '#000000',
@@ -844,7 +844,7 @@ const useSearchEntities = ({
         let elementTypeResult = [] as EntityWithLabelValue[];
         elementTypeResult = [
           ...(schema.scos ?? []).map((n) => ({
-            label: t(`entity_${n.label}`),
+            label: t_i18n(`entity_${n.label}`),
             value: n.label,
             type: n.label,
           })),
@@ -852,7 +852,7 @@ const useSearchEntities = ({
         ];
         elementTypeResult = [
           ...(schema.sdos ?? []).map((n) => ({
-            label: t(`entity_${n.label}`),
+            label: t_i18n(`entity_${n.label}`),
             value: n.label,
             type: n.label,
           })),
@@ -875,7 +875,7 @@ const useSearchEntities = ({
         ) {
           const entitiesTypes = availableEntityTypes
             .map((n) => ({
-              label: t(
+              label: t_i18n(
                 n.toString()[0] === n.toString()[0].toUpperCase()
                   ? `entity_${n.toString()}`
                   : `relationship_${n.toString()}`,
@@ -894,13 +894,13 @@ const useSearchEntities = ({
           ) {
             result = [
               ...(schema.scos ?? []).map((n) => ({
-                label: t(`entity_${n.label}`),
+                label: t_i18n(`entity_${n.label}`),
                 value: n.label,
                 type: n.label,
               })),
               ...result,
               {
-                label: t('entity_Stix-Cyber-Observable'),
+                label: t_i18n('entity_Stix-Cyber-Observable'),
                 value: 'Stix-Cyber-Observable',
                 type: 'Stix-Cyber-Observable',
               },
@@ -913,12 +913,12 @@ const useSearchEntities = ({
           ) {
             result = [
               ...(schema.sdos ?? []).map((n) => ({
-                label: t(`entity_${n.label}`),
+                label: t_i18n(`entity_${n.label}`),
                 value: n.label,
                 type: n.label,
               })),
               {
-                label: t('entity_Stix-Domain-Object'),
+                label: t_i18n('entity_Stix-Domain-Object'),
                 value: 'Stix-Domain-Object',
                 type: 'Stix-Domain-Object',
               },
@@ -931,13 +931,13 @@ const useSearchEntities = ({
           ) {
             result = [
               ...(schema.scrs ?? []).map((n) => ({
-                label: t(`relationship_${n.label}`),
+                label: t_i18n(`relationship_${n.label}`),
                 value: n.label,
                 type: n.label,
               })),
               ...result,
               {
-                label: t('relationship_stix-sighting-relationship'),
+                label: t_i18n('relationship_stix-sighting-relationship'),
                 value: 'stix-sighting-relationship',
                 type: 'stix-sighting-relationship',
               },
@@ -951,7 +951,7 @@ const useSearchEntities = ({
         if (availableRelationshipTypes) {
           const relationshipsTypes = availableRelationshipTypes
             .map((n) => ({
-              label: t(`relationship_${n.toString()}`),
+              label: t_i18n(`relationship_${n.toString()}`),
               value: n,
               type: n,
             }))
@@ -960,18 +960,18 @@ const useSearchEntities = ({
         } else {
           const relationshipsTypes = (schema.scrs ?? [])
             .map((n) => ({
-              label: t(`relationship_${n.label}`),
+              label: t_i18n(`relationship_${n.label}`),
               value: n.label,
               type: n.label,
             }))
             .concat([
               {
-                label: t('relationship_stix-sighting-relationship'),
+                label: t_i18n('relationship_stix-sighting-relationship'),
                 value: 'stix-sighting-relationship',
                 type: 'stix-sighting-relationship',
               },
               {
-                label: t('relationship_object'),
+                label: t_i18n('relationship_object'),
                 value: 'object',
                 type: 'stix-internal-relationship',
               },
@@ -1000,7 +1000,7 @@ const useSearchEntities = ({
         break;
       case 'x_opencti_negative': {
         const negativeValue = [true, false].map((n) => ({
-          label: t(n ? 'False positive' : 'True positive'),
+          label: t_i18n(n ? 'False positive' : 'True positive'),
           value: n.toString(),
           type: 'Vocabulary',
         }));

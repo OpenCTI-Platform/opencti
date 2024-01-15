@@ -23,7 +23,7 @@ const RoleEdition: FunctionComponent<RoleEditionProps> = ({
   role,
   open,
 }) => {
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   const [currentTab, setTab] = useState(0);
   const { editContext } = role;
 
@@ -31,7 +31,7 @@ const RoleEdition: FunctionComponent<RoleEditionProps> = ({
 
   return (
     <Drawer
-      title={t('Update a role')}
+      title={t_i18n('Update a role')}
       variant={open == null ? DrawerVariant.updateWithPanel : undefined}
       open={open}
       onClose={handleClose}
@@ -40,8 +40,8 @@ const RoleEdition: FunctionComponent<RoleEditionProps> = ({
       <>
         <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
           <Tabs value={currentTab} onChange={(event, value) => setTab(value)}>
-            <Tab label={t('Overview')} />
-            <Tab label={t('Capabilities')} />
+            <Tab label={t_i18n('Overview')} />
+            <Tab label={t_i18n('Capabilities')} />
           </Tabs>
         </Box>
         {currentTab === 0 && <RoleEditionOverview role={role} context={editContext} />}

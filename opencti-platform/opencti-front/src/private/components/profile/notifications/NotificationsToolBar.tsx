@@ -96,7 +96,7 @@ const NotificationsToolBar: FunctionComponent<NotificationsToolBarProps> = ({
   filters,
 }) => {
   const classes = useStyles();
-  const { t, n } = useFormatter();
+  const { t_i18n, n } = useFormatter();
 
   const isOpen = numberOfSelectedElements > 0;
 
@@ -162,8 +162,8 @@ const NotificationsToolBar: FunctionComponent<NotificationsToolBarProps> = ({
     handleClearSelectedElements();
     MESSAGING$.notifySuccess(
       <span>
-        {t('The background task has been executed. You can monitor it on')}{' '}
-        <Link to="/dashboard/data/processing/tasks">{t('the dedicated page')}</Link>.
+        {t_i18n('The background task has been executed. You can monitor it on')}{' '}
+        <Link to="/dashboard/data/processing/tasks">{t_i18n('the dedicated page')}</Link>.
       </span>,
     );
     setProcessing(false);
@@ -238,7 +238,7 @@ const NotificationsToolBar: FunctionComponent<NotificationsToolBarProps> = ({
               <span className={classes.selectedElementsNumber}>
                 {numberOfSelectedElements}
               </span>{' '}
-              {t('selected')}{' '}
+              {t_i18n('selected')}{' '}
               <IconButton
                 aria-label="clear"
                 disabled={numberOfSelectedElements === 0 || processing}
@@ -248,7 +248,7 @@ const NotificationsToolBar: FunctionComponent<NotificationsToolBarProps> = ({
                 <ClearOutlined fontSize="small" />
               </IconButton>
             </Typography>
-            <Tooltip title={t('Mark as read')}>
+            <Tooltip title={t_i18n('Mark as read')}>
               <span>
                 <IconButton
                   aria-label="ack"
@@ -261,7 +261,7 @@ const NotificationsToolBar: FunctionComponent<NotificationsToolBarProps> = ({
                 </IconButton>
               </span>
             </Tooltip>
-            <Tooltip title={t('Mark as unread')}>
+            <Tooltip title={t_i18n('Mark as unread')}>
               <span>
                 <IconButton
                   aria-label="ack"
@@ -274,7 +274,7 @@ const NotificationsToolBar: FunctionComponent<NotificationsToolBarProps> = ({
                 </IconButton>
               </span>
             </Tooltip>
-            <Tooltip title={t('Delete')}>
+            <Tooltip title={t_i18n('Delete')}>
               <span>
                 <IconButton
                   aria-label="delete"
@@ -299,19 +299,19 @@ const NotificationsToolBar: FunctionComponent<NotificationsToolBarProps> = ({
           >
             <DialogTitle>
               <div style={{ float: 'left' }}>
-                {t('Launch a background task')}
+                {t_i18n('Launch a background task')}
               </div>
               <div style={{ float: 'right' }}>
                 <span className={classes.selectedElementsNumber}>
                   {n(numberOfSelectedElements)}
                 </span>{' '}
-                {t('selected element(s)')}
+                {t_i18n('selected element(s)')}
               </div>
             </DialogTitle>
             <DialogContent>
               {numberOfSelectedElements > 1000 && (
                 <Alert severity="warning">
-                  {t(
+                  {t_i18n(
                     "You're targeting more than 1000 entities with this background task, be sure of what you're doing!",
                   )}
                 </Alert>
@@ -321,9 +321,9 @@ const NotificationsToolBar: FunctionComponent<NotificationsToolBarProps> = ({
                   <TableHead>
                     <TableRow>
                       <TableCell>#</TableCell>
-                      <TableCell>{t('Step')}</TableCell>
-                      <TableCell>{t('Field')}</TableCell>
-                      <TableCell>{t('Values')}</TableCell>
+                      <TableCell>{t_i18n('Step')}</TableCell>
+                      <TableCell>{t_i18n('Field')}</TableCell>
+                      <TableCell>{t_i18n('Values')}</TableCell>
                     </TableRow>
                   </TableHead>
                   <TableBody>
@@ -335,7 +335,7 @@ const NotificationsToolBar: FunctionComponent<NotificationsToolBarProps> = ({
                       <TableCell>
                         <Chip label="SCOPE" />
                       </TableCell>
-                      <TableCell>{t('N/A')}</TableCell>
+                      <TableCell>{t_i18n('N/A')}</TableCell>
                       <TableCell>
                         {selectAll ? (
                           <TasksFilterValueContainer
@@ -366,7 +366,7 @@ const NotificationsToolBar: FunctionComponent<NotificationsToolBarProps> = ({
                           <TableCell>
                             <Chip label={o.type} />
                           </TableCell>
-                          <TableCell>{o.context?.field ?? t('N/A')}</TableCell>
+                          <TableCell>{o.context?.field ?? t_i18n('N/A')}</TableCell>
                           <TableCell>
                             {truncate(
                               (o.context?.values ?? [])
@@ -384,14 +384,14 @@ const NotificationsToolBar: FunctionComponent<NotificationsToolBarProps> = ({
             </DialogContent>
             <DialogActions>
               <Button onClick={handleCloseTask} disabled={processing}>
-                {t('Cancel')}
+                {t_i18n('Cancel')}
               </Button>
               <Button
                 onClick={submitTask}
                 color="secondary"
                 disabled={processing}
               >
-                {t('Launch')}
+                {t_i18n('Launch')}
               </Button>
             </DialogActions>
           </Dialog>

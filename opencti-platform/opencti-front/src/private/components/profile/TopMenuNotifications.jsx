@@ -16,7 +16,7 @@ const useStyles = makeStyles((theme) => ({
 
 const TopMenuNotifications = () => {
   const location = useLocation();
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   const classes = useStyles();
   return (
     <>
@@ -31,7 +31,7 @@ const TopMenuNotifications = () => {
         }
         classes={{ root: classes.button }}
       >
-        {t('Notifications')}
+        {t_i18n('Notifications')}
       </Button>
       <Button
         component={Link}
@@ -44,7 +44,7 @@ const TopMenuNotifications = () => {
         }
         classes={{ root: classes.button }}
       >
-        {t('Triggers and digests')}
+        {t_i18n('Triggers and digests')}
       </Button>
     </>
   );

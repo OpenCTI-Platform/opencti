@@ -79,7 +79,7 @@ export const NotifierCreationForm: FunctionComponent<NotifierFormProps> = ({
   inputValue,
 }) => {
   const classes = useStyles();
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   const formRef = createRef<CoreForm>();
   const [open, setOpen] = useState(false);
   const [connector, setCurrentConnector] = useState<Option & { schema?: string; ui_schema?: string }>();
@@ -94,7 +94,7 @@ export const NotifierCreationForm: FunctionComponent<NotifierFormProps> = ({
     current: MutableRefObject<CoreForm>['current'] | null,
     { setErrors, setSubmitting, resetForm }: NotifierFormikHelpers,
   ) => {
-    notifierValidation(t)
+    notifierValidation(t_i18n)
       .validate(values)
       .then(() => {
         if (current && current.validateForm()) {
@@ -136,7 +136,7 @@ export const NotifierCreationForm: FunctionComponent<NotifierFormProps> = ({
   return (
     <Formik<NotifierAddInput>
       initialValues={initialValues}
-      validationSchema={notifierValidation(t)}
+      validationSchema={notifierValidation(t_i18n)}
       onSubmit={() => {
       }}
       onReset={onClose}
@@ -154,13 +154,13 @@ export const NotifierCreationForm: FunctionComponent<NotifierFormProps> = ({
           <Field
             component={TextField}
             name="name"
-            label={t('Name')}
+            label={t_i18n('Name')}
             fullWidth={true}
           />
           <Field
             component={TextField}
             name="description"
-            label={t('Description')}
+            label={t_i18n('Description')}
             fullWidth={true}
             style={{ marginTop: 20 }}
           />
@@ -208,7 +208,7 @@ export const NotifierCreationForm: FunctionComponent<NotifierFormProps> = ({
               disabled={isSubmitting}
               classes={{ root: classes.button }}
             >
-              {t('Test')}
+              {t_i18n('Test')}
             </Button>
             <Button
               variant="contained"
@@ -216,7 +216,7 @@ export const NotifierCreationForm: FunctionComponent<NotifierFormProps> = ({
               disabled={isSubmitting}
               classes={{ root: classes.button }}
             >
-              {t('Cancel')}
+              {t_i18n('Cancel')}
             </Button>
             <Button
               variant="contained"
@@ -229,7 +229,7 @@ export const NotifierCreationForm: FunctionComponent<NotifierFormProps> = ({
               }
               classes={{ root: classes.button }}
             >
-              {t('Create')}
+              {t_i18n('Create')}
             </Button>
           </div>
           <NotifierTestDialog
@@ -263,11 +263,11 @@ const NotifierCreation: FunctionComponent<{
   inputValue?: string;
   paginationOptions: NotifiersLinesPaginationQuery$variables;
 }> = ({ inputValue, paginationOptions }) => {
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   const updater = (store: RecordSourceSelectorProxy) => insertNode(store, 'Pagination_notifiers', paginationOptions, 'notifierAdd');
   return (
     <Drawer
-      title={t('Create a notifier')}
+      title={t_i18n('Create a notifier')}
       variant={DrawerVariant.createWithPanel}
     >
       <NotifierCreationForm

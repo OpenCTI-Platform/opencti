@@ -96,7 +96,7 @@ const NotifierEdition: FunctionComponent<NotifierEditionComponentProps> = ({
   queryRef,
   onClose,
 }) => {
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   const classes = useStyles();
   const formRef = createRef<CoreForm>();
 
@@ -118,7 +118,7 @@ const NotifierEdition: FunctionComponent<NotifierEditionComponentProps> = ({
     values: NotifierEditionValues,
     current: FormRef,
   ) => {
-    notifierValidation(t)
+    notifierValidation(t_i18n)
       .validate(values)
       .then(() => {
         if (current?.validateForm()) {
@@ -153,7 +153,7 @@ const NotifierEdition: FunctionComponent<NotifierEditionComponentProps> = ({
       <Formik
         enableReinitialize={true}
         initialValues={initialValues}
-        validationSchema={notifierValidation(t)}
+        validationSchema={notifierValidation(t_i18n)}
         onSubmit={() => {}}
         onClose={onClose}
       >
@@ -163,14 +163,14 @@ const NotifierEdition: FunctionComponent<NotifierEditionComponentProps> = ({
               component={TextField}
               variant="standard"
               name="name"
-              label={t('Name')}
+              label={t_i18n('Name')}
               fullWidth={true}
             />
             <Field
               component={TextField}
               name="description"
               variant="standard"
-              label={t('Description')}
+              label={t_i18n('Description')}
               fullWidth={true}
               style={{ marginTop: 20 }}
             />
@@ -212,7 +212,7 @@ const NotifierEdition: FunctionComponent<NotifierEditionComponentProps> = ({
                 disabled={isSubmitting}
                 classes={{ root: classes.button }}
               >
-                {t('Test')}
+                {t_i18n('Test')}
               </Button>
               <Button
                 variant="contained"
@@ -223,7 +223,7 @@ const NotifierEdition: FunctionComponent<NotifierEditionComponentProps> = ({
                 disabled={isSubmitting}
                 classes={{ root: classes.button }}
               >
-                {t('Save')}
+                {t_i18n('Save')}
               </Button>
             </div>
             <NotifierTestDialog

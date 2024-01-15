@@ -89,14 +89,14 @@ interface NoteEditionOverviewProps {
 const NoteEditionOverviewComponent: FunctionComponent<
 NoteEditionOverviewProps
 > = ({ note, context }) => {
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
 
   const userIsKnowledgeEditor = useGranted([KNOWLEDGE_KNUPDATE]);
   const basicShape = {
-    content: Yup.string().min(2).required(t('This field is required')),
+    content: Yup.string().min(2).required(t_i18n('This field is required')),
     created: Yup.date()
-      .typeError(t('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)'))
-      .required(t('This field is required')),
+      .typeError(t_i18n('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)'))
+      .required(t_i18n('This field is required')),
     attribute_abstract: Yup.string().nullable(),
     confidence: Yup.number().nullable(),
     note_types: Yup.array().nullable(),
@@ -147,7 +147,7 @@ NoteEditionOverviewProps
     likelihood: note.likelihood,
     createdBy: convertCreatedBy(note) as Option,
     objectMarking: convertMarkings(note),
-    x_opencti_workflow_id: convertStatus(t, note) as Option,
+    x_opencti_workflow_id: convertStatus(t_i18n, note) as Option,
   };
 
   return (
@@ -165,7 +165,7 @@ NoteEditionOverviewProps
             onFocus={editor.changeFocus}
             onSubmit={handleSubmitField}
             TextFieldProps={{
-              label: t('Publication date'),
+              label: t_i18n('Publication date'),
               variant: 'standard',
               fullWidth: true,
               helperText: (
@@ -176,7 +176,7 @@ NoteEditionOverviewProps
           <Field
             component={TextField}
             name="attribute_abstract"
-            label={t('Abstract')}
+            label={t_i18n('Abstract')}
             fullWidth={true}
             style={{ marginTop: 20 }}
             onFocus={editor.changeFocus}
@@ -191,7 +191,7 @@ NoteEditionOverviewProps
           <Field
             component={MarkdownField}
             name="content"
-            label={t('Content')}
+            label={t_i18n('Content')}
             fullWidth={true}
             multiline={true}
             rows="4"
@@ -203,7 +203,7 @@ NoteEditionOverviewProps
             }
           />
           <OpenVocabField
-            label={t('Note types')}
+            label={t_i18n('Note types')}
             type="note_types_ov"
             name="note_types"
             onSubmit={handleSubmitField}
@@ -225,7 +225,7 @@ NoteEditionOverviewProps
             component={SliderField}
             name="likelihood"
             type="number"
-            label={t('Likelihood')}
+            label={t_i18n('Likelihood')}
             fullWidth={true}
             style={{ marginTop: 20 }}
             onFocus={editor.changeFocus}

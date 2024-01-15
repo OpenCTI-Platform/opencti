@@ -100,11 +100,11 @@ export const CourseOfActionCreationForm: FunctionComponent<CourseOfActionFormPro
   defaultMarkingDefinitions,
 }) => {
   const classes = useStyles();
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   const basicShape = {
     name: Yup.string()
       .min(2)
-      .required(t('This field is required')),
+      .required(t_i18n('This field is required')),
     description: Yup.string()
       .nullable(),
   };
@@ -190,14 +190,14 @@ export const CourseOfActionCreationForm: FunctionComponent<CourseOfActionFormPro
           <Field
             component={TextField}
             name="name"
-            label={t('Name')}
+            label={t_i18n('Name')}
             fullWidth={true}
             detectDuplicate={['Course-Of-Action']}
           />
           <Field
             component={MarkdownField}
             name="description"
-            label={t('Description')}
+            label={t_i18n('Description')}
             fullWidth={true}
             multiline={true}
             rows="4"
@@ -232,7 +232,7 @@ export const CourseOfActionCreationForm: FunctionComponent<CourseOfActionFormPro
               disabled={isSubmitting}
               classes={{ root: classes.button }}
             >
-              {t('Cancel')}
+              {t_i18n('Cancel')}
             </Button>
             <Button
               variant="contained"
@@ -241,7 +241,7 @@ export const CourseOfActionCreationForm: FunctionComponent<CourseOfActionFormPro
               disabled={isSubmitting}
               classes={{ root: classes.button }}
             >
-              {t('Create')}
+              {t_i18n('Create')}
             </Button>
           </div>
         </Form>
@@ -257,7 +257,7 @@ const CourseOfActionCreation: FunctionComponent<CourseOfActionFormProps> = ({
   inputValue,
 }) => {
   const classes = useStyles();
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   const [open, setOpen] = useState(false);
 
   const handleOpen = () => setOpen(true);
@@ -272,7 +272,7 @@ const CourseOfActionCreation: FunctionComponent<CourseOfActionFormProps> = ({
   const renderClassic = () => {
     return (
       <Drawer
-        title={t('Create a course of action')}
+        title={t_i18n('Create a course of action')}
         variant={DrawerVariant.create}
       >
         {({ onClose }) => (
@@ -299,7 +299,7 @@ const CourseOfActionCreation: FunctionComponent<CourseOfActionFormProps> = ({
           <Add />
         </Fab>
         <Dialog open={open} onClose={handleClose} PaperProps={{ elevation: 1 }}>
-          <DialogTitle>{t('Create a course of action')}</DialogTitle>
+          <DialogTitle>{t_i18n('Create a course of action')}</DialogTitle>
           <DialogContent>
             <CourseOfActionCreationForm
               inputValue={inputValue}

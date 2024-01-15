@@ -30,18 +30,18 @@ const ListFiltersWithoutLocalStorage = ({
   variant,
   type,
 }) => {
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   const classes = useStyles();
   let icon = <FilterListOutlined fontSize={fontSize || 'medium'} />;
-  let tooltip = t('Filters');
+  let tooltip = t_i18n('Filters');
   let color = 'primary';
   if (type === 'from') {
     icon = <RayStartArrow fontSize={fontSize || 'medium'} />;
-    tooltip = t('Dynamic source filters');
+    tooltip = t_i18n('Dynamic source filters');
     color = 'warning';
   } else if (type === 'to') {
     icon = <RayEndArrow fontSize={fontSize || 'medium'} />;
-    tooltip = t('Dynamic target filters');
+    tooltip = t_i18n('Dynamic target filters');
     color = 'success';
   }
   return (
@@ -56,7 +56,7 @@ const ListFiltersWithoutLocalStorage = ({
             size="small"
             style={{ float: 'left', margin: '0 15px 0 7px' }}
           >
-            {t('Filters')}
+            {t_i18n('Filters')}
           </Button>
         </Tooltip>
       ) : (

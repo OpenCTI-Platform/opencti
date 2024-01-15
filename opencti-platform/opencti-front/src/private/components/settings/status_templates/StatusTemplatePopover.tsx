@@ -51,7 +51,7 @@ const StatusTemplatePopover: FunctionComponent<StatusTemplatePopoverProps> = ({
   paginationOptions,
 }) => {
   const classes = useStyles();
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
 
   const [anchorEl, setAnchorEl] = useState<PopoverProps['anchorEl']>(null);
   const [displayUpdate, setDisplayUpdate] = useState<boolean>(false);
@@ -106,13 +106,13 @@ const StatusTemplatePopover: FunctionComponent<StatusTemplatePopoverProps> = ({
         <MoreVert />
       </IconButton>
       <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleClose}>
-        <MenuItem onClick={handleOpenUpdate}>{t('Update')}</MenuItem>
-        <MenuItem onClick={handleOpenDelete}>{t('Delete')}</MenuItem>
+        <MenuItem onClick={handleOpenUpdate}>{t_i18n('Update')}</MenuItem>
+        <MenuItem onClick={handleOpenDelete}>{t_i18n('Delete')}</MenuItem>
       </Menu>
       <Drawer
         open={displayUpdate}
         onClose={handleCloseUpdate}
-        title={t('Update a status template')}
+        title={t_i18n('Update a status template')}
       >
         <QueryRenderer
           query={statusTemplateEditionQuery}
@@ -143,15 +143,15 @@ const StatusTemplatePopover: FunctionComponent<StatusTemplatePopoverProps> = ({
       >
         <DialogContent>
           <DialogContentText>
-            {t('Do you want to delete this status template?')}
+            {t_i18n('Do you want to delete this status template?')}
           </DialogContentText>
         </DialogContent>
         <DialogActions>
           <Button onClick={handleCloseDelete} disabled={deleting}>
-            {t('Cancel')}
+            {t_i18n('Cancel')}
           </Button>
           <Button color="secondary" onClick={submitDelete} disabled={deleting}>
-            {t('Delete')}
+            {t_i18n('Delete')}
           </Button>
         </DialogActions>
       </Dialog>

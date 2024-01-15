@@ -52,7 +52,7 @@ const StatusTemplateField: FunctionComponent<StatusTemplateFieldProps> = ({
   helpertext,
 }) => {
   const classes = useStyles();
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
 
   const [statusTemplateCreation, setStatusTemplateCreation] = useState<boolean>(false);
   const [statusTemplateInput, setStatusTemplateInput] = useState<string>('');
@@ -105,11 +105,11 @@ const StatusTemplateField: FunctionComponent<StatusTemplateFieldProps> = ({
         name={name}
         textfieldprops={{
           variant: 'standard',
-          label: t('Name'),
+          label: t_i18n('Name'),
           helperText: helpertext,
           onFocus: searchStatusTemplates,
         }}
-        noOptionsText={t('No available options')}
+        noOptionsText={t_i18n('No available options')}
         options={statusTemplates}
         onInputChange={searchStatusTemplates}
         openCreate={handleOpenStatusTemplateCreation}

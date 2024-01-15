@@ -194,7 +194,7 @@ const settingsValidation = (t) => Yup.object().shape({
 
 const Settings = () => {
   const classes = useStyles();
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   const handleChangeFocus = (id, name) => {
     commitMutation({
       mutation: settingsFocus,
@@ -233,7 +233,7 @@ const Settings = () => {
         finalValue = '#000000';
       }
     }
-    settingsValidation(t)
+    settingsValidation(t_i18n)
       .validateAt(name, { [name]: finalValue })
       .then(() => {
         commitMutation({
@@ -293,7 +293,7 @@ const Settings = () => {
                 <Grid container={true} spacing={3}>
                   <Grid item={true} xs={6}>
                     <Typography variant="h4" gutterBottom={true}>
-                      {t('Configuration')}
+                      {t_i18n('Configuration')}
                     </Typography>
                     <Paper
                       classes={{ root: classes.paper }}
@@ -304,7 +304,7 @@ const Settings = () => {
                         onSubmit={() => {}}
                         enableReinitialize={true}
                         initialValues={initialValues}
-                        validationSchema={settingsValidation(t)}
+                        validationSchema={settingsValidation(t_i18n)}
                       >
                         {() => (
                           <Form>
@@ -312,7 +312,7 @@ const Settings = () => {
                               component={TextField}
                               variant="standard"
                               name="platform_title"
-                              label={t('Platform title')}
+                              label={t_i18n('Platform title')}
                               fullWidth
                               onFocus={(name) => handleChangeFocus(id, name)}
                               onSubmit={(name, value) => handleSubmitField(id, name, value)
@@ -328,7 +328,7 @@ const Settings = () => {
                               component={TextField}
                               variant="standard"
                               name="platform_favicon"
-                              label={t('Platform favicon URL')}
+                              label={t_i18n('Platform favicon URL')}
                               fullWidth
                               style={{ marginTop: 20 }}
                               onFocus={(name) => handleChangeFocus(id, name)}
@@ -345,7 +345,7 @@ const Settings = () => {
                               component={TextField}
                               variant="standard"
                               name="platform_email"
-                              label={t('Sender email address')}
+                              label={t_i18n('Sender email address')}
                               fullWidth
                               style={{ marginTop: 20 }}
                               onFocus={(name) => handleChangeFocus(id, name)}
@@ -362,7 +362,7 @@ const Settings = () => {
                               component={SelectField}
                               variant="standard"
                               name="platform_theme"
-                              label={t('Theme')}
+                              label={t_i18n('Theme')}
                               fullWidth
                               containerstyle={fieldSpacingContainerStyle}
                               onFocus={(name) => handleChangeFocus(id, name)}
@@ -375,14 +375,14 @@ const Settings = () => {
                                 />
                               }
                             >
-                              <MenuItem value="dark">{t('Dark')}</MenuItem>
-                              <MenuItem value="light">{t('Light')}</MenuItem>
+                              <MenuItem value="dark">{t_i18n('Dark')}</MenuItem>
+                              <MenuItem value="light">{t_i18n('Light')}</MenuItem>
                             </Field>
                             <Field
                               component={SelectField}
                               variant="standard"
                               name="platform_language"
-                              label={t('Language')}
+                              label={t_i18n('Language')}
                               fullWidth
                               containerstyle={fieldSpacingContainerStyle}
                               onFocus={(name) => handleChangeFocus(id, name)}
@@ -396,7 +396,7 @@ const Settings = () => {
                               }
                             >
                               <MenuItem value="auto">
-                                <em>{t('Automatic')}</em>
+                                <em>{t_i18n('Automatic')}</em>
                               </MenuItem>
                               {
                                 availableLanguage.map(({ value, label }) => <MenuItem key={value} value={value}>{label}</MenuItem>)
@@ -414,7 +414,7 @@ const Settings = () => {
                       gutterBottom={true}
                       stye={{ float: 'left' }}
                     >
-                      {t('OpenCTI platform')}
+                      {t_i18n('OpenCTI platform')}
                     </Typography>
                     {!isEnterpriseEdition ? (
                       <EnterpriseEditionButton inLine />
@@ -427,7 +427,7 @@ const Settings = () => {
                         }
                         classes={{ root: classes.button }}
                       >
-                        {t('Disable Enterprise Edition')}
+                        {t_i18n('Disable Enterprise Edition')}
                       </Button>
                     )}
                     <div className="clearfix" />
@@ -436,13 +436,13 @@ const Settings = () => {
                         onSubmit={() => {}}
                         enableReinitialize={true}
                         initialValues={initialValues}
-                        validationSchema={settingsValidation(t)}
+                        validationSchema={settingsValidation(t_i18n)}
                       >
                         {() => (
                           <Form>
                             <List style={{ marginTop: -20 }}>
                               <ListItem divider={true}>
-                                <ListItemText primary={t('Version')} />
+                                <ListItemText primary={t_i18n('Version')} />
                                 <ItemBoolean
                                   variant="inList"
                                   neutralLabel={version}
@@ -450,35 +450,35 @@ const Settings = () => {
                                 />
                               </ListItem>
                               <ListItem divider={true}>
-                                <ListItemText primary={t('Edition')} />
+                                <ListItemText primary={t_i18n('Edition')} />
                                 <ItemBoolean
                                   variant="inList"
                                   neutralLabel={
                                     isEnterpriseEdition
-                                      ? t('Enterprise')
-                                      : t('Community')
+                                      ? t_i18n('Enterprise')
+                                      : t_i18n('Community')
                                   }
                                   status={null}
                                 />
                               </ListItem>
                               <ListItem divider={true}>
                                 <ListItemText
-                                  primary={t('Architecture mode')}
+                                  primary={t_i18n('Architecture mode')}
                                 />
                                 <ItemBoolean
                                   variant="inList"
                                   neutralLabel={
                                     settings.platform_cluster.instances_number
                                     > 1
-                                      ? t('Cluster')
-                                      : t('Standalone')
+                                      ? t_i18n('Cluster')
+                                      : t_i18n('Standalone')
                                   }
                                   status={null}
                                 />
                               </ListItem>
                               <ListItem divider={true}>
                                 <ListItemText
-                                  primary={t('Number of node(s)')}
+                                  primary={t_i18n('Number of node(s)')}
                                 />
                                 <ItemBoolean
                                   variant="inList"
@@ -495,7 +495,7 @@ const Settings = () => {
                                   variant="standard"
                                   disabled={true}
                                   name="filigran_support_key"
-                                  label={t('Filigran support key')}
+                                  label={t_i18n('Filigran support key')}
                                   fullWidth={true}
                                 />
                               </ListItem>
@@ -503,7 +503,7 @@ const Settings = () => {
                                 <ListItemText
                                   primary={
                                     <>
-                                      {t('Remove Filigran logos')}
+                                      {t_i18n('Remove Filigran logos')}
                                       <EEChip />
                                     </>
                                   }
@@ -544,22 +544,22 @@ const Settings = () => {
                   </Grid>
                   <Grid item={true} xs={4} style={{ marginTop: 30 }}>
                     <Typography variant="h4" gutterBottom={true}>
-                      {t('Dark theme')}
+                      {t_i18n('Dark theme')}
                     </Typography>
                     <Paper classes={{ root: classes.paper }} variant="outlined">
                       <Formik
                         onSubmit={() => {}}
                         enableReinitialize={true}
                         initialValues={initialValues}
-                        validationSchema={settingsValidation(t)}
+                        validationSchema={settingsValidation(t_i18n)}
                       >
                         {() => (
                           <Form>
                             <Field
                               component={ColorPickerField}
                               name="platform_theme_dark_background"
-                              label={t('Background color')}
-                              placeholder={t('Default')}
+                              label={t_i18n('Background color')}
+                              placeholder={t_i18n('Default')}
                               InputLabelProps={{
                                 shrink: true,
                               }}
@@ -578,8 +578,8 @@ const Settings = () => {
                             <Field
                               component={ColorPickerField}
                               name="platform_theme_dark_paper"
-                              label={t('Paper color')}
-                              placeholder={t('Default')}
+                              label={t_i18n('Paper color')}
+                              placeholder={t_i18n('Default')}
                               InputLabelProps={{
                                 shrink: true,
                               }}
@@ -599,8 +599,8 @@ const Settings = () => {
                             <Field
                               component={ColorPickerField}
                               name="platform_theme_dark_nav"
-                              label={t('Navigation color')}
-                              placeholder={t('Default')}
+                              label={t_i18n('Navigation color')}
+                              placeholder={t_i18n('Default')}
                               InputLabelProps={{
                                 shrink: true,
                               }}
@@ -620,8 +620,8 @@ const Settings = () => {
                             <Field
                               component={ColorPickerField}
                               name="platform_theme_dark_primary"
-                              label={t('Primary color')}
-                              placeholder={t('Default')}
+                              label={t_i18n('Primary color')}
+                              placeholder={t_i18n('Default')}
                               InputLabelProps={{
                                 shrink: true,
                               }}
@@ -641,8 +641,8 @@ const Settings = () => {
                             <Field
                               component={ColorPickerField}
                               name="platform_theme_dark_secondary"
-                              label={t('Secondary color')}
-                              placeholder={t('Default')}
+                              label={t_i18n('Secondary color')}
+                              placeholder={t_i18n('Default')}
                               InputLabelProps={{
                                 shrink: true,
                               }}
@@ -662,8 +662,8 @@ const Settings = () => {
                             <Field
                               component={ColorPickerField}
                               name="platform_theme_dark_accent"
-                              label={t('Accent color')}
-                              placeholder={t('Default')}
+                              label={t_i18n('Accent color')}
+                              placeholder={t_i18n('Default')}
                               InputLabelProps={{
                                 shrink: true,
                               }}
@@ -684,8 +684,8 @@ const Settings = () => {
                               component={TextField}
                               variant="standard"
                               name="platform_theme_dark_logo"
-                              label={t('Logo URL')}
-                              placeholder={t('Default')}
+                              label={t_i18n('Logo URL')}
+                              placeholder={t_i18n('Default')}
                               InputLabelProps={{
                                 shrink: true,
                               }}
@@ -705,8 +705,8 @@ const Settings = () => {
                               component={TextField}
                               variant="standard"
                               name="platform_theme_dark_logo_collapsed"
-                              label={t('Logo URL (collapsed)')}
-                              placeholder={t('Default')}
+                              label={t_i18n('Logo URL (collapsed)')}
+                              placeholder={t_i18n('Default')}
                               InputLabelProps={{
                                 shrink: true,
                               }}
@@ -726,8 +726,8 @@ const Settings = () => {
                               component={TextField}
                               variant="standard"
                               name="platform_theme_dark_logo_login"
-                              label={t('Logo URL (login)')}
-                              placeholder={t('Default')}
+                              label={t_i18n('Logo URL (login)')}
+                              placeholder={t_i18n('Default')}
                               InputLabelProps={{
                                 shrink: true,
                               }}
@@ -750,22 +750,22 @@ const Settings = () => {
                   </Grid>
                   <Grid item={true} xs={4} style={{ marginTop: 30 }}>
                     <Typography variant="h4" gutterBottom={true}>
-                      {t('Light theme')}
+                      {t_i18n('Light theme')}
                     </Typography>
                     <Paper classes={{ root: classes.paper }} variant="outlined">
                       <Formik
                         onSubmit={() => {}}
                         enableReinitialize={true}
                         initialValues={initialValues}
-                        validationSchema={settingsValidation(t)}
+                        validationSchema={settingsValidation(t_i18n)}
                       >
                         {() => (
                           <Form>
                             <Field
                               component={ColorPickerField}
                               name="platform_theme_light_background"
-                              label={t('Background color')}
-                              placeholder={t('Default')}
+                              label={t_i18n('Background color')}
+                              placeholder={t_i18n('Default')}
                               InputLabelProps={{
                                 shrink: true,
                               }}
@@ -784,8 +784,8 @@ const Settings = () => {
                             <Field
                               component={ColorPickerField}
                               name="platform_theme_light_paper"
-                              label={t('Paper color')}
-                              placeholder={t('Default')}
+                              label={t_i18n('Paper color')}
+                              placeholder={t_i18n('Default')}
                               InputLabelProps={{
                                 shrink: true,
                               }}
@@ -805,8 +805,8 @@ const Settings = () => {
                             <Field
                               component={ColorPickerField}
                               name="platform_theme_light_nav"
-                              label={t('Navigation color')}
-                              placeholder={t('Default')}
+                              label={t_i18n('Navigation color')}
+                              placeholder={t_i18n('Default')}
                               InputLabelProps={{
                                 shrink: true,
                               }}
@@ -826,8 +826,8 @@ const Settings = () => {
                             <Field
                               component={ColorPickerField}
                               name="platform_theme_light_primary"
-                              label={t('Primary color')}
-                              placeholder={t('Default')}
+                              label={t_i18n('Primary color')}
+                              placeholder={t_i18n('Default')}
                               InputLabelProps={{
                                 shrink: true,
                               }}
@@ -847,8 +847,8 @@ const Settings = () => {
                             <Field
                               component={ColorPickerField}
                               name="platform_theme_light_secondary"
-                              label={t('Secondary color')}
-                              placeholder={t('Default')}
+                              label={t_i18n('Secondary color')}
+                              placeholder={t_i18n('Default')}
                               InputLabelProps={{
                                 shrink: true,
                               }}
@@ -868,8 +868,8 @@ const Settings = () => {
                             <Field
                               component={ColorPickerField}
                               name="platform_theme_light_accent"
-                              label={t('Accent color')}
-                              placeholder={t('Default')}
+                              label={t_i18n('Accent color')}
+                              placeholder={t_i18n('Default')}
                               InputLabelProps={{
                                 shrink: true,
                               }}
@@ -890,8 +890,8 @@ const Settings = () => {
                               component={TextField}
                               variant="standard"
                               name="platform_theme_light_logo"
-                              label={t('Logo URL')}
-                              placeholder={t('Default')}
+                              label={t_i18n('Logo URL')}
+                              placeholder={t_i18n('Default')}
                               InputLabelProps={{
                                 shrink: true,
                               }}
@@ -911,8 +911,8 @@ const Settings = () => {
                               component={TextField}
                               variant="standard"
                               name="platform_theme_light_logo_collapsed"
-                              label={t('Logo URL (collapsed)')}
-                              placeholder={t('Default')}
+                              label={t_i18n('Logo URL (collapsed)')}
+                              placeholder={t_i18n('Default')}
                               InputLabelProps={{
                                 shrink: true,
                               }}
@@ -932,8 +932,8 @@ const Settings = () => {
                               component={TextField}
                               variant="standard"
                               name="platform_theme_light_logo_login"
-                              label={t('Logo URL (login)')}
-                              placeholder={t('Default')}
+                              label={t_i18n('Logo URL (login)')}
+                              placeholder={t_i18n('Default')}
                               InputLabelProps={{
                                 shrink: true,
                               }}
@@ -956,7 +956,7 @@ const Settings = () => {
                   </Grid>
                   <Grid item={true} xs={4} style={{ marginTop: 30 }}>
                     <Typography variant="h4" gutterBottom={true}>
-                      {t('Tools')}
+                      {t_i18n('Tools')}
                     </Typography>
                     <Paper classes={{ root: classes.paper }} variant="outlined">
                       <List style={{ marginTop: -20 }}>
@@ -968,11 +968,11 @@ const Settings = () => {
                           }
                           return (
                             <ListItem key={module.id} divider={true}>
-                              <ListItemText primary={t(module.id)} />
+                              <ListItemText primary={t_i18n(module.id)} />
                               <ItemBoolean
                                 variant="inList"
                                 label={
-                                  module.enable ? t('Enabled') : t('Disabled')
+                                  module.enable ? t_i18n('Enabled') : t_i18n('Disabled')
                                 }
                                 status={status}
                               />
@@ -981,7 +981,7 @@ const Settings = () => {
                         })}
                         {dependencies.map((dep) => (
                           <ListItem key={dep.name} divider={true}>
-                            <ListItemText primary={t(dep.name)} />
+                            <ListItemText primary={t_i18n(dep.name)} />
                             <ItemBoolean
                               variant="inList"
                               neutralLabel={dep.version}

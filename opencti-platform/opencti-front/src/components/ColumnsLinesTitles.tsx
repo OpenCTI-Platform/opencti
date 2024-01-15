@@ -48,7 +48,7 @@ const ColumnsLinesTitles: FunctionComponent<TriggerLineTitlesProps> = ({
   secondaryAction,
 }) => {
   const classes = useStyles();
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   const reverseBy = (field: string) => {
     handleSort(field, !orderAsc);
   };
@@ -74,14 +74,14 @@ const ColumnsLinesTitles: FunctionComponent<TriggerLineTitlesProps> = ({
           style={{ width }}
           onClick={() => reverseBy(field)}
         >
-          <span>{t(label)}</span>
+          <span>{t_i18n(label)}</span>
           {sortBy === field ? orderComponent : ''}
         </div>
       );
     }
     return (
       <div className={classes.headerItem} style={{ width }} key={field}>
-        <span>{t(label)}</span>
+        <span>{t_i18n(label)}</span>
       </div>
     );
   };

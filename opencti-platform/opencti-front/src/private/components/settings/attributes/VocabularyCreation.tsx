@@ -53,7 +53,7 @@ const VocabularyCreation: FunctionComponent<VocabularyCreationProps> = ({
   category,
 }) => {
   const classes = useStyles();
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
 
   const [addVocab] = useMutation<VocabularyCreationMutation>(vocabularyAdd);
 
@@ -93,7 +93,7 @@ const VocabularyCreation: FunctionComponent<VocabularyCreationProps> = ({
 
   return (
     <Drawer
-      title={t('Create a vocabulary')}
+      title={t_i18n('Create a vocabulary')}
       variant={DrawerVariant.createWithPanel}
     >
       {({ onClose }) => (
@@ -104,7 +104,7 @@ const VocabularyCreation: FunctionComponent<VocabularyCreationProps> = ({
             aliases: [] as { value: string }[],
             order: 0,
           }}
-          validationSchema={labelValidation(t)}
+          validationSchema={labelValidation(t_i18n)}
           onSubmit={(values, formikHelpers) => {
             onSubmit(values, formikHelpers);
             onClose();
@@ -117,14 +117,14 @@ const VocabularyCreation: FunctionComponent<VocabularyCreationProps> = ({
                 component={TextField}
                 variant="standard"
                 name="name"
-                label={t('Name')}
+                label={t_i18n('Name')}
                 fullWidth={true}
               />
               <Field
                 component={TextField}
                 variant="standard"
                 name="description"
-                label={t('Description')}
+                label={t_i18n('Description')}
                 fullWidth={true}
                 style={fieldSpacingContainerStyle}
               />
@@ -135,7 +135,7 @@ const VocabularyCreation: FunctionComponent<VocabularyCreationProps> = ({
                 multiple={true}
                 textfieldprops={{
                   variant: 'standard',
-                  label: t('Aliases'),
+                  label: t_i18n('Aliases'),
                 }}
                 options={[]}
                 renderOption={(
@@ -152,7 +152,7 @@ const VocabularyCreation: FunctionComponent<VocabularyCreationProps> = ({
                 component={TextField}
                 variant="standard"
                 name="order"
-                label={t('Order')}
+                label={t_i18n('Order')}
                 fullWidth={true}
                 type="number"
                 style={{ marginTop: 20 }}
@@ -164,7 +164,7 @@ const VocabularyCreation: FunctionComponent<VocabularyCreationProps> = ({
                   disabled={isSubmitting}
                   classes={{ root: classes.button }}
                 >
-                  {t('Cancel')}
+                  {t_i18n('Cancel')}
                 </Button>
                 <Button
                   variant="contained"
@@ -173,7 +173,7 @@ const VocabularyCreation: FunctionComponent<VocabularyCreationProps> = ({
                   disabled={isSubmitting || !isValid || !dirty}
                   classes={{ root: classes.button }}
                 >
-                  {t('Create')}
+                  {t_i18n('Create')}
                 </Button>
               </div>
             </Form>

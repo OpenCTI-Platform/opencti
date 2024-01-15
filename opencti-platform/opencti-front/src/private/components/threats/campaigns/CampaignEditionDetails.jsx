@@ -55,7 +55,7 @@ const campaignValidation = (t) => Yup.object().shape({
 
 const CampaignEditionDetailsComponent = (props) => {
   const { campaign, enableReferences, context, handleClose } = props;
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
 
   const handleChangeFocus = (name) => commitMutation({
     mutation: campaignEditionDetailsFocus,
@@ -106,7 +106,7 @@ const CampaignEditionDetailsComponent = (props) => {
 
   const handleSubmitField = (name, value) => {
     if (!enableReferences) {
-      campaignValidation(t)
+      campaignValidation(t_i18n)
         .validateAt(name, { [name]: value })
         .then(() => {
           commitMutation({
@@ -130,7 +130,7 @@ const CampaignEditionDetailsComponent = (props) => {
     <Formik
       enableReinitialize={true}
       initialValues={initialValues}
-      validationSchema={campaignValidation(t)}
+      validationSchema={campaignValidation(t_i18n)}
       onSubmit={onSubmit}
     >
       {({
@@ -148,7 +148,7 @@ const CampaignEditionDetailsComponent = (props) => {
             onFocus={handleChangeFocus}
             onSubmit={handleSubmitField}
             TextFieldProps={{
-              label: t('First seen'),
+              label: t_i18n('First seen'),
               variant: 'standard',
               fullWidth: true,
               helperText: (
@@ -162,7 +162,7 @@ const CampaignEditionDetailsComponent = (props) => {
             onFocus={handleChangeFocus}
             onSubmit={handleSubmitField}
             TextFieldProps={{
-              label: t('Last seen'),
+              label: t_i18n('Last seen'),
               variant: 'standard',
               fullWidth: true,
               style: { marginTop: 20 },
@@ -174,7 +174,7 @@ const CampaignEditionDetailsComponent = (props) => {
           <Field
             component={TextField}
             name="objective"
-            label={t('Objective')}
+            label={t_i18n('Objective')}
             fullWidth={true}
             multiline={true}
             rows={4}

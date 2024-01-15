@@ -26,14 +26,14 @@ export const caseRftEditionQuery = graphql`
 `;
 
 const CaseRftEditionContainer: FunctionComponent<CaseRftEditionContainerProps> = ({ queryRef, handleClose, open }) => {
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   const { caseRft } = usePreloadedQuery(caseRftEditionQuery, queryRef);
   if (caseRft === null) {
     return <ErrorNotFound />;
   }
   return (
     <Drawer
-      title={t('Update a request for takedown')}
+      title={t_i18n('Update a request for takedown')}
       variant={open == null ? DrawerVariant.update : undefined}
       context={caseRft.editContext}
       onClose={handleClose}

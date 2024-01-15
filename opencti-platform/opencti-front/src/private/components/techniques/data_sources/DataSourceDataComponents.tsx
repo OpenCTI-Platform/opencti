@@ -18,7 +18,7 @@ import { DataSourceDataComponents_dataSource$data } from './__generated__/DataSo
 const DataSourceDataComponentsComponent: FunctionComponent<{
   dataSource: DataSourceDataComponents_dataSource$data;
 }> = ({ dataSource }) => {
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
 
   const [commit] = useMutation(addDataComponentsMutationRelationDelete);
 
@@ -32,7 +32,7 @@ const DataSourceDataComponentsComponent: FunctionComponent<{
   return (
     <div>
       <Typography variant="h3" gutterBottom={true} style={{ float: 'left' }}>
-        {t('Data components')}
+        {t_i18n('Data components')}
       </Typography>
       <AddDataComponents dataSource={dataSource} />
       <div className="clearfix" />

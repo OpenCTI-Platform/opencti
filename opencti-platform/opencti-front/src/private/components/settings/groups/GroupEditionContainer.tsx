@@ -65,7 +65,7 @@ const GroupEditionContainer: FunctionComponent<GroupEditionContainerProps> = ({
   groupQueryRef, handleClose = () => {
   }, open,
 }) => {
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
 
   const [currentTab, setTab] = useState(0);
 
@@ -85,7 +85,7 @@ const GroupEditionContainer: FunctionComponent<GroupEditionContainerProps> = ({
   const { editContext } = group;
   return (
     <Drawer
-      title={t('Update a group')}
+      title={t_i18n('Update a group')}
       variant={open == null ? DrawerVariant.updateWithPanel : undefined}
       context={editContext}
       onClose={handleClose}
@@ -94,10 +94,10 @@ const GroupEditionContainer: FunctionComponent<GroupEditionContainerProps> = ({
       <>
         <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
           <Tabs value={currentTab} onChange={(event, value) => setTab(value)}>
-            <Tab label={t('Overview')} />
-            <Tab label={t('Roles')} />
-            <Tab label={t('Markings')} />
-            <Tab label={t('Members')} />
+            <Tab label={t_i18n('Overview')} />
+            <Tab label={t_i18n('Roles')} />
+            <Tab label={t_i18n('Markings')} />
+            <Tab label={t_i18n('Members')} />
           </Tabs>
         </Box>
         {currentTab === 0 && (

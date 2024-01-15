@@ -77,10 +77,10 @@ const channelMutationRelationDelete = graphql`
 
 const ChannelEditionOverviewComponent = (props) => {
   const { channel, enableReferences, context, handleClose } = props;
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
 
   const basicShape = {
-    name: Yup.string().min(2).required(t('This field is required')),
+    name: Yup.string().min(2).required(t_i18n('This field is required')),
     channel_types: Yup.array().nullable(),
     description: Yup.string().nullable(),
     confidence: Yup.number().nullable(),
@@ -151,7 +151,7 @@ const ChannelEditionOverviewComponent = (props) => {
   const initialValues = R.pipe(
     R.assoc('createdBy', convertCreatedBy(channel)),
     R.assoc('objectMarking', convertMarkings(channel)),
-    R.assoc('x_opencti_workflow_id', convertStatus(t, channel)),
+    R.assoc('x_opencti_workflow_id', convertStatus(t_i18n, channel)),
     R.assoc('channel_types', (channel.channel_types || [])),
     R.assoc('references', []),
     R.pick([
@@ -183,7 +183,7 @@ const ChannelEditionOverviewComponent = (props) => {
           <Field
             component={TextField}
             name="name"
-            label={t('Name')}
+            label={t_i18n('Name')}
             fullWidth={true}
             onFocus={editor.changeFocus}
             onSubmit={handleSubmitField}
@@ -194,7 +194,7 @@ const ChannelEditionOverviewComponent = (props) => {
           <OpenVocabField
             type="channel_types_ov"
             name="channel_types"
-            label={t('Channel types')}
+            label={t_i18n('Channel types')}
             variant="edit"
             multiple={true}
             containerStyle={fieldSpacingContainerStyle}
@@ -204,7 +204,7 @@ const ChannelEditionOverviewComponent = (props) => {
           <Field
             component={MarkdownField}
             name="description"
-            label={t('Description')}
+            label={t_i18n('Description')}
             fullWidth={true}
             multiline={true}
             rows="4"

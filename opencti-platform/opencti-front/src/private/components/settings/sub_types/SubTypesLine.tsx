@@ -88,7 +88,7 @@ const SubTypeLine: FunctionComponent<SubTypeLineProps> = ({
   index,
 }) => {
   const classes = useStyles();
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   const nodeSubType = useFragment(subTypesLinesFragment, node);
 
   const renderOptionIcon = (option: string) => {
@@ -144,7 +144,7 @@ const SubTypeLine: FunctionComponent<SubTypeLineProps> = ({
               className={classes.bodyItem}
               style={{ width: dataColumns.entity_type.width }}
             >
-              {t(`entity_${nodeSubType.label}`)}
+              {t_i18n(`entity_${nodeSubType.label}`)}
             </div>
             <div
               className={classes.bodyItem}

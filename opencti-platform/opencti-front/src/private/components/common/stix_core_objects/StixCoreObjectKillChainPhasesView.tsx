@@ -31,12 +31,12 @@ interface StixCoreObjectKillChainPhasesViewProps {
 }
 
 const StixCoreObjectKillChainPhasesView: FunctionComponent<StixCoreObjectKillChainPhasesViewProps> = ({ killChainPhasesEdges, firstLine }) => {
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   const classes = useStyles();
   return (
     <div>
       <Typography variant="h3" gutterBottom={true} style={firstLine ? undefined : { marginTop: 20 }}>
-        {t('Kill chain phases')}
+        {t_i18n('Kill chain phases')}
       </Typography>
       {killChainPhasesEdges.length > 0
         ? <List>

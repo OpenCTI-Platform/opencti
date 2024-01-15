@@ -120,7 +120,7 @@ const stixDomainObjectValidation = (t) => Yup.object().shape({
 });
 
 const StixDomainObjectEditionContainer = (props) => {
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   const classes = useStyles();
 
   const { handleClose, stixDomainObject, noStoreUpdate } = props;
@@ -186,7 +186,7 @@ const StixDomainObjectEditionContainer = (props) => {
 
   const handleSubmitField = (name, value) => {
     if (!enableReferences) {
-      stixDomainObjectValidation(t)
+      stixDomainObjectValidation(t_i18n)
         .validateAt(name, { [name]: value })
         .then(() => {
           commitMutation({
@@ -311,7 +311,7 @@ const StixDomainObjectEditionContainer = (props) => {
           <Close fontSize="small" color="primary" />
         </IconButton>
         <Typography variant="h6" classes={{ root: classes.title }}>
-          {t('Update an entity')}
+          {t_i18n('Update an entity')}
         </Typography>
         <SubscriptionAvatars context={editContext} />
         <div className="clearfix" />
@@ -320,7 +320,7 @@ const StixDomainObjectEditionContainer = (props) => {
         <Formik
           enableReinitialize={true}
           initialValues={initialValues}
-          validationSchema={stixDomainObjectValidation(t)}
+          validationSchema={stixDomainObjectValidation(t_i18n)}
           onSubmit={onSubmit}
         >
           {({ submitForm, isSubmitting, setFieldValue, values }) => (
@@ -330,7 +330,7 @@ const StixDomainObjectEditionContainer = (props) => {
                   component={TextField}
                   variant="standard"
                   name="result_name"
-                  label={t('Result Name')}
+                  label={t_i18n('Result Name')}
                   fullWidth={true}
                   onFocus={handleChangeFocus}
                   onSubmit={handleResultName}
@@ -343,7 +343,7 @@ const StixDomainObjectEditionContainer = (props) => {
                   component={TextField}
                   variant="standard"
                   name="name"
-                  label={t('Name')}
+                  label={t_i18n('Name')}
                   fullWidth={true}
                   disabled={typesWithoutName.includes(
                     stixDomainObject.entity_type,
@@ -360,7 +360,7 @@ const StixDomainObjectEditionContainer = (props) => {
                   component={TextField}
                   variant="standard"
                   name="aliases"
-                  label={t('Aliases separated by commas')}
+                  label={t_i18n('Aliases separated by commas')}
                   fullWidth={true}
                   style={{ marginTop: 20 }}
                   onFocus={handleChangeFocus}
@@ -378,7 +378,7 @@ const StixDomainObjectEditionContainer = (props) => {
                   component={TextField}
                   variant="standard"
                   name="x_opencti_aliases"
-                  label={t('Aliases separated by commas')}
+                  label={t_i18n('Aliases separated by commas')}
                   fullWidth={true}
                   style={{ marginTop: 20 }}
                   onFocus={handleChangeFocus}
@@ -404,7 +404,7 @@ const StixDomainObjectEditionContainer = (props) => {
                 <Field
                   component={MarkdownField}
                   name="description"
-                  label={t('Description')}
+                  label={t_i18n('Description')}
                   fullWidth={true}
                   multiline={true}
                   rows={4}

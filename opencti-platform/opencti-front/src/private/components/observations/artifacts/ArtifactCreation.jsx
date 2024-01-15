@@ -91,7 +91,7 @@ const ArtifactCreation = ({
   paginationOptions,
 }) => {
   const classes = useStyles();
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   const [open, setOpen] = useState(false);
 
   const handleOpen = () => {
@@ -168,7 +168,7 @@ const ArtifactCreation = ({
           >
             <Close fontSize="small" color="primary" />
           </IconButton>
-          <Typography variant="h6">{t('Create an artifact')}</Typography>
+          <Typography variant="h6">{t_i18n('Create an artifact')}</Typography>
         </div>
         <div className={classes.container}>
           <Formik
@@ -179,7 +179,7 @@ const ArtifactCreation = ({
               objectMarking: [],
               objectLabel: [],
             }}
-            validationSchema={artifactValidation(t)}
+            validationSchema={artifactValidation(t_i18n)}
             onSubmit={onSubmit}
             onReset={onReset}
           >
@@ -195,7 +195,7 @@ const ArtifactCreation = ({
                 <Field
                   component={MarkdownField}
                   name="x_opencti_description"
-                  label={t('Description')}
+                  label={t_i18n('Description')}
                   fullWidth={true}
                   multiline={true}
                   rows="4"
@@ -223,7 +223,7 @@ const ArtifactCreation = ({
                     disabled={isSubmitting}
                     classes={{ root: classes.button }}
                   >
-                    {t('Cancel')}
+                    {t_i18n('Cancel')}
                   </Button>
                   <Button
                     variant="contained"
@@ -232,7 +232,7 @@ const ArtifactCreation = ({
                     disabled={isSubmitting}
                     classes={{ root: classes.button }}
                   >
-                    {t('Create')}
+                    {t_i18n('Create')}
                   </Button>
                 </div>
               </Form>

@@ -71,7 +71,7 @@ const InfrastructureDetails: FunctionComponent<InfrastructureDetailsProps> = ({
   infrastructure,
 }) => {
   const classes = useStyles();
-  const { t, fldt } = useFormatter();
+  const { t_i18n, fldt } = useFormatter();
 
   const data: InfrastructureDetails_infrastructure$data = useFragment(
     InfrastructureDetailsFragment,
@@ -103,13 +103,13 @@ const InfrastructureDetails: FunctionComponent<InfrastructureDetailsProps> = ({
   return (
     <div style={{ height: '100%' }}>
       <Typography variant="h4" gutterBottom={true}>
-        {t('Details')}
+        {t_i18n('Details')}
       </Typography>
       <Paper classes={{ root: classes.paper }} variant="outlined">
         <Grid container={true} spacing={3}>
           <Grid item={true} xs={6}>
             <Typography variant="h3" gutterBottom={true}>
-              {t('Infrastructure types')}
+              {t_i18n('Infrastructure types')}
             </Typography>
             {data.infrastructure_types
             && data.infrastructure_types.length > 0 ? (
@@ -128,19 +128,19 @@ const InfrastructureDetails: FunctionComponent<InfrastructureDetailsProps> = ({
           </Grid>
           <Grid item={true} xs={6}>
             <Typography variant="h3" gutterBottom={true}>
-              {t('Description')}
+              {t_i18n('Description')}
             </Typography>
             <ExpandableMarkdown source={data.description} limit={400} />
           </Grid>
           <Grid item={true} xs={6}>
             <Typography variant="h3" gutterBottom={true}>
-              {t('First seen')}
+              {t_i18n('First seen')}
             </Typography>
             {data.first_seen ? fldt(data.first_seen) : '-'}
           </Grid>
           <Grid item={true} xs={6}>
             <Typography variant="h3" gutterBottom={true}>
-              {t('Last seen')}
+              {t_i18n('Last seen')}
             </Typography>
             {data.last_seen ? fldt(data.last_seen) : '-'}
           </Grid>
@@ -153,7 +153,7 @@ const InfrastructureDetails: FunctionComponent<InfrastructureDetailsProps> = ({
         <br />
         <StixCoreObjectsDonut
           dataSelection={observablesDataSelection}
-          parameters={{ title: t('Observables distribution') }}
+          parameters={{ title: t_i18n('Observables distribution') }}
           variant="inEntity"
           height={300}
         />

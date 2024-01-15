@@ -24,7 +24,7 @@ const useStyles = makeStyles<Theme>((theme) => ({
 const TopMenuLocation = () => {
   const classes = useStyles();
   const location = useLocation();
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   return (
     <>
       {!useIsHiddenEntity('Region') && (
@@ -40,7 +40,7 @@ const TopMenuLocation = () => {
           classes={{ root: classes.button }}
         >
           <PublicOutlined className={classes.icon} fontSize="small" />
-          {t('Regions')}
+          {t_i18n('Regions')}
         </Button>
       )}
       {!useIsHiddenEntity('Country') && (
@@ -56,7 +56,7 @@ const TopMenuLocation = () => {
           classes={{ root: classes.button }}
         >
           <FlagOutlined className={classes.icon} fontSize="small" />
-          {t('Countries')}
+          {t_i18n('Countries')}
         </Button>
       )}
       {!useIsHiddenEntity('Administrative-Area') && (
@@ -74,7 +74,7 @@ const TopMenuLocation = () => {
           classes={{ root: classes.button }}
         >
           <MapOutlined className={classes.icon} fontSize="small" />
-          {t('Areas')}
+          {t_i18n('Areas')}
         </Button>
       )}
       {!useIsHiddenEntity('City') && (
@@ -90,7 +90,7 @@ const TopMenuLocation = () => {
           classes={{ root: classes.button }}
         >
           <CityVariantOutline className={classes.icon} fontSize="small" />
-          {t('Cities')}
+          {t_i18n('Cities')}
         </Button>
       )}
       {!useIsHiddenEntity('Position') && (
@@ -106,7 +106,7 @@ const TopMenuLocation = () => {
           classes={{ root: classes.button }}
         >
           <PlaceOutlined className={classes.icon} fontSize="small" />
-          {t('Positions')}
+          {t_i18n('Positions')}
         </Button>
       )}
     </>

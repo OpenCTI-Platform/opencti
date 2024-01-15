@@ -114,7 +114,7 @@ const passwordValidation = (t) => Yup.object().shape({
 });
 
 const Otp = ({ closeFunction, secret, uri }) => {
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   const theme = useTheme();
   const [otpQrImage, setOtpQrImage] = useState('');
   const [code, setCode] = useState('');
@@ -129,7 +129,7 @@ const Otp = ({ closeFunction, secret, uri }) => {
       onError: () => {
         setInputDisable(false);
         setCode('');
-        return setError(t('The code is not correct'));
+        return setError(t_i18n('The code is not correct'));
       },
       onCompleted: () => {
         setError(null);
@@ -172,7 +172,7 @@ const Otp = ({ closeFunction, secret, uri }) => {
           variant="outlined"
           style={{ margin: '0 0 15px 0' }}
         >
-          {t('Type the code generated in your application')}
+          {t_i18n('Type the code generated in your application')}
         </Alert>
       )}
       <OtpInputField

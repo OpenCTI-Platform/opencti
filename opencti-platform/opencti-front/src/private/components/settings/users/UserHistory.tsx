@@ -25,7 +25,7 @@ interface UserHistoryProps {
 const UserHistory: FunctionComponent<UserHistoryProps> = ({
   userId,
 }) => {
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   const [entitySearchTerm, setEntitySearchTerm] = useState<string>('');
 
   const handleSearchEntity = (value: string) => {
@@ -80,7 +80,7 @@ const UserHistory: FunctionComponent<UserHistoryProps> = ({
   return (
     <>
       <Typography variant="h4" gutterBottom={true} style={{ float: 'left' }}>
-        {t('History')}
+        {t_i18n('History')}
       </Typography>
       <div style={{ float: 'right', marginTop: -12 }}>
         <SearchInput
@@ -89,7 +89,7 @@ const UserHistory: FunctionComponent<UserHistoryProps> = ({
           keyword={entitySearchTerm}
         />
       </div>
-      <Tooltip title={t('View all entities created by user')}>
+      <Tooltip title={t_i18n('View all entities created by user')}>
         <IconButton
           sx={createdByUserRedirectButton}
           component={Link}
@@ -100,7 +100,7 @@ const UserHistory: FunctionComponent<UserHistoryProps> = ({
           <StorageOutlined fontSize="small" />
         </IconButton>
       </Tooltip>
-      <Tooltip title={t('View all relationships created by user')}>
+      <Tooltip title={t_i18n('View all relationships created by user')}>
         <IconButton
           sx={createdByUserRedirectButton}
           component={Link}

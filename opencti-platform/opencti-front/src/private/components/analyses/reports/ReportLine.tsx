@@ -86,7 +86,7 @@ const ReportLineComponent: FunctionComponent<ReportLineComponentProps> = ({
   redirectionMode,
 }) => {
   const classes = useStyles();
-  const { fd, t } = useFormatter();
+  const { fd, t_i18n } = useFormatter();
   return (
     <ListItem
       classes={{ root: classes.item }}
@@ -138,7 +138,7 @@ const ReportLineComponent: FunctionComponent<ReportLineComponentProps> = ({
                 classes={{ root: classes.chipInList }}
                 color="primary"
                 variant="outlined"
-                label={node.report_types?.at(0) ?? t('Unknown')}
+                label={node.report_types?.at(0) ?? t_i18n('Unknown')}
               />
             </div>
             <div

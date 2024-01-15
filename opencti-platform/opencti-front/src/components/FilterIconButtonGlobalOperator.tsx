@@ -13,10 +13,10 @@ FilterIconButtonGlobalOperatorProps
   globalMode,
   handleSwitchGlobalMode,
 }) => {
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   return (
     <div className={classOperator} onClick={handleSwitchGlobalMode}>
-      {t(globalMode.toUpperCase())}
+      {t_i18n(globalMode.toUpperCase())}
     </div>
   );
 };

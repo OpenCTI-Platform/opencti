@@ -28,14 +28,14 @@ export const caseIncidentEditionQuery = graphql`
 const CaseIncidentEditionContainer: FunctionComponent<
 CaseIncidentEditionContainerProps
 > = ({ queryRef, handleClose, open }) => {
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   const { caseIncident } = usePreloadedQuery(caseIncidentEditionQuery, queryRef);
   if (caseIncident === null) {
     return <ErrorNotFound />;
   }
   return (
     <Drawer
-      title={t('Update an incident response')}
+      title={t_i18n('Update an incident response')}
       variant={open == null ? DrawerVariant.update : undefined}
       context={caseIncident.editContext}
       onClose={handleClose}

@@ -131,7 +131,7 @@ FileIndexingMonitoringComponentProps
   queryRef,
   refetch,
 }) => {
-  const { n, t, fldt, b } = useFormatter();
+  const { n, t_i18n, fldt, b } = useFormatter();
   const classes = useStyles();
   const { indexedFilesMetrics } = usePreloadedQuery<FileIndexingMonitoringQuery>(
     fileIndexingMonitoringQuery,
@@ -208,7 +208,7 @@ FileIndexingMonitoringComponentProps
               )}
             </div>
             <div>
-              <div className={classes.title}>{t('Status')}</div>
+              <div className={classes.title}>{t_i18n('Status')}</div>
               {isStarted ? (
                 <Chip
                   classes={{ root: classes.chip }}
@@ -216,7 +216,7 @@ FileIndexingMonitoringComponentProps
                     backgroundColor: 'rgba(76, 175, 80, 0.08)',
                     color: '#4caf50',
                   }}
-                  label={t('Running')}
+                  label={t_i18n('Running')}
                 />
               ) : (
                 <Chip
@@ -225,7 +225,7 @@ FileIndexingMonitoringComponentProps
                     backgroundColor: 'rgba(92, 123, 245, 0.08)',
                     color: '#5c7bf5',
                   }}
-                  label={t('Stopped')}
+                  label={t_i18n('Stopped')}
                 />
               )}
             </div>
@@ -246,7 +246,7 @@ FileIndexingMonitoringComponentProps
             <div className={classes.icon}>
               <FolderOutlined color="primary" sx={{ fontSize: 40 }} />
             </div>
-            <div className={classes.title}>{t('Indexed files')}</div>
+            <div className={classes.title}>{t_i18n('Indexed files')}</div>
             <div className={classes.number}>
               {indexedFiles} / {totalFiles}
             </div>
@@ -257,7 +257,7 @@ FileIndexingMonitoringComponentProps
             <div className={classes.icon}>
               <StorageOutlined color="primary" sx={{ fontSize: 40 }} />
             </div>
-            <div className={classes.title}>{t('Volume indexed')}</div>
+            <div className={classes.title}>{t_i18n('Volume indexed')}</div>
             <div className={classes.number}>
               {indexedFiles ? n(volumeIndexed) : 0}
             </div>
@@ -265,13 +265,13 @@ FileIndexingMonitoringComponentProps
         </Grid>
         <Grid item={true} xs={4}>
           <Typography variant="h4" gutterBottom={true}>
-            {t('Control')}
+            {t_i18n('Control')}
           </Typography>
           <Paper classes={{ root: classes.paper }} variant="outlined">
             <Grid container={true} spacing={3}>
               <Grid item={true} xs={6}>
                 <Typography variant="h3" gutterBottom={true}>
-                  {t('Engine')}
+                  {t_i18n('Engine')}
                 </Typography>
                 {isStarted ? (
                   <Button
@@ -281,7 +281,7 @@ FileIndexingMonitoringComponentProps
                     color="warning"
                     variant="contained"
                   >
-                    {t('Pause')}
+                    {t_i18n('Pause')}
                   </Button>
                 ) : (
                   <Button
@@ -291,13 +291,13 @@ FileIndexingMonitoringComponentProps
                     color="success"
                     variant="contained"
                   >
-                    {t('Start')}
+                    {t_i18n('Start')}
                   </Button>
                 )}
               </Grid>
               <Grid item={true} xs={6}>
                 <Typography variant="h3" gutterBottom={true}>
-                  {t('Indexing')}
+                  {t_i18n('Indexing')}
                 </Typography>
                 <Button
                   startIcon={<ClearOutlined />}
@@ -307,18 +307,18 @@ FileIndexingMonitoringComponentProps
                   variant="contained"
                   disabled={indexedFiles === 0}
                 >
-                  {t('Reset')}
+                  {t_i18n('Reset')}
                 </Button>
               </Grid>
               <Grid item={true} xs={6}>
                 <Typography variant="h3" gutterBottom={true}>
-                  {t('Indexing manager start')}
+                  {t_i18n('Indexing manager start')}
                 </Typography>
                 {fldt(managerConfiguration?.last_run_start_date)}
               </Grid>
               <Grid item={true} xs={6}>
                 <Typography variant="h3" gutterBottom={true}>
-                  {t('Last indexation')}
+                  {t_i18n('Last indexation')}
                 </Typography>
                 {fldt(lastIndexationDate)}
               </Grid>
@@ -327,13 +327,13 @@ FileIndexingMonitoringComponentProps
         </Grid>
         <Grid item={true} xs={4}>
           <Typography variant="h4" gutterBottom={true}>
-            {t('Information')}
+            {t_i18n('Information')}
           </Typography>
           <Paper classes={{ root: classes.paper }} variant="outlined">
             <Grid container={true} spacing={3}>
               <Grid item={true} xs={6}>
                 <Typography variant="h3" gutterBottom={true}>
-                  {t('Total files in S3')}
+                  {t_i18n('Total files in S3')}
                 </Typography>
                 <span style={{ fontWeight: 600, fontSize: 20 }}>
                   {n(totalFiles)}
@@ -341,7 +341,7 @@ FileIndexingMonitoringComponentProps
               </Grid>
               <Grid item={true} xs={6}>
                 <Typography variant="h3" gutterBottom={true}>
-                  {t('Files volumes in S3')}
+                  {t_i18n('Files volumes in S3')}
                 </Typography>
                 <span style={{ fontWeight: 600, fontSize: 20 }}>
                   {b(dataToIndex)}
@@ -349,7 +349,7 @@ FileIndexingMonitoringComponentProps
               </Grid>
               <Grid item={true} xs={12}>
                 <Typography variant="h3" gutterBottom={true}>
-                  {t('S3 volume by file type')}
+                  {t_i18n('S3 volume by file type')}
                 </Typography>
                 <List>
                   <ListItem
@@ -358,17 +358,17 @@ FileIndexingMonitoringComponentProps
                     style={{ height: 32, padding: 0 }}
                   >
                     <ListItemText
-                      primary={t('Type')}
+                      primary={t_i18n('Type')}
                       className={classes.header}
                       style={{ width: '30%' }}
                     />
                     <ListItemText
-                      primary={t('Files count')}
+                      primary={t_i18n('Files count')}
                       className={classes.header}
                       style={{ width: '30%' }}
                     />
                     <ListItemText
-                      primary={t('Files size')}
+                      primary={t_i18n('Files size')}
                       className={classes.header}
                       style={{ width: '30%' }}
                     />
@@ -381,7 +381,7 @@ FileIndexingMonitoringComponentProps
                       style={{ height: 32, padding: 0 }}
                     >
                       <ListItemText
-                        primary={t(metrics.mimeType)}
+                        primary={t_i18n(metrics.mimeType)}
                         className={classes.mimeType}
                         style={{ width: '30%' }}
                       />

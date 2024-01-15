@@ -86,7 +86,7 @@ const ThreatActorIndividualDetails: FunctionComponent<
 ThreatActorIndividualDetailsProps
 > = ({ threatActorIndividualData }) => {
   const classes = useStyles();
-  const { t, fldt } = useFormatter();
+  const { t_i18n, fldt } = useFormatter();
   const data: ThreatActorIndividualDetails_ThreatActorIndividual$data = useFragment(
     ThreatActorIndividualDetailsFragment,
     threatActorIndividualData,
@@ -96,7 +96,7 @@ ThreatActorIndividualDetailsProps
   return (
     <div style={{ height: '100%' }}>
       <Typography variant="h4" gutterBottom={true}>
-        {t('Details')}
+        {t_i18n('Details')}
       </Typography>
       <Paper classes={{ root: classes.paper }} variant="outlined">
         <Grid container={true} spacing={3}>
@@ -109,7 +109,7 @@ ThreatActorIndividualDetailsProps
               )}
               <Grid item={true} xs={hasImages ? 8 : 12}>
                 <Typography variant="h3" gutterBottom={true}>
-                  {t('Threat actor types')}
+                  {t_i18n('Threat actor types')}
                 </Typography>
                 <FieldOrEmpty source={data.threat_actor_types}>
                   {data.threat_actor_types?.map((threatActorIndividualType) => (
@@ -125,7 +125,7 @@ ThreatActorIndividualDetailsProps
                   gutterBottom={true}
                   style={{ marginTop: 20 }}
                 >
-                  {t('Description')}
+                  {t_i18n('Description')}
                 </Typography>
                 <ExpandableMarkdown
                   source={data.description}
@@ -141,7 +141,7 @@ ThreatActorIndividualDetailsProps
               gutterBottom={true}
               style={{ marginTop: 20 }}
             >
-              {t('First seen')}
+              {t_i18n('First seen')}
             </Typography>
             {fldt(data.first_seen)}
             <Typography
@@ -149,7 +149,7 @@ ThreatActorIndividualDetailsProps
               gutterBottom={true}
               style={{ marginTop: 20 }}
             >
-              {t('Last seen')}
+              {t_i18n('Last seen')}
             </Typography>
             {fldt(data.last_seen)}
           </Grid>
@@ -161,7 +161,7 @@ ThreatActorIndividualDetailsProps
               gutterBottom={true}
               style={{ marginTop: 20 }}
             >
-              {t('Sophistication')}
+              {t_i18n('Sophistication')}
             </Typography>
             <ItemOpenVocab
               type="threat-actor-individual-sophistication-ov"
@@ -175,7 +175,7 @@ ThreatActorIndividualDetailsProps
               gutterBottom={true}
               style={{ marginTop: 20 }}
             >
-              {t('Resource level')}
+              {t_i18n('Resource level')}
             </Typography>
             <ItemOpenVocab
               type="attack-resource-level-ov"
@@ -189,7 +189,7 @@ ThreatActorIndividualDetailsProps
               gutterBottom={true}
               style={{ marginTop: 20 }}
             >
-              {t('Primary motivation')}
+              {t_i18n('Primary motivation')}
             </Typography>
             <ItemOpenVocab
               type="attack-motivation-ov"
@@ -203,7 +203,7 @@ ThreatActorIndividualDetailsProps
               gutterBottom={true}
               style={{ marginTop: 20 }}
             >
-              {t('Roles')}
+              {t_i18n('Roles')}
             </Typography>
             <FieldOrEmpty source={data.roles}>
               {data.roles && (
@@ -234,7 +234,7 @@ ThreatActorIndividualDetailsProps
               gutterBottom={true}
               style={{ marginTop: 20 }}
             >
-              {t('Goals')}
+              {t_i18n('Goals')}
             </Typography>
             <FieldOrEmpty source={data.goals}>
               {data.goals && (
@@ -259,7 +259,7 @@ ThreatActorIndividualDetailsProps
               gutterBottom={true}
               style={{ marginTop: 20 }}
             >
-              {t('Secondary motivations')}
+              {t_i18n('Secondary motivations')}
             </Typography>
             <FieldOrEmpty source={data.secondary_motivations}>
               {data.secondary_motivations && (

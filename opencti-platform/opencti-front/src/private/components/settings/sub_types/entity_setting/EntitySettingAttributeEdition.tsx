@@ -100,7 +100,7 @@ const EntitySettingAttributeEdition = ({
   entitySetting,
   open,
 }: EntitySettingAttributeEditionProps) => {
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   const classes = useStyles();
   const { fieldToCategory } = useVocabularyCategory();
   const ovCategory = fieldToCategory(entitySetting.target_type, attribute.name);
@@ -236,7 +236,7 @@ const EntitySettingAttributeEdition = ({
   };
 
   const field = (setFieldValue: (field: string, value: string) => void) => {
-    const label = t('Default value');
+    const label = t_i18n('Default value');
     // Handle object marking specific case : activate or deactivate default values (handle in access)
     if (attribute.name === 'objectMarking') {
       return (
@@ -245,7 +245,7 @@ const EntitySettingAttributeEdition = ({
             component={SwitchField}
             type="checkbox"
             name="default_values"
-            label={t('Activate/Deactivate default values')}
+            label={t_i18n('Activate/Deactivate default values')}
             fullWidth={true}
             containerstyle={{ marginTop: 20 }}
           />
@@ -254,7 +254,7 @@ const EntitySettingAttributeEdition = ({
             variant="outlined"
             style={{ margin: '20px 0 10px 0' }}
           >
-            {t(
+            {t_i18n(
               'When enabling a default value for marking definitions, it will put the group default markings ot the user which created the entity if nothing is provided.',
             )}
           </Alert>
@@ -434,10 +434,10 @@ const EntitySettingAttributeEdition = ({
   };
   const customScale = (values.scale && isCustomScale(values.scale)) ? values.scale : null;
   const text = attribute.label ?? attribute.name;
-  const attributeName = t(text.charAt(0).toUpperCase() + text.slice(1));
+  const attributeName = t_i18n(text.charAt(0).toUpperCase() + text.slice(1));
   return (
     <Drawer
-      title={`${t('Update the attribute')} "${attributeName}"`}
+      title={`${t_i18n('Update the attribute')} "${attributeName}"`}
       open={open}
       onClose={handleClose}
     >
@@ -459,7 +459,7 @@ const EntitySettingAttributeEdition = ({
               component={SwitchField}
               type="checkbox"
               name="mandatory"
-              label={t('Mandatory')}
+              label={t_i18n('Mandatory')}
               disabled={attribute.mandatoryType !== 'customizable'}
             />
             {field(setFieldValue)}
@@ -485,7 +485,7 @@ const EntitySettingAttributeEdition = ({
                 }
                 classes={{ root: classes.button }}
               >
-                {t('Update')}
+                {t_i18n('Update')}
               </Button>
             </div>
           </Form>

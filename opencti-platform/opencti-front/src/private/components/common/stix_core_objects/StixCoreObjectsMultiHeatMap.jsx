@@ -85,7 +85,7 @@ const StixCoreObjectsMultiHeatMap = ({
 }) => {
   const theme = useTheme();
   const classes = useStyles();
-  const { t, fsd } = useFormatter();
+  const { t_i18n, fsd } = useFormatter();
   const renderContent = () => {
     const timeSeriesParameters = dataSelection.map((selection) => {
       return {
@@ -111,7 +111,7 @@ const StixCoreObjectsMultiHeatMap = ({
           if (props && props.stixCoreObjectsMultiTimeSeries) {
             const chartData = dataSelection
               .map((selection, i) => ({
-                name: selection.label ?? t('Number of entities'),
+                name: selection.label ?? t_i18n('Number of entities'),
                 data: props.stixCoreObjectsMultiTimeSeries[i].data.map(
                   (entry) => ({
                     x: new Date(entry.date),
@@ -175,7 +175,7 @@ const StixCoreObjectsMultiHeatMap = ({
                     textAlign: 'center',
                   }}
                 >
-                  {t('No entities of this type has been found.')}
+                  {t_i18n('No entities of this type has been found.')}
                 </span>
               </div>
             );
@@ -209,7 +209,7 @@ const StixCoreObjectsMultiHeatMap = ({
           textOverflow: 'ellipsis',
         }}
       >
-        {parameters.title ?? t('Entities history')}
+        {parameters.title ?? t_i18n('Entities history')}
       </Typography>
       {variant !== 'inLine' ? (
         <Paper classes={{ root: classes.paper }} variant="outlined">

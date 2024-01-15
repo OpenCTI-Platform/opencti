@@ -145,7 +145,7 @@ NotificationLineProps
   paginationOptions,
 }) => {
   const classes = useStyles();
-  const { t, fldt } = useFormatter();
+  const { t_i18n, fldt } = useFormatter();
   const [open, setOpen] = useState<boolean>(false);
   const [updating, setUpdating] = useState<boolean>(false);
   const data = useFragment(notificationLineFragment, node);
@@ -185,10 +185,10 @@ NotificationLineProps
     });
   };
   const eventTypes: Record<string, string> = {
-    create: t('Creation'),
-    update: t('Modification'),
-    delete: t('Deletion'),
-    none: t('Unknown'),
+    create: t_i18n('Creation'),
+    update: t_i18n('Modification'),
+    delete: t_i18n('Deletion'),
+    none: t_i18n('Unknown'),
   };
   const colors: Record<string, string> = {
     none: green[500],
@@ -251,14 +251,14 @@ NotificationLineProps
                   }}
                   label={
                     events.length > 1
-                      ? t('Multiple')
+                      ? t_i18n('Multiple')
                       : (eventTypes[firstEvent?.operation ?? 'none'] ?? firstEvent?.operation)
                   }
                 />
               </div>
               <div className={classes.bodyItem} style={{ width: dataColumns.message.width }}>
                 {events.length > 1 ? (
-                  <i>{t('Digest with multiple notifiers')}</i>
+                  <i>{t_i18n('Digest with multiple notifiers')}</i>
                 ) : (
                   <MarkdownDisplay content={firstEvent?.message ?? '-'} remarkGfmPlugin={true} commonmark={true}/>
                 )}
@@ -341,7 +341,7 @@ NotificationLineProps
             ))}
           </List>
           <DialogActions>
-            <Button onClick={() => setOpen(false)}>{t('Close')}</Button>
+            <Button onClick={() => setOpen(false)}>{t_i18n('Close')}</Button>
           </DialogActions>
         </DialogContent>
       </Dialog>

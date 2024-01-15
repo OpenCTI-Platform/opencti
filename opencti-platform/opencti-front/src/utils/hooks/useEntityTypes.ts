@@ -56,11 +56,11 @@ const useEntityTypes = () => {
     queryRef,
   );
 
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   const optionBuilder = (type: string, d: { id: string; label: string }[]) => {
     return d
       .map(({ id, label }) => ({
-        label: t(`${type}_${label}`),
+        label: t_i18n(`${type}_${label}`),
         value: id,
       }))
       .sort((a, b) => a.label.localeCompare(b.label));

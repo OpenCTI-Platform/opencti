@@ -125,14 +125,14 @@ const dataColumns: DataColumns = {
 
 const PublicTaxiiLine = ({ node }: { node: PublicTaxiiLines_node$key }) => {
   const classes = useStyles();
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   const collection = useFragment(publicTaxiiLinesFragment, node);
   const browseClick = () => {
     window.location.pathname = `/taxii2/root/collections/${collection.id}`;
   };
   const copyClick = () => {
     copyToClipboard(
-      t,
+      t_i18n,
       `${window.location.origin}/taxii2/root/collections/${collection.id}`,
     );
   };
@@ -150,21 +150,21 @@ const PublicTaxiiLine = ({ node }: { node: PublicTaxiiLines_node$key }) => {
                 className={classes.bodyItem}
                 style={{ width: value.width }}
               >
-                {value.render?.(collection, { t, classes })}
+                {value.render?.(collection, { t: t_i18n, classes })}
               </div>
             ))}
           </div>
         }
       />
       <ListItemSecondaryAction>
-        <Tooltip title={t('Copy uri to clipboard for your Taxii client')}>
+        <Tooltip title={t_i18n('Copy uri to clipboard for your Taxii client')}>
           <span>
             <IconButton onClick={copyClick} size="large" color="primary">
               <ContentCopy />
             </IconButton>
           </span>
         </Tooltip>
-        <Tooltip title={t('Access stream directly in your browser')}>
+        <Tooltip title={t_i18n('Access stream directly in your browser')}>
           <span>
             <IconButton onClick={browseClick} size="large" color="primary">
               <OpenInNew />
@@ -181,11 +181,11 @@ const PublicTaxiiLines = () => {
     publicTaxiiLinesQuery,
     queryRef,
   );
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   return taxiiCollections && taxiiCollections.edges.length > 0 ? (
     <>
       <Typography variant="h2" gutterBottom={true}>
-        {t('Public Taxii collections')}
+        {t_i18n('Public Taxii collections')}
       </Typography>
       <ListLines dataColumns={dataColumns} secondaryAction={true}>
         <ListLinesContent
@@ -201,7 +201,7 @@ const PublicTaxiiLines = () => {
   ) : (
     <>
       <Typography variant="h2" gutterBottom={true}>
-        {t('Public Taxii collections')}
+        {t_i18n('Public Taxii collections')}
       </Typography>
       <Typography
         variant="h5"
@@ -209,7 +209,7 @@ const PublicTaxiiLines = () => {
         color={'error'}
         style={{ marginTop: 20, marginBottom: 40 }}
       >
-        {t('No available public taxii collections on this platform')}
+        {t_i18n('No available public taxii collections on this platform')}
       </Typography>
     </>
   );

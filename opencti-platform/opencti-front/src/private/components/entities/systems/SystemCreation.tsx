@@ -81,11 +81,11 @@ export const SystemCreationForm: FunctionComponent<SystemFormProps> = ({
   inputValue,
 }) => {
   const classes = useStyles();
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   const basicShape = {
     name: Yup.string()
       .min(2)
-      .required(t('This field is required')),
+      .required(t_i18n('This field is required')),
     description: Yup.string()
       .nullable(),
     x_opencti_reliability: Yup.string()
@@ -169,21 +169,21 @@ export const SystemCreationForm: FunctionComponent<SystemFormProps> = ({
             component={TextField}
             variant="standard"
             name="name"
-            label={t('Name')}
+            label={t_i18n('Name')}
             fullWidth={true}
             detectDuplicate={['User']}
           />
           <Field
             component={MarkdownField}
             name="description"
-            label={t('Description')}
+            label={t_i18n('Description')}
             fullWidth={true}
             multiline={true}
             rows="4"
             style={{ marginTop: 20 }}
           />
           <OpenVocabField
-            label={t('Reliability')}
+            label={t_i18n('Reliability')}
             type="reliability_ov"
             name="x_opencti_reliability"
             containerStyle={fieldSpacingContainerStyle}
@@ -219,7 +219,7 @@ export const SystemCreationForm: FunctionComponent<SystemFormProps> = ({
               disabled={isSubmitting}
               classes={{ root: classes.button }}
             >
-              {t('Cancel')}
+              {t_i18n('Cancel')}
             </Button>
             <Button
               variant="contained"
@@ -228,7 +228,7 @@ export const SystemCreationForm: FunctionComponent<SystemFormProps> = ({
               disabled={isSubmitting}
               classes={{ root: classes.button }}
             >
-              {t('Create')}
+              {t_i18n('Create')}
             </Button>
           </div>
         </Form>
@@ -242,12 +242,12 @@ const SystemCreation = ({
 }: {
   paginationOptions: SystemsLinesPaginationQuery$variables;
 }) => {
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   const updater = (store: RecordSourceSelectorProxy) => insertNode(store, 'Pagination_systems', paginationOptions, 'systemAdd');
 
   return (
     <Drawer
-      title={t('Create a system')}
+      title={t_i18n('Create a system')}
       variant={DrawerVariant.create}
     >
       {({ onClose }) => (

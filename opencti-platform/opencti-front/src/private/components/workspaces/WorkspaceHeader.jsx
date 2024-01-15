@@ -106,7 +106,7 @@ const WorkspaceHeader = ({
   handleDateChange,
 }) => {
   const classes = useStyles();
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   const openTagsCreate = false;
   const [openTag, setOpenTag] = useState(false);
   const [newTag, setNewTag] = useState('');
@@ -146,7 +146,7 @@ const WorkspaceHeader = ({
           },
         },
         setSubmitting,
-        onCompleted: () => MESSAGING$.notifySuccess(t('The tag has been added')),
+        onCompleted: () => MESSAGING$.notifySuccess(t_i18n('The tag has been added')),
       });
     }
     setOpenTag(false);
@@ -165,7 +165,7 @@ const WorkspaceHeader = ({
           value: filteredTags,
         },
       },
-      onCompleted: () => MESSAGING$.notifySuccess(t('The tag has been removed')),
+      onCompleted: () => MESSAGING$.notifySuccess(t_i18n('The tag has been removed')),
     });
   };
 
@@ -238,7 +238,7 @@ const WorkspaceHeader = ({
                   style={{ width: 194, marginRight: 20 }}
                 >
                   <InputLabel id="relative" variant="outlined">
-                    {t('Relative time')}
+                    {t_i18n('Relative time')}
                   </InputLabel>
                   <Select
                     labelId="relative"
@@ -248,20 +248,20 @@ const WorkspaceHeader = ({
                     disabled={true}
                     variant="outlined"
                   >
-                    <MenuItem value="none">{t('None')}</MenuItem>
-                    <MenuItem value="days-1">{t('Last 24 hours')}</MenuItem>
-                    <MenuItem value="days-7">{t('Last 7 days')}</MenuItem>
-                    <MenuItem value="months-1">{t('Last month')}</MenuItem>
-                    <MenuItem value="months-3">{t('Last 3 months')}</MenuItem>
-                    <MenuItem value="months-6">{t('Last 6 months')}</MenuItem>
-                    <MenuItem value="years-1">{t('Last year')}</MenuItem>
+                    <MenuItem value="none">{t_i18n('None')}</MenuItem>
+                    <MenuItem value="days-1">{t_i18n('Last 24 hours')}</MenuItem>
+                    <MenuItem value="days-7">{t_i18n('Last 7 days')}</MenuItem>
+                    <MenuItem value="months-1">{t_i18n('Last month')}</MenuItem>
+                    <MenuItem value="months-3">{t_i18n('Last 3 months')}</MenuItem>
+                    <MenuItem value="months-6">{t_i18n('Last 6 months')}</MenuItem>
+                    <MenuItem value="years-1">{t_i18n('Last year')}</MenuItem>
                   </Select>
                 </FormControl>
                 <DatePicker
                   value={R.propOr(null, 'startDate', config)}
                   disableToolbar={true}
                   autoOk={true}
-                  label={t('Start date')}
+                  label={t_i18n('Start date')}
                   clearable={true}
                   disableFuture={true}
                   disabled={true}
@@ -279,7 +279,7 @@ const WorkspaceHeader = ({
                   value={R.propOr(null, 'endDate', config)}
                   disableToolbar={true}
                   autoOk={true}
-                  label={t('End date')}
+                  label={t_i18n('End date')}
                   clearable={true}
                   disabled={true}
                   disableFuture={true}
@@ -305,29 +305,29 @@ const WorkspaceHeader = ({
                 variant="outlined"
               >
                 <InputLabel id="relative" variant="outlined">
-                  {t('Relative time')}
+                  {t_i18n('Relative time')}
                 </InputLabel>
                 <Select
                   labelId="relative"
                   value={relativeDate ?? relativeDate}
                   onChange={(value) => handleDateChange('relativeDate', value)}
-                  label={t('Relative time')}
+                  label={t_i18n('Relative time')}
                   variant="outlined"
                 >
-                  <MenuItem value="none">{t('None')}</MenuItem>
-                  <MenuItem value="days-1">{t('Last 24 hours')}</MenuItem>
-                  <MenuItem value="days-7">{t('Last 7 days')}</MenuItem>
-                  <MenuItem value="months-1">{t('Last month')}</MenuItem>
-                  <MenuItem value="months-3">{t('Last 3 months')}</MenuItem>
-                  <MenuItem value="months-6">{t('Last 6 months')}</MenuItem>
-                  <MenuItem value="years-1">{t('Last year')}</MenuItem>
+                  <MenuItem value="none">{t_i18n('None')}</MenuItem>
+                  <MenuItem value="days-1">{t_i18n('Last 24 hours')}</MenuItem>
+                  <MenuItem value="days-7">{t_i18n('Last 7 days')}</MenuItem>
+                  <MenuItem value="months-1">{t_i18n('Last month')}</MenuItem>
+                  <MenuItem value="months-3">{t_i18n('Last 3 months')}</MenuItem>
+                  <MenuItem value="months-6">{t_i18n('Last 6 months')}</MenuItem>
+                  <MenuItem value="years-1">{t_i18n('Last year')}</MenuItem>
                 </Select>
               </FormControl>
               <DatePicker
                 value={R.propOr(null, 'startDate', config)}
                 disableToolbar={true}
                 autoOk={true}
-                label={t('Start date')}
+                label={t_i18n('Start date')}
                 clearable={true}
                 disableFuture={true}
                 disabled={!!relativeDate}
@@ -344,7 +344,7 @@ const WorkspaceHeader = ({
               <DatePicker
                 value={R.propOr(null, 'endDate', config)}
                 autoOk={true}
-                label={t('End date')}
+                label={t_i18n('End date')}
                 clearable={true}
                 disabled={!!relativeDate}
                 disableFuture={true}
@@ -377,7 +377,7 @@ const WorkspaceHeader = ({
         </div>
         {variant === 'investigation' && (
           <div className={classes.turnToReportOrCase}>
-            <Tooltip title={t('Add to a container')}>
+            <Tooltip title={t_i18n('Add to a container')}>
               <ToggleButtonGroup size="small" color="primary" exclusive={true}>
                 <ToggleButton
                   aria-label="Label"
@@ -393,7 +393,7 @@ const WorkspaceHeader = ({
         )}
         <Security needs={[EXPLORE_EXUPDATE]} hasAccess={userCanManage}>
           <div className={classes.manageAccess}>
-            <Tooltip title={t('Manage access restriction')}>
+            <Tooltip title={t_i18n('Manage access restriction')}>
               <ToggleButtonGroup size="small" color="warning" exclusive={true}>
                 <ToggleButton
                   aria-label="Label"
@@ -437,7 +437,7 @@ const WorkspaceHeader = ({
                 <DotsHorizontalCircleOutline fontSize="small" />
               </IconButton>
             ) : (
-              <Tooltip title={t('Add tag')}>
+              <Tooltip title={t_i18n('Add tag')}>
                 <IconButton
                   style={{ float: 'left', marginTop: '-5px' }}
                   color={openTag ? 'primary' : 'secondary'}
@@ -470,7 +470,7 @@ const WorkspaceHeader = ({
                       variant="standard"
                       name="new_tag"
                       autoFocus={true}
-                      placeholder={t('New tag')}
+                      placeholder={t_i18n('New tag')}
                       onChange={handleChangeNewTags}
                       value={newTag}
                       className={classes.tagsInput}
@@ -487,7 +487,7 @@ const WorkspaceHeader = ({
               fullWidth={true}
             >
               <DialogTitle>
-                {t('Entity tags')}
+                {t_i18n('Entity tags')}
                 <Formik
                   initialValues={{ new_tag: '' }}
                   onSubmit={onSubmitCreateTag}
@@ -499,7 +499,7 @@ const WorkspaceHeader = ({
                         variant="standard"
                         name="new_tag"
                         autoFocus={true}
-                        placeholder={t('New tag')}
+                        placeholder={t_i18n('New tag')}
                         className={classes.tagsInput}
                         onChange={handleChangeNewTags}
                         value={newTag}
@@ -555,7 +555,7 @@ const WorkspaceHeader = ({
                           name="new_tag"
                           autoFocus={true}
                           fullWidth={true}
-                          placeholder={t('New tags')}
+                          placeholder={t_i18n('New tags')}
                           className={classes.tagsInput}
                           onChange={handleChangeNewTags}
                           value={newTag}
@@ -573,7 +573,7 @@ const WorkspaceHeader = ({
               </DialogContent>
               <DialogActions>
                 <Button onClick={handleToggleOpenTags} color="primary">
-                  {t('Close')}
+                  {t_i18n('Close')}
                 </Button>
               </DialogActions>
             </Dialog>

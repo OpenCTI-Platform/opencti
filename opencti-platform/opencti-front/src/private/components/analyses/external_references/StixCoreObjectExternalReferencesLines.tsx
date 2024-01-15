@@ -94,7 +94,7 @@ const StixCoreObjectExternalReferencesLinesContainer: FunctionComponent<
 StixCoreObjectExternalReferencesLinesContainerProps
 > = ({ stixCoreObjectId, data, relay }) => {
   const classes = useStyles();
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   const [displayDialog, setDisplayDialog] = useState(false);
   const [displayExternalLink, setDisplayExternalLink] = useState(false);
   const [externalLink, setExternalLink] = useState<string | URL | undefined>(
@@ -231,7 +231,7 @@ StixCoreObjectExternalReferencesLinesContainerProps
   return (
     <div style={{ height: '100%' }}>
       <Typography variant="h4" gutterBottom={true} style={{ float: 'left' }}>
-        {t('External references')}
+        {t_i18n('External references')}
       </Typography>
       <Security
         needs={[KNOWLEDGE_KNUPDATE]}
@@ -271,7 +271,7 @@ StixCoreObjectExternalReferencesLinesContainerProps
                 ) {
                   externalReferenceSecondary = externalReference.description;
                 } else {
-                  externalReferenceSecondary = t('No description');
+                  externalReferenceSecondary = t_i18n('No description');
                 }
                 if (externalReference.url && !isFileAttached) {
                   return (
@@ -294,7 +294,7 @@ StixCoreObjectExternalReferencesLinesContainerProps
                           secondary={truncate(externalReferenceSecondary, 70)}
                         />
                         <ListItemSecondaryAction>
-                          <Tooltip title={t('Browse the link')}>
+                          <Tooltip title={t_i18n('Browse the link')}>
                             <IconButton
                               onClick={() => handleOpenExternalLink(
                                 externalReference.url ?? '',
@@ -431,7 +431,7 @@ StixCoreObjectExternalReferencesLinesContainerProps
                   textAlign: 'center',
                 }}
               >
-                {t('No entities of this type has been found.')}
+                {t_i18n('No entities of this type has been found.')}
               </span>
             </div>
           )}
@@ -459,15 +459,15 @@ StixCoreObjectExternalReferencesLinesContainerProps
       >
         <DialogContent>
           <DialogContentText>
-            {t('Do you want to remove this external reference?')}
+            {t_i18n('Do you want to remove this external reference?')}
           </DialogContentText>
         </DialogContent>
         <DialogActions>
           <Button onClick={handleCloseDialog} disabled={removing}>
-            {t('Cancel')}
+            {t_i18n('Cancel')}
           </Button>
           <Button color="secondary" onClick={handleRemoval} disabled={removing}>
-            {t('Delete')}
+            {t_i18n('Delete')}
           </Button>
         </DialogActions>
       </Dialog>
@@ -480,20 +480,20 @@ StixCoreObjectExternalReferencesLinesContainerProps
       >
         <DialogContent>
           <DialogContentText>
-            {t('Do you want to browse this external link?')}
+            {t_i18n('Do you want to browse this external link?')}
           </DialogContentText>
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleCloseExternalLink}>{t('Cancel')}</Button>
+          <Button onClick={handleCloseExternalLink}>{t_i18n('Cancel')}</Button>
           <Button color="secondary" onClick={handleBrowseExternalLink}>
-            {t('Browse the link')}
+            {t_i18n('Browse the link')}
           </Button>
         </DialogActions>
       </Dialog>
       <Formik
         enableReinitialize={true}
         initialValues={{ connector_id: '' }}
-        validationSchema={importValidation(t)}
+        validationSchema={importValidation(t_i18n)}
         onSubmit={onSubmitImport}
         onReset={handleCloseImport}
       >
@@ -506,12 +506,12 @@ StixCoreObjectExternalReferencesLinesContainerProps
               onClose={handleCloseImport}
               fullWidth={true}
             >
-              <DialogTitle>{t('Launch an import')}</DialogTitle>
+              <DialogTitle>{t_i18n('Launch an import')}</DialogTitle>
               <DialogContent>
                 <Field
                   component={SelectField}
                   name="connector_id"
-                  label={t('Connector')}
+                  label={t_i18n('Connector')}
                   fullWidth={true}
                   containerstyle={{ width: '100%' }}
                 >
@@ -538,14 +538,14 @@ StixCoreObjectExternalReferencesLinesContainerProps
               </DialogContent>
               <DialogActions>
                 <Button onClick={handleReset} disabled={isSubmitting}>
-                  {t('Cancel')}
+                  {t_i18n('Cancel')}
                 </Button>
                 <Button
                   color="secondary"
                   onClick={submitForm}
                   disabled={isSubmitting}
                 >
-                  {t('Create')}
+                  {t_i18n('Create')}
                 </Button>
               </DialogActions>
             </Dialog>

@@ -6,14 +6,14 @@ import { useIsEnforceReference } from '../../../../utils/hooks/useEntitySettings
 import Drawer, { DrawerVariant } from '../../common/drawer/Drawer';
 
 const CourseOfActionEditionContainer = (props) => {
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
 
   const { handleClose, courseOfAction, open } = props;
   const { editContext } = courseOfAction;
 
   return (
     <Drawer
-      title={t('Update a course of action')}
+      title={t_i18n('Update a course of action')}
       open={open}
       onClose={handleClose}
       variant={open == null ? DrawerVariant.update : undefined}

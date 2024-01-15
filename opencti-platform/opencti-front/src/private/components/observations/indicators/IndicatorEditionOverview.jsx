@@ -80,23 +80,23 @@ const IndicatorEditionOverviewComponent = ({
   context,
   enableReferences,
 }) => {
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
 
   const basicShape = {
-    name: Yup.string().min(2).required(t('This field is required')),
+    name: Yup.string().min(2).required(t_i18n('This field is required')),
     indicator_types: Yup.array(),
     confidence: Yup.number(),
-    pattern: Yup.string().required(t('This field is required')),
+    pattern: Yup.string().required(t_i18n('This field is required')),
     valid_from: Yup.date()
       .nullable()
-      .typeError(t('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)')),
+      .typeError(t_i18n('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)')),
     valid_until: Yup.date()
       .nullable()
       .min(
         Yup.ref('valid_from'),
         "The valid until date can't be before valid from date",
       )
-      .typeError(t('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)')),
+      .typeError(t_i18n('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)')),
     x_mitre_platforms: Yup.array().nullable(),
     x_opencti_score: Yup.number().nullable(),
     description: Yup.string().nullable(),
@@ -184,7 +184,7 @@ const IndicatorEditionOverviewComponent = ({
     R.assoc('killChainPhases', convertKillChainPhases(indicator)),
     R.assoc('createdBy', convertCreatedBy(indicator)),
     R.assoc('objectMarking', convertMarkings(indicator)),
-    R.assoc('x_opencti_workflow_id', convertStatus(t, indicator)),
+    R.assoc('x_opencti_workflow_id', convertStatus(t_i18n, indicator)),
     R.assoc('x_mitre_platforms', R.propOr([], 'x_mitre_platforms', indicator)),
     R.assoc('indicator_types', R.propOr([], 'indicator_types', indicator)),
     R.assoc('valid_from', buildDate(indicator.valid_from)),
@@ -228,7 +228,7 @@ const IndicatorEditionOverviewComponent = ({
             component={TextField}
             variant="standard"
             name="name"
-            label={t('Name')}
+            label={t_i18n('Name')}
             fullWidth={true}
             onFocus={editor.changeFocus}
             onSubmit={handleSubmitField}
@@ -237,7 +237,7 @@ const IndicatorEditionOverviewComponent = ({
             }
           />
           <OpenVocabField
-            label={t('Indicator types')}
+            label={t_i18n('Indicator types')}
             type="indicator-type-ov"
             name="indicator_types"
             onFocus={editor.changeFocus}
@@ -260,7 +260,7 @@ const IndicatorEditionOverviewComponent = ({
             component={TextField}
             variant="standard"
             name="pattern"
-            label={t('Indicator pattern')}
+            label={t_i18n('Indicator pattern')}
             fullWidth={true}
             multiline={true}
             rows="4"
@@ -277,7 +277,7 @@ const IndicatorEditionOverviewComponent = ({
             onFocus={editor.changeFocus}
             onSubmit={handleSubmitField}
             TextFieldProps={{
-              label: t('Valid from'),
+              label: t_i18n('Valid from'),
               variant: 'standard',
               fullWidth: true,
               style: { marginTop: 20 },
@@ -292,7 +292,7 @@ const IndicatorEditionOverviewComponent = ({
             onFocus={editor.changeFocus}
             onSubmit={handleSubmitField}
             TextFieldProps={{
-              label: t('Valid until'),
+              label: t_i18n('Valid until'),
               variant: 'standard',
               fullWidth: true,
               style: { marginTop: 20 },
@@ -302,7 +302,7 @@ const IndicatorEditionOverviewComponent = ({
             }}
           />
           <OpenVocabField
-            label={t('Platforms')}
+            label={t_i18n('Platforms')}
             type="platforms_ov"
             name="x_mitre_platforms"
             variant={'edit'}
@@ -316,7 +316,7 @@ const IndicatorEditionOverviewComponent = ({
             component={TextField}
             variant="standard"
             name="x_opencti_score"
-            label={t('Score')}
+            label={t_i18n('Score')}
             type="number"
             fullWidth={true}
             style={{ marginTop: 20 }}
@@ -332,7 +332,7 @@ const IndicatorEditionOverviewComponent = ({
           <Field
             component={MarkdownField}
             name="description"
-            label={t('Description')}
+            label={t_i18n('Description')}
             fullWidth={true}
             multiline={true}
             rows="4"
@@ -393,7 +393,7 @@ const IndicatorEditionOverviewComponent = ({
             component={SwitchField}
             type="checkbox"
             name="x_opencti_detection"
-            label={t('Detection')}
+            label={t_i18n('Detection')}
             containerstyle={{ marginTop: 20 }}
             onChange={handleSubmitField}
             helperText={

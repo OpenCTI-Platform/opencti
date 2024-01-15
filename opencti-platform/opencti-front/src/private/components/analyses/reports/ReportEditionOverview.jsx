@@ -85,13 +85,13 @@ const reportMutationRelationDelete = graphql`
 
 const ReportEditionOverviewComponent = (props) => {
   const { report, enableReferences, context, handleClose } = props;
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
 
   const basicShape = {
-    name: Yup.string().min(2).required(t('This field is required')),
+    name: Yup.string().min(2).required(t_i18n('This field is required')),
     published: Yup.date()
-      .typeError(t('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)'))
-      .required(t('This field is required')),
+      .typeError(t_i18n('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)'))
+      .required(t_i18n('This field is required')),
     report_types: Yup.array().nullable(),
     x_opencti_reliability: Yup.string().nullable(),
     confidence: Yup.number().nullable(),
@@ -173,7 +173,7 @@ const ReportEditionOverviewComponent = (props) => {
     R.assoc('report_types', report.report_types ?? []),
     R.assoc('objectAssignee', convertAssignees(report)),
     R.assoc('objectParticipant', convertParticipants(report)),
-    R.assoc('x_opencti_workflow_id', convertStatus(t, report)),
+    R.assoc('x_opencti_workflow_id', convertStatus(t_i18n, report)),
     R.assoc('createdBy', convertCreatedBy(report)),
     R.assoc('objectMarking', convertMarkings(report)),
     R.assoc('references', []),
@@ -212,7 +212,7 @@ const ReportEditionOverviewComponent = (props) => {
           <Field
             component={TextField}
             name="name"
-            label={t('Name')}
+            label={t_i18n('Name')}
             fullWidth={true}
             onFocus={editor.changeFocus}
             onSubmit={handleSubmitField}
@@ -226,7 +226,7 @@ const ReportEditionOverviewComponent = (props) => {
             onFocus={editor.changeFocus}
             onSubmit={handleSubmitField}
             TextFieldProps={{
-              label: t('Publication date'),
+              label: t_i18n('Publication date'),
               variant: 'standard',
               fullWidth: true,
               style: { marginTop: 20 },
@@ -236,7 +236,7 @@ const ReportEditionOverviewComponent = (props) => {
             }}
           />
           <OpenVocabField
-            label={t('Report types')}
+            label={t_i18n('Report types')}
             type="report_types_ov"
             name="report_types"
             onSubmit={handleSubmitField}
@@ -247,7 +247,7 @@ const ReportEditionOverviewComponent = (props) => {
             editContext={context}
           />
           <OpenVocabField
-            label={t('Reliability')}
+            label={t_i18n('Reliability')}
             type="reliability_ov"
             name="x_opencti_reliability"
             onChange={setFieldValue}
@@ -269,7 +269,7 @@ const ReportEditionOverviewComponent = (props) => {
           <Field
             component={MarkdownField}
             name="description"
-            label={t('Description')}
+            label={t_i18n('Description')}
             fullWidth={true}
             multiline={true}
             rows="4"

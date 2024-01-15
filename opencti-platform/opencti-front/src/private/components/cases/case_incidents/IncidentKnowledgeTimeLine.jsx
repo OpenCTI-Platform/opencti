@@ -58,7 +58,7 @@ const IncidentKnowledgeTimeLineComponent = ({
   displayRelationships,
 }) => {
   const classes = useStyles();
-  const { fldt, t } = useFormatter();
+  const { fldt, t_i18n } = useFormatter();
   const { edges } = caseData.objects;
   return (
     <div id="container" className={classes.container}>
@@ -82,7 +82,7 @@ const IncidentKnowledgeTimeLineComponent = ({
                 {displayRelationships && (
                   <span>
                     <br />
-                    <i>{`${t(`relationship_${node.entity_type}`)}`}</i>
+                    <i>{`${t_i18n(`relationship_${node.entity_type}`)}`}</i>
                   </span>
                 )}
               </TimelineOppositeContent>

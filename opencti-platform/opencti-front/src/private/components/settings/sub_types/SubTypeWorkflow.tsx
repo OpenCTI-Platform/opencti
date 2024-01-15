@@ -65,7 +65,7 @@ const SubTypeWorkflow: FunctionComponent<SubTypeEditionContainerProps> = ({
   open,
 }) => {
   const classes = useStyles();
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   const queryData = usePreloadedQuery(subTypeWorkflowEditionQuery, queryRef);
   if (queryData.subType) {
     const subType = useFragment(
@@ -75,7 +75,7 @@ const SubTypeWorkflow: FunctionComponent<SubTypeEditionContainerProps> = ({
     return (
       <Drawer
         open={open}
-        title={`${t('Workflow of')} ${t(`entity_${subType.label}`)}`}
+        title={`${t_i18n('Workflow of')} ${t_i18n(`entity_${subType.label}`)}`}
         onClose={handleClose}
       >
         <>

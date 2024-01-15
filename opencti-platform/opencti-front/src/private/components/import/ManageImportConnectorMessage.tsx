@@ -13,17 +13,17 @@ const WarningText = styled('span')(({ theme }) => ({
 }));
 
 const ManageImportConnectorMessage: FunctionComponent<ManageImportConnectorMessageProps> = ({ name }) => {
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   const isCsvMapperUpdater = useGranted([TAXIIAPI_SETCSVMAPPERS]);
   switch (name) {
     case 'ImportCsv':
       return <Box sx={{ paddingTop: '8px' }}>
-        <WarningText >{t('There are not any configurations set yet')}</WarningText>
+        <WarningText >{t_i18n('There are not any configurations set yet')}</WarningText>
         <div>
           {
             isCsvMapperUpdater
-              ? <Link to="/dashboard/data/processing/csv_mapper">{t('Create a CSV Mapper configuration')}</Link>
-              : <WarningText>{t('Please contact an administrator')}</WarningText>
+              ? <Link to="/dashboard/data/processing/csv_mapper">{t_i18n('Create a CSV Mapper configuration')}</Link>
+              : <WarningText>{t_i18n('Please contact an administrator')}</WarningText>
           }
         </div>
       </Box>;

@@ -102,7 +102,7 @@ const AuditsMultiHeatMap = ({
 }) => {
   const theme = useTheme();
   const classes = useStyles();
-  const { t, fsd } = useFormatter();
+  const { t_i18n, fsd } = useFormatter();
   const isGrantedToSettings = useGranted([SETTINGS]);
   const isEnterpriseEdition = useEnterpriseEdition();
   const renderContent = () => {
@@ -117,10 +117,10 @@ const AuditsMultiHeatMap = ({
             }}
           >
             {!isEnterpriseEdition
-              ? t(
+              ? t_i18n(
                 'This feature is only available in OpenCTI Enterprise Edition.',
               )
-              : t('You are not authorized to see this data.')}
+              : t_i18n('You are not authorized to see this data.')}
           </span>
         </div>
       );
@@ -149,7 +149,7 @@ const AuditsMultiHeatMap = ({
           if (props && props.auditsMultiTimeSeries) {
             const chartData = dataSelection
               .map((selection, i) => ({
-                name: selection.label ?? t('Number of history entries'),
+                name: selection.label ?? t_i18n('Number of history entries'),
                 data: props.auditsMultiTimeSeries[i].data.map((entry) => ({
                   x: new Date(entry.date),
                   y: entry.value,
@@ -211,7 +211,7 @@ const AuditsMultiHeatMap = ({
                     textAlign: 'center',
                   }}
                 >
-                  {t('No entities of this type has been found.')}
+                  {t_i18n('No entities of this type has been found.')}
                 </span>
               </div>
             );
@@ -245,7 +245,7 @@ const AuditsMultiHeatMap = ({
           textOverflow: 'ellipsis',
         }}
       >
-        {parameters.title ?? t('Entities history')}
+        {parameters.title ?? t_i18n('Entities history')}
       </Typography>
       {variant !== 'inLine' ? (
         <Paper classes={{ root: classes.paper }} variant="outlined">

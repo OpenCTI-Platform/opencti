@@ -49,7 +49,7 @@ StixCoreObjectOpinionsRadarProps
   height,
   opinionOptions,
 }) => {
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   const theme = useTheme();
   const { opinionsDistribution } = usePreloadedQuery<StixCoreObjectOpinionsRadarDistributionQuery>(
     stixCoreObjectOpinionsRadarDistributionQuery,
@@ -65,7 +65,7 @@ StixCoreObjectOpinionsRadarProps
   );
   const chartData = [
     {
-      name: t('Opinions'),
+      name: t_i18n('Opinions'),
       data: opinionOptions.map((m) => distributionData[m.label]?.value || 0),
     },
   ];

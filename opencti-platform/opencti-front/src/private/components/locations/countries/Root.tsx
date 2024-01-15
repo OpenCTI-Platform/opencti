@@ -74,7 +74,7 @@ const RootCountryComponent = ({ queryRef, countryId, link }) => {
   );
   useSubscription(subConfig);
   const location = useLocation();
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   const data = usePreloadedQuery(countryQuery, queryRef);
   const { country, connectorsForImport, connectorsForExport } = data;
   return (
@@ -116,37 +116,37 @@ const RootCountryComponent = ({ queryRef, countryId, link }) => {
                 component={Link}
                 to={`/dashboard/locations/countries/${country.id}`}
                 value={`/dashboard/locations/countries/${country.id}`}
-                label={t('Overview')}
+                label={t_i18n('Overview')}
               />
               <Tab
                 component={Link}
                 to={`/dashboard/locations/countries/${country.id}/knowledge`}
                 value={`/dashboard/locations/countries/${country.id}/knowledge`}
-                label={t('Knowledge')}
+                label={t_i18n('Knowledge')}
               />
               <Tab
                 component={Link}
                 to={`/dashboard/locations/countries/${country.id}/analyses`}
                 value={`/dashboard/locations/countries/${country.id}/analyses`}
-                label={t('Analyses')}
+                label={t_i18n('Analyses')}
               />
               <Tab
                 component={Link}
                 to={`/dashboard/locations/countries/${country.id}/sightings`}
                 value={`/dashboard/locations/countries/${country.id}/sightings`}
-                label={t('Sightings')}
+                label={t_i18n('Sightings')}
               />
               <Tab
                 component={Link}
                 to={`/dashboard/locations/countries/${country.id}/files`}
                 value={`/dashboard/locations/countries/${country.id}/files`}
-                label={t('Data')}
+                label={t_i18n('Data')}
               />
               <Tab
                 component={Link}
                 to={`/dashboard/locations/countries/${country.id}/history`}
                 value={`/dashboard/locations/countries/${country.id}/history`}
-                label={t('History')}
+                label={t_i18n('History')}
               />
             </Tabs>
           </Box>

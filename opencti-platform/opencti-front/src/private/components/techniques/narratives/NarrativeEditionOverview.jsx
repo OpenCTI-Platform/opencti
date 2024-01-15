@@ -78,10 +78,10 @@ const narrativeMutationRelationDelete = graphql`
 
 const NarrativeEditionOverviewComponent = (props) => {
   const { narrative, enableReferences, context, handleClose } = props;
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
 
   const basicShape = {
-    name: Yup.string().min(2).required(t('This field is required')),
+    name: Yup.string().min(2).required(t_i18n('This field is required')),
     description: Yup.string().nullable(),
     references: Yup.array(),
     x_opencti_workflow_id: Yup.object(),
@@ -157,7 +157,7 @@ const NarrativeEditionOverviewComponent = (props) => {
   const initialValues = R.pipe(
     R.assoc('createdBy', convertCreatedBy(narrative)),
     R.assoc('objectMarking', convertMarkings(narrative)),
-    R.assoc('x_opencti_workflow_id', convertStatus(t, narrative)),
+    R.assoc('x_opencti_workflow_id', convertStatus(t_i18n, narrative)),
     R.assoc('references', []),
     R.pick([
       'name',
@@ -187,7 +187,7 @@ const NarrativeEditionOverviewComponent = (props) => {
           <Field
             component={TextField}
             name="name"
-            label={t('Name')}
+            label={t_i18n('Name')}
             fullWidth={true}
             onFocus={editor.changeFocus}
             onSubmit={handleSubmitField}
@@ -198,7 +198,7 @@ const NarrativeEditionOverviewComponent = (props) => {
           <Field
             component={MarkdownField}
             name="description"
-            label={t('Description')}
+            label={t_i18n('Description')}
             fullWidth={true}
             multiline={true}
             rows="4"

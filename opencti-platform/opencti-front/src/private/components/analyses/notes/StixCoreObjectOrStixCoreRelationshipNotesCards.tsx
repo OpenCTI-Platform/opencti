@@ -160,10 +160,10 @@ StixCoreObjectOrStixCoreRelationshipNotesCardsProps
   defaultMarkings,
   title,
 }) => {
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   const classes = useStyles();
   const basicShape = {
-    content: Yup.string().min(2).required(t('This field is required')),
+    content: Yup.string().min(2).required(t_i18n('This field is required')),
     attribute_abstract: Yup.string().nullable(),
     confidence: Yup.number(),
     note_types: Yup.array(),
@@ -280,7 +280,7 @@ StixCoreObjectOrStixCoreRelationshipNotesCardsProps
             <Typography className={classes.heading}>
               <RateReviewOutlined />
               &nbsp;&nbsp;&nbsp;&nbsp;
-              <span style={{ fontWeight: 500 }}>{t('Write a note')}</span>
+              <span style={{ fontWeight: 500 }}>{t_i18n('Write a note')}</span>
             </Typography>
           </AccordionSummary>
           <AccordionDetails style={{ width: '100%' }}>
@@ -301,7 +301,7 @@ StixCoreObjectOrStixCoreRelationshipNotesCardsProps
                   <Field
                     component={MarkdownField}
                     name="content"
-                    label={t('Content')}
+                    label={t_i18n('Content')}
                     fullWidth={true}
                     multiline={true}
                     rows="4"
@@ -315,12 +315,12 @@ StixCoreObjectOrStixCoreRelationshipNotesCardsProps
                       <Field
                         component={TextField}
                         name="attribute_abstract"
-                        label={t('Abstract')}
+                        label={t_i18n('Abstract')}
                         fullWidth={true}
                         style={{ marginTop: 20 }}
                       />
                       <OpenVocabField
-                        label={t('Note types')}
+                        label={t_i18n('Note types')}
                         type="note_types_ov"
                         name="note_types"
                         onChange={(name, value) => setFieldValue(name, value)}
@@ -334,7 +334,7 @@ StixCoreObjectOrStixCoreRelationshipNotesCardsProps
                       <Field
                         component={SliderField}
                         name="likelihood"
-                        label={t('Likelihood')}
+                        label={t_i18n('Likelihood')}
                         fullWidth={true}
                         style={{ marginTop: 20 }}
                       />
@@ -355,7 +355,7 @@ StixCoreObjectOrStixCoreRelationshipNotesCardsProps
                       classes={{ root: classes.buttonAction }}
                       size="small"
                     >
-                      {t('Create')}
+                      {t_i18n('Create')}
                     </Button>
                     <Button
                       variant="contained"
@@ -367,7 +367,7 @@ StixCoreObjectOrStixCoreRelationshipNotesCardsProps
                         more ? <ExpandLessOutlined /> : <ExpandMoreOutlined />
                       }
                     >
-                      {more ? t('Less fields') : t('More fields')}
+                      {more ? t_i18n('Less fields') : t_i18n('More fields')}
                     </Button>
                     <Button
                       variant="contained"
@@ -376,7 +376,7 @@ StixCoreObjectOrStixCoreRelationshipNotesCardsProps
                       classes={{ root: classes.buttonAction }}
                       size="small"
                     >
-                      {t('Cancel')}
+                      {t_i18n('Cancel')}
                     </Button>
                     <div className="clearfix" />
                   </div>

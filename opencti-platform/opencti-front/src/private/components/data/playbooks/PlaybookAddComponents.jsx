@@ -97,7 +97,7 @@ const PlaybookAddComponentsContent = ({
   handleClose,
 }) => {
   const classes = useStyles();
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   const currentConfig = action === 'config' ? selectedNode?.data?.configuration : null;
   const [filters, setFilters] = useState(currentConfig?.filters ? deserializeFilterGroupForFrontend(currentConfig?.filters) : emptyFilterGroup);
 
@@ -157,30 +157,30 @@ const PlaybookAddComponentsContent = ({
     if (actionsInputs[i]?.op === 'add') {
       options = [
         {
-          label: t('Marking definitions'),
+          label: t_i18n('Marking definitions'),
           value: 'objectMarking',
           isMultiple: true,
         },
-        { label: t('Labels'), value: 'objectLabel', isMultiple: true },
+        { label: t_i18n('Labels'), value: 'objectLabel', isMultiple: true },
       ];
     } else if (actionsInputs[i]?.op === 'replace') {
       options = [
         {
-          label: t('Marking definitions'),
+          label: t_i18n('Marking definitions'),
           value: 'objectMarking',
           isMultiple: true,
         },
-        { label: t('Labels'), value: 'objectLabel', isMultiple: true },
-        { label: t('Author'), value: 'createdBy', isMultiple: false },
-        { label: t('Confidence'), value: 'confidence', isMultiple: false },
-        { label: t('Score'), value: 'x_opencti_score', isMultiple: false },
+        { label: t_i18n('Labels'), value: 'objectLabel', isMultiple: true },
+        { label: t_i18n('Author'), value: 'createdBy', isMultiple: false },
+        { label: t_i18n('Confidence'), value: 'confidence', isMultiple: false },
+        { label: t_i18n('Score'), value: 'x_opencti_score', isMultiple: false },
         {
-          label: t('Detection'),
+          label: t_i18n('Detection'),
           value: 'x_opencti_detection',
           isMultiple: false,
         },
         {
-          label: t('Status'),
+          label: t_i18n('Status'),
           value: 'x_opencti_workflow_id',
           isMultiple: false,
         },
@@ -188,11 +188,11 @@ const PlaybookAddComponentsContent = ({
     } else if (actionsInputs[i]?.op === 'remove') {
       options = [
         {
-          label: t('Marking definitions'),
+          label: t_i18n('Marking definitions'),
           value: 'objectMarking',
           isMultiple: true,
         },
-        { label: t('Labels'), value: 'objectLabel', isMultiple: true },
+        { label: t_i18n('Labels'), value: 'objectLabel', isMultiple: true },
       ];
     }
     return (
@@ -215,7 +215,7 @@ const PlaybookAddComponentsContent = ({
             options,
           )
         ) : (
-          <MenuItem value="none">{t('None')}</MenuItem>
+          <MenuItem value="none">{t_i18n('None')}</MenuItem>
         )}
       </Select>
     );
@@ -293,7 +293,7 @@ const PlaybookAddComponentsContent = ({
             component={SwitchField}
             type="checkbox"
             name={`actions-${i}-value`}
-            label={t('Value')}
+            label={t_i18n('Value')}
             onChange={(_, value) => handleChangeActionInput(i, 'value', [
               { label: value, value, patch_value: value },
             ])
@@ -312,7 +312,7 @@ const PlaybookAddComponentsContent = ({
                         }
             variant="standard"
             name={`actions-${i}-value`}
-            label={t('Value')}
+            label={t_i18n('Value')}
             fullWidth={true}
             onChange={(_, value) => handleChangeActionInput(i, 'value', [
               { label: value, value, patch_value: value },
@@ -412,7 +412,7 @@ const PlaybookAddComponentsContent = ({
       <div className={classes.config}>
         <Formik
           initialValues={initialValues}
-          validationSchema={addComponentValidation(t)}
+          validationSchema={addComponentValidation(t_i18n)}
           onSubmit={onSubmit}
           onReset={handleClose}
         >
@@ -429,7 +429,7 @@ const PlaybookAddComponentsContent = ({
                 component={TextField}
                 variant="standard"
                 name="name"
-                label={t('Name')}
+                label={t_i18n('Name')}
                 fullWidth={true}
               />
               {Object.entries(configurationSchema?.properties ?? {}).map(
@@ -518,7 +518,7 @@ const PlaybookAddComponentsContent = ({
                               <Grid container={true} spacing={3}>
                                 <Grid item={true} xs={3}>
                                   <FormControl className={classes.formControl}>
-                                    <InputLabel>{t('Action type')}</InputLabel>
+                                    <InputLabel>{t_i18n('Action type')}</InputLabel>
                                     <Select
                                       variant="standard"
                                       value={actionsInputs[i]?.op}
@@ -530,20 +530,20 @@ const PlaybookAddComponentsContent = ({
                                       }
                                     >
                                       <MenuItem value="add">
-                                        {t('Add')}
+                                        {t_i18n('Add')}
                                       </MenuItem>
                                       <MenuItem value="replace">
-                                        {t('Replace')}
+                                        {t_i18n('Replace')}
                                       </MenuItem>
                                       <MenuItem value="remove">
-                                        {t('Remove')}
+                                        {t_i18n('Remove')}
                                       </MenuItem>
                                     </Select>
                                   </FormControl>
                                 </Grid>
                                 <Grid item={true} xs={3}>
                                   <FormControl className={classes.formControl}>
-                                    <InputLabel>{t('Field')}</InputLabel>
+                                    <InputLabel>{t_i18n('Field')}</InputLabel>
                                     {renderFieldOptions(i, values, setValues)}
                                   </FormControl>
                                 </Grid>
@@ -576,7 +576,7 @@ const PlaybookAddComponentsContent = ({
                         variant="standard"
                         type="number"
                         name={k}
-                        label={t(v.$ref ?? k)}
+                        label={t_i18n(v.$ref ?? k)}
                         fullWidth={true}
                         style={{ marginTop: 20, width: '100%' }}
                       />
@@ -589,7 +589,7 @@ const PlaybookAddComponentsContent = ({
                         component={SwitchField}
                         type="checkbox"
                         name={k}
-                        label={t(v.$ref ?? k)}
+                        label={t_i18n(v.$ref ?? k)}
                         containerstyle={{ marginTop: 20 }}
                       />
                     );
@@ -622,7 +622,7 @@ const PlaybookAddComponentsContent = ({
                         options={v.oneOf}
                         textfieldprops={{
                           variant: 'standard',
-                          label: t(v.$ref ?? k),
+                          label: t_i18n(v.$ref ?? k),
                         }}
                         getOptionLabel={(option) => (option.title
                           ? option.title
@@ -664,7 +664,7 @@ const PlaybookAddComponentsContent = ({
                         options={v.items.oneOf}
                         textfieldprops={{
                           variant: 'standard',
-                          label: t(v.$ref ?? k),
+                          label: t_i18n(v.$ref ?? k),
                         }}
                         getOptionLabel={(option) => (option.title
                           ? option.title
@@ -682,7 +682,7 @@ const PlaybookAddComponentsContent = ({
                       style={{ marginTop: 20, width: '100%' }}
                       variant="standard"
                       name={k}
-                      label={t(v.$ref ?? k)}
+                      label={t_i18n(v.$ref ?? k)}
                       fullWidth={true}
                     />
                   );
@@ -696,7 +696,7 @@ const PlaybookAddComponentsContent = ({
                   disabled={isSubmitting}
                   classes={{ root: classes.button }}
                 >
-                  {t('Cancel')}
+                  {t_i18n('Cancel')}
                 </Button>
                 <Button
                   variant="contained"
@@ -709,8 +709,8 @@ const PlaybookAddComponentsContent = ({
                   classes={{ root: classes.button }}
                 >
                   {selectedNode?.data?.component?.id
-                    ? t('Update')
-                    : t('Create')}
+                    ? t_i18n('Update')
+                    : t_i18n('Create')}
                 </Button>
               </div>
             </Form>
@@ -737,7 +737,7 @@ const PlaybookAddComponents = ({
   onConfigAdd,
   onConfigReplace,
 }) => {
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   const [searchTerm, setSearchTerm] = useState('');
   const handleClose = () => {
     setSearchTerm('');
@@ -751,7 +751,7 @@ const PlaybookAddComponents = ({
   return (
     <Drawer
       open={open}
-      title={t('Add components')}
+      title={t_i18n('Add components')}
       onClose={handleClose}
     >
       {({ onClose }) => (

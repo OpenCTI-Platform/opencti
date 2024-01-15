@@ -58,7 +58,7 @@ const StixRelationshipsMultiVerticalBars = ({
 }) => {
   const theme = useTheme();
   const classes = useStyles();
-  const { t, fsd, mtdy, yd } = useFormatter();
+  const { t_i18n, fsd, mtdy, yd } = useFormatter();
   const renderContent = () => {
     const timeSeriesParameters = dataSelection.map((selection) => {
       const dataSelectionDateAttribute = selection.date_attribute && selection.date_attribute.length > 0
@@ -108,7 +108,7 @@ const StixRelationshipsMultiVerticalBars = ({
                     : undefined,
                 )}
                 series={dataSelection.map((selection, i) => ({
-                  name: selection.label ?? t('Number of entities'),
+                  name: selection.label ?? t_i18n('Number of entities'),
                   data: props.stixRelationshipsMultiTimeSeries[i].data.map(
                     (entry) => ({
                       x: new Date(entry.date),
@@ -134,7 +134,7 @@ const StixRelationshipsMultiVerticalBars = ({
                     textAlign: 'center',
                   }}
                 >
-                  {t('No entities of this type has been found.')}
+                  {t_i18n('No entities of this type has been found.')}
                 </span>
               </div>
             );
@@ -168,7 +168,7 @@ const StixRelationshipsMultiVerticalBars = ({
           textOverflow: 'ellipsis',
         }}
       >
-        {parameters.title ?? t('Entities history')}
+        {parameters.title ?? t_i18n('Entities history')}
       </Typography>
       {variant !== 'inLine' ? (
         <Paper classes={{ root: classes.paper }} variant="outlined">

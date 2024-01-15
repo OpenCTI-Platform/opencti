@@ -27,7 +27,7 @@ interface SearchRootComponentProps {
 }
 
 const SearchRootComponent: FunctionComponent<SearchRootComponentProps> = ({ filesCount = 0 }) => {
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   const { scope } = useParams() as { scope: string };
   const { keyword } = useParams() as { keyword: string };
   const searchType = ['knowledge', 'files'].includes(scope) ? scope : 'knowledge';
@@ -39,7 +39,7 @@ const SearchRootComponent: FunctionComponent<SearchRootComponentProps> = ({ file
           variant="h1"
           gutterBottom={true}
         >
-          {t('Global search')}
+          {t_i18n('Global search')}
         </Typography>
         <Box
           sx={{
@@ -53,7 +53,7 @@ const SearchRootComponent: FunctionComponent<SearchRootComponentProps> = ({ file
               component={Link}
               to={`/dashboard/search/knowledge/${keyword ?? ''}`}
               value='knowledge'
-              label={t('Knowledge search')}
+              label={t_i18n('Knowledge search')}
             />
             <Tab
               component={Link}
@@ -61,7 +61,7 @@ const SearchRootComponent: FunctionComponent<SearchRootComponentProps> = ({ file
               value='files'
               label={<>
                 <Badge badgeContent={filesCount} color="primary">
-                  <div style={{ padding: '0px 12px' }}>{t('Files search')}<EEChip /></div>
+                  <div style={{ padding: '0px 12px' }}>{t_i18n('Files search')}<EEChip /></div>
                 </Badge>
               </>
               }

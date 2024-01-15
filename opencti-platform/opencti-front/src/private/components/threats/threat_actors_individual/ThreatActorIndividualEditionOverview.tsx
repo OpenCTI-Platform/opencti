@@ -143,13 +143,13 @@ interface ThreatActorIndividualEditionFormValues {
 const ThreatActorIndividualEditionOverviewComponent: FunctionComponent<
 ThreatActorIndividualEditionOverviewProps
 > = ({ threatActorIndividualRef, enableReferences, handleClose, context }) => {
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   const threatActorIndividual = useFragment(
     threatActorIndividualEditionOverviewFragment,
     threatActorIndividualRef,
   );
   const basicShape = {
-    name: Yup.string().min(2).required(t('This field is required')),
+    name: Yup.string().min(2).required(t_i18n('This field is required')),
     threat_actor_types: Yup.array().nullable(),
     confidence: Yup.number().nullable(),
     description: Yup.string().nullable(),
@@ -234,7 +234,7 @@ ThreatActorIndividualEditionOverviewProps
     objectMarking: convertMarkings(threatActorIndividual),
     objectAssignee: convertAssignees(threatActorIndividual),
     killChainPhases: convertKillChainPhases(threatActorIndividual),
-    x_opencti_workflow_id: convertStatus(t, threatActorIndividual) as Option,
+    x_opencti_workflow_id: convertStatus(t_i18n, threatActorIndividual) as Option,
     confidence: threatActorIndividual.confidence,
     threat_actor_types: threatActorIndividual.threat_actor_types ?? [],
     references: [],
@@ -258,7 +258,7 @@ ThreatActorIndividualEditionOverviewProps
           <Field
             component={TextField}
             name="name"
-            label={t('Name')}
+            label={t_i18n('Name')}
             fullWidth={true}
             onFocus={editor.changeFocus}
             onSubmit={handleSubmitField}
@@ -270,7 +270,7 @@ ThreatActorIndividualEditionOverviewProps
             variant="edit"
             type="threat-actor-individual-type-ov"
             name="threat_actor_types"
-            label={t('Threat actor types')}
+            label={t_i18n('Threat actor types')}
             containerStyle={{ width: '100%', marginTop: 20 }}
             multiple={true}
             onFocus={editor.changeFocus}
@@ -289,7 +289,7 @@ ThreatActorIndividualEditionOverviewProps
           <Field
             component={MarkdownField}
             name="description"
-            label={t('Description')}
+            label={t_i18n('Description')}
             fullWidth={true}
             multiline={true}
             rows="4"

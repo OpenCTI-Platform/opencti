@@ -100,9 +100,9 @@ export const OpinionCreationFormKnowledgeEditor: FunctionComponent<OpinionFormPr
   defaultMarkingDefinitions,
 }) => {
   const classes = useStyles();
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   const basicShape = {
-    opinion: Yup.string().required(t('This field is required')),
+    opinion: Yup.string().required(t_i18n('This field is required')),
     explanation: Yup.string().nullable(),
     confidence: Yup.number(),
   };
@@ -174,7 +174,7 @@ export const OpinionCreationFormKnowledgeEditor: FunctionComponent<OpinionFormPr
       {({ submitForm, handleReset, isSubmitting, setFieldValue, values }) => (
         <Form style={{ margin: '20px 0 20px 0' }}>
           <OpenVocabField
-            label={t('Opinion')}
+            label={t_i18n('Opinion')}
             type="opinion_ov"
             name="opinion"
             onChange={(name, value) => setFieldValue(name, value)}
@@ -184,7 +184,7 @@ export const OpinionCreationFormKnowledgeEditor: FunctionComponent<OpinionFormPr
           <Field
             component={MarkdownField}
             name="explanation"
-            label={t('Explanation')}
+            label={t_i18n('Explanation')}
             fullWidth={true}
             multiline={true}
             rows="4"
@@ -223,7 +223,7 @@ export const OpinionCreationFormKnowledgeEditor: FunctionComponent<OpinionFormPr
               disabled={isSubmitting}
               classes={{ root: classes.button }}
             >
-              {t('Cancel')}
+              {t_i18n('Cancel')}
             </Button>
             <Button
               variant="contained"
@@ -232,7 +232,7 @@ export const OpinionCreationFormKnowledgeEditor: FunctionComponent<OpinionFormPr
               disabled={isSubmitting}
               classes={{ root: classes.button }}
             >
-              {t('Create')}
+              {t_i18n('Create')}
             </Button>
           </div>
         </Form>
@@ -250,9 +250,9 @@ export const OpinionCreationFormKnowledgeParticipant: FunctionComponent<OpinionF
   defaultMarkingDefinitions,
 }) => {
   const classes = useStyles();
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   const basicShape = {
-    opinion: Yup.string().required(t('This field is required')),
+    opinion: Yup.string().required(t_i18n('This field is required')),
     explanation: Yup.string().nullable(),
     confidence: Yup.number(),
   };
@@ -326,7 +326,7 @@ export const OpinionCreationFormKnowledgeParticipant: FunctionComponent<OpinionF
       {({ submitForm, handleReset, isSubmitting, setFieldValue, values }) => (
         <Form style={{ margin: '20px 0 20px 0' }}>
           <OpenVocabField
-            label={t('Opinion')}
+            label={t_i18n('Opinion')}
             type="opinion_ov"
             name="opinion"
             onChange={(name, value) => setFieldValue(name, value)}
@@ -336,7 +336,7 @@ export const OpinionCreationFormKnowledgeParticipant: FunctionComponent<OpinionF
           <Field
             component={MarkdownField}
             name="explanation"
-            label={t('Explanation')}
+            label={t_i18n('Explanation')}
             fullWidth={true}
             multiline={true}
             rows="4"
@@ -370,7 +370,7 @@ export const OpinionCreationFormKnowledgeParticipant: FunctionComponent<OpinionF
               disabled={isSubmitting}
               classes={{ root: classes.button }}
             >
-              {t('Cancel')}
+              {t_i18n('Cancel')}
             </Button>
             <Button
               variant="contained"
@@ -379,7 +379,7 @@ export const OpinionCreationFormKnowledgeParticipant: FunctionComponent<OpinionF
               disabled={isSubmitting}
               classes={{ root: classes.button }}
             >
-              {t('Create')}
+              {t_i18n('Create')}
             </Button>
           </div>
         </Form>
@@ -391,13 +391,13 @@ export const OpinionCreationFormKnowledgeParticipant: FunctionComponent<OpinionF
 const OpinionCreation: FunctionComponent<OpinionCreationProps> = ({
   paginationOptions,
 }) => {
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   const userIsKnowledgeEditor = useGranted([KNOWLEDGE_KNUPDATE]);
   const updater = (store: RecordSourceSelectorProxy, key: string) => insertNode(store, 'Pagination_opinions', paginationOptions, key);
 
   return (
     <Drawer
-      title={t('Create a opinions')}
+      title={t_i18n('Create a opinions')}
       variant={DrawerVariant.create}
     >
       {({ onClose }) => (

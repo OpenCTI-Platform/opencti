@@ -201,7 +201,7 @@ const AuditsTreeMap = ({
 }) => {
   const classes = useStyles();
   const theme = useTheme();
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   const isGrantedToSettings = useGranted([SETTINGS]);
   const isEnterpriseEdition = useEnterpriseEdition();
   const renderContent = () => {
@@ -216,10 +216,10 @@ const AuditsTreeMap = ({
             }}
           >
             {!isEnterpriseEdition
-              ? t(
+              ? t_i18n(
                 'This feature is only available in OpenCTI Enterprise Edition.',
               )
-              : t('You are not authorized to see this data.')}
+              : t_i18n('You are not authorized to see this data.')}
           </span>
         </div>
       );
@@ -255,7 +255,7 @@ const AuditsTreeMap = ({
                 || selection.attribute.endsWith('_ids')
                   ? defaultValue(n.entity)
                   : selection.attribute === 'entity_type'
-                    ? t(`entity_${n.label}`)
+                    ? t_i18n(`entity_${n.label}`)
                     : n.label,
               y: n.value,
             }));
@@ -286,7 +286,7 @@ const AuditsTreeMap = ({
                     textAlign: 'center',
                   }}
                 >
-                  {t('No entities of this type has been found.')}
+                  {t_i18n('No entities of this type has been found.')}
                 </span>
               </div>
             );
@@ -320,7 +320,7 @@ const AuditsTreeMap = ({
           textOverflow: 'ellipsis',
         }}
       >
-        {parameters.title || t('Distribution of entities')}
+        {parameters.title || t_i18n('Distribution of entities')}
       </Typography>
       {variant === 'inLine' ? (
         renderContent()

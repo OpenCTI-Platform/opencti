@@ -4506,7 +4506,7 @@ const StixRelationshipsList = ({
   parameters = {},
 }) => {
   const classes = useStyles();
-  const { t, fsd } = useFormatter();
+  const { t_i18n, fsd } = useFormatter();
   const renderContent = () => {
     if (!dataSelection) {
       return 'No data selection';
@@ -4584,13 +4584,13 @@ const StixRelationshipsList = ({
                                 {/* eslint-disable-next-line no-nested-ternary */}
                                 {stixRelationship.from
                                   ? stixRelationship.from.relationship_type
-                                    ? t(
+                                    ? t_i18n(
                                       `relationship_${stixRelationship.from.entity_type}`,
                                     )
-                                    : t(
+                                    : t_i18n(
                                       `entity_${stixRelationship.from.entity_type}`,
                                     )
-                                  : t('Restricted')}
+                                  : t_i18n('Restricted')}
                               </div>
                               <div
                                 className={classes.bodyItem}
@@ -4599,7 +4599,7 @@ const StixRelationshipsList = ({
                                 <code>
                                   {stixRelationship.from
                                     ? defaultValue(stixRelationship.from, true)
-                                    : t('Restricted')}
+                                    : t_i18n('Restricted')}
                                 </code>
                               </div>
                               <div
@@ -4610,7 +4610,7 @@ const StixRelationshipsList = ({
                                 }}
                               >
                                 <i>
-                                  {t(
+                                  {t_i18n(
                                     `relationship_${stixRelationship.relationship_type}`,
                                   )}
                                 </i>
@@ -4633,13 +4633,13 @@ const StixRelationshipsList = ({
                                 {/* eslint-disable-next-line no-nested-ternary */}
                                 {stixRelationship.to
                                   ? stixRelationship.to.relationship_type
-                                    ? t(
+                                    ? t_i18n(
                                       `relationship_${stixRelationship.to.entity_type}`,
                                     )
-                                    : t(
+                                    : t_i18n(
                                       `entity_${stixRelationship.to.entity_type}`,
                                     )
-                                  : t('Restricted')}
+                                  : t_i18n('Restricted')}
                               </div>
                               <div
                                 className={classes.bodyItem}
@@ -4648,7 +4648,7 @@ const StixRelationshipsList = ({
                                 <code>
                                   {stixRelationship.to
                                     ? defaultValue(stixRelationship.to, true)
-                                    : t('Restricted')}
+                                    : t_i18n('Restricted')}
                                 </code>
                               </div>
                               <div
@@ -4699,7 +4699,7 @@ const StixRelationshipsList = ({
                     textAlign: 'center',
                   }}
                 >
-                  {t('No entities of this type has been found.')}
+                  {t_i18n('No entities of this type has been found.')}
                 </span>
               </div>
             );
@@ -4733,7 +4733,7 @@ const StixRelationshipsList = ({
           textOverflow: 'ellipsis',
         }}
       >
-        {parameters.title ?? t('Relationships list')}
+        {parameters.title ?? t_i18n('Relationships list')}
       </Typography>
       {variant !== 'inLine' ? (
         <Paper classes={{ root: classes.paper }} variant="outlined">

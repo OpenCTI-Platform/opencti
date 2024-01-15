@@ -23,7 +23,7 @@ const useStyles = makeStyles<Theme>((theme) => ({
 
 const TopMenuTechniques = () => {
   const location = useLocation();
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   const classes = useStyles();
   return (
     <>
@@ -40,7 +40,7 @@ const TopMenuTechniques = () => {
           classes={{ root: classes.button }}
         >
           <LockPattern className={classes.icon} fontSize="small" />
-          {t('Attack patterns')}
+          {t_i18n('Attack patterns')}
         </Button>
       )}
       {!useIsHiddenEntity('Narrative') && (
@@ -56,7 +56,7 @@ const TopMenuTechniques = () => {
           classes={{ root: classes.button }}
         >
           <SpeakerNotesOutlined className={classes.icon} fontSize="small" />
-          {t('Narratives')}
+          {t_i18n('Narratives')}
         </Button>
       )}
       {!useIsHiddenEntity('Course-Of-Action') && (
@@ -74,7 +74,7 @@ const TopMenuTechniques = () => {
           classes={{ root: classes.button }}
         >
           <ProgressWrench className={classes.icon} fontSize="small" />
-          {t('Courses of action')}
+          {t_i18n('Courses of action')}
         </Button>
       )}
       {!useIsHiddenEntity('Data-Component') && (
@@ -90,7 +90,7 @@ const TopMenuTechniques = () => {
           classes={{ root: classes.button }}
         >
           <SourceOutlined className={classes.icon} fontSize="small" />
-          {t('Data components')}
+          {t_i18n('Data components')}
         </Button>
       )}
       {!useIsHiddenEntity('Data-Source') && (
@@ -106,7 +106,7 @@ const TopMenuTechniques = () => {
           classes={{ root: classes.button }}
         >
           <StreamOutlined className={classes.icon} fontSize="small" />
-          {t('Data sources')}
+          {t_i18n('Data sources')}
         </Button>
       )}
     </>

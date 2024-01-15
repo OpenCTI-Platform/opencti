@@ -16,13 +16,13 @@ const NoteEditionContainer: FunctionComponent<NoteEditionContainerProps> = ({
   handleClose,
   open,
 }) => {
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
 
   const { editContext } = note;
 
   return (
     <Drawer
-      title={t('Update a note')}
+      title={t_i18n('Update a note')}
       variant={open == null ? DrawerVariant.update : undefined}
       context={editContext}
       onClose={handleClose}

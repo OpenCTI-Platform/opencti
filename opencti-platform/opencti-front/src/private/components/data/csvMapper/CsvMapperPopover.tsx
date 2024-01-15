@@ -30,7 +30,7 @@ const CsvMapperPopover: FunctionComponent<CsvMapperPopoverProps> = ({
   csvMapperId,
   paginationOptions,
 }) => {
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
 
   const [anchorEl, setAnchorEl] = useState<PopoverProps['anchorEl']>(null);
   const handleOpen = (event: React.MouseEvent) => setAnchorEl(event.currentTarget);
@@ -80,8 +80,8 @@ const CsvMapperPopover: FunctionComponent<CsvMapperPopoverProps> = ({
         <MoreVert />
       </IconButton>
       <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleClose}>
-        <MenuItem onClick={handleOpenUpdate}>{t('Update')}</MenuItem>
-        <MenuItem onClick={deletion.handleOpenDelete}>{t('Delete')}</MenuItem>
+        <MenuItem onClick={handleOpenUpdate}>{t_i18n('Update')}</MenuItem>
+        <MenuItem onClick={deletion.handleOpenDelete}>{t_i18n('Delete')}</MenuItem>
       </Menu>
       {queryRef && (
         <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
@@ -93,7 +93,7 @@ const CsvMapperPopover: FunctionComponent<CsvMapperPopoverProps> = ({
         </React.Suspense>
       )}
       <DeleteDialog
-        title={t('Do you want to delete this CSV mapper ?')}
+        title={t_i18n('Do you want to delete this CSV mapper ?')}
         deletion={deletion}
         submitDelete={submitDelete}
       />

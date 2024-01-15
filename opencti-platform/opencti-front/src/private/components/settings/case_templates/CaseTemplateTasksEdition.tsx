@@ -19,11 +19,11 @@ const caseTemplateMutationFieldPatch = graphql`
 `;
 
 const CaseTemplateTasksEdition = ({ task }: { task: CaseTemplateTasksLine_node$data }) => {
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
 
   const basicShape = {
-    name: Yup.string().min(2).required(t('This field is required')),
-    description: Yup.string().nullable().max(5000, t('The value is too long')),
+    name: Yup.string().min(2).required(t_i18n('This field is required')),
+    description: Yup.string().nullable().max(5000, t_i18n('The value is too long')),
   };
   const taskValidator = useSchemaEditionValidation('Task', basicShape);
   const [commitFieldPatch] = useMutation(caseTemplateMutationFieldPatch);
@@ -54,14 +54,14 @@ const CaseTemplateTasksEdition = ({ task }: { task: CaseTemplateTasksLine_node$d
             component={TextField}
             variant="standard"
             name="name"
-            label={t('Name')}
+            label={t_i18n('Name')}
             fullWidth={true}
             onSubmit={onSubmit}
           />
           <Field
             component={MarkdownField}
             name="description"
-            label={t('Description')}
+            label={t_i18n('Description')}
             fullWidth={true}
             multiline={true}
             rows="4"

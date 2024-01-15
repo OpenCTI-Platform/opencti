@@ -96,7 +96,7 @@ const useStyles = makeStyles<Theme>((theme) => ({
 }));
 
 const AlertDigestEdition: FunctionComponent<AlertDigestEditionProps> = ({ queryRef, paginationOptions, handleClose }) => {
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   const classes = useStyles();
   const data = usePreloadedQuery<AlertEditionQuery>(alertEditionQuery, queryRef);
   const trigger = useFragment<AlertDigestEdition_trigger$key>(alertDigestEditionFragment, data.triggerKnowledge);
@@ -114,7 +114,7 @@ const AlertDigestEdition: FunctionComponent<AlertDigestEditionProps> = ({ queryR
     });
   };
   const handleSubmitField = (name: string, value: Option | string | string[]) => {
-    return digestTriggerValidation(t).validateAt(name, { [name]: value }).then(() => {
+    return digestTriggerValidation(t_i18n).validateAt(name, { [name]: value }).then(() => {
       commitFieldPatch({
         variables: {
           id: trigger?.id,
@@ -123,7 +123,7 @@ const AlertDigestEdition: FunctionComponent<AlertDigestEditionProps> = ({ queryR
       });
     }).catch(() => false);
   };
-  const handleSubmitFieldOptions = (name: string, value: { value: string }[]) => digestTriggerValidation(t)
+  const handleSubmitFieldOptions = (name: string, value: { value: string }[]) => digestTriggerValidation(t_i18n)
     .validateAt(name, { [name]: value })
     .then(() => {
       commitFieldPatch({
@@ -192,7 +192,7 @@ const AlertDigestEdition: FunctionComponent<AlertDigestEditionProps> = ({ queryR
           <Close fontSize="small" color="primary" />
         </IconButton>
         <Typography variant="h6" classes={{ root: classes.title }}>
-          {t('Update an activity digest trigger')}
+          {t_i18n('Update an activity digest trigger')}
         </Typography>
         <div className="clearfix" />
       </div>
@@ -204,14 +204,14 @@ const AlertDigestEdition: FunctionComponent<AlertDigestEditionProps> = ({ queryR
                 component={TextField}
                 variant="standard"
                 name="name"
-                label={t('Name')}
+                label={t_i18n('Name')}
                 fullWidth={true}
                 onSubmit={handleSubmitField}
               />
               <Field
                 component={MarkdownField}
                 name="description"
-                label={t('Description')}
+                label={t_i18n('Description')}
                 fullWidth={true}
                 multiline={true}
                 rows="4"
@@ -230,33 +230,33 @@ const AlertDigestEdition: FunctionComponent<AlertDigestEditionProps> = ({ queryR
                 component={SelectField}
                 variant="standard"
                 name="period"
-                label={t('Period')}
+                label={t_i18n('Period')}
                 fullWidth={true}
                 containerstyle={fieldSpacingContainerStyle}
                 onChange={handleSubmitField}
               >
-                <MenuItem value="hour">{t('hour')}</MenuItem>
-                <MenuItem value="day">{t('day')}</MenuItem>
-                <MenuItem value="week">{t('week')}</MenuItem>
-                <MenuItem value="month">{t('month')}</MenuItem>
+                <MenuItem value="hour">{t_i18n('hour')}</MenuItem>
+                <MenuItem value="day">{t_i18n('day')}</MenuItem>
+                <MenuItem value="week">{t_i18n('week')}</MenuItem>
+                <MenuItem value="month">{t_i18n('month')}</MenuItem>
               </Field>
               {values.period === 'week' && (
                 <Field
                   component={SelectField}
                   variant="standard"
                   name="day"
-                  label={t('Week day')}
+                  label={t_i18n('Week day')}
                   fullWidth={true}
                   containerstyle={fieldSpacingContainerStyle}
                   onChange={handleSubmitDay}
                 >
-                  <MenuItem value="1">{t('Monday')}</MenuItem>
-                  <MenuItem value="2">{t('Tuesday')}</MenuItem>
-                  <MenuItem value="3">{t('Wednesday')}</MenuItem>
-                  <MenuItem value="4">{t('Thursday')}</MenuItem>
-                  <MenuItem value="5">{t('Friday')}</MenuItem>
-                  <MenuItem value="6">{t('Saturday')}</MenuItem>
-                  <MenuItem value="7">{t('Sunday')}</MenuItem>
+                  <MenuItem value="1">{t_i18n('Monday')}</MenuItem>
+                  <MenuItem value="2">{t_i18n('Tuesday')}</MenuItem>
+                  <MenuItem value="3">{t_i18n('Wednesday')}</MenuItem>
+                  <MenuItem value="4">{t_i18n('Thursday')}</MenuItem>
+                  <MenuItem value="5">{t_i18n('Friday')}</MenuItem>
+                  <MenuItem value="6">{t_i18n('Saturday')}</MenuItem>
+                  <MenuItem value="7">{t_i18n('Sunday')}</MenuItem>
                 </Field>
               )}
               {values.period === 'month' && (
@@ -264,7 +264,7 @@ const AlertDigestEdition: FunctionComponent<AlertDigestEditionProps> = ({ queryR
                   component={SelectField}
                   variant="standard"
                   name="day"
-                  label={t('Month day')}
+                  label={t_i18n('Month day')}
                   fullWidth={true}
                   containerstyle={fieldSpacingContainerStyle}
                   onChange={handleSubmitDay}
@@ -283,7 +283,7 @@ const AlertDigestEdition: FunctionComponent<AlertDigestEditionProps> = ({ queryR
                   withMinutes={true}
                   onSubmit={handleSubmitTime}
                   TextFieldProps={{
-                    label: t('Time'),
+                    label: t_i18n('Time'),
                     variant: 'standard',
                     fullWidth: true,
                     style: { marginTop: 20 },

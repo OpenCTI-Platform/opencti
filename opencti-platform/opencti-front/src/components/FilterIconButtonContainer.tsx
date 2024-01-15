@@ -136,7 +136,7 @@ FilterIconButtonContainerProps
   setHasRenderedRef,
   availableRelationFilterTypes,
 }) => {
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   const classes = useStyles();
   const { filtersRepresentatives } = usePreloadedQuery<FilterValuesContentQuery>(
     filterValuesContentQuery,
@@ -268,13 +268,13 @@ FilterIconButtonContainerProps
         const isOperatorDisplayed = operatorIcon.includes(filterOperator ?? 'eq');
         const keyLabel = (
           <>
-            {truncate(t(filterKey), 20)}
+            {truncate(t_i18n(filterKey), 20)}
             {!isOperatorDisplayed && (
               <Box
                 component={'span'}
                 sx={{ padding: '0 4px', fontWeight: 'normal' }}
               >
-                {t(filterOperator)}
+                {t_i18n(filterOperator)}
               </Box>
             )}
             {isOperatorDisplayed

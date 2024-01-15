@@ -29,7 +29,7 @@ const Search = () => {
   } = useAuth();
   const isEnterpriseEdition = useEnterpriseEdition();
   const history = useHistory();
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   const { keyword } = useParams() as { keyword: string };
   const searchTerm = decodeSearchKeyword(keyword);
   const { viewStorage, helpers: storageHelpers, paginationOptions } = usePaginationLocalStorage<SearchStixCoreObjectsLinesPaginationQuery$variables>(
@@ -211,7 +211,7 @@ const Search = () => {
             color={isEnterpriseEdition ? 'primary' : 'ee'}
             to={`/dashboard/search/files/${searchTerm}`}
           >
-            <div>{t('Extend this search to indexed files')}<EEChip /></div>
+            <div>{t_i18n('Extend this search to indexed files')}<EEChip /></div>
           </Button>
         </div>
         )}

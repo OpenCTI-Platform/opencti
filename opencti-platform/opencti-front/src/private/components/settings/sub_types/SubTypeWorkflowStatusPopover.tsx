@@ -36,7 +36,7 @@ interface SubTypeStatusPopoverProps {
 const SubTypeWorkflowStatusPopover: FunctionComponent<
 SubTypeStatusPopoverProps
 > = ({ subTypeId, statusId }) => {
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   const queryRef = useQueryLoading<SubTypeWorkflowStatusEditQuery>(
     statusEditQuery,
     { id: statusId },
@@ -77,8 +77,8 @@ SubTypeStatusPopoverProps
         <MoreVert />
       </IconButton>
       <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleClose}>
-        <MenuItem onClick={handleOpenUpdate}>{t('Update')}</MenuItem>
-        <MenuItem onClick={handleOpenDelete}>{t('Delete')}</MenuItem>
+        <MenuItem onClick={handleOpenUpdate}>{t_i18n('Update')}</MenuItem>
+        <MenuItem onClick={handleOpenDelete}>{t_i18n('Delete')}</MenuItem>
       </Menu>
       {queryRef && (
         <React.Suspense fallback={<span />}>
@@ -99,15 +99,15 @@ SubTypeStatusPopoverProps
       >
         <DialogContent>
           <DialogContentText>
-            {t('Do you want to remove this status?')}
+            {t_i18n('Do you want to remove this status?')}
           </DialogContentText>
         </DialogContent>
         <DialogActions>
           <Button onClick={handleCloseDelete} disabled={deleting}>
-            {t('Cancel')}
+            {t_i18n('Cancel')}
           </Button>
           <Button color="secondary" onClick={submitDelete} disabled={deleting}>
-            {t('Delete')}
+            {t_i18n('Delete')}
           </Button>
         </DialogActions>
       </Dialog>

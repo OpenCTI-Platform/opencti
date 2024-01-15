@@ -63,7 +63,7 @@ const workspaceValidation = (t) => Yup.object().shape({
 
 const WorkspaceCreation = ({ paginationOptions, type }) => {
   const classes = useStyles();
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   const inputRef = useRef();
   const [commitImportMutation] = useMutation(importMutation);
   const [commitCreationMutation] = useMutation(workspaceMutation);
@@ -114,7 +114,7 @@ const WorkspaceCreation = ({ paginationOptions, type }) => {
     <>
       <VisuallyHiddenInput type="file" accept={'application/JSON'} ref={inputRef} onChange={handleImport} />
       <Drawer
-        title={t(`Create ${type}`)}
+        title={t_i18n(`Create ${type}`)}
         variant={type === 'dashboard' ? undefined : DrawerVariant.create}
         controlledDial={(type === 'dashboard') ? ({ onOpen }) => (
           <SpeedDial
@@ -124,16 +124,16 @@ const WorkspaceCreation = ({ paginationOptions, type }) => {
             FabProps={{ color: 'secondary' }}
           >
             <SpeedDialAction
-              title={t('Create dashboard')}
+              title={t_i18n('Create dashboard')}
               icon={<InsertChartOutlined />}
-              tooltipTitle={t('Create dashboard')}
+              tooltipTitle={t_i18n('Create dashboard')}
               onClick={onOpen}
               FabProps={{ classes: { root: classes.speedDialButton } }}
             />
             <SpeedDialAction
-              title={t('Import dashboard')}
+              title={t_i18n('Import dashboard')}
               icon={<CloudUploadOutlined />}
-              tooltipTitle={t('Import dashboard')}
+              tooltipTitle={t_i18n('Import dashboard')}
               onClick={() => inputRef.current?.click()}
               FabProps={{ classes: { root: classes.speedDialButton } }}
             />
@@ -146,7 +146,7 @@ const WorkspaceCreation = ({ paginationOptions, type }) => {
               name: '',
               description: '',
             }}
-            validationSchema={workspaceValidation(t)}
+            validationSchema={workspaceValidation(t_i18n)}
             onSubmit={onSubmit}
             onReset={onClose}
           >
@@ -155,13 +155,13 @@ const WorkspaceCreation = ({ paginationOptions, type }) => {
                 <Field
                   component={TextField}
                   name="name"
-                  label={t('Name')}
+                  label={t_i18n('Name')}
                   fullWidth={true}
                 />
                 <Field
                   component={MarkdownField}
                   name="description"
-                  label={t('Description')}
+                  label={t_i18n('Description')}
                   fullWidth={true}
                   multiline={true}
                   rows="4"
@@ -174,7 +174,7 @@ const WorkspaceCreation = ({ paginationOptions, type }) => {
                     disabled={isSubmitting}
                     classes={{ root: classes.button }}
                   >
-                    {t('Cancel')}
+                    {t_i18n('Cancel')}
                   </Button>
                   <Button
                     variant="contained"
@@ -183,7 +183,7 @@ const WorkspaceCreation = ({ paginationOptions, type }) => {
                     disabled={isSubmitting}
                     classes={{ root: classes.button }}
                   >
-                    {t('Create')}
+                    {t_i18n('Create')}
                   </Button>
                 </div>
               </Form>

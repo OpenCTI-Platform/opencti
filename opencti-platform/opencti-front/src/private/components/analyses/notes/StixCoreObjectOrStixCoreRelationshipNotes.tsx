@@ -25,7 +25,7 @@ StixCoreObjectOrStixCoreRelationshipNotesProps
   isRelationship,
   defaultMarkings,
 }) => {
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   const paginationOptions = {
     count: 200,
     orderBy: 'created' as NotesOrdering,
@@ -49,13 +49,13 @@ StixCoreObjectOrStixCoreRelationshipNotesProps
       stixCoreObjectOrStixCoreRelationshipNotesCardsQuery,
       paginationOptions,
     );
-    title = t('Notes about this relationship');
+    title = t_i18n('Notes about this relationship');
   } else {
     queryRef = useQueryLoading<StixCoreObjectOrStixCoreRelationshipNotesCardsQuery>(
       stixCoreObjectOrStixCoreRelationshipNotesCardsQuery,
       paginationOptions,
     );
-    title = t('Notes about this entity');
+    title = t_i18n('Notes about this entity');
   }
   return (
     <>

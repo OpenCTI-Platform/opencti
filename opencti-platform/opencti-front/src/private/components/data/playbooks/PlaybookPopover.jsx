@@ -60,7 +60,7 @@ const playbookEditionQuery = graphql`
 const PlaybookPopover = (props) => {
   const { playbookId, running, paginationOptions } = props;
   const classes = useStyles();
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   const navigate = useNavigate();
   const [anchorEl, setAnchorEl] = useState(null);
   const [displayUpdate, setDisplayUpdate] = useState(false);
@@ -157,12 +157,12 @@ const PlaybookPopover = (props) => {
         onClose={() => setAnchorEl(null)}
       >
         {running ? (
-          <MenuItem onClick={handleOpenStop}>{t('Stop')}</MenuItem>
+          <MenuItem onClick={handleOpenStop}>{t_i18n('Stop')}</MenuItem>
         ) : (
-          <MenuItem onClick={handleOpenStart}>{t('Start')}</MenuItem>
+          <MenuItem onClick={handleOpenStart}>{t_i18n('Start')}</MenuItem>
         )}
-        <MenuItem onClick={handleOpenUpdate}>{t('Update')}</MenuItem>
-        <MenuItem onClick={handleOpenDelete}>{t('Delete')}</MenuItem>
+        <MenuItem onClick={handleOpenUpdate}>{t_i18n('Update')}</MenuItem>
+        <MenuItem onClick={handleOpenDelete}>{t_i18n('Delete')}</MenuItem>
       </Menu>
       <QueryRenderer
         query={playbookEditionQuery}
@@ -189,15 +189,15 @@ const PlaybookPopover = (props) => {
       >
         <DialogContent>
           <DialogContentText>
-            {t('Do you want to delete this playbook?')}
+            {t_i18n('Do you want to delete this playbook?')}
           </DialogContentText>
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setDisplayDelete(false)} disabled={deleting}>
-            {t('Cancel')}
+            {t_i18n('Cancel')}
           </Button>
           <Button color="secondary" onClick={submitDelete} disabled={deleting}>
-            {t('Delete')}
+            {t_i18n('Delete')}
           </Button>
         </DialogActions>
       </Dialog>
@@ -210,15 +210,15 @@ const PlaybookPopover = (props) => {
       >
         <DialogContent>
           <DialogContentText>
-            {t('Do you want to start this playbook?')}
+            {t_i18n('Do you want to start this playbook?')}
           </DialogContentText>
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setDisplayStart(false)} disabled={starting}>
-            {t('Cancel')}
+            {t_i18n('Cancel')}
           </Button>
           <Button onClick={submitStart} color="secondary" disabled={starting}>
-            {t('Start')}
+            {t_i18n('Start')}
           </Button>
         </DialogActions>
       </Dialog>
@@ -231,15 +231,15 @@ const PlaybookPopover = (props) => {
       >
         <DialogContent>
           <DialogContentText>
-            {t('Do you want to stop this playbook?')}
+            {t_i18n('Do you want to stop this playbook?')}
           </DialogContentText>
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setDisplayStop(false)} disabled={stopping}>
-            {t('Cancel')}
+            {t_i18n('Cancel')}
           </Button>
           <Button onClick={submitStop} color="secondary" disabled={stopping}>
-            {t('Stop')}
+            {t_i18n('Stop')}
           </Button>
         </DialogActions>
       </Dialog>

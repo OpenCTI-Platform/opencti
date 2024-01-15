@@ -83,7 +83,7 @@ const sharedUpdater = (store: RecordSourceSelectorProxy, userId: string, paginat
 const StreamCollectionCreation: FunctionComponent<StreamCollectionCreationProps> = ({ paginationOptions }) => {
   const [filters, helpers] = useFiltersState(emptyFilterGroup);
   const classes = useStyles();
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   const onSubmit: FormikConfig<StreamCollectionCreationForm>['onSubmit'] = (values, { setSubmitting, resetForm }) => {
     const jsonFilters = serializeFilterGroupForBackend(filters);
     const authorized_members = values.authorized_members.map(({ value }) => ({
@@ -119,7 +119,7 @@ const StreamCollectionCreation: FunctionComponent<StreamCollectionCreationProps>
 
   return (
     <Drawer
-      title={t('Create a stream')}
+      title={t_i18n('Create a stream')}
       variant={DrawerVariant.createWithPanel}
       onClose={helpers.handleClearAllFilters}
     >
@@ -131,7 +131,7 @@ const StreamCollectionCreation: FunctionComponent<StreamCollectionCreationProps>
             stream_public: false,
             authorized_members: [] as Option[],
           }}
-          validationSchema={streamCollectionCreationValidation(t('This field is required'))}
+          validationSchema={streamCollectionCreationValidation(t_i18n('This field is required'))}
           onSubmit={onSubmit}
           onReset={onClose}
         >
@@ -147,14 +147,14 @@ const StreamCollectionCreation: FunctionComponent<StreamCollectionCreationProps>
                 component={TextField}
                 variant="standard"
                 name="name"
-                label={t('Name')}
+                label={t_i18n('Name')}
                 fullWidth={true}
               />
               <Field
                 component={TextField}
                 variant="standard"
                 name="description"
-                label={t('Description')}
+                label={t_i18n('Description')}
                 fullWidth={true}
                 style={{ marginTop: 20 }}
               />
@@ -166,20 +166,20 @@ const StreamCollectionCreation: FunctionComponent<StreamCollectionCreationProps>
                 style={{ position: 'relative' }}
               >
                 <AlertTitle>
-                  {t('Make this stream public and available to anyone')}
+                  {t_i18n('Make this stream public and available to anyone')}
                 </AlertTitle>
                 <FormControlLabel
                   control={<Switch />}
                   style={{ marginLeft: 1 }}
                   name="stream_public"
                   onChange={(_, checked) => setFieldValue('stream_public', checked)}
-                  label={t('Public stream')}
+                  label={t_i18n('Public stream')}
                 />
                 {!values.stream_public && (
                   <ObjectMembersField
                     label={'Accessible for'}
                     style={fieldSpacingContainerStyle}
-                    helpertext={t('Let the field empty to grant all authenticated users')}
+                    helpertext={t_i18n('Let the field empty to grant all authenticated users')}
                     multiple={true}
                     name="authorized_members"
                   />
@@ -229,7 +229,7 @@ const StreamCollectionCreation: FunctionComponent<StreamCollectionCreationProps>
                   disabled={isSubmitting}
                   classes={{ root: classes.button }}
                 >
-                  {t('Cancel')}
+                  {t_i18n('Cancel')}
                 </Button>
                 <Button
                   variant="contained"
@@ -238,7 +238,7 @@ const StreamCollectionCreation: FunctionComponent<StreamCollectionCreationProps>
                   disabled={isSubmitting}
                   classes={{ root: classes.button }}
                 >
-                  {t('Create')}
+                  {t_i18n('Create')}
                 </Button>
               </div>
             </Form>

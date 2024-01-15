@@ -102,7 +102,7 @@ const groupFragment = graphql`
 `;
 const Group = ({ groupData }: { groupData: Group_group$key }) => {
   const classes = useStyles();
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   const group = useFragment<Group_group$key>(groupFragment, groupData);
   const markingsSort = R.sortWith([
     R.ascend(R.propOr('TLP', 'definition_type')),
@@ -138,13 +138,13 @@ const Group = ({ groupData }: { groupData: Group_group$key }) => {
       >
         <Grid item={true} xs={6} style={{ paddingTop: 10 }}>
           <Typography variant="h4" gutterBottom={true}>
-            {t('Basic information')}
+            {t_i18n('Basic information')}
           </Typography>
           <Paper classes={{ root: classes.paper }} variant="outlined">
             <Grid container={true} spacing={3}>
               <Grid item={true} xs={12}>
                 <Typography variant="h3" gutterBottom={true}>
-                  {t('Description')}
+                  {t_i18n('Description')}
                 </Typography>
                 {group.description}
               </Grid>
@@ -153,20 +153,20 @@ const Group = ({ groupData }: { groupData: Group_group$key }) => {
               </Grid>
               <Grid item={true} xs={6}>
                 <Typography variant="h3" gutterBottom={true}>
-                  {t('Auto new markings')}
+                  {t_i18n('Auto new markings')}
                 </Typography>
                 <ItemBoolean
                   status={group.auto_new_marking ?? false}
-                  label={group.auto_new_marking ? t('Yes') : t('No')}
+                  label={group.auto_new_marking ? t_i18n('Yes') : t_i18n('No')}
                 />
               </Grid>
               <Grid item={true} xs={6}>
                 <Typography variant="h3" gutterBottom={true}>
-                  {t('Default membership')}
+                  {t_i18n('Default membership')}
                 </Typography>
                 <ItemBoolean
                   status={group.default_assignation ?? false}
-                  label={group.default_assignation ? t('Yes') : t('No')}
+                  label={group.default_assignation ? t_i18n('Yes') : t_i18n('No')}
                 />
               </Grid>
             </Grid>
@@ -174,13 +174,13 @@ const Group = ({ groupData }: { groupData: Group_group$key }) => {
         </Grid>
         <Grid item={true} xs={6} style={{ paddingTop: 10 }}>
           <Typography variant="h4" gutterBottom={true}>
-            {t('Permissions')}
+            {t_i18n('Permissions')}
           </Typography>
           <Paper classes={{ root: classes.paper }} variant="outlined">
             <Grid container={true} spacing={3}>
               <Grid item={true} xs={6}>
                 <Typography variant="h3" gutterBottom={true}>
-                  {t('Roles')}
+                  {t_i18n('Roles')}
                 </Typography>
                 <List>
                   {group.roles?.map((role) => (
@@ -202,7 +202,7 @@ const Group = ({ groupData }: { groupData: Group_group$key }) => {
               </Grid>
               <Grid item={true} xs={6}>
                 <Typography variant="h3" gutterBottom={true}>
-                  {t('Default dashboard')}
+                  {t_i18n('Default dashboard')}
                 </Typography>
                 <FieldOrEmpty source={group.default_dashboard}>
                   <List>
@@ -222,7 +222,7 @@ const Group = ({ groupData }: { groupData: Group_group$key }) => {
                       {!canAccessDashboard && (
                       <ListItemSecondaryAction>
                         <Tooltip
-                          title={t(
+                          title={t_i18n(
                             'You need to authorize this group to access this dashboard in the permissions of the workspace.',
                           )}
                         >
@@ -236,9 +236,9 @@ const Group = ({ groupData }: { groupData: Group_group$key }) => {
               </Grid>
               <Grid item={true} xs={6}>
                 <Typography variant="h3" gutterBottom={true}>
-                  {t('Default markings')}
+                  {t_i18n('Default markings')}
                   <Tooltip
-                    title={t(
+                    title={t_i18n(
                       'You can enable/disable default values for marking in the customization of each entity type.',
                     )}
                   >
@@ -274,7 +274,7 @@ const Group = ({ groupData }: { groupData: Group_group$key }) => {
               </Grid>
               <Grid item={true} xs={6}>
                 <Typography variant="h3" gutterBottom={true}>
-                  {t('Allowed markings')}
+                  {t_i18n('Allowed markings')}
                 </Typography>
                 <FieldOrEmpty source={allowedMarkings}>
                   <List>

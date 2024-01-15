@@ -64,7 +64,7 @@ const EntitiesStixDomainObjectLineComponent = ({
   index,
 }) => {
   const classes = useStyles();
-  const { t, fd } = useFormatter();
+  const { t_i18n, fd } = useFormatter();
   const link = `${resolveLink(node.entity_type)}/${node.id}`;
   return (
     <ListItem
@@ -108,7 +108,7 @@ const EntitiesStixDomainObjectLineComponent = ({
                   color: itemColor(node.entity_type),
                   border: `1px solid ${itemColor(node.entity_type)}`,
                 }}
-                label={t(`entity_${node.entity_type}`)}
+                label={t_i18n(`entity_${node.entity_type}`)}
               />
             </div>
             <div

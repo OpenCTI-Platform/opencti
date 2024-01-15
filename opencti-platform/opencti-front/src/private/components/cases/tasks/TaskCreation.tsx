@@ -73,12 +73,12 @@ const TaskCreationForm: FunctionComponent<TaskCreationProps> = ({
   onClose,
   defaultMarkings,
 }) => {
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   const classes = useStyles();
 
   const basicShape = {
-    name: Yup.string().min(2).required(t('This field is required')),
-    description: Yup.string().nullable().max(5000, t('The value is too long')),
+    name: Yup.string().min(2).required(t_i18n('This field is required')),
+    description: Yup.string().nullable().max(5000, t_i18n('The value is too long')),
     due_date: Yup.date().nullable(),
     objectLabel: Yup.array(),
     objectMarking: Yup.array(),
@@ -142,14 +142,14 @@ const TaskCreationForm: FunctionComponent<TaskCreationProps> = ({
             component={TextField}
             variant="standard"
             name="name"
-            label={t('Name')}
+            label={t_i18n('Name')}
             fullWidth
           />
           <Field
             component={DateTimePickerField}
             name="due_date"
             TextFieldProps={{
-              label: t('Due Date'),
+              label: t_i18n('Due Date'),
               variant: 'standard',
               fullWidth: true,
             }}
@@ -169,7 +169,7 @@ const TaskCreationForm: FunctionComponent<TaskCreationProps> = ({
           <Field
             component={MarkdownField}
             name="description"
-            label={t('Description')}
+            label={t_i18n('Description')}
             fullWidth
             multiline
             rows="4"
@@ -182,7 +182,7 @@ const TaskCreationForm: FunctionComponent<TaskCreationProps> = ({
               variant="contained"
               classes={{ root: classes.button }}
             >
-              {t('Cancel')}
+              {t_i18n('Cancel')}
             </Button>
             <Button
               variant="contained"
@@ -191,7 +191,7 @@ const TaskCreationForm: FunctionComponent<TaskCreationProps> = ({
               disabled={isSubmitting}
               classes={{ root: classes.button }}
             >
-              {t('Create')}
+              {t_i18n('Create')}
             </Button>
           </div>
         </Form>
@@ -205,11 +205,11 @@ const TaskCreation = ({
 }: {
   paginationOptions: TasksLinesPaginationQuery$variables;
 }) => {
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   const updater = (store: RecordSourceSelectorProxy) => insertNode(store, 'Pagination_tasks__caseTasks', paginationOptions, 'taskAdd');
   return (
     <Drawer
-      title={t('Create a task')}
+      title={t_i18n('Create a task')}
       variant={DrawerVariant.create}
     >
       <TaskCreationForm updater={updater} />

@@ -45,7 +45,7 @@ interface CaseRfiProps {
 
 const CaseRfiComponent: FunctionComponent<CaseRfiProps> = ({ data }) => {
   const classes = useStyles();
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   const ref = useRef(null);
   const caseRfiData = useFragment(caseFragment, data);
 
@@ -105,7 +105,7 @@ const CaseRfiComponent: FunctionComponent<CaseRfiProps> = ({ data }) => {
                     gutterBottom={true}
                     style={{ marginBottom: 10 }}
                   >
-                    {t('Tasks')}
+                    {t_i18n('Tasks')}
                   </Typography>
                   <Paper classes={{ root: classes.paper }} variant="outlined">
                     <ListLines
@@ -145,7 +145,7 @@ const CaseRfiComponent: FunctionComponent<CaseRfiProps> = ({ data }) => {
             isSupportParticipation={false}
             container={caseRfiData}
             types={['Incident', 'stix-sighting-relationship', 'Report']}
-            title={t('Origin of the case')}
+            title={t_i18n('Origin of the case')}
           />
         </Grid>
         <Grid item={true} xs={6} style={{ marginTop: 30 }}>
@@ -153,7 +153,7 @@ const CaseRfiComponent: FunctionComponent<CaseRfiProps> = ({ data }) => {
             isSupportParticipation={false}
             container={caseRfiData}
             types={['Stix-Cyber-Observable']}
-            title={t('Observables')}
+            title={t_i18n('Observables')}
           />
         </Grid>
         <Grid item={true} xs={6} style={{ marginTop: 30 }}>

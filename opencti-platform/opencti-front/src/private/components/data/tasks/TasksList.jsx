@@ -142,7 +142,7 @@ const TasksListFragment = graphql`
 `;
 const TasksList = ({ data }) => {
   const classes = useStyles();
-  const { t, nsdt, n } = useFormatter();
+  const { t_i18n, nsdt, n } = useFormatter();
   const [displayMessages, setDisplayMessages] = useState(false);
   const [displayErrors, setDisplayErrors] = useState(false);
   const [messages, setMessages] = useState([]);
@@ -198,7 +198,7 @@ const TasksList = ({ data }) => {
               textAlign: 'center',
             }}
           >
-            {t('No task')}
+            {t_i18n('No task')}
           </span>
         </div>
       </Paper>
@@ -234,7 +234,7 @@ const TasksList = ({ data }) => {
                 <Grid container={true} spacing={1}>
                   <Grid item={true} xs={12}>
                     <Typography variant="h3" gutterBottom={true}>
-                      {t('Targeted entities')} ({n(task.task_expected_number)}
+                      {t_i18n('Targeted entities')} ({n(task.task_expected_number)}
                       )
                     </Typography>
                     {task.task_search && (
@@ -243,14 +243,14 @@ const TasksList = ({ data }) => {
                         classes={{ root: classes.filter }}
                         label={
                           <div>
-                            <strong>{t('Search')}</strong>:{' '}
+                            <strong>{t_i18n('Search')}</strong>:{' '}
                             {task.task_search}
                           </div>
                             }
                       />
                       <Chip
                         classes={{ root: classes.operator }}
-                        label={t('AND')}
+                        label={t_i18n('AND')}
                       />
                     </span>
                     )}
@@ -264,7 +264,7 @@ const TasksList = ({ data }) => {
                               classes={{ root: classes.filter }}
                               label={
                                 <div>
-                                  <strong>{t('List of entities')}</strong>:{' '}
+                                  <strong>{t_i18n('List of entities')}</strong>:{' '}
                                   {listIds}
                                 </div>
                               }
@@ -275,18 +275,18 @@ const TasksList = ({ data }) => {
                     {task.type === 'RULE' && (
                     <Chip
                       classes={{ root: classes.filter }}
-                      label={<div>{t('All rule targets')}</div>}
+                      label={<div>{t_i18n('All rule targets')}</div>}
                     />
                     )}
                   </Grid>
                   <Grid item={true} xs={12}>
                     <Typography variant="h3" gutterBottom={true}>
-                      {t('Actions')}
+                      {t_i18n('Actions')}
                     </Typography>
                     {task.type === 'RULE' && (
                     <Chip
                       classes={{ root: classes.operator }}
-                      label={<div>{t('APPLY RULE')}</div>}
+                      label={<div>{t_i18n('APPLY RULE')}</div>}
                     />
                     )}
                     {task.actions
@@ -332,7 +332,7 @@ const TasksList = ({ data }) => {
                 <Grid container={true} spacing={3}>
                   <Grid item={true} xs={2}>
                     <Typography variant="h3" gutterBottom={true}>
-                      {t('Initiator')}
+                      {t_i18n('Initiator')}
                     </Typography>
                     <Tooltip title={task.initiator?.name}>
                       {truncate(task.initiator?.name, 15)}
@@ -340,35 +340,35 @@ const TasksList = ({ data }) => {
                   </Grid>
                   <Grid item={true} xs={2}>
                     <Typography variant="h3" gutterBottom={true}>
-                      {t('Task start time')}
+                      {t_i18n('Task start time')}
                     </Typography>
                     {nsdt(task.created_at)}
                   </Grid>
                   <Grid item={true} xs={2}>
                     <Typography variant="h3" gutterBottom={true}>
                       {task.completed
-                        ? t('Task end time')
-                        : t('Task last execution time')}
+                        ? t_i18n('Task end time')
+                        : t_i18n('Task last execution time')}
                     </Typography>
                     {nsdt(task.last_execution_date)}
                   </Grid>
                   {(task.scope ?? task.type)
                       && <Grid item={true} xs={2}>
                         <Typography variant="h3" gutterBottom={true}>
-                          {t('Scope')}
+                          {t_i18n('Scope')}
                         </Typography>
-                        <TaskScope scope={task.scope ?? task.type} label={t(task.scope ?? task.type)} />
+                        <TaskScope scope={task.scope ?? task.type} label={t_i18n(task.scope ?? task.type)} />
                       </Grid>
                     }
                   <Grid item={true} xs={2}>
                     <Typography variant="h3" gutterBottom={true}>
-                      {t('Status')}
+                      {t_i18n('Status')}
                     </Typography>
-                    <TaskStatus status={status} label={t(status)} />
+                    <TaskStatus status={status} label={t_i18n(status)} />
                   </Grid>
                   <Grid item={true} xs={10}>
                     <Typography variant="h3" gutterBottom={true}>
-                      {t('Progress')}
+                      {t_i18n('Progress')}
                     </Typography>
                     <LinearProgress
                       classes={{ root: classes.progress }}
@@ -396,7 +396,7 @@ const TasksList = ({ data }) => {
                 onClick={() => handleOpenErrors(task.errors)}
                 size="small"
               >
-                {task.errors.length} {t('errors')}
+                {task.errors.length} {t_i18n('errors')}
               </Button>
               {task.scope // if task.scope exists = it is list task or a query task
                 ? <Button
@@ -406,7 +406,7 @@ const TasksList = ({ data }) => {
                     size="small"
                   >
                   <Delete fontSize="small"/>
-                  &nbsp;&nbsp;{t('Delete')}
+                  &nbsp;&nbsp;{t_i18n('Delete')}
                 </Button>
                 : <Security needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}>
                   <Button
@@ -416,7 +416,7 @@ const TasksList = ({ data }) => {
                     size="small"
                   >
                     <Delete fontSize="small" />
-                    &nbsp;&nbsp;{t('Delete')}
+                    &nbsp;&nbsp;{t_i18n('Delete')}
                   </Button>
                 </Security>
               }
@@ -438,8 +438,8 @@ const TasksList = ({ data }) => {
               <Table className={classes.table} aria-label="simple table">
                 <TableHead>
                   <TableRow>
-                    <TableCell>{t('Timestamp')}</TableCell>
-                    <TableCell>{t('Message')}</TableCell>
+                    <TableCell>{t_i18n('Timestamp')}</TableCell>
+                    <TableCell>{t_i18n('Message')}</TableCell>
                   </TableRow>
                 </TableHead>
                 <TableBody>
@@ -459,7 +459,7 @@ const TasksList = ({ data }) => {
             onClick={handleCloseMessages}
             color="primary"
           >
-            {t('Close')}
+            {t_i18n('Close')}
           </Button>
         </DialogActions>
       </Dialog>
@@ -477,9 +477,9 @@ const TasksList = ({ data }) => {
               <Table className={classes.table} aria-label="simple table">
                 <TableHead>
                   <TableRow>
-                    <TableCell>{t('Timestamp')}</TableCell>
-                    <TableCell>{t('Message')}</TableCell>
-                    <TableCell>{t('Source')}</TableCell>
+                    <TableCell>{t_i18n('Timestamp')}</TableCell>
+                    <TableCell>{t_i18n('Message')}</TableCell>
+                    <TableCell>{t_i18n('Source')}</TableCell>
                   </TableRow>
                 </TableHead>
                 <TableBody>
@@ -497,7 +497,7 @@ const TasksList = ({ data }) => {
         </DialogContent>
         <DialogActions>
           <Button onClick={handleCloseErrors} color="primary">
-            {t('Close')}
+            {t_i18n('Close')}
           </Button>
         </DialogActions>
       </Dialog>

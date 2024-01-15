@@ -79,7 +79,7 @@ const RootCaseRfiComponent = ({ queryRef, caseId }) => {
     [caseId],
   );
   const location = useLocation();
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   useSubscription(subConfig);
   const {
     caseRfi: caseData,
@@ -133,37 +133,37 @@ const RootCaseRfiComponent = ({ queryRef, caseId }) => {
                 component={Link}
                 to={`/dashboard/cases/rfis/${caseData.id}`}
                 value={`/dashboard/cases/rfis/${caseData.id}`}
-                label={t('Overview')}
+                label={t_i18n('Overview')}
               />
               <Tab
                 component={Link}
                 to={`/dashboard/cases/rfis/${caseData.id}/knowledge`}
                 value={`/dashboard/cases/rfis/${caseData.id}/knowledge`}
-                label={t('Knowledge')}
+                label={t_i18n('Knowledge')}
               />
               <Tab
                 component={Link}
                 to={`/dashboard/cases/rfis/${caseData.id}/content`}
                 value={`/dashboard/cases/rfis/${caseData.id}/content`}
-                label={t('Content')}
+                label={t_i18n('Content')}
               />
               <Tab
                 component={Link}
                 to={`/dashboard/cases/rfis/${caseData.id}/entities`}
                 value={`/dashboard/cases/rfis/${caseData.id}/entities`}
-                label={t('Entities')}
+                label={t_i18n('Entities')}
               />
               <Tab
                 component={Link}
                 to={`/dashboard/cases/rfis/${caseData.id}/observables`}
                 value={`/dashboard/cases/rfis/${caseData.id}/observables`}
-                label={t('Observables')}
+                label={t_i18n('Observables')}
               />
               <Tab
                 component={Link}
                 to={`/dashboard/cases/rfis/${caseData.id}/files`}
                 value={`/dashboard/cases/rfis/${caseData.id}/files`}
-                label={t('Data')}
+                label={t_i18n('Data')}
               />
             </Tabs>
           </Box>

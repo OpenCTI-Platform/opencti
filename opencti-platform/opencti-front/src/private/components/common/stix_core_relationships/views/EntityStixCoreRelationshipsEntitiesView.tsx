@@ -45,7 +45,7 @@ EntityStixCoreRelationshipsEntitiesViewProps
   paddingRightButtonAdd = null,
   handleChangeView,
 }) => {
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   const {
     viewStorage,
     helpers: storageHelpers,
@@ -240,7 +240,7 @@ EntityStixCoreRelationshipsEntitiesViewProps
         handleClearSelectedElements={handleClearSelectedElements}
         variant="medium"
         warning={true}
-        warningMessage={t(
+        warningMessage={t_i18n(
           'Be careful, you are about to delete the selected entities (not the relationships!).',
         )}
       />

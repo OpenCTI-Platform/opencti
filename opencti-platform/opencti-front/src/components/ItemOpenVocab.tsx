@@ -82,20 +82,20 @@ const ItemOpenVocabDummy = ({
   displayMode?: 'chip' | 'span';
 }) => {
   const classes = useStyles();
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   if (displayMode === 'chip') {
     return (
-      <Tooltip title={t('No description')}>
-        <Chip classes={{ root: classes.chip }} label={t('Unknown')} />
+      <Tooltip title={t_i18n('No description')}>
+        <Chip classes={{ root: classes.chip }} label={t_i18n('Unknown')} />
       </Tooltip>
     );
   }
   return (
     <span className={classes.container}>
       <pre className={small ? classes.smallPre : classes.pre}>
-        {t('Unknown')}
+        {t_i18n('Unknown')}
       </pre>
-      <Tooltip title={t('No description')}>
+      <Tooltip title={t_i18n('No description')}>
         <InformationOutline
           className={small ? classes.smallIcon : classes.icon}
           fontSize="small"
@@ -114,7 +114,7 @@ const ItemOpenVocabComponent: FunctionComponent<ItemOpenVocabProps> = ({
   queryRef,
 }) => {
   const classes = useStyles();
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   const { vocabularies } = usePreloadedQuery<ItemOpenVocabQuery>(
     itemOpenVocabQuery,
     queryRef,
@@ -127,17 +127,17 @@ const ItemOpenVocabComponent: FunctionComponent<ItemOpenVocabProps> = ({
   }
   if (displayMode === 'chip') {
     let chip = (
-      <Chip classes={{ root: classes.chip }} label={value || t('Unknown')} />
+      <Chip classes={{ root: classes.chip }} label={value || t_i18n('Unknown')} />
     );
     if (type === 'case_severity_ov') {
-      chip = <ItemSeverity label={value || t('Unknown')} severity={value} />;
+      chip = <ItemSeverity label={value || t_i18n('Unknown')} severity={value} />;
     } else if (type === 'case_priority_ov') {
-      chip = <ItemPriority label={value || t('Unknown')} priority={value} />;
+      chip = <ItemPriority label={value || t_i18n('Unknown')} priority={value} />;
     }
     return !description && hideEmpty ? (
       chip
     ) : (
-      <Tooltip title={t(description ?? t('No description'))}>
+      <Tooltip title={t_i18n(description ?? t_i18n('No description'))}>
         <span>{chip}</span>
       </Tooltip>
     );
@@ -145,7 +145,7 @@ const ItemOpenVocabComponent: FunctionComponent<ItemOpenVocabProps> = ({
   const preClass = small ? classes.smallPre : classes.pre;
   const iconClass = small ? classes.smallIcon : classes.icon;
   const tooltip = (
-    <Tooltip title={t(description ?? t('No description'))}>
+    <Tooltip title={t_i18n(description ?? t_i18n('No description'))}>
       <InformationOutline
         className={iconClass}
         fontSize="small"
@@ -155,7 +155,7 @@ const ItemOpenVocabComponent: FunctionComponent<ItemOpenVocabProps> = ({
   );
   return (
     <span className={classes.container}>
-      <pre className={preClass}>{value || t('Unknown')}</pre>
+      <pre className={preClass}>{value || t_i18n('Unknown')}</pre>
       {!description && hideEmpty ? '' : tooltip}
     </span>
   );

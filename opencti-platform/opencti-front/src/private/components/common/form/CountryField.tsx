@@ -55,7 +55,7 @@ const CountryField: FunctionComponent<CountryFieldProps> = ({
   helpertext,
 }) => {
   const classes = useStyles();
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   const [countries, setCountries] = useState<
   {
     label: string | undefined;
@@ -94,13 +94,13 @@ const CountryField: FunctionComponent<CountryFieldProps> = ({
         name={name}
         textfieldprops={{
           variant: 'standard',
-          label: t(label),
+          label: t_i18n(label),
           helperText: helpertext,
           onFocus: searchCountries,
         }}
         onChange={onChange}
         style={containerStyle}
-        noOptionsText={t('No available options')}
+        noOptionsText={t_i18n('No available options')}
         options={countries}
         onInputChange={searchCountries}
         renderOption={(

@@ -58,7 +58,7 @@ interface FeedbackDetailsProps {
 const FeedbackDetails: FunctionComponent<FeedbackDetailsProps> = ({
   feedbackData,
 }) => {
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   const classes = useStyles();
   const data: FeedbackDetails_case$data = useFragment(
     FeedbackDetailsFragment,
@@ -67,19 +67,19 @@ const FeedbackDetails: FunctionComponent<FeedbackDetailsProps> = ({
   return (
     <div style={{ height: '100%' }}>
       <Typography variant="h4" gutterBottom={true}>
-        {t('Details')}
+        {t_i18n('Details')}
       </Typography>
       <Paper classes={{ root: classes.paper }} variant="outlined">
         <Grid container={true} spacing={3}>
           <Grid item={true} xs={6}>
             <Typography variant="h3" gutterBottom={true}>
-              {t('Rating')}
+              {t_i18n('Rating')}
             </Typography>
             <RatingField rating={data.rating} size="small" readOnly={true} />
           </Grid>
           <Grid item={true} xs={12}>
             <Typography variant="h3" gutterBottom={true}>
-              {t('Description')}
+              {t_i18n('Description')}
             </Typography>
             {data.description && (
               <ExpandableMarkdown source={data.description} limit={300} />

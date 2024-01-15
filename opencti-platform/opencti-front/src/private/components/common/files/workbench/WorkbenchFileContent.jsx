@@ -260,7 +260,7 @@ const WorkbenchFileContentComponent = ({
     vocabularyAttributes,
   } = useAttributes();
   const { fieldToCategory, getFieldDefinition } = useVocabularyCategory();
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   const history = useHistory();
   const classes = useStyles();
 
@@ -1571,14 +1571,14 @@ const WorkbenchFileContentComponent = ({
           style={inlineStylesHeaders[field]}
           onClick={() => reverseBy(field)}
         >
-          <span>{t(label)}</span>
+          <span>{t_i18n(label)}</span>
           {sortBy === field ? sortComponent : ''}
         </div>
       );
     }
     return (
       <div style={inlineStylesHeaders[field]}>
-        <span>{t(label)}</span>
+        <span>{t_i18n(label)}</span>
       </div>
     );
   };
@@ -1598,14 +1598,14 @@ const WorkbenchFileContentComponent = ({
           style={inlineStylesHeaders[field]}
           onClick={() => containerReverseBy(field)}
         >
-          <span>{t(label)}</span>
+          <span>{t_i18n(label)}</span>
           {containerSortBy === field ? sortComponent : ''}
         </div>
       );
     }
     return (
       <div style={inlineStylesHeaders[field]}>
-        <span>{t(label)}</span>
+        <span>{t_i18n(label)}</span>
       </div>
     );
   };
@@ -1618,7 +1618,7 @@ const WorkbenchFileContentComponent = ({
     const translatedOrderedList = R.pipe(
       R.map((n) => n.node),
       R.filter((n) => !typesContainers.includes(convertToStixType(n.label))),
-      R.map((n) => R.assoc('tlabel', t(`entity_${n.label}`), n)),
+      R.map((n) => R.assoc('tlabel', t_i18n(`entity_${n.label}`), n)),
       sortByLabel,
     )(subTypesEdges);
     return (
@@ -1828,7 +1828,7 @@ const WorkbenchFileContentComponent = ({
                         disabled={isSubmitting}
                         classes={{ root: classes.button }}
                       >
-                        {t('Cancel')}
+                        {t_i18n('Cancel')}
                       </Button>
                       <Button
                         startIcon={<DoubleArrow />}
@@ -1839,8 +1839,8 @@ const WorkbenchFileContentComponent = ({
                         classes={{ root: classes.button }}
                       >
                         {entityId
-                          ? t('Update and complete')
-                          : t('Add and complete')}
+                          ? t_i18n('Update and complete')
+                          : t_i18n('Add and complete')}
                       </Button>
                     </div>
                   </Form>
@@ -1996,7 +1996,7 @@ const WorkbenchFileContentComponent = ({
                 component={DynamicResolutionField}
                 variant="standard"
                 name="targets_from"
-                title={t('relationship_targets')}
+                title={t_i18n('relationship_targets')}
                 fullWidth
                 types={[
                   'Sector',
@@ -2018,7 +2018,7 @@ const WorkbenchFileContentComponent = ({
                 component={DynamicResolutionField}
                 variant="standard"
                 name="uses_from"
-                title={t('relationship_uses')}
+                title={t_i18n('relationship_uses')}
                 fullWidth
                 types={[
                   'Malware',
@@ -2036,7 +2036,7 @@ const WorkbenchFileContentComponent = ({
                 component={DynamicResolutionField}
                 variant="standard"
                 name="attributed-to_from"
-                title={t('relationship_attributed-to')}
+                title={t_i18n('relationship_attributed-to')}
                 fullWidth
                 types={['Threat-Actor', 'Intrusion-Set', 'Campaign']}
                 stixDomainObjects={stixDomainObjects}
@@ -2048,7 +2048,7 @@ const WorkbenchFileContentComponent = ({
                 component={DynamicResolutionField}
                 variant="standard"
                 name="targets_to"
-                title={t('relationship_targets')}
+                title={t_i18n('relationship_targets')}
                 fullWidth
                 types={[
                   'Threat-Actor',
@@ -2067,7 +2067,7 @@ const WorkbenchFileContentComponent = ({
                 component={DynamicResolutionField}
                 variant="standard"
                 name="attributed-to_to"
-                title={t('relationship_attributed-to') + t(' (reversed)')}
+                title={t_i18n('relationship_attributed-to') + t_i18n(' (reversed)')}
                 fullWidth
                 types={['Intrusion-Set', 'Campaign', 'Incident']}
                 stixDomainObjects={stixDomainObjects}
@@ -2079,7 +2079,7 @@ const WorkbenchFileContentComponent = ({
                 component={DynamicResolutionField}
                 variant="standard"
                 name="uses_to"
-                title={t('relationship_uses') + t(' (reversed)')}
+                title={t_i18n('relationship_uses') + t_i18n(' (reversed)')}
                 fullWidth
                 types={[
                   'Threat-Actor',
@@ -2099,7 +2099,7 @@ const WorkbenchFileContentComponent = ({
                 disabled={isSubmitting}
                 classes={{ root: classes.button }}
               >
-                {t('Cancel')}
+                {t_i18n('Cancel')}
               </Button>
               <Button
                 variant="contained"
@@ -2108,7 +2108,7 @@ const WorkbenchFileContentComponent = ({
                 disabled={isSubmitting}
                 classes={{ root: classes.button }}
               >
-                {t('Add context')}
+                {t_i18n('Add context')}
               </Button>
             </div>
           </Form>
@@ -2278,7 +2278,7 @@ const WorkbenchFileContentComponent = ({
                         disabled={isSubmitting}
                         classes={{ root: classes.button }}
                       >
-                        {t('Cancel')}
+                        {t_i18n('Cancel')}
                       </Button>
                       <Button
                         variant="contained"
@@ -2287,7 +2287,7 @@ const WorkbenchFileContentComponent = ({
                         disabled={isSubmitting}
                         classes={{ root: classes.button }}
                       >
-                        {t('Update')}
+                        {t_i18n('Update')}
                       </Button>
                     </div>
                   </Form>
@@ -2307,7 +2307,7 @@ const WorkbenchFileContentComponent = ({
     const translatedOrderedList = R.pipe(
       R.map((n) => n.node),
       R.filter((n) => !typesContainers.includes(convertToStixType(n.label))),
-      R.map((n) => R.assoc('tlabel', t(`entity_${n.label}`), n)),
+      R.map((n) => R.assoc('tlabel', t_i18n(`entity_${n.label}`), n)),
       sortByLabel,
     )(subTypesEdges);
     return (
@@ -2416,7 +2416,7 @@ const WorkbenchFileContentComponent = ({
                                 component={TextField}
                                 variant="standard"
                                 name="hashes.MD5"
-                                label={t('hash_md5')}
+                                label={t_i18n('hash_md5')}
                                 fullWidth
                                 style={{ marginTop: 20 }}
                               />
@@ -2424,7 +2424,7 @@ const WorkbenchFileContentComponent = ({
                                 component={TextField}
                                 variant="standard"
                                 name="hashes_SHA-1"
-                                label={t('hash_sha-1')}
+                                label={t_i18n('hash_sha-1')}
                                 fullWidth
                                 style={{ marginTop: 20 }}
                               />
@@ -2432,7 +2432,7 @@ const WorkbenchFileContentComponent = ({
                                 component={TextField}
                                 variant="standard"
                                 name="hashes_SHA-256"
-                                label={t('hash_sha-256')}
+                                label={t_i18n('hash_sha-256')}
                                 fullWidth
                                 style={{ marginTop: 20 }}
                               />
@@ -2440,7 +2440,7 @@ const WorkbenchFileContentComponent = ({
                                 component={TextField}
                                 variant="standard"
                                 name="hashes.SHA-512"
-                                label={t('hash_sha-512')}
+                                label={t_i18n('hash_sha-512')}
                                 fullWidth
                                 style={{ marginTop: 20 }}
                               />
@@ -2560,7 +2560,7 @@ const WorkbenchFileContentComponent = ({
                         disabled={isSubmitting}
                         classes={{ root: classes.button }}
                       >
-                        {t('Cancel')}
+                        {t_i18n('Cancel')}
                       </Button>
                       <Button
                         variant="contained"
@@ -2569,7 +2569,7 @@ const WorkbenchFileContentComponent = ({
                         disabled={isSubmitting}
                         classes={{ root: classes.button }}
                       >
-                        {observableId ? t('Update') : t('Add')}
+                        {observableId ? t_i18n('Update') : t_i18n('Add')}
                       </Button>
                     </div>
                   </Form>
@@ -2765,7 +2765,7 @@ const WorkbenchFileContentComponent = ({
                         disabled={isSubmitting}
                         classes={{ root: classes.button }}
                       >
-                        {t('Cancel')}
+                        {t_i18n('Cancel')}
                       </Button>
                       <Button
                         startIcon={<DoubleArrow />}
@@ -2776,8 +2776,8 @@ const WorkbenchFileContentComponent = ({
                         classes={{ root: classes.button }}
                       >
                         {containerId
-                          ? t('Update and complete')
-                          : t('Add and complete')}
+                          ? t_i18n('Update and complete')
+                          : t_i18n('Add and complete')}
                       </Button>
                     </div>
                   </Form>
@@ -2802,8 +2802,8 @@ const WorkbenchFileContentComponent = ({
       ...n,
       ttype:
         n.type === 'relationship'
-          ? t(`relationship_${n.relationship_type}`)
-          : t(`entity_${convertFromStixType(n.type)}`),
+          ? t_i18n(`relationship_${n.relationship_type}`)
+          : t_i18n(`entity_${convertFromStixType(n.type)}`),
       default_value: defaultValue({
         ...n,
         source_ref_name: defaultValue(
@@ -2874,19 +2874,19 @@ const WorkbenchFileContentComponent = ({
             let secondaryType = '';
             if (type === 'Identity') {
               type = resolveIdentityType(object.identity_class);
-              secondaryType = ` (${t(
+              secondaryType = ` (${t_i18n(
                 `entity_${resolveIdentityType(object.identity_class)}`,
               )})`;
             }
             if (type === 'Location') {
               type = resolveLocationType(object);
-              secondaryType = ` (${t(
+              secondaryType = ` (${t_i18n(
                 `entity_${resolveLocationType(object)}`,
               )})`;
             }
             if (type === 'Threat-Actor') {
               type = resolveThreatActorType(object);
-              secondaryType = ` (${t(
+              secondaryType = ` (${t_i18n(
                 `entity_${resolveThreatActorType(object)}`,
               )})`;
             }
@@ -2964,7 +2964,7 @@ const WorkbenchFileContentComponent = ({
             onClick={handleCloseContainer}
             classes={{ root: classes.button }}
           >
-            {t('Cancel')}
+            {t_i18n('Cancel')}
           </Button>
           <Button
             variant="contained"
@@ -2972,7 +2972,7 @@ const WorkbenchFileContentComponent = ({
             onClick={onSubmitContainerContext}
             classes={{ root: classes.button }}
           >
-            {t('Update context')}
+            {t_i18n('Update context')}
           </Button>
         </div>
       </div>
@@ -2982,7 +2982,7 @@ const WorkbenchFileContentComponent = ({
   const renderEntities = () => {
     const resolvedStixDomainObjects = stixDomainObjects.map((n) => ({
       ...n,
-      ttype: t(`entity_${convertFromStixType(n.type)}`),
+      ttype: t_i18n(`entity_${convertFromStixType(n.type)}`),
       default_value: defaultValue(n),
       markings: resolveMarkings(stixDomainObjects, n.object_marking_refs),
     }));
@@ -3035,19 +3035,19 @@ const WorkbenchFileContentComponent = ({
             let secondaryType = '';
             if (type === 'Identity') {
               type = resolveIdentityType(object.identity_class);
-              secondaryType = ` (${t(
+              secondaryType = ` (${t_i18n(
                 `entity_${resolveIdentityType(object.identity_class)}`,
               )})`;
             }
             if (type === 'Location') {
               type = resolveLocationType(object);
-              secondaryType = ` (${t(
+              secondaryType = ` (${t_i18n(
                 `entity_${resolveLocationType(object)}`,
               )})`;
             }
             if (type === 'Threat-Actor') {
               type = resolveThreatActorType(object);
-              secondaryType = ` (${t(
+              secondaryType = ` (${t_i18n(
                 `entity_${resolveThreatActorType(object)}`,
               )})`;
             }
@@ -3095,7 +3095,7 @@ const WorkbenchFileContentComponent = ({
                         className={classes.bodyItem}
                         style={inlineStyles.default_value}
                       >
-                        {object.default_value || t('Unknown')}
+                        {object.default_value || t_i18n('Unknown')}
                       </div>
                       <div
                         className={classes.bodyItem}
@@ -3156,13 +3156,13 @@ const WorkbenchFileContentComponent = ({
                                     <ItemBoolean
                                       variant="inList"
                                       status={true}
-                                      label={t('Yes')}
+                                      label={t_i18n('Yes')}
                                     />
                                   ) : (
                                     <ItemBoolean
                                       variant="inList"
                                       status={false}
-                                      label={t('No')}
+                                      label={t_i18n('No')}
                                     />
                                   );
                               }
@@ -3170,7 +3170,7 @@ const WorkbenchFileContentComponent = ({
                                 <ItemBoolean
                                   variant="inList"
                                   status={undefined}
-                                  label={t('Pending')}
+                                  label={t_i18n('Pending')}
                                 />
                               );
                             }}
@@ -3179,7 +3179,7 @@ const WorkbenchFileContentComponent = ({
                             <ItemBoolean
                               variant="inList"
                               status={null}
-                              label={t('Not applicable')}
+                              label={t_i18n('Not applicable')}
                             />
                           )}
                       </div>
@@ -3209,7 +3209,7 @@ const WorkbenchFileContentComponent = ({
         <Drawer
           open={entityStep != null}
           onClose={handleCloseEntity}
-          title={t('Manage an entity')}
+          title={t_i18n('Manage an entity')}
         >
           <>
             {!entityType && renderEntityTypesList()}
@@ -3227,12 +3227,12 @@ const WorkbenchFileContentComponent = ({
     const translatedOrderedList = R.pipe(
       R.map((n) => n.node),
       R.filter((n) => !typesContainers.includes(convertToStixType(n.label))),
-      R.map((n) => R.assoc('tlabel', t(`entity_${n.label}`), n)),
+      R.map((n) => R.assoc('tlabel', t_i18n(`entity_${n.label}`), n)),
       sortByLabel,
     )(subTypesEdges);
     const resolvedStixCyberObservables = stixCyberObservables.map((n) => ({
       ...n,
-      ttype: t(`entity_${convertFromStixType(n.type)}`),
+      ttype: t_i18n(`entity_${convertFromStixType(n.type)}`),
       default_value: defaultValue(n),
       markings: resolveMarkings(stixDomainObjects, n.object_marking_refs),
     }));
@@ -3346,7 +3346,7 @@ const WorkbenchFileContentComponent = ({
                         className={classes.bodyItem}
                         style={inlineStyles.default_value}
                       >
-                        {object.default_value || t('Unknown')}
+                        {object.default_value || t_i18n('Unknown')}
                       </div>
                       <div
                         className={classes.bodyItem}
@@ -3402,13 +3402,13 @@ const WorkbenchFileContentComponent = ({
                                     <ItemBoolean
                                       variant="inList"
                                       status={true}
-                                      label={t('Yes')}
+                                      label={t_i18n('Yes')}
                                     />
                                   ) : (
                                     <ItemBoolean
                                       variant="inList"
                                       status={false}
-                                      label={t('No')}
+                                      label={t_i18n('No')}
                                     />
                                   );
                               }
@@ -3416,7 +3416,7 @@ const WorkbenchFileContentComponent = ({
                                 <ItemBoolean
                                   variant="inList"
                                   status={undefined}
-                                  label={t('Pending')}
+                                  label={t_i18n('Pending')}
                                 />
                               );
                             }}
@@ -3425,7 +3425,7 @@ const WorkbenchFileContentComponent = ({
                             <ItemBoolean
                               variant="inList"
                               status={null}
-                              label={t('Not applicable')}
+                              label={t_i18n('Not applicable')}
                             />
                           )}
                       </div>
@@ -3455,7 +3455,7 @@ const WorkbenchFileContentComponent = ({
         <Drawer
           open={displayObservable}
           onClose={handleCloseObservable}
-          title={t('Manage an observable')}
+          title={t_i18n('Manage an observable')}
         >
           <>
             {!observableType && renderObservableTypesList()}
@@ -3473,7 +3473,7 @@ const WorkbenchFileContentComponent = ({
     };
     const resolvedStixCoreRelationships = stixCoreRelationships.map((n) => ({
       ...n,
-      ttype: t(`relationship_${n.relationship_type}`),
+      ttype: t_i18n(`relationship_${n.relationship_type}`),
       default_value: defaultValue({
         ...n,
         source_ref_name: defaultValue(indexedStixObjects[n.source_ref] || {}),
@@ -3564,7 +3564,7 @@ const WorkbenchFileContentComponent = ({
                       className={classes.bodyItem}
                       style={inlineStyles.default_value}
                     >
-                      {object.default_value || t('Unknown')}
+                      {object.default_value || t_i18n('Unknown')}
                     </div>
                     <div
                       className={classes.bodyItem}
@@ -3602,7 +3602,7 @@ const WorkbenchFileContentComponent = ({
         <Drawer
           open={entityStep != null}
           onClose={handleCloseRelationship}
-          title={t('Manage a relationship')}
+          title={t_i18n('Manage a relationship')}
         >
           <>{relationshipId && renderRelationshipForm()}</>
         </Drawer>
@@ -3617,7 +3617,7 @@ const WorkbenchFileContentComponent = ({
     };
     const resolvedStixSightings = stixSightings.map((n) => ({
       ...n,
-      ttype: t('Sighting'),
+      ttype: t_i18n('Sighting'),
       default_value: defaultValue({
         ...n,
         source_ref_name: defaultValue(
@@ -3715,7 +3715,7 @@ const WorkbenchFileContentComponent = ({
                       className={classes.bodyItem}
                       style={inlineStyles.default_value}
                     >
-                      {object.default_value || t('Unknown')}
+                      {object.default_value || t_i18n('Unknown')}
                     </div>
                     <div
                       className={classes.bodyItem}
@@ -3774,7 +3774,7 @@ const WorkbenchFileContentComponent = ({
         'task',
         'x-opencti-task',
       ].includes(convertToStixType(n.label))),
-      R.map((n) => R.assoc('tlabel', t(`entity_${n.label}`), n)),
+      R.map((n) => R.assoc('tlabel', t_i18n(`entity_${n.label}`), n)),
       sortByLabel,
     )(subTypesEdges);
     return (
@@ -3797,7 +3797,7 @@ const WorkbenchFileContentComponent = ({
   const renderContainers = () => {
     const resolvedContainers = containers.map((n) => ({
       ...n,
-      ttype: t(`entity_${convertFromStixType(n.type)}`),
+      ttype: t_i18n(`entity_${convertFromStixType(n.type)}`),
       default_value: defaultValue(n),
       markings: resolveMarkings(stixDomainObjects, n.object_marking_refs),
     }));
@@ -3886,7 +3886,7 @@ const WorkbenchFileContentComponent = ({
                         className={classes.bodyItem}
                         style={inlineStyles.default_value}
                       >
-                        {object.default_value || t('Unknown')}
+                        {object.default_value || t_i18n('Unknown')}
                       </div>
                       <div
                         className={classes.bodyItem}
@@ -3950,13 +3950,13 @@ const WorkbenchFileContentComponent = ({
                                     <ItemBoolean
                                       variant="inList"
                                       status={true}
-                                      label={t('Yes')}
+                                      label={t_i18n('Yes')}
                                     />
                                   ) : (
                                     <ItemBoolean
                                       variant="inList"
                                       status={false}
-                                      label={t('No')}
+                                      label={t_i18n('No')}
                                     />
                                   );
                               }
@@ -3964,7 +3964,7 @@ const WorkbenchFileContentComponent = ({
                                 <ItemBoolean
                                   variant="inList"
                                   status={undefined}
-                                  label={t('Pending')}
+                                  label={t_i18n('Pending')}
                                 />
                               );
                             }}
@@ -3973,7 +3973,7 @@ const WorkbenchFileContentComponent = ({
                             <ItemBoolean
                               variant="inList"
                               status={null}
-                              label={t('Not applicable')}
+                              label={t_i18n('Not applicable')}
                             />
                           )}
                       </div>
@@ -4003,7 +4003,7 @@ const WorkbenchFileContentComponent = ({
         <Drawer
           open={containerStep != null}
           onClose={handleCloseContainer}
-          title={t('Manage a container')}
+          title={t_i18n('Manage a container')}
         >
           <>
             {!containerType && renderContainerTypesList()}
@@ -4035,19 +4035,19 @@ const WorkbenchFileContentComponent = ({
           startIcon={<CheckCircleOutlined />}
           size="small"
         >
-          {t('Validate this workbench')}
+          {t_i18n('Validate this workbench')}
         </Button>
       </div>
       <div className="clearfix" />
       <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
         <Tabs value={currentTab} onChange={handleChangeTab}>
-          <Tab label={`${t('Entities')} (${stixDomainObjects.length})`} />
-          <Tab label={`${t('Observables')} (${stixCyberObservables.length})`} />
+          <Tab label={`${t_i18n('Entities')} (${stixDomainObjects.length})`} />
+          <Tab label={`${t_i18n('Observables')} (${stixCyberObservables.length})`} />
           <Tab
-            label={`${t('Relationships')} (${stixCoreRelationships.length})`}
+            label={`${t_i18n('Relationships')} (${stixCoreRelationships.length})`}
           />
-          <Tab label={`${t('Sightings')} (${stixSightings.length})`} />
-          <Tab label={`${t('Containers')} (${containers.length})`} />
+          <Tab label={`${t_i18n('Sightings')} (${stixSightings.length})`} />
+          <Tab label={`${t_i18n('Containers')} (${containers.length})`} />
         </Tabs>
       </Box>
       {currentTab === 0 && renderEntities()}
@@ -4064,13 +4064,13 @@ const WorkbenchFileContentComponent = ({
       >
         <DialogContent>
           <DialogContentText>
-            {t('Do you want to remove this object?')}
+            {t_i18n('Do you want to remove this object?')}
           </DialogContentText>
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleCloseDeleteObject}>{t('Cancel')}</Button>
+          <Button onClick={handleCloseDeleteObject}>{t_i18n('Cancel')}</Button>
           <Button color="secondary" onClick={() => submitDeleteObject()}>
-            {t('Remove')}
+            {t_i18n('Remove')}
           </Button>
         </DialogActions>
       </Dialog>
@@ -4079,7 +4079,7 @@ const WorkbenchFileContentComponent = ({
         initialValues={{
           connector_id: connectors.length > 0 ? connectors[0].id : '',
         }}
-        validationSchema={importValidation(t)}
+        validationSchema={importValidation(t_i18n)}
         onSubmit={onSubmitValidate}
         onReset={handleCloseValidate}
       >
@@ -4092,13 +4092,13 @@ const WorkbenchFileContentComponent = ({
               onClose={handleCloseValidate}
               fullWidth
             >
-              <DialogTitle>{t('Validate and send for import')}</DialogTitle>
+              <DialogTitle>{t_i18n('Validate and send for import')}</DialogTitle>
               <DialogContent>
                 <Field
                   component={SelectField}
                   variant="standard"
                   name="connector_id"
-                  label={t('Connector')}
+                  label={t_i18n('Connector')}
                   fullWidth
                   containerstyle={{ width: '100%' }}
                 >
@@ -4115,14 +4115,14 @@ const WorkbenchFileContentComponent = ({
               </DialogContent>
               <DialogActions>
                 <Button onClick={handleReset} disabled={isSubmitting}>
-                  {t('Cancel')}
+                  {t_i18n('Cancel')}
                 </Button>
                 <Button
                   color="secondary"
                   onClick={submitForm}
                   disabled={isSubmitting}
                 >
-                  {t('Create')}
+                  {t_i18n('Create')}
                 </Button>
               </DialogActions>
             </Dialog>

@@ -77,7 +77,7 @@ const StixRelationshipsNumber = ({
   parameters = {},
 }) => {
   const classes = useStyles();
-  const { t, n } = useFormatter();
+  const { t_i18n, n } = useFormatter();
   const renderContent = () => {
     const selection = dataSelection[0];
     const { filters } = buildFiltersAndOptionsForWidgets(selection.filters);
@@ -100,7 +100,7 @@ const StixRelationshipsNumber = ({
                 <div className={classes.number}>{n(total)}</div>
                 <ItemNumberDifference
                   difference={difference}
-                  description={t('24 hours')}
+                  description={t_i18n('24 hours')}
                 />
               </div>
             );
@@ -115,7 +115,7 @@ const StixRelationshipsNumber = ({
                     textAlign: 'center',
                   }}
                 >
-                  {t('No entities of this type has been found.')}
+                  {t_i18n('No entities of this type has been found.')}
                 </span>
               </div>
             );
@@ -149,7 +149,7 @@ const StixRelationshipsNumber = ({
           textOverflow: 'ellipsis',
         }}
       >
-        {parameters.title ?? t('Entities number')}
+        {parameters.title ?? t_i18n('Entities number')}
       </Typography>
       {variant !== 'inLine' ? (
         <Paper classes={{ root: classes.paper }} variant="outlined">

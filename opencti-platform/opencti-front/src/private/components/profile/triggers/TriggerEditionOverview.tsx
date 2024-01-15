@@ -87,7 +87,7 @@ interface TriggerEditionFormValues {
 const TriggerEditionOverview: FunctionComponent<
 TriggerEditionOverviewProps
 > = ({ data, handleClose, paginationOptions }) => {
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   const trigger = useFragment(triggerEditionOverviewFragment, data);
   const instanceTriggerFilters = deserializeFilterGroupForFrontend(trigger.filters) ?? undefined;
   const [commitFieldPatch] = useMutation(triggerMutationFieldPatch);
@@ -149,31 +149,31 @@ TriggerEditionOverviewProps
     });
   };
   const triggerValidation = () => Yup.object().shape({
-    name: Yup.string().required(t('This field is required')),
+    name: Yup.string().required(t_i18n('This field is required')),
     description: Yup.string().nullable(),
     event_types:
         trigger.trigger_type === 'live'
           ? Yup.array()
-            .min(1, t('Minimum one event type'))
-            .required(t('This field is required'))
+            .min(1, t_i18n('Minimum one event type'))
+            .required(t_i18n('This field is required'))
           : Yup.array().nullable(),
     notifiers:
         trigger.trigger_type === 'digest'
           ? Yup.array()
-            .min(1, t('Minimum one notifier'))
-            .required(t('This field is required'))
+            .min(1, t_i18n('Minimum one notifier'))
+            .required(t_i18n('This field is required'))
           : Yup.array().nullable(),
     period:
         trigger.trigger_type === 'digest'
-          ? Yup.string().required(t('This field is required'))
+          ? Yup.string().required(t_i18n('This field is required'))
           : Yup.string().nullable(),
     day: Yup.string().nullable(),
     time: Yup.string().nullable(),
     trigger_ids:
         trigger.trigger_type === 'digest'
           ? Yup.array()
-            .min(1, t('Minimum one trigger'))
-            .required(t('This field is required'))
+            .min(1, t_i18n('Minimum one trigger'))
+            .required(t_i18n('This field is required'))
           : Yup.array().nullable(),
   });
   const handleSubmitTriggers = (name: string, value: { value: string }[]) => triggerValidation()
@@ -307,14 +307,14 @@ TriggerEditionOverviewProps
             component={TextField}
             variant="standard"
             name="name"
-            label={t('Name')}
+            label={t_i18n('Name')}
             fullWidth={true}
             onSubmit={handleSubmitField}
           />
           <Field
             component={MarkdownField}
             name="description"
-            label={t('Description')}
+            label={t_i18n('Description')}
             fullWidth={true}
             multiline={true}
             rows="4"
@@ -329,7 +329,7 @@ TriggerEditionOverviewProps
             multiple={true}
             textfieldprops={{
               variant: 'standard',
-              label: t('Triggering on'),
+              label: t_i18n('Triggering on'),
             }}
             options={
                         trigger.instance_trigger
@@ -374,15 +374,15 @@ TriggerEditionOverviewProps
             component={SelectField}
             variant="standard"
             name="period"
-            label={t('Period')}
+            label={t_i18n('Period')}
             fullWidth={true}
             containerstyle={fieldSpacingContainerStyle}
             onChange={handleSubmitField}
           >
-            <MenuItem value="hour">{t('hour')}</MenuItem>
-            <MenuItem value="day">{t('day')}</MenuItem>
-            <MenuItem value="week">{t('week')}</MenuItem>
-            <MenuItem value="month">{t('month')}</MenuItem>
+            <MenuItem value="hour">{t_i18n('hour')}</MenuItem>
+            <MenuItem value="day">{t_i18n('day')}</MenuItem>
+            <MenuItem value="week">{t_i18n('week')}</MenuItem>
+            <MenuItem value="month">{t_i18n('month')}</MenuItem>
           </Field>
           )}
           {trigger.trigger_type === 'digest' && values.period === 'week' && (
@@ -390,18 +390,18 @@ TriggerEditionOverviewProps
             component={SelectField}
             variant="standard"
             name="day"
-            label={t('Week day')}
+            label={t_i18n('Week day')}
             fullWidth={true}
             containerstyle={fieldSpacingContainerStyle}
             onChange={handleSubmitDay}
           >
-            <MenuItem value="1">{t('Monday')}</MenuItem>
-            <MenuItem value="2">{t('Tuesday')}</MenuItem>
-            <MenuItem value="3">{t('Wednesday')}</MenuItem>
-            <MenuItem value="4">{t('Thursday')}</MenuItem>
-            <MenuItem value="5">{t('Friday')}</MenuItem>
-            <MenuItem value="6">{t('Saturday')}</MenuItem>
-            <MenuItem value="7">{t('Sunday')}</MenuItem>
+            <MenuItem value="1">{t_i18n('Monday')}</MenuItem>
+            <MenuItem value="2">{t_i18n('Tuesday')}</MenuItem>
+            <MenuItem value="3">{t_i18n('Wednesday')}</MenuItem>
+            <MenuItem value="4">{t_i18n('Thursday')}</MenuItem>
+            <MenuItem value="5">{t_i18n('Friday')}</MenuItem>
+            <MenuItem value="6">{t_i18n('Saturday')}</MenuItem>
+            <MenuItem value="7">{t_i18n('Sunday')}</MenuItem>
           </Field>
           )}
           {trigger.trigger_type === 'digest' && values.period === 'month' && (
@@ -409,7 +409,7 @@ TriggerEditionOverviewProps
             component={SelectField}
             variant="standard"
             name="day"
-            label={t('Month day')}
+            label={t_i18n('Month day')}
             fullWidth={true}
             containerstyle={fieldSpacingContainerStyle}
             onChange={handleSubmitDay}
@@ -428,7 +428,7 @@ TriggerEditionOverviewProps
             withMinutes={true}
             onSubmit={handleSubmitTime}
             TextFieldProps={{
-              label: t('Time'),
+              label: t_i18n('Time'),
               variant: 'standard',
               fullWidth: true,
               style: { marginTop: 20 },

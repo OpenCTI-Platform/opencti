@@ -44,7 +44,7 @@ const SettingsOrganizations = () => {
   };
 
   const queryRef = useQueryLoading<SettingsOrganizationsLinesPaginationQuery>(settingsOrganizationsLinesQuery, paginationOptions);
-  const { fd, t } = useFormatter();
+  const { fd, t_i18n } = useFormatter();
 
   const dataColumns = {
     name: {
@@ -57,7 +57,7 @@ const SettingsOrganizations = () => {
       label: 'Type',
       width: '20%',
       isSortable: true,
-      render: (node: Organization) => (node.x_opencti_organization_type ? t(`organization_${node.x_opencti_organization_type}`)
+      render: (node: Organization) => (node.x_opencti_organization_type ? t_i18n(`organization_${node.x_opencti_organization_type}`)
         : ''),
     },
     created: {

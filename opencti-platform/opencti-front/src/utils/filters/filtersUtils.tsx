@@ -290,7 +290,7 @@ export const buildFiltersAndOptionsForWidgets = (
 
 // return the i18n label corresponding to a value
 export const filterValue = (filterKey: string, value?: string | null) => {
-  const { t, nsd } = useFormatter();
+  const { t_i18n, nsd } = useFormatter();
   if (filterKey === 'regardingOf') {
     return JSON.stringify(value);
   }
@@ -299,15 +299,15 @@ export const filterValue = (filterKey: string, value?: string | null) => {
     && (booleanFilters.includes(filterKey) || inlineFilters.includes(filterKey))
   ) {
     // TODO: improvement: boolean filters based on schema definition (not an enum)
-    return t(value);
+    return t_i18n(value);
   }
   if (filterKey === 'x_opencti_negative') {
-    return t(value === 'true' ? 'False positive' : 'True positive');
+    return t_i18n(value === 'true' ? 'False positive' : 'True positive');
   }
   if (value && entityTypesFilters.includes(filterKey)) {
     return value === 'all'
-      ? t('entity_All')
-      : t(
+      ? t_i18n('entity_All')
+      : t_i18n(
         value.toString()[0] === value.toString()[0].toUpperCase()
           ? `entity_${value.toString()}`
           : `relationship_${value.toString()}`,
@@ -318,7 +318,7 @@ export const filterValue = (filterKey: string, value?: string | null) => {
     return nsd(value);
   }
   if (filterKey === 'relationship_type' || filterKey === 'type') {
-    return t(`relationship_${value}`);
+    return t_i18n(`relationship_${value}`);
   }
   return value;
 };

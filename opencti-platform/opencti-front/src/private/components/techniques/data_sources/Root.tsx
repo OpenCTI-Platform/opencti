@@ -73,7 +73,7 @@ const RootDataSourceComponent = ({ queryRef, dataSourceId }) => {
   );
   useSubscription(subConfig);
   const location = useLocation();
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   const data = usePreloadedQuery(dataSourceQuery, queryRef);
   const { dataSource, connectorsForImport, connectorsForExport, settings } = data;
   return (
@@ -110,19 +110,19 @@ const RootDataSourceComponent = ({ queryRef, dataSourceId }) => {
                 component={Link}
                 to={`/dashboard/techniques/data_sources/${dataSource.id}`}
                 value={`/dashboard/techniques/data_sources/${dataSource.id}`}
-                label={t('Overview')}
+                label={t_i18n('Overview')}
               />
               <Tab
                 component={Link}
                 to={`/dashboard/techniques/data_sources/${dataSource.id}/files`}
                 value={`/dashboard/techniques/data_sources/${dataSource.id}/files`}
-                label={t('Data')}
+                label={t_i18n('Data')}
               />
               <Tab
                 component={Link}
                 to={`/dashboard/techniques/data_sources/${dataSource.id}/history`}
                 value={`/dashboard/techniques/data_sources/${dataSource.id}/history`}
-                label={t('History')}
+                label={t_i18n('History')}
               />
             </Tabs>
           </Box>

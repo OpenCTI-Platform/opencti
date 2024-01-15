@@ -59,7 +59,7 @@ const FeedbackCreation: FunctionComponent<{
   initialValue?: Partial<FormikFeedbackAddInput>
 }> = ({ openDrawer, handleCloseDrawer, initialValue }) => {
   const classes = useStyles();
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   const { me } = useAuth();
   const [commit] = useMutation(feedbackMutation);
   const userIsKnowledgeEditor = useGranted([KNOWLEDGE_KNUPDATE]);
@@ -114,7 +114,7 @@ const FeedbackCreation: FunctionComponent<{
 
   return (
     <Drawer
-      title={t('Submit a feedback')}
+      title={t_i18n('Submit a feedback')}
       open={openDrawer}
       onClose={handleCloseDrawer}
     >
@@ -135,7 +135,7 @@ const FeedbackCreation: FunctionComponent<{
             <Field
               component={MarkdownField}
               name="description"
-              label={t('Description')}
+              label={t_i18n('Description')}
               fullWidth={true}
               multiline={true}
               rows="4"
@@ -145,7 +145,7 @@ const FeedbackCreation: FunctionComponent<{
               containerStyle={fieldSpacingContainerStyle}
             />
             <RatingField
-              label={t('Rating')}
+              label={t_i18n('Rating')}
               rating={values.rating}
               size="small"
               handleOnChange={(newValue) => {
@@ -173,7 +173,7 @@ const FeedbackCreation: FunctionComponent<{
                 variant="contained"
                 classes={{ root: classes.button }}
               >
-                {t('Cancel')}
+                {t_i18n('Cancel')}
               </Button>
               <Button
                 variant="contained"
@@ -182,7 +182,7 @@ const FeedbackCreation: FunctionComponent<{
                 disabled={isSubmitting}
                 classes={{ root: classes.button }}
               >
-                {t('Create')}
+                {t_i18n('Create')}
               </Button>
             </div>
           </Form>

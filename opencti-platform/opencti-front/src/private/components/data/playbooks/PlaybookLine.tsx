@@ -62,7 +62,7 @@ export const PlaybookLineComponent: FunctionComponent<PlaybookLineProps> = ({
   node,
 }) => {
   const classes = useStyles();
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   const data = useFragment(playbookLineFragment, node);
   return (
     <ListItem
@@ -96,7 +96,7 @@ export const PlaybookLineComponent: FunctionComponent<PlaybookLineProps> = ({
             >
               <ItemBoolean
                 variant="inList"
-                label={data.playbook_running ? t('Yes') : t('No')}
+                label={data.playbook_running ? t_i18n('Yes') : t_i18n('No')}
                 status={data.playbook_running}
               />
             </div>

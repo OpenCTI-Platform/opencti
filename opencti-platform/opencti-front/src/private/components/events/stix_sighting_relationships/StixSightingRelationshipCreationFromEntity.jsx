@@ -163,7 +163,7 @@ const StixSightingRelationshipCreationFromEntity = ({
   paddingRight,
 }) => {
   const classes = useStyles();
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   const [targetEntity, setTargetEntity] = useState(null);
   const [open, setOpen] = useState(false);
   const [step, setStep] = useState(0);
@@ -374,7 +374,7 @@ const StixSightingRelationshipCreationFromEntity = ({
             <Close fontSize="small" color="primary" />
           </IconButton>
           <Typography variant="h6" classes={{ root: classes.title }}>
-            {t('Create a sighting')}
+            {t_i18n('Create a sighting')}
           </Typography>
           <div className={classes.search}>
             <SearchInput
@@ -393,7 +393,7 @@ const StixSightingRelationshipCreationFromEntity = ({
               style={{ margin: '15px 15px 0 15px' }}
               classes={{ message: classes.info }}
             >
-              {t(
+              {t_i18n(
                 'This panel shows by default the latest created entities, use the search to find more.',
               )}
             </Alert>
@@ -422,7 +422,7 @@ const StixSightingRelationshipCreationFromEntity = ({
           >
             <Close fontSize="small" color="primary" />
           </IconButton>
-          <Typography variant="h6">{t('Create a sighting')}</Typography>
+          <Typography variant="h6">{t_i18n('Create a sighting')}</Typography>
         </div>
         <StixSightingRelationshipCreationForm
           fromEntities={[fromEntity]}

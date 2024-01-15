@@ -44,7 +44,7 @@ interface ExternalReferencePopoverProps {
 const ExternalReferencePopover: FunctionComponent<
 ExternalReferencePopoverProps
 > = ({ id, objectId, handleRemove, isExternalReferenceAttachment }) => {
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   const navigate = useNavigate();
   const [anchorEl, setAnchorEl] = useState<Element | null>(null);
   const [displayEdit, setDisplayEdit] = useState(false);
@@ -111,7 +111,7 @@ ExternalReferencePopoverProps
         <MoreVertOutlined />
       </IconButton>
       <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleClose}>
-        <MenuItem onClick={handleOpenUpdate}>{t('Update')}</MenuItem>
+        <MenuItem onClick={handleOpenUpdate}>{t_i18n('Update')}</MenuItem>
         {handleRemove && !isExternalReferenceAttachment && (
           <MenuItem
             onClick={() => {
@@ -119,10 +119,10 @@ ExternalReferencePopoverProps
               handleClose();
             }}
           >
-            {t('Remove from this object')}
+            {t_i18n('Remove from this object')}
           </MenuItem>
         )}
-        <MenuItem onClick={handleOpenDelete}>{t('Delete')}</MenuItem>
+        <MenuItem onClick={handleOpenDelete}>{t_i18n('Delete')}</MenuItem>
       </Menu>
       <QueryRenderer
         query={externalReferenceEditionQuery}
@@ -153,14 +153,14 @@ ExternalReferencePopoverProps
       >
         <DialogContent>
           <DialogContentText>
-            {t('Do you want to delete this external reference?')}
+            {t_i18n('Do you want to delete this external reference?')}
             {isExternalReferenceAttachment && (
               <Alert
                 severity="warning"
                 variant="outlined"
                 style={{ position: 'relative', marginTop: 20 }}
               >
-                {t(
+                {t_i18n(
                   'This external reference is linked to a file. If you delete it, the file will be deleted as well.',
                 )}
               </Alert>
@@ -169,10 +169,10 @@ ExternalReferencePopoverProps
         </DialogContent>
         <DialogActions>
           <Button onClick={handleCloseDelete} disabled={deleting}>
-            {t('Cancel')}
+            {t_i18n('Cancel')}
           </Button>
           <Button color="secondary" onClick={submitDelete} disabled={deleting}>
-            {t('Delete')}
+            {t_i18n('Delete')}
           </Button>
         </DialogActions>
       </Dialog>

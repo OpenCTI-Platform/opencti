@@ -120,9 +120,9 @@ const StixCoreRelationshipCreationForm = ({
   defaultCreatedBy,
   defaultMarkingDefinitions,
 }) => {
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   const classes = useStyles();
-  const stixCoreRelationshipValidator = useSchemaCreationValidation(STIX_CORE_RELATIONSHIP_TYPE, stixCoreRelationshipBasicShape(t));
+  const stixCoreRelationshipValidator = useSchemaCreationValidation(STIX_CORE_RELATIONSHIP_TYPE, stixCoreRelationshipBasicShape(t_i18n));
 
   const fromEntity = fromEntities[0];
   const toEntity = toEntities[0];
@@ -185,14 +185,14 @@ const StixCoreRelationshipCreationForm = ({
                   </div>
                   <div className={classes.type}>
                     {fromEntity.relationship_type
-                      ? t(`relationship_${fromEntity.entity_type}`)
-                      : t(`entity_${fromEntity.entity_type}`)}
+                      ? t_i18n(`relationship_${fromEntity.entity_type}`)
+                      : t_i18n(`entity_${fromEntity.entity_type}`)}
                   </div>
                 </div>
                 <div className={classes.content}>
                   <span className={classes.name}>
                     {isMultipleFrom
-                      ? (<em>{t('Multiple entities selected')}</em>)
+                      ? (<em>{t_i18n('Multiple entities selected')}</em>)
                       : (defaultValue(fromEntity))}
                   </span>
                 </div>
@@ -207,7 +207,7 @@ const StixCoreRelationshipCreationForm = ({
                     color="secondary"
                     size="small"
                   >
-                    {t('Reverse')}
+                    {t_i18n('Reverse')}
                   </Button>
                 )}
               </div>
@@ -234,14 +234,14 @@ const StixCoreRelationshipCreationForm = ({
                   </div>
                   <div className={classes.type}>
                     {toEntity.relationship_type
-                      ? t(`relationship_${toEntity.entity_type}`)
-                      : t(`entity_${toEntity.entity_type}`)}
+                      ? t_i18n(`relationship_${toEntity.entity_type}`)
+                      : t_i18n(`entity_${toEntity.entity_type}`)}
                   </div>
                 </div>
                 <div className={classes.content}>
                   <span className={classes.name}>
                     {isMultipleTo
-                      ? (<em>{t('Multiple entities selected')}</em>)
+                      ? (<em>{t_i18n('Multiple entities selected')}</em>)
                       : (defaultValue(toEntity))}
                   </span>
                 </div>
@@ -251,14 +251,14 @@ const StixCoreRelationshipCreationForm = ({
               component={SelectField}
               variant="standard"
               name="relationship_type"
-              label={t('Relationship type')}
+              label={t_i18n('Relationship type')}
               fullWidth={true}
               containerstyle={fieldSpacingContainerStyle}
             >
               {relationshipTypes.map(
                 (type) => (
                   <MenuItem key={type} value={type}>
-                    {t(`relationship_${type}`)}
+                    {t_i18n(`relationship_${type}`)}
                   </MenuItem>
                 ),
               )}
@@ -271,7 +271,7 @@ const StixCoreRelationshipCreationForm = ({
               component={DateTimePickerField}
               name="start_time"
               TextFieldProps={{
-                label: t('Start time'),
+                label: t_i18n('Start time'),
                 variant: 'standard',
                 fullWidth: true,
                 style: { marginTop: 20 },
@@ -281,7 +281,7 @@ const StixCoreRelationshipCreationForm = ({
               component={DateTimePickerField}
               name="stop_time"
               TextFieldProps={{
-                label: t('Stop time'),
+                label: t_i18n('Stop time'),
                 variant: 'standard',
                 fullWidth: true,
                 style: { marginTop: 20 },
@@ -290,7 +290,7 @@ const StixCoreRelationshipCreationForm = ({
             <Field
               component={MarkdownField}
               name="description"
-              label={t('Description')}
+              label={t_i18n('Description')}
               fullWidth={true}
               multiline={true}
               rows="4"
@@ -325,7 +325,7 @@ const StixCoreRelationshipCreationForm = ({
                   onClick={handleResetSelection}
                   disabled={isSubmitting}
                 >
-                  {t('Back')}
+                  {t_i18n('Back')}
                 </Button>
               </div>
             )}
@@ -336,7 +336,7 @@ const StixCoreRelationshipCreationForm = ({
                 disabled={isSubmitting}
                 classes={{ root: classes.button }}
               >
-                {t('Cancel')}
+                {t_i18n('Cancel')}
               </Button>
               <Button
                 variant="contained"
@@ -345,7 +345,7 @@ const StixCoreRelationshipCreationForm = ({
                 disabled={isSubmitting}
                 classes={{ root: classes.button }}
               >
-                {t('Create')}
+                {t_i18n('Create')}
               </Button>
             </div>
           </div>

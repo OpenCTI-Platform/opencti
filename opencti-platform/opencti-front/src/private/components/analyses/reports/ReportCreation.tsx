@@ -97,14 +97,14 @@ export const ReportCreationForm: FunctionComponent<ReportFormProps> = ({
   inputValue,
 }) => {
   const classes = useStyles();
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   const history = useHistory();
   const [mapAfter, setMapAfter] = useState<boolean>(false);
   const basicShape = {
-    name: Yup.string().min(2).required(t('This field is required')),
+    name: Yup.string().min(2).required(t_i18n('This field is required')),
     published: Yup.date()
-      .typeError(t('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)'))
-      .required(t('This field is required')),
+      .typeError(t_i18n('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)'))
+      .required(t_i18n('This field is required')),
     report_types: Yup.array().nullable(),
     x_opencti_reliability: Yup.string().nullable(),
     confidence: Yup.number().nullable(),
@@ -188,20 +188,20 @@ export const ReportCreationForm: FunctionComponent<ReportFormProps> = ({
           <Field
             component={TextField}
             name="name"
-            label={t('Name')}
+            label={t_i18n('Name')}
             fullWidth={true}
           />
           <Field
             component={DateTimePickerField}
             name="published"
             TextFieldProps={{
-              label: t('Publication date'),
+              label: t_i18n('Publication date'),
               fullWidth: true,
               style: { marginTop: 20 },
             }}
           />
           <OpenVocabField
-            label={t('Report types')}
+            label={t_i18n('Report types')}
             type="report_types_ov"
             name="report_types"
             onChange={(name, value) => setFieldValue(name, value)}
@@ -209,7 +209,7 @@ export const ReportCreationForm: FunctionComponent<ReportFormProps> = ({
             multiple={true}
           />
           <OpenVocabField
-            label={t('Reliability')}
+            label={t_i18n('Reliability')}
             type="reliability_ov"
             name="x_opencti_reliability"
             containerStyle={fieldSpacingContainerStyle}
@@ -223,7 +223,7 @@ export const ReportCreationForm: FunctionComponent<ReportFormProps> = ({
           <Field
             component={MarkdownField}
             name="description"
-            label={t('Description')}
+            label={t_i18n('Description')}
             fullWidth={true}
             multiline={true}
             rows="4"
@@ -232,7 +232,7 @@ export const ReportCreationForm: FunctionComponent<ReportFormProps> = ({
           <Field
             component={RichTextField}
             name="content"
-            label={t('Content')}
+            label={t_i18n('Content')}
             fullWidth={true}
             style={{
               ...fieldSpacingContainerStyle,
@@ -277,7 +277,7 @@ export const ReportCreationForm: FunctionComponent<ReportFormProps> = ({
               disabled={isSubmitting}
               classes={{ root: classes.button }}
             >
-              {t('Cancel')}
+              {t_i18n('Cancel')}
             </Button>
             <Button
               variant="contained"
@@ -286,7 +286,7 @@ export const ReportCreationForm: FunctionComponent<ReportFormProps> = ({
               disabled={isSubmitting}
               classes={{ root: classes.button }}
             >
-              {t('Create')}
+              {t_i18n('Create')}
             </Button>
             {values.content.length > 0 && (
               <Button
@@ -299,7 +299,7 @@ export const ReportCreationForm: FunctionComponent<ReportFormProps> = ({
                 disabled={isSubmitting}
                 classes={{ root: classes.button }}
               >
-                {t('Create and map')}
+                {t_i18n('Create and map')}
               </Button>
             )}
           </div>
@@ -314,7 +314,7 @@ const ReportCreation = ({
 }: {
   paginationOptions: ReportsLinesPaginationQuery$variables;
 }) => {
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   const updater = (store: RecordSourceSelectorProxy) => insertNode(
     store,
     'Pagination_reports',
@@ -323,7 +323,7 @@ const ReportCreation = ({
   );
   return (
     <Drawer
-      title={t('Create a report')}
+      title={t_i18n('Create a report')}
       variant={DrawerVariant.create}
     >
       <ReportCreationForm updater={updater} />

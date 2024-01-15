@@ -68,7 +68,7 @@ const syncValidation = (t) => Yup.object().shape({
 });
 
 const SyncEditionContainer = ({ synchronizer }) => {
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   const classes = useStyles();
   const [streams, setStreams] = useState([]);
   const [openOptions, setOpenOptions] = useState(synchronizer.no_dependencies || synchronizer.synchronized);
@@ -103,7 +103,7 @@ const SyncEditionContainer = ({ synchronizer }) => {
       },
       onCompleted: (data) => {
         if (data && data.synchronizerTest === 'Connection success') {
-          MESSAGING$.notifySuccess(t('Connection successfully verified'));
+          MESSAGING$.notifySuccess(t_i18n('Connection successfully verified'));
         }
       },
     });
@@ -111,7 +111,7 @@ const SyncEditionContainer = ({ synchronizer }) => {
 
   const handleSubmitField = (name, value) => {
     const parsedValue = name === 'user_id' ? value.value : value;
-    syncValidation(t)
+    syncValidation(t_i18n)
       .validateAt(name, { [name]: value })
       .then(() => {
         commitMutation({
@@ -154,7 +154,7 @@ const SyncEditionContainer = ({ synchronizer }) => {
     <Formik
       enableReinitialize={true}
       initialValues={initialValues}
-      validationSchema={syncValidation(t)}
+      validationSchema={syncValidation(t_i18n)}
     >
       {({ values }) => (
         <Form style={{ margin: '20px 0 20px 0' }}>
@@ -162,7 +162,7 @@ const SyncEditionContainer = ({ synchronizer }) => {
             component={TextField}
             variant="standard"
             name="name"
-            label={t('Name')}
+            label={t_i18n('Name')}
             fullWidth={true}
             onSubmit={handleSubmitField}
           />
@@ -174,7 +174,7 @@ const SyncEditionContainer = ({ synchronizer }) => {
             style={{ position: 'relative' }}
           >
             <AlertTitle>
-              &nbsp;&nbsp;{t('Remote OpenCTI configuration')}{' '}
+              &nbsp;&nbsp;{t_i18n('Remote OpenCTI configuration')}{' '}
               {isStreamAccessible ? (
                 <CheckCircleOutlined
                   style={{ fontSize: 22, color: '#4caf50', float: 'left' }}
@@ -186,7 +186,7 @@ const SyncEditionContainer = ({ synchronizer }) => {
               )}
             </AlertTitle>
             <Tooltip
-              title={t(
+              title={t_i18n(
                 'You need to configure a valid remote OpenCTI. Token is optional to consume public streams',
               )}
             >
@@ -200,7 +200,7 @@ const SyncEditionContainer = ({ synchronizer }) => {
               component={TextField}
               variant="standard"
               name="uri"
-              label={t('Remote OpenCTI URL')}
+              label={t_i18n('Remote OpenCTI URL')}
               fullWidth={true}
               style={{ marginTop: 20 }}
               disabled={true}
@@ -209,7 +209,7 @@ const SyncEditionContainer = ({ synchronizer }) => {
               component={TextField}
               variant="standard"
               name="token"
-              label={t('Remote OpenCTI token')}
+              label={t_i18n('Remote OpenCTI token')}
               fullWidth={true}
               style={{ marginTop: 20 }}
               disabled={true}
@@ -218,7 +218,7 @@ const SyncEditionContainer = ({ synchronizer }) => {
               component={TextField}
               variant="standard"
               name="dd"
-              label={t('Remote OpenCTI stream ID')}
+              label={t_i18n('Remote OpenCTI stream ID')}
               fullWidth={true}
               style={{ marginTop: 20 }}
               value={
@@ -230,7 +230,7 @@ const SyncEditionContainer = ({ synchronizer }) => {
           </Alert>
           <CreatorField
             name={'user_id'}
-            label={t('User responsible for data creation (empty = System)')}
+            label={t_i18n('User responsible for data creation (empty = System)')}
             containerStyle={fieldSpacingContainerStyle}
             onChange={handleSubmitField}
           />
@@ -239,7 +239,7 @@ const SyncEditionContainer = ({ synchronizer }) => {
             name="current_state_date"
             onSubmit={handleSubmitField}
             TextFieldProps={{
-              label: t('Starting synchronization (empty = from start)'),
+              label: t_i18n('Starting synchronization (empty = from start)'),
               variant: 'standard',
               fullWidth: true,
               style: { marginTop: 20 },
@@ -250,20 +250,20 @@ const SyncEditionContainer = ({ synchronizer }) => {
             type="checkbox"
             name="listen_deletion"
             containerstyle={{ marginTop: 20 }}
-            label={t('Take deletions into account')}
+            label={t_i18n('Take deletions into account')}
             onChange={handleSubmitField}
           />
           <Field
             component={SwitchField}
             type="checkbox"
             name="ssl_verify"
-            label={t('Verify SSL certificate')}
+            label={t_i18n('Verify SSL certificate')}
             containerstyle={{ marginBottom: 20 }}
             onChange={handleSubmitField}
           />
           <Accordion expanded={openOptions} onChange={() => setOpenOptions(!openOptions)}>
             <AccordionSummary id="accordion-panel">
-              <Typography>{t('Advanced options')}</Typography>
+              <Typography>{t_i18n('Advanced options')}</Typography>
             </AccordionSummary>
             <AccordionDetails>
               <Alert icon={false}
@@ -272,28 +272,28 @@ const SyncEditionContainer = ({ synchronizer }) => {
                 variant="outlined"
                 style={{ position: 'relative' }}
               >
-                <div>{t('Use these options if you know what you are doing')}</div>
+                <div>{t_i18n('Use these options if you know what you are doing')}</div>
               </Alert>
               <Field
                 component={SwitchField}
                 containerstyle={{ marginTop: 20 }}
                 type="checkbox"
                 name="no_dependencies"
-                label={t('Avoid dependencies resolution')}
+                label={t_i18n('Avoid dependencies resolution')}
                 onChange={handleSubmitField}
               />
-              <div>{t('Use this option if you want to prevent any built in relations resolutions (references like createdBy will still be auto resolved)')}</div>
+              <div>{t_i18n('Use this option if you want to prevent any built in relations resolutions (references like createdBy will still be auto resolved)')}</div>
               <hr style={{ marginTop: 20, marginBottom: 20 }} />
               <Field
                 component={SwitchField}
                 type="checkbox"
                 containerstyle={{ marginLeft: 2 }}
                 name="synchronized"
-                label={t('Use perfect synchronization')}
+                label={t_i18n('Use perfect synchronization')}
                 onChange={handleSubmitField}
               />
-              <div>{t('Use this option only in case of platform to platform replication')}</div>
-              <div>{t('Every data fetched from this synchronizer will be written as the only source of truth')}</div>
+              <div>{t_i18n('Use this option only in case of platform to platform replication')}</div>
+              <div>{t_i18n('Every data fetched from this synchronizer will be written as the only source of truth')}</div>
             </AccordionDetails>
           </Accordion>
           <div className={classes.buttons}>
@@ -303,7 +303,7 @@ const SyncEditionContainer = ({ synchronizer }) => {
               onClick={() => handleVerify(values)}
               classes={{ root: classes.button }}
             >
-              {t('Verify')}
+              {t_i18n('Verify')}
             </Button>
           </div>
         </Form>

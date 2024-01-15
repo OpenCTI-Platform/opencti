@@ -258,7 +258,7 @@ const inlineStyles = {
 };
 
 const SearchBulk = () => {
-  const { t, nsd, n } = useFormatter();
+  const { t_i18n, nsd, n } = useFormatter();
   const isGrantedToExports = useGranted([KNOWLEDGE_KNGETEXPORT]);
   const classes = useStyles();
   const [textFieldValue, setTextFieldValue] = useState('');
@@ -401,14 +401,14 @@ const SearchBulk = () => {
           style={inlineStylesHeaders[field]}
           onClick={() => reverseBy(field)}
         >
-          <span>{t(label)}</span>
+          <span>{t_i18n(label)}</span>
           {sortBy === field ? sortComponent : ''}
         </div>
       );
     }
     return (
       <div style={inlineStylesHeaders[field]}>
-        <span>{t(label)}</span>
+        <span>{t_i18n(label)}</span>
       </div>
     );
   };
@@ -438,7 +438,7 @@ const SearchBulk = () => {
         gutterBottom={true}
         style={{ marginBottom: 18, float: 'left' }}
       >
-        {t('Search for multiple entities')}
+        {t_i18n('Search for multiple entities')}
       </Typography>
       <ToggleButtonGroup
         size="small"
@@ -452,7 +452,7 @@ const SearchBulk = () => {
             size="small"
             onClick={() => setOpenExports(true)}
           >
-            <Tooltip title={t('Open export panel')}>
+            <Tooltip title={t_i18n('Open export panel')}>
               <FileDownloadOutlined
                 fontSize="small"
                 color={openExports ? 'secondary' : 'primary'}
@@ -463,7 +463,7 @@ const SearchBulk = () => {
         {exportDisabled && (
           <Tooltip
             title={`${
-              t(
+              t_i18n(
                 'Export is disabled because too many entities are targeted (maximum number of entities is: ',
               ) + export_max_size
             })`}
@@ -503,7 +503,7 @@ const SearchBulk = () => {
             multiline={true}
             fullWidth={true}
             minRows={20}
-            placeholder={t('One keyword by line or separated by commas')}
+            placeholder={t_i18n('One keyword by line or separated by commas')}
             variant="outlined"
           />
         </Grid>
@@ -583,14 +583,14 @@ const SearchBulk = () => {
                                 color: itemColor(entity.type),
                                 border: `1px solid ${itemColor(entity.type)}`,
                               }}
-                              label={t(`entity_${entity.type}`)}
+                              label={t_i18n(`entity_${entity.type}`)}
                             />
                           ) : (
                             <Chip
                               classes={{ root: classes.chipInList }}
                               variant="outlined"
                               color="error"
-                              label={t('Unknown')}
+                              label={t_i18n('Unknown')}
                             />
                           )}
                         </div>

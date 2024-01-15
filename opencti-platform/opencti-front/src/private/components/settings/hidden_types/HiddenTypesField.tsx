@@ -79,7 +79,7 @@ const HiddenTypesField: FunctionComponent<HiddenTypesFieldProps> = ({
   initialValues,
   handleChange,
 }) => {
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
 
   const entitySettings = useEntitySettings().filter(({ platform_hidden_type }) => platform_hidden_type !== null)
     .map((node) => ({
@@ -166,7 +166,7 @@ const HiddenTypesField: FunctionComponent<HiddenTypesFieldProps> = ({
           <Checkbox
             checked={isSelectedGroup(key)}
           />
-          {t(key)}
+          {t_i18n(key)}
         </MenuItem>,
       );
       (values as EntitySettingHidden[]).map((platformHiddenType) => items.push(
@@ -180,7 +180,7 @@ const HiddenTypesField: FunctionComponent<HiddenTypesFieldProps> = ({
               entitySettingsEntityType.indexOf(platformHiddenType.target_type) > -1}
             style={{ marginLeft: 10 }}
           />
-          {t(`entity_${platformHiddenType.target_type}`)}
+          {t_i18n(`entity_${platformHiddenType.target_type}`)}
           <Security needs={[SETTINGS_SETACCESSES]}>
             <HiddenTypesIndicator platformHiddenTargetType={platformHiddenType.target_type} />
           </Security>
@@ -194,7 +194,7 @@ const HiddenTypesField: FunctionComponent<HiddenTypesFieldProps> = ({
       component={SelectField}
       variant="standard"
       name="platform_hidden_types"
-      label={t('Hidden entity types')}
+      label={t_i18n('Hidden entity types')}
       fullWidth={true}
       multiple={true}
       containerstyle={fieldSpacingContainerStyle}
@@ -203,7 +203,7 @@ const HiddenTypesField: FunctionComponent<HiddenTypesFieldProps> = ({
       renderValue={(selected: string[]) => (
         <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
           {selected.map((value) => (
-            <Chip key={value} label={t(`entity_${value}`)} />
+            <Chip key={value} label={t_i18n(`entity_${value}`)} />
           ))}
         </Box>
       )}

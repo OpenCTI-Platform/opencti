@@ -129,7 +129,7 @@ const InvestigationExpandFormContent = ({
   distributionToQueryRef,
 }: InvestigationExpandFormContentProps) => {
   const classes = useStyles();
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   const { schema } = useAuth();
 
   const distributionRel = usePreloadedQuery(
@@ -281,7 +281,7 @@ const InvestigationExpandFormContent = ({
 
     setRelationships(
       nonNullDistribution.map(({ label, value }) => ({
-        label: `${t(`relationship_${label.toLowerCase()}`)} (${value})`,
+        label: `${t_i18n(`relationship_${label.toLowerCase()}`)} (${value})`,
         value: label,
       })),
     );
@@ -350,9 +350,9 @@ const InvestigationExpandFormContent = ({
     setTargets(
       graphDistribution.map(({ label, value }) => {
         const isRelationship = relationshipsNames.includes(label.toLowerCase());
-        let translation = t(`entity_${label}`);
+        let translation = t_i18n(`entity_${label}`);
         if (isRelationship) {
-          translation = `${t(`relationship_${label.toLowerCase()}`)} (${t('Relationship')})`;
+          translation = `${t_i18n(`relationship_${label.toLowerCase()}`)} (${t_i18n('Relationship')})`;
         }
         return {
           label: `${translation} (${value})`,
@@ -381,19 +381,19 @@ const InvestigationExpandFormContent = ({
     >
       {({ submitForm, handleReset, isSubmitting }) => (
         <Form>
-          <DialogTitle>{t('Expand elements')}</DialogTitle>
+          <DialogTitle>{t_i18n('Expand elements')}</DialogTitle>
           <DialogContent>
             <div className={classes.checkboxesContainer}>
               <Field
                 name="entity_types"
                 component={CheckboxesField}
-                label={t('All types of target')}
+                label={t_i18n('All types of target')}
                 items={targets}
               />
               <Field
                 name="relationship_types"
                 component={CheckboxesField}
-                label={t('All types of relationship')}
+                label={t_i18n('All types of relationship')}
                 items={relationships}
               />
             </div>
@@ -401,21 +401,21 @@ const InvestigationExpandFormContent = ({
               component={SwitchField}
               type="checkbox"
               name="reset_filters"
-              label={t('Reset filters')}
+              label={t_i18n('Reset filters')}
               containerstyle={{ marginTop: 20 }}
             />
           </DialogContent>
 
           <DialogActions>
             <Button onClick={handleReset} disabled={isSubmitting}>
-              {t('Cancel')}
+              {t_i18n('Cancel')}
             </Button>
             <Button
               color="secondary"
               onClick={submitForm}
               disabled={isSubmitting}
             >
-              {t('Expand')}
+              {t_i18n('Expand')}
             </Button>
           </DialogActions>
         </Form>

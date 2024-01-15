@@ -267,7 +267,7 @@ const StixCoreRelationshipCreationFromEntityList = ({
   }
 
   const classes = useStyles();
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
 
   const [commitRelationAdd] = useMutation(
     stixCoreRelationshipCreationFromEntityListRelationAdd,
@@ -279,7 +279,7 @@ const StixCoreRelationshipCreationFromEntityList = ({
   const enableReferences = useIsEnforceReference('stix-core-relationship');
   const stixCoreRelationshipValidator = useSchemaCreationValidation(
     'stix-core-relationship',
-    stixCoreRelationshipBasicShape(t),
+    stixCoreRelationshipBasicShape(t_i18n),
   );
   const [showForm, setShowForm] = useState(false);
   const [selected, setSelected] = useState(null);
@@ -422,7 +422,7 @@ const StixCoreRelationshipCreationFromEntityList = ({
             </List>
           ) : (
             <div style={{ padding: 20 }}>
-              {t('No entities were found for this search.')}
+              {t_i18n('No entities were found for this search.')}
             </div>
           )}
         </div>

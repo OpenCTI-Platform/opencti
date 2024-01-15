@@ -139,10 +139,10 @@ interface CountryEditionFormValues {
 const CountryEditionOverviewComponent: FunctionComponent<
 CountryEditionOverviewProps
 > = ({ countryRef, context, enableReferences = false, handleClose }) => {
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   const country = useFragment(countryEditionOverviewFragment, countryRef);
   const basicShape = {
-    name: Yup.string().min(2).required(t('This field is required')),
+    name: Yup.string().min(2).required(t_i18n('This field is required')),
     description: Yup.string().nullable(),
     references: Yup.array(),
     x_opencti_workflow_id: Yup.object(),
@@ -217,7 +217,7 @@ CountryEditionOverviewProps
     references: [],
     createdBy: convertCreatedBy(country) as Option,
     objectMarking: convertMarkings(country),
-    x_opencti_workflow_id: convertStatus(t, country) as Option,
+    x_opencti_workflow_id: convertStatus(t_i18n, country) as Option,
   };
   return (
     <Formik
@@ -239,7 +239,7 @@ CountryEditionOverviewProps
             component={TextField}
             variant="standard"
             name="name"
-            label={t('Name')}
+            label={t_i18n('Name')}
             fullWidth={true}
             onFocus={editor.changeFocus}
             onSubmit={handleSubmitField}
@@ -250,7 +250,7 @@ CountryEditionOverviewProps
           <Field
             component={MarkdownField}
             name="description"
-            label={t('Description')}
+            label={t_i18n('Description')}
             fullWidth={true}
             multiline={true}
             rows="4"

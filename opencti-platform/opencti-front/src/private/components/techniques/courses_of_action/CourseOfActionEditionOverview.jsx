@@ -81,10 +81,10 @@ const courseOfActionMutationRelationDelete = graphql`
 
 const CourseOfActionEditionOverviewComponent = (props) => {
   const { courseOfAction, enableReferences, context, handleClose } = props;
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
 
   const basicShape = {
-    name: Yup.string().min(2).required(t('This field is required')),
+    name: Yup.string().min(2).required(t_i18n('This field is required')),
     description: Yup.string().nullable(),
     x_opencti_threat_hunting: Yup.string().nullable(),
     x_opencti_log_sources: Yup.string().nullable(),
@@ -165,7 +165,7 @@ const CourseOfActionEditionOverviewComponent = (props) => {
   const initialValues = R.pipe(
     R.assoc('createdBy', convertCreatedBy(courseOfAction)),
     R.assoc('objectMarking', convertMarkings(courseOfAction)),
-    R.assoc('x_opencti_workflow_id', convertStatus(t, courseOfAction)),
+    R.assoc('x_opencti_workflow_id', convertStatus(t_i18n, courseOfAction)),
     R.assoc('references', []),
     R.assoc(
       'x_opencti_log_sources',
@@ -203,7 +203,7 @@ const CourseOfActionEditionOverviewComponent = (props) => {
           <Field
             component={TextField}
             name="name"
-            label={t('Name')}
+            label={t_i18n('Name')}
             fullWidth={true}
             onFocus={editor.changeFocus}
             onSubmit={handleSubmitField}
@@ -214,7 +214,7 @@ const CourseOfActionEditionOverviewComponent = (props) => {
           <Field
             component={TextField}
             name="x_mitre_id"
-            label={t('External ID')}
+            label={t_i18n('External ID')}
             fullWidth={true}
             style={{ marginTop: 20 }}
             onFocus={editor.changeFocus}
@@ -226,7 +226,7 @@ const CourseOfActionEditionOverviewComponent = (props) => {
           <Field
             component={MarkdownField}
             name="description"
-            label={t('Description')}
+            label={t_i18n('Description')}
             fullWidth={true}
             multiline={true}
             rows="4"
@@ -240,7 +240,7 @@ const CourseOfActionEditionOverviewComponent = (props) => {
           <Field
             component={MarkdownField}
             name="x_opencti_threat_hunting"
-            label={t('Threat hunting techniques')}
+            label={t_i18n('Threat hunting techniques')}
             fullWidth={true}
             multiline={true}
             rows="4"
@@ -257,7 +257,7 @@ const CourseOfActionEditionOverviewComponent = (props) => {
           <Field
             component={TextField}
             name="x_opencti_log_sources"
-            label={t('Log sources (1 / line)')}
+            label={t_i18n('Log sources (1 / line)')}
             fullWidth={true}
             multiline={true}
             rows="4"

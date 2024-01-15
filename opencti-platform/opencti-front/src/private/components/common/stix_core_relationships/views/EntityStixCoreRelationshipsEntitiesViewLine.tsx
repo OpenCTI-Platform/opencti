@@ -240,7 +240,7 @@ EntityStixCoreRelationshipsEntitiesLineProps
   index,
 }) => {
   const classes = useStyles();
-  const { t, nsdt } = useFormatter();
+  const { t_i18n, nsdt } = useFormatter();
   const stixCoreObject = useFragment(
     entityStixCoreRelationshipsEntitiesFragment,
     node,
@@ -290,7 +290,7 @@ EntityStixCoreRelationshipsEntitiesLineProps
                   color: itemColor(stixCoreObject.entity_type),
                   border: `1px solid ${itemColor(stixCoreObject.entity_type)}`,
                 }}
-                label={t(`entity_${stixCoreObject.entity_type}`)}
+                label={t_i18n(`entity_${stixCoreObject.entity_type}`)}
               />
             </div>
             <div

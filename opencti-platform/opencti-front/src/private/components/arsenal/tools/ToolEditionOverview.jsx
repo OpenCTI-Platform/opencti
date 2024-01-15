@@ -81,10 +81,10 @@ const toolMutationRelationDelete = graphql`
 
 const ToolEditionOverviewComponent = (props) => {
   const { tool, enableReferences, context, handleClose } = props;
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
 
   const basicShape = {
-    name: Yup.string().min(2).required(t('This field is required')),
+    name: Yup.string().min(2).required(t_i18n('This field is required')),
     description: Yup.string().nullable(),
     confidence: Yup.number().nullable(),
     tool_types: Yup.array().nullable(),
@@ -157,7 +157,7 @@ const ToolEditionOverviewComponent = (props) => {
     R.assoc('createdBy', convertCreatedBy(tool)),
     R.assoc('killChainPhases', convertKillChainPhases(tool)),
     R.assoc('objectMarking', convertMarkings(tool)),
-    R.assoc('x_opencti_workflow_id', convertStatus(t, tool)),
+    R.assoc('x_opencti_workflow_id', convertStatus(t_i18n, tool)),
     R.assoc('tool_types', tool.tool_types ?? []),
     R.assoc('references', []),
     R.pick([
@@ -192,7 +192,7 @@ const ToolEditionOverviewComponent = (props) => {
             component={TextField}
             variant="standard"
             name="name"
-            label={t('Name')}
+            label={t_i18n('Name')}
             fullWidth={true}
             onFocus={editor.changeFocus}
             onSubmit={handleSubmitField}
@@ -203,7 +203,7 @@ const ToolEditionOverviewComponent = (props) => {
           <Field
             component={MarkdownField}
             name="description"
-            label={t('Description')}
+            label={t_i18n('Description')}
             fullWidth={true}
             multiline={true}
             rows="4"
@@ -265,7 +265,7 @@ const ToolEditionOverviewComponent = (props) => {
           <OpenVocabField
             type="tool_types_ov"
             name="tool_types"
-            label={t('Tool types')}
+            label={t_i18n('Tool types')}
             onFocus={editor.changeFocus}
             onSubmit={handleSubmitField}
             onChange={(name, value) => setFieldValue(name, value)}

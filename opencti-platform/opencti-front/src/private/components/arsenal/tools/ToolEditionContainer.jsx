@@ -6,14 +6,14 @@ import ToolEditionOverview from './ToolEditionOverview';
 import { useIsEnforceReference } from '../../../../utils/hooks/useEntitySettings';
 
 const ToolEditionContainer = (props) => {
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
 
   const { handleClose, tool, open } = props;
   const { editContext } = tool;
 
   return (
     <Drawer
-      title={t('Update a tool')}
+      title={t_i18n('Update a tool')}
       open={open}
       onClose={handleClose}
       variant={open == null ? DrawerVariant.update : undefined}

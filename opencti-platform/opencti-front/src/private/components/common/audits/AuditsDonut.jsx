@@ -209,7 +209,7 @@ const AuditsDonut = ({
 }) => {
   const classes = useStyles();
   const theme = useTheme();
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   const isGrantedToSettings = useGranted([SETTINGS]);
   const isEnterpriseEdition = useEnterpriseEdition();
   const renderContent = () => {
@@ -224,10 +224,10 @@ const AuditsDonut = ({
             }}
           >
             {!isEnterpriseEdition
-              ? t(
+              ? t_i18n(
                 'This feature is only available in OpenCTI Enterprise Edition.',
               )
-              : t('You are not authorized to see this data.')}
+              : t_i18n('You are not authorized to see this data.')}
           </span>
         </div>
       );
@@ -264,7 +264,7 @@ const AuditsDonut = ({
               || selection.attribute.endsWith('_ids')
               ? defaultValue(n.entity)
               : selection.attribute === 'entity_type'
-                ? t(`entity_${n.label}`)
+                ? t_i18n(`entity_${n.label}`)
                 : n.label));
             return (
               <Chart
@@ -288,7 +288,7 @@ const AuditsDonut = ({
                     textAlign: 'center',
                   }}
                 >
-                  {t('No entities of this type has been found.')}
+                  {t_i18n('No entities of this type has been found.')}
                 </span>
               </div>
             );
@@ -322,7 +322,7 @@ const AuditsDonut = ({
           textOverflow: 'ellipsis',
         }}
       >
-        {parameters.title || t('Distribution of history')}
+        {parameters.title || t_i18n('Distribution of history')}
       </Typography>
       {variant === 'inLine' || variant === 'inEntity' ? (
         renderContent()

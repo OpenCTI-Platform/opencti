@@ -53,7 +53,7 @@ const PictureLine: FunctionComponent<PictureLineComponentProps> = ({
   entityId,
 }) => {
   const classes = useStyles();
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   const data = useFragment(pictureManagementUtilsFragment, picture);
   const [displayUpdate, setDisplayUpdate] = useState<boolean>(false);
   const handleOpenUpdate = () => setDisplayUpdate(true);
@@ -94,7 +94,7 @@ const PictureLine: FunctionComponent<PictureLineComponentProps> = ({
               >
                 <ItemBoolean
                   status={data.metaData?.inCarousel === true}
-                  label={data.metaData?.inCarousel ? t('Yes') : t('No')}
+                  label={data.metaData?.inCarousel ? t_i18n('Yes') : t_i18n('No')}
                 />
               </div>
             </>
@@ -106,7 +106,7 @@ const PictureLine: FunctionComponent<PictureLineComponentProps> = ({
       </ListItem>
       <Drawer
         open={displayUpdate}
-        title={t('Update a picture')}
+        title={t_i18n('Update a picture')}
         onClose={handleCloseUpdate}
       >
         <PictureManagementEdition

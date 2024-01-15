@@ -106,11 +106,11 @@ const SettingsOrganizationEdition = ({
   context,
   enableReferences = false,
 }: SettingsOrganizationEditionProps) => {
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   const isEnterpriseEdition = useEnterpriseEdition();
 
   const basicShape = {
-    name: Yup.string().min(2).required(t('This field is required')),
+    name: Yup.string().min(2).required(t_i18n('This field is required')),
     description: Yup.string().nullable(),
     contact_information: Yup.string().nullable(),
     x_opencti_organization_type: Yup.string().nullable(),
@@ -188,7 +188,7 @@ const SettingsOrganizationEdition = ({
   };
   return (
     <Drawer
-      title={t('Update the organization')}
+      title={t_i18n('Update the organization')}
       variant={DrawerVariant.updateWithPanel}
       context={context}
     >
@@ -215,7 +215,7 @@ const SettingsOrganizationEdition = ({
                 component={TextField}
                 variant="standard"
                 name="name"
-                label={t('Name')}
+                label={t_i18n('Name')}
                 fullWidth={true}
                 onFocus={editor.changeFocus}
                 onSubmit={handleSubmitField}
@@ -226,7 +226,7 @@ const SettingsOrganizationEdition = ({
               <Field
                 component={MarkdownField}
                 name="description"
-                label={t('Description')}
+                label={t_i18n('Description')}
                 fullWidth={true}
                 multiline={true}
                 rows="4"
@@ -245,7 +245,7 @@ const SettingsOrganizationEdition = ({
                 variant="standard"
                 name="x_opencti_organization_type"
                 onChange={handleSubmitField}
-                label={t('Organization type')}
+                label={t_i18n('Organization type')}
                 fullWidth={true}
                 inputProps={{
                   name: 'x_opencti_organization_type',
@@ -259,17 +259,17 @@ const SettingsOrganizationEdition = ({
                   />
                 }
               >
-                <MenuItem value="constituent">{t('Constituent')}</MenuItem>
-                <MenuItem value="csirt">{t('CSIRT')}</MenuItem>
-                <MenuItem value="partner">{t('Partner')}</MenuItem>
-                <MenuItem value="vendor">{t('Vendor')}</MenuItem>
-                <MenuItem value="other">{t('Other')}</MenuItem>
+                <MenuItem value="constituent">{t_i18n('Constituent')}</MenuItem>
+                <MenuItem value="csirt">{t_i18n('CSIRT')}</MenuItem>
+                <MenuItem value="partner">{t_i18n('Partner')}</MenuItem>
+                <MenuItem value="vendor">{t_i18n('Vendor')}</MenuItem>
+                <MenuItem value="other">{t_i18n('Other')}</MenuItem>
               </Field>
               <Field
                 component={TextField}
                 variant="standard"
                 name="contact_information"
-                label={t('Contact information')}
+                label={t_i18n('Contact information')}
                 fullWidth={true}
                 multiline={true}
                 rows="4"
@@ -290,7 +290,7 @@ const SettingsOrganizationEdition = ({
               <SettingsOrganizationHiddenTypesField organizationData={organization} />
               <GroupField
                 name="grantable_groups"
-                label={<>{t('Grantable groups by Organization administrators')}<EEChip feature={t('Organization sharing')} /></>}
+                label={<>{t_i18n('Grantable groups by Organization administrators')}<EEChip feature={t_i18n('Organization sharing')} /></>}
                 multiple={true}
                 onChange={editor.changeGrantableGroups}
                 containerStyle={{ width: '100%', backgroundColor: 'red' }}

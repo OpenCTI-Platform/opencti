@@ -48,7 +48,7 @@ interface UserAnalyticsProps {
 
 const UserAnalytics: FunctionComponent<UserAnalyticsProps> = ({ data }) => {
   const classes = useStyles();
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   const user = useFragment(UserFragment, data);
   const isEnterpriseEdition = useEnterpriseEdition();
   if (!isEnterpriseEdition) {
@@ -65,7 +65,7 @@ const UserAnalytics: FunctionComponent<UserAnalyticsProps> = ({ data }) => {
           <AuditsMultiVerticalBars
             height={300}
             parameters={{
-              title: t('Login to the platform'),
+              title: t_i18n('Login to the platform'),
             }}
             dataSelection={[
               {
@@ -92,7 +92,7 @@ const UserAnalytics: FunctionComponent<UserAnalyticsProps> = ({ data }) => {
           <AuditsMultiLineChart
             height={300}
             parameters={{
-              title: t('Knowledge generation'),
+              title: t_i18n('Knowledge generation'),
             }}
             dataSelection={[
               {
@@ -156,7 +156,7 @@ const UserAnalytics: FunctionComponent<UserAnalyticsProps> = ({ data }) => {
           <AuditsHorizontalBars
             height={350}
             parameters={{
-              title: t('Top global search keywords'),
+              title: t_i18n('Top global search keywords'),
             }}
             dataSelection={[
               {
@@ -181,7 +181,7 @@ const UserAnalytics: FunctionComponent<UserAnalyticsProps> = ({ data }) => {
           <AuditsDonut
             height={350}
             parameters={{
-              title: t('Top events'),
+              title: t_i18n('Top events'),
             }}
             dataSelection={[
               {
@@ -210,7 +210,7 @@ const UserAnalytics: FunctionComponent<UserAnalyticsProps> = ({ data }) => {
           <AuditsRadar
             height={350}
             parameters={{
-              title: t('Top authors of read and exported entities'),
+              title: t_i18n('Top authors of read and exported entities'),
             }}
             dataSelection={[
               {
@@ -240,7 +240,7 @@ const UserAnalytics: FunctionComponent<UserAnalyticsProps> = ({ data }) => {
           <AuditsList
             height={350}
             parameters={{
-              title: t('Latest exports'),
+              title: t_i18n('Latest exports'),
             }}
             dataSelection={[
               {
@@ -267,7 +267,7 @@ const UserAnalytics: FunctionComponent<UserAnalyticsProps> = ({ data }) => {
           <AuditsHorizontalBars
             height={350}
             parameters={{
-              title: t('Top read or exported entities'),
+              title: t_i18n('Top read or exported entities'),
             }}
             dataSelection={[
               {

@@ -45,7 +45,7 @@ interface DataComponentDataSourcesProps {
 const DataComponentDataSource: FunctionComponent<
 DataComponentDataSourcesProps
 > = ({ dataComponent }) => {
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
 
   const data: DataComponentDataSources_dataComponent$data = useFragment(
     DataComponentDataSourceFragment,
@@ -68,7 +68,7 @@ DataComponentDataSourcesProps
   return (
     <div>
       <Typography variant="h3" gutterBottom={true} style={{ float: 'left' }}>
-        {t('Data source')}
+        {t_i18n('Data source')}
       </Typography>
       {!dataSourceId && <AddDataSources dataComponentId={data.id} />}
       <div className="clearfix" />

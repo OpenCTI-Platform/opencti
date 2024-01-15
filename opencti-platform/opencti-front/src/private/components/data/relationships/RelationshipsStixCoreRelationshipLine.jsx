@@ -61,7 +61,7 @@ const RelationshipsStixCoreRelationshipLineComponent = ({
   index,
 }) => {
   const classes = useStyles();
-  const { t, fd } = useFormatter();
+  const { t_i18n, fd } = useFormatter();
 
   const remoteNode = node.from && !node.from.relationship_type ? node.from : node.to;
   let link = null;
@@ -97,7 +97,7 @@ const RelationshipsStixCoreRelationshipLineComponent = ({
         {node.is_inferred ? (
           <Tooltip
             title={
-              t('Inferred knowledge based on the rule ')
+              t_i18n('Inferred knowledge based on the rule ')
               + R.head(node.x_opencti_inferences).rule.name
             }
           >
@@ -136,12 +136,12 @@ const RelationshipsStixCoreRelationshipLineComponent = ({
                       type={node.from ? node.from.entity_type : 'restricted'}
                     />
                     {node.from
-                      ? t(
+                      ? t_i18n(
                         node.from.parent_types.includes('basic-relationship')
                           ? `relationship_${node.from.entity_type}`
                           : `entity_${node.from.entity_type}`,
                       )
-                      : t('Restricted')}
+                      : t_i18n('Restricted')}
                   </>
                 }
               />
@@ -150,7 +150,7 @@ const RelationshipsStixCoreRelationshipLineComponent = ({
               className={classes.bodyItem}
               style={{ width: dataColumns.fromName.width }}
             >
-              {node.from ? defaultValue(node.from, true) : t('Restricted')}
+              {node.from ? defaultValue(node.from, true) : t_i18n('Restricted')}
             </div>
             <div
               className={classes.bodyItem}
@@ -161,7 +161,7 @@ const RelationshipsStixCoreRelationshipLineComponent = ({
                 classes={{ root: classes.chipInList }}
                 style={{ width: 120 }}
                 color="primary"
-                label={t(`relationship_${node.relationship_type}`)}
+                label={t_i18n(`relationship_${node.relationship_type}`)}
               />
             </div>
             <div
@@ -190,12 +190,12 @@ const RelationshipsStixCoreRelationshipLineComponent = ({
                       type={node.to ? node.to.entity_type : 'restricted'}
                     />
                     {node.to
-                      ? t(
+                      ? t_i18n(
                         node.to.parent_types.includes('basic-relationship')
                           ? `relationship_${node.to.entity_type}`
                           : `entity_${node.to.entity_type}`,
                       )
-                      : t('Restricted')}
+                      : t_i18n('Restricted')}
                   </>
                 }
               />
@@ -204,7 +204,7 @@ const RelationshipsStixCoreRelationshipLineComponent = ({
               className={classes.bodyItem}
               style={{ width: dataColumns.toName.width }}
             >
-              {node.to ? defaultValue(node.to, true) : t('Restricted')}
+              {node.to ? defaultValue(node.to, true) : t_i18n('Restricted')}
             </div>
             <div
               className={classes.bodyItem}

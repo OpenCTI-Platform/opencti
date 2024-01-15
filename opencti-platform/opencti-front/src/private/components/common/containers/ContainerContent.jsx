@@ -79,7 +79,7 @@ const useStyles = makeStyles(() => ({
 
 const ContainerContentComponent = ({ containerData }) => {
   const classes = useStyles();
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   const [open, setOpen] = useState(false);
   const [editionMode, setEditionMode] = useState(false);
   const [openClearMapping, setOpenClearMapping] = useState(false);
@@ -285,9 +285,9 @@ const ContainerContentComponent = ({ containerData }) => {
             gutterBottom
             style={{ float: 'left' }}
           >
-            {t('Content')}
+            {t_i18n('Content')}
           </Typography>
-          <Tooltip title={editionMode ? t('Turn off edition mode') : t('Turn on edition mode')}>
+          <Tooltip title={editionMode ? t_i18n('Turn off edition mode') : t_i18n('Turn on edition mode')}>
             <IconButton
               color={editionMode ? 'secondary' : 'primary'}
               aria-label="Edit"
@@ -299,7 +299,7 @@ const ContainerContentComponent = ({ containerData }) => {
             </IconButton>
           </Tooltip>
           <>
-            <Tooltip title={t('Clear mappings')}>
+            <Tooltip title={t_i18n('Clear mappings')}>
               <IconButton
                 color="primary"
                 aria-label="Apply"
@@ -319,7 +319,7 @@ const ContainerContentComponent = ({ containerData }) => {
             >
               <DialogContent>
                 <DialogContentText>
-                  {t('Do you want to delete the mapping of this content?')}
+                  {t_i18n('Do you want to delete the mapping of this content?')}
                 </DialogContentText>
               </DialogContent>
               <DialogActions>
@@ -327,14 +327,14 @@ const ContainerContentComponent = ({ containerData }) => {
                   onClick={() => setOpenClearMapping(false)}
                   disabled={clearing}
                 >
-                  {t('Cancel')}
+                  {t_i18n('Cancel')}
                 </Button>
                 <Button
                   color="secondary"
                   onClick={() => clearMapping()}
                   disabled={clearing}
                 >
-                  {t('Clear')}
+                  {t_i18n('Clear')}
                 </Button>
               </DialogActions>
             </Dialog>
@@ -363,7 +363,7 @@ const ContainerContentComponent = ({ containerData }) => {
                   <Field
                     component={MarkdownField}
                     name="description"
-                    label={t('Description')}
+                    label={t_i18n('Description')}
                     fullWidth
                     multiline
                     rows="4"
@@ -382,7 +382,7 @@ const ContainerContentComponent = ({ containerData }) => {
                   <Field
                     component={RichTextField}
                     name="content"
-                    label={t('Content')}
+                    label={t_i18n('Content')}
                     fullWidth
                     onSubmit={handleSubmitField}
                     onSelect={handleTextSelection}
@@ -416,7 +416,7 @@ const ContainerContentComponent = ({ containerData }) => {
         </Grid>
         <Grid item xs={6} style={{ marginTop: -15 }}>
           <Typography variant="h4" gutterBottom>
-            {t('Mapping')}
+            {t_i18n('Mapping')}
           </Typography>
           <Paper classes={{ root: classes.paper }} variant="outlined">
             <ContainerStixCoreObjectsMapping

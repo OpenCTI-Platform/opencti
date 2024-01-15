@@ -74,7 +74,7 @@ const RootInfrastructureComponent = ({ queryRef, infrastructureId }) => {
     [infrastructureId],
   );
   const location = useLocation();
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   useSubscription(subConfig);
   const data = usePreloadedQuery(infrastructureQuery, queryRef);
   const { infrastructure, connectorsForImport, connectorsForExport } = data;
@@ -112,31 +112,31 @@ const RootInfrastructureComponent = ({ queryRef, infrastructureId }) => {
                 component={Link}
                 to={`/dashboard/observations/infrastructures/${infrastructure.id}`}
                 value={`/dashboard/observations/infrastructures/${infrastructure.id}`}
-                label={t('Overview')}
+                label={t_i18n('Overview')}
               />
               <Tab
                 component={Link}
                 to={`/dashboard/observations/infrastructures/${infrastructure.id}/knowledge`}
                 value={`/dashboard/observations/infrastructures/${infrastructure.id}/knowledge`}
-                label={t('Knowledge')}
+                label={t_i18n('Knowledge')}
               />
               <Tab
                 component={Link}
                 to={`/dashboard/observations/infrastructures/${infrastructure.id}/analyses`}
                 value={`/dashboard/observations/infrastructures/${infrastructure.id}/analyses`}
-                label={t('Analyses')}
+                label={t_i18n('Analyses')}
               />
               <Tab
                 component={Link}
                 to={`/dashboard/observations/infrastructures/${infrastructure.id}/files`}
                 value={`/dashboard/observations/infrastructures/${infrastructure.id}/files`}
-                label={t('Data')}
+                label={t_i18n('Data')}
               />
               <Tab
                 component={Link}
                 to={`/dashboard/observations/infrastructures/${infrastructure.id}/history`}
                 value={`/dashboard/observations/infrastructures/${infrastructure.id}/history`}
-                label={t('History')}
+                label={t_i18n('History')}
               />
             </Tabs>
           </Box>

@@ -40,14 +40,14 @@ interface PictureManagementEditionFormValues {
 }
 
 const PictureManagementEdition: FunctionComponent<PictureManagementEditionProps> = ({ picture, entityId, handleClose }) => {
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   const classes = useStyles();
   const [commit] = useMutation<PictureManagementUtilsMutation>(
     pictureManagementUtilsMutation,
   );
   const pictureValidation = () => Yup.object().shape({
     description: Yup.string().nullable(),
-    order: Yup.number().nullable().integer(t('The value must be a number')),
+    order: Yup.number().nullable().integer(t_i18n('The value must be a number')),
     inCarousel: Yup.boolean().nullable(),
   });
   const onSubmit: FormikConfig<PictureManagementEditionFormValues>['onSubmit'] = (values, { setSubmitting, setErrors }) => {
@@ -89,7 +89,7 @@ const PictureManagementEdition: FunctionComponent<PictureManagementEditionProps>
           <Field
             component={MarkdownField}
             name="description"
-            label={t('Description')}
+            label={t_i18n('Description')}
             fullWidth={true}
             multiline={true}
             rows="4"
@@ -99,7 +99,7 @@ const PictureManagementEdition: FunctionComponent<PictureManagementEditionProps>
             component={TextField}
             variant="standard"
             name="order"
-            label={t('Order of Carousel')}
+            label={t_i18n('Order of Carousel')}
             fullWidth={true}
             type="number"
             style={fieldSpacingContainerStyle}
@@ -108,7 +108,7 @@ const PictureManagementEdition: FunctionComponent<PictureManagementEditionProps>
             component={SwitchField}
             type="checkbox"
             name="inCarousel"
-            label={t('In Carousel')}
+            label={t_i18n('In Carousel')}
             containerstyle={fieldSpacingContainerStyle}
           />
           <div className={classes.buttons}>
@@ -119,7 +119,7 @@ const PictureManagementEdition: FunctionComponent<PictureManagementEditionProps>
               disabled={isSubmitting || !isValid}
               classes={{ root: classes.button }}
             >
-              {t('Update')}
+              {t_i18n('Update')}
             </Button>
           </div>
         </Form>

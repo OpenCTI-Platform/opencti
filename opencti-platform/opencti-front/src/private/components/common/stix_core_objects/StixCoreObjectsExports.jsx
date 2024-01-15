@@ -11,11 +11,11 @@ const StixCoreObjectsExports = ({
   open,
   handleToggle,
 }) => {
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   return (
     <Drawer
       open={open}
-      title={t('Exports list')}
+      title={t_i18n('Exports list')}
       onClose={handleToggle}
     >
       <QueryRenderer

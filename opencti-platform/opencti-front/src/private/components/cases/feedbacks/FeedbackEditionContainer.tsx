@@ -26,14 +26,14 @@ export const feedbackEditionQuery = graphql`
 `;
 
 const FeedbackEditionContainer: FunctionComponent<FeedbackEditionContainerProps> = ({ queryRef, handleClose, open }) => {
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   const { feedback } = usePreloadedQuery(feedbackEditionQuery, queryRef);
   if (feedback === null) {
     return <ErrorNotFound />;
   }
   return (
     <Drawer
-      title={t('Update a feedback')}
+      title={t_i18n('Update a feedback')}
       variant={open == null ? DrawerVariant.update : undefined}
       context={feedback.editContext}
       onClose={handleClose}

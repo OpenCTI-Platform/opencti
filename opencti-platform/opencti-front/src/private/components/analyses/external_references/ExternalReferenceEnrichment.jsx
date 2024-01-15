@@ -8,11 +8,11 @@ import ExternalReferenceEnrichmentLines, { externalReferenceEnrichmentLinesQuery
 import Drawer from '../../common/drawer/Drawer';
 
 const ExternalReferenceEnrichment = ({ externalReferenceId }) => {
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   const [open, setOpen] = useState(false);
   return (
     <div style={{ display: 'inline-block' }}>
-      <Tooltip title={t('Enrichment')}>
+      <Tooltip title={t_i18n('Enrichment')}>
         <IconButton
           onClick={() => setOpen(true)}
           color="primary"
@@ -25,7 +25,7 @@ const ExternalReferenceEnrichment = ({ externalReferenceId }) => {
       <Drawer
         open={open}
         onClose={() => setOpen(false)}
-        title={t('Enrichment connectors')}
+        title={t_i18n('Enrichment connectors')}
       >
         <QueryRenderer
           query={externalReferenceEnrichmentLinesQuery}

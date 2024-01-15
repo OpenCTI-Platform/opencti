@@ -37,23 +37,23 @@ interface SettingsOrganizationDetailsProps {
 const SettingsOrganizationDetails: FunctionComponent<
 SettingsOrganizationDetailsProps
 > = ({ settingsOrganization }) => {
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   const classes = useStyles();
   const organization = settingsOrganization;
   return (
     <div style={{ height: '100%' }}>
       <Typography variant="h4" gutterBottom={true}>
-        {t('Basic information')}
+        {t_i18n('Basic information')}
       </Typography>
       <Paper classes={{ root: classes.paper }} variant="outlined">
         <Grid container={true} spacing={3}>
           <Grid item={true} xs={12}>
             <Typography variant="h3" gutterBottom={true}>
-              {t('Organization type')}
+              {t_i18n('Organization type')}
             </Typography>
             <Chip
               classes={{ root: classes.chip }}
-              label={t(
+              label={t_i18n(
                 organization.x_opencti_organization_type
                   ? `organization_${organization.x_opencti_organization_type}`
                   : 'organization_other',
@@ -64,7 +64,7 @@ SettingsOrganizationDetailsProps
               gutterBottom={true}
               style={{ marginTop: 20 }}
             >
-              {t('Description')}
+              {t_i18n('Description')}
             </Typography>
             <ExpandableMarkdown source={organization.description} limit={400} />
             <Typography
@@ -72,7 +72,7 @@ SettingsOrganizationDetailsProps
               gutterBottom={true}
               style={{ marginTop: 20 }}
             >
-              {t('Contact information')}
+              {t_i18n('Contact information')}
             </Typography>
             <MarkdownDisplay
               content={organization.contact_information ?? ''}

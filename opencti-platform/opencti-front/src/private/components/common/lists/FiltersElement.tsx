@@ -63,7 +63,7 @@ const FiltersElement: FunctionComponent<FiltersElementProps> = ({
   availableRelationshipTypes,
   availableRelationFilterTypes,
 }) => {
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   const classes = useStyles();
   const displayedFilters = availableFilterKeys
     .map((key) => {
@@ -88,7 +88,7 @@ const FiltersElement: FunctionComponent<FiltersElementProps> = ({
         {variant === FiltersVariant.dialog && (
           <Grid item={true} xs={12}>
             <TextField
-              label={t('Global keyword')}
+              label={t_i18n('Global keyword')}
               variant="outlined"
               size="small"
               fullWidth={true}
@@ -134,7 +134,7 @@ const FiltersElement: FunctionComponent<FiltersElementProps> = ({
         })}
       </Grid>
       <div className={classes.helpertext}>
-        {t('Use')} <code>alt</code> + <code>click</code> {t('to exclude items')}
+        {t_i18n('Use')} <code>alt</code> + <code>click</code> {t_i18n('to exclude items')}
         .
       </div>
     </>

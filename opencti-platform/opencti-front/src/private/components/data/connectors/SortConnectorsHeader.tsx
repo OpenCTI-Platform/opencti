@@ -52,7 +52,7 @@ interface SortConnectorsHeaderProps {
 }
 
 const SortConnectorsHeader: React.FC<SortConnectorsHeaderProps> = ({ field, label, isSortable, orderAsc, sortBy, reverseBy }) => {
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
 
   const sortComponent = orderAsc ? (
     <ArrowDropDownOutlined sx={sortHeaderStyle.iconSort} />
@@ -66,7 +66,7 @@ const SortConnectorsHeader: React.FC<SortConnectorsHeaderProps> = ({ field, labe
         sx={sortHeaderStyle[field]}
         onClick={() => reverseBy(field)}
       >
-        <span>{t(label)}</span>
+        <span>{t_i18n(label)}</span>
         {sortBy === field ? sortComponent : ''}
       </Box>
     );
@@ -74,7 +74,7 @@ const SortConnectorsHeader: React.FC<SortConnectorsHeaderProps> = ({ field, labe
 
   return (
     <div style={sortHeaderStyle[field]}>
-      <span>{t(label)}</span>
+      <span>{t_i18n(label)}</span>
     </div>
   );
 };

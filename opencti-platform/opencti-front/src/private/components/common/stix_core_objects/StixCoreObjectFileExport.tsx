@@ -64,7 +64,7 @@ const StixCoreObjectFileExportComponent = ({
   redirectToContent,
 }: StixCoreObjectFileExportComponentProps) => {
   const navigate = useNavigate();
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   const data = usePreloadedQuery<StixCoreObjectFileExportQuery>(
     stixCoreObjectFileExportQuery,
     queryRef,
@@ -125,8 +125,8 @@ const StixCoreObjectFileExportComponent = ({
       <Tooltip
         title={
           isExportPossible
-            ? t('Generate an export')
-            : t('No export connector available to generate an export')
+            ? t_i18n('Generate an export')
+            : t_i18n('No export connector available to generate an export')
         }
         aria-label="generate-export"
       >
@@ -154,7 +154,7 @@ const StixCoreObjectFileExportComponent = ({
           type: 'full',
           maxMarkingDefinition: 'none',
         }}
-        validationSchema={exportValidation(t)}
+        validationSchema={exportValidation(t_i18n)}
         onSubmit={onSubmitExport}
         onReset={() => setOpen(false)}
       >
@@ -166,7 +166,7 @@ const StixCoreObjectFileExportComponent = ({
               onClose={() => setOpen(false)}
               fullWidth={true}
             >
-              <DialogTitle>{t('Generate an export')}</DialogTitle>
+              <DialogTitle>{t_i18n('Generate an export')}</DialogTitle>
               {/* Duplicate code for displaying list of marking in select input. TODO a component */}
               <QueryRenderer
                 query={markingDefinitionsLinesSearchQuery}
@@ -183,7 +183,7 @@ const StixCoreObjectFileExportComponent = ({
                           component={SelectField}
                           variant="standard"
                           name="format"
-                          label={t('Export format')}
+                          label={t_i18n('Export format')}
                           fullWidth={true}
                           containerstyle={{ width: '100%' }}
                         >
@@ -201,26 +201,26 @@ const StixCoreObjectFileExportComponent = ({
                           component={SelectField}
                           variant="standard"
                           name="type"
-                          label={t('Export type')}
+                          label={t_i18n('Export type')}
                           fullWidth={true}
                           containerstyle={fieldSpacingContainerStyle}
                         >
                           <MenuItem value="simple">
-                            {t('Simple export (just the entity)')}
+                            {t_i18n('Simple export (just the entity)')}
                           </MenuItem>
                           <MenuItem value="full">
-                            {t('Full export (entity and first neighbours)')}
+                            {t_i18n('Full export (entity and first neighbours)')}
                           </MenuItem>
                         </Field>
                         <Field
                           component={SelectField}
                           variant="standard"
                           name="maxMarkingDefinition"
-                          label={t('Max marking definition level')}
+                          label={t_i18n('Max marking definition level')}
                           fullWidth={true}
                           containerstyle={fieldSpacingContainerStyle}
                         >
-                          <MenuItem value="none">{t('None')}</MenuItem>
+                          <MenuItem value="none">{t_i18n('None')}</MenuItem>
                           {map(
                             (markingDefinition) => (
                               <MenuItem
@@ -251,7 +251,7 @@ const StixCoreObjectFileExportComponent = ({
                   }}
                   disabled={isSubmitting}
                 >
-                  {t('Create')}
+                  {t_i18n('Create')}
                 </Button>
               </DialogActions>
             </Dialog>

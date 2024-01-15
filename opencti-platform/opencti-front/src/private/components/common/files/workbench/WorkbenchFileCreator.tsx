@@ -86,7 +86,7 @@ const WorkbenchFileCreator: FunctionComponent<WorkbenchFileCreatorProps> = ({
   onCompleted,
   entity,
 }) => {
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   const classes = useStyles();
   const [commitWorkbench] = useMutation<WorkbenchFileCreatorMutation>(
     workbenchFileCreatorMutation,
@@ -157,7 +157,7 @@ const WorkbenchFileCreator: FunctionComponent<WorkbenchFileCreatorProps> = ({
     <Formik
       enableReinitialize={true}
       initialValues={initialValues}
-      validationSchema={fileValidation(t)}
+      validationSchema={fileValidation(t_i18n)}
       onSubmit={onSubmitCreate}
       onReset={handleCloseCreate}
     >
@@ -169,13 +169,13 @@ const WorkbenchFileCreator: FunctionComponent<WorkbenchFileCreatorProps> = ({
             onClose={handleCloseCreate}
             fullWidth
           >
-            <DialogTitle>{t('Create a workbench')}</DialogTitle>
+            <DialogTitle>{t_i18n('Create a workbench')}</DialogTitle>
             <DialogContent>
               <Field
                 component={TextField}
                 variant="standard"
                 name="name"
-                label={t('Name')}
+                label={t_i18n('Name')}
                 fullWidth
               />
               <Field
@@ -185,7 +185,7 @@ const WorkbenchFileCreator: FunctionComponent<WorkbenchFileCreatorProps> = ({
                 multiple
                 textfieldprops={{
                   variant: 'standard',
-                  label: t('Labels'),
+                  label: t_i18n('Labels'),
                 }}
                 options={[]}
                 renderOption={(
@@ -206,7 +206,7 @@ const WorkbenchFileCreator: FunctionComponent<WorkbenchFileCreatorProps> = ({
             </DialogContent>
             <DialogActions>
               <Button onClick={handleReset} disabled={isSubmitting}>
-                {t('Cancel')}
+                {t_i18n('Cancel')}
               </Button>
               <Button
                 type="submit"
@@ -214,7 +214,7 @@ const WorkbenchFileCreator: FunctionComponent<WorkbenchFileCreatorProps> = ({
                 onClick={submitForm}
                 disabled={isSubmitting}
               >
-                {t('Create')}
+                {t_i18n('Create')}
               </Button>
             </DialogActions>
           </Dialog>

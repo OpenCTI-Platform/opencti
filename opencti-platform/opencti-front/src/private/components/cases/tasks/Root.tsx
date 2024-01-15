@@ -69,7 +69,7 @@ const RootTaskComponent = ({ queryRef, taskId }) => {
     [taskId],
   );
   const location = useLocation();
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   useSubscription(subConfig);
   const {
     task: data,
@@ -113,25 +113,25 @@ const RootTaskComponent = ({ queryRef, taskId }) => {
                 component={Link}
                 to={`/dashboard/cases/tasks/${data.id}`}
                 value={`/dashboard/cases/tasks/${data.id}`}
-                label={t('Overview')}
+                label={t_i18n('Overview')}
               />
               <Tab
                 component={Link}
                 to={`/dashboard/cases/tasks/${data.id}/content`}
                 value={`/dashboard/cases/tasks/${data.id}/content`}
-                label={t('Content')}
+                label={t_i18n('Content')}
               />
               <Tab
                 component={Link}
                 to={`/dashboard/cases/tasks/${data.id}/files`}
                 value={`/dashboard/cases/tasks/${data.id}/files`}
-                label={t('Data')}
+                label={t_i18n('Data')}
               />
               <Tab
                 component={Link}
                 to={`/dashboard/cases/tasks/${data.id}/history`}
                 value={`/dashboard/cases/tasks/${data.id}/history`}
-                label={t('History')}
+                label={t_i18n('History')}
               />
             </Tabs>
           </Box>

@@ -33,7 +33,7 @@ const WidgetPopover = ({
   workspace,
 }) => {
   const classes = useStyles();
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   const [anchorEl, setAnchorEl] = useState(null);
   const [displayDelete, setDisplayDelete] = useState(false);
   const [displayDuplicate, setDisplayDuplicate] = useState(false);
@@ -77,9 +77,9 @@ const WidgetPopover = ({
             widget={widget}
             workspace={workspace}
           />
-          <MenuItem onClick={handleExportWidget}>{t('Export')}</MenuItem>
-          <MenuItem onClick={handleOpenDuplicate}>{t('Duplicate')}</MenuItem>
-          <MenuItem onClick={handleOpenDelete}>{t('Delete')}</MenuItem>
+          <MenuItem onClick={handleExportWidget}>{t_i18n('Export')}</MenuItem>
+          <MenuItem onClick={handleOpenDuplicate}>{t_i18n('Duplicate')}</MenuItem>
+          <MenuItem onClick={handleOpenDelete}>{t_i18n('Delete')}</MenuItem>
         </Security>
       </Menu>
       <Dialog
@@ -92,13 +92,13 @@ const WidgetPopover = ({
       >
         <DialogContent>
           <DialogContentText>
-            {t('Do you want to delete this widget?')}
+            {t_i18n('Do you want to delete this widget?')}
           </DialogContentText>
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setDisplayDelete(false)}>{t('Cancel')}</Button>
+          <Button onClick={() => setDisplayDelete(false)}>{t_i18n('Cancel')}</Button>
           <Button onClick={onDelete} color="secondary">
-            {t('Delete')}
+            {t_i18n('Delete')}
           </Button>
         </DialogActions>
       </Dialog>
@@ -112,12 +112,12 @@ const WidgetPopover = ({
       >
         <DialogContent>
           <DialogContentText>
-            {t('Do you want to duplicate this widget?')}
+            {t_i18n('Do you want to duplicate this widget?')}
           </DialogContentText>
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setDisplayDuplicate(false)}>
-            {t('Cancel')}
+            {t_i18n('Cancel')}
           </Button>
           <Button
             onClick={() => {
@@ -126,7 +126,7 @@ const WidgetPopover = ({
             }}
             color="secondary"
           >
-            {t('Duplicate')}
+            {t_i18n('Duplicate')}
           </Button>
         </DialogActions>
       </Dialog>

@@ -48,7 +48,7 @@ const CaseTemplateCreation: FunctionComponent<CaseTemplateCreationProps> = ({
   paginationOptions,
 }) => {
   const classes = useStyles();
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
 
   const [commitMutation] = useMutation(caseTemplateMutation);
 
@@ -77,7 +77,7 @@ const CaseTemplateCreation: FunctionComponent<CaseTemplateCreationProps> = ({
 
   return (
     <Drawer
-      title={t('Create a case template')}
+      title={t_i18n('Create a case template')}
       variant={DrawerVariant.createWithPanel}
     >
       {({ onClose }) => (
@@ -87,7 +87,7 @@ const CaseTemplateCreation: FunctionComponent<CaseTemplateCreationProps> = ({
             description: '',
             tasks: [],
           }}
-          validationSchema={caseTemplateValidation(t)}
+          validationSchema={caseTemplateValidation(t_i18n)}
           onSubmit={(values, formikHelpers) => {
             onSubmit(values, formikHelpers);
             onClose();
@@ -106,13 +106,13 @@ const CaseTemplateCreation: FunctionComponent<CaseTemplateCreationProps> = ({
                 component={TextField}
                 variant="standard"
                 name="name"
-                label={t('Name')}
+                label={t_i18n('Name')}
                 fullWidth={true}
               />
               <Field
                 component={MarkdownField}
                 name="description"
-                label={t('Description')}
+                label={t_i18n('Description')}
                 fullWidth={true}
                 multiline={true}
                 rows="4"
@@ -129,7 +129,7 @@ const CaseTemplateCreation: FunctionComponent<CaseTemplateCreationProps> = ({
                   disabled={isSubmitting}
                   classes={{ root: classes.button }}
                 >
-                  {t('Cancel')}
+                  {t_i18n('Cancel')}
                 </Button>
                 <Button
                   variant="contained"
@@ -138,7 +138,7 @@ const CaseTemplateCreation: FunctionComponent<CaseTemplateCreationProps> = ({
                   disabled={isSubmitting}
                   classes={{ root: classes.button }}
                 >
-                  {t('Create')}
+                  {t_i18n('Create')}
                 </Button>
               </div>
             </Form>

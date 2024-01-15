@@ -481,7 +481,7 @@ const ContainerHeader = (props) => {
     authorizedMembersMutation,
   } = props;
   const classes = useStyles();
-  const { t, fd } = useFormatter();
+  const { t_i18n, fd } = useFormatter();
   const userIsKnowledgeEditor = useGranted([KNOWLEDGE_KNUPDATE]);
   const [displaySuggestions, setDisplaySuggestions] = useState(false);
   const [selectedEntity, setSelectedEntity] = useState({});
@@ -785,7 +785,7 @@ const ContainerHeader = (props) => {
         <div className={classes.export}>
           <ExportButtons
             domElementId="container"
-            name={t('Report representation')}
+            name={t_i18n('Report representation')}
             pixelRatio={currentMode === 'graph' ? 1 : 2}
             adjust={adjust}
             containerId={container.id}
@@ -797,7 +797,7 @@ const ContainerHeader = (props) => {
         <div className={classes.modes}>
           <ToggleButtonGroup size="small" exclusive={true}>
             {modes.includes('graph') && (
-              <Tooltip title={t('Graph view')}>
+              <Tooltip title={t_i18n('Graph view')}>
                 <ToggleButton
                   component={Link}
                   to={`${link}/graph`}
@@ -811,7 +811,7 @@ const ContainerHeader = (props) => {
               </Tooltip>
             )}
             {modes.includes('content') && (
-              <Tooltip title={t('Content mapping view')}>
+              <Tooltip title={t_i18n('Content mapping view')}>
                 <ToggleButton
                   component={Link}
                   to={`${link}/content`}
@@ -825,7 +825,7 @@ const ContainerHeader = (props) => {
               </Tooltip>
             )}
             {modes.includes('timeline') && (
-              <Tooltip title={t('TimeLine view')}>
+              <Tooltip title={t_i18n('TimeLine view')}>
                 <ToggleButton
                   component={Link}
                   to={`${link}/timeline`}
@@ -839,7 +839,7 @@ const ContainerHeader = (props) => {
               </Tooltip>
             )}
             {modes.includes('correlation') && (
-              <Tooltip title={t('Correlation view')}>
+              <Tooltip title={t_i18n('Correlation view')}>
                 <ToggleButton
                   component={Link}
                   to={`${link}/correlation`}
@@ -855,7 +855,7 @@ const ContainerHeader = (props) => {
               </Tooltip>
             )}
             {modes.includes('matrix') && (
-              <Tooltip title={t('Tactics matrix view')}>
+              <Tooltip title={t_i18n('Tactics matrix view')}>
                 <ToggleButton
                   component={Link}
                   to={`${link}/matrix`}
@@ -912,7 +912,7 @@ const ContainerHeader = (props) => {
                   if (userIsKnowledgeEditor) {
                     return (
                       <>
-                        <Tooltip title={t('Open the suggestions')}>
+                        <Tooltip title={t_i18n('Open the suggestions')}>
                           <ToggleButton
                             onClick={() => setDisplaySuggestions(true)}
                             disabled={
@@ -953,7 +953,7 @@ const ContainerHeader = (props) => {
                           maxWidth="md"
                           fullWidth={true}
                         >
-                          <DialogTitle>{t('Suggestions')}</DialogTitle>
+                          <DialogTitle>{t_i18n('Suggestions')}</DialogTitle>
                           <DialogContent dividers={true}>
                             <List>
                               {suggestions.map((suggestion) => (
@@ -965,7 +965,7 @@ const ContainerHeader = (props) => {
                                   <ListItemText
                                     primary={
                                       <MarkdownDisplay
-                                        content={t(
+                                        content={t_i18n(
                                           `suggestion_${suggestion.type}`,
                                         )}
                                         remarkGfmPlugin={true}
@@ -1041,7 +1041,7 @@ const ContainerHeader = (props) => {
                               onClick={() => setDisplaySuggestions(false)}
                               color="primary"
                             >
-                              {t('Close')}
+                              {t_i18n('Close')}
                             </Button>
                           </DialogActions>
                         </Dialog>

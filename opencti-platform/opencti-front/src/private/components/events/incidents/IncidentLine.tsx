@@ -128,7 +128,7 @@ export const IncidentLine: FunctionComponent<IncidentLineComponentProps> = ({
   onToggleEntity,
 }) => {
   const classes = useStyles();
-  const { fd, t } = useFormatter();
+  const { fd, t_i18n } = useFormatter();
   const data = useFragment(IncidentLineFragment, node);
 
   return (
@@ -173,7 +173,7 @@ export const IncidentLine: FunctionComponent<IncidentLineComponentProps> = ({
                 classes={{ root: classes.chipInList }}
                 color="primary"
                 variant="outlined"
-                label={data.incident_type || t('Unknown')}
+                label={data.incident_type || t_i18n('Unknown')}
               />
             </div>
             <div
@@ -182,7 +182,7 @@ export const IncidentLine: FunctionComponent<IncidentLineComponentProps> = ({
             >
               <ItemSeverity
                 severity={data.severity}
-                label={t(data.severity || 'Unknown')}
+                label={t_i18n(data.severity || 'Unknown')}
                 variant="inList"
               />
             </div>

@@ -88,7 +88,7 @@ ExternalReferencesFieldProps
   dryrun,
 }) => {
   const classes = useStyles();
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
 
   const [externalReferenceCreation, setExternalReferenceCreation] = useState(false);
   const [externalReferences, setExternalReferences] = useState<
@@ -167,11 +167,11 @@ ExternalReferencesFieldProps
         multiple={true}
         textfieldprops={{
           variant: 'standard',
-          label: t('External references'),
+          label: t_i18n('External references'),
           helperText: helpertext,
           onFocus: searchExternalReferences,
         }}
-        noOptionsText={t('No available options')}
+        noOptionsText={t_i18n('No available options')}
         options={externalReferences}
         onInputChange={searchExternalReferences}
         openCreate={handleOpenExternalReferenceCreation}

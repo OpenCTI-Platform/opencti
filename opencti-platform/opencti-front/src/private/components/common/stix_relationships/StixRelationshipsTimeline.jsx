@@ -1261,7 +1261,7 @@ const StixRelationshipsTimeline = ({
   parameters = {},
 }) => {
   const classes = useStyles();
-  const { t, fldt } = useFormatter();
+  const { t_i18n, fldt } = useFormatter();
   const renderContent = () => {
     const selection = dataSelection[0];
     const dateAttribute = selection.date_attribute && selection.date_attribute.length > 0
@@ -1355,7 +1355,7 @@ const StixRelationshipsTimeline = ({
                     textAlign: 'center',
                   }}
                 >
-                  {t('No entities of this type has been found.')}
+                  {t_i18n('No entities of this type has been found.')}
                 </span>
               </div>
             );
@@ -1389,7 +1389,7 @@ const StixRelationshipsTimeline = ({
           textOverflow: 'ellipsis',
         }}
       >
-        {parameters.title ?? t('Relationships timeline')}
+        {parameters.title ?? t_i18n('Relationships timeline')}
       </Typography>
       {variant !== 'inLine' ? (
         <Paper classes={{ root: classes.paper }} variant="outlined">

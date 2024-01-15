@@ -41,7 +41,7 @@ interface OtpProps {
 }
 
 const Otp: FunctionComponent<OtpProps> = ({ secret, uri }) => {
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   const classes = useStyles();
   const theme = useTheme();
   const [otpQrImage, setOtpQrImage] = useState('');
@@ -57,7 +57,7 @@ const Otp: FunctionComponent<OtpProps> = ({ secret, uri }) => {
       onError: () => {
         setInputDisable(false);
         setCode('');
-        return setError(t('The code is not correct'));
+        return setError(t_i18n('The code is not correct'));
       },
       onCompleted: () => {
         window.location.reload();
@@ -99,7 +99,7 @@ const Otp: FunctionComponent<OtpProps> = ({ secret, uri }) => {
           variant="outlined"
           style={{ margin: '10px 0 10px 0', justifyContent: 'center' }}
         >
-          {t(
+          {t_i18n(
             'You need to activate a two-factor authentication. Please type the code generated in your application.',
           )}
         </Alert>

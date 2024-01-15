@@ -33,7 +33,7 @@ const StixCoreObjectKnowledgeBar = ({
   stixCoreObjectLink,
   availableSections,
 }) => {
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   const classes = useStyles();
   const location = useLocation();
   const { bannerSettings } = useAuth();
@@ -64,7 +64,7 @@ const StixCoreObjectKnowledgeBar = ({
           <ListItemIcon style={{ minWidth: 35 }}>
             <ItemIcon type="overview" />
           </ListItemIcon>
-          <ListItemText primary={t('Overview')} />
+          <ListItemText primary={t_i18n('Overview')} />
         </MenuItem>
         {isInAvailableSection(['sectors', 'organizations', 'individuals']) ? (
           <MenuList
@@ -72,7 +72,7 @@ const StixCoreObjectKnowledgeBar = ({
             component="nav"
             subheader={
               <ListSubheader style={{ height: 35 }}>
-                {t('Entities')}
+                {t_i18n('Entities')}
               </ListSubheader>
             }
           >
@@ -87,7 +87,7 @@ const StixCoreObjectKnowledgeBar = ({
                 <ListItemIcon style={{ minWidth: 35 }}>
                   <ItemIcon type="Sector" />
                 </ListItemIcon>
-                <ListItemText primary={t('Sectors')} />
+                <ListItemText primary={t_i18n('Sectors')} />
               </MenuItem>
             )}
             {includes('regions', availableSections) && (
@@ -101,7 +101,7 @@ const StixCoreObjectKnowledgeBar = ({
                 <ListItemIcon style={{ minWidth: 35 }}>
                   <ItemIcon type="Region" />
                 </ListItemIcon>
-                <ListItemText primary={t('Regions')} />
+                <ListItemText primary={t_i18n('Regions')} />
               </MenuItem>
             )}
             {includes('countries', availableSections) && (
@@ -117,7 +117,7 @@ const StixCoreObjectKnowledgeBar = ({
                 <ListItemIcon style={{ minWidth: 35 }}>
                   <ItemIcon type="Country" />
                 </ListItemIcon>
-                <ListItemText primary={t('Countries')} />
+                <ListItemText primary={t_i18n('Countries')} />
               </MenuItem>
             )}
             {includes('areas', availableSections) && (
@@ -131,7 +131,7 @@ const StixCoreObjectKnowledgeBar = ({
                 <ListItemIcon style={{ minWidth: 35 }}>
                   <ItemIcon type="Administrative-Area" />
                 </ListItemIcon>
-                <ListItemText primary={t('Areas')} />
+                <ListItemText primary={t_i18n('Areas')} />
               </MenuItem>
             )}
             {includes('cities', availableSections) && (
@@ -145,7 +145,7 @@ const StixCoreObjectKnowledgeBar = ({
                 <ListItemIcon style={{ minWidth: 35 }}>
                   <ItemIcon type="City" />
                 </ListItemIcon>
-                <ListItemText primary={t('Cities')} />
+                <ListItemText primary={t_i18n('Cities')} />
               </MenuItem>
             )}
             {includes('organizations', availableSections) && (
@@ -161,7 +161,7 @@ const StixCoreObjectKnowledgeBar = ({
                 <ListItemIcon style={{ minWidth: 35 }}>
                   <ItemIcon type="Organization" />
                 </ListItemIcon>
-                <ListItemText primary={t('Organizations')} />
+                <ListItemText primary={t_i18n('Organizations')} />
               </MenuItem>
             )}
             {includes('individuals', availableSections) && (
@@ -177,7 +177,7 @@ const StixCoreObjectKnowledgeBar = ({
                 <ListItemIcon style={{ minWidth: 35 }}>
                   <ItemIcon type="Individual" />
                 </ListItemIcon>
-                <ListItemText primary={t('Individuals')} />
+                <ListItemText primary={t_i18n('Individuals')} />
               </MenuItem>
             )}
             {includes('locations', availableSections) && (
@@ -193,7 +193,7 @@ const StixCoreObjectKnowledgeBar = ({
                 <ListItemIcon style={{ minWidth: 35 }}>
                   <ItemIcon type="location" />
                 </ListItemIcon>
-                <ListItemText primary={t('Locations')} />
+                <ListItemText primary={t_i18n('Locations')} />
               </MenuItem>
             )}
             {includes('used_tools', availableSections) && (
@@ -209,7 +209,7 @@ const StixCoreObjectKnowledgeBar = ({
                 <ListItemIcon style={{ minWidth: 35 }}>
                   <ItemIcon type="Tool" />
                 </ListItemIcon>
-                <ListItemText primary={t('Used tools')} />
+                <ListItemText primary={t_i18n('Used tools')} />
               </MenuItem>
             )}
           </MenuList>
@@ -226,7 +226,7 @@ const StixCoreObjectKnowledgeBar = ({
                 <ListItemIcon style={{ minWidth: 35 }}>
                   <ItemIcon type="Sector" />
                 </ListItemIcon>
-                <ListItemText primary={t('Sectors')} />
+                <ListItemText primary={t_i18n('Sectors')} />
               </MenuItem>
             )}
             {includes('regions', availableSections) && (
@@ -240,7 +240,7 @@ const StixCoreObjectKnowledgeBar = ({
                 <ListItemIcon style={{ minWidth: 35 }}>
                   <ItemIcon type="Region" />
                 </ListItemIcon>
-                <ListItemText primary={t('Regions')} />
+                <ListItemText primary={t_i18n('Regions')} />
               </MenuItem>
             )}
             {includes('countries', availableSections) && (
@@ -256,7 +256,7 @@ const StixCoreObjectKnowledgeBar = ({
                 <ListItemIcon style={{ minWidth: 35 }}>
                   <ItemIcon type="Country" />
                 </ListItemIcon>
-                <ListItemText primary={t('Countries')} />
+                <ListItemText primary={t_i18n('Countries')} />
               </MenuItem>
             )}
             {includes('areas', availableSections) && (
@@ -270,7 +270,7 @@ const StixCoreObjectKnowledgeBar = ({
                 <ListItemIcon style={{ minWidth: 35 }}>
                   <ItemIcon type="Administrative-Area" />
                 </ListItemIcon>
-                <ListItemText primary={t('Areas')} />
+                <ListItemText primary={t_i18n('Areas')} />
               </MenuItem>
             )}
             {includes('cities', availableSections) && (
@@ -284,7 +284,7 @@ const StixCoreObjectKnowledgeBar = ({
                 <ListItemIcon style={{ minWidth: 35 }}>
                   <ItemIcon type="City" />
                 </ListItemIcon>
-                <ListItemText primary={t('Cities')} />
+                <ListItemText primary={t_i18n('Cities')} />
               </MenuItem>
             )}
             {includes('locations', availableSections) && (
@@ -300,7 +300,7 @@ const StixCoreObjectKnowledgeBar = ({
                 <ListItemIcon style={{ minWidth: 35 }}>
                   <ItemIcon type="Location" />
                 </ListItemIcon>
-                <ListItemText primary={t('Locations')} />
+                <ListItemText primary={t_i18n('Locations')} />
               </MenuItem>
             )}
             {includes('organizations', availableSections) && (
@@ -316,7 +316,7 @@ const StixCoreObjectKnowledgeBar = ({
                 <ListItemIcon style={{ minWidth: 35 }}>
                   <ItemIcon type="Identity" />
                 </ListItemIcon>
-                <ListItemText primary={t('Organizations')} />
+                <ListItemText primary={t_i18n('Organizations')} />
               </MenuItem>
             )}
             {includes('individuals', availableSections) && (
@@ -332,7 +332,7 @@ const StixCoreObjectKnowledgeBar = ({
                 <ListItemIcon style={{ minWidth: 35 }}>
                   <ItemIcon type="Individual" />
                 </ListItemIcon>
-                <ListItemText primary={t('Individuals')} />
+                <ListItemText primary={t_i18n('Individuals')} />
               </MenuItem>
             )}
             {includes('used_tools', availableSections) && (
@@ -348,7 +348,7 @@ const StixCoreObjectKnowledgeBar = ({
                 <ListItemIcon style={{ minWidth: 35 }}>
                   <ItemIcon type="Tool" />
                 </ListItemIcon>
-                <ListItemText primary={t('Used tools')} />
+                <ListItemText primary={t_i18n('Used tools')} />
               </MenuItem>
             )}
           </div>
@@ -365,7 +365,7 @@ const StixCoreObjectKnowledgeBar = ({
           style={{ paddingBottom: 0 }}
           component="nav"
           subheader={
-            <ListSubheader style={{ height: 35 }}>{t('Threats')}</ListSubheader>
+            <ListSubheader style={{ height: 35 }}>{t_i18n('Threats')}</ListSubheader>
           }
         >
           {includes('threats', availableSections) && (
@@ -379,7 +379,7 @@ const StixCoreObjectKnowledgeBar = ({
               <ListItemIcon style={{ minWidth: 35 }}>
                 <ItemIcon type="threats" />
               </ListItemIcon>
-              <ListItemText primary={t('All threats')} />
+              <ListItemText primary={t_i18n('All threats')} />
             </MenuItem>
           )}
           {includes('attribution', availableSections) && (
@@ -395,7 +395,7 @@ const StixCoreObjectKnowledgeBar = ({
               <ListItemIcon style={{ minWidth: 35 }}>
                 <ItemIcon type="attribution" />
               </ListItemIcon>
-              <ListItemText primary={t('Attribution')} />
+              <ListItemText primary={t_i18n('Attribution')} />
             </MenuItem>
           )}
           {includes('victimology', availableSections) && (
@@ -411,7 +411,7 @@ const StixCoreObjectKnowledgeBar = ({
               <ListItemIcon style={{ minWidth: 35 }}>
                 <ItemIcon type="victimology" />
               </ListItemIcon>
-              <ListItemText primary={t('Victimology')} />
+              <ListItemText primary={t_i18n('Victimology')} />
             </MenuItem>
           )}
           {includes('threat_actors', availableSections) && (
@@ -427,7 +427,7 @@ const StixCoreObjectKnowledgeBar = ({
               <ListItemIcon style={{ minWidth: 35 }}>
                 <ItemIcon type="Threat-Actor-Individual" />
               </ListItemIcon>
-              <ListItemText primary={t('Threat actors')} />
+              <ListItemText primary={t_i18n('Threat actors')} />
             </MenuItem>
           )}
           {includes('intrusion_sets', availableSections) && (
@@ -443,7 +443,7 @@ const StixCoreObjectKnowledgeBar = ({
               <ListItemIcon style={{ minWidth: 35 }}>
                 <ItemIcon type="Intrusion-Set" />
               </ListItemIcon>
-              <ListItemText primary={t('Intrusion sets')} />
+              <ListItemText primary={t_i18n('Intrusion sets')} />
             </MenuItem>
           )}
           {includes('campaigns', availableSections) && (
@@ -457,7 +457,7 @@ const StixCoreObjectKnowledgeBar = ({
               <ListItemIcon style={{ minWidth: 35 }}>
                 <ItemIcon type="Campaign" />
               </ListItemIcon>
-              <ListItemText primary={t('Campaigns')} />
+              <ListItemText primary={t_i18n('Campaigns')} />
             </MenuItem>
           )}
         </MenuList>
@@ -475,7 +475,7 @@ const StixCoreObjectKnowledgeBar = ({
           style={{ paddingBottom: 0 }}
           component="nav"
           subheader={
-            <ListSubheader style={{ height: 35 }}>{t('Arsenal')}</ListSubheader>
+            <ListSubheader style={{ height: 35 }}>{t_i18n('Arsenal')}</ListSubheader>
           }
         >
           {includes('variants', availableSections) && (
@@ -489,7 +489,7 @@ const StixCoreObjectKnowledgeBar = ({
               <ListItemIcon style={{ minWidth: 35 }}>
                 <ItemIcon type="variant" />
               </ListItemIcon>
-              <ListItemText primary={t('Variants')} />
+              <ListItemText primary={t_i18n('Variants')} />
             </MenuItem>
           )}
           {includes('malwares', availableSections) && (
@@ -503,7 +503,7 @@ const StixCoreObjectKnowledgeBar = ({
               <ListItemIcon style={{ minWidth: 35 }}>
                 <ItemIcon type="Malware" />
               </ListItemIcon>
-              <ListItemText primary={t('Malwares')} />
+              <ListItemText primary={t_i18n('Malwares')} />
             </MenuItem>
           )}
           {includes('channels', availableSections) && (
@@ -517,7 +517,7 @@ const StixCoreObjectKnowledgeBar = ({
               <ListItemIcon style={{ minWidth: 35 }}>
                 <ItemIcon type="Channel" />
               </ListItemIcon>
-              <ListItemText primary={t('Channels')} />
+              <ListItemText primary={t_i18n('Channels')} />
             </MenuItem>
           )}
           {includes('tools', availableSections) && (
@@ -531,7 +531,7 @@ const StixCoreObjectKnowledgeBar = ({
               <ListItemIcon style={{ minWidth: 35 }}>
                 <ItemIcon type="tool" />
               </ListItemIcon>
-              <ListItemText primary={t('Tools')} />
+              <ListItemText primary={t_i18n('Tools')} />
             </MenuItem>
           )}
           {includes('vulnerabilities', availableSections) && (
@@ -547,7 +547,7 @@ const StixCoreObjectKnowledgeBar = ({
               <ListItemIcon style={{ minWidth: 35 }}>
                 <ItemIcon type="Vulnerability" />
               </ListItemIcon>
-              <ListItemText primary={t('Vulnerabilities')} />
+              <ListItemText primary={t_i18n('Vulnerabilities')} />
             </MenuItem>
           )}
         </MenuList>
@@ -558,7 +558,7 @@ const StixCoreObjectKnowledgeBar = ({
           component="nav"
           subheader={
             <ListSubheader style={{ height: 35 }}>
-              {t('Techniques')}
+              {t_i18n('Techniques')}
             </ListSubheader>
           }
         >
@@ -575,7 +575,7 @@ const StixCoreObjectKnowledgeBar = ({
               <ListItemIcon style={{ minWidth: 35 }}>
                 <ItemIcon type="Attack-Pattern" />
               </ListItemIcon>
-              <ListItemText primary={t('Attack patterns')} />
+              <ListItemText primary={t_i18n('Attack patterns')} />
             </MenuItem>
           )}
           {includes('narratives', availableSections) && (
@@ -591,7 +591,7 @@ const StixCoreObjectKnowledgeBar = ({
               <ListItemIcon style={{ minWidth: 35 }}>
                 <ItemIcon type="Narrative" />
               </ListItemIcon>
-              <ListItemText primary={t('Narratives')} />
+              <ListItemText primary={t_i18n('Narratives')} />
             </MenuItem>
           )}
         </MenuList>
@@ -607,7 +607,7 @@ const StixCoreObjectKnowledgeBar = ({
           component="nav"
           subheader={
             <ListSubheader style={{ height: 35 }}>
-              {t('Observations')}
+              {t_i18n('Observations')}
             </ListSubheader>
           }
         >
@@ -624,7 +624,7 @@ const StixCoreObjectKnowledgeBar = ({
               <ListItemIcon style={{ minWidth: 35 }}>
                 <ItemIcon type="Indicator" />
               </ListItemIcon>
-              <ListItemText primary={t('Indicators')} />
+              <ListItemText primary={t_i18n('Indicators')} />
             </MenuItem>
           )}
           {includes('observables', availableSections) && (
@@ -640,7 +640,7 @@ const StixCoreObjectKnowledgeBar = ({
               <ListItemIcon style={{ minWidth: 35 }}>
                 <ItemIcon type="Stix-Cyber-Observable" />
               </ListItemIcon>
-              <ListItemText primary={t('Observables')} />
+              <ListItemText primary={t_i18n('Observables')} />
             </MenuItem>
           )}
           {includes('infrastructures', availableSections) && (
@@ -656,7 +656,7 @@ const StixCoreObjectKnowledgeBar = ({
               <ListItemIcon style={{ minWidth: 35 }}>
                 <ItemIcon type="Infrastructure" />
               </ListItemIcon>
-              <ListItemText primary={t('Infrastructures')} />
+              <ListItemText primary={t_i18n('Infrastructures')} />
             </MenuItem>
           )}
         </MenuList>
@@ -666,7 +666,7 @@ const StixCoreObjectKnowledgeBar = ({
           style={{ paddingBottom: 0 }}
           component="nav"
           subheader={
-            <ListSubheader style={{ height: 35 }}>{t('Events')}</ListSubheader>
+            <ListSubheader style={{ height: 35 }}>{t_i18n('Events')}</ListSubheader>
           }
         >
           {includes('incidents', availableSections) && (
@@ -680,7 +680,7 @@ const StixCoreObjectKnowledgeBar = ({
               <ListItemIcon style={{ minWidth: 35 }}>
                 <ItemIcon type="Incident" />
               </ListItemIcon>
-              <ListItemText primary={t('Incidents')} />
+              <ListItemText primary={t_i18n('Incidents')} />
             </MenuItem>
           )}
           {includes('observed_data', availableSections) && (
@@ -696,7 +696,7 @@ const StixCoreObjectKnowledgeBar = ({
               <ListItemIcon style={{ minWidth: 35 }}>
                 <ItemIcon type="Observed-Data" />
               </ListItemIcon>
-              <ListItemText primary={t('Observed data')} />
+              <ListItemText primary={t_i18n('Observed data')} />
             </MenuItem>
           )}
           {includes('sightings', availableSections) && (
@@ -710,7 +710,7 @@ const StixCoreObjectKnowledgeBar = ({
               <ListItemIcon style={{ minWidth: 35 }}>
                 <ItemIcon type="sighting" />
               </ListItemIcon>
-              <ListItemText primary={t('Sightings')} />
+              <ListItemText primary={t_i18n('Sightings')} />
             </MenuItem>
           )}
         </MenuList>
@@ -720,7 +720,7 @@ const StixCoreObjectKnowledgeBar = ({
         sx={{ marginBottom: bannerSettings.bannerHeight }}
         component="nav"
         subheader={
-          <ListSubheader style={{ height: 35 }}>{t('Other')}</ListSubheader>
+          <ListSubheader style={{ height: 35 }}>{t_i18n('Other')}</ListSubheader>
         }
       >
         <MenuItem
@@ -733,7 +733,7 @@ const StixCoreObjectKnowledgeBar = ({
           <ListItemIcon style={{ minWidth: 35 }}>
             <ItemIcon type="related" />
           </ListItemIcon>
-          <ListItemText primary={t('Related entities')} />
+          <ListItemText primary={t_i18n('Related entities')} />
         </MenuItem>
       </MenuList>
     </Drawer>

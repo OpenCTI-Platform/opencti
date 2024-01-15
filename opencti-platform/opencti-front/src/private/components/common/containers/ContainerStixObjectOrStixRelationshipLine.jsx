@@ -57,7 +57,7 @@ const ContainerStixObjectOrStixRelationshipLineComponent = ({
   paginationOptions,
 }) => {
   const classes = useStyles();
-  const { t, fd } = useFormatter();
+  const { t_i18n, fd } = useFormatter();
   const restrictedWithFrom = node.from === null;
   // eslint-disable-next-line no-nested-ternary
   const link = node.relationship_type
@@ -73,9 +73,9 @@ const ContainerStixObjectOrStixRelationshipLineComponent = ({
   // eslint-disable-next-line no-nested-ternary
   const entityTypeLabel = node.relationship_type
     ? !restrictedWithFrom
-      ? t(`relationship_${node.entity_type}`)
-      : t('Restricted')
-    : t(`entity_${node.entity_type}`);
+      ? t_i18n(`relationship_${node.entity_type}`)
+      : t_i18n('Restricted')
+    : t_i18n(`entity_${node.entity_type}`);
   return (
     <ListItem
       classes={{ root: classes.item }}

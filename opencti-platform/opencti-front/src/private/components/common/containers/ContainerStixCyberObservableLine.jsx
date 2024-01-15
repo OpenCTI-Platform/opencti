@@ -86,7 +86,7 @@ const ContainerStixCyberObservableLineComponent = (props) => {
     setSelectedElements,
   } = props;
   const classes = useStyles();
-  const { t, fd, n } = useFormatter();
+  const { t_i18n, fd, n } = useFormatter();
   const refTypes = types ?? ['manual'];
   const isThroughInference = refTypes.includes('inferred');
   const isOnlyThroughInference = isThroughInference && !refTypes.includes('manual');
@@ -140,7 +140,7 @@ const ContainerStixCyberObservableLineComponent = (props) => {
                   color: itemColor(node.entity_type),
                   border: `1px solid ${itemColor(node.entity_type)}`,
                 }}
-                label={t(`entity_${node.entity_type}`)}
+                label={t_i18n(`entity_${node.entity_type}`)}
               />
             </div>
             <div
@@ -209,7 +209,7 @@ const ContainerStixCyberObservableLineComponent = (props) => {
       />
       <ListItemSecondaryAction>
         {isOnlyThroughInference ? (
-          <Tooltip title={t('Inferred knowledge')}>
+          <Tooltip title={t_i18n('Inferred knowledge')}>
             <AutoFix fontSize="small" style={{ marginLeft: -30 }} />
           </Tooltip>
         ) : (

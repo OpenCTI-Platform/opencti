@@ -35,7 +35,7 @@ const SettingsOrganizationUsers: FunctionComponent<
 MembersListContainerProps
 > = ({ organization }) => {
   const classes = useStyles();
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   const LOCAL_STORAGE_KEY = `organization-${organization.id}-users`;
   const { viewStorage, helpers, paginationOptions } = usePaginationLocalStorage<SettingsOrganizationUsersLinesQuery$variables>(
     LOCAL_STORAGE_KEY,
@@ -100,7 +100,7 @@ MembersListContainerProps
   return (
     <Grid item={true} xs={12} style={{ marginTop: 40 }}>
       <Typography variant="h4" gutterBottom={true} style={{ float: 'left' }}>
-        {t('Users')}
+        {t_i18n('Users')}
       </Typography>
       <SettingsOrganizationUserCreation
         paginationOptions={paginationOptions}

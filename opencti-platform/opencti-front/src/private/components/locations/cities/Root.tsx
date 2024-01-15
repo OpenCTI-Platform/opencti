@@ -72,7 +72,7 @@ const RootCityComponent = ({ queryRef, cityId, link }) => {
   );
   useSubscription(subConfig);
   const location = useLocation();
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   const data = usePreloadedQuery(cityQuery, queryRef);
   const { city, connectorsForImport, connectorsForExport } = data;
   return (
@@ -114,37 +114,37 @@ const RootCityComponent = ({ queryRef, cityId, link }) => {
                 component={Link}
                 to={`/dashboard/locations/cities/${city.id}`}
                 value={`/dashboard/locations/cities/${city.id}`}
-                label={t('Overview')}
+                label={t_i18n('Overview')}
               />
               <Tab
                 component={Link}
                 to={`/dashboard/locations/cities/${city.id}/knowledge`}
                 value={`/dashboard/locations/cities/${city.id}/knowledge`}
-                label={t('Knowledge')}
+                label={t_i18n('Knowledge')}
               />
               <Tab
                 component={Link}
                 to={`/dashboard/locations/cities/${city.id}/analyses`}
                 value={`/dashboard/locations/cities/${city.id}/analyses`}
-                label={t('Analyses')}
+                label={t_i18n('Analyses')}
               />
               <Tab
                 component={Link}
                 to={`/dashboard/locations/cities/${city.id}/sightings`}
                 value={`/dashboard/locations/cities/${city.id}/sightings`}
-                label={t('Sightings')}
+                label={t_i18n('Sightings')}
               />
               <Tab
                 component={Link}
                 to={`/dashboard/locations/cities/${city.id}/files`}
                 value={`/dashboard/locations/cities/${city.id}/files`}
-                label={t('Data')}
+                label={t_i18n('Data')}
               />
               <Tab
                 component={Link}
                 to={`/dashboard/locations/cities/${city.id}/history`}
                 value={`/dashboard/locations/cities/${city.id}/history`}
-                label={t('History')}
+                label={t_i18n('History')}
               />
             </Tabs>
           </Box>

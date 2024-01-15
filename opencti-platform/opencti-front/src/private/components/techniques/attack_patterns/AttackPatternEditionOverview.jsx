@@ -82,10 +82,10 @@ const attackPatternMutationRelationDelete = graphql`
 
 const AttackPatternEditionOverviewComponent = (props) => {
   const { attackPattern, enableReferences, context, handleClose } = props;
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
 
   const basicShape = {
-    name: Yup.string().min(2).required(t('This field is required')),
+    name: Yup.string().min(2).required(t_i18n('This field is required')),
     x_mitre_id: Yup.string().nullable(),
     description: Yup.string().nullable(),
     references: Yup.array(),
@@ -161,7 +161,7 @@ const AttackPatternEditionOverviewComponent = (props) => {
     R.assoc('createdBy', convertCreatedBy(attackPattern)),
     R.assoc('killChainPhases', convertKillChainPhases(attackPattern)),
     R.assoc('objectMarking', convertMarkings(attackPattern)),
-    R.assoc('x_opencti_workflow_id', convertStatus(t, attackPattern)),
+    R.assoc('x_opencti_workflow_id', convertStatus(t_i18n, attackPattern)),
     R.assoc('references', []),
     R.pick([
       'name',
@@ -192,7 +192,7 @@ const AttackPatternEditionOverviewComponent = (props) => {
           <Field
             component={TextField}
             name="name"
-            label={t('Name')}
+            label={t_i18n('Name')}
             fullWidth={true}
             onFocus={editor.changeFocus}
             onSubmit={handleSubmitField}
@@ -203,7 +203,7 @@ const AttackPatternEditionOverviewComponent = (props) => {
           <Field
             component={TextField}
             name="x_mitre_id"
-            label={t('External ID')}
+            label={t_i18n('External ID')}
             fullWidth={true}
             style={{ marginTop: 20 }}
             onFocus={editor.changeFocus}
@@ -215,7 +215,7 @@ const AttackPatternEditionOverviewComponent = (props) => {
           <Field
             component={MarkdownField}
             name="description"
-            label={t('Description')}
+            label={t_i18n('Description')}
             fullWidth={true}
             multiline={true}
             rows="4"

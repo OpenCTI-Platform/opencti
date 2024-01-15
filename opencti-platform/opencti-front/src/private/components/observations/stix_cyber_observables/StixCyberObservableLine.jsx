@@ -62,7 +62,7 @@ const StixCyberObservableLineComponent = ({
   index,
 }) => {
   const classes = useStyles();
-  const { t, nsdt } = useFormatter();
+  const { t_i18n, nsdt } = useFormatter();
   return (
     <ListItem
       classes={{ root: classes.item }}
@@ -107,7 +107,7 @@ const StixCyberObservableLineComponent = ({
                   color: itemColor(node.entity_type),
                   border: `1px solid ${itemColor(node.entity_type)}`,
                 }}
-                label={t(`entity_${node.entity_type}`)}
+                label={t_i18n(`entity_${node.entity_type}`)}
               />
             </div>
             <div

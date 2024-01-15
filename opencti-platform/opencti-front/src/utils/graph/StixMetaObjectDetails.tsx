@@ -82,7 +82,7 @@ const StixMetaObjectDetailsComponent: FunctionComponent<
 StixMetaObjectDetailsComponentProps
 > = ({ queryRef }) => {
   const classes = useStyles();
-  const { t, fldt } = useFormatter();
+  const { t_i18n, fldt } = useFormatter();
   const entity = usePreloadedQuery<StixMetaObjectDetailsQuery>(
     stixMetaObjectDetailsQuery,
     queryRef,
@@ -94,7 +94,7 @@ StixMetaObjectDetailsComponentProps
   return (
     <div>
       <Typography variant="h3" gutterBottom={true} className={classes.label}>
-        {t('Value')}
+        {t_i18n('Value')}
       </Typography>
       {stixMetaObject.entity_type === 'Marking-Definition' ? (
         <Tooltip title={defaultValue(stixMetaObject, true)}>
@@ -109,7 +109,7 @@ StixMetaObjectDetailsComponentProps
         </Tooltip>
       )}
       <Typography variant="h3" gutterBottom={true} className={classes.label}>
-        {t('Type')}
+        {t_i18n('Type')}
       </Typography>
       <Chip
         classes={{ root: classes.chipInList }}
@@ -121,14 +121,14 @@ StixMetaObjectDetailsComponentProps
           color: itemColor(stixMetaObject.entity_type),
           border: `1px solid ${itemColor(stixMetaObject.entity_type)}`,
         }}
-        label={t(`entity_${stixMetaObject.entity_type}`)}
+        label={t_i18n(`entity_${stixMetaObject.entity_type}`)}
       />
       <Typography variant="h3" gutterBottom={true} className={classes.label}>
-        {t('Creation date')}
+        {t_i18n('Creation date')}
       </Typography>
       {fldt(stixMetaObject.created_at)}
       <Typography variant="h3" gutterBottom={true} className={classes.label}>
-        {t('Creators')}
+        {t_i18n('Creators')}
       </Typography>
       <ItemCreators creators={stixMetaObject.creators ?? []} />
     </div>

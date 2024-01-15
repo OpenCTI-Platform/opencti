@@ -44,7 +44,7 @@ const CsvMapperRepresentationAttributeForm: FunctionComponent<
 CsvMapperRepresentationAttributeFormProps
 > = ({ indexRepresentation, attribute, label, handleErrors }) => {
   const classes = useStyles();
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
 
   const formikContext = useFormikContext<CsvMapper>();
   const selectedAttributes = formikContext.values.representations[indexRepresentation].attributes;
@@ -127,7 +127,7 @@ CsvMapperRepresentationAttributeFormProps
           renderInput={(params) => (
             <MuiTextField
               {...params}
-              label={t('Column index')}
+              label={t_i18n('Column index')}
               variant="outlined"
               size="small"
             />

@@ -59,7 +59,7 @@ const ToolBar: FunctionComponent<{
   handleClearSelectedElements,
 }) => {
   const classes = useStyles();
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   const entitySettings = useEntitySettings();
   const { bannerSettings: { bannerHeightNumber } } = useAuth();
   let entitySettingsSelected;
@@ -76,7 +76,7 @@ const ToolBar: FunctionComponent<{
         return (
           node.target_type.toLowerCase().indexOf(keyword.toLowerCase())
             !== -1
-          || t(`entity_${node.target_type}`)
+          || t_i18n(`entity_${node.target_type}`)
             .toLowerCase()
             .indexOf(keyword.toLowerCase()) !== -1
         );
@@ -112,9 +112,9 @@ const ToolBar: FunctionComponent<{
   const retrieveNotAvailableSetting = (currentKey: keyof EntitySetting) => entitySettingsSelectedFiltered.filter(({ [currentKey]: v }) => v === null);
   const handleOpenFilesRef = () => {
     handleOpen();
-    setTitle(t('Automatic references at file upload'));
+    setTitle(t_i18n('Automatic references at file upload'));
     setDescription(
-      t(
+      t_i18n(
         'This configuration enables an entity to automatically construct an external reference from the uploaded file.',
       ),
     );
@@ -125,9 +125,9 @@ const ToolBar: FunctionComponent<{
   };
   const handleOpenHidden = () => {
     handleOpen();
-    setTitle(t('Hidden in interface'));
+    setTitle(t_i18n('Hidden in interface'));
     setDescription(
-      t(
+      t_i18n(
         'This configuration hides a specific entity type across the entire platform.',
       ),
     );
@@ -136,9 +136,9 @@ const ToolBar: FunctionComponent<{
   };
   const handleOpenEnforceRef = () => {
     handleOpen();
-    setTitle(t('Enforce references'));
+    setTitle(t_i18n('Enforce references'));
     setDescription(
-      t(
+      t_i18n(
         'This configuration enables the requirement of a reference message on an entity creation or modification.',
       ),
     );
@@ -183,7 +183,7 @@ const ToolBar: FunctionComponent<{
           <span className={classes.titleNumber}>
             {numberOfSelectedElements}
           </span>{' '}
-          {t('selected')}{' '}
+          {t_i18n('selected')}{' '}
           <IconButton
             aria-label="clear"
             disabled={numberOfSelectedElements === 0}
@@ -193,7 +193,7 @@ const ToolBar: FunctionComponent<{
             <ClearOutlined fontSize="small" />
           </IconButton>
         </Typography>
-        <Tooltip title={t('Automatic references at file upload')}>
+        <Tooltip title={t_i18n('Automatic references at file upload')}>
           <span>
             <IconButton
               aria-label="files-ref"
@@ -211,7 +211,7 @@ const ToolBar: FunctionComponent<{
             </IconButton>
           </span>
         </Tooltip>
-        <Tooltip title={t('Hidden in interface')}>
+        <Tooltip title={t_i18n('Hidden in interface')}>
           <span>
             <IconButton
               aria-label="hidden-entity"
@@ -228,7 +228,7 @@ const ToolBar: FunctionComponent<{
             </IconButton>
           </span>
         </Tooltip>
-        <Tooltip title={t('Enforce references')}>
+        <Tooltip title={t_i18n('Enforce references')}>
           <span>
             <IconButton
               aria-label="enforce-ref"
@@ -259,12 +259,12 @@ const ToolBar: FunctionComponent<{
             {notAvailableSetting.length > 0 && (
               <div style={{ marginTop: 10 }}>
                 <strong>
-                  {t(
+                  {t_i18n(
                     'Be careful, this setting is not available for the following selected entity types: ',
                   )}
                   <span>
                     {notAvailableSetting
-                      .map((node) => t(`entity_${node.target_type}`))
+                      .map((node) => t_i18n(`entity_${node.target_type}`))
                       .join(', ')}
                   </span>
                 </strong>
@@ -276,14 +276,14 @@ const ToolBar: FunctionComponent<{
               control={
                 <Switch checked={value} onChange={() => setValue(!value)} />
               }
-              label={t('Enable this feature')}
+              label={t_i18n('Enable this feature')}
             />
           </FormGroup>
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleClose}>{t('Cancel')}</Button>
+          <Button onClick={handleClose}>{t_i18n('Cancel')}</Button>
           <Button variant="text" color="secondary" onClick={handleAction}>
-            {t('Update')}
+            {t_i18n('Update')}
           </Button>
         </DialogActions>
       </Dialog>

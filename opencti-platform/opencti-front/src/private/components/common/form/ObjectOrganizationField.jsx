@@ -62,7 +62,7 @@ const ObjectOrganizationField = (props) => {
   }));
   const [organizations, setOrganizations] = useState(defaultStateOrganizations);
   const classes = useStyles();
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
 
   const searchOrganizations = (event) => {
     fetchQuery(searchObjectOrganizationFieldQuery, {
@@ -89,11 +89,11 @@ const ObjectOrganizationField = (props) => {
         style={style}
         textfieldprops={{
           variant: 'standard',
-          label: label ? t(label) : '',
+          label: label ? t_i18n(label) : '',
           helperText: helpertext,
           onFocus: searchOrganizations,
         }}
-        noOptionsText={t('No available options')}
+        noOptionsText={t_i18n('No available options')}
         options={organizations}
         onInputChange={searchOrganizations}
         onChange={typeof onChange === 'function' ? onChange : null}
@@ -117,11 +117,11 @@ const ObjectOrganizationField = (props) => {
       disabled={disabled}
       textfieldprops={{
         variant: 'standard',
-        label: t(label) ?? '',
+        label: t_i18n(label) ?? '',
         helperText: helpertext,
         onFocus: searchOrganizations,
       }}
-      noOptionsText={t('No available options')}
+      noOptionsText={t_i18n('No available options')}
       options={organizations}
       onInputChange={searchOrganizations}
       onChange={typeof onChange === 'function' ? onChange : null}
@@ -146,7 +146,7 @@ const ObjectOrganizationField = (props) => {
       style={style}
       classes={{ message: classes.message }}
     >
-      <AlertTitle>{t('Organizations restriction')}</AlertTitle>
+      <AlertTitle>{t_i18n('Organizations restriction')}</AlertTitle>
       <div style={{ marginTop: 10 }}>{FieldElement}</div>
     </Alert>
   );

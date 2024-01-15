@@ -72,7 +72,7 @@ const FileIndexingComponent: FunctionComponent<FileIndexingComponentProps> = ({
   refetch,
 }) => {
   const isEnterpriseEdition = useEnterpriseEdition();
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   const { platformModuleHelpers } = useAuth();
   const isModuleWarning = platformModuleHelpers.isModuleWarning(FILE_INDEX_MANAGER);
   const { managerConfigurationByManagerId } = usePreloadedQuery<FileIndexingConfigurationQuery>(
@@ -99,10 +99,10 @@ const FileIndexingComponent: FunctionComponent<FileIndexingComponentProps> = ({
               variant="outlined"
               style={{ position: 'relative' }}
             >
-              {t(
+              {t_i18n(
                 'It seems that your OpenCTI stack is not supporting file indexing. Please ensure you meet',
               )}{' '}
-              <strong>{t('one of the following requirements:')}</strong>
+              <strong>{t_i18n('one of the following requirements:')}</strong>
               <ul>
                 <li>Elasticsearch &ge; 8.4</li>
                 <li>

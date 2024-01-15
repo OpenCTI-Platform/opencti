@@ -35,7 +35,7 @@ const FormAuthorizedMembers = ({
   owner,
   canDeactivate,
 }: FormAuthorizedMembersProps) => {
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   return (
     <Formik<FormAuthorizedMembersInputs>
       enableReinitialize
@@ -57,7 +57,7 @@ const FormAuthorizedMembers = ({
             handleClose();
           }}
         >
-          <DialogTitle>{t('Manage access restriction')}</DialogTitle>
+          <DialogTitle>{t_i18n('Manage access restriction')}</DialogTitle>
           <DialogContent>
             <Form>
               <Field
@@ -76,14 +76,14 @@ const FormAuthorizedMembers = ({
                 handleClose();
               }}
             >
-              {t('Cancel')}
+              {t_i18n('Cancel')}
             </Button>
             <Button
               color="secondary"
               onClick={submitForm}
               disabled={isSubmitting || !dirty}
             >
-              {t('Save')}
+              {t_i18n('Save')}
             </Button>
           </DialogActions>
         </Dialog>

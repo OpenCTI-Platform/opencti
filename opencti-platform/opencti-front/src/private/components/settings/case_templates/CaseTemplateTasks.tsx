@@ -64,7 +64,7 @@ const CaseHeaderMenu: FunctionComponent<CaseHeaderMenuProps> = ({
   paginationOptions,
 }) => {
   const classes = useStyles();
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   const navigate = useNavigate();
   const [anchorEl, setAnchorEl] = useState<Element | null>(null);
   const [openEdition, setOpenEdition] = useState(false);
@@ -142,8 +142,8 @@ const CaseHeaderMenu: FunctionComponent<CaseHeaderMenuProps> = ({
           open={Boolean(anchorEl)}
           onClose={handleMenuClose}
         >
-          <MenuItem onClick={onUpdateClick}>{t('Update')}</MenuItem>
-          <MenuItem onClick={handleOpenDelete}>{t('Delete')}</MenuItem>
+          <MenuItem onClick={onUpdateClick}>{t_i18n('Update')}</MenuItem>
+          <MenuItem onClick={handleOpenDelete}>{t_i18n('Delete')}</MenuItem>
         </Menu>
       </div>
       <Dialog
@@ -155,13 +155,13 @@ const CaseHeaderMenu: FunctionComponent<CaseHeaderMenuProps> = ({
       >
         <DialogContent>
           <DialogContentText>
-            {t('Do you want to delete this case template?')}
+            {t_i18n('Do you want to delete this case template?')}
           </DialogContentText>
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleCloseDelete}>{t('Cancel')}</Button>
+          <Button onClick={handleCloseDelete}>{t_i18n('Cancel')}</Button>
           <Button color="secondary" onClick={submitDelete}>
-            {t('Delete')}
+            {t_i18n('Delete')}
           </Button>
         </DialogActions>
       </Dialog>

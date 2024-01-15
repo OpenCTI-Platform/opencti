@@ -61,7 +61,7 @@ const taxiiCollectionValidation = (requiredSentence: string) => Yup.object().sha
 });
 
 const TaxiiCollectionEditionContainer: FunctionComponent<{ taxiiCollection: TaxiiCollectionEdition_taxiiCollection$data }> = ({ taxiiCollection }) => {
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   const classes = useStyles();
   const initialValues = {
     name: taxiiCollection.name,
@@ -71,7 +71,7 @@ const TaxiiCollectionEditionContainer: FunctionComponent<{ taxiiCollection: Taxi
   };
   const [filters, helpers] = useFiltersState(deserializeFilterGroupForFrontend(taxiiCollection.filters) ?? undefined);
   const handleSubmitField = (name: string, value: Option[] | string) => {
-    taxiiCollectionValidation(t('This field is required'))
+    taxiiCollectionValidation(t_i18n('This field is required'))
       .validateAt(name, { [name]: value })
       .then(() => {
         commitMutation({
@@ -91,7 +91,7 @@ const TaxiiCollectionEditionContainer: FunctionComponent<{ taxiiCollection: Taxi
       .catch(() => false);
   };
 
-  const handleSubmitFieldOptions = (name: string, value: Option[]) => taxiiCollectionValidation(t('This field is required'))
+  const handleSubmitFieldOptions = (name: string, value: Option[]) => taxiiCollectionValidation(t_i18n('This field is required'))
     .validateAt(name, { [name]: value })
     .then(() => {
       commitMutation({
@@ -134,7 +134,7 @@ const TaxiiCollectionEditionContainer: FunctionComponent<{ taxiiCollection: Taxi
       onSubmit={onSubmit}
       enableReinitialize={true}
       initialValues={initialValues}
-      validationSchema={taxiiCollectionValidation(t('This field is required'))}
+      validationSchema={taxiiCollectionValidation(t_i18n('This field is required'))}
     >
       {() => (
         <Form style={{ margin: '20px 0 20px 0' }}>
@@ -142,7 +142,7 @@ const TaxiiCollectionEditionContainer: FunctionComponent<{ taxiiCollection: Taxi
             component={TextField}
             variant="standard"
             name="name"
-            label={t('Name')}
+            label={t_i18n('Name')}
             fullWidth={true}
             onSubmit={handleSubmitField}
           />
@@ -150,7 +150,7 @@ const TaxiiCollectionEditionContainer: FunctionComponent<{ taxiiCollection: Taxi
             component={TextField}
             variant="standard"
             name="description"
-            label={t('Description')}
+            label={t_i18n('Description')}
             fullWidth={true}
             style={{ marginTop: 20 }}
             onSubmit={handleSubmitField}
@@ -163,13 +163,13 @@ const TaxiiCollectionEditionContainer: FunctionComponent<{ taxiiCollection: Taxi
             style={{ position: 'relative' }}
           >
             <AlertTitle>
-              {t('Make this taxii collection public and available to anyone')}
+              {t_i18n('Make this taxii collection public and available to anyone')}
             </AlertTitle>
             <FormControlLabel
               control={<Switch defaultChecked={!!initialValues.taxii_public}/>}
               style={{ marginLeft: 1 }}
               onChange={(_, checked) => handleSubmitField('taxii_public', checked.toString())}
-              label={t('Public taxii collection')}
+              label={t_i18n('Public taxii collection')}
             />
             {!initialValues.taxii_public && (
               <ObjectMembersField
@@ -177,7 +177,7 @@ const TaxiiCollectionEditionContainer: FunctionComponent<{ taxiiCollection: Taxi
                 style={fieldSpacingContainerStyle}
                 onChange={handleSubmitFieldOptions}
                 multiple={true}
-                helpertext={t('Let the field empty to grant all authenticated users')}
+                helpertext={t_i18n('Let the field empty to grant all authenticated users')}
                 name="authorized_members"
               />
             )}

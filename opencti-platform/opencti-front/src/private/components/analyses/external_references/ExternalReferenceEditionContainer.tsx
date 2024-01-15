@@ -12,13 +12,13 @@ interface ExternalReferenceEditionContainerProps {
 }
 
 const ExternalReferenceEditionContainer: FunctionComponent<ExternalReferenceEditionContainerProps> = ({ handleClose, externalReference, open }) => {
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
 
   const { editContext } = externalReference;
 
   return (
     <Drawer
-      title={t('Update an external reference')}
+      title={t_i18n('Update an external reference')}
       variant={open == null ? DrawerVariant.update : undefined}
       context={editContext}
       onClose={handleClose}

@@ -73,7 +73,7 @@ const ObjectMarkingField: FunctionComponent<ObjectMarkingFieldProps> = ({
   setFieldValue,
 }) => {
   const classes = useStyles();
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   const [newMarking, setNewMarking] = useState<
   Option[] | OptionValues | undefined
   >(undefined);
@@ -160,10 +160,10 @@ const ObjectMarkingField: FunctionComponent<ObjectMarkingFieldProps> = ({
         disabled={disabled}
         textfieldprops={{
           variant: 'standard',
-          label: label ?? t('Markings'),
+          label: label ?? t_i18n('Markings'),
           helperText: helpertext,
         }}
-        noOptionsText={t('No available options')}
+        noOptionsText={t_i18n('No available options')}
         options={optionSorted}
         onChange={typeof onChange === 'function' ? handleOnChange : null}
         renderOption={renderOption}
@@ -177,16 +177,16 @@ const ObjectMarkingField: FunctionComponent<ObjectMarkingFieldProps> = ({
       >
         <DialogContent>
           <DialogContentText>
-            {t('You are about to change the marking with another rank.')}
+            {t_i18n('You are about to change the marking with another rank.')}
           </DialogContentText>
           <DialogContentText>
-            {t('Are you sure you want to make the change?')}
+            {t_i18n('Are you sure you want to make the change?')}
           </DialogContentText>
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleCancellation}>{t('Cancel')}</Button>
+          <Button onClick={handleCancellation}>{t_i18n('Cancel')}</Button>
           <Button color="secondary" onClick={submitUpdate}>
-            {t('Replace')}
+            {t_i18n('Replace')}
           </Button>
         </DialogActions>
       </Dialog>

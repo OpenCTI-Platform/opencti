@@ -29,14 +29,14 @@ const CityEditionContainer: FunctionComponent<CityEditionContainerProps> = ({
   handleClose,
   open,
 }) => {
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   const { city } = usePreloadedQuery(cityEditionQuery, queryRef);
   if (city === null) {
     return <ErrorNotFound />;
   }
   return (
     <Drawer
-      title={t('Update a city')}
+      title={t_i18n('Update a city')}
       variant={open == null ? DrawerVariant.update : undefined}
       context={city.editContext}
       onClose={handleClose}

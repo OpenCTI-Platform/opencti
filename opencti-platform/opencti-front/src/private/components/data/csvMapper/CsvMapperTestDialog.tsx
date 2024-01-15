@@ -35,7 +35,7 @@ const CsvMapperTestDialog: FunctionComponent<CsvMapperTestDialogProps> = ({
   onClose,
   configuration,
 }) => {
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
 
   const [value, setValue] = useState<string>('');
   const [result, setResult] = useState<CsvMapperTestDialogQuery$data | undefined>(undefined);
@@ -85,7 +85,7 @@ const CsvMapperTestDialog: FunctionComponent<CsvMapperTestDialogProps> = ({
 
   return (
     <Dialog open={open} onClose={handleClose} PaperProps={{ elevation: 1 }}>
-      <DialogTitle>{t('Testing csv mapper')}</DialogTitle>
+      <DialogTitle>{t_i18n('Testing csv mapper')}</DialogTitle>
       <DialogContent>
         <Box
           sx={{
@@ -103,7 +103,7 @@ const CsvMapperTestDialog: FunctionComponent<CsvMapperTestDialogProps> = ({
             sizeLimit={1000000}
           />
           <Tooltip
-            title={t(
+            title={t_i18n(
               'Select a sample file in CSV format, with a maximum size of 5MB to limit the processing time.',
             )}
           >
@@ -123,7 +123,7 @@ const CsvMapperTestDialog: FunctionComponent<CsvMapperTestDialogProps> = ({
             disabled={!value || loading}
             onClick={onTest}
           >
-            {t('Test')}
+            {t_i18n('Test')}
           </Button>
           {loading && (
             <Box sx={{ marginLeft: '8px' }}>
@@ -141,14 +141,14 @@ const CsvMapperTestDialog: FunctionComponent<CsvMapperTestDialogProps> = ({
               display: 'flex',
             }}
              >
-            <span>{t('Objects found')} : </span>
-            <span><strong>{result?.csvMapperTest?.nbEntities} </strong> {t('Entities')}</span>
-            <span><strong>{result?.csvMapperTest?.nbRelationships}</strong> {t('Relationships')}</span>
+            <span>{t_i18n('Objects found')} : </span>
+            <span><strong>{result?.csvMapperTest?.nbEntities} </strong> {t_i18n('Entities')}</span>
+            <span><strong>{result?.csvMapperTest?.nbRelationships}</strong> {t_i18n('Relationships')}</span>
           </Box>
         }
         <Box sx={{ marginTop: '8px' }}>
           <CodeBlock
-            code={result?.csvMapperTest?.objects || t('You will find here the result in JSON format')}
+            code={result?.csvMapperTest?.objects || t_i18n('You will find here the result in JSON format')}
             language={'json'}
           />
         </Box>

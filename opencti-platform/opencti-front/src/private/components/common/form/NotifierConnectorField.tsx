@@ -49,7 +49,7 @@ const NotifierConnectorField: FunctionComponent<
 NotifierConnectorFieldProps
 > = ({ name, style, onChange, disabled, helpertext }) => {
   const classes = useStyles();
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
 
   const [connectors, setConnectors] = useState<
   { label: string | undefined; value: string | undefined }[]
@@ -87,11 +87,11 @@ NotifierConnectorFieldProps
         onChange={onChange}
         textfieldprops={{
           variant: 'standard',
-          label: t('Notification connector'),
+          label: t_i18n('Notification connector'),
           helperText: helpertext,
           onFocus: searchNotifierConnectors,
         }}
-        noOptionsText={t('No available options')}
+        noOptionsText={t_i18n('No available options')}
         options={connectors}
         onInputChange={searchNotifierConnectors}
         renderOption={(

@@ -47,7 +47,7 @@ interface DataSourceDetailsProps {
 const DataSourceDetailsComponent: FunctionComponent<DataSourceDetailsProps> = ({
   dataSource,
 }) => {
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   const classes = useStyles();
 
   const data: DataSourceDetails_dataSource$data = useFragment(
@@ -58,13 +58,13 @@ const DataSourceDetailsComponent: FunctionComponent<DataSourceDetailsProps> = ({
   return (
     <div style={{ height: '100%' }}>
       <Typography variant="h4" gutterBottom={true}>
-        {t('Details')}
+        {t_i18n('Details')}
       </Typography>
       <Paper classes={{ root: classes.paper }} variant="outlined">
         <Grid container={true} spacing={3}>
           <Grid item={true} xs={6}>
             <Typography variant="h3" gutterBottom={true}>
-              {t('Description')}
+              {t_i18n('Description')}
             </Typography>
             {data.description && (
               <ExpandableMarkdown source={data.description} limit={300} />
@@ -72,7 +72,7 @@ const DataSourceDetailsComponent: FunctionComponent<DataSourceDetailsProps> = ({
           </Grid>
           <Grid item={true} xs={6}>
             <Typography variant="h3" gutterBottom={true}>
-              {t('Platforms')}
+              {t_i18n('Platforms')}
             </Typography>
             {data.x_mitre_platforms?.map((platform) => (
               <ItemOpenVocab
@@ -87,7 +87,7 @@ const DataSourceDetailsComponent: FunctionComponent<DataSourceDetailsProps> = ({
               gutterBottom={true}
               style={{ marginTop: 20 }}
             >
-              {t('Layers')}
+              {t_i18n('Layers')}
             </Typography>
             {data.collection_layers?.map((layer) => (
               <ItemOpenVocab

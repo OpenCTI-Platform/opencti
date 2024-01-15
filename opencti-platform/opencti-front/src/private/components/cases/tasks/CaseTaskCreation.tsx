@@ -63,12 +63,12 @@ const CaseTaskCreation: FunctionComponent<CaseTaskCreationProps> = ({
   paginationOptions,
   defaultMarkings,
 }) => {
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   const classes = useStyles();
 
   const basicShape = {
-    name: Yup.string().min(2).required(t('This field is required')),
-    description: Yup.string().nullable().max(5000, t('The value is too long')),
+    name: Yup.string().min(2).required(t_i18n('This field is required')),
+    description: Yup.string().nullable().max(5000, t_i18n('The value is too long')),
     due_date: Yup.date().nullable(),
     objectLabel: Yup.array(),
     objectMarking: Yup.array(),
@@ -132,14 +132,14 @@ const CaseTaskCreation: FunctionComponent<CaseTaskCreationProps> = ({
             component={TextField}
             variant="standard"
             name="name"
-            label={t('Name')}
+            label={t_i18n('Name')}
             fullWidth
           />
           <Field
             component={DateTimePickerField}
             name="due_date"
             TextFieldProps={{
-              label: t('Due Date'),
+              label: t_i18n('Due Date'),
               variant: 'standard',
               fullWidth: true,
             }}
@@ -163,7 +163,7 @@ const CaseTaskCreation: FunctionComponent<CaseTaskCreationProps> = ({
           <Field
             component={MarkdownField}
             name="description"
-            label={t('Description')}
+            label={t_i18n('Description')}
             fullWidth
             multiline
             rows="4"
@@ -176,7 +176,7 @@ const CaseTaskCreation: FunctionComponent<CaseTaskCreationProps> = ({
               variant="contained"
               classes={{ root: classes.button }}
             >
-              {t('Cancel')}
+              {t_i18n('Cancel')}
             </Button>
             <Button
               variant="contained"
@@ -185,7 +185,7 @@ const CaseTaskCreation: FunctionComponent<CaseTaskCreationProps> = ({
               disabled={isSubmitting}
               classes={{ root: classes.button }}
             >
-              {t('Create')}
+              {t_i18n('Create')}
             </Button>
           </div>
         </Form>

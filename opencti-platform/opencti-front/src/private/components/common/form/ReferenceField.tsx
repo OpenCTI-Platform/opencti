@@ -53,7 +53,7 @@ const ReferenceField: FunctionComponent<RelationFieldProps> = ({
   value,
 }): ReactElement => {
   const classes = useStyles();
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   return (
     <Field
       component={AutocompleteField}
@@ -61,11 +61,11 @@ const ReferenceField: FunctionComponent<RelationFieldProps> = ({
       name={name}
       textfieldprops={{
         variant,
-        label: t(label),
+        label: t_i18n(label),
         helperText,
         onFocus,
       }}
-      noOptionsText={t(noOptionsText)}
+      noOptionsText={t_i18n(noOptionsText)}
       options={options}
       onInputChange={(v: InputEvent) => onInputChange(v?.data ?? null)}
       value={value}

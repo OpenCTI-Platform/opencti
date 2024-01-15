@@ -88,7 +88,7 @@ const ExternalReferenceFileImportViewerBase: FunctionComponent<
 ExternalReferenceFileImportViewerBaseProps
 > = ({ externalReference, disableImport, relay, connectorsImport }) => {
   const classes = useStyles();
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   const [fileToImport, setFileToImport] = useState<
   FileLine_file$data | null | undefined
   >(null);
@@ -144,7 +144,7 @@ ExternalReferenceFileImportViewerBaseProps
     <React.Fragment>
       <div style={{ height: '100%' }} className="break">
         <Typography variant="h4" gutterBottom={true} style={{ float: 'left' }}>
-          {t('Uploaded files')}
+          {t_i18n('Uploaded files')}
         </Typography>
         <div style={{ float: 'left', marginTop: -17 }}>
           <FileUploader
@@ -195,7 +195,7 @@ ExternalReferenceFileImportViewerBaseProps
                   textAlign: 'center',
                 }}
               >
-                {t('No file for the moment')}
+                {t_i18n('No file for the moment')}
               </span>
             </div>
           )}
@@ -205,7 +205,7 @@ ExternalReferenceFileImportViewerBaseProps
         <Formik
           enableReinitialize={true}
           initialValues={{ connector_id: '', configuration: '' }}
-          validationSchema={importValidation(t, (selectedConnector?.configurations?.length ?? 0) > 0)}
+          validationSchema={importValidation(t_i18n, (selectedConnector?.configurations?.length ?? 0) > 0)}
           onSubmit={onSubmitImport}
           onReset={handleCloseImport}
         >
@@ -218,12 +218,12 @@ ExternalReferenceFileImportViewerBaseProps
                 onClose={handleCloseImport}
                 fullWidth={true}
               >
-                <DialogTitle>{t('Launch an import')}</DialogTitle>
+                <DialogTitle>{t_i18n('Launch an import')}</DialogTitle>
                 <DialogContent>
                   <Field
                     component={SelectField}
                     name="connector_id"
-                    label={t('Connector')}
+                    label={t_i18n('Connector')}
                     fullWidth={true}
                     containerstyle={{ width: '100%' }}
                     onChange={handleSelectConnector}
@@ -251,7 +251,7 @@ ExternalReferenceFileImportViewerBaseProps
                           component={SelectField}
                           variant="standard"
                           name="configuration"
-                          label={t('Configuration')}
+                          label={t_i18n('Configuration')}
                           fullWidth={true}
                           containerstyle={{ marginTop: 20, width: '100%' }}
                            >
@@ -270,14 +270,14 @@ ExternalReferenceFileImportViewerBaseProps
                 </DialogContent>
                 <DialogActions>
                   <Button onClick={handleReset} disabled={isSubmitting}>
-                    {t('Cancel')}
+                    {t_i18n('Cancel')}
                   </Button>
                   <Button
                     color="secondary"
                     onClick={submitForm}
                     disabled={isSubmitting}
                   >
-                    {t('Create')}
+                    {t_i18n('Create')}
                   </Button>
                 </DialogActions>
               </Dialog>

@@ -30,7 +30,7 @@ interface GroupUsersProps {
 
 const GroupUsers: FunctionComponent<GroupUsersProps> = ({ groupId }) => {
   const classes = useStyles();
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   const LOCAL_STORAGE_KEY = `group-${groupId}-users`;
   const {
     viewStorage,
@@ -99,7 +99,7 @@ const GroupUsers: FunctionComponent<GroupUsersProps> = ({ groupId }) => {
         gutterBottom={true}
         style={{ float: 'left', marginRight: 12 }}
       >
-        {t('Members')}
+        {t_i18n('Members')}
       </Typography>
       <div style={{ float: 'right', marginTop: -12 }}>
         <SearchInput

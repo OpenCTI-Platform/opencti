@@ -71,7 +71,7 @@ const Role = ({
   groupsQueryRef: PreloadedQuery<GroupsSearchQuery>;
 }) => {
   const classes = useStyles();
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   const history = useHistory();
   const groupsData = usePreloadedQuery(groupsSearchQuery, groupsQueryRef);
   const groupNodes = (role: Role_role$data) => {
@@ -108,19 +108,19 @@ const Role = ({
       >
         <Grid item={true} xs={6} style={{ paddingTop: 10 }}>
           <Typography variant="h4" gutterBottom={true}>
-            {t('Basic information')}
+            {t_i18n('Basic information')}
           </Typography>
           <Paper classes={{ root: classes.paper }} variant="outlined">
             <Grid container={true} spacing={3}>
               <Grid item={true} xs={12}>
                 <Typography variant="h3" gutterBottom={true}>
-                  {t('Description')}
+                  {t_i18n('Description')}
                 </Typography>
                 {role.description}
               </Grid>
               <Grid item={true} xs={12}>
                 <Typography variant="h3" gutterBottom={true}>
-                  {t('Groups using this role')}
+                  {t_i18n('Groups using this role')}
                 </Typography>
                 <div>
                   {groupNodes(role)?.map((group) => (
@@ -145,7 +145,7 @@ const Role = ({
         </Grid>
         <Grid item={true} xs={6} style={{ paddingTop: 10 }}>
           <Typography variant="h4" gutterBottom={true}>
-            {t('Capabilities')}
+            {t_i18n('Capabilities')}
           </Typography>
           <Paper classes={{ root: classes.paper }} variant="outlined">
             <Grid container={true} spacing={3}>

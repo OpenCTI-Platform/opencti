@@ -142,7 +142,7 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
   const history = useHistory();
   const location = useLocation();
   const classes = useStyles();
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   const {
     bannerSettings: { bannerHeightNumber },
   } = useAuth();
@@ -249,9 +249,9 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
                   onSubmit={handleSearch}
                   keyword={keyword}
                   variant="topBar"
-                  placeholder={`${t('Search the platform')}...`}
+                  placeholder={`${t_i18n('Search the platform')}...`}
                 />
-                <Tooltip title={t('Advanced search')}>
+                <Tooltip title={t_i18n('Advanced search')}>
                   <IconButton
                     component={Link}
                     to="/dashboard/search"
@@ -266,7 +266,7 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
                     <BiotechOutlined fontSize={'medium'}/>
                   </IconButton>
                 </Tooltip>
-                <Tooltip title={t('Bulk search')}>
+                <Tooltip title={t_i18n('Bulk search')}>
                   <IconButton
                     component={Link}
                     to="/dashboard/search_bulk"
@@ -287,7 +287,7 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
           <div className={classes.barRightContainer}>
             <Security needs={[EXPLORE]}>
               <React.Fragment>
-                <Tooltip title={t('Custom dashboards')}>
+                <Tooltip title={t_i18n('Custom dashboards')}>
                   <IconButton
                     component={Link}
                     to="/dashboard/workspaces/dashboards"
@@ -303,7 +303,7 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
                     <InsertChartOutlined fontSize="medium"/>
                   </IconButton>
                 </Tooltip>
-                <Tooltip title={t('Investigations')}>
+                <Tooltip title={t_i18n('Investigations')}>
                   <IconButton
                     component={Link}
                     to="/dashboard/workspaces/investigations"
@@ -322,7 +322,7 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
               </React.Fragment>
             </Security>
             <Security needs={[KNOWLEDGE_KNASKIMPORT]}>
-              <Tooltip title={t('Data import and analyst workbenches')}>
+              <Tooltip title={t_i18n('Data import and analyst workbenches')}>
                 <IconButton
                   component={Link}
                   to="/dashboard/import"
@@ -338,7 +338,7 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
               </Tooltip>
             </Security>
             <Security needs={[KNOWLEDGE]}>
-              <Tooltip title={t('Notifications and triggers')}>
+              <Tooltip title={t_i18n('Notifications and triggers')}>
                 <IconButton
                   size="medium"
                   classes={{ root: classes.button }}
@@ -390,15 +390,15 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
                 to="/dashboard/profile"
                 onClick={handleCloseMenu}
               >
-                {t('Profile')}
+                {t_i18n('Profile')}
               </MenuItem>
-              <MenuItem onClick={handleOpenDrawer}>{t('Feedback')}</MenuItem>
+              <MenuItem onClick={handleOpenDrawer}>{t_i18n('Feedback')}</MenuItem>
               <MenuItem
                 component="a"
                 href={`${APP_BASE_PATH}/logout`}
                 rel="noreferrer"
               >
-                {t('Logout')}
+                {t_i18n('Logout')}
               </MenuItem>
             </Menu>
           </div>

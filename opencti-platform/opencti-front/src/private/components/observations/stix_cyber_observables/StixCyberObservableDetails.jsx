@@ -32,7 +32,7 @@ const useStyles = makeStyles(() => ({
 
 const StixCyberObservableDetailsComponent = ({ stixCyberObservable }) => {
   const classes = useStyles();
-  const { t, b, fldt } = useFormatter();
+  const { t_i18n, b, fldt } = useFormatter();
   const { isVocabularyField, fieldToCategory } = useVocabularyCategory();
   const [anchorEl, setAnchorEl] = useState(null);
   const handleOpen = (event) => {
@@ -73,14 +73,14 @@ const StixCyberObservableDetailsComponent = ({ stixCyberObservable }) => {
   return (
     <div style={{ height: '100%' }} className="break">
       <Typography variant="h4" gutterBottom={true}>
-        {t('Details')}
+        {t_i18n('Details')}
       </Typography>
       <Paper classes={{ root: classes.paper }} variant="outlined">
         <Grid container={true} spacing={3} style={{ marginBottom: 10 }}>
           {file && (
             <Grid item={true} xs={6}>
               <Typography variant="h3" gutterBottom={true}>
-                {t('File')}
+                {t_i18n('File')}
               </Typography>
               <Button
                 variant="outlined"
@@ -89,7 +89,7 @@ const StixCyberObservableDetailsComponent = ({ stixCyberObservable }) => {
                 startIcon={<GetAppOutlined />}
                 onClick={handleOpen}
               >
-                {t('Download')} ({b(file.size)})
+                {t_i18n('Download')} ({b(file.size)})
               </Button>
               <Menu
                 anchorEl={anchorEl}
@@ -103,7 +103,7 @@ const StixCyberObservableDetailsComponent = ({ stixCyberObservable }) => {
                   )
                   }
                 >
-                  {t('Encrypted archive')}
+                  {t_i18n('Encrypted archive')}
                 </MenuItem>
                 <MenuItem
                   dense={true}
@@ -112,14 +112,14 @@ const StixCyberObservableDetailsComponent = ({ stixCyberObservable }) => {
                   )
                   }
                 >
-                  {t('Raw file')}
+                  {t_i18n('Raw file')}
                 </MenuItem>
               </Menu>
             </Grid>
           )}
           <Grid item={true} xs={6}>
             <Typography variant="h3" gutterBottom={true}>
-              {t('Description')}
+              {t_i18n('Description')}
             </Typography>
             <ExpandableMarkdown
               source={stixCyberObservable.x_opencti_description}
@@ -160,7 +160,7 @@ const StixCyberObservableDetailsComponent = ({ stixCyberObservable }) => {
               return (
                 <Grid key={observableAttribute.key} item={true} xs={6}>
                   <Typography variant="h3" gutterBottom={true}>
-                    {t(observableAttribute.key)}
+                    {t_i18n(observableAttribute.key)}
                   </Typography>
                   <ItemOpenVocab
                     small={false}
@@ -188,7 +188,7 @@ const StixCyberObservableDetailsComponent = ({ stixCyberObservable }) => {
             return (
               <Grid key={observableAttribute.key} item={true} xs={6}>
                 <Typography variant="h3" gutterBottom={true}>
-                  {t(observableAttribute.key.replace('attribute_', ''))}
+                  {t_i18n(observableAttribute.key.replace('attribute_', ''))}
                 </Typography>
                 <pre>
                   <ItemCopy content={finalValue || '-'} />

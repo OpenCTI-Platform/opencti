@@ -80,7 +80,7 @@ const InvestigationAddStixCoreObjectsLineComponent = ({
   addedElements,
 }: InvestigationAddStixCoreObjectsLineComponentProps) => {
   const classes = useStyles();
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   return (
     <ListItem
       classes={{ root: classes.item }}
@@ -115,7 +115,7 @@ const InvestigationAddStixCoreObjectsLineComponent = ({
                   color: itemColor(node.entity_type),
                   border: `1px solid ${itemColor(node.entity_type)}`,
                 }}
-                label={t(`entity_${node.entity_type}`)}
+                label={t_i18n(`entity_${node.entity_type}`)}
               />
             </div>
             <div

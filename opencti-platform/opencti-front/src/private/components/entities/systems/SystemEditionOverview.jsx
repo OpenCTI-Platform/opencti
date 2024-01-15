@@ -79,10 +79,10 @@ const systemMutationRelationDelete = graphql`
 
 const SystemEditionOverviewComponent = (props) => {
   const { system, enableReferences, context, handleClose } = props;
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
 
   const basicShape = {
-    name: Yup.string().min(2).required(t('This field is required')),
+    name: Yup.string().min(2).required(t_i18n('This field is required')),
     description: Yup.string().nullable(),
     contact_information: Yup.string().nullable(),
     x_opencti_reliability: Yup.string().nullable(),
@@ -150,7 +150,7 @@ const SystemEditionOverviewComponent = (props) => {
   const initialValues = R.pipe(
     R.assoc('createdBy', convertCreatedBy(system)),
     R.assoc('objectMarking', convertMarkings(system)),
-    R.assoc('x_opencti_workflow_id', convertStatus(t, system)),
+    R.assoc('x_opencti_workflow_id', convertStatus(t_i18n, system)),
     R.assoc('references', []),
     R.pick([
       'name',
@@ -184,7 +184,7 @@ const SystemEditionOverviewComponent = (props) => {
             variant="standard"
             name="name"
             disabled={external}
-            label={t('Name')}
+            label={t_i18n('Name')}
             fullWidth={true}
             onFocus={editor.changeFocus}
             onSubmit={handleSubmitField}
@@ -195,7 +195,7 @@ const SystemEditionOverviewComponent = (props) => {
           <Field
             component={MarkdownField}
             name="description"
-            label={t('Description')}
+            label={t_i18n('Description')}
             fullWidth={true}
             multiline={true}
             rows="4"
@@ -210,7 +210,7 @@ const SystemEditionOverviewComponent = (props) => {
             component={TextField}
             variant="standard"
             name="contact_information"
-            label={t('Contact information')}
+            label={t_i18n('Contact information')}
             fullWidth={true}
             multiline={true}
             rows="4"
@@ -222,7 +222,7 @@ const SystemEditionOverviewComponent = (props) => {
               }
           />
           <OpenVocabField
-            label={t('Reliability')}
+            label={t_i18n('Reliability')}
             type="reliability_ov"
             name="x_opencti_reliability"
             onChange={setFieldValue}

@@ -83,7 +83,7 @@ const RootThreatActorIndividualComponent = ({
   );
   useSubscription(subConfig);
   const location = useLocation();
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   const {
     threatActorIndividual: data,
     connectorsForExport,
@@ -152,31 +152,31 @@ const RootThreatActorIndividualComponent = ({
                   component={Link}
                   to={`/dashboard/threats/threat_actors_individual/${data.id}`}
                   value={`/dashboard/threats/threat_actors_individual/${data.id}`}
-                  label={t('Overview')}
+                  label={t_i18n('Overview')}
                 />
                 <Tab
                   component={Link}
                   to={`/dashboard/threats/threat_actors_individual/${data.id}/knowledge`}
                   value={`/dashboard/threats/threat_actors_individual/${data.id}/knowledge`}
-                  label={t('Knowledge')}
+                  label={t_i18n('Knowledge')}
                 />
                 <Tab
                   component={Link}
                   to={`/dashboard/threats/threat_actors_individual/${data.id}/analyses`}
                   value={`/dashboard/threats/threat_actors_individual/${data.id}/analyses`}
-                  label={t('Analyses')}
+                  label={t_i18n('Analyses')}
                 />
                 <Tab
                   component={Link}
                   to={`/dashboard/threats/threat_actors_individual/${data.id}/files`}
                   value={`/dashboard/threats/threat_actors_individual/${data.id}/files`}
-                  label={t('Data')}
+                  label={t_i18n('Data')}
                 />
                 <Tab
                   component={Link}
                   to={`/dashboard/threats/threat_actors_individual/${data.id}/history`}
                   value={`/dashboard/threats/threat_actors_individual/${data.id}/history`}
-                  label={t('History')}
+                  label={t_i18n('History')}
                 />
               </Tabs>
             </Box>

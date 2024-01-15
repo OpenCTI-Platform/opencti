@@ -35,7 +35,7 @@ const Triggers: FunctionComponent<TriggersProps> = ({
   filterKey,
 }) => {
   const classes = useStyles();
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   const ref = useRef(null);
   const {
     viewStorage,
@@ -105,7 +105,7 @@ const Triggers: FunctionComponent<TriggersProps> = ({
   return (
     <Grid item={true} xs={12} style={{ marginTop: 30, marginBottom: 15 }}>
       <Typography variant="h4" gutterBottom={true} style={{ float: 'left' }}>
-        {t('Triggers and Digests')}
+        {t_i18n('Triggers and Digests')}
       </Typography>
       <div style={{ float: 'right', marginTop: -12 }}>
         <SearchInput
@@ -114,7 +114,7 @@ const Triggers: FunctionComponent<TriggersProps> = ({
           keyword={searchTerm}
         />
       </div>
-      <Tooltip title={t('Add a live trigger')}>
+      <Tooltip title={t_i18n('Add a live trigger')}>
         <IconButton
           aria-label="Add"
           className={classes.createButton}
@@ -131,7 +131,7 @@ const Triggers: FunctionComponent<TriggersProps> = ({
         handleClose={() => setOpenLive(false)}
         recipientId={recipientId}
       />
-      <Tooltip title={t('Add a regular digest')}>
+      <Tooltip title={t_i18n('Add a regular digest')}>
         <IconButton
           aria-label="Add"
           className={classes.createButton}

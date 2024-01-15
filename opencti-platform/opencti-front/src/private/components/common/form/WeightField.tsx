@@ -38,7 +38,7 @@ export const WeightFieldAdd: FunctionComponent<WeightFieldAddProps> = ({
   values,
   containerStyle,
 }): ReactElement => {
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   const { weightPrimaryUnit } = useUserMetric();
   return (
     <div style={containerStyle}>
@@ -63,7 +63,7 @@ export const WeightFieldAdd: FunctionComponent<WeightFieldAddProps> = ({
                     component={TextField}
                     variant="standard"
                     name={`${name}.${index}.measure`}
-                    label={t(`Weight (${weightPrimaryUnit})`)}
+                    label={t_i18n(`Weight (${weightPrimaryUnit})`)}
                     type="number"
                     InputProps={{ inputProps: { min: 0 } }}
                   />
@@ -71,7 +71,7 @@ export const WeightFieldAdd: FunctionComponent<WeightFieldAddProps> = ({
                     component={DatePickerField}
                     name={`${name}.${index}.date_seen`}
                     TextFieldProps={{
-                      label: t('Date Seen'),
+                      label: t_i18n('Date Seen'),
                       variant: 'standard',
                     }}
                     type="date"
@@ -102,7 +102,7 @@ export const WeightFieldAdd: FunctionComponent<WeightFieldAddProps> = ({
               }}
               style={{ marginTop: (values?.length ?? 0) > 0 ? 20 : 0 }}
             >
-              {t('Add a weight')}
+              {t_i18n('Add a weight')}
             </Button>
           </>
         )}
@@ -134,7 +134,7 @@ export const WeightFieldEdit: FunctionComponent<WeightFieldEditProps> = ({
   containerStyle,
   editContext = [],
 }): ReactElement => {
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   const { weightPrimaryUnit, weightToPivotFormat } = useUserMetric();
   return (
     <div style={containerStyle}>
@@ -162,7 +162,7 @@ export const WeightFieldEdit: FunctionComponent<WeightFieldEditProps> = ({
                       type="number"
                       InputProps={{ inputProps: { min: 0 } }}
                       name={`${name}.${index}.measure`}
-                      label={t(`Weight (${weightPrimaryUnit})`)}
+                      label={t_i18n(`Weight (${weightPrimaryUnit})`)}
                       onSubmit={(_: string, measure: string) => {
                         commitMutation({
                           ...defaultCommitMutation,
@@ -199,7 +199,7 @@ export const WeightFieldEdit: FunctionComponent<WeightFieldEditProps> = ({
                         });
                       }}
                       TextFieldProps={{
-                        label: t('Date Seen'),
+                        label: t_i18n('Date Seen'),
                         variant: 'standard',
                         helperText: (
                           <SubscriptionFocus
@@ -260,7 +260,7 @@ export const WeightFieldEdit: FunctionComponent<WeightFieldEditProps> = ({
               }}
               style={{ marginTop: (values?.length ?? 0) > 0 ? 20 : 0 }}
             >
-              {t('Add a weight')}
+              {t_i18n('Add a weight')}
             </Button>
           </>
         )}

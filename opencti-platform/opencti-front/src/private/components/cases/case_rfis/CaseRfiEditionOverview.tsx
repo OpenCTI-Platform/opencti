@@ -180,11 +180,11 @@ const CaseRfiEditionOverview: FunctionComponent<CaseRfiEditionOverviewProps> = (
   enableReferences = false,
   handleClose,
 }) => {
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   const caseData = useFragment(caseRfiEditionOverviewFragment, caseRef);
 
   const basicShape = {
-    name: Yup.string().min(2).required(t('This field is required')),
+    name: Yup.string().min(2).required(t_i18n('This field is required')),
     description: Yup.string().nullable(),
     information_types: Yup.array().nullable(),
     severity: Yup.string().nullable(),
@@ -260,7 +260,7 @@ const CaseRfiEditionOverview: FunctionComponent<CaseRfiEditionOverviewProps> = (
     objectMarking: convertMarkings(caseData),
     objectAssignee: convertAssignees(caseData),
     objectParticipant: convertParticipants(caseData),
-    x_opencti_workflow_id: convertStatus(t, caseData) as Option,
+    x_opencti_workflow_id: convertStatus(t_i18n, caseData) as Option,
     references: [],
   };
   return (
@@ -283,7 +283,7 @@ const CaseRfiEditionOverview: FunctionComponent<CaseRfiEditionOverviewProps> = (
             component={TextField}
             variant="standard"
             name="name"
-            label={t('Name')}
+            label={t_i18n('Name')}
             fullWidth={true}
             onFocus={editor.changeFocus}
             onSubmit={handleSubmitField}
@@ -298,7 +298,7 @@ const CaseRfiEditionOverview: FunctionComponent<CaseRfiEditionOverviewProps> = (
             onFocus={editor.changeFocus}
             onSubmit={handleSubmitField}
             TextFieldProps={{
-              label: t('Request for Information date'),
+              label: t_i18n('Request for Information date'),
               variant: 'standard',
               fullWidth: true,
               helperText: (
@@ -307,7 +307,7 @@ const CaseRfiEditionOverview: FunctionComponent<CaseRfiEditionOverviewProps> = (
             }}
           />
           <OpenVocabField
-            label={t('Information type')}
+            label={t_i18n('Information type')}
             type="request_for_information_types_ov"
             name="information_types"
             onSubmit={handleSubmitField}
@@ -318,7 +318,7 @@ const CaseRfiEditionOverview: FunctionComponent<CaseRfiEditionOverviewProps> = (
             editContext={context}
           />
           <OpenVocabField
-            label={t('Case severity')}
+            label={t_i18n('Case severity')}
             type="case_severity_ov"
             name="severity"
             onSubmit={handleSubmitField}
@@ -329,7 +329,7 @@ const CaseRfiEditionOverview: FunctionComponent<CaseRfiEditionOverviewProps> = (
             editContext={context}
           />
           <OpenVocabField
-            label={t('Case priority')}
+            label={t_i18n('Case priority')}
             type="case_priority_ov"
             name="priority"
             onSubmit={handleSubmitField}
@@ -350,7 +350,7 @@ const CaseRfiEditionOverview: FunctionComponent<CaseRfiEditionOverviewProps> = (
           <Field
             component={MarkdownField}
             name="description"
-            label={t('Description')}
+            label={t_i18n('Description')}
             fullWidth={true}
             multiline={true}
             rows="4"

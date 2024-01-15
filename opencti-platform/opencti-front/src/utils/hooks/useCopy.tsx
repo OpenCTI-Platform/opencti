@@ -26,7 +26,7 @@ const useCopy = <T extends OperationType['response']>(
   }: UseCopyProps<T>,
   selectAll = false,
 ) => {
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   return () => {
     let computedSelectedValues = selectedValues;
     if (selectAll) {
@@ -51,12 +51,12 @@ const useCopy = <T extends OperationType['response']>(
             .map(({ value }) => value);
           const toBeCopied = computedSelectedValues.join('\n');
           navigator.clipboard.writeText(toBeCopied);
-          MESSAGING$.notifySuccess(t('Elements successfully copied'));
+          MESSAGING$.notifySuccess(t_i18n('Elements successfully copied'));
         });
     } else {
       const toBeCopied = computedSelectedValues.join('\n');
       navigator.clipboard.writeText(toBeCopied);
-      MESSAGING$.notifySuccess(t('Elements successfully copied'));
+      MESSAGING$.notifySuccess(t_i18n('Elements successfully copied'));
     }
   };
 };

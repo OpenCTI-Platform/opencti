@@ -21,7 +21,7 @@ const MarkdownField = (props) => {
     controlledSetSelectTab,
     height,
   } = props;
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   const [selectedTab, setSelectedTab] = useState('write');
   const [field, meta] = useField(name);
   const internalOnFocus = (event) => {
@@ -82,10 +82,10 @@ const MarkdownField = (props) => {
         )
         }
         l18n={{
-          write: t('Write'),
-          preview: t('Preview'),
-          uploadingImage: t('Uploading image'),
-          pasteDropSelect: t('Paste'),
+          write: t_i18n('Write'),
+          preview: t_i18n('Preview'),
+          uploadingImage: t_i18n('Uploading image'),
+          pasteDropSelect: t_i18n('Paste'),
         }}
         childProps={{
           textArea: { onSelect: internalOnSelect },

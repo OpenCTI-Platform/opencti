@@ -114,7 +114,7 @@ const TriggerActivityLiveCreation: FunctionComponent<TriggerLiveCreationProps> =
   handleClose,
   creationCallback,
 }) => {
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   const classes = useStyles();
   const [filters, setFilters] = useState<FilterGroup | undefined>(undefined);
   const onReset = () => {
@@ -214,13 +214,13 @@ const TriggerActivityLiveCreation: FunctionComponent<TriggerLiveCreationProps> =
         component={TextField}
         variant="standard"
         name="name"
-        label={t('Name')}
+        label={t_i18n('Name')}
         fullWidth={true}
       />
       <Field
         component={MarkdownField}
         name="description"
-        label={t('Description')}
+        label={t_i18n('Description')}
         fullWidth={true}
         multiline={true}
         rows="4"
@@ -259,12 +259,12 @@ const TriggerActivityLiveCreation: FunctionComponent<TriggerLiveCreationProps> =
           >
             <Close fontSize="small" color="primary"/>
           </IconButton>
-          <Typography variant="h6">{t('Create a live activity trigger')}</Typography>
+          <Typography variant="h6">{t_i18n('Create a live activity trigger')}</Typography>
         </div>
         <div className={classes.container}>
           <Formik<TriggerActivityLiveAddInput>
             initialValues={liveInitialValues}
-            validationSchema={liveActivityTriggerValidation(t)}
+            validationSchema={liveActivityTriggerValidation(t_i18n)}
             onSubmit={onLiveSubmit}
             onReset={onReset}
           >
@@ -284,7 +284,7 @@ const TriggerActivityLiveCreation: FunctionComponent<TriggerLiveCreationProps> =
                     disabled={isSubmitting}
                     classes={{ root: classes.button }}
                   >
-                    {t('Cancel')}
+                    {t_i18n('Cancel')}
                   </Button>
                   <Button
                     variant="contained"
@@ -293,7 +293,7 @@ const TriggerActivityLiveCreation: FunctionComponent<TriggerLiveCreationProps> =
                     disabled={isSubmitting}
                     classes={{ root: classes.button }}
                   >
-                    {t('Create')}
+                    {t_i18n('Create')}
                   </Button>
                 </div>
               </Form>
@@ -311,20 +311,20 @@ const TriggerActivityLiveCreation: FunctionComponent<TriggerLiveCreationProps> =
       PaperProps={{ elevation: 1 }}
     >
       <Formik initialValues={liveInitialValues}
-        validationSchema={liveActivityTriggerValidation(t)}
+        validationSchema={liveActivityTriggerValidation(t_i18n)}
         onSubmit={onLiveSubmit}
         onReset={onReset}
       >
         {({ submitForm, handleReset, isSubmitting, setFieldValue, values }) => (
           <div>
-            <DialogTitle>{t('Create a live activity trigger')}</DialogTitle>
+            <DialogTitle>{t_i18n('Create a live activity trigger')}</DialogTitle>
             <DialogContent>{liveFields(setFieldValue, values)}</DialogContent>
             <DialogActions classes={{ root: classes.dialogActions }}>
               <Button onClick={handleReset} disabled={isSubmitting}>
-                {t('Cancel')}
+                {t_i18n('Cancel')}
               </Button>
               <Button color="secondary" onClick={submitForm} disabled={isSubmitting}>
-                {t('Create')}
+                {t_i18n('Create')}
               </Button>
             </DialogActions>
           </div>

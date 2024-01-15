@@ -35,7 +35,7 @@ const ExternalReferenceDetailsComponent: FunctionComponent<
 ExternalReferenceDetailsComponentProps
 > = ({ externalReference }) => {
   const classes = useStyles();
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   const [displayExternalLink, setDisplayExternalLink] = useState(false);
   const [externalLink, setExternalLink] = useState<string | URL | undefined>(
     undefined,
@@ -59,13 +59,13 @@ ExternalReferenceDetailsComponentProps
   return (
     <div style={{ height: '100%' }}>
       <Typography variant="h4" gutterBottom={true}>
-        {t('Details')}
+        {t_i18n('Details')}
       </Typography>
       <Paper classes={{ root: classes.paper }} variant="outlined">
         <Grid container={true} spacing={3}>
           <Grid item={true} xs={6}>
             <Typography variant="h3" gutterBottom={true}>
-              {t('External ID')}
+              {t_i18n('External ID')}
             </Typography>
             {externalReference.external_id}
             <Typography
@@ -73,17 +73,17 @@ ExternalReferenceDetailsComponentProps
               gutterBottom={true}
               style={{ marginTop: 20 }}
             >
-              {t('Creators')}
+              {t_i18n('Creators')}
             </Typography>
             <ItemCreators creators={externalReference.creators ?? []} />
           </Grid>
           <Grid item={true} xs={6}>
             <Typography variant="h3" gutterBottom={true}>
-              {t('URL')}
+              {t_i18n('URL')}
             </Typography>
             <pre style={{ position: 'relative', minHeight: 35 }}>
               {externalReference.url}
-              <Tooltip title={t('Browse the link')}>
+              <Tooltip title={t_i18n('Browse the link')}>
                 <IconButton
                   onClick={() => handleOpenExternalLink(externalReference.url ?? '')
                   }
@@ -108,13 +108,13 @@ ExternalReferenceDetailsComponentProps
       >
         <DialogContent>
           <DialogContentText>
-            {t('Do you want to browse this external link?')}
+            {t_i18n('Do you want to browse this external link?')}
           </DialogContentText>
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleCloseExternalLink}>{t('Cancel')}</Button>
+          <Button onClick={handleCloseExternalLink}>{t_i18n('Cancel')}</Button>
           <Button color="secondary" onClick={handleBrowseExternalLink}>
-            {t('Browse the link')}
+            {t_i18n('Browse the link')}
           </Button>
         </DialogActions>
       </Dialog>

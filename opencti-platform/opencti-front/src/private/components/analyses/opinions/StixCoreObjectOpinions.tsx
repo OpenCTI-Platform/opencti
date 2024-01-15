@@ -39,7 +39,7 @@ StixCoreObjectOpinionsProps
   stixCoreObjectId,
   queryVocabulariesRef,
 }) => {
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
 
   const { vocabularies } = usePreloadedQuery<StixCoreObjectOpinionsOpenVocabQuery>(
     stixCoreObjectOpinionsOpenVocabQuery,
@@ -85,7 +85,7 @@ StixCoreObjectOpinionsProps
         gutterBottom={true}
         style={{ float: 'left' }}
       >
-        {t('Distribution of opinions')}
+        {t_i18n('Distribution of opinions')}
       </Typography>
       <StixCoreObjectOpinionsDialog
         stixCoreObjectId={stixCoreObjectId}

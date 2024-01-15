@@ -148,11 +148,11 @@ interface DataSourceEditionFormValues {
 const DataSourceEditionOverview: FunctionComponent<
 DataSourceEditionOverviewProps
 > = ({ data, context, enableReferences = false, handleClose }) => {
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   const dataSource = useFragment(dataSourceEditionOverviewFragment, data);
 
   const basicShape = {
-    name: Yup.string().min(2).required(t('This field is required')),
+    name: Yup.string().min(2).required(t_i18n('This field is required')),
     description: Yup.string().nullable(),
     confidence: Yup.number().nullable(),
     x_mitre_platforms: Yup.array().nullable(),
@@ -236,7 +236,7 @@ DataSourceEditionOverviewProps
     description: dataSource.description,
     createdBy: convertCreatedBy(dataSource),
     objectMarking: convertMarkings(dataSource),
-    x_opencti_workflow_id: convertStatus(t, dataSource) as Option,
+    x_opencti_workflow_id: convertStatus(t_i18n, dataSource) as Option,
     confidence: dataSource.confidence,
     x_mitre_platforms: dataSource.x_mitre_platforms || [],
     collection_layers: dataSource.collection_layers || [],
@@ -262,7 +262,7 @@ DataSourceEditionOverviewProps
           <Field
             component={TextField}
             name="name"
-            label={t('Name')}
+            label={t_i18n('Name')}
             fullWidth={true}
             onFocus={editor.changeFocus}
             onSubmit={handleSubmitField}
@@ -281,7 +281,7 @@ DataSourceEditionOverviewProps
           <Field
             component={MarkdownField}
             name="description"
-            label={t('Description')}
+            label={t_i18n('Description')}
             fullWidth={true}
             multiline={true}
             rows="4"
@@ -327,7 +327,7 @@ DataSourceEditionOverviewProps
             onChange={editor.changeMarking}
           />
           <OpenVocabField
-            label={t('Platforms')}
+            label={t_i18n('Platforms')}
             type="platforms_ov"
             name="x_mitre_platforms"
             variant={'edit'}
@@ -338,7 +338,7 @@ DataSourceEditionOverviewProps
             editContext={context}
           />
           <OpenVocabField
-            label={t('Layers')}
+            label={t_i18n('Layers')}
             type="collection_layers_ov"
             name="collection_layers"
             variant={'edit'}

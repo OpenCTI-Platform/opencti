@@ -22,7 +22,7 @@ const useStyles = makeStyles(() => ({
 
 const IngestionTaxii = () => {
   const classes = useStyles();
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   const { platformModuleHelpers } = useAuth();
   const {
     viewStorage,
@@ -63,7 +63,7 @@ const IngestionTaxii = () => {
   if (!platformModuleHelpers.isIngestionManagerEnable()) {
     return (
       <Alert severity="info">
-        {t(platformModuleHelpers.generateDisableMessage(INGESTION_MANAGER))}
+        {t_i18n(platformModuleHelpers.generateDisableMessage(INGESTION_MANAGER))}
       </Alert>
     );
   }

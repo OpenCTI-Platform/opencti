@@ -25,7 +25,7 @@ const useStyles = makeStyles((theme) => ({
 const ProcessingMenu = () => {
   const location = useLocation();
   const classes = useStyles();
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   const {
     bannerSettings: { bannerHeightNumber },
   } = useAuth();
@@ -54,7 +54,7 @@ const ProcessingMenu = () => {
             )}
             dense={false}
           >
-            <ListItemText primary={<EEMenu>{t('Automation')}</EEMenu>} />
+            <ListItemText primary={<EEMenu>{t_i18n('Automation')}</EEMenu>} />
           </MenuItem>
         )}
         {isKnowledgeUpdater && (
@@ -64,7 +64,7 @@ const ProcessingMenu = () => {
             selected={location.pathname === '/dashboard/data/processing/tasks'}
             dense={false}
           >
-            <ListItemText primary={t('Tasks')} />
+            <ListItemText primary={t_i18n('Tasks')} />
           </MenuItem>
         )}
         {isCsvMapperUpdater && (
@@ -76,7 +76,7 @@ const ProcessingMenu = () => {
             )}
             dense={false}
           >
-            <ListItemText primary={t('CSV Mappers')} />
+            <ListItemText primary={t_i18n('CSV Mappers')} />
           </MenuItem>
         )}
       </MenuList>

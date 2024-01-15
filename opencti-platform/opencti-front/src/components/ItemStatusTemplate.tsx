@@ -32,14 +32,14 @@ const ItemStatusTemplate: FunctionComponent<{ statuses: SubType_subType$data['st
   statuses,
   disabled,
 }) => {
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   const classes = useStyles();
   if (disabled || statuses.length === 0) {
     return (
       <Chip
         classes={{ root: classes.chip }}
         variant="outlined"
-        label={disabled ? t('Disabled') : t('Unknown')}
+        label={disabled ? t_i18n('Disabled') : t_i18n('Unknown')}
       />
     );
   }

@@ -43,7 +43,7 @@ const EntitySettingSettings = ({
 }: {
   entitySettingsData: SubType_subType$data['settings'];
 }) => {
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   const entitySetting = useFragment<EntitySettingSettings_entitySetting$key>(
     entitySettingFragment,
     entitySettingsData,
@@ -71,13 +71,13 @@ const EntitySettingSettings = ({
             gutterBottom={true}
             style={{ float: 'left' }}
           >
-            {t('Hidden in interface')}
+            {t_i18n('Hidden in interface')}
           </Typography>
           <Tooltip
             title={
               !entitySetting.availableSettings.includes('platform_hidden_type')
-                ? t('This configuration is not available for this entity type')
-                : t(
+                ? t_i18n('This configuration is not available for this entity type')
+                : t_i18n(
                   'This configuration hides a specific entity type across the entire platform.',
                 )
             }
@@ -106,7 +106,7 @@ const EntitySettingSettings = ({
                   }
                 />
               }
-              label={t('Hide in the platform')}
+              label={t_i18n('Hide in the platform')}
             />
           </FormGroup>
         </div>
@@ -124,15 +124,15 @@ const EntitySettingSettings = ({
             gutterBottom={true}
             style={{ float: 'left' }}
           >
-            {t('Automatic references at file upload')}
+            {t_i18n('Automatic references at file upload')}
           </Typography>
           <Tooltip
             title={
               !entitySetting.availableSettings.includes(
                 'platform_entity_files_ref',
               )
-                ? t('This configuration is not available for this entity type')
-                : t(
+                ? t_i18n('This configuration is not available for this entity type')
+                : t_i18n(
                   'This configuration enables an entity to automatically construct an external reference from the uploaded file.',
                 )
             }
@@ -161,7 +161,7 @@ const EntitySettingSettings = ({
                   }
                 />
               }
-              label={t('Create external reference at upload')}
+              label={t_i18n('Create external reference at upload')}
             />
           </FormGroup>
         </div>
@@ -171,13 +171,13 @@ const EntitySettingSettings = ({
             gutterBottom={true}
             style={{ float: 'left' }}
           >
-            {t('Enforce references')}
+            {t_i18n('Enforce references')}
           </Typography>
           <Tooltip
             title={
               !entitySetting.availableSettings.includes('enforce_reference')
-                ? t('This configuration is not available for this entity type')
-                : t(
+                ? t_i18n('This configuration is not available for this entity type')
+                : t_i18n(
                   'This configuration enables the requirement of a reference message on an entity creation or modification.',
                 )
             }
@@ -206,7 +206,7 @@ const EntitySettingSettings = ({
                   }
                 />
               }
-              label={t('Enforce references')}
+              label={t_i18n('Enforce references')}
             />
           </FormGroup>
         </div>

@@ -24,7 +24,7 @@ const useStyles = makeStyles(() => ({
 const Sync = () => {
   const theme = useTheme();
   const classes = useStyles();
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   const { platformModuleHelpers } = useAuth();
   const {
     viewStorage,
@@ -64,7 +64,7 @@ const Sync = () => {
   if (!platformModuleHelpers.isSyncManagerEnable()) {
     return (
       <Alert severity="info">
-        {t(platformModuleHelpers.generateDisableMessage(SYNC_MANAGER))}
+        {t_i18n(platformModuleHelpers.generateDisableMessage(SYNC_MANAGER))}
       </Alert>
     );
   }
@@ -82,7 +82,7 @@ const Sync = () => {
         keyword={viewStorage.searchTerm}
         message={
           <>
-            {t(
+            {t_i18n(
               'You can configure your platform to consume remote OCTI streams. A list of public and commercial native feeds is available in the',
             )}{' '}
             <a

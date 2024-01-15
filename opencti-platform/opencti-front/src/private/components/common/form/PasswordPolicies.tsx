@@ -32,7 +32,7 @@ const passwordPoliciesFragment = graphql`
 
 const PasswordPolicies: FunctionComponent<{ style?: object }> = ({ style }) => {
   const classes = useStyles();
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   const { settings } = useAuth();
   const {
     password_policy_min_length,
@@ -51,16 +51,16 @@ const PasswordPolicies: FunctionComponent<{ style?: object }> = ({ style }) => {
   return <div style={style}>
     <Alert classes={{ root: classes.alert, message: classes.message }} severity="warning" variant="outlined" style={{ position: 'relative' }}>
       <AlertTitle>
-        {t('Password security policies')}
+        {t_i18n('Password security policies')}
       </AlertTitle>
       <div>
-        {(password_policy_min_length ?? 0) > 0 && <div>{t('Number of chars must be greater or equals to')} {password_policy_min_length}</div>}
-        {(password_policy_max_length ?? 0) > 0 && <div>{t('Number of chars must be lower or equals to')} {password_policy_max_length}</div>}
-        {(password_policy_min_symbols ?? 0) > 0 && <div>{t('Number of symbols must be greater or equals to')} {password_policy_min_symbols}</div>}
-        {(password_policy_min_numbers ?? 0) > 0 && <div>{t('Number of digits must be greater or equals to')} {password_policy_min_numbers}</div>}
-        {(password_policy_min_words ?? 0) > 0 && <div>{t('Number of words (split on hyphen, space) must be greater or equals to')} {password_policy_min_words}</div>}
-        {(password_policy_min_lowercase ?? 0) > 0 && <div>{t('Number of lowercase chars must be greater or equals to')} {password_policy_min_lowercase}</div>}
-        {(password_policy_min_uppercase ?? 0) > 0 && <div>{t('Number of uppercase chars must be greater or equals to')} {password_policy_min_uppercase}</div>}
+        {(password_policy_min_length ?? 0) > 0 && <div>{t_i18n('Number of chars must be greater or equals to')} {password_policy_min_length}</div>}
+        {(password_policy_max_length ?? 0) > 0 && <div>{t_i18n('Number of chars must be lower or equals to')} {password_policy_max_length}</div>}
+        {(password_policy_min_symbols ?? 0) > 0 && <div>{t_i18n('Number of symbols must be greater or equals to')} {password_policy_min_symbols}</div>}
+        {(password_policy_min_numbers ?? 0) > 0 && <div>{t_i18n('Number of digits must be greater or equals to')} {password_policy_min_numbers}</div>}
+        {(password_policy_min_words ?? 0) > 0 && <div>{t_i18n('Number of words (split on hyphen, space) must be greater or equals to')} {password_policy_min_words}</div>}
+        {(password_policy_min_lowercase ?? 0) > 0 && <div>{t_i18n('Number of lowercase chars must be greater or equals to')} {password_policy_min_lowercase}</div>}
+        {(password_policy_min_uppercase ?? 0) > 0 && <div>{t_i18n('Number of uppercase chars must be greater or equals to')} {password_policy_min_uppercase}</div>}
       </div>
     </Alert>
   </div>;

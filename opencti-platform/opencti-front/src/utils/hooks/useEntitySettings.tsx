@@ -79,7 +79,7 @@ export const useYupSchemaBuilder = (
   }
 
   // we're in creation mode, let's find if all mandatory fields are set
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   const entitySettings = useEntitySettings(id).at(0);
   if (!entitySettings) {
     throw Error(`Invalid type for setting: ${id}`);
@@ -98,12 +98,12 @@ export const useYupSchemaBuilder = (
         if (existingKeys.includes(attrName)) {
           const validator: Schema = (existingShape[attrName] as Schema)
             .transform((v) => ((Array.isArray(v) && v.length === 0) ? undefined : v))
-            .required(t('This field is required'));
+            .required(t_i18n('This field is required'));
           return [attrName, validator];
         }
         const validator = Yup.mixed()
           .transform((v) => ((Array.isArray(v) && v.length === 0) ? undefined : v))
-          .required(t('This field is required'));
+          .required(t_i18n('This field is required'));
         return [attrName, validator];
       }),
   );

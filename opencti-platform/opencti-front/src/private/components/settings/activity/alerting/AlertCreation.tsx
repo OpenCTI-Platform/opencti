@@ -47,7 +47,7 @@ const AlertCreation: FunctionComponent<TriggerCreationProps> = ({
   handleClose,
   open,
 }) => {
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   const classes = useStyles();
   const [openSpeedDial, setOpenSpeedDial] = useState(false);
   // Live
@@ -75,16 +75,16 @@ const AlertCreation: FunctionComponent<TriggerCreationProps> = ({
           FabProps={{ color: 'secondary' }}
         >
           <SpeedDialAction
-            title={t('Live trigger')}
+            title={t_i18n('Live trigger')}
             icon={<CampaignOutlined />}
-            tooltipTitle={t('Create a live trigger')}
+            tooltipTitle={t_i18n('Create a live trigger')}
             onClick={handleOpenCreateLive}
             FabProps={{ classes: { root: classes.speedDialButton } }}
           />
           <SpeedDialAction
-            title={t('Regular digest')}
+            title={t_i18n('Regular digest')}
             icon={<BackupTableOutlined />}
-            tooltipTitle={t('Create a regular digest')}
+            tooltipTitle={t_i18n('Create a regular digest')}
             onClick={handleOpenCreateDigest}
             FabProps={{ classes: { root: classes.speedDialButton } }}
           />

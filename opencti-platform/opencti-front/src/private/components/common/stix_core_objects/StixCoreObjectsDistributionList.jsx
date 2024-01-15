@@ -139,7 +139,7 @@ const StixCoreObjectsDistributionList = ({
 }) => {
   const classes = useStyles();
   const theme = useTheme();
-  const { t, n } = useFormatter();
+  const { t_i18n, n } = useFormatter();
   const hasSetAccess = useGranted([SETTINGS_SETACCESSES]);
   const renderContent = () => {
     const selection = dataSelection[0];
@@ -183,7 +183,7 @@ const StixCoreObjectsDistributionList = ({
                 selection.attribute.endsWith('_id')
                   ? o.entity?.representative?.main
                   : selection.attribute === 'entity_type'
-                    ? t(`entity_${o.label}`)
+                    ? t_i18n(`entity_${o.label}`)
                     : o.label,
               value: o.value,
               color: o.entity?.color ?? o.entity?.x_opencti_color,
@@ -250,7 +250,7 @@ const StixCoreObjectsDistributionList = ({
                     textAlign: 'center',
                   }}
                 >
-                  {t('No entities of this type has been found.')}
+                  {t_i18n('No entities of this type has been found.')}
                 </span>
               </div>
             );
@@ -284,7 +284,7 @@ const StixCoreObjectsDistributionList = ({
           textOverflow: 'ellipsis',
         }}
       >
-        {parameters.title || t('Distribution of entities')}
+        {parameters.title || t_i18n('Distribution of entities')}
       </Typography>
       {variant === 'inLine' ? (
         renderContent()

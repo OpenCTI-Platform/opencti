@@ -90,16 +90,16 @@ ObservedDataFormProps
   defaultMarkingDefinitions,
 }) => {
   const classes = useStyles();
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   const basicShape = {
     objects: Yup.array(),
     first_observed: Yup.date()
-      .typeError(t('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)'))
-      .required(t('This field is required')),
+      .typeError(t_i18n('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)'))
+      .required(t_i18n('This field is required')),
     last_observed: Yup.date()
-      .typeError(t('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)'))
-      .required(t('This field is required')),
-    number_observed: Yup.number().required(t('This field is required')),
+      .typeError(t_i18n('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)'))
+      .required(t_i18n('This field is required')),
+    number_observed: Yup.number().required(t_i18n('This field is required')),
     confidence: Yup.number().nullable(),
   };
   const observedDataValidator = useSchemaCreationValidation(
@@ -178,7 +178,7 @@ ObservedDataFormProps
             component={DateTimePickerField}
             name="first_observed"
             TextFieldProps={{
-              label: t('First observed'),
+              label: t_i18n('First observed'),
               variant: 'standard',
               fullWidth: true,
               style: { marginTop: 20 },
@@ -188,7 +188,7 @@ ObservedDataFormProps
             component={DateTimePickerField}
             name="last_observed"
             TextFieldProps={{
-              label: t('Last observed'),
+              label: t_i18n('Last observed'),
               variant: 'standard',
               fullWidth: true,
               style: { marginTop: 20 },
@@ -199,7 +199,7 @@ ObservedDataFormProps
             variant="standard"
             name="number_observed"
             type="number"
-            label={t('Number observed')}
+            label={t_i18n('Number observed')}
             fullWidth={true}
             style={{ marginTop: 20 }}
           />
@@ -236,7 +236,7 @@ ObservedDataFormProps
               disabled={isSubmitting}
               classes={{ root: classes.button }}
             >
-              {t('Cancel')}
+              {t_i18n('Cancel')}
             </Button>
             <Button
               variant="contained"
@@ -245,7 +245,7 @@ ObservedDataFormProps
               disabled={isSubmitting}
               classes={{ root: classes.button }}
             >
-              {t('Create')}
+              {t_i18n('Create')}
             </Button>
           </div>
         </Form>
@@ -259,7 +259,7 @@ const ObservedDataCreation = ({
 }: {
   paginationOptions: ObservedDatasLinesPaginationQuery$variables;
 }) => {
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   const updater = (store: RecordSourceSelectorProxy) => insertNode(
     store,
     'Pagination_observedDatas',
@@ -268,7 +268,7 @@ const ObservedDataCreation = ({
   );
   return (
     <Drawer
-      title={t('Create an observed data')}
+      title={t_i18n('Create an observed data')}
       variant={DrawerVariant.create}
     >
       {({ onClose }) => (

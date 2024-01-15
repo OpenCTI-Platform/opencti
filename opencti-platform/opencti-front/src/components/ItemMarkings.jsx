@@ -98,7 +98,7 @@ const StyledBadge = styled(Badge)(() => ({
 const ItemMarkings = ({ variant, markingDefinitionsEdges, limit }) => {
   const classes = useStyles();
   const theme = useTheme();
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   const sortBy = R.sortWith([
     R.ascend(R.propOr('TLP', 'definition_type')),
     R.descend(R.propOr(0, 'x_opencti_order')),
@@ -194,7 +194,7 @@ const ItemMarkings = ({ variant, markingDefinitionsEdges, limit }) => {
             key={markingDefinition.definition}
             className={className}
             style={inlineStyles.transparent}
-            label={t(markingDefinition.definition)}
+            label={t_i18n(markingDefinition.definition)}
             variant="outlined"
           />
         );

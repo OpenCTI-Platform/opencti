@@ -78,9 +78,9 @@ export const RegionCreationForm: FunctionComponent<RegionFormProps> = ({
   inputValue,
 }) => {
   const classes = useStyles();
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   const basicShape = {
-    name: Yup.string().min(2).required(t('This field is required')),
+    name: Yup.string().min(2).required(t_i18n('This field is required')),
     description: Yup.string().nullable(),
   };
   const regionValidator = useSchemaCreationValidation(REGION_TYPE, basicShape);
@@ -140,14 +140,14 @@ export const RegionCreationForm: FunctionComponent<RegionFormProps> = ({
             component={TextField}
             variant="standard"
             name="name"
-            label={t('Name')}
+            label={t_i18n('Name')}
             fullWidth={true}
             detectDuplicate={['Region']}
           />
           <Field
             component={MarkdownField}
             name="description"
-            label={t('Description')}
+            label={t_i18n('Description')}
             fullWidth={true}
             multiline={true}
             rows="4"
@@ -188,7 +188,7 @@ export const RegionCreationForm: FunctionComponent<RegionFormProps> = ({
               disabled={isSubmitting}
               classes={{ root: classes.button }}
             >
-              {t('Cancel')}
+              {t_i18n('Cancel')}
             </Button>
             <Button
               variant="contained"
@@ -197,7 +197,7 @@ export const RegionCreationForm: FunctionComponent<RegionFormProps> = ({
               disabled={isSubmitting}
               classes={{ root: classes.button }}
             >
-              {t('Create')}
+              {t_i18n('Create')}
             </Button>
           </div>
         </Form>
@@ -211,11 +211,11 @@ const RegionCreation = ({
 }: {
   paginationOptions: RegionsLinesPaginationQuery$variables;
 }) => {
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   const updater = (store: RecordSourceSelectorProxy) => insertNode(store, 'Pagination_regions', paginationOptions, 'regionAdd');
   return (
     <Drawer
-      title={t('Create a region')}
+      title={t_i18n('Create a region')}
       variant={DrawerVariant.create}
     >
       {({ onClose }) => (

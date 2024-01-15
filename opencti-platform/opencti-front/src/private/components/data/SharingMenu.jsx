@@ -23,7 +23,7 @@ const useStyles = makeStyles((theme) => ({
 const SharingMenu = () => {
   const location = useLocation();
   const classes = useStyles();
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   const {
     bannerSettings: { bannerHeightNumber },
   } = useAuth();
@@ -46,7 +46,7 @@ const SharingMenu = () => {
           selected={location.pathname === '/dashboard/data/sharing/streams'}
           dense={false}
         >
-          <ListItemText primary={t('Live streams')} />
+          <ListItemText primary={t_i18n('Live streams')} />
         </MenuItem>
         <MenuItem
           component={Link}
@@ -54,7 +54,7 @@ const SharingMenu = () => {
           selected={location.pathname.includes('/dashboard/data/sharing/feeds')}
           dense={false}
         >
-          <ListItemText primary={t('CSV Feeds')} />
+          <ListItemText primary={t_i18n('CSV Feeds')} />
         </MenuItem>
         <MenuItem
           component={Link}
@@ -62,7 +62,7 @@ const SharingMenu = () => {
           selected={location.pathname.includes('/dashboard/data/sharing/taxii')}
           dense={false}
         >
-          <ListItemText primary={t('TAXII collections')} />
+          <ListItemText primary={t_i18n('TAXII collections')} />
         </MenuItem>
       </MenuList>
     </Drawer>

@@ -66,7 +66,7 @@ const StixCoreRelationshipCreationFromEntityStixCoreObjectsLineComponent = ({
   index,
 }) => {
   const classes = useStyles();
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   const flag = node.entity_type === 'Country'
     && R.head((node.x_opencti_aliases ?? []).filter((n) => n?.length === 2));
   return (
@@ -121,7 +121,7 @@ const StixCoreRelationshipCreationFromEntityStixCoreObjectsLineComponent = ({
                   color: itemColor(node.entity_type),
                   border: `1px solid ${itemColor(node.entity_type)}`,
                 }}
-                label={t(`entity_${node.entity_type}`)}
+                label={t_i18n(`entity_${node.entity_type}`)}
               />
             </div>
             <div

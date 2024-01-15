@@ -106,7 +106,7 @@ const PlaybookHeaderComponent = ({
   const [openLastExecutions, setOpenLastExecutions] = useState(false);
   const [openExecution, setOpenExecution] = useState<string | null>(null);
   const [rawData, setRawData] = useState<string | null>(null);
-  const { t, nsdt } = useFormatter();
+  const { t_i18n, nsdt } = useFormatter();
   return (
     <>
       <Typography
@@ -130,8 +130,8 @@ const PlaybookHeaderComponent = ({
           }
           label={
             playbook.playbook_running
-              ? t('Playbook is running')
-              : t('Playbook is stopped')
+              ? t_i18n('Playbook is running')
+              : t_i18n('Playbook is stopped')
           }
         />
       </div>
@@ -145,7 +145,7 @@ const PlaybookHeaderComponent = ({
           style={{ margin: '7px 0 0 5px' }}
         >
           <ToggleButton value="cards" aria-label="cards">
-            <Tooltip title={t('Open last execution traces')}>
+            <Tooltip title={t_i18n('Open last execution traces')}>
               <Badge
                 badgeContent={(playbook.last_executions ?? []).length}
                 color="secondary"
@@ -159,7 +159,7 @@ const PlaybookHeaderComponent = ({
       <Drawer
         open={openLastExecutions}
         onClose={() => setOpenLastExecutions(false)}
-        title={t('Last execution traces')}
+        title={t_i18n('Last execution traces')}
       >
         <List>
           {(playbook.last_executions ?? []).map((lastExecution) => {
@@ -176,10 +176,10 @@ const PlaybookHeaderComponent = ({
                     <AutoAwesomeOutlined fontSize="small" color="primary" />
                   </ListItemIcon>
                   <ListItemText
-                    primary={`${t('Execution at')} ${nsdt(
+                    primary={`${t_i18n('Execution at')} ${nsdt(
                       lastExecution.execution_start,
                     )}`}
-                    secondary={`${(lastExecution.steps ?? []).length} ${t(
+                    secondary={`${(lastExecution.steps ?? []).length} ${t_i18n(
                       'steps executed',
                     )}`}
                   />
@@ -204,7 +204,7 @@ const PlaybookHeaderComponent = ({
                         onClick={() => setRawData(step.error ?? step.bundle_or_patch)}
                       >
                         <ListItemIcon>
-                          <Tooltip title={t(step.status)}>
+                          <Tooltip title={t_i18n(step.status)}>
                             {step.status === 'success' ? (
                               <CheckCircleOutlined
                                 fontSize="small"
@@ -217,7 +217,7 @@ const PlaybookHeaderComponent = ({
                         </ListItemIcon>
                         <ListItemText
                           primary={step.message}
-                          secondary={`${t('Execution ended at')} ${nsdt(
+                          secondary={`${t_i18n('Execution ended at')} ${nsdt(
                             step.out_timestamp,
                           )}`}
                         />
@@ -238,7 +238,7 @@ const PlaybookHeaderComponent = ({
         fullWidth={true}
         maxWidth="md"
       >
-        <DialogTitle>{t('Raw data')}</DialogTitle>
+        <DialogTitle>{t_i18n('Raw data')}</DialogTitle>
         <DialogContent>
           <pre>{rawData}</pre>
         </DialogContent>

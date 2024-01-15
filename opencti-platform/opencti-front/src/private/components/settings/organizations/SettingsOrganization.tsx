@@ -113,7 +113,7 @@ const SettingsOrganization = ({
   organizationData: SettingsOrganization_organization$key;
 }) => {
   const classes = useStyles();
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   const { me } = useAuth();
   const setAccess = useGranted([SETTINGS_SETACCESSES]);
   const isEnterpriseEdition = useEnterpriseEdition();
@@ -164,7 +164,7 @@ const SettingsOrganization = ({
         <Grid item={true} xs={6} style={{ paddingTop: 10 }}>
           <div style={{ height: '100%' }}>
             <Typography variant="h4" gutterBottom={true}>
-              {t('More information')}
+              {t_i18n('More information')}
             </Typography>
             <Paper classes={{ root: classes.paper }} variant="outlined">
               <Grid container={true} spacing={3}>
@@ -175,7 +175,7 @@ const SettingsOrganization = ({
                 </Grid>
                 <Grid item={true} xs={6}>
                   <Typography variant="h3" gutterBottom={true}>
-                    {t('Parent organizations')}
+                    {t_i18n('Parent organizations')}
                   </Typography>
                   <FieldOrEmpty source={parentOrganizations}>
                     <List>
@@ -201,7 +201,7 @@ const SettingsOrganization = ({
                 </Grid>
                 <Grid item={true} xs={6}>
                   <Typography variant="h3" gutterBottom={true}>
-                    {t('Child organizations')}
+                    {t_i18n('Child organizations')}
                   </Typography>
                   <FieldOrEmpty source={subOrganizations}>
                     <List>
@@ -225,7 +225,7 @@ const SettingsOrganization = ({
                 </Grid>
                 <Grid item={true} xs={6}>
                   <Typography variant="h3" gutterBottom={true}>
-                    {t('Default dashboard')}
+                    {t_i18n('Default dashboard')}
                   </Typography>
                   <FieldOrEmpty source={organization.default_dashboard}>
                     <List>
@@ -248,7 +248,7 @@ const SettingsOrganization = ({
                         {!canAccessDashboard && (
                           <ListItemSecondaryAction>
                             <Tooltip
-                              title={t(
+                              title={t_i18n(
                                 'You need to authorize this organization to access this dashboard in the permissions of the workspace.',
                               )}
                             >
@@ -262,7 +262,7 @@ const SettingsOrganization = ({
                 </Grid>
                 <Grid item={true} xs={6}>
                   <Typography variant="h3" gutterBottom={true}>
-                    {t('Grantable groups by organization administrators')}
+                    {t_i18n('Grantable groups by organization administrators')}
                   </Typography>
                   <FieldOrEmpty source={organization.grantable_groups}>
                     <List>
@@ -286,7 +286,7 @@ const SettingsOrganization = ({
                                 .get(group.id)
                                 ?.includes(BYPASS)) && (
                                 <Tooltip
-                                  title={t(
+                                  title={t_i18n(
                                     'This Group allows the user to bypass restriction. It should not be added here.',
                                   )}
                                 >
@@ -307,7 +307,7 @@ const SettingsOrganization = ({
                                 .get(group.id)
                                 ?.includes(BYPASS)) && (
                                 <Tooltip
-                                  title={t(
+                                  title={t_i18n(
                                     'This Group allows the user to bypass restriction. It should not be added here.',
                                   )}
                                 >
@@ -331,7 +331,7 @@ const SettingsOrganization = ({
         ) : (
           <Grid item={true} xs={12} style={{ marginTop: 30 }}>
             <EnterpriseEdition
-              feature={t('Organization sharing')}
+              feature={t_i18n('Organization sharing')}
             />
           </Grid>
         )}

@@ -37,7 +37,7 @@ const FileExportViewerComponent: FunctionComponent<
 FileExportViewerComponentProps
 > = ({ entity, relay, handleOpenExport, isExportPossible }) => {
   const classes = useStyles();
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   const { id, exportFiles } = entity;
   useEffect(() => {
     // Refresh the export viewer every interval
@@ -53,14 +53,14 @@ FileExportViewerComponentProps
     <Grid item={true} xs={6} style={{ marginTop: 40 }}>
       <div style={{ height: '100%' }} className="break">
         <Typography variant="h4" gutterBottom={true} style={{ float: 'left' }}>
-          {t('Exported files')}
+          {t_i18n('Exported files')}
         </Typography>
         <div style={{ float: 'left', marginTop: -15 }}>
           <Tooltip
             title={
               isExportPossible
-                ? t('Generate an export')
-                : t('No export connector available to generate an export')
+                ? t_i18n('Generate an export')
+                : t_i18n('No export connector available to generate an export')
             }
             aria-label="generate-export"
           >
@@ -103,7 +103,7 @@ FileExportViewerComponentProps
                   textAlign: 'center',
                 }}
               >
-                {t('No file for the moment')}
+                {t_i18n('No file for the moment')}
               </span>
             </div>
           )}

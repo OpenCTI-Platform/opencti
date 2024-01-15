@@ -68,7 +68,7 @@ const userEditionOrganizationsAdminRemoveMutation = graphql`
 
 const UserEditionOrganizationsAdminComponent = ({ user }) => {
   const isEnterpriseEdition = useEnterpriseEdition();
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
 
   const [promoteMemberMutation] = useMutation(userEditionOrganizationsAdminAddMutation);
   const [demoteMemberMutation] = useMutation(userEditionOrganizationsAdminRemoveMutation);
@@ -93,7 +93,7 @@ const UserEditionOrganizationsAdminComponent = ({ user }) => {
     }
   };
   if (!isEnterpriseEdition) {
-    return <div style={{ marginTop: 20 }}><EnterpriseEdition feature={t('Organization sharing')} /></div>;
+    return <div style={{ marginTop: 20 }}><EnterpriseEdition feature={t_i18n('Organization sharing')} /></div>;
   }
   return (
     <List>

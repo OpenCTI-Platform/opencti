@@ -6,14 +6,14 @@ import GroupingEditionOverview from './GroupingEditionOverview';
 import { useIsEnforceReference } from '../../../../utils/hooks/useEntitySettings';
 
 const GroupingEditionContainer = (props) => {
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
 
   const { handleClose, grouping, open } = props;
   const { editContext } = grouping;
 
   return (
     <Drawer
-      title={t('Update a grouping')}
+      title={t_i18n('Update a grouping')}
       open={open}
       onClose={handleClose}
       variant={open == null ? DrawerVariant.update : undefined}

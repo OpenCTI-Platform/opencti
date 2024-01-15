@@ -54,7 +54,7 @@ const CaseTemplateTasksPopover: FunctionComponent<CaseTemplateTasksPopoverProps>
   task,
 }) => {
   const classes = useStyles();
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
 
   const { caseTemplateId } = useParams() as { caseTemplateId: string };
 
@@ -141,13 +141,13 @@ const CaseTemplateTasksPopover: FunctionComponent<CaseTemplateTasksPopoverProps>
         <MoreVert />
       </IconButton>
       <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleClose}>
-        <MenuItem onClick={handleOpenUpdate}>{t('Update')}</MenuItem>
-        <MenuItem onClick={handleOpenUnlink}>{t('Unlink')}</MenuItem>
-        <MenuItem onClick={handleOpenDelete}>{t('Delete')}</MenuItem>
+        <MenuItem onClick={handleOpenUpdate}>{t_i18n('Update')}</MenuItem>
+        <MenuItem onClick={handleOpenUnlink}>{t_i18n('Unlink')}</MenuItem>
+        <MenuItem onClick={handleOpenDelete}>{t_i18n('Delete')}</MenuItem>
       </Menu>
       <Drawer
         open={displayUpdate}
-        title={t('Update a task template')}
+        title={t_i18n('Update a task template')}
         onClose={handleCloseUpdate}
       >
         <CaseTemplateTasksEdition task={task} />
@@ -161,15 +161,15 @@ const CaseTemplateTasksPopover: FunctionComponent<CaseTemplateTasksPopoverProps>
       >
         <DialogContent>
           <DialogContentText>
-            {t('Do you want to unlink this task template ?')}
+            {t_i18n('Do you want to unlink this task template ?')}
           </DialogContentText>
         </DialogContent>
         <DialogActions>
           <Button onClick={handleCloseUnlink} disabled={unlinking}>
-            {t('Cancel')}
+            {t_i18n('Cancel')}
           </Button>
           <Button color="secondary" onClick={submitUnlink} disabled={unlinking}>
-            {t('Unlink')}
+            {t_i18n('Unlink')}
           </Button>
         </DialogActions>
       </Dialog>
@@ -182,15 +182,15 @@ const CaseTemplateTasksPopover: FunctionComponent<CaseTemplateTasksPopoverProps>
       >
         <DialogContent>
           <DialogContentText>
-            {t('Do you want to delete this task ?')}
+            {t_i18n('Do you want to delete this task ?')}
           </DialogContentText>
         </DialogContent>
         <DialogActions>
           <Button onClick={handleCloseDelete} disabled={deleting}>
-            {t('Cancel')}
+            {t_i18n('Cancel')}
           </Button>
           <Button color="secondary" onClick={submitDelete} disabled={deleting}>
-            {t('Delete')}
+            {t_i18n('Delete')}
           </Button>
         </DialogActions>
       </Dialog>

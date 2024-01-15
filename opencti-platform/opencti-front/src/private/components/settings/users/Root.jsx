@@ -99,7 +99,7 @@ const RootUserComponent = ({ queryRef, userId, refetch }) => {
   );
   const location = useLocation();
   const classes = useStyles();
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   useSubscription(subConfig);
   const { me } = useAuth();
   const { user: data } = usePreloadedQuery(userQuery, queryRef);
@@ -129,13 +129,13 @@ const RootUserComponent = ({ queryRef, userId, refetch }) => {
                 component={Link}
                 to={`/dashboard/settings/accesses/users/${data.id}`}
                 value={`/dashboard/settings/accesses/users/${data.id}`}
-                label={t('Overview')}
+                label={t_i18n('Overview')}
               />
               <Tab
                 component={Link}
                 to={`/dashboard/settings/accesses/users/${data.id}/analytics`}
                 value={`/dashboard/settings/accesses/users/${data.id}/analytics`}
-                label={t('Analytics')}
+                label={t_i18n('Analytics')}
               />
             </Tabs>
           </Box>

@@ -54,7 +54,7 @@ const VocabularyEdition = ({
   handleClose: () => void;
   vocab: useVocabularyCategory_Vocabularynode$data;
 }) => {
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   const classes = useStyles();
 
   const [commitUpdateMutation] = useMutation(vocabularyMutationUpdate);
@@ -106,7 +106,7 @@ const VocabularyEdition = ({
         description: vocab.description ?? '',
         order: vocab.order,
       }}
-      validationSchema={attributeValidation(t)}
+      validationSchema={attributeValidation(t_i18n)}
       onSubmit={onSubmit}
     >
       {({ submitForm, isSubmitting, isValid }) => (
@@ -115,7 +115,7 @@ const VocabularyEdition = ({
             component={TextField}
             variant="standard"
             name="name"
-            label={t('Name')}
+            label={t_i18n('Name')}
             fullWidth={true}
             disabled={vocab.builtIn}
           />
@@ -123,7 +123,7 @@ const VocabularyEdition = ({
             component={TextField}
             variant="standard"
             name="description"
-            label={t('Description')}
+            label={t_i18n('Description')}
             fullWidth={true}
             style={fieldSpacingContainerStyle}
           />
@@ -132,8 +132,8 @@ const VocabularyEdition = ({
             style={{ marginTop: 20 }}
             name="aliases"
             multiple={true}
-            createLabel={t('Add')}
-            textfieldprops={{ variant: 'standard', label: t('Aliases') }}
+            createLabel={t_i18n('Add')}
+            textfieldprops={{ variant: 'standard', label: t_i18n('Aliases') }}
             options={(vocab.aliases ?? []).map((n) => ({
               id: n,
               value: n,
@@ -153,7 +153,7 @@ const VocabularyEdition = ({
             component={TextField}
             variant="standard"
             name="order"
-            label={t('Order')}
+            label={t_i18n('Order')}
             fullWidth={true}
             type="number"
             style={{ marginTop: 20 }}
@@ -166,7 +166,7 @@ const VocabularyEdition = ({
               disabled={isSubmitting || !isValid}
               classes={{ root: classes.button }}
             >
-              {t('Update')}
+              {t_i18n('Update')}
             </Button>
           </div>
         </Form>

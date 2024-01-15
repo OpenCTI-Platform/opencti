@@ -25,7 +25,7 @@ const SearchScopeElement = ({
   setSearchScope,
   availableRelationFilterTypes,
 }) => {
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   const classes = useStyles();
   const { schema } = useAuth();
   const [anchorElSearchScope, setAnchorElSearchScope] = useState();
@@ -45,7 +45,7 @@ const SearchScopeElement = ({
       ? availableRelationFilterTypes[name].includes(n)
       : true)),
     R.map((n) => ({
-      label: t(
+      label: t_i18n(
         n.toString()[0] === n.toString()[0].toUpperCase()
           ? `entity_${n.toString()}`
           : `relationship_${n.toString()}`,

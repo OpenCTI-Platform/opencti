@@ -77,7 +77,7 @@ const StatusTemplateCreation: FunctionComponent<StatusTemplateCreationProps> = (
   paginationOptions,
 }) => {
   const classes = useStyles();
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
 
   const onSubmit: FormikConfig<{ name: string; color: string }>['onSubmit'] = (
     values,
@@ -122,7 +122,7 @@ const StatusTemplateCreation: FunctionComponent<StatusTemplateCreationProps> = (
   const renderClassic = () => {
     return (
       <Drawer
-        title={t('Create a status template')}
+        title={t_i18n('Create a status template')}
         variant={DrawerVariant.createWithPanel}
       >
         {({ onClose }) => (
@@ -131,7 +131,7 @@ const StatusTemplateCreation: FunctionComponent<StatusTemplateCreationProps> = (
               name: '',
               color: '',
             }}
-            validationSchema={statusTemplateValidation(t)}
+            validationSchema={statusTemplateValidation(t_i18n)}
             onSubmit={(values, formikHelpers) => {
               onSubmit(values, formikHelpers);
               onClose();
@@ -144,13 +144,13 @@ const StatusTemplateCreation: FunctionComponent<StatusTemplateCreationProps> = (
                   component={TextField}
                   variant="standard"
                   name="name"
-                  label={t('Name')}
+                  label={t_i18n('Name')}
                   fullWidth={true}
                 />
                 <Field
                   component={ColorPickerField}
                   name="color"
-                  label={t('Color')}
+                  label={t_i18n('Color')}
                   fullWidth={true}
                   style={{ marginTop: 20 }}
                 />
@@ -161,7 +161,7 @@ const StatusTemplateCreation: FunctionComponent<StatusTemplateCreationProps> = (
                     disabled={isSubmitting}
                     classes={{ root: classes.button }}
                   >
-                    {t('Cancel')}
+                    {t_i18n('Cancel')}
                   </Button>
                   <Button
                     variant="contained"
@@ -170,7 +170,7 @@ const StatusTemplateCreation: FunctionComponent<StatusTemplateCreationProps> = (
                     disabled={isSubmitting}
                     classes={{ root: classes.button }}
                   >
-                    {t('Create')}
+                    {t_i18n('Create')}
                   </Button>
                 </div>
               </Form>
@@ -190,7 +190,7 @@ const StatusTemplateCreation: FunctionComponent<StatusTemplateCreationProps> = (
             name: inputValueContextual,
             color: '',
           }}
-          validationSchema={statusTemplateValidation(t)}
+          validationSchema={statusTemplateValidation(t_i18n)}
           onSubmit={onSubmit}
           onReset={onResetContextual}
         >
@@ -202,33 +202,33 @@ const StatusTemplateCreation: FunctionComponent<StatusTemplateCreationProps> = (
                 onClose={handleCloseContextual}
                 fullWidth={true}
               >
-                <DialogTitle>{t('Create a status template')}</DialogTitle>
+                <DialogTitle>{t_i18n('Create a status template')}</DialogTitle>
                 <DialogContent classes={{ root: classes.dialog }}>
                   <Field
                     component={TextField}
                     variant="standard"
                     name="name"
-                    label={t('Name')}
+                    label={t_i18n('Name')}
                     fullWidth={true}
                   />
                   <Field
                     component={ColorPickerField}
                     name="color"
-                    label={t('Color')}
+                    label={t_i18n('Color')}
                     fullWidth={true}
                     style={{ marginTop: 20 }}
                   />
                 </DialogContent>
                 <DialogActions>
                   <Button onClick={handleReset} disabled={isSubmitting}>
-                    {t('Cancel')}
+                    {t_i18n('Cancel')}
                   </Button>
                   <Button
                     color="secondary"
                     onClick={submitForm}
                     disabled={isSubmitting}
                   >
-                    {t('Create')}
+                    {t_i18n('Create')}
                   </Button>
                 </DialogActions>
               </Dialog>

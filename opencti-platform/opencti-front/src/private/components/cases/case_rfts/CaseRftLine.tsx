@@ -137,7 +137,7 @@ export const CaseRftLine: FunctionComponent<CaseRftLineComponentProps> = ({
   index,
 }) => {
   const classes = useStyles();
-  const { t, fd } = useFormatter();
+  const { t_i18n, fd } = useFormatter();
   const data = useFragment(caseFragment, node);
   return (
     <ListItem
@@ -185,7 +185,7 @@ export const CaseRftLine: FunctionComponent<CaseRftLineComponentProps> = ({
               <ItemPriority
                 variant="inList"
                 priority={data.priority}
-                label={data.priority || t('Unknown')}
+                label={data.priority || t_i18n('Unknown')}
               />
             </div>
             <div
@@ -195,7 +195,7 @@ export const CaseRftLine: FunctionComponent<CaseRftLineComponentProps> = ({
               <ItemSeverity
                 variant="inList"
                 severity={data.severity}
-                label={data.severity || t('Unknown')}
+                label={data.severity || t_i18n('Unknown')}
               />
             </div>
             <div

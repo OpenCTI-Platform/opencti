@@ -64,7 +64,7 @@ const useStyles = makeStyles<Theme>((theme) => ({
 
 const NodeWorkflow = ({ id, data }: NodeProps) => {
   const classes = useStyles();
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   const [anchorEl, setAnchorEl] = useState<Element | null>(null);
   const { getNode } = useReactFlow();
   return (
@@ -99,7 +99,7 @@ const NodeWorkflow = ({ id, data }: NodeProps) => {
               setAnchorEl(null);
             }}
           >
-            {t('Update')}
+            {t_i18n('Update')}
           </MenuItem>
           <MenuItem
             onClick={() => {
@@ -107,7 +107,7 @@ const NodeWorkflow = ({ id, data }: NodeProps) => {
               setAnchorEl(null);
             }}
           >
-            {t('Replace')}
+            {t_i18n('Replace')}
           </MenuItem>
           <MenuItem
             onClick={() => {
@@ -115,14 +115,14 @@ const NodeWorkflow = ({ id, data }: NodeProps) => {
               setAnchorEl(null);
             }}
           >
-            {t('Delete')}
+            {t_i18n('Delete')}
           </MenuItem>
         </Menu>
       </div>
       {!data.component?.is_entry_point && (
         <div style={{ position: 'absolute', bottom: 0, right: 0 }}>
           <Tooltip
-            title={t(
+            title={t_i18n(
               'Add a new branch at the same level from the parent output',
             )}
           >

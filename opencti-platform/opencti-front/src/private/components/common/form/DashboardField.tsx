@@ -54,7 +54,7 @@ const DashboardFieldComponent: FunctionComponent<DashboardFieldProps> = ({
   queryRef,
 }) => {
   const classes = useStyles();
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   const { workspaces } = usePreloadedQuery<DashboardFieldQuery>(
     workspaceQuery,
     queryRef,
@@ -68,7 +68,7 @@ const DashboardFieldComponent: FunctionComponent<DashboardFieldProps> = ({
       isOptionEqualToValue={(option: Option, { value }: Option) => option.value === value}
       textfieldprops={{
         variant: 'standard',
-        label: t('Default dashboard'),
+        label: t_i18n('Default dashboard'),
         fullWidth: true,
         helperText: (
           <SubscriptionFocus context={context} fieldName="default_dashboard" />

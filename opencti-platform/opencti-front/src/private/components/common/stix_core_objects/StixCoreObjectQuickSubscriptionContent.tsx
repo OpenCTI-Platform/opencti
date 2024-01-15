@@ -119,7 +119,7 @@ const StixCoreObjectQuickSubscriptionContent: FunctionComponent<
 StixCoreObjectQuickSubscriptionContentProps
 > = ({ queryRef, paginationOptions, instanceId, instanceName }) => {
   const classes = useStyles();
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   const [open, setOpen] = useState(false);
   const [deleting, setDeleting] = useState<boolean>(false);
   const [expandedLines, setExpandedLines] = useState<boolean>(false);
@@ -166,12 +166,12 @@ StixCoreObjectQuickSubscriptionContentProps
   };
 
   const liveTriggerValidation = () => Yup.object().shape({
-    name: Yup.string().required(t('This field is required')),
+    name: Yup.string().required(t_i18n('This field is required')),
     description: Yup.string().nullable(),
     event_types: Yup.array()
-      .min(1, t('Minimum one event type'))
-      .required(t('This field is required')),
-    notifiers: Yup.array().required(t('This field is required')),
+      .min(1, t_i18n('Minimum one event type'))
+      .required(t_i18n('This field is required')),
+    notifiers: Yup.array().required(t_i18n('This field is required')),
   });
 
   const createInstanceTrigger = () => {
@@ -348,7 +348,7 @@ StixCoreObjectQuickSubscriptionContentProps
                 component={TextField}
                 variant="standard"
                 name="name"
-                label={t('Name')}
+                label={t_i18n('Name')}
                 fullWidth={true}
               />
               <NotifierField name="notifiers" onChange={setFieldValue} />
@@ -359,7 +359,7 @@ StixCoreObjectQuickSubscriptionContentProps
                 multiple={true}
                 textfieldprops={{
                   variant: 'standard',
-                  label: t('Triggering on'),
+                  label: t_i18n('Triggering on'),
                 }}
                 options={instanceEventTypesOptions}
                 onChange={setFieldValue}
@@ -400,7 +400,7 @@ StixCoreObjectQuickSubscriptionContentProps
                   disabled={deleting}
                   classes={{ root: classes.deleteButton }}
                 >
-                  {multipleInstanceTrigger ? t('Remove') : t('Delete')}
+                  {multipleInstanceTrigger ? t_i18n('Remove') : t_i18n('Delete')}
                 </Button>
                 <Button
                   variant="contained"
@@ -409,7 +409,7 @@ StixCoreObjectQuickSubscriptionContentProps
                   disabled={isSubmitting}
                   classes={{ root: classes.updateButton }}
                 >
-                  {t('Update')}
+                  {t_i18n('Update')}
                 </Button>
               </div>
             </Form>
@@ -457,13 +457,13 @@ StixCoreObjectQuickSubscriptionContentProps
     const otherInstanceTriggersToDisplay = sortedTriggersToDisplay.slice(1); // the other instance triggers
     return (
       <Drawer
-        title={t('Update instance triggers')}
+        title={t_i18n('Update instance triggers')}
         open={open}
         onClose={handleClose}
       >
         <>
           <Alert severity="info" style={{ margin: '15px 15px 0 15px' }}>
-            {t(instanceTriggerDescription)}
+            {t_i18n(instanceTriggerDescription)}
           </Alert>
           <div>
             {updateInstanceTriggerContent(
@@ -481,7 +481,7 @@ StixCoreObjectQuickSubscriptionContentProps
                 onClick={handleToggleLine}
               >
                 <ListItemText
-                  primary={`${otherInstanceTriggersToDisplay.length} ${t(
+                  primary={`${otherInstanceTriggersToDisplay.length} ${t_i18n(
                     'other trigger(s) related to this entity',
                   )}`}
                 />
@@ -510,7 +510,7 @@ StixCoreObjectQuickSubscriptionContentProps
   };
   return (
     <div>
-      <Tooltip title={t('Instance trigger quick subscription')}>
+      <Tooltip title={t_i18n('Instance trigger quick subscription')}>
         <ToggleButton
           onClick={triggerUpdate ? handleOpen : createInstanceTrigger}
           value="quick-subscription"

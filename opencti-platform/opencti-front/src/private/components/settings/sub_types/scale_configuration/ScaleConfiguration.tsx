@@ -129,7 +129,7 @@ const ScaleConfiguration: FunctionComponent<EntitySettingScaleProps> = ({
   customScale,
   style,
 }) => {
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   const classes = useStyles();
 
   const [tickDefinition, setTickDefinition] = useState<ScaleConfig>(
@@ -204,13 +204,13 @@ const ScaleConfiguration: FunctionComponent<EntitySettingScaleProps> = ({
   return (
     <div style={style}>
       <Typography variant="h4" gutterBottom={true}>
-        {t('Scale configuration')}
+        {t_i18n('Scale configuration')}
       </Typography>
       <Paper classes={{ root: classes.paper }} variant="outlined">
         <div className={classes.container}>
           <FormControl sx={{ m: 1, minWidth: 140, margin: 0 }}>
             <InputLabel id="scale-selector">
-              {t('Selected scale template')}
+              {t_i18n('Selected scale template')}
             </InputLabel>
             <Select
               labelId="scale-selector"
@@ -227,15 +227,15 @@ const ScaleConfiguration: FunctionComponent<EntitySettingScaleProps> = ({
             </Select>
           </FormControl>
           <ScaleBar scale={tickDefinition}/>
-          <Typography variant="h4">{t('Customize scale')}</Typography>
+          <Typography variant="h4">{t_i18n('Customize scale')}</Typography>
           <Typography variant="h3" gutterBottom={true}>
-            {t('Limits')}
+            {t_i18n('Limits')}
           </Typography>
           <ScaleConfigurationLine
             tick={tickDefinition.min}
-            tickLabel={t('Minimum')}
+            tickLabel={t_i18n('Minimum')}
             validation={() => minMaxValidation(
-              t,
+              t_i18n,
               tickDefinition.min.value,
               tickDefinition.max.value,
             )
@@ -248,9 +248,9 @@ const ScaleConfiguration: FunctionComponent<EntitySettingScaleProps> = ({
           />
           <ScaleConfigurationLine
             tick={tickDefinition.max}
-            tickLabel={t('Maximum')}
+            tickLabel={t_i18n('Maximum')}
             validation={() => minMaxValidation(
-              t,
+              t_i18n,
               tickDefinition.min.value,
               tickDefinition.max.value,
             )
@@ -267,7 +267,7 @@ const ScaleConfiguration: FunctionComponent<EntitySettingScaleProps> = ({
               gutterBottom={true}
               style={{ float: 'left', marginBottom: 0 }}
             >
-              {t('Ticks')}
+              {t_i18n('Ticks')}
             </Typography>
             <IconButton
               color="secondary"
@@ -283,10 +283,10 @@ const ScaleConfiguration: FunctionComponent<EntitySettingScaleProps> = ({
             <ScaleConfigurationLine
               key={index}
               tick={tick}
-              tickLabel={t('Value')}
+              tickLabel={t_i18n('Value')}
               deleteEnabled={true}
               validation={() => tickValidation(
-                t,
+                t_i18n,
                 tickDefinition.min.value,
                 tickDefinition.max.value,
               )

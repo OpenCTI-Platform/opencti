@@ -33,7 +33,7 @@ const useStyles = makeStyles(() => ({
 
 const Vocabularies = () => {
   const classes = useStyles();
-  const { t, n } = useFormatter();
+  const { t_i18n, n } = useFormatter();
   const params = useParams() as { category: string };
   const { typeToCategory } = useVocabularyCategory();
   const category = typeToCategory(params.category);
@@ -83,7 +83,7 @@ const Vocabularies = () => {
                 key={type}
                 classes={{ root: classes.label }}
                 variant="outlined"
-                label={t(`entity_${type}`)}
+                label={t_i18n(`entity_${type}`)}
                 color="primary"
               />
             ))}

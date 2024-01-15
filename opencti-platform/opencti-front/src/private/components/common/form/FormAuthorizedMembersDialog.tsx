@@ -24,7 +24,7 @@ const FormAuthorizedMembersDialog = ({
   authorizedMembers,
   owner,
 }: FormAuthorizedMembersDialogProps) => {
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   const [open, setOpen] = useState(false);
   const isEnterpriseEdition = useEnterpriseEdition();
   const [commit] = useMutation(mutation);
@@ -61,7 +61,7 @@ const FormAuthorizedMembersDialog = ({
   };
   return (
     <>
-      <EETooltip title={t('Manage access restriction')}>
+      <EETooltip title={t_i18n('Manage access restriction')}>
         <ToggleButton
           onClick={() => isEnterpriseEdition && setOpen(true)}
           value="manage-access"

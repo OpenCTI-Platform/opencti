@@ -74,7 +74,7 @@ interface WidgetFiltersProps {
 }
 
 const WidgetFilters: FunctionComponent<WidgetFiltersProps> = ({ perspective, type, dataSelection, setDataSelection }) => {
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   const [filters, helpers] = useFiltersState(dataSelection.filters);
   const [filtersDynamicFrom, helpersDynamicFrom] = useFiltersState(dataSelection.dynamicFrom);
   const [filtersDynamicTo, helpersDynamicTo] = useFiltersState(dataSelection.dynamicTo);
@@ -145,7 +145,7 @@ const WidgetFilters: FunctionComponent<WidgetFiltersProps> = ({ perspective, typ
             marginTop: 8,
             color: 'orange',
           }}
-          >{t('Pre-query to get data to be used as source entity of the relationship (limited to 5000)')}</div>
+          >{t_i18n('Pre-query to get data to be used as source entity of the relationship (limited to 5000)')}</div>
           <FilterIconButton
             filters={filtersDynamicFrom}
             helpers={helpersDynamicFrom}
@@ -159,7 +159,7 @@ const WidgetFilters: FunctionComponent<WidgetFiltersProps> = ({ perspective, typ
             marginTop: 8,
             color: '#03A847',
           }}
-          >{t('Pre-query to get data to be used as target entity of the relationship (limited to 5000)')}</div>
+          >{t_i18n('Pre-query to get data to be used as target entity of the relationship (limited to 5000)')}</div>
           <FilterIconButton
             filters={filtersDynamicTo}
             helpers={helpersDynamicTo}
@@ -171,7 +171,7 @@ const WidgetFilters: FunctionComponent<WidgetFiltersProps> = ({ perspective, typ
       { isFilterGroupNotEmpty(filters) && (
         <>
           { perspective === 'relationships'
-            && <div style={{ marginTop: 8 }}>{t('Result: the relationships with source respecting the source pre-query, target respecting the target pre-query, and matching:')}</div>
+            && <div style={{ marginTop: 8 }}>{t_i18n('Result: the relationships with source respecting the source pre-query, target respecting the target pre-query, and matching:')}</div>
           }
           <FilterIconButton
             filters={filters}

@@ -129,7 +129,7 @@ export const InfrastructureLine: FunctionComponent<InfrastructureLineComponentPr
   index,
 }) => {
   const classes = useStyles();
-  const { fd, t } = useFormatter();
+  const { fd, t_i18n } = useFormatter();
   const data = useFragment(infrastructureFragment, node);
   return (
     <ListItem
@@ -176,7 +176,7 @@ export const InfrastructureLine: FunctionComponent<InfrastructureLineComponentPr
                 classes={{ root: classes.chipInList }}
                 color="primary"
                 variant="outlined"
-                label={data.infrastructure_types?.at(0) ?? t('Unknown')}
+                label={data.infrastructure_types?.at(0) ?? t_i18n('Unknown')}
               />
             </div>
             <div
