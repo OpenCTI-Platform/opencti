@@ -472,8 +472,8 @@ export const elPlatformMapping = async (index) => {
 export const elIndexSetting = async (index) => {
   const dataIndexSettings = await engine.indices.getSettings({ index });
   const { settings } = oebp(dataIndexSettings)[index];
-  const rollover_alias = engine instanceof ElkClient ? settings.index.lifecycle.rollover_alias
-    : settings.index.plugins.index_state_management.rollover_alias;
+  const rollover_alias = engine instanceof ElkClient ? settings.index.lifecycle?.rollover_alias
+    : settings.index.plugins.index_state_management?.rollover_alias;
   return { settings, rollover_alias };
 };
 export const elPlatformTemplates = async () => {
@@ -656,6 +656,13 @@ export const engineMappingGenerator = () => {
 };
 const computeIndexSettings = (rolloverAlias) => {
   if (engine instanceof ElkClient) {
+    // Rollover alias can be undefined for platform initialized <= 5.8
+    const cycle = rolloverAlias ? {
+      lifecycle: {
+        name: `${ES_INDEX_PREFIX}-ilm-policy`,
+        rollover_alias: rolloverAlias,
+      }
+    } : {};
     return {
       index: {
         mapping: {
@@ -663,24 +670,25 @@ const computeIndexSettings = (rolloverAlias) => {
             limit: ES_MAX_MAPPINGS,
           }
         },
-        lifecycle: {
-          name: `${ES_INDEX_PREFIX}-ilm-policy`,
-          rollover_alias: rolloverAlias,
-        }
+        ...cycle
       }
     };
   }
+  // Rollover alias can be undefined for platform initialized <= 5.8
+  const cycle = rolloverAlias ? {
+    plugins: {
+      index_state_management: {
+        rollover_alias: rolloverAlias,
+      }
+    }
+  } : {};
   return {
     mapping: {
       total_fields: {
         limit: ES_MAX_MAPPINGS,
       }
     },
-    plugins: {
-      index_state_management: {
-        rollover_alias: rolloverAlias,
-      }
-    }
+    ...cycle
   };
 };
 
