@@ -399,6 +399,7 @@ export const defaultValue = (n, tooltip = false) => {
       || n.phase_name
       || n.result_name
       || n.country
+      || n.key
       || (n.template && n.template.name)
       || (n.content && truncate(n.content, 30))
       || (n.hashes
@@ -435,6 +436,7 @@ export const defaultValue = (n, tooltip = false) => {
     || n.phase_name
     || n.result_name
     || n.country
+    || n.key
     || (n.template && n.template.name)
     || (n.content && truncate(n.content, 30))
     || (n.hashes
