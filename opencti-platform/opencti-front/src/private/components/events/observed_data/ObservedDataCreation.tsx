@@ -177,21 +177,23 @@ ObservedDataFormProps
           <Field
             component={DateTimePickerField}
             name="first_observed"
-            TextFieldProps={{
+            slotProps={{ textField: {
               label: t_i18n('First observed'),
               variant: 'standard',
               fullWidth: true,
               style: { marginTop: 20 },
+            },
             }}
           />
           <Field
             component={DateTimePickerField}
             name="last_observed"
-            TextFieldProps={{
+            slotProps={{ textField: {
               label: t_i18n('Last observed'),
               variant: 'standard',
               fullWidth: true,
               style: { marginTop: 20 },
+            },
             }}
           />
           <Field

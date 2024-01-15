@@ -225,14 +225,15 @@ const ReportEditionOverviewComponent = (props) => {
             name="published"
             onFocus={editor.changeFocus}
             onSubmit={handleSubmitField}
-            TextFieldProps={{
+            slotProps={{ textField: {
               label: t_i18n('Publication date'),
               variant: 'standard',
               fullWidth: true,
               style: { marginTop: 20 },
               helperText: (
-                <SubscriptionFocus context={context} fieldName="published" />
+                <SubscriptionFocus context={context} fieldName="published"/>
               ),
+            },
             }}
           />
           <OpenVocabField

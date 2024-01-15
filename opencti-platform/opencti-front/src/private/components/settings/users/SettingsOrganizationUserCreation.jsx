@@ -270,11 +270,12 @@ const SettingsOrganizationUserCreation = ({
               <Field
                 component={DateTimePickerField}
                 name="account_lock_after_date"
-                TextFieldProps={{
+                slotProps={{ textField: {
                   label: t_i18n('Account Expire Date'),
                   style: fieldSpacingContainerStyle,
                   variant: 'standard',
                   fullWidth: true,
+                },
                 }}
               />
               <div className={classes.buttons}>

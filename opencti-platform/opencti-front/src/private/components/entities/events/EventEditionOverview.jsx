@@ -222,14 +222,15 @@ const EventEditionOverviewComponent = (props) => {
             name="start_time"
             onFocus={editor.changeFocus}
             onSubmit={handleSubmitField}
-            TextFieldProps={{
+            slotProps={{ textField: {
               label: t_i18n('Start date'),
               variant: 'standard',
               fullWidth: true,
               style: { marginTop: 20 },
               helperText: (
-                <SubscriptionFocus context={context} fieldName="start_date" />
+                <SubscriptionFocus context={context} fieldName="start_date"/>
               ),
+            },
             }}
           />
           <Field
@@ -237,14 +238,15 @@ const EventEditionOverviewComponent = (props) => {
             name="stop_time"
             onFocus={editor.changeFocus}
             onSubmit={handleSubmitField}
-            TextFieldProps={{
+            slotProps={{ textField: {
               label: t_i18n('End date'),
               variant: 'standard',
               fullWidth: true,
               style: { marginTop: 20 },
               helperText: (
-                <SubscriptionFocus context={context} fieldName="end_date" />
+                <SubscriptionFocus context={context} fieldName="end_date"/>
               ),
+            },
             }}
           />
           {event.workflowEnabled && (

@@ -206,10 +206,11 @@ export const NoteCreationForm: FunctionComponent<NoteFormProps> = ({
           <Field
             component={DateTimePickerField}
             name="created"
-            TextFieldProps={{
+            slotProps={{ textField: {
               label: t_i18n('Publication date'),
               variant: 'standard',
               fullWidth: true,
+            },
             }}
           />
           <Field

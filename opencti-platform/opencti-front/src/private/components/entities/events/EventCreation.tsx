@@ -191,21 +191,23 @@ export const EventCreationForm: FunctionComponent<EventFormProps> = ({
           <Field
             component={DateTimePickerField}
             name="start_time"
-            TextFieldProps={{
+            slotProps={{ textField: {
               label: t_i18n('Start date'),
               variant: 'standard',
               fullWidth: true,
               style: { marginTop: 20 },
+            },
             }}
           />
           <Field
             component={DateTimePickerField}
             name="stop_time"
-            TextFieldProps={{
+            slotProps={{ textField: {
               label: t_i18n('End date'),
               variant: 'standard',
               fullWidth: true,
               style: { marginTop: 20 },
+            },
             }}
           />
           <CreatedByField

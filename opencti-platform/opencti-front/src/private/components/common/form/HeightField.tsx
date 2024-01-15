@@ -107,7 +107,7 @@ export const HeightFieldEdit: FunctionComponent<HeightFieldEditProps> = ({
                           },
                         });
                       }}
-                      TextFieldProps={{
+                      slotProps={{ textField: {
                         label: t_i18n('Date Seen'),
                         variant: 'standard',
                         helperText: (
@@ -116,6 +116,7 @@ export const HeightFieldEdit: FunctionComponent<HeightFieldEditProps> = ({
                             fieldName={`${name}.${index}.date_seen`}
                           />
                         ),
+                      },
                       }}
                     />
                   </div>
@@ -223,9 +224,10 @@ export const HeightFieldAdd: FunctionComponent<HeightFieldAddProps> = ({
                     <Field
                       component={DateTimePickerField}
                       name={`${name}.${index}.date_seen`}
-                      TextFieldProps={{
+                      slotProps={{ textField: {
                         label: t_i18n('Date Seen'),
                         variant: 'standard',
+                      },
                       }}
                       type="date"
                     />

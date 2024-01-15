@@ -555,21 +555,23 @@ class StixNestedRefRelationshipCreation extends Component {
               <Field
                 component={DateTimePickerField}
                 name="start_time"
-                TextFieldProps={{
+                slotProps={{ textField: {
                   label: t('Start time'),
                   variant: 'standard',
                   fullWidth: true,
                   style: { marginTop: 20 },
+                },
                 }}
               />
               <Field
                 component={DateTimePickerField}
                 name="stop_time"
-                TextFieldProps={{
+                slotProps={{ textField: {
                   label: t('Stop time'),
                   variant: 'standard',
                   fullWidth: true,
                   style: { marginTop: 20 },
+                },
                 }}
               />
               <ObjectMarkingField

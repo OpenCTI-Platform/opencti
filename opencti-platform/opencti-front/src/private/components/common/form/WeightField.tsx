@@ -71,9 +71,10 @@ export const WeightFieldAdd: FunctionComponent<WeightFieldAddProps> = ({
                   <Field
                     component={DateTimePickerField}
                     name={`${name}.${index}.date_seen`}
-                    TextFieldProps={{
+                    slotProps={{ textField: {
                       label: t_i18n('Date Seen'),
                       variant: 'standard',
+                    },
                     }}
                     type="date"
                   />
@@ -194,7 +195,7 @@ export const WeightFieldEdit: FunctionComponent<WeightFieldEditProps> = ({
                           },
                         });
                       }}
-                      TextFieldProps={{
+                      slotProps={{ textField: {
                         label: t_i18n('Date Seen'),
                         variant: 'standard',
                         helperText: (
@@ -203,6 +204,7 @@ export const WeightFieldEdit: FunctionComponent<WeightFieldEditProps> = ({
                             fieldName={`${name}.${index}.date_seen`}
                           />
                         ),
+                      },
                       }}
                     />
                   </div>

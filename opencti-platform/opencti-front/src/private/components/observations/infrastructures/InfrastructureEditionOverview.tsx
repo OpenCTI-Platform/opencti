@@ -312,14 +312,15 @@ const InfrastructureEditionOverviewComponent: FunctionComponent<InfrastructureEd
             name="first_seen"
             onFocus={editor.changeFocus}
             onChange={editor.changeField}
-            TextFieldProps={{
+            slotProps={{ textField: {
               label: t_i18n('First seen'),
               variant: 'standard',
               fullWidth: true,
               style: { marginTop: 20 },
               helperText: (
-                <SubscriptionFocus context={context} fieldName="first_seen" />
+                <SubscriptionFocus context={context} fieldName="first_seen"/>
               ),
+            },
             }}
           />
           <Field
@@ -327,14 +328,15 @@ const InfrastructureEditionOverviewComponent: FunctionComponent<InfrastructureEd
             name="last_seen"
             onFocus={editor.changeFocus}
             onChange={editor.changeField}
-            TextFieldProps={{
+            slotProps={{ textField: {
               label: t_i18n('Last seen'),
               variant: 'standard',
               fullWidth: true,
               style: { marginTop: 20 },
               helperText: (
-                <SubscriptionFocus context={context} fieldName="last_seen" />
+                <SubscriptionFocus context={context} fieldName="last_seen"/>
               ),
+            },
             }}
           />
           <KillChainPhasesField

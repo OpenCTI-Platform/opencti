@@ -30,7 +30,7 @@ const DateTimePickerField = (props) => {
     onChange,
     onFocus,
     onSubmit,
-    TextFieldProps,
+    slotProps,
     withSeconds = false,
   } = props;
   const intl = useIntl();
@@ -79,19 +79,17 @@ const DateTimePickerField = (props) => {
         format={
           dateTimeFormatsMapWithSeconds[intl.locale] || 'yyyy-MM-dd hh:mm:ss a'
         }
-        slotProps={{
-          textField: (params) => (
-            <TextField
-              {...params}
-              onFocus={internalOnFocus}
-              onBlur={internalOnBlur}
-              error={!R.isNil(meta.error)}
-              helperText={
-                (!R.isNil(meta.error) && meta.error) || TextFieldProps.helperText
-              }
-            />
-          ),
-        }}
+        renderInput={(params) => (
+          <TextField
+            {...params}
+            onFocus={internalOnFocus}
+            onBlur={internalOnBlur}
+            error={!R.isNil(meta.error)}
+            helperText={
+              (!R.isNil(meta.error) && meta.error) || slotProps.helperText
+            }
+          />
+        )}
       />
     );
   }
@@ -105,20 +103,18 @@ const DateTimePickerField = (props) => {
       onAccept={internalOnAccept}
       onChange={internalOnChange}
       views={['year', 'month', 'day', 'hours', 'minutes']}
-      inputFormat={dateTimeFormatsMap[intl.locale] || 'yyyy-MM-dd hh:mm a'}
-      slotProps={{
-        textField: (params) => (
-          <TextField
-            {...params}
-            onFocus={internalOnFocus}
-            onBlur={internalOnBlur}
-            error={!R.isNil(meta.error)}
-            helperText={
-              (!R.isNil(meta.error) && meta.error) || TextFieldProps.helperText
-            }
-          />
-        ),
-      }}
+      format={dateTimeFormatsMap[intl.locale] || 'yyyy-MM-dd hh:mm a'}
+      renderInput={(params) => (
+        <TextField
+          {...params}
+          onFocus={internalOnFocus}
+          onBlur={internalOnBlur}
+          error={!R.isNil(meta.error)}
+          helperText={
+            (!R.isNil(meta.error) && meta.error) || slotProps.helperText
+          }
+        />
+      )}
     />
   );
 };

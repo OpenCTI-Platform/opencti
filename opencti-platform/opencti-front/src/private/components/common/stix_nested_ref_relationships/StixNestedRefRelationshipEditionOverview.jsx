@@ -212,7 +212,7 @@ class StixNestedRefRelationshipEditionOverview extends Component {
                   name="start_time"
                   onFocus={this.handleChangeFocus.bind(this)}
                   onSubmit={this.handleSubmitField.bind(this)}
-                  TextFieldProps={{
+                  slotProps={{ textField: {
                     label: t('Start time'),
                     variant: 'standard',
                     fullWidth: true,
@@ -222,6 +222,7 @@ class StixNestedRefRelationshipEditionOverview extends Component {
                         fieldName="start_time"
                       />
                     ),
+                  },
                   }}
                 />
                 <Field
@@ -229,7 +230,7 @@ class StixNestedRefRelationshipEditionOverview extends Component {
                   name="stop_time"
                   onFocus={this.handleChangeFocus.bind(this)}
                   onSubmit={this.handleSubmitField.bind(this)}
-                  TextFieldProps={{
+                  slotProps={{ textField: {
                     label: t('Stop time'),
                     variant: 'standard',
                     fullWidth: true,
@@ -240,6 +241,7 @@ class StixNestedRefRelationshipEditionOverview extends Component {
                         fieldName="stop_time"
                       />
                     ),
+                  },
                   }}
                 />
               </Form>

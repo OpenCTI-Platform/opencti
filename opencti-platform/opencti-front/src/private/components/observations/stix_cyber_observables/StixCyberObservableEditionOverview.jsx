@@ -410,7 +410,7 @@ const StixCyberObservableEditionOverviewComponent = ({
                           withSeconds={true}
                           onFocus={handleChangeFocus}
                           onSubmit={handleSubmitField}
-                          TextFieldProps={{
+                          slotProps={{ textField: {
                             label: attribute.value,
                             variant: 'standard',
                             fullWidth: true,
@@ -421,6 +421,7 @@ const StixCyberObservableEditionOverviewComponent = ({
                                 fieldName={attribute.value}
                               />
                             ),
+                          },
                           }}
                         />
                       );

@@ -180,7 +180,7 @@ const ThreatActorIndividualEditionDemographicsComponent = ({
                 id="DateOfBirth"
                 onFocus={handleChangeFocus}
                 onSubmit={handleSubmitField}
-                TextFieldProps={{
+                slotProps={{ textField: {
                   label: t_i18n('Date of Birth'),
                   variant: 'standard',
                   fullWidth: true,
@@ -191,6 +191,7 @@ const ThreatActorIndividualEditionDemographicsComponent = ({
                       fieldName="date_of_birth"
                     />
                   ),
+                },
                 }}
               />
               <OpenVocabField
