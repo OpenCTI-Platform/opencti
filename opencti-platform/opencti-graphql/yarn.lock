@@ -8386,14 +8386,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"file-type@npm:18.7.0":
-  version: 18.7.0
-  resolution: "file-type@npm:18.7.0"
+"file-type@npm:19.0.0":
+  version: 19.0.0
+  resolution: "file-type@npm:19.0.0"
   dependencies:
     readable-web-to-node-stream: ^3.0.2
     strtok3: ^7.0.0
     token-types: ^5.0.1
-  checksum: 039dcb819858a3bc8285b51e4a756eb4b8d943dcf20e52fa4c097624cc99efd61d51aa595414879b7f86ea23fdbd83553aa3be679df2a85f5840e1ea03f93ef9
+  checksum: 03eec30a0b098f400436d5c578a0f2e8eaf58989fe7eae8762477348305181489c6108c4d560d78d6425fd0e16e99a302ea85fb33d1e046aa166c86884e109af
   languageName: node
   linkType: hard
 
@@ -11286,7 +11286,7 @@ __metadata:
     express-session: 1.17.3
     fast-glob: 3.3.2
     fast-json-patch: 3.1.1
-    file-type: 18.7.0
+    file-type: 19.0.0
     github-api: 3.4.0
     graphql: 16.8.1
     graphql-constraint-directive: 5.3.0
