@@ -67,7 +67,7 @@
     "archiver-zip-encrypted": "1.0.11",
     "async-lock": "1.4.1",
     "axios": "1.6.5",
-    "axios-cookiejar-support": "4.0.7",
+    "axios-cookiejar-support": "5.0.0",
     "bcryptjs": "2.4.3",
     "blocked-at": "1.2.0",
     "bluebird": "3.7.2",

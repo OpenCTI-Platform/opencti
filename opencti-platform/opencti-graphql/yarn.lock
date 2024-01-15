@@ -5979,15 +5979,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"axios-cookiejar-support@npm:4.0.7":
-  version: 4.0.7
-  resolution: "axios-cookiejar-support@npm:4.0.7"
+"axios-cookiejar-support@npm:5.0.0":
+  version: 5.0.0
+  resolution: "axios-cookiejar-support@npm:5.0.0"
   dependencies:
-    http-cookie-agent: ^5.0.4
+    http-cookie-agent: ^6.0.1
   peerDependencies:
     axios: ">=0.20.0"
     tough-cookie: ">=4.0.0"
-  checksum: aeaaa631026edb6d215dcdb042446c34240c2374104ec2708eb643158f0506c6d52fe5eea56882efde7ae3f020e072fc48a5255c515b7297dcc9ac00b8c494d2
+  checksum: d0b43d6e90dff056c6f524baef2caee2c50fa5c6f6b66d1dbfd53d28f624f0a800c6f1dfc112b27c52cdd3908518045f840e5070fa4921a53e89675f0a69282c
   languageName: node
   linkType: hard
 
@@ -9132,21 +9132,21 @@ __metadata:
   languageName: node
   linkType: hard
 
-"http-cookie-agent@npm:^5.0.4":
-  version: 5.0.4
-  resolution: "http-cookie-agent@npm:5.0.4"
+"http-cookie-agent@npm:^6.0.1":
+  version: 6.0.1
+  resolution: "http-cookie-agent@npm:6.0.1"
   dependencies:
     agent-base: ^7.1.0
   peerDependencies:
     deasync: ^0.1.26
     tough-cookie: ^4.0.0
-    undici: ^5.11.0
+    undici: ^5.11.0 || ^6.0.0
   peerDependenciesMeta:
     deasync:
       optional: true
     undici:
       optional: true
-  checksum: c136529cc402d0d7b8d3ae644a41f6ebc986951e0add60efbb7faf6cee74bf0895a25f8827fc362e4dc9238f937bb64d0c144e0236fd5af6cbb48849bbf327cc
+  checksum: 461c6f988c517372dbcbd01f7cc735b33520d73aba454f4a6d14b1fb97dc3f3ba1a73de32933bae53377b403f1c3988471b8e1f37b50238c17e10702460e1a67
   languageName: node
   linkType: hard
 
@@ -11229,7 +11229,7 @@ __metadata:
     archiver-zip-encrypted: 1.0.11
     async-lock: 1.4.1
     axios: 1.6.5
-    axios-cookiejar-support: 4.0.7
+    axios-cookiejar-support: 5.0.0
     bcryptjs: 2.4.3
     blocked-at: 1.2.0
     bluebird: 3.7.2
