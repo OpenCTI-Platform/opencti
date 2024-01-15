@@ -49,6 +49,7 @@ import {
   ENTITY_MAC_ADDR,
   ENTITY_NETWORK_TRAFFIC,
   ENTITY_PROCESS,
+  ENTITY_URL,
   ENTITY_USER_ACCOUNT,
   ENTITY_WINDOWS_REGISTRY_KEY,
   ENTITY_WINDOWS_REGISTRY_VALUE_TYPE
@@ -76,6 +77,7 @@ schemaRelationsRefDefinition.registerRelationsRef(ENTITY_EMAIL_MESSAGE, [
   buildRelationRef(bcc, (_: string, toType: string) => ENTITY_EMAIL_ADDR === toType),
   buildRelationRef(bodyMultipart, (_: string, toType: string) => ENTITY_EMAIL_MIME_PART_TYPE === toType),
   buildRelationRef(rawEmail, (_: string, toType: string) => ENTITY_HASHED_OBSERVABLE_ARTIFACT === toType),
+  buildRelationRef(contains, (_: string, toType: string) => [ENTITY_HASHED_OBSERVABLE_STIX_FILE, ENTITY_HASHED_OBSERVABLE_ARTIFACT, ENTITY_URL, ENTITY_EMAIL_ADDR].includes(toType))
 ]);
 schemaRelationsRefDefinition.registerRelationsRef(ENTITY_EMAIL_ADDR, [
   buildRelationRef(belongsTo, (_: string, toType: string) => ENTITY_USER_ACCOUNT === toType)

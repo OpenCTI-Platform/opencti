@@ -757,8 +757,9 @@ const convertEmailAddressToStix = (instance: StoreCyberObservable, type: string)
 };
 const convertEmailMessageToStix = (instance: StoreCyberObservable, type: string): SCO.StixEmailMessage => {
   assertType(ENTITY_EMAIL_MESSAGE, type);
+  const stixCyberObject = buildStixCyberObservable(instance);
   return {
-    ...buildStixCyberObservable(instance),
+    ...stixCyberObject,
     is_multipart: instance.is_multipart,
     date: convertToStixDate(instance.attribute_date),
     content_type: instance.content_type,
@@ -773,7 +774,14 @@ const convertEmailMessageToStix = (instance: StoreCyberObservable, type: string)
     additional_header_fields: {}, // TODO Implement
     body: instance.body,
     body_multipart: buildEmailBodyMultipart(instance),
-    raw_email_ref: instance[INPUT_RAW_EMAIL]?.standard_id
+    raw_email_ref: instance[INPUT_RAW_EMAIL]?.standard_id,
+    extensions: {
+      [STIX_EXT_OCTI]: stixCyberObject.extensions[STIX_EXT_OCTI],
+      [STIX_EXT_OCTI_SCO]: cleanObject({
+        ...stixCyberObject.extensions[STIX_EXT_OCTI_SCO],
+        contains_refs: (instance[INPUT_CONTAINS] ?? []).map((m) => m.standard_id),
+      })
+    }
   };
 };
 const convertFileToStix = (instance: StoreCyberObservable, type: string): SCO.StixFile => {

@@ -74,6 +74,10 @@ export interface StixEmailBodyMultipart extends StixInternalEmailBodyMultipart, 
   };
 }
 
+// Email Message Object Specific Properties
+export interface EmailMessageExtension extends CyberObjectExtension {
+  contains_refs: Array<StixId>;
+}
 // is_multipart, date, content_type, from_ref, sender_ref, to_refs, cc_refs, bcc_refs,
 // subject, received_lines, additional_header_fields, body, body_multipart, raw_email_ref
 export interface StixEmailMessage extends StixCyberObject {
@@ -92,6 +96,10 @@ export interface StixEmailMessage extends StixCyberObject {
   body: string; // optional
   body_multipart: Array<StixInternalEmailBodyMultipart>; // optional
   raw_email_ref: StixId | undefined; // optional
+  extensions: {
+    [STIX_EXT_OCTI]: StixOpenctiExtension;
+    [STIX_EXT_OCTI_SCO]: EmailMessageExtension;
+  };
 }
 
 // File Object Specific Properties
