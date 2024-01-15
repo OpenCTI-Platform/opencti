@@ -46,13 +46,13 @@ const useStyles = makeStyles({
   },
   containerKnowledge: {
     position: 'absolute',
-    top: 50,
-    right: 0,
+    top: 140,
+    right: 24,
   },
   containerGraph: {
     position: 'absolute',
-    top: 50,
-    right: 0,
+    top: 140,
+    right: 24,
   },
   title: {
     float: 'left',
