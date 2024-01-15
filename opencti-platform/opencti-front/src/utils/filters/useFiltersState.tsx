@@ -16,7 +16,7 @@ interface useFiltersStateProps {
   filters: FilterGroup,
   latestAddFilterId?: string
 }
-const useFiltersState = (initFilters: FilterGroup = emptyFilterGroup): [FilterGroup, handleFilterHelpers] => {
+const useFiltersState = (initFilters: FilterGroup = emptyFilterGroup, defaultClearFilters: FilterGroup = emptyFilterGroup): [FilterGroup, handleFilterHelpers] => {
   const [filtersState, setFiltersState] = useState<useFiltersStateProps>({
     filters: initFilters,
     latestAddFilterId: undefined,
@@ -73,7 +73,7 @@ const useFiltersState = (initFilters: FilterGroup = emptyFilterGroup): [FilterGr
     },
     handleClearAllFilters: () => {
       setFiltersState({
-        filters: initFilters,
+        filters: { ...defaultClearFilters },
         latestAddFilterId: undefined });
     },
     handleRemoveFilterById: (id: string) => {
