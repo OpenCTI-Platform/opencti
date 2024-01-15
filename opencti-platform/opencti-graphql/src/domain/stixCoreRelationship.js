@@ -47,12 +47,19 @@ export const findById = (context, user, stixCoreRelationshipId) => {
 export const stixCoreRelationshipsDistribution = async (context, user, args) => {
   // it's not possible to have a dynamicFrom and dynamicTo in args here for the moment
   // consider adding these fields in opencti.graphql if you want to use them
-  const finalArgs = await buildArgsFromDynamicFilters(context, user, args, []);
-  return distributionRelations(context, context.user, finalArgs);
+  const { dynamicArgs, isEmptyDynamic } = await buildArgsFromDynamicFilters(context, user, args);
+  if (isEmptyDynamic) {
+    return [];
+  }
+  return distributionRelations(context, context.user, dynamicArgs);
 };
 export const stixCoreRelationshipsNumber = async (context, user, args) => {
   const { relationship_type = [ABSTRACT_STIX_CORE_RELATIONSHIP], authorId } = args;
-  let finalArgs = await buildArgsFromDynamicFilters(context, user, args, { count: 0, total: 0 });
+  const { dynamicArgs, isEmptyDynamic } = await buildArgsFromDynamicFilters(context, user, args);
+  if (isEmptyDynamic) {
+    return { count: 0, total: 0 };
+  }
+  let finalArgs = dynamicArgs;
   if (isNotEmptyField(authorId)) {
     const filters = addFilter(args.filters, buildRefRelationKey(RELATION_CREATED_BY, '*'), authorId);
     finalArgs = { ...finalArgs, filters };
@@ -67,9 +74,11 @@ export const stixCoreRelationshipsNumber = async (context, user, args) => {
 export const stixCoreRelationshipsMultiTimeSeries = async (context, user, args) => {
   return Promise.all(args.timeSeriesParameters.map(async (timeSeriesParameter) => {
     const { startDate, endDate, interval } = args;
-    const defaultResult = { data: fillTimeSeries(startDate, endDate, interval, []) };
-    const finalArgs = await buildArgsFromDynamicFilters(context, user, timeSeriesParameter, defaultResult);
-    return { data: timeSeriesRelations(context, user, { ...args, ...finalArgs }) };
+    const { dynamicArgs, isEmptyDynamic } = await buildArgsFromDynamicFilters(context, user, timeSeriesParameter);
+    if (isEmptyDynamic) {
+      return { data: fillTimeSeries(startDate, endDate, interval, []) };
+    }
+    return { data: timeSeriesRelations(context, user, { ...args, ...dynamicArgs }) };
   }));
 };
 // endregion

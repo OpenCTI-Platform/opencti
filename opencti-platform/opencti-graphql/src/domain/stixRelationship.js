@@ -11,7 +11,7 @@ import { UnsupportedError } from '../config/errors';
 import { schemaTypesDefinition } from '../schema/schema-types';
 import { isFilterGroupNotEmpty } from '../utils/filtering/filtering-utils';
 
-export const buildArgsFromDynamicFilters = async (context, user, args, defaultResult) => {
+export const buildArgsFromDynamicFilters = async (context, user, args) => {
   const { dynamicFrom, dynamicTo } = args;
   const listEntitiesWithFilters = async (filters) => listEntities(context, user, [ABSTRACT_STIX_OBJECT], {
     connectionFormat: false,
@@ -25,7 +25,7 @@ export const buildArgsFromDynamicFilters = async (context, user, args, defaultRe
     if (fromIds.length > 0) {
       finalArgs = { ...finalArgs, fromId: args.fromId ? [...fromIds, args.fromId] : fromIds, dynamicFrom: undefined };
     } else {
-      return defaultResult;
+      return { dynamicArgs: null, isEmptyDynamic: true };
     }
   } else {
     finalArgs = { ...finalArgs, dynamicFrom: undefined };
@@ -35,18 +35,21 @@ export const buildArgsFromDynamicFilters = async (context, user, args, defaultRe
     if (toIds.length > 0) {
       finalArgs = { ...finalArgs, toId: args.toId ? [...toIds, args.toId] : toIds, dynamicTo: undefined };
     } else {
-      return defaultResult;
+      return { dynamicArgs: null, isEmptyDynamic: true };
     }
   } else {
     finalArgs = { ...finalArgs, dynamicTo: undefined };
   }
-  return finalArgs;
+  return { dynamicArgs: finalArgs, isEmptyDynamic: false };
 };
 
 export const findAll = async (context, user, args) => {
-  const finalArgs = await buildArgsFromDynamicFilters(context, user, args, { edges: [] });
-  const type = R.propOr(ABSTRACT_STIX_RELATIONSHIP, 'relationship_type', finalArgs);
-  return listRelations(context, user, type, R.dissoc('relationship_type', finalArgs));
+  const { dynamicArgs, isEmptyDynamic } = await buildArgsFromDynamicFilters(context, user, args);
+  if (isEmptyDynamic) {
+    return { edges: [] };
+  }
+  const type = R.propOr(ABSTRACT_STIX_RELATIONSHIP, 'relationship_type', dynamicArgs);
+  return listRelations(context, user, type, R.dissoc('relationship_type', dynamicArgs));
 };
 
 export const findById = (context, user, stixRelationshipId) => {
@@ -60,13 +63,19 @@ export const stixRelationshipDelete = async (context, user, stixRelationshipId) 
 
 // region stats
 export const stixRelationshipsDistribution = async (context, user, args) => {
-  const finalArgs = await buildArgsFromDynamicFilters(context, user, args, []);
-  return distributionRelations(context, context.user, finalArgs);
+  const { dynamicArgs, isEmptyDynamic } = await buildArgsFromDynamicFilters(context, user, args);
+  if (isEmptyDynamic) {
+    return [];
+  }
+  return distributionRelations(context, context.user, dynamicArgs);
 };
 export const stixRelationshipsNumber = async (context, user, args) => {
   const { relationship_type = [ABSTRACT_STIX_RELATIONSHIP] } = args;
-  const finalArgs = await buildArgsFromDynamicFilters(context, user, args, { count: 0, total: 0 });
-  const numberArgs = buildRelationsFilter(relationship_type, finalArgs);
+  const { dynamicArgs, isEmptyDynamic } = await buildArgsFromDynamicFilters(context, user, args);
+  if (isEmptyDynamic) {
+    return { count: 0, total: 0 };
+  }
+  const numberArgs = buildRelationsFilter(relationship_type, dynamicArgs);
   const indices = args.onlyInferred ? [READ_INDEX_INFERRED_RELATIONSHIPS]
     : [READ_INDEX_STIX_CORE_RELATIONSHIPS, READ_INDEX_STIX_SIGHTING_RELATIONSHIPS, READ_INDEX_INFERRED_RELATIONSHIPS];
   return {
@@ -77,9 +86,11 @@ export const stixRelationshipsNumber = async (context, user, args) => {
 export const stixRelationshipsMultiTimeSeries = async (context, user, args) => {
   return Promise.all(args.timeSeriesParameters.map(async (timeSeriesParameter) => {
     const { startDate, endDate, interval } = args;
-    const defaultResult = { data: fillTimeSeries(startDate, endDate, interval, []) };
-    const finalArgs = await buildArgsFromDynamicFilters(context, user, timeSeriesParameter, defaultResult);
-    return { data: timeSeriesRelations(context, user, { ...args, ...finalArgs }) };
+    const { dynamicArgs, isEmptyDynamic } = await buildArgsFromDynamicFilters(context, user, timeSeriesParameter);
+    if (isEmptyDynamic) {
+      return { data: fillTimeSeries(startDate, endDate, interval, []) };
+    }
+    return { data: timeSeriesRelations(context, user, { ...args, ...dynamicArgs }) };
   }));
 };
 // endregion
