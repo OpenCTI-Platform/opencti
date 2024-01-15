@@ -437,6 +437,8 @@ const WidgetConfig = ({ workspace, widget, onComplete, closeMenu }) => {
       ...n,
       perspective: selectedPerspective,
       filters: selectedPerspective === n.perspective ? n.filters : emptyFilterGroup,
+      dynamicFrom: selectedPerspective === n.perspective ? n.dynamicFrom : emptyFilterGroup,
+      dynamicTo: selectedPerspective === n.perspective ? n.dynamicTo : emptyFilterGroup,
     }));
     setDataSelection(newDataSelection);
     setPerspective(selectedPerspective);
