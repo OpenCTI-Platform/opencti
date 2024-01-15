@@ -2499,5 +2499,6 @@
   "Date attribute": "Atributo fecha",
   "The tag has been added": "Se ha añadido la etiqueta",
   "The tag has been removed": "Se ha eliminado la etiqueta",
-  "I have read and comply with the above statement": "He leído y acepto la declaración anterior"
+  "I have read and comply with the above statement": "He leído y acepto la declaración anterior",
+  "You need to activate OpenCTI enterprise edition to use this feature.": "Es necesario activar la edición empresarial de OpenCTI para utilizar esta función."
 }
