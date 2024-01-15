@@ -106,7 +106,7 @@ const RootCaseRftComponent = ({ queryRef, caseId }) => {
   return (
     <>
       {caseData ? (
-        <div style={{ paddingRight, position: 'relative' }}>
+        <div style={{ paddingRight }}>
           <ContainerHeader
             container={caseData}
             PopoverComponent={<CaseRftPopover id={caseData.id} />}

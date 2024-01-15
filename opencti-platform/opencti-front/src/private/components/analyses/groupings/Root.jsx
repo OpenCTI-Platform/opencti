@@ -115,7 +115,7 @@ class RootGrouping extends Component {
                   paddingRight = 350;
                 }
                 return (
-                  <div style={{ paddingRight, position: 'relative' }}>
+                  <div style={{ paddingRight }}>
                     <ContainerHeader
                       container={grouping}
                       PopoverComponent={<GroupingPopover />}
