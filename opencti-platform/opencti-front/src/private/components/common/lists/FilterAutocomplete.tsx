@@ -60,7 +60,7 @@ const FilterAutocomplete: FunctionComponent<FilterAutocompleteProps> = (props) =
     availableRelationFilterTypes,
     openOnFocus,
   } = props;
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   const classes = useStyles();
   const [searchScope, setSearchScope] = useState<Record<string, string[]>>(
     availableRelationFilterTypes || {
@@ -162,7 +162,7 @@ const FilterAutocomplete: FunctionComponent<FilterAutocompleteProps> = (props) =
       autoSelect={false}
       autoHighlight={true}
       getOptionLabel={(option) => option.label ?? ''}
-      noOptionsText={t('No available options')}
+      noOptionsText={t_i18n('No available options')}
       options={options}
       onInputChange={(event) => searchEntities(filterKey, cacheEntities, setCacheEntities, event)}
       inputValue={input}
@@ -170,13 +170,13 @@ const FilterAutocomplete: FunctionComponent<FilterAutocompleteProps> = (props) =
       groupBy={
         isStixObjectTypes
           ? (option) => option.type
-          : (option) => t(option.group ? option.group : filterKey)
+          : (option) => t_i18n(option.group ? option.group : filterKey)
       }
       isOptionEqualToValue={(option, value) => option.value === value.value}
       renderInput={(params) => (
         <TextField
           {...params}
-          label={t(filterKey)}
+          label={t_i18n(filterKey)}
           variant="outlined"
           size="small"
           fullWidth={true}

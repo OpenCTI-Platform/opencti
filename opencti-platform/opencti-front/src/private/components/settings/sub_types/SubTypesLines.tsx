@@ -57,12 +57,12 @@ const SubTypesLines: FunctionComponent<SubTypesLinesProps> = ({
     fragmentDef: subTypesLinesFragment,
     queryRef,
   });
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   const filterOnSubType = ({ node }: { node: { label: string } }) => {
     if (keyword) {
       return (
         node.label.toLowerCase().indexOf(keyword.toLowerCase()) !== -1
-        || t(`entity_${node.label}`)
+        || t_i18n(`entity_${node.label}`)
           .toLowerCase()
           .indexOf(keyword.toLowerCase()) !== -1
       );
@@ -73,8 +73,8 @@ const SubTypesLines: FunctionComponent<SubTypesLinesProps> = ({
     edgeA: { node: { label: string } },
     edgeB: { node: { label: string } },
   ) => {
-    return t(`entity_${edgeA.node.label}`).localeCompare(
-      t(`entity_${edgeB.node.label}`),
+    return t_i18n(`entity_${edgeA.node.label}`).localeCompare(
+      t_i18n(`entity_${edgeB.node.label}`),
     );
   };
   const subTypes = (data?.subTypes?.edges ?? [])

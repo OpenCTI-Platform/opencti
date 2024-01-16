@@ -66,7 +66,7 @@ const SearchIndexedFileLineComponent: FunctionComponent<SearchIndexedFileLineCom
   dataColumns,
 }) => {
   const classes = useStyles();
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   let entityLink = node.entity ? `${resolveLink(node.entity.entity_type)}/${node.entity.id}` : '';
   const isGrantedToFiles = useGranted([KNOWLEDGE_KNUPLOAD, KNOWLEDGE_KNGETEXPORT]);
   if (entityLink && isGrantedToFiles) {
@@ -101,7 +101,7 @@ const SearchIndexedFileLineComponent: FunctionComponent<SearchIndexedFileLineCom
       />
       <ListItemSecondaryAction>
         {node.entity && entityLink && (
-          <Tooltip title={t('Open the entity overview in a separated tab')}>
+          <Tooltip title={t_i18n('Open the entity overview in a separated tab')}>
             <IconButton
               component={Link}
               target="_blank"

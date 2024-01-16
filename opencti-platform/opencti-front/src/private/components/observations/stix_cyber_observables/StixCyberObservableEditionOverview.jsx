@@ -94,7 +94,7 @@ const StixCyberObservableEditionOverviewComponent = ({
   handleClose,
 }) => {
   const navigate = useNavigate();
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   const { isVocabularyField, fieldToCategory } = useVocabularyCategory();
   const onSubmit = (values, { setSubmitting }) => {
     const commitMessage = values.message;
@@ -301,7 +301,7 @@ const StixCyberObservableEditionOverviewComponent = ({
                     component={TextField}
                     variant="standard"
                     name="x_opencti_score"
-                    label={t('Score')}
+                    label={t_i18n('Score')}
                     fullWidth={true}
                     type="number"
                     onFocus={handleChangeFocus}
@@ -316,7 +316,7 @@ const StixCyberObservableEditionOverviewComponent = ({
                   <Field
                     component={MarkdownField}
                     name="x_opencti_description"
-                    label={t('Description')}
+                    label={t_i18n('Description')}
                     fullWidth={true}
                     multiline={true}
                     rows="4"
@@ -338,7 +338,7 @@ const StixCyberObservableEditionOverviewComponent = ({
                             component={TextField}
                             variant="standard"
                             name="/hashes/MD5"
-                            label={t('hash_md5')}
+                            label={t_i18n('hash_md5')}
                             fullWidth={true}
                             style={{ marginTop: 20 }}
                             onFocus={handleChangeFocus}
@@ -354,7 +354,7 @@ const StixCyberObservableEditionOverviewComponent = ({
                             component={TextField}
                             variant="standard"
                             name="/hashes/SHA-1"
-                            label={t('hash_sha-1')}
+                            label={t_i18n('hash_sha-1')}
                             fullWidth={true}
                             style={{ marginTop: 20 }}
                             onFocus={handleChangeFocus}
@@ -370,7 +370,7 @@ const StixCyberObservableEditionOverviewComponent = ({
                             component={TextField}
                             variant="standard"
                             name="/hashes/SHA-256"
-                            label={t('hash_sha-256')}
+                            label={t_i18n('hash_sha-256')}
                             fullWidth={true}
                             style={{ marginTop: 20 }}
                             onFocus={handleChangeFocus}
@@ -386,7 +386,7 @@ const StixCyberObservableEditionOverviewComponent = ({
                             component={TextField}
                             variant="standard"
                             name="/hashes/SHA-512"
-                            label={t('hash_sha-512')}
+                            label={t_i18n('hash_sha-512')}
                             fullWidth={true}
                             style={{ marginTop: 20 }}
                             onFocus={handleChangeFocus}
@@ -469,7 +469,7 @@ const StixCyberObservableEditionOverviewComponent = ({
                       return (
                         <OpenVocabField
                           key={attribute.value}
-                          label={t(attribute.value)}
+                          label={t_i18n(attribute.value)}
                           type={fieldToCategory(
                             stixCyberObservable.entity_type,
                             attribute.value,

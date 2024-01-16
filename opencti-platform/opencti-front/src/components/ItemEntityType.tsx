@@ -33,7 +33,7 @@ const ItemEntityType: FunctionComponent<ItemEntityTypeProps> = ({
   entityType,
 }) => {
   const classes = useStyles();
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   const style = variant === 'inList' ? classes.chipInList : classes.chip;
   return (
     <Chip
@@ -43,7 +43,7 @@ const ItemEntityType: FunctionComponent<ItemEntityTypeProps> = ({
         color: itemColor(entityType),
         border: `1px solid ${itemColor(entityType)}`,
       }}
-      label={t(`entity_${entityType}`)}
+      label={t_i18n(`entity_${entityType}`)}
     />
   );
 };

@@ -82,15 +82,15 @@ export const AdministrativeAreaCreationForm: FunctionComponent<AdministrativeAre
   inputValue,
 }) => {
   const classes = useStyles();
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   const basicShape = {
-    name: Yup.string().min(2).required(t('This field is required')),
+    name: Yup.string().min(2).required(t_i18n('This field is required')),
     description: Yup.string().nullable(),
     latitude: Yup.number()
-      .typeError(t('This field must be a number'))
+      .typeError(t_i18n('This field must be a number'))
       .nullable(),
     longitude: Yup.number()
-      .typeError(t('This field must be a number'))
+      .typeError(t_i18n('This field must be a number'))
       .nullable(),
   };
   const administrativeAreaValidator = useSchemaCreationValidation(
@@ -158,14 +158,14 @@ export const AdministrativeAreaCreationForm: FunctionComponent<AdministrativeAre
             component={TextField}
             variant="standard"
             name="name"
-            label={t('Name')}
+            label={t_i18n('Name')}
             fullWidth={true}
             detectDuplicate={['Administrative-Area']}
           />
           <Field
             component={MarkdownField}
             name="description"
-            label={t('Description')}
+            label={t_i18n('Description')}
             fullWidth={true}
             multiline={true}
             rows={4}
@@ -175,7 +175,7 @@ export const AdministrativeAreaCreationForm: FunctionComponent<AdministrativeAre
             component={TextField}
             variant="standard"
             name="latitude"
-            label={t('Latitude')}
+            label={t_i18n('Latitude')}
             fullWidth={true}
             style={{ marginTop: 20 }}
           />
@@ -183,7 +183,7 @@ export const AdministrativeAreaCreationForm: FunctionComponent<AdministrativeAre
             component={TextField}
             variant="standard"
             name="longitude"
-            label={t('Longitude')}
+            label={t_i18n('Longitude')}
             fullWidth={true}
             style={{ marginTop: 20 }}
           />
@@ -216,7 +216,7 @@ export const AdministrativeAreaCreationForm: FunctionComponent<AdministrativeAre
               disabled={isSubmitting}
               classes={{ root: classes.button }}
             >
-              {t('Cancel')}
+              {t_i18n('Cancel')}
             </Button>
             <Button
               variant="contained"
@@ -225,7 +225,7 @@ export const AdministrativeAreaCreationForm: FunctionComponent<AdministrativeAre
               disabled={isSubmitting}
               classes={{ root: classes.button }}
             >
-              {t('Create')}
+              {t_i18n('Create')}
             </Button>
           </div>
         </Form>
@@ -239,7 +239,7 @@ const AdministrativeAreaCreation = ({
 }: {
   paginationOptions: AdministrativeAreasLinesPaginationQuery$variables;
 }) => {
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   const updater = (store: RecordSourceSelectorProxy) => {
     insertNode(
       store,
@@ -250,7 +250,7 @@ const AdministrativeAreaCreation = ({
   };
   return (
     <Drawer
-      title={t('Create an area')}
+      title={t_i18n('Create an area')}
       variant={DrawerVariant.create}
     >
       {({ onClose }) => (

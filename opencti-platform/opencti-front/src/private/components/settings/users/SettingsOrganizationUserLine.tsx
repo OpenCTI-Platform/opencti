@@ -66,7 +66,7 @@ interface SettingsOrganizationUserLineComponentProps {
 
 export const SettingsOrganizationUserLine: FunctionComponent<SettingsOrganizationUserLineComponentProps> = ({ dataColumns, node, entityId: organizationId }) => {
   const classes = useStyles();
-  const { fd, t } = useFormatter();
+  const { fd, t_i18n } = useFormatter();
 
   const user = useFragment(UserLineFragment, node);
   const memberIsOrganizationAdmin = (user.administrated_organizations ?? []).map(({ id }) => id).includes(organizationId);
@@ -82,7 +82,7 @@ export const SettingsOrganizationUserLine: FunctionComponent<SettingsOrganizatio
     >
       <ListItemIcon classes={{ root: classes.itemIcon }}>
         {external && <AccountCircleOutlined />}
-        {!external && (memberIsOrganizationAdmin ? <Tooltip title={t('Organization administrator')}><AdminPanelSettingsOutlined color="success" /></Tooltip> : <Tooltip title={t('Member')}><PersonOutlined /></Tooltip>)}
+        {!external && (memberIsOrganizationAdmin ? <Tooltip title={t_i18n('Organization administrator')}><AdminPanelSettingsOutlined color="success" /></Tooltip> : <Tooltip title={t_i18n('Member')}><PersonOutlined /></Tooltip>)}
       </ListItemIcon>
       <ListItemText
         primary={

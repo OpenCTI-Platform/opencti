@@ -22,7 +22,7 @@ const useStyles = makeStyles(() => ({
 
 const Retention = () => {
   const classes = useStyles();
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   const { platformModuleHelpers } = useAuth();
   const {
     viewStorage,
@@ -56,7 +56,7 @@ const Retention = () => {
   if (!platformModuleHelpers.isRetentionManagerEnable()) {
     return (
       <Alert severity="info">
-        {t(platformModuleHelpers.generateDisableMessage(RETENTION_MANAGER))}
+        {t_i18n(platformModuleHelpers.generateDisableMessage(RETENTION_MANAGER))}
       </Alert>
     );
   }

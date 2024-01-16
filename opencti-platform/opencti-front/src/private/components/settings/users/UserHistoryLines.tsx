@@ -76,7 +76,7 @@ const UserHistoryLines: FunctionComponent<UserHistoryLinesProps> = ({
   refetch,
 }) => {
   const classes = useStyles();
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   const { data } = usePreloadedPaginationFragment<
   UserHistoryLinesQuery,
   UserHistoryLines_data$key
@@ -122,8 +122,8 @@ const UserHistoryLines: FunctionComponent<UserHistoryLinesProps> = ({
             }}
           >
             {isRelationLog
-              ? t('No relations history about this entity.')
-              : t('No history about this entity.')}
+              ? t_i18n('No relations history about this entity.')
+              : t_i18n('No history about this entity.')}
           </span>
         </div>
       )}

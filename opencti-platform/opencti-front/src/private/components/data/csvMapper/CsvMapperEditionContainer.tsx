@@ -57,7 +57,7 @@ const CsvMapperEditionContainer: FunctionComponent<CsvMapperEditionProps> = ({
   open,
   onClose,
 }) => {
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
 
   const data = usePreloadedQuery(csvMapperEditionContainerQuery, queryRef);
   const csvMapper = useFragment<CsvMapperEditionContainerFragment_csvMapper$key>(
@@ -70,7 +70,7 @@ const CsvMapperEditionContainer: FunctionComponent<CsvMapperEditionProps> = ({
   }
 
   return (
-    <Drawer title={t('Csv Mapper edition')} open={open} onClose={onClose}>
+    <Drawer title={t_i18n('Csv Mapper edition')} open={open} onClose={onClose}>
       <CsvMapperEdition csvMapper={csvMapper} onClose={onClose}/>
     </Drawer>
   );

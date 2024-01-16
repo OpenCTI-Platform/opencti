@@ -84,7 +84,7 @@ interface ThreatActorIndividualEditionDetailsFormValues {
 const ThreatActorIndividualEditionDetailsComponent: FunctionComponent<
 ThreatActorIndividualEditionDetailsProps
 > = ({ threatActorIndividualRef, context, enableReferences, handleClose }) => {
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   const threatActorIndividual = useFragment(
     threatActorIndividualEditionDetailsFragment,
     threatActorIndividualRef,
@@ -98,10 +98,10 @@ ThreatActorIndividualEditionDetailsProps
   const basicShape = {
     first_seen: Yup.date()
       .nullable()
-      .typeError(t('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)')),
+      .typeError(t_i18n('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)')),
     last_seen: Yup.date()
       .nullable()
-      .typeError(t('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)')),
+      .typeError(t_i18n('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)')),
     sophistication: Yup.string().nullable(),
     resource_level: Yup.string().nullable(),
     roles: Yup.array().nullable(),
@@ -229,7 +229,7 @@ ThreatActorIndividualEditionDetailsProps
                 onFocus={handleChangeFocus}
                 onSubmit={handleSubmitField}
                 TextFieldProps={{
-                  label: t('First seen'),
+                  label: t_i18n('First seen'),
                   variant: 'standard',
                   fullWidth: true,
                   helperText: (
@@ -246,7 +246,7 @@ ThreatActorIndividualEditionDetailsProps
                 onFocus={handleChangeFocus}
                 onSubmit={handleSubmitField}
                 TextFieldProps={{
-                  label: t('Last seen'),
+                  label: t_i18n('Last seen'),
                   variant: 'standard',
                   fullWidth: true,
                   style: { marginTop: 20 },
@@ -259,7 +259,7 @@ ThreatActorIndividualEditionDetailsProps
                 }}
               />
               <OpenVocabField
-                label={t('Sophistication')}
+                label={t_i18n('Sophistication')}
                 type="threat_actor_individual_sophistication_ov"
                 name="sophistication"
                 onFocus={handleChangeFocus}
@@ -271,7 +271,7 @@ ThreatActorIndividualEditionDetailsProps
                 editContext={context}
               />
               <OpenVocabField
-                label={t('Resource level')}
+                label={t_i18n('Resource level')}
                 type="attack-resource-level-ov"
                 name="resource_level"
                 onFocus={handleChangeFocus}
@@ -283,7 +283,7 @@ ThreatActorIndividualEditionDetailsProps
                 editContext={context}
               />
               <OpenVocabField
-                label={t('Roles')}
+                label={t_i18n('Roles')}
                 type="threat-actor-individual-role-ov"
                 name="roles"
                 onFocus={handleChangeFocus}
@@ -295,7 +295,7 @@ ThreatActorIndividualEditionDetailsProps
                 editContext={context}
               />
               <OpenVocabField
-                label={t('Primary motivation')}
+                label={t_i18n('Primary motivation')}
                 type="attack-motivation-ov"
                 name="primary_motivation"
                 onFocus={handleChangeFocus}
@@ -307,7 +307,7 @@ ThreatActorIndividualEditionDetailsProps
                 editContext={context}
               />
               <OpenVocabField
-                label={t('Secondary motivations')}
+                label={t_i18n('Secondary motivations')}
                 type="attack-motivation-ov"
                 name="secondary_motivations"
                 onFocus={handleChangeFocus}
@@ -319,7 +319,7 @@ ThreatActorIndividualEditionDetailsProps
                 editContext={context}
               />
               <OpenVocabField
-                label={t('Personal motivations')}
+                label={t_i18n('Personal motivations')}
                 type="attack-motivation-ov"
                 name="personal_motivations"
                 onFocus={handleChangeFocus}
@@ -333,7 +333,7 @@ ThreatActorIndividualEditionDetailsProps
               <Field
                 component={TextField}
                 name="goals"
-                label={t('Goals (1 / line)')}
+                label={t_i18n('Goals (1 / line)')}
                 fullWidth={true}
                 multiline={true}
                 rows="4"

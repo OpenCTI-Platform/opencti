@@ -27,18 +27,18 @@ const ExternalReferenceOverviewComponent: FunctionComponent<
 ExternalReferenceOverviewComponentProps
 > = ({ externalReference }) => {
   const classes = useStyles();
-  const { t, fldt } = useFormatter();
+  const { t_i18n, fldt } = useFormatter();
 
   return (
     <div style={{ height: '100%' }}>
       <Typography variant="h4" gutterBottom={true}>
-        {t('Overview')}
+        {t_i18n('Overview')}
       </Typography>
       <Paper classes={{ root: classes.paper }} variant="outlined">
         <Grid container={true} spacing={3}>
           <Grid item={true} xs={6}>
             <Typography variant="h3" gutterBottom={true}>
-              {t('Source name')}
+              {t_i18n('Source name')}
             </Typography>
             {truncate(externalReference.source_name, 40)}
             <Typography
@@ -46,7 +46,7 @@ ExternalReferenceOverviewComponentProps
               gutterBottom={true}
               style={{ marginTop: 20 }}
             >
-              {t('Description')}
+              {t_i18n('Description')}
             </Typography>
             <ExpandableMarkdown
               source={externalReference.description}
@@ -55,7 +55,7 @@ ExternalReferenceOverviewComponentProps
           </Grid>
           <Grid item={true} xs={6}>
             <Typography variant="h3" gutterBottom={true}>
-              {t('Creation date')}
+              {t_i18n('Creation date')}
             </Typography>
             {fldt(externalReference.created)}
             <Typography
@@ -63,7 +63,7 @@ ExternalReferenceOverviewComponentProps
               gutterBottom={true}
               style={{ marginTop: 20 }}
             >
-              {t('Modification date')}
+              {t_i18n('Modification date')}
             </Typography>
             {fldt(externalReference.modified)}
           </Grid>

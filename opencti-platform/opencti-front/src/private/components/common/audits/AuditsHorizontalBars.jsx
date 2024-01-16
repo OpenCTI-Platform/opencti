@@ -230,7 +230,7 @@ const AuditsHorizontalBars = ({
 }) => {
   const classes = useStyles();
   const theme = useTheme();
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   const navigate = useNavigate();
   const isGrantedToSettings = useGranted([SETTINGS]);
   const isEnterpriseEdition = useEnterpriseEdition();
@@ -246,10 +246,10 @@ const AuditsHorizontalBars = ({
             }}
           >
             {!isEnterpriseEdition
-              ? t(
+              ? t_i18n(
                 'This feature is only available in OpenCTI Enterprise Edition.',
               )
-              : t('You are not authorized to see this data.')}
+              : t_i18n('You are not authorized to see this data.')}
           </span>
         </div>
       );
@@ -285,7 +285,7 @@ const AuditsHorizontalBars = ({
                 || selection.attribute.endsWith('_ids')
                   ? defaultValue(n.entity)
                   : selection.attribute === 'entity_type'
-                    ? t(`entity_${n.label}`)
+                    ? t_i18n(`entity_${n.label}`)
                     : n.label,
               y: n.value,
               fillColor:
@@ -297,7 +297,7 @@ const AuditsHorizontalBars = ({
             }));
             const chartData = [
               {
-                name: selection.label || t('Number of history entries'),
+                name: selection.label || t_i18n('Number of history entries'),
                 data,
               },
             ];
@@ -342,7 +342,7 @@ const AuditsHorizontalBars = ({
                     textAlign: 'center',
                   }}
                 >
-                  {t('No entities of this type has been found.')}
+                  {t_i18n('No entities of this type has been found.')}
                 </span>
               </div>
             );
@@ -376,7 +376,7 @@ const AuditsHorizontalBars = ({
           textOverflow: 'ellipsis',
         }}
       >
-        {parameters.title || t('Distribution of history')}
+        {parameters.title || t_i18n('Distribution of history')}
       </Typography>
       {variant === 'inLine' ? (
         renderContent()

@@ -24,7 +24,7 @@ const UserEdition: FunctionComponent<UserEditionProps> = ({
   user,
   open,
 }) => {
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   const hasSetAccess = useGranted([SETTINGS_SETACCESSES]);
   const { editContext } = user;
   const external = user.external === true;
@@ -34,7 +34,7 @@ const UserEdition: FunctionComponent<UserEditionProps> = ({
   };
   return (
     <Drawer
-      title={t('Update a user')}
+      title={t_i18n('Update a user')}
       variant={open == null ? DrawerVariant.updateWithPanel : undefined}
       open={open}
       onClose={handleClose}
@@ -46,10 +46,10 @@ const UserEdition: FunctionComponent<UserEditionProps> = ({
             value={currentTab}
             onChange={(event, value) => handleChangeTab(value)}
           >
-            <Tab label={t('Overview')} />
-            <Tab disabled={external} label={t('Password')} />
-            <Tab label={t('Groups')} />
-            {hasSetAccess && <Tab label={<div>{t('Organizations admin')}<EEChip /></div>} />}
+            <Tab label={t_i18n('Overview')} />
+            <Tab disabled={external} label={t_i18n('Password')} />
+            <Tab label={t_i18n('Groups')} />
+            {hasSetAccess && <Tab label={<div>{t_i18n('Organizations admin')}<EEChip /></div>} />}
           </Tabs>
         </Box>
         {currentTab === 0 && (

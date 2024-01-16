@@ -25,7 +25,7 @@ const useStyles = makeStyles<Theme>(() => ({
 
 const Notifiers = () => {
   const classes = useStyles();
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   const {
     viewStorage,
     paginationOptions,
@@ -86,7 +86,7 @@ const Notifiers = () => {
         paginationOptions={paginationOptions}
         numberOfElements={numberOfElements}
         availableFilterKeys={['created']}
-        message={t(
+        message={t_i18n(
           'There are two built-in notifiers in the platform: User Interface and Default Mailer. They are not configurable and you can create your custom ones here.',
         )}
       >

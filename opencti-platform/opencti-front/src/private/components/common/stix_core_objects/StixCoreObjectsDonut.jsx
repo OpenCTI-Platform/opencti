@@ -212,7 +212,7 @@ const StixCoreObjectsDonut = ({
 }) => {
   const classes = useStyles();
   const theme = useTheme();
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   const renderContent = () => {
     const selection = dataSelection[0];
     const dataSelectionTypes = ['Stix-Core-Object'];
@@ -245,7 +245,7 @@ const StixCoreObjectsDonut = ({
             const labels = data.map((n) => (selection.attribute.endsWith('_id')
               ? defaultValue(n.entity)
               : selection.attribute === 'entity_type'
-                ? t(`entity_${n.label}`)
+                ? t_i18n(`entity_${n.label}`)
                 : n.label));
             let chartColors = [];
             if (data.at(0)?.entity?.color) {
@@ -292,7 +292,7 @@ const StixCoreObjectsDonut = ({
                     textAlign: 'center',
                   }}
                 >
-                  {t('No entities of this type has been found.')}
+                  {t_i18n('No entities of this type has been found.')}
                 </span>
               </div>
             );
@@ -326,7 +326,7 @@ const StixCoreObjectsDonut = ({
           textOverflow: 'ellipsis',
         }}
       >
-        {parameters.title || t('Distribution of entities')}
+        {parameters.title || t_i18n('Distribution of entities')}
       </Typography>
       {variant === 'inLine' || variant === 'inEntity' ? (
         renderContent()

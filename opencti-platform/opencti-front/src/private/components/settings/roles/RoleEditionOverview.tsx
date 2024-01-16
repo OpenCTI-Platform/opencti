@@ -46,7 +46,7 @@ interface RoleEditionOverviewComponentProps {
 }
 
 const RoleEditionOverviewComponent: FunctionComponent<RoleEditionOverviewComponentProps> = ({ role, context }) => {
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   const initialValues = R.pick(
     ['name', 'description'],
     role,
@@ -64,7 +64,7 @@ const RoleEditionOverviewComponent: FunctionComponent<RoleEditionOverviewCompone
     });
   };
   const handleSubmitField = (name: string, value: string | boolean) => {
-    roleValidation(t)
+    roleValidation(t_i18n)
       .validateAt(name, { [name]: value })
       .then(() => {
         commitFieldPatch({
@@ -78,7 +78,7 @@ const RoleEditionOverviewComponent: FunctionComponent<RoleEditionOverviewCompone
       <Formik
         enableReinitialize={true}
         initialValues={initialValues}
-        validationSchema={roleValidation(t)}
+        validationSchema={roleValidation(t_i18n)}
         onSubmit={() => {}}
       >
         {() => (
@@ -87,7 +87,7 @@ const RoleEditionOverviewComponent: FunctionComponent<RoleEditionOverviewCompone
               component={TextField}
               variant="standard"
               name="name"
-              label={t('Name')}
+              label={t_i18n('Name')}
               fullWidth={true}
               onFocus={handleChangeFocus}
               onSubmit={handleSubmitField}
@@ -98,7 +98,7 @@ const RoleEditionOverviewComponent: FunctionComponent<RoleEditionOverviewCompone
             <Field
               component={MarkdownField}
               name="description"
-              label={t('Description')}
+              label={t_i18n('Description')}
               fullWidth={true}
               multiline={true}
               rows={4}

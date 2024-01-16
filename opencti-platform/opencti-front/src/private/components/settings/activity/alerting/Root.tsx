@@ -43,9 +43,9 @@ const AlertingComponent: FunctionComponent<ConfigurationComponentProps> = ({
     rootQuery,
     queryRef,
   );
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   if (isEmptyField(settings.enterprise_edition)) {
-    return <EnterpriseEdition feature={t('Activity')} />;
+    return <EnterpriseEdition feature={t_i18n('Activity')} />;
   }
   return <Alerting />;
 };

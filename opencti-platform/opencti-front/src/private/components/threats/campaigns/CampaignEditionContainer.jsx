@@ -10,7 +10,7 @@ import { useIsEnforceReference } from '../../../../utils/hooks/useEntitySettings
 import Drawer, { DrawerVariant } from '../../common/drawer/Drawer';
 
 const CampaignEditionContainer = (props) => {
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
 
   const [currentTab, setCurrentTab] = useState(0);
   const handleChangeTab = (event, value) => setCurrentTab(value);
@@ -19,7 +19,7 @@ const CampaignEditionContainer = (props) => {
   const { editContext } = campaign;
   return (
     <Drawer
-      title={t('Update a campaign')}
+      title={t_i18n('Update a campaign')}
       open={open}
       onClose={handleClose}
       variant={open == null ? DrawerVariant.update : undefined}
@@ -28,8 +28,8 @@ const CampaignEditionContainer = (props) => {
       <>
         <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
           <Tabs value={currentTab} onChange={handleChangeTab}>
-            <Tab label={t('Overview')} />
-            <Tab label={t('Details')} />
+            <Tab label={t_i18n('Overview')} />
+            <Tab label={t_i18n('Details')} />
           </Tabs>
         </Box>
         {currentTab === 0 && (

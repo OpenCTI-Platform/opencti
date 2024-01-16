@@ -85,9 +85,9 @@ ThreatActorGroupFormProps
   inputValue,
 }) => {
   const classes = useStyles();
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   const basicShape = {
-    name: Yup.string().required(t('This field is required')),
+    name: Yup.string().required(t_i18n('This field is required')),
     threat_actor_types: Yup.array().nullable(),
     confidence: Yup.number().nullable(),
     description: Yup.string().nullable(),
@@ -163,7 +163,7 @@ ThreatActorGroupFormProps
           <Field
             component={TextField}
             name="name"
-            label={t('Name')}
+            label={t_i18n('Name')}
             fullWidth={true}
             detectDuplicate={[
               'Threat-Actor',
@@ -175,7 +175,7 @@ ThreatActorGroupFormProps
           <OpenVocabField
             type="threat-actor-group-type-ov"
             name="threat_actor_types"
-            label={t('Threat actor types')}
+            label={t_i18n('Threat actor types')}
             multiple={true}
             containerStyle={{ width: '100%', marginTop: 20 }}
             onChange={setFieldValue}
@@ -187,7 +187,7 @@ ThreatActorGroupFormProps
           <Field
             component={MarkdownField}
             name="description"
-            label={t('Description')}
+            label={t_i18n('Description')}
             fullWidth={true}
             multiline={true}
             rows="4"
@@ -222,7 +222,7 @@ ThreatActorGroupFormProps
               disabled={isSubmitting}
               classes={{ root: classes.button }}
             >
-              {t('Cancel')}
+              {t_i18n('Cancel')}
             </Button>
             <Button
               variant="contained"
@@ -231,7 +231,7 @@ ThreatActorGroupFormProps
               disabled={isSubmitting}
               classes={{ root: classes.button }}
             >
-              {t('Create')}
+              {t_i18n('Create')}
             </Button>
           </div>
         </Form>
@@ -245,7 +245,7 @@ const ThreatActorGroupCreation = ({
 }: {
   paginationOptions: ThreatActorsGroupCardsPaginationQuery$variables;
 }) => {
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   const updater = (store: RecordSourceSelectorProxy) => insertNode(
     store,
     'Pagination_threatActorsGroup',
@@ -254,7 +254,7 @@ const ThreatActorGroupCreation = ({
   );
   return (
     <Drawer
-      title={t('Create a threat actor group')}
+      title={t_i18n('Create a threat actor group')}
       variant={DrawerVariant.create}
     >
       {({ onClose }) => (

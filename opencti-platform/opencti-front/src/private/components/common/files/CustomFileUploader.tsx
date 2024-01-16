@@ -61,7 +61,7 @@ const CustomFileUploader: FunctionComponent<CustomFileUploadProps> = ({
   acceptMimeTypes,
   sizeLimit = 0, // defaults to 0 = no limit
 }) => {
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   const classes = useStyles();
   const [fileNameForDisplay, setFileNameForDisplay] = useState('');
   const [errorText, setErrorText] = useState('');
@@ -86,13 +86,13 @@ const CustomFileUploader: FunctionComponent<CustomFileUploadProps> = ({
       && !!file?.type
       && !acceptedList.includes(file?.type)
     ) {
-      setErrorText(t('This file is not in the specified format'));
+      setErrorText(t_i18n('This file is not in the specified format'));
       return;
     }
 
     // check the size limit if any set; if file is too big it is not set as value
     if (fileSize > 0 && sizeLimit > 0 && fileSize > sizeLimit) {
-      setErrorText(t('This file is too large'));
+      setErrorText(t_i18n('This file is too large'));
       return;
     }
 
@@ -110,7 +110,7 @@ const CustomFileUploader: FunctionComponent<CustomFileUploadProps> = ({
   return (
     <div className={classes.div}>
       <InputLabel shrink={true} variant="standard">
-        {label ? t(label) : t('Associated file')}
+        {label ? t_i18n(label) : t_i18n('Associated file')}
       </InputLabel>
       <Box
         className={classNames({
@@ -124,19 +124,19 @@ const CustomFileUploader: FunctionComponent<CustomFileUploadProps> = ({
           onChange={onChange}
           className={classes.button}
         >
-          {t('Select your file')}
+          {t_i18n('Select your file')}
           <VisuallyHiddenInput type="file" accept={acceptMimeTypes} />
         </Button>
         <span
-          title={fileNameForDisplay || t('No file selected.')}
+          title={fileNameForDisplay || t_i18n('No file selected.')}
           className={classes.span}
         >
-          {fileNameForDisplay || t('No file selected.')}
+          {fileNameForDisplay || t_i18n('No file selected.')}
         </span>
       </Box>
       {!!errorText && (
         <div>
-          <span className={classes.error}>{t(errorText)}</span>
+          <span className={classes.error}>{t_i18n(errorText)}</span>
         </div>
       )}
     </div>

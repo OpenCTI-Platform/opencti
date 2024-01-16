@@ -47,16 +47,16 @@ interface IndicatorDetailsComponentProps {
 const IndicatorDetailsComponent: FunctionComponent<IndicatorDetailsComponentProps> = ({
   indicator,
 }) => {
-  const { t, fldt } = useFormatter();
+  const { t_i18n, fldt } = useFormatter();
   const classes = useStyles();
   return (
     <div style={{ height: '100%' }} className="break">
       <Typography variant="h4" gutterBottom={true}>
-        {t('Details')}
+        {t_i18n('Details')}
       </Typography>
       <Paper classes={{ root: classes.paper }} variant="outlined">
         <Typography variant="h3" gutterBottom={true}>
-          {t('Indicator pattern')}
+          {t_i18n('Indicator pattern')}
         </Typography>
         <ExpandablePre source={indicator.pattern ?? ''} limit={300} />
         <Grid
@@ -66,7 +66,7 @@ const IndicatorDetailsComponent: FunctionComponent<IndicatorDetailsComponentProp
         >
           <Grid item={true} xs={6}>
             <Typography variant="h3" gutterBottom={true}>
-              {t('Valid from')}
+              {t_i18n('Valid from')}
             </Typography>
             <Chip classes={{ root: classes.chip }}
               label={fldt(indicator.valid_from)}
@@ -76,7 +76,7 @@ const IndicatorDetailsComponent: FunctionComponent<IndicatorDetailsComponentProp
               gutterBottom={true}
               style={{ marginTop: 20 }}
             >
-              {t('Score')}
+              {t_i18n('Score')}
             </Typography>
             <ItemScore score={indicator.x_opencti_score} />
             <Typography
@@ -84,7 +84,7 @@ const IndicatorDetailsComponent: FunctionComponent<IndicatorDetailsComponentProp
               gutterBottom={true}
               style={{ marginTop: 20 }}
             >
-              {t('Description')}
+              {t_i18n('Description')}
             </Typography>
             <ExpandableMarkdown source={indicator.description} limit={400} />
             <Typography
@@ -92,7 +92,7 @@ const IndicatorDetailsComponent: FunctionComponent<IndicatorDetailsComponentProp
               gutterBottom={true}
               style={{ marginTop: 20 }}
             >
-              {t('Indicator types')}
+              {t_i18n('Indicator types')}
             </Typography>
             {indicator.indicator_types && indicator.indicator_types.map((indicatorType) => (
               <Chip
@@ -104,7 +104,7 @@ const IndicatorDetailsComponent: FunctionComponent<IndicatorDetailsComponentProp
           </Grid>
           <Grid item={true} xs={6}>
             <Typography variant="h3" gutterBottom={true}>
-              {t('Valid until')}
+              {t_i18n('Valid until')}
             </Typography>
             <Chip
               classes={{ root: classes.chip }}
@@ -115,10 +115,10 @@ const IndicatorDetailsComponent: FunctionComponent<IndicatorDetailsComponentProp
               gutterBottom={true}
               style={{ marginTop: 20 }}
             >
-              {t('Detection')}
+              {t_i18n('Detection')}
             </Typography>
             <ItemBoolean
-              label={indicator.x_opencti_detection ? t('Yes') : t('No')}
+              label={indicator.x_opencti_detection ? t_i18n('Yes') : t_i18n('No')}
               status={indicator.x_opencti_detection}
             />
             <StixCoreObjectKillChainPhasesView killChainPhasesEdges={indicator.killChainPhases?.edges ?? []} />
@@ -127,7 +127,7 @@ const IndicatorDetailsComponent: FunctionComponent<IndicatorDetailsComponentProp
               gutterBottom={true}
               style={{ marginTop: 20 }}
             >
-              {t('Platforms')}
+              {t_i18n('Platforms')}
             </Typography>
             <List>
               { (indicator.x_mitre_platforms ?? []).map((platform) => (

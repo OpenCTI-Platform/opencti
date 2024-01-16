@@ -16,7 +16,7 @@ const useStyles = makeStyles((theme) => ({
 
 const TopMenuProfile = () => {
   const location = useLocation();
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   const classes = useStyles();
   return (
     <>
@@ -29,7 +29,7 @@ const TopMenuProfile = () => {
         }
         classes={{ root: classes.button }}
       >
-        {t('Profile')}
+        {t_i18n('Profile')}
       </Button>
     </>
   );

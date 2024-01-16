@@ -69,7 +69,7 @@ StixCoreObjectOpinionsRadarDialogProps
   fetchDistributionQuery,
   opinionOptions,
 }) => {
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   const { myOpinion } = usePreloadedQuery<StixCoreObjectOpinionsRadarDialogMyOpinionQuery>(
     stixCoreObjectOpinionsRadarDialogMyOpinionQuery,
     queryRef,
@@ -88,7 +88,7 @@ StixCoreObjectOpinionsRadarDialogProps
     } else {
       MESSAGING$.notifyError(
         <span>
-          {t('There are no opinions. You should create some before.')}
+          {t_i18n('There are no opinions. You should create some before.')}
         </span>,
       );
     }
@@ -180,7 +180,7 @@ StixCoreObjectOpinionsRadarDialogProps
               {({ submitForm, handleReset, isSubmitting }) => (
                 <Form>
                   <DialogTitle>
-                    {myOpinion ? t('Update opinion') : t('Create an opinion')}
+                    {myOpinion ? t_i18n('Update opinion') : t_i18n('Create an opinion')}
                   </DialogTitle>
                   <DialogContent>
                     <div style={{ marginLeft: 10, marginRight: 10 }}>
@@ -220,7 +220,7 @@ StixCoreObjectOpinionsRadarDialogProps
                     <Field
                       component={MarkdownField}
                       name="explanation"
-                      label={t('Explanation')}
+                      label={t_i18n('Explanation')}
                       fullWidth={true}
                       multiline={true}
                       rows="4"
@@ -233,14 +233,14 @@ StixCoreObjectOpinionsRadarDialogProps
                   </DialogContent>
                   <DialogActions>
                     <Button onClick={handleReset} disabled={isSubmitting}>
-                      {t('Cancel')}
+                      {t_i18n('Cancel')}
                     </Button>
                     <Button
                       color="secondary"
                       onClick={submitForm}
                       disabled={isSubmitting}
                     >
-                      {myOpinion ? t('Update') : t('Create')}
+                      {myOpinion ? t_i18n('Update') : t_i18n('Create')}
                     </Button>
                   </DialogActions>
                 </Form>

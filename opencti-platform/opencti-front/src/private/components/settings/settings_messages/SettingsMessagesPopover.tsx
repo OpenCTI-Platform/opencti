@@ -33,7 +33,7 @@ const SettingsMessagesPopover = ({
   settingsId: string
   message: SettingsMessagesLine_settingsMessage$data
 }) => {
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
 
   const [anchorEl, setAnchorEl] = useState<PopoverProps['anchorEl']>(null);
   const [displayUpdate, setDisplayUpdate] = useState<boolean>(false);
@@ -71,8 +71,8 @@ const SettingsMessagesPopover = ({
         <MoreVert />
       </IconButton>
       <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleClose}>
-        <MenuItem onClick={handleOpenUpdate}>{t('Update')}</MenuItem>
-        <MenuItem onClick={deletion.handleOpenDelete}>{t('Delete')}</MenuItem>
+        <MenuItem onClick={handleOpenUpdate}>{t_i18n('Update')}</MenuItem>
+        <MenuItem onClick={deletion.handleOpenDelete}>{t_i18n('Delete')}</MenuItem>
       </Menu>
       <SettingsMessageEdition
         settingsId={settingsId}
@@ -81,7 +81,7 @@ const SettingsMessagesPopover = ({
         open={displayUpdate}
       />
       <DeleteDialog
-        title={t('Do you want to delete this message ?')}
+        title={t_i18n('Do you want to delete this message ?')}
         deletion={deletion}
         submitDelete={submitDelete}
       />

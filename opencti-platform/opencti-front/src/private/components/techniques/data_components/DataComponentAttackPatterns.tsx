@@ -20,7 +20,7 @@ import { DataComponentAttackPatterns_dataComponent$data } from './__generated__/
 const DataComponentAttackPatternsComponent: FunctionComponent<{
   dataComponent: DataComponentAttackPatterns_dataComponent$data;
 }> = ({ dataComponent }) => {
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
 
   const [commit] = useMutation(addAttackPatternsMutationRelationDelete);
 
@@ -47,7 +47,7 @@ const DataComponentAttackPatternsComponent: FunctionComponent<{
       }}
     >
       <Typography variant="h3" gutterBottom={true} style={{ float: 'left' }}>
-        {t('Attack patterns')}
+        {t_i18n('Attack patterns')}
       </Typography>
       <AddAttackPatterns dataComponent={dataComponent} />
       <div className="clearfix" />

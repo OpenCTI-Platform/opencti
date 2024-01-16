@@ -207,7 +207,7 @@ const StixSightingRelationshipEditionOverviewComponent: FunctionComponent<Omit<S
 }) => {
   const stixSightingRelationshipType = 'stix-sighting-relationship';
 
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   const classes = useStyles();
   const enableReferences = useIsEnforceReference(stixSightingRelationshipType);
 
@@ -215,19 +215,19 @@ const StixSightingRelationshipEditionOverviewComponent: FunctionComponent<Omit<S
 
   const basicShape = {
     attribute_count: Yup.number()
-      .typeError(t('The value must be a number'))
-      .integer(t('The value must be a number'))
-      .required(t('This field is required')),
+      .typeError(t_i18n('The value must be a number'))
+      .integer(t_i18n('The value must be a number'))
+      .required(t_i18n('This field is required')),
     confidence: Yup.number()
-      .typeError(t('The value must be a number'))
-      .integer(t('The value must be a number'))
-      .required(t('This field is required')),
+      .typeError(t_i18n('The value must be a number'))
+      .integer(t_i18n('The value must be a number'))
+      .required(t_i18n('This field is required')),
     first_seen: Yup.date()
-      .typeError(t('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)'))
-      .required(t('This field is required')),
+      .typeError(t_i18n('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)'))
+      .required(t_i18n('This field is required')),
     last_seen: Yup.date()
-      .typeError(t('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)'))
-      .required(t('This field is required')),
+      .typeError(t_i18n('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)'))
+      .required(t_i18n('This field is required')),
     description: Yup.string().nullable(),
     x_opencti_negative: Yup.boolean(),
     x_opencti_workflow_id: Yup.object(),
@@ -277,7 +277,7 @@ const StixSightingRelationshipEditionOverviewComponent: FunctionComponent<Omit<S
     last_seen: buildDate(stixSightingRelationship.last_seen),
     description: stixSightingRelationship.description,
     x_opencti_negative: stixSightingRelationship.x_opencti_negative,
-    x_opencti_workflow_id: convertStatus(t, stixSightingRelationship) as Option,
+    x_opencti_workflow_id: convertStatus(t_i18n, stixSightingRelationship) as Option,
     createdBy: convertCreatedBy(stixSightingRelationship) as Option,
     objectMarking: convertMarkings(stixSightingRelationship),
     references: [],
@@ -296,7 +296,7 @@ const StixSightingRelationshipEditionOverviewComponent: FunctionComponent<Omit<S
           <Close fontSize="small" color="primary" />
         </IconButton>
         <Typography variant="h6" classes={{ root: classes.title }}>
-          {t('Update a sighting')}
+          {t_i18n('Update a sighting')}
         </Typography>
         <SubscriptionAvatars context={editContext} />
         <div className="clearfix" />
@@ -314,7 +314,7 @@ const StixSightingRelationshipEditionOverviewComponent: FunctionComponent<Omit<S
                 component={TextField}
                 variant="standard"
                 name="attribute_count"
-                label={t('Count')}
+                label={t_i18n('Count')}
                 fullWidth={true}
                 onFocus={editor.changeFocus}
                 onSubmit={editor.changeField}
@@ -338,7 +338,7 @@ const StixSightingRelationshipEditionOverviewComponent: FunctionComponent<Omit<S
                 onFocus={editor.changeFocus}
                 onChange={editor.changeField}
                 TextFieldProps={{
-                  label: t('First seen'),
+                  label: t_i18n('First seen'),
                   variant: 'standard',
                   fullWidth: true,
                   style: { marginTop: 20 },
@@ -354,7 +354,7 @@ const StixSightingRelationshipEditionOverviewComponent: FunctionComponent<Omit<S
                 onFocus={editor.changeFocus}
                 onChange={editor.changeField}
                 TextFieldProps={{
-                  label: t('Last seen'),
+                  label: t_i18n('Last seen'),
                   variant: 'standard',
                   fullWidth: true,
                   style: { marginTop: 20 },
@@ -367,7 +367,7 @@ const StixSightingRelationshipEditionOverviewComponent: FunctionComponent<Omit<S
               <Field
                 component={MarkdownField}
                 name="description"
-                label={t('Description')}
+                label={t_i18n('Description')}
                 fullWidth={true}
                 multiline={true}
                 rows={4}
@@ -416,7 +416,7 @@ const StixSightingRelationshipEditionOverviewComponent: FunctionComponent<Omit<S
                 component={SwitchField}
                 type="checkbox"
                 name="x_opencti_negative"
-                label={t('False positive')}
+                label={t_i18n('False positive')}
                 containerstyle={{ marginTop: 20 }}
                 onChange={editor.changeField}
                 helperText={
@@ -445,7 +445,7 @@ const StixSightingRelationshipEditionOverviewComponent: FunctionComponent<Omit<S
             classes={{ root: classes.button }}
             disabled={inferred}
           >
-            {t('Delete')}
+            {t_i18n('Delete')}
           </Button>
         )}
       </div>

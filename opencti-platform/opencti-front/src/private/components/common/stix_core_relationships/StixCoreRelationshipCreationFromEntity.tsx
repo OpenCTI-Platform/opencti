@@ -288,7 +288,7 @@ const StixCoreRelationshipCreationFromEntity: FunctionComponent<StixCoreRelation
     ];
   }
   const classes = useStyles();
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   const [open, setOpen] = useState(false);
   const [openSpeedDial, setOpenSpeedDial] = useState(false);
   const [openCreateEntity, setOpenCreateEntity] = useState(false);
@@ -520,7 +520,7 @@ const StixCoreRelationshipCreationFromEntity: FunctionComponent<StixCoreRelation
             <Close fontSize="small" color="primary"/>
           </IconButton>
           <Typography variant="h6" classes={{ root: classes.title }}>
-            {t('Create a relationship')}
+            {t_i18n('Create a relationship')}
           </Typography>
           <div className="clearfix"/>
         </div>
@@ -622,18 +622,18 @@ const StixCoreRelationshipCreationFromEntity: FunctionComponent<StixCoreRelation
               }}
             >
               <SpeedDialAction
-                title={t('Create an observable')}
+                title={t_i18n('Create an observable')}
                 icon={<HexagonOutline/>}
-                tooltipTitle={t('Create an observable')}
+                tooltipTitle={t_i18n('Create an observable')}
                 onClick={handleOpenCreateObservable}
                 FabProps={{
                   classes: { root: classes.speedDialButton },
                 }}
               />
               <SpeedDialAction
-                title={t('Create an entity')}
+                title={t_i18n('Create an entity')}
                 icon={<GlobeModel/>}
-                tooltipTitle={t('Create an entity')}
+                tooltipTitle={t_i18n('Create an entity')}
                 onClick={handleOpenCreateEntity}
                 FabProps={{
                   classes: { root: classes.speedDialButton },
@@ -675,7 +675,7 @@ const StixCoreRelationshipCreationFromEntity: FunctionComponent<StixCoreRelation
             color="secondary"
             onClick={() => handleNextStep()}
           >
-            {t('Continue')}
+            {t_i18n('Continue')}
             <ChevronRightOutlined/>
           </Fab>
           )}
@@ -718,7 +718,7 @@ const StixCoreRelationshipCreationFromEntity: FunctionComponent<StixCoreRelation
                   <Close fontSize="small" color="primary"/>
                 </IconButton>
                 <Typography variant="h6">
-                  {t('Create a relationship')}
+                  {t_i18n('Create a relationship')}
                 </Typography>
               </div>
               <StixCoreRelationshipCreationForm

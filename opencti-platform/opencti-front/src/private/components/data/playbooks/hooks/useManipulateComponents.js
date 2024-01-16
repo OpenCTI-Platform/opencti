@@ -800,7 +800,7 @@ const useManipulateComponents = (playbook, playbookComponents) => {
     replaceNode(component, name, config);
   };
   const renderManipulateComponents = () => {
-    const { t } = useFormatter();
+    const { t_i18n } = useFormatter();
     return (
       <>
         <PlaybookAddComponents
@@ -825,7 +825,7 @@ const useManipulateComponents = (playbook, playbookComponents) => {
         >
           <DialogContent>
             <DialogContentText>
-              {t('Do you want to delete this node?')}
+              {t_i18n('Do you want to delete this node?')}
             </DialogContentText>
           </DialogContent>
           <DialogActions>
@@ -835,10 +835,10 @@ const useManipulateComponents = (playbook, playbookComponents) => {
                 setAction(null);
               }}
             >
-              {t('Cancel')}
+              {t_i18n('Cancel')}
             </Button>
             <Button color="secondary" onClick={deleteNode}>
-              {t('Delete')}
+              {t_i18n('Delete')}
             </Button>
           </DialogActions>
         </Dialog>

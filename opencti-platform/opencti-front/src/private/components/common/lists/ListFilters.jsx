@@ -31,22 +31,22 @@ const ListFilters = ({
   type,
   helpers,
 }) => {
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   const [inputValue, setInputValue] = React.useState('');
   const classes = useStyles();
   let icon = <FilterListOutlined fontSize={fontSize || 'medium'} />;
-  let tooltip = t('Filters');
-  let placeholder = t('Add filter');
+  let tooltip = t_i18n('Filters');
+  let placeholder = t_i18n('Add filter');
   let color = 'primary';
   if (type === 'from') {
     icon = <RayStartArrow fontSize={fontSize || 'medium'} />;
-    tooltip = t('Dynamic source filters');
-    placeholder = t('Dynamic source filters');
+    tooltip = t_i18n('Dynamic source filters');
+    placeholder = t_i18n('Dynamic source filters');
     color = 'warning';
   } else if (type === 'to') {
     icon = <RayEndArrow fontSize={fontSize || 'medium'} />;
-    tooltip = t('Dynamic target filters');
-    placeholder = t('Dynamic target filters');
+    tooltip = t_i18n('Dynamic target filters');
+    placeholder = t_i18n('Dynamic target filters');
     color = 'success';
   }
   const handleClearFilters = () => {
@@ -66,7 +66,7 @@ const ListFilters = ({
             startIcon={icon}
             size="small"
           >
-            {t('Filters')}
+            {t_i18n('Filters')}
           </Button>
         </Tooltip>
       ) : (
@@ -76,7 +76,7 @@ const ListFilters = ({
             options={availableFilterKeys
               .map((opt) => ({
                 value: opt,
-                label: t(opt),
+                label: t_i18n(opt),
               }))
               .sort((a, b) => a.label.localeCompare(b.label))}
             sx={{ width: 200 }}
@@ -101,7 +101,7 @@ const ListFilters = ({
             )}
             renderOption={(props, option) => <li {...props}>{option.label}</li>}
           />
-          <Tooltip title={t('Clear filters')}>
+          <Tooltip title={t_i18n('Clear filters')}>
             <IconButton
               color={color}
               onClick={handleClearFilters}

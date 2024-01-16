@@ -82,15 +82,15 @@ const observedDataMutationRelationDelete = graphql`
 
 const ObservedDataEditionOverviewComponent = (props) => {
   const { observedData, enableReferences, context, handleClose } = props;
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
 
   const basicShape = {
     first_observed: Yup.date()
-      .required(t('This field is required'))
-      .typeError(t('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)')),
+      .required(t_i18n('This field is required'))
+      .typeError(t_i18n('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)')),
     last_observed: Yup.date()
-      .required(t('This field is required'))
-      .typeError(t('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)')),
+      .required(t_i18n('This field is required'))
+      .typeError(t_i18n('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)')),
     number_observed: Yup.number(),
     confidence: Yup.number(),
     references: Yup.array(),
@@ -172,7 +172,7 @@ const ObservedDataEditionOverviewComponent = (props) => {
     R.assoc('objectMarking', convertMarkings(observedData)),
     R.assoc('first_observed', buildDate(observedData.first_observed)),
     R.assoc('last_observed', buildDate(observedData.last_observed)),
-    R.assoc('x_opencti_workflow_id', convertStatus(t, observedData)),
+    R.assoc('x_opencti_workflow_id', convertStatus(t_i18n, observedData)),
     R.assoc('references', []),
     R.pick([
       'references',
@@ -209,7 +209,7 @@ const ObservedDataEditionOverviewComponent = (props) => {
               onFocus={editor.changeFocus}
               onSubmit={handleSubmitField}
               TextFieldProps={{
-                label: t('First observed'),
+                label: t_i18n('First observed'),
                 variant: 'standard',
                 fullWidth: true,
                 helperText: (
@@ -226,7 +226,7 @@ const ObservedDataEditionOverviewComponent = (props) => {
               onFocus={editor.changeFocus}
               onSubmit={handleSubmitField}
               TextFieldProps={{
-                label: t('Last observed'),
+                label: t_i18n('Last observed'),
                 variant: 'standard',
                 fullWidth: true,
                 style: { marginTop: 20 },
@@ -242,7 +242,7 @@ const ObservedDataEditionOverviewComponent = (props) => {
               component={TextField}
               variant="standard"
               name="number_observed"
-              label={t('Number observed')}
+              label={t_i18n('Number observed')}
               fullWidth={true}
               style={{ marginTop: 20 }}
               onFocus={editor.changeFocus}

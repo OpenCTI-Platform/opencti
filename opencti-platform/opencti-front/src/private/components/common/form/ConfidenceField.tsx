@@ -42,7 +42,7 @@ const ConfidenceField: FunctionComponent<ConfidenceFieldProps> = ({
   entityType,
   disabled,
 }) => {
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   const classes = useStyles();
   return (
     <Alert
@@ -60,7 +60,7 @@ const ConfidenceField: FunctionComponent<ConfidenceFieldProps> = ({
         entityType={entityType}
         attributeName="confidence"
         name={'confidence'}
-        label={t('Confidence level')}
+        label={t_i18n('Confidence level')}
         onFocus={onFocus}
         onSubmit={onSubmit}
         editContext={editContext}

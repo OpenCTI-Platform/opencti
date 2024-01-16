@@ -756,7 +756,7 @@ const StixRelationshipsMultiHorizontalBars = ({
 }) => {
   const classes = useStyles();
   const theme = useTheme();
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   const navigate = useNavigate();
   const renderContent = () => {
     let selection = {};
@@ -970,7 +970,7 @@ const StixRelationshipsMultiHorizontalBars = ({
                     textAlign: 'center',
                   }}
                 >
-                  {t('No entities of this type has been found.')}
+                  {t_i18n('No entities of this type has been found.')}
                 </span>
               </div>
             );
@@ -1004,7 +1004,7 @@ const StixRelationshipsMultiHorizontalBars = ({
           textOverflow: 'ellipsis',
         }}
       >
-        {parameters.title || title || t('Relationships distribution')}
+        {parameters.title || title || t_i18n('Relationships distribution')}
       </Typography>
       {variant !== 'inLine' ? (
         <Paper classes={{ root: classes.paper }} variant="outlined">

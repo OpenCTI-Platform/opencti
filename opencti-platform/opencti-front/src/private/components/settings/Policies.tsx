@@ -119,7 +119,7 @@ const PoliciesComponent: FunctionComponent<PoliciesComponentProps> = ({
   const settings = useFragment<Policies$key>(PoliciesFragment, data.settings);
   const [commitField] = useMutation(policiesFieldPatch);
   const classes = useStyles();
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   const handleSubmitField = (name: string, value: string | Option) => {
     policiesValidation()
       .validateAt(name, { [name]: value })
@@ -174,11 +174,11 @@ const PoliciesComponent: FunctionComponent<PoliciesComponentProps> = ({
                 <Grid container={true} spacing={3}>
                   <Grid item={true} xs={6}>
                     <Typography variant="h4" gutterBottom={true}>
-                      {t('Platform main organization')} <EEChip />
+                      {t_i18n('Platform main organization')} <EEChip />
                     </Typography>
                     <Paper classes={{ root: classes.paper }} variant="outlined">
                       <Alert severity="warning" variant="outlined">
-                        {t(
+                        {t_i18n(
                           'When you set a platform organization, all the pieces of knowledge which are not shared with any organization will be accessible only for users part of the platform one.',
                         )}
                       </Alert>
@@ -200,7 +200,7 @@ const PoliciesComponent: FunctionComponent<PoliciesComponentProps> = ({
                   </Grid>
                   <Grid item={true} xs={6}>
                     <Typography variant="h4" gutterBottom={true}>
-                      {t('Authentication strategies')}
+                      {t_i18n('Authentication strategies')}
                     </Typography>
                     <Paper classes={{ root: classes.paper }} variant="outlined">
                       <List style={{ marginTop: -20 }}>
@@ -215,7 +215,7 @@ const PoliciesComponent: FunctionComponent<PoliciesComponentProps> = ({
                             />
                             <ItemBoolean
                               variant="inList"
-                              label={t('Enabled')}
+                              label={t_i18n('Enabled')}
                               status={true}
                             />
                           </ListItem>
@@ -225,11 +225,11 @@ const PoliciesComponent: FunctionComponent<PoliciesComponentProps> = ({
                         component={SwitchField}
                         type="checkbox"
                         name="otp_mandatory"
-                        label={t('Enforce two-factor authentication')}
+                        label={t_i18n('Enforce two-factor authentication')}
                         containerstyle={{ marginTop: 20 }}
                         onChange={(name: string, value: string) => handleSubmitField(name, value)
                         }
-                        tooltip={t(
+                        tooltip={t_i18n(
                           'When enforcing 2FA authentication, all users will be asked to enable 2FA to be able to login in the platform.',
                         )}
                       />
@@ -237,7 +237,7 @@ const PoliciesComponent: FunctionComponent<PoliciesComponentProps> = ({
                   </Grid>
                   <Grid item={true} xs={6} style={{ marginTop: 30 }}>
                     <Typography variant="h4" gutterBottom={true}>
-                      {t('Local password policies')}
+                      {t_i18n('Local password policies')}
                     </Typography>
                     <Paper classes={{ root: classes.paper }} variant="outlined">
                       <Field
@@ -245,7 +245,7 @@ const PoliciesComponent: FunctionComponent<PoliciesComponentProps> = ({
                         type="number"
                         variant="standard"
                         name="password_policy_min_length"
-                        label={t(
+                        label={t_i18n(
                           'Number of chars must be greater or equals to',
                         )}
                         fullWidth={true}
@@ -262,9 +262,9 @@ const PoliciesComponent: FunctionComponent<PoliciesComponentProps> = ({
                         variant="standard"
                         style={{ marginTop: 20 }}
                         name="password_policy_max_length"
-                        label={`${t(
+                        label={`${t_i18n(
                           'Number of chars must be lower or equals to',
-                        )} (${t('0 equals no maximum')})`}
+                        )} (${t_i18n('0 equals no maximum')})`}
                         fullWidth={true}
                         onSubmit={(name: string, value: string) => {
                           return handleSubmitField(
@@ -279,7 +279,7 @@ const PoliciesComponent: FunctionComponent<PoliciesComponentProps> = ({
                         variant="standard"
                         style={{ marginTop: 20 }}
                         name="password_policy_min_symbols"
-                        label={t(
+                        label={t_i18n(
                           'Number of symbols must be greater or equals to',
                         )}
                         fullWidth={true}
@@ -296,7 +296,7 @@ const PoliciesComponent: FunctionComponent<PoliciesComponentProps> = ({
                         variant="standard"
                         style={{ marginTop: 20 }}
                         name="password_policy_min_numbers"
-                        label={t(
+                        label={t_i18n(
                           'Number of digits must be greater or equals to',
                         )}
                         fullWidth={true}
@@ -313,7 +313,7 @@ const PoliciesComponent: FunctionComponent<PoliciesComponentProps> = ({
                         variant="standard"
                         style={{ marginTop: 20 }}
                         name="password_policy_min_words"
-                        label={t(
+                        label={t_i18n(
                           'Number of words (split on hyphen, space) must be greater or equals to',
                         )}
                         fullWidth={true}
@@ -330,7 +330,7 @@ const PoliciesComponent: FunctionComponent<PoliciesComponentProps> = ({
                         variant="standard"
                         style={{ marginTop: 20 }}
                         name="password_policy_min_lowercase"
-                        label={t(
+                        label={t_i18n(
                           'Number of lowercase chars must be greater or equals to',
                         )}
                         fullWidth={true}
@@ -347,7 +347,7 @@ const PoliciesComponent: FunctionComponent<PoliciesComponentProps> = ({
                         variant="standard"
                         style={{ marginTop: 20 }}
                         name="password_policy_min_uppercase"
-                        label={t(
+                        label={t_i18n(
                           'Number of uppercase chars must be greater or equals to',
                         )}
                         fullWidth={true}
@@ -362,13 +362,13 @@ const PoliciesComponent: FunctionComponent<PoliciesComponentProps> = ({
                   </Grid>
                   <Grid item={true} xs={6} style={{ marginTop: 30 }}>
                     <Typography variant="h4" gutterBottom={true}>
-                      {t('Login messages')}
+                      {t_i18n('Login messages')}
                     </Typography>
                     <Paper classes={{ root: classes.paper }} variant="outlined">
                       <Field
                         component={MarkdownField}
                         name="platform_login_message"
-                        label={t('Platform login message')}
+                        label={t_i18n('Platform login message')}
                         fullWidth
                         multiline={true}
                         rows="3"
@@ -378,7 +378,7 @@ const PoliciesComponent: FunctionComponent<PoliciesComponentProps> = ({
                       <Field
                         component={MarkdownField}
                         name="platform_consent_message"
-                        label={t('Platform consent message')}
+                        label={t_i18n('Platform consent message')}
                         fullWidth
                         style={{ marginTop: 20 }}
                         onSubmit={handleSubmitField}
@@ -387,7 +387,7 @@ const PoliciesComponent: FunctionComponent<PoliciesComponentProps> = ({
                       <Field
                         component={MarkdownField}
                         name="platform_consent_confirm_text"
-                        label={t('Platform consent confirm text')}
+                        label={t_i18n('Platform consent confirm text')}
                         fullWidth
                         style={{ marginTop: 20 }}
                         height={38}
@@ -398,14 +398,14 @@ const PoliciesComponent: FunctionComponent<PoliciesComponentProps> = ({
                   </Grid>
                   <Grid item={true} xs={6} style={{ marginTop: 30 }}>
                     <Typography variant="h4" gutterBottom={true}>
-                      {t('Platform Banner Configuration')}
+                      {t_i18n('Platform Banner Configuration')}
                     </Typography>
                     <Paper classes={{ root: classes.paper }} variant="outlined">
                       <Field
                         component={SelectField}
                         variant="standard"
                         name="platform_banner_level"
-                        label={t('Platform banner level')}
+                        label={t_i18n('Platform banner level')}
                         fullWidth={true}
                         containerstyle={{ marginTop: 5, width: '100%' }}
                         onSubmit={(name: string, value: string) => {
@@ -414,16 +414,16 @@ const PoliciesComponent: FunctionComponent<PoliciesComponentProps> = ({
                         displ
                       >
                         <MenuItem value="">&nbsp;</MenuItem>
-                        <MenuItem value="GREEN">{t('GREEN')}</MenuItem>
-                        <MenuItem value="RED">{t('RED')}</MenuItem>
-                        <MenuItem value="YELLOW">{t('YELLOW')}</MenuItem>
+                        <MenuItem value="GREEN">{t_i18n('GREEN')}</MenuItem>
+                        <MenuItem value="RED">{t_i18n('RED')}</MenuItem>
+                        <MenuItem value="YELLOW">{t_i18n('YELLOW')}</MenuItem>
                       </Field>
                       <Field
                         component={TextField}
                         variant="standard"
                         style={{ marginTop: 20 }}
                         name="platform_banner_text"
-                        label={t('Platform banner text')}
+                        label={t_i18n('Platform banner text')}
                         fullWidth={true}
                         onSubmit={handleSubmitField}
                       />

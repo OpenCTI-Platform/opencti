@@ -23,7 +23,7 @@ const InvestigationAddStixCoreObjects = (props) => {
     mapping,
     workspaceStixCoreObjects,
   } = props;
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   const [open, setOpen] = useState(false);
   const [sortBy, setSortBy] = useState('_score');
   const [orderAsc, setOrderAsc] = useState(false);
@@ -169,7 +169,7 @@ const InvestigationAddStixCoreObjects = (props) => {
   return (
     <>
       {!mapping && (
-        <Tooltip title={t('Add an entity to this investigation')}>
+        <Tooltip title={t_i18n('Add an entity to this investigation')}>
           <IconButton
             color="primary"
             aria-label="Add"
@@ -190,7 +190,7 @@ const InvestigationAddStixCoreObjects = (props) => {
             setOpen(false);
           }
         }}
-        title={t('Add entities')}
+        title={t_i18n('Add entities')}
         containerRef={containerRef}
       >
         <UserContext.Consumer>

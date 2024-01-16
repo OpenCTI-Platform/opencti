@@ -16,7 +16,7 @@ interface ContainerStixObjectsOrStixRelationshipsLinesProps {
 const ContainerStixObjectsOrStixRelationshipsLines: FunctionComponent<
 ContainerStixObjectsOrStixRelationshipsLinesProps
 > = ({ dataColumns, container, paginationOptions }) => {
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   return (
     <div style={{ height: '100%' }}>
       {(container.objects?.edges ?? []).length > 0 ? (
@@ -51,7 +51,7 @@ ContainerStixObjectsOrStixRelationshipsLinesProps
               textAlign: 'center',
             }}
           >
-            {t('No entities of this type has been found.')}
+            {t_i18n('No entities of this type has been found.')}
           </span>
         </div>
       )}

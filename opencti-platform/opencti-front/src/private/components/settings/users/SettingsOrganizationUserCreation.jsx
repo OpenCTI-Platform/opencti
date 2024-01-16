@@ -83,7 +83,7 @@ const SettingsOrganizationUserCreation = ({
   variant,
 }) => {
   const { me, settings } = useAuth();
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   const classes = useStyles();
   const [openAddUser, setOpenAddUser] = useState(false);
   const onReset = () => setOpenAddUser(false);
@@ -149,7 +149,7 @@ const SettingsOrganizationUserCreation = ({
       )}
       <Drawer
         open={openAddUser}
-        title={t('Create a user')}
+        title={t_i18n('Create a user')}
         onClose={() => setOpenAddUser(false)}
       >
         <Formik
@@ -172,7 +172,7 @@ const SettingsOrganizationUserCreation = ({
             account_status: 'Active',
             account_lock_after_date: null,
           }}
-          validationSchema={userValidation(t)}
+          validationSchema={userValidation(t_i18n)}
           onSubmit={onSubmit}
           onReset={onReset}
         >
@@ -181,14 +181,14 @@ const SettingsOrganizationUserCreation = ({
               <Field
                 component={TextField}
                 name="name"
-                label={t('Name')}
+                label={t_i18n('Name')}
                 fullWidth={true}
               />
               <Field
                 component={TextField}
                 variant="standard"
                 name="user_email"
-                label={t('Email address')}
+                label={t_i18n('Email address')}
                 fullWidth={true}
                 style={{ marginTop: 20 }}
               />
@@ -196,7 +196,7 @@ const SettingsOrganizationUserCreation = ({
                 component={TextField}
                 variant="standard"
                 name="firstname"
-                label={t('Firstname')}
+                label={t_i18n('Firstname')}
                 fullWidth={true}
                 style={{ marginTop: 20 }}
               />
@@ -204,14 +204,14 @@ const SettingsOrganizationUserCreation = ({
                 component={TextField}
                 variant="standard"
                 name="lastname"
-                label={t('Lastname')}
+                label={t_i18n('Lastname')}
                 fullWidth={true}
                 style={{ marginTop: 20 }}
               />
               <Field
                 component={MarkdownField}
                 name="description"
-                label={t('Description')}
+                label={t_i18n('Description')}
                 fullWidth={true}
                 multiline={true}
                 rows={4}
@@ -222,7 +222,7 @@ const SettingsOrganizationUserCreation = ({
                 component={TextField}
                 variant="standard"
                 name="password"
-                label={t('Password')}
+                label={t_i18n('Password')}
                 type="password"
                 style={{ marginTop: 20 }}
                 fullWidth={true}
@@ -231,7 +231,7 @@ const SettingsOrganizationUserCreation = ({
                 component={TextField}
                 variant="standard"
                 name="confirmation"
-                label={t('Confirmation')}
+                label={t_i18n('Confirmation')}
                 type="password"
                 fullWidth={true}
                 style={{ marginTop: 20 }}
@@ -245,7 +245,7 @@ const SettingsOrganizationUserCreation = ({
               />
               { organization && <GroupField
                 name="groups"
-                label={t('Add a group')}
+                label={t_i18n('Add a group')}
                 multiple={true}
                 containerStyle={{ width: '100%' }}
                 predefinedGroups={convertGrantableGroups(organization)}
@@ -255,14 +255,14 @@ const SettingsOrganizationUserCreation = ({
                 component={SelectField}
                 variant="standard"
                 name="account_status"
-                label={t('Account Status')}
+                label={t_i18n('Account Status')}
                 fullWidth={true}
                 containerstyle={fieldSpacingContainerStyle}
               >
                 {settings.platform_user_statuses.map((s) => {
                   return (
                     <MenuItem key={s.status} value={s.status}>
-                      {t(s.status)}
+                      {t_i18n(s.status)}
                     </MenuItem>
                   );
                 })}
@@ -271,7 +271,7 @@ const SettingsOrganizationUserCreation = ({
                 component={DateTimePickerField}
                 name="account_lock_after_date"
                 TextFieldProps={{
-                  label: t('Account Expire Date'),
+                  label: t_i18n('Account Expire Date'),
                   style: fieldSpacingContainerStyle,
                   variant: 'standard',
                   fullWidth: true,
@@ -284,7 +284,7 @@ const SettingsOrganizationUserCreation = ({
                   disabled={isSubmitting}
                   classes={{ root: classes.button }}
                 >
-                  {t('Cancel')}
+                  {t_i18n('Cancel')}
                 </Button>
                 <Button
                   variant="contained"
@@ -293,7 +293,7 @@ const SettingsOrganizationUserCreation = ({
                   disabled={isSubmitting}
                   classes={{ root: classes.button }}
                 >
-                  {t('Create')}
+                  {t_i18n('Create')}
                 </Button>
               </div>
             </Form>

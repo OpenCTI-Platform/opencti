@@ -10,11 +10,11 @@ const writeFile = util.promisify(fs.writeFile);
 const srcDirectory = 'src';
 const englishTranslationFiles = 'lang/en.json';
 const jsxTsxFileExtensions = ['.jsx', '.tsx'];
-const searchPattern = /\{t\('[^']+'\)}/g;
+const searchPattern = /t_i18n\('[^']+'\)/g;
 const extractedValues = {};
 
 function extractValueFromPattern(pattern) {
-  const match = /\{t\('([^']+)'\)\}/.exec(pattern);
+  const match = /t_i18n\('([^']+)'\)/.exec(pattern);
   return match ? match[1] : null;
 }
 
@@ -54,11 +54,16 @@ async function mergeWithExistingData() {
     const existingData = await readFile(englishTranslationFiles, 'utf8');
     const existingValues = JSON.parse(existingData);
     
-    // Merge the existing values with the newly extracted values
-    const mergedValues = {...extractedValues, ...existingValues };
+    const updatedValues = { ...existingValues };
     
+    // Append only the new values that do not already exist in the file
+    for (const key in extractedValues) {
+      if (!updatedValues.hasOwnProperty(key)) {
+        updatedValues[key] = extractedValues[key];
+      }
+    }
     // Write the merged values back to the file
-    await writeFile(englishTranslationFiles, JSON.stringify(mergedValues, null, 2));
+    await writeFile(englishTranslationFiles, JSON.stringify(updatedValues, null, 2));
     console.log('File written successfully');
   } catch (error) {
     console.error(`Error merging with existing data: ${error.message}`);

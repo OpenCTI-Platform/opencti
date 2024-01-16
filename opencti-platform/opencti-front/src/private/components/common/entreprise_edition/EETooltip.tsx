@@ -14,7 +14,7 @@ const EETooltip = ({
   children: ReactElement;
   title?: string;
 }) => {
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   const [feedbackCreation, setFeedbackCreation] = useState(false);
   const isAdmin = useGranted([SETTINGS]);
   const isEnterpriseEdition = useEnterpriseEdition();
@@ -22,11 +22,11 @@ const EETooltip = ({
     settings: { id: settingsId },
   } = useAuth();
   if (isEnterpriseEdition) {
-    return <Tooltip title={title ? t(title) : undefined}>{children}</Tooltip>;
+    return <Tooltip title={title ? t_i18n(title) : undefined}>{children}</Tooltip>;
   }
   return (
     <>
-      <Tooltip title={title ? t(title) : undefined}>
+      <Tooltip title={title ? t_i18n(title) : undefined}>
         <span onClick={(e) => {
           setFeedbackCreation(true);
           e.preventDefault();
@@ -47,7 +47,7 @@ const EETooltip = ({
           openDrawer={feedbackCreation}
           handleCloseDrawer={() => setFeedbackCreation(false)}
           initialValue={{
-            description: t('', {
+            description: t_i18n('', {
               id: 'I would like to use a EE feature ...',
               values: { feature: title },
             }),

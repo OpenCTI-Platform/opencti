@@ -169,13 +169,13 @@ const StixDomainPanel = ({
   defaultCreatedBy,
   defaultMarkingDefinitions,
 }) => {
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   const queryData = usePreloadedQuery(
     stixDomainObjectCreationAllTypesQuery,
     queryRef,
   );
   const availableEntityTypes = buildEntityTypes(
-    t,
+    t_i18n,
     queryData,
     stixDomainObjectTypes,
   );
@@ -620,7 +620,7 @@ const StixDomainPanel = ({
         />
       );
     }
-    return <div>{t('Unsupported')}</div>;
+    return <div>{t_i18n('Unsupported')}</div>;
   };
 
   return (
@@ -630,7 +630,7 @@ const StixDomainPanel = ({
       onClose={onClose}
       fullWidth={true}
     >
-      <DialogTitle>{t('Create an entity')}</DialogTitle>
+      <DialogTitle>{t_i18n('Create an entity')}</DialogTitle>
       <DialogContent>
         <Select
           value={type}

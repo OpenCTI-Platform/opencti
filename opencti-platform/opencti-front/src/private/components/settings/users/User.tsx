@@ -186,7 +186,7 @@ interface UserProps {
 
 const User: FunctionComponent<UserProps> = ({ data }) => {
   const classes = useStyles();
-  const { t, nsdt, fsd, fldt } = useFormatter();
+  const { t_i18n, nsdt, fsd, fldt } = useFormatter();
   const { me } = useAuth();
   const theme = useTheme<Theme>();
   const [displayKillSession, setDisplayKillSession] = useState<boolean>(false);
@@ -281,7 +281,7 @@ const User: FunctionComponent<UserProps> = ({ data }) => {
       >
         <Grid item={true} xs={6} style={{ paddingTop: 10 }}>
           <Typography variant="h4" gutterBottom={true}>
-            {t('Basic information')}
+            {t_i18n('Basic information')}
           </Typography>
           <Paper classes={{ root: classes.paper }} variant="outlined">
             <Grid container={true} spacing={3}>
@@ -291,7 +291,7 @@ const User: FunctionComponent<UserProps> = ({ data }) => {
                   gutterBottom={true}
                   style={{ marginBottom: 7 }}
                 >
-                  {t('Email address')}
+                  {t_i18n('Email address')}
                 </Typography>
                 <pre style={{ margin: 0 }}>{user.user_email}</pre>
               </Grid>
@@ -301,7 +301,7 @@ const User: FunctionComponent<UserProps> = ({ data }) => {
                   gutterBottom={true}
                   style={{ float: 'left' }}
                 >
-                  {t('2FA state')}
+                  {t_i18n('2FA state')}
                 </Typography>
                 {user.otp_activated && (
                   <IconButton
@@ -316,40 +316,40 @@ const User: FunctionComponent<UserProps> = ({ data }) => {
                 )}
                 <div className="clearfix" />
                 <pre style={{ margin: 0 }}>
-                  {user.otp_activated ? t('Enabled') : t('Disabled')}
+                  {user.otp_activated ? t_i18n('Enabled') : t_i18n('Disabled')}
                 </pre>
               </Grid>
               <Grid item={true} xs={12}>
                 <Typography variant="h3" gutterBottom={true}>
-                  {t('Token')}
+                  {t_i18n('Token')}
                 </Typography>
                 <pre style={{ margin: 0 }}>{user.api_token}</pre>
               </Grid>
               <Grid item={true} xs={6}>
                 <Typography variant="h3" gutterBottom={true}>
-                  {t('Firstname')}
+                  {t_i18n('Firstname')}
                 </Typography>
                 {user.firstname || '-'}
               </Grid>
               <Grid item={true} xs={6}>
                 <Typography variant="h3" gutterBottom={true}>
-                  {t('Lastname')}
+                  {t_i18n('Lastname')}
                 </Typography>
                 {user.lastname || '-'}
               </Grid>
               <Grid item={true} xs={6}>
                 <Typography variant="h3" gutterBottom={true}>
-                  {t('Account status')}
+                  {t_i18n('Account status')}
                 </Typography>
                 <ItemAccountStatus
                   account_status={user.account_status}
-                  label={t(user.account_status || 'Unknown')}
+                  label={t_i18n(user.account_status || 'Unknown')}
                   variant="outlined"
                 />
               </Grid>
               <Grid item={true} xs={6}>
                 <Typography variant="h3" gutterBottom={true}>
-                  {t('Account expiration date')}
+                  {t_i18n('Account expiration date')}
                 </Typography>
                 {accountExpireDate || '-'}
               </Grid>
@@ -358,13 +358,13 @@ const User: FunctionComponent<UserProps> = ({ data }) => {
         </Grid>
         <Grid item={true} xs={6} style={{ paddingTop: 10 }}>
           <Typography variant="h4" gutterBottom={true}>
-            {t('Permissions')}
+            {t_i18n('Permissions')}
           </Typography>
           <Paper classes={{ root: classes.paper }} variant="outlined">
             <Grid container={true} spacing={3}>
               <Grid item={true} xs={6}>
                 <Typography variant="h3" gutterBottom={true}>
-                  {t('Roles')}
+                  {t_i18n('Roles')}
                 </Typography>
                 <FieldOrEmpty source={user.roles ?? []}>
                   <List>
@@ -395,7 +395,7 @@ const User: FunctionComponent<UserProps> = ({ data }) => {
               </Grid>
               <Grid item={true} xs={6}>
                 <Typography variant="h3" gutterBottom={true}>
-                  {t('Groups')}
+                  {t_i18n('Groups')}
                 </Typography>
                 <FieldOrEmpty source={user.groups?.edges}>
                   <List>
@@ -430,7 +430,7 @@ const User: FunctionComponent<UserProps> = ({ data }) => {
               </Grid>
               <Grid item={true} xs={6}>
                 <Typography variant="h3" gutterBottom={true}>
-                  {t('Organizations')}
+                  {t_i18n('Organizations')}
                 </Typography>
                 <FieldOrEmpty source={user.objectOrganization?.edges}>
                   <List>
@@ -471,7 +471,7 @@ const User: FunctionComponent<UserProps> = ({ data }) => {
                   gutterBottom={true}
                   style={{ float: 'left' }}
                 >
-                  {t('Sessions')}
+                  {t_i18n('Sessions')}
                 </Typography>
                 <Security needs={[SETTINGS]}>
                   <IconButton
@@ -508,7 +508,7 @@ const User: FunctionComponent<UserProps> = ({ data }) => {
                                   {session.ttl
                                     ? Math.round(session.ttl / 60)
                                     : 0}{' '}
-                                  {t('minutes')}
+                                  {t_i18n('minutes')}
                                 </div>
                               </>
                             }
@@ -538,7 +538,7 @@ const User: FunctionComponent<UserProps> = ({ data }) => {
         <Triggers recipientId={user.id} filterKey="authorized_members.id" />
         <Grid item={true} xs={6} style={{ marginTop: 30 }}>
           <Typography variant="h4" gutterBottom={true}>
-            {t('Operations')}
+            {t_i18n('Operations')}
           </Typography>
           <Paper
             classes={{ root: classes.paper }}
@@ -554,7 +554,7 @@ const User: FunctionComponent<UserProps> = ({ data }) => {
                     textAlign: 'center',
                   }}
                 >
-                  {t(
+                  {t_i18n(
                     'This feature is only available in OpenCTI Enterprise Edition.',
                   )}
                 </span>
@@ -605,7 +605,7 @@ const User: FunctionComponent<UserProps> = ({ data }) => {
                         }
                         series={[
                           {
-                            name: t('Number of operations'),
+                            name: t_i18n('Number of operations'),
                             data: chartData,
                           },
                         ]}
@@ -644,19 +644,19 @@ const User: FunctionComponent<UserProps> = ({ data }) => {
       >
         <DialogContent>
           <DialogContentText>
-            {t('Do you want to kill this session?')}
+            {t_i18n('Do you want to kill this session?')}
           </DialogContentText>
         </DialogContent>
         <DialogActions>
           <Button onClick={handleCloseKillSession} disabled={killing}>
-            {t('Cancel')}
+            {t_i18n('Cancel')}
           </Button>
           <Button
             onClick={submitKillSession}
             color="secondary"
             disabled={killing}
           >
-            {t('Kill')}
+            {t_i18n('Kill')}
           </Button>
         </DialogActions>
       </Dialog>
@@ -669,19 +669,19 @@ const User: FunctionComponent<UserProps> = ({ data }) => {
       >
         <DialogContent>
           <DialogContentText>
-            {t('Do you want to kill all the sessions of this user?')}
+            {t_i18n('Do you want to kill all the sessions of this user?')}
           </DialogContentText>
         </DialogContent>
         <DialogActions>
           <Button onClick={handleCloseKillSessions} disabled={killing}>
-            {t('Cancel')}
+            {t_i18n('Cancel')}
           </Button>
           <Button
             onClick={submitKillSessions}
             color="secondary"
             disabled={killing}
           >
-            {t('Kill all')}
+            {t_i18n('Kill all')}
           </Button>
         </DialogActions>
       </Dialog>

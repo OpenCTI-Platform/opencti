@@ -74,15 +74,15 @@ const eventMutationRelationDelete = graphql`
 
 const EventEditionOverviewComponent = (props) => {
   const { event, enableReferences, context, handleClose } = props;
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
 
   const basicShape = {
-    name: Yup.string().min(2).required(t('This field is required')),
+    name: Yup.string().min(2).required(t_i18n('This field is required')),
     description: Yup.string().nullable(),
     event_types: Yup.array().nullable(),
-    start_time: Yup.date().typeError(t('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)')).nullable(),
+    start_time: Yup.date().typeError(t_i18n('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)')).nullable(),
     stop_time: Yup.date()
-      .typeError(t('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)'))
+      .typeError(t_i18n('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)'))
       .min(Yup.ref('start_time'), "The end date can't be before start date")
       .nullable(),
     references: Yup.array(),
@@ -149,7 +149,7 @@ const EventEditionOverviewComponent = (props) => {
     R.assoc('stop_time', buildDate(event.stop_time)),
     R.assoc('createdBy', convertCreatedBy(event)),
     R.assoc('objectMarking', convertMarkings(event)),
-    R.assoc('x_opencti_workflow_id', convertStatus(t, event)),
+    R.assoc('x_opencti_workflow_id', convertStatus(t_i18n, event)),
     R.assoc('references', []),
     R.pick([
       'name',
@@ -183,7 +183,7 @@ const EventEditionOverviewComponent = (props) => {
             component={TextField}
             variant="standard"
             name="name"
-            label={t('Name')}
+            label={t_i18n('Name')}
             fullWidth={true}
             onFocus={editor.changeFocus}
             onSubmit={handleSubmitField}
@@ -192,7 +192,7 @@ const EventEditionOverviewComponent = (props) => {
               }
           />
           <OpenVocabField
-            label={t('Event types')}
+            label={t_i18n('Event types')}
             type="event-type-ov"
             name="event_types"
             onFocus={editor.changeFocus}
@@ -206,7 +206,7 @@ const EventEditionOverviewComponent = (props) => {
           <Field
             component={MarkdownField}
             name="description"
-            label={t('Description')}
+            label={t_i18n('Description')}
             fullWidth={true}
             multiline={true}
             rows="4"
@@ -223,7 +223,7 @@ const EventEditionOverviewComponent = (props) => {
             onFocus={editor.changeFocus}
             onSubmit={handleSubmitField}
             TextFieldProps={{
-              label: t('Start date'),
+              label: t_i18n('Start date'),
               variant: 'standard',
               fullWidth: true,
               style: { marginTop: 20 },
@@ -238,7 +238,7 @@ const EventEditionOverviewComponent = (props) => {
             onFocus={editor.changeFocus}
             onSubmit={handleSubmitField}
             TextFieldProps={{
-              label: t('End date'),
+              label: t_i18n('End date'),
               variant: 'standard',
               fullWidth: true,
               style: { marginTop: 20 },

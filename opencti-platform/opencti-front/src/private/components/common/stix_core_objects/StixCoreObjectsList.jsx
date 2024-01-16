@@ -259,7 +259,7 @@ const StixCoreObjectsList = ({
   parameters = {},
 }) => {
   const classes = useStyles();
-  const { t, fsd } = useFormatter();
+  const { t_i18n, fsd } = useFormatter();
   const renderContent = () => {
     const selection = dataSelection[0];
     const dataSelectionTypes = ['Stix-Core-Object'];
@@ -380,7 +380,7 @@ const StixCoreObjectsList = ({
                     textAlign: 'center',
                   }}
                 >
-                  {t('No entities of this type has been found.')}
+                  {t_i18n('No entities of this type has been found.')}
                 </span>
               </div>
             );
@@ -414,7 +414,7 @@ const StixCoreObjectsList = ({
           textOverflow: 'ellipsis',
         }}
       >
-        {parameters.title ?? t('Entities list')}
+        {parameters.title ?? t_i18n('Entities list')}
       </Typography>
       {variant !== 'inLine' ? (
         <Paper classes={{ root: classes.paper }} variant="outlined">

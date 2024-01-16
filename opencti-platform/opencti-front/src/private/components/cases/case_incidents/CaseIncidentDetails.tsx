@@ -177,7 +177,7 @@ interface CaseIncidentDetailsProps {
 const CaseIncidentDetails: FunctionComponent<CaseIncidentDetailsProps> = ({
   caseIncidentData,
 }) => {
-  const { t, fsd } = useFormatter();
+  const { t_i18n, fsd } = useFormatter();
   const classes = useStyles();
   const [expanded, setExpanded] = useState(false);
   const data = useFragment(CaseIncidentDetailsFragment, caseIncidentData);
@@ -194,13 +194,13 @@ const CaseIncidentDetails: FunctionComponent<CaseIncidentDetailsProps> = ({
   return (
     <div style={{ height: '100%' }}>
       <Typography variant="h4" gutterBottom={true}>
-        {t('Details')}
+        {t_i18n('Details')}
       </Typography>
       <Paper classes={{ root: classes.paper }} variant="outlined">
         <Grid container={true} spacing={3} style={{ marginBottom: 20 }}>
           <Grid item={true} xs={6}>
             <Typography variant="h3" gutterBottom={true}>
-              {t('Priority')}
+              {t_i18n('Priority')}
             </Typography>
             <ItemOpenVocab
               key="type"
@@ -212,7 +212,7 @@ const CaseIncidentDetails: FunctionComponent<CaseIncidentDetailsProps> = ({
           </Grid>
           <Grid item={true} xs={6}>
             <Typography variant="h3" gutterBottom={true}>
-              {t('Severity')}
+              {t_i18n('Severity')}
             </Typography>
             <ItemOpenVocab
               key="type"
@@ -224,7 +224,7 @@ const CaseIncidentDetails: FunctionComponent<CaseIncidentDetailsProps> = ({
           </Grid>
           <Grid item={true} xs={6}>
             <Typography variant="h3" gutterBottom={true}>
-              {t('Incident response type')}
+              {t_i18n('Incident response type')}
             </Typography>
             {responseTypes.length > 0
               ? (data.response_types ?? []).map((responseType) => (
@@ -238,7 +238,7 @@ const CaseIncidentDetails: FunctionComponent<CaseIncidentDetailsProps> = ({
           </Grid>
           <Grid item={true} xs={12}>
             <Typography variant="h3" gutterBottom={true}>
-              {t('Description')}
+              {t_i18n('Description')}
             </Typography>
             {data.description ? (
               <ExpandableMarkdown source={data.description} limit={300} />
@@ -248,7 +248,7 @@ const CaseIncidentDetails: FunctionComponent<CaseIncidentDetailsProps> = ({
           </Grid>
         </Grid>
         <Typography variant="h3" gutterBottom={true}>
-          {t('Correlated cases')}
+          {t_i18n('Correlated cases')}
         </Typography>
         <List classes={{ root: classes.relatedContainers }}>
           {relatedContainers.length > 0

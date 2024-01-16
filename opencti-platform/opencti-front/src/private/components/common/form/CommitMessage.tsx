@@ -48,7 +48,7 @@ const CommitMessage: FunctionComponent<CommitMessageProps> = ({
   noStoreUpdate,
   handleClose,
 }) => {
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   const classes = useStyles();
 
   const [controlOpen, setControlOpen] = useState<boolean>(open ?? false);
@@ -80,7 +80,7 @@ const CommitMessage: FunctionComponent<CommitMessageProps> = ({
               onClick={submitForm} // directly submit
               disabled={disabled}
             >
-              {t('Direct Update')}
+              {t_i18n('Direct Update')}
             </Button>
           </Security>
           <Button
@@ -89,7 +89,7 @@ const CommitMessage: FunctionComponent<CommitMessageProps> = ({
             onClick={handleOpenControl}
             disabled={disabled}
           >
-            {t('Update')}
+            {t_i18n('Update')}
           </Button>
         </div>
       )}
@@ -99,7 +99,7 @@ const CommitMessage: FunctionComponent<CommitMessageProps> = ({
         onClose={handleClose ?? handleCloseControl}
         fullWidth
       >
-        <DialogTitle>{t('Reference modification')}</DialogTitle>
+        <DialogTitle>{t_i18n('Reference modification')}</DialogTitle>
         <DialogContent>
           <ExternalReferencesField
             name="references"
@@ -112,7 +112,7 @@ const CommitMessage: FunctionComponent<CommitMessageProps> = ({
           <Field
             component={MarkdownField}
             name="message"
-            label={t('Message')}
+            label={t_i18n('Message')}
             fullWidth
             multiline
             rows="2"
@@ -125,7 +125,7 @@ const CommitMessage: FunctionComponent<CommitMessageProps> = ({
             onClick={onSubmitFromDialog}
             disabled={disabled || !validateReferences(values)}
           >
-            {t('Validate')}
+            {t_i18n('Validate')}
           </Button>
         </DialogActions>
       </Dialog>

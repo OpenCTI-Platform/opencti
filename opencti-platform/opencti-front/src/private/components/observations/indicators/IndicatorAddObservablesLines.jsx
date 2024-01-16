@@ -74,13 +74,13 @@ export const indicatorMutationRelationDelete = graphql`
 const IndicatorAddObservablesLinesContainer = (props) => {
   const { indicator, indicatorObservables, data } = props;
   const classes = useStyles();
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
 
   const [commitRelationAdd] = useMutation(indicatorMutationRelationAdd);
   const [commitRelationDelete] = useMutation(indicatorMutationRelationDelete);
 
   const enableReferences = useIsEnforceReference('stix-core-relationship');
-  const stixCoreRelationshipValidator = useSchemaCreationValidation('stix-core-relationship', stixCoreRelationshipBasicShape(t));
+  const stixCoreRelationshipValidator = useSchemaCreationValidation('stix-core-relationship', stixCoreRelationshipBasicShape(t_i18n));
   const [expandedPanels, setExpandedPanels] = useState({});
   const [showForm, setShowForm] = useState(false);
   const [selected, setSelected] = useState(null);
@@ -200,10 +200,10 @@ const IndicatorAddObservablesLinesContainer = (props) => {
                 >
                   <AccordionSummary expandIcon={<ExpandMore />}>
                     <Typography className={classes.heading}>
-                      {t(`entity_${type}`)}
+                      {t_i18n(`entity_${type}`)}
                     </Typography>
                     <Typography className={classes.secondaryHeading}>
-                      {stixCyberObservables[type].length} {t('entitie(s)')}
+                      {stixCyberObservables[type].length} {t_i18n('entitie(s)')}
                     </Typography>
                   </AccordionSummary>
                   <AccordionDetails
@@ -242,7 +242,7 @@ const IndicatorAddObservablesLinesContainer = (props) => {
             })
           ) : (
             <div style={{ paddingLeft: 20 }}>
-              {t('No entities were found for this search.')}
+              {t_i18n('No entities were found for this search.')}
             </div>
           )}
         </>

@@ -138,21 +138,21 @@ ThreatActorIndividualFormProps
   inputValue,
 }) => {
   const classes = useStyles();
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   const { heightsConverterSave, weightsConverterSave } = useUserMetric();
   const [currentTab, setCurrentTab] = useState(0);
   const handleChangeTab = (_: React.SyntheticEvent, value: number) => setCurrentTab(value);
   const basicShape = {
-    name: Yup.string().required(t('This field is required')),
+    name: Yup.string().required(t_i18n('This field is required')),
     threat_actor_types: Yup.array().nullable(),
     confidence: Yup.number().nullable(),
     description: Yup.string().nullable(),
     first_seen: Yup.date()
       .nullable()
-      .typeError(t('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)')),
+      .typeError(t_i18n('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)')),
     last_seen: Yup.date()
       .nullable()
-      .typeError(t('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)')),
+      .typeError(t_i18n('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)')),
     sophistication: Yup.object().nullable(),
     resource_level: Yup.object().nullable(),
     roles: Yup.array().nullable(),
@@ -162,14 +162,14 @@ ThreatActorIndividualFormProps
     goals: Yup.string().nullable(),
     date_of_birth: Yup.date()
       .nullable()
-      .typeError(t('The value must be a date (yyyy-MM-dd)')),
+      .typeError(t_i18n('The value must be a date (yyyy-MM-dd)')),
     bornIn: Yup.object().nullable(),
     ethnicity: Yup.object().nullable(),
-    gender: Yup.string().nullable().typeError(t('The value must be a string')),
+    gender: Yup.string().nullable().typeError(t_i18n('The value must be a string')),
     marital_status: Yup.string()
       .nullable()
-      .typeError(t('The value must be a string')),
-    job_title: Yup.string().max(250, t('The value is too long')),
+      .typeError(t_i18n('The value must be a string')),
+    job_title: Yup.string().max(250, t_i18n('The value is too long')),
     eye_color: Yup.string().nullable(),
     hair_color: Yup.string().nullable(),
     height: Yup.array().of(
@@ -177,10 +177,10 @@ ThreatActorIndividualFormProps
         measure: Yup.number()
           .min(0)
           .nullable()
-          .typeError(t('The value must be a number')),
+          .typeError(t_i18n('The value must be a number')),
         date_seen: Yup.date()
           .nullable()
-          .typeError(t('The value must be a date (yyyy-MM-dd)')),
+          .typeError(t_i18n('The value must be a date (yyyy-MM-dd)')),
       }),
     ),
     weight: Yup.array().of(
@@ -188,10 +188,10 @@ ThreatActorIndividualFormProps
         measure: Yup.number()
           .min(0)
           .nullable()
-          .typeError(t('The value must be a number')),
+          .typeError(t_i18n('The value must be a number')),
         date_seen: Yup.date()
           .nullable()
-          .typeError(t('The value must be a date (yyyy-MM-dd)')),
+          .typeError(t_i18n('The value must be a date (yyyy-MM-dd)')),
       }),
     ),
   };
@@ -320,13 +320,13 @@ ThreatActorIndividualFormProps
                     badgeContent={Object.keys(errors).length}
                     errors={errors}
                   >
-                    {t('Overview')}
+                    {t_i18n('Overview')}
                   </ErrorBadge>
                 }
               />
-              <Tab id="threat-details" label={t('Details')} />
-              <Tab id="threat-demographics" label={t('Demographics')} />
-              <Tab id="threat-bio" label={t('Biographics')} />
+              <Tab id="threat-details" label={t_i18n('Details')} />
+              <Tab id="threat-demographics" label={t_i18n('Demographics')} />
+              <Tab id="threat-bio" label={t_i18n('Biographics')} />
             </Tabs>
           </Box>
           {currentTab === 0 && (
@@ -335,7 +335,7 @@ ThreatActorIndividualFormProps
                 component={TextField}
                 style={{ marginTop: 20 }}
                 name="name"
-                label={t('Name')}
+                label={t_i18n('Name')}
                 fullWidth={true}
                 detectDuplicate={[
                   'Threat-Actor',
@@ -347,7 +347,7 @@ ThreatActorIndividualFormProps
               <OpenVocabField
                 type="threat-actor-individual-type-ov"
                 name="threat_actor_types"
-                label={t('Threat actor types')}
+                label={t_i18n('Threat actor types')}
                 multiple={true}
                 containerStyle={{ width: '100%', marginTop: 20 }}
                 onChange={setFieldValue}
@@ -359,7 +359,7 @@ ThreatActorIndividualFormProps
               <Field
                 component={MarkdownField}
                 name="description"
-                label={t('Description')}
+                label={t_i18n('Description')}
                 fullWidth={true}
                 multiline={true}
                 rows="4"
@@ -395,7 +395,7 @@ ThreatActorIndividualFormProps
                 component={DateTimePickerField}
                 name="first_seen"
                 TextFieldProps={{
-                  label: t('First seen'),
+                  label: t_i18n('First seen'),
                   variant: 'standard',
                   fullWidth: true,
                   style: { marginTop: 20 },
@@ -405,14 +405,14 @@ ThreatActorIndividualFormProps
                 component={DateTimePickerField}
                 name="last_seen"
                 TextFieldProps={{
-                  label: t('Last seen'),
+                  label: t_i18n('Last seen'),
                   variant: 'standard',
                   fullWidth: true,
                   style: { marginTop: 20 },
                 }}
               />
               <OpenVocabField
-                label={t('Sophistication')}
+                label={t_i18n('Sophistication')}
                 type="threat_actor_individual_sophistication_ov"
                 name="sophistication"
                 containerStyle={fieldSpacingContainerStyle}
@@ -420,7 +420,7 @@ ThreatActorIndividualFormProps
                 multiple={false}
               />
               <OpenVocabField
-                label={t('Resource level')}
+                label={t_i18n('Resource level')}
                 type="attack-resource-level-ov"
                 name="resource_level"
                 containerStyle={fieldSpacingContainerStyle}
@@ -428,7 +428,7 @@ ThreatActorIndividualFormProps
                 multiple={false}
               />
               <OpenVocabField
-                label={t('Roles')}
+                label={t_i18n('Roles')}
                 type="threat-actor-individual-role-ov"
                 name="roles"
                 containerStyle={fieldSpacingContainerStyle}
@@ -436,7 +436,7 @@ ThreatActorIndividualFormProps
                 multiple={true}
               />
               <OpenVocabField
-                label={t('Primary motivation')}
+                label={t_i18n('Primary motivation')}
                 type="attack-motivation-ov"
                 name="primary_motivation"
                 containerStyle={fieldSpacingContainerStyle}
@@ -444,7 +444,7 @@ ThreatActorIndividualFormProps
                 multiple={false}
               />
               <OpenVocabField
-                label={t('Secondary motivations')}
+                label={t_i18n('Secondary motivations')}
                 type="attack-motivation-ov"
                 name="secondary_motivations"
                 containerStyle={fieldSpacingContainerStyle}
@@ -452,7 +452,7 @@ ThreatActorIndividualFormProps
                 multiple={true}
               />
               <OpenVocabField
-                label={t('Personal motivations')}
+                label={t_i18n('Personal motivations')}
                 type="attack-motivation-ov"
                 name="personal_motivations"
                 containerStyle={fieldSpacingContainerStyle}
@@ -462,7 +462,7 @@ ThreatActorIndividualFormProps
               <Field
                 component={TextField}
                 name="goals"
-                label={t('Goals (1 / line)')}
+                label={t_i18n('Goals (1 / line)')}
                 fullWidth={true}
                 multiline={true}
                 rows="4"
@@ -475,14 +475,14 @@ ThreatActorIndividualFormProps
               <CountryField
                 id="PlaceOfBirth"
                 name="bornIn"
-                label={t('Place of Birth')}
+                label={t_i18n('Place of Birth')}
                 containerStyle={fieldSpacingContainerStyle}
                 onChange={setFieldValue}
               />
               <CountryField
                 id="Ethnicity"
                 name="ethnicity"
-                label={t('Ethnicity')}
+                label={t_i18n('Ethnicity')}
                 containerStyle={fieldSpacingContainerStyle}
                 onChange={setFieldValue}
               />
@@ -492,7 +492,7 @@ ThreatActorIndividualFormProps
                 name="date_of_birth"
                 onSubmit={setFieldValue}
                 TextFieldProps={{
-                  label: t('Date of Birth'),
+                  label: t_i18n('Date of Birth'),
                   variant: 'standard',
                   fullWidth: true,
                   style: { marginTop: 20 },
@@ -500,7 +500,7 @@ ThreatActorIndividualFormProps
               />
               <OpenVocabField
                 name="marital_status"
-                label={t('Marital Status')}
+                label={t_i18n('Marital Status')}
                 type="marital_status_ov"
                 variant="edit"
                 onChange={setFieldValue}
@@ -510,7 +510,7 @@ ThreatActorIndividualFormProps
               />
               <OpenVocabField
                 name="gender"
-                label={t('Gender')}
+                label={t_i18n('Gender')}
                 type="gender_ov"
                 variant="edit"
                 onChange={setFieldValue}
@@ -522,7 +522,7 @@ ThreatActorIndividualFormProps
                 component={MarkdownField}
                 name="job_title"
                 id="job_title"
-                label={t('Job Title')}
+                label={t_i18n('Job Title')}
                 fullWidth={true}
                 multiline={false}
                 rows="1"
@@ -535,7 +535,7 @@ ThreatActorIndividualFormProps
             <>
               <OpenVocabField
                 name="eye_color"
-                label={t('Eye Color')}
+                label={t_i18n('Eye Color')}
                 type="eye_color_ov"
                 variant="edit"
                 onChange={setFieldValue}
@@ -545,7 +545,7 @@ ThreatActorIndividualFormProps
               />
               <OpenVocabField
                 name="hair_color"
-                label={t('Hair Color')}
+                label={t_i18n('Hair Color')}
                 type="hair_color_ov"
                 variant="edit"
                 onChange={setFieldValue}
@@ -575,7 +575,7 @@ ThreatActorIndividualFormProps
               disabled={isSubmitting}
               classes={{ root: classes.button }}
             >
-              {t('Cancel')}
+              {t_i18n('Cancel')}
             </Button>
             <Button
               variant="contained"
@@ -584,7 +584,7 @@ ThreatActorIndividualFormProps
               disabled={isSubmitting}
               classes={{ root: classes.button }}
             >
-              {t('Create')}
+              {t_i18n('Create')}
             </Button>
           </div>
         </Form>
@@ -598,7 +598,7 @@ const ThreatActorIndividualCreation = ({
 }: {
   paginationOptions: ThreatActorsIndividualCardsPaginationQuery$variables;
 }) => {
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   const updater = (store: RecordSourceSelectorProxy) => insertNode(
     store,
     'Pagination_threatActorsIndividuals',
@@ -607,7 +607,7 @@ const ThreatActorIndividualCreation = ({
   );
   return (
     <Drawer
-      title={t('Create a threat actor individual')}
+      title={t_i18n('Create a threat actor individual')}
       variant={DrawerVariant.create}
     >
       {({ onClose }) => (

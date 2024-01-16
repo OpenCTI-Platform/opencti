@@ -228,7 +228,7 @@ const StixRelationshipsDonut = ({
 }) => {
   const classes = useStyles();
   const theme = useTheme();
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   const renderContent = () => {
     let selection = {};
     let filtersAndOptions;
@@ -261,7 +261,7 @@ const StixRelationshipsDonut = ({
               data = R.map(
                 (n) => R.assoc(
                   'label',
-                  `[${t(`entity_${n.entity.entity_type}`)}] ${defaultValue(n.entity)}`,
+                  `[${t_i18n(`entity_${n.entity.entity_type}`)}] ${defaultValue(n.entity)}`,
                   n,
                 ),
                 props.stixRelationshipsDistribution,
@@ -291,7 +291,7 @@ const StixRelationshipsDonut = ({
                     textAlign: 'center',
                   }}
                 >
-                  {t('No entities of this type has been found.')}
+                  {t_i18n('No entities of this type has been found.')}
                 </span>
               </div>
             );
@@ -325,7 +325,7 @@ const StixRelationshipsDonut = ({
           textOverflow: 'ellipsis',
         }}
       >
-        {parameters.title || title || t('Relationships distribution')}
+        {parameters.title || title || t_i18n('Relationships distribution')}
       </Typography>
       {variant !== 'inLine' ? (
         <Paper classes={{ root: classes.paper }} variant="outlined">

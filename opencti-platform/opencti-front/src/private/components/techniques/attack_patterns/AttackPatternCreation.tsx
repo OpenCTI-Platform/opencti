@@ -114,9 +114,9 @@ export const AttackPatternCreationForm: FunctionComponent<AttackPatternFormProps
   defaultMarkingDefinitions,
 }) => {
   const classes = useStyles();
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   const basicShape = {
-    name: Yup.string().min(2).required(t('This field is required')),
+    name: Yup.string().min(2).required(t_i18n('This field is required')),
     description: Yup.string().nullable(),
     x_mitre_id: Yup.string().nullable(),
   };
@@ -200,21 +200,21 @@ export const AttackPatternCreationForm: FunctionComponent<AttackPatternFormProps
           <Field
             component={TextField}
             name="name"
-            label={t('Name')}
+            label={t_i18n('Name')}
             fullWidth={true}
             detectDuplicate={['Attack-Pattern']}
           />
           <Field
             component={TextField}
             name="x_mitre_id"
-            label={t('External ID')}
+            label={t_i18n('External ID')}
             fullWidth={true}
             style={{ marginTop: 20 }}
           />
           <Field
             component={MarkdownField}
             name="description"
-            label={t('Description')}
+            label={t_i18n('Description')}
             fullWidth={true}
             multiline={true}
             rows="4"
@@ -253,7 +253,7 @@ export const AttackPatternCreationForm: FunctionComponent<AttackPatternFormProps
               disabled={isSubmitting}
               classes={{ root: classes.button }}
             >
-              {t('Cancel')}
+              {t_i18n('Cancel')}
             </Button>
             <Button
               variant="contained"
@@ -262,7 +262,7 @@ export const AttackPatternCreationForm: FunctionComponent<AttackPatternFormProps
               disabled={isSubmitting}
               classes={{ root: classes.button }}
             >
-              {t('Create')}
+              {t_i18n('Create')}
             </Button>
           </div>
         </Form>
@@ -276,7 +276,7 @@ const AttackPatternCreation = ({
 }: {
   paginationOptions: AttackPatternsLinesPaginationQuery$variables;
 }) => {
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   const updater = (store: RecordSourceSelectorProxy) => insertNode(
     store,
     'Pagination_attackPatterns',
@@ -286,7 +286,7 @@ const AttackPatternCreation = ({
 
   return (
     <Drawer
-      title={t('Create an attack pattern')}
+      title={t_i18n('Create an attack pattern')}
       variant={DrawerVariant.create}
     >
       {({ onClose }) => (

@@ -18,7 +18,7 @@ const useStyles = makeStyles(() => ({
 }));
 
 const Tasks = () => {
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   const classes = useStyles();
   const { platformModuleHelpers } = useAuth();
   const optionsInProgress = {
@@ -46,7 +46,7 @@ const Tasks = () => {
   if (!platformModuleHelpers.isTasksManagerEnable()) {
     return (
       <Alert severity="info">
-        {t(platformModuleHelpers.generateDisableMessage(TASK_MANAGER))}
+        {t_i18n(platformModuleHelpers.generateDisableMessage(TASK_MANAGER))}
       </Alert>
     );
   }
@@ -54,7 +54,7 @@ const Tasks = () => {
     <div className={classes.container}>
       <ProcessingMenu />
       <Typography variant="h4" gutterBottom={true}>
-        {t('In progress tasks')}
+        {t_i18n('In progress tasks')}
       </Typography>
       <QueryRenderer
         query={tasksListQuery}
@@ -67,7 +67,7 @@ const Tasks = () => {
         }}
       />
       <Typography variant="h4" gutterBottom={true} style={{ marginTop: 35 }}>
-        {t('Completed tasks')}
+        {t_i18n('Completed tasks')}
       </Typography>
       <QueryRenderer
         query={tasksListQuery}

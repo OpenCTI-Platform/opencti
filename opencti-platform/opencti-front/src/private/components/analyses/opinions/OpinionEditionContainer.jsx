@@ -5,14 +5,14 @@ import OpinionEditionOverview from './OpinionEditionOverview';
 import Drawer, { DrawerVariant } from '../../common/drawer/Drawer';
 
 const OpinionEditionContainer = (props) => {
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
 
   const { handleClose, opinion, open } = props;
   const { editContext } = opinion;
 
   return (
     <Drawer
-      title={t('Update a opinions')}
+      title={t_i18n('Update a opinions')}
       open={open}
       onClose={handleClose}
       variant={open == null ? DrawerVariant.update : undefined}

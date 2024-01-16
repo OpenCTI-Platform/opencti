@@ -27,7 +27,7 @@ const SettingsOrganizationEntitySettingHiddenTypesListComponent: FunctionCompone
   targetType,
   queryRef,
 }) => {
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   const data = usePreloadedQuery<SettingsOrganizationEntitySettingHiddenTypesListQuery>(settingsOrganizationEntitySettingHiddenTypesListQuery, queryRef);
   const organizations = data.organizations?.edges?.map((e) => e?.node) ?? [];
 
@@ -35,7 +35,7 @@ const SettingsOrganizationEntitySettingHiddenTypesListComponent: FunctionCompone
     <EntitySettingHiddenTypesList
       targetType={targetType}
       nodes={organizations}
-      label={t('Hidden in organizations')}
+      label={t_i18n('Hidden in organizations')}
       link={'/dashboard/settings/accesses/organizations/'}
       entityType={'Organization'}
     />

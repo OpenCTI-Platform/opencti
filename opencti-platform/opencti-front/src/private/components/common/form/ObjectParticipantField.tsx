@@ -74,7 +74,7 @@ const ObjectParticipantField: FunctionComponent<ObjectParticipantFieldProps> = (
   disabled,
 }) => {
   const classes = useStyles();
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   const [participants, setParticipants] = useState<OptionParticipant[]>([]);
 
   const searchParticipants = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -104,11 +104,11 @@ const ObjectParticipantField: FunctionComponent<ObjectParticipantFieldProps> = (
       multiple={true}
       textfieldprops={{
         variant: 'standard',
-        label: label ?? t('Participant(s)'),
+        label: label ?? t_i18n('Participant(s)'),
         helperText: helpertext,
         onFocus: searchParticipants,
       }}
-      noOptionsText={t('No available options')}
+      noOptionsText={t_i18n('No available options')}
       options={participants}
       onInputChange={searchParticipants}
       onChange={typeof onChange === 'function' ? onChange : null}

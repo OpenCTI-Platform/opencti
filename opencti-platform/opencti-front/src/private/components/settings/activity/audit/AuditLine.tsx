@@ -80,7 +80,7 @@ export const AuditLine: FunctionComponent<AuditLineProps> = ({
   node,
 }) => {
   const classes = useStyles();
-  const { t, fndt } = useFormatter();
+  const { t_i18n, fndt } = useFormatter();
   const theme = useTheme<Theme>();
   const [selectedLog, setSelectedLog] = useState<string | null>(null);
   const data = useFragment(AuditLineFragment, node);
@@ -97,13 +97,13 @@ export const AuditLine: FunctionComponent<AuditLineProps> = ({
     <>
       <Drawer
         open={!!selectedLog}
-        title={t('Activity raw detail')}
+        title={t_i18n('Activity raw detail')}
         onClose={() => setSelectedLog(null)}
       >
         <>
           <div>
             <Typography variant="h4" gutterBottom={true}>
-              {t('Message')}
+              {t_i18n('Message')}
             </Typography>
             <MarkdownDisplay
               content={message}
@@ -114,14 +114,14 @@ export const AuditLine: FunctionComponent<AuditLineProps> = ({
           {data.context_uri && (
             <div style={{ marginTop: 16 }}>
               <Typography variant="h4" gutterBottom={true}>
-                {t('Instance context')}
+                {t_i18n('Instance context')}
               </Typography>
               <Link to={data.context_uri}>View the element</Link>
             </div>
           )}
           <div style={{ marginTop: 16 }}>
             <Typography variant="h4" gutterBottom={true}>
-              {t('Raw data')}
+              {t_i18n('Raw data')}
             </Typography>
             <pre>{data.raw_data}</pre>
           </div>

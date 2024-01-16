@@ -55,7 +55,7 @@ const userValidation = (t) => Yup.object().shape({
 
 const UserCreation = ({ paginationOptions }) => {
   const { settings } = useAuth();
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   const classes = useStyles();
   const onSubmit = (values, { setSubmitting, resetForm }) => {
     const finalValues = R.pipe(
@@ -81,13 +81,13 @@ const UserCreation = ({ paginationOptions }) => {
 
   return (
     <Drawer
-      title={t('Create a user')}
+      title={t_i18n('Create a user')}
       variant={DrawerVariant.createWithPanel}
     >
       {({ onClose }) => (
         <>
           <Alert severity="info">
-            {t('User will be created with default groups.')}
+            {t_i18n('User will be created with default groups.')}
           </Alert>
           <br />
           <Formik
@@ -103,7 +103,7 @@ const UserCreation = ({ paginationOptions }) => {
               account_status: 'Active',
               account_lock_after_date: null,
             }}
-            validationSchema={userValidation(t)}
+            validationSchema={userValidation(t_i18n)}
             onSubmit={onSubmit}
             onReset={onClose}
           >
@@ -112,14 +112,14 @@ const UserCreation = ({ paginationOptions }) => {
                 <Field
                   component={TextField}
                   name="name"
-                  label={t('Name')}
+                  label={t_i18n('Name')}
                   fullWidth={true}
                 />
                 <Field
                   component={TextField}
                   variant="standard"
                   name="user_email"
-                  label={t('Email address')}
+                  label={t_i18n('Email address')}
                   fullWidth={true}
                   style={{ marginTop: 20 }}
                 />
@@ -127,7 +127,7 @@ const UserCreation = ({ paginationOptions }) => {
                   component={TextField}
                   variant="standard"
                   name="firstname"
-                  label={t('Firstname')}
+                  label={t_i18n('Firstname')}
                   fullWidth={true}
                   style={{ marginTop: 20 }}
                 />
@@ -135,14 +135,14 @@ const UserCreation = ({ paginationOptions }) => {
                   component={TextField}
                   variant="standard"
                   name="lastname"
-                  label={t('Lastname')}
+                  label={t_i18n('Lastname')}
                   fullWidth={true}
                   style={{ marginTop: 20 }}
                 />
                 <Field
                   component={MarkdownField}
                   name="description"
-                  label={t('Description')}
+                  label={t_i18n('Description')}
                   fullWidth={true}
                   multiline={true}
                   rows={4}
@@ -153,7 +153,7 @@ const UserCreation = ({ paginationOptions }) => {
                   component={TextField}
                   variant="standard"
                   name="password"
-                  label={t('Password')}
+                  label={t_i18n('Password')}
                   type="password"
                   style={{ marginTop: 20 }}
                   fullWidth={true}
@@ -162,7 +162,7 @@ const UserCreation = ({ paginationOptions }) => {
                   component={TextField}
                   variant="standard"
                   name="confirmation"
-                  label={t('Confirmation')}
+                  label={t_i18n('Confirmation')}
                   type="password"
                   fullWidth={true}
                   style={{ marginTop: 20 }}
@@ -177,14 +177,14 @@ const UserCreation = ({ paginationOptions }) => {
                   component={SelectField}
                   variant="standard"
                   name="account_status"
-                  label={t('Account Status')}
+                  label={t_i18n('Account Status')}
                   fullWidth={true}
                   containerstyle={fieldSpacingContainerStyle}
                 >
                   {settings.platform_user_statuses.map((s) => {
                     return (
                       <MenuItem key={s.status} value={s.status}>
-                        {t(s.status)}
+                        {t_i18n(s.status)}
                       </MenuItem>
                     );
                   })}
@@ -193,7 +193,7 @@ const UserCreation = ({ paginationOptions }) => {
                   component={DateTimePickerField}
                   name="account_lock_after_date"
                   TextFieldProps={{
-                    label: t('Account Expire Date'),
+                    label: t_i18n('Account Expire Date'),
                     style: fieldSpacingContainerStyle,
                     variant: 'standard',
                     fullWidth: true,
@@ -206,7 +206,7 @@ const UserCreation = ({ paginationOptions }) => {
                     disabled={isSubmitting}
                     classes={{ root: classes.button }}
                   >
-                    {t('Cancel')}
+                    {t_i18n('Cancel')}
                   </Button>
                   <Button
                     variant="contained"
@@ -215,7 +215,7 @@ const UserCreation = ({ paginationOptions }) => {
                     disabled={isSubmitting}
                     classes={{ root: classes.button }}
                   >
-                    {t('Create')}
+                    {t_i18n('Create')}
                   </Button>
                 </div>
               </Form>

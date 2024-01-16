@@ -26,7 +26,7 @@ const useStyles = makeStyles(() => ({
 const AddDataSources: FunctionComponent<{ dataComponentId: string }> = ({
   dataComponentId,
 }) => {
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   const classes = useStyles();
 
   const [open, setOpen] = useState(false);
@@ -62,7 +62,7 @@ const AddDataSources: FunctionComponent<{ dataComponentId: string }> = ({
       <Drawer
         open={open}
         onClose={handleClose}
-        title={t('Add data sources')}
+        title={t_i18n('Add data sources')}
         header={(
           <div className={classes.search}>
             <SearchInput

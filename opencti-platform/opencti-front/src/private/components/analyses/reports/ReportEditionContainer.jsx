@@ -6,14 +6,14 @@ import { useIsEnforceReference } from '../../../../utils/hooks/useEntitySettings
 import Drawer, { DrawerVariant } from '../../common/drawer/Drawer';
 
 const ReportEditionContainer = (props) => {
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
 
   const { handleClose, report, open } = props;
   const { editContext } = report;
 
   return (
     <Drawer
-      title={t('Update a report')}
+      title={t_i18n('Update a report')}
       open={open}
       onClose={handleClose}
       variant={open == null ? DrawerVariant.update : undefined}

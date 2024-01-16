@@ -139,10 +139,10 @@ interface RegionEditionFormValues {
 const RegionEditionOverviewComponent: FunctionComponent<
 RegionEdititionOverviewProps
 > = ({ regionRef, context, enableReferences = false, handleClose }) => {
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   const region = useFragment(regionEditionOverviewFragment, regionRef);
   const basicShape = {
-    name: Yup.string().min(2).required(t('This field is required')),
+    name: Yup.string().min(2).required(t_i18n('This field is required')),
     description: Yup.string().nullable(),
     references: Yup.array(),
     x_opencti_workflow_id: Yup.object(),
@@ -216,7 +216,7 @@ RegionEdititionOverviewProps
     description: region.description,
     createdBy: convertCreatedBy(region),
     objectMarking: convertMarkings(region),
-    x_opencti_workflow_id: convertStatus(t, region) as Option,
+    x_opencti_workflow_id: convertStatus(t_i18n, region) as Option,
     references: [],
   };
   return (
@@ -239,7 +239,7 @@ RegionEdititionOverviewProps
             component={TextField}
             variant="standard"
             name="name"
-            label={t('Name')}
+            label={t_i18n('Name')}
             fullWidth={true}
             onFocus={editor.changeFocus}
             onSubmit={handleSubmitField}
@@ -250,7 +250,7 @@ RegionEdititionOverviewProps
           <Field
             component={MarkdownField}
             name="description"
-            label={t('Description')}
+            label={t_i18n('Description')}
             fullWidth={true}
             multiline={true}
             rows="4"

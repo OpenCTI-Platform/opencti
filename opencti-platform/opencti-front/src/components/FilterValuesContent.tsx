@@ -24,14 +24,14 @@ interface FilterValuesContentProps {
 const FilterValuesContent: FunctionComponent<
 FilterValuesContentProps
 > = ({ redirection, isFilterTooltip, filterKey, id, value }) => {
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   const displayedValue = isFilterTooltip
     ? filterValue(filterKey, value)
     : truncate(filterValue(filterKey, value), 15);
   if (displayedValue === null) {
     return (
       <>
-        <del>{t('deleted')}</del>
+        <del>{t_i18n('deleted')}</del>
       </>
     );
   }

@@ -18,12 +18,12 @@ interface StixDomainObjectsExportsProps {
 const StixDomainObjectsExports: FunctionComponent<
 StixDomainObjectsExportsProps
 > = ({ exportContext, paginationOptions, open, handleToggle }) => {
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   return (
     <Drawer
       open={open}
       onClose={handleToggle}
-      title={t('Exports list')}
+      title={t_i18n('Exports list')}
     >
       <QueryRenderer
         query={stixDomainObjectsExportsContentQuery}

@@ -129,9 +129,9 @@ export const NarrativeCreationForm: FunctionComponent<NarrativeFormProps> = ({
   defaultMarkingDefinitions,
 }) => {
   const classes = useStyles();
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   const basicShape = {
-    name: Yup.string().min(2).required(t('This field is required')),
+    name: Yup.string().min(2).required(t_i18n('This field is required')),
     description: Yup.string().nullable(),
   };
   const narrativeValidator = useSchemaCreationValidation(
@@ -204,14 +204,14 @@ export const NarrativeCreationForm: FunctionComponent<NarrativeFormProps> = ({
           <Field
             component={TextField}
             name="name"
-            label={t('Name')}
+            label={t_i18n('Name')}
             fullWidth={true}
             detectDuplicate={['Narrative']}
           />
           <Field
             component={MarkdownField}
             name="description"
-            label={t('Description')}
+            label={t_i18n('Description')}
             fullWidth={true}
             multiline={true}
             rows="4"
@@ -246,7 +246,7 @@ export const NarrativeCreationForm: FunctionComponent<NarrativeFormProps> = ({
               disabled={isSubmitting}
               classes={{ root: classes.button }}
             >
-              {t('Cancel')}
+              {t_i18n('Cancel')}
             </Button>
             <Button
               variant="contained"
@@ -255,7 +255,7 @@ export const NarrativeCreationForm: FunctionComponent<NarrativeFormProps> = ({
               disabled={isSubmitting}
               classes={{ root: classes.button }}
             >
-              {t('Create')}
+              {t_i18n('Create')}
             </Button>
           </div>
         </Form>
@@ -271,7 +271,7 @@ const NarrativeCreation: FunctionComponent<NarrativeFormProps> = ({
   display,
 }) => {
   const classes = useStyles();
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   const [open, setOpen] = useState(false);
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
@@ -284,7 +284,7 @@ const NarrativeCreation: FunctionComponent<NarrativeFormProps> = ({
   const renderClassic = () => {
     return (
       <Drawer
-        title={t('Create a narrative')}
+        title={t_i18n('Create a narrative')}
         variant={DrawerVariant.create}
       >
         {({ onClose }) => (
@@ -311,7 +311,7 @@ const NarrativeCreation: FunctionComponent<NarrativeFormProps> = ({
           <Add />
         </Fab>
         <Dialog open={open} onClose={handleClose} PaperProps={{ elevation: 1 }}>
-          <DialogTitle>{t('Create a narrative')}</DialogTitle>
+          <DialogTitle>{t_i18n('Create a narrative')}</DialogTitle>
           <DialogContent>
             <NarrativeCreationForm
               inputValue={inputValue}

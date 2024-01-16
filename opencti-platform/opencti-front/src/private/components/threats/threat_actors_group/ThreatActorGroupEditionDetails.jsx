@@ -70,7 +70,7 @@ const ThreatActorGroupEditionDetailsComponent = ({
   context,
   handleClose,
 }) => {
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   const handleChangeFocus = (name) => commitMutation({
     mutation: ThreatActorGroupEditionDetailsFocus,
     variables: {
@@ -126,7 +126,7 @@ const ThreatActorGroupEditionDetailsComponent = ({
       if (name === 'goals') {
         finalValue = value && value.length > 0 ? R.split('\n', value) : [];
       }
-      ThreatActorGroupValidation(t)
+      ThreatActorGroupValidation(t_i18n)
         .validateAt(name, { [name]: value })
         .then(() => {
           commitMutation({
@@ -177,7 +177,7 @@ const ThreatActorGroupEditionDetailsComponent = ({
       <Formik
         enableReinitialize={true}
         initialValues={initialValues}
-        validationSchema={ThreatActorGroupValidation(t)}
+        validationSchema={ThreatActorGroupValidation(t_i18n)}
         onSubmit={onSubmit}
       >
         {({
@@ -196,7 +196,7 @@ const ThreatActorGroupEditionDetailsComponent = ({
                 onFocus={handleChangeFocus}
                 onSubmit={handleSubmitField}
                 TextFieldProps={{
-                  label: t('First seen'),
+                  label: t_i18n('First seen'),
                   variant: 'standard',
                   fullWidth: true,
                   helperText: (
@@ -213,7 +213,7 @@ const ThreatActorGroupEditionDetailsComponent = ({
                 onFocus={handleChangeFocus}
                 onSubmit={handleSubmitField}
                 TextFieldProps={{
-                  label: t('Last seen'),
+                  label: t_i18n('Last seen'),
                   variant: 'standard',
                   fullWidth: true,
                   style: { marginTop: 20 },
@@ -226,7 +226,7 @@ const ThreatActorGroupEditionDetailsComponent = ({
                 }}
               />
               <OpenVocabField
-                label={t('Sophistication')}
+                label={t_i18n('Sophistication')}
                 type="threat-actor-group-sophistication-ov"
                 name="sophistication"
                 onFocus={handleChangeFocus}
@@ -238,7 +238,7 @@ const ThreatActorGroupEditionDetailsComponent = ({
                 editContext={context}
               />
               <OpenVocabField
-                label={t('Resource level')}
+                label={t_i18n('Resource level')}
                 type="attack-resource-level-ov"
                 name="resource_level"
                 onFocus={handleChangeFocus}
@@ -250,7 +250,7 @@ const ThreatActorGroupEditionDetailsComponent = ({
                 editContext={context}
               />
               <OpenVocabField
-                label={t('Roles')}
+                label={t_i18n('Roles')}
                 type="threat-actor-group-role-ov"
                 name="roles"
                 onFocus={handleChangeFocus}
@@ -262,7 +262,7 @@ const ThreatActorGroupEditionDetailsComponent = ({
                 editContext={context}
               />
               <OpenVocabField
-                label={t('Primary motivation')}
+                label={t_i18n('Primary motivation')}
                 type="attack-motivation-ov"
                 name="primary_motivation"
                 onFocus={handleChangeFocus}
@@ -274,7 +274,7 @@ const ThreatActorGroupEditionDetailsComponent = ({
                 editContext={context}
               />
               <OpenVocabField
-                label={t('Secondary motivations')}
+                label={t_i18n('Secondary motivations')}
                 type="attack-motivation-ov"
                 name="secondary_motivations"
                 onFocus={handleChangeFocus}
@@ -286,7 +286,7 @@ const ThreatActorGroupEditionDetailsComponent = ({
                 editContext={context}
               />
               <OpenVocabField
-                label={t('Personal motivations')}
+                label={t_i18n('Personal motivations')}
                 type="attack-motivation-ov"
                 name="personal_motivations"
                 onFocus={handleChangeFocus}
@@ -300,7 +300,7 @@ const ThreatActorGroupEditionDetailsComponent = ({
               <Field
                 component={TextField}
                 name="goals"
-                label={t('Goals (1 / line)')}
+                label={t_i18n('Goals (1 / line)')}
                 fullWidth={true}
                 multiline={true}
                 rows="4"

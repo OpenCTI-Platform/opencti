@@ -62,7 +62,7 @@ const ContainerStixCoreObjectLineComponent = (props) => {
     contentMappingData,
   } = props;
   const classes = useStyles();
-  const { t, fd } = useFormatter();
+  const { t_i18n, fd } = useFormatter();
   const refTypes = types ?? ['manual'];
   const isThroughInference = refTypes.includes('inferred');
   const isOnlyThroughInference = isThroughInference && !refTypes.includes('manual');
@@ -91,7 +91,7 @@ const ContainerStixCoreObjectLineComponent = (props) => {
                   color: itemColor(node.entity_type),
                   border: `1px solid ${itemColor(node.entity_type)}`,
                 }}
-                label={t(`entity_${node.entity_type}`)}
+                label={t_i18n(`entity_${node.entity_type}`)}
               />
             </div>
             <div
@@ -133,7 +133,7 @@ const ContainerStixCoreObjectLineComponent = (props) => {
                 label={
                   contentMapping[node.standard_id]
                     ? contentMapping[node.standard_id]
-                    : t('No mapping')
+                    : t_i18n('No mapping')
                 }
               />
             </div>
@@ -142,7 +142,7 @@ const ContainerStixCoreObjectLineComponent = (props) => {
       />
       <ListItemSecondaryAction>
         {isOnlyThroughInference ? (
-          <Tooltip title={t('Inferred knowledge')}>
+          <Tooltip title={t_i18n('Inferred knowledge')}>
             <AutoFix fontSize="small" style={{ marginLeft: -30 }} />
           </Tooltip>
         ) : (

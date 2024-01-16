@@ -25,14 +25,14 @@ export const administrativeAreaEditionQuery = graphql`
   }
 `;
 const AdministrativeAreaEditionContainer: FunctionComponent<AdministrativeAreaEditionContainerProps> = ({ queryRef, handleClose, open }) => {
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   const { administrativeArea } = usePreloadedQuery(administrativeAreaEditionQuery, queryRef);
   if (administrativeArea === null) {
     return <ErrorNotFound />;
   }
   return (
     <Drawer
-      title={t('Update an area')}
+      title={t_i18n('Update an area')}
       variant={open == null ? DrawerVariant.update : undefined}
       context={administrativeArea.editContext}
       onClose={handleClose}

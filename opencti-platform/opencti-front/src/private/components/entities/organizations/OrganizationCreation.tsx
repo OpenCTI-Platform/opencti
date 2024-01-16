@@ -83,11 +83,11 @@ export const OrganizationCreationForm: FunctionComponent<OrganizationFormProps> 
   defaultMarkingDefinitions,
 }) => {
   const classes = useStyles();
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   const basicShape = {
     name: Yup.string()
       .min(2)
-      .required(t('This field is required')),
+      .required(t_i18n('This field is required')),
     description: Yup.string()
       .nullable(),
     x_opencti_organization_type: Yup.string()
@@ -171,14 +171,14 @@ export const OrganizationCreationForm: FunctionComponent<OrganizationFormProps> 
           component={TextField}
           variant="standard"
           name="name"
-          label={t('Name')}
+          label={t_i18n('Name')}
           fullWidth={true}
           detectDuplicate={['Organization']}
         />
         <Field
           component={MarkdownField}
           name="description"
-          label={t('Description')}
+          label={t_i18n('Description')}
           fullWidth={true}
           multiline={true}
           rows="4"
@@ -189,18 +189,18 @@ export const OrganizationCreationForm: FunctionComponent<OrganizationFormProps> 
           component={SelectField}
           variant="standard"
           name="x_opencti_organization_type"
-          label={t('Organization type')}
+          label={t_i18n('Organization type')}
           fullWidth={true}
           containerstyle={fieldSpacingContainerStyle}
         >
-          <MenuItem value="constituent">{t('Constituent')}</MenuItem>
-          <MenuItem value="csirt">{t('CSIRT')}</MenuItem>
-          <MenuItem value="partner">{t('Partner')}</MenuItem>
-          <MenuItem value="vendor">{t('Vendor')}</MenuItem>
-          <MenuItem value="other">{t('Other')}</MenuItem>
+          <MenuItem value="constituent">{t_i18n('Constituent')}</MenuItem>
+          <MenuItem value="csirt">{t_i18n('CSIRT')}</MenuItem>
+          <MenuItem value="partner">{t_i18n('Partner')}</MenuItem>
+          <MenuItem value="vendor">{t_i18n('Vendor')}</MenuItem>
+          <MenuItem value="other">{t_i18n('Other')}</MenuItem>
         </Field>
         <OpenVocabField
-          label={t('Reliability')}
+          label={t_i18n('Reliability')}
           type="reliability_ov"
           name="x_opencti_reliability"
           containerStyle={fieldSpacingContainerStyle}
@@ -236,7 +236,7 @@ export const OrganizationCreationForm: FunctionComponent<OrganizationFormProps> 
             disabled={isSubmitting}
             classes={{ root: classes.button }}
           >
-            {t('Cancel')}
+            {t_i18n('Cancel')}
           </Button>
           <Button
             variant="contained"
@@ -245,7 +245,7 @@ export const OrganizationCreationForm: FunctionComponent<OrganizationFormProps> 
             disabled={isSubmitting}
             classes={{ root: classes.button }}
           >
-            {t('Create')}
+            {t_i18n('Create')}
           </Button>
         </div>
       </Form>
@@ -256,7 +256,7 @@ export const OrganizationCreationForm: FunctionComponent<OrganizationFormProps> 
 const OrganizationCreation = ({ paginationOptions }: {
   paginationOptions: OrganizationsLinesPaginationQuery$variables
 }) => {
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
 
   const updater = (store: RecordSourceSelectorProxy) => insertNode(
     store,
@@ -267,7 +267,7 @@ const OrganizationCreation = ({ paginationOptions }: {
 
   return (
     <Drawer
-      title={t('Create an organization')}
+      title={t_i18n('Create an organization')}
       variant={DrawerVariant.create}
     >
       {({ onClose }) => (

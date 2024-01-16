@@ -66,7 +66,7 @@ interface FileIndexingConfigurationFormValues {
 const FileIndexingConfiguration: FunctionComponent<
 FileIndexingConfigurationProps
 > = ({ managerConfiguration }) => {
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   const { schema } = useAuth();
   const { sdos, scos } = schema;
   const classes = useStyles();
@@ -108,13 +108,13 @@ FileIndexingConfigurationProps
     max_file_size: Yup.number()
       .min(1)
       .max(100)
-      .required(t('This field is required')),
+      .required(t_i18n('This field is required')),
   });
 
   return (
     <>
       <Typography variant="h4" gutterBottom={true}>
-        {t('Configuration')}
+        {t_i18n('Configuration')}
       </Typography>
       <Paper classes={{ root: classes.paper }} variant="outlined">
         <Formik
@@ -125,7 +125,7 @@ FileIndexingConfigurationProps
           {({ submitForm, setFieldValue, values }) => (
             <Form >
               <Typography variant="h4" gutterBottom={true}>
-                {t('File types to index')}
+                {t_i18n('File types to index')}
               </Typography>
               <List style={{ marginBottom: 12 }}>
                 {(manager_setting?.supported_mime_types || []).map((mimeType: string) => (
@@ -135,7 +135,7 @@ FileIndexingConfigurationProps
                     dense={true}
                     style={{ height: 36 }}
                   >
-                    <ListItemText primary={t(mimeType)} />
+                    <ListItemText primary={t_i18n(mimeType)} />
                     <Checkbox
                       edge="start"
                       disableRipple={true}
@@ -164,7 +164,7 @@ FileIndexingConfigurationProps
                 component={TextField}
                 variant="standard"
                 name="max_file_size"
-                label={t('Max file size (in MB)')}
+                label={t_i18n('Max file size (in MB)')}
                 fullWidth={true}
                 type="number"
                 style={{ marginBottom: 20 }}
@@ -177,7 +177,7 @@ FileIndexingConfigurationProps
                 fullWidth={true}
                 textfieldprops={{
                   variant: 'standard',
-                  label: t('Restrict to specific entity types'),
+                  label: t_i18n('Restrict to specific entity types'),
                 }}
                 options={availableEntityTypes}
                 isOptionEqualToValue={(option: string, value: string) => option === value
@@ -192,7 +192,7 @@ FileIndexingConfigurationProps
                     <div className={classes.icon}>
                       <ItemIcon type={option} />
                     </div>
-                    <ListItemText primary={t(`entity_${option}`)} />
+                    <ListItemText primary={t_i18n(`entity_${option}`)} />
                   </li>
                 )}
               />
@@ -200,7 +200,7 @@ FileIndexingConfigurationProps
                 component={SwitchField}
                 type="checkbox"
                 name="include_global_files"
-                label={t(
+                label={t_i18n(
                   'Include files not related to any knowledge (data import)',
                 )}
                 containerstyle={{ marginBottom: 20 }}

@@ -83,7 +83,7 @@ ThreatActorIndividualEditionBiographicsComponentProps
   enableReferences,
   context,
 }: ThreatActorIndividualEditionBiographicsComponentProps) => {
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   const { heightsConverterLoad, weightsConverterLoad } = useUserMetric();
   const threatActorIndividual = useFragment(
     threatActorIndividualEditionBiographicsFragment,
@@ -101,7 +101,7 @@ ThreatActorIndividualEditionBiographicsComponentProps
     },
   });
   const handleSubmitField = (name: string, value: string | string[]) => {
-    threatActorIndividualValidation(t)
+    threatActorIndividualValidation(t_i18n)
       .validateAt(name, { [name]: value })
       .then(() => {
         commitMutation({
@@ -128,7 +128,7 @@ ThreatActorIndividualEditionBiographicsComponentProps
       <Formik
         enableReinitialize={true}
         initialValues={initialValues}
-        validationSchema={threatActorIndividualValidation(t)}
+        validationSchema={threatActorIndividualValidation(t_i18n)}
         onSubmit={() => {}}
       >
         {({
@@ -143,7 +143,7 @@ ThreatActorIndividualEditionBiographicsComponentProps
             <Form style={{ margin: '20px 0 20px 0' }}>
               <OpenVocabField
                 name="eye_color"
-                label={t('Eye Color')}
+                label={t_i18n('Eye Color')}
                 type="eye_color_ov"
                 variant="edit"
                 onChange={(name, value) => setFieldValue(name, value)}
@@ -155,7 +155,7 @@ ThreatActorIndividualEditionBiographicsComponentProps
               />
               <OpenVocabField
                 name="hair_color"
-                label={t('Hair Color')}
+                label={t_i18n('Hair Color')}
                 type="hair_color_ov"
                 variant="edit"
                 onChange={(name, value) => setFieldValue(name, value)}

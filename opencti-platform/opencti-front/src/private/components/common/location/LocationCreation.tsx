@@ -100,7 +100,7 @@ const LocationCreationForm: FunctionComponent<LocationCreationFormProps> = ({
   updater,
 }) => {
   const classes = useStyles();
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
 
   const [commit] = useMutation<LocationCreationMutation>(locationMutation);
 
@@ -147,7 +147,7 @@ const LocationCreationForm: FunctionComponent<LocationCreationFormProps> = ({
         description: '',
         type: '',
       }}
-      validationSchema={locationValidation(t)}
+      validationSchema={locationValidation(t_i18n)}
       onSubmit={onSubmit}
       onReset={onReset}
     >
@@ -161,14 +161,14 @@ const LocationCreationForm: FunctionComponent<LocationCreationFormProps> = ({
             component={TextField}
             variant="standard"
             name="name"
-            label={t('Name')}
+            label={t_i18n('Name')}
             fullWidth={true}
             detectDuplicate={['Organization', 'Individual']}
           />
           <Field
             component={MarkdownField}
             name="description"
-            label={t('Description')}
+            label={t_i18n('Description')}
             fullWidth={true}
             multiline={true}
             rows="4"
@@ -178,12 +178,12 @@ const LocationCreationForm: FunctionComponent<LocationCreationFormProps> = ({
             component={SelectField}
             variant="standard"
             name="type"
-            label={t('Entity type')}
+            label={t_i18n('Entity type')}
             fullWidth={true}
             containerstyle={fieldSpacingContainerStyle}
           >
             {!onlyAuthors && locations.map((location, idx) => (
-              <MenuItem key={idx} value={location}>{t(location)}</MenuItem>
+              <MenuItem key={idx} value={location}>{t_i18n(location)}</MenuItem>
             ))}
           </Field>
           <div className={classes.buttons}>
@@ -193,7 +193,7 @@ const LocationCreationForm: FunctionComponent<LocationCreationFormProps> = ({
               disabled={isSubmitting}
               classes={{ root: classes.button }}
             >
-              {t('Cancel')}
+              {t_i18n('Cancel')}
             </Button>
             <Button
               variant="contained"
@@ -202,7 +202,7 @@ const LocationCreationForm: FunctionComponent<LocationCreationFormProps> = ({
               disabled={isSubmitting}
               classes={{ root: classes.button }}
             >
-              {t('Create')}
+              {t_i18n('Create')}
             </Button>
           </div>
         </Form>
@@ -217,7 +217,7 @@ const LocationCreation: FunctionComponent<LocationCreationFormProps> = ({
   inputValue,
   updater,
 }) => {
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   const classes = useStyles();
 
   const [open, setOpen] = useState(false);
@@ -227,7 +227,7 @@ const LocationCreation: FunctionComponent<LocationCreationFormProps> = ({
   const renderClassic = () => {
     return (
       <Drawer
-        title={t('Add a location')}
+        title={t_i18n('Add a location')}
         variant={DrawerVariant.create}
       >
         {({ onClose }) => (
@@ -254,7 +254,7 @@ const LocationCreation: FunctionComponent<LocationCreationFormProps> = ({
           <Add />
         </Fab>
         <Dialog open={open} onClose={handleClose} PaperProps={{ elevation: 1 }}>
-          <DialogTitle>{t('Add a location')}</DialogTitle>
+          <DialogTitle>{t_i18n('Add a location')}</DialogTitle>
           <DialogContent>
             <LocationCreationForm
               inputValue={inputValue}

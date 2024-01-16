@@ -75,7 +75,7 @@ const RootDataComponent = () => {
   );
   useSubscription(subConfig);
   const location = useLocation();
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   return (
     <>
       <QueryRenderer
@@ -122,19 +122,19 @@ const RootDataComponent = () => {
                         component={Link}
                         to={`/dashboard/techniques/data_components/${dataComponent.id}`}
                         value={`/dashboard/techniques/data_components/${dataComponent.id}`}
-                        label={t('Overview')}
+                        label={t_i18n('Overview')}
                       />
                       <Tab
                         component={Link}
                         to={`/dashboard/techniques/data_components/${dataComponent.id}/files`}
                         value={`/dashboard/techniques/data_components/${dataComponent.id}/files`}
-                        label={t('Data')}
+                        label={t_i18n('Data')}
                       />
                       <Tab
                         component={Link}
                         to={`/dashboard/techniques/data_components/${dataComponent.id}/history`}
                         value={`/dashboard/techniques/data_components/${dataComponent.id}/history`}
-                        label={t('History')}
+                        label={t_i18n('History')}
                       />
                     </Tabs>
                   </Box>

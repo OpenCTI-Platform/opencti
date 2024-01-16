@@ -85,16 +85,16 @@ export const EventCreationForm: FunctionComponent<EventFormProps> = ({
   inputValue,
 }) => {
   const classes = useStyles();
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   const basicShape = {
-    name: Yup.string().min(2).required(t('This field is required')),
+    name: Yup.string().min(2).required(t_i18n('This field is required')),
     description: Yup.string().nullable(),
     event_types: Yup.array().nullable(),
     start_time: Yup.date()
-      .typeError(t('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)'))
+      .typeError(t_i18n('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)'))
       .nullable(),
     stop_time: Yup.date()
-      .typeError(t('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)'))
+      .typeError(t_i18n('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)'))
       .min(Yup.ref('start_time'), 'The end date can\'t be before start date')
       .nullable(),
   };
@@ -167,12 +167,12 @@ export const EventCreationForm: FunctionComponent<EventFormProps> = ({
             component={TextField}
             variant="standard"
             name="name"
-            label={t('Name')}
+            label={t_i18n('Name')}
             fullWidth={true}
             detectDuplicate={['Event']}
           />
           <OpenVocabField
-            label={t('Event types')}
+            label={t_i18n('Event types')}
             type="event-type-ov"
             name="event_types"
             containerStyle={fieldSpacingContainerStyle}
@@ -182,7 +182,7 @@ export const EventCreationForm: FunctionComponent<EventFormProps> = ({
           <Field
             component={MarkdownField}
             name="description"
-            label={t('Description')}
+            label={t_i18n('Description')}
             fullWidth={true}
             multiline={true}
             rows={4}
@@ -192,7 +192,7 @@ export const EventCreationForm: FunctionComponent<EventFormProps> = ({
             component={DateTimePickerField}
             name="start_time"
             TextFieldProps={{
-              label: t('Start date'),
+              label: t_i18n('Start date'),
               variant: 'standard',
               fullWidth: true,
               style: { marginTop: 20 },
@@ -202,7 +202,7 @@ export const EventCreationForm: FunctionComponent<EventFormProps> = ({
             component={DateTimePickerField}
             name="stop_time"
             TextFieldProps={{
-              label: t('End date'),
+              label: t_i18n('End date'),
               variant: 'standard',
               fullWidth: true,
               style: { marginTop: 20 },
@@ -237,7 +237,7 @@ export const EventCreationForm: FunctionComponent<EventFormProps> = ({
               disabled={isSubmitting}
               classes={{ root: classes.button }}
             >
-              {t('Cancel')}
+              {t_i18n('Cancel')}
             </Button>
             <Button
               variant="contained"
@@ -246,7 +246,7 @@ export const EventCreationForm: FunctionComponent<EventFormProps> = ({
               disabled={isSubmitting}
               classes={{ root: classes.button }}
             >
-              {t('Create')}
+              {t_i18n('Create')}
             </Button>
           </div>
         </Form>
@@ -260,11 +260,11 @@ const EventCreation = ({
 }: {
   paginationOptions: EventsLinesPaginationQuery$variables;
 }) => {
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   const updater = (store: RecordSourceSelectorProxy) => insertNode(store, 'Pagination_events', paginationOptions, 'eventAdd');
   return (
     <Drawer
-      title={t('Create an event')}
+      title={t_i18n('Create an event')}
       variant={DrawerVariant.create}
     >
       {({ onClose }) => (

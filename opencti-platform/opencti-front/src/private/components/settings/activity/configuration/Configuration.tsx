@@ -97,7 +97,7 @@ const ConfigurationComponent: FunctionComponent<
 ConfigurationComponentProps
 > = ({ queryRef }) => {
   const classes = useStyles();
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   const [commit] = useMutation(configurationFieldPatch);
   const { settings } = usePreloadedQuery<ConfigurationQuery>(
     configurationQuery,
@@ -119,7 +119,7 @@ ConfigurationComponentProps
     };
   };
   if (isEmptyField(settings.enterprise_edition)) {
-    return <EnterpriseEdition feature={t('Activity')} />;
+    return <EnterpriseEdition feature={t_i18n('Activity')} />;
   }
   return (
     <div className={classes.container}>
@@ -127,7 +127,7 @@ ConfigurationComponentProps
       <Grid container={true} spacing={3}>
         <Grid item={true} xs={12}>
           <Typography variant="h4" gutterBottom={true}>
-            {t('Extended activity logging')}
+            {t_i18n('Extended activity logging')}
           </Typography>
           <Paper classes={{ root: classes.paper }} variant="outlined">
             <Alert
@@ -137,7 +137,7 @@ ConfigurationComponentProps
               variant="outlined"
               style={{ position: 'relative' }}
             >
-              {t(
+              {t_i18n(
                 'Extended activity logging can be enabled on users, groups and organizations to log their actions like reading, uploading, downloading, etc.',
               )}
             </Alert>
@@ -159,7 +159,7 @@ ConfigurationComponentProps
                         >
                           <CreatorField
                             name="users"
-                            label={t('Add a user')}
+                            label={t_i18n('Add a user')}
                             onChange={onChangeData(resetForm)}
                             containerStyle={{ width: '100%' }}
                           />
@@ -172,7 +172,7 @@ ConfigurationComponentProps
                         >
                           <GroupField
                             name="groups"
-                            label={t('Add a group')}
+                            label={t_i18n('Add a group')}
                             multiple={false}
                             onChange={onChangeData(resetForm)}
                             containerStyle={{ width: '100%' }}
@@ -187,7 +187,7 @@ ConfigurationComponentProps
                           <ObjectOrganizationField
                             alert={false}
                             name="organizations"
-                            label={t('Add an organization')}
+                            label={t_i18n('Add an organization')}
                             multiple={false}
                             onChange={onChangeData(resetForm)}
                             style={{ width: '100' }}

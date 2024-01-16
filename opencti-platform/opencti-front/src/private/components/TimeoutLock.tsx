@@ -65,7 +65,7 @@ const timeoutReducer = (state: TimeoutState, action: Action): TimeoutState => {
 };
 
 const TimeoutLock: React.FunctionComponent = () => {
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   const {
     bannerSettings: { bannerHeightNumber, idleLimit, sessionLimit },
   } = useAuth();
@@ -231,16 +231,16 @@ const TimeoutLock: React.FunctionComponent = () => {
       }}
     >
       <DialogTitle sx={{ textAlign: 'center' }}>
-        {t('Session timeout in')}&nbsp;
+        {t_i18n('Session timeout in')}&nbsp;
         <strong>{formatSeconds(state.idleCount ?? 0)}</strong>
       </DialogTitle>
       <DialogContent>
         <DialogContentText sx={{ textAlign: 'center' }}>
-          {t('You will be automatically logged out at end of the timer.')}
+          {t_i18n('You will be automatically logged out at end of the timer.')}
           <br/>
-          {t('Select')} <code>{t('CONTINUE')}</code>{' '}
-          {t('to keep working or select')} <code>{t('LOGOUT')}</code>{' '}
-          {t('to terminate your session.')}
+          {t_i18n('Select')} <code>{t_i18n('CONTINUE')}</code>{' '}
+          {t_i18n('to keep working or select')} <code>{t_i18n('LOGOUT')}</code>{' '}
+          {t_i18n('to terminate your session.')}
         </DialogContentText>
       </DialogContent>
       <DialogActions
@@ -251,10 +251,10 @@ const TimeoutLock: React.FunctionComponent = () => {
         }}
       >
         <Button color="secondary" onClick={() => handleLogout()}>
-          {t('Logout')}
+          {t_i18n('Logout')}
         </Button>
         <Button color="primary" onClick={() => unlockScreen()}>
-          {t('Continue')}
+          {t_i18n('Continue')}
         </Button>
       </DialogActions>
     </Dialog>

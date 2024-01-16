@@ -27,17 +27,17 @@ const EntitySettingAttributeLines = ({
   keyword: string | undefined,
   entitySetting: EntitySettingAttributes_entitySetting$data,
 }) => {
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
 
   const filterOn = ({ node }: { node: AttributeNode }) => {
     if (keyword) {
       const value = node.label ?? node.name;
       const filterOnValue = value.toLowerCase().indexOf(keyword.toLowerCase()) !== -1;
-      const filterOnValueTranslated = t(`${value}`).toLowerCase().indexOf(keyword.toLowerCase()) !== -1;
+      const filterOnValueTranslated = t_i18n(`${value}`).toLowerCase().indexOf(keyword.toLowerCase()) !== -1;
 
       const type = computeAttributeNodeType(node);
       const filterOnType = type.toLowerCase().indexOf(keyword.toLowerCase()) !== -1;
-      const filterOnTypeTranslated = t(`${type}`).toLowerCase().indexOf(keyword.toLowerCase()) !== -1;
+      const filterOnTypeTranslated = t_i18n(`${type}`).toLowerCase().indexOf(keyword.toLowerCase()) !== -1;
 
       return filterOnValue || filterOnValueTranslated || filterOnType || filterOnTypeTranslated;
     }
@@ -49,7 +49,7 @@ const EntitySettingAttributeLines = ({
   ) => {
     const valueA = edgeA.node.label ?? edgeA.node.name;
     const valueB = edgeB.node.label ?? edgeB.node.name;
-    return t(`${valueA}`).localeCompare(t(`${valueB}`));
+    return t_i18n(`${valueA}`).localeCompare(t_i18n(`${valueB}`));
   };
 
   const attributes = (datas ?? [])

@@ -116,7 +116,7 @@ const AuditsList = ({
 }) => {
   const classes = useStyles();
   const theme = useTheme();
-  const { t, fldt } = useFormatter();
+  const { t_i18n, fldt } = useFormatter();
   const isGrantedToSettings = useGranted([SETTINGS]);
   const isEnterpriseEdition = useEnterpriseEdition();
   const renderContent = () => {
@@ -131,10 +131,10 @@ const AuditsList = ({
             }}
           >
             {!isEnterpriseEdition
-              ? t(
+              ? t_i18n(
                 'This feature is only available in OpenCTI Enterprise Edition.',
               )
-              : t('You are not authorized to see this data.')}
+              : t_i18n('You are not authorized to see this data.')}
           </span>
         </div>
       );
@@ -264,7 +264,7 @@ const AuditsList = ({
                     textAlign: 'center',
                   }}
                 >
-                  {t('No entities of this type has been found.')}
+                  {t_i18n('No entities of this type has been found.')}
                 </span>
               </div>
             );
@@ -298,7 +298,7 @@ const AuditsList = ({
           textOverflow: 'ellipsis',
         }}
       >
-        {parameters.title ?? t('Audits list')}
+        {parameters.title ?? t_i18n('Audits list')}
       </Typography>
       {variant !== 'inLine' ? (
         <Paper classes={{ root: classes.paper }} variant="outlined">

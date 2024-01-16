@@ -55,7 +55,7 @@ const FileUploader: FunctionComponent<FileUploaderProps> = ({
   size,
   nameInCallback,
 }) => {
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
 
   const uploadRef = useRef<HTMLInputElement | null>(null);
   const [upload, setUpload] = useState<string | null>(null);
@@ -80,7 +80,7 @@ const FileUploader: FunctionComponent<FileUploaderProps> = ({
           uploadRef.current.value = ''; // Reset the upload input
         }
         setUpload(null);
-        MESSAGING$.notifySuccess(t('File successfully uploaded'));
+        MESSAGING$.notifySuccess(t_i18n('File successfully uploaded'));
         const fileId = entityId
           ? (result as FileUploaderEntityMutation$data).stixCoreObjectEdit
             ?.importPush?.id
@@ -140,7 +140,7 @@ const FileUploader: FunctionComponent<FileUploaderProps> = ({
           </IconButton>
         </Tooltip>
       ) : (
-        <Tooltip title={t('Select your file')} aria-label="Select your file">
+        <Tooltip title={t_i18n('Select your file')} aria-label="Select your file">
           <IconButton
             onClick={handleOpenUpload}
             aria-haspopup="true"

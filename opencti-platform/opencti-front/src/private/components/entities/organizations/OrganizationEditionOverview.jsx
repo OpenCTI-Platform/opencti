@@ -77,10 +77,10 @@ const organizationMutationRelationDelete = graphql`
 
 const OrganizationEditionOverviewComponent = (props) => {
   const { organization, enableReferences, context, handleClose } = props;
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
 
   const basicShape = {
-    name: Yup.string().min(2).required(t('This field is required')),
+    name: Yup.string().min(2).required(t_i18n('This field is required')),
     description: Yup.string().nullable(),
     contact_information: Yup.string().nullable(),
     x_opencti_organization_type: Yup.string().nullable(),
@@ -151,7 +151,7 @@ const OrganizationEditionOverviewComponent = (props) => {
   const initialValues = R.pipe(
     R.assoc('createdBy', convertCreatedBy(organization)),
     R.assoc('objectMarking', convertMarkings(organization)),
-    R.assoc('x_opencti_workflow_id', convertStatus(t, organization)),
+    R.assoc('x_opencti_workflow_id', convertStatus(t_i18n, organization)),
     R.assoc('references', []),
     R.pick([
       'name',
@@ -184,7 +184,7 @@ const OrganizationEditionOverviewComponent = (props) => {
             component={TextField}
             variant="standard"
             name="name"
-            label={t('Name')}
+            label={t_i18n('Name')}
             fullWidth={true}
             onFocus={editor.changeFocus}
             onSubmit={handleSubmitField}
@@ -195,7 +195,7 @@ const OrganizationEditionOverviewComponent = (props) => {
           <Field
             component={MarkdownField}
             name="description"
-            label={t('Description')}
+            label={t_i18n('Description')}
             fullWidth={true}
             multiline={true}
             rows="4"
@@ -210,7 +210,7 @@ const OrganizationEditionOverviewComponent = (props) => {
             component={TextField}
             variant="standard"
             name="contact_information"
-            label={t('Contact information')}
+            label={t_i18n('Contact information')}
             fullWidth={true}
             multiline={true}
             rows="4"
@@ -227,7 +227,7 @@ const OrganizationEditionOverviewComponent = (props) => {
             name="x_opencti_organization_type"
             onFocus={editor.changeFocus}
             onChange={handleSubmitField}
-            label={t('Organization type')}
+            label={t_i18n('Organization type')}
             fullWidth={true}
             inputProps={{
               name: 'x_opencti_organization_type',
@@ -238,14 +238,14 @@ const OrganizationEditionOverviewComponent = (props) => {
               <SubscriptionFocus context={context} fieldName="x_opencti_organization_type" />
               }
           >
-            <MenuItem value="constituent">{t('Constituent')}</MenuItem>
-            <MenuItem value="csirt">{t('CSIRT')}</MenuItem>
-            <MenuItem value="partner">{t('Partner')}</MenuItem>
-            <MenuItem value="vendor">{t('Vendor')}</MenuItem>
-            <MenuItem value="other">{t('Other')}</MenuItem>
+            <MenuItem value="constituent">{t_i18n('Constituent')}</MenuItem>
+            <MenuItem value="csirt">{t_i18n('CSIRT')}</MenuItem>
+            <MenuItem value="partner">{t_i18n('Partner')}</MenuItem>
+            <MenuItem value="vendor">{t_i18n('Vendor')}</MenuItem>
+            <MenuItem value="other">{t_i18n('Other')}</MenuItem>
           </Field>
           <OpenVocabField
-            label={t('Reliability')}
+            label={t_i18n('Reliability')}
             type="reliability_ov"
             name="x_opencti_reliability"
             onChange={setFieldValue}

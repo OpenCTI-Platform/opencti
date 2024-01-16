@@ -37,12 +37,12 @@ const AuthorizedMembersFieldListItem = ({
   onChange,
   ownerId,
 }: AuthorizedMembersFieldListItemProps) => {
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   const { me } = useAuth();
 
   // Used for artificial rows for ALL and CREATOR if they have
   // no access.
-  const noAccess = { label: t('no access'), value: 'none' };
+  const noAccess = { label: t_i18n('no access'), value: 'none' };
 
   // Construct the list of available access levels based on
   // if generic option or not.
@@ -75,17 +75,17 @@ const AuthorizedMembersFieldListItem = ({
               authorizedMember.label
             ) : (
               <span style={smallText}>
-                {t('Deleted or restricted member')}
+                {t_i18n('Deleted or restricted member')}
               </span>
             )}
             {authorizedMember.value === me.id && (
               <span style={smallText}>
-                {' '}({t('you')})
+                {' '}({t_i18n('you')})
               </span>
             )}
             {authorizedMember.value === ownerId && (
               <span style={smallText}>
-                {' '}({t('Creator')})
+                {' '}({t_i18n('Creator')})
               </span>
             )}
           </>

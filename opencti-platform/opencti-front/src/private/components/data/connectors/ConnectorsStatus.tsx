@@ -146,7 +146,7 @@ const ConnectorsStatusComponent: FunctionComponent<ConnectorsStatusComponentProp
   queryRef,
   refetch,
 }) => {
-  const { t, nsdt, n } = useFormatter();
+  const { t_i18n, nsdt, n } = useFormatter();
   const classes = useStyles(); // TODO remove as deprecated
   const history = useHistory();
   const [sortBy, setSortBy] = useState<string>('name');
@@ -256,7 +256,7 @@ const ConnectorsStatusComponent: FunctionComponent<ConnectorsStatusComponentProp
     <Card variant="outlined">
       <CardHeader
         avatar={<ExtensionOutlined className={classes.icon} />}
-        title={t('Registered connectors')}
+        title={t_i18n('Registered connectors')}
         style={{ paddingBottom: 0 }}
       />
       <CardContent style={{ paddingTop: 0 }}>
@@ -317,14 +317,14 @@ const ConnectorsStatusComponent: FunctionComponent<ConnectorsStatusComponentProp
                       className={classes.bodyItem}
                       style={inlineStyles.connector_type}
                     >
-                      {t(connector.connector_type)}
+                      {t_i18n(connector.connector_type)}
                     </div>
                     <div
                       className={classes.bodyItem}
                       style={inlineStyles.auto}
                     >
                       <ItemBoolean
-                        label={connector.auto ? t('Automatic') : t('Manual')}
+                        label={connector.auto ? t_i18n('Automatic') : t_i18n('Manual')}
                         status={
                             connector.connector_type
                               === 'INTERNAL_ENRICHMENT'
@@ -353,7 +353,7 @@ const ConnectorsStatusComponent: FunctionComponent<ConnectorsStatusComponentProp
               <ListItemSecondaryAction>
                 <Security needs={[MODULES_MODMANAGE]}>
                   <>
-                    <Tooltip title={t('Reset the connector state')}>
+                    <Tooltip title={t_i18n('Reset the connector state')}>
                       <IconButton
                         onClick={() => {
                           if (connector.id) handleResetState(connector.id);
@@ -366,7 +366,7 @@ const ConnectorsStatusComponent: FunctionComponent<ConnectorsStatusComponentProp
                         <PlaylistRemoveOutlined />
                       </IconButton>
                     </Tooltip>
-                    <Tooltip title={t('Clear this connector')}>
+                    <Tooltip title={t_i18n('Clear this connector')}>
                       <IconButton
                         onClick={() => {
                           if (connector.id) handleDelete(connector.id);

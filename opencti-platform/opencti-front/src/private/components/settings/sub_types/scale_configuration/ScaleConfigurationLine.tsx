@@ -41,7 +41,7 @@ EntitySettingScaleTickLineProps
   noMargin,
 }) => {
   const classes = useStyles();
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
 
   return (
     <Formik
@@ -70,7 +70,7 @@ EntitySettingScaleTickLineProps
                   component={ColorPickerField}
                   variant="standard"
                   name="color"
-                  label={t('Color')}
+                  label={t_i18n('Color')}
                   fullWidth={true}
                   onSubmit={(name: keyof Tick, value: string) => handleUpdate(validateForm, name, value)}
                 />
@@ -80,7 +80,7 @@ EntitySettingScaleTickLineProps
                   component={TextField}
                   variant="standard"
                   name="label"
-                  label={t('Label')}
+                  label={t_i18n('Label')}
                   fullWidth={true}
                   onSubmit={(name: keyof Tick, value: string) => handleUpdate(validateForm, name, value)}
                 />

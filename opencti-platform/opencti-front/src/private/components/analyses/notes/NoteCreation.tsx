@@ -119,14 +119,14 @@ export const NoteCreationForm: FunctionComponent<NoteFormProps> = ({
   defaultMarkingDefinitions,
 }) => {
   const classes = useStyles();
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   const userIsKnowledgeEditor = useGranted([KNOWLEDGE_KNUPDATE]);
   const basicShape = {
     created: Yup.date()
-      .typeError(t('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)'))
-      .required(t('This field is required')),
+      .typeError(t_i18n('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)'))
+      .required(t_i18n('This field is required')),
     attribute_abstract: Yup.string().nullable(),
-    content: Yup.string().min(2).required(t('This field is required')),
+    content: Yup.string().min(2).required(t_i18n('This field is required')),
     confidence: Yup.number().nullable(),
     note_types: Yup.array().nullable(),
     likelihood: Yup.number().min(0).max(100),
@@ -207,7 +207,7 @@ export const NoteCreationForm: FunctionComponent<NoteFormProps> = ({
             component={DateTimePickerField}
             name="created"
             TextFieldProps={{
-              label: t('Publication date'),
+              label: t_i18n('Publication date'),
               variant: 'standard',
               fullWidth: true,
             }}
@@ -215,21 +215,21 @@ export const NoteCreationForm: FunctionComponent<NoteFormProps> = ({
           <Field
             component={TextField}
             name="attribute_abstract"
-            label={t('Abstract')}
+            label={t_i18n('Abstract')}
             fullWidth={true}
             style={{ marginTop: 20 }}
           />
           <Field
             component={MarkdownField}
             name="content"
-            label={t('Content')}
+            label={t_i18n('Content')}
             fullWidth={true}
             multiline={true}
             rows="4"
             style={{ marginTop: 20 }}
           />
           <OpenVocabField
-            label={t('Note types')}
+            label={t_i18n('Note types')}
             type="note_types_ov"
             name="note_types"
             onChange={(name, value) => setFieldValue(name, value)}
@@ -243,7 +243,7 @@ export const NoteCreationForm: FunctionComponent<NoteFormProps> = ({
           <Field
             component={SliderField}
             name="likelihood"
-            label={t('Likelihood')}
+            label={t_i18n('Likelihood')}
             fullWidth={true}
             style={{ marginTop: 20 }}
           />
@@ -278,7 +278,7 @@ export const NoteCreationForm: FunctionComponent<NoteFormProps> = ({
               disabled={isSubmitting}
               classes={{ root: classes.button }}
             >
-              {t('Cancel')}
+              {t_i18n('Cancel')}
             </Button>
             <Button
               variant="contained"
@@ -287,7 +287,7 @@ export const NoteCreationForm: FunctionComponent<NoteFormProps> = ({
               disabled={isSubmitting}
               classes={{ root: classes.button }}
             >
-              {t('Create')}
+              {t_i18n('Create')}
             </Button>
           </div>
         </Form>
@@ -302,7 +302,7 @@ const NoteCreation: FunctionComponent<NoteCreationProps> = ({
   contextual,
   paginationOptions,
 }) => {
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   const classes = useStyles();
   const [open, setOpen] = useState(false);
   const updater = (store: RecordSourceSelectorProxy, key: string) => {
@@ -311,7 +311,7 @@ const NoteCreation: FunctionComponent<NoteCreationProps> = ({
   const renderClassic = () => {
     return (
       <Drawer
-        title={t('Create a note')}
+        title={t_i18n('Create a note')}
         variant={DrawerVariant.create}
       >
         <NoteCreationForm inputValue={inputValue} updater={updater} />
@@ -334,7 +334,7 @@ const NoteCreation: FunctionComponent<NoteCreationProps> = ({
           onClose={() => setOpen(false)}
           PaperProps={{ elevation: 1 }}
         >
-          <DialogTitle>{t('Create a note')}</DialogTitle>
+          <DialogTitle>{t_i18n('Create a note')}</DialogTitle>
           <DialogContent>
             <NoteCreationForm
               inputValue={inputValue}

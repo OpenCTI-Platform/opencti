@@ -71,7 +71,7 @@ const CaseTemplateTasks: FunctionComponent<TaskTemplateFieldProps> = ({
   values,
 }) => {
   const classes = useStyles();
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   const [tasks, setTasks] = useState<Option[]>([...(values ?? [])]);
   const [openCreation, setOpenCreation] = useState(false);
   const [commitTaskCreation] = useMutation<CaseTemplateTasksCreationMutation>(
@@ -130,10 +130,10 @@ const CaseTemplateTasks: FunctionComponent<TaskTemplateFieldProps> = ({
         multiple={true}
         textfieldprops={{
           variant: 'standard',
-          label: t('Tasks'),
+          label: t_i18n('Tasks'),
           onFocus: searchTasks,
         }}
-        noOptionsText={t('No available options')}
+        noOptionsText={t_i18n('No available options')}
         options={tasks}
         onInputChange={searchTasks}
         onChange={onChange}
@@ -158,19 +158,19 @@ const CaseTemplateTasks: FunctionComponent<TaskTemplateFieldProps> = ({
         >
           {({ submitForm, handleReset, isSubmitting }) => (
             <Form>
-              <DialogTitle>{t('Create a task template')}</DialogTitle>
+              <DialogTitle>{t_i18n('Create a task template')}</DialogTitle>
               <DialogContent>
                 <Field
                   component={TextField}
                   variant="standard"
                   name="name"
-                  label={t('Name')}
+                  label={t_i18n('Name')}
                   fullWidth={true}
                 />
                 <Field
                   component={MarkdownField}
                   name="description"
-                  label={t('Description')}
+                  label={t_i18n('Description')}
                   fullWidth={true}
                   multiline={true}
                   rows="4"
@@ -185,14 +185,14 @@ const CaseTemplateTasks: FunctionComponent<TaskTemplateFieldProps> = ({
                   }}
                   disabled={isSubmitting}
                 >
-                  {t('Cancel')}
+                  {t_i18n('Cancel')}
                 </Button>
                 <Button
                   color="secondary"
                   onClick={submitForm}
                   disabled={isSubmitting}
                 >
-                  {t('Create')}
+                  {t_i18n('Create')}
                 </Button>
               </DialogActions>
             </Form>

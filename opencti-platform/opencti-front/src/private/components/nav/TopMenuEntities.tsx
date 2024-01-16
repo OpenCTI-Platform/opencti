@@ -21,7 +21,7 @@ const useStyles = makeStyles<Theme>((theme) => ({
 }));
 
 const TopMenuEntities = () => {
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   const location = useLocation();
   const classes = useStyles();
   return (
@@ -39,7 +39,7 @@ const TopMenuEntities = () => {
           classes={{ root: classes.button }}
         >
           <DomainOutlined className={classes.icon} fontSize="small" />
-          {t('Sectors')}
+          {t_i18n('Sectors')}
         </Button>
       )}
       {!useIsHiddenEntity('Event') && (
@@ -55,7 +55,7 @@ const TopMenuEntities = () => {
           classes={{ root: classes.button }}
         >
           <EventOutlined className={classes.icon} fontSize="small" />
-          {t('Events')}
+          {t_i18n('Events')}
         </Button>
       )}
       {!useIsHiddenEntity('Organization') && (
@@ -71,7 +71,7 @@ const TopMenuEntities = () => {
           classes={{ root: classes.button }}
         >
           <AccountBalanceOutlined className={classes.icon} fontSize="small" />
-          {t('Organizations')}
+          {t_i18n('Organizations')}
         </Button>
       )}
       {!useIsHiddenEntity('System') && (
@@ -87,7 +87,7 @@ const TopMenuEntities = () => {
           classes={{ root: classes.button }}
         >
           <StorageOutlined className={classes.icon} fontSize="small" />
-          {t('Systems')}
+          {t_i18n('Systems')}
         </Button>
       )}
       {!useIsHiddenEntity('Individual') && (
@@ -103,7 +103,7 @@ const TopMenuEntities = () => {
           classes={{ root: classes.button }}
         >
           <PersonOutlined className={classes.icon} fontSize="small" />
-          {t('Individuals')}
+          {t_i18n('Individuals')}
         </Button>
       )}
     </>

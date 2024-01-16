@@ -90,22 +90,22 @@ export const InfrastructureCreationForm: FunctionComponent<InfrastructureFormPro
   defaultMarkingDefinitions,
 }) => {
   const classes = useStyles();
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   const basicShape = {
-    name: Yup.string().min(2).required(t('This field is required')),
+    name: Yup.string().min(2).required(t_i18n('This field is required')),
     description: Yup.string().nullable(),
     infrastructure_types: Yup.array().nullable(),
     confidence: Yup.number().nullable(),
     first_seen: Yup.date()
       .nullable()
-      .typeError(t('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)')),
+      .typeError(t_i18n('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)')),
     last_seen: Yup.date()
       .nullable()
       .min(
         Yup.ref('first_seen'),
         'The last seen date can\'t be before first seen date',
       )
-      .typeError(t('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)')),
+      .typeError(t_i18n('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)')),
   };
   const infrastructureValidator = useSchemaCreationValidation(
     INFRASTRUCTURE_TYPE,
@@ -187,12 +187,12 @@ export const InfrastructureCreationForm: FunctionComponent<InfrastructureFormPro
             component={TextField}
             variant="standard"
             name="name"
-            label={t('Name')}
+            label={t_i18n('Name')}
             fullWidth={true}
             detectDuplicate={['Infrastructure']}
           />
           <OpenVocabField
-            label={t('Infrastructure types')}
+            label={t_i18n('Infrastructure types')}
             type="infrastructure-type-ov"
             name="infrastructure_types"
             containerStyle={fieldSpacingContainerStyle}
@@ -207,7 +207,7 @@ export const InfrastructureCreationForm: FunctionComponent<InfrastructureFormPro
             component={DateTimePickerField}
             name="first_seen"
             TextFieldProps={{
-              label: t('First seen'),
+              label: t_i18n('First seen'),
               variant: 'standard',
               fullWidth: true,
               style: { marginTop: 20 },
@@ -217,7 +217,7 @@ export const InfrastructureCreationForm: FunctionComponent<InfrastructureFormPro
             component={DateTimePickerField}
             name="last_seen"
             TextFieldProps={{
-              label: t('Last seen'),
+              label: t_i18n('Last seen'),
               variant: 'standard',
               fullWidth: true,
               style: { marginTop: 20 },
@@ -230,7 +230,7 @@ export const InfrastructureCreationForm: FunctionComponent<InfrastructureFormPro
           <Field
             component={MarkdownField}
             name="description"
-            label={t('Description')}
+            label={t_i18n('Description')}
             fullWidth={true}
             multiline={true}
             rows="4"
@@ -265,7 +265,7 @@ export const InfrastructureCreationForm: FunctionComponent<InfrastructureFormPro
               disabled={isSubmitting}
               classes={{ root: classes.button }}
             >
-              {t('Cancel')}
+              {t_i18n('Cancel')}
             </Button>
             <Button
               variant="contained"
@@ -274,7 +274,7 @@ export const InfrastructureCreationForm: FunctionComponent<InfrastructureFormPro
               disabled={isSubmitting}
               classes={{ root: classes.button }}
             >
-              {t('Create')}
+              {t_i18n('Create')}
             </Button>
           </div>
         </Form>
@@ -286,7 +286,7 @@ export const InfrastructureCreationForm: FunctionComponent<InfrastructureFormPro
 const InfrastructureCreation = ({ paginationOptions }: {
   paginationOptions: InfrastructuresLinesPaginationQuery$variables
 }) => {
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   const updater = (store: RecordSourceSelectorProxy) => insertNode(
     store,
     'Pagination_infrastructures',
@@ -296,7 +296,7 @@ const InfrastructureCreation = ({ paginationOptions }: {
 
   return (
     <Drawer
-      title={t('Create an infrastructure')}
+      title={t_i18n('Create an infrastructure')}
       variant={DrawerVariant.create}
     >
       {({ onClose }) => (

@@ -46,7 +46,7 @@ const RichTextField = (props) => {
   } = props;
   let editorReference;
   const classes = useStyles();
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   const [field, meta] = useField(name);
   const [fullScreen, setFullScreen] = useState(false);
   const internalOnFocus = () => {
@@ -108,7 +108,7 @@ const RichTextField = (props) => {
             >
               <CloseOutlined fontSize="small" color="primary" />
             </IconButton>
-            <Typography variant="h6">{t('Content')}</Typography>
+            <Typography variant="h6">{t_i18n('Content')}</Typography>
           </div>
           <div className={classes.container}>
             <CKEditor
@@ -140,7 +140,7 @@ const RichTextField = (props) => {
             <FormHelperText error={true}>{meta.error}</FormHelperText>
           )}
           <DialogActions>
-            <Button onClick={() => setFullScreen(false)}>{t('Close')}</Button>
+            <Button onClick={() => setFullScreen(false)}>{t_i18n('Close')}</Button>
           </DialogActions>
         </Dialog>
       ) : (

@@ -74,7 +74,7 @@ const CaseTemplateEdition: FunctionComponent<CaseTemplateEditionProps> = ({
   openPanel,
   setOpenPanel,
 }) => {
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   const handleClose = () => setOpenPanel(false);
 
   const [commitAddTask] = useMutation(caseTemplateAddTask);
@@ -133,7 +133,7 @@ const CaseTemplateEdition: FunctionComponent<CaseTemplateEditionProps> = ({
 
   return (
     <Drawer
-      title={t('Update the case template')}
+      title={t_i18n('Update the case template')}
       variant={DrawerVariant.updateWithPanel}
       open={openPanel}
       onClose={handleClose}
@@ -145,7 +145,7 @@ const CaseTemplateEdition: FunctionComponent<CaseTemplateEditionProps> = ({
         }}
         onSubmit={() => {
         }}
-        validationSchema={caseTemplateValidation(t)}
+        validationSchema={caseTemplateValidation(t_i18n)}
       >
         {({ values: currentValues, setFieldValue }) => (
           <Form style={{ margin: '20px 0 20px 0' }}>
@@ -153,7 +153,7 @@ const CaseTemplateEdition: FunctionComponent<CaseTemplateEditionProps> = ({
               component={TextField}
               variant="standard"
               name="name"
-              label={t('Name')}
+              label={t_i18n('Name')}
               fullWidth
               onSubmit={handleSubmitField}
               style={{ marginBottom: '20px' }}
@@ -161,7 +161,7 @@ const CaseTemplateEdition: FunctionComponent<CaseTemplateEditionProps> = ({
             <Field
               component={MarkdownField}
               name="description"
-              label={t('Description')}
+              label={t_i18n('Description')}
               fullWidth
               multiline
               rows="4"

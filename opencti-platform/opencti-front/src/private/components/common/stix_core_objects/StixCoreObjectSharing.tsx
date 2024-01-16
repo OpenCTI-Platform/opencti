@@ -116,7 +116,7 @@ const StixCoreObjectSharing: FunctionComponent<ContainerHeaderSharedProps> = ({
   variant,
 }) => {
   const classes = useStyles();
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   const [displaySharing, setDisplaySharing] = useState(false);
   const userIsOrganizationEditor = useGranted([
     KNOWLEDGE_KNUPDATE_KNORGARESTRICT,
@@ -183,7 +183,7 @@ const StixCoreObjectSharing: FunctionComponent<ContainerHeaderSharedProps> = ({
               />
             </Tooltip>
           ))}
-          <EETooltip title={t('Share with an organization')}>
+          <EETooltip title={t_i18n('Share with an organization')}>
             <ToggleButton
               value="shared"
               onClick={isEnterpriseEdition ? handleOpenSharing : () => {}}
@@ -208,27 +208,27 @@ const StixCoreObjectSharing: FunctionComponent<ContainerHeaderSharedProps> = ({
                 onClose={() => handleReset()}
                 fullWidth={true}
               >
-                <DialogTitle>{t('Share with an organization')}</DialogTitle>
+                <DialogTitle>{t_i18n('Share with an organization')}</DialogTitle>
                 <DialogContent style={{ overflowY: 'hidden' }}>
                   <Form>
                     <ObjectOrganizationField
                       name="objectOrganization"
                       style={{ width: '100%' }}
-                      label={t('Organization')}
+                      label={t_i18n('Organization')}
                       multiple={false}
                     />
                   </Form>
                 </DialogContent>
                 <DialogActions>
                   <Button onClick={handleReset} disabled={isSubmitting}>
-                    {t('Close')}
+                    {t_i18n('Close')}
                   </Button>
                   <Button
                     onClick={submitForm}
                     disabled={isSubmitting}
                     color="secondary"
                   >
-                    {t('Share')}
+                    {t_i18n('Share')}
                   </Button>
                 </DialogActions>
               </Dialog>
@@ -240,9 +240,9 @@ const StixCoreObjectSharing: FunctionComponent<ContainerHeaderSharedProps> = ({
     return (
       <React.Fragment>
         <Typography variant="h3" gutterBottom={true} style={{ float: 'left' }}>
-          {t('Organizations sharing')}
+          {t_i18n('Organizations sharing')}
         </Typography>
-        <EETooltip title={t('Share with an organization')}>
+        <EETooltip title={t_i18n('Share with an organization')}>
           <IconButton
             color="primary"
             aria-label="Label"
@@ -279,27 +279,27 @@ const StixCoreObjectSharing: FunctionComponent<ContainerHeaderSharedProps> = ({
               onClose={() => handleReset()}
               fullWidth={true}
             >
-              <DialogTitle>{t('Share with an organization')}</DialogTitle>
+              <DialogTitle>{t_i18n('Share with an organization')}</DialogTitle>
               <DialogContent style={{ overflowY: 'hidden' }}>
                 <Form>
                   <ObjectOrganizationField
                     name="objectOrganization"
                     style={{ width: '100%' }}
-                    label={t('Organization')}
+                    label={t_i18n('Organization')}
                     multiple={false}
                   />
                 </Form>
               </DialogContent>
               <DialogActions>
                 <Button onClick={handleReset} disabled={isSubmitting}>
-                  {t('Close')}
+                  {t_i18n('Close')}
                 </Button>
                 <Button
                   onClick={submitForm}
                   disabled={isSubmitting}
                   color="secondary"
                 >
-                  {t('Share')}
+                  {t_i18n('Share')}
                 </Button>
               </DialogActions>
             </Dialog>

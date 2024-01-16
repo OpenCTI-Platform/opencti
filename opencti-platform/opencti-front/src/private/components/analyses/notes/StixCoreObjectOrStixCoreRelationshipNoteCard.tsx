@@ -107,7 +107,7 @@ interface StixCoreObjectOrStixCoreRelationshipNoteCardComponentProps {
 const StixCoreObjectOrStixCoreRelationshipNoteCard: FunctionComponent<
 StixCoreObjectOrStixCoreRelationshipNoteCardComponentProps
 > = ({ data, stixCoreObjectOrStixCoreRelationshipId, paginationOptions }) => {
-  const { t, nsdt } = useFormatter();
+  const { t_i18n, nsdt } = useFormatter();
   const classes = useStyles();
   const theme = useTheme<Theme>();
   const note = useFragment(
@@ -181,11 +181,11 @@ StixCoreObjectOrStixCoreRelationshipNoteCardComponentProps
                 {authorLink ? (
                   <Link to={authorLink}>{authorName}</Link>
                 ) : (
-                  t('Unknown')
+                  t_i18n('Unknown')
                 )}
               </strong>{' '}
               <span style={{ color: theme.palette.text?.secondary }}>
-                {t('added a note')} {t('on')} {nsdt(note.created)}
+                {t_i18n('added a note')} {t_i18n('on')} {nsdt(note.created)}
               </span>
             </div>
             <div
@@ -195,13 +195,13 @@ StixCoreObjectOrStixCoreRelationshipNoteCardComponentProps
                 textTransform: 'none',
               }}
             >
-              {(note.note_types ?? [t('Unknown')]).map((type) => (
+              {(note.note_types ?? [t_i18n('Unknown')]).map((type) => (
                 <Chip
                   key={type}
                   classes={{ root: classes.chipInList }}
                   color="primary"
                   variant="outlined"
-                  label={t(type)}
+                  label={t_i18n(type)}
                 />
               ))}
             </div>
@@ -224,7 +224,7 @@ StixCoreObjectOrStixCoreRelationshipNoteCardComponentProps
         <Grid container={true} spacing={3}>
           <Grid item={true} xs={9}>
             <Typography variant="h3" gutterBottom={true}>
-              {t('Abstract')}
+              {t_i18n('Abstract')}
             </Typography>
             {note.attribute_abstract && (
               <MarkdownDisplay
@@ -237,7 +237,7 @@ StixCoreObjectOrStixCoreRelationshipNoteCardComponentProps
               gutterBottom={true}
               style={{ marginTop: 20 }}
             >
-              {t('Content')}
+              {t_i18n('Content')}
             </Typography>
             {note.content && (
               <MarkdownDisplay content={note.content} remarkGfmPlugin={true} />
@@ -256,7 +256,7 @@ StixCoreObjectOrStixCoreRelationshipNoteCardComponentProps
                   gutterBottom={true}
                   style={{ marginTop: 20 }}
                 >
-                  {t('Confidence level')}
+                  {t_i18n('Confidence level')}
                 </Typography>
                 <ItemConfidence
                   confidence={note.confidence}
@@ -269,7 +269,7 @@ StixCoreObjectOrStixCoreRelationshipNoteCardComponentProps
                   gutterBottom={true}
                   style={{ marginTop: 20 }}
                 >
-                  {t('Likelihood')}
+                  {t_i18n('Likelihood')}
                 </Typography>
                 <ItemLikelihood likelihood={note.likelihood} />
               </Grid>
@@ -294,15 +294,15 @@ StixCoreObjectOrStixCoreRelationshipNoteCardComponentProps
       >
         <DialogContent>
           <DialogContentText>
-            {t('Do you want to remove this note from this entity?')}
+            {t_i18n('Do you want to remove this note from this entity?')}
           </DialogContentText>
         </DialogContent>
         <DialogActions>
           <Button onClick={handleCloseDialog} disabled={removing}>
-            {t('Cancel')}
+            {t_i18n('Cancel')}
           </Button>
           <Button onClick={handleRemoval} color="secondary" disabled={removing}>
-            {t('Remove')}
+            {t_i18n('Remove')}
           </Button>
         </DialogActions>
       </Dialog>

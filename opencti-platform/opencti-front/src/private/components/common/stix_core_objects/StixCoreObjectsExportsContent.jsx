@@ -18,7 +18,7 @@ const StixCoreObjectsExportsContentComponent = ({
   exportContext,
   paginationOptions,
 }) => {
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   useEffect(() => {
     const subscription = interval$.subscribe(() => {
       if (isOpen) {
@@ -55,7 +55,7 @@ const StixCoreObjectsExportsContentComponent = ({
                 textAlign: 'center',
               }}
             >
-              {t('No file for the moment')}
+              {t_i18n('No file for the moment')}
             </span>
           </div>
         )}

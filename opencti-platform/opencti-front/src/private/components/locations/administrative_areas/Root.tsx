@@ -78,7 +78,7 @@ const RootAdministrativeAreaComponent = ({
   );
   useSubscription(subConfig);
   const location = useLocation();
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   const data = usePreloadedQuery(administrativeAreaQuery, queryRef);
   const { administrativeArea, connectorsForImport, connectorsForExport } = data;
   return (
@@ -122,37 +122,37 @@ const RootAdministrativeAreaComponent = ({
                 component={Link}
                 to={`/dashboard/locations/administrative_areas/${administrativeArea.id}`}
                 value={`/dashboard/locations/administrative_areas/${administrativeArea.id}`}
-                label={t('Overview')}
+                label={t_i18n('Overview')}
               />
               <Tab
                 component={Link}
                 to={`/dashboard/locations/administrative_areas/${administrativeArea.id}/knowledge`}
                 value={`/dashboard/locations/administrative_areas/${administrativeArea.id}/knowledge`}
-                label={t('Knowledge')}
+                label={t_i18n('Knowledge')}
               />
               <Tab
                 component={Link}
                 to={`/dashboard/locations/administrative_areas/${administrativeArea.id}/analyses`}
                 value={`/dashboard/locations/administrative_areas/${administrativeArea.id}/analyses`}
-                label={t('Analyses')}
+                label={t_i18n('Analyses')}
               />
               <Tab
                 component={Link}
                 to={`/dashboard/locations/administrative_areas/${administrativeArea.id}/sightings`}
                 value={`/dashboard/locations/administrative_areas/${administrativeArea.id}/sightings`}
-                label={t('Sightings')}
+                label={t_i18n('Sightings')}
               />
               <Tab
                 component={Link}
                 to={`/dashboard/locations/administrative_areas/${administrativeArea.id}/files`}
                 value={`/dashboard/locations/administrative_areas/${administrativeArea.id}/files`}
-                label={t('Data')}
+                label={t_i18n('Data')}
               />
               <Tab
                 component={Link}
                 to={`/dashboard/locations/administrative_areas/${administrativeArea.id}/history`}
                 value={`/dashboard/locations/administrative_areas/${administrativeArea.id}/history`}
-                label={t('History')}
+                label={t_i18n('History')}
               />
             </Tabs>
           </Box>

@@ -44,7 +44,7 @@ const VocabularyPopover: FunctionComponent<VocabularyPopoverProps> = ({
   refetch,
 }) => {
   const classes = useStyles();
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   const [anchorEl, setAnchorEl] = useState<PopoverProps['anchorEl']>(null);
   const [displayUpdate, setDisplayUpdate] = useState<boolean>(false);
   const handleOpen = (event: React.MouseEvent) => {
@@ -61,15 +61,15 @@ const VocabularyPopover: FunctionComponent<VocabularyPopoverProps> = ({
     setDisplayUpdate(false);
     refetch();
   };
-  let deleteLabel = t('Delete');
+  let deleteLabel = t_i18n('Delete');
   const deletable = !vocab.builtIn
     && (!vocab.category.fields.some(({ required }) => required)
       || vocab.usages === 0);
   if (!deletable) {
     if (vocab.builtIn) {
-      deleteLabel = t('This item is built-in');
+      deleteLabel = t_i18n('This item is built-in');
     } else {
-      deleteLabel = t('Some fields in usage are mandatory');
+      deleteLabel = t_i18n('Some fields in usage are mandatory');
     }
   }
   const {
@@ -107,7 +107,7 @@ const VocabularyPopover: FunctionComponent<VocabularyPopoverProps> = ({
         <MoreVertOutlined />
       </IconButton>
       <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleClose}>
-        <MenuItem onClick={handleOpenUpdate}>{t('Update')}</MenuItem>
+        <MenuItem onClick={handleOpenUpdate}>{t_i18n('Update')}</MenuItem>
         <MenuItem onClick={handleOpenDelete} disabled={!deletable}>
           {deleteLabel}
         </MenuItem>
@@ -121,20 +121,20 @@ const VocabularyPopover: FunctionComponent<VocabularyPopoverProps> = ({
       >
         <DialogContent>
           <DialogContentText>
-            {t('Do you want to delete this vocabulary?')}
+            {t_i18n('Do you want to delete this vocabulary?')}
           </DialogContentText>
         </DialogContent>
         <DialogActions>
           <Button onClick={handleCloseDelete} disabled={deleting}>
-            {t('Cancel')}
+            {t_i18n('Cancel')}
           </Button>
           <Button color="secondary" onClick={submitDelete} disabled={deleting}>
-            {t('Delete')}
+            {t_i18n('Delete')}
           </Button>
         </DialogActions>
       </Dialog>
       <Drawer
-        title={t('Update an attribute')}
+        title={t_i18n('Update an attribute')}
         open={displayUpdate}
         onClose={handleCloseUpdate}
       >

@@ -40,7 +40,7 @@ const SettingsMessages = ({
 }: {
   settings: SettingsMessages_settingsMessages$key & { readonly id: string };
 }) => {
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   const classes = useStyles();
   const messages = useFragment<SettingsMessages_settingsMessages$key>(
     settingsMessagesFragment,
@@ -64,7 +64,7 @@ const SettingsMessages = ({
               width: '70%',
             }}
           >
-            {t('Sample')}
+            {t_i18n('Sample')}
           </div>
         );
       },
@@ -83,7 +83,7 @@ const SettingsMessages = ({
         return (
           <ItemBoolean
             variant="inList"
-            label={data.activated ? t('Enabled') : t('Disabled')}
+            label={data.activated ? t_i18n('Enabled') : t_i18n('Disabled')}
             status={data.activated}
           />
         );
@@ -97,7 +97,7 @@ const SettingsMessages = ({
         return (
           <ItemBoolean
             variant="inList"
-            label={data.dismissible ? t('Yes') : t('No')}
+            label={data.dismissible ? t_i18n('Yes') : t_i18n('No')}
             status={data.dismissible}
           />
         );
@@ -121,7 +121,7 @@ const SettingsMessages = ({
   return (
     <>
       <Typography variant="h4" gutterBottom={true} style={{ float: 'left' }}>
-        {t('Platform announcement')}
+        {t_i18n('Platform announcement')}
       </Typography>
       <IconButton
         style={{ float: 'left', marginTop: -15 }}

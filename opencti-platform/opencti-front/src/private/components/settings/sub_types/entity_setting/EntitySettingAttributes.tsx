@@ -33,7 +33,7 @@ const EntitySettingAttributes = ({
   entitySettingsData: SubType_subType$data['settings'];
   searchTerm: string | undefined;
 }) => {
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   const entitySetting = useFragment<EntitySettingAttributes_entitySetting$key>(
     entitySettingAttributesFragment,
     entitySettingsData,
@@ -52,7 +52,7 @@ const EntitySettingAttributes = ({
       isSortable: false,
       render: (data: EntitySettingAttributeLine_attribute$data) => {
         const text = data.label ?? data.name;
-        return t(text.charAt(0).toUpperCase() + text.slice(1));
+        return t_i18n(text.charAt(0).toUpperCase() + text.slice(1));
       },
     },
     mandatory: {

@@ -92,7 +92,7 @@ interface IncidentEditionDetailsFormValues {
 const IncidentEditionDetails: FunctionComponent<
 IncidentEditionDetailsProps
 > = ({ incidentRef, context, enableReferences = false, handleClose }) => {
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
 
   const incident = useFragment(incidentEditionDetailsFragment, incidentRef);
   const isInferred = incident.is_inferred;
@@ -168,7 +168,7 @@ IncidentEditionDetailsProps
     <Formik
       enableReinitialize={true}
       initialValues={initialValues}
-      validationSchema={incidentEditionDetailsValidation(t)}
+      validationSchema={incidentEditionDetailsValidation(t_i18n)}
       onSubmit={onSubmit}
     >
       {({
@@ -187,7 +187,7 @@ IncidentEditionDetailsProps
             onFocus={handleChangeFocus}
             onSubmit={handleSubmitField}
             TextFieldProps={{
-              label: t('First seen'),
+              label: t_i18n('First seen'),
               variant: 'standard',
               fullWidth: true,
               helperText: (
@@ -198,12 +198,12 @@ IncidentEditionDetailsProps
           <Field
             component={DateTimePickerField}
             name="last_seen"
-            label={t('Last seen')}
+            label={t_i18n('Last seen')}
             disabled={isInferred}
             onFocus={handleChangeFocus}
             onSubmit={handleSubmitField}
             TextFieldProps={{
-              label: t('Last seen'),
+              label: t_i18n('Last seen'),
               variant: 'standard',
               fullWidth: true,
               style: { marginTop: 20 },
@@ -216,7 +216,7 @@ IncidentEditionDetailsProps
             component={TextField}
             variant="standard"
             name="source"
-            label={t('Source')}
+            label={t_i18n('Source')}
             fullWidth={true}
             style={{ marginTop: 20 }}
             onFocus={handleChangeFocus}
@@ -229,7 +229,7 @@ IncidentEditionDetailsProps
             component={TextField}
             variant="standard"
             name="objective"
-            label={t('Objective')}
+            label={t_i18n('Objective')}
             fullWidth={true}
             multiline={true}
             rows={4}

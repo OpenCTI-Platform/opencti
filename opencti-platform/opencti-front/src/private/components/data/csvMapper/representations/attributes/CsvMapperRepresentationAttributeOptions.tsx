@@ -24,7 +24,7 @@ const CsvMapperRepresentationAttributeOptions: FunctionComponent<
 CsvMapperRepresentationAttributeOptionsProps
 > = ({ attribute, indexRepresentation }) => {
   const classes = useStyles();
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
 
   const formikContext = useFormikContext<CsvMapper>();
   const selectedAttributes = formikContext.values.representations[indexRepresentation].attributes;
@@ -56,10 +56,10 @@ CsvMapperRepresentationAttributeOptionsProps
                 ?.pattern_date || ''
             }
             onChange={(event) => onChange('pattern_date', event.target.value)}
-            placeholder={t('Date pattern')}
+            placeholder={t_i18n('Date pattern')}
           />
           <Tooltip
-            title={t(
+            title={t_i18n(
               'By default we accept iso date (YYYY-MM-DD), but you can specify your own date format in ISO notation (for instance DD.MM.YYYY)',
             )}
           >
@@ -82,10 +82,10 @@ CsvMapperRepresentationAttributeOptionsProps
                 ?.separator || ''
             }
             onChange={(event) => onChange('separator', event.target.value)}
-            placeholder={t('List separator')}
+            placeholder={t_i18n('List separator')}
           />
           <Tooltip
-            title={t(
+            title={t_i18n(
               'If this field contains multiple values, you can specify the separator used between each values (for instance | or +)',
             )}
           >

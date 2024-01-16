@@ -95,7 +95,7 @@ interface UserHistoryLineProps {
 
 const UserHistoryLine: FunctionComponent<UserHistoryLineProps> = ({ node }) => {
   const classes = useStyles();
-  const { t, nsdt } = useFormatter();
+  const { t_i18n, nsdt } = useFormatter();
   const [open, setOpen] = useState(false);
 
   const log = useFragment<UserHistoryLine_node$key>(userHistoryLineFragment, node);
@@ -345,7 +345,7 @@ const UserHistoryLine: FunctionComponent<UserHistoryLineProps> = ({ node }) => {
         onClose={handleClose}
         fullWidth={true}
       >
-        <DialogTitle>{t('Commit message')}</DialogTitle>
+        <DialogTitle>{t_i18n('Commit message')}</DialogTitle>
         <DialogContent>
           <MarkdownDisplay
             content={log.context_data?.message ?? '-'}
@@ -355,7 +355,7 @@ const UserHistoryLine: FunctionComponent<UserHistoryLineProps> = ({ node }) => {
         </DialogContent>
         <DialogActions>
           <Button color="primary" onClick={handleClose}>
-            {t('Close')}
+            {t_i18n('Close')}
           </Button>
         </DialogActions>
       </Dialog>

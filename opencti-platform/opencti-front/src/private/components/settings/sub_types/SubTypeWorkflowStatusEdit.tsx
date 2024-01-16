@@ -74,7 +74,7 @@ const SubTypeWorkflowStatusEdit: FunctionComponent<StatusEditionProps> = ({
     queryRef,
     nodePath: 'status',
   });
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
 
   const initialValues: StatusEditForm = {
     template: data.template
@@ -111,7 +111,7 @@ const SubTypeWorkflowStatusEdit: FunctionComponent<StatusEditionProps> = ({
   return (
     <Formik
       initialValues={initialValues}
-      validationSchema={statusValidation(t)}
+      validationSchema={statusValidation(t_i18n)}
       onSubmit={handleSubmitStatusTemplate}
     >
       {({ submitForm, isSubmitting, setFieldValue }) => (
@@ -123,7 +123,7 @@ const SubTypeWorkflowStatusEdit: FunctionComponent<StatusEditionProps> = ({
             fullWidth={true}
             TransitionComponent={Transition}
           >
-            <DialogTitle>{t('Update a status')}</DialogTitle>
+            <DialogTitle>{t_i18n('Update a status')}</DialogTitle>
             <DialogContent>
               <StatusTemplateField
                 name="template"
@@ -134,14 +134,14 @@ const SubTypeWorkflowStatusEdit: FunctionComponent<StatusEditionProps> = ({
                 component={TextField}
                 variant="standard"
                 name="order"
-                label={t('Order')}
+                label={t_i18n('Order')}
                 fullWidth={true}
                 type="number"
                 style={{ marginTop: 20 }}
               />
               <DialogActions>
                 <Button onClick={submitForm} disabled={isSubmitting}>
-                  {t('Close')}
+                  {t_i18n('Close')}
                 </Button>
               </DialogActions>
             </DialogContent>

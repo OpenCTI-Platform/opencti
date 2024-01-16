@@ -83,9 +83,9 @@ const ThreatActorGroupMutationRelationDelete = graphql`
 
 const ThreatActorGroupEditionOverviewComponent = (props) => {
   const { threatActorGroup, enableReferences, context, handleClose } = props;
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   const basicShape = {
-    name: Yup.string().min(2).required(t('This field is required')),
+    name: Yup.string().min(2).required(t_i18n('This field is required')),
     threat_actor_types: Yup.array().nullable(),
     confidence: Yup.number().nullable(),
     description: Yup.string().nullable(),
@@ -157,7 +157,7 @@ const ThreatActorGroupEditionOverviewComponent = (props) => {
     R.assoc('createdBy', convertCreatedBy(threatActorGroup)),
     R.assoc('killChainPhases', convertKillChainPhases(threatActorGroup)),
     R.assoc('objectMarking', convertMarkings(threatActorGroup)),
-    R.assoc('x_opencti_workflow_id', convertStatus(t, threatActorGroup)),
+    R.assoc('x_opencti_workflow_id', convertStatus(t_i18n, threatActorGroup)),
     R.assoc('references', []),
     R.assoc(
       'threat_actor_types',
@@ -196,7 +196,7 @@ const ThreatActorGroupEditionOverviewComponent = (props) => {
           <Field
             component={TextField}
             name="name"
-            label={t('Name')}
+            label={t_i18n('Name')}
             fullWidth={true}
             onFocus={editor.changeFocus}
             onSubmit={handleSubmitField}
@@ -208,7 +208,7 @@ const ThreatActorGroupEditionOverviewComponent = (props) => {
             variant="edit"
             type="threat-actor-group-type-ov"
             name="threat_actor_types"
-            label={t('Threat actor types')}
+            label={t_i18n('Threat actor types')}
             containerStyle={{ width: '100%', marginTop: 20 }}
             multiple={true}
             onFocus={editor.changeFocus}
@@ -227,7 +227,7 @@ const ThreatActorGroupEditionOverviewComponent = (props) => {
           <Field
             component={MarkdownField}
             name="description"
-            label={t('Description')}
+            label={t_i18n('Description')}
             fullWidth={true}
             multiline={true}
             rows="4"

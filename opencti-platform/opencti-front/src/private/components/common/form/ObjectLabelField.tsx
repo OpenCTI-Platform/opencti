@@ -47,7 +47,7 @@ const ObjectLabelField: FunctionComponent<ObjectLabelFieldProps> = ({
   onChange,
 }) => {
   const classes = useStyles();
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
 
   const [labelCreation, setLabelCreation] = useState(false);
   const [labels, setLabels] = useState<Option[]>([]);
@@ -82,11 +82,11 @@ const ObjectLabelField: FunctionComponent<ObjectLabelFieldProps> = ({
         multiple={true}
         textfieldprops={{
           variant: 'standard',
-          label: t('Labels'),
+          label: t_i18n('Labels'),
           helperText: helpertext,
           onFocus: searchLabels,
         }}
-        noOptionsText={t('No available options')}
+        noOptionsText={t_i18n('No available options')}
         options={labels}
         onInputChange={searchLabels}
         openCreate={() => setLabelCreation(true)}

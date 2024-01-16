@@ -54,7 +54,7 @@ const ItemCopy: FunctionComponent<ItemCopyProps> = ({
   variant,
   limit = null,
 }) => {
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   const classes = useStyles();
   return (
     <div
@@ -68,7 +68,7 @@ const ItemCopy: FunctionComponent<ItemCopyProps> = ({
         onClick={(event) => {
           event.stopPropagation();
           event.preventDefault();
-          copyToClipboard(t, content);
+          copyToClipboard(t_i18n, content);
         }}
       >
         <ContentCopyOutlined

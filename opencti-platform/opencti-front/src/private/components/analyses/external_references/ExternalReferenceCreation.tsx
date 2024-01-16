@@ -97,7 +97,7 @@ const ExternalReferenceCreation: FunctionComponent<ExternalReferenceCreationProp
   dryrun,
 }) => {
   const classes = useStyles();
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
 
   const [open, setOpen] = useState(false);
 
@@ -197,7 +197,7 @@ const ExternalReferenceCreation: FunctionComponent<ExternalReferenceCreationProp
   const renderClassic = () => {
     return (
       <Drawer
-        title={t('Create an external reference')}
+        title={t_i18n('Create an external reference')}
         variant={DrawerVariant.create}
       >
         {({ onClose }) => (
@@ -209,7 +209,7 @@ const ExternalReferenceCreation: FunctionComponent<ExternalReferenceCreationProp
               description: '',
               file: '',
             }}
-            validationSchema={externalReferenceValidation(t)}
+            validationSchema={externalReferenceValidation(t_i18n)}
             onSubmit={onSubmit}
             onReset={() => {
               onResetClassic();
@@ -221,21 +221,21 @@ const ExternalReferenceCreation: FunctionComponent<ExternalReferenceCreationProp
                 <Field
                   component={TextField}
                   name="source_name"
-                  label={t('Source name')}
+                  label={t_i18n('Source name')}
                   fullWidth={true}
                 />
                 <Field
                   component={TextField}
                   name="external_id"
                   id={'external_id'}
-                  label={t('External ID')}
+                  label={t_i18n('External ID')}
                   fullWidth={true}
                   style={{ marginTop: 20 }}
                 />
                 <Field
                   component={TextField}
                   name="url"
-                  label={t('URL')}
+                  label={t_i18n('URL')}
                   fullWidth={true}
                   style={{ marginTop: 20 }}
                 />
@@ -248,7 +248,7 @@ const ExternalReferenceCreation: FunctionComponent<ExternalReferenceCreationProp
                 <Field
                   component={MarkdownField}
                   name="description"
-                  label={t('Description')}
+                  label={t_i18n('Description')}
                   fullWidth={true}
                   multiline={true}
                   rows="4"
@@ -261,7 +261,7 @@ const ExternalReferenceCreation: FunctionComponent<ExternalReferenceCreationProp
                     disabled={isSubmitting}
                     classes={{ root: classes.button }}
                   >
-                    {t('Cancel')}
+                    {t_i18n('Cancel')}
                   </Button>
                   <Button
                     variant="contained"
@@ -270,7 +270,7 @@ const ExternalReferenceCreation: FunctionComponent<ExternalReferenceCreationProp
                     disabled={isSubmitting}
                     classes={{ root: classes.button }}
                   >
-                    {t('Create')}
+                    {t_i18n('Create')}
                   </Button>
                 </div>
               </Form>
@@ -309,31 +309,31 @@ const ExternalReferenceCreation: FunctionComponent<ExternalReferenceCreationProp
               description: '',
               file: '',
             }}
-            validationSchema={externalReferenceValidation(t)}
+            validationSchema={externalReferenceValidation(t_i18n)}
             onReset={onResetContextual}
           >
             {({ submitForm, handleReset, isSubmitting, setFieldValue }) => (
               <Form>
-                <DialogTitle>{t('Create an external reference')}</DialogTitle>
+                <DialogTitle>{t_i18n('Create an external reference')}</DialogTitle>
                 <DialogContent>
                   <Field
                     component={TextField}
                     name="source_name"
-                    label={t('Source name')}
+                    label={t_i18n('Source name')}
                     fullWidth={true}
                   />
                   <Field
                     component={TextField}
                     name="external_id"
                     id={'external_id'}
-                    label={t('External ID')}
+                    label={t_i18n('External ID')}
                     fullWidth={true}
                     style={{ marginTop: 20 }}
                   />
                   <Field
                     component={TextField}
                     name="url"
-                    label={t('URL')}
+                    label={t_i18n('URL')}
                     fullWidth={true}
                     style={{ marginTop: 20 }}
                   />
@@ -346,7 +346,7 @@ const ExternalReferenceCreation: FunctionComponent<ExternalReferenceCreationProp
                   <Field
                     component={MarkdownField}
                     name="description"
-                    label={t('Description')}
+                    label={t_i18n('Description')}
                     fullWidth={true}
                     multiline={true}
                     rows="4"
@@ -358,14 +358,14 @@ const ExternalReferenceCreation: FunctionComponent<ExternalReferenceCreationProp
                     onClick={handleCloseContextual || handleReset}
                     disabled={isSubmitting}
                   >
-                    {t('Cancel')}
+                    {t_i18n('Cancel')}
                   </Button>
                   <Button
                     color="secondary"
                     onClick={submitForm}
                     disabled={isSubmitting}
                   >
-                    {t('Create')}
+                    {t_i18n('Create')}
                   </Button>
                 </DialogActions>
               </Form>

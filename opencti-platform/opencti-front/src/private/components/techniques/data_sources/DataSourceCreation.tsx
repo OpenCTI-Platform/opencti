@@ -109,9 +109,9 @@ export const DataSourceCreationForm: FunctionComponent<DataSourceFormProps> = ({
   defaultMarkingDefinitions,
 }) => {
   const classes = useStyles();
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   const basicShape = {
-    name: Yup.string().min(2).required(t('This field is required')),
+    name: Yup.string().min(2).required(t_i18n('This field is required')),
     description: Yup.string().nullable(),
     confidence: Yup.number().nullable(),
   };
@@ -185,7 +185,7 @@ export const DataSourceCreationForm: FunctionComponent<DataSourceFormProps> = ({
           <Field
             component={TextField}
             name="name"
-            label={t('Name')}
+            label={t_i18n('Name')}
             fullWidth={true}
             detectDuplicate={['Data-Source']}
           />
@@ -196,7 +196,7 @@ export const DataSourceCreationForm: FunctionComponent<DataSourceFormProps> = ({
           <Field
             component={MarkdownField}
             name="description"
-            label={t('Description')}
+            label={t_i18n('Description')}
             fullWidth={true}
             multiline={true}
             rows="4"
@@ -237,7 +237,7 @@ export const DataSourceCreationForm: FunctionComponent<DataSourceFormProps> = ({
           />
           <CustomFileUploader setFieldValue={setFieldValue} />
           <OpenVocabField
-            label={t('Platforms')}
+            label={t_i18n('Platforms')}
             type="platforms_ov"
             name="x_mitre_platforms"
             onChange={(name, value) => setFieldValue(name, value)}
@@ -245,7 +245,7 @@ export const DataSourceCreationForm: FunctionComponent<DataSourceFormProps> = ({
             multiple={true}
           />
           <OpenVocabField
-            label={t('Layers')}
+            label={t_i18n('Layers')}
             type="collection_layers_ov"
             name="collection_layers"
             onChange={(name, value) => setFieldValue(name, value)}
@@ -259,7 +259,7 @@ export const DataSourceCreationForm: FunctionComponent<DataSourceFormProps> = ({
               disabled={isSubmitting}
               classes={{ root: classes.button }}
             >
-              {t('Cancel')}
+              {t_i18n('Cancel')}
             </Button>
             <Button
               variant="contained"
@@ -268,7 +268,7 @@ export const DataSourceCreationForm: FunctionComponent<DataSourceFormProps> = ({
               disabled={isSubmitting}
               classes={{ root: classes.button }}
             >
-              {t('Create')}
+              {t_i18n('Create')}
             </Button>
           </div>
         </Form>
@@ -283,7 +283,7 @@ const DataSourceCreation: FunctionComponent<DataSourceCreationProps> = ({
   inputValue,
   paginationOptions,
 }) => {
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   const classes = useStyles();
 
   const [open, setOpen] = useState(false);
@@ -298,7 +298,7 @@ const DataSourceCreation: FunctionComponent<DataSourceCreationProps> = ({
 
   const renderClassic = () => (
     <Drawer
-      title={t('Create a data source')}
+      title={t_i18n('Create a data source')}
       variant={DrawerVariant.create}
     >
       {({ onClose }) => (
@@ -323,7 +323,7 @@ const DataSourceCreation: FunctionComponent<DataSourceCreationProps> = ({
         <Add />
       </Fab>
       <Dialog open={open} onClose={handleClose} PaperProps={{ elevation: 1 }}>
-        <DialogTitle>{t('Create a data source')}</DialogTitle>
+        <DialogTitle>{t_i18n('Create a data source')}</DialogTitle>
         <DialogContent>
           <DataSourceCreationForm
             inputValue={inputValue}

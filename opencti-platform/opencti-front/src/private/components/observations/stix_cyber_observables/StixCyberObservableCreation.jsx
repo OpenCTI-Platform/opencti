@@ -225,7 +225,7 @@ const StixCyberObservableCreation = ({
   defaultMarkingDefinitions = null,
 }) => {
   const classes = useStyles();
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   const { isVocabularyField, fieldToCategory } = useVocabularyCategory();
   const [status, setStatus] = useState({ open: false, type: type ?? null });
 
@@ -354,7 +354,7 @@ const StixCyberObservableCreation = ({
             const sortByLabel = sortBy(compose(toLower, prop('tlabel')));
             const translatedOrderedList = pipe(
               map((n) => n.node),
-              map((n) => assoc('tlabel', t(`entity_${n.label}`), n)),
+              map((n) => assoc('tlabel', t_i18n(`entity_${n.label}`), n)),
               sortByLabel,
             )(subTypesEdges);
             return (
@@ -450,14 +450,14 @@ const StixCyberObservableCreation = ({
                         component={TextField}
                         variant="standard"
                         name="x_opencti_score"
-                        label={t('Score')}
+                        label={t_i18n('Score')}
                         fullWidth={true}
                         type="number"
                       />
                       <Field
                         component={MarkdownField}
                         name="x_opencti_description"
-                        label={t('Description')}
+                        label={t_i18n('Description')}
                         fullWidth={true}
                         multiline={true}
                         rows="4"
@@ -471,7 +471,7 @@ const StixCyberObservableCreation = ({
                                 component={TextField}
                                 variant="standard"
                                 name="hashes_MD5"
-                                label={t('hash_md5')}
+                                label={t_i18n('hash_md5')}
                                 fullWidth={true}
                                 style={{ marginTop: 20 }}
                               />
@@ -479,7 +479,7 @@ const StixCyberObservableCreation = ({
                                 component={TextField}
                                 variant="standard"
                                 name="hashes_SHA-1"
-                                label={t('hash_sha-1')}
+                                label={t_i18n('hash_sha-1')}
                                 fullWidth={true}
                                 style={{ marginTop: 20 }}
                               />
@@ -487,7 +487,7 @@ const StixCyberObservableCreation = ({
                                 component={TextField}
                                 variant="standard"
                                 name="hashes_SHA-256"
-                                label={t('hash_sha-256')}
+                                label={t_i18n('hash_sha-256')}
                                 fullWidth={true}
                                 style={{ marginTop: 20 }}
                               />
@@ -495,7 +495,7 @@ const StixCyberObservableCreation = ({
                                 component={TextField}
                                 variant="standard"
                                 name="hashes_SHA-512"
-                                label={t('hash_sha-512')}
+                                label={t_i18n('hash_sha-512')}
                                 fullWidth={true}
                                 style={{ marginTop: 20 }}
                               />
@@ -506,7 +506,7 @@ const StixCyberObservableCreation = ({
                           return (
                             <OpenVocabField
                               key={attribute.value}
-                              label={t(attribute.value)}
+                              label={t_i18n(attribute.value)}
                               type={fieldToCategory(
                                 status.type,
                                 attribute.value,
@@ -610,7 +610,7 @@ const StixCyberObservableCreation = ({
                       component={SwitchField}
                       type="checkbox"
                       name="createIndicator"
-                      label={t('Create an indicator from this observable')}
+                      label={t_i18n('Create an indicator from this observable')}
                       containerstyle={{ marginTop: 20 }}
                     />
                     <div className={classes.buttons}>
@@ -620,7 +620,7 @@ const StixCyberObservableCreation = ({
                         disabled={isSubmitting}
                         classes={{ root: classes.button }}
                       >
-                        {t('Cancel')}
+                        {t_i18n('Cancel')}
                       </Button>
                       <Button
                         variant={contextual ? 'text' : 'contained'}
@@ -629,7 +629,7 @@ const StixCyberObservableCreation = ({
                         disabled={isSubmitting}
                         classes={{ root: classes.button }}
                       >
-                        {t('Create')}
+                        {t_i18n('Create')}
                       </Button>
                     </div>
                   </Form>
@@ -672,7 +672,7 @@ const StixCyberObservableCreation = ({
             >
               <Close fontSize="small" color="primary" />
             </IconButton>
-            <Typography variant="h6">{t('Create an observable')}</Typography>
+            <Typography variant="h6">{t_i18n('Create an observable')}</Typography>
           </div>
           <div className={classes.container}>
             {!status.type ? renderList() : renderForm()}
@@ -701,7 +701,7 @@ const StixCyberObservableCreation = ({
           onClose={speeddial ? handleClose : localHandleClose}
           fullWidth={true}
         >
-          <DialogTitle>{t('Create an observable')}</DialogTitle>
+          <DialogTitle>{t_i18n('Create an observable')}</DialogTitle>
           <DialogContent style={{ paddingTop: 0 }}>
             {!status.type ? renderList() : renderForm()}
           </DialogContent>

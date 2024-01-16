@@ -145,19 +145,19 @@ AdministrativeAreaEditionOverviewProps
   enableReferences = false,
   handleClose,
 }) => {
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   const administrativeArea = useFragment(
     administrativeAreaEditionOverviewFragment,
     administrativeAreaRef,
   );
   const basicShape = {
-    name: Yup.string().min(2).required(t('This field is required')),
+    name: Yup.string().min(2).required(t_i18n('This field is required')),
     description: Yup.string().nullable(),
     latitude: Yup.number()
-      .typeError(t('This field must be a number'))
+      .typeError(t_i18n('This field must be a number'))
       .nullable(),
     longitude: Yup.number()
-      .typeError(t('This field must be a number'))
+      .typeError(t_i18n('This field must be a number'))
       .nullable(),
     references: Yup.array(),
     x_opencti_workflow_id: Yup.object(),
@@ -229,7 +229,7 @@ AdministrativeAreaEditionOverviewProps
     longitude: administrativeArea.longitude,
     createdBy: convertCreatedBy(administrativeArea),
     objectMarking: convertMarkings(administrativeArea),
-    x_opencti_workflow_id: convertStatus(t, administrativeArea) as Option,
+    x_opencti_workflow_id: convertStatus(t_i18n, administrativeArea) as Option,
     references: [],
   };
   return (
@@ -252,7 +252,7 @@ AdministrativeAreaEditionOverviewProps
             component={TextField}
             variant="standard"
             name="name"
-            label={t('Name')}
+            label={t_i18n('Name')}
             fullWidth={true}
             onFocus={editor.changeFocus}
             onSubmit={handleSubmitField}
@@ -263,7 +263,7 @@ AdministrativeAreaEditionOverviewProps
           <Field
             component={MarkdownField}
             name="description"
-            label={t('Description')}
+            label={t_i18n('Description')}
             fullWidth={true}
             multiline={true}
             rows="4"
@@ -279,7 +279,7 @@ AdministrativeAreaEditionOverviewProps
             variant="standard"
             style={{ marginTop: 20 }}
             name="latitude"
-            label={t('Latitude')}
+            label={t_i18n('Latitude')}
             fullWidth={true}
             onFocus={editor.changeFocus}
             onSubmit={handleSubmitField}
@@ -292,7 +292,7 @@ AdministrativeAreaEditionOverviewProps
             variant="standard"
             style={{ marginTop: 20 }}
             name="longitude"
-            label={t('Longitude')}
+            label={t_i18n('Longitude')}
             fullWidth={true}
             onFocus={editor.changeFocus}
             onSubmit={handleSubmitField}

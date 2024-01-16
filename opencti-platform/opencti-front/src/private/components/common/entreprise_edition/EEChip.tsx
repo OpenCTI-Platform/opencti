@@ -44,7 +44,7 @@ const useStyles = makeStyles<Theme>((theme) => ({
 const EEChip = ({ feature, clickable = true, floating = false }: { feature?: string, clickable?: boolean, floating?: boolean }) => {
   const classes = useStyles();
   const isEnterpriseEdition = useEnterpriseEdition();
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   const [displayDialog, setDisplayDialog] = useState(false);
   const isAdmin = useGranted([SETTINGS]);
   const { settings: { id: settingsId } } = useAuth();
@@ -67,7 +67,7 @@ const EEChip = ({ feature, clickable = true, floating = false }: { feature?: str
           openDrawer={displayDialog}
           handleCloseDrawer={() => setDisplayDialog(false)}
           initialValue={{
-            description: t(`I would like to use a EE feature ${feature ? `(${feature}) ` : ''}but I don't have EE activated.\nI would like to discuss with you about activating EE.`),
+            description: t_i18n(`I would like to use a EE feature ${feature ? `(${feature}) ` : ''}but I don't have EE activated.\nI would like to discuss with you about activating EE.`),
           }}
         />
       )}

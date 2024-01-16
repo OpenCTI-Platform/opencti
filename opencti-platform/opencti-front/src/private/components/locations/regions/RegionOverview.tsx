@@ -47,28 +47,28 @@ const RegionOverview: FunctionComponent<RegionOverviewProps> = ({
   regionRef,
 }) => {
   const classes = useStyles();
-  const { t, fldt } = useFormatter();
+  const { t_i18n, fldt } = useFormatter();
   const region = useFragment(regionOverviewFragment, regionRef);
   return (
     <div style={{ height: '100%' }} className="break">
       <Typography variant="h4" gutterBottom={true}>
-        {t('Information')}
+        {t_i18n('Information')}
       </Typography>
       <Paper classes={{ root: classes.paper }} variant="outlined">
         <Typography variant="h3" gutterBottom={true}>
-          {t('Creation date')}
+          {t_i18n('Creation date')}
         </Typography>
         {fldt(region.created)}
         <Typography variant="h3" gutterBottom={true} style={{ marginTop: 20 }}>
-          {t('Modification date')}
+          {t_i18n('Modification date')}
         </Typography>
         {fldt(region.modified)}
         <Typography variant="h3" gutterBottom={true} style={{ marginTop: 20 }}>
-          {t('Author')}
+          {t_i18n('Author')}
         </Typography>
         <ItemAuthor createdBy={propOr(null, 'createdBy', region)} />
         <Typography variant="h3" gutterBottom={true} style={{ marginTop: 20 }}>
-          {t('Description')}
+          {t_i18n('Description')}
         </Typography>
         <ExpandableMarkdown source={region.description} limit={400} />
       </Paper>

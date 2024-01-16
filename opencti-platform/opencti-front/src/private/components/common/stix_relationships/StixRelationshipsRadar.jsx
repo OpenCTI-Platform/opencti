@@ -230,7 +230,7 @@ const StixRelationshipsRadar = ({
 }) => {
   const classes = useStyles();
   const theme = useTheme();
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   const renderContent = () => {
     let selection = {};
     let filtersAndOptions;
@@ -267,7 +267,7 @@ const StixRelationshipsRadar = ({
               data = R.map(
                 (n) => R.assoc(
                   'label',
-                  `[${t(`entity_${n.entity.entity_type}`)}] ${defaultValue(n.entity)}`,
+                  `[${t_i18n(`entity_${n.entity.entity_type}`)}] ${defaultValue(n.entity)}`,
                   n,
                 ),
                 props.stixRelationshipsDistribution,
@@ -276,7 +276,7 @@ const StixRelationshipsRadar = ({
             const valueData = data.map((n) => n.value);
             const chartData = [
               {
-                name: selection.label || t('Number of relationships'),
+                name: selection.label || t_i18n('Number of relationships'),
                 data: valueData,
               },
             ];
@@ -303,7 +303,7 @@ const StixRelationshipsRadar = ({
                     textAlign: 'center',
                   }}
                 >
-                  {t('No entities of this type has been found.')}
+                  {t_i18n('No entities of this type has been found.')}
                 </span>
               </div>
             );
@@ -337,7 +337,7 @@ const StixRelationshipsRadar = ({
           textOverflow: 'ellipsis',
         }}
       >
-        {parameters.title || title || t('Relationships distribution')}
+        {parameters.title || title || t_i18n('Relationships distribution')}
       </Typography>
       {variant !== 'inLine' ? (
         <Paper classes={{ root: classes.paper }} variant="outlined">

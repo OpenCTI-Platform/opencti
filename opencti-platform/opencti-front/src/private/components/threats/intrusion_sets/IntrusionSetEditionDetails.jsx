@@ -67,7 +67,7 @@ const intrusionSetValidation = (t) => Yup.object().shape({
 
 const IntrusionSetEditionDetailsComponent = (props) => {
   const { intrusionSet, enableReferences, context, handleClose } = props;
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
 
   const handleChangeFocus = (name) => commitMutation({
     mutation: intrusionSetEditionDetailsFocus,
@@ -161,7 +161,7 @@ const IntrusionSetEditionDetailsComponent = (props) => {
     <Formik
       enableReinitialize={true}
       initialValues={initialValues}
-      validationSchema={intrusionSetValidation(t)}
+      validationSchema={intrusionSetValidation(t_i18n)}
       onSubmit={onSubmit}
     >
       {({
@@ -179,7 +179,7 @@ const IntrusionSetEditionDetailsComponent = (props) => {
             onFocus={handleChangeFocus}
             onSubmit={handleSubmitField}
             TextFieldProps={{
-              label: t('First seen'),
+              label: t_i18n('First seen'),
               variant: 'standard',
               fullWidth: true,
               helperText: (
@@ -193,7 +193,7 @@ const IntrusionSetEditionDetailsComponent = (props) => {
             onFocus={handleChangeFocus}
             onSubmit={handleSubmitField}
             TextFieldProps={{
-              label: t('Last seen'),
+              label: t_i18n('Last seen'),
               variant: 'standard',
               fullWidth: true,
               style: { marginTop: 20 },
@@ -203,7 +203,7 @@ const IntrusionSetEditionDetailsComponent = (props) => {
             }}
           />
           <OpenVocabField
-            label={t('Resource level')}
+            label={t_i18n('Resource level')}
             type="attack-resource-level-ov"
             name="resource_level"
             onFocus={handleChangeFocus}
@@ -215,7 +215,7 @@ const IntrusionSetEditionDetailsComponent = (props) => {
             editContext={context}
           />
           <OpenVocabField
-            label={t('Primary motivation')}
+            label={t_i18n('Primary motivation')}
             type="attack-motivation-ov"
             name="primary_motivation"
             onFocus={handleChangeFocus}
@@ -227,7 +227,7 @@ const IntrusionSetEditionDetailsComponent = (props) => {
             editContext={context}
           />
           <OpenVocabField
-            label={t('Secondary motivations')}
+            label={t_i18n('Secondary motivations')}
             type="attack-motivation-ov"
             name="secondary_motivations"
             onFocus={handleChangeFocus}
@@ -241,7 +241,7 @@ const IntrusionSetEditionDetailsComponent = (props) => {
           <Field
             component={TextField}
             name="goals"
-            label={t('Goals (1 / line)')}
+            label={t_i18n('Goals (1 / line)')}
             fullWidth={true}
             multiline={true}
             rows="4"

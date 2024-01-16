@@ -396,7 +396,7 @@ const stixCoreObjectsMultiHorizontalBars = ({
 }) => {
   const classes = useStyles();
   const theme = useTheme();
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   const navigate = useNavigate();
   const renderContent = () => {
     const selection = dataSelection[0];
@@ -469,7 +469,7 @@ const stixCoreObjectsMultiHorizontalBars = ({
                   selection.attribute.endsWith('_id')
                     ? defaultValue(n.entity)
                     : selection.attribute === 'entity_type'
-                      ? t(`entity_${n.label}`)
+                      ? t_i18n(`entity_${n.label}`)
                       : n.label,
                 y: n.value,
                 fillColor: color,
@@ -477,7 +477,7 @@ const stixCoreObjectsMultiHorizontalBars = ({
             });
             const chartData = [
               {
-                name: selection.label || t('Number of relationships'),
+                name: selection.label || t_i18n('Number of relationships'),
                 data,
               },
             ];
@@ -517,7 +517,7 @@ const stixCoreObjectsMultiHorizontalBars = ({
                     textAlign: 'center',
                   }}
                 >
-                  {t('No entities of this type has been found.')}
+                  {t_i18n('No entities of this type has been found.')}
                 </span>
               </div>
             );
@@ -551,7 +551,7 @@ const stixCoreObjectsMultiHorizontalBars = ({
           textOverflow: 'ellipsis',
         }}
       >
-        {parameters.title || t('Distribution of entities')}
+        {parameters.title || t_i18n('Distribution of entities')}
       </Typography>
       {variant === 'inLine' ? (
         renderContent()

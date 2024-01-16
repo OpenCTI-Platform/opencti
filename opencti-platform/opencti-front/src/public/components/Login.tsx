@@ -111,7 +111,7 @@ interface LoginProps {
 const Login: FunctionComponent<LoginProps> = ({ type, settings }) => {
   const classes = useStyles();
   const theme = useTheme<Theme>();
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   const { dimension } = useDimensions();
   const isEnterpriseEdition = isNotEmptyField(settings.enterprise_edition);
 
@@ -168,7 +168,7 @@ const Login: FunctionComponent<LoginProps> = ({ type, settings }) => {
   const consentMessage = settings.platform_consent_message;
   const consentConfirmText = settings.platform_consent_confirm_text
     ? settings.platform_consent_confirm_text
-    : t('I have read and comply with the above statement');
+    : t_i18n('I have read and comply with the above statement');
   const loginMessage = settings.platform_login_message;
   const loginLogo = theme.palette.mode === 'dark'
     ? settings.platform_theme_dark_logo_login

@@ -85,7 +85,7 @@ const StixRelationshipsMultiHeatMap = ({
 }) => {
   const theme = useTheme();
   const classes = useStyles();
-  const { t, fsd } = useFormatter();
+  const { t_i18n, fsd } = useFormatter();
   const renderContent = () => {
     const timeSeriesParameters = dataSelection.map((selection) => {
       const dataSelectionDateAttribute = selection.date_attribute && selection.date_attribute.length > 0
@@ -113,7 +113,7 @@ const StixRelationshipsMultiHeatMap = ({
           if (props && props.stixRelationshipsMultiTimeSeries) {
             const chartdata = dataSelection
               .map((selection, i) => ({
-                name: selection.label ?? t('Number of relationships'),
+                name: selection.label ?? t_i18n('Number of relationships'),
                 data: props.stixRelationshipsMultiTimeSeries[i].data.map(
                   (entry) => ({
                     x: new Date(entry.date),
@@ -177,7 +177,7 @@ const StixRelationshipsMultiHeatMap = ({
                     textAlign: 'center',
                   }}
                 >
-                  {t('No entities of this type has been found.')}
+                  {t_i18n('No entities of this type has been found.')}
                 </span>
               </div>
             );
@@ -211,7 +211,7 @@ const StixRelationshipsMultiHeatMap = ({
           textOverflow: 'ellipsis',
         }}
       >
-        {parameters.title ?? t('Entities history')}
+        {parameters.title ?? t_i18n('Entities history')}
       </Typography>
       {variant !== 'inLine' ? (
         <Paper classes={{ root: classes.paper }} variant="outlined">

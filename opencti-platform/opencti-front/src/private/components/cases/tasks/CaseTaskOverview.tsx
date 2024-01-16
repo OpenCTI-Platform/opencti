@@ -74,7 +74,7 @@ interface CaseTaskOverviewProps {
 const CaseTaskOverview: FunctionComponent<CaseTaskOverviewProps> = ({
   tasksData,
 }) => {
-  const { t, fldt } = useFormatter();
+  const { t_i18n, fldt } = useFormatter();
   const data: CaseTaskOverview_task$data = useFragment(
     CaseTaskOverviewFragment,
     tasksData,
@@ -88,7 +88,7 @@ const CaseTaskOverview: FunctionComponent<CaseTaskOverviewProps> = ({
             gutterBottom={true}
             style={{ marginTop: 20 }}
           >
-            {t('Description')}
+            {t_i18n('Description')}
           </Typography>
           <ExpandableMarkdown source={data.description} limit={300} />
           <Typography
@@ -96,7 +96,7 @@ const CaseTaskOverview: FunctionComponent<CaseTaskOverviewProps> = ({
             gutterBottom={true}
             style={{ marginTop: 20 }}
           >
-            {t('Assignees')}
+            {t_i18n('Assignees')}
           </Typography>
           <ItemAssignees assigneesEdges={data.objectAssignee?.edges ?? []} />
           <Typography
@@ -104,7 +104,7 @@ const CaseTaskOverview: FunctionComponent<CaseTaskOverviewProps> = ({
             gutterBottom={true}
             style={{ marginTop: 20 }}
           >
-            {t('Creation date')}
+            {t_i18n('Creation date')}
           </Typography>
           {fldt(data.created)}
         </Grid>
@@ -114,7 +114,7 @@ const CaseTaskOverview: FunctionComponent<CaseTaskOverviewProps> = ({
             gutterBottom={true}
             style={{ marginTop: 20 }}
           >
-            {t('Due Date')}
+            {t_i18n('Due Date')}
           </Typography>
           <ItemDueDate due_date={data.due_date} variant="inElement" />
           <Typography
@@ -122,7 +122,7 @@ const CaseTaskOverview: FunctionComponent<CaseTaskOverviewProps> = ({
             gutterBottom={true}
             style={{ marginTop: 20 }}
           >
-            {t('Processing status')}
+            {t_i18n('Processing status')}
           </Typography>
           <ItemStatus status={data.status} disabled={!data.workflowEnabled} />
           {data.objectMarking && (
@@ -132,7 +132,7 @@ const CaseTaskOverview: FunctionComponent<CaseTaskOverviewProps> = ({
                 gutterBottom={true}
                 style={{ marginTop: 20 }}
               >
-                {t('Marking')}
+                {t_i18n('Marking')}
               </Typography>
               <ItemMarkings
                 markingDefinitionsEdges={data.objectMarking.edges ?? []}

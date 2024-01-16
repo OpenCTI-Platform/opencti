@@ -215,7 +215,7 @@ const StixDomainObjectBookmarksList = ({
 }) => {
   const classes = useStyles();
   const theme = useTheme();
-  const { t, fsd } = useFormatter();
+  const { t_i18n, fsd } = useFormatter();
   const renderContent = () => {
     const selection = dataSelection[0];
     return (
@@ -256,7 +256,7 @@ const StixDomainObjectBookmarksList = ({
                                 </Avatar>
                               }
                               title={bookmark.name}
-                              subheader={`${t('Updated on')} ${fsd(
+                              subheader={`${t_i18n('Updated on')} ${fsd(
                                 bookmark.modified,
                               )}`}
                             />
@@ -279,7 +279,7 @@ const StixDomainObjectBookmarksList = ({
                     textAlign: 'center',
                   }}
                 >
-                  {t('No entities of this type has been found.')}
+                  {t_i18n('No entities of this type has been found.')}
                 </span>
               </div>
             );
@@ -313,7 +313,7 @@ const StixDomainObjectBookmarksList = ({
           textOverflow: 'ellipsis',
         }}
       >
-        {parameters.title ?? t('Entities list')}
+        {parameters.title ?? t_i18n('Entities list')}
       </Typography>
       {variant !== 'inLine' ? (
         <Paper classes={{ root: classes.paper }} variant="outlined">

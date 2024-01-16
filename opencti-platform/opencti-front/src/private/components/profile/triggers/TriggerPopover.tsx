@@ -34,7 +34,7 @@ const TriggerPopover = ({
   paginationOptions?: TriggersLinesPaginationQuery$variables;
   disabled: boolean;
 }) => {
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
   const [displayDelete, setDisplayDelete] = useState<boolean>(false);
   const [displayEdit, setDisplayEdit] = useState<boolean>(false);
@@ -73,7 +73,7 @@ const TriggerPopover = ({
   const handleCloseEdit = () => setDisplayEdit(false);
   return (
     <>
-      <Tooltip title={disabled ? t('This trigger/digest has been shared with you and you are not able to modify or delete it') : ''}>
+      <Tooltip title={disabled ? t_i18n('This trigger/digest has been shared with you and you are not able to modify or delete it') : ''}>
         <IconButton
           onClick={handleOpen}
           aria-haspopup="true"
@@ -86,8 +86,8 @@ const TriggerPopover = ({
         </IconButton>
       </Tooltip>
       <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleClose}>
-        <MenuItem onClick={handleOpenEdit}>{t('Update')}</MenuItem>
-        <MenuItem onClick={handleOpenDelete}>{t('Delete')}</MenuItem>
+        <MenuItem onClick={handleOpenEdit}>{t_i18n('Update')}</MenuItem>
+        <MenuItem onClick={handleOpenDelete}>{t_i18n('Delete')}</MenuItem>
       </Menu>
       <Dialog
         open={displayDelete}
@@ -98,20 +98,20 @@ const TriggerPopover = ({
       >
         <DialogContent>
           <DialogContentText>
-            {t('Do you want to delete this trigger?')}
+            {t_i18n('Do you want to delete this trigger?')}
           </DialogContentText>
         </DialogContent>
         <DialogActions>
           <Button onClick={handleCloseDelete} disabled={deleting}>
-            {t('Cancel')}
+            {t_i18n('Cancel')}
           </Button>
           <Button color="secondary" onClick={submitDelete} disabled={deleting}>
-            {t('Delete')}
+            {t_i18n('Delete')}
           </Button>
         </DialogActions>
       </Dialog>
       <Drawer
-        title={t('Update a trigger')}
+        title={t_i18n('Update a trigger')}
         open={displayEdit}
         onClose={handleCloseEdit}
       >

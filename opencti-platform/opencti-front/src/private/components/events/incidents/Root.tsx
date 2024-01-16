@@ -79,7 +79,7 @@ const RootIncidentComponent = ({ queryRef }) => {
     [incidentId],
   );
   const location = useLocation();
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   useSubscription(subConfig);
   const data = usePreloadedQuery(incidentQuery, queryRef);
   const { incident, connectorsForImport, connectorsForExport } = data;
@@ -117,31 +117,31 @@ const RootIncidentComponent = ({ queryRef }) => {
                 component={Link}
                 to={`/dashboard/events/incidents/${incident.id}`}
                 value={`/dashboard/events/incidents/${incident.id}`}
-                label={t('Overview')}
+                label={t_i18n('Overview')}
               />
               <Tab
                 component={Link}
                 to={`/dashboard/events/incidents/${incident.id}/knowledge`}
                 value={`/dashboard/events/incidents/${incident.id}/knowledge`}
-                label={t('Knowledge')}
+                label={t_i18n('Knowledge')}
               />
               <Tab
                 component={Link}
                 to={`/dashboard/events/incidents/${incident.id}/analyses`}
                 value={`/dashboard/events/incidents/${incident.id}/analyses`}
-                label={t('Analyses')}
+                label={t_i18n('Analyses')}
               />
               <Tab
                 component={Link}
                 to={`/dashboard/events/incidents/${incident.id}/files`}
                 value={`/dashboard/events/incidents/${incident.id}/files`}
-                label={t('Data')}
+                label={t_i18n('Data')}
               />
               <Tab
                 component={Link}
                 to={`/dashboard/events/incidents/${incident.id}/history`}
                 value={`/dashboard/events/incidents/${incident.id}/history`}
-                label={t('History')}
+                label={t_i18n('History')}
               />
             </Tabs>
           </Box>

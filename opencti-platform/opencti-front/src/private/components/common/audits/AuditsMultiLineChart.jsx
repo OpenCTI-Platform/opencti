@@ -75,7 +75,7 @@ const AuditsMultiLineChart = ({
 }) => {
   const theme = useTheme();
   const classes = useStyles();
-  const { t, fsd, mtdy, yd } = useFormatter();
+  const { t_i18n, fsd, mtdy, yd } = useFormatter();
   const isGrantedToSettings = useGranted([SETTINGS]);
   const isEnterpriseEdition = useEnterpriseEdition();
   const renderContent = () => {
@@ -90,10 +90,10 @@ const AuditsMultiLineChart = ({
             }}
           >
             {!isEnterpriseEdition
-              ? t(
+              ? t_i18n(
                 'This feature is only available in OpenCTI Enterprise Edition.',
               )
-              : t('You are not authorized to see this data.')}
+              : t_i18n('You are not authorized to see this data.')}
           </span>
         </div>
       );
@@ -143,7 +143,7 @@ const AuditsMultiLineChart = ({
                   parameters.legend,
                 )}
                 series={dataSelection.map((selection, i) => ({
-                  name: selection.label ?? t('Number of history entries'),
+                  name: selection.label ?? t_i18n('Number of history entries'),
                   data: props.auditsMultiTimeSeries[i].data.map((entry) => ({
                     x: new Date(entry.date),
                     y: entry.value,
@@ -167,7 +167,7 @@ const AuditsMultiLineChart = ({
                     textAlign: 'center',
                   }}
                 >
-                  {t('No entities of this type has been found.')}
+                  {t_i18n('No entities of this type has been found.')}
                 </span>
               </div>
             );
@@ -201,7 +201,7 @@ const AuditsMultiLineChart = ({
           textOverflow: 'ellipsis',
         }}
       >
-        {parameters.title ?? t('Activity and history')}
+        {parameters.title ?? t_i18n('Activity and history')}
       </Typography>
       {variant !== 'inLine' ? (
         <Paper classes={{ root: classes.paper }} variant="outlined">

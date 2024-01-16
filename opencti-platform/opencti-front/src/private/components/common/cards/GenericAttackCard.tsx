@@ -125,7 +125,7 @@ export const GenericAttackCard: FunctionComponent<GenericAttackCardProps> = ({
   bookmarksIds,
 }) => {
   const classes = useStyles();
-  const { t, fld } = useFormatter();
+  const { t_i18n, fld } = useFormatter();
   const relatedIntrusionSets = (cardData.relatedIntrusionSets?.edges ?? [])
     .map((n) => n?.node?.from?.name)
     .join(', ');
@@ -193,7 +193,7 @@ export const GenericAttackCard: FunctionComponent<GenericAttackCardProps> = ({
           </div>
           <div className={classes.extras}>
             <div className={classes.extraColumn} style={{ paddingRight: 10 }}>
-              <Typography variant="h4">{t('Known as')}</Typography>
+              <Typography variant="h4">{t_i18n('Known as')}</Typography>
               <Typography variant="body2">
                 {emptyFilled((cardData.aliases || []).join(', '))}
               </Typography>
@@ -201,7 +201,7 @@ export const GenericAttackCard: FunctionComponent<GenericAttackCardProps> = ({
             {entityType === 'Malware' ? (
               <div className={classes.extraColumn} style={{ paddingLeft: 10 }}>
                 <Typography variant="h4">
-                  {t('Correlated intrusion sets')}
+                  {t_i18n('Correlated intrusion sets')}
                 </Typography>
                 <Typography variant="body2">
                   {emptyFilled(relatedIntrusionSets)}
@@ -209,7 +209,7 @@ export const GenericAttackCard: FunctionComponent<GenericAttackCardProps> = ({
               </div>
             ) : (
               <div className={classes.extraColumn} style={{ paddingLeft: 10 }}>
-                <Typography variant="h4">{t('Used malware')}</Typography>
+                <Typography variant="h4">{t_i18n('Used malware')}</Typography>
                 <Typography variant="body2">
                   {emptyFilled(usedMalware)}
                 </Typography>
@@ -219,13 +219,13 @@ export const GenericAttackCard: FunctionComponent<GenericAttackCardProps> = ({
           </div>
           <div className={classes.extras}>
             <div className={classes.extraColumn} style={{ paddingRight: 10 }}>
-              <Typography variant="h4">{t('Targeted countries')}</Typography>
+              <Typography variant="h4">{t_i18n('Targeted countries')}</Typography>
               <Typography variant="body2">
                 {emptyFilled(targetedCountries)}
               </Typography>
             </div>
             <div className={classes.extraColumn} style={{ paddingLeft: 10 }}>
-              <Typography variant="h4">{t('Targeted sectors')}</Typography>
+              <Typography variant="h4">{t_i18n('Targeted sectors')}</Typography>
               <Typography variant="body2">
                 {emptyFilled(targetedSectors)}
               </Typography>

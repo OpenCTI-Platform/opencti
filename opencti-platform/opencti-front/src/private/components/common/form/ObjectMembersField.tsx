@@ -63,7 +63,7 @@ const ObjectMembersField: FunctionComponent<ObjectMembersFieldProps> = ({
   disabled = false,
 }) => {
   const classes = useStyles();
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   const [members, setMembers] = useState<OptionMember[]>([]);
   const searchMembers = (event: React.ChangeEvent<HTMLInputElement>) => {
     fetchQuery(objectMembersFieldSearchQuery, {
@@ -98,13 +98,13 @@ const ObjectMembersField: FunctionComponent<ObjectMembersFieldProps> = ({
         multiple={multiple ?? false}
         textfieldprops={{
           variant: 'standard',
-          label: t(label ?? 'Users, groups or organizations'),
+          label: t_i18n(label ?? 'Users, groups or organizations'),
           helperText: helpertext,
           onFocus: searchMembers,
         }}
         onChange={(n: string, v: Option[]) => onChange?.(n, v)}
         style={style}
-        noOptionsText={t('No available options')}
+        noOptionsText={t_i18n('No available options')}
         options={members}
         groupBy={(option: OptionMember) => option.type}
         onInputChange={searchMembers}

@@ -66,7 +66,7 @@ interface RoleEditionCapabilitiesComponentProps {
 const RoleEditionCapabilitiesComponent: FunctionComponent<
 RoleEditionCapabilitiesComponentProps
 > = ({ role, queryRef }) => {
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   const { capabilities } = usePreloadedQuery<RoleEditionCapabilitiesLinesSearchQuery>(
     roleEditionCapabilitiesLinesSearch,
     queryRef,
@@ -114,7 +114,7 @@ RoleEditionCapabilitiesComponentProps
               backgroundColor: 'transparent',
             }}
           >
-            {t('Capabilities')}
+            {t_i18n('Capabilities')}
           </ListSubheader>
         }
       >
@@ -142,7 +142,7 @@ RoleEditionCapabilitiesComponentProps
                 <ListItemIcon style={{ minWidth: 32 }}>
                   <LocalPoliceOutlined fontSize="small" />
                 </ListItemIcon>
-                <ListItemText primary={t(capability.description)} />
+                <ListItemText primary={t_i18n(capability.description)} />
                 <ListItemSecondaryAction>
                   <Checkbox
                     onChange={(event) => handleToggle(capability.id, event)}

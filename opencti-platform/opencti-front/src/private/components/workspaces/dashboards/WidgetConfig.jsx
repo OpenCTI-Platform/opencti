@@ -322,7 +322,7 @@ const WidgetConfig = ({ workspace, widget, onComplete, closeMenu }) => {
     initialStep = 2;
   }
   const classes = useStyles();
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   const [open, setOpen] = useState(false);
   const [selectedTab, setSelectedTab] = useState('write');
   const [stepIndex, setStepIndex] = useState(initialStep);
@@ -574,7 +574,7 @@ const WidgetConfig = ({ workspace, widget, onComplete, closeMenu }) => {
                     variant="body1"
                     style={{ marginTop: 8 }}
                   >
-                    {t(visualizationType.name)}
+                    {t_i18n(visualizationType.name)}
                   </Typography>
                 </CardContent>
               </CardActionArea>
@@ -615,11 +615,11 @@ const WidgetConfig = ({ workspace, widget, onComplete, closeMenu }) => {
                   variant="h2"
                   style={{ marginTop: 20 }}
                 >
-                  {t('Entities')}
+                  {t_i18n('Entities')}
                 </Typography>
                 <br/>
                 <Typography variant="body1">
-                  {t('Display global knowledge with filters and criteria.')}
+                  {t_i18n('Display global knowledge with filters and criteria.')}
                 </Typography>
               </CardContent>
             </CardActionArea>
@@ -640,11 +640,11 @@ const WidgetConfig = ({ workspace, widget, onComplete, closeMenu }) => {
                   variant="h2"
                   style={{ marginTop: 20 }}
                 >
-                  {t('Knowledge graph')}
+                  {t_i18n('Knowledge graph')}
                 </Typography>
                 <br/>
                 <Typography variant="body1">
-                  {t(
+                  {t_i18n(
                     'Display specific knowledge using relationships and filters.',
                   )}
                 </Typography>
@@ -670,11 +670,11 @@ const WidgetConfig = ({ workspace, widget, onComplete, closeMenu }) => {
                   variant="h2"
                   style={{ marginTop: 20 }}
                 >
-                  {t('Activity & history')}
+                  {t_i18n('Activity & history')}
                 </Typography>
                 <br/>
                 <Typography variant="body1">
-                  {t('Display data related to the history and activity.')}
+                  {t_i18n('Display data related to the history and activity.')}
                 </Typography>
               </CardContent>
             </CardActionArea>
@@ -710,7 +710,7 @@ const WidgetConfig = ({ workspace, widget, onComplete, closeMenu }) => {
                 <div style={{ display: 'flex', width: '100%' }}>
                   <TextField
                     style={{ flex: 1 }}
-                    label={`${t('Label')} (${dataSelection[i].perspective})`}
+                    label={`${t_i18n('Label')} (${dataSelection[i].perspective})`}
                     fullWidth={true}
                     value={dataSelection[i].label}
                     onChange={(event) => handleChangeDataValidationLabel(i, event.target.value)}
@@ -749,7 +749,7 @@ const WidgetConfig = ({ workspace, widget, onComplete, closeMenu }) => {
               onClick={() => handleAddDataSelection('relationships')}
               classes={{ root: classes.buttonAdd }}
             >
-              <AddOutlined fontSize="small" /> {t('Relationships')}
+              <AddOutlined fontSize="small" /> {t_i18n('Relationships')}
             </Button>
             <Button
               variant="contained"
@@ -759,7 +759,7 @@ const WidgetConfig = ({ workspace, widget, onComplete, closeMenu }) => {
               onClick={() => handleAddDataSelection('entities')}
               classes={{ root: classes.buttonAdd }}
             >
-              <AddOutlined fontSize="small" /> {t('Entities')}
+              <AddOutlined fontSize="small" /> {t_i18n('Entities')}
             </Button>
           </div>
         )}
@@ -788,7 +788,7 @@ const WidgetConfig = ({ workspace, widget, onComplete, closeMenu }) => {
             classes={{ root: classes.button }}
             onClick={() => setStepIndex(3)}
           >
-            {t('Validate')}
+            {t_i18n('Validate')}
           </Button>
         </div>
       </div>
@@ -798,7 +798,7 @@ const WidgetConfig = ({ workspace, widget, onComplete, closeMenu }) => {
     return (
       <div style={{ marginTop: 20 }}>
         <TextField
-          label={t('Title')}
+          label={t_i18n('Title')}
           fullWidth={true}
           value={parameters.title}
           onChange={(event) => handleChangeParameter('title', event.target.value)
@@ -806,7 +806,7 @@ const WidgetConfig = ({ workspace, widget, onComplete, closeMenu }) => {
         />
         {getCurrentCategory() === 'text' && (
         <div style={{ marginTop: 20 }}>
-          <InputLabel shrink={true}>{t('Content')}</InputLabel>
+          <InputLabel shrink={true}>{t_i18n('Content')}</InputLabel>
           <ReactMde
             value={parameters.content}
             onChange={(value) => handleChangeParameter('content', value)}
@@ -820,10 +820,10 @@ const WidgetConfig = ({ workspace, widget, onComplete, closeMenu }) => {
               />,
             )}
             l18n={{
-              write: t('Write'),
-              preview: t('Preview'),
-              uploadingImage: t('Uploading image'),
-              pasteDropSelect: t('Paste'),
+              write: t_i18n('Write'),
+              preview: t_i18n('Preview'),
+              uploadingImage: t_i18n('Uploading image'),
+              pasteDropSelect: t_i18n('Paste'),
             }}
             minEditorHeight={100}
             maxEditorHeight={100}
@@ -832,7 +832,7 @@ const WidgetConfig = ({ workspace, widget, onComplete, closeMenu }) => {
         )}
         {getCurrentCategory() === 'timeseries' && (
         <FormControl fullWidth={true} style={{ marginTop: 20 }}>
-          <InputLabel id="relative">{t('Interval')}</InputLabel>
+          <InputLabel id="relative">{t_i18n('Interval')}</InputLabel>
           <Select
             labelId="relative"
             fullWidth={true}
@@ -840,11 +840,11 @@ const WidgetConfig = ({ workspace, widget, onComplete, closeMenu }) => {
             onChange={(event) => handleChangeParameter('interval', event.target.value)
                             }
           >
-            <MenuItem value="day">{t('Day')}</MenuItem>
-            <MenuItem value="week">{t('Week')}</MenuItem>
-            <MenuItem value="month">{t('Month')}</MenuItem>
-            <MenuItem value="quarter">{t('Quarter')}</MenuItem>
-            <MenuItem value="year">{t('Year')}</MenuItem>
+            <MenuItem value="day">{t_i18n('Day')}</MenuItem>
+            <MenuItem value="week">{t_i18n('Week')}</MenuItem>
+            <MenuItem value="month">{t_i18n('Month')}</MenuItem>
+            <MenuItem value="quarter">{t_i18n('Quarter')}</MenuItem>
+            <MenuItem value="year">{t_i18n('Year')}</MenuItem>
           </Select>
         </FormControl>
         )}
@@ -857,7 +857,7 @@ const WidgetConfig = ({ workspace, widget, onComplete, closeMenu }) => {
                   {(getCurrentCategory() === 'distribution'
                                         || getCurrentCategory() === 'list') && (
                                         <TextField
-                                          label={t('Number of results')}
+                                          label={t_i18n('Number of results')}
                                           fullWidth={true}
                                           type="number"
                                           value={dataSelection[i].number ?? 10}
@@ -883,7 +883,7 @@ const WidgetConfig = ({ workspace, widget, onComplete, closeMenu }) => {
                       <InputLabel id="relative" size="small">
                         {isNotEmptyField(dataSelection[i].label)
                           ? dataSelection[i].label
-                          : t('Date attribute')}
+                          : t_i18n('Date attribute')}
                       </InputLabel>
                       <Select
                         labelId="relative"
@@ -900,35 +900,35 @@ const WidgetConfig = ({ workspace, widget, onComplete, closeMenu }) => {
                                                     }
                       >
                         <MenuItem value="created_at">
-                          created_at ({t('Technical date')})
+                          created_at ({t_i18n('Technical date')})
                         </MenuItem>
                         <MenuItem value="updated_at">
-                          updated_at ({t('Technical date')})
+                          updated_at ({t_i18n('Technical date')})
                         </MenuItem>
                         <MenuItem value="created">
-                          created ({t('Functional date')})
+                          created ({t_i18n('Functional date')})
                         </MenuItem>
                         <MenuItem value="modified">
-                          modified ({t('Functional date')})
+                          modified ({t_i18n('Functional date')})
                         </MenuItem>
                         {getCurrentIsRelationships() && (
                         <MenuItem value="start_time">
-                          start_time ({t('Functional date')})
+                          start_time ({t_i18n('Functional date')})
                         </MenuItem>
                         )}
                         {getCurrentIsRelationships() && (
                         <MenuItem value="stop_time">
-                          stop_time ({t('Functional date')})
+                          stop_time ({t_i18n('Functional date')})
                         </MenuItem>
                         )}
                         {getCurrentIsRelationships() && (
                         <MenuItem value="first_seen">
-                          first_seen ({t('Functional date')})
+                          first_seen ({t_i18n('Functional date')})
                         </MenuItem>
                         )}
                         {getCurrentIsRelationships() && (
                         <MenuItem value="last_seen">
-                          last_seen ({t('Functional date')})
+                          last_seen ({t_i18n('Functional date')})
                         </MenuItem>
                         )}
                       </Select>
@@ -938,10 +938,10 @@ const WidgetConfig = ({ workspace, widget, onComplete, closeMenu }) => {
                   {dataSelection[i].perspective === 'relationships'
                                         && type === 'map' && (
                                         <TextField
-                                          label={t('Zoom')}
+                                          label={t_i18n('Zoom')}
                                           fullWidth={true}
                                           value={dataSelection[i].zoom ?? 2}
-                                          placeholder={t('Zoom')}
+                                          placeholder={t_i18n('Zoom')}
                                           onChange={(event) => handleChangeDataValidationParameter(
                                             i,
                                             'zoom',
@@ -954,10 +954,10 @@ const WidgetConfig = ({ workspace, widget, onComplete, closeMenu }) => {
                   {dataSelection[i].perspective === 'relationships'
                                         && type === 'map' && (
                                         <TextField
-                                          label={t('Center latitude')}
+                                          label={t_i18n('Center latitude')}
                                           fullWidth={true}
                                           value={dataSelection[i].centerLat ?? 48.8566969}
-                                          placeholder={t('Center latitude')}
+                                          placeholder={t_i18n('Center latitude')}
                                           onChange={(event) => handleChangeDataValidationParameter(
                                             i,
                                             'centerLat',
@@ -970,10 +970,10 @@ const WidgetConfig = ({ workspace, widget, onComplete, closeMenu }) => {
                   {dataSelection[i].perspective === 'relationships'
                                         && type === 'map' && (
                                         <TextField
-                                          label={t('Center longitude')}
+                                          label={t_i18n('Center longitude')}
                                           fullWidth={true}
                                           value={dataSelection[i].centerLng ?? 2.3514616}
-                                          placeholder={t('Center longitude')}
+                                          placeholder={t_i18n('Center longitude')}
                                           onChange={(event) => handleChangeDataValidationParameter(
                                             i,
                                             'centerLng',
@@ -996,7 +996,7 @@ const WidgetConfig = ({ workspace, widget, onComplete, closeMenu }) => {
                         marginRight: 20,
                       }}
                     >
-                      <InputLabel>{t('Attribute')}</InputLabel>
+                      <InputLabel>{t_i18n('Attribute')}</InputLabel>
                       <Select
                         fullWidth={true}
                         value={dataSelection[i].attribute}
@@ -1008,34 +1008,34 @@ const WidgetConfig = ({ workspace, widget, onComplete, closeMenu }) => {
                                                         }
                       >
                         <MenuItem key="internal_id" value="internal_id">
-                          {t('Entity')}
+                          {t_i18n('Entity')}
                         </MenuItem>
                         <MenuItem key="entity_type" value="entity_type">
-                          {t('Entity type')}
+                          {t_i18n('Entity type')}
                         </MenuItem>
                         <MenuItem
                           key="created-by.internal_id"
                           value="created-by.internal_id"
                         >
-                          {t('Author')}
+                          {t_i18n('Author')}
                         </MenuItem>
                         <MenuItem
                           key="object-marking.internal_id"
                           value="object-marking.internal_id"
                         >
-                          {t('Marking definition')}
+                          {t_i18n('Marking definition')}
                         </MenuItem>
                         <MenuItem
                           key="kill-chain-phase.internal_id"
                           value="kill-chain-phase.internal_id"
                         >
-                          {t('Kill chain phase')}
+                          {t_i18n('Kill chain phase')}
                         </MenuItem>
                         <MenuItem key="creator_id" value="creator_id">
-                          {t('Creator')}
+                          {t_i18n('Creator')}
                         </MenuItem>
                         <MenuItem key="x_opencti_workflow_id" value="x_opencti_workflow_id">
-                          {t('Status')}
+                          {t_i18n('Status')}
                         </MenuItem>
                       </Select>
                     </FormControl>
@@ -1049,7 +1049,7 @@ const WidgetConfig = ({ workspace, widget, onComplete, closeMenu }) => {
                                                     flex: 1,
                                                   }}
                                                 >
-                                                  <InputLabel>{t('Attribute')}</InputLabel>
+                                                  <InputLabel>{t_i18n('Attribute')}</InputLabel>
                                                   <QueryRenderer
                                                     query={stixCyberObservablesLinesAttributesQuery}
                                                     variables={{
@@ -1115,7 +1115,7 @@ const WidgetConfig = ({ workspace, widget, onComplete, closeMenu }) => {
                                                                 key={attribute.value}
                                                                 value={attribute.value}
                                                               >
-                                                                {t(
+                                                                {t_i18n(
                                                                   capitalizeFirstLetter(
                                                                     attribute.value,
                                                                   ),
@@ -1140,10 +1140,10 @@ const WidgetConfig = ({ workspace, widget, onComplete, closeMenu }) => {
                                                                   ? 20
                                                                   : 0,
                                                   }}
-                                                  label={t('Field')}
+                                                  label={t_i18n('Field')}
                                                   fullWidth={true}
                                                   value={dataSelection[i].attribute}
-                                                  placeholder={t('Series attribute')}
+                                                  placeholder={t_i18n('Series attribute')}
                                                   onChange={(event) => handleChangeDataValidationParameter(
                                                     i,
                                                     'attribute',
@@ -1160,7 +1160,7 @@ const WidgetConfig = ({ workspace, widget, onComplete, closeMenu }) => {
                         flex: 1,
                       }}
                     >
-                      <InputLabel>{t('Attribute')}</InputLabel>
+                      <InputLabel>{t_i18n('Attribute')}</InputLabel>
                       <Select
                         fullWidth={true}
                         value={dataSelection[i].attribute ?? 'entity_type'}
@@ -1197,7 +1197,7 @@ const WidgetConfig = ({ workspace, widget, onComplete, closeMenu }) => {
                             key={attribute.value}
                             value={attribute.value}
                           >
-                            {t(capitalizeFirstLetter(attribute.value))}
+                            {t_i18n(capitalizeFirstLetter(attribute.value))}
                           </MenuItem>
                         ))}
                       </Select>
@@ -1211,12 +1211,12 @@ const WidgetConfig = ({ workspace, widget, onComplete, closeMenu }) => {
                           checked={!dataSelection[i].isTo}
                         />
                                                     }
-                      label={t('Display the source')}
+                      label={t_i18n('Display the source')}
                     />
                     )}
                     {dataSelection[i].perspective === 'relationships' && (
                     <Tooltip
-                      title={t(
+                      title={t_i18n(
                         'Enable if the displayed data is the source of the relationships.',
                       )}
                     >
@@ -1242,7 +1242,7 @@ const WidgetConfig = ({ workspace, widget, onComplete, closeMenu }) => {
                 checked={parameters.stacked}
               />
                             }
-            label={t('Stacked')}
+            label={t_i18n('Stacked')}
           />
           )}
           {getCurrentAvailableParameters().includes('distributed') && (
@@ -1253,7 +1253,7 @@ const WidgetConfig = ({ workspace, widget, onComplete, closeMenu }) => {
                 checked={parameters.distributed}
               />
                             }
-            label={t('Distributed')}
+            label={t_i18n('Distributed')}
           />
           )}
           {getCurrentAvailableParameters().includes('legend') && (
@@ -1264,7 +1264,7 @@ const WidgetConfig = ({ workspace, widget, onComplete, closeMenu }) => {
                 checked={parameters.legend}
               />
                             }
-            label={t('Display legend')}
+            label={t_i18n('Display legend')}
           />
           )}
         </div>
@@ -1297,16 +1297,16 @@ const WidgetConfig = ({ workspace, widget, onComplete, closeMenu }) => {
             FabProps={{ color: 'secondary' }}
           >
             <SpeedDialAction
-              title={t('Create a widget')}
+              title={t_i18n('Create a widget')}
               icon={<WidgetsOutlined />}
-              tooltipTitle={t('Create a widget')}
+              tooltipTitle={t_i18n('Create a widget')}
               onClick={() => setOpen(true)}
               FabProps={{ classes: { root: classes.speedDialButton } }}
             />
             <SpeedDialAction
-              title={t('Import a widget')}
+              title={t_i18n('Import a widget')}
               icon={<CloudUploadOutlined />}
-              tooltipTitle={t('Import a widget')}
+              tooltipTitle={t_i18n('Import a widget')}
               onClick={() => inputRef.current?.click()}
               FabProps={{ classes: { root: classes.speedDialButton } }}
             />
@@ -1320,7 +1320,7 @@ const WidgetConfig = ({ workspace, widget, onComplete, closeMenu }) => {
             setOpen(true);
           }}
         >
-          {t('Update')}
+          {t_i18n('Update')}
         </MenuItem>
       )}
       <Dialog
@@ -1339,7 +1339,7 @@ const WidgetConfig = ({ workspace, widget, onComplete, closeMenu }) => {
                 onClick={() => setStepIndex(0)}
                 disabled={stepIndex === 0}
               >
-                <StepLabel>{t('Visualization')}</StepLabel>
+                <StepLabel>{t_i18n('Visualization')}</StepLabel>
               </StepButton>
             </Step>
             <Step>
@@ -1347,7 +1347,7 @@ const WidgetConfig = ({ workspace, widget, onComplete, closeMenu }) => {
                 onClick={() => setStepIndex(1)}
                 disabled={stepIndex <= 1 || getCurrentCategory() === 'text'}
               >
-                <StepLabel>{t('Perspective')}</StepLabel>
+                <StepLabel>{t_i18n('Perspective')}</StepLabel>
               </StepButton>
             </Step>
             <Step>
@@ -1355,7 +1355,7 @@ const WidgetConfig = ({ workspace, widget, onComplete, closeMenu }) => {
                 onClick={() => setStepIndex(2)}
                 disabled={stepIndex <= 2 || getCurrentCategory() === 'text'}
               >
-                <StepLabel>{t('Filters')}</StepLabel>
+                <StepLabel>{t_i18n('Filters')}</StepLabel>
               </StepButton>
             </Step>
             <Step>
@@ -1363,14 +1363,14 @@ const WidgetConfig = ({ workspace, widget, onComplete, closeMenu }) => {
                 onClick={() => setStepIndex(3)}
                 disabled={stepIndex <= 3}
               >
-                <StepLabel>{t('Parameters')}</StepLabel>
+                <StepLabel>{t_i18n('Parameters')}</StepLabel>
               </StepButton>
             </Step>
           </Stepper>
         </DialogTitle>
         <DialogContent>{getStepContent()}</DialogContent>
         <DialogActions>
-          <Button onClick={handleClose}>{t('Cancel')}</Button>
+          <Button onClick={handleClose}>{t_i18n('Cancel')}</Button>
           <Button
             color="secondary"
             onClick={completeSetup}
@@ -1380,7 +1380,7 @@ const WidgetConfig = ({ workspace, widget, onComplete, closeMenu }) => {
                 && !isDataSelectionAttributesValid())
             }
           >
-            {widget ? t('Update') : t('Create')}
+            {widget ? t_i18n('Update') : t_i18n('Create')}
           </Button>
         </DialogActions>
       </Dialog>

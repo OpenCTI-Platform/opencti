@@ -64,7 +64,7 @@ const subTypeFragment = graphql`
 `;
 
 const SubType = ({ data }: { data: SubType_subType$key }) => {
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   const classes = useStyles();
   const subType = useFragment(subTypeFragment, data);
   const subTypeSettingsId = subType.settings?.id;
@@ -91,11 +91,11 @@ const SubType = ({ data }: { data: SubType_subType$key }) => {
       <CustomizationMenu />
       <div style={{ marginBottom: 23 }}>
         <Typography variant="h1" gutterBottom={true}>
-          {t(`entity_${subType.label}`)}
+          {t_i18n(`entity_${subType.label}`)}
         </Typography>
       </div>
       <Typography variant="h4" gutterBottom={true}>
-        {t('Configuration')}
+        {t_i18n('Configuration')}
       </Typography>
       <Paper
         classes={{ root: classes.paper }}
@@ -107,7 +107,7 @@ const SubType = ({ data }: { data: SubType_subType$key }) => {
           && <>
             <div style={{ marginTop: 10 }}>
               <Typography variant="h3" gutterBottom={true}>
-                {t('Workflow')}
+                {t_i18n('Workflow')}
                 <SubTypeStatusPopover subTypeId={subType.id} />
               </Typography>
             </div>
@@ -121,7 +121,7 @@ const SubType = ({ data }: { data: SubType_subType$key }) => {
       {subType.settings?.availableSettings.includes('attributes_configuration')
         && <>
           <Typography variant="h4" gutterBottom={true} style={{ float: 'left' }}>
-            {t('Attributes')}
+            {t_i18n('Attributes')}
           </Typography>
           <div style={{ float: 'right', marginTop: -12 }}>
             <SearchInput

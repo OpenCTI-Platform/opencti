@@ -46,7 +46,7 @@ const NotifierTestResult = ({
     notifierTestQuery,
     queryRef,
   );
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   const classes = useStyles();
   return (
     <>
@@ -54,7 +54,7 @@ const NotifierTestResult = ({
         Result{' '}
         <Chip
           className={notifierTest ? classes.error : classes.success}
-          label={t(notifierTest ? 'Error' : 'OK')}
+          label={t_i18n(notifierTest ? 'Error' : 'OK')}
         />
       </Typography>
       {notifierTest && <code>{notifierTest}</code>}
@@ -75,13 +75,13 @@ const NotifierTestDialog: FunctionComponent<NotifierTestDialogProps> = ({
   queryRef,
   onTest,
 }) => {
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   const classes = useStyles();
 
   const [target, setTarget] = useState('default_notification');
   return (
     <Dialog open={open} onClose={onClose} PaperProps={{ elevation: 1 }}>
-      <DialogTitle>{t('Testing notifier')}</DialogTitle>
+      <DialogTitle>{t_i18n('Testing notifier')}</DialogTitle>
       <DialogContent>
         <div className={classes.container}>
           <Typography>Choose target</Typography>
@@ -91,11 +91,11 @@ const NotifierTestDialog: FunctionComponent<NotifierTestDialogProps> = ({
             fullWidth={true}
           >
             <MenuItem value={'default_notification'}>
-              {t('Sample Notification')}
+              {t_i18n('Sample Notification')}
             </MenuItem>
-            <MenuItem value={'default_digest'}>{t('Sample Digest')}</MenuItem>
+            <MenuItem value={'default_digest'}>{t_i18n('Sample Digest')}</MenuItem>
             <MenuItem value={'default_activity'}>
-              {t('Sample Activity Alert')}
+              {t_i18n('Sample Activity Alert')}
             </MenuItem>
           </Select>
         </div>
@@ -117,7 +117,7 @@ const NotifierTestDialog: FunctionComponent<NotifierTestDialogProps> = ({
           color="secondary"
           onClick={() => onTest(target)}
         >
-          {t('Test')}
+          {t_i18n('Test')}
         </Button>
       </DialogContent>
     </Dialog>

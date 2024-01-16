@@ -29,7 +29,7 @@ const DisplayFilterGroup: FunctionComponent<DisplayFilterGroupProps> = ({
 }) => {
   const { filterGroups } = filterObj;
   const [open, setOpen] = useState(false);
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   const handleClickOpen = () => {
     setOpen(true);
   };
@@ -73,7 +73,7 @@ const DisplayFilterGroup: FunctionComponent<DisplayFilterGroupProps> = ({
             width: 'fit-content',
           }}
         >
-          <span>{t(key)}</span>
+          <span>{t_i18n(key)}</span>
           <Box
             sx={{
               textTransform: 'uppercase',
@@ -108,7 +108,7 @@ const DisplayFilterGroup: FunctionComponent<DisplayFilterGroupProps> = ({
                       padding: '8px',
                     }}
                   >
-                    {t(mode)}
+                    {t_i18n(mode)}
                   </Box>
                 )}
               </Fragment>
@@ -182,7 +182,7 @@ const DisplayFilterGroup: FunctionComponent<DisplayFilterGroupProps> = ({
         onClick={handleClickOpen}
         label={
           <>
-            {t('Filters are not fully displayed')}
+            {t_i18n('Filters are not fully displayed')}
             <InformationOutline
               fontSize="small"
               color="secondary"
@@ -228,7 +228,7 @@ const DisplayFilterGroup: FunctionComponent<DisplayFilterGroupProps> = ({
         </DialogContent>
         <DialogActions>
           <Button onClick={handleClose} autoFocus>
-            {t('Close')}
+            {t_i18n('Close')}
           </Button>
         </DialogActions>
       </Dialog>

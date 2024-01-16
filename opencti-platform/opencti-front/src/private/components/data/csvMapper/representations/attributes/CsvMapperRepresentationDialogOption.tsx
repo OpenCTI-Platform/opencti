@@ -16,7 +16,7 @@ interface CsvMapperRepresentationDialogOptionProps {
 
 const CsvMapperRepresentationDialogOption: FunctionComponent<CsvMapperRepresentationDialogOptionProps> = ({ attribute, children }) => {
   const [open, setOpen] = React.useState(false);
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   const handleClickOpen = () => {
     setOpen(true);
   };
@@ -28,7 +28,7 @@ const CsvMapperRepresentationDialogOption: FunctionComponent<CsvMapperRepresenta
     <>
       <IconButton
         color="primary"
-        aria-label={t('Settings')}
+        aria-label={t_i18n('Settings')}
         onClick={handleClickOpen}
         size="large"
         disabled={!attribute.column?.column_name}
@@ -42,14 +42,14 @@ const CsvMapperRepresentationDialogOption: FunctionComponent<CsvMapperRepresenta
         aria-describedby="Configure optional settings to the field"
       >
         <DialogTitle id="csv-mapper-dialog-title">
-          {t('Attribute mapping configuration')}
+          {t_i18n('Attribute mapping configuration')}
         </DialogTitle>
         <DialogContent>
           {children}
         </DialogContent>
         <DialogActions>
           <Button onClick={handleClose} autoFocus>
-            {t('Close')}
+            {t_i18n('Close')}
           </Button>
         </DialogActions>
       </Dialog>

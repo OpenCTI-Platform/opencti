@@ -21,10 +21,10 @@ import { useFormatter } from '../../../../../components/i18n';
 
 const Root = () => {
   const isEnterpriseEdition = useEnterpriseEdition();
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
 
   if (!isEnterpriseEdition) {
-    return <EnterpriseEdition feature={t('Activity')} />;
+    return <EnterpriseEdition feature={t_i18n('Activity')} />;
   }
   return <Audit />;
 };

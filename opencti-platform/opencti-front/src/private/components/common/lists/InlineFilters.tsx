@@ -24,7 +24,7 @@ const useStyles = makeStyles(() => ({
 }));
 
 const InlineFilters: FunctionComponent<BooleanFilterProps> = ({ filterKey, handleSwitchFilter, defaultHandleRemoveFilter }) => {
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   const classes = useStyles();
   const handleInputValues = (value: string) => {
     if (defaultHandleRemoveFilter && handleSwitchFilter) {
@@ -45,7 +45,7 @@ const InlineFilters: FunctionComponent<BooleanFilterProps> = ({ filterKey, handl
             exclusive={true}
             style={{ marginRight: '15px' }}
           >
-            <Tooltip title={t('No filtering')}>
+            <Tooltip title={t_i18n('No filtering')}>
               <ToggleButton
                 onClick={(_, value) => handleInputValues(value)}
                 value=""
@@ -56,7 +56,7 @@ const InlineFilters: FunctionComponent<BooleanFilterProps> = ({ filterKey, handl
                 />
               </ToggleButton>
             </Tooltip>
-            <Tooltip title={t('Regular digest')}>
+            <Tooltip title={t_i18n('Regular digest')}>
               <ToggleButton
                 onClick={(_, value) => handleInputValues(value)}
                 value="digest"
@@ -67,7 +67,7 @@ const InlineFilters: FunctionComponent<BooleanFilterProps> = ({ filterKey, handl
                 />
               </ToggleButton>
             </Tooltip>
-            <Tooltip title={t('Live trigger')}>
+            <Tooltip title={t_i18n('Live trigger')}>
               <ToggleButton
                 onClick={(_, value) => handleInputValues(value)}
                 value="live"
@@ -88,7 +88,7 @@ const InlineFilters: FunctionComponent<BooleanFilterProps> = ({ filterKey, handl
             exclusive={true}
             style={{ marginRight: '15px' }}
           >
-            <Tooltip title={t('No filtering')}>
+            <Tooltip title={t_i18n('No filtering')}>
               <ToggleButton
                 onClick={(_, value) => handleInputValues(value)}
                 value=""
@@ -99,7 +99,7 @@ const InlineFilters: FunctionComponent<BooleanFilterProps> = ({ filterKey, handl
                 />
               </ToggleButton>
             </Tooltip>
-            <Tooltip title={t('Yes')}>
+            <Tooltip title={t_i18n('Yes')}>
               <ToggleButton
                 onClick={(_, value) => handleInputValues(value)}
                 value="true"
@@ -110,7 +110,7 @@ const InlineFilters: FunctionComponent<BooleanFilterProps> = ({ filterKey, handl
                 />
               </ToggleButton>
             </Tooltip>
-            <Tooltip title={t('No')}>
+            <Tooltip title={t_i18n('No')}>
               <ToggleButton
                 onClick={(_, value) => handleInputValues(value)}
                 value="false"
@@ -130,7 +130,7 @@ const InlineFilters: FunctionComponent<BooleanFilterProps> = ({ filterKey, handl
       <InputLabel
         classes={{ root: classes.inputLabel }}
       >
-        {t(filterKey)}
+        {t_i18n(filterKey)}
       </InputLabel>
       {booleanFilterContent()}
     </>

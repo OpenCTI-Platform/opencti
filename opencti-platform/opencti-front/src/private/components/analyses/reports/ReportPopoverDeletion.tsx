@@ -47,7 +47,7 @@ const ReportPopoverDeletion: FunctionComponent<ReportPopoverDeletionProps> = ({
   handleClose,
   handleCloseDelete,
 }) => {
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   const theme = useTheme<Theme>();
   const navigate = useNavigate();
   const [purgeElements, setPurgeElements] = useState(false);
@@ -73,7 +73,7 @@ const ReportPopoverDeletion: FunctionComponent<ReportPopoverDeletionProps> = ({
     >
       <DialogContent>
         <DialogContentText>
-          {t('Do you want to delete this report?')}
+          {t_i18n('Do you want to delete this report?')}
         </DialogContentText>
         <QueryRenderer
           query={reportPopoverDeletionQuery}
@@ -87,13 +87,13 @@ const ReportPopoverDeletion: FunctionComponent<ReportPopoverDeletionProps> = ({
                 variant="outlined"
                 style={{ marginTop: 20 }}
               >
-                <AlertTitle>{t('Cascade delete')}</AlertTitle>
-                {t('In this report, ')}&nbsp;
+                <AlertTitle>{t_i18n('Cascade delete')}</AlertTitle>
+                {t_i18n('In this report, ')}&nbsp;
                 <strong style={{ color: theme.palette.error.main }}>
                   {numberOfDeletions}
                 </strong>
                 &nbsp;
-                {t(
+                {t_i18n(
                   'element(s) are not linked to any other reports and will be orphan after the deletion.',
                 )}
                 <FormGroup>
@@ -105,7 +105,7 @@ const ReportPopoverDeletion: FunctionComponent<ReportPopoverDeletionProps> = ({
                         onChange={() => setPurgeElements(!purgeElements)}
                       />
                     }
-                    label={t('Also delete these elements')}
+                    label={t_i18n('Also delete these elements')}
                   />
                 </FormGroup>
               </Alert>
@@ -115,10 +115,10 @@ const ReportPopoverDeletion: FunctionComponent<ReportPopoverDeletionProps> = ({
       </DialogContent>
       <DialogActions>
         <Button onClick={handleCloseDelete} disabled={deleting}>
-          {t('Cancel')}
+          {t_i18n('Cancel')}
         </Button>
         <Button color="secondary" onClick={submitDelete} disabled={deleting}>
-          {t('Delete')}
+          {t_i18n('Delete')}
         </Button>
       </DialogActions>
     </Dialog>

@@ -23,7 +23,7 @@ const useStyles = makeStyles(() => ({
 
 const VocabularyCategories = () => {
   const classes = useStyles();
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   const { categories, sortBy, orderAsc, searchTerm, handleSort, handleSearch } = useVocabularyCategoryAsQuery();
   const renderLines = () => {
     const dataColumns = {
@@ -44,7 +44,7 @@ const VocabularyCategories = () => {
                 key={type}
                 classes={{ root: classes.label }}
                 variant="outlined"
-                label={t(`entity_${type}`)}
+                label={t_i18n(`entity_${type}`)}
                 color="primary"
               />
             ))}

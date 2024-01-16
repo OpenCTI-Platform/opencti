@@ -71,7 +71,7 @@ const dashboardSettingsMutation = graphql`
 
 const DashboardSettings = () => {
   const classes = useStyles();
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   const {
     me: {
       default_time_field: timeField,
@@ -103,13 +103,13 @@ const DashboardSettings = () => {
         maxWidth="xs"
         fullWidth={true}
       >
-        <DialogTitle>{t('Dashboard settings')}</DialogTitle>
+        <DialogTitle>{t_i18n('Dashboard settings')}</DialogTitle>
         <DialogContent>
           <Security
             needs={[EXPLORE]}
             placeholder={
               <FormControl style={{ width: '100%' }}>
-                <InputLabel id="timeField">{t('Date reference')}</InputLabel>
+                <InputLabel id="timeField">{t_i18n('Date reference')}</InputLabel>
                 <Select
                   labelId="timeField"
                   value={timeField === null ? '' : timeField}
@@ -117,8 +117,8 @@ const DashboardSettings = () => {
                   }
                   fullWidth={true}
                 >
-                  <MenuItem value="technical">{t('Technical date')}</MenuItem>
-                  <MenuItem value="functional">{t('Functional date')}</MenuItem>
+                  <MenuItem value="technical">{t_i18n('Technical date')}</MenuItem>
+                  <MenuItem value="functional">{t_i18n('Functional date')}</MenuItem>
                 </Select>
               </FormControl>
             }
@@ -144,7 +144,7 @@ const DashboardSettings = () => {
                     <div>
                       <FormControl style={{ width: '100%' }}>
                         <InputLabel id="timeField">
-                          {t('Date reference')}
+                          {t_i18n('Date reference')}
                         </InputLabel>
                         <Select
                           labelId="timeField"
@@ -157,16 +157,16 @@ const DashboardSettings = () => {
                           fullWidth={true}
                         >
                           <MenuItem value="technical">
-                            {t('Technical date')}
+                            {t_i18n('Technical date')}
                           </MenuItem>
                           <MenuItem value="functional">
-                            {t('Functional date')}
+                            {t_i18n('Functional date')}
                           </MenuItem>
                         </Select>
                       </FormControl>
                       <FormControl style={{ width: '100%', marginTop: 20 }}>
                         <InputLabel id="timeField">
-                          {t('Custom dashboard')}
+                          {t_i18n('Custom dashboard')}
                         </InputLabel>
                         <Select
                           labelId="dashboard"
@@ -182,11 +182,11 @@ const DashboardSettings = () => {
                           }}
                         >
                           <MenuItem value="default">
-                            <em>{t('Automatic')}</em>
+                            <em>{t_i18n('Automatic')}</em>
                           </MenuItem>
                           {dashboards?.length > 0 && (
                             <ListSubheader>
-                              {t('Recommended dashboards')}
+                              {t_i18n('Recommended dashboards')}
                             </ListSubheader>
                           )}
                           {dashboards?.map(({ id, name }) => (
@@ -201,7 +201,7 @@ const DashboardSettings = () => {
                             </MenuItem>
                           ))}
                           {workspaces?.length > 0 && (
-                            <ListSubheader>{t('Dashboards')}</ListSubheader>
+                            <ListSubheader>{t_i18n('Dashboards')}</ListSubheader>
                           )}
                           {workspaces?.map(({ node }) => (
                             <MenuItem key={node.id} value={node.id}>
@@ -225,7 +225,7 @@ const DashboardSettings = () => {
           </Security>
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleClose}>{t('Close')}</Button>
+          <Button onClick={handleClose}>{t_i18n('Close')}</Button>
         </DialogActions>
       </Dialog>
     </span>

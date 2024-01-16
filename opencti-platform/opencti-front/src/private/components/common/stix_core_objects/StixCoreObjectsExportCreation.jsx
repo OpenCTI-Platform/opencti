@@ -85,7 +85,7 @@ const StixCoreObjectsExportCreationComponent = ({
   onExportAsk,
   data,
 }) => {
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   const classes = useStyles();
   const [open, setOpen] = useState(false);
   const onSubmit = (selectedIds, values, { setSubmitting, resetForm }) => {
@@ -127,8 +127,8 @@ const StixCoreObjectsExportCreationComponent = ({
             <Tooltip
               title={
                 isExportPossible
-                  ? t('Generate an export')
-                  : t('No export connector available to generate an export')
+                  ? t_i18n('Generate an export')
+                  : t_i18n('No export connector available to generate an export')
               }
               aria-label="generate-export"
             >
@@ -148,7 +148,7 @@ const StixCoreObjectsExportCreationComponent = ({
                 format: '',
                 maxMarkingDefinition: 'none',
               }}
-              validationSchema={exportValidation(t)}
+              validationSchema={exportValidation(t_i18n)}
               onSubmit={(values, { setSubmitting, resetForm }) => onSubmit(selectedIds, values, { setSubmitting, resetForm })
               }
               onReset={() => setOpen(false)}
@@ -161,7 +161,7 @@ const StixCoreObjectsExportCreationComponent = ({
                     onClose={() => setOpen(false)}
                     fullWidth={true}
                   >
-                    <DialogTitle>{t('Generate an export')}</DialogTitle>
+                    <DialogTitle>{t_i18n('Generate an export')}</DialogTitle>
                     <QueryRenderer
                       query={markingDefinitionsLinesSearchQuery}
                       variables={{ first: 200 }}
@@ -173,7 +173,7 @@ const StixCoreObjectsExportCreationComponent = ({
                                 component={SelectField}
                                 variant="standard"
                                 name="format"
-                                label={t('Export format')}
+                                label={t_i18n('Export format')}
                                 fullWidth={true}
                                 containerstyle={{ width: '100%' }}
                               >
@@ -191,14 +191,14 @@ const StixCoreObjectsExportCreationComponent = ({
                                 component={SelectField}
                                 variant="standard"
                                 name="maxMarkingDefinition"
-                                label={t('Max marking definition level')}
+                                label={t_i18n('Max marking definition level')}
                                 fullWidth={true}
                                 containerstyle={{
                                   marginTop: 20,
                                   width: '100%',
                                 }}
                               >
-                                <MenuItem value="none">{t('None')}</MenuItem>
+                                <MenuItem value="none">{t_i18n('None')}</MenuItem>
                                 {R.map(
                                   (markingDefinition) => (
                                     <MenuItem
@@ -219,14 +219,14 @@ const StixCoreObjectsExportCreationComponent = ({
                     />
                     <DialogActions>
                       <Button onClick={handleReset} disabled={isSubmitting}>
-                        {t('Cancel')}
+                        {t_i18n('Cancel')}
                       </Button>
                       <Button
                         color="secondary"
                         onClick={submitForm}
                         disabled={isSubmitting}
                       >
-                        {t('Create')}
+                        {t_i18n('Create')}
                       </Button>
                     </DialogActions>
                   </Dialog>

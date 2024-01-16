@@ -85,9 +85,9 @@ export const ChannelCreationForm: FunctionComponent<ChannelFormProps> = ({
   inputValue,
 }) => {
   const classes = useStyles();
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   const basicShape = {
-    name: Yup.string().min(2).required(t('This field is required')),
+    name: Yup.string().min(2).required(t_i18n('This field is required')),
     channel_types: Yup.array().nullable(),
     description: Yup.string().nullable(),
     confidence: Yup.number().nullable(),
@@ -157,14 +157,14 @@ export const ChannelCreationForm: FunctionComponent<ChannelFormProps> = ({
           <Field
             component={TextField}
             name="name"
-            label={t('Name')}
+            label={t_i18n('Name')}
             fullWidth={true}
             detectDuplicate={['Channel', 'Malware']}
           />
           <OpenVocabField
             type="channel_types_ov"
             name="channel_types"
-            label={t('Channel type')}
+            label={t_i18n('Channel type')}
             multiple
             containerStyle={fieldSpacingContainerStyle}
             onChange={setFieldValue}
@@ -172,7 +172,7 @@ export const ChannelCreationForm: FunctionComponent<ChannelFormProps> = ({
           <Field
             component={MarkdownField}
             name="description"
-            label={t('Description')}
+            label={t_i18n('Description')}
             fullWidth={true}
             multiline={true}
             rows="4"
@@ -223,7 +223,7 @@ export const ChannelCreationForm: FunctionComponent<ChannelFormProps> = ({
               disabled={isSubmitting}
               classes={{ root: classes.button }}
             >
-              {t('Cancel')}
+              {t_i18n('Cancel')}
             </Button>
             <Button
               variant="contained"
@@ -232,7 +232,7 @@ export const ChannelCreationForm: FunctionComponent<ChannelFormProps> = ({
               disabled={isSubmitting}
               classes={{ root: classes.button }}
             >
-              {t('Create')}
+              {t_i18n('Create')}
             </Button>
           </div>
         </Form>
@@ -246,11 +246,11 @@ const ChannelCreation = ({
 }: {
   paginationOptions: ChannelsLinesPaginationQuery$variables;
 }) => {
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   const updater = (store: RecordSourceSelectorProxy) => insertNode(store, 'Pagination_channels', paginationOptions, 'channelAdd');
   return (
     <Drawer
-      title={t('Create a channel')}
+      title={t_i18n('Create a channel')}
       variant={DrawerVariant.create}
     >
       {({ onClose }) => (

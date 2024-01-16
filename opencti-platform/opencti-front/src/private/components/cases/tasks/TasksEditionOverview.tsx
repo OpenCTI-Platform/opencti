@@ -166,11 +166,11 @@ const TasksEditionOverview: FunctionComponent<TasksEditionOverviewProps> = ({
   enableReferences = false,
   handleClose,
 }) => {
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   const taskData = useFragment(tasksEditionOverviewFragment, taskRef);
 
   const basicShape = {
-    name: Yup.string().min(2).required(t('This field is required')),
+    name: Yup.string().min(2).required(t_i18n('This field is required')),
     description: Yup.string().nullable(),
     x_opencti_workflow_id: Yup.object().nullable(),
   };
@@ -226,7 +226,7 @@ const TasksEditionOverview: FunctionComponent<TasksEditionOverviewProps> = ({
     objectMarking: convertMarkings(taskData),
     objectAssignee: convertAssignees(taskData),
     objectParticipant: convertParticipants(taskData),
-    x_opencti_workflow_id: convertStatus(t, taskData) as Option,
+    x_opencti_workflow_id: convertStatus(t_i18n, taskData) as Option,
   };
   return (
     <Formik
@@ -241,7 +241,7 @@ const TasksEditionOverview: FunctionComponent<TasksEditionOverviewProps> = ({
             component={TextField}
             variant="standard"
             name="name"
-            label={t('Name')}
+            label={t_i18n('Name')}
             fullWidth={true}
             onFocus={editor.changeFocus}
             onSubmit={editor.changeField}
@@ -256,7 +256,7 @@ const TasksEditionOverview: FunctionComponent<TasksEditionOverviewProps> = ({
             onFocus={editor.changeFocus}
             onSubmit={editor.changeField}
             TextFieldProps={{
-              label: t('Due Date'),
+              label: t_i18n('Due Date'),
               variant: 'standard',
               fullWidth: true,
               helperText: (
@@ -268,7 +268,7 @@ const TasksEditionOverview: FunctionComponent<TasksEditionOverviewProps> = ({
           <Field
             component={MarkdownField}
             name="description"
-            label={t('Description')}
+            label={t_i18n('Description')}
             fullWidth={true}
             multiline={true}
             rows="4"

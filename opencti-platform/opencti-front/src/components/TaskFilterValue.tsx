@@ -39,7 +39,7 @@ const TaskFilterValue = ({
   filters: FilterGroup;
   queryRef: PreloadedQuery<FilterValuesContentQuery>;
 }) => {
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   const classes = useStyles();
   const { filtersRepresentatives } = usePreloadedQuery<FilterValuesContentQuery>(
     filterValuesContentQuery,
@@ -48,18 +48,18 @@ const TaskFilterValue = ({
   const filtersRepresentativesMap = new Map(
     (filtersRepresentatives ?? []).map((n) => [n?.id, n?.value]),
   );
-  const globalFilterMode = t(filters.mode.toUpperCase());
+  const globalFilterMode = t_i18n(filters.mode.toUpperCase());
   return (
     <>
       {(filters.filters ?? []).map((currentFilter) => {
         const label = `${truncate(
           currentFilter.key.startsWith('rel_')
-            ? t(
+            ? t_i18n(
               `relationship_${currentFilter.key
                 .replace('rel_', '')
                 .replace('.*', '')}`,
             )
-            : t(currentFilter.key),
+            : t_i18n(currentFilter.key),
           20,
         )}`;
         const isOperatorNil = ['nil', 'not_nil'].includes(
@@ -67,10 +67,10 @@ const TaskFilterValue = ({
         );
         const DisplayNilLabel = () => {
           if (currentFilter.operator === 'nil') {
-            return <span>{t('is empty')}</span>;
+            return <span>{t_i18n('is empty')}</span>;
           }
           if (currentFilter.operator === 'not_nil') {
-            return <span>{t('is not empty')}</span>;
+            return <span>{t_i18n('is not empty')}</span>;
           }
           return null;
         };
@@ -85,7 +85,7 @@ const TaskFilterValue = ({
                     <DisplayNilLabel/>
                   ) : (
                     currentFilter.values.map((o) => {
-                      const localFilterMode = t(
+                      const localFilterMode = t_i18n(
                         (currentFilter.mode ?? 'eq').toUpperCase(),
                       );
                       return (

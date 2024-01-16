@@ -99,7 +99,7 @@ const RootFeedbackComponent = ({ queryRef, caseId }) => {
     [caseId],
   );
   const location = useLocation();
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   useSubscription(subConfig);
   const {
     feedback: feedbackData,
@@ -152,25 +152,25 @@ const RootFeedbackComponent = ({ queryRef, caseId }) => {
                 component={Link}
                 to={`/dashboard/cases/feedbacks/${feedbackData.id}`}
                 value={`/dashboard/cases/feedbacks/${feedbackData.id}`}
-                label={t('Overview')}
+                label={t_i18n('Overview')}
               />
               <Tab
                 component={Link}
                 to={`/dashboard/cases/feedbacks/${feedbackData.id}/content`}
                 value={`/dashboard/cases/feedbacks/${feedbackData.id}/content`}
-                label={t('Content')}
+                label={t_i18n('Content')}
               />
               <Tab
                 component={Link}
                 to={`/dashboard/cases/feedbacks/${feedbackData.id}/files`}
                 value={`/dashboard/cases/feedbacks/${feedbackData.id}/files`}
-                label={t('Data')}
+                label={t_i18n('Data')}
               />
               <Tab
                 component={Link}
                 to={`/dashboard/cases/feedbacks/${feedbackData.id}/history`}
                 value={`/dashboard/cases/feedbacks/${feedbackData.id}/history`}
-                label={t('History')}
+                label={t_i18n('History')}
               />
             </Tabs>
           </Box>

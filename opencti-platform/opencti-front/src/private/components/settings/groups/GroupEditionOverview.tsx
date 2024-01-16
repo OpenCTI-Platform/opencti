@@ -80,10 +80,10 @@ interface GroupEditionOverviewComponentProps {
 
 }
 const GroupEditionOverviewComponent: FunctionComponent<GroupEditionOverviewComponentProps> = ({ group, context }) => {
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
 
   const basicShape: ObjectShape = {
-    name: Yup.string().required(t('This field is required')),
+    name: Yup.string().required(t_i18n('This field is required')),
     description: Yup.string().nullable(),
     default_assignation: Yup.bool(),
     auto_new_marking: Yup.bool(),
@@ -124,7 +124,7 @@ const GroupEditionOverviewComponent: FunctionComponent<GroupEditionOverviewCompo
             <Field
               component={TextField}
               name="name"
-              label={t('Name')}
+              label={t_i18n('Name')}
               fullWidth={true}
               onFocus={editor.changeFocus}
               onSubmit={editor.changeField}
@@ -135,7 +135,7 @@ const GroupEditionOverviewComponent: FunctionComponent<GroupEditionOverviewCompo
             <Field
               component={MarkdownField}
               name="description"
-              label={t('Description')}
+              label={t_i18n('Description')}
               fullWidth={true}
               multiline={true}
               rows={4}
@@ -157,7 +157,7 @@ const GroupEditionOverviewComponent: FunctionComponent<GroupEditionOverviewCompo
               component={SwitchField}
               type="checkbox"
               name="default_assignation"
-              label={t('Granted by default at user creation')}
+              label={t_i18n('Granted by default at user creation')}
               containerstyle={{ marginTop: 20 }}
               onChange={editor.changeField}
               helperText={
@@ -171,7 +171,7 @@ const GroupEditionOverviewComponent: FunctionComponent<GroupEditionOverviewCompo
               component={SwitchField}
               type="checkbox"
               name="auto_new_marking"
-              label={t(
+              label={t_i18n(
                 'Automatically authorize this group to new marking definition',
               )}
               containerstyle={{ marginTop: 20 }}

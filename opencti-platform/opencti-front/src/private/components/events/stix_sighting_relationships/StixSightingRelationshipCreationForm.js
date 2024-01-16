@@ -98,16 +98,16 @@ const StixSightingRelationshipCreationForm = ({
   defaultCreatedBy,
   defaultMarkingDefinitions,
 }) => {
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   const classes = useStyles();
   const basicShape = {
-    attribute_count: Yup.number().required(t('This field is required')),
+    attribute_count: Yup.number().required(t_i18n('This field is required')),
     confidence: Yup.number().nullable(),
     first_seen: Yup.date()
-      .typeError(t('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)'))
+      .typeError(t_i18n('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)'))
       .nullable(),
     last_seen: Yup.date()
-      .typeError(t('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)'))
+      .typeError(t_i18n('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)'))
       .min(Yup.ref('first_seen'), "The end date can't be before start date")
       .nullable(),
     description: Yup.string().nullable(),
@@ -183,14 +183,14 @@ const StixSightingRelationshipCreationForm = ({
                   </div>
                   <div className={classes.type}>
                     {fromEntity?.relationship_type
-                      ? t(`relationship_${fromEntity?.entity_type}`)
-                      : t(`entity_${fromEntity?.entity_type}`)}
+                      ? t_i18n(`relationship_${fromEntity?.entity_type}`)
+                      : t_i18n(`entity_${fromEntity?.entity_type}`)}
                   </div>
                 </div>
                 <div className={classes.content}>
                   <span className={classes.name}>
                     {isMultipleFrom
-                      ? (<em>{t('Multiple entities selected')}</em>)
+                      ? (<em>{t_i18n('Multiple entities selected')}</em>)
                       : (defaultName(fromEntity))}
                   </span>
                 </div>
@@ -205,7 +205,7 @@ const StixSightingRelationshipCreationForm = ({
                     color="secondary"
                     size="small"
                   >
-                    {t('Reverse')}
+                    {t_i18n('Reverse')}
                   </Button>
                 )}
               </div>
@@ -232,14 +232,14 @@ const StixSightingRelationshipCreationForm = ({
                   </div>
                   <div className={classes.type}>
                     {toEntity?.relationship_type
-                      ? t(`relationship_${toEntity?.entity_type}`)
-                      : t(`entity_${toEntity?.entity_type}`)}
+                      ? t_i18n(`relationship_${toEntity?.entity_type}`)
+                      : t_i18n(`entity_${toEntity?.entity_type}`)}
                   </div>
                 </div>
                 <div className={classes.content}>
                   <span className={classes.name}>
                     {isMultipleTo
-                      ? (<em>{t('Multiple entities selected')}</em>)
+                      ? (<em>{t_i18n('Multiple entities selected')}</em>)
                       : (defaultName(toEntity))}
                   </span>
                 </div>
@@ -250,7 +250,7 @@ const StixSightingRelationshipCreationForm = ({
               component={TextField}
               variant="standard"
               name="attribute_count"
-              label={t('Count')}
+              label={t_i18n('Count')}
               fullWidth={true}
               type="number"
               style={{ marginTop: 20 }}
@@ -263,7 +263,7 @@ const StixSightingRelationshipCreationForm = ({
               component={DateTimePickerField}
               name="first_seen"
               TextFieldProps={{
-                label: t('First seen'),
+                label: t_i18n('First seen'),
                 variant: 'standard',
                 fullWidth: true,
                 style: { marginTop: 20 },
@@ -273,7 +273,7 @@ const StixSightingRelationshipCreationForm = ({
               component={DateTimePickerField}
               name="last_seen"
               TextFieldProps={{
-                label: t('Last seen'),
+                label: t_i18n('Last seen'),
                 variant: 'standard',
                 fullWidth: true,
                 style: { marginTop: 20 },
@@ -282,7 +282,7 @@ const StixSightingRelationshipCreationForm = ({
             <Field
               component={MarkdownField}
               name="description"
-              label={t('Description')}
+              label={t_i18n('Description')}
               fullWidth={true}
               multiline={true}
               rows="4"
@@ -301,7 +301,7 @@ const StixSightingRelationshipCreationForm = ({
               component={SwitchField}
               type="checkbox"
               name="x_opencti_negative"
-              label={t('False positive')}
+              label={t_i18n('False positive')}
               containerstyle={{ marginTop: 20 }}
             />
             <ExternalReferencesField
@@ -316,7 +316,7 @@ const StixSightingRelationshipCreationForm = ({
                   onClick={handleResetSelection}
                   disabled={isSubmitting}
                 >
-                  {t('Back')}
+                  {t_i18n('Back')}
                 </Button>
               </div>
             )}
@@ -327,7 +327,7 @@ const StixSightingRelationshipCreationForm = ({
                 disabled={isSubmitting}
                 classes={{ root: classes.button }}
               >
-                {t('Cancel')}
+                {t_i18n('Cancel')}
               </Button>
               <Button
                 variant="contained"
@@ -336,7 +336,7 @@ const StixSightingRelationshipCreationForm = ({
                 disabled={isSubmitting}
                 classes={{ root: classes.button }}
               >
-                {t('Create')}
+                {t_i18n('Create')}
               </Button>
             </div>
           </div>

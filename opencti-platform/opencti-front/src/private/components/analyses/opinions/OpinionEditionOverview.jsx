@@ -71,10 +71,10 @@ const opinionMutationRelationDelete = graphql`
 
 const OpinionEditionOverviewComponent = (props) => {
   const { opinion, context } = props;
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   const userIsKnowledgeEditor = useGranted([KNOWLEDGE_KNUPDATE]);
   const basicShape = {
-    opinion: Yup.string().required(t('This field is required')),
+    opinion: Yup.string().required(t_i18n('This field is required')),
     explanation: Yup.string().nullable(),
     confidence: Yup.number(),
     x_opencti_workflow_id: Yup.object(),
@@ -110,7 +110,7 @@ const OpinionEditionOverviewComponent = (props) => {
   const initialValues = {
     createdBy: convertCreatedBy(opinion),
     objectMarking: convertMarkings(opinion),
-    x_opencti_workflow_id: convertStatus(t, opinion),
+    x_opencti_workflow_id: convertStatus(t_i18n, opinion),
     confidence: opinion.confidence,
     explanation: opinion.explanation,
   };
@@ -127,7 +127,7 @@ const OpinionEditionOverviewComponent = (props) => {
         <div>
           <Form style={{ margin: '20px 0 20px 0' }}>
             <OpenVocabField
-              label={t('Opinion')}
+              label={t_i18n('Opinion')}
               type="opinion-ov"
               name="opinion"
               onFocus={editor.changeFocus}
@@ -141,7 +141,7 @@ const OpinionEditionOverviewComponent = (props) => {
             <Field
               component={MarkdownField}
               name="explanation"
-              label={t('Explanation')}
+              label={t_i18n('Explanation')}
               fullWidth={true}
               multiline={true}
               rows="4"

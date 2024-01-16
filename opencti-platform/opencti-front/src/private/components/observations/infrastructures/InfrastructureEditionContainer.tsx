@@ -26,14 +26,14 @@ interface InfrastructureEditionContainerProps {
 }
 
 const InfrastructureEditionContainer: FunctionComponent<InfrastructureEditionContainerProps> = ({ handleClose, queryRef, open }) => {
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
 
   const { infrastructure } = usePreloadedQuery(infrastructureEditionContainerQuery, queryRef);
 
   if (infrastructure) {
     return (
       <Drawer
-        title={t('Update an infrastructure')}
+        title={t_i18n('Update an infrastructure')}
         variant={open == null ? DrawerVariant.update : undefined}
         context={infrastructure.editContext}
         onClose={handleClose}

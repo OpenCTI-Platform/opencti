@@ -73,7 +73,7 @@ const AuditsNumber = ({
   parameters = {},
 }) => {
   const classes = useStyles();
-  const { t, n } = useFormatter();
+  const { t_i18n, n } = useFormatter();
   const isGrantedToSettings = useGranted([SETTINGS]);
   const isEnterpriseEdition = useEnterpriseEdition();
   const renderContent = () => {
@@ -88,10 +88,10 @@ const AuditsNumber = ({
             }}
           >
             {!isEnterpriseEdition
-              ? t(
+              ? t_i18n(
                 'This feature is only available in OpenCTI Enterprise Edition.',
               )
-              : t('You are not authorized to see this data.')}
+              : t_i18n('You are not authorized to see this data.')}
           </span>
         </div>
       );
@@ -115,7 +115,7 @@ const AuditsNumber = ({
                 <div className={classes.number}>{n(total)}</div>
                 <ItemNumberDifference
                   difference={difference}
-                  description={t('24 hours')}
+                  description={t_i18n('24 hours')}
                 />
               </div>
             );
@@ -130,7 +130,7 @@ const AuditsNumber = ({
                     textAlign: 'center',
                   }}
                 >
-                  {t('No entities of this type has been found.')}
+                  {t_i18n('No entities of this type has been found.')}
                 </span>
               </div>
             );
@@ -164,7 +164,7 @@ const AuditsNumber = ({
           textOverflow: 'ellipsis',
         }}
       >
-        {parameters.title ?? t('Entities number')}
+        {parameters.title ?? t_i18n('Entities number')}
       </Typography>
       {variant !== 'inLine' ? (
         <Paper classes={{ root: classes.paper }} variant="outlined">

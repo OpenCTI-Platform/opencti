@@ -192,7 +192,7 @@ export const rulesListQuery = graphql`
 
 const RulesListComponent = ({ relay, data, keyword }) => {
   const classes = useStyles();
-  const { t, nsdt, md, n } = useFormatter();
+  const { t_i18n, nsdt, md, n } = useFormatter();
   const theme = useTheme();
   const [displayDisable, setDisplayDisable] = useState(false);
   const [displayEnable, setDisplayEnable] = useState(false);
@@ -231,7 +231,7 @@ const RulesListComponent = ({ relay, data, keyword }) => {
       onCompleted: () => {
         setProcessing(false);
         MESSAGING$.notifySuccess(
-          t('The rule has been enabled, rescan of platform data launched...'),
+          t_i18n('The rule has been enabled, rescan of platform data launched...'),
         );
         handleCloseEnable();
       },
@@ -248,7 +248,7 @@ const RulesListComponent = ({ relay, data, keyword }) => {
       onCompleted: () => {
         setProcessing(false);
         MESSAGING$.notifySuccess(
-          t('The rule has been disabled, clean-up launched...'),
+          t_i18n('The rule has been disabled, clean-up launched...'),
         );
         handleCloseDisable();
       },
@@ -270,7 +270,7 @@ const RulesListComponent = ({ relay, data, keyword }) => {
     R.fromPairs,
   )(data);
   const categories = R.pipe(
-    R.map((o) => ({ key: o, name: t(o) })),
+    R.map((o) => ({ key: o, name: t_i18n(o) })),
     sortByNameCaseInsensitive,
   )(Object.keys(rules));
   const tasks = R.pathOr([], ['backgroundTasks', 'edges'], data);
@@ -314,12 +314,12 @@ const RulesListComponent = ({ relay, data, keyword }) => {
               >
                 <CardContent>
                   <div className={classes.title}>
-                    {t('Total inferred entities')}
+                    {t_i18n('Total inferred entities')}
                   </div>
                   <div className={classes.number}>{n(totalEntities)}</div>
                   <ItemNumberDifference
                     difference={differenceEntities}
-                    description={t('24 hours')}
+                    description={t_i18n('24 hours')}
                   />
                   <div className={classes.icon}>
                     <Database color="inherit" fontSize="large" />
@@ -335,12 +335,12 @@ const RulesListComponent = ({ relay, data, keyword }) => {
               >
                 <CardContent>
                   <div className={classes.title}>
-                    {t('Total inferred relations')}
+                    {t_i18n('Total inferred relations')}
                   </div>
                   <div className={classes.number}>{n(totalRelations)}</div>
                   <ItemNumberDifference
                     difference={differenceRelations}
-                    description={t('24 hours')}
+                    description={t_i18n('24 hours')}
                   />
                   <div className={classes.icon}>
                     <GraphOutline color="inherit" fontSize="large" />
@@ -356,12 +356,12 @@ const RulesListComponent = ({ relay, data, keyword }) => {
               >
                 <CardContent>
                   <div className={classes.title}>
-                    {t('Rules engine status')}
+                    {t_i18n('Rules engine status')}
                   </div>
                   <div style={{ marginTop: 20 }}>
                     <ItemBoolean
                       status={isEngineEnabled}
-                      label={isEngineEnabled ? t('Enabled') : t('Disabled')}
+                      label={isEngineEnabled ? t_i18n('Enabled') : t_i18n('Disabled')}
                     />
                   </div>
                   <div className={classes.icon}>
@@ -378,7 +378,7 @@ const RulesListComponent = ({ relay, data, keyword }) => {
               >
                 <CardContent>
                   <div className={classes.title}>
-                    {t('Last event processed')}
+                    {t_i18n('Last event processed')}
                   </div>
                   <div style={{ marginTop: 20 }}>
                     {nsdt(
@@ -415,11 +415,11 @@ const RulesListComponent = ({ relay, data, keyword }) => {
                 )}
                 series={[
                   {
-                    name: t('Inferred entities'),
+                    name: t_i18n('Inferred entities'),
                     data: chartDataEntities,
                   },
                   {
-                    name: t('Inferred relationships'),
+                    name: t_i18n('Inferred relationships'),
                     data: chartDataRelations,
                   },
                 ]}
@@ -458,7 +458,7 @@ const RulesListComponent = ({ relay, data, keyword }) => {
                 >
                   <Grid item={true} xs={3}>
                     <Typography variant="h4" gutterBottom={true}>
-                      {t(rule.name)}
+                      {t_i18n(rule.name)}
                     </Typography>
                     <Paper
                       variant="outlined"
@@ -468,13 +468,13 @@ const RulesListComponent = ({ relay, data, keyword }) => {
                       <Grid container={true} spacing={3}>
                         <Grid item={true} xs={6}>
                           <Typography variant="h3">
-                            {t('Description')}
+                            {t_i18n('Description')}
                           </Typography>
-                          {t(rule.description)}
+                          {t_i18n(rule.description)}
                         </Grid>
                         <Grid item={true} xs={6}>
                           <Typography variant="h3" gutterBottom={true}>
-                            {t('Status')}
+                            {t_i18n('Status')}
                           </Typography>
                           <FormGroup>
                             <FormControlLabel
@@ -491,8 +491,8 @@ const RulesListComponent = ({ relay, data, keyword }) => {
                               }
                               label={
                                 isEngineEnabled && rule.activated
-                                  ? t('Enabled')
-                                  : t('Disabled')
+                                  ? t_i18n('Enabled')
+                                  : t_i18n('Disabled')
                               }
                             />
                           </FormGroup>
@@ -508,12 +508,12 @@ const RulesListComponent = ({ relay, data, keyword }) => {
                               }}
                             >
                               {task.enable
-                                ? t(
+                                ? t_i18n(
                                   task.completed
                                     ? 'This rule has been applied on the existing data'
                                     : 'Applying this rule on the existing data',
                                 )
-                                : t(
+                                : t_i18n(
                                   task.completed
                                     ? 'Rule has been cleaned up on the existing data'
                                     : 'Cleaning up this rule on the existing data',
@@ -553,7 +553,7 @@ const RulesListComponent = ({ relay, data, keyword }) => {
                           {displayDefinition.if.map((step, index) => {
                             return (
                               <div key={index} className={classes.step}>
-                                <div className={classes.if}>{t('IF')}</div>
+                                <div className={classes.if}>{t_i18n('IF')}</div>
                                 <div className={classes.element}>
                                   <div
                                     className={classes.source}
@@ -571,7 +571,7 @@ const RulesListComponent = ({ relay, data, keyword }) => {
                                         : 'transparent',
                                     }}
                                   >
-                                    {t(step.relation)}
+                                    {t_i18n(step.relation)}
                                   </div>
                                   <div
                                     className={classes.target}
@@ -589,7 +589,7 @@ const RulesListComponent = ({ relay, data, keyword }) => {
                         <div className={classes.middle}>
                           <ArrowRightAlt fontSize="large" />
                           <br />
-                          <div className={classes.then}>{t('THEN')}</div>
+                          <div className={classes.then}>{t_i18n('THEN')}</div>
                         </div>
                         <div className={classes.right}>
                           {displayDefinition.then.map((step, index) => {
@@ -616,7 +616,7 @@ const RulesListComponent = ({ relay, data, keyword }) => {
                                           : 'transparent',
                                       }}
                                     >
-                                      {t(step.relation)}
+                                      {t_i18n(step.relation)}
                                     </div>
                                   )}
                                   {step.target && (
@@ -652,19 +652,19 @@ const RulesListComponent = ({ relay, data, keyword }) => {
       >
         <DialogContent>
           <DialogContentText>
-            {t('Do you want to enable this rule?')}
+            {t_i18n('Do you want to enable this rule?')}
           </DialogContentText>
         </DialogContent>
         <DialogActions>
           <Button onClick={handleCloseEnable} disabled={processing}>
-            {t('Cancel')}
+            {t_i18n('Cancel')}
           </Button>
           <Button
             onClick={submitEnableRule}
             color="secondary"
             disabled={processing}
           >
-            {t('Enable')}
+            {t_i18n('Enable')}
           </Button>
         </DialogActions>
       </Dialog>
@@ -677,19 +677,19 @@ const RulesListComponent = ({ relay, data, keyword }) => {
       >
         <DialogContent>
           <DialogContentText>
-            {t('Do you want to disable this rule?')}
+            {t_i18n('Do you want to disable this rule?')}
           </DialogContentText>
         </DialogContent>
         <DialogActions>
           <Button onClick={handleCloseDisable} disabled={processing}>
-            {t('Cancel')}
+            {t_i18n('Cancel')}
           </Button>
           <Button
             onClick={submitDisableRule}
             color="secondary"
             disabled={processing}
           >
-            {t('Disable')}
+            {t_i18n('Disable')}
           </Button>
         </DialogActions>
       </Dialog>

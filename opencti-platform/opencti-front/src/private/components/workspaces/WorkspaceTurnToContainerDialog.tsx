@@ -70,7 +70,7 @@ const investigationToContainerMutation = graphql`
 
 const WorkspaceTurnToContainerDialog: FunctionComponent<WorkspaceTurnToContainerDialogProps> = ({ workspace, open, handleClose }) => {
   const classes = useStyles();
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   const [containerCreation, setContainerCreation] = useState(false);
   const [actionsInputs, setActionsInputs] = useState<ActionInputs | null>(null);
   const [targetContainerId, setTargetContainerId] = useState('');
@@ -167,7 +167,7 @@ const WorkspaceTurnToContainerDialog: FunctionComponent<WorkspaceTurnToContainer
       open={open}
       onClose={() => handleClose()}
     >
-      <DialogTitle>{t('Add to container')}</DialogTitle>
+      <DialogTitle>{t_i18n('Add to container')}</DialogTitle>
       <DialogContent>
         <StixDomainObjectCreation
           inputValue={actionsInputs?.inputValue || ''}
@@ -209,13 +209,13 @@ const WorkspaceTurnToContainerDialog: FunctionComponent<WorkspaceTurnToContainer
             <TextField
               {...params}
               variant="standard"
-              label={t('Container')}
+              label={t_i18n('Container')}
               fullWidth={true}
               onFocus={(event: React.SyntheticEvent<Element, Event>) => searchContainers(event)}
               style={{ marginTop: 3 }}
             />
           )}
-          noOptionsText={t('No available options')}
+          noOptionsText={t_i18n('No available options')}
           options={containersFromElements}
           onInputChange={(event, userInput) => searchContainers(event, userInput)}
           inputValue={actionsInputs?.inputValue || ''}
@@ -241,7 +241,7 @@ const WorkspaceTurnToContainerDialog: FunctionComponent<WorkspaceTurnToContainer
       </DialogContent>
       <DialogActions>
         <Button onClick={() => handleClose()}>
-          {t('Cancel')}
+          {t_i18n('Cancel')}
         </Button>
         <Button
           color="secondary"
@@ -256,7 +256,7 @@ const WorkspaceTurnToContainerDialog: FunctionComponent<WorkspaceTurnToContainer
             handleLaunchUpdate();
           }}
         >
-          {t('Add')}
+          {t_i18n('Add')}
         </Button>
       </DialogActions>
     </Dialog>

@@ -181,11 +181,11 @@ const CaseIncidentEditionOverview: FunctionComponent<CaseIncidentEditionOverview
   enableReferences = false,
   handleClose,
 }) => {
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   const caseData = useFragment(caseIncidentEditionOverviewFragment, caseRef);
 
   const basicShape = {
-    name: Yup.string().min(2).required(t('This field is required')),
+    name: Yup.string().min(2).required(t_i18n('This field is required')),
     severity: Yup.string().nullable(),
     priority: Yup.string().nullable(),
     response_types: Yup.array(),
@@ -261,7 +261,7 @@ const CaseIncidentEditionOverview: FunctionComponent<CaseIncidentEditionOverview
     objectMarking: convertMarkings(caseData),
     objectAssignee: convertAssignees(caseData),
     objectParticipant: convertParticipants(caseData),
-    x_opencti_workflow_id: convertStatus(t, caseData) as Option,
+    x_opencti_workflow_id: convertStatus(t_i18n, caseData) as Option,
     references: [],
   };
   return (
@@ -284,7 +284,7 @@ const CaseIncidentEditionOverview: FunctionComponent<CaseIncidentEditionOverview
             component={TextField}
             variant="standard"
             name="name"
-            label={t('Name')}
+            label={t_i18n('Name')}
             fullWidth={true}
             onFocus={editor.changeFocus}
             onSubmit={editor.changeField}
@@ -299,7 +299,7 @@ const CaseIncidentEditionOverview: FunctionComponent<CaseIncidentEditionOverview
             onFocus={editor.changeFocus}
             onSubmit={editor.changeField}
             TextFieldProps={{
-              label: t('Incident date'),
+              label: t_i18n('Incident date'),
               variant: 'standard',
               fullWidth: true,
               helperText: (
@@ -309,7 +309,7 @@ const CaseIncidentEditionOverview: FunctionComponent<CaseIncidentEditionOverview
             containerStyle={fieldSpacingContainerStyle}
           />
           <OpenVocabField
-            label={t('Case severity')}
+            label={t_i18n('Case severity')}
             type="case_severity_ov"
             name="severity"
             onSubmit={handleSubmitField}
@@ -320,7 +320,7 @@ const CaseIncidentEditionOverview: FunctionComponent<CaseIncidentEditionOverview
             editContext={context}
           />
           <OpenVocabField
-            label={t('Case priority')}
+            label={t_i18n('Case priority')}
             type="case_priority_ov"
             name="priority"
             onSubmit={handleSubmitField}
@@ -331,7 +331,7 @@ const CaseIncidentEditionOverview: FunctionComponent<CaseIncidentEditionOverview
             editContext={context}
           />
           <OpenVocabField
-            label={t('Response type')}
+            label={t_i18n('Response type')}
             type="incident_response_types_ov"
             name="response_types"
             onSubmit={handleSubmitField}
@@ -352,7 +352,7 @@ const CaseIncidentEditionOverview: FunctionComponent<CaseIncidentEditionOverview
           <Field
             component={MarkdownField}
             name="description"
-            label={t('Description')}
+            label={t_i18n('Description')}
             fullWidth={true}
             multiline={true}
             rows="4"

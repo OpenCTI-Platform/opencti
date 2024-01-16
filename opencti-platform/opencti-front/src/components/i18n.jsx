@@ -287,7 +287,7 @@ export const useFormatter = () => {
     });
   };
   return {
-    t: translate,
+    t_i18n: translate,
     n: formatNumber,
     b: formatBytes,
     fld: longDate,

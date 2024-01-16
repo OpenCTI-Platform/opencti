@@ -337,7 +337,7 @@ const RelationshipDetailsComponent: FunctionComponent<
 RelationshipDetailsComponentProps
 > = ({ queryRef }) => {
   const classes = useStyles();
-  const { t, fldt } = useFormatter();
+  const { t_i18n, fldt } = useFormatter();
   const entity = usePreloadedQuery<RelationshipDetailsQuery>(
     relationshipDetailsQuery,
     queryRef,
@@ -365,7 +365,7 @@ RelationshipDetailsComponentProps
             gutterBottom={true}
             className={classes.label}
           >
-            {t('Creators')}
+            {t_i18n('Creators')}
           </Typography>
           <ItemCreators creators={stixRelationship.creators ?? []} />
         </>
@@ -374,19 +374,19 @@ RelationshipDetailsComponentProps
     return (
       <>
         <Typography variant="h3" gutterBottom={true} className={classes.label}>
-          {t('First seen')}
+          {t_i18n('First seen')}
         </Typography>
         {stixRelationship.entity_type !== 'stix-sighting-relationship'
           ? fldt(stixRelationship.start_time)
           : fldt(stixRelationship.first_seen)}
         <Typography variant="h3" gutterBottom={true} className={classes.label}>
-          {t('Last seen')}
+          {t_i18n('Last seen')}
         </Typography>
         {stixRelationship.entity_type !== 'stix-sighting-relationship'
           ? fldt(stixRelationship.stop_time)
           : fldt(stixRelationship.last_seen)}
         <Typography variant="h3" gutterBottom={true} className={classes.label}>
-          {t('Description')}
+          {t_i18n('Description')}
         </Typography>
         {stixRelationship.description
         && stixRelationship.description.length > 0 ? (
@@ -398,7 +398,7 @@ RelationshipDetailsComponentProps
             '-'
           )}
         <Typography variant="h3" gutterBottom={true} className={classes.label}>
-          {t('Confidence level')}
+          {t_i18n('Confidence level')}
         </Typography>
         {stixRelationship.confidence ? (
           <ItemConfidence
@@ -409,7 +409,7 @@ RelationshipDetailsComponentProps
           '-'
         )}
         <Typography variant="h3" gutterBottom={true} className={classes.label}>
-          {t('Marking')}
+          {t_i18n('Marking')}
         </Typography>
         {stixRelationship.objectMarking
         && stixRelationship.objectMarking.edges.length > 0 ? (
@@ -421,7 +421,7 @@ RelationshipDetailsComponentProps
             '-'
           )}
         <Typography variant="h3" gutterBottom={true} className={classes.label}>
-          {t('Author')}
+          {t_i18n('Author')}
         </Typography>
         {stixRelationship.createdBy ? (
           <ItemAuthor createdBy={stixRelationship.createdBy} />
@@ -429,15 +429,15 @@ RelationshipDetailsComponentProps
           '-'
         )}
         <Typography variant="h3" gutterBottom={true} className={classes.label}>
-          {t('Creators')}
+          {t_i18n('Creators')}
         </Typography>
         <ItemCreators creators={stixRelationship.creators ?? []} />
         <Typography variant="h3" gutterBottom={true} className={classes.label}>
-          {`${t('Last')} ${
+          {`${t_i18n('Last')} ${
             (stixRelationship.reports?.pageInfo.globalCount ?? 0) >= 10
               ? 10
               : stixRelationship.reports?.pageInfo.globalCount
-          } ${t('reports')} ${t('of')} ${stixRelationship.reports?.pageInfo
+          } ${t_i18n('reports')} ${t_i18n('of')} ${stixRelationship.reports?.pageInfo
             .globalCount}`}
         </Typography>
         {reportsEdges && reportsEdges.length > 0 ? (
@@ -480,7 +480,7 @@ RelationshipDetailsComponentProps
           '-'
         )}
         <Typography variant="h3" gutterBottom={true} className={classes.label}>
-          {t('External References')}
+          {t_i18n('External References')}
         </Typography>
         {externalReferencesEdges && externalReferencesEdges.length > 0 ? (
           <List style={{ marginBottom: 0 }}>
@@ -502,7 +502,7 @@ RelationshipDetailsComponentProps
                 ) {
                   externalReferenceSecondary = externalReference.node.description;
                 } else {
-                  externalReferenceSecondary = t('No description');
+                  externalReferenceSecondary = t_i18n('No description');
                 }
                 return (
                   <React.Fragment key={externalReference.node.id}>
@@ -543,7 +543,7 @@ RelationshipDetailsComponentProps
   return (
     <div>
       <Typography variant="h3" gutterBottom={true} className={classes.label}>
-        {t('Relation type')}
+        {t_i18n('Relation type')}
       </Typography>
       <Chip
         classes={{ root: classes.chipInList }}
@@ -555,7 +555,7 @@ RelationshipDetailsComponentProps
           color: itemColor(stixRelationship.relationship_type),
           border: `1px solid ${itemColor(stixRelationship.relationship_type)}`,
         }}
-        label={t(`relationship_${stixRelationship.relationship_type}`)}
+        label={t_i18n(`relationship_${stixRelationship.relationship_type}`)}
       />
       {!stixRelationship.from?.relationship_type
         && stixRelationship.from?.id && (
@@ -572,7 +572,7 @@ RelationshipDetailsComponentProps
               gutterBottom={true}
               className={classes.label}
             >
-              {t('Source')}
+              {t_i18n('Source')}
             </Typography>
             {stixRelationship.from?.relationship_type}
           </div>
@@ -587,13 +587,13 @@ RelationshipDetailsComponentProps
             gutterBottom={true}
             className={classes.label}
           >
-            {t('Target')}
+            {t_i18n('Target')}
           </Typography>
           {stixRelationship.to?.relationship_type}
         </div>
       )}
       <Typography variant="h3" gutterBottom={true} className={classes.label}>
-        {t('Creation date')}
+        {t_i18n('Creation date')}
       </Typography>
       {fldt(stixRelationship.created_at)}
       {computeNotGenericDetails()}

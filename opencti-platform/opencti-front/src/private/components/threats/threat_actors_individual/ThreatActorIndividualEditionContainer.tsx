@@ -39,7 +39,7 @@ const THREAT_ACTOR_TYPE = 'Threat-Actor-Individual';
 const ThreatActorIndividualEditionContainer: FunctionComponent<
 ThreatActorIndividualEditionContainerProps
 > = ({ handleClose, queryRef, open }) => {
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   const { threatActorIndividual } = usePreloadedQuery<ThreatActorIndividualEditionContainerQuery>(
     ThreatActorIndividualEditionQuery,
     queryRef,
@@ -51,7 +51,7 @@ ThreatActorIndividualEditionContainerProps
   if (threatActorIndividual !== null) {
     return (
       <Drawer
-        title={t('Update a threat actor individual')}
+        title={t_i18n('Update a threat actor individual')}
         variant={open == null ? DrawerVariant.update : undefined}
         context={threatActorIndividual.editContext}
         onClose={handleClose}
@@ -61,10 +61,10 @@ ThreatActorIndividualEditionContainerProps
           <>
             <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
               <Tabs value={currentTab} onChange={handleChangeTab}>
-                <Tab label={t('Overview')} />
-                <Tab label={t('Details')} />
-                <Tab label={t('Demographics')} />
-                <Tab label={t('Biographics')} />
+                <Tab label={t_i18n('Overview')} />
+                <Tab label={t_i18n('Details')} />
+                <Tab label={t_i18n('Demographics')} />
+                <Tab label={t_i18n('Biographics')} />
               </Tabs>
             </Box>
             {currentTab === 0 && (

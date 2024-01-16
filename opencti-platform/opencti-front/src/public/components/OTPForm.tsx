@@ -33,7 +33,7 @@ const logoutMutation = graphql`
 
 const OTPForm = () => {
   const classes = useStyles();
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   const [code, setCode] = useState('');
   const [error, setError] = useState('');
   const [inputDisable, setInputDisable] = useState(false);
@@ -55,7 +55,7 @@ const OTPForm = () => {
       onError: () => {
         setInputDisable(false);
         setCode('');
-        setError(t('The code is not correct'));
+        setError(t_i18n('The code is not correct'));
       },
       onCompleted: () => {
         window.location.reload();
@@ -78,7 +78,7 @@ const OTPForm = () => {
           variant="outlined"
           style={{ margin: '15px 0', justifyContent: 'center' }}
         >
-          {t(
+          {t_i18n(
             'You need to validate your two-factor authentication. Please type the code generated in your application',
           )}
         </Alert>
@@ -97,7 +97,7 @@ const OTPForm = () => {
         onClick={handleLogout}
         style={{ marginTop: 30 }}
       >
-        {t('Cancel')}
+        {t_i18n('Cancel')}
       </Button>
     </div>
   );

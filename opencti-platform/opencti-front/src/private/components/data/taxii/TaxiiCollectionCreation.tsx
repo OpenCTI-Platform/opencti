@@ -82,7 +82,7 @@ const sharedUpdater = (store: RecordSourceSelectorProxy, userId: string, paginat
 };
 
 const TaxiiCollectionCreation: FunctionComponent<TaxiiCollectionCreationProps> = ({ paginationOptions }) => {
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   const classes = useStyles();
   const [filters, helpers] = useFiltersState(emptyFilterGroup);
   const onSubmit: FormikConfig<TaxiiCollectionCreationForm>['onSubmit'] = (values, { setSubmitting, resetForm }) => {
@@ -119,7 +119,7 @@ const TaxiiCollectionCreation: FunctionComponent<TaxiiCollectionCreationProps> =
   };
   return (
     <Drawer
-      title={t('Create a TAXII collection')}
+      title={t_i18n('Create a TAXII collection')}
       variant={DrawerVariant.createWithPanel}
       onClose={helpers.handleClearAllFilters}
     >
@@ -130,7 +130,7 @@ const TaxiiCollectionCreation: FunctionComponent<TaxiiCollectionCreationProps> =
             description: '',
             authorized_members: [],
           }}
-          validationSchema={taxiiCollectionCreationValidation(t('This field is required'))}
+          validationSchema={taxiiCollectionCreationValidation(t_i18n('This field is required'))}
           onSubmit={onSubmit}
           onReset={onClose}
         >
@@ -140,14 +140,14 @@ const TaxiiCollectionCreation: FunctionComponent<TaxiiCollectionCreationProps> =
                 component={TextField}
                 variant="standard"
                 name="name"
-                label={t('Name')}
+                label={t_i18n('Name')}
                 fullWidth={true}
               />
               <Field
                 component={TextField}
                 variant="standard"
                 name="description"
-                label={t('Description')}
+                label={t_i18n('Description')}
                 fullWidth={true}
                 style={{ marginTop: 20 }}
               />
@@ -159,20 +159,20 @@ const TaxiiCollectionCreation: FunctionComponent<TaxiiCollectionCreationProps> =
                 style={{ position: 'relative' }}
               >
                 <AlertTitle>
-                  {t('Make this taxii collection public and available to anyone')}
+                  {t_i18n('Make this taxii collection public and available to anyone')}
                 </AlertTitle>
                 <FormControlLabel
                   control={<Switch />}
                   style={{ marginLeft: 1 }}
                   name="taxii_public"
                   onChange={(_, checked) => setFieldValue('taxii_public', checked)}
-                  label={t('Public collection')}
+                  label={t_i18n('Public collection')}
                 />
                 {!values?.taxii_public && (
                   <ObjectMembersField
                     label={'Accessible for'}
                     style={fieldSpacingContainerStyle}
-                    helpertext={t('Let the field empty to grant all authenticated users')}
+                    helpertext={t_i18n('Let the field empty to grant all authenticated users')}
                     multiple={true}
                     name="authorized_members"
                   />
@@ -222,7 +222,7 @@ const TaxiiCollectionCreation: FunctionComponent<TaxiiCollectionCreationProps> =
                   disabled={isSubmitting}
                   classes={{ root: classes.button }}
                 >
-                  {t('Cancel')}
+                  {t_i18n('Cancel')}
                 </Button>
                 <Button
                   variant="contained"
@@ -231,7 +231,7 @@ const TaxiiCollectionCreation: FunctionComponent<TaxiiCollectionCreationProps> =
                   disabled={!isFilterGroupNotEmpty(filters) || isSubmitting}
                   classes={{ root: classes.button }}
                 >
-                  {t('Create')}
+                  {t_i18n('Create')}
                 </Button>
               </div>
             </Form>

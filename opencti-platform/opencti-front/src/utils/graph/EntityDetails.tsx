@@ -301,7 +301,7 @@ const EntityDetailsComponent: FunctionComponent<
 EntityDetailsComponentProps
 > = ({ queryRef }) => {
   const classes = useStyles();
-  const { t, fldt } = useFormatter();
+  const { t_i18n, fldt } = useFormatter();
   const entity = usePreloadedQuery<EntityDetailsQuery>(
     entityDetailsQuery,
     queryRef,
@@ -324,13 +324,13 @@ EntityDetailsComponentProps
   return (
     <div>
       <Typography variant="h3" gutterBottom={true} className={classes.label}>
-        {t('Value')}
+        {t_i18n('Value')}
       </Typography>
       <Tooltip title={defaultValue(stixCoreObject, true)}>
         <span>{truncate(defaultValue(stixCoreObject), 40)}</span>
       </Tooltip>
       <Typography variant="h3" gutterBottom={true} className={classes.label}>
-        {t('Type')}
+        {t_i18n('Type')}
       </Typography>
       <Chip
         classes={{ root: classes.chipInList }}
@@ -342,14 +342,14 @@ EntityDetailsComponentProps
           color: itemColor(stixCoreObject.entity_type),
           border: `1px solid ${itemColor(stixCoreObject.entity_type)}`,
         }}
-        label={t(`entity_${stixCoreObject.entity_type}`)}
+        label={t_i18n(`entity_${stixCoreObject.entity_type}`)}
       />
       <Typography variant="h3" gutterBottom={true} className={classes.label}>
-        {t('Creation date')}
+        {t_i18n('Creation date')}
       </Typography>
       {fldt(stixCoreObject.created_at)}
       <Typography variant="h3" gutterBottom={true} className={classes.label}>
-        {t('Description')}
+        {t_i18n('Description')}
       </Typography>
       {entityDescription && entityDescription.length > 0 ? (
         <ExpandableMarkdown source={entityDescription} limit={400} />
@@ -363,7 +363,7 @@ EntityDetailsComponentProps
             gutterBottom={true}
             className={classes.label}
           >
-            {t('Confidence level')}
+            {t_i18n('Confidence level')}
           </Typography>
           <FieldOrEmpty source={stixCoreObject.confidence}>
             {stixCoreObject.confidence && (
@@ -376,7 +376,7 @@ EntityDetailsComponentProps
         </div>
       )}
       <Typography variant="h3" gutterBottom={true} className={classes.label}>
-        {t('Marking')}
+        {t_i18n('Marking')}
       </Typography>
       {stixCoreObject.objectMarking?.edges
       && stixCoreObject.objectMarking?.edges.length > 0 ? (
@@ -388,19 +388,19 @@ EntityDetailsComponentProps
           '-'
         )}
       <Typography variant="h3" gutterBottom={true} className={classes.label}>
-        {t('Author')}
+        {t_i18n('Author')}
       </Typography>
       <ItemAuthor createdBy={stixCoreObject.createdBy} />
       <Typography variant="h3" gutterBottom={true} className={classes.label}>
-        {t('Creators')}
+        {t_i18n('Creators')}
       </Typography>
       <ItemCreators creators={stixCoreObject.creators ?? []} />
       <Typography variant="h3" gutterBottom={true} className={classes.label}>
-        {`${t('Last')} ${
+        {`${t_i18n('Last')} ${
           (stixCoreObject.reports?.pageInfo.globalCount ?? 0) >= 10
             ? 10
             : stixCoreObject.reports?.pageInfo.globalCount
-        } ${t('reports')} ${t('of')} ${stixCoreObject.reports?.pageInfo
+        } ${t_i18n('reports')} ${t_i18n('of')} ${stixCoreObject.reports?.pageInfo
           .globalCount}`}
       </Typography>
       {reportsEdges && reportsEdges.length > 0 ? (
@@ -443,7 +443,7 @@ EntityDetailsComponentProps
         '-'
       )}
       <Typography variant="h3" gutterBottom={true} className={classes.label}>
-        {t('External references')}
+        {t_i18n('External references')}
       </Typography>
       {externalReferencesEdges && externalReferencesEdges.length > 0 ? (
         <List style={{ marginBottom: 0 }}>
@@ -465,7 +465,7 @@ EntityDetailsComponentProps
               ) {
                 externalReferenceSecondary = externalReference.node.description;
               } else {
-                externalReferenceSecondary = t('No description');
+                externalReferenceSecondary = t_i18n('No description');
               }
               return (
                 <React.Fragment key={externalReference.node.id}>

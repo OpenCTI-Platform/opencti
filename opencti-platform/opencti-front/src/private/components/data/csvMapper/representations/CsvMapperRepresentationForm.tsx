@@ -67,7 +67,7 @@ CsvMapperRepresentationFormProps
   handleRepresentationErrors,
   prefixLabel,
 }) => {
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   const classes = useStyles();
 
   const formikContext = useFormikContext<CsvMapper>();
@@ -138,7 +138,7 @@ CsvMapperRepresentationFormProps
     const value = selectChangeEvent?.target.value ?? '';
     return availableTypes.filter(
       (type) => type.value.includes(value)
-        || t(`${prefixLabel}${type.label}`).includes(value),
+        || t_i18n(`${prefixLabel}${type.label}`).includes(value),
     );
   };
 
@@ -155,9 +155,9 @@ CsvMapperRepresentationFormProps
         <AccordionSummary expandIcon={<ExpandMoreOutlined />} onClick={toggle}>
           <div className={classes.container}>
             <Typography>
-              {representationLabel(index, representation, t)}
+              {representationLabel(index, representation, t_i18n)}
             </Typography>
-            <Tooltip title={t('Delete')}>
+            <Tooltip title={t_i18n('Delete')}>
               <IconButton color="error" onClick={handleOpenDelete}>
                 <DeleteOutlined fontSize="small" />
               </IconButton>
@@ -170,10 +170,10 @@ CsvMapperRepresentationFormProps
               selectOnFocus
               openOnFocus
               autoHighlight
-              getOptionLabel={(option) => t(`${prefixLabel}${option.label}`)}
-              noOptionsText={t('No available options')}
+              getOptionLabel={(option) => t_i18n(`${prefixLabel}${option.label}`)}
+              noOptionsText={t_i18n('No available options')}
               options={availableTypes}
-              groupBy={(option) => t(option.type) ?? t('Unknown')}
+              groupBy={(option) => t_i18n(option.type) ?? t_i18n('Unknown')}
               value={
                 availableTypes.find(
                   (e) => e.id === representation.target.entity_type,
@@ -184,7 +184,7 @@ CsvMapperRepresentationFormProps
               renderInput={(params) => (
                 <TextField
                   {...params}
-                  label={t('Entity type')}
+                  label={t_i18n('Entity type')}
                   variant="outlined"
                   size="small"
                 />
@@ -195,7 +195,7 @@ CsvMapperRepresentationFormProps
                     <ItemIcon type={option.label} />
                   </div>
                   <div className={classes.text}>
-                    {t(`${prefixLabel}${option.label}`)}
+                    {t_i18n(`${prefixLabel}${option.label}`)}
                   </div>
                 </li>
               )}
@@ -220,14 +220,14 @@ CsvMapperRepresentationFormProps
                 color="error"
                 onClick={handleOpenDelete}
               >
-                {t('Delete')}
+                {t_i18n('Delete')}
               </Button>
             </div>
           </>
         </AccordionDetails>
       </Accordion>
       <DeleteDialog
-        title={t('Do you want to delete this representation?')}
+        title={t_i18n('Do you want to delete this representation?')}
         deletion={deletion}
         submitDelete={onDelete}
       />

@@ -59,11 +59,11 @@ const streamCollectionValidation = (requiredSentence: string) => Yup.object().sh
 
 const StreamCollectionEditionContainer: FunctionComponent<{ streamCollection: StreamCollectionEdition_streamCollection$data }> = ({ streamCollection }) => {
   const classes = useStyles();
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   const initialValues = { ...streamCollection, authorized_members: convertAuthorizedMembers(streamCollection) };
   const [filters, helpers] = useFiltersState(deserializeFilterGroupForFrontend(streamCollection.filters) ?? undefined);
   const handleSubmitField = (name: string, value: Option[] | string) => {
-    streamCollectionValidation(t('This field is required'))
+    streamCollectionValidation(t_i18n('This field is required'))
       .validateAt(name, { [name]: value })
       .then(() => {
         commitMutation({
@@ -82,7 +82,7 @@ const StreamCollectionEditionContainer: FunctionComponent<{ streamCollection: St
       })
       .catch(() => false);
   };
-  const handleSubmitFieldOptions = (name: string, value: Option[]) => streamCollectionValidation(t('This field is required'))
+  const handleSubmitFieldOptions = (name: string, value: Option[]) => streamCollectionValidation(t_i18n('This field is required'))
     .validateAt(name, { [name]: value })
     .then(() => {
       commitMutation({
@@ -125,7 +125,7 @@ const StreamCollectionEditionContainer: FunctionComponent<{ streamCollection: St
       onSubmit={onSubmit}
       enableReinitialize={true}
       initialValues={initialValues}
-      validationSchema={streamCollectionValidation(t('This field is required'))}
+      validationSchema={streamCollectionValidation(t_i18n('This field is required'))}
     >
       {() => (
         <Form style={{ margin: '20px 0 20px 0' }}>
@@ -133,7 +133,7 @@ const StreamCollectionEditionContainer: FunctionComponent<{ streamCollection: St
             component={TextField}
             variant="standard"
             name="name"
-            label={t('Name')}
+            label={t_i18n('Name')}
             fullWidth={true}
             onSubmit={handleSubmitField}
           />
@@ -141,7 +141,7 @@ const StreamCollectionEditionContainer: FunctionComponent<{ streamCollection: St
             component={TextField}
             variant="standard"
             name="description"
-            label={t('Description')}
+            label={t_i18n('Description')}
             fullWidth={true}
             style={{ marginTop: 20 }}
             onSubmit={handleSubmitField}
@@ -154,13 +154,13 @@ const StreamCollectionEditionContainer: FunctionComponent<{ streamCollection: St
             style={{ position: 'relative' }}
           >
             <AlertTitle>
-              {t('Make this stream public and available to anyone')}
+              {t_i18n('Make this stream public and available to anyone')}
             </AlertTitle>
             <FormControlLabel
               control={<Switch defaultChecked={!!initialValues.stream_public} />}
               style={{ marginLeft: 1 }}
               onChange={(_, checked) => handleSubmitField('stream_public', checked.toString())}
-              label={t('Public stream')}
+              label={t_i18n('Public stream')}
             />
             {!initialValues.stream_public && (
               <ObjectMembersField
@@ -168,7 +168,7 @@ const StreamCollectionEditionContainer: FunctionComponent<{ streamCollection: St
                 style={fieldSpacingContainerStyle}
                 onChange={handleSubmitFieldOptions}
                 multiple={true}
-                helpertext={t('Let the field empty to grant all authenticated users')}
+                helpertext={t_i18n('Let the field empty to grant all authenticated users')}
                 name="authorized_members"
               />
             )}

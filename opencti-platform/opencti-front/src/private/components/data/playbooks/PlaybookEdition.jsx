@@ -37,10 +37,10 @@ const playbookValidation = (t) => Yup.object().shape({
 });
 
 const PlaybookEditionContainer = ({ handleClose, playbook, open }) => {
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   const initialValues = R.pickAll(['name', 'description'], playbook);
   const handleSubmitField = (name, value) => {
-    playbookValidation(t)
+    playbookValidation(t_i18n)
       .validateAt(name, { [name]: value })
       .then(() => {
         commitMutation({
@@ -55,14 +55,14 @@ const PlaybookEditionContainer = ({ handleClose, playbook, open }) => {
   };
   return (
     <Drawer
-      title={t('Update a playbook')}
+      title={t_i18n('Update a playbook')}
       open={open}
       onClose={handleClose}
     >
       <Formik
         enableReinitialize={true}
         initialValues={initialValues}
-        validationSchema={playbookValidation(t)}
+        validationSchema={playbookValidation(t_i18n)}
       >
         {() => (
           <Form style={{ margin: '20px 0 20px 0' }}>
@@ -70,7 +70,7 @@ const PlaybookEditionContainer = ({ handleClose, playbook, open }) => {
               component={TextField}
               variant="standard"
               name="name"
-              label={t('Name')}
+              label={t_i18n('Name')}
               fullWidth={true}
               onSubmit={handleSubmitField}
             />
@@ -78,7 +78,7 @@ const PlaybookEditionContainer = ({ handleClose, playbook, open }) => {
               component={TextField}
               variant="standard"
               name="description"
-              label={t('Description')}
+              label={t_i18n('Description')}
               fullWidth={true}
               style={{ marginTop: 20 }}
               onSubmit={handleSubmitField}

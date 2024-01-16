@@ -25,11 +25,11 @@ interface BasicRelationshipDetailsProps {
 }
 const BasicRelationshipDetails: FunctionComponent<BasicRelationshipDetailsProps> = ({ relation }) => {
   const classes = useStyles();
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   return (
     <div>
       <Typography variant="h3" gutterBottom={true} className={classes.label}>
-        {t('Relation type')}
+        {t_i18n('Relation type')}
       </Typography>
       <Chip
         classes={{ root: classes.chipInList }}
@@ -43,7 +43,7 @@ const BasicRelationshipDetails: FunctionComponent<BasicRelationshipDetailsProps>
             relation.relationship_type,
           )}`,
         }}
-        label={t(`relationship_${relation.relationship_type}`)}
+        label={t_i18n(`relationship_${relation.relationship_type}`)}
       />
       {relation.source_id && (
         <RelationShipFromAndTo
@@ -58,7 +58,7 @@ const BasicRelationshipDetails: FunctionComponent<BasicRelationshipDetailsProps>
         />
       )}
       <Typography variant="h3" gutterBottom={true} className={classes.label}>
-        {t('Marking')}
+        {t_i18n('Marking')}
       </Typography>
       {relation.markedBy
         && relation.markedBy.length > 0 ? (

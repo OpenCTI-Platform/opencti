@@ -40,7 +40,7 @@ interface RelayResponseError extends Error {
 const FLASH_COOKIE = 'opencti_flash';
 const LoginForm = () => {
   const classes = useStyles();
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   const [cookies, , removeCookie] = useCookies([FLASH_COOKIE]);
   const flashError = cookies[FLASH_COOKIE] || '';
   removeCookie(FLASH_COOKIE);
@@ -54,7 +54,7 @@ const LoginForm = () => {
         input: values,
       },
       onError: (error: RelayResponseError) => {
-        const errorMessage = t(
+        const errorMessage = t_i18n(
           error.res?.errors?.at?.(0)?.message ?? 'Unknown',
         );
         setErrors({ email: errorMessage });
@@ -76,8 +76,8 @@ const LoginForm = () => {
       <Formik
         initialValues={initialValues}
         initialTouched={{ email: !R.isEmpty(flashError) }}
-        initialErrors={{ email: !R.isEmpty(flashError) ? t(flashError) : '' }}
-        validationSchema={loginValidation(t)}
+        initialErrors={{ email: !R.isEmpty(flashError) ? t_i18n(flashError) : '' }}
+        validationSchema={loginValidation(t_i18n)}
         onSubmit={onSubmit}
       >
         {({ isSubmitting, isValid }) => (
@@ -85,13 +85,13 @@ const LoginForm = () => {
             <Field
               component={TextField}
               name="email"
-              label={t('Login')}
+              label={t_i18n('Login')}
               fullWidth={true}
             />
             <Field
               component={TextField}
               name="password"
-              label={t('Password')}
+              label={t_i18n('Password')}
               type="password"
               fullWidth={true}
               style={{ marginTop: 20 }}
@@ -103,7 +103,7 @@ const LoginForm = () => {
               disabled={isSubmitting || !isValid}
               style={{ marginTop: 30 }}
             >
-              {t('Sign in')}
+              {t_i18n('Sign in')}
             </Button>
           </Form>
         )}

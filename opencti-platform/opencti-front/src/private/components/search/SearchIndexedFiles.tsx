@@ -42,7 +42,7 @@ import { SETTINGS } from '../../../utils/hooks/useGranted';
 
 const LOCAL_STORAGE_KEY = 'view-files';
 const SearchIndexedFilesComponent = () => {
-  const { fd, t } = useFormatter();
+  const { fd, t_i18n } = useFormatter();
   const history = useHistory();
   const {
     platformModuleHelpers: { isFileIndexManagerEnable },
@@ -188,8 +188,8 @@ const SearchIndexedFilesComponent = () => {
             style={{ position: 'relative', marginBottom: 30 }}
           >
             <AlertTitle style={{ marginBottom: 0 }}>
-              {t('File indexing is not started.')}
-              <Security needs={[SETTINGS]} placeholder={<span>&nbsp;{t('Please contact your administrator.')}</span>}>
+              {t_i18n('File indexing is not started.')}
+              <Security needs={[SETTINGS]} placeholder={<span>&nbsp;{t_i18n('Please contact your administrator.')}</span>}>
                 <Button
                   component={Link}
                   size="small"
@@ -198,7 +198,7 @@ const SearchIndexedFilesComponent = () => {
                   variant="outlined"
                   style={{ marginLeft: 20 }}
                 >
-                  {t('Configure file indexing')}
+                  {t_i18n('Configure file indexing')}
                 </Button>
               </Security>
             </AlertTitle>

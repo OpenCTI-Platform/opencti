@@ -26,7 +26,7 @@ const EnterpriseEditionButton = ({
   feature?: string;
   inLine?: boolean;
 }) => {
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   const classes = useStyles();
   const [openEnterpriseEditionConsent, setOpenEnterpriseEditionConsent] = useState(false);
   const [feedbackCreation, setFeedbackCreation] = useState(false);
@@ -55,7 +55,7 @@ const EnterpriseEditionButton = ({
             }),
           }}
         >
-          {t('Enable Enterprise Edition')}
+          {t_i18n('Enable Enterprise Edition')}
         </Button>
       ) : (
         <Button
@@ -65,14 +65,14 @@ const EnterpriseEditionButton = ({
           onClick={() => setFeedbackCreation(true)}
           classes={{ root: classes.button }}
         >
-          {t('Create a feedback')}
+          {t_i18n('Create a feedback')}
         </Button>
       )}
       <FeedbackCreation
         openDrawer={feedbackCreation}
         handleCloseDrawer={() => setFeedbackCreation(false)}
         initialValue={{
-          description: t(
+          description: t_i18n(
             `I would like to use a EE feature ${
               feature ? `(${feature}) ` : ''
             }but I don't have EE activated.\nI would like to discuss with you about activating EE.`,

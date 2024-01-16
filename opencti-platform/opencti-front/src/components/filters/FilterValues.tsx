@@ -71,7 +71,7 @@ const FilterValues: FunctionComponent<FilterValuesProps> = ({
   chipColor,
   noLabelDisplay,
 }) => {
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   const filterKey = currentFilter.key;
   const filterOperator = currentFilter.operator;
   const filterValues = currentFilter.values;
@@ -89,7 +89,7 @@ const FilterValues: FunctionComponent<FilterValuesProps> = ({
           {label}
         </strong>{' '}
         <span>
-          {filterOperator === 'nil' ? t('is empty') : t('is not empty')}
+          {filterOperator === 'nil' ? t_i18n('is empty') : t_i18n('is not empty')}
         </span>
       </>
     );
@@ -111,7 +111,7 @@ const FilterValues: FunctionComponent<FilterValuesProps> = ({
             className={operatorClassName}
             onClick={operatorOnClick}
           >
-            {t((currentFilter.mode ?? 'or').toUpperCase())}
+            {t_i18n((currentFilter.mode ?? 'or').toUpperCase())}
           </div>
         )}
       </Fragment>
@@ -135,7 +135,7 @@ const FilterValues: FunctionComponent<FilterValuesProps> = ({
               const subKey = val.key;
               const keyLabel = (
                 <>
-                  {truncate(t(subKey), 20)}
+                  {truncate(t_i18n(subKey), 20)}
                   <>&nbsp;=</>
                 </>
               );

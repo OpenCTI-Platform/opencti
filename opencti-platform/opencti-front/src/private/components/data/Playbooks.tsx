@@ -43,7 +43,7 @@ const Playbooks: FunctionComponent = () => {
   const classes = useStyles();
 
   const isEnterpriseEdition = useEnterpriseEdition();
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
 
   const { viewStorage, helpers, paginationOptions } = usePaginationLocalStorage<PlaybooksLinesPaginationQuery$variables>(
     LOCAL_STORAGE_KEY_PLAYBOOKS,
@@ -126,7 +126,7 @@ const Playbooks: FunctionComponent = () => {
           </Security>
         </>
       ) : (
-        <EnterpriseEdition feature={t('Playbook')} />
+        <EnterpriseEdition feature={t_i18n('Playbook')} />
       )}
     </div>
   );

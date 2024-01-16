@@ -68,7 +68,7 @@ const IncidentDetails: FunctionComponent<IncidentDetailsProps> = ({
   incidentData,
 }) => {
   const classes = useStyles();
-  const { t, fldt } = useFormatter();
+  const { t_i18n, fldt } = useFormatter();
 
   const incident: IncidentDetails_incident$data = useFragment(
     incidentDetailsFragment,
@@ -122,26 +122,26 @@ const IncidentDetails: FunctionComponent<IncidentDetailsProps> = ({
   return (
     <div style={{ height: '100%' }}>
       <Typography variant="h4" gutterBottom={true}>
-        {t('Details')}
+        {t_i18n('Details')}
       </Typography>
       <Paper classes={{ root: classes.paper }} variant="outlined">
         <Grid container={true} spacing={3}>
           <Grid item={true} xs={6}>
             <Typography variant="h3" gutterBottom={true}>
-              {t('Incident type')}
+              {t_i18n('Incident type')}
             </Typography>
             <Chip
               classes={{ root: classes.chip }}
               color="primary"
               variant="outlined"
-              label={incident.incident_type || t('Unknown')}
+              label={incident.incident_type || t_i18n('Unknown')}
             />
             <Typography
               variant="h3"
               gutterBottom={true}
               style={{ marginTop: 20 }}
             >
-              {t('First seen')}
+              {t_i18n('First seen')}
             </Typography>
             {fldt(incident.first_seen)}
             <Typography
@@ -149,13 +149,13 @@ const IncidentDetails: FunctionComponent<IncidentDetailsProps> = ({
               gutterBottom={true}
               style={{ marginTop: 20 }}
             >
-              {t('Description')}
+              {t_i18n('Description')}
             </Typography>
             <ExpandableMarkdown source={incident.description} limit={400} />
           </Grid>
           <Grid item={true} xs={6}>
             <Typography variant="h3" gutterBottom={true}>
-              {t('Severity')}
+              {t_i18n('Severity')}
             </Typography>
             <ItemOpenVocab
               key="type"
@@ -168,7 +168,7 @@ const IncidentDetails: FunctionComponent<IncidentDetailsProps> = ({
               gutterBottom={true}
               style={{ marginTop: 20 }}
             >
-              {t('Last seen')}
+              {t_i18n('Last seen')}
             </Typography>
             {fldt(incident.last_seen)}
             <Typography
@@ -176,27 +176,27 @@ const IncidentDetails: FunctionComponent<IncidentDetailsProps> = ({
               gutterBottom={true}
               style={{ marginTop: 20 }}
             >
-              {t('Source')}
+              {t_i18n('Source')}
             </Typography>
             <Chip
               classes={{ root: classes.chip2 }}
               color="secondary"
               variant="outlined"
-              label={incident.source || t('Unknown')}
+              label={incident.source || t_i18n('Unknown')}
             />
             <Typography
               variant="h3"
               gutterBottom={true}
               style={{ marginTop: 20 }}
             >
-              {t('Objective')}
+              {t_i18n('Objective')}
             </Typography>
             <ExpandableMarkdown source={incident.objective} limit={100} />
           </Grid>
           <Grid item={true} xs={6}>
             <StixCoreObjectsDonut
               dataSelection={entitiesDataSelection}
-              parameters={{ title: t('Entities distribution') }}
+              parameters={{ title: t_i18n('Entities distribution') }}
               variant="inEntity"
               height={300}
             />
@@ -204,7 +204,7 @@ const IncidentDetails: FunctionComponent<IncidentDetailsProps> = ({
           <Grid item={true} xs={6}>
             <StixCoreObjectsDonut
               dataSelection={observablesDataSelection}
-              parameters={{ title: t('Observables distribution') }}
+              parameters={{ title: t_i18n('Observables distribution') }}
               variant="inEntity"
               height={300}
             />

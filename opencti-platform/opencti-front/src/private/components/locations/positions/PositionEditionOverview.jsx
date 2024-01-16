@@ -81,20 +81,20 @@ const positionMutationRelationDelete = graphql`
 
 const PositionEditionOverviewComponent = (props) => {
   const { position, enableReferences, context, handleClose } = props;
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   const basicShape = {
-    name: Yup.string().min(2).required(t('This field is required')),
-    description: Yup.string().nullable().max(5000, t('The value is too long')),
+    name: Yup.string().min(2).required(t_i18n('This field is required')),
+    description: Yup.string().nullable().max(5000, t_i18n('The value is too long')),
     latitude: Yup.number()
-      .typeError(t('This field must be a number'))
+      .typeError(t_i18n('This field must be a number'))
       .nullable(),
     longitude: Yup.number()
-      .typeError(t('This field must be a number'))
+      .typeError(t_i18n('This field must be a number'))
       .nullable(),
     street_address: Yup.string()
       .nullable()
-      .max(1000, t('The value is too long')),
-    postal_code: Yup.string().nullable().max(1000, t('The value is too long')),
+      .max(1000, t_i18n('The value is too long')),
+    postal_code: Yup.string().nullable().max(1000, t_i18n('The value is too long')),
     references: Yup.array(),
     x_opencti_workflow_id: Yup.object(),
   };
@@ -162,7 +162,7 @@ const PositionEditionOverviewComponent = (props) => {
   const initialValues = R.pipe(
     R.assoc('createdBy', convertCreatedBy(position)),
     R.assoc('objectMarking', convertMarkings(position)),
-    R.assoc('x_opencti_workflow_id', convertStatus(t, position)),
+    R.assoc('x_opencti_workflow_id', convertStatus(t_i18n, position)),
     R.assoc('references', []),
     R.pick([
       'name',
@@ -197,7 +197,7 @@ const PositionEditionOverviewComponent = (props) => {
             component={TextField}
             variant="standard"
             name="name"
-            label={t('Name')}
+            label={t_i18n('Name')}
             fullWidth={true}
             onFocus={editor.changeFocus}
             onSubmit={handleSubmitField}
@@ -208,7 +208,7 @@ const PositionEditionOverviewComponent = (props) => {
           <Field
             component={MarkdownField}
             name="description"
-            label={t('Description')}
+            label={t_i18n('Description')}
             fullWidth={true}
             multiline={true}
             rows="4"
@@ -224,7 +224,7 @@ const PositionEditionOverviewComponent = (props) => {
             variant="standard"
             style={{ marginTop: 20 }}
             name="latitude"
-            label={t('Latitude')}
+            label={t_i18n('Latitude')}
             fullWidth={true}
             onFocus={editor.changeFocus}
             onSubmit={handleSubmitField}
@@ -237,7 +237,7 @@ const PositionEditionOverviewComponent = (props) => {
             variant="standard"
             style={{ marginTop: 20 }}
             name="longitude"
-            label={t('Longitude')}
+            label={t_i18n('Longitude')}
             fullWidth={true}
             onFocus={editor.changeFocus}
             onSubmit={handleSubmitField}
@@ -250,7 +250,7 @@ const PositionEditionOverviewComponent = (props) => {
             variant="standard"
             style={{ marginTop: 20 }}
             name="street_address"
-            label={t('Street address')}
+            label={t_i18n('Street address')}
             fullWidth={true}
             onFocus={editor.changeFocus}
             onSubmit={handleSubmitField}
@@ -263,7 +263,7 @@ const PositionEditionOverviewComponent = (props) => {
             variant="standard"
             style={{ marginTop: 20 }}
             name="postal_code"
-            label={t('Postal code')}
+            label={t_i18n('Postal code')}
             fullWidth={true}
             onFocus={editor.changeFocus}
             onSubmit={handleSubmitField}

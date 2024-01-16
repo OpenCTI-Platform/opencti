@@ -95,7 +95,7 @@ const AlertLiveEdition: FunctionComponent<AlertLiveEditionProps> = ({
   queryRef,
   handleClose,
 }) => {
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   const classes = useStyles();
   const data = usePreloadedQuery<AlertEditionQuery>(
     alertEditionQuery,
@@ -126,7 +126,7 @@ const AlertLiveEdition: FunctionComponent<AlertLiveEditionProps> = ({
     name: string,
     value: Option | string | string[],
   ) => {
-    return liveActivityTriggerValidation(t)
+    return liveActivityTriggerValidation(t_i18n)
       .validateAt(name, { [name]: value })
       .then(() => {
         commitFieldPatch({
@@ -138,7 +138,7 @@ const AlertLiveEdition: FunctionComponent<AlertLiveEditionProps> = ({
       })
       .catch(() => false);
   };
-  const handleSubmitFieldOptions = (name: string, value: { value: string }[]) => liveActivityTriggerValidation(t)
+  const handleSubmitFieldOptions = (name: string, value: { value: string }[]) => liveActivityTriggerValidation(t_i18n)
     .validateAt(name, { [name]: value })
     .then(() => {
       commitFieldPatch({
@@ -228,7 +228,7 @@ const AlertLiveEdition: FunctionComponent<AlertLiveEditionProps> = ({
           <Close fontSize="small" color="primary" />
         </IconButton>
         <Typography variant="h6" classes={{ root: classes.title }}>
-          {t('Update an activity live trigger')}
+          {t_i18n('Update an activity live trigger')}
         </Typography>
         <div className="clearfix" />
       </div>
@@ -244,14 +244,14 @@ const AlertLiveEdition: FunctionComponent<AlertLiveEditionProps> = ({
                 component={TextField}
                 variant="standard"
                 name="name"
-                label={t('Name')}
+                label={t_i18n('Name')}
                 fullWidth={true}
                 onSubmit={handleSubmitField}
               />
               <Field
                 component={MarkdownField}
                 name="description"
-                label={t('Description')}
+                label={t_i18n('Description')}
                 fullWidth={true}
                 multiline={true}
                 rows="4"

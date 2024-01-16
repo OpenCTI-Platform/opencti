@@ -207,7 +207,7 @@ const StixCoreObjectsTreeMap = ({
 }) => {
   const classes = useStyles();
   const theme = useTheme();
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   const renderContent = () => {
     const selection = dataSelection[0];
     const dataSelectionTypes = ['Stix-Core-Object'];
@@ -242,7 +242,7 @@ const StixCoreObjectsTreeMap = ({
               x: selection.attribute.endsWith('_id')
                 ? defaultValue(n.entity)
                 : selection.attribute === 'entity_type'
-                  ? t(`entity_${n.label}`)
+                  ? t_i18n(`entity_${n.label}`)
                   : n.label,
               y: n.value,
             }));
@@ -273,7 +273,7 @@ const StixCoreObjectsTreeMap = ({
                     textAlign: 'center',
                   }}
                 >
-                  {t('No entities of this type has been found.')}
+                  {t_i18n('No entities of this type has been found.')}
                 </span>
               </div>
             );
@@ -304,7 +304,7 @@ const StixCoreObjectsTreeMap = ({
           margin: variant !== 'inLine' ? '0 0 10px 0' : '-10px 0 10px -7px',
         }}
       >
-        {parameters.title || t('Distribution of entities')}
+        {parameters.title || t_i18n('Distribution of entities')}
       </Typography>
       {variant === 'inLine' ? (
         renderContent()

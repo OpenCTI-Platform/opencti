@@ -178,7 +178,7 @@ const aliasValidation = (t) => Yup.object().shape({
 
 const StixDomainObjectHeader = (props) => {
   const classes = useStyles();
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   const {
     stixDomainObject,
     isOpenctiAlias,
@@ -263,7 +263,7 @@ const StixDomainObjectHeader = (props) => {
           references: R.pluck('value', values.references || []),
         },
         setSubmitting,
-        onCompleted: () => MESSAGING$.notifySuccess(t('The alias has been added')),
+        onCompleted: () => MESSAGING$.notifySuccess(t_i18n('The alias has been added')),
       });
     }
     setOpenAlias(false);
@@ -286,7 +286,7 @@ const StixDomainObjectHeader = (props) => {
         commitMessage: data.message,
         references: R.pluck('value', data.references || []),
       },
-      onCompleted: () => MESSAGING$.notifySuccess(t('The alias has been removed')),
+      onCompleted: () => MESSAGING$.notifySuccess(t_i18n('The alias has been removed')),
     });
     setOpenCommitDelete(false);
   };
@@ -334,7 +334,7 @@ const StixDomainObjectHeader = (props) => {
       {typeof onViewAs === 'function' && (
         <>
           <InputLabel classes={{ root: classes.viewAsFieldLabel }}>
-            {t('Display as')}
+            {t_i18n('Display as')}
           </InputLabel>
           <FormControl
             classes={{ root: classes.viewAsField }}
@@ -351,8 +351,8 @@ const StixDomainObjectHeader = (props) => {
               }}
               variant="outlined"
             >
-              <MenuItem value="knowledge">{t('Knowledge entity')}</MenuItem>
-              <MenuItem value="author">{t('Author')}</MenuItem>
+              <MenuItem value="knowledge">{t_i18n('Knowledge entity')}</MenuItem>
+              <MenuItem value="author">{t_i18n('Author')}</MenuItem>
             </Select>
           </FormControl>
         </>
@@ -406,7 +406,7 @@ const StixDomainObjectHeader = (props) => {
             <Formik
               initialValues={{ new_alias: '' }}
               onSubmit={onSubmitCreateAlias}
-              validationSchema={enableReferences ? aliasValidation(t) : null}
+              validationSchema={enableReferences ? aliasValidation(t_i18n) : null}
             >
               {({ submitForm, isSubmitting, setFieldValue, values }) => (
                 <Form style={{ float: 'right' }}>
@@ -415,7 +415,7 @@ const StixDomainObjectHeader = (props) => {
                     variant="standard"
                     name="new_alias"
                     autoFocus={true}
-                    placeholder={t('New alias')}
+                    placeholder={t_i18n('New alias')}
                     className={classes.aliasesInput}
                     onChange={handleChangeNewAlias}
                     value={newAlias}
@@ -509,11 +509,11 @@ const StixDomainObjectHeader = (props) => {
           fullWidth={true}
         >
           <DialogTitle>
-            {t('Entity aliases')}
+            {t_i18n('Entity aliases')}
             <Formik
               initialValues={{ new_alias: '' }}
               onSubmit={onSubmitCreateAlias}
-              validationSchema={enableReferences ? aliasValidation(t) : null}
+              validationSchema={enableReferences ? aliasValidation(t_i18n) : null}
             >
               {({ submitForm, isSubmitting, setFieldValue, values }) => (
                 <Form style={{ float: 'right' }}>
@@ -522,7 +522,7 @@ const StixDomainObjectHeader = (props) => {
                     variant="standard"
                     name="new_alias"
                     autoFocus={true}
-                    placeholder={t('New alias')}
+                    placeholder={t_i18n('New alias')}
                     className={classes.aliasesInput}
                     onChange={handleChangeNewAlias}
                     value={newAlias}
@@ -587,7 +587,7 @@ const StixDomainObjectHeader = (props) => {
               <Formik
                 initialValues={{ new_alias: '' }}
                 onSubmit={onSubmitCreateAlias}
-                validationSchema={enableReferences ? aliasValidation(t) : null}
+                validationSchema={enableReferences ? aliasValidation(t_i18n) : null}
               >
                 {({ submitForm, isSubmitting, setFieldValue, values }) => (
                   <Form>
@@ -597,7 +597,7 @@ const StixDomainObjectHeader = (props) => {
                       name="new_alias"
                       autoFocus={true}
                       fullWidth={true}
-                      placeholder={t('New aliases')}
+                      placeholder={t_i18n('New aliases')}
                       className={classes.aliasesInput}
                       onChange={handleChangeNewAlias}
                       value={newAlias}
@@ -629,7 +629,7 @@ const StixDomainObjectHeader = (props) => {
           </DialogContent>
           <DialogActions>
             <Button onClick={handleToggleOpenAliases} color="primary">
-              {t('Close')}
+              {t_i18n('Close')}
             </Button>
           </DialogActions>
         </Dialog>
@@ -638,7 +638,7 @@ const StixDomainObjectHeader = (props) => {
         <Formik
           initialValues={{}}
           onSubmit={onSubmitDeleteAlias}
-          validationSchema={aliasValidation(t)}
+          validationSchema={aliasValidation(t_i18n)}
         >
           {({ submitForm, isSubmitting, setFieldValue, values }) => (
             <Form style={{ float: 'right' }}>

@@ -158,11 +158,11 @@ interface FeedbackEditionFormValues {
 const FeedbackEditionOverviewComponent: FunctionComponent<
 FeedbackEditionOverviewProps
 > = ({ feedbackRef, context, enableReferences = false, handleClose }) => {
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   const feedbackData = useFragment(feedbackEditionOverviewFragment, feedbackRef);
 
   const basicShape = {
-    name: Yup.string().min(2).required(t('This field is required')),
+    name: Yup.string().min(2).required(t_i18n('This field is required')),
     description: Yup.string().nullable(),
     x_opencti_workflow_id: Yup.object(),
     rating: Yup.number(),
@@ -238,7 +238,7 @@ FeedbackEditionOverviewProps
     createdBy: convertCreatedBy(feedbackData) as Option,
     objectMarking: convertMarkings(feedbackData),
     objectAssignee: convertAssignees(feedbackData),
-    x_opencti_workflow_id: convertStatus(t, feedbackData) as Option,
+    x_opencti_workflow_id: convertStatus(t_i18n, feedbackData) as Option,
   };
   return (
     <Formik
@@ -260,7 +260,7 @@ FeedbackEditionOverviewProps
             component={TextField}
             variant="standard"
             name="name"
-            label={t('Name')}
+            label={t_i18n('Name')}
             fullWidth={true}
             style={fieldSpacingContainerStyle}
             onFocus={editor.changeFocus}
@@ -272,7 +272,7 @@ FeedbackEditionOverviewProps
           <Field
             component={MarkdownField}
             name="description"
-            label={t('Description')}
+            label={t_i18n('Description')}
             fullWidth={true}
             multiline={true}
             rows="4"
@@ -292,7 +292,7 @@ FeedbackEditionOverviewProps
             variant="edit"
           />
           <RatingField
-            label={t('Rating')}
+            label={t_i18n('Rating')}
             rating={feedbackData.rating}
             size="small"
             style={fieldSpacingContainerStyle}

@@ -136,7 +136,7 @@ const StixDomainObjectThreatKnowledge: FunctionComponent<
 StixDomainObjectThreatKnowledgeProps
 > = ({ stixDomainObjectId, stixDomainObjectType, displayObservablesStats }) => {
   const classes = useStyles();
-  const { n, t } = useFormatter();
+  const { n, t_i18n } = useFormatter();
   const [viewType, setViewType] = useState('timeline');
   const [timeField, setTimeField] = useState('technical');
   const [nestedRelationships, setNestedRelationships] = useState(false);
@@ -273,11 +273,11 @@ StixDomainObjectThreatKnowledgeProps
                   const difference = total - props.reportsNumber.count;
                   return (
                     <CardContent>
-                      <div className={classes.title}>{t('Total reports')}</div>
+                      <div className={classes.title}>{t_i18n('Total reports')}</div>
                       <div className={classes.number}>{n(total)}</div>
                       <ItemNumberDifference
                         difference={difference}
-                        description={t('30 days')}
+                        description={t_i18n('30 days')}
                       />
                       <div className={classes.icon}>
                         <DescriptionOutlined color="inherit" fontSize="large" />
@@ -323,13 +323,13 @@ StixDomainObjectThreatKnowledgeProps
                     <CardContent>
                       <div className={classes.title}>
                         {displayObservablesStats
-                          ? t('Total observables')
-                          : t('Total indicators')}
+                          ? t_i18n('Total observables')
+                          : t_i18n('Total indicators')}
                       </div>
                       <div className={classes.number}>{n(total)}</div>
                       <ItemNumberDifference
                         difference={difference}
-                        description={t('30 days')}
+                        description={t_i18n('30 days')}
                       />
                       <div className={classes.icon}>
                         {displayObservablesStats ? (
@@ -378,12 +378,12 @@ StixDomainObjectThreatKnowledgeProps
                   return (
                     <CardContent>
                       <div className={classes.title}>
-                        {t('Total relations')}
+                        {t_i18n('Total relations')}
                       </div>
                       <div className={classes.number}>{n(total)}</div>
                       <ItemNumberDifference
                         difference={difference}
-                        description={t('30 days')}
+                        description={t_i18n('30 days')}
                       />
                       <div className={classes.icon}>
                         <DeviceHubOutlined color="inherit" fontSize="large" />
@@ -406,7 +406,7 @@ StixDomainObjectThreatKnowledgeProps
           <StixCoreObjectReportsHorizontalBars
             stixCoreObjectId={stixDomainObjectId}
             field="created-by.internal_id"
-            title={t('Distribution of sources')}
+            title={t_i18n('Distribution of sources')}
           />
         </Grid>
         <Grid item={true} xs={6} style={{ marginBottom: 20 }}>
@@ -414,7 +414,7 @@ StixDomainObjectThreatKnowledgeProps
             stixCoreObjectId={stixDomainObjectId}
             stixCoreObjectType="Stix-Core-Object"
             relationshipType="stix-core-relationship"
-            title={t('Distribution of relations')}
+            title={t_i18n('Distribution of relations')}
             field="entity_type"
             noDirection={true}
           />
@@ -427,8 +427,8 @@ StixDomainObjectThreatKnowledgeProps
         onChange={(_, value) => handleChangeViewType(value)}
         style={{ float: 'left' }}
       >
-        <Tab label={t('Timeline')} value="timeline" />
-        <Tab label={t('Global kill chain')} value="killchain" />
+        <Tab label={t_i18n('Timeline')} value="timeline" />
+        <Tab label={t_i18n('Global kill chain')} value="killchain" />
       </Tabs>
       <div className={classes.filters}>
         <Filters
@@ -462,15 +462,15 @@ StixDomainObjectThreatKnowledgeProps
           elevation={1}
         >
           <FormControl style={{ width: '100%' }}>
-            <InputLabel id="timeField">{t('Date reference')}</InputLabel>
+            <InputLabel id="timeField">{t_i18n('Date reference')}</InputLabel>
             <Select
               labelId="timeField"
               value={timeField === null ? '' : timeField}
               onChange={handleChangeTimeField}
               fullWidth={true}
             >
-              <MenuItem value="technical">{t('Technical date')}</MenuItem>
-              <MenuItem value="functional">{t('Functional date')}</MenuItem>
+              <MenuItem value="technical">{t_i18n('Technical date')}</MenuItem>
+              <MenuItem value="functional">{t_i18n('Functional date')}</MenuItem>
             </Select>
           </FormControl>
           <FormControlLabel
@@ -483,7 +483,7 @@ StixDomainObjectThreatKnowledgeProps
                 color="primary"
               />
             }
-            label={t('Display nested relationships')}
+            label={t_i18n('Display nested relationships')}
           />
         </Popover>
       </div>
@@ -491,7 +491,7 @@ StixDomainObjectThreatKnowledgeProps
         <ExportButtons
           domElementId="container"
           name={
-            viewType === 'killchain' ? t('Global kill chain') : t('Timeline')
+            viewType === 'killchain' ? t_i18n('Global kill chain') : t_i18n('Timeline')
           }
         />
       </div>

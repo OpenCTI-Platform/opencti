@@ -26,12 +26,12 @@ export const countryEditionQuery = graphql`
 `;
 
 const CountryEditionContainer: FunctionComponent<CountryEditionContainerProps> = ({ handleClose, queryRef, open }) => {
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   const { country } = usePreloadedQuery(countryEditionQuery, queryRef);
   if (country) {
     return (
       <Drawer
-        title={t('Update an country')}
+        title={t_i18n('Update an country')}
         variant={open == null ? DrawerVariant.update : undefined}
         context={country.editContext}
         onClose={handleClose}

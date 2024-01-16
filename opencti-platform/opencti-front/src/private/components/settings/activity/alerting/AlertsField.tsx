@@ -81,7 +81,7 @@ const AlertsField: FunctionComponent<TriggersFieldProps> = ({
   paginationOptions,
 }) => {
   const classes = useStyles();
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   const [triggerCreation, setTriggerCreation] = useState(false);
   const [triggers, setTriggers] = useState<
   {
@@ -142,11 +142,11 @@ const AlertsField: FunctionComponent<TriggersFieldProps> = ({
         multiple={true}
         textfieldprops={{
           variant: 'standard',
-          label: t('Triggers'),
+          label: t_i18n('Triggers'),
           helperText: helpertext,
           onFocus: searchTriggers,
         }}
-        noOptionsText={t('No available options')}
+        noOptionsText={t_i18n('No available options')}
         options={triggers}
         onInputChange={searchTriggers}
         openCreate={handleOpenTriggerCreation}

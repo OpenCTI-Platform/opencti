@@ -38,7 +38,7 @@ const StixCoreObjectOrStixCoreRelationshipContainers = ({
   onChangeOpenExports,
   reportType,
 }) => {
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   const classes = useStyles();
   const {
     platformModuleHelpers: { isRuntimeFieldEnable },
@@ -227,7 +227,7 @@ const StixCoreObjectOrStixCoreRelationshipContainers = ({
             {numberOfElements && (
             <div>
               <strong>{`${numberOfElements.number}${numberOfElements.symbol}`}</strong>{' '}
-              {t('entitie(s)')}
+              {t_i18n('entitie(s)')}
             </div>
             )}
             <ToggleButtonGroup
@@ -244,12 +244,12 @@ const StixCoreObjectOrStixCoreRelationshipContainers = ({
               }}
             >
               <ToggleButton value="lines" aria-label="lines">
-                <Tooltip title={t('Lines view')}>
+                <Tooltip title={t_i18n('Lines view')}>
                   <ViewListOutlined fontSize="small" color="primary" />
                 </Tooltip>
               </ToggleButton>
               <ToggleButton value="graph" aria-label="graph">
-                <Tooltip title={t('Graph view')}>
+                <Tooltip title={t_i18n('Graph view')}>
                   <VectorPolygon fontSize="small" />
                 </Tooltip>
               </ToggleButton>
@@ -258,7 +258,7 @@ const StixCoreObjectOrStixCoreRelationshipContainers = ({
                 aria-label="export"
                 disabled={true}
               >
-                <Tooltip title={t('Open export panel')}>
+                <Tooltip title={t_i18n('Open export panel')}>
                   <FileDownloadOutlined fontSize="small" />
                 </Tooltip>
               </ToggleButton>

@@ -164,20 +164,20 @@ const InfrastructureEditionOverviewComponent: FunctionComponent<InfrastructureEd
   enableReferences,
   handleClose,
 }) => {
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   const infrastructure = useFragment(infrastructureEditionOverviewFragment, infrastructureData);
 
   const basicShape = {
-    name: Yup.string().min(2).required(t('This field is required')),
+    name: Yup.string().min(2).required(t_i18n('This field is required')),
     description: Yup.string().nullable(),
     infrastructure_types: Yup.array().nullable(),
     confidence: Yup.number().nullable(),
     first_seen: Yup.date()
       .nullable()
-      .typeError(t('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)')),
+      .typeError(t_i18n('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)')),
     last_seen: Yup.date()
       .nullable()
-      .typeError(t('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)')),
+      .typeError(t_i18n('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)')),
     references: Yup.array(),
     x_opencti_workflow_id: Yup.object(),
   };
@@ -255,7 +255,7 @@ const InfrastructureEditionOverviewComponent: FunctionComponent<InfrastructureEd
     createdBy: convertCreatedBy(infrastructure) as Option,
     objectMarking: convertMarkings(infrastructure),
     killChainPhases: convertKillChainPhases(infrastructure),
-    x_opencti_workflow_id: convertStatus(t, infrastructure) as Option,
+    x_opencti_workflow_id: convertStatus(t_i18n, infrastructure) as Option,
     confidence: infrastructure.confidence,
     first_seen: buildDate(infrastructure.first_seen),
     last_seen: buildDate(infrastructure.last_seen),
@@ -282,7 +282,7 @@ const InfrastructureEditionOverviewComponent: FunctionComponent<InfrastructureEd
             component={TextField}
             variant="standard"
             name="name"
-            label={t('Name')}
+            label={t_i18n('Name')}
             fullWidth={true}
             onFocus={editor.changeFocus}
             onSubmit={handleSubmitField}
@@ -291,7 +291,7 @@ const InfrastructureEditionOverviewComponent: FunctionComponent<InfrastructureEd
             }
           />
           <OpenVocabField
-            label={t('Infrastructure types')}
+            label={t_i18n('Infrastructure types')}
             type="infrastructure_type_ov"
             name="infrastructure_types"
             onSubmit={handleSubmitField}
@@ -315,7 +315,7 @@ const InfrastructureEditionOverviewComponent: FunctionComponent<InfrastructureEd
             onFocus={editor.changeFocus}
             onChange={editor.changeField}
             TextFieldProps={{
-              label: t('First seen'),
+              label: t_i18n('First seen'),
               variant: 'standard',
               fullWidth: true,
               style: { marginTop: 20 },
@@ -330,7 +330,7 @@ const InfrastructureEditionOverviewComponent: FunctionComponent<InfrastructureEd
             onFocus={editor.changeFocus}
             onChange={editor.changeField}
             TextFieldProps={{
-              label: t('Last seen'),
+              label: t_i18n('Last seen'),
               variant: 'standard',
               fullWidth: true,
               style: { marginTop: 20 },
@@ -354,7 +354,7 @@ const InfrastructureEditionOverviewComponent: FunctionComponent<InfrastructureEd
           <Field
             component={MarkdownField}
             name="description"
-            label={t('Description')}
+            label={t_i18n('Description')}
             fullWidth={true}
             multiline={true}
             rows="4"

@@ -19,7 +19,7 @@ const CapabilitiesList: FunctionComponent<CapabilitiesListProps> = ({
   queryRef,
   role,
 }) => {
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   const roleCapabilities = (role.capabilities ?? []).map((n) => ({
     name: n?.name,
   })) as { name: string }[];
@@ -54,7 +54,7 @@ const CapabilitiesList: FunctionComponent<CapabilitiesListProps> = ({
                 <ListItemIcon style={{ minWidth: 32 }}>
                   <ItemIcon type="Capability" />
                 </ListItemIcon>
-                <ListItemText primary={t(capability.description)} />
+                <ListItemText primary={t_i18n(capability.description)} />
               </ListItem>
             );
           }

@@ -23,7 +23,7 @@ const useStyles = makeStyles<Theme>((theme) => ({
 const TopMenuAnalyses = () => {
   const classes = useStyles();
   const location = useLocation();
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   return (
     <div>
       {!useIsHiddenEntity('Report') && (
@@ -39,7 +39,7 @@ const TopMenuAnalyses = () => {
           classes={{ root: classes.button }}
         >
           <DescriptionOutlined className={classes.icon} fontSize="small" />
-          {t('Reports')}
+          {t_i18n('Reports')}
         </Button>
       )}
       {!useIsHiddenEntity('Grouping') && (
@@ -55,7 +55,7 @@ const TopMenuAnalyses = () => {
           classes={{ root: classes.button }}
         >
           <WorkspacesOutlined className={classes.icon} fontSize="small" />
-          {t('Groupings')}
+          {t_i18n('Groupings')}
         </Button>
       )}
       {!useIsHiddenEntity('Malware-Analysis') && (
@@ -71,7 +71,7 @@ const TopMenuAnalyses = () => {
           classes={{ root: classes.button }}
         >
           <BiotechOutlined className={classes.icon} fontSize="small" />
-          {t('Malware analyses')}
+          {t_i18n('Malware analyses')}
         </Button>
       )}
       {!useIsHiddenEntity('Note') && (
@@ -86,7 +86,7 @@ const TopMenuAnalyses = () => {
           classes={{ root: classes.button }}
         >
           <SubjectOutlined className={classes.icon} fontSize="small" />
-          {t('Notes')}
+          {t_i18n('Notes')}
         </Button>
       )}
       <Button
@@ -101,7 +101,7 @@ const TopMenuAnalyses = () => {
         classes={{ root: classes.button }}
       >
         <LocalOfferOutlined className={classes.icon} fontSize="small" />
-        {t('External references')}
+        {t_i18n('External references')}
       </Button>
     </div>
   );

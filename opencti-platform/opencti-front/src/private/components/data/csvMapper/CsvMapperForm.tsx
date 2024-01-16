@@ -61,7 +61,7 @@ interface CsvMapperFormProps {
 }
 
 const CsvMapperForm: FunctionComponent<CsvMapperFormProps> = ({ csvMapper, onSubmit }) => {
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   const classes = useStyles();
 
   // -- INIT --
@@ -159,7 +159,7 @@ const CsvMapperForm: FunctionComponent<CsvMapperFormProps> = ({ csvMapper, onSub
       <Formik<CsvMapper>
         enableReinitialize
         initialValues={csvMapper}
-        validationSchema={csvMapperValidation(t)}
+        validationSchema={csvMapperValidation(t_i18n)}
         onSubmit={onSubmit}
       >
         {({ submitForm, isSubmitting, setFieldValue, values }) => {
@@ -176,7 +176,7 @@ const CsvMapperForm: FunctionComponent<CsvMapperFormProps> = ({ csvMapper, onSub
                 component={TextField}
                 variant="standard"
                 name="name"
-                label={t('Name')}
+                label={t_i18n('Name')}
                 fullWidth
               />
               <div className={classNames(classes.center, classes.marginTop)}>
@@ -184,10 +184,10 @@ const CsvMapperForm: FunctionComponent<CsvMapperFormProps> = ({ csvMapper, onSub
                   component={SwitchField}
                   type="checkbox"
                   name="has_header"
-                  label={t('My CSV file contains headers')}
+                  label={t_i18n('My CSV file contains headers')}
                 />
                 <Tooltip
-                  title={t(
+                  title={t_i18n(
                     'If this option is selected, we will skip the first line of your csv file',
                   )}
                 >
@@ -199,7 +199,7 @@ const CsvMapperForm: FunctionComponent<CsvMapperFormProps> = ({ csvMapper, onSub
                 </Tooltip>
               </div>
               <div className={classes.marginTop}>
-                <Typography>{t('CSV separator')}</Typography>
+                <Typography>{t_i18n('CSV separator')}</Typography>
                 <div className={classes.center}>
                   <Field
                     checked={values.separator !== ';'} // if unset, this is the default option
@@ -211,7 +211,7 @@ const CsvMapperForm: FunctionComponent<CsvMapperFormProps> = ({ csvMapper, onSub
                     onChange={(event: SelectChangeEvent) => setFieldValue('separator', event.target.value)
                     }
                   />
-                  <Typography>{t('Comma')}</Typography>
+                  <Typography>{t_i18n('Comma')}</Typography>
                 </div>
                 <div className={classes.center}>
                   <Field
@@ -224,7 +224,7 @@ const CsvMapperForm: FunctionComponent<CsvMapperFormProps> = ({ csvMapper, onSub
                     onChange={(event: SelectChangeEvent) => setFieldValue('separator', event.target.value)
                     }
                   />
-                  <Typography>{t('Semicolon')}</Typography>
+                  <Typography>{t_i18n('Semicolon')}</Typography>
                 </div>
               </div>
               <div className={classes.center}>
@@ -232,11 +232,11 @@ const CsvMapperForm: FunctionComponent<CsvMapperFormProps> = ({ csvMapper, onSub
                   component={TextField}
                   name="skipLineChar"
                   value={values.skipLineChar}
-                  label={t('Char to escape line')}
+                  label={t_i18n('Char to escape line')}
                   onChange={(event: SelectChangeEvent) => setFieldValue('skipLineChar', event.target.value)}
                 />
                 <Tooltip
-                  title={t(
+                  title={t_i18n(
                     'Every line that begins with this character will be skipped during parsing (for example: #).',
                   )}
                 >
@@ -252,7 +252,7 @@ const CsvMapperForm: FunctionComponent<CsvMapperFormProps> = ({ csvMapper, onSub
                   variant="h3"
                   gutterBottom
                 >
-                  {t('Representations for entity')}
+                  {t_i18n('Representations for entity')}
                 </Typography>
                 <IconButton
                   color="secondary"
@@ -283,7 +283,7 @@ const CsvMapperForm: FunctionComponent<CsvMapperFormProps> = ({ csvMapper, onSub
                   variant="h3"
                   gutterBottom
                 >
-                  {t('Representations for relationship')}
+                  {t_i18n('Representations for relationship')}
                 </Typography>
                 <IconButton
                   color="secondary"
@@ -317,7 +317,7 @@ const CsvMapperForm: FunctionComponent<CsvMapperFormProps> = ({ csvMapper, onSub
                   classes={{ root: classes.button }}
                   disabled={hasError}
                 >
-                  {t('Test')}
+                  {t_i18n('Test')}
                 </Button>
                 <Button
                   variant="contained"
@@ -326,7 +326,7 @@ const CsvMapperForm: FunctionComponent<CsvMapperFormProps> = ({ csvMapper, onSub
                   disabled={isSubmitting}
                   classes={{ root: classes.button }}
                 >
-                  {csvMapper.id ? t('Update') : t('Create')}
+                  {csvMapper.id ? t_i18n('Update') : t_i18n('Create')}
                 </Button>
               </div>
               <CsvMapperTestDialog

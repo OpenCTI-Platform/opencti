@@ -53,7 +53,7 @@ const attackPatternValidation = () => Yup.object().shape({
 
 const AttackPatternEditionDetailsComponent = (props) => {
   const { attackPattern, enableReferences, context, handleClose } = props;
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
 
   const handleChangeFocus = (name) => commitMutation({
     mutation: attackPatternEditionDetailsFocus,
@@ -148,7 +148,7 @@ const AttackPatternEditionDetailsComponent = (props) => {
       }) => (
         <Form style={{ margin: '20px 0 20px 0' }}>
           <OpenVocabField
-            label={t('Platforms')}
+            label={t_i18n('Platforms')}
             type="platforms_ov"
             name="x_mitre_platforms"
             variant={'edit'}
@@ -159,7 +159,7 @@ const AttackPatternEditionDetailsComponent = (props) => {
             editContext={context}
           />
           <OpenVocabField
-            label={t('Required permissions')}
+            label={t_i18n('Required permissions')}
             type="permissions-ov"
             name="x_mitre_permissions_required"
             onSubmit={handleSubmitField}
@@ -172,7 +172,7 @@ const AttackPatternEditionDetailsComponent = (props) => {
           <Field
             component={TextField}
             name="x_mitre_detection"
-            label={t('Detection')}
+            label={t_i18n('Detection')}
             fullWidth={true}
             multiline={true}
             rows="4"

@@ -31,7 +31,7 @@ export interface MenuEntry {
 
 const NavToolbarMenu: FunctionComponent<{ entries: MenuEntry[] }> = ({ entries }) => {
   const classes = useStyles();
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   const location = useLocation();
   const { bannerSettings } = useAuth();
   const bannerHeight = bannerSettings.bannerHeightNumber;
@@ -55,7 +55,7 @@ const NavToolbarMenu: FunctionComponent<{ entries: MenuEntry[] }> = ({ entries }
                   {entry.icon}
                 </ListItemIcon>
               )}
-              <ListItemText primary={t(entry.label)} />
+              <ListItemText primary={t_i18n(entry.label)} />
             </MenuItem>
           );
         })}

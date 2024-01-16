@@ -202,7 +202,7 @@ const EntityStixCoreRelationshipsHorizontalBars = (
     variant,
   },
 ) => {
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   const classes = useStyles();
   const theme = useTheme();
   const navigate = useNavigate();
@@ -238,7 +238,7 @@ const EntityStixCoreRelationshipsHorizontalBars = (
                 field === 'internal_id'
                   ? n.entity.name
                   : field === 'entity_type'
-                    ? t(`entity_${n.label}`)
+                    ? t_i18n(`entity_${n.label}`)
                     : n.label,
               y: n.value,
               fillColor:
@@ -248,7 +248,7 @@ const EntityStixCoreRelationshipsHorizontalBars = (
             }));
             const chartData = [
               {
-                name: seriesName || t('Number of relationships'),
+                name: seriesName || t_i18n('Number of relationships'),
                 data,
               },
             ];
@@ -286,7 +286,7 @@ const EntityStixCoreRelationshipsHorizontalBars = (
                     textAlign: 'center',
                   }}
                 >
-                  {t('No entities of this type has been found.')}
+                  {t_i18n('No entities of this type has been found.')}
                 </span>
               </div>
             );
@@ -324,7 +324,7 @@ const EntityStixCoreRelationshipsHorizontalBars = (
                 : '-10px 0 10px -7px',
         }}
       >
-        {title || t('StixDomainObjects distribution')}
+        {title || t_i18n('StixDomainObjects distribution')}
       </Typography>
       {variant === 'inLine' || variant === 'inEntity' ? (
         renderContent()

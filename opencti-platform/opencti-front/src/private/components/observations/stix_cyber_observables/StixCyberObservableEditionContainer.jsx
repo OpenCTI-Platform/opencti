@@ -30,7 +30,7 @@ const useStyles = makeStyles((theme) => ({
 
 const StixCyberObservableEditionContainer = (props) => {
   const classes = useStyles();
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
 
   const { handleClose, stixCyberObservable } = props;
   const { editContext } = stixCyberObservable;
@@ -48,7 +48,7 @@ const StixCyberObservableEditionContainer = (props) => {
           <Close fontSize="small" color="primary" />
         </IconButton>
         <Typography variant="h6" classes={{ root: classes.title }}>
-          {t('Update an observable')}
+          {t_i18n('Update an observable')}
         </Typography>
         <SubscriptionAvatars context={editContext} />
         <div className="clearfix" />

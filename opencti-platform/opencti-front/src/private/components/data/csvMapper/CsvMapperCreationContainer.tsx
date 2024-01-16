@@ -11,11 +11,11 @@ interface CsvMapperCreationProps {
 const CsvMapperCreationContainer: FunctionComponent<CsvMapperCreationProps> = ({
   paginationOptions,
 }) => {
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
 
   return (
     <Drawer
-      title={t('Create a csv mapper')}
+      title={t_i18n('Create a csv mapper')}
       variant={DrawerVariant.createWithPanel}
     >
       <CsvMapperCreation paginationOptions={paginationOptions} />

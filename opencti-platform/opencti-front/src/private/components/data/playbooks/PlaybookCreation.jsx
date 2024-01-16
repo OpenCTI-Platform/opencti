@@ -50,7 +50,7 @@ const playbookCreationValidation = (t) => Yup.object().shape({
 
 const PlaybookCreation = ({ paginationOptions }) => {
   const classes = useStyles();
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   const onSubmit = (values, { setSubmitting, resetForm }) => {
     commitMutation({
       mutation: PlaybookCreationMutation,
@@ -74,7 +74,7 @@ const PlaybookCreation = ({ paginationOptions }) => {
   };
   return (
     <Drawer
-      title={t('Create a playbook')}
+      title={t_i18n('Create a playbook')}
       variant={DrawerVariant.createWithPanel}
     >
       {({ onClose }) => (
@@ -83,7 +83,7 @@ const PlaybookCreation = ({ paginationOptions }) => {
             name: '',
             description: '',
           }}
-          validationSchema={playbookCreationValidation(t)}
+          validationSchema={playbookCreationValidation(t_i18n)}
           onSubmit={(values, formikHelpers) => {
             onSubmit(values, formikHelpers);
             onClose();
@@ -96,14 +96,14 @@ const PlaybookCreation = ({ paginationOptions }) => {
                 component={TextField}
                 variant="standard"
                 name="name"
-                label={t('Name')}
+                label={t_i18n('Name')}
                 fullWidth={true}
               />
               <Field
                 component={TextField}
                 variant="standard"
                 name="description"
-                label={t('Description')}
+                label={t_i18n('Description')}
                 fullWidth={true}
                 style={{ marginTop: 20 }}
               />
@@ -114,7 +114,7 @@ const PlaybookCreation = ({ paginationOptions }) => {
                   disabled={isSubmitting}
                   classes={{ root: classes.button }}
                 >
-                  {t('Cancel')}
+                  {t_i18n('Cancel')}
                 </Button>
                 <Button
                   variant="contained"
@@ -123,7 +123,7 @@ const PlaybookCreation = ({ paginationOptions }) => {
                   disabled={isSubmitting}
                   classes={{ root: classes.button }}
                 >
-                  {t('Create')}
+                  {t_i18n('Create')}
                 </Button>
               </div>
             </Form>

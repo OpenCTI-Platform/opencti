@@ -121,7 +121,7 @@ const CaseTasksLines: FunctionComponent<CaseTasksLinesProps> = ({
   containerRef,
 }) => {
   const classes = useStyles();
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   const [open, setOpen] = useState(false);
   const [openCaseTemplate, setOpenCaseTemplate] = useState(false);
   const handleOpen = () => setOpen(true);
@@ -141,9 +141,9 @@ const CaseTasksLines: FunctionComponent<CaseTasksLinesProps> = ({
         gutterBottom={true}
         style={{ float: 'left', paddingBottom: 11 }}
       >
-        {t('Tasks')}
+        {t_i18n('Tasks')}
       </Typography>
-      <Tooltip title={t('Add a task to this container')}>
+      <Tooltip title={t_i18n('Add a task to this container')}>
         <IconButton
           color="secondary"
           aria-label="Add"
@@ -154,7 +154,7 @@ const CaseTasksLines: FunctionComponent<CaseTasksLinesProps> = ({
           <AddOutlined fontSize="small"/>
         </IconButton>
       </Tooltip>
-      <Tooltip title={t('Apply a new case template')}>
+      <Tooltip title={t_i18n('Apply a new case template')}>
         <IconButton
           color="secondary"
           aria-label="Apply"
@@ -172,7 +172,7 @@ const CaseTasksLines: FunctionComponent<CaseTasksLinesProps> = ({
         fullWidth={true}
         maxWidth="md"
       >
-        <DialogTitle>{t('Apply case templates')}</DialogTitle>
+        <DialogTitle>{t_i18n('Apply case templates')}</DialogTitle>
         <DialogContent>
           <Formik
             initialValues={{ caseTemplates: [] }}
@@ -216,7 +216,7 @@ const CaseTasksLines: FunctionComponent<CaseTasksLinesProps> = ({
                     disabled={isSubmitting}
                     classes={{ root: classes.button }}
                   >
-                    {t('Cancel')}
+                    {t_i18n('Cancel')}
                   </Button>
                   <Button
                     color="secondary"
@@ -224,7 +224,7 @@ const CaseTasksLines: FunctionComponent<CaseTasksLinesProps> = ({
                     disabled={isSubmitting}
                     classes={{ root: classes.button }}
                   >
-                    {t('Apply')}
+                    {t_i18n('Apply')}
                   </Button>
                 </div>
               </Form>
@@ -234,7 +234,7 @@ const CaseTasksLines: FunctionComponent<CaseTasksLinesProps> = ({
       </Dialog>
       <Drawer
         open={open}
-        title={t('Create a task')}
+        title={t_i18n('Create a task')}
         onClose={handleClose}
       >
         <CaseTaskCreation

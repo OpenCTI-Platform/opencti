@@ -41,7 +41,7 @@ const ContentKnowledgeTimeLineBar = ({
   handleSwitchFilterGlobalMode,
 }) => {
   const classes = useStyles();
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   const [navOpen, setNavOpen] = useState(
     localStorage.getItem('navOpen') === 'true',
   );
@@ -95,8 +95,8 @@ const ContentKnowledgeTimeLineBar = ({
                 <Tooltip
                   title={
                                         timeLineDisplayRelationships
-                                          ? t('Do not display relationships')
-                                          : t('Display relationships')
+                                          ? t_i18n('Do not display relationships')
+                                          : t_i18n('Display relationships')
                                     }
                 >
                   <span>
@@ -112,8 +112,8 @@ const ContentKnowledgeTimeLineBar = ({
                 <Tooltip
                   title={
                                         timeLineFunctionalDate
-                                          ? t('Use technical dates')
-                                          : t('Use functional dates')
+                                          ? t_i18n('Use technical dates')
+                                          : t_i18n('Use functional dates')
                                     }
                 >
                   <span>

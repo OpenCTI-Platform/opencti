@@ -125,13 +125,13 @@ const dataColumns: DataColumns = {
 
 const PublicFeedLine = ({ node }: { node: PublicFeedLines_node$key }) => {
   const classes = useStyles();
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   const feed = useFragment(publicFeedLinesFragment, node);
   const browseClick = () => {
     window.location.pathname = `/feeds/${feed.id}`;
   };
   const copyClick = () => {
-    copyToClipboard(t, `${window.location.origin}/feeds/${feed.id}`);
+    copyToClipboard(t_i18n, `${window.location.origin}/feeds/${feed.id}`);
   };
   return (
     <ListItem classes={{ root: classes.item }} color="primary" divider={true}>
@@ -147,21 +147,21 @@ const PublicFeedLine = ({ node }: { node: PublicFeedLines_node$key }) => {
                 className={classes.bodyItem}
                 style={{ width: value.width }}
               >
-                {value.render?.(feed, { t, classes })}
+                {value.render?.(feed, { t: t_i18n, classes })}
               </div>
             ))}
           </div>
         }
       />
       <ListItemSecondaryAction>
-        <Tooltip title={t('Copy uri to clipboard for your csv client')}>
+        <Tooltip title={t_i18n('Copy uri to clipboard for your csv client')}>
           <span>
             <IconButton onClick={copyClick} size="large" color="primary">
               <ContentCopy />
             </IconButton>
           </span>
         </Tooltip>
-        <Tooltip title={t('Access CSV feeds directly in your browser')}>
+        <Tooltip title={t_i18n('Access CSV feeds directly in your browser')}>
           <span>
             <IconButton onClick={browseClick} size="large" color="primary">
               <OpenInNew />
@@ -178,11 +178,11 @@ const PublicFeedLines = () => {
     publicFeedLinesQuery,
     queryRef,
   );
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   return feeds && feeds.edges.length > 0 ? (
     <>
       <Typography variant="h2" gutterBottom={true}>
-        {t('Public CSV feeds')}
+        {t_i18n('Public CSV feeds')}
       </Typography>
       <ListLines dataColumns={dataColumns} secondaryAction={true}>
         <ListLinesContent
@@ -198,7 +198,7 @@ const PublicFeedLines = () => {
   ) : (
     <>
       <Typography variant="h2" gutterBottom={true}>
-        {t('Public CSV feeds')}
+        {t_i18n('Public CSV feeds')}
       </Typography>
       <Typography
         variant="h5"
@@ -206,7 +206,7 @@ const PublicFeedLines = () => {
         color={'error'}
         style={{ marginTop: 20 }}
       >
-        {t('No available public CSV feeds on this platform')}
+        {t_i18n('No available public CSV feeds on this platform')}
       </Typography>
     </>
   );

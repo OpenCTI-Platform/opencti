@@ -28,7 +28,7 @@ const useStyles = makeStyles<Theme>((theme) => ({
 }));
 
 const TopMenuData = () => {
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   const classes = useStyles();
   const location = useLocation();
   const { platformModuleHelpers } = useAuth();
@@ -51,7 +51,7 @@ const TopMenuData = () => {
           variant={getVariant('/dashboard/data/entities')}
           classes={{ root: classes.button }}
         >
-          {t('Entities')}
+          {t_i18n('Entities')}
         </Button>
       )}
       {isKnowledgeReader && (
@@ -62,7 +62,7 @@ const TopMenuData = () => {
           variant={getVariant('/dashboard/data/relationships')}
           classes={{ root: classes.button }}
         >
-          {t('Relationships')}
+          {t_i18n('Relationships')}
         </Button>
       )}
       {isSettingsManager && (
@@ -73,7 +73,7 @@ const TopMenuData = () => {
           variant={getVariant('/dashboard/data/ingestion')}
           classes={{ root: classes.button }}
         >
-          {t('Ingestion')}
+          {t_i18n('Ingestion')}
         </Button>
       )}
       {(isKnowledgeUpdater || isAdministrator || isCsvMapperUpdater) && (
@@ -92,7 +92,7 @@ const TopMenuData = () => {
               variant={getVariant('/dashboard/data/processing')}
               classes={{ root: classes.button }}
             >
-              {t('Processing')}
+              {t_i18n('Processing')}
             </Button>
           </span>
         </Tooltip>
@@ -105,7 +105,7 @@ const TopMenuData = () => {
           variant={getVariant('/dashboard/data/sharing')}
           classes={{ root: classes.button }}
         >
-          {t('Data sharing')}
+          {t_i18n('Data sharing')}
         </Button>
       )}
       {isConnectorReader && (
@@ -116,7 +116,7 @@ const TopMenuData = () => {
           variant={getVariant('/dashboard/data/connectors')}
           classes={{ root: classes.button }}
         >
-          {t('Connectors')}
+          {t_i18n('Connectors')}
         </Button>
       )}
     </div>

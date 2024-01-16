@@ -252,7 +252,7 @@ export const EntityStixSightingRelationshipLine: FunctionComponent<EntityStixSig
   },
 ) => {
   const classes = useStyles();
-  const { t, nsdt } = useFormatter();
+  const { t_i18n, nsdt } = useFormatter();
   const data = useFragment<EntityStixSightingRelationshipLine_node$key>(
     EntityStixSightingRelationshipLineFragment,
     node,
@@ -288,8 +288,8 @@ export const EntityStixSightingRelationshipLine: FunctionComponent<EntityStixSig
                 }}
                 label={
                     data.x_opencti_negative
-                      ? t('False positive')
-                      : t('True positive')
+                      ? t_i18n('False positive')
+                      : t_i18n('True positive')
                   }
               />
             </div>
@@ -305,15 +305,15 @@ export const EntityStixSightingRelationshipLine: FunctionComponent<EntityStixSig
             >
               {!restricted
                 ? entity.name || entity.observable_value
-                : t('Restricted')}
+                : t_i18n('Restricted')}
             </div>
             <div
               className={classes.bodyItem}
               style={{ width: dataColumns.entity_type.width }}
             >
               {!restricted
-                ? t(`entity_${entity.entity_type}`)
-                : t('Restricted')}
+                ? t_i18n(`entity_${entity.entity_type}`)
+                : t_i18n('Restricted')}
             </div>
             <div
               className={classes.bodyItem}
@@ -340,7 +340,7 @@ export const EntityStixSightingRelationshipLine: FunctionComponent<EntityStixSig
         {data.is_inferred ? (
           <Tooltip
             title={
-                `${t('Inferred knowledge based on the rule ')}
+                `${t_i18n('Inferred knowledge based on the rule ')}
                 ${R.head(data.x_opencti_inferences ?? [])?.rule.name ?? ''}`
               }
           >

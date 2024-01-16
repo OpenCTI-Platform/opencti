@@ -106,7 +106,7 @@ export const AlertingLineComponent: FunctionComponent<AlertingLineProps> = ({
   paginationOptions,
 }) => {
   const classes = useStyles();
-  const { t, nt } = useFormatter();
+  const { t_i18n, nt } = useFormatter();
   const data = useFragment(alertingLineFragment, node);
   const filters = deserializeFilterGroupForFrontend(data.filters);
   const currentTime = data.trigger_time?.split('-') ?? [
@@ -137,8 +137,8 @@ export const AlertingLineComponent: FunctionComponent<AlertingLineProps> = ({
                 classes={{ root: classes.chipInList2 }}
                 label={
                   data.trigger_type === 'live'
-                    ? t('Live trigger')
-                    : t('Regular digest')
+                    ? t_i18n('Live trigger')
+                    : t_i18n('Regular digest')
                 }
                 variant="outlined"
               />
@@ -178,7 +178,7 @@ export const AlertingLineComponent: FunctionComponent<AlertingLineProps> = ({
                   classes={{ root: classes.chipInList3 }}
                   label={
                     <span>
-                      <strong>{t('Period: ')}</strong>
+                      <strong>{t_i18n('Period: ')}</strong>
                       {data.period}
                     </span>
                                     }
@@ -188,7 +188,7 @@ export const AlertingLineComponent: FunctionComponent<AlertingLineProps> = ({
                   classes={{ root: classes.chipInList3 }}
                   label={
                     <span>
-                      <strong>{t('Day: ')}</strong>
+                      <strong>{t_i18n('Day: ')}</strong>
                       {day}
                     </span>
                                         }
@@ -199,7 +199,7 @@ export const AlertingLineComponent: FunctionComponent<AlertingLineProps> = ({
                   classes={{ root: classes.chipInList3 }}
                   label={
                     <span>
-                      <strong>{t('Time: ')}</strong>
+                      <strong>{t_i18n('Time: ')}</strong>
                       {nt(time)}
                     </span>
                                         }

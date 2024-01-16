@@ -261,7 +261,7 @@ const StixRelationshipsDistributionList = ({
   parameters = {},
 }) => {
   const classes = useStyles();
-  const { t, n } = useFormatter();
+  const { t_i18n, n } = useFormatter();
   const hasSetAccess = useGranted([SETTINGS_SETACCESSES]);
   const renderContent = () => {
     let selection = {};
@@ -352,7 +352,7 @@ const StixRelationshipsDistributionList = ({
                     textAlign: 'center',
                   }}
                 >
-                  {t('No entities of this type has been found.')}
+                  {t_i18n('No entities of this type has been found.')}
                 </span>
               </div>
             );
@@ -386,7 +386,7 @@ const StixRelationshipsDistributionList = ({
           textOverflow: 'ellipsis',
         }}
       >
-        {parameters.title || title || t('Relationships distribution')}
+        {parameters.title || title || t_i18n('Relationships distribution')}
       </Typography>
       {variant !== 'inLine' ? (
         <Paper classes={{ root: classes.paper }} variant="outlined">

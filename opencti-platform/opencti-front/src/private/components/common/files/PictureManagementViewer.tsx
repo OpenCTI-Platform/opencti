@@ -44,7 +44,7 @@ const PictureManagementViewer: FunctionComponent<
 PictureManagementViewerProps
 > = ({ entity }) => {
   const classes = useStyles();
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
 
   const data: PictureManagementViewer_entity$data = useFragment(
     pictureManagementViewerFragment,
@@ -75,7 +75,7 @@ PictureManagementViewerProps
     <Grid item={true} xs={6} style={{ marginTop: 40 }}>
       <div style={{ height: '100%' }} className="break">
         <Typography variant="h4" gutterBottom={true} style={{ float: 'left' }}>
-          {t('Pictures Management')}
+          {t_i18n('Pictures Management')}
         </Typography>
         <div className="clearfix" />
         <Paper classes={{ root: classes.paper }} variant="outlined">
@@ -107,7 +107,7 @@ PictureManagementViewerProps
                   textAlign: 'center',
                 }}
               >
-                {t('No file for the moment')}
+                {t_i18n('No file for the moment')}
               </span>
             </div>
           )}

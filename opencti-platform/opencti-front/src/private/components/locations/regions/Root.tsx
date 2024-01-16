@@ -75,7 +75,7 @@ const RootRegionComponent = ({ queryRef, regionId, link }) => {
   );
   useSubscription(subConfig);
   const location = useLocation();
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   const data = usePreloadedQuery(regionQuery, queryRef);
   const { region, connectorsForImport, connectorsForExport } = data;
   return (
@@ -117,37 +117,37 @@ const RootRegionComponent = ({ queryRef, regionId, link }) => {
                 component={Link}
                 to={`/dashboard/locations/regions/${region.id}`}
                 value={`/dashboard/locations/regions/${region.id}`}
-                label={t('Overview')}
+                label={t_i18n('Overview')}
               />
               <Tab
                 component={Link}
                 to={`/dashboard/locations/regions/${region.id}/knowledge`}
                 value={`/dashboard/locations/regions/${region.id}/knowledge`}
-                label={t('Knowledge')}
+                label={t_i18n('Knowledge')}
               />
               <Tab
                 component={Link}
                 to={`/dashboard/locations/regions/${region.id}/analyses`}
                 value={`/dashboard/locations/regions/${region.id}/analyses`}
-                label={t('Analyses')}
+                label={t_i18n('Analyses')}
               />
               <Tab
                 component={Link}
                 to={`/dashboard/locations/regions/${region.id}/sightings`}
                 value={`/dashboard/locations/regions/${region.id}/sightings`}
-                label={t('Sightings')}
+                label={t_i18n('Sightings')}
               />
               <Tab
                 component={Link}
                 to={`/dashboard/locations/regions/${region.id}/files`}
                 value={`/dashboard/locations/regions/${region.id}/files`}
-                label={t('Data')}
+                label={t_i18n('Data')}
               />
               <Tab
                 component={Link}
                 to={`/dashboard/locations/regions/${region.id}/history`}
                 value={`/dashboard/locations/regions/${region.id}/history`}
-                label={t('History')}
+                label={t_i18n('History')}
               />
             </Tabs>
           </Box>

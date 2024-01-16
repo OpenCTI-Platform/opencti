@@ -82,10 +82,10 @@ const campaignMutationRelationDelete = graphql`
 
 const CampaignEditionOverviewComponent = (props) => {
   const { campaign, enableReferences, context, handleClose } = props;
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
 
   const basicShape = {
-    name: Yup.string().min(2).required(t('This field is required')),
+    name: Yup.string().min(2).required(t_i18n('This field is required')),
     confidence: Yup.number().nullable(),
     description: Yup.string().nullable(),
     references: Yup.array(),
@@ -162,7 +162,7 @@ const CampaignEditionOverviewComponent = (props) => {
     confidence: campaign.confidence,
     createdBy: convertCreatedBy(campaign),
     objectMarking: convertMarkings(campaign),
-    x_opencti_workflow_id: convertStatus(t, campaign),
+    x_opencti_workflow_id: convertStatus(t_i18n, campaign),
     references: [],
   };
   return (
@@ -184,7 +184,7 @@ const CampaignEditionOverviewComponent = (props) => {
           <Field
             component={TextField}
             name="name"
-            label={t('Name')}
+            label={t_i18n('Name')}
             fullWidth={true}
             onFocus={editor.changeFocus}
             onSubmit={handleSubmitField}
@@ -203,7 +203,7 @@ const CampaignEditionOverviewComponent = (props) => {
           <Field
             component={MarkdownField}
             name="description"
-            label={t('Description')}
+            label={t_i18n('Description')}
             fullWidth={true}
             multiline={true}
             rows="4"

@@ -24,7 +24,7 @@ const useStyles = makeStyles<Theme>((theme) => ({
 const TopMenuArsenal = () => {
   const classes = useStyles();
   const location = useLocation();
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
 
   return (
     <div>
@@ -41,7 +41,7 @@ const TopMenuArsenal = () => {
           classes={{ root: classes.button }}
         >
           <Biohazard className={classes.icon} fontSize="small" />
-          {t('Malwares')}
+          {t_i18n('Malwares')}
         </Button>
       )}
       {!useIsHiddenEntity('Channel') && (
@@ -57,7 +57,7 @@ const TopMenuArsenal = () => {
           classes={{ root: classes.button }}
         >
           <SurroundSoundOutlined className={classes.icon} fontSize="small" />
-          {t('Channels')}
+          {t_i18n('Channels')}
         </Button>
       )}
       {!useIsHiddenEntity('Tool') && (
@@ -73,7 +73,7 @@ const TopMenuArsenal = () => {
           classes={{ root: classes.button }}
         >
           <WebAssetOutlined className={classes.icon} fontSize="small" />
-          {t('Tools')}
+          {t_i18n('Tools')}
         </Button>
       )}
       {!useIsHiddenEntity('Vulnerability') && (
@@ -89,7 +89,7 @@ const TopMenuArsenal = () => {
           classes={{ root: classes.button }}
         >
           <BugReportOutlined className={classes.icon} fontSize="small" />
-          {t('Vulnerabilities')}
+          {t_i18n('Vulnerabilities')}
         </Button>
       )}
     </div>

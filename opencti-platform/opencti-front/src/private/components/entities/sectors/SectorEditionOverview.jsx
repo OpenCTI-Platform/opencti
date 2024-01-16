@@ -78,10 +78,10 @@ const sectorMutationRelationDelete = graphql`
 
 const SectorEditionOverviewComponent = (props) => {
   const { sector, enableReferences, context, handleClose } = props;
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
 
   const basicShape = {
-    name: Yup.string().min(2).required(t('This field is required')),
+    name: Yup.string().min(2).required(t_i18n('This field is required')),
     description: Yup.string().nullable(),
     references: Yup.array(),
     x_opencti_workflow_id: Yup.object(),
@@ -145,7 +145,7 @@ const SectorEditionOverviewComponent = (props) => {
 
   const createdBy = convertCreatedBy(sector);
   const objectMarking = convertMarkings(sector);
-  const status = convertStatus(t, sector);
+  const status = convertStatus(t_i18n, sector);
   const initialValues = R.pipe(
     R.assoc('createdBy', createdBy),
     R.assoc('objectMarking', objectMarking),
@@ -180,7 +180,7 @@ const SectorEditionOverviewComponent = (props) => {
             component={TextField}
             variant="standard"
             name="name"
-            label={t('Name')}
+            label={t_i18n('Name')}
             fullWidth={true}
             onFocus={editor.changeFocus}
             onSubmit={handleSubmitField}
@@ -191,7 +191,7 @@ const SectorEditionOverviewComponent = (props) => {
           <Field
             component={MarkdownField}
             name="description"
-            label={t('Description')}
+            label={t_i18n('Description')}
             fullWidth={true}
             multiline={true}
             rows="4"

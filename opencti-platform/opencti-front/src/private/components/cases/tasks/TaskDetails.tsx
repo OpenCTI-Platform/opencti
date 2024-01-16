@@ -78,7 +78,7 @@ interface TasksDetailsProps {
 }
 
 const TaskDetails: FunctionComponent<TasksDetailsProps> = ({ tasksData }) => {
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   const classes = useStyles();
   const data: TaskDetails_task$data = useFragment(
     TaskDetailsFragment,
@@ -87,19 +87,19 @@ const TaskDetails: FunctionComponent<TasksDetailsProps> = ({ tasksData }) => {
   return (
     <div style={{ height: '100%' }}>
       <Typography variant="h4" gutterBottom={true}>
-        {t('Details')}
+        {t_i18n('Details')}
       </Typography>
       <Paper classes={{ root: classes.paper }} variant="outlined">
         <Grid container={true} spacing={3}>
           <Grid item={true} xs={12}>
             <Typography variant="h3" gutterBottom={true}>
-              {t('Description')}
+              {t_i18n('Description')}
             </Typography>
             <ExpandableMarkdown source={data.description} limit={300} />
           </Grid>
           <Grid item={true} xs={12}>
             <Typography variant="h3" gutterBottom={true}>
-              {t('Due Date')}
+              {t_i18n('Due Date')}
             </Typography>
             <ItemDueDate due_date={data.due_date} variant={'inElement'} />
           </Grid>

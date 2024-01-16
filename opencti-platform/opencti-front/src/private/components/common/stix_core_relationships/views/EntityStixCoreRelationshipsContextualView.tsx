@@ -90,7 +90,7 @@ const EntityStixCoreRelationshipsContextualViewComponent: FunctionComponent<Enti
   currentView,
 }) => {
   const classes = useStyles();
-  const { t, n, nsdt } = useFormatter();
+  const { t_i18n, n, nsdt } = useFormatter();
 
   const stixDomainObject = usePreloadedFragment<
   EntityStixCoreRelationshipsContextualViewQuery,
@@ -140,7 +140,7 @@ const EntityStixCoreRelationshipsContextualViewComponent: FunctionComponent<Enti
             color: itemColor(stixCoreObject.entity_type),
             border: `1px solid ${itemColor(stixCoreObject.entity_type)}`,
           }}
-          label={t(`entity_${stixCoreObject.entity_type}`)}
+          label={t_i18n(`entity_${stixCoreObject.entity_type}`)}
         />
       ),
     },
@@ -308,7 +308,7 @@ const EntityStixCoreRelationshipsContextualViewComponent: FunctionComponent<Enti
         handleClearSelectedElements={handleClearSelectedElements}
         variant="medium"
         warning={true}
-        warningMessage={t(
+        warningMessage={t_i18n(
           'Be careful, you are about to delete the selected entities.',
         )}
       />

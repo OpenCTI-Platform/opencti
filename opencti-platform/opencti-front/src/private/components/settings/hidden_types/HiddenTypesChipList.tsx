@@ -34,7 +34,7 @@ const HiddenTypesChipList = ({
   hiddenTypes: readonly string[]
 }) => {
   const classes = useStyles();
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
 
   const hiddenTypesGlobal = useEntitySettings()
     .filter((entitySetting) => entitySetting.platform_hidden_type === true)
@@ -43,18 +43,18 @@ const HiddenTypesChipList = ({
 
   return (<>
     <Typography variant="h3" gutterBottom={true}>
-      {t('Hidden entity types')}
+      {t_i18n('Hidden entity types')}
     </Typography>
     <FieldOrEmpty source={hiddenTypesGlobal.concat(hiddenTypes)}>
       {diff.map((hiddenTypeGlobal) => (<Chip
         key={hiddenTypeGlobal}
         classes={{ root: classes.grey_chip }}
-        label={t(`entity_${hiddenTypeGlobal}`)}
+        label={t_i18n(`entity_${hiddenTypeGlobal}`)}
                                        />))}
       {hiddenTypes.map((hiddenType) => (<Chip
         key={hiddenType}
         classes={{ root: classes.chip }}
-        label={t(`entity_${hiddenType}`)}
+        label={t_i18n(`entity_${hiddenType}`)}
                                         />))}
     </FieldOrEmpty>
   </>

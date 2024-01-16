@@ -17,7 +17,7 @@ const DeleteDialog = ({
   deletion: Deletion
   submitDelete: () => void
 }) => {
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
 
   return (
     <Dialog
@@ -34,10 +34,10 @@ const DeleteDialog = ({
       </DialogContent>
       <DialogActions>
         <Button onClick={deletion.handleCloseDelete} disabled={deletion.deleting}>
-          {t('Cancel')}
+          {t_i18n('Cancel')}
         </Button>
         <Button color="secondary" onClick={submitDelete} disabled={deletion.deleting}>
-          {t('Delete')}
+          {t_i18n('Delete')}
         </Button>
       </DialogActions>
     </Dialog>

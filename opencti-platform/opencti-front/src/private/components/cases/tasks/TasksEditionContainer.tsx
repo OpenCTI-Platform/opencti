@@ -26,14 +26,14 @@ export const tasksEditionQuery = graphql`
 `;
 
 const TasksEditionContainer: FunctionComponent<TasksEditionContainerProps> = ({ queryRef, handleClose, open }) => {
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   const { task } = usePreloadedQuery(tasksEditionQuery, queryRef);
   if (task === null) {
     return <ErrorNotFound />;
   }
   return (
     <Drawer
-      title={t('Update a task')}
+      title={t_i18n('Update a task')}
       variant={open == null ? DrawerVariant.update : undefined}
       context={task.editContext}
       onClose={handleClose}

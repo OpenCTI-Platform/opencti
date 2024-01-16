@@ -26,7 +26,7 @@ const useStyles = makeStyles(() => ({
 const AddDataComponents: FunctionComponent<{
   attackPattern: AttackPatternDataComponents_attackPattern$data;
 }> = ({ attackPattern }) => {
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   const classes = useStyles();
 
   const [open, setOpen] = useState(false);
@@ -62,7 +62,7 @@ const AddDataComponents: FunctionComponent<{
       <Drawer
         open={open}
         onClose={handleClose}
-        title={t('Add data components')}
+        title={t_i18n('Add data components')}
         header={(
           <div className={classes.search}>
             <SearchInput

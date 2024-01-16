@@ -98,7 +98,7 @@ const FileLineComponent: FunctionComponent<FileLineComponentProps> = ({
   isArtifact,
 }) => {
   const classes = useStyles();
-  const { t, fld } = useFormatter();
+  const { t_i18n, fld } = useFormatter();
 
   const [anchorEl, setAnchorEl] = useState<PopoverProps['anchorEl']>(null);
   const [displayRemove, setDisplayRemove] = useState(false);
@@ -189,7 +189,7 @@ const FileLineComponent: FunctionComponent<FileLineComponentProps> = ({
         if (onDelete) {
           onDelete();
         }
-        MESSAGING$.notifySuccess(t('File successfully removed'));
+        MESSAGING$.notifySuccess(t_i18n('File successfully removed'));
       },
       optimisticResponse: undefined,
       onError: undefined,
@@ -268,7 +268,7 @@ const FileLineComponent: FunctionComponent<FileLineComponentProps> = ({
             primary={`${truncate(fileNameWithoutExtension, 80)}${fileExtension}`}
             secondary={
               <>
-                {file?.metaData?.mimetype ?? t('Pending')} (
+                {file?.metaData?.mimetype ?? t_i18n('Pending')} (
                 {fld(file?.lastModified ?? moment())})
               </>
             }
@@ -276,7 +276,7 @@ const FileLineComponent: FunctionComponent<FileLineComponentProps> = ({
         </Tooltip>
         <ListItemSecondaryAction>
           {!disableImport && (
-            <Tooltip title={t('Launch an import of this file')}>
+            <Tooltip title={t_i18n('Launch an import of this file')}>
               <span>
                 <IconButton
                   disabled={isProgress || !isImportActive()}
@@ -298,7 +298,7 @@ const FileLineComponent: FunctionComponent<FileLineComponentProps> = ({
           )}
           {!directDownload && !isFail && (
             <>
-              <Tooltip title={t('Download this file')}>
+              <Tooltip title={t_i18n('Download this file')}>
                 <span>
                   <IconButton
                     disabled={isProgress}
@@ -331,7 +331,7 @@ const FileLineComponent: FunctionComponent<FileLineComponentProps> = ({
                   )
                   }
                 >
-                  {t('Encrypted archive')}
+                  {t_i18n('Encrypted archive')}
                 </MenuItem>
                 <MenuItem
                   dense={true}
@@ -340,7 +340,7 @@ const FileLineComponent: FunctionComponent<FileLineComponentProps> = ({
                   )
                   }
                 >
-                  {t('Raw file')}
+                  {t_i18n('Raw file')}
                 </MenuItem>
               </Menu>
             </>
@@ -348,7 +348,7 @@ const FileLineComponent: FunctionComponent<FileLineComponentProps> = ({
           {!isExternalReferenceAttachment && (
             <>
               {isFail || isOutdated ? (
-                <Tooltip title={t('Delete this file')}>
+                <Tooltip title={t_i18n('Delete this file')}>
                   <span>
                     <IconButton
                       disabled={isProgress}
@@ -365,7 +365,7 @@ const FileLineComponent: FunctionComponent<FileLineComponentProps> = ({
                   </span>
                 </Tooltip>
               ) : (
-                <Tooltip title={t('Delete this file')}>
+                <Tooltip title={t_i18n('Delete this file')}>
                   <span>
                     <IconButton
                       disabled={isProgress}
@@ -396,14 +396,14 @@ const FileLineComponent: FunctionComponent<FileLineComponentProps> = ({
       >
         <DialogContent>
           <DialogContentText>
-            {t('Do you want to delete this file?')}
+            {t_i18n('Do you want to delete this file?')}
             {isContainsReference && (
               <Alert
                 severity="warning"
                 variant="outlined"
                 style={{ position: 'relative', marginTop: 20 }}
               >
-                {t(
+                {t_i18n(
                   'This file is linked to an external reference. If you delete it, the reference will be deleted as well.',
                 )}
               </Alert>
@@ -412,14 +412,14 @@ const FileLineComponent: FunctionComponent<FileLineComponentProps> = ({
         </DialogContent>
         <DialogActions>
           <Button onClick={handleCloseDelete} disabled={deleting}>
-            {t('Cancel')}
+            {t_i18n('Cancel')}
           </Button>
           <Button
             color="secondary"
             onClick={() => handleRemoveFile(file?.id)}
             disabled={deleting}
           >
-            {t('Delete')}
+            {t_i18n('Delete')}
           </Button>
         </DialogActions>
       </Dialog>
@@ -432,19 +432,19 @@ const FileLineComponent: FunctionComponent<FileLineComponentProps> = ({
       >
         <DialogContent>
           <DialogContentText>
-            {t('Do you want to remove this job?')}
+            {t_i18n('Do you want to remove this job?')}
           </DialogContentText>
         </DialogContent>
         <DialogActions>
           <Button onClick={handleCloseRemove} disabled={deleting}>
-            {t('Cancel')}
+            {t_i18n('Cancel')}
           </Button>
           <Button
             color="secondary"
             onClick={() => handleRemoveJob(file?.id)}
             disabled={deleting}
           >
-            {t('Delete')}
+            {t_i18n('Delete')}
           </Button>
         </DialogActions>
       </Dialog>
@@ -457,13 +457,13 @@ const FileLineComponent: FunctionComponent<FileLineComponentProps> = ({
       >
         <DialogContent>
           <DialogContentText>
-            {t('How do you want to download this file?')}
+            {t_i18n('How do you want to download this file?')}
             <Alert
               severity="warning"
               variant="outlined"
               style={{ position: 'relative', marginTop: 20 }}
             >
-              {t(
+              {t_i18n(
                 'You are about to download a file related to an Artifact (or a binary). It might be malicious. You can download it as an encrypted archive (password: "infected") in order to protect your workstation and share it safely.',
               )}
             </Alert>
@@ -471,14 +471,14 @@ const FileLineComponent: FunctionComponent<FileLineComponentProps> = ({
         </DialogContent>
         <DialogActions>
           <Button onClick={handleCloseDownload} disabled={deleting}>
-            {t('Cancel')}
+            {t_i18n('Cancel')}
           </Button>
           <Button
             color="warning"
             onClick={() => handleLink(`${APP_BASE_PATH}/storage/get/${encodedFilePath}`)
             }
           >
-            {t('Raw file')}
+            {t_i18n('Raw file')}
           </Button>
           <Button
             color="success"
@@ -487,7 +487,7 @@ const FileLineComponent: FunctionComponent<FileLineComponentProps> = ({
             )
             }
           >
-            {t('Encrypted archive')}
+            {t_i18n('Encrypted archive')}
           </Button>
         </DialogActions>
       </Dialog>

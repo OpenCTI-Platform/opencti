@@ -59,10 +59,10 @@ WorkspaceDuplicationDialogProps
   updater,
   paginationOptions,
 }) => {
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   const duplicatedDashboardInitialName = useMemo(
-    () => `${workspace.name} - ${t('copy')}`,
-    [t, workspace.name],
+    () => `${workspace.name} - ${t_i18n('copy')}`,
+    [t_i18n, workspace.name],
   );
   const [newName, setNewName] = useState(duplicatedDashboardInitialName);
   const [commitDuplicatedWorkspaceCreation] = useMutation<WorkspaceDuplicationDialogDuplicatedWorkspaceCreationMutation>(
@@ -93,11 +93,11 @@ WorkspaceDuplicationDialogProps
         if (isDashboardView) {
           MESSAGING$.notifySuccess(
             <span>
-              {t('The dashboard has been duplicated. You can manage it')}{' '}
+              {t_i18n('The dashboard has been duplicated. You can manage it')}{' '}
               <Link
                 to={`/dashboard/workspaces/dashboards/${data.workspaceDuplicate?.id}`}
               >
-                {t('here')}
+                {t_i18n('here')}
               </Link>
               .
             </span>,
@@ -119,18 +119,18 @@ WorkspaceDuplicationDialogProps
       fullWidth={true}
       maxWidth="xs"
     >
-      <DialogTitle>{t('Duplicate the dashboard')}</DialogTitle>
+      <DialogTitle>{t_i18n('Duplicate the dashboard')}</DialogTitle>
       <DialogContent>
         <TextField
           error={!newName}
           autoFocus
           margin="dense"
           id="duplicated_dashboard_name"
-          label={t('New name')}
+          label={t_i18n('New name')}
           type="text"
           fullWidth
           variant="standard"
-          helperText={!newName ? `${t('This field is required')}` : ''}
+          helperText={!newName ? `${t_i18n('This field is required')}` : ''}
           defaultValue={newName}
           onChange={(event) => {
             event.preventDefault();
@@ -139,13 +139,13 @@ WorkspaceDuplicationDialogProps
         />
       </DialogContent>
       <DialogActions>
-        <Button onClick={handleCloseDuplicate}>{t('Cancel')}</Button>
+        <Button onClick={handleCloseDuplicate}>{t_i18n('Cancel')}</Button>
         <Button
           color="secondary"
           onClick={() => handleSubmitDuplicate(newName)}
           disabled={duplicating || !newName}
         >
-          {t('Duplicate')}
+          {t_i18n('Duplicate')}
         </Button>
       </DialogActions>
     </Dialog>

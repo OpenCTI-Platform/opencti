@@ -26,7 +26,7 @@ const useStyles = makeStyles(() => ({
 
 const ExternalReferenceStixCoreObjectsComponent = ({ externalReference }) => {
   const classes = useStyles();
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   const stixCoreObjects = R.map(
     (n) => n?.node,
     externalReference.references?.edges ?? [],
@@ -34,7 +34,7 @@ const ExternalReferenceStixCoreObjectsComponent = ({ externalReference }) => {
   return (
     <div style={{ height: '100%' }}>
       <Typography variant="h4" gutterBottom={true}>
-        {t('Linked objects')}
+        {t_i18n('Linked objects')}
       </Typography>
       <Paper classes={{ root: classes.paper }} variant="outlined">
         <List classes={{ root: classes.list }}>

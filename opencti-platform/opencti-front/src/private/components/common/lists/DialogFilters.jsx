@@ -24,10 +24,10 @@ const DialogFilters = ({
   handleSearch,
   filterElement,
 }) => {
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   return (
     <React.Fragment>
-      <Tooltip title={t('Advanced search')}>
+      <Tooltip title={t_i18n('Advanced search')}>
         <IconButton
           onClick={handleOpenFilters}
           disabled={disabled}
@@ -43,7 +43,7 @@ const DialogFilters = ({
         fullWidth={true}
         maxWidth="md"
       >
-        <DialogTitle>{t('Advanced search')}</DialogTitle>
+        <DialogTitle>{t_i18n('Advanced search')}</DialogTitle>
         <DialogContent style={{ paddingTop: 10 }}>
 
           <FilterIconButton
@@ -56,9 +56,9 @@ const DialogFilters = ({
           {filterElement}
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleCloseFilters}>{t('Cancel')}</Button>
+          <Button onClick={handleCloseFilters}>{t_i18n('Cancel')}</Button>
           <Button color="secondary" onClick={handleSearch}>
-            {t('Search')}
+            {t_i18n('Search')}
           </Button>
         </DialogActions>
       </Dialog>

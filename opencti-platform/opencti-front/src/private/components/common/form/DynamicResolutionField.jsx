@@ -59,7 +59,7 @@ const DynamicResolutionField = ({
   stixDomainObjects,
   helperText,
 }) => {
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   const [textFieldValue, setTextFieldValue] = useState(
     field.value.map((n) => n.name).join('\n'),
   );
@@ -193,7 +193,7 @@ const DynamicResolutionField = ({
                       <div>
                         <div style={inlineStyles.type}>
                           {item.in_platform ? (
-                            t(`entity_${item.type}`)
+                            t_i18n(`entity_${item.type}`)
                           ) : (
                             <Select
                               variant="standard"
@@ -209,7 +209,7 @@ const DynamicResolutionField = ({
                             >
                               {types.map((n) => (
                                 <MenuItem key={n} value={n}>
-                                  {t(`entity_${n}`)}
+                                  {t_i18n(`entity_${n}`)}
                                 </MenuItem>
                               ))}
                             </Select>
@@ -225,10 +225,10 @@ const DynamicResolutionField = ({
                             label={
                               // eslint-disable-next-line no-nested-ternary
                               item.in_platform
-                                ? t('In platform')
+                                ? t_i18n('In platform')
                                 : item.in_platform === null
-                                  ? t('In workbench')
-                                  : t('To create')
+                                  ? t_i18n('In workbench')
+                                  : t_i18n('To create')
                             }
                           />
                         </div>
@@ -247,7 +247,7 @@ const DynamicResolutionField = ({
                   textAlign: 'center',
                 }}
               >
-                {t('No entities added in this context.')}
+                {t_i18n('No entities added in this context.')}
               </span>
             </div>
           )}

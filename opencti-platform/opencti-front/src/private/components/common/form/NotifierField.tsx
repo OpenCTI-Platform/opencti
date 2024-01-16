@@ -52,7 +52,7 @@ const NotifierField: FunctionComponent<NotifierFieldProps> = ({
   onChange,
 }) => {
   const classes = useStyles();
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   const [notifiersTemplates, setNotifiersTemplates] = useState<Option[]>([]);
   const searchNotifiers = (event: React.ChangeEvent<HTMLInputElement>) => {
     fetchQuery(NotifierFieldQuery, {
@@ -82,11 +82,11 @@ const NotifierField: FunctionComponent<NotifierFieldProps> = ({
         style={fieldSpacingContainerStyle ?? style}
         textfieldprops={{
           variant: 'standard',
-          label: t('Notifiers'),
+          label: t_i18n('Notifiers'),
           helperText: helpertext,
           onFocus: searchNotifiers,
         }}
-        noOptionsText={t('No available options')}
+        noOptionsText={t_i18n('No available options')}
         options={notifiersTemplates}
         onInputChange={searchNotifiers}
         isOptionEqualToValue={(option: Option, { value }: Option) => option.value === value

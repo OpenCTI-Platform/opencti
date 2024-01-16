@@ -69,7 +69,7 @@ const SettingsMessageForm = ({
   creation?: boolean;
   open?: boolean;
 }) => {
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   const classes = useStyles();
   const [commit] = useMutation(settingsMessageEditionPatch);
   const onSubmit: FormikConfig<SettingsMessageInput>['onSubmit'] = (
@@ -110,7 +110,7 @@ const SettingsMessageForm = ({
     };
   return (
     <Drawer
-      title={creation ? `${t('Create a message')}` : `${t('Update a message')}`}
+      title={creation ? `${t_i18n('Create a message')}` : `${t_i18n('Update a message')}`}
       open={open}
       onClose={handleClose}
     >
@@ -131,19 +131,19 @@ const SettingsMessageForm = ({
                 component={TextField}
                 variant="standard"
                 name="message"
-                label={t('Message')}
+                label={t_i18n('Message')}
                 fullWidth={true}
               />
               <Field
                 component={ColorPickerField}
                 name="color"
-                label={t('Color')}
+                label={t_i18n('Color')}
                 fullWidth={true}
                 style={{ marginTop: 20 }}
               />
               <ObjectMembersField
                 name="recipients"
-                label={t('Recipients')}
+                label={t_i18n('Recipients')}
                 style={fieldSpacingContainerStyle}
                 multiple={true}
               />
@@ -151,14 +151,14 @@ const SettingsMessageForm = ({
                 component={SwitchField}
                 type="checkbox"
                 name="activated"
-                label={t('Activated')}
+                label={t_i18n('Activated')}
                 containerstyle={{ marginTop: 20 }}
               />
               <Field
                 component={SwitchField}
                 type="checkbox"
                 name="dismissible"
-                label={t('Dismissible')}
+                label={t_i18n('Dismissible')}
                 containerstyle={{ marginTop: 10 }}
               />
               <div className={classes.buttons}>
@@ -168,7 +168,7 @@ const SettingsMessageForm = ({
                   disabled={isSubmitting}
                   classes={{ root: classes.button }}
                 >
-                  {t('Cancel')}
+                  {t_i18n('Cancel')}
                 </Button>
                 <Button
                   variant="contained"
@@ -177,7 +177,7 @@ const SettingsMessageForm = ({
                   disabled={isSubmitting || !isValid}
                   classes={{ root: classes.button }}
                 >
-                  {creation ? `${t('Create')}` : `${t('Update')}`}
+                  {creation ? `${t_i18n('Create')}` : `${t_i18n('Update')}`}
                 </Button>
               </div>
             </Form>

@@ -31,7 +31,7 @@ const ThreatActorIndividualDemographics = ({
   threatActorIndividual,
 }: ThreatActorIndividualDemographicsProps) => {
   const classes = useStyles();
-  const { t, fsd } = useFormatter();
+  const { t_i18n, fsd } = useFormatter();
   const countryRelationship: ThreatActorIndividualDemographicsCountryRelationships = {
     country_of_residence: [],
     citizenship: [],
@@ -61,13 +61,13 @@ const ThreatActorIndividualDemographics = ({
   return (
     <div style={{ height: '100%' }}>
       <Typography variant="h4" gutterBottom={true}>
-        {t('Demographic Information')}
+        {t_i18n('Demographic Information')}
       </Typography>
       <Paper classes={{ root: classes.paper }} variant="outlined">
         <Grid container={true} spacing={3}>
           <Grid item={true} xs={4}>
             <Typography variant="h3" gutterBottom={true}>
-              {t('Country of Residence')}
+              {t_i18n('Country of Residence')}
             </Typography>
             <div id="country_of_residence_list">
               {countryRelationship.country_of_residence.length > 0
@@ -75,7 +75,7 @@ const ThreatActorIndividualDemographics = ({
                   (place: string, index: number) => (
                     <Chip
                       key={index}
-                      label={t(place)}
+                      label={t_i18n(place)}
                       style={{ margin: 1 }}
                     />
                   ),
@@ -85,7 +85,7 @@ const ThreatActorIndividualDemographics = ({
           </Grid>
           <Grid item={true} xs={4}>
             <Typography variant="h3" gutterBottom={true}>
-              {t('Citizenship')}
+              {t_i18n('Citizenship')}
             </Typography>
             <div id="citizenship_list">
               {countryRelationship.citizenship.length > 0
@@ -93,7 +93,7 @@ const ThreatActorIndividualDemographics = ({
                   (place: string, index: number) => (
                     <Chip
                       key={index}
-                      label={t(place)}
+                      label={t_i18n(place)}
                       style={{ margin: 1 }}
                     />
                   ),
@@ -103,15 +103,15 @@ const ThreatActorIndividualDemographics = ({
           </Grid>
           <Grid item={true} xs={4}>
             <Typography variant="h3" gutterBottom={true}>
-              {t('Place of Birth')}
+              {t_i18n('Place of Birth')}
             </Typography>
             <div id="place_of_birth">
-              {t(countryRelationship.place_of_birth ?? '-')}
+              {t_i18n(countryRelationship.place_of_birth ?? '-')}
             </div>
           </Grid>
           <Grid item={true} xs={4}>
             <Typography variant="h3" gutterBottom={true}>
-              {t('Date of Birth')}
+              {t_i18n('Date of Birth')}
             </Typography>
             <div id="date_of_birth">
               {threatActorIndividual.date_of_birth
@@ -121,7 +121,7 @@ const ThreatActorIndividualDemographics = ({
           </Grid>
           <Grid item={true} xs={4}>
             <Typography variant="h3" gutterBottom={true}>
-              {t('Nationality')}
+              {t_i18n('Nationality')}
             </Typography>
             <div id="nationality">
               {countryRelationship.nationality
@@ -130,7 +130,7 @@ const ThreatActorIndividualDemographics = ({
                   (place: string, index: number) => (
                     <Chip
                       key={index}
-                      label={t(place)}
+                      label={t_i18n(place)}
                       style={{ margin: 1 }}
                     />
                   ),
@@ -140,13 +140,13 @@ const ThreatActorIndividualDemographics = ({
           </Grid>
           <Grid item={true} xs={4}>
             <Typography variant="h3" gutterBottom={true}>
-              {t('Ethnicity')}
+              {t_i18n('Ethnicity')}
             </Typography>
-            <div id="ethnicity">{t(countryRelationship.ethnicity ?? '-')}</div>
+            <div id="ethnicity">{t_i18n(countryRelationship.ethnicity ?? '-')}</div>
           </Grid>
           <Grid item={true} xs={4}>
             <Typography variant="h3" gutterBottom={true}>
-              {t('Gender')}
+              {t_i18n('Gender')}
             </Typography>
             <ItemOpenVocab
               type="gender-ov"
@@ -156,7 +156,7 @@ const ThreatActorIndividualDemographics = ({
           </Grid>
           <Grid item={true} xs={4}>
             <Typography variant="h3" gutterBottom={true}>
-              {t('Marital Status')}
+              {t_i18n('Marital Status')}
             </Typography>
             <ItemOpenVocab
               type="marital-status-ov"
@@ -166,7 +166,7 @@ const ThreatActorIndividualDemographics = ({
           </Grid>
           <Grid item={true} xs={4}>
             <Typography variant="h3" gutterBottom={true}>
-              {t('Job Title')}
+              {t_i18n('Job Title')}
             </Typography>
             <div id="job_title">{threatActorIndividual.job_title ?? '-'}</div>
           </Grid>

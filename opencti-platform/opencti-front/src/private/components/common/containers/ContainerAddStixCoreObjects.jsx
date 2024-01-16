@@ -71,7 +71,7 @@ const ContainerAddStixCoreObjects = (props) => {
     handleClose,
   } = props;
   const classes = useStyles();
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   const [open, setOpen] = useState(false);
   const [openSpeedDial, setOpenSpeedDial] = useState(false);
   const [openCreateEntity, setOpenCreateEntity] = useState(false);
@@ -201,18 +201,18 @@ const ContainerAddStixCoreObjects = (props) => {
           }}
         >
           <SpeedDialAction
-            title={t('Create an observable')}
+            title={t_i18n('Create an observable')}
             icon={<HexagonOutline/>}
-            tooltipTitle={t('Create an observable')}
+            tooltipTitle={t_i18n('Create an observable')}
             onClick={() => handleOpenCreateObservable()}
             FabProps={{
               classes: { root: classes.speedDialButton },
             }}
           />
           <SpeedDialAction
-            title={t('Create an entity')}
+            title={t_i18n('Create an entity')}
             icon={<GlobeModel/>}
-            tooltipTitle={t('Create an entity')}
+            tooltipTitle={t_i18n('Create an entity')}
             onClick={() => handleOpenCreateEntity()}
             FabProps={{
               classes: { root: classes.speedDialButton },
@@ -399,7 +399,7 @@ const ContainerAddStixCoreObjects = (props) => {
   const renderButton = () => {
     if (knowledgeGraph) {
       return (
-        <Tooltip title={t('Add an entity to this container')}>
+        <Tooltip title={t_i18n('Add an entity to this container')}>
           <IconButton
             color="primary"
             aria-label="Add"
@@ -457,7 +457,7 @@ const ContainerAddStixCoreObjects = (props) => {
             setOpen(false);
           }
         }}
-        title={t('Add entities')}
+        title={t_i18n('Add entities')}
         containerRef={containerRef}
       >
         <>

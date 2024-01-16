@@ -32,7 +32,7 @@ export const IncidentEditionQuery = graphql`
 `;
 
 const IncidentEditionContainer: FunctionComponent<IncidentEditionContainerProps> = ({ queryRef, handleClose, open }) => {
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
 
   const { incident } = usePreloadedQuery(IncidentEditionQuery, queryRef);
   const [currentTab, setCurrentTab] = useState(0);
@@ -43,7 +43,7 @@ const IncidentEditionContainer: FunctionComponent<IncidentEditionContainerProps>
   }
   return (
     <Drawer
-      title={t('Update an incident')}
+      title={t_i18n('Update an incident')}
       variant={open == null ? DrawerVariant.update : undefined}
       context={incident.editContext}
       onClose={handleClose}
@@ -53,8 +53,8 @@ const IncidentEditionContainer: FunctionComponent<IncidentEditionContainerProps>
         <>
           <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
             <Tabs value={currentTab} onChange={handleChangeTab}>
-              <Tab label={t('Overview')} />
-              <Tab label={t('Details')} />
+              <Tab label={t_i18n('Overview')} />
+              <Tab label={t_i18n('Details')} />
             </Tabs>
           </Box>
           {currentTab === 0 && (

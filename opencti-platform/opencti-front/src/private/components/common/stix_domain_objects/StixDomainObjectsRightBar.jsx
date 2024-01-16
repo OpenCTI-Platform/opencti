@@ -32,7 +32,7 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 const StixDomainObjectsRightBar = ({ types = [], handleToggle, handleClear }) => {
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   const classes = useStyles();
   const { bannerSettings } = useAuth();
   const settingsMessagesBannerHeight = useSettingsMessagesBannerHeight();
@@ -54,7 +54,7 @@ const StixDomainObjectsRightBar = ({ types = [], handleToggle, handleClear }) =>
             const sortByLabel = sortBy(compose(toLower, prop('tlabel')));
             const translatedOrderedList = pipe(
               map((n) => n.node),
-              map((n) => assoc('tlabel', t(`entity_${n.label}`), n)),
+              map((n) => assoc('tlabel', t_i18n(`entity_${n.label}`), n)),
               sortByLabel,
             )(subTypesEdges);
             return (
@@ -62,8 +62,8 @@ const StixDomainObjectsRightBar = ({ types = [], handleToggle, handleClear }) =>
                 sx={{ marginBottom: bannerSettings.bannerHeight }}
                 subheader={
                   <ListSubheader component="div">
-                    {t('Entity types')}
-                    <Tooltip title={t('Clear filters')}>
+                    {t_i18n('Entity types')}
+                    <Tooltip title={t_i18n('Clear filters')}>
                       <span>
                         <IconButton onClick={handleClear}
                           disabled={types.length === 0}

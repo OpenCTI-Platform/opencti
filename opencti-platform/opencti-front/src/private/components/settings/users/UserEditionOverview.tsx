@@ -91,7 +91,7 @@ interface UserEditionOverviewComponentProps {
 const UserEditionOverviewComponent: FunctionComponent<
 UserEditionOverviewComponentProps
 > = ({ user, context }) => {
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   const { me, settings } = useAuth();
   const [commitFocus] = useMutation(userEditionOverviewFocus);
   const [commitFieldPatch] = useMutation(userMutationFieldPatch);
@@ -133,7 +133,7 @@ UserEditionOverviewComponentProps
   };
 
   const handleSubmitField = (name: string, value: string | Date) => {
-    userValidation(t, userIsOnlyOrganizationAdmin)
+    userValidation(t_i18n, userIsOnlyOrganizationAdmin)
       .validateAt(name, { [name]: value })
       .then(() => {
         commitFieldPatch({
@@ -178,7 +178,7 @@ UserEditionOverviewComponentProps
     <Formik
       enableReinitialize={true}
       initialValues={initialValues}
-      validationSchema={userValidation(t, userIsOnlyOrganizationAdmin)}
+      validationSchema={userValidation(t_i18n, userIsOnlyOrganizationAdmin)}
       onSubmit={() => {}}
     >
       {() => (
@@ -187,7 +187,7 @@ UserEditionOverviewComponentProps
             component={TextField}
             variant="standard"
             name="name"
-            label={t('Name')}
+            label={t_i18n('Name')}
             disabled={external}
             fullWidth={true}
             onFocus={handleChangeFocus}
@@ -201,7 +201,7 @@ UserEditionOverviewComponentProps
             variant="standard"
             name="user_email"
             disabled={external}
-            label={t('Email address')}
+            label={t_i18n('Email address')}
             fullWidth={true}
             style={fieldSpacingContainerStyle}
             onFocus={handleChangeFocus}
@@ -214,7 +214,7 @@ UserEditionOverviewComponentProps
             component={TextField}
             variant="standard"
             name="firstname"
-            label={t('Firstname')}
+            label={t_i18n('Firstname')}
             fullWidth={true}
             style={fieldSpacingContainerStyle}
             onFocus={handleChangeFocus}
@@ -227,7 +227,7 @@ UserEditionOverviewComponentProps
             component={TextField}
             variant="standard"
             name="lastname"
-            label={t('Lastname')}
+            label={t_i18n('Lastname')}
             fullWidth={true}
             style={fieldSpacingContainerStyle}
             onFocus={handleChangeFocus}
@@ -239,7 +239,7 @@ UserEditionOverviewComponentProps
           <Field
             component={MarkdownField}
             name="description"
-            label={t('Description')}
+            label={t_i18n('Description')}
             fullWidth={true}
             multiline={true}
             rows={4}
@@ -254,7 +254,7 @@ UserEditionOverviewComponentProps
             component={SelectField}
             variant="standard"
             name="language"
-            label={t('Language')}
+            label={t_i18n('Language')}
             fullWidth={true}
             containerstyle={fieldSpacingContainerStyle}
             onFocus={handleChangeFocus}
@@ -264,7 +264,7 @@ UserEditionOverviewComponentProps
             }
           >
             <MenuItem value="auto">
-              <em>{t('Automatic')}</em>
+              <em>{t_i18n('Automatic')}</em>
             </MenuItem>
             <MenuItem value="en">English</MenuItem>
             <MenuItem value="fr">Français</MenuItem>
@@ -282,7 +282,7 @@ UserEditionOverviewComponentProps
             variant="standard"
             name="api_token"
             disabled={true}
-            label={t('Token')}
+            label={t_i18n('Token')}
             fullWidth={true}
             style={{ marginTop: 20 }}
             onFocus={handleChangeFocus}
@@ -295,7 +295,7 @@ UserEditionOverviewComponentProps
             component={SelectField}
             variant="standard"
             name="account_status"
-            label={t('Account Status')}
+            label={t_i18n('Account Status')}
             fullWidth={true}
             containerstyle={fieldSpacingContainerStyle}
             onFocus={handleChangeFocus}
@@ -305,14 +305,14 @@ UserEditionOverviewComponentProps
               }
           >
             {settings.platform_user_statuses.map((s) => {
-              return <MenuItem key={s.status} value={s.status}>{t(s.status)}</MenuItem>;
+              return <MenuItem key={s.status} value={s.status}>{t_i18n(s.status)}</MenuItem>;
             })}
           </Field>
           <Field
             component={DateTimePickerField}
             name="account_lock_after_date"
             TextFieldProps={{
-              label: t('Account Expire Date'),
+              label: t_i18n('Account Expire Date'),
               variant: 'standard',
               style: fieldSpacingContainerStyle,
               fullWidth: true,

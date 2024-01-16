@@ -101,7 +101,7 @@ const StyledTooltip = styled(({ className, ...props }) => (
 const LeftBar = () => {
   const theme = useTheme();
   const location = useLocation();
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
 
   const { settings: { platform_whitemark } } = useAuth();
   const isEnterpriseEdition = useEnterpriseEdition();
@@ -209,7 +209,7 @@ const LeftBar = () => {
         component="nav"
         style={{ marginTop: bannerHeightNumber + settingsMessagesBannerHeight }}
       >
-        <StyledTooltip title={!navOpen && t('Dashboard')} placement="right">
+        <StyledTooltip title={!navOpen && t_i18n('Dashboard')} placement="right">
           <MenuItem
             component={Link}
             to="/dashboard"
@@ -223,7 +223,7 @@ const LeftBar = () => {
             {navOpen && (
               <ListItemText
                 classes={{ primary: classes.menuItemText }}
-                primary={t('Dashboard')}
+                primary={t_i18n('Dashboard')}
               />
             )}
           </MenuItem>
@@ -233,7 +233,7 @@ const LeftBar = () => {
       <Security needs={[KNOWLEDGE]}>
         <MenuList component="nav">
           {!hideAnalyses && (
-            <StyledTooltip title={!navOpen && t('Analyses')} placement="right">
+            <StyledTooltip title={!navOpen && t_i18n('Analyses')} placement="right">
               <MenuItem
                 component={Link}
                 to="/dashboard/analyses"
@@ -247,14 +247,14 @@ const LeftBar = () => {
                 {navOpen && (
                   <ListItemText
                     classes={{ primary: classes.menuItemText }}
-                    primary={t('Analyses')}
+                    primary={t_i18n('Analyses')}
                   />
                 )}
               </MenuItem>
             </StyledTooltip>
           )}
           {!hideCases && (
-            <StyledTooltip title={!navOpen && t('Cases')} placement="right">
+            <StyledTooltip title={!navOpen && t_i18n('Cases')} placement="right">
               <MenuItem
                 component={Link}
                 to="/dashboard/cases"
@@ -268,14 +268,14 @@ const LeftBar = () => {
                 {navOpen && (
                   <ListItemText
                     classes={{ primary: classes.menuItemText }}
-                    primary={t('Cases')}
+                    primary={t_i18n('Cases')}
                   />
                 )}
               </MenuItem>
             </StyledTooltip>
           )}
           {!hideEvents && (
-            <StyledTooltip title={!navOpen && t('Events')} placement="right">
+            <StyledTooltip title={!navOpen && t_i18n('Events')} placement="right">
               <MenuItem
                 component={Link}
                 to="/dashboard/events"
@@ -289,7 +289,7 @@ const LeftBar = () => {
                 {navOpen && (
                   <ListItemText
                     classes={{ primary: classes.menuItemText }}
-                    primary={t('Events')}
+                    primary={t_i18n('Events')}
                   />
                 )}
               </MenuItem>
@@ -297,7 +297,7 @@ const LeftBar = () => {
           )}
           {!hideObservations && (
             <StyledTooltip
-              title={!navOpen && t('Observations')}
+              title={!navOpen && t_i18n('Observations')}
               placement="right"
             >
               <MenuItem
@@ -313,7 +313,7 @@ const LeftBar = () => {
                 {navOpen && (
                   <ListItemText
                     classes={{ primary: classes.menuItemText }}
-                    primary={t('Observations')}
+                    primary={t_i18n('Observations')}
                   />
                 )}
               </MenuItem>
@@ -323,7 +323,7 @@ const LeftBar = () => {
         <Divider />
         <MenuList component="nav">
           {!hideThreats && (
-            <StyledTooltip title={!navOpen && t('Threats')} placement="right">
+            <StyledTooltip title={!navOpen && t_i18n('Threats')} placement="right">
               <MenuItem
                 component={Link}
                 to="/dashboard/threats"
@@ -337,14 +337,14 @@ const LeftBar = () => {
                 {navOpen && (
                   <ListItemText
                     classes={{ primary: classes.menuItemText }}
-                    primary={t('Threats')}
+                    primary={t_i18n('Threats')}
                   />
                 )}
               </MenuItem>
             </StyledTooltip>
           )}
           {!hideArsenal && (
-            <StyledTooltip title={!navOpen && t('Arsenal')} placement="right">
+            <StyledTooltip title={!navOpen && t_i18n('Arsenal')} placement="right">
               <MenuItem
                 component={Link}
                 to="/dashboard/arsenal"
@@ -358,7 +358,7 @@ const LeftBar = () => {
                 {navOpen && (
                   <ListItemText
                     classes={{ primary: classes.menuItemText }}
-                    primary={t('Arsenal')}
+                    primary={t_i18n('Arsenal')}
                   />
                 )}
               </MenuItem>
@@ -366,7 +366,7 @@ const LeftBar = () => {
           )}
           {!hideTechniques && (
             <StyledTooltip
-              title={!navOpen && t('Techniques')}
+              title={!navOpen && t_i18n('Techniques')}
               placement="right"
             >
               <MenuItem
@@ -382,14 +382,14 @@ const LeftBar = () => {
                 {navOpen && (
                   <ListItemText
                     classes={{ primary: classes.menuItemText }}
-                    primary={t('Techniques')}
+                    primary={t_i18n('Techniques')}
                   />
                 )}
               </MenuItem>
             </StyledTooltip>
           )}
           {!hideEntities && (
-            <StyledTooltip title={!navOpen && t('Entities')} placement="right">
+            <StyledTooltip title={!navOpen && t_i18n('Entities')} placement="right">
               <MenuItem
                 component={Link}
                 to="/dashboard/entities"
@@ -403,14 +403,14 @@ const LeftBar = () => {
                 {navOpen && (
                   <ListItemText
                     classes={{ primary: classes.menuItemText }}
-                    primary={t('Entities')}
+                    primary={t_i18n('Entities')}
                   />
                 )}
               </MenuItem>
             </StyledTooltip>
           )}
           {!hideLocations && (
-            <StyledTooltip title={!navOpen && t('Locations')} placement="right">
+            <StyledTooltip title={!navOpen && t_i18n('Locations')} placement="right">
               <MenuItem
                 component={Link}
                 to="/dashboard/locations"
@@ -424,7 +424,7 @@ const LeftBar = () => {
                 {navOpen && (
                   <ListItemText
                     classes={{ primary: classes.menuItemText }}
-                    primary={t('Locations')}
+                    primary={t_i18n('Locations')}
                   />
                 )}
               </MenuItem>
@@ -436,7 +436,7 @@ const LeftBar = () => {
         <Divider />
         <MenuList component="nav">
           <Security needs={[MODULES, KNOWLEDGE, TAXIIAPI_SETCOLLECTIONS]}>
-            <StyledTooltip title={!navOpen && t('Data')} placement="right">
+            <StyledTooltip title={!navOpen && t_i18n('Data')} placement="right">
               <MenuItem
                 component={Link}
                 to={toData}
@@ -450,7 +450,7 @@ const LeftBar = () => {
                 {navOpen && (
                   <ListItemText
                     classes={{ primary: classes.menuItemText }}
-                    primary={t('Data')}
+                    primary={t_i18n('Data')}
                   />
                 )}
               </MenuItem>
@@ -459,7 +459,7 @@ const LeftBar = () => {
           <Security needs={[SETTINGS, VIRTUAL_ORGANIZATION_ADMIN]}>
             {isOrganizationAdmin && !isGrantedToSettings ? (
               <StyledTooltip
-                title={!navOpen && t('Settings')}
+                title={!navOpen && t_i18n('Settings')}
                 placement="right"
               >
                 <MenuItem
@@ -476,14 +476,14 @@ const LeftBar = () => {
                   {navOpen && (
                     <ListItemText
                       classes={{ primary: classes.menuItemText }}
-                      primary={t('Settings')}
+                      primary={t_i18n('Settings')}
                     />
                   )}
                 </MenuItem>
               </StyledTooltip>
             ) : (
               <StyledTooltip
-                title={!navOpen && t('Settings')}
+                title={!navOpen && t_i18n('Settings')}
                 placement="right"
               >
                 <MenuItem
@@ -500,7 +500,7 @@ const LeftBar = () => {
                   {navOpen && (
                     <ListItemText
                       classes={{ primary: classes.menuItemText }}
-                      primary={t('Settings')}
+                      primary={t_i18n('Settings')}
                     />
                   )}
                 </MenuItem>
@@ -549,7 +549,7 @@ const LeftBar = () => {
         {navOpen && (
           <ListItemText
             classes={{ primary: classes.menuItemText }}
-            primary={t('Collapse')}
+            primary={t_i18n('Collapse')}
           />
         )}
       </MenuItem>

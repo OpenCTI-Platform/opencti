@@ -6,14 +6,14 @@ import { useIsEnforceReference } from '../../../../utils/hooks/useEntitySettings
 import Drawer, { DrawerVariant } from '../../common/drawer/Drawer';
 
 const SystemEditionContainer = (props) => {
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
 
   const { handleClose, system, open } = props;
   const { editContext } = system;
 
   return (
     <Drawer
-      title={t('Update a system')}
+      title={t_i18n('Update a system')}
       open={open}
       onClose={handleClose}
       variant={open == null ? DrawerVariant.update : undefined}

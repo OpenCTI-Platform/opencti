@@ -138,7 +138,7 @@ const RelationShipFromAndToComponent: FunctionComponent<
 RelationShipFromAndToComponentProps
 > = ({ queryRef, direction }) => {
   const classes = useStyles();
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   const entity = usePreloadedQuery<RelationShipFromAndToQuery>(
     relationShipFromAndToQuery,
     queryRef,
@@ -150,7 +150,7 @@ RelationShipFromAndToComponentProps
   return (
     <React.Fragment>
       <Typography variant="h3" gutterBottom={true} className={classes.label}>
-        {t(direction === 'From' ? 'Source' : 'Target')}
+        {t_i18n(direction === 'From' ? 'Source' : 'Target')}
       </Typography>
       <Tooltip title={defaultValue(stixCoreObject, true)}>
         <span>{truncate(defaultValue(stixCoreObject), 40)}</span>

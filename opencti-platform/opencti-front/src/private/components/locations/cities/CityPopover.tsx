@@ -37,7 +37,7 @@ const CityPopoverDeletionMutation = graphql`
 
 const CityPopover = ({ id }: { id: string }) => {
   const classes = useStyles();
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   const navigate = useNavigate();
   const [anchorEl, setAnchorEl] = useState<PopoverProps['anchorEl']>();
   const [displayEdit, setDisplayEdit] = useState<boolean>(false);
@@ -88,9 +88,9 @@ const CityPopover = ({ id }: { id: string }) => {
         <MoreVert />
       </IconButton>
       <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleClose}>
-        <MenuItem onClick={handleOpenEdit}>{t('Update')}</MenuItem>
+        <MenuItem onClick={handleOpenEdit}>{t_i18n('Update')}</MenuItem>
         <Security needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}>
-          <MenuItem onClick={handleOpenDelete}>{t('Delete')}</MenuItem>
+          <MenuItem onClick={handleOpenDelete}>{t_i18n('Delete')}</MenuItem>
         </Security>
       </Menu>
       <Dialog
@@ -102,15 +102,15 @@ const CityPopover = ({ id }: { id: string }) => {
       >
         <DialogContent>
           <DialogContentText>
-            {t('Do you want to delete this city?')}
+            {t_i18n('Do you want to delete this city?')}
           </DialogContentText>
         </DialogContent>
         <DialogActions>
           <Button onClick={handleCloseDelete} disabled={deleting}>
-            {t('Cancel')}
+            {t_i18n('Cancel')}
           </Button>
           <Button color="secondary" onClick={submitDelete} disabled={deleting}>
-            {t('Delete')}
+            {t_i18n('Delete')}
           </Button>
         </DialogActions>
       </Dialog>

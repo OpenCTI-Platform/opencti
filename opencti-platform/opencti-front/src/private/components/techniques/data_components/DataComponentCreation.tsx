@@ -98,11 +98,11 @@ export const DataComponentCreationForm: FunctionComponent<DataComponentFormProps
   defaultMarkingDefinitions,
 }) => {
   const classes = useStyles();
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   const basicShape = {
     name: Yup.string()
       .min(2)
-      .required(t('This field is required')),
+      .required(t_i18n('This field is required')),
     description: Yup.string()
       .nullable(),
     confidence: Yup.number()
@@ -187,7 +187,7 @@ export const DataComponentCreationForm: FunctionComponent<DataComponentFormProps
           <Field
             component={TextField}
             name="name"
-            label={t('Name')}
+            label={t_i18n('Name')}
             fullWidth={true}
             detectDuplicate={['Data-Component']}
           />
@@ -198,7 +198,7 @@ export const DataComponentCreationForm: FunctionComponent<DataComponentFormProps
           <Field
             component={MarkdownField}
             name="description"
-            label={t('Description')}
+            label={t_i18n('Description')}
             fullWidth={true}
             multiline={true}
             rows="4"
@@ -245,7 +245,7 @@ export const DataComponentCreationForm: FunctionComponent<DataComponentFormProps
               disabled={isSubmitting}
               classes={{ root: classes.button }}
             >
-              {t('Cancel')}
+              {t_i18n('Cancel')}
             </Button>
             <Button
               variant="contained"
@@ -254,7 +254,7 @@ export const DataComponentCreationForm: FunctionComponent<DataComponentFormProps
               disabled={isSubmitting}
               classes={{ root: classes.button }}
             >
-              {t('Create')}
+              {t_i18n('Create')}
             </Button>
           </div>
         </Form>
@@ -274,7 +274,7 @@ const DataComponentCreation: FunctionComponent<{
   inputValue,
   paginationOptions,
 }) => {
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   const classes = useStyles();
 
   const [open, setOpen] = useState(false);
@@ -289,7 +289,7 @@ const DataComponentCreation: FunctionComponent<{
 
   const renderClassic = () => (
     <Drawer
-      title={t('Create a data component')}
+      title={t_i18n('Create a data component')}
       variant={DrawerVariant.create}
     >
       {({ onClose }) => (
@@ -314,7 +314,7 @@ const DataComponentCreation: FunctionComponent<{
         <Add />
       </Fab>
       <Dialog open={open} onClose={handleClose} PaperProps={{ elevation: 1 }}>
-        <DialogTitle>{t('Create a data component')}</DialogTitle>
+        <DialogTitle>{t_i18n('Create a data component')}</DialogTitle>
         <DialogContent>
           <DataComponentCreationForm
             inputValue={inputValue}

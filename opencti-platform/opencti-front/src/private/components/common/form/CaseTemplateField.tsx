@@ -56,7 +56,7 @@ const CaseTemplateFieldComponent: FunctionComponent<CaseTemplateFieldComponentPr
   label,
 }) => {
   const classes = useStyles();
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
 
   const data = usePreloadedQuery(caseTemplateFieldQuery, queryRef);
   const caseTemplates = data.caseTemplates?.edges?.map(({ node }) => ({ value: node.id, label: node.name }));
@@ -69,7 +69,7 @@ const CaseTemplateFieldComponent: FunctionComponent<CaseTemplateFieldComponentPr
         multiple
         textfieldprops={{
           variant: 'standard',
-          label: t(label ?? 'Default case templates'),
+          label: t_i18n(label ?? 'Default case templates'),
           helperText: helpertext,
         }}
         onChange={(name: string, value: Option[]) => {
@@ -77,7 +77,7 @@ const CaseTemplateFieldComponent: FunctionComponent<CaseTemplateFieldComponentPr
           onSubmit?.(name, value);
         }}
         style={containerStyle}
-        noOptionsText={t('No available options')}
+        noOptionsText={t_i18n('No available options')}
         options={caseTemplates}
         renderOption={(
           props: React.HTMLAttributes<HTMLLIElement>,

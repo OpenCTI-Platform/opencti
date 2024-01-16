@@ -32,7 +32,7 @@ const useStyles = makeStyles(() => ({
 
 const Rules = () => {
   const classes = useStyles();
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   const { viewStorage, helpers } = usePaginationLocalStorage(
     LOCAL_STORAGE_KEY,
     {},
@@ -45,7 +45,7 @@ const Rules = () => {
           if (!platformModuleHelpers.isRuleEngineEnable()) {
             return (
               <Alert severity="info">
-                {t(platformModuleHelpers.generateDisableMessage(RULE_ENGINE))}
+                {t_i18n(platformModuleHelpers.generateDisableMessage(RULE_ENGINE))}
               </Alert>
             );
           }

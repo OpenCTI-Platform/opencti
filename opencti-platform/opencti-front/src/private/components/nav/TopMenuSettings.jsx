@@ -19,7 +19,7 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 const TopMenuSettings = () => {
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   const location = useLocation();
   const classes = useStyles();
   const isEnterpriseEdition = useEnterpriseEdition();
@@ -42,7 +42,7 @@ const TopMenuSettings = () => {
           }
           classes={{ root: classes.button }}
         >
-          {t('Parameters')}
+          {t_i18n('Parameters')}
         </Button>
       </Security>
       <Security
@@ -63,7 +63,7 @@ const TopMenuSettings = () => {
           }
           classes={{ root: classes.button }}
         >
-          {t('Security')}
+          {t_i18n('Security')}
         </Button>
       </Security>
       <Security needs={[SETTINGS]}>
@@ -78,7 +78,7 @@ const TopMenuSettings = () => {
           }
           classes={{ root: classes.button }}
         >
-          {t('Customization')}
+          {t_i18n('Customization')}
         </Button>
       </Security>
       <Security needs={[SETTINGS_SETLABELS]}>
@@ -93,7 +93,7 @@ const TopMenuSettings = () => {
           }
           classes={{ root: classes.button }}
         >
-          {t('Taxonomies')}
+          {t_i18n('Taxonomies')}
         </Button>
       </Security>
       <Security needs={[SETTINGS]}>
@@ -109,8 +109,8 @@ const TopMenuSettings = () => {
           classes={{ root: classes.button }}
         >
           <>
-            {t('Activity')}
-            <EEChip feature={t('Activity')} clickable={false} />
+            {t_i18n('Activity')}
+            <EEChip feature={t_i18n('Activity')} clickable={false} />
           </>
         </Button>
       </Security>
@@ -126,8 +126,8 @@ const TopMenuSettings = () => {
           }
           classes={{ root: classes.button }}
         >
-          {t('File indexing')}
-          <EEChip feature={t('File indexing')} clickable={false} />
+          {t_i18n('File indexing')}
+          <EEChip feature={t_i18n('File indexing')} clickable={false} />
         </Button>
       </Security>
     </>

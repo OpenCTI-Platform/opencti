@@ -228,7 +228,7 @@ const StixCoreObjectsTimeline = ({
   parameters = {},
 }) => {
   const classes = useStyles();
-  const { t, fldt } = useFormatter();
+  const { t_i18n, fldt } = useFormatter();
   const renderContent = () => {
     const selection = dataSelection[0];
     const dataSelectionTypes = ['Stix-Core-Object'];
@@ -314,7 +314,7 @@ const StixCoreObjectsTimeline = ({
                     textAlign: 'center',
                   }}
                 >
-                  {t('No entities of this type has been found.')}
+                  {t_i18n('No entities of this type has been found.')}
                 </span>
               </div>
             );
@@ -345,7 +345,7 @@ const StixCoreObjectsTimeline = ({
           margin: variant !== 'inLine' ? '0 0 10px 0' : '-10px 0 10px -7px',
         }}
       >
-        {parameters.title ?? t('Entities list')}
+        {parameters.title ?? t_i18n('Entities list')}
       </Typography>
       {variant !== 'inLine' ? (
         <Paper classes={{ root: classes.paper }} variant="outlined">

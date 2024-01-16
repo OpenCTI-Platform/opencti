@@ -33,7 +33,7 @@ const OpinionPopoverDeletionMutation = graphql`
 
 const OpinionPopover = (data) => {
   const history = useHistory();
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   const [anchorEl, setAnchorEl] = useState(null);
   const [displayDelete, setDisplayDelete] = useState(false);
   const [displayEdit, setDisplayEdit] = useState(false);
@@ -74,12 +74,12 @@ const OpinionPopover = (data) => {
         <MoreVert />
       </IconButton>
       <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleClose}>
-        <MenuItem onClick={handleOpenEdit}>{t('Update')}</MenuItem>
+        <MenuItem onClick={handleOpenEdit}>{t_i18n('Update')}</MenuItem>
         <CollaborativeSecurity
           data={data.opinion}
           needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}
         >
-          <MenuItem onClick={handleOpenDelete}>{t('Delete')}</MenuItem>
+          <MenuItem onClick={handleOpenDelete}>{t_i18n('Delete')}</MenuItem>
         </CollaborativeSecurity>
       </Menu>
       <Dialog
@@ -90,15 +90,15 @@ const OpinionPopover = (data) => {
       >
         <DialogContent>
           <DialogContentText>
-            {t('Do you want to delete this opinions?')}
+            {t_i18n('Do you want to delete this opinions?')}
           </DialogContentText>
         </DialogContent>
         <DialogActions>
           <Button onClick={handleCloseDelete} disabled={deleting}>
-            {t('Cancel')}
+            {t_i18n('Cancel')}
           </Button>
           <Button color="secondary" onClick={submitDelete} disabled={deleting}>
-            {t('Delete')}
+            {t_i18n('Delete')}
           </Button>
         </DialogActions>
       </Dialog>

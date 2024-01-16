@@ -137,7 +137,7 @@ const PositionDetails: FunctionComponent<PositionDetailsProps> = ({
   position,
   queryRef,
 }) => {
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   const classes = useStyles();
   const data = usePreloadedFragment<
   PositionDetailsLocationRelationshipsLinesQueryLinesPaginationQuery,
@@ -158,13 +158,13 @@ const PositionDetails: FunctionComponent<PositionDetailsProps> = ({
   return (
     <div style={{ height: '100%' }}>
       <Typography variant="h4" gutterBottom={true}>
-        {t('Details')}
+        {t_i18n('Details')}
       </Typography>
       <Paper classes={{ root: classes.paper }} variant="outlined">
         <Grid container={true} spacing={3}>
           <Grid item={true} xs={12}>
             <Typography variant="h3" gutterBottom={true}>
-              {t('Description')}
+              {t_i18n('Description')}
             </Typography>
             {position.description && (
               <ExpandableMarkdown source={position.description} limit={300} />
@@ -172,7 +172,7 @@ const PositionDetails: FunctionComponent<PositionDetailsProps> = ({
           </Grid>
           <Grid item={true} xs={6}>
             <Typography variant="h3" gutterBottom={true}>
-              {t('Latitude')}
+              {t_i18n('Latitude')}
             </Typography>
             {position.latitude && (
               <ExpandableMarkdown
@@ -183,7 +183,7 @@ const PositionDetails: FunctionComponent<PositionDetailsProps> = ({
           </Grid>
           <Grid item={true} xs={6}>
             <Typography variant="h3" gutterBottom={true}>
-              {t('Longitude')}
+              {t_i18n('Longitude')}
             </Typography>
             {position.longitude && (
               <ExpandableMarkdown
@@ -194,7 +194,7 @@ const PositionDetails: FunctionComponent<PositionDetailsProps> = ({
           </Grid>
           <Grid item={true} xs={6}>
             <Typography variant="h3" gutterBottom={true}>
-              {t('Street address')}
+              {t_i18n('Street address')}
             </Typography>
             {position.street_address && (
               <ExpandableMarkdown
@@ -205,7 +205,7 @@ const PositionDetails: FunctionComponent<PositionDetailsProps> = ({
           </Grid>
           <Grid item={true} xs={6}>
             <Typography variant="h3" gutterBottom={true}>
-              {t('Postal code')}
+              {t_i18n('Postal code')}
             </Typography>
             {position.postal_code && (
               <ExpandableMarkdown source={position.postal_code} limit={300} />
@@ -213,7 +213,7 @@ const PositionDetails: FunctionComponent<PositionDetailsProps> = ({
           </Grid>
           <Grid item={true} xs={6}>
             <Typography variant="h3" gutterBottom={true}>
-              {t('City')}
+              {t_i18n('City')}
             </Typography>
             {cities
               && cities.map((name) => (
@@ -226,7 +226,7 @@ const PositionDetails: FunctionComponent<PositionDetailsProps> = ({
           </Grid>
           <Grid item={true} xs={6}>
             <Typography variant="h3" gutterBottom={true}>
-              {t('Country')}
+              {t_i18n('Country')}
             </Typography>
             {countries
               && countries.map((name) => (
@@ -239,7 +239,7 @@ const PositionDetails: FunctionComponent<PositionDetailsProps> = ({
           </Grid>
           <Grid item={true} xs={6}>
             <Typography variant="h3" gutterBottom={true}>
-              {t('Region')}
+              {t_i18n('Region')}
             </Typography>
             {regions
               && regions.map((name) => (
@@ -252,7 +252,7 @@ const PositionDetails: FunctionComponent<PositionDetailsProps> = ({
           </Grid>
           <Grid item={true} xs={6}>
             <Typography variant="h3" gutterBottom={true}>
-              {t('entity_Administrative-Area')}
+              {t_i18n('entity_Administrative-Area')}
             </Typography>
             {areas
               && areas.map((name) => (

@@ -22,7 +22,7 @@ const useStyles = makeStyles<Theme>((theme) => ({
 }));
 
 const TopMenuCases = () => {
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   const location = useLocation();
   const classes = useStyles();
   return (
@@ -40,7 +40,7 @@ const TopMenuCases = () => {
           classes={{ root: classes.button }}
         >
           <BriefcaseEyeOutline className={classes.icon} fontSize="small" />
-          {t('Incident responses')}
+          {t_i18n('Incident responses')}
         </Button>
       )}
       {!useIsHiddenEntity('Case-Rfi') && (
@@ -56,7 +56,7 @@ const TopMenuCases = () => {
           classes={{ root: classes.button }}
         >
           <BriefcaseSearchOutline className={classes.icon} fontSize="small" />
-          {t('Requests for information')}
+          {t_i18n('Requests for information')}
         </Button>
       )}
       {!useIsHiddenEntity('Case-Rft') && (
@@ -72,7 +72,7 @@ const TopMenuCases = () => {
           classes={{ root: classes.button }}
         >
           <BriefcaseRemoveOutline className={classes.icon} fontSize="small" />
-          {t('Requests for takedown')}
+          {t_i18n('Requests for takedown')}
         </Button>
       )}
       {!useIsHiddenEntity('Task') && (
@@ -88,7 +88,7 @@ const TopMenuCases = () => {
           classes={{ root: classes.button }}
         >
           <TaskAltOutlined className={classes.icon} fontSize="small" />
-          {t('Tasks')}
+          {t_i18n('Tasks')}
         </Button>
       )}
       {!useIsHiddenEntity('Feedback') && (
@@ -104,7 +104,7 @@ const TopMenuCases = () => {
           classes={{ root: classes.button }}
         >
           <BriefcaseEditOutline className={classes.icon} fontSize="small" />
-          {t('Feedbacks')}
+          {t_i18n('Feedbacks')}
         </Button>
       )}
     </div>

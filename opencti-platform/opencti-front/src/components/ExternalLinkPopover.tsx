@@ -20,7 +20,7 @@ const ExternalLinkPopover: FunctionComponent<ExternalLinkPopoverProps> = ({
   setDisplayExternalLink,
   setExternalLink,
 }) => {
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   const handleCloseExternalLink = () => {
     setDisplayExternalLink(false);
     setExternalLink(undefined);
@@ -40,13 +40,13 @@ const ExternalLinkPopover: FunctionComponent<ExternalLinkPopoverProps> = ({
     >
       <DialogContent>
         <DialogContentText>
-          {t('Do you want to browse this external link?')}
+          {t_i18n('Do you want to browse this external link?')}
         </DialogContentText>
       </DialogContent>
       <DialogActions>
-        <Button onClick={handleCloseExternalLink}>{t('Cancel')}</Button>
+        <Button onClick={handleCloseExternalLink}>{t_i18n('Cancel')}</Button>
         <Button color="secondary" onClick={handleBrowseExternalLink}>
-          {t('Browse the link')}
+          {t_i18n('Browse the link')}
         </Button>
       </DialogActions>
     </Dialog>

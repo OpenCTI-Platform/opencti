@@ -45,7 +45,7 @@ const CsvMapperRepresentationAttributeRefForm: FunctionComponent<
 CsvMapperRepresentationAttributeRefFormProps
 > = ({ indexRepresentation, attribute, label, handleErrors }) => {
   const classes = useStyles();
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
 
   const formikContext = useFormikContext<CsvMapper>();
   const { representations } = formikContext.values;
@@ -188,7 +188,7 @@ CsvMapperRepresentationAttributeRefFormProps
             autoSelect={false}
             autoHighlight
             multiple
-            getOptionLabel={(option) => representationLabel(representations.indexOf(option), option, t)
+            getOptionLabel={(option) => representationLabel(representations.indexOf(option), option, t_i18n)
             }
             options={options}
             value={getBasedOnRepresentations(attribute, options) || null}
@@ -196,7 +196,7 @@ CsvMapperRepresentationAttributeRefFormProps
             renderInput={(params) => (
               <MuiTextField
                 {...params}
-                label={t('Representation entity')}
+                label={t_i18n('Representation entity')}
                 variant="outlined"
                 size="small"
               />
@@ -212,7 +212,7 @@ CsvMapperRepresentationAttributeRefFormProps
             openOnFocus
             autoSelect={false}
             autoHighlight
-            getOptionLabel={(option) => representationLabel(representations.indexOf(option), option, t)
+            getOptionLabel={(option) => representationLabel(representations.indexOf(option), option, t_i18n)
             }
             options={options}
             value={
@@ -222,7 +222,7 @@ CsvMapperRepresentationAttributeRefFormProps
             renderInput={(params) => (
               <MuiTextField
                 {...params}
-                label={t('Representation entity')}
+                label={t_i18n('Representation entity')}
                 variant="outlined"
                 size="small"
               />

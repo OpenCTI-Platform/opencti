@@ -47,7 +47,7 @@ export const HeightFieldEdit: FunctionComponent<HeightFieldEditProps> = ({
   containerStyle,
   editContext = [],
 }): ReactElement => {
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   const { lengthPrimaryUnit, heightToPivotFormat } = useUserMetric();
   return (
     <div style={containerStyle}>
@@ -75,7 +75,7 @@ export const HeightFieldEdit: FunctionComponent<HeightFieldEditProps> = ({
                       type="number"
                       InputProps={{ inputProps: { min: 0 } }}
                       name={`${name}.${index}.measure`}
-                      label={t(`Height (${lengthPrimaryUnit})`)}
+                      label={t_i18n(`Height (${lengthPrimaryUnit})`)}
                       onSubmit={(_: string, measure: string) => {
                         commitMutation({
                           ...defaultCommitMutation,
@@ -112,7 +112,7 @@ export const HeightFieldEdit: FunctionComponent<HeightFieldEditProps> = ({
                         });
                       }}
                       TextFieldProps={{
-                        label: t('Date Seen'),
+                        label: t_i18n('Date Seen'),
                         variant: 'standard',
                         helperText: (
                           <SubscriptionFocus
@@ -173,7 +173,7 @@ export const HeightFieldEdit: FunctionComponent<HeightFieldEditProps> = ({
               }}
               style={{ marginTop: (values?.length ?? 0) > 0 ? 20 : 0 }}
             >
-              {t('Add a height')}
+              {t_i18n('Add a height')}
             </Button>
           </div>
         )}
@@ -194,7 +194,7 @@ export const HeightFieldAdd: FunctionComponent<HeightFieldAddProps> = ({
   values,
   containerStyle,
 }): ReactElement => {
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   const { lengthPrimaryUnit } = useUserMetric();
   return (
     <div style={containerStyle}>
@@ -220,7 +220,7 @@ export const HeightFieldAdd: FunctionComponent<HeightFieldAddProps> = ({
                       component={TextField}
                       variant="standard"
                       name={`${name}.${index}.measure`}
-                      label={t(`Height (${lengthPrimaryUnit})`)}
+                      label={t_i18n(`Height (${lengthPrimaryUnit})`)}
                       type="number"
                       InputProps={{ inputProps: { min: 0 } }}
                     />
@@ -228,7 +228,7 @@ export const HeightFieldAdd: FunctionComponent<HeightFieldAddProps> = ({
                       component={DatePickerField}
                       name={`${name}.${index}.date_seen`}
                       TextFieldProps={{
-                        label: t('Date Seen'),
+                        label: t_i18n('Date Seen'),
                         variant: 'standard',
                       }}
                       type="date"
@@ -259,7 +259,7 @@ export const HeightFieldAdd: FunctionComponent<HeightFieldAddProps> = ({
                 }}
                 style={{ marginTop: (values?.length ?? 0) > 0 ? 20 : 0 }}
               >
-                {t('Add a height')}
+                {t_i18n('Add a height')}
               </Button>
             </div>
           </>

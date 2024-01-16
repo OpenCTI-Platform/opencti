@@ -23,7 +23,7 @@ const useStyles = makeStyles<Theme>((theme) => ({
 const TopMenuObservations = () => {
   const classes = useStyles();
   const location = useLocation();
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
 
   return (
     <div>
@@ -40,7 +40,7 @@ const TopMenuObservations = () => {
           classes={{ root: classes.button }}
         >
           <HexagonOutline className={classes.icon} fontSize="small" />
-          {t('Observables')}
+          {t_i18n('Observables')}
         </Button>
       )}
       {!useIsHiddenEntity('Artifact') && (
@@ -56,7 +56,7 @@ const TopMenuObservations = () => {
           classes={{ root: classes.button }}
         >
           <ArchiveOutline className={classes.icon} fontSize="small" />
-          {t('Artifacts')}
+          {t_i18n('Artifacts')}
         </Button>
       )}
       {!useIsHiddenEntity('Indicator') && (
@@ -72,7 +72,7 @@ const TopMenuObservations = () => {
           classes={{ root: classes.button }}
         >
           <ShieldSearch className={classes.icon} fontSize="small" />
-          {t('Indicators')}
+          {t_i18n('Indicators')}
         </Button>
       )}
       {!useIsHiddenEntity('Infrastructure') && (
@@ -90,7 +90,7 @@ const TopMenuObservations = () => {
           classes={{ root: classes.button }}
         >
           <ServerNetwork className={classes.icon} fontSize="small" />
-          {t('Infrastructures')}
+          {t_i18n('Infrastructures')}
         </Button>
       )}
     </div>

@@ -81,12 +81,12 @@ const groupingMutationRelationDelete = graphql`
 
 const GroupingEditionOverviewComponent = (props) => {
   const { grouping, enableReferences, context, handleClose } = props;
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
 
   const basicShape = {
-    name: Yup.string().min(2).required(t('This field is required')),
+    name: Yup.string().min(2).required(t_i18n('This field is required')),
     confidence: Yup.number().nullable(),
-    context: Yup.string().required(t('This field is required')),
+    context: Yup.string().required(t_i18n('This field is required')),
     description: Yup.string().nullable(),
     references: Yup.array(),
     x_opencti_workflow_id: Yup.object(),
@@ -160,7 +160,7 @@ const GroupingEditionOverviewComponent = (props) => {
   const initialValues = R.pipe(
     R.assoc('createdBy', convertCreatedBy(grouping)),
     R.assoc('objectMarking', convertMarkings(grouping)),
-    R.assoc('x_opencti_workflow_id', convertStatus(t, grouping)),
+    R.assoc('x_opencti_workflow_id', convertStatus(t_i18n, grouping)),
     R.assoc('references', []),
     R.pick([
       'name',
@@ -194,7 +194,7 @@ const GroupingEditionOverviewComponent = (props) => {
             <Field
               component={TextField}
               name="name"
-              label={t('Name')}
+              label={t_i18n('Name')}
               fullWidth={true}
               onFocus={editor.changeFocus}
               onSubmit={handleSubmitField}
@@ -211,7 +211,7 @@ const GroupingEditionOverviewComponent = (props) => {
               variant="edit"
             />
             <OpenVocabField
-              label={t('Context')}
+              label={t_i18n('Context')}
               type="grouping-context-ov"
               name="context"
               onFocus={editor.changeFocus}
@@ -225,7 +225,7 @@ const GroupingEditionOverviewComponent = (props) => {
             <Field
               component={MarkdownField}
               name="description"
-              label={t('Description')}
+              label={t_i18n('Description')}
               fullWidth={true}
               multiline={true}
               rows="4"

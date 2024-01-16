@@ -111,7 +111,7 @@ const AlertDigestCreation: FunctionComponent<TriggerDigestCreationProps> = ({
   open,
   handleClose,
 }) => {
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   const classes = useStyles();
   const onReset = () => handleClose && handleClose();
   const [commitDigest] = useMutation(triggerDigestCreationMutation);
@@ -181,13 +181,13 @@ const AlertDigestCreation: FunctionComponent<TriggerDigestCreationProps> = ({
         component={TextField}
         variant="standard"
         name="name"
-        label={t('Name')}
+        label={t_i18n('Name')}
         fullWidth={true}
       />
       <Field
         component={MarkdownField}
         name="description"
-        label={t('Description')}
+        label={t_i18n('Description')}
         fullWidth={true}
         multiline={true}
         rows="4"
@@ -204,31 +204,31 @@ const AlertDigestCreation: FunctionComponent<TriggerDigestCreationProps> = ({
         component={SelectField}
         variant="standard"
         name="period"
-        label={t('Period')}
+        label={t_i18n('Period')}
         fullWidth={true}
         containerstyle={fieldSpacingContainerStyle}
       >
-        <MenuItem value="hour">{t('hour')}</MenuItem>
-        <MenuItem value="day">{t('day')}</MenuItem>
-        <MenuItem value="week">{t('week')}</MenuItem>
-        <MenuItem value="month">{t('month')}</MenuItem>
+        <MenuItem value="hour">{t_i18n('hour')}</MenuItem>
+        <MenuItem value="day">{t_i18n('day')}</MenuItem>
+        <MenuItem value="week">{t_i18n('week')}</MenuItem>
+        <MenuItem value="month">{t_i18n('month')}</MenuItem>
       </Field>
       {values.period === 'week' && (
         <Field
           component={SelectField}
           variant="standard"
           name="day"
-          label={t('Week day')}
+          label={t_i18n('Week day')}
           fullWidth={true}
           containerstyle={fieldSpacingContainerStyle}
         >
-          <MenuItem value="1">{t('Monday')}</MenuItem>
-          <MenuItem value="2">{t('Tuesday')}</MenuItem>
-          <MenuItem value="3">{t('Wednesday')}</MenuItem>
-          <MenuItem value="4">{t('Thursday')}</MenuItem>
-          <MenuItem value="5">{t('Friday')}</MenuItem>
-          <MenuItem value="6">{t('Saturday')}</MenuItem>
-          <MenuItem value="7">{t('Sunday')}</MenuItem>
+          <MenuItem value="1">{t_i18n('Monday')}</MenuItem>
+          <MenuItem value="2">{t_i18n('Tuesday')}</MenuItem>
+          <MenuItem value="3">{t_i18n('Wednesday')}</MenuItem>
+          <MenuItem value="4">{t_i18n('Thursday')}</MenuItem>
+          <MenuItem value="5">{t_i18n('Friday')}</MenuItem>
+          <MenuItem value="6">{t_i18n('Saturday')}</MenuItem>
+          <MenuItem value="7">{t_i18n('Sunday')}</MenuItem>
         </Field>
       )}
       {values.period === 'month' && (
@@ -236,7 +236,7 @@ const AlertDigestCreation: FunctionComponent<TriggerDigestCreationProps> = ({
           component={SelectField}
           variant="standard"
           name="day"
-          label={t('Month day')}
+          label={t_i18n('Month day')}
           fullWidth={true}
           containerstyle={fieldSpacingContainerStyle}
         >
@@ -253,7 +253,7 @@ const AlertDigestCreation: FunctionComponent<TriggerDigestCreationProps> = ({
           name="time"
           withMinutes={true}
           TextFieldProps={{
-            label: t('Time'),
+            label: t_i18n('Time'),
             variant: 'standard',
             fullWidth: true,
             style: { marginTop: 20 },
@@ -290,12 +290,12 @@ const AlertDigestCreation: FunctionComponent<TriggerDigestCreationProps> = ({
         >
           <Close fontSize="small" color="primary" />
         </IconButton>
-        <Typography variant="h6">{t('Create a regular activity digest')}</Typography>
+        <Typography variant="h6">{t_i18n('Create a regular activity digest')}</Typography>
       </div>
       <div className={classes.container}>
         <Formik<TriggerDigestActivityAddInput>
           initialValues={digestInitialValues}
-          validationSchema={digestTriggerValidation(t)}
+          validationSchema={digestTriggerValidation(t_i18n)}
           onSubmit={onDigestSubmit}
           onReset={onReset}
         >
@@ -315,7 +315,7 @@ const AlertDigestCreation: FunctionComponent<TriggerDigestCreationProps> = ({
                   disabled={isSubmitting}
                   classes={{ root: classes.button }}
                 >
-                  {t('Cancel')}
+                  {t_i18n('Cancel')}
                 </Button>
                 <Button
                   variant="contained"
@@ -324,7 +324,7 @@ const AlertDigestCreation: FunctionComponent<TriggerDigestCreationProps> = ({
                   disabled={isSubmitting}
                   classes={{ root: classes.button }}
                 >
-                  {t('Create')}
+                  {t_i18n('Create')}
                 </Button>
               </div>
             </Form>
@@ -342,24 +342,24 @@ const AlertDigestCreation: FunctionComponent<TriggerDigestCreationProps> = ({
     >
       <Formik
         initialValues={digestInitialValues}
-        validationSchema={digestTriggerValidation(t)}
+        validationSchema={digestTriggerValidation(t_i18n)}
         onSubmit={onDigestSubmit}
         onReset={onReset}
       >
         {({ submitForm, handleReset, isSubmitting, setFieldValue, values }) => (
           <div>
-            <DialogTitle>{t('Create a regular activity digest')}</DialogTitle>
+            <DialogTitle>{t_i18n('Create a regular activity digest')}</DialogTitle>
             <DialogContent>{digestFields(setFieldValue, values)}</DialogContent>
             <DialogActions classes={{ root: classes.dialogActions }}>
               <Button onClick={handleReset} disabled={isSubmitting}>
-                {t('Cancel')}
+                {t_i18n('Cancel')}
               </Button>
               <Button
                 color="secondary"
                 onClick={submitForm}
                 disabled={isSubmitting}
               >
-                {t('Create')}
+                {t_i18n('Create')}
               </Button>
             </DialogActions>
           </div>

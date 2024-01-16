@@ -27,7 +27,7 @@ const GroupHiddenTypesListComponent: FunctionComponent<{
   targetType,
   queryRef,
 }) => {
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   const data = usePreloadedQuery<GroupEntitySettingHiddenTypesListQuery>(groupEntitySettingHiddenTypesListQuery, queryRef);
   const groups = data.groups?.edges?.map((e) => e?.node) ?? [];
 
@@ -35,7 +35,7 @@ const GroupHiddenTypesListComponent: FunctionComponent<{
     <EntitySettingHiddenTypesList
       targetType={targetType}
       nodes={groups}
-      label={t('Hidden in groups')}
+      label={t_i18n('Hidden in groups')}
       link={'/dashboard/settings/accesses/groups/'}
       entityType={'Group'}
     />

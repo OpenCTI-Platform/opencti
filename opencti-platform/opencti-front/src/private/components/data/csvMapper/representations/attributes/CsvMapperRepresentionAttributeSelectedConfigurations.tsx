@@ -23,7 +23,7 @@ const useStyles = makeStyles(() => ({
 }));
 const CsvMapperRepresentionAttributeSelectedConfigurations: FunctionComponent<CsvMapperRepresentionAttributSeelectedConfigurationsProps> = ({ configuration }) => {
   const classes = useStyles();
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   if (!configuration?.pattern_date && !configuration?.separator) {
     return null;
   }
@@ -32,14 +32,14 @@ const CsvMapperRepresentionAttributeSelectedConfigurations: FunctionComponent<Cs
     {
       configuration.pattern_date
       && <>
-        <SubdirectoryArrowRight/>{t('Date pattern')}:
+        <SubdirectoryArrowRight/>{t_i18n('Date pattern')}:
         <span className={classes.selectedOption}>{configuration.pattern_date}</span>
       </>
     }
     {
       configuration.separator
       && <>
-        <SubdirectoryArrowRight/> {t('List separator')}:
+        <SubdirectoryArrowRight/> {t_i18n('List separator')}:
         <span className={classes.selectedOption}>{configuration.separator}</span>
       </>
     }

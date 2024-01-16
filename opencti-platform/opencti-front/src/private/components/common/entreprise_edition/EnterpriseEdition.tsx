@@ -32,7 +32,7 @@ const useStyles = makeStyles<Theme>((theme) => ({
 
 const EnterpriseEdition = ({ message, feature }: { message?: string, feature?: string }) => {
   const classes = useStyles();
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   return (
     <>
       <Alert
@@ -43,7 +43,7 @@ const EnterpriseEdition = ({ message, feature }: { message?: string, feature?: s
         style={{ position: 'relative' }}
       >
         <AlertTitle style={{ marginBottom: 0, fontWeight: 400 }}>
-          {t(message ?? 'You need to activate OpenCTI enterprise edition to use this feature.')}
+          {t_i18n(message ?? 'You need to activate OpenCTI enterprise edition to use this feature.')}
           <EnterpriseEditionButton feature={feature} />
         </AlertTitle>
       </Alert>

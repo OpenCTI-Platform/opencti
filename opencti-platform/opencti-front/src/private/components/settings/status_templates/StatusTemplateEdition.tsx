@@ -53,7 +53,7 @@ const StatusTemplateEdition: FunctionComponent<StatusTemplateEditionProps> = ({
 }) => {
   const data = useFragment(StatusTemplateEditionFragment, statusTemplate);
 
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   const initialValues = pick(['name', 'color'], data);
 
   const handleChangeFocus = (name: string) => {
@@ -75,7 +75,7 @@ const StatusTemplateEdition: FunctionComponent<StatusTemplateEditionProps> = ({
   };
 
   const handleSubmitField = (name: string, value: string) => {
-    statusTemplateValidation(t)
+    statusTemplateValidation(t_i18n)
       .validateAt(name, { [name]: value })
       .then(() => {
         commitMutation({
@@ -99,7 +99,7 @@ const StatusTemplateEdition: FunctionComponent<StatusTemplateEditionProps> = ({
     <Formik
       enableReinitialize={true}
       initialValues={initialValues}
-      validationSchema={statusTemplateValidation(t)}
+      validationSchema={statusTemplateValidation(t_i18n)}
       onSubmit={() => {
       }}
     >
@@ -109,7 +109,7 @@ const StatusTemplateEdition: FunctionComponent<StatusTemplateEditionProps> = ({
             component={TextField}
             variant="standard"
             name="name"
-            label={t('Name')}
+            label={t_i18n('Name')}
             fullWidth={true}
             onFocus={handleChangeFocus}
             onSubmit={handleSubmitField}
@@ -117,7 +117,7 @@ const StatusTemplateEdition: FunctionComponent<StatusTemplateEditionProps> = ({
           <Field
             component={ColorPickerField}
             name="color"
-            label={t('Color')}
+            label={t_i18n('Color')}
             fullWidth={true}
             style={{ marginTop: 20 }}
             onFocus={handleChangeFocus}

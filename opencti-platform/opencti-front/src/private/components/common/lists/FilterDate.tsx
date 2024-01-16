@@ -23,7 +23,7 @@ const FilterDate: FunctionComponent<FilterDateProps> = ({
   inputValues,
   setInputValues,
 }) => {
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
 
   const findFilterFromKey = (filters: {
     key: string,
@@ -66,7 +66,7 @@ const FilterDate: FunctionComponent<FilterDateProps> = ({
   return (
     <DatePicker
       key={filterKey}
-      label={t(filterKey)}
+      label={t_i18n(filterKey)}
       value={findFilterFromKey(inputValues, filterKey, operator)?.values[0] || null}
       onChange={(value) => handleChangeDate(value as Date)}
       onAccept={(value) => handleAcceptDate(value as Date)}

@@ -94,7 +94,7 @@ export const syncStreamCollectionQuery = graphql`
 `;
 
 const SyncCreation = ({ paginationOptions }) => {
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   const classes = useStyles();
   const [verified, setVerified] = useState(false);
   const [streams, setStreams] = useState([]);
@@ -105,7 +105,7 @@ const SyncCreation = ({ paginationOptions }) => {
       variables: { input },
       onCompleted: (data) => {
         if (data && data.synchronizerTest === 'Connection success') {
-          MESSAGING$.notifySuccess(t('Connection successfully verified'));
+          MESSAGING$.notifySuccess(t_i18n('Connection successfully verified'));
           setVerified(true);
         }
       },
@@ -179,7 +179,7 @@ const SyncCreation = ({ paginationOptions }) => {
 
   return (
     <Drawer
-      title={t('Create a synchronizer')}
+      title={t_i18n('Create a synchronizer')}
       variant={DrawerVariant.createWithPanel}
     >
       {({ onClose }) => (
@@ -195,7 +195,7 @@ const SyncCreation = ({ paginationOptions }) => {
             ssl_verify: false,
             synchronized: false,
           }}
-          validationSchema={syncCreationValidation(t)}
+          validationSchema={syncCreationValidation(t_i18n)}
           onSubmit={onSubmit}
           onReset={onClose}
         >
@@ -214,7 +214,7 @@ const SyncCreation = ({ paginationOptions }) => {
                   component={TextField}
                   variant="standard"
                   name="name"
-                  label={t('Name')}
+                  label={t_i18n('Name')}
                   fullWidth={true}
                 />
                 <Alert
@@ -224,9 +224,9 @@ const SyncCreation = ({ paginationOptions }) => {
                   variant="outlined"
                   style={{ position: 'relative' }}
                 >
-                  <AlertTitle>{t('Remote OpenCTI configuration')}</AlertTitle>
+                  <AlertTitle>{t_i18n('Remote OpenCTI configuration')}</AlertTitle>
                   <Tooltip
-                    title={t(
+                    title={t_i18n(
                       'You need to configure a valid remote OpenCTI. Token is optional to consume public streams',
                     )}
                   >
@@ -240,7 +240,7 @@ const SyncCreation = ({ paginationOptions }) => {
                     component={TextField}
                     variant="standard"
                     name="uri"
-                    label={t('Remote OpenCTI URL')}
+                    label={t_i18n('Remote OpenCTI URL')}
                     fullWidth={true}
                     disabled={streams.length > 0}
                     style={fieldSpacingContainerStyle}
@@ -249,7 +249,7 @@ const SyncCreation = ({ paginationOptions }) => {
                     component={TextField}
                     variant="standard"
                     name="token"
-                    label={t('Remote OpenCTI token')}
+                    label={t_i18n('Remote OpenCTI token')}
                     fullWidth={true}
                     disabled={streams.length > 0}
                     style={fieldSpacingContainerStyle}
@@ -259,7 +259,7 @@ const SyncCreation = ({ paginationOptions }) => {
                       component={SelectField}
                       variant="standard"
                       name="stream_id"
-                      label={t('Remote OpenCTI stream ID')}
+                      label={t_i18n('Remote OpenCTI stream ID')}
                       inputProps={{ name: 'stream_id', id: 'stream_id' }}
                       containerstyle={fieldSpacingContainerStyle}
                       renderValue={(value) => streams.filter((stream) => stream.value === value).at(0)
@@ -315,7 +315,7 @@ const SyncCreation = ({ paginationOptions }) => {
                         disabled={isSubmitting}
                         classes={{ root: classes.button }}
                       >
-                        {t('Validate')}
+                        {t_i18n('Validate')}
                       </Button>
                     )}
                     {streams.length > 0 && (
@@ -330,14 +330,14 @@ const SyncCreation = ({ paginationOptions }) => {
                         disabled={isSubmitting}
                         classes={{ root: classes.button }}
                       >
-                        {t('Reset')}
+                        {t_i18n('Reset')}
                       </Button>
                     )}
                   </div>
                 </Alert>
                 <CreatorField
                   name="user_id"
-                  label={t(
+                  label={t_i18n(
                     'User responsible for data creation (empty = System)',
                   )}
                   containerStyle={fieldSpacingContainerStyle}
@@ -346,7 +346,7 @@ const SyncCreation = ({ paginationOptions }) => {
                   component={DateTimePickerField}
                   name="current_state_date"
                   TextFieldProps={{
-                    label: t('Starting synchronization (empty = from start)'),
+                    label: t_i18n('Starting synchronization (empty = from start)'),
                     variant: 'standard',
                     fullWidth: true,
                     style: { marginTop: 20 },
@@ -357,18 +357,18 @@ const SyncCreation = ({ paginationOptions }) => {
                   type="checkbox"
                   name="listen_deletion"
                   containerstyle={{ marginTop: 20 }}
-                  label={t('Take deletions into account')}
+                  label={t_i18n('Take deletions into account')}
                 />
                 <Field
                   component={SwitchField}
                   type="checkbox"
                   name="ssl_verify"
                   containerstyle={{ marginBottom: 20 }}
-                  label={t('Verify SSL certificate')}
+                  label={t_i18n('Verify SSL certificate')}
                 />
                 <Accordion>
                   <AccordionSummary id="accordion-panel">
-                    <Typography>{t('Advanced options')}</Typography>
+                    <Typography>{t_i18n('Advanced options')}</Typography>
                   </AccordionSummary>
                   <AccordionDetails>
                     <Alert
@@ -382,7 +382,7 @@ const SyncCreation = ({ paginationOptions }) => {
                       style={{ position: 'relative' }}
                     >
                       <div>
-                        {t('Use these options if you know what you are doing')}
+                        {t_i18n('Use these options if you know what you are doing')}
                       </div>
                     </Alert>
                     <Field
@@ -390,10 +390,10 @@ const SyncCreation = ({ paginationOptions }) => {
                       containerstyle={{ marginTop: 20 }}
                       type="checkbox"
                       name="no_dependencies"
-                      label={t('Avoid dependencies resolution')}
+                      label={t_i18n('Avoid dependencies resolution')}
                     />
                     <div>
-                      {t(
+                      {t_i18n(
                         'Use this option if you want to prevent any built in relations resolutions (references like createdBy will still be auto resolved)',
                       )}
                     </div>
@@ -403,15 +403,15 @@ const SyncCreation = ({ paginationOptions }) => {
                       type="checkbox"
                       containerstyle={{ marginLeft: 2 }}
                       name="synchronized"
-                      label={t('Use perfect synchronization')}
+                      label={t_i18n('Use perfect synchronization')}
                     />
                     <div>
-                      {t(
+                      {t_i18n(
                         'Use this option only in case of platform to platform replication',
                       )}
                     </div>
                     <div>
-                      {t(
+                      {t_i18n(
                         'Every data fetched from this synchronizer will be written as the only source of truth',
                       )}
                     </div>
@@ -424,7 +424,7 @@ const SyncCreation = ({ paginationOptions }) => {
                     disabled={isSubmitting}
                     classes={{ root: classes.button }}
                   >
-                    {t('Cancel')}
+                    {t_i18n('Cancel')}
                   </Button>
                   <Button
                     variant="contained"
@@ -433,7 +433,7 @@ const SyncCreation = ({ paginationOptions }) => {
                     disabled={!values.stream_id || isSubmitting}
                     classes={{ root: classes.button }}
                   >
-                    {t('Verify')}
+                    {t_i18n('Verify')}
                   </Button>
                   <Button
                     variant="contained"
@@ -442,7 +442,7 @@ const SyncCreation = ({ paginationOptions }) => {
                     disabled={!values.stream_id || !verified || isSubmitting}
                     classes={{ root: classes.button }}
                   >
-                    {t('Create')}
+                    {t_i18n('Create')}
                   </Button>
                 </div>
               </Form>

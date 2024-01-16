@@ -100,17 +100,17 @@ const ThreatActorIndividualBiographicsComponent = ({
   threatActorIndividual,
 }: ThreatActorIndividualBiographicsComponentProps) => {
   const classes = useStyles();
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   return (
     <div style={{ height: '100%' }}>
       <Typography variant="h4" gutterBottom={true}>
-        {t('Biographic Information')}
+        {t_i18n('Biographic Information')}
       </Typography>
       <Paper classes={{ root: classes.paper }} variant="outlined">
         <Grid container={true} spacing={3}>
           <DetailGrid
-            title={t('Eye Color')}
-            tooltip={t('Known observed eye color(s) for the Identity.')}
+            title={t_i18n('Eye Color')}
+            tooltip={t_i18n('Known observed eye color(s) for the Identity.')}
           >
             <ItemOpenVocab
               type="eye-color-ov"
@@ -120,8 +120,8 @@ const ThreatActorIndividualBiographicsComponent = ({
           </DetailGrid>
 
           <DetailGrid
-            title={t('Hair Color')}
-            tooltip={t('Known observed hair color(s) for the Identity.')}
+            title={t_i18n('Hair Color')}
+            tooltip={t_i18n('Known observed hair color(s) for the Identity.')}
           >
             <ItemOpenVocab
               type="hair-color-ov"
@@ -131,8 +131,8 @@ const ThreatActorIndividualBiographicsComponent = ({
           </DetailGrid>
 
           <DetailGrid
-            title={t('Height')}
-            tooltip={t('Known observed height(s) for the Identity.')}
+            title={t_i18n('Height')}
+            tooltip={t_i18n('Known observed height(s) for the Identity.')}
           >
             <List dense={true} disablePadding={true} id={'HeightIDRead'}>
               {(threatActorIndividual.height ?? []).length > 0 ? (
@@ -153,8 +153,8 @@ const ThreatActorIndividualBiographicsComponent = ({
           </DetailGrid>
 
           <DetailGrid
-            title={t('Weight')}
-            tooltip={t('Known observed weight(s) for the Individual.')}
+            title={t_i18n('Weight')}
+            tooltip={t_i18n('Known observed weight(s) for the Individual.')}
           >
             <List dense={true} disablePadding={true} id={'WeightIDRead'}>
               {(threatActorIndividual.weight ?? []).length > 0 ? (

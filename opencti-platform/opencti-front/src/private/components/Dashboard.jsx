@@ -161,7 +161,7 @@ const useStyles = makeStyles((theme) => ({
 
 // region inner components
 const NoTableElement = () => {
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   return (
     <div style={{ display: 'table', height: '100%', width: '100%' }}>
       <span
@@ -171,7 +171,7 @@ const NoTableElement = () => {
           textAlign: 'center',
         }}
       >
-        {t('No entities of this type has been found.')}
+        {t_i18n('No entities of this type has been found.')}
       </span>
     </div>
   );
@@ -191,7 +191,7 @@ const dashboardStixDomainObjectsNumberQuery = graphql`
 `;
 const TotalEntitiesCardComponent = ({ title, Icon, queryRef }) => {
   const classes = useStyles();
-  const { t, n } = useFormatter();
+  const { t_i18n, n } = useFormatter();
   const data = usePreloadedQuery(
     dashboardStixDomainObjectsNumberQuery,
     queryRef,
@@ -200,11 +200,11 @@ const TotalEntitiesCardComponent = ({ title, Icon, queryRef }) => {
   const difference = total - data.stixDomainObjectsNumber.count;
   return (
     <CardContent>
-      <div className={classes.title}>{t(title)}</div>
+      <div className={classes.title}>{t_i18n(title)}</div>
       <div className={classes.number}>{n(total)}</div>
       <ItemNumberDifference
         difference={difference}
-        description={t('24 hours')}
+        description={t_i18n('24 hours')}
       />
       <div className={classes.icon}>
         <Icon color="inherit" fontSize="large" />
@@ -249,7 +249,7 @@ const dashboardStixCoreRelationshipsNumberQuery = graphql`
 `;
 const TotalRelationshipsCardComponent = ({ title, Icon, queryRef }) => {
   const classes = useStyles();
-  const { t, n } = useFormatter();
+  const { t_i18n, n } = useFormatter();
   const data = usePreloadedQuery(
     dashboardStixCoreRelationshipsNumberQuery,
     queryRef,
@@ -258,11 +258,11 @@ const TotalRelationshipsCardComponent = ({ title, Icon, queryRef }) => {
   const difference = total - data.stixCoreRelationshipsNumber.count;
   return (
     <CardContent>
-      <div className={classes.title}>{t(title)}</div>
+      <div className={classes.title}>{t_i18n(title)}</div>
       <div className={classes.number}>{n(total)}</div>
       <ItemNumberDifference
         difference={difference}
-        description={t('24 hours')}
+        description={t_i18n('24 hours')}
       />
       <div className={classes.icon}>
         <Icon color="inherit" fontSize="large" />
@@ -304,7 +304,7 @@ const dashboardStixCyberObservablesNumberQuery = graphql`
 `;
 const TotalObservablesCardComponent = ({ title, Icon, queryRef }) => {
   const classes = useStyles();
-  const { t, n } = useFormatter();
+  const { t_i18n, n } = useFormatter();
   const data = usePreloadedQuery(
     dashboardStixCyberObservablesNumberQuery,
     queryRef,
@@ -313,11 +313,11 @@ const TotalObservablesCardComponent = ({ title, Icon, queryRef }) => {
   const difference = total - data.stixCyberObservablesNumber.count;
   return (
     <CardContent>
-      <div className={classes.title}>{t(title)}</div>
+      <div className={classes.title}>{t_i18n(title)}</div>
       <div className={classes.number}>{n(total)}</div>
       <ItemNumberDifference
         difference={difference}
-        description={t('24 hours')}
+        description={t_i18n('24 hours')}
       />
       <div className={classes.icon}>
         <Icon color="inherit" fontSize="large" />
@@ -468,7 +468,7 @@ const dashboardStixDomainObjectsTimeSeriesQuery = graphql`
 const IngestedEntitiesGraphComponent = ({ queryRef }) => {
   const classes = useStyles();
   const theme = useTheme();
-  const { md, t } = useFormatter();
+  const { md, t_i18n } = useFormatter();
   const data = usePreloadedQuery(
     dashboardStixDomainObjectsTimeSeriesQuery,
     queryRef,
@@ -493,7 +493,7 @@ const IngestedEntitiesGraphComponent = ({ queryRef }) => {
         )}
         series={[
           {
-            name: t('Ingested entities'),
+            name: t_i18n('Ingested entities'),
             data: chartData,
           },
         ]}
@@ -672,7 +672,7 @@ const dashboardLastStixDomainObjectsQuery = graphql`
 `;
 const LastIngestedAnalysesComponent = ({ queryRef }) => {
   const classes = useStyles();
-  const { t, fsd } = useFormatter();
+  const { t_i18n, fsd } = useFormatter();
   const data = usePreloadedQuery(dashboardLastStixDomainObjectsQuery, queryRef);
   const objects = data.stixDomainObjects;
   if (objects.edges.length === 0) {
@@ -712,7 +712,7 @@ const LastIngestedAnalysesComponent = ({ queryRef }) => {
                 classes={{ root: classes.chipInList }}
                 color="primary"
                 variant="outlined"
-                label={stixDomainObject.report_types?.at(0) ?? t('Unknown')}
+                label={stixDomainObject.report_types?.at(0) ?? t_i18n('Unknown')}
               />
             </div>
             <div className={classes.itemAuthor}>
@@ -783,7 +783,7 @@ const dashboardStixCyberObservablesDistributionQuery = graphql`
 const ObservablesDistributionComponent = ({ queryRef }) => {
   const classes = useStyles();
   const theme = useTheme();
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   const data = usePreloadedQuery(
     dashboardStixCyberObservablesDistributionQuery,
     queryRef,
@@ -794,7 +794,7 @@ const ObservablesDistributionComponent = ({ queryRef }) => {
   if (distribution.length === 0) {
     return <NoTableElement />;
   }
-  const labels = data.stixCyberObservablesDistribution.map((n) => t(`entity_${n.label}`));
+  const labels = data.stixCyberObservablesDistribution.map((n) => t_i18n(`entity_${n.label}`));
   return (
     <div className={classes.graphContainer}>
       <Chart
@@ -827,13 +827,13 @@ const ObservablesDistribution = () => {
 // endregion
 
 const DefaultDashboard = ({ timeField }) => {
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   const classes = useStyles();
   const theme = useTheme();
   return (
     <Security
       needs={[KNOWLEDGE]}
-      placeholder={t(
+      placeholder={t_i18n(
         'You do not have any access to the knowledge of this OpenCTI instance.',
       )}
     >
@@ -909,7 +909,7 @@ const DefaultDashboard = ({ timeField }) => {
       <Grid container={true} spacing={3} style={{ marginTop: -15 }}>
         <Grid item={true} xs={4}>
           <Typography variant="h4" gutterBottom={true}>
-            {t('Top Labels (3 last months)')}
+            {t_i18n('Top Labels (3 last months)')}
           </Typography>
           <Paper
             classes={{ root: classes.paper }}
@@ -923,7 +923,7 @@ const DefaultDashboard = ({ timeField }) => {
         </Grid>
         <Grid item={true} xs={8}>
           <Typography variant="h4" gutterBottom={true}>
-            {t('Ingested entities')}
+            {t_i18n('Ingested entities')}
           </Typography>
           <Paper
             classes={{ root: classes.paper }}
@@ -972,13 +972,13 @@ const DefaultDashboard = ({ timeField }) => {
                 },
               ]
             }
-            title={t('Top 10 active entities (3 last months)')}
+            title={t_i18n('Top 10 active entities (3 last months)')}
             startDate={monthsAgo(3)}
           />
         </Grid>
         <Grid item={true} xs={6}>
           <Typography variant="h4" gutterBottom={true}>
-            {t('Targeted countries (3 last months)')}
+            {t_i18n('Targeted countries (3 last months)')}
           </Typography>
           <Paper
             classes={{ root: classes.paper }}
@@ -1001,7 +1001,7 @@ const DefaultDashboard = ({ timeField }) => {
       <Grid container={true} spacing={3} style={{ marginTop: 5 }}>
         <Grid item={true} xs={8}>
           <Typography variant="h4" gutterBottom={true}>
-            {t('Last ingested reports (creation date in the platform)')}
+            {t_i18n('Last ingested reports (creation date in the platform)')}
           </Typography>
           <Paper
             classes={{ root: classes.paper }}
@@ -1015,7 +1015,7 @@ const DefaultDashboard = ({ timeField }) => {
         </Grid>
         <Grid item={true} xs={4}>
           <Typography variant="h4" gutterBottom={true}>
-            {t('Observables distribution')}
+            {t_i18n('Observables distribution')}
           </Typography>
           <Paper
             classes={{ root: classes.paper }}
@@ -1072,11 +1072,11 @@ const WorkspaceDashboard = ({ dashboard, timeField }) => {
   );
 };
 const CustomDashboard = ({ dashboard, timeField }) => {
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   return (
     <Security
       needs={[EXPLORE]}
-      placeholder={t(
+      placeholder={t_i18n(
         'You do not have any access to the explore part of this OpenCTI instance.',
       )}
     >

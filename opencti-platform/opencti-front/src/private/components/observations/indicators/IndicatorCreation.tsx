@@ -122,26 +122,26 @@ export const IndicatorCreationForm: FunctionComponent<IndicatorFormProps> = ({
   defaultMarkingDefinitions,
 }) => {
   const classes = useStyles();
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   const basicShape = {
-    name: Yup.string().min(2).required(t('This field is required')),
+    name: Yup.string().min(2).required(t_i18n('This field is required')),
     indicator_types: Yup.array().nullable(),
     confidence: Yup.number().nullable(),
-    pattern: Yup.string().required(t('This field is required')),
-    pattern_type: Yup.string().required(t('This field is required')),
+    pattern: Yup.string().required(t_i18n('This field is required')),
+    pattern_type: Yup.string().required(t_i18n('This field is required')),
     x_opencti_main_observable_type: Yup.string().required(
-      t('This field is required'),
+      t_i18n('This field is required'),
     ),
     valid_from: Yup.date()
       .nullable()
-      .typeError(t('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)')),
+      .typeError(t_i18n('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)')),
     valid_until: Yup.date()
       .nullable()
       .min(
         Yup.ref('valid_from'),
         'The valid until date can\'t be before valid from date',
       )
-      .typeError(t('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)')),
+      .typeError(t_i18n('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)')),
     x_mitre_platforms: Yup.array().nullable(),
     x_opencti_score: Yup.number().nullable(),
     description: Yup.string().nullable(),
@@ -238,11 +238,11 @@ export const IndicatorCreationForm: FunctionComponent<IndicatorFormProps> = ({
             component={TextField}
             variant="standard"
             name="name"
-            label={t('Name')}
+            label={t_i18n('Name')}
             fullWidth={true}
           />
           <OpenVocabField
-            label={t('Indicator types')}
+            label={t_i18n('Indicator types')}
             type="indicator-type-ov"
             name="indicator_types"
             multiple={true}
@@ -254,7 +254,7 @@ export const IndicatorCreationForm: FunctionComponent<IndicatorFormProps> = ({
             containerStyle={fieldSpacingContainerStyle}
           />
           <OpenVocabField
-            label={t('Pattern type')}
+            label={t_i18n('Pattern type')}
             type="pattern_type_ov"
             name="pattern_type"
             onChange={(name, value) => setFieldValue(name, value)}
@@ -265,7 +265,7 @@ export const IndicatorCreationForm: FunctionComponent<IndicatorFormProps> = ({
             component={TextField}
             variant="standard"
             name="pattern"
-            label={t('Pattern')}
+            label={t_i18n('Pattern')}
             fullWidth={true}
             multiline={true}
             rows="4"
@@ -274,14 +274,14 @@ export const IndicatorCreationForm: FunctionComponent<IndicatorFormProps> = ({
           />
           <TypesField
             name="x_opencti_main_observable_type"
-            label={t('Main observable type')}
+            label={t_i18n('Main observable type')}
             containerstyle={fieldSpacingContainerStyle}
           />
           <Field
             component={DateTimePickerField}
             name="valid_from"
             TextFieldProps={{
-              label: t('Valid from'),
+              label: t_i18n('Valid from'),
               variant: 'standard',
               fullWidth: true,
               style: { marginTop: 20 },
@@ -291,14 +291,14 @@ export const IndicatorCreationForm: FunctionComponent<IndicatorFormProps> = ({
             component={DateTimePickerField}
             name="valid_until"
             TextFieldProps={{
-              label: t('Valid until'),
+              label: t_i18n('Valid until'),
               variant: 'standard',
               fullWidth: true,
               style: { marginTop: 20 },
             }}
           />
           <OpenVocabField
-            label={t('Platforms')}
+            label={t_i18n('Platforms')}
             type="platforms_ov"
             name="x_mitre_platforms"
             onChange={(name, value) => setFieldValue(name, value)}
@@ -309,7 +309,7 @@ export const IndicatorCreationForm: FunctionComponent<IndicatorFormProps> = ({
             component={TextField}
             variant="standard"
             name="x_opencti_score"
-            label={t('Score')}
+            label={t_i18n('Score')}
             type="number"
             fullWidth={true}
             style={{ marginTop: 20 }}
@@ -317,7 +317,7 @@ export const IndicatorCreationForm: FunctionComponent<IndicatorFormProps> = ({
           <Field
             component={MarkdownField}
             name="description"
-            label={t('Description')}
+            label={t_i18n('Description')}
             fullWidth={true}
             multiline={true}
             rows="4"
@@ -353,7 +353,7 @@ export const IndicatorCreationForm: FunctionComponent<IndicatorFormProps> = ({
             component={SwitchField}
             type="checkbox"
             name="x_opencti_detection"
-            label={t('Detection')}
+            label={t_i18n('Detection')}
             fullWidth={true}
             containerstyle={{ marginTop: 20 }}
           />
@@ -361,7 +361,7 @@ export const IndicatorCreationForm: FunctionComponent<IndicatorFormProps> = ({
             component={SwitchField}
             type="checkbox"
             name="createObservables"
-            label={t('Create observables from this indicator')}
+            label={t_i18n('Create observables from this indicator')}
             fullWidth={true}
             containerstyle={{ marginTop: 10 }}
           />
@@ -372,7 +372,7 @@ export const IndicatorCreationForm: FunctionComponent<IndicatorFormProps> = ({
               disabled={isSubmitting}
               classes={{ root: classes.button }}
             >
-              {t('Cancel')}
+              {t_i18n('Cancel')}
             </Button>
             <Button
               variant="contained"
@@ -381,7 +381,7 @@ export const IndicatorCreationForm: FunctionComponent<IndicatorFormProps> = ({
               disabled={isSubmitting}
               classes={{ root: classes.button }}
             >
-              {t('Create')}
+              {t_i18n('Create')}
             </Button>
           </div>
         </Form>
@@ -397,7 +397,7 @@ interface IndicatorCreationProps {
 }
 
 const IndicatorCreation: FunctionComponent<IndicatorCreationProps> = ({ paginationOptions, contextual, display }) => {
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   const classes = useStyles();
   const [open, setOpen] = useState(false);
   const handleOpen = () => setOpen(true);
@@ -428,7 +428,7 @@ const IndicatorCreation: FunctionComponent<IndicatorCreationProps> = ({ paginati
           onClose={handleClose}
           PaperProps={{ elevation: 1 }}
         >
-          <DialogTitle>{t('Create an indicator')}</DialogTitle>
+          <DialogTitle>{t_i18n('Create an indicator')}</DialogTitle>
           <DialogContent>
             <IndicatorCreationForm
               updater={updater}
@@ -443,7 +443,7 @@ const IndicatorCreation: FunctionComponent<IndicatorCreationProps> = ({ paginati
 
   return (
     <Drawer
-      title={t('Create an indicator')}
+      title={t_i18n('Create an indicator')}
       variant={DrawerVariant.createWithLargePanel}
     >
       {({ onClose }) => (

@@ -26,14 +26,14 @@ interface DataSourceEditionContainerProps {
 }
 
 const DataSourceEditionContainer: FunctionComponent<DataSourceEditionContainerProps> = ({ handleClose, queryRef, open }) => {
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
 
   const { dataSource } = usePreloadedQuery(dataSourceEditionQuery, queryRef);
 
   if (dataSource) {
     return (
       <Drawer
-        title={t('Update a data source')}
+        title={t_i18n('Update a data source')}
         variant={open == null ? DrawerVariant.update : undefined}
         context={dataSource.editContext}
         onClose={handleClose}

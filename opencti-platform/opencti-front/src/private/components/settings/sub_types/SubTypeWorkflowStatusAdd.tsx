@@ -46,7 +46,7 @@ const SubTypeWorkflowStatusAdd: FunctionComponent<
 SubTypeWorkflowStatusAddProps
 > = ({ display, subTypeId }) => {
   const classes = useStyles();
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   const [open, setOpen] = useState(false);
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
@@ -85,7 +85,7 @@ SubTypeWorkflowStatusAddProps
       </Fab>
       <Formik
         initialValues={initialValues}
-        validationSchema={statusValidation(t)}
+        validationSchema={statusValidation(t_i18n)}
         onSubmit={onSubmit}
         onReset={onReset}
       >
@@ -97,7 +97,7 @@ SubTypeWorkflowStatusAddProps
               onClose={handleClose}
               fullWidth={true}
             >
-              <DialogTitle>{t('Create a status')}</DialogTitle>
+              <DialogTitle>{t_i18n('Create a status')}</DialogTitle>
               <DialogContent>
                 <StatusTemplateField
                   name="template"
@@ -108,7 +108,7 @@ SubTypeWorkflowStatusAddProps
                   component={TextField}
                   variant="standard"
                   name="order"
-                  label={t('Order')}
+                  label={t_i18n('Order')}
                   fullWidth={true}
                   type="number"
                   style={{ marginTop: 20 }}
@@ -116,14 +116,14 @@ SubTypeWorkflowStatusAddProps
               </DialogContent>
               <DialogActions>
                 <Button onClick={handleReset} disabled={isSubmitting}>
-                  {t('Cancel')}
+                  {t_i18n('Cancel')}
                 </Button>
                 <Button
                   color="secondary"
                   onClick={submitForm}
                   disabled={isSubmitting}
                 >
-                  {t('Create')}
+                  {t_i18n('Create')}
                 </Button>
               </DialogActions>
             </Dialog>

@@ -97,11 +97,11 @@ export const CaseRftCreationForm: FunctionComponent<CaseRftFormProps> = ({
   defaultMarkingDefinitions,
 }) => {
   const classes = useStyles();
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   const history = useHistory();
   const [mapAfter, setMapAfter] = useState<boolean>(false);
   const basicShape = {
-    name: Yup.string().min(2).required(t('This field is required')),
+    name: Yup.string().min(2).required(t_i18n('This field is required')),
     description: Yup.string().nullable(),
     content: Yup.string().nullable(),
   };
@@ -189,7 +189,7 @@ export const CaseRftCreationForm: FunctionComponent<CaseRftFormProps> = ({
             component={TextField}
             variant="standard"
             name="name"
-            label={t('Name')}
+            label={t_i18n('Name')}
             fullWidth={true}
             detectDuplicate={['Case-Rft']}
             style={{ marginBottom: '20px' }}
@@ -198,13 +198,13 @@ export const CaseRftCreationForm: FunctionComponent<CaseRftFormProps> = ({
             component={DateTimePickerField}
             name="created"
             TextFieldProps={{
-              label: t('Request For Takedown Date'),
+              label: t_i18n('Request For Takedown Date'),
               variant: 'standard',
               fullWidth: true,
             }}
           />
           <OpenVocabField
-            label={t('Request for takedown type')}
+            label={t_i18n('Request for takedown type')}
             type="request_for_takedown_types_ov"
             name="takedown_types"
             multiple
@@ -212,14 +212,14 @@ export const CaseRftCreationForm: FunctionComponent<CaseRftFormProps> = ({
             containerStyle={fieldSpacingContainerStyle}
           />
           <OpenVocabField
-            label={t('Severity')}
+            label={t_i18n('Severity')}
             type="case_severity_ov"
             name="severity"
             onChange={(name, value) => setFieldValue(name, value)}
             containerStyle={fieldSpacingContainerStyle}
           />
           <OpenVocabField
-            label={t('Priority')}
+            label={t_i18n('Priority')}
             type="case_priority_ov"
             name="priority"
             onChange={(name, value) => setFieldValue(name, value)}
@@ -236,7 +236,7 @@ export const CaseRftCreationForm: FunctionComponent<CaseRftFormProps> = ({
           <Field
             component={MarkdownField}
             name="description"
-            label={t('Description')}
+            label={t_i18n('Description')}
             fullWidth={true}
             multiline={true}
             rows="4"
@@ -245,7 +245,7 @@ export const CaseRftCreationForm: FunctionComponent<CaseRftFormProps> = ({
           <Field
             component={RichTextField}
             name="content"
-            label={t('Content')}
+            label={t_i18n('Content')}
             fullWidth={true}
             style={{
               ...fieldSpacingContainerStyle,
@@ -290,7 +290,7 @@ export const CaseRftCreationForm: FunctionComponent<CaseRftFormProps> = ({
               disabled={isSubmitting}
               classes={{ root: classes.button }}
             >
-              {t('Cancel')}
+              {t_i18n('Cancel')}
             </Button>
             <Button
               variant="contained"
@@ -299,7 +299,7 @@ export const CaseRftCreationForm: FunctionComponent<CaseRftFormProps> = ({
               disabled={isSubmitting}
               classes={{ root: classes.button }}
             >
-              {t('Create')}
+              {t_i18n('Create')}
             </Button>
             {values.content.length > 0 && (
               <Button
@@ -312,7 +312,7 @@ export const CaseRftCreationForm: FunctionComponent<CaseRftFormProps> = ({
                 disabled={isSubmitting}
                 classes={{ root: classes.button }}
               >
-                {t('Create and map')}
+                {t_i18n('Create and map')}
               </Button>
             )}
           </div>
@@ -327,7 +327,7 @@ const CaseRftCreation = ({
 }: {
   paginationOptions: CaseRftLinesCasesPaginationQuery$variables;
 }) => {
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   const updater = (store: RecordSourceSelectorProxy) => insertNode(
     store,
     'Pagination_case_caseRfts',
@@ -336,7 +336,7 @@ const CaseRftCreation = ({
   );
   return (
     <Drawer
-      title={t('Create a request for takedown')}
+      title={t_i18n('Create a request for takedown')}
       variant={DrawerVariant.create}
     >
       <CaseRftCreationForm updater={updater} />

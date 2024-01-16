@@ -73,7 +73,7 @@ const AuthorizedMembersField = ({
   showCreatorLine = false,
   canDeactivate = false,
 }: AuthorizedMembersFieldProps) => {
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   const { setFieldValue } = form;
   const { name, value } = field;
   // Value in sync with internal Formik field 'applyAccesses'.
@@ -89,19 +89,19 @@ const AuthorizedMembersField = ({
     (o) => o.value === CREATOR_AUTHORIZED_CONFIG.id,
   );
   const allMembersOption: Option = {
-    label: t(ALL_MEMBERS_AUTHORIZED_CONFIG.labelKey),
+    label: t_i18n(ALL_MEMBERS_AUTHORIZED_CONFIG.labelKey),
     type: ALL_MEMBERS_AUTHORIZED_CONFIG.type,
     value: ALL_MEMBERS_AUTHORIZED_CONFIG.id,
   };
   const creatorOption: Option = {
-    label: t(CREATOR_AUTHORIZED_CONFIG.labelKey),
+    label: t_i18n(CREATOR_AUTHORIZED_CONFIG.labelKey),
     type: CREATOR_AUTHORIZED_CONFIG.type,
     value: CREATOR_AUTHORIZED_CONFIG.id,
   };
   const accessRights = [
-    { label: t('can view'), value: 'view' },
-    { label: t('can edit'), value: 'edit' },
-    { label: t('can manage'), value: 'admin' },
+    { label: t_i18n('can view'), value: 'view' },
+    { label: t_i18n('can edit'), value: 'edit' },
+    { label: t_i18n('can manage'), value: 'admin' },
   ];
   /**
    * Add a new authorized member in the value of the field,
@@ -222,11 +222,11 @@ const AuthorizedMembersField = ({
   const changeCreatorAccess = (accessRight: AccessRight) => {
     changeMemberAccess(CREATOR_AUTHORIZED_CONFIG.id, accessRight);
   };
-  let accessInfoMessage = t('info_authorizedmembers_workspace');
+  let accessInfoMessage = t_i18n('info_authorizedmembers_workspace');
   if (canDeactivate) {
     accessInfoMessage = applyAccesses
-      ? t('info_authorizedmembers_knowledge_off')
-      : t('info_authorizedmembers_knowledge_on');
+      ? t_i18n('info_authorizedmembers_knowledge_off')
+      : t_i18n('info_authorizedmembers_knowledge_on');
   }
   return (
     <>
@@ -260,7 +260,7 @@ const AuthorizedMembersField = ({
                 containerstyle={{ marginTop: 15 }}
                 type="checkbox"
                 name="applyAccesses"
-                label={t('Activate access restriction')}
+                label={t_i18n('Activate access restriction')}
                 disabled={!canDeactivate}
                 onChange={(_: string, val: string) => {
                   changeApplyAccesses(val === 'true', resetForm, setField);
@@ -278,7 +278,7 @@ const AuthorizedMembersField = ({
                 icon={false}
                 variant="outlined"
               >
-                <AlertTitle>{t('Add new specific access')}</AlertTitle>
+                <AlertTitle>{t_i18n('Add new specific access')}</AlertTitle>
                 <div
                   style={{
                     display: 'flex',
@@ -295,14 +295,14 @@ const AuthorizedMembersField = ({
                       (a) => a.value === values.newAccessMember?.value,
                     ) && (
                       <FormHelperText style={{ position: 'absolute' }}>
-                        {t('Access already granted')}
+                        {t_i18n('Access already granted')}
                       </FormHelperText>
                     )}
                   </div>
                   <Field
                     name="newAccessRight"
                     component={SelectField}
-                    label={t('Access right')}
+                    label={t_i18n('Access right')}
                     style={{ m: 1, minWidth: 120 }}
                     size="small"
                     disabled={!values.applyAccesses}
@@ -346,7 +346,7 @@ const AuthorizedMembersField = ({
                     mb: 0,
                   }}
                 >
-                  {t('Current specific accesses')}
+                  {t_i18n('Current specific accesses')}
                 </Typography>
 
                 <List sx={{ pb: 0 }}>

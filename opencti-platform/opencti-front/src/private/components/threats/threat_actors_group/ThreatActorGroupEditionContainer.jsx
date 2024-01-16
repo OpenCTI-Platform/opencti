@@ -14,13 +14,13 @@ const ThreatActorGroupEditionContainer = ({
   threatActorGroup,
   open,
 }) => {
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   const { editContext } = threatActorGroup;
   const [currentTab, setCurrentTab] = useState(0);
   const handleChangeTab = (event, value) => setCurrentTab(value);
   return (
     <Drawer
-      title={t('Update a threat actor group')}
+      title={t_i18n('Update a threat actor group')}
       open={open}
       onClose={handleClose}
       variant={open == null ? DrawerVariant.update : undefined}
@@ -29,8 +29,8 @@ const ThreatActorGroupEditionContainer = ({
       <>
         <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
           <Tabs value={currentTab} onChange={handleChangeTab}>
-            <Tab label={t('Overview')} />
-            <Tab label={t('Details')} />
+            <Tab label={t_i18n('Overview')} />
+            <Tab label={t_i18n('Details')} />
           </Tabs>
         </Box>
         {currentTab === 0 && (
