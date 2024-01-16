@@ -1713,6 +1713,11 @@ const adaptFilterToEntityTypeFilterKey = (filter) => {
     return { newFilter, newFilterGroup };
   }
 
+  // In case where filter values is an empty array
+  if (filter.values.length === 0) {
+    return { newFilter, newFilterGroup };
+  }
+
   // at this point, operator !== nil and operator !== not_nil
   if (mode === 'or') {
     // in elastic, having several keys is an implicit 'or' between the keys, so we can just add the key in the list
