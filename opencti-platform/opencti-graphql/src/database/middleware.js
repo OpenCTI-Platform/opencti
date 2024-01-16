@@ -280,12 +280,14 @@ const batchListThrough = async (context, user, sources, sourceSide, relationType
   const targetsWithTypes = {};
   relations.forEach((relation) => {
     const relationTarget = targets.find((i) => i.id === relation[`${opposite}Id`]);
-    const isInferred = isInferredIndex(relation._index);
-    const targetType = isInferred ? 'inferred' : 'manual';
-    if (targetsWithTypes[relationTarget.id] && !targetsWithTypes[relationTarget.id].i_types.includes(targetType)) {
-      targetsWithTypes[relationTarget.id].i_types.push(targetType);
-    } else {
-      targetsWithTypes[relationTarget.id] = { ...relationTarget, i_types: [targetType] };
+    if (relationTarget) { // Could be empty due to restriction on the entity but not on the relationship
+      const isInferred = isInferredIndex(relation._index);
+      const targetType = isInferred ? 'inferred' : 'manual';
+      if (targetsWithTypes[relationTarget.id] && !targetsWithTypes[relationTarget.id].i_types.includes(targetType)) {
+        targetsWithTypes[relationTarget.id].i_types.push(targetType);
+      } else {
+        targetsWithTypes[relationTarget.id] = { ...relationTarget, i_types: [targetType] };
+      }
     }
   });
   // endregion
