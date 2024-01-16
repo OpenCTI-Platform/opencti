@@ -158,6 +158,9 @@ export const fillTimeSeries = (startDate, endDate, interval, data) => {
       startDateParsed = moment.parseZone(getMonday(new Date(startDateParsed.format(dateFormat))).toISOString());
       endDateParsed = moment.parseZone(getMonday(new Date(endDateParsed.format(dateFormat))).toISOString());
       break;
+    case 'hour':
+      dateFormat = 'YYYY-MM-DD HH:mm:ss';
+      break;
     default:
       dateFormat = 'YYYY-MM-DD';
   }
