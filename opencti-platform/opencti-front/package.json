@@ -7,7 +7,7 @@
     "@analytics/google-analytics": "1.0.7",
     "@ckeditor/ckeditor5-react": "6.1.0",
     "@date-io/date-fns": "2.17.0",
-    "@emotion/react": "11.11.1",
+    "@emotion/react": "11.11.3",
     "@emotion/styled": "11.11.0",
     "@mui/icons-material": "5.15.3",
     "@mui/lab": "5.0.0-alpha.159",
