@@ -485,7 +485,7 @@ const StixDomainObjectHeader = (props) => {
           )}
           <StixCoreObjectFileExport
             id={stixDomainObject.id}
-            type={stixDomainObject.entity_type}
+            type={entityType}
           />
           {isKnowledgeUpdater && (
             <StixCoreObjectContainer elementId={stixDomainObject.id} />

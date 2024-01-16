@@ -1,10 +1,10 @@
-export const resolveLink = (type: string): string | null => {
+export const resolveLink = (type = 'unknown'): string | null => {
   switch (type) {
     case 'Dashboard':
-    case 'dashboard':
+    case 'dashboard': // for using resolveLink in workspaces
       return '/dashboard/workspaces/dashboards';
     case 'Investigation':
-    case 'investigation':
+    case 'investigation': // for using resolveLink in workspaces
       return '/dashboard/workspaces/investigations';
     case 'Attack-Pattern':
       return '/dashboard/techniques/attack_patterns';

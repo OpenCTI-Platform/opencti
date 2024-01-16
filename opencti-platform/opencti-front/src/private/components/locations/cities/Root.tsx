@@ -88,7 +88,7 @@ const RootCityComponent = ({ queryRef, cityId, link }) => {
           }}
         >
           <StixDomainObjectHeader
-            entityType="city"
+            entityType="City"
             disableSharing={true}
             stixDomainObject={city}
             PopoverComponent={<CityPopover id={city.id} />}

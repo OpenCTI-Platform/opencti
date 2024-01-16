@@ -94,7 +94,7 @@ const RootAdministrativeAreaComponent = ({
           }}
         >
           <StixDomainObjectHeader
-            entityType="administrativeArea"
+            entityType="Administrative-Area"
             disableSharing={true}
             stixDomainObject={administrativeArea}
             PopoverComponent={
