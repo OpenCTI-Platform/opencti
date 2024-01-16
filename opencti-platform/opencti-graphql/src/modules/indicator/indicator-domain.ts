@@ -222,7 +222,7 @@ export const computeIndicatorDecayPatch = (indicator: BasicStoreEntityIndicator)
   // update x_opencti_score
   let patch: IndicatorPatch = {};
   const model = indicator.x_opencti_decay_rule;
-  if (!model || !model.decay_points || !model.decay_revoke_score) {
+  if (!model || !model.decay_points) {
     return null;
   }
   const newStableScore = model.decay_points.find((p) => (p || indicator.x_opencti_score) < indicator.x_opencti_score) || model.decay_revoke_score;

@@ -116,6 +116,27 @@ describe('Decay update testing', () => {
     order: 0
   };
 
+  it('should move to next score and update next reaction date for default rule', () => {
+    // GIVEN an Indicator with decay that is on the first decay point and has next reaction point
+    const indicatorInput = getDefaultIndicatorEntity();
+    indicatorInput.x_opencti_decay_rule = FALLBACK_DECAY_RULE;
+    indicatorInput.x_opencti_score = 50;
+    indicatorInput.x_opencti_decay_history = [{
+      updated_at: indicatorInput.valid_from,
+      score: 50,
+    }];
+
+    // WHEN next reaction point is computed
+    const patchResult = computeIndicatorDecayPatch(indicatorInput);
+
+    // THEN
+    expect(patchResult?.revoked, 'This indicator should not be revoked.').toBeUndefined();
+    expect(patchResult?.x_opencti_score, 'This indicator should be updated to next score (50 -> 40).').toBe(40);
+    expect(patchResult?.next_score_reaction_date, 'This indicator should have a new reaction date.').toBeDefined();
+    expect(patchResult?.x_opencti_decay_history?.length, 'This indicator should have one more history data.').toBe(2);
+    expect(patchResult?.x_opencti_decay_history?.at(1)?.score, 'This indicator should have one more history data.').toBe(40);
+  });
+
   it('should move to next score and update next reaction date', () => {
     // GIVEN an Indicator with decay that is on the first decay point and has next reaction point
     const indicatorInput = getDefaultIndicatorEntity();
