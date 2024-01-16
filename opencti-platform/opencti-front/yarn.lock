@@ -5655,12 +5655,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/react-csv@npm:1.1.8":
-  version: 1.1.8
-  resolution: "@types/react-csv@npm:1.1.8"
+"@types/react-csv@npm:1.1.10":
+  version: 1.1.10
+  resolution: "@types/react-csv@npm:1.1.10"
   dependencies:
     "@types/react": "*"
-  checksum: 6f3d9015fa05846ebe28445738f6ba3889621b4fddddb7e17feb200ffecd425c99cd473d2aff0492be1bc0a56d2ba2163268ccc1ce6d9d11d27fb70fd89bc1fc
+  checksum: 0a19efd0bb559a288ce640abc491850c81e75ca5900c25044d93ad633d89d62e49c6963a1d5657e664e61edd526295a4a93641dd8429703cc4ebf9a0ab4d4157
   languageName: node
   linkType: hard
 
@@ -15522,7 +15522,7 @@ __metadata:
     "@types/qrcode": 1.5.2
     "@types/ramda": 0.29.6
     "@types/react": 18.2.46
-    "@types/react-csv": 1.1.8
+    "@types/react-csv": 1.1.10
     "@types/react-dom": 18.2.18
     "@types/react-relay": 16.0.5
     "@types/react-router-dom": 5.3.3
