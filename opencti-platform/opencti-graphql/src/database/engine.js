@@ -473,7 +473,7 @@ export const elIndexSetting = async (index) => {
   const dataIndexSettings = await engine.indices.getSettings({ index });
   const { settings } = oebp(dataIndexSettings)[index];
   const rollover_alias = engine instanceof ElkClient ? settings.index.lifecycle?.rollover_alias
-    : settings.index.plugins.index_state_management?.rollover_alias;
+    : settings.index.plugins?.index_state_management?.rollover_alias;
   return { settings, rollover_alias };
 };
 export const elPlatformTemplates = async () => {
