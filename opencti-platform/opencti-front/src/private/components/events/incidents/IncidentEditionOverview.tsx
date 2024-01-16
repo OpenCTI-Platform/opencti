@@ -20,8 +20,9 @@ import ObjectAssigneeField from '../../common/form/ObjectAssigneeField';
 import { Option } from '../../common/form/ReferenceField';
 import { IncidentEditionOverview_incident$key } from './__generated__/IncidentEditionOverview_incident.graphql';
 import { useSchemaEditionValidation } from '../../../../utils/hooks/useEntitySettings';
-import useFormEditor from '../../../../utils/hooks/useFormEditor';
+import useFormEditor, { GenericData } from '../../../../utils/hooks/useFormEditor';
 import ObjectParticipantField from '../../common/form/ObjectParticipantField';
+import { GenericContext } from '../../common/model/GenericContextModel';
 
 const incidentMutationFieldPatch = graphql`
   mutation IncidentEditionOverviewFieldPatchMutation(
@@ -183,7 +184,7 @@ IncidentEditionOverviewProps
     editionFocus: incidentEditionOverviewFocus,
   };
   const editor = useFormEditor(
-    incident,
+    incident as GenericData,
     enableReferences,
     queries,
     incidentValidator,

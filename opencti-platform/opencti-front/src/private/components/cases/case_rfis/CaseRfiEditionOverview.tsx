@@ -3,6 +3,7 @@ import { FormikConfig } from 'formik/dist/types';
 import React, { FunctionComponent } from 'react';
 import { graphql, useFragment } from 'react-relay';
 import * as Yup from 'yup';
+import { GenericContext } from '@components/common/model/GenericContextModel';
 import DateTimePickerField from '../../../../components/DateTimePickerField';
 import { useFormatter } from '../../../../components/i18n';
 import MarkdownField from '../../../../components/MarkdownField';
@@ -11,7 +12,7 @@ import TextField from '../../../../components/TextField';
 import { convertAssignees, convertCreatedBy, convertMarkings, convertParticipants, convertStatus } from '../../../../utils/edition';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import { useSchemaEditionValidation } from '../../../../utils/hooks/useEntitySettings';
-import useFormEditor from '../../../../utils/hooks/useFormEditor';
+import useFormEditor, { GenericData } from '../../../../utils/hooks/useFormEditor';
 import { adaptFieldValue } from '../../../../utils/String';
 import CommitMessage from '../../common/form/CommitMessage';
 import ConfidenceField from '../../common/form/ConfidenceField';
@@ -156,10 +157,7 @@ const caseRfiMutationRelationDelete = graphql`
 
 interface CaseRfiEditionOverviewProps {
   caseRef: CaseRfiEditionOverview_case$key
-  context: ReadonlyArray<{
-    readonly focusOn: string | null
-    readonly name: string
-  }> | null
+  context?: readonly (GenericContext | null)[] | null;
   enableReferences?: boolean
   handleClose: () => void
 }
@@ -201,7 +199,7 @@ const CaseRfiEditionOverview: FunctionComponent<CaseRfiEditionOverviewProps> = (
     relationDelete: caseRfiMutationRelationDelete,
     editionFocus: caseRfiEditionOverviewFocus,
   };
-  const editor = useFormEditor(caseData, enableReferences, queries, caseValidator);
+  const editor = useFormEditor(caseData as GenericData, enableReferences, queries, caseValidator);
 
   const onSubmit: FormikConfig<CaseRfiEditionFormValues>['onSubmit'] = (values, { setSubmitting }) => {
     const { message, references, ...otherValues } = values;

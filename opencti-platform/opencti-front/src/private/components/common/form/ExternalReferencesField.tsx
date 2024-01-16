@@ -39,11 +39,11 @@ export type ExternalReferencesValues = {
   value: string;
   entity?: {
     created: string;
-    description: string | null;
-    external_id: string | null;
+    description?: string | null;
+    external_id?: string | null;
     id: string;
     source_name: string;
-    url: string | null;
+    url?: string | null;
   };
 }[];
 
@@ -58,11 +58,11 @@ interface ExternalReferencesFieldProps {
       value: string;
       entity?: {
         created: string;
-        description: string | null;
-        external_id: string | null;
+        description?: string | null;
+        external_id?: string | null;
         id: string;
         source_name: string;
-        url: string | null;
+        url?: string | null;
       };
     }[],
     shouldValidate?: boolean,
@@ -247,7 +247,7 @@ ExternalReferencesFieldProps
               },
               values || [],
             );
-            setFieldValue(name, newExternalReferences);
+            setFieldValue(name, newExternalReferences ?? []);
           }
         }}
       />

@@ -109,7 +109,7 @@ const SubTypeWorkflow: FunctionComponent<SubTypeEditionContainerProps> = ({
                       <Avatar
                         variant="square"
                         style={
-                          status?.template && {
+                          status.template && {
                             color: status.template.color,
                             borderColor: status.template.color,
                             backgroundColor: hexToRGB(status.template.color),

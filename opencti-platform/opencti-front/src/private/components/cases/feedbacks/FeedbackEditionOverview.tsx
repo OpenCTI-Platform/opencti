@@ -289,7 +289,7 @@ FeedbackEditionOverviewProps
           />
           <RatingField
             label={t_i18n('Rating')}
-            rating={feedbackData?.rating}
+            rating={feedbackData.rating}
             size="small"
             style={fieldSpacingContainerStyle}
             handleOnChange={(newValue) => handleSubmitField('rating', String(newValue))

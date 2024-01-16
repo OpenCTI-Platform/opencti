@@ -4,6 +4,8 @@ import Box from '@mui/material/Box';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
 import Drawer, { DrawerVariant } from '@components/common/drawer/Drawer';
+import { IncidentEditionOverview_incident$key } from '@components/events/incidents/__generated__/IncidentEditionOverview_incident.graphql';
+import { IncidentEditionDetails_incident$key } from '@components/events/incidents/__generated__/IncidentEditionDetails_incident.graphql';
 import { useFormatter } from '../../../../components/i18n';
 import IncidentEditionOverview from './IncidentEditionOverview';
 import IncidentEditionDetails from './IncidentEditionDetails';
@@ -45,7 +47,7 @@ const IncidentEditionContainer: FunctionComponent<IncidentEditionContainerProps>
     <Drawer
       title={t_i18n('Update an incident')}
       variant={open == null ? DrawerVariant.update : undefined}
-      context={incident.editContext}
+      context={incident?.editContext}
       onClose={handleClose}
       open={open}
     >
@@ -59,17 +61,17 @@ const IncidentEditionContainer: FunctionComponent<IncidentEditionContainerProps>
           </Box>
           {currentTab === 0 && (
             <IncidentEditionOverview
-              incidentRef={incident}
+              incidentRef={incident as IncidentEditionOverview_incident$key}
               enableReferences={useIsEnforceReference('Incident')}
-              context={incident.editContext}
+              context={incident?.editContext}
               handleClose={onClose}
             />
           )}
           {currentTab === 1 && (
             <IncidentEditionDetails
-              incidentRef={incident}
+              incidentRef={incident as IncidentEditionDetails_incident$key}
               enableReferences={useIsEnforceReference('Incident')}
-              context={incident.editContext}
+              context={incident?.editContext}
               handleClose={onClose}
             />
           )}

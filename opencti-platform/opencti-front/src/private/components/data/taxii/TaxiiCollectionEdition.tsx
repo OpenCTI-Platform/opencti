@@ -64,8 +64,8 @@ const TaxiiCollectionEditionContainer: FunctionComponent<{ taxiiCollection: Taxi
   const { t_i18n } = useFormatter();
   const classes = useStyles();
   const initialValues = {
-    name: taxiiCollection.name,
-    description: taxiiCollection.description,
+    name: taxiiCollection.name ?? '',
+    description: taxiiCollection.description ?? '',
     taxii_public: taxiiCollection.taxii_public,
     authorized_members: convertAuthorizedMembers(taxiiCollection),
   };

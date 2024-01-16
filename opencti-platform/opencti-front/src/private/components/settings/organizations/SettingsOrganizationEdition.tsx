@@ -132,9 +132,9 @@ const SettingsOrganizationEdition = ({
   );
   const initialValues: SettingsOrganizationFormValues = {
     name: organization.name,
-    description: organization?.description ?? null,
-    x_opencti_organization_type: organization?.x_opencti_organization_type ?? null,
-    contact_information: organization?.contact_information ?? null,
+    description: organization.description ?? null,
+    x_opencti_organization_type: organization.x_opencti_organization_type ?? null,
+    contact_information: organization.contact_information ?? null,
     default_dashboard: organization.default_dashboard
       ? {
         value: organization.default_dashboard.id,

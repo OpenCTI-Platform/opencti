@@ -124,7 +124,7 @@ const toFinalValues = (values: NoteAddInput, id: string) => {
 };
 
 const toOptions = (
-  objectMarkings: { id: string; definition: string | null }[] = [],
+  objectMarkings: { id: string; definition: string | null | undefined }[] = [],
 ) => (objectMarkings ?? []).map(convertMarking);
 
 export interface NoteAddInput {
@@ -144,8 +144,8 @@ interface StixCoreObjectOrStixCoreRelationshipNotesCardsProps {
   paginationOptions: StixCoreObjectOrStixCoreRelationshipNotesCardsQuery$variables;
   defaultMarkings?: {
     id: string;
-    definition: string | null;
-    x_opencti_color: string | null;
+    definition: string | null | undefined;
+    x_opencti_color: string | null | undefined;
   }[];
   title: string;
 }

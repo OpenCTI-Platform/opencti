@@ -1,6 +1,7 @@
 import React, { FunctionComponent } from 'react';
 import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import Drawer, { DrawerVariant } from '@components/common/drawer/Drawer';
+import { CaseIncidentEditionOverview_case$key } from '@components/cases/case_incidents/__generated__/CaseIncidentEditionOverview_case.graphql';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
 import { useFormatter } from '../../../../components/i18n';
 import { useIsEnforceReference } from '../../../../utils/hooks/useEntitySettings';
@@ -37,14 +38,14 @@ CaseIncidentEditionContainerProps
     <Drawer
       title={t_i18n('Update an incident response')}
       variant={open == null ? DrawerVariant.update : undefined}
-      context={caseIncident.editContext}
+      context={caseIncident?.editContext}
       onClose={handleClose}
       open={open}
     >
       {({ onClose }) => (
         <CaseIncidentEditionOverview
-          caseRef={caseIncident}
-          context={caseIncident.editContext}
+          caseRef={caseIncident as CaseIncidentEditionOverview_case$key}
+          context={caseIncident?.editContext}
           enableReferences={useIsEnforceReference('Case-Incident')}
           handleClose={onClose}
         />

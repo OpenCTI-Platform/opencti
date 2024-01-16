@@ -60,7 +60,12 @@ const streamCollectionValidation = (requiredSentence: string) => Yup.object().sh
 const StreamCollectionEditionContainer: FunctionComponent<{ streamCollection: StreamCollectionEdition_streamCollection$data }> = ({ streamCollection }) => {
   const classes = useStyles();
   const { t_i18n } = useFormatter();
-  const initialValues = { ...streamCollection, authorized_members: convertAuthorizedMembers(streamCollection) };
+  const initialValues = { ...streamCollection,
+    authorized_members: convertAuthorizedMembers(streamCollection),
+    stream_public: streamCollection.stream_public ?? null,
+    name: streamCollection.name ?? '',
+    description: streamCollection.description ?? '',
+  };
   const [filters, helpers] = useFiltersState(deserializeFilterGroupForFrontend(streamCollection.filters) ?? undefined);
   const handleSubmitField = (name: string, value: Option[] | string) => {
     streamCollectionValidation(t_i18n('This field is required'))

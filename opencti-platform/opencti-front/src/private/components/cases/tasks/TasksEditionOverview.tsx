@@ -3,6 +3,7 @@ import { FormikConfig } from 'formik/dist/types';
 import React, { FunctionComponent } from 'react';
 import { graphql, useFragment } from 'react-relay';
 import * as Yup from 'yup';
+import { GenericContext } from '@components/common/model/GenericContextModel';
 import DateTimePickerField from '../../../../components/DateTimePickerField';
 import { useFormatter } from '../../../../components/i18n';
 import MarkdownField from '../../../../components/MarkdownField';
@@ -11,7 +12,7 @@ import TextField from '../../../../components/TextField';
 import { convertAssignees, convertCreatedBy, convertMarkings, convertParticipants, convertStatus } from '../../../../utils/edition';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import { useSchemaEditionValidation } from '../../../../utils/hooks/useEntitySettings';
-import useFormEditor from '../../../../utils/hooks/useFormEditor';
+import useFormEditor, { GenericData } from '../../../../utils/hooks/useFormEditor';
 import { adaptFieldValue } from '../../../../utils/String';
 import CreatedByField from '../../common/form/CreatedByField';
 import ObjectAssigneeField from '../../common/form/ObjectAssigneeField';
@@ -139,10 +140,7 @@ const tasksMutationRelationDelete = graphql`
 
 interface TasksEditionOverviewProps {
   taskRef: TasksEditionOverview_task$key;
-  context: ReadonlyArray<{
-    readonly focusOn: string | null;
-    readonly name: string;
-  }> | null;
+  context?: readonly (GenericContext | null)[] | null;
   enableReferences?: boolean;
   handleClose: () => void;
   tasksPaginationOptions?: { filters: FilterGroup };
@@ -183,7 +181,7 @@ const TasksEditionOverview: FunctionComponent<TasksEditionOverviewProps> = ({
     editionFocus: tasksEditionOverviewFocus,
   };
   const editor = useFormEditor(
-    taskData,
+    taskData as GenericData,
     enableReferences,
     queries,
     taskValidator,
@@ -220,7 +218,7 @@ const TasksEditionOverview: FunctionComponent<TasksEditionOverviewProps> = ({
 
   const initialValues: TasksEditionFormValues = {
     name: taskData.name,
-    description: taskData.description,
+    description: taskData.description ?? '',
     due_date: buildDate(taskData.due_date),
     createdBy: convertCreatedBy(taskData) as Option,
     objectMarking: convertMarkings(taskData),

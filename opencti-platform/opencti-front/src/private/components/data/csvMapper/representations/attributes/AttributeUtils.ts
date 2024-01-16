@@ -23,21 +23,21 @@ export const alphabet = (size = 0) => {
 export const useMapAttributes = (
   attributes: ReadonlyArray<{
     readonly based_on: {
-      readonly representations: ReadonlyArray<string | null> | null;
-    } | null;
-    readonly column: {
-      readonly column_name: string | null;
-    } | null;
-    readonly key: string;
-  }>,
+      readonly representations: ReadonlyArray<string | null | undefined> | null | undefined
+    } | null | undefined;
+    readonly column: { readonly column_name: string | null | undefined;
+      readonly configuration: {
+        readonly pattern_date: string | null | undefined;
+        readonly separator: string | null | undefined } | null | undefined } | null | undefined;
+    readonly key: string }>,
 ) => {
   return (attributes ?? []).concat();
 };
 
 export const convertFromSchemaAttribute = (schemaAttribute: {
-  readonly label: string | null;
+  readonly label: string | null | undefined;
   readonly mandatory: boolean;
-  readonly multiple: boolean | null;
+  readonly multiple: boolean | null | undefined;
   readonly name: string;
   readonly type: string;
 }) => {

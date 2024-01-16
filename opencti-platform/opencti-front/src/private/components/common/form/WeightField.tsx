@@ -8,13 +8,13 @@ import {
   ThreatActorIndividualEditionBiographics_ThreatActorIndividual$data,
 } from '@components/threats/threat_actors_individual/__generated__/ThreatActorIndividualEditionBiographics_ThreatActorIndividual.graphql';
 import Button from '@mui/material/Button';
-import { ThreatActorContext } from './ThreatActorIndividualModel';
 import { useFormatter } from '../../../../components/i18n';
 import { SubscriptionFocus } from '../../../../components/Subscription';
 import DatePickerField from '../../../../components/DatePickerField';
 import TextField from '../../../../components/TextField';
 import { commitMutation, defaultCommitMutation } from '../../../../relay/environment';
 import useUserMetric from '../../../../utils/hooks/useUserMetric';
+import { GenericContext } from '../model/GenericContextModel';
 
 export const individualWeightMutation = graphql`
   mutation WeightFieldIndividualMutation($id: ID!, $input: [EditInput]!) {
@@ -121,7 +121,7 @@ interface WeightFieldEditProps {
     width: string;
   };
   setFieldValue?: (name: string, value: unknown) => void;
-  editContext?: readonly (ThreatActorContext | null)[] | null;
+  editContext?: readonly (GenericContext | null)[] | null;
 }
 export const WeightFieldEdit: FunctionComponent<WeightFieldEditProps> = ({
   id,

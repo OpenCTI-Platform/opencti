@@ -225,7 +225,7 @@ DataComponentEditionOverviewComponentProps
 
   const initialValues: DataComponentAddInput = {
     name: dataComponent.name,
-    description: dataComponent?.description ?? '',
+    description: dataComponent.description ?? '',
     createdBy: convertCreatedBy(dataComponent) as Option,
     objectMarking: convertMarkings(dataComponent),
     x_opencti_workflow_id: convertStatus(t_i18n, dataComponent) as Option,

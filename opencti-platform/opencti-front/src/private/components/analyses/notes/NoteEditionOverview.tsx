@@ -2,6 +2,7 @@ import React, { FunctionComponent } from 'react';
 import { createFragmentContainer, graphql } from 'react-relay';
 import { Field, Form, Formik } from 'formik';
 import * as Yup from 'yup';
+import { GenericContext } from '@components/common/model/GenericContextModel';
 import { useFormatter } from '../../../../components/i18n';
 import MarkdownField from '../../../../components/MarkdownField';
 import { SubscriptionFocus } from '../../../../components/Subscription';
@@ -20,7 +21,7 @@ import { Option } from '../../common/form/ReferenceField';
 import { NoteEditionOverview_note$data } from './__generated__/NoteEditionOverview_note.graphql';
 import SliderField from '../../../../components/SliderField';
 import { useSchemaEditionValidation } from '../../../../utils/hooks/useEntitySettings';
-import useFormEditor from '../../../../utils/hooks/useFormEditor';
+import useFormEditor, { GenericData } from '../../../../utils/hooks/useFormEditor';
 
 export const noteMutationFieldPatch = graphql`
   mutation NoteEditionOverviewFieldPatchMutation(
@@ -110,7 +111,7 @@ NoteEditionOverviewProps
     relationDelete: noteMutationRelationDelete,
     editionFocus: noteEditionOverviewFocus,
   };
-  const editor = useFormEditor(note, false, queries, noteValidator);
+  const editor = useFormEditor(note as GenericData, false, queries, noteValidator);
 
   const handleSubmitField = (
     name: string,

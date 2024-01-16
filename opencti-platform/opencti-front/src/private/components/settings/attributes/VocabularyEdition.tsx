@@ -104,7 +104,7 @@ const VocabularyEdition = ({
           label: n,
         })) as { id: string; label: string; value: string }[],
         description: vocab.description ?? '',
-        order: vocab?.order,
+        order: vocab.order,
       }}
       validationSchema={attributeValidation(t_i18n)}
       onSubmit={onSubmit}

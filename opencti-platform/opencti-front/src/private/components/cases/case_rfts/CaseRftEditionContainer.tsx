@@ -1,6 +1,7 @@
 import React, { FunctionComponent } from 'react';
 import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import Drawer, { DrawerVariant } from '@components/common/drawer/Drawer';
+import { CaseRftEditionOverview_case$key } from '@components/cases/case_rfts/__generated__/CaseRftEditionOverview_case.graphql';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
 import { useFormatter } from '../../../../components/i18n';
 import { useIsEnforceReference } from '../../../../utils/hooks/useEntitySettings';
@@ -35,14 +36,14 @@ const CaseRftEditionContainer: FunctionComponent<CaseRftEditionContainerProps> =
     <Drawer
       title={t_i18n('Update a request for takedown')}
       variant={open == null ? DrawerVariant.update : undefined}
-      context={caseRft.editContext}
+      context={caseRft?.editContext}
       onClose={handleClose}
       open={open}
     >
       {({ onClose }) => (
         <CaseRftEditionOverview
-          caseRef={caseRft}
-          context={caseRft.editContext}
+          caseRef={caseRft as CaseRftEditionOverview_case$key}
+          context={caseRft?.editContext}
           enableReferences={useIsEnforceReference('Case-Rft')}
           handleClose={onClose}
         />

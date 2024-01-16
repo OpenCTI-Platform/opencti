@@ -77,7 +77,7 @@ InputSliderFieldProps & FieldProps
             <Select
               fullWidth
               labelId={name}
-              value={currentLevel.level.value !== null ? currentLevel.level.value.toString() : ''}
+              value={currentLevel.level.value !== null ? currentLevel.level.value?.toString() : ''}
               onChange={updateFromSelect}
               disabled={disabled}
             >
@@ -126,7 +126,7 @@ InputSliderFieldProps & FieldProps
           <Select
             fullWidth
             labelId={name}
-            value={currentLevel.level.value !== null ? currentLevel.level.value.toString() : ''}
+            value={currentLevel.level.value !== null ? currentLevel.level.value?.toString() : ''}
             onChange={(event) => setFieldValue(name, event.target.value)}
             disabled={disabled}
           >

@@ -14,6 +14,7 @@ import { IncidentEditionDetailsFocusMutation } from './__generated__/IncidentEdi
 import { Option } from '../../common/form/ReferenceField';
 import { IncidentEditionDetails_incident$key } from './__generated__/IncidentEditionDetails_incident.graphql';
 import { parse } from '../../../../utils/Time';
+import { GenericContext } from '../../common/model/GenericContextModel';
 
 const incidentMutationFieldPatch = graphql`
   mutation IncidentEditionDetailsFieldPatchMutation(
