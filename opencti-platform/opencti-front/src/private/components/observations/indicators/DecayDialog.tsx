@@ -28,7 +28,7 @@ export interface LabelledDecayHistory {
 
 const DecayDialogContent : FunctionComponent<DecayDialogContentProps> = ({ indicator }) => {
   const theme = useTheme<Theme>();
-  const { t, fldt } = useFormatter();
+  const { t_i18n, fldt } = useFormatter();
 
   const indicatorDecayDetails = indicator.decayLiveDetails;
 
@@ -84,22 +84,22 @@ const DecayDialogContent : FunctionComponent<DecayDialogContentProps> = ({ indic
       >
         <Grid item={true} xs={8}>
           <Typography variant="h6">
-            {t('Lifecycle key information')}
+            {t_i18n('Lifecycle key information')}
           </Typography>
           <TableContainer component={Paper}>
             <Table sx={{ maxHeight: 440 }} size="small" aria-label="lifecycle history">
               <TableHead>
                 <TableRow>
-                  <TableCell>{t('Information')}</TableCell>
-                  <TableCell>{t('Score')}</TableCell>
-                  <TableCell>{t('Date')}</TableCell>
+                  <TableCell>{t_i18n('Information')}</TableCell>
+                  <TableCell>{t_i18n('Score')}</TableCell>
+                  <TableCell>{t_i18n('Date')}</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
                 {decayFullHistory.map((history, index) => {
                   return (
                     <TableRow key={index}>
-                      <TableCell sx={history.style}>{t(history.label)}</TableCell>
+                      <TableCell sx={history.style}>{t_i18n(history.label)}</TableCell>
                       <TableCell sx={history.style}>{history.score}</TableCell>
                       <TableCell sx={history.style}>{fldt(history.updated_at)}</TableCell>
                     </TableRow>
@@ -111,14 +111,14 @@ const DecayDialogContent : FunctionComponent<DecayDialogContentProps> = ({ indic
         </Grid>
         <Grid item={true} xs={4}>
           <Typography variant="h6">
-            {t('Applied decay rule')}
+            {t_i18n('Applied decay rule')}
           </Typography>
           <ul>
-            <li>{t('Base score:')} { indicator.x_opencti_base_score }</li>
-            <li>{t('Lifetime (in days):')} { indicator.x_opencti_decay_rule?.decay_lifetime ?? 'Not set'}</li>
-            <li>{t('Pound factor:')} { indicator.x_opencti_decay_rule?.decay_pound ?? 'Not set'}</li>
-            <li>{t('Revoke score:')} { indicator.x_opencti_decay_rule?.decay_revoke_score ?? 'Not set'}</li>
-            <li>{t('Reaction points:')} {decayReactionPoints.join(', ')}</li>
+            <li>{t_i18n('Base score:')} { indicator.x_opencti_base_score }</li>
+            <li>{t_i18n('Lifetime (in days):')} { indicator.x_opencti_decay_rule?.decay_lifetime ?? 'Not set'}</li>
+            <li>{t_i18n('Pound factor:')} { indicator.x_opencti_decay_rule?.decay_pound ?? 'Not set'}</li>
+            <li>{t_i18n('Revoke score:')} { indicator.x_opencti_decay_rule?.decay_revoke_score ?? 'Not set'}</li>
+            <li>{t_i18n('Reaction points:')} {decayReactionPoints.join(', ')}</li>
           </ul>
         </Grid>
       </Grid>
