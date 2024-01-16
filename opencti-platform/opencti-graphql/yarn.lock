@@ -4587,10 +4587,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/bcryptjs@npm:2.4.4":
-  version: 2.4.4
-  resolution: "@types/bcryptjs@npm:2.4.4"
-  checksum: 7c8a50e0dec58bd391bf65b41c1422ac61c5f71d5adaa9a002c10368b64f4b1a9a0628f29b43dfd1fa0353b671b2cb1c11e27c5658877527ebad6d3c3f50e2b2
+"@types/bcryptjs@npm:2.4.6":
+  version: 2.4.6
+  resolution: "@types/bcryptjs@npm:2.4.6"
+  checksum: 25ae1fd1e8a9bd688e22a8de905581d6d7bf26e823b797f895d2c488100b1f15d3c12a7d1a94f553087b010d316bf3978106df860e8e58fd13f52b4c708df5fd
   languageName: node
   linkType: hard
 
@@ -11229,7 +11229,7 @@ __metadata:
     "@opentelemetry/sdk-trace-node": 1.19.0
     "@opentelemetry/semantic-conventions": 1.19.0
     "@rollup/plugin-graphql": 2.0.4
-    "@types/bcryptjs": 2.4.4
+    "@types/bcryptjs": 2.4.6
     "@types/bluebird": 3.5.40
     "@types/dot-object": 2.1.3
     "@types/ejs": 3.1.3
