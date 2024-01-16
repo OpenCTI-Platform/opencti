@@ -131,7 +131,7 @@
     "vite": "5.0.11",
     "vite-plugin-relay": "2.0.0",
     "vite-plugin-static-copy": "1.0.0",
-    "vitest": "1.0.4"
+    "vitest": "1.2.0"
   },
   "engines": {
     "node": ">= 16.*"
