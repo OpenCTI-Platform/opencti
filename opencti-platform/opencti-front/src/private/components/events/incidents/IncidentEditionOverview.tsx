@@ -145,12 +145,7 @@ const incidentEditionOverviewFragment = graphql`
 
 interface IncidentEditionOverviewProps {
   incidentRef: IncidentEditionOverview_incident$key;
-  context:
-  | readonly ({
-    readonly focusOn: string | null;
-    readonly name: string;
-  } | null)[]
-  | null;
+  context?: readonly (GenericContext | null)[] | null;
   enableReferences?: boolean;
   handleClose: () => void;
 }

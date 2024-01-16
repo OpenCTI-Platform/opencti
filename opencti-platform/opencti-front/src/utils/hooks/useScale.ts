@@ -129,10 +129,10 @@ export const buildScaleFilters = (
 };
 
 export const buildScaleLevel = (
-  value: number | null,
+  value: number | null | undefined,
   scale: ScaleConfig | null | undefined,
 ) => {
-  if (value === null || !scale) {
+  if (value === null || value === undefined || !scale) {
     return {
       level: {
         value,
@@ -171,7 +171,7 @@ export const buildScaleLevel = (
 export const useLevel = (
   entityType: string | null,
   attributeName: string,
-  value: number | null,
+  value: number | null | undefined,
 ) => {
   const scale = useScale(entityType, attributeName);
   return buildScaleLevel(value, scale);

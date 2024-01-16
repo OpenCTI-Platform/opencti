@@ -1,12 +1,11 @@
 import React from 'react';
 import makeStyles from '@mui/styles/makeStyles';
 import { usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStorage';
-import { DataSourcesLinesPaginationQuery$variables } from '../../techniques/data_sources/__generated__/DataSourcesLinesPaginationQuery.graphql';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import SubTypesLines, { subTypesLinesQuery } from './SubTypesLines';
 import ListLines from '../../../../components/list_lines/ListLines';
 import { SubTypeLineDummy } from './SubTypesLine';
-import { SubTypesLinesQuery } from './__generated__/SubTypesLinesQuery.graphql';
+import { SubTypesLinesQuery, SubTypesLinesQuery$variables } from './__generated__/SubTypesLinesQuery.graphql';
 import useEntityToggle from '../../../../utils/hooks/useEntityToggle';
 import ToolBar from './ToolBar';
 import CustomizationMenu from '../CustomizationMenu';
@@ -22,7 +21,7 @@ const useStyles = makeStyles(() => ({
 
 const SubTypes = () => {
   const classes = useStyles();
-  const { viewStorage, helpers, paginationOptions } = usePaginationLocalStorage<DataSourcesLinesPaginationQuery$variables>(
+  const { viewStorage, helpers, paginationOptions } = usePaginationLocalStorage<SubTypesLinesQuery$variables>(
     LOCAL_STORAGE_KEY_SUB_TYPES,
     { searchTerm: '' },
   );

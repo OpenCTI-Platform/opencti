@@ -11,6 +11,7 @@ import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import { DashboardFieldQuery } from './__generated__/DashboardFieldQuery.graphql';
 import { Option } from './ReferenceField';
 import ItemIcon from '../../../../components/ItemIcon';
+import { GenericContext } from '../model/GenericContextModel';
 
 const useStyles = makeStyles(() => ({
   icon: {
@@ -26,12 +27,7 @@ const useStyles = makeStyles(() => ({
 
 interface DashboardFieldProps {
   onChange: (name: string, value: string) => void;
-  context:
-  | readonly ({
-    readonly focusOn: string | null;
-    readonly name: string;
-  } | null)[]
-  | null;
+  context?: readonly (GenericContext | null)[] | null;
   queryRef: PreloadedQuery<DashboardFieldQuery>;
 }
 

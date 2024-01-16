@@ -19,7 +19,7 @@ import ConfidenceField from '../../common/form/ConfidenceField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import OpenVocabField from '../../common/form/OpenVocabField';
 import { useSchemaEditionValidation } from '../../../../utils/hooks/useEntitySettings';
-import useFormEditor from '../../../../utils/hooks/useFormEditor';
+import useFormEditor, { GenericData } from '../../../../utils/hooks/useFormEditor';
 import { dataComponentEditionOverviewFocus } from '../data_components/DataComponentEditionOverview';
 
 const dataSourceMutationFieldPatch = graphql`
@@ -124,10 +124,10 @@ interface DataSourceEditionOverviewProps {
   data: DataSourceEditionOverview_dataSource$key;
   context:
   | readonly ({
-    readonly focusOn: string | null;
+    readonly focusOn: string | null | undefined;
     readonly name: string;
   } | null)[]
-  | null;
+  | null | undefined;
   enableReferences?: boolean;
   handleClose: () => void;
 }
@@ -172,7 +172,7 @@ DataSourceEditionOverviewProps
     editionFocus: dataComponentEditionOverviewFocus,
   };
   const editor = useFormEditor(
-    dataSource,
+    dataSource as GenericData,
     enableReferences,
     queries,
     dataSourceValidator,

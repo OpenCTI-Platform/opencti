@@ -271,7 +271,7 @@ export const EntityStixSightingRelationshipLine: FunctionComponent<EntityStixSig
       disabled={restricted}
     >
       <ListItemIcon classes={{ root: classes.itemIcon }}>
-        <ItemIcon type={!restricted ? entity.entity_type : 'restricted'} />
+        <ItemIcon type={!restricted ? entity?.entity_type : 'restricted'} />
       </ListItemIcon>
       <ListItemText
         primary={
@@ -304,7 +304,7 @@ export const EntityStixSightingRelationshipLine: FunctionComponent<EntityStixSig
               style={{ width: dataColumns.name.width }}
             >
               {!restricted
-                ? entity.name || entity.observable_value
+                ? entity?.name || entity?.observable_value
                 : t_i18n('Restricted')}
             </div>
             <div
@@ -312,7 +312,7 @@ export const EntityStixSightingRelationshipLine: FunctionComponent<EntityStixSig
               style={{ width: dataColumns.entity_type.width }}
             >
               {!restricted
-                ? t_i18n(`entity_${entity.entity_type}`)
+                ? t_i18n(`entity_${entity?.entity_type}`)
                 : t_i18n('Restricted')}
             </div>
             <div

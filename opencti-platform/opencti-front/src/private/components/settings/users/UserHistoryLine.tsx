@@ -108,7 +108,7 @@ const UserHistoryLine: FunctionComponent<UserHistoryLineProps> = ({ node }) => {
     setOpen(false);
   };
 
-  const renderIcon = (eventScope: string | null, isRelation: boolean, eventMessage: string | undefined, commit: string | null | undefined) => {
+  const renderIcon = (eventScope: string | null | undefined, isRelation: boolean, eventMessage: string | undefined, commit: string | null | undefined) => {
     if (isRelation) {
       if (eventScope === 'create') {
         return (
@@ -303,7 +303,7 @@ const UserHistoryLine: FunctionComponent<UserHistoryLineProps> = ({ node }) => {
   return (
     <div className={classes.container}>
       <div className={classes.avatar}>
-        {renderIcon(log.event_scope, false, log.context_data?.message, log.context_data?.commit)}
+        {renderIcon(log?.event_scope, false, log.context_data?.message, log.context_data?.commit)}
       </div>
       <div
         className={classes.content}

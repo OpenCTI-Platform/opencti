@@ -18,7 +18,7 @@ import ConfidenceField from '../../common/form/ConfidenceField';
 import { Option } from '../../common/form/ReferenceField';
 import { adaptFieldValue } from '../../../../utils/String';
 import { useSchemaEditionValidation } from '../../../../utils/hooks/useEntitySettings';
-import useFormEditor from '../../../../utils/hooks/useFormEditor';
+import useFormEditor, { GenericData } from '../../../../utils/hooks/useFormEditor';
 
 const dataComponentMutationFieldPatch = graphql`
   mutation DataComponentEditionOverviewFieldPatchMutation(
@@ -119,10 +119,10 @@ interface DataComponentEditionOverviewComponentProps {
   data: DataComponentEditionOverview_dataComponent$key;
   context:
   | readonly ({
-    readonly focusOn: string | null;
+    readonly focusOn: string | null | undefined;
     readonly name: string;
   } | null)[]
-  | null;
+  | null | undefined;
   enableReferences?: boolean;
   handleClose: () => void;
 }
@@ -164,7 +164,7 @@ DataComponentEditionOverviewComponentProps
     editionFocus: dataComponentEditionOverviewFocus,
   };
   const editor = useFormEditor(
-    dataComponent,
+    dataComponent as GenericData,
     enableReferences,
     queries,
     dataComponentValidator,
@@ -225,7 +225,7 @@ DataComponentEditionOverviewComponentProps
 
   const initialValues: DataComponentAddInput = {
     name: dataComponent.name,
-    description: dataComponent.description,
+    description: dataComponent?.description ?? '',
     createdBy: convertCreatedBy(dataComponent) as Option,
     objectMarking: convertMarkings(dataComponent),
     x_opencti_workflow_id: convertStatus(t_i18n, dataComponent) as Option,

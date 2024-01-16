@@ -5,11 +5,11 @@ import ListLinesContent from '../../../../../components/list_lines/ListLinesCont
 import { useFormatter } from '../../../../../components/i18n';
 import { EntitySettingAttributes_entitySetting$data } from './__generated__/EntitySettingAttributes_entitySetting.graphql';
 
-interface AttributeNode {
-  label: string | null,
+export interface AttributeNode {
+  label?: string | null,
   name: string,
   type: string,
-  scale: string | null
+  scale?: string | null
 }
 
 const computeAttributeNodeType = (node: AttributeNode) => {

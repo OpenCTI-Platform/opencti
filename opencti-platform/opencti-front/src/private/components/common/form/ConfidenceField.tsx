@@ -4,7 +4,7 @@ import Alert from '@mui/material/Alert';
 import makeStyles from '@mui/styles/makeStyles';
 import InputSliderField from '../../../../components/InputSliderField';
 import { useFormatter } from '../../../../components/i18n';
-import { ThreatActorContext } from '../../threats/threat_actors_individual/ThreatActorIndividualModel';
+import { GenericContext } from '../model/GenericContextModel';
 
 const useStyles = makeStyles(() => ({
   alert: {
@@ -23,7 +23,7 @@ interface ConfidenceFieldProps {
   variant?: string;
   onSubmit?: (name: string, value: string | number | number[]) => void;
   onFocus?: (name: string, value: string) => void;
-  editContext?: readonly (ThreatActorContext | null)[] | null;
+  editContext?: readonly (GenericContext | null)[] | null;
   containerStyle?: Record<string, string | number>;
   entityType: string;
   disabled?: boolean;

@@ -2,7 +2,7 @@ import React from 'react';
 import * as Yup from 'yup';
 import { Form, Formik } from 'formik';
 import { graphql, useFragment } from 'react-relay';
-import { ThreatActorContext } from './ThreatActorIndividualModel';
+import { GenericContext } from '../../common/model/GenericContextModel';
 import { useFormatter } from '../../../../components/i18n';
 import { commitMutation, defaultCommitMutation } from '../../../../relay/environment';
 import { HeightFieldEdit } from '../../common/form/HeightField';
@@ -68,7 +68,7 @@ const threatActorIndividualValidation = (t: (s: string) => string) => Yup.object
 interface ThreatActorIndividualEditionBiographicsComponentProps {
   threatActorIndividualRef: ThreatActorIndividualEditionBiographics_ThreatActorIndividual$key;
   enableReferences: boolean;
-  context?: readonly (ThreatActorContext | null)[] | null;
+  context?: readonly (GenericContext | null)[] | null;
 }
 
 const ThreatActorIndividualEditionBiographicsComponent: React.FunctionComponent<

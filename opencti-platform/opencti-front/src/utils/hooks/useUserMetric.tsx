@@ -95,7 +95,7 @@ const weightsConverterSave = (userMetricType: SupportedUnitType) => {
 const useUserMetric = () => {
   const { me } = useAuth();
   const intl = useIntl();
-  const unitSystem = computeUserUnit(me?.unit_system, intl.locale);
+  const unitSystem = computeUserUnit(me.unit_system, intl.locale);
   const lengthPrimaryUnit = Units[unitSystem].length;
   const weightPrimaryUnit = Units[unitSystem].weight;
   const heightsConverterSaveFn = heightsConverterSave(unitSystem);

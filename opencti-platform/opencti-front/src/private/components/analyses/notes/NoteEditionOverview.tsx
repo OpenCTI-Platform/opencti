@@ -77,12 +77,7 @@ const noteMutationRelationDelete = graphql`
 
 interface NoteEditionOverviewProps {
   note: NoteEditionOverview_note$data;
-  context:
-  | readonly ({
-    readonly focusOn: string | null;
-    readonly name: string;
-  } | null)[]
-  | null;
+  context?: readonly (GenericContext | null)[] | null;
   handleClose: () => void;
 }
 

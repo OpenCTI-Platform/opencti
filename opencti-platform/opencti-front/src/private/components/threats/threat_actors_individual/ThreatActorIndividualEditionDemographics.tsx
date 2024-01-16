@@ -4,7 +4,7 @@ import { graphql, useFragment } from 'react-relay';
 import * as Yup from 'yup';
 import CountryField from '@components/common/form/CountryField';
 import { Option } from '@components/common/form/ReferenceField';
-import { ThreatActorContext } from './ThreatActorIndividualModel';
+import { GenericContext } from '../../common/model/GenericContextModel';
 import { useFormatter } from '../../../../components/i18n';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import { commitMutation, defaultCommitMutation } from '../../../../relay/environment';
@@ -75,7 +75,7 @@ const threatActorIndividualValidation = (t: (s: string) => string) => Yup.object
 interface ThreatActorIndividualEditionDemographicsComponentProps {
   threatActorIndividualRef: ThreatActorIndividualEditionDemographics_ThreatActorIndividual$key;
   enableReferences: boolean;
-  context?: readonly (ThreatActorContext | null)[] | null;
+  context?: readonly (GenericContext | null)[] | null;
 }
 
 const ThreatActorIndividualEditionDemographicsComponent = ({

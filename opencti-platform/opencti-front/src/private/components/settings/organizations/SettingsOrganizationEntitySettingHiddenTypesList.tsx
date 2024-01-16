@@ -1,6 +1,6 @@
 import React, { FunctionComponent } from 'react';
 import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
-import EntitySettingHiddenTypesList from '../sub_types/entity_setting/EntitySettingHiddenTypesList';
+import EntitySettingHiddenTypesList, { Entity } from '../sub_types/entity_setting/EntitySettingHiddenTypesList';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import { useFormatter } from '../../../../components/i18n';
@@ -29,7 +29,7 @@ const SettingsOrganizationEntitySettingHiddenTypesListComponent: FunctionCompone
 }) => {
   const { t_i18n } = useFormatter();
   const data = usePreloadedQuery<SettingsOrganizationEntitySettingHiddenTypesListQuery>(settingsOrganizationEntitySettingHiddenTypesListQuery, queryRef);
-  const organizations = data.organizations?.edges?.map((e) => e?.node) ?? [];
+  const organizations: Entity[] = data.organizations?.edges?.map((e) => e?.node) ?? [];
 
   return (
     <EntitySettingHiddenTypesList

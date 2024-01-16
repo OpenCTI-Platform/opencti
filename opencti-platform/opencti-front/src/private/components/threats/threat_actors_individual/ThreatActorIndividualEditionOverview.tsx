@@ -20,7 +20,7 @@ import useFormEditor, { GenericData } from '../../../../utils/hooks/useFormEdito
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import { Option } from '../../common/form/ReferenceField';
 import { ThreatActorIndividualEditionOverview_ThreatActorIndividual$key } from './__generated__/ThreatActorIndividualEditionOverview_ThreatActorIndividual.graphql';
-import { ThreatActorContext } from './ThreatActorIndividualModel';
+import { GenericContext } from '../../common/model/GenericContextModel';
 
 const ThreatActorIndividualMutationFieldPatch = graphql`
   mutation ThreatActorIndividualEditionOverviewFieldPatchMutation(
@@ -121,7 +121,7 @@ const threatActorIndividualEditionOverviewFragment = graphql`
 
 interface ThreatActorIndividualEditionOverviewProps {
   threatActorIndividualRef: ThreatActorIndividualEditionOverview_ThreatActorIndividual$key;
-  context?: readonly (ThreatActorContext | null)[] | null;
+  context?: readonly (GenericContext | null)[] | null;
   enableReferences: boolean;
   handleClose: () => void;
 }
