@@ -144,7 +144,7 @@ EntityStixCoreRelationshipsEntitiesViewProps
     search: searchTerm,
     orderBy: sortBy && sortBy in dataColumns && dataColumns[sortBy].isSortable ? sortBy : 'name',
     orderMode: orderAsc ? 'asc' : 'desc',
-    filters: contextFilters,
+    filters: removeIdFromFilterGroupObject(contextFilters),
   } as unknown as EntityStixCoreRelationshipsEntitiesViewLinesPaginationQuery$variables; // Because of FilterMode
 
   const {
