@@ -55,7 +55,7 @@ export const findAll = (context: AuthContext, user: AuthUser, args: QueryIndicat
  * @param indicator
  */
 export const getDecayDetails = async (context: AuthContext, user: AuthUser, indicator: BasicStoreEntityIndicator) => {
-  if (!indicator.x_opencti_decay_rule) {
+  if (!indicator.decay_applied_rule) {
     return null;
   }
   const details: DecayLiveDetails = {
@@ -67,11 +67,11 @@ export const getDecayDetails = async (context: AuthContext, user: AuthUser, indi
 
 export const findIndicatorsForDecay = (context: AuthContext, user: AuthUser, maxSize: number) => {
   const filters = {
-    orderBy: 'next_score_reaction_date',
+    orderBy: 'decay_next_reaction_date',
     orderMode: OrderingMode.Asc,
     mode: FilterMode.And,
     filters: [
-      { key: ['next_score_reaction_date'], values: [prepareDate()], operator: FilterOperator.Lt },
+      { key: ['decay_next_reaction_date'], values: [prepareDate()], operator: FilterOperator.Lt },
       { key: ['revoked'], values: ['false'] },
     ],
     filterGroups: [],
@@ -179,11 +179,11 @@ export const addIndicator = async (context: AuthContext, user: AuthUser, indicat
     });
     finalIndicatorToCreate = {
       ...indicatorToCreate,
-      next_score_reaction_date: nextScoreReactionDate,
-      x_opencti_base_score: indicatorBaseScore,
-      x_opencti_base_score_date: validFrom.toISOString(),
-      x_opencti_decay_rule: indicatorDecayRule,
-      x_opencti_decay_history: decayHistory,
+      decay_next_reaction_date: nextScoreReactionDate,
+      decay_base_score: indicatorBaseScore,
+      decay_base_score_date: validFrom.toISOString(),
+      decay_applied_rule: indicatorDecayRule,
+      decay_history: decayHistory,
     };
   } else {
     finalIndicatorToCreate = { ...indicatorToCreate };
@@ -214,36 +214,33 @@ export const addIndicator = async (context: AuthContext, user: AuthUser, indicat
 export interface IndicatorPatch {
   revoked?: boolean,
   x_opencti_score?: number,
-  x_opencti_decay_history?: DecayHistory[],
-  next_score_reaction_date?: Date,
+  decay_history?: DecayHistory[],
+  decay_next_reaction_date?: Date,
 }
 
 export const computeIndicatorDecayPatch = (indicator: BasicStoreEntityIndicator) => {
-  // update x_opencti_score
   let patch: IndicatorPatch = {};
-  const model = indicator.x_opencti_decay_rule;
+  const model = indicator.decay_applied_rule;
   if (!model || !model.decay_points) {
     return null;
   }
   const newStableScore = model.decay_points.find((p) => (p || indicator.x_opencti_score) < indicator.x_opencti_score) || model.decay_revoke_score;
   if (newStableScore) {
-    const decayHistory: DecayHistory[] = [...(indicator.x_opencti_decay_history ?? [])];
+    const decayHistory: DecayHistory[] = [...(indicator.decay_history ?? [])];
     decayHistory.push({
       updated_at: new Date(),
       score: newStableScore,
     });
     patch = {
       x_opencti_score: newStableScore,
-      x_opencti_decay_history: decayHistory,
+      decay_history: decayHistory,
     };
     if (newStableScore <= model.decay_revoke_score) {
-      // revoke
       patch = { ...patch, revoked: true };
     } else {
-      // compute next_score_reaction_date
-      const nextScoreReactionDate = computeNextScoreReactionDate(indicator.x_opencti_base_score, newStableScore, model as DecayRule, moment(indicator.valid_from));
+      const nextScoreReactionDate = computeNextScoreReactionDate(indicator.decay_base_score, newStableScore, model as DecayRule, moment(indicator.valid_from));
       if (nextScoreReactionDate) {
-        patch = { ...patch, next_score_reaction_date: nextScoreReactionDate };
+        patch = { ...patch, decay_next_reaction_date: nextScoreReactionDate };
       }
     }
   }
@@ -251,10 +248,10 @@ export const computeIndicatorDecayPatch = (indicator: BasicStoreEntityIndicator)
 };
 
 /**
- * Triggered by the decay manager when next_score_reaction_date is reached.
+ * Triggered by the decay manager when decay_next_reaction_date is reached.
  * Compute the next step for Indicator as patch to applied to the database:
  * - change the current stable score to next
- * - update the next_score_reaction_date to next one
+ * - update the decay_next_reaction_date to next one
  * - revoke if the revoke score is reached
  * @param context
  * @param user

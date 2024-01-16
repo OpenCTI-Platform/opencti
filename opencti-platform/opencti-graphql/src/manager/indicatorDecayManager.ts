@@ -10,7 +10,7 @@ const BATCH_SIZE = conf.get('indicator_decay_manager:batch_size') || 10000;
 
 /**
  * Search for N (batch_size) older Indicators that requires to have the current stable score to be updated
- * based on next_score_reaction_date.
+ * based on decay_next_reaction_date.
  * Update the stable score to the next value, and revoke indicators if needed.
  */
 export const indicatorDecayHandler = async () => {

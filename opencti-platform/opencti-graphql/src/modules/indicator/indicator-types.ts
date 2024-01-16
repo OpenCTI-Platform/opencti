@@ -40,10 +40,10 @@ export interface BasicStoreEntityIndicator extends BasicStoreEntity {
   valid_from: Date;
   valid_until: Date;
   kill_chain_phases: Array<StixKillChainPhase>;
-  x_opencti_decay_rule: DecayRule;
-  x_opencti_decay_history: Array<DecayHistory>;
-  x_opencti_base_score: number;
-  x_opencti_base_score_date: Date;
+  decay_applied_rule: DecayRule;
+  decay_history: Array<DecayHistory>;
+  decay_base_score: number;
+  decay_base_score_date: Date;
 }
 
 export interface StoreEntityIndicator extends StoreEntity {
@@ -56,8 +56,8 @@ export interface StoreEntityIndicator extends StoreEntity {
   valid_from: Date;
   valid_until: Date;
   kill_chain_phases: Array<StixKillChainPhase>;
-  x_opencti_decay_rule: DecayRule;
-  x_opencti_decay_history: Array<DecayHistory>;
-  x_opencti_base_score: number;
-  x_opencti_base_score_date: Date;
+  decay_applied_rule: DecayRule;
+  decay_history: Array<DecayHistory>;
+  decay_base_score: number;
+  decay_base_score_date: Date;
 }

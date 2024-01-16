@@ -97,8 +97,8 @@ describe('Decay update testing', () => {
   const getDefaultIndicatorEntity = () => {
     const indicatorInput: Partial<BasicStoreEntityIndicator> = {
       x_opencti_score: 50,
-      x_opencti_base_score: 100,
-      x_opencti_decay_history: [],
+      decay_base_score: 100,
+      decay_history: [],
       valid_from: moment().subtract('5', 'days').toDate(),
       valid_until: moment().add('5', 'days').toDate()
     };
@@ -119,9 +119,9 @@ describe('Decay update testing', () => {
   it('should move to next score and update next reaction date for default rule', () => {
     // GIVEN an Indicator with decay that is on the first decay point and has next reaction point
     const indicatorInput = getDefaultIndicatorEntity();
-    indicatorInput.x_opencti_decay_rule = FALLBACK_DECAY_RULE;
+    indicatorInput.decay_applied_rule = FALLBACK_DECAY_RULE;
     indicatorInput.x_opencti_score = 50;
-    indicatorInput.x_opencti_decay_history = [{
+    indicatorInput.decay_history = [{
       updated_at: indicatorInput.valid_from,
       score: 50,
     }];
@@ -132,19 +132,19 @@ describe('Decay update testing', () => {
     // THEN
     expect(patchResult?.revoked, 'This indicator should not be revoked.').toBeUndefined();
     expect(patchResult?.x_opencti_score, 'This indicator should be updated to next score (50 -> 40).').toBe(40);
-    expect(patchResult?.next_score_reaction_date, 'This indicator should have a new reaction date.').toBeDefined();
-    expect(patchResult?.x_opencti_decay_history?.length, 'This indicator should have one more history data.').toBe(2);
-    expect(patchResult?.x_opencti_decay_history?.at(1)?.score, 'This indicator should have one more history data.').toBe(40);
+    expect(patchResult?.decay_next_reaction_date, 'This indicator should have a new reaction date.').toBeDefined();
+    expect(patchResult?.decay_history?.length, 'This indicator should have one more history data.').toBe(2);
+    expect(patchResult?.decay_history?.at(1)?.score, 'This indicator should have one more history data.').toBe(40);
   });
 
   it('should move to next score and update next reaction date', () => {
     // GIVEN an Indicator with decay that is on the first decay point and has next reaction point
     const indicatorInput = getDefaultIndicatorEntity();
-    indicatorInput.x_opencti_decay_rule = defaultDecayRule;
-    indicatorInput.x_opencti_decay_rule.decay_points = [100, 80, 50, 20];
-    indicatorInput.x_opencti_decay_rule.decay_revoke_score = 10;
+    indicatorInput.decay_applied_rule = defaultDecayRule;
+    indicatorInput.decay_applied_rule.decay_points = [100, 80, 50, 20];
+    indicatorInput.decay_applied_rule.decay_revoke_score = 10;
     indicatorInput.x_opencti_score = 100;
-    indicatorInput.x_opencti_decay_history = [];
+    indicatorInput.decay_history = [];
 
     // WHEN next reaction point is computed
     const patchResult = computeIndicatorDecayPatch(indicatorInput);
@@ -152,20 +152,20 @@ describe('Decay update testing', () => {
     // THEN
     expect(patchResult?.revoked, 'This indicator should not be revoked.').toBeUndefined();
     expect(patchResult?.x_opencti_score, 'This indicator should be updated to next score (100 -> 80).').toBe(80);
-    expect(patchResult?.next_score_reaction_date, 'This indicator should have a new reaction date.').toBeDefined();
-    expect(patchResult?.x_opencti_decay_history?.length, 'This indicator should have one more history data.').toBe(1);
-    expect(patchResult?.x_opencti_decay_history?.at(0)?.score, 'This indicator should have one more history data.').toBe(80);
+    expect(patchResult?.decay_next_reaction_date, 'This indicator should have a new reaction date.').toBeDefined();
+    expect(patchResult?.decay_history?.length, 'This indicator should have one more history data.').toBe(1);
+    expect(patchResult?.decay_history?.at(0)?.score, 'This indicator should have one more history data.').toBe(80);
   });
 
   it('should be revoked when revoke score is reached', () => {
     // GIVEN an Indicator with decay that is on the last decay point and has next a revoke score
     const indicatorInput = getDefaultIndicatorEntity();
-    indicatorInput.x_opencti_decay_rule = defaultDecayRule;
-    indicatorInput.x_opencti_decay_rule.decay_points = [100, 80, 50, 20];
-    indicatorInput.x_opencti_decay_rule.decay_revoke_score = 10;
+    indicatorInput.decay_applied_rule = defaultDecayRule;
+    indicatorInput.decay_applied_rule.decay_points = [100, 80, 50, 20];
+    indicatorInput.decay_applied_rule.decay_revoke_score = 10;
     indicatorInput.x_opencti_score = 20;
-    indicatorInput.x_opencti_decay_history = [];
-    indicatorInput.x_opencti_decay_history.push({ updated_at: new Date(2023, 1), score: 100 });
+    indicatorInput.decay_history = [];
+    indicatorInput.decay_history.push({ updated_at: new Date(2023, 1), score: 100 });
 
     // WHEN next reaction point is computed
     const patchResult = computeIndicatorDecayPatch(indicatorInput);
@@ -173,17 +173,17 @@ describe('Decay update testing', () => {
     // THEN
     expect(patchResult?.revoked, 'This indicator should be revoked.').toBeTruthy();
     expect(patchResult?.x_opencti_score, 'This indicator should be updated to revoke score.').toBe(10);
-    expect(patchResult?.next_score_reaction_date, 'This indicator should not have a next reaction date.').toBeUndefined();
-    expect(patchResult?.x_opencti_decay_history?.length, 'This indicator should have one more history data.').toBe(2);
+    expect(patchResult?.decay_next_reaction_date, 'This indicator should not have a next reaction date.').toBeUndefined();
+    expect(patchResult?.decay_history?.length, 'This indicator should have one more history data.').toBe(2);
   });
 
   it('should revoke when current score is already lower than revoke score', () => {
     // GIVEN an Indicator with a stable score that is already lower than revoke score
     // use case that should not happen with a normal usage
     const indicatorInput = getDefaultIndicatorEntity();
-    indicatorInput.x_opencti_decay_rule = defaultDecayRule;
-    indicatorInput.x_opencti_decay_rule.decay_points = [100, 80, 50, 20];
-    indicatorInput.x_opencti_decay_rule.decay_revoke_score = 50;
+    indicatorInput.decay_applied_rule = defaultDecayRule;
+    indicatorInput.decay_applied_rule.decay_points = [100, 80, 50, 20];
+    indicatorInput.decay_applied_rule.decay_revoke_score = 50;
     indicatorInput.x_opencti_score = 30;
 
     // WHEN next reaction point is computed
@@ -192,16 +192,16 @@ describe('Decay update testing', () => {
     // THEN
     expect(patchResult?.revoked, 'This indicator should be revoked.').toBeTruthy();
     expect(patchResult?.x_opencti_score, 'This indicator should be updated to revoke score.').toBe(20);
-    expect(patchResult?.next_score_reaction_date, 'This indicator should not have a next reaction date.').toBeUndefined();
+    expect(patchResult?.decay_next_reaction_date, 'This indicator should not have a next reaction date.').toBeUndefined();
   });
 
   it('should revoke when revoke score is higher than all decay points', () => {
     // GIVEN an Indicator with revoke score higher than all decay points
     // use case that should not happen with a normal usage
     const indicatorInput = getDefaultIndicatorEntity();
-    indicatorInput.x_opencti_decay_rule = defaultDecayRule;
-    indicatorInput.x_opencti_decay_rule.decay_points = [80, 50, 20];
-    indicatorInput.x_opencti_decay_rule.decay_revoke_score = 100;
+    indicatorInput.decay_applied_rule = defaultDecayRule;
+    indicatorInput.decay_applied_rule.decay_points = [80, 50, 20];
+    indicatorInput.decay_applied_rule.decay_revoke_score = 100;
     indicatorInput.x_opencti_score = 50;
 
     // WHEN next reaction point is computed
@@ -210,7 +210,7 @@ describe('Decay update testing', () => {
     // THEN
     expect(patchResult.revoked, 'This indicator should be revoked.').toBeTruthy();
     expect(patchResult.x_opencti_score, 'This indicator should be updated to revoke score.').toBe(20);
-    expect(patchResult.next_score_reaction_date, 'This indicator should not have a next reaction date.').toBeUndefined();
+    expect(patchResult.decay_next_reaction_date, 'This indicator should not have a next reaction date.').toBeUndefined();
   });
 
   it('should do nothing when decay rule is null', () => {
@@ -229,9 +229,9 @@ describe('Decay live detailed data testing (subset of indicatorDecayDetails quer
   it('should compute live score correctly', () => {
     const indicator: Partial<BasicStoreEntityIndicator> = {
       x_opencti_score: 100,
-      x_opencti_base_score: 100,
-      x_opencti_base_score_date: moment().subtract('5', 'days').toDate(),
-      x_opencti_decay_rule: FALLBACK_DECAY_RULE,
+      decay_base_score: 100,
+      decay_base_score_date: moment().subtract('5', 'days').toDate(),
+      decay_applied_rule: FALLBACK_DECAY_RULE,
       valid_from: moment().subtract('5', 'days').toDate(),
       valid_until: moment().add('5', 'days').toDate()
     };
@@ -240,12 +240,12 @@ describe('Decay live detailed data testing (subset of indicatorDecayDetails quer
     expect(liveScore).toBe(76);
   });
 
-  it('should live score be equals to stable when x_opencti_base_score_date is missing', () => {
+  it('should live score be equals to stable when decay_base_score_date is missing', () => {
     const indicator: Partial<BasicStoreEntityIndicator> = {
       x_opencti_score: 42,
-      x_opencti_base_score: 100,
-      x_opencti_base_score_date: undefined,
-      x_opencti_decay_history: [],
+      decay_base_score: 100,
+      decay_base_score_date: undefined,
+      decay_history: [],
       valid_from: moment().subtract('5', 'days').toDate(),
       valid_until: moment().add('5', 'days').toDate()
     };
@@ -256,10 +256,10 @@ describe('Decay live detailed data testing (subset of indicatorDecayDetails quer
   it('should next reaction point be updated when score is lower than max reaction score', () => {
     const indicator: Partial<BasicStoreEntityIndicator> = {
       x_opencti_score: 42,
-      x_opencti_base_score: 100,
-      x_opencti_base_score_date: moment().subtract('5', 'days').toDate(),
-      x_opencti_decay_history: [],
-      x_opencti_decay_rule: FALLBACK_DECAY_RULE,
+      decay_base_score: 100,
+      decay_base_score_date: moment().subtract('5', 'days').toDate(),
+      decay_history: [],
+      decay_applied_rule: FALLBACK_DECAY_RULE,
       valid_from: moment().subtract('5', 'days').toDate(),
       valid_until: moment().add('5', 'days').toDate()
     };

@@ -8802,6 +8802,10 @@ export type Indicator = BasicObject & StixCoreObject & StixDomainObject & StixOb
   created_at: Scalars['DateTime']['output'];
   creators?: Maybe<Array<Creator>>;
   decayLiveDetails?: Maybe<DecayLiveDetails>;
+  decay_applied_rule?: Maybe<DecayRule>;
+  decay_base_score?: Maybe<Scalars['Int']['output']>;
+  decay_base_score_date?: Maybe<Scalars['DateTime']['output']>;
+  decay_history?: Maybe<Array<DecayHistory>>;
   description?: Maybe<Scalars['String']['output']>;
   editContext?: Maybe<Array<EditUserContext>>;
   entity_type: Scalars['String']['output'];
@@ -8846,10 +8850,6 @@ export type Indicator = BasicObject & StixCoreObject & StixDomainObject & StixOb
   valid_until?: Maybe<Scalars['DateTime']['output']>;
   workflowEnabled?: Maybe<Scalars['Boolean']['output']>;
   x_mitre_platforms?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
-  x_opencti_base_score?: Maybe<Scalars['Int']['output']>;
-  x_opencti_base_score_date?: Maybe<Scalars['DateTime']['output']>;
-  x_opencti_decay_history?: Maybe<Array<DecayHistory>>;
-  x_opencti_decay_rule?: Maybe<DecayRule>;
   x_opencti_detection?: Maybe<Scalars['Boolean']['output']>;
   x_opencti_graph_data?: Maybe<Scalars['String']['output']>;
   x_opencti_inferences?: Maybe<Array<Maybe<Inference>>>;
@@ -31391,6 +31391,10 @@ export type IndicatorResolvers<ContextType = any, ParentType extends ResolversPa
   created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   creators?: Resolver<Maybe<Array<ResolversTypes['Creator']>>, ParentType, ContextType>;
   decayLiveDetails?: Resolver<Maybe<ResolversTypes['DecayLiveDetails']>, ParentType, ContextType>;
+  decay_applied_rule?: Resolver<Maybe<ResolversTypes['DecayRule']>, ParentType, ContextType>;
+  decay_base_score?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
+  decay_base_score_date?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
+  decay_history?: Resolver<Maybe<Array<ResolversTypes['DecayHistory']>>, ParentType, ContextType>;
   description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   editContext?: Resolver<Maybe<Array<ResolversTypes['EditUserContext']>>, ParentType, ContextType>;
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
@@ -31435,10 +31439,6 @@ export type IndicatorResolvers<ContextType = any, ParentType extends ResolversPa
   valid_until?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   workflowEnabled?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   x_mitre_platforms?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
-  x_opencti_base_score?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
-  x_opencti_base_score_date?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
-  x_opencti_decay_history?: Resolver<Maybe<Array<ResolversTypes['DecayHistory']>>, ParentType, ContextType>;
-  x_opencti_decay_rule?: Resolver<Maybe<ResolversTypes['DecayRule']>, ParentType, ContextType>;
   x_opencti_detection?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   x_opencti_graph_data?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_inferences?: Resolver<Maybe<Array<Maybe<ResolversTypes['Inference']>>>, ParentType, ContextType>;

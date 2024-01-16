@@ -154,16 +154,16 @@ type Indicator implements BasicObject & StixObject & StixCoreObject & StixDomain
   valid_from: DateTime
   valid_until: DateTime
   x_opencti_score: Int
-  x_opencti_base_score: Int
-  x_opencti_base_score_date: DateTime
   x_opencti_detection: Boolean
   x_opencti_main_observable_type: String
   x_mitre_platforms: [String]
   killChainPhases: KillChainPhaseConnection
   observables(first: Int): StixCyberObservableConnection
   #Decay
-  x_opencti_decay_rule: DecayRule
-  x_opencti_decay_history: [DecayHistory!]
+  decay_base_score : Int
+  decay_base_score_date : DateTime
+  decay_applied_rule: DecayRule
+  decay_history: [DecayHistory!]
   decayLiveDetails: DecayLiveDetails
   # Technical
   creators: [Creator!]

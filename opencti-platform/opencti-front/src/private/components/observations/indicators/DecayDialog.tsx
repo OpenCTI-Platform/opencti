@@ -32,9 +32,9 @@ const DecayDialogContent : FunctionComponent<DecayDialogContentProps> = ({ indic
 
   const indicatorDecayDetails = indicator.decayLiveDetails;
 
-  const decayHistory = indicator.x_opencti_decay_history ? [...indicator.x_opencti_decay_history] : [];
+  const decayHistory = indicator.decay_history ? [...indicator.decay_history] : [];
   const decayLivePoints = indicatorDecayDetails?.live_points ? [...indicatorDecayDetails.live_points] : [];
-  const decayReactionPoints = indicator.x_opencti_decay_rule?.decay_points ?? [];
+  const decayReactionPoints = indicator.decay_applied_rule?.decay_points ?? [];
 
   const currentScoreLineStyle = {
     color: theme.palette.success.main,
@@ -114,10 +114,10 @@ const DecayDialogContent : FunctionComponent<DecayDialogContentProps> = ({ indic
             {t_i18n('Applied decay rule')}
           </Typography>
           <ul>
-            <li>{t_i18n('Base score:')} { indicator.x_opencti_base_score }</li>
-            <li>{t_i18n('Lifetime (in days):')} { indicator.x_opencti_decay_rule?.decay_lifetime ?? 'Not set'}</li>
-            <li>{t_i18n('Pound factor:')} { indicator.x_opencti_decay_rule?.decay_pound ?? 'Not set'}</li>
-            <li>{t_i18n('Revoke score:')} { indicator.x_opencti_decay_rule?.decay_revoke_score ?? 'Not set'}</li>
+            <li>{t_i18n('Base score:')} { indicator.decay_base_score }</li>
+            <li>{t_i18n('Lifetime (in days):')} { indicator.decay_applied_rule?.decay_lifetime ?? 'Not set'}</li>
+            <li>{t_i18n('Pound factor:')} { indicator.decay_applied_rule?.decay_pound ?? 'Not set'}</li>
+            <li>{t_i18n('Revoke score:')} { indicator.decay_applied_rule?.decay_revoke_score ?? 'Not set'}</li>
             <li>{t_i18n('Reaction points:')} {decayReactionPoints.join(', ')}</li>
           </ul>
         </Grid>

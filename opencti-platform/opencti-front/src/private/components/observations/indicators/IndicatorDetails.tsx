@@ -93,7 +93,7 @@ const IndicatorDetailsComponent: FunctionComponent<IndicatorDetailsComponentProp
                 <Typography variant="h3" gutterBottom={true}>
                   <div style = {{ display: 'flex', gap: '8px', alignItems: 'center' }}>
                     <div>{t_i18n('Score')}</div>
-                    {indicator.x_opencti_decay_rule && (
+                    {indicator.decay_applied_rule && (
                       <Tooltip title={t_i18n('This score is updated with the decay rule applied to this indicator.')}>
                         <InformationOutline fontSize="small" color="primary" />
                       </Tooltip>
@@ -102,7 +102,7 @@ const IndicatorDetailsComponent: FunctionComponent<IndicatorDetailsComponentProp
                 </Typography>
                 <ItemScore score={indicator.x_opencti_score} />
               </Grid>
-              {indicator.x_opencti_decay_rule && (
+              {indicator.decay_applied_rule && (
               <Grid item xs={8}>
                 <Button
                   size="small"
@@ -212,15 +212,15 @@ const IndicatorDetails = createFragmentContainer(IndicatorDetailsComponent, {
       valid_from
       valid_until
       x_opencti_score
-      x_opencti_base_score
+      decay_base_score
       x_opencti_detection
       x_mitre_platforms
       indicator_types
-      x_opencti_decay_history {
+      decay_history {
         score
         updated_at
       }
-      x_opencti_decay_rule {
+      decay_applied_rule {
         decay_lifetime
         decay_pound
         decay_points

@@ -112,10 +112,10 @@ export const findDecayRuleForIndicator = (indicatorObservableType: string, enabl
  * @param indicator
  */
 export const computeLiveScore = (indicator: BasicStoreEntityIndicator) => {
-  if (indicator.x_opencti_base_score_date && indicator.x_opencti_base_score && indicator.x_opencti_decay_rule) {
-    const decayRule = indicator.x_opencti_decay_rule as DecayRule;
-    const daysSinceDecayStart = moment().diff(moment(indicator.x_opencti_base_score_date), 'days', true);
-    return Math.round(computeScoreFromExpectedTime(indicator.x_opencti_base_score, daysSinceDecayStart, decayRule));
+  if (indicator.decay_base_score_date && indicator.decay_base_score && indicator.decay_applied_rule) {
+    const decayRule = indicator.decay_applied_rule as DecayRule;
+    const daysSinceDecayStart = moment().diff(moment(indicator.decay_base_score_date), 'days', true);
+    return Math.round(computeScoreFromExpectedTime(indicator.decay_base_score, daysSinceDecayStart, decayRule));
   }
   // by default return current score
   return indicator.x_opencti_score;
@@ -127,15 +127,15 @@ export const computeLiveScore = (indicator: BasicStoreEntityIndicator) => {
  * @param indicator
  */
 export const computeLivePoints = (indicator: BasicStoreEntityIndicator) => {
-  if (indicator.x_opencti_decay_rule && indicator.x_opencti_decay_rule.decay_points && indicator.x_opencti_base_score_date) {
+  if (indicator.decay_applied_rule && indicator.decay_applied_rule.decay_points && indicator.decay_base_score_date) {
     const result: DecayHistory[] = [];
-    const nextKeyPoints = [...indicator.x_opencti_decay_rule.decay_points, indicator.x_opencti_decay_rule.decay_revoke_score];
+    const nextKeyPoints = [...indicator.decay_applied_rule.decay_points, indicator.decay_applied_rule.decay_revoke_score];
     for (let i = 0; i < nextKeyPoints.length; i += 1) {
       const scorePoint = nextKeyPoints[i];
       if (scorePoint < indicator.x_opencti_score) {
-        const elapsedTimeInDays = computeTimeFromExpectedScore(indicator.x_opencti_base_score, scorePoint, indicator.x_opencti_decay_rule as DecayRule);
+        const elapsedTimeInDays = computeTimeFromExpectedScore(indicator.decay_base_score, scorePoint, indicator.decay_applied_rule as DecayRule);
         const duration = moment.duration(elapsedTimeInDays, 'days');
-        const scoreDate = moment(indicator.x_opencti_base_score_date).add(duration.asMilliseconds(), 'ms');
+        const scoreDate = moment(indicator.decay_base_score_date).add(duration.asMilliseconds(), 'ms');
         result.push({ updated_at: scoreDate.toDate(), score: scorePoint });
       }
     }
