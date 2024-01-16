@@ -55,12 +55,17 @@ const useStyles = makeStyles<Theme>((theme) => ({
     alignItems: 'center',
   },
   handle: {
-    position: 'relative',
-    transform: 'none',
-    left: 'auto',
-    margin: '0 30px 0 30px',
+    position: 'absolute',
   },
 }));
+
+const getHandlePositionStyle = (count: number, index: number, width = 160): React.CSSProperties | undefined => {
+  // we distribute evenly the output ports at the bottom using CSS
+  // we divide our width in N intervals, the N points being at the center of their interval
+  const interval = width / count;
+  const position = index * interval + (interval / 2);
+  return { left: position };
+};
 
 const NodeWorkflow = ({ id, data }: NodeProps) => {
   const classes = useStyles();
@@ -140,7 +145,7 @@ const NodeWorkflow = ({ id, data }: NodeProps) => {
         <Handle type="target" position={Position.Top} isConnectable={false} />
       )}
       <div className={classes.handlesWrapper}>
-        {(data.component?.ports ?? []).map((n: node) => (
+        {(data.component?.ports ?? []).map((n: node, index: number, array: node[]) => (
           <Handle
             key={n.id}
             id={n.id}
@@ -148,6 +153,7 @@ const NodeWorkflow = ({ id, data }: NodeProps) => {
             position={Position.Bottom}
             isConnectable={false}
             className={classes.handle}
+            style={getHandlePositionStyle(array.length, index)}
           />
         ))}
       </div>
