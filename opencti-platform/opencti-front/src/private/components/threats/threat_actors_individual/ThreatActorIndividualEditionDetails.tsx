@@ -3,6 +3,7 @@ import { graphql, useFragment, useMutation } from 'react-relay';
 import * as Yup from 'yup';
 import { Field, Form, Formik } from 'formik';
 import { FormikConfig } from 'formik/dist/types';
+import { ThreatActorContext } from './ThreatActorIndividualModel';
 import { isNone, useFormatter } from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
 import { SubscriptionFocus } from '../../../../components/Subscription';
@@ -65,10 +66,7 @@ const threatActorIndividualEditionDetailsFragment = graphql`
 
 interface ThreatActorIndividualEditionDetailsProps {
   threatActorIndividualRef: ThreatActorIndividualEditionDetails_ThreatActorIndividual$key;
-  context: ReadonlyArray<{
-    readonly focusOn: string | null;
-    readonly name: string;
-  }> | null;
+  context?: readonly (ThreatActorContext | null)[] | null;
   enableReferences?: boolean;
   handleClose: () => void;
 }

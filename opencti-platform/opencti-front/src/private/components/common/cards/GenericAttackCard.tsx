@@ -94,7 +94,7 @@ interface labelEdges {
   }>;
 }
 
-interface GenericAttack {
+export interface GenericAttack {
   id: string;
   name: string;
   description: string | null;

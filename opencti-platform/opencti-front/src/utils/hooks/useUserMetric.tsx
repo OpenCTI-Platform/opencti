@@ -30,7 +30,7 @@ export const Units: { [k in SupportedUnitType]: UnitType } = {
   },
 };
 
-const computeUserUnit = (selectedSystem: UnitSystem | null, selectedLanguage = DEFAULT_LANG): SupportedUnitType => {
+const computeUserUnit = (selectedSystem?: UnitSystem | null, selectedLanguage = DEFAULT_LANG): SupportedUnitType => {
   const unitSystem = selectedSystem || 'auto';
   if (unitSystem === 'auto' || unitSystem === '%future added value') {
     const languageLocale = selectedLanguage && selectedLanguage !== LANGUAGES.AUTO ? selectedLanguage : DEFAULT_LANG;
@@ -95,7 +95,7 @@ const weightsConverterSave = (userMetricType: SupportedUnitType) => {
 const useUserMetric = () => {
   const { me } = useAuth();
   const intl = useIntl();
-  const unitSystem = computeUserUnit(me.unit_system, intl.locale);
+  const unitSystem = computeUserUnit(me?.unit_system, intl.locale);
   const lengthPrimaryUnit = Units[unitSystem].length;
   const weightPrimaryUnit = Units[unitSystem].weight;
   const heightsConverterSaveFn = heightsConverterSave(unitSystem);

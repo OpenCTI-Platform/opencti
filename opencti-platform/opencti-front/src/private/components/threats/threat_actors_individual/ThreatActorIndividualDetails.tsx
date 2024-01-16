@@ -19,7 +19,7 @@ import {
   ThreatActorIndividualDetails_ThreatActorIndividual$key,
 } from './__generated__/ThreatActorIndividualDetails_ThreatActorIndividual.graphql';
 import FieldOrEmpty from '../../../../components/FieldOrEmpty';
-import ImageCarousel from '../../../../components/ImageCarousel';
+import ImageCarousel, { ImagesData } from '../../../../components/ImageCarousel';
 import ThreatActorIndividualLocation from './ThreatActorIndividualLocation';
 
 const useStyles = makeStyles<Theme>((theme) => ({
@@ -91,8 +91,12 @@ ThreatActorIndividualDetailsProps
     ThreatActorIndividualDetailsFragment,
     threatActorIndividualData,
   );
-  const hasImages = (data.images?.edges ?? []).filter((n) => n?.node?.metaData?.inCarousel)
-    .length > 0;
+  const imagesCarousel: { images: ImagesData } = {
+    images: {
+      edges: (data.images?.edges ?? []).filter((n) => n?.node?.metaData?.inCarousel),
+    } as ImagesData,
+  };
+  const hasImages = imagesCarousel.images?.edges ? imagesCarousel.images.edges.length > 0 : false;
   return (
     <div style={{ height: '100%' }}>
       <Typography variant="h4" gutterBottom={true}>
@@ -104,7 +108,7 @@ ThreatActorIndividualDetailsProps
             <Grid container={true} spacing={3}>
               {hasImages && (
                 <Grid item={true} xs={4}>
-                  <ImageCarousel data={data} />
+                  <ImageCarousel data={imagesCarousel} />
                 </Grid>
               )}
               <Grid item={true} xs={hasImages ? 8 : 12}>

@@ -8,6 +8,7 @@ import {
   ThreatActorIndividualEditionBiographics_ThreatActorIndividual$data,
 } from '@components/threats/threat_actors_individual/__generated__/ThreatActorIndividualEditionBiographics_ThreatActorIndividual.graphql';
 import Button from '@mui/material/Button';
+import { ThreatActorContext } from './ThreatActorIndividualModel';
 import { useFormatter } from '../../../../components/i18n';
 import { SubscriptionFocus } from '../../../../components/Subscription';
 import DatePickerField from '../../../../components/DatePickerField';
@@ -120,12 +121,7 @@ interface WeightFieldEditProps {
     width: string;
   };
   setFieldValue?: (name: string, value: unknown) => void;
-  editContext?:
-  | readonly {
-    readonly focusOn: string | null;
-    readonly name: string;
-  }[]
-  | null;
+  editContext?: readonly (ThreatActorContext | null)[] | null;
 }
 export const WeightFieldEdit: FunctionComponent<WeightFieldEditProps> = ({
   id,

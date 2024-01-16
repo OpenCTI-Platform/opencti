@@ -8,6 +8,7 @@ import {
   ThreatActorIndividualEditionBiographics_ThreatActorIndividual$data,
 } from '@components/threats/threat_actors_individual/__generated__/ThreatActorIndividualEditionBiographics_ThreatActorIndividual.graphql';
 import { MeasureInput } from '@components/threats/threat_actors_individual/__generated__/ThreatActorIndividualCreationMutation.graphql';
+import { ThreatActorContext } from '../../threats/threat_actors_individual/ThreatActorIndividualModel';
 import { useFormatter } from '../../../../components/i18n';
 import { SubscriptionFocus } from '../../../../components/Subscription';
 import DatePickerField from '../../../../components/DatePickerField';
@@ -33,12 +34,7 @@ interface HeightFieldEditProps {
   values: ThreatActorIndividualEditionBiographics_ThreatActorIndividual$data['height'];
   containerStyle: { marginTop: number; width: string };
   setFieldValue?: (name: string, value: unknown) => void;
-  editContext?:
-  | readonly {
-    readonly focusOn: string | null;
-    readonly name: string;
-  }[]
-  | null;
+  editContext?: readonly (ThreatActorContext | null)[] | null;
 }
 export const HeightFieldEdit: FunctionComponent<HeightFieldEditProps> = ({
   name,

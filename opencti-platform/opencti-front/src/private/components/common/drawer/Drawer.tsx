@@ -7,6 +7,7 @@ import Typography from '@mui/material/Typography';
 import Fab from '@mui/material/Fab';
 import classNames from 'classnames';
 import { createStyles } from '@mui/styles';
+import { ThreatActorContext } from '../../threats/threat_actors_individual/ThreatActorIndividualModel';
 import type { Theme } from '../../../../components/Theme';
 import useAuth from '../../../../utils/hooks/useAuth';
 import { SubscriptionAvatars } from '../../../../components/Subscription';
@@ -65,10 +66,7 @@ interface DrawerProps {
   open?: boolean;
   onClose?: () => void;
   variant?: DrawerVariant;
-  context?: ReadonlyArray<{
-    readonly focusOn: string | null;
-    readonly name: string;
-  }> | null;
+  context?: readonly (ThreatActorContext | null)[] | null;
   header?: React.ReactElement;
   controlledDial?: ({ onOpen, onClose }:{ onOpen: () => void, onClose: () => void }) => React.ReactElement;
   containerRef?: HTMLInputElement;
