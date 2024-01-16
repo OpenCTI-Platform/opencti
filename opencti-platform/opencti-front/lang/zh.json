@@ -2500,5 +2500,7 @@
   "The tag has been added": "标签已添加",
   "The tag has been removed": "标签已删除",
   "I have read and comply with the above statement": "我已阅读并遵守上述声明",
-  "You need to activate OpenCTI enterprise edition to use this feature.": "您需要激活 OpenCTI 企业版才能使用此功能。"
+  "You need to activate OpenCTI enterprise edition to use this feature.": "您需要激活 OpenCTI 企业版才能使用此功能。",
+  "Max Confidence Level": "最大置信度",
+  "This value is overridden for the following entity types": "以下实体类型可重载该值"
 }

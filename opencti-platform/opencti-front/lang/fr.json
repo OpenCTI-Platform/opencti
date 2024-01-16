@@ -2500,5 +2500,7 @@
   "The tag has been added": "La balise a été ajoutée",
   "The tag has been removed": "La balise a été supprimée",
   "I have read and comply with the above statement": "J'ai lu et j'accepte la déclaration ci-dessus",
-  "You need to activate OpenCTI enterprise edition to use this feature.": "Vous devez activer OpenCTI enterprise edition pour utiliser cette fonctionnalité."
+  "You need to activate OpenCTI enterprise edition to use this feature.": "Vous devez activer OpenCTI enterprise edition pour utiliser cette fonctionnalité.",
+  "Max Confidence Level": "Niveau de confiance maximal",
+  "This value is overridden for the following entity types": "Cette valeur est remplacée pour les types d'entités suivants"
 }

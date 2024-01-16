@@ -2500,5 +2500,7 @@
   "The tag has been added": "タグが追加されました",
   "The tag has been removed": "タグは削除されました",
   "I have read and comply with the above statement": "私は上記の声明を読み、遵守します。",
-  "You need to activate OpenCTI enterprise edition to use this feature.": "この機能を使用するには、OpenCTI エンタープライズ版を有効にする必要があります。"
+  "You need to activate OpenCTI enterprise edition to use this feature.": "この機能を使用するには、OpenCTI エンタープライズ版を有効にする必要があります。",
+  "Max Confidence Level": "最大信頼度",
+  "This value is overridden for the following entity types": "この値は、以下のエンティティ・タイプでオーバーライドされます。"
 }

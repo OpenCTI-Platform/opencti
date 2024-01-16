@@ -2500,5 +2500,7 @@
   "The tag has been added": "The tag has been added",
   "The tag has been removed": "The tag has been removed",
   "I have read and comply with the above statement": "I have read and comply with the above statement",
-  "You need to activate OpenCTI enterprise edition to use this feature.": "You need to activate OpenCTI enterprise edition to use this feature."
+  "You need to activate OpenCTI enterprise edition to use this feature.": "You need to activate OpenCTI enterprise edition to use this feature.",
+  "Max Confidence Level": "Max Confidence Level",
+  "This value is overridden for the following entity types": "This value is overridden for the following entity types"
 }

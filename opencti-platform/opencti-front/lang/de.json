@@ -2500,5 +2500,7 @@
   "The tag has been added": "Das Tag wurde hinzugefügt",
   "The tag has been removed": "Das Tag wurde entfernt",
   "I have read and comply with the above statement": "Ich habe die obige Erklärung gelesen und erkläre mich damit einverstanden",
-  "You need to activate OpenCTI enterprise edition to use this feature.": "Um diese Funktion nutzen zu können, müssen Sie die OpenCTI Enterprise Edition aktivieren."
+  "You need to activate OpenCTI enterprise edition to use this feature.": "Um diese Funktion nutzen zu können, müssen Sie die OpenCTI Enterprise Edition aktivieren.",
+  "Max Confidence Level": "Max. Konfidenzniveau",
+  "This value is overridden for the following entity types": "Dieser Wert wird für die folgenden Entitätstypen außer Kraft gesetzt"
 }
