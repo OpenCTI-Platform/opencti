@@ -12,35 +12,38 @@
         <meta name="author" content="Filigran">
       
       
-        <link rel="canonical" href="https://docs.opencti.io/latest/usage/notifiers/">
+        <link rel="canonical" href="https://docs.opencti.io/latest/administration/notifiers/">
       
       
-        <link rel="prev" href="../notifications/">
+        <link rel="prev" href="../reasoning/">
       
       
-        <link rel="next" href="../background-tasks/">
+        <link rel="next" href="../notifier-samples/">
       
       
         
       
       
       <link rel="icon" href="../../assets/images/favicon.png">
-      <meta name="generator" content="mkdocs-1.5.2, mkdocs-material-9.1.21+insiders-4.39.0">
+      <meta name="generator" content="mkdocs-1.5.3, mkdocs-material-9.5.4+insiders-4.49.2">
     
     
       
-        <title>Sample notifiers - OpenCTI Documentation</title>
+        <title>Custom notifiers - OpenCTI Documentation</title>
       
     
     
-      <link rel="stylesheet" href="../../assets/stylesheets/main.3a36e643.min.css">
+      <link rel="stylesheet" href="../../assets/stylesheets/main.67c3bdf0.min.css">
       
         
-        <link rel="stylesheet" href="../../assets/stylesheets/palette.ecc776e4.min.css">
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
       
       
 
+
     
+    
+      
     
     
       
@@ -65,9 +68,7 @@
   
   
 
-
-  <script id="__analytics">function __md_analytics(){function n(){dataLayer.push(arguments)}window.dataLayer=window.dataLayer||[],n("js",new Date),n("config","G-DB4K9LZPDZ"),document.addEventListener("DOMContentLoaded",function(){document.forms.search&&document.forms.search.query.addEventListener("blur",function(){this.value&&n("event","search",{search_term:this.value})}),document$.subscribe(function(){var a=document.forms.feedback;if(void 0!==a)for(var e of a.querySelectorAll("[type=submit]"))e.addEventListener("click",function(e){e.preventDefault();var t=document.location.pathname,e=this.getAttribute("data-md-value");n("event","feedback",{page:t,data:e}),a.firstElementChild.disabled=!0;e=a.querySelector(".md-feedback__note [data-md-value='"+e+"']");e&&(e.hidden=!1)}),a.hidden=!1}),location$.subscribe(function(e){n("config","G-DB4K9LZPDZ",{page_path:e.pathname})})});var e=document.createElement("script");e.async=!0,e.src="https://www.googletagmanager.com/gtag/js?id=G-DB4K9LZPDZ",document.getElementById("__analytics").insertAdjacentElement("afterEnd",e)}</script>
-
+<script id="__analytics">function __md_analytics(){function n(){dataLayer.push(arguments)}window.dataLayer=window.dataLayer||[],n("js",new Date),n("config","G-DB4K9LZPDZ"),document.addEventListener("DOMContentLoaded",function(){document.forms.search&&document.forms.search.query.addEventListener("blur",function(){this.value&&n("event","search",{search_term:this.value})}),document$.subscribe(function(){var a=document.forms.feedback;if(void 0!==a)for(var e of a.querySelectorAll("[type=submit]"))e.addEventListener("click",function(e){e.preventDefault();var t=document.location.pathname,e=this.getAttribute("data-md-value");n("event","feedback",{page:t,data:e}),a.firstElementChild.disabled=!0;e=a.querySelector(".md-feedback__note [data-md-value='"+e+"']");e&&(e.hidden=!1)}),a.hidden=!1}),location$.subscribe(function(e){n("config","G-DB4K9LZPDZ",{page_path:e.pathname})})});var e=document.createElement("script");e.async=!0,e.src="https://www.googletagmanager.com/gtag/js?id=G-DB4K9LZPDZ",document.getElementById("__analytics").insertAdjacentElement("afterEnd",e)}</script>
   
     <script>"undefined"!=typeof __md_analytics&&__md_analytics()</script>
   
@@ -102,7 +103,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#notifiers" class="md-skip">
+        <a href="#custom-notifiers" class="md-skip">
           Skip to content
         </a>
       
@@ -193,12 +194,15 @@
     <form class="md-search__form" name="search">
       <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
       <label class="md-search__icon md-icon" for="__search">
+        
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5Z"/></svg>
+        
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12Z"/></svg>
       </label>
       <nav class="md-search__options" aria-label="Search">
         
         <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41Z"/></svg>
         </button>
       </nav>
@@ -224,7 +228,7 @@
         <a href="https://github.com/OpenCTI-Platform/opencti" title="Go to repository" class="md-source" data-md-component="source">
   <div class="md-source__icon md-icon">
     
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.4.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2023 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81z"/></svg>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.5.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2023 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81z"/></svg>
   </div>
   <div class="md-source__repository">
     GitHub
@@ -295,13 +299,11 @@
         
   
   
-    
-  
   
     
     
       <li class="md-tabs__item">
-        <a href="../getting-started/" class="md-tabs__link md-tabs__link--active">
+        <a href="../../usage/getting-started/" class="md-tabs__link">
           
   
   User Guide
@@ -315,11 +317,13 @@
         
   
   
+    
+  
   
     
     
-      <li class="md-tabs__item">
-        <a href="../../administration/introduction/" class="md-tabs__link">
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="../introduction/" class="md-tabs__link">
           
   
   Administration
@@ -418,7 +422,7 @@
       <a href="https://github.com/OpenCTI-Platform/opencti" title="Go to repository" class="md-source" data-md-component="source">
   <div class="md-source__icon md-icon">
     
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.4.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2023 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81z"/></svg>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.5.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2023 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81z"/></svg>
   </div>
   <div class="md-source__repository">
     GitHub
@@ -430,6 +434,7 @@
     
       
       
+  
   
   
   
@@ -458,12 +463,17 @@
   
   
   
+  
     
     
     
-    <li class="md-nav__item md-nav__item--nested">
+    
+    
       
-        
+      
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
         
         
         
@@ -471,7 +481,8 @@
         
         <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2" >
         
-          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="">
             
   
   <span class="md-ellipsis">
@@ -504,6 +515,9 @@
   
   
   
+  
+    
+    
     
     
     
@@ -512,11 +526,11 @@
         
         
         
-        
           
         
         <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2_1" >
         
+          
           <label class="md-nav__link" for="__nav_2_1" id="__nav_2_1_label" tabindex="0">
             
   
@@ -550,6 +564,7 @@
   
   
   
+  
     <li class="md-nav__item">
       <a href="../../deployment/overview/" class="md-nav__link">
         
@@ -573,6 +588,7 @@
             
               
                 
+  
   
   
   
@@ -602,6 +618,7 @@
   
   
   
+  
     <li class="md-nav__item">
       <a href="../../deployment/configuration/" class="md-nav__link">
         
@@ -628,6 +645,7 @@
   
   
   
+  
     <li class="md-nav__item">
       <a href="../../deployment/authentication/" class="md-nav__link">
         
@@ -651,6 +669,7 @@
             
               
                 
+  
   
   
   
@@ -688,6 +707,9 @@
   
   
   
+  
+    
+    
     
     
     
@@ -696,11 +718,11 @@
         
         
         
-        
           
         
         <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2_2" >
         
+          
           <label class="md-nav__link" for="__nav_2_2" id="__nav_2_2_label" tabindex="0">
             
   
@@ -734,6 +756,7 @@
   
   
   
+  
     <li class="md-nav__item">
       <a href="../../deployment/connectors/" class="md-nav__link">
         
@@ -760,6 +783,7 @@
   
   
   
+  
     <li class="md-nav__item">
       <a href="../../deployment/integrations/" class="md-nav__link">
         
@@ -783,6 +807,7 @@
             
               
                 
+  
   
   
   
@@ -820,6 +845,9 @@
   
   
   
+  
+    
+    
     
     
     
@@ -828,11 +856,11 @@
         
         
         
-        
           
         
         <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2_3" >
         
+          
           <label class="md-nav__link" for="__nav_2_3" id="__nav_2_3_label" tabindex="0">
             
   
@@ -866,6 +894,7 @@
   
   
   
+  
     <li class="md-nav__item">
       <a href="../../deployment/clustering/" class="md-nav__link">
         
@@ -892,6 +921,7 @@
   
   
   
+  
     <li class="md-nav__item">
       <a href="../../deployment/rollover/" class="md-nav__link">
         
@@ -915,6 +945,7 @@
             
               
                 
+  
   
   
   
@@ -958,21 +989,27 @@
       
   
   
-    
   
   
     
     
     
-    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
       
         
         
         
+          
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" checked>
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3" >
         
-          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="">
             
   
   <span class="md-ellipsis">
@@ -989,7 +1026,7 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="true">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
           <label class="md-nav__title" for="__nav_3">
             <span class="md-nav__icon md-icon"></span>
             
@@ -1005,8 +1042,9 @@
   
   
   
+  
     <li class="md-nav__item">
-      <a href="../getting-started/" class="md-nav__link">
+      <a href="../../usage/getting-started/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -1031,6 +1069,9 @@
   
   
   
+  
+    
+    
     
     
     
@@ -1039,11 +1080,11 @@
         
         
         
-        
           
         
         <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3_2" >
         
+          
           <label class="md-nav__link" for="__nav_3_2" id="__nav_3_2_label" tabindex="0">
             
   
@@ -1077,8 +1118,9 @@
   
   
   
+  
     <li class="md-nav__item">
-      <a href="../data-model/" class="md-nav__link">
+      <a href="../../usage/data-model/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -1103,8 +1145,9 @@
   
   
   
+  
     <li class="md-nav__item">
-      <a href="../nested/" class="md-nav__link">
+      <a href="../../usage/nested/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -1129,8 +1172,9 @@
   
   
   
+  
     <li class="md-nav__item">
-      <a href="../containers/" class="md-nav__link">
+      <a href="../../usage/containers/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -1155,8 +1199,9 @@
   
   
   
+  
     <li class="md-nav__item">
-      <a href="../deduplication/" class="md-nav__link">
+      <a href="../../usage/deduplication/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -1181,8 +1226,9 @@
   
   
   
+  
     <li class="md-nav__item">
-      <a href="../reliability-confidence/" class="md-nav__link">
+      <a href="../../usage/reliability-confidence/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -1215,6 +1261,9 @@
   
   
   
+  
+    
+    
     
     
     
@@ -1223,11 +1272,11 @@
         
         
         
-        
           
         
         <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3_3" >
         
+          
           <label class="md-nav__link" for="__nav_3_3" id="__nav_3_3_label" tabindex="0">
             
   
@@ -1261,8 +1310,9 @@
   
   
   
+  
     <li class="md-nav__item">
-      <a href="../overview/" class="md-nav__link">
+      <a href="../../usage/overview/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -1287,8 +1337,9 @@
   
   
   
+  
     <li class="md-nav__item">
-      <a href="../search/" class="md-nav__link">
+      <a href="../../usage/search/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -1313,6 +1364,9 @@
   
   
   
+  
+    
+    
     
     
     
@@ -1321,11 +1375,11 @@
         
         
         
-        
           
         
         <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3_3_3" >
         
+          
           <label class="md-nav__link" for="__nav_3_3_3" id="__nav_3_3_3_label" tabindex="0">
             
   
@@ -1359,8 +1413,9 @@
   
   
   
+  
     <li class="md-nav__item">
-      <a href="../exploring-analysis/" class="md-nav__link">
+      <a href="../../usage/exploring-analysis/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -1385,8 +1440,9 @@
   
   
   
+  
     <li class="md-nav__item">
-      <a href="../exploring-cases/" class="md-nav__link">
+      <a href="../../usage/exploring-cases/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -1411,8 +1467,9 @@
   
   
   
+  
     <li class="md-nav__item">
-      <a href="../exploring-events/" class="md-nav__link">
+      <a href="../../usage/exploring-events/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -1437,8 +1494,9 @@
   
   
   
+  
     <li class="md-nav__item">
-      <a href="../exploring-observations/" class="md-nav__link">
+      <a href="../../usage/exploring-observations/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -1463,8 +1521,9 @@
   
   
   
+  
     <li class="md-nav__item">
-      <a href="../exploring-threats/" class="md-nav__link">
+      <a href="../../usage/exploring-threats/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -1489,8 +1548,9 @@
   
   
   
+  
     <li class="md-nav__item">
-      <a href="../exploring-arsenal/" class="md-nav__link">
+      <a href="../../usage/exploring-arsenal/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -1515,8 +1575,9 @@
   
   
   
+  
     <li class="md-nav__item">
-      <a href="../exploring-techniques/" class="md-nav__link">
+      <a href="../../usage/exploring-techniques/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -1541,8 +1602,9 @@
   
   
   
+  
     <li class="md-nav__item">
-      <a href="../exploring-entities/" class="md-nav__link">
+      <a href="../../usage/exploring-entities/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -1567,8 +1629,9 @@
   
   
   
+  
     <li class="md-nav__item">
-      <a href="../exploring-locations/" class="md-nav__link">
+      <a href="../../usage/exploring-locations/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -1601,8 +1664,9 @@
   
   
   
+  
     <li class="md-nav__item">
-      <a href="../pivoting/" class="md-nav__link">
+      <a href="../../usage/pivoting/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -1635,6 +1699,9 @@
   
   
   
+  
+    
+    
     
     
     
@@ -1643,11 +1710,11 @@
         
         
         
-        
           
         
         <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3_4" >
         
+          
           <label class="md-nav__link" for="__nav_3_4" id="__nav_3_4_label" tabindex="0">
             
   
@@ -1681,8 +1748,9 @@
   
   
   
+  
     <li class="md-nav__item">
-      <a href="../import-automated/" class="md-nav__link">
+      <a href="../../usage/import-automated/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -1707,8 +1775,9 @@
   
   
   
+  
     <li class="md-nav__item">
-      <a href="../import-files/" class="md-nav__link">
+      <a href="../../usage/import-files/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -1733,8 +1802,9 @@
   
   
   
+  
     <li class="md-nav__item">
-      <a href="../manual-creation/" class="md-nav__link">
+      <a href="../../usage/manual-creation/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -1759,8 +1829,9 @@
   
   
   
+  
     <li class="md-nav__item">
-      <a href="../workbench/" class="md-nav__link">
+      <a href="../../usage/workbench/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -1793,6 +1864,9 @@
   
   
   
+  
+    
+    
     
     
     
@@ -1801,11 +1875,11 @@
         
         
         
-        
           
         
         <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3_5" >
         
+          
           <label class="md-nav__link" for="__nav_3_5" id="__nav_3_5_label" tabindex="0">
             
   
@@ -1839,8 +1913,9 @@
   
   
   
+  
     <li class="md-nav__item">
-      <a href="../inferences/" class="md-nav__link">
+      <a href="../../usage/inferences/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -1865,8 +1940,9 @@
   
   
   
+  
     <li class="md-nav__item">
-      <a href="../enrichment/" class="md-nav__link">
+      <a href="../../usage/enrichment/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -1891,8 +1967,9 @@
   
   
   
+  
     <li class="md-nav__item">
-      <a href="../merging/" class="md-nav__link">
+      <a href="../../usage/merging/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -1924,20 +2001,23 @@
                 
   
   
-    
   
   
     
     
     
-    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
       
         
         
         
+          
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3_6" checked>
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3_6" >
         
+          
           <label class="md-nav__link" for="__nav_3_6" id="__nav_3_6_label" tabindex="0">
             
   
@@ -1955,7 +2035,7 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_6_label" aria-expanded="true">
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_6_label" aria-expanded="false">
           <label class="md-nav__title" for="__nav_3_6">
             <span class="md-nav__icon md-icon"></span>
             
@@ -1971,8 +2051,9 @@
   
   
   
+  
     <li class="md-nav__item">
-      <a href="../case-management/" class="md-nav__link">
+      <a href="../../usage/case-management/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -1996,55 +2077,10 @@
                 
   
   
-    
-  
-  
-    
-    
-    
-    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
-      
-        
-        
-        
-        
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3_6_2" checked>
-        
-          <label class="md-nav__link" for="__nav_3_6_2" id="__nav_3_6_2_label" tabindex="0">
-            
-  
-  <span class="md-ellipsis">
-    
-  
-    Notifications
-  
-
-    
-  </span>
-  
-  
-
-            <span class="md-nav__icon md-icon"></span>
-          </label>
-        
-        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_3_6_2_label" aria-expanded="true">
-          <label class="md-nav__title" for="__nav_3_6_2">
-            <span class="md-nav__icon md-icon"></span>
-            
-  
-    Notifications
-  
-
-          </label>
-          <ul class="md-nav__list" data-md-scrollfix>
-            
-              
-                
-  
   
   
     <li class="md-nav__item">
-      <a href="../notifications/" class="md-nav__link">
+      <a href="../../usage/notifications/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -2068,139 +2104,10 @@
                 
   
   
-    
-  
-  
-    <li class="md-nav__item md-nav__item--active">
-      
-      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
-      
-      
-        
-      
-      
-        <label class="md-nav__link md-nav__link--active" for="__toc">
-          
-  
-  <span class="md-ellipsis">
-    
-  
-    Sample notifiers
-  
-
-    
-  </span>
-  
-  
-
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <a href="./" class="md-nav__link md-nav__link--active">
-        
-  
-  <span class="md-ellipsis">
-    
-  
-    Sample notifiers
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-      
-        
-
-<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
-  
-  
-  
-    
-  
-  
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Table of contents
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#sample-notifiers" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Sample notifiers
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Sample notifiers">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#configure-teams-webhook" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Configure Teams webhook
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#default-teams-message-for-live-trigger" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Default teams message for live trigger
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#default-teams-message-for-digest" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Default teams message for digest
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-    </ul>
-  
-</nav>
-      
-    </li>
-  
-
-              
-            
-          </ul>
-        </nav>
-      
-    </li>
-  
-
-              
-            
-              
-                
-  
   
   
     <li class="md-nav__item">
-      <a href="../background-tasks/" class="md-nav__link">
+      <a href="../../usage/background-tasks/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -2225,8 +2132,58 @@
   
   
   
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3_6_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_3_6_4" id="__nav_3_6_4_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    
+  
+    Dashboards
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_3_6_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3_6_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Dashboards
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
     <li class="md-nav__item">
-      <a href="../dashboards/" class="md-nav__link">
+      <a href="../../usage/dashboards/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -2251,8 +2208,44 @@
   
   
   
+  
     <li class="md-nav__item">
-      <a href="../workflows/" class="md-nav__link">
+      <a href="../../usage/widgets/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    
+  
+    Widget creation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../usage/workflows/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -2277,8 +2270,9 @@
   
   
   
+  
     <li class="md-nav__item">
-      <a href="../indicators-lifecycle/" class="md-nav__link">
+      <a href="../../usage/indicators-lifecycle/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -2303,8 +2297,9 @@
   
   
   
+  
     <li class="md-nav__item">
-      <a href="../automation/" class="md-nav__link">
+      <a href="../../usage/automation/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -2337,6 +2332,9 @@
   
   
   
+  
+    
+    
     
     
     
@@ -2345,11 +2343,11 @@
         
         
         
-        
           
         
         <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3_7" >
         
+          
           <label class="md-nav__link" for="__nav_3_7" id="__nav_3_7_label" tabindex="0">
             
   
@@ -2383,8 +2381,9 @@
   
   
   
+  
     <li class="md-nav__item">
-      <a href="../feeds/" class="md-nav__link">
+      <a href="../../usage/feeds/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -2409,8 +2408,9 @@
   
   
   
+  
     <li class="md-nav__item">
-      <a href="../export-structured/" class="md-nav__link">
+      <a href="../../usage/export-structured/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -2435,8 +2435,9 @@
   
   
   
+  
     <li class="md-nav__item">
-      <a href="../export-documents/" class="md-nav__link">
+      <a href="../../usage/export-documents/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -2475,21 +2476,27 @@
       
   
   
+    
+  
+  
   
     
     
     
-    <li class="md-nav__item md-nav__item--nested">
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
       
         
         
         
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" checked>
         
           
-        
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4" >
-        
-          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="0">
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="">
             
   
   <span class="md-ellipsis">
@@ -2506,7 +2513,7 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="true">
           <label class="md-nav__title" for="__nav_4">
             <span class="md-nav__icon md-icon"></span>
             
@@ -2522,8 +2529,9 @@
   
   
   
+  
     <li class="md-nav__item">
-      <a href="../../administration/introduction/" class="md-nav__link">
+      <a href="../introduction/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -2548,8 +2556,9 @@
   
   
   
+  
     <li class="md-nav__item">
-      <a href="../../administration/enterprise/" class="md-nav__link">
+      <a href="../enterprise/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -2574,6 +2583,9 @@
   
   
   
+  
+    
+    
     
     
     
@@ -2582,11 +2594,11 @@
         
         
         
-        
           
         
         <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4_3" >
         
+          
           <label class="md-nav__link" for="__nav_4_3" id="__nav_4_3_label" tabindex="0">
             
   
@@ -2620,8 +2632,9 @@
   
   
   
+  
     <li class="md-nav__item">
-      <a href="../../administration/merging/" class="md-nav__link">
+      <a href="../merging/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -2646,8 +2659,9 @@
   
   
   
+  
     <li class="md-nav__item">
-      <a href="../../administration/csv-mappers/" class="md-nav__link">
+      <a href="../csv-mappers/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -2679,20 +2693,23 @@
                 
   
   
+    
+  
+  
   
     
     
     
-    <li class="md-nav__item md-nav__item--nested">
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
       
         
         
         
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4_4" checked>
         
           
-        
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4_4" >
-        
           <label class="md-nav__link" for="__nav_4_4" id="__nav_4_4_label" tabindex="0">
             
   
@@ -2710,7 +2727,7 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_4_4_label" aria-expanded="false">
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_4_4_label" aria-expanded="true">
           <label class="md-nav__title" for="__nav_4_4">
             <span class="md-nav__icon md-icon"></span>
             
@@ -2726,8 +2743,9 @@
   
   
   
+  
     <li class="md-nav__item">
-      <a href="../../administration/parameters/" class="md-nav__link">
+      <a href="../parameters/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -2752,6 +2770,9 @@
   
   
   
+  
+    
+    
     
     
     
@@ -2760,11 +2781,11 @@
         
         
         
-        
           
         
         <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4_4_2" >
         
+          
           <label class="md-nav__link" for="__nav_4_4_2" id="__nav_4_4_2_label" tabindex="0">
             
   
@@ -2798,8 +2819,9 @@
   
   
   
+  
     <li class="md-nav__item">
-      <a href="../../administration/policies/" class="md-nav__link">
+      <a href="../policies/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -2824,8 +2846,9 @@
   
   
   
+  
     <li class="md-nav__item">
-      <a href="../../administration/users/" class="md-nav__link">
+      <a href="../users/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -2850,8 +2873,9 @@
   
   
   
+  
     <li class="md-nav__item">
-      <a href="../../administration/segregation/" class="md-nav__link">
+      <a href="../segregation/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -2883,20 +2907,23 @@
                 
   
   
+    
+  
+  
   
     
     
     
-    <li class="md-nav__item md-nav__item--nested">
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
       
         
         
         
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4_4_3" checked>
         
           
-        
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4_4_3" >
-        
           <label class="md-nav__link" for="__nav_4_4_3" id="__nav_4_4_3_label" tabindex="0">
             
   
@@ -2914,7 +2941,7 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_4_4_3_label" aria-expanded="false">
+        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_4_4_3_label" aria-expanded="true">
           <label class="md-nav__title" for="__nav_4_4_3">
             <span class="md-nav__icon md-icon"></span>
             
@@ -2930,8 +2957,9 @@
   
   
   
+  
     <li class="md-nav__item">
-      <a href="../../administration/entities/" class="md-nav__link">
+      <a href="../entities/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -2956,8 +2984,9 @@
   
   
   
+  
     <li class="md-nav__item">
-      <a href="../../administration/reasoning/" class="md-nav__link">
+      <a href="../reasoning/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -2981,9 +3010,228 @@
                 
   
   
+    
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+      
+        
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4_4_3_3" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_4_4_3_3" id="__nav_4_4_3_3_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    
+  
+    Notifiers
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="4" aria-labelledby="__nav_4_4_3_3_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_4_4_3_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Notifiers
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  <span class="md-ellipsis">
+    
+  
+    Custom notifiers
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  <span class="md-ellipsis">
+    
+  
+    Custom notifiers
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#built-in-notifier-connectors" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Built-In notifier connectors
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Built-In notifier connectors">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#platform-mailer" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Platform mailer
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#simple-mailer" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Simple mailer
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#webhook" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Webhook
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#configuration-and-access" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Configuration and access
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
   
     <li class="md-nav__item">
-      <a href="../../administration/retentions/" class="md-nav__link">
+      <a href="../notifier-samples/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    
+  
+    Notifier samples
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../retentions/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -3008,8 +3256,9 @@
   
   
   
+  
     <li class="md-nav__item">
-      <a href="../../administration/sourcing/" class="md-nav__link">
+      <a href="../sourcing/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -3042,8 +3291,9 @@
   
   
   
+  
     <li class="md-nav__item">
-      <a href="../../administration/ontologies/" class="md-nav__link">
+      <a href="../ontologies/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -3068,6 +3318,9 @@
   
   
   
+  
+    
+    
     
     
     
@@ -3076,11 +3329,11 @@
         
         
         
-        
           
         
         <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4_4_5" >
         
+          
           <label class="md-nav__link" for="__nav_4_4_5" id="__nav_4_4_5_label" tabindex="0">
             
   
@@ -3114,8 +3367,9 @@
   
   
   
+  
     <li class="md-nav__item">
-      <a href="../../administration/audit/overview/" class="md-nav__link">
+      <a href="../audit/overview/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -3140,8 +3394,9 @@
   
   
   
+  
     <li class="md-nav__item">
-      <a href="../../administration/audit/events/" class="md-nav__link">
+      <a href="../audit/events/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -3166,8 +3421,9 @@
   
   
   
+  
     <li class="md-nav__item">
-      <a href="../../administration/audit/configuration/" class="md-nav__link">
+      <a href="../audit/configuration/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -3192,8 +3448,9 @@
   
   
   
+  
     <li class="md-nav__item">
-      <a href="../../administration/audit/triggers/" class="md-nav__link">
+      <a href="../audit/triggers/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -3226,8 +3483,9 @@
   
   
   
+  
     <li class="md-nav__item">
-      <a href="../../administration/file-indexing/" class="md-nav__link">
+      <a href="../file-indexing/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -3267,12 +3525,17 @@
   
   
   
+  
     
     
     
-    <li class="md-nav__item md-nav__item--nested">
+    
+    
       
-        
+      
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
         
         
         
@@ -3280,7 +3543,8 @@
         
         <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_5" >
         
-          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="">
             
   
   <span class="md-ellipsis">
@@ -3313,6 +3577,9 @@
   
   
   
+  
+    
+    
     
     
     
@@ -3321,11 +3588,11 @@
         
         
         
-        
           
         
         <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_5_1" >
         
+          
           <label class="md-nav__link" for="__nav_5_1" id="__nav_5_1_label" tabindex="0">
             
   
@@ -3359,6 +3626,7 @@
   
   
   
+  
     <li class="md-nav__item">
       <a href="../../reference/data-model/" class="md-nav__link">
         
@@ -3382,6 +3650,7 @@
             
               
                 
+  
   
   
   
@@ -3411,6 +3680,7 @@
   
   
   
+  
     <li class="md-nav__item">
       <a href="../../reference/taxonomy/" class="md-nav__link">
         
@@ -3434,6 +3704,7 @@
             
               
                 
+  
   
   
   
@@ -3471,6 +3742,9 @@
   
   
   
+  
+    
+    
     
     
     
@@ -3479,11 +3753,11 @@
         
         
         
-        
           
         
         <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_5_2" >
         
+          
           <label class="md-nav__link" for="__nav_5_2" id="__nav_5_2_label" tabindex="0">
             
   
@@ -3517,6 +3791,7 @@
   
   
   
+  
     <li class="md-nav__item">
       <a href="../../reference/api/" class="md-nav__link">
         
@@ -3543,6 +3818,9 @@
   
   
   
+  
+    
+    
     
     
     
@@ -3551,11 +3829,11 @@
         
         
         
-        
           
         
         <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_5_2_2" >
         
+          
           <label class="md-nav__link" for="__nav_5_2_2" id="__nav_5_2_2_label" tabindex="0">
             
   
@@ -3589,6 +3867,7 @@
   
   
   
+  
     <li class="md-nav__item">
       <a href="../../reference/filters/" class="md-nav__link">
         
@@ -3612,6 +3891,7 @@
             
               
                 
+  
   
   
   
@@ -3649,6 +3929,7 @@
   
   
   
+  
     <li class="md-nav__item">
       <a href="../../reference/streaming/" class="md-nav__link">
         
@@ -3675,6 +3956,7 @@
   
   
   
+  
     <li class="md-nav__item">
       <a href="../../reference/taxii-feeds/" class="md-nav__link">
         
@@ -3698,6 +3980,7 @@
             
               
                 
+  
   
   
   
@@ -3735,6 +4018,7 @@
   
   
   
+  
     <li class="md-nav__item">
       <a href="../../reference/security/" class="md-nav__link">
         
@@ -3768,12 +4052,17 @@
   
   
   
+  
     
     
     
-    <li class="md-nav__item md-nav__item--nested">
+    
+    
       
-        
+      
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
         
         
         
@@ -3781,7 +4070,8 @@
         
         <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_6" >
         
-          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="">
             
   
   <span class="md-ellipsis">
@@ -3814,6 +4104,9 @@
   
   
   
+  
+    
+    
     
     
     
@@ -3822,11 +4115,11 @@
         
         
         
-        
           
         
         <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_6_1" >
         
+          
           <label class="md-nav__link" for="__nav_6_1" id="__nav_6_1_label" tabindex="0">
             
   
@@ -3860,6 +4153,7 @@
   
   
   
+  
     <li class="md-nav__item">
       <a href="../../development/environment_ubuntu/" class="md-nav__link">
         
@@ -3883,6 +4177,7 @@
             
               
                 
+  
   
   
   
@@ -3920,6 +4215,7 @@
   
   
   
+  
     <li class="md-nav__item">
       <a href="../../development/platform/" class="md-nav__link">
         
@@ -3943,6 +4239,7 @@
             
               
                 
+  
   
   
   
@@ -3972,6 +4269,7 @@
   
   
   
+  
     <li class="md-nav__item">
       <a href="../../development/connectors/" class="md-nav__link">
         
@@ -3995,6 +4293,7 @@
             
               
                 
+  
   
   
   
@@ -4053,22 +4352,22 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#sample-notifiers" class="md-nav__link">
+  <a href="#built-in-notifier-connectors" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Sample notifiers
+        Built-In notifier connectors
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="Sample notifiers">
+    <nav class="md-nav" aria-label="Built-In notifier connectors">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#configure-teams-webhook" class="md-nav__link">
+  <a href="#platform-mailer" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Configure Teams webhook
+        Platform mailer
       
     </span>
   </a>
@@ -4076,10 +4375,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#default-teams-message-for-live-trigger" class="md-nav__link">
+  <a href="#simple-mailer" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Default teams message for live trigger
+        Simple mailer
       
     </span>
   </a>
@@ -4087,10 +4386,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#default-teams-message-for-digest" class="md-nav__link">
+  <a href="#webhook" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Default teams message for digest
+        Webhook
       
     </span>
   </a>
@@ -4099,6 +4398,17 @@
         
       </ul>
     </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#configuration-and-access" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Configuration and access
+      
+    </span>
+  </a>
   
 </li>
       
@@ -4143,10 +4453,10 @@
     
     
       <li class="md-path__item">
-        <a href="../getting-started/" class="md-path__link">
+        <a href="../introduction/" class="md-path__link">
           
   <span class="md-ellipsis">
-    User Guide
+    Administration
   </span>
 
         </a>
@@ -4160,10 +4470,10 @@
     
     
       <li class="md-path__item">
-        <a href="../case-management/" class="md-path__link">
+        <a href="../parameters/" class="md-path__link">
           
   <span class="md-ellipsis">
-    Act on knowledge
+    Platform settings
   </span>
 
         </a>
@@ -4177,10 +4487,27 @@
     
     
       <li class="md-path__item">
-        <a href="../notifications/" class="md-path__link">
+        <a href="../entities/" class="md-path__link">
           
   <span class="md-ellipsis">
-    Notifications
+    Customization
+  </span>
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+    
+    
+      <li class="md-path__item">
+        <a href="./" class="md-path__link">
+          
+  <span class="md-ellipsis">
+    Notifiers
   </span>
 
         </a>
@@ -4197,8 +4524,9 @@
                 
                   
 
+
   
-    <a href="https://github.com/OpenCTI-Platform/docs/blob/main/docs/usage/notifiers.md" title="Edit this page" class="md-content__button md-icon">
+    <a href="https://github.com/OpenCTI-Platform/docs/blob/main/docs/administration/notifiers.md" title="Edit this page" class="md-content__button md-icon">
       
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M10 20H6V4h7v5h5v3.1l2-2V8l-6-6H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h4v-2m10.2-7c.1 0 .3.1.4.2l1.3 1.3c.2.2.2.6 0 .8l-1 1-2.1-2.1 1-1c.1-.1.2-.2.4-.2m0 3.9L14.1 23H12v-2.1l6.1-6.1 2.1 2.1Z"/></svg>
     </a>
@@ -4207,93 +4535,51 @@
     
       
     
-    <a href="https://github.com/OpenCTI-Platform/docs/raw/main/docs/usage/notifiers.md" title="View source of this page" class="md-content__button md-icon">
+    <a href="https://github.com/OpenCTI-Platform/docs/raw/main/docs/administration/notifiers.md" title="View source of this page" class="md-content__button md-icon">
       
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M17 18c.56 0 1 .44 1 1s-.44 1-1 1-1-.44-1-1 .44-1 1-1m0-3c-2.73 0-5.06 1.66-6 4 .94 2.34 3.27 4 6 4s5.06-1.66 6-4c-.94-2.34-3.27-4-6-4m0 6.5a2.5 2.5 0 0 1-2.5-2.5 2.5 2.5 0 0 1 2.5-2.5 2.5 2.5 0 0 1 2.5 2.5 2.5 2.5 0 0 1-2.5 2.5M9.27 20H6V4h7v5h5v4.07c.7.08 1.36.25 2 .49V8l-6-6H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h4.5a8.15 8.15 0 0 1-1.23-2Z"/></svg>
     </a>
   
 
 
-<h1 id="notifiers">Notifiers</h1>
-<h2 id="sample-notifiers">Sample notifiers</h2>
-<h3 id="configure-teams-webhook">Configure Teams webhook</h3>
-<p>You can check the <a href="https://learn.microsoft.com/en-us/microsoftteams/platform/webhooks-and-connectors/how-to/add-incoming-webhook?tabs=dotnet">Microsoft website</a></p>
-<h3 id="default-teams-message-for-live-trigger">Default teams message for live trigger</h3>
-<p>The default configuration for a Teams message sent through webhook for a live notification is:
-<div class="highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>{
-</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>    &quot;template&quot;: {
-</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>        &quot;type&quot;: &quot;message&quot;,
-</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>        &quot;attachments&quot;: [
-</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>            {
-</span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>                &quot;contentType&quot;: &quot;application/vnd.microsoft.card.thumbnail&quot;,
-</span><span id="__span-0-7"><a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>                &quot;content&quot;: {
-</span><span id="__span-0-8"><a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a>                    &quot;subtitle&quot;: &quot;Operation : &lt;%=content[0].events[0].operation%&gt;&quot;,
-</span><span id="__span-0-9"><a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a>                    &quot;text&quot;: &quot;&lt;%=(new Date(notification.created)).toLocaleString()%&gt;&quot;,
-</span><span id="__span-0-10"><a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a>                    &quot;title&quot;: &quot;&lt;%=content[0].events[0].message%&gt;&quot;,
-</span><span id="__span-0-11"><a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a>                    &quot;buttons&quot;: [
-</span><span id="__span-0-12"><a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a>                        {
-</span><span id="__span-0-13"><a id="__codelineno-0-13" name="__codelineno-0-13" href="#__codelineno-0-13"></a>                            &quot;type&quot;: &quot;openUrl&quot;,
-</span><span id="__span-0-14"><a id="__codelineno-0-14" name="__codelineno-0-14" href="#__codelineno-0-14"></a>                            &quot;title&quot;: &quot;See in OpenCTI&quot;,
-</span><span id="__span-0-15"><a id="__codelineno-0-15" name="__codelineno-0-15" href="#__codelineno-0-15"></a>                            &quot;value&quot;: &quot;https://YOUR_OPENCTI_URL/dashboard/id/&lt;%=content[0].events[0].instance_id%&gt;&quot;
-</span><span id="__span-0-16"><a id="__codelineno-0-16" name="__codelineno-0-16" href="#__codelineno-0-16"></a>                        }
-</span><span id="__span-0-17"><a id="__codelineno-0-17" name="__codelineno-0-17" href="#__codelineno-0-17"></a>                    ]
-</span><span id="__span-0-18"><a id="__codelineno-0-18" name="__codelineno-0-18" href="#__codelineno-0-18"></a>                }
-</span><span id="__span-0-19"><a id="__codelineno-0-19" name="__codelineno-0-19" href="#__codelineno-0-19"></a>            }
-</span><span id="__span-0-20"><a id="__codelineno-0-20" name="__codelineno-0-20" href="#__codelineno-0-20"></a>        ]
-</span><span id="__span-0-21"><a id="__codelineno-0-21" name="__codelineno-0-21" href="#__codelineno-0-21"></a>    }
-</span><span id="__span-0-22"><a id="__codelineno-0-22" name="__codelineno-0-22" href="#__codelineno-0-22"></a>    &quot;url&quot;: &quot;https://YOUR_DOMAIN.webhook.office.com/YOUR_ENDPOINT&quot;,
-</span><span id="__span-0-23"><a id="__codelineno-0-23" name="__codelineno-0-23" href="#__codelineno-0-23"></a>    &quot;verb&quot;: &quot;POST&quot;
-</span><span id="__span-0-24"><a id="__codelineno-0-24" name="__codelineno-0-24" href="#__codelineno-0-24"></a>}
-</span></code></pre></div></p>
-<h3 id="default-teams-message-for-digest">Default teams message for digest</h3>
-<p>The default configuration for a Teams message sent through webhook for a digest notification is:
-<div class="highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>{
-</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>    &quot;template&quot;: {
-</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>        &quot;type&quot;: &quot;message&quot;,
-</span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a>        &quot;attachments&quot;: [
-</span><span id="__span-1-5"><a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a>            {
-</span><span id="__span-1-6"><a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a>                &quot;contentType&quot;: &quot;application/vnd.microsoft.card.adaptive&quot;,
-</span><span id="__span-1-7"><a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a>                &quot;content&quot;: {
-</span><span id="__span-1-8"><a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a>                    &quot;$schema&quot;: &quot;http://adaptivecards.io/schemas/adaptive-card.json&quot;,
-</span><span id="__span-1-9"><a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a>                    &quot;type&quot;: &quot;AdaptiveCard&quot;,
-</span><span id="__span-1-10"><a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a>                    &quot;version&quot;: &quot;1.0&quot;,
-</span><span id="__span-1-11"><a id="__codelineno-1-11" name="__codelineno-1-11" href="#__codelineno-1-11"></a>                    &quot;body&quot;: [
-</span><span id="__span-1-12"><a id="__codelineno-1-12" name="__codelineno-1-12" href="#__codelineno-1-12"></a>                        {
-</span><span id="__span-1-13"><a id="__codelineno-1-13" name="__codelineno-1-13" href="#__codelineno-1-13"></a>                            &quot;type&quot;: &quot;Container&quot;,
-</span><span id="__span-1-14"><a id="__codelineno-1-14" name="__codelineno-1-14" href="#__codelineno-1-14"></a>                            &quot;items&quot;: [
-</span><span id="__span-1-15"><a id="__codelineno-1-15" name="__codelineno-1-15" href="#__codelineno-1-15"></a>                                {
-</span><span id="__span-1-16"><a id="__codelineno-1-16" name="__codelineno-1-16" href="#__codelineno-1-16"></a>                                    &quot;type&quot;: &quot;TextBlock&quot;,
-</span><span id="__span-1-17"><a id="__codelineno-1-17" name="__codelineno-1-17" href="#__codelineno-1-17"></a>                                    &quot;text&quot;: &quot;&lt;%=notification.name%&gt;&quot;,
-</span><span id="__span-1-18"><a id="__codelineno-1-18" name="__codelineno-1-18" href="#__codelineno-1-18"></a>                                    &quot;weight&quot;: &quot;bolder&quot;,
-</span><span id="__span-1-19"><a id="__codelineno-1-19" name="__codelineno-1-19" href="#__codelineno-1-19"></a>                                    &quot;size&quot;: &quot;extraLarge&quot;
-</span><span id="__span-1-20"><a id="__codelineno-1-20" name="__codelineno-1-20" href="#__codelineno-1-20"></a>                                }, {
-</span><span id="__span-1-21"><a id="__codelineno-1-21" name="__codelineno-1-21" href="#__codelineno-1-21"></a>                                    &quot;type&quot;: &quot;TextBlock&quot;,
-</span><span id="__span-1-22"><a id="__codelineno-1-22" name="__codelineno-1-22" href="#__codelineno-1-22"></a>                                    &quot;text&quot;: &quot;&lt;%=(new Date(notification.created)).toLocaleString()%&gt;&quot;,
-</span><span id="__span-1-23"><a id="__codelineno-1-23" name="__codelineno-1-23" href="#__codelineno-1-23"></a>                                    &quot;size&quot;: &quot;medium&quot;
-</span><span id="__span-1-24"><a id="__codelineno-1-24" name="__codelineno-1-24" href="#__codelineno-1-24"></a>                                }
-</span><span id="__span-1-25"><a id="__codelineno-1-25" name="__codelineno-1-25" href="#__codelineno-1-25"></a>                            ]
-</span><span id="__span-1-26"><a id="__codelineno-1-26" name="__codelineno-1-26" href="#__codelineno-1-26"></a>                        },
-</span><span id="__span-1-27"><a id="__codelineno-1-27" name="__codelineno-1-27" href="#__codelineno-1-27"></a>                        &lt;% for(var i=0; i&lt;content.length; i++) { %&gt;
-</span><span id="__span-1-28"><a id="__codelineno-1-28" name="__codelineno-1-28" href="#__codelineno-1-28"></a>                        {
-</span><span id="__span-1-29"><a id="__codelineno-1-29" name="__codelineno-1-29" href="#__codelineno-1-29"></a>                            &quot;type&quot;: &quot;Container&quot;,
-</span><span id="__span-1-30"><a id="__codelineno-1-30" name="__codelineno-1-30" href="#__codelineno-1-30"></a>                            &quot;items&quot;: [&lt;% for(var j=0; j&lt;content[i].events.length; j++) { %&gt;
-</span><span id="__span-1-31"><a id="__codelineno-1-31" name="__codelineno-1-31" href="#__codelineno-1-31"></a>                                {
-</span><span id="__span-1-32"><a id="__codelineno-1-32" name="__codelineno-1-32" href="#__codelineno-1-32"></a>                                    &quot;type&quot; : &quot;TextBlock&quot;,
-</span><span id="__span-1-33"><a id="__codelineno-1-33" name="__codelineno-1-33" href="#__codelineno-1-33"></a>                                    &quot;text&quot; : &quot;[&lt;%=content[i].events[j].message%&gt;](https://YOUR_OPENCTI_URL/dashboard/id/&lt;%=content[i].events[j].instance_id%&gt;)&quot;
-</span><span id="__span-1-34"><a id="__codelineno-1-34" name="__codelineno-1-34" href="#__codelineno-1-34"></a>                                }&lt;% if(j&lt;(content[i].events.length - 1)) {%&gt;,&lt;% } %&gt;
-</span><span id="__span-1-35"><a id="__codelineno-1-35" name="__codelineno-1-35" href="#__codelineno-1-35"></a>                            &lt;% } %&gt;]
-</span><span id="__span-1-36"><a id="__codelineno-1-36" name="__codelineno-1-36" href="#__codelineno-1-36"></a>                            }&lt;% if(i&lt;(content.length - 1)) {%&gt;,&lt;% } %&gt;
-</span><span id="__span-1-37"><a id="__codelineno-1-37" name="__codelineno-1-37" href="#__codelineno-1-37"></a>                        &lt;% } %&gt;
-</span><span id="__span-1-38"><a id="__codelineno-1-38" name="__codelineno-1-38" href="#__codelineno-1-38"></a>                    ]
-</span><span id="__span-1-39"><a id="__codelineno-1-39" name="__codelineno-1-39" href="#__codelineno-1-39"></a>                }
-</span><span id="__span-1-40"><a id="__codelineno-1-40" name="__codelineno-1-40" href="#__codelineno-1-40"></a>            }
-</span><span id="__span-1-41"><a id="__codelineno-1-41" name="__codelineno-1-41" href="#__codelineno-1-41"></a>        ],
-</span><span id="__span-1-42"><a id="__codelineno-1-42" name="__codelineno-1-42" href="#__codelineno-1-42"></a>       &quot;dataString&quot;: &lt;%-JSON.stringify(notification)%&gt;
-</span><span id="__span-1-43"><a id="__codelineno-1-43" name="__codelineno-1-43" href="#__codelineno-1-43"></a>    },
-</span><span id="__span-1-44"><a id="__codelineno-1-44" name="__codelineno-1-44" href="#__codelineno-1-44"></a>    &quot;url&quot;: &quot;https://YOUR_DOMAIN.webhook.office.com/YOUR_ENDPOINT&quot;,
-</span><span id="__span-1-45"><a id="__codelineno-1-45" name="__codelineno-1-45" href="#__codelineno-1-45"></a>    &quot;verb&quot;: &quot;POST&quot;
-</span><span id="__span-1-46"><a id="__codelineno-1-46" name="__codelineno-1-46" href="#__codelineno-1-46"></a>}
-</span></code></pre></div></p>
+<h1 id="custom-notifiers">Custom notifiers</h1>
+<p>Leveraging the platform's built-in connectors, users can create custom notifiers tailored to their unique needs. OpenCTI features three built-in connectors: a webhook connector, a simple mailer connector, and a platform mailer connector. These connectors operate based on registered schemas that describe their interaction methods.</p>
+<p><a class="glightbox" href="../assets/notifier-connectors.png" data-type="image" data-width="100%" data-height="auto" data-desc-position="bottom"><img alt="Notifier connectors" src="../assets/notifier-connectors.png" /></a></p>
+<h3 id="built-in-notifier-connectors">Built-In notifier connectors</h3>
+<h4 id="platform-mailer">Platform mailer</h4>
+<p>This notifier connector enables customization of notifications raised within the platform. It's simple to configure, requiring only:</p>
+<ul>
+<li>Title: The title for the platform notification.</li>
+<li>Template: Specifies the message template for the notification.</li>
+</ul>
+<h4 id="simple-mailer">Simple mailer</h4>
+<p>This notifier connector offers a straightforward approach to email notifications with simplified configuration options. Users can set:</p>
+<ul>
+<li>Title: The title for the email notification.</li>
+<li>Header: Additional content to include at the beginning of the email.</li>
+<li>Footer: Additional content to include at the end of the email.</li>
+<li>Logo: The option to add a logo to the email.</li>
+<li>Background Color: Customize the background color of the email.</li>
+</ul>
+<p><a class="glightbox" href="../assets/custom-email-notifier.png" data-type="image" data-width="100%" data-height="auto" data-desc-position="bottom"><img alt="Custom email notifier" src="../assets/custom-email-notifier.png" /></a></p>
+<h4 id="webhook">Webhook</h4>
+<p>This notifier connector enables users to send notifications to external applications or services through HTTP requests. Users can specify:</p>
+<ul>
+<li>Verb: Specifies the HTTP method (GET, POST, PUT, DELETE).</li>
+<li>URL: Defines the destination URL for the webhook.</li>
+<li>Template: Specifies the message template for the notification.</li>
+<li>Parameters and Headers: Customizable parameters and headers sent through the webhook request.</li>
+</ul>
+<p>OpenCTI provides two notifier samples by default, designed to communicate with Microsoft Teams through a webhook. A <a href="../notifier-samples/">documentation page</a> providing details on these samples is available.</p>
+<h3 id="configuration-and-access">Configuration and access</h3>
+<p>Custom notifiers are manageable in the "Settings &gt; Customization &gt; Notifiers" window and can be restricted through Role-Based Access Control (RBAC). Administrators can control access, limiting usage to specific Users, Groups, or Organizations.</p>
+<p>For guidance on configuring notification triggers and exploring the usages of notifiers, refer to the <a href="../../usage/notifications/">dedicated documentation page</a>.</p>
+
+
+
+
+
+
 
   
     
@@ -4305,49 +4591,49 @@
 
   <aside class="md-source-file">
     
-      <span class="md-source-file__fact">
-        <span class="md-icon" title="Last update">
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1-2.1-2M12.5 7v5.2l4 2.4-1 1L11 13V7h1.5M11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2v1.8Z"/></svg>
-        </span>
-        <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago"><span class="timeago" datetime="2023-09-08T12:32:09+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date">2023-09-08</span>
-      </span>
+      
+  <span class="md-source-file__fact">
+    <span class="md-icon" title="Last update">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1-2.1-2M12.5 7v5.2l4 2.4-1 1L11 13V7h1.5M11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2v1.8Z"/></svg>
+    </span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago"><span class="timeago" datetime="2023-12-11T13:30:37+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date">2023-12-11</span>
+  </span>
+
     
     
-      <span class="md-source-file__fact">
-        <span class="md-icon" title="Created">
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M14.47 15.08 11 13V7h1.5v5.25l3.08 1.83c-.41.28-.79.62-1.11 1m-1.39 4.84c-.36.05-.71.08-1.08.08-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8c0 .37-.03.72-.08 1.08.69.1 1.33.32 1.92.64.1-.56.16-1.13.16-1.72 0-5.5-4.5-10-10-10S2 6.5 2 12s4.47 10 10 10c.59 0 1.16-.06 1.72-.16-.32-.59-.54-1.23-.64-1.92M18 15v3h-3v2h3v3h2v-3h3v-2h-3v-3h-2Z"/></svg>
-        </span>
-        <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago"><span class="timeago" datetime="2023-08-26T14:17:11+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date">2023-08-26</span>
-      </span>
+      
+  <span class="md-source-file__fact">
+    <span class="md-icon" title="Created">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M14.47 15.08 11 13V7h1.5v5.25l3.08 1.83c-.41.28-.79.62-1.11 1m-1.39 4.84c-.36.05-.71.08-1.08.08-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8c0 .37-.03.72-.08 1.08.69.1 1.33.32 1.92.64.1-.56.16-1.13.16-1.72 0-5.5-4.5-10-10-10S2 6.5 2 12s4.47 10 10 10c.59 0 1.16-.06 1.72-.16-.32-.59-.54-1.23-.64-1.92M18 15v3h-3v2h3v3h2v-3h3v-2h-3v-3h-2Z"/></svg>
+    </span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago"><span class="timeago" datetime="2023-12-11T13:30:37+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date">2023-12-11</span>
+  </span>
+
     
     
     
-      <span class="md-source-file__fact">
-        <span class="md-icon" title="Contributors">
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 2A10 10 0 0 0 2 12c0 4.42 2.87 8.17 6.84 9.5.5.08.66-.23.66-.5v-1.69c-2.77.6-3.36-1.34-3.36-1.34-.46-1.16-1.11-1.47-1.11-1.47-.91-.62.07-.6.07-.6 1 .07 1.53 1.03 1.53 1.03.87 1.52 2.34 1.07 2.91.83.09-.65.35-1.09.63-1.34-2.22-.25-4.55-1.11-4.55-4.92 0-1.11.38-2 1.03-2.71-.1-.25-.45-1.29.1-2.64 0 0 .84-.27 2.75 1.02.79-.22 1.65-.33 2.5-.33.85 0 1.71.11 2.5.33 1.91-1.29 2.75-1.02 2.75-1.02.55 1.35.2 2.39.1 2.64.65.71 1.03 1.6 1.03 2.71 0 3.82-2.34 4.66-4.57 4.91.36.31.69.92.69 1.85V21c0 .27.16.59.67.5C19.14 20.16 22 16.42 22 12A10 10 0 0 0 12 2Z"/></svg>
-        </span>
-        <span>GitHub</span>
-        <nav>
+      
+  <span class="md-source-file__fact">
+    
+      
+  <span class="md-icon" title="Contributors">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 2A10 10 0 0 0 2 12c0 4.42 2.87 8.17 6.84 9.5.5.08.66-.23.66-.5v-1.69c-2.77.6-3.36-1.34-3.36-1.34-.46-1.16-1.11-1.47-1.11-1.47-.91-.62.07-.6.07-.6 1 .07 1.53 1.03 1.53 1.03.87 1.52 2.34 1.07 2.91.83.09-.65.35-1.09.63-1.34-2.22-.25-4.55-1.11-4.55-4.92 0-1.11.38-2 1.03-2.71-.1-.25-.45-1.29.1-2.64 0 0 .84-.27 2.75 1.02.79-.22 1.65-.33 2.5-.33.85 0 1.71.11 2.5.33 1.91-1.29 2.75-1.02 2.75-1.02.55 1.35.2 2.39.1 2.64.65.71 1.03 1.6 1.03 2.71 0 3.82-2.34 4.66-4.57 4.91.36.31.69.92.69 1.85V21c0 .27.16.59.67.5C19.14 20.16 22 16.42 22 12A10 10 0 0 0 12 2Z"/></svg>
+  </span>
+  <span>GitHub</span>
+
+    
+    <nav>
+      
+        <a href="https://github.com/Lhorus6" class="md-author" title="@Lhorus6">
           
-            <a href="https://github.com/SamuelHassine" class="md-author" title="@SamuelHassine">
-              
-              <img src="https://avatars.githubusercontent.com/u/1334279?size=72" alt="SamuelHassine">
-            </a>
-          
-            <a href="https://github.com/Lhorus6" class="md-author" title="@Lhorus6">
-              
-              <img src="https://avatars.githubusercontent.com/u/70956706?size=72" alt="Lhorus6">
-            </a>
-          
-            <a href="https://github.com/Kedae" class="md-author" title="@Kedae">
-              
-              <img src="https://avatars.githubusercontent.com/u/50013774?size=72" alt="Kedae">
-            </a>
-          
-          
-          
-        </nav>
-      </span>
+          <img src="https://avatars.githubusercontent.com/u/70956706?size=72" alt="Lhorus6">
+        </a>
+      
+      
+      
+    </nav>
+  </span>
+
     
   </aside>
 
@@ -4374,8 +4660,9 @@
       <nav class="md-footer__inner md-grid" aria-label="Footer" >
         
           
-          <a href="../notifications/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Notifications and alerting" rel="prev">
+          <a href="../reasoning/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Rules engine">
             <div class="md-footer__button md-icon">
+              
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12Z"/></svg>
             </div>
             <div class="md-footer__title">
@@ -4383,23 +4670,24 @@
                 Previous
               </span>
               <div class="md-ellipsis">
-                Notifications and alerting
+                Rules engine
               </div>
             </div>
           </a>
         
         
           
-          <a href="../background-tasks/" class="md-footer__link md-footer__link--next" aria-label="Next: Background tasks" rel="next">
+          <a href="../notifier-samples/" class="md-footer__link md-footer__link--next" aria-label="Next: Notifier samples">
             <div class="md-footer__title">
               <span class="md-footer__direction">
                 Next
               </span>
               <div class="md-ellipsis">
-                Background tasks
+                Notifier samples
               </div>
             </div>
             <div class="md-footer__button md-icon">
+              
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11H4Z"/></svg>
             </div>
           </a>
@@ -4428,7 +4716,7 @@
       
     
     <a href="https://github.com/OpenCTI-Platform" target="_blank" rel="noopener" title="github.com" class="md-social__link">
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512"><!--! Font Awesome Free 6.4.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2023 Fonticons, Inc.--><path d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6zm-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3zm44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9zM244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252 496 113.3 383.5 8 244.8 8zM97.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1zm-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7zm32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1zm-11.4-14.7c-1.6 1-1.6 3.6 0 5.9 1.6 2.3 4.3 3.3 5.6 2.3 1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2z"/></svg>
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512"><!--! Font Awesome Free 6.5.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2023 Fonticons, Inc.--><path d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6zm-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3zm44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9zM244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252 496 113.3 383.5 8 244.8 8zM97.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1zm-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7zm32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1zm-11.4-14.7c-1.6 1-1.6 3.6 0 5.9 1.6 2.3 4.3 3.3 5.6 2.3 1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2z"/></svg>
     </a>
   
     
@@ -4439,7 +4727,7 @@
       
     
     <a href="https://blog.filigran.io" target="_blank" rel="noopener" title="blog.filigran.io" class="md-social__link">
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 512"><!--! Font Awesome Free 6.4.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2023 Fonticons, Inc.--><path d="M180.5 74.262C80.813 74.262 0 155.633 0 256s80.819 181.738 180.5 181.738S361 356.373 361 256 280.191 74.262 180.5 74.262Zm288.25 10.646c-49.845 0-90.245 76.619-90.245 171.095s40.406 171.1 90.251 171.1 90.251-76.619 90.251-171.1H559c0-94.503-40.4-171.095-90.248-171.095Zm139.506 17.821c-17.526 0-31.735 68.628-31.735 153.274s14.2 153.274 31.735 153.274S640 340.631 640 256c0-84.649-14.215-153.271-31.742-153.271Z"/></svg>
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 512"><!--! Font Awesome Free 6.5.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2023 Fonticons, Inc.--><path d="M180.5 74.262C80.813 74.262 0 155.633 0 256s80.819 181.738 180.5 181.738S361 356.373 361 256 280.191 74.262 180.5 74.262Zm288.25 10.646c-49.845 0-90.245 76.619-90.245 171.095s40.406 171.1 90.251 171.1 90.251-76.619 90.251-171.1H559c0-94.503-40.4-171.095-90.248-171.095Zm139.506 17.821c-17.526 0-31.735 68.628-31.735 153.274s14.2 153.274 31.735 153.274S640 340.631 640 256c0-84.649-14.215-153.271-31.742-153.271Z"/></svg>
     </a>
   
     
@@ -4450,7 +4738,7 @@
       
     
     <a href="https://community.filigran.io" target="_blank" rel="noopener" title="community.filigran.io" class="md-social__link">
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.4.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2023 Fonticons, Inc.--><path d="M94.12 315.1c0 25.9-21.16 47.06-47.06 47.06S0 341 0 315.1c0-25.9 21.16-47.06 47.06-47.06h47.06v47.06zm23.72 0c0-25.9 21.16-47.06 47.06-47.06s47.06 21.16 47.06 47.06v117.84c0 25.9-21.16 47.06-47.06 47.06s-47.06-21.16-47.06-47.06V315.1zm47.06-188.98c-25.9 0-47.06-21.16-47.06-47.06S139 32 164.9 32s47.06 21.16 47.06 47.06v47.06H164.9zm0 23.72c25.9 0 47.06 21.16 47.06 47.06s-21.16 47.06-47.06 47.06H47.06C21.16 243.96 0 222.8 0 196.9s21.16-47.06 47.06-47.06H164.9zm188.98 47.06c0-25.9 21.16-47.06 47.06-47.06 25.9 0 47.06 21.16 47.06 47.06s-21.16 47.06-47.06 47.06h-47.06V196.9zm-23.72 0c0 25.9-21.16 47.06-47.06 47.06-25.9 0-47.06-21.16-47.06-47.06V79.06c0-25.9 21.16-47.06 47.06-47.06 25.9 0 47.06 21.16 47.06 47.06V196.9zM283.1 385.88c25.9 0 47.06 21.16 47.06 47.06 0 25.9-21.16 47.06-47.06 47.06-25.9 0-47.06-21.16-47.06-47.06v-47.06h47.06zm0-23.72c-25.9 0-47.06-21.16-47.06-47.06 0-25.9 21.16-47.06 47.06-47.06h117.84c25.9 0 47.06 21.16 47.06 47.06 0 25.9-21.16 47.06-47.06 47.06H283.1z"/></svg>
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.5.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2023 Fonticons, Inc.--><path d="M94.12 315.1c0 25.9-21.16 47.06-47.06 47.06S0 341 0 315.1c0-25.9 21.16-47.06 47.06-47.06h47.06v47.06zm23.72 0c0-25.9 21.16-47.06 47.06-47.06s47.06 21.16 47.06 47.06v117.84c0 25.9-21.16 47.06-47.06 47.06s-47.06-21.16-47.06-47.06V315.1zm47.06-188.98c-25.9 0-47.06-21.16-47.06-47.06S139 32 164.9 32s47.06 21.16 47.06 47.06v47.06H164.9zm0 23.72c25.9 0 47.06 21.16 47.06 47.06s-21.16 47.06-47.06 47.06H47.06C21.16 243.96 0 222.8 0 196.9s21.16-47.06 47.06-47.06H164.9zm188.98 47.06c0-25.9 21.16-47.06 47.06-47.06 25.9 0 47.06 21.16 47.06 47.06s-21.16 47.06-47.06 47.06h-47.06V196.9zm-23.72 0c0 25.9-21.16 47.06-47.06 47.06-25.9 0-47.06-21.16-47.06-47.06V79.06c0-25.9 21.16-47.06 47.06-47.06 25.9 0 47.06 21.16 47.06 47.06V196.9zM283.1 385.88c25.9 0 47.06 21.16 47.06 47.06 0 25.9-21.16 47.06-47.06 47.06-25.9 0-47.06-21.16-47.06-47.06v-47.06h47.06zm0-23.72c-25.9 0-47.06-21.16-47.06-47.06 0-25.9 21.16-47.06 47.06-47.06h117.84c25.9 0 47.06 21.16 47.06 47.06 0 25.9-21.16 47.06-47.06 47.06H283.1z"/></svg>
     </a>
   
     
@@ -4461,7 +4749,7 @@
       
     
     <a href="https://linkedin.com/company/filigran" target="_blank" rel="noopener" title="linkedin.com" class="md-social__link">
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.4.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2023 Fonticons, Inc.--><path d="M416 32H31.9C14.3 32 0 46.5 0 64.3v383.4C0 465.5 14.3 480 31.9 480H416c17.6 0 32-14.5 32-32.3V64.3c0-17.8-14.4-32.3-32-32.3zM135.4 416H69V202.2h66.5V416zm-33.2-243c-21.3 0-38.5-17.3-38.5-38.5S80.9 96 102.2 96c21.2 0 38.5 17.3 38.5 38.5 0 21.3-17.2 38.5-38.5 38.5zm282.1 243h-66.4V312c0-24.8-.5-56.7-34.5-56.7-34.6 0-39.9 27-39.9 54.9V416h-66.4V202.2h63.7v29.2h.9c8.9-16.8 30.6-34.5 62.9-34.5 67.2 0 79.7 44.3 79.7 101.9V416z"/></svg>
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.5.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2023 Fonticons, Inc.--><path d="M416 32H31.9C14.3 32 0 46.5 0 64.3v383.4C0 465.5 14.3 480 31.9 480H416c17.6 0 32-14.5 32-32.3V64.3c0-17.8-14.4-32.3-32-32.3zM135.4 416H69V202.2h66.5V416zm-33.2-243c-21.3 0-38.5-17.3-38.5-38.5S80.9 96 102.2 96c21.2 0 38.5 17.3 38.5 38.5 0 21.3-17.2 38.5-38.5 38.5zm282.1 243h-66.4V312c0-24.8-.5-56.7-34.5-56.7-34.6 0-39.9 27-39.9 54.9V416h-66.4V202.2h63.7v29.2h.9c8.9-16.8 30.6-34.5 62.9-34.5 67.2 0 79.7 44.3 79.7 101.9V416z"/></svg>
     </a>
   
     
@@ -4472,7 +4760,7 @@
       
     
     <a href="https://twitter.com/FiligranHQ" target="_blank" rel="noopener" title="twitter.com" class="md-social__link">
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.4.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2023 Fonticons, Inc.--><path d="M459.37 151.716c.325 4.548.325 9.097.325 13.645 0 138.72-105.583 298.558-298.558 298.558-59.452 0-114.68-17.219-161.137-47.106 8.447.974 16.568 1.299 25.34 1.299 49.055 0 94.213-16.568 130.274-44.832-46.132-.975-84.792-31.188-98.112-72.772 6.498.974 12.995 1.624 19.818 1.624 9.421 0 18.843-1.3 27.614-3.573-48.081-9.747-84.143-51.98-84.143-102.985v-1.299c13.969 7.797 30.214 12.67 47.431 13.319-28.264-18.843-46.781-51.005-46.781-87.391 0-19.492 5.197-37.36 14.294-52.954 51.655 63.675 129.3 105.258 216.365 109.807-1.624-7.797-2.599-15.918-2.599-24.04 0-57.828 46.782-104.934 104.934-104.934 30.213 0 57.502 12.67 76.67 33.137 23.715-4.548 46.456-13.32 66.599-25.34-7.798 24.366-24.366 44.833-46.132 57.827 21.117-2.273 41.584-8.122 60.426-16.243-14.292 20.791-32.161 39.308-52.628 54.253z"/></svg>
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.5.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2023 Fonticons, Inc.--><path d="M459.37 151.716c.325 4.548.325 9.097.325 13.645 0 138.72-105.583 298.558-298.558 298.558-59.452 0-114.68-17.219-161.137-47.106 8.447.974 16.568 1.299 25.34 1.299 49.055 0 94.213-16.568 130.274-44.832-46.132-.975-84.792-31.188-98.112-72.772 6.498.974 12.995 1.624 19.818 1.624 9.421 0 18.843-1.3 27.614-3.573-48.081-9.747-84.143-51.98-84.143-102.985v-1.299c13.969 7.797 30.214 12.67 47.431 13.319-28.264-18.843-46.781-51.005-46.781-87.391 0-19.492 5.197-37.36 14.294-52.954 51.655 63.675 129.3 105.258 216.365 109.807-1.624-7.797-2.599-15.918-2.599-24.04 0-57.828 46.782-104.934 104.934-104.934 30.213 0 57.502 12.67 76.67 33.137 23.715-4.548 46.456-13.32 66.599-25.34-7.798 24.366-24.366 44.833-46.132 57.827 21.117-2.273 41.584-8.122 60.426-16.243-14.292 20.791-32.161 39.308-52.628 54.253z"/></svg>
     </a>
   
     
@@ -4483,7 +4771,7 @@
       
     
     <a href="https://facebook.com/FiligranHQ" target="_blank" rel="noopener" title="facebook.com" class="md-social__link">
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.4.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2023 Fonticons, Inc.--><path d="M504 256C504 119 393 8 256 8S8 119 8 256c0 123.78 90.69 226.38 209.25 245V327.69h-63V256h63v-54.64c0-62.15 37-96.48 93.67-96.48 27.14 0 55.52 4.84 55.52 4.84v61h-31.28c-30.8 0-40.41 19.12-40.41 38.73V256h68.78l-11 71.69h-57.78V501C413.31 482.38 504 379.78 504 256z"/></svg>
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.5.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2023 Fonticons, Inc.--><path d="M512 256C512 114.6 397.4 0 256 0S0 114.6 0 256c0 120 82.7 220.8 194.2 248.5V334.2h-52.8V256h52.8v-33.7c0-87.1 39.4-127.5 125-127.5 16.2 0 44.2 3.2 55.7 6.4V172c-6-.6-16.5-1-29.6-1-42 0-58.2 15.9-58.2 57.2V256h83.6l-14.4 78.2H287v175.9C413.8 494.8 512 386.9 512 256z"/></svg>
     </a>
   
 </div>
@@ -4497,18 +4785,15 @@
       <div class="md-dialog__inner md-typeset"></div>
     </div>
     
-    <script id="__config" type="application/json">{"base": "../..", "features": ["navigation.tabs", "navigation.path", "navigation.footer", "navigation.expand", "content.action.edit", "content.action.view", "content.code.annotate", "content.code.copy", "search.highlight"], "search": "../../assets/javascripts/workers/search.6c7302c4.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"provider": "mike"}}</script>
+    
+    <script id="__config" type="application/json">{"base": "../..", "features": ["navigation.tabs", "navigation.path", "navigation.footer", "navigation.expand", "content.action.edit", "content.action.view", "content.code.annotate", "content.code.copy", "search.highlight"], "search": "../../assets/javascripts/workers/search.1e90e0fb.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"provider": "mike"}}</script>
     
     
-      <script src="../../assets/javascripts/bundle.7c5c0157.min.js"></script>
+      <script src="../../assets/javascripts/bundle.a0279539.min.js"></script>
       
-        
-          <script src="../../js/timeago.min.js"></script>
-        
+        <script src="../../js/timeago.min.js"></script>
       
-        
-          <script src="../../js/timeago_mkdocs_material.js"></script>
-        
+        <script src="../../js/timeago_mkdocs_material.js"></script>
       
     
   <script>document$.subscribe(() => {const lightbox = GLightbox({"touchNavigation": true, "loop": false, "zoomable": true, "draggable": true, "openEffect": "zoom", "closeEffect": "zoom", "slideEffect": "slide"});})</script></body>
