@@ -39,7 +39,7 @@
     "@aws-sdk/property-provider": "3.374.0",
     "@elastic/elasticsearch": "8.11.0",
     "@elastic/transport": "8.4.0",
-    "@escape.tech/graphql-armor": "2.3.1",
+    "@escape.tech/graphql-armor": "2.4.0",
     "@graphql-tools/schema": "10.0.2",
     "@graphql-tools/utils": "10.0.12",
     "@jorgeferrero/stream-to-buffer": "2.0.6",

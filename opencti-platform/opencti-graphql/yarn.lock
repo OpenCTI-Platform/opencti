@@ -1684,12 +1684,31 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@envelop/core@npm:^5.0.0":
+  version: 5.0.0
+  resolution: "@envelop/core@npm:5.0.0"
+  dependencies:
+    "@envelop/types": 5.0.0
+    tslib: ^2.5.0
+  checksum: a3b6ac557c4529aff734bea2181d948c7626903260ebe84e4d9004c16f49b22196855934f7d0b3fcca44252088c4fa6641edc59075a2a3bb586c1fa4805c0990
+  languageName: node
+  linkType: hard
+
 "@envelop/types@npm:4.0.1":
   version: 4.0.1
   resolution: "@envelop/types@npm:4.0.1"
   dependencies:
     tslib: ^2.5.0
   checksum: 136bdd570118a879044bd9ef8ed4df0460429fa952509b9be724f852b80cdae154c5e95792715194505511b171423808a60eed98c890e6997b4e9d122590bb21
+  languageName: node
+  linkType: hard
+
+"@envelop/types@npm:5.0.0":
+  version: 5.0.0
+  resolution: "@envelop/types@npm:5.0.0"
+  dependencies:
+    tslib: ^2.5.0
+  checksum: 1098f821981d2b59a453f5f21ac3b2ea9fcf6bd253a564f0317f67b7469ff17e53921ea99a3b528cb5c95e0671460d68b55150836ce635788576500317a8ad9b
   languageName: node
   linkType: hard
 
@@ -2037,11 +2056,11 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@escape.tech/graphql-armor-max-aliases@npm:2.1.0":
-  version: 2.1.0
-  resolution: "@escape.tech/graphql-armor-max-aliases@npm:2.1.0"
+"@escape.tech/graphql-armor-max-aliases@npm:2.3.0":
+  version: 2.3.0
+  resolution: "@escape.tech/graphql-armor-max-aliases@npm:2.3.0"
   dependencies:
-    "@envelop/core": ^4.0.0
+    "@envelop/core": ^5.0.0
     "@escape.tech/graphql-armor-types": 0.5.0
     graphql: ^16.0.0
   dependenciesMeta:
@@ -2049,7 +2068,7 @@ __metadata:
       optional: true
     "@escape.tech/graphql-armor-types":
       optional: true
-  checksum: c1a87eb298d34bd363f70f8257555613a359650e24777a0f089369c4d8b14310520a41a51293697ab8cbef3395979de1de64e2ec7fbdc47fe5d3538242aa43a7
+  checksum: d6312b44bac18cfbeb787550e73e126b2bcfde67ef83f90498681b12ad1315870c5cb1131d6b1036baf99a9c789999b2c35f33f734a2501dc288351632581a27
   languageName: node
   linkType: hard
 
@@ -2085,11 +2104,11 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@escape.tech/graphql-armor-max-tokens@npm:2.2.0":
-  version: 2.2.0
-  resolution: "@escape.tech/graphql-armor-max-tokens@npm:2.2.0"
+"@escape.tech/graphql-armor-max-tokens@npm:2.3.0":
+  version: 2.3.0
+  resolution: "@escape.tech/graphql-armor-max-tokens@npm:2.3.0"
   dependencies:
-    "@envelop/core": ^4.0.0
+    "@envelop/core": ^5.0.0
     "@escape.tech/graphql-armor-types": 0.5.0
     graphql: ^16.0.0
   dependenciesMeta:
@@ -2097,7 +2116,7 @@ __metadata:
       optional: true
     "@escape.tech/graphql-armor-types":
       optional: true
-  checksum: d14757c1125a199ed7db4ada9c5f04952b09a5ed7983b2b7252832fab5a6f7071c1d0cf7263d1a85c398f6febca3cecae047555e2e4bd30c3c89553dba6aa939
+  checksum: 27cc67556bdb49f6b4d5511d0db2b3d502b196c13965b06a6ba1a3bd4f368af160ebefc60abf61a328c41edc476008e550726f1188a34d00856030818f407b3c
   languageName: node
   linkType: hard
 
@@ -2110,20 +2129,20 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@escape.tech/graphql-armor@npm:2.3.1":
-  version: 2.3.1
-  resolution: "@escape.tech/graphql-armor@npm:2.3.1"
+"@escape.tech/graphql-armor@npm:2.4.0":
+  version: 2.4.0
+  resolution: "@escape.tech/graphql-armor@npm:2.4.0"
   dependencies:
     "@escape.tech/graphql-armor-block-field-suggestions": 2.1.0
     "@escape.tech/graphql-armor-cost-limit": 2.1.0
-    "@escape.tech/graphql-armor-max-aliases": 2.1.0
+    "@escape.tech/graphql-armor-max-aliases": 2.3.0
     "@escape.tech/graphql-armor-max-depth": 2.2.0
     "@escape.tech/graphql-armor-max-directives": 2.1.0
-    "@escape.tech/graphql-armor-max-tokens": 2.2.0
+    "@escape.tech/graphql-armor-max-tokens": 2.3.0
     graphql: ^16.0.0
   peerDependencies:
     "@apollo/server": ^4.0.0
-    "@envelop/core": ^4.0.0
+    "@envelop/core": ^5.0.0
     "@escape.tech/graphql-armor-types": 0.5.0
   peerDependenciesMeta:
     "@apollo/server":
@@ -2132,7 +2151,7 @@ __metadata:
       optional: true
     "@escape.tech/graphql-armor-types":
       optional: true
-  checksum: effde77876d994fff61ca7a36371232e34080bbc60cb238169c110110bea2bffa13e865cd1fc5a38763ad2ae77891f4131d2cfdd5b2c9c880c695fc59a035896
+  checksum: 64df83619ab5c8f880206d90b73f8be1f0f91d5714626111c0d9511b89f1672217179b59e48f72b7f4170ac2922f6d9a7fe7e0d13ee896f62b9689144bd707cd
   languageName: node
   linkType: hard
 
@@ -11228,7 +11247,7 @@ __metadata:
     "@aws-sdk/property-provider": 3.374.0
     "@elastic/elasticsearch": 8.11.0
     "@elastic/transport": 8.4.0
-    "@escape.tech/graphql-armor": 2.3.1
+    "@escape.tech/graphql-armor": 2.4.0
     "@graphql-codegen/cli": 5.0.0
     "@graphql-codegen/client-preset": 4.1.0
     "@graphql-codegen/introspection": 4.0.0
