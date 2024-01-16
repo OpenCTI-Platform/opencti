@@ -107,6 +107,12 @@ class IncidentKnowledgeGraphBar extends Component {
     };
   }
 
+  componentDidUpdate(prevProps) {
+    if (prevProps.openCreatedRelation === false && this.props.openCreatedRelation) {
+      this.setState({ openCreatedRelation: true });
+    }
+  }
+
   handleOpenRemove() {
     this.setState({ displayRemove: true });
   }
@@ -175,6 +181,7 @@ class IncidentKnowledgeGraphBar extends Component {
 
   handleCloseCreateRelationship() {
     this.setState({ openCreatedRelation: false });
+    this.props.handleCloseRelationCreation();
   }
 
   handleReverseRelation() {

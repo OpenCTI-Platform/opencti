@@ -38,6 +38,7 @@ import InvestigationGraphBar from './InvestigationGraphBar';
 import { UserContext } from '../../../../utils/hooks/useAuth';
 import { investigationAddStixCoreObjectsLinesRelationsDeleteMutation } from './InvestigationAddStixCoreObjectsLines';
 import { isNotEmptyField } from '../../../../utils/utils';
+import RelationSelection from '../../../../utils/graph/RelationSelection';
 
 const PARAMETERS$ = new Subject().pipe(debounce(() => timer(2000)));
 const POSITIONS$ = new Subject().pipe(debounce(() => timer(2000)));
@@ -999,6 +1000,7 @@ class InvestigationGraphComponent extends Component {
       keyword: '',
       prevClick: null,
       navOpen: localStorage.getItem('navOpen') === 'true',
+      openCreatedRelation: false,
     };
     this.canvas = null;
   }
@@ -2113,6 +2115,8 @@ class InvestigationGraphComponent extends Component {
                 handleSearch={this.handleSearch.bind(this)}
                 navOpen={navOpen}
                 resetAllFilters={this.resetAllFilters.bind(this, false)}
+                openCreatedRelation={this.state.openCreatedRelation}
+                handleCloseRelationCreation={() => this.setState({ openCreatedRelation: false })}
               />
               {selectedEntities.length > 0 && (
                 <EntitiesDetailsRightsBar selectedEntities={selectedEntities} />
@@ -2221,6 +2225,18 @@ class InvestigationGraphComponent extends Component {
                       this.selectedNodes.clear();
                       Array.from(nodes).forEach((n) => this.selectedNodes.add(n));
                       this.setState({ numberOfSelectedNodes: nodes.size });
+                    }}
+                  />
+                  <RelationSelection
+                    activated={!(selectModeFree && selectModeFreeReady) && !selectRectangleModeFree}
+                    width={graphWidth}
+                    height={graphHeight}
+                    graphDataNodes={graphData.nodes}
+                    graph={this.graph}
+                    setSelectedNodes={(nodes) => {
+                      this.selectedNodes.clear();
+                      Array.from(nodes).forEach((n) => this.selectedNodes.add(n));
+                      this.setState({ numberOfSelectedNodes: this.selectedNodes.size, openCreatedRelation: true });
                     }}
                   />
                   <RectangleSelection

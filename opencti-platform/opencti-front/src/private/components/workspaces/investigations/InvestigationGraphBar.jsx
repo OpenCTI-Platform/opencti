@@ -95,6 +95,12 @@ class InvestigationGraphBar extends Component {
     };
   }
 
+  componentDidUpdate(prevProps) {
+    if (prevProps.openCreatedRelation === false && this.props.openCreatedRelation) {
+      this.setState({ openCreatedRelation: true });
+    }
+  }
+
   handleOpenRemove() {
     this.setState({ displayRemove: true });
   }
@@ -145,6 +151,7 @@ class InvestigationGraphBar extends Component {
 
   handleCloseCreateRelationship() {
     this.setState({ openCreatedRelation: false });
+    this.props.handleCloseRelationCreation();
   }
 
   handleOpenSelectByType(event) {
@@ -183,7 +190,7 @@ class InvestigationGraphBar extends Component {
     } else if (
       (this.props.numberOfSelectedLinks === 1
         && this.props.selectedLinks[0].entity_type
-          === 'stix-sighting-relationship')
+        === 'stix-sighting-relationship')
       || (this.props.selectedNodes[0]
         && this.props.selectedNodes[0].relationship_type
         && this.props.selectedNodes[0].parent_types.includes(
@@ -1073,6 +1080,7 @@ InvestigationGraphBar.propTypes = {
   lastLinkFirstSeen: PropTypes.string,
   lastLinkLastSeen: PropTypes.string,
   navOpen: PropTypes.bool,
+  openCreatedRelation: PropTypes.bool,
 };
 
 export default R.compose(

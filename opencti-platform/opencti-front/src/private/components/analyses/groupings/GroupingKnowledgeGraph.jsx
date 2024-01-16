@@ -42,6 +42,7 @@ import { hexToRGB } from '../../../../utils/Colors';
 import { UserContext } from '../../../../utils/hooks/useAuth';
 import investigationAddFromContainer from '../../../../utils/InvestigationUtils';
 import { isNotEmptyField } from '../../../../utils/utils';
+import RelationSelection from '../../../../utils/graph/RelationSelection';
 
 const ignoredStixCoreObjectsTypes = ['Note', 'Opinion'];
 
@@ -516,6 +517,7 @@ class GroupingKnowledgeGraphComponent extends Component {
       zoomed: false,
       keyword: '',
       navOpen: localStorage.getItem('navOpen') === 'true',
+      openCreatedRelation: false,
     };
   }
 
@@ -1414,6 +1416,8 @@ class GroupingKnowledgeGraphComponent extends Component {
                 handleSearch={this.handleSearch.bind(this)}
                 navOpen={navOpen}
                 resetAllFilters={this.resetAllFilters.bind(this)}
+                openCreatedRelation={this.state.openCreatedRelation}
+                handleCloseRelationCreation={() => this.setState({ openCreatedRelation: false })}
               />
               {selectedEntities.length > 0 && (
                 <EntitiesDetailsRightsBar
@@ -1527,6 +1531,18 @@ class GroupingKnowledgeGraphComponent extends Component {
                       this.selectedNodes.clear();
                       Array.from(nodes).forEach((n) => this.selectedNodes.add(n));
                       this.setState({ numberOfSelectedNodes: nodes.size });
+                    }}
+                  />
+                  <RelationSelection
+                    activated={!(selectModeFree && selectModeFreeReady) && !selectRectangleModeFree}
+                    width={graphWidth}
+                    height={graphHeight}
+                    graphDataNodes={graphData.nodes}
+                    graph={this.graph}
+                    setSelectedNodes={(nodes) => {
+                      this.selectedNodes.clear();
+                      Array.from(nodes).forEach((n) => this.selectedNodes.add(n));
+                      this.setState({ numberOfSelectedNodes: this.selectedNodes.size, openCreatedRelation: true });
                     }}
                   />
                   <RectangleSelection
