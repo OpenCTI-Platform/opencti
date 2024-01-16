@@ -1863,6 +1863,12 @@ class ToolBar extends Component {
                         <ItemIcon type={element.entity_type} />
                       </ListItemIcon>
                       <ListItemText
+                        sx={{
+                          '.MuiListItemText-primary': {
+                            overflowX: 'hidden',
+                            textOverflow: 'ellipsis',
+                          },
+                        }}
                         primary={defaultValue(element)}
                         secondary={truncate(
                           element.description
@@ -1915,7 +1921,9 @@ class ToolBar extends Component {
                 >
                   {t('Name')}
                 </Typography>
-                {defaultValue(keptElement)}
+                <div style={{ overflowX: 'hidden', textOverflow: 'ellipsis' }}>
+                  {defaultValue(keptElement)}
+                </div>
                 <Typography
                   variant="h3"
                   gutterBottom={true}
