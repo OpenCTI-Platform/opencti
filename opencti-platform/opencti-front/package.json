@@ -89,7 +89,7 @@
   },
   "devDependencies": {
     "@rollup/plugin-graphql": "2.0.4",
-    "@testing-library/react": "14.0.0",
+    "@testing-library/react": "14.1.2",
     "@types/node": "20.11.2",
     "@types/qrcode": "1.5.2",
     "@types/ramda": "0.29.6",
