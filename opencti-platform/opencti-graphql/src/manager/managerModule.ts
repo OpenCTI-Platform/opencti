@@ -29,7 +29,7 @@ export interface ManagerDefinition {
   streamSchedulerHandler?: ManagerStreamScheduler;
   enabledByConfig: boolean;
   enabled: (settings?: BasicStoreSettings) => boolean; // enabled from configuration and settings
-  enabledToStart: () => boolean; // if manager can be started
+  enabledToStart: () => boolean; // if manager can be started (some managers need to start even when disabled)
   enterpriseEditionOnly?: boolean;
   warning?: () => boolean; // condition to display a warning on manager module (ex: missing configuration, manager can't start)
 }
@@ -68,18 +68,13 @@ const initManager = (manager: ManagerDefinition) => {
         if (lock) await lock.unlock();
         if (startDate) {
           const duration = moment.duration(utcDate().diff(startDate)).asMilliseconds();
-          logApp.info(`[OPENCTI-MODULE] ${manager.label} done in ${duration}ms`);
+          logApp.debug(`[OPENCTI-MODULE] ${manager.label} done in ${duration}ms`);
         }
       }
     }
   };
 
   const streamHandler = async () => {
-    // TODO handle enterprise edition enabled
-    // const context = executionContext('file_index_manager');
-    // const settings = await getEntityFromCache<BasicStoreSettings>(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
-    // const enterpriseEditionEnabled = isNotEmptyField(settings?.enterprise_edition);
-    // if (enterpriseEditionEnabled) {
     if (manager.streamSchedulerHandler) {
       let lock;
       try {
@@ -126,9 +121,9 @@ const initManager = (manager: ManagerDefinition) => {
     status: (settings?: BasicStoreSettings) => {
       return {
         id: manager.id,
-        enable: manager.enabled(settings), // ENABLED_FILE_INDEX_MANAGER && isNotEmptyField(settings?.enterprise_edition),
+        enable: manager.enabled(settings),
         running,
-        warning: manager.warning?.() || false, // !isAttachmentProcessorEnabled(),
+        warning: manager.warning?.() || false,
       };
     },
     shutdown: async () => {

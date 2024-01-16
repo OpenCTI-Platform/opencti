@@ -1,7 +1,6 @@
 import moment from 'moment';
 import type { Moment } from 'moment';
 import type { BasicStoreEntityIndicator } from './indicator-types';
-import { logApp } from '../../config/conf';
 
 export interface DecayHistory {
   updated_at: Date
@@ -68,12 +67,12 @@ const DECAY_FACTOR: number = 3.0;
  * @param rule decay configuration to use.
  */
 export const computeScoreFromExpectedTime = (initialScore: number, daysFromStart: number, rule: DecayRule) => {
-  if (rule.decay_lifetime && rule.decay_pound) {
-    if (daysFromStart > rule.decay_lifetime) return 0;
-    if (daysFromStart <= 0) return initialScore;
-    return initialScore * (1 - ((daysFromStart / rule.decay_lifetime) ** (1 / (DECAY_FACTOR * rule.decay_pound))));
+  if (!rule) {
+    return initialScore;
   }
-  return 0; // FIXME or null ?
+  if (daysFromStart > rule.decay_lifetime) return 0;
+  if (daysFromStart <= 0) return initialScore;
+  return initialScore * (1 - ((daysFromStart / rule.decay_lifetime) ** (1 / (DECAY_FACTOR * rule.decay_pound))));
 };
 
 /**
@@ -118,9 +117,7 @@ export const computeLiveScore = (indicator: BasicStoreEntityIndicator) => {
     const daysSinceDecayStart = moment().diff(moment(indicator.x_opencti_base_score_date), 'days', true);
     return Math.round(computeScoreFromExpectedTime(indicator.x_opencti_base_score, daysSinceDecayStart, decayRule));
   }
-  // TODO change to debug at the end of implementation
-  logApp.warn('Sorry bu I cannot compute live score, something is missing.');
-
+  // by default return current score
   return indicator.x_opencti_score;
 };
 

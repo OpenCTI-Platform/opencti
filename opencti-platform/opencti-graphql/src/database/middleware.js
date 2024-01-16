@@ -2519,12 +2519,6 @@ const upsertElement = async (context, user, element, type, basePatch, opts = {})
     }
   }
   const inputs = []; // All inputs impacted by modifications (+inner)
-  if (type === ENTITY_TYPE_INDICATOR) {
-    // TODO if confidence level is greater on updatePatch, restart Decay computation here, and save it.
-
-    // TODO also maybe if the main observable type change, we need to search for another decay rule ?
-  }
-
   // If file directly attached
   if (!isEmptyField(updatePatch.file)) {
     const path = `import/${element.entity_type}/${element.internal_id}`;
