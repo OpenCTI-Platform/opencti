@@ -341,7 +341,7 @@ UserEditionOverviewComponentProps
             hasSetAccess && (
               <ConfidenceField
                 name="max_confidence"
-                label={t('Max Confidence Level')}
+                label={t_i18n('Max Confidence Level')}
                 onFocus={handleChangeFocus}
                 onSubmit={handleSubmitField}
                 entityType="User"
