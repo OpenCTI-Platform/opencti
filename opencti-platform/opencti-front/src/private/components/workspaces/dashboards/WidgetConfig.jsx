@@ -344,7 +344,6 @@ const WidgetConfig = ({ workspace, widget, onComplete, closeMenu }) => {
   );
   const [parameters, setParameters] = useState(widget?.parameters ?? {});
   const [commitWidgetImportMutation] = useMutation(workspaceImportWidgetMutation);
-
   const setDataSelectionWithIndex = (data, index) => {
     setDataSelection([...dataSelection.map((d, i) => (i === index ? data : d))]);
   };
@@ -370,7 +369,7 @@ const WidgetConfig = ({ workspace, widget, onComplete, closeMenu }) => {
       },
     });
   };
-  const handleClose = () => {
+  const handleCloseAfterCancel = () => {
     if (!widget) {
       setStepIndex(0);
       setType(null);
@@ -385,6 +384,21 @@ const WidgetConfig = ({ workspace, widget, onComplete, closeMenu }) => {
     setOpen(false);
     setDataSelection(widget?.dataSelection ?? [initialSelection]);
   };
+
+  const handleCloseAfterUpdate = () => {
+    if (!widget) {
+      setStepIndex(0);
+      setType(null);
+      setPerspective(null);
+      setDataSelection([initialSelection]);
+      setParameters({});
+    } else if (widget.type === 'text') {
+      setStepIndex(3);
+    } else {
+      setStepIndex(2);
+    }
+    setOpen(false);
+  };
   const completeSetup = () => {
     onComplete({
       ...(widget ?? {}),
@@ -394,7 +408,7 @@ const WidgetConfig = ({ workspace, widget, onComplete, closeMenu }) => {
       dataSelection,
       parameters,
     });
-    handleClose();
+    handleCloseAfterUpdate();
   };
   const getCurrentIsRelationships = () => {
     return indexedVisualizationTypes[type]?.isRelationships ?? false;
@@ -1327,7 +1341,7 @@ const WidgetConfig = ({ workspace, widget, onComplete, closeMenu }) => {
         open={open}
         PaperProps={{ elevation: 1 }}
         TransitionComponent={Transition}
-        onClose={handleClose}
+        onClose={handleCloseAfterCancel}
         fullWidth={true}
         maxWidth="md"
         className="noDrag"
@@ -1370,7 +1384,7 @@ const WidgetConfig = ({ workspace, widget, onComplete, closeMenu }) => {
         </DialogTitle>
         <DialogContent>{getStepContent()}</DialogContent>
         <DialogActions>
-          <Button onClick={handleClose}>{t_i18n('Cancel')}</Button>
+          <Button onClick={handleCloseAfterCancel}>{t_i18n('Cancel')}</Button>
           <Button
             color="secondary"
             onClick={completeSetup}
