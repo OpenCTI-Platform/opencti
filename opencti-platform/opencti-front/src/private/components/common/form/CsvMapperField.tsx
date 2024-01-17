@@ -51,7 +51,7 @@ const CsvMapperField: FunctionComponent<CsvMapperFieldComponentProps> = ({
   name,
 }) => {
   const classes = useStyles();
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   const [csvMappers, setCsvMappers] = useState<
   {
     label: string | undefined;
@@ -81,10 +81,10 @@ const CsvMapperField: FunctionComponent<CsvMapperFieldComponentProps> = ({
         multiple={false}
         textfieldprops={{
           variant: 'standard',
-          label: t('Csv Mappers'),
+          label: t_i18n('CSV Mappers'),
           onFocus: searchCsvMappers,
         }}
-        noOptionsText={t('No available options')}
+        noOptionsText={t_i18n('No available options')}
         options={csvMappers}
         isOptionEqualToValue={isOptionEqualToValue}
         onInputChange={searchCsvMappers}

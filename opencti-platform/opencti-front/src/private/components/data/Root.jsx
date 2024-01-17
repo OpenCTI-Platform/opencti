@@ -131,7 +131,8 @@ const Root = () => {
           path="/dashboard/data/processing/tasks"
           component={Tasks}
         />
-      </Switch></Suspense>
+      </Switch>
+    </Suspense>
   );
 };
 

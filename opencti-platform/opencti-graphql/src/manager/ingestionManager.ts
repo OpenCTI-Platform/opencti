@@ -297,7 +297,8 @@ const csvHttpGet = async (ingestion: BasicStoreEntityIngestionCsv): Promise<CsvR
   }
   let certificates;
   if (ingestion.authentication_type === 'certificate') {
-    certificates = { cert: ingestion.authentication_value.split(':')[0], key: ingestion.authentication_value.split(':')[1], ca: ingestion.authentication_value.split(':')[0] };
+    const [cert, key, ca ] = ingestion.authentication_value.split(':');
+    certificates = { cert, key, ca };
   }
   const httpClientOptions: GetHttpClient = { headers, rejectUnauthorized: false, responseType: 'json', certificates };
   const httpClient = getHttpClient(httpClientOptions);
@@ -306,13 +307,13 @@ const csvHttpGet = async (ingestion: BasicStoreEntityIngestionCsv): Promise<CsvR
 };
 const csvDataToObjects = async (data: string, ingestion: BasicStoreEntityIngestionCsv, csvMapper: BasicStoreEntityCsvMapper, context: AuthContext) => { // push bundle to queues
   const entitiesData = data.split('\n');
-  logApp.info(`[OPENCTI-MODULE] CSV ingestion execution for ${entitiesData.length} items`);
   const csvBuffer = await fetchCsvFromUrl(ingestion.uri, csvMapper.skipLineChar);
   const { objects } = await bundleProcess(context, context.user ?? SYSTEM_USER, csvBuffer, csvMapper);
   if (objects === undefined) {
     const error = UnknownError('Undefined CSV objects', data);
     logApp.error(error, { name: ingestion.name, context: 'CSV transform' });
   }
+  logApp.info(`[OPENCTI-MODULE] CSV ingestion execution for ${entitiesData.length} items`);
   return objects;
 };
 const csvDataHandler = async (context: AuthContext, ingestion: BasicStoreEntityIngestionCsv) => {
