@@ -14,7 +14,7 @@ export const buildTestConfig = (include: string[]) => defineConfig({
     globalSetup: ['./tests/utils/globalSetup.js'],
     setupFiles: ['./tests/utils/testSetup.js'],
     coverage: {
-      provider: 'v8',
+      provider: 'istanbul',
       include: ['src/**'],
       exclude: ['src/generated/**', 'src/migrations/**', 'src/stixpattern/**', 'src/python/**'],
       reporter: ['text', 'json', 'html'],
