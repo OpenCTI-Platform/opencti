@@ -317,6 +317,7 @@ const StixRelationshipsDistributionList = ({
                         key={entry.label}
                         dense={true}
                         button={!!link}
+                        className="noDrag"
                         classes={{ root: classes.item }}
                         divider={true}
                         component={link ? Link : null}

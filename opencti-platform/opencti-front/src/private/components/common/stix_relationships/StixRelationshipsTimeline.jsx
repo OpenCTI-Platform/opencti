@@ -1319,6 +1319,7 @@ const StixRelationshipsTimeline = ({
                                 borderColor: itemColor(remoteNode.entity_type),
                               }}
                               variant="outlined"
+                              className="noDrag"
                             >
                               <ItemIcon type={remoteNode.entity_type} />
                             </TimelineDot>

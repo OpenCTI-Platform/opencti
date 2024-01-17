@@ -371,6 +371,8 @@ export const horizontalBarsChartOptions = (
           // for clickable parts of the graphs
           // eslint-disable-next-line no-param-reassign
           event.target.style.cursor = 'pointer';
+          // eslint-disable-next-line no-param-reassign
+          event.target.classList.add('noDrag');
         }
       },
       click: (event, chartContext, config) => {
