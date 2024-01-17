@@ -138,7 +138,7 @@ export const CaseIncidentCreationForm: FunctionComponent<IncidentFormProps> = ({
         input,
       },
       updater: (store, response) => {
-        if (updater) {
+        if (updater && response) {
           updater(store, 'caseIncidentAdd', response.caseIncidentAdd);
         }
       },

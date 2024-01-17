@@ -138,7 +138,7 @@ export const ReportCreationForm: FunctionComponent<ReportFormProps> = ({
         input,
       },
       updater: (store, response) => {
-        if (updater) {
+        if (updater && response) {
           updater(store, 'reportAdd', response.reportAdd);
         }
       },

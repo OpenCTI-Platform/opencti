@@ -125,7 +125,7 @@ export const GroupingCreationForm: FunctionComponent<GroupingFormProps> = ({
         input,
       },
       updater: (store, response) => {
-        if (updater) {
+        if (updater && response) {
           updater(store, 'groupingAdd', response.groupingAdd);
         }
       },
