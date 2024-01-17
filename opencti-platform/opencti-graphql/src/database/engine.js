@@ -2482,25 +2482,7 @@ export const elPaginate = async (context, user, indexName, options = {}) => {
     })
     .catch(
       /* v8 ignore next */ (err) => {
-        // Because we create the mapping at element creation
-        // We log the error only if its not a mapping not found error
-        let isTechnicalError = true;
-        if (isNotEmptyField(err.meta?.body)) {
-          let errorCauses = err.meta.body?.error?.root_cause ?? [];
-          if (typeof errorCauses === 'object') {
-            errorCauses = R.values(errorCauses);
-          }
-          const invalidMappingCauses = errorCauses.map((r) => r.reason ?? '')
-            .filter((r) => R.includes(NO_MAPPING_FOUND_ERROR, r) || R.includes(NO_SUCH_INDEX_ERROR, r));
-          const numberOfCauses = errorCauses.length;
-          isTechnicalError = numberOfCauses === 0 || numberOfCauses > invalidMappingCauses.length;
-        }
-        // If uncontrolled error, log and propagate
-        if (isTechnicalError) {
-          throw DatabaseError('Fail to execute engine pagination', { cause: err, query });
-        } else {
-          return connectionFormat ? buildPagination(0, null, [], 0) : [];
-        }
+        throw DatabaseError('Fail to execute engine pagination', { cause: err, query });
       }
     );
 };

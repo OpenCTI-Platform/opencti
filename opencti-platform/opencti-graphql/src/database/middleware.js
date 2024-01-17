@@ -2371,28 +2371,23 @@ const buildInnerRelation = (from, to, type) => {
 const ALIGN_OLDEST = 'oldest';
 const ALIGN_NEWEST = 'newest';
 const computeExtendedDateValues = (newValue, currentValue, mode) => {
-  if (isNotEmptyField(newValue)) {
-    const newValueDate = moment(newValue);
-    // If a first_seen already exists
-    if (isNotEmptyField(currentValue)) {
-      // If the new first_seen is before the existing one, we update
-      const currentValueDate = moment(currentValue);
-      if (mode === ALIGN_OLDEST) {
-        if (newValueDate.isBefore(currentValueDate)) {
-          return newValueDate.utc().toISOString();
-        }
+  const newValueDate = moment(newValue);
+  if (isNotEmptyField(currentValue)) {
+    const currentValueDate = moment(currentValue);
+    if (mode === ALIGN_OLDEST) {
+      if (newValueDate.isBefore(currentValueDate)) {
+        return newValueDate.utc().toISOString();
       }
-      if (mode === ALIGN_NEWEST) {
-        if (newValueDate.isAfter(currentValueDate)) {
-          return newValueDate.utc().toISOString();
-        }
+      return currentValueDate.utc().toISOString();
+    }
+    if (mode === ALIGN_NEWEST) {
+      if (newValueDate.isAfter(currentValueDate)) {
+        return newValueDate.utc().toISOString();
       }
-      // If no first_seen exists, we update
-    } else {
-      return newValueDate.utc().toISOString();
+      return currentValueDate.utc().toISOString();
     }
   }
-  return null;
+  return newValueDate.utc().toISOString();
 };
 const buildAttributeUpdate = (isFullSync, attribute, currentData, inputData) => {
   const inputs = [];
@@ -2419,16 +2414,10 @@ const buildTimeUpdate = (input, instance, startField, stopField) => {
   const patch = {};
   // If not coming from a rule, compute extended time.
   if (input[startField]) {
-    const extendedStart = computeExtendedDateValues(input[startField], instance[startField], ALIGN_OLDEST);
-    if (extendedStart) {
-      patch[startField] = extendedStart;
-    }
+    patch[startField] = computeExtendedDateValues(input[startField], instance[startField], ALIGN_OLDEST);
   }
   if (input[stopField]) {
-    const extendedStop = computeExtendedDateValues(input[stopField], instance[stopField], ALIGN_NEWEST);
-    if (extendedStop) {
-      patch[stopField] = extendedStop;
-    }
+    patch[stopField] = computeExtendedDateValues(input[stopField], instance[stopField], ALIGN_NEWEST);
   }
   return patch;
 };
@@ -2526,8 +2515,8 @@ const upsertElement = async (context, user, element, type, basePatch, opts = {})
   // Upsert relations with times extensions
   if (isStixCoreRelationship(type)) {
     const timePatch = buildTimeUpdate(updatePatch, element, 'start_time', 'stop_time');
-    updatePatch.first_observed = timePatch.start_time ?? updatePatch.start_time;
-    updatePatch.last_observed = timePatch.stop_time ?? updatePatch.stop_time;
+    updatePatch.start_time = timePatch.start_time ?? updatePatch.start_time;
+    updatePatch.stop_time = timePatch.stop_time ?? updatePatch.stop_time;
   }
   if (isStixSightingRelationship(type)) {
     const timePatch = buildTimeUpdate(updatePatch, element, 'first_seen', 'last_seen');
