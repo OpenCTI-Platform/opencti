@@ -141,8 +141,6 @@ const MAX_JS_PARAMS = 65536; // Too prevent Maximum call stack size exceeded
 const MAX_SEARCH_SIZE = 5000;
 export const ROLE_FROM = 'from';
 export const ROLE_TO = 'to';
-const NO_MAPPING_FOUND_ERROR = 'No mapping found';
-const NO_SUCH_INDEX_ERROR = 'no such index';
 const UNIMPACTED_ENTITIES_ROLE = [
   `${RELATION_CREATED_BY}_${ROLE_TO}`,
   `${RELATION_OBJECT_MARKING}_${ROLE_TO}`,
