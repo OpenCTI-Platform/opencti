@@ -70,8 +70,6 @@ const RelationSelection: FunctionComponent<LassoSelectionProps> = ({
   const selectedNodes = new Set<Coord>();
 
   const startFreeHand = (e: MouseEvent, mouseMoveFunction: (e: MouseEvent) => void) => {
-    e.stopPropagation();
-    e.preventDefault();
     currentContext.reset();
     if ((e.target as HTMLDivElement)?.tagName !== 'CANVAS' || !currentContext) {
       return;
@@ -80,6 +78,8 @@ const RelationSelection: FunctionComponent<LassoSelectionProps> = ({
       document.removeEventListener('mousemove', mouseMoveFunction);
       return;
     }
+    e.stopPropagation();
+    e.preventDefault();
     document.addEventListener('mousemove', mouseMoveFunction);
     freeHand = true;
     coord = reposition(e);
@@ -201,7 +201,7 @@ const RelationSelection: FunctionComponent<LassoSelectionProps> = ({
       width={(width - 30)}
       height={height}
       className={classes.canvas}
-      id="lasso-canvas"
+      id="relation-canvas"
     />
   );
 };
