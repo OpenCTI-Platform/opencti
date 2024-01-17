@@ -161,7 +161,7 @@
     "@types/express": "4.17.19",
     "@types/graphql-upload": "16.0.5",
     "@types/nconf": "0.10.6",
-    "@types/ramda": "0.29.6",
+    "@types/ramda": "0.29.9",
     "@types/tough-cookie": "4.0.5",
     "@types/turndown": "5.0.4",
     "@types/uuid": "9.0.7",
