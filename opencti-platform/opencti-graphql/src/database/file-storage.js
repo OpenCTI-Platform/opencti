@@ -178,15 +178,22 @@ export const loadFile = async (user, filename) => {
       Key: filename
     }));
     const metaData = {
-      ...object.Metadata,
+      version: object.Metadata.version,
+      description: object.Metadata.description,
+      list_filters: object.Metadata.list_filters,
+      filename: object.Metadata.filename,
       mimetype: object.Metadata.mimetype,
+      labels_text: object.Metadata.labels_text,
+      labels: object.Metadata.labels_text ? object.Metadata.labels_text.split(';') : [],
+      encoding: object.Metadata.encoding,
+      creator_id: object.Metadata.creator_id,
       entity_id: object.Metadata.entity_id,
-      messages: [],
-      errors: [],
+      external_reference_id: object.Metadata.external_reference_id,
+      messages: object.Metadata.messages,
+      errors: object.Metadata.errors,
+      inCarousel: object.Metadata.inCarousel,
+      order: object.Metadata.order
     };
-    if (metaData.labels_text) {
-      metaData.labels = metaData.labels_text.split(';');
-    }
     return {
       id: filename,
       name: decodeURIComponent(object.Metadata.filename || 'unknown'),
@@ -194,8 +201,8 @@ export const loadFile = async (user, filename) => {
       information: '',
       lastModified: object.LastModified,
       lastModifiedSinceMin: sinceNowInMinutes(object.LastModified),
+      uploadStatus: 'complete',
       metaData,
-      uploadStatus: 'complete'
     };
   } catch (err) {
     throw UnsupportedError('Load file from storage fail', { cause: err, user_id: user.id, filename });
