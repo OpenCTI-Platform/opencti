@@ -18,7 +18,7 @@ const ExpandableMarkdown: FunctionComponent<ExpandableMarkdownProps> = ({
   const shouldBeTruncated = (source || '').length > limit;
   return (
     <span>
-      <div style={{ position: 'relative' }}>
+      <div style={{ position: 'relative', overflowX: 'auto' }}>
         {shouldBeTruncated && (
           <div style={{ position: 'absolute', top: -32, right: 0 }}>
             <IconButton onClick={onClick} size="large">
