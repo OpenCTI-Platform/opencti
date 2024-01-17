@@ -35,3 +35,9 @@ __generated__
 !.yarn/sdks
 !.yarn/versions
 .pnp.*
+/test-results/
+/playwright-report/
+/blob-report/
+/playwright/.cache/
+/.nyc_output/
+/tests_e2e/.setup/
