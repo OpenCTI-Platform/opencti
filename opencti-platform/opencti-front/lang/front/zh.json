@@ -2442,8 +2442,7 @@
   "Do you want to stop this CSV ingester?": "您要停止此CSV导入程序吗？",
   "Create a CSV Ingester": "创建一个CSV导入程序",
   "Update a CSV Ingester": "更新一个CSV导入程序",
-  "Please, note that the test will be run on the 50 first lines": "请注意，测试将在前50行运行"
-  "workflow_id": "状态",
+  "Please, note that the test will be run on the 50 first lines": "请注意，测试将在前50行运行",
   "regardingOf": "关于",
   "WITH": "有",
   "Pre-query to get data to be used as source entity of the relationship (limited to 5000)": "预查询，获取用作关系源实体的数据（限制为 5000）",

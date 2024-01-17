@@ -2452,8 +2452,7 @@
   "Do you want to stop this CSV ingester?": "Do you want to stop this CSV ingester?",
   "Create a CSV Ingester": "Create a CSV Ingester",
   "Update a CSV Ingester": "Update a CSV Ingester",
-  "Please, note that the test will be run on the 50 first lines": "Please, note that the test will be run on the 50 first lines"
-  "workflow_id": "Status",
+  "Please, note that the test will be run on the 50 first lines": "Please, note that the test will be run on the 50 first lines",
   "regardingOf": "In regards of",
   "Uploading image": "Uploading image",
   "Paste": "Paste",

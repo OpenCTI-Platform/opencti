@@ -2442,8 +2442,7 @@
   "Do you want to stop this CSV ingester?": "¿Quieres detener este importador CSV?",
   "Create a CSV Ingester": "Crear un Importador CSV",
   "Update a CSV Ingester": "Actualizar un Importador CSV",
-  "Please, note that the test will be run on the 50 first lines": "Por favor, ten en cuenta que la prueba se ejecutará en las primeras 50 líneas"
-  "workflow_id": "Estado",
+  "Please, note that the test will be run on the 50 first lines": "Por favor, ten en cuenta que la prueba se ejecutará en las primeras 50 líneas",
   "regardingOf": "En cuanto a",
   "WITH": "CON",
   "Pre-query to get data to be used as source entity of the relationship (limited to 5000)": "Consulta previa para obtener los datos que se utilizarán como entidad fuente de la relación (limitada a 5000)",
