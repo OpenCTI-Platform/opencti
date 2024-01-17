@@ -5,7 +5,7 @@ import { isStixMatchFilterGroup_MockableForUnitTests } from '../../../src/utils/
 
 import stixReports from '../../data/stream-events/stream-event-stix2-reports.json';
 import stixIndicators from '../../data/stream-events/stream-event-stix2-indicators.json';
-import stixBundle from '../../data/DATA-TEST-STIX2_v2.json';
+import stixBundle from '../../data/filters/DATA-TEST-FILTERS.json';
 import type { FilterGroup } from '../../../src/generated/graphql';
 
 const stixReport = stixReports[0]; //  confidence 3, revoked=false, labels=report, TLP:TEST

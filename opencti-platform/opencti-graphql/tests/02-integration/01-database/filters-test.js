@@ -1,17 +1,17 @@
 import { describe, expect, it } from 'vitest';
 import { ADMIN_USER, buildStandardUser, testContext } from '../../utils/testQuery';
-import data from '../../data/DATA-TEST-STIX2_v2.json';
+import stixBundle from '../../data/filters/DATA-TEST-FILTERS.json';
 import { isEmptyField } from '../../../src/database/utils';
 import { ENTITY_TYPE_INTRUSION_SET } from '../../../src/schema/stixDomainObject';
-import { isStixMatchFilterGroup } from '../../../src/utils/filtering/filtering-stix/stix-filtering';
+import { isStixMatchFilterGroup_MockableForUnitTests } from '../../../src/utils/filtering/filtering-stix/stix-filtering';
 
 const WHITE_TLP = { standard_id: 'marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9', internal_id: null };
 
 const applyFilters = async (filters, user = ADMIN_USER) => {
   const filteredObjects = [];
-  for (let i = 0; i < data.objects.length; i += 1) {
-    const stix = data.objects[i];
-    const isCurrentlyVisible = await isStixMatchFilterGroup(testContext, user, stix, filters);
+  for (let i = 0; i < stixBundle.objects.length; i += 1) {
+    const stix = stixBundle.objects[i];
+    const isCurrentlyVisible = await isStixMatchFilterGroup_MockableForUnitTests(testContext, user, stix, filters, new Map());
     if (isCurrentlyVisible) {
       filteredObjects.push(stix);
     }
@@ -53,7 +53,7 @@ describe('Filters testing', () => {
       filterGroups: [],
     };
     const filteredObjectsNot = await applyFilters(filtersNot);
-    expect(data.objects.length - filteredObjects.length).toBe(filteredObjectsNot.length);
+    expect(stixBundle.objects.length - filteredObjects.length).toBe(filteredObjectsNot.length);
   });
 
   it('Should marking filters correctly applied for standard user', async () => {
@@ -125,7 +125,7 @@ describe('Filters testing', () => {
       filterGroups: [],
     };
     const filteredObjectsNot = await applyFilters(filtersNot);
-    expect(data.objects.length - filteredObjects.length).toBe(filteredObjectsNot.length);
+    expect(stixBundle.objects.length - filteredObjects.length).toBe(filteredObjectsNot.length);
   });
 
   // assignee_filter
@@ -156,7 +156,7 @@ describe('Filters testing', () => {
       filterGroups: [],
     };
     const filteredObjectsNot = await applyFilters(filtersNot);
-    expect(data.objects.length - filteredObjects.length).toBe(filteredObjectsNot.length);
+    expect(stixBundle.objects.length - filteredObjects.length).toBe(filteredObjectsNot.length);
   });
 
   // revoked
@@ -189,8 +189,8 @@ describe('Filters testing', () => {
     const filteredObjectsNot = await applyFilters(filtersNot);
     expect(filteredObjectsNot.length).toBe(8);
     // With nothing
-    const noConfidenceSize = data.objects.filter((stix) => isEmptyField(stix.confidence)).length;
-    const remainingSize = data.objects.length - filteredObjects.length - filteredObjectsNot.length;
+    const noConfidenceSize = stixBundle.objects.filter((stix) => isEmptyField(stix.confidence)).length;
+    const remainingSize = stixBundle.objects.length - filteredObjects.length - filteredObjectsNot.length;
     expect(remainingSize).toBe(noConfidenceSize);
   });
 
@@ -236,7 +236,7 @@ describe('Filters testing', () => {
       filterGroups: [],
     };
     const filteredObjectsNot = await applyFilters(filtersNot);
-    expect(data.objects.length - filteredObjects.length).toBe(filteredObjectsNot.length);
+    expect(stixBundle.objects.length - filteredObjects.length).toBe(filteredObjectsNot.length);
   });
 
   it('Should from filters correctly applied', async () => {

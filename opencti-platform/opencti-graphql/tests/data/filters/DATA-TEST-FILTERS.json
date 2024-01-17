@@ -1,0 +1,949 @@
+{
+  "type": "bundle",
+  "id": "bundle--8c939929-688f-4a72-badb-3dd1bd6af0fa",
+  "objects": [
+    {
+      "id": "identity--7b82b010-b1c0-4dae-981f-7756374a17df",
+      "type": "identity",
+      "spec_version": "2.1",
+      "name": "ANSSI",
+      "identity_class": "organization",
+      "labels": ["identity"],
+      "created": "2020-02-23T23:40:53.575Z",
+      "modified": "2020-02-27T08:45:39.351Z",
+      "x_opencti_organization_type": "CSIRT",
+      "x_opencti_reliability": "A - Completely reliable"
+    },
+    {
+      "id": "marking-definition--78ca4366-f5b8-4764-83f7-34ce38198e27",
+      "type": "marking-definition",
+      "spec_version": "2.1",
+      "definition_type": "TLP",
+      "x_opencti_order": 3,
+      "definition": {
+        "TLP": "TLP:TEST"
+      },
+      "created": "2020-02-25T09:02:29.040Z",
+      "modified": "2020-02-25T09:02:29.040Z"
+    },
+    {
+      "type": "threat-actor",
+      "spec_version": "2.1",
+      "id": "threat-actor--dfaa8d77-07e2-4e28-b2c8-92e9f7b04428",
+      "created": "2018-11-19T23:39:03.893Z",
+      "modified": "2018-11-19T23:39:03.893Z",
+      "name": "Disco Team Threat Actor Group",
+      "description": "This organized threat actor group operates to create profit from all types of crime.",
+      "threat_actor_types": [
+        "crime-syndicate"
+      ],
+      "aliases": [
+        "Equipo del Discoteca"
+      ],
+      "roles": [
+        "agent"
+      ],
+      "goals": [
+        "Steal Credit Card Information"
+      ],
+      "sophistication": "expert",
+      "resource_level": "organization",
+      "primary_motivation": "personal-gain",
+      "object_marking_refs": ["marking-definition--78ca4366-f5b8-4764-83f7-34ce38198e27"]
+    },
+    {
+      "type": "threat-actor",
+      "spec_version": "2.1",
+      "id": "threat-actor--dfaa8d77-07e2-4e28-b2c8-92e9f7b04429",
+      "created": "2018-11-19T23:39:03.893Z",
+      "modified": "2018-11-19T23:39:03.893Z",
+      "name": "Jhon Threat Actor Individual",
+      "description": "This organized threat actor individual.",
+      "threat_actor_types": [
+        "crime-syndicate"
+      ],
+      "sophistication": "expert",
+      "resource_level": "individual",
+      "created_by_ref": "identity--7b82b010-b1c0-4dae-981f-7756374a17df",
+      "object_marking_refs": ["marking-definition--78ca4366-f5b8-4764-83f7-34ce38198e27"]
+    },
+    {
+      "id": "threat-actor--8e4cce1a-194c-564a-8125-80fe784dff3a",
+      "spec_version": "2.1",
+      "type": "threat-actor",
+      "extensions": {
+        "extension-definition--ea279b3e-5c71-4632-ac08-831c66a786ba": {
+          "extension_type": "new-sdo",
+          "id": "8bb3d3c5-ba1d-4434-82bb-23fe71d2b08b",
+          "type": "Threat-Actor-Individual",
+          "created_at": "2023-07-06T11:39:36.949Z",
+          "updated_at": "2023-07-06T11:39:36.949Z",
+          "is_inferred": false,
+          "creator_ids": [
+            "88ec0c6a-13ce-5e39-b486-354fe4a7084f"
+          ]
+        }
+      },
+      "created": "2023-07-06T11:39:36.949Z",
+      "modified": "2023-07-06T11:39:36.949Z",
+      "revoked": false,
+      "confidence": 75,
+      "lang": "en",
+      "object_marking_refs": [
+        "marking-definition--907bb632-e3c2-52fa-b484-cf166a7d377c"
+      ],
+      "name": "Henry Threat Actor Individual Hacker",
+      "description": "Henry Threat Actor Individual Hacker",
+      "threat_actor_types": [
+        "hacker"
+      ]
+    },
+    {
+      "id": "observed-data--7d258c31-9a26-4543-aecb-2abc5ed366be",
+      "type": "observed-data",
+      "created": "2020-02-25T09:02:29.040Z",
+      "modified": "2020-02-25T09:02:29.040Z",
+      "spec_version": "2.1",
+      "number_observed": 1,
+      "first_observed": "2020-02-25T09:02:29.040Z",
+      "last_observed": "2020-02-25T09:02:29.040Z",
+      "objects": {
+        "0": {
+          "hashes": {
+            "MD5": "757a71f0fbd6b3d993be2a213338d1f2",
+            "SHA-1": "ebe874c468d4b1b78fa4b3a7b3653b45db0da0e7",
+            "SHA-256": "19640e31073a3b929e0ea434652f3d6d560a06bf653f60530141bf4660227e02"
+          },
+          "type": "file"
+        }
+      },
+      "object_refs": ["malware--faa5b705-cf44-4e50-8472-29e5fec43c3c"]
+    },
+    {
+      "id": "identity--5556c4ab-3e5e-4d56-8410-60b29cecbeb6",
+      "type": "identity",
+      "spec_version": "2.1",
+      "name": "Consulting",
+      "identity_class": "class",
+      "labels": ["identity"],
+      "description": "Private entities providing expert advice in a specific field to external entities.",
+      "created": "2020-02-23T23:40:53.582Z",
+      "modified": "2020-03-07T10:48:51.034Z"
+    },
+    {
+      "id": "identity--360f3368-b911-4bb1-a7f9-0a8e4ef4e023",
+      "type": "identity",
+      "spec_version": "2.1",
+      "name": "Information Technologies Consulting",
+      "identity_class": "class",
+      "labels": ["identity"],
+      "description": "Includes Managed Services Providers (MSPs).",
+      "created": "2020-02-23T23:40:53.582Z",
+      "modified": "2020-03-24T07:26:32.754Z"
+    },
+    {
+      "id": "relationship--10e8c71d-a1b4-4e35-bca8-2e4a3785ea04",
+      "type": "relationship",
+      "spec_version": "2.1",
+      "relationship_type": "part-of",
+      "description": "Sector Information Technologies Consulting is a subsector of Consulting",
+      "source_ref": "identity--360f3368-b911-4bb1-a7f9-0a8e4ef4e023",
+      "target_ref": "identity--5556c4ab-3e5e-4d56-8410-60b29cecbeb6",
+      "created": "2020-02-23T23:40:53.582Z",
+      "modified": "2020-02-23T23:40:53.582Z",
+      "start_time": "1900-05-01T00:00:00.000Z",
+      "stop_time": "1900-05-01T00:00:00.000Z"
+    },
+    {
+      "id": "report--a445d22a-db0c-4b5d-9ec8-e9ad0b6dbdd7",
+      "type": "report",
+      "spec_version": "2.1",
+      "name": "A demo report for testing purposes",
+      "labels": ["report"],
+      "description": "Report for testing purposes (random data).",
+      "published": "2020-03-01T14:02:48.111Z",
+      "created": "2020-03-01T14:02:55.327Z",
+      "modified": "2020-03-01T14:09:48.078Z",
+      "report_types": ["threat-report"],
+      "confidence": 3,
+      "created_by_ref": "identity--7b82b010-b1c0-4dae-981f-7756374a17df",
+      "object_marking_refs": ["marking-definition--78ca4366-f5b8-4764-83f7-34ce38198e27"],
+      "object_refs": [
+        "malware--faa5b705-cf44-4e50-8472-29e5fec43c3c",
+        "indicator--10e9a46e-7edb-496b-a167-e27ea3ed0079",
+        "indicator--51640662-9c78-4402-932f-1d4531624723",
+        "indicator--a2f7504a-ea0d-48ed-a18d-cbf352fae6cf",
+        "identity--c017f212-546b-4f21-999d-97d3dc558f7b",
+        "identity--5a510e41-5cb2-45cc-a191-a4844ea0a141",
+        "identity--062f72b1-7caf-4112-ab92-6211f7e7abc8",
+        "attack-pattern--489a7797-01c3-4706-8cd1-ec56a9db3adc",
+        "location--c3794ffd-0e71-4670-aa4d-978b4cbdc72c",
+        "location--5acd8b26-51c2-4608-86ed-e9edd43ad971",
+        "intrusion-set--18854f55-ac7c-4634-bd9a-352dd07613b7",
+        "campaign--92d46985-17a6-4610-8be8-cc70c82ed214",
+        "incident--0b626d41-1d8d-4b96-86fa-ad49cea2cfd4",
+        "attack-pattern--2fc04aa5-48c1-49ec-919a-b88241ef1d17",
+        "observed-data--7d258c31-9a26-4543-aecb-2abc5ed366be",
+        "relationship--e35b3fc1-47f3-4ccb-a8fe-65a0864edd02",
+        "relationship--1fc9b5f8-3822-44c5-85d9-ee3476ca26de",
+        "relationship--b703f822-f6f0-4d96-9c9b-3fc0bb61e69c",
+        "relationship--8d2200a8-f9ef-4345-95d1-ba3ed49606f9",
+        "relationship--eedcea8f-a464-4977-955c-5113aa3c0896",
+        "relationship--2326c8b3-ef45-4978-98d0-0059728275c4",
+        "relationship--9f999fc5-5c74-4964-ab87-ee4c7cdc37a3",
+        "relationship--3541149d-1af6-4688-993c-dc32c7ee3880",
+        "relationship--3e10618c-a301-43db-87f3-91b9e397c30d",
+        "relationship--d861deab-84b6-4dc9-bcce-594e3d1c904f",
+        "relationship--307058e3-84f3-4e9c-8776-2e4fe4d6c6c7"
+      ]
+    },
+    {
+      "id": "note--573f623c-bf68-4f19-9500-d618f0d00af0",
+      "type": "note",
+      "spec_version": "2.1",
+      "abstract": "This is a note",
+      "content": "This is a note about a malware and an intrusion set",
+      "labels": ["note"],
+      "created": "2020-03-02T15:02:55.327Z",
+      "modified": "2020-03-02T15:09:48.078Z",
+      "created_by_ref": "identity--7b82b010-b1c0-4dae-981f-7756374a17df",
+      "object_marking_refs": ["marking-definition--78ca4366-f5b8-4764-83f7-34ce38198e27"],
+      "object_refs": [
+        "malware--faa5b705-cf44-4e50-8472-29e5fec43c3c",
+        "intrusion-set--18854f55-ac7c-4634-bd9a-352dd07613b7",
+        "relationship--9f999fc5-5c74-4964-ab87-ee4c7cdc37a3",
+        "observed-data--7d258c31-9a26-4543-aecb-2abc5ed366be"
+      ]
+    },
+    {
+      "id": "opinion--fab0d63d-e1be-4771-9c14-043b76f71d4f",
+      "type": "opinion",
+      "spec_version": "2.1",
+      "explanation": "This is the explanation of the opinion",
+      "opinion": "strongly-agree",
+      "labels": ["opinion"],
+      "created": "2020-03-02T15:02:55.327Z",
+      "modified": "2020-03-02T15:09:48.078Z",
+      "created_by_ref": "identity--7b82b010-b1c0-4dae-981f-7756374a17df",
+      "object_marking_refs": ["marking-definition--78ca4366-f5b8-4764-83f7-34ce38198e27"],
+      "object_refs": [
+        "incident--0b626d41-1d8d-4b96-86fa-ad49cea2cfd4",
+        "note--573f623c-bf68-4f19-9500-d618f0d00af0",
+        "malware--faa5b705-cf44-4e50-8472-29e5fec43c3c",
+        "intrusion-set--18854f55-ac7c-4634-bd9a-352dd07613b7",
+        "relationship--9f999fc5-5c74-4964-ab87-ee4c7cdc37a3",
+        "observed-data--7d258c31-9a26-4543-aecb-2abc5ed366be"
+      ]
+    },
+    {
+      "id": "malware--faa5b705-cf44-4e50-8472-29e5fec43c3c",
+      "type": "malware",
+      "spec_version": "2.1",
+      "name": "Paradise Ransomware",
+      "labels": ["malware"],
+      "description": "MalwareHunterTeam discovered a new Paradise Ransomware variant that uses the extension _V.0.0.0.1{paradise@all-ransomware.info}.prt and drops a ransom note named PARADISE_README_paradise@all-ransomware.info.txt.",
+      "created": "2019-09-30T16:38:26.000Z",
+      "modified": "2020-01-14T14:01:48.288Z",
+      "kill_chain_phases": [
+        {
+          "kill_chain_name": "mitre-attack",
+          "phase_name": "persistence",
+          "x_opencti_order": 20
+        }
+      ],
+      "external_references": [
+        {
+          "source_name": "ESET Sednit Part 2",
+          "description": "ESET. (2016, October). En Route with Sednit - Part 2: Observing the Comings and Goings. Retrieved November 21, 2016.",
+          "url": "http://www.welivesecurity.com/wp-content/uploads/2016/10/eset-sednit-part-2.pdf"
+        },
+        {
+          "source_name": "mitre-attack",
+          "url": "https://attack.mitre.org/software/S0045",
+          "external_id": "S0045"
+        },
+        {
+          "source_name": "Kaspersky Sofacy",
+          "description": "Kaspersky Lab's Global Research and Analysis Team. (2015, December 4). Sofacy APT hits high profile targets with updated toolset. Retrieved December 10, 2015.",
+          "url": "https://securelist.com/sofacy-apt-hits-high-profile-targets-with-updated-toolset/72924/"
+        }
+      ]
+    },
+    {
+      "id": "malware--c6006dd5-31ca-45c2-8ae0-4e428e712f88",
+      "type": "malware",
+      "spec_version": "2.1",
+      "name": "Spelevo EK",
+      "labels": ["ryuk", "TrickBot", "COVID-19"],
+      "description": "Exploit Kit",
+      "created": "2020-02-04T14:48:31.601Z",
+      "modified": "2020-02-04T14:48:31.601Z",
+      "object_marking_refs": ["marking-definition--78ca4366-f5b8-4764-83f7-34ce38198e27"]
+    },
+    {
+      "id": "software--b0debdba-74e7-4463-ad2a-34334ee66d8d",
+      "type": "software",
+      "name": "Fedora",
+      "spec_version": "2.1",
+      "created": "2021-02-04T14:48:31.601Z",
+      "modified": "2021-02-04T14:48:31.601Z"
+    },
+    {
+      "id": "malware-analysis--8fd6fcd4-81a9-4937-92b8-4e1cbe68f263",
+      "type": "malware-analysis",
+      "product": "Product to analyse",
+      "submitted": "2023-02-15T23:00:00.000Z",
+      "spec_version": "2.1",
+      "result_name": "Spelevo EK analysis",
+      "labels": ["ryuk", "TrickBot", "COVID-19"],
+      "created": "2021-02-04T14:48:31.601Z",
+      "modified": "2021-02-04T14:48:31.601Z",
+      "object_marking_refs": ["marking-definition--78ca4366-f5b8-4764-83f7-34ce38198e27"],
+      "operating_system_ref": "software--b0debdba-74e7-4463-ad2a-34334ee66d8d"
+    },
+    {
+      "id": "relationship--642f6fca-6c5a-495c-9419-9ee0a4a599ee",
+      "type": "relationship",
+      "spec_version": "2.1",
+      "relationship_type": "related-to",
+      "source_ref": "malware-analysis--8fd6fcd4-81a9-4937-92b8-4e1cbe68f263",
+      "target_ref": "malware--c6006dd5-31ca-45c2-8ae0-4e428e712f88",
+      "created": "2022-03-01T14:07:14.316Z",
+      "modified": "2022-03-01T14:07:14.316Z",
+      "created_by_ref": "identity--72de07e8-e6ed-4dfe-b906-1e82fae1d132",
+      "object_marking_refs": ["marking-definition--78ca4366-f5b8-4764-83f7-34ce38198e27"]
+    },
+    {
+      "id": "campaign--92d46985-17a6-4610-8be8-cc70c82ed214",
+      "type": "campaign",
+      "spec_version": "2.1",
+      "name": "A new campaign",
+      "labels": ["campaign"],
+      "description": "A test campaign",
+      "first_seen": "2020-02-27T08:45:43.365Z",
+      "last_seen": "2020-02-27T08:45:43.365Z",
+      "created": "2020-02-29T14:48:31.601Z",
+      "modified": "2020-02-29T14:48:31.601Z",
+      "object_marking_refs": ["marking-definition--78ca4366-f5b8-4764-83f7-34ce38198e27"]
+    },
+    {
+      "id": "incident--0b626d41-1d8d-4b96-86fa-ad49cea2cfd4",
+      "type": "incident",
+      "spec_version": "2.1",
+      "name": "A new incident",
+      "description": "A test incident",
+      "first_seen": "2020-02-27T08:45:47.779Z",
+      "last_seen": "2020-02-27T08:45:47.779Z",
+      "created": "2020-03-25T14:48:31.601Z",
+      "modified": "2020-03-25T14:48:31.601Z",
+      "object_marking_refs": ["marking-definition--78ca4366-f5b8-4764-83f7-34ce38198e27"]
+    },
+    {
+      "id": "identity--72de07e8-e6ed-4dfe-b906-1e82fae1d132",
+      "type": "identity",
+      "spec_version": "2.1",
+      "name": "CIRCL",
+      "x_opencti_aliases": ["Computer Incident", "Incident"],
+      "identity_class": "organization",
+      "labels": ["identity"],
+      "created": "2020-02-25T22:23:20.648Z",
+      "modified": "2020-02-25T22:23:20.648Z",
+      "x_opencti_reliability": "B - Usually reliable"
+    },
+    {
+      "id": "marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9",
+      "type": "marking-definition",
+      "spec_version": "2.1",
+      "definition_type": "TLP",
+      "definition": {
+        "TLP": "TLP:WHITE"
+      },
+      "created": "2020-02-25T09:02:15.077Z"
+    },
+    {
+      "id": "indicator--10e9a46e-7edb-496b-a167-e27ea3ed0079",
+      "type": "indicator",
+      "spec_version": "2.1",
+      "name": "www.xolod-teplo.ru",
+      "labels": ["indicator"],
+      "description": "download location",
+      "pattern_type": "stix",
+      "pattern": "[domain-name:value = 'www.xolod-teplo.ru']",
+      "valid_from": "2016-09-09T05:58:03.000Z",
+      "valid_until": "2017-09-09T05:58:03.000Z",
+      "created": "2020-02-25T22:25:59.717Z",
+      "modified": "2020-02-25T22:25:59.717Z",
+      "created_by_ref": "identity--72de07e8-e6ed-4dfe-b906-1e82fae1d132",
+      "object_marking_refs": ["marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9"]
+    },
+    {
+      "id": "indicator--51640662-9c78-4402-932f-1d4531624723",
+      "type": "indicator",
+      "spec_version": "2.1",
+      "name": "www.one-clap.jp",
+      "labels": ["indicator"],
+      "description": "download location",
+      "pattern_type": "stix",
+      "pattern": "[domain-name:value = 'www.one-clap.jp']",
+      "valid_from": "2016-09-09T05:58:02.000Z",
+      "valid_until": "2017-09-09T05:58:02.000Z",
+      "created": "2020-02-25T22:25:59.714Z",
+      "modified": "2020-02-25T22:25:59.714Z",
+      "created_by_ref": "identity--72de07e8-e6ed-4dfe-b906-1e82fae1d132",
+      "object_marking_refs": ["marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9"]
+    },
+    {
+      "type": "sighting",
+      "spec_version": "2.1",
+      "id": "sighting--ee20065d-2555-424f-ad9e-0f8428623c75",
+      "created": "2016-08-06T20:08:31.000Z",
+      "modified": "2016-09-06T20:08:31.000Z",
+      "sighting_of_ref": "indicator--51640662-9c78-4402-932f-1d4531624723",
+      "observed_data_refs": ["observed-data--7d258c31-9a26-4543-aecb-2abc5ed366be"],
+      "where_sighted_refs": ["identity--72de07e8-e6ed-4dfe-b906-1e82fae1d132"],
+      "first_seen": "2016-08-06T20:08:31.000Z",
+      "last_seen": "2016-08-07T20:08:31.000Z",
+      "count": 12,
+      "x_opencti_negative": true
+    },
+    {
+      "id": "indicator--a2f7504a-ea0d-48ed-a18d-cbf352fae6cf",
+      "type": "indicator",
+      "spec_version": "2.1",
+      "name": "2a0169c72c84e6d3fa49af701fd46ee7aaf1d1d9e107798d93a6ca8df5d25957",
+      "labels": ["indicator"],
+      "description": "CMSTAR Variants Identified in Phishing Campaign",
+      "pattern_type": "stix",
+      "pattern": "[file:hashes.'SHA-256' = '2a0169c72c84e6d3fa49af701fd46ee7aaf1d1d9e107798d93a6ca8df5d25957']",
+      "valid_from": "2017-09-28T20:25:13.000Z",
+      "valid_until": "2018-09-28T20:25:13.000Z",
+      "created": "2020-02-25T22:25:17.453Z",
+      "modified": "2020-02-25T22:25:17.453Z",
+      "created_by_ref": "identity--72de07e8-e6ed-4dfe-b906-1e82fae1d132",
+      "object_marking_refs": ["marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9"]
+    },
+    {
+      "id": "sighting--579a46af-a339-400d-809e-b92101fe7de8",
+      "type": "sighting",
+      "spec_version": "2.1",
+      "created": "2016-08-06T20:08:31.000Z",
+      "modified": "2016-09-06T20:08:31.000Z",
+      "sighting_of_ref": "indicator--a2f7504a-ea0d-48ed-a18d-cbf352fae6cf",
+      "where_sighted_refs": ["location--5acd8b26-51c2-4608-86ed-e9edd43ad971"],
+      "first_seen": "2016-08-06T20:08:31.000Z",
+      "last_seen": "2016-08-07T20:08:31.000Z",
+      "count": 8,
+      "x_opencti_negative": false
+    },
+    {
+      "id": "identity--c017f212-546b-4f21-999d-97d3dc558f7b",
+      "type": "identity",
+      "spec_version": "2.1",
+      "name": "Allied Universal",
+      "identity_class": "organization",
+      "labels": ["identity"],
+      "description": "US-based security company.",
+      "created": "2020-02-04T15:10:55.068Z",
+      "modified": "2020-02-04T15:10:55.068Z",
+      "object_marking_refs": ["marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9"]
+    },
+    {
+      "id": "identity--d37acc64-4a6f-4dc2-879a-a4c138d0a27f",
+      "type": "identity",
+      "spec_version": "2.1",
+      "name": "John Doe",
+      "identity_class": "individual",
+      "labels": ["identity"],
+      "created": "2020-03-27T08:39:45.676Z",
+      "modified": "2020-03-27T08:39:45.676Z"
+    },
+    {
+      "id": "relationship--10f2228d-cc68-45e3-bce2-53b1841b01c2",
+      "type": "relationship",
+      "spec_version": "2.1",
+      "relationship_type": "part-of",
+      "description": "John Doe works for Allied Universal",
+      "source_ref": "identity--d37acc64-4a6f-4dc2-879a-a4c138d0a27f",
+      "target_ref": "identity--c017f212-546b-4f21-999d-97d3dc558f7b",
+      "created": "2020-03-28T02:42:53.582Z",
+      "modified": "2020-02-28T02:42:53.582Z",
+      "start_time": "1900-02-01T00:00:00.000Z",
+      "stop_time": "1900-02-01T00:00:00.000Z"
+    },
+    {
+      "id": "relationship--9315a197-fe15-4c96-b77c-edcaa5e22ecb",
+      "type": "relationship",
+      "spec_version": "2.1",
+      "relationship_type": "part-of",
+      "description": "Allied Universal is part of the Consulting sector",
+      "source_ref": "identity--c017f212-546b-4f21-999d-97d3dc558f7b",
+      "target_ref": "identity--5556c4ab-3e5e-4d56-8410-60b29cecbeb6",
+      "created": "2020-02-25T23:42:53.582Z",
+      "modified": "2020-02-25T23:42:53.582Z",
+      "start_time": "1900-03-01T00:00:00.000Z",
+      "stop_time": "1900-03-01T00:00:00.000Z"
+    },
+    {
+      "id": "identity--ae876e2d-4927-43df-af22-e36c9487fd8d",
+      "type": "identity",
+      "spec_version": "2.1",
+      "name": "ANSSI - Sous-direction Opérations",
+      "identity_class": "organization",
+      "labels": ["identity"],
+      "created": "2020-02-23T23:40:53.575Z",
+      "modified": "2020-02-27T08:45:39.351Z",
+      "x_opencti_organization_type": "CSIRT"
+    },
+    {
+      "id": "relationship--261688c1-0468-4be4-be8f-f70e463ab6ed",
+      "type": "relationship",
+      "spec_version": "2.1",
+      "relationship_type": "part-of",
+      "description": "ANSSI - Sous-direction Opérations is part of ANSSI",
+      "source_ref": "identity--ae876e2d-4927-43df-af22-e36c9487fd8d",
+      "target_ref": "identity--7b82b010-b1c0-4dae-981f-7756374a17df",
+      "created": "2020-02-25T23:42:53.582Z",
+      "modified": "2020-02-25T23:42:53.582Z",
+      "start_time": "1900-03-01T00:00:00.000Z",
+      "stop_time": "1900-03-01T00:00:00.000Z"
+    },
+    {
+      "id": "identity--5a510e41-5cb2-45cc-a191-a4844ea0a141",
+      "type": "identity",
+      "spec_version": "2.1",
+      "name": "Southwire",
+      "identity_class": "organization",
+      "labels": ["identity"],
+      "description": "Leading wire and cables US-based manufacturer.",
+      "created": "2020-01-08T16:05:17.311Z",
+      "modified": "2020-01-08T16:05:17.311Z",
+      "object_marking_refs": ["marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9"]
+    },
+    {
+      "id": "identity--062f72b1-7caf-4112-ab92-6211f7e7abc8",
+      "type": "identity",
+      "spec_version": "2.1",
+      "name": "Energy",
+      "identity_class": "class",
+      "labels": ["identity"],
+      "description": "Public and private entities operating to extract, store, transport and process fuel, entities managing energy plants and energy storage and distribution and entities managing fuel waste.",
+      "created": "2020-02-23T23:40:53.576Z",
+      "modified": "2020-02-23T23:40:53.576Z"
+    },
+    {
+      "id": "identity--c78cb6e5-0c4b-4611-8297-d1b8b55e40b5",
+      "type": "identity",
+      "spec_version": "2.1",
+      "name": "The MITRE Corporation",
+      "identity_class": "organization",
+      "labels": ["identity"],
+      "created": "2017-06-01T00:00:00.000Z",
+      "modified": "2017-06-01T00:00:00.000Z"
+    },
+    {
+      "id": "marking-definition--fa42a846-8d90-4e51-bc29-71d5b4802168",
+      "type": "marking-definition",
+      "spec_version": "2.1",
+      "definition_type": "statement",
+      "definition": {
+        "statement": "Copyright 2017, The MITRE Corporation"
+      },
+      "created": "2017-06-01T00:00:00.000Z",
+      "modified": "2020-02-25T09:07:15.423Z"
+    },
+    {
+      "id": "attack-pattern--489a7797-01c3-4706-8cd1-ec56a9db3adc",
+      "type": "attack-pattern",
+      "spec_version": "2.1",
+      "x_mitre_id": "T1369",
+      "name": "Spear phishing messages with malicious links",
+      "labels": ["attack-pattern"],
+      "description": "This technique has been deprecated. Please see ATT&CK's Initial Access and Execution tactics for replacement techniques.\n\nEmails with malicious links are designed to get a user to click on the link in order to deliver malware payloads. (Citation: GoogleDrive Phishing) (Citation: RSASEThreat)",
+      "created": "2017-12-14T16:46:06.044Z",
+      "modified": "2018-10-17T00:14:20.652Z",
+      "created_by_ref": "identity--c78cb6e5-0c4b-4611-8297-d1b8b55e40b5",
+      "object_marking_refs": ["marking-definition--fa42a846-8d90-4e51-bc29-71d5b4802168"],
+      "kill_chain_phases": [
+        {
+          "kill_chain_name": "mitre-pre-attack",
+          "phase_name": "launch",
+          "x_opencti_order": 0
+        }
+      ],
+      "external_references": [
+        {
+          "source_name": "mitre-pre-attack",
+          "url": "https://attack.mitre.org/techniques/T1369",
+          "external_id": "T1369"
+        }
+      ]
+    },
+    {
+      "id": "location--c3794ffd-0e71-4670-aa4d-978b4cbdc72c",
+      "type": "location",
+      "spec_version": "2.1",
+      "name": "Hietzing",
+      "created": "2020-02-29T21:35:28.489Z",
+      "modified": "2020-02-29T21:35:28.489Z",
+      "x_opencti_location_type": "City"
+    },
+    {
+      "id": "location--861af688-581e-4571-a0d9-955c9096fb42",
+      "type": "location",
+      "spec_version": "2.1",
+      "name": "Bretagne",
+      "description": "Administrative Area",
+      "created": "2019-10-26T14:55:55.895Z",
+      "modified": "2020-02-27T08:45:38.165Z",
+      "x_opencti_location_type": "Administrative-Area"
+    },
+    {
+      "id": "location--5acd8b26-51c2-4608-86ed-e9edd43ad971",
+      "type": "location",
+      "spec_version": "2.1",
+      "name": "France",
+      "description": "France",
+      "created": "2019-10-26T14:55:55.895Z",
+      "modified": "2020-02-27T08:45:38.165Z",
+      "x_opencti_location_type": "Country"
+    },
+    {
+      "id": "location--6bf1f67a-6a55-4e4d-b237-6cdda97baef2",
+      "type": "location",
+      "spec_version": "2.1",
+      "name": "Western Europe",
+      "description": "Western Europe",
+      "created": "2019-10-26T14:55:55.895Z",
+      "modified": "2020-02-27T08:45:38.165Z",
+      "created_by_ref": "identity--7b82b010-b1c0-4dae-981f-7756374a17df",
+      "x_opencti_location_type": "Region"
+    },
+    {
+      "id": "relationship--b6d7f03d-7bb9-4ddf-9695-8933075b95a9",
+      "type": "relationship",
+      "spec_version": "2.1",
+      "relationship_type": "located-at",
+      "source_ref": "location--5acd8b26-51c2-4608-86ed-e9edd43ad971",
+      "target_ref": "location--6bf1f67a-6a55-4e4d-b237-6cdda97baef2",
+      "created": "2020-03-01T14:07:14.316Z",
+      "modified": "2020-03-01T14:07:14.316Z",
+      "created_by_ref": "identity--7b82b010-b1c0-4dae-981f-7756374a17df",
+      "object_marking_refs": ["marking-definition--78ca4366-f5b8-4764-83f7-34ce38198e27"]
+    },
+    {
+      "id": "relationship--f6c3a68d-bfb5-48ea-a9b7-59db3465eac1",
+      "type": "relationship",
+      "spec_version": "2.1",
+      "relationship_type": "located-at",
+      "source_ref": "location--861af688-581e-4571-a0d9-955c9096fb42",
+      "target_ref": "location--5acd8b26-51c2-4608-86ed-e9edd43ad971",
+      "created": "2020-03-01T14:07:14.316Z",
+      "modified": "2020-03-01T14:07:14.316Z",
+      "created_by_ref": "identity--7b82b010-b1c0-4dae-981f-7756374a17df",
+      "object_marking_refs": ["marking-definition--78ca4366-f5b8-4764-83f7-34ce38198e27"]
+    },
+    {
+      "id": "location--bc9f5d2c-7209-4b24-903e-587c7cf00ab1",
+      "type": "location",
+      "spec_version": "2.1",
+      "name": "Europe",
+      "identity_class": "organization",
+      "labels": ["identity"],
+      "description": "Europe",
+      "created": "2019-10-26T14:55:55.895Z",
+      "modified": "2020-02-27T08:45:38.165Z",
+      "created_by_ref": "identity--7b82b010-b1c0-4dae-981f-7756374a17df",
+      "x_opencti_location_type": "Region"
+    },
+    {
+      "id": "relationship--ba52fced-422a-4bee-816a-85aa21c9eaca",
+      "type": "relationship",
+      "spec_version": "2.1",
+      "relationship_type": "located-at",
+      "source_ref": "location--6bf1f67a-6a55-4e4d-b237-6cdda97baef2",
+      "target_ref": "location--bc9f5d2c-7209-4b24-903e-587c7cf00ab1",
+      "created": "2020-03-01T14:07:14.316Z",
+      "modified": "2020-03-01T14:07:14.316Z",
+      "created_by_ref": "identity--7b82b010-b1c0-4dae-981f-7756374a17df",
+      "object_marking_refs": ["marking-definition--78ca4366-f5b8-4764-83f7-34ce38198e27"]
+    },
+    {
+      "id": "intrusion-set--18854f55-ac7c-4634-bd9a-352dd07613b7",
+      "type": "intrusion-set",
+      "spec_version": "2.1",
+      "name": "APT41",
+      "aliases": ["Winnti"],
+      "labels": ["intrusion-set"],
+      "description": "[APT41](https://attack.mitre.org/groups/G0096) is a group that carries out Chinese state-sponsored espionage activity in addition to financially motivated activity. [APT41](https://attack.mitre.org/groups/G0096) has been active since as early as 2012. The group has been observed targeting healthcare, telecom, technology, and video game industries in 14 countries.(Citation: FireEye APT41 Aug 2019)",
+      "created": "2019-09-23T13:43:36.945Z",
+      "modified": "2019-10-14T21:52:59.301Z",
+      "x_opencti_id": "82316ffd-a0ec-4519-a454-6566f8f5676c",
+      "created_by_ref": "identity--c78cb6e5-0c4b-4611-8297-d1b8b55e40b5",
+      "object_marking_refs": ["marking-definition--fa42a846-8d90-4e51-bc29-71d5b4802168"],
+      "external_references": [
+        {
+          "source_name": "FireEye APT41 Aug 2019",
+          "description": "Fraser, N., et al. (2019, August 7). Double DragonAPT41, a dual espionage and cyber crime operation APT41. Retrieved September 23, 2019.",
+          "url": "https://content.fireeye.com/apt-41/rpt-apt41"
+        },
+        {
+          "source_name": "mitre-attack",
+          "url": "https://attack.mitre.org/groups/G0096",
+          "external_id": "G0096"
+        }
+      ]
+    },
+    {
+      "id": "attack-pattern--2fc04aa5-48c1-49ec-919a-b88241ef1d17",
+      "type": "attack-pattern",
+      "spec_version": "2.1",
+      "x_opencti_external_id": "T1368",
+      "name": "Spear phishing messages with malicious links",
+      "labels": ["attack-pattern"],
+      "description": "This technique has been deprecated. Please see ATT&CK's Initial Access and Execution tactics for replacement techniques.\n\nEmails with text only phishing messages do not contain any attachments or links to websites. They are designed to get a user to take a follow on action such as calling a phone number or wiring money. They can also be used to elicit an email response to confirm existence of an account or user. (Citation: Paypal Phone Scam)",
+      "created": "2017-12-14T16:46:06.044Z",
+      "modified": "2018-10-17T00:14:20.652Z",
+      "created_by_ref": "identity--c78cb6e5-0c4b-4611-8297-d1b8b55e40b5",
+      "object_marking_refs": ["marking-definition--fa42a846-8d90-4e51-bc29-71d5b4802168"],
+      "kill_chain_phases": [
+        {
+          "kill_chain_name": "mitre-pre-attack",
+          "phase_name": "launch",
+          "x_opencti_order": 0
+        }
+      ],
+      "external_references": [
+        {
+          "source_name": "mitre-pre-attack",
+          "url": "https://attack.mitre.org/techniques/T1368",
+          "external_id": "T1368"
+        }
+      ]
+    },
+    {
+      "id": "course-of-action--ae56a49d-5281-45c5-ab95-70a1439c338e",
+      "type": "course-of-action",
+      "spec_version": "2.1",
+      "name": "Compile After Delivery Mitigation",
+      "labels": ["course-of-action"],
+      "description": "This type of technique cannot be easily mitigated with preventive controls or patched since it is based on the abuse of operating system design features. For example, blocking all file compilation may have unintended side effects, such as preventing legitimate OS frameworks and code development mechanisms from operating properly. Consider removing compilers if not needed, otherwise efforts should be focused on preventing adversary tools from running earlier in the chain of activity and on identifying subsequent malicious behavior.\n\nIdentify unnecessary system utilities or potentially malicious software that may be used to decrypt, deobfuscate, decode, and compile files or information, and audit and/or block them by using whitelisting (Citation: Beechey 2010) tools, like AppLocker, (Citation: Windows Commands JPCERT) (Citation: NSA MS AppLocker) or Software Restriction Policies (Citation: Corio 2008) where appropriate. (Citation: TechNet Applocker vs SRP)",
+      "created": "2019-04-25T20:53:07.814Z",
+      "modified": "2019-07-24T14:18:49.192Z",
+      "x_opencti_id": "326b7708-d4cf-4020-8cd1-9726b99895db"
+    },
+    {
+      "id": "relationship--efc9bbb8-e606-4fb1-83ae-d74690fd0416",
+      "type": "relationship",
+      "relationship_type": "mitigates",
+      "source_ref": "course-of-action--ae56a49d-5281-45c5-ab95-70a1439c338e",
+      "target_ref": "attack-pattern--2fc04aa5-48c1-49ec-919a-b88241ef1d17",
+      "created": "2019-04-25T20:53:08.446Z",
+      "modified": "2019-07-24T14:18:49.366Z",
+      "start_time": "2020-02-26T00:51:35.000Z",
+      "stop_time": "2020-02-26T00:51:35.000Z",
+      "confidence": 1
+    },
+    {
+      "id": "relationship--e35b3fc1-47f3-4ccb-a8fe-65a0864edd02",
+      "type": "relationship",
+      "spec_version": "2.1",
+      "relationship_type": "uses",
+      "source_ref": "malware--faa5b705-cf44-4e50-8472-29e5fec43c3c",
+      "target_ref": "attack-pattern--489a7797-01c3-4706-8cd1-ec56a9db3adc",
+      "created": "2020-03-01T14:05:20.065Z",
+      "modified": "2020-03-01T14:05:20.065Z",
+      "start_time": "2020-02-29T23:00:00.000Z",
+      "stop_time": "2020-02-29T23:00:00.000Z",
+      "confidence": 3
+    },
+    {
+      "id": "relationship--6d59077d-a2fb-4217-846f-c7cf038672fa",
+      "type": "relationship",
+      "spec_version": "2.1",
+      "relationship_type": "attributed-to",
+      "source_ref": "campaign--92d46985-17a6-4610-8be8-cc70c82ed214",
+      "target_ref": "intrusion-set--18854f55-ac7c-4634-bd9a-352dd07613b7",
+      "created": "2020-03-02T14:10:20.065Z",
+      "modified": "2020-03-02T14:10:20.065Z",
+      "start_time": "2020-03-01T23:01:00.000Z",
+      "stop_time": "2020-03-01T23:01:00.000Z",
+      "confidence": 3
+    },
+    {
+      "id": "relationship--55119cba-8fbe-450b-bb47-3af8db29c187",
+      "type": "relationship",
+      "spec_version": "2.1",
+      "relationship_type": "attributed-to",
+      "source_ref": "incident--0b626d41-1d8d-4b96-86fa-ad49cea2cfd4",
+      "target_ref": "campaign--92d46985-17a6-4610-8be8-cc70c82ed214",
+      "created": "2020-03-25T14:10:20.065Z",
+      "modified": "2020-03-25T14:10:20.065Z",
+      "start_time": "2020-02-27T08:45:47.779Z",
+      "stop_time": "2020-02-27T08:45:47.779Z",
+      "confidence": 2
+    },
+    {
+      "id": "relationship--e50087ed-906a-4d9f-b5c0-39c1d23ca0b2",
+      "type": "relationship",
+      "spec_version": "2.1",
+      "relationship_type": "related-to",
+      "source_ref": "observed-data--7d258c31-9a26-4543-aecb-2abc5ed366be",
+      "target_ref": "incident--0b626d41-1d8d-4b96-86fa-ad49cea2cfd4",
+      "created": "2020-03-23T10:25:15.932Z",
+      "modified": "2020-03-23T10:25:15.932Z",
+      "start_time": "2020-03-22T23:00:00.000Z",
+      "stop_time": "2020-03-22T23:00:00.000Z",
+      "confidence": 1
+    },
+    {
+      "id": "relationship--1fc9b5f8-3822-44c5-85d9-ee3476ca26de",
+      "type": "relationship",
+      "spec_version": "2.1",
+      "relationship_type": "uses",
+      "source_ref": "malware--faa5b705-cf44-4e50-8472-29e5fec43c3c",
+      "target_ref": "attack-pattern--2fc04aa5-48c1-49ec-919a-b88241ef1d17",
+      "created": "2020-03-01T14:05:16.797Z",
+      "modified": "2020-03-01T14:05:16.797Z",
+      "start_time": "2020-02-29T22:30:00.000Z",
+      "stop_time": "2020-02-29T22:30:00.000Z",
+      "confidence": 30
+    },
+    {
+      "id": "relationship--b703f822-f6f0-4d96-9c9b-3fc0bb61e69c",
+      "type": "relationship",
+      "spec_version": "2.1",
+      "relationship_type": "indicates",
+      "source_ref": "indicator--a2f7504a-ea0d-48ed-a18d-cbf352fae6cf",
+      "target_ref": "intrusion-set--18854f55-ac7c-4634-bd9a-352dd07613b7",
+      "created": "2020-03-01T14:06:06.256Z",
+      "modified": "2020-03-01T14:06:06.256Z",
+      "start_time": "2020-02-29T23:00:00.000Z",
+      "stop_time": "2020-02-29T23:00:00.000Z",
+      "confidence": 20
+    },
+    {
+      "id": "relationship--c32d553c-e22f-40ce-93e6-eb62dd145f3b",
+      "type": "relationship",
+      "spec_version": "2.1",
+      "relationship_type": "indicates",
+      "source_ref": "indicator--a2f7504a-ea0d-48ed-a18d-cbf352fae6cf",
+      "target_ref": "relationship--e35b3fc1-47f3-4ccb-a8fe-65a0864edd02",
+      "created": "2020-03-02T14:06:06.256Z",
+      "modified": "2020-03-02T14:06:06.256Z",
+      "start_time": "2020-01-29T23:00:00.000Z",
+      "stop_time": "2020-01-29T23:00:00.000Z",
+      "confidence": 30
+    },
+    {
+      "id": "relationship--8d2200a8-f9ef-4345-95d1-ba3ed49606f9",
+      "type": "relationship",
+      "spec_version": "2.1",
+      "relationship_type": "indicates",
+      "source_ref": "indicator--51640662-9c78-4402-932f-1d4531624723",
+      "target_ref": "relationship--1fc9b5f8-3822-44c5-85d9-ee3476ca26de",
+      "created": "2020-03-01T14:05:28.926Z",
+      "modified": "2020-03-01T14:05:28.926Z",
+      "start_time": "2020-02-29T23:00:00.000Z",
+      "stop_time": "2020-02-29T23:00:00.000Z",
+      "confidence": 20
+    },
+    {
+      "id": "relationship--eedcea8f-a464-4977-955c-5113aa3c0896",
+      "type": "relationship",
+      "spec_version": "2.1",
+      "relationship_type": "indicates",
+      "source_ref": "indicator--10e9a46e-7edb-496b-a167-e27ea3ed0079",
+      "target_ref": "relationship--1fc9b5f8-3822-44c5-85d9-ee3476ca26de",
+      "created": "2020-03-01T14:05:40.487Z",
+      "modified": "2020-03-01T14:05:40.487Z",
+      "start_time": "2020-02-29T23:00:00.000Z",
+      "stop_time": "2020-02-29T23:00:00.000Z",
+      "confidence": 30
+    },
+    {
+      "id": "relationship--2326c8b3-ef45-4978-98d0-0059728275c4",
+      "type": "relationship",
+      "spec_version": "2.1",
+      "relationship_type": "targets",
+      "source_ref": "intrusion-set--18854f55-ac7c-4634-bd9a-352dd07613b7",
+      "target_ref": "location--c3794ffd-0e71-4670-aa4d-978b4cbdc72c",
+      "created": "2020-03-01T14:04:49.475Z",
+      "modified": "2020-03-01T14:04:49.475Z",
+      "start_time": "2020-02-29T23:00:00.000Z",
+      "stop_time": "2020-02-29T23:00:00.000Z",
+      "confidence": 30
+    },
+    {
+      "id": "relationship--9f999fc5-5c74-4964-ab87-ee4c7cdc37a3",
+      "type": "relationship",
+      "spec_version": "2.1",
+      "relationship_type": "uses",
+      "source_ref": "intrusion-set--18854f55-ac7c-4634-bd9a-352dd07613b7",
+      "target_ref": "malware--faa5b705-cf44-4e50-8472-29e5fec43c3c",
+      "created": "2020-03-01T14:04:45.334Z",
+      "modified": "2020-03-01T14:04:45.334Z",
+      "start_time": "2020-02-28T23:00:00.000Z",
+      "stop_time": "2020-02-29T23:00:00.000Z",
+      "confidence": 30
+    },
+    {
+      "id": "relationship--3541149d-1af6-4688-993c-dc32c7ee3880",
+      "type": "relationship",
+      "spec_version": "2.1",
+      "relationship_type": "targets",
+      "source_ref": "intrusion-set--18854f55-ac7c-4634-bd9a-352dd07613b7",
+      "target_ref": "identity--c017f212-546b-4f21-999d-97d3dc558f7b",
+      "created": "2020-03-01T14:08:04.901Z",
+      "modified": "2020-03-01T14:08:04.901Z",
+      "start_time": "2020-02-29T23:00:00.000Z",
+      "stop_time": "2020-02-29T23:00:00.000Z",
+      "confidence": 30,
+      "created_by_ref": "identity--7b82b010-b1c0-4dae-981f-7756374a17df",
+      "object_marking_refs": ["marking-definition--78ca4366-f5b8-4764-83f7-34ce38198e27"]
+    },
+    {
+      "id": "relationship--3e10618c-a301-43db-87f3-91b9e397c30d",
+      "type": "relationship",
+      "spec_version": "2.1",
+      "relationship_type": "located-at",
+      "source_ref": "location--c3794ffd-0e71-4670-aa4d-978b4cbdc72c",
+      "target_ref": "location--5acd8b26-51c2-4608-86ed-e9edd43ad971",
+      "created": "2020-03-01T14:07:14.316Z",
+      "modified": "2020-03-01T14:07:14.316Z",
+      "start_time": "2020-02-29T23:00:00.000Z",
+      "stop_time": "2020-02-29T23:00:00.000Z",
+      "confidence": 30,
+      "created_by_ref": "identity--7b82b010-b1c0-4dae-981f-7756374a17df",
+      "object_marking_refs": ["marking-definition--78ca4366-f5b8-4764-83f7-34ce38198e27"]
+    },
+    {
+      "id": "relationship--d861deab-84b6-4dc9-bcce-594e3d1c904f",
+      "type": "relationship",
+      "spec_version": "2.1",
+      "relationship_type": "part-of",
+      "source_ref": "identity--5a510e41-5cb2-45cc-a191-a4844ea0a141",
+      "target_ref": "identity--062f72b1-7caf-4112-ab92-6211f7e7abc8",
+      "created": "2020-03-01T14:08:24.617Z",
+      "modified": "2020-03-01T14:08:24.617Z",
+      "start_time": "2020-02-29T23:00:00.000Z",
+      "stop_time": "2020-02-29T23:00:00.000Z",
+      "confidence": 30,
+      "created_by_ref": "identity--7b82b010-b1c0-4dae-981f-7756374a17df",
+      "object_marking_refs": ["marking-definition--78ca4366-f5b8-4764-83f7-34ce38198e27"]
+    },
+    {
+      "id": "relationship--307058e3-84f3-4e9c-8776-2e4fe4d6c6c7",
+      "type": "relationship",
+      "spec_version": "2.1",
+      "relationship_type": "part-of",
+      "source_ref": "identity--c017f212-546b-4f21-999d-97d3dc558f7b",
+      "target_ref": "identity--5a510e41-5cb2-45cc-a191-a4844ea0a141",
+      "created": "2020-03-01T14:08:08.771Z",
+      "modified": "2020-03-01T14:08:08.771Z",
+      "start_time": "2020-02-29T23:00:00.000Z",
+      "stop_time": "2020-02-29T23:00:00.000Z",
+      "created_by_ref": "identity--7b82b010-b1c0-4dae-981f-7756374a17df",
+      "object_marking_refs": ["marking-definition--78ca4366-f5b8-4764-83f7-34ce38198e27"]
+    }
+  ]
+}
