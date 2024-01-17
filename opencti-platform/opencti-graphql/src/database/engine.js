@@ -141,8 +141,6 @@ const MAX_JS_PARAMS = 65536; // Too prevent Maximum call stack size exceeded
 const MAX_SEARCH_SIZE = 5000;
 export const ROLE_FROM = 'from';
 export const ROLE_TO = 'to';
-const NO_MAPPING_FOUND_ERROR = 'No mapping found';
-const NO_SUCH_INDEX_ERROR = 'no such index';
 const UNIMPACTED_ENTITIES_ROLE = [
   `${RELATION_CREATED_BY}_${ROLE_TO}`,
   `${RELATION_OBJECT_MARKING}_${ROLE_TO}`,
@@ -2482,25 +2480,7 @@ export const elPaginate = async (context, user, indexName, options = {}) => {
     })
     .catch(
       /* v8 ignore next */ (err) => {
-        // Because we create the mapping at element creation
-        // We log the error only if its not a mapping not found error
-        let isTechnicalError = true;
-        if (isNotEmptyField(err.meta?.body)) {
-          let errorCauses = err.meta.body?.error?.root_cause ?? [];
-          if (typeof errorCauses === 'object') {
-            errorCauses = R.values(errorCauses);
-          }
-          const invalidMappingCauses = errorCauses.map((r) => r.reason ?? '')
-            .filter((r) => R.includes(NO_MAPPING_FOUND_ERROR, r) || R.includes(NO_SUCH_INDEX_ERROR, r));
-          const numberOfCauses = errorCauses.length;
-          isTechnicalError = numberOfCauses === 0 || numberOfCauses > invalidMappingCauses.length;
-        }
-        // If uncontrolled error, log and propagate
-        if (isTechnicalError) {
-          throw DatabaseError('Fail to execute engine pagination', { cause: err, query });
-        } else {
-          return connectionFormat ? buildPagination(0, null, [], 0) : [];
-        }
+        throw DatabaseError('Fail to execute engine pagination', { cause: err, query });
       }
     );
 };

@@ -2371,28 +2371,23 @@ const buildInnerRelation = (from, to, type) => {
 const ALIGN_OLDEST = 'oldest';
 const ALIGN_NEWEST = 'newest';
 const computeExtendedDateValues = (newValue, currentValue, mode) => {
-  if (isNotEmptyField(newValue)) {
-    const newValueDate = moment(newValue);
-    // If a first_seen already exists
-    if (isNotEmptyField(currentValue)) {
-      // If the new first_seen is before the existing one, we update
-      const currentValueDate = moment(currentValue);
-      if (mode === ALIGN_OLDEST) {
-        if (newValueDate.isBefore(currentValueDate)) {
-          return newValueDate.utc().toISOString();
-        }
+  const newValueDate = moment(newValue);
+  if (isNotEmptyField(currentValue)) {
+    const currentValueDate = moment(currentValue);
+    if (mode === ALIGN_OLDEST) {
+      if (newValueDate.isBefore(currentValueDate)) {
+        return { updated: true, date: newValueDate.utc().toISOString() };
       }
-      if (mode === ALIGN_NEWEST) {
-        if (newValueDate.isAfter(currentValueDate)) {
-          return newValueDate.utc().toISOString();
-        }
+      return { updated: false, date: currentValueDate.utc().toISOString() };
+    }
+    if (mode === ALIGN_NEWEST) {
+      if (newValueDate.isAfter(currentValueDate)) {
+        return { updated: true, date: newValueDate.utc().toISOString() };
       }
-      // If no first_seen exists, we update
-    } else {
-      return newValueDate.utc().toISOString();
+      return { updated: false, date: currentValueDate.utc().toISOString() };
     }
   }
-  return null;
+  return { updated: true, date: newValueDate.utc().toISOString() };
 };
 const buildAttributeUpdate = (isFullSync, attribute, currentData, inputData) => {
   const inputs = [];
@@ -2414,23 +2409,6 @@ const buildAttributeUpdate = (isFullSync, attribute, currentData, inputData) => 
     inputs.push({ key: fieldKey, value: [inputData] });
   }
   return inputs;
-};
-const buildTimeUpdate = (input, instance, startField, stopField) => {
-  const patch = {};
-  // If not coming from a rule, compute extended time.
-  if (input[startField]) {
-    const extendedStart = computeExtendedDateValues(input[startField], instance[startField], ALIGN_OLDEST);
-    if (extendedStart) {
-      patch[startField] = extendedStart;
-    }
-  }
-  if (input[stopField]) {
-    const extendedStop = computeExtendedDateValues(input[stopField], instance[stopField], ALIGN_NEWEST);
-    if (extendedStop) {
-      patch[stopField] = extendedStop;
-    }
-  }
-  return patch;
 };
 const buildRelationDeduplicationFilters = (input) => {
   const filters = [];
@@ -2515,25 +2493,28 @@ const upsertElement = async (context, user, element, type, basePatch, opts = {})
   }
   // Upsert observed data count and times extensions
   if (type === ENTITY_TYPE_CONTAINER_OBSERVED_DATA) {
-    // Upsert the count only if a time patch is applied.
-    const timePatch = buildTimeUpdate(updatePatch, element, 'first_observed', 'last_observed');
-    if (isNotEmptyField(timePatch)) {
-      updatePatch.first_observed = timePatch.first_observed ?? updatePatch.first_observed;
-      updatePatch.last_observed = timePatch.last_observed ?? updatePatch.last_observed;
+    const { date: cFo, updated: isCFoUpdated } = computeExtendedDateValues(updatePatch.first_observed, element.first_observed, ALIGN_OLDEST);
+    const { date: cLo, updated: isCLoUpdated } = computeExtendedDateValues(updatePatch.last_observed, element.last_observed, ALIGN_NEWEST);
+    updatePatch.first_observed = cFo;
+    updatePatch.last_observed = cLo;
+    // Only update number_observed if part of the relation dates change
+    if (isCFoUpdated || isCLoUpdated) {
       updatePatch.number_observed = element.number_observed + updatePatch.number_observed;
     }
   }
   // Upsert relations with times extensions
   if (isStixCoreRelationship(type)) {
-    const timePatch = buildTimeUpdate(updatePatch, element, 'start_time', 'stop_time');
-    updatePatch.first_observed = timePatch.start_time ?? updatePatch.start_time;
-    updatePatch.last_observed = timePatch.stop_time ?? updatePatch.stop_time;
+    const { date: cStartTime } = computeExtendedDateValues(updatePatch.start_time, element.start_time, ALIGN_OLDEST);
+    const { date: cStopTime } = computeExtendedDateValues(updatePatch.stop_time, element.stop_time, ALIGN_NEWEST);
+    updatePatch.start_time = cStartTime;
+    updatePatch.stop_time = cStopTime;
   }
   if (isStixSightingRelationship(type)) {
-    const timePatch = buildTimeUpdate(updatePatch, element, 'first_seen', 'last_seen');
-    if (isNotEmptyField(timePatch)) {
-      updatePatch.first_seen = timePatch.first_seen ?? updatePatch.first_seen;
-      updatePatch.last_seen = timePatch.last_seen ?? updatePatch.last_seen;
+    const { date: cFs, updated: isCFsUpdated } = computeExtendedDateValues(updatePatch.first_seen, element.first_seen, ALIGN_OLDEST);
+    const { date: cLs, updated: isCLsUpdated } = computeExtendedDateValues(updatePatch.last_seen, element.last_seen, ALIGN_NEWEST);
+    updatePatch.first_seen = cFs;
+    updatePatch.last_seen = cLs;
+    if (isCFsUpdated || isCLsUpdated) {
       updatePatch.attribute_count = element.attribute_count + updatePatch.attribute_count;
     }
   }
@@ -2820,11 +2801,15 @@ export const createRelationRaw = async (context, user, input, opts = {}) => {
     lock = await lockResource(participantIds);
     // region check existing relationship
     const existingRelationships = [];
-    const listingArgs = { fromId: from.internal_id, toId: to.internal_id, connectionFormat: false };
     if (fromRule) {
       // In case inferred rule, try to find the relation with basic filters
       // Only in inferred indices.
-      const fromRuleArgs = { ...listingArgs, indices: [READ_INDEX_INFERRED_RELATIONSHIPS] };
+      const fromRuleArgs = {
+        fromId: from.internal_id,
+        toId: to.internal_id,
+        connectionFormat: false,
+        indices: [READ_INDEX_INFERRED_RELATIONSHIPS]
+      };
       const inferredRelationships = await listRelations(context, SYSTEM_USER, relationshipType, fromRuleArgs);
       existingRelationships.push(...inferredRelationships);
     } else {
@@ -2833,14 +2818,14 @@ export const createRelationRaw = async (context, user, input, opts = {}) => {
       const deduplicationFilters = buildRelationDeduplicationFilters(resolvedInput);
       const searchFilters = {
         mode: 'or',
-        filters: [{ key: 'ids', values: inputIds }],
+        filters: [{ key: 'ids', values: getInputIds(relationshipType, resolvedInput, false) }],
         filterGroups: [{
           mode: 'and',
           filters: [
             {
               key: ['connections'],
               nested: [
-                { key: 'internal_id', values: [fromId] },
+                { key: 'internal_id', values: [from.internal_id] },
                 { key: 'role', values: ['*_from'], operator: FilterOperator.Wildcard }
               ],
               values: []
@@ -2848,7 +2833,7 @@ export const createRelationRaw = async (context, user, input, opts = {}) => {
             {
               key: ['connections'],
               nested: [
-                { key: 'internal_id', values: [toId] },
+                { key: 'internal_id', values: [to.internal_id] },
                 { key: 'role', values: ['*_to'], operator: FilterOperator.Wildcard }
               ],
               values: []
