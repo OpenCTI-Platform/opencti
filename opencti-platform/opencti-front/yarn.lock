@@ -15595,7 +15595,7 @@ __metadata:
     react-material-ui-carousel: 3.4.2
     react-mde: 11.5.0
     react-otp-input: 3.1.1
-    react-pdf: 7.5.1
+    react-pdf: 7.7.0
     react-rectangle-selection: 1.0.4
     react-relay: 16.1.0
     react-relay-network-modern: 6.2.2
@@ -17180,18 +17180,19 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-pdf@npm:7.5.1":
-  version: 7.5.1
-  resolution: "react-pdf@npm:7.5.1"
+"react-pdf@npm:7.7.0":
+  version: 7.7.0
+  resolution: "react-pdf@npm:7.7.0"
   dependencies:
     clsx: ^2.0.0
+    dequal: ^2.0.3
     make-cancellable-promise: ^1.3.1
     make-event-props: ^1.6.0
     merge-refs: ^1.2.1
     pdfjs-dist: 3.11.174
     prop-types: ^15.6.2
     tiny-invariant: ^1.0.0
-    tiny-warning: ^1.0.0
+    warning: ^4.0.0
   peerDependencies:
     "@types/react": ^16.8.0 || ^17.0.0 || ^18.0.0
     react: ^16.8.0 || ^17.0.0 || ^18.0.0
@@ -17199,7 +17200,7 @@ __metadata:
   peerDependenciesMeta:
     "@types/react":
       optional: true
-  checksum: 6048727fc6881533c3c18f274a933ced8623bf0ff6165fe3e0328b4f381e7a35e1161e051c2a219360b2ee0b6292434f3c522611a3fc7aafdbab7379ccf09d5d
+  checksum: 624634b353d7dd1758ef0d5651a880e81463673fdf4363eeedb0d651a46af594369e980fcfafb392a64bf96c053e2537f405af9f02b28957ae7ae60600896679
   languageName: node
   linkType: hard
 
@@ -20921,7 +20922,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"warning@npm:^4.0.3":
+"warning@npm:^4.0.0, warning@npm:^4.0.3":
   version: 4.0.3
   resolution: "warning@npm:4.0.3"
   dependencies:
