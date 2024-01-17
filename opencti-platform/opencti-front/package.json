@@ -100,6 +100,7 @@
     "@types/react-router-dom": "5.3.3",
     "@types/react-syntax-highlighter": "15.5.8",
     "@types/react-test-renderer": "18.0.7",
+    "@types/relay-runtime": "14.1.22",
     "@types/relay-test-utils": "14.1.4",
     "@types/uuid": "9.0.7",
     "@vitejs/plugin-react": "4.1.0",
