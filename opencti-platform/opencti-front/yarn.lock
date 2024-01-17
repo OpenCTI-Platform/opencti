@@ -2204,6 +2204,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@date-fns/upgrade@npm:^1.0.3":
+  version: 1.0.3
+  resolution: "@date-fns/upgrade@npm:1.0.3"
+  dependencies:
+    date-fns: ^2.1
+  checksum: 0e36ad6d90ce2db86087682a69ad8f3a5079402d3a1e4ed2e72ad7b6c7e5e03d3c1f165e9805610d049d9c2e879cdcb7131d53b1ab5a31e201e1bcdf3022e669
+  languageName: node
+  linkType: hard
+
 "@date-io/core@npm:^2.17.0":
   version: 2.17.0
   resolution: "@date-io/core@npm:2.17.0"
@@ -8457,7 +8466,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"date-fns@npm:2.30.0, date-fns@npm:^2.19.0":
+"date-fns@npm:2.30.0, date-fns@npm:^2.1, date-fns@npm:^2.19.0":
   version: 2.30.0
   resolution: "date-fns@npm:2.30.0"
   dependencies:
@@ -14973,6 +14982,7 @@ __metadata:
   dependencies:
     "@analytics/google-analytics": 1.0.7
     "@ckeditor/ckeditor5-react": 6.1.0
+    "@date-fns/upgrade": ^1.0.3
     "@date-io/date-fns": 2.17.0
     "@emotion/react": 11.11.3
     "@emotion/styled": 11.11.0
