@@ -39,7 +39,7 @@ const IngestionCsvMapperTestDialog: FunctionComponent<IngestionCsvMapperTestDial
   csvMapperId,
   setIsCreateDisabled,
 }) => {
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   const [result, setResult] = useState<IngestionCsvMapperTestDialogQuery$data | undefined>(undefined);
   const [loading, setLoading] = useState<boolean>(false);
 
@@ -74,7 +74,7 @@ const IngestionCsvMapperTestDialog: FunctionComponent<IngestionCsvMapperTestDial
 
   return (
     <Dialog open={open} onClose={handleClose} PaperProps={{ elevation: 1 }}>
-      <DialogTitle>{t('Testing csv mapper')}</DialogTitle>
+      <DialogTitle>{t_i18n('Testing csv mapper')}</DialogTitle>
       <DialogContent>
         <Box
           sx={{ marginBottom: '12px' }}
@@ -104,7 +104,7 @@ const IngestionCsvMapperTestDialog: FunctionComponent<IngestionCsvMapperTestDial
               variant="outlined"
               style={{ padding: '0px 10px 0px 10px' }}
             >
-              {t('Please, note that the test will be run on the 50 first lines')}
+              {t_i18n('Please, note that the test will be run on the 50 first lines')}
             </Alert>
           </div>
         </Box>
@@ -116,7 +116,7 @@ const IngestionCsvMapperTestDialog: FunctionComponent<IngestionCsvMapperTestDial
             color="secondary"
             onClick={() => onTest(uri, typeof csvMapperId === 'string' ? csvMapperId : csvMapperId.value)}
           >
-            {t('Test')}
+            {t_i18n('Test')}
           </Button>
           {loading && (
             <Box sx={{ marginLeft: '8px' }}>
@@ -134,15 +134,15 @@ const IngestionCsvMapperTestDialog: FunctionComponent<IngestionCsvMapperTestDial
                 display: 'flex',
               }}
                >
-              <span>{t('Objects found')} : </span>
-              <span><strong>{result?.test_mapper?.nbEntities} </strong> {t('Entities')}</span>
-              <span><strong>{result?.test_mapper?.nbRelationships}</strong> {t('Relationships')}</span>
+              <span>{t_i18n('Objects found')} : </span>
+              <span><strong>{result?.test_mapper?.nbEntities} </strong> {t_i18n('Entities')}</span>
+              <span><strong>{result?.test_mapper?.nbRelationships}</strong> {t_i18n('Relationships')}</span>
             </Box>
           }
         </Box>
         <Box sx={{ marginTop: '8px' }}>
           <CodeBlock
-            code={result?.test_mapper?.objects || t('You will find here the result in JSON format.')}
+            code={result?.test_mapper?.objects || t_i18n('You will find here the result in JSON format.')}
             language={'json'}
           />
         </Box>

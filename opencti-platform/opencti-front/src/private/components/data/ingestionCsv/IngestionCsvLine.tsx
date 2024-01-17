@@ -66,7 +66,7 @@ export const IngestionCsvLineComponent: FunctionComponent<IngestionCsvLineProps>
   paginationOptions,
 }) => {
   const classes = useStyles();
-  const { t, nsdt } = useFormatter();
+  const { t_i18n, nsdt } = useFormatter();
   const data = useFragment(ingestionCsvLineFragment, node);
   return (
     <ListItem classes={{ root: classes.item }} divider={true}>
@@ -94,7 +94,7 @@ export const IngestionCsvLineComponent: FunctionComponent<IngestionCsvLineProps>
             >
               <ItemBoolean
                 variant="inList"
-                label={data.ingestion_running ? t('Yes') : t('No')}
+                label={data.ingestion_running ? t_i18n('Yes') : t_i18n('No')}
                 status={!!data.ingestion_running}
               />
             </div>

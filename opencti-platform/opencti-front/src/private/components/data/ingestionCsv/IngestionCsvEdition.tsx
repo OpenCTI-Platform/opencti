@@ -88,18 +88,18 @@ const IngestionCsvEdition: FunctionComponent<IngestionCsvEditionProps> = ({
   handleClose,
   enableReferences = false,
 }) => {
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
   const classes = useStyles();
   const [open, setOpen] = useState(false);
   const ingestionCsvData = useFragment(ingestionCsvEditionFragment, ingestionCsv);
   const basicShape = {
-    name: Yup.string().required(t('This field is required')),
+    name: Yup.string().required(t_i18n('This field is required')),
     description: Yup.string().nullable(),
-    uri: Yup.string().required(t('This field is required')),
-    authentication_type: Yup.string().required(t('This field is required')),
+    uri: Yup.string().required(t_i18n('This field is required')),
+    authentication_type: Yup.string().required(t_i18n('This field is required')),
     authentication_value: Yup.string().nullable(),
     current_state_date: Yup.date()
-      .typeError(t('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)'))
+      .typeError(t_i18n('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)'))
       .nullable(),
     user_id: Yup.mixed().nullable(),
     username: Yup.string().nullable(),
@@ -107,7 +107,7 @@ const IngestionCsvEdition: FunctionComponent<IngestionCsvEditionProps> = ({
     cert: Yup.string().nullable(),
     key: Yup.string().nullable(),
     ca: Yup.string().nullable(),
-    csvMapper_id: Yup.mixed().required(t('This field is required')),
+    csvMapper_id: Yup.mixed().required(t_i18n('This field is required')),
   };
 
   const ingestionCsvValidator = useSchemaEditionValidation('IngestionCsv', basicShape);
@@ -183,7 +183,7 @@ const IngestionCsvEdition: FunctionComponent<IngestionCsvEditionProps> = ({
             component={TextField}
             variant="standard"
             name="name"
-            label={t('Name')}
+            label={t_i18n('Name')}
             fullWidth={true}
             onSubmit={handleSubmitField}
           />
@@ -191,7 +191,7 @@ const IngestionCsvEdition: FunctionComponent<IngestionCsvEditionProps> = ({
             component={TextField}
             variant="standard"
             name="description"
-            label={t('Description')}
+            label={t_i18n('Description')}
             fullWidth={true}
             style={fieldSpacingContainerStyle}
             onSubmit={handleSubmitField}
@@ -200,7 +200,7 @@ const IngestionCsvEdition: FunctionComponent<IngestionCsvEditionProps> = ({
             component={TextField}
             variant="standard"
             name="uri"
-            label={t('CSV URL')}
+            label={t_i18n('CSV URL')}
             fullWidth={true}
             onSubmit={handleSubmitField}
             style={fieldSpacingContainerStyle}
@@ -209,7 +209,7 @@ const IngestionCsvEdition: FunctionComponent<IngestionCsvEditionProps> = ({
             component={DateTimePickerField}
             name="current_state_date"
             TextFieldProps={{
-              label: t(
+              label: t_i18n(
                 'Import from date (empty = all CSV feed possible items)',
               ),
               variant: 'standard',
@@ -226,7 +226,7 @@ const IngestionCsvEdition: FunctionComponent<IngestionCsvEditionProps> = ({
             component={SelectField}
             variant="standard"
             name="authentication_type"
-            label={t('Authentication type')}
+            label={t_i18n('Authentication type')}
             onSubmit={handleSubmitField}
             fullWidth={true}
             containerstyle={{
@@ -234,11 +234,11 @@ const IngestionCsvEdition: FunctionComponent<IngestionCsvEditionProps> = ({
               marginTop: 20,
             }}
           >
-            <MenuItem value="none">{t('None')}</MenuItem>
-            <MenuItem value="basic">{t('Basic user / password')}</MenuItem>
-            <MenuItem value="bearer">{t('Bearer token')}</MenuItem>
+            <MenuItem value="none">{t_i18n('None')}</MenuItem>
+            <MenuItem value="basic">{t_i18n('Basic user / password')}</MenuItem>
+            <MenuItem value="bearer">{t_i18n('Bearer token')}</MenuItem>
             <MenuItem value="certificate">
-              {t('Client certificate')}
+              {t_i18n('Client certificate')}
             </MenuItem>
           </Field>
           {values.authentication_type === 'basic' && (
@@ -247,7 +247,7 @@ const IngestionCsvEdition: FunctionComponent<IngestionCsvEditionProps> = ({
                 component={TextField}
                 variant="standard"
                 name="username"
-                label={t('Username')}
+                label={t_i18n('Username')}
                 onSubmit={handleSubmitField}
                 fullWidth={true}
                 style={fieldSpacingContainerStyle}
@@ -256,7 +256,7 @@ const IngestionCsvEdition: FunctionComponent<IngestionCsvEditionProps> = ({
                 component={TextField}
                 variant="standard"
                 name="password"
-                label={t('Password')}
+                label={t_i18n('Password')}
                 onSubmit={handleSubmitField}
                 fullWidth={true}
                 style={fieldSpacingContainerStyle}
@@ -268,7 +268,7 @@ const IngestionCsvEdition: FunctionComponent<IngestionCsvEditionProps> = ({
               component={TextField}
               variant="standard"
               name="authentication_value"
-              label={t('Token')}
+              label={t_i18n('Token')}
               onSubmit={handleSubmitField}
               fullWidth={true}
               style={fieldSpacingContainerStyle}
@@ -280,7 +280,7 @@ const IngestionCsvEdition: FunctionComponent<IngestionCsvEditionProps> = ({
                 component={TextField}
                 variant="standard"
                 name="cert"
-                label={t('Certificate (base64)')}
+                label={t_i18n('Certificate (base64)')}
                 onSubmit={handleSubmitField}
                 fullWidth={true}
                 style={fieldSpacingContainerStyle}
@@ -289,7 +289,7 @@ const IngestionCsvEdition: FunctionComponent<IngestionCsvEditionProps> = ({
                 component={TextField}
                 variant="standard"
                 name="key"
-                label={t('Key (base64)')}
+                label={t_i18n('Key (base64)')}
                 onSubmit={handleSubmitField}
                 fullWidth={true}
                 style={fieldSpacingContainerStyle}
@@ -298,7 +298,7 @@ const IngestionCsvEdition: FunctionComponent<IngestionCsvEditionProps> = ({
                 component={TextField}
                 variant="standard"
                 name="ca"
-                label={t('CA certificate (base64)')}
+                label={t_i18n('CA certificate (base64)')}
                 onSubmit={handleSubmitField}
                 fullWidth={true}
                 style={fieldSpacingContainerStyle}
@@ -307,7 +307,7 @@ const IngestionCsvEdition: FunctionComponent<IngestionCsvEditionProps> = ({
           )}
           <CreatorField
             name="user_id"
-            label={t('User responsible for data creation (empty = System)')}
+            label={t_i18n('User responsible for data creation (empty = System)')}
             isOptionEqualToValue={(option: Option, value: string) => option.value === value}
             onChange={handleSubmitField}
             containerStyle={fieldSpacingContainerStyle}
@@ -330,7 +330,7 @@ const IngestionCsvEdition: FunctionComponent<IngestionCsvEditionProps> = ({
               classes={{ root: classes.button }}
               disabled={!(values.uri && values.csvMapper_id)}
             >
-              {t('Verify')}
+              {t_i18n('Verify')}
             </Button>
           </div>
           <IngestionCsvMapperTestDialog

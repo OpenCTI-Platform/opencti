@@ -26,7 +26,7 @@ const IngestionCsvEditionContainer: FunctionComponent<IngestionCsvEditionContain
   open,
   handleClose,
 }) => {
-  const { t } = useFormatter();
+  const { t_i18n } = useFormatter();
 
   const { ingestionCsv } = usePreloadedQuery(ingestionCsvEditionContainerQuery, queryRef);
 
@@ -35,7 +35,7 @@ const IngestionCsvEditionContainer: FunctionComponent<IngestionCsvEditionContain
   }
   return (
     <Drawer
-      title={t('Update a CSV Ingester')}
+      title={t_i18n('Update a CSV Ingester')}
       variant={open == null ? DrawerVariant.update : undefined}
       onClose={handleClose}
       open={open}

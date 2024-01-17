@@ -297,7 +297,7 @@ const csvHttpGet = async (ingestion: BasicStoreEntityIngestionCsv): Promise<CsvR
   }
   let certificates;
   if (ingestion.authentication_type === 'certificate') {
-    const [cert, key, ca ] = ingestion.authentication_value.split(':');
+    const [cert, key, ca] = ingestion.authentication_value.split(':');
     certificates = { cert, key, ca };
   }
   const httpClientOptions: GetHttpClient = { headers, rejectUnauthorized: false, responseType: 'json', certificates };
