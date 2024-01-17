@@ -932,7 +932,7 @@
       "object_marking_refs": ["marking-definition--78ca4366-f5b8-4764-83f7-34ce38198e27"]
     },
     {
-      "id": "relationship--d861deab-84b6-4dc9-bcce-594e3d1c904g",
+      "id": "relationship--ab5b0730-f7ac-48ee-ac94-38a2f72d2e0f",
       "type": "relationship",
       "spec_version": "2.1",
       "relationship_type": "part-of",
@@ -940,8 +940,8 @@
       "target_ref": "identity--062f72b1-7caf-4112-ab92-6211f7e7abc8",
       "created": "2020-03-01T14:08:24.617Z",
       "modified": "2020-03-01T14:08:24.617Z",
-      "start_time": "2020-02-29T23:00:00.000Z",
-      "stop_time": "2020-02-29T23:00:00.000Z",
+      "start_time": "2020-02-28T23:00:00.000Z",
+      "stop_time": "2020-03-01T23:00:00.000Z",
       "confidence": 30,
       "created_by_ref": "identity--7b82b010-b1c0-4dae-981f-7756374a17df",
       "object_marking_refs": ["marking-definition--78ca4366-f5b8-4764-83f7-34ce38198e27"]
