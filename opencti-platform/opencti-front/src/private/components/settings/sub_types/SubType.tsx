@@ -3,13 +3,11 @@ import React, { useMemo } from 'react';
 import Paper from '@mui/material/Paper';
 import makeStyles from '@mui/styles/makeStyles';
 import { graphql, useFragment, useSubscription } from 'react-relay';
-import { GraphQLSubscriptionConfig } from 'relay-runtime';
 import { useFormatter } from '../../../../components/i18n';
 import ItemStatusTemplate from '../../../../components/ItemStatusTemplate';
 import SubTypeStatusPopover from './SubTypeWorkflowPopover';
 import EntitySettingSettings from './entity_setting/EntitySettingSettings';
 import { SubType_subType$key } from './__generated__/SubType_subType.graphql';
-import { SubTypeEntitySettingSubscription } from './__generated__/SubTypeEntitySettingSubscription.graphql';
 import EntitySettingAttributes from './entity_setting/EntitySettingAttributes';
 import CustomizationMenu from '../CustomizationMenu';
 import SearchInput from '../../../../components/SearchInput';
@@ -69,9 +67,7 @@ const SubType = ({ data }: { data: SubType_subType$key }) => {
   const subType = useFragment(subTypeFragment, data);
   const subTypeSettingsId = subType.settings?.id;
   if (subTypeSettingsId) {
-    const config = useMemo<
-    GraphQLSubscriptionConfig<SubTypeEntitySettingSubscription>
-    >(
+    const config = useMemo(
       () => ({
         subscription: entitySettingSubscription,
         variables: { id: subTypeSettingsId },
