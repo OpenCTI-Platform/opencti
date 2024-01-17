@@ -46,10 +46,10 @@ const useStyles = makeStyles<Theme>((theme) => ({
   },
 }));
 
-const csvMapperValidation = (t: (s: string) => string) => Yup.object().shape({
-  name: Yup.string().required(t('This field is required')),
-  has_header: Yup.boolean().required(t('This field is required')),
-  separator: Yup.string().required(t('This field is required')),
+const csvMapperValidation = (t_i18n: (s: string) => string) => Yup.object().shape({
+  name: Yup.string().required(t_i18n('This field is required')),
+  has_header: Yup.boolean().required(t_i18n('This field is required')),
+  separator: Yup.string().required(t_i18n('This field is required')),
   skipLineChar: Yup.string().max(1),
 });
 
@@ -207,7 +207,7 @@ const CsvMapperForm: FunctionComponent<CsvMapperFormProps> = ({ csvMapper, onSub
                     <FormControlLabel
                       value=";"
                       control={<Radio />}
-                      label={t('Semicolon')}
+                      label={t_i18n('Semicolon')}
                     />
                     <FormControlLabel
                       value={'|'}
