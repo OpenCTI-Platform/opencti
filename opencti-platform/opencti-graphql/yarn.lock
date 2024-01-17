@@ -9933,10 +9933,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"jose@npm:5.1.3":
-  version: 5.1.3
-  resolution: "jose@npm:5.1.3"
-  checksum: c0225c3408b1c3fcfc40c68161e5e14d554c606ffa428250e0db618469df52f4ce32c69918e296c8c299db1081981638096be838426f61d926269d35602fd814
+"jose@npm:5.2.0":
+  version: 5.2.0
+  resolution: "jose@npm:5.2.0"
+  checksum: 277ef57dcfb2552c3f769e07235ace4d206b8959ca72dff58128be9af480ab591c8cd8724140d0110fd3bc88a020178d552ab29d418a97f98724d5c82593ac93
   languageName: node
   linkType: hard
 

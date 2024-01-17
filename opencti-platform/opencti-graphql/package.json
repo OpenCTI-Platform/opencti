@@ -190,7 +190,7 @@
   "resolutions": {
     "json5": "2.2.3",
     "cross-fetch": "4.0.0",
-    "jose": "5.1.3",
+    "jose": "5.2.0",
     "lodash": "4.17.21",
     "@xmldom/xmldom": "0.8.10",
     "@elastic/transport": "patch:@elastic/transport@8.4.0#./patch/elasticsearch-transport-8.10.0.patch",
