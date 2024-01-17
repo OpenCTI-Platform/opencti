@@ -92,7 +92,7 @@
     "@testing-library/react": "14.1.2",
     "@types/node": "20.11.2",
     "@types/qrcode": "1.5.5",
-    "@types/ramda": "0.29.6",
+    "@types/ramda": "0.29.9",
     "@types/react": "18.2.48",
     "@types/react-csv": "1.1.10",
     "@types/react-dom": "18.2.18",

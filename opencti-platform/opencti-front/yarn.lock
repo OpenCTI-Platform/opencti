@@ -5255,12 +5255,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/ramda@npm:0.29.6":
-  version: 0.29.6
-  resolution: "@types/ramda@npm:0.29.6"
+"@types/ramda@npm:0.29.9":
+  version: 0.29.9
+  resolution: "@types/ramda@npm:0.29.9"
   dependencies:
-    types-ramda: ^0.29.5
-  checksum: b8198f90295e40b0f2aa6dc18c60535a88ecd6e2afdb421e0616398b9cbed03f2a760e9d712258ab8fdebe7da9e21ecf31d2bc9cae6d31406b0095ce8c4c8591
+    types-ramda: ^0.29.6
+  checksum: b4d3746f2770f05f276901e1490ed733cb8a2f2aea1bb8b651914cf89dee93832c1dc61914dad1b35054f0eb7597491963335d27cd98fe4f293a67529b66382d
   languageName: node
   linkType: hard
 
@@ -15003,7 +15003,7 @@ __metadata:
     "@testing-library/react": 14.1.2
     "@types/node": 20.11.2
     "@types/qrcode": 1.5.5
-    "@types/ramda": 0.29.6
+    "@types/ramda": 0.29.9
     "@types/react": 18.2.48
     "@types/react-csv": 1.1.10
     "@types/react-dom": 18.2.18
@@ -19647,7 +19647,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"types-ramda@npm:^0.29.5":
+"types-ramda@npm:^0.29.6":
   version: 0.29.6
   resolution: "types-ramda@npm:0.29.6"
   dependencies:
