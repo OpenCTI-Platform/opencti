@@ -2820,11 +2820,15 @@ export const createRelationRaw = async (context, user, input, opts = {}) => {
     lock = await lockResource(participantIds);
     // region check existing relationship
     const existingRelationships = [];
-    const listingArgs = { fromId: from.internal_id, toId: to.internal_id, connectionFormat: false };
     if (fromRule) {
       // In case inferred rule, try to find the relation with basic filters
       // Only in inferred indices.
-      const fromRuleArgs = { ...listingArgs, indices: [READ_INDEX_INFERRED_RELATIONSHIPS] };
+      const fromRuleArgs = {
+        fromId: from.internal_id,
+        toId: to.internal_id,
+        connectionFormat: false,
+        indices: [READ_INDEX_INFERRED_RELATIONSHIPS]
+      };
       const inferredRelationships = await listRelations(context, SYSTEM_USER, relationshipType, fromRuleArgs);
       existingRelationships.push(...inferredRelationships);
     } else {
@@ -2833,14 +2837,14 @@ export const createRelationRaw = async (context, user, input, opts = {}) => {
       const deduplicationFilters = buildRelationDeduplicationFilters(resolvedInput);
       const searchFilters = {
         mode: 'or',
-        filters: [{ key: 'ids', values: inputIds }],
+        filters: [{ key: 'ids', values: getInputIds(relationshipType, resolvedInput, false) }],
         filterGroups: [{
           mode: 'and',
           filters: [
             {
               key: ['connections'],
               nested: [
-                { key: 'internal_id', values: [fromId] },
+                { key: 'internal_id', values: [from.internal_id] },
                 { key: 'role', values: ['*_from'], operator: FilterOperator.Wildcard }
               ],
               values: []
@@ -2848,7 +2852,7 @@ export const createRelationRaw = async (context, user, input, opts = {}) => {
             {
               key: ['connections'],
               nested: [
-                { key: 'internal_id', values: [toId] },
+                { key: 'internal_id', values: [to.internal_id] },
                 { key: 'role', values: ['*_to'], operator: FilterOperator.Wildcard }
               ],
               values: []
