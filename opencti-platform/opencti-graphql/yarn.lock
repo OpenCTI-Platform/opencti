@@ -11363,7 +11363,7 @@ __metadata:
     openid-client: 5.6.4
     opentelemetry-node-metrics: 3.0.0
     otplib: 12.0.1
-    passport: 0.6.0
+    passport: 0.7.0
     passport-auth0: 1.4.4
     passport-facebook: 3.0.0
     passport-github: 1.1.0
@@ -11716,14 +11716,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"passport@npm:0.6.0":
-  version: 0.6.0
-  resolution: "passport@npm:0.6.0"
+"passport@npm:0.7.0":
+  version: 0.7.0
+  resolution: "passport@npm:0.7.0"
   dependencies:
     passport-strategy: 1.x.x
     pause: 0.0.1
     utils-merge: ^1.0.1
-  checksum: ef932ad671d50de34765c7a53cd1e058d8331a82a6df09265a9c6c1168911aee4a7b5215803d0101110ab7f317e096b4954ca7e18fb2c33b9929f0bd17dbe159
+  checksum: 5080b46df2df7a84f7ba4a8a20437ce71a1346fd27ab47b62df3251a666af9f3430d6c8a1beda3174f6a9d91edc823b57b88050d423a6cff9831848a2d97725c
   languageName: node
   linkType: hard
 
