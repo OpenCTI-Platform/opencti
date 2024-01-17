@@ -5755,13 +5755,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/react-relay@npm:16.0.5":
-  version: 16.0.5
-  resolution: "@types/react-relay@npm:16.0.5"
+"@types/react-relay@npm:16.0.6":
+  version: 16.0.6
+  resolution: "@types/react-relay@npm:16.0.6"
   dependencies:
     "@types/react": "*"
     "@types/relay-runtime": "*"
-  checksum: 65a79f850d9b144245124411ddd9bfe6083e0b6e054b8f53a6bb57124c13fd084c402c51003ef754921d01517af4abec4f62c36ef8e4ac0cbdbfdbcf210ee2e6
+  checksum: 9c0850799015f57c3c21ede46ee5913114c4cf00fad8f21876b0c0feac2e00c79f644d5e1b3b07aeb66a47e46b1aa523ec728e7835a7639209624dfcfd16e339
   languageName: node
   linkType: hard
 
@@ -5848,6 +5848,13 @@ __metadata:
   version: 14.1.19
   resolution: "@types/relay-runtime@npm:14.1.19"
   checksum: 035b1bfcd35947bd5bbfe066e97140098b041e430b938ed26a7ad23f3d24c446e925d9ce1d4f2e64e7e5fb1d6167010c8a0058b56047a2b10db0ce3eba9287b6
+  languageName: node
+  linkType: hard
+
+"@types/relay-runtime@npm:14.1.22":
+  version: 14.1.22
+  resolution: "@types/relay-runtime@npm:14.1.22"
+  checksum: 6275a9b9b18b86da442cf0a4e63478c285f1bae60eb513a0107e412c39f392643462fc68a425d788edcd51976d6c6891785df053ed28295e646f563aa01c0134
   languageName: node
   linkType: hard
 
@@ -15606,10 +15613,11 @@ __metadata:
     "@types/react": 18.2.46
     "@types/react-csv": 1.1.10
     "@types/react-dom": 18.2.18
-    "@types/react-relay": 16.0.5
+    "@types/react-relay": 16.0.6
     "@types/react-router-dom": 5.3.3
     "@types/react-syntax-highlighter": 15.5.11
     "@types/react-test-renderer": 18.0.7
+    "@types/relay-runtime": 14.1.22
     "@types/relay-test-utils": 14.1.4
     "@types/uuid": 9.0.7
     "@vitejs/plugin-react": 4.2.1

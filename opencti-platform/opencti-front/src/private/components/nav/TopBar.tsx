@@ -14,7 +14,6 @@ import Tooltip from '@mui/material/Tooltip';
 import { graphql, PreloadedQuery, usePreloadedQuery, useSubscription } from 'react-relay';
 import { useTheme } from '@mui/styles';
 import makeStyles from '@mui/styles/makeStyles';
-import { GraphQLSubscriptionConfig } from 'relay-runtime';
 import { usePage } from 'use-analytics';
 import { useFormatter } from '../../../components/i18n';
 import SearchInput from '../../../components/SearchInput';
@@ -43,7 +42,7 @@ import { EXPLORE, KNOWLEDGE, KNOWLEDGE_KNASKIMPORT } from '../../../utils/hooks/
 import TopMenuProfile from '../profile/TopMenuProfile';
 import TopMenuNotifications from '../profile/TopMenuNotifications';
 import { TopBarQuery } from './__generated__/TopBarQuery.graphql';
-import { TopBarNotificationNumberSubscription, TopBarNotificationNumberSubscription$data } from './__generated__/TopBarNotificationNumberSubscription.graphql';
+import { TopBarNotificationNumberSubscription$data } from './__generated__/TopBarNotificationNumberSubscription.graphql';
 import useAuth from '../../../utils/hooks/useAuth';
 import { useSettingsMessagesBannerHeight } from '../settings/settings_messages/SettingsMessagesBanner';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
@@ -153,16 +152,15 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
   const data = usePreloadedQuery(topBarQuery, queryRef);
   const page = usePage();
   const handleNewNotificationsNumber = (
-    response: TopBarNotificationNumberSubscription$data | null | undefined,
+    response: TopBarNotificationNumberSubscription$data | null | undefined | unknown,
   ) => {
-    return setNotificationsNumber(response?.notificationsNumber?.count ?? null);
+    const notificationNumber = response ? (response as TopBarNotificationNumberSubscription$data).notificationsNumber?.count : null;
+    return setNotificationsNumber(notificationNumber ?? null);
   };
   const isNewNotification = notificationsNumber !== null
     ? notificationsNumber > 0
     : (data.myUnreadNotificationsCount ?? 0) > 0;
-  const subConfig = useMemo<
-  GraphQLSubscriptionConfig<TopBarNotificationNumberSubscription>
-  >(
+  const subConfig = useMemo(
     () => ({
       subscription: topBarNotificationNumberSubscription,
       variables: {},

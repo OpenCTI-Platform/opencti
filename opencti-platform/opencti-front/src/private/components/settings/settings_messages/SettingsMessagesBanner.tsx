@@ -4,14 +4,12 @@ import makeStyles from '@mui/styles/makeStyles';
 import * as R from 'ramda';
 import React, { useEffect, useLayoutEffect, useMemo, useState } from 'react';
 import { graphql, PreloadedQuery, usePreloadedQuery, useSubscription } from 'react-relay';
-import { GraphQLSubscriptionConfig } from 'relay-runtime';
 import type { Theme } from '../../../../components/Theme';
 import { generateBannerMessageColors } from '../../../../utils/Colors';
 import useBus, { dispatch } from '../../../../utils/hooks/useBus';
 import useLocalStorage from '../../../../utils/hooks/useLocalStorage';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import { SettingsMessagesBannerQuery } from './__generated__/SettingsMessagesBannerQuery.graphql';
-import { SettingsMessagesBannerSubscription } from './__generated__/SettingsMessagesBannerSubscription.graphql';
 import { MessageFromLocalStorage } from '../../../../utils/hooks/useLocalStorageModel';
 
 export const settingsMessagesQuery = graphql`
@@ -133,9 +131,7 @@ const SettingsMessagesBannerComponent = ({
     settingsMessagesQuery,
     queryRef,
   );
-  const config = useMemo<
-  GraphQLSubscriptionConfig<SettingsMessagesBannerSubscription>
-  >(
+  const config = useMemo(
     () => ({
       subscription: settingsSubscription,
       variables: { id: settings.id },
