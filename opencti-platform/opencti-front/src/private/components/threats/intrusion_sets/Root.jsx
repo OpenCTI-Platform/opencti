@@ -6,6 +6,7 @@ import Box from '@mui/material/Box';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
 import * as R from 'ramda';
+import BreadcrumbHeader from '../../../../components/BreadcrumbHeader';
 import { QueryRenderer, requestSubscription } from '../../../../relay/environment';
 import IntrusionSet from './IntrusionSet';
 import IntrusionSetKnowledge from './IntrusionSetKnowledge';
@@ -88,6 +89,15 @@ class RootIntrusionSet extends Component {
       },
     } = this.props;
     const link = `/dashboard/threats/intrusion_sets/${intrusionSetId}/knowledge`;
+    const path = [
+      {
+        text: t('Threats'),
+      },
+      {
+        text: t('Intrusion sets'),
+        link: '/dashboard/threats/intrusion_sets',
+      },
+    ];
     return (
       <>
         <Route path="/dashboard/threats/intrusion_sets/:intrusionSetId/knowledge">
@@ -129,12 +139,14 @@ class RootIntrusionSet extends Component {
                         : 0,
                     }}
                   >
-                    <StixDomainObjectHeader
-                      entityType="Intrusion-Set"
-                      stixDomainObject={intrusionSet}
-                      PopoverComponent={<IntrusionSetPopover />}
-                      enableQuickSubscription={true}
-                    />
+                    <BreadcrumbHeader path={path}>
+                      <StixDomainObjectHeader
+                        entityType="Intrusion-Set"
+                        stixDomainObject={intrusionSet}
+                        PopoverComponent={<IntrusionSetPopover />}
+                        enableQuickSubscription={true}
+                      />
+                    </BreadcrumbHeader>
                     <Box
                       sx={{
                         borderBottom: 1,

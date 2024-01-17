@@ -18,6 +18,7 @@ import StixCoreObjectOrStixCoreRelationshipContainers from '../../common/contain
 import StixCoreObjectKnowledgeBar from '../../common/stix_core_objects/StixCoreObjectKnowledgeBar';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
 import inject18n from '../../../../components/i18n';
+import BreadcrumbHeader from '../../../../components/BreadcrumbHeader';
 
 const subscription = graphql`
   subscription RootChannelSubscription($id: ID!) {
@@ -86,6 +87,15 @@ class RootChannel extends Component {
       },
     } = this.props;
     const link = `/dashboard/arsenal/channels/${channelId}/knowledge`;
+    const path = [
+      {
+        text: t('Arsenal'),
+      },
+      {
+        text: t('Channels'),
+        link: '/dashboard/arsenal/channels',
+      },
+    ];
     return (
       <div>
         <Route path="/dashboard/arsenal/channels/:channelId/knowledge">
@@ -123,12 +133,14 @@ class RootChannel extends Component {
                         : 0,
                     }}
                   >
-                    <StixDomainObjectHeader
-                      entityType="Channel"
-                      stixDomainObject={channel}
-                      PopoverComponent={<ChannelPopover />}
-                      enableQuickSubscription={true}
-                    />
+                    <BreadcrumbHeader path={path}>
+                      <StixDomainObjectHeader
+                        entityType="Channel"
+                        stixDomainObject={channel}
+                        PopoverComponent={<ChannelPopover />}
+                        enableQuickSubscription={true}
+                      />
+                    </BreadcrumbHeader>
                     <Box
                       sx={{
                         borderBottom: 1,

@@ -7,7 +7,7 @@ import ListItemText from '@mui/material/ListItemText';
 import { KeyboardArrowRightOutlined } from '@mui/icons-material';
 import Skeleton from '@mui/material/Skeleton';
 import makeStyles from '@mui/styles/makeStyles';
-import { Theme } from '@mui/material/styles/createTheme';
+import type { Theme } from '@mui/material/styles/createTheme';
 import { EventLine_node$key } from '@components/entities/events/__generated__/EventLine_node.graphql';
 import ItemIcon from '../../../../components/ItemIcon';
 import { useFormatter } from '../../../../components/i18n';

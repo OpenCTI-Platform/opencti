@@ -17,6 +17,7 @@ import NotePopover from './NotePopover';
 import inject18n from '../../../../components/i18n';
 import { CollaborativeSecurity } from '../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
+import BreadcrumbHeader from '../../../../components/BreadcrumbHeader';
 
 const subscription = graphql`
   subscription RootNoteSubscription($id: ID!) {
@@ -93,6 +94,13 @@ class RootNote extends Component {
             if (props) {
               if (props.note) {
                 const { note } = props;
+                const path = [
+                  { text: t('Analyses') },
+                  {
+                    text: t('Notes'),
+                    link: '/dashboard/analyses/notes',
+                  },
+                ];
                 return (
                   <div
                     style={{
@@ -103,21 +111,23 @@ class RootNote extends Component {
                         : 0,
                     }}
                   >
-                    <CollaborativeSecurity
-                      data={note}
-                      needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}
-                      placeholder={
+                    <BreadcrumbHeader path={path}>
+                      <CollaborativeSecurity
+                        data={note}
+                        needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}
+                        placeholder={
+                          <ContainerHeader
+                            container={note}
+                            PopoverComponent={<NotePopover note={note} />}
+                          />
+                        }
+                      >
                         <ContainerHeader
-                          container={note}
+                          container={props.note}
                           PopoverComponent={<NotePopover note={note} />}
                         />
-                      }
-                    >
-                      <ContainerHeader
-                        container={props.note}
-                        PopoverComponent={<NotePopover note={note} />}
-                      />
-                    </CollaborativeSecurity>
+                      </CollaborativeSecurity>
+                    </BreadcrumbHeader>
                     <Box
                       sx={{
                         borderBottom: 1,

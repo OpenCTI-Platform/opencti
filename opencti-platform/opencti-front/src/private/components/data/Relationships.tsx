@@ -5,6 +5,9 @@ import {
 } from '@components/data/relationships/__generated__/RelationshipsStixCoreRelationshipsLinesPaginationQuery.graphql';
 import { RelationshipsStixCoreRelationshipLine_node$data } from '@components/data/relationships/__generated__/RelationshipsStixCoreRelationshipLine_node.graphql';
 import { RelationshipsStixCoreRelationshipLineDummy } from '@components/data/relationships/RelationshipsStixCoreRelationshipLine';
+import { useFormatter } from 'src/components/i18n';
+import { makeStyles } from '@mui/styles';
+import type { Theme } from 'src/components/Theme';
 import ListLines from '../../../components/list_lines/ListLines';
 import RelationshipsStixCoreRelationshipsLines, { relationshipsStixCoreRelationshipsLinesQuery } from './relationships/RelationshipsStixCoreRelationshipsLines';
 import useAuth from '../../../utils/hooks/useAuth';
@@ -14,10 +17,24 @@ import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage'
 import useEntityToggle from '../../../utils/hooks/useEntityToggle';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
 import { buildEntityTypeBasedFilterContext, emptyFilterGroup, getDefaultFilterObjFromArray } from '../../../utils/filters/filtersUtils';
+import BreadcrumbHeader from '../../../components/BreadcrumbHeader';
+
+const useStyles = makeStyles<Theme>((theme) => ({
+  header: {
+    paddingBottom: 25,
+    color: theme.palette.mode === 'light'
+      ? theme.palette.common.black
+      : theme.palette.primary.main,
+    fontSize: '24px',
+    fontWeight: 'bold',
+  },
+}));
 
 const LOCAL_STORAGE_KEY = 'relationships';
 
 const Relationships = () => {
+  const classes = useStyles();
+  const { t_i18n } = useFormatter();
   const {
     platformModuleHelpers: { isRuntimeFieldEnable },
   } = useAuth();
@@ -118,6 +135,14 @@ const Relationships = () => {
     };
     return (
       <>
+        <BreadcrumbHeader
+          path={[
+            { text: t_i18n('Data') },
+            { text: t_i18n('Relationships') },
+          ]}
+        >
+          <div className={ classes.header }>{t_i18n('Relationships')}</div>
+        </BreadcrumbHeader>
         <ListLines
           helpers={storageHelpers}
           sortBy={sortBy}

@@ -1,4 +1,5 @@
 import React, { FunctionComponent } from 'react';
+import { makeStyles } from '@mui/styles';
 import ListLines from '../../../components/list_lines/ListLines';
 import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
@@ -17,6 +18,20 @@ import {
 } from './case_incidents/__generated__/CaseIncidentsLinesCasesPaginationQuery.graphql';
 import { CaseIncidentLineCase_node$data } from './case_incidents/__generated__/CaseIncidentLineCase_node.graphql';
 import { buildEntityTypeBasedFilterContext, emptyFilterGroup } from '../../../utils/filters/filtersUtils';
+import type { Theme } from '../../../components/Theme';
+import BreadcrumbHeader from '../../../components/BreadcrumbHeader';
+import { useFormatter } from '../../../components/i18n';
+
+const useStyles = makeStyles<Theme>((theme) => ({
+  header: {
+    paddingBottom: 25,
+    color: theme.palette.mode === 'light'
+      ? theme.palette.common.black
+      : theme.palette.primary.main,
+    fontSize: '24px',
+    fontWeight: 'bold',
+  },
+}));
 
 interface CaseIncidentsProps {
   inputValue?: string;
@@ -25,6 +40,8 @@ interface CaseIncidentsProps {
 export const LOCAL_STORAGE_KEY_CASE_INCIDENT = 'caseIncidents';
 
 const CaseIncidents: FunctionComponent<CaseIncidentsProps> = () => {
+  const classes = useStyles();
+  const { t_i18n } = useFormatter();
   const {
     platformModuleHelpers: { isRuntimeFieldEnable },
   } = useAuth();
@@ -124,80 +141,90 @@ const CaseIncidents: FunctionComponent<CaseIncidentsProps> = () => {
     };
 
     return (
-      <ListLines
-        helpers={helpers}
-        sortBy={sortBy}
-        orderAsc={orderAsc}
-        dataColumns={dataColumns}
-        handleSort={helpers.handleSort}
-        handleSearch={helpers.handleSearch}
-        handleAddFilter={helpers.handleAddFilter}
-        handleRemoveFilter={helpers.handleRemoveFilter}
-        handleSwitchGlobalMode={helpers.handleSwitchGlobalMode}
-        handleSwitchLocalMode={helpers.handleSwitchLocalMode}
-        handleToggleExports={helpers.handleToggleExports}
-        handleToggleSelectAll={handleToggleSelectAll}
-        selectAll={selectAll}
-        openExports={openExports}
-        exportContext={{ entity_type: 'Case-Incident' }}
-        keyword={searchTerm}
-        filters={filters}
-        paginationOptions={queryPaginationOptions}
-        numberOfElements={numberOfElements}
-        iconExtension={true}
-        availableFilterKeys={[
-          'workflow_id',
-          'objectLabel',
-          'objectMarking',
-          'createdBy',
-          'source_reliability',
-          'confidence',
-          'objectAssignee',
-          'objectParticipant',
-          'priority',
-          'severity',
-          'creator_id',
-          'created',
-          'name',
-        ]}
-      >
-        {queryRef && (
-          <React.Suspense
-            fallback={
-              <>
-                {Array(20)
-                  .fill(0)
-                  .map((_, idx) => (
-                    <CaseIncidentLineDummy
-                      key={idx}
-                      dataColumns={dataColumns}
-                    />
-                  ))}
-              </>
-            }
-          >
-            <CaseIncidentsLines
-              queryRef={queryRef}
-              paginationOptions={queryPaginationOptions}
-              dataColumns={dataColumns}
-              setNumberOfElements={helpers.handleSetNumberOfElements}
-              selectedElements={selectedElements}
-              deSelectedElements={deSelectedElements}
-              onToggleEntity={onToggleEntity}
-              selectAll={selectAll}
-            />
-            <ToolBar
-              selectedElements={selectedElements}
-              deSelectedElements={deSelectedElements}
-              numberOfSelectedElements={numberOfSelectedElements}
-              handleClearSelectedElements={handleClearSelectedElements}
-              selectAll={selectAll}
-              filters={contextFilters}
-              type="Case-Incident"
-            />
-          </React.Suspense>
-        )}
-      </ListLines>
+      <>
+        <BreadcrumbHeader
+          path={[
+            { text: t_i18n('Cases') },
+            { text: t_i18n('Incident responses') },
+          ]}
+        >
+          <div className={ classes.header }>{t_i18n('Incident responses')}</div>
+        </BreadcrumbHeader>
+        <ListLines
+          helpers={helpers}
+          sortBy={sortBy}
+          orderAsc={orderAsc}
+          dataColumns={dataColumns}
+          handleSort={helpers.handleSort}
+          handleSearch={helpers.handleSearch}
+          handleAddFilter={helpers.handleAddFilter}
+          handleRemoveFilter={helpers.handleRemoveFilter}
+          handleSwitchGlobalMode={helpers.handleSwitchGlobalMode}
+          handleSwitchLocalMode={helpers.handleSwitchLocalMode}
+          handleToggleExports={helpers.handleToggleExports}
+          handleToggleSelectAll={handleToggleSelectAll}
+          selectAll={selectAll}
+          openExports={openExports}
+          exportContext={{ entity_type: 'Case-Incident' }}
+          keyword={searchTerm}
+          filters={filters}
+          paginationOptions={queryPaginationOptions}
+          numberOfElements={numberOfElements}
+          iconExtension={true}
+          availableFilterKeys={[
+            'workflow_id',
+            'objectLabel',
+            'objectMarking',
+            'createdBy',
+            'source_reliability',
+            'confidence',
+            'objectAssignee',
+            'objectParticipant',
+            'priority',
+            'severity',
+            'creator_id',
+            'created',
+            'name',
+          ]}
+        >
+          {queryRef && (
+            <React.Suspense
+              fallback={
+                <>
+                  {Array(20)
+                    .fill(0)
+                    .map((_, idx) => (
+                      <CaseIncidentLineDummy
+                        key={idx}
+                        dataColumns={dataColumns}
+                      />
+                    ))}
+                </>
+              }
+            >
+              <CaseIncidentsLines
+                queryRef={queryRef}
+                paginationOptions={queryPaginationOptions}
+                dataColumns={dataColumns}
+                setNumberOfElements={helpers.handleSetNumberOfElements}
+                selectedElements={selectedElements}
+                deSelectedElements={deSelectedElements}
+                onToggleEntity={onToggleEntity}
+                selectAll={selectAll}
+              />
+              <ToolBar
+                selectedElements={selectedElements}
+                deSelectedElements={deSelectedElements}
+                numberOfSelectedElements={numberOfSelectedElements}
+                handleClearSelectedElements={handleClearSelectedElements}
+                selectAll={selectAll}
+                filters={contextFilters}
+                type="Case-Incident"
+              />
+            </React.Suspense>
+          )}
+        </ListLines>
+      </>
     );
   };
   return (

@@ -21,6 +21,7 @@ import { buildViewParamsFromUrlAndStorage, saveViewParameters } from '../../../.
 import StixCoreObjectKnowledgeBar from '../../common/stix_core_objects/StixCoreObjectKnowledgeBar';
 import EntityStixSightingRelationships from '../../events/stix_sighting_relationships/EntityStixSightingRelationships';
 import inject18n from '../../../../components/i18n';
+import BreadcrumbHeader from '../../../../components/BreadcrumbHeader';
 
 const subscription = graphql`
   subscription RootOrganizationSubscription($id: ID!) {
@@ -118,6 +119,13 @@ class RootOrganization extends Component {
     } = this.props;
     const { viewAs } = this.state;
     const link = `/dashboard/entities/organizations/${organizationId}/knowledge`;
+    const path = [
+      { text: t('Entities') },
+      {
+        text: t('Organizations'),
+        link: '/dashboard/entities/organizations',
+      },
+    ];
     return (
       <>
         <Route path="/dashboard/entities/organizations/:organizationId/knowledge">
@@ -161,16 +169,18 @@ class RootOrganization extends Component {
                         : 0,
                     }}
                   >
-                    <StixDomainObjectHeader
-                      entityType="Organization"
-                      disableSharing={true}
-                      stixDomainObject={organization}
-                      isOpenctiAlias={true}
-                      enableQuickSubscription={true}
-                      PopoverComponent={<OrganizationPopover />}
-                      onViewAs={this.handleChangeViewAs.bind(this)}
-                      viewAs={viewAs}
-                    />
+                    <BreadcrumbHeader path={path}>
+                      <StixDomainObjectHeader
+                        entityType="Organization"
+                        disableSharing={true}
+                        stixDomainObject={organization}
+                        isOpenctiAlias={true}
+                        enableQuickSubscription={true}
+                        PopoverComponent={<OrganizationPopover />}
+                        onViewAs={this.handleChangeViewAs.bind(this)}
+                        viewAs={viewAs}
+                      />
+                    </BreadcrumbHeader>
                     <Box
                       sx={{
                         borderBottom: 1,

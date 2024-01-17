@@ -1,4 +1,5 @@
 import React, { FunctionComponent } from 'react';
+import { makeStyles } from '@mui/styles';
 import { QueryRenderer } from '../../../relay/environment';
 import ListLines from '../../../components/list_lines/ListLines';
 import ObservedDatasLines, { observedDatasLinesQuery } from './observed_data/ObservedDatasLines';
@@ -14,10 +15,26 @@ import { ObservedDataLine_node$data } from './observed_data/__generated__/Observ
 import { ObservedDatasLinesPaginationQuery$data, ObservedDatasLinesPaginationQuery$variables } from './observed_data/__generated__/ObservedDatasLinesPaginationQuery.graphql';
 import { ModuleHelper } from '../../../utils/platformModulesHelper';
 import { buildEntityTypeBasedFilterContext, emptyFilterGroup } from '../../../utils/filters/filtersUtils';
+import type { Theme } from '../../../components/Theme';
+import { useFormatter } from '../../../components/i18n';
+import BreadcrumbHeader from '../../../components/BreadcrumbHeader';
+
+const useStyles = makeStyles<Theme>((theme) => ({
+  header: {
+    paddingBottom: 25,
+    color: theme.palette.mode === 'light'
+      ? theme.palette.common.black
+      : theme.palette.primary.main,
+    fontSize: '24px',
+    fontWeight: 'bold',
+  },
+}));
 
 const LOCAL_STORAGE_KEY = 'observedDatas';
 
 const ObservedDatas: FunctionComponent = () => {
+  const classes = useStyles();
+  const { t_i18n } = useFormatter();
   const {
     viewStorage,
     helpers: storageHelpers,
@@ -95,6 +112,14 @@ const ObservedDatas: FunctionComponent = () => {
     };
     return (
       <>
+        <BreadcrumbHeader
+          path={[
+            { text: t_i18n('Events') },
+            { text: t_i18n('Observed data') },
+          ]}
+        >
+          <div className={ classes.header }>{t_i18n('Observed data')}</div>
+        </BreadcrumbHeader>
         <ListLines
           helpers={storageHelpers}
           sortBy={sortBy}

@@ -19,6 +19,7 @@ import StixCoreObjectKnowledgeBar from '../../common/stix_core_objects/StixCoreO
 import ErrorNotFound from '../../../../components/ErrorNotFound';
 import EntityStixSightingRelationships from '../../events/stix_sighting_relationships/EntityStixSightingRelationships';
 import inject18n from '../../../../components/i18n';
+import BreadcrumbHeader from '../../../../components/BreadcrumbHeader';
 
 const subscription = graphql`
   subscription RootEventsSubscription($id: ID!) {
@@ -85,6 +86,13 @@ class RootEvent extends Component {
       },
     } = this.props;
     const link = `/dashboard/entities/events/${eventId}/knowledge`;
+    const path = [
+      { text: t('Entities') },
+      {
+        text: t('Events'),
+        link: '/dashboard/entities/events',
+      },
+    ];
     return (
       <>
         <Route path="/dashboard/entities/events/:eventId/knowledge">
@@ -121,12 +129,14 @@ class RootEvent extends Component {
                         : 0,
                     }}
                   >
-                    <StixDomainObjectHeader
-                      entityType="Event"
-                      stixDomainObject={event}
-                      enableQuickSubscription={true}
-                      PopoverComponent={<EventPopover />}
-                    />
+                    <BreadcrumbHeader path={path}>
+                      <StixDomainObjectHeader
+                        entityType="Event"
+                        stixDomainObject={event}
+                        enableQuickSubscription={true}
+                        PopoverComponent={<EventPopover />}
+                      />
+                    </BreadcrumbHeader>
                     <Box
                       sx={{
                         borderBottom: 1,

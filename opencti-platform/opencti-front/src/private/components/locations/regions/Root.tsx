@@ -24,6 +24,7 @@ import { RootRegionQuery } from './__generated__/RootRegionQuery.graphql';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import { useFormatter } from '../../../../components/i18n';
+import BreadcrumbHeader from '../../../../components/BreadcrumbHeader';
 
 const subscription = graphql`
   subscription RootRegionsSubscription($id: ID!) {
@@ -78,6 +79,13 @@ const RootRegionComponent = ({ queryRef, regionId, link }) => {
   const { t_i18n } = useFormatter();
   const data = usePreloadedQuery(regionQuery, queryRef);
   const { region, connectorsForImport, connectorsForExport } = data;
+  const path = [
+    { text: t_i18n('Locations') },
+    {
+      text: t_i18n('Regions'),
+      link: '/dashboard/locations/regions',
+    },
+  ];
   return (
     <>
       {region ? (
@@ -90,14 +98,15 @@ const RootRegionComponent = ({ queryRef, regionId, link }) => {
               : 0,
           }}
         >
-          <StixDomainObjectHeader
-            entityType="Region"
-            disableSharing={true}
-            stixDomainObject={region}
-            PopoverComponent={<RegionPopover id={region.id} />}
-            enableQuickSubscription={true}
-            isOpenctiAlias={true}
-          />
+          <BreadcrumbHeader path={path}>
+            <StixDomainObjectHeader
+              entityType="Region"
+              disableSharing={true}
+              stixDomainObject={region}
+              PopoverComponent={<RegionPopover id={region.id} />}
+              enableQuickSubscription={true}
+            isOpenctiAlias={true}/>
+          </BreadcrumbHeader>
           <Box
             sx={{
               borderBottom: 1,

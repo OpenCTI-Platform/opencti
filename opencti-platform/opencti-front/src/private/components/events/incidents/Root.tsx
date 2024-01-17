@@ -21,10 +21,10 @@ import ErrorNotFound from '../../../../components/ErrorNotFound';
 import StixCoreObjectKnowledgeBar from '../../common/stix_core_objects/StixCoreObjectKnowledgeBar';
 import StixDomainObjectContent from '../../common/stix_domain_objects/StixDomainObjectContent';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
-
 import { RootIncidentQuery } from './__generated__/RootIncidentQuery.graphql';
 import { RootIncidentSubscription } from './__generated__/RootIncidentSubscription.graphql';
 import { useFormatter } from '../../../../components/i18n';
+import BreadcrumbHeader from '../../../../components/BreadcrumbHeader';
 
 const subscription = graphql`
   subscription RootIncidentSubscription($id: ID!) {
@@ -83,6 +83,13 @@ const RootIncidentComponent = ({ queryRef }) => {
   useSubscription(subConfig);
   const data = usePreloadedQuery(incidentQuery, queryRef);
   const { incident, connectorsForImport, connectorsForExport } = data;
+  const path = [
+    { text: t_i18n('Events') },
+    {
+      text: t_i18n('Incidents'),
+      link: '/dashboard/events/incidents',
+    },
+  ];
   return (
     <>
       {incident ? (
@@ -95,12 +102,14 @@ const RootIncidentComponent = ({ queryRef }) => {
               : 0,
           }}
         >
-          <StixDomainObjectHeader
-            entityType="Incident"
-            stixDomainObject={incident}
-            PopoverComponent={IncidentPopover}
-            enableQuickSubscription={true}
-          />
+          <BreadcrumbHeader path={path}>
+            <StixDomainObjectHeader
+              entityType="Incident"
+              stixDomainObject={incident}
+              PopoverComponent={IncidentPopover}
+              enableQuickSubscription={true}
+            />
+          </BreadcrumbHeader>
           <Box
             sx={{ borderBottom: 1, borderColor: 'divider', marginBottom: 4 }}
           >

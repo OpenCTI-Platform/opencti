@@ -25,6 +25,7 @@ import ContainerStixDomainObjects from '../../common/containers/ContainerStixDom
 import ContainerStixCyberObservables from '../../common/containers/ContainerStixCyberObservables';
 import CaseRfiKnowledge from './CaseRfiKnowledge';
 import { useFormatter } from '../../../../components/i18n';
+import BreadcrumbHeader from '../../../../components/BreadcrumbHeader';
 
 const subscription = graphql`
   subscription RootCaseRfiCaseSubscription($id: ID!) {
@@ -87,6 +88,13 @@ const RootCaseRfiComponent = ({ queryRef, caseId }) => {
     connectorsForImport,
   } = usePreloadedQuery<RootCaseRfiCaseQuery>(caseRfiQuery, queryRef);
   let paddingRight = 0;
+  const path = [
+    { text: t_i18n('Cases') },
+    {
+      text: t_i18n('Requests for information'),
+      link: '/dashboard/cases/rfis',
+    },
+  ];
   if (caseData) {
     if (
       location.pathname.includes(
@@ -108,11 +116,13 @@ const RootCaseRfiComponent = ({ queryRef, caseId }) => {
     <>
       {caseData ? (
         <div style={{ paddingRight }}>
-          <ContainerHeader
-            container={caseData}
-            PopoverComponent={<CaseRfiPopover id={caseData.id} />}
-            enableQuickSubscription={true}
-          />
+          <BreadcrumbHeader path={path}>
+            <ContainerHeader
+              container={caseData}
+              PopoverComponent={<CaseRfiPopover id={caseData.id} />}
+              enableQuickSubscription={true}
+            />
+          </BreadcrumbHeader>
           <Box
             sx={{
               borderBottom: 1,

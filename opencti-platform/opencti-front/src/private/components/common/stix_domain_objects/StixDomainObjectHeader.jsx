@@ -41,9 +41,14 @@ import StixCoreObjectQuickSubscription from '../stix_core_objects/StixCoreObject
 import { defaultValue } from '../../../../utils/Graph';
 import Transition from '../../../../components/Transition';
 
-const useStyles = makeStyles(() => ({
+const useStyles = makeStyles((theme) => ({
   title: {
     float: 'left',
+    fontWeight: 'bold',
+    color: theme.palette.mode === 'light'
+      ? theme.palette.common.black
+      : theme.palette.primary.main,
+    fontSize: '24px',
   },
   popover: {
     float: 'left',

@@ -20,6 +20,7 @@ import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainO
 import IndicatorPopover from './IndicatorPopover';
 import StixCoreObjectOrStixCoreRelationshipContainers from '../../common/containers/StixCoreObjectOrStixCoreRelationshipContainers';
 import inject18n from '../../../../components/i18n';
+import BreadcrumbHeader from '../../../../components/BreadcrumbHeader';
 
 const subscription = graphql`
   subscription RootIndicatorSubscription($id: ID!) {
@@ -85,6 +86,13 @@ class RootIndicator extends Component {
         params: { indicatorId },
       },
     } = this.props;
+    const path = [
+      { text: t('Observations') },
+      {
+        text: t('Indicators'),
+        link: '/dashboard/observations/indicators',
+      },
+    ];
     return (
       <>
         <QueryRenderer
@@ -96,12 +104,14 @@ class RootIndicator extends Component {
                 const { indicator } = props;
                 return (
                   <>
-                    <StixDomainObjectHeader
-                      entityType="Indicator"
-                      stixDomainObject={indicator}
-                      PopoverComponent={<IndicatorPopover />}
-                      noAliases={true}
-                    />
+                    <BreadcrumbHeader path={path}>
+                      <StixDomainObjectHeader
+                        entityType="Indicator"
+                        stixDomainObject={indicator}
+                        PopoverComponent={<IndicatorPopover />}
+                        noAliases={true}
+                      />
+                    </BreadcrumbHeader>
                     <Box
                       sx={{
                         borderBottom: 1,

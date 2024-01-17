@@ -25,6 +25,7 @@ import IncidentKnowledge from './IncidentKnowledge';
 import { RootIncidentQuery } from '../../events/incidents/__generated__/RootIncidentQuery.graphql';
 import { RootIncidentSubscription } from '../../events/incidents/__generated__/RootIncidentSubscription.graphql';
 import { useFormatter } from '../../../../components/i18n';
+import BreadcrumbHeader from '../../../../components/BreadcrumbHeader';
 
 const subscription = graphql`
   subscription RootIncidentCaseSubscription($id: ID!) {
@@ -86,6 +87,13 @@ const RootCaseIncidentComponent = ({ queryRef, caseId }) => {
     connectorsForImport,
   } = usePreloadedQuery<RootIncidentCaseQuery>(caseIncidentQuery, queryRef);
   let paddingRight = 0;
+  const path = [
+    { text: t_i18n('Cases') },
+    {
+      text: t_i18n('Incident responses'),
+      link: '/dashboard/cases/incidents',
+    },
+  ];
   if (caseData) {
     if (
       location.pathname.includes(
@@ -109,11 +117,13 @@ const RootCaseIncidentComponent = ({ queryRef, caseId }) => {
     <>
       {caseData ? (
         <div style={{ paddingRight }}>
-          <ContainerHeader
-            container={caseData}
-            PopoverComponent={<CaseIncidentPopover id={caseData.id} />}
-            enableQuickSubscription={true}
-          />
+          <BreadcrumbHeader path={path}>
+            <ContainerHeader
+              container={caseData}
+              PopoverComponent={<CaseIncidentPopover id={caseData.id} />}
+              enableQuickSubscription={true}
+            />
+          </BreadcrumbHeader>
           <Box
             sx={{
               borderBottom: 1,

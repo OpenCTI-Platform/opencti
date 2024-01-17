@@ -15,6 +15,7 @@ import { graphql, useFragment } from 'react-relay';
 import { Link } from 'react-router-dom';
 import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
 import GroupConfidenceLevel from '@components/settings/groups/GroupConfidenceLevel';
+import type { Theme } from 'src/components/Theme';
 import FieldOrEmpty from '../../../../components/FieldOrEmpty';
 import { useFormatter } from '../../../../components/i18n';
 import ItemBoolean from '../../../../components/ItemBoolean';
@@ -28,7 +29,7 @@ import GroupPopover from './GroupPopover';
 import ItemIcon from '../../../../components/ItemIcon';
 import GroupHiddenTypesChipList from './GroupHiddenTypesChipList';
 
-const useStyles = makeStyles(() => ({
+const useStyles = makeStyles<Theme>((theme) => ({
   container: {
     margin: 0,
     padding: '0 200px 0 0',
@@ -38,6 +39,12 @@ const useStyles = makeStyles(() => ({
   },
   title: {
     float: 'left',
+    textTransform: 'uppercase',
+    color: theme.palette.mode === 'light'
+      ? theme.palette.common.black
+      : theme.palette.primary.main,
+    fontSize: '24px',
+    fontWeight: 'bold',
   },
   popover: {
     float: 'left',

@@ -1,4 +1,5 @@
 import React from 'react';
+import { makeStyles } from '@mui/styles';
 import ListLines from '../../../components/list_lines/ListLines';
 import ChannelsLines, { channelsLinesQuery } from './channels/ChannelsLines';
 import ChannelCreation from './channels/ChannelCreation';
@@ -9,10 +10,26 @@ import useQueryLoading from '../../../utils/hooks/useQueryLoading';
 import { ChannelLineDummy } from './channels/ChannelLine';
 import { ChannelsLinesPaginationQuery, ChannelsLinesPaginationQuery$variables } from './channels/__generated__/ChannelsLinesPaginationQuery.graphql';
 import { buildEntityTypeBasedFilterContext, emptyFilterGroup, getDefaultFilterObjFromArray } from '../../../utils/filters/filtersUtils';
+import type { Theme } from '../../../components/Theme';
+import { useFormatter } from '../../../components/i18n';
+import BreadcrumbHeader from '../../../components/BreadcrumbHeader';
+
+const useStyles = makeStyles<Theme>((theme) => ({
+  header: {
+    paddingBottom: 25,
+    color: theme.palette.mode === 'light'
+      ? theme.palette.common.black
+      : theme.palette.primary.main,
+    fontSize: '24px',
+    fontWeight: 'bold',
+  },
+}));
 
 const LOCAL_STORAGE_KEY = 'channels';
 
 const Channels = () => {
+  const classes = useStyles();
+  const { t_i18n } = useFormatter();
   const { viewStorage, helpers, paginationOptions } = usePaginationLocalStorage<ChannelsLinesPaginationQuery$variables>(
     LOCAL_STORAGE_KEY,
     {
@@ -75,61 +92,71 @@ const Channels = () => {
       queryPaginationOptions,
     );
     return (
-      <ListLines
-        helpers={helpers}
-        sortBy={sortBy}
-        orderAsc={orderAsc}
-        dataColumns={dataColumns}
-        handleSort={helpers.handleSort}
-        handleSearch={helpers.handleSearch}
-        handleAddFilter={helpers.handleAddFilter}
-        handleRemoveFilter={helpers.handleRemoveFilter}
-        handleSwitchGlobalMode={helpers.handleSwitchGlobalMode}
-        handleSwitchLocalMode={helpers.handleSwitchLocalMode}
-        handleToggleExports={helpers.handleToggleExports}
-        openExports={openExports}
-        exportContext={{ entity_type: 'Channel' }}
-        keyword={searchTerm}
-        filters={filters}
-        paginationOptions={queryPaginationOptions}
-        numberOfElements={numberOfElements}
-        availableFilterKeys={[
-          'channel_types',
-          'workflow_id',
-          'objectLabel',
-          'objectMarking',
-          'createdBy',
-          'source_reliability',
-          'confidence',
-          'created',
-          'name',
-        ]}
-      >
-        {queryRef && (
-          <React.Suspense
-            fallback={
-              <>
-                {Array(20)
-                  .fill(0)
-                  .map((_, idx) => (
-                    <ChannelLineDummy
-                      key={idx}
-                      dataColumns={dataColumns}
-                    />
-                  ))}
-              </>
-            }
-          >
-            <ChannelsLines
-              queryRef={queryRef}
-              paginationOptions={queryPaginationOptions}
-              dataColumns={dataColumns}
-              onLabelClick={helpers.handleAddFilter}
-              setNumberOfElements={helpers.handleSetNumberOfElements}
-            />
-          </React.Suspense>
-        )}
-      </ListLines>
+      <>
+        <BreadcrumbHeader
+          path={[
+            { text: t_i18n('Arsenal') },
+            { text: t_i18n('Channels') },
+          ]}
+        >
+          <div className={ classes.header }>{t_i18n('Channels')}</div>
+        </BreadcrumbHeader>
+        <ListLines
+          helpers={helpers}
+          sortBy={sortBy}
+          orderAsc={orderAsc}
+          dataColumns={dataColumns}
+          handleSort={helpers.handleSort}
+          handleSearch={helpers.handleSearch}
+          handleAddFilter={helpers.handleAddFilter}
+          handleRemoveFilter={helpers.handleRemoveFilter}
+          handleSwitchGlobalMode={helpers.handleSwitchGlobalMode}
+          handleSwitchLocalMode={helpers.handleSwitchLocalMode}
+          handleToggleExports={helpers.handleToggleExports}
+          openExports={openExports}
+          exportContext={{ entity_type: 'Channel' }}
+          keyword={searchTerm}
+          filters={filters}
+          paginationOptions={queryPaginationOptions}
+          numberOfElements={numberOfElements}
+          availableFilterKeys={[
+            'channel_types',
+            'workflow_id',
+            'objectLabel',
+            'objectMarking',
+            'createdBy',
+            'source_reliability',
+            'confidence',
+            'created',
+            'name',
+          ]}
+        >
+          {queryRef && (
+            <React.Suspense
+              fallback={
+                <>
+                  {Array(20)
+                    .fill(0)
+                    .map((_, idx) => (
+                      <ChannelLineDummy
+                        key={idx}
+                        dataColumns={dataColumns}
+                      />
+                    ))}
+                </>
+              }
+            >
+              <ChannelsLines
+                queryRef={queryRef}
+                paginationOptions={queryPaginationOptions}
+                dataColumns={dataColumns}
+                onLabelClick={helpers.handleAddFilter}
+                setNumberOfElements={helpers.handleSetNumberOfElements}
+              />
+            </React.Suspense>
+          )}
+        </ListLines>
+      </>
     );
   };
 

@@ -19,6 +19,9 @@ import FileIndexingConfigurationAndMonitoring from '@components/settings/file_in
 import EnterpriseEdition from '@components/common/entreprise_edition/EnterpriseEdition';
 import { interval } from 'rxjs';
 import Alert from '@mui/material/Alert';
+import BreadcrumbHeader from 'src/components/BreadcrumbHeader';
+import { makeStyles } from '@mui/styles';
+import type { Theme } from 'src/components/Theme';
 import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
 import useAuth from '../../../../utils/hooks/useAuth';
 import { FILE_INDEX_MANAGER } from '../../../../utils/platformModulesHelper';
@@ -26,6 +29,17 @@ import Loader, { LoaderVariant } from '../../../../components/Loader';
 import { FileIndexingConfigurationQuery } from './__generated__/FileIndexingConfigurationQuery.graphql';
 import { TEN_SECONDS } from '../../../../utils/Time';
 import { useFormatter } from '../../../../components/i18n';
+
+const useStyles = makeStyles<Theme>((theme) => ({
+  header: {
+    paddingBottom: 25,
+    color: theme.palette.mode === 'light'
+      ? theme.palette.common.black
+      : theme.palette.primary.main,
+    fontSize: '24px',
+    fontWeight: 'bold',
+  },
+}));
 
 const interval$ = interval(TEN_SECONDS);
 
@@ -133,6 +147,8 @@ const FileIndexingComponent: FunctionComponent<FileIndexingComponentProps> = ({
 };
 
 const FileIndexing = () => {
+  const classes = useStyles();
+  const { t_i18n } = useFormatter();
   const [queryRef, loadQuery] = useQueryLoader<FileIndexingConfigurationQuery>(
     fileIndexingConfigurationQuery,
   );
@@ -149,6 +165,13 @@ const FileIndexing = () => {
 
   return (
     <>
+      <BreadcrumbHeader path={[
+        { text: t_i18n('Settings') },
+        { text: t_i18n('File indexing') },
+      ]}
+      >
+        <div className={ classes.header }>{t_i18n('File indexing')}</div>
+      </BreadcrumbHeader>
       {queryRef && (
         <React.Suspense fallback={<Loader variant={LoaderVariant.container} />}>
           <FileIndexingComponent queryRef={queryRef} refetch={refetch} />

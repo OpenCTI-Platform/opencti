@@ -1,5 +1,6 @@
 import { FunctionComponent } from 'react';
 import { React } from 'mdi-material-ui';
+import { makeStyles } from '@mui/styles';
 import StixCyberObservableCreation from './stix_cyber_observables/StixCyberObservableCreation';
 import Security from '../../../utils/Security';
 import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
@@ -16,10 +17,26 @@ import ExportContextProvider from '../../../utils/ExportContextProvider';
 import useEntityToggle from '../../../utils/hooks/useEntityToggle';
 import { StixCyberObservableLine_node$data } from './stix_cyber_observables/__generated__/StixCyberObservableLine_node.graphql';
 import { buildEntityTypeBasedFilterContext, emptyFilterGroup, getDefaultFilterObjFromArray } from '../../../utils/filters/filtersUtils';
+import type { Theme } from '../../../components/Theme';
+import { useFormatter } from '../../../components/i18n';
+import BreadcrumbHeader from '../../../components/BreadcrumbHeader';
+
+const useStyles = makeStyles<Theme>((theme) => ({
+  header: {
+    paddingBottom: 25,
+    color: theme.palette.mode === 'light'
+      ? theme.palette.common.black
+      : theme.palette.primary.main,
+    fontSize: '24px',
+    fontWeight: 'bold',
+  },
+}));
 
 const LOCAL_STORAGE_KEY = 'stixCyberObservables';
 
 const StixCyberObservables: FunctionComponent = () => {
+  const classes = useStyles();
+  const { t_i18n } = useFormatter();
   const {
     platformModuleHelpers: { isRuntimeFieldEnable },
   } = useAuth();
@@ -124,6 +141,14 @@ const StixCyberObservables: FunctionComponent = () => {
   const renderLines = () => {
     return (
       <>
+        <BreadcrumbHeader
+          path={[
+            { text: t_i18n('Observations') },
+            { text: t_i18n('Observables') },
+          ]}
+        >
+          <div className={ classes.header }>{t_i18n('Observables')}</div>
+        </BreadcrumbHeader>
         <ListLines
           helpers={helpers}
           sortBy={sortBy}

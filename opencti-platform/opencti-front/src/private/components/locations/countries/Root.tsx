@@ -23,6 +23,7 @@ import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import { useFormatter } from '../../../../components/i18n';
 import CountryPopover from './CountryPopover';
+import BreadcrumbHeader from '../../../../components/BreadcrumbHeader';
 
 const subscription = graphql`
   subscription RootCountriesSubscription($id: ID!) {
@@ -77,6 +78,13 @@ const RootCountryComponent = ({ queryRef, countryId, link }) => {
   const { t_i18n } = useFormatter();
   const data = usePreloadedQuery(countryQuery, queryRef);
   const { country, connectorsForImport, connectorsForExport } = data;
+  const path = [
+    { text: t_i18n('Locations') },
+    {
+      text: t_i18n('Countries'),
+      link: '/dashboard/locations/countries',
+    },
+  ];
   return (
     <>
       {country ? (
@@ -89,14 +97,15 @@ const RootCountryComponent = ({ queryRef, countryId, link }) => {
               : 0,
           }}
         >
-          <StixDomainObjectHeader
-            entityType="Country"
-            disableSharing={true}
-            stixDomainObject={country}
-            PopoverComponent={<CountryPopover id={country.id} />}
-            enableQuickSubscription={true}
-            isOpenctiAlias={true}
-          />
+          <BreadcrumbHeader path={path}>
+            <StixDomainObjectHeader
+              entityType="Country"
+              disableSharing={true}
+              stixDomainObject={country}
+              PopoverComponent={<CountryPopover id={country.id} />}
+              enableQuickSubscription={true}
+            isOpenctiAlias={true}/>
+          </BreadcrumbHeader>
           <Box
             sx={{
               borderBottom: 1,

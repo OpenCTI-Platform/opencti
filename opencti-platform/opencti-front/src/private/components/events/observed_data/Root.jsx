@@ -16,6 +16,7 @@ import Loader from '../../../../components/Loader';
 import ContainerStixDomainObjects from '../../common/containers/ContainerStixDomainObjects';
 import ContainerStixCyberObservables from '../../common/containers/ContainerStixCyberObservables';
 import inject18n from '../../../../components/i18n';
+import BreadcrumbHeader from '../../../../components/BreadcrumbHeader';
 
 const subscription = graphql`
   subscription RootObservedDataSubscription($id: ID!) {
@@ -83,6 +84,13 @@ class RootObservedData extends Component {
         params: { observedDataId },
       },
     } = this.props;
+    const path = [
+      { text: t('Events') },
+      {
+        text: t('Observed data'),
+        link: '/dashboard/events/observed_data',
+      },
+    ];
     return (
       <>
         <QueryRenderer
@@ -105,10 +113,12 @@ class RootObservedData extends Component {
                         : 0,
                   }}
                 >
-                  <ContainerHeader
-                    container={observedData}
-                    PopoverComponent={<ObservedDataPopover />}
-                  />
+                  <BreadcrumbHeader path={path}>
+                    <ContainerHeader
+                      container={observedData}
+                      PopoverComponent={<ObservedDataPopover />}
+                    />
+                  </BreadcrumbHeader>
                   <Box
                     sx={{
                       borderBottom: 1,

@@ -6,6 +6,7 @@ import Box from '@mui/material/Box';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
 import * as R from 'ramda';
+import BreadcrumbHeader from '../../../../components/BreadcrumbHeader';
 import { QueryRenderer, requestSubscription } from '../../../../relay/environment';
 import Campaign from './Campaign';
 import CampaignKnowledge from './CampaignKnowledge';
@@ -86,6 +87,15 @@ class RootCampaign extends Component {
       },
     } = this.props;
     const link = `/dashboard/threats/campaigns/${campaignId}/knowledge`;
+    const path = [
+      {
+        text: t('Threats'),
+      },
+      {
+        text: t('Campaigns'),
+        link: '/dashboard/threats/campaigns',
+      },
+    ];
     return (
       <div>
         <Route path="/dashboard/threats/campaigns/:campaignId/knowledge">
@@ -125,12 +135,14 @@ class RootCampaign extends Component {
                         : 0,
                     }}
                   >
-                    <StixDomainObjectHeader
-                      entityType="Campaign"
-                      stixDomainObject={campaign}
-                      PopoverComponent={<CampaignPopover />}
-                      enableQuickSubscription={true}
-                    />
+                    <BreadcrumbHeader path={path}>
+                      <StixDomainObjectHeader
+                        entityType="Campaign"
+                        stixDomainObject={campaign}
+                        PopoverComponent={<CampaignPopover />}
+                        enableQuickSubscription={true}
+                      />
+                    </BreadcrumbHeader>
                     <Box
                       sx={{
                         borderBottom: 1,

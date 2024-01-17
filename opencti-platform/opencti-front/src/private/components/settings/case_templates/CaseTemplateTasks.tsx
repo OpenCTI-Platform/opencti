@@ -13,6 +13,7 @@ import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
 import IconButton from '@mui/material/IconButton';
+import type { Theme } from 'src/components/Theme';
 import ListLines from '../../../../components/list_lines/ListLines';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import { usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStorage';
@@ -32,13 +33,18 @@ import { CaseTemplateLine_node$key } from './__generated__/CaseTemplateLine_node
 import { CaseTemplateLineFragment } from './CaseTemplateLine';
 import { FilterGroup, isFilterGroupNotEmpty, removeIdFromFilterGroupObject } from '../../../../utils/filters/filtersUtils';
 
-const useStyles = makeStyles(() => ({
+const useStyles = makeStyles<Theme>((theme) => ({
   container: {
     margin: 0,
     padding: '0 200px 50px 0',
   },
   title: {
     float: 'left',
+    color: theme.palette.mode === 'light'
+      ? theme.palette.common.black
+      : theme.palette.primary.main,
+    fontSize: '24px',
+    fontWeight: 'bold',
   },
   popover: {
     float: 'left',
@@ -252,6 +258,7 @@ const CaseTemplateTasks = () => {
   };
   return (
     <div className={classes.container}>
+      <LabelsVocabulariesMenu />
       {caseTemplateQueryRef && (
         <>
           <React.Suspense
@@ -266,7 +273,6 @@ const CaseTemplateTasks = () => {
         </>
       )}
       <div className="clearfix" style={{ paddingTop: 16 }} />
-      <LabelsVocabulariesMenu />
       {renderLines()}
     </div>
   );

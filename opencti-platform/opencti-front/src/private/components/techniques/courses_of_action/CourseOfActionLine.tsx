@@ -7,7 +7,7 @@ import ListItemText from '@mui/material/ListItemText';
 import { KeyboardArrowRight } from '@mui/icons-material';
 import Skeleton from '@mui/material/Skeleton';
 import makeStyles from '@mui/styles/makeStyles';
-import { Theme } from '@mui/material/styles/createTheme';
+import type { Theme } from '@mui/material/styles/createTheme';
 import { CourseOfActionLine_node$key } from '@components/techniques/courses_of_action/__generated__/CourseOfActionLine_node.graphql';
 import { useFormatter } from '../../../../components/i18n';
 import StixCoreObjectLabels from '../../common/stix_core_objects/StixCoreObjectLabels';

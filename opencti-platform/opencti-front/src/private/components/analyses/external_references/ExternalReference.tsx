@@ -12,6 +12,8 @@ import ExternalReferenceFileImportViewer from './ExternalReferenceFileImportView
 import ExternalReferenceStixCoreObjects from './ExternalReferenceStixCoreObjects';
 import { ExternalReference_externalReference$data } from './__generated__/ExternalReference_externalReference.graphql';
 import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
+import BreadcrumbHeader from '../../../../components/BreadcrumbHeader';
+import { useFormatter } from '../../../../components/i18n';
 
 const useStyles = makeStyles(() => ({
   container: {
@@ -37,14 +39,24 @@ const ExternalReferenceComponent: FunctionComponent<
 ExternalReferenceComponentProps
 > = ({ externalReference, connectorsImport }) => {
   const classes = useStyles();
+  const { t_i18n } = useFormatter();
+  const path = [
+    { text: t_i18n('Analyses') },
+    {
+      text: t_i18n('External references'),
+      link: '/dashboard/analyses/external_references',
+    },
+  ];
   return (
     <div className={classes.container}>
-      <ExternalReferenceHeader
-        externalReference={externalReference}
-        PopoverComponent={
-          <ExternalReferencePopover id={''} handleRemove={undefined} />
-        }
-      />
+      <BreadcrumbHeader path={path}>
+        <ExternalReferenceHeader
+          externalReference={externalReference}
+          PopoverComponent={
+            <ExternalReferencePopover id={''} handleRemove={undefined} />
+          }
+        />
+      </BreadcrumbHeader>
       <Grid
         container={true}
         spacing={3}

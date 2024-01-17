@@ -36,11 +36,8 @@ const styles = (theme) => ({
     backgroundColor: theme.palette.background.default,
   },
   searchInput: {
-    transition: theme.transitions.create('width'),
-    width: 200,
-    '&:focus': {
-      width: 350,
-    },
+    // transition: theme.transitions.create('width'),
+    width: '100%',
   },
   searchInputSmall: {
     transition: theme.transitions.create('width'),
@@ -93,6 +90,7 @@ class SearchInput extends Component {
             onSubmit(value);
           }
         }}
+        sx={{ width: variant === 'topBar' ? '100%' : 'auto' }}
         InputProps={{
           startAdornment: (
             <InputAdornment position="start">

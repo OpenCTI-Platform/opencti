@@ -8,7 +8,7 @@ import { KeyboardArrowRight } from '@mui/icons-material';
 import Checkbox from '@mui/material/Checkbox';
 import Skeleton from '@mui/material/Skeleton';
 import makeStyles from '@mui/styles/makeStyles';
-import { ArtifactLine_node$data, ArtifactLine_node$key } from '@components/observations/artifacts/__generated__/ArtifactLine_node.graphql';
+import { ArtifactLine_node$data, ArtifactLine_node$key } from './__generated__/ArtifactLine_node.graphql';
 import StixCoreObjectLabels from '../../common/stix_core_objects/StixCoreObjectLabels';
 import ItemMarkings from '../../../../components/ItemMarkings';
 import ItemIcon from '../../../../components/ItemIcon';

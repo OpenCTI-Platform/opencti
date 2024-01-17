@@ -16,6 +16,7 @@ import StixCoreObjectHistory from '../../common/stix_core_objects/StixCoreObject
 import ErrorNotFound from '../../../../components/ErrorNotFound';
 import CourseOfActionKnowledge from './CourseOfActionKnowledge';
 import inject18n from '../../../../components/i18n';
+import BreadcrumbHeader from '../../../../components/BreadcrumbHeader';
 
 const subscription = graphql`
   subscription RootCoursesOfActionSubscription($id: ID!) {
@@ -81,6 +82,15 @@ class RootCourseOfAction extends Component {
         params: { courseOfActionId },
       },
     } = this.props;
+    const path = [
+      {
+        text: t('Techniques'),
+      },
+      {
+        text: t('Courses of action'),
+        link: '/dashboard/techniques/courses_of_action',
+      },
+    ];
     return (
       <div>
         <QueryRenderer
@@ -100,13 +110,14 @@ class RootCourseOfAction extends Component {
                         : 0,
                     }}
                   >
-                    <StixDomainObjectHeader
-                      entityType="Course-Of-Action"
-                      disableSharing={true}
-                      stixDomainObject={props.courseOfAction}
-                      PopoverComponent={<CourseOfActionPopover />}
-                      isOpenctiAlias={true}
-                    />
+                    <BreadcrumbHeader path={path}>
+                      <StixDomainObjectHeader
+                        entityType="Course-Of-Action"
+                        disableSharing={true}
+                        stixDomainObject={props.courseOfAction}
+                        PopoverComponent={<CourseOfActionPopover />}
+                      isOpenctiAlias={true}/>
+                    </BreadcrumbHeader>
                     <Box
                       sx={{
                         borderBottom: 1,

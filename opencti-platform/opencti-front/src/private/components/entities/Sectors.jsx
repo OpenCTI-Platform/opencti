@@ -11,11 +11,20 @@ import SectorCreation from './sectors/SectorCreation';
 import SearchInput from '../../../components/SearchInput';
 import Security from '../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE } from '../../../utils/hooks/useGranted';
+import BreadcrumbHeader from '../../../components/BreadcrumbHeader';
 
-const styles = () => ({
+const styles = (theme) => ({
   parameters: {
     float: 'left',
     marginTop: -10,
+  },
+  header: {
+    paddingBottom: 25,
+    color: theme.palette.mode === 'light'
+      ? theme.palette.common.black
+      : theme.palette.primary.main,
+    fontSize: '24px',
+    fontWeight: 'bold',
   },
 });
 
@@ -54,9 +63,17 @@ class Sectors extends Component {
 
   render() {
     const { searchTerm } = this.state;
-    const { classes } = this.props;
+    const { classes, t } = this.props;
     return (
       <div>
+        <BreadcrumbHeader
+          path={[
+            { text: t('Entities') },
+            { text: t('Sectors') },
+          ]}
+        >
+          <div className={ classes.header }>{t('Sectors')}</div>
+        </BreadcrumbHeader>
         <div className={classes.parameters}>
           <div style={{ float: 'left', marginRight: 20 }}>
             <SearchInput

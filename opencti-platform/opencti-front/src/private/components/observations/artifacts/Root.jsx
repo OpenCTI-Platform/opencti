@@ -18,6 +18,7 @@ import ErrorNotFound from '../../../../components/ErrorNotFound';
 import FileManager from '../../common/files/FileManager';
 import StixSightingRelationship from '../../events/stix_sighting_relationships/StixSightingRelationship';
 import inject18n from '../../../../components/i18n';
+import BreadcrumbHeader from '../../../../components/BreadcrumbHeader';
 
 const subscription = graphql`
   subscription RootArtifactSubscription($id: ID!) {
@@ -85,6 +86,13 @@ class RootArtifact extends Component {
       },
     } = this.props;
     const link = `/dashboard/observations/artifacts/${observableId}/knowledge`;
+    const path = [
+      { text: t('Observations') },
+      {
+        text: t('Artifacts'),
+        link: '/dashboard/observations/artifacts',
+      },
+    ];
     return (
       <>
         <QueryRenderer
@@ -96,10 +104,12 @@ class RootArtifact extends Component {
                 const { stixCyberObservable } = props;
                 return (
                   <>
-                    <StixCyberObservableHeader
-                      stixCyberObservable={stixCyberObservable}
-                      isArtifact={true}
-                    />
+                    <BreadcrumbHeader path={path}>
+                      <StixCyberObservableHeader
+                        stixCyberObservable={stixCyberObservable}
+                        isArtifact={true}
+                      />
+                    </BreadcrumbHeader>
                     <Box
                       sx={{
                         borderBottom: 1,

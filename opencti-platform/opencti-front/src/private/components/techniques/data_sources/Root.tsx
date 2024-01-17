@@ -22,6 +22,7 @@ import DataSource from './DataSource';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import { useFormatter } from '../../../../components/i18n';
+import BreadcrumbHeader from '../../../../components/BreadcrumbHeader';
 
 const subscription = graphql`
   subscription RootDataSourcesSubscription($id: ID!) {
@@ -76,6 +77,15 @@ const RootDataSourceComponent = ({ queryRef, dataSourceId }) => {
   const { t_i18n } = useFormatter();
   const data = usePreloadedQuery(dataSourceQuery, queryRef);
   const { dataSource, connectorsForImport, connectorsForExport, settings } = data;
+  const path = [
+    {
+      text: t_i18n('Techniques'),
+    },
+    {
+      text: t_i18n('Data sources'),
+      link: '/dashboard/techniques/data_sources',
+    },
+  ];
   return (
     <>
       {dataSource ? (
@@ -88,13 +98,14 @@ const RootDataSourceComponent = ({ queryRef, dataSourceId }) => {
               : 0,
           }}
         >
-          <StixDomainObjectHeader
-            entityType={'Data-Source'}
-            disableSharing={true}
-            noAliases={true}
-            stixDomainObject={dataSource}
-            PopoverComponent={<DataSourcePopover id={dataSource.id} />}
-          />
+          <BreadcrumbHeader path={path}>
+            <StixDomainObjectHeader
+              entityType={'Data-Source'}
+              disableSharing={true}
+              noAliases={true}stixDomainObject={dataSource}
+              PopoverComponent={<DataSourcePopover id={dataSource.id} />}
+            />
+          </BreadcrumbHeader>
           <Box
             sx={{ borderBottom: 1, borderColor: 'divider', marginBottom: 4 }}
           >

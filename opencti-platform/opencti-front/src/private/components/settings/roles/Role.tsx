@@ -8,6 +8,7 @@ import ListItem from '@mui/material/ListItem';
 import { Link, useHistory } from 'react-router-dom';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
+import type { Theme } from 'src/components/Theme';
 import AccessesMenu from '../AccessesMenu';
 import { useFormatter } from '../../../../components/i18n';
 import { Role_role$data, Role_role$key } from './__generated__/Role_role.graphql';
@@ -24,7 +25,7 @@ import { groupsSearchQuery } from '../Groups';
 import { GroupsSearchQuery } from '../__generated__/GroupsSearchQuery.graphql';
 import ItemIcon from '../../../../components/ItemIcon';
 
-const useStyles = makeStyles(() => ({
+const useStyles = makeStyles<Theme>((theme) => ({
   container: {
     margin: 0,
     padding: '0 200px 0 0',
@@ -34,6 +35,11 @@ const useStyles = makeStyles(() => ({
   },
   title: {
     float: 'left',
+    color: theme.palette.mode === 'light'
+      ? theme.palette.common.black
+      : theme.palette.primary.main,
+    fontSize: '24px',
+    fontWeight: 'bold',
   },
   popover: {
     float: 'left',

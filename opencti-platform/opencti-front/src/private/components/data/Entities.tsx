@@ -5,6 +5,9 @@ import {
 } from '@components/data/entities/__generated__/EntitiesStixDomainObjectsLinesPaginationQuery.graphql';
 import { EntitiesStixDomainObjectLineDummy } from '@components/data/entities/EntitiesStixDomainObjectLine';
 import { EntitiesStixDomainObjectLine_node$data } from '@components/data/entities/__generated__/EntitiesStixDomainObjectLine_node.graphql';
+import { useFormatter } from 'src/components/i18n';
+import { makeStyles } from '@mui/styles';
+import type { Theme } from 'src/components/Theme';
 import ListLines from '../../../components/list_lines/ListLines';
 import ToolBar from './ToolBar';
 import EntitiesStixDomainObjectsLines, { entitiesStixDomainObjectsLinesQuery } from './entities/EntitiesStixDomainObjectsLines';
@@ -14,10 +17,24 @@ import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage'
 import useEntityToggle from '../../../utils/hooks/useEntityToggle';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
 import { buildEntityTypeBasedFilterContext, emptyFilterGroup, getDefaultFilterObjFromArray } from '../../../utils/filters/filtersUtils';
+import BreadcrumbHeader from '../../../components/BreadcrumbHeader';
+
+const useStyles = makeStyles<Theme>((theme) => ({
+  header: {
+    paddingBottom: 25,
+    color: theme.palette.mode === 'light'
+      ? theme.palette.common.black
+      : theme.palette.primary.main,
+    fontSize: '24px',
+    fontWeight: 'bold',
+  },
+}));
 
 const LOCAL_STORAGE_KEY = 'entities';
 
 const Entities = () => {
+  const classes = useStyles();
+  const { t_i18n } = useFormatter();
   const {
     platformModuleHelpers: { isRuntimeFieldEnable },
   } = useAuth();
@@ -106,6 +123,14 @@ const Entities = () => {
     };
     return (
       <>
+        <BreadcrumbHeader
+          path={[
+            { text: t_i18n('Data') },
+            { text: t_i18n('Entities') },
+          ]}
+        >
+          <div className={ classes.header }>{t_i18n('Entities')}</div>
+        </BreadcrumbHeader>
         <ListLines
           helpers={storageHelpers}
           sortBy={sortBy}

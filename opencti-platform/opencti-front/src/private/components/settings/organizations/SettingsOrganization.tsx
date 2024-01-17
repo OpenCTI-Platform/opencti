@@ -13,6 +13,7 @@ import { graphql, useFragment } from 'react-relay';
 import { Link } from 'react-router-dom';
 import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
 import EnterpriseEdition from '@components/common/entreprise_edition/EnterpriseEdition';
+import type { Theme } from 'src/components/Theme';
 import FieldOrEmpty from '../../../../components/FieldOrEmpty';
 import { useFormatter } from '../../../../components/i18n';
 import { useIsEnforceReference } from '../../../../utils/hooks/useEntitySettings';
@@ -30,7 +31,7 @@ import useGranted, { BYPASS, SETTINGS, SETTINGS_SETACCESSES } from '../../../../
 import Security from '../../../../utils/Security';
 import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
 
-const useStyles = makeStyles({
+const useStyles = makeStyles<Theme>((theme) => ({
   container: {
     margin: 0,
     padding: '0 200px 0 0',
@@ -47,8 +48,13 @@ const useStyles = makeStyles({
   },
   title: {
     float: 'left',
+    color: theme.palette.mode === 'light'
+      ? theme.palette.common.black
+      : theme.palette.primary.main,
+    fontSize: '24px',
+    fontWeight: 'bold',
   },
-});
+}));
 const settingsOrganizationFragment = graphql`
   fragment SettingsOrganization_organization on Organization {
     id

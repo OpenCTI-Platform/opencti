@@ -1,4 +1,5 @@
 import React from 'react';
+import { makeStyles } from '@mui/styles';
 import { QueryRenderer } from '../../../relay/environment';
 import ListLines from '../../../components/list_lines/ListLines';
 import StixSightingRelationshipsLines, { stixSightingRelationshipsLinesQuery } from './stix_sighting_relationships/StixSightingRelationshipsLines';
@@ -12,6 +13,20 @@ import { StixSightingRelationshipLine_node$data } from './stix_sighting_relation
 import ToolBar from '../data/ToolBar';
 import ExportContextProvider from '../../../utils/ExportContextProvider';
 import { buildEntityTypeBasedFilterContext, emptyFilterGroup, getDefaultFilterObjFromArray } from '../../../utils/filters/filtersUtils';
+import type { Theme } from '../../../components/Theme';
+import { useFormatter } from '../../../components/i18n';
+import BreadcrumbHeader from '../../../components/BreadcrumbHeader';
+
+const useStyles = makeStyles<Theme>((theme) => ({
+  header: {
+    paddingBottom: 25,
+    color: theme.palette.mode === 'light'
+      ? theme.palette.common.black
+      : theme.palette.primary.main,
+    fontSize: '24px',
+    fontWeight: 'bold',
+  },
+}));
 
 const dataColumns = {
   x_opencti_negative: {
@@ -63,6 +78,8 @@ const dataColumns = {
 const LOCAL_STORAGE_KEY = 'stixSightingRelationships';
 
 const StixSightingRelationships = () => {
+  const classes = useStyles();
+  const { t_i18n } = useFormatter();
   const {
     viewStorage,
     paginationOptions,
@@ -106,6 +123,14 @@ const StixSightingRelationships = () => {
   const renderLines = () => {
     return (
       <>
+        <BreadcrumbHeader
+          path={[
+            { text: t_i18n('Events') },
+            { text: t_i18n('Sightings') },
+          ]}
+        >
+          <div className={ classes.header }>{t_i18n('Sightings')}</div>
+        </BreadcrumbHeader>
         <ListLines
           helpers={storageHelpers}
           sortBy={sortBy}

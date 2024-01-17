@@ -1,4 +1,5 @@
 import React, { FunctionComponent } from 'react';
+import { makeStyles } from '@mui/styles';
 import ListLines from '../../../components/list_lines/ListLines';
 import NotesLines, { notesLinesQuery } from './notes/NotesLines';
 import Security from '../../../utils/Security';
@@ -14,10 +15,26 @@ import { NoteLine_node$data } from './notes/__generated__/NoteLine_node.graphql'
 import { NotesLinesPaginationQuery, NotesLinesPaginationQuery$variables } from './notes/__generated__/NotesLinesPaginationQuery.graphql';
 import NoteCreation from './notes/NoteCreation';
 import { buildEntityTypeBasedFilterContext, emptyFilterGroup, getDefaultFilterObjFromArray } from '../../../utils/filters/filtersUtils';
+import type { Theme } from '../../../components/Theme';
+import { useFormatter } from '../../../components/i18n';
+import BreadcrumbHeader from '../../../components/BreadcrumbHeader';
+
+const useStyles = makeStyles<Theme>((theme) => ({
+  header: {
+    paddingBottom: 25,
+    color: theme.palette.mode === 'light'
+      ? theme.palette.common.black
+      : theme.palette.primary.main,
+    fontSize: '24px',
+    fontWeight: 'bold',
+  },
+}));
 
 const LOCAL_STORAGE_KEY = 'notes';
 
 const Notes: FunctionComponent = () => {
+  const classes = useStyles();
+  const { t_i18n } = useFormatter();
   const {
     platformModuleHelpers: { isRuntimeFieldEnable },
   } = useAuth();
@@ -113,6 +130,13 @@ const Notes: FunctionComponent = () => {
     };
     return (
       <>
+        <BreadcrumbHeader path={[
+          { text: t_i18n('Analyses') },
+          { text: t_i18n('Notes') },
+        ]}
+        >
+          <div className={ classes.header }>{t_i18n('Notes')}</div>
+        </BreadcrumbHeader>
         <ListLines
           helpers={storageHelpers}
           sortBy={sortBy}

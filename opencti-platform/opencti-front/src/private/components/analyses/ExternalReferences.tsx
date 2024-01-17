@@ -1,4 +1,5 @@
 import React, { FunctionComponent } from 'react';
+import { makeStyles } from '@mui/styles';
 import ListLines from '../../../components/list_lines/ListLines';
 import ExternalReferencesLines, { externalReferencesLinesQuery } from './external_references/ExternalReferencesLines';
 import ExternalReferenceCreation from './external_references/ExternalReferenceCreation';
@@ -16,6 +17,20 @@ import ToolBar from '../data/ToolBar';
 import { ExternalReferenceLineDummy } from './external_references/ExternalReferenceLine';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
 import { buildEntityTypeBasedFilterContext, emptyFilterGroup } from '../../../utils/filters/filtersUtils';
+import type { Theme } from '../../../components/Theme';
+import { useFormatter } from '../../../components/i18n';
+import BreadcrumbHeader from '../../../components/BreadcrumbHeader';
+
+const useStyles = makeStyles<Theme>((theme) => ({
+  header: {
+    paddingBottom: 25,
+    color: theme.palette.mode === 'light'
+      ? theme.palette.common.black
+      : theme.palette.primary.main,
+    fontSize: '24px',
+    fontWeight: 'bold',
+  },
+}));
 
 const LOCAL_STORAGE_KEY = 'externalReferences';
 
@@ -25,6 +40,8 @@ interface ExternalReferencesProps {
 }
 
 const ExternalReferences: FunctionComponent<ExternalReferencesProps> = () => {
+  const classes = useStyles();
+  const { t_i18n } = useFormatter();
   const {
     platformModuleHelpers: { isRuntimeFieldEnable },
   } = useAuth();
@@ -89,6 +106,14 @@ const ExternalReferences: FunctionComponent<ExternalReferencesProps> = () => {
 
   return (
     <>
+      <BreadcrumbHeader
+        path={[
+          { text: t_i18n('Analyses') },
+          { text: t_i18n('External references') },
+        ]}
+      >
+        <div className={ classes.header }>{t_i18n('External references')}</div>
+      </BreadcrumbHeader>
       <ListLines
         helpers={helpers}
         sortBy={sortBy}

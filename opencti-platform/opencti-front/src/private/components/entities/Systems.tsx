@@ -1,6 +1,9 @@
 import React from 'react';
 import { SystemLineDummy } from '@components/entities/systems/SystemLine';
 import { SystemsLinesPaginationQuery, SystemsLinesPaginationQuery$variables } from '@components/entities/systems/__generated__/SystemsLinesPaginationQuery.graphql';
+import { useFormatter } from 'src/components/i18n';
+import { makeStyles } from '@mui/styles';
+import type { Theme } from 'src/components/Theme';
 import ListLines from '../../../components/list_lines/ListLines';
 import SystemsLines, { systemsLinesQuery } from './systems/SystemsLines';
 import SystemCreation from './systems/SystemCreation';
@@ -9,10 +12,24 @@ import { KNOWLEDGE_KNUPDATE } from '../../../utils/hooks/useGranted';
 import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
 import { emptyFilterGroup } from '../../../utils/filters/filtersUtils';
+import BreadcrumbHeader from '../../../components/BreadcrumbHeader';
+
+const useStyles = makeStyles<Theme>((theme) => ({
+  header: {
+    paddingBottom: 25,
+    color: theme.palette.mode === 'light'
+      ? theme.palette.common.black
+      : theme.palette.primary.main,
+    fontSize: '24px',
+    fontWeight: 'bold',
+  },
+}));
 
 const LOCAL_STORAGE_KEY = 'systems';
 
 const Systems = () => {
+  const classes = useStyles();
+  const { t_i18n } = useFormatter();
   const { viewStorage, helpers, paginationOptions } = usePaginationLocalStorage<SystemsLinesPaginationQuery$variables>(
     LOCAL_STORAGE_KEY,
     {
@@ -60,58 +77,68 @@ const Systems = () => {
       paginationOptions,
     );
     return (
-      <ListLines
-        helpers={helpers}
-        sortBy={sortBy}
-        orderAsc={orderAsc}
-        dataColumns={dataColumns}
-        handleSort={helpers.handleSort}
-        handleSearch={helpers.handleSearch}
-        handleAddFilter={helpers.handleAddFilter}
-        handleRemoveFilter={helpers.handleRemoveFilter}
-        handleSwitchGlobalMode={helpers.handleSwitchGlobalMode}
-        handleSwitchLocalMode={helpers.handleSwitchLocalMode}
-        handleToggleExports={helpers.handleToggleExports}
-        openExports={openExports}
-        exportContext={{ entity_type: 'System' }}
-        keyword={searchTerm}
-        filters={filters}
-        paginationOptions={paginationOptions}
-        numberOfElements={numberOfElements}
-        availableFilterKeys={[
-          'objectLabel',
-          'objectMarking',
-          'created',
-          'createdBy',
-          'x_opencti_reliability',
-          'name',
-        ]}
-      >
-        {queryRef && (
-          <React.Suspense
-            fallback={
-              <>
-                {Array(20)
-                  .fill(0)
-                  .map((_, idx) => (
-                    <SystemLineDummy
-                      key={idx}
-                      dataColumns={dataColumns}
-                    />
-                  ))}
-              </>
-            }
-          >
-            <SystemsLines
-              queryRef={queryRef}
-              paginationOptions={paginationOptions}
-              dataColumns={dataColumns}
-              onLabelClick={helpers.handleAddFilter}
-              setNumberOfElements={helpers.handleSetNumberOfElements}
-            />
-          </React.Suspense>
-        )}
-      </ListLines>
+      <>
+        <BreadcrumbHeader
+          path={[
+            { text: t_i18n('Entities') },
+            { text: t_i18n('Systems') },
+          ]}
+        >
+          <div className={ classes.header }>{t_i18n('Systems')}</div>
+        </BreadcrumbHeader>
+        <ListLines
+          helpers={helpers}
+          sortBy={sortBy}
+          orderAsc={orderAsc}
+          dataColumns={dataColumns}
+          handleSort={helpers.handleSort}
+          handleSearch={helpers.handleSearch}
+          handleAddFilter={helpers.handleAddFilter}
+          handleRemoveFilter={helpers.handleRemoveFilter}
+          handleSwitchGlobalMode={helpers.handleSwitchGlobalMode}
+          handleSwitchLocalMode={helpers.handleSwitchLocalMode}
+          handleToggleExports={helpers.handleToggleExports}
+          openExports={openExports}
+          exportContext={{ entity_type: 'System' }}
+          keyword={searchTerm}
+          filters={filters}
+          paginationOptions={paginationOptions}
+          numberOfElements={numberOfElements}
+          availableFilterKeys={[
+            'objectLabel',
+            'objectMarking',
+            'created',
+            'createdBy',
+            'x_opencti_reliability',
+            'name',
+          ]}
+        >
+          {queryRef && (
+            <React.Suspense
+              fallback={
+                <>
+                  {Array(20)
+                    .fill(0)
+                    .map((_, idx) => (
+                      <SystemLineDummy
+                        key={idx}
+                        dataColumns={dataColumns}
+                      />
+                    ))}
+                </>
+              }
+            >
+              <SystemsLines
+                queryRef={queryRef}
+                paginationOptions={paginationOptions}
+                dataColumns={dataColumns}
+                onLabelClick={helpers.handleAddFilter}
+                setNumberOfElements={helpers.handleSetNumberOfElements}
+              />
+            </React.Suspense>
+          )}
+        </ListLines>
+      </>
     );
   };
 

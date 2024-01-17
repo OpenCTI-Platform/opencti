@@ -18,6 +18,7 @@ import StixCoreObjectOrStixCoreRelationshipContainers from '../../common/contain
 import StixCoreObjectKnowledgeBar from '../../common/stix_core_objects/StixCoreObjectKnowledgeBar';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
 import inject18n from '../../../../components/i18n';
+import BreadcrumbHeader from '../../../../components/BreadcrumbHeader';
 
 const subscription = graphql`
   subscription RootVulnerabilitySubscription($id: ID!) {
@@ -86,6 +87,15 @@ class RootVulnerability extends Component {
       },
     } = this.props;
     const link = `/dashboard/arsenal/vulnerabilities/${vulnerabilityId}/knowledge`;
+    const path = [
+      {
+        text: t('Arsenal'),
+      },
+      {
+        text: t('Vulnerabilities'),
+        link: '/dashboard/arsenal/vulnerabilities',
+      },
+    ];
     return (
       <div>
         <Route path="/dashboard/arsenal/vulnerabilities/:vulnerabilityId/knowledge">
@@ -124,13 +134,15 @@ class RootVulnerability extends Component {
                         : 0,
                     }}
                   >
-                    <StixDomainObjectHeader
-                      entityType="Vulnerability"
-                      stixDomainObject={vulnerability}
-                      PopoverComponent={<VulnerabilityPopover />}
-                      enableQuickSubscription={true}
-                      isOpenctiAlias={true}
-                    />
+                    <BreadcrumbHeader path={path}>
+                      <StixDomainObjectHeader
+                        entityType="Vulnerability"
+                        stixDomainObject={vulnerability}
+                        PopoverComponent={<VulnerabilityPopover />}
+                        enableQuickSubscription={true}
+                        isOpenctiAlias={true}
+                      />
+                    </BreadcrumbHeader>
                     <Box
                       sx={{
                         borderBottom: 1,

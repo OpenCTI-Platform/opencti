@@ -17,10 +17,21 @@ import { IndicatorsLinesPaginationQuery, IndicatorsLinesPaginationQuery$variable
 import { ModuleHelper } from '../../../utils/platformModulesHelper';
 import { IndicatorLineDummyComponent } from './indicators/IndicatorLine';
 import { buildEntityTypeBasedFilterContext, emptyFilterGroup, findFilterFromKey, getDefaultFilterObjFromArray } from '../../../utils/filters/filtersUtils';
+import BreadcrumbHeader from '../../../components/BreadcrumbHeader';
+import { useFormatter } from '../../../components/i18n';
+import type { Theme } from '../../../components/Theme';
 
-const useStyles = makeStyles(() => ({
+const useStyles = makeStyles<Theme>((theme) => ({
   container: {
     paddingRight: 250,
+  },
+  header: {
+    paddingBottom: 25,
+    color: theme.palette.mode === 'light'
+      ? theme.palette.common.black
+      : theme.palette.primary.main,
+    fontSize: '24px',
+    fontWeight: 'bold',
   },
 }));
 
@@ -28,7 +39,7 @@ const LOCAL_STORAGE_KEY = 'indicators-list';
 
 const Indicators = () => {
   const classes = useStyles();
-
+  const { t_i18n } = useFormatter();
   const {
     viewStorage,
     paginationOptions,
@@ -149,6 +160,14 @@ const Indicators = () => {
     };
     return (
       <>
+        <BreadcrumbHeader
+          path={[
+            { text: t_i18n('Observations') },
+            { text: t_i18n('Indicators') },
+          ]}
+        >
+          <div className={ classes.header }>{t_i18n('Indicators')}</div>
+        </BreadcrumbHeader>
         <ListLines
           helpers={storageHelpers}
           sortBy={sortBy}

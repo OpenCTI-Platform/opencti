@@ -7,7 +7,7 @@ import { KeyboardArrowRightOutlined } from '@mui/icons-material';
 import Skeleton from '@mui/material/Skeleton';
 import { graphql, useFragment } from 'react-relay';
 import makeStyles from '@mui/styles/makeStyles';
-import { Theme } from '@mui/material/styles/createTheme';
+import type { Theme } from '@mui/material/styles/createTheme';
 import { useFormatter } from '../../../../components/i18n';
 import { DataColumns } from '../../../../components/list_lines';
 import { DataSourceLine_node$key } from './__generated__/DataSourceLine_node.graphql';

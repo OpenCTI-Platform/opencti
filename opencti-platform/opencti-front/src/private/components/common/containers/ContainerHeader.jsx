@@ -43,22 +43,14 @@ import StixCoreObjectFileExport from '../stix_core_objects/StixCoreObjectFileExp
 import Transition from '../../../../components/Transition';
 import { authorizedMembersToOptions } from '../../../../utils/authorizedMembers';
 
-const useStyles = makeStyles({
-  containerDefault: {
-    marginTop: 0,
-  },
-  containerKnowledge: {
-    position: 'absolute',
-    top: 140,
-    right: 24,
-  },
-  containerGraph: {
-    position: 'absolute',
-    top: 140,
-    right: 24,
-  },
+const useStyles = makeStyles((theme) => ({
   title: {
     float: 'left',
+    fontWeight: 'bold',
+    color: theme.palette.mode === 'light'
+      ? theme.palette.common.black
+      : theme.palette.primary.main,
+    fontSize: '24px',
   },
   popover: {
     float: 'left',
@@ -79,7 +71,7 @@ const useStyles = makeStyles({
     margin: '-6px 0 0 0',
     float: 'right',
   },
-});
+}));
 
 export const containerHeaderObjectsQuery = graphql`
   query ContainerHeaderObjectsQuery($id: String!) {

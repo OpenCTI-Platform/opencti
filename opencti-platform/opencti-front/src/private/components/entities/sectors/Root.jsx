@@ -19,6 +19,7 @@ import StixCoreObjectKnowledgeBar from '../../common/stix_core_objects/StixCoreO
 import ErrorNotFound from '../../../../components/ErrorNotFound';
 import EntityStixSightingRelationships from '../../events/stix_sighting_relationships/EntityStixSightingRelationships';
 import inject18n from '../../../../components/i18n';
+import BreadcrumbHeader from '../../../../components/BreadcrumbHeader';
 
 const subscription = graphql`
   subscription RootSectorSubscription($id: ID!) {
@@ -87,6 +88,13 @@ class RootSector extends Component {
       },
     } = this.props;
     const link = `/dashboard/entities/sectors/${sectorId}/knowledge`;
+    const path = [
+      { text: t('Entities') },
+      {
+        text: t('Sectors'),
+        link: '/dashboard/entities/sectors',
+      },
+    ];
     return (
       <>
         <Route path="/dashboard/entities/sectors/:sectorId/knowledge">
@@ -123,14 +131,16 @@ class RootSector extends Component {
                         : 0,
                     }}
                   >
-                    <StixDomainObjectHeader
-                      entityType="Sector"
-                      disableSharing={true}
-                      stixDomainObject={sector}
-                      isOpenctiAlias={true}
-                      enableQuickSubscription={true}
-                      PopoverComponent={<SectorPopover />}
-                    />
+                    <BreadcrumbHeader path={path}>
+                      <StixDomainObjectHeader
+                        entityType="Sector"
+                        disableSharing={true}
+                        stixDomainObject={sector}
+                        isOpenctiAlias={true}
+                        enableQuickSubscription={true}
+                        PopoverComponent={<SectorPopover />}
+                      />
+                    </BreadcrumbHeader>
                     <Box
                       sx={{
                         borderBottom: 1,

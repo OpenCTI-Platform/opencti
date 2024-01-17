@@ -21,6 +21,7 @@ import { buildViewParamsFromUrlAndStorage, saveViewParameters } from '../../../.
 import StixCoreObjectKnowledgeBar from '../../common/stix_core_objects/StixCoreObjectKnowledgeBar';
 import EntityStixSightingRelationships from '../../events/stix_sighting_relationships/EntityStixSightingRelationships';
 import inject18n from '../../../../components/i18n';
+import BreadcrumbHeader from '../../../../components/BreadcrumbHeader';
 
 const subscription = graphql`
   subscription RootIndividualsSubscription($id: ID!) {
@@ -119,6 +120,13 @@ class RootIndividual extends Component {
     } = this.props;
     const { viewAs } = this.state;
     const link = `/dashboard/entities/individuals/${individualId}/knowledge`;
+    const path = [
+      { text: t('Entities') },
+      {
+        text: t('Individuals'),
+        link: '/dashboard/entities/individuals',
+      },
+    ];
     return (
       <>
         <Route path="/dashboard/entities/individuals/:individualId/knowledge">
@@ -158,16 +166,18 @@ class RootIndividual extends Component {
                         : 0,
                     }}
                   >
-                    <StixDomainObjectHeader
-                      entityType="Individual"
-                      disableSharing={true}
-                      stixDomainObject={individual}
-                      isOpenctiAlias={true}
-                      enableQuickSubscription={true}
-                      PopoverComponent={<IndividualPopover />}
-                      onViewAs={this.handleChangeViewAs.bind(this)}
-                      viewAs={viewAs}
-                    />
+                    <BreadcrumbHeader path={path}>
+                      <StixDomainObjectHeader
+                        entityType="Individual"
+                        disableSharing={true}
+                        stixDomainObject={individual}
+                        isOpenctiAlias={true}
+                        enableQuickSubscription={true}
+                        PopoverComponent={<IndividualPopover />}
+                        onViewAs={this.handleChangeViewAs.bind(this)}
+                        viewAs={viewAs}
+                      />
+                    </BreadcrumbHeader>
                     <Box
                       sx={{
                         borderBottom: 1,

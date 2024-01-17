@@ -18,6 +18,7 @@ import StixCoreObjectOrStixCoreRelationshipContainers from '../../common/contain
 import StixCoreObjectKnowledgeBar from '../../common/stix_core_objects/StixCoreObjectKnowledgeBar';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
 import inject18n from '../../../../components/i18n';
+import BreadcrumbHeader from '../../../../components/BreadcrumbHeader';
 
 const subscription = graphql`
   subscription RootAttackPatternSubscription($id: ID!) {
@@ -86,6 +87,15 @@ class RootAttackPattern extends Component {
       },
     } = this.props;
     const link = `/dashboard/techniques/attack_patterns/${attackPatternId}/knowledge`;
+    const path = [
+      {
+        text: t('Techniques'),
+      },
+      {
+        text: t('Attack patterns'),
+        link: '/dashboard/techniques/attack_patterns',
+      },
+    ];
     return (
       <div>
         <Route path="/dashboard/techniques/attack_patterns/:attackPatternId/knowledge">
@@ -123,12 +133,14 @@ class RootAttackPattern extends Component {
                         : 0,
                     }}
                   >
-                    <StixDomainObjectHeader
-                      entityType="AttackPattern"
-                      disableSharing={true}
-                      stixDomainObject={props.attackPattern}
-                      PopoverComponent={<AttackPatternPopover />}
-                    />
+                    <BreadcrumbHeader path={path}>
+                      <StixDomainObjectHeader
+                        entityType="AttackPattern"
+                        disableSharing={true}
+                        stixDomainObject={props.attackPattern}
+                        PopoverComponent={<AttackPatternPopover />}
+                      />
+                    </BreadcrumbHeader>
                     <Box
                       sx={{
                         borderBottom: 1,

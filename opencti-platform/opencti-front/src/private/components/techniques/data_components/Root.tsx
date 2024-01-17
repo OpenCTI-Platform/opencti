@@ -22,6 +22,7 @@ import { RootDataComponentQuery$data } from './__generated__/RootDataComponentQu
 import DataComponentKnowledge from './DataComponentKnowledge';
 import { RootDataComponentSubscription } from './__generated__/RootDataComponentSubscription.graphql';
 import { useFormatter } from '../../../../components/i18n';
+import BreadcrumbHeader from '../../../../components/BreadcrumbHeader';
 
 const subscription = graphql`
   subscription RootDataComponentSubscription($id: ID!) {
@@ -85,6 +86,15 @@ const RootDataComponent = () => {
           if (props) {
             if (props.dataComponent) {
               const { dataComponent } = props;
+              const path = [
+                {
+                  text: t_i18n('Techniques'),
+                },
+                {
+                  text: t_i18n('Data components'),
+                  link: '/dashboard/techniques/data_components',
+                },
+              ];
               return (
                 <div
                   style={{
@@ -95,14 +105,15 @@ const RootDataComponent = () => {
                       : 0,
                   }}
                 >
-                  <StixDomainObjectHeader
-                    entityType="Data-Component"
-                    stixDomainObject={props.dataComponent}
-                    PopoverComponent={
-                      <DataComponentPopover dataComponentId={dataComponentId} />
-                    }
-                    noAliases={true}
-                  />
+                  <BreadcrumbHeader path={path}>
+                    <StixDomainObjectHeader
+                      entityType="Data-Component"
+                      stixDomainObject={props.dataComponent}
+                      PopoverComponent={
+                        <DataComponentPopover dataComponentId={dataComponentId} />
+                      }
+                    noAliases={true}/>
+                  </BreadcrumbHeader>
                   <Box
                     sx={{
                       borderBottom: 1,

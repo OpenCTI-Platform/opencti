@@ -23,6 +23,7 @@ import { RootInfrastructureQuery } from './__generated__/RootInfrastructureQuery
 import Infrastructure from './Infrastructure';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import { useFormatter } from '../../../../components/i18n';
+import BreadcrumbHeader from '../../../../components/BreadcrumbHeader';
 
 const subscription = graphql`
   subscription RootInfrastructureSubscription($id: ID!) {
@@ -78,6 +79,13 @@ const RootInfrastructureComponent = ({ queryRef, infrastructureId }) => {
   useSubscription(subConfig);
   const data = usePreloadedQuery(infrastructureQuery, queryRef);
   const { infrastructure, connectorsForImport, connectorsForExport } = data;
+  const path = [
+    { text: t_i18n('Observations') },
+    {
+      text: t_i18n('Infrastructures'),
+      link: '/dashboard/observations/infrastructures',
+    },
+  ];
   return (
     <>
       {infrastructure ? (
@@ -90,12 +98,14 @@ const RootInfrastructureComponent = ({ queryRef, infrastructureId }) => {
               : 0,
           }}
         >
-          <StixDomainObjectHeader
-            entityType="Infrastructure"
-            stixDomainObject={infrastructure}
-            PopoverComponent={InfrastructurePopover}
-            enableQuickSubscription={true}
-          />
+          <BreadcrumbHeader path={path}>
+            <StixDomainObjectHeader
+              entityType="Infrastructure"
+              stixDomainObject={infrastructure}
+              PopoverComponent={InfrastructurePopover}
+              enableQuickSubscription={true}
+            />
+          </BreadcrumbHeader>
           <Box
             sx={{ borderBottom: 1, borderColor: 'divider', marginBottom: 4 }}
           >

@@ -6,10 +6,16 @@ import { truncate } from '../../../../utils/String';
 import Security from '../../../../utils/Security';
 import { ExternalReferenceHeader_externalReference$data } from './__generated__/ExternalReferenceHeader_externalReference.graphql';
 import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
+import type { Theme } from '../../../../components/Theme';
 
-const useStyles = makeStyles(() => ({
+const useStyles = makeStyles<Theme>((theme) => ({
   title: {
     float: 'left',
+    color: theme.palette.mode === 'light'
+      ? theme.palette.common.black
+      : theme.palette.primary.main,
+    fontSize: '24px',
+    fontWeight: 'bold',
   },
   popover: {
     float: 'left',

@@ -19,6 +19,7 @@ import StixCoreObjectKnowledgeBar from '../../common/stix_core_objects/StixCoreO
 import ErrorNotFound from '../../../../components/ErrorNotFound';
 import EntityStixSightingRelationships from '../../events/stix_sighting_relationships/EntityStixSightingRelationships';
 import inject18n from '../../../../components/i18n';
+import BreadcrumbHeader from '../../../../components/BreadcrumbHeader';
 
 const subscription = graphql`
   subscription RootPositionsSubscription($id: ID!) {
@@ -85,6 +86,13 @@ class RootPosition extends Component {
       },
     } = this.props;
     const link = `/dashboard/locations/positions/${positionId}/knowledge`;
+    const path = [
+      { text: t('Locations') },
+      {
+        text: t('Positions'),
+        link: '/dashboard/locations/positions',
+      },
+    ];
     return (
       <>
         <Route path="/dashboard/locations/positions/:positionId/knowledge">
@@ -125,14 +133,15 @@ class RootPosition extends Component {
                         : 0,
                     }}
                   >
-                    <StixDomainObjectHeader
-                      entityType="Position"
-                      disableSharing={true}
-                      stixDomainObject={props.position}
-                      PopoverComponent={<PositionPopover />}
-                      enableQuickSubscription={true}
-                      isOpenctiAlias={true}
-                    />
+                    <BreadcrumbHeader path={path}>
+                      <StixDomainObjectHeader
+                        entityType="Position"
+                        disableSharing={true}
+                        stixDomainObject={props.position}
+                        PopoverComponent={<PositionPopover />}
+                        enableQuickSubscription={true}
+                      isOpenctiAlias={true}/>
+                    </BreadcrumbHeader>
                     <Box
                       sx={{
                         borderBottom: 1,

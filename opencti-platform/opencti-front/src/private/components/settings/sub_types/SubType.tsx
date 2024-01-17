@@ -3,6 +3,7 @@ import React, { useMemo } from 'react';
 import Paper from '@mui/material/Paper';
 import makeStyles from '@mui/styles/makeStyles';
 import { graphql, useFragment, useSubscription } from 'react-relay';
+import type { Theme } from 'src/components/Theme';
 import { useFormatter } from '../../../../components/i18n';
 import ItemStatusTemplate from '../../../../components/ItemStatusTemplate';
 import SubTypeStatusPopover from './SubTypeWorkflowPopover';
@@ -14,7 +15,7 @@ import SearchInput from '../../../../components/SearchInput';
 import { usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStorage';
 import { DataSourcesLinesPaginationQuery$variables } from '../../techniques/data_sources/__generated__/DataSourcesLinesPaginationQuery.graphql';
 
-const useStyles = makeStyles(() => ({
+const useStyles = makeStyles<Theme>((theme) => ({
   container: {
     margin: 0,
     padding: '0 200px 50px 0',
@@ -26,6 +27,13 @@ const useStyles = makeStyles(() => ({
     padding: '15px',
     borderRadius: 6,
     position: 'relative',
+  },
+  title: {
+    color: theme.palette.mode === 'light'
+      ? theme.palette.common.black
+      : theme.palette.primary.main,
+    fontSize: '24px',
+    fontWeight: 'bold',
   },
 }));
 
@@ -86,7 +94,7 @@ const SubType = ({ data }: { data: SubType_subType$key }) => {
     <div className={classes.container}>
       <CustomizationMenu />
       <div style={{ marginBottom: 23 }}>
-        <Typography variant="h1" gutterBottom={true}>
+        <Typography variant="h1" gutterBottom={true} className={ classes.title }>
           {t_i18n(`entity_${subType.label}`)}
         </Typography>
       </div>

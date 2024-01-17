@@ -18,6 +18,7 @@ import ContainerStixCyberObservables from '../../common/containers/ContainerStix
 import ErrorNotFound from '../../../../components/ErrorNotFound';
 import StixCoreObjectFilesAndHistory from '../../common/stix_core_objects/StixCoreObjectFilesAndHistory';
 import inject18n from '../../../../components/i18n';
+import BreadcrumbHeader from '../../../../components/BreadcrumbHeader';
 
 const subscription = graphql`
   subscription RootGroupingSubscription($id: ID!) {
@@ -96,6 +97,13 @@ class RootGrouping extends Component {
             if (props) {
               if (props.grouping) {
                 const { grouping } = props;
+                const path = [
+                  { text: t('Analyses') },
+                  {
+                    text: t('Groupings'),
+                    link: '/dashboard/analyses/groupings',
+                  },
+                ];
                 let paddingRight = 0;
                 if (
                   location.pathname.includes(
@@ -116,12 +124,14 @@ class RootGrouping extends Component {
                 }
                 return (
                   <div style={{ paddingRight }}>
-                    <ContainerHeader
-                      container={grouping}
-                      PopoverComponent={<GroupingPopover />}
-                      enableQuickSubscription={true}
-                      enableQuickExport={true}
-                    />
+                    <BreadcrumbHeader path={path}>
+                      <ContainerHeader
+                        container={grouping}
+                        PopoverComponent={<GroupingPopover />}
+                        enableQuickSubscription={true}
+                        enableQuickExport={true}
+                      />
+                    </BreadcrumbHeader>
                     <Box
                       sx={{
                         borderBottom: 1,

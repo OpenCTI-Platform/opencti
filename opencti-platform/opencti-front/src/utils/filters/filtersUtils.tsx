@@ -199,7 +199,7 @@ export const findFiltersFromKeys = (
   keys: string[],
   operator?: string,
 ) => {
-  const result = [];
+  const result: Filter[] = [];
   for (const filter of filters) {
     if (keys.includes(filter.key)) {
       if (operator && filter.operator === operator) {
@@ -260,7 +260,7 @@ export const buildFiltersAndOptionsForWidgets = (
     filters = removeEntityTypeAllFromFilterGroup(filters);
   }
   // 03. handle startDate and endDate options
-  const dateFiltersContent = [];
+  const dateFiltersContent: Filter[] = [];
   if (startDate) {
     dateFiltersContent.push({
       key: dateAttribute,

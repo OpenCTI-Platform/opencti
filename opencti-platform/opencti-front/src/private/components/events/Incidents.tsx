@@ -1,4 +1,5 @@
 import React, { FunctionComponent } from 'react';
+import { makeStyles } from '@mui/styles';
 import ListLines from '../../../components/list_lines/ListLines';
 import IncidentsLines, { incidentsLinesPaginationQuery } from './incidents/IncidentsLines';
 import IncidentCreation from './incidents/IncidentCreation';
@@ -14,10 +15,26 @@ import ToolBar from '../data/ToolBar';
 import ExportContextProvider from '../../../utils/ExportContextProvider';
 import { IncidentsLinesPaginationQuery, IncidentsLinesPaginationQuery$variables } from './incidents/__generated__/IncidentsLinesPaginationQuery.graphql';
 import { buildEntityTypeBasedFilterContext, emptyFilterGroup } from '../../../utils/filters/filtersUtils';
+import type { Theme } from '../../../components/Theme';
+import BreadcrumbHeader from '../../../components/BreadcrumbHeader';
+import { useFormatter } from '../../../components/i18n';
 
 export const LOCAL_STORAGE_KEY = 'incidents';
 
+const useStyles = makeStyles<Theme>((theme) => ({
+  header: {
+    paddingBottom: 25,
+    color: theme.palette.mode === 'light'
+      ? theme.palette.common.black
+      : theme.palette.primary.main,
+    fontSize: '24px',
+    fontWeight: 'bold',
+  },
+}));
+
 const Incidents: FunctionComponent = () => {
+  const classes = useStyles();
+  const { t_i18n } = useFormatter();
   const {
     platformModuleHelpers: { isRuntimeFieldEnable },
   } = useAuth();
@@ -111,6 +128,14 @@ const Incidents: FunctionComponent = () => {
   const renderLines = () => {
     return (
       <>
+        <BreadcrumbHeader
+          path={[
+            { text: t_i18n('Events') },
+            { text: t_i18n('Incidents') },
+          ]}
+        >
+          <div className={ classes.header }>{t_i18n('Incidents')}</div>
+        </BreadcrumbHeader>
         <ListLines
           helpers={helpers}
           sortBy={sortBy}

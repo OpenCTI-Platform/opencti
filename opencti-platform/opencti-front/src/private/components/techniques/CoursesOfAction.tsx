@@ -5,6 +5,7 @@ import {
 } from '@components/techniques/courses_of_action/__generated__/CoursesOfActionLinesPaginationQuery.graphql';
 import { CourseOfActionLineDummy } from '@components/techniques/courses_of_action/CourseOfActionLine';
 import CourseOfActionCreation from '@components/techniques/courses_of_action/CourseOfActionCreation';
+import { makeStyles } from '@mui/styles';
 import ListLines from '../../../components/list_lines/ListLines';
 import CoursesOfActionLines, { coursesOfActionLinesQuery } from './courses_of_action/CoursesOfActionLines';
 import Security from '../../../utils/Security';
@@ -12,10 +13,26 @@ import { KNOWLEDGE_KNUPDATE } from '../../../utils/hooks/useGranted';
 import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
 import { emptyFilterGroup } from '../../../utils/filters/filtersUtils';
+import type { Theme } from '../../../components/Theme';
+import { useFormatter } from '../../../components/i18n';
+import BreadcrumbHeader from '../../../components/BreadcrumbHeader';
+
+const useStyles = makeStyles<Theme>((theme) => ({
+  header: {
+    paddingBottom: 25,
+    color: theme.palette.mode === 'light'
+      ? theme.palette.common.black
+      : theme.palette.primary.main,
+    fontSize: '24px',
+    fontWeight: 'bold',
+  },
+}));
 
 const LOCAL_STORAGE_KEY = 'coursesOfAction';
 
 const CoursesOfAction = () => {
+  const classes = useStyles();
+  const { t_i18n } = useFormatter();
   const { viewStorage, helpers, paginationOptions } = usePaginationLocalStorage<CoursesOfActionLinesPaginationQuery$variables>(
     LOCAL_STORAGE_KEY,
     {
@@ -62,61 +79,71 @@ const CoursesOfAction = () => {
       paginationOptions,
     );
     return (
-      <ListLines
-        helpers={helpers}
-        sortBy={sortBy}
-        orderAsc={orderAsc}
-        dataColumns={dataColumns}
-        handleSort={helpers.handleSort}
-        handleSearch={helpers.handleSearch}
-        handleAddFilter={helpers.handleAddFilter}
-        handleRemoveFilter={helpers.handleRemoveFilter}
-        handleSwitchGlobalMode={helpers.handleSwitchGlobalMode}
-        handleSwitchLocalMode={helpers.handleSwitchLocalMode}
-        handleToggleExports={helpers.handleToggleExports}
-        openExports={openExports}
-        exportContext={{ entity_type: 'Course-Of-Action' }}
-        keyword={searchTerm}
-        filters={filters}
-        paginationOptions={paginationOptions}
-        numberOfElements={numberOfElements}
-        availableFilterKeys={[
-          'workflow_id',
-          'objectLabel',
-          'objectMarking',
-          'createdBy',
-          'source_reliability',
-          'creator_id',
-          'created',
-          'revoked',
-          'name',
-        ]}
-      >
-        {queryRef && (
-          <React.Suspense
-            fallback={
-              <>
-                {Array(20)
-                  .fill(0)
-                  .map((_, idx) => (
-                    <CourseOfActionLineDummy
-                      key={idx}
-                      dataColumns={dataColumns}
-                    />
-                  ))}
-              </>
-            }
-          >
-            <CoursesOfActionLines
-              queryRef={queryRef}
-              paginationOptions={paginationOptions}
-              dataColumns={dataColumns}
-              onLabelClick={helpers.handleAddFilter}
-              setNumberOfElements={helpers.handleSetNumberOfElements}
-            />
-          </React.Suspense>
-        )}
-      </ListLines>
+      <>
+        <BreadcrumbHeader
+          path={[
+            { text: t_i18n('Techniques') },
+            { text: t_i18n('Courses of action') },
+          ]}
+        >
+          <div className={ classes.header }>{t_i18n('Courses of action')}</div>
+        </BreadcrumbHeader>
+        <ListLines
+          helpers={helpers}
+          sortBy={sortBy}
+          orderAsc={orderAsc}
+          dataColumns={dataColumns}
+          handleSort={helpers.handleSort}
+          handleSearch={helpers.handleSearch}
+          handleAddFilter={helpers.handleAddFilter}
+          handleRemoveFilter={helpers.handleRemoveFilter}
+          handleSwitchGlobalMode={helpers.handleSwitchGlobalMode}
+          handleSwitchLocalMode={helpers.handleSwitchLocalMode}
+          handleToggleExports={helpers.handleToggleExports}
+          openExports={openExports}
+          exportContext={{ entity_type: 'Course-Of-Action' }}
+          keyword={searchTerm}
+          filters={filters}
+          paginationOptions={paginationOptions}
+          numberOfElements={numberOfElements}
+          availableFilterKeys={[
+            'workflow_id',
+            'objectLabel',
+            'objectMarking',
+            'createdBy',
+            'source_reliability',
+            'creator_id',
+            'created',
+            'revoked',
+            'name',
+          ]}
+        >
+          {queryRef && (
+            <React.Suspense
+              fallback={
+                <>
+                  {Array(20)
+                    .fill(0)
+                    .map((_, idx) => (
+                      <CourseOfActionLineDummy
+                        key={idx}
+                        dataColumns={dataColumns}
+                      />
+                    ))}
+                </>
+              }
+            >
+              <CoursesOfActionLines
+                queryRef={queryRef}
+                paginationOptions={paginationOptions}
+                dataColumns={dataColumns}
+                onLabelClick={helpers.handleAddFilter}
+                setNumberOfElements={helpers.handleSetNumberOfElements}
+              />
+            </React.Suspense>
+          )}
+        </ListLines>
+      </>
     );
   };
 

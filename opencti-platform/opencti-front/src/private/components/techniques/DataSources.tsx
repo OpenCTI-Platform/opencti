@@ -1,4 +1,5 @@
 import React, { FunctionComponent } from 'react';
+import { makeStyles } from '@mui/styles';
 import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
 import ListLines from '../../../components/list_lines/ListLines';
 import Security from '../../../utils/Security';
@@ -9,10 +10,26 @@ import DataSourcesLines, { dataSourcesLinesQuery } from './data_sources/DataSour
 import { DataSourcesLinesPaginationQuery, DataSourcesLinesPaginationQuery$variables } from './data_sources/__generated__/DataSourcesLinesPaginationQuery.graphql';
 import { DataSourceLineDummy } from './data_sources/DataSourceLine';
 import { emptyFilterGroup } from '../../../utils/filters/filtersUtils';
+import type { Theme } from '../../../components/Theme';
+import { useFormatter } from '../../../components/i18n';
+import BreadcrumbHeader from '../../../components/BreadcrumbHeader';
 
 export const LOCAL_STORAGE_KEY_DATA_SOURCES = 'dataSources';
 
+const useStyles = makeStyles<Theme>((theme) => ({
+  header: {
+    paddingBottom: 25,
+    color: theme.palette.mode === 'light'
+      ? theme.palette.common.black
+      : theme.palette.primary.main,
+    fontSize: '24px',
+    fontWeight: 'bold',
+  },
+}));
+
 const DataSources: FunctionComponent = () => {
+  const classes = useStyles();
+  const { t_i18n } = useFormatter();
   const { viewStorage, helpers, paginationOptions } = usePaginationLocalStorage<DataSourcesLinesPaginationQuery$variables>(
     LOCAL_STORAGE_KEY_DATA_SOURCES,
     {
@@ -63,58 +80,68 @@ const DataSources: FunctionComponent = () => {
       paginationOptions,
     );
     return (
-      <ListLines
-        helpers={helpers}
-        sortBy={sortBy}
-        orderAsc={orderAsc}
-        dataColumns={dataColumns}
-        handleSort={helpers.handleSort}
-        handleSearch={helpers.handleSearch}
-        handleAddFilter={helpers.handleAddFilter}
-        handleRemoveFilter={helpers.handleRemoveFilter}
-        handleSwitchGlobalMode={helpers.handleSwitchGlobalMode}
-        handleSwitchLocalMode={helpers.handleSwitchLocalMode}
-        handleToggleExports={helpers.handleToggleExports}
-        openExports={openExports}
-        exportContext={{ entity_type: 'Data-Source' }}
-        keyword={searchTerm}
-        filters={filters}
-        paginationOptions={paginationOptions}
-        numberOfElements={numberOfElements}
-        availableFilterKeys={[
-          'workflow_id',
-          'objectLabel',
-          'objectMarking',
-          'createdBy',
-          'source_reliability',
-          'confidence',
-          'created',
-          'revoked',
-          'name',
-        ]}
-      >
-        {queryRef && (
-          <React.Suspense
-            fallback={
-              <>
-                {Array(20)
-                  .fill(0)
-                  .map((_, idx) => (
-                    <DataSourceLineDummy key={idx} dataColumns={dataColumns} />
-                  ))}
-              </>
-            }
-          >
-            <DataSourcesLines
-              queryRef={queryRef}
-              paginationOptions={paginationOptions}
-              dataColumns={dataColumns}
-              onLabelClick={helpers.handleAddFilter}
-              setNumberOfElements={helpers.handleSetNumberOfElements}
-            />
-          </React.Suspense>
-        )}
-      </ListLines>
+      <>
+        <BreadcrumbHeader
+          path={[
+            { text: t_i18n('Techniques') },
+            { text: t_i18n('Data sources') },
+          ]}
+        >
+          <div className={ classes.header }>{t_i18n('Data sources')}</div>
+        </BreadcrumbHeader>
+        <ListLines
+          helpers={helpers}
+          sortBy={sortBy}
+          orderAsc={orderAsc}
+          dataColumns={dataColumns}
+          handleSort={helpers.handleSort}
+          handleSearch={helpers.handleSearch}
+          handleAddFilter={helpers.handleAddFilter}
+          handleRemoveFilter={helpers.handleRemoveFilter}
+          handleSwitchGlobalMode={helpers.handleSwitchGlobalMode}
+          handleSwitchLocalMode={helpers.handleSwitchLocalMode}
+          handleToggleExports={helpers.handleToggleExports}
+          openExports={openExports}
+          exportContext={{ entity_type: 'Data-Source' }}
+          keyword={searchTerm}
+          filters={filters}
+          paginationOptions={paginationOptions}
+          numberOfElements={numberOfElements}
+          availableFilterKeys={[
+            'workflow_id',
+            'objectLabel',
+            'objectMarking',
+            'createdBy',
+            'source_reliability',
+            'confidence',
+            'created',
+            'revoked',
+            'name',
+          ]}
+        >
+          {queryRef && (
+            <React.Suspense
+              fallback={
+                <>
+                  {Array(20)
+                    .fill(0)
+                    .map((_, idx) => (
+                      <DataSourceLineDummy key={idx} dataColumns={dataColumns} />
+                    ))}
+                </>
+              }
+            >
+              <DataSourcesLines
+                queryRef={queryRef}
+                paginationOptions={paginationOptions}
+                dataColumns={dataColumns}
+                onLabelClick={helpers.handleAddFilter}
+                setNumberOfElements={helpers.handleSetNumberOfElements}
+              />
+            </React.Suspense>
+          )}
+        </ListLines>
+      </>
     );
   };
   return (

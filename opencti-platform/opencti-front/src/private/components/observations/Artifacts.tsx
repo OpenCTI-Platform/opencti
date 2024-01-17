@@ -1,7 +1,8 @@
 import React, { FunctionComponent } from 'react';
-import { ArtifactLine_node$data } from '@components/observations/artifacts/__generated__/ArtifactLine_node.graphql';
-import { ArtifactsLinesPaginationQuery, ArtifactsLinesPaginationQuery$variables } from '@components/observations/artifacts/__generated__/ArtifactsLinesPaginationQuery.graphql';
-import { ArtifactLineDummy } from '@components/observations/artifacts/ArtifactLine';
+import { makeStyles } from '@mui/styles';
+import { ArtifactLine_node$data } from './artifacts/__generated__/ArtifactLine_node.graphql';
+import { ArtifactsLinesPaginationQuery, ArtifactsLinesPaginationQuery$variables } from './artifacts/__generated__/ArtifactsLinesPaginationQuery.graphql';
+import { ArtifactLineDummy } from './artifacts/ArtifactLine';
 import ListLines from '../../../components/list_lines/ListLines';
 import Security from '../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE } from '../../../utils/hooks/useGranted';
@@ -14,10 +15,26 @@ import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage'
 import useEntityToggle from '../../../utils/hooks/useEntityToggle';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
 import { buildEntityTypeBasedFilterContext, emptyFilterGroup } from '../../../utils/filters/filtersUtils';
+import type { Theme } from '../../../components/Theme';
+import { useFormatter } from '../../../components/i18n';
+import BreadcrumbHeader from '../../../components/BreadcrumbHeader';
+
+const useStyles = makeStyles<Theme>((theme) => ({
+  header: {
+    paddingBottom: 25,
+    color: theme.palette.mode === 'light'
+      ? theme.palette.common.black
+      : theme.palette.primary.main,
+    fontSize: '24px',
+    fontWeight: 'bold',
+  },
+}));
 
 const LOCAL_STORAGE_KEY = 'artifacts';
 
 const Artifacts: FunctionComponent = () => {
+  const classes = useStyles();
+  const { t_i18n } = useFormatter();
   const {
     platformModuleHelpers: { isRuntimeFieldEnable },
   } = useAuth();
@@ -113,6 +130,14 @@ const Artifacts: FunctionComponent = () => {
   const renderLines = () => {
     return (
       <>
+        <BreadcrumbHeader
+          path={[
+            { text: t_i18n('Observations') },
+            { text: t_i18n('Artifacts') },
+          ]}
+        >
+          <div className={ classes.header }>{t_i18n('Artifacts')}</div>
+        </BreadcrumbHeader>
         <ListLines
           helpers={helpers}
           sortBy={sortBy}

@@ -18,6 +18,7 @@ import StixCoreObjectOrStixCoreRelationshipContainers from '../../common/contain
 import StixCoreObjectKnowledgeBar from '../../common/stix_core_objects/StixCoreObjectKnowledgeBar';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
 import inject18n from '../../../../components/i18n';
+import BreadcrumbHeader from '../../../../components/BreadcrumbHeader';
 
 const subscription = graphql`
   subscription RootNarrativeSubscription($id: ID!) {
@@ -86,6 +87,15 @@ class RootNarrative extends Component {
       },
     } = this.props;
     const link = `/dashboard/techniques/narratives/${narrativeId}/knowledge`;
+    const path = [
+      {
+        text: t('Techniques'),
+      },
+      {
+        text: t('Narratives'),
+        link: '/dashboard/techniques/narratives',
+      },
+    ];
     return (
       <div>
         <Route path="/dashboard/techniques/narratives/:narrativeId/knowledge">
@@ -119,12 +129,14 @@ class RootNarrative extends Component {
                         : 0,
                     }}
                   >
-                    <StixDomainObjectHeader
-                      entityType="Narrative"
-                      disableSharing={true}
-                      stixDomainObject={props.narrative}
-                      PopoverComponent={<NarrativePopover />}
-                    />
+                    <BreadcrumbHeader path={path}>
+                      <StixDomainObjectHeader
+                        entityType="Narrative"
+                        disableSharing={true}
+                        stixDomainObject={props.narrative}
+                        PopoverComponent={<NarrativePopover />}
+                      />
+                    </BreadcrumbHeader>
                     <Box
                       sx={{
                         borderBottom: 1,

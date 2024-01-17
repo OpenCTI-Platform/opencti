@@ -10,6 +10,7 @@ import Box from '@mui/material/Box';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
 import { useLocation } from 'react-router-dom-v5-compat';
+import BreadcrumbHeader from 'src/components/BreadcrumbHeader';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
@@ -93,6 +94,15 @@ const RootThreatActorIndividualComponent = ({
     queryRef,
   );
   const link = `/dashboard/threats/threat_actors_individual/${threatActorIndividualId}/knowledge`;
+  const path = [
+    {
+      text: t_i18n('Threats'),
+    },
+    {
+      text: t_i18n('Threat actors (individual)'),
+      link: '/dashboard/threats/threat_actors_individual',
+    },
+  ];
   return (
     <>
       <Route path="/dashboard/threats/threat_actors_individual/:threatActorIndividualId/knowledge">
@@ -130,12 +140,14 @@ const RootThreatActorIndividualComponent = ({
                 : 0,
             }}
           >
-            <StixDomainObjectHeader
-              entityType="Threat-Actor-Individual"
-              stixDomainObject={data}
-              PopoverComponent={ThreatActorIndividualPopover}
-              enableQuickSubscription={true}
-            />
+            <BreadcrumbHeader path={path}>
+              <StixDomainObjectHeader
+                entityType="Threat-Actor-Individual"
+                stixDomainObject={data}
+                PopoverComponent={ThreatActorIndividualPopover}
+                enableQuickSubscription={true}
+              />
+            </BreadcrumbHeader>
             <Box
               sx={{ borderBottom: 1, borderColor: 'divider', marginBottom: 4 }}
             >

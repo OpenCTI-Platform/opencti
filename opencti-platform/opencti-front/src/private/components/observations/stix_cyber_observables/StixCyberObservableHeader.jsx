@@ -7,9 +7,14 @@ import { truncate } from '../../../../utils/String';
 import StixCoreObjectEnrichment from '../../common/stix_core_objects/StixCoreObjectEnrichment';
 import StixCoreObjectSharing from '../../common/stix_core_objects/StixCoreObjectSharing';
 
-const useStyles = makeStyles(() => ({
+const useStyles = makeStyles((theme) => ({
   title: {
     float: 'left',
+    color: theme.palette.mode === 'light'
+      ? theme.palette.common.black
+      : theme.palette.primary.main,
+    fontSize: '24px',
+    fontWeight: 'bold',
   },
   popover: {
     float: 'left',

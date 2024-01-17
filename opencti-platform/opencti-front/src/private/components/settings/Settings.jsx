@@ -13,6 +13,7 @@ import ListItem from '@mui/material/ListItem';
 import ListItemText from '@mui/material/ListItemText';
 import { makeStyles } from '@mui/styles';
 import Switch from '@mui/material/Switch';
+import BreadcrumbHeader from '../../../components/BreadcrumbHeader';
 import EEChip from '../common/entreprise_edition/EEChip';
 import EnterpriseEditionButton from '../common/entreprise_edition/EnterpriseEditionButton';
 import { SubscriptionFocus } from '../../../components/Subscription';
@@ -30,7 +31,7 @@ import SettingsAnalytics from './settings_analytics/SettingsAnalytics';
 import ItemBoolean from '../../../components/ItemBoolean';
 import { availableLanguage } from '../../../components/AppIntlProvider';
 
-const useStyles = makeStyles(() => ({
+const useStyles = makeStyles((theme) => ({
   container: {
     margin: '0 0 60px 0',
   },
@@ -44,6 +45,14 @@ const useStyles = makeStyles(() => ({
   button: {
     float: 'right',
     marginTop: -30,
+  },
+  header: {
+    paddingBottom: 25,
+    color: theme.palette.mode === 'light'
+      ? theme.palette.common.black
+      : theme.palette.primary.main,
+    fontSize: '24px',
+    fontWeight: 'bold',
   },
 }));
 
@@ -245,6 +254,13 @@ const Settings = () => {
   };
   return (
     <div className={classes.container}>
+      <BreadcrumbHeader path={[
+        { text: t_i18n('Settings') },
+        { text: t_i18n('Parameters') },
+      ]}
+      >
+        <div className={ classes.header }>{t_i18n('Parameters')}</div>
+      </BreadcrumbHeader>
       <QueryRenderer
         query={settingsQuery}
         render={({ props }) => {

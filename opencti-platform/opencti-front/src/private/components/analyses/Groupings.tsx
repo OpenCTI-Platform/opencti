@@ -1,4 +1,5 @@
 import React, { FunctionComponent } from 'react';
+import { makeStyles } from '@mui/styles';
 import ListLines from '../../../components/list_lines/ListLines';
 import GroupingsLines, { groupingsLinesQuery } from './groupings/GroupingsLines';
 import GroupingCreation from './groupings/GroupingCreation';
@@ -13,6 +14,20 @@ import { GroupingsLinesPaginationQuery, GroupingsLinesPaginationQuery$variables 
 import { GroupingLine_node$data } from './groupings/__generated__/GroupingLine_node.graphql';
 import { GroupingLineDummy } from './groupings/GroupingLine';
 import { buildEntityTypeBasedFilterContext, emptyFilterGroup, getDefaultFilterObjFromArray } from '../../../utils/filters/filtersUtils';
+import { useFormatter } from '../../../components/i18n';
+import type { Theme } from '../../../components/Theme';
+import BreadcrumbHeader from '../../../components/BreadcrumbHeader';
+
+const useStyles = makeStyles<Theme>((theme) => ({
+  header: {
+    paddingBottom: 25,
+    color: theme.palette.mode === 'light'
+      ? theme.palette.common.black
+      : theme.palette.primary.main,
+    fontSize: '24px',
+    fontWeight: 'bold',
+  },
+}));
 
 const LOCAL_STORAGE_KEY = 'groupings';
 
@@ -21,6 +36,8 @@ interface GroupingsProps {
 }
 
 const Groupings: FunctionComponent<GroupingsProps> = () => {
+  const classes = useStyles();
+  const { t_i18n } = useFormatter();
   const {
     platformModuleHelpers: { isRuntimeFieldEnable },
   } = useAuth();
@@ -122,6 +139,14 @@ const Groupings: FunctionComponent<GroupingsProps> = () => {
     };
     return (
       <>
+        <BreadcrumbHeader
+          path={[
+            { text: t_i18n('Analyses') },
+            { text: t_i18n('Groupings') },
+          ]}
+        >
+          <div className={ classes.header }>{t_i18n('Groupings')}</div>
+        </BreadcrumbHeader>
         <ListLines
           helpers={storageHelpers}
           sortBy={sortBy}

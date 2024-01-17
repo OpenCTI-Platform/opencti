@@ -18,6 +18,7 @@ import { graphql, createFragmentContainer } from 'react-relay';
 import makeStyles from '@mui/styles/makeStyles';
 import 'reactflow/dist/style.css';
 import ReactFlow, { ReactFlowProvider } from 'reactflow';
+import BreadcrumbHeader from '../../../../components/BreadcrumbHeader';
 import { ErrorBoundary, SimpleError } from '../../Error';
 import PlaybookHeader from './PlaybookHeader';
 import useLayout from './hooks/useLayout';
@@ -89,7 +90,14 @@ const PlaybookComponent = ({ playbook, playbookComponents }) => {
   };
   return (
     <>
-      <PlaybookHeader playbook={playbook} />
+      <BreadcrumbHeader path={[
+        { text: 'Data' },
+        { text: 'Processing', link: '/dashboard/data/processing/automation' },
+        { text: 'Playbooks' },
+      ]}
+      >
+        <PlaybookHeader playbook={playbook} />
+      </BreadcrumbHeader>
       <ErrorBoundary
         display={
           <div style={{ paddingTop: 28 }}>

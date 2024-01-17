@@ -18,6 +18,7 @@ import StixCoreObjectOrStixCoreRelationshipContainers from '../../common/contain
 import StixCoreObjectKnowledgeBar from '../../common/stix_core_objects/StixCoreObjectKnowledgeBar';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
 import inject18n from '../../../../components/i18n';
+import BreadcrumbHeader from '../../../../components/BreadcrumbHeader';
 
 const subscription = graphql`
   subscription RootToolSubscription($id: ID!) {
@@ -88,6 +89,15 @@ class RootTool extends Component {
       },
     } = this.props;
     const link = `/dashboard/arsenal/tools/${toolId}/knowledge`;
+    const path = [
+      {
+        text: t('Arsenal'),
+      },
+      {
+        text: t('Tools'),
+        link: '/dashboard/arsenal/tools',
+      },
+    ];
     return (
       <>
         <Route path="/dashboard/arsenal/tools/:toolId/knowledge">
@@ -124,12 +134,14 @@ class RootTool extends Component {
                         : 0,
                     }}
                   >
-                    <StixDomainObjectHeader
-                      entityType="Tool"
-                      stixDomainObject={tool}
-                      PopoverComponent={<ToolPopover />}
-                      enableQuickSubscription={true}
-                    />
+                    <BreadcrumbHeader path={path}>
+                      <StixDomainObjectHeader
+                        entityType="Tool"
+                        stixDomainObject={tool}
+                        PopoverComponent={<ToolPopover />}
+                        enableQuickSubscription={true}
+                      />
+                    </BreadcrumbHeader>
                     <Box
                       sx={{
                         borderBottom: 1,

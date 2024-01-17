@@ -4,6 +4,7 @@ import {
   AttackPatternsLinesPaginationQuery$variables,
 } from '@components/techniques/attack_patterns/__generated__/AttackPatternsLinesPaginationQuery.graphql';
 import { AttackPatternLineDummy } from '@components/techniques/attack_patterns/AttackPatternLine';
+import { makeStyles } from '@mui/styles';
 import ListLines from '../../../components/list_lines/ListLines';
 import AttackPatternsLines, { attackPatternsLinesQuery } from './attack_patterns/AttackPatternsLines';
 import AttackPatternCreation from './attack_patterns/AttackPatternCreation';
@@ -12,10 +13,26 @@ import { KNOWLEDGE_KNUPDATE } from '../../../utils/hooks/useGranted';
 import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
 import { emptyFilterGroup } from '../../../utils/filters/filtersUtils';
+import type { Theme } from '../../../components/Theme';
+import { useFormatter } from '../../../components/i18n';
+import BreadcrumbHeader from '../../../components/BreadcrumbHeader';
+
+const useStyles = makeStyles<Theme>((theme) => ({
+  header: {
+    paddingBottom: 25,
+    color: theme.palette.mode === 'light'
+      ? theme.palette.common.black
+      : theme.palette.primary.main,
+    fontSize: '24px',
+    fontWeight: 'bold',
+  },
+}));
 
 const LOCAL_STORAGE_KEY = 'attackPattern';
 
 const AttackPatterns = () => {
+  const classes = useStyles();
+  const { t_i18n } = useFormatter();
   const { viewStorage, helpers, paginationOptions } = usePaginationLocalStorage<AttackPatternsLinesPaginationQuery$variables>(
     LOCAL_STORAGE_KEY,
     {
@@ -73,62 +90,71 @@ const AttackPatterns = () => {
       paginationOptions,
     );
     return (
-      <ListLines
-        helpers={helpers}
-        sortBy={sortBy}
-        orderAsc={orderAsc}
-        dataColumns={dataColumns}
-        handleSort={helpers.handleSort}
-        handleSearch={helpers.handleSearch}
-        handleAddFilter={helpers.handleAddFilter}
-        handleRemoveFilter={helpers.handleRemoveFilter}
-        handleSwitchGlobalMode={helpers.handleSwitchGlobalMode}
-        handleSwitchLocalMode={helpers.handleSwitchLocalMode}
-        handleToggleExports={helpers.handleToggleExports}
-        openExports={openExports}
-        exportContext={{ entity_type: 'Attack-Pattern' }}
-        keyword={searchTerm}
-        filters={filters}
-        paginationOptions={paginationOptions}
-        numberOfElements={numberOfElements}
-        availableFilterKeys={[
-          'workflow_id',
-          'objectLabel',
-          'objectMarking',
-          'createdBy',
-          'source_reliability',
-          'creator_id',
-          'created',
-          'revoked',
-          'killChainPhases',
-          'name',
-        ]}
-      >
-        {queryRef && (
-        <React.Suspense
-          fallback={
-            <>
-              {Array(20)
-                .fill(0)
-                .map((_, idx) => (
-                  <AttackPatternLineDummy
-                    key={idx}
-                    dataColumns={dataColumns}
-                  />
-                ))}
-            </>
-                }
+      <>
+        <BreadcrumbHeader
+          path={[
+            { text: t_i18n('Techniques') },
+            { text: t_i18n('Attack patterns') },
+          ]}
         >
-          <AttackPatternsLines
-            queryRef={queryRef}
-            paginationOptions={paginationOptions}
-            dataColumns={dataColumns}
-            onLabelClick={helpers.handleAddFilter}
-            setNumberOfElements={helpers.handleSetNumberOfElements}
-          />
-        </React.Suspense>
-        )}
-      </ListLines>
+          <div className={ classes.header }>{t_i18n('Attack patterns')}</div>
+        </BreadcrumbHeader>
+        <ListLines
+          helpers={helpers}
+          sortBy={sortBy}
+          orderAsc={orderAsc}
+          dataColumns={dataColumns}
+          handleSort={helpers.handleSort}
+          handleSearch={helpers.handleSearch}
+          handleAddFilter={helpers.handleAddFilter}
+          handleRemoveFilter={helpers.handleRemoveFilter}
+          handleSwitchGlobalMode={helpers.handleSwitchGlobalMode}
+          handleSwitchLocalMode={helpers.handleSwitchLocalMode}
+          handleToggleExports={helpers.handleToggleExports}
+          openExports={openExports}
+          exportContext={{ entity_type: 'Attack-Pattern' }}
+          keyword={searchTerm}
+          filters={filters}
+          paginationOptions={paginationOptions}
+          numberOfElements={numberOfElements}
+          availableFilterKeys={[
+            'objectLabel',
+            'objectMarking',
+            'createdBy',
+            'source_reliability',
+            'creator_id',
+            'created',
+            'revoked',
+            'killChainPhases',
+            'name',
+          ]}
+        >
+          {queryRef && (
+          <React.Suspense
+            fallback={
+              <>
+                {Array(20)
+                  .fill(0)
+                  .map((_, idx) => (
+                    <AttackPatternLineDummy
+                      key={idx}
+                      dataColumns={dataColumns}
+                    />
+                  ))}
+              </>
+                  }
+          >
+            <AttackPatternsLines
+              queryRef={queryRef}
+              paginationOptions={paginationOptions}
+              dataColumns={dataColumns}
+              onLabelClick={helpers.handleAddFilter}
+              setNumberOfElements={helpers.handleSetNumberOfElements}
+            />
+          </React.Suspense>
+          )}
+        </ListLines>
+      </>
     );
   };
 

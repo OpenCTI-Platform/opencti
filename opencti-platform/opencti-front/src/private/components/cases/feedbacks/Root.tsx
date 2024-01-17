@@ -22,6 +22,7 @@ import StixCoreObjectHistory from '../../common/stix_core_objects/StixCoreObject
 import StixDomainObjectContent from '../../common/stix_domain_objects/StixDomainObjectContent';
 import Feedback from './Feedback';
 import { useFormatter } from '../../../../components/i18n';
+import BreadcrumbHeader from '../../../../components/BreadcrumbHeader';
 
 const subscription = graphql`
   subscription RootFeedbackSubscription($id: ID!) {
@@ -107,6 +108,13 @@ const RootFeedbackComponent = ({ queryRef, caseId }) => {
     connectorsForImport,
   } = usePreloadedQuery<RootFeedbackQuery>(feedbackQuery, queryRef);
   let paddingRight = 0;
+  const path = [
+    { text: t_i18n('Cases') },
+    {
+      text: t_i18n('Feedbacks'),
+      link: '/dashboard/cases/feedbacks',
+    },
+  ];
   if (feedbackData) {
     if (
       location.pathname.includes(
@@ -123,15 +131,17 @@ const RootFeedbackComponent = ({ queryRef, caseId }) => {
     <>
       {feedbackData ? (
         <div style={{ paddingRight }}>
-          <ContainerHeader
-            container={feedbackData}
-            PopoverComponent={<FeedbackPopover id={feedbackData.id} />}
-            enableSuggestions={false}
-            disableSharing
-            enableQuickSubscription
-            enableManageAuthorizedMembers={canManage}
-            authorizedMembersMutation={feedbackAuthorizedMembersMutation}
-          />
+          <BreadcrumbHeader path={path}>
+            <ContainerHeader
+              container={feedbackData}
+              PopoverComponent={<FeedbackPopover id={feedbackData.id} />}
+              enableSuggestions={false}
+              disableSharing
+              enableQuickSubscription
+              enableManageAuthorizedMembers={canManage}
+              authorizedMembersMutation={feedbackAuthorizedMembersMutation}
+            />
+          </BreadcrumbHeader>
           <Box
             sx={{
               borderBottom: 1,

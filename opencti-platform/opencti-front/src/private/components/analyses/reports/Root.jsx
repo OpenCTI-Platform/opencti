@@ -6,6 +6,7 @@ import * as R from 'ramda';
 import Box from '@mui/material/Box';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
+import BreadcrumbHeader from '../../../../components/BreadcrumbHeader';
 import { QueryRenderer, requestSubscription } from '../../../../relay/environment';
 import Report from './Report';
 import ReportPopover from './ReportPopover';
@@ -40,6 +41,7 @@ const reportQuery = graphql`
     report(id: $id) {
       id
       standard_id
+      name
       ...Report_report
       ...ReportDetails_report
       ...ReportKnowledge_report
@@ -73,6 +75,9 @@ class RootReport extends Component {
       subscription,
       variables: { id: reportId },
     });
+    this.state = {
+      lastPath: undefined,
+    };
   }
 
   componentWillUnmount() {
@@ -96,6 +101,15 @@ class RootReport extends Component {
             if (props) {
               if (props.report) {
                 const { report } = props;
+                const path = [
+                  {
+                    text: t('Analyses'),
+                  },
+                  {
+                    text: t('Reports'),
+                    link: '/dashboard/analyses/reports',
+                  },
+                ];
                 let paddingRight = 0;
                 if (
                   location.pathname.includes(
@@ -113,15 +127,51 @@ class RootReport extends Component {
                   )
                 ) {
                   paddingRight = 350;
+                } else if (location.pathname.includes(
+                  `/dashboard/analyses/reports/${report.id}/entities`,
+                )) {
+                  this.setState({
+                    lastPath: {
+                      text: t('Entities'),
+                    },
+                  });
+                  paddingRight = 260;
+                } else if (location.pathname.includes(
+                  `/dashboard/analyses/reports/${report.id}/observables`,
+                )) {
+                  this.setState({
+                    lastPath: {
+                      text: t('Observables'),
+                    },
+                  });
+                  paddingRight = 260;
+                } else if (location.pathname.includes(
+                  `/dashboard/analyses/reports/${report.id}/files`,
+                )) {
+                  this.setState({
+                    lastPath: {
+                      text: t('Data'),
+                    },
+                  });
+                } else {
+                  this.setState({
+                    lastPath: {
+                      text: t('Overview'),
+                    },
+                  });
                 }
                 return (
                   <div style={{ paddingRight }}>
-                    <ContainerHeader
-                      container={report}
-                      PopoverComponent={<ReportPopover />}
-                      enableQuickSubscription={true}
-                      enableQuickExport={true}
-                    />
+                    <BreadcrumbHeader
+                      path={path}
+                    >
+                      <ContainerHeader
+                        container={report}
+                        PopoverComponent={<ReportPopover />}
+                        enableQuickSubscription={true}
+                        enableQuickExport={true}
+                      />
+                    </BreadcrumbHeader>
                     <Box
                       sx={{
                         borderBottom: 1,

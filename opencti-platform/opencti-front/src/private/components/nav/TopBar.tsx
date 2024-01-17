@@ -19,30 +19,11 @@ import Popover from '@mui/material/Popover';
 import Box from '@mui/material/Box';
 import { useFormatter } from '../../../components/i18n';
 import SearchInput from '../../../components/SearchInput';
-import TopMenuDashboard from './TopMenuDashboard';
-import TopMenuSearch from './TopMenuSearch';
-import TopMenuAnalyses from './TopMenuAnalyses';
-import TopMenuOpinion from './TopMenuOpinion';
-import TopMenuEvents from './TopMenuEvents';
-import TopMenuObservations from './TopMenuObservations';
-import TopMenuThreats from './TopMenuThreats';
-import TopMenuArsenal from './TopMenuArsenal';
-import TopMenuEntities from './TopMenuEntities';
-import TopMenuData from './TopMenuData';
-import TopMenuSettings from './TopMenuSettings';
-import TopMenuTechniques from './TopMenuTechniques';
 import { APP_BASE_PATH, fileUri, MESSAGING$ } from '../../../relay/environment';
 import Security from '../../../utils/Security';
-import TopMenuWorkspacesDashboards from './TopMenuWorkspacesDashboards';
-import TopMenuWorkspacesInvestigations from './TopMenuWorkspacesInvestigations';
-import TopMenuImport from './TopMenuImport';
-import TopMenuLocation from './TopMenuLocation';
 import FeedbackCreation from '../cases/feedbacks/FeedbackCreation';
-import TopMenuCases from './TopMenuCases';
 import type { Theme } from '../../../components/Theme';
 import { KNOWLEDGE } from '../../../utils/hooks/useGranted';
-import TopMenuProfile from '../profile/TopMenuProfile';
-import TopMenuNotifications from '../profile/TopMenuNotifications';
 import { TopBarQuery } from './__generated__/TopBarQuery.graphql';
 import { TopBarNotificationNumberSubscription$data } from './__generated__/TopBarNotificationNumberSubscription.graphql';
 import useAuth from '../../../utils/hooks/useAuth';
@@ -85,7 +66,8 @@ const useStyles = makeStyles<Theme>((theme) => ({
   },
   menuContainer: {
     float: 'left',
-    marginLeft: 30,
+    marginRight: '15em',
+    width: '100%',
   },
   barRight: {
     position: 'absolute',
@@ -97,6 +79,12 @@ const useStyles = makeStyles<Theme>((theme) => ({
     float: 'left',
     height: '100%',
     paddingTop: 12,
+  },
+  searchBarContainer: {
+    width: '100%',
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   divider: {
     display: 'table-cell',
@@ -152,31 +140,6 @@ const topBarQuery = graphql`
     myUnreadNotificationsCount
   }
 `;
-
-const routes = {
-  // ME
-  '/dashboard/profile/me': () => <TopMenuProfile/>,
-  '/dashboard/profile/': () => <TopMenuNotifications/>,
-  '/dashboard/cases': () => <TopMenuCases/>,
-  '/dashboard/analyses/opinions/': (id: string) => <TopMenuOpinion id={id}/>,
-  '/dashboard/analyses': () => <TopMenuAnalyses/>,
-  '/dashboard/events': () => <TopMenuEvents/>,
-  '/dashboard/observations': () => <TopMenuObservations/>,
-  '/dashboard/threats': () => <TopMenuThreats/>,
-  '/dashboard/arsenal': () => <TopMenuArsenal/>,
-  '/dashboard/entities': () => <TopMenuEntities/>,
-  '/dashboard/locations': () => <TopMenuLocation/>,
-  '/dashboard/techniques': () => <TopMenuTechniques/>,
-  '/dashboard/data': () => <TopMenuData/>,
-  '/dashboard/settings': () => <TopMenuSettings/>,
-  '/dashboard/workspaces/dashboards': () => <TopMenuWorkspacesDashboards/>,
-  '/dashboard/workspaces/investigations': () => (
-    <TopMenuWorkspacesInvestigations/>
-  ),
-  '/dashboard/search': () => <TopMenuSearch/>,
-  '/dashboard/import': () => <TopMenuImport/>,
-  '/dashboard': () => <TopMenuDashboard/>,
-};
 
 const TopBarComponent: FunctionComponent<TopBarProps> = ({
   queryRef,
@@ -271,9 +234,6 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
   // global search keyword
   const keyword = decodeSearchKeyword(location.pathname.match(/(?:\/dashboard\/search\/(?:knowledge|files)\/(.*))/)?.[1] ?? '');
 
-  const extractId = (path = '') => location.pathname.split(path)[1].split('/')[0];
-  const [routePath, routeFn] = Object.entries(routes).find(([path]) => location.pathname.includes(path))
-  ?? [];
   return (
     <AppBar
       position="fixed"
@@ -293,13 +253,14 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
             />
           </Link>
         </div>
-        <div className={classes.menuContainer}>
-          {routeFn?.(extractId(routePath))}
-        </div>
-        <div className={classes.barRight}>
+        <div className={classes.menuContainer} style={{
+          marginLeft: navOpen ? '35px' : '24px',
+        }}
+        >
+          {/* {routeFn?.(extractId(routePath))} */}
           <Security needs={[KNOWLEDGE]}>
             <React.Fragment>
-              <div className={classes.barRightContainer}>
+              <div className={classes.searchBarContainer}>
                 <SearchInput
                   onSubmit={handleSearch}
                   keyword={keyword}
@@ -339,6 +300,8 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
               <Divider className={classes.divider} orientation="vertical"/>
             </React.Fragment>
           </Security>
+        </div>
+        <div className={classes.barRight}>
           <div className={classes.barRightContainer}>
             <Security needs={[KNOWLEDGE]}>
               <Tooltip title={t_i18n('Notifications and triggers')}>

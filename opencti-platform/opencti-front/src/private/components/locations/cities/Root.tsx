@@ -22,6 +22,7 @@ import { RootCitiesSubscription } from './__generated__/RootCitiesSubscription.g
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import { useFormatter } from '../../../../components/i18n';
+import BreadcrumbHeader from '../../../../components/BreadcrumbHeader';
 import CityPopover from './CityPopover';
 
 const subscription = graphql`
@@ -75,6 +76,13 @@ const RootCityComponent = ({ queryRef, cityId, link }) => {
   const { t_i18n } = useFormatter();
   const data = usePreloadedQuery(cityQuery, queryRef);
   const { city, connectorsForImport, connectorsForExport } = data;
+  const path = [
+    { text: t_i18n('Locations') },
+    {
+      text: t_i18n('Cities'),
+      link: '/dashboard/locations/cities',
+    },
+  ];
   return (
     <>
       {city ? (
@@ -87,14 +95,15 @@ const RootCityComponent = ({ queryRef, cityId, link }) => {
               : 0,
           }}
         >
-          <StixDomainObjectHeader
-            entityType="City"
-            disableSharing={true}
-            stixDomainObject={city}
-            PopoverComponent={<CityPopover id={city.id} />}
-            enableQuickSubscription={true}
-            isOpenctiAlias={true}
-          />
+          <BreadcrumbHeader path={path}>
+            <StixDomainObjectHeader
+              entityType="City"
+              disableSharing={true}
+              stixDomainObject={city}
+              PopoverComponent={<CityPopover id={city.id} />}
+              enableQuickSubscription={true}
+            isOpenctiAlias={true}/>
+          </BreadcrumbHeader>
           <Box
             sx={{
               borderBottom: 1,

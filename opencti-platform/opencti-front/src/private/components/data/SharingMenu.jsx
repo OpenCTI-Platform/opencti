@@ -5,6 +5,7 @@ import MenuList from '@mui/material/MenuList';
 import MenuItem from '@mui/material/MenuItem';
 import ListItemText from '@mui/material/ListItemText';
 import makeStyles from '@mui/styles/makeStyles';
+import BreadcrumbHeader from '../../../components/BreadcrumbHeader';
 import { useFormatter } from '../../../components/i18n';
 import useAuth from '../../../utils/hooks/useAuth';
 import { useSettingsMessagesBannerHeight } from '../settings/settings_messages/SettingsMessagesBanner';
@@ -18,6 +19,14 @@ const useStyles = makeStyles((theme) => ({
     padding: 0,
   },
   toolbar: theme.mixins.toolbar,
+  header: {
+    paddingBottom: 25,
+    color: theme.palette.mode === 'light'
+      ? theme.palette.common.black
+      : theme.palette.primary.main,
+    fontSize: '24px',
+    fontWeight: 'bold',
+  },
 }));
 
 const SharingMenu = () => {
@@ -28,7 +37,23 @@ const SharingMenu = () => {
     bannerSettings: { bannerHeightNumber },
   } = useAuth();
   const settingsMessagesBannerHeight = useSettingsMessagesBannerHeight();
-  return (
+  const lastPath = location.pathname.split('/').slice(-1)[0];
+  let currentPath;
+  switch (lastPath) {
+    case 'feeds': currentPath = 'CSV Feeds';
+      break;
+    case 'taxii': currentPath = 'TAXII collections';
+      break;
+    default: currentPath = 'Live streams';
+  }
+  return (<>
+    <BreadcrumbHeader path={[
+      { text: t_i18n('Data') },
+      { text: t_i18n('Data sharing') },
+    ]}
+    >
+      <div className={ classes.header }>{t_i18n(currentPath)}</div>
+    </BreadcrumbHeader>
     <Drawer
       variant="permanent"
       anchor="right"
@@ -66,7 +91,7 @@ const SharingMenu = () => {
         </MenuItem>
       </MenuList>
     </Drawer>
-  );
+  </>);
 };
 
 export default SharingMenu;

@@ -32,6 +32,7 @@ import { interval } from 'rxjs';
 import DialogTitle from '@mui/material/DialogTitle';
 import Dialog from '@mui/material/Dialog';
 import DialogContent from '@mui/material/DialogContent';
+import type { Theme } from 'src/components/Theme';
 import Drawer from '../../common/drawer/Drawer';
 import { PlaybookHeader_playbook$data } from './__generated__/PlaybookHeader_playbook.graphql';
 import { useFormatter } from '../../../../components/i18n';
@@ -41,10 +42,15 @@ import Transition from '../../../../components/Transition';
 
 const interval$ = interval(FIVE_SECONDS);
 
-const useStyles = makeStyles(() => ({
+const useStyles = makeStyles<Theme>((theme) => ({
   title: {
     float: 'left',
     textTransform: 'uppercase',
+    color: theme.palette.mode === 'light'
+      ? theme.palette.common.black
+      : theme.palette.primary.main,
+    fontSize: '24px',
+    fontWeight: 'bold',
   },
   popover: {
     float: 'left',

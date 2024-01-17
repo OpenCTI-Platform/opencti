@@ -1,4 +1,5 @@
 import React, { FunctionComponent } from 'react';
+import { makeStyles } from '@mui/styles';
 import ListLines from '../../../components/list_lines/ListLines';
 import ReportsLines, { reportsLinesQuery } from './reports/ReportsLines';
 import ReportCreation from './reports/ReportCreation';
@@ -14,10 +15,26 @@ import useQueryLoading from '../../../utils/hooks/useQueryLoading';
 import { ReportLineDummy } from './reports/ReportLine';
 import ExportContextProvider from '../../../utils/ExportContextProvider';
 import { buildEntityTypeBasedFilterContext, emptyFilterGroup } from '../../../utils/filters/filtersUtils';
+import type { Theme } from '../../../components/Theme';
+import { useFormatter } from '../../../components/i18n';
+import BreadcrumbHeader from '../../../components/BreadcrumbHeader';
+
+const useStyles = makeStyles<Theme>((theme) => ({
+  header: {
+    paddingBottom: 25,
+    color: theme.palette.mode === 'light'
+      ? theme.palette.common.black
+      : theme.palette.primary.main,
+    fontSize: '24px',
+    fontWeight: 'bold',
+  },
+}));
 
 const LOCAL_STORAGE_KEY = 'reports';
 
 const Reports: FunctionComponent = () => {
+  const classes = useStyles();
+  const { t_i18n } = useFormatter();
   const {
     platformModuleHelpers: { isRuntimeFieldEnable },
   } = useAuth();
@@ -112,6 +129,18 @@ const Reports: FunctionComponent = () => {
     };
     return (
       <>
+        <BreadcrumbHeader
+          path={[
+            {
+              text: t_i18n('Analyses'),
+            },
+            {
+              text: t_i18n('Reports'),
+            },
+          ]}
+        >
+          <div className={ classes.header }>{t_i18n('Reports')}</div>
+        </BreadcrumbHeader>
         <ListLines
           helpers={storageHelpers}
           sortBy={sortBy}

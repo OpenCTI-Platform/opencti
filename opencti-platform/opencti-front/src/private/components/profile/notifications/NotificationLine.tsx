@@ -10,7 +10,7 @@ import { CheckCircleOutlined, UnpublishedOutlined, DeleteOutlined } from '@mui/i
 import Skeleton from '@mui/material/Skeleton';
 import { graphql, useFragment, useMutation } from 'react-relay';
 import makeStyles from '@mui/styles/makeStyles';
-import { Theme } from '@mui/material/styles/createTheme';
+import type { Theme } from '@mui/material/styles/createTheme';
 import Checkbox from '@mui/material/Checkbox';
 import { deepPurple, green, indigo, red } from '@mui/material/colors';
 import List from '@mui/material/List';

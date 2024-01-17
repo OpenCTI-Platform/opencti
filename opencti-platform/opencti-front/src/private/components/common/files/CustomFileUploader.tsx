@@ -1,7 +1,7 @@
 import React, { FormEvent, FunctionComponent, useState } from 'react';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
-import { Theme } from '@mui/material/styles/createTheme';
+import type { Theme } from '@mui/material/styles/createTheme';
 import makeStyles from '@mui/styles/makeStyles';
 import classNames from 'classnames';
 import VisuallyHiddenInput from '@components/common/VisuallyHiddenInput';

@@ -21,6 +21,7 @@ import { buildViewParamsFromUrlAndStorage, saveViewParameters } from '../../../.
 import StixCoreObjectKnowledgeBar from '../../common/stix_core_objects/StixCoreObjectKnowledgeBar';
 import EntityStixSightingRelationships from '../../events/stix_sighting_relationships/EntityStixSightingRelationships';
 import inject18n from '../../../../components/i18n';
+import BreadcrumbHeader from '../../../../components/BreadcrumbHeader';
 
 const subscription = graphql`
   subscription RootSystemsSubscription($id: ID!) {
@@ -117,6 +118,13 @@ class RootSystem extends Component {
     } = this.props;
     const { viewAs } = this.state;
     const link = `/dashboard/entities/systems/${systemId}/knowledge`;
+    const path = [
+      { text: t('Entities') },
+      {
+        text: t('Systems'),
+        link: '/dashboard/entities/systems',
+      },
+    ];
     return (
       <>
         <Route path="/dashboard/entities/systems/:systemId/knowledge">
@@ -156,16 +164,18 @@ class RootSystem extends Component {
                         : 0,
                     }}
                   >
-                    <StixDomainObjectHeader
-                      entityType="System"
-                      disableSharing={true}
-                      stixDomainObject={system}
-                      isOpenctiAlias={true}
-                      enableQuickSubscription={true}
-                      PopoverComponent={<SystemPopover />}
-                      onViewAs={this.handleChangeViewAs.bind(this)}
-                      viewAs={viewAs}
-                    />
+                    <BreadcrumbHeader path={path}>
+                      <StixDomainObjectHeader
+                        entityType="System"
+                        disableSharing={true}
+                        stixDomainObject={system}
+                        isOpenctiAlias={true}
+                        enableQuickSubscription={true}
+                        PopoverComponent={<SystemPopover />}
+                        onViewAs={this.handleChangeViewAs.bind(this)}
+                        viewAs={viewAs}
+                      />
+                    </BreadcrumbHeader>
                     <Box
                       sx={{
                         borderBottom: 1,

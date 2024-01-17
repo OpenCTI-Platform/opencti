@@ -22,6 +22,7 @@ import TasksPopover from './TaskPopover';
 import { RootTaskQuery } from './__generated__/RootTaskQuery.graphql';
 import { RootTaskSubscription } from './__generated__/RootTaskSubscription.graphql';
 import { useFormatter } from '../../../../components/i18n';
+import BreadcrumbHeader from '../../../../components/BreadcrumbHeader';
 
 const subscription = graphql`
   subscription RootTaskSubscription($id: ID!) {
@@ -77,6 +78,13 @@ const RootTaskComponent = ({ queryRef, taskId }) => {
     connectorsForImport,
   } = usePreloadedQuery<RootTaskQuery>(TaskQuery, queryRef);
   let paddingRight = 0;
+  const path = [
+    { text: t_i18n('Cases') },
+    {
+      text: t_i18n('Tasks'),
+      link: '/dashboard/cases/tasks',
+    },
+  ];
   if (data) {
     if (
       location.pathname.includes(`/dashboard/cases/tasks/${data.id}/content`)
@@ -88,11 +96,13 @@ const RootTaskComponent = ({ queryRef, taskId }) => {
     <>
       {data ? (
         <div style={{ paddingRight }}>
-          <ContainerHeader
-            container={data}
-            PopoverComponent={<TasksPopover id={data.id} />}
-            enableSuggestions={false}
-          />
+          <BreadcrumbHeader path={path}>
+            <ContainerHeader
+              container={data}
+              PopoverComponent={<TasksPopover id={data.id} />}
+              enableSuggestions={false}
+            />
+          </BreadcrumbHeader>
           <Box
             sx={{
               borderBottom: 1,

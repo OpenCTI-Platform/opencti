@@ -23,6 +23,7 @@ import { RootAdministrativeAreasSubscription } from './__generated__/RootAdminis
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import { useFormatter } from '../../../../components/i18n';
+import BreadcrumbHeader from '../../../../components/BreadcrumbHeader';
 
 const subscription = graphql`
   subscription RootAdministrativeAreasSubscription($id: ID!) {
@@ -81,6 +82,13 @@ const RootAdministrativeAreaComponent = ({
   const { t_i18n } = useFormatter();
   const data = usePreloadedQuery(administrativeAreaQuery, queryRef);
   const { administrativeArea, connectorsForImport, connectorsForExport } = data;
+  const path = [
+    { text: t_i18n('Locations') },
+    {
+      text: t_i18n('Areas'),
+      link: '/dashboard/locations/administrative_areas',
+    },
+  ];
   return (
     <>
       {administrativeArea ? (
@@ -93,16 +101,17 @@ const RootAdministrativeAreaComponent = ({
               : 0,
           }}
         >
-          <StixDomainObjectHeader
-            entityType="Administrative-Area"
-            disableSharing={true}
-            stixDomainObject={administrativeArea}
-            PopoverComponent={
-              <AdministrativeAreaPopover id={administrativeArea.id} />
-            }
-            enableQuickSubscription={true}
-            isOpenctiAlias={true}
-          />
+          <BreadcrumbHeader path={path}>
+            <StixDomainObjectHeader
+              entityType="Administrative-Area"
+              disableSharing={true}
+              stixDomainObject={administrativeArea}
+              PopoverComponent={
+                <AdministrativeAreaPopover id={administrativeArea.id} />
+              }
+              enableQuickSubscription={true}
+            isOpenctiAlias={true}/>
+          </BreadcrumbHeader>
           <Box
             sx={{
               borderBottom: 1,
