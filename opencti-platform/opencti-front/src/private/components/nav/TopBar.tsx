@@ -14,7 +14,6 @@ import Tooltip from '@mui/material/Tooltip';
 import { graphql, PreloadedQuery, usePreloadedQuery, useSubscription } from 'react-relay';
 import { useTheme } from '@mui/styles';
 import makeStyles from '@mui/styles/makeStyles';
-import { GraphQLSubscriptionConfig } from 'relay-runtime';
 import { usePage } from 'use-analytics';
 import { useFormatter } from '../../../components/i18n';
 import SearchInput from '../../../components/SearchInput';
