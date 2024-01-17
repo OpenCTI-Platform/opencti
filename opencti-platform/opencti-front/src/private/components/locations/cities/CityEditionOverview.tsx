@@ -3,6 +3,7 @@ import { graphql, useFragment } from 'react-relay';
 import { Field, Form, Formik } from 'formik';
 import * as Yup from 'yup';
 import { FormikConfig } from 'formik/dist/types';
+import { GenericContext } from '@components/common/model/GenericContextModel';
 import TextField from '../../../../components/TextField';
 import { SubscriptionFocus } from '../../../../components/Subscription';
 import CreatedByField from '../../common/form/CreatedByField';
@@ -16,7 +17,7 @@ import { useFormatter } from '../../../../components/i18n';
 import { Option } from '../../common/form/ReferenceField';
 import { CityEditionOverview_city$key } from './__generated__/CityEditionOverview_city.graphql';
 import { useSchemaEditionValidation } from '../../../../utils/hooks/useEntitySettings';
-import useFormEditor from '../../../../utils/hooks/useFormEditor';
+import useFormEditor, { GenericData } from '../../../../utils/hooks/useFormEditor';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 
 const cityMutationFieldPatch = graphql`
@@ -117,12 +118,7 @@ export const cityEditionOverviewFragment = graphql`
 
 interface CityEditionOverviewProps {
   cityRef: CityEditionOverview_city$key;
-  context:
-  | readonly ({
-    readonly focusOn: string | null;
-    readonly name: string;
-  } | null)[]
-  | null;
+  context?: readonly (GenericContext | null)[] | null;
   enableReferences?: boolean;
   handleClose: () => void;
 }
@@ -162,7 +158,7 @@ const CityEditionOverview: FunctionComponent<CityEditionOverviewProps> = ({
     relationDelete: cityMutationRelationDelete,
     editionFocus: cityEditionOverviewFocus,
   };
-  const editor = useFormEditor(city, enableReferences, queries, cityValidator);
+  const editor = useFormEditor(city as GenericData, enableReferences, queries, cityValidator);
   const onSubmit: FormikConfig<CityEditionFormValues>['onSubmit'] = (
     values,
     { setSubmitting },

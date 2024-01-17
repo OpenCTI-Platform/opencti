@@ -7,6 +7,7 @@ import * as Yup from 'yup';
 import Drawer, { DrawerVariant } from '@components/common/drawer/Drawer';
 import GroupField from '@components/common/form/GroupField';
 import EEChip from '@components/common/entreprise_edition/EEChip';
+import { GenericContext } from '@components/common/model/GenericContextModel';
 import { useFormatter } from '../../../../components/i18n';
 import MarkdownField from '../../../../components/MarkdownField';
 import SelectField from '../../../../components/SelectField';
@@ -85,14 +86,12 @@ interface SettingsOrganizationFormValues {
   default_dashboard: Option | null;
   message?: string;
   references?: Option[];
+  grantable_groups: { label: string; value: string; }[];
 }
 
 interface SettingsOrganizationEditionProps {
   organization: SettingsOrganization_organization$data
-  context: ReadonlyArray<{
-    readonly focusOn: string | null;
-    readonly name: string;
-  }> | null
+  context?: readonly (GenericContext | null)[] | null;
   enableReferences?: boolean
 }
 
@@ -131,11 +130,11 @@ const SettingsOrganizationEdition = ({
     queries,
     organizationValidator,
   );
-  const initialValues = {
+  const initialValues: SettingsOrganizationFormValues = {
     name: organization.name,
-    description: organization.description,
-    x_opencti_organization_type: organization.x_opencti_organization_type,
-    contact_information: organization.contact_information,
+    description: organization.description ?? null,
+    x_opencti_organization_type: organization.x_opencti_organization_type ?? null,
+    contact_information: organization.contact_information ?? null,
     default_dashboard: organization.default_dashboard
       ? {
         value: organization.default_dashboard.id,

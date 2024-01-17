@@ -16,10 +16,11 @@ import { convertAssignees, convertCreatedBy, convertKillChainPhases, convertMark
 import OpenVocabField from '../../common/form/OpenVocabField';
 import { useFormatter } from '../../../../components/i18n';
 import { useSchemaEditionValidation } from '../../../../utils/hooks/useEntitySettings';
-import useFormEditor from '../../../../utils/hooks/useFormEditor';
+import useFormEditor, { GenericData } from '../../../../utils/hooks/useFormEditor';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import { Option } from '../../common/form/ReferenceField';
 import { ThreatActorIndividualEditionOverview_ThreatActorIndividual$key } from './__generated__/ThreatActorIndividualEditionOverview_ThreatActorIndividual.graphql';
+import { GenericContext } from '../../common/model/GenericContextModel';
 
 const ThreatActorIndividualMutationFieldPatch = graphql`
   mutation ThreatActorIndividualEditionOverviewFieldPatchMutation(
@@ -120,12 +121,7 @@ const threatActorIndividualEditionOverviewFragment = graphql`
 
 interface ThreatActorIndividualEditionOverviewProps {
   threatActorIndividualRef: ThreatActorIndividualEditionOverview_ThreatActorIndividual$key;
-  context:
-  | readonly ({
-    readonly focusOn: string | null;
-    readonly name: string;
-  } | null)[]
-  | null;
+  context?: readonly (GenericContext | null)[] | null;
   enableReferences: boolean;
   handleClose: () => void;
 }
@@ -167,7 +163,7 @@ ThreatActorIndividualEditionOverviewProps
     editionFocus: ThreatActorIndividualEditionOverviewFocus,
   };
   const editor = useFormEditor(
-    threatActorIndividual,
+    threatActorIndividual as GenericData,
     enableReferences,
     queries,
     ThreatActorIndividualValidator,

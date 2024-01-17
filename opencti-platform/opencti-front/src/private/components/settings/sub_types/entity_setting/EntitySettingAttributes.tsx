@@ -6,7 +6,7 @@ import { SubType_subType$data } from '../__generated__/SubType_subType.graphql';
 import ErrorNotFound from '../../../../../components/ErrorNotFound';
 import { EntitySettingAttributeLine_attribute$data } from './__generated__/EntitySettingAttributeLine_attribute.graphql';
 import { EntitySettingAttributes_entitySetting$key } from './__generated__/EntitySettingAttributes_entitySetting.graphql';
-import EntitySettingAttributeLines from './EntitySettingAttributeLines';
+import EntitySettingAttributeLines, { AttributeNode } from './EntitySettingAttributeLines';
 import { useFormatter } from '../../../../../components/i18n';
 import { isNotEmptyField } from '../../../../../utils/utils';
 
@@ -92,13 +92,8 @@ const EntitySettingAttributes = ({
       },
     },
   };
-  const datas = entitySetting.attributesDefinitions.map(
-    (attr: {
-      label: string | null;
-      name: string;
-      type: string;
-      scale: string | null;
-    }) => ({ node: attr }),
+  const datas: { node: AttributeNode }[] = entitySetting.attributesDefinitions.map(
+    (attr: AttributeNode) => ({ node: attr }),
   );
   return (
     <ListLines dataColumns={dataColumns} noFilters={true}>

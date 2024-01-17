@@ -8,10 +8,10 @@ import { ListItemButton } from '@mui/material';
 import ItemIcon from '../../../../../components/ItemIcon';
 import FieldOrEmpty from '../../../../../components/FieldOrEmpty';
 
-interface Entity {
+export interface Entity {
   readonly id: string;
   readonly name: string;
-  readonly default_hidden_types: ReadonlyArray<string> | null;
+  readonly default_hidden_types?: ReadonlyArray<string> | null;
 }
 
 const computeHiddenEntities = (nodes: Array<Entity | undefined>, targetType: string) => {

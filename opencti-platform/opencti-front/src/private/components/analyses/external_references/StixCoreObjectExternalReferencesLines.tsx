@@ -25,6 +25,7 @@ import { FormikConfig } from 'formik/dist/types';
 import { Link } from 'react-router-dom';
 import IconButton from '@mui/material/IconButton';
 import Tooltip from '@mui/material/Tooltip';
+import { FileLine_file$data } from '@components/common/files/__generated__/FileLine_file.graphql';
 import { truncate } from '../../../../utils/String';
 import { commitMutation, MESSAGING$ } from '../../../../relay/environment';
 import AddExternalReferences from './AddExternalReferences';
@@ -103,20 +104,7 @@ StixCoreObjectExternalReferencesLinesContainerProps
   const [externalReferenceToRemove, setExternalReferenceToRemove] = useState<externalReferenceEdge_type | null>(null);
   const [removing, setRemoving] = useState(false);
   const [expanded, setExpanded] = useState(false);
-  const [fileToImport, setFileToImport] = useState<
-  | {
-    id: string;
-    lastModified: string | null;
-    metaData:
-    | {
-      mimetype: string | null;
-    }
-    | null
-    | undefined;
-  }
-  | null
-  | undefined
-  >(null);
+  const [fileToImport, setFileToImport] = useState<FileLine_file$data | null>(null);
   const externalReferencesEdges = data.stixCoreObject
     ? data.stixCoreObject.externalReferences?.edges
     : [];
@@ -188,18 +176,11 @@ StixCoreObjectExternalReferencesLinesContainerProps
     removeExternalReference(externalReferenceToRemove);
   };
   const handleOpenImport = (
-    file:
-    | {
-      id: string;
-      lastModified: string | null;
-      metaData: {
-        mimetype: string | null;
-      } | null;
-    }
-    | null
-    | undefined,
+    file?: FileLine_file$data,
   ) => {
-    setFileToImport(file);
+    if (file) {
+      setFileToImport(file);
+    }
   };
   const handleCloseImport = () => {
     setFileToImport(null);

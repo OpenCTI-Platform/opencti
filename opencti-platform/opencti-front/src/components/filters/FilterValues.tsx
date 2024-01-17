@@ -48,7 +48,7 @@ interface FilterValuesProps {
   label: string | React.JSX.Element;
   tooltip?: boolean;
   currentFilter: Filter;
-  filtersRepresentativesMap: Map<string, string | null>;
+  filtersRepresentativesMap: Map<string, string | null | undefined>;
   redirection?: boolean;
   handleSwitchLocalMode?: (filter: Filter) => void;
   onClickLabel?: (event: React.MouseEvent<HTMLButtonElement>) => void;

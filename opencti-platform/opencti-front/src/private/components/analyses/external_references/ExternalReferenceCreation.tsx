@@ -76,7 +76,7 @@ interface ExternalReferenceCreationProps {
   contextual?: boolean;
   inputValue?: string;
   onCreate?: (
-    externalReference: ExternalReferenceAddInput | null,
+    externalReference: ExternalReferenceAddInput | null | undefined,
     onlyCreate: boolean
   ) => void;
   openContextual: boolean;

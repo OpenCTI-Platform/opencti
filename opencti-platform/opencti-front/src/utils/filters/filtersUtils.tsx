@@ -387,7 +387,7 @@ export const serializeFilterGroupForBackend = (
  * @param filterGroup
  */
 export const deserializeFilterGroupForFrontend = (
-  filterGroup: GqlFilterGroup | string | null,
+  filterGroup?: GqlFilterGroup | string | null,
 ): FilterGroup | null => {
   if (!filterGroup) {
     return null;

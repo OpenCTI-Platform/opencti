@@ -1,7 +1,7 @@
 import React, { FunctionComponent } from 'react';
 import { graphql, useFragment } from 'react-relay';
 import { ThreatActorIndividualCard_node$key } from './__generated__/ThreatActorIndividualCard_node.graphql';
-import { GenericAttackCard } from '../../common/cards/GenericAttackCard';
+import { GenericAttack, GenericAttackCard } from '../../common/cards/GenericAttackCard';
 
 const ThreatActorIndividualCardFragment = graphql`
   fragment ThreatActorIndividualCard_node on ThreatActorIndividual {
@@ -118,7 +118,7 @@ ThreatActorIndividualCardProps
   const data = useFragment(ThreatActorIndividualCardFragment, node);
   return (
     <GenericAttackCard
-      cardData={data}
+      cardData={data as GenericAttack}
       cardLink={`/dashboard/threats/threat_actors_individual/${data.id}`}
       entityType="Threat-Actor-Individual"
       onLabelClick={onLabelClick}

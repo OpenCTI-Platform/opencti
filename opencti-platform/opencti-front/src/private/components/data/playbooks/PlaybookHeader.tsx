@@ -105,7 +105,7 @@ const PlaybookHeaderComponent = ({
   }, []);
   const [openLastExecutions, setOpenLastExecutions] = useState(false);
   const [openExecution, setOpenExecution] = useState<string | null>(null);
-  const [rawData, setRawData] = useState<string | null>(null);
+  const [rawData, setRawData] = useState<string | null | undefined>(null);
   const { t_i18n, nsdt } = useFormatter();
   return (
     <>

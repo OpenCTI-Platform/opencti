@@ -13,7 +13,7 @@ export const useDocumentModifier = (title: string) => {
   });
 };
 
-export const useDocumentFaviconModifier = (href: string | null) => {
+export const useDocumentFaviconModifier = (href?: string | null) => {
   useEffect(() => {
     const element = document.getElementById('favicon');
     const favicon = element as HTMLLinkElement;

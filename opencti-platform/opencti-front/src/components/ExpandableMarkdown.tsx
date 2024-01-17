@@ -5,7 +5,7 @@ import { emptyFilled, truncate } from '../utils/String';
 import MarkdownDisplay from './MarkdownDisplay';
 
 interface ExpandableMarkdownProps {
-  source: string | null;
+  source?: string | null;
   limit: number;
 }
 

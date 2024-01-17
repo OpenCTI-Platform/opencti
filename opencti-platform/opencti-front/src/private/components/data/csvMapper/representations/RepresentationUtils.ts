@@ -38,31 +38,26 @@ export const representationLabel = (
 };
 
 export const getEntityRepresentations = (csvMapper: CsvMapper) => {
-  return csvMapper.representations.filter((r) => r.type === 'entity');
+  return (csvMapper.representations ?? []).filter((r) => r.type === 'entity');
 };
 export const getRelationshipRepresentations = (csvMapper: CsvMapper) => {
-  return csvMapper.representations.filter((r) => r.type === 'relationship');
+  return (csvMapper.representations ?? []).filter((r) => r.type === 'relationship');
 };
 
 // -- MAPPER --
 
 export const useMapRepresentations = (
-  representations: ReadonlyArray<{
-    readonly attributes: ReadonlyArray<{
-      readonly based_on: {
-        readonly representations: ReadonlyArray<string | null> | null;
-      } | null;
-      readonly column: {
-        readonly column_name: string | null;
-      } | null;
-      readonly key: string;
-    }>;
-    readonly id: string;
-    readonly target: {
-      readonly entity_type: string;
-    };
-    readonly type: CsvMapperRepresentationType;
-  }>,
+  representations: ReadonlyArray<{ readonly attributes: ReadonlyArray<{
+    readonly based_on: {
+      readonly representations: ReadonlyArray<string | null | undefined> | null | undefined
+    } | null | undefined;
+    readonly column: { readonly column_name: string | null | undefined;
+      readonly configuration: {
+        readonly pattern_date: string | null | undefined;
+        readonly separator: string | null | undefined } | null | undefined } | null | undefined;
+    readonly key: string }>; readonly id: string; readonly target: {
+    readonly entity_type: string };
+  readonly type: CsvMapperRepresentationType }>,
 ) => {
   return (representations ?? []).concat().map((r) => ({
     ...r,

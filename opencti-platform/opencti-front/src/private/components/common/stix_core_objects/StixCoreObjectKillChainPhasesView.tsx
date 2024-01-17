@@ -24,7 +24,7 @@ interface StixCoreObjectKillChainPhasesViewProps {
     id: string;
     kill_chain_name: string;
     phase_name: string;
-    x_opencti_order: number | null;
+    x_opencti_order?: number | null;
   };
   }>;
   firstLine?: boolean,

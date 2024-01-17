@@ -67,7 +67,7 @@ AddDataSourcesLinesContainerProps
   const [commit] = useMutation(addDataSourcesLinesMutationAdd);
 
   const addDataSource = (dataSource: {
-    readonly description: string | null;
+    readonly description?: string | null;
     readonly id: string;
     readonly name: string;
   }) => commit({

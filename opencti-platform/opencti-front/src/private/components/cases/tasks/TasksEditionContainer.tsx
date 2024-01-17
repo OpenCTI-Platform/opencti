@@ -1,6 +1,7 @@
 import React, { FunctionComponent } from 'react';
 import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import Drawer, { DrawerVariant } from '@components/common/drawer/Drawer';
+import { TasksEditionOverview_task$key } from '@components/cases/tasks/__generated__/TasksEditionOverview_task.graphql';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
 import { useFormatter } from '../../../../components/i18n';
 import { useIsEnforceReference } from '../../../../utils/hooks/useEntitySettings';
@@ -35,14 +36,14 @@ const TasksEditionContainer: FunctionComponent<TasksEditionContainerProps> = ({ 
     <Drawer
       title={t_i18n('Update a task')}
       variant={open == null ? DrawerVariant.update : undefined}
-      context={task.editContext}
+      context={task?.editContext}
       onClose={handleClose}
       open={open}
     >
       {({ onClose }) => (
         <TasksEditionOverview
-          taskRef={task}
-          context={task.editContext}
+          taskRef={task as TasksEditionOverview_task$key}
+          context={task?.editContext}
           enableReferences={useIsEnforceReference('Task')}
           handleClose={onClose}
         />

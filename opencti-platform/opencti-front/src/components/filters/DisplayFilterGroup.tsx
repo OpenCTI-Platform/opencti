@@ -16,7 +16,7 @@ import { Filter, FilterGroup } from '../../utils/filters/filtersUtils';
 interface DisplayFilterGroupProps {
   filterObj: FilterGroup;
   filterMode: string;
-  filtersRepresentativesMap: Map<string, string | null>;
+  filtersRepresentativesMap: Map<string, string | null | undefined>;
   classFilter: string;
   classChipLabel: string;
 }

@@ -18,7 +18,7 @@ interface SecurityProps {
 }
 
 interface DataSecurityProps extends SecurityProps {
-  data: { createdBy: { id: string } | null };
+  data: { createdBy: { id: string } | null | undefined };
 }
 
 // DEPECRATED

@@ -22,7 +22,7 @@ import { convertCreatedBy, convertMarkings, convertStatus } from '../../../../ut
 import DateTimePickerField from '../../../../components/DateTimePickerField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import { useIsEnforceReference, useSchemaEditionValidation } from '../../../../utils/hooks/useEntitySettings';
-import useFormEditor from '../../../../utils/hooks/useFormEditor';
+import useFormEditor, { GenericData } from '../../../../utils/hooks/useFormEditor';
 import { adaptFieldValue } from '../../../../utils/String';
 import { Option } from '../../common/form/ReferenceField';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
@@ -240,7 +240,7 @@ const StixSightingRelationshipEditionOverviewComponent: FunctionComponent<Omit<S
     relationDelete: stixSightingRelationshipMutationRelationDelete,
     editionFocus: stixSightingRelationshipEditionFocus,
   };
-  const editor = useFormEditor(stixSightingRelationship, enableReferences, queries, stixSightingRelationshipValidator);
+  const editor = useFormEditor(stixSightingRelationship as GenericData, enableReferences, queries, stixSightingRelationshipValidator);
 
   const onSubmit: FormikConfig<StixSightingRelationshipAddInput>['onSubmit'] = (values, { setSubmitting }) => {
     const { message, references, ...otherValues } = values;
@@ -272,10 +272,10 @@ const StixSightingRelationshipEditionOverviewComponent: FunctionComponent<Omit<S
   };
   const initialValues: StixSightingRelationshipAddInput = {
     attribute_count: stixSightingRelationship.attribute_count,
-    confidence: stixSightingRelationship.confidence,
+    confidence: stixSightingRelationship.confidence ?? null,
     first_seen: buildDate(stixSightingRelationship.first_seen),
     last_seen: buildDate(stixSightingRelationship.last_seen),
-    description: stixSightingRelationship.description,
+    description: stixSightingRelationship.description ?? null,
     x_opencti_negative: stixSightingRelationship.x_opencti_negative,
     x_opencti_workflow_id: convertStatus(t_i18n, stixSightingRelationship) as Option,
     createdBy: convertCreatedBy(stixSightingRelationship) as Option,
@@ -462,6 +462,9 @@ const StixSightingRelationshipEditionOverview: FunctionComponent<Omit<StixSighti
   }
   // eslint-disable-next-line max-len
   const stixSightingRelationship = useFragment<StixSightingRelationshipEditionOverview_stixSightingRelationship$key>(StixSightingRelationshipEditionOverviewFragment, queryData.stixSightingRelationship);
+  if (!stixSightingRelationship) {
+    return null;
+  }
   return <StixSightingRelationshipEditionOverviewComponent {...props} stixSightingRelationship={stixSightingRelationship} />;
 };
 

@@ -108,11 +108,12 @@ const SubTypeWorkflow: FunctionComponent<SubTypeEditionContainerProps> = ({
                     <ListItemAvatar>
                       <Avatar
                         variant="square"
-                        style={{
-                          color: status.template.color,
-                          borderColor: status.template.color,
-                          backgroundColor: hexToRGB(status.template.color),
-                        }}
+                        style={
+                          status.template && {
+                            color: status.template.color,
+                            borderColor: status.template.color,
+                            backgroundColor: hexToRGB(status.template.color),
+                          }}
                       >
                         {status.order}
                       </Avatar>
@@ -124,7 +125,7 @@ const SubTypeWorkflow: FunctionComponent<SubTypeEditionContainerProps> = ({
                             className={classes.bodyItem}
                             style={{ width: '30%' }}
                           >
-                            {status.template.name}
+                            {status.template?.name ?? ''}
                           </div>
                           <div
                             className={classes.bodyItem}

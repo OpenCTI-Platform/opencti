@@ -3,6 +3,7 @@ import React, { FunctionComponent } from 'react';
 import { createFragmentContainer, graphql } from 'react-relay';
 import * as Yup from 'yup';
 import { ObjectShape } from 'yup';
+import { GenericContext } from '@components/common/model/GenericContextModel';
 import { useFormatter } from '../../../../components/i18n';
 import MarkdownField from '../../../../components/MarkdownField';
 import { SubscriptionFocus } from '../../../../components/Subscription';
@@ -71,12 +72,7 @@ const groupMutationRelationDelete = graphql`
 
 interface GroupEditionOverviewComponentProps {
   group: GroupEditionOverview_group$data,
-  context:
-  | readonly ({
-    readonly focusOn: string | null;
-    readonly name: string;
-  } | null)[]
-  | null;
+  context?: readonly (GenericContext | null)[] | null;
 
 }
 const GroupEditionOverviewComponent: FunctionComponent<GroupEditionOverviewComponentProps> = ({ group, context }) => {

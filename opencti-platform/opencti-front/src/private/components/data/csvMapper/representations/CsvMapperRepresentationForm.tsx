@@ -99,7 +99,7 @@ CsvMapperRepresentationFormProps
   const deletion = useDeletion({});
   const { setDeleting, handleCloseDelete, handleOpenDelete } = deletion;
   const onDelete = async () => {
-    const newRepresentations = formikContext.values.representations;
+    const newRepresentations = formikContext.values.representations ?? [];
     newRepresentations.splice(index, 1);
     await formikContext.setFieldValue('representations', newRepresentations);
     setDeleting(false);

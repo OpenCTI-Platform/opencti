@@ -44,7 +44,7 @@ interface VocabularyEditionFormikValues {
   name: string;
   description: string;
   aliases: { id: string; label: string; value: string }[];
-  order: number | null;
+  order: number | null | undefined;
 }
 
 const VocabularyEdition = ({

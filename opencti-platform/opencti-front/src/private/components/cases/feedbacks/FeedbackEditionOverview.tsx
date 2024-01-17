@@ -3,6 +3,7 @@ import { graphql, useFragment } from 'react-relay';
 import { Field, Form, Formik } from 'formik';
 import * as Yup from 'yup';
 import { FormikConfig } from 'formik/dist/types';
+import { GenericContext } from '@components/common/model/GenericContextModel';
 import { useFormatter } from '../../../../components/i18n';
 import { SubscriptionFocus } from '../../../../components/Subscription';
 import { convertAssignees, convertCreatedBy, convertMarkings, convertStatus } from '../../../../utils/edition';
@@ -14,7 +15,7 @@ import TextField from '../../../../components/TextField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import CreatedByField from '../../common/form/CreatedByField';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
-import useFormEditor from '../../../../utils/hooks/useFormEditor';
+import useFormEditor, { GenericData } from '../../../../utils/hooks/useFormEditor';
 import MarkdownField from '../../../../components/MarkdownField';
 import RatingField from '../../../../components/RatingField';
 import CommitMessage from '../../common/form/CommitMessage';
@@ -137,12 +138,7 @@ const feedbackMutationRelationDelete = graphql`
 
 interface FeedbackEditionOverviewProps {
   feedbackRef: FeedbackEditionOverview_case$key;
-  context:
-  | readonly ({
-    readonly focusOn: string | null;
-    readonly name: string;
-  } | null)[]
-  | null;
+  context?: readonly (GenericContext | null)[] | null;
   enableReferences?: boolean;
   handleClose: () => void;
 }
@@ -176,7 +172,7 @@ FeedbackEditionOverviewProps
     relationDelete: feedbackMutationRelationDelete,
     editionFocus: feedbackEditionOverviewFocus,
   };
-  const editor = useFormEditor(feedbackData, enableReferences, queries, feedbackValidator);
+  const editor = useFormEditor(feedbackData as GenericData, enableReferences, queries, feedbackValidator);
 
   const onSubmit: FormikConfig<FeedbackEditionFormValues>['onSubmit'] = (
     values,
