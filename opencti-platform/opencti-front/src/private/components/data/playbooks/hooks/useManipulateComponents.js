@@ -301,7 +301,6 @@ const useManipulateComponents = (playbook, playbookComponents) => {
     let newNodes = getNodes();
     let newEdges = getEdges();
     const targetNode = getNode(selectedEdge.target);
-    // Add the new node
     const newNode = {
       id: result.nodeId,
       position: { x: targetNode.position.x, y: targetNode.position.y },
@@ -523,8 +522,10 @@ const useManipulateComponents = (playbook, playbookComponents) => {
     setEdges(newEdges);
   };
   const applyDeleteNode = () => {
+    // start by removing the node and the edges that leads to it
     let newNodes = getNodes().filter((n) => n.id !== selectedNode.id);
-    let newEdges = getEdges();
+    let newEdges = getEdges().filter((e) => e.target !== selectedNode.id);
+    // then delete the edges that come out of the node, and all children underneath
     const edgesToDelete = newEdges.filter((n) => n.source === selectedNode.id);
     const result = deleteEdgesAndAllChildren(newNodes, newEdges, edgesToDelete);
     newNodes = result.nodes;
@@ -541,6 +542,7 @@ const useManipulateComponents = (playbook, playbookComponents) => {
     );
     const childPlaceholderId = uuid();
     if (originEdge && otherEdgesToParentNode.length === 1) {
+      // inserting placeholder in place of the node
       newNodes.push({
         id: `${childPlaceholderId}-${originEdge.sourceHandle}`,
         position: {
@@ -559,6 +561,7 @@ const useManipulateComponents = (playbook, playbookComponents) => {
         },
       });
     } else if (otherEdgesToParentNode.length <= 1) {
+      // inserting placeholder of origin (entry point)
       newNodes.push({
         id: 'PLACEHOLDER-ORIGIN',
         type: 'placeholder',
@@ -575,6 +578,8 @@ const useManipulateComponents = (playbook, playbookComponents) => {
       });
     }
     if (parentNode && originEdge && otherEdgesToParentNode.length === 1) {
+      // If the parent node is not the topmost node,
+      // we need a placeholder edge that leads to the placeholder node
       newEdges.push({
         id: `${parentNode.id}-${originEdge.sourceHandle}-${childPlaceholderId}`,
         type: 'placeholder',
