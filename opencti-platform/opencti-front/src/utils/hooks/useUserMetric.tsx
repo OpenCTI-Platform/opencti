@@ -30,7 +30,7 @@ export const Units: { [k in SupportedUnitType]: UnitType } = {
   },
 };
 
-const computeUserUnit = (selectedSystem: UnitSystem | null, selectedLanguage = DEFAULT_LANG): SupportedUnitType => {
+const computeUserUnit = (selectedSystem?: UnitSystem | null, selectedLanguage = DEFAULT_LANG): SupportedUnitType => {
   const unitSystem = selectedSystem || 'auto';
   if (unitSystem === 'auto' || unitSystem === '%future added value') {
     const languageLocale = selectedLanguage && selectedLanguage !== LANGUAGES.AUTO ? selectedLanguage : DEFAULT_LANG;

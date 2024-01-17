@@ -55,7 +55,7 @@ interface ImageMetaData {
   order: number | null;
 }
 
-interface ImagesData {
+export interface ImagesData {
   edges: ReadonlyArray<{
     node: {
       id: string;

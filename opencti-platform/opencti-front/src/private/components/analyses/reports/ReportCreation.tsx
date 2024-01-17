@@ -79,7 +79,7 @@ interface ReportFormProps {
   updater: (
     store: RecordSourceSelectorProxy,
     key: string,
-    response: { id: string; name: string } | null
+    response: { id: string; name: string } | null | undefined
   ) => void;
   onClose?: () => void;
   defaultCreatedBy?: { value: string; label: string };
@@ -138,7 +138,7 @@ export const ReportCreationForm: FunctionComponent<ReportFormProps> = ({
         input,
       },
       updater: (store, response) => {
-        if (updater) {
+        if (updater && response) {
           updater(store, 'reportAdd', response.reportAdd);
         }
       },

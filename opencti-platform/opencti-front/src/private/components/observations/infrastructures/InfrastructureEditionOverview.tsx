@@ -20,9 +20,10 @@ import CommitMessage from '../../common/form/CommitMessage';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import ConfidenceField from '../../common/form/ConfidenceField';
 import { useSchemaEditionValidation } from '../../../../utils/hooks/useEntitySettings';
-import useFormEditor from '../../../../utils/hooks/useFormEditor';
+import useFormEditor, { GenericData } from '../../../../utils/hooks/useFormEditor';
 import { InfrastructureEditionOverview_infrastructure$key } from './__generated__/InfrastructureEditionOverview_infrastructure.graphql';
 import { Option } from '../../common/form/ReferenceField';
+import { GenericContext } from '../../common/model/GenericContextModel';
 
 const infrastructureMutationFieldPatch = graphql`
   mutation InfrastructureEditionOverviewFieldPatchMutation(
@@ -138,10 +139,7 @@ export const infrastructureEditionOverviewFragment = graphql`
 
 interface InfrastructureEditionOverviewProps {
   infrastructureData: InfrastructureEditionOverview_infrastructure$key,
-  context: readonly ({
-    readonly focusOn: string | null;
-    readonly name: string;
-  } | null)[] | null
+  context?: readonly (GenericContext | null)[] | null;
   enableReferences: boolean
   handleClose: () => void
 }
@@ -155,7 +153,7 @@ interface InfrastructureEditionFormValues {
   killChainPhases?: Option[];
   first_seen: null | Date;
   last_seen: null | Date;
-  confidence: number | null;
+  confidence: number | null | undefined;
 }
 
 const InfrastructureEditionOverviewComponent: FunctionComponent<InfrastructureEditionOverviewProps> = ({
@@ -193,7 +191,7 @@ const InfrastructureEditionOverviewComponent: FunctionComponent<InfrastructureEd
     editionFocus: infrastructureEditionOverviewFocus,
   };
   const editor = useFormEditor(
-    infrastructure,
+    infrastructure as GenericData,
     enableReferences,
     queries,
     infrastructureValidator,

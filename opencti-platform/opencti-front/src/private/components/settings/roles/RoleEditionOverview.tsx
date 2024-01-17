@@ -40,9 +40,9 @@ const roleValidation = (t: (n: string) => string) => Yup.object().shape({
 interface RoleEditionOverviewComponentProps {
   role: RoleEditionOverview_role$data,
   context: ReadonlyArray<{
-    readonly focusOn: string | null;
+    readonly focusOn?: string | null;
     readonly name: string;
-  }> | null,
+  }> | null | undefined,
 }
 
 const RoleEditionOverviewComponent: FunctionComponent<RoleEditionOverviewComponentProps> = ({ role, context }) => {

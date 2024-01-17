@@ -14,6 +14,7 @@ import { IncidentEditionDetailsFocusMutation } from './__generated__/IncidentEdi
 import { Option } from '../../common/form/ReferenceField';
 import { IncidentEditionDetails_incident$key } from './__generated__/IncidentEditionDetails_incident.graphql';
 import { parse } from '../../../../utils/Time';
+import { GenericContext } from '../../common/model/GenericContextModel';
 
 const incidentMutationFieldPatch = graphql`
   mutation IncidentEditionDetailsFieldPatchMutation(
@@ -73,12 +74,7 @@ const incidentEditionDetailsValidation = (t: (v: string) => string) => Yup.objec
 
 interface IncidentEditionDetailsProps {
   incidentRef: IncidentEditionDetails_incident$key;
-  context:
-  | readonly ({
-    readonly focusOn: string | null;
-    readonly name: string;
-  } | null)[]
-  | null;
+  context?: readonly (GenericContext | null)[] | null;
   enableReferences?: boolean;
   handleClose: () => void;
 }

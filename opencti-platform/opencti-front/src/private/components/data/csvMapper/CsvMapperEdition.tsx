@@ -6,6 +6,7 @@ import { CsvMapperEditionContainerFragment_csvMapper$data } from '@components/da
 import CsvMapperForm from '@components/data/csvMapper/CsvMapperForm';
 import { useMapRepresentations, sanitized } from '@components/data/csvMapper/representations/RepresentationUtils';
 import { CsvMapper } from '@components/data/csvMapper/CsvMapper';
+import { Representation } from '@components/data/csvMapper/representations/Representation';
 import formikFieldToEditInput from '../../../../utils/FormikUtils';
 
 const csvMapperEditionPatch = graphql`
@@ -32,7 +33,7 @@ const CsvMapperEdition: FunctionComponent<CsvMapperEditionProps> = ({
     has_header: csvMapper.has_header,
     separator: csvMapper.separator,
     skipLineChar: csvMapper.skipLineChar,
-    representations: useMapRepresentations(csvMapper.representations),
+    representations: useMapRepresentations(csvMapper.representations) as Representation[],
     errors: csvMapper.errors,
   };
 
@@ -43,7 +44,7 @@ const CsvMapperEdition: FunctionComponent<CsvMapperEditionProps> = ({
     const input = formikFieldToEditInput(
       {
         ...R.omit(['id', 'errors'], values),
-        representations: JSON.stringify(sanitized(values.representations)),
+        representations: JSON.stringify(sanitized(values.representations ?? [])),
       },
       {
         name: csvMapper.name,

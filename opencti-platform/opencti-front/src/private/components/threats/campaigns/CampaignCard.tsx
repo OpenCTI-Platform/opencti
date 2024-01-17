@@ -1,6 +1,6 @@
 import React, { FunctionComponent } from 'react';
 import { graphql, useFragment } from 'react-relay';
-import { GenericAttackCard } from '../../common/cards/GenericAttackCard';
+import { GenericAttack, GenericAttackCard } from '../../common/cards/GenericAttackCard';
 import { CampaignCard_node$key } from './__generated__/CampaignCard_node.graphql';
 
 const CampaignCardFragment = graphql`
@@ -99,7 +99,7 @@ const CampaignCard: FunctionComponent<CampaignCardProps> = ({
   const data = useFragment(CampaignCardFragment, node);
   return (
     <GenericAttackCard
-      cardData={data}
+      cardData={data as GenericAttack}
       cardLink={`/dashboard/threats/campaigns/${data.id}`}
       entityType="Campaign"
       onLabelClick={onLabelClick}

@@ -115,7 +115,7 @@ const Login: FunctionComponent<LoginProps> = ({ type, settings }) => {
   const { dimension } = useDimensions();
   const isEnterpriseEdition = isNotEmptyField(settings.enterprise_edition);
 
-  const renderExternalAuthButton = (provider: string | null) => {
+  const renderExternalAuthButton = (provider?: string | null) => {
     switch (provider) {
       case 'facebook':
         return <Facebook className={classes.iconSmall} />;
@@ -128,7 +128,7 @@ const Login: FunctionComponent<LoginProps> = ({ type, settings }) => {
     }
   };
 
-  const renderExternalAuthClassName = (provider: string | null) => {
+  const renderExternalAuthClassName = (provider?: string | null) => {
     switch (provider) {
       case 'facebook':
         return classes.buttonFacebook;
@@ -142,14 +142,14 @@ const Login: FunctionComponent<LoginProps> = ({ type, settings }) => {
   };
 
   const renderExternalAuth = (
-    authButtons: Array<{
-      provider: string | null;
+    authButtons?: Array<{
+      provider?: string | null;
       name: string;
-      type: string | null;
+      type?: string | null;
     }>,
   ) => (
     <div style={{ marginTop: 10, marginBottom: 20 }}>
-      {authButtons.map((value, index) => (
+      {authButtons?.map((value, index) => (
         <Button
           key={`${value.provider}_${index}`}
           type="submit"

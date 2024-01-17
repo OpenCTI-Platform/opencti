@@ -14,6 +14,7 @@ import DatePickerField from '../../../../components/DatePickerField';
 import TextField from '../../../../components/TextField';
 import { commitMutation, defaultCommitMutation } from '../../../../relay/environment';
 import useUserMetric from '../../../../utils/hooks/useUserMetric';
+import { GenericContext } from '../model/GenericContextModel';
 
 export const individualWeightMutation = graphql`
   mutation WeightFieldIndividualMutation($id: ID!, $input: [EditInput]!) {
@@ -120,12 +121,7 @@ interface WeightFieldEditProps {
     width: string;
   };
   setFieldValue?: (name: string, value: unknown) => void;
-  editContext?:
-  | readonly {
-    readonly focusOn: string | null;
-    readonly name: string;
-  }[]
-  | null;
+  editContext?: readonly (GenericContext | null)[] | null;
 }
 export const WeightFieldEdit: FunctionComponent<WeightFieldEditProps> = ({
   id,

@@ -1,6 +1,6 @@
 import React, { FunctionComponent } from 'react';
 import { graphql, useFragment } from 'react-relay';
-import { GenericAttackCard } from '../../common/cards/GenericAttackCard';
+import { GenericAttack, GenericAttackCard } from '../../common/cards/GenericAttackCard';
 import { IntrusionSetCard_node$key } from './__generated__/IntrusionSetCard_node.graphql';
 
 const IntrusionSetCardFragment = graphql`
@@ -120,7 +120,7 @@ const IntrusionSetCard: FunctionComponent<IntrusionSetCardProps> = ({
   const data = useFragment(IntrusionSetCardFragment, node);
   return (
     <GenericAttackCard
-      cardData={data}
+      cardData={data as GenericAttack}
       cardLink={`/dashboard/threats/intrusion_sets/${data.id}`}
       entityType="Intrusion-Set"
       onLabelClick={onLabelClick}

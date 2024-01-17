@@ -16,8 +16,9 @@ import { useFormatter } from '../../../../components/i18n';
 import { Option } from '../../common/form/ReferenceField';
 import { AdministrativeAreaEditionOverview_administrativeArea$key } from './__generated__/AdministrativeAreaEditionOverview_administrativeArea.graphql';
 import { useSchemaEditionValidation } from '../../../../utils/hooks/useEntitySettings';
-import useFormEditor from '../../../../utils/hooks/useFormEditor';
+import useFormEditor, { GenericData } from '../../../../utils/hooks/useFormEditor';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
+import { GenericContext } from '../../common/model/GenericContextModel';
 
 const administrativeAreaMutationFieldPatch = graphql`
   mutation AdministrativeAreaEditionOverviewFieldPatchMutation(
@@ -118,12 +119,7 @@ export const administrativeAreaEditionOverviewFragment = graphql`
 
 interface AdministrativeAreaEditionOverviewProps {
   administrativeAreaRef: AdministrativeAreaEditionOverview_administrativeArea$key;
-  context:
-  | readonly ({
-    readonly focusOn: string | null;
-    readonly name: string;
-  } | null)[]
-  | null;
+  context?: readonly (GenericContext | null)[] | null;
   enableReferences?: boolean;
   handleClose: () => void;
 }
@@ -173,7 +169,7 @@ AdministrativeAreaEditionOverviewProps
     editionFocus: administrativeAreaEditionOverviewFocus,
   };
   const editor = useFormEditor(
-    administrativeArea,
+    administrativeArea as GenericData,
     enableReferences,
     queries,
     administrativeAreaValidator,

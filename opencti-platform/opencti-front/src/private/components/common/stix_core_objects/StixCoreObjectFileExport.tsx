@@ -273,7 +273,6 @@ const StixCoreObjectFileExport = ({
 }) => {
   const queryRef = useQueryLoading<StixCoreObjectFileExportQuery>(
     stixCoreObjectFileExportQuery,
-    { id },
   );
   return (
     <>

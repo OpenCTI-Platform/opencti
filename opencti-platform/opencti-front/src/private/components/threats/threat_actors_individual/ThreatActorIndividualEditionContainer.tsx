@@ -4,6 +4,18 @@ import Box from '@mui/material/Box';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
 import Drawer, { DrawerVariant } from '@components/common/drawer/Drawer';
+import {
+  ThreatActorIndividualEditionOverview_ThreatActorIndividual$key,
+} from '@components/threats/threat_actors_individual/__generated__/ThreatActorIndividualEditionOverview_ThreatActorIndividual.graphql';
+import {
+  ThreatActorIndividualEditionDetails_ThreatActorIndividual$key,
+} from '@components/threats/threat_actors_individual/__generated__/ThreatActorIndividualEditionDetails_ThreatActorIndividual.graphql';
+import {
+  ThreatActorIndividualEditionDemographics_ThreatActorIndividual$key,
+} from '@components/threats/threat_actors_individual/__generated__/ThreatActorIndividualEditionDemographics_ThreatActorIndividual.graphql';
+import {
+  ThreatActorIndividualEditionBiographics_ThreatActorIndividual$key,
+} from '@components/threats/threat_actors_individual/__generated__/ThreatActorIndividualEditionBiographics_ThreatActorIndividual.graphql';
 import { useFormatter } from '../../../../components/i18n';
 import { useIsEnforceReference } from '../../../../utils/hooks/useEntitySettings';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
@@ -53,7 +65,7 @@ ThreatActorIndividualEditionContainerProps
       <Drawer
         title={t_i18n('Update a threat actor individual')}
         variant={open == null ? DrawerVariant.update : undefined}
-        context={threatActorIndividual.editContext}
+        context={threatActorIndividual?.editContext}
         onClose={handleClose}
         open={open}
       >
@@ -69,32 +81,32 @@ ThreatActorIndividualEditionContainerProps
             </Box>
             {currentTab === 0 && (
               <ThreatActorIndividualEditionOverview
-                threatActorIndividualRef={threatActorIndividual}
+                threatActorIndividualRef={threatActorIndividual as ThreatActorIndividualEditionOverview_ThreatActorIndividual$key}
                 enableReferences={useIsEnforceReference(THREAT_ACTOR_TYPE)}
-                context={threatActorIndividual.editContext}
+                context={threatActorIndividual?.editContext}
                 handleClose={onClose}
               />
             )}
             {currentTab === 1 && (
               <ThreatActorIndividualEditionDetails
-                threatActorIndividualRef={threatActorIndividual}
+                threatActorIndividualRef={threatActorIndividual as ThreatActorIndividualEditionDetails_ThreatActorIndividual$key}
                 enableReferences={useIsEnforceReference(THREAT_ACTOR_TYPE)}
-                context={threatActorIndividual.editContext}
+                context={threatActorIndividual?.editContext}
                 handleClose={onClose}
               />
             )}
             {currentTab === 2 && (
               <ThreatActorIndividualEditionDemographics
-                threatActorIndividualRef={threatActorIndividual}
+                threatActorIndividualRef={threatActorIndividual as ThreatActorIndividualEditionDemographics_ThreatActorIndividual$key}
                 enableReferences={useIsEnforceReference(THREAT_ACTOR_TYPE)}
-                context={threatActorIndividual.editContext}
+                context={threatActorIndividual?.editContext}
               />
             )}
             {currentTab === 3 && (
               <ThreatActorIndividualEditionBiographics
-                threatActorIndividualRef={threatActorIndividual}
+                threatActorIndividualRef={threatActorIndividual as ThreatActorIndividualEditionBiographics_ThreatActorIndividual$key}
                 enableReferences={useIsEnforceReference(THREAT_ACTOR_TYPE)}
-                context={threatActorIndividual.editContext}
+                context={threatActorIndividual?.editContext}
               />
             )}
           </>

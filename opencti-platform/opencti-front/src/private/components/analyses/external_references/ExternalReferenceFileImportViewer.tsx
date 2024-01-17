@@ -167,11 +167,11 @@ ExternalReferenceFileImportViewerBaseProps
                     node: {
                       id: string;
                       metaData: {
-                        mimetype: string | null;
-                      } | null;
+                        mimetype: string | null | undefined;
+                      } | null | undefined;
                       ' $fragmentSpreads': FragmentRefs<'FileLine_file'>;
                     };
-                  } | null,
+                  } | null | undefined,
                 ) => file?.node && (
                   <FileLine
                     key={file.node.id}

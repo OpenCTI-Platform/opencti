@@ -17,8 +17,9 @@ import { useFormatter } from '../../../../components/i18n';
 import { RegionEditionOverview_region$key } from './__generated__/RegionEditionOverview_region.graphql';
 import CommitMessage from '../../common/form/CommitMessage';
 import { useSchemaEditionValidation } from '../../../../utils/hooks/useEntitySettings';
-import useFormEditor from '../../../../utils/hooks/useFormEditor';
+import useFormEditor, { GenericData } from '../../../../utils/hooks/useFormEditor';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
+import { GenericContext } from '../../common/model/GenericContextModel';
 
 const regionMutationFieldPatch = graphql`
   mutation RegionEditionOverviewFieldPatchMutation(
@@ -116,12 +117,7 @@ const regionEditionOverviewFragment = graphql`
 
 interface RegionEdititionOverviewProps {
   regionRef: RegionEditionOverview_region$key;
-  context:
-  | readonly ({
-    readonly focusOn: string | null;
-    readonly name: string;
-  } | null)[]
-  | null;
+  context?: readonly (GenericContext | null)[] | null;
   enableReferences?: boolean;
   handleClose: () => void;
 }
@@ -155,7 +151,7 @@ RegionEdititionOverviewProps
     editionFocus: regionEditionOverviewFocus,
   };
   const editor = useFormEditor(
-    region,
+    region as GenericData,
     enableReferences,
     queries,
     regionValidator,

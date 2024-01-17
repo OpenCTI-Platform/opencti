@@ -108,7 +108,7 @@ const UserHistoryLine: FunctionComponent<UserHistoryLineProps> = ({ node }) => {
     setOpen(false);
   };
 
-  const renderIcon = (eventScope: string | null, isRelation: boolean, eventMessage: string | undefined, commit: string | null | undefined) => {
+  const renderIcon = (eventScope: string | null | undefined, isRelation: boolean, eventMessage: string | undefined, commit: string | null | undefined) => {
     if (isRelation) {
       if (eventScope === 'create') {
         return (

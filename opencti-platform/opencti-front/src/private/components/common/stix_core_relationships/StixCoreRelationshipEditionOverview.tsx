@@ -22,7 +22,7 @@ import { convertCreatedBy, convertKillChainPhases, convertMarkings, convertStatu
 import StatusField from '../form/StatusField';
 import DateTimePickerField from '../../../../components/DateTimePickerField';
 import { useIsEnforceReference, useSchemaEditionValidation } from '../../../../utils/hooks/useEntitySettings';
-import useFormEditor from '../../../../utils/hooks/useFormEditor';
+import useFormEditor, { GenericData } from '../../../../utils/hooks/useFormEditor';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
 import { StixCoreRelationshipEditionOverviewQuery } from './__generated__/StixCoreRelationshipEditionOverviewQuery.graphql';
 import {
@@ -243,7 +243,7 @@ Omit<StixCoreRelationshipEditionOverviewProps, 'queryRef'>
     editionFocus: stixCoreRelationshipEditionFocus,
   };
   const editor = useFormEditor(
-    stixCoreRelationship,
+    stixCoreRelationship as GenericData,
     enableReferences,
     queries,
     stixCoreRelationshipValidator,
@@ -295,10 +295,10 @@ Omit<StixCoreRelationshipEditionOverviewProps, 'queryRef'>
     });
   };
   const initialValues: StixCoreRelationshipAddInput = {
-    confidence: stixCoreRelationship.confidence,
+    confidence: stixCoreRelationship.confidence ?? null,
     start_time: buildDate(stixCoreRelationship.start_time),
     stop_time: buildDate(stixCoreRelationship.stop_time),
-    description: stixCoreRelationship.description,
+    description: stixCoreRelationship.description ?? '',
     killChainPhases: convertKillChainPhases(stixCoreRelationship),
     x_opencti_workflow_id: convertStatus(t_i18n, stixCoreRelationship) as Option,
     createdBy: convertCreatedBy(stixCoreRelationship) as Option,
@@ -495,6 +495,9 @@ Omit<StixCoreRelationshipEditionOverviewProps, 'stixCoreRelationship'>
     StixCoreRelationshipEditionOverviewFragment,
     queryData.stixCoreRelationship,
   );
+  if (!stixCoreRelationship) {
+    return null;
+  }
   return (
     <StixCoreRelationshipEditionOverviewComponent
       {...props}

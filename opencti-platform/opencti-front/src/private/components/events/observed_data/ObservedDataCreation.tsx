@@ -130,8 +130,8 @@ ObservedDataFormProps
         input,
       },
       updater: (store, response) => {
-        if (updater) {
-          updater(store, 'observedDataAdd', response.observedDataAdd);
+        if (updater && response) {
+          updater(store, 'observedDataAdd', response.observedDataAdd ?? null);
         }
       },
       onError: (error) => {

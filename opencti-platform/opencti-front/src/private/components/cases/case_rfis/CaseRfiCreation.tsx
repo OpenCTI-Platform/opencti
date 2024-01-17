@@ -79,7 +79,7 @@ interface CaseRfiFormProps {
   updater: (
     store: RecordSourceSelectorProxy,
     key: string,
-    response: { id: string; name: string } | null
+    response: { id: string; name: string } | null | undefined
   ) => void;
   onClose?: () => void;
   defaultConfidence?: number;
@@ -136,7 +136,7 @@ export const CaseRfiCreationForm: FunctionComponent<CaseRfiFormProps> = ({
         input,
       },
       updater: (store, response) => {
-        if (updater) {
+        if (updater && response) {
           updater(store, 'caseRfiAdd', response.caseRfiAdd);
         }
       },

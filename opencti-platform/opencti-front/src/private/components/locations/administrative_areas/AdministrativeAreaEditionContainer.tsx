@@ -1,6 +1,9 @@
 import React, { FunctionComponent } from 'react';
 import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import Drawer, { DrawerVariant } from '@components/common/drawer/Drawer';
+import {
+  AdministrativeAreaEditionOverview_administrativeArea$key,
+} from '@components/locations/administrative_areas/__generated__/AdministrativeAreaEditionOverview_administrativeArea.graphql';
 import AdministrativeAreaEditionOverview from './AdministrativeAreaEditionOverview';
 import { useFormatter } from '../../../../components/i18n';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
@@ -34,14 +37,14 @@ const AdministrativeAreaEditionContainer: FunctionComponent<AdministrativeAreaEd
     <Drawer
       title={t_i18n('Update an area')}
       variant={open == null ? DrawerVariant.update : undefined}
-      context={administrativeArea.editContext}
+      context={administrativeArea?.editContext}
       onClose={handleClose}
       open={open}
     >
       {({ onClose }) => (
         <AdministrativeAreaEditionOverview
-          administrativeAreaRef={administrativeArea}
-          context={administrativeArea.editContext}
+          administrativeAreaRef={administrativeArea as AdministrativeAreaEditionOverview_administrativeArea$key}
+          context={administrativeArea?.editContext}
           handleClose={onClose}
           enableReferences={useIsEnforceReference('Administrative-Area')}
         />

@@ -17,8 +17,9 @@ import { Option } from '../../common/form/ReferenceField';
 import CommitMessage from '../../common/form/CommitMessage';
 import { adaptFieldValue } from '../../../../utils/String';
 import { useSchemaEditionValidation } from '../../../../utils/hooks/useEntitySettings';
-import useFormEditor from '../../../../utils/hooks/useFormEditor';
+import useFormEditor, { GenericData } from '../../../../utils/hooks/useFormEditor';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
+import { GenericContext } from '../../common/model/GenericContextModel';
 
 const countryMutationFieldPatch = graphql`
   mutation CountryEditionOverviewFieldPatchMutation(
@@ -116,12 +117,7 @@ const countryEditionOverviewFragment = graphql`
 
 interface CountryEditionOverviewProps {
   countryRef: CountryEditionOverview_country$key;
-  context:
-  | readonly ({
-    readonly focusOn: string | null;
-    readonly name: string;
-  } | null)[]
-  | null;
+  context?: readonly (GenericContext | null)[] | null;
   enableReferences?: boolean;
   handleClose: () => void;
 }
@@ -155,7 +151,7 @@ CountryEditionOverviewProps
     editionFocus: countryEditionOverviewFocus,
   };
   const editor = useFormEditor(
-    country,
+    country as GenericData,
     enableReferences,
     queries,
     countryValidator,
@@ -213,7 +209,7 @@ CountryEditionOverviewProps
   };
   const initialValues: CountryEditionFormValues = {
     name: country.name,
-    description: country.description,
+    description: country.description ?? '',
     references: [],
     createdBy: convertCreatedBy(country) as Option,
     objectMarking: convertMarkings(country),

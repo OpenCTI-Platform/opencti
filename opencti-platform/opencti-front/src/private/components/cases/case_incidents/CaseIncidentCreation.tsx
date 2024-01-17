@@ -80,7 +80,7 @@ interface IncidentFormProps {
   updater: (
     store: RecordSourceSelectorProxy,
     key: string,
-    response: { id: string; name: string } | null
+    response: { id: string; name: string } | null | undefined
   ) => void;
   onClose?: () => void;
   defaultConfidence?: number;
@@ -138,7 +138,7 @@ export const CaseIncidentCreationForm: FunctionComponent<IncidentFormProps> = ({
         input,
       },
       updater: (store, response) => {
-        if (updater) {
+        if (updater && response) {
           updater(store, 'caseIncidentAdd', response.caseIncidentAdd);
         }
       },

@@ -60,7 +60,7 @@ const StyledRating = styled(Rating)(({ theme }) => ({
 
 interface RatingProps {
   label?: string;
-  rating: number | null;
+  rating?: number | null;
   readOnly?: boolean;
   style?: Record<string, unknown>;
   size: 'tiny' | 'small' | 'large';
