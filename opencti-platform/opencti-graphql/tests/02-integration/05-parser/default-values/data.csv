@@ -1,0 +1,7 @@
+author name,area name,area conf,area desc,area lat,area lng,mal name,mal family,mal types,mal archi,kcf name,kcf phase,kcf order
+Jean Michel,morbihan,100,56,2,-2,,,,,,,
+,finistere,,29,2,-3,,,,,,,
+,cotes-darmor,100,,1,-2,,,,,,,
+,ile-et-vilaine,50,35,,,,,,,,,
+,,,,,,vador,TRUE,ddos,arm,mitre-attack,persistence,20
+,,,,,,octopus,FALSE,,,,,
