@@ -6,15 +6,13 @@ import DialogContent from '@mui/material/DialogContent';
 import DialogActions from '@mui/material/DialogActions';
 import { CogOutline } from 'mdi-material-ui';
 import IconButton from '@mui/material/IconButton';
-import { AttributeWithMetadata } from '@components/data/csvMapper/representations/attributes/Attribute';
 import { useFormatter } from '../../../../../../components/i18n';
 
 interface CsvMapperRepresentationDialogOptionProps {
-  attribute: AttributeWithMetadata
   children: ReactNode
 }
 
-const CsvMapperRepresentationDialogOption: FunctionComponent<CsvMapperRepresentationDialogOptionProps> = ({ attribute, children }) => {
+const CsvMapperRepresentationDialogOption: FunctionComponent<CsvMapperRepresentationDialogOptionProps> = ({ children }) => {
   const [open, setOpen] = React.useState(false);
   const { t_i18n } = useFormatter();
   const handleClickOpen = () => {
@@ -31,7 +29,6 @@ const CsvMapperRepresentationDialogOption: FunctionComponent<CsvMapperRepresenta
         aria-label={t_i18n('Settings')}
         onClick={handleClickOpen}
         size="large"
-        disabled={!attribute.column?.column_name}
       >
         <CogOutline/>
       </IconButton>

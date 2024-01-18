@@ -3,9 +3,9 @@ import { CsvMapperLinesPaginationQuery$variables } from '@components/data/csvMap
 import { FormikConfig } from 'formik';
 import { graphql, useMutation } from 'react-relay';
 import CsvMapperForm from '@components/data/csvMapper/CsvMapperForm';
-import { sanitized } from '@components/data/csvMapper/representations/RepresentationUtils';
-import { CsvMapper } from '@components/data/csvMapper/CsvMapper';
+import { CsvMapperFormData } from '@components/data/csvMapper/CsvMapper';
 import { CsvMapperAddInput } from '@components/data/csvMapper/__generated__/CsvMapperCreationContainerMutation.graphql';
+import { formDataToCsvMapper } from '@components/data/csvMapper/CsvMapperUtils';
 import { insertNode } from '../../../../utils/store';
 
 const csvMapperCreation = graphql`
@@ -31,16 +31,18 @@ const CsvMapperCreation: FunctionComponent<CsvMapperCreationFormProps> = ({
   paginationOptions,
 }) => {
   const [commit] = useMutation(csvMapperCreation);
-  const onSubmit: FormikConfig<CsvMapper>['onSubmit'] = (
+
+  const onSubmit: FormikConfig<CsvMapperFormData>['onSubmit'] = (
     values,
     { resetForm },
   ) => {
+    const formattedValues = formDataToCsvMapper(values);
     const input: CsvMapperAddInput = {
-      name: values.name,
-      has_header: values.has_header,
-      separator: values.separator,
-      representations: JSON.stringify(sanitized(values.representations)),
-      skipLineChar: values.skipLineChar,
+      name: formattedValues.name,
+      has_header: formattedValues.has_header,
+      separator: formattedValues.separator,
+      skipLineChar: formattedValues.skipLineChar,
+      representations: JSON.stringify(formattedValues.representations),
     };
     commit({
       variables: {
@@ -61,13 +63,14 @@ const CsvMapperCreation: FunctionComponent<CsvMapperCreationFormProps> = ({
     });
   };
 
-  const initialValues: CsvMapper = {
+  const initialValues: CsvMapperFormData = {
+    id: '',
     name: '',
     has_header: false,
     separator: ',',
-    representations: [],
-    skipLineChar: '',
-    errors: null,
+    skip_line_char: '',
+    entity_representations: [],
+    relationship_representations: [],
   };
 
   return <CsvMapperForm csvMapper={initialValues} onSubmit={onSubmit} />;

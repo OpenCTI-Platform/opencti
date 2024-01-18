@@ -7037,7 +7037,6 @@ type Query {
   works(first: Int, after: ID, orderBy: WorksOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): WorkConnection
   runtimeAttributes(first: Int, search: String, orderMode: OrderingMode, attributeName: String!): AttributeConnection
   schemaAttributeNames(elementType: [String]!): AttributeConnection
-  schemaAttributes(entityType: String!): [TypeAttribute!]!
   retentionRule(id: String!): RetentionRule
   retentionRules(first: Int, after: ID, search: String): RetentionRuleConnection
   taxiiCollection(id: String!): TaxiiCollection
@@ -7277,6 +7276,7 @@ type Query {
   csvMapper(id: String!): CsvMapper
   csvMappers(first: Int, after: ID, orderBy: CsvMapperOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): CsvMapperConnection
   csvMapperTest(configuration: String!, content: String!): CsvMapperTestResult
+  csvMapperSchemaAttributes: [CsvMapperSchemaAttributes!]!
 }
 
 type Subscription {
@@ -9809,6 +9809,7 @@ type TypeAttribute {
   type: String!
   mandatory: Boolean!
   mandatoryType: String!
+  editDefault: Boolean!
   multiple: Boolean
   label: String
   defaultValues: [DefaultValue!]
@@ -10778,6 +10779,7 @@ type CsvMapperRepresentationAttribute {
   column: AttributeColumn
   based_on: AttributeBasedOn
   ref: AttributeRef
+  default_values: [DefaultValue!]
 }
 
 enum Operator {
@@ -10841,6 +10843,22 @@ type CsvMapperTestResult {
   objects: String!
   nbRelationships: Int!
   nbEntities: Int!
+}
+
+type CsvMapperSchemaAttribute {
+  name: String!
+  type: String!
+  mandatory: Boolean!
+  mandatoryType: String!
+  editDefault: Boolean!
+  multiple: Boolean!
+  defaultValues: [DefaultValue!]
+  label: String
+}
+
+type CsvMapperSchemaAttributes {
+  name: String!
+  attributes: [CsvMapperSchemaAttribute!]!
 }
 
 input AttributeColumnConfigurationInput {

@@ -1,11 +1,11 @@
 import React, { FunctionComponent } from 'react';
-import { AttributeConfiguration } from '@components/data/csvMapper/representations/attributes/Attribute';
 import makeStyles from '@mui/styles/makeStyles';
 import { SubdirectoryArrowRight } from 'mdi-material-ui';
+import { CsvMapperRepresentationAttributeFormData } from '@components/data/csvMapper/representations/attributes/Attribute';
 import { useFormatter } from '../../../../../../components/i18n';
 
-interface CsvMapperRepresentionAttributSeelectedConfigurationsProps {
-  configuration?: AttributeConfiguration
+interface CsvMapperRepresentionAttributSelectedConfigurationsProps {
+  configuration?: CsvMapperRepresentationAttributeFormData
 }
 
 const useStyles = makeStyles(() => ({
@@ -21,7 +21,9 @@ const useStyles = makeStyles(() => ({
     marginLeft: '4px',
   },
 }));
-const CsvMapperRepresentionAttributeSelectedConfigurations: FunctionComponent<CsvMapperRepresentionAttributSeelectedConfigurationsProps> = ({ configuration }) => {
+
+const CsvMapperRepresentionAttributeSelectedConfigurations:
+FunctionComponent<CsvMapperRepresentionAttributSelectedConfigurationsProps> = ({ configuration }) => {
   const classes = useStyles();
   const { t_i18n } = useFormatter();
   if (!configuration?.pattern_date && !configuration?.separator) {

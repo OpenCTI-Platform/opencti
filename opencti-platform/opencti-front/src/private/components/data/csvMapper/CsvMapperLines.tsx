@@ -1,31 +1,13 @@
 import React, { FunctionComponent } from 'react';
-import { graphql, PreloadedQuery } from 'react-relay';
+import { graphql, usePaginationFragment } from 'react-relay';
 import { CsvMapperLines_csvMapper$key } from '@components/data/csvMapper/__generated__/CsvMapperLines_csvMapper.graphql';
 import CsvMapperLine from '@components/data/csvMapper/CsvMapperLine';
 import LineDummy from '@components/common/LineDummy';
+import { useCsvMappersData } from '@components/data/csvMapper/csvMappers.data';
+import { csvMappers_MappersQuery } from '@components/data/csvMapper/__generated__/csvMappers_MappersQuery.graphql';
 import { DataColumns } from '../../../../components/list_lines';
-import usePreloadedPaginationFragment from '../../../../utils/hooks/usePreloadedPaginationFragment';
 import ListLinesContent from '../../../../components/list_lines/ListLinesContent';
-import { CsvMapperLinesPaginationQuery, CsvMapperLinesPaginationQuery$variables } from './__generated__/CsvMapperLinesPaginationQuery.graphql';
-
-export const csvMapperLinesQuery = graphql`
-  query CsvMapperLinesPaginationQuery(
-    $count: Int
-    $orderBy: CsvMapperOrdering
-    $orderMode: OrderingMode
-    $filters: FilterGroup
-    $search: String
-  ) {
-    ...CsvMapperLines_csvMapper
-      @arguments(
-        count: $count
-        orderBy: $orderBy
-        orderMode: $orderMode
-        filters: $filters
-        search: $search
-      )
-  }
-`;
+import { CsvMapperLinesPaginationQuery$variables } from './__generated__/CsvMapperLinesPaginationQuery.graphql';
 
 export const csvMapperLinesFragment = graphql`
   fragment CsvMapperLines_csvMapper on Query
@@ -61,27 +43,21 @@ export const csvMapperLinesFragment = graphql`
 `;
 
 export interface CsvMapperLinesProps {
-  queryRef: PreloadedQuery<CsvMapperLinesPaginationQuery>;
   paginationOptions: CsvMapperLinesPaginationQuery$variables;
   dataColumns: DataColumns;
 }
 
 const CsvMapperLines: FunctionComponent<CsvMapperLinesProps> = ({
-  queryRef,
   paginationOptions,
   dataColumns,
 }) => {
-  const { data } = usePreloadedPaginationFragment<
-  CsvMapperLinesPaginationQuery,
+  const { csvMappers } = useCsvMappersData();
+  const { data } = usePaginationFragment<
+  csvMappers_MappersQuery,
   CsvMapperLines_csvMapper$key
-  >({
-    queryRef,
-    linesQuery: csvMapperLinesQuery,
-    linesFragment: csvMapperLinesFragment,
-    nodePath: ['csvMappers', 'pageInfo', 'globalCount'],
-  });
+  >(csvMapperLinesFragment, csvMappers);
 
-  const csvMappers = data?.csvMappers?.edges ?? [];
+  const csvMappersData = data?.csvMappers?.edges ?? [];
   const globalCount = data?.csvMappers?.pageInfo?.globalCount;
 
   return (
@@ -90,7 +66,7 @@ const CsvMapperLines: FunctionComponent<CsvMapperLinesProps> = ({
       loadMore={() => {}}
       hasMore={() => {}}
       isLoading={() => false}
-      dataList={csvMappers}
+      dataList={csvMappersData}
       globalCount={globalCount}
       LineComponent={CsvMapperLine}
       DummyLineComponent={LineDummy}

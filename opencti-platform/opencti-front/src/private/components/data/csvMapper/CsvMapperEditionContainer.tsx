@@ -30,6 +30,10 @@ const csvMapperEditionContainerFragment = graphql`
             pattern_date
           }
         }
+        default_values {
+          id
+          name
+        }
         based_on {
           representations
         }

@@ -1,101 +1,84 @@
 import React, { FunctionComponent } from 'react';
-import makeStyles from '@mui/styles/makeStyles';
-import { useFormikContext } from 'formik';
-import { InformationOutline } from 'mdi-material-ui';
-import Tooltip from '@mui/material/Tooltip';
-import { AttributeWithMetadata } from '@components/data/csvMapper/representations/attributes/Attribute';
-import { CsvMapper } from '@components/data/csvMapper/CsvMapper';
-import MuiTextField from '@mui/material/TextField';
+import CsvMapperRepresentationAttributeOption from '@components/data/csvMapper/representations/attributes/CsvMapperRepresentationAttributeOption';
+import DialogContentText from '@mui/material/DialogContentText';
+import { Field, FormikProps } from 'formik';
+import DefaultValueField from '@components/common/form/DefaultValueField';
+import { CsvMapperFormData } from '@components/data/csvMapper/CsvMapper';
+import {
+  CsvMapperRepresentationAttributesForm_allSchemaAttributes$data,
+} from '@components/data/csvMapper/representations/attributes/__generated__/CsvMapperRepresentationAttributesForm_allSchemaAttributes.graphql';
 import { useFormatter } from '../../../../../../components/i18n';
 
-const useStyles = makeStyles(() => ({
-  container: {
-    display: 'flex',
-    alignItems: 'center',
-  },
-}));
-
 interface CsvMapperRepresentationAttributeOptionsProps {
-  attribute: AttributeWithMetadata;
-  indexRepresentation: number;
+  schemaAttribute: CsvMapperRepresentationAttributesForm_allSchemaAttributes$data['csvMapperSchemaAttributes'][number]['attributes'][number];
+  attributeName: string;
+  form: FormikProps<CsvMapperFormData>
 }
 
 const CsvMapperRepresentationAttributeOptions: FunctionComponent<
 CsvMapperRepresentationAttributeOptionsProps
-> = ({ attribute, indexRepresentation }) => {
-  const classes = useStyles();
+> = ({ schemaAttribute, attributeName, form }) => {
   const { t_i18n } = useFormatter();
+  const { setFieldValue, getFieldProps } = form;
 
-  const formikContext = useFormikContext<CsvMapper>();
-  const selectedAttributes = formikContext.values.representations[indexRepresentation].attributes;
-  const indexAttribute = selectedAttributes.findIndex(
-    (a) => a.key === attribute.key,
-  );
+  const settingsDefaultValues = schemaAttribute.defaultValues?.map((v) => v.name).join(',') ?? t('none');
 
-  const onChange = async (name: string, value: string) => {
-    await formikContext.setFieldValue(
-      `representations[${indexRepresentation}].attributes[${indexAttribute}].column.configuration`,
-      { [name]: value },
-    );
-  };
-
-  // we disabled the option if the attribute is not in the mapper
-  // user must select a column before being able to set an option
-  const enabled = !!selectedAttributes.find((a) => a.key === attribute.key);
+  // Retrieve the entity type of the current representation for open vocab fields.
+  const representationName = attributeName.split('.')[0];
+  const entityType: string = getFieldProps(representationName).value.target_type;
 
   return (
     <>
-      {attribute.type === 'date' && (
-        <div className={classes.container}>
-          <MuiTextField
-            style={{ margin: 0 }}
-            disabled={!enabled}
-            type="standard"
-            value={
-              selectedAttributes[indexAttribute]?.column?.configuration
-                ?.pattern_date || ''
-            }
-            onChange={(event) => onChange('pattern_date', event.target.value)}
-            placeholder={t_i18n('Date pattern')}
-          />
-          <Tooltip
-            title={t_i18n(
-              'By default we accept iso date (YYYY-MM-DD), but you can specify your own date format in ISO notation (for instance DD.MM.YYYY)',
-            )}
-          >
-            <InformationOutline
-              fontSize="small"
-              color="primary"
-              style={{ cursor: 'default' }}
-            />
-          </Tooltip>
-        </div>
+      {schemaAttribute.type === 'date' && (
+        <Field
+          component={CsvMapperRepresentationAttributeOption}
+          name={`${attributeName}.pattern_date`}
+          placeholder={t_i18n('Date pattern')}
+          tooltip={t_i18n(
+            'By default we accept iso date (YYYY-MM-DD), but you can specify your own date format in ISO notation (for instance DD.MM.YYYY)',
+          )}
+        />
       )}
-      {attribute.multiple && (
-        <div className={classes.container}>
-          <MuiTextField
-            style={{ margin: 0 }}
-            disabled={!enabled}
-            type="standard"
-            value={
-              selectedAttributes[indexAttribute]?.column?.configuration
-                ?.separator || ''
-            }
-            onChange={(event) => onChange('separator', event.target.value)}
-            placeholder={t_i18n('List separator')}
-          />
-          <Tooltip
-            title={t_i18n(
-              'If this field contains multiple values, you can specify the separator used between each values (for instance | or +)',
-            )}
-          >
-            <InformationOutline
-              fontSize="small"
-              color="primary"
-              style={{ cursor: 'default' }}
-            />
-          </Tooltip>
-        </div>
+      {schemaAttribute.multiple && (
+        <Field
+          component={CsvMapperRepresentationAttributeOption}
+          name={`${attributeName}.separator`}
+          placeholder={t_i18n('List separator')}
+          tooltip={t_i18n(
+            'If this field contains multiple values, you can specify the separator used between each values (for instance | or +)',
+          )}
+        />
+      )}
+      {schemaAttribute.editDefault && (
+      <>
+        <DefaultValueField
+          attribute={schemaAttribute}
+          setFieldValue={setFieldValue}
+          name={`${attributeName}.default_values`}
+          entityType={entityType}
+        />
+
+        {settingsDefaultValues
+          ? (
+            <>
+              <DialogContentText sx={{ width: 450, mt: '8px' }}>
+                {t_i18n('', {
+                  id: 'Settings default values',
+                  values: { value: settingsDefaultValues },
+                })}
+              </DialogContentText>
+              <DialogContentText>
+                {t_i18n('Settings default values usage...')}
+              </DialogContentText>
+            </>
+          )
+          : (
+            <DialogContentText sx={{ width: 450, mt: '8px' }}>
+              {t_i18n('No default value set in Settings...')}
+            </DialogContentText>
+          )
+        }
+      </>
       )}
     </>
   );

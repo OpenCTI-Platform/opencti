@@ -1,24 +1,17 @@
-// as stored in the CSV Mapper and sent to backend
-export interface Attribute {
-  key: string;
-  // it's either column or based_on, not both
-  based_on: {
-    representations: ReadonlyArray<string | null> | null;
-  } | null;
-  column: {
-    column_name: string | null;
-    configuration?: AttributeConfiguration;
-  } | null;
-}
+import { CsvMapperEditionContainerFragment_csvMapper$data } from '@components/data/csvMapper/__generated__/CsvMapperEditionContainerFragment_csvMapper.graphql';
+import { DefaultValues } from '../../../../../../utils/defaultValues';
 
-// enhanced with schema info
-export interface AttributeWithMetadata extends Attribute {
-  mandatory?: boolean;
-  multiple?: boolean | null;
-  type?: string;
-}
+export type CsvMapperRepresentationAttribute = CsvMapperEditionContainerFragment_csvMapper$data['representations'][number]['attributes'][number];
 
-export interface AttributeConfiguration {
-  separator?: string;
-  pattern_date?: string;
+export type CsvMapperRepresentationAttributeEdit = Omit<CsvMapperRepresentationAttribute, 'default_values'> & {
+  default_values: string[] | null
+};
+
+export interface CsvMapperRepresentationAttributeFormData {
+  key: string
+  column_name?: string
+  separator?: string
+  pattern_date?: string
+  default_values?: DefaultValues
+  based_on?: (string | null)[]
 }

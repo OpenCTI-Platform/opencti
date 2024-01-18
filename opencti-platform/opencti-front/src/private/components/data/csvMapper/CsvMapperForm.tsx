@@ -1,5 +1,5 @@
 import React, { FunctionComponent, useEffect, useState } from 'react';
-import { Field, Form, Formik } from 'formik';
+import { Field, FieldArray, Form, Formik } from 'formik';
 import Button from '@mui/material/Button';
 import makeStyles from '@mui/styles/makeStyles';
 import * as Yup from 'yup';
@@ -10,8 +10,9 @@ import Tooltip from '@mui/material/Tooltip';
 import { FormikHelpers } from 'formik/dist/types';
 import { SelectChangeEvent } from '@mui/material/Select';
 import CsvMapperRepresentationForm, { RepresentationFormEntityOption } from '@components/data/csvMapper/representations/CsvMapperRepresentationForm';
-import { CsvMapper } from '@components/data/csvMapper/CsvMapper';
+import { CsvMapperFormData } from '@components/data/csvMapper/CsvMapper';
 import classNames from 'classnames';
+import { formDataToCsvMapper } from '@components/data/csvMapper/CsvMapperUtils';
 import type { Theme } from '../../../../components/Theme';
 import { useFormatter } from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
@@ -19,7 +20,6 @@ import SwitchField from '../../../../components/SwitchField';
 import useAuth from '../../../../utils/hooks/useAuth';
 import { representationInitialization } from './representations/RepresentationUtils';
 import CsvMapperTestDialog from './CsvMapperTestDialog';
-import type { Representation } from './representations/Representation';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   buttons: {
@@ -53,10 +53,10 @@ const csvMapperValidation = (t: (s: string) => string) => Yup.object().shape({
 });
 
 interface CsvMapperFormProps {
-  csvMapper: CsvMapper;
+  csvMapper: CsvMapperFormData;
   onSubmit: (
-    values: CsvMapper,
-    formikHelpers: FormikHelpers<CsvMapper>,
+    values: CsvMapperFormData,
+    formikHelpers: FormikHelpers<CsvMapperFormData>,
   ) => void;
 }
 
@@ -120,34 +120,31 @@ const CsvMapperForm: FunctionComponent<CsvMapperFormProps> = ({ csvMapper, onSub
   // -- EVENTS --
 
   const onAddEntityRepresentation = (
-    setFieldValue: (field: string, value: Representation[]) => void,
-    values: CsvMapper,
+    setFieldValue: FormikHelpers<CsvMapperFormData>['setFieldValue'],
+    values: CsvMapperFormData,
   ) => {
-    // we must insert the entity before the relationships as the list is sorted
-    const entities = values.representations.filter((r) => r.type === 'entity');
-    const relationships = values.representations.filter(
-      (r) => r.type === 'relationship',
-    );
-    setFieldValue('representations', [
-      ...entities,
+    setFieldValue('entity_representations', [
+      ...values.entity_representations,
       representationInitialization('entity'),
-      ...relationships,
     ]);
   };
   const onAddRelationshipRepresentation = (
-    setFieldValue: (field: string, value: Representation[]) => void,
-    values: CsvMapper,
+    setFieldValue: FormikHelpers<CsvMapperFormData>['setFieldValue'],
+    values: CsvMapperFormData,
   ) => {
     // always added at the end
-    setFieldValue('representations', [
-      ...values.representations,
+    setFieldValue('relationship_representations', [
+      ...values.relationship_representations,
       representationInitialization('relationship'),
     ]);
   };
 
   // -- ERRORS --
   // on edit mode, csvMapper.errors might be set; on create mode backend validation is not done yet so error is null
-  const [hasError, setHasError] = useState<boolean>(!!csvMapper.errors?.length || csvMapper.representations.length === 0);
+  const [hasError, setHasError] = useState<boolean>(
+    !!csvMapper.errors?.length
+    || (csvMapper.entity_representations.length === 0 && csvMapper.relationship_representations.length === 0),
+  );
   let errors: Map<string, string> = new Map();
   const handleRepresentationErrors = (key: string, value: boolean) => {
     errors = { ...errors, [key]: value };
@@ -156,20 +153,13 @@ const CsvMapperForm: FunctionComponent<CsvMapperFormProps> = ({ csvMapper, onSub
 
   return (
     <>
-      <Formik<CsvMapper>
+      <Formik<CsvMapperFormData>
         enableReinitialize
         initialValues={csvMapper}
         validationSchema={csvMapperValidation(t_i18n)}
         onSubmit={onSubmit}
       >
         {({ submitForm, isSubmitting, setFieldValue, values }) => {
-          const entities = values.representations.filter(
-            (r) => r.type === 'entity',
-          );
-          const relationships = values.representations.filter(
-            (r) => r.type === 'relationship',
-          );
-
           return (
             <Form className={classes.formContainer}>
               <Field
@@ -227,13 +217,14 @@ const CsvMapperForm: FunctionComponent<CsvMapperFormProps> = ({ csvMapper, onSub
                   <Typography>{t_i18n('Semicolon')}</Typography>
                 </div>
               </div>
-              <div className={classes.center}>
+              <div
+                className={classes.marginTop}
+                style={{ display: 'flex', alignItems: 'end', gap: '8px' }}
+              >
                 <Field
                   component={TextField}
-                  name="skipLineChar"
-                  value={values.skipLineChar}
+                  name="skip_line_char"
                   label={t_i18n('Char to escape line')}
-                  onChange={(event: SelectChangeEvent) => setFieldValue('skipLineChar', event.target.value)}
                 />
                 <Tooltip
                   title={t_i18n(
@@ -247,11 +238,9 @@ const CsvMapperForm: FunctionComponent<CsvMapperFormProps> = ({ csvMapper, onSub
                   />
                 </Tooltip>
               </div>
+
               <div className={classNames(classes.center, classes.marginTop)}>
-                <Typography
-                  variant="h3"
-                  gutterBottom
-                >
+                <Typography variant="h3" sx={{ m: 0 }}>
                   {t_i18n('Representations for entity')}
                 </Typography>
                 <IconButton
@@ -264,25 +253,32 @@ const CsvMapperForm: FunctionComponent<CsvMapperFormProps> = ({ csvMapper, onSub
                   <Add fontSize="small"/>
                 </IconButton>
               </div>
-              {entities.map((representation, idx) => (
-                <div
-                  key={`entity-${idx}`}
-                  className={classes.representationContainer}
-                >
-                  <CsvMapperRepresentationForm
-                    key={representation.id}
-                    index={idx}
-                    availableTypes={availableEntityTypes}
-                    handleRepresentationErrors={handleRepresentationErrors}
-                    prefixLabel="entity_"
-                  />
-                </div>
-              ))}
+              <FieldArray
+                name="entity_representations"
+                render={(arrayHelpers) => (
+                  <>
+                    {values.entity_representations.map((_, idx) => (
+                      <div
+                        key={`entity-${idx}`}
+                        className={classes.representationContainer}
+                      >
+                        <Field
+                          component={CsvMapperRepresentationForm}
+                          name={`entity_representations[${idx}]`}
+                          index={idx}
+                          availableTypes={availableEntityTypes}
+                          handleRepresentationErrors={handleRepresentationErrors}
+                          prefixLabel="entity_"
+                          onDelete={() => arrayHelpers.remove(idx)}
+                        />
+                      </div>
+                    ))}
+                  </>
+                )}
+              />
+
               <div className={classNames(classes.center, classes.marginTop)}>
-                <Typography
-                  variant="h3"
-                  gutterBottom
-                >
+                <Typography variant="h3" sx={{ m: 0 }}>
                   {t_i18n('Representations for relationship')}
                 </Typography>
                 <IconButton
@@ -295,20 +291,30 @@ const CsvMapperForm: FunctionComponent<CsvMapperFormProps> = ({ csvMapper, onSub
                   <Add fontSize="small"/>
                 </IconButton>
               </div>
-              {relationships.map((representation, idx) => (
-                <div
-                  key={`relationship-${idx}`}
-                  className={classes.representationContainer}
-                >
-                  <CsvMapperRepresentationForm
-                    key={representation.id}
-                    index={entities.length + idx}
-                    availableTypes={availableRelationshipTypes}
-                    handleRepresentationErrors={handleRepresentationErrors}
-                    prefixLabel="relationship_"
-                  />
-                </div>
-              ))}
+              <FieldArray
+                name="relationship_representations"
+                render={(arrayHelpers) => (
+                  <>
+                    {values.relationship_representations.map((_, idx) => (
+                      <div
+                        key={`relationship-${idx}`}
+                        className={classes.representationContainer}
+                      >
+                        <Field
+                          component={CsvMapperRepresentationForm}
+                          name={`relationship_representations[${idx}]`}
+                          index={idx}
+                          availableTypes={availableRelationshipTypes}
+                          handleRepresentationErrors={handleRepresentationErrors}
+                          prefixLabel="relationship_"
+                          onDelete={() => arrayHelpers.remove(idx)}
+                        />
+                      </div>
+                    ))}
+                  </>
+                )}
+              />
+
               <div className={classes.buttons}>
                 <Button
                   variant="contained"
@@ -332,7 +338,7 @@ const CsvMapperForm: FunctionComponent<CsvMapperFormProps> = ({ csvMapper, onSub
               <CsvMapperTestDialog
                 open={open}
                 onClose={() => setOpen(false)}
-                configuration={JSON.stringify(values)}
+                configuration={JSON.stringify(formDataToCsvMapper(values))}
               />
             </Form>
           );
