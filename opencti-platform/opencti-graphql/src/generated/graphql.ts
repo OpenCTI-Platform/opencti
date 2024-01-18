@@ -25354,6 +25354,7 @@ export type User = BasicObject & InternalObject & {
   default_time_field?: Maybe<Scalars['String']['output']>;
   description?: Maybe<Scalars['String']['output']>;
   editContext?: Maybe<Array<EditUserContext>>;
+  effective_confidence_level?: Maybe<UserConfidenceLevel>;
   entity_type: Scalars['String']['output'];
   external?: Maybe<Scalars['Boolean']['output']>;
   firstname?: Maybe<Scalars['String']['output']>;
@@ -36214,6 +36215,7 @@ export type UserResolvers<ContextType = any, ParentType extends ResolversParentT
   default_time_field?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   editContext?: Resolver<Maybe<Array<ResolversTypes['EditUserContext']>>, ParentType, ContextType>;
+  effective_confidence_level?: Resolver<Maybe<ResolversTypes['UserConfidenceLevel']>, ParentType, ContextType>;
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   external?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   firstname?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;

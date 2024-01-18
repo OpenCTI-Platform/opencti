@@ -1388,6 +1388,7 @@ type User implements BasicObject & InternalObject {
   capabilities: [Capability]!
   default_hidden_types: [String!]!
   user_confidence_level: UserConfidenceLevel
+  effective_confidence_level: UserConfidenceLevel
   groups(orderBy: GroupsOrdering, orderMode: OrderingMode): GroupConnection
   objectOrganization(orderBy: OrganizationsOrdering, orderMode: OrderingMode): OrganizationConnection
   created_at: DateTime!
