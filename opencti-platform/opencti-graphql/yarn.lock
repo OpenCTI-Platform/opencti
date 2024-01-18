@@ -4522,16 +4522,16 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/graphql-upload@npm:16.0.5":
-  version: 16.0.5
-  resolution: "@types/graphql-upload@npm:16.0.5"
+"@types/graphql-upload@npm:16.0.7":
+  version: 16.0.7
+  resolution: "@types/graphql-upload@npm:16.0.7"
   dependencies:
     "@types/express": "*"
     "@types/koa": "*"
     "@types/node": "*"
     fs-capacitor: ^8.0.0
-    graphql: 0.13.1 - 16
-  checksum: aae8d9844af6acbb47c8af3c1f29a24d90576205517df5e501723f65ea51f54ed4bfdf1f35c0984c352e0b573ae626144dff636ff88a08c6d979e99d51798ca4
+    graphql: ^16.3.0
+  checksum: 06521957111e25217e925bfeee66e3d8d861797a4ca940f3fc475233319d372d3046bfc66c3d00811d567ead4abb28a3d051d1cb9f7f4f342552288c8deba3c0
   languageName: node
   linkType: hard
 
@@ -10927,7 +10927,7 @@ __metadata:
     "@types/dot-object": 2.1.6
     "@types/ejs": 3.1.3
     "@types/express": 4.17.19
-    "@types/graphql-upload": 16.0.5
+    "@types/graphql-upload": 16.0.7
     "@types/nconf": 0.10.6
     "@types/ramda": 0.29.9
     "@types/tough-cookie": 4.0.5
