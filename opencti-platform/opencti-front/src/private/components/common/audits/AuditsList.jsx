@@ -149,7 +149,7 @@ const AuditsList = ({
         query={auditsListQuery}
         variables={{
           types: ['History', 'Activity'],
-          first: 50,
+          first: selection.number ?? 10,
           orderBy: dateAttribute,
           orderMode: 'desc',
           filters,
