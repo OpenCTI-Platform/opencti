@@ -46,7 +46,7 @@ import { connectorsForEnrichment } from '../database/repository';
 import { addOrganizationRestriction, batchObjectOrganizations, removeOrganizationRestriction } from '../domain/stix';
 import { stixCoreObjectOptions } from '../schema/stixCoreObject';
 import { numberOfContainersForObject } from '../domain/container';
-import { paginatedForPathsWithEnrichment } from '../modules/internal/document/document-domain';
+import { paginatedForPathWithEnrichment } from '../modules/internal/document/document-domain';
 import { getSpecVersionOrDefault } from '../domain/stixRelationship';
 
 const createdByLoader = batchLoader(batchCreatedBy);
@@ -85,7 +85,7 @@ const stixCoreObjectResolvers = {
     stixCoreObjectsMultiDistribution: (_, args, context) => stixCoreObjectsMultiDistribution(context, context.user, args),
     stixCoreObjectsExportFiles: (_, { exportContext, first }, context) => {
       const path = `export/${exportContext.entity_type}${exportContext.entity_id ? `/${exportContext.entity_id}` : ''}`;
-      return paginatedForPathsWithEnrichment(context, context.user, [path], { first });
+      return paginatedForPathWithEnrichment(context, context.user, path, exportContext.entity_id, { first });
     },
     filtersRepresentatives: (_, { filters }, context) => findFiltersRepresentatives(context, context.user, filters),
   },
@@ -120,13 +120,13 @@ const stixCoreObjectResolvers = {
     connectors: (stixCoreObject, { onlyAlive = false }, context) => connectorsForEnrichment(context, context.user, stixCoreObject.entity_type, onlyAlive),
     importFiles: (stixCoreObject, { first, prefixMimeType }, context) => {
       const opts = { first, prefixMimeTypes: prefixMimeType ? [prefixMimeType] : null, entity_id: stixCoreObject.id };
-      return paginatedForPathsWithEnrichment(context, context.user, [`import/${stixCoreObject.entity_type}/${stixCoreObject.id}`], opts);
+      return paginatedForPathWithEnrichment(context, context.user, `import/${stixCoreObject.entity_type}/${stixCoreObject.id}`, stixCoreObject.id, opts);
     },
     pendingFiles: (stixCoreObject, { first }, context) => {
-      return paginatedForPathsWithEnrichment(context, context.user, ['import/pending'], { first, entity_id: stixCoreObject.id });
+      return paginatedForPathWithEnrichment(context, context.user, 'import/pending', stixCoreObject.id, { first });
     },
     exportFiles: (stixCoreObject, { first }, context) => {
-      return paginatedForPathsWithEnrichment(context, context.user, [`export/${stixCoreObject.entity_type}/${stixCoreObject.id}`], { first, entity_id: stixCoreObject.id });
+      return paginatedForPathWithEnrichment(context, context.user, `export/${stixCoreObject.entity_type}/${stixCoreObject.id}`, stixCoreObject.id, { first });
     },
     numberOfConnectedElement: (stixCoreObject) => stixCoreObjectsConnectedNumber(stixCoreObject),
     spec_version: getSpecVersionOrDefault

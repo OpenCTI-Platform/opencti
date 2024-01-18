@@ -187,7 +187,7 @@ export const buildContextDataForFile = (entity: BasicStoreObject, path: string, 
     id: entity?.internal_id,
     entity_name: entity ? extractEntityRepresentativeName(entity) : 'global',
     entity_type: entity?.entity_type ?? 'global',
-    file_name: filename
+    file_name: filename,
   };
   if (entity) {
     if (entity.creator_id) {

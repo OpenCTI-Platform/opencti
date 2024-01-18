@@ -32,7 +32,7 @@ import { stixHashesToInput } from '../schema/fieldDataAdapter';
 import { stixCyberObservableOptions } from '../schema/stixCyberObservable';
 import { batchLoader, stixLoadByIdStringify } from '../database/middleware';
 import { observableValue } from '../utils/format';
-import { paginatedForPathsWithEnrichment } from '../modules/internal/document/document-domain';
+import { paginatedForPathWithEnrichment } from '../modules/internal/document/document-domain';
 
 const indicatorsLoader = batchLoader(batchIndicators);
 const vulnerabilitiesLoader = batchLoader(batchVulnerabilities);
@@ -58,7 +58,7 @@ const stixCyberObservableResolvers = {
     },
     stixCyberObservablesExportFiles: (_, { exportContext, first }, context) => {
       const path = `export/${exportContext.entity_type}${exportContext.entity_id ? `/${exportContext.entity_id}` : ''}`;
-      return paginatedForPathsWithEnrichment(context, context.user, [path], { first });
+      return paginatedForPathWithEnrichment(context, context.user, path, exportContext.entity_id, { first });
     },
   },
   StixCyberObservablesOrdering: stixCyberObservableOptions.StixCyberObservablesOrdering,
@@ -78,11 +78,11 @@ const stixCyberObservableResolvers = {
     toStix: (stixCyberObservable, _, context) => stixLoadByIdStringify(context, context.user, stixCyberObservable.id),
     importFiles: (stixCyberObservable, { first }, context) => {
       const path = `import/${stixCyberObservable.entity_type}/${stixCyberObservable.id}`;
-      return paginatedForPathsWithEnrichment(context, context.user, [path], { first, entity_id: stixCyberObservable.id });
+      return paginatedForPathWithEnrichment(context, context.user, path, stixCyberObservable.id, { first });
     },
     exportFiles: (stixCyberObservable, { first }, context) => {
       const path = `export/${stixCyberObservable.entity_type}/${stixCyberObservable.id}`;
-      return paginatedForPathsWithEnrichment(context, context.user, [path], { first, entity_id: stixCyberObservable.id });
+      return paginatedForPathWithEnrichment(context, context.user, path, stixCyberObservable.id, { first });
     },
   },
   Process: {

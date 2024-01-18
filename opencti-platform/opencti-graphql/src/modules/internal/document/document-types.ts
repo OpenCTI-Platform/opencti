@@ -9,5 +9,6 @@ export interface BasicStoreEntityDocument extends BasicStoreEntity {
     order?: number
     description?: string
     inCarousel?: boolean
+    filename?: string
   }
 }
