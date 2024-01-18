@@ -1427,3 +1427,39 @@ export const userEditContext = async (context, user, userId, input) => {
   return storeLoadById(context, user, userId, ENTITY_TYPE_USER).then((userToReturn) => notify(BUS_TOPICS[ENTITY_TYPE_USER].EDIT_TOPIC, userToReturn, user));
 };
 // endregion
+
+export const getUserEffectiveConfidenceLevel = async (userId, context) => {
+  const user = await findById(context, context.user, userId);
+  return computeUserEffectiveConfidenceLevel(user);
+};
+
+export const computeUserEffectiveConfidenceLevel = (user) => {
+  // if user has a specific confidence level, it overrides everything and we return it
+  if (user.user_confidence_level) {
+    return user.user_confidence_level;
+  }
+
+  // otherwise we get all groups and organisations for this user, and select the lowest max_confidence found
+  let minLevel = null;
+  for (let i = 0; i < user.groups.length; i += 1) {
+    const groupLevel = user.groups[i].group_confidence_level?.max_confidence ?? 999;
+    if (minLevel === null || groupLevel < minLevel) {
+      minLevel = groupLevel;
+    }
+  }
+  for (let i = 0; i < user.organizations.length; i += 1) {
+    const orgLevel = user.organizations[i].org_confidence_level?.max_confidence ?? 999;
+    if (minLevel === null || orgLevel < minLevel) {
+      minLevel = orgLevel;
+    }
+  }
+  if (minLevel !== null) {
+    return {
+      max_confidence: minLevel,
+      overrides: []
+    };
+  }
+
+  // finally, if this user has no effective confidence level, we can return null
+  return null;
+};

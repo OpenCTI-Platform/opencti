@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { testContext } from '../../utils/testQuery';
-import { checkPasswordInlinePolicy } from '../../../src/domain/user';
+import { checkPasswordInlinePolicy, computeUserEffectiveConfidenceLevel } from '../../../src/domain/user';
 
 describe('password checker', () => {
   it('should no policy applied', async () => {
@@ -73,5 +73,89 @@ describe('password checker', () => {
     };
     expect(checkPasswordInlinePolicy(testContext, policy03, 'julA').length).toBe(1);
     expect(checkPasswordInlinePolicy(testContext, policy03, 'ju!lA').length).toBe(0);
+  });
+});
+
+describe('Effective max confidence level', () => {
+  it("user's confidence level overrides groups and orgs", async () => {
+    // minimal subset of a real User
+    const userA = {
+      user_confidence_level: {
+        max_confidence: 30,
+        overrides: [],
+      },
+      groups: [{
+        group_confidence_level: {
+          max_confidence: 70,
+          overrides: [],
+        }
+      },
+      {
+        group_confidence_level: {
+          max_confidence: 80,
+          overrides: [],
+        }
+      }],
+      organizations: []
+    };
+    expect(computeUserEffectiveConfidenceLevel(userA)).toEqual({ max_confidence: 30, overrides: [] }); // user overrides
+
+    const userB = {
+      user_confidence_level: null,
+      groups: [{
+        group_confidence_level: {
+          max_confidence: 70,
+          overrides: [],
+        }
+      },
+      {
+        group_confidence_level: {
+          max_confidence: 80,
+          overrides: [],
+        }
+      }],
+      organizations: []
+    };
+    expect(computeUserEffectiveConfidenceLevel(userB)).toEqual({ max_confidence: 70, overrides: [] }); // lowest of groups
+
+    const userC = {
+      user_confidence_level: null,
+      groups: [{
+        group_confidence_level: {
+          max_confidence: 70,
+          overrides: [],
+        }
+      },
+      {
+        group_confidence_level: {
+          max_confidence: 80,
+          overrides: [],
+        }
+      }],
+      organizations: [{
+        org_confidence_level: {
+          max_confidence: 90,
+          overrides: [],
+        }
+      },
+      {
+        org_confidence_level: {
+          max_confidence: 40,
+          overrides: [],
+        }
+      }]
+    };
+    expect(computeUserEffectiveConfidenceLevel(userC)).toEqual({ max_confidence: 40, overrides: [] }); // lowest of groups and orgs
+
+    const userD = {
+      user_confidence_level: null,
+      groups: [{
+        group_confidence_level: null
+      }],
+      organizations: [{
+        org_confidence_level: null
+      }]
+    };
+    expect(computeUserEffectiveConfidenceLevel(userD)).toBeNull(); // nothing set
   });
 });

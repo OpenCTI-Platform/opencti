@@ -31,6 +31,7 @@ import {
   findParticipants,
   findRoleById,
   findRoles,
+  getUserEffectiveConfidenceLevel,
   meEditField,
   otpUserActivation,
   otpUserDeactivation,
@@ -87,6 +88,7 @@ const userResolvers = {
     objectOrganization: (current, args, context) => organizationsLoader.load(current.id, context, context.user, { ...args, withInferences: false }),
     editContext: (current) => fetchEditContext(current.id),
     sessions: (current) => findUserSessions(current.id),
+    effective_confidence_level: (current, args, context) => getUserEffectiveConfidenceLevel(current.id, context),
   },
   Member: {
     name: (current, _, context) => {
