@@ -5169,21 +5169,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/node@npm:*, @types/node@npm:>=12.12.47, @types/node@npm:>=13.7.0":
+"@types/node@npm:*, @types/node@npm:20.11.5, @types/node@npm:>=12.12.47, @types/node@npm:>=13.7.0":
   version: 20.11.5
   resolution: "@types/node@npm:20.11.5"
   dependencies:
     undici-types: ~5.26.4
   checksum: a542727de1334ae20a3ca034b0ecf4b464a57ca01efc4f9cf43bd9ab93896125ab3c2de060ecd8f6ae23b86c6bf3463f681b643e69c032c6a662d376c98a6092
-  languageName: node
-  linkType: hard
-
-"@types/node@npm:20.11.2":
-  version: 20.11.2
-  resolution: "@types/node@npm:20.11.2"
-  dependencies:
-    undici-types: ~5.26.4
-  checksum: 28ce6425cd1cc93aac12309c81b986a9fe1be8da6a877bc51ee890ea46174a104177d74c9b7a86907e54cc66917fdb57259b0c8456ec4cabb07faf174e790556
   languageName: node
   linkType: hard
 
@@ -14989,7 +14980,7 @@ __metadata:
     "@rjsf/utils": 5.16.1
     "@rollup/plugin-graphql": 2.0.4
     "@testing-library/react": 14.1.2
-    "@types/node": 20.11.2
+    "@types/node": 20.11.5
     "@types/qrcode": 1.5.5
     "@types/ramda": 0.29.9
     "@types/react": 18.2.48
