@@ -8,6 +8,7 @@ type TypeAttribute {
   type: String!
   mandatory: Boolean!
   mandatoryType: String!
+  editDefault: Boolean!
   multiple: Boolean
   label: String
   defaultValues: [DefaultValue!]

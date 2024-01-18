@@ -1,5 +1,5 @@
 import type { Resolvers } from '../../../generated/graphql';
-import { createCsvMapper, csvMapperTest, deleteCsvMapper, fieldPatchCsvMapper, findAll, findById } from './csvMapper-domain';
+import { createCsvMapper, csvMapperTest, deleteCsvMapper, fieldPatchCsvMapper, findAll, findById, csvMapperSchemaAttributes } from './csvMapper-domain';
 import { errors } from './csvMapper-utils';
 
 const csvMapperResolvers: Resolvers = {
@@ -7,9 +7,10 @@ const csvMapperResolvers: Resolvers = {
     csvMapper: (_, { id }, context) => findById(context, context.user, id),
     csvMappers: (_, args, context) => findAll(context, context.user, args),
     csvMapperTest: (_, { configuration, content }, context) => csvMapperTest(context, context.user, configuration, content),
+    csvMapperSchemaAttributes: (_, __, context) => csvMapperSchemaAttributes(context, context.user),
   },
   CsvMapper: {
-    errors: (csvMapper, _, context) => errors(context, csvMapper)
+    errors: (csvMapper, _, context) => errors(context, context.user, csvMapper)
   },
   Mutation: {
     csvMapperAdd: (_, { input }, context) => {

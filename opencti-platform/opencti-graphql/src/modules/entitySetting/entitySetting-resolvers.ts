@@ -1,11 +1,19 @@
 import { withFilter } from 'graphql-subscriptions';
-import { entitySettingsEditField, findAll, findById, findByType } from './entitySetting-domain';
+import {
+  entitySettingsEditField,
+  findAll,
+  findById,
+  findByType,
+  queryDefaultValuesAttributesForSetting,
+  queryEntitySettingSchemaAttributes,
+  queryMandatoryAttributesForSetting,
+  queryScaleAttributesForSetting
+} from './entitySetting-domain';
 import type { Resolvers } from '../../generated/graphql';
 import { pubSubAsyncIterator } from '../../database/redis';
 import { BUS_TOPICS } from '../../config/conf';
 import { ENTITY_TYPE_ENTITY_SETTING } from './entitySetting-types';
 import { getAvailableSettings } from './entitySetting-utils';
-import { getDefaultValuesAttributesForSetting, getMandatoryAttributesForSetting, getScaleAttributesForSetting, queryAttributesDefinition } from '../../domain/attribute';
 
 const entitySettingResolvers: Resolvers = {
   Query: {
@@ -14,10 +22,10 @@ const entitySettingResolvers: Resolvers = {
     entitySettingByType: (_, { targetType }, context) => findByType(context, context.user, targetType),
   },
   EntitySetting: {
-    attributesDefinitions: (entitySetting, _, context) => queryAttributesDefinition(context, context.user, entitySetting),
-    mandatoryAttributes: (entitySetting, _, context) => getMandatoryAttributesForSetting(context, context.user, entitySetting),
-    scaleAttributes: (entitySetting, _, context) => getScaleAttributesForSetting(context, context.user, entitySetting),
-    defaultValuesAttributes: (entitySetting, _, context) => getDefaultValuesAttributesForSetting(context, context.user, entitySetting),
+    attributesDefinitions: (entitySetting, _, context) => queryEntitySettingSchemaAttributes(context, context.user, entitySetting),
+    mandatoryAttributes: (entitySetting, _, context) => queryMandatoryAttributesForSetting(context, context.user, entitySetting),
+    scaleAttributes: (entitySetting, _, context) => queryScaleAttributesForSetting(context, context.user, entitySetting),
+    defaultValuesAttributes: (entitySetting, _, context) => queryDefaultValuesAttributesForSetting(context, context.user, entitySetting),
     availableSettings: (entitySetting, _, __) => getAvailableSettings(entitySetting.target_type),
   },
   Mutation: {
