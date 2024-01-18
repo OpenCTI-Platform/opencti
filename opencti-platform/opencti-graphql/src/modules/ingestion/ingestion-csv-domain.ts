@@ -98,8 +98,8 @@ export const fetchCsvExtractFromUrl = async (url: string, csvMapperSkipLineChar:
   return Buffer.from(dataExtract);
 };
 
-export const testCsvIngestionMapping = async (context: AuthContext, user: AuthUser, uri: string, csvMapper_id: string): Promise<CsvMapperTestResult> => {
-  const csvMapper: BasicStoreEntityCsvMapper = await findCsvMapperById(context, user, csvMapper_id);
+export const testCsvIngestionMapping = async (context: AuthContext, user: AuthUser, uri: string, csv_mapper_id: string): Promise<CsvMapperTestResult> => {
+  const csvMapper: BasicStoreEntityCsvMapper = await findCsvMapperById(context, user, csv_mapper_id);
   const csvBuffer = await fetchCsvExtractFromUrl(uri, csvMapper.skipLineChar);
   const bundle = await bundleProcess(context, user, csvBuffer, csvMapper);
   return {

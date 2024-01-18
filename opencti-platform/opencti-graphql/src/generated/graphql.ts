@@ -9710,7 +9710,7 @@ export type IngestionCsv = BasicObject & InternalObject & {
 export type IngestionCsvAddInput = {
   authentication_type: CsvAuthType;
   authentication_value?: InputMaybe<Scalars['String']['input']>;
-  csvMapper_id: Scalars['String']['input'];
+  csv_mapper_id: Scalars['String']['input'];
   current_state_date?: InputMaybe<Scalars['DateTime']['input']>;
   description?: InputMaybe<Scalars['String']['input']>;
   ingestion_running?: InputMaybe<Scalars['Boolean']['input']>;
@@ -19466,7 +19466,7 @@ export type QueryTaxiiCollectionsArgs = {
 
 
 export type QueryTest_MapperArgs = {
-  csvMapper_id: Scalars['String']['input'];
+  csv_mapper_id: Scalars['String']['input'];
   uri: Scalars['String']['input'];
 };
 
@@ -34382,7 +34382,7 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   tasks?: Resolver<Maybe<ResolversTypes['TaskConnection']>, ParentType, ContextType, Partial<QueryTasksArgs>>;
   taxiiCollection?: Resolver<Maybe<ResolversTypes['TaxiiCollection']>, ParentType, ContextType, RequireFields<QueryTaxiiCollectionArgs, 'id'>>;
   taxiiCollections?: Resolver<Maybe<ResolversTypes['TaxiiCollectionConnection']>, ParentType, ContextType, Partial<QueryTaxiiCollectionsArgs>>;
-  test_mapper?: Resolver<Maybe<ResolversTypes['CsvMapperTestResult']>, ParentType, ContextType, RequireFields<QueryTest_MapperArgs, 'csvMapper_id' | 'uri'>>;
+  test_mapper?: Resolver<Maybe<ResolversTypes['CsvMapperTestResult']>, ParentType, ContextType, RequireFields<QueryTest_MapperArgs, 'csv_mapper_id' | 'uri'>>;
   threatActor?: Resolver<Maybe<ResolversTypes['ThreatActor']>, ParentType, ContextType, Partial<QueryThreatActorArgs>>;
   threatActorGroup?: Resolver<Maybe<ResolversTypes['ThreatActorGroup']>, ParentType, ContextType, Partial<QueryThreatActorGroupArgs>>;
   threatActorIndividual?: Resolver<Maybe<ResolversTypes['ThreatActorIndividual']>, ParentType, ContextType, RequireFields<QueryThreatActorIndividualArgs, 'id'>>;

@@ -79,7 +79,7 @@ interface IngestionCsvEditionForm {
   authentication_value: string,
   current_state_date: Date | null
   ingestion_running: boolean,
-  csvMapper_id: string | Option,
+  csv_mapper_id: string | Option,
   user_id: string | Option
 }
 
@@ -107,7 +107,7 @@ const IngestionCsvEdition: FunctionComponent<IngestionCsvEditionProps> = ({
     cert: Yup.string().nullable(),
     key: Yup.string().nullable(),
     ca: Yup.string().nullable(),
-    csvMapper_id: Yup.mixed().required(t_i18n('This field is required')),
+    csv_mapper_id: Yup.mixed().required(t_i18n('This field is required')),
   };
 
   const ingestionCsvValidator = useSchemaEditionValidation('IngestionCsv', basicShape);
@@ -136,7 +136,7 @@ const IngestionCsvEdition: FunctionComponent<IngestionCsvEditionProps> = ({
 
   const handleSubmitField = (name: string, value: Option | string | string[] | number | number[] | null) => {
     let finalValue = value as string;
-    if (name === 'csvMapper_id' || name === 'user_id') {
+    if (name === 'csv_mapper_id' || name === 'user_id') {
       finalValue = (value as Option).value;
     }
     ingestionCsvValidator
@@ -159,7 +159,7 @@ const IngestionCsvEdition: FunctionComponent<IngestionCsvEditionProps> = ({
     authentication_value: ingestionCsvData.authentication_value,
     current_state_date: ingestionCsvData.current_state_date,
     ingestion_running: ingestionCsvData.ingestion_running,
-    csvMapper_id: convertMapper(ingestionCsvData, 'csvMapper'),
+    csv_mapper_id: convertMapper(ingestionCsvData, 'csvMapper'),
     user_id: convertUser(ingestionCsvData, 'user'),
   };
 
@@ -218,7 +218,7 @@ const IngestionCsvEdition: FunctionComponent<IngestionCsvEditionProps> = ({
             }}
           />
           <CsvMapperField
-            name="csvMapper_id"
+            name="csv_mapper_id"
             isOptionEqualToValue={(option: Option, value: string) => option.value === value}
             onChange={handleSubmitField}
           />
@@ -328,7 +328,7 @@ const IngestionCsvEdition: FunctionComponent<IngestionCsvEditionProps> = ({
               color="primary"
               onClick={() => setOpen(true)}
               classes={{ root: classes.button }}
-              disabled={!(values.uri && values.csvMapper_id)}
+              disabled={!(values.uri && values.csv_mapper_id)}
             >
               {t_i18n('Verify')}
             </Button>
@@ -337,7 +337,7 @@ const IngestionCsvEdition: FunctionComponent<IngestionCsvEditionProps> = ({
             open={open}
             onClose={() => setOpen(false)}
             uri={values.uri}
-            csvMapperId={values.csvMapper_id}
+            csvMapperId={values.csv_mapper_id}
           />
         </Form>
       )}

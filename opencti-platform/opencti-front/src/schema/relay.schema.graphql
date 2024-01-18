@@ -7317,7 +7317,7 @@ type Query {
   ingestionTaxiis(first: Int, after: ID, orderBy: IngestionTaxiiOrdering, orderMode: OrderingMode, filters: FilterGroup, includeAuthorities: Boolean, search: String): IngestionTaxiiConnection
   ingestionCsv(id: String!): IngestionCsv
   ingestionCsvs(first: Int, after: ID, orderBy: IngestionCsvOrdering, orderMode: OrderingMode, filters: FilterGroup, includeAuthorities: Boolean, search: String): IngestionCsvConnection
-  test_mapper(uri: String!, csvMapper_id: String!): CsvMapperTestResult
+  test_mapper(uri: String!, csv_mapper_id: String!): CsvMapperTestResult
   indicator(id: String!): Indicator
   indicators(first: Int, after: ID, orderBy: IndicatorsOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): IndicatorConnection
   indicatorsTimeSeries(objectId: String, field: String!, operation: StatsOperation!, startDate: DateTime!, endDate: DateTime!, interval: String!, filters: FilterGroup): [TimeSeries]
@@ -10580,7 +10580,7 @@ input IngestionCsvAddInput {
   authentication_value: String
   current_state_date: DateTime
   uri: uri_String_NotNull_minLength_5!
-  csvMapper_id: String!
+  csv_mapper_id: String!
   ingestion_running: Boolean
   user_id: String!
 }

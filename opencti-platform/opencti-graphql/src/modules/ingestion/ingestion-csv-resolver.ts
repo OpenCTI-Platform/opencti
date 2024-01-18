@@ -17,11 +17,11 @@ const ingestionCsvResolvers: Resolvers = {
   Query: {
     ingestionCsv: (_, { id }, context) => findById(context, context.user, id),
     ingestionCsvs: (_, args, context) => findAllPaginated(context, context.user, args),
-    test_mapper: (_, { uri, csvMapper_id }, context) => testCsvIngestionMapping(context, context.user, uri, csvMapper_id),
+    test_mapper: (_, { uri, csv_mapper_id }, context) => testCsvIngestionMapping(context, context.user, uri, csv_mapper_id),
   },
   IngestionCsv: {
     user: (ingestionCsv, _, context) => creatorLoader.load(ingestionCsv.user_id, context, context.user),
-    csvMapper: (ingestionCsv, _, context) => findCsvMapperForIngestionById(context, context.user, ingestionCsv.csvMapper_id),
+    csvMapper: (ingestionCsv, _, context) => findCsvMapperForIngestionById(context, context.user, ingestionCsv.csv_mapper_id),
   },
   Mutation: {
     ingestionCsvAdd: (_, { input }, context) => {

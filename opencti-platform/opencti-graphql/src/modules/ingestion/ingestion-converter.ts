@@ -44,7 +44,7 @@ export const convertIngestionCsvToStix = (instance: StoreEntityIngestionCsv): St
     name: instance.name,
     description: instance.description,
     uri: instance.uri,
-    csvMapper_id: instance.csvMapper_id,
+    csv_mapper_id: instance.csv_mapper_id,
     ingestion_running: instance.ingestion_running,
     extensions: {
       [STIX_EXT_OCTI]: cleanObject({

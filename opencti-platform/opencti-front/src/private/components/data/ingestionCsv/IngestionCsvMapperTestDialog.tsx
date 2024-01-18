@@ -15,8 +15,8 @@ import { useFormatter } from '../../../../components/i18n';
 import { fetchQuery, handleError } from '../../../../relay/environment';
 
 const ingestionCsvMapperTestQuery = graphql`
-  query IngestionCsvMapperTestDialogQuery($uri: String!, $csvMapper_id: String!) {
-    test_mapper(uri: $uri, csvMapper_id: $csvMapper_id) {
+  query IngestionCsvMapperTestDialogQuery($uri: String!, $csv_mapper_id: String!) {
+    test_mapper(uri: $uri, csv_mapper_id: $csv_mapper_id) {
       nbEntities
       nbRelationships
       objects
@@ -48,9 +48,9 @@ const IngestionCsvMapperTestDialog: FunctionComponent<IngestionCsvMapperTestDial
     onClose();
   };
 
-  const onTest = (url: string, csvMapper_id: string) => {
+  const onTest = (url: string, csv_mapper_id: string) => {
     setLoading(true);
-    fetchQuery(ingestionCsvMapperTestQuery, { uri: url, csvMapper_id })
+    fetchQuery(ingestionCsvMapperTestQuery, { uri: url, csv_mapper_id })
       .toPromise()
       .then((data) => {
         const resultTest = (data as IngestionCsvMapperTestDialogQuery$data)

@@ -37,7 +37,7 @@ describe('CSV ingestion resolver standard behavior', () => {
         authentication_type: 'none',
         name: 'Single column',
         uri: 'https://lists.blocklist.de/lists/all.txt',
-        csvMapper_id: singleColumnCsvMapperId,
+        csv_mapper_id: singleColumnCsvMapperId,
         user_id: ADMIN_USER.id
       }
     };
@@ -50,6 +50,34 @@ describe('CSV ingestion resolver standard behavior', () => {
         ingestion_running
           }
       },
+      `,
+      variables: CSV_FEED_INGESTER_TO_CREATE
+    });
+    singleColumnCsvFeedIngesterId = createSingleColumnCsvFeedsIngesterQueryResult?.data?.ingestionCsvAdd?.id;
+    expect(singleColumnCsvFeedIngesterId).toBeDefined();
+    expect(createSingleColumnCsvFeedsIngesterQueryResult?.data?.ingestionCsvAdd?.entity_type).toBe('IngestionCsv');
+    expect(createSingleColumnCsvFeedsIngesterQueryResult?.data?.ingestionCsvAdd?.ingestion_running).toBeFalsy();
+  });
+
+  it('should create a CSV feeds ingester with authentication', async () => {
+    const CSV_FEED_INGESTER_TO_CREATE = {
+      input: {
+        authentication_type: 'none',
+        name: 'Single column',
+        uri: 'https://lists.blocklist.de/lists/all.txt',
+        csv_mapper_id: singleColumnCsvMapperId,
+        user_id: ADMIN_USER.id
+      }
+    };
+    const createSingleColumnCsvFeedsIngesterQueryResult = await queryAsAdmin({
+      query: gql`
+          mutation createSingleColumnCsvFeedsIngester($input: IngestionCsvAddInput!) {
+              ingestionCsvAdd(input: $input) {
+                  id
+                  entity_type
+                  ingestion_running
+              }
+          },
       `,
       variables: CSV_FEED_INGESTER_TO_CREATE
     });

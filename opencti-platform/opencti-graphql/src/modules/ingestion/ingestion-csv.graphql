@@ -56,7 +56,7 @@ type Query {
     ): IngestionCsvConnection @auth(for: [SETTINGS])
     test_mapper(
         uri: String!
-        csvMapper_id: String!
+        csv_mapper_id: String!
     ): CsvMapperTestResult @auth(for: [SETTINGS])
 }
 
@@ -68,7 +68,7 @@ input IngestionCsvAddInput {
     authentication_value: String
     current_state_date: DateTime
     uri: String! @constraint(minLength: 5)
-    csvMapper_id: String!
+    csv_mapper_id: String!
     ingestion_running: Boolean
     user_id: String!
 }

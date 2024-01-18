@@ -47,7 +47,7 @@ export interface IngestionCsvCreationForm {
   name: string
   description: string
   uri: string
-  csvMapper_id: string | Option
+  csv_mapper_id: string | Option
   authentication_type: CsvAuthType
   authentication_value: string
   current_state_date: Date | null
@@ -74,7 +74,7 @@ const IngestionCsvCreation: FunctionComponent<IngestionCsvCreationProps> = ({ pa
     current_state_date: Yup.date()
       .typeError(t_i18n('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)'))
       .nullable(),
-    csvMapper_id: Yup.object().required(t_i18n('This field is required')),
+    csv_mapper_id: Yup.object().required(t_i18n('This field is required')),
     username: Yup.string().nullable(),
     password: Yup.string().nullable(),
     cert: Yup.string().nullable(),
@@ -99,7 +99,7 @@ const IngestionCsvCreation: FunctionComponent<IngestionCsvCreationProps> = ({ pa
       name: values.name,
       description: values.description,
       uri: values.uri,
-      csvMapper_id: typeof values.csvMapper_id === 'string' ? values.csvMapper_id : values.csvMapper_id.value,
+      csv_mapper_id: typeof values.csv_mapper_id === 'string' ? values.csv_mapper_id : values.csv_mapper_id.value,
       authentication_type: values.authentication_type,
       authentication_value: authenticationValue,
       current_state_date: values.current_state_date,
@@ -135,7 +135,7 @@ const IngestionCsvCreation: FunctionComponent<IngestionCsvCreationProps> = ({ pa
             name: '',
             description: '',
             uri: '',
-            csvMapper_id: '',
+            csv_mapper_id: '',
             authentication_type: 'none',
             authentication_value: '',
             current_state_date: null,
@@ -185,7 +185,7 @@ const IngestionCsvCreation: FunctionComponent<IngestionCsvCreationProps> = ({ pa
                 style={fieldSpacingContainerStyle}
               />
               <CsvMapperField
-                name="csvMapper_id"
+                name="csv_mapper_id"
                 isOptionEqualToValue={(option: Option, value: string) => option.value === value}
               />
               <Field
@@ -288,7 +288,7 @@ const IngestionCsvCreation: FunctionComponent<IngestionCsvCreationProps> = ({ pa
                   color="primary"
                   onClick={() => setOpen(true)}
                   classes={{ root: classes.button }}
-                  disabled={!(values.uri && values.csvMapper_id)}
+                  disabled={!(values.uri && values.csv_mapper_id)}
                 >
                   {t_i18n('Verify')}
                 </Button>
@@ -306,7 +306,7 @@ const IngestionCsvCreation: FunctionComponent<IngestionCsvCreationProps> = ({ pa
                 open={open}
                 onClose={() => setOpen(false)}
                 uri={values.uri}
-                csvMapperId={values.csvMapper_id}
+                csvMapperId={values.csv_mapper_id}
                 setIsCreateDisabled={setIsCreateDisabled}
               />
             </Form>
