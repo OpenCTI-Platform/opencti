@@ -19,6 +19,7 @@ import Dialog from '@mui/material/Dialog';
 import DecayDialogContent from '@components/observations/indicators/DecayDialog';
 import DialogActions from '@mui/material/DialogActions';
 import DialogTitle from '@mui/material/DialogTitle';
+import Box from '@mui/material/Box';
 import ItemScore from '../../../../components/ItemScore';
 import IndicatorObservables from './IndicatorObservables';
 import ExpandableMarkdown from '../../../../components/ExpandableMarkdown';
@@ -66,7 +67,7 @@ const IndicatorDetailsComponent: FunctionComponent<IndicatorDetailsComponentProp
     setIsLifecycleOpen(true);
   };
   return (
-    <div style={{ height: '100%' }} className="break">
+    <Box sx={{ height: '100%' }} className="break">
       <Typography variant="h4" gutterBottom={true}>
         {t_i18n('Details')}
       </Typography>
@@ -78,7 +79,7 @@ const IndicatorDetailsComponent: FunctionComponent<IndicatorDetailsComponentProp
         <Grid
           container={true}
           spacing={3}
-          style={{ marginTop: 10, marginBottom: 10 }}
+          sx={{ marginTop: '10px', marginBottom: '10px' }}
         >
           <Grid item={true} xs={6}>
             <Typography variant="h3" gutterBottom={true}>
@@ -87,18 +88,18 @@ const IndicatorDetailsComponent: FunctionComponent<IndicatorDetailsComponentProp
             <Chip classes={{ root: classes.chip }}
               label={fldt(indicator.valid_from)}
             />
-            <Grid container columnSpacing={1} style={{ marginTop: 20 }}>
+            <Grid container columnSpacing={1} sx={{ marginTop: '20px' }}>
               <Grid item xs={4}>
 
                 <Typography variant="h3" gutterBottom={true}>
-                  <div style = {{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-                    <div>{t_i18n('Score')}</div>
+                  <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
+                    <span>{t_i18n('Score')}</span>
                     {indicator.decay_applied_rule && (
                       <Tooltip title={t_i18n('This score is updated with the decay rule applied to this indicator.')}>
                         <InformationOutline fontSize="small" color="primary" />
                       </Tooltip>
                     )}
-                  </div>
+                  </Box>
                 </Typography>
                 <ItemScore score={indicator.x_opencti_score} />
               </Grid>
@@ -109,7 +110,7 @@ const IndicatorDetailsComponent: FunctionComponent<IndicatorDetailsComponentProp
                   variant="outlined"
                   onClick={openLifecycleDialog}
                   startIcon={<TroubleshootOutlined />}
-                  style={{ marginTop: 22 }}
+                  sx={{ marginTop: '22px' }}
                 >
                   {t_i18n('Lifecycle')}
                 </Button>
@@ -136,7 +137,7 @@ const IndicatorDetailsComponent: FunctionComponent<IndicatorDetailsComponentProp
             <Typography
               variant="h3"
               gutterBottom={true}
-              style={{ marginTop: 20 }}
+              sx={{ marginTop: '20px' }}
             >
               {t_i18n('Description')}
             </Typography>
@@ -144,7 +145,7 @@ const IndicatorDetailsComponent: FunctionComponent<IndicatorDetailsComponentProp
             <Typography
               variant="h3"
               gutterBottom={true}
-              style={{ marginTop: 20 }}
+              sx={{ marginTop: '20px' }}
             >
               {t_i18n('Indicator types')}
             </Typography>
@@ -167,7 +168,7 @@ const IndicatorDetailsComponent: FunctionComponent<IndicatorDetailsComponentProp
             <Typography
               variant="h3"
               gutterBottom={true}
-              style={{ marginTop: 20 }}
+              sx={{ marginTop: '20px' }}
             >
               {t_i18n('Detection')}
             </Typography>
@@ -179,7 +180,7 @@ const IndicatorDetailsComponent: FunctionComponent<IndicatorDetailsComponentProp
             <Typography
               variant="h3"
               gutterBottom={true}
-              style={{ marginTop: 20 }}
+              sx={{ marginTop: '20px' }}
             >
               {t_i18n('Platforms')}
             </Typography>
@@ -199,7 +200,7 @@ const IndicatorDetailsComponent: FunctionComponent<IndicatorDetailsComponentProp
         <Divider />
         <IndicatorObservables indicator={indicator} />
       </Paper>
-    </div>
+    </Box>
   );
 };
 
