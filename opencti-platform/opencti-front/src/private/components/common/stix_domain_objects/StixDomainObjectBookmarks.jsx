@@ -1,24 +1,25 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { compose, pathOr } from 'ramda';
+import * as R from 'ramda';
 import { graphql, createPaginationContainer } from 'react-relay';
 import withStyles from '@mui/styles/withStyles';
 import Typography from '@mui/material/Typography';
-import * as R from 'ramda';
+import Tooltip from '@mui/material/Tooltip';
+import { InformationOutline } from 'mdi-material-ui';
 import { StixDomainObjectBookmark, StixDomainObjectBookmarkDummy } from './StixDomainObjectBookmark';
 import inject18n from '../../../../components/i18n';
 import ListCardsContent from '../../../../components/list_cards/ListCardsContent';
 
 const styles = () => ({
   container: {
-    margin: '0 0 30px 0',
+    margin: '0 0 10px 0',
   },
 });
 
 class StixDomainObjectBookmarksComponent extends Component {
   componentDidUpdate(prevProps) {
-    const prevBookmarks = pathOr([], ['bookmarks', 'edges'], prevProps.data);
-    const bookmarks = pathOr([], ['bookmarks', 'edges'], this.props.data);
+    const prevBookmarks = R.pathOr([], ['bookmarks', 'edges'], prevProps.data);
+    const bookmarks = R.pathOr([], ['bookmarks', 'edges'], this.props.data);
     const diff = R.symmetricDifferenceWith(
       (x, y) => x.node.id === y.node.id,
       prevBookmarks,
@@ -31,22 +32,32 @@ class StixDomainObjectBookmarksComponent extends Component {
 
   render() {
     const { classes, data, t, relay } = this.props;
-    const bookmarks = pathOr([], ['bookmarks', 'edges'], data);
+    const bookmarks = R.pathOr([], ['bookmarks', 'edges'], data);
     if (bookmarks.length > 0) {
       return (
         <div className={classes.container}>
           <Typography
             variant="h4"
             gutterBottom={true}
-            style={{ padding: '0 0 5px 18px' }}
+            style={{ padding: '0 0 5px 18px', float: 'left' }}
           >
             {t('Favorite entities')}
           </Typography>
+          <Tooltip
+            title={t('Only the first 8 favorite entities are displayed here. You can use custom dashboard favorite widget to have them all in your dashboard(s)')}
+          >
+            <InformationOutline
+              fontSize="small"
+              color="primary"
+              style={{ cursor: 'default', float: 'left', margin: '-3px 0 0 10px' }}
+            />
+          </Tooltip>
+          <div className="clearfix" />
           <ListCardsContent
             loadMore={relay.loadMore.bind(this)}
             hasMore={relay.hasMore.bind(this)}
             isLoading={relay.isLoading.bind(this)}
-            dataList={bookmarks}
+            dataList={R.take(8, bookmarks)}
             CardComponent={<StixDomainObjectBookmark />}
             DummyCardComponent={<StixDomainObjectBookmarkDummy />}
             rowHeight={90}
@@ -111,7 +122,7 @@ const StixDomainObjectBookmarksFragment = createPaginationContainer(
   },
 );
 
-export default compose(
+export default R.compose(
   inject18n,
   withStyles(styles),
 )(StixDomainObjectBookmarksFragment);
