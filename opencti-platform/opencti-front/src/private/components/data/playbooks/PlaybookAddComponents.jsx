@@ -424,7 +424,7 @@ const PlaybookAddComponentsContent = ({
             values,
             setFieldValue,
           }) => (
-            <Form style={{ marginTop: '20px 0 20px 0' }}>
+            <Form style={{ margin: '20px 0 20px 0' }}>
               <Field
                 component={TextField}
                 variant="standard"
