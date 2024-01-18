@@ -11,7 +11,7 @@ Moreover, the top banner of the dashboard offers a convenient feature to configu
 
 ![Dashboard overview](assets/dashboard-overview.png)
 
-
+<a id="access-control-section"></a>
 ## Access control
 
 In OpenCTI, the power to create custom dashboards comes with a flexible access control system, allowing users to tailor visibility and rights according to their collaborative needs.

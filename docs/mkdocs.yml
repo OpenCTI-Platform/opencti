@@ -122,6 +122,7 @@ nav:
       - Integrations: deployment/integrations.md
       - Other resources: deployment/resources.md
     - Advanced:
+      - Platform managers: deployment/managers.md
       - Clustering: deployment/clustering.md
       - Indices and rollover: deployment/rollover.md
       - Troubleshooting: deployment/troubleshooting.md

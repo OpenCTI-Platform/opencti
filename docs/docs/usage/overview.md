@@ -56,7 +56,7 @@ In OpenCTI, the different roles are highly customizable. It is possible to defin
 
 ## Presentation of a typical page in OpenCTI
 
-Although there are many different entities in OpenCTI and many different tabs, most of them are quite similar and only have minor differences from the other, mostly due to some of their characteristics, which requires specific fields or do not require some fields which are necessary for the other. 
+While OpenCTI features numerous entities and tabs, many of them share similarities, with only minor differences arising from specific characteristics. These differences may involve the inclusion or exclusion of certain fields, depending on the nature of the entity.
 
 In this part will only be detailed a general outline of a "typical" OpenCTI page. The specifies of the different entities will be detailed in the corresponding pages below (Activities and Knowledge).
 
@@ -158,7 +158,7 @@ In addition, the `Data` tab of `Threat actors (group)`, `Threat actors (individu
 <a id="history-section"></a>
 ### History
 
-The `History` tab display the history of change of the Entity, update of attributes, creation of relations, ...
+The `History` tab displays the history of change of the Entity, update of attributes, creation of relations, ...
 
 Because of the volumes of information the history is written in a specific index that consume the redis stream to rebuild the history for the UI.
 ![History tab of a Malware](assets/history.png)
@@ -169,4 +169,4 @@ Because of the volumes of information the history is written in a specific index
 - The `Observables` tab (for Reports and Observed data): A table containing all SCO (Stix Cyber Observable) contained in the Report or the Observed data, with search and filters available. It also displays if the SCO has been added directly or through [inferences with the reasoning engine](inferences.md)
 - the `Entities` tab (for Reports and Observed data): A table containing all SDO (Stix Domain Objects) contained in the Report or the Observed data, with search and filters available. It also displays if the SDO has been added directly or through [inferences with the reasoning engine](inferences.md)
 - Observables:
-- the `Sightings` tab (for Indicators and Observables): A table containing all `Sightings` relationships corresponding to events in which `Indicators` (IP, domain name, url, etc.) are detected by or within an information system, an individual or an organization. Most often, this corresponds to a security event transmitted by a SIEM or EDR.
+- the `Sightings` tab (for Indicators and Observables): A table containing all `Sightings` relationships corresponding to events in which `Indicators` (IP, domain name, URL, etc.) are detected by or within an information system, an individual or an organization. Most often, this corresponds to a security event transmitted by a SIEM or EDR.

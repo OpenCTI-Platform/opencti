@@ -37,7 +37,7 @@ Live Streams enable users to consume data from another OpenCTI platform, fosteri
 
 Additional configuration options:
 
-- User responsible for data creation: Define the user responsible for creating data received from this stream. Best practice is to dedicate one user per source for organizational clarity. Please [see here](../deployment/connectors.md#connector-token-section) for more information on this good practice.
+- User responsible for data creation: Define the user responsible for creating data received from this stream. Best practice is to dedicate one user per source for organizational clarity. Please [see the section "Best practices" below](import-automated.md#best-practices-section) for more information.
 - Starting synchronization: Specify the date of the oldest data to retrieve. Leave the field empty to import everything.
 - Take deletions into account: Enable this option to delete data from your platform if it was deleted on the providing stream. (Note: Data won't be deleted if another source has imported it previously.)
 - Verify SSL certificate: Check the validity of the certificate of the domain hosting the remote platform.
@@ -56,7 +56,7 @@ TAXII Feeds in OpenCTI provide a robust mechanism for ingesting TAXII collection
 
 Additional configuration options:
 
-- User responsible for data creation: Define the user responsible for creating data received from this TAXII feed. Best practice is to dedicate one user per source for organizational clarity. Please [see here](../deployment/connectors.md#connector-token-section) for more information on this good practice.
+- User responsible for data creation: Define the user responsible for creating data received from this TAXII feed. Best practice is to dedicate one user per source for organizational clarity. Please [see the section "Best practices" below](import-automated.md#best-practices-section) for more information.
 - Import from date: Specify the date of the oldest data to retrieve. Leave the field empty to import everything.
 
 ![TAXII feed configuration](assets/taxii-feed-configuration.png)
@@ -69,13 +69,24 @@ RSS Feeds functionality enables users to seamlessly ingest items in report form 
 
 Additional configuration options:
 
-- User responsible for data creation: Define the user responsible for creating data received from this RSS feed. Best practice is to dedicate one user per source for organizational clarity. Please [see here](../deployment/connectors.md#connector-token-section) for more information on this good practice.
+- User responsible for data creation: Define the user responsible for creating data received from this RSS feed. Best practice is to dedicate one user per source for organizational clarity. Please [see the section "Best practices" below](import-automated.md#best-practices-section) for more information.
 - Import from date: Specify the date of the oldest data to retrieve. Leave the field empty to import everything.
 - Default report types: Indicate the report type to be applied to the imported report.
-- Default author: Indicate the default author to be applied to the imported report.
+- Default author: Indicate the default author to be applied to the imported report. Please [see the section "Best practices" below](import-automated.md#best-practices-section) for more information.
 - Default marking definitions: Indicate the default markings to be applied to the imported reports.
 
 ![RSS feed configuration](assets/rss-feed-configuration.png)
+
+
+<a id="best-practices-section"></a>
+### Best practices for feed import
+
+Ensuring a secure and well-organized environment is paramount in OpenCTI. Here are two recommended best practices to enhance security, traceability, and overall organizational clarity:
+
+1. Create a dedicated user for each source: Generate a user specifically for feed import, following the convention `[F] Source name` for clear identification. Assign the user to the "Connectors" group to streamline user management and permission related to data creation. Please [see here](../deployment/connectors.md#connector-token-section) for more information on this good practice.
+2. Establish a dedicated Organization for the source: Create an organization named after the data source for clear identification. Assign the newly created organization to the "Default author" field in feed import configuration if available.
+
+By adhering to these best practices, you ensure independence in managing rights for each import source through dedicated user and organization structures. In addition, you enable clear traceability to the entity's creator, facilitating source evaluation, dashboard creation, data filtering and other administrative tasks.
 
 
 ## Digest

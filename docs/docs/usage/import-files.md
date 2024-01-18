@@ -12,6 +12,8 @@ The platform provides a seamless process for automatically parsing data from var
 
 **CSV mappers:** The CSV mapper is a tailored functionality to facilitate the import of data stored in CSV files. For more in-depth information on using CSV mappers, refer to the [CSV Mappers](../administration/csv-mappers.md) documentation page.
 
+![Manual import connectors](assets/manual-import-connectors.png)
+
 
 ## Usage
 
@@ -35,6 +37,8 @@ As for the `ImportFileStix` connector and the CSV mappers, there is no identific
 
     Import connectors may introduce errors in identifying object types or add "unknown" entities. Workbenches were established with the intent of reviewing the output of connectors before validation. Therefore, it is crucial to be vigilant when examining the workbench to prevent the import of incorrect data into the platform.
 
+![Global import panel](assets/global-import-panel.png)
+
 
 ## Additional information
 
@@ -52,7 +56,7 @@ When importing a document directly from an entity's "Data" tab, there can be an 
 
 ### File import in Content tab
 
-Expanding the scope of file imports, users can seamlessly add files in the `Content` tab of [Analyses](exploring-analysis) or [Cases](exploring-cases.md). In this scenario, the file is directly added as an attachment without utilizing an import mechanism.
+Expanding the scope of file imports, users can seamlessly add files in the `Content` tab of [Analyses](exploring-analysis.md) or [Cases](exploring-cases.md). In this scenario, the file is directly added as an attachment without utilizing an import mechanism.
 
 ### User capability requirement
 

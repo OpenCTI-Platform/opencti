@@ -1,6 +1,6 @@
 # Configuration
 
-The purpose of this section is to learn how to configure OpenCTI to have it tailored for your production and development needs. 
+The purpose of this section is to learn how to configure OpenCTI to have it tailored for your production and development needs. It is possible to check all default parameters implemented in the platform in the [`default.json` file](https://github.com/OpenCTI-Platform/opencti/blob/master/opencti-platform/opencti-graphql/config/default.json).
  
 Here are the configuration keys, for both containers (environment variables) and manual deployment.
 
@@ -33,102 +33,102 @@ Here are the configuration keys, for both containers (environment variables) and
 
 #### Basic parameters
 
-| Parameter                   | Environment variable       | Default value         | Description                                                      |
-| :-------------------------- |:---------------------------|:----------------------|:-----------------------------------------------------------------|
-| app:port                    | APP__PORT                  | 4000                  | Listen port of the application                                   |
-| app:base_path               | APP__BASE_PATH             |                       | Specific URI (ie. /opencti)                                      |
-| app:base_url                | APP__BASE_URL              | http://localhost:4000 | Full URL of the platform (should include the `base_path` if any) |
-| app:request_timeout         | APP__REQUEST_TIMEOUT       | 1200000               | Request timeout, in ms (default 20 minutes)                      |
-| app:session_timeout         | APP__SESSION_TIMEOUT       | 0                     | Session timeout, in ms (default 0 minute - disabled)             |
-| app:session_idle_timeout    | APP__SESSION_IDLE_TIMEOUT  | 1200000               | Idle timeout, in ms (default 20 minutes)                         |
-| app:session_cookie          | APP__SESSION_COOKIE        | false                 | Use memory/session cookie instead of persistent one              |
-| app:admin:email             | APP__ADMIN__EMAIL          | admin@opencti.io      | Default login email of the admin user                            |
-| app:admin:password          | APP__ADMIN__PASSWORD       | ChangeMe              | Default password of the admin user                               |
-| app:admin:token             | APP__ADMIN__TOKEN          | ChangeMe              | Default token (must be a valid UUIDv4)                           |
+| Parameter                | Environment variable      | Default value         | Description                                                      |
+|:-------------------------|:--------------------------|:----------------------|:-----------------------------------------------------------------|
+| app:port                 | APP__PORT                 | 4000                  | Listen port of the application                                   |
+| app:base_path            | APP__BASE_PATH            |                       | Specific URI (ie. /opencti)                                      |
+| app:base_url             | APP__BASE_URL             | http://localhost:4000 | Full URL of the platform (should include the `base_path` if any) |
+| app:request_timeout      | APP__REQUEST_TIMEOUT      | 1200000               | Request timeout, in ms (default 20 minutes)                      |
+| app:session_timeout      | APP__SESSION_TIMEOUT      | 0                     | Session timeout, in ms (default 0 minute - disabled)             |
+| app:session_idle_timeout | APP__SESSION_IDLE_TIMEOUT | 1200000               | Idle timeout, in ms (default 20 minutes)                         |
+| app:session_cookie       | APP__SESSION_COOKIE       | false                 | Use memory/session cookie instead of persistent one              |
+| app:admin:email          | APP__ADMIN__EMAIL         | admin@opencti.io      | Default login email of the admin user                            |
+| app:admin:password       | APP__ADMIN__PASSWORD      | ChangeMe              | Default password of the admin user                               |
+| app:admin:token          | APP__ADMIN__TOKEN         | ChangeMe              | Default token (must be a valid UUIDv4)                           |
 
 #### Network and security
 
-| Parameter                          | Environment variable                            | Default value                 | Description                                                                                |
-| :--------------------------------- | :---------------------------------------------- | :---------------------------- |:-------------------------------------------------------------------------------------------|
-| http_proxy                         | HTTP_PROXY                                      |                               | Proxy URL for HTTP connection (example: http://proxy:8O080)                        |
-| https_proxy                        | HTTPS_PROXY                                      |                              | Proxy URL for HTTPS connection (example: http://proxy:8O080)                       |
-| no_proxy                           | NO_PROXY                                         |                              | Comma separated list of hostnames for proxy exception (example: localhost,127.0.0.0/8,internal.opencti.io)                        |
-| app:https_cert:cookie_secure       | APP__HTTPS_CERT__COOKIE_SECURE                  | false                         | Set the flag "secure" for session cookies.                                         |
-| app:https_cert:ca                  | APP__HTTPS_CERT__CA                             | Empty list []                 | Certificate authority paths or content, only if the client uses a self-signed certificate. |
-| app:https_cert:key                 | APP__HTTPS_CERT__KEY                            |                               | Certificate key path or content                                                            |
-| app:https_cert:crt                 | APP__HTTPS_CERT__CRT                            |                               | Certificate crt path or content                                                            |
-| app:https_cert:reject_unauthorized | APP__HTTPS_CERT__REJECT_UNAUTHORIZED            |                               | If not false, the server certificate is verified against the list of supplied CAs          |
+| Parameter                          | Environment variable                 | Default value | Description                                                                                                |
+|:-----------------------------------|:-------------------------------------|:--------------|:-----------------------------------------------------------------------------------------------------------|
+| http_proxy                         | HTTP_PROXY                           |               | Proxy URL for HTTP connection (example: http://proxy:8O080)                                                |
+| https_proxy                        | HTTPS_PROXY                          |               | Proxy URL for HTTPS connection (example: http://proxy:8O080)                                               |
+| no_proxy                           | NO_PROXY                             |               | Comma separated list of hostnames for proxy exception (example: localhost,127.0.0.0/8,internal.opencti.io) |
+| app:https_cert:cookie_secure       | APP__HTTPS_CERT__COOKIE_SECURE       | false         | Set the flag "secure" for session cookies.                                                                 |
+| app:https_cert:ca                  | APP__HTTPS_CERT__CA                  | Empty list [] | Certificate authority paths or content, only if the client uses a self-signed certificate.                 |
+| app:https_cert:key                 | APP__HTTPS_CERT__KEY                 |               | Certificate key path or content                                                                            |
+| app:https_cert:crt                 | APP__HTTPS_CERT__CRT                 |               | Certificate crt path or content                                                                            |
+| app:https_cert:reject_unauthorized | APP__HTTPS_CERT__REJECT_UNAUTHORIZED |               | If not false, the server certificate is verified against the list of supplied CAs                          |
 
 #### Logging
 
 ##### Errors
 
-| Parameter                          | Environment variable                            | Default value                 | Description                                                                         |
-| :--------------------------------- | :---------------------------------------------- | :---------------------------- | :---------------------------------------------------------------------------------- |
-| app:app_logs:logs_level            | APP__APP_LOGS__LOGS_LEVEL                       | info                          | The application log level                                                           |
-| app:app_logs:logs_files            | APP__APP_LOGS__LOGS_FILES                       | `true`                        | If application logs is logged into files                                            |
-| app:app_logs:logs_console          | APP__APP_LOGS__LOGS_CONSOLE                     | `true`                        | If application logs is logged to console (useful for containers)                    |
-| app:app_logs:logs_max_files        | APP__APP_LOGS__LOGS_MAX_FILES                   | 7                             | Maximum number of daily files in logs                                               |
-| app:app_logs:logs_directory        | APP__APP_LOGS__LOGS_DIRECTORY                   | ./logs                        | File logs directory                                                                 |
+| Parameter                   | Environment variable          | Default value | Description                                                      |
+|:----------------------------|:------------------------------|:--------------|:-----------------------------------------------------------------|
+| app:app_logs:logs_level     | APP__APP_LOGS__LOGS_LEVEL     | info          | The application log level                                        |
+| app:app_logs:logs_files     | APP__APP_LOGS__LOGS_FILES     | `true`        | If application logs is logged into files                         |
+| app:app_logs:logs_console   | APP__APP_LOGS__LOGS_CONSOLE   | `true`        | If application logs is logged to console (useful for containers) |
+| app:app_logs:logs_max_files | APP__APP_LOGS__LOGS_MAX_FILES | 7             | Maximum number of daily files in logs                            |
+| app:app_logs:logs_directory | APP__APP_LOGS__LOGS_DIRECTORY | ./logs        | File logs directory                                              |
 
 ##### Audit
 
-| Parameter                          | Environment variable                            | Default value                 | Description                                                                         |
-| :--------------------------------- | :---------------------------------------------- | :---------------------------- | :---------------------------------------------------------------------------------- |
-| app:audit_logs:logs_files          | APP__AUDIT_LOGS__LOGS_FILES                     | `true`                        | If audit logs is logged into files                                                  |
-| app:audit_logs:logs_console        | APP__AUDIT_LOGS__LOGS_CONSOLE                   | `true`                        | If audit logs is logged to console (useful for containers)                          |
-| app:audit_logs:logs_max_files      | APP__AUDIT_LOGS__LOGS_MAX_FILES                 | 7                             | Maximum number of daily files in logs                                               |
-| app:audit_logs:logs_directory      | APP__AUDIT_LOGS__LOGS_DIRECTORY                 | ./logs                        | Audit logs directory                                                                |
+| Parameter                     | Environment variable            | Default value | Description                                                |
+|:------------------------------|:--------------------------------|:--------------|:-----------------------------------------------------------|
+| app:audit_logs:logs_files     | APP__AUDIT_LOGS__LOGS_FILES     | `true`        | If audit logs is logged into files                         |
+| app:audit_logs:logs_console   | APP__AUDIT_LOGS__LOGS_CONSOLE   | `true`        | If audit logs is logged to console (useful for containers) |
+| app:audit_logs:logs_max_files | APP__AUDIT_LOGS__LOGS_MAX_FILES | 7             | Maximum number of daily files in logs                      |
+| app:audit_logs:logs_directory | APP__AUDIT_LOGS__LOGS_DIRECTORY | ./logs        | Audit logs directory                                       |
 
 #### Maps & references
 
-| Parameter                          | Environment variable                     | Default value                                              | Description                                                      |
-| :--------------------------------- | :--------------------------------------- | :--------------------------------------------------------- | ---------------------------------------------------------------- |
-| app:map_tile_server_dark           | APP__MAP_TILE_SERVER_DARK                | https://map.opencti.io/styles/luatix-dark/{z}/{x}/{y}.png  | The address of the OpenStreetMap provider with dark theme style  |
-| app:map_tile_server_light          | APP__MAP_TILE_SERVER_LIGHT               | https://map.opencti.io/styles/luatix-light/{z}/{x}/{y}.png | The address of the OpenStreetMap provider with light theme style |
-| app:reference_attachment           | APP__REFERENCE_ATTACHMENT                | `false`                                                    | External reference mandatory attachment                          |
+| Parameter                 | Environment variable       | Default value                                              | Description                                                      |
+|:--------------------------|:---------------------------|:-----------------------------------------------------------|------------------------------------------------------------------|
+| app:map_tile_server_dark  | APP__MAP_TILE_SERVER_DARK  | https://map.opencti.io/styles/luatix-dark/{z}/{x}/{y}.png  | The address of the OpenStreetMap provider with dark theme style  |
+| app:map_tile_server_light | APP__MAP_TILE_SERVER_LIGHT | https://map.opencti.io/styles/luatix-light/{z}/{x}/{y}.png | The address of the OpenStreetMap provider with light theme style |
+| app:reference_attachment  | APP__REFERENCE_ATTACHMENT  | `false`                                                    | External reference mandatory attachment                          |
 
 #### Technical customization
 
-| Parameter                                              | Environment variable                                    | Default value | Description                                                                         |
-|:-------------------------------------------------------|:--------------------------------------------------------|:--------------| :---------------------------------------------------------------------------------- |
-| app:graphql:playground:enabled                         | APP__GRAPHQL__PLAYGROUND__ENABLED                       | `true`        | Enable the playground on /graphql                                                   |
-| app:graphql:playground:force_disabled_introspection    | APP__GRAPHQL_PLAYGROUND__FORCE_DISABLED_INTROSPECTION   | `false`       | Introspection is allowed to auth users but can be disabled in needed                |
-| app:concurrency:retry_count                            | APP__CONCURRENCY__RETRY_COUNT                           | 200           | Number of try to get the lock to work an element (create/update/merge, ...)         |
-| app:concurrency:retry_delay                            | APP__CONCURRENCY__RETRY_DELAY                           | 100           | Delay between 2 lock retry (in milliseconds)                                        |
-| app:concurrency:retry_jitter                           | APP__CONCURRENCY__RETRY_JITTER                          | 50            | Random jitter to prevent concurrent retry  (in milliseconds)                        |
-| app:concurrency:max_ttl                                | APP__CONCURRENCY__MAX_TTL                               | 30000         | Global maximum time for lock retry (in milliseconds)                                |
+| Parameter                                           | Environment variable                                  | Default value | Description                                                                 |
+|:----------------------------------------------------|:------------------------------------------------------|:--------------|:----------------------------------------------------------------------------|
+| app:graphql:playground:enabled                      | APP__GRAPHQL__PLAYGROUND__ENABLED                     | `true`        | Enable the playground on /graphql                                           |
+| app:graphql:playground:force_disabled_introspection | APP__GRAPHQL_PLAYGROUND__FORCE_DISABLED_INTROSPECTION | `false`       | Introspection is allowed to auth users but can be disabled in needed        |
+| app:concurrency:retry_count                         | APP__CONCURRENCY__RETRY_COUNT                         | 200           | Number of try to get the lock to work an element (create/update/merge, ...) |
+| app:concurrency:retry_delay                         | APP__CONCURRENCY__RETRY_DELAY                         | 100           | Delay between 2 lock retry (in milliseconds)                                |
+| app:concurrency:retry_jitter                        | APP__CONCURRENCY__RETRY_JITTER                        | 50            | Random jitter to prevent concurrent retry  (in milliseconds)                |
+| app:concurrency:max_ttl                             | APP__CONCURRENCY__MAX_TTL                             | 30000         | Global maximum time for lock retry (in milliseconds)                        |
 
 ### Dependencies
 
 #### ElasticSearch
 
-| Parameter                              | Environment variable                    | Default value                 | Description                                                                             |
-|:---------------------------------------| :-------------------------------------- | :---------------------------- |:----------------------------------------------------------------------------------------|
-| elasticsearch:engine_selector          | ELASTICSEARCH__ENGINE_SELECTOR          | auto                          | `elk` or `opensearch`, default is `auto`, please put `elk` if you use token auth.       |
-| elasticsearch:url                      | ELASTICSEARCH__URL                      | http://localhost:9200         | URL(s) of the ElasticSearch (supports http://user:pass@localhost:9200 and list of URLs) |
-| elasticsearch:username                 | ELASTICSEARCH__USERNAME                 |                               | Username can be put in the URL or with this parameter                                   |
-| elasticsearch:password                 | ELASTICSEARCH__PASSWORD                 |                               | Password can be put in the URL or with this parameter                                   |
-| elasticsearch:api_key                  | ELASTICSEARCH__API_KEY                  |                               | API key for ElasticSearch token auth. Please set also `engine_selector` to `elk`        |
-| elasticsearch:index_prefix             | ELASTICSEARCH__INDEX_PREFIX             | opencti                       | Prefix for the indices                                                                  |
-| elasticsearch:ssl:reject_unauthorized  | ELASTICSEARCH__SSL__REJECT_UNAUTHORIZED | `true`                        | Enable TLS certificate check                                                            |
-| elasticsearch:ssl:ca                   | ELASTICSEARCH__SSL__CA                  |                               | Custom certificate path or content                                                      |
-| elasticsearch:ssl:ca_plain (depecated) | ELASTICSEARCH__SSL__CA_PLAIN            |                               | @depecated, use ca directly                                                             |
+| Parameter                              | Environment variable                    | Default value         | Description                                                                             |
+|:---------------------------------------|:----------------------------------------|:----------------------|:----------------------------------------------------------------------------------------|
+| elasticsearch:engine_selector          | ELASTICSEARCH__ENGINE_SELECTOR          | auto                  | `elk` or `opensearch`, default is `auto`, please put `elk` if you use token auth.       |
+| elasticsearch:url                      | ELASTICSEARCH__URL                      | http://localhost:9200 | URL(s) of the ElasticSearch (supports http://user:pass@localhost:9200 and list of URLs) |
+| elasticsearch:username                 | ELASTICSEARCH__USERNAME                 |                       | Username can be put in the URL or with this parameter                                   |
+| elasticsearch:password                 | ELASTICSEARCH__PASSWORD                 |                       | Password can be put in the URL or with this parameter                                   |
+| elasticsearch:api_key                  | ELASTICSEARCH__API_KEY                  |                       | API key for ElasticSearch token auth. Please set also `engine_selector` to `elk`        |
+| elasticsearch:index_prefix             | ELASTICSEARCH__INDEX_PREFIX             | opencti               | Prefix for the indices                                                                  |
+| elasticsearch:ssl:reject_unauthorized  | ELASTICSEARCH__SSL__REJECT_UNAUTHORIZED | `true`                | Enable TLS certificate check                                                            |
+| elasticsearch:ssl:ca                   | ELASTICSEARCH__SSL__CA                  |                       | Custom certificate path or content                                                      |
+| elasticsearch:ssl:ca_plain (depecated) | ELASTICSEARCH__SSL__CA_PLAIN            |                       | @depecated, use ca directly                                                             |
 
 #### Redis
 
-| Parameter                          | Environment variable                          | Default value                 | Description                                                                         |
-| :--------------------------------- | :-------------------------------------------- | :---------------------------- | :---------------------------------------------------------------------------------- |
-| redis:mode                         | REDIS__MODE                                   | single                        | Connect to redis "single" or "cluster"                                              |
-| redis:namespace                    | REDIS__NAMESPACE                              |                               | Namespace (to use as prefix)                                                        |
-| redis:hostname                     | REDIS__HOSTNAME                               | localhost                     | Hostname of the Redis Server                                                        |
-| redis:hostnames                    | REDIS__HOSTNAMES                              |                               | Hostnames definition for Redis cluster mode: a list of host/port objects.         |
-| redis:port                         | REDIS__PORT                                   | 6379                          | Port of the Redis Server                                                            |
-| redis:use_ssl                      | REDIS__USE_SSL                                | `false`                       | Is the Redis Server has TLS enabled                                                 |
-| redis:username                     | REDIS__USERNAME                               |                               | Username of the Redis Server                                                        |
-| redis:password                     | REDIS__PASSWORD                               |                               | Password of the Redis Server                                                        |
-| redis:ca                           | REDIS__CA                                     | [}                            | List of path(s) of the CA certificate(s)                                            |
-| redis:trimming                     | REDIS__TRIMMING                               | 2000000                       | Number of elements to maintain in the stream. (0 = unlimited)                    |
+| Parameter       | Environment variable | Default value | Description                                                               |
+|:----------------|:---------------------|:--------------|:--------------------------------------------------------------------------|
+| redis:mode      | REDIS__MODE          | single        | Connect to redis "single" or "cluster"                                    |
+| redis:namespace | REDIS__NAMESPACE     |               | Namespace (to use as prefix)                                              |
+| redis:hostname  | REDIS__HOSTNAME      | localhost     | Hostname of the Redis Server                                              |
+| redis:hostnames | REDIS__HOSTNAMES     |               | Hostnames definition for Redis cluster mode: a list of host/port objects. |
+| redis:port      | REDIS__PORT          | 6379          | Port of the Redis Server                                                  |
+| redis:use_ssl   | REDIS__USE_SSL       | `false`       | Is the Redis Server has TLS enabled                                       |
+| redis:username  | REDIS__USERNAME      |               | Username of the Redis Server                                              |
+| redis:password  | REDIS__PASSWORD      |               | Password of the Redis Server                                              |
+| redis:ca        | REDIS__CA            | [}            | List of path(s) of the CA certificate(s)                                  |
+| redis:trimming  | REDIS__TRIMMING      | 2000000       | Number of elements to maintain in the stream. (0 = unlimited)             |
 
 #### RabbitMQ
 
@@ -154,29 +154,29 @@ Here are the configuration keys, for both containers (environment variables) and
 
 #### S3 Bucket
 
-| Parameter                          | Environment variable                            | Default value                 | Description                                                                         |
-| :--------------------------------- | :---------------------------------------------- | :---------------------------- | :---------------------------------------------------------------------------------- |
-| minio:endpoint                     | MINIO__ENDPOINT                                 | localhost                     | Hostname of the S3 Service                                                          |
-| minio:port                         | MINIO__PORT                                     | 9000                          | Port of the S3 Service                                                              |
-| minio:use_ssl                      | MINIO__USE_SSL                                  | `false`                       | Is the S3 Service has TLS enabled                                                   |
-| minio:access_key                   | MINIO__ACCESS_KEY                               | ChangeMe                      | The S3 Service access key                                                           |
-| minio:secret_key                   | MINIO__SECRET_KEY                               | ChangeMe                      | The S3 Service secret key                                                           |
-| minio:bucket_name                  | MINIO__BUCKET_NAME                              | opencti-bucket                | The S3 bucket name (useful to change if you use AWS)                                |
-| minio:bucket_region                | MINIO__BUCKET_REGION                            | us-east-1                     | The S3 bucket region if you use AWS                                                 |
-| minio:use_aws_role                 | MINIO__USE_AWS_ROLE                             | `false`                       | To use AWS role auto credentials                                                    |
+| Parameter           | Environment variable | Default value  | Description                                          |
+|:--------------------|:---------------------|:---------------|:-----------------------------------------------------|
+| minio:endpoint      | MINIO__ENDPOINT      | localhost      | Hostname of the S3 Service                           |
+| minio:port          | MINIO__PORT          | 9000           | Port of the S3 Service                               |
+| minio:use_ssl       | MINIO__USE_SSL       | `false`        | Is the S3 Service has TLS enabled                    |
+| minio:access_key    | MINIO__ACCESS_KEY    | ChangeMe       | The S3 Service access key                            |
+| minio:secret_key    | MINIO__SECRET_KEY    | ChangeMe       | The S3 Service secret key                            |
+| minio:bucket_name   | MINIO__BUCKET_NAME   | opencti-bucket | The S3 bucket name (useful to change if you use AWS) |
+| minio:bucket_region | MINIO__BUCKET_REGION | us-east-1      | The S3 bucket region if you use AWS                  |
+| minio:use_aws_role  | MINIO__USE_AWS_ROLE  | `false`        | To use AWS role auto credentials                     |
 
 #### SMTP Service
 
-| Parameter                          | Environment variable                            | Default value                 | Description                                                                         |
-| :--------------------------------- | :---------------------------------------------- | :---------------------------- | :---------------------------------------------------------------------------------- |
-| smtp:hostname                      | SMTP__HOSTNAME                                  |                               | SMTP Server hostname                                                                |
-| smtp:port                          | SMTP__PORT                                      | 9000                          | SMTP Port (25 or 465 for TLS)                                                       |
-| smtp:use_ssl                       | SMTP__USE_SSL                                   | `false`                       | SMTP over TLS                                                                       |
-| smtp:reject_unauthorized           | SMTP__REJECT_UNAUTHORIZED                       | `false`                       | Enable TLS certificate check                                                        |
-| smtp:username                      | SMTP__USERNAME                                  |                               | SMTP Username if authentication is needed                                           |
-| smtp:password                      | SMTP__PASSWORD                                  |                               | SMTP Password if authentication is needed                                           |
+| Parameter                | Environment variable      | Default value | Description                               |
+|:-------------------------|:--------------------------|:--------------|:------------------------------------------|
+| smtp:hostname            | SMTP__HOSTNAME            |               | SMTP Server hostname                      |
+| smtp:port                | SMTP__PORT                | 9000          | SMTP Port (25 or 465 for TLS)             |
+| smtp:use_ssl             | SMTP__USE_SSL             | `false`       | SMTP over TLS                             |
+| smtp:reject_unauthorized | SMTP__REJECT_UNAUTHORIZED | `false`       | Enable TLS certificate check              |
+| smtp:username            | SMTP__USERNAME            |               | SMTP Username if authentication is needed |
+| smtp:password            | SMTP__PASSWORD            |               | SMTP Password if authentication is needed |
 
-### Schedules & Engines
+### Engines, Schedules and Managers
 
 | Parameter                                            | Environment variable                         | Default value                    | Description                                         |
 |:-----------------------------------------------------|:---------------------------------------------|:---------------------------------|:----------------------------------------------------|
@@ -233,9 +233,10 @@ Here are the configuration keys, for both containers (environment variables) and
 | file_index_manager:enabled                           | FILE_INDEX_MANAGER__ENABLED                  | `true`                           | Enable/disable the file indexing manager            |
 | file_index_manager:stream_lock_key                   | FILE_INDEX_MANAGER__STREAM_LOCK              | file_index_manager_stream_lock   | Stream lock key for the manager in Redis            |
 | file_index_manager:interval                          | FILE_INDEX_MANAGER__INTERVAL                 | 60000                            | Interval to check for new files                     |
-!!! note "Default file"
+
+!!! note "Manager's duties"
     
-    It is possible to check all default parameters implemented in the platform in the [`default.json` file](https://github.com/OpenCTI-Platform/opencti/blob/master/opencti-platform/opencti-graphql/config/default.json).
+    A description of each manager's duties is available on [a dedicated page](managers.md).
 
 ## Worker and connector
 

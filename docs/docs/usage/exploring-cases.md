@@ -60,7 +60,7 @@ At the bottom, you have many option to manipulate the graph:
 
 ![Content mapping view of a Case](assets/case-content-mapping.png)
 
-Through this view, you can map existing or new Objects directly from a readable content, allowing you to quickly append structured Knowledge in your Case before refining it with relationships and details. 
+Through this view, you can map existing or new Objects directly from a readable content, allowing you to quickly append structured Knowledge in your Case before refining it with relationships and details.
 This view is a great place to see the continuum between unstructured and structured Knowledge.
 
 #### Timeline view
@@ -82,6 +82,7 @@ Tasks are actions to be performed in the context of a Case (Incident Response, R
 When clicking on the Tasks tab at the top of the interface, you see the list of all the Tasks you have access to, in respect with your [allowed marking definitions](../administration/users.md). You can then search and filter on some common and specific attributes of the tasks.
 
 Clicking on a Task, you land on its Overview tab. For a Tasks, the following tabs are accessible:
+
 - Overview: as described [here](overview.md#overview-section).
 - Data: as described [here](overview.md#data-section).
 - History: as described [here](overview.md#history-section).
@@ -96,6 +97,7 @@ This feature gives the opportunity to engage with other users of your platform a
 ![Feedback Overview](assets/feedback-overview.png)
 
 Clicking on a Feedback, you land on its Overview tab. For a Feedback, the following tabs are accessible:
+
 - Overview: as described [here](overview.md#overview-section).
 - Content: as described [here](overview.md#content-section). 
 - Data: as described [here](overview.md#data-section).
