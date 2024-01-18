@@ -2213,24 +2213,24 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@date-io/core@npm:^2.17.0":
-  version: 2.17.0
-  resolution: "@date-io/core@npm:2.17.0"
-  checksum: 008dfc79eb54256805113d76feca82fe0b08a245ecbfb2d53809e6a129dc201f9dbd053c8ad63512203ab1a13ff7f76de0edc31829588ef507d53307974c29a8
+"@date-io/core@npm:^3.0.0":
+  version: 3.0.0
+  resolution: "@date-io/core@npm:3.0.0"
+  checksum: 5fdecfb1c6bfe30864096c3ce3f9e73a359a6a12f34a5829504eea7a0327122e361a95d9501ad0eaaf02b2e45322913985d9f47e1c667f3c0a4f7d792c116884
   languageName: node
   linkType: hard
 
-"@date-io/date-fns@npm:2.17.0":
-  version: 2.17.0
-  resolution: "@date-io/date-fns@npm:2.17.0"
+"@date-io/date-fns@npm:^3.0.0":
+  version: 3.0.0
+  resolution: "@date-io/date-fns@npm:3.0.0"
   dependencies:
-    "@date-io/core": ^2.17.0
+    "@date-io/core": ^3.0.0
   peerDependencies:
-    date-fns: ^2.0.0
+    date-fns: ^3.2.0
   peerDependenciesMeta:
     date-fns:
       optional: true
-  checksum: bfab634c985a98dd44fdfc5f982b0348da2886c9ad79a8d71fd7bfa05b740af7f5cf340508cd7ce51d67c141fb8766998c8efdf50653252c68ec078471cd76e6
+  checksum: bf9c3bbcd5466d4e4d1847921c5b2e4e3b6166c0e27d601be292384ab7ba26fc0fa3934382b71a7c70d42e781955ac47280b2834d6a70d242618a044c4f098fb
   languageName: node
   linkType: hard
 
@@ -3286,6 +3286,28 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@mui/base@npm:^5.0.0-beta.22":
+  version: 5.0.0-beta.32
+  resolution: "@mui/base@npm:5.0.0-beta.32"
+  dependencies:
+    "@babel/runtime": ^7.23.8
+    "@floating-ui/react-dom": ^2.0.5
+    "@mui/types": ^7.2.13
+    "@mui/utils": ^5.15.5
+    "@popperjs/core": ^2.11.8
+    clsx: ^2.1.0
+    prop-types: ^15.8.1
+  peerDependencies:
+    "@types/react": ^17.0.0 || ^18.0.0
+    react: ^17.0.0 || ^18.0.0
+    react-dom: ^17.0.0 || ^18.0.0
+  peerDependenciesMeta:
+    "@types/react":
+      optional: true
+  checksum: 5f27be8914c072ffcbe6720de9aa6129180e68927657e8bcbc03a6f322d1ee6c6740a199d72ed0b490a7b29b79cc0c59d1e05a427089b17f4cbc9cc756e67506
+  languageName: node
+  linkType: hard
+
 "@mui/core-downloads-tracker@npm:^5.15.3, @mui/core-downloads-tracker@npm:^5.15.5":
   version: 5.15.5
   resolution: "@mui/core-downloads-tracker@npm:5.15.5"
@@ -3565,38 +3587,41 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@mui/utils@npm:^5.14.5":
-  version: 5.14.5
-  resolution: "@mui/utils@npm:5.14.5"
+"@mui/utils@npm:^5.14.19":
+  version: 5.14.19
+  resolution: "@mui/utils@npm:5.14.19"
   dependencies:
-    "@babel/runtime": ^7.22.6
-    "@types/prop-types": ^15.7.5
-    "@types/react-is": ^18.2.1
+    "@babel/runtime": ^7.23.4
+    "@types/prop-types": ^15.7.11
     prop-types: ^15.8.1
     react-is: ^18.2.0
   peerDependencies:
+    "@types/react": ^17.0.0 || ^18.0.0
     react: ^17.0.0 || ^18.0.0
-  checksum: 7044d73ae41bdfd9c7c6287a3c1391ec4c5395c8f0092eac3ca4f1fd5359068fad29366f39d8072f68493eb5225399463935bbca266c879d630f8ebaa3db96d7
+  peerDependenciesMeta:
+    "@types/react":
+      optional: true
+  checksum: f53f746eb33bc5d700b9f2b454e211ca17f5aa320cd30f54a82a347e4da0c61b872f323f01ff4b5247d3f992ac4f72a69ac79974300a6dedf01ff6b8f6d75b49
   languageName: node
   linkType: hard
 
-"@mui/x-date-pickers@npm:6.11.2":
-  version: 6.11.2
-  resolution: "@mui/x-date-pickers@npm:6.11.2"
+"@mui/x-date-pickers@npm:^6.19.0":
+  version: 6.19.0
+  resolution: "@mui/x-date-pickers@npm:6.19.0"
   dependencies:
-    "@babel/runtime": ^7.22.6
-    "@mui/utils": ^5.14.5
-    "@types/react-transition-group": ^4.4.6
+    "@babel/runtime": ^7.23.2
+    "@mui/base": ^5.0.0-beta.22
+    "@mui/utils": ^5.14.16
+    "@types/react-transition-group": ^4.4.8
     clsx: ^2.0.0
     prop-types: ^15.8.1
     react-transition-group: ^4.4.5
   peerDependencies:
     "@emotion/react": ^11.9.0
     "@emotion/styled": ^11.8.1
-    "@mui/base": ^5.0.0-alpha.87
     "@mui/material": ^5.8.6
     "@mui/system": ^5.8.0
-    date-fns: ^2.25.0
+    date-fns: ^2.25.0 || ^3.2.0
     date-fns-jalali: ^2.13.0-0
     dayjs: ^1.10.7
     luxon: ^3.0.2
@@ -3624,7 +3649,7 @@ __metadata:
       optional: true
     moment-jalaali:
       optional: true
-  checksum: 389932d3e990d596a24d593086a02960a1111217745587ef9ac35a2e419bfbc3b7c112d50df591ff80ee864731acecb6cfe2945274796c52856f87275d1b4b10
+  checksum: 65da961de3012c1453ce7589c836fac0808fdfe00aa90311d5e11b2a2197c2aa61930200fded61598e5ec86f6fef1c683951078a623e18ee5f4c129b5a760545
   languageName: node
   linkType: hard
 
@@ -5225,7 +5250,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/prop-types@npm:*, @types/prop-types@npm:^15.7.11, @types/prop-types@npm:^15.7.5":
+"@types/prop-types@npm:*, @types/prop-types@npm:^15.7.11":
   version: 15.7.11
   resolution: "@types/prop-types@npm:15.7.11"
   checksum: 7519ff11d06fbf6b275029fe03fff9ec377b4cb6e864cac34d87d7146c7f5a7560fd164bdc1d2dbe00b60c43713631251af1fd3d34d46c69cd354602bc0c7c54
@@ -8466,12 +8491,19 @@ __metadata:
   languageName: node
   linkType: hard
 
-"date-fns@npm:2.30.0, date-fns@npm:^2.1, date-fns@npm:^2.19.0":
+"date-fns@npm:^2.1, date-fns@npm:^2.19.0":
   version: 2.30.0
   resolution: "date-fns@npm:2.30.0"
   dependencies:
     "@babel/runtime": ^7.21.0
   checksum: f7be01523282e9bb06c0cd2693d34f245247a29098527d4420628966a2d9aad154bd0e90a6b1cf66d37adcb769cd108cf8a7bd49d76db0fb119af5cdd13644f4
+  languageName: node
+  linkType: hard
+
+"date-fns@npm:^3.2.0":
+  version: 3.2.0
+  resolution: "date-fns@npm:3.2.0"
+  checksum: ff5dab139f40170c4ba5472bab9bc887dd3940f7661bd8322f074faadbd422513c7195296541b5237fc450a0333a4b1c5659f887c7c14b1bfa2902998ac7582e
   languageName: node
   linkType: hard
 
@@ -14983,7 +15015,7 @@ __metadata:
     "@analytics/google-analytics": 1.0.7
     "@ckeditor/ckeditor5-react": 6.1.0
     "@date-fns/upgrade": ^1.0.3
-    "@date-io/date-fns": 2.17.0
+    "@date-io/date-fns": ^3.0.0
     "@emotion/react": 11.11.3
     "@emotion/styled": 11.11.0
     "@mui/icons-material": 5.15.3
@@ -14991,7 +15023,7 @@ __metadata:
     "@mui/material": 5.15.3
     "@mui/styles": 5.15.3
     "@mui/utils": 5.15.3
-    "@mui/x-date-pickers": 6.11.2
+    "@mui/x-date-pickers": ^6.19.0
     "@rjsf/core": 5.16.1
     "@rjsf/mui": 5.16.1
     "@rjsf/utils": 5.16.1
@@ -15024,7 +15056,7 @@ __metadata:
     d3-hierarchy: 3.1.2
     d3-timer: 3.0.1
     dagre: 0.8.5
-    date-fns: 2.30.0
+    date-fns: ^3.2.0
     esbuild: 0.19.11
     esbuild-jest: 0.5.0
     eslint: 8.56.0
