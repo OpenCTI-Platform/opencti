@@ -154,7 +154,7 @@ CsvMapperRepresentationFormProps
               getOptionLabel={(option) => t_i18n(`${prefixLabel}${option.label}`)}
               noOptionsText={t_i18n('No available options')}
               options={availableTypes}
-              groupBy={(option) => t_i18n(option.type) ?? t('Unknown')}
+              groupBy={(option) => t_i18n(option.type) ?? t_i18n('Unknown')}
               value={availableTypes.find((e) => e.id === value.target_type) || null}
               onInputChange={(event) => searchType(event)}
               onChange={(_, val) => handleChangeEntityType(val)}

@@ -2518,5 +2518,8 @@
   "This score is updated with the decay rule applied to this indicator.": "This score is updated with the decay rule applied to this indicator.",
   "Lifecycle": "Lifecycle",
   "Lifecycle details": "Lifecycle details",
-  "Subscription to specific object(s)": "Subscription to specific object(s)"
+  "Subscription to specific object(s)": "Subscription to specific object(s)",
+  "Settings default values": "Default value from entity settings: {value}",
+  "Settings default values usage...": "If the data is not found in the CSV file then the default value set in Settings > Customization will be used instead. You can override this default value by filling the input above.",
+  "No default value set in Settings...": "No default value set for this attribute in the entity settings. You can provide one with the input above. This value will be used if the data is missing in the CSV file."
 }

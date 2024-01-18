@@ -1,7 +1,4 @@
 import {
-  CsvMapperRepresentationAttributesFormQuery$data,
-} from '@components/data/csvMapper/representations/attributes/__generated__/CsvMapperRepresentationAttributesFormQuery.graphql';
-import {
   CsvMapperRepresentationAttribute,
   CsvMapperRepresentationAttributeEdit,
   CsvMapperRepresentationAttributeFormData,
@@ -32,7 +29,7 @@ export const alphabet = (size = 0) => {
 // try to compute a label from the attribute schema
 // Cascading attempts if the following fields exist : label, then name
 export const getAttributeLabel = (
-  schemaAttribute: CsvMapperRepresentationAttributesFormQuery$data['schemaAttributes'][number],
+  schemaAttribute: CsvMapperRepresentationAttributesForm_allSchemaAttributes$data['csvMapperSchemaAttributes'][number]['attributes'][number],
 ) => {
   return schemaAttribute.label ?? schemaAttribute.name;
 };

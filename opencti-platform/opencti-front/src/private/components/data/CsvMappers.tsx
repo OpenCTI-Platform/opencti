@@ -1,13 +1,12 @@
 import React, { Suspense } from 'react';
 import makeStyles from '@mui/styles/makeStyles';
 import CsvMapperLines from '@components/data/csvMapper/CsvMapperLines';
-import { CsvMapperLinesPaginationQuery$variables } from '@components/data/csvMapper/__generated__/CsvMapperLinesPaginationQuery.graphql';
 import CsvMapperCreationContainer from '@components/data/csvMapper/CsvMapperCreationContainer';
 import { CsvMapperLine_csvMapper$data } from '@components/data/csvMapper/__generated__/CsvMapperLine_csvMapper.graphql';
 import { CancelOutlined, CheckCircleOutlined } from '@mui/icons-material';
 import ProcessingMenu from '@components/data/ProcessingMenu';
 import CsvMappersProvider, { mappersQuery, schemaAttributesQuery } from '@components/data/csvMapper/csvMappers.data';
-import { csvMappers_MappersQuery } from '@components/data/csvMapper/__generated__/csvMappers_MappersQuery.graphql';
+import { csvMappers_MappersQuery, csvMappers_MappersQuery$variables } from '@components/data/csvMapper/__generated__/csvMappers_MappersQuery.graphql';
 import { csvMappers_SchemaAttributesQuery } from '@components/data/csvMapper/__generated__/csvMappers_SchemaAttributesQuery.graphql';
 import ListLines from '../../../components/list_lines/ListLines';
 import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
@@ -25,7 +24,7 @@ const useStyles = makeStyles(() => ({
 const CsvMappers = () => {
   const classes = useStyles();
 
-  const { viewStorage, paginationOptions, helpers } = usePaginationLocalStorage<CsvMapperLinesPaginationQuery$variables>(
+  const { viewStorage, paginationOptions, helpers } = usePaginationLocalStorage<csvMappers_MappersQuery$variables>(
     LOCAL_STORAGE_KEY_CSV_MAPPERS,
     {
       sortBy: 'name',

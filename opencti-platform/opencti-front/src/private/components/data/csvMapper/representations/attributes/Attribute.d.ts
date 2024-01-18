@@ -13,5 +13,5 @@ export interface CsvMapperRepresentationAttributeFormData {
   separator?: string
   pattern_date?: string
   default_values?: DefaultValues
-  based_on?: (string | null)[]
+  based_on?: (string | null | undefined)[]
 }

@@ -1,11 +1,11 @@
 import React, { FunctionComponent } from 'react';
-import { CsvMapperLinesPaginationQuery$variables } from '@components/data/csvMapper/__generated__/CsvMapperLinesPaginationQuery.graphql';
 import { FormikConfig } from 'formik';
 import { graphql, useMutation } from 'react-relay';
 import CsvMapperForm from '@components/data/csvMapper/CsvMapperForm';
 import { CsvMapperFormData } from '@components/data/csvMapper/CsvMapper';
 import { CsvMapperAddInput } from '@components/data/csvMapper/__generated__/CsvMapperCreationContainerMutation.graphql';
 import { formDataToCsvMapper } from '@components/data/csvMapper/CsvMapperUtils';
+import { csvMappers_MappersQuery$variables } from '@components/data/csvMapper/__generated__/csvMappers_MappersQuery.graphql';
 import { insertNode } from '../../../../utils/store';
 
 const csvMapperCreation = graphql`
@@ -23,7 +23,7 @@ const csvMapperCreation = graphql`
 
 interface CsvMapperCreationFormProps {
   onClose?: () => void;
-  paginationOptions: CsvMapperLinesPaginationQuery$variables;
+  paginationOptions: csvMappers_MappersQuery$variables;
 }
 
 const CsvMapperCreation: FunctionComponent<CsvMapperCreationFormProps> = ({

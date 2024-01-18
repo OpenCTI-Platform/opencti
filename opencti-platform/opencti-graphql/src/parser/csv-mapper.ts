@@ -256,6 +256,7 @@ const mapRecord = async (
 
   const entitySetting = await getEntitySettingFromCache(context, entity_type);
   const filledInput = fillDefaultValues(user, input, entitySetting);
+  filledInput.objectMarking = []; // TODO manage markings
 
   if (!isValidInput(filledInput)) {
     return null;

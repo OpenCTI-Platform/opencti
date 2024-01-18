@@ -21,7 +21,7 @@ CsvMapperRepresentationAttributeOptionsProps
   const { t_i18n } = useFormatter();
   const { setFieldValue, getFieldProps } = form;
 
-  const settingsDefaultValues = schemaAttribute.defaultValues?.map((v) => v.name).join(',') ?? t('none');
+  const settingsDefaultValues = schemaAttribute.defaultValues?.map((v) => v.name).join(',');
 
   // Retrieve the entity type of the current representation for open vocab fields.
   const representationName = attributeName.split('.')[0];
@@ -62,7 +62,7 @@ CsvMapperRepresentationAttributeOptionsProps
           ? (
             <>
               <DialogContentText sx={{ width: 450, mt: '8px' }}>
-                {t_i18n('', {
+                {t_i18n('Settings default values', {
                   id: 'Settings default values',
                   values: { value: settingsDefaultValues },
                 })}

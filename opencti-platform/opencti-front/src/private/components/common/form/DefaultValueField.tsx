@@ -22,7 +22,7 @@ interface DefaultValueFieldProps {
   attribute: {
     name: string
     type: string
-    multiple: boolean | null
+    multiple: boolean | null | undefined
   },
   setFieldValue: (field: string, value: string) => void,
   entityType?: string
@@ -134,11 +134,13 @@ const DefaultValueField = ({
         label={label}
         component={DateTimePickerField}
         name={name}
-        TextFieldProps={{
-          label,
-          variant: 'standard',
-          fullWidth: true,
-          style: { marginTop: 20 },
+        textFieldProps={{
+          textField: {
+            label,
+            variant: 'standard',
+            fullWidth: true,
+            style: { marginTop: 20 },
+          },
         }}
       />
     );
