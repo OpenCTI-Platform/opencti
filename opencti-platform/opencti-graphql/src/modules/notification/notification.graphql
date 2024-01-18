@@ -55,6 +55,8 @@ type Trigger implements InternalObject & BasicObject {
     parent_types: [String]!
     created: DateTime
     modified: DateTime
+    created_at: DateTime
+    updated_at: DateTime
     name: String!
     description: String
     trigger_type: TriggerType! # live or digest
@@ -63,7 +65,7 @@ type Trigger implements InternalObject & BasicObject {
     notifiers: [Notifier!]
     trigger_ids: [String]
     triggers: [Trigger]
-    recipients: [Member]
+    recipients: [Member!]
     period: DigestPeriod
     trigger_time: String
     isDirectAdministrator: Boolean
@@ -160,6 +162,7 @@ type Query {
         includeAuthorities: Boolean
         search: String
     ): TriggerConnection @auth
+    triggersKnowledgeCount(filters: FilterGroup, includeAuthorities: Boolean, search: String): Int @auth
     # Alerts
     triggerActivity(id: String!): Trigger @auth(for: [SETTINGS])
     triggersActivity(

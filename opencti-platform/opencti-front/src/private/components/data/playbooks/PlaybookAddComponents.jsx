@@ -368,7 +368,6 @@ const PlaybookAddComponentsContent = ({
                 key={component.id}
                 divider={true}
                 button={true}
-                clases={{ root: classes.item }}
                 onClick={() => setComponentId(component.id)}
               >
                 <ListItemIcon>

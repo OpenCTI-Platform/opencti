@@ -100,6 +100,8 @@ export const addTrigger = async (
     trigger_type: type,
     created: now(),
     updated: now(),
+    created_at: now(),
+    updated_at: now(),
     trigger_scope: 'knowledge',
     instance_trigger: type === TriggerTypeValue.Digest ? false : (triggerInput as TriggerLiveAddInput).instance_trigger,
     authorized_members: authorizedMembers,
@@ -139,6 +141,8 @@ export const addTriggerActivity = async (
   const defaultOpts = {
     created: now(),
     updated: now(),
+    created_at: now(),
+    updated_at: now(),
     trigger_scope: 'activity',
     trigger_type: type,
     authorized_members: [...(triggerInput.recipients ?? []).map((r) => ({ id: r, access_right: MEMBER_ACCESS_RIGHT_VIEW }))],
@@ -177,7 +181,6 @@ export const getTriggerRecipients = async (context: AuthContext, user: AuthUser,
 
 export const triggerEdit = async (context: AuthContext, user: AuthUser, triggerId: string, input: InternalEditInput[]) => {
   const trigger = await triggerGet(context, user, triggerId);
-
   if (trigger.trigger_type === TriggerTypeValue.Live) {
     const filtersItem = input.find((item) => item.key === 'filters');
     if (filtersItem?.value[0]) {
@@ -261,6 +264,12 @@ export const triggersKnowledgeFind = (context: AuthContext, user: AuthUser, opts
   return listEntitiesPaginated<BasicStoreEntityTrigger>(context, user, [ENTITY_TYPE_TRIGGER], queryArgs);
 };
 
+export const triggersKnowledgeCount = async (context: AuthContext, opts: QueryTriggersKnowledgeArgs) => {
+  const finalFilter = addFilter(opts.filters, 'trigger_scope', 'knowledge');
+  const queryArgs = { ...opts, filters: finalFilter, types: [ENTITY_TYPE_TRIGGER] };
+  return elCount(context, SYSTEM_USER, READ_INDEX_INTERNAL_OBJECTS, queryArgs);
+};
+
 export const triggersActivityFind = (context: AuthContext, user: AuthUser, opts: QueryTriggersActivityArgs) => {
   const finalFilter = addFilter(opts.filters, 'trigger_scope', 'activity');
   const queryArgs = { ...opts, includeAuthorities: true, filters: finalFilter };
@@ -285,8 +294,8 @@ export const myUnreadNotificationsCount = async (context: AuthContext, user: Aut
     filters: [{ key: 'user_id', values: [userId ?? user.id] }, { key: 'is_read', values: [false] }],
     filterGroups: [],
   };
-  const queryArgs = { filters: queryFilters };
-  return elCount(context, user, READ_INDEX_INTERNAL_OBJECTS, { ...queryArgs, types: [ENTITY_TYPE_NOTIFICATION] });
+  const queryArgs = { filters: queryFilters, types: [ENTITY_TYPE_NOTIFICATION] };
+  return elCount(context, user, READ_INDEX_INTERNAL_OBJECTS, queryArgs);
 };
 export const notificationDelete = async (context: AuthContext, user: AuthUser, notificationId: string) => {
   const notification = await notificationGet(context, user, notificationId);

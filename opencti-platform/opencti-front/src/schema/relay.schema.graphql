@@ -7207,6 +7207,7 @@ type Query {
   narratives(first: Int, after: ID, orderBy: NarrativesOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): NarrativeConnection
   triggerKnowledge(id: String!): Trigger
   triggersKnowledge(first: Int, after: ID, orderBy: TriggersOrdering, orderMode: OrderingMode, filters: FilterGroup, includeAuthorities: Boolean, search: String): TriggerConnection
+  triggersKnowledgeCount(filters: FilterGroup, includeAuthorities: Boolean, search: String): Int
   triggerActivity(id: String!): Trigger
   triggersActivity(first: Int, after: ID, orderBy: TriggersOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): TriggerConnection
   notification(id: String!): Notification
@@ -8582,6 +8583,8 @@ type Trigger implements InternalObject & BasicObject {
   parent_types: [String]!
   created: DateTime
   modified: DateTime
+  created_at: DateTime
+  updated_at: DateTime
   name: String!
   description: String
   trigger_type: TriggerType!
@@ -8590,7 +8593,7 @@ type Trigger implements InternalObject & BasicObject {
   notifiers: [Notifier!]
   trigger_ids: [String]
   triggers: [Trigger]
-  recipients: [Member]
+  recipients: [Member!]
   period: DigestPeriod
   trigger_time: String
   isDirectAdministrator: Boolean

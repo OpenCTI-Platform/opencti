@@ -25,6 +25,7 @@ import MenuItem from '@mui/material/MenuItem';
 import * as R from 'ramda';
 import * as Yup from 'yup';
 import makeStyles from '@mui/styles/makeStyles';
+import StixCoreObjectSubscribers from '../stix_core_objects/StixCoreObjectSubscribers';
 import StixCoreObjectFileExport from '../stix_core_objects/StixCoreObjectFileExport';
 import StixCoreObjectContainer from '../stix_core_objects/StixCoreObjectContainer';
 import { commitMutation, MESSAGING$ } from '../../../../relay/environment';
@@ -75,6 +76,7 @@ const useStyles = makeStyles(() => ({
   actions: {
     margin: '-6px 0 0 0',
     float: 'right',
+    display: 'flex',
   },
 }));
 
@@ -377,7 +379,7 @@ const StixDomainObjectHeader = (props) => {
                     label={truncate(label, 40)}
                   />
                 </Tooltip>
-                  }
+              }
             >
               <Tooltip title={label}>
                 <Chip
@@ -476,6 +478,9 @@ const StixDomainObjectHeader = (props) => {
         </Security>
       )}
       <div className={classes.actions}>
+        {enableQuickSubscription && (
+          <StixCoreObjectSubscribers elementId={stixDomainObject.id} />
+        )}
         <ToggleButtonGroup size="small" color="secondary" exclusive={true}>
           {disableSharing !== true && (
             <StixCoreObjectSharing

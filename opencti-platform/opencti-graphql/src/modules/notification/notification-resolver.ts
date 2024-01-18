@@ -21,6 +21,7 @@ import {
   triggerGet,
   triggersActivityFind,
   triggersGet,
+  triggersKnowledgeCount,
   triggersKnowledgeFind,
 } from './notification-domain';
 import { ENTITY_TYPE_NOTIFICATION, NOTIFICATION_NUMBER } from './notification-types';
@@ -30,6 +31,7 @@ const notificationResolvers: Resolvers = {
     // Knowledge trigger
     triggerKnowledge: (_, { id }, context) => triggerGet(context, context.user, id),
     triggersKnowledge: (_, args, context) => triggersKnowledgeFind(context, context.user, args),
+    triggersKnowledgeCount: (_, args, context) => triggersKnowledgeCount(context, args),
     // Activity trigger
     triggerActivity: (_, { id }, context) => triggerGet(context, context.user, id),
     triggersActivity: (_, args, context) => triggersActivityFind(context, context.user, args),

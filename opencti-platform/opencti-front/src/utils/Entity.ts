@@ -88,6 +88,8 @@ export const resolveLink = (type = 'unknown'): string | null => {
     case 'Creator':
     case 'Assignee':
       return '/dashboard/settings/accesses/users';
+    case 'Group':
+      return '/dashboard/settings/accesses/groups';
     case 'Stix-Cyber-Observable':
     case 'Autonomous-System':
     case 'Directory':
@@ -126,16 +128,16 @@ export const resolveLink = (type = 'unknown'): string | null => {
 export const computeLink = (node: {
   id: string;
   entity_type: string;
-  relationship_type: string;
-  from: { entity_type: string; id: string };
+  relationship_type?: string;
+  from?: { entity_type: string; id: string };
 }): string | null => {
   if (!node) return null;
   let redirectLink;
-  if (node.relationship_type === 'stix-sighting-relationship') {
+  if (node.relationship_type === 'stix-sighting-relationship' && node.from) {
     redirectLink = `${resolveLink(node.from.entity_type)}/${
       node.from.id
     }/knowledge/sightings/${node.id}`;
-  } else if (node.relationship_type) {
+  } else if (node.relationship_type && node.from) {
     redirectLink = `${resolveLink(node.from.entity_type)}/${
       node.from.id
     }/knowledge/relations/${node.id}`;

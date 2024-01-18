@@ -17143,6 +17143,7 @@ export type Query = {
   triggerKnowledge?: Maybe<Trigger>;
   triggersActivity?: Maybe<TriggerConnection>;
   triggersKnowledge?: Maybe<TriggerConnection>;
+  triggersKnowledgeCount?: Maybe<Scalars['Int']['output']>;
   user?: Maybe<User>;
   users?: Maybe<UserConnection>;
   vocabularies?: Maybe<VocabularyConnection>;
@@ -19353,6 +19354,13 @@ export type QueryTriggersKnowledgeArgs = {
   includeAuthorities?: InputMaybe<Scalars['Boolean']['input']>;
   orderBy?: InputMaybe<TriggersOrdering>;
   orderMode?: InputMaybe<OrderingMode>;
+  search?: InputMaybe<Scalars['String']['input']>;
+};
+
+
+export type QueryTriggersKnowledgeCountArgs = {
+  filters?: InputMaybe<FilterGroup>;
+  includeAuthorities?: InputMaybe<Scalars['Boolean']['input']>;
   search?: InputMaybe<Scalars['String']['input']>;
 };
 
@@ -24991,6 +24999,7 @@ export enum ToolsOrdering {
 export type Trigger = BasicObject & InternalObject & {
   __typename?: 'Trigger';
   created?: Maybe<Scalars['DateTime']['output']>;
+  created_at?: Maybe<Scalars['DateTime']['output']>;
   currentUserAccessRight?: Maybe<Scalars['String']['output']>;
   description?: Maybe<Scalars['String']['output']>;
   entity_type: Scalars['String']['output'];
@@ -25004,12 +25013,13 @@ export type Trigger = BasicObject & InternalObject & {
   notifiers?: Maybe<Array<Notifier>>;
   parent_types: Array<Maybe<Scalars['String']['output']>>;
   period?: Maybe<DigestPeriod>;
-  recipients?: Maybe<Array<Maybe<Member>>>;
+  recipients?: Maybe<Array<Member>>;
   standard_id: Scalars['String']['output'];
   trigger_ids?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
   trigger_time?: Maybe<Scalars['String']['output']>;
   trigger_type: TriggerType;
   triggers?: Maybe<Array<Maybe<Trigger>>>;
+  updated_at?: Maybe<Scalars['DateTime']['output']>;
 };
 
 export type TriggerActivityDigestAddInput = {
@@ -33993,6 +34003,7 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   triggerKnowledge?: Resolver<Maybe<ResolversTypes['Trigger']>, ParentType, ContextType, RequireFields<QueryTriggerKnowledgeArgs, 'id'>>;
   triggersActivity?: Resolver<Maybe<ResolversTypes['TriggerConnection']>, ParentType, ContextType, Partial<QueryTriggersActivityArgs>>;
   triggersKnowledge?: Resolver<Maybe<ResolversTypes['TriggerConnection']>, ParentType, ContextType, Partial<QueryTriggersKnowledgeArgs>>;
+  triggersKnowledgeCount?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType, Partial<QueryTriggersKnowledgeCountArgs>>;
   user?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType, RequireFields<QueryUserArgs, 'id'>>;
   users?: Resolver<Maybe<ResolversTypes['UserConnection']>, ParentType, ContextType, Partial<QueryUsersArgs>>;
   vocabularies?: Resolver<Maybe<ResolversTypes['VocabularyConnection']>, ParentType, ContextType, Partial<QueryVocabulariesArgs>>;
@@ -35993,6 +36004,7 @@ export type ToolEditMutationsResolvers<ContextType = any, ParentType extends Res
 
 export type TriggerResolvers<ContextType = any, ParentType extends ResolversParentTypes['Trigger'] = ResolversParentTypes['Trigger']> = ResolversObject<{
   created?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
+  created_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   currentUserAccessRight?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
@@ -36006,12 +36018,13 @@ export type TriggerResolvers<ContextType = any, ParentType extends ResolversPare
   notifiers?: Resolver<Maybe<Array<ResolversTypes['Notifier']>>, ParentType, ContextType>;
   parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
   period?: Resolver<Maybe<ResolversTypes['DigestPeriod']>, ParentType, ContextType>;
-  recipients?: Resolver<Maybe<Array<Maybe<ResolversTypes['Member']>>>, ParentType, ContextType>;
+  recipients?: Resolver<Maybe<Array<ResolversTypes['Member']>>, ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   trigger_ids?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
   trigger_time?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   trigger_type?: Resolver<ResolversTypes['TriggerType'], ParentType, ContextType>;
   triggers?: Resolver<Maybe<Array<Maybe<ResolversTypes['Trigger']>>>, ParentType, ContextType>;
+  updated_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
