@@ -4486,7 +4486,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/express@npm:*":
+"@types/express@npm:*, @types/express@npm:4.17.21":
   version: 4.17.21
   resolution: "@types/express@npm:4.17.21"
   dependencies:
@@ -4507,18 +4507,6 @@ __metadata:
     "@types/qs": "*"
     "@types/serve-static": "*"
   checksum: 15c1af46d02de834e4a225eccaa9d85c0370fdbb3ed4e1bc2d323d24872309961542b993ae236335aeb3e278630224a6ea002078d39e651d78a3b0356b1eaa79
-  languageName: node
-  linkType: hard
-
-"@types/express@npm:4.17.19":
-  version: 4.17.19
-  resolution: "@types/express@npm:4.17.19"
-  dependencies:
-    "@types/body-parser": "*"
-    "@types/express-serve-static-core": ^4.17.33
-    "@types/qs": "*"
-    "@types/serve-static": "*"
-  checksum: 3d39d0655eb0825d96fec100985a38737767ddd6da2dbda1e330a3adf36c98a9b7cd8d9539db32876d1fbb47a09343cad7b38c30c8dd7c291271fcb9b85cb21b
   languageName: node
   linkType: hard
 
@@ -10926,7 +10914,7 @@ __metadata:
     "@types/bluebird": 3.5.42
     "@types/dot-object": 2.1.6
     "@types/ejs": 3.1.5
-    "@types/express": 4.17.19
+    "@types/express": 4.17.21
     "@types/graphql-upload": 16.0.7
     "@types/nconf": 0.10.6
     "@types/ramda": 0.29.9
