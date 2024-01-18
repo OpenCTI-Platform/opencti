@@ -1199,6 +1199,7 @@
   "Pattern": "Motif",
   "Pattern type": "Type de motif",
   "Indicator pattern": "Motif de l'indicateur",
+  "pattern": "Motif de l'indicateur",
   "Valid from": "Valide depuis",
   "Valid until": "Valide jusqu'à",
   "Score": "Score",

@@ -53,6 +53,7 @@ export const textFilters = [
   'name',
   'description',
   'value',
+  'pattern',
 ];
 
 // filters that can have 'eq' or 'not_eq' operator
