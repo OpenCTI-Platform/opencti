@@ -54,7 +54,7 @@ const useStyles = makeStyles((theme) => ({
     marginLeft: theme.spacing(2),
   },
   config: {
-    padding: '10px 20px 20px 20px',
+    padding: '10px 0px 20px 0px',
   },
   container: {
     marginTop: 40,
@@ -424,7 +424,7 @@ const PlaybookAddComponentsContent = ({
             values,
             setFieldValue,
           }) => (
-            <Form style={{ margin: '20px 0 20px 0' }}>
+            <Form style={{ marginTop: '20px 0 20px 0', width: '100%' }}>
               <Field
                 component={TextField}
                 variant="standard"
