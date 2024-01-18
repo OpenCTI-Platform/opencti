@@ -1932,6 +1932,7 @@
   "HISTORY_MANAGER": "ヒストリーマネージャ",
   "INGESTION_MANAGER": "インジェストマネージャー",
   "FILE_INDEX_MANAGER": "ファイル索引マネージャー",
+  "INDICATOR_DECAY_MANAGER": "インジケーター・ディケイ・マネージャー",
   "text/markdown": "MD",
   "application/json": "JSON",
   "text/csv": "CSV",
