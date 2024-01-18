@@ -27,7 +27,7 @@ const validateInput = async (context: AuthContext, user: AuthUser, inputs: Recor
 const inlineEntityTypes = [ENTITY_TYPE_EXTERNAL_REFERENCE];
 
 export const bundleProcess = async (context: AuthContext, user: AuthUser, content: Buffer | string, mapper: BasicStoreEntityCsvMapper, entity?: BasicStoreBase) => {
-  await validate(context, mapper);
+  await validate(context, user, mapper);
   const sanitizedMapper = sanitized(mapper);
 
   const bundleBuilder = new BundleBuilder();
@@ -44,7 +44,7 @@ export const bundleProcess = async (context: AuthContext, user: AuthUser, conten
         skipLine = false;
       } else if (!isEmptyLine) {
         // Compute input by representation
-        const inputs = mappingProcess(sanitizedMapper, record);
+        const inputs = await mappingProcess(context, user, sanitizedMapper, record);
         // Remove inline elements
         const withoutInlineInputs = inputs.filter((input) => !inlineEntityTypes.includes(input.entity_type as string));
         // Validate elements

@@ -102,7 +102,6 @@ import {
   ID_INTERNAL,
   ID_STANDARD,
   IDS_STIX,
-  INPUT_AUTHORIZED_MEMBERS,
   INPUT_EXTERNAL_REFS,
   INPUT_GRANTED_REFS,
   INPUT_LABELS,
@@ -164,7 +163,6 @@ import {
   isUserCanAccessStoreElement,
   isUserHasCapability,
   KNOWLEDGE_ORGANIZATION_RESTRICT,
-  MEMBER_ACCESS_CREATOR,
   RULE_MANAGER_USER,
   SYSTEM_USER,
   userFilterStoreElements,
@@ -191,16 +189,16 @@ import { ACTION_TYPE_SHARE, ACTION_TYPE_UNSHARE, createListTask } from '../domai
 import { ENTITY_TYPE_VOCABULARY, vocabularyDefinitions } from '../modules/vocabulary/vocabulary-types';
 import { getVocabulariesCategories, getVocabularyCategoryForField, isEntityFieldAnOpenVocabulary, updateElasticVocabularyValue } from '../modules/vocabulary/vocabulary-utils';
 import { depsKeysRegister, isDateAttribute, isMultipleAttribute, isNumericAttribute, isObjectAttribute, schemaAttributesDefinition } from '../schema/schema-attributes';
-import { getAttributesConfiguration, getDefaultValues, getEntitySettingFromCache } from '../modules/entitySetting/entitySetting-utils';
+import { fillDefaultValues, getAttributesConfiguration, getEntitySettingFromCache } from '../modules/entitySetting/entitySetting-utils';
 import { schemaRelationsRefDefinition } from '../schema/schema-relationsRef';
 import { validateInputCreation, validateInputUpdate } from '../schema/schema-validator';
-import { getMandatoryAttributesForSetting } from '../domain/attribute';
 import { telemetry } from '../config/tracing';
 import { cleanMarkings, handleMarkingOperations } from '../utils/markingDefinition-utils';
 import { generateCreateMessage, generateUpdateMessage } from './generate-message';
 import { confidence } from '../schema/attribute-definition';
 import { ENTITY_TYPE_INDICATOR } from '../modules/indicator/indicator-types';
 import { FilterOperator } from '../generated/graphql';
+import { getMandatoryAttributesForSetting } from '../modules/entitySetting/entitySetting-attributeUtils';
 
 // region global variables
 const MAX_BATCH_SIZE = 300;
@@ -2209,43 +2207,6 @@ const upsertRelationRule = async (context, instance, input, opts = {}) => {
   return await patchAttribute(context, RULE_MANAGER_USER, instance.id, instance.entity_type, patch, opts);
 };
 // endregion
-
-export const fillDefaultValues = (user, input, entitySetting) => {
-  const attributesConfiguration = getAttributesConfiguration(entitySetting);
-  if (!attributesConfiguration) {
-    return input;
-  }
-  const filledValues = new Map();
-  attributesConfiguration.filter((attr) => attr.default_values)
-    .filter((attr) => INPUT_MARKINGS !== attr.name)
-    .forEach((attr) => {
-      if (input[attr.name] === undefined || input[attr.name] === null) { // empty is a valid value
-        const defaultValue = getDefaultValues(attr, schemaAttributesDefinition.isMultipleAttribute(entitySetting.target_type, attr.name));
-
-        if (attr.name === INPUT_AUTHORIZED_MEMBERS && defaultValue) {
-          const defaultAuthorizedMembers = defaultValue.map((v) => JSON.parse(v));
-          // Replace dynamic creator rule with the id of the user making the query.
-          const creatorRule = defaultAuthorizedMembers.find((v) => v.id === MEMBER_ACCESS_CREATOR);
-          if (creatorRule) {
-            creatorRule.id = user.id;
-          }
-          filledValues.set(attr.name, defaultAuthorizedMembers);
-        } else {
-          filledValues.set(attr.name, defaultValue);
-        }
-      }
-    });
-
-  // Marking management
-  if (input[INPUT_MARKINGS] === undefined || input[INPUT_MARKINGS] === null) { // empty is a valid value
-    const defaultMarkings = user.default_marking ?? [];
-    const globalDefaultMarking = (defaultMarkings.find((entry) => entry.entity_type === 'GLOBAL')?.values ?? []).map((m) => m.id);
-    if (!isEmptyField(globalDefaultMarking)) {
-      filledValues.set(INPUT_MARKINGS, globalDefaultMarking);
-    }
-  }
-  return { ...input, ...Object.fromEntries(filledValues) };
-};
 
 const validateEntityAndRelationCreation = async (context, user, input, type, entitySetting, opts = {}) => {
   if (opts.bypassValidation !== true) { // Allow creation directly from the back-end

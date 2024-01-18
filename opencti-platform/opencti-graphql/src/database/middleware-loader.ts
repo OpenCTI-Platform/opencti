@@ -353,6 +353,22 @@ export const internalFindByIds = async <T extends BasicStoreObject>(
   return await elFindByIds(context, user, ids, args) as unknown as T[];
 };
 
+// Similar to internalFindByIds but forcing toMap: true in type.
+// To avoid types mismatch with internalFindByIds that cast the result into an array.
+export const internalFindByIdsMapped = async <T extends BasicStoreObject>(
+  context: AuthContext,
+  user: AuthUser,
+  ids: string[],
+  args?: {
+    type?: string | string[],
+    baseData?: boolean,
+    mapWithAllIds?: boolean,
+    baseFields?: string[]
+  } & Record<string, string | string[] | boolean>
+) => {
+  return await elFindByIds(context, user, ids, { ...(args ?? {}), toMap: true }) as unknown as Record<string, T>;
+};
+
 export const internalLoadById = async <T extends BasicStoreBase>(
   context: AuthContext,
   user: AuthUser,
