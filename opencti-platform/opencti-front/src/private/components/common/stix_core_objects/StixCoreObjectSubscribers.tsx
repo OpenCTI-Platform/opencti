@@ -1,6 +1,5 @@
 import React, { FunctionComponent, useState } from 'react';
 import { graphql } from 'react-relay';
-import makeStyles from '@mui/styles/makeStyles';
 import Button from '@mui/material/Button';
 import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
@@ -10,7 +9,6 @@ import { Link } from 'react-router-dom';
 import { StixCoreObjectSubscribersCountQuery$data } from './__generated__/StixCoreObjectSubscribersCountQuery.graphql';
 import { QueryRenderer } from '../../../../relay/environment';
 import { useFormatter } from '../../../../components/i18n';
-import type { Theme } from '../../../../components/Theme';
 import useGranted, { SETTINGS_SETACCESSES } from '../../../../utils/hooks/useGranted';
 import ItemIcon from '../../../../components/ItemIcon';
 import Drawer, { DrawerVariant } from '../drawer/Drawer';
