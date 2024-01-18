@@ -22,6 +22,7 @@ export const findAll = async (context: AuthContext, user: AuthUser, opts: Entity
 };
 
 export const batchParticipants = async (context: AuthContext, user: AuthUser, caseIds: string[]) => {
+  console.log('TEST PRINT FOR COVERAGE');
   return batchListThroughGetTo(context, user, caseIds, RELATION_OBJECT_PARTICIPANT, ENTITY_TYPE_USER);
 };
 
