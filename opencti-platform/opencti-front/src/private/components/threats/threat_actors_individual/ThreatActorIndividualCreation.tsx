@@ -35,7 +35,6 @@ import {
   ThreatActorIndividualCreationMutation$variables,
 } from './__generated__/ThreatActorIndividualCreationMutation.graphql';
 import { ThreatActorsIndividualCardsPaginationQuery$variables } from './__generated__/ThreatActorsIndividualCardsPaginationQuery.graphql';
-import DatePickerField from '../../../../components/DatePickerField';
 import { HeightFieldAdd } from '../../common/form/HeightField';
 import { WeightFieldAdd } from '../../common/form/WeightField';
 import CustomFileUploader from '../../common/files/CustomFileUploader';
@@ -394,21 +393,23 @@ ThreatActorIndividualFormProps
               <Field
                 component={DateTimePickerField}
                 name="first_seen"
-                TextFieldProps={{
+                slotProps={{ textField: {
                   label: t_i18n('First seen'),
                   variant: 'standard',
                   fullWidth: true,
                   style: { marginTop: 20 },
+                },
                 }}
               />
               <Field
                 component={DateTimePickerField}
                 name="last_seen"
-                TextFieldProps={{
+                slotProps={{ textField: {
                   label: t_i18n('Last seen'),
                   variant: 'standard',
                   fullWidth: true,
                   style: { marginTop: 20 },
+                },
                 }}
               />
               <OpenVocabField
@@ -488,14 +489,15 @@ ThreatActorIndividualFormProps
               />
               <Field
                 id="DateOfBirth"
-                component={DatePickerField}
+                component={DateTimePickerField}
                 name="date_of_birth"
                 onSubmit={setFieldValue}
-                TextFieldProps={{
+                slotProps={{ textField: {
                   label: t_i18n('Date of Birth'),
                   variant: 'standard',
                   fullWidth: true,
                   style: { marginTop: 20 },
+                },
                 }}
               />
               <OpenVocabField

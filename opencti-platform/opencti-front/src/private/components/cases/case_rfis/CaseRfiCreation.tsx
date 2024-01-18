@@ -195,10 +195,11 @@ export const CaseRfiCreationForm: FunctionComponent<CaseRfiFormProps> = ({
           <Field
             component={DateTimePickerField}
             name="created"
-            TextFieldProps={{
+            slotProps={{ textField: {
               label: t_i18n('Request For Information Date'),
               variant: 'standard',
               fullWidth: true,
+            },
             }}
           />
           <OpenVocabField

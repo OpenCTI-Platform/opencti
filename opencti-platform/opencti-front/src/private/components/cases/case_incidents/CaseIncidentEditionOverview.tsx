@@ -296,13 +296,14 @@ const CaseIncidentEditionOverview: FunctionComponent<CaseIncidentEditionOverview
             name="created"
             onFocus={editor.changeFocus}
             onSubmit={editor.changeField}
-            TextFieldProps={{
+            slotProps={{ textField: {
               label: t_i18n('Incident date'),
               variant: 'standard',
               fullWidth: true,
               helperText: (
-                <SubscriptionFocus context={context} fieldName="created" />
+                <SubscriptionFocus context={context} fieldName="created"/>
               ),
+            },
             }}
             containerStyle={fieldSpacingContainerStyle}
           />

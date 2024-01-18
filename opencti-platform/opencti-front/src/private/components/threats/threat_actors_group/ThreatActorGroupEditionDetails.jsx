@@ -195,7 +195,7 @@ const ThreatActorGroupEditionDetailsComponent = ({
                 name="first_seen"
                 onFocus={handleChangeFocus}
                 onSubmit={handleSubmitField}
-                TextFieldProps={{
+                slotProps={{ textField: {
                   label: t_i18n('First seen'),
                   variant: 'standard',
                   fullWidth: true,
@@ -205,6 +205,7 @@ const ThreatActorGroupEditionDetailsComponent = ({
                       fieldName="first_seen"
                     />
                   ),
+                },
                 }}
               />
               <Field
@@ -212,7 +213,7 @@ const ThreatActorGroupEditionDetailsComponent = ({
                 name="last_seen"
                 onFocus={handleChangeFocus}
                 onSubmit={handleSubmitField}
-                TextFieldProps={{
+                slotProps={{ textField: {
                   label: t_i18n('Last seen'),
                   variant: 'standard',
                   fullWidth: true,
@@ -223,6 +224,7 @@ const ThreatActorGroupEditionDetailsComponent = ({
                       fieldName="last_seen"
                     />
                   ),
+                },
                 }}
               />
               <OpenVocabField

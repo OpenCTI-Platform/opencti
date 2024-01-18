@@ -200,10 +200,12 @@ export const CaseIncidentCreationForm: FunctionComponent<IncidentFormProps> = ({
           <Field
             component={DateTimePickerField}
             name="created"
-            TextFieldProps={{
+            slotProps={{ textField: {
               label: t_i18n('Incident date'),
               variant: 'standard',
               fullWidth: true,
+              style: { marginTop: 20 },
+            },
             }}
           />
           <OpenVocabField

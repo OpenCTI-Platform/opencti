@@ -1,15 +1,11 @@
 import React, { FunctionComponent, ReactNode, useContext } from 'react';
 import { IntlProvider } from 'react-intl';
-import frLocale from 'date-fns/locale/fr';
-import esLocale from 'date-fns/locale/es';
-import enLocale from 'date-fns/locale/en-US';
-import jaLocale from 'date-fns/locale/ja';
-import cnLocale from 'date-fns/locale/zh-CN';
-import deLocale from 'date-fns/locale/de';
 import moment from 'moment';
-import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
+import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFnsV3';
 import { LocalizationProvider } from '@mui/x-date-pickers';
 import { createFragmentContainer, graphql } from 'react-relay';
+import { Locale } from 'date-fns/locale/types';
+import { enUS, fr, es, ja, zhCN, de } from 'date-fns/locale';
 import locale, { DEFAULT_LANG } from '../utils/BrowserLanguage';
 import { UserContext } from '../utils/hooks/useAuth';
 import { AppIntlProvider_settings$data } from './__generated__/AppIntlProvider_settings.graphql';
@@ -23,12 +19,12 @@ import messages_de from '../../lang/de.json';
 type PlatformLang = 'es-es' | 'fr-fr' | 'ja-jp' | 'zh-cn' | 'en-us' | 'de-de';
 
 const localeMap: Record<PlatformLang, Locale> = {
-  'en-us': enLocale,
-  'fr-fr': frLocale,
-  'es-es': esLocale,
-  'ja-jp': jaLocale,
-  'zh-cn': cnLocale,
-  'de-de': deLocale,
+  'en-us': enUS,
+  'fr-fr': fr,
+  'es-es': es,
+  'ja-jp': ja,
+  'zh-cn': zhCN,
+  'de-de': de,
 };
 
 const i18n: { messages: Record<PlatformLang, Record<string, string>> } = {

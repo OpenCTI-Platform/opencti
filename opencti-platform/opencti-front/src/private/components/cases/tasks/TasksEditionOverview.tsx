@@ -253,13 +253,14 @@ const TasksEditionOverview: FunctionComponent<TasksEditionOverviewProps> = ({
             name="due_date"
             onFocus={editor.changeFocus}
             onSubmit={editor.changeField}
-            TextFieldProps={{
+            slotProps={{ textField: {
               label: t_i18n('Due Date'),
               variant: 'standard',
               fullWidth: true,
               helperText: (
-                <SubscriptionFocus context={context} fieldName="due_date" />
+                <SubscriptionFocus context={context} fieldName="due_date"/>
               ),
+            },
             }}
             containerStyle={fieldSpacingContainerStyle}
           />

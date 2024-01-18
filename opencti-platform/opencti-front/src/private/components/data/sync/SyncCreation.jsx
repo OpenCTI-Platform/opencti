@@ -345,11 +345,12 @@ const SyncCreation = ({ paginationOptions }) => {
                 <Field
                   component={DateTimePickerField}
                   name="current_state_date"
-                  TextFieldProps={{
+                  slotProps={{ textField: {
                     label: t_i18n('Starting synchronization (empty = from start)'),
                     variant: 'standard',
                     fullWidth: true,
                     style: { marginTop: 20 },
+                  },
                   }}
                 />
                 <Field
