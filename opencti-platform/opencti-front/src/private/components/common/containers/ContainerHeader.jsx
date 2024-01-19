@@ -22,6 +22,7 @@ import Select from '@mui/material/Select';
 import MenuItem from '@mui/material/MenuItem';
 import CircularProgress from '@mui/material/CircularProgress';
 import { makeStyles } from '@mui/styles';
+import StixCoreObjectSubscribers from '../stix_core_objects/StixCoreObjectSubscribers';
 import FormAuthorizedMembersDialog from '../form/FormAuthorizedMembersDialog';
 import ExportButtons from '../../../../components/ExportButtons';
 import Security from '../../../../utils/Security';
@@ -68,6 +69,7 @@ const useStyles = makeStyles({
   actions: {
     margin: '-6px 0 0 0',
     float: 'right',
+    display: 'flex',
   },
   export: {
     margin: '-6px 0 0 0',
@@ -872,6 +874,9 @@ const ContainerHeader = (props) => {
         </div>
       )}
       <div className={classes.actions}>
+        {enableQuickSubscription && (
+          <StixCoreObjectSubscribers elementId={container.id} />
+        )}
         <ToggleButtonGroup size="small" color="secondary" exclusive={false}>
           <Security
             needs={[KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS]}

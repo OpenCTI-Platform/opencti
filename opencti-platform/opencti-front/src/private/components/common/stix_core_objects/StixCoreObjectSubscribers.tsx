@@ -6,6 +6,8 @@ import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import List from '@mui/material/List';
 import { Link } from 'react-router-dom';
+import { KeyboardArrowRightOutlined } from '@mui/icons-material';
+import makeStyles from '@mui/styles/makeStyles';
 import { StixCoreObjectSubscribersCountQuery$data } from './__generated__/StixCoreObjectSubscribersCountQuery.graphql';
 import { QueryRenderer } from '../../../../relay/environment';
 import { useFormatter } from '../../../../components/i18n';
@@ -13,12 +15,27 @@ import useGranted, { SETTINGS_SETACCESSES } from '../../../../utils/hooks/useGra
 import ItemIcon from '../../../../components/ItemIcon';
 import Drawer, { DrawerVariant } from '../drawer/Drawer';
 import { computeLink } from '../../../../utils/Entity';
+import { Theme } from '../../../../components/Theme';
 
 // region types
 interface ContainerHeaderSharedProps {
   elementId: string;
 }
 // endregion
+
+const useStyles = makeStyles<Theme>((theme) => ({
+  item: {
+    paddingLeft: 10,
+    height: 50,
+  },
+  itemIcon: {
+    color: theme.palette.primary.main,
+  },
+  goIcon: {
+    position: 'absolute',
+    right: -10,
+  },
+}));
 
 const stixCoreObjectSubscribersCountQuery = graphql`
   query StixCoreObjectSubscribersCountQuery($filters: FilterGroup, $includeAuthorities: Boolean, $search: String) {
@@ -40,6 +57,7 @@ const stixCoreObjectSubscribersCountQuery = graphql`
 const StixCoreObjectSubscribers: FunctionComponent<ContainerHeaderSharedProps> = ({
   elementId,
 }) => {
+  const classes = useStyles();
   const { t_i18n } = useFormatter();
   const [displaySubscribers, setDisplaySubscribers] = useState(false);
   const hasSetAccess = useGranted([SETTINGS_SETACCESSES]);
@@ -73,19 +91,20 @@ const StixCoreObjectSubscribers: FunctionComponent<ContainerHeaderSharedProps> =
                 <>
                   {triggerNode?.node?.recipients?.map((recipient) => (
                     <ListItem
+                      classes={{ root: classes.item }}
                       key={recipient.id}
                       divider={true}
                       button={true}
                       component={Link}
                       to={`${computeLink(recipient)}`}
                     >
-                      <ListItemIcon>
+                      <ListItemIcon classes={{ root: classes.itemIcon }}>
                         <ItemIcon type={recipient.entity_type}/>
                       </ListItemIcon>
-                      <ListItemText
-                        primary={recipient.name}
-                        secondary={recipient.entity_type}
-                      />
+                      <ListItemText primary={recipient.name} />
+                      <ListItemIcon classes={{ root: classes.goIcon }}>
+                        <KeyboardArrowRightOutlined/>
+                      </ListItemIcon>
                     </ListItem>
                   ))}
                 </>
