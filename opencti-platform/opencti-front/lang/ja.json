@@ -1187,6 +1187,7 @@
   "Pattern": "パターン",
   "Pattern type": "パターンタイプ",
   "Indicator pattern": "インジケータパターン",
+  "pattern": "インジケータパターン",
   "Valid from": "有効期間(開始)",
   "Valid until": "有効期間(終了)",
   "Score": "スコア",

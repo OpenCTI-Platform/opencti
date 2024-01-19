@@ -1159,6 +1159,7 @@
   "Pattern": "模式",
   "Pattern type": "模式类型",
   "Indicator pattern": "攻击指标模式",
+  "pattern": "攻击指标模式",
   "Valid from": "有效期从",
   "Valid until": "有效期至",
   "Score": "分数",
