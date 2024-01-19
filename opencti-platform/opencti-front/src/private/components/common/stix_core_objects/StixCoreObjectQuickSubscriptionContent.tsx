@@ -457,7 +457,7 @@ StixCoreObjectQuickSubscriptionContentProps
     const otherInstanceTriggersToDisplay = sortedTriggersToDisplay.slice(1); // the other instance triggers
     return (
       <Drawer
-        title={t_i18n('Update instance triggers')}
+        title={t_i18n('Update subscription')}
         open={open}
         onClose={handleClose}
       >
@@ -509,8 +509,8 @@ StixCoreObjectQuickSubscriptionContentProps
     );
   };
   return (
-    <div>
-      <Tooltip title={t_i18n('Instance trigger quick subscription')}>
+    <>
+      <Tooltip title={t_i18n('Subscribe to updates (modifications and new relations)')}>
         <ToggleButton
           onClick={triggerUpdate ? handleOpen : createInstanceTrigger}
           value="quick-subscription"
@@ -524,7 +524,7 @@ StixCoreObjectQuickSubscriptionContentProps
         </ToggleButton>
       </Tooltip>
       {triggerUpdate && updateInstanceTrigger()}
-    </div>
+    </>
   );
 };
 

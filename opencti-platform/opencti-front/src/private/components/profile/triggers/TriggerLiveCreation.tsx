@@ -1,16 +1,13 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import { Close } from '@mui/icons-material';
 import Button from '@mui/material/Button';
 import Checkbox from '@mui/material/Checkbox';
 import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 import DialogTitle from '@mui/material/DialogTitle';
-import Drawer from '@mui/material/Drawer';
-import IconButton from '@mui/material/IconButton';
 import ListItemText from '@mui/material/ListItemText';
 import MenuItem from '@mui/material/MenuItem';
-import Typography from '@mui/material/Typography';
+import Drawer, { DrawerVariant } from '@components/common/drawer/Drawer';
 import makeStyles from '@mui/styles/makeStyles';
 import { Field, Form, Formik } from 'formik';
 import { FormikConfig, FormikHelpers } from 'formik/dist/types';
@@ -46,16 +43,6 @@ import { TriggersLinesPaginationQuery$variables } from './__generated__/Triggers
 import useFiltersState from '../../../../utils/filters/useFiltersState';
 
 const useStyles = makeStyles<Theme>((theme) => ({
-  drawerPaper: {
-    minHeight: '100vh',
-    width: '50%',
-    position: 'fixed',
-    transition: theme.transitions.create('width', {
-      easing: theme.transitions.easing.sharp,
-      duration: theme.transitions.duration.enteringScreen,
-    }),
-    padding: 0,
-  },
   dialogActions: {
     padding: '0 17px 20px 0',
   },
@@ -65,19 +52,6 @@ const useStyles = makeStyles<Theme>((theme) => ({
   },
   button: {
     marginLeft: theme.spacing(2),
-  },
-  header: {
-    backgroundColor: theme.palette.background.nav,
-    padding: '20px 20px 20px 60px',
-  },
-  closeButton: {
-    position: 'absolute',
-    top: 12,
-    left: 5,
-    color: 'inherit',
-  },
-  container: {
-    padding: '10px 20px 20px 20px',
   },
 }));
 
@@ -102,7 +76,7 @@ const liveTriggerValidation = (t: (message: string) => string) => Yup.object().s
   notifiers: Yup.array().nullable(),
 });
 
-export const instanceTriggerDescription = 'An instance trigger on an entity X notifies the following events: update/deletion of X, creation/deletion of a relationship from/to X, creation/deletion of an entity that has X in its refs (for instance contains X, is shared with X, is created by X...), adding/removing X in the ref of an entity.';
+export const instanceTriggerDescription = 'When subscribing to an object, it notifies you about modifications of this object, containers (reports, groupings, etc.) about this object as well as creation and deletion of relationships related to this object.';
 
 interface TriggerLiveAddInput {
   name: string;
@@ -240,15 +214,6 @@ const TriggerLiveCreation: FunctionComponent<TriggerLiveCreationProps> = ({
     return (
       <>
         <Field
-          component={SwitchField}
-          type="checkbox"
-          name="instance_trigger"
-          label={t_i18n('Instance trigger')}
-          tooltip={instanceTriggerDescription}
-          containerstyle={{ marginTop: 20 }}
-          onChange={() => onChangeInstanceTrigger(setFieldValue)}
-        />
-        <Field
           component={AutocompleteField}
           name="event_types"
           style={fieldSpacingContainerStyle}
@@ -275,10 +240,19 @@ const TriggerLiveCreation: FunctionComponent<TriggerLiveCreationProps> = ({
           )}
         />
         <NotifierField name="notifiers" onChange={setFieldValue} />
+        <Field
+          component={SwitchField}
+          type="checkbox"
+          name="instance_trigger"
+          label={t_i18n('Subscription to specific object(s)')}
+          tooltip={instanceTriggerDescription}
+          containerstyle={{ marginTop: 20 }}
+          onChange={() => onChangeInstanceTrigger(setFieldValue)}
+        />
         {instance_trigger ? (
           <div style={fieldSpacingContainerStyle}>
             <FilterAutocomplete
-              filterKey={'connectedToId'}
+              filterKey='connectedToId'
               searchContext={{ entityTypes: ['Stix-Core-Object'] }}
               defaultHandleAddFilter={handleAddFilter}
               inputValues={instanceFilters}
@@ -286,36 +260,40 @@ const TriggerLiveCreation: FunctionComponent<TriggerLiveCreationProps> = ({
               openOnFocus={true}
             />
           </div>
-        ) : (<Box sx={{ paddingTop: 4,
-          display: 'flex',
-          gap: 1 }}
-             >
-          <Filters
-            availableFilterKeys={[
-              'entity_type',
-              'workflow_id',
-              'objectAssignee',
-              'objects',
-              'objectMarking',
-              'objectLabel',
-              'creator_id',
-              'createdBy',
-              'priority',
-              'severity',
-              'x_opencti_score',
-              'x_opencti_detection',
-              'revoked',
-              'confidence',
-              'indicator_types',
-              'pattern_type',
-              'fromId',
-              'toId',
-              'fromTypes',
-              'toTypes',
-            ]}
-            helpers={helpers}
-          />
-        </Box>
+        ) : (
+          <Box
+            sx={{
+              display: 'flex',
+              gap: 1,
+              marginTop: '20px',
+            }}
+          >
+            <Filters
+              availableFilterKeys={[
+                'entity_type',
+                'workflow_id',
+                'objectAssignee',
+                'objects',
+                'objectMarking',
+                'objectLabel',
+                'creator_id',
+                'createdBy',
+                'priority',
+                'severity',
+                'x_opencti_score',
+                'x_opencti_detection',
+                'revoked',
+                'confidence',
+                'indicator_types',
+                'pattern_type',
+                'fromId',
+                'toId',
+                'fromTypes',
+                'toTypes',
+              ]}
+              helpers={helpers}
+            />
+          </Box>
         )}
       </>
     );
@@ -366,32 +344,17 @@ const TriggerLiveCreation: FunctionComponent<TriggerLiveCreationProps> = ({
 
   const renderClassic = () => (
     <Drawer
-      disableRestoreFocus={true}
+      title={t_i18n('Create a live trigger')}
+      variant={DrawerVariant.create}
       open={open}
-      anchor="right"
-      elevation={1}
-      sx={{ zIndex: 1202 }}
-      classes={{ paper: classes.drawerPaper }}
       onClose={onReset}
     >
-      <div className={classes.header}>
-        <IconButton
-          aria-label="Close"
-          className={classes.closeButton}
-          onClick={onReset}
-          size="large"
-          color="primary"
-        >
-          <Close fontSize="small" color="primary" />
-        </IconButton>
-        <Typography variant="h6">{t_i18n('Create a live trigger')}</Typography>
-      </div>
-      <div className={classes.container}>
+      {({ onClose }) => (
         <Formik<TriggerLiveAddInput>
           initialValues={liveInitialValues}
           validationSchema={liveTriggerValidation(t_i18n)}
           onSubmit={onLiveSubmit}
-          onReset={onReset}
+          onReset={onClose}
         >
           {({
             submitForm,
@@ -424,7 +387,7 @@ const TriggerLiveCreation: FunctionComponent<TriggerLiveCreationProps> = ({
             </Form>
           )}
         </Formik>
-      </div>
+      )}
     </Drawer>
   );
 

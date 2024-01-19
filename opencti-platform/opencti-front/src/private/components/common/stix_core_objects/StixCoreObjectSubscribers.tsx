@@ -15,7 +15,7 @@ import useGranted, { SETTINGS_SETACCESSES } from '../../../../utils/hooks/useGra
 import ItemIcon from '../../../../components/ItemIcon';
 import Drawer, { DrawerVariant } from '../drawer/Drawer';
 import { computeLink } from '../../../../utils/Entity';
-import { Theme } from '../../../../components/Theme';
+import type { Theme } from '../../../../components/Theme';
 
 // region types
 interface ContainerHeaderSharedProps {

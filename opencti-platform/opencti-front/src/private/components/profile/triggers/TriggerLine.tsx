@@ -160,8 +160,8 @@ export const TriggerLineComponent: FunctionComponent<TriggerLineProps> = ({
               {data.notifiers
                 && data.notifiers.length > 0
                 && data.notifiers
-                  .map<React.ReactNode>((n) => <code key={n.id}>{n.name}</code>)
-                  .reduce((prev, curr) => [prev, ', ', curr])}
+                  .map<React.ReactNode>((n) => <code key={n.id} style={{ marginRight: 5 }}>{n.name}</code>)
+              }
             </div>
             <div
               className={classes.bodyItem}
