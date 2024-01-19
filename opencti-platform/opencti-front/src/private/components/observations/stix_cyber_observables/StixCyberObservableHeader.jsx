@@ -2,7 +2,6 @@ import React from 'react';
 import { graphql, createFragmentContainer } from 'react-relay';
 import Typography from '@mui/material/Typography';
 import makeStyles from '@mui/styles/makeStyles';
-import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
 import StixCyberObservablePopover from './StixCyberObservablePopover';
 import { truncate } from '../../../../utils/String';
 import StixCoreObjectEnrichment from '../../common/stix_core_objects/StixCoreObjectEnrichment';
@@ -19,6 +18,9 @@ const useStyles = makeStyles(() => ({
   actions: {
     margin: '-6px 0 0 0',
     float: 'right',
+  },
+  actionButtons: {
+    display: 'flex',
   },
 }));
 
@@ -44,7 +46,7 @@ const StixCyberObservableHeaderComponent = ({
         />
       </div>
       <div className={classes.actions}>
-        <ToggleButtonGroup size="small" color="secondary" exclusive={true}>
+        <div className={classes.actionButtons}>
           {disableSharing !== true && (
             <StixCoreObjectSharing
               elementId={stixCyberObservable.id}
@@ -52,7 +54,7 @@ const StixCyberObservableHeaderComponent = ({
             />
           )}
           <StixCoreObjectEnrichment stixCoreObjectId={stixCyberObservable.id} />
-        </ToggleButtonGroup>
+        </div>
       </div>
       <div className="clearfix" />
     </div>

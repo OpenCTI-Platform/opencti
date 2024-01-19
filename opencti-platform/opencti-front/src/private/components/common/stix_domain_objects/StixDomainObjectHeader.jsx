@@ -14,7 +14,6 @@ import DialogActions from '@mui/material/DialogActions';
 import Button from '@mui/material/Button';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
-import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
 import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
 import ListItemText from '@mui/material/ListItemText';
 import { DialogTitle } from '@mui/material';
@@ -76,6 +75,8 @@ const useStyles = makeStyles(() => ({
   actions: {
     margin: '-6px 0 0 0',
     float: 'right',
+  },
+  actionButtons: {
     display: 'flex',
   },
 }));
@@ -478,10 +479,10 @@ const StixDomainObjectHeader = (props) => {
         </Security>
       )}
       <div className={classes.actions}>
-        {enableQuickSubscription && (
-          <StixCoreObjectSubscribers elementId={stixDomainObject.id} />
-        )}
-        <ToggleButtonGroup size="small" color="secondary" exclusive={true}>
+        <div className={classes.actionButtons}>
+          {enableQuickSubscription && (
+            <StixCoreObjectSubscribers elementId={stixDomainObject.id} />
+          )}
           {disableSharing !== true && (
             <StixCoreObjectSharing
               elementId={stixDomainObject.id}
@@ -502,7 +503,7 @@ const StixDomainObjectHeader = (props) => {
             />
           )}
           <StixCoreObjectEnrichment stixCoreObjectId={stixDomainObject.id} />
-        </ToggleButtonGroup>
+        </div>
       </div>
       <div className="clearfix" />
       {!noAliases && (
