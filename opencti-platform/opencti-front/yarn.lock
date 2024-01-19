@@ -14980,7 +14980,7 @@ __metadata:
     react-relay: 16.1.0
     react-relay-network-modern: 6.2.2
     react-router-dom: 5.3.4
-    react-router-dom-v5-compat: 6.21.2
+    react-router-dom-v5-compat: 6.21.3
     react-syntax-highlighter: 15.5.0
     react-test-renderer: 18.2.0
     react-timeline-range-slider: 1.4.1
@@ -16673,17 +16673,17 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-router-dom-v5-compat@npm:6.21.2":
-  version: 6.21.2
-  resolution: "react-router-dom-v5-compat@npm:6.21.2"
+"react-router-dom-v5-compat@npm:6.21.3":
+  version: 6.21.3
+  resolution: "react-router-dom-v5-compat@npm:6.21.3"
   dependencies:
     history: ^5.3.0
-    react-router: 6.21.2
+    react-router: 6.21.3
   peerDependencies:
     react: ">=16.8"
     react-dom: ">=16.8"
     react-router-dom: 4 || 5
-  checksum: 02f3159e60a8a34db7a8eeab32677d55d295bc5814abd475dd5186a558d3e0ce275c5dbb7ea910e6e873db4376e4d48c520142e4d63f71319a4a96f99e4834c4
+  checksum: f93084c3d421b1dbdd1e15ec9baacd51b58cfd9dc2cd38646b0d4cac856cb7beb8e7651259fbbb7aaa1f1c5f1013b1863a2ad366bb79031a1e382a53a4afc240
   languageName: node
   linkType: hard
 
@@ -16723,14 +16723,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-router@npm:6.21.2":
-  version: 6.21.2
-  resolution: "react-router@npm:6.21.2"
+"react-router@npm:6.21.3":
+  version: 6.21.3
+  resolution: "react-router@npm:6.21.3"
   dependencies:
     "@remix-run/router": 1.14.2
   peerDependencies:
     react: ">=16.8"
-  checksum: 8c38a4914892d5b8052bc5c244af95109affd8b74bffa16f9ea7856dc0e992dd8539b19d2618721cd7ef091a585f394fac9d05ab7a98cf3ca6aeb7519b7bce0e
+  checksum: 7e6297d5b67ae07d2e8564e036dbb15ebd706b41c22238940f47eee9b21ffb76d41336803c3b33435f1ebe210226577e32df3838bcbf2cd7c813fa357c0a4fac
   languageName: node
   linkType: hard
 
