@@ -28,7 +28,9 @@ import { FunctionalError, UnsupportedError } from '../config/errors';
 import { type Filter, type FilterGroup, FilterMode, FilterOperator, type InputMaybe, OrderingMode } from '../generated/graphql';
 import { ASSIGNEE_FILTER, CREATOR_FILTER, INSTANCE_REGARDING_OF, PARTICIPANT_FILTER } from '../utils/filtering/filtering-constants';
 import { completeContextDataForEntity, publishUserAction } from '../listener/UserActionListener';
+import type { UserReadActionContextData } from '../listener/UserActionListener';
 import { extractEntityRepresentativeName } from './entity-representative';
+import { ENTITY_TYPE_WORKSPACE } from '../modules/workspace/workspace-types';
 
 export interface FiltersWithNested extends Filter {
   nested?: Array<{
@@ -568,11 +570,14 @@ export const storeLoadById = async <T extends BasicStoreCommon>(context: AuthCon
   }
   const data = await internalLoadById<T>(context, user, id, { type });
   if (data) {
-    const contextData = completeContextDataForEntity({
+    const contextData: UserReadActionContextData = completeContextDataForEntity({
       id,
       entity_name: extractEntityRepresentativeName(data),
       entity_type: data.entity_type,
     }, data);
+    if (data.entity_type === ENTITY_TYPE_WORKSPACE) {
+      contextData.workspace_type = data.type;
+    }
     await publishUserAction({
       user,
       event_type: 'read',

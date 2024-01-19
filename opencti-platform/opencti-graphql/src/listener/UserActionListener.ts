@@ -1,8 +1,7 @@
 import type { AuthUser } from '../types/user';
-import type { BasicStoreObject, BasicStoreCommon } from '../types/store';
+import type { BasicStoreCommon, BasicStoreObject } from '../types/store';
 import { extractEntityRepresentativeName } from '../database/entity-representative';
 import { RELATION_CREATED_BY, RELATION_GRANTED_TO, RELATION_OBJECT_LABEL, RELATION_OBJECT_MARKING } from '../schema/stixRefRelationship';
-import { ENTITY_TYPE_WORKSPACE } from '../modules/workspace/workspace-types';
 
 interface BasicUserAction {
   user: AuthUser
@@ -22,46 +21,39 @@ export interface UserSearchAction extends BasicUserAction {
   event_scope: 'search'
   context_data: UserSearchActionContextData
 }
-export interface UserEnrichActionContextData {
+
+export interface ElementContextData {
   id: string
   entity_name: string
   entity_type: string
-  connector_id: string
-  connector_name: string
   creator_ids?: string[]
   granted_refs_ids?: string[]
   object_marking_refs_ids?: string[]
   created_by_ref_id?: string
   labels_ids?: string[]
+}
+export interface UserEnrichActionContextData extends ElementContextData {
+  connector_id: string
+  connector_name: string
 }
 export interface UserEnrichAction extends BasicUserAction {
   event_type: 'command'
   event_scope: 'enrich'
   context_data: UserEnrichActionContextData
 }
-export interface UserImportActionContextData {
-  id: string,
+export interface UserImportActionContextData extends ElementContextData {
   file_id: string,
   file_mime: string,
   file_name: string,
   connectors: string[],
-  entity_name: string,
-  entity_type: string
-  creator_ids?: string[]
-  granted_refs_ids?: string[]
-  object_marking_refs_ids?: string[]
-  created_by_ref_id?: string
-  labels_ids?: string[]
 }
 export interface UserImportAction extends BasicUserAction {
   event_type: 'command'
   event_scope: 'import'
   context_data: UserImportActionContextData
 }
-export interface UserExportActionContextData {
-  id: string
+export interface UserExportActionContextData extends ElementContextData {
   format: string
-  entity_name: string
   entity_type: string
   export_scope: 'query' | 'single' | 'selection'
   export_type: 'simple' | 'full'
@@ -69,11 +61,6 @@ export interface UserExportActionContextData {
   max_marking: string
   list_params?: unknown,
   selected_ids?: string[]
-  creator_ids?: string[]
-  granted_refs_ids?: string[]
-  object_marking_refs_ids?: string[]
-  created_by_ref_id?: string
-  labels_ids?: string[]
 }
 export interface UserExportAction extends BasicUserAction {
   event_type: 'command'
@@ -83,17 +70,9 @@ export interface UserExportAction extends BasicUserAction {
 // endregion
 
 // region file
-export interface UserFileActionContextData {
-  id: string
+export interface UserFileActionContextData extends ElementContextData {
   path: string
-  entity_name: string
-  entity_type: string
   file_name: string
-  creator_ids?: string[]
-  granted_refs_ids?: string[]
-  object_marking_refs_ids?: string[]
-  created_by_ref_id?: string
-  labels_ids?: string[]
 }
 export interface UserFileAction extends BasicUserAction {
   event_type: 'file'
@@ -103,15 +82,7 @@ export interface UserFileAction extends BasicUserAction {
 // endregion
 
 // region read / mutation
-export interface UserReadActionContextData {
-  id: string
-  entity_name: string
-  entity_type: string
-  creator_ids?: string[]
-  granted_refs_ids?: string[]
-  object_marking_refs_ids?: string[]
-  created_by_ref_id?: string
-  labels_ids?: string[]
+export interface UserReadActionContextData extends ElementContextData {
   workspace_type?: string
 }
 export interface UserReadAction extends BasicUserAction {
@@ -182,7 +153,7 @@ export const publishUserAction = async (userAction: UserAction) => {
   return Promise.all(actionPromises);
 };
 
-export const completeContextDataForEntity = <T extends BasicStoreCommon>(inputContextData: any, data: T) => {
+export const completeContextDataForEntity = <T extends BasicStoreCommon, C extends ElementContextData>(inputContextData: C, data: T) => {
   const contextData = {
     ...inputContextData,
   };
@@ -201,9 +172,6 @@ export const completeContextDataForEntity = <T extends BasicStoreCommon>(inputCo
   if (data[RELATION_OBJECT_LABEL]) {
     contextData.labels_ids = data[RELATION_OBJECT_LABEL];
   }
-  if (data.entity_type === ENTITY_TYPE_WORKSPACE) {
-    contextData.workspace_type = data.type;
-  }
   return contextData;
 };
 
@@ -218,5 +186,5 @@ export const buildContextDataForFile = (entity: BasicStoreObject, path: string, 
   if (entity) {
     contextData = completeContextDataForEntity(contextData, entity);
   }
-  return contextData as UserFileActionContextData;
+  return contextData;
 };
