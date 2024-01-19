@@ -54,7 +54,7 @@ const useStyles = makeStyles((theme) => ({
     marginLeft: theme.spacing(2),
   },
   config: {
-    padding: '10px 0px 20px 0px',
+    padding: '0px 0px 20px 0px',
   },
   container: {
     marginTop: 40,
