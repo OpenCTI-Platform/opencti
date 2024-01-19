@@ -367,6 +367,7 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
               classes={{ root: classes.button }}
               aria-owns={menuOpen.open ? 'menu-appbar' : undefined}
               aria-haspopup="true"
+              aria-label={t_i18n('Profile')}
               id="profile-menu-button"
               onClick={handleOpenMenu}
               color={
