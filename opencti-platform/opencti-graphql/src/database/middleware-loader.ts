@@ -27,10 +27,8 @@ import type {
 import { FunctionalError, UnsupportedError } from '../config/errors';
 import { type Filter, type FilterGroup, FilterMode, FilterOperator, type InputMaybe, OrderingMode } from '../generated/graphql';
 import { ASSIGNEE_FILTER, CREATOR_FILTER, INSTANCE_REGARDING_OF, PARTICIPANT_FILTER } from '../utils/filtering/filtering-constants';
-import { publishUserAction, type UserReadActionContextData } from '../listener/UserActionListener';
+import { completeContextDataForEntity, publishUserAction } from '../listener/UserActionListener';
 import { extractEntityRepresentativeName } from './entity-representative';
-import { RELATION_CREATED_BY, RELATION_GRANTED_TO, RELATION_OBJECT_LABEL, RELATION_OBJECT_MARKING } from '../schema/stixRefRelationship';
-import { ENTITY_TYPE_WORKSPACE } from '../modules/workspace/workspace-types';
 
 export interface FiltersWithNested extends Filter {
   nested?: Array<{
@@ -570,29 +568,11 @@ export const storeLoadById = async <T extends BasicStoreCommon>(context: AuthCon
   }
   const data = await internalLoadById<T>(context, user, id, { type });
   if (data) {
-    const contextData: UserReadActionContextData = {
+    const contextData = completeContextDataForEntity({
       id,
       entity_name: extractEntityRepresentativeName(data),
-      entity_type: data.entity_type
-    };
-    if (data.creator_id) {
-      contextData.creator_ids = Array.isArray(data.creator_id) ? data.creator_id : [data.creator_id];
-    }
-    if (data[RELATION_GRANTED_TO]) {
-      contextData.granted_refs_ids = data[RELATION_GRANTED_TO];
-    }
-    if (data[RELATION_OBJECT_MARKING]) {
-      contextData.object_marking_refs_ids = data[RELATION_OBJECT_MARKING];
-    }
-    if (data[RELATION_CREATED_BY]) {
-      contextData.created_by_ref_id = data[RELATION_CREATED_BY];
-    }
-    if (data[RELATION_OBJECT_LABEL]) {
-      contextData.labels_ids = data[RELATION_OBJECT_LABEL];
-    }
-    if (data.entity_type === ENTITY_TYPE_WORKSPACE) {
-      contextData.workspace_type = data.type;
-    }
+      entity_type: data.entity_type,
+    }, data);
     await publishUserAction({
       user,
       event_type: 'read',

@@ -9,7 +9,7 @@ import { findById as findMarkingDefinitionById } from './markingDefinition';
 import { now, observableValue } from '../utils/format';
 import { createWork } from './work';
 import { pushToConnector } from '../database/rabbitmq';
-import { RELATION_CREATED_BY, RELATION_GRANTED_TO, RELATION_OBJECT_LABEL, RELATION_OBJECT_MARKING } from '../schema/stixRefRelationship';
+import { RELATION_GRANTED_TO } from '../schema/stixRefRelationship';
 import { ENTITY_TYPE_CONTAINER_NOTE, ENTITY_TYPE_CONTAINER_OPINION, isStixDomainObjectShareableContainer, STIX_ORGANIZATIONS_UNRESTRICTED } from '../schema/stixDomainObject';
 import {
   ABSTRACT_STIX_CORE_OBJECT,
@@ -27,7 +27,7 @@ import { createQueryTask } from './backgroundTask';
 import { getParentTypes } from '../schema/schemaUtils';
 import { internalLoadById, storeLoadById } from '../database/middleware-loader';
 import { schemaTypesDefinition } from '../schema/schema-types';
-import { publishUserAction } from '../listener/UserActionListener';
+import { completeContextDataForEntity, publishUserAction } from '../listener/UserActionListener';
 import { checkAndConvertFilters } from '../utils/filtering/filtering-utils';
 import { specialTypesExtensions } from '../database/file-storage';
 
@@ -152,22 +152,7 @@ export const askEntityExport = async (context, user, format, entity, type = 'sim
       return work;
     }, connectors)
   );
-  const contextData = baseEvent;
-  if (entity.creator_id) {
-    contextData.creator_ids = Array.isArray(entity.creator_id) ? entity.creator_id : [entity.creator_id];
-  }
-  if (entity[RELATION_GRANTED_TO]) {
-    contextData.granted_refs_ids = entity[RELATION_GRANTED_TO];
-  }
-  if (entity[RELATION_OBJECT_MARKING]) {
-    contextData.object_marking_refs_ids = entity[RELATION_OBJECT_MARKING];
-  }
-  if (entity[RELATION_CREATED_BY]) {
-    contextData.created_by_ref_id = entity[RELATION_CREATED_BY];
-  }
-  if (entity[RELATION_OBJECT_LABEL]) {
-    contextData.labels_ids = entity[RELATION_OBJECT_LABEL];
-  }
+  const contextData = completeContextDataForEntity(baseEvent, entity);
   await publishUserAction({
     user,
     event_access: 'extended',

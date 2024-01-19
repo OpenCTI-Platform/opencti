@@ -1,7 +1,8 @@
 import type { AuthUser } from '../types/user';
+import type { BasicStoreObject, BasicStoreCommon } from '../types/store';
 import { extractEntityRepresentativeName } from '../database/entity-representative';
-import type { BasicStoreObject } from '../types/store';
 import { RELATION_CREATED_BY, RELATION_GRANTED_TO, RELATION_OBJECT_LABEL, RELATION_OBJECT_MARKING } from '../schema/stixRefRelationship';
+import { ENTITY_TYPE_WORKSPACE } from '../modules/workspace/workspace-types';
 
 interface BasicUserAction {
   user: AuthUser
@@ -181,8 +182,33 @@ export const publishUserAction = async (userAction: UserAction) => {
   return Promise.all(actionPromises);
 };
 
+export const completeContextDataForEntity = <T extends BasicStoreCommon>(inputContextData: any, data: T) => {
+  const contextData = {
+    ...inputContextData,
+  };
+  if (data.creator_id) {
+    contextData.creator_ids = Array.isArray(data.creator_id) ? data.creator_id : [data.creator_id];
+  }
+  if (data[RELATION_GRANTED_TO]) {
+    contextData.granted_refs_ids = data[RELATION_GRANTED_TO];
+  }
+  if (data[RELATION_OBJECT_MARKING]) {
+    contextData.object_marking_refs_ids = data[RELATION_OBJECT_MARKING];
+  }
+  if (data[RELATION_CREATED_BY]) {
+    contextData.created_by_ref_id = data[RELATION_CREATED_BY];
+  }
+  if (data[RELATION_OBJECT_LABEL]) {
+    contextData.labels_ids = data[RELATION_OBJECT_LABEL];
+  }
+  if (data.entity_type === ENTITY_TYPE_WORKSPACE) {
+    contextData.workspace_type = data.type;
+  }
+  return contextData;
+};
+
 export const buildContextDataForFile = (entity: BasicStoreObject, path: string, filename: string) => {
-  const contextData: UserFileActionContextData = {
+  let contextData: UserFileActionContextData = {
     path,
     id: entity?.internal_id,
     entity_name: entity ? extractEntityRepresentativeName(entity) : 'global',
@@ -190,21 +216,7 @@ export const buildContextDataForFile = (entity: BasicStoreObject, path: string, 
     file_name: filename,
   };
   if (entity) {
-    if (entity.creator_id) {
-      contextData.creator_ids = Array.isArray(entity.creator_id) ? entity.creator_id : [entity.creator_id];
-    }
-    if (entity[RELATION_GRANTED_TO]) {
-      contextData.granted_refs_ids = entity[RELATION_GRANTED_TO];
-    }
-    if (entity[RELATION_OBJECT_MARKING]) {
-      contextData.object_marking_refs_ids = entity[RELATION_OBJECT_MARKING];
-    }
-    if (entity[RELATION_CREATED_BY]) {
-      contextData.created_by_ref_id = entity[RELATION_CREATED_BY];
-    }
-    if (entity[RELATION_OBJECT_LABEL]) {
-      contextData.labels_ids = entity[RELATION_OBJECT_LABEL];
-    }
+    contextData = completeContextDataForEntity(contextData, entity);
   }
-  return contextData;
+  return contextData as UserFileActionContextData;
 };

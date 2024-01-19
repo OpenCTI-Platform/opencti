@@ -5,7 +5,6 @@ import { internalLoadById } from '../database/middleware-loader';
 import { buildContextDataForFile, publishUserAction } from '../listener/UserActionListener';
 import { stixCoreObjectImportDelete } from './stixCoreObject';
 import { extractEntityRepresentativeName } from '../database/entity-representative';
-import { RELATION_CREATED_BY, RELATION_GRANTED_TO, RELATION_OBJECT_LABEL, RELATION_OBJECT_MARKING } from '../schema/stixRefRelationship';
 import { allFilesForPaths, allRemainingFilesCount } from '../modules/internal/document/document-domain';
 import { getManagerConfigurationFromCache } from '../modules/managerConfiguration/managerConfiguration-domain';
 import { supportedMimeTypes } from '../modules/managerConfiguration/managerConfiguration-utils';
@@ -81,7 +80,7 @@ export const askJobImport = async (context, user, args) => {
   const connectors = await uploadJobImport(context, user, file.id, file.metaData.mimetype, entityId, opts);
   const entityName = entityId ? extractEntityRepresentativeName(entity) : 'global';
   const entityType = entityId ? entity.entity_type : 'global';
-  const contextData = {
+  let contextData = {
     id: entityId,
     file_id: file.id,
     file_name: file.name,
@@ -91,21 +90,7 @@ export const askJobImport = async (context, user, args) => {
     entity_type: entityType
   };
   if (entity) { // Entity can be null for global
-    if (entity.creator_id) {
-      contextData.creator_ids = Array.isArray(entity.creator_id) ? entity.creator_id : [entity.creator_id];
-    }
-    if (entity[RELATION_GRANTED_TO]) {
-      contextData.granted_refs_ids = entity[RELATION_GRANTED_TO];
-    }
-    if (entity[RELATION_OBJECT_MARKING]) {
-      contextData.object_marking_refs_ids = entity[RELATION_OBJECT_MARKING];
-    }
-    if (entity[RELATION_CREATED_BY]) {
-      contextData.created_by_ref_id = entity[RELATION_CREATED_BY];
-    }
-    if (entity[RELATION_OBJECT_LABEL]) {
-      contextData.labels_ids = entity[RELATION_OBJECT_LABEL];
-    }
+    contextData = completeContextDataForEntity(contextData, entity);
   }
   await publishUserAction({
     user,
