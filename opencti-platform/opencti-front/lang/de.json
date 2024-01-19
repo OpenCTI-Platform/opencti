@@ -1697,6 +1697,7 @@
   "INGESTION_MANAGER": "Ingestion-Manager",
   "PLAYBOOK_MANAGER": "Spielbuch-Manager",
   "FILE_INDEX_MANAGER": "Datei-Index-Manager",
+  "INDICATOR_DECAY_MANAGER": "Indikator Abklingmanager",
   "text/markdown": "MD",
   "application/json": "JSON",
   "text/csv": "CSV",

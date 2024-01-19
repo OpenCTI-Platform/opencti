@@ -1,6 +1,7 @@
 import * as R from 'ramda';
-import { batchListThroughGetTo, createEntity, createRelation, distributionEntities, storeLoadByIdWithRefs, timeSeriesEntities } from '../../database/middleware';
-import { listEntitiesPaginated, storeLoadById } from '../../database/middleware-loader';
+import moment from 'moment/moment';
+import { batchListThroughGetTo, createEntity, createRelation, distributionEntities, patchAttribute, storeLoadByIdWithRefs, timeSeriesEntities } from '../../database/middleware';
+import { listAllEntities, listEntitiesPaginated, storeLoadById } from '../../database/middleware-loader';
 import { BUS_TOPICS, logApp } from '../../config/conf';
 import { notify } from '../../database/redis';
 import { checkIndicatorSyntax } from '../../python/pythonBridge';
@@ -25,6 +26,19 @@ import type { AuthContext, AuthUser } from '../../types/user';
 import { type BasicStoreEntityIndicator, ENTITY_TYPE_INDICATOR, type StoreEntityIndicator } from './indicator-types';
 import type { IndicatorAddInput, QueryIndicatorsArgs, QueryIndicatorsNumberArgs } from '../../generated/graphql';
 import type { NumberResult } from '../../types/store';
+import {
+  BUILT_IN_DECAY_RULES,
+  computeLivePoints,
+  computeLiveScore,
+  computeNextScoreReactionDate,
+  type DecayHistory,
+  type DecayLiveDetails,
+  type DecayRule,
+  findDecayRuleForIndicator
+} from './decay-domain';
+import { isModuleActivated } from '../../domain/settings';
+import { prepareDate } from '../../utils/format';
+import { FilterMode, FilterOperator, OrderingMode } from '../../generated/graphql';
 
 export const findById = (context: AuthContext, user: AuthUser, indicatorId: string) => {
   return storeLoadById<BasicStoreEntityIndicator>(context, user, indicatorId, ENTITY_TYPE_INDICATOR);
@@ -32,6 +46,41 @@ export const findById = (context: AuthContext, user: AuthUser, indicatorId: stri
 
 export const findAll = (context: AuthContext, user: AuthUser, args: QueryIndicatorsArgs) => {
   return listEntitiesPaginated<BasicStoreEntityIndicator>(context, user, [ENTITY_TYPE_INDICATOR], args);
+};
+
+/**
+ * Compute live decay detail for an indicator.
+ * @param context
+ * @param user
+ * @param indicator
+ */
+export const getDecayDetails = async (context: AuthContext, user: AuthUser, indicator: BasicStoreEntityIndicator) => {
+  if (!indicator.decay_applied_rule) {
+    return null;
+  }
+  const details: DecayLiveDetails = {
+    live_score: computeLiveScore(indicator),
+    live_points: computeLivePoints(indicator),
+  };
+  return details;
+};
+
+export const findIndicatorsForDecay = (context: AuthContext, user: AuthUser, maxSize: number) => {
+  const filters = {
+    orderBy: 'decay_next_reaction_date',
+    orderMode: OrderingMode.Asc,
+    mode: FilterMode.And,
+    filters: [
+      { key: ['decay_next_reaction_date'], values: [prepareDate()], operator: FilterOperator.Lt },
+      { key: ['revoked'], values: ['false'] },
+    ],
+    filterGroups: [],
+  };
+  const args = {
+    filters,
+    maxSize,
+  };
+  return listAllEntities<BasicStoreEntityIndicator>(context, user, [ENTITY_TYPE_INDICATOR], args);
 };
 
 export const createObservablesFromIndicator = async (
@@ -98,18 +147,47 @@ export const addIndicator = async (context: AuthContext, user: AuthUser, indicat
   if (check === false) {
     throw FunctionalError(`Indicator of type ${indicator.pattern_type} is not correctly formatted.`);
   }
-  const { validFrom, validUntil, revoked, validPeriod } = await computeValidPeriod(context, user, indicator);
+  const indicatorBaseScore = indicator.x_opencti_score ?? 50;
+  const isDecayActivated = await isModuleActivated('INDICATOR_DECAY_MANAGER');
+  // find default decay rule (even if decay is not activated, it is used to compute default validFrom and validUntil)
+  const decayRule = findDecayRuleForIndicator(observableType, BUILT_IN_DECAY_RULES);
+  const { validFrom, validUntil, revoked, validPeriod } = await computeValidPeriod(indicator, decayRule);
   const indicatorToCreate = R.pipe(
     R.dissoc('createObservables'),
     R.dissoc('basedOn'),
     R.assoc('pattern', formattedPattern),
     R.assoc('x_opencti_main_observable_type', observableType),
-    R.assoc('x_opencti_score', indicator.x_opencti_score ?? 50),
+    R.assoc('x_opencti_score', indicatorBaseScore),
     R.assoc('x_opencti_detection', indicator.x_opencti_detection ?? false),
-    R.assoc('valid_from', validFrom),
-    R.assoc('valid_until', validUntil),
+    R.assoc('valid_from', validFrom.toISOString()),
+    R.assoc('valid_until', validUntil.toISOString()),
     R.assoc('revoked', revoked),
   )(indicator);
+  let finalIndicatorToCreate;
+  if (isDecayActivated) {
+    const indicatorDecayRule = {
+      decay_lifetime: decayRule.decay_lifetime,
+      decay_pound: decayRule.decay_pound,
+      decay_points: [...decayRule.decay_points],
+      decay_revoke_score: decayRule.decay_revoke_score,
+    };
+    const nextScoreReactionDate = computeNextScoreReactionDate(indicatorBaseScore, indicatorBaseScore, decayRule, validFrom);
+    const decayHistory: DecayHistory[] = [];
+    decayHistory.push({
+      updated_at: validFrom.toDate(),
+      score: indicatorBaseScore,
+    });
+    finalIndicatorToCreate = {
+      ...indicatorToCreate,
+      decay_next_reaction_date: nextScoreReactionDate,
+      decay_base_score: indicatorBaseScore,
+      decay_base_score_date: validFrom.toISOString(),
+      decay_applied_rule: indicatorDecayRule,
+      decay_history: decayHistory,
+    };
+  } else {
+    finalIndicatorToCreate = { ...indicatorToCreate };
+  }
   // create the linked observables
   let observablesToLink: string[] = [];
   if (indicator.basedOn) {
@@ -117,10 +195,10 @@ export const addIndicator = async (context: AuthContext, user: AuthUser, indicat
   }
   if (!validPeriod) {
     throw DatabaseError('You cant create an indicator with valid_until less than valid_from', {
-      input: indicatorToCreate,
+      input: finalIndicatorToCreate,
     });
   }
-  const created = await createEntity(context, user, indicatorToCreate, ENTITY_TYPE_INDICATOR);
+  const created = await createEntity(context, user, finalIndicatorToCreate, ENTITY_TYPE_INDICATOR);
   await Promise.all(
     observablesToLink.map((observableToLink) => {
       const input = { fromId: created.id, toId: observableToLink, relationship_type: RELATION_BASED_ON };
@@ -131,6 +209,61 @@ export const addIndicator = async (context: AuthContext, user: AuthUser, indicat
     await createObservablesFromIndicator(context, user, indicator, created);
   }
   return notify(BUS_TOPICS[ABSTRACT_STIX_DOMAIN_OBJECT].ADDED_TOPIC, created, user);
+};
+
+export interface IndicatorPatch {
+  revoked?: boolean,
+  x_opencti_score?: number,
+  decay_history?: DecayHistory[],
+  decay_next_reaction_date?: Date,
+}
+
+export const computeIndicatorDecayPatch = (indicator: BasicStoreEntityIndicator) => {
+  let patch: IndicatorPatch = {};
+  const model = indicator.decay_applied_rule;
+  if (!model || !model.decay_points) {
+    return null;
+  }
+  const newStableScore = model.decay_points.find((p) => (p || indicator.x_opencti_score) < indicator.x_opencti_score) || model.decay_revoke_score;
+  if (newStableScore) {
+    const decayHistory: DecayHistory[] = [...(indicator.decay_history ?? [])];
+    decayHistory.push({
+      updated_at: new Date(),
+      score: newStableScore,
+    });
+    patch = {
+      x_opencti_score: newStableScore,
+      decay_history: decayHistory,
+    };
+    if (newStableScore <= model.decay_revoke_score) {
+      patch = { ...patch, revoked: true };
+    } else {
+      const nextScoreReactionDate = computeNextScoreReactionDate(indicator.decay_base_score, newStableScore, model as DecayRule, moment(indicator.valid_from));
+      if (nextScoreReactionDate) {
+        patch = { ...patch, decay_next_reaction_date: nextScoreReactionDate };
+      }
+    }
+  }
+  return patch;
+};
+
+/**
+ * Triggered by the decay manager when decay_next_reaction_date is reached.
+ * Compute the next step for Indicator as patch to applied to the database:
+ * - change the current stable score to next
+ * - update the decay_next_reaction_date to next one
+ * - revoke if the revoke score is reached
+ * @param context
+ * @param user
+ * @param indicator
+ */
+export const updateIndicatorDecayScore = async (context: AuthContext, user: AuthUser, indicator: BasicStoreEntityIndicator) => {
+  // update x_opencti_score
+  const patch = computeIndicatorDecayPatch(indicator);
+  if (!patch) {
+    return null;
+  }
+  return patchAttribute(context, user, indicator.id, ENTITY_TYPE_INDICATOR, patch);
 };
 
 // region series

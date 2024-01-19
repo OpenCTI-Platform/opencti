@@ -18,6 +18,7 @@ import { executionContext, SYSTEM_USER } from '../utils/access';
 import { ENTITY_TYPE_SETTINGS } from '../schema/internalObject';
 import type { BasicStoreSettings } from '../types/settings';
 import playbookManager from './playbookManager';
+import { getAllManagersStatuses } from './managerModule';
 
 const SCHEDULE_TIME = 30000;
 const NODE_INSTANCE_ID = conf.get('app:node_identifier') || uuid();
@@ -36,6 +37,7 @@ const initClusterManager = () => {
   const clusterHandler = async (platformId: string) => {
     const context = executionContext('cluster_manager');
     const settings = await getEntityFromCache<BasicStoreSettings>(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
+    // TODO migrate managers modules
     const managers = [
       ruleEngine.status(),
       historyManager.status(),
@@ -49,6 +51,7 @@ const initClusterManager = () => {
       activityManager.status(settings),
       playbookManager.status(settings),
       fileIndexManager.status(settings),
+      ...getAllManagersStatuses(),
     ];
     const configData: ClusterConfig = { platform_id: platformId, managers };
     await registerClusterInstance(platformId, configData);

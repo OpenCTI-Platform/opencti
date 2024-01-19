@@ -1983,6 +1983,7 @@
   "HISTORY_MANAGER": "Gestor del historial",
   "INGESTION_MANAGER": "Gestor del ingestion",
   "FILE_INDEX_MANAGER": "Gestor de índice de archivos",
+  "INDICATOR_DECAY_MANAGER": "Gestor de decaimiento de indicador",
   "text/markdown": "MD",
   "application/json": "JSON",
   "text/csv": "CSV",

@@ -1890,6 +1890,7 @@
   "HISTORY_MANAGER": "历史经理",
   "INGESTION_MANAGER": "摄取管理器",
   "FILE_INDEX_MANAGER": "文件索引管理器",
+  "INDICATOR_DECAY_MANAGER": "指标衰减管理器",
   "text/markdown": "MD",
   "application/json": "JSON",
   "text/csv": "CSV",

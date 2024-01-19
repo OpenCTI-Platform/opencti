@@ -3,7 +3,7 @@ import { MARKING_TLP_AMBER, MARKING_TLP_AMBER_STRICT, MARKING_TLP_CLEAR, MARKING
 import { getEntitiesMapFromCache } from '../../database/cache';
 import { ENTITY_TYPE_MARKING_DEFINITION } from '../../schema/stixMetaObject';
 import type { AuthContext, AuthUser } from '../../types/user';
-import type { IndicatorAddInput } from '../../generated/graphql';
+import type { DecayRule, IndicatorAddInput } from '../../generated/graphql';
 import type { BasicStoreEntity } from '../../types/store';
 import { isNotEmptyField } from '../../database/utils';
 import { utcDate } from '../../utils/format';
@@ -78,21 +78,21 @@ const computeValidFrom = (indicator: IndicatorAddInput): Moment => {
   return utcDate();
 };
 
-const computeValidUntil = async (context: AuthContext, user: AuthUser, indicator: IndicatorAddInput, validFrom: Moment): Promise<Moment> => {
+const computeValidUntil = async (indicator: IndicatorAddInput, validFrom: Moment, decayRule: DecayRule): Promise<Moment> => {
   if (isNotEmptyField(indicator.valid_until)) {
     return utcDate(indicator.valid_until);
   }
-  const ttl = await computeValidTTL(context, user, indicator);
+  const ttl = decayRule.decay_lifetime; // await computeValidTTL(context, user, indicator, decayRule);
   return validFrom.clone().add(ttl, 'days');
 };
 
-export const computeValidPeriod = async (context: AuthContext, user: AuthUser, indicator: IndicatorAddInput) => {
+export const computeValidPeriod = async (indicator: IndicatorAddInput, decayRule: DecayRule) => {
   const validFrom = computeValidFrom(indicator);
-  const validUntil = await computeValidUntil(context, user, indicator, validFrom);
+  const validUntil = await computeValidUntil(indicator, validFrom, decayRule);
 
   return {
-    validFrom: validFrom.toISOString(),
-    validUntil: validUntil.toISOString(),
+    validFrom,
+    validUntil,
     revoked: validUntil.isBefore(utcDate()),
     validPeriod: validFrom.isSameOrBefore(validUntil)
   };

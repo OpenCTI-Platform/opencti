@@ -39,6 +39,7 @@ import playbookManager from './manager/playbookManager';
 import fileIndexManager from './manager/fileIndexManager';
 import { isAttachmentProcessorEnabled } from './database/engine';
 import { UnknownError } from './config/errors';
+import { startAllManagers } from './manager/managerModule';
 
 // region dynamic modules
 const startModules = async () => {
@@ -136,6 +137,11 @@ const startModules = async () => {
   } else {
     logApp.info('[OPENCTI-MODULE] File index manager not started (disabled by configuration)');
   }
+
+  // refactoring in module in progress
+  // all managers will be started only in this method
+  await startAllManagers();
+
   // endregion
   // region Cluster manager
   await clusterManager.start();

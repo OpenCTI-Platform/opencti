@@ -1,6 +1,7 @@
 import { expect, it, describe } from 'vitest';
 import gql from 'graphql-tag';
 import { queryAsAdmin } from '../../utils/testQuery';
+// import type { Indicator } from '../../../src/generated/graphql';
 
 const LIST_QUERY = gql`
     query indicators(

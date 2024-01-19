@@ -1962,6 +1962,7 @@
   "INGESTION_MANAGER": "Manager d'ingestion",
   "PLAYBOOK_MANAGER": "Manager de playbook",
   "FILE_INDEX_MANAGER": "Manager d'indexation des fichiers",
+  "INDICATOR_DECAY_MANAGER": "Manager du déclin des indicateurs",
   "text/markdown": "MD",
   "application/json": "JSON",
   "text/csv": "CSV",
