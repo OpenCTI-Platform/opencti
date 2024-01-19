@@ -30,7 +30,7 @@ export default defineConfig({
     trace: 'on-first-retry',
     ignoreHTTPSErrors: true,
   },
-  
+
   /* Configure projects for major browsers */
   projects: [
     {
@@ -42,6 +42,11 @@ export default defineConfig({
       name: 'firefox',
       use: { ...devices['Desktop Firefox'] },
     },
+
+    {
+      name: 'webkit',
+      use: { ...devices['Desktop Safari']}
+    }
 
     /* Test against mobile viewports. */
     // {
@@ -70,5 +75,5 @@ export default defineConfig({
   //   url: 'http://127.0.0.1:3000',
   //   reuseExistingServer: !process.env.CI,
   // },
-  
+
 });
