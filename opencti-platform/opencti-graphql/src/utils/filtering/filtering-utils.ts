@@ -178,7 +178,7 @@ const specialFilterKeysConvertor = new Map([
   [CONTEXT_ENTITY_TYPE_FILTER, 'context_data.entity_type'],
   [CONTEXT_CREATOR_FILTER, 'context_data.creator_id'],
   [CONTEXT_CREATED_BY_FILTER, 'context_data.created_by_ref_id'],
-  [CONTEXT_OBJECT_MARKING_FILTER, 'context_data.object_marking_refs_ids'],
+  [CONTEXT_OBJECT_MARKING_FILTER, 'rel_object-marking.internal_id'],
   [CONTEXT_OBJECT_LABEL_FILTER, 'context_data.labels_ids'],
   [MEMBERS_USER_FILTER, 'user_id'],
   [MEMBERS_GROUP_FILTER, 'group_ids'],
