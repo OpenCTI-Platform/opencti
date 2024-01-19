@@ -539,20 +539,21 @@ for (let i = 0; i < providerKeys.length; i += 1) {
         };
         const organizationsToAssociate = isOrgaMapping ? computeOrganizationsMapping() : [];
         // Build the user login
-        const email = req.headers[mappedConfig.header_email];
+        const email = req.header(mappedConfig.header_email);
         if (isEmptyField(email) || !validator.isEmail(email)) {
           return null;
         }
-        const name = req.headers[mappedConfig.header_name];
-        const firstname = req.headers[mappedConfig.header_firstname];
-        const lastname = req.headers[mappedConfig.header_lastname];
+        const name = req.header(mappedConfig.header_name);
+        const firstname = req.header(mappedConfig.header_firstname);
+        const lastname = req.header(mappedConfig.header_lastname);
         const opts = {
           providerGroups: mappedGroups,
           providerOrganizations: organizationsToAssociate,
           autoCreateGroup: mappedConfig.auto_create_group ?? false,
         };
+        const provider_metadata = { headers_audit: mappedConfig.headers_audit };
         return new Promise((resolve) => {
-          providerLoginHandler({ email, name, firstname, lastname }, (_, user) => {
+          providerLoginHandler({ email, name, firstname, provider_metadata, lastname }, (err, user) => {
             resolve(user);
           }, opts);
         });

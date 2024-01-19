@@ -43,6 +43,7 @@ const HistoryDefinition: AttributeDefinition[] = [
     upsert: false,
     isFilterable: false
   },
+  { name: 'user_metadata', label: 'Event user metadata', type: 'object', format: 'flat', editDefault: false, mandatoryType: 'internal', multiple: false, upsert: false, isFilterable: false },
   {
     name: 'applicant_id',
     label: 'Applicant',

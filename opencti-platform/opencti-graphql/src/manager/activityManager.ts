@@ -97,6 +97,7 @@ const historyIndexing = async (context: AuthContext, events: Array<SseEvent<Acti
         event_access: event.data.event_access,
         event_scope: event.data.event_scope,
         user_id: ENABLED_DEMO_MODE ? REDACTED_USER.id : event.data.origin?.user_id,
+        user_metadata: event.data.origin?.user_metadata,
         group_ids: event.data.origin?.group_ids ?? [],
         organization_ids: event.data.origin?.organization_ids ?? [],
         applicant_id: event.data.origin?.applicant_id,
