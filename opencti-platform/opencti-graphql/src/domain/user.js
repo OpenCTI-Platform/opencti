@@ -108,10 +108,10 @@ export const userWithOrigin = (req, user) => {
   const origin = {
     socket: 'query',
     ip: req?.ip,
-    user_id: user?.id,
+    user_id: user.id,
+    group_ids: user.group_ids,
+    organization_ids: user.organizations?.map((o) => o.internal_id) ?? [],
     user_metadata: { ...headers_metadata },
-    group_ids: user?.group_ids,
-    organization_ids: user?.organizations?.map((o) => o.internal_id) ?? [],
     referer: req?.headers.referer,
     applicant_id: req?.headers['opencti-applicant-id'],
     call_retry_number: req?.headers['opencti-retry-number'],
