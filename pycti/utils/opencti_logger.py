@@ -59,6 +59,3 @@ def logger(level, json_logging=True):
             )
 
     return AppLogger
-
-
-test_logger = logger("INFO")("test")
