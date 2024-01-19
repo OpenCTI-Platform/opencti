@@ -176,7 +176,7 @@ const specialFilterKeysConvertor = new Map([
   [SIGHTED_BY_FILTER, buildRefRelationKey(STIX_SIGHTING_RELATIONSHIP)],
   [CONTEXT_ENTITY_ID_FILTER, 'context_data.id'],
   [CONTEXT_ENTITY_TYPE_FILTER, 'context_data.entity_type'],
-  [CONTEXT_CREATOR_FILTER, 'context_data.creator_id'],
+  [CONTEXT_CREATOR_FILTER, 'context_data.creator_ids'],
   [CONTEXT_CREATED_BY_FILTER, 'context_data.created_by_ref_id'],
   [CONTEXT_OBJECT_MARKING_FILTER, 'rel_object-marking.internal_id'],
   [CONTEXT_OBJECT_LABEL_FILTER, 'context_data.labels_ids'],

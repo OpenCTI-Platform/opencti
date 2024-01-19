@@ -237,6 +237,7 @@ export const buildOCTIExtensions = (instance: StoreObject): S.StixOpenctiExtensi
     authorized_members: instance.authorized_members ?? undefined,
     workflow_id: instance.x_opencti_workflow_id,
     labels_ids: instance['object-label'] ?? [],
+    created_by_ref_id: instance['created-by'] ? [instance['created-by']] : [],
   };
   return cleanObject(octiExtensions);
 };

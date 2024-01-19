@@ -39,6 +39,7 @@ interface HistoryContext {
   external_references?: Array<string>;
   creator_ids?: Array<string>;
   labels_ids?: Array<string>;
+  created_by_ref_id?: Array<string>;
 }
 
 export interface HistoryData extends BasicStoreEntity {
@@ -74,6 +75,7 @@ const eventsApplyHandler = async (context: AuthContext, events: Array<SseEvent<S
       entity_name: extractStixRepresentative(stix),
       creator_ids: stix.extensions[STIX_EXT_OCTI].creator_ids,
       labels_ids: stix.extensions[STIX_EXT_OCTI].labels_ids,
+      created_by_ref_id: stix.extensions[STIX_EXT_OCTI].created_by_ref_id,
     };
     if (event.data.type === EVENT_TYPE_UPDATE) {
       const updateEvent: UpdateEvent = event.data as UpdateEvent;
