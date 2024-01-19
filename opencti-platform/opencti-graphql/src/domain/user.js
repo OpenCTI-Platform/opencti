@@ -103,12 +103,15 @@ export const userWithOrigin = (req, user) => {
   // - In audit logs to identify the user
   // - In stream message to also identifier the user
   // - In logging system to know the level of the error message
+  const headers_metadata = R.mergeAll((user.headers_audit ?? [])
+    .map((header) => ({ [header]: req.header(header) })));
   const origin = {
     socket: 'query',
     ip: req?.ip,
-    user_id: user?.id,
-    group_ids: user?.group_ids,
-    organization_ids: user?.organizations?.map((o) => o.internal_id) ?? [],
+    user_id: user.id,
+    group_ids: user.group_ids,
+    organization_ids: user.organizations?.map((o) => o.internal_id) ?? [],
+    user_metadata: { ...headers_metadata },
     referer: req?.headers.referer,
     applicant_id: req?.headers['opencti-applicant-id'],
     call_retry_number: req?.headers['opencti-retry-number'],
@@ -1267,7 +1270,7 @@ export const internalAuthenticateUser = async (context, req, user, provider, { t
   const userOrigin = userWithOrigin(req, sessionUser);
   if (!isSessionRefresh) {
     await publishUserAction({
-      user: userWithOrigin(req, logged),
+      user: userOrigin,
       event_type: 'authentication',
       event_access: 'administration',
       event_scope: 'login',

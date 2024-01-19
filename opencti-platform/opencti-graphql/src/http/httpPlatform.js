@@ -310,41 +310,43 @@ const createApp = async (app) => {
       const referer = extractRefererPathFromReq(req) ?? '/';
       const provider = req.session.session_provider?.provider;
       const { user } = req.session;
-      const withOrigin = userWithOrigin(req, user);
-      await publishUserAction({
-        user: withOrigin,
-        event_type: 'authentication',
-        event_access: 'administration',
-        event_scope: 'logout',
-        context_data: undefined
-      });
-      await delUserContext(user);
-      res.clearCookie(OPENCTI_SESSION);
-      req.session.destroy(() => {
-        const strategy = passport._strategy(provider);
-        if (strategy) {
-          if (strategy.logout_remote === true && strategy.logout) {
-            req.user = user; // Needed for passport
-            strategy.logout(req, (error, request) => {
-              if (error) {
-                setCookieError(res, 'Error generating logout uri');
-                next(error);
-              } else {
-                res.redirect(request);
-              }
-            });
+      if (user) {
+        const withOrigin = userWithOrigin(req, user);
+        await publishUserAction({
+          user: withOrigin,
+          event_type: 'authentication',
+          event_access: 'administration',
+          event_scope: 'logout',
+          context_data: undefined
+        });
+        await delUserContext(user);
+        res.clearCookie(OPENCTI_SESSION);
+        req.session.destroy(() => {
+          const strategy = passport._strategy(provider);
+          if (strategy) {
+            if (strategy.logout_remote === true && strategy.logout) {
+              req.user = user; // Needed for passport
+              strategy.logout(req, (error, request) => {
+                if (error) {
+                  setCookieError(res, 'Error generating logout uri');
+                  next(error);
+                } else {
+                  res.redirect(request);
+                }
+              });
+            } else {
+              res.redirect(referer);
+            }
           } else {
-            res.redirect(referer);
+            const headerStrategy = HEADERS_AUTHENTICATORS.find((h) => h.provider === provider);
+            if (headerStrategy && headerStrategy.logout_uri) {
+              res.redirect(headerStrategy.logout_uri);
+            } else {
+              res.redirect(referer);
+            }
           }
-        } else {
-          const headerStrategy = HEADERS_AUTHENTICATORS.find((h) => h.provider === provider);
-          if (headerStrategy && headerStrategy.logout_uri) {
-            res.redirect(headerStrategy.logout_uri);
-          } else {
-            res.redirect(referer);
-          }
-        }
-      });
+        });
+      }
     } catch (e) {
       setCookieError(res, e?.message);
       next(e);

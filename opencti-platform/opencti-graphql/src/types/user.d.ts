@@ -17,6 +17,7 @@ interface UserOrigin {
   organization_ids?: string[];
   applicant_id?: string;
   referer?: string;
+  user_metadata?: object;
 }
 
 interface AuthUser extends BasicStoreIdentifier {
