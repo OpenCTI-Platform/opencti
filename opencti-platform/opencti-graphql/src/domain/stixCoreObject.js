@@ -213,9 +213,7 @@ export const askElementEnrichmentForConnector = async (context, user, enrichedId
     entity_name: extractEntityRepresentativeName(element),
     entity_type: element.entity_type
   };
-  if (element) {
-    contextData = completeContextDataForEntity(contextData, element);
-  }
+  contextData = completeContextDataForEntity(contextData, element);
   await publishUserAction({
     user,
     event_access: 'extended',
