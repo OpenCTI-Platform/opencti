@@ -236,6 +236,7 @@ export const buildOCTIExtensions = (instance: StoreObject): S.StixOpenctiExtensi
     participant_ids: (instance[INPUT_PARTICIPANT] ?? []).map((m) => m.internal_id),
     authorized_members: instance.authorized_members ?? undefined,
     workflow_id: instance.x_opencti_workflow_id,
+    labels_ids: instance['object-label'] ?? [],
   };
   return cleanObject(octiExtensions);
 };

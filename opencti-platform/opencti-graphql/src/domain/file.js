@@ -2,7 +2,7 @@ import * as R from 'ramda';
 import { logApp } from '../config/conf';
 import { deleteFile, loadFile, upload, uploadJobImport } from '../database/file-storage';
 import { internalLoadById } from '../database/middleware-loader';
-import { buildContextDataForFile, publishUserAction } from '../listener/UserActionListener';
+import { buildContextDataForFile, completeContextDataForEntity, publishUserAction } from '../listener/UserActionListener';
 import { stixCoreObjectImportDelete } from './stixCoreObject';
 import { extractEntityRepresentativeName } from '../database/entity-representative';
 import { allFilesForPaths, allRemainingFilesCount } from '../modules/internal/document/document-domain';
