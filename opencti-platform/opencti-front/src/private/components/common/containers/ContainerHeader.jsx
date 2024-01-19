@@ -22,6 +22,8 @@ import Select from '@mui/material/Select';
 import MenuItem from '@mui/material/MenuItem';
 import CircularProgress from '@mui/material/CircularProgress';
 import { makeStyles } from '@mui/styles';
+import Box from '@mui/material/Box';
+import { useSettingsMessagesBannerHeight } from '../../settings/settings_messages/SettingsMessagesBanner';
 import StixCoreObjectSubscribers from '../stix_core_objects/StixCoreObjectSubscribers';
 import FormAuthorizedMembersDialog from '../form/FormAuthorizedMembersDialog';
 import ExportButtons from '../../../../components/ExportButtons';
@@ -69,6 +71,8 @@ const useStyles = makeStyles({
   actions: {
     margin: '-6px 0 0 0',
     float: 'right',
+  },
+  actionButtons: {
     display: 'flex',
   },
   export: {
@@ -738,16 +742,21 @@ const ContainerHeader = (props) => {
     }
   };
 
-  let className = 'containerDefault';
-  if (knowledge) {
-    className = 'containerKnowledge';
+  const settingsMessagesBannerHeight = useSettingsMessagesBannerHeight();
+  // containerDefault style
+  let containerStyle = {
+    marginTop: 0,
+  };
+  if (knowledge || currentMode === 'graph' || currentMode === 'correlation') {
+    // container knowledge / graph style
+    containerStyle = {
+      position: 'absolute',
+      top: 140 + settingsMessagesBannerHeight,
+      right: 24,
+    };
   }
-  if (currentMode === 'graph' || currentMode === 'correlation') {
-    className = 'containerGraph';
-  }
-
   return (
-    <div className={classes[className]}>
+    <Box sx={containerStyle}>
       {!knowledge && (
         <Tooltip
           title={
@@ -874,10 +883,10 @@ const ContainerHeader = (props) => {
         </div>
       )}
       <div className={classes.actions}>
-        {enableQuickSubscription && (
-          <StixCoreObjectSubscribers elementId={container.id} />
-        )}
-        <ToggleButtonGroup size="small" color="secondary" exclusive={false}>
+        <div className={classes.actionButtons}>
+          {enableQuickSubscription && (
+            <StixCoreObjectSubscribers elementId={container.id} />
+          )}
           <Security
             needs={[KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS]}
             hasAccess={!!enableManageAuthorizedMembers}
@@ -1069,10 +1078,10 @@ const ContainerHeader = (props) => {
               <StixCoreObjectEnrichment stixCoreObjectId={container.id} />
             )}
           </>
-        </ToggleButtonGroup>
+        </div>
       </div>
       <div className="clearfix" />
-    </div>
+    </Box>
   );
 };
 
