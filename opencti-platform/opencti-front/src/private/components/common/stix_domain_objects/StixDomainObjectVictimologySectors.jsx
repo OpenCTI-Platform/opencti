@@ -650,6 +650,7 @@ class StixDomainObjectVictimologySectorsComponent extends Component {
             open={openExports}
             handleToggle={this.handleToggleExports.bind(this)}
             paginationOptions={paginationOptions}
+            exportContext={{ entity_type: 'stix-core-relationship' }}
           />
         </Security>
         <Security needs={[KNOWLEDGE_KNUPDATE]}>

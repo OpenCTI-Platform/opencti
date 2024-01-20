@@ -69,9 +69,8 @@ const StixDomainObjectAttackPatterns = ({
                 currentView={view}
                 defaultStartTime={defaultStartTime}
                 defaultStopTime={defaultStopTime}
-                handleToggleExports={
-                  disableExport ? null : helpers.handleToggleExports
-                }
+                exportContext={{ entity_type: 'stix-core-relationship' }}
+                handleToggleExports={disableExport ? null : helpers.handleToggleExports}
                 openExports={openExports}
               />
             );
