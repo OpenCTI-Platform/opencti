@@ -24,6 +24,14 @@ const useStyles = makeStyles(() => ({
     float: 'left',
     marginTop: -15,
   },
+  paper: {
+    height: '100%',
+    minHeight: '100%',
+    margin: 0,
+    padding: '15px',
+    borderRadius: 6,
+    position: 'relative',
+  },
 }));
 
 interface TriggersProps {
@@ -103,7 +111,7 @@ const Triggers: FunctionComponent<TriggersProps> = ({
   const [openLive, setOpenLive] = useState(false);
   const [openDigest, setOpenDigest] = useState(false);
   return (
-    <Grid item={true} xs={12} style={{ marginTop: 30, marginBottom: 15 }}>
+    <Grid item={true} xs={12} style={{ marginTop: 30 }}>
       <Typography variant="h4" gutterBottom={true} style={{ float: 'left' }}>
         {t_i18n('Triggers and Digests')}
       </Typography>
@@ -146,15 +154,7 @@ const Triggers: FunctionComponent<TriggersProps> = ({
       <Paper
         ref={ref}
         variant="outlined"
-        sx={{ marginTop: 0,
-          maxHeight: 500,
-          overflow: 'auto',
-          height: '100%',
-          minHeight: '100%',
-          margin: 0,
-          padding: '15px',
-          borderRadius: '6px',
-          listStyleType: 'none' }}
+        classes={{ root: classes.paper }}
       >
         <ColumnsLinesTitles
           dataColumns={dataColumns}

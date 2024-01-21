@@ -91,8 +91,8 @@ const DashboardSettings = () => {
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
   return (
-    <span>
-      <IconButton onClick={handleOpen} size="medium">
+    <>
+      <IconButton onClick={handleOpen} size="medium" color="primary">
         <SettingsOutlined fontSize="small" />
       </IconButton>
       <Dialog
@@ -141,7 +141,7 @@ const DashboardSettings = () => {
                     ({ node: { id } }) => !dashboards.some((d) => d.id === id),
                   );
                   return (
-                    <div>
+                    <>
                       <FormControl style={{ width: '100%' }}>
                         <InputLabel id="timeField">
                           {t_i18n('Date reference')}
@@ -216,7 +216,7 @@ const DashboardSettings = () => {
                           ))}
                         </Select>
                       </FormControl>
-                    </div>
+                    </>
                   );
                 }
                 return <div />;
@@ -228,7 +228,7 @@ const DashboardSettings = () => {
           <Button onClick={handleClose}>{t_i18n('Close')}</Button>
         </DialogActions>
       </Dialog>
-    </span>
+    </>
   );
 };
 

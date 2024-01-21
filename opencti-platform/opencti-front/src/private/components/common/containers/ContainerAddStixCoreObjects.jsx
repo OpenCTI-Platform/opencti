@@ -414,7 +414,7 @@ const ContainerAddStixCoreObjects = (props) => {
     if (simple) {
       return (
         <IconButton
-          color="secondary"
+          color="primary"
           aria-label="Add"
           onClick={() => setOpen(true)}
           classes={{ root: classes.createButtonSimple }}

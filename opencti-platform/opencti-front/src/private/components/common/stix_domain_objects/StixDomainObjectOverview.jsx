@@ -332,7 +332,7 @@ class StixDomainObjectOverview extends Component {
                     >
                       <BrushOutlined
                         fontSize="small"
-                        color={stixIds.length === 0 ? 'inherit' : 'secondary'}
+                        color={stixIds.length === 0 ? 'inherit' : 'primary'}
                       />
                     </IconButton>
                   </div>

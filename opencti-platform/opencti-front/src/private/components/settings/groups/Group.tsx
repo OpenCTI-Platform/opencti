@@ -302,17 +302,10 @@ const Group = ({ groupData }: { groupData: Group_group$key }) => {
             </Grid>
           </Paper>
         </Grid>
-        <Grid
-          container={true}
-          spacing={3}
-          classes={{ container: classes.gridContainer }}
-          style={{ marginTop: 10, marginLeft: 0 }}
-        >
-          <Triggers recipientId={group.id} filterKey="authorized_members.id" />
-          <GroupUsers groupId={group.id} />
-        </Grid>
+        <Triggers recipientId={group.id} filterKey="authorized_members.id" />
+        <GroupUsers groupId={group.id} />
       </Grid>
-      <GroupEdition groupId={group.id}/>
+      <GroupEdition groupId={group.id} />
     </div>
   );
 };

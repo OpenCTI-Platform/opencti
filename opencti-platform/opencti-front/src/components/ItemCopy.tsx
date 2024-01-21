@@ -72,6 +72,7 @@ const ItemCopy: FunctionComponent<ItemCopyProps> = ({
         }}
       >
         <ContentCopyOutlined
+          color="primary"
           sx={{ fontSize: variant === 'inLine' ? 12 : 18 }}
         />
       </span>

@@ -242,6 +242,7 @@ class ContainerStixCoreObjectPopover extends Component {
     return (
       <div className={classes.container}>
         <IconButton
+          color="primary"
           onClick={this.handleOpen.bind(this)}
           disabled={this.props.menuDisable ?? false}
           aria-haspopup="true"

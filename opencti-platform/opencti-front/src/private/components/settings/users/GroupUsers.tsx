@@ -18,9 +18,10 @@ const useStyles = makeStyles<Theme>(() => ({
   paper: {
     height: '100%',
     minHeight: '100%',
-    margin: '28px 0 0 0',
+    margin: '10px 0 0 0',
     padding: '15px',
     borderRadius: 6,
+    position: 'relative',
   },
 }));
 
@@ -93,11 +94,11 @@ const GroupUsers: FunctionComponent<GroupUsersProps> = ({ groupId }) => {
     },
   };
   return (
-    <Grid item={true} xs={12} style={{ marginTop: 40 }}>
+    <Grid item={true} xs={12} style={{ marginTop: 37 }}>
       <Typography
         variant="h4"
         gutterBottom={true}
-        style={{ float: 'left', marginRight: 12 }}
+        style={{ float: 'left' }}
       >
         {t_i18n('Members')}
       </Typography>
@@ -108,6 +109,7 @@ const GroupUsers: FunctionComponent<GroupUsersProps> = ({ groupId }) => {
           keyword={searchTerm}
         />
       </div>
+      <div className="clearfix" />
       <Paper classes={{ root: classes.paper }} variant="outlined">
         <ColumnsLinesTitles
           dataColumns={dataColumns}

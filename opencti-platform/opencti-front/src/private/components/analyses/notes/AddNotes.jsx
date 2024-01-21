@@ -54,9 +54,9 @@ class AddNotes extends Component {
       paginationOptions,
     } = this.props;
     return (
-      <div>
+      <>
         <IconButton
-          color="secondary"
+          color="primary"
           aria-label="Add"
           onClick={this.handleOpen.bind(this)}
           classes={{ root: classes.createButton }}
@@ -142,7 +142,7 @@ class AddNotes extends Component {
           inputValue={this.state.search}
           paginationOptions={{ search: this.state.search }}
         />
-      </div>
+      </>
     );
   }
 }

@@ -13,7 +13,7 @@ import { QueryRenderer } from '../../../../relay/environment';
 import { useFormatter } from '../../../../components/i18n';
 import useGranted, { SETTINGS_SETACCESSES } from '../../../../utils/hooks/useGranted';
 import ItemIcon from '../../../../components/ItemIcon';
-import Drawer, { DrawerVariant } from '../drawer/Drawer';
+import Drawer from '../drawer/Drawer';
 import { computeLink } from '../../../../utils/Entity';
 import type { Theme } from '../../../../components/Theme';
 
