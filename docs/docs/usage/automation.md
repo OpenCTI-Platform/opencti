@@ -23,7 +23,7 @@ You will then be able to:
 
 ## Playbook philosophy
 
-Consider Playbook as STIX 2.1 bundle pipeline. 
+Consider Playbook as a STIX 2.1 bundle pipeline. 
 
 Initiating with a component listening to a data stream, each subsequent component in the playbook processes a received STIX bundle. These components have the ability to modify the bundle and subsequently transmit the altered result to connected components.
 
