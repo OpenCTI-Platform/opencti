@@ -1208,8 +1208,8 @@ export const elFindByIds = async (context, user, ids, opts = {}) => {
     if (types && types.length > 0) {
       const typesShould = types.map((typeShould) => (
         [
-          { terms: { 'entity_type.keyword': typeShould } },
-          { terms: { 'parent_types.keyword': typeShould } }
+          { term: { 'entity_type.keyword': typeShould } },
+          { term: { 'parent_types.keyword': typeShould } }
         ]
       )).flat();
       const shouldType = {
