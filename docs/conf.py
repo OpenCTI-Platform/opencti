@@ -19,11 +19,11 @@ sys.path.insert(0, os.path.abspath(".."))
 # -- Project information -----------------------------------------------------
 
 project = "OpenCTI client for Python"
-copyright = "2020, OpenCTI Project"
+copyright = "2024, Filigran"
 author = "OpenCTI Project"
 
 # The full version, including alpha/beta/rc tags
-release = "4.2.0"
+release = "5.12.20"
 
 master_doc = "index"
 
