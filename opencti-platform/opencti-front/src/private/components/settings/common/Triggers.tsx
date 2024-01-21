@@ -31,6 +31,7 @@ const useStyles = makeStyles(() => ({
     padding: '15px',
     borderRadius: 6,
     position: 'relative',
+    listStyleType: 'none',
   },
 }));
 

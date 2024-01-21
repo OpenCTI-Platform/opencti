@@ -170,7 +170,7 @@ class Labels extends Component {
       },
     };
     return (
-      <div>
+      <>
         <ListLines
           sortBy={sortBy}
           orderAsc={orderAsc}
@@ -216,7 +216,7 @@ class Labels extends Component {
           type="Label"
           variant="medium"
         />
-      </div>
+      </>
     );
   }
 

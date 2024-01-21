@@ -17,7 +17,6 @@ import MoreVert from '@mui/icons-material/MoreVert';
 import inject18n from '../../../../components/i18n';
 import { commitMutation, QueryRenderer } from '../../../../relay/environment';
 import MarkingDefinitionEdition from './MarkingDefinitionEdition';
-import Loader from '../../../../components/Loader';
 
 const styles = () => ({
   container: {
@@ -146,7 +145,7 @@ class MarkingDefinitionPopover extends Component {
                 />
               );
             }
-            return <Loader variant="inElement" />;
+            return <div />;
           }}
         />
         <Dialog

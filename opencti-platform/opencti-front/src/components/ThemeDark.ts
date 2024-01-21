@@ -137,8 +137,13 @@ const ThemeDark = (
     },
     MuiCssBaseline: {
       styleOverrides: {
+        html: {
+          scrollbarColor: `${accent || '#01478d'} ${paper || '#001e3c'}`,
+          scrollbarWidth: 'thin',
+        },
         body: {
-          scrollbarColor: '#6b6b6b #2b2b2b',
+          scrollbarColor: `${accent || '#01478d'} ${paper || '#001e3c'}`,
+          scrollbarWidth: 'thin',
           '&::-webkit-scrollbar, & *::-webkit-scrollbar': {
             backgroundColor: paper || '#001e3c',
           },

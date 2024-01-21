@@ -135,16 +135,21 @@ const ThemeLight = (
     },
     MuiCssBaseline: {
       styleOverrides: {
+        html: {
+          scrollbarColor: `${accent || '#d3eaff'} ${paper || '#ffffff'}`,
+          scrollbarWidth: 'thin',
+        },
         body: {
-          scrollbarColor: '#6b6b6b #2b2b2b',
+          scrollbarColor: `${accent || '#d3eaff'} ${paper || '#ffffff'}`,
+          scrollbarWidth: 'thin',
           '&::-webkit-scrollbar, & *::-webkit-scrollbar': {
-            backgroundColor: paper || '#f3f6f9',
+            backgroundColor: paper || '#ffffff',
           },
           '&::-webkit-scrollbar-thumb, & *::-webkit-scrollbar-thumb': {
             borderRadius: 8,
             backgroundColor: accent || '#d3eaff',
             minHeight: 24,
-            border: `3px solid ${paper || '#f3f6f9'}`,
+            border: `3px solid ${paper || '#ffffff'}`,
           },
           '&::-webkit-scrollbar-thumb:focus, & *::-webkit-scrollbar-thumb:focus':
             {
@@ -251,7 +256,7 @@ const ThemeLight = (
             backgroundColor: '#00bcd4 !important',
           },
           '.leaflet-container': {
-            backgroundColor: `${paper || '#f3f6f9'} !important`,
+            backgroundColor: `${paper || '#ffffff'} !important`,
           },
           '.react-grid-item .react-resizable-handle::after': {
             borderRight: '2px solid rgba(0, 0, 0, 0.6) !important',
