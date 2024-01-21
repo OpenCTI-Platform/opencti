@@ -64,13 +64,14 @@ const stixCoreRelationshipResolvers = {
     stixCoreRelationshipsNumber: (_, args, context) => stixCoreRelationshipsNumber(context, context.user, args),
     stixCoreRelationshipsExportFiles: (_, { exportContext, first }, context) => {
       const path = `export/${exportContext.entity_type}${exportContext.entity_id ? `/${exportContext.entity_id}` : ''}`;
-      return paginatedForPathWithEnrichment(context, context.user, path, exportContext.entity_id, { first });
+      const opts = { first, entity_id: exportContext.entity_id, entity_type: exportContext.entity_type };
+      return paginatedForPathWithEnrichment(context, context.user, path, exportContext.entity_id, opts);
     },
   },
   StixCoreRelationshipsOrdering: stixCoreRelationshipOptions.StixCoreRelationshipsOrdering,
   StixCoreRelationship: {
-    from: (rel, _, context) => loadByIdLoader.load(rel.fromId, context, context.user),
-    to: (rel, _, context) => loadByIdLoader.load(rel.toId, context, context.user),
+    from: (rel, _, context) => (rel.from ? rel.from : loadByIdLoader.load({ id: rel.fromId, type: rel.fromType }, context, context.user)),
+    to: (rel, _, context) => (rel.to ? rel.to : loadByIdLoader.load({ id: rel.toId, type: rel.toType }, context, context.user)),
     toStix: (rel, _, context) => stixLoadByIdStringify(context, context.user, rel.id),
     creators: (rel, _, context) => creatorsLoader.load(rel.creator_id, context, context.user),
     createdBy: (rel, _, context) => createdByLoader.load(rel.id, context, context.user),

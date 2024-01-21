@@ -51,7 +51,8 @@ const stixDomainObjectResolvers = {
     },
     stixDomainObjectsExportFiles: (_, { exportContext, first }, context) => {
       const path = `export/${exportContext.entity_type}${exportContext.entity_id ? `/${exportContext.entity_id}` : ''}`;
-      return paginatedForPathWithEnrichment(context, context.user, path, exportContext.entity_id, { first });
+      const opts = { first, entity_type: exportContext.entity_type };
+      return paginatedForPathWithEnrichment(context, context.user, path, exportContext.entity_id, opts);
     },
   },
   StixDomainObjectsOrdering: StixDomainObjectsOptions.StixDomainObjectsOrdering,

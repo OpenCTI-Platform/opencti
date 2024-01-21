@@ -61,6 +61,7 @@ export const findById: DomainFindById<BasicStoreEntityDocument> = (context: Auth
 
 interface FilesOptions<T extends BasicStoreCommon> extends EntityOptions<T> {
   entity_id?: string
+  entity_type?: string
   modifiedSince?: string | null
   prefixMimeTypes?: string[]
   maxFileSize?: number
@@ -166,7 +167,7 @@ export const paginatedForPathWithEnrichment = async (context: AuthContext, user:
   // region enrichment only possible for single path resolution
   // Enrich pagination for import images
   if (path.startsWith('import/') && entity_id) {
-    const entity = await internalLoadById(context, user, entity_id);
+    const entity = await internalLoadById(context, user, entity_id, { type: opts?.entity_type });
     // Get files information to complete
     const internalFiles = entity?.x_opencti_files ?? [];
     if (internalFiles.length > 0) {

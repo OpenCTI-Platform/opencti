@@ -14,7 +14,7 @@ import {
   timeSeriesRelations,
   updateAttribute,
 } from '../../../src/database/middleware';
-import { elFindByIds, elLoadById, elRawSearch, ES_IGNORE_THROTTLED } from '../../../src/database/engine';
+import { elFindByIds, elLoadById, elRawSearch } from '../../../src/database/engine';
 import { ADMIN_USER, testContext } from '../../utils/testQuery';
 import {
   ENTITY_TYPE_CAMPAIGN,
@@ -712,7 +712,6 @@ const internalIdCounting = async (ids) => {
   };
   const query = {
     index: READ_DATA_INDICES,
-    ignore_throttled: ES_IGNORE_THROTTLED,
     size: 5000,
     body: {
       query: {

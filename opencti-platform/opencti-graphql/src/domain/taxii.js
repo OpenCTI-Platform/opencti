@@ -9,13 +9,13 @@ import { deleteElementById, stixLoadByIds, updateAttribute } from '../database/m
 import { listEntities, storeLoadById } from '../database/middleware-loader';
 import { ForbiddenAccess, FunctionalError } from '../config/errors';
 import { delEditContext, notify, setEditContext } from '../database/redis';
-import { BUS_TOPICS } from '../config/conf';
+import conf, { BUS_TOPICS } from '../config/conf';
 import { addFilter } from '../utils/filtering/filtering-utils';
 import { convertFiltersToQueryOptions } from '../utils/filtering/filtering-resolution';
 import { publishUserAction } from '../listener/UserActionListener';
 import { MEMBER_ACCESS_RIGHT_VIEW, SYSTEM_USER, TAXIIAPI_SETCOLLECTIONS } from '../utils/access';
 
-const MAX_PAGINATION_ELEMENTS = 500;
+const MAX_TAXII_PAGINATION = conf.get('app:data_sharing:taxii:max_pagination_result') || 500;
 const STIX_MEDIA_TYPE = 'application/stix+json;version=2.1';
 
 // Taxii graphQL handlers
@@ -120,10 +120,10 @@ export const collectionQuery = async (context, user, collection, args) => {
   const filters = collection.filters ? JSON.parse(collection.filters) : undefined;
   const options = await convertFiltersToQueryOptions(filters, { after: added_after });
   options.after = next;
-  let maxSize = MAX_PAGINATION_ELEMENTS;
+  let maxSize = MAX_TAXII_PAGINATION;
   if (limit) {
     const paramLimit = parseInt(limit, 10);
-    maxSize = paramLimit > MAX_PAGINATION_ELEMENTS ? MAX_PAGINATION_ELEMENTS : paramLimit;
+    maxSize = paramLimit > MAX_TAXII_PAGINATION ? MAX_TAXII_PAGINATION : paramLimit;
   }
   options.first = maxSize;
   if (type) options.types = type.split(',');

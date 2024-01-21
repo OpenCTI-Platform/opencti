@@ -23,7 +23,7 @@ import { createStreamProcessor, lockResource, type StreamProcessor, } from '../d
 import { executionContext, SYSTEM_USER } from '../utils/access';
 import { getEntityFromCache } from '../database/cache';
 import { ENTITY_TYPE_SETTINGS } from '../schema/internalObject';
-import { elLoadById, isAttachmentProcessorEnabled, } from '../database/engine';
+import { isAttachmentProcessorEnabled, } from '../database/engine';
 import { elIndexFiles, elUpdateFilesWithEntityRestrictions } from '../database/file-search';
 import { getFileContent } from '../database/file-storage';
 import type { AuthContext } from '../types/user';
@@ -34,9 +34,10 @@ import { STIX_EXT_OCTI } from '../types/stix-extensions';
 import { getManagerConfigurationFromCache, updateManagerConfigurationLastRun } from '../modules/managerConfiguration/managerConfiguration-domain';
 import { allFilesForPaths, getIndexFromDate } from '../modules/internal/document/document-domain';
 import { buildOptionsFromFileManager } from '../domain/file';
+import { internalLoadById } from '../database/middleware-loader';
 
 const FILE_INDEX_MANAGER_KEY = conf.get('file_index_manager:lock_key');
-const SCHEDULE_TIME = conf.get('file_index_manager:interval') || 6000; // 1 minute
+const SCHEDULE_TIME = conf.get('file_index_manager:interval') || 60000; // 1 minute
 const STREAM_SCHEDULE_TIME = 10000;
 const FILE_INDEX_MANAGER_STREAM_KEY = conf.get('file_index_manager:stream_lock_key');
 
@@ -102,13 +103,14 @@ const handleStreamEvents = async (streamEvents: Array<SseEvent<StreamDataEvent>>
         const updateEvent: UpdateEvent = event.data as UpdateEvent;
         const stix = updateEvent.data;
         const entityId = stix.extensions[STIX_EXT_OCTI].id;
+        const entityType = stix.extensions[STIX_EXT_OCTI].type;
         const stixFiles = stix.extensions[STIX_EXT_OCTI].files;
         // test if markings or organization sharing have been updated
         const isDataRestrictionsUpdate = updateEvent.context?.patch && updateEvent.context.patch
           .map((op) => op.path && (op.path.includes('granted_refs') || op.path.includes('object_marking_refs')));
         if (stixFiles?.length > 0 && isDataRestrictionsUpdate) {
           // update all indexed files for this entity
-          const entity = await elLoadById(context, SYSTEM_USER, entityId);
+          const entity = await internalLoadById(context, SYSTEM_USER, entityId, { type: entityType });
           await elUpdateFilesWithEntityRestrictions(entity);
         }
       }

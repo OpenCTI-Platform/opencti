@@ -3,7 +3,7 @@ import { batchListThroughGetTo, deleteElementById, distributionRelations, timeSe
 import { ABSTRACT_STIX_OBJECT, ABSTRACT_STIX_RELATIONSHIP, ENTITY_TYPE_IDENTITY } from '../schema/general';
 import { buildRelationsFilter, listEntities, listRelations, storeLoadById } from '../database/middleware-loader';
 import { fillTimeSeries, READ_INDEX_INFERRED_RELATIONSHIPS, READ_INDEX_STIX_CORE_RELATIONSHIPS, READ_INDEX_STIX_SIGHTING_RELATIONSHIPS } from '../database/utils';
-import { elCount, ES_MAX_PAGINATION } from '../database/engine';
+import { elCount, MAX_RUNTIME_RESOLUTION_SIZE } from '../database/engine';
 import { RELATION_CREATED_BY, RELATION_OBJECT_MARKING } from '../schema/stixRefRelationship';
 import { ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
 import { STIX_SPEC_VERSION, stixCoreRelationshipsMapping } from '../database/stix';
@@ -15,7 +15,7 @@ export const buildArgsFromDynamicFilters = async (context, user, args) => {
   const { dynamicFrom, dynamicTo } = args;
   const listEntitiesWithFilters = async (filters) => listEntities(context, user, [ABSTRACT_STIX_OBJECT], {
     connectionFormat: false,
-    first: ES_MAX_PAGINATION,
+    first: MAX_RUNTIME_RESOLUTION_SIZE,
     baseData: true,
     filters
   });

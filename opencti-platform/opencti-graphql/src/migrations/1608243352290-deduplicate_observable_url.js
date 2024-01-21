@@ -1,5 +1,5 @@
 import * as R from 'ramda';
-import { ES_IGNORE_THROTTLED, elRawSearch } from '../database/engine';
+import { elRawSearch } from '../database/engine';
 import { READ_INDEX_STIX_CYBER_OBSERVABLES } from '../database/utils';
 import { mergeEntities, patchAttribute } from '../database/middleware';
 import { generateStandardId } from '../schema/identifier';
@@ -11,7 +11,6 @@ export const up = async (next) => {
   // region find duplicates
   const query = {
     index: READ_INDEX_STIX_CYBER_OBSERVABLES,
-    ignore_throttled: ES_IGNORE_THROTTLED,
     body: {
       aggs: {
         url: {
@@ -41,7 +40,6 @@ export const up = async (next) => {
     // Find all elements with this key
     const findQuery = {
       index: READ_INDEX_STIX_CYBER_OBSERVABLES,
-      ignore_throttled: ES_IGNORE_THROTTLED,
       body: {
         query: {
           bool: {

@@ -10,18 +10,17 @@ import {
   buildPagination,
   cursorToOffset,
   ES_INDEX_PREFIX,
+  inferIndexFromConceptType,
   isEmptyField,
   isInferredIndex,
   isNotEmptyField,
   offsetToCursor,
   pascalize,
   READ_DATA_INDICES,
-  READ_ENTITIES_INDICES,
   READ_INDEX_INTERNAL_OBJECTS,
   READ_INDEX_STIX_DOMAIN_OBJECTS,
   READ_PLATFORM_INDICES,
   READ_RELATIONSHIPS_INDICES,
-  READ_RELATIONSHIPS_INDICES_WITHOUT_INFERRED,
   UPDATE_OPERATION_ADD,
   waitInSec,
   WRITE_PLATFORM_INDICES
@@ -119,8 +118,9 @@ import { rule_definitions } from '../rules/rules-definition';
 const ELK_ENGINE = 'elk';
 const OPENSEARCH_ENGINE = 'opensearch';
 export const ES_MAX_CONCURRENCY = conf.get('elasticsearch:max_concurrency');
-export const ES_IGNORE_THROTTLED = conf.get('elasticsearch:search_ignore_throttled');
-export const ES_MAX_PAGINATION = conf.get('elasticsearch:max_pagination_result');
+export const ES_MAX_PAGINATION = conf.get('elasticsearch:max_pagination_result') || 500;
+export const MAX_BULK_OPERATIONS = conf.get('elasticsearch:max_bulk_operations') || 5000;
+export const MAX_RUNTIME_RESOLUTION_SIZE = conf.get('elasticsearch:max_runtime_resolutions') || 5000;
 const ES_INDEX_PATTERN_SUFFIX = conf.get('elasticsearch:index_creation_pattern');
 const ES_MAX_RESULT_WINDOW = conf.get('elasticsearch:max_result_window') || 100000;
 const ES_INDEX_SHARD_NUMBER = conf.get('elasticsearch:number_of_shards');
@@ -129,17 +129,15 @@ const ES_INDEX_REPLICA_NUMBER = conf.get('elasticsearch:number_of_replicas');
 const ES_PRIMARY_SHARD_SIZE = conf.get('elasticsearch:max_primary_shard_size') || '50gb';
 const ES_MAX_AGE = conf.get('elasticsearch:max_age') || '365d';
 const ES_MAX_DOCS = conf.get('elasticsearch:max_docs') || 75000000;
-const ES_MAX_BULK_RESOLUTIONS = conf.get('elasticsearch:max_bulk_resolutions') || 500;
-export const MAX_BULK_OPERATIONS = conf.get('elasticsearch:max_bulk_operations') || 5000;
 
 const TOO_MANY_CLAUSES = 'too_many_nested_clauses';
+export const BULK_TIMEOUT = '5m';
+const MAX_TERMS_SPLIT = 65000; // By default, Elasticsearch limits the terms query to a maximum of 65,536 terms. You can change this limit using the index.
 const ES_MAX_MAPPINGS = 3000;
 const ES_RETRY_ON_CONFLICT = 5;
 const MAX_EVENT_LOOP_PROCESSING_TIME = 50;
-export const BULK_TIMEOUT = '5m';
 const MAX_AGGREGATION_SIZE = 100;
-const MAX_JS_PARAMS = 65536; // Too prevent Maximum call stack size exceeded
-const MAX_SEARCH_SIZE = 5000;
+
 export const ROLE_FROM = 'from';
 export const ROLE_TO = 'to';
 const UNIMPACTED_ENTITIES_ROLE = [
@@ -392,9 +390,10 @@ export const buildDataRestrictions = async (context, user, opts = {}) => {
     // If user have organization management role, he can bypass this restriction.
     // If platform is for specific organization, only user from this organization can access empty defined
     const settings = await getEntityFromCache(context, user, ENTITY_TYPE_SETTINGS);
-    const excludedEntityMatches = STIX_ORGANIZATIONS_UNRESTRICTED
-      .map((t) => [{ match: { 'parent_types.keyword': t } }, { match_phrase: { 'entity_type.keyword': t } }])
-      .flat();
+    const excludedEntityMatches = [
+      { terms: { 'parent_types.keyword': STIX_ORGANIZATIONS_UNRESTRICTED } },
+      { terms: { 'entity_type.keyword': STIX_ORGANIZATIONS_UNRESTRICTED } }
+    ];
     if (settings.platform_organization) {
       if (user.inside_platform_organization) {
         // Data are visible independently of the organizations
@@ -879,7 +878,7 @@ export const RUNTIME_ATTRIBUTES = {
       // eslint-disable-next-line no-use-before-define
       const identities = await elPaginate(context, user, READ_INDEX_STIX_DOMAIN_OBJECTS, {
         types: [ENTITY_TYPE_IDENTITY],
-        first: MAX_SEARCH_SIZE,
+        first: MAX_RUNTIME_RESOLUTION_SIZE,
         connectionFormat: false,
       });
       return R.mergeAll(identities.map((i) => ({ [i.internal_id]: i.name })));
@@ -904,7 +903,7 @@ export const RUNTIME_ATTRIBUTES = {
     getParams: async (context, user) => {
       const countries = await elPaginate(context, user, READ_INDEX_STIX_DOMAIN_OBJECTS, {
         types: [ENTITY_TYPE_LOCATION_COUNTRY],
-        first: MAX_SEARCH_SIZE,
+        first: MAX_RUNTIME_RESOLUTION_SIZE,
         connectionFormat: false,
       });
       return R.mergeAll(countries.map((country) => ({ [country.internal_id]: country.name })));
@@ -929,7 +928,7 @@ export const RUNTIME_ATTRIBUTES = {
     getParams: async (context, user) => {
       const countries = await elPaginate(context, user, READ_INDEX_STIX_DOMAIN_OBJECTS, {
         types: [ENTITY_TYPE_LOCATION_COUNTRY],
-        first: MAX_SEARCH_SIZE,
+        first: MAX_RUNTIME_RESOLUTION_SIZE,
         connectionFormat: false,
       });
       return R.mergeAll(countries.map((country) => ({ [country.internal_id]: country.name })));
@@ -955,7 +954,7 @@ export const RUNTIME_ATTRIBUTES = {
       // eslint-disable-next-line no-use-before-define
       const users = await elPaginate(context, user, READ_INDEX_INTERNAL_OBJECTS, {
         types: [ENTITY_TYPE_USER],
-        first: MAX_SEARCH_SIZE,
+        first: MAX_RUNTIME_RESOLUTION_SIZE,
         connectionFormat: false,
       });
       return R.mergeAll(users.map((i) => ({ [i.internal_id]: i.name.replace(/[&/\\#,+[\]()$~%.'":*?<>{}]/g, '') })));
@@ -978,12 +977,7 @@ export const RUNTIME_ATTRIBUTES = {
         }
     `,
     getParams: async (context, user) => {
-      // eslint-disable-next-line no-use-before-define
-      const identities = await elPaginate(context, user, READ_ENTITIES_INDICES, {
-        types: [ENTITY_TYPE_MARKING_DEFINITION],
-        first: MAX_SEARCH_SIZE,
-        connectionFormat: false,
-      });
+      const identities = await getEntitiesListFromCache(context, user, ENTITY_TYPE_MARKING_DEFINITION);
       return R.mergeAll(identities.map((i) => ({ [i.internal_id]: i.definition })));
     },
   },
@@ -1007,7 +1001,7 @@ export const RUNTIME_ATTRIBUTES = {
       // eslint-disable-next-line no-use-before-define
       const users = await elPaginate(context, user, READ_INDEX_INTERNAL_OBJECTS, {
         types: [ENTITY_TYPE_USER],
-        first: MAX_SEARCH_SIZE,
+        first: MAX_RUNTIME_RESOLUTION_SIZE,
         connectionFormat: false,
       });
       return R.mergeAll(users.map((i) => ({ [i.internal_id]: i.name.replace(/[&/\\#,+[\]()$~%.'":*?<>{}]/g, '') })));
@@ -1033,7 +1027,7 @@ export const RUNTIME_ATTRIBUTES = {
       // eslint-disable-next-line no-use-before-define
       const users = await elPaginate(context, user, READ_INDEX_INTERNAL_OBJECTS, {
         types: [ENTITY_TYPE_USER],
-        first: MAX_SEARCH_SIZE,
+        first: MAX_RUNTIME_RESOLUTION_SIZE,
         connectionFormat: false,
       });
       return R.mergeAll(users.map((i) => ({ [i.internal_id]: i.name.replace(/[&/\\#,+[\]()$~%.'":*?<>{}]/g, '') })));
@@ -1154,66 +1148,8 @@ export const elConvertHits = async (data, opts = {}) => {
   return convertedHits;
 };
 
-export const elFindByFromAndTo = async (context, user, fromId, toId, relationshipType) => {
-  const mustTerms = [];
-  const markingRestrictions = await buildDataRestrictions(context, user);
-  mustTerms.push(...markingRestrictions.must);
-  mustTerms.push({
-    nested: {
-      path: 'connections',
-      query: {
-        bool: {
-          must: [
-            { match_phrase: { 'connections.internal_id.keyword': fromId } },
-            { query_string: { fields: ['connections.role'], query: '*_from' } }
-          ],
-        },
-      },
-    },
-  });
-  mustTerms.push({
-    nested: {
-      path: 'connections',
-      query: {
-        bool: {
-          must: [
-            { match_phrase: { 'connections.internal_id.keyword': toId } },
-            { query_string: { fields: ['connections.role'], query: '*_to' } }
-          ],
-        },
-      },
-    },
-  });
-  mustTerms.push({
-    bool: {
-      should: [
-        { match_phrase: { 'entity_type.keyword': relationshipType } },
-        { match_phrase: { 'parent_types.keyword': relationshipType } },
-      ],
-      minimum_should_match: 1,
-    },
-  });
-  const query = {
-    index: READ_RELATIONSHIPS_INDICES_WITHOUT_INFERRED,
-    size: MAX_SEARCH_SIZE,
-    ignore_throttled: ES_IGNORE_THROTTLED,
-    body: {
-      query: {
-        bool: {
-          must: mustTerms,
-          must_not: markingRestrictions.must_not,
-        },
-      },
-    },
-  };
-  const data = await elRawSearch(context, user, relationshipType, query).catch((e) => {
-    throw DatabaseError('Find by from and to fail', { cause: e, query });
-  });
-  return elConvertHits(data.hits.hits);
-};
-
 export const elFindByIds = async (context, user, ids, opts = {}) => {
-  const { indices = READ_DATA_INDICES, baseData = false, baseFields = BASE_FIELDS } = opts;
+  const { indices = [], baseData = false, baseFields = BASE_FIELDS } = opts;
   const { withoutRels = false, onRelationship = null, toMap = false, mapWithAllIds = false, type = null, forceAliases = false } = opts;
   const idsArray = Array.isArray(ids) ? ids : [ids];
   const types = (Array.isArray(type) || !type) ? type : [type];
@@ -1221,8 +1157,14 @@ export const elFindByIds = async (context, user, ids, opts = {}) => {
   if (processIds.length === 0) {
     return toMap ? {} : [];
   }
+  let computedIndices = indices;
+  // If no indices explicitly defined, compute them on the types
+  // If no types specified, fallback to generic READ_DATA_INDICES
+  if (isEmptyField(computedIndices)) {
+    computedIndices = isEmptyField(types) ? READ_DATA_INDICES : R.uniq(types.map((findType) => `${inferIndexFromConceptType(findType)}*`));
+  }
   let hits = {};
-  const groupIds = R.splitEvery(ES_MAX_BULK_RESOLUTIONS, idsArray);
+  const groupIds = R.splitEvery(MAX_TERMS_SPLIT, idsArray);
   for (let index = 0; index < groupIds.length; index += 1) {
     const mustTerms = [];
     const workingIds = groupIds[index];
@@ -1266,8 +1208,8 @@ export const elFindByIds = async (context, user, ids, opts = {}) => {
     if (types && types.length > 0) {
       const typesShould = types.map((typeShould) => (
         [
-          { match_phrase: { 'entity_type.keyword': typeShould } },
-          { match_phrase: { 'parent_types.keyword': typeShould } }
+          { terms: { 'entity_type.keyword': typeShould } },
+          { terms: { 'parent_types.keyword': typeShould } }
         ]
       )).flat();
       const shouldType = {
@@ -1305,9 +1247,8 @@ export const elFindByIds = async (context, user, ids, opts = {}) => {
         body.search_after = searchAfter;
       }
       const query = {
-        index: indices,
-        size: MAX_SEARCH_SIZE,
-        ignore_throttled: ES_IGNORE_THROTTLED,
+        index: computedIndices,
+        size: workingIds.length < ES_MAX_PAGINATION ? workingIds.length : ES_MAX_PAGINATION,
         _source: baseData ? baseFields : true,
         body,
       };
@@ -1320,7 +1261,7 @@ export const elFindByIds = async (context, user, ids, opts = {}) => {
       if (elements.length > 0) {
         const convertedHits = await elConvertHits(elements, { withoutRels, mapWithAllIds, toMap: true });
         hits = { ...hits, ...convertedHits };
-        if (elements.length < MAX_SEARCH_SIZE) {
+        if (elements.length < ES_MAX_PAGINATION) {
           hasNextPage = false;
         } else {
           const { sort } = elements[elements.length - 1];
@@ -1342,8 +1283,10 @@ export const elLoadById = async (context, user, id, opts = {}) => {
   }
   return R.head(hits);
 };
-export const elBatchIds = async (context, user, ids) => {
-  const hits = await elFindByIds(context, user, ids);
+export const elBatchIds = async (context, user, elements) => {
+  const ids = elements.map((e) => e.id);
+  const types = elements.map((e) => e.type);
+  const hits = await elFindByIds(context, user, ids, { type: types });
   return ids.map((id) => R.find((h) => h.internal_id === id, hits));
 };
 
@@ -2100,7 +2043,7 @@ const completeSpecialFilterKeys = async (context, user, inputFilters) => {
 
 const elQueryBodyBuilder = async (context, user, options) => {
   // eslint-disable-next-line no-use-before-define
-  const { ids = [], first = 200, after, orderBy = null, orderMode = 'asc', noSize = false, noSort = false, intervalInclude = false } = options;
+  const { ids = [], first = ES_MAX_PAGINATION, after, orderBy = null, orderMode = 'asc', noSize = false, noSort = false, intervalInclude = false } = options;
   const { types = null, search = null } = options;
   const filters = checkAndConvertFilters(options.filters, { noFiltersChecking: options.noFiltersChecking });
   const { startDate = null, endDate = null, dateAttribute = null } = options;
@@ -2275,7 +2218,6 @@ export const elHistogramCount = async (context, user, indexName, options = {}) =
   };
   const query = {
     index: indexName,
-    ignore_throttled: ES_IGNORE_THROTTLED,
     _source_excludes: '*', // Dont need to get anything
     body,
   };
@@ -2419,7 +2361,7 @@ export const elAggregationRelationsCount = async (context, user, indexName, opti
       },
     };
   }
-  const query = { index: indexName, ignore_throttled: ES_IGNORE_THROTTLED, body };
+  const query = { index: indexName, body };
   logApp.debug('[SEARCH] aggregationRelationsCount', { query });
   const isIdFields = field?.endsWith('internal_id');
   return elRawSearch(context, user, types, query)
@@ -2473,7 +2415,6 @@ export const elAggregationsList = async (context, user, indexName, aggregations,
   }
   const query = {
     index: indexName,
-    ignore_throttled: ES_IGNORE_THROTTLED,
     track_total_hits: true,
     _source: false,
     body,
@@ -2501,7 +2442,7 @@ export const elAggregationsList = async (context, user, indexName, aggregations,
 
 export const elPaginate = async (context, user, indexName, options = {}) => {
   // eslint-disable-next-line no-use-before-define
-  const { baseData = false, first = 200 } = options;
+  const { baseData = false, first = ES_MAX_PAGINATION } = options;
   const { types = null, connectionFormat = true } = options;
   const body = await elQueryBodyBuilder(context, user, options);
   if (body.size > ES_MAX_PAGINATION) {
@@ -2510,7 +2451,6 @@ export const elPaginate = async (context, user, indexName, options = {}) => {
   }
   const query = {
     index: indexName,
-    ignore_throttled: ES_IGNORE_THROTTLED,
     track_total_hits: true,
     _source: baseData ? BASE_FIELDS : true,
     body,
@@ -2529,7 +2469,7 @@ export const elPaginate = async (context, user, indexName, options = {}) => {
     );
 };
 export const elList = async (context, user, indexName, opts = {}) => {
-  const { first = MAX_SEARCH_SIZE, maxSize = undefined } = opts;
+  const { first = ES_MAX_PAGINATION, maxSize = undefined } = opts;
   let emitSize = 0;
   let hasNextPage = true;
   let continueProcess = true;
@@ -2549,7 +2489,7 @@ export const elList = async (context, user, indexName, opts = {}) => {
     const paginateOpts = { ...opts, first, after: searchAfter, connectionFormat: false };
     const elements = await elPaginate(context, user, indexName, paginateOpts);
     emitSize += elements.length;
-    const noMoreElements = elements.length === 0 || elements.length < (first ?? MAX_SEARCH_SIZE);
+    const noMoreElements = elements.length === 0 || elements.length < (first ?? ES_MAX_PAGINATION);
     const moreThanMax = maxSize ? emitSize >= maxSize : false;
     if (noMoreElements || moreThanMax) {
       if (elements.length > 0) {
@@ -2604,17 +2544,13 @@ export const elAttributeValues = async (context, user, field, opts = {}) => {
       values: {
         terms: {
           field: isDateOrNumber ? field : `${field}.keyword`,
-          size: first ?? MAX_JS_PARAMS,
+          size: first ?? ES_MAX_PAGINATION,
           order: { _key: orderMode },
         },
       },
     },
   };
-  const query = {
-    index: [READ_DATA_INDICES],
-    ignore_throttled: ES_IGNORE_THROTTLED,
-    body,
-  };
+  const query = { index: [READ_DATA_INDICES], body };
   const data = await elRawSearch(context, user, field, query);
   const { buckets } = data.aggregations.values;
   const values = (buckets ?? []).map((n) => n.key).filter((val) => (search ? val.includes(search.toLowerCase()) : true));
@@ -2715,20 +2651,21 @@ const getRelatedRelations = async (context, user, targetIds, elements, level, ca
     filters: filtersContent,
     filterGroups: [],
   };
-  const opts = { filters, connectionFormat: false, types: [ABSTRACT_BASIC_RELATIONSHIP] };
-  const hits = await elList(context, user, READ_RELATIONSHIPS_INDICES, opts);
-  const groupResults = R.splitEvery(MAX_JS_PARAMS, hits);
   const foundRelations = [];
-  for (let index = 0; index < groupResults.length; index += 1) {
-    const subRels = groupResults[index];
-    elements.unshift(...subRels.map((s) => ({ ...s, level })));
-    const internalIds = subRels.map((g) => g.internal_id);
-    const resolvedIds = internalIds.filter((f) => !cache[f]);
-    foundRelations.push(...resolvedIds);
-    resolvedIds.forEach((id) => {
-      cache.set(id, '');
-    });
-  }
+  const callback = async (hits) => {
+    for (let index = 0; index < hits.length; index += 1) {
+      const subRels = hits[index];
+      elements.unshift(...subRels.map((s) => ({ ...s, level })));
+      const internalIds = subRels.map((g) => g.internal_id);
+      const resolvedIds = internalIds.filter((f) => !cache[f]);
+      foundRelations.push(...resolvedIds);
+      resolvedIds.forEach((id) => {
+        cache.set(id, '');
+      });
+    }
+  };
+  const opts = { filters, connectionFormat: false, callback, types: [ABSTRACT_BASIC_RELATIONSHIP] };
+  await elList(context, user, READ_RELATIONSHIPS_INDICES, opts);
   // If relations find, need to recurs to find relations to relations
   if (foundRelations.length > 0) {
     const groups = R.splitEvery(MAX_BULK_OPERATIONS, foundRelations);

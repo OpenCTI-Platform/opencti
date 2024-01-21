@@ -23,6 +23,7 @@ import {
   stixDomainObjectEditField
 } from '../../domain/stixDomainObject';
 import type { Resolvers } from '../../generated/graphql';
+import { ENTITY_TYPE_WORKSPACE } from '../workspace/workspace-types';
 
 const loadByIdLoader = batchLoader(elBatchIds);
 const sectorsLoader = batchLoader(batchSectors);
@@ -40,7 +41,7 @@ const organizationResolvers: Resolvers = {
     members: (organization, args, context) => membersLoader.load(organization.id, context, context.user, args),
     subOrganizations: (organization, _, context) => subOrganizationsLoader.load(organization.id, context, context.user),
     parentOrganizations: (organization, _, context) => parentOrganizationsLoader.load(organization.id, context, context.user),
-    default_dashboard: (current, _, context) => loadByIdLoader.load(current.default_dashboard, context, context.user),
+    default_dashboard: (current, _, context) => loadByIdLoader.load({ id: current.default_dashboard, type: ENTITY_TYPE_WORKSPACE }, context, context.user),
     grantable_groups: (organization, _, context) => findGrantableGroups(context, context.user, organization),
   },
   User: {

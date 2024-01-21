@@ -40,8 +40,8 @@ const stixRefRelationshipResolvers = {
     schemaRelationsRefTypesMapping: () => schemaRelationsRefTypesMapping(),
   },
   StixRefRelationship: {
-    from: (rel, _, context) => (rel.from ? rel.from : loadByIdLoader.load(rel.fromId, context, context.user)),
-    to: (rel, _, context) => (rel.to ? rel.to : loadByIdLoader.load(rel.toId, context, context.user)),
+    from: (rel, _, context) => (rel.from ? rel.from : loadByIdLoader.load({ id: rel.fromId, type: rel.fromType }, context, context.user)),
+    to: (rel, _, context) => (rel.to ? rel.to : loadByIdLoader.load({ id: rel.toId, type: rel.toType }, context, context.user)),
     containers: (rel, _, context) => containersLoader.load(rel.id, context, context.user),
     reports: (rel, _, context) => reportsLoader.load(rel.id, context, context.user),
     notes: (rel, _, context) => notesLoader.load(rel.id, context, context.user),

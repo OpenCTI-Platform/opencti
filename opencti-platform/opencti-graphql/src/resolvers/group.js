@@ -21,6 +21,7 @@ import {
 } from '../domain/group';
 import withCancel from '../graphql/subscriptionWrapper';
 import { ENTITY_TYPE_GROUP } from '../schema/internalObject';
+import { ENTITY_TYPE_WORKSPACE } from '../modules/workspace/workspace-types';
 
 const loadByIdLoader = batchLoader(elBatchIds);
 const markingsLoader = batchLoader(batchMarkingDefinitions);
@@ -38,7 +39,7 @@ const groupResolvers = {
     roles: (stixCoreObject, _, context) => rolesLoader.load(stixCoreObject.id, context, context.user),
     members: (group, args, context) => membersLoader.load(group.id, context, context.user, args),
     editContext: (group) => fetchEditContext(group.id),
-    default_dashboard: (current, _, context) => loadByIdLoader.load(current.default_dashboard, context, context.user),
+    default_dashboard: (current, _, context) => loadByIdLoader.load({ id: current.default_dashboard, type: ENTITY_TYPE_WORKSPACE }, context, context.user),
   },
   Mutation: {
     groupEdit: (_, { id }, context) => ({

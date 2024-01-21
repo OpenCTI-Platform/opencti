@@ -83,7 +83,7 @@ export const mergeDefaultMarking = async (defaultMarkings) => {
 export const defaultMarkingDefinitionsFromGroups = async (context, groupIds) => {
   const markingsMap = await getEntitiesMapFromCache(context, SYSTEM_USER, ENTITY_TYPE_MARKING_DEFINITION);
   // Retrieve default marking by groups
-  return internalFindByIds(context, SYSTEM_USER, groupIds)
+  return internalFindByIds(context, SYSTEM_USER, groupIds, { type: ENTITY_TYPE_GROUP })
     .then((groups) => groups.map((group) => {
       const defaultMarking = group.default_marking ?? [];
       return defaultMarking.map((entry) => {
