@@ -170,7 +170,6 @@ const WorkspaceHeader = ({
   };
 
   const { relativeDate } = config ?? {};
-
   const [displayManageAccess, setDisplayManageAccess] = useState(false);
   const handleOpenManageAccess = () => setDisplayManageAccess(true);
   const handleCloseManageAccess = () => setDisplayManageAccess(false);
@@ -266,14 +265,13 @@ const WorkspaceHeader = ({
                   disableFuture={true}
                   disabled={true}
                   onChange={(value) => handleDateChange('startDate', value)}
-                  renderInput={(params) => (
-                    <TextField
-                      style={{ marginRight: 20 }}
-                      variant="outlined"
-                      size="small"
-                      {...params}
-                    />
-                  )}
+                  slotProps={{
+                    textField: {
+                      style: { marginRight: 20 },
+                      variant: 'outlined',
+                      size: 'small',
+                    },
+                  }}
                 />
                 <DatePicker
                   value={R.propOr(null, 'endDate', config)}
@@ -284,14 +282,13 @@ const WorkspaceHeader = ({
                   disabled={true}
                   disableFuture={true}
                   onChange={(value) => handleDateChange('endDate', value)}
-                  renderInput={(params) => (
-                    <TextField
-                      style={{ marginRight: 20 }}
-                      variant="outlined"
-                      size="small"
-                      {...params}
-                    />
-                  )}
+                  slotProps={{
+                    textField: {
+                      style: { marginRight: 20 },
+                      variant: 'outlined',
+                      size: 'small',
+                    },
+                  }}
                 />
               </div>
             }
@@ -332,14 +329,13 @@ const WorkspaceHeader = ({
                 disableFuture={true}
                 disabled={!!relativeDate}
                 onChange={(value) => handleDateChange('startDate', value)}
-                renderInput={(params) => (
-                  <TextField
-                    style={{ marginRight: 20 }}
-                    variant="outlined"
-                    size="small"
-                    {...params}
-                  />
-                )}
+                slotProps={{
+                  textField: {
+                    style: { marginRight: 20 },
+                    variant: 'outlined',
+                    size: 'small',
+                  },
+                }}
               />
               <DatePicker
                 value={R.propOr(null, 'endDate', config)}
@@ -349,9 +345,13 @@ const WorkspaceHeader = ({
                 disabled={!!relativeDate}
                 disableFuture={true}
                 onChange={(value) => handleDateChange('endDate', value)}
-                renderInput={(params) => (
-                  <TextField variant="outlined" size="small" {...params} />
-                )}
+                slotProps={{
+                  textField: {
+                    style: { marginRight: 20 },
+                    variant: 'outlined',
+                    size: 'small',
+                  },
+                }}
               />
             </div>
           </Security>

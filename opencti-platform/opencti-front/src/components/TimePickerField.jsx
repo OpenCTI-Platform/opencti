@@ -1,6 +1,5 @@
 import React from 'react';
 import { TimePicker } from '@mui/x-date-pickers/TimePicker';
-import TextField from '@mui/material/TextField';
 import { fieldToTimePicker } from 'formik-mui-lab';
 import { useField } from 'formik';
 import * as R from 'ramda';
@@ -85,17 +84,14 @@ const TimePickerField = (props) => {
       onChange={internalOnChange}
       views={views}
       inputFormat={inputFormat}
-      renderInput={(params) => (
-        <TextField
-          {...params}
-          onFocus={internalOnFocus}
-          onBlur={internalOnBlur}
-          error={!R.isNil(meta.error)}
-          helperText={
-            (!R.isNil(meta.error) && meta.error) || TextFieldProps.helperText
-          }
-        />
-      )}
+      slotProps={{
+        textField: {
+          onFocus: internalOnFocus,
+          onBlur: internalOnBlur,
+          error: !R.isNil(meta.error),
+          helperText: (!R.isNil(meta.error) && meta.error) || TextFieldProps.helperText,
+        },
+      }}
     />
   );
 };

@@ -37,7 +37,6 @@ const OtpInputField: FunctionComponent<OtpInputFieldProps> = ({
   isDisabled,
 }) => {
   const classes = useStyles();
-
   return (
     <OtpInput
       value={value}

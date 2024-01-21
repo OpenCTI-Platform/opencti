@@ -1,6 +1,5 @@
 import React from 'react';
 import { DateTimePicker } from '@mui/x-date-pickers/DateTimePicker';
-import TextField from '@mui/material/TextField';
 import { fieldToDateTimePicker } from 'formik-mui-lab';
 import { useField } from 'formik';
 import * as R from 'ramda';
@@ -79,17 +78,14 @@ const DateTimePickerField = (props) => {
         format={
           dateTimeFormatsMapWithSeconds[intl.locale] || 'yyyy-MM-dd hh:mm:ss a'
         }
-        renderInput={(params) => (
-          <TextField
-            {...params}
-            onFocus={internalOnFocus}
-            onBlur={internalOnBlur}
-            error={!R.isNil(meta.error)}
-            helperText={
-              (!R.isNil(meta.error) && meta.error) || slotProps.helperText
-            }
-          />
-        )}
+        slotProps={{
+          textField: {
+            onFocus: internalOnFocus,
+            onBlur: internalOnBlur,
+            error: !R.isNil(meta.error),
+            helperText: (!R.isNil(meta.error) && meta.error) || slotProps.helperText,
+          },
+        }}
       />
     );
   }
@@ -104,17 +100,14 @@ const DateTimePickerField = (props) => {
       onChange={internalOnChange}
       views={['year', 'month', 'day', 'hours', 'minutes']}
       format={dateTimeFormatsMap[intl.locale] || 'yyyy-MM-dd hh:mm a'}
-      renderInput={(params) => (
-        <TextField
-          {...params}
-          onFocus={internalOnFocus}
-          onBlur={internalOnBlur}
-          error={!R.isNil(meta.error)}
-          helperText={
-            (!R.isNil(meta.error) && meta.error) || slotProps.helperText
-          }
-        />
-      )}
+      slotProps={{
+        textField: {
+          onFocus: internalOnFocus,
+          onBlur: internalOnBlur,
+          error: !R.isNil(meta.error),
+          helperText: (!R.isNil(meta.error) && meta.error) || slotProps.helperText,
+        },
+      }}
     />
   );
 };

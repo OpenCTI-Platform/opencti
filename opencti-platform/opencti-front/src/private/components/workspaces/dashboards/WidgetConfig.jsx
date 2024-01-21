@@ -1300,7 +1300,7 @@ const WidgetConfig = ({ workspace, widget, onComplete, closeMenu }) => {
     }
   };
   return (
-    <div>
+    <>
       {!widget && (
         <>
           <VisuallyHiddenInput type="file" accept={'application/JSON'} ref={inputRef} onChange={handleWidgetImport} />
@@ -1398,7 +1398,7 @@ const WidgetConfig = ({ workspace, widget, onComplete, closeMenu }) => {
           </Button>
         </DialogActions>
       </Dialog>
-    </div>
+    </>
   );
 };
 
