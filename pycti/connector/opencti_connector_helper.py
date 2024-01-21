@@ -11,7 +11,6 @@ import sys
 import tempfile
 import threading
 import time
-import traceback
 import uuid
 from queue import Queue
 from typing import Callable, Dict, List, Optional, Union
@@ -30,7 +29,6 @@ FALSY: List[str] = ["no", "false", "False"]
 
 
 def killProgramHook(etype, value, tb):
-    traceback.print_exception(etype, value, tb)
     os.kill(os.getpid(), signal.SIGTERM)
 
 
@@ -290,8 +288,10 @@ class ListenQueue(threading.Thread):
                     )
 
     def run(self) -> None:
+        self.helper.connector_logger.info("Starting ListenQueue thread")
         while not self.exit_event.is_set():
             try:
+                self.helper.connector_logger.info("ListenQueue connecting to rabbitMq.")
                 # Connect the broker
                 self.pika_credentials = pika.PlainCredentials(self.user, self.password)
                 self.pika_parameters = pika.ConnectionParameters(
@@ -308,28 +308,32 @@ class ListenQueue(threading.Thread):
                 self.pika_connection = pika.BlockingConnection(self.pika_parameters)
                 self.channel = self.pika_connection.channel()
                 try:
+                    # confirm_delivery is only for cluster mode rabbitMQ
+                    # when not in cluster mode this line raise an exception
                     self.channel.confirm_delivery()
                 except Exception as err:  # pylint: disable=broad-except
-                    self.helper.connector_logger.warning(str(err))
+                    self.helper.connector_logger.debug(str(err))
                 self.channel.basic_qos(prefetch_count=1)
                 assert self.channel is not None
                 self.channel.basic_consume(
                     queue=self.queue_name, on_message_callback=self._process_message
                 )
                 self.channel.start_consuming()
-            except (KeyboardInterrupt, SystemExit):
-                self.channel.stop_consuming()
-                self.pika_connection.close()
-                self.helper.connector_logger.info("Connector stop")
-                sys.exit(0)
             except Exception as err:  # pylint: disable=broad-except
-                self.pika_connection.close()
+                try:
+                    self.pika_connection.close()
+                except Exception as errInException:
+                    self.helper.connector_logger.debug(
+                        type(errInException).__name__, {"reason": str(errInException)}
+                    )
                 self.helper.connector_logger.error(
                     type(err).__name__, {"reason": str(err)}
                 )
-                sys.exit(1)
+                # Wait some time and then retry ListenQueue again.
+                time.sleep(10)
 
     def stop(self):
+        self.helper.connector_logger.info("Preparing ListenQueue for clean shutdown")
         self.exit_event.set()
         self.pika_connection.close()
         if self.thread:
@@ -353,6 +357,7 @@ class PingAlive(threading.Thread):
     def ping(self) -> None:
         while not self.exit_event.is_set():
             try:
+                self.connector_logger.debug("PingAlive running.")
                 initial_state = self.get_state()
                 result = self.api.connector.ping(self.connector_id, initial_state)
                 remote_state = (
@@ -378,11 +383,11 @@ class PingAlive(threading.Thread):
             self.exit_event.wait(40)
 
     def run(self) -> None:
-        self.connector_logger.info("Starting ping alive thread")
+        self.connector_logger.info("Starting PingAlive thread")
         self.ping()
 
     def stop(self) -> None:
-        self.connector_logger.info("Preparing for clean shutdown")
+        self.connector_logger.info("Preparing PingAlive for clean shutdown")
         self.exit_event.set()
 
 
@@ -395,10 +400,11 @@ class StreamAlive(threading.Thread):
 
     def run(self) -> None:
         try:
-            self.helper.connector_logger.info("Starting stream alive thread")
+            self.helper.connector_logger.info("Starting StreamAlive thread")
             time_since_last_heartbeat = 0
             while not self.exit_event.is_set():
                 time.sleep(5)
+                self.helper.connector_logger.debug("StreamAlive running")
                 try:
                     self.q.get(block=False)
                     time_since_last_heartbeat = 0
@@ -409,12 +415,18 @@ class StreamAlive(threading.Thread):
                             "Time since last heartbeat exceeded 45s, stopping the connector"
                         )
                         break
+            self.helper.connector_logger.info(
+                "Exit event in StreamAlive loop, stopping process."
+            )
             sys.excepthook(*sys.exc_info())
-        except:
+        except Exception as ex:
+            self.helper.connector_logger.error(
+                "Error in StreamAlive loop, stopping process.", {"reason": str(ex)}
+            )
             sys.excepthook(*sys.exc_info())
 
     def stop(self) -> None:
-        self.helper.connector_logger.info("Preparing for clean shutdown")
+        self.helper.connector_logger.info("Preparing StreamAlive for clean shutdown")
         self.exit_event.set()
 
 
@@ -449,6 +461,7 @@ class ListenStream(threading.Thread):
 
     def run(self) -> None:  # pylint: disable=too-many-branches
         try:
+            self.helper.connector_logger.info("Starting ListenStream thread")
             current_state = self.helper.get_state()
             start_from = self.start_timestamp
             recover_until = self.recover_iso_date
@@ -545,10 +558,14 @@ class ListenStream(threading.Thread):
                             self.exit = True
                         state["start_from"] = str(msg.id)
                         self.helper.set_state(state)
-        except:
+        except Exception as ex:
+            self.helper.connector_logger.error(
+                "Error in ListenStream loop, exit.", {"reason": str(ex)}
+            )
             sys.excepthook(*sys.exc_info())
 
     def stop(self):
+        self.helper.connector_logger.info("Preparing ListenStream for clean shutdown")
         self.exit_event.set()
 
 
@@ -735,6 +752,7 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
         self.listen_queue = None
 
     def stop(self) -> None:
+        self.connector_logger.info("Preparing connector for clean shutdown")
         if self.listen_queue:
             self.listen_queue.stop()
         # if self.listen_stream:
