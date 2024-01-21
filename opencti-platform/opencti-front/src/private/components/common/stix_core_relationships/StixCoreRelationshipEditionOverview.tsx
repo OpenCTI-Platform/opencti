@@ -352,7 +352,7 @@ Omit<StixCoreRelationshipEditionOverviewProps, 'queryRef'>
                 name="start_time"
                 onFocus={editor.changeFocus}
                 onSubmit={editor.changeField}
-                slotProps={{ textField: {
+                textFieldProps={{
                   label: t_i18n('Start time'),
                   variant: 'standard',
                   fullWidth: true,
@@ -363,7 +363,6 @@ Omit<StixCoreRelationshipEditionOverviewProps, 'queryRef'>
                       fieldName="start_time"
                     />
                   ),
-                },
                 }}
               />
               <Field
@@ -371,7 +370,7 @@ Omit<StixCoreRelationshipEditionOverviewProps, 'queryRef'>
                 name="stop_time"
                 onFocus={editor.changeFocus}
                 onSubmit={handleSubmitFieldStopTime}
-                slotProps={{ textField: {
+                textFieldProps={{
                   label: t_i18n('Stop time'),
                   variant: 'standard',
                   fullWidth: true,
@@ -382,7 +381,6 @@ Omit<StixCoreRelationshipEditionOverviewProps, 'queryRef'>
                       fieldName="stop_time"
                     />
                   ),
-                },
                 }}
               />
               <Field

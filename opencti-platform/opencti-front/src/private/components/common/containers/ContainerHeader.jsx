@@ -885,7 +885,7 @@ const ContainerHeader = (props) => {
       <div className={classes.actions}>
         <div className={classes.actionButtons}>
           {enableQuickSubscription && (
-            <StixCoreObjectSubscribers elementId={container.id} />
+          <StixCoreObjectSubscribers elementId={container.id} />
           )}
           <Security
             needs={[KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS]}

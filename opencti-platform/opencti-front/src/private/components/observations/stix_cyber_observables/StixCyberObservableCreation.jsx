@@ -526,12 +526,11 @@ const StixCyberObservableCreation = ({
                               key={attribute.value}
                               name={attribute.value}
                               withSeconds={true}
-                              slotProps={{ textField: {
+                              textFieldProps={{
                                 label: attribute.value,
                                 variant: 'standard',
                                 fullWidth: true,
                                 style: { marginTop: 20 },
-                              },
                               }}
                             />
                           );

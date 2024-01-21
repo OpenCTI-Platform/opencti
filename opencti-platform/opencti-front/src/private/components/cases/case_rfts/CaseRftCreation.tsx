@@ -197,11 +197,10 @@ export const CaseRftCreationForm: FunctionComponent<CaseRftFormProps> = ({
           <Field
             component={DateTimePickerField}
             name="created"
-            slotProps={{ textField: {
+            textFieldProps={{
               label: t_i18n('Request For Takedown Date'),
               variant: 'standard',
               fullWidth: true,
-            },
             }}
           />
           <OpenVocabField

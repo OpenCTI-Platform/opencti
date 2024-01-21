@@ -270,23 +270,21 @@ const StixCoreRelationshipCreationForm = ({
             <Field
               component={DateTimePickerField}
               name="start_time"
-              slotProps={{ textField: {
+              textFieldProps={{
                 label: t_i18n('Start time'),
                 variant: 'standard',
                 fullWidth: true,
                 style: { marginTop: 20 },
-              },
               }}
             />
             <Field
               component={DateTimePickerField}
               name="stop_time"
-              slotProps={{ textField: {
+              textFieldProps={{
                 label: t_i18n('Stop time'),
                 variant: 'standard',
                 fullWidth: true,
                 style: { marginTop: 20 },
-              },
               }}
             />
             <Field

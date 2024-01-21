@@ -82,7 +82,6 @@ const StixCoreObjectSubscribers: FunctionComponent<ContainerHeaderSharedProps> =
         {hasSetAccess && (
           <Drawer
             open={displaySubscribers}
-            variant={DrawerVariant.create}
             title={t_i18n('Subscribers')}
             onClose={() => setDisplaySubscribers(false)}
           >

@@ -178,14 +178,13 @@ const IntrusionSetEditionDetailsComponent = (props) => {
             name="first_seen"
             onFocus={handleChangeFocus}
             onSubmit={handleSubmitField}
-            slotProps={{ textField: {
+            textFieldProps={{
               label: t_i18n('First seen'),
               variant: 'standard',
               fullWidth: true,
               helperText: (
                 <SubscriptionFocus context={context} fieldName="first_seen"/>
               ),
-            },
             }}
           />
           <Field
@@ -193,7 +192,7 @@ const IntrusionSetEditionDetailsComponent = (props) => {
             name="last_seen"
             onFocus={handleChangeFocus}
             onSubmit={handleSubmitField}
-            slotProps={{ textField: {
+            textFieldProps={{
               label: t_i18n('Last seen'),
               variant: 'standard',
               fullWidth: true,
@@ -201,7 +200,6 @@ const IntrusionSetEditionDetailsComponent = (props) => {
               helperText: (
                 <SubscriptionFocus context={context} fieldName="last_seen"/>
               ),
-            },
             }}
           />
           <OpenVocabField

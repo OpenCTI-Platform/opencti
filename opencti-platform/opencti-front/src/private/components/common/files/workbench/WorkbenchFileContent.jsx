@@ -1703,12 +1703,11 @@ const WorkbenchFileContentComponent = ({
                               key={attribute}
                               name={attribute}
                               withSeconds
-                              slotProps={{ textField: {
+                              textFieldProps={{
                                 label: attribute,
                                 variant: 'standard',
                                 fullWidth: true,
                                 style: { marginTop: 20 },
-                              },
                               }}
                             />
                           );
@@ -2176,12 +2175,11 @@ const WorkbenchFileContentComponent = ({
                               key={attribute}
                               name={attribute}
                               withSeconds={true}
-                              slotProps={{ textField: {
+                              textFieldProps={{
                                 label: attribute,
                                 variant: 'standard',
                                 fullWidth: true,
                                 style: { marginTop: 20 },
-                              },
                               }}
                             />
                           );
@@ -2402,12 +2400,11 @@ const WorkbenchFileContentComponent = ({
                               key={attribute}
                               name={attribute}
                               withSeconds
-                              slotProps={{ textField: {
+                              textFieldProps={{
                                 label: attribute,
                                 variant: 'standard',
                                 fullWidth: true,
                                 style: { marginTop: 20 },
-                              },
                               }}
                             />
                           );
@@ -2643,12 +2640,11 @@ const WorkbenchFileContentComponent = ({
                               key={attribute}
                               name={attribute}
                               withSeconds
-                              slotProps={{ textField: {
+                              textFieldProps={{
                                 label: attribute,
                                 variant: 'standard',
                                 fullWidth: true,
                                 style: { marginTop: 20 },
-                              },
                               }}
                             />
                           );

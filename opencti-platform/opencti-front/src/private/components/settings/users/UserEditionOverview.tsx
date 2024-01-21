@@ -311,12 +311,11 @@ UserEditionOverviewComponentProps
           <Field
             component={DateTimePickerField}
             name="account_lock_after_date"
-            slotProps={{ textField: {
+            textFieldProps={{
               label: t_i18n('Account Expire Date'),
               variant: 'standard',
               style: fieldSpacingContainerStyle,
               fullWidth: true,
-            },
             }}
             onFocus={handleChangeFocus}
             onChange={handleSubmitField}

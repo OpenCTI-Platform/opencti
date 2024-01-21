@@ -337,7 +337,7 @@ const StixSightingRelationshipEditionOverviewComponent: FunctionComponent<Omit<S
                 name="first_seen"
                 onFocus={editor.changeFocus}
                 onChange={editor.changeField}
-                slotProps={{ textField: {
+                textFieldProps={{
                   label: t_i18n('First seen'),
                   variant: 'standard',
                   fullWidth: true,
@@ -345,7 +345,6 @@ const StixSightingRelationshipEditionOverviewComponent: FunctionComponent<Omit<S
                   helperText: (
                     <SubscriptionFocus context={editContext} fieldName="first_seen"/>
                   ),
-                },
                 }}
                 disabled={inferred}
               />
@@ -354,7 +353,7 @@ const StixSightingRelationshipEditionOverviewComponent: FunctionComponent<Omit<S
                 name="last_seen"
                 onFocus={editor.changeFocus}
                 onChange={editor.changeField}
-                slotProps={{ textField: {
+                textFieldProps={{
                   label: t_i18n('Last seen'),
                   variant: 'standard',
                   fullWidth: true,
@@ -362,7 +361,6 @@ const StixSightingRelationshipEditionOverviewComponent: FunctionComponent<Omit<S
                   helperText: (
                     <SubscriptionFocus context={editContext} fieldName="last_seen"/>
                   ),
-                },
                 }}
                 disabled={inferred}
               />

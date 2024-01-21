@@ -63,8 +63,8 @@ import { getEntitySettingFromCache } from '../modules/entitySetting/entitySettin
 import { stixObjectOrRelationshipAddRefRelation, stixObjectOrRelationshipAddRefRelations, stixObjectOrRelationshipDeleteRefRelation } from './stixObjectOrStixRelationship';
 import { buildContextDataForFile, publishUserAction } from '../listener/UserActionListener';
 import { extractEntityRepresentativeName } from '../database/entity-representative';
-import { addFilter, extractFilterGroupValues } from '../utils/filtering/filtering-utils';
-import { specialFilterKeysWhoseValueToResolve } from '../utils/filtering/filtering-constants';
+import { addFilter, extractFilterGroupValues, findFiltersFromKey } from '../utils/filtering/filtering-utils';
+import { INSTANCE_REGARDING_OF, specialFilterKeysWhoseValueToResolve } from '../utils/filtering/filtering-constants';
 import { schemaRelationsRefDefinition } from '../schema/schema-relationsRef';
 
 export const findAll = async (context, user, args) => {
@@ -305,10 +305,29 @@ export const stixCoreObjectsDistribution = async (context, user, args) => {
 };
 
 export const stixCoreObjectsDistributionByEntity = async (context, user, args) => {
-  const { relationship_type, objectId, types } = args;
-  const filters = addFilter(args.filters, (relationship_type ?? [RELATION_RELATED_TO])
-    .map((n) => buildRefRelationKey(n, '*')), objectId);
-  return distributionEntities(context, user, types ?? [ABSTRACT_STIX_CORE_OBJECT], { ...args, filters });
+  const { objectId, types, filters } = args;
+  let finalFilters = filters;
+  // Here, we need to force regardingOf ID = objectID
+  // Check if filter is already present and replace id
+  if (findFiltersFromKey(filters.filters ?? [], INSTANCE_REGARDING_OF).length > 0) {
+    finalFilters = {
+      ...filters,
+      filters: finalFilters.filters.map((n) => (n.key === INSTANCE_REGARDING_OF ? {
+        ...n,
+        values: [
+          ...n.values.filter((i) => i.key !== 'id'),
+          { key: 'id', values: [objectId] }
+        ]
+      } : n))
+    };
+  // If not present, adding it
+  } else {
+    finalFilters = addFilter(filters, INSTANCE_REGARDING_OF, [
+      { key: 'id', values: [objectId] },
+      { key: 'type', values: [RELATION_RELATED_TO] }
+    ]);
+  }
+  return distributionEntities(context, user, types ?? [ABSTRACT_STIX_CORE_OBJECT], { ...args, filters: finalFilters });
 };
 
 export const stixCoreObjectsMultiDistribution = (context, user, args) => {

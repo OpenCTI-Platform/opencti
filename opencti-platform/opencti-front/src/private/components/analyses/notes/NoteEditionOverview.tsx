@@ -160,14 +160,13 @@ NoteEditionOverviewProps
             name="created"
             onFocus={editor.changeFocus}
             onSubmit={handleSubmitField}
-            slotProps={{ textField: {
+            textFieldProps={{
               label: t_i18n('Publication date'),
               variant: 'standard',
               fullWidth: true,
               helperText: (
                 <SubscriptionFocus context={context} fieldName="created"/>
               ),
-            },
             }}
           />
           <Field

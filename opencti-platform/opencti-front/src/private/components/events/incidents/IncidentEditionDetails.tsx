@@ -182,14 +182,13 @@ IncidentEditionDetailsProps
             disabled={isInferred}
             onFocus={handleChangeFocus}
             onSubmit={handleSubmitField}
-            slotProps={{ textField: {
+            textFieldProps={{
               label: t_i18n('First seen'),
               variant: 'standard',
               fullWidth: true,
               helperText: (
                 <SubscriptionFocus context={context} fieldName="first_seen"/>
               ),
-            },
             }}
           />
           <Field
@@ -199,7 +198,7 @@ IncidentEditionDetailsProps
             disabled={isInferred}
             onFocus={handleChangeFocus}
             onSubmit={handleSubmitField}
-            slotProps={{ textField: {
+            textFieldProps={{
               label: t_i18n('Last seen'),
               variant: 'standard',
               fullWidth: true,
@@ -207,7 +206,6 @@ IncidentEditionDetailsProps
               helperText: (
                 <SubscriptionFocus context={context} fieldName="last_seen"/>
               ),
-            },
             }}
           />
           <Field

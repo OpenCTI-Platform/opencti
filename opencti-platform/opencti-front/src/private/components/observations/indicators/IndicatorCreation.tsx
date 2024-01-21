@@ -280,23 +280,21 @@ export const IndicatorCreationForm: FunctionComponent<IndicatorFormProps> = ({
           <Field
             component={DateTimePickerField}
             name="valid_from"
-            slotProps={{ textField: {
+            textFieldProps={{
               label: t_i18n('Valid from'),
               variant: 'standard',
               fullWidth: true,
               style: { marginTop: 20 },
-            },
             }}
           />
           <Field
             component={DateTimePickerField}
             name="valid_until"
-            slotProps={{ textField: {
+            textFieldProps={{
               label: t_i18n('Valid until'),
               variant: 'standard',
               fullWidth: true,
               style: { marginTop: 20 },
-            },
             }}
           />
           <OpenVocabField

@@ -261,14 +261,13 @@ const IngestionTaxiiCreation = (props) => {
               <Field
                 component={DateTimePickerField}
                 name="added_after_start"
-                slotProps={{ textField: {
+                textFieldProps={{
                   label: t(
                     'Import from date (empty = all TAXII collection possible items)',
                   ),
                   variant: 'standard',
                   fullWidth: true,
                   style: { marginTop: 20 },
-                },
                 }}
               />
               <div className={classes.buttons}>

@@ -208,7 +208,7 @@ const ObservedDataEditionOverviewComponent = (props) => {
               name="first_observed"
               onFocus={editor.changeFocus}
               onSubmit={handleSubmitField}
-              slotProps={{ textField: {
+              textFieldProps={{
                 label: t_i18n('First observed'),
                 variant: 'standard',
                 fullWidth: true,
@@ -218,7 +218,6 @@ const ObservedDataEditionOverviewComponent = (props) => {
                     fieldName="first_observed"
                   />
                 ),
-              },
               }}
             />
             <Field
@@ -226,7 +225,7 @@ const ObservedDataEditionOverviewComponent = (props) => {
               name="last_observed"
               onFocus={editor.changeFocus}
               onSubmit={handleSubmitField}
-              slotProps={{ textField: {
+              textFieldProps={{
                 label: t_i18n('Last observed'),
                 variant: 'standard',
                 fullWidth: true,
@@ -237,7 +236,6 @@ const ObservedDataEditionOverviewComponent = (props) => {
                     fieldName="last_observed"
                   />
                 ),
-              },
               }}
             />
             <Field

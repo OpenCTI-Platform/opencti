@@ -194,12 +194,11 @@ export const ReportCreationForm: FunctionComponent<ReportFormProps> = ({
           <Field
             component={DateTimePickerField}
             name="published"
-            slotProps={{ textField: {
+            textFieldProps={{
               label: t_i18n('Publication date'),
               variant: 'standard',
               fullWidth: true,
               style: { marginTop: 20 },
-            },
             }}
           />
           <OpenVocabField

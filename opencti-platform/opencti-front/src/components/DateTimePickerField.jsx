@@ -29,7 +29,7 @@ const DateTimePickerField = (props) => {
     onChange,
     onFocus,
     onSubmit,
-    slotProps,
+    textFieldProps,
     withSeconds = false,
   } = props;
   const intl = useIntl();
@@ -80,10 +80,11 @@ const DateTimePickerField = (props) => {
         }
         slotProps={{
           textField: {
+            ...textFieldProps,
             onFocus: internalOnFocus,
             onBlur: internalOnBlur,
             error: !R.isNil(meta.error),
-            helperText: (!R.isNil(meta.error) && meta.error) || slotProps.helperText,
+            helperText: (!R.isNil(meta.error) && meta.error) || textFieldProps.helperText,
           },
         }}
       />
@@ -102,10 +103,11 @@ const DateTimePickerField = (props) => {
       format={dateTimeFormatsMap[intl.locale] || 'yyyy-MM-dd hh:mm a'}
       slotProps={{
         textField: {
+          ...textFieldProps,
           onFocus: internalOnFocus,
           onBlur: internalOnBlur,
           error: !R.isNil(meta.error),
-          helperText: (!R.isNil(meta.error) && meta.error) || slotProps.helperText,
+          helperText: (!R.isNil(meta.error) && meta.error) || textFieldProps.helperText,
         },
       }}
     />

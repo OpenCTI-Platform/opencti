@@ -206,23 +206,21 @@ export const InfrastructureCreationForm: FunctionComponent<InfrastructureFormPro
           <Field
             component={DateTimePickerField}
             name="first_seen"
-            slotProps={{ textField: {
+            textFieldProps={{
               label: t_i18n('First seen'),
               variant: 'standard',
               fullWidth: true,
               style: { marginTop: 20 },
-            },
             }}
           />
           <Field
             component={DateTimePickerField}
             name="last_seen"
-            slotProps={{ textField: {
+            textFieldProps={{
               label: t_i18n('Last seen'),
               variant: 'standard',
               fullWidth: true,
               style: { marginTop: 20 },
-            },
             }}
           />
           <KillChainPhasesField

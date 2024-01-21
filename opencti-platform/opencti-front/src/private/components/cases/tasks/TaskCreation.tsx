@@ -148,11 +148,10 @@ const TaskCreationForm: FunctionComponent<TaskCreationProps> = ({
           <Field
             component={DateTimePickerField}
             name="due_date"
-            slotProps={{ textField: {
+            textFieldProps={{
               label: t_i18n('Due Date'),
               variant: 'standard',
               fullWidth: true,
-            },
             }}
           />
           <ObjectAssigneeField

@@ -305,13 +305,12 @@ const IngestionTaxiiEditionContainer = ({
               component={DateTimePickerField}
               name="added_after_start"
               onSubmit={handleSubmitField}
-              slotProps={{ textField: {
+              textFieldProps={{
                 label: t(
                   'Import from date (empty = all TAXII collection possible items)',
                 ),
                 fullWidth: true,
                 style: { marginTop: 20 },
-              },
               }}
             />
             <CreatorField

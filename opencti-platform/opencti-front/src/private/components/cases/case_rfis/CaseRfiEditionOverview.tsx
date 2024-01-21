@@ -295,14 +295,13 @@ const CaseRfiEditionOverview: FunctionComponent<CaseRfiEditionOverviewProps> = (
             name="created"
             onFocus={editor.changeFocus}
             onSubmit={handleSubmitField}
-            slotProps={{ textField: {
+            textFieldProps={{
               label: t_i18n('Request for Information date'),
               variant: 'standard',
               fullWidth: true,
               helperText: (
                 <SubscriptionFocus context={context} fieldName="created"/>
               ),
-            },
             }}
           />
           <OpenVocabField

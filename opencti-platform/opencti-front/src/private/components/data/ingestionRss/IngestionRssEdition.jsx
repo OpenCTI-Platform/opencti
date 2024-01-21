@@ -140,14 +140,13 @@ const IngestionRssEditionContainer = ({
             <Field
               component={DateTimePickerField}
               name="current_state_date"
-              slotProps={{ textField: {
+              textFieldProps={{
                 label: t(
                   'Import from date (empty = all RSS feed possible items)',
                 ),
                 variant: 'standard',
                 fullWidth: true,
                 style: { marginTop: 20 },
-              },
               }}
               onChange={handleSubmitField}
             />

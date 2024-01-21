@@ -29,7 +29,7 @@ const TimePickerField = (props) => {
     onChange,
     onFocus,
     onSubmit,
-    TextFieldProps,
+    textFieldProps,
     withMinutes = false,
     withSeconds = false,
   } = props;
@@ -86,10 +86,11 @@ const TimePickerField = (props) => {
       inputFormat={inputFormat}
       slotProps={{
         textField: {
+          ...textFieldProps,
           onFocus: internalOnFocus,
           onBlur: internalOnBlur,
           error: !R.isNil(meta.error),
-          helperText: (!R.isNil(meta.error) && meta.error) || TextFieldProps.helperText,
+          helperText: (!R.isNil(meta.error) && meta.error) || textFieldProps.helperText,
         },
       }}
     />

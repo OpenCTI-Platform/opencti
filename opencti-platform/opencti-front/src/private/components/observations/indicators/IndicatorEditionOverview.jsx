@@ -276,7 +276,7 @@ const IndicatorEditionOverviewComponent = ({
             name="valid_from"
             onFocus={editor.changeFocus}
             onSubmit={handleSubmitField}
-            slotProps={{ textField: {
+            textFieldProps={{
               label: t_i18n('Valid from'),
               variant: 'standard',
               fullWidth: true,
@@ -284,7 +284,6 @@ const IndicatorEditionOverviewComponent = ({
               helperText: (
                 <SubscriptionFocus context={context} fieldName="valid_from"/>
               ),
-            },
             }}
           />
           <Field
@@ -292,7 +291,7 @@ const IndicatorEditionOverviewComponent = ({
             name="valid_until"
             onFocus={editor.changeFocus}
             onSubmit={handleSubmitField}
-            slotProps={{ textField: {
+            textFieldProps={{
               label: t_i18n('Valid until'),
               variant: 'standard',
               fullWidth: true,
@@ -300,7 +299,6 @@ const IndicatorEditionOverviewComponent = ({
               helperText: (
                 <SubscriptionFocus context={context} fieldName="valid_until"/>
               ),
-            },
             }}
           />
           <OpenVocabField

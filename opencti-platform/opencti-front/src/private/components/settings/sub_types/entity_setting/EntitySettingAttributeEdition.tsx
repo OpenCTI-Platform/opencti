@@ -332,12 +332,11 @@ const EntitySettingAttributeEdition = ({
           label={label}
           component={DateTimePickerField}
           name="default_values"
-          slotProps={{ textField: {
+          textFieldProps={{
             label,
             variant: 'standard',
             fullWidth: true,
             style: { marginTop: 20 },
-          },
           }}
         />
       );
