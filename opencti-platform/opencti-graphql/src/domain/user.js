@@ -1192,6 +1192,10 @@ export const buildCompleteUser = async (context, client) => {
   const defaultHiddenTypesGroups = getDefaultHiddenTypes(groups);
   const defaultHiddenTypesOrgs = getDefaultHiddenTypes(allowed_organizations);
   const default_hidden_types = uniq(defaultHiddenTypesGroups.concat(defaultHiddenTypesOrgs));
+
+  // effective confidence level
+  const effective_confidence_level = computeUserEffectiveConfidenceLevel({ ...client, groups, organizations });
+
   return {
     ...client,
     roles,
@@ -1206,6 +1210,7 @@ export const buildCompleteUser = async (context, client) => {
     allowed_marking: marking.user,
     all_marking: marking.all,
     default_marking: marking.default,
+    effective_confidence_level,
   };
 };
 

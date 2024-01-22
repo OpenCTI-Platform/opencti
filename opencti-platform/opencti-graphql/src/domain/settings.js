@@ -1,12 +1,12 @@
 import { getHeapStatistics } from 'node:v8';
 import nconf from 'nconf';
 import * as R from 'ramda';
-import { createEntity, loadEntity, patchAttribute, updateAttribute } from '../database/middleware';
+import { createEntity, listAllThings, loadEntity, patchAttribute, updateAttribute } from '../database/middleware';
 import conf, { ACCOUNT_STATUSES, BUS_TOPICS, ENABLED_DEMO_MODE, getBaseUrl, PLATFORM_VERSION } from '../config/conf';
 import { delEditContext, getClusterInstances, getRedisVersion, notify, setEditContext } from '../database/redis';
 import { isRuntimeSortEnable, searchEngineVersion } from '../database/engine';
 import { getRabbitMQVersion } from '../database/rabbitmq';
-import { ENTITY_TYPE_SETTINGS } from '../schema/internalObject';
+import { ENTITY_TYPE_SETTINGS, ENTITY_TYPE_USER } from '../schema/internalObject';
 import { isUserHasCapability, SETTINGS_SET_ACCESSES, SYSTEM_USER } from '../utils/access';
 import { storeLoadById } from '../database/middleware-loader';
 import { INTERNAL_SECURITY_PROVIDER, PROVIDERS } from '../config/providers';
@@ -16,6 +16,7 @@ import { now } from '../utils/format';
 import { generateInternalId } from '../schema/identifier';
 import { UnsupportedError } from '../config/errors';
 import { isEmptyField } from '../database/utils';
+import { buildCompleteUser } from './user';
 
 export const getMemoryStatistics = () => {
   return { ...process.memoryUsage(), ...getHeapStatistics() };
@@ -155,4 +156,29 @@ export const settingDeleteMessage = async (context, user, settingsId, messageId)
   const patch = { platform_messages: JSON.stringify(messages) };
   const { element } = await patchAttribute(context, user, settingsId, ENTITY_TYPE_SETTINGS, patch);
   return notify(BUS_TOPICS[ENTITY_TYPE_SETTINGS].EDIT_TOPIC, element, user);
+};
+
+export const getCriticalAlerts = async (context) => {
+  // only 1 critical alert is checked: null effective confidence levels on users
+  // it's for admins only (only them can take action)
+  if (isUserHasCapability(context.user, SETTINGS_SET_ACCESSES)) {
+    const allUsers = await listAllThings(context, context.user, [ENTITY_TYPE_USER], {});
+    // need completed users to have computed effective level
+    const allCompleteUsers = await Promise.all(allUsers.map(async (user) => await buildCompleteUser(context, user)));
+    // if at least one user have a null effective confidence level, it's an issue
+    const usersWithNull = allCompleteUsers.filter((user) => user.effective_confidence_level === null);
+    if (usersWithNull.length === 0) {
+      return [];
+    }
+    return [{
+      type: 'USER_WITH_NULL_EFFECTIVE_LEVEL',
+      message: 'Some users have no effective confidence level, they will not be able to use the platform properly. Please configure these users using groups or organization confidence level, or individual confidence level.',
+      details: {
+        users: usersWithNull,
+      }
+    }];
+  }
+
+  // no alert
+  return [];
 };
