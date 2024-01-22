@@ -25,14 +25,12 @@ const useStyles = makeStyles(() => ({
 
 const stixCoreObjectsMultiAreaChartTimeSeriesQuery = graphql`
   query StixCoreObjectsMultiAreaChartTimeSeriesQuery(
-    $operation: StatsOperation!
     $startDate: DateTime!
     $endDate: DateTime!
     $interval: String!
     $timeSeriesParameters: [StixCoreObjectsTimeSeriesParameters]
   ) {
     stixCoreObjectsMultiTimeSeries(
-      operation: $operation
       startDate: $startDate
       endDate: $endDate
       interval: $interval
@@ -83,7 +81,6 @@ const StixCoreObjectsMultiAreaChart = ({
       <QueryRenderer
         query={stixCoreObjectsMultiAreaChartTimeSeriesQuery}
         variables={{
-          operation: 'count',
           startDate: startDate ?? monthsAgo(12),
           endDate: endDate ?? now(),
           interval: parameters.interval ?? 'day',

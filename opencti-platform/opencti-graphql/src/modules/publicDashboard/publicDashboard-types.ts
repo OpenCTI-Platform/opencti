@@ -35,7 +35,6 @@ export interface StixPublicDashboard extends StixDomainObject {
   public_manifest: string;
   private_manifest: string;
   uri_key: string;
-  aliases: Array<string>;
   extensions: {
     [STIX_EXT_OCTI] : StixOpenctiExtensionSDO
   };

@@ -265,10 +265,9 @@ export const stixCoreObjectsMultiTimeSeries = (context, user, args) => {
 };
 
 export const publicStixCoreObjectsMultiTimeSeries = async (context, args) => {
-  // TODO Get User from manifest => user should be added to public manifest => for now manifest is build by front
-
+  // TODO cache publicdashboard => notify
   // Get public dashboard User id
-  const { id, user_id } = await loadEntity(
+  const { user_id, private_manifest } = await loadEntity(
     context,
     SYSTEM_USER,
     [ENTITY_TYPE_PUBLIC_DASHBOARD],
@@ -286,15 +285,7 @@ export const publicStixCoreObjectsMultiTimeSeries = async (context, args) => {
   // Get user from cache
   const platformUsersMap = await getEntitiesMapFromCache(context, SYSTEM_USER, ENTITY_TYPE_USER);
   const plateformUser = platformUsersMap.get(user_id);
-  const user = { ...plateformUser, origin: { user_id: plateformUser.id, referer: 'public-dashboard' } };
-
-  // Get private manifest
-  const { private_manifest } = await storeLoadById(
-    context,
-    user,
-    id,
-    ENTITY_TYPE_PUBLIC_DASHBOARD,
-  );
+  const user = { ...plateformUser, origin: { user_id: plateformUser.id, referer: 'public-dashboard' } }; // check
 
   // Get widget query configuration
   const parsedManifest = JSON.parse(fromBase64(private_manifest) ?? '{}');
@@ -304,13 +295,9 @@ export const publicStixCoreObjectsMultiTimeSeries = async (context, args) => {
   widgetConfigs.map((widgetConfig) => timeSeriesParameters.push({
     field: widgetConfig.date_attribute,
     filters: widgetConfig.filters,
-    types: [
-      'Stix-Core-Object' // ?? should be in the manifest
-    ]
   }));
 
   const standardArgs = {
-    operation: 'count', // TODO 'count' is harcoded for now but should come from manifest
     startDate: args.startDate,
     endDate: args.endDate,
     interval: args.interval,
@@ -336,10 +323,8 @@ export const stixCoreObjectsNumber = (context, user, args) => {
 };
 
 export const publicStixCoreObjectsNumber = async (context, args) => {
-  // args = {"endDate":"2024-01-18T16:38:08.000Z","filters":{"filterGroups":[],"filters":[],"mode":"and"},"types":["Stix-Core-Object"]}
-
   // Get public dashboard User id
-  const { id, user_id } = await loadEntity(
+  const { private_manifest, user_id } = await loadEntity(
     context,
     SYSTEM_USER,
     [ENTITY_TYPE_PUBLIC_DASHBOARD],
@@ -359,33 +344,23 @@ export const publicStixCoreObjectsNumber = async (context, args) => {
   const plateformUser = platformUsersMap.get(user_id);
   const user = { ...plateformUser, origin: { user_id: plateformUser.id, referer: 'public-dashboard' } };
 
-  // Get private manifest
-  const { private_manifest } = await storeLoadById(
-    context,
-    user,
-    id,
-    ENTITY_TYPE_PUBLIC_DASHBOARD,
-  );
-
   // Get widget query configuration
   const parsedManifest = JSON.parse(fromBase64(private_manifest) ?? '{}');
   const { widgets } = parsedManifest;
-  const widgetConfigs = widgets[args.widgetId].dataSelection;
-  const parameters = [];
-  widgetConfigs.map((widgetConfig) => parameters.push({
+  const widgetConfig = widgets[args.widgetId].dataSelection[0];
+  const parameters = {
     startDate: args.startDate,
     endDate: args.endDate,
     filters: widgetConfig.filters,
     onlyInferred: args.onlyInferred,
     search: args.search,
     types: [
-      'Stix-Core-Object' // ?? should be in the manifest
+      ABSTRACT_STIX_CORE_OBJECT, // stixCoreObjectsNumber api needs types
     ]
-  }));
+  };
 
-  const standardArgs = parameters[0];
   // Use standard API
-  return stixCoreObjectsNumber(context, user, standardArgs);
+  return stixCoreObjectsNumber(context, user, parameters);
 };
 
 export const stixCoreObjectsMultiNumber = (context, user, args) => {

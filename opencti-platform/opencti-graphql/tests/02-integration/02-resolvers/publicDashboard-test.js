@@ -104,13 +104,73 @@ describe('PublicDashboard resolver standard behavior', () => {
     });
     privateDashboardInternalId = privateDashboard.data.workspaceAdd.id;
 
-    // Add a widget to Private dashboard as empty dashboard should not be pubslished
-    const emptyDashboardManifest = toBase64(JSON.stringify({ widgets: {}, config: {} }));
+    // Add manifest to Private dashboard as empty dashboard should not be pubslished
+    const parsedManifest = {
+      widgets: {
+        'ebb25410-7048-4de7-9288-704e962215f6': {
+          id: 'ebb25410-7048-4de7-9288-704e962215f6',
+          type: 'number',
+          perspective: 'entities',
+          dataSelection: [
+            {
+              label: 'area',
+              attribute: 'entity_type',
+              date_attribute: 'created_at',
+              perspective: 'entities',
+              isTo: true,
+              filters: {
+                mode: 'and',
+                filters: [
+
+                ],
+                filterGroups: [
+
+                ]
+              },
+              dynamicFrom: {
+                mode: 'and',
+                filters: [
+
+                ],
+                filterGroups: [
+
+                ]
+              },
+              dynamicTo: {
+                mode: 'and',
+                filters: [
+
+                ],
+                filterGroups: [
+
+                ]
+              }
+            }
+          ],
+          parameters: {
+            title: 'area number'
+          },
+          layout: {
+            w: 4,
+            h: 2,
+            x: 4,
+            y: 0,
+            i: 'ebb25410-7048-4de7-9288-704e962215f6',
+            moved: false,
+            static: false
+          }
+        }
+      },
+      config: {
+
+      }
+    };
+    const manifest = toBase64(JSON.stringify(parsedManifest));
     await queryAsAdmin({
       query: UPDATE_PRIVATE_DASHBOARD_QUERY,
       variables: {
         id: privateDashboardInternalId,
-        input: { key: 'manifest', value: emptyDashboardManifest },
+        input: { key: 'manifest', value: manifest },
       },
     });
     // Create the publicDashboard
@@ -144,6 +204,19 @@ describe('PublicDashboard resolver standard behavior', () => {
       variables: { first: 10 },
     });
     expect(queryResult.data.publicDashboards.edges.length).toEqual(1);
+  });
+  it('should not update publicDashboard if invalidInput key', async () => {
+    const updatedDescription = 'updated Description';
+    const queryResult = await queryAsAdmin({
+      query: UPDATE_QUERY,
+      variables: {
+        id: publicDashboardInternalId,
+        input: { key: 'description', value: updatedDescription },
+      },
+    });
+    expect(queryResult).not.toBeNull();
+    expect(queryResult.errors.length).toEqual(1);
+    expect(queryResult.errors.at(0).message).toEqual('Only name and uri_key can be updated');
   });
   it('should update publicDashboard', async () => {
     const updatedName = `${publicDashboardName} - updated`;
@@ -179,9 +252,11 @@ describe('PublicDashboard resolver standard behavior', () => {
   });
 });
 
-describe('PublicDashboard features list', () => {
+describe('PublicDashboard specific behaviour', () => {
   let privateDashboard2InternalId;
+  let emptyPrivateDashboardInternalId;
   const publicDashboardName = 'publicDashboard2';
+  const emptyPublicDashboardName = 'empty private dashboard';
   it('User without capability should not create private dashboards', async () => {
     // Create Private dashboard
     const privateDashboard2 = await queryAsAdmin({
@@ -196,12 +271,72 @@ describe('PublicDashboard features list', () => {
     privateDashboard2InternalId = privateDashboard2.data.workspaceAdd.id;
 
     // Add a widget to Private dashboard as empty dashboard should not be pubslished
-    const emptyDashboardManifest = toBase64(JSON.stringify({ widgets: {}, config: {} }));
+    const parsedManifest = {
+      widgets: {
+        'ebb25410-7048-4de7-9288-704e962215f6': {
+          id: 'ebb25410-7048-4de7-9288-704e962215f6',
+          type: 'number',
+          perspective: 'entities',
+          dataSelection: [
+            {
+              label: 'area',
+              attribute: 'entity_type',
+              date_attribute: 'created_at',
+              perspective: 'entities',
+              isTo: true,
+              filters: {
+                mode: 'and',
+                filters: [
+
+                ],
+                filterGroups: [
+
+                ]
+              },
+              dynamicFrom: {
+                mode: 'and',
+                filters: [
+
+                ],
+                filterGroups: [
+
+                ]
+              },
+              dynamicTo: {
+                mode: 'and',
+                filters: [
+
+                ],
+                filterGroups: [
+
+                ]
+              }
+            }
+          ],
+          parameters: {
+            title: 'area number'
+          },
+          layout: {
+            w: 4,
+            h: 2,
+            x: 4,
+            y: 0,
+            i: 'ebb25410-7048-4de7-9288-704e962215f6',
+            moved: false,
+            static: false
+          }
+        }
+      },
+      config: {
+
+      }
+    };
+    const manifest = toBase64(JSON.stringify(parsedManifest));
     await editorQuery({
       query: UPDATE_PRIVATE_DASHBOARD_QUERY,
       variables: {
         id: privateDashboard2InternalId,
-        input: { key: 'manifest', value: emptyDashboardManifest },
+        input: { key: 'manifest', value: manifest },
       },
     });
     // Create the publicDashboard
@@ -226,9 +361,39 @@ describe('PublicDashboard features list', () => {
       variables: { id: privateDashboard2InternalId },
     });
   });
-  it('Admin should list private dashboards', async () => {});
-  it('Admin should list all public dashboards URI keys', async () => {});
-  it('Admin should delete a link for a public dashboard', async () => {});
-  it('Admin should update a link for a public dashboard', async () => {});
+  it('Empty dashboard should not be published', async () => {
+    // Create Private dashboard
+    const emptyPrivateDashboard = await queryAsAdmin({
+      query: CREATE_PRIVATE_DASHBOARD_QUERY,
+      variables: {
+        input: {
+          type: 'dashboard',
+          name: 'empty private dashboard',
+        },
+      },
+    });
+    emptyPrivateDashboardInternalId = emptyPrivateDashboard.data.workspaceAdd.id;
+    // Create the publicDashboard
+    const PUBLICDASHBOARD2_TO_CREATE = {
+      input: {
+        name: emptyPublicDashboardName,
+        dashboard_id: emptyPrivateDashboardInternalId,
+      },
+    };
+    const emptyPublicDashboard = await queryAsAdmin({
+      query: CREATE_QUERY,
+      variables: PUBLICDASHBOARD2_TO_CREATE,
+    });
+
+    expect(emptyPublicDashboard).not.toBeNull();
+    expect(emptyPublicDashboard.errors.length).toEqual(1);
+    expect(emptyPublicDashboard.errors.at(0).message).toEqual('Cannot published empty dashboard');
+
+    // Delete private dashboard
+    await queryAsAdmin({
+      query: DELETE_PRIVATE_DASHBOARD_QUERY,
+      variables: { id: emptyPrivateDashboardInternalId },
+    });
+  });
   it('Marking definition update by an admin should impact public dashboard', async () => {});
 });

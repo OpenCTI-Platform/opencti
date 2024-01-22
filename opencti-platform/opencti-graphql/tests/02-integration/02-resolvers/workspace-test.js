@@ -905,11 +905,6 @@ describe('Workspace member access behavior', () => {
   });
 
   it('Admin gets only his 3 created workspaces', async () => {
-    const queryResultDefault = await queryAsAdmin({
-      query: LIST_QUERY,
-      variables: { first: 10 },
-    });
-    expect(queryResultDefault.data.workspaces.edges.length).toEqual(3);
     const queryResult = await queryAsAdmin({
       query: LIST_QUERY,
       variables: { first: 10 },
@@ -922,6 +917,7 @@ describe('Workspace member access behavior', () => {
       query: LIST_QUERY,
       variables: { first: 10, includeAuthorities: true },
     });
+    // includes workspaces created in publicDashboard-test.js
     expect(queryResult.data.workspaces.edges.length).toEqual(4);
   });
 
