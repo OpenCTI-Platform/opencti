@@ -62,15 +62,17 @@ export const elIndexFiles = async (context, user, files) => {
         uploaded_at: file.uploaded_at,
       };
       const documentBody = buildIndexFileBody(internal_id, fileObject, entity);
-      await elIndex(INDEX_FILES, documentBody, { pipeline: 'attachment' }).catch((err) => {
+      try {
+        await elIndex(INDEX_FILES, documentBody, { pipeline: 'attachment' });
+      } catch (err) {
         // catch & log error
         const documentWithoutFileData = R.dissoc('file_data', documentBody);
         logApp.error('Error on file indexing', { message: err.message, causeStack: err.data?.cause?.stack, stack: err.stack, body: documentWithoutFileData });
         // try to index without file content
-        elIndex(INDEX_FILES, documentWithoutFileData).catch((e) => {
+        await elIndex(INDEX_FILES, documentWithoutFileData).catch((e) => {
           logApp.error('Error in fallback file indexing', { message: e.message, cause: e.cause, body: documentWithoutFileData });
         });
-      });
+      }
     }
   }
 };
