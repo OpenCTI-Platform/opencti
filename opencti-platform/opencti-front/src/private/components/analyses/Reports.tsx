@@ -152,6 +152,7 @@ const Reports: FunctionComponent = () => {
             'created_at',
             'objects',
             'name',
+            'description',
           ]}
         >
           {queryRef && (

@@ -1633,13 +1633,23 @@ const buildLocalMustFilter = async (validFilter) => {
       } else if (operator === 'contains' || operator === 'not_contains') {
         const targets = operator === 'contains' ? valuesFiltering : noValuesFiltering;
         const val = specialElasticCharsEscape(values[i].toString());
-        targets.push({
-          query_string: {
-            query: `*${val.replace(/\s/g, '\\ ')}*`,
-            analyze_wildcard: true,
-            fields: arrayKeys.map((k) => `${k}.keyword`),
-          },
-        });
+        if (key.includes(ATTRIBUTE_DESCRIPTION)) {
+          targets.push({
+            query_string: {
+              query: `*"${val}"*`,
+              analyze_wildcard: true,
+              fields: arrayKeys,
+            },
+          });
+        } else {
+          targets.push({
+            query_string: {
+              query: `*${val.replace(/\s/g, '\\ ')}*`,
+              analyze_wildcard: true,
+              fields: arrayKeys.map((k) => `${k}.keyword`),
+            },
+          });
+        }
       } else if (operator === 'starts_with' || operator === 'not_starts_with') {
         const targets = operator === 'starts_with' ? valuesFiltering : noValuesFiltering;
         const val = specialElasticCharsEscape(values[i].toString());
