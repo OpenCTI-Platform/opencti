@@ -1348,7 +1348,7 @@ export const elBatchIds = async (context, user, ids) => {
 
 // region elastic common loader.
 export const specialElasticCharsEscape = (query) => {
-  return query.replace(/([/+|\-*()^~={}[\]:?\\])/g, '\\$1');
+  return query.replace(/([/+|\-*()^~={}[\]:?"\\])/g, '\\$1');
 };
 
 const BASE_SEARCH_CONNECTIONS = [
