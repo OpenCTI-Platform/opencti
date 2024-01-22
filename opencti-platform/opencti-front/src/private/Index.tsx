@@ -76,7 +76,7 @@ const Index = ({ settings }: IndexProps) => {
   return (
     <>
       <SystemBanners settings={settings} />
-      {(settings?.platform_session_idle_timeout ?? 0) > 0 && <TimeoutLock />}
+      {(settings.platform_session_idle_timeout ?? 0) > 0 && <TimeoutLock />}
       <SettingsMessagesBanner />
       <PlatformCriticalAlertDialog alerts={settings.platform_critical_alerts}/>
       <Box
