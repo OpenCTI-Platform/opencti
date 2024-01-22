@@ -158,20 +158,21 @@ export const settingDeleteMessage = async (context, user, settingsId, messageId)
   return notify(BUS_TOPICS[ENTITY_TYPE_SETTINGS].EDIT_TOPIC, element, user);
 };
 
-export const getCriticalAlerts = async (context) => {
+export const getCriticalAlerts = async (context, user) => {
   // only 1 critical alert is checked: null effective confidence levels on users
   // it's for admins only (only them can take action)
-  if (isUserHasCapability(context.user, SETTINGS_SET_ACCESSES)) {
-    const allUsers = await listAllThings(context, context.user, [ENTITY_TYPE_USER], {});
+  if (isUserHasCapability(user, SETTINGS_SET_ACCESSES)) {
+    const allUsers = await listAllThings(context, user, [ENTITY_TYPE_USER], {});
     // need completed users to have computed effective level
-    const allCompleteUsers = await Promise.all(allUsers.map(async (user) => await buildCompleteUser(context, user)));
+    const allCompleteUsers = await Promise.all(allUsers.map(async (usr) => await buildCompleteUser(context, usr)));
     // if at least one user have a null effective confidence level, it's an issue
-    const usersWithNull = allCompleteUsers.filter((user) => user.effective_confidence_level === null);
+    const usersWithNull = allCompleteUsers.filter((usr) => usr.effective_confidence_level === null);
     if (usersWithNull.length === 0) {
       return [];
     }
     return [{
       type: 'USER_WITH_NULL_EFFECTIVE_LEVEL',
+      // default message for API users
       message: 'Some users have no effective confidence level, they will not be able to use the platform properly. Please configure these users using groups or organization confidence level, or individual confidence level.',
       details: {
         users: usersWithNull,
