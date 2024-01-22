@@ -1066,6 +1066,18 @@ type SettingsMessage {
   recipients: [Member!] @auth(for: [SETTINGS])
 }
 
+enum PlatformCriticalAlertType {
+  USER_WITH_NULL_EFFECTIVE_LEVEL
+}
+type PlatformCriticalAlertDetails {
+  users: [User!]!
+}
+type PlatformCriticalAlert {
+  message: String!
+  type: PlatformCriticalAlertType!
+  details: PlatformCriticalAlertDetails
+}
+
 type Settings implements InternalObject & BasicObject {
   id: ID!
   standard_id: String! @auth
@@ -1114,6 +1126,7 @@ type Settings implements InternalObject & BasicObject {
   platform_demo: Boolean
   platform_reference_attachment: Boolean @auth
   platform_feature_flags: [Module!] @auth
+  platform_critical_alerts: [PlatformCriticalAlert!]!
   created_at: DateTime! @auth
   updated_at: DateTime! @auth
   enterprise_edition: DateTime

@@ -4,6 +4,7 @@ import nconf from 'nconf';
 import { BUS_TOPICS } from '../config/conf';
 import {
   getApplicationInfo,
+  getCriticalAlerts,
   getMessagesFilteredByRecipients,
   getSettings,
   settingDeleteMessage,
@@ -35,6 +36,7 @@ const settingsResolvers = {
     platform_session_idle_timeout: () => Number(nconf.get('app:session_idle_timeout')),
     platform_session_timeout: () => Number(nconf.get('app:session_timeout')),
     platform_organization: (settings, __, context) => findById(context, context.user, settings.platform_organization),
+    platform_critical_alerts: (_, __, context) => getCriticalAlerts(context),
     activity_listeners: (settings, __, context) => internalFindByIds(context, context.user, settings.activity_listeners_ids),
     otp_mandatory: (settings) => settings.otp_mandatory ?? false,
     password_policy_min_length: (settings) => settings.password_policy_min_length ?? 0,
