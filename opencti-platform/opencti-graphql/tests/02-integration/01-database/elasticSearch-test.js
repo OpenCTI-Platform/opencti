@@ -16,6 +16,7 @@ import {
   elLoadById,
   elPaginate,
   elRebuildRelation,
+  ES_MAX_PAGINATION,
   searchEngineInit
 } from '../../../src/database/engine';
 import {
@@ -393,7 +394,7 @@ describe('Elasticsearch relation reconstruction', () => {
 
 describe('Elasticsearch pagination', () => {
   it('should entity paginate everything', async () => {
-    const data = await elPaginate(testContext, ADMIN_USER, READ_ENTITIES_INDICES, { first: 1000 });
+    const data = await elPaginate(testContext, ADMIN_USER, READ_ENTITIES_INDICES, { first: ES_MAX_PAGINATION });
     expect(data).not.toBeNull();
     expect(data.edges.length).toEqual(493);
     const filterBaseTypes = R.uniq(R.map((e) => e.node.base_type, data.edges));
@@ -410,7 +411,7 @@ describe('Elasticsearch pagination', () => {
   it('should entity paginate everything after', async () => {
     const data = await elPaginate(testContext, ADMIN_USER, READ_ENTITIES_INDICES, {
       after: 'WyJ2b2NhYnVsYXJ5LS1mZGYyNTVhOC01ZjM3LTVmZWMtYWRmYS0xZGYwYjdkM2QwY2UiXQ==',
-      first: 1000,
+      first: ES_MAX_PAGINATION,
     });
     expect(data).not.toBeNull();
     expect(data.edges.length).toEqual(1);
@@ -470,7 +471,7 @@ describe('Elasticsearch pagination', () => {
       filters: [{ key: 'x_opencti_color', operator: 'nil', values: [] }],
       filterGroups: [],
     };
-    const data = await elPaginate(testContext, ADMIN_USER, READ_ENTITIES_INDICES, { filters, first: 1000 });
+    const data = await elPaginate(testContext, ADMIN_USER, READ_ENTITIES_INDICES, { filters, first: ES_MAX_PAGINATION });
     expect(data.edges.length).toEqual(486);
   });
   it('should entity paginate with field exist filter', async () => {
@@ -533,7 +534,7 @@ describe('Elasticsearch pagination', () => {
       ],
       filterGroups: [],
     };
-    data = await elPaginate(testContext, ADMIN_USER, READ_ENTITIES_INDICES, { filters, first: 1000 });
+    data = await elPaginate(testContext, ADMIN_USER, READ_ENTITIES_INDICES, { filters, first: ES_MAX_PAGINATION });
     expect(data.edges.length).toEqual(351);
     filters = {
       mode: 'and',
@@ -550,7 +551,7 @@ describe('Elasticsearch pagination', () => {
     const data = await elPaginate(testContext, ADMIN_USER, READ_ENTITIES_INDICES, {
       orderBy: 'created',
       orderMode: 'asc',
-      first: 1000
+      first: ES_MAX_PAGINATION
     });
     expect(data.edges.length).toEqual(493);
     const createdDates = R.map((e) => e.node.created, data.edges);

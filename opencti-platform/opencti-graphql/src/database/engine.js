@@ -18,7 +18,14 @@ import {
   pascalize,
   READ_DATA_INDICES,
   READ_INDEX_INTERNAL_OBJECTS,
+  READ_INDEX_INTERNAL_RELATIONSHIPS,
+  READ_INDEX_STIX_CORE_RELATIONSHIPS,
+  READ_INDEX_STIX_CYBER_OBSERVABLE_RELATIONSHIPS,
+  READ_INDEX_STIX_CYBER_OBSERVABLES,
   READ_INDEX_STIX_DOMAIN_OBJECTS,
+  READ_INDEX_STIX_META_OBJECTS,
+  READ_INDEX_STIX_META_RELATIONSHIPS,
+  READ_INDEX_STIX_SIGHTING_RELATIONSHIPS,
   READ_PLATFORM_INDICES,
   READ_RELATIONSHIPS_INDICES,
   UPDATE_OPERATION_ADD,
@@ -63,19 +70,20 @@ import {
   ENTITY_TYPE_IDENTITY_INDIVIDUAL,
   ENTITY_TYPE_IDENTITY_SYSTEM,
   ENTITY_TYPE_LOCATION_COUNTRY,
+  isStixDomainObject,
   isStixObjectAliased,
-  STIX_ORGANIZATIONS_UNRESTRICTED,
+  STIX_ORGANIZATIONS_UNRESTRICTED
 } from '../schema/stixDomainObject';
-import { isStixObject } from '../schema/stixCoreObject';
-import { isBasicRelationship, isStixRelationshipExceptRef } from '../schema/stixRelationship';
-import { RELATION_INDICATES, STIX_CORE_RELATIONSHIPS } from '../schema/stixCoreRelationship';
+import { isBasicObject, isStixCoreObject, isStixObject } from '../schema/stixCoreObject';
+import { isBasicRelationship, isStixRelationship, isStixRelationshipExceptRef } from '../schema/stixRelationship';
+import { isStixCoreRelationship, RELATION_INDICATES, STIX_CORE_RELATIONSHIPS } from '../schema/stixCoreRelationship';
 import { INTERNAL_FROM_FIELD, INTERNAL_TO_FIELD } from '../schema/identifier';
 import { BYPASS, computeUserMemberAccessIds, executionContext, INTERNAL_USERS, isBypassUser, MEMBER_ACCESS_ALL, SYSTEM_USER } from '../utils/access';
 import { isSingleRelationsRef, } from '../schema/stixEmbeddedRelationship';
 import { now, runtimeFieldObservableValueScript } from '../utils/format';
-import { ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
+import { ENTITY_TYPE_MARKING_DEFINITION, isStixMetaObject } from '../schema/stixMetaObject';
 import { getEntitiesListFromCache, getEntityFromCache } from './cache';
-import { ENTITY_TYPE_MIGRATION_STATUS, ENTITY_TYPE_SETTINGS, ENTITY_TYPE_STATUS, ENTITY_TYPE_USER } from '../schema/internalObject';
+import { ENTITY_TYPE_MIGRATION_STATUS, ENTITY_TYPE_SETTINGS, ENTITY_TYPE_STATUS, ENTITY_TYPE_USER, isInternalObject } from '../schema/internalObject';
 import { telemetry } from '../config/tracing';
 import {
   isBooleanAttribute,
@@ -111,8 +119,8 @@ import {
 import { FilterMode } from '../generated/graphql';
 import { booleanMapping, dateMapping, numericMapping, shortMapping, textMapping } from '../schema/attribute-definition';
 import { schemaTypesDefinition } from '../schema/schema-types';
-import { INTERNAL_RELATIONSHIPS } from '../schema/internalRelationship';
-import { STIX_SIGHTING_RELATIONSHIP } from '../schema/stixSightingRelationship';
+import { INTERNAL_RELATIONSHIPS, isInternalRelationship } from '../schema/internalRelationship';
+import { isStixSightingRelationship, STIX_SIGHTING_RELATIONSHIP } from '../schema/stixSightingRelationship';
 import { rule_definitions } from '../rules/rules-definition';
 
 const ELK_ENGINE = 'elk';
@@ -1148,8 +1156,43 @@ export const elConvertHits = async (data, opts = {}) => {
   return convertedHits;
 };
 
+const computeQueryIndices = (indices, types) => {
+  // If no indices explicitly defined, compute them on the types
+  // If no types specified, fallback to generic READ_DATA_INDICES
+  if (isEmptyField(indices)) {
+    return isEmptyField(types) ? READ_DATA_INDICES : R.uniq(types.map((findType) => {
+      if (isAbstract(findType)) {
+        // For objects
+        if (isInternalObject(findType)) return [READ_INDEX_INTERNAL_OBJECTS];
+        if (isStixMetaObject(findType)) return [READ_INDEX_STIX_META_OBJECTS];
+        if (isStixDomainObject(findType)) return [READ_INDEX_STIX_DOMAIN_OBJECTS];
+        if (isStixCoreObject(findType)) return [READ_INDEX_STIX_DOMAIN_OBJECTS, READ_INDEX_STIX_CYBER_OBSERVABLES];
+        if (isStixObject(findType)) return [READ_INDEX_STIX_META_OBJECTS, READ_INDEX_STIX_DOMAIN_OBJECTS, READ_INDEX_STIX_CYBER_OBSERVABLES];
+        if (isBasicObject(findType)) return [READ_INDEX_STIX_META_OBJECTS, READ_INDEX_STIX_DOMAIN_OBJECTS, READ_INDEX_STIX_CYBER_OBSERVABLES, READ_INDEX_INTERNAL_OBJECTS];
+        // For relationships
+        if (isInternalRelationship(findType)) return [READ_INDEX_INTERNAL_RELATIONSHIPS];
+        if (isStixSightingRelationship(findType)) return [READ_INDEX_STIX_SIGHTING_RELATIONSHIPS];
+        if (isStixCoreRelationship(findType)) return [READ_INDEX_STIX_CORE_RELATIONSHIPS];
+        if (isStixRefRelationship(findType)) return [READ_INDEX_STIX_META_RELATIONSHIPS, READ_INDEX_STIX_CYBER_OBSERVABLE_RELATIONSHIPS];
+        if (isStixRelationship(findType)) {
+          return [READ_INDEX_STIX_CORE_RELATIONSHIPS, READ_INDEX_STIX_SIGHTING_RELATIONSHIPS, READ_INDEX_STIX_META_RELATIONSHIPS,
+            READ_INDEX_STIX_CYBER_OBSERVABLE_RELATIONSHIPS];
+        }
+        if (isBasicRelationship(findType)) {
+          return [READ_INDEX_STIX_CORE_RELATIONSHIPS, READ_INDEX_STIX_SIGHTING_RELATIONSHIPS, READ_INDEX_STIX_META_RELATIONSHIPS,
+            READ_INDEX_STIX_CYBER_OBSERVABLE_RELATIONSHIPS, READ_INDEX_INTERNAL_RELATIONSHIPS];
+        }
+        // Fallback
+        return READ_DATA_INDICES;
+      }
+      return [`${inferIndexFromConceptType(findType)}*`];
+    }).flat());
+  }
+  return indices;
+};
+
 export const elFindByIds = async (context, user, ids, opts = {}) => {
-  const { indices = [], baseData = false, baseFields = BASE_FIELDS } = opts;
+  const { indices, baseData = false, baseFields = BASE_FIELDS } = opts;
   const { withoutRels = false, onRelationship = null, toMap = false, mapWithAllIds = false, type = null, forceAliases = false } = opts;
   const idsArray = Array.isArray(ids) ? ids : [ids];
   const types = (Array.isArray(type) || !type) ? type : [type];
@@ -1157,12 +1200,7 @@ export const elFindByIds = async (context, user, ids, opts = {}) => {
   if (processIds.length === 0) {
     return toMap ? {} : [];
   }
-  let computedIndices = indices;
-  // If no indices explicitly defined, compute them on the types
-  // If no types specified, fallback to generic READ_DATA_INDICES
-  if (isEmptyField(computedIndices)) {
-    computedIndices = isEmptyField(types) ? READ_DATA_INDICES : R.uniq(types.map((findType) => `${inferIndexFromConceptType(findType)}*`));
-  }
+  const computedIndices = computeQueryIndices(indices, types);
   let hits = {};
   const groupIds = R.splitEvery(MAX_TERMS_SPLIT, idsArray);
   for (let index = 0; index < groupIds.length; index += 1) {
@@ -1246,9 +1284,11 @@ export const elFindByIds = async (context, user, ids, opts = {}) => {
       if (searchAfter) {
         body.search_after = searchAfter;
       }
+      const relationshipsCount = ES_MAX_PAGINATION;
+      const entitiesCount = workingIds.length > ES_MAX_PAGINATION ? ES_MAX_PAGINATION : workingIds.length;
       const query = {
         index: computedIndices,
-        size: workingIds.length < ES_MAX_PAGINATION ? workingIds.length : ES_MAX_PAGINATION,
+        size: onRelationship ? relationshipsCount : entitiesCount,
         _source: baseData ? baseFields : true,
         body,
       };
@@ -2446,8 +2486,8 @@ export const elPaginate = async (context, user, indexName, options = {}) => {
   const { types = null, connectionFormat = true } = options;
   const body = await elQueryBodyBuilder(context, user, options);
   if (body.size > ES_MAX_PAGINATION) {
-    const message = '[SEARCH] You cannot ask this amount of results. If you need more, please use pagination';
-    throw DatabaseError(message, { maximum: ES_MAX_PAGINATION, body });
+    logApp.warn('[SEARCH] Pagination limited to max result config', { max: ES_MAX_PAGINATION });
+    body.size = ES_MAX_PAGINATION;
   }
   const query = {
     index: indexName,

@@ -34,6 +34,8 @@ import {
   READ_DATA_INDICES_INFERRED,
   READ_INDEX_HISTORY,
   READ_INDEX_INFERRED_RELATIONSHIPS,
+  READ_INDEX_STIX_CYBER_OBSERVABLE_RELATIONSHIPS,
+  READ_INDEX_STIX_META_RELATIONSHIPS,
   READ_RELATIONSHIPS_INDICES,
   READ_RELATIONSHIPS_INDICES_WITHOUT_INFERRED,
   UPDATE_OPERATION_ADD,
@@ -117,7 +119,8 @@ import {
   RELATION_GRANTED_TO,
   RELATION_KILL_CHAIN_PHASE,
   RELATION_OBJECT,
-  RELATION_OBJECT_MARKING
+  RELATION_OBJECT_MARKING,
+  STIX_REF_RELATIONSHIP_TYPES
 } from '../schema/stixRefRelationship';
 import { ENTITY_TYPE_STATUS, ENTITY_TYPE_USER, isDatedInternalObject } from '../schema/internalObject';
 import { isStixCoreObject, isStixObject } from '../schema/stixCoreObject';
@@ -383,7 +386,7 @@ const loadElementMetaDependencies = async (context, user, elements, args = {}) =
   const workingElements = Array.isArray(elements) ? elements : [elements];
   const workingElementsMap = new Map(workingElements.map((i) => [i.internal_id, i]));
   const workingIds = workingElements.map((element) => element.internal_id);
-  const relTypes = onlyMarking ? [RELATION_OBJECT_MARKING] : workingElements.map((element) => element.entity_type);
+  const relTypes = onlyMarking ? [RELATION_OBJECT_MARKING] : STIX_REF_RELATIONSHIP_TYPES;
   // Resolve all relations
   const refsRelations = await elFindByIds(context, user, workingIds, { type: relTypes, onRelationship: 'from' });
   const refsPerElements = R.groupBy((r) => r.fromId, refsRelations);
@@ -410,6 +413,7 @@ const loadElementMetaDependencies = async (context, user, elements, args = {}) =
         }, values).filter((d) => isNotEmptyField(d));
         const metaRefKey = schemaRelationsRefDefinition.getRelationRef(element.entity_type, inputKey);
         if (isEmptyField(metaRefKey)) {
+          console.log({ key, inputKey, type: element.entity_type, relTypes });
           throw UnsupportedError('Schema validation failure when loading dependencies', { key, inputKey, type: element.entity_type });
         }
         const invalidRelations = values.filter((v) => toResolvedElements[v.toId] === undefined);
