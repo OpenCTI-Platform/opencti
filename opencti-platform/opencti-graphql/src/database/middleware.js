@@ -411,7 +411,6 @@ const loadElementMetaDependencies = async (context, user, elements, args = {}) =
         }, values).filter((d) => isNotEmptyField(d));
         const metaRefKey = schemaRelationsRefDefinition.getRelationRef(element.entity_type, inputKey);
         if (isEmptyField(metaRefKey)) {
-          console.log({ key, inputKey, type: element.entity_type, relTypes });
           throw UnsupportedError('Schema validation failure when loading dependencies', { key, inputKey, type: element.entity_type });
         }
         const invalidRelations = values.filter((v) => toResolvedElements[v.toId] === undefined);
