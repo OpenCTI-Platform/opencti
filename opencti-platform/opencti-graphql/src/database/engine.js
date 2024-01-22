@@ -2694,9 +2694,8 @@ const getRelatedRelations = async (context, user, targetIds, elements, level, ca
   const foundRelations = [];
   const callback = async (hits) => {
     for (let index = 0; index < hits.length; index += 1) {
-      const subRels = hits[index];
-      elements.unshift(...subRels.map((s) => ({ ...s, level })));
-      const internalIds = subRels.map((g) => g.internal_id);
+      elements.unshift(...hits.map((s) => ({ ...s, level })));
+      const internalIds = hits.map((g) => g.internal_id);
       const resolvedIds = internalIds.filter((f) => !cache[f]);
       foundRelations.push(...resolvedIds);
       resolvedIds.forEach((id) => {
