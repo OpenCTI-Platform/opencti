@@ -2502,5 +2502,7 @@
   "I have read and comply with the above statement": "我已阅读并遵守上述声明",
   "You need to activate OpenCTI enterprise edition to use this feature.": "您需要激活 OpenCTI 企业版才能使用此功能。",
   "Max Confidence Level": "最大置信度",
-  "This value is overridden for the following entity types": "以下实体类型可重载该值"
+  "This value is overridden for the following entity types": "以下实体类型可重载该值",
+  "Enable user max confidence level": "启用用户最大置信度",
+  "The user's max confidence level overrides the max confidence that might be set at groups or organizations level.": "用户的最大置信度高于可能在组或组织级别设置的最大置信度。"
 }

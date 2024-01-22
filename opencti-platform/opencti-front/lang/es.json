@@ -2502,5 +2502,7 @@
   "I have read and comply with the above statement": "He leído y acepto la declaración anterior",
   "You need to activate OpenCTI enterprise edition to use this feature.": "Es necesario activar la edición empresarial de OpenCTI para utilizar esta función.",
   "Max Confidence Level": "Nivel de confianza máximo",
-  "This value is overridden for the following entity types": "Este valor se anula para los siguientes tipos de entidad"
+  "This value is overridden for the following entity types": "Este valor se anula para los siguientes tipos de entidad",
+  "Enable user max confidence level": "Activar el nivel máximo de confianza del usuario",
+  "The user's max confidence level overrides the max confidence that might be set at groups or organizations level.": "El nivel máximo de confianza del usuario prevalece sobre el nivel máximo de confianza que pueda estar establecido a nivel de grupos u organizaciones."
 }

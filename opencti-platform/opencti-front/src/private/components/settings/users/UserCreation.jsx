@@ -203,7 +203,8 @@ const UserCreation = ({ paginationOptions }) => {
                   }}
                 />
                 <OptionalConfidenceLevelField
-                  name="max_confidence"
+                  name="user_confidence_level"
+                  entityType="User"
                   label={t_i18n('Max Confidence Level')}
                 />
                 <div className={classes.buttons}>

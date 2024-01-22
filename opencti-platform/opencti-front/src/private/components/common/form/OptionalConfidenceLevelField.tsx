@@ -1,9 +1,12 @@
 import React, { FunctionComponent, useState } from 'react';
 import { Field, useFormikContext } from 'formik';
 import Alert from '@mui/material/Alert';
+import Box from '@mui/material/Box';
+import Tooltip from '@mui/material/Tooltip';
 import makeStyles from '@mui/styles/makeStyles';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import Switch from '@mui/material/Switch';
+import { InformationOutline } from 'mdi-material-ui';
 import InputSliderField from '../../../../components/InputSliderField';
 import { useFormatter } from '../../../../components/i18n';
 
@@ -23,8 +26,7 @@ const useStyles = makeStyles(() => ({
 interface OptionalConfidenceLevelFieldProps {
   name: string;
   label?: string;
-  variant?: string;
-  onSubmit: (name: string, value: string | null) => void;
+  onSubmit?: (name: string, value: string | null) => void;
   onFocus?: (name: string, value: string) => void;
   editContext?:
   | readonly ({
@@ -40,7 +42,6 @@ interface OptionalConfidenceLevelFieldProps {
 const OptionalConfidenceLevelField: FunctionComponent<OptionalConfidenceLevelFieldProps> = ({
   name,
   label,
-  variant,
   onFocus,
   onSubmit,
   editContext,
@@ -53,15 +54,15 @@ const OptionalConfidenceLevelField: FunctionComponent<OptionalConfidenceLevelFie
   const classes = useStyles();
   const { setFieldValue, initialValues } = useFormikContext<Record<string, boolean>>();
 
-  const [switchValue, setSwitchValue] = useState(initialValues[name]); // Default switch value
+  const [switchValue, setSwitchValue] = useState(initialValues[name] ?? false); // Default switch value
 
-  const handleSwitchChange = () => {
+  const handleSwitchChange = async () => {
     if (switchValue) {
-      setFieldValue(name, null);
-      onSubmit(name, null);
+      await setFieldValue(name, null);
+      onSubmit?.(name, null);
     } else {
-      setFieldValue(name, 100);
-      onSubmit(name, '100');
+      await setFieldValue(name, 100);
+      onSubmit?.(name, '100');
     }
     setSwitchValue(!switchValue);
   };
@@ -71,15 +72,23 @@ const OptionalConfidenceLevelField: FunctionComponent<OptionalConfidenceLevelFie
       severity="info"
       icon={false}
       variant="outlined"
-      style={{ position: 'relative' }}
+      sx={{ position: 'relative' }}
     >
-      <FormControlLabel
-        control={<Switch checked={switchValue} onChange={handleSwitchChange} />}
-        label="Disable Confidence Level"
-      />
+      <Box sx={{ display: 'flex', alignItems: 'center' }}>
+        <FormControlLabel
+          control={<Switch checked={switchValue} onChange={handleSwitchChange} />}
+          label={t_i18n('Enable user max confidence level')}
+          sx={{ marginRight: 1 }}
+        />
+        <Tooltip
+          sx={{ zIndex: 2 }}
+          title={t_i18n('The user\'s max confidence level overrides the max confidence that might be set at groups or organizations level.')}
+        >
+          <InformationOutline fontSize="small" color="primary" />
+        </Tooltip>
+      </Box>
       <Field
         component={InputSliderField}
-        variant={variant}
         containerstyle={containerStyle}
         fullWidth={true}
         entityType={entityType}
@@ -90,6 +99,7 @@ const OptionalConfidenceLevelField: FunctionComponent<OptionalConfidenceLevelFie
         onSubmit={onSubmit}
         editContext={editContext}
         disabled={!switchValue || disabled}
+        variant="edit"
       />
     </Alert>
   );

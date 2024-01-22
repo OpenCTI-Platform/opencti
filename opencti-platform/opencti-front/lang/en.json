@@ -2502,5 +2502,7 @@
   "I have read and comply with the above statement": "I have read and comply with the above statement",
   "You need to activate OpenCTI enterprise edition to use this feature.": "You need to activate OpenCTI enterprise edition to use this feature.",
   "Max Confidence Level": "Max Confidence Level",
-  "This value is overridden for the following entity types": "This value is overridden for the following entity types"
+  "This value is overridden for the following entity types": "This value is overridden for the following entity types",
+  "Enable user max confidence level": "Enable user max confidence level",
+  "The user's max confidence level overrides the max confidence that might be set at groups or organizations level.": "The user's max confidence level overrides the max confidence that might be set at groups or organizations level."
 }

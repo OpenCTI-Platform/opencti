@@ -76,7 +76,7 @@ const userValidation = (t: (value: string) => string, userIsOnlyOrganizationAdmi
   account_status: Yup.string(),
   account_lock_after_date: Yup.date().nullable(),
   objectOrganization: userIsOnlyOrganizationAdmin ? Yup.array().min(1, t('Minimum one organization')).required(t('This field is required')) : Yup.array(),
-  max_confidence: Yup.number()
+  user_confidence_level: Yup.number()
     .min(0, t('The value must be greater than or equal to 0'))
     .max(100, t('The value must be less than or equal to 100'))
     .nullable(),
@@ -118,7 +118,7 @@ UserEditionOverviewComponentProps
     description: user.description,
     account_status: user.account_status,
     account_lock_after_date: user.account_lock_after_date,
-    max_confidence: user.user_confidence_level?.max_confidence,
+    user_confidence_level: user.user_confidence_level?.max_confidence,
     objectOrganization,
   };
 
@@ -134,14 +134,14 @@ UserEditionOverviewComponentProps
   };
 
   const handleSubmitField = (name: string, value: string | null) => {
+    console.log('sdfqsdfgsd', name, value);
     userValidation(t_i18n, userIsOnlyOrganizationAdmin)
       .validateAt(name, { [name]: value })
       .then(() => {
-        // specific case for user confidence level that must be updated as a full object (we cannot field patch non-multiple objects for now)
-        // We pass the existing overrides for this user so they are unchanged
-        if (name === 'max_confidence') {
+        // specific case for user confidence level: to update an object we have several use-cases
+        if (name === 'user_confidence_level') {
           if (user.user_confidence_level && value) {
-            // We edit an existing value
+            // We edit an existing value inside the object: use object_path
             commitFieldPatch({
               variables: {
                 id: user.id,
@@ -153,7 +153,7 @@ UserEditionOverviewComponentProps
               },
             });
           } else if (!user.user_confidence_level && value) {
-            // We have no user_confidence_level and we add one
+            // We have no user_confidence_level and we add one: push a complete object
             commitFieldPatch({
               variables: {
                 id: user.id,
@@ -167,7 +167,7 @@ UserEditionOverviewComponentProps
               },
             });
           } else if (user.user_confidence_level && !value) {
-            // we have an existing value but we want to remove it
+            // we have an existing value but we want to remove it: push [null] (and not null!)
             commitFieldPatch({
               variables: {
                 id: user.id,
@@ -368,14 +368,13 @@ UserEditionOverviewComponentProps
           {
             hasSetAccess && (
               <OptionalConfidenceLevelField
-                name="max_confidence"
+                name="user_confidence_level"
                 label={t_i18n('Max Confidence Level')}
                 onFocus={handleChangeFocus}
                 onSubmit={handleSubmitField}
                 entityType="User"
                 containerStyle={fieldSpacingContainerStyle}
                 editContext={context}
-                variant="edit"
               />
             )
           }

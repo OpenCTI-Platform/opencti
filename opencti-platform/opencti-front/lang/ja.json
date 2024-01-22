@@ -2502,5 +2502,7 @@
   "I have read and comply with the above statement": "私は上記の声明を読み、遵守します。",
   "You need to activate OpenCTI enterprise edition to use this feature.": "この機能を使用するには、OpenCTI エンタープライズ版を有効にする必要があります。",
   "Max Confidence Level": "最大信頼度",
-  "This value is overridden for the following entity types": "この値は、以下のエンティティ・タイプでオーバーライドされます。"
+  "This value is overridden for the following entity types": "この値は、以下のエンティティ・タイプでオーバーライドされます。",
+  "Enable user max confidence level": "ユーザーの最大信頼レベルを有効にする",
+  "The user's max confidence level overrides the max confidence that might be set at groups or organizations level.": "ユーザの最大信頼レベルは、グループまたは組織レベルで設定されている可能性のある最大信頼レベルよりも優先されます。"
 }
