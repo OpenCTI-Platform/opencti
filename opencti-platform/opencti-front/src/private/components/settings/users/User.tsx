@@ -157,16 +157,13 @@ const UserFragment = graphql`
     default_hidden_types
     user_confidence_level {
       max_confidence
-      overrides {
-        entity_type
-        max_confidence
-      }
     }
     effective_confidence_level {
       max_confidence
-      overrides {
-        entity_type
-        max_confidence
+      source {
+        ... on User { entity_type id name }
+        ... on Organization { entity_type id name }
+        ... on Group { entity_type id name }
       }
     }
     objectOrganization(
@@ -565,6 +562,7 @@ const User: FunctionComponent<UserProps> = ({ data }) => {
                 <UserConfidenceLevel
                   confidenceLevel={user.effective_confidence_level}
                   showNullAsError={true}
+                  showSource={true}
                 />
               </Grid>
             </Grid>

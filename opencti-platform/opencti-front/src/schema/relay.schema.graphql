@@ -1373,13 +1373,20 @@ type Creator {
 
 type UserConfidenceLevel {
   max_confidence: Int!
-  overrides: [ConfidenceLevelOverride!]!
+  overrides: [UserConfidenceLevelOverride!]!
 }
 
-type ConfidenceLevelOverride {
+type UserConfidenceLevelOverride {
   entity_type: String!
   max_confidence: Int!
 }
+
+type EffectiveConfidenceLevel {
+  max_confidence: Int!
+  source: EffectiveConfidenceLevelSource!
+}
+
+union EffectiveConfidenceLevelSource = Organization | Group | User
 
 type User implements BasicObject & InternalObject {
   id: ID!
@@ -1403,7 +1410,7 @@ type User implements BasicObject & InternalObject {
   capabilities: [Capability]!
   default_hidden_types: [String!]!
   user_confidence_level: UserConfidenceLevel
-  effective_confidence_level: UserConfidenceLevel
+  effective_confidence_level: EffectiveConfidenceLevel
   groups(orderBy: GroupsOrdering, orderMode: OrderingMode): GroupConnection
   objectOrganization(orderBy: OrganizationsOrdering, orderMode: OrderingMode): OrganizationConnection
   created_at: DateTime!

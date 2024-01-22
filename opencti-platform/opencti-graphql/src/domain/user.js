@@ -1441,27 +1441,35 @@ export const getUserEffectiveConfidenceLevel = async (userId, context) => {
 export const computeUserEffectiveConfidenceLevel = (user) => {
   // if user has a specific confidence level, it overrides everything and we return it
   if (user.user_confidence_level) {
-    return user.user_confidence_level;
+    return {
+      ...user.user_confidence_level,
+      source: user,
+    };
   }
 
   // otherwise we get all groups and organisations for this user, and select the lowest max_confidence found
   let minLevel = null;
+  let source = null;
   for (let i = 0; i < user.groups.length; i += 1) {
     const groupLevel = user.groups[i].group_confidence_level?.max_confidence ?? null;
     if (minLevel === null || (groupLevel !== null && groupLevel < minLevel)) {
       minLevel = groupLevel;
+      source = user.groups[i];
     }
   }
   for (let i = 0; i < user.organizations.length; i += 1) {
     const orgLevel = user.organizations[i].org_confidence_level?.max_confidence ?? null;
     if (minLevel === null || (orgLevel !== null && orgLevel < minLevel)) {
       minLevel = orgLevel;
+      source = user.organizations[i];
     }
   }
   if (minLevel !== null) {
     return {
       max_confidence: minLevel,
-      overrides: []
+      // TODO: handle overrides and their sources
+      overrides: [],
+      source,
     };
   }
 

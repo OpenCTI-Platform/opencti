@@ -116,6 +116,14 @@ const userResolvers = {
   Group: {
     roles: (group, args, context) => rolesGroupsLoader.load(group.id, context, context.user, args),
   },
+  EffectiveConfidenceLevelSource: {
+    __resolveType(obj) {
+      if (obj.entity_type) {
+        return obj.entity_type.replace(/(?:^|-)(\w)/g, (matches, letter) => letter.toUpperCase());
+      }
+      return 'Unknown';
+    },
+  },
   Mutation: {
     otpActivation: (_, { input }, context) => otpUserActivation(context, context.user, input),
     otpDeactivation: (_, __, context) => otpUserDeactivation(context, context.user, context.user.id),
