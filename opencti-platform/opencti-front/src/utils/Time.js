@@ -123,3 +123,23 @@ export const formatSeconds = (seconds) => {
   const formattedSecs = `${leadingZero(secondsLeft)}`;
   return `${formattedHours}${formattedMins}${formattedSecs}`;
 };
+
+/**
+ * Get a past date in a string format based on a relative string
+ * used to compute how much time we go before.
+ *
+ * @param relativeDate How much time to go before (ex: days-7).
+ * @return {string|null} The past date.
+ */
+export const computerRelativeDate = (relativeDate) => {
+  if (relativeDate.includes('days')) {
+    return daysAgo(relativeDate.split('-')[1], null, false);
+  }
+  if (relativeDate.includes('months')) {
+    return monthsAgo(relativeDate.split('-')[1]);
+  }
+  if (relativeDate.includes('years')) {
+    return yearsAgo(relativeDate.split('-')[1]);
+  }
+  return null;
+};

@@ -5,7 +5,7 @@ import RGL, { WidthProvider } from 'react-grid-layout';
 import Paper from '@mui/material/Paper';
 import makeStyles from '@mui/styles/makeStyles';
 import { v4 as uuid } from 'uuid';
-import { daysAgo, dayStartDate, monthsAgo, parse, yearsAgo } from '../../../../utils/Time';
+import { computerRelativeDate, dayStartDate, parse } from '../../../../utils/Time';
 import WorkspaceHeader from '../WorkspaceHeader';
 import { commitMutation } from '../../../../relay/environment';
 import { workspaceMutationFieldPatch } from '../WorkspaceEditionOverview';
@@ -206,18 +206,6 @@ const DashboardComponent = ({ workspace, noToolbar }) => {
   };
   const getDayStartDate = () => {
     return dayStartDate(null, false);
-  };
-  const computerRelativeDate = (relativeDate) => {
-    if (relativeDate.includes('days')) {
-      return daysAgo(relativeDate.split('-')[1], null, false);
-    }
-    if (relativeDate.includes('months')) {
-      return monthsAgo(relativeDate.split('-')[1]);
-    }
-    if (relativeDate.includes('years')) {
-      return yearsAgo(relativeDate.split('-')[1]);
-    }
-    return null;
   };
   const renderEntitiesVisualization = (widget, config) => {
     const { relativeDate } = config;
