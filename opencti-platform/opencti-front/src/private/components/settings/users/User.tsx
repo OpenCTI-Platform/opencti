@@ -162,6 +162,13 @@ const UserFragment = graphql`
         max_confidence
       }
     }
+    effective_confidence_level {
+      max_confidence
+      overrides {
+        entity_type
+        max_confidence
+      }
+    }
     objectOrganization(
       orderBy: $organizationsOrderBy
       orderMode: $organizationsOrderMode
@@ -544,7 +551,21 @@ const User: FunctionComponent<UserProps> = ({ data }) => {
                 <Typography variant="h3" gutterBottom={true}>
                   {t_i18n('Max Confidence Level')}
                 </Typography>
-                <UserConfidenceLevel userConfidenceLevel={user.user_confidence_level ?? '-'}/>
+                <UserConfidenceLevel confidenceLevel={user.user_confidence_level ?? '-'}/>
+              </Grid>
+              <Grid item={true} xs={12}>
+                <Typography
+                  variant="h3"
+                  gutterBottom={true}
+                  style={{ float: 'left' }}
+                >
+                  {t_i18n('Effective Confidence Level')}
+                </Typography>
+                <div className="clearfix"/>
+                <UserConfidenceLevel
+                  confidenceLevel={user.effective_confidence_level}
+                  showNullAsError={true}
+                />
               </Grid>
             </Grid>
           </Paper>
