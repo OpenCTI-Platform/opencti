@@ -10982,7 +10982,6 @@ type Query {
     search: String
   ): [TimeSeries] @auth(for: [KNOWLEDGE, EXPLORE])
   stixCoreObjectsMultiTimeSeries(
-    operation: StatsOperation!
     startDate: DateTime!
     endDate: DateTime
     interval: String!

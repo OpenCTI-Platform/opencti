@@ -1,5 +1,5 @@
 import { STIX_EXT_OCTI } from '../../types/stix-extensions';
-import { buildStixDomain, cleanObject, convertObjectReferences } from '../../database/stix-converter';
+import { buildStixDomain, cleanObject } from '../../database/stix-converter';
 import type { StixPublicDashboard, StoreEntityPublicDashboard } from './publicDashboard-types';
 
 const convertPublicDashboardToStix = (instance: StoreEntityPublicDashboard): StixPublicDashboard => {
@@ -13,12 +13,10 @@ const convertPublicDashboardToStix = (instance: StoreEntityPublicDashboard): Sti
     public_manifest: instance.public_manifest,
     private_manifest: instance.private_manifest,
     uri_key: instance.uri_key,
-    aliases: instance.x_opencti_aliases ?? [],
     extensions: {
       [STIX_EXT_OCTI]: cleanObject({
         ...stixDomainObject.extensions[STIX_EXT_OCTI],
         extension_type: 'new-sdo',
-        object_refs_inferred: convertObjectReferences(instance, true),
       })
     }
   };
