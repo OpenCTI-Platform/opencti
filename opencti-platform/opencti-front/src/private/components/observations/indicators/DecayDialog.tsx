@@ -13,6 +13,7 @@ import { SxProps } from '@mui/material';
 import { Theme } from '@mui/material/styles/createTheme';
 import { useTheme } from '@mui/styles';
 import { IndicatorDetails_indicator$data } from '@components/observations/indicators/__generated__/IndicatorDetails_indicator.graphql';
+import DecayChart from '@components/observations/indicators/DecayChart';
 import { useFormatter } from '../../../../components/i18n';
 
 interface DecayDialogContentProps {
@@ -34,22 +35,32 @@ const DecayDialogContent : FunctionComponent<DecayDialogContentProps> = ({ indic
 
   const decayHistory = indicator.decay_history ? [...indicator.decay_history] : [];
   const decayLivePoints = indicatorDecayDetails?.live_points ? [...indicatorDecayDetails.live_points] : [];
-  const decayReactionPoints = indicator.decay_applied_rule?.decay_points ?? [];
 
-  const currentScoreLineStyle = {
+  const currentLiveScoreLineStyle = {
     color: theme.palette.success.main,
     fontWeight: 'bold',
   };
-  const revokeScoreLineStyle = {
-    color: theme.palette.error.main,
+
+  const currentScoreLineStyle = {
+    color: theme.palette.info.main,
+    fontWeight: 'bold',
   };
+
+  const revokeScoreLineStyle = {
+    color: theme.palette.secondary.main,
+  };
+
+  const normalHistoryLineStyle = {
+    color: theme.palette.text.primary,
+  };
+
   const decayFullHistory: LabelledDecayHistory[] = [];
   decayHistory.map((history, index) => (
     decayFullHistory.push({
       score: history.score,
       updated_at: history.updated_at,
       label: index === 0 ? 'Score at creation' : 'Score updated',
-      style: index === decayHistory.length - 1 ? currentScoreLineStyle : {},
+      style: history.score === indicator.x_opencti_score ? currentScoreLineStyle : normalHistoryLineStyle,
     })
   ));
 
@@ -58,7 +69,7 @@ const DecayDialogContent : FunctionComponent<DecayDialogContentProps> = ({ indic
       score: history.score,
       updated_at: history.updated_at,
       label: index === decayLivePoints.length - 1 ? 'Revoke score' : 'Score update planned',
-      style: index === decayLivePoints.length - 1 ? revokeScoreLineStyle : {},
+      style: index === decayLivePoints.length - 1 ? revokeScoreLineStyle : normalHistoryLineStyle,
     })
   ));
 
@@ -67,7 +78,7 @@ const DecayDialogContent : FunctionComponent<DecayDialogContentProps> = ({ indic
       score: indicatorDecayDetails.live_score,
       updated_at: new Date(),
       label: 'Current live score',
-      style: currentScoreLineStyle,
+      style: currentLiveScoreLineStyle,
     });
   }
 
@@ -82,7 +93,10 @@ const DecayDialogContent : FunctionComponent<DecayDialogContentProps> = ({ indic
         spacing={3}
         style={{ borderColor: 'white', borderWidth: 1 }}
       >
-        <Grid item={true} xs={8}>
+        <Grid item={true} xs={6}>
+          <DecayChart indicator={indicator}/>
+        </Grid>
+        <Grid item={true} xs={6}>
           <Typography variant="h6">
             {t_i18n('Lifecycle key information')}
           </Typography>
@@ -109,18 +123,7 @@ const DecayDialogContent : FunctionComponent<DecayDialogContentProps> = ({ indic
             </Table>
           </TableContainer>
         </Grid>
-        <Grid item={true} xs={4}>
-          <Typography variant="h6">
-            {t_i18n('Applied decay rule')}
-          </Typography>
-          <ul>
-            <li>{t_i18n('Base score:')} { indicator.decay_base_score }</li>
-            <li>{t_i18n('Lifetime (in days):')} { indicator.decay_applied_rule?.decay_lifetime ?? 'Not set'}</li>
-            <li>{t_i18n('Pound factor:')} { indicator.decay_applied_rule?.decay_pound ?? 'Not set'}</li>
-            <li>{t_i18n('Revoke score:')} { indicator.decay_applied_rule?.decay_revoke_score ?? 'Not set'}</li>
-            <li>{t_i18n('Reaction points:')} {decayReactionPoints.join(', ')}</li>
-          </ul>
-        </Grid>
+
       </Grid>
     </DialogContent>
   );
