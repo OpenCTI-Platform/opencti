@@ -27,6 +27,16 @@ const rootSettingsFragment = graphql`
       message
     }
     platform_banner_level
+    platform_critical_alerts {
+      message
+      type
+      details {
+        users {
+          id 
+          name 
+        }
+      }
+    }
     platform_map_tile_server_dark
     platform_map_tile_server_light
     platform_theme
