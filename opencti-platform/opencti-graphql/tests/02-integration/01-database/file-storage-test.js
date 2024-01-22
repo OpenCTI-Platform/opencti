@@ -4,7 +4,7 @@ import { deleteFile, downloadFile, loadFile } from '../../../src/database/file-s
 import { execChildPython } from '../../../src/python/pythonBridge';
 import { ADMIN_USER, testContext, API_TOKEN, API_URI, PYTHON_PATH } from '../../utils/testQuery';
 import { elLoadById } from '../../../src/database/engine';
-import { allFilesForPaths, paginatedForPathsWithEnrichment } from '../../../src/modules/internal/document/document-domain';
+import { allFilesForPaths, paginatedForPathWithEnrichment } from '../../../src/modules/internal/document/document-domain';
 import { utcDate } from '../../../src/utils/format';
 
 const streamConverter = (stream) => {
@@ -32,7 +32,7 @@ describe('File storage file listing', () => {
   });
   it('should paginate file listing', async () => {
     const malware = await elLoadById(testContext, ADMIN_USER, 'malware--faa5b705-cf44-4e50-8472-29e5fec43c3c');
-    let list = await paginatedForPathsWithEnrichment(testContext, ADMIN_USER, [`export/Malware/${malware.id}`], { first: 25 });
+    let list = await paginatedForPathWithEnrichment(testContext, ADMIN_USER, `export/Malware/${malware.id}`, malware.id, { first: 25 });
     expect(list).not.toBeNull();
     expect(list.edges.length).toEqual(1);
     let file = head(list.edges).node;
@@ -43,7 +43,7 @@ describe('File storage file listing', () => {
     expect(file.metaData.encoding).toEqual('7bit');
     expect(file.metaData.filename).toEqual(exportFileName.replace(/\s/g, '%20'));
     expect(file.metaData.mimetype).toEqual('application/json');
-    list = await paginatedForPathsWithEnrichment(testContext, ADMIN_USER, ['import/global'], { first: 25 });
+    list = await paginatedForPathWithEnrichment(testContext, ADMIN_USER, 'import/global', undefined, { first: 25 });
     expect(list).not.toBeNull();
     expect(list.edges.length).toEqual(1);
     file = head(list.edges).node;

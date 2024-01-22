@@ -4,18 +4,20 @@ import moment from 'moment';
 import { generateFileIndexId } from '../../../schema/identifier';
 import { ENTITY_TYPE_INTERNAL_FILE } from '../../../schema/internalObject';
 import { elCount, elDeleteInstances, elIndex } from '../../../database/engine';
-import { INDEX_INTERNAL_OBJECTS, isEmptyField, READ_INDEX_INTERNAL_OBJECTS } from '../../../database/utils';
+import { INDEX_INTERNAL_OBJECTS, isEmptyField, isNotEmptyField, READ_INDEX_INTERNAL_OBJECTS } from '../../../database/utils';
 import { type EntityOptions, type FilterGroupWithNested, internalLoadById, listAllEntities, listEntitiesPaginated, storeLoadById } from '../../../database/middleware-loader';
 import type { AuthContext, AuthUser } from '../../../types/user';
 import { type DomainFindById } from '../../../domain/domainTypes';
 import type { BasicStoreEntityDocument } from './document-types';
-import type { BasicStoreCommon } from '../../../types/store';
+import type { BasicStoreCommon, BasicStoreObject } from '../../../types/store';
 import { type File, FilterMode, FilterOperator, OrderingMode } from '../../../generated/graphql';
 import { loadExportWorksAsProgressFiles } from '../../../domain/work';
-import { UnsupportedError } from '../../../config/errors';
 import { elSearchFiles } from '../../../database/file-search';
 import { SYSTEM_USER } from '../../../utils/access';
 import { FROM_START_STR } from '../../../utils/format';
+import { buildContextDataForFile, publishUserAction } from '../../../listener/UserActionListener';
+import type { UserAction } from '../../../listener/UserActionListener';
+import { ForbiddenAccess } from '../../../config/errors';
 
 export const getIndexFromDate = async (context: AuthContext) => {
   const searchOptions = {
@@ -119,12 +121,36 @@ export const allRemainingFilesCount = async (context: AuthContext, user: AuthUse
   return elCount(context, user, [READ_INDEX_INTERNAL_OBJECTS], remainingOpts);
 };
 
+export const checkFileAccess = async (context: AuthContext, user: AuthUser, scope: string, { entity_id, filename, id }: { entity_id?: string, filename: string, id: string }) => {
+  if (isEmptyField(entity_id)) {
+    return true;
+  }
+  const userInstancePromise = internalLoadById(context, user, entity_id);
+  const systemInstancePromise = internalLoadById(context, SYSTEM_USER, entity_id);
+  const [instance, systemInstance] = await Promise.all([userInstancePromise, systemInstancePromise]);
+  if (isEmptyField(instance)) {
+    if (isNotEmptyField(systemInstance)) {
+      const data = buildContextDataForFile(systemInstance as BasicStoreObject, id, filename);
+      await publishUserAction({
+        user,
+        event_type: 'file',
+        event_scope: scope,
+        event_access: 'extended',
+        status: 'error',
+        context_data: data
+      } as UserAction);
+    }
+    throw ForbiddenAccess('Access to this file is restricted', { id: entity_id, file: id });
+  }
+  return true;
+};
+
 // Get Files paginated with auto enrichment
 // Images metadata for users
 // In progress virtual files from export
-export const paginatedForPathsWithEnrichment = async (context: AuthContext, user: AuthUser, paths: string[], opts?: FilesOptions<BasicStoreEntityDocument>) => {
+export const paginatedForPathWithEnrichment = async (context: AuthContext, user: AuthUser, path: string, entity_id: string, opts?: FilesOptions<BasicStoreEntityDocument>) => {
   const findOpts: EntityOptions<BasicStoreEntityDocument> = {
-    filters: buildFileFilters(paths, opts),
+    filters: buildFileFilters([path], { ...opts, entity_id }),
     noFiltersChecking: true // No associated model
   };
   const orderOptions: any = {};
@@ -132,16 +158,15 @@ export const paginatedForPathsWithEnrichment = async (context: AuthContext, user
     orderOptions.orderBy = 'lastModified';
     orderOptions.orderMode = OrderingMode.Desc;
   }
-  const listOptions = { ...opts, ...findOpts, ...orderOptions };
-  const pagination = await listEntitiesPaginated<BasicStoreEntityDocument>(context, user, [ENTITY_TYPE_INTERNAL_FILE], listOptions);
+  const listOptions = { ...opts, entity_id, ...findOpts, ...orderOptions };
+
+  await checkFileAccess(context, user, 'read', { entity_id, id: path, filename: '' });
+  const pagination = await listEntitiesPaginated<BasicStoreEntityDocument>(context, SYSTEM_USER, [ENTITY_TYPE_INTERNAL_FILE], listOptions);
+
   // region enrichment only possible for single path resolution
   // Enrich pagination for import images
-  if (paths.length === 1 && paths[0].startsWith('import/') && opts?.entity_id) {
-    const entity = await internalLoadById(context, user, opts.entity_id);
-    if (isEmptyField(entity)) {
-      // User has no access to this entity, files cannot be listed.
-      throw UnsupportedError('FILES_LIST', { entity_id: opts.entity_id });
-    }
+  if (path.startsWith('import/') && entity_id) {
+    const entity = await internalLoadById(context, user, entity_id);
     // Get files information to complete
     const internalFiles = entity?.x_opencti_files ?? [];
     if (internalFiles.length > 0) {
@@ -158,8 +183,8 @@ export const paginatedForPathsWithEnrichment = async (context: AuthContext, user
     }
   }
   // Enrich pagination for ongoing exports
-  if (paths.length === 1 && paths[0].startsWith('export/')) {
-    const progressFiles = await loadExportWorksAsProgressFiles(context, user, paths[0]);
+  if (path.startsWith('export/')) {
+    const progressFiles = await loadExportWorksAsProgressFiles(context, user, path);
     pagination.edges = [...progressFiles.map((p: any) => ({ node: p, cursor: uuidv4() })), ...pagination.edges];
   }
   // endregion

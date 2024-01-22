@@ -28,7 +28,7 @@ import { ABSTRACT_STIX_DOMAIN_OBJECT } from '../schema/general';
 import { stixDomainObjectOptions as StixDomainObjectsOptions } from '../schema/stixDomainObjectOptions';
 import { stixCoreObjectExportPush, stixCoreObjectImportPush, stixCoreObjectsExportPush } from '../domain/stixCoreObject';
 import { batchLoader } from '../database/middleware';
-import { paginatedForPathsWithEnrichment } from '../modules/internal/document/document-domain';
+import { paginatedForPathWithEnrichment } from '../modules/internal/document/document-domain';
 
 const assigneesLoader = batchLoader(batchAssignees);
 
@@ -51,7 +51,7 @@ const stixDomainObjectResolvers = {
     },
     stixDomainObjectsExportFiles: (_, { exportContext, first }, context) => {
       const path = `export/${exportContext.entity_type}${exportContext.entity_id ? `/${exportContext.entity_id}` : ''}`;
-      return paginatedForPathsWithEnrichment(context, context.user, [path], { first });
+      return paginatedForPathWithEnrichment(context, context.user, path, exportContext.entity_id, { first });
     },
   },
   StixDomainObjectsOrdering: StixDomainObjectsOptions.StixDomainObjectsOrdering,

@@ -8,16 +8,13 @@ import { defaultProvider } from '@aws-sdk/credential-provider-node/dist-cjs/defa
 import mime from 'mime-types';
 import conf, { booleanConf, ENABLED_FILE_INDEX_MANAGER, logApp } from '../config/conf';
 import { now, sinceNowInMinutes } from '../utils/format';
-import { DatabaseError, ForbiddenAccess, FunctionalError, UnsupportedError } from '../config/errors';
+import { DatabaseError, FunctionalError, UnsupportedError } from '../config/errors';
 import { createWork, deleteWorkForFile, deleteWorkForSource } from '../domain/work';
-import { isEmptyField, isNotEmptyField } from './utils';
+import { isNotEmptyField } from './utils';
 import { connectorsForImport } from './repository';
 import { pushToConnector } from './rabbitmq';
 import { elDeleteFilesByIds } from './file-search';
 import { isAttachmentProcessorEnabled } from './engine';
-import { internalLoadById } from './middleware-loader';
-import { SYSTEM_USER } from '../utils/access';
-import { buildContextDataForFile, publishUserAction } from '../listener/UserActionListener';
 import { allFilesForPaths, deleteDocumentIndex, indexFileToDocument } from '../modules/internal/document/document-domain';
 
 // Minio configuration
@@ -218,31 +215,6 @@ const guessMimeType = (fileId) => {
     return 'application/pdf';
   }
   return mimeType;
-};
-
-export const checkFileAccess = async (context, user, scope, loadedFile) => {
-  const { entity_id, filename } = loadedFile.metaData;
-  if (isEmptyField(entity_id)) {
-    return true;
-  }
-  const userInstancePromise = internalLoadById(context, user, entity_id);
-  const systemInstancePromise = internalLoadById(context, SYSTEM_USER, entity_id);
-  const [instance, systemInstance] = await Promise.all([userInstancePromise, systemInstancePromise]);
-  if (isEmptyField(instance)) {
-    if (isNotEmptyField(systemInstance)) {
-      const data = buildContextDataForFile(systemInstance, loadedFile.id, filename);
-      await publishUserAction({
-        user,
-        event_type: 'file',
-        event_scope: scope,
-        event_access: 'extended',
-        status: 'error',
-        context_data: data
-      });
-    }
-    throw ForbiddenAccess('Access to this file is restricted', { id: entity_id, file: loadedFile.id });
-  }
-  return true;
 };
 
 export const isFileObjectExcluded = (id) => {
