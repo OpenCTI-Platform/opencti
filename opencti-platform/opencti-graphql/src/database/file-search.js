@@ -62,7 +62,19 @@ export const elIndexFiles = async (context, user, files) => {
         uploaded_at: file.uploaded_at,
       };
       const documentBody = buildIndexFileBody(internal_id, fileObject, entity);
-      await elIndex(INDEX_FILES, documentBody, { pipeline: 'attachment' });
+      let success = true;
+      await elIndex(INDEX_FILES, documentBody, { pipeline: 'attachment' }).catch((err) => {
+        // catch & log error
+        logApp.error(err);
+        success = false;
+      });
+      if (!success) {
+        // try to index without content
+        const documentWithoutFileData = R.dissoc('file_data', documentBody);
+        await elIndex(INDEX_FILES, documentWithoutFileData).catch((err) => {
+          logApp.error(err);
+        });
+      }
     }
   }
 };

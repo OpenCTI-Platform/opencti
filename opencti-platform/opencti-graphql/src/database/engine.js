@@ -2614,7 +2614,9 @@ export const elIndex = async (indexName, documentBody, opts = {}) => {
     indexParams = { ...indexParams, pipeline };
   }
   await engine.index(indexParams).catch((err) => {
-    throw DatabaseError('Simple indexing fail', { cause: err, body: documentBody });
+    // remove content (used by file indexing) from log
+    const documentBodyToLog = R.dissoc('file_data', documentBody);
+    throw DatabaseError('Simple indexing fail', { cause: err, body: documentBodyToLog });
   });
   return documentBody;
 };
