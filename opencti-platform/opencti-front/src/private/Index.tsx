@@ -4,7 +4,7 @@ import Box from '@mui/material/Box';
 import CssBaseline from '@mui/material/CssBaseline';
 import { useTheme, makeStyles } from '@mui/styles';
 import { BoundaryRoute, NoMatch } from '@components/Error';
-import PlatformCriticalAlertBanner from '@components/settings/platform_alerts/PlatformCriticalAlertBanner';
+import PlatformCriticalAlertDialog from '@components/settings/platform_alerts/PlatformCriticalAlertDialog';
 import TopBar from './components/nav/TopBar';
 import LeftBar from './components/nav/LeftBar';
 import Message from '../components/Message';
@@ -78,7 +78,7 @@ const Index = ({ settings }: IndexProps) => {
       <SystemBanners settings={settings} />
       {(settings?.platform_session_idle_timeout ?? 0) > 0 && <TimeoutLock />}
       <SettingsMessagesBanner />
-      <PlatformCriticalAlertBanner alerts={settings.platform_critical_alerts}/>
+      <PlatformCriticalAlertDialog alerts={settings.platform_critical_alerts}/>
       <Box
         sx={{
           display: 'flex',

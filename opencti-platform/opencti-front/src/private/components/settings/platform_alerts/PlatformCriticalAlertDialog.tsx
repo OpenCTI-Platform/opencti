@@ -13,11 +13,11 @@ import { RootSettings$data } from '../../../__generated__/RootSettings.graphql';
 import Transition from '../../../../components/Transition';
 import useGranted, { SETTINGS_SETACCESSES } from '../../../../utils/hooks/useGranted';
 
-type PlatformCriticalAlertBannerProps = {
+type PlatformCriticalAlertDialogProps = {
   alerts: RootSettings$data['platform_critical_alerts']
 };
 
-const PlatformCriticalAlertBanner: React.FC<PlatformCriticalAlertBannerProps> = ({ alerts }) => {
+const PlatformCriticalAlertDialog: React.FC<PlatformCriticalAlertDialogProps> = ({ alerts }) => {
   const { t_i18n } = useFormatter();
   const navigate = useNavigate();
   const hasSetAccesses = useGranted([SETTINGS_SETACCESSES]);
@@ -103,4 +103,4 @@ const PlatformCriticalAlertBanner: React.FC<PlatformCriticalAlertBannerProps> = 
   );
 };
 
-export default PlatformCriticalAlertBanner;
+export default PlatformCriticalAlertDialog;
