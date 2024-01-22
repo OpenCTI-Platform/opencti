@@ -83,6 +83,7 @@ const TopMenuAnalyses = () => {
               ? 'contained'
               : 'text'
           }
+          size="small"
           classes={{ root: classes.button }}
         >
           <SubjectOutlined className={classes.icon} fontSize="small" />
