@@ -15,6 +15,7 @@ import ListItemText from '@mui/material/ListItemText';
 import ExpandableMarkdown from '../../../../components/ExpandableMarkdown';
 import CoursesOfActionAttackPatterns from './CourseOfActionAttackPatterns';
 import inject18n from '../../../../components/i18n';
+import FieldOrEmpty from '../../../../components/FieldOrEmpty';
 
 const styles = () => ({
   paper: {
@@ -58,9 +59,9 @@ class CourseOfActionDetailsComponent extends Component {
               >
                 {t('Log sources')}
               </Typography>
-              {courseOfAction.x_opencti_log_sources && (
+              <FieldOrEmpty source={courseOfAction.x_opencti_log_sources}>
                 <List>
-                  {courseOfAction.x_opencti_log_sources.map((logSource, index) => (
+                  {(courseOfAction.x_opencti_log_sources ?? []).map((logSource, index) => (
                     <ListItem key={`${index}:${logSource}`} dense={true} divider={true}>
                       <ListItemIcon>
                         <PostOutline />
@@ -69,17 +70,21 @@ class CourseOfActionDetailsComponent extends Component {
                     </ListItem>
                   ))}
                 </List>
-              )}
+              </FieldOrEmpty>
             </Grid>
             <Grid item={true} xs={6}>
               <Typography variant="h3" gutterBottom={true}>
                 {t('External ID')}
               </Typography>
-              <Chip
-                size="small"
-                label={courseOfAction.x_mitre_id}
-                color="primary"
-              />
+              <FieldOrEmpty
+                source={courseOfAction.x_mitre_id}
+              >
+                <Chip
+                  size="small"
+                  label={courseOfAction.x_mitre_id}
+                  color="primary"
+                />
+              </FieldOrEmpty>
               <Typography
                 variant="h3"
                 gutterBottom={true}

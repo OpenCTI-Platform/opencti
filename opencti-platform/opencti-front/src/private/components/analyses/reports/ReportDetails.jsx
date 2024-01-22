@@ -19,6 +19,7 @@ import ExpandableMarkdown from '../../../../components/ExpandableMarkdown';
 import EntityStixCoreRelationshipsHorizontalBars from '../../common/stix_core_relationships/EntityStixCoreRelationshipsHorizontalBars';
 import ItemIcon from '../../../../components/ItemIcon';
 import ItemMarkings from '../../../../components/ItemMarkings';
+import FieldOrEmpty from '../../../../components/FieldOrEmpty';
 
 const styles = (theme) => ({
   paper: {
@@ -140,13 +141,15 @@ const ReportDetailsComponent = (props) => {
             >
               {t('Report types')}
             </Typography>
-            {report.report_types?.map((reportType) => (
-              <Chip
-                key={reportType}
-                classes={{ root: classes.chip }}
-                label={reportType}
-              />
-            ))}
+            <FieldOrEmpty source={report.report_types}>
+              {report.report_types.map((reportType) => (
+                <Chip
+                  key={reportType}
+                  classes={{ root: classes.chip }}
+                  label={reportType}
+                />
+              ))}
+            </FieldOrEmpty>
             <Typography
               variant="h3"
               gutterBottom={true}
