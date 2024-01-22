@@ -17,6 +17,9 @@ import {
   offsetToCursor,
   pascalize,
   READ_DATA_INDICES,
+  READ_ENTITIES_INDICES_WITHOUT_INFERRED,
+  READ_INDEX_INFERRED_ENTITIES,
+  READ_INDEX_INFERRED_RELATIONSHIPS,
   READ_INDEX_INTERNAL_OBJECTS,
   READ_INDEX_INTERNAL_RELATIONSHIPS,
   READ_INDEX_STIX_CORE_RELATIONSHIPS,
@@ -28,6 +31,7 @@ import {
   READ_INDEX_STIX_SIGHTING_RELATIONSHIPS,
   READ_PLATFORM_INDICES,
   READ_RELATIONSHIPS_INDICES,
+  READ_RELATIONSHIPS_INDICES_WITHOUT_INFERRED,
   UPDATE_OPERATION_ADD,
   waitInSec,
   WRITE_PLATFORM_INDICES
@@ -1156,51 +1160,66 @@ export const elConvertHits = async (data, opts = {}) => {
   return convertedHits;
 };
 
-const computeQueryIndices = (indices, types) => {
+const computeQueryIndices = (indices, types, includeInferences) => {
   // If no indices explicitly defined, compute them on the types
   // If no types specified, fallback to generic READ_DATA_INDICES
+  const entityInferIndex = includeInferences ? [READ_INDEX_INFERRED_ENTITIES] : [];
+  const relationshipInferIndex = includeInferences ? [READ_INDEX_INFERRED_RELATIONSHIPS] : [];
+  // If indices are explicitly defined, just rely on the definition
   if (isEmptyField(indices)) {
-    return isEmptyField(types) ? READ_DATA_INDICES : R.uniq(types.map((findType) => {
+    // If not and have no clue about the expected types, ask for all indices.
+    // Worst case scenario that need to be avoided.
+    if (isEmptyField(types)) {
+      return READ_DATA_INDICES;
+    }
+    // If types are defined we need to infer from them the correct indices
+    return R.uniq(types.map((findType) => {
+      // If defined types are abstract, try to restrict the indices as much as possible
       if (isAbstract(findType)) {
         // For objects
-        if (isInternalObject(findType)) return [READ_INDEX_INTERNAL_OBJECTS];
-        if (isStixMetaObject(findType)) return [READ_INDEX_STIX_META_OBJECTS];
-        if (isStixDomainObject(findType)) return [READ_INDEX_STIX_DOMAIN_OBJECTS];
-        if (isStixCoreObject(findType)) return [READ_INDEX_STIX_DOMAIN_OBJECTS, READ_INDEX_STIX_CYBER_OBSERVABLES];
-        if (isStixObject(findType)) return [READ_INDEX_STIX_META_OBJECTS, READ_INDEX_STIX_DOMAIN_OBJECTS, READ_INDEX_STIX_CYBER_OBSERVABLES];
-        if (isBasicObject(findType)) return [READ_INDEX_STIX_META_OBJECTS, READ_INDEX_STIX_DOMAIN_OBJECTS, READ_INDEX_STIX_CYBER_OBSERVABLES, READ_INDEX_INTERNAL_OBJECTS];
-        // For relationships
-        if (isInternalRelationship(findType)) return [READ_INDEX_INTERNAL_RELATIONSHIPS];
-        if (isStixSightingRelationship(findType)) return [READ_INDEX_STIX_SIGHTING_RELATIONSHIPS];
-        if (isStixCoreRelationship(findType)) return [READ_INDEX_STIX_CORE_RELATIONSHIPS];
-        if (isStixRefRelationship(findType)) return [READ_INDEX_STIX_META_RELATIONSHIPS, READ_INDEX_STIX_CYBER_OBSERVABLE_RELATIONSHIPS];
-        if (isStixRelationship(findType)) {
-          return [READ_INDEX_STIX_CORE_RELATIONSHIPS, READ_INDEX_STIX_SIGHTING_RELATIONSHIPS, READ_INDEX_STIX_META_RELATIONSHIPS,
-            READ_INDEX_STIX_CYBER_OBSERVABLE_RELATIONSHIPS];
+        if (isBasicObject(findType)) {
+          if (isInternalObject(findType)) return [...entityInferIndex, READ_INDEX_INTERNAL_OBJECTS];
+          if (isStixMetaObject(findType)) return [...entityInferIndex, READ_INDEX_STIX_META_OBJECTS];
+          if (isStixDomainObject(findType)) return [...entityInferIndex, READ_INDEX_STIX_DOMAIN_OBJECTS];
+          if (isStixCoreObject(findType)) return [...entityInferIndex, READ_INDEX_STIX_DOMAIN_OBJECTS, READ_INDEX_STIX_CYBER_OBSERVABLES];
+          if (isStixObject(findType)) return [...entityInferIndex, READ_INDEX_STIX_META_OBJECTS, READ_INDEX_STIX_DOMAIN_OBJECTS, READ_INDEX_STIX_CYBER_OBSERVABLES];
+          return [...entityInferIndex, READ_ENTITIES_INDICES_WITHOUT_INFERRED];
         }
+        // For relationships
         if (isBasicRelationship(findType)) {
-          return [READ_INDEX_STIX_CORE_RELATIONSHIPS, READ_INDEX_STIX_SIGHTING_RELATIONSHIPS, READ_INDEX_STIX_META_RELATIONSHIPS,
-            READ_INDEX_STIX_CYBER_OBSERVABLE_RELATIONSHIPS, READ_INDEX_INTERNAL_RELATIONSHIPS];
+          if (isInternalRelationship(findType)) return [...relationshipInferIndex, READ_INDEX_INTERNAL_RELATIONSHIPS];
+          if (isStixSightingRelationship(findType)) return [...relationshipInferIndex, READ_INDEX_STIX_SIGHTING_RELATIONSHIPS];
+          if (isStixCoreRelationship(findType)) return [...relationshipInferIndex, READ_INDEX_STIX_CORE_RELATIONSHIPS];
+          if (isStixRefRelationship(findType)) return [...relationshipInferIndex, READ_INDEX_STIX_META_RELATIONSHIPS, READ_INDEX_STIX_CYBER_OBSERVABLE_RELATIONSHIPS];
+          if (isStixRelationship(findType)) {
+            return [...relationshipInferIndex, READ_INDEX_STIX_CORE_RELATIONSHIPS, READ_INDEX_STIX_SIGHTING_RELATIONSHIPS, READ_INDEX_STIX_META_RELATIONSHIPS,
+              READ_INDEX_STIX_CYBER_OBSERVABLE_RELATIONSHIPS];
+          }
+          return [...relationshipInferIndex, ...READ_RELATIONSHIPS_INDICES_WITHOUT_INFERRED];
         }
         // Fallback
-        return READ_DATA_INDICES;
+        throw UnsupportedError('Fail to compute indices for unknown type', { type: findType });
       }
-      return [`${inferIndexFromConceptType(findType)}*`];
+      // If concrete type, infer the index from the type and add the inference index if needed
+      if (isBasicObject(findType)) {
+        return [...entityInferIndex, `${inferIndexFromConceptType(findType)}*`];
+      }
+      return [...relationshipInferIndex, `${inferIndexFromConceptType(findType)}*`];
     }).flat());
   }
   return indices;
 };
 
 export const elFindByIds = async (context, user, ids, opts = {}) => {
-  const { indices, baseData = false, baseFields = BASE_FIELDS } = opts;
-  const { withoutRels = false, onRelationship = null, toMap = false, mapWithAllIds = false, type = null, forceAliases = false } = opts;
+  const { indices, baseData = false, baseFields = BASE_FIELDS, includeInferences = false } = opts;
+  const { withoutRels = false, toMap = false, mapWithAllIds = false, type = null, forceAliases = false } = opts;
   const idsArray = Array.isArray(ids) ? ids : [ids];
   const types = (Array.isArray(type) || !type) ? type : [type];
   const processIds = R.filter((id) => isNotEmptyField(id), idsArray);
   if (processIds.length === 0) {
     return toMap ? {} : [];
   }
-  const computedIndices = computeQueryIndices(indices, types);
+  const computedIndices = computeQueryIndices(indices, types, includeInferences);
   let hits = {};
   const groupIds = R.splitEvery(MAX_TERMS_SPLIT, idsArray);
   for (let index = 0; index < groupIds.length; index += 1) {
@@ -1213,36 +1232,19 @@ export const elFindByIds = async (context, user, ids, opts = {}) => {
     }
     // With onRelationship option, the ids needs to be found on a relationship connection side.
     // onRelationship must be from or to
-    if (onRelationship && (onRelationship === 'from' || onRelationship === 'to')) {
-      const nested = {
-        nested: {
-          path: 'connections',
-          query: {
-            bool: {
-              must: [
-                { query_string: { query: `*_${onRelationship}`, fields: ['connections.role'] } },
-                { terms: { [`connections.${ID_INTERNAL}.keyword`]: workingIds } }
-              ]
-            },
-          },
-        }
-      };
-      mustTerms.push(nested);
-    } else {
-      // Compute combination terms
-      for (let indexType = 0; indexType < elementTypes.length; indexType += 1) {
-        const elementType = elementTypes[indexType];
-        const terms = { [`${elementType}.keyword`]: workingIds };
-        idsTermsPerType.push({ terms });
-      }
-      const should = {
-        bool: {
-          should: idsTermsPerType,
-          minimum_should_match: 1,
-        },
-      };
-      mustTerms.push(should);
+    // Compute combination terms
+    for (let indexType = 0; indexType < elementTypes.length; indexType += 1) {
+      const elementType = elementTypes[indexType];
+      const terms = { [`${elementType}.keyword`]: workingIds };
+      idsTermsPerType.push({ terms });
     }
+    const should = {
+      bool: {
+        should: idsTermsPerType,
+        minimum_should_match: 1,
+      },
+    };
+    mustTerms.push(should);
     if (types && types.length > 0) {
       const typesShould = types.map((typeShould) => (
         [
@@ -1270,6 +1272,9 @@ export const elFindByIds = async (context, user, ids, opts = {}) => {
         },
       },
     };
+    // TODO Remove orderBy criteria
+    // This method is here to resolve direct ids
+    // Not designed to do some ordering
     if (opts.orderBy) {
       const orderCriteria = opts.orderBy;
       const isDateOrNumber = isDateNumericOrBooleanAttribute(orderCriteria);
@@ -1284,11 +1289,9 @@ export const elFindByIds = async (context, user, ids, opts = {}) => {
       if (searchAfter) {
         body.search_after = searchAfter;
       }
-      const relationshipsCount = ES_MAX_PAGINATION;
-      const entitiesCount = workingIds.length > ES_MAX_PAGINATION ? ES_MAX_PAGINATION : workingIds.length;
       const query = {
         index: computedIndices,
-        size: onRelationship ? relationshipsCount : entitiesCount,
+        size: workingIds.length > ES_MAX_PAGINATION ? ES_MAX_PAGINATION : workingIds.length,
         _source: baseData ? baseFields : true,
         body,
       };

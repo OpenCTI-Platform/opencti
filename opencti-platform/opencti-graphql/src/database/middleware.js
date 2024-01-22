@@ -194,7 +194,7 @@ import { cleanMarkings, handleMarkingOperations } from '../utils/markingDefiniti
 import { generateCreateMessage, generateUpdateMessage } from './generate-message';
 import { confidence } from '../schema/attribute-definition';
 import { ENTITY_TYPE_INDICATOR } from '../modules/indicator/indicator-types';
-import { FilterOperator } from '../generated/graphql';
+import { FilterMode, FilterOperator } from '../generated/graphql';
 import { getMandatoryAttributesForSetting } from '../modules/entitySetting/entitySetting-attributeUtils';
 
 // region global variables
@@ -386,7 +386,8 @@ const loadElementMetaDependencies = async (context, user, elements, args = {}) =
   const workingIds = workingElements.map((element) => element.internal_id);
   const relTypes = onlyMarking ? [RELATION_OBJECT_MARKING] : STIX_REF_RELATIONSHIP_TYPES;
   // Resolve all relations
-  const refsRelations = await elFindByIds(context, user, workingIds, { type: relTypes, onRelationship: 'from' });
+  const relationFilter = { mode: FilterMode.And, filters: [{ key: ['fromId'], values: workingIds }], filterGroups: [] };
+  const refsRelations = await listAllRelations(context, user, relTypes, { filters: relationFilter });
   const refsPerElements = R.groupBy((r) => r.fromId, refsRelations);
   // Parallel resolutions
   const toResolvedIds = R.uniq(refsRelations.map((rel) => rel.toId));
@@ -2100,7 +2101,7 @@ export const updateAttributeFromLoadedWithRefs = async (context, user, initial, 
 };
 
 export const updateAttribute = async (context, user, id, type, inputs, opts = {}) => {
-  const initial = await storeLoadByIdWithRefs(context, user, id, { type });
+  const initial = await storeLoadByIdWithRefs(context, user, id, { ...opts, type });
   if (!initial) {
     throw FunctionalError('Cant find element to update', { id, type });
   }
@@ -2191,7 +2192,8 @@ const upsertEntityRule = async (context, instance, input, opts = {}) => {
   const ruleInstance = R.mergeRight(instance, rulePatch);
   const innerPatch = createRuleDataPatch(ruleInstance);
   const patch = { ...rulePatch, ...innerPatch };
-  return patchAttribute(context, RULE_MANAGER_USER, instance.id, instance.entity_type, patch, opts);
+  const patchOpts = { ...opts, includeInferences: true };
+  return await patchAttribute(context, RULE_MANAGER_USER, instance.id, instance.entity_type, patch, patchOpts);
 };
 const upsertRelationRule = async (context, instance, input, opts = {}) => {
   const { fromRule, ruleOverride = false } = opts;
@@ -2207,7 +2209,8 @@ const upsertRelationRule = async (context, instance, input, opts = {}) => {
   const innerPatch = createRuleDataPatch(ruleInstance);
   const patch = { ...rulePatch, ...innerPatch };
   logApp.info('Upsert inferred relation', { id: instance.id, relation: patch });
-  return await patchAttribute(context, RULE_MANAGER_USER, instance.id, instance.entity_type, patch, opts);
+  const patchOpts = { ...opts, includeInferences: true };
+  return await patchAttribute(context, RULE_MANAGER_USER, instance.id, instance.entity_type, patch, patchOpts);
 };
 // endregion
 
