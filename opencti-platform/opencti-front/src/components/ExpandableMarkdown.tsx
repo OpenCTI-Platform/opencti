@@ -26,7 +26,7 @@ const ExpandableMarkdown: FunctionComponent<ExpandableMarkdownProps> = ({
             </IconButton>
           </div>
         )}
-        <div style={{ marginTop: 5 }}>
+        <div>
           <MarkdownDisplay
             content={expand ? emptyFilled(source) : truncate(source, limit)}
             remarkGfmPlugin={true}
