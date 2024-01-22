@@ -4,7 +4,7 @@ import { Field, Form, Formik } from 'formik';
 import * as R from 'ramda';
 import * as Yup from 'yup';
 import MenuItem from '@mui/material/MenuItem';
-import ConfidenceField from '@components/common/form/ConfidenceField';
+import OptionalConfidenceLevelField from '@components/common/form/OptionalConfidenceLevelField';
 import TextField from '../../../../components/TextField';
 import SelectField from '../../../../components/SelectField';
 import { SubscriptionFocus } from '../../../../components/Subscription';
@@ -77,9 +77,9 @@ const userValidation = (t: (value: string) => string, userIsOnlyOrganizationAdmi
   account_lock_after_date: Yup.date().nullable(),
   objectOrganization: userIsOnlyOrganizationAdmin ? Yup.array().min(1, t('Minimum one organization')).required(t('This field is required')) : Yup.array(),
   max_confidence: Yup.number()
-    .required(t('This field is required'))
     .min(0, t('The value must be greater than or equal to 0'))
-    .max(100, t('The value must be less than or equal to 100')),
+    .max(100, t('The value must be less than or equal to 100'))
+    .nullable(),
 });
 
 interface UserEditionOverviewComponentProps {
@@ -133,31 +133,59 @@ UserEditionOverviewComponentProps
     });
   };
 
-  const handleSubmitField = (name: string, value: string) => {
+  const handleSubmitField = (name: string, value: string | null) => {
     userValidation(t_i18n, userIsOnlyOrganizationAdmin)
       .validateAt(name, { [name]: value })
       .then(() => {
         // specific case for user confidence level that must be updated as a full object (we cannot field patch non-multiple objects for now)
         // We pass the existing overrides for this user so they are unchanged
         if (name === 'max_confidence') {
-          commitFieldPatch({
-            variables: {
-              id: user.id,
-              input: {
-                key: 'user_confidence_level',
-                object_path: '/user_confidence_level/max_confidence',
-                value: parseInt(value, 10),
+          if (user.user_confidence_level && value) {
+            // We edit an existing value
+            commitFieldPatch({
+              variables: {
+                id: user.id,
+                input: {
+                  key: 'user_confidence_level',
+                  object_path: '/user_confidence_level/max_confidence',
+                  value: parseInt(value, 10),
+                },
               },
-            },
-          });
-        } else {
-          // simple case for all flat attributes
-          commitFieldPatch({
-            variables: {
-              id: user.id,
-              input: { key: name, value: value || '' },
-            },
-          });
+            });
+          } else if (!user.user_confidence_level && value) {
+            // We have no user_confidence_level and we add one
+            commitFieldPatch({
+              variables: {
+                id: user.id,
+                input: {
+                  key: 'user_confidence_level',
+                  value: {
+                    max_confidence: parseInt(value, 10),
+                    overrides: [],
+                  },
+                },
+              },
+            });
+          } else if (user.user_confidence_level && !value) {
+            // we have an existing value but we want to remove it
+            commitFieldPatch({
+              variables: {
+                id: user.id,
+                input: {
+                  key: 'user_confidence_level',
+                  value: [null],
+                },
+              },
+            });
+          } else {
+            // simple case for all flat attributes
+            commitFieldPatch({
+              variables: {
+                id: user.id,
+                input: { key: name, value: value || '' },
+              },
+            });
+          }
         }
       })
       .catch(() => false);
@@ -339,7 +367,7 @@ UserEditionOverviewComponentProps
           />
           {
             hasSetAccess && (
-              <ConfidenceField
+              <OptionalConfidenceLevelField
                 name="max_confidence"
                 label={t_i18n('Max Confidence Level')}
                 onFocus={handleChangeFocus}

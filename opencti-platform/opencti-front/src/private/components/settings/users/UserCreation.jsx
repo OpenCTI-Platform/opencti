@@ -8,6 +8,7 @@ import { makeStyles } from '@mui/styles';
 import { graphql } from 'react-relay';
 import Alert from '@mui/material/Alert';
 import MenuItem from '@mui/material/MenuItem';
+import OptionalConfidenceLevelField from '@components/common/form/OptionalConfidenceLevelField';
 import Drawer, { DrawerVariant } from '../../common/drawer/Drawer';
 import { useFormatter } from '../../../../components/i18n';
 import { commitMutation } from '../../../../relay/environment';
@@ -64,6 +65,7 @@ const UserCreation = ({ paginationOptions }) => {
         'objectOrganization',
         R.pluck('value', values.objectOrganization),
       ),
+      R.assocPath(['user_confidence_level', 'max_confidence'], parseInt(values, 10)),
     )(values);
     commitMutation({
       mutation: userMutation,
@@ -102,6 +104,7 @@ const UserCreation = ({ paginationOptions }) => {
               objectOrganization: [],
               account_status: 'Active',
               account_lock_after_date: null,
+              max_confidence: 100,
             }}
             validationSchema={userValidation(t_i18n)}
             onSubmit={onSubmit}
@@ -198,6 +201,10 @@ const UserCreation = ({ paginationOptions }) => {
                     variant: 'standard',
                     fullWidth: true,
                   }}
+                />
+                <OptionalConfidenceLevelField
+                  name="max_confidence"
+                  label={t_i18n('Max Confidence Level')}
                 />
                 <div className={classes.buttons}>
                   <Button

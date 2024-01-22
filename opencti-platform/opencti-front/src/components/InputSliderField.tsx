@@ -95,7 +95,7 @@ InputSliderFieldProps & FieldProps
           </Grid>
         </Grid>
         <Slider
-          value={value}
+          value={value || 0}
           min={min}
           max={max}
           onChange={(_, v) => setFieldValue(name, v.toString())}
@@ -105,6 +105,7 @@ InputSliderFieldProps & FieldProps
           valueLabelDisplay="off"
           size="small"
           valueLabelFormat={() => currentLevel.level.label}
+          disabled={disabled}
         />
       </>
     );
@@ -144,7 +145,7 @@ InputSliderFieldProps & FieldProps
         </Grid>
       </Grid>
       <Slider
-        value={value}
+        value={value || 0}
         min={min}
         max={max}
         onChange={(_, v) => setFieldValue(name, v.toString())}
@@ -153,6 +154,7 @@ InputSliderFieldProps & FieldProps
         valueLabelDisplay="auto"
         size="small"
         valueLabelFormat={() => currentLevel.level.label}
+        disabled={disabled}
       />
     </>
   );
