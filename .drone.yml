@@ -4,11 +4,7 @@ name: opencti-tests
 
 trigger:
   branch:
-    include:
-      - master
-  event:
-    include:
-      - pull_request
+    - master
 
 steps:
   - name: api-tests
