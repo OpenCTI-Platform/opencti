@@ -1,6 +1,15 @@
----
 kind: pipeline
+type: docker
 name: opencti-tests
+
+trigger:
+  branch:
+    - master
+  event:
+    - pull_request
+  action:
+    exclude:
+      - converted_to_draft
 
 steps:
   - name: api-tests
@@ -53,7 +62,7 @@ steps:
 
   - name: frontend-tests
     image: node:20-alpine
-    volumes:    
+    volumes:
     - name: cache-node-frontend
       path: /drone/src/opencti-platform/opencti-front/node_modules
     - name: cache-python
@@ -76,8 +85,6 @@ steps:
       CIRCLECI_TOKEN:
         from_secret: circleci_token
     when:
-      branch:
-        - master
       event:
         exclude:
           - pull_request
@@ -153,11 +160,11 @@ services:
       - NODE_OPTIONS=--max_old_space_size=8192 yarn start
   - name: opencti-live-start
     image: nikolaik/python-nodejs:python3.11-nodejs20-alpine
-    volumes:    
+    volumes:
     - name: cache-node-live-start-backend
       path: /tmp/live-start-platform/opencti-graphql/node_modules
     - name: cache-python
-      path: /usr/lib/python3.11    
+      path: /usr/lib/python3.11
     environment:
       APP__PORT: 4200
       APP__ADMIN__PASSWORD: admin
@@ -187,7 +194,7 @@ services:
     - name: cache-node-direct-start-backend
       path: //tmp/direct-start-platform/opencti-graphql/node_modules
     - name: cache-python
-      path: /usr/lib/python3.11    
+      path: /usr/lib/python3.11
     environment:
       APP__PORT: 4300
       APP__ADMIN__PASSWORD: admin
@@ -213,9 +220,9 @@ services:
       - NODE_OPTIONS=--max_old_space_size=8192 yarn start
   - name: opencti-direct-worker
     image: nikolaik/python-nodejs:python3.11-nodejs20-alpine
-    volumes:    
+    volumes:
     - name: cache-python
-      path: /usr/lib/python3.11        
+      path: /usr/lib/python3.11
     environment:
       OPENCTI_URL: http://opencti-direct-start:4300
       OPENCTI_TOKEN: bfa014e0-e02e-4aa6-a42b-603b19dcf159
@@ -232,7 +239,7 @@ services:
       - python3 src/worker.py
   - name: opencti-restore-start
     image: nikolaik/python-nodejs:python3.11-nodejs20-alpine
-    volumes:    
+    volumes:
     - name: cache-node-raw-start-backend
       path: /tmp/restore-start-platform/node_modules
     - name: cache-python
@@ -267,19 +274,20 @@ volumes:
       path: /tmp/cache-node-backend
   - name: cache-node-raw-start-backend
     host:
-      path: /tmp/cache-node-raw-start-backend      
+      path: /tmp/cache-node-raw-start-backend
   - name: cache-node-live-start-backend
     host:
-      path: /tmp/cache-node-live-start-backend          
+      path: /tmp/cache-node-live-start-backend
   - name: cache-node-direct-start-backend
     host:
-      path: /tmp/cache-node-direct-start-backend   
+      path: /tmp/cache-node-direct-start-backend
   - name: cache-node-restore-start-backend
     host:
-      path: /tmp/cache-node-restore-start-backend                    
+      path: /tmp/cache-node-restore-start-backend
   - name: cache-node-frontend
     host:
-      path: /tmp/cache-node-frontend      
+      path: /tmp/cache-node-frontend
   - name: cache-python
     host:
       path: /tmp/cache-python
+      
