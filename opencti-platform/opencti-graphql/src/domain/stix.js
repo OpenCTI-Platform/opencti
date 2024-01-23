@@ -1,6 +1,6 @@
 import mime from 'mime-types';
 import { invertObj, map } from 'ramda';
-import { batchListThroughGetTo, deleteElementById, mergeEntities, updateAttribute } from '../database/middleware';
+import { deleteElementById, mergeEntities, updateAttribute } from '../database/middleware';
 import { isStixObject } from '../schema/stixCoreObject';
 import { isStixRelationship } from '../schema/stixRelationship';
 import { FunctionalError, UnsupportedError } from '../config/errors';
@@ -28,7 +28,6 @@ import { getParentTypes } from '../schema/schemaUtils';
 import { internalLoadById, storeLoadById } from '../database/middleware-loader';
 import { schemaTypesDefinition } from '../schema/schema-types';
 import { publishUserAction } from '../listener/UserActionListener';
-import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../modules/organization/organization-types';
 import { checkAndConvertFilters } from '../utils/filtering/filtering-utils';
 import { specialTypesExtensions } from '../database/file-storage';
 
@@ -189,10 +188,6 @@ export const exportTransformFilters = (filteringArgs, orderOptions) => {
       : filteringArgs.orderBy,
     filters: checkAndConvertFilters(filters),
   };
-};
-
-export const batchObjectOrganizations = (context, user, stixCoreObjectIds) => {
-  return batchListThroughGetTo(context, user, stixCoreObjectIds, RELATION_GRANTED_TO, ENTITY_TYPE_IDENTITY_ORGANIZATION);
 };
 
 const createSharingTask = async (context, type, containerId, organizationId) => {

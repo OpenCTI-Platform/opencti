@@ -68,8 +68,8 @@ class AddSoftwares extends Component {
   render() {
     const { t, classes, vulnerability, vulnerabilitySoftwares } = this.props;
     const paginationOptions = {
-      types: ['Software'],
       search: this.state.search,
+      count: 25,
     };
     return (
       <div>
@@ -97,10 +97,7 @@ class AddSoftwares extends Component {
         >
           <QueryRenderer
             query={addSoftwaresLinesQuery}
-            variables={{
-              search: this.state.search,
-              count: 20,
-            }}
+            variables={paginationOptions}
             render={({ props }) => {
               return (
                 <AddSoftwaresLines

@@ -7,10 +7,7 @@ import {
   stixDomainObjectEditContext,
   stixDomainObjectEditField,
 } from '../domain/stixDomainObject';
-import { batchKillChainPhases } from '../domain/stixCoreObject';
-import { batchLoader } from '../database/middleware';
-
-const killChainPhaseLoader = batchLoader(batchKillChainPhases);
+import { killChainPhasesPaginated } from '../domain/stixCoreRelationship';
 
 const infrastructureResolvers = {
   Query: {
@@ -18,7 +15,7 @@ const infrastructureResolvers = {
     infrastructures: (_, args, context) => findAll(context, context.user, args),
   },
   Infrastructure: {
-    killChainPhases: (infrastructure, _, context) => killChainPhaseLoader.load(infrastructure.id, context, context.user),
+    killChainPhases: (infrastructure, args, context) => killChainPhasesPaginated(context, context.user, infrastructure.id, args),
   },
   Mutation: {
     infrastructureEdit: (_, { id }, context) => ({

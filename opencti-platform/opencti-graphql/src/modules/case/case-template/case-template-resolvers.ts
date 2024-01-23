@@ -1,8 +1,14 @@
 import type { Resolvers } from '../../../generated/graphql';
-import { caseTemplateAdd, caseTemplateDelete, caseTemplateEdit, findAll, findById, batchTasks, caseTemplateAddRelation, caseTemplateDeleteRelation } from './case-template-domain';
-import { batchLoader } from '../../../database/middleware';
-
-const taskLoader = batchLoader(batchTasks);
+import {
+  caseTemplateAdd,
+  caseTemplateAddRelation,
+  caseTemplateDelete,
+  caseTemplateDeleteRelation,
+  caseTemplateEdit,
+  findAll,
+  findById,
+  taskTemplatesPaginated
+} from './case-template-domain';
 
 const caseTemplateResolvers: Resolvers = {
   Query: {
@@ -10,7 +16,7 @@ const caseTemplateResolvers: Resolvers = {
     caseTemplates: (_, args, context) => findAll(context, context.user, args),
   },
   CaseTemplate: {
-    tasks: (current, _, context) => taskLoader.load(current.id, context, context.user),
+    tasks: (current, args, context) => taskTemplatesPaginated(context, context.user, current.id, args),
   },
   Mutation: {
     caseTemplateAdd: (_, { input }, context) => caseTemplateAdd(context, context.user, input),

@@ -1,6 +1,6 @@
 import { assoc, isNil, pipe } from 'ramda';
-import { batchListThroughGetTo, createEntity, timeSeriesEntities } from '../database/middleware';
-import { listEntities, storeLoadById } from '../database/middleware-loader';
+import { createEntity, timeSeriesEntities } from '../database/middleware';
+import { listEntities, listEntitiesThroughRelationsPaginated, storeLoadById } from '../database/middleware-loader';
 import { BUS_TOPICS } from '../config/conf';
 import { notify } from '../database/redis';
 import { ENTITY_TYPE_INCIDENT } from '../schema/stixDomainObject';
@@ -18,8 +18,8 @@ export const findAll = (context, user, args) => {
   return listEntities(context, user, [ENTITY_TYPE_INCIDENT], args);
 };
 
-export const batchParticipants = (context, user, incidentIds) => {
-  return batchListThroughGetTo(context, user, incidentIds, RELATION_OBJECT_PARTICIPANT, ENTITY_TYPE_USER);
+export const participantsPaginated = async (context, user, groupId, args) => {
+  return listEntitiesThroughRelationsPaginated(context, user, groupId, RELATION_OBJECT_PARTICIPANT, ENTITY_TYPE_USER, false, args);
 };
 
 // region time series

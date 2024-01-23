@@ -19583,7 +19583,6 @@ export type Region = BasicObject & Location & StixCoreObject & StixDomainObject 
   groupings?: Maybe<GroupingConnection>;
   id: Scalars['ID']['output'];
   importFiles?: Maybe<FileConnection>;
-  isSubRegion?: Maybe<Scalars['Boolean']['output']>;
   is_inferred: Scalars['Boolean']['output'];
   jobs?: Maybe<Array<Maybe<Work>>>;
   lang?: Maybe<Scalars['String']['output']>;
@@ -26177,7 +26176,10 @@ export type VulnerabilityReportsArgs = {
 
 
 export type VulnerabilitySoftwaresArgs = {
+  after?: InputMaybe<Scalars['ID']['input']>;
   first?: InputMaybe<Scalars['Int']['input']>;
+  orderBy?: InputMaybe<StixCyberObservablesOrdering>;
+  orderMode?: InputMaybe<OrderingMode>;
 };
 
 
@@ -34210,7 +34212,6 @@ export type RegionResolvers<ContextType = any, ParentType extends ResolversParen
   groupings?: Resolver<Maybe<ResolversTypes['GroupingConnection']>, ParentType, ContextType, Partial<RegionGroupingsArgs>>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   importFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<RegionImportFilesArgs>>;
-  isSubRegion?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   is_inferred?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   jobs?: Resolver<Maybe<Array<Maybe<ResolversTypes['Work']>>>, ParentType, ContextType, Partial<RegionJobsArgs>>;
   lang?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;

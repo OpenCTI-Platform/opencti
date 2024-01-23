@@ -18,15 +18,11 @@ import { ABSTRACT_STIX_REF_RELATIONSHIP } from '../schema/general';
 import withCancel from '../graphql/subscriptionWrapper';
 import { batchLoader, distributionRelations } from '../database/middleware';
 import { elBatchIds } from '../database/engine';
-import { batchNotes, batchOpinions, batchReports, batchContainers } from '../domain/stixCoreRelationship';
 import { batchCreators } from '../domain/user';
 import { schemaRelationsRefTypesMapping } from '../database/stix-ref';
+import { containersPaginated, notesPaginated, opinionsPaginated, reportsPaginated } from '../domain/stixCoreObject';
 
 const loadByIdLoader = batchLoader(elBatchIds);
-const notesLoader = batchLoader(batchNotes);
-const opinionsLoader = batchLoader(batchOpinions);
-const containersLoader = batchLoader(batchContainers);
-const reportsLoader = batchLoader(batchReports);
 const creatorsLoader = batchLoader(batchCreators);
 
 const stixRefRelationshipResolvers = {
@@ -42,11 +38,14 @@ const stixRefRelationshipResolvers = {
   StixRefRelationship: {
     from: (rel, _, context) => (rel.from ? rel.from : loadByIdLoader.load({ id: rel.fromId, type: rel.fromType }, context, context.user)),
     to: (rel, _, context) => (rel.to ? rel.to : loadByIdLoader.load({ id: rel.toId, type: rel.toType }, context, context.user)),
-    containers: (rel, _, context) => containersLoader.load(rel.id, context, context.user),
-    reports: (rel, _, context) => reportsLoader.load(rel.id, context, context.user),
-    notes: (rel, _, context) => notesLoader.load(rel.id, context, context.user),
-    opinions: (rel, _, context) => opinionsLoader.load(rel.id, context, context.user),
+    // region inner listing - cant be batch loaded
+    containers: (rel, args, context) => containersPaginated(context, context.user, rel.id, args),
+    reports: (rel, args, context) => reportsPaginated(context, context.user, rel.id, args),
+    notes: (rel, args, context) => notesPaginated(context, context.user, rel.id, args),
+    opinions: (rel, args, context) => opinionsPaginated(context, context.user, rel.id, args),
     creators: (rel, _, context) => creatorsLoader.load(rel.creator_id, context, context.user),
+    // endregion
+    // Utils
     editContext: (rel) => fetchEditContext(rel.id),
     datable: (rel) => isDatable(rel.fromType, rel.relationship_type),
   },

@@ -1,5 +1,5 @@
 import type { Resolvers } from '../../generated/graphql';
-import { addAdministrativeArea, batchCountry, findAll, findById } from './administrativeArea-domain';
+import { addAdministrativeArea, findAll, findById } from './administrativeArea-domain';
 import {
   stixDomainObjectAddRelation,
   stixDomainObjectCleanContext,
@@ -8,9 +8,7 @@ import {
   stixDomainObjectEditContext,
   stixDomainObjectEditField
 } from '../../domain/stixDomainObject';
-import { batchLoader } from '../../database/middleware';
-
-const batchCountryLoader = batchLoader(batchCountry);
+import { locatedAtCountry } from '../../domain/city';
 
 const administrativeAreaResolvers: Resolvers = {
   Query: {
@@ -18,7 +16,9 @@ const administrativeAreaResolvers: Resolvers = {
     administrativeAreas: (_, args, context) => findAll(context, context.user, args),
   },
   AdministrativeArea: {
-    country: (administrativeArea, _, context) => batchCountryLoader.load(administrativeArea.id, context, context.user),
+    /* eslint-disable @typescript-eslint/ban-ts-comment */
+    // @ts-ignore
+    country: (administrativeArea, _, context) => locatedAtCountry(context, context.user, administrativeArea.id),
   },
   Mutation: {
     administrativeAreaAdd: (_, { input }, context) => {

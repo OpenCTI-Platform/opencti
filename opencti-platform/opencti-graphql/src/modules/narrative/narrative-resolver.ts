@@ -1,5 +1,5 @@
 import type { Resolvers } from '../../generated/graphql';
-import { addNarrative, batchIsSubNarrative, batchParentNarratives, batchSubNarratives, findAll, findById } from './narrative-domain';
+import { addNarrative, childNarrativesPaginated, findAll, findById, isSubNarrative, parentNarrativesPaginated } from './narrative-domain';
 import {
   stixDomainObjectAddRelation,
   stixDomainObjectCleanContext,
@@ -8,11 +8,7 @@ import {
   stixDomainObjectEditContext,
   stixDomainObjectEditField
 } from '../../domain/stixDomainObject';
-import { batchLoader } from '../../database/middleware';
-
-const parentNarrativesLoader = batchLoader(batchParentNarratives);
-const subNarrativesLoader = batchLoader(batchSubNarratives);
-const isSubNarrativeLoader = batchLoader(batchIsSubNarrative);
+import type { BasicStoreEntityNarrative } from './narrative-types';
 
 const narrativeResolvers: Resolvers = {
   Query: {
@@ -20,9 +16,9 @@ const narrativeResolvers: Resolvers = {
     narratives: (_, args, context) => findAll(context, context.user, args),
   },
   Narrative: {
-    parentNarratives: (narrative, _, context) => parentNarrativesLoader.load(narrative.id, context, context.user),
-    subNarratives: (narrative, _, context) => subNarrativesLoader.load(narrative.id, context, context.user),
-    isSubNarrative: (narrative, _, context) => isSubNarrativeLoader.load(narrative.id, context, context.user),
+    parentNarratives: (narrative, args, context) => parentNarrativesPaginated<BasicStoreEntityNarrative>(context, context.user, narrative.id, args),
+    subNarratives: (narrative, args, context) => childNarrativesPaginated<BasicStoreEntityNarrative>(context, context.user, narrative.id, args),
+    isSubNarrative: (narrative, _, context) => isSubNarrative(context, context.user, narrative.id),
   },
   Mutation: {
     narrativeAdd: (_, { input }, context) => {

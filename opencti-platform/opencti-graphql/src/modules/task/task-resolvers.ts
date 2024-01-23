@@ -1,8 +1,15 @@
 import type { Resolvers } from '../../generated/graphql';
-import { batchParticipants, findAll, findById, taskAdd, taskAddRelation, taskContainsStixObjectOrStixRelationship, taskDelete, taskDeleteRelation, taskEdit } from './task-domain';
-import { batchLoader } from '../../database/middleware';
-
-const participantLoader = batchLoader(batchParticipants);
+import {
+  findAll,
+  findById,
+  taskAdd,
+  taskAddRelation,
+  taskContainsStixObjectOrStixRelationship,
+  taskDelete,
+  taskDeleteRelation,
+  taskEdit,
+  taskParticipantsPaginated
+} from './task-domain';
 
 const taskResolvers: Resolvers = {
   Query: {
@@ -13,7 +20,7 @@ const taskResolvers: Resolvers = {
     },
   },
   Task: {
-    objectParticipant: (current, _, context) => participantLoader.load(current.id, context, context.user),
+    objectParticipant: (current, args, context) => taskParticipantsPaginated(context, context.user, current.id, args),
   },
   Mutation: {
     taskAdd: (_, { input }, context) => taskAdd(context, context.user, input),

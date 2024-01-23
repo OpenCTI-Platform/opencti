@@ -1,4 +1,4 @@
-import { addCity, batchCountry, findAll, findById } from '../domain/city';
+import { addCity, locatedAtCountry, findAll, findById } from '../domain/city';
 import {
   stixDomainObjectAddRelation,
   stixDomainObjectCleanContext,
@@ -7,9 +7,6 @@ import {
   stixDomainObjectEditContext,
   stixDomainObjectEditField,
 } from '../domain/stixDomainObject';
-import { batchLoader } from '../database/middleware';
-
-const batchCountryLoader = batchLoader(batchCountry);
 
 const cityResolvers = {
   Query: {
@@ -17,7 +14,7 @@ const cityResolvers = {
     cities: (_, args, context) => findAll(context, context.user, args),
   },
   City: {
-    country: (city, _, context) => batchCountryLoader.load(city.id, context, context.user),
+    country: (city, _, context) => locatedAtCountry(context, context.user, city.id),
   },
   Mutation: {
     cityEdit: (_, { id }, context) => ({

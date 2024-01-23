@@ -1,4 +1,4 @@
-import { addCourseOfAction, batchAttackPatterns, findAll, findById } from '../domain/courseOfAction';
+import { addCourseOfAction, attackPatternsPaginated, findAll, findById } from '../domain/courseOfAction';
 import {
   stixDomainObjectAddRelation,
   stixDomainObjectCleanContext,
@@ -7,9 +7,6 @@ import {
   stixDomainObjectEditContext,
   stixDomainObjectEditField,
 } from '../domain/stixDomainObject';
-import { batchLoader } from '../database/middleware';
-
-const attackPatternsLoader = batchLoader(batchAttackPatterns);
 
 const courseOfActionResolvers = {
   Query: {
@@ -17,7 +14,7 @@ const courseOfActionResolvers = {
     coursesOfAction: (_, args, context) => findAll(context, context.user, args),
   },
   CourseOfAction: {
-    attackPatterns: (courseOfAction, _, context) => attackPatternsLoader.load(courseOfAction.id, context, context.user),
+    attackPatterns: (courseOfAction, args, context) => attackPatternsPaginated(context, context.user, courseOfAction.id, args),
   },
   Mutation: {
     courseOfActionEdit: (_, { id }, context) => ({

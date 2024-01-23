@@ -1,4 +1,4 @@
-import { addSystem, batchOrganizations, findAll, findById } from '../domain/system';
+import { addSystem, belongsToOrganizationsPaginated, findAll, findById } from '../domain/system';
 import {
   stixDomainObjectAddRelation,
   stixDomainObjectCleanContext,
@@ -7,9 +7,6 @@ import {
   stixDomainObjectEditContext,
   stixDomainObjectEditField,
 } from '../domain/stixDomainObject';
-import { batchLoader } from '../database/middleware';
-
-const organizationsLoader = batchLoader(batchOrganizations);
 
 const systemResolvers = {
   Query: {
@@ -17,7 +14,7 @@ const systemResolvers = {
     systems: (_, args, context) => findAll(context, context.user, args),
   },
   System: {
-    organizations: (system, _, context) => organizationsLoader.load(system.id, context, context.user),
+    organizations: (system, args, context) => belongsToOrganizationsPaginated(context, context.user, system.id, args),
   },
   Mutation: {
     systemEdit: (_, { id }, context) => ({

@@ -1178,10 +1178,7 @@ type Group implements InternalObject & BasicObject {
   ): UserConnection @auth(for: [SETTINGS_SETACCESSES])
   created_at: DateTime
   updated_at: DateTime
-  roles(
-    orderBy: RolesOrdering
-    orderMode: OrderingMode
-  ): [Role]
+  roles(orderBy: RolesOrdering, orderMode: OrderingMode): RoleConnection
   allowed_marking: [MarkingDefinition!]
   default_marking: [DefaultMarking!]
   default_hidden_types: [String!]
@@ -1306,10 +1303,7 @@ type User implements BasicObject & InternalObject {
   theme: String
   language: String
   external: Boolean
-  roles(
-    orderBy: RolesOrdering
-    orderMode: OrderingMode
-  ): [Role]!
+  roles: [Role]!
   capabilities: [Capability]!
   default_hidden_types: [String!]!
   groups(
@@ -3866,7 +3860,7 @@ type Individual implements BasicObject & StixObject & StixCoreObject & StixDomai
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
-  isUser: Boolean
+  isUser: Boolean  @auth(for: [SETTINGS_SETACCESSES])
 }
 input IndividualAddInput {
   stix_id: StixId
@@ -5305,7 +5299,6 @@ type Region implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   # Region
   parentRegions: RegionConnection
   subRegions: RegionConnection
-  isSubRegion: Boolean
   countries: CountryConnection
   # Technical
   creators: [Creator!]
@@ -6108,7 +6101,7 @@ type Vulnerability implements BasicObject & StixObject & StixCoreObject & StixDo
   x_opencti_cvss_integrity_impact: String
   x_opencti_cvss_availability_impact: String
   x_opencti_cvss_confidentiality_impact: String
-  softwares(first: Int): StixCyberObservableConnection
+  softwares(first: Int, after: ID, orderBy: StixCyberObservablesOrdering, orderMode: OrderingMode): StixCyberObservableConnection
   # Technical
   creators: [Creator!]
   toStix: String

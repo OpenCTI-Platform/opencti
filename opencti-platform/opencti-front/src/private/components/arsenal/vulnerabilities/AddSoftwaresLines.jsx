@@ -28,7 +28,7 @@ class AddSoftwaresLinesContainer extends Component {
         relationshipType={'has'}
         availableDatas={data?.stixCyberObservables}
         existingDatas={vulnerabilitySoftwares}
-        updaterOptions={ { path: 'softwares' } }
+        updaterOptions={ { path: 'softwares', params: { first: 10 } } }
         isRelationReversed={true}
       />
     );

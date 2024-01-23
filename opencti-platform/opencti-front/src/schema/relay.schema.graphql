@@ -4073,7 +4073,6 @@ type Region implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   x_opencti_aliases: [String]
   parentRegions: RegionConnection
   subRegions: RegionConnection
-  isSubRegion: Boolean
   countries: CountryConnection
   creators: [Creator!]
   toStix: String
@@ -4585,7 +4584,7 @@ type Vulnerability implements BasicObject & StixObject & StixCoreObject & StixDo
   x_opencti_cvss_integrity_impact: String
   x_opencti_cvss_availability_impact: String
   x_opencti_cvss_confidentiality_impact: String
-  softwares(first: Int): StixCyberObservableConnection
+  softwares(first: Int, after: ID, orderBy: StixCyberObservablesOrdering, orderMode: OrderingMode): StixCyberObservableConnection
   creators: [Creator!]
   toStix: String
   importFiles(first: Int, prefixMimeType: String): FileConnection

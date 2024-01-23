@@ -9,11 +9,11 @@ import {
 } from '../../domain/stixDomainObject';
 import type { Resolvers } from '../../generated/graphql';
 import { batchLoader } from '../../database/middleware';
-import { batchBornIn, batchEthnicity } from '../../domain/stixCoreObject';
+import { batchInternalRels } from '../../domain/stixCoreObject';
 import { utcDate } from '../../utils/format';
+import { RELATION_BORN_IN, RELATION_ETHNICITY } from '../../schema/stixRefRelationship';
 
-const bornInLoader = batchLoader(batchBornIn);
-const ethnicityLoader = batchLoader(batchEthnicity);
+const relBatchLoader = batchLoader(batchInternalRels);
 
 const threatActorIndividualResolvers: Resolvers = {
   Query: {
@@ -21,8 +21,8 @@ const threatActorIndividualResolvers: Resolvers = {
     threatActorsIndividuals: (_, args, context) => findAll(context, context.user, args),
   },
   ThreatActorIndividual: {
-    bornIn: (threatActorIndividual, _, context) => bornInLoader.load(threatActorIndividual.id, context, context.user),
-    ethnicity: (threatActorIndividual, _, context) => ethnicityLoader.load(threatActorIndividual.id, context, context.user),
+    bornIn: (threatActorIndividual, _, context) => relBatchLoader.load({ element: threatActorIndividual, type: RELATION_BORN_IN }, context, context.user),
+    ethnicity: (threatActorIndividual, _, context) => relBatchLoader.load({ element: threatActorIndividual, type: RELATION_ETHNICITY }, context, context.user),
     height: (threatActorIndividual, _, __) => (threatActorIndividual.height ?? [])
       .map((height, index) => ({ ...height, index }))
       .sort((a, b) => utcDate(a.date_seen).diff(utcDate(b.date_seen))),

@@ -1,6 +1,5 @@
 import { BUS_TOPICS } from '../../config/conf';
-import type { EntityOptions } from '../../database/middleware-loader';
-import { listAllEntities, listEntitiesPaginated, storeLoadById } from '../../database/middleware-loader';
+import { type EntityOptions, listAllEntities, listEntitiesPaginated, listEntitiesThroughRelationsPaginated, storeLoadById } from '../../database/middleware-loader';
 import { notify } from '../../database/redis';
 import { ABSTRACT_STIX_DOMAIN_OBJECT, buildRefRelationKey } from '../../schema/general';
 import type { AuthContext, AuthUser } from '../../types/user';
@@ -9,7 +8,6 @@ import { type BasicStoreEntityTaskTemplate, ENTITY_TYPE_TASK_TEMPLATE } from '..
 import { TEMPLATE_TASK_RELATION } from './case-template/case-template-types';
 import { RELATION_OBJECT_MARKING, RELATION_OBJECT_PARTICIPANT } from '../../schema/stixRefRelationship';
 import { taskAdd } from '../task/task-domain';
-import { batchListThroughGetTo } from '../../database/middleware';
 import { ENTITY_TYPE_USER } from '../../schema/internalObject';
 import { FilterMode } from '../../generated/graphql';
 
@@ -21,8 +19,8 @@ export const findAll = (context: AuthContext, user: AuthUser, opts: EntityOption
   return listEntitiesPaginated<BasicStoreEntityCase>(context, user, [ENTITY_TYPE_CONTAINER_CASE], opts);
 };
 
-export const batchParticipants = (context: AuthContext, user: AuthUser, caseIds: string[]) => {
-  return batchListThroughGetTo(context, user, caseIds, RELATION_OBJECT_PARTICIPANT, ENTITY_TYPE_USER);
+export const participantsPaginated = async (context: AuthContext, user: AuthUser, caseId: string, opts: EntityOptions<BasicStoreEntityCase>) => {
+  return listEntitiesThroughRelationsPaginated(context, user, caseId, RELATION_OBJECT_PARTICIPANT, ENTITY_TYPE_USER, false, opts);
 };
 
 export const upsertTemplateForCase = async (context: AuthContext, user: AuthUser, id: string, caseTemplateId: string) => {

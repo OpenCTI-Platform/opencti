@@ -1,6 +1,6 @@
 import { assoc } from 'ramda';
-import { createEntity, batchListThroughGetFrom, batchListThroughGetTo, batchLoadThroughGetTo } from '../database/middleware';
-import { listEntities, storeLoadById } from '../database/middleware-loader';
+import { createEntity } from '../database/middleware';
+import { listEntities, listEntitiesThroughRelationsPaginated, storeLoadById } from '../database/middleware-loader';
 import { BUS_TOPICS } from '../config/conf';
 import { notify } from '../database/redis';
 import { ENTITY_TYPE_LOCATION_COUNTRY, ENTITY_TYPE_LOCATION_REGION } from '../schema/stixDomainObject';
@@ -15,21 +15,16 @@ export const findAll = (context, user, args) => {
   return listEntities(context, user, [ENTITY_TYPE_LOCATION_REGION], args);
 };
 
-export const batchParentRegions = (context, user, regionIds) => {
-  return batchListThroughGetTo(context, user, regionIds, RELATION_LOCATED_AT, ENTITY_TYPE_LOCATION_REGION);
+export const parentRegionsPaginated = async (context, user, regionId, args) => {
+  return listEntitiesThroughRelationsPaginated(context, user, regionId, RELATION_LOCATED_AT, ENTITY_TYPE_LOCATION_REGION, false, args);
 };
 
-export const batchSubRegions = (context, user, regionIds) => {
-  return batchListThroughGetFrom(context, user, regionIds, RELATION_LOCATED_AT, ENTITY_TYPE_LOCATION_REGION);
+export const childRegionsPaginated = async (context, user, regionId, args) => {
+  return listEntitiesThroughRelationsPaginated(context, user, regionId, RELATION_LOCATED_AT, ENTITY_TYPE_LOCATION_REGION, true, args);
 };
 
-export const batchCountries = (context, user, regionIds) => {
-  return batchListThroughGetFrom(context, user, regionIds, RELATION_LOCATED_AT, ENTITY_TYPE_LOCATION_COUNTRY);
-};
-
-export const batchIsSubRegion = async (context, user, regionIds) => {
-  const batchRegions = await batchLoadThroughGetTo(context, user, regionIds, RELATION_LOCATED_AT, ENTITY_TYPE_LOCATION_REGION);
-  return batchRegions.map((b) => b !== undefined);
+export const countriesPaginated = async (context, user, elementId, args) => {
+  return listEntitiesThroughRelationsPaginated(context, user, elementId, RELATION_LOCATED_AT, ENTITY_TYPE_LOCATION_COUNTRY, false, args);
 };
 
 export const addRegion = async (context, user, region) => {

@@ -3,14 +3,11 @@ import { BUS_TOPICS } from '../config/conf';
 import {
   addStixCyberObservable,
   artifactImport,
-  batchArtifacts,
-  batchCountries,
-  batchIndicators,
-  batchStixFiles,
-  batchVulnerabilities,
   findAll,
   findById,
+  indicatorsPaginated,
   promoteObservableToIndicator,
+  serviceDllsPaginated,
   stixCyberObservableAddRelation,
   stixCyberObservableCleanContext,
   stixCyberObservableDelete,
@@ -22,7 +19,9 @@ import {
   stixCyberObservableExportAsk,
   stixCyberObservablesExportAsk,
   stixCyberObservablesNumber,
-  stixCyberObservablesTimeSeries
+  stixCyberObservablesTimeSeries,
+  stixFileObsArtifact,
+  vulnerabilitiesPaginated
 } from '../domain/stixCyberObservable';
 import { pubSubAsyncIterator } from '../database/redis';
 import withCancel from '../graphql/subscriptionWrapper';
@@ -30,15 +29,10 @@ import { stixCoreObjectExportPush, stixCoreObjectImportPush, stixCoreObjectsExpo
 import { ABSTRACT_STIX_CYBER_OBSERVABLE } from '../schema/general';
 import { stixHashesToInput } from '../schema/fieldDataAdapter';
 import { stixCyberObservableOptions } from '../schema/stixCyberObservable';
-import { batchLoader, stixLoadByIdStringify } from '../database/middleware';
+import { stixLoadByIdStringify } from '../database/middleware';
 import { observableValue } from '../utils/format';
 import { paginatedForPathWithEnrichment } from '../modules/internal/document/document-domain';
-
-const indicatorsLoader = batchLoader(batchIndicators);
-const vulnerabilitiesLoader = batchLoader(batchVulnerabilities);
-const countriesLoader = batchLoader(batchCountries);
-const stixFileLoader = batchLoader(batchStixFiles);
-const artifactsLoader = batchLoader(batchArtifacts);
+import { countriesPaginated } from '../domain/region';
 
 const stixCyberObservableResolvers = {
   Query: {
@@ -74,7 +68,6 @@ const stixCyberObservableResolvers = {
       return 'Unknown';
     },
     observable_value: (stixCyberObservable) => observableValue(stixCyberObservable),
-    indicators: (stixCyberObservable, _, context) => indicatorsLoader.load(stixCyberObservable.id, context, context.user),
     stixCoreRelationships: (rel, args, context) => stixCoreRelationships(context, context.user, rel.id, args),
     toStix: (stixCyberObservable, _, context) => stixLoadByIdStringify(context, context.user, stixCyberObservable.id),
     importFiles: (stixCyberObservable, { first }, context) => {
@@ -87,21 +80,22 @@ const stixCyberObservableResolvers = {
       const opts = { first, entity_type: stixCyberObservable.entity_type };
       return paginatedForPathWithEnrichment(context, context.user, path, stixCyberObservable.id, opts);
     },
+    indicators: (stixCyberObservable, args, context) => indicatorsPaginated(context, context.user, stixCyberObservable.id, args),
   },
   Process: {
-    serviceDlls: (process, _, { user }) => stixFileLoader.load(process.id, user),
+    serviceDlls: (process, _, context) => serviceDllsPaginated(process.id, context, context.user),
   },
   StixFile: {
-    obsContent: (stixFile, _, context) => artifactsLoader.load(stixFile.id, context, context.user),
+    obsContent: (stixFile, _, context) => stixFileObsArtifact(context, context.user, stixFile.id),
   },
   Software: {
-    vulnerabilities: (software, _, context) => vulnerabilitiesLoader.load(software.id, context, context.user),
+    vulnerabilities: (software, args, context) => vulnerabilitiesPaginated(context, context.user, software.id, args),
   },
   IPv4Addr: {
-    countries: (ip, _, context) => countriesLoader.load(ip.id, context, context.user),
+    countries: (ip, args, context) => countriesPaginated(context, context.user, ip.id, args),
   },
   IPv6Addr: {
-    countries: (ip, _, context) => countriesLoader.load(ip.id, context, context.user),
+    countries: (ip, args, context) => countriesPaginated(context, context.user, ip.id, args),
   },
   Mutation: {
     stixCyberObservableEdit: (_, { id }, context) => ({

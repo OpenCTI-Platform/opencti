@@ -77,7 +77,6 @@ const regionFragment = graphql`
     latitude
     longitude
     x_opencti_aliases
-    isSubRegion
     status {
       id
       order
@@ -111,7 +110,7 @@ const RegionComponent = ({ regionData }: { regionData: Region_region$key }) => {
                 : [48.8566969, 2.3514616]
             }
             countries={countries}
-            zoom={region.isSubRegion ? 4 : 3}
+            zoom={3}
           />
         </Grid>
         <Grid item={true} xs={6} style={{ paddingTop: 10 }}>

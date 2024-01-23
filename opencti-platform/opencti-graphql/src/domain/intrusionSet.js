@@ -1,6 +1,6 @@
-import { assoc, pipe, isNil } from 'ramda';
-import { createEntity, batchListThroughGetTo } from '../database/middleware';
-import { listEntities, storeLoadById } from '../database/middleware-loader';
+import { assoc, isNil, pipe } from 'ramda';
+import { createEntity } from '../database/middleware';
+import { listEntities, listEntitiesThroughRelationsPaginated, storeLoadById } from '../database/middleware-loader';
 import { BUS_TOPICS } from '../config/conf';
 import { notify } from '../database/redis';
 import { ENTITY_TYPE_INTRUSION_SET } from '../schema/stixDomainObject';
@@ -25,6 +25,6 @@ export const addIntrusionSet = async (context, user, intrusionSet) => {
   return notify(BUS_TOPICS[ABSTRACT_STIX_DOMAIN_OBJECT].ADDED_TOPIC, created, user);
 };
 
-export const batchLocations = (context, user, intrusionSetIds) => {
-  return batchListThroughGetTo(context, user, intrusionSetIds, RELATION_ORIGINATES_FROM, ENTITY_TYPE_LOCATION);
+export const locationsPaginated = async (context, user, intrusionSetId, args) => {
+  return listEntitiesThroughRelationsPaginated(context, user, intrusionSetId, RELATION_ORIGINATES_FROM, ENTITY_TYPE_LOCATION, false, args);
 };

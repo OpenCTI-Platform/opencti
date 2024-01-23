@@ -1,5 +1,5 @@
-import { batchListThroughGetFrom, createEntity } from '../../database/middleware';
-import { listEntitiesPaginated, storeLoadById } from '../../database/middleware-loader';
+import { createEntity } from '../../database/middleware';
+import { listEntitiesPaginated, listEntitiesThroughRelationsPaginated, storeLoadById } from '../../database/middleware-loader';
 import type { AuthContext, AuthUser } from '../../types/user';
 import type { BasicStoreEntityDataSource } from './dataSource-types';
 import type { DataSourceAddInput, QueryDataSourcesArgs } from '../../generated/graphql';
@@ -10,6 +10,7 @@ import { ENTITY_TYPE_DATA_COMPONENT, ENTITY_TYPE_DATA_SOURCE } from '../../schem
 import { stixDomainObjectEditField } from '../../domain/stixDomainObject';
 import { INPUT_DATA_SOURCE, RELATION_DATA_SOURCE } from '../dataComponent/dataComponent-types';
 import type { DomainFindById } from '../../domain/domainTypes';
+import type { BasicStoreCommon } from '../../types/store';
 
 export const findById: DomainFindById<BasicStoreEntityDataSource> = (context: AuthContext, user: AuthUser, dataSourceId: string) => {
   return storeLoadById(context, user, dataSourceId, ENTITY_TYPE_DATA_SOURCE);
@@ -24,8 +25,8 @@ export const dataSourceAdd = async (context: AuthContext, user: AuthUser, dataSo
   return notify(BUS_TOPICS[ABSTRACT_STIX_DOMAIN_OBJECT].ADDED_TOPIC, created, user);
 };
 
-export const batchDataComponents = async (context: AuthContext, user: AuthUser, dataSourceIds: [string]) => {
-  return batchListThroughGetFrom(context, user, dataSourceIds, RELATION_DATA_SOURCE, ENTITY_TYPE_DATA_COMPONENT);
+export const dataComponentsPaginated = async <T extends BasicStoreCommon> (context: AuthContext, user: AuthUser, dataSourceId: string, opts: QueryDataSourcesArgs) => {
+  return listEntitiesThroughRelationsPaginated<T>(context, user, dataSourceId, RELATION_DATA_SOURCE, ENTITY_TYPE_DATA_COMPONENT, true, opts);
 };
 
 export const dataSourceDataComponentAdd = async (context: AuthContext, user: AuthUser, dataSourceId: string, dataComponentId: string) => {

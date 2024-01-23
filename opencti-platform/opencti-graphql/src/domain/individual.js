@@ -1,6 +1,6 @@
 import * as R from 'ramda';
-import { createEntity, batchListThroughGetTo } from '../database/middleware';
-import { listEntities, storeLoadById } from '../database/middleware-loader';
+import { createEntity } from '../database/middleware';
+import { listEntities, listEntitiesThroughRelationsPaginated, storeLoadById } from '../database/middleware-loader';
 import { BUS_TOPICS } from '../config/conf';
 import { notify } from '../database/redis';
 import { ENTITY_TYPE_IDENTITY_INDIVIDUAL } from '../schema/stixDomainObject';
@@ -25,11 +25,11 @@ export const addIndividual = async (context, user, individual, opts = {}) => {
   return notify(BUS_TOPICS[ABSTRACT_STIX_DOMAIN_OBJECT].ADDED_TOPIC, created, user);
 };
 
-export const batchOrganizations = (context, user, individualIds) => {
-  return batchListThroughGetTo(context, user, individualIds, RELATION_PART_OF, ENTITY_TYPE_IDENTITY_ORGANIZATION);
+export const partOfOrganizationsPaginated = async (context, user, individualId, args) => {
+  return listEntitiesThroughRelationsPaginated(context, user, individualId, RELATION_PART_OF, ENTITY_TYPE_IDENTITY_ORGANIZATION, false, args);
 };
 
-export const isUser = async (context, user, individualContactInformation) => {
+export const isUser = async (context, individualContactInformation) => {
   if (isEmptyField(individualContactInformation)) {
     return false;
   }

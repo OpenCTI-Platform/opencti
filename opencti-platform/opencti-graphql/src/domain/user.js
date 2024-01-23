@@ -17,19 +17,19 @@ import {
 import { AuthenticationFailure, DatabaseError, ForbiddenAccess, FunctionalError, UnsupportedError } from '../config/errors';
 import { getEntitiesListFromCache, getEntitiesMapFromCache, getEntityFromCache } from '../database/cache';
 import { elLoadBy, elRawDeleteByQuery } from '../database/engine';
+import { createEntity, createRelation, deleteElementById, deleteRelationsByFromAndTo, patchAttribute, updateAttribute, updatedInputsToData } from '../database/middleware';
 import {
-  batchListThroughGetTo,
-  createEntity,
-  createRelation,
-  deleteElementById,
-  deleteRelationsByFromAndTo,
-  listThroughGetFrom,
-  listThroughGetTo,
-  patchAttribute,
-  updateAttribute,
-  updatedInputsToData
-} from '../database/middleware';
-import { internalFindByIds, internalLoadById, listAllEntities, listAllEntitiesForFilter, listAllRelations, listEntities, storeLoadById } from '../database/middleware-loader';
+  internalFindByIds,
+  internalLoadById,
+  listAllEntities,
+  listAllEntitiesForFilter,
+  listAllFromEntitiesThroughRelations,
+  listAllRelations,
+  listAllToEntitiesThroughRelations,
+  listEntities,
+  listEntitiesThroughRelationsPaginated,
+  storeLoadById
+} from '../database/middleware-loader';
 import { delEditContext, delUserContext, notify, setEditContext } from '../database/redis';
 import { findSessionsForUsers, killUserSessions, markSessionForRefresh } from '../database/session';
 import { buildPagination, isEmptyField, isNotEmptyField, READ_INDEX_INTERNAL_OBJECTS } from '../database/utils';
@@ -148,9 +148,9 @@ export const findById = async (context, user, userId) => {
   const data = await storeLoadById(context, user, userId, ENTITY_TYPE_USER);
   if (!isUserHasCapability(user, SETTINGS_SET_ACCESSES) && user.id !== userId) {
     // if no organization in common with the logged user
-    const memberOrgas = await listThroughGetTo(context, user, userId, RELATION_PARTICIPATE_TO, ENTITY_TYPE_IDENTITY_ORGANIZATION);
-    const myOrgasIds = user.administrated_organizations.map((organization) => organization.id);
-    if (!memberOrgas.map((organization) => organization.id).find((orgaId) => myOrgasIds.includes(orgaId))) {
+    const memberOrganizations = await listAllToEntitiesThroughRelations(context, user, userId, RELATION_PARTICIPATE_TO, ENTITY_TYPE_IDENTITY_ORGANIZATION);
+    const myOrganizationsIds = user.administrated_organizations.map((organization) => organization.id);
+    if (!memberOrganizations.map((organization) => organization.id).find((orgaId) => myOrganizationsIds.includes(orgaId))) {
       throw ForbiddenAccess();
     }
   }
@@ -161,14 +161,15 @@ export const findById = async (context, user, userId) => {
 export const findAll = async (context, user, args) => {
   // if user is orga_admin && not set_accesses
   if (!isUserHasCapability(user, SETTINGS_SET_ACCESSES)) {
-    const organisationIds = user.administrated_organizations.map((orga) => orga.id);
-    const users = R.uniq((await listThroughGetFrom(
+    // TODO JRI REPLACE BY listEntities with filter?????
+    const organisationIds = user.administrated_organizations.map((organization) => organization.id);
+    const users = await listAllFromEntitiesThroughRelations(
       context,
       user,
       organisationIds,
       RELATION_PARTICIPATE_TO,
       ENTITY_TYPE_USER,
-    )).map((n) => ({ node: n })));
+    ).map((n) => ({ node: n }));
     return buildPagination(0, null, users, users.length);
   }
   return listEntities(context, user, [ENTITY_TYPE_USER], args);
@@ -192,10 +193,6 @@ export const findAllMembers = (context, user, args) => {
   const { entityTypes = null } = args;
   const types = entityTypes || [ENTITY_TYPE_USER, ENTITY_TYPE_IDENTITY_ORGANIZATION, ENTITY_TYPE_GROUP];
   return listEntities(context, user, types, args);
-};
-
-export const batchGroups = async (context, user, userId, opts = {}) => {
-  return batchListThroughGetTo(context, user, userId, RELATION_MEMBER_OF, ENTITY_TYPE_GROUP, opts);
 };
 
 // build only a creator object with what we need to expose of users
@@ -222,12 +219,16 @@ export const batchCreators = async (context, user, userListIds) => {
   return userIds.map((ids) => ids.map((id) => INTERNAL_USERS[id] || buildCreatorUser(platformUsers.get(id)) || SYSTEM_USER));
 };
 
-export const batchOrganizations = async (context, user, userId, opts = {}) => {
-  return batchListThroughGetTo(context, user, userId, RELATION_PARTICIPATE_TO, ENTITY_TYPE_IDENTITY_ORGANIZATION, opts);
+export const userOrganizationsPaginated = async (context, user, userId, opts) => {
+  return listEntitiesThroughRelationsPaginated(context, user, userId, RELATION_PARTICIPATE_TO, ENTITY_TYPE_IDENTITY_ORGANIZATION, false, opts);
 };
 
-export const batchRolesForGroups = async (context, user, groupId, opts = {}) => {
-  return batchListThroughGetTo(context, user, groupId, RELATION_HAS_ROLE, ENTITY_TYPE_ROLE, { ...opts, paginate: false });
+export const userGroupsPaginated = async (context, user, userId, opts) => {
+  return listEntitiesThroughRelationsPaginated(context, user, userId, RELATION_MEMBER_OF, ENTITY_TYPE_GROUP, false, opts);
+};
+
+export const groupRolesPaginated = async (context, user, groupId, opts) => {
+  return listEntitiesThroughRelationsPaginated(context, user, groupId, RELATION_HAS_ROLE, ENTITY_TYPE_ROLE, false, opts);
 };
 
 export const batchRolesForUsers = async (context, user, userIds, opts = {}) => {
@@ -299,7 +300,7 @@ const getUserAndGlobalMarkings = async (context, userId, userGroups, capabilitie
   if (shouldBypass) { // Bypass user have all platform markings
     userMarkingsPromise = allMarkingsPromise;
   } else { // Standard user have markings related to his groups
-    userMarkingsPromise = listThroughGetTo(context, SYSTEM_USER, groupIds, RELATION_ACCESSES_TO, ENTITY_TYPE_MARKING_DEFINITION);
+    userMarkingsPromise = listAllToEntitiesThroughRelations(context, SYSTEM_USER, groupIds, RELATION_ACCESSES_TO, ENTITY_TYPE_MARKING_DEFINITION);
   }
   const defaultGroupMarkingsPromise = defaultMarkingDefinitionsFromGroups(context, groupIds);
   const [userMarkings, markings, defaultMarkings] = await Promise.all([userMarkingsPromise, allMarkingsPromise, defaultGroupMarkingsPromise]);
@@ -309,12 +310,12 @@ const getUserAndGlobalMarkings = async (context, userId, userGroups, capabilitie
 
 export const getRoles = async (context, userGroups) => {
   const groupIds = userGroups.map((r) => r.id);
-  return listThroughGetTo(context, SYSTEM_USER, groupIds, RELATION_HAS_ROLE, ENTITY_TYPE_ROLE);
+  return listAllToEntitiesThroughRelations(context, SYSTEM_USER, groupIds, RELATION_HAS_ROLE, ENTITY_TYPE_ROLE);
 };
 
 export const getCapabilities = async (context, userId, userRoles, isUserPlatform) => {
   const roleIds = userRoles.map((r) => r.id);
-  const capabilities = R.uniq(await listThroughGetTo(context, SYSTEM_USER, roleIds, RELATION_HAS_CAPABILITY, ENTITY_TYPE_CAPABILITY));
+  const capabilities = await listAllToEntitiesThroughRelations(context, SYSTEM_USER, roleIds, RELATION_HAS_CAPABILITY, ENTITY_TYPE_CAPABILITY);
   // Force push the bypass for default admin
   const withoutBypass = !capabilities.some((c) => c.name === BYPASS);
   if (userId === OPENCTI_ADMIN_UUID && withoutBypass) {
@@ -325,8 +326,8 @@ export const getCapabilities = async (context, userId, userRoles, isUserPlatform
   return isUserPlatform ? capabilities : capabilities.filter((c) => c.name !== KNOWLEDGE_ORGANIZATION_RESTRICT);
 };
 
-export const batchRoleCapabilities = async (context, user, roleId) => {
-  return batchListThroughGetTo(context, user, roleId, RELATION_HAS_CAPABILITY, ENTITY_TYPE_CAPABILITY, { paginate: false });
+export const roleCapabilities = async (context, user, roleId) => {
+  return listAllToEntitiesThroughRelations(context, user, roleId, RELATION_HAS_CAPABILITY, ENTITY_TYPE_CAPABILITY);
 };
 
 export const getDefaultHiddenTypes = (entities) => {
@@ -966,7 +967,6 @@ export const loginFromProvider = async (userInfo, opts = {}) => {
   }
   // endregion
   const settings = await getEntityFromCache(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
-  const listOpts = { paginate: false };
   const { email, name: providedName, firstname, lastname } = userInfo;
   if (isEmptyField(email)) {
     throw ForbiddenAccess('User email not provided');
@@ -988,7 +988,7 @@ export const loginFromProvider = async (userInfo, opts = {}) => {
   // If groups are specified here, that overwrite the default assignation
   if (providerGroups.length > 0) {
     // 01 - Delete all groups relation from the user
-    const userGroups = await listThroughGetTo(context, SYSTEM_USER, user.id, RELATION_MEMBER_OF, ENTITY_TYPE_GROUP, listOpts);
+    const userGroups = await listAllToEntitiesThroughRelations(context, SYSTEM_USER, user.id, RELATION_MEMBER_OF, ENTITY_TYPE_GROUP);
     const deleteGroups = userGroups.filter((o) => !providerGroups.includes(o.name));
     for (let index = 0; index < deleteGroups.length; index += 1) {
       const userGroup = userGroups[index];
@@ -1006,7 +1006,7 @@ export const loginFromProvider = async (userInfo, opts = {}) => {
   // If organizations are specified here, that overwrite the default assignation
   if (providerOrganizations.length > 0) {
     // 01 - Delete all organizations no longer assign to the user
-    const userOrganizations = await listThroughGetTo(context, SYSTEM_USER, user.id, RELATION_PARTICIPATE_TO, ENTITY_TYPE_IDENTITY_ORGANIZATION, listOpts);
+    const userOrganizations = await listAllToEntitiesThroughRelations(context, SYSTEM_USER, user.id, RELATION_PARTICIPATE_TO, ENTITY_TYPE_IDENTITY_ORGANIZATION);
     const deleteOrganizations = userOrganizations.filter((o) => !providerOrganizations.includes(o.name));
     for (let index = 0; index < deleteOrganizations.length; index += 1) {
       const userOrganization = deleteOrganizations[index];
@@ -1167,7 +1167,6 @@ export const buildCompleteUser = async (context, client) => {
   if (!client) {
     return undefined;
   }
-  const batchOpts = { batched: false, paginate: false };
   const contactInformationFilter = {
     mode: 'and',
     filters: [{ key: 'contact_information', values: [client.user_email] }],
@@ -1175,10 +1174,17 @@ export const buildCompleteUser = async (context, client) => {
   };
   const args = { filters: contactInformationFilter, connectionFormat: false, noFiltersChecking: true };
   const individualsPromise = listEntities(context, SYSTEM_USER, [ENTITY_TYPE_IDENTITY_INDIVIDUAL], args);
-  const organizationsPromise = batchOrganizations(context, SYSTEM_USER, client.id, { ...batchOpts, withInferences: false });
-  const userGroupsPromise = listThroughGetTo(context, SYSTEM_USER, client.id, RELATION_MEMBER_OF, ENTITY_TYPE_GROUP);
+  const organizationsPromise = listAllToEntitiesThroughRelations(
+    context,
+    SYSTEM_USER,
+    client.id,
+    RELATION_PARTICIPATE_TO,
+    ENTITY_TYPE_IDENTITY_ORGANIZATION,
+    { withInferences: true }
+  );
+  const userGroupsPromise = listAllToEntitiesThroughRelations(context, SYSTEM_USER, client.id, RELATION_MEMBER_OF, ENTITY_TYPE_GROUP);
   const settings = await getEntityFromCache(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
-  const allowed_organizations = await batchOrganizations(context, SYSTEM_USER, client.id, batchOpts);
+  const allowed_organizations = await listAllToEntitiesThroughRelations(context, SYSTEM_USER, client.id, RELATION_PARTICIPATE_TO, ENTITY_TYPE_IDENTITY_ORGANIZATION);
   const userOrganizations = allowed_organizations.map((m) => m.internal_id);
   const isUserPlatform = settings.platform_organization ? userOrganizations.includes(settings.platform_organization) : true;
   const [individuals, organizations, groups] = await Promise.all([individualsPromise, organizationsPromise, userGroupsPromise]);

@@ -1,5 +1,13 @@
-import { batchListThroughGetFrom, batchListThroughGetTo, createEntity, patchAttribute } from '../../database/middleware';
-import { type EntityOptions, internalFindByIds, listAllEntities, listEntitiesPaginated, storeLoadById } from '../../database/middleware-loader';
+import { createEntity, patchAttribute } from '../../database/middleware';
+import {
+  type EntityOptions,
+  internalFindByIds,
+  listAllEntities,
+  listAllFromEntitiesThroughRelations,
+  listEntitiesPaginated,
+  listEntitiesThroughRelationsPaginated,
+  storeLoadById
+} from '../../database/middleware-loader';
 import { BUS_TOPICS } from '../../config/conf';
 import { notify } from '../../database/redis';
 import { ENTITY_TYPE_IDENTITY_SECTOR } from '../../schema/stixDomainObject';
@@ -13,7 +21,7 @@ import type { BasicObject, OrganizationAddInput, ResolversTypes } from '../../ge
 import { FunctionalError } from '../../config/errors';
 import { isUserHasCapability, SETTINGS_SET_ACCESSES } from '../../utils/access';
 import { publishUserAction } from '../../listener/UserActionListener';
-import type { BasicStoreEntity } from '../../types/store';
+import type { BasicStoreCommon, BasicStoreEntity } from '../../types/store';
 import { userSessionRefresh } from '../../domain/user';
 
 // region CRUD
@@ -39,7 +47,7 @@ export const editAuthorizedAuthorities = async (context: AuthContext, user: Auth
 export const organizationAdminAdd = async (context: AuthContext, user: AuthUser, organizationId: string, memberId: string) => {
   // Get Orga and members
   const organization = await findById(context, user, organizationId);
-  const members: BasicStoreEntity[] = await batchListThroughGetFrom(context, user, organizationId, RELATION_PARTICIPATE_TO, ENTITY_TYPE_USER, { batched: false, paginate: false });
+  const members: BasicStoreEntity[] = await listAllFromEntitiesThroughRelations(context, user, organizationId, RELATION_PARTICIPATE_TO, ENTITY_TYPE_USER);
   const updatedUser = members.find(({ id }) => id === memberId);
   // Check if user is part of Orga. If not, throw exception
   if (!updatedUser) {
@@ -62,7 +70,7 @@ export const organizationAdminAdd = async (context: AuthContext, user: AuthUser,
 export const organizationAdminRemove = async (context: AuthContext, user: AuthUser, organizationId: string, memberId: string) => {
   // Get Orga and members
   const organization = await findById(context, user, organizationId);
-  const members: BasicStoreEntity[] = await batchListThroughGetFrom(context, user, organizationId, RELATION_PARTICIPATE_TO, ENTITY_TYPE_USER, { batched: false, paginate: false });
+  const members: BasicStoreEntity[] = await listAllFromEntitiesThroughRelations(context, user, organizationId, RELATION_PARTICIPATE_TO, ENTITY_TYPE_USER);
   const updatedUser = members.find(({ id }) => id === memberId);
   // Check if user is part of Orga and is orga_admin. If not, throw exception
   if (!updatedUser) {
@@ -100,17 +108,24 @@ export const buildAdministratedOrganizations = async (context: AuthContext, user
 };
 // endregion
 
-// region BATCH
-export const batchSectors = (context: AuthContext, user: AuthUser, organizationIds: string[]) => {
-  return batchListThroughGetTo(context, user, organizationIds, RELATION_PART_OF, ENTITY_TYPE_IDENTITY_SECTOR);
+export const organizationSectorsPaginated = async <T extends BasicStoreCommon> (context: AuthContext, user: AuthUser, organizationId: string,
+  args: EntityOptions<T>) => {
+  return listEntitiesThroughRelationsPaginated<T>(context, user, organizationId, RELATION_PART_OF, ENTITY_TYPE_IDENTITY_SECTOR, false, args);
 };
-export const batchMembers = async (context: AuthContext, user: AuthUser, organizationIds: string[], opts = {}) => {
-  return batchListThroughGetFrom(context, user, organizationIds, RELATION_PARTICIPATE_TO, ENTITY_TYPE_USER, opts);
+
+export const organizationMembersPaginated = async <T extends BasicStoreCommon> (context: AuthContext, user: AuthUser, organizationId: string,
+  args: EntityOptions<T>) => {
+  return listEntitiesThroughRelationsPaginated<T>(context, user, organizationId, RELATION_PARTICIPATE_TO, ENTITY_TYPE_USER, true, args);
 };
-export const batchSubOrganizations = async (context: AuthContext, user: AuthUser, organizationIds: string[], opts = {}) => {
-  return batchListThroughGetFrom(context, user, organizationIds, RELATION_PART_OF, ENTITY_TYPE_IDENTITY_ORGANIZATION, opts);
+
+export const parentOrganizationsPaginated = async <T extends BasicStoreCommon> (context: AuthContext, user: AuthUser, organizationId: string,
+  args: EntityOptions<T>) => {
+  return listEntitiesThroughRelationsPaginated<T>(context, user, organizationId, RELATION_PART_OF, ENTITY_TYPE_IDENTITY_ORGANIZATION, false, args);
 };
-export const batchParentOrganizations = async (context: AuthContext, user: AuthUser, organizationIds: string[], opts = {}) => {
-  return batchListThroughGetTo(context, user, organizationIds, RELATION_PART_OF, ENTITY_TYPE_IDENTITY_ORGANIZATION, opts);
+
+export const childOrganizationsPaginated = async <T extends BasicStoreCommon> (context: AuthContext, user: AuthUser, organizationId: string,
+  args: EntityOptions<T>) => {
+  return listEntitiesThroughRelationsPaginated<T>(context, user, organizationId, RELATION_PART_OF, ENTITY_TYPE_IDENTITY_ORGANIZATION, true, args);
 };
+
 // endregion

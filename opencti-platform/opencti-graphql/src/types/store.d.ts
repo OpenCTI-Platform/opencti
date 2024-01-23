@@ -238,12 +238,24 @@ interface StoreRelation extends BasicStoreRelation, StoreCommon {
 }
 
 interface BasicStoreEntityEdge<T extends BasicStoreEntity> {
-  cursor: string;
+  cursor: string
+  types?: string[]
+  node: T;
+}
+
+interface BasicStoreCommonEdge<T extends BasicStoreCommon> {
+  cursor: string
+  types?: string[]
   node: T;
 }
 
 interface StoreEntityConnection<T extends BasicStoreEntity> {
   edges: Array<BasicStoreEntityEdge<T>>;
+  pageInfo: PageInfo;
+}
+
+interface StoreCommonConnection<T extends BasicStoreCommon> {
+  edges: Array<BasicStoreCommonEdge<T>>;
   pageInfo: PageInfo;
 }
 

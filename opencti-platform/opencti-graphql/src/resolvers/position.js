@@ -1,4 +1,4 @@
-import { addPosition, batchCity, findAll, findById } from '../domain/position';
+import { addPosition, findAll, findById } from '../domain/position';
 import {
   stixDomainObjectAddRelation,
   stixDomainObjectCleanContext,
@@ -8,8 +8,9 @@ import {
   stixDomainObjectEditField,
 } from '../domain/stixDomainObject';
 import { batchLoader } from '../database/middleware';
+import { batchInternalRels } from '../domain/stixCoreObject';
 
-const batchCityLoader = batchLoader(batchCity);
+const batchCityLoader = batchLoader(batchInternalRels);
 
 const positionResolvers = {
   Query: {
