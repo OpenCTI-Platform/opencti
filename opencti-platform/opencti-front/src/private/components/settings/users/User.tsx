@@ -21,6 +21,8 @@ import makeStyles from '@mui/styles/makeStyles';
 import { ApexOptions } from 'apexcharts';
 import { SimplePaletteColorOptions } from '@mui/material/styles/createPalette';
 import UserConfidenceLevel from '@components/settings/users/UserConfidenceLevel';
+import AlertTitle from '@mui/material/AlertTitle';
+import Alert from '@mui/material/Alert';
 import FieldOrEmpty from '../../../../components/FieldOrEmpty';
 import { useFormatter } from '../../../../components/i18n';
 import UserEdition from './UserEdition';
@@ -545,20 +547,29 @@ const User: FunctionComponent<UserProps> = ({ data }) => {
                 />
               </Grid>
               <Grid item={true} xs={6}>
-                <Typography
-                  variant="h3"
-                  gutterBottom={true}
-                  style={{ float: 'left' }}
-                >
-                  {t_i18n('Max Confidence Level')}
-                </Typography>
-                <div className="clearfix"/>
                 <UserConfidenceLevel
                   confidenceLevel={user.effective_confidence_level}
-                  showNullAsError={true}
                   showSource={true}
                 />
               </Grid>
+              {
+                !user.effective_confidence_level && (
+                  <Grid item={true} xs={12}>
+                    <Alert
+                      icon={false}
+                      severity="error"
+                      variant="outlined"
+                      sx={{
+                        marginTop: 1,
+                      }}
+                    >
+                      <AlertTitle>
+                        {t_i18n('No confidence level found in this user\'s groups and organizations, and no confidence level defined at the user level. Starting with OpenCTI 6.0, this user won\'t be able to create any data.')}
+                      </AlertTitle>
+                    </Alert>
+                  </Grid>
+                )
+              }
             </Grid>
           </Paper>
         </Grid>

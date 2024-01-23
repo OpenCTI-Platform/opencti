@@ -66,10 +66,12 @@ const UserCreation = ({ paginationOptions }) => {
       ...rest,
       objectOrganization: objectOrganization.map((n) => n.value),
       // TODO: Handle default assignation groups: groups.map((n) => n.value),
-      user_confidence_level: {
-        max_confidence: parseInt(user_confidence_level, 10),
-        overrides: [],
-      },
+      user_confidence_level: user_confidence_level
+        ? {
+          max_confidence: parseInt(user_confidence_level, 10),
+          overrides: [],
+        }
+        : null,
     };
     commitMutation({
       mutation: userMutation,

@@ -503,7 +503,7 @@ export const addUser = async (context, user, newUser) => {
     R.assoc('account_lock_after_date', newUser.account_lock_after_date),
     R.assoc('unit_system', newUser.unit_system),
     R.assoc('user_confidence_level', {
-      max_confidence: newUser.user_confidence_level.max_confidence ?? nconf.get('app:user_confidence_level_default') ?? 100,
+      max_confidence: newUser.user_confidence_level?.max_confidence ?? nconf.get('app:user_confidence_level_default') ?? 100,
       overrides: [],
     }),
     R.dissoc('roles')

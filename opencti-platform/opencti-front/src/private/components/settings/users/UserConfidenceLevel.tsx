@@ -1,9 +1,7 @@
 import React from 'react';
 import { User_user$data } from '@components/settings/users/__generated__/User_user.graphql';
-import Alert from '@mui/material/Alert';
-import AlertTitle from '@mui/material/AlertTitle';
-
 import { Link } from 'react-router-dom-v5-compat';
+import Typography from '@mui/material/Typography';
 import { useFormatter } from '../../../../components/i18n';
 
 type Data_UserConfidenceLevel = User_user$data['user_confidence_level'];
@@ -19,30 +17,23 @@ const UserConfidenceLevel: React.FC<UserConfidenceLevelProps> = ({ confidenceLev
   const { t_i18n } = useFormatter();
 
   if (!confidenceLevel) {
-    if (!showNullAsError) {
-      return <span>-</span>;
-    }
     return (
-      <Alert
-        icon={false}
-        severity="warning"
-        variant="outlined"
-        sx={{
-          marginTop: 1,
-        }}
-      >
-        <AlertTitle>
-          {t_i18n('No confidence level found in this user\'s groups and organizations, and no confidence level defined at the user level. Starting with OpenCTI 6.0, this user won\'t be able to create any data.')}
-        </AlertTitle>
-      </Alert>
-
+      <>
+        <Typography
+          variant="h3"
+          gutterBottom={true}
+          style={{ float: 'left' }}
+        >
+          {t_i18n('Max Confidence Level')}
+        </Typography>
+        <div className="clearfix"/>
+        <span>-</span>
+      </>
     );
   }
 
-  // TODO: add overrides when used
-  // const overrides = confidenceLevel.overrides ?? []
-  //   .map(({ entity_type, max_confidence }) => `${t_i18n(`entity_${entity_type}`)}: ${max_confidence}`)
-  //   .join('\n');
+  // TODO: add overrides in a tooltip when in use
+
   const renderSource = () => {
     const source = (confidenceLevel as Data_EffectiveConfidenceLevel)?.source;
 
@@ -58,7 +49,7 @@ const UserConfidenceLevel: React.FC<UserConfidenceLevelProps> = ({ confidenceLev
               values: {
                 entity_type: t_i18n(`entity_${source.entity_type}`),
                 link: (
-                  <Link to={`/dashboard/settings/accesses/users/${source.id}`}>
+                  <Link to={`/dashboard/settings/accesses/${source.entity_type.toLowerCase()}s/${source.id}`}>
                     {source.name}
                   </Link>
                 ),
@@ -72,12 +63,22 @@ const UserConfidenceLevel: React.FC<UserConfidenceLevelProps> = ({ confidenceLev
         <em>[{t_i18n('From: this user\'s max confidence level')}]</em>
       );
     }
+
+    return null;
   };
 
   return (
     <div style={{ float: 'left', marginRight: 5 }}>
+      <Typography
+        variant="h3"
+        gutterBottom={true}
+        style={{ float: 'left' }}
+      >
+        {t_i18n('Max Confidence Level')}
+      </Typography>
+      <div className="clearfix"/>
       {`${confidenceLevel.max_confidence ?? '-'}`}
-        &nbsp;
+      &nbsp;
       {showSource && renderSource()}
     </div>
   );
