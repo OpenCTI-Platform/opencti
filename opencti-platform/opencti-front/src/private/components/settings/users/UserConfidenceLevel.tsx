@@ -52,12 +52,19 @@ const UserConfidenceLevel: React.FC<UserConfidenceLevelProps> = ({ confidenceLev
       if (source.entity_type && source.entity_type !== 'User') {
         // a group or orga
         return (
-          <span>[
-            {t_i18n('From:')}
-            <Link to={`/dashboard/settings/accesses/users/${source.id}`}>
-              {source.name}
-            </Link>
-            ]</span>
+          <em>(
+            {t_i18n('', {
+              id: 'confidence_level_from',
+              values: {
+                entity_type: t_i18n(`entity_${source.entity_type}`),
+                link: (
+                  <Link to={`/dashboard/settings/accesses/users/${source.id}`}>
+                    {source.name}
+                  </Link>
+                ),
+              },
+            })}
+            )</em>
         );
       }
       // the user himself
