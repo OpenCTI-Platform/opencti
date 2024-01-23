@@ -97,7 +97,7 @@ const UserLineComponent: React.FC<UserLineComponentProps> = (props) => {
                 <Tooltip
                   title={t_i18n("No confidence level found in this user's groups and organizations, and no confidence level defined at the user level.")}
                 >
-                  <ReportGmailerrorred color={'error'}/>
+                  <ReportGmailerrorred fontSize={'small'} color={'error'}/>
                 </Tooltip>
               )}
             </div>
