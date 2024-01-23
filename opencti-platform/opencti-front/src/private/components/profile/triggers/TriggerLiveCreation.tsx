@@ -285,6 +285,7 @@ const TriggerLiveCreation: FunctionComponent<TriggerLiveCreationProps> = ({
                 'revoked',
                 'confidence',
                 'indicator_types',
+                'x_opencti_main_observable_type',
                 'pattern_type',
                 'fromId',
                 'toId',

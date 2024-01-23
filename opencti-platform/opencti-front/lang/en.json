@@ -1543,7 +1543,7 @@
   "indicator_types": "Indicator type",
   "pattern_type": "Pattern type",
   "incident_type": "Incident type",
-  "x_opencti_main_observable_type": "Observable type",
+  "x_opencti_main_observable_type": "Main observable type",
   "objectLabel": "Label",
   "createdBy": "Author",
   "category": "Category",
