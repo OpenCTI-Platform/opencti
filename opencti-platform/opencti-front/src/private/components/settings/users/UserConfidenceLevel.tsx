@@ -11,18 +11,19 @@ type UserConfidenceLevelProps = {
 const UserConfidenceLevel: React.FC<UserConfidenceLevelProps> = ({ userConfidenceLevel }) => {
   const { t_i18n } = useFormatter();
 
-  const overrides = userConfidenceLevel.overrides
-    .map(({ entity_type, max_confidence }) => `${t_i18n(`entity_${entity_type}`)}: ${max_confidence}`)
+  const isOverride = userConfidenceLevel?.overrides ?? [];
+
+  const overrides = isOverride.map(({ entity_type, max_confidence }) => `${t_i18n(`entity_${entity_type}`)}: ${max_confidence}`)
     .join('\n');
 
   return (
     <>
       <div style={{ float: 'left', marginRight: 5 }}>
-        {`${userConfidenceLevel.max_confidence ?? '-'}`}
+        {`${userConfidenceLevel?.max_confidence ?? '-'}`}
       </div>
       <div>
         {
-        userConfidenceLevel.overrides.length > 0 && (
+        overrides.length > 0 && (
         <Tooltip title={
           <div style={{ whiteSpace: 'pre-line' }}>
             {`${t_i18n('This value is overridden for the following entity types')}\n\n${overrides}`}
