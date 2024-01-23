@@ -1,14 +1,13 @@
 import React from 'react';
 import { Field, Form, Formik } from 'formik';
 import Button from '@mui/material/Button';
-import * as R from 'ramda';
-import { omit } from 'ramda';
 import * as Yup from 'yup';
 import { makeStyles } from '@mui/styles';
 import { graphql } from 'react-relay';
 import Alert from '@mui/material/Alert';
 import MenuItem from '@mui/material/MenuItem';
-import OptionalConfidenceLevelField from '@components/common/form/OptionalConfidenceLevelField';
+import GroupField from '../../common/form/GroupField';
+import OptionalConfidenceLevelField from '../../common/form/OptionalConfidenceLevelField';
 import Drawer, { DrawerVariant } from '../../common/drawer/Drawer';
 import { useFormatter } from '../../../../components/i18n';
 import { commitMutation } from '../../../../relay/environment';
@@ -59,14 +58,19 @@ const UserCreation = ({ paginationOptions }) => {
   const { t_i18n } = useFormatter();
   const classes = useStyles();
   const onSubmit = (values, { setSubmitting, resetForm }) => {
-    const finalValues = R.pipe(
-      omit(['confirmation']),
-      R.assoc(
-        'objectOrganization',
-        R.pluck('value', values.objectOrganization),
-      ),
-      R.assocPath(['user_confidence_level', 'max_confidence'], parseInt(values, 10)),
-    )(values);
+    const { objectOrganization, user_confidence_level, ...rest } = values;
+    delete rest.confirmation;
+    delete rest.groups;
+    // TODO: Handle default assignation groups
+    const finalValues = {
+      ...rest,
+      objectOrganization: objectOrganization.map((n) => n.value),
+      // TODO: Handle default assignation groups: groups.map((n) => n.value),
+      user_confidence_level: {
+        max_confidence: parseInt(user_confidence_level, 10),
+        overrides: [],
+      },
+    };
     commitMutation({
       mutation: userMutation,
       variables: {
@@ -102,9 +106,10 @@ const UserCreation = ({ paginationOptions }) => {
               password: '',
               confirmation: '',
               objectOrganization: [],
+              groups: [],
               account_status: 'Active',
               account_lock_after_date: null,
-              max_confidence: 100,
+              user_confidence_level: 100,
             }}
             validationSchema={userValidation(t_i18n)}
             onSubmit={onSubmit}
@@ -174,6 +179,11 @@ const UserCreation = ({ paginationOptions }) => {
                   outlined={false}
                   name="objectOrganization"
                   label="Organizations"
+                  style={fieldSpacingContainerStyle}
+                />
+                <GroupField
+                  name="groups"
+                  label="Groups"
                   style={fieldSpacingContainerStyle}
                 />
                 <Field

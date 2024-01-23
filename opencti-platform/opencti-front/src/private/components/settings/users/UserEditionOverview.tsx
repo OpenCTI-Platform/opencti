@@ -42,8 +42,8 @@ const userEditionOverviewFocus = graphql`
   }
 `;
 
-const userMutationGroupAdd = graphql`
-  mutation UserEditionOverviewGroupAddMutation($id: ID!, $organizationId: ID!) {
+const userMutationOrganizationAdd = graphql`
+  mutation UserEditionOverviewOrganizationAddMutation($id: ID!, $organizationId: ID!) {
     userEdit(id: $id) {
       organizationAdd(organizationId: $organizationId) {
         ...UserEditionOverview_user
@@ -52,8 +52,8 @@ const userMutationGroupAdd = graphql`
   }
 `;
 
-const userMutationGroupDelete = graphql`
-  mutation UserEditionOverviewGroupDeleteMutation(
+const userMutationOrganizationDelete = graphql`
+  mutation UserEditionOverviewOrganizationDeleteMutation(
     $id: ID!
     $organizationId: ID!
   ) {
@@ -102,8 +102,8 @@ UserEditionOverviewComponentProps
 
   const [commitFocus] = useMutation(userEditionOverviewFocus);
   const [commitFieldPatch] = useMutation(userMutationFieldPatch);
-  const [commitGroupAdd] = useMutation(userMutationGroupAdd);
-  const [commitGroupDelete] = useMutation(userMutationGroupDelete);
+  const [commitOrganizationAdd] = useMutation(userMutationOrganizationAdd);
+  const [commitOrganizationDelete] = useMutation(userMutationOrganizationDelete);
 
   const userIsOnlyOrganizationAdmin = isOnlyOrganizationAdmin();
   const external = user.external === true;
@@ -135,7 +135,6 @@ UserEditionOverviewComponentProps
   };
 
   const handleSubmitField = (name: string, value: string | null) => {
-    console.log('sdfqsdfgsd', name, value);
     userValidation(t_i18n, userIsOnlyOrganizationAdmin)
       .validateAt(name, { [name]: value })
       .then(() => {
@@ -203,7 +202,7 @@ UserEditionOverviewComponentProps
     const added = R.difference(values, currentValues);
     const removed = R.difference(currentValues, values);
     if (added.length > 0) {
-      commitGroupAdd({
+      commitOrganizationAdd({
         variables: {
           id: user.id,
           organizationId: R.head(added)?.value,
@@ -211,7 +210,7 @@ UserEditionOverviewComponentProps
       });
     }
     if (removed.length > 0) {
-      commitGroupDelete({
+      commitOrganizationDelete({
         variables: {
           id: user.id,
           organizationId: R.head(removed)?.value,
