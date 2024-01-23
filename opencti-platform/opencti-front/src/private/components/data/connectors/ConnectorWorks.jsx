@@ -26,6 +26,7 @@ import inject18n from '../../../../components/i18n';
 import { FIVE_SECONDS } from '../../../../utils/Time';
 import { truncate } from '../../../../utils/String';
 import { commitMutation, MESSAGING$ } from '../../../../relay/environment';
+import Tooltip from "@mui/material/Tooltip";
 
 const interval$ = interval(FIVE_SECONDS);
 
@@ -189,7 +190,11 @@ class ConnectorWorksComponent extends Component {
                       <Typography variant="h3" gutterBottom={true}>
                         {t('Name')}
                       </Typography>
-                      {truncate(work.name, 40)}
+                      <Tooltip title={work.name}>
+                        <Typography>
+                          {truncate(work.name, 80)}
+                        </Typography>
+                      </Tooltip>
                     </Grid>
                     <Grid item={true} xs={6}>
                       <Typography variant="h3" gutterBottom={true}>
