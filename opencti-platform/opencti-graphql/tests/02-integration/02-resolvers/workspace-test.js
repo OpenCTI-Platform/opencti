@@ -375,7 +375,7 @@ describe('Workspace resolver standard behavior', () => {
     const queryResult = await queryAsAdmin({
       query: gql`
         mutation workspaceImportWidget($id: ID!, $input: ImportConfigurationInput!) {
-            workspaceWidgetConfigurationImport(id: $id, input: $input) {
+          workspaceWidgetConfigurationImport(id: $id, input: $input) {
             id
             manifest
           }
@@ -416,7 +416,7 @@ describe('Workspace resolver standard behavior', () => {
     const queryResult = await queryAsAdmin({
       query: gql`
         mutation workspaceImportWidget($id: ID!, $input: ImportConfigurationInput!) {
-            workspaceWidgetConfigurationImport(id: $id, input: $input) {
+          workspaceWidgetConfigurationImport(id: $id, input: $input) {
             manifest
           }
         }
@@ -452,7 +452,7 @@ describe('Workspace resolver standard behavior', () => {
     const queryResult = await queryAsAdmin({
       query: gql`
         mutation workspaceImportWidget($id: ID!, $input: ImportConfigurationInput!) {
-            workspaceWidgetConfigurationImport(id: $id, input: $input) {
+          workspaceWidgetConfigurationImport(id: $id, input: $input) {
             manifest
           }
         }
@@ -761,22 +761,22 @@ describe('Workspace resolver standard behavior', () => {
     // Delete entities
     await queryAsAdmin({
       query: gql`
-              mutation sectorDelete($id: ID!) {
-                  sectorEdit(id: $id) {
-                      delete
-                  }
-              }
-          `,
+        mutation sectorDelete($id: ID!) {
+          sectorEdit(id: $id) {
+            delete
+          }
+        }
+      `,
       variables: { id: sectorId },
     });
     await queryAsAdmin({
       query: gql`
-              mutation individualDelete($id: ID!) {
-                  individualEdit(id: $id) {
-                      delete
-                  }
-              }
-          `,
+        mutation individualDelete($id: ID!) {
+          individualEdit(id: $id) {
+            delete
+          }
+        }
+      `,
       variables: { id: individualId },
     });
 
@@ -905,6 +905,11 @@ describe('Workspace member access behavior', () => {
   });
 
   it('Admin gets only his 3 created workspaces', async () => {
+    const queryResultDefault = await queryAsAdmin({
+      query: LIST_QUERY,
+      variables: { first: 10 },
+    });
+    expect(queryResultDefault.data.workspaces.edges.length).toEqual(3);
     const queryResult = await queryAsAdmin({
       query: LIST_QUERY,
       variables: { first: 10 },
@@ -917,7 +922,6 @@ describe('Workspace member access behavior', () => {
       query: LIST_QUERY,
       variables: { first: 10, includeAuthorities: true },
     });
-    // includes workspaces created in publicDashboard-test.js
     expect(queryResult.data.workspaces.edges.length).toEqual(4);
   });
 
