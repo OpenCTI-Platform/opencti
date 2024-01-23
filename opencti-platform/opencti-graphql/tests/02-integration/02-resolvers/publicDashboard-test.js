@@ -1,6 +1,6 @@
 import { describe, expect, it, beforeAll, afterAll } from 'vitest';
 import gql from 'graphql-tag';
-import { editorQuery, queryAsAdmin } from '../../utils/testQuery';
+import { editorQuery, participantQuery, queryAsAdmin } from '../../utils/testQuery';
 import { toBase64 } from '../../../src/database/utils';
 
 const LIST_QUERY = gql`
@@ -269,6 +269,19 @@ describe('PublicDashboard resolver', () => {
         expect(queryResult.data.publicDashboardFieldPatch.name).toEqual(updatedName);
       });
 
+      it('User with EXPLORE_EXUPDATE_PUBLISH capability but no admin access right cannot update public dashboard', async () => {
+        const queryResult = await editorQuery({
+          query: UPDATE_QUERY,
+          variables: {
+            id: privateDashboardInternalId,
+            input: { key: 'name', value: ['updated name'] },
+          },
+        });
+        expect(queryResult).not.toBeNull();
+        expect(queryResult.errors.length).toEqual(1);
+        expect(queryResult.errors.at(0).message).toEqual('Cant find element to update');
+      });
+
       it('should delete publicDashboard', async () => {
         // Delete the publicDashboard
         await queryAsAdmin({
@@ -287,7 +300,7 @@ describe('PublicDashboard resolver', () => {
     });
 
     describe('PublicDashboard specific behaviour', () => {
-      it('User without capability should not create private dashboards', async () => {
+      it('User without EXPLORE_EXUPDATE_PUBLISH capability should not create private dashboards', async () => {
         // Create the publicDashboard
         const PUBLICDASHBOARD2_TO_CREATE = {
           input: {
@@ -295,7 +308,7 @@ describe('PublicDashboard resolver', () => {
             dashboard_id: privateDashboardInternalId,
           },
         };
-        const publicDashboard = await editorQuery({
+        const publicDashboard = await participantQuery({
           query: CREATE_QUERY,
           variables: PUBLICDASHBOARD2_TO_CREATE,
         });
@@ -304,8 +317,6 @@ describe('PublicDashboard resolver', () => {
         expect(publicDashboard.errors.length).toEqual(1);
         expect(publicDashboard.errors.at(0).name).toEqual('FORBIDDEN_ACCESS');
       });
-
-      it('Marking definition update by an admin should impact public dashboard', async () => {});
     });
   });
 });

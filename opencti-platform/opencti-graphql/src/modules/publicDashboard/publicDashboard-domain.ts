@@ -11,6 +11,7 @@ import type { EditInput, FilterGroup, PublicDashboardAddInput, QueryPublicDashbo
 import { FunctionalError, UnsupportedError } from '../../config/errors';
 import { SYSTEM_USER } from '../../utils/access';
 import { publishUserAction } from '../../listener/UserActionListener';
+import { initializeAuthorizedMembers } from '../workspace/workspace-domain';
 
 export const findById = (
   context: AuthContext,
@@ -38,7 +39,7 @@ export const findAll = (
   );
 };
 
-export const getPublicDashboard = (
+export const getPublicDashboardByUriKey = (
   context: AuthContext,
   uri_key: string,
 ) => {
@@ -69,6 +70,9 @@ export const addPublicDashboard = async (
     user,
     input.dashboard_id,
   );
+  if (!dashboard) {
+    throw FunctionalError('Cannot find dashboard');
+  }
   if (!dashboard.manifest) {
     throw FunctionalError('Cannot published empty dashboard');
   }
@@ -84,8 +88,12 @@ export const addPublicDashboard = async (
   // Create public manifest
   const publicManifest = toBase64(JSON.stringify(parsedManifest) ?? '{}');
 
-  // Create publicDashboard // TODO add auth members
-  const publicDashboardToCreate = { // TODO add marking max to input
+  const authorizedMembers = initializeAuthorizedMembers(
+    [{ id: user.id, access_right: 'admin' }],
+    user,
+  );
+  // Create publicDashboard
+  const publicDashboardToCreate = {
     name: input.name,
     description: input.description,
     public_manifest: publicManifest,
@@ -93,6 +101,8 @@ export const addPublicDashboard = async (
     dashboard_id: input.dashboard_id,
     user_id: user.id,
     uri_key: uuidv4(),
+    authorized_members: authorizedMembers,
+    allowed_markings: input.allowed_markings,
   };
 
   const created = await createEntity(

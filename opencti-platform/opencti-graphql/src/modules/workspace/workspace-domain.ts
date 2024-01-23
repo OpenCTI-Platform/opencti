@@ -152,7 +152,7 @@ const checkInvestigatedEntitiesInputs = async (
   }
 };
 
-const initializeAuthorizedMembers = (
+export const initializeAuthorizedMembers = (
   authorizedMembers: InputMaybe<MemberAccessInput[]> | undefined,
   user: AuthUser,
 ) => {

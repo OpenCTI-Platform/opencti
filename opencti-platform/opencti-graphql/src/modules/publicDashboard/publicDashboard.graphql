@@ -11,11 +11,11 @@ type PublicDashboard implements InternalObject & BasicObject {
   public_manifest: String
   private_manifest: String @auth(for: [KNOWLEDGE, EXPLORE])
   uri_key: String!
-  max_marking: [MarkingDefinition!]  @auth(for: [KNOWLEDGE, EXPLORE])
+  allowed_markings: [String!]  @auth(for: [KNOWLEDGE, EXPLORE])
   created_at: DateTime
   updated_at: DateTime
   editContext: [EditUserContext!]  @auth(for: [KNOWLEDGE, EXPLORE])
-  authorized_members: [MemberAccess!]
+  authorized_members: [MemberAccess!]  @auth(for: [KNOWLEDGE, EXPLORE])
 }
 
 # Ordering
@@ -43,7 +43,7 @@ type Query {
     filters: FilterGroup
     search: String
   ): PublicDashboardConnection @auth(for: [EXPLORE])
-  publicDashboardPublic(uri_key: String!): PublicDashboard
+  publicDashboardByUriKey(uri_key: String!): PublicDashboard
 }
 
 type PublicDashboardEdge {
@@ -52,10 +52,11 @@ type PublicDashboardEdge {
 }
 
 # Mutation
-input PublicDashboardAddInput { # TODO add marking max to input
+input PublicDashboardAddInput {
   name: String!
   description: String
   dashboard_id: String!
+  allowed_markings: [String!]
 }
 
 type Mutation {
