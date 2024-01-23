@@ -25,8 +25,12 @@ const PlatformCriticalAlertDialog: React.FC<PlatformCriticalAlertDialogProps> = 
   const [open, setOpen] = useState<boolean>(alerts.length > 0);
 
   // we only display the first alert if any.
-  // if (alerts.length > 0) {
   const alert = alerts[0];
+
+  if (!alert) {
+    return null;
+  }
+
   const users = (alert?.details?.users ?? []);
   const usersExcerpt = users.slice(0, 5);
   const restCount = Math.max(0, users.length - 5);
