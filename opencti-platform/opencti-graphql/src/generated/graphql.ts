@@ -17229,6 +17229,7 @@ export type Provider = {
 
 export type PublicDashboard = BasicObject & InternalObject & {
   __typename?: 'PublicDashboard';
+  allowed_markings?: Maybe<Array<Scalars['String']['output']>>;
   authorized_members?: Maybe<Array<MemberAccess>>;
   created_at?: Maybe<Scalars['DateTime']['output']>;
   dashboard_id?: Maybe<Scalars['String']['output']>;
@@ -17236,7 +17237,6 @@ export type PublicDashboard = BasicObject & InternalObject & {
   editContext?: Maybe<Array<EditUserContext>>;
   entity_type: Scalars['String']['output'];
   id: Scalars['ID']['output'];
-  max_marking?: Maybe<Array<MarkingDefinition>>;
   name: Scalars['String']['output'];
   parent_types: Array<Scalars['String']['output']>;
   private_manifest?: Maybe<Scalars['String']['output']>;
@@ -17248,6 +17248,7 @@ export type PublicDashboard = BasicObject & InternalObject & {
 };
 
 export type PublicDashboardAddInput = {
+  allowed_markings?: InputMaybe<Array<Scalars['String']['input']>>;
   dashboard_id: Scalars['String']['input'];
   description?: InputMaybe<Scalars['String']['input']>;
   name: Scalars['String']['input'];
@@ -17444,7 +17445,7 @@ export type Query = {
   position?: Maybe<Position>;
   positions?: Maybe<PositionConnection>;
   publicDashboard?: Maybe<PublicDashboard>;
-  publicDashboardPublic?: Maybe<PublicDashboard>;
+  publicDashboardByUriKey?: Maybe<PublicDashboard>;
   publicDashboards?: Maybe<PublicDashboardConnection>;
   publicStixCoreObjectsMultiTimeSeries?: Maybe<Array<Maybe<MultiTimeSeries>>>;
   publicStixCoreObjectsNumber?: Maybe<Number>;
@@ -18766,7 +18767,7 @@ export type QueryPublicDashboardArgs = {
 };
 
 
-export type QueryPublicDashboardPublicArgs = {
+export type QueryPublicDashboardByUriKeyArgs = {
   uri_key: Scalars['String']['input'];
 };
 
@@ -34442,6 +34443,7 @@ export type ProviderResolvers<ContextType = any, ParentType extends ResolversPar
 }>;
 
 export type PublicDashboardResolvers<ContextType = any, ParentType extends ResolversParentTypes['PublicDashboard'] = ResolversParentTypes['PublicDashboard']> = ResolversObject<{
+  allowed_markings?: Resolver<Maybe<Array<ResolversTypes['String']>>, ParentType, ContextType>;
   authorized_members?: Resolver<Maybe<Array<ResolversTypes['MemberAccess']>>, ParentType, ContextType>;
   created_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   dashboard_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -34449,7 +34451,6 @@ export type PublicDashboardResolvers<ContextType = any, ParentType extends Resol
   editContext?: Resolver<Maybe<Array<ResolversTypes['EditUserContext']>>, ParentType, ContextType>;
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
-  max_marking?: Resolver<Maybe<Array<ResolversTypes['MarkingDefinition']>>, ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   parent_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   private_manifest?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -34644,7 +34645,7 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   position?: Resolver<Maybe<ResolversTypes['Position']>, ParentType, ContextType, RequireFields<QueryPositionArgs, 'id'>>;
   positions?: Resolver<Maybe<ResolversTypes['PositionConnection']>, ParentType, ContextType, Partial<QueryPositionsArgs>>;
   publicDashboard?: Resolver<Maybe<ResolversTypes['PublicDashboard']>, ParentType, ContextType, RequireFields<QueryPublicDashboardArgs, 'id'>>;
-  publicDashboardPublic?: Resolver<Maybe<ResolversTypes['PublicDashboard']>, ParentType, ContextType, RequireFields<QueryPublicDashboardPublicArgs, 'uri_key'>>;
+  publicDashboardByUriKey?: Resolver<Maybe<ResolversTypes['PublicDashboard']>, ParentType, ContextType, RequireFields<QueryPublicDashboardByUriKeyArgs, 'uri_key'>>;
   publicDashboards?: Resolver<Maybe<ResolversTypes['PublicDashboardConnection']>, ParentType, ContextType, Partial<QueryPublicDashboardsArgs>>;
   publicStixCoreObjectsMultiTimeSeries?: Resolver<Maybe<Array<Maybe<ResolversTypes['MultiTimeSeries']>>>, ParentType, ContextType, RequireFields<QueryPublicStixCoreObjectsMultiTimeSeriesArgs, 'interval' | 'startDate' | 'uriKey' | 'widgetId'>>;
   publicStixCoreObjectsNumber?: Resolver<Maybe<ResolversTypes['Number']>, ParentType, ContextType, RequireFields<QueryPublicStixCoreObjectsNumberArgs, 'uriKey' | 'widgetId'>>;

@@ -1,6 +1,7 @@
 import type { BasicStoreEntity, StoreEntity } from '../../types/store';
 import type { StixDomainObject, StixOpenctiExtensionSDO } from '../../types/stix-common';
 import { STIX_EXT_OCTI } from '../../types/stix-extensions';
+import type { AuthorizedMember } from '../../utils/access';
 
 export const ENTITY_TYPE_PUBLIC_DASHBOARD = 'PublicDashboard';
 
@@ -13,6 +14,8 @@ export interface BasicStoreEntityPublicDashboard extends BasicStoreEntity {
   public_manifest: string;
   private_manifest: string;
   uri_key: string;
+  authorized_members: Array<AuthorizedMember>;
+  allowed_markings: Array<string>;
 }
 
 export interface StoreEntityPublicDashboard extends StoreEntity {
@@ -23,6 +26,8 @@ export interface StoreEntityPublicDashboard extends StoreEntity {
   public_manifest: string;
   private_manifest: string;
   uri_key: string;
+  authorized_members: Array<AuthorizedMember>;
+  allowed_markings: Array<string>;
 }
 // endregion
 
@@ -35,6 +40,7 @@ export interface StixPublicDashboard extends StixDomainObject {
   public_manifest: string;
   private_manifest: string;
   uri_key: string;
+  allowed_markings: Array<string>;
   extensions: {
     [STIX_EXT_OCTI] : StixOpenctiExtensionSDO
   };

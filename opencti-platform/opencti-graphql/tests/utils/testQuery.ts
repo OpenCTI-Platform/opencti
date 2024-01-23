@@ -91,7 +91,7 @@ export const ROLE_EDITOR: Role = {
   id: generateStandardId(ENTITY_TYPE_ROLE, { name: 'Access knowledge/exploration and edit/delete' }),
   name: 'Access knowledge/exploration and edit/delete',
   description: 'Knowledge/exploration edit/delete',
-  capabilities: ['KNOWLEDGE_KNUPDATE_KNDELETE', 'EXPLORE_EXUPDATE_EXDELETE']
+  capabilities: ['KNOWLEDGE_KNUPDATE_KNDELETE', 'EXPLORE_EXUPDATE_EXDELETE', 'EXPLORE_EXUPDATE_PUBLISH']
 };
 
 export const ROLE_SECURITY: Role = {

@@ -15,7 +15,7 @@ const publicDashboardQuery = graphql`
   query PublicDashboardQuery(
     $uri_key: String!
   ) {
-    publicDashboardPublic(
+    publicDashboardByUriKey(
       uri_key: $uri_key
     ) {
       name
@@ -36,7 +36,7 @@ const PublicDashboardComponent = ({
   const ReactGridLayout = useMemo(() => WidthProvider(RGL), []);
 
   const publicDashboard = usePreloadedQuery(publicDashboardQuery, queryRef);
-  const manifest = publicDashboard.publicDashboardPublic?.public_manifest;
+  const manifest = publicDashboard.publicDashboardByUriKey?.public_manifest;
   const parsedManifest: PublicManifest = JSON.parse(fromB64(manifest ?? '{}'));
   const { widgets, config } = parsedManifest;
 

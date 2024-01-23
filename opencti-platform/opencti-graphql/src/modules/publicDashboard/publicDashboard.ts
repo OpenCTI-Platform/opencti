@@ -4,6 +4,7 @@ import type { ModuleDefinition } from '../../schema/module';
 import { registerDefinition } from '../../schema/module';
 import { ENTITY_TYPE_PUBLIC_DASHBOARD, type StixPublicDashboard, type StoreEntityPublicDashboard } from './publicDashboard-types';
 import convertPublicDashboardToStix from './publicDashboard-converter';
+import { authorizedMembers } from '../../schema/attribute-definition';
 
 export const PUBLIC_DASHBOARD_DEFINITION: ModuleDefinition<StoreEntityPublicDashboard, StixPublicDashboard> = {
   type: {
@@ -24,6 +25,8 @@ export const PUBLIC_DASHBOARD_DEFINITION: ModuleDefinition<StoreEntityPublicDash
     { name: 'public_manifest', label: 'Public manifest', type: 'string', format: 'short', mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false, isFilterable: false },
     { name: 'private_manifest', label: 'Public manifest', type: 'string', format: 'short', mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false, isFilterable: false },
     { name: 'uri_key', label: 'Uri key', type: 'string', format: 'short', mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false, isFilterable: false },
+    { name: 'allowed_markings', label: 'Allowed markings', type: 'string', format: 'short', mandatoryType: 'internal', editDefault: false, multiple: true, upsert: false, isFilterable: false },
+    authorizedMembers
   ],
   relations: [],
   representative: (stix: StixPublicDashboard) => {

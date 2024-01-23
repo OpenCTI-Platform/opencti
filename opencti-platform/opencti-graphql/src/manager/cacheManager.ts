@@ -39,6 +39,7 @@ import type { BasicStoreEntityPlaybook, ComponentDefinition } from '../modules/p
 import { ENTITY_TYPE_PLAYBOOK } from '../modules/playbook/playbook-types';
 import { isNotEmptyField } from '../database/utils';
 import { findAllPlaybooks } from '../modules/playbook/playbook-domain';
+import { type BasicStoreEntityPublicDashboard, ENTITY_TYPE_PUBLIC_DASHBOARD } from '../modules/publicDashboard/publicDashboard-types';
 
 const workflowStatuses = (context: AuthContext) => {
   const reloadStatuses = async () => {
@@ -180,6 +181,12 @@ const platformNotifiers = (context: AuthContext) => {
   };
   return { values: null, fn: reloadNotifiers };
 };
+const platformPublicDashboards = (context: AuthContext) => {
+  const reloadPublicDashboards = async () => {
+    return listAllEntities<BasicStoreEntityPublicDashboard>(context, SYSTEM_USER, [ENTITY_TYPE_PUBLIC_DASHBOARD], { connectionFormat: false });
+  };
+  return { values: null, fn: reloadPublicDashboards };
+};
 
 const initCacheManager = () => {
   let subscribeIdentifier: { topic: string; unsubscribe: () => void; };
@@ -199,6 +206,7 @@ const initCacheManager = () => {
     writeCacheForEntity(ENTITY_TYPE_RESOLVED_FILTERS, platformResolvedFilters(context));
     writeCacheForEntity(ENTITY_TYPE_STREAM_COLLECTION, platformStreams(context));
     writeCacheForEntity(ENTITY_TYPE_NOTIFIER, platformNotifiers(context));
+    writeCacheForEntity(ENTITY_TYPE_PUBLIC_DASHBOARD, platformPublicDashboards(context));
   };
   const resetCacheContent = async (event: { instance: StoreEntity | StoreRelation }) => {
     const { instance } = event;

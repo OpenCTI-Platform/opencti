@@ -7338,10 +7338,10 @@ type Query {
   csvMapper(id: String!): CsvMapper
   csvMappers(first: Int, after: ID, orderBy: CsvMapperOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): CsvMapperConnection
   csvMapperTest(configuration: String!, content: String!): CsvMapperTestResult
+  csvMapperSchemaAttributes: [CsvMapperSchemaAttributes!]!
   publicDashboard(id: String!): PublicDashboard
   publicDashboards(first: Int, after: ID, orderBy: PublicDashboardsOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): PublicDashboardConnection
-  publicDashboardPublic(uri_key: String!): PublicDashboard
-  csvMapperSchemaAttributes: [CsvMapperSchemaAttributes!]!
+  publicDashboardByUriKey(uri_key: String!): PublicDashboard
 }
 
 type Subscription {
@@ -11081,7 +11081,7 @@ type PublicDashboard implements InternalObject & BasicObject {
   public_manifest: String
   private_manifest: String
   uri_key: String!
-  max_marking: [MarkingDefinition!]
+  allowed_markings: [String!]
   created_at: DateTime
   updated_at: DateTime
   editContext: [EditUserContext!]
@@ -11109,6 +11109,7 @@ input PublicDashboardAddInput {
   name: String!
   description: String
   dashboard_id: String!
+  allowed_markings: [String!]
 }
 
 enum Tone {
