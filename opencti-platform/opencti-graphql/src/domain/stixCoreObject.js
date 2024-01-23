@@ -4,7 +4,6 @@ import {
   createRelationRaw,
   deleteElementById,
   distributionEntities,
-  loadEntity,
   storeLoadByIdWithRefs,
   timeSeriesEntities
 } from '../database/middleware';
@@ -43,13 +42,13 @@ import { ENTITY_TYPE_EXTERNAL_REFERENCE, ENTITY_TYPE_MARKING_DEFINITION } from '
 import { createWork, workToExportFile } from './work';
 import { pushToConnector } from '../database/rabbitmq';
 import { now } from '../utils/format';
-import { ENTITY_TYPE_CONNECTOR, ENTITY_TYPE_USER } from '../schema/internalObject';
+import { ENTITY_TYPE_CONNECTOR } from '../schema/internalObject';
 import { deleteFile, storeFileConverter, upload } from '../database/file-storage';
 import { findById as documentFindById } from '../modules/internal/document/document-domain';
 import { elCount, elUpdateElement } from '../database/engine';
 import { generateStandardId, getInstanceIds } from '../schema/identifier';
 import { askEntityExport, askListExport, exportTransformFilters } from './stix';
-import { fromBase64, isEmptyField, isNotEmptyField, READ_ENTITIES_INDICES, READ_INDEX_INFERRED_ENTITIES } from '../database/utils';
+import { isEmptyField, isNotEmptyField, READ_ENTITIES_INDICES, READ_INDEX_INFERRED_ENTITIES } from '../database/utils';
 import { RELATION_RELATED_TO, STIX_CORE_RELATIONSHIPS } from '../schema/stixCoreRelationship';
 import { ENTITY_TYPE_CONTAINER_CASE } from '../modules/case/case-types';
 import { getEntitySettingFromCache } from '../modules/entitySetting/entitySetting-utils';
@@ -58,10 +57,11 @@ import { buildContextDataForFile, publishUserAction } from '../listener/UserActi
 import { extractEntityRepresentativeName } from '../database/entity-representative';
 import { addFilter, extractFilterGroupValues, findFiltersFromKey } from '../utils/filtering/filtering-utils';
 import { INSTANCE_REGARDING_OF, specialFilterKeysWhoseValueToResolve } from '../utils/filtering/filtering-constants';
+import { getWidgetsAndUser } from '../utils/publicDashboard';
 import { schemaRelationsRefDefinition } from '../schema/schema-relationsRef';
 import { SYSTEM_USER } from '../utils/access';
 import { ENTITY_TYPE_PUBLIC_DASHBOARD } from '../modules/publicDashboard/publicDashboard-types';
-import { getEntitiesMapFromCache } from '../database/cache';
+import { getEntitiesListFromCache, getEntitiesMapFromCache } from '../database/cache';
 import { ENTITY_TYPE_CONTAINER_GROUPING } from '../modules/grouping/grouping-types';
 import { getEntitiesMapFromCache } from '../database/cache';
 
@@ -376,7 +376,7 @@ export const publicStixCoreObjectsNumber = async (context, args) => {
   widgetConfigs.map((widgetConfig) => parameters.push({
     startDate: args.startDate,
     endDate: args.endDate,
-    filters: widgetConfig.filters,
+    filters,
     onlyInferred: args.onlyInferred,
     search: args.search,
     types: [
