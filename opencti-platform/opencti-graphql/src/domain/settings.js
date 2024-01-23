@@ -6,7 +6,7 @@ import conf, { ACCOUNT_STATUSES, BUS_TOPICS, ENABLED_DEMO_MODE, getBaseUrl, PLAT
 import { delEditContext, getClusterInstances, getRedisVersion, notify, setEditContext } from '../database/redis';
 import { isRuntimeSortEnable, searchEngineVersion } from '../database/engine';
 import { getRabbitMQVersion } from '../database/rabbitmq';
-import { ENTITY_TYPE_SETTINGS, ENTITY_TYPE_USER } from '../schema/internalObject';
+import { ENTITY_TYPE_GROUP, ENTITY_TYPE_SETTINGS, ENTITY_TYPE_USER } from '../schema/internalObject';
 import { isUserHasCapability, SETTINGS_SET_ACCESSES, SYSTEM_USER } from '../utils/access';
 import { storeLoadById } from '../database/middleware-loader';
 import { INTERNAL_SECURITY_PROVIDER, PROVIDERS } from '../config/providers';
@@ -159,23 +159,21 @@ export const settingDeleteMessage = async (context, user, settingsId, messageId)
 };
 
 export const getCriticalAlerts = async (context, user) => {
-  // only 1 critical alert is checked: null effective confidence levels on users
+  // only 1 critical alert is checked: null confidence level on groups
   // it's for admins only (only them can take action)
   if (isUserHasCapability(user, SETTINGS_SET_ACCESSES)) {
-    const allUsers = await listAllThings(context, user, [ENTITY_TYPE_USER], {});
-    // need completed users to have computed effective level
-    const allCompleteUsers = await Promise.all(allUsers.map(async (usr) => await buildCompleteUser(context, usr)));
+    const allGroups = await listAllThings(context, user, [ENTITY_TYPE_GROUP], {});
     // if at least one user have a null effective confidence level, it's an issue
-    const usersWithNull = allCompleteUsers.filter((usr) => usr.effective_confidence_level === null);
-    if (usersWithNull.length === 0) {
+    const groupsWithNull = allGroups.filter((group) => !group.group_confidence_level);
+    if (groupsWithNull.length === 0) {
       return [];
     }
     return [{
-      type: 'USER_WITH_NULL_EFFECTIVE_LEVEL',
+      type: 'GROUP_WITH_NULL_EFFECTIVE_LEVEL',
       // default message for API users
-      message: 'Some users have no effective confidence level, they will not be able to use the platform properly. Please configure these users using groups or organization confidence level, or individual confidence level.',
+      message: 'Some groups have field group_confidence_level to null, members will not be able to use the platform properly.',
       details: {
-        users: usersWithNull,
+        groups: groupsWithNull,
       }
     }];
   }

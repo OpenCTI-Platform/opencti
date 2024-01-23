@@ -1067,10 +1067,10 @@ type SettingsMessage {
 }
 
 enum PlatformCriticalAlertType {
-  USER_WITH_NULL_EFFECTIVE_LEVEL
+  GROUP_WITH_NULL_EFFECTIVE_LEVEL
 }
 type PlatformCriticalAlertDetails {
-  users: [User!]!
+  groups: [Group!]!
 }
 type PlatformCriticalAlert {
   message: String!

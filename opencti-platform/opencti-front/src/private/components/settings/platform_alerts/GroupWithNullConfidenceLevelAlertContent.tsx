@@ -8,22 +8,22 @@ import DialogActions from '@mui/material/DialogActions';
 import { RootSettings$data } from '../../../__generated__/RootSettings.graphql';
 import { useFormatter } from '../../../../components/i18n';
 
-type UserWithNullEffectiveConfidenceLevelAlertContentProps = {
+type GroupWithNullConfidenceLevelAlertContentProps = {
   alert: RootSettings$data['platform_critical_alerts'][0]
   closeHandler: () => void
 };
 
-const UserWithNullEffectiveConfidenceLevelAlertContent: React.FC<UserWithNullEffectiveConfidenceLevelAlertContentProps> = ({ alert, closeHandler }) => {
+const GroupWithNullConfidenceLevelAlertContent: React.FC<GroupWithNullConfidenceLevelAlertContentProps> = ({ alert, closeHandler }) => {
   const { t_i18n } = useFormatter();
   const navigate = useNavigate();
 
-  const users = (alert?.details?.users ?? []);
-  const usersExcerpt = users.slice(0, 5);
-  const restCount = Math.max(0, users.length - 5);
+  const groups = (alert?.details?.groups ?? []);
+  const groupsExcerpt = groups.slice(0, 5);
+  const restCount = Math.max(0, groups.length - 5);
 
   const goToSettingsHandler = () => {
     closeHandler();
-    navigate('/dashboard/settings/accesses/users');
+    navigate('/dashboard/settings/accesses/groups');
   };
 
   return (
@@ -41,19 +41,19 @@ const UserWithNullEffectiveConfidenceLevelAlertContent: React.FC<UserWithNullEff
             },
           )}
         </DialogContentText>
-        { usersExcerpt.length > 0 && (
+        { groupsExcerpt.length > 0 && (
         <DialogContentText>
-          <Box component="span">{t_i18n('The following user(s) require your attention:')}</Box>
+          <Box component="span">{t_i18n('The following groups(s) require your attention:')}</Box>
           &nbsp;
-          {usersExcerpt.map((user, index) => (
+          {groupsExcerpt.map((user, index) => (
             <Fragment key={`${user.id}-${index}`}>
               <Link
-                to={`/dashboard/settings/accesses/users/${user.id}`}
+                to={`/dashboard/settings/accesses/groups/${user.id}`}
                 onClick={closeHandler}
               >
                 {user.name}
               </Link>
-              {index !== usersExcerpt.length - 1 && <span>,&nbsp;</span>}
+              {index !== groupsExcerpt.length - 1 && <span>,&nbsp;</span>}
             </Fragment>
           ))}
           { restCount > 0 && (
@@ -73,4 +73,4 @@ const UserWithNullEffectiveConfidenceLevelAlertContent: React.FC<UserWithNullEff
   );
 };
 
-export default UserWithNullEffectiveConfidenceLevelAlertContent;
+export default GroupWithNullConfidenceLevelAlertContent;

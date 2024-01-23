@@ -3,7 +3,7 @@ import Dialog from '@mui/material/Dialog';
 import DialogContent from '@mui/material/DialogContent';
 import DialogTitle from '@mui/material/DialogTitle';
 
-import UserWithNullEffectiveConfidenceLevelAlertContent from '@components/settings/platform_alerts/UserWithNullEffectiveConfidenceLevelAlertContent';
+import GroupWithNullConfidenceLevelAlertContent from '@components/settings/platform_alerts/GroupWithNullConfidenceLevelAlertContent';
 import { useFormatter } from '../../../../components/i18n';
 import { RootSettings$data } from '../../../__generated__/RootSettings.graphql';
 import Transition from '../../../../components/Transition';
@@ -32,8 +32,8 @@ const PlatformCriticalAlertDialog: React.FC<PlatformCriticalAlertDialogProps> = 
 
   const getDialogContentFromAlertType = () => {
     switch (alert.type) {
-      case 'USER_WITH_NULL_EFFECTIVE_LEVEL': {
-        return <UserWithNullEffectiveConfidenceLevelAlertContent alert={alert} closeHandler={closeHandler} />;
+      case 'GROUP_WITH_NULL_EFFECTIVE_LEVEL': {
+        return <GroupWithNullConfidenceLevelAlertContent alert={alert} closeHandler={closeHandler} />;
       }
       default:
         return <DialogContent>{t_i18n('Unknown configuration error in the platform.')}</DialogContent>;

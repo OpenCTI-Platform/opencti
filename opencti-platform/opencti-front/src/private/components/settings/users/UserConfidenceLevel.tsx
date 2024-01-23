@@ -2,6 +2,8 @@ import React from 'react';
 import { User_user$data } from '@components/settings/users/__generated__/User_user.graphql';
 import { Link } from 'react-router-dom-v5-compat';
 import Typography from '@mui/material/Typography';
+import { ReportGmailerrorred } from '@mui/icons-material';
+import Tooltip from '@mui/material/Tooltip';
 import { useFormatter } from '../../../../components/i18n';
 
 type Data_UserConfidenceLevel = User_user$data['user_confidence_level'];
@@ -27,7 +29,15 @@ const UserConfidenceLevel: React.FC<UserConfidenceLevelProps> = ({ confidenceLev
           {t_i18n('Max Confidence Level')}
         </Typography>
         <div className="clearfix"/>
-        <span>-</span>
+        { showNullAsError ? (
+          <Tooltip
+            title={t_i18n("No confidence level found in this user's groups, and no confidence level defined at the user level.")}
+          >
+            <ReportGmailerrorred fontSize={'small'} color={'error'}/>
+          </Tooltip>
+        ) : (
+          <span>-</span>
+        )}
       </>
     );
   }

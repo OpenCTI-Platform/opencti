@@ -31,7 +31,7 @@ const rootSettingsFragment = graphql`
       message
       type
       details {
-        users {
+        groups {
           id 
           name 
         }

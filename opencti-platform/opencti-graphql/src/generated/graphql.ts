@@ -16315,11 +16315,11 @@ export type PlatformCriticalAlert = {
 
 export type PlatformCriticalAlertDetails = {
   __typename?: 'PlatformCriticalAlertDetails';
-  users: Array<User>;
+  groups: Array<Group>;
 };
 
 export enum PlatformCriticalAlertType {
-  UserWithNullEffectiveLevel = 'USER_WITH_NULL_EFFECTIVE_LEVEL'
+  GroupWithNullEffectiveLevel = 'GROUP_WITH_NULL_EFFECTIVE_LEVEL'
 }
 
 export type PlayBookExecution = {
@@ -27671,7 +27671,7 @@ export type ResolversTypes = ResolversObject<{
   PhoneNumber: ResolverTypeWrapper<Omit<PhoneNumber, 'cases' | 'containers' | 'createdBy' | 'groupings' | 'indicators' | 'notes' | 'objectOrganization' | 'observedData' | 'opinions' | 'reports' | 'stixCoreRelationships'> & { cases?: Maybe<ResolversTypes['CaseConnection']>, containers?: Maybe<ResolversTypes['ContainerConnection']>, createdBy?: Maybe<ResolversTypes['Identity']>, groupings?: Maybe<ResolversTypes['GroupingConnection']>, indicators?: Maybe<ResolversTypes['IndicatorConnection']>, notes?: Maybe<ResolversTypes['NoteConnection']>, objectOrganization?: Maybe<ResolversTypes['OrganizationConnection']>, observedData?: Maybe<ResolversTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversTypes['OpinionConnection']>, reports?: Maybe<ResolversTypes['ReportConnection']>, stixCoreRelationships?: Maybe<ResolversTypes['StixCoreRelationshipConnection']> }>;
   PhoneNumberAddInput: PhoneNumberAddInput;
   PlatformCriticalAlert: ResolverTypeWrapper<Omit<PlatformCriticalAlert, 'details'> & { details?: Maybe<ResolversTypes['PlatformCriticalAlertDetails']> }>;
-  PlatformCriticalAlertDetails: ResolverTypeWrapper<Omit<PlatformCriticalAlertDetails, 'users'> & { users: Array<ResolversTypes['User']> }>;
+  PlatformCriticalAlertDetails: ResolverTypeWrapper<Omit<PlatformCriticalAlertDetails, 'groups'> & { groups: Array<ResolversTypes['Group']> }>;
   PlatformCriticalAlertType: PlatformCriticalAlertType;
   PlayBookExecution: ResolverTypeWrapper<PlayBookExecution>;
   PlayBookExecutionStep: ResolverTypeWrapper<PlayBookExecutionStep>;
@@ -28360,7 +28360,7 @@ export type ResolversParentTypes = ResolversObject<{
   PhoneNumber: Omit<PhoneNumber, 'cases' | 'containers' | 'createdBy' | 'groupings' | 'indicators' | 'notes' | 'objectOrganization' | 'observedData' | 'opinions' | 'reports' | 'stixCoreRelationships'> & { cases?: Maybe<ResolversParentTypes['CaseConnection']>, containers?: Maybe<ResolversParentTypes['ContainerConnection']>, createdBy?: Maybe<ResolversParentTypes['Identity']>, groupings?: Maybe<ResolversParentTypes['GroupingConnection']>, indicators?: Maybe<ResolversParentTypes['IndicatorConnection']>, notes?: Maybe<ResolversParentTypes['NoteConnection']>, objectOrganization?: Maybe<ResolversParentTypes['OrganizationConnection']>, observedData?: Maybe<ResolversParentTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversParentTypes['OpinionConnection']>, reports?: Maybe<ResolversParentTypes['ReportConnection']>, stixCoreRelationships?: Maybe<ResolversParentTypes['StixCoreRelationshipConnection']> };
   PhoneNumberAddInput: PhoneNumberAddInput;
   PlatformCriticalAlert: Omit<PlatformCriticalAlert, 'details'> & { details?: Maybe<ResolversParentTypes['PlatformCriticalAlertDetails']> };
-  PlatformCriticalAlertDetails: Omit<PlatformCriticalAlertDetails, 'users'> & { users: Array<ResolversParentTypes['User']> };
+  PlatformCriticalAlertDetails: Omit<PlatformCriticalAlertDetails, 'groups'> & { groups: Array<ResolversParentTypes['Group']> };
   PlayBookExecution: PlayBookExecution;
   PlayBookExecutionStep: PlayBookExecutionStep;
   Playbook: BasicStoreEntityPlaybook;
@@ -33653,7 +33653,7 @@ export type PlatformCriticalAlertResolvers<ContextType = any, ParentType extends
 }>;
 
 export type PlatformCriticalAlertDetailsResolvers<ContextType = any, ParentType extends ResolversParentTypes['PlatformCriticalAlertDetails'] = ResolversParentTypes['PlatformCriticalAlertDetails']> = ResolversObject<{
-  users?: Resolver<Array<ResolversTypes['User']>, ParentType, ContextType>;
+  groups?: Resolver<Array<ResolversTypes['Group']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
