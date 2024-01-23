@@ -2,57 +2,16 @@ kind: pipeline
 type: docker
 name: opencti-tests
 
-steps:
-#  Launch api tests on master
-  - name: api-tests-on-master
-    image: nikolaik/python-nodejs:python3.11-nodejs20-alpine
-    volumes:
-      - name: cache-node-backend
-        path: /drone/src/opencti-platform/opencti-graphql/node_modules
-      - name: cache-python
-        path: /usr/lib/python3.11
-    environment:
-      APP__BASE_URL: http://api-tests:4010/
-      APP__ADMIN__PASSWORD: admin
-      APP__SYNC_RAW_START_REMOTE_URI: http://opencti-raw-start:4100/graphql
-      APP__SYNC_LIVE_START_REMOTE_URI: http://opencti-live-start:4200/graphql
-      APP__SYNC_DIRECT_START_REMOTE_URI: http://opencti-direct-start:4300/graphql
-      APP__SYNC_RESTORE_START_REMOTE_URI: http://opencti-restore-start:4400/graphql
-      APP__ADMIN__TOKEN: bfa014e0-e02e-4aa6-a42b-603b19dcf159
-      REDIS__HOSTNAME: redis
-      ELASTICSEARCH__URL: http://elastic:9200
-      MINIO__ENDPOINT: minio
-      RABBITMQ__HOSTNAME: rabbitmq
-      EXPIRATION_SCHEDULER__ENABLED: false
-      SUBSCRIPTION_SCHEDULER__ENABLED: false
-      SMTP__HOSTNAME: smtp.ethereal.email
-      SMTP__PORT: 587
-      SMTP__USERNAME: jennyfer.mraz@ethereal.email
-      SMTP__PASSWORD: frhJ2mSPTfaEutpbug
-      PYTHONUNBUFFERED: 1
-    commands:
-      - apk add build-base git libffi-dev cargo
-      - pip3 install --upgrade setuptools
-      - BRANCH=$(echo $DRONE_COMMIT_BRANCH | cut -d "/" -f 2)
-      - CLIENT_PYTHON_BRANCH=$([[ "$(echo "$(git ls-remote --heads https://github.com/OpenCTI-Platform/client-python.git opencti/$BRANCH)")" != '' ]] && echo opencti/$BRANCH || echo 'master')
-      - CONNECTOR_BRANCH=$([[ $(git ls-remote --heads https://github.com/OpenCTI-Platform/connectors.git opencti/$BRANCH) ]] && echo opencti/$BRANCH || echo 'master')
-      - git clone -b $CONNECTOR_BRANCH https://github.com/OpenCTI-Platform/connectors.git opencti-connectors
-      - cd opencti-platform/opencti-graphql
-      - yarn install
-      - yarn build
-      - yarn check-ts
-      - yarn lint
-      - pip3 install --upgrade --force git+https://github.com/OpenCTI-Platform/client-python@$CLIENT_PYTHON_BRANCH
-      - NODE_OPTIONS=--max_old_space_size=8192 yarn test
-    when:
-      branch:
-        - master
-      event:
-        exclude:
-          - pull_request
+trigger:
+  branch:
+    include:
+      - master
+  event:
+    include:
+      - pull_request
 
-  #  Launch api tests on Pull Request
-  - name: api-tests-on-pull-request
+steps:
+  - name: api-tests
     image: nikolaik/python-nodejs:python3.11-nodejs20-alpine
     volumes:
     - name: cache-node-backend
@@ -92,37 +51,15 @@ steps:
       - yarn lint
       - pip3 install --upgrade --force git+https://github.com/OpenCTI-Platform/client-python@$CLIENT_PYTHON_BRANCH
       - NODE_OPTIONS=--max_old_space_size=8192 yarn test
-    when:
-      event:
-        - pull_request
 
-  #  Launch api coverage on Master
-  - name: api-coverage-on-master
+  - name: api-coverage
     image: plugins/codecov
     settings:
       token: e5c6fb05-76f7-4985-86cf-ff843d5d103e
       paths:
         - opencti-platform/opencti-graphql/coverage
-    when:
-      branch:
-        - master
-      event:
-        exclude:
-          - pull_request
 
-  #  Launch api coverage on Pull Request
-  - name: api-coverage-on-pull-request
-    image: plugins/codecov
-    settings:
-      token: e5c6fb05-76f7-4985-86cf-ff843d5d103e
-      paths:
-        - opencti-platform/opencti-graphql/coverage
-    when:
-      event:
-        - pull_request
-
-  #  Launch frontend tests on Master
-  - name: frontend-tests-on-master
+  - name: frontend-tests
     image: node:20-alpine
     volumes:
     - name: cache-node-frontend
@@ -138,33 +75,6 @@ steps:
       - yarn check-ts
       - yarn lint
       - NODE_OPTIONS=--max_old_space_size=8192 yarn test
-    when:
-      branch:
-        - master
-      event:
-        exclude:
-          - pull_request
-
-  #  Launch frontend tests on Pull Request
-  - name: frontend-tests-on-pull-request
-    image: node:20-alpine
-    volumes:
-      - name: cache-node-frontend
-        path: /drone/src/opencti-platform/opencti-front/node_modules
-      - name: cache-python
-        path: /usr/lib/python3.11
-    commands:
-      - apk add git tini gcc g++ make musl-dev cargo python3 python3-dev postfix postfix-pcre
-      - npm install -g node-gyp
-      - cd opencti-platform/opencti-front
-      - yarn install
-      - yarn build
-      - yarn check-ts
-      - yarn lint
-      - NODE_OPTIONS=--max_old_space_size=8192 yarn test
-    when:
-      event:
-        - pull_request
 
   - name: build-circleci
     image: curlimages/curl
@@ -174,8 +84,6 @@ steps:
       CIRCLECI_TOKEN:
         from_secret: circleci_token
     when:
-      branch:
-        - master
       event:
         exclude:
           - pull_request
