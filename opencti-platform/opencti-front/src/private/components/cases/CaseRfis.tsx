@@ -55,7 +55,7 @@ const CaseRfis: FunctionComponent<CaseRfisProps> = () => {
   } as unknown as CaseRfiLinesCasesPaginationQuery$variables;
   const queryRef = useQueryLoading<CaseRfiLinesCasesPaginationQuery>(
     caseRfisLinesQuery,
-    paginationOptions,
+    queryPaginationOptions,
   );
 
   const {
