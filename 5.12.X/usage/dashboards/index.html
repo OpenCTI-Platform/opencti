@@ -896,6 +896,33 @@
   
   
     <li class="md-nav__item">
+      <a href="../../deployment/managers/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    
+  
+    Platform managers
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../../deployment/clustering/" class="md-nav__link">
         
   
@@ -4586,11 +4613,12 @@
 <h2 id="dashboard-overview">Dashboard overview</h2>
 <p>You have the flexibility to tailor the arrangement of <a href="../widgets/">widgets</a> on your dashboard, optimizing organization and workflow efficiency. Widgets can be intuitively placed to highlight key information. Additionally, you can resize widgets from the bottom right corner based on the importance of the information, enabling adaptation to specific analytical needs. This technical flexibility ensures a fluid, visually optimized user experience.</p>
 <p>Moreover, the top banner of the dashboard offers a convenient feature to configure the timeframe for displayed data. This can be accomplished through the selection of a relative time period, such as "Last 7 days", or by specifying fixed "Start" and "End" dates, allowing users to precisely control the temporal scope of the displayed information.</p>
-<p><a class="glightbox" href="../assets/dashboard-overview.png" data-type="image" data-width="100%" data-height="auto" data-desc-position="bottom"><img alt="Dashboard overview" src="../assets/dashboard-overview.png" /></a></p>
+<p><a class="glightbox" href="../assets/dashboard-overview.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="Dashboard overview" src="../assets/dashboard-overview.png" /></a></p>
+<p><a id="access-control-section"></a></p>
 <h2 id="access-control">Access control</h2>
 <p>In OpenCTI, the power to create custom dashboards comes with a flexible access control system, allowing users to tailor visibility and rights according to their collaborative needs.</p>
 <p>When a user crafts a personalized dashboard, by default, it remains visible only to the dashboard creator. At this stage, the creator holds administrative access rights. However, they can extend access and rights to others using the "Manage access" button, denoted by a locker icon, located at the top right of the dashboard page.</p>
-<p><a class="glightbox" href="../assets/manage-access-button.png" data-type="image" data-width="100%" data-height="auto" data-desc-position="bottom"><img alt="Manage access button" src="../assets/manage-access-button.png" /></a></p>
+<p><a class="glightbox" href="../assets/manage-access-button.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="Manage access button" src="../assets/manage-access-button.png" /></a></p>
 <p><strong>Levels of access:</strong></p>
 <ul>
 <li>View: Access to view the dashboard. </li>
@@ -4598,7 +4626,7 @@
 <li>Manage: Edit + Ability to delete the dashboard and to control user access and rights.</li>
 </ul>
 <p>It's crucial to emphasize that at least one user must retain admin access to ensure ongoing management capabilities for the dashboard.</p>
-<p><a class="glightbox" href="../assets/manage-access-dialog.png" data-type="image" data-width="100%" data-height="auto" data-desc-position="bottom"><img alt="Manage access dialog" src="../assets/manage-access-dialog.png" /></a> </p>
+<p><a class="glightbox" href="../assets/manage-access-dialog.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="Manage access dialog" src="../assets/manage-access-dialog.png" /></a> </p>
 <div class="admonition note">
 <p class="admonition-title">Knowledge access restriction</p>
 <p>The platform's data access restrictions also apply to dashboards. The data displayed in the widgets is subject to the user's access rights within the platform. Therefore, an admin user will not see the same results in the widgets as a user with limited access, such as viewing only TLP:CLEAR data (assuming the platform contains data beyond TLP:CLEAR). </p>
@@ -4612,15 +4640,15 @@
 <li>Click on the burger menu button at the end of the dashboard line.</li>
 <li>Select <code>Export</code>.</li>
 </ol>
-<p><a class="glightbox" href="../assets/export-dashboard-option.png" data-type="image" data-width="100%" data-height="auto" data-desc-position="bottom"><img alt="Export dashboard option" src="../assets/export-dashboard-option.png" /></a></p>
+<p><a class="glightbox" href="../assets/export-dashboard-option.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="Export dashboard option" src="../assets/export-dashboard-option.png" /></a></p>
 <p>To export a widget, the same mechanism is used, but from the burger menu button in the upper right-hand corner of the widget.</p>
-<p><a class="glightbox" href="../assets/export-widget-option.png" data-type="image" data-width="100%" data-height="auto" data-desc-position="bottom"><img alt="Export widget option" src="../assets/export-widget-option.png" /></a></p>
+<p><a class="glightbox" href="../assets/export-widget-option.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="Export widget option" src="../assets/export-widget-option.png" /></a></p>
 <p>To export a dashboard configuration from the dashboard view:</p>
 <ol>
 <li>Navigate to the desired dashboard.</li>
 <li>Click on the <code>Export</code> button (file with an arrow pointing to the top right corner) located in the top-right corner of the dashboard.</li>
 </ol>
-<p><a class="glightbox" href="../assets/export-json-button.png" data-type="image" data-width="100%" data-height="auto" data-desc-position="bottom"><img alt="Export JSON button" src="../assets/export-json-button.png" /></a></p>
+<p><a class="glightbox" href="../assets/export-json-button.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="Export JSON button" src="../assets/export-json-button.png" /></a></p>
 <h4 id="configuration-file">Configuration file</h4>
 <p>The dashboard configuration will be saved as a JSON file, with the title formatted as <code>[YYYYMMDD]_octi_dashboard_[dashboard title]</code>. The expected configuration file content is as follows:</p>
 <div class="highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="p">{</span>
@@ -4643,7 +4671,7 @@
 <p class="admonition-title">Source platform-related filters</p>
 <p>When exporting a dashboard or widget configuration, all filters will be exported as is. Filters on objects that do not exist in the receiving platform will need manual deletion after import. Filters to be deleted can be identified by their "delete" barred value.</p>
 </div>
-<p><a class="glightbox" href="../assets/filter-to-delete.png" data-type="image" data-width="100%" data-height="auto" data-desc-position="bottom"><img alt="Filter to delete" src="../assets/filter-to-delete.png" /></a></p>
+<p><a class="glightbox" href="../assets/filter-to-delete.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="Filter to delete" src="../assets/filter-to-delete.png" /></a></p>
 <h3 id="import">Import</h3>
 <p>Dashboards can be imported from the custom dashboards list:</p>
 <ol>
@@ -4651,9 +4679,9 @@
 <li>Click on the <code>Import dashboard</code> button (cloud with an upward arrow).</li>
 <li>Select your file.</li>
 </ol>
-<p><a class="glightbox" href="../assets/import-dashboard-option.png" data-type="image" data-width="100%" data-height="auto" data-desc-position="bottom"><img alt="Import dashboard option" src="../assets/import-dashboard-option.png" /></a></p>
+<p><a class="glightbox" href="../assets/import-dashboard-option.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="Import dashboard option" src="../assets/import-dashboard-option.png" /></a></p>
 <p>To import a widget, the same mechanism is used, but from a dashboard view.</p>
-<p><a class="glightbox" href="../assets/import-widget-option.png" data-type="image" data-width="100%" data-height="auto" data-desc-position="bottom"><img alt="Import widget option" src="../assets/import-widget-option.png" /></a></p>
+<p><a class="glightbox" href="../assets/import-widget-option.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="Import widget option" src="../assets/import-widget-option.png" /></a></p>
 <div class="admonition warning">
 <p class="admonition-title">Configuration compatibility</p>
 <p>Only JSON files with the required properties will be accepted, including "openCTI_version: [5.12.0 and above]", "type: [dashboard|widget]", and a "configuration". This applies to both dashboards and widgets configurations.</p>
@@ -4671,9 +4699,9 @@
 <li>Navigate to the desired dashboard.</li>
 <li>Click on the <code>Duplicate the dashboard</code> button (two stacked sheets) located in the top-right corner of the dashboard.</li>
 </ol>
-<p><a class="glightbox" href="../assets/duplicate-dashboard-button.png" data-type="image" data-width="100%" data-height="auto" data-desc-position="bottom"><img alt="Duplicate dashboard button" src="../assets/duplicate-dashboard-button.png" /></a></p>
+<p><a class="glightbox" href="../assets/duplicate-dashboard-button.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="Duplicate dashboard button" src="../assets/duplicate-dashboard-button.png" /></a></p>
 <p>Upon successful duplication, a confirmation message is displayed for a short duration, accompanied by a link for easy access to the new dashboard view. Nevertheless, the new dashboard can still be found in the dashboards list.</p>
-<p><a class="glightbox" href="../assets/duplicate-dashboard-success-message.png" data-type="image" data-width="100%" data-height="auto" data-desc-position="bottom"><img alt="duplicate-dashboard-success-message" src="../assets/duplicate-dashboard-success-message.png" /></a></p>
+<p><a class="glightbox" href="../assets/duplicate-dashboard-success-message.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="duplicate-dashboard-success-message" src="../assets/duplicate-dashboard-success-message.png" /></a></p>
 <div class="admonition note">
 <p class="admonition-title">Dashboard access</p>
 <p>The user importing or duplicating a dashboard becomes the only one with access to it. Then, access can be managed as usual.</p>
@@ -4700,7 +4728,7 @@
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1-2.1-2M12.5 7v5.2l4 2.4-1 1L11 13V7h1.5M11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2v1.8Z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago"><span class="timeago" datetime="2023-12-11T13:30:37+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date">2023-12-11</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago"><span class="timeago" datetime="2024-01-18T10:16:21+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date">2024-01-18</span>
   </span>
 
     
@@ -4728,33 +4756,27 @@
     
     <nav>
       
-        <a href="https://github.com/SamuelHassine" class="md-author" title="@SamuelHassine">
+        <a href="https://github.com/Lhorus6" class="md-author" title="@Lhorus6">
           
-          <img src="https://avatars.githubusercontent.com/u/1334279?size=72" alt="SamuelHassine">
+          <img src="https://avatars.githubusercontent.com/u/70956706?v=4&size=72" alt="Lhorus6">
         </a>
       
         <a href="https://github.com/Goumies" class="md-author" title="@Goumies">
           
-          <img src="https://avatars.githubusercontent.com/u/13460700?size=72" alt="Goumies">
+          <img src="https://avatars.githubusercontent.com/u/13460700?v=4&size=72" alt="Goumies">
         </a>
       
         <a href="https://github.com/richard-julien" class="md-author" title="@richard-julien">
           
-          <img src="https://avatars.githubusercontent.com/u/285555?size=72" alt="richard-julien">
+          <img src="https://avatars.githubusercontent.com/u/285555?v=4&size=72" alt="richard-julien">
         </a>
       
-        <a href="https://github.com/marieflorescontact" class="md-author" title="@marieflorescontact">
+        <a href="https://github.com/SamuelHassine" class="md-author" title="@SamuelHassine">
           
-          <img src="https://avatars.githubusercontent.com/u/73853856?size=72" alt="marieflorescontact">
+          <img src="https://avatars.githubusercontent.com/u/1334279?v=4&size=72" alt="SamuelHassine">
         </a>
       
       
-      
-        
-          <a href="https://github.com/OpenCTI-Platform/docs/blob/main/docs/usage/dashboards.md" class="md-author md-author--more">
-            +2
-          </a>
-        
       
     </nav>
   </span>

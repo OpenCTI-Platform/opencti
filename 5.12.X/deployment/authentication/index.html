@@ -1138,6 +1138,33 @@
   
   
     <li class="md-nav__item">
+      <a href="../managers/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    
+  
+    Platform managers
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../clustering/" class="md-nav__link">
         
   
@@ -4879,7 +4906,7 @@ Here is an example to extract PEM from PCKS12:
 </div>
 <p>Here is an example of SAML configuration using environment variables:</p>
 <div class="highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">PROVIDERS__SAML__STRATEGY=SamlStrategy</span><span class="w"> </span>
-</span><span id="__span-5-2"><a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">PROVIDERS__SAML__CONFIG__LABEL=&quot;Login with SAML&quot;</span>
+</span><span id="__span-5-2"><a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">&quot;PROVIDERS__SAML__CONFIG__LABEL=Login</span><span class="nv"> </span><span class="s">with</span><span class="nv"> </span><span class="s">SAML&quot;</span>
 </span><span id="__span-5-3"><a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">PROVIDERS__SAML__CONFIG__ISSUER=mydomain</span>
 </span><span id="__span-5-4"><a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">PROVIDERS__SAML__CONFIG__ENTRY_POINT=https://auth.mydomain.com/auth/realms/mydomain/protocol/saml</span>
 </span><span id="__span-5-5"><a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">PROVIDERS__SAML__CONFIG__SAML_CALLBACK_URL=http://opencti.mydomain.com/auth/saml/callback</span>
@@ -4912,8 +4939,8 @@ Here is an example to extract PEM from PCKS12:
 </span><span id="__span-6-23"><a id="__codelineno-6-23" name="__codelineno-6-23" href="#__codelineno-6-23"></a><span class="p">}</span>
 </span></code></pre></div>
 <p>Here is an example of SAML Groups mapping configuration using environment variables:</p>
-<div class="highlight"><pre><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">PROVIDERS__SAML__CONFIG__GROUPS_MANAGEMENT__GROUP_ATTRIBUTES=[\&quot;Group\&quot;]</span>
-</span><span id="__span-7-2"><a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">PROVIDERS__SAML__CONFIG__GROUPS_MANAGEMENT__GROUPS_MAPPING=[\&quot;SAML_Group_1:OpenCTI_Group_1\&quot;, \&quot;SAML_Group_2:OpenCTI_Group_2\&quot;, ...]</span>
+<div class="highlight"><pre><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">&quot;PROVIDERS__SAML__CONFIG__GROUPS_MANAGEMENT__GROUP_ATTRIBUTES=[\&quot;Group\&quot;]&quot;</span>
+</span><span id="__span-7-2"><a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">&quot;PROVIDERS__SAML__CONFIG__GROUPS_MANAGEMENT__GROUPS_MAPPING=[\&quot;SAML_Group_1:OpenCTI_Group_1\&quot;,</span><span class="nv"> </span><span class="s">\&quot;SAML_Group_2:OpenCTI_Group_2\&quot;,</span><span class="nv"> </span><span class="s">...]&quot;</span>
 </span></code></pre></div>
 <h3 id="auth0-button">Auth0 (button)</h3>
 <p>This strategy allows to use <a href="https://auth0.com">Auth0 Service</a> to handle the authentication and is based on <a href="http://www.passportjs.org/packages/passport-auth0">Passport - Auth0</a>.</p>
@@ -4939,7 +4966,7 @@ Here is an example to extract PEM from PCKS12:
 </span><span id="__span-9-4"><a id="__codelineno-9-4" name="__codelineno-9-4" href="#__codelineno-9-4"></a><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">PROVIDERS__AUTHZERO__CONFIG__CLIENT_SECRET=${AUTH0_CLIENT_SECRET}</span>
 </span><span id="__span-9-5"><a id="__codelineno-9-5" name="__codelineno-9-5" href="#__codelineno-9-5"></a><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">PROVIDERS__AUTHZERO__CONFIG__CALLBACK_URL=${AUTH0_CALLBACK_URL}</span>
 </span><span id="__span-9-6"><a id="__codelineno-9-6" name="__codelineno-9-6" href="#__codelineno-9-6"></a><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">PROVIDERS__AUTHZERO__CONFIG__DOMAIN=${AUTH0_DOMAIN}</span>
-</span><span id="__span-9-7"><a id="__codelineno-9-7" name="__codelineno-9-7" href="#__codelineno-9-7"></a><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">PROVIDERS__AUTHZERO__CONFIG__SCOPE=&quot;openid email profile&quot;</span>
+</span><span id="__span-9-7"><a id="__codelineno-9-7" name="__codelineno-9-7" href="#__codelineno-9-7"></a><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">&quot;PROVIDERS__AUTHZERO__CONFIG__SCOPE=openid</span><span class="nv"> </span><span class="s">email</span><span class="nv"> </span><span class="s">profile&quot;</span>
 </span><span id="__span-9-8"><a id="__codelineno-9-8" name="__codelineno-9-8" href="#__codelineno-9-8"></a><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">PROVIDERS__AUTHZERO__CONFIG__LOGOUT_REMOTE=false</span>
 </span></code></pre></div>
 <h3 id="openid-connect-button">OpenID Connect (button)</h3>
@@ -4959,11 +4986,11 @@ Here is an example to extract PEM from PCKS12:
 </span></code></pre></div>
 <p>Here is an example of OpenID configuration using environment variables:</p>
 <div class="highlight"><pre><span></span><code><span id="__span-11-1"><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">PROVIDERS__OPENID__STRATEGY=OpenIDConnectStrategy</span><span class="w"> </span>
-</span><span id="__span-11-2"><a id="__codelineno-11-2" name="__codelineno-11-2" href="#__codelineno-11-2"></a><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">PROVIDERS__OPENID__CONFIG__LABEL=&quot;Login with OpenID&quot;</span>
+</span><span id="__span-11-2"><a id="__codelineno-11-2" name="__codelineno-11-2" href="#__codelineno-11-2"></a><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">&quot;PROVIDERS__OPENID__CONFIG__LABEL=Login</span><span class="nv"> </span><span class="s">with</span><span class="nv"> </span><span class="s">OpenID&quot;</span>
 </span><span id="__span-11-3"><a id="__codelineno-11-3" name="__codelineno-11-3" href="#__codelineno-11-3"></a><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">PROVIDERS__OPENID__CONFIG__ISSUER=https://auth.mydomain.com/auth/realms/xxxx</span>
 </span><span id="__span-11-4"><a id="__codelineno-11-4" name="__codelineno-11-4" href="#__codelineno-11-4"></a><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">PROVIDERS__OPENID__CONFIG__CLIENT_ID=XXXXXXXXXXXXXXXXXX</span>
 </span><span id="__span-11-5"><a id="__codelineno-11-5" name="__codelineno-11-5" href="#__codelineno-11-5"></a><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">PROVIDERS__OPENID__CONFIG__CLIENT_SECRET=XXXXXXXXXXXXXXXXXX</span>
-</span><span id="__span-11-6"><a id="__codelineno-11-6" name="__codelineno-11-6" href="#__codelineno-11-6"></a><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">PROVIDERS__OPENID__CONFIG__REDIRECT_URIS=[\&quot;https://opencti.mydomain.com/auth/oic/callback\&quot;]</span>
+</span><span id="__span-11-6"><a id="__codelineno-11-6" name="__codelineno-11-6" href="#__codelineno-11-6"></a><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">&quot;PROVIDERS__OPENID__CONFIG__REDIRECT_URIS=[\&quot;https://opencti.mydomain.com/auth/oic/callback\&quot;]&quot;</span>
 </span><span id="__span-11-7"><a id="__codelineno-11-7" name="__codelineno-11-7" href="#__codelineno-11-7"></a><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">PROVIDERS__OPENID__CONFIG__LOGOUT_REMOTE=false</span>
 </span></code></pre></div>
 <p>OpenCTI support mapping OpenID Claims on OpenCTI Groups (everything is tied to a group in the platform). Here is an example:</p>
@@ -4986,13 +5013,13 @@ Here is an example to extract PEM from PCKS12:
 </span><span id="__span-12-17"><a id="__codelineno-12-17" name="__codelineno-12-17" href="#__codelineno-12-17"></a><span class="p">}</span>
 </span></code></pre></div>
 <p>Here is an example of OpenID Groups mapping configuration using environment variables:</p>
-<div class="highlight"><pre><span></span><code><span id="__span-13-1"><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">PROVIDERS__OPENID__CONFIG__GROUPS_MANAGEMENT__GROUPS_SCOPE=&quot;groups&quot;</span>
-</span><span id="__span-13-2"><a id="__codelineno-13-2" name="__codelineno-13-2" href="#__codelineno-13-2"></a><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">PROVIDERS__OPENID__CONFIG__GROUPS_MANAGEMENT__GROUPS_PATH=[\&quot;groups\&quot;, \&quot;realm_access.groups\&quot;, \&quot;resource_access.account.groups\&quot;]</span>
-</span><span id="__span-13-3"><a id="__codelineno-13-3" name="__codelineno-13-3" href="#__codelineno-13-3"></a><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">PROVIDERS__OPENID__CONFIG__GROUPS_MANAGEMENT__GROUPS_MAPPING=[\&quot;OpenID_Group_1:OpenCTI_Group_1\&quot;, \&quot;OpenID_Group_2:OpenCTI_Group_2\&quot;, ...]</span>
+<div class="highlight"><pre><span></span><code><span id="__span-13-1"><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">PROVIDERS__OPENID__CONFIG__GROUPS_MANAGEMENT__GROUPS_SCOPE=groups</span>
+</span><span id="__span-13-2"><a id="__codelineno-13-2" name="__codelineno-13-2" href="#__codelineno-13-2"></a><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">&quot;PROVIDERS__OPENID__CONFIG__GROUPS_MANAGEMENT__GROUPS_PATH=[\&quot;groups\&quot;,</span><span class="nv"> </span><span class="s">\&quot;realm_access.groups\&quot;,</span><span class="nv"> </span><span class="s">\&quot;resource_access.account.groups\&quot;]&quot;</span>
+</span><span id="__span-13-3"><a id="__codelineno-13-3" name="__codelineno-13-3" href="#__codelineno-13-3"></a><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">&quot;PROVIDERS__OPENID__CONFIG__GROUPS_MANAGEMENT__GROUPS_MAPPING=[\&quot;OpenID_Group_1:OpenCTI_Group_1\&quot;,</span><span class="nv"> </span><span class="s">\&quot;OpenID_Group_2:OpenCTI_Group_2\&quot;,</span><span class="nv"> </span><span class="s">...]&quot;</span>
 </span></code></pre></div>
 <p>By default, the claims are mapped based on the content of the JWT <code>access_token</code>. If you want to map claims which are in other JWT (such as <code>id_token</code>), you can define the following environment variables:</p>
-<div class="highlight"><pre><span></span><code><span id="__span-14-1"><a id="__codelineno-14-1" name="__codelineno-14-1" href="#__codelineno-14-1"></a><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">PROVIDERS__OPENID__CONFIG__GROUPS_MANAGEMENT__TOKEN_REFERENCE=&quot;id_token&quot;</span>
-</span><span id="__span-14-2"><a id="__codelineno-14-2" name="__codelineno-14-2" href="#__codelineno-14-2"></a><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">PROVIDERS__OPENID__CONFIG__ORGANISATIONS_MANAGEMENT__TOKEN_REFERENCE=&quot;id_token&quot;</span>
+<div class="highlight"><pre><span></span><code><span id="__span-14-1"><a id="__codelineno-14-1" name="__codelineno-14-1" href="#__codelineno-14-1"></a><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">PROVIDERS__OPENID__CONFIG__GROUPS_MANAGEMENT__TOKEN_REFERENCE=id_token</span>
+</span><span id="__span-14-2"><a id="__codelineno-14-2" name="__codelineno-14-2" href="#__codelineno-14-2"></a><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">PROVIDERS__OPENID__CONFIG__ORGANISATIONS_MANAGEMENT__TOKEN_REFERENCE=id_token</span>
 </span></code></pre></div>
 <p>Alternatively, you can request OpenCTI to use claims from the <code>userinfo</code> endpoint instead of a JWT.
 <div class="highlight"><pre><span></span><code><span id="__span-15-1"><a id="__codelineno-15-1" name="__codelineno-15-1" href="#__codelineno-15-1"></a><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">PROVIDERS__OPENID__CONFIG__GROUPS_MANAGEMENT__READ_USERINFO=true</span>
@@ -5156,7 +5183,7 @@ The logout uri will remove the session and redirect the configured uri. If not s
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1-2.1-2M12.5 7v5.2l4 2.4-1 1L11 13V7h1.5M11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2v1.8Z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago"><span class="timeago" datetime="2024-01-11T15:40:01+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date">2024-01-11</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago"><span class="timeago" datetime="2024-01-23T09:07:04+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date">2024-01-23</span>
   </span>
 
     
@@ -5186,22 +5213,22 @@ The logout uri will remove the session and redirect the configured uri. If not s
       
         <a href="https://github.com/SamuelHassine" class="md-author" title="@SamuelHassine">
           
-          <img src="https://avatars.githubusercontent.com/u/1334279?size=72" alt="SamuelHassine">
-        </a>
-      
-        <a href="https://github.com/Archidoit" class="md-author" title="@Archidoit">
-          
-          <img src="https://avatars.githubusercontent.com/u/75783086?size=72" alt="Archidoit">
-        </a>
-      
-        <a href="https://github.com/oklien" class="md-author" title="@oklien">
-          
-          <img src="https://avatars.githubusercontent.com/u/696906?size=72" alt="oklien">
+          <img src="https://avatars.githubusercontent.com/u/1334279?v=4&size=72" alt="SamuelHassine">
         </a>
       
         <a href="https://github.com/yassine-ouaamou" class="md-author" title="@yassine-ouaamou">
           
-          <img src="https://avatars.githubusercontent.com/u/7083405?size=72" alt="yassine-ouaamou">
+          <img src="https://avatars.githubusercontent.com/u/7083405?v=4&size=72" alt="yassine-ouaamou">
+        </a>
+      
+        <a href="https://github.com/richard-julien" class="md-author" title="@richard-julien">
+          
+          <img src="https://avatars.githubusercontent.com/u/285555?v=4&size=72" alt="richard-julien">
+        </a>
+      
+        <a href="https://github.com/Augustin-FL" class="md-author" title="@Augustin-FL">
+          
+          <img src="https://avatars.githubusercontent.com/u/9406403?v=4&size=72" alt="Augustin-FL">
         </a>
       
       

@@ -15,7 +15,7 @@
         <link rel="canonical" href="https://docs.opencti.io/latest/deployment/clustering/">
       
       
-        <link rel="prev" href="../resources/">
+        <link rel="prev" href="../managers/">
       
       
         <link rel="next" href="../rollover/">
@@ -890,6 +890,33 @@
 
           </label>
           <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../managers/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    
+  
+    Platform managers
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
             
               
                 
@@ -4613,7 +4640,7 @@
     
     
       <li class="md-path__item">
-        <a href="./" class="md-path__link">
+        <a href="../managers/" class="md-path__link">
           
   <span class="md-ellipsis">
     Advanced
@@ -4656,7 +4683,7 @@
 <p>The OpenCTI platform technological stack has been designed to be able to scale horizontally. All dependencies such as Elastic or Redis can be deployed in cluster mode and performances can be drastically increased by deploying multiple platform and worker instances.</p>
 <h2 id="high-level-architecture">High level architecture</h2>
 <p>Here is the high level architecture for customers and Filigran cloud platform to ensure both high availability and throughput.</p>
-<p><a class="glightbox" href="../assets/cluster.png" data-type="image" data-width="100%" data-height="auto" data-desc-position="bottom"><img alt="Cluster" src="../assets/cluster.png" /></a></p>
+<p><a class="glightbox" href="../assets/cluster.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="Cluster" src="../assets/cluster.png" /></a></p>
 <h2 id="configuration">Configuration</h2>
 <h3 id="dependencies">Dependencies</h3>
 <h4 id="elasticsearch">ElasticSearch</h4>
@@ -4697,7 +4724,7 @@
 </li>
 </ul>
 <p>When enabling clustering, the number of nodes is displayed in Settings &gt; Parameters.</p>
-<p><a class="glightbox" href="../assets/cluster-mode.png" data-type="image" data-width="100%" data-height="auto" data-desc-position="bottom"><img alt="Cluster mode" src="../assets/cluster-mode.png" /></a></p>
+<p><a class="glightbox" href="../assets/cluster-mode.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="Cluster mode" src="../assets/cluster-mode.png" /></a></p>
 <h3 id="managers-and-schedulers">Managers and schedulers</h3>
 <p>Also, since some managers like the rule engine, the task manager and the notification manager can take some resources in the OpenCTI NodeJS process, it is highly recommended to disable them in the frontend cluster. OpenCTI automatically handle the distribution and the launching of the engines across all nodes in the cluster except where they are explicitely <a href="../configuration/#schedules-engines">disabled in the configuration</a>.</p>
 
@@ -4786,7 +4813,7 @@
       <nav class="md-footer__inner md-grid" aria-label="Footer" >
         
           
-          <a href="../resources/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Other resources">
+          <a href="../managers/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Platform managers">
             <div class="md-footer__button md-icon">
               
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12Z"/></svg>
@@ -4796,7 +4823,7 @@
                 Previous
               </span>
               <div class="md-ellipsis">
-                Other resources
+                Platform managers
               </div>
             </div>
           </a>

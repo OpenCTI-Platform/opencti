@@ -896,6 +896,33 @@
   
   
     <li class="md-nav__item">
+      <a href="../../deployment/managers/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    
+  
+    Platform managers
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../../deployment/clustering/" class="md-nav__link">
         
   
@@ -4539,31 +4566,31 @@ Note that you can delete or update any mapper from the context menu via the burg
 <p>Note that the parser will not extract any information from the CSV header if any ; it will just skip
 the first line during parsing.</p>
 </div>
-<p><a class="glightbox" href="../assets/csv-mappers-create.png" data-type="image" data-width="100%" data-height="auto" data-desc-position="bottom"><img alt="Creating a new CSV Mapper" src="../assets/csv-mappers-create.png" /></a></p>
+<p><a class="glightbox" href="../assets/csv-mappers-create.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="Creating a new CSV Mapper" src="../assets/csv-mappers-create.png" /></a></p>
 <p>Then, you need to create every representation, one per entity and relationship type represented in the CSV file.
 Click on the <strong>+</strong> button to add an empty representation in the list, and click on the chevron to expand the section and configure the representation.</p>
 <p>Depending on the entity type, the form contains the fields that are either required (input outlined in red) or optional.
 For each field, set the corresponding columns mapping (the letter-based index of the column in the CSV table, as presented in common spreadsheet tools). </p>
 <p>References to other entities should be picked from the list of all the other representations already defined earlier in the mapper.</p>
 <p>You can do the same for all the relationships between entities that might be defined in this particular CSV file structure.</p>
-<p><a class="glightbox" href="../assets/csv-mappers-rep-1.png" data-type="image" data-width="100%" data-height="auto" data-desc-position="bottom"><img alt="New representation" src="../assets/csv-mappers-rep-1.png" /></a></p>
+<p><a class="glightbox" href="../assets/csv-mappers-rep-1.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="New representation" src="../assets/csv-mappers-rep-1.png" /></a></p>
 <p>Fields might have options besides the mandatory column index, to help extract relevant data.</p>
 <ul>
 <li><strong>Date</strong> values are expected in <a href="https://en.wikipedia.org/wiki/ISO_8601?oldformat=true">ISO 8601</a> format, but you can set your own format to the time parser</li>
 <li><strong>Multiple values</strong> can be extracted by specifying the separator used inside the cell (e.g. <code>+</code> or <code>|</code>)</li>
 </ul>
-<p><a class="glightbox" href="../assets/csv-mappers-field-options.png" data-type="image" data-width="100%" data-height="auto" data-desc-position="bottom"><img alt="Field options" src="../assets/csv-mappers-field-options.png" /></a></p>
+<p><a class="glightbox" href="../assets/csv-mappers-field-options.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="Field options" src="../assets/csv-mappers-field-options.png" /></a></p>
 <h2 id="csv-mapper-validity">CSV Mapper validity</h2>
 <p>The only parameter required to save a CSV Mapper is a name ; creating and refining its representations can be done iteratively.</p>
 <p>All CSV Mappers go through a quick validation that checks if all the representations have all their mandatory fields set. 
 Only valid mappers can be run by the users on their CSV files.</p>
 <p>Mapper validity is visible in the list of CSV Mappers as shown below.</p>
-<p><a class="glightbox" href="../assets/csv-mappers-invalid.png" data-type="image" data-width="100%" data-height="auto" data-desc-position="bottom"><img alt="An invalid CSV Mapper" src="../assets/csv-mappers-invalid.png" /></a></p>
+<p><a class="glightbox" href="../assets/csv-mappers-invalid.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="An invalid CSV Mapper" src="../assets/csv-mappers-invalid.png" /></a></p>
 <h2 id="test-your-csv-mapper">Test your CSV mapper</h2>
 <p>In the creation or edition form, hit the button <strong>Test</strong> to open a dialog. Select a sample CSV file and hit the <strong>Test</strong> button.</p>
 <p>The code block contains the raw result of the parsing attempt, in form of a STIX 2.1 bundle in JSON format.</p>
 <p>You can then check if the extracted values match the expected entities and relationships.</p>
-<p><a class="glightbox" href="../assets/csv-mappers-test.png" data-type="image" data-width="100%" data-height="auto" data-desc-position="bottom"><img alt="Test a CSV Mapper" src="../assets/csv-mappers-test.png" /></a></p>
+<p><a class="glightbox" href="../assets/csv-mappers-test.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="Test a CSV Mapper" src="../assets/csv-mappers-test.png" /></a></p>
 <h2 id="use-a-mapper-for-importing-a-csv-file">Use a mapper for importing a CSV file</h2>
 <p>You can change the default configuration of the import csv connector in your configuration file.
 <div class="highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="w">  </span><span class="nt">&quot;import_csv_built_in_connector&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
@@ -4577,7 +4604,7 @@ The file will then be parsed following the representation rules set in the mappe
 <p>By default, the imported elements will be added in a new Analyst Workbench where you will be able to check the result of the import.</p>
 <h2 id="enter-default-values-for-mandatory-fields">Enter default values for mandatory fields</h2>
 <p>In <em>settings</em> <strong>&gt;</strong> <em>Customization</em>, you need to select the entity type that you used in CSV mapper.</p>
-<p><a class="glightbox" href="../assets/CSV%20%20mapper-settings.png" data-type="image" data-width="100%" data-height="auto" data-desc-position="bottom"><img alt="mapper-settings" src="../assets/CSV%20%20mapper-settings.png" /></a></p>
+<p><a class="glightbox" href="../assets/CSV%20%20mapper-settings.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="mapper-settings" src="../assets/CSV%20%20mapper-settings.png" /></a></p>
 <p>In the configuration of the entity type, you have access to all of the entity's attributes.</p>
 <p>Note that on this screen, for each associated attribute:</p>
 <ul>
@@ -4585,9 +4612,9 @@ The file will then be parsed following the representation rules set in the mappe
 <li>the label 'mandatory' is displayed and editable</li>
 </ul>
 <p>Click on the attribute to add a <strong>default value</strong> information.</p>
-<p><a class="glightbox" href="../assets/CSV%20mapper-attribute.png" data-type="image" data-width="100%" data-height="auto" data-desc-position="bottom"><img alt="mapper-custom" src="../assets/CSV%20mapper-attribute.png" /></a></p>
+<p><a class="glightbox" href="../assets/CSV%20mapper-attribute.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="mapper-custom" src="../assets/CSV%20mapper-attribute.png" /></a></p>
 <p>Enter the <strong>default value</strong> in the input field.</p>
-<p><a class="glightbox" href="../assets/CSV%20mapper-default.png" data-type="image" data-width="100%" data-height="auto" data-desc-position="bottom"><img alt="mapper-attribute" src="../assets/CSV%20mapper-default.png" /></a></p>
+<p><a class="glightbox" href="../assets/CSV%20mapper-default.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="mapper-attribute" src="../assets/CSV%20mapper-default.png" /></a></p>
 <p>Once the attribute is configured, you can return on the CSV mapper. If mandatory information is not filled in CSV mapper form but a <strong>default value</strong> exists for that field,
 that allows to parse the CSV file nevertheless.</p>
 

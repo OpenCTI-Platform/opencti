@@ -896,6 +896,33 @@
   
   
     <li class="md-nav__item">
+      <a href="../../deployment/managers/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    
+  
+    Platform managers
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../../deployment/clustering/" class="md-nav__link">
         
   
@@ -1724,46 +1751,80 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#add-and-expand-an-entity" class="md-nav__link">
+  <a href="#perform-investigation" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Add and expand an entity
+        Perform investigation
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Perform investigation">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#manipulate-entity" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Manipulate entity
       
     </span>
   </a>
   
 </li>
-      
-        <li class="md-nav__item">
-  <a href="#add-a-relationship" class="md-nav__link">
+        
+          <li class="md-nav__item">
+  <a href="#manipulate-relationship" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Add a relationship
+        Manipulate relationship
       
     </span>
   </a>
   
 </li>
+        
+      </ul>
+    </nav>
+  
+</li>
       
         <li class="md-nav__item">
-  <a href="#export-your-investigation" class="md-nav__link">
+  <a href="#capitalize-on-an-investigation" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Export your investigation
+        Capitalize on an investigation
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Capitalize on an investigation">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#export-investigation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Export investigation
       
     </span>
   </a>
   
 </li>
-      
-        <li class="md-nav__item">
-  <a href="#turn-your-investigation-to-report-or-case" class="md-nav__link">
+        
+          <li class="md-nav__item">
+  <a href="#turn-investigation-into-a-container" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Turn your investigation to Report or Case
+        Turn investigation into a container
       
     </span>
   </a>
+  
+</li>
+        
+      </ul>
+    </nav>
   
 </li>
       
@@ -4335,46 +4396,80 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#add-and-expand-an-entity" class="md-nav__link">
+  <a href="#perform-investigation" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Add and expand an entity
+        Perform investigation
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Perform investigation">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#manipulate-entity" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Manipulate entity
       
     </span>
   </a>
   
 </li>
-      
-        <li class="md-nav__item">
-  <a href="#add-a-relationship" class="md-nav__link">
+        
+          <li class="md-nav__item">
+  <a href="#manipulate-relationship" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Add a relationship
+        Manipulate relationship
       
     </span>
   </a>
   
 </li>
+        
+      </ul>
+    </nav>
+  
+</li>
       
         <li class="md-nav__item">
-  <a href="#export-your-investigation" class="md-nav__link">
+  <a href="#capitalize-on-an-investigation" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Export your investigation
+        Capitalize on an investigation
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Capitalize on an investigation">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#export-investigation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Export investigation
       
     </span>
   </a>
   
 </li>
-      
-        <li class="md-nav__item">
-  <a href="#turn-your-investigation-to-report-or-case" class="md-nav__link">
+        
+          <li class="md-nav__item">
+  <a href="#turn-investigation-into-a-container" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Turn your investigation to Report or Case
+        Turn investigation into a container
       
     </span>
   </a>
+  
+</li>
+        
+      </ul>
+    </nav>
   
 </li>
       
@@ -4475,47 +4570,53 @@
 
 
 <h1 id="pivot-and-investigate">Pivot and investigate</h1>
-<p>In Opencti, all data can be represented as a large knowledge graph: everything is linked to something. 
-You can pivot on any entity and on any relationship you have in your platform, using investigations.</p>
-<p>Investigations are available on the top right of the top bar:</p>
-<p><a class="glightbox" href="../assets/top-menu-investigation.png" data-type="image" data-width="100%" data-height="auto" data-desc-position="bottom"><img alt="Top menu investigation" src="../assets/top-menu-investigation.png" /></a></p>
-<p>Investigations are organized by workspace. When you create a new empty workspace, it will only be visible by you and enables you to work on your investigation before sharing it.</p>
-<p>In your workspace, you can add entities that you want to investigate, visualize the data linked to these entities, add relationships, and export your investigation graph in pdf, image or as new stix report.</p>
-<p><a class="glightbox" href="../assets/investigation-workspace.png" data-type="image" data-width="100%" data-height="auto" data-desc-position="bottom"><img alt="Investigation workspace" src="../assets/investigation-workspace.png" /></a></p>
-<p>You can see next to them a bullet with a number inside. It is a visual indication showing you how many entities are linked to this one and not displayed in the graph yet.
-Note that this number is an approximation of the number of entities. That's why there is a <code>~</code> next to the number.</p>
-<p>No bullet displayed means there is nothing to expand from this node.</p>
-<h2 id="add-and-expand-an-entity">Add and expand an entity</h2>
-<p>You can add any existing entity of the platform to your investigation.</p>
-<p><a class="glightbox" href="../assets/investigation-bottom-right-menu.png" data-type="image" data-width="100%" data-height="auto" data-desc-position="bottom"><img alt="Investigation bottom right menu" src="../assets/investigation-bottom-right-menu.png" /></a></p>
-<p>Once added, you can select the entity, and see its details in the panel that appears on the right of the screen.</p>
-<p>In the same menu as above, right next to "Add en entity", you can expand the selected entity. Clicking on the menu icon open a new window where you can choose which type of entities and relationships you want to expand.</p>
-<p>For each type of entity or relationship, the number of elements that will be added into the investigation graph is displayed in parentheses. This time there is no <code>~</code> symbol as the number is exact.</p>
-<p><a class="glightbox" href="../assets/investigation-expand-entity.png" data-type="image" data-width="100%" data-height="auto" data-desc-position="bottom"><img alt="Investigation expand entity" src="../assets/investigation-expand-entity.png" /></a></p>
-<p>For example, in the image above, selecting target <em>Malware</em> and relationship <em>Uses</em> means: expand in my investigation graph all <em>Malwares</em> linked to this node with a relationship of type <em>Uses</em>.</p>
-<h2 id="add-a-relationship">Add a relationship</h2>
-<p>You can add a relationship between entities directly in your investigation.</p>
-<p><a class="glightbox" href="../assets/investigation-create-relationship.png" data-type="image" data-width="100%" data-height="auto" data-desc-position="bottom"><img alt="Investigation create relationship" src="../assets/investigation-create-relationship.png" /></a></p>
-<h2 id="export-your-investigation">Export your investigation</h2>
-<p>You can export your investigation in PDF or image format. 
-You can also download all the content of your investigation graph in a <strong>Report</strong> stix bundle (investigation is automatically converted).</p>
-<p><a class="glightbox" href="../assets/investigation-export.png" data-type="image" data-width="100%" data-height="auto" data-desc-position="bottom"><img alt="Investigation export" src="../assets/investigation-export.png" /></a></p>
-<h2 id="turn-your-investigation-to-report-or-case">Turn your investigation to Report or Case</h2>
-<p>You can turn your investigation to :
-- a grouping
-- an incident response
-- a report
-- a request for information
-- a request for takedown</p>
-<p><a class="glightbox" href="../assets/investigation-turn-to-report-or-case.png" data-type="image" data-width="100%" data-height="auto" data-desc-position="bottom"><img alt="investigation-turn-to-report-or-case.png" src="../assets/investigation-turn-to-report-or-case.png" /></a></p>
-<p>Either, you create a new report or case
-<a class="glightbox" href="../assets/investigation-turn-to-report-or-case-dialog-new-entity.png" data-type="image" data-width="100%" data-height="auto" data-desc-position="bottom"><img alt="investigation-turn-to-report-or-case-dialog-new-entity.png" src="../assets/investigation-turn-to-report-or-case-dialog-new-entity.png" /></a></p>
-<p><a class="glightbox" href="../assets/investigation-turn-to-report-or-case-dialog-new-entity-form.png" data-type="image" data-width="100%" data-height="auto" data-desc-position="bottom"><img alt="investigation-turn-to-report-or-case-dialog-new-entity-form.png" src="../assets/investigation-turn-to-report-or-case-dialog-new-entity-form.png" /></a></p>
-<p>Or, you select an existing entity
-<a class="glightbox" href="../assets/investigation-turn-to-report-or-case-dialog-entity-selection.png" data-type="image" data-width="100%" data-height="auto" data-desc-position="bottom"><img alt="investigation-turn-to-report-or-case-dialog-entity-selection.png" src="../assets/investigation-turn-to-report-or-case-dialog-entity-selection.png" /></a></p>
-<p><a class="glightbox" href="../assets/investigation-turn-to-report-or-case-dialog-entity-selection-add.png" data-type="image" data-width="100%" data-height="auto" data-desc-position="bottom"><img alt="investigation-turn-to-report-or-case-dialog-entity-selection-add.png" src="../assets/investigation-turn-to-report-or-case-dialog-entity-selection-add.png" /></a></p>
-<p>Once you have clicked on the <code>ADD</code> button, the browser will be redirected to the <code>Knowledge</code> tab of the Report or Cases you added the content of your investigation. If you added it to multiple reports or cases, you will be redirected to the first of the list.
-<a class="glightbox" href="../assets/investigation-turn-to-report-or-case-success.png" data-type="image" data-width="100%" data-height="auto" data-desc-position="bottom"><img alt="investigation-turn-to-report-or-case-success.png" src="../assets/investigation-turn-to-report-or-case-success.png" /></a></p>
+<p>In OpenCTI, all data are structured as an extensive knowledge graph, where every element is interconnected. The investigation functionality provides a powerful tool for pivoting on any entity or relationship within the platform. Pivoting enables users to explore and analyze connections between entities and relationships, facilitating a comprehensive understanding of the data.</p>
+<p>To access investigations, navigate to the top right corner of the toolbar:</p>
+<p><a class="glightbox" href="../assets/top-menu-investigation.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="Top menu investigation" src="../assets/top-menu-investigation.png" /></a></p>
+<div class="admonition note">
+<p class="admonition-title">Access restriction</p>
+<p>When an investigation is created, it is initially visible only to the creator, allowing them to work on the investigation before deciding to share it. The sharing mechanism is akin to that of dashboards. For further details, refer to the <a href="../dashboards/#access-control-section">Access control section</a> in the dashboard documentation page.</p>
+</div>
+<h2 id="perform-investigation">Perform investigation</h2>
+<h3 id="manipulate-entity">Manipulate entity</h3>
+<p>We can add any existing entity of the platform to your investigation.</p>
+<p><a class="glightbox" href="../assets/investigation-bottom-right-menu.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="Investigation bottom right menu" src="../assets/investigation-bottom-right-menu.png" /></a></p>
+<p>After adding an entity, we can choose the entity and view its details in the panel that appears on the right of the screen.</p>
+<p>On each node, we'll notice a bullet with a number inside, serving as a visual indication of how many entities are linked to it but not currently displayed in the graph. Keep in mind that this number is an approximation, which is why there's a "+" next to it. If there's no bullet displayed, it means there's nothing to expand from this node.</p>
+<p><a class="glightbox" href="../assets/investigation-workspace.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="Investigation workspace" src="../assets/investigation-workspace.png" /></a></p>
+<p>To incorporate these linked entities into the graph, we just have to expand the nodes. Utilize the button with a 4-arrows logo in the mentioned menu, or double-click on the entity directly. This action opens a new window where we can choose the types of entities and relationships we wish to expand.</p>
+<p><a class="glightbox" href="../assets/investigation-expand-entity.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="Investigation expand entity" src="../assets/investigation-expand-entity.png" /></a></p>
+<p>For instance, in the image above, selecting the target <em>Malware</em> and the relationship <em>Uses</em> implies expanding in my investigation graph all <em>Malware</em> linked to this node with a relationship of type <em>Uses</em>.</p>
+<h3 id="manipulate-relationship">Manipulate relationship</h3>
+<p>We can create a relationship between entities directly within our investigation. To achieve this, select multiple entities by clicking on them while holding down the shift key. Subsequently, a button appears at the bottom right to create one (or more, depending on the number of entities selected) relationships.</p>
+<p><a class="glightbox" href="../assets/investigation-create-relationship.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="Investigation create relationship" src="../assets/investigation-create-relationship.png" /></a></p>
+<div class="admonition note">
+<p class="admonition-title">Relationship creation</p>
+<p>Creating a relationship in the investigation graph will generate the relationship in your knowledge base.</p>
+</div>
+<h2 id="capitalize-on-an-investigation">Capitalize on an investigation</h2>
+<h3 id="export-investigation">Export investigation</h3>
+<p>Users have the capability to export investigations, providing a way to share, document, or archive their findings.</p>
+<ul>
+<li>PDF and image formats: Users can export investigations in either PDF or image format, offering flexibility in sharing and documentation.</li>
+<li>STIX bundle: The platform allows the export of the entire content of an investigation graph as a STIX bundle. In the STIX format, all objects within the investigation graph are automatically aggregated into a Report object.</li>
+</ul>
+<p><a class="glightbox" href="../assets/investigation-export.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="Investigation export" src="../assets/investigation-export.png" /></a></p>
+<h3 id="turn-investigation-into-a-container">Turn investigation into a container</h3>
+<p>Users can efficiently collect and consolidate the findings of an investigation by adding the content into dedicated <a href="../containers/">containers</a>. The contents of an investigation can be imported into various types of containers, including:</p>
+<ul>
+<li>Grouping</li>
+<li>Incident Response</li>
+<li>Report</li>
+<li>Request for Information</li>
+<li>Request for Takedown</li>
+</ul>
+<p><a class="glightbox" href="../assets/investigation-turn-to-report-or-case.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="investigation-turn-to-report-or-case.png" src="../assets/investigation-turn-to-report-or-case.png" /></a></p>
+<p>We have the flexibility to choose between creating a new container on the fly or adding investigation content to an existing container. </p>
+<p><a class="glightbox" href="../assets/investigation-turn-to-report-or-case-dialog-new-entity.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="investigation-turn-to-report-or-case-dialog-new-entity.png" src="../assets/investigation-turn-to-report-or-case-dialog-new-entity.png" /></a></p>
+<p><a class="glightbox" href="../assets/investigation-turn-to-report-or-case-dialog-new-entity-form.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="investigation-turn-to-report-or-case-dialog-new-entity-form.png" src="../assets/investigation-turn-to-report-or-case-dialog-new-entity-form.png" /></a></p>
+<p>After clicking on the <code>ADD</code> button, the browser will redirect to the Knowledge tab of the container where we added the content of our investigation. If we added it to multiple containers, the redirection will be to the first of the list.</p>
+<p><a class="glightbox" href="../assets/investigation-turn-to-report-or-case-success.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="investigation-turn-to-report-or-case-success.png" src="../assets/investigation-turn-to-report-or-case-success.png" /></a></p>
 
 
 
@@ -4538,7 +4639,7 @@ You can also download all the content of your investigation graph in a <strong>R
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1-2.1-2M12.5 7v5.2l4 2.4-1 1L11 13V7h1.5M11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2v1.8Z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago"><span class="timeago" datetime="2023-10-12T15:09:27+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date">2023-10-12</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago"><span class="timeago" datetime="2024-01-18T10:16:21+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date">2024-01-18</span>
   </span>
 
     
@@ -4566,24 +4667,24 @@ You can also download all the content of your investigation graph in a <strong>R
     
     <nav>
       
+        <a href="https://github.com/Lhorus6" class="md-author" title="@Lhorus6">
+          
+          <img src="https://avatars.githubusercontent.com/u/70956706?v=4&size=72" alt="Lhorus6">
+        </a>
+      
         <a href="https://github.com/lndrtrbn" class="md-author" title="@lndrtrbn">
           
-          <img src="https://avatars.githubusercontent.com/u/33682259?size=72" alt="lndrtrbn">
-        </a>
-      
-        <a href="https://github.com/Jipegien" class="md-author" title="@Jipegien">
-          
-          <img src="https://avatars.githubusercontent.com/u/104078945?size=72" alt="Jipegien">
-        </a>
-      
-        <a href="https://github.com/richard-julien" class="md-author" title="@richard-julien">
-          
-          <img src="https://avatars.githubusercontent.com/u/285555?size=72" alt="richard-julien">
+          <img src="https://avatars.githubusercontent.com/u/33682259?v=4&size=72" alt="lndrtrbn">
         </a>
       
         <a href="https://github.com/Goumies" class="md-author" title="@Goumies">
           
-          <img src="https://avatars.githubusercontent.com/u/13460700?size=72" alt="Goumies">
+          <img src="https://avatars.githubusercontent.com/u/13460700?v=4&size=72" alt="Goumies">
+        </a>
+      
+        <a href="https://github.com/richard-julien" class="md-author" title="@richard-julien">
+          
+          <img src="https://avatars.githubusercontent.com/u/285555?v=4&size=72" alt="richard-julien">
         </a>
       
       

@@ -896,6 +896,33 @@
   
   
     <li class="md-nav__item">
+      <a href="../../deployment/managers/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    
+  
+    Platform managers
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../../deployment/clustering/" class="md-nav__link">
         
   
@@ -4518,7 +4545,7 @@
 <li>resolving relationships and dependencies even out of the filters ;</li>
 <li>they can be public (without authentication).</li>
 </ul>
-<p><a class="glightbox" href="../assets/live-stream.png" data-type="image" data-width="100%" data-height="auto" data-desc-position="bottom"><img alt="Live stream" src="../assets/live-stream.png" /></a></p>
+<p><a class="glightbox" href="../assets/live-stream.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="Live stream" src="../assets/live-stream.png" /></a></p>
 <h3 id="scenario">Scenario</h3>
 <p>To better understand how live streams are working, let's take a few examples, from simple to complex.</p>
 <p>Given a live stream with filters <em>Entity type: Indicator</em> <code>AND</code> <em>Label: detection</em>. Let's see what happen with an indicator with:</p>
@@ -4566,7 +4593,7 @@
 <h2 id="taxii-collections">TAXII Collections</h2>
 <p>OpenCTI has an embedded TAXII API endpoint which provides valid STIX 2.1 bundles. If you wish to know more about the TAXII standard, <a href="https://oasis-open.github.io/cti-documentation/taxii/intro.html">please read the official introduction</a>.</p>
 <p>In OpenCTI you can create as many TAXII 2.1 collections as needed. Each of them can have specific filters to publish only a subset of the platform overall knowledge (specific types of entities, labels, marking definitions, etc.).</p>
-<p><a class="glightbox" href="../assets/taxii-collection.png" data-type="image" data-width="100%" data-height="auto" data-desc-position="bottom"><img alt="TAXII Collection" src="../assets/taxii-collection.png" /></a></p>
+<p><a class="glightbox" href="../assets/taxii-collection.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="TAXII Collection" src="../assets/taxii-collection.png" /></a></p>
 <p>After creating a new collection, every systems with a proper access token can consume the collection using different kinds of authentication (basic, bearer, etc.)</p>
 <p>As when using the GraphQL API, TAXII 2.1 collections have a classic pagination system that should be handled by the consumer. Also, it's important to understand that element dependencies (nested IDs) inside the collection are not always contained/resolved in the bundle, so consistency needs to be handled at the client level.</p>
 <h2 id="csv-feeds">CSV feeds</h2>

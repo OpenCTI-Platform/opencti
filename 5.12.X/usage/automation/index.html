@@ -896,6 +896,33 @@
   
   
     <li class="md-nav__item">
+      <a href="../../deployment/managers/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    
+  
+    Platform managers
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../../deployment/clustering/" class="md-nav__link">
         
   
@@ -4768,7 +4795,7 @@
 <li>etc.</li>
 </ul>
 <h2 id="playbook-philosophy">Playbook philosophy</h2>
-<p>Consider Playbook as STIX 2.1 bundle pipeline. </p>
+<p>Consider Playbook as a STIX 2.1 bundle pipeline. </p>
 <p>Initiating with a component listening to a data stream, each subsequent component in the playbook processes a received STIX bundle. These components have the ability to modify the bundle and subsequently transmit the altered result to connected components.</p>
 <p>In this paradigm, components can send out the STIX 2.1 bundle to multiple components, enabling the development of multiple branches within your playbook.</p>
 <p>A well-designed playbook end with a component executing an action based on the processed information. For instance, this may involve writing the STIX 2.1 bundle in a data stream.</p>
@@ -4778,9 +4805,9 @@
 </div>
 <h2 id="create-a-playbook">Create a Playbook</h2>
 <p>It is possible to create as many playbooks as needed which are running independently. You can give a name and description to each playbook.</p>
-<p><a class="glightbox" href="../assets/playbook_create.png" data-type="image" data-width="100%" data-height="auto" data-desc-position="bottom"><img alt="Create a new playbook" src="../assets/playbook_create.png" /></a></p>
+<p><a class="glightbox" href="../assets/playbook_create.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="Create a new playbook" src="../assets/playbook_create.png" /></a></p>
 <p>The first step to define in the playbook is the “triggering event”, which can be any knowledge event (create, update or delete) with customizable filters. To do so, click on the grey rectangle in the center of the workspace and choose the component to "listen knowledge events". Configure it with adequate filters. You can use same filters as in other part of the platform.</p>
-<p><a class="glightbox" href="../assets/playbook_listen.png" data-type="image" data-width="100%" data-height="auto" data-desc-position="bottom"><img alt="Listening creation event for TLP:GREEN IPs and domain names" src="../assets/playbook_listen.png" /></a></p>
+<p><a class="glightbox" href="../assets/playbook_listen.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="Listening creation event for TLP:GREEN IPs and domain names" src="../assets/playbook_listen.png" /></a></p>
 <p>Then you have flexible choices for the next steps to:</p>
 <ul>
 <li>filter the initial knowledge ;</li>
@@ -4793,7 +4820,7 @@
 <p>By clicking on the arrow icon in the bottom right corner of a component, you can develop a new branch at the same level.</p>
 <p>By clicking the "+" button on a link between components, you can insert a component between the two.</p>
 <h2 id="components-of-playbooks">Components of playbooks</h2>
-<p><a class="glightbox" href="../assets/playbook_components.png" data-type="image" data-width="100%" data-height="auto" data-desc-position="bottom"><img alt="List of current components" src="../assets/playbook_components.png" /></a></p>
+<p><a class="glightbox" href="../assets/playbook_components.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="List of current components" src="../assets/playbook_components.png" /></a></p>
 <h4 id="log-data-in-standard-output">Log data in standard output</h4>
 <p>Will write the received STIX 2.1 bundle in platform logs with configurable log level and then send out the STIX 2.1 bundle unmodified.</p>
 <h4 id="send-for-ingestion">Send for ingestion</h4>
@@ -4829,7 +4856,7 @@ By default, it is applied to entities having triggered the playbook. You can tog
 <p>Will elagate the received STIX 2.1 bundle based on the configured filter.</p>
 <h2 id="monitor-playbook-activity">Monitor playbook activity</h2>
 <p>At the top right of the interface, you can access execution trace of your playbook and consult the raw data after every step of your playbook execution.</p>
-<p><a class="glightbox" href="../assets/playbook_traces.png" data-type="image" data-width="100%" data-height="auto" data-desc-position="bottom"><img alt="Steps monitoring" src="../assets/playbook_traces.png" /></a></p>
+<p><a class="glightbox" href="../assets/playbook_traces.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="Steps monitoring" src="../assets/playbook_traces.png" /></a></p>
 
 
 
@@ -4852,7 +4879,7 @@ By default, it is applied to entities having triggered the playbook. You can tog
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1-2.1-2M12.5 7v5.2l4 2.4-1 1L11 13V7h1.5M11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2v1.8Z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago"><span class="timeago" datetime="2023-11-20T11:54:00+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date">2023-11-20</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago"><span class="timeago" datetime="2024-01-21T09:14:13+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date">2024-01-21</span>
   </span>
 
     
@@ -4880,19 +4907,24 @@ By default, it is applied to entities having triggered the playbook. You can tog
     
     <nav>
       
-        <a href="https://github.com/SamuelHassine" class="md-author" title="@SamuelHassine">
+        <a href="https://github.com/yassine-ouaamou" class="md-author" title="@yassine-ouaamou">
           
-          <img src="https://avatars.githubusercontent.com/u/1334279?size=72" alt="SamuelHassine">
-        </a>
-      
-        <a href="https://github.com/Jipegien" class="md-author" title="@Jipegien">
-          
-          <img src="https://avatars.githubusercontent.com/u/104078945?size=72" alt="Jipegien">
+          <img src="https://avatars.githubusercontent.com/u/7083405?v=4&size=72" alt="yassine-ouaamou">
         </a>
       
         <a href="https://github.com/Lhorus6" class="md-author" title="@Lhorus6">
           
-          <img src="https://avatars.githubusercontent.com/u/70956706?size=72" alt="Lhorus6">
+          <img src="https://avatars.githubusercontent.com/u/70956706?v=4&size=72" alt="Lhorus6">
+        </a>
+      
+        <a href="https://github.com/SamuelHassine" class="md-author" title="@SamuelHassine">
+          
+          <img src="https://avatars.githubusercontent.com/u/1334279?v=4&size=72" alt="SamuelHassine">
+        </a>
+      
+        <a href="https://github.com/Jipegien" class="md-author" title="@Jipegien">
+          
+          <img src="https://avatars.githubusercontent.com/u/104078945?v=4&size=72" alt="Jipegien">
         </a>
       
       

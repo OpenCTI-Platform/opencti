@@ -896,6 +896,33 @@
   
   
     <li class="md-nav__item">
+      <a href="../../deployment/managers/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    
+  
+    Platform managers
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../../deployment/clustering/" class="md-nav__link">
         
   
@@ -3133,6 +3160,23 @@
         
       
       
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  <span class="md-ellipsis">
+    
+  
+    Retention policies
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
       <a href="./" class="md-nav__link md-nav__link--active">
         
   
@@ -3148,6 +3192,47 @@
   
 
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#configuration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Configuration
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#verification-process" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Verification process
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
       
     </li>
   
@@ -4248,6 +4333,36 @@
     
   
   
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#configuration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Configuration
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#verification-process" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Verification process
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
 </nav>
                   </div>
                 </div>
@@ -4360,12 +4475,23 @@
 
 
 <h1 id="retention-policies">Retention policies</h1>
-<div class="admonition tip">
-<p class="admonition-title">Under construction</p>
-<p>We are doing our best to complete this page. 
-If you want to participate, don't hesitate to join the <a href="https://community.filigran.io">Filigran Community on Slack</a> 
-or submit your pull request on the <a href="https://github.com/OpenCTI-Platform/docs">Github doc repository</a>.</p>
+<p>Retention rules serve the purpose of establishing data retention times, specifying when data should be automatically deleted from the platform. Users can define filters to target specific objects. Any object meeting these criteria that haven't been updated within the designated time frame will be deleted.</p>
+<h2 id="configuration">Configuration</h2>
+<p>Retention rules can be configured in the "Settings &gt; Customization &gt; Retention policies" window. A set of parameters must be configured:</p>
+<ul>
+<li>Maximum retention days: Set the maximum number of days an object can remain unchanged before being eligible for deletion.</li>
+<li>Filters: Define filters based on specific criteria to select the types of objects subject to retention rules.</li>
+</ul>
+<p>An object will be removed if it meets the specified filters and hasn't been updated for the duration set in the "Maximum retention days" field.</p>
+<p><a class="glightbox" href="../assets/retention-policy-parameters.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="Retention policy parameters" src="../assets/retention-policy-parameters.png" /></a></p>
+<h2 id="verification-process">Verification process</h2>
+<p>Before activating a retention rule, users have the option to verify its impact using the "Verify" button. This action provides insight into the number of objects that currently match the rule's criteria and would be deleted if the rule is activated.</p>
+<p><a class="glightbox" href="../assets/items-to-be-deleted.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="Items to  be deleted" src="../assets/items-to-be-deleted.png" /></a></p>
+<div class="admonition warning">
+<p class="admonition-title">Verify before activation</p>
+<p>Always use the "Verify" feature to assess the potential impact of a retention rule before activating it. Once the rule is activated, data deletion will begin, and retrieval of the deleted data will not be possible.</p>
 </div>
+<p>Retention rules contribute to maintaining a streamlined and efficient data lifecycle within OpenCTI, ensuring that outdated or irrelevant information is systematically removed from the platform, thereby optimizing disk space usage.</p>
 
 
 
@@ -4388,7 +4514,7 @@ or submit your pull request on the <a href="https://github.com/OpenCTI-Platform/
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1-2.1-2M12.5 7v5.2l4 2.4-1 1L11 13V7h1.5M11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2v1.8Z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago"><span class="timeago" datetime="2023-12-11T13:30:37+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date">2023-12-11</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago"><span class="timeago" datetime="2024-01-18T10:16:21+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date">2024-01-18</span>
   </span>
 
     
@@ -4418,12 +4544,12 @@ or submit your pull request on the <a href="https://github.com/OpenCTI-Platform/
       
         <a href="https://github.com/Lhorus6" class="md-author" title="@Lhorus6">
           
-          <img src="https://avatars.githubusercontent.com/u/70956706?size=72" alt="Lhorus6">
+          <img src="https://avatars.githubusercontent.com/u/70956706?v=4&size=72" alt="Lhorus6">
         </a>
       
         <a href="https://github.com/richard-julien" class="md-author" title="@richard-julien">
           
-          <img src="https://avatars.githubusercontent.com/u/285555?size=72" alt="richard-julien">
+          <img src="https://avatars.githubusercontent.com/u/285555?v=4&size=72" alt="richard-julien">
         </a>
       
       

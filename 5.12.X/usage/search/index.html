@@ -896,6 +896,33 @@
   
   
     <li class="md-nav__item">
+      <a href="../../deployment/managers/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    
+  
+    Platform managers
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../../deployment/clustering/" class="md-nav__link">
         
   
@@ -4513,7 +4540,7 @@
 <h2 id="global-search">Global search</h2>
 <p>The global search is always available in the top bar of the platform.</p>
 <figure>
-<p><a class="glightbox" href="../assets/search-bar.png" data-type="image" data-width="100%" data-height="auto" data-desc-position="bottom"><img alt="Search bar" src="../assets/search-bar.png" /></a></p>
+<p><a class="glightbox" href="../assets/search-bar.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="Search bar" src="../assets/search-bar.png" /></a></p>
 </figure>
 <p>This search covers all <a href="../data-model/#stix-model-section">STIX Domain Objects (SDOs)</a> and <a href="../data-model/#stix-model-section">STIX Cyber Observables (SCOs)</a> in the platform. The search results are sorted according to the following behaviour:</p>
 <ul>
@@ -4522,9 +4549,9 @@
 <li>Priority 3 for partial matching of the keyword in all other attributes (full text search).</li>
 </ul>
 <p>If you get unexpected result, it is always possible to add some filters after the initial search:</p>
-<p><a class="glightbox" href="../assets/search-filters.png" data-type="image" data-width="100%" data-height="auto" data-desc-position="bottom"><img alt="Search filters" src="../assets/search-filters.png" /></a></p>
+<p><a class="glightbox" href="../assets/search-filters.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="Search filters" src="../assets/search-filters.png" /></a></p>
 <p>Also, using the <code>Advanced search</code> button, it is possible to directly put filters in a global search:</p>
-<p><a class="glightbox" href="../assets/advanced-search.png" data-type="image" data-width="100%" data-height="auto" data-desc-position="bottom"><img alt="Advanced search" src="../assets/advanced-search.png" /></a></p>
+<p><a class="glightbox" href="../assets/advanced-search.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="Advanced search" src="../assets/advanced-search.png" /></a></p>
 <div class="admonition info">
 <p class="admonition-title">Advanced filters</p>
 <p>You have access to advanced filters all accross the UI, if you want to know more about how to use these 
@@ -4538,11 +4565,11 @@ filters with the API or the Python library, <a href="../../reference/filters/">d
 </div>
 <p>It's possible to extend the global search by keywords to the content of documents uploaded to the platform via the Data import tab, or directly linked to an entity via its Data tab.</p>
 <p>It is particularly useful to enable <code>Full text indexing</code> to avoid missing important information that may not have been structured within the platform. This situation can arise due to a partial automatic import of document content, limitations of a connector, and, of course, errors during manual processing.</p>
-<p><a class="glightbox" href="../assets/global-search-files.png" data-type="image" data-width="100%" data-height="auto" data-desc-position="bottom"><img alt="Files search" src="../assets/global-search-files.png" /></a></p>
+<p><a class="glightbox" href="../assets/global-search-files.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="Files search" src="../assets/global-search-files.png" /></a></p>
 <p>In order to search in files, you need to configure <a href="../../administration/file-indexing/">file indexing</a>.</p>
 <h2 id="bulk-search">Bulk search</h2>
 <p>The bulk search capabilities is available in the top bar of the platform and allows you to copy paste a list of keyword or objects (ie. list of domains, list of IP addresses, list of vulnerabilities, etc.) to search in the platform:</p>
-<p><a class="glightbox" href="../assets/bulk-search.png" data-type="image" data-width="100%" data-height="auto" data-desc-position="bottom"><img alt="Bulk search" src="../assets/bulk-search.png" /></a></p>
+<p><a class="glightbox" href="../assets/bulk-search.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="Bulk search" src="../assets/bulk-search.png" /></a></p>
 <p>When searching in bulk, OpenCTI is only looking for an exact match in some properties:</p>
 <ul>
 <li><code>name</code></li>
@@ -4559,14 +4586,14 @@ filters with the API or the Python library, <a href="../../reference/filters/">d
 <li><code>x_opencti_additional_names</code></li>
 </ul>
 <p>When something is not found, it appears in the list as <code>Unknown</code> and will be excluded if you choose to export your search result in a JSON STIX bundle or in a CSV file.</p>
-<p><a class="glightbox" href="../assets/bulk-result.png" data-type="image" data-width="100%" data-height="auto" data-desc-position="bottom"><img alt="Bulk search results" src="../assets/bulk-result.png" /></a></p>
+<p><a class="glightbox" href="../assets/bulk-result.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="Bulk search results" src="../assets/bulk-result.png" /></a></p>
 <h2 id="contextual-search">Contextual search</h2>
 <p>In most of the screens of knowledge, you always have a contextual search bar allowing you to filter the list you are on:</p>
-<p><a class="glightbox" href="../assets/contextual-search.png" data-type="image" data-width="100%" data-height="auto" data-desc-position="bottom"><img alt="Contextual search" src="../assets/contextual-search.png" /></a></p>
+<p><a class="glightbox" href="../assets/contextual-search.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="Contextual search" src="../assets/contextual-search.png" /></a></p>
 <p>The search keyword used here is taken into account if you decide to export the current view in a file such as a JSON STIX bundle or a CSV file.</p>
 <h2 id="other-search-bars">Other search bars</h2>
 <p>Some other screens can contain search bars for specific purposes. For instance, in the graph views to filter the nodes displayed on the graph:</p>
-<p><a class="glightbox" href="../assets/search-graph.png" data-type="image" data-width="100%" data-height="auto" data-desc-position="bottom"><img alt="Search in graph" src="../assets/search-graph.png" /></a></p>
+<p><a class="glightbox" href="../assets/search-graph.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="Search in graph" src="../assets/search-graph.png" /></a></p>
 
 
 

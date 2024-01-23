@@ -896,6 +896,33 @@
   
   
     <li class="md-nav__item">
+      <a href="../../deployment/managers/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    
+  
+    Platform managers
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../../deployment/clustering/" class="md-nav__link">
         
   
@@ -4685,7 +4712,7 @@
 <h2 id="introduction">Introduction</h2>
 <p>In OpenCTI, the RBAC system not only related to what users can do or cannot do in the platform (aka. <code>Capabilities</code>) but also to the system of <a href="../segregation/">data segregation</a>. Also, platform behaviour such as default home dashboards, default triggers and digests as well as default hidden menus or entities can be defined across groups and organizations.</p>
 <h2 id="high-level-design">High level design</h2>
-<p><a class="glightbox" href="../assets/rbac.png" data-type="image" data-width="100%" data-height="auto" data-desc-position="bottom"><img alt="RBAC" src="../assets/rbac.png" /></a></p>
+<p><a class="glightbox" href="../assets/rbac.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="RBAC" src="../assets/rbac.png" /></a></p>
 <h2 id="roles">Roles</h2>
 <p>Roles are used in the platform to grant the given groups with some <strong>capabilities</strong> to define what users in those groupes can do or cannot do.</p>
 <h3 id="list-of-capabilities">List of capabilities</h3>
@@ -4798,13 +4825,13 @@
 <h3 id="manage-roles">Manage roles</h3>
 <p>You can manage the roles in <code>Settings &gt; Security &gt; Roles</code>.</p>
 <p>To create a role, just click on the <code>+</code> button:</p>
-<p><a class="glightbox" href="../assets/create-role.png" data-type="image" data-width="100%" data-height="auto" data-desc-position="bottom"><img alt="Create role" src="../assets/create-role.png" /></a></p>
+<p><a class="glightbox" href="../assets/create-role.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="Create role" src="../assets/create-role.png" /></a></p>
 <p>Then you will be able to define the capabilities of the role:</p>
-<p><a class="glightbox" href="../assets/update-role.png" data-type="image" data-width="100%" data-height="auto" data-desc-position="bottom"><img alt="Update role" src="../assets/update-role.png" /></a></p>
+<p><a class="glightbox" href="../assets/update-role.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="Update role" src="../assets/update-role.png" /></a></p>
 <h2 id="users">Users</h2>
 <p>You can manage the users in <code>Settings &gt; Security &gt; Users</code>. If you are using <a href="../../deployment/authentication/">Single-Sign-On (SSO)</a>, the users in OpenCTI are automatically created upon login.</p>
 <p>To create a user, just click on the <code>+</code> button:</p>
-<p><a class="glightbox" href="../assets/create-user.png" data-type="image" data-width="100%" data-height="auto" data-desc-position="bottom"><img alt="Create user" src="../assets/create-user.png" /></a></p>
+<p><a class="glightbox" href="../assets/create-user.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="Create user" src="../assets/create-user.png" /></a></p>
 <h3 id="manage-a-user">Manage a user</h3>
 <p>When access to a user, it is possible to:</p>
 <ul>
@@ -4814,7 +4841,7 @@
 <li>Manage its triggers and digests</li>
 <li>Visualize the history and operations</li>
 </ul>
-<p><a class="glightbox" href="../assets/user-overview.png" data-type="image" data-width="100%" data-height="auto" data-desc-position="bottom"><img alt="User overview" src="../assets/user-overview.png" /></a></p>
+<p><a class="glightbox" href="../assets/user-overview.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="User overview" src="../assets/user-overview.png" /></a></p>
 <h2 id="groups">Groups</h2>
 <p>Groups is the main vehicule to manage permissions and <a href="../segregation/">data segregation</a> as well as platform customization for the given users part of this group. You can manage the groups in <code>Settings &gt; Security &gt; Groups</code>.</p>
 <p>Here is the description of the group available parameters.</p>
@@ -4856,17 +4883,17 @@
 </tr>
 </tbody>
 </table>
-<p><a class="glightbox" href="../assets/group-overview.png" data-type="image" data-width="100%" data-height="auto" data-desc-position="bottom"><img alt="Group overview" src="../assets/group-overview.png" /></a></p>
+<p><a class="glightbox" href="../assets/group-overview.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="Group overview" src="../assets/group-overview.png" /></a></p>
 <h3 id="manage-a-group">Manage a group</h3>
 <p>When managing a group, you can define the members and all above configurations.</p>
-<p><a class="glightbox" href="../assets/update-group.png" data-type="image" data-width="100%" data-height="auto" data-desc-position="bottom"><img alt="Update a group" src="../assets/update-group.png" /></a></p>
+<p><a class="glightbox" href="../assets/update-group.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="Update a group" src="../assets/update-group.png" /></a></p>
 <h2 id="organizations">Organizations</h2>
 <p>Users can belong to organizations, which is an additional layer of <a href="../segregation/">data segregation</a> and customization.</p>
 <h2 id="organization-administration">Organization administration</h2>
 <p>Plateform administrators can promote members of an organization as "Organization administrator". This elevated role grants them the necessary capabilities to create, edit and delete users from the corresponding Organization. Additionally, administrators have the flexibility to define a list of groups that can be granted to newly created members by the organization administrators. This feature simplifies the process of granting appropriate access and privileges to individuals joining the organization.</p>
-<p><a class="glightbox" href="../assets/organization_admin_view.png" data-type="image" data-width="100%" data-height="auto" data-desc-position="bottom"><img alt="Organization admin Settings view" src="../assets/organization_admin_view.png" /></a></p>
+<p><a class="glightbox" href="../assets/organization_admin_view.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="Organization admin Settings view" src="../assets/organization_admin_view.png" /></a></p>
 <p>The platform administrator can promote/demote an organization admin through its user edition form.</p>
-<p><a class="glightbox" href="../assets/define_organization_admin.png" data-type="image" data-width="100%" data-height="auto" data-desc-position="bottom"><img alt="Organization admin promoting/demoting" src="../assets/define_organization_admin.png" /></a></p>
+<p><a class="glightbox" href="../assets/define_organization_admin.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="Organization admin promoting/demoting" src="../assets/define_organization_admin.png" /></a></p>
 <p>The "Organization admin" has restricted access to Settings. They can only manage the members of the organizations for which they have been promoted as "admins".</p>
 
 

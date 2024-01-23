@@ -896,6 +896,33 @@
   
   
     <li class="md-nav__item">
+      <a href="../../deployment/managers/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    
+  
+    Platform managers
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../../deployment/clustering/" class="md-nav__link">
         
   
@@ -4724,15 +4751,15 @@
 <p>Marking Definition objects are unique among STIX objects in the <a href="https://docs.oasis-open.org/cti/stix/v2.1/stix-v2.1.html">STIX 2.1 standard</a> in that they cannot be versioned.  This restriction is in place to prevent the possibility of indirect alterations to the markings associated with a STIX Object.</p>
 <p>Multiple markings can be added to the same object. Certain categories of marking definitions or trust groups may enforce rules that specify which markings take precedence over others or how some markings can be added to complement existing ones.</p>
 <p>In OpenCTI, data is segregated based on knowledge marking. The diagram provided below illustrates the manner in which OpenCTI establishes connections between pieces of information to authorize data access for a user:</p>
-<p><a class="glightbox" href="../assets/data-access-diagram.png" data-type="image" data-width="100%" data-height="auto" data-desc-position="bottom"><img alt="Data access diagram" src="../assets/data-access-diagram.png" /></a></p>
+<p><a class="glightbox" href="../assets/data-access-diagram.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="Data access diagram" src="../assets/data-access-diagram.png" /></a></p>
 <h3 id="traffic-light-protocol">Traffic Light Protocol</h3>
 <p>The Traffic Light Protocol is implemented by default as marking definitions in OpenCTI. It allows you to segregate information by TLP level in your platform and restrict access to marked data if users are not authorized to see the corresponding marking.</p>
 <p>The <em>Traffic Light Protocol</em> (TLP) was designed by the <em>Forum of Incidence Response and Security Teams</em> (<a href="https://www.first.org/tlp/">FIRST</a>) to provide a standardized method for classifying and handling sensitive information, based on four categories of sensitivity.</p>
 <p>For more details, the diagram provided below illustrates how are categorized the marking definitions:</p>
-<p><a class="glightbox" href="../assets/tlp-diagram.png" data-type="image" data-width="100%" data-height="auto" data-desc-position="bottom"><img alt="TLP diagram" src="../assets/tlp-diagram.png" /></a></p>
+<p><a class="glightbox" href="../assets/tlp-diagram.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="TLP diagram" src="../assets/tlp-diagram.png" /></a></p>
 <h3 id="create-new-markings">Create new markings</h3>
 <p>In order to create a marking, you must first have the ability to access the Settings tab. For example, a user who is in a group with the role of Administrator can bypass all capabilities or a user who is in a group with the role that has <code>Access administration</code> checked can access the Settings tab. For more details about user administration here: <a href="../users/">Users and Role Based Access Control</a></p>
-<p><a class="glightbox" href="../assets/authorize-access.gif" data-type="image" data-width="100%" data-height="auto" data-desc-position="bottom"><img alt="Authorize access administration" src="../assets/authorize-access.gif" /></a></p>
+<p><a class="glightbox" href="../assets/authorize-access.gif" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="Authorize access administration" src="../assets/authorize-access.gif" /></a></p>
 <p>Once you have access to the settings, you can create your new marking in <code>Security</code> -&gt; <code>Marking Definitions</code></p>
 <p>A marking has:</p>
 <ul>
@@ -4741,27 +4768,27 @@
 <li>a color</li>
 <li>an order</li>
 </ul>
-<p><a class="glightbox" href="../assets/create-marking.gif" data-type="image" data-width="100%" data-height="auto" data-desc-position="bottom"><img alt="Create a marking animation" src="../assets/create-marking.gif" /></a></p>
+<p><a class="glightbox" href="../assets/create-marking.gif" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="Create a marking animation" src="../assets/create-marking.gif" /></a></p>
 <h3 id="allowed-marking-definitions">Allowed marking definitions</h3>
 <p>In order for all users in a group to be able to see entities and relationships that have specific markings on them, allowed markings can be checked when updating a group:</p>
-<p><a class="glightbox" href="../assets/update-group-marking.png" data-type="image" data-width="100%" data-height="auto" data-desc-position="bottom"><img alt="Update allowed markings in a group" src="../assets/update-group-marking.png" /></a></p>
+<p><a class="glightbox" href="../assets/update-group-marking.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="Update allowed markings in a group" src="../assets/update-group-marking.png" /></a></p>
 <h3 id="default-marking-definitions">Default marking definitions</h3>
 <p>To apply a default marking when creating a new entity or relationship, you can choose which marking to add by default from the list of allowed markings. You can add <em>only one marking per type</em>, but you can have multiple types.</p>
-<p><a class="glightbox" href="../assets/default-marking.gif" data-type="image" data-width="100%" data-height="auto" data-desc-position="bottom"><img alt="Add default marking" src="../assets/default-marking.gif" /></a></p>
+<p><a class="glightbox" href="../assets/default-marking.gif" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="Add default marking" src="../assets/default-marking.gif" /></a></p>
 <p>Be careful, add markings as default markings is not enough to see the markings when you create an entity or relationship, you need to enable default markings in an entity or relationship customization.</p>
 <p>For example, if you create a new report, got to <code>Settings</code> -&gt; <code>Customization</code> -&gt; <code>Report</code> -&gt; <code>Markings</code> and click on <code>Activate/Desactivate default values</code></p>
-<p><a class="glightbox" href="../assets/activate-default-markings.png" data-type="image" data-width="100%" data-height="auto" data-desc-position="bottom"><img alt="Activate default values for markings" src="../assets/activate-default-markings.png" /></a></p>
+<p><a class="glightbox" href="../assets/activate-default-markings.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="Activate default values for markings" src="../assets/activate-default-markings.png" /></a></p>
 <h3 id="authorize-a-group-to-new-marking-definition">Authorize a group to new marking definition</h3>
 <p>To authorize a group to automatically have access to a newly created marking definition in allowed marking definitions, you can check <code>Automatically authorize this group to new marking definition</code> when update a group:</p>
-<p><a class="glightbox" href="../assets/automatically-marking.png" data-type="image" data-width="100%" data-height="auto" data-desc-position="bottom"><img alt="Activate automatically authorize group for new markings" src="../assets/automatically-marking.png" /></a></p>
+<p><a class="glightbox" href="../assets/automatically-marking.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="Activate automatically authorize group for new markings" src="../assets/automatically-marking.png" /></a></p>
 <h3 id="behavior-on-the-opencti-platform">Behavior on the OpenCTI Platform</h3>
 <h4 id="create-a-new-entity-or-relationship">Create a new entity or relationship</h4>
 <p>When a new entity or a new relationship is created, if multiple markings of the same type and different order are added, the platform will only keep the highest order for each type.</p>
 <p>For example:</p>
 <p>Create a new report and add markings <code>PAP:AMBER</code>,<code>PAP:RED</code>,<code>TLP:AMBER+STRICT</code>,<code>TLP:CLEAR</code> and a statement <code>CC-BY-SA-4.0 DISARM Foundation</code></p>
-<p><a class="glightbox" href="../assets/create-entity-markings.png" data-type="image" data-width="100%" data-height="auto" data-desc-position="bottom"><img alt="Create entity with markings" src="../assets/create-entity-markings.png" /></a></p>
+<p><a class="glightbox" href="../assets/create-entity-markings.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="Create entity with markings" src="../assets/create-entity-markings.png" /></a></p>
 <p>The final markings kept are: <code>PAP:RED</code>, <code>TLP:AMBER+STRICT</code> and <code>CC-BY-SA-4.0 DISARM Foundation</code></p>
-<p><a class="glightbox" href="../assets/create-entity-marking-filter.png" data-type="image" data-width="100%" data-height="auto" data-desc-position="bottom"><img alt="Create entity with markings" src="../assets/create-entity-marking-filter.png" /></a></p>
+<p><a class="glightbox" href="../assets/create-entity-marking-filter.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="Create entity with markings" src="../assets/create-entity-marking-filter.png" /></a></p>
 <h4 id="update-an-entity-or-a-relationship">Update an entity or a relationship</h4>
 <p>When update an entity or a relationship:</p>
 <ul>
@@ -4769,13 +4796,13 @@
 <li>add a marking with <em>same type and same order</em>, the marking will be added</li>
 <li>add a marking with <em>different type</em>, the marking will be added</li>
 </ul>
-<p><a class="glightbox" href="../assets/marking-pop.gif" data-type="image" data-width="100%" data-height="auto" data-desc-position="bottom"><img alt="Update entity with markings, popup dialog" src="../assets/marking-pop.gif" /></a></p>
+<p><a class="glightbox" href="../assets/marking-pop.gif" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="Update entity with markings, popup dialog" src="../assets/marking-pop.gif" /></a></p>
 <h4 id="merge-entities">Merge entities</h4>
 <p>When you merge multiple entities, the platform will keep the highest order for each type of markings when the merge is complete:</p>
 <p>For example, merging 2 observables, one with <code>TLP:CLEAR</code> and <code>PAP:CLEAR</code> and the other one with <code>PAP:RED</code> and <code>TLP:GREEN</code> from 198.250.250.11 to 197.250.251.12.</p>
-<p><a class="glightbox" href="../assets/merge-entities-markings.png" data-type="image" data-width="100%" data-height="auto" data-desc-position="bottom"><img alt="Merge entities" src="../assets/merge-entities-markings.png" /></a></p>
+<p><a class="glightbox" href="../assets/merge-entities-markings.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="Merge entities" src="../assets/merge-entities-markings.png" /></a></p>
 <p>As final result, you will have the observable with the value 197.250.251.12 with <code>PAP:RED</code> and <code>TLP:GREEN</code></p>
-<p><a class="glightbox" href="../assets/merge-entities-markings-result.png" data-type="image" data-width="100%" data-height="auto" data-desc-position="bottom"><img alt="Merge entities result" src="../assets/merge-entities-markings-result.png" /></a></p>
+<p><a class="glightbox" href="../assets/merge-entities-markings-result.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="Merge entities result" src="../assets/merge-entities-markings-result.png" /></a></p>
 <h4 id="import-data-from-a-connector">Import data from a connector</h4>
 <p>When you import data from a connector, the connector cannot downgrade a marking for the same entity, if a same type of marking is set on it.</p>
 <p>For example, if you create a new observable with same values as Alien Vault data and change marking in the platform as <code>TLP:AMBER</code>, when importing data, the platform will keep the highest rank for the same type of markings.</p>

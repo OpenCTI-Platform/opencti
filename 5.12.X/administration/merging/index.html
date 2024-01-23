@@ -896,6 +896,33 @@
   
   
     <li class="md-nav__item">
+      <a href="../../deployment/managers/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    
+  
+    Platform managers
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../../deployment/clustering/" class="md-nav__link">
         
   
@@ -4477,9 +4504,9 @@
 <h1 id="merging">Merging</h1>
 <h2 id="data-merging">Data merging</h2>
 <p>Within the OpenCTI platform, the merge capability is present into the "Data &gt; Entities" tab, and is fairly straightforward to use. To execute a merge, select the set of entities to be merged, then click on the Merge icon. NB: it is not possible to merge entities of different types, nor is it possible to merge more than 4 entities at a time (it will have to be done in several stages).</p>
-<p><a class="glightbox" href="../assets/merge_panel.png" data-type="image" data-width="100%" data-height="auto" data-desc-position="bottom"><img alt="Merge_panel" src="../assets/merge_panel.png" /></a></p>
+<p><a class="glightbox" href="../assets/merge_panel.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="Merge_panel" src="../assets/merge_panel.png" /></a></p>
 <p>Central to the merging process is the selection of a main entity. This primary entity becomes the anchor, retaining crucial attributes such as name and description. Other entities, while losing specific fields like descriptions, are aliased under the primary entity. This strategic decision preserves vital data while eliminating redundancy.</p>
-<p><a class="glightbox" href="../assets/main_entity_selection.png" data-type="image" data-width="100%" data-height="auto" data-desc-position="bottom"><img alt="Main_entity_selection" src="../assets/main_entity_selection.png" /></a></p>
+<p><a class="glightbox" href="../assets/main_entity_selection.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="Main_entity_selection" src="../assets/main_entity_selection.png" /></a></p>
 <p>Once the choice has been made, simply validate to run the task in the background. Depending on the number of entity relationships, and the current workload on the platform, the merge may take more or less time. In the case of a healthy platform and around a hundred relationships per entity, merge is almost instantaneous.</p>
 <h2 id="data-preservation-and-relationship-continuity">Data preservation and relationship continuity</h2>
 <p>A common concern when merging entities lies in the potential loss of information. In the context of OpenCTI, this worry is alleviated. Even if the merged entities were initially created by distinct sources, the platform ensures that data is not lost. Upon merging, the platform automatically generates relationships directly on the merged entity. This strategic approach ensures that all connections, regardless of their origin, are anchored to the consolidated entity. Post-merge, OpenCTI treats these once-separate entities as a singular, unified entity. Subsequent information from varied sources is channeled directly into the entity resulting from the merger. This unified entity becomes the focal point for all future relationships, ensuring the continuity of data and relationships without any loss or fragmentation.</p>

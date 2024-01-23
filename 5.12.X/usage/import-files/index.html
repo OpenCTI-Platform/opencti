@@ -896,6 +896,33 @@
   
   
     <li class="md-nav__item">
+      <a href="../../deployment/managers/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    
+  
+    Platform managers
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../../deployment/clustering/" class="md-nav__link">
         
   
@@ -4639,6 +4666,7 @@
 <li><code>ImportDocument</code>: Versatile connector supporting an array of file formats, including pdf, text, html, and markdown.</li>
 </ul>
 <p><strong>CSV mappers:</strong> The CSV mapper is a tailored functionality to facilitate the import of data stored in CSV files. For more in-depth information on using CSV mappers, refer to the <a href="../../administration/csv-mappers/">CSV Mappers</a> documentation page.</p>
+<p><a class="glightbox" href="../assets/manual-import-connectors.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="Manual import connectors" src="../assets/manual-import-connectors.png" /></a></p>
 <h2 id="usage">Usage</h2>
 <h3 id="locations">Locations</h3>
 <p>Both mechanisms can be employed wherever file uploads are possible. This includes the "Data" tabs of all entities and the dedicated panel named "Data import and analyst workbenches" located in the top right-hand corner (database logo with a small gear). Importing files from these two locations is not entirely equal; refer to the "Relationship handling from entity's Data tab" section below for details on this matter.</p>
@@ -4655,6 +4683,7 @@
 <p class="admonition-title">Review workbenches</p>
 <p>Import connectors may introduce errors in identifying object types or add "unknown" entities. Workbenches were established with the intent of reviewing the output of connectors before validation. Therefore, it is crucial to be vigilant when examining the workbench to prevent the import of incorrect data into the platform.</p>
 </div>
+<p><a class="glightbox" href="../assets/global-import-panel.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="Global import panel" src="../assets/global-import-panel.png" /></a></p>
 <h2 id="additional-information">Additional information</h2>
 <h3 id="no-workbench-for-csv-mapper">No workbench for CSV mapper</h3>
 <p>It's essential to note that CSV mappers operate differently from other import mechanisms. Unlike connectors, CSV mappers do not generate workbenches. Instead, the data identified by CSV mappers is imported directly into the platform without an intermediary workbench stage.</p>
@@ -4665,7 +4694,7 @@
 <li>For entities that are not containers, a distinct behavior unfolds. In this scenario, the identified objects are not linked to the entity, except for Observables. <code>Related to</code> relationships between the Observables and the entity are automatically added to the workbench and created after validation of this one.</li>
 </ul>
 <h3 id="file-import-in-content-tab">File import in Content tab</h3>
-<p>Expanding the scope of file imports, users can seamlessly add files in the <code>Content</code> tab of <a href="exploring-analysis">Analyses</a> or <a href="../exploring-cases/">Cases</a>. In this scenario, the file is directly added as an attachment without utilizing an import mechanism.</p>
+<p>Expanding the scope of file imports, users can seamlessly add files in the <code>Content</code> tab of <a href="../exploring-analysis/">Analyses</a> or <a href="../exploring-cases/">Cases</a>. In this scenario, the file is directly added as an attachment without utilizing an import mechanism.</p>
 <h3 id="user-capability-requirement">User capability requirement</h3>
 <p>In order to initiate file imports, users must possess the requisite <a href="../../administration/users/">capability</a>: "Upload knowledge files." This capability ensures that only authorized users can contribute and manage knowledge files within the OpenCTI platform, maintaining a controlled and secure environment for data uploads.</p>
 <div class="admonition warning">
@@ -4696,7 +4725,7 @@ CSV mappers can be created and configured in the administration interface.   </p
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1-2.1-2M12.5 7v5.2l4 2.4-1 1L11 13V7h1.5M11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2v1.8Z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago"><span class="timeago" datetime="2023-12-11T13:30:37+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date">2023-12-11</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago"><span class="timeago" datetime="2024-01-18T10:16:21+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date">2024-01-18</span>
   </span>
 
     
@@ -4726,17 +4755,17 @@ CSV mappers can be created and configured in the administration interface.   </p
       
         <a href="https://github.com/Lhorus6" class="md-author" title="@Lhorus6">
           
-          <img src="https://avatars.githubusercontent.com/u/70956706?size=72" alt="Lhorus6">
-        </a>
-      
-        <a href="https://github.com/richard-julien" class="md-author" title="@richard-julien">
-          
-          <img src="https://avatars.githubusercontent.com/u/285555?size=72" alt="richard-julien">
+          <img src="https://avatars.githubusercontent.com/u/70956706?v=4&size=72" alt="Lhorus6">
         </a>
       
         <a href="https://github.com/labo-flg" class="md-author" title="@labo-flg">
           
-          <img src="https://avatars.githubusercontent.com/u/146674147?size=72" alt="labo-flg">
+          <img src="https://avatars.githubusercontent.com/u/146674147?v=4&size=72" alt="labo-flg">
+        </a>
+      
+        <a href="https://github.com/richard-julien" class="md-author" title="@richard-julien">
+          
+          <img src="https://avatars.githubusercontent.com/u/285555?v=4&size=72" alt="richard-julien">
         </a>
       
       

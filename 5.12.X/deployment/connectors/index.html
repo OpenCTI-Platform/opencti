@@ -1138,6 +1138,33 @@
   
   
     <li class="md-nav__item">
+      <a href="../managers/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    
+  
+    Platform managers
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../clustering/" class="md-nav__link">
         
   
@@ -4790,7 +4817,7 @@
 <p>You are looking for the available connectors? The list is in the <a href="https://filigran.notion.site/OpenCTI-Ecosystem-868329e9fb734fca89692b2ed6087e76">OpenCTI Ecosystem</a>.</p>
 </div>
 <p>Connectors are the cornerstone of the OpenCTI platform and allow organizations to easily ingest, enrich or export data in the platform. According to their functionality and use case, they are categorized in the following classes.</p>
-<p><a class="glightbox" href="../assets/connectors.png" data-type="image" data-width="100%" data-height="auto" data-desc-position="bottom"><img alt="Connectors" src="../assets/connectors.png" /></a></p>
+<p><a class="glightbox" href="../assets/connectors.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="Connectors" src="../assets/connectors.png" /></a></p>
 <h3 id="import">Import</h3>
 <p>These connectors automatically retrieve information from an external organization, application or service, convert it to STIX 2.1 bundles and import it into OpenCTI using the workers.</p>
 <h3 id="enrichment">Enrichment</h3>
@@ -4876,12 +4903,12 @@
 <h3 id="create-the-user">Create the user</h3>
 <p>As mentioned previously, it is strongly recommended to run each connector with its own user. <strong>The <code>Internal Export File</code> connectors should be launched with a user that belongs to a group which has an “Administrator” role (with bypass all capabilities enabled).</strong></p>
 <p>By default, in platform, a group named "Connectors" already exists. So just create a new user with the name <code>[C] Name of the connector</code> in Settings &gt; Security &gt; Users.</p>
-<p><a class="glightbox" href="../assets/create-user.png" data-type="image" data-width="100%" data-height="auto" data-desc-position="bottom"><img alt="Create user" src="../assets/create-user.png" /></a></p>
+<p><a class="glightbox" href="../assets/create-user.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="Create user" src="../assets/create-user.png" /></a></p>
 <h3 id="put-the-user-in-the-group">Put the user in the group</h3>
 <p>Just go to the user you have just created and add it to the <code>Connectors</code> group.</p>
-<p><a class="glightbox" href="../assets/user-groups.png" data-type="image" data-width="100%" data-height="auto" data-desc-position="bottom"><img alt="User groups" src="../assets/user-groups.png" /></a></p>
+<p><a class="glightbox" href="../assets/user-groups.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="User groups" src="../assets/user-groups.png" /></a></p>
 <p>Then just get the token of the user displayed in the interface.</p>
-<p><a class="glightbox" href="../assets/user-token.png" data-type="image" data-width="100%" data-height="auto" data-desc-position="bottom"><img alt="User token" src="../assets/user-token.png" /></a></p>
+<p><a class="glightbox" href="../assets/user-token.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="User token" src="../assets/user-token.png" /></a></p>
 <h2 id="docker-activation">Docker activation</h2>
 <p>You can either directly run the Docker image of connectors or add them to your current <code>docker-compose.yml</code> file.</p>
 <h3 id="add-a-connector-to-your-deployment">Add a connector to your deployment</h3>
@@ -4935,7 +4962,7 @@
 </span></code></pre></div>
 <h2 id="connectors-status">Connectors status</h2>
 <p>The connector status can be displayed in the dedicated section of the platform available in Data &gt; Connectors. You will be able to see the statistics of the RabbitMQ queue of the connector:</p>
-<p><a class="glightbox" href="../assets/connectors-status.png" data-type="image" data-width="100%" data-height="auto" data-desc-position="bottom"><img alt="Connectors" src="../assets/connectors-status.png" /></a></p>
+<p><a class="glightbox" href="../assets/connectors-status.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="Connectors" src="../assets/connectors-status.png" /></a></p>
 <div class="admonition bug">
 <p class="admonition-title">Problem</p>
 <p>If you encounter problems deploying OpenCTI or connectors, you can consult the <a href="../troubleshooting/">troubleshooting page</a> page.</p>

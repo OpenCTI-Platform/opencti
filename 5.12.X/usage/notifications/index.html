@@ -896,6 +896,33 @@
   
   
     <li class="md-nav__item">
+      <a href="../../deployment/managers/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    
+  
+    Platform managers
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../../deployment/clustering/" class="md-nav__link">
         
   
@@ -4702,18 +4729,18 @@
 <p>In the evolving landscape of cybersecurity, timely awareness is crucial. OpenCTI empowers users to stay informed and act swiftly through its robust notifications and alerting system. This feature allows users to create personalized triggers that actively monitor the platform for specific events and notify them promptly when these conditions are met.</p>
 <p>From individual users tailoring their alert preferences to administrators orchestrating collaborative triggers for Groups or Organizations, OpenCTI's notification system is a versatile tool for keeping cybersecurity stakeholders in the loop.</p>
 <p>The main menu "Notifications and triggers" for creating and managing notifications is located in the top right-hand corner with the bell icon.</p>
-<p><a class="glightbox" href="../assets/notifications.png" data-type="image" data-width="100%" data-height="auto" data-desc-position="bottom"><img alt="Notifications" src="../assets/notifications.png" /></a>  </p>
+<p><a class="glightbox" href="../assets/notifications.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="Notifications" src="../assets/notifications.png" /></a>  </p>
 <h2 id="triggers">Triggers</h2>
 <p>In OpenCTI, triggers serve as personalized mechanisms for users to stay informed about specific events that align with their cybersecurity priorities. Users can create and manage triggers to tailor their notification experience. Each trigger operates by actively listening to events based on predefined filters and event types, promptly notifying users via chosen notifiers when conditions are met.</p>
-<p><a class="glightbox" href="../assets/triggers.png" data-type="image" data-width="100%" data-height="auto" data-desc-position="bottom"><img alt="Triggers" src="../assets/triggers.png" /></a></p>
+<p><a class="glightbox" href="../assets/triggers.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="Triggers" src="../assets/triggers.png" /></a></p>
 <h3 id="trigger-management">Trigger management</h3>
 <p><strong>Individual user triggers:</strong> Each user possesses the autonomy to craft their own triggers, finely tuned to their unique preferences and responsibilities. By setting up personalized filters and selecting preferred notifiers, users ensure that they receive timely and relevant notifications aligned with their specific focus areas.</p>
 <p><strong>Administrative control:</strong> Platform administrators have the capability to create and manage triggers for Users, Groups and Organizations. This provides centralized control and the ability to configure triggers that address collective cybersecurity objectives. Users within the designated Group or Organization will benefit from triggers with read-only access rights. These triggers are to be created directly on the User|Group|Organization with whom to share them in "Settings &gt; Security &gt; Users|Groups|Organizations".</p>
-<p><a class="glightbox" href="../assets/restricted-trigger.png" data-type="image" data-width="100%" data-height="auto" data-desc-position="bottom"><img alt="Restricted trigger" src="../assets/restricted-trigger.png" /></a></p>
+<p><a class="glightbox" href="../assets/restricted-trigger.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="Restricted trigger" src="../assets/restricted-trigger.png" /></a></p>
 <h3 id="trigger-filters">Trigger filters</h3>
 <p>Leveraging the filters, users can meticulously <strong>define the criteria that activate their triggers</strong>. This level of granularity ensures that triggers are accurate, responding precisely to events that matter most. Users can tailor filters to consider various parameters such as object types, markings, sources, or other contextual details. They can also allow notifications for the assignment of a Task, a Case, etc.</p>
 <p>Beyond filters, a trigger can be configured to <strong>respond to three event types</strong>: creation, modification, and deletion.</p>
-<p><a class="glightbox" href="../assets/trigger-configuration.png" data-type="image" data-width="100%" data-height="auto" data-desc-position="bottom"><img alt="Trigger configuration" src="../assets/trigger-configuration.png" /></a></p>
+<p><a class="glightbox" href="../assets/trigger-configuration.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="Trigger configuration" src="../assets/trigger-configuration.png" /></a></p>
 <h3 id="instance-triggers">Instance triggers</h3>
 <p>Instance triggers offer a targeted approach to live monitoring by allowing users to set up triggers specific to one or several entities. These triggers, when activated, keep a vigilant eye on a predefined set of events related to the selected entities, ensuring that you stay instantly informed about crucial changes.</p>
 <h4 id="creating-instance-triggers">Creating instance triggers</h4>
@@ -4725,14 +4752,14 @@
 <li>Toggle the switch "Instance trigger".</li>
 <li>Choose the entities to monitor.</li>
 </ol>
-<p><a class="glightbox" href="../assets/instance-trigger-creation.png" data-type="image" data-width="100%" data-height="auto" data-desc-position="bottom"><img alt="Instance trigger creation" src="../assets/instance-trigger-creation.png" /></a></p>
+<p><a class="glightbox" href="../assets/instance-trigger-creation.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="Instance trigger creation" src="../assets/instance-trigger-creation.png" /></a></p>
 <p><strong>Method 2:</strong> Quick subscription</p>
 <ol>
 <li>On an entity's overview, locate the "Instance trigger quick subscription" button with the bell icon at the top right.</li>
 <li>Click on the button to create the instance trigger.</li>
 <li>(Optional) Click on it again to modify the instance trigger created.</li>
 </ol>
-<p><a class="glightbox" href="../assets/quick-subscription-button.png" data-type="image" data-width="100%" data-height="auto" data-desc-position="bottom"><img alt="Quick subscription button" src="../assets/quick-subscription-button.png" /></a></p>
+<p><a class="glightbox" href="../assets/quick-subscription-button.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="Quick subscription button" src="../assets/quick-subscription-button.png" /></a></p>
 <h4 id="events-monitored-by-instance-triggers">Events monitored by instance triggers</h4>
 <p>An instance trigger set on an entity X actively monitors the following events:</p>
 <ul>
@@ -4757,7 +4784,7 @@
 <li>Configure digest: Set the parameters, including triggers to be included and the frequency of notifications (daily, weekly, monthly). </li>
 <li>Choose the notifier(s): Select the notification method(s) (e.g. within the OpenCTI interface, via email, etc.).</li>
 </ol>
-<p><a class="glightbox" href="../assets/digest-creation.png" data-type="image" data-width="100%" data-height="auto" data-desc-position="bottom"><img alt="Digest configuration" src="../assets/digest-creation.png" /></a></p>
+<p><a class="glightbox" href="../assets/digest-creation.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="Digest configuration" src="../assets/digest-creation.png" /></a></p>
 <h3 id="benefits-of-digests">Benefits of digests</h3>
 <ul>
 <li>Organized notifications: Digests enable you to organize and categorize notifications, preventing a flood of individual alerts.</li>
@@ -4767,7 +4794,7 @@
 <p>Digests enhance your control over notification management, ensuring a more structured and convenient approach to staying informed about important events.</p>
 <h2 id="notifiers">Notifiers</h2>
 <p>In OpenCTI, notifiers serve as the channels for delivering notifications, allowing users to stay informed about critical events. The platform offers two built-in notifiers, "Default mailer" for email notifications and "User interface" for in-platform alerts.</p>
-<p><a class="glightbox" href="../assets/notifiers.png" data-type="image" data-width="100%" data-height="auto" data-desc-position="bottom"><img alt="Notifiers" src="../assets/notifiers.png" /></a></p>
+<p><a class="glightbox" href="../assets/notifiers.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="Notifiers" src="../assets/notifiers.png" /></a></p>
 <h3 id="notifier-connectors">Notifier connectors</h3>
 <p>OpenCTI features built-in notifier connectors that empower users to create personalized notifiers for notification and activity alerting. Three essential connectors are available:</p>
 <ul>
@@ -4776,7 +4803,7 @@
 <li>Generic webhook connector: Facilitates communication through webhooks.</li>
 </ul>
 <p>OpenCTI provides two samples of webhook notifiers designed for Teams integration.</p>
-<p><a class="glightbox" href="../assets/custom-notifiers.png" data-type="image" data-width="100%" data-height="auto" data-desc-position="bottom"><img alt="Custom notifiers" src="../assets/custom-notifiers.png" /></a></p>
+<p><a class="glightbox" href="../assets/custom-notifiers.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="Custom notifiers" src="../assets/custom-notifiers.png" /></a></p>
 <h3 id="configuration-and-access">Configuration and Access</h3>
 <p>Notifiers are manageable in the "Settings &gt; Customization &gt; Notifiers" window and can be restricted through Role-Based Access Control (RBAC). Administrators can restrict access to specific Users, Groups, or Organizations, ensuring controlled usage.</p>
 <p>For guidance on configuring custom notifiers and explore detailed setup instructions, refer to the <a href="../../administration/notifiers/">dedicated documentation page</a>.</p>
