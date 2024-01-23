@@ -427,7 +427,7 @@ TriggerEditionOverviewProps
             name="time"
             withMinutes={true}
             onSubmit={handleSubmitTime}
-            TextFieldProps={{
+            textFieldProps={{
               label: t_i18n('Time'),
               variant: 'standard',
               fullWidth: true,

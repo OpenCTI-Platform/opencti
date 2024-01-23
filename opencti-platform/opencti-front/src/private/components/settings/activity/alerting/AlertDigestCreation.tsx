@@ -252,7 +252,7 @@ const AlertDigestCreation: FunctionComponent<TriggerDigestCreationProps> = ({
           component={TimePickerField}
           name="time"
           withMinutes={true}
-          TextFieldProps={{
+          textFieldProps={{
             label: t_i18n('Time'),
             variant: 'standard',
             fullWidth: true,
