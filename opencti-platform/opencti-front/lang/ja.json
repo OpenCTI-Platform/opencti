@@ -1532,6 +1532,7 @@
   "entity_Stix-Core-Objects": "エンティティと観測結果",
   "entity_Stix-Core-Relationship": "リレーションシップ",
   "entity_stix-core-relationship": "リレーションシップ",
+  "entity_reported-in": "で報告されました",
   "entity_stix-sighting-relationship": "目撃情報",
   "entity_Stix-Meta-Objects": "メタエンティティ",
   "entity_Identity": "アイデンティティ",

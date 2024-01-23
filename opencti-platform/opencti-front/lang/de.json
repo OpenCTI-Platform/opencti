@@ -1317,6 +1317,7 @@
   "entity_Stix-Core-Objects": "Entitäten und Observablen",
   "entity_Stix-Core-Relationship": "Beziehungen",
   "entity_stix-core-relationship": "Beziehungen",
+  "entity_reported-in": "Gemeldet in",
   "entity_stix-sighting-relationship": "Sichtungen",
   "entity_Stix-Meta-Objects": "Meta-Entitäten",
   "entity_Identity": "Identität",

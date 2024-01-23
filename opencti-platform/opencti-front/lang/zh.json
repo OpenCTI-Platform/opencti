@@ -1501,6 +1501,7 @@
   "entity_Stix-Core-Objects": "STIX核心对象",
   "entity_Stix-Core-Relationship": "STIX核心关系",
   "entity_stix-core-relationship": "STIX核心关系",
+  "entity_reported-in": "报道于",
   "entity_stix-sighting-relationship": "STIX目击关系",
   "entity_Stix-Meta-Objects": "元实体",
   "entity_Identity": "身份",

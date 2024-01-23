@@ -1320,6 +1320,7 @@
   "entity_Stix-Core-Objects": "Entities and observables",
   "entity_Stix-Core-Relationship": "Relationships",
   "entity_stix-core-relationship": "Relationships",
+  "entity_reported-in": "Reported in",
   "entity_stix-sighting-relationship": "Sightings",
   "entity_Stix-Meta-Objects": "Meta entities",
   "entity_Identity": "Identity",
