@@ -96,7 +96,7 @@ steps:
       event:
         - pull_request
 
-  #  Launch api tests on Master
+  #  Launch api coverage on Master
   - name: api-coverage-on-master
     image: plugins/codecov
     settings:
@@ -110,7 +110,7 @@ steps:
         exclude:
           - pull_request
 
-  #  Launch api tests on Pull Request
+  #  Launch api coverage on Pull Request
   - name: api-coverage-on-pull-request
     image: plugins/codecov
     settings:
@@ -121,7 +121,7 @@ steps:
       event:
         - pull_request
 
-  #  Launch api tests on Master
+  #  Launch frontend tests on Master
   - name: frontend-tests-on-master
     image: node:20-alpine
     volumes:
@@ -145,7 +145,7 @@ steps:
         exclude:
           - pull_request
 
-  #  Launch api tests on Pull Request
+  #  Launch frontend tests on Pull Request
   - name: frontend-tests-on-pull-request
     image: node:20-alpine
     volumes:
