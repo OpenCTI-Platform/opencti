@@ -391,15 +391,11 @@ export const stixDomainObjectsLinesSearchQuery = graphql`
             }
           }
           objectMarking {
-            edges {
-              node {
-                definition
-                definition_type
-                definition
-                x_opencti_order
-                x_opencti_color
-              }
-            }
+            definition
+            definition_type
+            definition
+            x_opencti_order
+            x_opencti_color
           }
         }
       }
@@ -571,13 +567,9 @@ const StixDomainObjectsLines = createPaginationContainer(
                 name
               }
               objectLabel {
-                edges {
-                  node {
-                    id
-                    value
-                    color
-                  }
-                }
+                id
+                value
+                color
               }
             }
           }

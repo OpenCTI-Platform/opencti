@@ -62,8 +62,7 @@ const BasicRelationshipDetails: FunctionComponent<BasicRelationshipDetailsProps>
       </Typography>
       {relation.markedBy
         && relation.markedBy.length > 0 ? (
-          <ItemMarkings
-            markingDefinitionsEdges={relation.markedBy.map((marking) => ({ node: marking }))}
+          <ItemMarkings markingDefinitions={relation.markedBy ?? []}
             limit={2}
           />
         ) : (

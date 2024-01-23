@@ -25,13 +25,9 @@ const DataComponentDetailsFragment = graphql`
     id
     description
     objectLabel {
-      edges {
-        node {
-          id
-          value
-          color
-        }
-      }
+      id
+      value
+      color
     }
     ...DataComponentDataSources_dataComponent
     ...DataComponentAttackPatterns_dataComponent

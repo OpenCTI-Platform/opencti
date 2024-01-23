@@ -126,24 +126,16 @@ const stixCoreObjectOrStixRelationshipLastContainersQuery = graphql`
             }
           }
           objectMarking {
-            edges {
-              node {
-                id
-                definition_type
-                definition
-                x_opencti_order
-                x_opencti_color
-              }
-            }
+            id
+            definition_type
+            definition
+            x_opencti_order
+            x_opencti_color
           }
           objectLabel {
-            edges {
-              node {
-                id
-                value
-                color
-              }
-            }
+            id
+            value
+            color
           }
           ... on ObservedData {
             objects(first: 1) {
@@ -162,15 +154,11 @@ const stixCoreObjectOrStixRelationshipLastContainersQuery = graphql`
                       }
                     }
                     objectMarking {
-                      edges {
-                        node {
-                          id
-                          definition_type
-                          definition
-                          x_opencti_order
-                          x_opencti_color
-                        }
-                      }
+                      id
+                      definition_type
+                      definition
+                      x_opencti_order
+                      x_opencti_color
                     }
                   }
                   ... on AttackPattern {
@@ -434,9 +422,7 @@ class StixCoreObjectOrStixRelationshipLastContainers extends Component {
                                   >
                                     <ItemMarkings
                                       variant="inList"
-                                      markingDefinitionsEdges={
-                                        container.objectMarking.edges
-                                      }
+                                      markingDefinitions={container.objectMarking ?? []}
                                       limit={1}
                                     />
                                   </div>

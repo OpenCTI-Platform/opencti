@@ -57,13 +57,9 @@ const attackPatternLineFragment = graphql`
     created
     modified
     objectLabel {
-      edges {
-        node {
-          id
-          value
-          color
-        }
-      }
+      id
+      value
+      color
     }
     killChainPhases {
       edges {

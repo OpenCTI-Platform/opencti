@@ -1118,7 +1118,7 @@ export const elConvertHitsToMap = async (elements, opts) => {
   return convertedHitsMap;
 };
 
-export const elConvertHits = async (data, opts) => {
+export const elConvertHits = async (data, opts = {}) => {
   const { withoutRels = false } = opts;
   const convertedHits = [];
   let startProcessingTime = new Date().getTime();

@@ -341,8 +341,8 @@ class StixDomainObjectVictimologyRegionsList extends Component {
                         />
                         <ItemMarkings
                           variant="inList"
-                          markingDefinitionsEdges={
-                            stixCoreRelationship.objectMarking.edges
+                          markingDefinitions={
+                            stixCoreRelationship.objectMarking ?? []
                           }
                           limit={1}
                         />
@@ -470,8 +470,8 @@ class StixDomainObjectVictimologyRegionsList extends Component {
                                   />
                                   <ItemMarkings
                                     variant="inList"
-                                    markingDefinitionsEdges={
-                                      stixCoreRelationship.objectMarking.edges
+                                    markingDefinitions={
+                                      stixCoreRelationship.objectMarking ?? []
                                     }
                                     limit={1}
                                   />
@@ -583,10 +583,7 @@ class StixDomainObjectVictimologyRegionsList extends Component {
                                           />
                                           <ItemMarkings
                                             variant="inList"
-                                            markingDefinitionsEdges={
-                                              stixCoreRelationship.objectMarking
-                                                .edges
-                                            }
+                                            markingDefinitions={stixCoreRelationship.objectMarking ?? []}
                                             limit={1}
                                           />
                                           <ItemYears

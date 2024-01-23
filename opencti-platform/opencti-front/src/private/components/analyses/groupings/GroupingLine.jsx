@@ -166,7 +166,7 @@ class GroupingLineComponent extends Component {
               >
                 <ItemMarkings
                   variant="inList"
-                  markingDefinitionsEdges={node.objectMarking.edges ?? []}
+                  markingDefinitions={node.objectMarking ?? []}
                   limit={1}
                 />
               </div>
@@ -211,24 +211,16 @@ const GroupingLineFragment = createFragmentContainer(GroupingLineComponent, {
         }
       }
       objectMarking {
-        edges {
-          node {
-            id
-            definition_type
-            definition
-            x_opencti_order
-            x_opencti_color
-          }
-        }
+        id
+        definition_type
+        definition
+        x_opencti_order
+        x_opencti_color
       }
       objectLabel {
-        edges {
-          node {
-            id
-            value
-            color
-          }
-        }
+        id
+        value
+        color
       }
       creators {
         id

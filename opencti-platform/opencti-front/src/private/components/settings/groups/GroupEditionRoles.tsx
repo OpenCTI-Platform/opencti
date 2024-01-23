@@ -69,7 +69,7 @@ const GroupEditionRolesComponent: FunctionComponent<GroupEditionRolesComponentPr
     queryRef,
   );
   const rolesData = (roles?.edges ?? []).map((n) => n?.node) as { id: string, name: string }[];
-  const groupRoles = (group.roles ?? []).map((n) => ({ id: n?.id }));
+  const groupRoles = group.roles?.edges?.map(({ node: n }) => ({ id: n?.id })) ?? [];
   const [commitAddRole] = useMutation(groupEditionAddRoles);
   const [commitRemoveRole] = useMutation(groupEditionRemoveRoles);
 
@@ -132,13 +132,12 @@ const GroupEditionRoles = createFragmentContainer(GroupEditionRolesComponent, {
           orderMode: { type: "OrderingMode", defaultValue: asc }
       ) {
           id
-          roles(
-              orderBy: $orderBy,
-              orderMode: $orderMode,
-          ) {
-              ... on Role {
-                  id
-                  name
+          roles(orderBy: $orderBy,orderMode: $orderMode) {
+              edges {
+                  node {
+                      id
+                      name  
+                  }
               }
           }
       }

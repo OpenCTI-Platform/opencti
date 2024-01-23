@@ -126,7 +126,7 @@ const ContainerAddStixCoreObjectsLineComponent = ({
             >
               <ItemMarkings
                 variant="inList"
-                markingDefinitionsEdges={node.objectMarking.edges}
+                markingDefinitions={node.objectMarking ?? []}
                 limit={1}
               />
             </div>
@@ -329,24 +329,16 @@ export const ContainerAddStixCoreObjectsLine = createFragmentContainer(
           }
         }
         objectMarking {
-          edges {
-            node {
-              id
-              definition_type
-              definition
-              x_opencti_order
-              x_opencti_color
-            }
-          }
+          id
+          definition_type
+          definition
+          x_opencti_order
+          x_opencti_color
         }
         objectLabel {
-          edges {
-            node {
-              id
-              value
-              color
-            }
-          }
+          id
+          value
+          color
         }
         creators {
           id

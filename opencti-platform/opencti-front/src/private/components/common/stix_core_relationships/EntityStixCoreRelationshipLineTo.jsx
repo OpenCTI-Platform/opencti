@@ -206,7 +206,7 @@ class EntityStixCoreRelationshipLineToComponent extends Component {
               >
                 <ItemMarkings
                   variant="inList"
-                  markingDefinitionsEdges={node.objectMarking.edges ?? []}
+                  markingDefinitions={node.objectMarking ?? []}
                   limit={1}
                 />
               </div>
@@ -273,15 +273,11 @@ const EntityStixCoreRelationshipLineToFragment = createFragmentContainer(
           }
         }
         objectMarking {
-          edges {
-            node {
-              id
-              definition_type
-              definition
-              x_opencti_order
-              x_opencti_color
-            }
-          }
+          id
+          definition_type
+          definition
+          x_opencti_order
+          x_opencti_color
         }
         creators {
           id
@@ -304,13 +300,9 @@ const EntityStixCoreRelationshipLineToFragment = createFragmentContainer(
             created_at
             updated_at
             objectLabel {
-              edges {
-                node {
-                  id
-                  value
-                  color
-                }
-              }
+              id
+              value
+              color
             }
             createdBy {
               ... on Identity {
@@ -318,15 +310,11 @@ const EntityStixCoreRelationshipLineToFragment = createFragmentContainer(
               }
             }
             objectMarking {
-              edges {
-                node {
-                  id
-                  definition_type
-                  definition
-                  x_opencti_order
-                  x_opencti_color
-                }
-              }
+              id
+              definition_type
+              definition
+              x_opencti_order
+              x_opencti_color
             }
             creators {
               id

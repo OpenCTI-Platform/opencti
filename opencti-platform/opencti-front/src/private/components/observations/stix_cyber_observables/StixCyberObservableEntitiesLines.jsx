@@ -399,15 +399,11 @@ const StixCyberObservableEntitiesLines = createPaginationContainer(
                 }
               }
               objectMarking {
-                edges {
-                  node {
-                    id
-                    definition_type
-                    definition
-                    x_opencti_order
-                    x_opencti_color
-                  }
-                }
+                id
+                definition_type
+                definition
+                x_opencti_order
+                x_opencti_color
               }
               creators {
                 id

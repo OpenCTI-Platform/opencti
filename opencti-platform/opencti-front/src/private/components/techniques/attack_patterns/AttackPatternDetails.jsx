@@ -168,13 +168,9 @@ const AttackPatternDetails = createFragmentContainer(
           }
         }
         objectLabel {
-          edges {
-            node {
-              id
-              value
-              color
-            }
-          }
+          id
+          value
+          color
         }
         ...AttackPatternSubAttackPatterns_attackPattern
         ...AttackPatternParentAttackPatterns_attackPattern

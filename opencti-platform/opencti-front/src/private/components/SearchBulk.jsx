@@ -664,9 +664,7 @@ const SearchBulk = () => {
                           {entity.in_platform && (
                             <ItemMarkings
                               variant="inList"
-                              markingDefinitionsEdges={
-                                entity.markings.edges ?? []
-                              }
+                              markingDefinitions={entity.markings ?? []}
                               limit={1}
                             />
                           )}

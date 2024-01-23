@@ -111,13 +111,9 @@ const CaseRfiDetailsFragment = graphql`
     severity
     priority
     objectLabel {
-      edges {
-        node {
-          id
-          value
-          color
-        }
-      }
+      id
+      value
+      color
     }
     name
     x_opencti_stix_ids
@@ -153,15 +149,11 @@ const CaseRfiDetailsFragment = graphql`
               }
             }
             objectMarking {
-              edges {
-                node {
-                  id
-                  definition_type
-                  definition
-                  x_opencti_order
-                  x_opencti_color
-                }
-              }
+              id
+              definition_type
+              definition
+              x_opencti_order
+              x_opencti_color
             }
           }
         }
@@ -281,8 +273,8 @@ const CaseRfiDetails: FunctionComponent<CaseRfiDetailsProps> = ({
                   <div className={classes.itemMarking}>
                     <ItemMarkings
                       variant="inList"
-                      markingDefinitionsEdges={
-                          relatedContainer?.objectMarking?.edges ?? []
+                      markingDefinitions={
+                          relatedContainer?.objectMarking ?? []
                         }
                       limit={1}
                     />

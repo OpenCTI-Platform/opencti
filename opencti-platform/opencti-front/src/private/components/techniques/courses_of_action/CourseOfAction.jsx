@@ -64,9 +64,7 @@ class CourseOfActionComponent extends Component {
         </Grid>
         <StixCoreObjectOrStixCoreRelationshipNotes
           stixCoreObjectOrStixCoreRelationshipId={courseOfAction.id}
-          defaultMarkings={(courseOfAction.objectMarking?.edges ?? []).map(
-            (edge) => edge.node,
-          )}
+          defaultMarkings={courseOfAction.objectMarking ?? []}
         />
         <Security needs={[KNOWLEDGE_KNUPDATE]}>
           <CourseOfActionEdition courseOfActionId={courseOfAction.id} />
@@ -109,24 +107,16 @@ const CourseOfAction = createFragmentContainer(CourseOfActionComponent, {
         name
       }
       objectMarking {
-        edges {
-          node {
-            id
-            definition_type
-            definition
-            x_opencti_order
-            x_opencti_color
-          }
-        }
+        id
+        definition_type
+        definition
+        x_opencti_order
+        x_opencti_color
       }
       objectLabel {
-        edges {
-          node {
-            id
-            value
-            color
-          }
-        }
+        id
+        value
+        color
       }
       name
       x_opencti_aliases

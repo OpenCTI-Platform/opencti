@@ -339,15 +339,11 @@ export default createFragmentContainer(PositionEditionOverviewComponent, {
         }
       }
       objectMarking {
-        edges {
-          node {
-            id
-            definition_type
-            definition
-            x_opencti_order
-            x_opencti_color
-          }
-        }
+        id
+        definition_type
+        definition
+        x_opencti_order
+        x_opencti_color
       }
       status {
         id

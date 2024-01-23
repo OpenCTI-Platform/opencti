@@ -1,4 +1,4 @@
-import { addIncident, findAll, findById, incidentsTimeSeries, incidentsTimeSeriesByEntity, participantsPaginated } from '../domain/incident';
+import { addIncident, findAll, findById, incidentsTimeSeries, incidentsTimeSeriesByEntity } from '../domain/incident';
 import {
   stixDomainObjectAddRelation,
   stixDomainObjectCleanContext,
@@ -7,8 +7,12 @@ import {
   stixDomainObjectEditContext,
   stixDomainObjectEditField,
 } from '../domain/stixDomainObject';
-import { RELATION_OBJECT_ASSIGNEE } from '../schema/stixRefRelationship';
+import { RELATION_OBJECT_ASSIGNEE, RELATION_OBJECT_PARTICIPANT } from '../schema/stixRefRelationship';
 import { buildRefRelationKey } from '../schema/general';
+import { batchLoader } from '../database/middleware';
+import { batchInternalRels } from '../domain/stixCoreObject';
+
+const relBatchLoader = batchLoader(batchInternalRels);
 
 const incidentResolvers = {
   Query: {
@@ -22,7 +26,7 @@ const incidentResolvers = {
     },
   },
   Incident: {
-    objectParticipant: (current, args, context) => participantsPaginated(context, context.user, current.id, args),
+    objectParticipant: (container, _, context) => relBatchLoader.load({ element: container, type: RELATION_OBJECT_PARTICIPANT }, context, context.user),
   },
   IncidentsOrdering: {
     objectAssignee: buildRefRelationKey(RELATION_OBJECT_ASSIGNEE),

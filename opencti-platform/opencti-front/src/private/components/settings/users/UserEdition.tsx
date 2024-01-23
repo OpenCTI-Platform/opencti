@@ -71,22 +71,15 @@ const UserEditionFragment = createFragmentContainer(UserEdition, {
   user: graphql`
     fragment UserEdition_user on User
     @argumentDefinitions(
-      rolesOrderBy: { type: "RolesOrdering", defaultValue: name }
-      rolesOrderMode: { type: "OrderingMode", defaultValue: asc }
       groupsOrderBy: { type: "GroupsOrdering", defaultValue: name }
       groupsOrderMode: { type: "OrderingMode", defaultValue: asc }
-      organizationsOrderBy: {
-        type: "OrganizationsOrdering"
-        defaultValue: name
-      }
+      organizationsOrderBy: { type: "OrganizationsOrdering"defaultValue: name }
       organizationsOrderMode: { type: "OrderingMode", defaultValue: asc }
     ) {
       id
       external
       ...UserEditionOverview_user
         @arguments(
-          rolesOrderBy: $rolesOrderBy
-          rolesOrderMode: $rolesOrderMode
           organizationsOrderBy: $organizationsOrderBy
           organizationsOrderMode: $organizationsOrderMode
         )

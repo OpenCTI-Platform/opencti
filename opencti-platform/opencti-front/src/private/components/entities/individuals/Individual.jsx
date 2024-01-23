@@ -71,9 +71,7 @@ class IndividualComponent extends Component {
         </Grid>
         <StixCoreObjectOrStixCoreRelationshipNotes
           stixCoreObjectOrStixCoreRelationshipId={individual.id}
-          defaultMarkings={(individual.objectMarking?.edges ?? []).map(
-            (edge) => edge.node,
-          )}
+          defaultMarkings={individual.objectMarking ?? []}
         />
         {!individual.isUser && (
           <Security needs={[KNOWLEDGE_KNUPDATE]}>
@@ -120,24 +118,16 @@ const Individual = createFragmentContainer(IndividualComponent, {
         name
       }
       objectMarking {
-        edges {
-          node {
-            id
-            definition_type
-            definition
-            x_opencti_order
-            x_opencti_color
-          }
-        }
+        id
+        definition_type
+        definition
+        x_opencti_order
+        x_opencti_color
       }
       objectLabel {
-        edges {
-          node {
-            id
-            value
-            color
-          }
-        }
+        id
+        value
+        color
       }
       name
       x_opencti_aliases

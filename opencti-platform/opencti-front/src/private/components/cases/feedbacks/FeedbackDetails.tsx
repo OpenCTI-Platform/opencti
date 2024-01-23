@@ -29,13 +29,9 @@ const FeedbackDetailsFragment = graphql`
     modified
     created_at
     objectLabel {
-      edges {
-        node {
-          id
-          value
-          color
-        }
-      }
+      id
+      value
+      color
     }
     name
     x_opencti_stix_ids

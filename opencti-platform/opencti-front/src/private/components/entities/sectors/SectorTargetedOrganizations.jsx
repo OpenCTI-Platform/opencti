@@ -85,15 +85,11 @@ const sectorTargetedOrganizationsQuery = graphql`
               }
             }
             objectMarking {
-              edges {
-                node {
-                  id
-                  definition_type
-                  definition
-                  x_opencti_order
-                  x_opencti_color
-                }
-              }
+              id
+              definition_type
+              definition
+              x_opencti_order
+              x_opencti_color
             }
             from {
               ... on BasicObject {
@@ -161,8 +157,8 @@ class SectorTargetedOrganizations extends Component {
                               <div style={{ width: 110, paddingRight: 20 }}>
                                 <ItemMarkings
                                   variant="inList"
-                                  markingDefinitionsEdges={
-                                    relation.objectMarking.edges
+                                  markingDefinitions={
+                                    relation.objectMarking ?? []
                                   }
                                   limit={1}
                                 />

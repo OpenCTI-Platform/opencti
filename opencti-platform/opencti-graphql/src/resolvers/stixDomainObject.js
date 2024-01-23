@@ -2,7 +2,6 @@ import { withFilter } from 'graphql-subscriptions';
 import { BUS_TOPICS } from '../config/conf';
 import {
   addStixDomainObject,
-  assigneesPaginated,
   findAll,
   findById,
   stixDomainObjectAddRelation,
@@ -26,8 +25,12 @@ import { pubSubAsyncIterator } from '../database/redis';
 import withCancel from '../graphql/subscriptionWrapper';
 import { ABSTRACT_STIX_DOMAIN_OBJECT } from '../schema/general';
 import { stixDomainObjectOptions as StixDomainObjectsOptions } from '../schema/stixDomainObjectOptions';
-import { stixCoreObjectExportPush, stixCoreObjectImportPush, stixCoreObjectsExportPush } from '../domain/stixCoreObject';
+import { batchInternalRels, stixCoreObjectExportPush, stixCoreObjectImportPush, stixCoreObjectsExportPush } from '../domain/stixCoreObject';
 import { paginatedForPathWithEnrichment } from '../modules/internal/document/document-domain';
+import { RELATION_OBJECT_ASSIGNEE } from '../schema/stixRefRelationship';
+import { batchLoader } from '../database/middleware';
+
+const relBatchLoader = batchLoader(batchInternalRels);
 
 const stixDomainObjectResolvers = {
   Query: {
@@ -62,7 +65,7 @@ const stixDomainObjectResolvers = {
     },
     avatar: (stixDomainObject) => stixDomainObjectAvatar(stixDomainObject),
     status: (stixDomainObject, _, context) => (stixDomainObject.x_opencti_workflow_id ? findStatusById(context, context.user, stixDomainObject.x_opencti_workflow_id) : null),
-    objectAssignee: (stixDomainObject, args, context) => assigneesPaginated(context, context.user, stixDomainObject.id, args),
+    objectAssignee: (stixDomainObject, args, context) => relBatchLoader.load({ element: stixDomainObject, type: RELATION_OBJECT_ASSIGNEE }, context, context.user),
     workflowEnabled: async (stixDomainObject, _, context) => {
       const statusesType = await findByType(context, context.user, stixDomainObject.entity_type);
       return statusesType.length > 0;

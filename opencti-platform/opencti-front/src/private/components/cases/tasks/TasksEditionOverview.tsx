@@ -78,33 +78,21 @@ const tasksEditionOverviewFragment = graphql`
     }
     workflowEnabled
     objectMarking {
-      edges {
-        node {
-          id
-          definition_type
-          definition
-          x_opencti_order
-          x_opencti_color
-        }
-      }
+      id
+      definition_type
+      definition
+      x_opencti_order
+      x_opencti_color
     }
     objectAssignee {
-      edges {
-        node {
-          id
-          name
-          entity_type
-        }
-      }
+      id
+      name
+      entity_type
     }
     objectParticipant {
-      edges {
-        node {
-          id
-          name
-          entity_type
-        }
-      }
+      id
+      name
+      entity_type
     }
   }
 `;

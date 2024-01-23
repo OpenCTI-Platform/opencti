@@ -1,9 +1,14 @@
 import { Promise as BluePromise } from 'bluebird';
 import { stixDomainObjectDelete } from '../../domain/stixDomainObject';
 import type { Resolvers } from '../../generated/graphql';
-import { findAll, findById, participantsPaginated, upsertTemplateForCase } from './case-domain';
+import { findAll, findById, upsertTemplateForCase } from './case-domain';
 import { caseTasksPaginated } from '../task/task-domain';
 import type { BasicStoreEntityTask } from '../task/task-types';
+import { RELATION_OBJECT_PARTICIPANT } from '../../schema/stixRefRelationship';
+import { batchLoader } from '../../database/middleware';
+import { batchInternalRels } from '../../domain/stixCoreObject';
+
+const relBatchLoader = batchLoader(batchInternalRels);
 
 const caseResolvers: Resolvers = {
   Query: {
@@ -20,7 +25,7 @@ const caseResolvers: Resolvers = {
       return 'Unknown';
     },
     tasks: (current, args, context) => caseTasksPaginated<BasicStoreEntityTask>(context, context.user, current.id, args),
-    objectParticipant: (current, args, context) => participantsPaginated(context, context.user, current.id, args),
+    objectParticipant: (container, _, context) => relBatchLoader.load({ element: container, type: RELATION_OBJECT_PARTICIPANT }, context, context.user),
   },
   CasesOrdering: {
     creator: 'creator_id',

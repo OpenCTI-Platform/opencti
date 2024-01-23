@@ -207,8 +207,8 @@ class StixDomainObjectGlobalKillChainComponent extends Component {
                             />
                             <ItemMarkings
                               variant="inList"
-                              markingDefinitionsEdges={
-                                stixDomainObject.objectMarking.edges
+                              markingDefinitions={
+                                stixDomainObject.objectMarking ?? []
                               }
                               limit={1}
                             />
@@ -280,15 +280,11 @@ const StixDomainObjectGlobalKillChain = createRefetchContainer(
                   }
                 }
                 objectMarking {
-                  edges {
-                    node {
-                      id
-                      definition_type
-                      definition
-                      x_opencti_order
-                      x_opencti_color
-                    }
-                  }
+                  id
+                  definition_type
+                  definition
+                  x_opencti_order
+                  x_opencti_color
                 }
               }
               to {

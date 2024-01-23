@@ -21,9 +21,12 @@ import {
   stixDomainObjectEditContext,
   stixDomainObjectEditField,
 } from '../domain/stixDomainObject';
-import { distributionEntities } from '../database/middleware';
+import { batchLoader, distributionEntities } from '../database/middleware';
 import { ENTITY_TYPE_CONTAINER_REPORT } from '../schema/stixDomainObject';
-import { participantsPaginated } from '../domain/incident';
+import { RELATION_OBJECT_PARTICIPANT } from '../schema/stixRefRelationship';
+import { batchInternalRels } from '../domain/stixCoreObject';
+
+const relBatchLoader = batchLoader(batchInternalRels);
 
 const reportResolvers = {
   Query: {
@@ -59,7 +62,7 @@ const reportResolvers = {
   },
   Report: {
     deleteWithElementsCount: (report, _, context) => reportDeleteElementsCount(context, context.user, report.id),
-    objectParticipant: (current, args, context) => participantsPaginated(context, context.user, current.id, args),
+    objectParticipant: (container, _, context) => relBatchLoader.load({ element: container, type: RELATION_OBJECT_PARTICIPANT }, context, context.user),
   },
   Mutation: {
     reportEdit: (_, { id }, context) => ({

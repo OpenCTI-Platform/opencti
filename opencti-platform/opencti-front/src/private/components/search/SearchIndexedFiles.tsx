@@ -136,7 +136,7 @@ const SearchIndexedFilesComponent = () => {
             {node.entity && (
               <ItemMarkings
                 variant="inList"
-                markingDefinitionsEdges={node.entity.objectMarking?.edges ?? []}
+                markingDefinitions={node.entity.objectMarking ?? []}
                 limit={1}
               />
             )}

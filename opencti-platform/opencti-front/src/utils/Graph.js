@@ -599,18 +599,14 @@ export const buildCorrelationData = (
 ) => {
   const objects = R.map((n) => {
     let { objectMarking } = n;
-    if (R.isNil(objectMarking) || R.isEmpty(objectMarking.edges)) {
+    if (R.isNil(objectMarking) || R.isEmpty(objectMarking)) {
       objectMarking = [
         {
-          node: {
-            id: 'abb8eb18-a02c-48e9-adae-08c92275c87e',
-            definition: t('None'),
-            definition_type: t('None'),
-          },
+          id: 'abb8eb18-a02c-48e9-adae-08c92275c87e',
+          definition: t('None'),
+          definition_type: t('None'),
         },
       ];
-    } else {
-      objectMarking = R.map((m) => m.node, objectMarking.edges);
     }
     let { createdBy } = n;
     if (R.isNil(createdBy) || R.isEmpty(createdBy)) {
@@ -646,18 +642,14 @@ export const buildCorrelationData = (
     R.flatten,
     R.map((n) => {
       let { objectMarking } = n.node;
-      if (R.isNil(objectMarking) || R.isEmpty(objectMarking.edges)) {
+      if (R.isNil(objectMarking) || R.isEmpty(objectMarking)) {
         objectMarking = [
           {
-            node: {
-              id: 'abb8eb18-a02c-48e9-adae-08c92275c87e',
-              definition: t('None'),
-              definition_type: t('None'),
-            },
+            id: 'abb8eb18-a02c-48e9-adae-08c92275c87e',
+            definition: t('None'),
+            definition_type: t('None'),
           },
         ];
-      } else {
-        objectMarking = R.map((m) => m.node, objectMarking.edges);
       }
       let { createdBy } = n.node;
       if (R.isNil(createdBy) || R.isEmpty(createdBy)) {
@@ -752,18 +744,14 @@ export const buildCaseCorrelationData = (
 ) => {
   const objects = R.map((n) => {
     let { objectMarking } = n;
-    if (R.isNil(objectMarking) || R.isEmpty(objectMarking.edges)) {
+    if (R.isNil(objectMarking) || R.isEmpty(objectMarking)) {
       objectMarking = [
         {
-          node: {
-            id: 'abb8eb18-a02c-48e9-adae-08c92275c87e',
-            definition: t('None'),
-            definition_type: t('None'),
-          },
+          id: 'abb8eb18-a02c-48e9-adae-08c92275c87e',
+          definition: t('None'),
+          definition_type: t('None'),
         },
       ];
-    } else {
-      objectMarking = R.map((m) => m.node, objectMarking.edges);
     }
     let { createdBy } = n;
     if (R.isNil(createdBy) || R.isEmpty(createdBy)) {
@@ -799,18 +787,14 @@ export const buildCaseCorrelationData = (
     R.flatten,
     R.map((n) => {
       let { objectMarking } = n.node;
-      if (R.isNil(objectMarking) || R.isEmpty(objectMarking.edges)) {
+      if (R.isNil(objectMarking) || R.isEmpty(objectMarking)) {
         objectMarking = [
           {
-            node: {
-              id: 'abb8eb18-a02c-48e9-adae-08c92275c87e',
-              definition: t('None'),
-              definition_type: t('None'),
-            },
+            id: 'abb8eb18-a02c-48e9-adae-08c92275c87e',
+            definition: t('None'),
+            definition_type: t('None'),
           },
         ];
-      } else {
-        objectMarking = R.map((m) => m.node, objectMarking.edges);
       }
       let { createdBy } = n.node;
       if (R.isNil(createdBy) || R.isEmpty(createdBy)) {
@@ -939,10 +923,10 @@ export const buildGraphData = (objects, graphData, t) => {
         (n.types?.includes('inferred') && !n.types.includes('manual')) || false,
       defaultDate: jsDate(defaultDate(n)),
       markedBy:
-        !R.isNil(n.objectMarking) && !R.isEmpty(n.objectMarking.edges)
+        !R.isNil(n.objectMarking) && !R.isEmpty(n.objectMarking)
           ? R.map(
-            (m) => ({ id: m.node.id, definition: m.node.definition }),
-            n.objectMarking.edges,
+            (m) => ({ id: m.id, definition: m.definition }),
+            n.objectMarking,
           )
           : [
             {
@@ -978,10 +962,10 @@ export const buildGraphData = (objects, graphData, t) => {
         stop_time: '',
         defaultDate: jsDate(defaultDate(n)),
         markedBy:
-          !R.isNil(n.objectMarking) && !R.isEmpty(n.objectMarking.edges)
+          !R.isNil(n.objectMarking) && !R.isEmpty(n.objectMarking)
             ? R.map(
-              (m) => ({ id: m.node.id, definition: m.node.definition }),
-              n.objectMarking.edges,
+              (m) => ({ id: m.id, definition: m.definition }),
+              n.objectMarking,
             )
             : [
               {
@@ -1014,10 +998,10 @@ export const buildGraphData = (objects, graphData, t) => {
         stop_time: '',
         defaultDate: jsDate(defaultDate(n)),
         markedBy:
-          !R.isNil(n.objectMarking) && !R.isEmpty(n.objectMarking.edges)
+          !R.isNil(n.objectMarking) && !R.isEmpty(n.objectMarking)
             ? R.map(
-              (m) => ({ id: m.node.id, definition: m.node.definition }),
-              n.objectMarking.edges,
+              (m) => ({ id: m.id, definition: m.definition }),
+              n.objectMarking,
             )
             : [
               {
@@ -1134,10 +1118,10 @@ export const buildGraphData = (objects, graphData, t) => {
           (n.types?.includes('inferred') && !n.types.includes('manual'))
           || false,
         markedBy:
-          !R.isNil(n.objectMarking) && !R.isEmpty(n.objectMarking.edges)
+          !R.isNil(n.objectMarking) && !R.isEmpty(n.objectMarking)
             ? R.map(
-              (m) => ({ id: m.node.id, definition: m.node.definition }),
-              n.objectMarking.edges,
+              (m) => ({ id: m.id, definition: m.definition }),
+              n.objectMarking,
             )
             : [
               {

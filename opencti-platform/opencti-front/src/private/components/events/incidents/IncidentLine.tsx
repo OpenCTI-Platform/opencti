@@ -74,33 +74,21 @@ const IncidentLineFragment = graphql`
     confidence
     entity_type
     objectAssignee {
-      edges {
-        node {
-          entity_type
-          id
-          name
-        }
-      }
+      entity_type
+      id
+      name
     }
     objectMarking {
-      edges {
-        node {
-          id
-          definition_type
-          definition
-          x_opencti_order
-          x_opencti_color
-        }
-      }
+      id
+      definition_type
+      definition
+      x_opencti_order
+      x_opencti_color
     }
     objectLabel {
-      edges {
-        node {
-          id
-          value
-          color
-        }
-      }
+      id
+      value
+      color
     }
     creators {
       id
@@ -190,7 +178,7 @@ export const IncidentLine: FunctionComponent<IncidentLineComponentProps> = ({
               className={classes.bodyItem}
               style={{ width: dataColumns.objectAssignee.width }}
             >
-              {(data.objectAssignee?.edges ?? []).map((p) => p?.node.name).join(', ')}
+              {(data.objectAssignee ?? []).map((p) => p.name).join(', ')}
             </div>
             <div
               className={classes.bodyItem}
@@ -230,7 +218,7 @@ export const IncidentLine: FunctionComponent<IncidentLineComponentProps> = ({
             >
               <ItemMarkings
                 variant="inList"
-                markingDefinitionsEdges={data.objectMarking?.edges ?? []}
+                markingDefinitions={data.objectMarking ?? []}
                 limit={1}
               />
             </div>

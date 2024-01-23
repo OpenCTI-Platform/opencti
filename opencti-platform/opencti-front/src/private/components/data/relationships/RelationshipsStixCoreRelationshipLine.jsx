@@ -230,7 +230,7 @@ const RelationshipsStixCoreRelationshipLineComponent = ({
             >
               <ItemMarkings
                 variant="inList"
-                markingDefinitionsEdges={node.objectMarking.edges ?? []}
+                markingDefinitions={node.objectMarking ?? []}
                 limit={1}
               />
             </div>
@@ -268,23 +268,15 @@ export const RelationshipsStixCoreRelationshipLine = createFragmentContainer(
           }
         }
         objectMarking {
-          edges {
-            node {
-              id
-              definition
-              x_opencti_order
-              x_opencti_color
-            }
-          }
+          id
+          definition
+          x_opencti_order
+          x_opencti_color
         }
         objectLabel {
-          edges {
-            node {
-              id
-              value
-              color
-            }
-          }
+          id
+          value
+          color
         }
         x_opencti_inferences {
           rule {
@@ -493,14 +485,10 @@ export const RelationshipsStixCoreRelationshipLine = createFragmentContainer(
                             }
                           }
                           objectMarking {
-                            edges {
-                              node {
-                                id
-                                definition
-                                x_opencti_order
-                                x_opencti_color
-                              }
-                            }
+                            id
+                            definition
+                            x_opencti_order
+                            x_opencti_color
                           }
                         }
                         ... on AttackPattern {
@@ -820,14 +808,10 @@ export const RelationshipsStixCoreRelationshipLine = createFragmentContainer(
                                 }
                               }
                               objectMarking {
-                                edges {
-                                  node {
-                                    id
-                                    definition
-                                    x_opencti_order
-                                    x_opencti_color
-                                  }
-                                }
+                                id
+                                definition
+                                x_opencti_order
+                                x_opencti_color
                               }
                             }
                             ... on AttackPattern {
@@ -1057,14 +1041,10 @@ export const RelationshipsStixCoreRelationshipLine = createFragmentContainer(
                             }
                           }
                           objectMarking {
-                            edges {
-                              node {
-                                id
-                                definition
-                                x_opencti_order
-                                x_opencti_color
-                              }
-                            }
+                            id
+                            definition
+                            x_opencti_order
+                            x_opencti_color
                           }
                         }
                         ... on AttackPattern {
@@ -1297,14 +1277,10 @@ export const RelationshipsStixCoreRelationshipLine = createFragmentContainer(
                                 }
                               }
                               objectMarking {
-                                edges {
-                                  node {
-                                    id
-                                    definition
-                                    x_opencti_order
-                                    x_opencti_color
-                                  }
-                                }
+                                id
+                                definition
+                                x_opencti_order
+                                x_opencti_color
                               }
                             }
                             ... on AttackPattern {
@@ -1531,14 +1507,10 @@ export const RelationshipsStixCoreRelationshipLine = createFragmentContainer(
                                 }
                               }
                               objectMarking {
-                                edges {
-                                  node {
-                                    id
-                                    definition
-                                    x_opencti_order
-                                    x_opencti_color
-                                  }
-                                }
+                                id
+                                definition
+                                x_opencti_order
+                                x_opencti_color
                               }
                             }
                             ... on AttackPattern {
@@ -1772,14 +1744,10 @@ export const RelationshipsStixCoreRelationshipLine = createFragmentContainer(
                             }
                           }
                           objectMarking {
-                            edges {
-                              node {
-                                id
-                                definition
-                                x_opencti_order
-                                x_opencti_color
-                              }
-                            }
+                            id
+                            definition
+                            x_opencti_order
+                            x_opencti_color
                           }
                         }
                         ... on AttackPattern {
@@ -2095,14 +2063,10 @@ export const RelationshipsStixCoreRelationshipLine = createFragmentContainer(
                                 }
                               }
                               objectMarking {
-                                edges {
-                                  node {
-                                    id
-                                    definition
-                                    x_opencti_order
-                                    x_opencti_color
-                                  }
-                                }
+                                id
+                                definition
+                                x_opencti_order
+                                x_opencti_color
                               }
                             }
                             ... on AttackPattern {
@@ -2332,14 +2296,10 @@ export const RelationshipsStixCoreRelationshipLine = createFragmentContainer(
                             }
                           }
                           objectMarking {
-                            edges {
-                              node {
-                                id
-                                definition
-                                x_opencti_order
-                                x_opencti_color
-                              }
-                            }
+                            id
+                            definition
+                            x_opencti_order
+                            x_opencti_color
                           }
                         }
                         ... on AttackPattern {
@@ -2572,14 +2532,10 @@ export const RelationshipsStixCoreRelationshipLine = createFragmentContainer(
                                 }
                               }
                               objectMarking {
-                                edges {
-                                  node {
-                                    id
-                                    definition
-                                    x_opencti_order
-                                    x_opencti_color
-                                  }
-                                }
+                                id
+                                definition
+                                x_opencti_order
+                                x_opencti_color
                               }
                             }
                             ... on AttackPattern {
@@ -2806,14 +2762,10 @@ export const RelationshipsStixCoreRelationshipLine = createFragmentContainer(
                                 }
                               }
                               objectMarking {
-                                edges {
-                                  node {
-                                    id
-                                    definition
-                                    x_opencti_order
-                                    x_opencti_color
-                                  }
-                                }
+                                id
+                                definition
+                                x_opencti_order
+                                x_opencti_color
                               }
                             }
                             ... on AttackPattern {
@@ -2950,14 +2902,10 @@ export const RelationshipsStixCoreRelationshipLine = createFragmentContainer(
           name
         }
         objectMarking {
-          edges {
-            node {
-              id
-              definition
-              x_opencti_order
-              x_opencti_color
-            }
-          }
+          id
+          definition
+          x_opencti_order
+          x_opencti_color
         }
         from {
           ... on BasicObject {
@@ -3087,14 +3035,10 @@ export const RelationshipsStixCoreRelationshipLine = createFragmentContainer(
                       }
                     }
                     objectMarking {
-                      edges {
-                        node {
-                          id
-                          definition
-                          x_opencti_order
-                          x_opencti_color
-                        }
-                      }
+                      id
+                      definition
+                      x_opencti_order
+                      x_opencti_color
                     }
                   }
                   ... on AttackPattern {
@@ -3520,14 +3464,10 @@ export const RelationshipsStixCoreRelationshipLine = createFragmentContainer(
                       }
                     }
                     objectMarking {
-                      edges {
-                        node {
-                          id
-                          definition
-                          x_opencti_order
-                          x_opencti_color
-                        }
-                      }
+                      id
+                      definition
+                      x_opencti_order
+                      x_opencti_color
                     }
                   }
                   ... on AttackPattern {

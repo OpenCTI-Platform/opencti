@@ -51,31 +51,19 @@ const TaskFragment = graphql`
     workflowEnabled
     entity_type
     objectMarking {
-      edges {
-        node {
-          definition
-          definition_type
-          id
-        }
-      }
+      definition
+      definition_type
+      id
     }
     objectLabel {
-      edges {
-        node {
-          id
-          value
-          color
-        }
-      }
+      id
+      value
+      color
     }
     objectAssignee {
-      edges {
-        node {
-          entity_type
-          id
-          name
-        }
-      }
+      entity_type
+      id
+      name
     }
     status {
       template {
@@ -110,7 +98,7 @@ export const tasksDataColumns: DataColumns = {
     width: '18%',
     isSortable: true,
     // eslint-disable-next-line @typescript-eslint/no-shadow
-    render: (task: TasksLine_node$data) => task.objectAssignee?.edges?.map(({ node }) => node.name).join(', '),
+    render: (task: TasksLine_node$data) => (task.objectAssignee ?? []).map((node) => node.name).join(', '),
   },
   objectLabel: {
     label: 'Labels',

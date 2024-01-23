@@ -14,9 +14,9 @@ type Task implements Container & StixDomainObject & StixCoreObject & StixObject 
   # StixCoreObject
   createdBy: Identity
   numberOfConnectedElement: Int!
-  objectMarking: MarkingDefinitionConnection
-  objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
-  objectLabel: LabelConnection
+  objectMarking: [MarkingDefinition!]
+  objectOrganization: [Organization!] @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
+  objectLabel: [Label!]
   externalReferences(first: Int): ExternalReferenceConnection
   containersNumber: Number
   containers(first: Int, entityTypes: [String!]): ContainerConnection
@@ -90,7 +90,8 @@ type Task implements Container & StixDomainObject & StixCoreObject & StixObject 
   created: DateTime
   modified: DateTime
   x_opencti_graph_data: String
-  objectAssignee: AssigneeConnection
+  objectAssignee: [Assignee!]
+  objectParticipant: [Participant!]
   avatar: OpenCtiFile
   # Container
   objects(
@@ -128,7 +129,6 @@ type Task implements Container & StixDomainObject & StixCoreObject & StixObject 
   name: String!
   description: String
   due_date: DateTime
-  objectParticipant: ParticipantConnection
 }
 
 # Ordering

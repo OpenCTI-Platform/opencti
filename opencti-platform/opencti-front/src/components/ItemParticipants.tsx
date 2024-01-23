@@ -1,19 +1,18 @@
 import React, { FunctionComponent } from 'react';
 import Button from '@mui/material/Button';
-import { ObjectParticipantFieldParticipantsSearchQuery$data } from '../private/components/common/form/__generated__/ObjectParticipantFieldParticipantsSearchQuery.graphql';
 import FieldOrEmpty from './FieldOrEmpty';
 
-type Participants = ObjectParticipantFieldParticipantsSearchQuery$data['participants'];
 interface ItemParticipantsProps {
-  participants: Participants;
+  participants: {
+    readonly entity_type: string
+    readonly id: string
+    readonly name: string
+  }[];
 }
 
-const ItemParticipants: FunctionComponent<ItemParticipantsProps> = ({
-  participants,
-}) => {
-  const participantsData = (participants?.edges ?? []).slice()
-    .sort((a, b) => a.node.name.localeCompare(b.node.name))
-    .map((n) => n.node);
+const ItemParticipants: FunctionComponent<ItemParticipantsProps> = ({ participants }) => {
+  const participantsData = (participants ?? []).slice()
+    .sort((a, b) => a.name.localeCompare(b.name));
 
   return (
     <FieldOrEmpty source={participantsData}>

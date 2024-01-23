@@ -52,13 +52,9 @@ const InfrastructureDetailsFragment = graphql`
       }
     }
     objectLabel {
-      edges {
-        node {
-          id
-          value
-          color
-        }
-      }
+      id
+      value
+      color
     }
   }
 `;

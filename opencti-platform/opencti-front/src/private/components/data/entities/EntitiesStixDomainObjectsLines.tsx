@@ -85,14 +85,10 @@ export const entitiesStixDomainObjectsLinesFragment = graphql`
             }
           }
           objectMarking {
-            edges {
-              node {
-                id
-                definition
-                x_opencti_order
-                x_opencti_color
-              }
-            }
+            id
+            definition
+            x_opencti_order
+            x_opencti_color
           }
           ...EntitiesStixDomainObjectLine_node
         }

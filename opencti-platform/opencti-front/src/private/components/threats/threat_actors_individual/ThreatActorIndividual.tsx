@@ -51,25 +51,17 @@ export const threatActorIndividualFragment = graphql`
       name
     }
     objectMarking {
-      edges {
-        node {
-          id
-          definition
-          definition_type
-          definition
-          x_opencti_order
-          x_opencti_color
-        }
-      }
+      id
+      definition
+      definition_type
+      definition
+      x_opencti_order
+      x_opencti_color
     }
     objectLabel {
-      edges {
-        node {
-          id
-          value
-          color
-        }
-      }
+      id
+      value
+      color
     }
     name
     aliases
@@ -214,9 +206,7 @@ const ThreatActorIndividualComponent = ({
       </Grid>
       <StixCoreObjectOrStixCoreRelationshipNotes
         stixCoreObjectOrStixCoreRelationshipId={threatActorIndividual.id}
-        defaultMarkings={(threatActorIndividual.objectMarking?.edges ?? []).map(
-          (edge) => edge.node,
-        )}
+        defaultMarkings={threatActorIndividual.objectMarking ?? []}
       />
       <Security needs={[KNOWLEDGE_KNUPDATE]}>
         <ThreatActorIndividualEdition

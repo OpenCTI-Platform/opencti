@@ -139,8 +139,8 @@ class StixDomainObjectOverview extends Component {
                     {t('Marking')}
                   </Typography>
                   <ItemMarkings
-                    markingDefinitionsEdges={
-                      stixDomainObject.objectMarking.edges ?? []
+                    markingDefinitions={
+                      stixDomainObject.objectMarking ?? []
                     }
                   />
                 </>
@@ -249,11 +249,7 @@ class StixDomainObjectOverview extends Component {
                   >
                     {t('Assignees')}
                   </Typography>
-                  <ItemAssignees
-                    assigneesEdges={
-                      stixDomainObject.objectAssignee?.edges ?? []
-                    }
-                  />
+                  <ItemAssignees assignees={stixDomainObject.objectAssignee ?? []}/>
                 </>
               )}
               {displayParticipants && (

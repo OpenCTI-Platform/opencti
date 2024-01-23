@@ -51,12 +51,8 @@ const containerHeaderSharedQuery = graphql`
   query StixCoreRelationshipSharingQuery($id: String!) {
     stixCoreRelationship(id: $id) {
       objectOrganization {
-        edges {
-          node {
-            id
-            name
-          }
-        }
+        id
+        name
       }
     }
   }
@@ -71,12 +67,8 @@ const containerHeaderSharedQueryGroupDeleteMutation = graphql`
       restrictionOrganizationDelete(organizationId: $organizationId) {
         id
         objectOrganization {
-          edges {
-            node {
-              id
-              name
-            }
-          }
+          id
+          name
         }
       }
     }
@@ -92,12 +84,8 @@ const containerHeaderSharedGroupAddMutation = graphql`
       restrictionOrganizationAdd(organizationId: $organizationId) {
         id
         objectOrganization {
-          edges {
-            node {
-              id
-              name
-            }
-          }
+          id
+          name
         }
       }
     }
@@ -156,7 +144,7 @@ ContainerHeaderSharedProps
   const render = ({
     stixCoreRelationship,
   }: StixCoreRelationshipSharingQuery$data) => {
-    const edges = stixCoreRelationship?.objectOrganization?.edges ?? [];
+    const edges = stixCoreRelationship?.objectOrganization ?? [];
     return (
       <React.Fragment>
         <Typography variant="h3" gutterBottom={true} style={{ float: 'left' }}>
@@ -177,14 +165,14 @@ ContainerHeaderSharedProps
         {!isEnterpriseEdition && <EEChip floating={true} />}
         <div className="clearfix" />
         {edges.map((edge) => (
-          <Tooltip key={edge.node.id} title={edge.node.name}>
+          <Tooltip key={edge.id} title={edge.name}>
             <Chip
               icon={<AccountBalanceOutlined />}
               classes={{ root: classes.organization }}
               color="warning"
               variant="outlined"
-              label={truncate(edge.node.name, 15)}
-              onDelete={() => removeOrganization(edge.node.id)}
+              label={truncate(edge.name, 15)}
+              onDelete={() => removeOrganization(edge.id)}
             />
           </Tooltip>
         ))}

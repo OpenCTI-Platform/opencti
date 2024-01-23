@@ -45,9 +45,9 @@ export const stixObjectOrRelationshipAddRefRelation = async (
   const patch = { [fieldName]: [input.toId] };
   const operations = { [fieldName]: UPDATE_OPERATION_ADD };
   // Update data
-  await patchAttribute(context, user, stixObjectOrRelationshipId, type, patch, { operations });
+  const { element: patchedFrom } = await patchAttribute(context, user, stixObjectOrRelationshipId, type, patch, { operations });
 
-  const { element } = await buildRelationData(context, user, { from: stixObjectOrRelationship, to, relationship_type: input.relationship_type });
+  const { element } = await buildRelationData(context, user, { from: patchedFrom, to, relationship_type: input.relationship_type });
 
   await notify(BUS_TOPICS[type as BusTopicsKeyType].EDIT_TOPIC, element, user);
   // TODO

@@ -216,8 +216,8 @@ class StixDomainObjectAttackPatternsKillChainLines extends Component {
                               />
                               <ItemMarkings
                                 variant="inList"
-                                markingDefinitionsEdges={
-                                  attackPattern.markingDefinitions?.edges ?? []
+                                markingDefinitions={
+                                  attackPattern.markingDefinitions ?? []
                                 }
                                 limit={1}
                               />

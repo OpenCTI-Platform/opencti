@@ -130,15 +130,11 @@ const reportKnowledgeGraphStixCoreObjectQuery = graphql`
         }
       }
       objectMarking {
-        edges {
-          node {
-            id
-            definition_type
-            definition
-            x_opencti_order
-            x_opencti_color
-          }
-        }
+        id
+        definition_type
+        definition
+        x_opencti_order
+        x_opencti_color
       }
       ... on StixDomainObject {
         created
@@ -319,15 +315,11 @@ const reportKnowledgeGraphStixRelationshipQuery = graphql`
           }
         }
         objectMarking {
-          edges {
-            node {
-              id
-              definition_type
-              definition
-              x_opencti_order
-              x_opencti_color
-            }
-          }
+          id
+          definition_type
+          definition
+          x_opencti_order
+          x_opencti_color
         }
       }
       ... on StixRefRelationship {
@@ -369,15 +361,11 @@ const reportKnowledgeGraphStixRelationshipQuery = graphql`
         created_at
         datable
         objectMarking {
-          edges {
-            node {
-              id
-              definition_type
-              definition
-              x_opencti_order
-              x_opencti_color
-            }
-          }
+          id
+          definition_type
+          definition
+          x_opencti_order
+          x_opencti_color
         }
       }
       ... on StixSightingRelationship {
@@ -426,15 +414,11 @@ const reportKnowledgeGraphStixRelationshipQuery = graphql`
           }
         }
         objectMarking {
-          edges {
-            node {
-              id
-              definition_type
-              definition
-              x_opencti_order
-              x_opencti_color
-            }
-          }
+          id
+          definition_type
+          definition
+          x_opencti_order
+          x_opencti_color
         }
       }
     }
@@ -1759,15 +1743,11 @@ const ReportKnowledgeGraph = createFragmentContainer(
           }
         }
         objectMarking {
-          edges {
-            node {
-              id
-              definition_type
-              definition
-              x_opencti_order
-              x_opencti_color
-            }
-          }
+          id
+          definition_type
+          definition
+          x_opencti_order
+          x_opencti_color
         }
         objects(all: true) {
           edges {
@@ -1788,15 +1768,11 @@ const ReportKnowledgeGraph = createFragmentContainer(
                   }
                 }
                 objectMarking {
-                  edges {
-                    node {
-                      id
-                      definition_type
-                      definition
-                      x_opencti_order
-                      x_opencti_color
-                    }
-                  }
+                  id
+                  definition_type
+                  definition
+                  x_opencti_order
+                  x_opencti_color
                 }
               }
               ... on StixDomainObject {
@@ -2000,15 +1976,11 @@ const ReportKnowledgeGraph = createFragmentContainer(
                   }
                 }
                 objectMarking {
-                  edges {
-                    node {
-                      id
-                      definition_type
-                      definition
-                      x_opencti_order
-                      x_opencti_color
-                    }
-                  }
+                  id
+                  definition_type
+                  definition
+                  x_opencti_order
+                  x_opencti_color
                 }
               }
               ... on StixRefRelationship {
@@ -2050,15 +2022,11 @@ const ReportKnowledgeGraph = createFragmentContainer(
                 created_at
                 datable
                 objectMarking {
-                  edges {
-                    node {
-                      id
-                      definition_type
-                      definition
-                      x_opencti_order
-                      x_opencti_color
-                    }
-                  }
+                  id
+                  definition_type
+                  definition
+                  x_opencti_order
+                  x_opencti_color
                 }
               }
               ... on StixSightingRelationship {
@@ -2107,15 +2075,11 @@ const ReportKnowledgeGraph = createFragmentContainer(
                   }
                 }
                 objectMarking {
-                  edges {
-                    node {
-                      id
-                      definition_type
-                      definition
-                      x_opencti_order
-                      x_opencti_color
-                    }
-                  }
+                  id
+                  definition_type
+                  definition
+                  x_opencti_order
+                  x_opencti_color
                 }
               }
             }

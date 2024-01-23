@@ -139,9 +139,7 @@ ContainerStixObjectsOrStixRelationshipsComponentProps
               types ?? ['Stix-Domain-Object', 'Stix-Cyber-Observable']
             }
             defaultCreatedBy={container.createdBy ?? null}
-            defaultMarkingDefinitions={(
-              container.objectMarking?.edges ?? []
-            ).map((n) => n.node)}
+            defaultMarkingDefinitions={container.objectMarking ?? []}
             confidence={container.confidence}
           />
         </Security>
@@ -173,15 +171,11 @@ const ContainerStixObjectsOrStixRelationships = createFragmentContainer(
           }
         }
         objectMarking {
-          edges {
-            node {
-              id
-              definition_type
-              definition
-              x_opencti_order
-              x_opencti_color
-            }
-          }
+          id
+          definition_type
+          definition
+          x_opencti_order
+          x_opencti_color
         }
         creators {
           id

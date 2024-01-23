@@ -32,8 +32,6 @@ const useStyles = makeStyles(() => ({
 const subscription = graphql`
   subscription RootUsersSubscription(
     $id: ID!
-    $rolesOrderBy: RolesOrdering
-    $rolesOrderMode: OrderingMode
     $groupsOrderBy: GroupsOrdering
     $groupsOrderMode: OrderingMode
     $organizationsOrderBy: OrganizationsOrdering
@@ -42,8 +40,6 @@ const subscription = graphql`
     user(id: $id) {
       ...User_user
         @arguments(
-          rolesOrderBy: $rolesOrderBy
-          rolesOrderMode: $rolesOrderMode
           groupsOrderBy: $groupsOrderBy
           groupsOrderMode: $groupsOrderMode
           organizationsOrderBy: $organizationsOrderBy
@@ -51,8 +47,6 @@ const subscription = graphql`
         )
       ...UserEdition_user
         @arguments(
-          rolesOrderBy: $rolesOrderBy
-          rolesOrderMode: $rolesOrderMode
           groupsOrderBy: $groupsOrderBy
           groupsOrderMode: $groupsOrderMode
           organizationsOrderBy: $organizationsOrderBy
@@ -65,8 +59,6 @@ const subscription = graphql`
 const userQuery = graphql`
   query RootUserQuery(
     $id: String!
-    $rolesOrderBy: RolesOrdering
-    $rolesOrderMode: OrderingMode
     $groupsOrderBy: GroupsOrdering
     $groupsOrderMode: OrderingMode
     $organizationsOrderBy: OrganizationsOrdering
@@ -77,8 +69,6 @@ const userQuery = graphql`
       name
       ...User_user
         @arguments(
-          rolesOrderBy: $rolesOrderBy
-          rolesOrderMode: $rolesOrderMode
           groupsOrderBy: $groupsOrderBy
           groupsOrderMode: $groupsOrderMode
           organizationsOrderBy: $organizationsOrderBy

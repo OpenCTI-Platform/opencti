@@ -78,9 +78,13 @@ const groupFragment = graphql`
       }
     }
     roles(orderBy: $rolesOrderBy, orderMode: $rolesOrderMode) {
-      id
-      name
-      description
+      edges {
+        node {
+          id
+          name
+          description
+        }
+      }
     }
     allowed_marking {
       id
@@ -183,7 +187,7 @@ const Group = ({ groupData }: { groupData: Group_group$key }) => {
                   {t_i18n('Roles')}
                 </Typography>
                 <List>
-                  {group.roles?.map((role) => (
+                  {group.roles?.edges?.map(({ node: role }) => (
                     <ListItem
                       key={role?.id}
                       dense={true}

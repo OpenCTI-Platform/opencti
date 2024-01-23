@@ -15,9 +15,9 @@ type CaseRft implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   # Stix Core Object
   createdBy: Identity
   numberOfConnectedElement: Int!
-  objectMarking: MarkingDefinitionConnection
-  objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
-  objectLabel: LabelConnection
+  objectMarking: [MarkingDefinition!]
+  objectOrganization: [Organization!] @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
+  objectLabel: [Label!]
   externalReferences(first: Int): ExternalReferenceConnection
   containersNumber: Number
   containers(first: Int, entityTypes: [String!]): ContainerConnection
@@ -91,7 +91,8 @@ type CaseRft implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   created: DateTime
   modified: DateTime
   x_opencti_graph_data: String
-  objectAssignee: AssigneeConnection
+  objectAssignee: [Assignee!]
+  objectParticipant: [Participant!]
   avatar: OpenCtiFile
   # Container
   objects(
@@ -131,7 +132,6 @@ type CaseRft implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   content: String
   content_mapping: String
   tasks: TaskConnection!
-  objectParticipant: ParticipantConnection
   # Request For Takedown
   takedown_types: [String!]
   severity: String

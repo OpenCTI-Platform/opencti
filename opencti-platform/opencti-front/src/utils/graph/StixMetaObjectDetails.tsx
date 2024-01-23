@@ -99,7 +99,7 @@ StixMetaObjectDetailsComponentProps
       {stixMetaObject.entity_type === 'Marking-Definition' ? (
         <Tooltip title={defaultValue(stixMetaObject, true)}>
           <ItemMarkings
-            markingDefinitionsEdges={[{ node: stixMetaObject }]}
+            markingDefinitions={[stixMetaObject]}
             limit={2}
           />
         </Tooltip>

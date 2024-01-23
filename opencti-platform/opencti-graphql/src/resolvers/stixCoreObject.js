@@ -95,7 +95,6 @@ const stixCoreObjectResolvers = {
     editContext: (stixCoreObject) => fetchEditContext(stixCoreObject.id),
     // region batch loaded through rel de-normalization. Cant be ordered of filtered
     createdBy: (stixCoreObject, _, context) => relBatchLoader.load({ element: stixCoreObject, type: RELATION_CREATED_BY }, context, context.user),
-    objectLabel: (stixCoreObject, _, context) => relBatchLoader.load({ element: stixCoreObject, type: RELATION_OBJECT_LABEL }, context, context.user),
     objectOrganization: (stixCoreObject, _, context) => relBatchLoader.load({ element: stixCoreObject, type: RELATION_GRANTED_TO }, context, context.user),
     objectMarking: (stixCoreObject, _, context) => markingDefinitionsLoader.load(stixCoreObject, context, context.user),
     // endregion
@@ -108,6 +107,7 @@ const stixCoreObjectResolvers = {
     notes: (stixCoreObject, args, context) => notesPaginated(context, context.user, stixCoreObject.id, args),
     opinions: (stixCoreObject, args, context) => opinionsPaginated(context, context.user, stixCoreObject.id, args),
     observedData: (stixCoreObject, args, context) => observedDataPaginated(context, context.user, stixCoreObject.id, args),
+    objectLabel: (stixCoreObject, _, context) => relBatchLoader.load({ element: stixCoreObject, type: RELATION_OBJECT_LABEL }, context, context.user),
     // endregion
     // Files and connectors
     jobs: (stixCoreObject, args, context) => worksForSource(context, context.user, stixCoreObject.standard_id, args),

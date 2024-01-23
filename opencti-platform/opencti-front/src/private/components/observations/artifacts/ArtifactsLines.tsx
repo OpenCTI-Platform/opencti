@@ -80,15 +80,11 @@ const artifactsLinesFragment = graphql`
           observable_value
           created_at
           objectMarking {
-            edges {
-              node {
-                id
-                definition_type
-                definition
-                x_opencti_order
-                x_opencti_color
-              }
-            }
+            id
+            definition_type
+            definition
+            x_opencti_order
+            x_opencti_color
           }
           ...ArtifactLine_node
         }

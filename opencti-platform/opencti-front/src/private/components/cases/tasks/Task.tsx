@@ -40,41 +40,25 @@ export const taskFragment = graphql`
       }
     }
     objectMarking {
-      edges {
-        node {
-          definition
-          definition_type
-          id
-          x_opencti_color
-        }
-      }
+      id
+      definition
+      definition_type
+      x_opencti_color
     }
     objectLabel {
-      edges {
-        node {
-          id
-          value
-          color
-        }
-      }
+      id
+      value
+      color
     }
     objectAssignee {
-      edges {
-        node {
-          entity_type
-          id
-          name
-        }
-      }
+      entity_type
+      id
+      name
     }
     objectParticipant {
-      edges {
-        node {
-          entity_type
-          id
-          name
-        }
-      }
+      entity_type
+      id
+      name
     }
     status {
       template {
@@ -120,9 +104,7 @@ const TaskComponent = ({ data }: { data: Tasks_tasks$key }) => {
       </Grid>
       <StixCoreObjectOrStixCoreRelationshipNotes
         stixCoreObjectOrStixCoreRelationshipId={task.id}
-        defaultMarkings={(task.objectMarking?.edges ?? []).map(
-          (edge) => edge.node,
-        )}
+        defaultMarkings={task.objectMarking ?? []}
       />
       <Security needs={[KNOWLEDGE_KNUPDATE]}>
         <TaskEdition caseId={task.id} />

@@ -111,13 +111,9 @@ const CaseIncidentDetailsFragment = graphql`
     created_at
     response_types
     objectLabel {
-      edges {
-        node {
-          id
-          value
-          color
-        }
-      }
+      id
+      value
+      color
     }
     name
     x_opencti_stix_ids
@@ -153,15 +149,11 @@ const CaseIncidentDetailsFragment = graphql`
               }
             }
             objectMarking {
-              edges {
-                node {
-                  id
-                  definition_type
-                  definition
-                  x_opencti_order
-                  x_opencti_color
-                }
-              }
+              id
+              definition_type
+              definition
+              x_opencti_order
+              x_opencti_color
             }
           }
         }
@@ -283,9 +275,7 @@ const CaseIncidentDetails: FunctionComponent<CaseIncidentDetailsProps> = ({
                   <div className={classes.itemMarking}>
                     <ItemMarkings
                       variant="inList"
-                      markingDefinitionsEdges={
-                          relatedContainer?.objectMarking?.edges ?? []
-                        }
+                      markingDefinitions={relatedContainer?.objectMarking ?? []}
                       limit={1}
                     />
                   </div>

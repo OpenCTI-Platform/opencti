@@ -60,15 +60,11 @@ const groupingKnowledgeCorrelationStixCoreObjectQuery = graphql`
         }
       }
       objectMarking {
-        edges {
-          node {
-            id
-            definition_type
-            definition
-            x_opencti_order
-            x_opencti_color
-          }
-        }
+        id
+        definition_type
+        definition
+        x_opencti_order
+        x_opencti_color
       }
       ... on StixDomainObject {
         created
@@ -225,15 +221,11 @@ const groupingKnowledgeCorrelationStixCoreRelationshipQuery = graphql`
         }
       }
       objectMarking {
-        edges {
-          node {
-            id
-            definition_type
-            definition
-            x_opencti_order
-            x_opencti_color
-          }
-        }
+        id
+        definition_type
+        definition
+        x_opencti_order
+        x_opencti_color
       }
     }
   }
@@ -264,17 +256,17 @@ class GroupingKnowledgeCorrelationComponent extends Component {
       R.concat(
         R.pipe(
           R.filter((m) => m.node.objectMarking),
-          R.map((m) => m.node.objectMarking.edges),
+          R.map((m) => m.node.objectMarking),
           R.flatten,
-          R.map((m) => m.node.id),
+          R.map((m) => m.id),
         )(props.grouping.objects.edges),
         R.pipe(
           R.filter((m) => m.node.groupings),
           R.map((m) => m.node.groupings.edges),
           R.flatten,
-          R.map((m) => m.node.objectMarking.edges),
+          R.map((m) => m.node.objectMarking),
           R.flatten,
-          R.map((m) => m.node.id),
+          R.map((m) => m.id),
         )(props.grouping.objects.edges),
       ),
     );
@@ -914,17 +906,15 @@ class GroupingKnowledgeCorrelationComponent extends Component {
       R.concat(
         R.pipe(
           R.filter((m) => m.node.objectMarking),
-          R.map((m) => m.node.objectMarking.edges),
+          R.map((m) => m.node.objectMarking),
           R.flatten,
-          R.map((m) => m.node),
         )(grouping.objects.edges),
         R.pipe(
           R.filter((m) => m.node.groupings),
           R.map((m) => m.node.groupings.edges),
           R.flatten,
-          R.map((m) => m.node.objectMarking.edges),
+          R.map((m) => m.node.objectMarking),
           R.flatten,
-          R.map((m) => m.node),
         )(grouping.objects.edges),
       ),
     );
@@ -1285,15 +1275,11 @@ const GroupingKnowledgeCorrelation = createFragmentContainer(
           }
         }
         objectMarking {
-          edges {
-            node {
-              id
-              definition_type
-              definition
-              x_opencti_order
-              x_opencti_color
-            }
-          }
+          id
+          definition_type
+          definition
+          x_opencti_order
+          x_opencti_color
         }
         objects {
           edges {
@@ -1313,15 +1299,11 @@ const GroupingKnowledgeCorrelation = createFragmentContainer(
                   }
                 }
                 objectMarking {
-                  edges {
-                    node {
-                      id
-                      definition_type
-                      definition
-                      x_opencti_order
-                      x_opencti_color
-                    }
-                  }
+                  id
+                  definition_type
+                  definition
+                  x_opencti_order
+                  x_opencti_color
                 }
                 groupings(first: 20) {
                   edges {
@@ -1341,15 +1323,11 @@ const GroupingKnowledgeCorrelation = createFragmentContainer(
                         }
                       }
                       objectMarking {
-                        edges {
-                          node {
-                            id
-                            definition_type
-                            definition
-                            x_opencti_order
-                            x_opencti_color
-                          }
-                        }
+                        id
+                        definition_type
+                        definition
+                        x_opencti_order
+                        x_opencti_color
                       }
                     }
                   }
@@ -1452,16 +1430,12 @@ const GroupingKnowledgeCorrelation = createFragmentContainer(
                           entity_type
                         }
                       }
-                      objectMarking {
-                        edges {
-                          node {
-                            id
-                            definition_type
-                            definition
-                            x_opencti_order
-                            x_opencti_color
-                          }
-                        }
+                                            objectMarking {
+                        id
+                        definition_type
+                        definition
+                        x_opencti_order
+                        x_opencti_color
                       }
                     }
                   }

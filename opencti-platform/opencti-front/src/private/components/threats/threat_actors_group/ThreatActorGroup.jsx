@@ -63,9 +63,7 @@ class ThreatActorGroupComponent extends Component {
         </Grid>
         <StixCoreObjectOrStixCoreRelationshipNotes
           stixCoreObjectOrStixCoreRelationshipId={threatActorGroup.id}
-          defaultMarkings={(threatActorGroup.objectMarking?.edges ?? []).map(
-            (edge) => edge.node,
-          )}
+          defaultMarkings={threatActorGroup.objectMarking ?? []}
         />
         <Security needs={[KNOWLEDGE_KNUPDATE]}>
           <ThreatActorGroupEdition threatActorGroupId={threatActorGroup.id} />
@@ -108,25 +106,17 @@ const ThreatActorGroup = createFragmentContainer(ThreatActorGroupComponent, {
         name
       }
       objectMarking {
-        edges {
-          node {
-            id
-            definition
-            definition_type
-            definition
-            x_opencti_order
-            x_opencti_color
-          }
-        }
+        id
+        definition
+        definition_type
+        definition
+        x_opencti_order
+        x_opencti_color
       }
       objectLabel {
-        edges {
-          node {
-            id
-            value
-            color
-          }
-        }
+        id
+        value
+        color
       }
       name
       aliases

@@ -18,13 +18,9 @@ const stixCoreObjectMutationRelationsAdd = graphql`
         references: $references
       ) {
         objectLabel {
-          edges {
-            node {
-              id
-              value
-              color
-            }
-          }
+          id
+          value
+          color
         }
       }
     }
@@ -48,13 +44,9 @@ const stixCoreObjectMutationRelationDelete = graphql`
       ) {
         ... on StixCoreObject {
           objectLabel {
-            edges {
-              node {
-                id
-                value
-                color
-              }
-            }
+            id
+            value
+            color
           }
         }
       }

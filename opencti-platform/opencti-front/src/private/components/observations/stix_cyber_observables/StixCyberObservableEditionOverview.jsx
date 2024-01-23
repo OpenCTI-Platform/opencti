@@ -793,15 +793,11 @@ const StixCyberObservableEditionOverview = createFragmentContainer(
           }
         }
         objectMarking {
-          edges {
-            node {
-              id
-              definition
-              definition_type
-              x_opencti_order
-              x_opencti_color
-            }
-          }
+          id
+          definition
+          definition_type
+          x_opencti_order
+          x_opencti_color
         }
       }
     `,

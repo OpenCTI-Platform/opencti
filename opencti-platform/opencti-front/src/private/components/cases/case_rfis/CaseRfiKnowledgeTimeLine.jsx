@@ -141,15 +141,11 @@ export default createFragmentContainer(CaseRfiKnowledgeTimeLineComponent, {
         }
       }
       objectMarking {
-        edges {
-          node {
-            id
-            definition_type
-            definition
-            x_opencti_order
-            x_opencti_color
-          }
-        }
+        id
+        definition_type
+        definition
+        x_opencti_order
+        x_opencti_color
       }
       objects(
         all: true
@@ -177,15 +173,11 @@ export default createFragmentContainer(CaseRfiKnowledgeTimeLineComponent, {
                 }
               }
               objectMarking {
-                edges {
-                  node {
-                    id
-                    definition_type
-                    definition
-                    x_opencti_order
-                    x_opencti_color
-                  }
-                }
+                id
+                definition_type
+                definition
+                x_opencti_order
+                x_opencti_color
               }
             }
             ... on StixDomainObject {
@@ -731,15 +723,11 @@ export default createFragmentContainer(CaseRfiKnowledgeTimeLineComponent, {
                 }
               }
               objectMarking {
-                edges {
-                  node {
-                    id
-                    definition_type
-                    definition
-                    x_opencti_order
-                    x_opencti_color
-                  }
-                }
+                id
+                definition_type
+                definition
+                x_opencti_order
+                x_opencti_color
               }
             }
             ... on StixRefRelationship {
@@ -780,15 +768,11 @@ export default createFragmentContainer(CaseRfiKnowledgeTimeLineComponent, {
               }
               created_at
               objectMarking {
-                edges {
-                  node {
-                    id
-                    definition_type
-                    definition
-                    x_opencti_order
-                    x_opencti_color
-                  }
-                }
+                id
+                definition_type
+                definition
+                x_opencti_order
+                x_opencti_color
               }
             }
             ... on StixSightingRelationship {
@@ -837,15 +821,11 @@ export default createFragmentContainer(CaseRfiKnowledgeTimeLineComponent, {
                 }
               }
               objectMarking {
-                edges {
-                  node {
-                    id
-                    definition_type
-                    definition
-                    x_opencti_order
-                    x_opencti_color
-                  }
-                }
+                id
+                definition_type
+                definition
+                x_opencti_order
+                x_opencti_color
               }
             }
           }

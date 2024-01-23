@@ -23,8 +23,12 @@ export const groupsSearchQuery = graphql`
           created_at
           updated_at
           roles {
-              id
-              name
+            edges {
+              node {
+                id
+                name
+              }
+            }
           }
         }
       }

@@ -180,7 +180,7 @@ const EntityStixCoreRelationshipsIndicatorsContextualViewComponent: FunctionComp
       render: (stixCoreObject: EntityStixCoreRelationshipsIndicatorsContextualViewLine_node$data) => (
         <ItemMarkings
           variant="inList"
-          markingDefinitionsEdges={stixCoreObject.objectMarking?.edges ?? []}
+          markingDefinitions={stixCoreObject.objectMarking ?? []}
           limit={1}
         />
       ),

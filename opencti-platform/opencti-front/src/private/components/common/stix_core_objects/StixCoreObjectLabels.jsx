@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { compose, map, take, sortWith, prop, ascend, pipe } from 'ramda';
+import { compose, map, take } from 'ramda';
 import withTheme from '@mui/styles/withTheme';
 import withStyles from '@mui/styles/withStyles';
 import Chip from '@mui/material/Chip';
@@ -46,18 +46,11 @@ class StixCoreObjectLabels extends Component {
     if (variant === 'inSearch') {
       style = classes.labelInSearch;
     }
-    const labelsNodes = labels
-      ? pipe(
-        map((n) => n.node),
-        sortWith([ascend(prop('value'))]),
-      )(labels.edges)
-      : null;
-
     return (
       <>
         {
           /* eslint-disable-next-line no-nested-ternary */
-          !revoked && labelsNodes && labelsNodes.length > 0 ? (
+          !revoked && labels && labels.length > 0 ? (
             map(
               (label) => (
                 <Tooltip key={label.id} title={label.value}>
@@ -83,7 +76,7 @@ class StixCoreObjectLabels extends Component {
                   />
                 </Tooltip>
               ),
-              take(3, labelsNodes),
+              take(3, labels),
             )
           ) : revoked ? (
             <Chip

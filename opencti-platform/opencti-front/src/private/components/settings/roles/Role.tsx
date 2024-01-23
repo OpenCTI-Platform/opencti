@@ -76,7 +76,7 @@ const Role = ({
   const groupsData = usePreloadedQuery(groupsSearchQuery, groupsQueryRef);
   const groupNodes = (role: Role_role$data) => {
     return (groupsData.groups?.edges ?? [])
-      .map((group) => ((group?.node.roles ?? []).map((r) => r?.id).includes(role.id)
+      .map((group) => ((group?.node.roles?.edges ?? []).map(({ node: r }) => r?.id).includes(role.id)
         ? group?.node
         : null))
       .filter((n) => n !== null && n !== undefined);

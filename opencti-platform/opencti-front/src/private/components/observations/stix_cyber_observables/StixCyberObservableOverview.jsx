@@ -136,8 +136,8 @@ class StixCyberObservableOverview extends Component {
                 {t('Marking')}
               </Typography>
               <ItemMarkings
-                markingDefinitionsEdges={
-                  stixCyberObservable.objectMarking.edges ?? []
+                markingDefinitions={
+                  stixCyberObservable.objectMarking ?? []
                 }
               />
               <Typography

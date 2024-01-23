@@ -184,9 +184,7 @@ const GroupingDetailsComponent = (props) => {
                   <div style={{ width: 110, paddingRight: 20 }}>
                     <ItemMarkings
                       variant="inList"
-                      markingDefinitionsEdges={
-                        relatedContainer.objectMarking.edges
-                      }
+                      markingDefinitions={relatedContainer.objectMarking}
                       limit={1}
                     />
                   </div>
@@ -249,16 +247,12 @@ const GroupingDetails = createFragmentContainer(GroupingDetailsComponent, {
                 }
               }
               objectMarking {
-                edges {
-                  node {
-                    id
-                    definition
-                    definition_type
-                    definition
-                    x_opencti_order
-                    x_opencti_color
-                  }
-                }
+                id
+                definition
+                definition_type
+                definition
+                x_opencti_order
+                x_opencti_color
               }
             }
           }

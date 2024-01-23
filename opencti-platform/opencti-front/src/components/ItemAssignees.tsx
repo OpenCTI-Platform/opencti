@@ -9,22 +9,17 @@ type Node = {
 };
 
 type Props = {
-  assigneesEdges: ReadonlyArray<{
-    readonly node: Node;
-  }>
+  assignees: ReadonlyArray<Node>;
 };
 
 const ItemAssignees: FunctionComponent<Props> = (props) => {
-  const { assigneesEdges } = props;
+  const { assignees } = props;
   const sortBy = R.sortWith([R.ascend<Node>(R.prop('name'))]);
-  const assignees = R.pipe(
-    R.map((n: { node: Node }) => n.node),
-    sortBy,
-  )(assigneesEdges);
+  const sortedAssignees = R.pipe(sortBy)(assignees);
   return (
     <div>
-      {assignees.length > 0
-        ? assignees.map((assignee) => (
+      {sortedAssignees.length > 0
+        ? sortedAssignees.map((assignee) => (
           <Button
             key={assignee.id}
             variant="outlined"

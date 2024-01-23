@@ -236,13 +236,9 @@ const IndicatorDetails = createFragmentContainer(IndicatorDetailsComponent, {
         }
       }
       objectLabel {
-        edges {
-          node {
-            id
-            value
-            color
-          }
-        }
+        id
+        value
+        color
       }
       killChainPhases {
         edges {

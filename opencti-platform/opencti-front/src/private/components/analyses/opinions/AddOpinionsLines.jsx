@@ -147,7 +147,7 @@ class AddOpinionsLinesContainer extends Component {
               <div style={{ marginRight: 50 }}>
                 <ItemMarkings
                   variant="inList"
-                  markingDefinitionsEdges={opinion.objectMarking.edges}
+                  markingDefinitions={opinion.objectMarking ?? []}
                   limit={1}
                 />
               </div>

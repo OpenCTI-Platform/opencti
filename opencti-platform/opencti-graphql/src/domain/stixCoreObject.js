@@ -89,7 +89,7 @@ export const batchInternalRels = async (context, user, elements) => {
   return elements.map(({ element, type }) => {
     const relId = element[type];
     if (Array.isArray(relId)) {
-      return buildPagination(0, undefined, relId.map((id) => ({ node: resolvedElements[id] })), relId.length);
+      return relId.map((id) => resolvedElements[id]);
     }
     return relId ? resolvedElements[relId] : undefined;
   });
@@ -98,9 +98,7 @@ export const batchInternalRels = async (context, user, elements) => {
 export const batchMarkingDefinitions = async (context, user, stixCoreObjects) => {
   const markingsFromCache = await getEntitiesMapFromCache(context, user, ENTITY_TYPE_MARKING_DEFINITION);
   return stixCoreObjects.map((s) => {
-    const markings = (s[RELATION_OBJECT_MARKING] ?? []).map((id) => markingsFromCache.get(id));
-    const edges = markings.map((m) => ({ node: m }));
-    return buildPagination(0, null, edges, edges.length);
+    return (s[RELATION_OBJECT_MARKING] ?? []).map((id) => markingsFromCache.get(id));
   });
 };
 

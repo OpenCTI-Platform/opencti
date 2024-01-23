@@ -1,15 +1,5 @@
 import type { Resolvers } from '../../generated/graphql';
-import {
-  findAll,
-  findById,
-  taskAdd,
-  taskAddRelation,
-  taskContainsStixObjectOrStixRelationship,
-  taskDelete,
-  taskDeleteRelation,
-  taskEdit,
-  taskParticipantsPaginated
-} from './task-domain';
+import { findAll, findById, taskAdd, taskAddRelation, taskContainsStixObjectOrStixRelationship, taskDelete, taskDeleteRelation, taskEdit } from './task-domain';
 
 const taskResolvers: Resolvers = {
   Query: {
@@ -18,9 +8,6 @@ const taskResolvers: Resolvers = {
     taskContainsStixObjectOrStixRelationship: (_, args, context) => {
       return taskContainsStixObjectOrStixRelationship(context, context.user, args.id, args.stixObjectOrStixRelationshipId);
     },
-  },
-  Task: {
-    objectParticipant: (current, args, context) => taskParticipantsPaginated(context, context.user, current.id, args),
   },
   Mutation: {
     taskAdd: (_, { input }, context) => taskAdd(context, context.user, input),
