@@ -4,7 +4,7 @@ name: opencti-tests
 
 steps:
 #  Launch api tests on master
-  - name: api-tests
+  - name: api-tests-on-master
     image: nikolaik/python-nodejs:python3.11-nodejs20-alpine
     volumes:
       - name: cache-node-backend
@@ -52,7 +52,7 @@ steps:
           - pull_request
 
   #  Launch api tests on Pull Request
-  - name: api-tests
+  - name: api-tests-on-pull-request
     image: nikolaik/python-nodejs:python3.11-nodejs20-alpine
     volumes:
     - name: cache-node-backend
@@ -97,7 +97,7 @@ steps:
         - pull_request
 
   #  Launch api tests on Master
-  - name: api-coverage
+  - name: api-coverage-on-master
     image: plugins/codecov
     settings:
       token: e5c6fb05-76f7-4985-86cf-ff843d5d103e
@@ -111,7 +111,7 @@ steps:
           - pull_request
 
   #  Launch api tests on Pull Request
-  - name: api-coverage
+  - name: api-coverage-on-pull-request
     image: plugins/codecov
     settings:
       token: e5c6fb05-76f7-4985-86cf-ff843d5d103e
@@ -122,7 +122,7 @@ steps:
         - pull_request
 
   #  Launch api tests on Master
-  - name: frontend-tests
+  - name: frontend-tests-on-master
     image: node:20-alpine
     volumes:
     - name: cache-node-frontend
@@ -146,7 +146,7 @@ steps:
           - pull_request
 
   #  Launch api tests on Pull Request
-  - name: frontend-tests
+  - name: frontend-tests-on-pull-request
     image: node:20-alpine
     volumes:
       - name: cache-node-frontend
