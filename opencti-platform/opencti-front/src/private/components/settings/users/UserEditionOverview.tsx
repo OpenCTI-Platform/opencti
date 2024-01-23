@@ -4,7 +4,8 @@ import { Field, Form, Formik } from 'formik';
 import * as R from 'ramda';
 import * as Yup from 'yup';
 import MenuItem from '@mui/material/MenuItem';
-import ConfidenceField from '@components/common/form/ConfidenceField';
+import OptionalConfidenceLevelField from '@components/common/form/OptionalConfidenceLevelField';
+import FormHelperText from '@mui/material/FormHelperText';
 import TextField from '../../../../components/TextField';
 import SelectField from '../../../../components/SelectField';
 import { SubscriptionFocus } from '../../../../components/Subscription';
@@ -41,8 +42,8 @@ const userEditionOverviewFocus = graphql`
   }
 `;
 
-const userMutationGroupAdd = graphql`
-  mutation UserEditionOverviewGroupAddMutation($id: ID!, $organizationId: ID!) {
+const userMutationOrganizationAdd = graphql`
+  mutation UserEditionOverviewOrganizationAddMutation($id: ID!, $organizationId: ID!) {
     userEdit(id: $id) {
       organizationAdd(organizationId: $organizationId) {
         ...UserEditionOverview_user
@@ -51,8 +52,8 @@ const userMutationGroupAdd = graphql`
   }
 `;
 
-const userMutationGroupDelete = graphql`
-  mutation UserEditionOverviewGroupDeleteMutation(
+const userMutationOrganizationDelete = graphql`
+  mutation UserEditionOverviewOrganizationDeleteMutation(
     $id: ID!
     $organizationId: ID!
   ) {
@@ -76,10 +77,10 @@ const userValidation = (t: (value: string) => string, userIsOnlyOrganizationAdmi
   account_status: Yup.string(),
   account_lock_after_date: Yup.date().nullable(),
   objectOrganization: userIsOnlyOrganizationAdmin ? Yup.array().min(1, t('Minimum one organization')).required(t('This field is required')) : Yup.array(),
-  max_confidence: Yup.number()
-    .required(t('This field is required'))
+  user_confidence_level: Yup.number()
     .min(0, t('The value must be greater than or equal to 0'))
-    .max(100, t('The value must be less than or equal to 100')),
+    .max(100, t('The value must be less than or equal to 100'))
+    .nullable(),
 });
 
 interface UserEditionOverviewComponentProps {
@@ -101,8 +102,8 @@ UserEditionOverviewComponentProps
 
   const [commitFocus] = useMutation(userEditionOverviewFocus);
   const [commitFieldPatch] = useMutation(userMutationFieldPatch);
-  const [commitGroupAdd] = useMutation(userMutationGroupAdd);
-  const [commitGroupDelete] = useMutation(userMutationGroupDelete);
+  const [commitOrganizationAdd] = useMutation(userMutationOrganizationAdd);
+  const [commitOrganizationDelete] = useMutation(userMutationOrganizationDelete);
 
   const userIsOnlyOrganizationAdmin = isOnlyOrganizationAdmin();
   const external = user.external === true;
@@ -118,7 +119,7 @@ UserEditionOverviewComponentProps
     description: user.description,
     account_status: user.account_status,
     account_lock_after_date: user.account_lock_after_date,
-    max_confidence: user.user_confidence_level.max_confidence,
+    user_confidence_level: user.user_confidence_level?.max_confidence,
     objectOrganization,
   };
 
@@ -133,31 +134,58 @@ UserEditionOverviewComponentProps
     });
   };
 
-  const handleSubmitField = (name: string, value: string) => {
+  const handleSubmitField = (name: string, value: string | null) => {
     userValidation(t_i18n, userIsOnlyOrganizationAdmin)
       .validateAt(name, { [name]: value })
       .then(() => {
-        // specific case for user confidence level that must be updated as a full object (we cannot field patch non-multiple objects for now)
-        // We pass the existing overrides for this user so they are unchanged
-        if (name === 'max_confidence') {
-          commitFieldPatch({
-            variables: {
-              id: user.id,
-              input: {
-                key: 'user_confidence_level',
-                object_path: '/user_confidence_level/max_confidence',
-                value: parseInt(value, 10),
+        // specific case for user confidence level: to update an object we have several use-cases
+        if (name === 'user_confidence_level') {
+          if (user.user_confidence_level && value) {
+            // We edit an existing value inside the object: use object_path
+            commitFieldPatch({
+              variables: {
+                id: user.id,
+                input: {
+                  key: 'user_confidence_level',
+                  object_path: '/user_confidence_level/max_confidence',
+                  value: parseInt(value, 10),
+                },
               },
-            },
-          });
-        } else {
-          // simple case for all flat attributes
-          commitFieldPatch({
-            variables: {
-              id: user.id,
-              input: { key: name, value: value || '' },
-            },
-          });
+            });
+          } else if (!user.user_confidence_level && value) {
+            // We have no user_confidence_level and we add one: push a complete object
+            commitFieldPatch({
+              variables: {
+                id: user.id,
+                input: {
+                  key: 'user_confidence_level',
+                  value: {
+                    max_confidence: parseInt(value, 10),
+                    overrides: [],
+                  },
+                },
+              },
+            });
+          } else if (user.user_confidence_level && !value) {
+            // we have an existing value but we want to remove it: push [null] (and not null!)
+            commitFieldPatch({
+              variables: {
+                id: user.id,
+                input: {
+                  key: 'user_confidence_level',
+                  value: [null],
+                },
+              },
+            });
+          } else {
+            // simple case for all flat attributes
+            commitFieldPatch({
+              variables: {
+                id: user.id,
+                input: { key: name, value: value || '' },
+              },
+            });
+          }
         }
       })
       .catch(() => false);
@@ -174,7 +202,7 @@ UserEditionOverviewComponentProps
     const added = R.difference(values, currentValues);
     const removed = R.difference(currentValues, values);
     if (added.length > 0) {
-      commitGroupAdd({
+      commitOrganizationAdd({
         variables: {
           id: user.id,
           organizationId: R.head(added)?.value,
@@ -182,7 +210,7 @@ UserEditionOverviewComponentProps
       });
     }
     if (removed.length > 0) {
-      commitGroupDelete({
+      commitOrganizationDelete({
         variables: {
           id: user.id,
           organizationId: R.head(removed)?.value,
@@ -276,9 +304,6 @@ UserEditionOverviewComponentProps
             containerstyle={fieldSpacingContainerStyle}
             onFocus={handleChangeFocus}
             onSubmit={handleSubmitField}
-            helpertext={
-              <SubscriptionFocus context={context} fieldName="language" />
-            }
           >
             <MenuItem value="auto">
               <em>{t_i18n('Automatic')}</em>
@@ -286,6 +311,9 @@ UserEditionOverviewComponentProps
             <MenuItem value="en">English</MenuItem>
             <MenuItem value="fr">Français</MenuItem>
           </Field>
+          <FormHelperText>
+            <SubscriptionFocus context={context} fieldName="language" />
+          </FormHelperText>
           <ObjectOrganizationField
             name="objectOrganization"
             label="Organizations"
@@ -317,14 +345,14 @@ UserEditionOverviewComponentProps
             containerstyle={fieldSpacingContainerStyle}
             onFocus={handleChangeFocus}
             onChange={handleSubmitField}
-            helperText={
-              <SubscriptionFocus context={context} fieldName="account_status" />
-              }
           >
             {settings.platform_user_statuses.map((s) => {
               return <MenuItem key={s.status} value={s.status}>{t_i18n(s.status)}</MenuItem>;
             })}
           </Field>
+          <FormHelperText>
+            <SubscriptionFocus context={context} fieldName="account_status" />
+          </FormHelperText>
           <Field
             component={DateTimePickerField}
             name="account_lock_after_date"
@@ -339,15 +367,14 @@ UserEditionOverviewComponentProps
           />
           {
             hasSetAccess && (
-              <ConfidenceField
-                name="max_confidence"
+              <OptionalConfidenceLevelField
+                name="user_confidence_level"
                 label={t_i18n('Max Confidence Level')}
                 onFocus={handleChangeFocus}
                 onSubmit={handleSubmitField}
                 entityType="User"
                 containerStyle={fieldSpacingContainerStyle}
                 editContext={context}
-                variant="edit"
               />
             )
           }

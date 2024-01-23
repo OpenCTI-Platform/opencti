@@ -544,7 +544,7 @@ const User: FunctionComponent<UserProps> = ({ data }) => {
                 <Typography variant="h3" gutterBottom={true}>
                   {t_i18n('Max Confidence Level')}
                 </Typography>
-                <UserConfidenceLevel userConfidenceLevel={user.user_confidence_level}/>
+                <UserConfidenceLevel userConfidenceLevel={user.user_confidence_level ?? '-'}/>
               </Grid>
             </Grid>
           </Paper>

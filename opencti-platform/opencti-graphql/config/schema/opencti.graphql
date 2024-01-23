@@ -1321,7 +1321,7 @@ type User implements BasicObject & InternalObject {
   ): [Role]!
   capabilities: [Capability]!
   default_hidden_types: [String!]!
-  user_confidence_level: UserConfidenceLevel!
+  user_confidence_level: UserConfidenceLevel
   groups(
     orderBy: GroupsOrdering
     orderMode: OrderingMode
@@ -1401,7 +1401,19 @@ input UserAddInput {
   account_lock_after_date: DateTime
   unit_system: String
   groups: [ID!]
+  user_confidence_level: UserConfidenceLevelInput
 }
+
+input UserConfidenceLevelInput {
+  max_confidence: Int!
+  overrides: [ConfidenceLevelOverrideInput!]!
+}
+
+input ConfidenceLevelOverrideInput {
+  entity_type: String!
+  max_confidence: Int!
+}
+
 input UserLoginInput {
   email: String!
   password: String!
