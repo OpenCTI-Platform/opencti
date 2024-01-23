@@ -2515,6 +2515,7 @@
   "alert_USER_WITH_NULL_EFFECTIVE_LEVEL": "Starting with OpenCTI 6.0, a max confidence level will be added to users. It will provide platform administrators with more control on the impact of imported data and prevent any unwanted update on data. Please read {link_blogpost} for more information.\n \nOn this platform, \"max confidence level\" of some users are currently undefined. They will not be able to create any data in version 6.X of the platform. In order to prevent that, make sure all users have a max confidence level set. More info in {link_blogpost}. Be particularly mindful of users associated to Connectors, Feeds and Streams. Join {link_slack} if you need advices.",
   "No confidence level found in this user's groups and organizations, and no confidence level defined at the user level.": "No confidence level found in this user's groups and organizations, and no confidence level defined at the user level.",
   "confidence_level_from": "From {entity_type} {link}",
+  "Unknown configuration error in the platform.": "Unknown configuration error in the platform.",
   "The user's max confidence level overrides the max confidence that might be set at groups or organizations level.": "The user's max confidence level overrides the max confidence that might be set at groups or organizations level.",
   "pattern": "Indicator pattern",
   "Update subscription": "Update subscription",
