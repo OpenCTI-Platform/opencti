@@ -261,7 +261,7 @@ const StixRelationshipsDonut = ({
               data = R.map(
                 (n) => R.assoc(
                   'label',
-                  `[${t_i18n(`entity_${n.entity.entity_type}`)}] ${defaultValue(n.entity)}`,
+                  defaultValue(n.entity),
                   n,
                 ),
                 props.stixRelationshipsDistribution,

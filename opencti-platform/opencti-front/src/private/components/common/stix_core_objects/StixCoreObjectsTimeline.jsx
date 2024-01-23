@@ -278,6 +278,7 @@ const StixCoreObjectsTimeline = ({
                                 ),
                               }}
                               variant="outlined"
+                              className=".noDrag"
                             >
                               <ItemIcon type={stixCoreObject.entity_type} />
                             </TimelineDot>
@@ -285,7 +286,7 @@ const StixCoreObjectsTimeline = ({
                           <TimelineConnector />
                         </TimelineSeparator>
                         <TimelineContent>
-                          <Paper variant="outlined" className={classes.paper}>
+                          <Paper variant="outlined" classes={{ root: classes.paper }} className=".noDrag">
                             <Typography variant="h2">
                               {defaultValue(stixCoreObject)}
                             </Typography>
