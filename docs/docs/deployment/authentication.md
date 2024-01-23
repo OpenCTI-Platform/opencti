@@ -118,7 +118,7 @@ Here is an example of SAML configuration using environment variables:
 
 ```yaml
 - PROVIDERS__SAML__STRATEGY=SamlStrategy 
-- PROVIDERS__SAML__CONFIG__LABEL="Login with SAML"
+- "PROVIDERS__SAML__CONFIG__LABEL=Login with SAML"
 - PROVIDERS__SAML__CONFIG__ISSUER=mydomain
 - PROVIDERS__SAML__CONFIG__ENTRY_POINT=https://auth.mydomain.com/auth/realms/mydomain/protocol/saml
 - PROVIDERS__SAML__CONFIG__SAML_CALLBACK_URL=http://opencti.mydomain.com/auth/saml/callback
@@ -157,8 +157,8 @@ OpenCTI supports mapping SAML Roles/Groups on OpenCTI Groups. Here is an example
 Here is an example of SAML Groups mapping configuration using environment variables:
 
 ```yaml
-- PROVIDERS__SAML__CONFIG__GROUPS_MANAGEMENT__GROUP_ATTRIBUTES=[\"Group\"]
-- PROVIDERS__SAML__CONFIG__GROUPS_MANAGEMENT__GROUPS_MAPPING=[\"SAML_Group_1:OpenCTI_Group_1\", \"SAML_Group_2:OpenCTI_Group_2\", ...]
+- "PROVIDERS__SAML__CONFIG__GROUPS_MANAGEMENT__GROUP_ATTRIBUTES=[\"Group\"]"
+- "PROVIDERS__SAML__CONFIG__GROUPS_MANAGEMENT__GROUPS_MAPPING=[\"SAML_Group_1:OpenCTI_Group_1\", \"SAML_Group_2:OpenCTI_Group_2\", ...]"
 ```
 
 ### Auth0 (button)
@@ -191,7 +191,7 @@ Here is an example of Auth0 configuration using environment variables:
 - PROVIDERS__AUTHZERO__CONFIG__CLIENT_SECRET=${AUTH0_CLIENT_SECRET}
 - PROVIDERS__AUTHZERO__CONFIG__CALLBACK_URL=${AUTH0_CALLBACK_URL}
 - PROVIDERS__AUTHZERO__CONFIG__DOMAIN=${AUTH0_DOMAIN}
-- PROVIDERS__AUTHZERO__CONFIG__SCOPE="openid email profile"
+- "PROVIDERS__AUTHZERO__CONFIG__SCOPE=openid email profile"
 - PROVIDERS__AUTHZERO__CONFIG__LOGOUT_REMOTE=false
 ```
 
@@ -218,11 +218,11 @@ Here is an example of OpenID configuration using environment variables:
 
 ```yaml
 - PROVIDERS__OPENID__STRATEGY=OpenIDConnectStrategy 
-- PROVIDERS__OPENID__CONFIG__LABEL="Login with OpenID"
+- "PROVIDERS__OPENID__CONFIG__LABEL=Login with OpenID"
 - PROVIDERS__OPENID__CONFIG__ISSUER=https://auth.mydomain.com/auth/realms/xxxx
 - PROVIDERS__OPENID__CONFIG__CLIENT_ID=XXXXXXXXXXXXXXXXXX
 - PROVIDERS__OPENID__CONFIG__CLIENT_SECRET=XXXXXXXXXXXXXXXXXX
-- PROVIDERS__OPENID__CONFIG__REDIRECT_URIS=[\"https://opencti.mydomain.com/auth/oic/callback\"]
+- "PROVIDERS__OPENID__CONFIG__REDIRECT_URIS=[\"https://opencti.mydomain.com/auth/oic/callback\"]"
 - PROVIDERS__OPENID__CONFIG__LOGOUT_REMOTE=false
 ```
 
@@ -251,16 +251,16 @@ OpenCTI support mapping OpenID Claims on OpenCTI Groups (everything is tied to a
 Here is an example of OpenID Groups mapping configuration using environment variables:
 
 ```yaml
-- PROVIDERS__OPENID__CONFIG__GROUPS_MANAGEMENT__GROUPS_SCOPE="groups"
-- PROVIDERS__OPENID__CONFIG__GROUPS_MANAGEMENT__GROUPS_PATH=[\"groups\", \"realm_access.groups\", \"resource_access.account.groups\"]
-- PROVIDERS__OPENID__CONFIG__GROUPS_MANAGEMENT__GROUPS_MAPPING=[\"OpenID_Group_1:OpenCTI_Group_1\", \"OpenID_Group_2:OpenCTI_Group_2\", ...]
+- PROVIDERS__OPENID__CONFIG__GROUPS_MANAGEMENT__GROUPS_SCOPE=groups
+- "PROVIDERS__OPENID__CONFIG__GROUPS_MANAGEMENT__GROUPS_PATH=[\"groups\", \"realm_access.groups\", \"resource_access.account.groups\"]"
+- "PROVIDERS__OPENID__CONFIG__GROUPS_MANAGEMENT__GROUPS_MAPPING=[\"OpenID_Group_1:OpenCTI_Group_1\", \"OpenID_Group_2:OpenCTI_Group_2\", ...]"
 ```
 
 By default, the claims are mapped based on the content of the JWT `access_token`. If you want to map claims which are in other JWT (such as `id_token`), you can define the following environment variables:
 
 ```yaml
-- PROVIDERS__OPENID__CONFIG__GROUPS_MANAGEMENT__TOKEN_REFERENCE="id_token"
-- PROVIDERS__OPENID__CONFIG__ORGANISATIONS_MANAGEMENT__TOKEN_REFERENCE="id_token"
+- PROVIDERS__OPENID__CONFIG__GROUPS_MANAGEMENT__TOKEN_REFERENCE=id_token
+- PROVIDERS__OPENID__CONFIG__ORGANISATIONS_MANAGEMENT__TOKEN_REFERENCE=id_token
 ```
 
 Alternatively, you can request OpenCTI to use claims from the `userinfo` endpoint instead of a JWT.
