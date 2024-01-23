@@ -25,6 +25,7 @@ const entitiesFilters = [
   'malware_types',
   'report_types',
   'regardingOf',
+  'x_opencti_main_observable_type',
 ];
 
 const relationshipsFilters = [
@@ -39,6 +40,7 @@ const relationshipsFilters = [
   'confidence',
   'killChainPhases',
   'creator_id',
+  'x_opencti_main_observable_type',
 ];
 
 const auditsFilters = [

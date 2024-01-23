@@ -2503,5 +2503,20 @@
   "The tag has been removed": "The tag has been removed",
   "I have read and comply with the above statement": "I have read and comply with the above statement",
   "You need to activate OpenCTI enterprise edition to use this feature.": "You need to activate OpenCTI enterprise edition to use this feature.",
-  "pattern": "Indicator pattern"
+  "pattern": "Indicator pattern",
+  "Update subscription": "Update subscription",
+  "Subscribe to updates (modifications and new relations)": "Subscribe to updates (modifications and new relations)",
+  "subscribers": "subscribers",
+  "Subscribers": "Subscribers",
+  "Lifecycle key information": "Lifecycle key information",
+  "Applied decay rule": "Applied decay rule",
+  "Base score:": "Base score:",
+  "Lifetime (in days):": "Lifetime (in days):",
+  "Pound factor:": "Pound factor:",
+  "Revoke score:": "Revoke score:",
+  "Reaction points:": "Reaction points:",
+  "This score is updated with the decay rule applied to this indicator.": "This score is updated with the decay rule applied to this indicator.",
+  "Lifecycle": "Lifecycle",
+  "Lifecycle details": "Lifecycle details",
+  "Subscription to specific object(s)": "Subscription to specific object(s)"
 }
