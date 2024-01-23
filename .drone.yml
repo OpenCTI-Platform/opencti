@@ -4,12 +4,11 @@ name: opencti-tests
 
 trigger:
   branch:
-    - master
+    include:
+      - master
   event:
-    - pull_request
-  action:
-    exclude:
-      - converted_to_draft
+    include:
+      - pull_request
 
 steps:
   - name: api-tests
@@ -290,4 +289,4 @@ volumes:
   - name: cache-python
     host:
       path: /tmp/cache-python
-      
+
