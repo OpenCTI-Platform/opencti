@@ -5,6 +5,7 @@ import * as R from 'ramda';
 import * as Yup from 'yup';
 import MenuItem from '@mui/material/MenuItem';
 import OptionalConfidenceLevelField from '@components/common/form/OptionalConfidenceLevelField';
+import FormHelperText from '@mui/material/FormHelperText';
 import TextField from '../../../../components/TextField';
 import SelectField from '../../../../components/SelectField';
 import { SubscriptionFocus } from '../../../../components/Subscription';
@@ -304,9 +305,6 @@ UserEditionOverviewComponentProps
             containerstyle={fieldSpacingContainerStyle}
             onFocus={handleChangeFocus}
             onSubmit={handleSubmitField}
-            helpertext={
-              <SubscriptionFocus context={context} fieldName="language" />
-            }
           >
             <MenuItem value="auto">
               <em>{t_i18n('Automatic')}</em>
@@ -314,6 +312,9 @@ UserEditionOverviewComponentProps
             <MenuItem value="en">English</MenuItem>
             <MenuItem value="fr">Français</MenuItem>
           </Field>
+          <FormHelperText>
+            <SubscriptionFocus context={context} fieldName="language" />
+          </FormHelperText>
           <ObjectOrganizationField
             name="objectOrganization"
             label="Organizations"
@@ -345,14 +346,14 @@ UserEditionOverviewComponentProps
             containerstyle={fieldSpacingContainerStyle}
             onFocus={handleChangeFocus}
             onChange={handleSubmitField}
-            helperText={
-              <SubscriptionFocus context={context} fieldName="account_status" />
-              }
           >
             {settings.platform_user_statuses.map((s) => {
               return <MenuItem key={s.status} value={s.status}>{t_i18n(s.status)}</MenuItem>;
             })}
           </Field>
+          <FormHelperText>
+            <SubscriptionFocus context={context} fieldName="account_status" />
+          </FormHelperText>
           <Field
             component={DateTimePickerField}
             name="account_lock_after_date"

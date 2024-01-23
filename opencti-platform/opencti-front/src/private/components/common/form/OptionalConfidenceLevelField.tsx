@@ -54,7 +54,7 @@ const OptionalConfidenceLevelField: FunctionComponent<OptionalConfidenceLevelFie
   const classes = useStyles();
   const { setFieldValue, initialValues } = useFormikContext<Record<string, boolean>>();
 
-  const [switchValue, setSwitchValue] = useState(initialValues[name] ?? false); // Default switch value
+  const [switchValue, setSwitchValue] = useState(Number.isInteger(initialValues[name])); // Default switch value
 
   const handleSwitchChange = async () => {
     if (switchValue) {
