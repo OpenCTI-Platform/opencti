@@ -522,7 +522,7 @@ for (let i = 0; i < providerKeys.length; i += 1) {
         const computeGroupsMapping = () => {
           const groupsMapping = mappedConfig.groups_management?.groups_mapping || [];
           const groupsSplitter = mappedConfig.groups_management?.groups_splitter || ',';
-          const availableGroups = (req.headers[mappedConfig.groups_management?.groups_header] ?? '').split(groupsSplitter);
+          const availableGroups = (req.header(mappedConfig.groups_management?.groups_header) ?? '').split(groupsSplitter);
           const groupsMapper = genConfigMapper(groupsMapping);
           return availableGroups.map((a) => groupsMapper[a]).filter((r) => isNotEmptyField(r));
         };
@@ -533,7 +533,7 @@ for (let i = 0; i < providerKeys.length; i += 1) {
           const orgaDefault = mappedConfig.organizations_default ?? [];
           const orgasMapping = mappedConfig.organizations_management?.organizations_mapping || [];
           const orgasSplitter = mappedConfig.organizations_management?.organizations_splitter || ',';
-          const availableOrgas = (req.headers[mappedConfig.organizations_management?.organizations_header] ?? '').split(orgasSplitter);
+          const availableOrgas = (req.header(mappedConfig.organizations_management?.organizations_header) ?? '').split(orgasSplitter);
           const orgasMapper = genConfigMapper(orgasMapping);
           return [...orgaDefault, ...availableOrgas.map((a) => orgasMapper[a]).filter((r) => isNotEmptyField(r))];
         };
