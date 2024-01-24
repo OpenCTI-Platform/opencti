@@ -12,7 +12,7 @@ export const importCsvConnectorRuntime = async (context: AuthContext, user: Auth
   const configurations = await connector.connector_schema_runtime_fn(context, user);
   const configurationsFiltered: BasicStoreEntityCsvMapper[] = [];
   await Promise.all(configurations.map(async (c) => {
-    const mapperErrors = await errors(context, c);
+    const mapperErrors = await errors(context, user, c);
     if (mapperErrors === null) {
       configurationsFiltered.push(c);
     }

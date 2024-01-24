@@ -2518,5 +2518,9 @@
   "This score is updated with the decay rule applied to this indicator.": "Diese Punktzahl wird mit der auf diesen Indikator angewandten Verfallsregel aktualisiert.",
   "Lifecycle": "Lebenszyklus",
   "Lifecycle details": "Details zum Lebenszyklus",
-  "Subscription to specific object(s)": "Abonnement auf bestimmte(s) Objekt(e)"
+  "Subscription to specific object(s)": "Abonnement auf bestimmte(s) Objekt(e)",
+  "Settings default values": "Standardwert aus den Entitätseinstellungen: {value}",
+  "Settings default values usage...": "Wenn die Daten nicht in der CSV-Datei gefunden werden, wird stattdessen der unter Einstellungen > Anpassung eingestellte Standardwert verwendet. Sie können diesen Standardwert überschreiben, indem Sie die obige Eingabe ausfüllen.",
+  "No default value set in Settings...": "In den Entitätseinstellungen ist kein Standardwert für dieses Attribut festgelegt. Sie können einen Wert mit der obigen Eingabe angeben. Dieser Wert wird verwendet, wenn die Daten in der CSV-Datei fehlen.",
+  "Default values set": "Standardwerte gesetzt"
 }

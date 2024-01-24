@@ -2518,5 +2518,9 @@
   "This score is updated with the decay rule applied to this indicator.": "该分数会根据适用于该指标的衰减规则进行更新。",
   "Lifecycle": "生命周期",
   "Lifecycle details": "生命周期详情",
-  "Subscription to specific object(s)": "订阅特定对象"
+  "Subscription to specific object(s)": "订阅特定对象",
+  "Settings default values": "实体设置中的默认值：{value}",
+  "Settings default values usage...": "如果 CSV 文件中没有数据，则将使用 \"设置 >自定义 \"中设置的默认值。您可以通过填写上面的输入内容来覆盖默认值。",
+  "No default value set in Settings...": "实体设置中未为此属性设置默认值。您可以通过上面的输入提供一个。如果 CSV 文件中缺少数据，将使用此值。",
+  "Default values set": "已设置默认值"
 }

@@ -1,19 +1,35 @@
 import { head } from 'ramda';
-import { ABSTRACT_STIX_CORE_RELATIONSHIP, ABSTRACT_STIX_CYBER_OBSERVABLE, ABSTRACT_STIX_DOMAIN_OBJECT } from '../../schema/general';
+import { ABSTRACT_STIX_CORE_RELATIONSHIP, ABSTRACT_STIX_CYBER_OBSERVABLE, ABSTRACT_STIX_DOMAIN_OBJECT, INPUT_AUTHORIZED_MEMBERS, INPUT_MARKINGS } from '../../schema/general';
 import { STIX_SIGHTING_RELATIONSHIP } from '../../schema/stixSightingRelationship';
 import { ENTITY_TYPE_CONTAINER_NOTE, ENTITY_TYPE_CONTAINER_OPINION, isStixDomainObject } from '../../schema/stixDomainObject';
 import { UnsupportedError } from '../../config/errors';
 import type { AttributeConfiguration, BasicStoreEntityEntitySetting } from './entitySetting-types';
 import { ENTITY_TYPE_ENTITY_SETTING } from './entitySetting-types';
 import { getEntitiesListFromCache } from '../../database/cache';
-import { SYSTEM_USER } from '../../utils/access';
+import { MEMBER_ACCESS_CREATOR, SYSTEM_USER } from '../../utils/access';
 import type { AuthContext } from '../../types/user';
 import { isStixCoreRelationship } from '../../schema/stixCoreRelationship';
 import { isStixCyberObservable } from '../../schema/stixCyberObservable';
 import { ENTITY_TYPE_CONTAINER_CASE } from '../case/case-types';
 import { ENTITY_TYPE_CONTAINER_TASK } from '../task/task-types';
+import { isNumericAttribute, schemaAttributesDefinition } from '../../schema/schema-attributes';
+import { isEmptyField } from '../../database/utils';
+import type { MandatoryType } from '../../schema/attribute-definition';
+import { schemaRelationsRefDefinition } from '../../schema/schema-relationsRef';
 
 export type typeAvailableSetting = boolean | string;
+
+export interface EntitySettingSchemaAttribute {
+  name: string
+  type: string
+  mandatory: boolean
+  mandatoryType: MandatoryType
+  multiple: boolean
+  editDefault: boolean
+  label?: string
+  defaultValues?: { id: string, name:string }[]
+  scale?: string
+}
 
 export const defaultEntitySetting: Record<string, typeAvailableSetting> = {
   platform_entity_files_ref: false,
@@ -109,4 +125,51 @@ export const getDefaultValues = (attributeConfiguration: AttributeConfiguration,
     return head(attributeConfiguration.default_values);
   }
   return undefined;
+};
+
+export const fillDefaultValues = (user: any, input: any, entitySetting: any) => {
+  const attributesConfiguration = getAttributesConfiguration(entitySetting);
+  if (!attributesConfiguration) {
+    return input;
+  }
+  const filledValues = new Map();
+  attributesConfiguration.filter((attr) => attr.default_values)
+    .filter((attr) => INPUT_MARKINGS !== attr.name)
+    .forEach((attr) => {
+      if (input[attr.name] === undefined || input[attr.name] === null) { // empty is a valid value
+        const attributeDef = schemaAttributesDefinition.getAttribute(entitySetting.target_type, attr.name);
+        const refDef = schemaRelationsRefDefinition.getRelationRef(entitySetting.target_type, attr.name);
+        let isMultiple = false;
+        if (attributeDef) {
+          isMultiple = attributeDef.multiple;
+        } else if (refDef) {
+          isMultiple = refDef.multiple;
+        }
+        const defaultValue = getDefaultValues(attr, isMultiple);
+        const isNumeric = isNumericAttribute(attr.name);
+        const parsedValue = isNumeric ? Number(defaultValue) : defaultValue;
+
+        if (attr.name === INPUT_AUTHORIZED_MEMBERS && parsedValue) {
+          const defaultAuthorizedMembers = (parsedValue as string[]).map((v) => JSON.parse(v));
+          // Replace dynamic creator rule with the id of the user making the query.
+          const creatorRule = defaultAuthorizedMembers.find((v) => v.id === MEMBER_ACCESS_CREATOR);
+          if (creatorRule) {
+            creatorRule.id = user.id;
+          }
+          filledValues.set(attr.name, defaultAuthorizedMembers);
+        } else {
+          filledValues.set(attr.name, parsedValue);
+        }
+      }
+    });
+
+  // Marking management
+  if (input[INPUT_MARKINGS] === undefined || input[INPUT_MARKINGS] === null) { // empty is a valid value
+    const defaultMarkings = user?.default_marking ?? [];
+    const globalDefaultMarking = (defaultMarkings.find((entry: any) => entry.entity_type === 'GLOBAL')?.values ?? []).map((m: any) => m.id);
+    if (!isEmptyField(globalDefaultMarking)) {
+      filledValues.set(INPUT_MARKINGS, globalDefaultMarking);
+    }
+  }
+  return { ...input, ...Object.fromEntries(filledValues) };
 };

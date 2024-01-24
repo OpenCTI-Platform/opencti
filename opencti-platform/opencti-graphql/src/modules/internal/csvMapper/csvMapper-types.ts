@@ -22,10 +22,11 @@ interface AttributeRef {
   ids: string[]
 }
 
-interface CsvMapperRepresentationAttribute {
+export interface CsvMapperRepresentationAttribute {
   key: string
   column?: AttributeColumn
   based_on?: AttributeBasedOn
+  default_values?: string[]
   ref?: AttributeRef
 }
 export enum Operator {

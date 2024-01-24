@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import { useField } from 'formik';
 import InputLabel from '@mui/material/InputLabel';
 import FormHelperText from '@mui/material/FormHelperText';
@@ -44,7 +44,7 @@ const RichTextField = (props) => {
     style,
     disabled,
   } = props;
-  let editorReference;
+  const editorReference = useRef();
   const classes = useStyles();
   const { t_i18n } = useFormatter();
   const [field, meta] = useField(name);
@@ -61,9 +61,9 @@ const RichTextField = (props) => {
     }
   };
   const internalOnSelect = () => {
-    const htmlContent = editorReference.data.stringify(
-      editorReference.model.getSelectedContent(
-        editorReference.model.document.selection,
+    const htmlContent = editorReference.current.data.stringify(
+      editorReference.current.model.getSelectedContent(
+        editorReference.current.model.document.selection,
       ),
     );
     const tmp = document.createElement('DIV');
@@ -72,12 +72,41 @@ const RichTextField = (props) => {
     if (
       typeof onSelect === 'function'
       && selection.length > 2
-      && editorReference.isReadOnly
+      && editorReference.current.isReadOnly
       && !fullScreen
     ) {
       onSelect(selection.trim());
     }
   };
+
+  const CKEditorInstance = (
+    <CKEditor
+      editor={Editor}
+      onReady={(editor) => {
+        editorReference.current = editor;
+        editorReference.current.setData(field.value || '');
+        editorReference.current.model.document.selection.on(
+          'change',
+          internalOnSelect,
+        );
+      }}
+      config={{
+        width: '100%',
+        language: 'en',
+        image: {
+          resizeUnit: 'px',
+        },
+      }}
+      data={field.value || ''}
+      onChange={(_, editor) => {
+        setFieldValue(name, editor.getData());
+      }}
+      onBlur={internalOnBlur}
+      onFocus={internalOnFocus}
+      disabled={disabled}
+    />
+  );
+
   return (
     <div style={style} className={!R.isNil(meta.error) ? 'error' : 'main'}>
       <InputLabel shrink={true} style={{ float: 'left' }}>
@@ -111,30 +140,7 @@ const RichTextField = (props) => {
             <Typography variant="h6">{t_i18n('Content')}</Typography>
           </div>
           <div className={classes.container}>
-            <CKEditor
-              editor={Editor}
-              onReady={(editor) => {
-                editorReference = editor;
-                editorReference.model.document.selection.on(
-                  'change',
-                  internalOnSelect,
-                );
-              }}
-              config={{
-                width: '100%',
-                language: 'en',
-                image: {
-                  resizeUnit: 'px',
-                },
-              }}
-              data={field.value || ''}
-              onChange={(event, editor) => {
-                setFieldValue(name, editor.getData());
-              }}
-              onBlur={internalOnBlur}
-              onFocus={internalOnFocus}
-              disabled={disabled}
-            />
+            {CKEditorInstance}
           </div>
           {!R.isNil(meta.error) && (
             <FormHelperText error={true}>{meta.error}</FormHelperText>
@@ -143,34 +149,7 @@ const RichTextField = (props) => {
             <Button onClick={() => setFullScreen(false)}>{t_i18n('Close')}</Button>
           </DialogActions>
         </Dialog>
-      ) : (
-        <>
-          <CKEditor
-            editor={Editor}
-            onReady={(editor) => {
-              editorReference = editor;
-              editorReference.model.document.selection.on(
-                'change',
-                internalOnSelect,
-              );
-            }}
-            config={{
-              width: '100%',
-              language: 'en',
-              image: {
-                resizeUnit: 'px',
-              },
-            }}
-            data={field.value || ''}
-            onChange={(event, editor) => {
-              setFieldValue(name, editor.getData());
-            }}
-            onBlur={internalOnBlur}
-            onFocus={internalOnFocus}
-            disabled={disabled}
-          />
-        </>
-      )}
+      ) : CKEditorInstance}
       {!R.isNil(meta.error) && (
         <FormHelperText error={true}>{meta.error}</FormHelperText>
       )}

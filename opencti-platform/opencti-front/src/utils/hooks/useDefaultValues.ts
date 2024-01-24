@@ -2,6 +2,7 @@ import { head, isEmpty } from 'ramda';
 import { FormikValues } from 'formik/dist/types';
 import { EntitySettingAttributeEditionMembersQuery$data } from '@components/settings/sub_types/entity_setting/__generated__/EntitySettingAttributeEditionMembersQuery.graphql';
 import { Option } from '@components/common/form/ReferenceField';
+import { useCallback } from 'react';
 import useEntitySettings from './useEntitySettings';
 import useAuth from './useAuth';
 import useVocabularyCategory from './useVocabularyCategory';
@@ -9,61 +10,64 @@ import { isEmptyField } from '../utils';
 import { now } from '../Time';
 import { AuthorizedMembers, authorizedMembersToOptions, INPUT_AUTHORIZED_MEMBERS } from '../authorizedMembers';
 
-export const useComputeDefaultValues = (
-  entityType: string,
-  attributeName: string,
-  multiple: boolean,
-  type: string,
-  defaultValues: readonly { id: string; name: string }[],
-  membersData?: EntitySettingAttributeEditionMembersQuery$data,
-) => {
+export const useComputeDefaultValues = () => {
   const { fieldToCategory } = useVocabularyCategory();
-  const ovCategory = fieldToCategory(entityType, attributeName);
-  // Handle createdBy
-  if (attributeName === 'createdBy') {
-    return (
-      head(
-        defaultValues.map((v) => ({ value: v.id, label: v.name } as Option)),
-      ) ?? ''
-    );
-  }
 
-  if (attributeName === INPUT_AUTHORIZED_MEMBERS) {
-    const defaultAuthorizedMembers: AuthorizedMembers = defaultValues
-      .map((v) => {
-        const parsed = JSON.parse(v.id);
-        const member = membersData?.members?.edges?.find(({ node }) => node.id === parsed.id);
-        return {
-          id: parsed.id,
-          name: member?.node.name ?? '',
-          entity_type: member?.node.entity_type ?? '',
-          access_right: parsed.access_right,
-        };
-      })
-      .filter((v) => !!v.id && !!v.access_right);
-
-    return defaultAuthorizedMembers.length > 0
-      ? authorizedMembersToOptions(defaultAuthorizedMembers)
-      : null;
-  }
-
-  // Handle OV
-  if (ovCategory) {
-    if (multiple) {
-      return defaultValues.map((v) => v.name);
+  return useCallback((
+    entityType: string,
+    attributeName: string,
+    multiple: boolean,
+    type: string,
+    defaultValues: readonly { id: string; name: string }[],
+    membersData?: EntitySettingAttributeEditionMembersQuery$data,
+  ) => {
+    const ovCategory = fieldToCategory(entityType, attributeName);
+    // Handle createdBy
+    if (attributeName === 'createdBy') {
+      return (
+        head(
+          defaultValues.map((v) => ({ value: v.id, label: v.name })),
+        ) ?? ''
+      );
     }
-    return head(defaultValues.map((v) => v.name)) ?? '';
-  }
-  if (multiple) {
-    return defaultValues.map((v) => ({ value: v.id, label: v.name } as Option));
-  }
-  // Handle boolean
-  if (type === 'boolean') {
-    return Boolean(head(defaultValues)?.id);
-  }
 
-  // Handle single numeric & single string
-  return head(defaultValues)?.id ?? '';
+    if (attributeName === INPUT_AUTHORIZED_MEMBERS) {
+      const defaultAuthorizedMembers: AuthorizedMembers = defaultValues
+        .map((v) => {
+          const parsed = JSON.parse(v.id);
+          const member = membersData?.members?.edges?.find(({ node }) => node.id === parsed.id);
+          return {
+            id: parsed.id,
+            name: member?.node.name ?? '',
+            entity_type: member?.node.entity_type ?? '',
+            access_right: parsed.access_right,
+          };
+        })
+        .filter((v) => !!v.id && !!v.access_right);
+
+      return defaultAuthorizedMembers.length > 0
+        ? authorizedMembersToOptions(defaultAuthorizedMembers)
+        : null;
+    }
+
+    // Handle OV
+    if (ovCategory) {
+      if (multiple) {
+        return defaultValues.map((v) => v.name);
+      }
+      return head(defaultValues.map((v) => v.name)) ?? '';
+    }
+    if (multiple) {
+      return defaultValues.map((v) => ({ value: v.id, label: v.name } as Option));
+    }
+    // Handle boolean
+    if (type === 'boolean') {
+      return Boolean(head(defaultValues)?.id);
+    }
+
+    // Handle single numeric & single string
+    return head(defaultValues)?.id ?? '';
+  }, [fieldToCategory]);
 };
 
 const useDefaultValues = <Values extends FormikValues>(
@@ -71,6 +75,8 @@ const useDefaultValues = <Values extends FormikValues>(
   initialValues: Values,
   notEmptyValues?: Partial<Values>,
 ) => {
+  const computeDefaultValues = useComputeDefaultValues();
+
   const entitySettings = useEntitySettings(id).at(0);
   if (!entitySettings) {
     throw Error(`Invalid type for setting: ${id}`);
@@ -91,7 +97,7 @@ const useDefaultValues = <Values extends FormikValues>(
         keys.includes(attr.name)
         && isEmptyField(initialValues[attr.name])
       ) {
-        defaultValues[attr.name] = useComputeDefaultValues(
+        defaultValues[attr.name] = computeDefaultValues(
           entitySettings.target_type,
           attr.name,
           Array.isArray(initialValues[attr.name]),

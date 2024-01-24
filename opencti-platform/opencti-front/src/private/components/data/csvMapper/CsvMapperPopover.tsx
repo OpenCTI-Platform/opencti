@@ -5,9 +5,9 @@ import IconButton from '@mui/material/IconButton';
 import MoreVert from '@mui/icons-material/MoreVert';
 import { graphql, useMutation } from 'react-relay';
 import { PopoverProps } from '@mui/material/Popover';
-import { CsvMapperLinesPaginationQuery$variables } from '@components/data/csvMapper/__generated__/CsvMapperLinesPaginationQuery.graphql';
 import CsvMapperEditionContainer, { csvMapperEditionContainerQuery } from '@components/data/csvMapper/CsvMapperEditionContainer';
 import { CsvMapperEditionContainerQuery } from '@components/data/csvMapper/__generated__/CsvMapperEditionContainerQuery.graphql';
+import { csvMappers_MappersQuery$variables } from '@components/data/csvMapper/__generated__/csvMappers_MappersQuery.graphql';
 import { useFormatter } from '../../../../components/i18n';
 import DeleteDialog from '../../../../components/DeleteDialog';
 import useDeletion from '../../../../utils/hooks/useDeletion';
@@ -23,7 +23,7 @@ const csvMapperPopoverDelete = graphql`
 
 interface CsvMapperPopoverProps {
   csvMapperId: string;
-  paginationOptions: CsvMapperLinesPaginationQuery$variables;
+  paginationOptions: csvMappers_MappersQuery$variables;
 }
 
 const CsvMapperPopover: FunctionComponent<CsvMapperPopoverProps> = ({

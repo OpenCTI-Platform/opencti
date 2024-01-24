@@ -1,27 +1,30 @@
 /* eslint-disable no-param-reassign */
 import moment from 'moment';
-import type { AttributeDefinition, AttrType, } from '../schema/attribute-definition';
+import type { AttributeDefinition, AttrType } from '../schema/attribute-definition';
 import { entityType, relationshipType, standardId } from '../schema/attribute-definition';
 import { generateStandardId } from '../schema/identifier';
 import { schemaAttributesDefinition } from '../schema/schema-attributes';
 import { isEmptyField, isNotEmptyField } from '../database/utils';
 import { schemaRelationsRefDefinition } from '../schema/schema-relationsRef';
 import { handleInnerType } from '../domain/stixDomainObject';
-import { columnNameToIdx } from './csv-helper';
+import { extractValueFromCsv } from './csv-helper';
 import { isStixRelationshipExceptRef } from '../schema/stixRelationship';
-import type { BasicStoreEntityCsvMapper, CsvMapperRepresentation } from '../modules/internal/csvMapper/csvMapper-types';
+import type { AttributeColumn, BasicStoreEntityCsvMapper, CsvMapperRepresentation, CsvMapperRepresentationAttribute } from '../modules/internal/csvMapper/csvMapper-types';
 import { CsvMapperRepresentationType, Operator } from '../modules/internal/csvMapper/csvMapper-types';
-import type { AttributeColumn } from '../generated/graphql';
 import { isValidTargetType } from '../modules/internal/csvMapper/csvMapper-utils';
+import { fillDefaultValues, getEntitySettingFromCache } from '../modules/entitySetting/entitySetting-utils';
+import type { AuthContext, AuthUser } from '../types/user';
 import { UnsupportedError } from '../config/errors';
+import { internalFindByIdsMapped } from '../database/middleware-loader';
+import type { BasicStoreObject } from '../types/store';
 
 export type InputType = string | string[] | boolean | number | Record<string, any>;
 
 // -- HANDLE VALUE --
 
-const formatValue = (value: string, type: AttrType, column: AttributeColumn) => {
-  const pattern_date = column.configuration?.pattern_date;
-  const timezone = column.configuration?.timezone;
+const formatValue = (value: string, type: AttrType, column: AttributeColumn | undefined) => {
+  const pattern_date = column?.configuration?.pattern_date;
+  const timezone = column?.configuration?.timezone;
   if (type === 'string') {
     return value.trim();
   }
@@ -51,8 +54,8 @@ const formatValue = (value: string, type: AttrType, column: AttributeColumn) => 
   return value;
 };
 
-const computeValue = (value: string, column: AttributeColumn, attributeDef: AttributeDefinition) => {
-  if (isEmptyField(value)) {
+const computeValue = (value: string | undefined, column: AttributeColumn, attributeDef: AttributeDefinition) => {
+  if (value === undefined || isEmptyField(value)) {
     return null;
   }
   // Handle multiple
@@ -66,13 +69,17 @@ const computeValue = (value: string, column: AttributeColumn, attributeDef: Attr
   return formatValue(value, attributeDef.type, column);
 };
 
-const extractValueFromCsv = (record: string[], columnName: string) => {
-  const idx = columnNameToIdx(columnName); // Handle letter to idx here & remove headers
-  if (isEmptyField(idx)) {
-    throw UnsupportedError('Unknown column name', { name: columnName });
-  } else {
-    return record[idx as number];
+const computeDefaultValue = (
+  defaultValue: string[],
+  attribute: CsvMapperRepresentationAttribute,
+  definition: AttributeDefinition,
+) => {
+  // Handle multiple
+  if (definition.multiple) {
+    return defaultValue.map((v) => formatValue(v, definition.type, attribute.column));
   }
+  // Handle single
+  return formatValue(defaultValue[0], definition.type, attribute.column);
 };
 
 // -- VALIDATION --
@@ -128,107 +135,182 @@ const handleId = (representation: CsvMapperRepresentation, input: Record<string,
   input[standardId.name] = generateStandardId(representation.target.entity_type, input);
 };
 
-const handleDirectAttribute = (attributeKey: string, column: AttributeColumn, input: Record<string, InputType>, value: string) => {
-  const entity_type = input[entityType.name] as string;
-  const attributeDef = schemaAttributesDefinition.getAttribute(entity_type, attributeKey);
-  if (!attributeDef) {
-    throw UnsupportedError('Invalid attribute', { key: attributeKey, type: entity_type });
+const handleDirectAttribute = (
+  attribute: CsvMapperRepresentationAttribute,
+  input: Record<string, InputType>,
+  record: string[],
+  definition: AttributeDefinition
+) => {
+  if (attribute.default_values !== null && attribute.default_values !== undefined) {
+    const computedDefault = computeDefaultValue(attribute.default_values, attribute, definition);
+    if (computedDefault !== null && computedDefault !== undefined) {
+      input[attribute.key] = computedDefault;
+    }
   }
-  const computedValue = computeValue(value, column, attributeDef);
-  if (computedValue !== null && computedValue !== undefined) {
-    input[attributeKey] = computedValue;
+  if (attribute.column && isNotEmptyField(attribute.column?.column_name)) {
+    const recordValue = extractValueFromCsv(record, attribute.column.column_name);
+    const computedValue = computeValue(recordValue, attribute.column, definition);
+    if (computedValue !== null && computedValue !== undefined) {
+      input[attribute.key] = computedValue;
+    }
   }
 };
-const handleBasedOnAttribute = (attributeKey: string, input: Record<string, InputType>, entities: Record<string, InputType>[]) => {
-  const entity_type = input[entityType.name] as string;
-  // Is relation from or to (stix-core || stix-sighting)
-  if (isStixRelationshipExceptRef(entity_type) && (['from', 'to'].includes(attributeKey))) {
-    if (attributeKey === 'from') {
-      const entity = entities[0];
-      if (isNotEmptyField(entity)) {
-        input.from = entity;
-        input.fromType = entity[entityType.name];
-      }
-    } else if (attributeKey === 'to') {
-      const entity = entities[0];
-      if (isNotEmptyField(entity)) {
-        input.to = entity;
-        input.toType = entity[entityType.name];
-      }
-    }
-  // Is relation ref
-  } else {
-    const relationDef = schemaRelationsRefDefinition.getRelationRef(entity_type, attributeKey);
-    if (!relationDef) {
-      throw UnsupportedError('Invalid attribute', { key: attributeKey, type: entity_type });
+
+const handleBasedOnAttribute = (
+  attribute: CsvMapperRepresentationAttribute,
+  input: Record<string, InputType>,
+  definition: AttributeDefinition | null,
+  otherEntities: Map<string, Record<string, InputType>>,
+  refEntities: Record<string, BasicStoreObject>
+) => {
+  if (definition && attribute.default_values && attribute.default_values.length > 0) {
+    if (definition.multiple) {
+      input[attribute.key] = attribute.default_values.flatMap((id) => {
+        const entity = refEntities[id];
+        if (!entity) return [];
+        return [entity];
+      });
     } else {
-      input[attributeKey] = relationDef.multiple ? entities : entities[0];
+      const entity = refEntities[attribute.default_values[0]];
+      if (entity) {
+        input[attribute.key] = entity;
+      }
+    }
+  }
+  if (attribute.based_on) {
+    if (isEmptyField(attribute.based_on)) {
+      throw UnsupportedError('Unknown value(s)', { key: attribute.key });
+    }
+    const entities = (attribute.based_on.representations ?? [])
+      .map((id) => otherEntities.get(id))
+      .filter((e) => e !== undefined) as Record<string, InputType>[];
+    if (entities.length > 0) {
+      const entity_type = input[entityType.name] as string;
+      // Is relation from or to (stix-core || stix-sighting)
+      if (isStixRelationshipExceptRef(entity_type) && ['from', 'to'].includes(attribute.key)) {
+        if (attribute.key === 'from') {
+          const entity = entities[0];
+          if (isNotEmptyField(entity)) {
+            input.from = entity;
+            input.fromType = entity[entityType.name];
+          }
+        } else if (attribute.key === 'to') {
+          const entity = entities[0];
+          if (isNotEmptyField(entity)) {
+            input.to = entity;
+            input.toType = entity[entityType.name];
+          }
+        }
+        // Is relation ref
+      } else if (definition) {
+        const refs = definition.multiple ? entities : entities[0];
+        if (isNotEmptyField(refs)) {
+          input[attribute.key] = refs;
+        }
+      }
     }
   }
 };
 
-const handleAttributes = (record: string[], representation: CsvMapperRepresentation, input: Record<string, InputType>, map: Map<string, Record<string, InputType>>) => {
-  const attributes = representation.attributes ?? [];
-  attributes.forEach((attribute) => {
-    // Handle column attribute
-    if (attribute.column && isNotEmptyField(attribute.column?.column_name)) {
-      const { column } = attribute;
-      const recordValue = extractValueFromCsv(record, column.column_name);
-      handleDirectAttribute(attribute.key, attribute.column, input, recordValue);
-
+const handleAttributes = (
+  record: string[],
+  representation: CsvMapperRepresentation,
+  input: Record<string, InputType>,
+  otherEntities: Map<string, Record<string, InputType>>,
+  refEntities: Record<string, BasicStoreObject>
+) => {
+  const { entity_type } = representation.target;
+  (representation.attributes ?? []).forEach((attribute) => {
+    const attributeDef = schemaAttributesDefinition.getAttribute(entity_type, attribute.key);
+    const refDef = schemaRelationsRefDefinition.getRelationRef(entity_type, attribute.key);
+    if (attributeDef) {
+      // Handle column attribute
+      handleDirectAttribute(attribute, input, record, attributeDef);
+    } else if (refDef || ['from', 'to'].includes(attribute.key)) {
       // Handle based_on attribute
-    } else if (attribute.based_on) {
-      const basedOn = attribute.based_on;
-      const entities = basedOn.representations?.map((based) => map.get(based));
-      if (isEmptyField(entities)) {
-        throw UnsupportedError('Unknown value(s)', { key: attribute.key });
-      } else {
-        const definedEntities = entities?.filter((e) => e !== undefined) as Record<string, InputType>[];
-        handleBasedOnAttribute(attribute.key, input, definedEntities);
-      }
+      handleBasedOnAttribute(attribute, input, refDef, otherEntities, refEntities);
+    } else {
+      throw UnsupportedError('Unknown schema for attribute:', { attribute });
     }
   });
 };
 
-const mapRecord = (record: string[], representation: CsvMapperRepresentation, map: Map<string, Record<string, InputType>>) => {
+const mapRecord = async (
+  context: AuthContext,
+  user: AuthUser,
+  record: string[],
+  representation: CsvMapperRepresentation,
+  otherEntities: Map<string, Record<string, InputType>>,
+  refEntities: Record<string, BasicStoreObject>
+) => {
   if (!isValidTarget(record, representation)) {
     return null;
   }
+  const { entity_type } = representation.target;
+
   let input: Record<string, InputType> = {};
-
   handleType(representation, input);
-  input = handleInnerType(input, representation.target.entity_type);
-  handleAttributes(record, representation, input, map);
+  input = handleInnerType(input, entity_type);
 
-  if (!isValidInput(input)) {
+  handleAttributes(record, representation, input, otherEntities, refEntities);
+
+  const entitySetting = await getEntitySettingFromCache(context, entity_type);
+  const filledInput = fillDefaultValues(user, input, entitySetting);
+  filledInput.objectMarking = []; // TODO manage markings
+
+  if (!isValidInput(filledInput)) {
     return null;
   }
+  handleId(representation, filledInput);
 
-  handleId(representation, input);
-
-  return input;
+  return filledInput;
 };
-export const mappingProcess = (mapper: BasicStoreEntityCsvMapper, record: string[]): Record<string, InputType>[] => {
+
+export const mappingProcess = async (
+  context: AuthContext,
+  user: AuthUser,
+  mapper: BasicStoreEntityCsvMapper,
+  record: string[]
+): Promise<Record<string, InputType>[]> => {
   const { representations } = mapper;
-  const representationEntities = representations.filter((r) => r.type === CsvMapperRepresentationType.entity);
+  // IDs of entity refs retrieved from default values of based_on attributes in csv mapper.
+  const refIdsToResolve = new Set(representations.flatMap((representation) => {
+    const { target } = representation;
+    return representation.attributes.flatMap((attribute) => {
+      if (attribute.default_values && attribute.default_values.length > 0) {
+        const refDef = schemaRelationsRefDefinition.getRelationRef(target.entity_type, attribute.key);
+        if (refDef) {
+          return attribute.default_values;
+        }
+      }
+      return [];
+    });
+  }));
+  const refEntities = await internalFindByIdsMapped(context, user, [...refIdsToResolve]);
+
+  const representationEntities = representations
+    .filter((r) => r.type === CsvMapperRepresentationType.entity)
+    .sort((r1, r2) => r1.attributes.filter((attr) => attr.based_on).length - r2.attributes.filter((attr) => attr.based_on).length);
   const representationRelationships = representations.filter((r) => r.type === CsvMapperRepresentationType.relationship);
   const results = new Map<string, Record<string, InputType>>();
 
   // 1. entities sort by no based on at first
-  representationEntities
-    .sort((r1, r2) => r1.attributes.filter((attr) => attr.based_on).length - r2.attributes.filter((attr) => attr.based_on).length)
-    .forEach((representation) => {
-      const input = mapRecord(record, representation, results);
-      if (input) {
-        results.set(representation.id, input);
-      }
-    });
-  // 2. relationships
-  representationRelationships.forEach((representation) => {
-    const input = mapRecord(record, representation, results);
+  for (let i = 0; i < representationEntities.length; i += 1) {
+    const representation = representationEntities[i];
+    const input = await mapRecord(context, user, record, representation, results, refEntities);
     if (input) {
       results.set(representation.id, input);
     }
-  });
+  }
+
+  // 2. relationships
+  for (let i = 0; i < representationRelationships.length; i += 1) {
+    const representation = representationRelationships[i];
+    const input = await mapRecord(context, user, record, representation, results, refEntities);
+    if (input) {
+      results.set(representation.id, input);
+    }
+  }
+
   return Array.from(results.values());
 };

@@ -6,10 +6,15 @@ import { representationLabel } from '@components/data/csvMapper/representations/
 import * as R from 'ramda';
 import { getBasedOnRepresentations, getInfoForRef } from '@components/data/csvMapper/representations/attributes/AttributeUtils';
 import makeStyles from '@mui/styles/makeStyles';
-import { Attribute, AttributeWithMetadata } from '@components/data/csvMapper/representations/attributes/Attribute';
-import { Representation } from '@components/data/csvMapper/representations/Representation';
-import { useFormikContext } from 'formik';
-import { CsvMapper } from '@components/data/csvMapper/CsvMapper';
+import { FieldProps } from 'formik';
+import { CsvMapperFormData } from '@components/data/csvMapper/CsvMapper';
+import CsvMapperRepresentationDialogOption from '@components/data/csvMapper/representations/attributes/CsvMapperRepresentationDialogOption';
+import CsvMapperRepresentationAttributeOptions from '@components/data/csvMapper/representations/attributes/CsvMapperRepresentationAttributeOptions';
+import { CsvMapperRepresentationAttributeFormData } from '@components/data/csvMapper/representations/attributes/Attribute';
+import { CsvMapperRepresentationFormData } from '@components/data/csvMapper/representations/Representation';
+import {
+  CsvMapperRepresentationAttributesForm_allSchemaAttributes$data,
+} from '@components/data/csvMapper/representations/attributes/__generated__/CsvMapperRepresentationAttributesForm_allSchemaAttributes.graphql';
 import { isEmptyField } from '../../../../../../utils/utils';
 import useAuth from '../../../../../../utils/hooks/useAuth';
 import { resolveTypesForRelationship, resolveTypesForRelationshipRef } from '../../../../../../utils/Relation';
@@ -19,9 +24,10 @@ const useStyles = makeStyles(() => ({
   container: {
     width: '100%',
     display: 'inline-grid',
-    gridTemplateColumns: '1fr 1fr 1fr',
+    gridTemplateColumns: '2fr 3fr 50px',
     alignItems: 'center',
     marginTop: '10px',
+    gap: '10px',
   },
   inputError: {
     '& fieldset': {
@@ -34,165 +40,151 @@ const useStyles = makeStyles(() => ({
   },
 }));
 
-interface CsvMapperRepresentationAttributeRefFormProps {
-  indexRepresentation: number;
-  attribute: AttributeWithMetadata;
+export type RepresentationAttributeForm = CsvMapperRepresentationAttributeFormData | undefined;
+
+interface CsvMapperRepresentationAttributeRefFormProps
+  extends FieldProps<RepresentationAttributeForm, CsvMapperFormData> {
+  representation: CsvMapperRepresentationFormData
+  schemaAttribute: CsvMapperRepresentationAttributesForm_allSchemaAttributes$data['csvMapperSchemaAttributes'][number]['attributes'][number];
   label: string;
   handleErrors: (key: string, value: string | null) => void;
 }
 
 const CsvMapperRepresentationAttributeRefForm: FunctionComponent<
 CsvMapperRepresentationAttributeRefFormProps
-> = ({ indexRepresentation, attribute, label, handleErrors }) => {
+> = ({ form, field, representation, schemaAttribute, label, handleErrors }) => {
   const classes = useStyles();
   const { t_i18n } = useFormatter();
 
-  const formikContext = useFormikContext<CsvMapper>();
-  const { representations } = formikContext.values;
-  const representation = representations[indexRepresentation];
-  const entityType = representation.target.entity_type;
-  const indexAttribute = representation.attributes.findIndex(
-    (a) => a.key === attribute.key,
-  );
-  const selectedAttributes = representation.attributes;
+  const { name, value } = field;
+  const { setFieldValue, values } = form;
+  const { entity_representations } = values;
 
   const [fromType, fromId] = getInfoForRef(
-    representation.attributes,
-    representations,
+    Object.values(representation.attributes),
+    entity_representations,
     'from',
   );
   const [toType, toId] = getInfoForRef(
-    representation.attributes,
-    representations,
+    Object.values(representation.attributes),
+    entity_representations,
     'to',
   );
 
-  const multiple = attribute.multiple ?? false;
+  const multiple = schemaAttribute.multiple ?? false;
 
   const { schema } = useAuth();
   const { schemaRelationsTypesMapping, schemaRelationsRefTypesMapping } = schema;
 
-  const filteredOptions = ((representationsOptions: Representation[]) => representationsOptions
-    .filter((r) => {
-      return r.id !== representation.id;
-    })
-    .filter((r) => {
-      if (attribute.key === 'from' && toId) {
-        return r.id !== toId;
-      }
-      if (attribute.key === 'to' && fromId) {
-        return r.id !== fromId;
-      }
-      return true;
-    }));
+  const filterOptions = (representationsOptions: CsvMapperRepresentationFormData[]) => {
+    return representationsOptions
+      .filter((r) => r.id !== representation.id)
+      .filter((r) => {
+        if (schemaAttribute.name === 'from' && toId) {
+          return r.id !== toId;
+        }
+        if (schemaAttribute.name === 'to' && fromId) {
+          return r.id !== fromId;
+        }
+        return true;
+      });
+  };
 
-  let options;
+  let options: CsvMapperRepresentationFormData[] = [];
 
   // For both entity types, whether they are related-to or revoked-by,
   // we don't need to resolve the different types, as they can link any entity between them.
-  if (entityType === 'related-to' || entityType === 'revoked-by') {
-    options = filteredOptions(representations);
-  } else {
+  if (representation.target_type === 'related-to' || representation.target_type === 'revoked-by') {
+    options = filterOptions(entity_representations);
+  } else if (representation.target_type) {
     const relationshipTypes = resolveTypesForRelationship(
       schemaRelationsTypesMapping,
-      entityType,
-      attribute.key,
+      representation.target_type,
+      schemaAttribute.name,
       fromType,
       toType,
     );
     const relationshipRefTypes = resolveTypesForRelationshipRef(
       schemaRelationsRefTypesMapping,
-      entityType,
-      attribute.key,
+      representation.target_type,
+      schemaAttribute.name,
     );
-    options = filteredOptions(representations
-      .filter((r) => {
-        return [...relationshipTypes, ...relationshipRefTypes].includes(
-          r.target.entity_type,
-        );
-      }));
+    options = filterOptions(
+      entity_representations
+        .filter((r) => r.target_type && [...relationshipTypes, ...relationshipRefTypes].includes(r.target_type)),
+    );
   }
 
   // -- ERRORS --
 
-  const hasError = attribute.mandatory && isEmptyField(attribute.based_on?.representations);
-  const [errors, setErrors] = useState(hasError);
-  const manageErrors = (value: Representation[] | Representation | null) => {
-    if (attribute.mandatory && isEmptyField(value)) {
-      setErrors(true);
-    } else {
-      setErrors(false);
-    }
+  const hasErrors = () => {
+    const missMandatoryValue = schemaAttribute.mandatory && isEmptyField(value?.based_on);
+    const missSettingsDefaultValue = isEmptyField(schemaAttribute.defaultValues);
+    const missDefaultValue = isEmptyField(value?.default_values);
+    return missMandatoryValue && missSettingsDefaultValue && missDefaultValue;
   };
+
+  const [errors, setErrors] = useState(hasErrors());
 
   // -- EVENTS --
 
   useEffect(() => {
+    setErrors(hasErrors());
+  }, [value, schemaAttribute]);
+
+  useEffect(() => {
     if (errors) {
-      handleErrors(attribute.key, 'This attribute is required');
+      handleErrors(schemaAttribute.name, 'This attribute is required');
     } else {
-      handleErrors(attribute.key, null);
+      handleErrors(schemaAttribute.name, null);
     }
   }, [errors]);
 
   const onValueChange = async (
-    value: Representation[] | Representation | null,
+    val: CsvMapperRepresentationFormData[] | CsvMapperRepresentationFormData | null,
   ) => {
-    let ids: string[];
+    let ids: string[] | undefined;
     if (multiple) {
-      ids = value ? (value as Representation[]).map((r) => r.id) : [];
+      ids = val ? (val as CsvMapperRepresentationFormData[]).map((r) => r.id) : undefined;
     } else {
       // internally, it's always an array
-      ids = value ? [(value as Representation).id] : [];
+      ids = val ? [(val as CsvMapperRepresentationFormData).id] : undefined;
     }
 
-    if (indexAttribute === -1) {
+    if (!value) {
       // this attribute was not set yet, initialize
-      const newSelectedAttribute: Attribute = {
-        key: attribute.key,
-        column: null,
-        based_on: { representations: ids },
+      const newAttribute: CsvMapperRepresentationAttributeFormData = {
+        key: schemaAttribute.name,
+        based_on: ids,
       };
-      await formikContext.setFieldValue(
-        `representations[${indexRepresentation}].attributes`,
-        [...selectedAttributes, newSelectedAttribute],
-      );
-    } else if (value === null) {
-      // if the input value becomes unset, remove the attributes from selection in formik
-      selectedAttributes.splice(indexAttribute, 1);
-      await formikContext.setFieldValue(
-        `representations[${indexRepresentation}].attributes`,
-        selectedAttributes,
-      );
+      await setFieldValue(name, newAttribute);
     } else {
-      await formikContext.setFieldValue(
-        `representations[${indexRepresentation}].attributes[${indexAttribute}].based_on.representations`,
-        ids,
-      );
+      const updateAttribute: CsvMapperRepresentationAttributeFormData = {
+        ...value,
+        based_on: ids,
+      };
+      await setFieldValue(name, updateAttribute);
     }
-
-    manageErrors(value);
   };
 
   return (
     <div className={classes.container}>
       <div>
         {label}
-        {attribute.mandatory && <span className={classes.redStar}>*</span>}
+        {schemaAttribute.mandatory && <span className={classes.redStar}>*</span>}
       </div>
       <div>
         {multiple && (
-          <MUIAutocomplete
+          <MUIAutocomplete<CsvMapperRepresentationFormData, true>
             selectOnFocus
             openOnFocus
             autoSelect={false}
             autoHighlight
             multiple
-            getOptionLabel={(option) => representationLabel(representations.indexOf(option), option, t_i18n)
-            }
+            getOptionLabel={(option) => representationLabel(entity_representations.indexOf(option), option, t_i18n)}
             options={options}
-            value={getBasedOnRepresentations(attribute, options) || null}
-            onChange={(_, value) => onValueChange(value)}
+            value={getBasedOnRepresentations(value, options) || null}
+            onChange={(_, val) => onValueChange(val)}
             renderInput={(params) => (
               <MuiTextField
                 {...params}
@@ -207,18 +199,15 @@ CsvMapperRepresentationAttributeRefFormProps
           />
         )}
         {!multiple && (
-          <MUIAutocomplete
+          <MUIAutocomplete<CsvMapperRepresentationFormData>
             selectOnFocus
             openOnFocus
             autoSelect={false}
             autoHighlight
-            getOptionLabel={(option) => representationLabel(representations.indexOf(option), option, t_i18n)
-            }
+            getOptionLabel={(option) => representationLabel(entity_representations.indexOf(option), option, t_i18n)}
             options={options}
-            value={
-              R.head(getBasedOnRepresentations(attribute, options)) || null
-            }
-            onChange={(_, value) => onValueChange(value)}
+            value={R.head(getBasedOnRepresentations(value, options)) || null}
+            onChange={(_, val) => onValueChange(val)}
             renderInput={(params) => (
               <MuiTextField
                 {...params}
@@ -231,6 +220,17 @@ CsvMapperRepresentationAttributeRefFormProps
               [classes.inputError]: errors,
             })}
           />
+        )}
+      </div>
+      <div>
+        {schemaAttribute.editDefault && (
+          <CsvMapperRepresentationDialogOption>
+            <CsvMapperRepresentationAttributeOptions
+              schemaAttribute={schemaAttribute}
+              attributeName={name}
+              form={form}
+            />
+          </CsvMapperRepresentationDialogOption>
         )}
       </div>
     </div>

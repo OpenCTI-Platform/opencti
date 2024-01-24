@@ -22,6 +22,7 @@ type CsvMapperRepresentationAttribute {
   column: AttributeColumn
   based_on: AttributeBasedOn
   ref: AttributeRef
+  default_values: [DefaultValue!]
 }
 
 enum Operator {
@@ -86,6 +87,21 @@ type CsvMapperTestResult {
   nbEntities: Int!
 }
 
+type CsvMapperSchemaAttribute {
+  name: String!
+  type: String!
+  mandatory: Boolean!
+  mandatoryType: String!
+  editDefault: Boolean!
+  multiple: Boolean!
+  defaultValues: [DefaultValue!]
+  label: String
+}
+type CsvMapperSchemaAttributes {
+  name: String!
+  attributes: [CsvMapperSchemaAttribute!]!
+}
+
 # Queries
 type Query {
   csvMapper(id: String!): CsvMapper @auth
@@ -101,6 +117,7 @@ type Query {
     configuration: String!
     content: String!
   ): CsvMapperTestResult @auth(for: [TAXIIAPI_SETCSVMAPPERS])
+  csvMapperSchemaAttributes: [CsvMapperSchemaAttributes!]! @auth(for: [KNOWLEDGE])
 }
 
 # Mutations

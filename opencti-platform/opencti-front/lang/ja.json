@@ -2518,5 +2518,9 @@
   "This score is updated with the decay rule applied to this indicator.": "このスコアはこのインジケータに適用される減衰ルールで更新される。",
   "Lifecycle": "ライフサイクル",
   "Lifecycle details": "ライフサイクルの詳細",
-  "Subscription to specific object(s)": "特定のオブジェクトへのサブスクリプション"
+  "Subscription to specific object(s)": "特定のオブジェクトへのサブスクリプション",
+  "Settings default values": "エンティティ設定のデフォルト値：{value}",
+  "Settings default values usage...": "CSVファイルにデータがない場合、設定 >カスタマイズで設定されたデフォルト値が代わりに使用されます。このデフォルト値は、上の入力欄に記入することで上書きすることができます。",
+  "No default value set in Settings...": "エンティティ設定でこの属性にデフォルト値が設定されていません。上記の入力で指定できます。CSVファイルにデータがない場合、この値が使用されます。",
+  "Default values set": "デフォルト値設定"
 }

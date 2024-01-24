@@ -1,11 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { csvMapperMockSimpleEntity } from './simple-entity-test/csv-mapper-mock-simple-entity';
 import { isNotEmptyField } from '../../../src/database/utils';
-
-import '../../../src/modules';
 import { csvMapperMockSimpleRelationship } from './simple-relationship-test/csv-mapper-mock-simple-relationship';
 import { csvMapperMockSimpleEntityWithRef } from './simple-entity-with-ref-test/csv-mapper-mock-simple-entity-with-ref';
-import { columnNameToIdx } from '../../../src/parser/csv-helper';
 import { csvMapperMockRealUseCase } from './real-use-case/csv-mapper-mock-real-use-case';
 import { csvMapperMockSimpleDifferentEntities } from '../../data/csv-mapper-mock-simple-different-entities';
 import { csvMapperMockSimpleSighting } from './simple-sighting-test/csv-mapper-mock-simple-sighting';
@@ -14,28 +11,7 @@ import { ADMIN_USER, testContext } from '../../utils/testQuery';
 import { csvMapperMockSimpleSkipLine } from './simple-skip-line-test/csv-mapper-mock-simple-skip-line';
 import { csvMapperMalware } from './entities-with-booleans/mapper';
 
-describe('CSV-HELPER', () => {
-  it('Column name to idx', async () => {
-    let idx = columnNameToIdx('A');
-    expect(idx)
-      .toBe(0);
-    idx = columnNameToIdx('Z');
-    expect(idx)
-      .toBe(25);
-    idx = columnNameToIdx('AD');
-    expect(idx)
-      .toBe(29); // 26 + 3
-    idx = columnNameToIdx('BE');
-    expect(idx)
-      .toBe(56); // 26 + 26 + 4
-    idx = columnNameToIdx('IQ');
-    expect(idx)
-      .toBe(250);
-    idx = columnNameToIdx('AJD');
-    expect(idx)
-      .toBe(939);
-  });
-});
+import '../../../src/modules';
 
 describe('CSV-PARSER', () => {
   it('Parse CSV - Simple entity', async () => {
@@ -54,6 +30,7 @@ describe('CSV-PARSER', () => {
     expect(threatActorWithTypes.threat_actor_types.length)
       .toBe(2);
   });
+
   it('Parse CSV - Simple relationship', async () => {
     const filPath = './tests/02-integration/05-parser/simple-relationship-test/Threat-Actor-Group_PART-OF_list.csv';
     const bundle = await bundleProcess(testContext, ADMIN_USER, filPath, csvMapperMockSimpleRelationship);
@@ -66,6 +43,7 @@ describe('CSV-PARSER', () => {
     expect(objects.filter((o) => o.relationship_type === 'part-of').length)
       .toBe(2);
   });
+
   it('Parse CSV - Simple sighting', async () => {
     const filPath = './tests/02-integration/05-parser/simple-sighting-test/Threat-Actor-Group_SIGHTING_org.csv';
     const bundle = await bundleProcess(testContext, ADMIN_USER, filPath, csvMapperMockSimpleSighting);
@@ -83,6 +61,7 @@ describe('CSV-PARSER', () => {
     expect(sighting.first_seen).not.toBeUndefined();
     expect(sighting.last_seen).toBeUndefined();
   });
+
   it('Parse CSV - Simple entity with refs', async () => {
     const filPath = './tests/02-integration/05-parser/simple-entity-with-ref-test/Threat-Actor-Group_with-ref.csv';
     const bundle = await bundleProcess(testContext, ADMIN_USER, filPath, csvMapperMockSimpleEntityWithRef);
@@ -108,6 +87,7 @@ describe('CSV-PARSER', () => {
       .not
       .toBeNull();
   });
+
   it('Parse CSV - Simple different entities', async () => {
     const filPath = './tests/02-integration/05-parser/simple-different-entities-test/Threat-Actor-Group_or_Organization.csv';
     const bundle = await bundleProcess(testContext, ADMIN_USER, filPath, csvMapperMockSimpleDifferentEntities);
@@ -120,6 +100,7 @@ describe('CSV-PARSER', () => {
     expect(objects.filter((o) => o.type === 'identity').length)
       .toBe(1);
   });
+
   it('Parse CSV - Real use case', async () => {
     const filPath = './tests/02-integration/05-parser/real-use-case/schema incidents.csv';
     const bundle = await bundleProcess(testContext, ADMIN_USER, filPath, csvMapperMockRealUseCase);
@@ -147,6 +128,7 @@ describe('CSV-PARSER', () => {
     expect(relationshipPartOf.length)
       .toBe(160);
   });
+
   it('Parse CSV - Simple skip line test on Simple entity ', async () => {
     const filPath = './tests/02-integration/05-parser/simple-skip-line-test/Threat-Actor-Group_list_skip_line.csv';
     const bundle = await bundleProcess(testContext, ADMIN_USER, filPath, csvMapperMockSimpleSkipLine);

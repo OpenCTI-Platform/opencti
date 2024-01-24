@@ -8,7 +8,7 @@ import { graphql, useFragment } from 'react-relay';
 import TableViewIcon from '@mui/icons-material/TableView';
 import { CsvMapperLine_csvMapper$key } from '@components/data/csvMapper/__generated__/CsvMapperLine_csvMapper.graphql';
 import CsvMapperPopover from '@components/data/csvMapper/CsvMapperPopover';
-import { CsvMapperLinesPaginationQuery$variables } from '@components/data/csvMapper/__generated__/CsvMapperLinesPaginationQuery.graphql';
+import { csvMappers_MappersQuery$variables } from '@components/data/csvMapper/__generated__/csvMappers_MappersQuery.graphql';
 import type { Theme } from '../../../../components/Theme';
 import { DataColumns } from '../../../../components/list_lines';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
@@ -43,7 +43,7 @@ const csvMapperFragment = graphql`
 interface CsvMapperLineProps {
   node: CsvMapperLine_csvMapper$key;
   dataColumns: DataColumns;
-  paginationOptions: CsvMapperLinesPaginationQuery$variables;
+  paginationOptions: csvMappers_MappersQuery$variables;
 }
 
 const CsvMapperLine: FunctionComponent<CsvMapperLineProps> = ({

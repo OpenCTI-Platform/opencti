@@ -2518,5 +2518,9 @@
   "This score is updated with the decay rule applied to this indicator.": "Esta puntuación se actualiza con la regla de decaimiento aplicada a este indicador.",
   "Lifecycle": "Ciclo de vida",
   "Lifecycle details": "Detalles del ciclo de vida",
-  "Subscription to specific object(s)": "Suscripción a objeto(s) específico(s)"
+  "Subscription to specific object(s)": "Suscripción a objeto(s) específico(s)",
+  "Settings default values": "Valor por defecto de la configuración de la entidad: {value}",
+  "Settings default values usage...": "Si los datos no se encuentran en el archivo CSV entonces el valor por defecto establecido en Configuración > Personalización se utilizará en su lugar. Puede anular este valor por defecto rellenando la entrada de arriba.",
+  "No default value set in Settings...": "No hay valor por defecto para este atributo en la configuración de la entidad. Puede proporcionar uno con la entrada de arriba. Este valor se utilizará si faltan datos en el archivo CSV.",
+  "Default values set": "Valores por defecto establecidos"
 }
