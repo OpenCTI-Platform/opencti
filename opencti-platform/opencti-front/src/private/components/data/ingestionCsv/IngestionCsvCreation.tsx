@@ -170,7 +170,7 @@ const IngestionCsvCreation: FunctionComponent<IngestionCsvCreationProps> = ({ pa
               <Field
                 component={DateTimePickerField}
                 name="current_state_date"
-                TextFieldProps={{
+                textFieldProps={{
                   label: t_i18n('Import from date (empty = all Csv possible items)'),
                   variant: 'standard',
                   fullWidth: true,

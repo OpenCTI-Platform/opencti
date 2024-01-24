@@ -208,7 +208,7 @@ const IngestionCsvEdition: FunctionComponent<IngestionCsvEditionProps> = ({
           <Field
             component={DateTimePickerField}
             name="current_state_date"
-            TextFieldProps={{
+            textFieldProps={{
               label: t_i18n(
                 'Import from date (empty = all CSV feed possible items)',
               ),
