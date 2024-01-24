@@ -1261,6 +1261,7 @@ input GroupAddInput {
   default_assignation: Boolean
   auto_new_marking: Boolean
   clientMutationId: String
+  group_confidence_level: ConfidenceLevelInput!
 }
 
 enum UnitSystem {
@@ -1484,12 +1485,12 @@ input UserAddInput {
   account_lock_after_date: DateTime
   unit_system: String
   groups: [ID!]
-  user_confidence_level: UserConfidenceLevelInput
+  user_confidence_level: ConfidenceLevelInput
 }
 
 scalar user_email_String_NotNull_minLength_5_format_email
 
-input UserConfidenceLevelInput {
+input ConfidenceLevelInput {
   max_confidence: Int!
   overrides: [ConfidenceLevelOverrideInput!]!
 }

@@ -1208,6 +1208,7 @@ input GroupAddInput {
   default_assignation: Boolean
   auto_new_marking: Boolean
   clientMutationId: String
+  group_confidence_level: ConfidenceLevelInput!
 }
 
 ############## Users
@@ -1422,10 +1423,10 @@ input UserAddInput {
   account_lock_after_date: DateTime
   unit_system: String
   groups: [ID!]
-  user_confidence_level: UserConfidenceLevelInput
+  user_confidence_level: ConfidenceLevelInput
 }
 
-input UserConfidenceLevelInput {
+input ConfidenceLevelInput {
   max_confidence: Int!
   overrides: [ConfidenceLevelOverrideInput!]!
 }

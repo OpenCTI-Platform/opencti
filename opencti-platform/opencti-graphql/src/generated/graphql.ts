@@ -3345,6 +3345,11 @@ export type ConfidenceLevel = {
   overrides: Array<ConfidenceLevelOverride>;
 };
 
+export type ConfidenceLevelInput = {
+  max_confidence: Scalars['Int']['input'];
+  overrides: Array<ConfidenceLevelOverrideInput>;
+};
+
 export type ConfidenceLevelOverride = {
   __typename?: 'ConfidenceLevelOverride';
   entity_type: Scalars['String']['output'];
@@ -7152,6 +7157,7 @@ export type GroupAddInput = {
   clientMutationId?: InputMaybe<Scalars['String']['input']>;
   default_assignation?: InputMaybe<Scalars['Boolean']['input']>;
   description?: InputMaybe<Scalars['String']['input']>;
+  group_confidence_level: ConfidenceLevelInput;
   name: Scalars['String']['input'];
 };
 
@@ -25654,7 +25660,7 @@ export type UserAddInput = {
   password: Scalars['String']['input'];
   theme?: InputMaybe<Scalars['String']['input']>;
   unit_system?: InputMaybe<Scalars['String']['input']>;
-  user_confidence_level?: InputMaybe<UserConfidenceLevelInput>;
+  user_confidence_level?: InputMaybe<ConfidenceLevelInput>;
   user_email: Scalars['String']['input'];
 };
 
@@ -25841,11 +25847,6 @@ export type UserAgentStixCoreRelationshipsDistributionArgs = {
 export type UserAgentAddInput = {
   file?: InputMaybe<Scalars['Upload']['input']>;
   value?: InputMaybe<Scalars['String']['input']>;
-};
-
-export type UserConfidenceLevelInput = {
-  max_confidence: Scalars['Int']['input'];
-  overrides: Array<ConfidenceLevelOverrideInput>;
 };
 
 export type UserConnection = {
@@ -27324,6 +27325,7 @@ export type ResolversTypes = ResolversObject<{
   CityEditMutations: ResolverTypeWrapper<Omit<CityEditMutations, 'contextClean' | 'contextPatch' | 'fieldPatch' | 'relationAdd' | 'relationDelete'> & { contextClean?: Maybe<ResolversTypes['City']>, contextPatch?: Maybe<ResolversTypes['City']>, fieldPatch?: Maybe<ResolversTypes['City']>, relationAdd?: Maybe<ResolversTypes['StixRefRelationship']>, relationDelete?: Maybe<ResolversTypes['City']> }>;
   Cluster: ResolverTypeWrapper<Cluster>;
   ConfidenceLevel: ResolverTypeWrapper<ConfidenceLevel>;
+  ConfidenceLevelInput: ConfidenceLevelInput;
   ConfidenceLevelOverride: ResolverTypeWrapper<ConfidenceLevelOverride>;
   ConfidenceLevelOverrideInput: ConfidenceLevelOverrideInput;
   Connector: ResolverTypeWrapper<Connector>;
@@ -27924,7 +27926,6 @@ export type ResolversTypes = ResolversObject<{
   UserAddInput: UserAddInput;
   UserAgent: ResolverTypeWrapper<Omit<UserAgent, 'cases' | 'containers' | 'createdBy' | 'groupings' | 'indicators' | 'notes' | 'objectOrganization' | 'observedData' | 'opinions' | 'reports' | 'stixCoreRelationships'> & { cases?: Maybe<ResolversTypes['CaseConnection']>, containers?: Maybe<ResolversTypes['ContainerConnection']>, createdBy?: Maybe<ResolversTypes['Identity']>, groupings?: Maybe<ResolversTypes['GroupingConnection']>, indicators?: Maybe<ResolversTypes['IndicatorConnection']>, notes?: Maybe<ResolversTypes['NoteConnection']>, objectOrganization?: Maybe<ResolversTypes['OrganizationConnection']>, observedData?: Maybe<ResolversTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversTypes['OpinionConnection']>, reports?: Maybe<ResolversTypes['ReportConnection']>, stixCoreRelationships?: Maybe<ResolversTypes['StixCoreRelationshipConnection']> }>;
   UserAgentAddInput: UserAgentAddInput;
-  UserConfidenceLevelInput: UserConfidenceLevelInput;
   UserConnection: ResolverTypeWrapper<Omit<UserConnection, 'edges'> & { edges: Array<ResolversTypes['UserEdge']> }>;
   UserEdge: ResolverTypeWrapper<Omit<UserEdge, 'node'> & { node: ResolversTypes['User'] }>;
   UserEditMutations: ResolverTypeWrapper<Omit<UserEditMutations, 'contextClean' | 'contextPatch' | 'fieldPatch' | 'organizationAdd' | 'organizationDelete' | 'relationDelete' | 'tokenRenew'> & { contextClean?: Maybe<ResolversTypes['User']>, contextPatch?: Maybe<ResolversTypes['User']>, fieldPatch?: Maybe<ResolversTypes['User']>, organizationAdd?: Maybe<ResolversTypes['User']>, organizationDelete?: Maybe<ResolversTypes['User']>, relationDelete?: Maybe<ResolversTypes['User']>, tokenRenew?: Maybe<ResolversTypes['User']> }>;
@@ -28059,6 +28060,7 @@ export type ResolversParentTypes = ResolversObject<{
   CityEditMutations: Omit<CityEditMutations, 'contextClean' | 'contextPatch' | 'fieldPatch' | 'relationAdd' | 'relationDelete'> & { contextClean?: Maybe<ResolversParentTypes['City']>, contextPatch?: Maybe<ResolversParentTypes['City']>, fieldPatch?: Maybe<ResolversParentTypes['City']>, relationAdd?: Maybe<ResolversParentTypes['StixRefRelationship']>, relationDelete?: Maybe<ResolversParentTypes['City']> };
   Cluster: Cluster;
   ConfidenceLevel: ConfidenceLevel;
+  ConfidenceLevelInput: ConfidenceLevelInput;
   ConfidenceLevelOverride: ConfidenceLevelOverride;
   ConfidenceLevelOverrideInput: ConfidenceLevelOverrideInput;
   Connector: Connector;
@@ -28576,7 +28578,6 @@ export type ResolversParentTypes = ResolversObject<{
   UserAddInput: UserAddInput;
   UserAgent: Omit<UserAgent, 'cases' | 'containers' | 'createdBy' | 'groupings' | 'indicators' | 'notes' | 'objectOrganization' | 'observedData' | 'opinions' | 'reports' | 'stixCoreRelationships'> & { cases?: Maybe<ResolversParentTypes['CaseConnection']>, containers?: Maybe<ResolversParentTypes['ContainerConnection']>, createdBy?: Maybe<ResolversParentTypes['Identity']>, groupings?: Maybe<ResolversParentTypes['GroupingConnection']>, indicators?: Maybe<ResolversParentTypes['IndicatorConnection']>, notes?: Maybe<ResolversParentTypes['NoteConnection']>, objectOrganization?: Maybe<ResolversParentTypes['OrganizationConnection']>, observedData?: Maybe<ResolversParentTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversParentTypes['OpinionConnection']>, reports?: Maybe<ResolversParentTypes['ReportConnection']>, stixCoreRelationships?: Maybe<ResolversParentTypes['StixCoreRelationshipConnection']> };
   UserAgentAddInput: UserAgentAddInput;
-  UserConfidenceLevelInput: UserConfidenceLevelInput;
   UserConnection: Omit<UserConnection, 'edges'> & { edges: Array<ResolversParentTypes['UserEdge']> };
   UserEdge: Omit<UserEdge, 'node'> & { node: ResolversParentTypes['User'] };
   UserEditMutations: Omit<UserEditMutations, 'contextClean' | 'contextPatch' | 'fieldPatch' | 'organizationAdd' | 'organizationDelete' | 'relationDelete' | 'tokenRenew'> & { contextClean?: Maybe<ResolversParentTypes['User']>, contextPatch?: Maybe<ResolversParentTypes['User']>, fieldPatch?: Maybe<ResolversParentTypes['User']>, organizationAdd?: Maybe<ResolversParentTypes['User']>, organizationDelete?: Maybe<ResolversParentTypes['User']>, relationDelete?: Maybe<ResolversParentTypes['User']>, tokenRenew?: Maybe<ResolversParentTypes['User']> };

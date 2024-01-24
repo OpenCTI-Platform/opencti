@@ -20,6 +20,7 @@ import DateTimePickerField from '../../../../components/DateTimePickerField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import useAuth from '../../../../utils/hooks/useAuth';
 import { insertNode } from '../../../../utils/store';
+import useGranted, { SETTINGS_SETACCESSES } from '../../../../utils/hooks/useGranted';
 
 const useStyles = makeStyles((theme) => ({
   buttons: {
@@ -57,6 +58,7 @@ const UserCreation = ({ paginationOptions }) => {
   const { settings } = useAuth();
   const { t_i18n } = useFormatter();
   const classes = useStyles();
+  const hasSetAccess = useGranted([SETTINGS_SETACCESSES]);
 
   const onSubmit = (values, { setSubmitting, resetForm }) => {
     const { objectOrganization, groups, user_confidence_level, ...rest } = values;
@@ -214,11 +216,13 @@ const UserCreation = ({ paginationOptions }) => {
                     fullWidth: true,
                   }}
                 />
-                <OptionalConfidenceLevelField
-                  name="user_confidence_level"
-                  entityType="User"
-                  label={t_i18n('Max Confidence Level')}
-                />
+                {hasSetAccess && (
+                  <OptionalConfidenceLevelField
+                    name="user_confidence_level"
+                    entityType="User"
+                    label={t_i18n('Max Confidence Level')}
+                  />
+                )}
                 <div className={classes.buttons}>
                   <Button
                     variant="contained"

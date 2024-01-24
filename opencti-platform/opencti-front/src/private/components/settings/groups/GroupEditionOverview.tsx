@@ -13,6 +13,7 @@ import DashboardField from '../../common/form/DashboardField';
 import { GroupEditionOverview_group$data } from './__generated__/GroupEditionOverview_group.graphql';
 import GroupHiddenTypesField from './GroupHiddenTypesField';
 import useFormEditor, { GenericData } from '../../../../utils/hooks/useFormEditor';
+import useGranted, { SETTINGS_SETACCESSES } from '../../../../utils/hooks/useGranted';
 
 export const groupMutationFieldPatch = graphql`
   mutation GroupEditionOverviewFieldPatchMutation(
@@ -77,12 +78,17 @@ interface GroupEditionOverviewComponentProps {
 }
 const GroupEditionOverviewComponent: FunctionComponent<GroupEditionOverviewComponentProps> = ({ group, context }) => {
   const { t_i18n } = useFormatter();
+  const hasSetAccess = useGranted([SETTINGS_SETACCESSES]);
 
   const basicShape: ObjectShape = {
     name: Yup.string().required(t_i18n('This field is required')),
     description: Yup.string().nullable(),
     default_assignation: Yup.bool(),
     auto_new_marking: Yup.bool(),
+    group_confidence_level: Yup.number()
+      .min(0, t_i18n('The value must be greater than or equal to 0'))
+      .max(100, t_i18n('The value must be less than or equal to 100'))
+      .required(t_i18n('This field is required')),
   };
 
   const groupValidator = Yup.object().shape(basicShape);
@@ -104,6 +110,7 @@ const GroupEditionOverviewComponent: FunctionComponent<GroupEditionOverviewCompo
       value: group.default_dashboard.id,
       label: group.default_dashboard.name,
     } : null,
+    group_confidence_level: group.group_confidence_level?.max_confidence,
   };
 
   return (
@@ -203,6 +210,9 @@ const GroupEditionOverview = createFragmentContainer(
           authorizedMembers {
             id
           }
+        }
+        group_confidence_level {
+          max_confidence
         }
         ...GroupHiddenTypesField_group
       }
