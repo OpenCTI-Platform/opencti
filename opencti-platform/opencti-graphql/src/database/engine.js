@@ -862,13 +862,29 @@ export const elDeleteIndices = async (indexesToDelete) => {
   );
 };
 
+const getRuntimeUsers = async (context, user) => {
+  const users = await getEntitiesListFromCache(context, user, ENTITY_TYPE_USER);
+  return R.mergeAll(users.map((i) => ({ [i.internal_id]: i.name.replace(/[&/\\#,+[\]()$~%.'":*?<>{}]/g, '') })));
+};
+const getRuntimeMarkings = async (context, user) => {
+  const identities = await getEntitiesListFromCache(context, user, ENTITY_TYPE_MARKING_DEFINITION);
+  return R.mergeAll(identities.map((i) => ({ [i.internal_id]: i.definition })));
+};
+const getRuntimeEntities = async (context, user, entityType) => {
+  const elements = await elPaginate(context, user, READ_INDEX_STIX_DOMAIN_OBJECTS, {
+    types: [entityType],
+    first: MAX_RUNTIME_RESOLUTION_SIZE,
+    connectionFormat: false,
+  });
+  return R.mergeAll(elements.map((i) => ({ [i.internal_id]: i.name })));
+};
+
 export const RUNTIME_ATTRIBUTES = {
   observable_value: {
     field: 'observable_value.keyword',
     type: 'keyword',
     getSource: async () => runtimeFieldObservableValueScript(),
-    getParams: async () => {
-    },
+    getParams: async () => {},
   },
   createdBy: {
     field: 'createdBy.keyword',
@@ -886,15 +902,7 @@ export const RUNTIME_ATTRIBUTES = {
           emit('Unknown')
         }
     `,
-    getParams: async (context, user) => {
-      // eslint-disable-next-line no-use-before-define
-      const identities = await elPaginate(context, user, READ_INDEX_STIX_DOMAIN_OBJECTS, {
-        types: [ENTITY_TYPE_IDENTITY],
-        first: MAX_RUNTIME_RESOLUTION_SIZE,
-        connectionFormat: false,
-      });
-      return R.mergeAll(identities.map((i) => ({ [i.internal_id]: i.name })));
-    },
+    getParams: async (context, user) => getRuntimeEntities(context, user, ENTITY_TYPE_IDENTITY)
   },
   bornIn: {
     field: 'bornIn.keyword',
@@ -912,14 +920,7 @@ export const RUNTIME_ATTRIBUTES = {
         emit('Unknown')
       }
     `,
-    getParams: async (context, user) => {
-      const countries = await elPaginate(context, user, READ_INDEX_STIX_DOMAIN_OBJECTS, {
-        types: [ENTITY_TYPE_LOCATION_COUNTRY],
-        first: MAX_RUNTIME_RESOLUTION_SIZE,
-        connectionFormat: false,
-      });
-      return R.mergeAll(countries.map((country) => ({ [country.internal_id]: country.name })));
-    },
+    getParams: async (context, user) => getRuntimeEntities(context, user, ENTITY_TYPE_LOCATION_COUNTRY)
   },
   ethnicity: {
     field: 'ethnicity.keyword',
@@ -937,14 +938,7 @@ export const RUNTIME_ATTRIBUTES = {
         emit('Unknown')
       }
     `,
-    getParams: async (context, user) => {
-      const countries = await elPaginate(context, user, READ_INDEX_STIX_DOMAIN_OBJECTS, {
-        types: [ENTITY_TYPE_LOCATION_COUNTRY],
-        first: MAX_RUNTIME_RESOLUTION_SIZE,
-        connectionFormat: false,
-      });
-      return R.mergeAll(countries.map((country) => ({ [country.internal_id]: country.name })));
-    },
+    getParams: async (context, user) => getRuntimeEntities(context, user, ENTITY_TYPE_LOCATION_COUNTRY)
   },
   creator: {
     field: 'creator.keyword',
@@ -962,15 +956,7 @@ export const RUNTIME_ATTRIBUTES = {
           emit('Unknown')
         }
     `,
-    getParams: async (context, user) => {
-      // eslint-disable-next-line no-use-before-define
-      const users = await elPaginate(context, user, READ_INDEX_INTERNAL_OBJECTS, {
-        types: [ENTITY_TYPE_USER],
-        first: MAX_RUNTIME_RESOLUTION_SIZE,
-        connectionFormat: false,
-      });
-      return R.mergeAll(users.map((i) => ({ [i.internal_id]: i.name.replace(/[&/\\#,+[\]()$~%.'":*?<>{}]/g, '') })));
-    },
+    getParams: async (context, user) => getRuntimeUsers(context, user),
   },
   objectMarking: {
     field: 'objectMarking.keyword',
@@ -988,10 +974,7 @@ export const RUNTIME_ATTRIBUTES = {
           emit('Unknown')
         }
     `,
-    getParams: async (context, user) => {
-      const identities = await getEntitiesListFromCache(context, user, ENTITY_TYPE_MARKING_DEFINITION);
-      return R.mergeAll(identities.map((i) => ({ [i.internal_id]: i.definition })));
-    },
+    getParams: async (context, user) => getRuntimeMarkings(context, user),
   },
   objectAssignee: {
     field: 'objectAssignee.keyword',
@@ -1009,18 +992,10 @@ export const RUNTIME_ATTRIBUTES = {
           emit('unknown')
         }
     `,
-    getParams: async (context, user) => {
-      // eslint-disable-next-line no-use-before-define
-      const users = await elPaginate(context, user, READ_INDEX_INTERNAL_OBJECTS, {
-        types: [ENTITY_TYPE_USER],
-        first: MAX_RUNTIME_RESOLUTION_SIZE,
-        connectionFormat: false,
-      });
-      return R.mergeAll(users.map((i) => ({ [i.internal_id]: i.name.replace(/[&/\\#,+[\]()$~%.'":*?<>{}]/g, '') })));
-    },
+    getParams: async (context, user) => getRuntimeUsers(context, user),
   },
   participant: {
-    field: 'participant.keyword',
+    field: 'objectParticipant.keyword',
     type: 'keyword',
     getSource: async () => `
         if (doc.containsKey('rel_object-participant.internal_id')) {
@@ -1035,15 +1010,7 @@ export const RUNTIME_ATTRIBUTES = {
           emit('unknown')
         }
     `,
-    getParams: async (context, user) => {
-      // eslint-disable-next-line no-use-before-define
-      const users = await elPaginate(context, user, READ_INDEX_INTERNAL_OBJECTS, {
-        types: [ENTITY_TYPE_USER],
-        first: MAX_RUNTIME_RESOLUTION_SIZE,
-        connectionFormat: false,
-      });
-      return R.mergeAll(users.map((i) => ({ [i.internal_id]: i.name.replace(/[&/\\#,+[\]()$~%.'":*?<>{}]/g, '') })));
-    },
+    getParams: async (context, user) => getRuntimeUsers(context, user),
   },
 };
 
@@ -1246,15 +1213,12 @@ export const elFindByIds = async (context, user, ids, opts = {}) => {
     };
     mustTerms.push(should);
     if (types && types.length > 0) {
-      const typesShould = types.map((typeShould) => (
-        [
-          { term: { 'entity_type.keyword': typeShould } },
-          { term: { 'parent_types.keyword': typeShould } }
-        ]
-      )).flat();
       const shouldType = {
         bool: {
-          should: typesShould,
+          should: [
+            { terms: { 'entity_type.keyword': types } },
+            { terms: { 'parent_types.keyword': types } }
+          ],
           minimum_should_match: 1,
         },
       };
