@@ -2516,7 +2516,7 @@
   "No confidence level found in this user's groups, and no confidence level defined at the user level.": "No confidence level found in this user's groups, and no confidence level defined at the user level.",
   "confidence_level_from": "From {entity_type} {link}",
   "Unknown configuration error in the platform.": "Unknown configuration error in the platform.",
-  "The user's max confidence level overrides the max confidence that might be set at groups or organizations level.": "The user's max confidence level overrides the max confidence that might be set at groups or organizations level.",
+  "No confidence level set! Members of this group might not be able to create data.": "No confidence level set! Members of this group might not be able to create data.",
   "pattern": "Indicator pattern",
   "Update subscription": "Update subscription",
   "Subscribe to updates (modifications and new relations)": "Subscribe to updates (modifications and new relations)",

@@ -2531,5 +2531,6 @@
   "alert_GROUP_WITH_NULL_EFFECTIVE_LEVEL": "OpenCTI 6.0 から、グループとユーザーに最大信頼度が追加されます。これにより、プラットフォーム管理者はインポートされたデータの影響をよりコントロールできるようになり、データの不要な更新を防ぐことができます。詳しくは{link_blogpost}をお読みください。\n \nこのプラットフォームでは、いくつかのグループの最大信頼度が現在未定義です。そのグループのメンバーはバージョン6.Xではデータを作成することができません。これを防ぐには、すべてのグループに最大信頼度が設定されていることを確認してください。詳細は{link_blogpost}を参照してください。コネクター、フィード、ストリームに関連するユーザーには特に注意してください。必要であれば、グループの信頼度よりも個人の信頼度を優先して設定できます。アドバイスが必要な場合は{link_slack}に参加してください。",
   "No confidence level found in this user's groups, and no confidence level defined at the user level.": "このユーザーのグループには信頼レベルが見つからず、ユーザーレベルにも信頼レベルが定義されていません。",
   "confidence_level_from": "5}}から{entity_type}",
-  "Unknown configuration error in the platform.": "プラットフォームで不明な構成エラーが発生しました。"
+  "Unknown configuration error in the platform.": "プラットフォームで不明な構成エラーが発生しました。",
+  "No confidence level set! Members of this group might not be able to create data.": "信頼度が設定されていない！このグループのメンバーはデータを作成できない可能性があります。"
 }

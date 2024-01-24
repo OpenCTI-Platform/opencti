@@ -62,6 +62,9 @@ const groupFragment = graphql`
     name
     default_assignation
     auto_new_marking
+    group_confidence_level {
+      max_confidence
+    }
     description
     members {
       edges {

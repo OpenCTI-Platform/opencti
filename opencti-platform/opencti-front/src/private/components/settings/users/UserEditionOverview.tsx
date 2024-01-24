@@ -87,7 +87,7 @@ interface UserEditionOverviewComponentProps {
   user: UserEditionOverview_user$data;
   context:
   | readonly ({
-    readonly focusOn?: string | null;
+    readonly focusOn: string | null;
     readonly name: string;
   } | null)[]
   | null | undefined;
@@ -134,7 +134,7 @@ UserEditionOverviewComponentProps
     });
   };
 
-  const handleSubmitField = (name: string, value: string | Date | null) => {
+  const handleSubmitField = (name: string, value: string | null) => {
     userValidation(t_i18n, userIsOnlyOrganizationAdmin)
       .validateAt(name, { [name]: value })
       .then(() => {
