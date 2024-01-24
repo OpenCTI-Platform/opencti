@@ -165,7 +165,7 @@ class WorkbenchFileLineComponent extends Component {
     const { displayDelete } = this.state;
     const { uploadStatus, metaData } = file;
     const { errors } = metaData;
-    const isFail = errors.length > 0;
+    const isFail = errors && errors.length > 0;
     const isProgress = uploadStatus === 'progress' || uploadStatus === 'wait';
     const isOutdated = uploadStatus === 'timeout';
     return (

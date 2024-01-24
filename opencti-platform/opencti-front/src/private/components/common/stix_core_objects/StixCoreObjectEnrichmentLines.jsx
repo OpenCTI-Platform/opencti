@@ -198,7 +198,7 @@ const StixCoreObjectEnrichment = ({
               </ListItem>
               <List component="div" disablePadding={true}>
                 {jobs.map((work) => {
-                  const isFail = work.errors.length > 0;
+                  const isFail = work.errors && work.errors.length > 0;
                   const messages = R.sortBy(R.prop('timestamp'), [
                     ...work.messages,
                     ...work.errors,
