@@ -9,12 +9,18 @@ import { enUS, fr, es, ja, zhCN, de } from 'date-fns/locale';
 import locale, { DEFAULT_LANG } from '../utils/BrowserLanguage';
 import { UserContext } from '../utils/hooks/useAuth';
 import { AppIntlProvider_settings$data } from './__generated__/AppIntlProvider_settings.graphql';
-import messages_es from '../../lang/es.json';
-import messages_fr from '../../lang/fr.json';
-import messages_ja from '../../lang/ja.json';
-import messages_zh from '../../lang/zh.json';
-import messages_en from '../../lang/en.json';
-import messages_de from '../../lang/de.json';
+import messages_es_front from '../../lang/front/es.json';
+import messages_fr_front from '../../lang/front/fr.json';
+import messages_ja_front from '../../lang/front/ja.json';
+import messages_zh_front from '../../lang/front/zh.json';
+import messages_en_front from '../../lang/front/en.json';
+import messages_de_front from '../../lang/front/de.json';
+import messages_es_back from '../../lang/back/es.json';
+import messages_fr_back from '../../lang/back/fr.json';
+import messages_ja_back from '../../lang/back/ja.json';
+import messages_zh_back from '../../lang/back/zh.json';
+import messages_en_back from '../../lang/back/en.json';
+import messages_de_back from '../../lang/back/de.json';
 
 type PlatformLang = 'es-es' | 'fr-fr' | 'ja-jp' | 'zh-cn' | 'en-us' | 'de-de';
 
@@ -29,12 +35,12 @@ const localeMap: Record<PlatformLang, Locale> = {
 
 const i18n: { messages: Record<PlatformLang, Record<string, string>> } = {
   messages: {
-    'es-es': messages_es,
-    'fr-fr': messages_fr,
-    'ja-jp': messages_ja,
-    'zh-cn': messages_zh,
-    'en-us': messages_en,
-    'de-de': messages_de,
+    'es-es': { ...messages_es_back, ...messages_es_front },
+    'fr-fr': { ...messages_fr_back, ...messages_fr_front },
+    'ja-jp': { ...messages_ja_back, ...messages_ja_front },
+    'zh-cn': { ...messages_zh_back, ...messages_zh_front },
+    'en-us': { ...messages_en_back, ...messages_en_front },
+    'de-de': { ...messages_de_back, ...messages_de_front },
   },
 };
 
@@ -54,6 +60,7 @@ interface AppIntlProviderProps {
 
 const AppIntlProvider: FunctionComponent<AppIntlProviderProps> = ({ settings, children }) => {
   const { me } = useContext(UserContext);
+  console.log('messages', { ...messages_es_back, ...messages_es_front });
   const platformLanguage = settings.platform_language ?? null;
   const platformLang = platformLanguage !== null && platformLanguage !== 'auto'
     ? settings.platform_language
