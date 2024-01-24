@@ -2542,6 +2542,8 @@
   "Settings default values usage...": "Wenn die Daten nicht in der CSV-Datei gefunden werden, wird stattdessen der unter Einstellungen > Anpassung eingestellte Standardwert verwendet. Sie können diesen Standardwert außer Kraft setzen, indem Sie die obige Eingabe ausfüllen.",
   "No default value set in Settings...": "In den Entitätseinstellungen ist kein Standardwert für dieses Attribut festgelegt. Sie können einen Wert mit der obigen Eingabe angeben. Dieser Wert wird verwendet, wenn die Daten in der CSV-Datei fehlen.",
   "Default values set": "Standardwerte gesetzt",
+  "Let the user choose marking definitions": "Der Benutzer kann Markierungsdefinitionen wählen",
+  "Use default marking definitions of the user": "Standard-Markierungsdefinitionen des Benutzers verwenden",
   "The following groups require your attention:": "Die folgenden Gruppen erfordern Ihre Aufmerksamkeit:",
   "entity_reported-in": "Berichtet in",
   "Max Confidence": "Maximalvertrauen",

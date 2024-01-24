@@ -31,6 +31,11 @@ export const useComputeDefaultValues = () => {
       );
     }
 
+    // Handle object marking specific case : activate or deactivate default values (handle in access)
+    if (attributeName === 'objectMarking') {
+      return defaultValues[0]?.id ?? false;
+    }
+
     if (attributeName === INPUT_AUTHORIZED_MEMBERS) {
       const defaultAuthorizedMembers: AuthorizedMembers = defaultValues
         .map((v) => {

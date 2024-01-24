@@ -5,7 +5,6 @@ import Button from '@mui/material/Button';
 import * as Yup from 'yup';
 import makeStyles from '@mui/styles/makeStyles';
 import { FormikConfig } from 'formik/dist/types';
-import { head } from 'ramda';
 import Drawer from '@components/common/drawer/Drawer';
 import { EntitySettingAttributeEditionMembersQuery$data } from '@components/settings/sub_types/entity_setting/__generated__/EntitySettingAttributeEditionMembersQuery.graphql';
 import DefaultValueField from '@components/common/form/DefaultValueField';
@@ -185,10 +184,6 @@ const EntitySettingAttributeEdition = ({
 
   const defaultValues = () => {
     const values = attribute.defaultValues ? [...attribute.defaultValues] : [];
-    // Handle object marking specific case : activate or deactivate default values (handle in access)
-    if (attribute.name === 'objectMarking') {
-      return head(values)?.id ?? false;
-    }
     return computeDefaultValues(
       entitySetting.target_type,
       attribute.name,
