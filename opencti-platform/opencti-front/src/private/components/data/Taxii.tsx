@@ -24,7 +24,7 @@ const Taxii = () => {
     orderAsc: params.orderAsc !== false,
     searchTerm: params.searchTerm ?? '',
     view: params.view ?? 'lines',
-    sortBy: params.sortBy,
+    sortBy: params.sortBy ?? 'name',
   });
 
   const saveView = () => {

@@ -1327,7 +1327,7 @@ const StixRelationshipsTimeline = ({
                           <TimelineConnector />
                         </TimelineSeparator>
                         <TimelineContent>
-                          <Paper variant="outlined" classes={{ root: classes.paper }} className=".noDrag">
+                          <Paper variant="outlined" classes={{ root: classes.paper }} className="noDrag">
                             <Typography variant="h2">
                               {defaultValue(remoteNode)}
                             </Typography>

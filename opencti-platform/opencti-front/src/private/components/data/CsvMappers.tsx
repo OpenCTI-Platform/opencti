@@ -27,6 +27,7 @@ const CsvMappers = () => {
     {
       sortBy: 'name',
       orderAsc: false,
+      view: 'lines',
       searchTerm: '',
     },
   );

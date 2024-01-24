@@ -30,6 +30,7 @@ class Stream extends Component {
       LOCAL_STORAGE_KEY,
     );
     this.state = {
+      sortBy: propOr('name', 'sortBy', params),
       orderAsc: propOr(true, 'orderAsc', params),
       searchTerm: propOr('', 'searchTerm', params),
       view: propOr('lines', 'view', params),
