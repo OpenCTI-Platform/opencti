@@ -127,7 +127,7 @@ const FileExportViewer = createRefetchContainer(
     entity: graphql`
       fragment FileExportViewer_entity on StixCoreObject {
         id
-        exportFiles(first: 1000) @connection(key: "Pagination_exportFiles") {
+        exportFiles(first: 500) @connection(key: "Pagination_exportFiles") {
           edges {
             node {
               id

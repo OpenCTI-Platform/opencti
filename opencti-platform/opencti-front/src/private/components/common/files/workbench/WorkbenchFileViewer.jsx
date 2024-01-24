@@ -132,7 +132,7 @@ const WorkbenchFileViewer = createRefetchContainer(
       fragment WorkbenchFileViewer_entity on StixCoreObject {
         id
         entity_type
-        pendingFiles(first: 1000) @connection(key: "Pagination_pendingFiles") {
+        pendingFiles(first: 500) @connection(key: "Pagination_pendingFiles") {
           edges {
             node {
               id

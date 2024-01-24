@@ -2453,7 +2453,7 @@ export const elPaginate = async (context, user, indexName, options = {}) => {
   const { types = null, connectionFormat = true } = options;
   const body = await elQueryBodyBuilder(context, user, options);
   if (body.size > ES_MAX_PAGINATION) {
-    logApp.warn('[SEARCH] Pagination limited to max result config', { max: ES_MAX_PAGINATION });
+    logApp.warn('[SEARCH] Pagination limited to max result config', { size: body.size, max: ES_MAX_PAGINATION });
     body.size = ES_MAX_PAGINATION;
   }
   const query = {
