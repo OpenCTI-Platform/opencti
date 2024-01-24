@@ -1,7 +1,6 @@
 import React from 'react';
 import { User_user$data } from '@components/settings/users/__generated__/User_user.graphql';
 import { Link } from 'react-router-dom-v5-compat';
-import Typography from '@mui/material/Typography';
 import { ReportGmailerrorred } from '@mui/icons-material';
 import Tooltip from '@mui/material/Tooltip';
 import { useFormatter } from '../../../../components/i18n';
