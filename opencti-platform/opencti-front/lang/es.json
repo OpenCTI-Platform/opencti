@@ -1560,7 +1560,6 @@
   "entity_Stix-Core-Objects": "Entidades y observables",
   "entity_Stix-Core-Relationship": "Relaciones",
   "entity_stix-core-relationship": "Relaciones",
-  "entity_reported-in": "Reportado en",
   "entity_stix-sighting-relationship": "Detecciones",
   "entity_Stix-Meta-Objects": "Metaentidades",
   "entity_Identity": "Identidad",
@@ -1983,7 +1982,6 @@
   "HISTORY_MANAGER": "Gestor del historial",
   "INGESTION_MANAGER": "Gestor del ingestion",
   "FILE_INDEX_MANAGER": "Gestor de índice de archivos",
-  "INDICATOR_DECAY_MANAGER": "Gestor de decaimiento de indicador",
   "text/markdown": "MD",
   "application/json": "JSON",
   "text/csv": "CSV",
@@ -2518,5 +2516,9 @@
   "This score is updated with the decay rule applied to this indicator.": "Esta puntuación se actualiza con la regla de decaimiento aplicada a este indicador.",
   "Lifecycle": "Ciclo de vida",
   "Lifecycle details": "Detalles del ciclo de vida",
-  "Subscription to specific object(s)": "Suscripción a objeto(s) específico(s)"
+  "Subscription to specific object(s)": "Suscripción a objeto(s) específico(s)",
+  "Max Confidence Level": "Nivel de confianza máximo",
+  "This value is overridden for the following entity types": "Este valor se anula para los siguientes tipos de entidad",
+  "Enable user max confidence level": "Habilitar nivel de confianza máximo del usuario",
+  "The user's max confidence level overrides the max confidence that might be set at groups or organizations level.": "El nivel máximo de confianza del usuario anula el nivel máximo de confianza que pueda estar establecido a nivel de grupos u organizaciones."
 }

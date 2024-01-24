@@ -1550,7 +1550,6 @@
   "entity_Stix-Core-Objects": "Entités et observables",
   "entity_Stix-Core-Relationship": "Relations",
   "entity_stix-core-relationship": "Relations",
-  "entity_reported-in": "Rapporté dans",
   "entity_stix-sighting-relationship": "Détections",
   "entity_Stix-Meta-Objects": "Meta entités",
   "entity_Identity": "Identité",
@@ -1962,7 +1961,6 @@
   "INGESTION_MANAGER": "Manager d'ingestion",
   "PLAYBOOK_MANAGER": "Manager de playbook",
   "FILE_INDEX_MANAGER": "Manager d'indexation des fichiers",
-  "INDICATOR_DECAY_MANAGER": "Manager du déclin des indicateurs",
   "text/markdown": "MD",
   "application/json": "JSON",
   "text/csv": "CSV",
@@ -2518,5 +2516,9 @@
   "This score is updated with the decay rule applied to this indicator.": "Ce score est mis à jour avec la règle de désintégration appliquée à cet indicateur.",
   "Lifecycle": "Cycle de vie",
   "Lifecycle details": "Détails du cycle de vie",
-  "Subscription to specific object(s)": "Abonnement à un (des) objet(s) spécifique(s)"
+  "Subscription to specific object(s)": "Abonnement à un (des) objet(s) spécifique(s)",
+  "Max Confidence Level": "Niveau de confiance maximal",
+  "This value is overridden for the following entity types": "Cette valeur est remplacée pour les types d'entités suivants",
+  "Enable user max confidence level": "Activer le niveau de confiance maximum de l'utilisateur",
+  "The user's max confidence level overrides the max confidence that might be set at groups or organizations level.": "Le niveau de confiance maximum de l'utilisateur est prioritaire sur le niveau de confiance maximum qui peut être défini au niveau des groupes ou des organisations."
 }

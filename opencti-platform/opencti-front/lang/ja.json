@@ -1532,7 +1532,6 @@
   "entity_Stix-Core-Objects": "エンティティと観測結果",
   "entity_Stix-Core-Relationship": "リレーションシップ",
   "entity_stix-core-relationship": "リレーションシップ",
-  "entity_reported-in": "で報告されました",
   "entity_stix-sighting-relationship": "目撃情報",
   "entity_Stix-Meta-Objects": "メタエンティティ",
   "entity_Identity": "アイデンティティ",
@@ -1933,7 +1932,6 @@
   "HISTORY_MANAGER": "ヒストリーマネージャ",
   "INGESTION_MANAGER": "インジェストマネージャー",
   "FILE_INDEX_MANAGER": "ファイル索引マネージャー",
-  "INDICATOR_DECAY_MANAGER": "インジケーター・ディケイ・マネージャー",
   "text/markdown": "MD",
   "application/json": "JSON",
   "text/csv": "CSV",
@@ -2518,5 +2516,9 @@
   "This score is updated with the decay rule applied to this indicator.": "このスコアはこのインジケータに適用される減衰ルールで更新される。",
   "Lifecycle": "ライフサイクル",
   "Lifecycle details": "ライフサイクルの詳細",
-  "Subscription to specific object(s)": "特定のオブジェクトへのサブスクリプション"
+  "Subscription to specific object(s)": "特定のオブジェクトへのサブスクリプション",
+  "Max Confidence Level": "最大信頼度",
+  "This value is overridden for the following entity types": "この値は以下のエンティティ・タイプでオーバーライドされます。",
+  "Enable user max confidence level": "ユーザの最大信頼レベルを有効にする",
+  "The user's max confidence level overrides the max confidence that might be set at groups or organizations level.": "ユーザーの最大信頼レベルは、グループまたは組織レベルで設定されている可能性のある最大信頼レベルを上書きします。"
 }

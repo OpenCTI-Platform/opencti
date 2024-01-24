@@ -1317,7 +1317,6 @@
   "entity_Stix-Core-Objects": "Entitäten und Observablen",
   "entity_Stix-Core-Relationship": "Beziehungen",
   "entity_stix-core-relationship": "Beziehungen",
-  "entity_reported-in": "Gemeldet in",
   "entity_stix-sighting-relationship": "Sichtungen",
   "entity_Stix-Meta-Objects": "Meta-Entitäten",
   "entity_Identity": "Identität",
@@ -1697,7 +1696,6 @@
   "INGESTION_MANAGER": "Ingestion-Manager",
   "PLAYBOOK_MANAGER": "Spielbuch-Manager",
   "FILE_INDEX_MANAGER": "Datei-Index-Manager",
-  "INDICATOR_DECAY_MANAGER": "Indikator Abklingmanager",
   "text/markdown": "MD",
   "application/json": "JSON",
   "text/csv": "CSV",
@@ -2518,5 +2516,9 @@
   "This score is updated with the decay rule applied to this indicator.": "Diese Punktzahl wird mit der auf diesen Indikator angewandten Verfallsregel aktualisiert.",
   "Lifecycle": "Lebenszyklus",
   "Lifecycle details": "Details zum Lebenszyklus",
-  "Subscription to specific object(s)": "Abonnement auf bestimmte(s) Objekt(e)"
+  "Subscription to specific object(s)": "Abonnement auf bestimmte(s) Objekt(e)",
+  "Max Confidence Level": "Max. Konfidenzniveau",
+  "This value is overridden for the following entity types": "Dieser Wert wird für die folgenden Entitätstypen außer Kraft gesetzt",
+  "Enable user max confidence level": "Max. Konfidenzniveau des Benutzers einschalten",
+  "The user's max confidence level overrides the max confidence that might be set at groups or organizations level.": "Die maximale Vertrauensebene des Benutzers hat Vorrang vor der maximalen Vertrauensebene, die auf Gruppen- oder Organisationsebene festgelegt werden kann."
 }
