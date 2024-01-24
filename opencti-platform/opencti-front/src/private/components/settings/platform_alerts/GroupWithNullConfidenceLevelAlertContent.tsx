@@ -17,7 +17,7 @@ const GroupWithNullConfidenceLevelAlertContent: React.FC<GroupWithNullConfidence
   const { t_i18n } = useFormatter();
   const navigate = useNavigate();
 
-  const groups = (alert?.details?.groups ?? []);
+  const groups = (alert.details?.groups ?? []);
   const groupsExcerpt = groups.slice(0, 5);
   const restCount = Math.max(0, groups.length - 5);
 
