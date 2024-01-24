@@ -1460,7 +1460,7 @@ export const computeUserEffectiveConfidenceLevel = (user) => {
     };
   }
 
-  // otherwise we get all groups and organisations for this user, and select the lowest max_confidence found
+  // otherwise we get all groups for this user, and select the lowest max_confidence found
   let minLevel = null;
   let source = null;
   for (let i = 0; i < user.groups.length; i += 1) {
@@ -1470,13 +1470,7 @@ export const computeUserEffectiveConfidenceLevel = (user) => {
       source = user.groups[i];
     }
   }
-  for (let i = 0; i < user.organizations.length; i += 1) {
-    const orgLevel = user.organizations[i].org_confidence_level?.max_confidence ?? null;
-    if (minLevel === null || (orgLevel !== null && orgLevel < minLevel)) {
-      minLevel = orgLevel;
-      source = user.organizations[i];
-    }
-  }
+
   if (minLevel !== null) {
     return {
       max_confidence: minLevel,

@@ -77,85 +77,59 @@ describe('password checker', () => {
 });
 
 describe('Effective max confidence level', () => {
+  const group70 = {
+    id: 'group70',
+    group_confidence_level: {
+      max_confidence: 70,
+      overrides: [],
+    }
+  };
+
+  const group80 = {
+    id: 'group80',
+    group_confidence_level: {
+      max_confidence: 70,
+      overrides: [],
+    }
+  };
+
   it("user's confidence level overrides groups and orgs", async () => {
     // minimal subset of a real User
     const userA = {
+      id: 'userA',
       user_confidence_level: {
         max_confidence: 30,
         overrides: [],
       },
-      groups: [{
-        group_confidence_level: {
-          max_confidence: 70,
-          overrides: [],
-        }
-      },
-      {
-        group_confidence_level: {
-          max_confidence: 80,
-          overrides: [],
-        }
-      }],
-      organizations: []
+      groups: [group70, group80],
     };
-    expect(computeUserEffectiveConfidenceLevel(userA)).toEqual({ max_confidence: 30, overrides: [] }); // user overrides
+    expect(computeUserEffectiveConfidenceLevel(userA)).toEqual({
+      max_confidence: 30,
+      overrides: [],
+      source: userA,
+    });
 
     const userB = {
+      id: 'userB',
       user_confidence_level: null,
-      groups: [{
-        group_confidence_level: {
-          max_confidence: 70,
-          overrides: [],
-        }
-      },
-      {
-        group_confidence_level: {
-          max_confidence: 80,
-          overrides: [],
-        }
-      }],
-      organizations: []
+      groups: [group70, group80],
     };
-    expect(computeUserEffectiveConfidenceLevel(userB)).toEqual({ max_confidence: 70, overrides: [] }); // lowest of groups
-
-    const userC = {
-      user_confidence_level: null,
-      groups: [{
-        group_confidence_level: {
-          max_confidence: 70,
-          overrides: [],
-        }
-      },
-      {
-        group_confidence_level: {
-          max_confidence: 80,
-          overrides: [],
-        }
-      }],
-      organizations: [{
-        org_confidence_level: {
-          max_confidence: 90,
-          overrides: [],
-        }
-      },
-      {
-        org_confidence_level: {
-          max_confidence: 40,
-          overrides: [],
-        }
-      }]
-    };
-    expect(computeUserEffectiveConfidenceLevel(userC)).toEqual({ max_confidence: 40, overrides: [] }); // lowest of groups and orgs
+    expect(computeUserEffectiveConfidenceLevel(userB)).toEqual({
+      max_confidence: 70,
+      overrides: [],
+      source: group70,
+    });
 
     const userD = {
       user_confidence_level: null,
-      groups: [{
-        group_confidence_level: null
-      }],
-      organizations: [{
-        org_confidence_level: null
-      }]
+      groups: [{ group_confidence_level: null }, { group_confidence_level: null }],
     };
-    expect(computeUserEffectiveConfidenceLevel(userD)).toBeNull(); // nothing set
+
+    const userE = {
+      user_confidence_level: null,
+      groups: [],
+    };
+    expect(computeUserEffectiveConfidenceLevel(userD)).toBeNull();
+    expect(computeUserEffectiveConfidenceLevel(userE)).toBeNull();
   });
 });
