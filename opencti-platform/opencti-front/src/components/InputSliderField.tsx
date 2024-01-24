@@ -1,4 +1,4 @@
-import { Field, FieldProps } from 'formik';
+import { Field, FieldProps, useFormikContext } from 'formik';
 import React, { FunctionComponent } from 'react';
 import { Grid, MenuItem, Select, SelectChangeEvent, Slider } from '@mui/material';
 import TextField from './TextField';
@@ -54,6 +54,9 @@ InputSliderFieldProps & FieldProps
     onSubmit?.(name, event.target.value);
   };
   const currentLevel = buildScaleLevel(value, scale);
+
+  const formik = useFormikContext();
+
   if (variant === 'edit') {
     return (
       <>
@@ -80,6 +83,8 @@ InputSliderFieldProps & FieldProps
               value={currentLevel.level.value?.toString() ?? ''}
               onChange={updateFromSelect}
               disabled={disabled}
+              // empirically add a margin if the field on the left is in error, to align them
+              style={{ marginBottom: (formik.errors as Record<string, string>)[name] ? 23 : 0 }}
             >
               {marks.map((mark, i: number) => {
                 return (
