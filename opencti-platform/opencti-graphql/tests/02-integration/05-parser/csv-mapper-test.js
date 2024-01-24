@@ -206,6 +206,17 @@ describe('CSV-MAPPER', () => {
       const ileEtVilaine = data.find((object) => object.name === 'ile-et-vilaine');
       const vador = data.find((object) => object.name === 'vador');
       const octopus = data.find((object) => object.name === 'octopus');
+      const vadorOnMorbihan = data.find((object) => object.entity_type === 'targets' && object.from.name === 'vador');
+      const octopusOnIleEtVilaine = data.find((object) => object.entity_type === 'targets' && object.from.name === 'octopus');
+
+      expect(morbihan).toBeDefined();
+      expect(finistere).toBeDefined();
+      expect(cotesDArmor).toBeDefined();
+      expect(ileEtVilaine).toBeDefined();
+      expect(vador).toBeDefined();
+      expect(octopus).toBeDefined();
+      expect(vadorOnMorbihan).toBeDefined();
+      expect(octopusOnIleEtVilaine).toBeDefined();
 
       expect(morbihan.entity_type).toBe('Administrative-Area');
       expect(morbihan.confidence).toBe(100);
@@ -246,6 +257,9 @@ describe('CSV-MAPPER', () => {
       expect(vador.killChainPhases[0].phase_name).toBe('persistence');
       expect(vador.killChainPhases[0].x_opencti_order).toBe(20);
 
+      expect(vadorOnMorbihan.to.name).toBe('morbihan');
+      expect(vadorOnMorbihan.confidence).toBe(77);
+
       expect(octopus.entity_type).toBe('Malware');
       expect(octopus.is_family).toBe(false);
       expect(octopus.malware_types).toEqual(['ddosssss']);
@@ -254,6 +268,9 @@ describe('CSV-MAPPER', () => {
       expect(octopus.createdBy).toBe(individual.id);
       expect(octopus.killChainPhases.length).toBe(1);
       expect(octopus.killChainPhases[0].phase_name).toBe(killChainPhase.phase_name);
+
+      expect(octopusOnIleEtVilaine.to.name).toBe('ile-et-vilaine');
+      expect(octopusOnIleEtVilaine.confidence).toBe(77);
     });
   });
 });

@@ -2521,5 +2521,6 @@
   "Subscription to specific object(s)": "Abonnement à un (des) objet(s) spécifique(s)",
   "Settings default values": "Valeur par défaut des paramètres de l'entité : {value}",
   "Settings default values usage...": "Si les données ne sont pas trouvées dans le fichier CSV, la valeur par défaut définie dans Paramètres > Personnalisation sera utilisée à la place. Vous pouvez remplacer cette valeur par défaut en remplissant le champs ci-dessus.",
-  "No default value set in Settings...": "Aucune valeur par défaut n'a été définie pour cet attribut dans les paramètres de l'entité. Vous pouvez en fournir une en remplissant le champ ci-dessus. Cette valeur sera utilisée si les données sont manquantes dans le fichier CSV."
+  "No default value set in Settings...": "Aucune valeur par défaut n'a été définie pour cet attribut dans les paramètres de l'entité. Vous pouvez en fournir une en remplissant le champ ci-dessus. Cette valeur sera utilisée si les données sont manquantes dans le fichier CSV.",
+  "Default values set": "Valeurs par défaut remplies"
 }
