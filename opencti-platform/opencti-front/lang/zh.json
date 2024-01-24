@@ -508,7 +508,6 @@
   "Selected entities": "选定的实体",
   "Merged entity": "归并的实体",
   "Demo credentials": "Demo凭证",
-  "User will be created with default groups.": "將使用預設組創建使用者。",
   "No connectors are enabled on this platform.": "此平台未启用任何连接器。",
   "Enabled import connectors": "已启用的导入连接器",
   "No enrichment connectors on this platform": "此平台上没有富化连接器",
@@ -2520,5 +2519,17 @@
   "Max Confidence Level": "最大置信度",
   "This value is overridden for the following entity types": "以下实体类型可重载该值",
   "Enable user max confidence level": "启用用户最大置信度",
-  "The user's max confidence level overrides the max confidence that might be set at groups or organizations level.": "用户的最大置信度优先于可能在组或组织级别设置的最大置信度。"
+  "The user's max confidence level overrides the max confidence that might be set at groups or organizations level.": "用户的最大置信度优先于可能在组或组织级别设置的最大置信度。",
+  "Unless specific groups are selected, user will be created with default groups.": "除非选择了特定组，否则创建用户时将使用默认组。",
+  "entity_Group": "组",
+  "Important notice: your action is required!": "重要提示：需要您执行操作！",
+  "this blogpost": "本博文",
+  "our Slack channel": "我们的 Slack 频道",
+  "The following {entity_type} require your attention:": "以下 {entity_type} 需要您的关注：",
+  "and ... more": "和{count}更多。",
+  "Open Settings": "打开设置",
+  "alert_GROUP_WITH_NULL_EFFECTIVE_LEVEL": "从 OpenCTI 6.0 开始，将为组和用户添加最大置信度。这将为平台管理员提供更多对导入数据影响的控制，并防止任何不必要的数据更新。请阅读 {link_blogpost} 获取更多信息。\n \n在本平台中，某些组的 \"max confidence level\" 目前未定义。这些组的成员将无法在 6.X 版平台中创建任何数据。为避免出现这种情况，请确保所有组都设置了最大置信度。更多信息请参见 {link_blogpost}。请特别注意与连接器、馈送和数据流相关联的用户；必要时，您可以设置个人置信度来覆盖组置信度。如果需要建议，请加入 {link_slack} 。",
+  "No confidence level found in this user's groups, and no confidence level defined at the user level.": "在该用户的组中未找到置信度，也未在用户级别定义置信度。",
+  "confidence_level_from": "来自 {entity_type}{link}",
+  "Unknown configuration error in the platform.": "平台中存在未知配置错误。"
 }

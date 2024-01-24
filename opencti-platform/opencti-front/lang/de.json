@@ -1130,7 +1130,6 @@
   "Kill": "Töten",
   "Do you want to kill all the sessions of this user?": "Möchten Sie alle Sitzungen dieses Benutzers löschen?",
   "Kill all": "Alle löschen",
-  "User will be created with default groups.": "Der Benutzer wird mit Standardgruppen erstellt.",
   "Update a user": "Aktualisieren eines Benutzers",
   "Organizations admin": "Organisationen verwalten",
   "View all entities created by user": "Alle vom Benutzer erstellten Organisationen anzeigen",
@@ -2520,5 +2519,17 @@
   "Max Confidence Level": "Max. Konfidenzniveau",
   "This value is overridden for the following entity types": "Dieser Wert wird für die folgenden Entitätstypen außer Kraft gesetzt",
   "Enable user max confidence level": "Max. Konfidenzniveau des Benutzers einschalten",
-  "The user's max confidence level overrides the max confidence that might be set at groups or organizations level.": "Die maximale Vertrauensebene des Benutzers hat Vorrang vor der maximalen Vertrauensebene, die auf Gruppen- oder Organisationsebene festgelegt werden kann."
+  "The user's max confidence level overrides the max confidence that might be set at groups or organizations level.": "Die maximale Vertrauensebene des Benutzers hat Vorrang vor der maximalen Vertrauensebene, die auf Gruppen- oder Organisationsebene festgelegt werden kann.",
+  "Unless specific groups are selected, user will be created with default groups.": "Wenn keine spezifischen Gruppen ausgewählt werden, wird der Benutzer mit den Standardgruppen erstellt.",
+  "entity_Group": "Gruppe",
+  "Important notice: your action is required!": "Wichtiger Hinweis: Ihr Handeln ist erforderlich!",
+  "this blogpost": "dieser Blogpost",
+  "our Slack channel": "unser Slack-Kanal",
+  "The following {entity_type} require your attention:": "Die folgenden {entity_type} erfordern Ihre Aufmerksamkeit:",
+  "and ... more": "und {count} mehr.",
+  "Open Settings": "Einstellungen öffnen",
+  "alert_GROUP_WITH_NULL_EFFECTIVE_LEVEL": "Beginnend mit OpenCTI 6.0 wird ein maximales Vertrauensniveau für Gruppen und Benutzer hinzugefügt. Damit haben Plattformadministratoren eine bessere Kontrolle über die Auswirkungen importierter Daten und können unerwünschte Datenaktualisierungen verhindern. Bitte lesen Sie {link_blogpost} für weitere Informationen.\n \nAuf dieser Plattform sind \"max confidence level\" einiger Gruppen derzeit undefiniert. Deren Mitglieder können in der Version 6.X der Plattform keine Daten erstellen. Um dies zu verhindern, stellen Sie sicher, dass für alle Gruppen eine maximale Vertrauensstufe festgelegt ist. Mehr dazu in {link_blogpost}. Achten Sie besonders auf Benutzer, die mit Connectors, Feeds und Streams verbunden sind; Sie können die individuelle Vertrauensstufe so einstellen, dass sie die Gruppen-Vertrauensstufe überschreibt, wenn dies erforderlich ist. Treten Sie {link_slack} bei, wenn Sie Ratschläge benötigen.",
+  "No confidence level found in this user's groups, and no confidence level defined at the user level.": "Keine Vertrauensstufe in den Gruppen dieses Benutzers gefunden und keine Vertrauensstufe auf Benutzerebene definiert.",
+  "confidence_level_from": "Von {entity_type} {link}",
+  "Unknown configuration error in the platform.": "Unbekannter Konfigurationsfehler in der Plattform."
 }
