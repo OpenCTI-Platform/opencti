@@ -3339,6 +3339,18 @@ export type Cluster = {
   instances_number: Scalars['Int']['output'];
 };
 
+export type ConfidenceLevel = {
+  __typename?: 'ConfidenceLevel';
+  max_confidence: Scalars['Int']['output'];
+  overrides: Array<ConfidenceLevelOverride>;
+};
+
+export type ConfidenceLevelOverride = {
+  __typename?: 'ConfidenceLevelOverride';
+  entity_type: Scalars['String']['output'];
+  max_confidence: Scalars['Int']['output'];
+};
+
 export type ConfidenceLevelOverrideInput = {
   entity_type: Scalars['String']['input'];
   max_confidence: Scalars['Int']['input'];
@@ -7110,6 +7122,7 @@ export type Group = BasicObject & InternalObject & {
   description?: Maybe<Scalars['String']['output']>;
   editContext?: Maybe<Array<EditUserContext>>;
   entity_type: Scalars['String']['output'];
+  group_confidence_level?: Maybe<ConfidenceLevel>;
   id: Scalars['ID']['output'];
   members?: Maybe<UserConnection>;
   name: Scalars['String']['output'];
@@ -25394,7 +25407,7 @@ export type User = BasicObject & InternalObject & {
   theme?: Maybe<Scalars['String']['output']>;
   unit_system?: Maybe<UnitSystem>;
   updated_at: Scalars['DateTime']['output'];
-  user_confidence_level?: Maybe<UserConfidenceLevel>;
+  user_confidence_level?: Maybe<ConfidenceLevel>;
   user_email: Scalars['String']['output'];
 };
 
@@ -25830,21 +25843,9 @@ export type UserAgentAddInput = {
   value?: InputMaybe<Scalars['String']['input']>;
 };
 
-export type UserConfidenceLevel = {
-  __typename?: 'UserConfidenceLevel';
-  max_confidence: Scalars['Int']['output'];
-  overrides: Array<UserConfidenceLevelOverride>;
-};
-
 export type UserConfidenceLevelInput = {
   max_confidence: Scalars['Int']['input'];
   overrides: Array<ConfidenceLevelOverrideInput>;
-};
-
-export type UserConfidenceLevelOverride = {
-  __typename?: 'UserConfidenceLevelOverride';
-  entity_type: Scalars['String']['output'];
-  max_confidence: Scalars['Int']['output'];
 };
 
 export type UserConnection = {
@@ -27322,6 +27323,8 @@ export type ResolversTypes = ResolversObject<{
   CityEdge: ResolverTypeWrapper<Omit<CityEdge, 'node'> & { node: ResolversTypes['City'] }>;
   CityEditMutations: ResolverTypeWrapper<Omit<CityEditMutations, 'contextClean' | 'contextPatch' | 'fieldPatch' | 'relationAdd' | 'relationDelete'> & { contextClean?: Maybe<ResolversTypes['City']>, contextPatch?: Maybe<ResolversTypes['City']>, fieldPatch?: Maybe<ResolversTypes['City']>, relationAdd?: Maybe<ResolversTypes['StixRefRelationship']>, relationDelete?: Maybe<ResolversTypes['City']> }>;
   Cluster: ResolverTypeWrapper<Cluster>;
+  ConfidenceLevel: ResolverTypeWrapper<ConfidenceLevel>;
+  ConfidenceLevelOverride: ResolverTypeWrapper<ConfidenceLevelOverride>;
   ConfidenceLevelOverrideInput: ConfidenceLevelOverrideInput;
   Connector: ResolverTypeWrapper<Connector>;
   ConnectorConfig: ResolverTypeWrapper<ConnectorConfig>;
@@ -27921,9 +27924,7 @@ export type ResolversTypes = ResolversObject<{
   UserAddInput: UserAddInput;
   UserAgent: ResolverTypeWrapper<Omit<UserAgent, 'cases' | 'containers' | 'createdBy' | 'groupings' | 'indicators' | 'notes' | 'objectOrganization' | 'observedData' | 'opinions' | 'reports' | 'stixCoreRelationships'> & { cases?: Maybe<ResolversTypes['CaseConnection']>, containers?: Maybe<ResolversTypes['ContainerConnection']>, createdBy?: Maybe<ResolversTypes['Identity']>, groupings?: Maybe<ResolversTypes['GroupingConnection']>, indicators?: Maybe<ResolversTypes['IndicatorConnection']>, notes?: Maybe<ResolversTypes['NoteConnection']>, objectOrganization?: Maybe<ResolversTypes['OrganizationConnection']>, observedData?: Maybe<ResolversTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversTypes['OpinionConnection']>, reports?: Maybe<ResolversTypes['ReportConnection']>, stixCoreRelationships?: Maybe<ResolversTypes['StixCoreRelationshipConnection']> }>;
   UserAgentAddInput: UserAgentAddInput;
-  UserConfidenceLevel: ResolverTypeWrapper<UserConfidenceLevel>;
   UserConfidenceLevelInput: UserConfidenceLevelInput;
-  UserConfidenceLevelOverride: ResolverTypeWrapper<UserConfidenceLevelOverride>;
   UserConnection: ResolverTypeWrapper<Omit<UserConnection, 'edges'> & { edges: Array<ResolversTypes['UserEdge']> }>;
   UserEdge: ResolverTypeWrapper<Omit<UserEdge, 'node'> & { node: ResolversTypes['User'] }>;
   UserEditMutations: ResolverTypeWrapper<Omit<UserEditMutations, 'contextClean' | 'contextPatch' | 'fieldPatch' | 'organizationAdd' | 'organizationDelete' | 'relationDelete' | 'tokenRenew'> & { contextClean?: Maybe<ResolversTypes['User']>, contextPatch?: Maybe<ResolversTypes['User']>, fieldPatch?: Maybe<ResolversTypes['User']>, organizationAdd?: Maybe<ResolversTypes['User']>, organizationDelete?: Maybe<ResolversTypes['User']>, relationDelete?: Maybe<ResolversTypes['User']>, tokenRenew?: Maybe<ResolversTypes['User']> }>;
@@ -28057,6 +28058,8 @@ export type ResolversParentTypes = ResolversObject<{
   CityEdge: Omit<CityEdge, 'node'> & { node: ResolversParentTypes['City'] };
   CityEditMutations: Omit<CityEditMutations, 'contextClean' | 'contextPatch' | 'fieldPatch' | 'relationAdd' | 'relationDelete'> & { contextClean?: Maybe<ResolversParentTypes['City']>, contextPatch?: Maybe<ResolversParentTypes['City']>, fieldPatch?: Maybe<ResolversParentTypes['City']>, relationAdd?: Maybe<ResolversParentTypes['StixRefRelationship']>, relationDelete?: Maybe<ResolversParentTypes['City']> };
   Cluster: Cluster;
+  ConfidenceLevel: ConfidenceLevel;
+  ConfidenceLevelOverride: ConfidenceLevelOverride;
   ConfidenceLevelOverrideInput: ConfidenceLevelOverrideInput;
   Connector: Connector;
   ConnectorConfig: ConnectorConfig;
@@ -28573,9 +28576,7 @@ export type ResolversParentTypes = ResolversObject<{
   UserAddInput: UserAddInput;
   UserAgent: Omit<UserAgent, 'cases' | 'containers' | 'createdBy' | 'groupings' | 'indicators' | 'notes' | 'objectOrganization' | 'observedData' | 'opinions' | 'reports' | 'stixCoreRelationships'> & { cases?: Maybe<ResolversParentTypes['CaseConnection']>, containers?: Maybe<ResolversParentTypes['ContainerConnection']>, createdBy?: Maybe<ResolversParentTypes['Identity']>, groupings?: Maybe<ResolversParentTypes['GroupingConnection']>, indicators?: Maybe<ResolversParentTypes['IndicatorConnection']>, notes?: Maybe<ResolversParentTypes['NoteConnection']>, objectOrganization?: Maybe<ResolversParentTypes['OrganizationConnection']>, observedData?: Maybe<ResolversParentTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversParentTypes['OpinionConnection']>, reports?: Maybe<ResolversParentTypes['ReportConnection']>, stixCoreRelationships?: Maybe<ResolversParentTypes['StixCoreRelationshipConnection']> };
   UserAgentAddInput: UserAgentAddInput;
-  UserConfidenceLevel: UserConfidenceLevel;
   UserConfidenceLevelInput: UserConfidenceLevelInput;
-  UserConfidenceLevelOverride: UserConfidenceLevelOverride;
   UserConnection: Omit<UserConnection, 'edges'> & { edges: Array<ResolversParentTypes['UserEdge']> };
   UserEdge: Omit<UserEdge, 'node'> & { node: ResolversParentTypes['User'] };
   UserEditMutations: Omit<UserEditMutations, 'contextClean' | 'contextPatch' | 'fieldPatch' | 'organizationAdd' | 'organizationDelete' | 'relationDelete' | 'tokenRenew'> & { contextClean?: Maybe<ResolversParentTypes['User']>, contextPatch?: Maybe<ResolversParentTypes['User']>, fieldPatch?: Maybe<ResolversParentTypes['User']>, organizationAdd?: Maybe<ResolversParentTypes['User']>, organizationDelete?: Maybe<ResolversParentTypes['User']>, relationDelete?: Maybe<ResolversParentTypes['User']>, tokenRenew?: Maybe<ResolversParentTypes['User']> };
@@ -29688,6 +29689,18 @@ export type CityEditMutationsResolvers<ContextType = any, ParentType extends Res
 
 export type ClusterResolvers<ContextType = any, ParentType extends ResolversParentTypes['Cluster'] = ResolversParentTypes['Cluster']> = ResolversObject<{
   instances_number?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
+export type ConfidenceLevelResolvers<ContextType = any, ParentType extends ResolversParentTypes['ConfidenceLevel'] = ResolversParentTypes['ConfidenceLevel']> = ResolversObject<{
+  max_confidence?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  overrides?: Resolver<Array<ResolversTypes['ConfidenceLevelOverride']>, ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
+export type ConfidenceLevelOverrideResolvers<ContextType = any, ParentType extends ResolversParentTypes['ConfidenceLevelOverride'] = ResolversParentTypes['ConfidenceLevelOverride']> = ResolversObject<{
+  entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  max_confidence?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
@@ -30989,6 +31002,7 @@ export type GroupResolvers<ContextType = any, ParentType extends ResolversParent
   description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   editContext?: Resolver<Maybe<Array<ResolversTypes['EditUserContext']>>, ParentType, ContextType>;
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  group_confidence_level?: Resolver<Maybe<ResolversTypes['ConfidenceLevel']>, ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   members?: Resolver<Maybe<ResolversTypes['UserConnection']>, ParentType, ContextType, Partial<GroupMembersArgs>>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
@@ -36288,7 +36302,7 @@ export type UserResolvers<ContextType = any, ParentType extends ResolversParentT
   theme?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   unit_system?: Resolver<Maybe<ResolversTypes['UnitSystem']>, ParentType, ContextType>;
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
-  user_confidence_level?: Resolver<Maybe<ResolversTypes['UserConfidenceLevel']>, ParentType, ContextType>;
+  user_confidence_level?: Resolver<Maybe<ResolversTypes['ConfidenceLevel']>, ParentType, ContextType>;
   user_email?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
@@ -36394,18 +36408,6 @@ export type UserAgentResolvers<ContextType = any, ParentType extends ResolversPa
   x_opencti_inferences?: Resolver<Maybe<Array<Maybe<ResolversTypes['Inference']>>>, ParentType, ContextType>;
   x_opencti_score?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   x_opencti_stix_ids?: Resolver<Maybe<Array<Maybe<ResolversTypes['StixId']>>>, ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
-}>;
-
-export type UserConfidenceLevelResolvers<ContextType = any, ParentType extends ResolversParentTypes['UserConfidenceLevel'] = ResolversParentTypes['UserConfidenceLevel']> = ResolversObject<{
-  max_confidence?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
-  overrides?: Resolver<Array<ResolversTypes['UserConfidenceLevelOverride']>, ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
-}>;
-
-export type UserConfidenceLevelOverrideResolvers<ContextType = any, ParentType extends ResolversParentTypes['UserConfidenceLevelOverride'] = ResolversParentTypes['UserConfidenceLevelOverride']> = ResolversObject<{
-  entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  max_confidence?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
@@ -36904,6 +36906,8 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   CityEdge?: CityEdgeResolvers<ContextType>;
   CityEditMutations?: CityEditMutationsResolvers<ContextType>;
   Cluster?: ClusterResolvers<ContextType>;
+  ConfidenceLevel?: ConfidenceLevelResolvers<ContextType>;
+  ConfidenceLevelOverride?: ConfidenceLevelOverrideResolvers<ContextType>;
   Connector?: ConnectorResolvers<ContextType>;
   ConnectorConfig?: ConnectorConfigResolvers<ContextType>;
   ConnectorConfiguration?: ConnectorConfigurationResolvers<ContextType>;
@@ -37295,8 +37299,6 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   User?: UserResolvers<ContextType>;
   UserAccount?: UserAccountResolvers<ContextType>;
   UserAgent?: UserAgentResolvers<ContextType>;
-  UserConfidenceLevel?: UserConfidenceLevelResolvers<ContextType>;
-  UserConfidenceLevelOverride?: UserConfidenceLevelOverrideResolvers<ContextType>;
   UserConnection?: UserConnectionResolvers<ContextType>;
   UserEdge?: UserEdgeResolvers<ContextType>;
   UserEditMutations?: UserEditMutationsResolvers<ContextType>;

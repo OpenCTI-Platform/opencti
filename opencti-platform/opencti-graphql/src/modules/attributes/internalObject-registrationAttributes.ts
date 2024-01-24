@@ -226,6 +226,32 @@ const internalObjectsAttributes: { [k: string]: Array<AttributeDefinition> } = {
     },
     { name: 'default_dashboard', label: 'Default dashboard', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: true },
     { name: 'default_hidden_types', label: 'Default hidden types', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: true, upsert: false, isFilterable: true },
+    { name: 'group_confidence_level',
+      label: 'Group Confidence Level',
+      type: 'object',
+      format: 'standard',
+      mandatoryType: 'no',
+      editDefault: false,
+      multiple: false,
+      upsert: false,
+      isFilterable: true,
+      mappings: [
+        { name: 'max_confidence', label: 'Max Confidence', type: 'numeric', precision: 'integer', editDefault: false, mandatoryType: 'internal', multiple: false, upsert: false, isFilterable: true },
+        { name: 'overrides',
+          label: 'Overrides',
+          type: 'object',
+          format: 'nested',
+          editDefault: false,
+          mandatoryType: 'internal',
+          multiple: true,
+          upsert: true,
+          isFilterable: true,
+          mappings: [
+            { name: 'entity_type', label: 'Entity Type', type: 'string', format: 'short', editDefault: false, mandatoryType: 'external', multiple: false, upsert: false, isFilterable: true },
+            { name: 'max_confidence', label: 'Max Confidence', type: 'numeric', precision: 'integer', editDefault: false, mandatoryType: 'external', multiple: false, upsert: false, isFilterable: true },
+          ] },
+      ]
+    },
   ],
   [ENTITY_TYPE_USER]: [
     { name: 'user_email', label: 'Email', type: 'string', format: 'short', mandatoryType: 'external', editDefault: true, multiple: false, upsert: false, isFilterable: true },
@@ -286,7 +312,8 @@ const internalObjectsAttributes: { [k: string]: Array<AttributeDefinition> } = {
             { name: 'entity_type', label: 'Entity Type', type: 'string', format: 'short', editDefault: false, mandatoryType: 'external', multiple: false, upsert: false, isFilterable: true },
             { name: 'max_confidence', label: 'Max Confidence', type: 'numeric', precision: 'integer', editDefault: false, mandatoryType: 'external', multiple: false, upsert: false, isFilterable: true },
           ] },
-      ] },
+      ]
+    },
   ],
   [ENTITY_TYPE_ROLE]: [
     { name: 'name', label: 'Name', type: 'string', format: 'short', mandatoryType: 'external', editDefault: true, multiple: false, upsert: false, isFilterable: true },
