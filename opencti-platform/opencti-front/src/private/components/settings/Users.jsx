@@ -43,18 +43,23 @@ const Users = () => {
       },
       user_email: {
         label: 'Email',
-        width: '30%',
+        width: '25%',
         isSortable: true,
       },
       firstname: {
         label: 'Firstname',
-        width: '15%',
+        width: '12.5%',
         isSortable: true,
       },
       lastname: {
         label: 'Lastname',
-        width: '15%',
+        width: '12.5%',
         isSortable: true,
+      },
+      effective_confidence_level: {
+        label: 'confidence',
+        width: '10%',
+        isSortable: false,
       },
       otp: {
         label: '2FA',

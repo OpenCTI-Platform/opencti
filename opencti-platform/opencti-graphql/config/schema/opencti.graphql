@@ -1066,6 +1066,18 @@ type SettingsMessage {
   recipients: [Member!] @auth(for: [SETTINGS])
 }
 
+enum PlatformCriticalAlertType {
+  GROUP_WITH_NULL_EFFECTIVE_LEVEL
+}
+type PlatformCriticalAlertDetails {
+  groups: [Group!]!
+}
+type PlatformCriticalAlert {
+  message: String!
+  type: PlatformCriticalAlertType!
+  details: PlatformCriticalAlertDetails
+}
+
 type Settings implements InternalObject & BasicObject {
   id: ID!
   standard_id: String! @auth
@@ -1114,6 +1126,7 @@ type Settings implements InternalObject & BasicObject {
   platform_demo: Boolean
   platform_reference_attachment: Boolean @auth
   platform_feature_flags: [Module!] @auth
+  platform_critical_alerts: [PlatformCriticalAlert!]!
   created_at: DateTime! @auth
   updated_at: DateTime! @auth
   enterprise_edition: DateTime
@@ -1284,14 +1297,20 @@ type Creator {
   entity_type: String!
   representative: Representative!
 }
+
 type UserConfidenceLevel {
   max_confidence: Int!
-  overrides: [ConfidenceLevelOverride!]!
+  overrides: [UserConfidenceLevelOverride!]!
 }
-type ConfidenceLevelOverride {
+type UserConfidenceLevelOverride {
   entity_type: String!
   max_confidence: Int!
 }
+type EffectiveConfidenceLevel {
+  max_confidence: Int!
+  source: EffectiveConfidenceLevelSource!
+}
+union EffectiveConfidenceLevelSource = Organization | Group | User
 
 type User implements BasicObject & InternalObject {
   id: ID! # internal_id
@@ -1316,6 +1335,7 @@ type User implements BasicObject & InternalObject {
   capabilities: [Capability]!
   default_hidden_types: [String!]!
   user_confidence_level: UserConfidenceLevel
+  effective_confidence_level: EffectiveConfidenceLevel
   groups(
     orderBy: GroupsOrdering
     orderMode: OrderingMode
