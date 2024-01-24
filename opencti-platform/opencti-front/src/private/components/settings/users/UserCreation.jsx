@@ -52,10 +52,15 @@ const userValidation = (t) => Yup.object().shape({
   confirmation: Yup.string()
     .oneOf([Yup.ref('password'), null], t('The values do not match'))
     .required(t('This field is required')),
+  user_confidence_level_enabled: Yup.boolean(),
   user_confidence_level: Yup.number()
     .min(0, t('The value must be greater than or equal to 0'))
     .max(100, t('The value must be less than or equal to 100'))
-    .required(t('This field is required')),
+    .when('user_confidence_level_enabled', {
+      is: true,
+      then: (schema) => schema.required(t('This field is required')).nullable(),
+      otherwise: (schema) => schema.nullable(),
+    }),
 });
 
 const UserCreation = ({ paginationOptions }) => {
@@ -77,7 +82,9 @@ const UserCreation = ({ paginationOptions }) => {
         }
         : null,
     };
-    delete finalValues.confirmation; // remove the password confirmation from payload
+    // remove technical fields
+    delete finalValues.confirmation;
+    delete finalValues.user_confidence_level_enabled;
 
     commitMutation({
       mutation: userMutation,

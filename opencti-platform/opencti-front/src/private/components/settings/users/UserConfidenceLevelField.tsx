@@ -4,14 +4,13 @@ import Alert from '@mui/material/Alert';
 import Box from '@mui/material/Box';
 import Tooltip from '@mui/material/Tooltip';
 import makeStyles from '@mui/styles/makeStyles';
-import FormControlLabel from '@mui/material/FormControlLabel';
-import Switch from '@mui/material/Switch';
 import { InformationOutline } from 'mdi-material-ui';
 import { User_user$data } from '@components/settings/users/__generated__/User_user.graphql';
 import InputSliderField from '../../../../components/InputSliderField';
 import { useFormatter } from '../../../../components/i18n';
 import UserConfidenceLevel from './UserConfidenceLevel';
 import type { Theme } from '../../../../components/Theme';
+import SwitchField from '../../../../components/SwitchField';
 
 const useStyles = makeStyles((theme: Theme) => ({
   alert: {
@@ -79,13 +78,14 @@ const UserConfidenceLevelField: FunctionComponent<UserConfidenceLevelFieldProps>
       variant="outlined"
       sx={{ position: 'relative' }}
     >
-      { effectiveLevel ? (
+      { !!effectiveLevel && (
         <Box>
           {t_i18n('Current effective confidence level:')}
           &nbsp;
           <UserConfidenceLevel confidenceLevel={effectiveLevel} showSource={true} />
         </Box>
-      ) : (
+      )}
+      { effectiveLevel === null && (
         <Box
           sx={{ color: 'error.main' }}
         >
@@ -93,10 +93,15 @@ const UserConfidenceLevelField: FunctionComponent<UserConfidenceLevelFieldProps>
         </Box>
       )}
       <Box sx={{ display: 'flex', alignItems: 'center' }}>
-        <FormControlLabel
-          control={<Switch checked={switchValue} onChange={handleSwitchChange} />}
+        {/* we still use a technical field for this switch to be able to do lazy yup validation ; do NOT submit! */}
+        <Field
+          component={SwitchField}
+          type="checkbox"
+          name="user_confidence_level_enabled"
           label={t_i18n('Enable user max confidence level')}
-          sx={{ marginRight: 1 }}
+          // controlled field
+          checked={switchValue}
+          onChange={handleSwitchChange}
         />
         <Tooltip
           sx={{ zIndex: 2 }}

@@ -2518,6 +2518,7 @@
   "Unknown configuration error in the platform.": "Unknown configuration error in the platform.",
   "This group does not have a confidence level, members might not be able to create data.": "This group does not have a confidence level, members might not be able to create data.",
   "Current effective confidence level:": "Current effective confidence level:",
+  "From: user": "From: user",
   "pattern": "Indicator pattern",
   "Update subscription": "Update subscription",
   "Subscribe to updates (modifications and new relations)": "Subscribe to updates (modifications and new relations)",

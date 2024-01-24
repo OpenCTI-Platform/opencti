@@ -2534,5 +2534,6 @@
   "You can enable/disable default values for marking in the customization of each entity type.": "您可以在定制每个实体类型时启用/禁用标记的默认值。",
   "This group does not have a confidence level, members might not be able to create data.": "该组没有置信度，成员可能无法创建数据。",
   "The user's max confidence level overrides the max confidence that might be set at groups level.": "用户的最大置信度高于组级可能设置的最大置信度。",
-  "Current effective confidence level:": "当前有效置信水平："
+  "Current effective confidence level:": "当前有效置信水平：",
+  "From: user": "发件人：用户"
 }

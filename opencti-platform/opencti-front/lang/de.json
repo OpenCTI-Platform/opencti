@@ -2534,5 +2534,6 @@
   "You can enable/disable default values for marking in the customization of each entity type.": "Sie können in der Anpassung jedes Entitätstyps Standardwerte für die Markierung aktivieren/deaktivieren.",
   "This group does not have a confidence level, members might not be able to create data.": "Diese Gruppe hat kein Vertrauensniveau, die Mitglieder sind möglicherweise nicht in der Lage, Daten zu erstellen.",
   "The user's max confidence level overrides the max confidence that might be set at groups level.": "Die maximale Vertrauensstufe des Benutzers hat Vorrang vor der maximalen Vertrauensstufe, die auf Gruppenebene festgelegt werden kann.",
-  "Current effective confidence level:": "Derzeitiges effektives Konfidenzniveau:"
+  "Current effective confidence level:": "Derzeitiges effektives Konfidenzniveau:",
+  "From: user": "Von: Benutzer"
 }

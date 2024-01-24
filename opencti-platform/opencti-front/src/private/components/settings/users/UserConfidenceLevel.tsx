@@ -58,7 +58,7 @@ const UserConfidenceLevel: React.FC<UserConfidenceLevelProps> = ({ confidenceLev
       }
       // the user himself
       return (
-        <>[{t_i18n('From: this user\'s max confidence level')}]</>
+        <>[{t_i18n('From: user')}]</>
       );
     }
 

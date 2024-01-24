@@ -119,6 +119,7 @@ UserEditionOverviewComponentProps
     description: user.description,
     account_status: user.account_status,
     account_lock_after_date: user.account_lock_after_date,
+    user_confidence_level_enabled: !!user.user_confidence_level,
     user_confidence_level: user.user_confidence_level?.max_confidence,
     objectOrganization,
   };
