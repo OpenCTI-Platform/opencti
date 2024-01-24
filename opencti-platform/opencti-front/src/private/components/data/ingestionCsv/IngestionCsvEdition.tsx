@@ -70,15 +70,15 @@ interface IngestionCsvEditionProps {
 }
 
 interface IngestionCsvEditionForm {
-  message?: string
-  references: ExternalReferencesValues | undefined
+  message?: string | null
+  references?: ExternalReferencesValues
   name: string,
-  description: string | null,
+  description?: string | null,
   uri: string,
   authentication_type: string,
-  authentication_value: string,
+  authentication_value?:  string | null,
   current_state_date: Date | null
-  ingestion_running: boolean,
+  ingestion_running?:  boolean | null,
   csv_mapper_id: string | Option,
   user_id: string | Option
 }
@@ -161,6 +161,7 @@ const IngestionCsvEdition: FunctionComponent<IngestionCsvEditionProps> = ({
     ingestion_running: ingestionCsvData.ingestion_running,
     csv_mapper_id: convertMapper(ingestionCsvData, 'csvMapper'),
     user_id: convertUser(ingestionCsvData, 'user'),
+    references: undefined
   };
 
   return (
