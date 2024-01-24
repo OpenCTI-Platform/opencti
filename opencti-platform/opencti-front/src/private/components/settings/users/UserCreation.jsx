@@ -6,7 +6,6 @@ import { makeStyles } from '@mui/styles';
 import { graphql } from 'react-relay';
 import Alert from '@mui/material/Alert';
 import MenuItem from '@mui/material/MenuItem';
-import FormHelperText from '@mui/material/FormHelperText';
 import GroupField from '../../common/form/GroupField';
 import OptionalConfidenceLevelField from '../../common/form/OptionalConfidenceLevelField';
 import Drawer, { DrawerVariant } from '../../common/drawer/Drawer';
