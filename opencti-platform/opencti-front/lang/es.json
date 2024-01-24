@@ -534,7 +534,6 @@
   "Selected entities": "Entidades seleccionadas",
   "Merged entity": "Entidad fusionada",
   "Demo credentials": "Credenciales de prueba",
-  "User will be created with default groups.": "El usuario se creará con grupos por defecto.",
   "No connectors are enabled on this platform.": "Ningún conector se ha habilitado en esta plataforma.",
   "Enabled import connectors": "Conectores de importación activados",
   "No enrichment connectors on this platform": "Ningún conector de enriquecimiento en esta plataforma",
@@ -2520,5 +2519,17 @@
   "Max Confidence Level": "Nivel de confianza máximo",
   "This value is overridden for the following entity types": "Este valor se anula para los siguientes tipos de entidad",
   "Enable user max confidence level": "Habilitar nivel de confianza máximo del usuario",
-  "The user's max confidence level overrides the max confidence that might be set at groups or organizations level.": "El nivel máximo de confianza del usuario anula el nivel máximo de confianza que pueda estar establecido a nivel de grupos u organizaciones."
+  "The user's max confidence level overrides the max confidence that might be set at groups or organizations level.": "El nivel máximo de confianza del usuario anula el nivel máximo de confianza que pueda estar establecido a nivel de grupos u organizaciones.",
+  "Unless specific groups are selected, user will be created with default groups.": "A menos que se seleccionen grupos específicos, el usuario se creará con los grupos por defecto.",
+  "entity_Group": "Grupo",
+  "Important notice: your action is required!": "Aviso importante: ¡su acción es necesaria!",
+  "this blogpost": "este blogpost",
+  "our Slack channel": "nuestro canal de Slack",
+  "The following {entity_type} require your attention:": "Los siguientes {entity_type} requieren su atención:",
+  "and ... more": "y {count} más.",
+  "Open Settings": "Abrir Ajustes",
+  "alert_GROUP_WITH_NULL_EFFECTIVE_LEVEL": "A partir de OpenCTI 6.0, se añadirá un nivel de confianza máximo a los grupos y usuarios. Proporcionará a los administradores de la plataforma un mayor control sobre el impacto de los datos importados y evitará cualquier actualización no deseada de los datos. Lea {link_blogpost} para obtener más información.\n \nEn esta plataforma, \"el nivel máximo de confianza\" de algunos grupos no están definidos actualmente. Sus miembros no podrán crear ningún dato en la versión 6.X de la plataforma. Para evitarlo, asegúrate de que todos los grupos tienen un nivel de confianza máximo definido. Más información en {link_blogpost}. Ten especial cuidado con los usuarios asociados a Conectores, Feeds y Streams; puedes establecer el nivel de confianza individual para anular el nivel de confianza de grupo si es necesario. Únete a {link_slack} si necesitas consejos.",
+  "No confidence level found in this user's groups, and no confidence level defined at the user level.": "No se ha encontrado ningún nivel de confianza en los grupos de este usuario, y no se ha definido ningún nivel de confianza a nivel de usuario.",
+  "confidence_level_from": "De {entity_type} {link}",
+  "Unknown configuration error in the platform.": "Error de configuración desconocido en la plataforma."
 }
