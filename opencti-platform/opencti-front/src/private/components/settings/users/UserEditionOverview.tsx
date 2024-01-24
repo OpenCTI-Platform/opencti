@@ -87,7 +87,7 @@ interface UserEditionOverviewComponentProps {
   user: UserEditionOverview_user$data;
   context:
   | readonly ({
-    readonly focusOn: string | null;
+    readonly focusOn: string | null | undefined;
     readonly name: string;
   } | null)[]
   | null | undefined;

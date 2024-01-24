@@ -30,7 +30,7 @@ interface OptionalConfidenceLevelFieldProps {
   onFocus?: (name: string, value: string) => void;
   editContext?:
   | readonly ({
-    readonly focusOn: string | null;
+    readonly focusOn: string | null | undefined;
     readonly name: string;
   } | null)[]
   | null;

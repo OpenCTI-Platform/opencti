@@ -1,9 +1,10 @@
 import { Field, Form, Formik } from 'formik';
 import React, { FunctionComponent } from 'react';
-import { createFragmentContainer, graphql } from 'react-relay';
+import { createFragmentContainer, graphql, useMutation } from 'react-relay';
 import * as Yup from 'yup';
 import { ObjectShape } from 'yup';
 import { GenericContext } from '@components/common/model/GenericContextModel';
+import ConfidenceField from '@components/common/form/ConfidenceField';
 import { useFormatter } from '../../../../components/i18n';
 import MarkdownField from '../../../../components/MarkdownField';
 import { SubscriptionFocus } from '../../../../components/Subscription';
@@ -14,6 +15,7 @@ import { GroupEditionOverview_group$data } from './__generated__/GroupEditionOve
 import GroupHiddenTypesField from './GroupHiddenTypesField';
 import useFormEditor, { GenericData } from '../../../../utils/hooks/useFormEditor';
 import useGranted, { SETTINGS_SETACCESSES } from '../../../../utils/hooks/useGranted';
+import { fieldSpacingContainerStyle } from '../../../../utils/field';
 
 export const groupMutationFieldPatch = graphql`
   mutation GroupEditionOverviewFieldPatchMutation(
@@ -79,6 +81,7 @@ interface GroupEditionOverviewComponentProps {
 const GroupEditionOverviewComponent: FunctionComponent<GroupEditionOverviewComponentProps> = ({ group, context }) => {
   const { t_i18n } = useFormatter();
   const hasSetAccess = useGranted([SETTINGS_SETACCESSES]);
+  const [commitFieldPatch] = useMutation(groupMutationFieldPatch);
 
   const basicShape: ObjectShape = {
     name: Yup.string().required(t_i18n('This field is required')),
@@ -101,6 +104,25 @@ const GroupEditionOverviewComponent: FunctionComponent<GroupEditionOverviewCompo
 
   const editor = useFormEditor(group as unknown as GenericData, false, queries, groupValidator);
 
+  const handleSubmitField = (name: string, value: string) => {
+    groupValidator
+      .validateAt(name, { [name]: value })
+      .then(() => {
+        if (name === 'group_confidence_level') {
+          commitFieldPatch({
+            variables: {
+              id: group.id,
+              input: {
+                key: 'group_confidence_level',
+                object_path: '/group_confidence_level/max_confidence',
+                value: parseInt(value, 10),
+              },
+            },
+          });
+        }
+      })
+      .catch(() => false);
+  };
   const initialValues = {
     name: group.name,
     description: group.description,
@@ -187,6 +209,20 @@ const GroupEditionOverviewComponent: FunctionComponent<GroupEditionOverviewCompo
               }
             />
             <GroupHiddenTypesField groupData={group} />
+            {
+              hasSetAccess && (
+                <ConfidenceField
+                  name="group_confidence_level"
+                  label={t_i18n('Max Confidence Level')}
+                  onFocus={editor.changeFocus}
+                  onSubmit={handleSubmitField}
+                  entityType="Group"
+                  containerStyle={fieldSpacingContainerStyle}
+                  editContext={context}
+                  variant="edit"
+                />
+              )
+            }
           </Form>
         )}
       </Formik>
