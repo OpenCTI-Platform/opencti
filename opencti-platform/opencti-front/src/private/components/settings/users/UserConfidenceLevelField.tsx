@@ -11,7 +11,7 @@ import { User_user$data } from '@components/settings/users/__generated__/User_us
 import InputSliderField from '../../../../components/InputSliderField';
 import { useFormatter } from '../../../../components/i18n';
 import UserConfidenceLevel from './UserConfidenceLevel';
-import { Theme } from '../../../../components/Theme';
+import type { Theme } from '../../../../components/Theme';
 
 const useStyles = makeStyles((theme: Theme) => ({
   alert: {
