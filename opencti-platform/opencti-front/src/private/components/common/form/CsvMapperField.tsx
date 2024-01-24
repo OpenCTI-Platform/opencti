@@ -1,11 +1,9 @@
 import { Option } from '@components/common/form/ReferenceField';
-import { graphql } from 'react-relay';
-import React, { FunctionComponent, useState } from 'react';
+import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
+import React, { FunctionComponent } from 'react';
 import makeStyles from '@mui/styles/makeStyles';
 import { Field } from 'formik';
-import * as R from 'ramda';
-import { CsvMapperFieldSearchQuery$data } from '@components/common/form/__generated__/CsvMapperFieldSearchQuery.graphql';
-import { fetchQuery } from '../../../../relay/environment';
+import { CsvMapperFieldSearchQuery } from '@components/common/form/__generated__/CsvMapperFieldSearchQuery.graphql';
 import { useFormatter } from '../../../../components/i18n';
 import AutocompleteField from '../../../../components/AutocompleteField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
@@ -30,9 +28,10 @@ interface CsvMapperFieldComponentProps {
   name: string;
   isOptionEqualToValue: (option: Option, value: string) => boolean;
   onChange?: (name: string, value: Option) => void;
+  queryRef: PreloadedQuery<CsvMapperFieldSearchQuery>
 }
 
-const CsvMapperQuery = graphql`
+export const csvMapperQuery = graphql`
   query CsvMapperFieldSearchQuery($search: String) {
     csvMappers(search: $search) {
       edges {
@@ -49,29 +48,15 @@ const CsvMapperField: FunctionComponent<CsvMapperFieldComponentProps> = ({
   onChange,
   isOptionEqualToValue,
   name,
+  queryRef,
 }) => {
   const classes = useStyles();
   const { t_i18n } = useFormatter();
-  const [csvMappers, setCsvMappers] = useState<
-  {
-    label: string | undefined;
-    value: string | undefined;
-  }[]
-  >([]);
-  const searchCsvMappers = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const search = event?.target?.value ?? '';
-    fetchQuery(CsvMapperQuery, { search })
-      .toPromise()
-      .then((data) => {
-        const newCsvMappers = (
-          (data as CsvMapperFieldSearchQuery$data)?.csvMappers?.edges ?? []
-        ).map(({ node }) => ({
-          value: node.id,
-          label: node.name,
-        }));
-        setCsvMappers(R.uniq([...csvMappers, ...newCsvMappers]));
-      });
-  };
+  const data = usePreloadedQuery(csvMapperQuery, queryRef);
+  const csvMappersPreloaded = data.csvMappers?.edges?.map(({ node }) => ({
+    value: node.id,
+    label: node.name,
+  }));
   return (
     <>
       <Field
@@ -82,12 +67,10 @@ const CsvMapperField: FunctionComponent<CsvMapperFieldComponentProps> = ({
         textfieldprops={{
           variant: 'standard',
           label: t_i18n('CSV Mappers'),
-          onFocus: searchCsvMappers,
         }}
         noOptionsText={t_i18n('No available options')}
-        options={csvMappers}
+        options={csvMappersPreloaded}
         isOptionEqualToValue={isOptionEqualToValue}
-        onInputChange={searchCsvMappers}
         onChange={onChange}
         classes={{ clearIndicator: classes.autoCompleteIndicator }}
         renderOption={(
