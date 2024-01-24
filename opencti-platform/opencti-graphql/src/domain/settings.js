@@ -1,12 +1,12 @@
 import { getHeapStatistics } from 'node:v8';
 import nconf from 'nconf';
 import * as R from 'ramda';
-import { createEntity, loadEntity, patchAttribute, updateAttribute } from '../database/middleware';
+import { createEntity, listAllThings, loadEntity, patchAttribute, updateAttribute } from '../database/middleware';
 import conf, { ACCOUNT_STATUSES, BUS_TOPICS, ENABLED_DEMO_MODE, getBaseUrl, PLATFORM_VERSION } from '../config/conf';
 import { delEditContext, getClusterInstances, getRedisVersion, notify, setEditContext } from '../database/redis';
 import { isRuntimeSortEnable, searchEngineVersion } from '../database/engine';
 import { getRabbitMQVersion } from '../database/rabbitmq';
-import { ENTITY_TYPE_SETTINGS } from '../schema/internalObject';
+import { ENTITY_TYPE_GROUP, ENTITY_TYPE_SETTINGS } from '../schema/internalObject';
 import { isUserHasCapability, SETTINGS_SET_ACCESSES, SYSTEM_USER } from '../utils/access';
 import { storeLoadById } from '../database/middleware-loader';
 import { INTERNAL_SECURITY_PROVIDER, PROVIDERS } from '../config/providers';
@@ -155,4 +155,28 @@ export const settingDeleteMessage = async (context, user, settingsId, messageId)
   const patch = { platform_messages: JSON.stringify(messages) };
   const { element } = await patchAttribute(context, user, settingsId, ENTITY_TYPE_SETTINGS, patch);
   return notify(BUS_TOPICS[ENTITY_TYPE_SETTINGS].EDIT_TOPIC, element, user);
+};
+
+export const getCriticalAlerts = async (context, user) => {
+  // only 1 critical alert is checked: null confidence level on groups
+  // it's for admins only (only them can take action)
+  if (isUserHasCapability(user, SETTINGS_SET_ACCESSES)) {
+    const allGroups = await listAllThings(context, user, [ENTITY_TYPE_GROUP], {});
+    // if at least one user have a null effective confidence level, it's an issue
+    const groupsWithNull = allGroups.filter((group) => !group.group_confidence_level);
+    if (groupsWithNull.length === 0) {
+      return [];
+    }
+    return [{
+      type: 'GROUP_WITH_NULL_EFFECTIVE_LEVEL',
+      // default message for API users
+      message: 'Some groups have field group_confidence_level to null, members will not be able to use the platform properly.',
+      details: {
+        groups: groupsWithNull,
+      }
+    }];
+  }
+
+  // no alert
+  return [];
 };

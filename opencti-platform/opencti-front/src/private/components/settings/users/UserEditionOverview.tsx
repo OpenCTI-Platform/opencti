@@ -134,7 +134,7 @@ UserEditionOverviewComponentProps
     });
   };
 
-  const handleSubmitField = (name: string, value: string | null) => {
+  const handleSubmitField = (name: string, value: string | Date | null) => {
     userValidation(t_i18n, userIsOnlyOrganizationAdmin)
       .validateAt(name, { [name]: value })
       .then(() => {
@@ -414,6 +414,14 @@ const UserEditionOverview = createFragmentContainer(
           overrides {
             entity_type
             max_confidence
+          }
+        }
+        effective_confidence_level {
+          max_confidence
+          source {
+            ... on User { entity_type id name }
+            ... on Organization { entity_type id name }
+            ... on Group { entity_type id name }
           }
         }
         roles(orderBy: $rolesOrderBy, orderMode: $rolesOrderMode) {

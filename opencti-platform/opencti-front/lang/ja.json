@@ -522,7 +522,6 @@
   "Selected entities": "選択したエンティティ",
   "Merged entity": "マージされたエンティティ",
   "Demo credentials": "デモ用の認証情報",
-  "User will be created with default groups.": "ユーザーは既定のグループで作成されます。",
   "No connectors are enabled on this platform.": "有効なコネクタがありません。",
   "Enabled import connectors": "有効なインポート用コネクタ",
   "No enrichment connectors on this platform": "有効なエンリッチ用コネクタがありません",
@@ -2520,5 +2519,17 @@
   "Max Confidence Level": "最大信頼度",
   "This value is overridden for the following entity types": "この値は以下のエンティティ・タイプでオーバーライドされます。",
   "Enable user max confidence level": "ユーザの最大信頼レベルを有効にする",
-  "The user's max confidence level overrides the max confidence that might be set at groups or organizations level.": "ユーザーの最大信頼レベルは、グループまたは組織レベルで設定されている可能性のある最大信頼レベルを上書きします。"
+  "The user's max confidence level overrides the max confidence that might be set at groups or organizations level.": "ユーザーの最大信頼レベルは、グループまたは組織レベルで設定されている可能性のある最大信頼レベルを上書きします。",
+  "Unless specific groups are selected, user will be created with default groups.": "特定のグループを選択しない限り、ユーザーはデフォルトのグループで作成されます。",
+  "entity_Group": "グループ",
+  "Important notice: your action is required!": "重要なお知らせ：あなたのアクションが必要です！",
+  "this blogpost": "このブログ記事",
+  "our Slack channel": "Slackチャンネル",
+  "The following {entity_type} require your attention:": "以下の{entity_type}に注意が必要です：",
+  "and ... more": "および{count}以上です。",
+  "Open Settings": "設定を開く",
+  "alert_GROUP_WITH_NULL_EFFECTIVE_LEVEL": "OpenCTI 6.0 から、グループとユーザーに最大信頼度が追加されます。これにより、プラットフォーム管理者はインポートされたデータの影響をよりコントロールできるようになり、データの不要な更新を防ぐことができます。詳しくは{link_blogpost}をお読みください。\n \nこのプラットフォームでは、いくつかのグループの最大信頼度が現在未定義です。そのグループのメンバーはバージョン6.Xではデータを作成することができません。これを防ぐには、すべてのグループに最大信頼度が設定されていることを確認してください。詳細は{link_blogpost}を参照してください。コネクター、フィード、ストリームに関連するユーザーには特に注意してください。必要であれば、グループの信頼度よりも個人の信頼度を優先して設定できます。アドバイスが必要な場合は{link_slack}に参加してください。",
+  "No confidence level found in this user's groups, and no confidence level defined at the user level.": "このユーザーのグループには信頼レベルが見つからず、ユーザーレベルにも信頼レベルが定義されていません。",
+  "confidence_level_from": "5}}から{entity_type}",
+  "Unknown configuration error in the platform.": "プラットフォームで不明な構成エラーが発生しました。"
 }

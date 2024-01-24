@@ -53,8 +53,7 @@ const OptionalConfidenceLevelField: FunctionComponent<OptionalConfidenceLevelFie
   const finalLabel = label || t_i18n('Confidence level');
   const classes = useStyles();
   const { setFieldValue, initialValues } = useFormikContext<Record<string, boolean>>();
-
-  const [switchValue, setSwitchValue] = useState(Number.isInteger(initialValues[name])); // Default switch value
+  const [switchValue, setSwitchValue] = useState(Number.isInteger(initialValues[name]));
 
   const handleSwitchChange = async () => {
     if (switchValue) {
@@ -82,7 +81,7 @@ const OptionalConfidenceLevelField: FunctionComponent<OptionalConfidenceLevelFie
         />
         <Tooltip
           sx={{ zIndex: 2 }}
-          title={t_i18n('The user\'s max confidence level overrides the max confidence that might be set at groups or organizations level.')}
+          title={t_i18n('The user\'s max confidence level overrides the max confidence that might be set at groups level.')}
         >
           <InformationOutline fontSize="small" color="primary" />
         </Tooltip>
