@@ -6,6 +6,7 @@ import { makeStyles } from '@mui/styles';
 import { graphql } from 'react-relay';
 import Alert from '@mui/material/Alert';
 import MenuItem from '@mui/material/MenuItem';
+import FormHelperText from '@mui/material/FormHelperText';
 import GroupField from '../../common/form/GroupField';
 import OptionalConfidenceLevelField from '../../common/form/OptionalConfidenceLevelField';
 import Drawer, { DrawerVariant } from '../../common/drawer/Drawer';
@@ -57,15 +58,13 @@ const UserCreation = ({ paginationOptions }) => {
   const { settings } = useAuth();
   const { t_i18n } = useFormatter();
   const classes = useStyles();
+
   const onSubmit = (values, { setSubmitting, resetForm }) => {
-    const { objectOrganization, user_confidence_level, ...rest } = values;
-    delete rest.confirmation;
-    delete rest.groups;
-    // TODO: Handle default assignation groups
+    const { objectOrganization, groups, user_confidence_level, ...rest } = values;
     const finalValues = {
       ...rest,
       objectOrganization: objectOrganization.map((n) => n.value),
-      // TODO: Handle default assignation groups: groups.map((n) => n.value),
+      groups: groups.map((n) => n.value),
       user_confidence_level: user_confidence_level
         ? {
           max_confidence: parseInt(user_confidence_level, 10),
@@ -73,6 +72,8 @@ const UserCreation = ({ paginationOptions }) => {
         }
         : null,
     };
+    delete finalValues.confirmation; // remove the password confirmation from payload
+
     commitMutation({
       mutation: userMutation,
       variables: {
@@ -95,7 +96,7 @@ const UserCreation = ({ paginationOptions }) => {
       {({ onClose }) => (
         <>
           <Alert severity="info">
-            {t_i18n('User will be created with default groups.')}
+            {t_i18n('Unless specific groups are selected, user will be created with default groups.')}
           </Alert>
           <br />
           <Formik
@@ -111,7 +112,7 @@ const UserCreation = ({ paginationOptions }) => {
               groups: [],
               account_status: 'Active',
               account_lock_after_date: null,
-              user_confidence_level: 100,
+              user_confidence_level: null,
             }}
             validationSchema={userValidation(t_i18n)}
             onSubmit={onSubmit}

@@ -43,7 +43,7 @@ const GroupWithNullConfidenceLevelAlertContent: React.FC<GroupWithNullConfidence
         </DialogContentText>
         { groupsExcerpt.length > 0 && (
         <DialogContentText>
-          <Box component="span">{t_i18n('The following groups(s) require your attention:')}</Box>
+          <Box component="span">{t_i18n('', { id: 'The following {entity_type} require your attention:', values: { entity_type: 'groups' } })}</Box>
           &nbsp;
           {groupsExcerpt.map((user, index) => (
             <Fragment key={`${user.id}-${index}`}>

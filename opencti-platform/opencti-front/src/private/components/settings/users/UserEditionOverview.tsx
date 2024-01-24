@@ -416,6 +416,14 @@ const UserEditionOverview = createFragmentContainer(
             max_confidence
           }
         }
+        effective_confidence_level {
+          max_confidence
+          source {
+            ... on User { entity_type id name }
+            ... on Organization { entity_type id name }
+            ... on Group { entity_type id name }
+          }
+        }
         roles(orderBy: $rolesOrderBy, orderMode: $rolesOrderMode) {
           id
           name
