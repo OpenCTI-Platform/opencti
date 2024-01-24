@@ -4,8 +4,9 @@ import { Field, Form, Formik } from 'formik';
 import * as R from 'ramda';
 import * as Yup from 'yup';
 import MenuItem from '@mui/material/MenuItem';
-import OptionalConfidenceLevelField from '@components/common/form/OptionalConfidenceLevelField';
+import UserConfidenceLevelField from '@components/settings/users/UserConfidenceLevelField';
 import FormHelperText from '@mui/material/FormHelperText';
+import UserConfidenceLevel from '@components/settings/users/UserConfidenceLevel';
 import TextField from '../../../../components/TextField';
 import SelectField from '../../../../components/SelectField';
 import { SubscriptionFocus } from '../../../../components/Subscription';
@@ -367,15 +368,18 @@ UserEditionOverviewComponentProps
           />
           {
             hasSetAccess && (
-              <OptionalConfidenceLevelField
-                name="user_confidence_level"
-                label={t_i18n('Max Confidence Level')}
-                onFocus={handleChangeFocus}
-                onSubmit={handleSubmitField}
-                entityType="User"
-                containerStyle={fieldSpacingContainerStyle}
-                editContext={context}
-              />
+              <>
+                <UserConfidenceLevelField
+                  name="user_confidence_level"
+                  label={t_i18n('Max Confidence Level')}
+                  onFocus={handleChangeFocus}
+                  onSubmit={handleSubmitField}
+                  entityType="User"
+                  containerStyle={fieldSpacingContainerStyle}
+                  editContext={context}
+                  effectiveLevel={user.effective_confidence_level}
+                />
+              </>
             )
           }
         </Form>

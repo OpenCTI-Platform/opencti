@@ -7,10 +7,13 @@ import makeStyles from '@mui/styles/makeStyles';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import Switch from '@mui/material/Switch';
 import { InformationOutline } from 'mdi-material-ui';
+import { User_user$data } from '@components/settings/users/__generated__/User_user.graphql';
 import InputSliderField from '../../../../components/InputSliderField';
 import { useFormatter } from '../../../../components/i18n';
+import UserConfidenceLevel from './UserConfidenceLevel';
+import { Theme } from '../../../../components/Theme';
 
-const useStyles = makeStyles(() => ({
+const useStyles = makeStyles((theme: Theme) => ({
   alert: {
     width: '100%',
     marginTop: 20,
@@ -20,10 +23,11 @@ const useStyles = makeStyles(() => ({
     width: '100%',
     overflow: 'visible',
     paddingBottom: 0,
+    color: theme.palette.text?.secondary,
   },
 }));
 
-interface OptionalConfidenceLevelFieldProps {
+interface UserConfidenceLevelFieldProps {
   name: string;
   label?: string;
   onSubmit?: (name: string, value: string | null) => void;
@@ -37,9 +41,10 @@ interface OptionalConfidenceLevelFieldProps {
   containerStyle?: Record<string, string | number>;
   entityType: string;
   disabled?: boolean;
+  effectiveLevel?: User_user$data['effective_confidence_level']
 }
 
-const OptionalConfidenceLevelField: FunctionComponent<OptionalConfidenceLevelFieldProps> = ({
+const UserConfidenceLevelField: FunctionComponent<UserConfidenceLevelFieldProps> = ({
   name,
   label,
   onFocus,
@@ -48,6 +53,7 @@ const OptionalConfidenceLevelField: FunctionComponent<OptionalConfidenceLevelFie
   containerStyle,
   entityType,
   disabled,
+  effectiveLevel,
 }) => {
   const { t_i18n } = useFormatter();
   const finalLabel = label || t_i18n('Confidence level');
@@ -73,6 +79,19 @@ const OptionalConfidenceLevelField: FunctionComponent<OptionalConfidenceLevelFie
       variant="outlined"
       sx={{ position: 'relative' }}
     >
+      { effectiveLevel ? (
+        <Box>
+          {t_i18n('Current effective confidence level:')}
+          &nbsp;
+          <UserConfidenceLevel confidenceLevel={effectiveLevel} showSource={true} />
+        </Box>
+      ) : (
+        <Box
+          sx={{ color: 'error.main' }}
+        >
+          {t_i18n('This user has no effective confidence level from the groups assigned.')}
+        </Box>
+      )}
       <Box sx={{ display: 'flex', alignItems: 'center' }}>
         <FormControlLabel
           control={<Switch checked={switchValue} onChange={handleSwitchChange} />}
@@ -104,4 +123,4 @@ const OptionalConfidenceLevelField: FunctionComponent<OptionalConfidenceLevelFie
   );
 };
 
-export default OptionalConfidenceLevelField;
+export default UserConfidenceLevelField;

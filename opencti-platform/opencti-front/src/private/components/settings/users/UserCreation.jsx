@@ -7,7 +7,7 @@ import { graphql } from 'react-relay';
 import Alert from '@mui/material/Alert';
 import MenuItem from '@mui/material/MenuItem';
 import GroupField from '../../common/form/GroupField';
-import OptionalConfidenceLevelField from '../../common/form/OptionalConfidenceLevelField';
+import UserConfidenceLevelField from './UserConfidenceLevelField';
 import Drawer, { DrawerVariant } from '../../common/drawer/Drawer';
 import { useFormatter } from '../../../../components/i18n';
 import { commitMutation } from '../../../../relay/environment';
@@ -221,7 +221,7 @@ const UserCreation = ({ paginationOptions }) => {
                   }}
                 />
                 {hasSetAccess && (
-                  <OptionalConfidenceLevelField
+                  <UserConfidenceLevelField
                     name="user_confidence_level"
                     entityType="User"
                     label={t_i18n('Max Confidence Level')}

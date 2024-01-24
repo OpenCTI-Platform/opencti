@@ -2505,7 +2505,7 @@
   "Max Confidence Level": "Max Confidence Level",
   "This value is overridden for the following entity types": "This value is overridden for the following entity types",
   "Enable user max confidence level": "Enable user max confidence level",
-  "The user's max confidence level overrides the max confidence that might be set at groups or organizations level.": "The user's max confidence level overrides the max confidence that might be set at groups or organizations level.",
+  "The user's max confidence level overrides the max confidence that might be set at groups level.": "The user's max confidence level overrides the max confidence that might be set at groups level.",
   "Important notice: your action is required!": "Important notice: your action is required!",
   "this blogpost": "this blogpost",
   "our Slack channel": "our Slack channel",
@@ -2514,9 +2514,10 @@
   "Open Settings": "Open Settings",
   "alert_GROUP_WITH_NULL_EFFECTIVE_LEVEL": "Starting with OpenCTI 6.0, a max confidence level will be added to groups and users. It will provide platform administrators with more control on the impact of imported data and prevent any unwanted update on data. Please read {link_blogpost} for more information.\n \nOn this platform, \"max confidence level\" of some groups are currently undefined. Their members will not be able to create any data in version 6.X of the platform. In order to prevent that, make sure all groups have a max confidence level set. More info in {link_blogpost}. Be particularly mindful of users associated to Connectors, Feeds and Streams; you can set individual confidence level to override group confidence level if need be. Join {link_slack} if you need advices.",
   "No confidence level found in this user's groups, and no confidence level defined at the user level.": "No confidence level found in this user's groups, and no confidence level defined at the user level.",
-  "confidence_level_from": "From {entity_type} {link}",
+  "confidence_level_from": "from {entity_type} {link}",
   "Unknown configuration error in the platform.": "Unknown configuration error in the platform.",
-  "No confidence level set! Members of this group might not be able to create data.": "No confidence level set! Members of this group might not be able to create data.",
+  "This group does not have a confidence level, members might not be able to create data.": "This group does not have a confidence level, members might not be able to create data.",
+  "Current effective confidence level:": "Current effective confidence level:",
   "pattern": "Indicator pattern",
   "Update subscription": "Update subscription",
   "Subscribe to updates (modifications and new relations)": "Subscribe to updates (modifications and new relations)",
@@ -2532,5 +2533,6 @@
   "This score is updated with the decay rule applied to this indicator.": "This score is updated with the decay rule applied to this indicator.",
   "Lifecycle": "Lifecycle",
   "Lifecycle details": "Lifecycle details",
-  "Subscription to specific object(s)": "Subscription to specific object(s)"
+  "Subscription to specific object(s)": "Subscription to specific object(s)",
+  "You can enable/disable default values for marking in the customization of each entity type.": "You can enable/disable default values for marking in the customization of each entity type."
 }

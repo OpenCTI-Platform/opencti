@@ -5,6 +5,7 @@ import * as Yup from 'yup';
 import { ObjectShape } from 'yup';
 import { GenericContext } from '@components/common/model/GenericContextModel';
 import ConfidenceField from '@components/common/form/ConfidenceField';
+import FormHelperText from '@mui/material/FormHelperText';
 import { useFormatter } from '../../../../components/i18n';
 import MarkdownField from '../../../../components/MarkdownField';
 import { SubscriptionFocus } from '../../../../components/Subscription';
@@ -185,13 +186,14 @@ const GroupEditionOverviewComponent: FunctionComponent<GroupEditionOverviewCompo
               label={t_i18n('Granted by default at user creation')}
               containerstyle={{ marginTop: 20 }}
               onChange={editor.changeField}
-              helperText={
-                <SubscriptionFocus
-                  context={context}
-                  fieldName="default_assignation"
-                />
-              }
+
             />
+            <FormHelperText>
+              <SubscriptionFocus
+                context={context}
+                fieldName="default_assignation"
+              />
+            </FormHelperText>
             <Field
               component={SwitchField}
               type="checkbox"
@@ -201,13 +203,13 @@ const GroupEditionOverviewComponent: FunctionComponent<GroupEditionOverviewCompo
               )}
               containerstyle={{ marginTop: 20 }}
               onChange={editor.changeField}
-              helperText={
-                <SubscriptionFocus
-                  context={context}
-                  fieldName="auto_new_marking"
-                />
-              }
             />
+            <FormHelperText>
+              <SubscriptionFocus
+                context={context}
+                fieldName="auto_new_marking"
+              />
+            </FormHelperText>
             <GroupHiddenTypesField groupData={group} />
             {
               hasSetAccess && (

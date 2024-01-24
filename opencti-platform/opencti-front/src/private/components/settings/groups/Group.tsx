@@ -310,9 +310,10 @@ const Group = ({ groupData }: { groupData: Group_group$key }) => {
                   </List>
                 </FieldOrEmpty>
               </Grid>
-              <Grid item={true} xs={6}>
+              <Grid item={true} xs={12}>
                 <GroupConfidenceLevel
                   confidenceLevel={group.group_confidence_level}
+                  showNullAsAlert={true}
                 />
               </Grid>
             </Grid>

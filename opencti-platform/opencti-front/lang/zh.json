@@ -2519,7 +2519,6 @@
   "Max Confidence Level": "最大置信度",
   "This value is overridden for the following entity types": "以下实体类型可重载该值",
   "Enable user max confidence level": "启用用户最大置信度",
-  "The user's max confidence level overrides the max confidence that might be set at groups or organizations level.": "用户的最大置信度优先于可能在组或组织级别设置的最大置信度。",
   "Unless specific groups are selected, user will be created with default groups.": "除非选择了特定组，否则创建用户时将使用默认组。",
   "entity_Group": "组",
   "Important notice: your action is required!": "重要提示：需要您执行操作！",
@@ -2532,5 +2531,8 @@
   "No confidence level found in this user's groups, and no confidence level defined at the user level.": "在该用户的组中未找到置信度，也未在用户级别定义置信度。",
   "confidence_level_from": "来自 {entity_type}{link}",
   "Unknown configuration error in the platform.": "平台中存在未知配置错误。",
-  "No confidence level set! Members of this group might not be able to create data.": "未设置置信度！该组的成员可能无法创建数据。"
+  "You can enable/disable default values for marking in the customization of each entity type.": "您可以在定制每个实体类型时启用/禁用标记的默认值。",
+  "This group does not have a confidence level, members might not be able to create data.": "该组没有置信度，成员可能无法创建数据。",
+  "The user's max confidence level overrides the max confidence that might be set at groups level.": "用户的最大置信度高于组级可能设置的最大置信度。",
+  "Current effective confidence level:": "当前有效置信水平："
 }

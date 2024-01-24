@@ -2519,7 +2519,6 @@
   "Max Confidence Level": "最大信頼度",
   "This value is overridden for the following entity types": "この値は以下のエンティティ・タイプでオーバーライドされます。",
   "Enable user max confidence level": "ユーザの最大信頼レベルを有効にする",
-  "The user's max confidence level overrides the max confidence that might be set at groups or organizations level.": "ユーザーの最大信頼レベルは、グループまたは組織レベルで設定されている可能性のある最大信頼レベルを上書きします。",
   "Unless specific groups are selected, user will be created with default groups.": "特定のグループを選択しない限り、ユーザーはデフォルトのグループで作成されます。",
   "entity_Group": "グループ",
   "Important notice: your action is required!": "重要なお知らせ：あなたのアクションが必要です！",
@@ -2532,5 +2531,8 @@
   "No confidence level found in this user's groups, and no confidence level defined at the user level.": "このユーザーのグループには信頼レベルが見つからず、ユーザーレベルにも信頼レベルが定義されていません。",
   "confidence_level_from": "5}}から{entity_type}",
   "Unknown configuration error in the platform.": "プラットフォームで不明な構成エラーが発生しました。",
-  "No confidence level set! Members of this group might not be able to create data.": "信頼度が設定されていない！このグループのメンバーはデータを作成できない可能性があります。"
+  "You can enable/disable default values for marking in the customization of each entity type.": "各エンティティ・タイプのカスタマイズで、マーキングのデフォルト値の有効/無効を設定できます。",
+  "This group does not have a confidence level, members might not be able to create data.": "このグループには信頼度がなく、メンバーはデータを作成できない可能性がある。",
+  "The user's max confidence level overrides the max confidence that might be set at groups level.": "ユーザー'の最大信頼度は、グループレベルで設定される可能性のある最大信頼度よりも優先される。",
+  "Current effective confidence level:": "現在の有効信頼度："
 }

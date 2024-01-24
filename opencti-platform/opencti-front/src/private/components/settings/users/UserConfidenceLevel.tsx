@@ -19,26 +19,14 @@ const UserConfidenceLevel: React.FC<UserConfidenceLevelProps> = ({ confidenceLev
   const { t_i18n } = useFormatter();
 
   if (!confidenceLevel) {
-    return (
-      <>
-        <Typography
-          variant="h3"
-          gutterBottom={true}
-          style={{ float: 'left' }}
-        >
-          {t_i18n('Max Confidence Level')}
-        </Typography>
-        <div className="clearfix"/>
-        { showNullAsError ? (
-          <Tooltip
-            title={t_i18n("No confidence level found in this user's groups, and no confidence level defined at the user level.")}
-          >
-            <ReportGmailerrorred fontSize={'small'} color={'error'}/>
-          </Tooltip>
-        ) : (
-          <span>-</span>
-        )}
-      </>
+    return showNullAsError ? (
+      <Tooltip
+        title={t_i18n("No confidence level found in this user's groups, and no confidence level defined at the user level.")}
+      >
+        <ReportGmailerrorred fontSize={'small'} color={'error'}/>
+      </Tooltip>
+    ) : (
+      <span>-</span>
     );
   }
 
@@ -57,7 +45,7 @@ const UserConfidenceLevel: React.FC<UserConfidenceLevelProps> = ({ confidenceLev
             [{t_i18n('', {
             id: 'confidence_level_from',
             values: {
-              entity_type: t_i18n(`entity_${source.entity_type}`),
+              entity_type: t_i18n(`entity_${source.entity_type}`).toLowerCase(),
               link: (
                 <Link to={`/dashboard/settings/accesses/${source.entity_type.toLowerCase()}s/${source.id}`}>
                   {source.name}
@@ -78,19 +66,11 @@ const UserConfidenceLevel: React.FC<UserConfidenceLevelProps> = ({ confidenceLev
   };
 
   return (
-    <div style={{ float: 'left', marginRight: 5 }}>
-      <Typography
-        variant="h3"
-        gutterBottom={true}
-        style={{ float: 'left' }}
-      >
-        {t_i18n('Max Confidence Level')}
-      </Typography>
-      <div className="clearfix"/>
+    <>
       {`${confidenceLevel.max_confidence ?? '-'}`}
       &nbsp;
       {showSource && renderSource()}
-    </div>
+    </>
   );
 };
 

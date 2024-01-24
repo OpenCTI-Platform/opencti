@@ -2519,7 +2519,6 @@
   "Max Confidence Level": "Max. Konfidenzniveau",
   "This value is overridden for the following entity types": "Dieser Wert wird für die folgenden Entitätstypen außer Kraft gesetzt",
   "Enable user max confidence level": "Max. Konfidenzniveau des Benutzers einschalten",
-  "The user's max confidence level overrides the max confidence that might be set at groups or organizations level.": "Die maximale Vertrauensebene des Benutzers hat Vorrang vor der maximalen Vertrauensebene, die auf Gruppen- oder Organisationsebene festgelegt werden kann.",
   "Unless specific groups are selected, user will be created with default groups.": "Wenn keine spezifischen Gruppen ausgewählt werden, wird der Benutzer mit den Standardgruppen erstellt.",
   "entity_Group": "Gruppe",
   "Important notice: your action is required!": "Wichtiger Hinweis: Ihr Handeln ist erforderlich!",
@@ -2532,5 +2531,8 @@
   "No confidence level found in this user's groups, and no confidence level defined at the user level.": "Keine Vertrauensstufe in den Gruppen dieses Benutzers gefunden und keine Vertrauensstufe auf Benutzerebene definiert.",
   "confidence_level_from": "Von {entity_type} {link}",
   "Unknown configuration error in the platform.": "Unbekannter Konfigurationsfehler in der Plattform.",
-  "No confidence level set! Members of this group might not be able to create data.": "Kein Konfidenzniveau festgelegt! Die Mitglieder dieser Gruppe können möglicherweise keine Daten erstellen."
+  "You can enable/disable default values for marking in the customization of each entity type.": "Sie können in der Anpassung jedes Entitätstyps Standardwerte für die Markierung aktivieren/deaktivieren.",
+  "This group does not have a confidence level, members might not be able to create data.": "Diese Gruppe hat kein Vertrauensniveau, die Mitglieder sind möglicherweise nicht in der Lage, Daten zu erstellen.",
+  "The user's max confidence level overrides the max confidence that might be set at groups level.": "Die maximale Vertrauensstufe des Benutzers hat Vorrang vor der maximalen Vertrauensstufe, die auf Gruppenebene festgelegt werden kann.",
+  "Current effective confidence level:": "Derzeitiges effektives Konfidenzniveau:"
 }
