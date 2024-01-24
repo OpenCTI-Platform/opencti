@@ -9694,6 +9694,7 @@ export type IngestionCsv = BasicObject & InternalObject & {
   created_at?: Maybe<Scalars['DateTime']['output']>;
   csvMapper: CsvMapper;
   current_state_date?: Maybe<Scalars['DateTime']['output']>;
+  current_state_hash?: Maybe<Scalars['String']['output']>;
   description?: Maybe<Scalars['String']['output']>;
   entity_type: Scalars['String']['output'];
   id: Scalars['ID']['output'];
@@ -26858,7 +26859,7 @@ export type WindowsRegistryValueTypeAddInput = {
 
 export type Work = {
   __typename?: 'Work';
-  completed_number?: Maybe<Scalars['Int']['output']>;
+  completed_number?: Maybe<Scalars['String']['output']>;
   completed_time?: Maybe<Scalars['DateTime']['output']>;
   connector?: Maybe<Connector>;
   errors?: Maybe<Array<Maybe<WorkMessage>>>;
@@ -31930,6 +31931,7 @@ export type IngestionCsvResolvers<ContextType = any, ParentType extends Resolver
   created_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   csvMapper?: Resolver<ResolversTypes['CsvMapper'], ParentType, ContextType>;
   current_state_date?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
+  current_state_hash?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
@@ -36902,7 +36904,7 @@ export type WindowsRegistryValueTypeResolvers<ContextType = any, ParentType exte
 }>;
 
 export type WorkResolvers<ContextType = any, ParentType extends ResolversParentTypes['Work'] = ResolversParentTypes['Work']> = ResolversObject<{
-  completed_number?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
+  completed_number?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   completed_time?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   connector?: Resolver<Maybe<ResolversTypes['Connector']>, ParentType, ContextType>;
   errors?: Resolver<Maybe<Array<Maybe<ResolversTypes['WorkMessage']>>>, ParentType, ContextType>;

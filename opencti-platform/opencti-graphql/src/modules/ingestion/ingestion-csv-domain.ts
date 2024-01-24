@@ -16,6 +16,8 @@ export const findById = (context: AuthContext, user: AuthUser, ingestionId: stri
   return storeLoadById<BasicStoreEntityIngestionCsv>(context, user, ingestionId, ENTITY_TYPE_INGESTION_CSV);
 };
 
+// findLastCSVIngestion
+
 export const findAllPaginated = async (context: AuthContext, user: AuthUser, opts = {}) => {
   return listEntitiesPaginated<BasicStoreEntityIngestionCsv>(context, user, [ENTITY_TYPE_INGESTION_CSV], opts);
 };

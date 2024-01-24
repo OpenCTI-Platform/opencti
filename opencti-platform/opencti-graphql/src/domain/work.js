@@ -189,7 +189,7 @@ export const createWork = async (context, user, connector, friendlyName, sourceI
     received_time: receivedTime,
     processed_time: null,
     completed_time: null,
-    completed_number: 0,
+    completed_number: '0',
     messages: [],
     errors: [],
   };

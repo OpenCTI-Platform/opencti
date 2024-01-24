@@ -743,7 +743,7 @@ type Work {
   received_time: DateTime
   processed_time: DateTime
   completed_time: DateTime
-  completed_number: Int
+  completed_number: String
   messages: [WorkMessage]
   errors: [WorkMessage]
   tracking: WorkTracking

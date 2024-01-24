@@ -77,6 +77,7 @@ export interface StixIngestionTaxii extends StixObject {
 export const ENTITY_TYPE_INGESTION_CSV = 'IngestionCsv';
 
 export interface BasicStoreEntityIngestionCsv extends BasicStoreEntity {
+  current_state_hash: string;
   name: string
   description: string
   uri: string

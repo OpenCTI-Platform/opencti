@@ -1,6 +1,7 @@
 import type { convertableToString } from 'xml2js';
 import { parseStringPromise as xmlParse } from 'xml2js';
 import TurndownService from 'turndown';
+import bcrypt from 'bcryptjs';
 import * as R from 'ramda';
 import { v4 as uuidv4 } from 'uuid';
 import { clearIntervalAsync, setIntervalAsync } from 'set-interval-async/dynamic';
@@ -19,7 +20,7 @@ import { ENTITY_TYPE_CONTAINER_REPORT } from '../schema/stixDomainObject';
 import { pushToSync } from '../database/rabbitmq';
 import { OPENCTI_SYSTEM_UUID } from '../schema/general';
 import { findAllRssIngestions, patchRssIngestion } from '../modules/ingestion/ingestion-rss-domain';
-import type { AuthContext } from '../types/user';
+import type {AuthContext, AuthUser} from '../types/user';
 import type { BasicStoreEntityIngestionCsv, BasicStoreEntityIngestionRss, BasicStoreEntityIngestionTaxii } from '../modules/ingestion/ingestion-types';
 import { findAllTaxiiIngestions, patchTaxiiIngestion } from '../modules/ingestion/ingestion-taxii-domain';
 import { TaxiiVersion } from '../generated/graphql';
@@ -27,6 +28,9 @@ import { fetchCsvFromUrl, findAllCsvIngestions, patchCsvIngestion, testCsvIngest
 import type { BasicStoreEntityCsvMapper } from '../modules/internal/csvMapper/csvMapper-types';
 import { findById } from '../modules/internal/csvMapper/csvMapper-domain';
 import { bundleProcess } from '../parser/csv-bundler';
+import {createWork, updateExpectationsNumber, findById as findWorkById, deleteWork} from "../domain/work";
+import {IMPORT_CSV_CONNECTOR} from "../connector/importCsv/importCsv";
+import {elLoadById} from "../database/engine";
 
 // Ingestion manager responsible to cleanup old data
 // Each API will start is ingestion manager.
@@ -316,21 +320,53 @@ const csvDataToObjects = async (data: string, ingestion: BasicStoreEntityIngesti
   logApp.info(`[OPENCTI-MODULE] CSV ingestion execution for ${entitiesData.length} items`);
   return objects;
 };
+
+const csvIngestionWorks: string[] = []
+export const cleanCompletedWorks = async(context: AuthContext, user: AuthUser, csvIngestionWorks: string[]) => {
+  const allCsvIngestionWorks = await Promise.all(csvIngestionWorks.map(async(id) => await elLoadById(id)))
+  logApp.info(`[OPENCTI-MODULE] CSV ingestion execution - cleanCompletedWorks, allWorks = ${JSON.stringify(allCsvIngestionWorks, null, 2)}`);
+  const completedWorks = allCsvIngestionWorks.filter(({status}: Work) => status === 'complete')
+  completedWorks.forEach(({id}: Work) => deleteWork(context, user, id))
+};
 const csvDataHandler = async (context: AuthContext, ingestion: BasicStoreEntityIngestionCsv) => {
   const { data, addedLast } = await csvHttpGet(ingestion);
-  const csvMapper: BasicStoreEntityCsvMapper = await findById(context, context.user ?? SYSTEM_USER, ingestion.csv_mapper_id);
-  const csvMappingTestResult = await testCsvIngestionMapping(context, context.user ?? SYSTEM_USER, ingestion.uri, ingestion.csv_mapper_id);
+  const user = context.user ?? SYSTEM_USER;
+  const csvMapper: BasicStoreEntityCsvMapper = await findById(context, user, ingestion.csv_mapper_id);
+  const csvMappingTestResult = await testCsvIngestionMapping(context, user, ingestion.uri, ingestion.csv_mapper_id);
+
   if (!csvMappingTestResult.nbEntities) {
     const error = UnknownError('Invalid data from URL', data);
     logApp.error(error, { name: ingestion.name, context: 'CSV transform' });
   }
-  const bundle = { type: 'bundle', id: `bundle--${uuidv4()}`, objects: await csvDataToObjects(data, ingestion, csvMapper, context) };
-  const stixBundle = JSON.stringify(bundle);
-  const content = Buffer.from(stixBundle, 'utf-8').toString('base64');
-  await pushToSync({ type: 'bundle', applicant_id: ingestion.user_id ?? OPENCTI_SYSTEM_UUID, content, update: true });
+
+  const hashedIncomingData = bcrypt.hashSync(data)
+  if(bcrypt.compareSync(data, ingestion.current_state_hash ?? '')){
+    logApp.info(`[OPENCTI-MODULE] CSV ingestion execution - csvDataHandler - hashedIncomingData === ingestion.current_state_hash`);
+    await cleanCompletedWorks(context, user, csvIngestionWorks)
+    return
+  }
+
+  const objects = await csvDataToObjects(data, ingestion, csvMapper, context);
+  const bundleSize = 1000;
+  for (let index = 0; index < objects.length; index+=bundleSize) {
+    // Filter objects already added to queue
+    const splitBundle = objects.slice(index, index + bundleSize)
+    const bundle = { type: 'bundle', id: `bundle--${uuidv4()}`, objects: splitBundle };
+    const stixBundle = JSON.stringify(bundle);
+    const content = Buffer.from(stixBundle, 'utf-8').toString('base64');
+    const friendlyName = 'CSV feed Ingestion';
+    const work = await createWork(context, user, IMPORT_CSV_CONNECTOR, friendlyName, IMPORT_CSV_CONNECTOR.id) as unknown as Work
+    await updateExpectationsNumber(context, user, work.id, 1) // splitBundle.length -> needs import_processed_number =< 1000 -> currently 1 as string blocking status update to complete
+    await pushToSync({ type: 'bundle', applicant_id: ingestion.user_id ?? OPENCTI_SYSTEM_UUID, work_id: work.id, content, update: true });
+    csvIngestionWorks.push(work.id)
+  }
+  await cleanCompletedWorks(context, user, csvIngestionWorks)
+  // Between ingestions, maintain list of objects added to queue
+  logApp.info(`[OPENCTI-MODULE] CSV ingestion execution - csvDataHandler, csvIngestionWorks = ${JSON.stringify(csvIngestionWorks, null, 2)}`);
+
   // Update the state
   await patchCsvIngestion(context, SYSTEM_USER, ingestion.internal_id, {
-    current_state_cursor: data,
+    current_state_hash: hashedIncomingData,
     added_after_start: utcDate(addedLast)
   });
 };
@@ -347,7 +383,7 @@ const csvExecutor = async (context: AuthContext) => {
     const ingestion = ingestions[i];
     const ingestionPromise = csvDataHandler(context, ingestion)
       .catch((e) => {
-        logApp.error(`[OPENCTI-MODULE] execution error for ${ingestion.name}`, { error: e });
+        logApp.error(`[OPENCTI-MODULE] execution error for ${ingestion.name} : ${e}`, { error: e });
       });
     ingestionPromises.push(ingestionPromise);
   }

@@ -46,7 +46,7 @@ export const parseCsvMapper = (entity: any): BasicStoreEntityCsvMapper => {
 };
 
 export const parseCsvMapperWithDefaultValues = async (context: AuthContext, user: AuthUser, entity: any) => {
-  if (typeof entity.representations !== 'string') {
+  if (typeof entity?.representations !== 'string') {
     return entity;
   }
 

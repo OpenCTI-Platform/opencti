@@ -21,6 +21,7 @@ type IngestionCsv implements InternalObject & BasicObject {
     user_id: String!
     user: Creator
     ingestion_running: Boolean
+    current_state_hash: String
     current_state_date: DateTime
 }
 
