@@ -1550,7 +1550,6 @@
   "entity_Stix-Core-Objects": "Entités et observables",
   "entity_Stix-Core-Relationship": "Relations",
   "entity_stix-core-relationship": "Relations",
-  "entity_reported-in": "Rapporté dans",
   "entity_stix-sighting-relationship": "Détections",
   "entity_Stix-Meta-Objects": "Meta entités",
   "entity_Identity": "Identité",
@@ -1962,7 +1961,6 @@
   "INGESTION_MANAGER": "Manager d'ingestion",
   "PLAYBOOK_MANAGER": "Manager de playbook",
   "FILE_INDEX_MANAGER": "Manager d'indexation des fichiers",
-  "INDICATOR_DECAY_MANAGER": "Manager du déclin des indicateurs",
   "text/markdown": "MD",
   "application/json": "JSON",
   "text/csv": "CSV",
@@ -2519,8 +2517,8 @@
   "Lifecycle": "Cycle de vie",
   "Lifecycle details": "Détails du cycle de vie",
   "Subscription to specific object(s)": "Abonnement à un (des) objet(s) spécifique(s)",
-  "Settings default values": "Valeur par défaut des paramètres de l'entité : {value}",
-  "Settings default values usage...": "Si les données ne sont pas trouvées dans le fichier CSV, la valeur par défaut définie dans Paramètres > Personnalisation sera utilisée à la place. Vous pouvez remplacer cette valeur par défaut en remplissant le champs ci-dessus.",
-  "No default value set in Settings...": "Aucune valeur par défaut n'a été définie pour cet attribut dans les paramètres de l'entité. Vous pouvez en fournir une en remplissant le champ ci-dessus. Cette valeur sera utilisée si les données sont manquantes dans le fichier CSV.",
-  "Default values set": "Valeurs par défaut remplies"
+  "Max Confidence Level": "Niveau de confiance maximal",
+  "This value is overridden for the following entity types": "Cette valeur est remplacée pour les types d'entités suivants",
+  "Enable user max confidence level": "Activer le niveau de confiance maximum de l'utilisateur",
+  "The user's max confidence level overrides the max confidence that might be set at groups or organizations level.": "Le niveau de confiance maximum de l'utilisateur est prioritaire sur le niveau de confiance maximum qui peut être défini au niveau des groupes ou des organisations."
 }
