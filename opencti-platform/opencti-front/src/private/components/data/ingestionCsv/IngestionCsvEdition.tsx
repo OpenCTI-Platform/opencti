@@ -9,10 +9,11 @@ import MenuItem from '@mui/material/MenuItem';
 import CreatorField from '@components/common/form/CreatorField';
 import CommitMessage from '@components/common/form/CommitMessage';
 import { IngestionCsvEditionFragment_ingestionCsv$key } from '@components/data/ingestionCsv/__generated__/IngestionCsvEditionFragment_ingestionCsv.graphql';
-import CsvMapperField from '@components/common/form/CsvMapperField';
+import CsvMapperField, { csvMapperQuery } from '@components/common/form/CsvMapperField';
 import Button from '@mui/material/Button';
 import IngestionCsvMapperTestDialog from '@components/data/ingestionCsv/IngestionCsvMapperTestDialog';
 import makeStyles from '@mui/styles/makeStyles';
+import { CsvMapperFieldSearchQuery } from '@components/common/form/__generated__/CsvMapperFieldSearchQuery.graphql';
 import { convertMapper, convertUser } from '../../../../utils/edition';
 import { useFormatter } from '../../../../components/i18n';
 import { useSchemaEditionValidation } from '../../../../utils/hooks/useEntitySettings';
@@ -22,6 +23,7 @@ import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import SelectField from '../../../../components/SelectField';
 import DateTimePickerField from '../../../../components/DateTimePickerField';
 import type { Theme } from '../../../../components/Theme';
+import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   buttons: {
@@ -76,9 +78,9 @@ interface IngestionCsvEditionForm {
   description?: string | null,
   uri: string,
   authentication_type: string,
-  authentication_value?:  string | null,
+  authentication_value?: string | null,
   current_state_date: Date | null
-  ingestion_running?:  boolean | null,
+  ingestion_running?: boolean | null,
   csv_mapper_id: string | Option,
   user_id: string | Option
 }
@@ -161,11 +163,13 @@ const IngestionCsvEdition: FunctionComponent<IngestionCsvEditionProps> = ({
     ingestion_running: ingestionCsvData.ingestion_running,
     csv_mapper_id: convertMapper(ingestionCsvData, 'csvMapper'),
     user_id: convertUser(ingestionCsvData, 'user'),
-    references: undefined
+    references: undefined,
   };
 
+  const queryRef = useQueryLoading<CsvMapperFieldSearchQuery>(csvMapperQuery);
+
   return (
-    <Formik
+    <Formik<IngestionCsvEditionForm>
       enableReinitialize={true}
       initialValues={initialValues as never}
       validationSchema={ingestionCsvValidator}
@@ -218,11 +222,12 @@ const IngestionCsvEdition: FunctionComponent<IngestionCsvEditionProps> = ({
               style: { marginTop: 20 },
             }}
           />
-          <CsvMapperField
+          !!queryRef && <CsvMapperField
             name="csv_mapper_id"
             isOptionEqualToValue={(option: Option, value: string) => option.value === value}
             onChange={handleSubmitField}
-          />
+            queryRef={queryRef}
+                        />
           <Field
             component={SelectField}
             variant="standard"

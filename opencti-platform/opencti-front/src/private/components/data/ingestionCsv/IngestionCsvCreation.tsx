@@ -9,8 +9,9 @@ import { IngestionCsvLinesPaginationQuery$variables } from '@components/data/ing
 import { FormikConfig } from 'formik/dist/types';
 import { Option } from '@components/common/form/ReferenceField';
 import { CsvAuthType } from '@components/data/ingestionCsv/__generated__/IngestionCsvCreationMutation.graphql';
-import CsvMapperField from '@components/common/form/CsvMapperField';
+import CsvMapperField, { csvMapperQuery } from '@components/common/form/CsvMapperField';
 import IngestionCsvMapperTestDialog from '@components/data/ingestionCsv/IngestionCsvMapperTestDialog';
+import { CsvMapperFieldSearchQuery } from '@components/common/form/__generated__/CsvMapperFieldSearchQuery.graphql';
 import Drawer, { DrawerVariant } from '../../common/drawer/Drawer';
 import { useFormatter } from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
@@ -20,6 +21,7 @@ import { insertNode } from '../../../../utils/store';
 import SelectField from '../../../../components/SelectField';
 import type { Theme } from '../../../../components/Theme';
 import DateTimePickerField from '../../../../components/DateTimePickerField';
+import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   buttons: {
@@ -124,6 +126,8 @@ const IngestionCsvCreation: FunctionComponent<IngestionCsvCreationProps> = ({ pa
     });
   };
 
+  const queryRef = useQueryLoading<CsvMapperFieldSearchQuery>(csvMapperQuery);
+
   return (
     <Drawer
       title={t_i18n('Create a CSV ingester')}
@@ -135,7 +139,7 @@ const IngestionCsvCreation: FunctionComponent<IngestionCsvCreationProps> = ({ pa
             name: '',
             description: '',
             uri: '',
-            csv_mapper_id: '',
+            csv_mapper_id: { value: '', label: '' },
             authentication_type: 'none',
             authentication_value: '',
             current_state_date: null,
@@ -187,6 +191,7 @@ const IngestionCsvCreation: FunctionComponent<IngestionCsvCreationProps> = ({ pa
               <CsvMapperField
                 name="csv_mapper_id"
                 isOptionEqualToValue={(option: Option, value: string) => option.value === value}
+                queryRef={queryRef}
               />
               <Field
                 component={SelectField}
