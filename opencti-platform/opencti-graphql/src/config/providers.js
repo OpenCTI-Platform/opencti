@@ -75,6 +75,7 @@ const configurationMapping = {
   signature_algorithm: 'signatureAlgorithm',
   digest_algorithm: 'digestAlgorithm',
   want_assertions_signed: 'wantAssertionsSigned',
+  want_authn_response_signed: 'wantAuthnResponseSigned',
   authn_context: 'authnContext',
   disable_requested_authn_context: 'disableRequestedAuthnContext',
   force_authn: 'forceAuthn',
