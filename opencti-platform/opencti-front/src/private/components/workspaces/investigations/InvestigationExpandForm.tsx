@@ -254,7 +254,7 @@ const InvestigationExpandFormContent = ({
         });
       }
     });
-
+    const relationRefsWithUser = ['object-participant', 'object-assignee'];
     const nonNullDistribution = (
       distributionRel.stixRelationshipsDistribution ?? []
     )
@@ -275,8 +275,8 @@ const InvestigationExpandFormContent = ({
           },
         ]
         : []))
-      // Remove from the list entities with nothing to add.
-      .filter(({ value }) => value > 0)
+      // Remove from the list relations with nothing to add and relations ref involving the user
+      .filter(({ label, value }) => value > 0 && !relationRefsWithUser.includes(label.toLowerCase()))
       .sort((a, b) => (b.value ?? 0) - (a.value ?? 0));
 
     setRelationships(
@@ -341,8 +341,8 @@ const InvestigationExpandFormContent = ({
           target.value
           - (existingTargetsSelected.get(target.label.toLowerCase()) ?? 0),
       }))
-      // Remove from the list entities with nothing to add.
-      .filter(({ value }) => value > 0)
+      // Remove from the list entities with nothing to add and entities that are not knowledge
+      .filter(({ label, value }) => label !== 'User' && value > 0)
       .sort((a, b) => a.label.localeCompare(b.label));
 
     // Uses to determine which key of translation to use below.
