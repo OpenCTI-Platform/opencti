@@ -2553,6 +2553,8 @@
   "Default values set": "Default values set",
   "Let the user choose marking definitions": "Let the user choose marking definitions",
   "Use default marking definitions of the user": "Use default marking definitions of the user",
+  "Marking definitions to use by the csv mapper...": "Marking definitions to use by the csv mapper if some marking attributes have the policy set to: let the user choose the marking definitions.",
+  "Use default marking definitions of the user": "Use default marking definitions of the user",
   "Update without references": "Update without references",
   "Max Confidence Level:": "Max Confidence Level:"
 }

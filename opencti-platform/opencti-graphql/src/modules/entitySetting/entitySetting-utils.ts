@@ -134,9 +134,10 @@ export const fillDefaultValues = (user: any, input: any, entitySetting: any) => 
   }
   const filledValues = new Map();
   attributesConfiguration.filter((attr) => attr.default_values)
-    .filter((attr) => INPUT_MARKINGS !== attr.name)
     .forEach((attr) => {
-      if (input[attr.name] === undefined || input[attr.name] === null) { // empty is a valid value
+      // Do not compute default value if we already have a value in the input.
+      // Empty is a valid value (i.e. [] for arrays or "" for strings).
+      if (input[attr.name] === undefined || input[attr.name] === null) {
         const attributeDef = schemaAttributesDefinition.getAttribute(entitySetting.target_type, attr.name);
         const refDef = schemaRelationsRefDefinition.getRelationRef(entitySetting.target_type, attr.name);
         let isMultiple = false;
@@ -157,19 +158,17 @@ export const fillDefaultValues = (user: any, input: any, entitySetting: any) => 
             creatorRule.id = user.id;
           }
           filledValues.set(attr.name, defaultAuthorizedMembers);
+        } else if (attr.name === INPUT_MARKINGS && parsedValue) {
+          const defaultMarkings = user?.default_marking ?? [];
+          const globalDefaultMarking = (defaultMarkings.find((entry: any) => entry.entity_type === 'GLOBAL')?.values ?? []).map((m: any) => m.id);
+          if (!isEmptyField(globalDefaultMarking)) {
+            filledValues.set(INPUT_MARKINGS, globalDefaultMarking);
+          }
         } else {
           filledValues.set(attr.name, parsedValue);
         }
       }
     });
 
-  // Marking management
-  if (input[INPUT_MARKINGS] === undefined || input[INPUT_MARKINGS] === null) { // empty is a valid value
-    const defaultMarkings = user?.default_marking ?? [];
-    const globalDefaultMarking = (defaultMarkings.find((entry: any) => entry.entity_type === 'GLOBAL')?.values ?? []).map((m: any) => m.id);
-    if (!isEmptyField(globalDefaultMarking)) {
-      filledValues.set(INPUT_MARKINGS, globalDefaultMarking);
-    }
-  }
   return { ...input, ...Object.fromEntries(filledValues) };
 };
