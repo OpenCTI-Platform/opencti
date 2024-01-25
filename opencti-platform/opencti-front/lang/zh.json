@@ -2524,7 +2524,6 @@
   "Important notice: your action is required!": "重要提示：需要您执行操作！",
   "this blogpost": "本博文",
   "our Slack channel": "我们的 Slack 频道",
-  "The following {entity_type} require your attention:": "以下 {entity_type} 需要您的关注：",
   "and ... more": "和{count}更多。",
   "Open Settings": "打开设置",
   "alert_GROUP_WITH_NULL_EFFECTIVE_LEVEL": "从 OpenCTI 6.0 开始，将为组和用户添加最大置信度。这将为平台管理员提供更多对导入数据影响的控制，并防止任何不必要的数据更新。请阅读 {link_blogpost} 获取更多信息。\n \n在本平台中，某些组的 \"max confidence level\" 目前未定义。这些组的成员将无法在 6.X 版平台中创建任何数据。为避免出现这种情况，请确保所有组都设置了最大置信度。更多信息请参见 {link_blogpost}。请特别注意与连接器、馈送和数据流相关联的用户；必要时，您可以设置个人置信度来覆盖组置信度。如果需要建议，请加入 {link_slack} 。",
@@ -2546,5 +2545,6 @@
   "Settings default values": "实体设置中的默认值：{value}",
   "Settings default values usage...": "如果 CSV 文件中没有数据，则将使用 \"设置 >自定义 \"中设置的默认值。您可以通过填写上面的输入内容来覆盖默认值。",
   "No default value set in Settings...": "实体设置中未为此属性设置默认值。您可以通过上面的输入提供一个。如果 CSV 文件中缺少数据，将使用此值。",
-  "Default values set": "已设置默认值"
+  "Default values set": "已设置默认值",
+  "The following groups require your attention:": "请您关注以下群体："
 }

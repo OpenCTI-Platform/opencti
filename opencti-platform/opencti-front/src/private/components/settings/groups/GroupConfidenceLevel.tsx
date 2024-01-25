@@ -9,35 +9,18 @@ type Data_GroupConfidenceLevel = Group_group$data['group_confidence_level'];
 
 type GroupConfidenceLevelProps = {
   confidenceLevel?: Data_GroupConfidenceLevel
-  showNullAsAlert?: boolean
 };
 
-const GroupConfidenceLevel: React.FC<GroupConfidenceLevelProps> = ({ confidenceLevel, showNullAsAlert = false }) => {
+const GroupConfidenceLevel: React.FC<GroupConfidenceLevelProps> = ({ confidenceLevel }) => {
   const { t_i18n } = useFormatter();
 
   if (!confidenceLevel) {
-    if (showNullAsAlert) {
-      return (
-        <Alert severity={'error'} variant={'outlined'}>
-          <AlertTitle>
-            {t_i18n('This group does not have a max confidence level, members might not be able to create data.')}
-          </AlertTitle>
-        </Alert>
-      );
-    }
-
     return (
-      <>
-        <Typography
-          variant="h3"
-          gutterBottom={true}
-          style={{ float: 'left' }}
-        >
-          {t_i18n('Max Confidence Level')}
-        </Typography>
-        <div className="clearfix"/>
-        <span>-</span>
-      </>
+      <Alert severity={'error'} variant={'outlined'}>
+        <AlertTitle>
+          {t_i18n('This group does not have a max confidence level, members might not be able to create data.')}
+        </AlertTitle>
+      </Alert>
     );
   }
 

@@ -2524,7 +2524,6 @@
   "Important notice: your action is required!": "Wichtiger Hinweis: Ihr Handeln ist erforderlich!",
   "this blogpost": "dieser Blogpost",
   "our Slack channel": "unser Slack-Kanal",
-  "The following {entity_type} require your attention:": "Die folgenden {entity_type} erfordern Ihre Aufmerksamkeit:",
   "and ... more": "und {count} mehr.",
   "Open Settings": "Einstellungen öffnen",
   "alert_GROUP_WITH_NULL_EFFECTIVE_LEVEL": "Beginnend mit OpenCTI 6.0 wird ein maximales Vertrauensniveau für Gruppen und Benutzer hinzugefügt. Damit haben Plattformadministratoren eine bessere Kontrolle über die Auswirkungen importierter Daten und können unerwünschte Datenaktualisierungen verhindern. Bitte lesen Sie {link_blogpost} für weitere Informationen.\n \nAuf dieser Plattform sind \"max confidence level\" einiger Gruppen derzeit undefiniert. Deren Mitglieder können in der Version 6.X der Plattform keine Daten erstellen. Um dies zu verhindern, stellen Sie sicher, dass für alle Gruppen eine maximale Vertrauensstufe festgelegt ist. Mehr dazu in {link_blogpost}. Achten Sie besonders auf Benutzer, die mit Connectors, Feeds und Streams verbunden sind; Sie können die individuelle Vertrauensstufe so einstellen, dass sie die Gruppen-Vertrauensstufe überschreibt, wenn dies erforderlich ist. Treten Sie {link_slack} bei, wenn Sie Ratschläge benötigen.",
@@ -2546,5 +2545,6 @@
   "Settings default values": "Standardwert aus den Entitätseinstellungen: {value}",
   "Settings default values usage...": "Wenn die Daten nicht in der CSV-Datei gefunden werden, wird stattdessen der unter Einstellungen > Anpassung eingestellte Standardwert verwendet. Sie können diesen Standardwert außer Kraft setzen, indem Sie die obige Eingabe ausfüllen.",
   "No default value set in Settings...": "In den Entitätseinstellungen ist kein Standardwert für dieses Attribut festgelegt. Sie können einen Wert mit der obigen Eingabe angeben. Dieser Wert wird verwendet, wenn die Daten in der CSV-Datei fehlen.",
-  "Default values set": "Standardwerte gesetzt"
+  "Default values set": "Standardwerte gesetzt",
+  "The following groups require your attention:": "Die folgenden Gruppen erfordern Ihre Aufmerksamkeit:"
 }

@@ -2524,7 +2524,6 @@
   "Important notice: your action is required!": "重要なお知らせ：あなたのアクションが必要です！",
   "this blogpost": "このブログ記事",
   "our Slack channel": "Slackチャンネル",
-  "The following {entity_type} require your attention:": "以下の{entity_type}に注意が必要です：",
   "and ... more": "および{count}以上です。",
   "Open Settings": "設定を開く",
   "alert_GROUP_WITH_NULL_EFFECTIVE_LEVEL": "OpenCTI 6.0 から、グループとユーザーに最大信頼度が追加されます。これにより、プラットフォーム管理者はインポートされたデータの影響をよりコントロールできるようになり、データの不要な更新を防ぐことができます。詳しくは{link_blogpost}をお読みください。\n \nこのプラットフォームでは、いくつかのグループの最大信頼度が現在未定義です。そのグループのメンバーはバージョン6.Xではデータを作成することができません。これを防ぐには、すべてのグループに最大信頼度が設定されていることを確認してください。詳細は{link_blogpost}を参照してください。コネクター、フィード、ストリームに関連するユーザーには特に注意してください。必要であれば、グループの信頼度よりも個人の信頼度を優先して設定できます。アドバイスが必要な場合は{link_slack}に参加してください。",
@@ -2546,5 +2545,6 @@
   "Settings default values": "エンティティ設定のデフォルト値{value}",
   "Settings default values usage...": "CSVファイルにデータがない場合、設定 >カスタマイズで設定されたデフォルト値が代わりに使用されます。このデフォルト値は、上記の入力で上書きすることができます。",
   "No default value set in Settings...": "エンティティ設定でこの属性にデフォルト値が設定されていません。上記の入力で指定できます。CSVファイルにデータがない場合、この値が使用されます。",
-  "Default values set": "デフォルト値設定"
+  "Default values set": "デフォルト値設定",
+  "The following groups require your attention:": "以下のグループに注目してほしい："
 }

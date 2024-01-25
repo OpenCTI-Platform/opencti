@@ -1315,7 +1315,7 @@ type EffectiveConfidenceLevel {
   max_confidence: Int!
   source: EffectiveConfidenceLevelSource!
 }
-union EffectiveConfidenceLevelSource = Organization | Group | User
+union EffectiveConfidenceLevelSource = Group | User
 
 type User implements BasicObject & InternalObject {
   id: ID! # internal_id

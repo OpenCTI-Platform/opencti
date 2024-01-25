@@ -231,7 +231,6 @@ const UserCreation = ({ paginationOptions }) => {
                 {hasSetAccess && (
                   <UserConfidenceLevelField
                     name="user_confidence_level"
-                    entityType="User"
                     label={t_i18n('Max Confidence Level')}
                   />
                 )}
