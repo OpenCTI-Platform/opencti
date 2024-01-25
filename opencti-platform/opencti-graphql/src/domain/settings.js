@@ -162,7 +162,7 @@ export const getCriticalAlerts = async (context, user) => {
   // it's for admins only (only them can take action)
   if (isUserHasCapability(user, SETTINGS_SET_ACCESSES)) {
     const allGroups = await listAllThings(context, user, [ENTITY_TYPE_GROUP], {});
-    // if at least one user have a null effective confidence level, it's an issue
+    // if at least one have a null effective confidence level, it's an issue
     const groupsWithNull = allGroups.filter((group) => !group.group_confidence_level);
     if (groupsWithNull.length === 0) {
       return [];

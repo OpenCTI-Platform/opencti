@@ -552,8 +552,6 @@ const User: FunctionComponent<UserProps> = ({ data }) => {
                 <div className="clearfix"/>
                 <UserConfidenceLevel
                   confidenceLevel={user.effective_confidence_level}
-                  showSource={true}
-                  showNullAsError={true}
                 />
               </Grid>
             </Grid>

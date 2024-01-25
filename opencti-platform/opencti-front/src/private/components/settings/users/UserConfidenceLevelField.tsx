@@ -38,7 +38,6 @@ interface UserConfidenceLevelFieldProps {
   } | null)[]
   | null;
   containerStyle?: Record<string, string | number>;
-  entityType: string;
   disabled?: boolean;
   currentUser?: UserEditionOverview_user$data; // only for edition
 }
@@ -50,7 +49,6 @@ const UserConfidenceLevelField: FunctionComponent<UserConfidenceLevelFieldProps>
   onSubmit,
   editContext,
   containerStyle,
-  entityType,
   disabled,
   currentUser,
 }) => {
@@ -82,7 +80,7 @@ const UserConfidenceLevelField: FunctionComponent<UserConfidenceLevelFieldProps>
         <Box>
           {t_i18n('Effective max confidence level:')}
           &nbsp;
-          <UserConfidenceLevel confidenceLevel={currentUser.effective_confidence_level} showSource={true} />
+          <UserConfidenceLevel confidenceLevel={currentUser.effective_confidence_level} />
         </Box>
       )}
       { currentUser && currentUser.effective_confidence_level === null && (currentUser.groups?.edges ?? []).length > 0 && (
@@ -121,7 +119,7 @@ const UserConfidenceLevelField: FunctionComponent<UserConfidenceLevelFieldProps>
         component={InputSliderField}
         containerstyle={containerStyle}
         fullWidth={true}
-        entityType={entityType}
+        entityType={'User'}
         attributeName={name}
         name={name}
         label={finalLabel}

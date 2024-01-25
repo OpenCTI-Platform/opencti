@@ -12,22 +12,18 @@ type Data_EffectiveConfidenceLevel = User_user$data['effective_confidence_level'
 
 type UserConfidenceLevelProps = {
   confidenceLevel?: Data_UserConfidenceLevel | Data_EffectiveConfidenceLevel
-  showNullAsError?: boolean
-  showSource?: boolean
 };
 
-const UserConfidenceLevel: React.FC<UserConfidenceLevelProps> = ({ confidenceLevel, showNullAsError = false, showSource = false }) => {
+const UserConfidenceLevel: React.FC<UserConfidenceLevelProps> = ({ confidenceLevel }) => {
   const { t_i18n } = useFormatter();
 
   if (!confidenceLevel) {
-    return showNullAsError ? (
+    return (
       <Tooltip
         title={t_i18n("No confidence level found in this user's groups, and no confidence level defined at the user level.")}
       >
         <ReportGmailerrorred fontSize={'small'} color={'error'}/>
       </Tooltip>
-    ) : (
-      <span>-</span>
     );
   }
 
@@ -77,7 +73,7 @@ const UserConfidenceLevel: React.FC<UserConfidenceLevelProps> = ({ confidenceLev
   return (
     <Box component={'span'} sx={{ display: 'inline-flex', alignItems: 'center' }}>
       <span>{`${confidenceLevel.max_confidence ?? '-'}`}</span>
-      {showSource && renderSource()}
+      {renderSource()}
     </Box>
   );
 };

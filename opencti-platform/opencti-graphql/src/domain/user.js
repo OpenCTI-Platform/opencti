@@ -502,11 +502,6 @@ export const addUser = async (context, user, newUser) => {
     await checkPasswordFromPolicy(context, userPassword);
   }
 
-  // user confidence level is optional; we construct the object to store in base
-  const userConfidenceLevel = newUser.user_confidence_level
-    ? { max_confidence: newUser.user_confidence_level.max_confidence, overrides: [] }
-    : null;
-
   const userToCreate = R.pipe(
     R.assoc('user_email', userEmail),
     R.assoc('api_token', newUser.api_token ? newUser.api_token : uuid()),
@@ -517,7 +512,7 @@ export const addUser = async (context, user, newUser) => {
     R.assoc('account_status', newUser.account_status ? newUser.account_status : DEFAULT_ACCOUNT_STATUS),
     R.assoc('account_lock_after_date', newUser.account_lock_after_date),
     R.assoc('unit_system', newUser.unit_system),
-    R.assoc('user_confidence_level', userConfidenceLevel),
+    R.assoc('user_confidence_level', newUser.user_confidence_level ?? null), // can be null
     R.dissoc('roles'),
     R.dissoc('groups')
   )(newUser);
@@ -532,7 +527,7 @@ export const addUser = async (context, user, newUser) => {
   await Promise.all(relationOrganizations.map((relation) => createRelation(context, user, relation)));
 
   // Either use the provided groups or Assign the default groups to user (SSO)
-  if (newUser.groups) {
+  if (newUser.groups?.length > 0) {
     const relationGroups = newUser.groups.map((group) => ({
       fromId: element.id,
       toId: group,

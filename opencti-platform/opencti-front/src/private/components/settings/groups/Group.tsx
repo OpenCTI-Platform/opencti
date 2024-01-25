@@ -76,10 +76,6 @@ const groupFragment = graphql`
     }
     group_confidence_level {
       max_confidence
-      overrides {
-        max_confidence
-        entity_type
-      }
     }
     default_dashboard {
       id
@@ -317,7 +313,6 @@ const Group = ({ groupData }: { groupData: Group_group$key }) => {
               <Grid item={true} xs={12}>
                 <GroupConfidenceLevel
                   confidenceLevel={group.group_confidence_level}
-                  showNullAsAlert={true}
                 />
               </Grid>
             </Grid>

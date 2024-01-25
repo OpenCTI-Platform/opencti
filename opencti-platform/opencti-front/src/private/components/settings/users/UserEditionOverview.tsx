@@ -377,7 +377,6 @@ UserEditionOverviewComponentProps
               label={t_i18n('Max Confidence Level')}
               onFocus={handleChangeFocus}
               onSubmit={handleSubmitField}
-              entityType="User"
               containerStyle={fieldSpacingContainerStyle}
               editContext={context}
               currentUser={user}
@@ -416,10 +415,6 @@ const UserEditionOverview = createFragmentContainer(
         account_lock_after_date
         user_confidence_level {
           max_confidence
-          overrides {
-            entity_type
-            max_confidence
-          }
         }
         effective_confidence_level {
           max_confidence
