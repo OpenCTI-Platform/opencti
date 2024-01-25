@@ -46,7 +46,7 @@ const roleEditionRemoveCapability = graphql`
 
 export const roleEditionCapabilitiesLinesSearch = graphql`
   query RoleEditionCapabilitiesLinesSearchQuery {
-    capabilities(first: 1000) {
+    capabilities(first: 500) {
       edges {
         node {
           id

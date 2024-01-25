@@ -260,7 +260,7 @@ const StixCyberObservableDetails = createFragmentContainer(
             algorithm
             hash
           }
-          importFiles(first: 1000) {
+          importFiles(first: 500) {
             edges {
               node {
                 id
