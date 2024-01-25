@@ -254,7 +254,8 @@ const InvestigationExpandFormContent = ({
         });
       }
     });
-    const relationRefsWithUser = ['object-participant', 'object-assignee'];
+    // relations refs involving the user are not expandable
+    const relationRefsWithUser = (schema.schemaRelationsRefTypesMapping.get('*_User') ?? []).map((ref) => ref.toLowerCase());
     const nonNullDistribution = (
       distributionRel.stixRelationshipsDistribution ?? []
     )
@@ -262,7 +263,7 @@ const InvestigationExpandFormContent = ({
       .flatMap((rel) => (rel
         ? [
           {
-            label: rel.label,
+            label: rel.label.toLowerCase(),
             // Decrease from the count of already displayed elements.
             // toLowerCase() because relationship names are pascalized
             // in elAggregationRelationsCount().
@@ -276,12 +277,11 @@ const InvestigationExpandFormContent = ({
         ]
         : []))
       // Remove from the list relations with nothing to add and relations ref involving the user
-      .filter(({ label, value }) => value > 0 && !relationRefsWithUser.includes(label.toLowerCase()))
+      .filter(({ label, value }) => value > 0 && !relationRefsWithUser?.includes(label.replace('-', '')))
       .sort((a, b) => (b.value ?? 0) - (a.value ?? 0));
-
     setRelationships(
       nonNullDistribution.map(({ label, value }) => ({
-        label: `${t_i18n(`relationship_${label.toLowerCase()}`)} (${value})`,
+        label: `${t_i18n(`relationship_${label}`)} (${value})`,
         value: label,
       })),
     );
