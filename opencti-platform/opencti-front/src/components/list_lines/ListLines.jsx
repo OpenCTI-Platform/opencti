@@ -24,6 +24,8 @@ import DialogContent from '@mui/material/DialogContent';
 import DialogActions from '@mui/material/DialogActions';
 import Button from '@mui/material/Button';
 import Box from '@mui/material/Box';
+import { v4 } from 'uuid';
+import { ErrorBoundary } from '../../private/components/Error';
 import Filters from '../../private/components/common/lists/Filters';
 import SearchInput from '../SearchInput';
 import inject18n from '../i18n';
@@ -217,9 +219,7 @@ class ListLines extends Component {
       entityTypes: exportContext?.entity_type ? [exportContext.entity_type] : [],
     };
     return (
-      <div
-        className={noPadding ? classes.containerNoPadding : classes.container}
-      >
+      <div className={noPadding ? classes.containerNoPadding : classes.container}>
         {!inline && (
           <div
             className={
@@ -442,7 +442,8 @@ class ListLines extends Component {
           availableRelationFilterTypes={availableRelationFilterTypes}
           redirection
         />
-        {message && (
+        <ErrorBoundary key={keyword || v4()}>
+          {message && (
           <div style={{ width: '100%', marginTop: 10 }}>
             <Alert
               severity="info"
@@ -453,16 +454,11 @@ class ListLines extends Component {
               {message}
             </Alert>
           </div>
-        )}
-        <List
-          classes={{
-            root: bottomNav
-              ? classes.linesContainerBottomNav
-              : classes.linesContainer,
-          }}
-          style={!handleToggleSelectAll ? { marginTop: 10 } : null}
-        >
-          {!noHeaders && (
+          )}
+          <List classes={{ root: bottomNav ? classes.linesContainerBottomNav : classes.linesContainer }}
+            style={!handleToggleSelectAll ? { marginTop: 10 } : null}
+          >
+            {!noHeaders && (
             <ListItem
               classes={{ root: classes.item }}
               divider={false}
@@ -525,10 +521,10 @@ class ListLines extends Component {
                 <ListItemSecondaryAction> &nbsp; </ListItemSecondaryAction>
               )}
             </ListItem>
-          )}
-          {children}
-        </List>
-        {typeof handleToggleExports === 'function' && exportContext
+            )}
+            {children}
+          </List>
+          {typeof handleToggleExports === 'function' && exportContext
           && exportContext.entity_type !== 'Stix-Core-Object'
           && exportContext.entity_type !== 'Stix-Cyber-Observable'
           && exportContext.entity_type !== 'stix-core-relationship' && (
@@ -540,8 +536,8 @@ class ListLines extends Component {
                 exportContext={exportContext}
               />
             </Security>
-        )}
-        {typeof handleToggleExports === 'function' && exportContext
+          )}
+          {typeof handleToggleExports === 'function' && exportContext
           && exportContext.entity_type === 'stix-core-relationship' && (
             <Security needs={[KNOWLEDGE_KNGETEXPORT]}>
               <StixCoreRelationshipsExports
@@ -551,8 +547,8 @@ class ListLines extends Component {
                 exportContext={exportContext}
               />
             </Security>
-        )}
-        {typeof handleToggleExports === 'function' && exportContext
+          )}
+          {typeof handleToggleExports === 'function' && exportContext
           && exportContext.entity_type === 'Stix-Core-Object' && (
             <Security needs={[KNOWLEDGE_KNGETEXPORT]}>
               <StixCoreObjectsExports
@@ -562,8 +558,8 @@ class ListLines extends Component {
                 exportContext={exportContext}
               />
             </Security>
-        )}
-        {typeof handleToggleExports === 'function' && exportContext
+          )}
+          {typeof handleToggleExports === 'function' && exportContext
           && exportContext.entity_type === 'Stix-Cyber-Observable' && (
             <Security needs={[KNOWLEDGE_KNGETEXPORT]}>
               <StixCyberObservablesExports
@@ -573,8 +569,8 @@ class ListLines extends Component {
                 exportContext={exportContext}
               />
             </Security>
-        )}
-        {handleSwitchRedirectionMode && (
+          )}
+          {handleSwitchRedirectionMode && (
           <Dialog
             open={this.state.openSettings}
             PaperProps={{ elevation: 1 }}
@@ -613,7 +609,8 @@ class ListLines extends Component {
               </Button>
             </DialogActions>
           </Dialog>
-        )}
+          )}
+        </ErrorBoundary>
       </div>
     );
   }

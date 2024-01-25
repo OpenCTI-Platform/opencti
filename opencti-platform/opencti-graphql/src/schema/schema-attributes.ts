@@ -155,31 +155,6 @@ export const schemaAttributesDefinition = {
     return this.upsertByEntity.get(this.selectEntityType(entityType)) ?? [];
   },
 
-  // Internal recursive function to get all search possible attributes
-  // Not to be used directly, use getSearchAttributes instead
-  __innerSearchAttributes(prefix: string | undefined, attributes: AttributeDefinition[]) {
-    const stringAttributes: string[] = [];
-    attributes.forEach((attr) => {
-      if (attr.type === 'string') {
-        stringAttributes.push(prefix ? `${prefix}.${attr.name}` : attr.name);
-      }
-      if (attr.type === 'object' && attr.format !== 'flat') {
-        stringAttributes.push(...(this.__innerSearchAttributes(attr.name, attr.mappings)));
-      }
-    });
-    return stringAttributes;
-  },
-
-  getSearchAttributes(excludes: string[] = []) {
-    usageProtection = true;
-    const attributes = Array.from(this.allAttributes.values());
-    const stringAttributes = this.__innerSearchAttributes(undefined, attributes);
-    if (stringAttributes.length >= 1024) {
-      throw UnsupportedError('Current engine doesnt support more than 1024 search fields, list must be tailored');
-    }
-    return stringAttributes.filter((attr) => !excludes.includes(attr));
-  },
-
   isSpecificTypeAttribute(attributeName: string, ...attributeType: AttrType[]): boolean {
     usageProtection = true;
     return attributeType.reduce((r, fn) => this.attributesByTypes[fn].has(attributeName) || r, false);

@@ -61,6 +61,12 @@ export const DatabaseError = (reason, data) => error('DATABASE_ERROR', reason ||
   ...data,
 });
 
+export const ComplexSearchError = (reason, data) => error('COMPLEX_SEARCH_ERROR', reason || 'A search error has occurred', {
+  http_status: 500,
+  genre: CATEGORY_TECHNICAL,
+  ...data,
+});
+
 export const ConfigurationError = (reason, data) => error('CONFIGURATION_ERROR', reason || 'A configuration error has occurred', {
   http_status: 500,
   genre: CATEGORY_TECHNICAL,
