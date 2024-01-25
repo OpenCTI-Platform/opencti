@@ -87,7 +87,7 @@ const RelationSelection: FunctionComponent<LassoSelectionProps> = ({
     currentContext.lineWidth = 1;
     currentContext.setLineDash([1, 3]);
     currentContext.lineCap = 'round';
-    currentContext.strokeStyle = (theme.palette.warning as SimplePaletteColorOptions)?.main ?? theme.palette.common.white;
+    currentContext.strokeStyle = (theme.palette.success as SimplePaletteColorOptions)?.main ?? theme.palette.common.white;
     currentContext.beginPath();
     selectedNodes.clear();
   };
@@ -119,7 +119,7 @@ const RelationSelection: FunctionComponent<LassoSelectionProps> = ({
       const lastNodeCoords: Coord = graph.current.graph2ScreenCoords(lastNode.x, lastNode.y);
 
       currentContext.beginPath();
-      currentContext.strokeStyle = (theme.palette.warning as SimplePaletteColorOptions)?.main ?? theme.palette.common.white;
+      currentContext.strokeStyle = (theme.palette.success as SimplePaletteColorOptions)?.main ?? theme.palette.common.white;
       coord = reposition(e);
       currentContext.moveTo(firstNodeCoords.x, firstNodeCoords.y);
       currentContext.lineTo(lastNodeCoords.x, lastNodeCoords.y);
