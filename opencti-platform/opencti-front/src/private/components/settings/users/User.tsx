@@ -162,7 +162,6 @@ const UserFragment = graphql`
       max_confidence
       source {
         ... on User { entity_type id name }
-        ... on Organization { entity_type id name }
         ... on Group { entity_type id name }
       }
     }
