@@ -14,6 +14,7 @@ import React from 'react';
 import { graphql, useFragment } from 'react-relay';
 import { Link } from 'react-router-dom';
 import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
+import GroupConfidenceLevel from '@components/settings/groups/GroupConfidenceLevel';
 import FieldOrEmpty from '../../../../components/FieldOrEmpty';
 import { useFormatter } from '../../../../components/i18n';
 import ItemBoolean from '../../../../components/ItemBoolean';
@@ -62,12 +63,22 @@ const groupFragment = graphql`
     name
     default_assignation
     auto_new_marking
+    group_confidence_level {
+      max_confidence
+    }
     description
     members {
       edges {
         node {
           ...UserLine_node
         }
+      }
+    }
+    group_confidence_level {
+      max_confidence
+      overrides {
+        max_confidence
+        entity_type
       }
     }
     default_dashboard {
@@ -298,6 +309,12 @@ const Group = ({ groupData }: { groupData: Group_group$key }) => {
                     ))}
                   </List>
                 </FieldOrEmpty>
+              </Grid>
+              <Grid item={true} xs={12}>
+                <GroupConfidenceLevel
+                  confidenceLevel={group.group_confidence_level}
+                  showNullAsAlert={true}
+                />
               </Grid>
             </Grid>
           </Paper>

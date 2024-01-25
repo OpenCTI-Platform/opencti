@@ -4,8 +4,8 @@ import { Field, Form, Formik } from 'formik';
 import * as R from 'ramda';
 import * as Yup from 'yup';
 import MenuItem from '@mui/material/MenuItem';
-import OptionalConfidenceLevelField from '@components/common/form/OptionalConfidenceLevelField';
 import FormHelperText from '@mui/material/FormHelperText';
+import UserConfidenceLevelField from './UserConfidenceLevelField';
 import TextField from '../../../../components/TextField';
 import SelectField from '../../../../components/SelectField';
 import { SubscriptionFocus } from '../../../../components/Subscription';
@@ -77,17 +77,22 @@ const userValidation = (t: (value: string) => string, userIsOnlyOrganizationAdmi
   account_status: Yup.string(),
   account_lock_after_date: Yup.date().nullable(),
   objectOrganization: userIsOnlyOrganizationAdmin ? Yup.array().min(1, t('Minimum one organization')).required(t('This field is required')) : Yup.array(),
+  user_confidence_level_enabled: Yup.boolean(),
   user_confidence_level: Yup.number()
     .min(0, t('The value must be greater than or equal to 0'))
     .max(100, t('The value must be less than or equal to 100'))
-    .nullable(),
+    .when('user_confidence_level_enabled', {
+      is: true,
+      then: (schema) => schema.required(t('This field is required')).nullable(),
+      otherwise: (schema) => schema.nullable(),
+    }),
 });
 
 interface UserEditionOverviewComponentProps {
   user: UserEditionOverview_user$data;
   context:
   | readonly ({
-    readonly focusOn?: string | null;
+    readonly focusOn: string | null | undefined;
     readonly name: string;
   } | null)[]
   | null | undefined;
@@ -119,6 +124,7 @@ UserEditionOverviewComponentProps
     description: user.description,
     account_status: user.account_status,
     account_lock_after_date: user.account_lock_after_date,
+    user_confidence_level_enabled: !!user.user_confidence_level,
     user_confidence_level: user.user_confidence_level?.max_confidence,
     objectOrganization,
   };
@@ -134,7 +140,7 @@ UserEditionOverviewComponentProps
     });
   };
 
-  const handleSubmitField = (name: string, value: string | Date | null) => {
+  const handleSubmitField = (name: string, value: string | null) => {
     userValidation(t_i18n, userIsOnlyOrganizationAdmin)
       .validateAt(name, { [name]: value })
       .then(() => {
@@ -365,19 +371,18 @@ UserEditionOverviewComponentProps
             onFocus={handleChangeFocus}
             onChange={handleSubmitField}
           />
-          {
-            hasSetAccess && (
-              <OptionalConfidenceLevelField
-                name="user_confidence_level"
-                label={t_i18n('Max Confidence Level')}
-                onFocus={handleChangeFocus}
-                onSubmit={handleSubmitField}
-                entityType="User"
-                containerStyle={fieldSpacingContainerStyle}
-                editContext={context}
-              />
-            )
-          }
+          { hasSetAccess && (
+            <UserConfidenceLevelField
+              name="user_confidence_level"
+              label={t_i18n('Max Confidence Level')}
+              onFocus={handleChangeFocus}
+              onSubmit={handleSubmitField}
+              entityType="User"
+              containerStyle={fieldSpacingContainerStyle}
+              editContext={context}
+              currentUser={user}
+            />
+          )}
         </Form>
       )}
     </Formik>
@@ -392,6 +397,8 @@ const UserEditionOverview = createFragmentContainer(
       @argumentDefinitions(
         rolesOrderBy: { type: "RolesOrdering", defaultValue: name }
         rolesOrderMode: { type: "OrderingMode", defaultValue: asc }
+        groupsOrderBy: { type: "GroupsOrdering", defaultValue: name }
+        groupsOrderMode: { type: "OrderingMode", defaultValue: asc }
         organizationsOrderBy: { type: "OrganizationsOrdering", defaultValue: name }
         organizationsOrderMode: { type: "OrderingMode", defaultValue: asc }
       ) {
@@ -420,7 +427,6 @@ const UserEditionOverview = createFragmentContainer(
           max_confidence
           source {
             ... on User { entity_type id name }
-            ... on Organization { entity_type id name }
             ... on Group { entity_type id name }
           }
         }
@@ -429,6 +435,14 @@ const UserEditionOverview = createFragmentContainer(
           name
         }
         objectOrganization(orderBy: $organizationsOrderBy, orderMode: $organizationsOrderMode) {
+          edges {
+            node {
+              id
+              name
+            }
+          }
+        }
+        groups(orderBy: $groupsOrderBy, orderMode: $groupsOrderMode) {
           edges {
             node {
               id

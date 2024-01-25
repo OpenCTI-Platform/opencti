@@ -162,7 +162,6 @@ const UserFragment = graphql`
       max_confidence
       source {
         ... on User { entity_type id name }
-        ... on Organization { entity_type id name }
         ... on Group { entity_type id name }
       }
     }
@@ -545,6 +544,14 @@ const User: FunctionComponent<UserProps> = ({ data }) => {
                 />
               </Grid>
               <Grid item={true} xs={6}>
+                <Typography
+                  variant="h3"
+                  gutterBottom={true}
+                  style={{ float: 'left' }}
+                >
+                  {t_i18n('Max Confidence Level')}
+                </Typography>
+                <div className="clearfix"/>
                 <UserConfidenceLevel
                   confidenceLevel={user.effective_confidence_level}
                   showSource={true}

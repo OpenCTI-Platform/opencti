@@ -1198,6 +1198,7 @@ type Group implements InternalObject & BasicObject {
   allowed_marking: [MarkingDefinition!]
   default_marking: [DefaultMarking!]
   default_hidden_types: [String!]
+  group_confidence_level: ConfidenceLevel
   # Technical
   editContext: [EditUserContext!]
 }
@@ -1207,6 +1208,7 @@ input GroupAddInput {
   default_assignation: Boolean
   auto_new_marking: Boolean
   clientMutationId: String
+  group_confidence_level: ConfidenceLevelInput!
 }
 
 ############## Users
@@ -1301,11 +1303,11 @@ type Creator {
   representative: Representative!
 }
 
-type UserConfidenceLevel {
+type ConfidenceLevel {
   max_confidence: Int!
-  overrides: [UserConfidenceLevelOverride!]!
+  overrides: [ConfidenceLevelOverride!]!
 }
-type UserConfidenceLevelOverride {
+type ConfidenceLevelOverride {
   entity_type: String!
   max_confidence: Int!
 }
@@ -1340,7 +1342,7 @@ type User implements BasicObject & InternalObject {
   ): [Role]!
   capabilities: [Capability]!
   default_hidden_types: [String!]!
-  user_confidence_level: UserConfidenceLevel
+  user_confidence_level: ConfidenceLevel
   effective_confidence_level: EffectiveConfidenceLevel
   groups(
     orderBy: GroupsOrdering
@@ -1421,10 +1423,10 @@ input UserAddInput {
   account_lock_after_date: DateTime
   unit_system: String
   groups: [ID!]
-  user_confidence_level: UserConfidenceLevelInput
+  user_confidence_level: ConfidenceLevelInput
 }
 
-input UserConfidenceLevelInput {
+input ConfidenceLevelInput {
   max_confidence: Int!
   overrides: [ConfidenceLevelOverrideInput!]!
 }

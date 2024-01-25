@@ -1,45 +1,43 @@
-import React, { Component } from 'react';
-import * as PropTypes from 'prop-types';
-import { graphql, createPaginationContainer } from 'react-relay';
+import React from 'react';
+import { graphql, createPaginationContainer, RelayPaginationProp } from 'react-relay';
 import { pathOr } from 'ramda';
+import { GroupsLinesPaginationQuery$variables } from '@components/settings/groups/__generated__/GroupsLinesPaginationQuery.graphql';
+import { GroupsLines_data$data } from '@components/settings/groups/__generated__/GroupsLines_data.graphql';
 import ListLinesContent from '../../../../components/list_lines/ListLinesContent';
 import { GroupLine, GroupLineDummy } from './GroupLine';
+import { DataColumns } from '../../../../components/list_lines';
 
 const nbOfRowsToLoad = 50;
 
-class GroupsLines extends Component {
-  render() {
-    const { initialLoading, dataColumns, relay, paginationOptions } = this.props;
-    return (
-      <ListLinesContent
-        initialLoading={initialLoading}
-        loadMore={relay.loadMore.bind(this)}
-        hasMore={relay.hasMore.bind(this)}
-        isLoading={relay.isLoading.bind(this)}
-        dataList={pathOr([], ['groups', 'edges'], this.props.data)}
-        globalCount={pathOr(
-          nbOfRowsToLoad,
-          ['groups', 'pageInfo', 'globalCount'],
-          this.props.data,
-        )}
-        LineComponent={<GroupLine />}
-        DummyLineComponent={<GroupLineDummy />}
-        dataColumns={dataColumns}
-        nbOfRowsToLoad={nbOfRowsToLoad}
-        paginationOptions={paginationOptions}
-      />
-    );
-  }
+interface GroupsLinesProps {
+  initialLoading: boolean
+  dataColumns: DataColumns
+  relay: RelayPaginationProp,
+  paginationOptions: GroupsLinesPaginationQuery$variables
+  data: GroupsLines_data$data
 }
 
-GroupsLines.propTypes = {
-  classes: PropTypes.object,
-  paginationOptions: PropTypes.object,
-  dataColumns: PropTypes.object.isRequired,
-  data: PropTypes.object,
-  relay: PropTypes.object,
-  groups: PropTypes.object,
-  initialLoading: PropTypes.bool,
+const GroupsLines: React.FC<GroupsLinesProps> = (props) => {
+  const { initialLoading, dataColumns, relay, paginationOptions, data } = props;
+  return (
+    <ListLinesContent
+      initialLoading={initialLoading}
+      loadMore={relay.loadMore.bind(this)}
+      hasMore={relay.hasMore.bind(this)}
+      isLoading={relay.isLoading.bind(this)}
+      dataList={pathOr([], ['groups', 'edges'], data)}
+      globalCount={pathOr(
+        nbOfRowsToLoad,
+        ['groups', 'pageInfo', 'globalCount'],
+        data,
+      )}
+      LineComponent={GroupLine}
+      DummyLineComponent={GroupLineDummy}
+      dataColumns={dataColumns}
+      nbOfRowsToLoad={nbOfRowsToLoad}
+      paginationOptions={paginationOptions}
+    />
+  );
 };
 
 export const groupsLinesQuery = graphql`

@@ -1,9 +1,10 @@
 import React from 'react';
 import { User_user$data } from '@components/settings/users/__generated__/User_user.graphql';
 import { Link } from 'react-router-dom-v5-compat';
-import Typography from '@mui/material/Typography';
 import { ReportGmailerrorred } from '@mui/icons-material';
 import Tooltip from '@mui/material/Tooltip';
+import { InformationOutline } from 'mdi-material-ui';
+import Box from '@mui/material/Box';
 import { useFormatter } from '../../../../components/i18n';
 
 type Data_UserConfidenceLevel = User_user$data['user_confidence_level'];
@@ -19,26 +20,14 @@ const UserConfidenceLevel: React.FC<UserConfidenceLevelProps> = ({ confidenceLev
   const { t_i18n } = useFormatter();
 
   if (!confidenceLevel) {
-    return (
-      <>
-        <Typography
-          variant="h3"
-          gutterBottom={true}
-          style={{ float: 'left' }}
-        >
-          {t_i18n('Max Confidence Level')}
-        </Typography>
-        <div className="clearfix"/>
-        { showNullAsError ? (
-          <Tooltip
-            title={t_i18n("No confidence level found in this user's groups, and no confidence level defined at the user level.")}
-          >
-            <ReportGmailerrorred fontSize={'small'} color={'error'}/>
-          </Tooltip>
-        ) : (
-          <span>-</span>
-        )}
-      </>
+    return showNullAsError ? (
+      <Tooltip
+        title={t_i18n("No confidence level found in this user's groups, and no confidence level defined at the user level.")}
+      >
+        <ReportGmailerrorred fontSize={'small'} color={'error'}/>
+      </Tooltip>
+    ) : (
+      <span>-</span>
     );
   }
 
@@ -53,24 +42,32 @@ const UserConfidenceLevel: React.FC<UserConfidenceLevelProps> = ({ confidenceLev
       if (source.entity_type && source.entity_type !== 'User') {
         // a group or orga
         return (
-          <em>(
-            {t_i18n('', {
-              id: 'confidence_level_from',
+          <Tooltip
+            sx={{ marginLeft: 1 }}
+            title={t_i18n('', {
+              id: 'confidence_level_from_group',
               values: {
-                entity_type: t_i18n(`entity_${source.entity_type}`),
                 link: (
-                  <Link to={`/dashboard/settings/accesses/${source.entity_type.toLowerCase()}s/${source.id}`}>
+                  <Link to={`/dashboard/settings/accesses/groups/${source.id}`}>
                     {source.name}
                   </Link>
                 ),
               },
             })}
-            )</em>
+          >
+            <InformationOutline fontSize={'small'} color={'info'} />
+          </Tooltip>
         );
       }
       // the user himself
       return (
-        <em>[{t_i18n('From: this user\'s max confidence level')}]</em>
+        <Tooltip
+          sx={{ marginLeft: 1 }}
+          title={t_i18n('This value is defined at the user level, which overrides the value inherited from user\'s groups.')}
+        >
+          <InformationOutline fontSize={'small'} color={'info'} />
+        </Tooltip>
+
       );
     }
 
@@ -78,19 +75,10 @@ const UserConfidenceLevel: React.FC<UserConfidenceLevelProps> = ({ confidenceLev
   };
 
   return (
-    <div style={{ float: 'left', marginRight: 5 }}>
-      <Typography
-        variant="h3"
-        gutterBottom={true}
-        style={{ float: 'left' }}
-      >
-        {t_i18n('Max Confidence Level')}
-      </Typography>
-      <div className="clearfix"/>
-      {`${confidenceLevel.max_confidence ?? '-'}`}
-      &nbsp;
+    <Box component={'span'} sx={{ display: 'inline-flex', alignItems: 'center' }}>
+      <span>{`${confidenceLevel.max_confidence ?? '-'}`}</span>
       {showSource && renderSource()}
-    </div>
+    </Box>
   );
 };
 

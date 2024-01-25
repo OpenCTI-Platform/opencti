@@ -1,4 +1,5 @@
 import { assoc, dissoc, pipe } from 'ramda';
+import nconf from 'nconf';
 import { createEntity, createRelation } from '../database/middleware';
 import { ENTITY_TYPE_CAPABILITY, ENTITY_TYPE_GROUP, ENTITY_TYPE_ROLE } from '../schema/internalObject';
 import { RELATION_HAS_CAPABILITY } from '../schema/internalRelationship';
@@ -35,8 +36,15 @@ export const addRole = async (context, user, role) => {
 };
 
 export const addGroup = async (context, user, group) => {
+  // with SSO use-case in mind, we need to set a default confidence level if not provided (even if mandatory in GQL API)
+  const group_confidence_level = group.group_confidence_level ?? {
+    max_confidence: nconf.get('app:group_confidence_level:max_confidence_default') ?? 100,
+    overrides: [],
+  };
+
   const groupWithDefaultValues = {
     ...group,
+    group_confidence_level,
     default_assignation: group.default_assignation ?? false,
     auto_new_marking: group.auto_new_marking ?? false
   };
