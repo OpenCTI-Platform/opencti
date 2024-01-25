@@ -422,18 +422,14 @@ export const usePaginationLocalStorage = <U>(
         if (findCorrespondingFilter && ['objectLabel', 'contextObjectLabel'].includes(findCorrespondingFilter.key)) {
           if (viewStorage.filters) {
             const { filters } = viewStorage;
-            const generateUUID = uuid();
             setValue((c) => ({
               ...c,
-              filters: handleAddFilterWithEmptyValueUtil({ filters,
-                filter: {
-                  id: generateUUID,
-                  key: 'objectLabel',
-                  operator: findCorrespondingFilter.operator === 'not_eq' ? 'not_nil' : 'nil',
-                  values: [],
-                  mode: 'and',
-                } }),
-              latestAddFilterId: generateUUID,
+              filters: handleChangeOperatorFiltersUtil({
+                filters,
+                id,
+                operator: findCorrespondingFilter.operator === 'not_eq' ? 'not_nil' : 'nil',
+              }),
+              latestAddFilterId: id,
             }));
           }
         }
@@ -447,9 +443,6 @@ export const usePaginationLocalStorage = <U>(
       }
     },
     handleChangeRepresentationFilter: (id: string, oldValue: FilterValue, newValue: FilterValue) => {
-      console.log({ id });
-      console.log({ oldValue });
-      console.log({ newValue });
       if (oldValue && newValue) {
         handleChangeRepresentationFilterUtil({ viewStorage, setValue, id, oldValue, newValue });
       } else if (oldValue) {

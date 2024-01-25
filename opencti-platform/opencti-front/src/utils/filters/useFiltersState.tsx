@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import { v4 as uuid } from 'uuid';
 import { emptyFilterGroup, Filter, FilterGroup, FilterValue } from './filtersUtils';
 import {
   handleAddFilterWithEmptyValueUtil,
@@ -36,17 +35,14 @@ const useFiltersState = (initFilters: FilterGroup = emptyFilterGroup, defaultCle
       if (valueId === null) { // handle clicking on 'no label' in entities list
         const findCorrespondingFilter = filtersState.filters?.filters.find((f) => id === f.id);
         if (findCorrespondingFilter && ['objectLabel', 'contextObjectLabel'].includes(findCorrespondingFilter.key)) {
-          const noLabelFilter: Filter = {
-            id: uuid(),
-            key: 'objectLabel',
-            operator: findCorrespondingFilter.operator === 'not_eq' ? 'not_nil' : 'nil',
-            values: [],
-            mode: 'and',
-          };
           setFiltersState((prevState) => ({
             ...prevState,
-            filters: handleAddFilterWithEmptyValueUtil({ filters: prevState.filters, filter: noLabelFilter }),
-            latestAddFilterId: noLabelFilter.id,
+            filters: handleChangeOperatorFiltersUtil({
+              filters: prevState.filters,
+              id,
+              operator: findCorrespondingFilter.operator === 'not_eq' ? 'not_nil' : 'nil',
+            }),
+            latestAddFilterId: id,
           }));
         }
       } else {
