@@ -219,6 +219,9 @@ describe('User resolver standard behavior', () => {
           id
           name
           description
+          group_confidence_level {
+            max_confidence
+          }
         }
       }
     `;
