@@ -218,8 +218,13 @@ const taxiiHttpGet = async (ingestion: BasicStoreEntityIngestionTaxii): Promise<
   const httpClient = getHttpClient(httpClientOptions);
   const preparedUri = ingestion.uri.endsWith('/') ? ingestion.uri : `${ingestion.uri}/`;
   const url = `${preparedUri}collections/${ingestion.collection}/objects/`;
-  const next = ingestion.added_after_start ? ingestion.current_state_cursor : null;
-  const params = { next, added_after: ingestion.added_after_start };
+  const next = ingestion.current_state_cursor;
+  // https://docs.oasis-open.org/cti/taxii/v2.1/os/taxii-v2.1-os.html#_Toc31107519
+  // If the more property is set to true and the next property is populated then the client can paginate through the remaining records using the next URL parameter along with the
+  // same original query options.
+  // If the more property is set to true and the next property is empty then the client may paginate through the remaining records by using the added_after URL parameter with the
+  // date/time value from the X-TAXII-Date-Added-Last header along with the same original query options.
+  const params = next ? { next } : { added_after: ingestion.added_after_start };
   const { data, headers: resultHeaders } = await httpClient.get(url, { params });
   return { data, addedLast: resultHeaders['x-taxii-date-added-last'] };
 };
