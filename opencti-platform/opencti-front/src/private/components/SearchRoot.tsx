@@ -3,18 +3,29 @@ import Box from '@mui/material/Box';
 import Tab from '@mui/material/Tab';
 import Tabs from '@mui/material/Tabs';
 import { Link, Redirect, Switch, useParams } from 'react-router-dom';
-import Typography from '@mui/material/Typography';
 import { BoundaryRoute } from '@components/Error';
 import Search from '@components/Search';
 import SearchIndexedFiles from '@components/search/SearchIndexedFiles';
 import EEChip from '@components/common/entreprise_edition/EEChip';
 import { graphql, PreloadedQuery, usePreloadedQuery, useQueryLoader } from 'react-relay';
 import Badge from '@mui/material/Badge';
+import { makeStyles } from '@mui/styles';
+import { Theme } from 'src/components/Theme';
 import ExportContextProvider from '../../utils/ExportContextProvider';
 import { useFormatter } from '../../components/i18n';
 import { decodeSearchKeyword } from '../../utils/SearchUtils';
 import useAuth from '../../utils/hooks/useAuth';
 import { SearchRootFilesCountQuery } from './__generated__/SearchRootFilesCountQuery.graphql';
+
+const useStyles = makeStyles<Theme>((theme) => ({
+  header: {
+    color: theme.palette.mode === 'light'
+      ? theme.palette.common.black
+      : theme.palette.primary.main,
+    fontSize: '24px',
+    fontWeight: 'bold',
+  },
+}));
 
 const searchRootFilesCountQuery = graphql`
   query SearchRootFilesCountQuery($search: String) {
@@ -28,6 +39,7 @@ interface SearchRootComponentProps {
 
 const SearchRootComponent: FunctionComponent<SearchRootComponentProps> = ({ filesCount = 0 }) => {
   const { t_i18n } = useFormatter();
+  const classes = useStyles();
   const { scope } = useParams() as { scope: string };
   const { keyword } = useParams() as { keyword: string };
   const searchType = ['knowledge', 'files'].includes(scope) ? scope : 'knowledge';
@@ -35,12 +47,9 @@ const SearchRootComponent: FunctionComponent<SearchRootComponentProps> = ({ file
   return (
     <ExportContextProvider>
       <div>
-        <Typography
-          variant="h1"
-          gutterBottom={true}
-        >
+        <div className={ classes.header }>
           {t_i18n('Global search')}
-        </Typography>
+        </div>
         <Box
           sx={{
             borderBottom: 1,

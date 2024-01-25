@@ -47,9 +47,13 @@ const styles = (theme) => ({
   container: {
     margin: 0,
   },
-  title: {
-    float: 'left',
-    textTransform: 'uppercase',
+  header: {
+    paddingBottom: 25,
+    color: theme.palette.mode === 'light'
+      ? theme.palette.common.black
+      : theme.palette.primary.main,
+    fontSize: '24px',
+    fontWeight: 'bold',
   },
   gridContainer: {
     marginBottom: 20,
@@ -317,13 +321,9 @@ class ImportContentComponent extends Component {
     };
     return (
       <div className={classes.container}>
-        <Typography
-          variant="h1"
-          gutterBottom={true}
-          classes={{ root: classes.title }}
-        >
+        <div className={classes.header}>
           {t('Data import')}
-        </Typography>
+        </div>
         <div className="clearfix" />
         <Grid
           container={true}

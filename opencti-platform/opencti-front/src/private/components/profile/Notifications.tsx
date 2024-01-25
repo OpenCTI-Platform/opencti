@@ -1,4 +1,7 @@
 import React, { FunctionComponent } from 'react';
+import { useFormatter } from 'src/components/i18n';
+import { makeStyles } from '@mui/styles';
+import { Theme } from 'src/components/Theme';
 import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
 import ListLines from '../../../components/list_lines/ListLines';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
@@ -11,9 +14,22 @@ import useAuth from '../../../utils/hooks/useAuth';
 import NotificationsToolBar from './notifications/NotificationsToolBar';
 import { emptyFilterGroup, getDefaultFilterObjFromArray, isFilterGroupNotEmpty, removeIdFromFilterGroupObject } from '../../../utils/filters/filtersUtils';
 
+const useStyles = makeStyles<Theme>((theme) => ({
+  header: {
+    paddingBottom: 25,
+    color: theme.palette.mode === 'light'
+      ? theme.palette.common.black
+      : theme.palette.primary.main,
+    fontSize: '24px',
+    fontWeight: 'bold',
+  },
+}));
+
 export const LOCAL_STORAGE_KEY = 'notifiers';
 
 const Notifications: FunctionComponent = () => {
+  const { t_i18n } = useFormatter();
+  const classes = useStyles();
   const { me } = useAuth();
   const { viewStorage, helpers, paginationOptions } = usePaginationLocalStorage<NotificationsLinesPaginationQuery$variables>(
     LOCAL_STORAGE_KEY,
@@ -95,7 +111,8 @@ const Notifications: FunctionComponent = () => {
       queryPaginationOptions,
     );
 
-    return (
+    return (<>
+      <div className={ classes.header }>{t_i18n('Notifications')}</div>
       <ListLines
         helpers={helpers}
         sortBy={sortBy}
@@ -155,7 +172,7 @@ const Notifications: FunctionComponent = () => {
         </React.Suspense>
         )}
       </ListLines>
-    );
+    </>);
   };
   return <div>{renderLines()}</div>;
 };

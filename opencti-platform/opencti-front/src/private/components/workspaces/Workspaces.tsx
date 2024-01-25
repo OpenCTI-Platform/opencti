@@ -1,6 +1,9 @@
 import React, { FunctionComponent } from 'react';
 import { WorkspacesLinesPaginationQuery, WorkspacesLinesPaginationQuery$variables } from '@components/workspaces/__generated__/WorkspacesLinesPaginationQuery.graphql';
 import { WorkspaceLineDummy } from '@components/workspaces/WorkspaceLine';
+import { useFormatter } from 'src/components/i18n';
+import { makeStyles } from '@mui/styles';
+import { Theme } from 'src/components/Theme';
 import ListLines from '../../../components/list_lines/ListLines';
 import WorkspacesLines, { workspacesLinesQuery } from './WorkspacesLines';
 import WorkspaceCreation from './WorkspaceCreation';
@@ -10,6 +13,17 @@ import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage'
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
 import { GqlFilterGroup } from '../../../utils/filters/filtersUtils';
 
+const useStyles = makeStyles<Theme>((theme) => ({
+  header: {
+    paddingBottom: 25,
+    color: theme.palette.mode === 'light'
+      ? theme.palette.common.black
+      : theme.palette.primary.main,
+    fontSize: '24px',
+    fontWeight: 'bold',
+  },
+}));
+
 interface WorkspacesProps {
   type: string;
 }
@@ -17,6 +31,8 @@ interface WorkspacesProps {
 const Workspaces: FunctionComponent<WorkspacesProps> = ({
   type,
 }) => {
+  const { t_i18n } = useFormatter();
+  const classes = useStyles();
   const {
     viewStorage,
     paginationOptions,
@@ -32,6 +48,17 @@ const Workspaces: FunctionComponent<WorkspacesProps> = ({
       view: 'lines',
     },
   );
+
+  let header: string;
+  switch (type) {
+    case 'dashboard':
+      header = 'Dashboards';
+      break;
+    case 'investigation':
+      header = 'Investigations';
+      break;
+    default: // No header
+  }
 
   const {
     numberOfElements,
@@ -85,7 +112,8 @@ const Workspaces: FunctionComponent<WorkspacesProps> = ({
         isSortable: true,
       },
     };
-    return (
+    return (<>
+      <div className={ classes.header }>{t_i18n(header)}</div>
       <ListLines
         helpers={storageHelpers}
         sortBy={sortBy}
@@ -119,7 +147,7 @@ const Workspaces: FunctionComponent<WorkspacesProps> = ({
           </React.Suspense>
         )}
       </ListLines>
-    );
+    </>);
   };
 
   return (

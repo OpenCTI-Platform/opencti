@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from 'react';
-import Typography from '@mui/material/Typography';
 import * as R from 'ramda';
 import Grid from '@mui/material/Grid';
 import TextField from '@mui/material/TextField';
@@ -34,6 +33,13 @@ import { export_max_size } from '../../utils/utils';
 const SEARCH$ = new Subject().pipe(debounce(() => timer(500)));
 
 const useStyles = makeStyles((theme) => ({
+  header: {
+    color: theme.palette.mode === 'light'
+      ? theme.palette.common.black
+      : theme.palette.primary.main,
+    fontSize: '24px',
+    fontWeight: 'bold',
+  },
   container: {
     transition: theme.transitions.create('padding', {
       easing: theme.transitions.easing.sharp,
@@ -433,13 +439,9 @@ const SearchBulk = () => {
     : resolvedEntities;
   return (
     <div className={classes.container}>
-      <Typography
-        variant="h1"
-        gutterBottom={true}
-        style={{ marginBottom: 18, float: 'left' }}
-      >
+      <div className={ classes.header }>
         {t_i18n('Search for multiple entities')}
-      </Typography>
+      </div>
       <ToggleButtonGroup
         size="small"
         color="primary"
