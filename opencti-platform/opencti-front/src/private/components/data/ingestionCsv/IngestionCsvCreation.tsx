@@ -139,7 +139,7 @@ const IngestionCsvCreation: FunctionComponent<IngestionCsvCreationProps> = ({ pa
             name: '',
             description: '',
             uri: '',
-            csv_mapper_id: { value: '', label: '' },
+            csv_mapper_id: '',
             authentication_type: 'none',
             authentication_value: '',
             current_state_date: null,

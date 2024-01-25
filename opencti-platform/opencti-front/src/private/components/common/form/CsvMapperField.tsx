@@ -28,7 +28,7 @@ interface CsvMapperFieldComponentProps {
   name: string;
   isOptionEqualToValue: (option: Option, value: string) => boolean;
   onChange?: (name: string, value: Option) => void;
-  queryRef: PreloadedQuery<CsvMapperFieldSearchQuery>
+  queryRef: PreloadedQuery<CsvMapperFieldSearchQuery> | null | undefined
 }
 
 export const csvMapperQuery = graphql`
@@ -52,8 +52,8 @@ const CsvMapperField: FunctionComponent<CsvMapperFieldComponentProps> = ({
 }) => {
   const classes = useStyles();
   const { t_i18n } = useFormatter();
-  const data = usePreloadedQuery(csvMapperQuery, queryRef);
-  const csvMappersPreloaded = data.csvMappers?.edges?.map(({ node }) => ({
+  const data = queryRef && usePreloadedQuery(csvMapperQuery, queryRef);
+  const csvMappersPreloaded = data?.csvMappers?.edges?.map(({ node }) => ({
     value: node.id,
     label: node.name,
   }));
