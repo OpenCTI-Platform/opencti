@@ -3,7 +3,7 @@
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-nocheck
 import React from 'react';
-import { Route, Switch } from 'react-router-dom';
+import { Route, Routes } from 'react-router-dom';
 import { graphql, useFragment } from 'react-relay';
 import EntityStixCoreRelationships from '../../common/stix_core_relationships/EntityStixCoreRelationships';
 import StixDomainObjectKnowledge from '../../common/stix_domain_objects/StixDomainObjectKnowledge';
@@ -31,7 +31,7 @@ const AdministrativeAreaKnowledge = ({
   const link = `/dashboard/locations/administrative_areas/${administrativeArea.id}/knowledge`;
   return (
     <>
-      <Switch>
+      <Routes>
         <Route
           exact
           path="/dashboard/locations/administrative_areas/:administrativeAreaId/knowledge/relations/:relationId"
@@ -285,7 +285,7 @@ const AdministrativeAreaKnowledge = ({
             />
           )}
         />
-      </Switch>
+      </Routes>
     </>
   );
 };

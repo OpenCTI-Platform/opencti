@@ -3,7 +3,7 @@
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-nocheck
 import React from 'react';
-import { Route, Switch, useParams } from 'react-router-dom';
+import { Route, Routes, useParams } from 'react-router-dom';
 import { graphql } from 'react-relay';
 import { QueryRenderer } from '../../../../relay/environment';
 import Loader from '../../../../components/Loader';
@@ -29,13 +29,13 @@ const RootSubType = () => {
         if (props) {
           if (props.subType) {
             return (
-              <Switch>
+              <Routes>
                 <Route
                   exact
                   path="/dashboard/settings/customization/entity_types/:subTypeId"
                   render={() => <SubType data={props.subType} />}
                 />
-              </Switch>
+              </Routes>
             );
           }
           return <ErrorNotFound />;

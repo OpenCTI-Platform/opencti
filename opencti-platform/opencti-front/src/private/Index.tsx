@@ -1,9 +1,9 @@
 import React, { Suspense, lazy, useEffect } from 'react';
-import { Route, Switch } from 'react-router-dom';
+import { Route, Routes } from 'react-router-dom';
 import Box from '@mui/material/Box';
 import CssBaseline from '@mui/material/CssBaseline';
 import { useTheme, makeStyles } from '@mui/styles';
-import { BoundaryRoute, NoMatch } from '@components/Error';
+import { boundaryWrapper, NoMatch } from '@components/Error';
 import PlatformCriticalAlertDialog from '@components/settings/platform_alerts/PlatformCriticalAlertDialog';
 import TopBar from './components/nav/TopBar';
 import LeftBar from './components/nav/LeftBar';
@@ -24,6 +24,7 @@ const RootAnalyses = lazy(() => import('./components/analyses/Root'));
 const RootCases = lazy(() => import('./components/cases/Root'));
 const RootEvents = lazy(() => import('./components/events/Root'));
 const RootObservations = lazy(() => import('./components/observations/Root'));
+const RootProfile = lazy(() => import('./components/profile/Root'));
 const RootThreats = lazy(() => import('./components/threats/Root'));
 const RootArsenal = lazy(() => import('./components/arsenal/Root'));
 const RootTechnique = lazy(() => import('./components/techniques/Root'));
@@ -33,7 +34,6 @@ const RootData = lazy(() => import('./components/data/Root'));
 const RootWorkspaces = lazy(() => import('./components/workspaces/Root'));
 const RootSettings = lazy(() => import('./components/settings/Root'));
 const RootActivity = lazy(() => import('./components/settings/activity/Root'));
-const RootProfile = lazy(() => import('./components/profile/Root'));
 
 const useStyles = makeStyles((theme: Theme) => ({
   toolbar: theme.mixins.toolbar,
@@ -96,71 +96,63 @@ const Index = ({ settings }: IndexProps) => {
             style={{ marginTop: settingsMessagesBannerHeight }}
           />
           <Suspense fallback={<Loader />}>
-            <Switch>
-              <BoundaryRoute exact path="/dashboard" component={Dashboard} />
-              <BoundaryRoute exact path="/dashboard/search" component={SearchRoot} />
-              <BoundaryRoute exact path="/dashboard/search/:scope" component={SearchRoot} />
-              <BoundaryRoute exact path="/dashboard/search/:scope/:keyword" component={SearchRoot} />
-              <BoundaryRoute
-                exact
-                path="/dashboard/id/:id"
-                component={StixObjectOrStixRelationship}
-              />
-              <BoundaryRoute
-                exact
-                path="/dashboard/search_bulk"
-                component={SearchBulk}
-              />
-              <BoundaryRoute
-                path="/dashboard/analyses"
-                component={RootAnalyses}
-              />
-              <BoundaryRoute path="/dashboard/cases" component={RootCases} />
-              <BoundaryRoute path="/dashboard/events" component={RootEvents} />
+            <Routes>
+              <Route path="/" Component={boundaryWrapper(Dashboard)}/>
+
+              {/* Searhc need to be rework */}
+              <Route path="/search/*" Component={boundaryWrapper(SearchRoot)} />
               <Route
-                path="/dashboard/observations"
-              // Because mismatch of types between react-router v5 and v6.
-              // It uses types of v6, but we are using v5 here and compiler is lost.
-              /* eslint-disable-next-line @typescript-eslint/ban-ts-comment */
-              /* @ts-ignore */
-                component={RootObservations}
-              />
-              <BoundaryRoute path="/dashboard/threats" component={RootThreats} />
-              <BoundaryRoute path="/dashboard/arsenal" component={RootArsenal} />
-              <BoundaryRoute
-                path="/dashboard/techniques"
-                component={RootTechnique}
-              />
-              <BoundaryRoute
-                path="/dashboard/entities"
-                component={RootEntities}
-              />
-              <BoundaryRoute
-                path="/dashboard/locations"
-                component={RootLocation}
-              />
-              <BoundaryRoute path="/dashboard/data" component={RootData} />
-              <BoundaryRoute
-                path="/dashboard/workspaces"
-                component={RootWorkspaces}
-              />
-              <BoundaryRoute
-                path="/dashboard/settings"
-                component={RootSettings}
-              />
-              <BoundaryRoute path="/dashboard/audits" component={RootActivity} />
-              <BoundaryRoute
-                path="/dashboard/profile"
-                component={RootProfile}
+                path="/id/:id"
+                Component={boundaryWrapper(StixObjectOrStixRelationship)}
               />
               <Route
-              // Because mismatch of types between react-router v5 and v6.
-              // It uses types of v6, but we are using v5 here and compiler is lost.
-              /* eslint-disable-next-line @typescript-eslint/ban-ts-comment */
-              /* @ts-ignore */
-                component={NoMatch}
+                path="/search_bulk"
+                Component={boundaryWrapper(SearchBulk)}
               />
-            </Switch>
+              {/* Need to refactor below */}
+              <Route
+                path="/analyses/*"
+                Component={boundaryWrapper(RootAnalyses)}
+              />
+              <Route path="/cases" Component={boundaryWrapper(RootCases)} />
+              <Route path="/events" Component={boundaryWrapper(RootEvents)} />
+
+              <Route path="/threats" Component={boundaryWrapper(RootThreats)} />
+              <Route path="/arsenal" Component={boundaryWrapper(RootArsenal)} />
+              <Route
+                path="/techniques"
+                Component={boundaryWrapper(RootTechnique)}
+              />
+              <Route
+                path="/entities"
+                Component={boundaryWrapper(RootEntities)}
+              />
+              <Route
+                path="/locations"
+                Component={boundaryWrapper(RootLocation)}
+              />
+              <Route path="/data" Component={boundaryWrapper(RootData)} />
+              <Route
+                path="/workspaces"
+                Component={boundaryWrapper(RootWorkspaces)}
+              />
+              <Route
+                path="/settings"
+                Component={boundaryWrapper(RootSettings)}
+              />
+              <Route path="/audits" Component={boundaryWrapper(RootActivity)} />
+              <Route
+                path="/profile"
+                Component={boundaryWrapper(RootProfile)}
+              />
+              <Route
+                path="/observations"
+                Component={ RootObservations }
+              />
+              <Route
+                element={<NoMatch/>}
+              />
+            </Routes>
           </Suspense>
         </Box>
       </Box>

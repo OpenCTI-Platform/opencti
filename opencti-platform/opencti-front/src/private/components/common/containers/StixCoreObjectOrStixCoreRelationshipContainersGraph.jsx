@@ -5,10 +5,10 @@ import * as R from 'ramda';
 import { Subject, timer } from 'rxjs';
 import withTheme from '@mui/styles/withTheme';
 import { debounce } from 'rxjs/operators';
-import { withRouter } from 'react-router-dom';
 import ForceGraph3D from 'react-force-graph-3d';
 import SpriteText from 'three-spritetext';
 import ForceGraph2D from 'react-force-graph-2d';
+import withRouter from '../../../../utils/compat-router/withRouter';
 import {
   applyFilters,
   buildGraphData,

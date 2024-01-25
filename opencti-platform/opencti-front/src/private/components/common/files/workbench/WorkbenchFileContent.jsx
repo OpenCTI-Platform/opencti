@@ -25,7 +25,7 @@ import { Field, Form, Formik } from 'formik';
 import * as R from 'ramda';
 import React, { useEffect, useState } from 'react';
 import { createFragmentContainer, graphql } from 'react-relay';
-import { useHistory } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { v4 as uuid } from 'uuid';
 import * as Yup from 'yup';
 import DateTimePickerField from '../../../../../components/DateTimePickerField';
@@ -261,7 +261,7 @@ const WorkbenchFileContentComponent = ({
   } = useAttributes();
   const { fieldToCategory, getFieldDefinition } = useVocabularyCategory();
   const { t_i18n } = useFormatter();
-  const history = useHistory();
+  const navigate = useNavigate();
   const classes = useStyles();
 
   // region state
@@ -811,9 +811,9 @@ const WorkbenchFileContentComponent = ({
                 const entityLink = `${resolveLink(
                   file.metaData.entity.entity_type,
                 )}/${file.metaData.entity.id}`;
-                history.push(`${entityLink}/files`);
+                navigate(`${entityLink}/files`);
               } else {
-                history.push('/dashboard/data/import');
+                navigate('/dashboard/data/import');
               }
             },
             onError: (error) => {

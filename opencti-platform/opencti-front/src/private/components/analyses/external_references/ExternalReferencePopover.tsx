@@ -10,7 +10,7 @@ import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
 import { MoreVertOutlined } from '@mui/icons-material';
-import { useNavigate } from 'react-router-dom-v5-compat';
+import { useNavigate } from 'react-router-dom';
 import { useFormatter } from '../../../../components/i18n';
 import { QueryRenderer } from '../../../../relay/environment';
 import ExternalReferenceEditionContainer from './ExternalReferenceEditionContainer';

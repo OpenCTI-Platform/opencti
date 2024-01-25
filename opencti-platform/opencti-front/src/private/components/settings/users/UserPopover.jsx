@@ -10,8 +10,8 @@ import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 import MoreVert from '@mui/icons-material/MoreVert';
-import { withRouter } from 'react-router-dom';
 import DialogTitle from '@mui/material/DialogTitle';
+import withRouter from '../../../../utils/compat-router/withRouter';
 import inject18n from '../../../../components/i18n';
 import { commitMutation, QueryRenderer } from '../../../../relay/environment';
 import UserEdition from './UserEdition';
@@ -80,7 +80,7 @@ class UserPopover extends Component {
       onCompleted: () => {
         this.setState({ deleting: false });
         this.handleClose();
-        this.props.history.push('/dashboard/settings/accesses/users');
+        this.props.navigate('/dashboard/settings/accesses/users');
       },
     });
   }

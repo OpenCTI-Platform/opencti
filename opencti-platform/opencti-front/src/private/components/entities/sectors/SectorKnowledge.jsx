@@ -1,7 +1,8 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
-import { Route, Switch, withRouter } from 'react-router-dom';
+import { Route, Routes } from 'react-router-dom';
 import { graphql, createFragmentContainer } from 'react-relay';
+import withRouter from '../../../../utils/compat-router/withRouter';
 import EntityStixCoreRelationships from '../../common/stix_core_relationships/EntityStixCoreRelationships';
 import StixDomainObjectKnowledge from '../../common/stix_domain_objects/StixDomainObjectKnowledge';
 import StixCoreRelationship from '../../common/stix_core_relationships/StixCoreRelationship';
@@ -13,7 +14,7 @@ class SectorKnowledgeComponent extends Component {
     const link = `/dashboard/entities/sectors/${sector.id}/knowledge`;
     return (
       <>
-        <Switch>
+        <Routes>
           <Route
             exact
             path="/dashboard/entities/sectors/:sectorId/knowledge/relations/:relationId"
@@ -209,7 +210,7 @@ class SectorKnowledgeComponent extends Component {
               />
             )}
           />
-        </Switch>
+        </Routes>
       </>
     );
   }

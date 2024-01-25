@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useHistory } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 import Button from '@mui/material/Button';
@@ -26,7 +26,7 @@ const GroupingPopoverDeletionMutation = graphql`
 
 const GroupingPopover = (props) => {
   const { id } = props;
-  const history = useHistory();
+  const navigate = useNavigate();
   const { t_i18n } = useFormatter();
   const [anchorEl, setAnchorEl] = useState(null);
   const [displayDelete, setDisplayDelete] = useState(false);
@@ -47,7 +47,7 @@ const GroupingPopover = (props) => {
       onCompleted: () => {
         setDeleting(false);
         handleClose();
-        history.push('/dashboard/analyses/groupings');
+        navigate('/dashboard/analyses/groupings');
       },
     });
   };

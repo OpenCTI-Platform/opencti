@@ -1,7 +1,7 @@
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-nocheck
 import React, { FunctionComponent } from 'react';
-import { Route, Switch, useParams } from 'react-router-dom';
+import { Route, Routes, useParams } from 'react-router-dom';
 import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
@@ -43,7 +43,7 @@ const RootRoleComponent: FunctionComponent<RootRoleComponentProps> = ({ queryRef
   return (
     <Security needs={[SETTINGS_SETACCESSES]}>
       {role ? (
-        <Switch>
+        <Routes>
           {groupsQueryRef ? (
             <React.Suspense fallback={<Loader variant={LoaderVariant.inElement}/>}>
               <Route
@@ -58,7 +58,7 @@ const RootRoleComponent: FunctionComponent<RootRoleComponentProps> = ({ queryRef
             <Loader variant={LoaderVariant.inElement} />
           )
           }
-        </Switch>
+        </Routes>
       ) : (
         <ErrorNotFound />
       )}

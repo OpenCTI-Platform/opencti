@@ -8,7 +8,6 @@ import { createFragmentContainer, graphql } from 'react-relay';
 import ForceGraph2D from 'react-force-graph-2d';
 import ForceGraph3D from 'react-force-graph-3d';
 import withTheme from '@mui/styles/withTheme';
-import { withRouter } from 'react-router-dom';
 import RectangleSelection from 'react-rectangle-selection';
 import inject18n from '../../../../components/i18n';
 import { commitMutation, fetchQuery, MESSAGING$ } from '../../../../relay/environment';
@@ -43,6 +42,7 @@ import { UserContext } from '../../../../utils/hooks/useAuth';
 import investigationAddFromContainer from '../../../../utils/InvestigationUtils';
 import { isNotEmptyField } from '../../../../utils/utils';
 import RelationSelection from '../../../../utils/graph/RelationSelection';
+import withRouter from '../../../../utils/compat-router/withRouter';
 
 const ignoredStixCoreObjectsTypes = ['Note', 'Opinion'];
 
@@ -415,7 +415,7 @@ class GroupingKnowledgeGraphComponent extends Component {
     this.selectedNodes = new Set();
     this.selectedLinks = new Set();
     const params = buildViewParamsFromUrlAndStorage(
-      props.history,
+      props.navigate,
       props.location,
       LOCAL_STORAGE_KEY,
     );
@@ -557,7 +557,7 @@ class GroupingKnowledgeGraphComponent extends Component {
   saveParameters(refreshGraphData = false) {
     const LOCAL_STORAGE_KEY = `grouping-${this.props.grouping.id}-knowledge`;
     saveViewParameters(
-      this.props.history,
+      this.props.navigate,
       this.props.location,
       LOCAL_STORAGE_KEY,
       { zoom: this.zoom, ...this.state },

@@ -1,12 +1,11 @@
 import React, { useEffect, useMemo } from 'react';
 import * as PropTypes from 'prop-types';
-import { Link, Route, Switch, useParams } from 'react-router-dom';
+import { Link, Route, Routes, useParams, useLocation } from 'react-router-dom';
 import { graphql, usePreloadedQuery, useQueryLoader, useSubscription } from 'react-relay';
 import Typography from '@mui/material/Typography';
 import Box from '@mui/material/Box';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
-import { useLocation } from 'react-router-dom-v5-compat';
 import makeStyles from '@mui/styles/makeStyles';
 import UserPopover from './UserPopover';
 import AccessesMenu from '../AccessesMenu';
@@ -138,7 +137,7 @@ const RootUserComponent = ({ queryRef, userId, refetch }) => {
               />
             </Tabs>
           </Box>
-          <Switch>
+          <Routes>
             <Route
               exact
               path="/dashboard/settings/accesses/users/:userId"
@@ -153,7 +152,7 @@ const RootUserComponent = ({ queryRef, userId, refetch }) => {
                 <UserAnalytics {...routeProps} data={data} refetch={refetch} />
               )}
             />
-          </Switch>
+          </Routes>
         </div>
       ) : (
         <ErrorNotFound />

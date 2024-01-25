@@ -1,12 +1,13 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { Route, Redirect, withRouter, Switch, Link } from 'react-router-dom';
+import { Route, Redirect, Routes, Link } from 'react-router-dom';
 import { graphql } from 'react-relay';
 import { propOr } from 'ramda';
 import * as R from 'ramda';
 import Box from '@mui/material/Box';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
+import withRouter from '../../../../utils/compat-router/withRouter';
 import { QueryRenderer, requestSubscription } from '../../../../relay/environment';
 import Individual from './Individual';
 import IndividualKnowledge from './IndividualKnowledge';
@@ -73,7 +74,7 @@ class RootIndividual extends Component {
     } = props;
     const LOCAL_STORAGE_KEY = `individual-${individualId}`;
     const params = buildViewParamsFromUrlAndStorage(
-      props.history,
+      props.navigate,
       props.location,
       LOCAL_STORAGE_KEY,
     );
@@ -98,7 +99,7 @@ class RootIndividual extends Component {
     } = this.props;
     const LOCAL_STORAGE_KEY = `individual-${individualId}`;
     saveViewParameters(
-      this.props.history,
+      this.props.navigate,
       this.props.location,
       LOCAL_STORAGE_KEY,
       this.state,
@@ -229,7 +230,7 @@ class RootIndividual extends Component {
                         />
                       </Tabs>
                     </Box>
-                    <Switch>
+                    <Routes>
                       <Route
                         exact
                         path="/dashboard/entities/individuals/:individualId"
@@ -307,7 +308,7 @@ class RootIndividual extends Component {
                           />
                         )}
                       />
-                    </Switch>
+                    </Routes>
                   </div>
                 );
               }

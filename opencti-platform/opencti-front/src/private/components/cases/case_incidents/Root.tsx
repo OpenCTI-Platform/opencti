@@ -4,12 +4,11 @@
 // @ts-nocheck
 import React, { useMemo } from 'react';
 import { graphql, usePreloadedQuery, useSubscription } from 'react-relay';
-import { Link, Redirect, Route, Switch, useParams } from 'react-router-dom';
+import { Link, Redirect, Route, Routes, useParams, useLocation } from 'react-router-dom';
 import { GraphQLSubscriptionConfig } from 'relay-runtime';
 import Box from '@mui/material/Box';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
-import { useLocation } from 'react-router-dom-v5-compat';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
@@ -176,7 +175,7 @@ const RootCaseIncidentComponent = ({ queryRef, caseId }) => {
               />
             </Tabs>
           </Box>
-          <Switch>
+          <Routes>
             <Route
               exact
               path="/dashboard/cases/incidents/:caseId"
@@ -243,7 +242,7 @@ const RootCaseIncidentComponent = ({ queryRef, caseId }) => {
                 />
               )}
             />
-          </Switch>
+          </Routes>
         </div>
       ) : (
         <ErrorNotFound />

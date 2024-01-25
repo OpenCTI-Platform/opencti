@@ -2,10 +2,9 @@
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-nocheck
 import React, { useMemo } from 'react';
-import { Link, Redirect, Route, Switch, useParams } from 'react-router-dom';
+import { Link, Redirect, Route, Routes, useParams, useLocation } from 'react-router-dom';
 import { graphql, usePreloadedQuery, useSubscription } from 'react-relay';
 import { GraphQLSubscriptionConfig } from 'relay-runtime';
-import { useLocation } from 'react-router-dom-v5-compat';
 import Box from '@mui/material/Box';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
@@ -152,7 +151,7 @@ const RootIncidentComponent = ({ queryRef }) => {
               />
             </Tabs>
           </Box>
-          <Switch>
+          <Routes>
             <Route
               exact
               path="/dashboard/events/incidents/:incidentId"
@@ -214,7 +213,7 @@ const RootIncidentComponent = ({ queryRef }) => {
                 />
               )}
             />
-          </Switch>
+          </Routes>
         </div>
       ) : (
         <ErrorNotFound />

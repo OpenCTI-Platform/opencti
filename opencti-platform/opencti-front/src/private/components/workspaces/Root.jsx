@@ -1,12 +1,12 @@
 import React from 'react';
-import { Switch } from 'react-router-dom';
+import { Routes } from 'react-router-dom';
 import Workspaces from './Workspaces';
 import RootDashboard from './dashboards/Root';
 import RootInvestigation from './investigations/Root';
 import { BoundaryRoute } from '../Error';
 
 const Root = () => (
-  <Switch>
+  <Routes>
     <BoundaryRoute
       exact
       path="/dashboard/workspaces/dashboards"
@@ -25,7 +25,7 @@ const Root = () => (
       path="/dashboard/workspaces/investigations/:workspaceId"
       render={(routeProps) => <RootInvestigation {...routeProps} />}
     />
-  </Switch>
+  </Routes>
 );
 
 export default Root;

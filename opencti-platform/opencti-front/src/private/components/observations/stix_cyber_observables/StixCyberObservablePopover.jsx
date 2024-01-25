@@ -1,7 +1,6 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { compose } from 'ramda';
-import { withRouter } from 'react-router-dom';
 import withStyles from '@mui/styles/withStyles';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
@@ -13,6 +12,7 @@ import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
 import MoreVert from '@mui/icons-material/MoreVert';
 import { graphql } from 'react-relay';
+import withRouter from '../../../../utils/compat-router/withRouter';
 import ToggleButton from '@mui/material/ToggleButton';
 import inject18n from '../../../../components/i18n';
 import { QueryRenderer, commitMutation } from '../../../../relay/environment';
@@ -82,7 +82,7 @@ class StixCyberObservablePopover extends Component {
       onCompleted: () => {
         this.setState({ deleting: false });
         this.handleClose();
-        this.props.history.push(
+        this.props.navigate(
           `/dashboard/observations/${
             this.props.isArtifact ? 'artifacts' : 'observables'
           }`,
@@ -187,7 +187,7 @@ StixCyberObservablePopover.propTypes = {
   stixCyberObservableId: PropTypes.string,
   classes: PropTypes.object,
   t: PropTypes.func,
-  history: PropTypes.object,
+  navigate: PropTypes.func,
   isArtifact: PropTypes.bool,
 };
 

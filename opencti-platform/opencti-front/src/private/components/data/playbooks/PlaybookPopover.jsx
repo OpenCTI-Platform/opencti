@@ -25,7 +25,7 @@ import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
 import MoreVert from '@mui/icons-material/MoreVert';
 import makeStyles from '@mui/styles/makeStyles';
-import { useNavigate } from 'react-router-dom-v5-compat';
+import { useNavigate } from 'react-router-dom';
 import { commitMutation, QueryRenderer } from '../../../../relay/environment';
 import PlaybookEdition, { playbookMutationFieldPatch } from './PlaybookEdition';
 import { deleteNode } from '../../../../utils/store';

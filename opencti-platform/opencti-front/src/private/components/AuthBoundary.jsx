@@ -1,8 +1,8 @@
 import React from 'react';
 import { compose, includes, map } from 'ramda';
 import * as PropTypes from 'prop-types';
-import { withRouter } from 'react-router-dom';
 import LoginRoot from '../../public/LoginRoot';
+import withRouter from '../../utils/compat-router/withRouter';
 
 class AuthBoundaryComponent extends React.Component {
   constructor(props) {

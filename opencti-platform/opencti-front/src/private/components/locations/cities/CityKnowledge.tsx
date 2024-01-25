@@ -3,7 +3,7 @@
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-nocheck
 import React from 'react';
-import { Route, Switch } from 'react-router-dom';
+import { Route, Routes } from 'react-router-dom';
 import { graphql, useFragment } from 'react-relay';
 import EntityStixCoreRelationships from '../../common/stix_core_relationships/EntityStixCoreRelationships';
 import StixDomainObjectKnowledge from '../../common/stix_domain_objects/StixDomainObjectKnowledge';
@@ -27,7 +27,7 @@ const CityKnowledge = ({ cityData }: { cityData: CityKnowledge_city$key }) => {
   const link = `/dashboard/locations/cities/${city.id}/knowledge`;
   return (
     <>
-      <Switch>
+      <Routes>
         <Route
           exact
           path="/dashboard/locations/cities/:cityId/knowledge/relations/:relationId"
@@ -282,7 +282,7 @@ const CityKnowledge = ({ cityData }: { cityData: CityKnowledge_city$key }) => {
             />
           )}
         />
-      </Switch>
+      </Routes>
     </>
   );
 };

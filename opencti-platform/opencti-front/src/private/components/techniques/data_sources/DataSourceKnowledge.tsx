@@ -2,7 +2,7 @@
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-nocheck
 import React, { FunctionComponent } from 'react';
-import { Route, Switch } from 'react-router-dom';
+import { Route, Routes } from 'react-router-dom';
 import { graphql, useFragment } from 'react-relay';
 import StixCoreRelationship from '../../common/stix_core_relationships/StixCoreRelationship';
 import { DataSourceKnowledge_dataSource$key } from './__generated__/DataSourceKnowledge_dataSource.graphql';
@@ -26,14 +26,14 @@ DataSourceKnowledgeComponentProps
   const dataSource = useFragment(DataSourceKnowledgeFragment, data);
   return (
     <>
-      <Switch>
+      <Routes>
         <Route
           path="/dashboard/techniques/data_sources/:dataSourceId/knowledge/relations/:relationId"
           render={(routeProps) => (
             <StixCoreRelationship entityId={dataSource.id} {...routeProps} />
           )}
         />
-      </Switch>
+      </Routes>
     </>
   );
 };

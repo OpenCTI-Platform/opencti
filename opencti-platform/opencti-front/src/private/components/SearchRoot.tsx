@@ -2,8 +2,7 @@ import React, { FunctionComponent, useEffect } from 'react';
 import Box from '@mui/material/Box';
 import Tab from '@mui/material/Tab';
 import Tabs from '@mui/material/Tabs';
-import { Link, Redirect, Switch, useParams } from 'react-router-dom';
-import { BoundaryRoute } from '@components/Error';
+import { Link, Navigate, Route, Routes, useLocation, useParams } from 'react-router-dom';
 import Search from '@components/Search';
 import SearchIndexedFiles from '@components/search/SearchIndexedFiles';
 import EEChip from '@components/common/entreprise_edition/EEChip';
@@ -28,9 +27,12 @@ interface SearchRootComponentProps {
 
 const SearchRootComponent: FunctionComponent<SearchRootComponentProps> = ({ filesCount = 0 }) => {
   const { t_i18n } = useFormatter();
-  const { scope } = useParams() as { scope: string };
   const { keyword } = useParams() as { keyword: string };
-  const searchType = ['knowledge', 'files'].includes(scope) ? scope : 'knowledge';
+  const location = useLocation();
+  let searchType = 'knowledge';
+  if (location.pathname.includes('/files')) {
+    searchType = 'files';
+  }
   return (
     <ExportContextProvider>
       <Breadcrumbs variant="standard" elements={[{ label: t_i18n('Search') }, { label: t_i18n('Advanced search'), current: true }]} />
@@ -58,40 +60,39 @@ const SearchRootComponent: FunctionComponent<SearchRootComponentProps> = ({ file
               </Badge>
             </>
               }
-          />
-        </Tabs>
-      </Box>
-      <Switch>
-        <BoundaryRoute
-          exact
-          path="/dashboard/search/knowledge"
-          render={(routeProps) => (
-            <Search {...routeProps} />
-          )}
+            />
+          </Tabs>
+        </Box>
+      <Routes>
+        <Route
+          path="/knowledge"
+          element={
+            <Search />
+          }
         />
-        <BoundaryRoute
-          exact
-          path="/dashboard/search/knowledge/:keyword"
-          render={(routeProps) => (
-            <Search {...routeProps} />
-          )}
+        <Route
+          path="/knowledge/:keyword"
+          element={
+            <Search />
+          }
         />
-        <BoundaryRoute
-          exact
-          path="/dashboard/search/files"
-          render={(routeProps) => (
-            <SearchIndexedFiles {...routeProps} />
-          )}
+        <Route
+          path="/files"
+          element={
+            <SearchIndexedFiles />
+          }
         />
-        <BoundaryRoute
-          exact
-          path="/dashboard/search/files/:keyword"
-          render={(routeProps) => (
-            <SearchIndexedFiles {...routeProps} />
-          )}
+        <Route
+          path="/files/:keyword"
+          element={
+            <SearchIndexedFiles />
+          }
         />
-        <Redirect to="/dashboard/search/knowledge" />
-      </Switch>
+        <Route path="/" element={
+          <Navigate to="/dashboard/search/knowledge" />
+        }
+        />
+      </Routes>
     </ExportContextProvider>
   );
 };

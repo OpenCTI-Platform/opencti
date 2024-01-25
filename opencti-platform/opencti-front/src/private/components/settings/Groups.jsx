@@ -1,7 +1,6 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { compose, propOr } from 'ramda';
-import { withRouter } from 'react-router-dom';
 import withStyles from '@mui/styles/withStyles';
 import { graphql } from 'react-relay';
 import { QueryRenderer } from '../../../relay/environment';
@@ -11,7 +10,8 @@ import ListLines from '../../../components/list_lines/ListLines';
 import GroupsLines, { groupsLinesQuery } from './groups/GroupsLines';
 import GroupCreation from './groups/GroupCreation';
 import AccessesMenu from './AccessesMenu';
-import Breadcrumbs from '../../../components/Breadcrumbs';
+import Breadcrumbs from '../../../components/Breadcrumps';
+import withRouter from '../../../utils/compat-router/withRouter';
 
 export const groupsSearchQuery = graphql`
   query GroupsSearchQuery($search: String) {
@@ -52,7 +52,7 @@ class Groups extends Component {
   constructor(props) {
     super(props);
     const params = buildViewParamsFromUrlAndStorage(
-      props.history,
+      props.navigate,
       props.location,
       LOCAL_STORAGE_KEY,
     );
@@ -66,7 +66,7 @@ class Groups extends Component {
 
   saveView() {
     saveViewParameters(
-      this.props.history,
+      this.props.navigate,
       this.props.location,
       LOCAL_STORAGE_KEY,
       this.state,
@@ -164,7 +164,7 @@ class Groups extends Component {
 Groups.propTypes = {
   t: PropTypes.func,
   classes: PropTypes.object,
-  history: PropTypes.object,
+  navigate: PropTypes.func,
   location: PropTypes.object,
 };
 

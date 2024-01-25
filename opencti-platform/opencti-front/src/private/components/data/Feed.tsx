@@ -1,8 +1,7 @@
 import React, { useEffect, useState } from 'react';
-import { useLocation } from 'react-router-dom-v5-compat';
+import { useLocation, useNavigate } from 'react-router-dom';
 import Box from '@mui/material/Box';
 import { FeedLinesPaginationQuery$data } from '@components/data/feeds/__generated__/FeedLinesPaginationQuery.graphql';
-import { useHistory } from 'react-router-dom';
 import { QueryRenderer } from '../../../relay/environment';
 import { buildViewParamsFromUrlAndStorage, saveViewParameters } from '../../../utils/ListParameters';
 import ListLines from '../../../components/list_lines/ListLines';
@@ -16,7 +15,7 @@ import { useFormatter } from '../../../components/i18n';
 const Feed = () => {
   const { t_i18n } = useFormatter();
   const LOCAL_STORAGE_KEY = 'feed';
-  const history = useHistory();
+  const navigate = useNavigate();
   const location = useLocation();
   const params = buildViewParamsFromUrlAndStorage(
     history,

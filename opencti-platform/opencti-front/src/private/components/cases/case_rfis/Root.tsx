@@ -3,13 +3,12 @@
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-nocheck
 import React, { useMemo } from 'react';
-import { Link, Redirect, Route, Switch, useParams } from 'react-router-dom';
+import { Link, Redirect, Route, Routes, useParams, useLocation } from 'react-router-dom';
 import { graphql, usePreloadedQuery, useSubscription } from 'react-relay';
 import { GraphQLSubscriptionConfig } from 'relay-runtime';
 import Box from '@mui/material/Box';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
-import { useLocation } from 'react-router-dom-v5-compat';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
@@ -175,7 +174,7 @@ const RootCaseRfiComponent = ({ queryRef, caseId }) => {
               />
             </Tabs>
           </Box>
-          <Switch>
+          <Routes>
             <Route
               exact
               path="/dashboard/cases/rfis/:caseId"
@@ -252,7 +251,7 @@ const RootCaseRfiComponent = ({ queryRef, caseId }) => {
                 />
               )}
             />
-          </Switch>
+          </Routes>
         </div>
       ) : (
         <ErrorNotFound />

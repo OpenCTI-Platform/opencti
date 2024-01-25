@@ -78,7 +78,7 @@ const saveParamsToLocalStorage = (localStorageKey, params) => {
 };
 
 export const saveViewParameters = (
-  history,
+  navigate,
   location,
   localStorageKey,
   params,
@@ -90,14 +90,14 @@ export const saveViewParameters = (
   const searchParams = buildParamsFromHistory(params);
   const newUrl = `${APP_BASE_PATH}${location.pathname}?${searchParams}`;
   if (refresh) {
-    history.replace(newUrl);
+    navigate(newUrl, { replace: true });
   } else {
     window.history.replaceState(null, '', newUrl);
   }
 };
 
 export const buildViewParamsFromUrlAndStorage = (
-  history,
+  navigate,
   location,
   localStorageKey,
 ) => {
@@ -203,7 +203,7 @@ export const buildViewParamsFromUrlAndStorage = (
       ? split(',', finalParams.createdBy)
       : [];
   }
-  saveViewParameters(history, location, localStorageKey, finalParams);
+  saveViewParameters(navigate, location, localStorageKey, finalParams);
   return finalParams;
 };
 

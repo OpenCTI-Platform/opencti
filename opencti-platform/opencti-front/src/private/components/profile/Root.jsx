@@ -1,12 +1,12 @@
 import React from 'react';
-import { Redirect, Switch } from 'react-router-dom';
+import { Redirect, Routes } from 'react-router-dom';
 import { BoundaryRoute } from '../Error';
 import Notifications from './Notifications';
 import Profile from './Profile';
 import Triggers from './Triggers';
 
 const Root = () => (
-  <Switch>
+  <Routes>
     <BoundaryRoute
       exact
       path="/dashboard/profile"
@@ -27,7 +27,7 @@ const Root = () => (
       path="/dashboard/profile/triggers"
       component={Triggers}
     />
-  </Switch>
+  </Routes>
 );
 
 export default Root;

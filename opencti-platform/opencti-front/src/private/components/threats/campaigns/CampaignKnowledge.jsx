@@ -1,7 +1,8 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
-import { Route, Switch, withRouter } from 'react-router-dom';
+import { Route, Routes } from 'react-router-dom';
 import { graphql, createFragmentContainer } from 'react-relay';
+import withRouter from '../../../../utils/compat-router/withRouter';
 import EntityStixCoreRelationships from '../../common/stix_core_relationships/EntityStixCoreRelationships';
 import StixDomainObjectThreatKnowledge from '../../common/stix_domain_objects/StixDomainObjectThreatKnowledge';
 import StixCoreRelationship from '../../common/stix_core_relationships/StixCoreRelationship';
@@ -18,7 +19,7 @@ class CampaignKnowledgeComponent extends Component {
     const link = `/dashboard/threats/campaigns/${campaign.id}/knowledge`;
     return (
       <>
-        <Switch>
+        <Routes>
           <Route
             exact
             path="/dashboard/threats/campaigns/:campaignId/knowledge/relations/:relationId"
@@ -289,7 +290,7 @@ class CampaignKnowledgeComponent extends Component {
               />
             )}
           />
-        </Switch>
+        </Routes>
       </>
     );
   }

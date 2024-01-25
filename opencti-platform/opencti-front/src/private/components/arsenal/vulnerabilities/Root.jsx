@@ -1,11 +1,12 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { Route, Redirect, withRouter, Switch, Link } from 'react-router-dom';
+import { Route, Redirect, Routes, Link } from 'react-router-dom';
 import { graphql } from 'react-relay';
 import * as R from 'ramda';
 import Box from '@mui/material/Box';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
+import withRouter from '../../../../utils/compat-router/withRouter';
 import { QueryRenderer, requestSubscription } from '../../../../relay/environment';
 import Vulnerability from './Vulnerability';
 import VulnerabilityKnowledge from './VulnerabilityKnowledge';
@@ -186,7 +187,7 @@ class RootVulnerability extends Component {
                         />
                       </Tabs>
                     </Box>
-                    <Switch>
+                    <Routes>
                       <Route
                         exact
                         path="/dashboard/arsenal/vulnerabilities/:vulnerabilityId"
@@ -250,7 +251,7 @@ class RootVulnerability extends Component {
                           />
                         )}
                       />
-                    </Switch>
+                    </Routes>
                   </div>
                 );
               }

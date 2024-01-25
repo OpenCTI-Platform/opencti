@@ -13,7 +13,7 @@ import Button from '@mui/material/Button';
 import * as Yup from 'yup';
 import MenuItem from '@mui/material/MenuItem';
 import { graphql, PreloadedQuery, useMutation, usePreloadedQuery } from 'react-relay';
-import { createSearchParams, useNavigate } from 'react-router-dom-v5-compat';
+import { createSearchParams, useNavigate } from 'react-router-dom';
 import { FormikHelpers } from 'formik/dist/types';
 import { FileManagerExportMutation } from '@components/common/files/__generated__/FileManagerExportMutation.graphql';
 import { StixCoreObjectFileExportQuery } from '@components/common/stix_core_objects/__generated__/StixCoreObjectFileExportQuery.graphql';

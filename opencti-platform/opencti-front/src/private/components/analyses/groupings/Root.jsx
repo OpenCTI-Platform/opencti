@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { Link, Switch, Redirect, Route, withRouter } from 'react-router-dom';
+import { Link, Routes, Redirect, Route } from 'react-router-dom';
 import { graphql } from 'react-relay';
 import * as R from 'ramda';
 import Box from '@mui/material/Box';
@@ -18,7 +18,8 @@ import ContainerStixCyberObservables from '../../common/containers/ContainerStix
 import ErrorNotFound from '../../../../components/ErrorNotFound';
 import StixCoreObjectFilesAndHistory from '../../common/stix_core_objects/StixCoreObjectFilesAndHistory';
 import inject18n from '../../../../components/i18n';
-import Breadcrumbs from '../../../../components/Breadcrumbs';
+import withRouter from '../../../../utils/compat-router/withRouter';
+import Breadcrumbs from '../../../../components/Breadcrumps';
 
 const subscription = graphql`
   subscription RootGroupingSubscription($id: ID!) {
@@ -185,7 +186,7 @@ class RootGrouping extends Component {
                         />
                       </Tabs>
                     </Box>
-                    <Switch>
+                    <Routes>
                       <Route
                         exact
                         path="/dashboard/analyses/groupings/:groupingId"
@@ -257,7 +258,7 @@ class RootGrouping extends Component {
                           />
                         )}
                       />
-                    </Switch>
+                    </Routes>
                   </div>
                 );
               }

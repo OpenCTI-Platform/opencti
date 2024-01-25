@@ -1,11 +1,12 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { Route, withRouter } from 'react-router-dom';
+import { Route } from 'react-router-dom';
 import { graphql } from 'react-relay';
 import { QueryRenderer, requestSubscription } from '../../../../relay/environment';
 import ExternalReference from './ExternalReference';
 import Loader from '../../../../components/Loader';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
+import withRouter from '../../../../utils/compat-router/withRouter';
 
 const subscription = graphql`
   subscription RootExternalReferenceSubscription($id: ID!) {

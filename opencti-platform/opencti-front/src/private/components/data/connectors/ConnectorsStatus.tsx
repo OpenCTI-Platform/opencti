@@ -12,7 +12,7 @@ import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
 import List from '@mui/material/List';
 import Tooltip from '@mui/material/Tooltip';
 import IconButton from '@mui/material/IconButton';
-import { Link, useHistory } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { ConnectorsStatusQuery } from '@components/data/connectors/__generated__/ConnectorsStatusQuery.graphql';
 import { ConnectorsStatus_data$key } from '@components/data/connectors/__generated__/ConnectorsStatus_data.graphql';
 import makeStyles from '@mui/styles/makeStyles';
@@ -148,7 +148,7 @@ const ConnectorsStatusComponent: FunctionComponent<ConnectorsStatusComponentProp
 }) => {
   const { t_i18n, nsdt, n } = useFormatter();
   const classes = useStyles(); // TODO remove as deprecated
-  const history = useHistory();
+  const navigate = useNavigate();
   const [sortBy, setSortBy] = useState<string>('name');
   const [orderAsc, setOrderAsc] = useState<boolean>(true);
 
@@ -197,7 +197,7 @@ const ConnectorsStatusComponent: FunctionComponent<ConnectorsStatusComponentProp
       },
       onCompleted: () => {
         MESSAGING$.notifySuccess('The connector has been cleared');
-        history.push('/dashboard/data/ingestion/connectors');
+        navigate('/dashboard/data/ingestion/connectors');
       },
       updater: undefined,
       optimisticResponse: undefined,

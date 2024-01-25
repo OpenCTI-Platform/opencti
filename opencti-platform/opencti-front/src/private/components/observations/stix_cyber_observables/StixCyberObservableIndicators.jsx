@@ -293,7 +293,7 @@ StixCyberObservableIndicatorsComponent.propTypes = {
   classes: PropTypes.object,
   t: PropTypes.func,
   fd: PropTypes.func,
-  history: PropTypes.object,
+  navigate: PropTypes.func,
 };
 
 const StixCyberObservableIndicators = createFragmentContainer(

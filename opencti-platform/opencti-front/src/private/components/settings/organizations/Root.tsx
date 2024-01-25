@@ -2,7 +2,7 @@
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-nocheck
 import React, { FunctionComponent, useMemo } from 'react';
-import { Route, Switch, useParams } from 'react-router-dom';
+import { Route, Routes, useParams } from 'react-router-dom';
 import { graphql, PreloadedQuery, usePreloadedQuery, useSubscription } from 'react-relay';
 import { GraphQLSubscriptionConfig } from 'relay-runtime';
 import { VIRTUAL_ORGANIZATION_ADMIN, SETTINGS_SETACCESSES } from '../../../../utils/hooks/useGranted';
@@ -53,7 +53,7 @@ const RootSettingsOrganizationComponent: FunctionComponent<RootSettingsOrganizat
   return (
     <Security needs={[SETTINGS_SETACCESSES, VIRTUAL_ORGANIZATION_ADMIN]}>
       {organization ? (
-        <Switch>
+        <Routes>
           <Route
             exact
             path="/dashboard/settings/accesses/organizations/:organizationId"
@@ -61,7 +61,7 @@ const RootSettingsOrganizationComponent: FunctionComponent<RootSettingsOrganizat
               <SettingsOrganization {...routeProps} organizationData={organization} />
             )}
           />
-        </Switch>
+        </Routes>
       ) : (
         <ErrorNotFound />
       )}

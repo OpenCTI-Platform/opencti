@@ -8,7 +8,7 @@ import SpeedDial from '@mui/material/SpeedDial';
 import SpeedDialAction from '@mui/material/SpeedDialAction';
 import { CloudUploadOutlined, InsertChartOutlined } from '@mui/icons-material';
 import makeStyles from '@mui/styles/makeStyles';
-import { useHistory } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import VisuallyHiddenInput from '../common/VisuallyHiddenInput';
 import Drawer, { DrawerVariant } from '../common/drawer/Drawer';
 import { useFormatter } from '../../../components/i18n';
@@ -67,7 +67,7 @@ const WorkspaceCreation = ({ paginationOptions, type }) => {
   const inputRef = useRef();
   const [commitImportMutation] = useMutation(importMutation);
   const [commitCreationMutation] = useMutation(workspaceMutation);
-  const history = useHistory();
+  const navigate = useNavigate();
 
   const handleImport = (event) => {
     const importedFile = event.target.files[0];
@@ -75,7 +75,7 @@ const WorkspaceCreation = ({ paginationOptions, type }) => {
       variables: { file: importedFile },
       onCompleted: (data) => {
         inputRef.current.value = null; // Reset the input uploader ref
-        history.push(
+        navigate(
           `${resolveLink('Dashboard')}/${data.workspaceConfigurationImport}`,
         );
       },

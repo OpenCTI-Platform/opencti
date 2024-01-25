@@ -2,7 +2,7 @@
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-nocheck
 import React, { useMemo } from 'react';
-import { Link, Redirect, Route, Switch, useLocation, useParams } from 'react-router-dom';
+import { Link, Redirect, Route, Routes, useLocation, useParams } from 'react-router-dom';
 import { graphql, usePreloadedQuery, useSubscription } from 'react-relay';
 import { GraphQLSubscriptionConfig } from 'relay-runtime';
 import Box from '@mui/material/Box';
@@ -156,7 +156,7 @@ const RootCityComponent = ({ queryRef, cityId, link }) => {
               />
             </Tabs>
           </Box>
-          <Switch>
+          <Routes>
             <Route
               exact
               path="/dashboard/locations/cities/:cityId"
@@ -221,7 +221,7 @@ const RootCityComponent = ({ queryRef, cityId, link }) => {
                 />
               )}
             />
-          </Switch>
+          </Routes>
         </div>
       ) : (
         <ErrorNotFound />

@@ -298,7 +298,7 @@ StixCyberObservableEntities.propTypes = {
   relationship_type: PropTypes.string,
   classes: PropTypes.object,
   t: PropTypes.func,
-  history: PropTypes.object,
+  navigate: PropTypes.func,
   defaultStartTime: PropTypes.string,
   defaultStopTime: PropTypes.string,
 };
