@@ -89,12 +89,14 @@ const UserEditionGroupsComponent = ({ user }) => {
                 primary={
                   <div style={{ display: 'flex', alignItems: 'center' }}>
                     {group.name}
-                    {group.group_confidence_level === null && (
+                    {group.group_confidence_level === null ? (
                       <Tooltip
                         title={t_i18n('This group has no max confidence level defined.')}
                       >
                         <ReportGmailerrorred fontSize={'small'} color={'error'} style={{ marginLeft: 5 }}/>
                       </Tooltip>
+                    ) : (
+                      ` (${t_i18n('Max Confidence Level:')} ${group.group_confidence_level.max_confidence})`
                     )}
                   </div>
                 }

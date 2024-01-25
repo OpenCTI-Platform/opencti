@@ -200,6 +200,7 @@ const UserCreation = ({ paginationOptions }) => {
                   name="groups"
                   label="Groups"
                   style={fieldSpacingContainerStyle}
+                  showConfidence={true}
                 />
                 <Field
                   component={SelectField}

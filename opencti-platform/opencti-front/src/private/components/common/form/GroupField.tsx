@@ -63,18 +63,19 @@ export const groupsQuery = graphql`
 
 type GroupFieldOption = {
   label: string,
-  value: string
+  value: string,
 };
 
 interface GroupFieldProps {
   name: string,
-  label: string,
-  style: object,
-  onChange: () => void,
+  label: React.ReactNode,
+  style?: React.CSSProperties,
+  onChange?: unknown,
   multiple?: boolean,
   helpertext?: string,
   disabled?: boolean,
-  predefinedGroups?: GroupFieldOption[]
+  predefinedGroups?: GroupFieldOption[],
+  showConfidence?: boolean,
 }
 
 const GroupField: React.FC<GroupFieldProps> = (props) => {
@@ -89,6 +90,7 @@ const GroupField: React.FC<GroupFieldProps> = (props) => {
     helpertext,
     disabled = false,
     predefinedGroups,
+    showConfidence = false,
   } = props;
 
   const [groups, setGroups] = useState<GroupFieldOption[]>([]);
@@ -101,10 +103,18 @@ const GroupField: React.FC<GroupFieldProps> = (props) => {
         .toPromise()
         .then((data) => {
           const dataGroups = (data as GroupFieldQuery$data).groups?.edges ?? [];
-          const newGroups = dataGroups.map((n) => ({
-            label: n?.node.name ?? '',
-            value: n?.node.id ?? '',
-          }));
+          const newGroups = dataGroups.map((n) => {
+            const max_confidence = n?.node.group_confidence_level
+              ? `${t_i18n('Max Confidence Level:')} ${n.node.group_confidence_level.max_confidence}`
+              : t_i18n('No confidence level');
+            const newLabel = showConfidence
+              ? `${n?.node.name} (${max_confidence})`
+              : n?.node.name ?? '';
+            return {
+              label: newLabel,
+              value: n?.node.id ?? '',
+            };
+          });
           setGroups(newGroups);
         });
     }

@@ -175,7 +175,6 @@ ConfigurationComponentProps
                             label={t_i18n('Add a group')}
                             multiple={false}
                             onChange={onChangeData(resetForm)}
-                            containerStyle={{ width: '100%' }}
                           />
                         </Grid>
                         <Grid
