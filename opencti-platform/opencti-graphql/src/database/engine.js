@@ -27,7 +27,7 @@ import {
   WRITE_PLATFORM_INDICES
 } from './utils';
 import conf, { booleanConf, loadCert, logApp } from '../config/conf';
-import { ConfigurationError, DatabaseError, EngineShardsError, FunctionalError, UnsupportedError } from '../config/errors';
+import { ComplexSearchError, ConfigurationError, DatabaseError, EngineShardsError, FunctionalError, UnsupportedError } from '../config/errors';
 import {
   isStixRefRelationship,
   RELATION_CREATED_BY,
@@ -132,6 +132,7 @@ const ES_MAX_DOCS = conf.get('elasticsearch:max_docs') || 75000000;
 const ES_MAX_BULK_RESOLUTIONS = conf.get('elasticsearch:max_bulk_resolutions') || 500;
 export const MAX_BULK_OPERATIONS = conf.get('elasticsearch:max_bulk_operations') || 5000;
 
+const TOO_MANY_CLAUSES = 'too_many_nested_clauses';
 const ES_MAX_MAPPINGS = 3000;
 const ES_RETRY_ON_CONFLICT = 5;
 const MAX_EVENT_LOOP_PROCESSING_TIME = 50;
@@ -1348,28 +1349,71 @@ export const elBatchIds = async (context, user, ids) => {
 
 // region elastic common loader.
 export const specialElasticCharsEscape = (query) => {
-  return query.replace(/([/+|\-*()^~={}[\]:?"\\])/g, '\\$1');
+  return query.replace(/([/+|\-*()^~={}[\]:?!"\\])/g, '\\$1');
 };
 
+// Global search attributes are limited
+// Its due to opensearch / elastic limitations
 const BASE_SEARCH_CONNECTIONS = [
   // Pounds for connections search
-  `connections.${ATTRIBUTE_NAME}^5`,
+  `connections.${ATTRIBUTE_NAME}^4`,
   // Add all other attributes
   'connections.*',
 ];
 const BASE_SEARCH_ATTRIBUTES = [
   // Pounds for attributes search
   `${ATTRIBUTE_NAME}^5`,
-  `${ATTRIBUTE_DESCRIPTION}^2`,
   `${ATTRIBUTE_ABSTRACT}^5`,
   `${ATTRIBUTE_EXPLANATION}^5`,
+  `${ATTRIBUTE_DESCRIPTION}^2`,
+  'x_opencti_description^2',
   // Add all other attributes
-  ...schemaAttributesDefinition.getSearchAttributes([
-    ATTRIBUTE_NAME,
-    ATTRIBUTE_DESCRIPTION,
-    ATTRIBUTE_ABSTRACT,
-    ATTRIBUTE_EXPLANATION
-  ]),
+  'aliases',
+  'x_opencti_aliases',
+  'roles',
+  'objective',
+  'content',
+  'content_mapping',
+  'explanation',
+  'opinion',
+  'x_mitre_id',
+  'x_opencti_threat_hunting',
+  'x_opencti_log_sources',
+  'postal_code',
+  'street_address',
+  'source',
+  'context',
+  'pattern',
+  'path',
+  'value',
+  'display_name',
+  'body',
+  'hashes.MD5',
+  'hashes.SHA-1',
+  'hashes.SHA-256',
+  'hashes.SHA-512',
+  'hashes.SHA3-256',
+  'hashes.SHA3-512',
+  'hashes.SSDEEP',
+  'hashes.SDHASH',
+  'hashes.TLSH',
+  'hashes.LZJD',
+  'url',
+  'subject',
+  'payload_bin',
+  'x_opencti_additional_names',
+  'serial_number',
+  'issuer',
+  'cwd',
+  'command_line',
+  'cpe',
+  'swid',
+  'iban',
+  'bic',
+  'account_number',
+  'card_number',
+  'holder_name',
+  'title',
 ];
 
 export const elGenerateFullTextSearchShould = (search, args = {}) => {
@@ -2084,13 +2128,11 @@ const elQueryBodyBuilder = async (context, user, options) => {
       specialFiltersContent.push({ key: TYPE_FILTER, values: R.flatten(types) });
     }
   }
-  const completeFilters = specialFiltersContent.length > 0
-    ? {
-      mode: FilterMode.And,
-      filters: specialFiltersContent,
-      filterGroups: isFilterGroupNotEmpty(filters) ? [filters] : [],
-    }
-    : filters;
+  const completeFilters = specialFiltersContent.length > 0 ? {
+    mode: FilterMode.And,
+    filters: specialFiltersContent,
+    filterGroups: isFilterGroupNotEmpty(filters) ? [filters] : [],
+  } : filters;
   // Handle filters
   if (isFilterGroupNotEmpty(completeFilters)) {
     const finalFilters = await completeSpecialFilterKeys(context, user, completeFilters);
@@ -2480,7 +2522,9 @@ export const elPaginate = async (context, user, indexName, options = {}) => {
     })
     .catch(
       /* v8 ignore next */ (err) => {
-        throw DatabaseError('Fail to execute engine pagination', { cause: err, query });
+        const root_cause = err.meta?.body?.error?.caused_by?.type;
+        if (root_cause === TOO_MANY_CLAUSES) throw ComplexSearchError();
+        throw DatabaseError('Fail to execute engine pagination', { cause: err, root_cause, query });
       }
     );
 };

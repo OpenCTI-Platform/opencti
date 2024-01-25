@@ -1002,6 +1002,9 @@ const listEntitiesByHashes = async (context, user, type, hashes) => {
     return [];
   }
   const searchHashes = extractNotFuzzyHashValues(hashes); // Search hashes must filter the fuzzy hashes
+  if (searchHashes.length === 0) {
+    return [];
+  }
   return listEntities(context, user, [type], {
     filters: {
       mode: 'and',
