@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { CSSProperties, useEffect, useState } from 'react';
 import DrawerMUI from '@mui/material/Drawer';
 import makeStyles from '@mui/styles/makeStyles';
 import IconButton from '@mui/material/IconButton';
@@ -70,6 +70,7 @@ interface DrawerProps {
   header?: React.ReactElement;
   controlledDial?: ({ onOpen, onClose }:{ onOpen: () => void, onClose: () => void }) => React.ReactElement;
   containerRef?: HTMLInputElement;
+  containerStyle?: CSSProperties
 }
 
 const Drawer = ({
@@ -82,6 +83,7 @@ const Drawer = ({
   header,
   controlledDial,
   containerRef,
+  containerStyle,
 }: DrawerProps) => {
   const {
     bannerSettings: { bannerHeightNumber },
@@ -162,7 +164,7 @@ const Drawer = ({
           {context && <SubscriptionAvatars context={context} />}
           {header}
         </div>
-        <div className={classes.container}>{component}</div>
+        <div className={classes.container} style={containerStyle}>{component}</div>
       </DrawerMUI>
     </>
   );
