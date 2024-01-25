@@ -58,8 +58,8 @@ it('should search parsing correctly generated', () => {
   expect(parsed.matchesString).toBe('cool* test\\-with*');
 
   parsed = parse('test of search with $"()_"!spe")£")cif2933920ic chars');
-  expect(parsed.queriesString).toBe('test* of* search* with* $!spe\\)cif2933920ic* chars*');
-  expect(parsed.matchesString).toBe('()_ )£ test* of* search* with* $!spe\\)cif2933920ic* chars*');
+  expect(parsed.queriesString).toBe('test* of* search* with* $\\!spe\\)cif2933920ic* chars*');
+  expect(parsed.matchesString).toBe('()_ )£ test* of* search* with* $\\!spe\\)cif2933920ic* chars*');
 
   // IDS TESTING
   parsed = parse('     test       d1d7344e-f38e-497b-930c-07779d81ffff');
