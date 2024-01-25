@@ -106,7 +106,7 @@ class RolePopover extends Component {
       onCompleted: () => {
         this.setState({ deleting: false });
         this.handleClose();
-        this.props.history.push('/dashboard/settings/accesses/roles');
+        this.props.navigate('/dashboard/settings/accesses/roles');
       },
     });
   }

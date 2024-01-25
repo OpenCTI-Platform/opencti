@@ -3,7 +3,7 @@
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-nocheck
 import React from 'react';
-import { Route, Switch } from 'react-router-dom';
+import { Route, Routes } from 'react-router-dom';
 import { graphql, useFragment } from 'react-relay';
 import EntityStixCoreRelationships from '../../common/stix_core_relationships/EntityStixCoreRelationships';
 import StixCoreRelationship from '../../common/stix_core_relationships/StixCoreRelationship';
@@ -38,7 +38,7 @@ const ThreatActorIndividualKnowledgeComponent = ({
   const link = `/dashboard/threats/threat_actors_individual/${threatActorIndividual.id}/knowledge`;
   return (
     <>
-      <Switch>
+      <Routes>
         <Route
           exact
           path="/dashboard/threats/threat_actors_individual/:threatActorIndividualId/knowledge/relations/:relationId"
@@ -350,7 +350,7 @@ const ThreatActorIndividualKnowledgeComponent = ({
             />
           )}
         />
-      </Switch>
+      </Routes>
     </>
   );
 };

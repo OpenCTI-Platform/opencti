@@ -3,10 +3,9 @@
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-nocheck
 import React, { useMemo } from 'react';
-import { Route, Redirect, useParams, Switch, Link } from 'react-router-dom';
+import { Route, Redirect, useParams, Routes, Link, useLocation } from 'react-router-dom';
 import { graphql, usePreloadedQuery, useSubscription } from 'react-relay';
 import { GraphQLSubscriptionConfig } from 'relay-runtime';
-import { useLocation } from 'react-router-dom-v5-compat';
 import Box from '@mui/material/Box';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
@@ -147,7 +146,7 @@ const RootInfrastructureComponent = ({ queryRef, infrastructureId }) => {
               />
             </Tabs>
           </Box>
-          <Switch>
+          <Routes>
             <Route
               exact
               path="/dashboard/observations/infrastructures/:infrastructureId"
@@ -201,7 +200,7 @@ const RootInfrastructureComponent = ({ queryRef, infrastructureId }) => {
                 />
               )}
             />
-          </Switch>
+          </Routes>
         </div>
       ) : (
         <ErrorNotFound />

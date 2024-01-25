@@ -1,13 +1,14 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { Route, withRouter } from 'react-router-dom';
 import { compose } from 'ramda';
+import { Route } from 'react-router-dom';
 import { QueryRenderer } from '../../../../relay/environment';
 import Connector, { connectorQuery } from './Connector';
 import Loader from '../../../../components/Loader';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
 import inject18n from '../../../../components/i18n';
+import withRouter from '../../../../utils/compat-router/withRouter';
 
 class RootConnector extends Component {
   render() {

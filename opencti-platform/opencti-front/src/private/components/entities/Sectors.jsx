@@ -1,7 +1,6 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { compose, propOr } from 'ramda';
-import { withRouter } from 'react-router-dom';
 import withStyles from '@mui/styles/withStyles';
 import { QueryRenderer } from '../../../relay/environment';
 import { buildViewParamsFromUrlAndStorage, saveViewParameters } from '../../../utils/ListParameters';
@@ -11,7 +10,8 @@ import SectorCreation from './sectors/SectorCreation';
 import SearchInput from '../../../components/SearchInput';
 import Security from '../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE } from '../../../utils/hooks/useGranted';
-import Breadcrumbs from '../../../components/Breadcrumbs';
+import withRouter from '../../../utils/compat-router/withRouter';
+import Breadcrumbs from '../../../components/Breadcrumps';
 
 const styles = () => ({
   parameters: {
@@ -26,7 +26,7 @@ class Sectors extends Component {
   constructor(props) {
     super(props);
     const params = buildViewParamsFromUrlAndStorage(
-      props.history,
+      props.navigate,
       props.location,
       LOCAL_STORAGE_KEY,
     );
@@ -38,7 +38,7 @@ class Sectors extends Component {
 
   saveView() {
     saveViewParameters(
-      this.props.history,
+      this.props.navigate,
       this.props.location,
       LOCAL_STORAGE_KEY,
       this.state,
@@ -86,7 +86,7 @@ class Sectors extends Component {
 
 Sectors.propTypes = {
   t: PropTypes.func,
-  history: PropTypes.object,
+  navigate: PropTypes.func,
   location: PropTypes.object,
   classes: PropTypes.object,
 };

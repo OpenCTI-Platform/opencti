@@ -18,14 +18,14 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-nocheck
 import React from 'react';
-import { Route, Switch } from 'react-router-dom';
+import { Route, Routes } from 'react-router-dom';
 import Audit from './audit/Root';
 import Alerting from './alerting/Root';
 import Configuration from './configuration/Configuration';
 
 const RootActivity = () => {
   return (
-    <Switch>
+    <Routes>
       <Route
         exact
         path="/dashboard/settings/activity/audit"
@@ -41,7 +41,7 @@ const RootActivity = () => {
         path="/dashboard/settings/activity/alerting"
         render={() => <Alerting />}
       />
-    </Switch>
+    </Routes>
   );
 };
 

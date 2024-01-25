@@ -1,9 +1,9 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { withRouter } from 'react-router-dom';
 import { compose } from 'ramda';
 import { graphql } from 'react-relay';
 import withStyles from '@mui/styles/withStyles';
+import withRouter from '../../../../utils/compat-router/withRouter';
 import inject18n from '../../../../components/i18n';
 import { QueryRenderer } from '../../../../relay/environment';
 import StixCoreRelationshipOverview from './StixCoreRelationshipOverview';

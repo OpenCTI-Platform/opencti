@@ -1,12 +1,12 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { graphql } from 'react-relay';
-import { withRouter } from 'react-router-dom';
 import * as R from 'ramda';
 import { QueryRenderer } from '../../../../../relay/environment';
 import WorkbenchFileContent from './WorkbenchFileContent';
 import Loader from '../../../../../components/Loader';
 import { fromB64 } from '../../../../../utils/String';
+import withRouter from '../../../../../utils/compat-router/withRouter';
 
 const workbenchFileQuery = graphql`
   query WorkbenchFileQuery($id: String!) {

@@ -11,7 +11,6 @@ import Dialog from '@mui/material/Dialog';
 import Tooltip from '@mui/material/Tooltip';
 import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
 import ToggleButton from '@mui/material/ToggleButton';
-import { withRouter } from 'react-router-dom';
 import IconButton from '@mui/material/IconButton';
 import themeLight from './ThemeLight';
 import themeDark from './ThemeDark';
@@ -19,6 +18,7 @@ import { commitLocalUpdate } from '../relay/environment';
 import { exportImage, exportPdf } from '../utils/Image';
 import inject18n from './i18n';
 import Loader from './Loader';
+import withRouter from '../utils/compat-router/withRouter';
 
 const styles = () => ({
   exportButtons: {

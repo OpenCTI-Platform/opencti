@@ -1,19 +1,20 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
-import { Route, Switch, withRouter } from 'react-router-dom';
+import { Route, Routes } from 'react-router-dom';
 import { graphql, createFragmentContainer } from 'react-relay';
 import EntityStixCoreRelationships from '../../common/stix_core_relationships/EntityStixCoreRelationships';
 import StixDomainObjectKnowledge from '../../common/stix_domain_objects/StixDomainObjectKnowledge';
 import StixCoreRelationship from '../../common/stix_core_relationships/StixCoreRelationship';
 import StixDomainObjectAuthorKnowledge from '../../common/stix_domain_objects/StixDomainObjectAuthorKnowledge';
 import StixSightingRelationship from '../../events/stix_sighting_relationships/StixSightingRelationship';
+import withRouter from '../../../../utils/compat-router/withRouter';
 
 class OrganizationKnowledgeComponent extends Component {
   render() {
     const { organization, viewAs } = this.props;
     const link = `/dashboard/entities/organizations/${organization.id}/knowledge`;
     return (
-      <Switch>
+      <Routes>
         <Route
           exact
           path="/dashboard/entities/organizations/:organizationId/knowledge/relations/:relationId"
@@ -287,7 +288,7 @@ class OrganizationKnowledgeComponent extends Component {
             />
           )}
         />
-      </Switch>
+      </Routes>
     );
   }
 }

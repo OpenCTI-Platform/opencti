@@ -1,5 +1,5 @@
 import React, { Suspense, lazy } from 'react';
-import { Redirect, Switch } from 'react-router-dom';
+import { Redirect, Routes } from 'react-router-dom';
 import { isOnlyOrganizationAdmin, VIRTUAL_ORGANIZATION_ADMIN, SETTINGS, SETTINGS_SETACCESSES, SETTINGS_SETLABELS, SETTINGS_SETMARKINGS } from '../../../utils/hooks/useGranted';
 import { BoundaryRoute } from '../Error';
 import Loader from '../../../components/Loader';
@@ -38,7 +38,7 @@ const Root = () => {
   return (
     <div data-testid="settings-page">
       <Suspense fallback={<Loader />}>
-        <Switch>
+        <Routes>
           <Security needs={[SETTINGS, VIRTUAL_ORGANIZATION_ADMIN]} placeholder={<Redirect to="/dashboard" />}>
             <BoundaryRoute exact path="/dashboard/settings" component={Settings} />
             <BoundaryRoute
@@ -310,7 +310,7 @@ const Root = () => {
               )}
             />
           </Security>
-        </Switch>
+        </Routes>
       </Suspense>
     </div>
   );

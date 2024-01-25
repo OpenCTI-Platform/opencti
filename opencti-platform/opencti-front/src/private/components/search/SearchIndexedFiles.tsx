@@ -20,7 +20,7 @@ import {
   SearchIndexedFilesLinesPaginationQuery$variables,
 } from '@components/search/__generated__/SearchIndexedFilesLinesPaginationQuery.graphql';
 import { SearchIndexedFileLine_node$data } from '@components/search/__generated__/SearchIndexedFileLine_node.graphql';
-import { Link, useHistory, useParams } from 'react-router-dom';
+import { Link, useNavigate, useParams } from 'react-router-dom';
 import EnterpriseEdition from '@components/common/entreprise_edition/EnterpriseEdition';
 import Alert from '@mui/material/Alert';
 import AlertTitle from '@mui/material/AlertTitle';
@@ -43,7 +43,7 @@ import { SETTINGS } from '../../../utils/hooks/useGranted';
 const LOCAL_STORAGE_KEY = 'view-files';
 const SearchIndexedFilesComponent = () => {
   const { fd, t_i18n } = useFormatter();
-  const history = useHistory();
+  const navigate = useNavigate();
   const {
     platformModuleHelpers: { isFileIndexManagerEnable },
   } = useAuth();
@@ -76,7 +76,7 @@ const SearchIndexedFilesComponent = () => {
   );
 
   const handleSearch = (searchKeyword: string) => {
-    handleSearchByKeyword(searchKeyword, 'files', history);
+    handleSearchByKeyword(searchKeyword, 'files', navigate);
   };
 
   const fileSearchEnabled = isFileIndexManagerEnable();

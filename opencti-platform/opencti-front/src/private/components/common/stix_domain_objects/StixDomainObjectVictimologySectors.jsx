@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { Link, withRouter } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import * as R from 'ramda';
 import withStyles from '@mui/styles/withStyles';
 import IconButton from '@mui/material/IconButton';
@@ -30,6 +30,7 @@ import StixCoreRelationshipsExports from '../stix_core_relationships/StixCoreRel
 import ItemMarkings from '../../../../components/ItemMarkings';
 import { export_max_size } from '../../../../utils/utils';
 import MarkdownDisplay from '../../../../components/MarkdownDisplay';
+import withRouter from '../../../../utils/compat-router/withRouter';
 
 const styles = (theme) => ({
   container: {
@@ -60,7 +61,7 @@ class StixDomainObjectVictimologySectorsComponent extends Component {
     let params = {};
     if (!props.noState) {
       params = buildViewParamsFromUrlAndStorage(
-        props.history,
+        props.navigate,
         props.location,
         LOCAL_STORAGE_KEY,
       );
@@ -81,7 +82,7 @@ class StixDomainObjectVictimologySectorsComponent extends Component {
     if (!this.props.noState) {
       const LOCAL_STORAGE_KEY = `victimology-sectors-${this.props.entityId}`;
       saveViewParameters(
-        this.props.history,
+        this.props.navigate,
         this.props.location,
         LOCAL_STORAGE_KEY,
         this.state,

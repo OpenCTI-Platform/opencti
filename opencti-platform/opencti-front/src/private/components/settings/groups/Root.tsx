@@ -1,7 +1,7 @@
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-nocheck
 import React, { FunctionComponent, useMemo } from 'react';
-import { Route, Switch, useParams } from 'react-router-dom';
+import { Route, Routes, useParams } from 'react-router-dom';
 import { graphql, PreloadedQuery, usePreloadedQuery, useSubscription } from 'react-relay';
 import { GraphQLSubscriptionConfig } from 'relay-runtime';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
@@ -65,7 +65,7 @@ const RootGroupComponent: FunctionComponent<RootGroupComponentProps> = ({ queryR
   return (
     <Security needs={[SETTINGS_SETACCESSES]}>
       {group ? (
-        <Switch>
+        <Routes>
           <Route
             exact
             path="/dashboard/settings/accesses/groups/:groupId"
@@ -73,7 +73,7 @@ const RootGroupComponent: FunctionComponent<RootGroupComponentProps> = ({ queryR
               <Group {...routeProps} groupData={group} />
             )}
           />
-        </Switch>
+        </Routes>
       ) : (
         <ErrorNotFound />
       )}

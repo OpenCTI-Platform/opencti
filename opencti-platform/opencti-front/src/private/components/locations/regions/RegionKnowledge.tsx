@@ -2,7 +2,7 @@
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-nocheck
 import React from 'react';
-import { Route, Switch } from 'react-router-dom';
+import { Route, Routes } from 'react-router-dom';
 import { graphql, useFragment } from 'react-relay';
 import EntityStixCoreRelationships from '../../common/stix_core_relationships/EntityStixCoreRelationships';
 import StixDomainObjectKnowledge from '../../common/stix_domain_objects/StixDomainObjectKnowledge';
@@ -30,7 +30,7 @@ const RegionKnowledgeComponent = ({
   const link = `/dashboard/locations/regions/${region.id}/knowledge`;
   return (
     <>
-      <Switch>
+      <Routes>
         <Route
           exact
           path="/dashboard/locations/regions/:regionId/knowledge/relations/:relationId"
@@ -298,7 +298,7 @@ const RegionKnowledgeComponent = ({
             />
           )}
         />
-      </Switch>
+      </Routes>
     </>
   );
 };

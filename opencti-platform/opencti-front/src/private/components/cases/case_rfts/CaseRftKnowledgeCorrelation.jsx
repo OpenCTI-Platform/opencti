@@ -6,10 +6,10 @@ import ForceGraph2D from 'react-force-graph-2d';
 import ForceGraph3D from 'react-force-graph-3d';
 import RectangleSelection from 'react-rectangle-selection';
 import { createFragmentContainer, graphql } from 'react-relay';
-import { withRouter } from 'react-router-dom';
 import { Subject, timer } from 'rxjs';
 import { debounce } from 'rxjs/operators';
 import SpriteText from 'three-spritetext';
+import withRouter from '../../../../utils/compat-router/withRouter';
 import inject18n from '../../../../components/i18n';
 import { commitMutation, fetchQuery, MESSAGING$ } from '../../../../relay/environment';
 import { hexToRGB } from '../../../../utils/Colors';
@@ -238,7 +238,7 @@ class CaseRftKnowledgeCorrelationComponent extends Component {
     this.selectedNodes = new Set();
     this.selectedLinks = new Set();
     const params = buildViewParamsFromUrlAndStorage(
-      props.history,
+      props.navigate,
       props.location,
       LOCAL_STORAGE_KEY,
     );
@@ -351,7 +351,7 @@ class CaseRftKnowledgeCorrelationComponent extends Component {
   saveParameters(refreshGraphData = false) {
     const LOCAL_STORAGE_KEY = `case-rfts-${this.props.caseData.id}-knowledge-correlation`;
     saveViewParameters(
-      this.props.history,
+      this.props.navigate,
       this.props.location,
       LOCAL_STORAGE_KEY,
       { zoom: this.zoom, ...this.state },

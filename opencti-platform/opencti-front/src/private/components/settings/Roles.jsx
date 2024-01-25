@@ -1,7 +1,6 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { compose, propOr } from 'ramda';
-import { withRouter } from 'react-router-dom';
 import withStyles from '@mui/styles/withStyles';
 import { QueryRenderer } from '../../../relay/environment';
 import { buildViewParamsFromUrlAndStorage, saveViewParameters } from '../../../utils/ListParameters';
@@ -10,7 +9,8 @@ import ListLines from '../../../components/list_lines/ListLines';
 import RolesLines, { rolesLinesQuery } from './roles/RolesLines';
 import AccessesMenu from './AccessesMenu';
 import RoleCreation from './roles/RoleCreation';
-import Breadcrumbs from '../../../components/Breadcrumbs';
+import withRouter from '../../../utils/compat-router/withRouter';
+import Breadcrumbs from '../../../components/Breadcrumps';
 
 const styles = () => ({
   container: {
@@ -25,7 +25,7 @@ class Roles extends Component {
   constructor(props) {
     super(props);
     const params = buildViewParamsFromUrlAndStorage(
-      props.history,
+      props.navigate,
       props.location,
       LOCAL_STORAGE_KEY,
     );
@@ -39,7 +39,7 @@ class Roles extends Component {
 
   saveView() {
     saveViewParameters(
-      this.props.history,
+      this.props.navigate,
       this.props.location,
       LOCAL_STORAGE_KEY,
       this.state,
@@ -127,7 +127,7 @@ class Roles extends Component {
 Roles.propTypes = {
   t: PropTypes.func,
   classes: PropTypes.object,
-  history: PropTypes.object,
+  navigate: PropTypes.func,
   location: PropTypes.object,
 };
 

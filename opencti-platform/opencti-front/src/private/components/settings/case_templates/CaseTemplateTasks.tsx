@@ -1,10 +1,9 @@
 import Typography from '@mui/material/Typography';
 import makeStyles from '@mui/styles/makeStyles';
 import React, { FunctionComponent, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { MoreVertOutlined } from '@mui/icons-material';
 import MenuItem from '@mui/material/MenuItem';
-import { useNavigate } from 'react-router-dom-v5-compat';
 import { graphql, PreloadedQuery } from 'react-relay';
 import Button from '@mui/material/Button';
 import Menu from '@mui/material/Menu';

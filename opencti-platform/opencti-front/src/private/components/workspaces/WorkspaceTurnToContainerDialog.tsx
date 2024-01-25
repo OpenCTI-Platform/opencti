@@ -11,7 +11,7 @@ import Button from '@mui/material/Button';
 import Dialog from '@mui/material/Dialog';
 import makeStyles from '@mui/styles/makeStyles';
 import { graphql, useMutation } from 'react-relay';
-import { useHistory } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { WorkspaceTurnToContainerDialogMutation } from '@components/workspaces/__generated__/WorkspaceTurnToContainerDialogMutation.graphql';
 import { Option } from '@components/common/form/ReferenceField';
 import Transition from '../../../components/Transition';
@@ -102,7 +102,7 @@ const WorkspaceTurnToContainerDialog: FunctionComponent<WorkspaceTurnToContainer
   const [commitInvestigationToContainerAdd] = useMutation<WorkspaceTurnToContainerDialogMutation>(
     investigationToContainerMutation,
   );
-  const history = useHistory();
+  const navigate = useNavigate();
   const handleCloseUpdate = () => {
     setActionsInputs(null);
   };
@@ -116,7 +116,7 @@ const WorkspaceTurnToContainerDialog: FunctionComponent<WorkspaceTurnToContainer
       onCompleted: (data) => {
         const id = data.containerEdit?.knowledgeAddFromInvestigation?.id;
         const entityType = data.containerEdit?.knowledgeAddFromInvestigation?.entity_type || '';
-        history.push(
+        navigate(
           `${resolveLink(entityType.toString())}/${id}/knowledge/graph`,
         );
       },

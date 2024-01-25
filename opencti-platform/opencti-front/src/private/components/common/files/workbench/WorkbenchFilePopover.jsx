@@ -1,7 +1,6 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { compose } from 'ramda';
-import { withRouter } from 'react-router-dom';
 import withStyles from '@mui/styles/withStyles';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
@@ -17,6 +16,7 @@ import { graphql } from 'react-relay';
 import inject18n from '../../../../../components/i18n';
 import { APP_BASE_PATH, commitMutation } from '../../../../../relay/environment';
 import { resolveLink } from '../../../../../utils/Entity';
+import withRouter from '../../../../../utils/compat-router/withRouter';
 
 const styles = (theme) => ({
   container: {
@@ -84,9 +84,9 @@ class WorkbenchFilePopover extends Component {
           const entityLink = `${resolveLink(
             this.props.file.metaData.entity.entity_type,
           )}/${this.props.file.metaData.entity.id}`;
-          this.props.history.push(`${entityLink}/files`);
+          this.props.navigate(`${entityLink}/files`);
         } else {
-          this.props.history.push('/dashboard/data/import');
+          this.props.navigate('/dashboard/data/import');
         }
       },
     });
@@ -157,7 +157,7 @@ WorkbenchFilePopover.propTypes = {
   file: PropTypes.object,
   classes: PropTypes.object,
   t: PropTypes.func,
-  history: PropTypes.object,
+  navigate: PropTypes.func,
 };
 
 export default compose(

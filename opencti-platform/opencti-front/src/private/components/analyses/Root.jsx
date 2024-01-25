@@ -1,6 +1,7 @@
 import React, { Suspense, lazy } from 'react';
-import { Switch, Redirect } from 'react-router-dom';
-import { BoundaryRoute } from '../Error';
+import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
+
+import { boundaryWrapper } from '@components/Error';
 import { useIsHiddenEntity } from '../../../utils/hooks/useEntitySettings';
 import Loader from '../../../components/Loader';
 
@@ -32,67 +33,60 @@ const Root = () => {
   }
   return (
     <Suspense fallback={<Loader />}>
-      <Switch>
-        <BoundaryRoute
-          exact
-          path="/dashboard/analyses"
-          render={() => <Redirect to={`/dashboard/analyses/${redirect}`} />}
+      <Routes>
+        <Route
+          path="/"
+          element={<Navigate to={`/dashboard/analyses/${redirect}`} />}
         />
-        <BoundaryRoute
-          exact
-          path="/dashboard/analyses/reports"
-          component={Reports}
+        <Route
+          path="/reports"
+          Component={boundaryWrapper(Reports)}
         />
-        <BoundaryRoute
-          path="/dashboard/analyses/reports/:reportId"
-          component={RootReport}
+        <Route
+          path="/reports/:reportId/*"
+          Component={boundaryWrapper(RootReport)}
         />
-        <BoundaryRoute
-          exact
-          path="/dashboard/analyses/groupings"
-          component={Groupings}
+        <Route
+          path="/groupings"
+          Component={boundaryWrapper(Groupings)}
         />
-        <BoundaryRoute
-          path="/dashboard/analyses/groupings/:groupingId"
-          component={RootGrouping}
+        <Route
+          path="/groupings/:groupingId"
+          Component={boundaryWrapper(RootGrouping)}
         />
-        <BoundaryRoute
-          exact
-          path="/dashboard/analyses/malware_analyses"
-          component={MalwareAnalyses}
+        <Route
+          path="/malware_analyses"
+          Component={boundaryWrapper(MalwareAnalyses)}
         />
-        <BoundaryRoute
-          path="/dashboard/analyses/malware_analyses/:malwareAnalysisId"
-          component={RootMalwareAnalysis}
+        <Route
+          path="/malware_analyses/:malwareAnalysisId"
+          Component={boundaryWrapper(RootMalwareAnalysis)}
         />
-        <BoundaryRoute
-          exact
-          path="/dashboard/analyses/notes"
-          component={Notes}
+        <Route
+          path="/notes"
+          Component={boundaryWrapper(Notes)}
         />
-        <BoundaryRoute
-          path="/dashboard/analyses/notes/:noteId"
-          component={RootNote}
+        <Route
+          path="/notes/:noteId"
+          Component={boundaryWrapper(RootNote)}
         />
-        <BoundaryRoute
-          exact
-          path="/dashboard/analyses/opinions"
-          component={Opinions}
+        <Route
+          path="/opinions"
+          Component={boundaryWrapper(Opinions)}
         />
-        <BoundaryRoute
-          path="/dashboard/analyses/opinions/:opinionId"
-          component={RootOpinion}
+        <Route
+          path="/opinions/:opinionId"
+          Component={boundaryWrapper(RootOpinion)}
         />
-        <BoundaryRoute
-          exact
-          path="/dashboard/analyses/external_references"
-          component={ExternalReferences}
+        <Route
+          path="/external_references"
+          Component={boundaryWrapper(ExternalReferences)}
         />
-        <BoundaryRoute
-          path="/dashboard/analyses/external_references/:externalReferenceId"
-          component={RootExternalReference}
+        <Route
+          path="/external_references/:externalReferenceId"
+          Component={boundaryWrapper(RootExternalReference)}
         />
-      </Switch>
+      </Routes>
     </Suspense>
   );
 };

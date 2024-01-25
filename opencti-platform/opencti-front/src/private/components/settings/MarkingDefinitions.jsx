@@ -1,7 +1,6 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { compose, propOr } from 'ramda';
-import { withRouter } from 'react-router-dom';
 import withStyles from '@mui/styles/withStyles';
 import { QueryRenderer } from '../../../relay/environment';
 import { buildViewParamsFromUrlAndStorage, saveViewParameters } from '../../../utils/ListParameters';
@@ -10,7 +9,8 @@ import ListLines from '../../../components/list_lines/ListLines';
 import MarkingDefinitionsLines, { markingDefinitionsLinesQuery } from './marking_definitions/MarkingDefinitionsLines';
 import MarkingDefinitionCreation from './marking_definitions/MarkingDefinitionCreation';
 import AccessesMenu from './AccessesMenu';
-import Breadcrumbs from '../../../components/Breadcrumbs';
+import withRouter from '../../../utils/compat-router/withRouter';
+import Breadcrumbs from '../../../components/Breadcrumps';
 
 const styles = () => ({
   container: {
@@ -24,7 +24,7 @@ class MarkingDefinitions extends Component {
   constructor(props) {
     super(props);
     const params = buildViewParamsFromUrlAndStorage(
-      props.history,
+      props.navigate,
       props.location,
       LOCAL_STORAGE_KEY,
     );
@@ -38,7 +38,7 @@ class MarkingDefinitions extends Component {
 
   saveView() {
     saveViewParameters(
-      this.props.history,
+      this.props.navigate,
       this.props.location,
       LOCAL_STORAGE_KEY,
       this.state,
@@ -131,7 +131,7 @@ class MarkingDefinitions extends Component {
 MarkingDefinitions.propTypes = {
   t: PropTypes.func,
   classes: PropTypes.object,
-  history: PropTypes.object,
+  navigate: PropTypes.func,
   location: PropTypes.object,
 };
 

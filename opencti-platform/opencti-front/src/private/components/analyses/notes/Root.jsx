@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { Link, Route, Switch, withRouter } from 'react-router-dom';
+import { Link, Route, Routes } from 'react-router-dom';
 import { graphql } from 'react-relay';
 import * as R from 'ramda';
 import Box from '@mui/material/Box';
@@ -17,6 +17,7 @@ import NotePopover from './NotePopover';
 import inject18n from '../../../../components/i18n';
 import { CollaborativeSecurity } from '../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
+import withRouter from '../../../../utils/compat-router/withRouter';
 
 const subscription = graphql`
   subscription RootNoteSubscription($id: ID!) {
@@ -154,7 +155,7 @@ class RootNote extends Component {
                         />
                       </Tabs>
                     </Box>
-                    <Switch>
+                    <Routes>
                       <Route
                         exact
                         path="/dashboard/analyses/notes/:noteId"
@@ -186,7 +187,7 @@ class RootNote extends Component {
                           />
                         )}
                       />
-                    </Switch>
+                    </Routes>
                   </div>
                 );
               }

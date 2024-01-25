@@ -1,8 +1,8 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { compose } from 'ramda';
-import { withRouter } from 'react-router-dom';
 import withStyles from '@mui/styles/withStyles';
+import withRouter from '../../../../utils/compat-router/withRouter';
 import { QueryRenderer } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
 import Loader from '../../../../components/Loader';
@@ -75,7 +75,7 @@ class AttackPatternsMatrix extends Component {
 AttackPatternsMatrix.propTypes = {
   t: PropTypes.func,
   marginRight: PropTypes.bool,
-  history: PropTypes.object,
+  navigate: PropTypes.func,
   location: PropTypes.object,
   classes: PropTypes.object,
   attackPatterns: PropTypes.array,

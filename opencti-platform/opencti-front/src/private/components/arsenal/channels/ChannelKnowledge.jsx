@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { Route, Switch, withRouter } from 'react-router-dom';
+import { Route, Routes } from 'react-router-dom';
 import { compose } from 'ramda';
 import { graphql, createFragmentContainer } from 'react-relay';
 import inject18n from '../../../../components/i18n';
@@ -11,6 +11,7 @@ import StixDomainObjectThreatKnowledge from '../../common/stix_domain_objects/St
 import StixSightingRelationship from '../../events/stix_sighting_relationships/StixSightingRelationship';
 import StixDomainObjectVictimology from '../../common/stix_domain_objects/StixDomainObjectVictimology';
 import EntityStixCoreRelationshipsStixCyberObservable from '../../common/stix_core_relationships/views/stix_cyber_observable/EntityStixCoreRelationshipsStixCyberObservable';
+import withRouter from '../../../../utils/compat-router/withRouter';
 
 class ChannelKnowledgeComponent extends Component {
   render() {
@@ -18,7 +19,7 @@ class ChannelKnowledgeComponent extends Component {
     const link = `/dashboard/arsenal/channels/${channel.id}/knowledge`;
     return (
       <>
-        <Switch>
+        <Routes>
           <Route
             exact
             path="/dashboard/arsenal/channels/:channelId/knowledge/relations/:relationId"
@@ -230,7 +231,7 @@ class ChannelKnowledgeComponent extends Component {
               />
             )}
           />
-        </Switch>
+        </Routes>
       </>
     );
   }

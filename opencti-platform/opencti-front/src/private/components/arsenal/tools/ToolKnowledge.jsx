@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { Route, Switch, withRouter } from 'react-router-dom';
+import { Route, Routes } from 'react-router-dom';
 import * as R from 'ramda';
 import { graphql, createFragmentContainer } from 'react-relay';
 import inject18n from '../../../../components/i18n';
@@ -11,6 +11,7 @@ import StixDomainObjectThreatKnowledge from '../../common/stix_domain_objects/St
 import StixSightingRelationship from '../../events/stix_sighting_relationships/StixSightingRelationship';
 import EntityStixCoreRelationshipsIndicators from '../../common/stix_core_relationships/views/indicators/EntityStixCoreRelationshipsIndicators';
 import EntityStixCoreRelationshipsStixCyberObservable from '../../common/stix_core_relationships/views/stix_cyber_observable/EntityStixCoreRelationshipsStixCyberObservable';
+import withRouter from '../../../../utils/compat-router/withRouter';
 
 class ToolKnowledgeComponent extends Component {
   render() {
@@ -18,7 +19,7 @@ class ToolKnowledgeComponent extends Component {
     const link = `/dashboard/arsenal/tools/${tool.id}/knowledge`;
     return (
       <>
-        <Switch>
+        <Routes>
           <Route
             exact
             path="/dashboard/arsenal/tools/:toolId/knowledge/relations/:relationId"
@@ -213,7 +214,7 @@ class ToolKnowledgeComponent extends Component {
               />
             )}
           />
-        </Switch>
+        </Routes>
       </>
     );
   }

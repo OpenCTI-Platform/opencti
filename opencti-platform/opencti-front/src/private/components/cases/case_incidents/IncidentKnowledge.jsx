@@ -4,7 +4,7 @@ import * as R from 'ramda';
 import { propOr } from 'ramda';
 import { createFragmentContainer, graphql } from 'react-relay';
 import withStyles from '@mui/styles/withStyles';
-import { Route, withRouter } from 'react-router-dom';
+import { Route } from 'react-router-dom';
 import { QueryRenderer } from '../../../../relay/environment';
 import ContainerHeader from '../../common/containers/ContainerHeader';
 import IncidentKnowledgeGraph, { incidentKnowledgeGraphQuery } from './IncidentKnowledgeGraph';
@@ -18,6 +18,7 @@ import { constructHandleAddFilter, constructHandleRemoveFilter, emptyFilterGroup
 import ContentKnowledgeTimeLineBar from '../../common/containers/ContainertKnowledgeTimeLineBar';
 import ContainerContent, { containerContentQuery } from '../../common/containers/ContainerContent';
 import investigationAddFromContainer from '../../../../utils/InvestigationUtils';
+import withRouter from '../../../../utils/compat-router/withRouter';
 
 const styles = () => ({
   container: {
@@ -102,7 +103,7 @@ class IncidentKnowledgeComponent extends Component {
     const LOCAL_STORAGE_KEY = `case-incident-knowledge-${props.caseData.id}`;
     super(props);
     const params = buildViewParamsFromUrlAndStorage(
-      props.history,
+      props.navigate,
       props.location,
       LOCAL_STORAGE_KEY,
     );
@@ -124,7 +125,7 @@ class IncidentKnowledgeComponent extends Component {
   saveView() {
     const LOCAL_STORAGE_KEY = `case-incident-knowledge-${this.props.caseData.id}`;
     saveViewParameters(
-      this.props.history,
+      this.props.navigate,
       this.props.location,
       LOCAL_STORAGE_KEY,
       this.state,
@@ -447,7 +448,7 @@ IncidentKnowledgeComponent.propTypes = {
   mode: PropTypes.string,
   classes: PropTypes.object,
   t: PropTypes.func,
-  history: PropTypes.object,
+  navigate: PropTypes.func,
   enableReferences: PropTypes.bool,
 };
 

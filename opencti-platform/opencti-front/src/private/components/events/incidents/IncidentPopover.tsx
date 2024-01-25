@@ -8,7 +8,7 @@ import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 import MoreVert from '@mui/icons-material/MoreVert';
 import { graphql, useMutation } from 'react-relay';
-import { useNavigate } from 'react-router-dom-v5-compat';
+import { useNavigate } from 'react-router-dom';
 import { PopoverProps } from '@mui/material/Popover';
 import DialogContentText from '@mui/material/DialogContentText';
 import { useFormatter } from '../../../../components/i18n';

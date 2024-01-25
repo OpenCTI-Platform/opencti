@@ -1,5 +1,5 @@
 import React, { Suspense, lazy } from 'react';
-import { Redirect, Switch } from 'react-router-dom';
+import { Redirect, Routes } from 'react-router-dom';
 import { BoundaryRoute } from '../Error';
 import { useIsHiddenEntity } from '../../../utils/hooks/useEntitySettings';
 import Loader from '../../../components/Loader';
@@ -22,7 +22,7 @@ const Root = () => {
   }
   return (
     <Suspense fallback={<Loader />}>
-      <Switch>
+      <Routes>
         <BoundaryRoute
           exact
           path="/dashboard/events"
@@ -56,7 +56,7 @@ const Root = () => {
           path="/dashboard/events/sightings/:sightingId"
           component={StixSightingRelationship}
         />
-      </Switch>
+      </Routes>
     </Suspense>
   );
 };

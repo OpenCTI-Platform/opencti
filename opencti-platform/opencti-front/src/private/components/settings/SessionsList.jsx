@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import * as R from 'ramda';
-import { Link, withRouter } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import withStyles from '@mui/styles/withStyles';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
@@ -23,6 +23,7 @@ import { FIVE_SECONDS, timestamp } from '../../../utils/Time';
 import { userSessionKillMutation } from './users/User';
 import ItemIcon from '../../../components/ItemIcon';
 import Transition from '../../../components/Transition';
+import withRouter from '../../../utils/compat-router/withRouter';
 
 const interval$ = interval(FIVE_SECONDS);
 
@@ -252,7 +253,7 @@ class SessionsListComponent extends Component {
 SessionsListComponent.propTypes = {
   t: PropTypes.func,
   classes: PropTypes.object,
-  history: PropTypes.object,
+  navigate: PropTypes.func,
   location: PropTypes.object,
   nsdt: PropTypes.func,
   data: PropTypes.object,

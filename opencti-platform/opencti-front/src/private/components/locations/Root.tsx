@@ -3,7 +3,7 @@
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-nocheck
 import React, { Suspense, lazy } from 'react';
-import { Redirect, Switch } from 'react-router-dom';
+import { Redirect, Routes } from 'react-router-dom';
 import { BoundaryRoute } from '../Error';
 import { useIsHiddenEntity } from '../../../utils/hooks/useEntitySettings';
 import Loader from '../../../components/Loader';
@@ -34,7 +34,7 @@ const Root = () => {
   }
   return (
     <Suspense fallback={<Loader />}>
-      <Switch>
+      <Routes>
         <BoundaryRoute
           exact
           path="/dashboard/locations"
@@ -85,7 +85,7 @@ const Root = () => {
           path="/dashboard/locations/positions/:positionId"
           component={RootPosition}
         />
-      </Switch>
+      </Routes>
     </Suspense>
   );
 };

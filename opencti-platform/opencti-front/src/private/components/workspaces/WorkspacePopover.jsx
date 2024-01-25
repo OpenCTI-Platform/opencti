@@ -11,7 +11,7 @@ import MoreVert from '@mui/icons-material/MoreVert';
 import { graphql, useMutation } from 'react-relay';
 import makeStyles from '@mui/styles/makeStyles';
 import PropTypes from 'prop-types';
-import { useNavigate } from 'react-router-dom-v5-compat';
+import { useNavigate } from 'react-router-dom';
 import { useFormatter } from '../../../components/i18n';
 import { QueryRenderer } from '../../../relay/environment';
 import WorkspaceEditionContainer from './WorkspaceEditionContainer';

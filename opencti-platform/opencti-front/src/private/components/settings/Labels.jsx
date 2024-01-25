@@ -1,7 +1,6 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { compose, propOr } from 'ramda';
-import { withRouter } from 'react-router-dom';
 import withStyles from '@mui/styles/withStyles';
 import * as R from 'ramda';
 import { QueryRenderer } from '../../../relay/environment';
@@ -12,7 +11,8 @@ import LabelsLines, { labelsLinesQuery } from './labels/LabelsLines';
 import LabelCreation from './labels/LabelCreation';
 import LabelsVocabulariesMenu from './LabelsVocabulariesMenu';
 import ToolBar from '../data/ToolBar';
-import Breadcrumbs from '../../../components/Breadcrumbs';
+import Breadcrumbs from '../../../components/Breadcrumps';
+import withRouter from '../../../utils/compat-router/withRouter';
 
 const styles = () => ({
   container: {
@@ -27,7 +27,7 @@ class Labels extends Component {
   constructor(props) {
     super(props);
     const params = buildViewParamsFromUrlAndStorage(
-      props.history,
+      props.navigate,
       props.location,
       LOCAL_STORAGE_KEY,
     );
@@ -45,7 +45,7 @@ class Labels extends Component {
 
   saveView() {
     saveViewParameters(
-      this.props.history,
+      this.props.navigate,
       this.props.location,
       LOCAL_STORAGE_KEY,
       this.state,
@@ -255,7 +255,7 @@ class Labels extends Component {
 Labels.propTypes = {
   classes: PropTypes.object,
   t: PropTypes.func,
-  history: PropTypes.object,
+  navigate: PropTypes.func,
   location: PropTypes.object,
 };
 

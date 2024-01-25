@@ -6,7 +6,7 @@ import withTheme from '@mui/styles/withTheme';
 import Typography from '@mui/material/Typography';
 import Paper from '@mui/material/Paper';
 import ForceGraph2D from 'react-force-graph-2d';
-import { withRouter } from 'react-router-dom';
+import withRouter from '../../../../utils/compat-router/withRouter';
 import inject18n from '../../../../components/i18n';
 import { buildGraphData, linkPaint, nodeAreaPaint, nodePaint } from '../../../../utils/Graph';
 import { resolveLink } from '../../../../utils/Entity';
@@ -64,7 +64,7 @@ class StixCoreRelationshipInference extends Component {
         ? 'sightings'
         : 'relations'
     }/${link.id}`;
-    this.props.history.push(permalink);
+    this.props.navigate(permalink);
   }
 
   render() {

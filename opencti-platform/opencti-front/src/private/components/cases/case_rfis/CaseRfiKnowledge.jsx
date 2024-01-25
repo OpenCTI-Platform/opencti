@@ -4,7 +4,7 @@ import * as R from 'ramda';
 import { propOr } from 'ramda';
 import { createFragmentContainer, graphql } from 'react-relay';
 import withStyles from '@mui/styles/withStyles';
-import { Route, withRouter } from 'react-router-dom';
+import { Route } from 'react-router-dom';
 import { QueryRenderer } from '../../../../relay/environment';
 import ContainerHeader from '../../common/containers/ContainerHeader';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
@@ -18,6 +18,7 @@ import CaseRfiKnowledgeCorrelation, { caseRfiKnowledgeCorrelationQuery } from '.
 import ContentKnowledgeTimeLineBar from '../../common/containers/ContainertKnowledgeTimeLineBar';
 import ContainerContent, { containerContentQuery } from '../../common/containers/ContainerContent';
 import investigationAddFromContainer from '../../../../utils/InvestigationUtils';
+import withRouter from '../../../../utils/compat-router/withRouter';
 
 const styles = () => ({
   container: {
@@ -102,7 +103,7 @@ class CaseRfiKnowledgeComponent extends Component {
     const LOCAL_STORAGE_KEY = `case-rfis-knowledge-${props.caseData.id}`;
     super(props);
     const params = buildViewParamsFromUrlAndStorage(
-      props.history,
+      props.navigate,
       props.location,
       LOCAL_STORAGE_KEY,
     );
@@ -124,7 +125,7 @@ class CaseRfiKnowledgeComponent extends Component {
   saveView() {
     const LOCAL_STORAGE_KEY = `case-rfis-knowledge-${this.props.caseData.id}`;
     saveViewParameters(
-      this.props.history,
+      this.props.navigate,
       this.props.location,
       LOCAL_STORAGE_KEY,
       this.state,
@@ -444,8 +445,8 @@ CaseRfiKnowledgeComponent.propTypes = {
   mode: PropTypes.string,
   classes: PropTypes.object,
   t: PropTypes.func,
-  history: PropTypes.object,
   enableReferences: PropTypes.bool,
+  navigate: PropTypes.func,
 };
 
 const CaseRfiKnowledge = createFragmentContainer(CaseRfiKnowledgeComponent, {

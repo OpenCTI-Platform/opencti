@@ -1,6 +1,6 @@
 import React from 'react';
 import { User_user$data } from '@components/settings/users/__generated__/User_user.graphql';
-import { Link } from 'react-router-dom-v5-compat';
+import { Link } from 'react-router-dom';
 import { ReportGmailerrorred } from '@mui/icons-material';
 import Tooltip from '@mui/material/Tooltip';
 import { InformationOutline } from 'mdi-material-ui';
