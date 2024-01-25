@@ -84,6 +84,9 @@
       "email": "admin@opencti.io",
       "password": "ChangeMe",
       "token": "ChangeMe"
+    },
+    "group_confidence_level": {
+      "max_confidence_default": 100
     }
   },
   "demo_mode": false,

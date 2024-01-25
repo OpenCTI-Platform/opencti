@@ -54,10 +54,11 @@ InputSliderFieldProps & FieldProps
     onSubmit?.(name, event.target.value);
   };
   const currentLevel = buildScaleLevel(value, scale);
+
   if (variant === 'edit') {
     return (
       <>
-        <Grid container={true} spacing={3} alignItems="end">
+        <Grid container={true} spacing={3} >
           <Grid item={true} xs={6}>
             <Field
               component={TextField}
@@ -77,9 +78,10 @@ InputSliderFieldProps & FieldProps
             <Select
               fullWidth
               labelId={name}
-              value={currentLevel.level.value !== null ? currentLevel.level.value?.toString() : ''}
+              value={currentLevel.level.value?.toString() ?? ''}
               onChange={updateFromSelect}
               disabled={disabled}
+              sx={{ marginTop: 2 }} // to align field with the number input, that has a label
             >
               {marks.map((mark, i: number) => {
                 return (
@@ -112,7 +114,7 @@ InputSliderFieldProps & FieldProps
   }
   return (
     <>
-      <Grid container={true} spacing={3} alignItems="end">
+      <Grid container={true} spacing={3} >
         <Grid item={true} xs={6}>
           <Field
             component={TextField}
@@ -127,9 +129,10 @@ InputSliderFieldProps & FieldProps
           <Select
             fullWidth
             labelId={name}
-            value={currentLevel.level.value !== null ? currentLevel.level.value?.toString() : ''}
+            value={currentLevel.level.value?.toString() ?? ''}
             onChange={(event) => setFieldValue(name, event.target.value)}
             disabled={disabled}
+            sx={{ marginTop: 2 }}
           >
             {marks.map((mark, i: number) => {
               return (

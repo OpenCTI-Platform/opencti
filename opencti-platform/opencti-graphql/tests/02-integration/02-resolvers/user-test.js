@@ -218,6 +218,9 @@ describe('User resolver standard behavior', () => {
           id
           name
           description
+          group_confidence_level {
+            max_confidence
+          }
         }
       }
     `;
@@ -226,6 +229,10 @@ describe('User resolver standard behavior', () => {
       input: {
         name: 'Group of user',
         description: 'Group of user description',
+        group_confidence_level: {
+          max_confidence: 100,
+          overrides: [],
+        }
       },
     };
     const group = await queryAsAdmin({
@@ -235,6 +242,7 @@ describe('User resolver standard behavior', () => {
     expect(group).not.toBeNull();
     expect(group.data.groupAdd).not.toBeNull();
     expect(group.data.groupAdd.name).toEqual('Group of user');
+    expect(group.data.groupAdd.group_confidence_level.max_confidence).toEqual(100);
     groupInternalId = group.data.groupAdd.id;
     const RELATION_ADD_QUERY = gql`
       mutation GroupEdit($id: ID!, $input: InternalRelationshipAddInput!) {

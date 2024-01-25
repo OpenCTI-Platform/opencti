@@ -292,7 +292,6 @@ const SettingsOrganizationEdition = ({
                 label={<>{t_i18n('Grantable groups by Organization administrators')}<EEChip feature={t_i18n('Organization sharing')} /></>}
                 multiple={true}
                 onChange={editor.changeGrantableGroups}
-                containerStyle={{ width: '100%', backgroundColor: 'red' }}
                 style={{ marginTop: 20 }}
                 disabled={!isEnterpriseEdition}
               />

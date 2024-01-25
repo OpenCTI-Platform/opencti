@@ -1,8 +1,10 @@
-import React, { Component } from 'react';
-import * as PropTypes from 'prop-types';
-import { createPaginationContainer, graphql } from 'react-relay';
+import React from 'react';
+import { createPaginationContainer, graphql, RelayPaginationProp } from 'react-relay';
+import { UsersLinesPaginationQuery$variables } from '@components/settings/users/__generated__/UsersLinesPaginationQuery.graphql';
+import { UsersLines_data$data } from '@components/settings/users/__generated__/UsersLines_data.graphql';
 import ListLinesContent from '../../../../components/list_lines/ListLinesContent';
 import { UserLine, UserLineDummy } from './UserLine';
+import { DataColumns } from '../../../../components/list_lines';
 
 const nbOfRowsToLoad = 50;
 
@@ -20,35 +22,31 @@ export const usersLinesSearchQuery = graphql`
   }
 `;
 
-class UsersLines extends Component {
-  render() {
-    const { initialLoading, dataColumns, relay, paginationOptions, data } = this.props;
-    return (
-      <ListLinesContent
-        initialLoading={initialLoading}
-        loadMore={relay.loadMore.bind(this)}
-        hasMore={relay.hasMore.bind(this)}
-        isLoading={relay.isLoading.bind(this)}
-        dataList={data?.users?.edges ?? []}
-        globalCount={data?.users?.pageInfo?.globalCount ?? nbOfRowsToLoad}
-        LineComponent={<UserLine />}
-        DummyLineComponent={<UserLineDummy />}
-        dataColumns={dataColumns}
-        nbOfRowsToLoad={nbOfRowsToLoad}
-        paginationOptions={paginationOptions}
-      />
-    );
-  }
+interface UsersLinesProps {
+  initialLoading: boolean
+  dataColumns: DataColumns
+  relay: RelayPaginationProp,
+  paginationOptions: UsersLinesPaginationQuery$variables
+  data: UsersLines_data$data
 }
 
-UsersLines.propTypes = {
-  classes: PropTypes.object,
-  paginationOptions: PropTypes.object,
-  dataColumns: PropTypes.object.isRequired,
-  data: PropTypes.object,
-  relay: PropTypes.object,
-  users: PropTypes.object,
-  initialLoading: PropTypes.bool,
+const UsersLines: React.FC<UsersLinesProps> = (props) => {
+  const { initialLoading, dataColumns, relay, paginationOptions, data } = props;
+  return (
+    <ListLinesContent
+      initialLoading={initialLoading}
+      loadMore={relay.loadMore.bind(this)}
+      hasMore={relay.hasMore.bind(this)}
+      isLoading={relay.isLoading.bind(this)}
+      dataList={data?.users?.edges ?? []}
+      globalCount={data?.users?.pageInfo?.globalCount ?? nbOfRowsToLoad}
+      LineComponent={UserLine}
+      DummyLineComponent={UserLineDummy}
+      dataColumns={dataColumns}
+      nbOfRowsToLoad={nbOfRowsToLoad}
+      paginationOptions={paginationOptions}
+    />
+  );
 };
 
 export const usersLinesQuery = graphql`

@@ -7,7 +7,7 @@ import { graphql } from 'react-relay';
 import Alert from '@mui/material/Alert';
 import MenuItem from '@mui/material/MenuItem';
 import GroupField from '../../common/form/GroupField';
-import OptionalConfidenceLevelField from '../../common/form/OptionalConfidenceLevelField';
+import UserConfidenceLevelField from './UserConfidenceLevelField';
 import Drawer, { DrawerVariant } from '../../common/drawer/Drawer';
 import { useFormatter } from '../../../../components/i18n';
 import { commitMutation } from '../../../../relay/environment';
@@ -20,6 +20,7 @@ import DateTimePickerField from '../../../../components/DateTimePickerField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import useAuth from '../../../../utils/hooks/useAuth';
 import { insertNode } from '../../../../utils/store';
+import useGranted, { SETTINGS_SETACCESSES } from '../../../../utils/hooks/useGranted';
 
 const useStyles = makeStyles((theme) => ({
   buttons: {
@@ -51,12 +52,22 @@ const userValidation = (t) => Yup.object().shape({
   confirmation: Yup.string()
     .oneOf([Yup.ref('password'), null], t('The values do not match'))
     .required(t('This field is required')),
+  user_confidence_level_enabled: Yup.boolean(),
+  user_confidence_level: Yup.number()
+    .min(0, t('The value must be greater than or equal to 0'))
+    .max(100, t('The value must be less than or equal to 100'))
+    .when('user_confidence_level_enabled', {
+      is: true,
+      then: (schema) => schema.required(t('This field is required')).nullable(),
+      otherwise: (schema) => schema.nullable(),
+    }),
 });
 
 const UserCreation = ({ paginationOptions }) => {
   const { settings } = useAuth();
   const { t_i18n } = useFormatter();
   const classes = useStyles();
+  const hasSetAccess = useGranted([SETTINGS_SETACCESSES]);
 
   const onSubmit = (values, { setSubmitting, resetForm }) => {
     const { objectOrganization, groups, user_confidence_level, ...rest } = values;
@@ -71,7 +82,9 @@ const UserCreation = ({ paginationOptions }) => {
         }
         : null,
     };
-    delete finalValues.confirmation; // remove the password confirmation from payload
+    // remove technical fields
+    delete finalValues.confirmation;
+    delete finalValues.user_confidence_level_enabled;
 
     commitMutation({
       mutation: userMutation,
@@ -187,6 +200,7 @@ const UserCreation = ({ paginationOptions }) => {
                   name="groups"
                   label="Groups"
                   style={fieldSpacingContainerStyle}
+                  showConfidence={true}
                 />
                 <Field
                   component={SelectField}
@@ -214,11 +228,13 @@ const UserCreation = ({ paginationOptions }) => {
                     fullWidth: true,
                   }}
                 />
-                <OptionalConfidenceLevelField
-                  name="user_confidence_level"
-                  entityType="User"
-                  label={t_i18n('Max Confidence Level')}
-                />
+                {hasSetAccess && (
+                  <UserConfidenceLevelField
+                    name="user_confidence_level"
+                    entityType="User"
+                    label={t_i18n('Max Confidence Level')}
+                  />
+                )}
                 <div className={classes.buttons}>
                   <Button
                     variant="contained"

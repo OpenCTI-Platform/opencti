@@ -1,18 +1,14 @@
 import { afterAll, describe, expect, it } from 'vitest';
 import gql from 'graphql-tag';
 import { ADMIN_USER, queryAsAdmin, testContext } from '../../utils/testQuery';
-import {
-  ENTITY_TYPE_ATTACK_PATTERN,
-  ENTITY_TYPE_CONTAINER_REPORT,
-  ENTITY_TYPE_MALWARE,
-  ENTITY_TYPE_RESOLVED_FILTERS
-} from '../../../src/schema/stixDomainObject';
+import { ENTITY_TYPE_ATTACK_PATTERN, ENTITY_TYPE_CONTAINER_REPORT, ENTITY_TYPE_MALWARE, ENTITY_TYPE_RESOLVED_FILTERS } from '../../../src/schema/stixDomainObject';
 import { STIX_EXT_OCTI } from '../../../src/types/stix-extensions';
 import {
   buildTargetEvents,
   filterUpdateInstanceIdsFromUpdatePatch,
   generateNotificationMessageForInstance,
-  generateNotificationMessageForInstanceWithRefs, generateNotificationMessageForInstanceWithRefsUpdate,
+  generateNotificationMessageForInstanceWithRefs,
+  generateNotificationMessageForInstanceWithRefsUpdate,
   isRelationFromOrToMatchFilters
 } from '../../../src/manager/notificationManager';
 import { STIX_SIGHTING_RELATIONSHIP } from '../../../src/schema/stixSightingRelationship';
@@ -231,6 +227,7 @@ describe('Notification manager behaviors test', async () => {
       input: {
         name: 'Group with green marking allowed',
         description: 'Only green marking are allowed in this group',
+        group_confidence_level: { max_confidence: 100, overrides: [] },
       }
     },
   });
