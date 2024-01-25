@@ -2525,7 +2525,6 @@
   "our Slack channel": "notre canal Slack",
   "and ... more": "et {count} de plus.",
   "Open Settings": "Ouvrir les paramètres",
-  "No confidence level found in this user's groups, and no confidence level defined at the user level.": "Aucun niveau de confiance n'a été trouvé dans les groupes et organisations de cet utilisateur, et aucun niveau de confiance n'a été défini au niveau de l'utilisateur.",
   "confidence_level_from": "de {entity_type} {link}",
   "Unknown configuration error in the platform.": "Erreur de configuration inconnue dans la plate-forme.",
   "alert_GROUP_WITH_NULL_EFFECTIVE_LEVEL": "À partir d'OpenCTI 6.0, un niveau de confiance maximal sera ajouté aux groupes et aux utilisateurs. Cela permettra aux administrateurs de la plateforme de mieux contrôler l'impact des données importées et d'éviter toute mise à jour indésirable des données. Veuillez lire {link_blogpost} pour plus d'informations.\n \nSur cette plateforme, le niveau de confiance maximum de certains groupes est actuellement indéfini. Leurs membres ne pourront pas créer de données dans la version 6.X de la plateforme. Pour éviter cela, assurez-vous que tous les groupes ont un niveau de confiance maximum défini. Plus d'informations dans {link_blogpost}. Soyez particulièrement attentif aux utilisateurs associés aux connecteurs, aux streams et aux feeds ; vous pouvez définir un niveau de confiance individuel pour remplacer le niveau de confiance du groupe si nécessaire. Rejoignez {link_slack} si vous avez besoin de conseils.",
@@ -2535,5 +2534,6 @@
   "This group does not have a confidence level, members might not be able to create data.": "Ce groupe n'a pas de niveau de confiance, les membres pourraient ne pas être en mesure de créer des données.",
   "The user's max confidence level overrides the max confidence that might be set at groups level.": "Le niveau de confiance maximal défini par l'utilisateur prévaut sur le niveau de confiance maximal éventuellement défini au niveau des groupes.",
   "Current effective confidence level:": "Niveau de confiance effectif actuel :",
-  "From: user": "De : utilisateur"
+  "From: user": "De : utilisateur",
+  "No confidence level found in this user's groups, and no confidence level defined at the user level.": "Aucun niveau de confiance n'a été trouvé dans les groupes de cet utilisateur, et aucun niveau de confiance n'a été défini au niveau de l'utilisateur."
 }
