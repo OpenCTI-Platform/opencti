@@ -17,25 +17,22 @@ const ExpandableMarkdown: FunctionComponent<ExpandableMarkdownProps> = ({
   const onClick = () => setExpand(!expand);
   const shouldBeTruncated = (source || '').length > limit;
   return (
-    <span>
-      <div style={{ position: 'relative', overflowX: 'auto' }}>
-        {shouldBeTruncated && (
-          <div style={{ position: 'absolute', top: -32, right: 0 }}>
-            <IconButton onClick={onClick} size="large">
-              {expand ? <ExpandLess /> : <ExpandMore />}
-            </IconButton>
-          </div>
-        )}
-        <div>
-          <MarkdownDisplay
-            content={expand ? emptyFilled(source) : truncate(source, limit)}
-            remarkGfmPlugin={true}
-            commonmark={true}
-          />
-        </div>
-        <div className="clearfix" />
+    <div style={{ position: 'relative' }}>
+      {shouldBeTruncated && (
+      <div style={{ position: 'absolute', top: -32, right: 0 }}>
+        <IconButton onClick={onClick} size="large">
+          {expand ? <ExpandLess /> : <ExpandMore />}
+        </IconButton>
       </div>
-    </span>
+      )}
+      <div style={{ overflowX: 'auto' }}>
+        <MarkdownDisplay
+          content={expand ? emptyFilled(source) : truncate(source, limit)}
+          remarkGfmPlugin={true}
+          commonmark={true}
+        />
+      </div>
+    </div>
   );
 };
 
