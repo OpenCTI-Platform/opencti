@@ -26,6 +26,9 @@ export const groupsSearchQuery = graphql`
               id
               name
           }
+          group_confidence_level {
+            max_confidence
+          }
         }
       }
     }

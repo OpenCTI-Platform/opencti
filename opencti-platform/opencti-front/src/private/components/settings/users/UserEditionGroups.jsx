@@ -7,10 +7,12 @@ import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
 import ListItemText from '@mui/material/ListItemText';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import Checkbox from '@mui/material/Checkbox';
-import { GroupOutlined } from '@mui/icons-material';
+import { GroupOutlined, ReportGmailerrorred } from '@mui/icons-material';
+import Tooltip from '@mui/material/Tooltip';
 import { commitMutation, QueryRenderer } from '../../../../relay/environment';
 import { groupsSearchQuery } from '../Groups';
 import { isOnlyOrganizationAdmin } from '../../../../utils/hooks/useGranted';
+import { useFormatter } from '../../../../components/i18n';
 
 const userMutationRelationAdd = graphql`
   mutation UserEditionGroupsRelationAddMutation(
@@ -43,6 +45,7 @@ const userMutationRelationDelete = graphql`
 
 const UserEditionGroupsComponent = ({ user }) => {
   const userIsOnlyOrganizationAdmin = isOnlyOrganizationAdmin();
+  const { t_i18n } = useFormatter();
 
   const handleToggle = (groupId, userGroup, event) => {
     if (event.target.checked) {
@@ -83,7 +86,18 @@ const UserEditionGroupsComponent = ({ user }) => {
                 <GroupOutlined />
               </ListItemIcon>
               <ListItemText
-                primary={group.name}
+                primary={
+                  <div style={{ display: 'flex', alignItems: 'center' }}>
+                    {group.name}
+                    {group.group_confidence_level === null && (
+                      <Tooltip
+                        title={t_i18n('No confidence level found in this group.')}
+                      >
+                        <ReportGmailerrorred fontSize={'small'} color={'error'} style={{ marginLeft: 5 }}/>
+                      </Tooltip>
+                    )}
+                  </div>
+                }
                 secondary={group.description ?? ''}
               />
               <ListItemSecondaryAction>

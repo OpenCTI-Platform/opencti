@@ -89,7 +89,7 @@ const UserConfidenceLevelField: FunctionComponent<UserConfidenceLevelFieldProps>
         <Box
           sx={{ color: 'error.main' }}
         >
-          {t_i18n('This user has no effective confidence level from the groups assigned.')}
+          {t_i18n('This user has no effective confidence level from the groups assigned. Make sure to assign a confidence level in your groups')}
         </Box>
       )}
       <Box sx={{ display: 'flex', alignItems: 'center' }}>
