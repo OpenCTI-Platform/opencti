@@ -39,6 +39,9 @@ describe('Group resolver standard behavior', () => {
           id
           name
           description
+          group_confidence_level { 
+            max_confidence 
+          }
         }
       }
     `;
@@ -47,6 +50,7 @@ describe('Group resolver standard behavior', () => {
       input: {
         name: 'Group',
         description: 'Group description',
+        group_confidence_level: { max_confidence: 100, overrides: [] },
       },
     };
     const group = await queryAsAdmin({
@@ -56,6 +60,7 @@ describe('Group resolver standard behavior', () => {
     expect(group).not.toBeNull();
     expect(group.data.groupAdd).not.toBeNull();
     expect(group.data.groupAdd.name).toEqual('Group');
+    expect(group.data.groupAdd.group_confidence_level.max_confidence).toEqual(100);
     groupInternalId = group.data.groupAdd.id;
   });
 

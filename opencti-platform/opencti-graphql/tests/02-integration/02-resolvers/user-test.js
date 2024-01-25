@@ -4,7 +4,7 @@ import { elLoadById } from '../../../src/database/engine';
 import { generateStandardId } from '../../../src/schema/identifier';
 import { ENTITY_TYPE_CAPABILITY, ENTITY_TYPE_GROUP, ENTITY_TYPE_USER } from '../../../src/schema/internalObject';
 import { ADMIN_USER, editorQuery, queryAsAdmin, testContext } from '../../utils/testQuery';
-import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from "../../../src/modules/organization/organization-types";
+import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../../../src/modules/organization/organization-types';
 
 const LIST_QUERY = gql`
   query users(
@@ -227,6 +227,10 @@ describe('User resolver standard behavior', () => {
       input: {
         name: 'Group of user',
         description: 'Group of user description',
+        group_confidence_level: {
+          max_confidence: 100,
+          overrides: [],
+        }
       },
     };
     const group = await queryAsAdmin({
@@ -236,6 +240,7 @@ describe('User resolver standard behavior', () => {
     expect(group).not.toBeNull();
     expect(group.data.groupAdd).not.toBeNull();
     expect(group.data.groupAdd.name).toEqual('Group of user');
+    expect(group.data.groupAdd.group_confidence_level.max_confidence).toEqual(100);
     groupInternalId = group.data.groupAdd.id;
     const RELATION_ADD_QUERY = gql`
       mutation GroupEdit($id: ID!, $input: InternalRelationshipAddInput!) {
