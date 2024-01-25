@@ -1,4 +1,4 @@
-import { Filter, FilterGroup } from './filtersUtils';
+import { Filter, FilterGroup, FilterValue } from './filtersUtils';
 
 type FiltersLocalStorageUtilProps<U> = {
   filters: FilterGroup,
@@ -45,11 +45,11 @@ export const handleSwitchLocalModeUtil = ({ filters, filter }: FiltersLocalStora
     : f));
 };
 
-export const handleAddRepresentationFilterUtil = ({ filters, id, valueId }: FiltersLocalStorageUtilProps<{
+export const handleAddRepresentationFilterUtil = ({ filters, id, value }: FiltersLocalStorageUtilProps<{
   id: string,
-  valueId: string
+  value: string | FilterValue
 }>): FilterGroup => {
-  return updateFilters(filters, (f) => (f.id === id ? { ...f, values: [...f.values, valueId] } : f));
+  return updateFilters(filters, (f) => (f.id === id ? { ...f, values: [...f.values, value] } : f));
 };
 
 export const handleAddSingleValueFilterUtil = ({ filters, id, valueId }: FiltersLocalStorageUtilProps<{
@@ -62,14 +62,14 @@ export const handleAddSingleValueFilterUtil = ({ filters, id, valueId }: Filters
   return updateFilters(filters, (f) => (f.id === id ? { ...f, values: [] } : f));
 };
 
-export const handleRemoveRepresentationFilterUtil = ({ filters, id, valueId }: FiltersLocalStorageUtilProps<{
+export const handleRemoveRepresentationFilterUtil = ({ filters, id, value }: FiltersLocalStorageUtilProps<{
   id: string,
-  valueId: string
+  value: string | FilterValue
 }>): FilterGroup => {
   return updateFilters(filters, (f) => (f.id === id
     ? {
       ...f,
-      values: f.values.filter((value) => value !== valueId),
+      values: f.values.filter((v) => v !== value),
     }
     : f));
 };
@@ -81,10 +81,15 @@ export const handleRemoveFilterUtil = ({ filters, id }: FiltersLocalStorageUtilP
   };
 };
 
-export const handleClearAllFiltersUtil = (filters?: Filter[]): FilterGroup => {
-  return {
-    filterGroups: [],
-    filters: filters ? [...filters] : [],
-    mode: 'and',
-  };
+export const handleChangeRepresentationFilterUtil = ({ filters, id, oldValue, newValue }:FiltersLocalStorageUtilProps<{
+  id: string,
+  oldValue: FilterValue,
+  newValue: FilterValue,
+}>): FilterGroup => {
+  return updateFilters(
+    filters,
+    (f) => (f.id === id
+      ? { ...f, values: f.values.filter((val) => val !== oldValue).concat([newValue]) }
+      : f),
+  );
 };

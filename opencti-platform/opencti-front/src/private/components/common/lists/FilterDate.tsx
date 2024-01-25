@@ -62,7 +62,6 @@ const FilterDate: FunctionComponent<FilterDateProps> = ({
       }
     }
   };
-
   return (
     <DatePicker
       key={filterKey}

@@ -13,12 +13,8 @@ import {
   handleRemoveFilterUtil,
   handleRemoveRepresentationFilterUtil,
   handleSwitchLocalModeUtil,
-} from '../filters/filtersManageStateUtil';
-import {
-  handleAddRepresentationFilterUtil as oldHandleAddRepresentationFilterUtil,
   handleChangeRepresentationFilterUtil,
-  handleRemoveRepresentationFilterUtil as oldHandleRemoveRepresentationFilterUtil,
-} from '../filters/filtersLocalStorageUtil';
+} from '../filters/filtersManageStateUtil';
 import { LocalStorage } from './useLocalStorageModel';
 
 export interface handleFilterHelpers {
@@ -405,19 +401,19 @@ export const usePaginationLocalStorage = <U>(
     },
     handleRemoveRepresentationFilter: (
       id: string,
-      valueId: string,
+      value: string,
     ) => {
       if (viewStorage?.filters) {
         const filters = viewStorage?.filters;
         setValue((c) => ({
           ...c,
-          filters: handleRemoveRepresentationFilterUtil({ filters, id, valueId }),
+          filters: handleRemoveRepresentationFilterUtil({ filters, id, value }),
           latestAddFilterId: undefined,
         }));
       }
     },
-    handleAddRepresentationFilter: (id: string, valueId: string) => {
-      if (valueId === null) { // handle clicking on 'no label' in entities list
+    handleAddRepresentationFilter: (id: string, value: string) => {
+      if (value === null) { // handle clicking on 'no label' in entities list
         const findCorrespondingFilter = viewStorage.filters?.filters.find((f) => id === f.id);
         if (findCorrespondingFilter && ['objectLabel', 'contextObjectLabel'].includes(findCorrespondingFilter.key)) {
           if (viewStorage.filters) {
@@ -437,18 +433,34 @@ export const usePaginationLocalStorage = <U>(
         const { filters } = viewStorage;
         setValue((c) => ({
           ...c,
-          filters: handleAddRepresentationFilterUtil({ filters, id, valueId }),
+          filters: handleAddRepresentationFilterUtil({ filters, id, value }),
           latestAddFilterId: undefined,
         }));
       }
     },
     handleChangeRepresentationFilter: (id: string, oldValue: FilterValue, newValue: FilterValue) => {
+      const filters = viewStorage?.filters;
+      if (!filters) {
+        return;
+      }
       if (oldValue && newValue) {
-        handleChangeRepresentationFilterUtil({ viewStorage, setValue, id, oldValue, newValue });
+        setValue((c) => ({
+          ...c,
+          filters: handleChangeRepresentationFilterUtil({ filters, id, oldValue, newValue }),
+          latestAddFilterId: undefined,
+        }));
       } else if (oldValue) {
-        oldHandleRemoveRepresentationFilterUtil({ viewStorage, setValue, id, value: oldValue });
+        setValue((c) => ({
+          ...c,
+          filters: handleRemoveRepresentationFilterUtil({ filters, id, value: oldValue }),
+          latestAddFilterId: undefined,
+        }));
       } else if (newValue) {
-        oldHandleAddRepresentationFilterUtil({ viewStorage, setValue, id, value: newValue });
+        setValue((c) => ({
+          ...c,
+          filters: handleAddRepresentationFilterUtil({ filters, id, value: newValue }),
+          latestAddFilterId: undefined,
+        }));
       }
     },
     handleAddSingleValueFilter: (id: string, valueId?: string) => {
