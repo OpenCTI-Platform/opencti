@@ -222,9 +222,21 @@ export const isFileObjectExcluded = (id) => {
   return excludedFiles.map((e) => e.toLowerCase()).includes(fileName.toLowerCase());
 };
 
-const rawFilesListing = async (directory, opts = {}) => {
-  const { recursive = false } = opts;
-  const objects = [];
+const filesAdaptation = (objects) => {
+  const storageObjects = objects.map((obj) => {
+    return {
+      ...obj,
+      mimeType: guessMimeType(obj.Key),
+    };
+  });
+  return storageObjects.filter((obj) => {
+    return !isFileObjectExcluded(obj.Key);
+  });
+};
+
+export const loadedFilesListing = async (user, directory, opts = {}) => {
+  const { recursive = false, callback = null } = opts;
+  const files = [];
   if (isNotEmptyField(directory) && directory.startsWith('/')) {
     throw FunctionalError('File listing directory must not start with a /');
   }
@@ -240,7 +252,13 @@ const rawFilesListing = async (directory, opts = {}) => {
   while (truncated) {
     try {
       const response = await s3Client.send(new s3.ListObjectsV2Command(requestParams));
-      objects.push(...(response.Contents ?? []));
+      const resultFiles = filesAdaptation(response.Contents ?? []);
+      const resultLoaded = await BluePromise.map(resultFiles, (f) => loadFile(user, f.Key), { concurrency: 5 });
+      if (callback) {
+        callback(resultLoaded);
+      } else {
+        files.push(...resultLoaded);
+      }
       truncated = response.IsTruncated;
       if (truncated) {
         requestParams.ContinuationToken = response.NextContinuationToken;
@@ -250,21 +268,7 @@ const rawFilesListing = async (directory, opts = {}) => {
       truncated = false;
     }
   }
-  const storageObjects = objects.map((obj) => {
-    return {
-      ...obj,
-      mimeType: guessMimeType(obj.Key),
-    };
-  });
-  return storageObjects.filter((obj) => {
-    return !isFileObjectExcluded(obj.Key);
-  });
-};
-
-export const loadedFilesListing = async (user, directory, opts = {}) => {
-  const storageObjects = await rawFilesListing(directory, opts);
-  // Load file metadata with 5 // call maximum
-  return BluePromise.map(storageObjects, (f) => loadFile(user, f.Key), { concurrency: 5 });
+  return files;
 };
 
 export const uploadJobImport = async (context, user, fileId, fileMime, entityId, opts = {}) => {
