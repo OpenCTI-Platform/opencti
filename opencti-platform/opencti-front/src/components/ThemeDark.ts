@@ -267,6 +267,18 @@ const ThemeDark = (
         },
       },
     },
+    MuiMenuItem: {
+      styleOverrides: {
+        root: {
+          '&.Mui-selected': {
+            boxShadow: `2px 0 ${EE_COLOR} inset`,
+          },
+          '&.Mui-selected:hover': {
+            boxShadow: `2px 0 ${EE_COLOR} inset`,
+          },
+        },
+      },
+    },
   },
 });
 
