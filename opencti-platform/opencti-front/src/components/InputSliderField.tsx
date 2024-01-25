@@ -1,4 +1,4 @@
-import { Field, FieldProps, useFormikContext } from 'formik';
+import { Field, FieldProps } from 'formik';
 import React, { FunctionComponent } from 'react';
 import { Grid, MenuItem, Select, SelectChangeEvent, Slider } from '@mui/material';
 import TextField from './TextField';

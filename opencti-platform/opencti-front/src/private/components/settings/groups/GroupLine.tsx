@@ -96,7 +96,7 @@ const GroupLineComponent: React.FC<GroupLineProps> = (props) => {
             >
               {node.group_confidence_level?.max_confidence ?? (
                 <Tooltip
-                  title={t_i18n('This group does not have a confidence level, members might not be able to create data.')}
+                  title={t_i18n('This group does not have a max confidence level, members might not be able to create data.')}
                 >
                   <ReportGmailerrorred fontSize={'small'} color={'error'}/>
                 </Tooltip>
