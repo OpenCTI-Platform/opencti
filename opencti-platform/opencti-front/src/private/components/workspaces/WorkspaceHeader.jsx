@@ -29,13 +29,14 @@ import ListItemText from '@mui/material/ListItemText';
 import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
 import DialogActions from '@mui/material/DialogActions';
 import Dialog from '@mui/material/Dialog';
+import WorkspaceShareButton from './WorkspaceShareButton';
 import WorkspaceDuplicationDialog from './WorkspaceDuplicationDialog';
 import handleExportJson from './workspaceExportHandler';
 import WorkspaceTurnToContainerDialog from './WorkspaceTurnToContainerDialog';
 import { commitMutation, fetchQuery, MESSAGING$ } from '../../../relay/environment';
 import Security from '../../../utils/Security';
 import { nowUTC } from '../../../utils/Time';
-import { EXPLORE_EXUPDATE } from '../../../utils/hooks/useGranted';
+import { EXPLORE_EXUPDATE, EXPLORE_EXUPDATE_PUBLISH } from '../../../utils/hooks/useGranted';
 import WorkspacePopover from './WorkspacePopover';
 import ExportButtons from '../../../components/ExportButtons';
 import { useFormatter } from '../../../components/i18n';
@@ -349,6 +350,11 @@ const WorkspaceHeader = ({
             </div>
           </Security>
         )}
+        <Security needs={[EXPLORE_EXUPDATE_PUBLISH]}>
+          <div style={{ margin: '-8px 0 0 4px', float: 'right' }}>
+            <WorkspaceShareButton workspaceId={workspace.id} />
+          </div>
+        </Security>
         <WorkspaceDuplicationDialog
           workspace={workspace}
           displayDuplicate={displayDuplicate}
