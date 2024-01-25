@@ -272,12 +272,12 @@ const ThemeLight = (
             backgroundColor: 'rgba(0,0,0,0.04)',
           },
           '&.Mui-selected': {
-            boxShadow: `2px 0 ${EE_COLOR} inset`,
-            backgroundColor: 'rgba(0,102,255,0.08)',
+            boxShadow: `2px 0 ${primary || '#0066ff'} inset`,
+            backgroundColor: hexToRGB(primary || '#0066ff', 0.08),
           },
           '&.Mui-selected:hover': {
-            boxShadow: `2px 0 ${EE_COLOR} inset`,
-            backgroundColor: 'rgba(0,102,255,0.12)',
+            boxShadow: `2px 0 ${primary || '#0066ff'} inset`,
+            backgroundColor: hexToRGB(primary || '#0066ff', 0.12),
           },
         },
       },
