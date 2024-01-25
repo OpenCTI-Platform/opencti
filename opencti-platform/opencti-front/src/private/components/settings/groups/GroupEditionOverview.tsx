@@ -110,16 +110,31 @@ const GroupEditionOverviewComponent: FunctionComponent<GroupEditionOverviewCompo
       .validateAt(name, { [name]: value })
       .then(() => {
         if (name === 'group_confidence_level') {
-          commitFieldPatch({
-            variables: {
-              id: group.id,
-              input: {
-                key: 'group_confidence_level',
-                object_path: '/group_confidence_level/max_confidence',
-                value: parseInt(value, 10),
+          if (group.group_confidence_level) {
+            commitFieldPatch({
+              variables: {
+                id: group.id,
+                input: {
+                  key: 'group_confidence_level',
+                  object_path: '/group_confidence_level/max_confidence',
+                  value: parseInt(value, 10),
+                },
               },
-            },
-          });
+            });
+          } else {
+            commitFieldPatch({
+              variables: {
+                id: group.id,
+                input: {
+                  key: 'group_confidence_level',
+                  value: {
+                    max_confidence: parseInt(value, 10),
+                    overrides: [],
+                  },
+                },
+              },
+            });
+          }
         }
       })
       .catch(() => false);

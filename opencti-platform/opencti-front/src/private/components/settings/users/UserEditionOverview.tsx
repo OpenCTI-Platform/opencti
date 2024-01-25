@@ -77,10 +77,15 @@ const userValidation = (t: (value: string) => string, userIsOnlyOrganizationAdmi
   account_status: Yup.string(),
   account_lock_after_date: Yup.date().nullable(),
   objectOrganization: userIsOnlyOrganizationAdmin ? Yup.array().min(1, t('Minimum one organization')).required(t('This field is required')) : Yup.array(),
+  user_confidence_level_enabled: Yup.boolean(),
   user_confidence_level: Yup.number()
     .min(0, t('The value must be greater than or equal to 0'))
     .max(100, t('The value must be less than or equal to 100'))
-    .nullable(),
+    .when('user_confidence_level_enabled', {
+      is: true,
+      then: (schema) => schema.required(t('This field is required')).nullable(),
+      otherwise: (schema) => schema.nullable(),
+    }),
 });
 
 interface UserEditionOverviewComponentProps {
@@ -366,22 +371,18 @@ UserEditionOverviewComponentProps
             onFocus={handleChangeFocus}
             onChange={handleSubmitField}
           />
-          {
-            hasSetAccess && (
-              <>
-                <UserConfidenceLevelField
-                  name="user_confidence_level"
-                  label={t_i18n('Max Confidence Level')}
-                  onFocus={handleChangeFocus}
-                  onSubmit={handleSubmitField}
-                  entityType="User"
-                  containerStyle={fieldSpacingContainerStyle}
-                  editContext={context}
-                  effectiveLevel={user.effective_confidence_level}
-                />
-              </>
-            )
-          }
+          { hasSetAccess && (
+            <UserConfidenceLevelField
+              name="user_confidence_level"
+              label={t_i18n('Max Confidence Level')}
+              onFocus={handleChangeFocus}
+              onSubmit={handleSubmitField}
+              entityType="User"
+              containerStyle={fieldSpacingContainerStyle}
+              editContext={context}
+              effectiveLevel={user.effective_confidence_level}
+            />
+          )}
         </Form>
       )}
     </Formik>
