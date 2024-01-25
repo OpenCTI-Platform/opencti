@@ -55,12 +55,10 @@ InputSliderFieldProps & FieldProps
   };
   const currentLevel = buildScaleLevel(value, scale);
 
-  const formik = useFormikContext();
-
   if (variant === 'edit') {
     return (
       <>
-        <Grid container={true} spacing={3} alignItems="end">
+        <Grid container={true} spacing={3} >
           <Grid item={true} xs={6}>
             <Field
               component={TextField}
@@ -83,8 +81,7 @@ InputSliderFieldProps & FieldProps
               value={currentLevel.level.value?.toString() ?? ''}
               onChange={updateFromSelect}
               disabled={disabled}
-              // empirically add a margin if the field on the left is in error, to align them
-              style={{ marginBottom: (formik.errors as Record<string, string>)[name] ? 23 : 0 }}
+              sx={{ marginTop: 2 }} // to align field with the number input, that has a label
             >
               {marks.map((mark, i: number) => {
                 return (
