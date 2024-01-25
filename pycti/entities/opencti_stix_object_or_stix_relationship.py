@@ -309,11 +309,11 @@ class StixObjectOrStixRelationship:
             ... on Vulnerability {
                 name
                 description
-                x_opencti_base_score
-                x_opencti_base_severity
-                x_opencti_attack_vector
-                x_opencti_integrity_impact
-                x_opencti_availability_impact
+                x_opencti_cvss_base_score
+                x_opencti_cvss_base_severity
+                x_opencti_cvss_attack_vector
+                x_opencti_cvss_integrity_impact
+                x_opencti_cvss_availability_impact
             }
             ... on Incident {
                 name
