@@ -11,7 +11,7 @@ import { INTERNAL_REFS } from '../../../domain/attribute-utils';
 import { internalFindByIds } from '../../../database/middleware-loader';
 import type { BasicStoreEntity } from '../../../types/store';
 import { extractRepresentative } from '../../../database/entity-representative';
-import type { MandatoryType } from '../../../schema/attribute-definition';
+import type { MandatoryType, ObjectAttribute } from '../../../schema/attribute-definition';
 import { schemaAttributesDefinition } from '../../../schema/schema-attributes';
 
 export interface CsvMapperSchemaAttribute {
@@ -198,4 +198,13 @@ export const sanitized = (mapper: BasicStoreEntityCsvMapper) => {
       };
     })
   };
+};
+
+export const getHashesNames = (entityType: string) => {
+  const definition = schemaAttributesDefinition.getAttributes(entityType);
+  const hashesDefinition = definition.get('hashes');
+  if (!hashesDefinition) {
+    return [];
+  }
+  return (hashesDefinition as ObjectAttribute).mappings.map((mapping) => (mapping.name));
 };

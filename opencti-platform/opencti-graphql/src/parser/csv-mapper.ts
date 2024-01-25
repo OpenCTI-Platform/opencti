@@ -1,6 +1,6 @@
 /* eslint-disable no-param-reassign */
 import moment from 'moment';
-import type { AttributeDefinition, AttrType } from '../schema/attribute-definition';
+import type { AttributeDefinition, AttrType, ObjectAttribute } from '../schema/attribute-definition';
 import { entityType, relationshipType, standardId } from '../schema/attribute-definition';
 import { generateStandardId } from '../schema/identifier';
 import { schemaAttributesDefinition } from '../schema/schema-attributes';
@@ -11,7 +11,7 @@ import { extractValueFromCsv } from './csv-helper';
 import { isStixRelationshipExceptRef } from '../schema/stixRelationship';
 import type { AttributeColumn, CsvMapperRepresentation, CsvMapperRepresentationAttribute, CsvMapperWithUserMarkings } from '../modules/internal/csvMapper/csvMapper-types';
 import { CsvMapperRepresentationType, Operator } from '../modules/internal/csvMapper/csvMapper-types';
-import { isValidTargetType } from '../modules/internal/csvMapper/csvMapper-utils';
+import { getHashesNames, isValidTargetType } from '../modules/internal/csvMapper/csvMapper-utils';
 import { fillDefaultValues, getAttributesConfiguration, getEntitySettingFromCache } from '../modules/entitySetting/entitySetting-utils';
 import type { AuthContext, AuthUser } from '../types/user';
 import { UnsupportedError } from '../config/errors';
@@ -141,9 +141,12 @@ const handleDirectAttribute = (
   attribute: CsvMapperRepresentationAttribute,
   input: Record<string, InputType>,
   record: string[],
-  definition: AttributeDefinition
+  definition: AttributeDefinition,
+  hashesNames: string[],
 ) => {
-  if (attribute.default_values !== null && attribute.default_values !== undefined) {
+  const isAttributeHash = hashesNames.includes(attribute.key);
+
+  if (attribute.default_values !== null && attribute.default_values !== undefined && !isAttributeHash) {
     const computedDefault = computeDefaultValue(attribute.default_values, attribute, definition);
     if (computedDefault !== null && computedDefault !== undefined) {
       input[attribute.key] = computedDefault;
@@ -153,7 +156,12 @@ const handleDirectAttribute = (
     const recordValue = extractValueFromCsv(record, attribute.column.column_name);
     const computedValue = computeValue(recordValue, attribute.column, definition);
     if (computedValue !== null && computedValue !== undefined) {
-      input[attribute.key] = computedValue;
+      if (isAttributeHash) {
+        const values = (input.hashes ?? {}) as Record<string, any>;
+        input.hashes = { ...values, [attribute.key]: computedValue };
+      } else {
+        input[attribute.key] = computedValue;
+      }
     }
   }
 };
@@ -223,12 +231,27 @@ const handleAttributes = (
   refEntities: Record<string, BasicStoreObject>
 ) => {
   const { entity_type } = representation.target;
+  const hashesNames = getHashesNames(entity_type);
+
   (representation.attributes ?? []).forEach((attribute) => {
-    const attributeDef = schemaAttributesDefinition.getAttribute(entity_type, attribute.key);
-    const refDef = schemaRelationsRefDefinition.getRelationRef(entity_type, attribute.key);
+    let attributeKey = attribute.key;
+    if (hashesNames.includes(attribute.key)) {
+      attributeKey = 'hashes';
+    }
+    const attributeDef = schemaAttributesDefinition.getAttribute(entity_type, attributeKey);
+    const refDef = schemaRelationsRefDefinition.getRelationRef(entity_type, attributeKey);
+
     if (attributeDef) {
-      // Handle column attribute
-      handleDirectAttribute(attribute, input, record, attributeDef);
+      if (hashesNames.includes(attribute.key)) {
+        const definitionHash = (attributeDef as ObjectAttribute).mappings
+          .find((definition) => (definition.name === attribute.key));
+        if (definitionHash) {
+          handleDirectAttribute(attribute, input, record, definitionHash, hashesNames);
+        }
+      } else {
+        // Handle column attribute
+        handleDirectAttribute(attribute, input, record, attributeDef, []);
+      }
     } else if (refDef || ['from', 'to'].includes(attribute.key)) {
       handleBasedOnAttribute(attribute, input, refDef, otherEntities, refEntities);
     } else {

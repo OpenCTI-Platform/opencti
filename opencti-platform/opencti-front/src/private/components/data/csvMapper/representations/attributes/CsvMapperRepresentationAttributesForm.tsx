@@ -57,9 +57,55 @@ CsvMapperRepresentationAttributesFormProps
     (schema) => schema.name === representation.target_type,
   )?.attributes ?? [];
 
+  const mutableSchemaAttributes = entitySchemaAttributes.slice();
+  const indexToReplace = mutableSchemaAttributes.findIndex((a) => a.name === 'hashes');
+
+  if (indexToReplace !== -1) {
+    console.log(mutableSchemaAttributes[indexToReplace]);
+    mutableSchemaAttributes.splice(
+      indexToReplace,
+      1,
+      {
+        defaultValues: null,
+        editDefault: false,
+        label: null,
+        mandatory: false,
+        multiple: false,
+        name: 'MD5',
+        type: 'string',
+      },
+      {
+        defaultValues: null,
+        editDefault: false,
+        label: null,
+        mandatory: false,
+        multiple: false,
+        name: 'SHA-1',
+        type: 'string',
+      },
+      {
+        defaultValues: null,
+        editDefault: false,
+        label: null,
+        mandatory: false,
+        multiple: false,
+        name: 'SHA-256',
+        type: 'string',
+      },
+      {
+        defaultValues: null,
+        editDefault: false,
+        label: null,
+        mandatory: false,
+        multiple: false,
+        name: 'SHA-512',
+        type: 'string',
+      },
+    );
+  }
   return (
     <>
-      {[...entitySchemaAttributes]
+      {[...mutableSchemaAttributes]
         .sort((a1, a2) => Number(a2.mandatory) - Number(a1.mandatory))
         .map((schemaAttribute) => {
           if (schemaAttribute.type === 'ref') {
