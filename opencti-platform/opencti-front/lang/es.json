@@ -2528,12 +2528,16 @@
   "and ... more": "y {count} más.",
   "Open Settings": "Abrir Ajustes",
   "alert_GROUP_WITH_NULL_EFFECTIVE_LEVEL": "A partir de OpenCTI 6.0, se añadirá un nivel de confianza máximo a los grupos y usuarios. Proporcionará a los administradores de la plataforma un mayor control sobre el impacto de los datos importados y evitará cualquier actualización no deseada de los datos. Lea {link_blogpost} para obtener más información.\n \nEn esta plataforma, \"el nivel máximo de confianza\" de algunos grupos no están definidos actualmente. Sus miembros no podrán crear ningún dato en la versión 6.X de la plataforma. Para evitarlo, asegúrate de que todos los grupos tienen un nivel de confianza máximo definido. Más información en {link_blogpost}. Ten especial cuidado con los usuarios asociados a Conectores, Feeds y Streams; puedes establecer el nivel de confianza individual para anular el nivel de confianza de grupo si es necesario. Únete a {link_slack} si necesitas consejos.",
-  "confidence_level_from": "de {entity_type} {link}",
   "Unknown configuration error in the platform.": "Error de configuración desconocido en la plataforma.",
   "You can enable/disable default values for marking in the customization of each entity type.": "Puede activar/desactivar los valores por defecto para el marcado en la personalización de cada tipo de entidad.",
-  "This group does not have a confidence level, members might not be able to create data.": "Este grupo no tiene un nivel de confianza, es posible que los miembros no puedan crear datos.",
   "The user's max confidence level overrides the max confidence that might be set at groups level.": "El nivel de confianza máximo del usuario prevalece sobre el nivel de confianza máximo que pueda establecerse a nivel de grupo.",
-  "Current effective confidence level:": "Nivel de confianza efectivo actual:",
-  "From: user": "De: usuario",
-  "No confidence level found in this user's groups, and no confidence level defined at the user level.": "No se ha encontrado ningún nivel de confianza en los grupos de este usuario, y no se ha definido ningún nivel de confianza a nivel de usuario."
+  "No confidence level found in this user's groups, and no confidence level defined at the user level.": "No se ha encontrado ningún nivel de confianza en los grupos de este usuario, y no se ha definido ningún nivel de confianza a nivel de usuario.",
+  "This group does not have a max confidence level, members might not be able to create data.": "Este grupo no tiene un nivel de confianza máximo, es posible que los miembros no puedan crear datos.",
+  "This user has no effective confidence level from the groups assigned.": "Este usuario no tiene nivel de confianza efectivo de los grupos asignados.",
+  "confidence_level_from_group": "Este valor se hereda del grupo {link}.",
+  "Effective max confidence level:": "Nivel de confianza máximo efectivo:",
+  "This value is defined at the user level, which overrides the value inherited from user's groups.": "Este valor se define a nivel de usuario, que anula el valor heredado de los grupos del usuario.",
+  "This user is not a member of any group and does not inherit a max confidence level.": "Este usuario no es miembro de ningún grupo y no hereda un nivel de confianza máximo.",
+  "This user does not inherit a max confidence level from their group. Configure user's groups with a max confidence level.": "Este usuario no hereda un nivel de confianza máximo de su grupo. Configurar grupos de usuarios con un nivel de confianza máximo.",
+  "This group has no max confidence level defined.": "Este grupo no tiene definido un nivel de confianza máximo."
 }

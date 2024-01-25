@@ -3,6 +3,8 @@ import { User_user$data } from '@components/settings/users/__generated__/User_us
 import { Link } from 'react-router-dom-v5-compat';
 import { ReportGmailerrorred } from '@mui/icons-material';
 import Tooltip from '@mui/material/Tooltip';
+import { InformationOutline } from 'mdi-material-ui';
+import Box from '@mui/material/Box';
 import { useFormatter } from '../../../../components/i18n';
 
 type Data_UserConfidenceLevel = User_user$data['user_confidence_level'];
@@ -40,24 +42,32 @@ const UserConfidenceLevel: React.FC<UserConfidenceLevelProps> = ({ confidenceLev
       if (source.entity_type && source.entity_type !== 'User') {
         // a group or orga
         return (
-          <>
-            [{t_i18n('', {
-            id: 'confidence_level_from',
-            values: {
-              entity_type: t_i18n(`entity_${source.entity_type}`).toLowerCase(),
-              link: (
-                <Link to={`/dashboard/settings/accesses/${source.entity_type.toLowerCase()}s/${source.id}`}>
-                  {source.name}
-                </Link>
-              ),
-            },
-          })}]
-          </>
+          <Tooltip
+            sx={{ marginLeft: 1 }}
+            title={t_i18n('', {
+              id: 'confidence_level_from_group',
+              values: {
+                link: (
+                  <Link to={`/dashboard/settings/accesses/groups/${source.id}`}>
+                    {source.name}
+                  </Link>
+                ),
+              },
+            })}
+          >
+            <InformationOutline fontSize={'small'} color={'info'} />
+          </Tooltip>
         );
       }
       // the user himself
       return (
-        <>[{t_i18n('From: user')}]</>
+        <Tooltip
+          sx={{ marginLeft: 1 }}
+          title={t_i18n('This value is defined at the user level, which overrides the value inherited from user\'s groups.')}
+        >
+          <InformationOutline fontSize={'small'} color={'info'} />
+        </Tooltip>
+
       );
     }
 
@@ -65,11 +75,10 @@ const UserConfidenceLevel: React.FC<UserConfidenceLevelProps> = ({ confidenceLev
   };
 
   return (
-    <>
-      {`${confidenceLevel.max_confidence ?? '-'}`}
-      &nbsp;
+    <Box component={'span'} sx={{ display: 'inline-flex', alignItems: 'center' }}>
+      <span>{`${confidenceLevel.max_confidence ?? '-'}`}</span>
       {showSource && renderSource()}
-    </>
+    </Box>
   );
 };
 

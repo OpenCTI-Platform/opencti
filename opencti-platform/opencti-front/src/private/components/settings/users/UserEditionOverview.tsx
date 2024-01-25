@@ -380,7 +380,7 @@ UserEditionOverviewComponentProps
               entityType="User"
               containerStyle={fieldSpacingContainerStyle}
               editContext={context}
-              effectiveLevel={user.effective_confidence_level}
+              currentUser={user}
             />
           )}
         </Form>
@@ -397,6 +397,8 @@ const UserEditionOverview = createFragmentContainer(
       @argumentDefinitions(
         rolesOrderBy: { type: "RolesOrdering", defaultValue: name }
         rolesOrderMode: { type: "OrderingMode", defaultValue: asc }
+        groupsOrderBy: { type: "GroupsOrdering", defaultValue: name }
+        groupsOrderMode: { type: "OrderingMode", defaultValue: asc }
         organizationsOrderBy: { type: "OrganizationsOrdering", defaultValue: name }
         organizationsOrderMode: { type: "OrderingMode", defaultValue: asc }
       ) {
@@ -433,6 +435,14 @@ const UserEditionOverview = createFragmentContainer(
           name
         }
         objectOrganization(orderBy: $organizationsOrderBy, orderMode: $organizationsOrderMode) {
+          edges {
+            node {
+              id
+              name
+            }
+          }
+        }
+        groups(orderBy: $groupsOrderBy, orderMode: $groupsOrderMode) {
           edges {
             node {
               id

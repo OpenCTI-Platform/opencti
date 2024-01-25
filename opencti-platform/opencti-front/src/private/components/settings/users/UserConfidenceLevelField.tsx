@@ -5,7 +5,7 @@ import Box from '@mui/material/Box';
 import Tooltip from '@mui/material/Tooltip';
 import makeStyles from '@mui/styles/makeStyles';
 import { InformationOutline } from 'mdi-material-ui';
-import { User_user$data } from '@components/settings/users/__generated__/User_user.graphql';
+import { UserEditionOverview_user$data } from '@components/settings/users/__generated__/UserEditionOverview_user.graphql';
 import InputSliderField from '../../../../components/InputSliderField';
 import { useFormatter } from '../../../../components/i18n';
 import UserConfidenceLevel from './UserConfidenceLevel';
@@ -40,7 +40,7 @@ interface UserConfidenceLevelFieldProps {
   containerStyle?: Record<string, string | number>;
   entityType: string;
   disabled?: boolean;
-  effectiveLevel?: User_user$data['effective_confidence_level']
+  currentUser?: UserEditionOverview_user$data; // only for edition
 }
 
 const UserConfidenceLevelField: FunctionComponent<UserConfidenceLevelFieldProps> = ({
@@ -52,7 +52,7 @@ const UserConfidenceLevelField: FunctionComponent<UserConfidenceLevelFieldProps>
   containerStyle,
   entityType,
   disabled,
-  effectiveLevel,
+  currentUser,
 }) => {
   const { t_i18n } = useFormatter();
   const finalLabel = label || t_i18n('Confidence level');
@@ -78,18 +78,25 @@ const UserConfidenceLevelField: FunctionComponent<UserConfidenceLevelFieldProps>
       variant="outlined"
       sx={{ position: 'relative' }}
     >
-      { !!effectiveLevel && (
+      { currentUser && !!currentUser.effective_confidence_level && (
         <Box>
-          {t_i18n('Current effective confidence level:')}
+          {t_i18n('Effective max confidence level:')}
           &nbsp;
-          <UserConfidenceLevel confidenceLevel={effectiveLevel} showSource={true} />
+          <UserConfidenceLevel confidenceLevel={currentUser.effective_confidence_level} showSource={true} />
         </Box>
       )}
-      { effectiveLevel === null && (
+      { currentUser && currentUser.effective_confidence_level === null && (currentUser.groups?.edges ?? []).length > 0 && (
         <Box
           sx={{ color: 'error.main' }}
         >
-          {t_i18n('This user has no effective confidence level from the groups assigned. Make sure to assign a confidence level in your groups')}
+          {t_i18n('This user does not inherit a max confidence level from their group. Configure user\'s groups with a max confidence level.')}
+        </Box>
+      )}
+      { currentUser && currentUser.effective_confidence_level === null && (currentUser.groups?.edges ?? []).length === 0 && (
+        <Box
+          sx={{ color: 'error.main' }}
+        >
+          {t_i18n('This user is not a member of any group and does not inherit a max confidence level.')}
         </Box>
       )}
       <Box sx={{ display: 'flex', alignItems: 'center' }}>
