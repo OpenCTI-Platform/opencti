@@ -43,7 +43,7 @@ export const FiltersVariant = {
 export const inlineFilters = ['is_read', 'trigger_type', 'instance_trigger'];
 
 export const integerFilters = [
-  'x_opencti_base_score',
+  'x_opencti_cvss_base_score',
   'x_opencti_score',
   'confidence',
   'likelihood',
@@ -107,7 +107,7 @@ export const dateFilters = [
 const uniqFilters = [
   'revoked',
   'x_opencti_detection',
-  'x_opencti_base_score',
+  'x_opencti_cvss_base_score',
   'confidence',
   'likelihood',
   'x_opencti_negative',
