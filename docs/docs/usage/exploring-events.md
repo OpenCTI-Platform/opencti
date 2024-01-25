@@ -14,7 +14,7 @@ From the `Events` section, users can access the following tabs:
 
 Incidents usually represents negative events impacting resources you want to protect, but local definitions can vary a lot, from a simple security events send by a SIEM to a massive scale supply chain attack impacting a whole activity sector.
 
-In the MITRE STIX 2.1, the `Incident` SDO has not yet been finalize and is the object of important work as part of a forthcoming STIX Extension.
+In the MITRE STIX 2.1, the `Incident` SDO has not yet been finalized and is the object of important work as part of a forthcoming STIX Extension.
 
 When clicking on the Incidents tab at the top left, you see the list of all the Incidents you have access to, in respect with your [allowed marking definitions](../administration/users.md).
 
@@ -31,7 +31,7 @@ When clicking on an `Incident` in the list, you land on its Overview tab. For an
 - Data: as described [here](overview.md#data-section).
 - History: as described [here](overview.md#history-section).
 
-![Incident Overview](assets/incident_overview.png)
+![Incident overview](assets/incident_overview.png)
 
 ## Sightings
 

@@ -34,7 +34,7 @@ When clicking on a `Sector` in the list, you land on its Overview tab. For a Sec
 - Data: as described [here](overview.md#data-section).
 - History: as described [here](overview.md#history-section).
 
-![Sector Overview](assets/sector_overview.png)
+![Sector overview](assets/sector_overview.png)
 
 
 ## Events
