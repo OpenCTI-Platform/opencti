@@ -1941,6 +1941,8 @@ enum StixCoreObjectsOrdering {
   published
   valid_from
   valid_until
+  first_seen
+  last_seen
   indicator_pattern
   x_opencti_workflow_id
   createdBy
