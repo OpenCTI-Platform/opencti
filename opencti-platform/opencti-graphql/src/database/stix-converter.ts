@@ -473,12 +473,12 @@ const convertVulnerabilityToStix = (instance: StoreEntity, type: string): SDO.St
     extensions: {
       [STIX_EXT_OCTI]: cleanObject({
         ...vulnerability.extensions[STIX_EXT_OCTI],
-        attack_vector: instance.x_opencti_attack_vector,
-        availability_impact: instance.x_opencti_availability_impact,
-        base_score: instance.x_opencti_base_score,
-        base_severity: instance.x_opencti_base_severity,
-        confidentiality_impact: instance.x_opencti_confidentiality_impact,
-        integrity_impact: instance.x_opencti_integrity_impact,
+        attack_vector: instance.x_opencti_cvss_attack_vector,
+        availability_impact: instance.x_opencti_cvss_availability_impact,
+        base_score: instance.x_opencti_cvss_base_score,
+        base_severity: instance.x_opencti_cvss_base_severity,
+        confidentiality_impact: instance.x_opencti_cvss_confidentiality_impact,
+        integrity_impact: instance.x_opencti_cvss_integrity_impact,
       })
     }
   };

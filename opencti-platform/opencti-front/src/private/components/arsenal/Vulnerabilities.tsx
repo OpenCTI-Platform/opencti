@@ -55,7 +55,7 @@ const Vulnerabilities = () => {
         width: '20%',
         isSortable: true,
       },
-      x_opencti_base_severity: {
+      x_opencti_cvss_base_severity: {
         label: 'CVSS3 - Severity',
         width: '15%',
         isSortable: true,
@@ -108,9 +108,9 @@ const Vulnerabilities = () => {
           'createdBy',
           'source_reliability',
           'confidence',
-          'x_opencti_base_score',
-          'x_opencti_base_severity',
-          'x_opencti_attack_vector',
+          'x_opencti_cvss_base_score',
+          'x_opencti_cvss_base_severity',
+          'x_opencti_cvss_attack_vector',
           'creator_id',
           'created',
           'name',

@@ -26031,9 +26031,9 @@ export enum VulnerabilitiesOrdering {
   Modified = 'modified',
   Name = 'name',
   UpdatedAt = 'updated_at',
-  XOpenctiAttackVector = 'x_opencti_attack_vector',
-  XOpenctiBaseScore = 'x_opencti_base_score',
-  XOpenctiBaseSeverity = 'x_opencti_base_severity',
+  XOpenctiCvssAttackVector = 'x_opencti_cvss_attack_vector',
+  XOpenctiCvssBaseScore = 'x_opencti_cvss_base_score',
+  XOpenctiCvssBaseSeverity = 'x_opencti_cvss_base_severity',
   XOpenctiWorkflowId = 'x_opencti_workflow_id'
 }
 
@@ -26086,14 +26086,14 @@ export type Vulnerability = BasicObject & StixCoreObject & StixDomainObject & St
   updated_at: Scalars['DateTime']['output'];
   workflowEnabled?: Maybe<Scalars['Boolean']['output']>;
   x_opencti_aliases?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
-  x_opencti_attack_vector?: Maybe<Scalars['String']['output']>;
-  x_opencti_availability_impact?: Maybe<Scalars['String']['output']>;
-  x_opencti_base_score?: Maybe<Scalars['Float']['output']>;
-  x_opencti_base_severity?: Maybe<Scalars['String']['output']>;
-  x_opencti_confidentiality_impact?: Maybe<Scalars['String']['output']>;
+  x_opencti_cvss_attack_vector?: Maybe<Scalars['String']['output']>;
+  x_opencti_cvss_availability_impact?: Maybe<Scalars['String']['output']>;
+  x_opencti_cvss_base_score?: Maybe<Scalars['Float']['output']>;
+  x_opencti_cvss_base_severity?: Maybe<Scalars['String']['output']>;
+  x_opencti_cvss_confidentiality_impact?: Maybe<Scalars['String']['output']>;
+  x_opencti_cvss_integrity_impact?: Maybe<Scalars['String']['output']>;
   x_opencti_graph_data?: Maybe<Scalars['String']['output']>;
   x_opencti_inferences?: Maybe<Array<Maybe<Inference>>>;
-  x_opencti_integrity_impact?: Maybe<Scalars['String']['output']>;
   x_opencti_stix_ids?: Maybe<Array<Maybe<Scalars['StixId']['output']>>>;
 };
 
@@ -26250,12 +26250,12 @@ export type VulnerabilityAddInput = {
   stix_id?: InputMaybe<Scalars['StixId']['input']>;
   update?: InputMaybe<Scalars['Boolean']['input']>;
   x_opencti_aliases?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
-  x_opencti_attack_vector?: InputMaybe<Scalars['String']['input']>;
-  x_opencti_availability_impact?: InputMaybe<Scalars['String']['input']>;
-  x_opencti_base_score?: InputMaybe<Scalars['Float']['input']>;
-  x_opencti_base_severity?: InputMaybe<Scalars['String']['input']>;
-  x_opencti_confidentiality_impact?: InputMaybe<Scalars['String']['input']>;
-  x_opencti_integrity_impact?: InputMaybe<Scalars['String']['input']>;
+  x_opencti_cvss_attack_vector?: InputMaybe<Scalars['String']['input']>;
+  x_opencti_cvss_availability_impact?: InputMaybe<Scalars['String']['input']>;
+  x_opencti_cvss_base_score?: InputMaybe<Scalars['Float']['input']>;
+  x_opencti_cvss_base_severity?: InputMaybe<Scalars['String']['input']>;
+  x_opencti_cvss_confidentiality_impact?: InputMaybe<Scalars['String']['input']>;
+  x_opencti_cvss_integrity_impact?: InputMaybe<Scalars['String']['input']>;
   x_opencti_stix_ids?: InputMaybe<Array<InputMaybe<Scalars['StixId']['input']>>>;
 };
 
@@ -36480,14 +36480,14 @@ export type VulnerabilityResolvers<ContextType = any, ParentType extends Resolve
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   workflowEnabled?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   x_opencti_aliases?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
-  x_opencti_attack_vector?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  x_opencti_availability_impact?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  x_opencti_base_score?: Resolver<Maybe<ResolversTypes['Float']>, ParentType, ContextType>;
-  x_opencti_base_severity?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  x_opencti_confidentiality_impact?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  x_opencti_cvss_attack_vector?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  x_opencti_cvss_availability_impact?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  x_opencti_cvss_base_score?: Resolver<Maybe<ResolversTypes['Float']>, ParentType, ContextType>;
+  x_opencti_cvss_base_severity?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  x_opencti_cvss_confidentiality_impact?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  x_opencti_cvss_integrity_impact?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_graph_data?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_inferences?: Resolver<Maybe<Array<Maybe<ResolversTypes['Inference']>>>, ParentType, ContextType>;
-  x_opencti_integrity_impact?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_stix_ids?: Resolver<Maybe<Array<Maybe<ResolversTypes['StixId']>>>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;

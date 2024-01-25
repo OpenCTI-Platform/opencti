@@ -658,7 +658,7 @@ const useSearchEntities = ({
             ]);
           });
         break;
-      case 'x_opencti_base_score': {
+      case 'x_opencti_cvss_base_score': {
         buildOptionsFromStaticList(filterKey, baseScores, ['lte', 'gt']);
         break;
       }
@@ -793,8 +793,8 @@ const useSearchEntities = ({
         buildOptionsFromVocabularySearchQuery(filterKey, ['grouping_context_ov']);
         break;
 
-      case 'x_opencti_base_severity':
-      case 'x_opencti_attack_vector':
+      case 'x_opencti_cvss_base_severity':
+      case 'x_opencti_cvss_attack_vector':
       case 'x_opencti_organization_type':
       case 'source':
         buildOptionsFromAttributesSearchQuery(filterKey);

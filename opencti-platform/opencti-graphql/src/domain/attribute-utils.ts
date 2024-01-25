@@ -72,12 +72,12 @@ export const INTERNAL_ATTRIBUTES = [
   'x_opencti_firstname',
   'x_opencti_lastname',
   'x_opencti_score',
-  'x_opencti_base_score',
-  'x_opencti_base_severity',
-  'x_opencti_attack_vector',
-  'x_opencti_integrity_impact',
-  'x_opencti_availability_impact',
-  'x_opencti_confidentiality_impact',
+  'x_opencti_cvss_base_score',
+  'x_opencti_cvss_base_severity',
+  'x_opencti_cvss_attack_vector',
+  'x_opencti_cvss_integrity_impact',
+  'x_opencti_cvss_availability_impact',
+  'x_opencti_cvss_confidentiality_impact',
   'x_opencti_additional_names',
 ];
 

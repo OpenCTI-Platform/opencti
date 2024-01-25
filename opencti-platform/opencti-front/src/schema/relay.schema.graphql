@@ -4514,9 +4514,9 @@ input ToolAddInput {
 
 enum VulnerabilitiesOrdering {
   name
-  x_opencti_base_score
-  x_opencti_base_severity
-  x_opencti_attack_vector
+  x_opencti_cvss_base_score
+  x_opencti_cvss_base_severity
+  x_opencti_cvss_attack_vector
   created
   modified
   created_at
@@ -4576,12 +4576,12 @@ type Vulnerability implements BasicObject & StixObject & StixCoreObject & StixDo
   name: String!
   description: String
   x_opencti_aliases: [String]
-  x_opencti_base_score: Float
-  x_opencti_base_severity: String
-  x_opencti_attack_vector: String
-  x_opencti_integrity_impact: String
-  x_opencti_availability_impact: String
-  x_opencti_confidentiality_impact: String
+  x_opencti_cvss_base_score: Float
+  x_opencti_cvss_base_severity: String
+  x_opencti_cvss_attack_vector: String
+  x_opencti_cvss_integrity_impact: String
+  x_opencti_cvss_availability_impact: String
+  x_opencti_cvss_confidentiality_impact: String
   softwares(first: Int): StixCyberObservableConnection
   creators: [Creator!]
   toStix: String
@@ -4601,12 +4601,12 @@ input VulnerabilityAddInput {
   name: name_String_NotNull_minLength_2!
   description: String
   x_opencti_aliases: [String]
-  x_opencti_base_score: Float
-  x_opencti_base_severity: String
-  x_opencti_attack_vector: String
-  x_opencti_integrity_impact: String
-  x_opencti_availability_impact: String
-  x_opencti_confidentiality_impact: String
+  x_opencti_cvss_base_score: Float
+  x_opencti_cvss_base_severity: String
+  x_opencti_cvss_attack_vector: String
+  x_opencti_cvss_integrity_impact: String
+  x_opencti_cvss_availability_impact: String
+  x_opencti_cvss_confidentiality_impact: String
   confidence: Int
   revoked: Boolean
   lang: String

@@ -298,11 +298,11 @@ interface BasicStoreEntity extends BasicStoreCommon {
   x_opencti_location_type: string;
   x_opencti_reliability: string;
   x_opencti_organization_type: string;
-  x_opencti_attack_vector: string;
-  x_opencti_availability_impact: string;
-  x_opencti_base_severity: string;
-  x_opencti_confidentiality_impact: string;
-  x_opencti_integrity_impact: string;
+  x_opencti_cvss_attack_vector: string;
+  x_opencti_cvss_availability_impact: string;
+  x_opencti_cvss_base_severity: string;
+  x_opencti_cvss_confidentiality_impact: string;
+  x_opencti_cvss_integrity_impact: string;
   x_opencti_main_observable_type: string;
   x_opencti_lastname: string;
   x_opencti_firstname: string;
@@ -356,7 +356,7 @@ interface BasicStoreEntity extends BasicStoreCommon {
   longitude: string;
   precision: number;
   x_opencti_order: number;
-  x_opencti_base_score: number;
+  x_opencti_cvss_base_score: number;
   x_opencti_score: number;
   usages: number;
   note_types: Array<string>;
