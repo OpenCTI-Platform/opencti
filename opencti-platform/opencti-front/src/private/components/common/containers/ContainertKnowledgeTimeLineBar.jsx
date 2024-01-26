@@ -20,10 +20,9 @@ const useStyles = makeStyles(() => ({
     overflow: 'hidden',
   },
   divider: {
-    height: '51px',
-    margin: '0 5px 0 5px',
-    paddingTop: 3,
-    paddingBottom: 3,
+    marginTop: 3,
+    height: 50,
+    margin: '0 5px',
   },
 }));
 
@@ -46,7 +45,6 @@ const ContentKnowledgeTimeLineBar = ({
   const [navOpen, setNavOpen] = useState(
     localStorage.getItem('navOpen') === 'true',
   );
-
   const [open, setOpen] = useState(false);
 
   useEffect(() => {
@@ -75,15 +73,16 @@ const ContentKnowledgeTimeLineBar = ({
         >
           <div
             style={{
-              height: open ? 108 : 54,
+              height: open ? 'auto' : 54,
               minHeight: open ? 108 : 54,
-              transition: 'height 0.2s linear',
+              transition: 'min-height 0.2s linear',
+              paddingTop: 3,
+
             }}
           >
             <div
               style={{
                 display: 'flex',
-
               }}
             >
               <Tooltip
@@ -105,10 +104,10 @@ const ContentKnowledgeTimeLineBar = ({
               </Tooltip>
               <Tooltip
                 title={
-                                        timeLineFunctionalDate
-                                          ? t_i18n('Use technical dates')
-                                          : t_i18n('Use functional dates')
-                                    }
+                    timeLineFunctionalDate
+                      ? t_i18n('Use technical dates')
+                      : t_i18n('Use functional dates')
+                }
               >
                 <span>
                   <IconButton
@@ -121,7 +120,7 @@ const ContentKnowledgeTimeLineBar = ({
                 </span>
               </Tooltip>
               <Divider className={classes.divider} orientation="vertical" />
-              <div style={{ flexGrow: 0 }}>
+              <div style={{ flexGrow: 0, margin: '9px 10px 0 10px' }}>
                 <SearchInput
                   variant="thin"
                   onSubmit={handleTimeLineSearch}
@@ -129,7 +128,7 @@ const ContentKnowledgeTimeLineBar = ({
                 />
               </div>
               <Divider className={classes.divider} orientation="vertical" />
-              <div>
+              <div style ={{ paddingTop: 4 }} >
                 <Filters
                   availableFilterKeys={[
                     'entity_type',
@@ -145,6 +144,7 @@ const ContentKnowledgeTimeLineBar = ({
                   handleAddFilter={handleAddTimeLineFilter}
                 />
               </div>
+
               <div style={{ flexGrow: 1 }}>
                 <FilterIconButton
                   filters={timeLineFilters}
@@ -154,9 +154,13 @@ const ContentKnowledgeTimeLineBar = ({
                   redirection
                 />
               </div>
-              <IconButton style={{ height: 'fit-content' }} onClick={() => setOpen(!open)}>
+              {timeLineFilters.filters.length > 0 ? (
+                <IconButton style={{ height: 'fit-content' }} color="primary" onClick={() => setOpen(!open)}>
+                  <KeyboardArrowDownIcon />
+                </IconButton>
+              ) : (<IconButton style={{ height: 'fit-content' }} aria-haspopup="false">
                 <KeyboardArrowDownIcon />
-              </IconButton>
+              </IconButton>)}
             </div>
           </div>
         </Drawer>)}
