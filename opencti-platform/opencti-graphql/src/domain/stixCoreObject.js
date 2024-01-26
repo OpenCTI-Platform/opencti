@@ -265,13 +265,29 @@ export const stixCoreObjectsMultiTimeSeries = (context, user, args) => {
 };
 
 export const publicStixCoreObjectsMultiTimeSeries = async (context, args) => {
-  const { widgets, user } = await getWidgetsAndUser(context, args.uriKey);
-  const widgetConfigs = widgets[args.widgetId].dataSelection;
-  const timeSeriesParameters = [];
-  widgetConfigs.map((widgetConfig) => timeSeriesParameters.push({
-    field: widgetConfig.date_attribute,
-    filters: widgetConfig.filters,
-  }));
+  const { widgets, user, allowed_markings } = await getWidgetsAndUser(context, args.uriKey);
+  const { dataSelection } = widgets[args.widgetId];
+
+  const markingFilters = {
+    key: [
+      'objectMarking'
+    ],
+    values: allowed_markings,
+    operator: 'eq',
+    mode: 'or'
+  };
+
+  const timeSeriesParameters = dataSelection.map((selection) => {
+    const filters = {
+      filterGroups: [selection.filters],
+      filters: allowed_markings ? [markingFilters] : [],
+      mode: 'and'
+    };
+    return {
+      field: selection.date_attribute,
+      filters,
+    };
+  });
 
   const standardArgs = {
     startDate: args.startDate,
@@ -305,14 +321,14 @@ export const publicStixCoreObjectsNumber = async (context, args) => {
     key: [
       'objectMarking'
     ],
-    values: allowed_markings ?? [],
+    values: allowed_markings,
     operator: 'eq',
     mode: 'or'
   };
 
   const filters = {
     filterGroups: [widgetConfig.filters],
-    filters: [markingFilters],
+    filters: allowed_markings ? [markingFilters] : [],
     mode: 'and'
   };
 

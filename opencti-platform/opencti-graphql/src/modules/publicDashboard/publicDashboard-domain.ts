@@ -89,7 +89,7 @@ export const addPublicDashboard = async (
   const publicManifest = toBase64(JSON.stringify(parsedManifest) ?? '{}');
 
   const authorizedMembers = initializeAuthorizedMembers(
-    [{ id: user.id, access_right: 'admin' }],
+    [{ id: user.id, access_right: 'admin' }, { id: 'ALL', access_right: 'view' }],
     user,
   );
   // Create publicDashboard

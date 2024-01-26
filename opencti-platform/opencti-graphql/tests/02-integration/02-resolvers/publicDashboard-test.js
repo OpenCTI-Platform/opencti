@@ -269,7 +269,7 @@ describe('PublicDashboard resolver', () => {
         expect(queryResult.data.publicDashboardFieldPatch.name).toEqual(updatedName);
       });
 
-      it('User with EXPLORE_EXUPDATE_PUBLISH capability but no admin access right cannot update public dashboard', async () => {
+      it('User with EXPLORE_EXUPDATE_PUBLISH capability but view access right cannot update public dashboard', async () => {
         const queryResult = await editorQuery({
           query: UPDATE_QUERY,
           variables: {
@@ -279,7 +279,7 @@ describe('PublicDashboard resolver', () => {
         });
         expect(queryResult).not.toBeNull();
         expect(queryResult.errors.length).toEqual(1);
-        expect(queryResult.errors.at(0).message).toEqual('Cant find element to update');
+        expect(queryResult.errors.at(0).message).toEqual('You are not allowed to do this.');
       });
 
       it('should delete publicDashboard', async () => {
