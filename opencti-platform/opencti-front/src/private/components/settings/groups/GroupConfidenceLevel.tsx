@@ -18,7 +18,7 @@ const GroupConfidenceLevel: React.FC<GroupConfidenceLevelProps> = ({ confidenceL
     return (
       <Alert severity={'error'} variant={'outlined'}>
         <AlertTitle>
-          {t_i18n('This group does not have a max confidence level, members might not be able to create data.')}
+          {t_i18n('This group does not have a Max Confidence Level, members might not be able to create data.')}
         </AlertTitle>
       </Alert>
     );

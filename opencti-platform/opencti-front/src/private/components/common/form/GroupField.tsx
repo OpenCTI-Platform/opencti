@@ -106,7 +106,7 @@ const GroupField: React.FC<GroupFieldProps> = (props) => {
           const newGroups = dataGroups.map((n) => {
             const max_confidence = n?.node.group_confidence_level
               ? `${t_i18n('Max Confidence Level:')} ${n.node.group_confidence_level.max_confidence}`
-              : t_i18n('No confidence level');
+              : t_i18n('No Max Confidence Level');
             const newLabel = showConfidence
               ? `${n?.node.name} (${max_confidence})`
               : n?.node.name ?? '';

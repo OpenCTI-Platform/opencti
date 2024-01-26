@@ -78,7 +78,7 @@ const UserConfidenceLevelField: FunctionComponent<UserConfidenceLevelFieldProps>
     >
       { currentUser && !!currentUser.effective_confidence_level && (
         <Box>
-          {t_i18n('Effective max confidence level:')}
+          {t_i18n('Effective Max Confidence Level:')}
           &nbsp;
           <UserConfidenceLevel confidenceLevel={currentUser.effective_confidence_level} />
         </Box>
@@ -87,14 +87,14 @@ const UserConfidenceLevelField: FunctionComponent<UserConfidenceLevelFieldProps>
         <Box
           sx={{ color: 'error.main' }}
         >
-          {t_i18n('This user does not inherit a max confidence level from their group. Configure user\'s groups with a max confidence level.')}
+          {t_i18n('This user does not inherit a Max Confidence Level from their group. Configure user\'s groups with a Max Confidence Level.')}
         </Box>
       )}
       { currentUser && currentUser.effective_confidence_level === null && (currentUser.groups?.edges ?? []).length === 0 && (
         <Box
           sx={{ color: 'error.main' }}
         >
-          {t_i18n('This user is not a member of any group and does not inherit a max confidence level.')}
+          {t_i18n('This user has no Max Confidence Level and does not inherit one from groups. Add a group to this user to resolve the issue.')}
         </Box>
       )}
       <Box sx={{ display: 'flex', alignItems: 'center' }}>
@@ -103,14 +103,14 @@ const UserConfidenceLevelField: FunctionComponent<UserConfidenceLevelFieldProps>
           component={SwitchField}
           type="checkbox"
           name="user_confidence_level_enabled"
-          label={t_i18n('Enable user max confidence level')}
+          label={t_i18n('Enable user Max Confidence Level')}
           // controlled field
           checked={switchValue}
           onChange={handleSwitchChange}
         />
         <Tooltip
           sx={{ zIndex: 2 }}
-          title={t_i18n('The user\'s max confidence level overrides the max confidence that might be set at groups level.')}
+          title={t_i18n('The user\'s Max Confidence Level overrides Max Confidence Level inherited from user\'s groups')}
         >
           <InformationOutline fontSize="small" color="primary" />
         </Tooltip>

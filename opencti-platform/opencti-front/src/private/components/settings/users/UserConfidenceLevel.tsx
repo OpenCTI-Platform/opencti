@@ -41,7 +41,7 @@ const UserConfidenceLevel: React.FC<UserConfidenceLevelProps> = ({ confidenceLev
           <Tooltip
             sx={{ marginLeft: 1 }}
             title={t_i18n('', {
-              id: 'confidence_level_from_group',
+              id: 'The Max Confidence Level is currently inherited from the group {link}',
               values: {
                 link: (
                   <Link to={`/dashboard/settings/accesses/groups/${source.id}`}>
@@ -59,7 +59,7 @@ const UserConfidenceLevel: React.FC<UserConfidenceLevelProps> = ({ confidenceLev
       return (
         <Tooltip
           sx={{ marginLeft: 1 }}
-          title={t_i18n('This value is defined at the user level, which overrides the value inherited from user\'s groups.')}
+          title={t_i18n('The Max Confidence Level is currently defined at the user level. It overrides Max Confidence Level from user\'s groups.')}
         >
           <InformationOutline fontSize={'small'} color={'info'} />
         </Tooltip>

@@ -69,7 +69,7 @@ MembersListContainerProps
       render: (user) => user.lastname,
     },
     effective_confidence_level: {
-      label: 'confidence',
+      label: 'Max Confidence',
       width: '10%',
       isSortable: false,
     },

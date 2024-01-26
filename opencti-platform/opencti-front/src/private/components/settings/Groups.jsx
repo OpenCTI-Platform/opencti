@@ -99,7 +99,7 @@ class Groups extends Component {
         isSortable: true,
       },
       group_confidence_level: {
-        label: 'Confidence',
+        label: 'Max Confidence',
         width: '10%',
         isSortable: true,
       },

@@ -57,7 +57,7 @@ const Users = () => {
         isSortable: true,
       },
       effective_confidence_level: {
-        label: 'confidence',
+        label: 'Max Confidence',
         width: '10%',
         isSortable: false,
       },

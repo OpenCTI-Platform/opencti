@@ -83,7 +83,7 @@ const GroupUsers: FunctionComponent<GroupUsersProps> = ({ groupId }) => {
       isSortable: true,
     },
     effective_confidence_level: {
-      label: 'confidence',
+      label: 'Max Confidence',
       width: '10%',
       isSortable: false,
     },
