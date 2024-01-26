@@ -31,7 +31,7 @@ const READ_QUERY = gql`
 `;
 
 describe('Group resolver standard behavior', () => {
-  let groupIds; // keep for delete
+  const groupIds = []; // keep for delete
   let groupId; // the one we will use in all tests
   it('should group created', async () => {
     const CREATE_QUERY = gql`
@@ -362,14 +362,16 @@ describe('Group resolver standard behavior', () => {
         }
       }
     `;
-    // Delete the group
-    await queryAsAdmin({
-      query: DELETE_QUERY,
-      variables: { id: groupId },
-    });
-    // Verify is no longer found
-    const queryResult = await queryAsAdmin({ query: READ_QUERY, variables: { id: groupId } });
-    expect(queryResult).not.toBeNull();
-    expect(queryResult.data.group).toBeNull();
+    // Delete the groups
+    for (let i = 0; i < groupIds.length; i += 1) {
+      await queryAsAdmin({
+        query: DELETE_QUERY,
+        variables: { id: groupIds[i] },
+      });
+      // Verify is no longer found
+      const queryResult = await queryAsAdmin({ query: READ_QUERY, variables: { id: groupIds[i] } });
+      expect(queryResult).not.toBeNull();
+      expect(queryResult.data.group).toBeNull();
+    }
   });
 });
