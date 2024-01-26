@@ -448,9 +448,9 @@ class Identity:
                         }
                     }
                 """
-                input_variables[
-                    "x_opencti_organization_type"
-                ] = x_opencti_organization_type
+                input_variables["x_opencti_organization_type"] = (
+                    x_opencti_organization_type
+                )
                 input_variables["x_opencti_reliability"] = x_opencti_reliability
                 result_data_field = "organizationAdd"
             elif type == IdentityTypes.INDIVIDUAL.value:
@@ -533,97 +533,115 @@ class Identity:
 
             # Search in extensions
             if "x_opencti_aliases" not in stix_object:
-                stix_object[
-                    "x_opencti_aliases"
-                ] = self.opencti.get_attribute_in_extension("aliases", stix_object)
+                stix_object["x_opencti_aliases"] = (
+                    self.opencti.get_attribute_in_extension("aliases", stix_object)
+                )
             if "x_opencti_organization_type" not in stix_object:
-                stix_object[
-                    "x_opencti_organization_type"
-                ] = self.opencti.get_attribute_in_extension(
-                    "organization_type", stix_object
+                stix_object["x_opencti_organization_type"] = (
+                    self.opencti.get_attribute_in_extension(
+                        "organization_type", stix_object
+                    )
                 )
             if "x_opencti_reliability" not in stix_object:
-                stix_object[
-                    "x_opencti_reliability"
-                ] = self.opencti.get_attribute_in_extension("reliability", stix_object)
+                stix_object["x_opencti_reliability"] = (
+                    self.opencti.get_attribute_in_extension("reliability", stix_object)
+                )
             if "x_opencti_organization_type" not in stix_object:
-                stix_object[
-                    "x_opencti_organization_type"
-                ] = self.opencti.get_attribute_in_extension(
-                    "organization_type", stix_object
+                stix_object["x_opencti_organization_type"] = (
+                    self.opencti.get_attribute_in_extension(
+                        "organization_type", stix_object
+                    )
                 )
             if "x_opencti_firstname" not in stix_object:
-                stix_object[
-                    "x_opencti_firstname"
-                ] = self.opencti.get_attribute_in_extension("firstname", stix_object)
+                stix_object["x_opencti_firstname"] = (
+                    self.opencti.get_attribute_in_extension("firstname", stix_object)
+                )
             if "x_opencti_lastname" not in stix_object:
-                stix_object[
-                    "x_opencti_lastname"
-                ] = self.opencti.get_attribute_in_extension("lastname", stix_object)
+                stix_object["x_opencti_lastname"] = (
+                    self.opencti.get_attribute_in_extension("lastname", stix_object)
+                )
             if "x_opencti_stix_ids" not in stix_object:
-                stix_object[
-                    "x_opencti_stix_ids"
-                ] = self.opencti.get_attribute_in_extension("stix_ids", stix_object)
+                stix_object["x_opencti_stix_ids"] = (
+                    self.opencti.get_attribute_in_extension("stix_ids", stix_object)
+                )
             if "x_opencti_workflow_id" not in stix_object:
-                stix_object[
-                    "x_opencti_workflow_id"
-                ] = self.opencti.get_attribute_in_extension(
-                    "x_opencti_workflow_id", stix_object
+                stix_object["x_opencti_workflow_id"] = (
+                    self.opencti.get_attribute_in_extension(
+                        "x_opencti_workflow_id", stix_object
+                    )
                 )
 
             return self.create(
                 type=type,
                 stix_id=stix_object["id"],
-                createdBy=extras["created_by_id"]
-                if "created_by_id" in extras
-                else None,
-                objectMarking=extras["object_marking_ids"]
-                if "object_marking_ids" in extras
-                else None,
-                objectLabel=extras["object_label_ids"]
-                if "object_label_ids" in extras
-                else None,
-                externalReferences=extras["external_references_ids"]
-                if "external_references_ids" in extras
-                else None,
+                createdBy=(
+                    extras["created_by_id"] if "created_by_id" in extras else None
+                ),
+                objectMarking=(
+                    extras["object_marking_ids"]
+                    if "object_marking_ids" in extras
+                    else None
+                ),
+                objectLabel=(
+                    extras["object_label_ids"] if "object_label_ids" in extras else None
+                ),
+                externalReferences=(
+                    extras["external_references_ids"]
+                    if "external_references_ids" in extras
+                    else None
+                ),
                 revoked=stix_object["revoked"] if "revoked" in stix_object else None,
-                confidence=stix_object["confidence"]
-                if "confidence" in stix_object
-                else None,
+                confidence=(
+                    stix_object["confidence"] if "confidence" in stix_object else None
+                ),
                 lang=stix_object["lang"] if "lang" in stix_object else None,
                 created=stix_object["created"] if "created" in stix_object else None,
                 modified=stix_object["modified"] if "modified" in stix_object else None,
                 name=stix_object["name"],
-                description=self.opencti.stix2.convert_markdown(
-                    stix_object["description"]
-                )
-                if "description" in stix_object
-                else None,
-                contact_information=self.opencti.stix2.convert_markdown(
-                    stix_object["contact_information"]
-                )
-                if "contact_information" in stix_object
-                else None,
+                description=(
+                    self.opencti.stix2.convert_markdown(stix_object["description"])
+                    if "description" in stix_object
+                    else None
+                ),
+                contact_information=(
+                    self.opencti.stix2.convert_markdown(
+                        stix_object["contact_information"]
+                    )
+                    if "contact_information" in stix_object
+                    else None
+                ),
                 roles=stix_object["roles"] if "roles" in stix_object else None,
                 x_opencti_aliases=self.opencti.stix2.pick_aliases(stix_object),
-                x_opencti_organization_type=stix_object["x_opencti_organization_type"]
-                if "x_opencti_organization_type" in stix_object
-                else None,
-                x_opencti_reliability=stix_object["x_opencti_reliability"]
-                if "x_opencti_reliability" in stix_object
-                else None,
-                x_opencti_firstname=stix_object["x_opencti_firstname"]
-                if "x_opencti_firstname" in stix_object
-                else None,
-                x_opencti_lastname=stix_object["x_opencti_lastname"]
-                if "x_opencti_lastname" in stix_object
-                else None,
-                x_opencti_stix_ids=stix_object["x_opencti_stix_ids"]
-                if "x_opencti_stix_ids" in stix_object
-                else None,
-                x_opencti_workflow_id=stix_object["x_opencti_workflow_id"]
-                if "x_opencti_workflow_id" in stix_object
-                else None,
+                x_opencti_organization_type=(
+                    stix_object["x_opencti_organization_type"]
+                    if "x_opencti_organization_type" in stix_object
+                    else None
+                ),
+                x_opencti_reliability=(
+                    stix_object["x_opencti_reliability"]
+                    if "x_opencti_reliability" in stix_object
+                    else None
+                ),
+                x_opencti_firstname=(
+                    stix_object["x_opencti_firstname"]
+                    if "x_opencti_firstname" in stix_object
+                    else None
+                ),
+                x_opencti_lastname=(
+                    stix_object["x_opencti_lastname"]
+                    if "x_opencti_lastname" in stix_object
+                    else None
+                ),
+                x_opencti_stix_ids=(
+                    stix_object["x_opencti_stix_ids"]
+                    if "x_opencti_stix_ids" in stix_object
+                    else None
+                ),
+                x_opencti_workflow_id=(
+                    stix_object["x_opencti_workflow_id"]
+                    if "x_opencti_workflow_id" in stix_object
+                    else None
+                ),
                 update=update,
             )
         else:

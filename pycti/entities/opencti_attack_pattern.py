@@ -524,81 +524,99 @@ class AttackPattern:
                     else 0
                 )
             if "x_mitre_platforms" not in stix_object:
-                stix_object[
-                    "x_mitre_platforms"
-                ] = self.opencti.get_attribute_in_mitre_extension(
-                    "platforms", stix_object
+                stix_object["x_mitre_platforms"] = (
+                    self.opencti.get_attribute_in_mitre_extension(
+                        "platforms", stix_object
+                    )
                 )
             if "x_mitre_permissions_required" not in stix_object:
-                stix_object[
-                    "x_mitre_permissions_required"
-                ] = self.opencti.get_attribute_in_mitre_extension(
-                    "permissions_required", stix_object
+                stix_object["x_mitre_permissions_required"] = (
+                    self.opencti.get_attribute_in_mitre_extension(
+                        "permissions_required", stix_object
+                    )
                 )
             if "x_mitre_detection" not in stix_object:
-                stix_object[
-                    "x_mitre_detection"
-                ] = self.opencti.get_attribute_in_mitre_extension(
-                    "detection", stix_object
+                stix_object["x_mitre_detection"] = (
+                    self.opencti.get_attribute_in_mitre_extension(
+                        "detection", stix_object
+                    )
                 )
             if "x_opencti_stix_ids" not in stix_object:
-                stix_object[
-                    "x_opencti_stix_ids"
-                ] = self.opencti.get_attribute_in_extension("stix_ids", stix_object)
+                stix_object["x_opencti_stix_ids"] = (
+                    self.opencti.get_attribute_in_extension("stix_ids", stix_object)
+                )
             if "x_opencti_granted_refs" not in stix_object:
-                stix_object[
-                    "x_opencti_granted_refs"
-                ] = self.opencti.get_attribute_in_extension("granted_refs", stix_object)
+                stix_object["x_opencti_granted_refs"] = (
+                    self.opencti.get_attribute_in_extension("granted_refs", stix_object)
+                )
 
             return self.create(
                 stix_id=stix_object["id"],
-                createdBy=extras["created_by_id"]
-                if "created_by_id" in extras
-                else None,
-                objectMarking=extras["object_marking_ids"]
-                if "object_marking_ids" in extras
-                else None,
-                objectLabel=extras["object_label_ids"]
-                if "object_label_ids" in extras
-                else None,
-                externalReferences=extras["external_references_ids"]
-                if "external_references_ids" in extras
-                else None,
+                createdBy=(
+                    extras["created_by_id"] if "created_by_id" in extras else None
+                ),
+                objectMarking=(
+                    extras["object_marking_ids"]
+                    if "object_marking_ids" in extras
+                    else None
+                ),
+                objectLabel=(
+                    extras["object_label_ids"] if "object_label_ids" in extras else None
+                ),
+                externalReferences=(
+                    extras["external_references_ids"]
+                    if "external_references_ids" in extras
+                    else None
+                ),
                 revoked=stix_object["revoked"] if "revoked" in stix_object else None,
-                confidence=stix_object["confidence"]
-                if "confidence" in stix_object
-                else None,
+                confidence=(
+                    stix_object["confidence"] if "confidence" in stix_object else None
+                ),
                 lang=stix_object["lang"] if "lang" in stix_object else None,
                 created=stix_object["created"] if "created" in stix_object else None,
                 modified=stix_object["modified"] if "modified" in stix_object else None,
                 name=stix_object["name"],
-                description=self.opencti.stix2.convert_markdown(
-                    stix_object["description"]
-                )
-                if "description" in stix_object
-                else None,
+                description=(
+                    self.opencti.stix2.convert_markdown(stix_object["description"])
+                    if "description" in stix_object
+                    else None
+                ),
                 aliases=self.opencti.stix2.pick_aliases(stix_object),
-                x_mitre_platforms=stix_object["x_mitre_platforms"]
-                if "x_mitre_platforms" in stix_object
-                else stix_object["x_amitt_platforms"]
-                if "x_amitt_platforms" in stix_object
-                else None,
-                x_mitre_permissions_required=stix_object["x_mitre_permissions_required"]
-                if "x_mitre_permissions_required" in stix_object
-                else None,
-                x_mitre_detection=stix_object["x_mitre_detection"]
-                if "x_mitre_detection" in stix_object
-                else None,
+                x_mitre_platforms=(
+                    stix_object["x_mitre_platforms"]
+                    if "x_mitre_platforms" in stix_object
+                    else (
+                        stix_object["x_amitt_platforms"]
+                        if "x_amitt_platforms" in stix_object
+                        else None
+                    )
+                ),
+                x_mitre_permissions_required=(
+                    stix_object["x_mitre_permissions_required"]
+                    if "x_mitre_permissions_required" in stix_object
+                    else None
+                ),
+                x_mitre_detection=(
+                    stix_object["x_mitre_detection"]
+                    if "x_mitre_detection" in stix_object
+                    else None
+                ),
                 x_mitre_id=x_mitre_id,
-                killChainPhases=extras["kill_chain_phases_ids"]
-                if "kill_chain_phases_ids" in extras
-                else None,
-                x_opencti_stix_ids=stix_object["x_opencti_stix_ids"]
-                if "x_opencti_stix_ids" in stix_object
-                else None,
-                objectOrganization=stix_object["x_opencti_granted_refs"]
-                if "x_opencti_granted_refs" in stix_object
-                else None,
+                killChainPhases=(
+                    extras["kill_chain_phases_ids"]
+                    if "kill_chain_phases_ids" in extras
+                    else None
+                ),
+                x_opencti_stix_ids=(
+                    stix_object["x_opencti_stix_ids"]
+                    if "x_opencti_stix_ids" in stix_object
+                    else None
+                ),
+                objectOrganization=(
+                    stix_object["x_opencti_granted_refs"]
+                    if "x_opencti_granted_refs" in stix_object
+                    else None
+                ),
                 update=update,
             )
         else:
