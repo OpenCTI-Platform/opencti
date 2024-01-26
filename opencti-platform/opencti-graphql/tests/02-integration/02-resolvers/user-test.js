@@ -47,6 +47,16 @@ const READ_QUERY = gql`
       standard_id
       name
       description
+      user_confidence_level {
+        max_confidence
+      }
+      effective_confidence_level {
+        max_confidence
+        source {
+          ... on User { entity_type id name }
+          ... on Group { entity_type id name }
+        }
+      }
       groups {
         edges {
           node {
@@ -108,6 +118,16 @@ describe('User resolver standard behavior', () => {
           user_email
           firstname
           lastname
+          user_confidence_level {
+            max_confidence
+          }
+          effective_confidence_level {
+            max_confidence
+            source {
+              ... on User { entity_type id name }
+              ... on Group { entity_type id name }
+            }
+          }
         }
       }
     `;
@@ -129,6 +149,8 @@ describe('User resolver standard behavior', () => {
     expect(user).not.toBeNull();
     expect(user.data.userAdd).not.toBeNull();
     expect(user.data.userAdd.name).toEqual('User');
+    expect(user.data.userAdd.user_confidence_level).toBeNull();
+    expect(user.data.userAdd.effective_confidence_level).toBeNull(); // no group, no individual level
     userInternalId = user.data.userAdd.id;
     userStandardId = user.data.userAdd.standard_id;
   });
@@ -179,6 +201,37 @@ describe('User resolver standard behavior', () => {
       variables: { id: userInternalId, input: { key: 'name', value: ['User - test'] } },
     });
     expect(queryResult.data.userEdit.fieldPatch.name).toEqual('User - test');
+  });
+  it('should update user confidence level', async () => {
+    const UPDATE_QUERY = gql`
+      mutation UserEdit($id: ID!, $input: [EditInput]!) {
+        userEdit(id: $id) {
+          fieldPatch(input: $input) {
+            id
+            user_confidence_level {
+              max_confidence
+            }
+            effective_confidence_level {
+              max_confidence
+              source {
+                ... on User { entity_type id name }
+                ... on Group { entity_type id name }
+              }
+            }
+          }
+        }
+      }
+    `;
+    const queryResult = await queryAsAdmin({
+      query: UPDATE_QUERY,
+      variables: {
+        id: userInternalId,
+        input: { key: 'user_confidence_level', value: { max_confidence: 33, overrides: [] } }
+      },
+    });
+    expect(queryResult.data.userEdit.fieldPatch.user_confidence_level.max_confidence).toEqual(33);
+    expect(queryResult.data.userEdit.fieldPatch.effective_confidence_level.max_confidence).toEqual(33);
+    expect(queryResult.data.userEdit.fieldPatch.effective_confidence_level.source.id).toEqual(userInternalId);
   });
   it('should context patch user', async () => {
     const CONTEXT_PATCH_QUERY = gql`
@@ -231,7 +284,7 @@ describe('User resolver standard behavior', () => {
         name: 'Group of user',
         description: 'Group of user description',
         group_confidence_level: {
-          max_confidence: 100,
+          max_confidence: 60,
           overrides: [],
         }
       },
@@ -243,7 +296,7 @@ describe('User resolver standard behavior', () => {
     expect(group).not.toBeNull();
     expect(group.data.groupAdd).not.toBeNull();
     expect(group.data.groupAdd.name).toEqual('Group of user');
-    expect(group.data.groupAdd.group_confidence_level.max_confidence).toEqual(100);
+    expect(group.data.groupAdd.group_confidence_level.max_confidence).toEqual(60);
     groupInternalId = group.data.groupAdd.id;
     const RELATION_ADD_QUERY = gql`
       mutation GroupEdit($id: ID!, $input: InternalRelationshipAddInput!) {
@@ -282,6 +335,46 @@ describe('User resolver standard behavior', () => {
     expect(queryResult).not.toBeNull();
     expect(queryResult.data.user).not.toBeNull();
     expect(queryResult.data.user.groups.edges.length).toEqual(2); // the 2 groups are: 'Group of user' and 'Default'
+  });
+  it('should user confidence level be unchanged', async () => {
+    const queryResult = await queryAsAdmin({ query: READ_QUERY, variables: { id: userInternalId } });
+    expect(queryResult).not.toBeNull();
+    expect(queryResult.data.user).not.toBeNull();
+    expect(queryResult.data.user.user_confidence_level.max_confidence).toEqual(33);
+    expect(queryResult.data.user.effective_confidence_level.max_confidence).toEqual(33);
+    expect(queryResult.data.user.effective_confidence_level.source.id).toEqual(userInternalId);
+  });
+  it('should remove user confidence level, effective level should be accurate', async () => {
+    const UPDATE_QUERY = gql`
+      mutation UserEdit($id: ID!, $input: [EditInput]!) {
+        userEdit(id: $id) {
+          fieldPatch(input: $input) {
+            id
+            user_confidence_level {
+              max_confidence
+            }
+            effective_confidence_level {
+              max_confidence
+              source {
+                ... on User { entity_type id name }
+                ... on Group { entity_type id name }
+              }
+            }
+          }
+        }
+      }
+    `;
+    const queryResult = await queryAsAdmin({
+      query: UPDATE_QUERY,
+      variables: {
+        id: userInternalId,
+        input: { key: 'user_confidence_level', value: [null] }
+      },
+    });
+    expect(queryResult.data.userEdit.fieldPatch.user_confidence_level.max_confidence).toBeNull;
+    // now effective level is the group's value
+    expect(queryResult.data.userEdit.fieldPatch.effective_confidence_level.max_confidence).toEqual(60);
+    expect(queryResult.data.userEdit.fieldPatch.effective_confidence_level.source.id).toEqual(groupInternalId);
   });
   it('should add role in group', async () => {
     const ROLE_ADD_QUERY = gql`
