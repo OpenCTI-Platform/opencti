@@ -289,13 +289,9 @@ const EntityStixCoreRelationshipLineAllFragment = createFragmentContainer(
           name
         }
         killChainPhases {
-          edges {
-            node {
-              id
-              phase_name
-              x_opencti_order
-            }
-          }
+          id
+          phase_name
+          x_opencti_order
         }
         from {
           ... on StixCoreObject {
@@ -335,13 +331,9 @@ const EntityStixCoreRelationshipLineAllFragment = createFragmentContainer(
             description
             x_mitre_id
             killChainPhases {
-              edges {
-                node {
-                  id
-                  phase_name
-                  x_opencti_order
-                }
-              }
+              id
+              phase_name
+              x_opencti_order
             }
           }
           ... on Campaign {
@@ -500,13 +492,9 @@ const EntityStixCoreRelationshipLineAllFragment = createFragmentContainer(
                 description
                 x_mitre_id
                 killChainPhases {
-                  edges {
-                    node {
-                      id
-                      phase_name
-                      x_opencti_order
-                    }
-                  }
+                  id
+                  phase_name
+                  x_opencti_order
                 }
               }
               ... on Campaign {
@@ -667,13 +655,9 @@ const EntityStixCoreRelationshipLineAllFragment = createFragmentContainer(
                 description
                 x_mitre_id
                 killChainPhases {
-                  edges {
-                    node {
-                      id
-                      phase_name
-                      x_opencti_order
-                    }
-                  }
+                  id
+                  phase_name
+                  x_opencti_order
                 }
               }
               ... on Campaign {
@@ -836,13 +820,9 @@ const EntityStixCoreRelationshipLineAllFragment = createFragmentContainer(
             description
             x_mitre_id
             killChainPhases {
-              edges {
-                node {
-                  id
-                  phase_name
-                  x_opencti_order
-                }
-              }
+              id
+              phase_name
+              x_opencti_order
             }
           }
           ... on Campaign {
@@ -1001,13 +981,9 @@ const EntityStixCoreRelationshipLineAllFragment = createFragmentContainer(
                 description
                 x_mitre_id
                 killChainPhases {
-                  edges {
-                    node {
-                      id
-                      phase_name
-                      x_opencti_order
-                    }
-                  }
+                  id
+                  phase_name
+                  x_opencti_order
                 }
               }
               ... on Campaign {
@@ -1168,13 +1144,9 @@ const EntityStixCoreRelationshipLineAllFragment = createFragmentContainer(
                 description
                 x_mitre_id
                 killChainPhases {
-                  edges {
-                    node {
-                      id
-                      phase_name
-                      x_opencti_order
-                    }
-                  }
+                  id
+                  phase_name
+                  x_opencti_order
                 }
               }
               ... on Campaign {

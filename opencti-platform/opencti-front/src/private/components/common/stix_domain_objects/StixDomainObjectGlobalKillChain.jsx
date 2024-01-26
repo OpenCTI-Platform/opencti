@@ -56,13 +56,13 @@ class StixDomainObjectGlobalKillChainComponent extends Component {
       // eslint-disable-next-line no-nested-ternary
       R.map((n) => (n.node
         && n.node.killChainPhases
-        && n.node.killChainPhases.edges.length > 0
-        ? n.node.killChainPhases.edges[0].node
+        && n.node.killChainPhases.length > 0
+        ? n.node.killChainPhases[0]
         : n.node
             && n.node.to
             && n.node.to.killChainPhases
-            && n.node.to.killChainPhases.edges.length > 0
-          ? n.node.to.killChainPhases.edges[0].node
+            && n.node.to.killChainPhases.length > 0
+          ? n.node.to.killChainPhases[0]
           : { id: 'unknown', phase_name: t('Unknown'), x_opencti_order: 99 })),
       R.uniq,
       R.indexBy(R.prop('id')),
@@ -93,13 +93,13 @@ class StixDomainObjectGlobalKillChainComponent extends Component {
       R.map((n) => R.assoc(
         'killChainPhase',
         // eslint-disable-next-line no-nested-ternary
-        n && n.killChainPhases && n.killChainPhases.edges.length > 0
-          ? n.killChainPhases.edges[0].node
+        n && n.killChainPhases && n.killChainPhases.length > 0
+          ? n.killChainPhases[0]
           : n
               && n.to
               && n.to.killChainPhases
-              && n.to.killChainPhases.edges.length > 0
-            ? n.to.killChainPhases.edges[0].node
+              && n.to.killChainPhases.length > 0
+            ? n.to.killChainPhases[0]
             : { id: 'unknown', phase_name: t('Unknown'), x_opencti_order: 99 },
         n,
       )),
@@ -271,13 +271,9 @@ const StixDomainObjectGlobalKillChain = createRefetchContainer(
                 start_time
                 stop_time
                 killChainPhases {
-                  edges {
-                    node {
-                      id
-                      phase_name
-                      x_opencti_order
-                    }
-                  }
+                  id
+                  phase_name
+                  x_opencti_order
                 }
                 objectMarking {
                   id
@@ -296,13 +292,9 @@ const StixDomainObjectGlobalKillChain = createRefetchContainer(
                   name
                   x_mitre_id
                   killChainPhases {
-                    edges {
-                      node {
-                        id
-                        phase_name
-                        x_opencti_order
-                      }
-                    }
+                    id
+                    phase_name
+                    x_opencti_order
                   }
                 }
                 ... on Campaign {
@@ -350,13 +342,9 @@ const StixDomainObjectGlobalKillChain = createRefetchContainer(
                 ... on Malware {
                   name
                   killChainPhases {
-                    edges {
-                      node {
-                        id
-                        phase_name
-                        x_opencti_order
-                      }
-                    }
+                    id
+                    phase_name
+                    x_opencti_order
                   }
                 }
                 ... on ThreatActor {
@@ -365,13 +353,9 @@ const StixDomainObjectGlobalKillChain = createRefetchContainer(
                 ... on Tool {
                   name
                   killChainPhases {
-                    edges {
-                      node {
-                        id
-                        phase_name
-                        x_opencti_order
-                      }
-                    }
+                    id
+                    phase_name
+                    x_opencti_order
                   }
                 }
                 ... on Vulnerability {
@@ -390,13 +374,9 @@ const StixDomainObjectGlobalKillChain = createRefetchContainer(
                       name
                       x_mitre_id
                       killChainPhases {
-                          edges {
-                              node {
-                                  id
-                                  phase_name
-                                  x_opencti_order
-                              }
-                          }
+                          id
+                          phase_name
+                          x_opencti_order
                       }
                   }
                   ... on Campaign {
@@ -444,13 +424,9 @@ const StixDomainObjectGlobalKillChain = createRefetchContainer(
                   ... on Malware {
                       name
                       killChainPhases {
-                          edges {
-                              node {
-                                  id
-                                  phase_name
-                                  x_opencti_order
-                              }
-                          }
+                          id
+                          phase_name
+                          x_opencti_order
                       }
                   }
                   ... on ThreatActor {
@@ -459,13 +435,9 @@ const StixDomainObjectGlobalKillChain = createRefetchContainer(
                   ... on Tool {
                       name
                       killChainPhases {
-                          edges {
-                              node {
-                                  id
-                                  phase_name
-                                  x_opencti_order
-                              }
-                          }
+                          id
+                          phase_name
+                          x_opencti_order
                       }
                   }
                   ... on Vulnerability {

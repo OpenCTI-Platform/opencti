@@ -7,9 +7,8 @@ import { elCount } from '../database/engine';
 import { fillTimeSeries, isNotEmptyField, READ_INDEX_INFERRED_RELATIONSHIPS, READ_INDEX_STIX_CORE_RELATIONSHIPS } from '../database/utils';
 import { isStixCoreRelationship, stixCoreRelationshipOptions } from '../schema/stixCoreRelationship';
 import { ABSTRACT_STIX_CORE_RELATIONSHIP, buildRefRelationKey } from '../schema/general';
-import { RELATION_CREATED_BY, RELATION_KILL_CHAIN_PHASE, } from '../schema/stixRefRelationship';
-import { ENTITY_TYPE_KILL_CHAIN_PHASE } from '../schema/stixMetaObject';
-import { buildRelationsFilter, listEntitiesThroughRelationsPaginated, listRelations, storeLoadById } from '../database/middleware-loader';
+import { RELATION_CREATED_BY, } from '../schema/stixRefRelationship';
+import { buildRelationsFilter, listRelations, storeLoadById } from '../database/middleware-loader';
 import { askListExport, exportTransformFilters } from './stix';
 import { workToExportFile } from './work';
 import { stixObjectOrRelationshipAddRefRelation, stixObjectOrRelationshipAddRefRelations, stixObjectOrRelationshipDeleteRefRelation } from './stixObjectOrStixRelationship';
@@ -64,10 +63,6 @@ export const stixCoreRelationshipsMultiTimeSeries = async (context, user, args) 
   }));
 };
 // endregion
-
-export const killChainPhasesPaginated = async (context, user, stixCoreObjectId, opts) => {
-  return listEntitiesThroughRelationsPaginated(context, user, stixCoreObjectId, RELATION_KILL_CHAIN_PHASE, ENTITY_TYPE_KILL_CHAIN_PHASE, false, opts);
-};
 
 export const stixRelations = (context, user, stixCoreObjectId, args) => {
   const finalArgs = R.assoc('fromId', stixCoreObjectId, args);

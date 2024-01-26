@@ -157,7 +157,7 @@ type Indicator implements BasicObject & StixObject & StixCoreObject & StixDomain
   x_opencti_detection: Boolean
   x_opencti_main_observable_type: String
   x_mitre_platforms: [String]
-  killChainPhases: KillChainPhaseConnection
+  killChainPhases: [KillChainPhase!]
   observables(first: Int): StixCyberObservableConnection
   #Decay
   decay_base_score : Int

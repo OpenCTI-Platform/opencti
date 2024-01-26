@@ -38,12 +38,8 @@ const READ_QUERY = gql`
       name
       description
       killChainPhases {
-        edges {
-          node {
-            id
-            standard_id
-          }
-        }
+        id
+        standard_id
       }
       toStix
     }
@@ -87,8 +83,8 @@ describe('Tool resolver standard behavior', () => {
     expect(queryResult.data.tool).not.toBeNull();
     expect(queryResult.data.tool.id).toEqual(toolInternalId);
     expect(queryResult.data.tool.toStix.length).toBeGreaterThan(5);
-    expect(queryResult.data.tool.killChainPhases.edges.length).toEqual(1);
-    expect(queryResult.data.tool.killChainPhases.edges[0].node.standard_id).toEqual(
+    expect(queryResult.data.tool.killChainPhases.length).toEqual(1);
+    expect(queryResult.data.tool.killChainPhases[0].standard_id).toEqual(
       'kill-chain-phase--56330302-292c-5ad4-bece-bacaa99c16e0'
     );
   });

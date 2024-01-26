@@ -419,13 +419,9 @@ const stixDomainObjectAttackPatternsKillChainLines = createRefetchContainer(
                                         }
                                     }
                                     killChainPhases {
-                                        edges {
-                                            node {
-                                                id
-                                                phase_name
-                                                x_opencti_order
-                                            }
-                                        }
+                                        id
+                                        phase_name
+                                        x_opencti_order
                                     }
                                 }
                             }
@@ -476,24 +472,16 @@ const stixDomainObjectAttackPatternsKillChainLines = createRefetchContainer(
                                         }
                                     }
                                     killChainPhases {
-                                        edges {
-                                            node {
-                                                id
-                                                phase_name
-                                                x_opencti_order
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                            killChainPhases {
-                                edges {
-                                    node {
                                         id
                                         phase_name
                                         x_opencti_order
                                     }
                                 }
+                            }
+                            killChainPhases {
+                                id
+                                phase_name
+                                x_opencti_order
                             }
                             objectMarking {
                                 id

@@ -452,15 +452,11 @@ const IndicatorEditionOverview = createFragmentContainer(
           }
         }
         killChainPhases {
-          edges {
-            node {
-              id
-              entity_type
-              kill_chain_name
-              phase_name
-              x_opencti_order
-            }
-          }
+          id
+          entity_type
+          kill_chain_name
+          phase_name
+          x_opencti_order
         }
         objectMarking {
           id

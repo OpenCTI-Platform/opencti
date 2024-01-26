@@ -2194,7 +2194,7 @@ type AttackPattern implements BasicObject & StixObject & StixCoreObject & StixDo
   x_mitre_permissions_required: [String]
   x_mitre_detection: String
   x_mitre_id: String
-  killChainPhases: KillChainPhaseConnection
+  killChainPhases: [KillChainPhase!]
   coursesOfAction: CourseOfActionConnection
   parentAttackPatterns: AttackPatternConnection
   subAttackPatterns: AttackPatternConnection
@@ -3458,7 +3458,7 @@ type Infrastructure implements BasicObject & StixObject & StixCoreObject & StixD
   infrastructure_types: [String]
   first_seen: DateTime
   last_seen: DateTime
-  killChainPhases: KillChainPhaseConnection
+  killChainPhases: [KillChainPhase!]
   creators: [Creator!]
   toStix: String
   importFiles(first: Int, prefixMimeType: String): FileConnection
@@ -4181,7 +4181,7 @@ type Malware implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   architecture_execution_envs: [String]
   implementation_languages: [String]
   capabilities: [String]
-  killChainPhases: KillChainPhaseConnection
+  killChainPhases: [KillChainPhase!]
   creators: [Creator!]
   toStix: String
   importFiles(first: Int, prefixMimeType: String): FileConnection
@@ -4477,7 +4477,7 @@ type Tool implements BasicObject & StixObject & StixCoreObject & StixDomainObjec
   aliases: [String]
   tool_types: [String]
   tool_version: String
-  killChainPhases: KillChainPhaseConnection
+  killChainPhases: [KillChainPhase!]
   creators: [Creator!]
   toStix: String
   importFiles(first: Int, prefixMimeType: String): FileConnection
@@ -6764,7 +6764,7 @@ type StixCoreRelationship implements BasicRelationship & StixRelationship {
   groupings(first: Int): GroupingConnection
   cases(first: Int): CaseConnection
   stixCoreRelationships(first: Int, after: ID, orderBy: StixCoreRelationshipsOrdering, orderMode: OrderingMode, fromId: StixRef, toId: StixRef, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: FilterGroup): StixCoreRelationshipConnection
-  killChainPhases: KillChainPhaseConnection
+  killChainPhases: [KillChainPhase!]
   creators: [Creator!]
   toStix: String
   editContext: [EditUserContext!]
@@ -10577,7 +10577,7 @@ type Indicator implements BasicObject & StixObject & StixCoreObject & StixDomain
   x_opencti_detection: Boolean
   x_opencti_main_observable_type: String
   x_mitre_platforms: [String]
-  killChainPhases: KillChainPhaseConnection
+  killChainPhases: [KillChainPhase!]
   observables(first: Int): StixCyberObservableConnection
   decay_base_score: Int
   decay_base_score_date: DateTime

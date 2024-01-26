@@ -2301,7 +2301,7 @@ type AttackPattern implements BasicObject & StixObject & StixCoreObject & StixDo
   x_mitre_permissions_required: [String]
   x_mitre_detection: String
   x_mitre_id: String
-  killChainPhases: KillChainPhaseConnection
+  killChainPhases: [KillChainPhase!]
   coursesOfAction: CourseOfActionConnection
   parentAttackPatterns: AttackPatternConnection
   subAttackPatterns: AttackPatternConnection
@@ -4340,7 +4340,7 @@ type Infrastructure implements BasicObject & StixObject & StixCoreObject & StixD
   infrastructure_types: [String]
   first_seen: DateTime
   last_seen: DateTime
-  killChainPhases: KillChainPhaseConnection
+  killChainPhases: [KillChainPhase!]
   # Technical
   creators: [Creator!]
   toStix: String
@@ -5464,7 +5464,7 @@ type Malware implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   architecture_execution_envs: [String]
   implementation_languages: [String]
   capabilities: [String]
-  killChainPhases: KillChainPhaseConnection
+  killChainPhases: [KillChainPhase!]
   # Technical
   creators: [Creator!]
   toStix: String
@@ -5937,7 +5937,7 @@ type Tool implements BasicObject & StixObject & StixCoreObject & StixDomainObjec
   aliases: [String]
   tool_types: [String]
   tool_version: String
-  killChainPhases: KillChainPhaseConnection
+  killChainPhases: [KillChainPhase!]
   # Technical
   creators: [Creator!]
   toStix: String
@@ -10392,7 +10392,7 @@ type StixCoreRelationship implements BasicRelationship & StixRelationship {
     search: String
     filters: FilterGroup
   ): StixCoreRelationshipConnection
-  killChainPhases: KillChainPhaseConnection
+  killChainPhases: [KillChainPhase!]
   # Technical
   creators: [Creator!]
   toStix: String

@@ -33,12 +33,8 @@ const GET_QUERY = `
       }
     }
     killChainPhases {
-      edges {
-        node {
-          id
-          phase_name
-        }
-      }
+      id
+      phase_name
     }
   }
 `;
@@ -89,7 +85,7 @@ describe('CSV-MAPPER', () => {
     const entitySettings = data.entitySettings.edges.map((e) => e.node);
     entitySettingArea = entitySettings.find((setting) => setting.target_type === ENTITY_TYPE_LOCATION_ADMINISTRATIVE_AREA);
     entitySettingMalware = entitySettings.find((setting) => setting.target_type === ENTITY_TYPE_MALWARE);
-    killChainPhases = data.killChainPhases.edges.map((e) => e.node);
+    killChainPhases = data.killChainPhases;
 
     const areaDefaultValues = [
       { name: 'createdBy', default_values: [individual.id], mandatory: false },

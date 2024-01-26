@@ -4,7 +4,6 @@ import {
   addStixCoreRelationship,
   findAll,
   findById,
-  killChainPhasesPaginated,
   stixCoreRelationshipAddRelation,
   stixCoreRelationshipAddRelations,
   stixCoreRelationshipCleanContext,
@@ -40,7 +39,7 @@ import {
 } from '../domain/stixCoreObject';
 import { numberOfContainersForObject } from '../domain/container';
 import { paginatedForPathWithEnrichment } from '../modules/internal/document/document-domain';
-import { RELATION_CREATED_BY, RELATION_GRANTED_TO, RELATION_OBJECT_LABEL } from '../schema/stixRefRelationship';
+import { RELATION_CREATED_BY, RELATION_GRANTED_TO, RELATION_KILL_CHAIN_PHASE, RELATION_OBJECT_LABEL } from '../schema/stixRefRelationship';
 
 const loadByIdLoader = batchLoader(elBatchIds);
 const relBatchLoader = batchLoader(batchInternalRels);
@@ -71,11 +70,11 @@ const stixCoreRelationshipResolvers = {
     createdBy: (rel, _, context) => relBatchLoader.load({ element: rel, type: RELATION_CREATED_BY }, context, context.user),
     objectOrganization: (rel, _, context) => relBatchLoader.load({ element: rel, type: RELATION_GRANTED_TO }, context, context.user),
     objectLabel: (rel, _, context) => relBatchLoader.load({ element: rel, type: RELATION_OBJECT_LABEL }, context, context.user),
+    killChainPhases: (rel, _, context) => relBatchLoader.load({ element: rel, type: RELATION_KILL_CHAIN_PHASE }, context, context.user),
     objectMarking: (rel, _, context) => markingDefinitionsLoader.load(rel, context, context.user),
     // endregion
     // region inner listing - cant be batch loaded
     externalReferences: (rel, args, context) => externalReferencesPaginated(context, context.user, rel.id, args),
-    killChainPhases: (rel, args, context) => killChainPhasesPaginated(context, context.user, rel.id, args),
     containers: (rel, args, context) => containersPaginated(context, context.user, rel.id, args),
     reports: (rel, args, context) => reportsPaginated(context, context.user, rel.id, args),
     cases: (rel, args, context) => casesPaginated(context, context.user, rel.id, args),

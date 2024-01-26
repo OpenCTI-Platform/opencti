@@ -18,10 +18,13 @@ import {
   stixDomainObjectEditContext,
   stixDomainObjectEditField,
 } from '../../domain/stixDomainObject';
-import { distributionEntities } from '../../database/middleware';
+import { batchLoader, distributionEntities } from '../../database/middleware';
 import type { Resolvers } from '../../generated/graphql';
 import { ENTITY_TYPE_INDICATOR } from './indicator-types';
-import { killChainPhasesPaginated } from '../../domain/stixCoreRelationship';
+import { RELATION_KILL_CHAIN_PHASE } from '../../schema/stixRefRelationship';
+import { batchInternalRels } from '../../domain/stixCoreObject';
+
+const relBatchLoader = batchLoader(batchInternalRels);
 
 const indicatorResolvers: Resolvers = {
   Query: {
@@ -47,9 +50,7 @@ const indicatorResolvers: Resolvers = {
     },
   },
   Indicator: {
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    // @ts-ignore
-    killChainPhases: (indicator, args, context) => killChainPhasesPaginated(context, context.user, indicator.id, args),
+    killChainPhases: (indicator, _, context) => relBatchLoader.load({ element: indicator, type: RELATION_KILL_CHAIN_PHASE }, context, context.user),
     observables: (indicator, args, context) => observablesPaginated<any>(context, context.user, indicator.id, args),
     decayLiveDetails: (indicator, _, context) => getDecayDetails(context, context.user, indicator),
   },

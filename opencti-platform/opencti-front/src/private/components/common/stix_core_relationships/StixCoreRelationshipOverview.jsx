@@ -423,8 +423,8 @@ class StixCoreRelationshipContainer extends Component {
                       commonmark={true}
                     />
                     <StixCoreObjectKillChainPhasesView
-                      killChainPhasesEdges={
-                        stixCoreRelationship.killChainPhases.edges
+                      killChainPhases={
+                        stixCoreRelationship.killChainPhases
                       }
                     />
                   </Grid>
@@ -689,15 +689,11 @@ const StixCoreRelationshipOverview = createFragmentContainer(
         }
         workflowEnabled
         killChainPhases {
-          edges {
-            node {
-              id
-              entity_type
-              kill_chain_name
-              phase_name
-              x_opencti_order
-            }
-          }
+          id
+          entity_type
+          kill_chain_name
+          phase_name
+          x_opencti_order
         }
         x_opencti_inferences {
           rule {

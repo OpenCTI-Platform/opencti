@@ -84,14 +84,10 @@ export const incidentKnowledgeAttackPatternsGraphQuery = graphql`
                 }
               }
               killChainPhases {
-                edges {
-                  node {
-                    id
-                    kill_chain_name
-                    phase_name
-                    x_opencti_order
-                  }
-                }
+                id
+                kill_chain_name
+                phase_name
+                x_opencti_order
               }
             }
           }
