@@ -2546,5 +2546,7 @@
   "Settings default values usage...": "如果 CSV 文件中没有数据，则将使用 \"设置 >自定义 \"中设置的默认值。您可以通过填写上面的输入内容来覆盖默认值。",
   "No default value set in Settings...": "实体设置中未为此属性设置默认值。您可以通过上面的输入提供一个。如果 CSV 文件中缺少数据，将使用此值。",
   "Default values set": "已设置默认值",
-  "The following groups require your attention:": "请您关注以下群体："
+  "The following groups require your attention:": "请您关注以下群体：",
+  "entity_reported-in": "报道",
+  "INDICATOR_DECAY_MANAGER": "指标衰减管理器"
 }

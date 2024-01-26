@@ -2546,5 +2546,7 @@
   "Settings default values usage...": "CSVファイルにデータがない場合、設定 >カスタマイズで設定されたデフォルト値が代わりに使用されます。このデフォルト値は、上記の入力で上書きすることができます。",
   "No default value set in Settings...": "エンティティ設定でこの属性にデフォルト値が設定されていません。上記の入力で指定できます。CSVファイルにデータがない場合、この値が使用されます。",
   "Default values set": "デフォルト値設定",
-  "The following groups require your attention:": "以下のグループに注目してほしい："
+  "The following groups require your attention:": "以下のグループに注目してほしい：",
+  "entity_reported-in": "で報告されている。",
+  "INDICATOR_DECAY_MANAGER": "インジケーター減衰マネージャー"
 }
