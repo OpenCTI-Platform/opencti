@@ -1,6 +1,5 @@
-import React, {FunctionComponent, useEffect, useState} from 'react';
-import { pathOr } from 'ramda';
-import {graphql, createRefetchContainer, RelayRefetchProp} from 'react-relay';
+import React, { FunctionComponent, useEffect, useState } from 'react';
+import { graphql, createRefetchContainer, RelayRefetchProp } from 'react-relay';
 import Grid from '@mui/material/Grid';
 import Typography from '@mui/material/Typography';
 import LinearProgress from '@mui/material/LinearProgress';
@@ -18,38 +17,19 @@ import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
 import { interval } from 'rxjs';
 import { Delete } from 'mdi-material-ui';
+import Tooltip from '@mui/material/Tooltip';
+import makeStyles from '@mui/styles/makeStyles';
+import { ConnectorWorks_data$data } from '@components/data/connectors/__generated__/ConnectorWorks_data.graphql';
 import TaskStatus from '../../../../components/TaskStatus';
-import {useFormatter} from '../../../../components/i18n';
+import { useFormatter } from '../../../../components/i18n';
 import { FIVE_SECONDS } from '../../../../utils/Time';
 import { truncate } from '../../../../utils/String';
 import { commitMutation, MESSAGING$ } from '../../../../relay/environment';
-import Tooltip from "@mui/material/Tooltip";
-import makeStyles from "@mui/styles/makeStyles";
-import Transition from "../../../../components/Transition"
-import {ConnectorWorks_data$data} from "@components/data/connectors/__generated__/ConnectorWorks_data.graphql";
+import Transition from '../../../../components/Transition';
 
 const interval$ = interval(FIVE_SECONDS);
 
 const useStyles = makeStyles(() => ({
-  container: {
-    margin: 0,
-  },
-  editButton: {
-    position: 'fixed',
-    bottom: 30,
-    right: 230,
-  },
-  gridContainer: {
-    marginBottom: 20,
-  },
-  title: {
-    float: 'left',
-    textTransform: 'uppercase',
-  },
-  popover: {
-    float: 'right',
-    marginTop: '-13px',
-  },
   paper: {
     height: '100%',
     minHeight: '100%',
@@ -57,18 +37,6 @@ const useStyles = makeStyles(() => ({
     padding: '15px',
     borderRadius: 6,
     position: 'relative',
-  },
-  card: {
-    width: '100%',
-    marginBottom: 20,
-    borderRadius: 6,
-    position: 'relative',
-  },
-  chip: {
-    height: 30,
-    float: 'left',
-    margin: '0 10px 10px 0',
-    backgroundColor: '#607d8b',
   },
   number: {
     fontWeight: 600,
@@ -88,24 +56,19 @@ export const connectorWorksWorkDeletionMutation = graphql`
   }
 `;
 
-interface Notification {
-  message: string | null;
-  sequence: number | null;
-  source: string | null;
-  timestamp: any | null;
-}
+type WorkMessages = NonNullable<NonNullable<NonNullable<NonNullable<ConnectorWorks_data$data['works']>['edges']>[0]>['node']['errors']>;
 
 interface Options {
   count: number,
   filters: {
-    mode: string
+    mode: string,
     filters: [
       {
         key: string
         values: string[]
         operator: string
         mode: string
-      }
+      },
     ],
     filterGroups: [],
   },
@@ -117,34 +80,25 @@ interface ConnectorWorksComponentProps {
   relay: RelayRefetchProp
 }
 
-const ConnectorWorksComponent: FunctionComponent<ConnectorWorksComponentProps> = ({data, options, relay}) => {
-  const works: NonNullable<ConnectorWorks_data$data["works"]>["edges"] = pathOr([], ['works', 'edges'], data);
+const ConnectorWorksComponent: FunctionComponent<ConnectorWorksComponentProps> = ({ data, options, relay }) => {
+  // const works: NonNullable<ConnectorWorks_data$data['works']>['edges'] = pathOr([], ['works', 'edges'], data);
+  const works = data.works?.edges ?? [];
   const { t_i18n, nsdt } = useFormatter();
   const classes = useStyles();
-  const [displayMessages, setDisplayMessages] = useState<boolean>(false);
   const [displayErrors, setDisplayErrors] = useState<boolean>(false);
-  const [messages, setMessages] = useState<Notification[]>([]);
-  const [errors, setErrors] = useState<Notification[]>([]);
+  const [errors, setErrors] = useState<WorkMessages>([]);
 
-  const handleOpenMessages = (messages: Notification[]) => {
-    setDisplayMessages(true);
-    setMessages(messages);
-  }
-
-  const handleCloseMessages = () => {
-    setDisplayMessages(false);
-    setMessages([]);
-  }
-
-  const handleOpenErrors = (errors: Notification[]) => {
-    setDisplayErrors(true);
-    setErrors(errors);
-  }
+  const handleOpenErrors = (errorsList: WorkMessages | null) => {
+    if (errorsList !== null) {
+      setDisplayErrors(true);
+      setErrors(errorsList);
+    }
+  };
 
   const handleCloseErrors = () => {
     setDisplayErrors(false);
     setErrors([]);
-  }
+  };
 
   // eslint-disable-next-line class-methods-use-this
   const handleDeleteWork = (workId: string) => {
@@ -162,7 +116,7 @@ const ConnectorWorksComponent: FunctionComponent<ConnectorWorksComponentProps> =
       onError: undefined,
       setSubmitting: undefined,
     });
-  }
+  };
 
   useEffect(() => {
     const subscription = interval$.subscribe(() => {
@@ -198,8 +152,9 @@ const ConnectorWorksComponent: FunctionComponent<ConnectorWorksComponentProps> =
           </div>
         </Paper>
       )}
-      {works.map((workEge) => {
-        const work = workEge!.node;
+      {works.map((workEdge) => {
+        const work = workEdge?.node;
+        if (!work) return null;
         const { tracking } = work;
         return (
           <Paper
@@ -280,12 +235,12 @@ const ConnectorWorksComponent: FunctionComponent<ConnectorWorksComponentProps> =
                       variant="determinate"
                       value={
                         // eslint-disable-next-line no-nested-ternary
-                        tracking
+                        tracking && tracking.import_expected_number !== null && tracking.import_processed_number !== null
                           ? tracking.import_expected_number === 0
                             ? 0
                             : Math.round(
-                              (tracking.import_processed_number!
-                                  / tracking.import_expected_number!)
+                              (tracking.import_processed_number
+                                  / tracking.import_expected_number)
                                   * 100,
                             )
                           : 0
@@ -298,10 +253,10 @@ const ConnectorWorksComponent: FunctionComponent<ConnectorWorksComponentProps> =
                 style={{ position: 'absolute', right: 10, top: 10 }}
                 variant="contained"
                 color="secondary"
-                onClick={() => handleOpenErrors(work.errors as Notification[])}
+                onClick={() => handleOpenErrors(work.errors)}
                 size="small"
               >
-                {work.errors!.length} {t_i18n('errors')}
+                {work.errors?.length} {t_i18n('errors')}
               </Button>
               <Button
                 variant="outlined"
@@ -316,45 +271,6 @@ const ConnectorWorksComponent: FunctionComponent<ConnectorWorksComponentProps> =
           </Paper>
         );
       })}
-      <Dialog
-        PaperProps={{ elevation: 1 }}
-        open={displayMessages}
-        keepMounted={true}
-        TransitionComponent={Transition}
-        onClose={handleCloseMessages}
-        fullScreen={true}
-      >
-        <DialogContent>
-          <DialogContentText>
-            <TableContainer component={Paper}>
-              <Table aria-label="simple table">
-                <TableHead>
-                  <TableRow>
-                    <TableCell>{t_i18n('Timestamp')}</TableCell>
-                    <TableCell>{t_i18n('Message')}</TableCell>
-                  </TableRow>
-                </TableHead>
-                <TableBody>
-                  {messages.map((message) => (
-                    <TableRow key={message.timestamp}>
-                      <TableCell>{nsdt(message.timestamp)}</TableCell>
-                      <TableCell>{message.message}</TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </TableContainer>
-          </DialogContentText>
-        </DialogContent>
-        <DialogActions>
-          <Button
-            onClick={handleCloseMessages}
-            color="primary"
-          >
-            {t_i18n('Close')}
-          </Button>
-        </DialogActions>
-      </Dialog>
       <Dialog
         PaperProps={{ elevation: 1 }}
         open={displayErrors}
@@ -375,7 +291,7 @@ const ConnectorWorksComponent: FunctionComponent<ConnectorWorksComponentProps> =
                   </TableRow>
                 </TableHead>
                 <TableBody>
-                  {errors.map((error) => (
+                  {errors.map((error) => error && (
                     <TableRow key={error.timestamp}>
                       <TableCell>{nsdt(error.timestamp)}</TableCell>
                       <TableCell>{error.message}</TableCell>
@@ -394,7 +310,7 @@ const ConnectorWorksComponent: FunctionComponent<ConnectorWorksComponentProps> =
         </DialogActions>
       </Dialog>
     </div>
-  )
+  );
 };
 
 export const connectorWorksQuery = graphql`
