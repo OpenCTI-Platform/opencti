@@ -1,12 +1,5 @@
 import * as R from 'ramda';
-import {
-  createEntity,
-  createRelationRaw,
-  deleteElementById,
-  distributionEntities,
-  storeLoadByIdWithRefs,
-  timeSeriesEntities
-} from '../database/middleware';
+import { createEntity, createRelationRaw, deleteElementById, distributionEntities, storeLoadByIdWithRefs, timeSeriesEntities } from '../database/middleware';
 import { internalFindByIds, internalLoadById, listEntities, listEntitiesThroughRelationsPaginated, storeLoadById, storeLoadByIds } from '../database/middleware-loader';
 import { findAll as relationFindAll } from './stixCoreRelationship';
 import { delEditContext, lockResource, notify, setEditContext, storeUpdateEvent } from '../database/redis';
@@ -57,11 +50,7 @@ import { buildContextDataForFile, publishUserAction } from '../listener/UserActi
 import { extractEntityRepresentativeName } from '../database/entity-representative';
 import { addFilter, extractFilterGroupValues, findFiltersFromKey } from '../utils/filtering/filtering-utils';
 import { INSTANCE_REGARDING_OF, specialFilterKeysWhoseValueToResolve } from '../utils/filtering/filtering-constants';
-import { getWidgetsAndUser } from '../utils/publicDashboard';
 import { schemaRelationsRefDefinition } from '../schema/schema-relationsRef';
-import { SYSTEM_USER } from '../utils/access';
-import { ENTITY_TYPE_PUBLIC_DASHBOARD } from '../modules/publicDashboard/publicDashboard-types';
-import { getEntitiesListFromCache, getEntitiesMapFromCache } from '../database/cache';
 import { ENTITY_TYPE_CONTAINER_GROUPING } from '../modules/grouping/grouping-types';
 import { getEntitiesMapFromCache } from '../database/cache';
 
