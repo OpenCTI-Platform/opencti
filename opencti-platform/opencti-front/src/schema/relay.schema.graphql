@@ -1806,6 +1806,17 @@ input MarkingDefinitionAddInput {
   update: Boolean
 }
 
+type MarkingDefinitionShort {
+  id: ID!
+  standard_id: String!
+  entity_type: String!
+  representative: Representative!
+  definition_type: String
+  definition: String
+  x_opencti_order: Int!
+  x_opencti_color: String
+}
+
 enum LabelsOrdering {
   value
   color
@@ -11081,7 +11092,8 @@ type PublicDashboard implements InternalObject & BasicObject {
   public_manifest: String
   private_manifest: String
   uri_key: String!
-  allowed_markings: [String!]
+  allowed_markings_ids: [String!]
+  allowed_markings: [MarkingDefinitionShort!]
   created_at: DateTime
   updated_at: DateTime
   editContext: [EditUserContext!]
@@ -11109,7 +11121,7 @@ input PublicDashboardAddInput {
   name: String!
   description: String
   dashboard_id: String!
-  allowed_markings: [String!]
+  allowed_markings_ids: [String!]
 }
 
 enum Tone {

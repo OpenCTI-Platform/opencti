@@ -12,6 +12,9 @@ import { FunctionalError, UnsupportedError } from '../../config/errors';
 import { SYSTEM_USER } from '../../utils/access';
 import { publishUserAction } from '../../listener/UserActionListener';
 import { initializeAuthorizedMembers } from '../workspace/workspace-domain';
+import { ENTITY_TYPE_MARKING_DEFINITION } from '../../schema/stixMetaObject';
+import { getEntitiesMapFromCache } from '../../database/cache';
+import type { StoreMarkingDefinition } from '../../types/store';
 
 export const findById = (
   context: AuthContext,
@@ -59,6 +62,17 @@ export const getPublicDashboardByUriKey = (
   ) as Promise<BasicStoreEntityPublicDashboard>;
 };
 
+export const getAllowedMarkings = async (
+  context: AuthContext,
+  user: AuthUser,
+  publicDashboard: BasicStoreEntityPublicDashboard,
+): Promise<StoreMarkingDefinition[]> => {
+  // get markings from cache
+  const markingsMap = await getEntitiesMapFromCache<StoreMarkingDefinition>(context, user, ENTITY_TYPE_MARKING_DEFINITION);
+  const publicDashboardMarkingsIds = publicDashboard.allowed_markings_ids;
+  return publicDashboardMarkingsIds.flatMap((id: string) => markingsMap.get(id) || []);
+};
+
 export const addPublicDashboard = async (
   context: AuthContext,
   user: AuthUser,
@@ -102,7 +116,7 @@ export const addPublicDashboard = async (
     user_id: user.id,
     uri_key: uuidv4(),
     authorized_members: authorizedMembers,
-    allowed_markings: input.allowed_markings,
+    allowed_markings_ids: input.allowed_markings_ids,
   };
 
   const created = await createEntity(

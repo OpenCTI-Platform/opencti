@@ -13,6 +13,8 @@ const convertPublicDashboardToStix = (instance: StoreEntityPublicDashboard): Sti
     public_manifest: instance.public_manifest,
     private_manifest: instance.private_manifest,
     uri_key: instance.uri_key,
+    allowed_markings_ids: instance.allowed_markings_ids,
+    allowed_markings: instance.allowed_markings,
     extensions: {
       [STIX_EXT_OCTI]: cleanObject({
         ...stixDomainObject.extensions[STIX_EXT_OCTI],
