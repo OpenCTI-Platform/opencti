@@ -1,4 +1,4 @@
-black==23.12.1
+black==24.1.0
 build>=0.7
 isort>=5.10
 pre-commit~=3.3
