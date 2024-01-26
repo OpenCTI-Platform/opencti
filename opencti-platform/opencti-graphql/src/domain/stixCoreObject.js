@@ -1,12 +1,5 @@
 import * as R from 'ramda';
-import {
-  createEntity,
-  createRelationRaw,
-  deleteElementById,
-  distributionEntities,
-  storeLoadByIdWithRefs,
-  timeSeriesEntities
-} from '../database/middleware';
+import { createEntity, createRelationRaw, deleteElementById, distributionEntities, storeLoadByIdWithRefs, timeSeriesEntities } from '../database/middleware';
 import { internalFindByIds, internalLoadById, listEntities, listEntitiesThroughRelationsPaginated, storeLoadById, storeLoadByIds } from '../database/middleware-loader';
 import { findAll as relationFindAll } from './stixCoreRelationship';
 import { delEditContext, lockResource, notify, setEditContext, storeUpdateEvent } from '../database/redis';
@@ -57,12 +50,10 @@ import { buildContextDataForFile, publishUserAction } from '../listener/UserActi
 import { extractEntityRepresentativeName } from '../database/entity-representative';
 import { addFilter, extractFilterGroupValues, findFiltersFromKey } from '../utils/filtering/filtering-utils';
 import { INSTANCE_REGARDING_OF, specialFilterKeysWhoseValueToResolve } from '../utils/filtering/filtering-constants';
-import { getWidgetsAndUser } from '../utils/publicDashboard';
 import { schemaRelationsRefDefinition } from '../schema/schema-relationsRef';
-import { SYSTEM_USER } from '../utils/access';
-import { ENTITY_TYPE_PUBLIC_DASHBOARD } from '../modules/publicDashboard/publicDashboard-types';
-import { getEntitiesListFromCache, getEntitiesMapFromCache } from '../database/cache';
 import { ENTITY_TYPE_CONTAINER_GROUPING } from '../modules/grouping/grouping-types';
+import { getEntitiesMapFromCache } from '../database/cache';
+import { getWidgetsUserAndMarkings } from '../modules/publicDashboard/publicDashboard-utils';
 
 export const findAll = async (context, user, args) => {
   let types = [];
@@ -265,14 +256,14 @@ export const stixCoreObjectsMultiTimeSeries = (context, user, args) => {
 };
 
 export const publicStixCoreObjectsMultiTimeSeries = async (context, args) => {
-  const { widgets, user, allowed_markings } = await getWidgetsAndUser(context, args.uriKey);
+  const { widgets, user, allowed_markings_ids } = await getWidgetsUserAndMarkings(context, args.uriKey);
   const { dataSelection } = widgets[args.widgetId];
 
   const markingFilters = {
     key: [
       'objectMarking'
     ],
-    values: allowed_markings,
+    values: allowed_markings_ids,
     operator: 'eq',
     mode: 'or'
   };
@@ -280,7 +271,7 @@ export const publicStixCoreObjectsMultiTimeSeries = async (context, args) => {
   const timeSeriesParameters = dataSelection.map((selection) => {
     const filters = {
       filterGroups: [selection.filters],
-      filters: allowed_markings ? [markingFilters] : [],
+      filters: allowed_markings_ids ? [markingFilters] : [],
       mode: 'and'
     };
     return {
@@ -315,20 +306,20 @@ export const stixCoreObjectsNumber = (context, user, args) => {
 };
 
 export const publicStixCoreObjectsNumber = async (context, args) => {
-  const { widgets, user, allowed_markings } = await getWidgetsAndUser(context, args.uriKey);
+  const { widgets, user, allowed_markings_ids } = await getWidgetsUserAndMarkings(context, args.uriKey);
   const widgetConfig = widgets[args.widgetId].dataSelection[0];
   const markingFilters = {
     key: [
       'objectMarking'
     ],
-    values: allowed_markings,
+    values: allowed_markings_ids,
     operator: 'eq',
     mode: 'or'
   };
 
   const filters = {
     filterGroups: [widgetConfig.filters],
-    filters: allowed_markings ? [markingFilters] : [],
+    filters: allowed_markings_ids ? [markingFilters] : [],
     mode: 'and'
   };
 

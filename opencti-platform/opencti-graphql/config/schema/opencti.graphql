@@ -1737,6 +1737,16 @@ input MarkingDefinitionAddInput {
   clientMutationId: String
   update: Boolean
 }
+type MarkingDefinitionShort {
+  id: ID! # internal_id
+  standard_id: String!
+  entity_type: String!
+  representative: Representative!
+  definition_type: String
+  definition: String
+  x_opencti_order: Int!
+  x_opencti_color: String
+}
 
 ############## Labels
 enum LabelsOrdering {

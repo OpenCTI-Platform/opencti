@@ -1,5 +1,5 @@
 import type { Resolvers } from '../../generated/graphql';
-import { addPublicDashboard, findById, findAll, publicDashboardDelete, publicDashboardEditField, getPublicDashboardByUriKey } from './publicDashboard-domain';
+import { addPublicDashboard, findById, findAll, publicDashboardDelete, publicDashboardEditField, getPublicDashboardByUriKey, getAllowedMarkings } from './publicDashboard-domain';
 import { getAuthorizedMembers } from '../../utils/authorizedMembers';
 
 const publicDashboardResolvers: Resolvers = {
@@ -10,6 +10,7 @@ const publicDashboardResolvers: Resolvers = {
   },
   PublicDashboard: {
     authorized_members: (publicDashboard, _, context) => getAuthorizedMembers(context, context.user, publicDashboard),
+    allowed_markings: (publicDashboard, _, context) => getAllowedMarkings(context, context.user, publicDashboard),
   },
   Mutation: {
     publicDashboardAdd: (_, { input }, context) => {

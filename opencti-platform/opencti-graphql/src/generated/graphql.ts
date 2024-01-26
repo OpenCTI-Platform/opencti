@@ -11733,6 +11733,18 @@ export type MarkingDefinitionEditMutationsFieldPatchArgs = {
   input: Array<InputMaybe<EditInput>>;
 };
 
+export type MarkingDefinitionShort = {
+  __typename?: 'MarkingDefinitionShort';
+  definition?: Maybe<Scalars['String']['output']>;
+  definition_type?: Maybe<Scalars['String']['output']>;
+  entity_type: Scalars['String']['output'];
+  id: Scalars['ID']['output'];
+  representative: Representative;
+  standard_id: Scalars['String']['output'];
+  x_opencti_color?: Maybe<Scalars['String']['output']>;
+  x_opencti_order: Scalars['Int']['output'];
+};
+
 export enum MarkingDefinitionsOrdering {
   Created = 'created',
   CreatedAt = 'created_at',
@@ -17296,7 +17308,8 @@ export type Provider = {
 
 export type PublicDashboard = BasicObject & InternalObject & {
   __typename?: 'PublicDashboard';
-  allowed_markings?: Maybe<Array<Scalars['String']['output']>>;
+  allowed_markings?: Maybe<Array<MarkingDefinitionShort>>;
+  allowed_markings_ids?: Maybe<Array<Scalars['String']['output']>>;
   authorized_members?: Maybe<Array<MemberAccess>>;
   created_at?: Maybe<Scalars['DateTime']['output']>;
   dashboard_id?: Maybe<Scalars['String']['output']>;
@@ -17315,7 +17328,7 @@ export type PublicDashboard = BasicObject & InternalObject & {
 };
 
 export type PublicDashboardAddInput = {
-  allowed_markings?: InputMaybe<Array<Scalars['String']['input']>>;
+  allowed_markings_ids?: InputMaybe<Array<Scalars['String']['input']>>;
   dashboard_id: Scalars['String']['input'];
   description?: InputMaybe<Scalars['String']['input']>;
   name: Scalars['String']['input'];
@@ -28113,6 +28126,7 @@ export type ResolversTypes = ResolversObject<{
   MarkingDefinitionConnection: ResolverTypeWrapper<MarkingDefinitionConnection>;
   MarkingDefinitionEdge: ResolverTypeWrapper<MarkingDefinitionEdge>;
   MarkingDefinitionEditMutations: ResolverTypeWrapper<MarkingDefinitionEditMutations>;
+  MarkingDefinitionShort: ResolverTypeWrapper<MarkingDefinitionShort>;
   MarkingDefinitionsOrdering: MarkingDefinitionsOrdering;
   MeOrganization: ResolverTypeWrapper<MeOrganization>;
   MeOrganizationConnection: ResolverTypeWrapper<MeOrganizationConnection>;
@@ -28832,6 +28846,7 @@ export type ResolversParentTypes = ResolversObject<{
   MarkingDefinitionConnection: MarkingDefinitionConnection;
   MarkingDefinitionEdge: MarkingDefinitionEdge;
   MarkingDefinitionEditMutations: MarkingDefinitionEditMutations;
+  MarkingDefinitionShort: MarkingDefinitionShort;
   MeOrganization: MeOrganization;
   MeOrganizationConnection: MeOrganizationConnection;
   MeOrganizationEdge: MeOrganizationEdge;
@@ -33103,6 +33118,18 @@ export type MarkingDefinitionEditMutationsResolvers<ContextType = any, ParentTyp
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
+export type MarkingDefinitionShortResolvers<ContextType = any, ParentType extends ResolversParentTypes['MarkingDefinitionShort'] = ResolversParentTypes['MarkingDefinitionShort']> = ResolversObject<{
+  definition?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  definition_type?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  representative?: Resolver<ResolversTypes['Representative'], ParentType, ContextType>;
+  standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  x_opencti_color?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  x_opencti_order?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
 export type MeOrganizationResolvers<ContextType = any, ParentType extends ResolversParentTypes['MeOrganization'] = ResolversParentTypes['MeOrganization']> = ResolversObject<{
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
@@ -34569,7 +34596,8 @@ export type ProviderResolvers<ContextType = any, ParentType extends ResolversPar
 }>;
 
 export type PublicDashboardResolvers<ContextType = any, ParentType extends ResolversParentTypes['PublicDashboard'] = ResolversParentTypes['PublicDashboard']> = ResolversObject<{
-  allowed_markings?: Resolver<Maybe<Array<ResolversTypes['String']>>, ParentType, ContextType>;
+  allowed_markings?: Resolver<Maybe<Array<ResolversTypes['MarkingDefinitionShort']>>, ParentType, ContextType>;
+  allowed_markings_ids?: Resolver<Maybe<Array<ResolversTypes['String']>>, ParentType, ContextType>;
   authorized_members?: Resolver<Maybe<Array<ResolversTypes['MemberAccess']>>, ParentType, ContextType>;
   created_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   dashboard_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -37810,6 +37838,7 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   MarkingDefinitionConnection?: MarkingDefinitionConnectionResolvers<ContextType>;
   MarkingDefinitionEdge?: MarkingDefinitionEdgeResolvers<ContextType>;
   MarkingDefinitionEditMutations?: MarkingDefinitionEditMutationsResolvers<ContextType>;
+  MarkingDefinitionShort?: MarkingDefinitionShortResolvers<ContextType>;
   MeOrganization?: MeOrganizationResolvers<ContextType>;
   MeOrganizationConnection?: MeOrganizationConnectionResolvers<ContextType>;
   MeOrganizationEdge?: MeOrganizationEdgeResolvers<ContextType>;

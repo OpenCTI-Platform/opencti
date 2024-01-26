@@ -207,6 +207,24 @@ describe('PublicDashboard resolver', () => {
     describe('PublicDashboard resolver standard behavior', () => {
       let publicDashboardInternalId;
 
+      it('User without EXPLORE_EXUPDATE_PUBLISH capability should not create private dashboards', async () => {
+        // Create the publicDashboard
+        const PUBLICDASHBOARD2_TO_CREATE = {
+          input: {
+            name: publicDashboardName,
+            dashboard_id: privateDashboardInternalId,
+          },
+        };
+        const publicDashboard = await participantQuery({
+          query: CREATE_QUERY,
+          variables: PUBLICDASHBOARD2_TO_CREATE,
+        });
+
+        expect(publicDashboard).not.toBeNull();
+        expect(publicDashboard.errors.length).toEqual(1);
+        expect(publicDashboard.errors.at(0).name).toEqual('FORBIDDEN_ACCESS');
+      });
+
       it('should publicDashboard created', async () => {
         // Create the publicDashboard
         const PUBLICDASHBOARD_TO_CREATE = {
@@ -273,7 +291,7 @@ describe('PublicDashboard resolver', () => {
         const queryResult = await editorQuery({
           query: UPDATE_QUERY,
           variables: {
-            id: privateDashboardInternalId,
+            id: publicDashboardInternalId,
             input: { key: 'name', value: ['updated name'] },
           },
         });
@@ -296,26 +314,6 @@ describe('PublicDashboard resolver', () => {
         });
         expect(queryResult).not.toBeNull();
         expect(queryResult.data.publicDashboards.edges.length).toEqual(0);
-      });
-    });
-
-    describe('PublicDashboard specific behaviour', () => {
-      it('User without EXPLORE_EXUPDATE_PUBLISH capability should not create private dashboards', async () => {
-        // Create the publicDashboard
-        const PUBLICDASHBOARD2_TO_CREATE = {
-          input: {
-            name: publicDashboardName,
-            dashboard_id: privateDashboardInternalId,
-          },
-        };
-        const publicDashboard = await participantQuery({
-          query: CREATE_QUERY,
-          variables: PUBLICDASHBOARD2_TO_CREATE,
-        });
-
-        expect(publicDashboard).not.toBeNull();
-        expect(publicDashboard.errors.length).toEqual(1);
-        expect(publicDashboard.errors.at(0).name).toEqual('FORBIDDEN_ACCESS');
       });
     });
   });

@@ -7,7 +7,6 @@ import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
 import ToggleButton from '@mui/material/ToggleButton';
 import Tooltip from '@mui/material/Tooltip';
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
-import DoNotDisturbAltIcon from '@mui/icons-material/DoNotDisturbAlt';
 import { useTheme } from '@mui/styles';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { useFormatter } from '../../../components/i18n';
@@ -25,7 +24,7 @@ export const workspaceShareListQuery = graphql`
           user_id
           created_at
           updated_at
-          allowed_markings
+          allowed_markings_ids
         }
       }
     }
