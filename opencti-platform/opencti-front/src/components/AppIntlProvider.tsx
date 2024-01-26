@@ -60,7 +60,6 @@ interface AppIntlProviderProps {
 
 const AppIntlProvider: FunctionComponent<AppIntlProviderProps> = ({ settings, children }) => {
   const { me } = useContext(UserContext);
-  console.log('messages', { ...messages_es_back, ...messages_es_front });
   const platformLanguage = settings.platform_language ?? null;
   const platformLang = platformLanguage !== null && platformLanguage !== 'auto'
     ? settings.platform_language
