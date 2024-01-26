@@ -16357,7 +16357,7 @@ export type PlatformCriticalAlertDetails = {
 };
 
 export enum PlatformCriticalAlertType {
-  GroupWithNullEffectiveLevel = 'GROUP_WITH_NULL_EFFECTIVE_LEVEL'
+  GroupWithNullEffectiveLevel = 'GROUP_WITH_NULL_CONFIDENCE_LEVEL'
 }
 
 export type PlayBookExecution = {
