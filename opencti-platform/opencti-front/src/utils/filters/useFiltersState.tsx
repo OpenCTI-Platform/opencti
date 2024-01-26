@@ -1,11 +1,11 @@
 import { useState } from 'react';
-import { v4 as uuid } from 'uuid';
 import { emptyFilterGroup, Filter, FilterGroup, FilterValue } from './filtersUtils';
 import {
   handleAddFilterWithEmptyValueUtil,
   handleAddRepresentationFilterUtil,
   handleAddSingleValueFilterUtil,
   handleChangeOperatorFiltersUtil,
+  handleChangeRepresentationFilterUtil,
   handleRemoveFilterUtil,
   handleRemoveRepresentationFilterUtil,
   handleSwitchLocalModeUtil,
@@ -32,27 +32,24 @@ const useFiltersState = (initFilters: FilterGroup = emptyFilterGroup, defaultCle
         latestAddFilterId: filter.id,
       }));
     },
-    handleAddRepresentationFilter: (id: string, valueId: string) => {
-      if (valueId === null) { // handle clicking on 'no label' in entities list
+    handleAddRepresentationFilter: (id: string, value: string) => {
+      if (value === null) { // handle clicking on 'no label' in entities list
         const findCorrespondingFilter = filtersState.filters?.filters.find((f) => id === f.id);
         if (findCorrespondingFilter && ['objectLabel', 'contextObjectLabel'].includes(findCorrespondingFilter.key)) {
-          const noLabelFilter: Filter = {
-            id: uuid(),
-            key: 'objectLabel',
-            operator: findCorrespondingFilter.operator === 'not_eq' ? 'not_nil' : 'nil',
-            values: [],
-            mode: 'and',
-          };
           setFiltersState((prevState) => ({
             ...prevState,
-            filters: handleAddFilterWithEmptyValueUtil({ filters: prevState.filters, filter: noLabelFilter }),
-            latestAddFilterId: noLabelFilter.id,
+            filters: handleChangeOperatorFiltersUtil({
+              filters: prevState.filters,
+              id,
+              operator: findCorrespondingFilter.operator === 'not_eq' ? 'not_nil' : 'nil',
+            }),
+            latestAddFilterId: id,
           }));
         }
       } else {
         setFiltersState((prevState) => ({
           ...prevState,
-          filters: handleAddRepresentationFilterUtil({ filters: prevState.filters, id, valueId }),
+          filters: handleAddRepresentationFilterUtil({ filters: prevState.filters, id, value }),
           latestAddFilterId: undefined,
         }));
       }
@@ -83,10 +80,10 @@ const useFiltersState = (initFilters: FilterGroup = emptyFilterGroup, defaultCle
         latestAddFilterId: undefined,
       }));
     },
-    handleRemoveRepresentationFilter: (id: string, valueId: string) => {
+    handleRemoveRepresentationFilter: (id: string, value: string) => {
       setFiltersState((prevState) => ({
         ...prevState,
-        filters: handleRemoveRepresentationFilterUtil({ filters: prevState.filters, id, valueId }),
+        filters: handleRemoveRepresentationFilterUtil({ filters: prevState.filters, id, value }),
         latestAddFilterId: undefined,
       }));
     },
@@ -111,33 +108,20 @@ const useFiltersState = (initFilters: FilterGroup = emptyFilterGroup, defaultCle
       if (oldValue && newValue) {
         setFiltersState((prevState) => ({
           ...prevState,
-          filters: {
-            ...prevState.filters,
-            filters: prevState.filters.filters.map((f) => (f.id === id
-              ? { ...f, values: f.values.filter((val) => val !== oldValue).concat([newValue]) }
-              : f)),
-          },
+          filters: handleChangeRepresentationFilterUtil({ filters: prevState.filters, id, oldValue, newValue }),
+          latestAddFilterId: undefined,
         }));
       } else if (oldValue) {
         setFiltersState((prevState) => ({
           ...prevState,
-          filters: {
-            ...prevState.filters,
-            filters: prevState.filters.filters.map((f) => (f.id === id
-              ? {
-                ...f,
-                values: f.values.filter((v) => v !== oldValue),
-              }
-              : f)),
-          },
+          filters: handleRemoveRepresentationFilterUtil({ filters: prevState.filters, id, value: oldValue }),
+          latestAddFilterId: undefined,
         }));
       } else if (newValue) {
         setFiltersState((prevState) => ({
           ...prevState,
-          filters: {
-            ...prevState.filters,
-            filters: prevState.filters.filters.map((f) => (f.id === id ? { ...f, values: [...f.values, newValue] } : f)),
-          },
+          filters: handleAddRepresentationFilterUtil({ filters: prevState.filters, id, value: newValue }),
+          latestAddFilterId: undefined,
         }));
       }
     },

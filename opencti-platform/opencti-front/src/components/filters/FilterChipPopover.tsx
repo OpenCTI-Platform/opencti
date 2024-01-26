@@ -139,7 +139,7 @@ export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({
     values: string[];
     operator?: string;
   }[]
-  >([]);
+  >(filter ? [filter] : []);
   const [cacheEntities, setCacheEntities] = useState<
   Record<
   string,
