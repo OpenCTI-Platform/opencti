@@ -15,8 +15,8 @@ import {
   PLATFORM_VERSION
 } from '../config/conf';
 import { AuthenticationFailure, DatabaseError, ForbiddenAccess, FunctionalError, UnsupportedError } from '../config/errors';
-import { getEntitiesListFromCache, getEntityFromCache } from '../database/cache';
-import { elFindByIds, elLoadBy, elRawDeleteByQuery } from '../database/engine';
+import { getEntitiesListFromCache, getEntitiesMapFromCache, getEntityFromCache } from '../database/cache';
+import { elLoadBy, elRawDeleteByQuery } from '../database/engine';
 import {
   batchListThroughGetTo,
   createEntity,
@@ -198,19 +198,28 @@ export const batchGroups = async (context, user, userId, opts = {}) => {
   return batchListThroughGetTo(context, user, userId, RELATION_MEMBER_OF, ENTITY_TYPE_GROUP, opts);
 };
 
-const internalUserIds = Object.keys(INTERNAL_USERS);
+// build only a creator object with what we need to expose of users
+const buildCreatorUser = (user) => {
+  if (!user) {
+    return user;
+  }
+  return {
+    id: user.id,
+    entity_type: user.entity_type,
+    name: user.name,
+    description: user.description,
+    standard_id: user.id
+  };
+};
 export const batchCreator = async (context, user, userIds) => {
-  const userToFinds = R.uniq(userIds.filter((u) => isNotEmptyField(u)).filter((u) => !internalUserIds.includes(u)));
-  const users = await elFindByIds(context, user, userToFinds, { toMap: true });
-  return userIds.map((id) => INTERNAL_USERS[id] || users[id] || SYSTEM_USER);
+  const platformUsers = await getEntitiesMapFromCache(context, SYSTEM_USER, ENTITY_TYPE_USER);
+  return userIds.map((id) => INTERNAL_USERS[id] || buildCreatorUser(platformUsers.get(id)) || SYSTEM_USER);
 };
 
 export const batchCreators = async (context, user, userListIds) => {
   const userIds = userListIds.map((u) => (Array.isArray(u) ? u : [u]));
-  const allUserIds = userIds.flat();
-  const userToFinds = R.uniq(allUserIds.filter((u) => isNotEmptyField(u)).filter((u) => !internalUserIds.includes(u)));
-  const users = await elFindByIds(context, user, userToFinds, { toMap: true });
-  return userIds.map((ids) => ids.map((id) => INTERNAL_USERS[id] || users[id] || SYSTEM_USER));
+  const platformUsers = await getEntitiesMapFromCache(context, SYSTEM_USER, ENTITY_TYPE_USER);
+  return userIds.map((ids) => ids.map((id) => INTERNAL_USERS[id] || buildCreatorUser(platformUsers.get(id)) || SYSTEM_USER));
 };
 
 export const batchOrganizations = async (context, user, userId, opts = {}) => {
