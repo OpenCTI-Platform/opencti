@@ -17,13 +17,11 @@ import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
 import { interval } from 'rxjs';
 import { Delete } from 'mdi-material-ui';
-import Tooltip from '@mui/material/Tooltip';
 import makeStyles from '@mui/styles/makeStyles';
 import { ConnectorWorks_data$data } from '@components/data/connectors/__generated__/ConnectorWorks_data.graphql';
 import TaskStatus from '../../../../components/TaskStatus';
 import { useFormatter } from '../../../../components/i18n';
 import { FIVE_SECONDS } from '../../../../utils/Time';
-import { truncate } from '../../../../utils/String';
 import { commitMutation, MESSAGING$ } from '../../../../relay/environment';
 import Transition from '../../../../components/Transition';
 
@@ -81,7 +79,6 @@ interface ConnectorWorksComponentProps {
 }
 
 const ConnectorWorksComponent: FunctionComponent<ConnectorWorksComponentProps> = ({ data, options, relay }) => {
-  // const works: NonNullable<ConnectorWorks_data$data['works']>['edges'] = pathOr([], ['works', 'edges'], data);
   const works = data.works?.edges ?? [];
   const { t_i18n, nsdt } = useFormatter();
   const classes = useStyles();
@@ -170,11 +167,9 @@ const ConnectorWorksComponent: FunctionComponent<ConnectorWorksComponentProps> =
                     <Typography variant="h3" gutterBottom={true}>
                       {t_i18n('Name')}
                     </Typography>
-                    <Tooltip title={work.name}>
-                      <Typography>
-                        {truncate(work.name, 80)}
-                      </Typography>
-                    </Tooltip>
+                    <Typography>
+                      {work.name}
+                    </Typography>
                   </Grid>
                   <Grid item={true} xs={6}>
                     <Typography variant="h3" gutterBottom={true}>
