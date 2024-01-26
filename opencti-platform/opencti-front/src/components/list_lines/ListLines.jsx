@@ -24,7 +24,6 @@ import DialogContent from '@mui/material/DialogContent';
 import DialogActions from '@mui/material/DialogActions';
 import Button from '@mui/material/Button';
 import Box from '@mui/material/Box';
-import { v4 } from 'uuid';
 import { ErrorBoundary } from '../../private/components/Error';
 import Filters from '../../private/components/common/lists/Filters';
 import SearchInput from '../SearchInput';
@@ -442,7 +441,7 @@ class ListLines extends Component {
           availableRelationFilterTypes={availableRelationFilterTypes}
           redirection
         />
-        <ErrorBoundary key={keyword || v4()}>
+        <ErrorBoundary key={keyword}>
           {message && (
           <div style={{ width: '100%', marginTop: 10 }}>
             <Alert
