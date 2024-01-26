@@ -113,7 +113,7 @@ const UserHistory: FunctionComponent<UserHistoryProps> = ({
       </Tooltip>
       <div className="clearfix" />
       {queryRef ? (
-        <React.Suspense fallback={<Loader variant={LoaderVariant.container} />}>
+        <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
           <UserHistoryLines
             queryRef={queryRef}
             isRelationLog={false}
@@ -121,7 +121,7 @@ const UserHistory: FunctionComponent<UserHistoryProps> = ({
           />
         </React.Suspense>
       ) : (
-        <Loader variant={LoaderVariant.container} />
+        <Loader variant={LoaderVariant.inElement} />
       )}
     </>
   );

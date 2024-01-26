@@ -536,7 +536,7 @@ const User: FunctionComponent<UserProps> = ({ data }) => {
           </Paper>
         </Grid>
         <Triggers recipientId={user.id} filterKey="authorized_members.id" />
-        <Grid item={true} xs={6} style={{ marginTop: 30 }}>
+        <Grid item={true} xs={6} style={{ marginTop: 35 }}>
           <Typography variant="h4" gutterBottom={true}>
             {t_i18n('Operations')}
           </Typography>
@@ -621,7 +621,7 @@ const User: FunctionComponent<UserProps> = ({ data }) => {
             )}
           </Paper>
         </Grid>
-        <Grid item={true} xs={6} style={{ marginTop: 30 }}>
+        <Grid item={true} xs={6} style={{ marginTop: 35 }}>
           <UserHistory userId={user.id} />
         </Grid>
       </Grid>

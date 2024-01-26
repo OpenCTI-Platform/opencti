@@ -64,7 +64,7 @@ export const vocabularyDefinitions: Record<VocabularyCategory, VocabularyDefinit
       required: false,
       multiple: true,
     }, {
-      key: 'personnal_motivations',
+      key: 'personal_motivations',
       required: false,
       multiple: true,
     }]
@@ -107,11 +107,6 @@ export const vocabularyDefinitions: Record<VocabularyCategory, VocabularyDefinit
     entity_types: [ENTITY_TYPE_DATA_SOURCE],
     fields: [{
       key: 'collection_layers',
-      required: false,
-      multiple: true,
-    },
-    { // For backward compatibility in python
-      key: 'x_mitre_collection_layers',
       required: false,
       multiple: true,
     }]
