@@ -2546,5 +2546,7 @@
   "Settings default values usage...": "Si les données ne sont pas trouvées dans le fichier CSV, la valeur par défaut définie dans Paramètres > ; Personnalisation sera utilisée à la place. Vous pouvez remplacer cette valeur par défaut en remplissant les champs ci-dessus.",
   "No default value set in Settings...": "Aucune valeur par défaut n'a été définie pour cet attribut dans les paramètres de l'entité. Vous pouvez en fournir une en remplissant le champ ci-dessus. Cette valeur sera utilisée si les données sont manquantes dans le fichier CSV.",
   "Default values set": "Valeurs par défaut définies",
-  "The following groups require your attention:": "Les groupes suivants requièrent votre attention :"
+  "The following groups require your attention:": "Les groupes suivants requièrent votre attention :",
+  "entity_reported-in": "Rapporté dans",
+  "INDICATOR_DECAY_MANAGER": "Gestionnaire de la dégradation des indicateurs"
 }
