@@ -7002,7 +7002,7 @@ type Query {
   elasticSearchMetrics: ElasticSearchMetrics
   logs(first: Int, after: ID, orderBy: LogsOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): LogConnection
   audits(first: Int, after: ID, types: [String!], orderBy: LogsOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): LogConnection
-  auditsNumber(types: [String], startDate: DateTime, endDate: DateTime, onlyInferred: Boolean, filters: FilterGroup, search: String): Number
+  auditsNumber(dateAttribute: String, types: [String], startDate: DateTime, endDate: DateTime, onlyInferred: Boolean, filters: FilterGroup, search: String): Number
   auditsTimeSeries(field: String!, operation: StatsOperation!, startDate: DateTime!, endDate: DateTime, interval: String!, types: [String], filters: FilterGroup, search: String): [TimeSeries]
   auditsDistribution(field: String!, startDate: DateTime, endDate: DateTime, dateAttribute: String, operation: StatsOperation!, limit: Int, order: String, types: [String], filters: FilterGroup, search: String): [Distribution]
   auditsMultiTimeSeries(operation: StatsOperation!, startDate: DateTime!, endDate: DateTime, interval: String!, onlyInferred: Boolean, timeSeriesParameters: [AuditsTimeSeriesParameters]): [MultiTimeSeries]
@@ -7077,8 +7077,8 @@ type Query {
   stixCoreObjectsExportFiles(first: Int, exportContext: ExportContext!): FileConnection
   stixCoreObjectsTimeSeries(authorId: String, field: String!, operation: StatsOperation!, startDate: DateTime!, endDate: DateTime, interval: String!, onlyInferred: Boolean, types: [String], filters: FilterGroup, search: String): [TimeSeries]
   stixCoreObjectsMultiTimeSeries(operation: StatsOperation!, startDate: DateTime!, endDate: DateTime, interval: String!, onlyInferred: Boolean, timeSeriesParameters: [StixCoreObjectsTimeSeriesParameters]): [MultiTimeSeries]
-  stixCoreObjectsNumber(types: [String], startDate: DateTime, endDate: DateTime, onlyInferred: Boolean, filters: FilterGroup, search: String): Number
-  stixCoreObjectsMultiNumber(startDate: DateTime, endDate: DateTime, onlyInferred: Boolean, numberParameters: [StixCoreObjectsNumberParameters]): [Number]
+  stixCoreObjectsNumber(dateAttribute: String, types: [String], startDate: DateTime, endDate: DateTime, onlyInferred: Boolean, filters: FilterGroup, search: String): Number
+  stixCoreObjectsMultiNumber(dateAttribute: String, startDate: DateTime, endDate: DateTime, onlyInferred: Boolean, numberParameters: [StixCoreObjectsNumberParameters]): [Number]
   stixCoreObjectsDistribution(objectId: [String], relationship_type: [String], toTypes: [String], elementWithTargetTypes: [String], field: String!, startDate: DateTime, endDate: DateTime, dateAttribute: String, operation: StatsOperation!, limit: Int, order: String, types: [String], filters: FilterGroup, search: String): [Distribution]
   stixCoreObjectsMultiDistribution(field: String!, startDate: DateTime, endDate: DateTime, dateAttribute: String, operation: StatsOperation!, limit: Int, order: String, distributionParameters: StixCoreObjectsDistributionParameters): [MultiDistribution]
   filtersRepresentatives(filters: FilterGroup!): [RepresentativeWithId!]!
@@ -7087,7 +7087,7 @@ type Query {
   bookmarks(first: Int, after: ID, types: [String], filters: FilterGroup): StixDomainObjectConnection
   stixDomainObjectsExportFiles(first: Int, exportContext: ExportContext!): FileConnection
   stixDomainObjectsTimeSeries(authorId: String, field: String!, operation: StatsOperation!, startDate: DateTime!, endDate: DateTime, interval: String!, types: [String], onlyInferred: Boolean, filters: FilterGroup, search: String): [TimeSeries]
-  stixDomainObjectsNumber(types: [String], endDate: DateTime, onlyInferred: Boolean, filters: FilterGroup, search: String): Number
+  stixDomainObjectsNumber(dateAttribute: String, types: [String], endDate: DateTime, onlyInferred: Boolean, filters: FilterGroup, search: String): Number
   stixDomainObjectsDistribution(objectId: [String], relationship_type: [String], toTypes: [String], elementWithTargetTypes: [String], field: String!, dateAttribute: String, operation: StatsOperation!, limit: Int, order: String, types: [String], filters: FilterGroup, search: String): [Distribution]
   attackPattern(id: String): AttackPattern
   attackPatterns(first: Int, after: ID, orderBy: AttackPatternsOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String, toStix: Boolean): AttackPatternConnection
@@ -7162,7 +7162,7 @@ type Query {
   stixCyberObservable(id: String!): StixCyberObservable
   stixCyberObservables(first: Int, after: ID, types: [String], orderBy: StixCyberObservablesOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String, toStix: Boolean): StixCyberObservableConnection
   stixCyberObservablesExportFiles(first: Int, exportContext: ExportContext!): FileConnection
-  stixCyberObservablesNumber(types: [String], authorId: String, endDate: DateTime, filters: FilterGroup, search: String): Number
+  stixCyberObservablesNumber(dateAttribute: String, types: [String], authorId: String, endDate: DateTime, filters: FilterGroup, search: String): Number
   stixCyberObservablesTimeSeries(types: [String], filters: FilterGroup, search: String): [TimeSeries]
   stixCyberObservablesDistribution(objectId: String, field: String!, dateAttribute: String, operation: String!, filters: FilterGroup, search: String): [Distribution]
   stixRelationship(id: String): StixRelationship
@@ -7170,7 +7170,7 @@ type Query {
   stixRelationshipsTimeSeries(field: String!, operation: StatsOperation!, startDate: DateTime!, endDate: DateTime, interval: String!, onlyInferred: Boolean, fromOrToId: [String], elementWithTargetTypes: [String], fromId: [String], fromRole: String, fromTypes: [String], toId: [String], toRole: String, toTypes: [String], relationship_type: [String], confidences: [Int], search: String, filters: FilterGroup, dynamicFrom: FilterGroup, dynamicTo: FilterGroup): [TimeSeries]
   stixRelationshipsMultiTimeSeries(operation: StatsOperation!, startDate: DateTime!, endDate: DateTime, interval: String!, onlyInferred: Boolean, timeSeriesParameters: [StixRelationshipsTimeSeriesParameters]): [MultiTimeSeries]
   stixRelationshipsDistribution(field: String!, operation: StatsOperation!, startDate: DateTime, endDate: DateTime, dateAttribute: String, isTo: Boolean, limit: Int, order: String, fromOrToId: [String], elementWithTargetTypes: [String], fromId: [String], fromRole: String, fromTypes: [String], toId: [String], toRole: String, toTypes: [String], relationship_type: [String], confidences: [Int], search: String, filters: FilterGroup, dynamicFrom: FilterGroup, dynamicTo: FilterGroup, aggregateOnConnections: Boolean): [Distribution]
-  stixRelationshipsNumber(authorId: String, noDirection: Boolean, endDate: DateTime, onlyInferred: Boolean, fromOrToId: [String], elementWithTargetTypes: [String], fromId: [String], fromRole: String, fromTypes: [String], toId: [String], toRole: String, toTypes: [String], relationship_type: [String], confidences: [Int], search: String, filters: FilterGroup, dynamicFrom: FilterGroup, dynamicTo: FilterGroup): Number
+  stixRelationshipsNumber(dateAttribute: String, authorId: String, noDirection: Boolean, endDate: DateTime, onlyInferred: Boolean, fromOrToId: [String], elementWithTargetTypes: [String], fromId: [String], fromRole: String, fromTypes: [String], toId: [String], toRole: String, toTypes: [String], relationship_type: [String], confidences: [Int], search: String, filters: FilterGroup, dynamicFrom: FilterGroup, dynamicTo: FilterGroup): Number
   schemaRelationsTypesMapping: [StixRelationshipSchema!]!
   schemaRelationsRefTypesMapping: [StixRelationshipSchema!]!
   stixCoreRelationship(id: String): StixCoreRelationship
@@ -7178,13 +7178,13 @@ type Query {
   stixCoreRelationshipsTimeSeries(field: String!, operation: StatsOperation!, startDate: DateTime!, endDate: DateTime, interval: String!, onlyInferred: Boolean, fromOrToId: [String], elementWithTargetTypes: [String], fromId: [String], fromRole: String, fromTypes: [String], toId: [String], toRole: String, toTypes: [String], relationship_type: [String], confidences: [Int], search: String, filters: FilterGroup, dynamicFrom: FilterGroup, dynamicTo: FilterGroup): [TimeSeries]
   stixCoreRelationshipsMultiTimeSeries(operation: StatsOperation!, startDate: DateTime!, endDate: DateTime, interval: String!, onlyInferred: Boolean, timeSeriesParameters: [StixCoreRelationshipsTimeSeriesParameters]): [MultiTimeSeries]
   stixCoreRelationshipsDistribution(field: String!, operation: StatsOperation!, startDate: DateTime, endDate: DateTime, dateAttribute: String, isTo: Boolean, limit: Int, order: String, fromOrToId: [String], elementWithTargetTypes: [String], fromId: [String], fromRole: String, fromTypes: [String], toId: [String], toRole: String, toTypes: [String], relationship_type: [String], confidences: [Int], search: String, filters: FilterGroup, dynamicFrom: FilterGroup, dynamicTo: FilterGroup, aggregateOnConnections: Boolean): [Distribution]
-  stixCoreRelationshipsNumber(authorId: String, noDirection: Boolean, endDate: DateTime, onlyInferred: Boolean, fromOrToId: [String], elementWithTargetTypes: [String], fromId: [String], fromRole: String, fromTypes: [String], toId: [String], toRole: String, toTypes: [String], relationship_type: [String], confidences: [Int], search: String, filters: FilterGroup, dynamicFrom: FilterGroup, dynamicTo: FilterGroup): Number
+  stixCoreRelationshipsNumber(dateAttribute: String, authorId: String, noDirection: Boolean, endDate: DateTime, onlyInferred: Boolean, fromOrToId: [String], elementWithTargetTypes: [String], fromId: [String], fromRole: String, fromTypes: [String], toId: [String], toRole: String, toTypes: [String], relationship_type: [String], confidences: [Int], search: String, filters: FilterGroup, dynamicFrom: FilterGroup, dynamicTo: FilterGroup): Number
   stixCoreRelationshipsExportFiles(first: Int, exportContext: ExportContext!): FileConnection
   stixSightingRelationship(id: String): StixSightingRelationship
   stixSightingRelationships(first: Int, after: ID, orderBy: StixSightingRelationshipsOrdering, orderMode: OrderingMode, fromOrToId: String, fromId: StixRef, toId: StixRef, fromTypes: [String], toTypes: [String], firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, search: String, filters: FilterGroup, toStix: Boolean): StixSightingRelationshipConnection
   stixSightingRelationshipsTimeSeries(fromOrToId: String, fromId: StixRef, toId: StixRef, field: String!, operation: StatsOperation!, startDate: DateTime!, endDate: DateTime!, interval: String!, fromTypes: [String], toTypes: [String], search: String, filters: FilterGroup): [TimeSeries]
   stixSightingRelationshipsDistribution(fromOrToId: String, fromId: StixRef, toId: StixRef, field: String!, operation: StatsOperation!, startDate: DateTime, endDate: DateTime, dateAttribute: String, limit: Int, order: String, fromTypes: [String], toTypes: [String], search: String, filters: FilterGroup): [Distribution]
-  stixSightingRelationshipsNumber(fromOrToId: String, fromId: StixRef, toId: StixRef, endDate: DateTime, fromTypes: [String], toTypes: [String], search: String, filters: FilterGroup): Number
+  stixSightingRelationshipsNumber(dateAttribute: String, fromOrToId: String, fromId: StixRef, toId: StixRef, endDate: DateTime, fromTypes: [String], toTypes: [String], search: String, filters: FilterGroup): Number
   stixRefRelationship(id: String): StixRefRelationship
   stixRefRelationships(first: Int, after: ID, orderBy: StixRefRelationshipsOrdering, orderMode: OrderingMode, fromOrToId: String, fromId: StixRef, toId: StixRef, fromTypes: [String], toTypes: [String], relationship_type: [String], startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, search: String, filters: FilterGroup, toStix: Boolean): StixRefRelationshipConnection
   stixNestedRefRelationships(first: Int, after: ID, orderBy: StixRefRelationshipsOrdering, orderMode: OrderingMode, fromOrToId: String, fromId: StixRef, toId: StixRef, fromTypes: [String], toTypes: [String], relationship_type: [String], startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, search: String, filters: FilterGroup, toStix: Boolean): StixRefRelationshipConnection

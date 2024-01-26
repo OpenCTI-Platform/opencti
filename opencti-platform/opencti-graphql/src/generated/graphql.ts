@@ -17278,6 +17278,7 @@ export type QueryAuditsMultiTimeSeriesArgs = {
 
 
 export type QueryAuditsNumberArgs = {
+  dateAttribute?: InputMaybe<Scalars['String']['input']>;
   endDate?: InputMaybe<Scalars['DateTime']['input']>;
   filters?: InputMaybe<FilterGroup>;
   onlyInferred?: InputMaybe<Scalars['Boolean']['input']>;
@@ -18617,6 +18618,7 @@ export type QueryStixCoreObjectsMultiDistributionArgs = {
 
 
 export type QueryStixCoreObjectsMultiNumberArgs = {
+  dateAttribute?: InputMaybe<Scalars['String']['input']>;
   endDate?: InputMaybe<Scalars['DateTime']['input']>;
   numberParameters?: InputMaybe<Array<InputMaybe<StixCoreObjectsNumberParameters>>>;
   onlyInferred?: InputMaybe<Scalars['Boolean']['input']>;
@@ -18635,6 +18637,7 @@ export type QueryStixCoreObjectsMultiTimeSeriesArgs = {
 
 
 export type QueryStixCoreObjectsNumberArgs = {
+  dateAttribute?: InputMaybe<Scalars['String']['input']>;
   endDate?: InputMaybe<Scalars['DateTime']['input']>;
   filters?: InputMaybe<FilterGroup>;
   onlyInferred?: InputMaybe<Scalars['Boolean']['input']>;
@@ -18740,6 +18743,7 @@ export type QueryStixCoreRelationshipsMultiTimeSeriesArgs = {
 export type QueryStixCoreRelationshipsNumberArgs = {
   authorId?: InputMaybe<Scalars['String']['input']>;
   confidences?: InputMaybe<Array<InputMaybe<Scalars['Int']['input']>>>;
+  dateAttribute?: InputMaybe<Scalars['String']['input']>;
   dynamicFrom?: InputMaybe<FilterGroup>;
   dynamicTo?: InputMaybe<FilterGroup>;
   elementWithTargetTypes?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
@@ -18818,6 +18822,7 @@ export type QueryStixCyberObservablesExportFilesArgs = {
 
 export type QueryStixCyberObservablesNumberArgs = {
   authorId?: InputMaybe<Scalars['String']['input']>;
+  dateAttribute?: InputMaybe<Scalars['String']['input']>;
   endDate?: InputMaybe<Scalars['DateTime']['input']>;
   filters?: InputMaybe<FilterGroup>;
   search?: InputMaybe<Scalars['String']['input']>;
@@ -18871,6 +18876,7 @@ export type QueryStixDomainObjectsExportFilesArgs = {
 
 
 export type QueryStixDomainObjectsNumberArgs = {
+  dateAttribute?: InputMaybe<Scalars['String']['input']>;
   endDate?: InputMaybe<Scalars['DateTime']['input']>;
   filters?: InputMaybe<FilterGroup>;
   onlyInferred?: InputMaybe<Scalars['Boolean']['input']>;
@@ -19061,6 +19067,7 @@ export type QueryStixRelationshipsMultiTimeSeriesArgs = {
 export type QueryStixRelationshipsNumberArgs = {
   authorId?: InputMaybe<Scalars['String']['input']>;
   confidences?: InputMaybe<Array<InputMaybe<Scalars['Int']['input']>>>;
+  dateAttribute?: InputMaybe<Scalars['String']['input']>;
   dynamicFrom?: InputMaybe<FilterGroup>;
   dynamicTo?: InputMaybe<FilterGroup>;
   elementWithTargetTypes?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
@@ -19154,6 +19161,7 @@ export type QueryStixSightingRelationshipsDistributionArgs = {
 
 
 export type QueryStixSightingRelationshipsNumberArgs = {
+  dateAttribute?: InputMaybe<Scalars['String']['input']>;
   endDate?: InputMaybe<Scalars['DateTime']['input']>;
   filters?: InputMaybe<FilterGroup>;
   fromId?: InputMaybe<Scalars['StixRef']['input']>;

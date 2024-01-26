@@ -26,6 +26,7 @@ const useStyles = makeStyles({
 
 const stixCoreObjectsNumberNumberQuery = graphql`
   query StixCoreObjectsNumberNumberSeriesQuery(
+    $dateAttribute: String
     $types: [String]
     $startDate: DateTime
     $endDate: DateTime
@@ -34,6 +35,7 @@ const stixCoreObjectsNumberNumberQuery = graphql`
     $search: String
   ) {
     stixCoreObjectsNumber(
+      dateAttribute: $dateAttribute
       types: $types
       startDate: $startDate
       endDate: $endDate
@@ -69,9 +71,7 @@ const StixCoreObjectsNumber = ({
         query={stixCoreObjectsNumberNumberQuery}
         variables={{
           types: dataSelectionTypes,
-          first: selection.number ?? 10,
-          orderBy: dateAttribute,
-          orderMode: 'desc',
+          dateAttribute,
           filters,
           startDate,
           endDate: dayAgo(),

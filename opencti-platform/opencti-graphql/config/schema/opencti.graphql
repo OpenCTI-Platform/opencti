@@ -10663,6 +10663,7 @@ type Query {
     search: String
   ): LogConnection @auth(for: [SETTINGS])
   auditsNumber(
+    dateAttribute: String
     types: [String]
     startDate: DateTime
     endDate: DateTime
@@ -10940,6 +10941,7 @@ type Query {
     timeSeriesParameters: [StixCoreObjectsTimeSeriesParameters]
   ): [MultiTimeSeries] @auth(for: [KNOWLEDGE, EXPLORE])
   stixCoreObjectsNumber(
+    dateAttribute: String
     types: [String]
     startDate: DateTime
     endDate: DateTime
@@ -10948,6 +10950,7 @@ type Query {
     search: String
   ): Number @auth(for: [KNOWLEDGE, EXPLORE])
   stixCoreObjectsMultiNumber(
+    dateAttribute: String
     startDate: DateTime
     endDate: DateTime
     onlyInferred: Boolean
@@ -11008,6 +11011,7 @@ type Query {
     search: String
   ): [TimeSeries] @auth(for: [KNOWLEDGE, EXPLORE])
   stixDomainObjectsNumber(
+    dateAttribute: String
     types: [String]
     endDate: DateTime
     onlyInferred: Boolean
@@ -11418,6 +11422,7 @@ type Query {
   ): StixCyberObservableConnection @auth(for: [KNOWLEDGE])
   stixCyberObservablesExportFiles(first: Int, exportContext: ExportContext!): FileConnection
   stixCyberObservablesNumber(
+    dateAttribute: String
     types: [String]
     authorId: String
     endDate: DateTime
@@ -11527,6 +11532,7 @@ type Query {
     aggregateOnConnections: Boolean
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
   stixRelationshipsNumber(
+    dateAttribute: String
     authorId: String
     noDirection: Boolean
     endDate: DateTime
@@ -11637,6 +11643,7 @@ type Query {
     aggregateOnConnections: Boolean
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
   stixCoreRelationshipsNumber(
+    dateAttribute: String
     authorId: String
     noDirection: Boolean
     endDate: DateTime
@@ -11710,6 +11717,7 @@ type Query {
     filters: FilterGroup
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
   stixSightingRelationshipsNumber(
+    dateAttribute: String
     fromOrToId: String
     fromId: StixRef
     toId: StixRef

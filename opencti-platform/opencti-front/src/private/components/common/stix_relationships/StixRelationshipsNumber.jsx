@@ -26,6 +26,7 @@ const useStyles = makeStyles({
 
 const stixRelationshipsNumberNumberQuery = graphql`
   query StixRelationshipsNumberNumberSeriesQuery(
+    $dateAttribute: String
     $noDirection: Boolean
     $endDate: DateTime
     $onlyInferred: Boolean
@@ -45,6 +46,7 @@ const stixRelationshipsNumberNumberQuery = graphql`
     $dynamicTo: FilterGroup
   ) {
     stixRelationshipsNumber(
+      dateAttribute: $dateAttribute
       noDirection: $noDirection
       endDate: $endDate
       onlyInferred: $onlyInferred
@@ -80,6 +82,9 @@ const StixRelationshipsNumber = ({
   const { t_i18n, n } = useFormatter();
   const renderContent = () => {
     const selection = dataSelection[0];
+    const dateAttribute = selection.date_attribute && selection.date_attribute.length > 0
+      ? selection.date_attribute
+      : 'created_at';
     const { filters } = buildFiltersAndOptionsForWidgets(selection.filters);
     return (
       <QueryRenderer
@@ -87,6 +92,7 @@ const StixRelationshipsNumber = ({
         variables={{
           filters,
           startDate,
+          dateAttribute,
           endDate: dayAgo(),
           dynamicFrom: selection.dynamicFrom,
           dynamicTo: selection.dynamicTo,
