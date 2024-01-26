@@ -142,7 +142,7 @@ const ReportDetailsComponent = (props) => {
               {t('Report types')}
             </Typography>
             <FieldOrEmpty source={report.report_types}>
-              {report.report_types.map((reportType) => (
+              {report.report_types?.map((reportType) => (
                 <Chip
                   key={reportType}
                   classes={{ root: classes.chip }}
