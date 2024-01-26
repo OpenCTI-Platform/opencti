@@ -85,7 +85,8 @@ const stixCoreObjectResolvers = {
     stixCoreObjectsMultiDistribution: (_, args, context) => stixCoreObjectsMultiDistribution(context, context.user, args),
     stixCoreObjectsExportFiles: (_, { exportContext, first }, context) => {
       const path = `export/${exportContext.entity_type}${exportContext.entity_id ? `/${exportContext.entity_id}` : ''}`;
-      return paginatedForPathWithEnrichment(context, context.user, path, exportContext.entity_id, { first });
+      const opts = { first, entity_type: exportContext.entity_type };
+      return paginatedForPathWithEnrichment(context, context.user, path, exportContext.entity_id, opts);
     },
     filtersRepresentatives: (_, { filters }, context) => findFiltersRepresentatives(context, context.user, filters),
   },
@@ -119,14 +120,16 @@ const stixCoreObjectResolvers = {
     jobs: (stixCoreObject, args, context) => worksForSource(context, context.user, stixCoreObject.standard_id, args),
     connectors: (stixCoreObject, { onlyAlive = false }, context) => connectorsForEnrichment(context, context.user, stixCoreObject.entity_type, onlyAlive),
     importFiles: (stixCoreObject, { first, prefixMimeType }, context) => {
-      const opts = { first, prefixMimeTypes: prefixMimeType ? [prefixMimeType] : null, entity_id: stixCoreObject.id };
+      const opts = { first, prefixMimeTypes: prefixMimeType ? [prefixMimeType] : null, entity_id: stixCoreObject.id, entity_type: stixCoreObject.entity_type };
       return paginatedForPathWithEnrichment(context, context.user, `import/${stixCoreObject.entity_type}/${stixCoreObject.id}`, stixCoreObject.id, opts);
     },
     pendingFiles: (stixCoreObject, { first }, context) => {
-      return paginatedForPathWithEnrichment(context, context.user, 'import/pending', stixCoreObject.id, { first });
+      const opts = { first, entity_type: stixCoreObject.entity_type };
+      return paginatedForPathWithEnrichment(context, context.user, 'import/pending', stixCoreObject.id, opts);
     },
     exportFiles: (stixCoreObject, { first }, context) => {
-      return paginatedForPathWithEnrichment(context, context.user, `export/${stixCoreObject.entity_type}/${stixCoreObject.id}`, stixCoreObject.id, { first });
+      const opts = { first, entity_type: stixCoreObject.entity_type };
+      return paginatedForPathWithEnrichment(context, context.user, `export/${stixCoreObject.entity_type}/${stixCoreObject.id}`, stixCoreObject.id, opts);
     },
     numberOfConnectedElement: (stixCoreObject) => stixCoreObjectsConnectedNumber(stixCoreObject),
     spec_version: getSpecVersionOrDefault

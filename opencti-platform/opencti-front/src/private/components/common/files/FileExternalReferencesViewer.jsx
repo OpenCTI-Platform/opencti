@@ -119,7 +119,7 @@ const FileExternalReferencesViewer = createRefetchContainer(
               source_name
               url
               description
-              importFiles(first: 1000)
+              importFiles(first: 500)
                 @connection(key: "Pagination_importFiles") {
                 edges {
                   node {

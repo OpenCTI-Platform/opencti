@@ -698,7 +698,7 @@ const StixDomainObjectContent = createRefetchContainer(
     stixDomainObject: graphql`
       fragment StixDomainObjectContent_stixDomainObject on StixDomainObject {
         id
-        importFiles(first: 1000) {
+        importFiles(first: 500) {
           edges {
             node {
               id
@@ -724,7 +724,7 @@ const StixDomainObjectContent = createRefetchContainer(
             }
           }
         }
-        exportFiles(first: 1000) @connection(key: "Pagination_exportFiles") {
+        exportFiles(first: 500) @connection(key: "Pagination_exportFiles") {
           edges {
             node {
               id
@@ -745,7 +745,7 @@ const StixDomainObjectContent = createRefetchContainer(
               source_name
               url
               description
-              importFiles(first: 1000) {
+              importFiles(first: 500) {
                 edges {
                   node {
                     id

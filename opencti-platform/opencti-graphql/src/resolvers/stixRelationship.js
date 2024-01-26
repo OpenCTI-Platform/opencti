@@ -35,8 +35,8 @@ const stixRelationshipResolvers = {
   },
   StixRelationshipsOrdering: {},
   StixRelationship: {
-    from: (rel, _, context) => loadByIdLoader.load(rel.fromId, context, context.user),
-    to: (rel, _, context) => loadByIdLoader.load(rel.toId, context, context.user),
+    from: (rel, _, context) => (rel.from ? rel.from : loadByIdLoader.load({ id: rel.fromId, type: rel.fromType }, context, context.user)),
+    to: (rel, _, context) => (rel.to ? rel.to : loadByIdLoader.load({ id: rel.toId, type: rel.toType }, context, context.user)),
     creators: (rel, _, context) => creatorsLoader.load(rel.creator_id, context, context.user),
     createdBy: (rel, _, context) => createdByLoader.load(rel.id, context, context.user),
     toStix: (rel, _, context) => stixLoadByIdStringify(context, context.user, rel.id),

@@ -34,8 +34,6 @@ import {
   READ_DATA_INDICES_INFERRED,
   READ_INDEX_HISTORY,
   READ_INDEX_INFERRED_RELATIONSHIPS,
-  READ_INDEX_STIX_CYBER_OBSERVABLE_RELATIONSHIPS,
-  READ_INDEX_STIX_META_RELATIONSHIPS,
   READ_RELATIONSHIPS_INDICES,
   READ_RELATIONSHIPS_INDICES_WITHOUT_INFERRED,
   UPDATE_OPERATION_ADD,
@@ -46,7 +44,6 @@ import {
   elAggregationCount,
   elAggregationRelationsCount,
   elDeleteElements,
-  elFindByFromAndTo,
   elFindByIds,
   elHistogramCount,
   elIndexElements,
@@ -197,7 +194,7 @@ import { cleanMarkings, handleMarkingOperations } from '../utils/markingDefiniti
 import { generateCreateMessage, generateUpdateMessage } from './generate-message';
 import { confidence } from '../schema/attribute-definition';
 import { ENTITY_TYPE_INDICATOR } from '../modules/indicator/indicator-types';
-import { FilterOperator } from '../generated/graphql';
+import { FilterMode, FilterOperator } from '../generated/graphql';
 import { getMandatoryAttributesForSetting } from '../modules/entitySetting/entitySetting-attributeUtils';
 
 // region global variables
@@ -272,7 +269,7 @@ const batchListThrough = async (context, user, sources, sourceSide, relationType
   // endregion
   // region Resolved all targets for all relations
   const targetIds = R.uniq(relations.map((s) => s[`${opposite}Id`]));
-  const targets = await elFindByIds(context, user, targetIds, opts);
+  const targets = await elFindByIds(context, user, targetIds, { ...opts, type: targetEntityType });
   // endregion
   // region Enrich all targets with internal types [manual and/or inferred]
   const targetsWithTypes = {};
@@ -389,12 +386,13 @@ const loadElementMetaDependencies = async (context, user, elements, args = {}) =
   const workingIds = workingElements.map((element) => element.internal_id);
   const relTypes = onlyMarking ? [RELATION_OBJECT_MARKING] : STIX_REF_RELATIONSHIP_TYPES;
   // Resolve all relations
-  const refIndices = [READ_INDEX_STIX_META_RELATIONSHIPS, READ_INDEX_STIX_CYBER_OBSERVABLE_RELATIONSHIPS, READ_INDEX_INFERRED_RELATIONSHIPS];
-  const refsRelations = await elFindByIds(context, user, workingIds, { type: relTypes, indices: refIndices, onRelationship: 'from' });
+  const relationFilter = { mode: FilterMode.And, filters: [{ key: ['fromId'], values: workingIds }], filterGroups: [] };
+  const refsRelations = await listAllRelations(context, user, relTypes, { filters: relationFilter });
   const refsPerElements = R.groupBy((r) => r.fromId, refsRelations);
   // Parallel resolutions
   const toResolvedIds = R.uniq(refsRelations.map((rel) => rel.toId));
-  const toResolvedElements = await elFindByIds(context, user, toResolvedIds, { withoutRels: true, connectionFormat: false, toMap: true });
+  const toResolvedTypes = R.uniq(refsRelations.map((rel) => rel.toType));
+  const toResolvedElements = await elFindByIds(context, user, toResolvedIds, { withoutRels: true, type: toResolvedTypes, connectionFormat: false, toMap: true });
   const refEntries = Object.entries(refsPerElements);
   const loadedElementMap = new Map();
   for (let indexRef = 0; indexRef < refEntries.length; indexRef += 1) {
@@ -718,7 +716,10 @@ const inputResolveRefs = async (context, user, input, type, entitySetting) => {
         cleanedInput[src] = null;
       }
     }
-    const simpleResolutionsPromise = internalFindByIds(context, user, fetchingIds.map((i) => i.id), { forceAliases });
+    // TODO Improve type restriction from targeted ref inferred types
+    // This information must be added in the model
+    const findOpts = { forceAliases, indices: READ_DATA_INDICES };
+    const simpleResolutionsPromise = internalFindByIds(context, user, fetchingIds.map((i) => i.id), findOpts);
     let embeddedFromPromise = Promise.resolve();
     if (embeddedFromResolution) {
       fetchingIds.push({ id: embeddedFromResolution, destKey: 'from', multiple: false });
@@ -1897,7 +1898,7 @@ export const updateAttributeMetaResolved = async (context, user, initial, inputs
     let existingEntityPromise = Promise.resolve(undefined);
     let existingByHashedPromise = Promise.resolve([]);
     if (eventualNewStandardId) {
-      existingEntityPromise = internalLoadById(context, user, eventualNewStandardId);
+      existingEntityPromise = internalLoadById(context, user, eventualNewStandardId, { type: initial.entity_type });
     }
     if (isStixCyberObservableHashedObservable(initial.entity_type)) {
       existingByHashedPromise = listEntitiesByHashes(context, user, initial.entity_type, updated.hashes)
@@ -2100,7 +2101,7 @@ export const updateAttributeFromLoadedWithRefs = async (context, user, initial, 
 };
 
 export const updateAttribute = async (context, user, id, type, inputs, opts = {}) => {
-  const initial = await storeLoadByIdWithRefs(context, user, id, { type });
+  const initial = await storeLoadByIdWithRefs(context, user, id, { ...opts, type });
   if (!initial) {
     throw FunctionalError('Cant find element to update', { id, type });
   }
@@ -2191,7 +2192,8 @@ const upsertEntityRule = async (context, instance, input, opts = {}) => {
   const ruleInstance = R.mergeRight(instance, rulePatch);
   const innerPatch = createRuleDataPatch(ruleInstance);
   const patch = { ...rulePatch, ...innerPatch };
-  return patchAttribute(context, RULE_MANAGER_USER, instance.id, instance.entity_type, patch, opts);
+  const patchOpts = { ...opts, includeInferences: true };
+  return await patchAttribute(context, RULE_MANAGER_USER, instance.id, instance.entity_type, patch, patchOpts);
 };
 const upsertRelationRule = async (context, instance, input, opts = {}) => {
   const { fromRule, ruleOverride = false } = opts;
@@ -2207,7 +2209,8 @@ const upsertRelationRule = async (context, instance, input, opts = {}) => {
   const innerPatch = createRuleDataPatch(ruleInstance);
   const patch = { ...rulePatch, ...innerPatch };
   logApp.info('Upsert inferred relation', { id: instance.id, relation: patch });
-  return await patchAttribute(context, RULE_MANAGER_USER, instance.id, instance.entity_type, patch, opts);
+  const patchOpts = { ...opts, includeInferences: true };
+  return await patchAttribute(context, RULE_MANAGER_USER, instance.id, instance.entity_type, patch, patchOpts);
 };
 // endregion
 
@@ -3145,7 +3148,7 @@ const createEntityRaw = async (context, user, input, type, opts = {}) => {
       }
       if (filteredEntities.length === 1) {
         const upsertEntityOpts = { ...opts, locks: participantIds, bypassIndividualUpdate: true };
-        const element = await storeLoadByIdWithRefs(context, user, R.head(filteredEntities).internal_id);
+        const element = await storeLoadByIdWithRefs(context, user, R.head(filteredEntities).internal_id, { type });
         return upsertElement(context, user, element, type, resolvedInput, upsertEntityOpts);
       }
       // If creation is not by a reference
@@ -3422,11 +3425,26 @@ export const deleteRelationsByFromAndTo = async (context, user, fromId, toId, re
     throw ForbiddenAccess();
   }
   // Looks like the caller doesnt give the correct from, to currently
-  const relationsToDelete = await elFindByFromAndTo(context, user, fromThing.internal_id, toThing.internal_id, relationshipType);
-  for (let i = 0; i < relationsToDelete.length; i += 1) {
-    const r = relationsToDelete[i];
-    await deleteElementById(context, user, r.internal_id, r.entity_type, opts);
-  }
+  const relationsCallback = async (relationsToDelete) => {
+    for (let i = 0; i < relationsToDelete.length; i += 1) {
+      const r = relationsToDelete[i];
+      await deleteElementById(context, user, r.internal_id, r.entity_type, opts);
+    }
+  };
+  const relationsToDelete = await listAllRelations(context, user, relationshipType, {
+    indices: READ_RELATIONSHIPS_INDICES_WITHOUT_INFERRED,
+    baseData: true,
+    connectionFormat: false,
+    filters: {
+      mode: 'and',
+      filters: [
+        { key: ['fromId'], values: [fromThing.internal_id] },
+        { key: ['toId'], values: [toThing.internal_id] }
+      ],
+      filterGroups: []
+    },
+    callback: relationsCallback
+  });
   return { from: fromThing, to: toThing, deletions: relationsToDelete };
 };
 // endregion

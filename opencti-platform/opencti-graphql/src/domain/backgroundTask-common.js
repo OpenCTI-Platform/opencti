@@ -53,17 +53,17 @@ export const checkActionValidity = async (context, user, input, scope, taskType)
     // 1.3. Check the modified entities are of type Knowledge
     if (taskType === TASK_TYPE_QUERY) {
       const parentTypes = typeFiltersValues.map((n) => getParentTypes(n));
-      const isNotKnowledges = !areParentTypesKnowledge(parentTypes) || typeFiltersValues.some((type) => type === ENTITY_TYPE_VOCABULARY);
-      if (isNotKnowledges) {
-        throw ForbiddenAccess('The targeted ids are not knowledges.');
+      const isNotKnowledge = !areParentTypesKnowledge(parentTypes) || typeFiltersValues.some((type) => type === ENTITY_TYPE_VOCABULARY);
+      if (isNotKnowledge) {
+        throw ForbiddenAccess('The targeted ids are not knowledge.');
       }
     } else if (taskType === TASK_TYPE_LIST) {
       const objects = await Promise.all(ids.map((id) => internalLoadById(context, user, id)));
-      const isNotKnowledges = objects.includes(undefined)
+      const isNotKnowledge = objects.includes(undefined)
         || !areParentTypesKnowledge(objects.map((o) => o.parent_types))
         || objects.some(({ entity_type }) => entity_type === ENTITY_TYPE_VOCABULARY);
-      if (isNotKnowledges) {
-        throw ForbiddenAccess('The targeted ids are not knowledges.');
+      if (isNotKnowledge) {
+        throw ForbiddenAccess('The targeted ids are not knowledge.');
       }
     } else {
       throw UnsupportedError('A background task should be of type query or list.');

@@ -7,7 +7,7 @@ import { ABSTRACT_BASIC_RELATIONSHIP, ABSTRACT_STIX_REF_RELATIONSHIP, ABSTRACT_S
 import { isStixDomainObjectContainer } from '../schema/stixDomainObject';
 import { buildPagination, isInferredIndex, READ_INDEX_STIX_DOMAIN_OBJECTS } from '../database/utils';
 import { now } from '../utils/format';
-import { elBatchIds, elCount } from '../database/engine';
+import { elCount, elFindByIds } from '../database/engine';
 import { findById as findInvestigationById } from '../modules/workspace/workspace-domain';
 import { stixCoreObjectAddRelations } from './stixCoreObject';
 import { addFilter } from '../utils/filtering/filtering-utils';
@@ -144,7 +144,7 @@ export const containersObjectsOfObject = async (context, user, { id, types, filt
 
 export const filterUnwantedEntitiesOut = async ({ context, user, ids }) => {
   const filteredOutInvestigatedIds = [];
-  const entities = await elBatchIds(context, user, ids);
+  const entities = await elFindByIds(context, user, ids);
   entities?.forEach((entity) => {
     if (!['Task', 'Note'].includes(entity.entity_type)) {
       filteredOutInvestigatedIds.push(entity.id);

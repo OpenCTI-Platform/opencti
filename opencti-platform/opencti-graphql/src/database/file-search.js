@@ -20,7 +20,7 @@ import { RELATION_GRANTED_TO, RELATION_OBJECT_MARKING } from '../schema/stixRefR
 import { buildPagination, cursorToOffset, INDEX_FILES, READ_DATA_INDICES_WITHOUT_INTERNAL, READ_INDEX_FILES } from './utils';
 import { DatabaseError } from '../config/errors';
 import { logApp } from '../config/conf';
-import { buildDataRestrictions, elFindByIds, elIndex, elRawCount, elRawDeleteByQuery, elRawSearch, elRawUpdateByQuery, ES_IGNORE_THROTTLED } from './engine';
+import { buildDataRestrictions, elFindByIds, elIndex, elRawCount, elRawDeleteByQuery, elRawSearch, elRawUpdateByQuery } from './engine';
 
 const buildIndexFileBody = (documentId, file, entity = null) => {
   const documentBody = {
@@ -200,7 +200,6 @@ export const elSearchFiles = async (context, user, options = {}) => {
   const sourceExcludes = (excludeFields?.length > 0) ? excludeFields : [];
   const query = {
     index: INDEX_FILES,
-    ignore_throttled: ES_IGNORE_THROTTLED,
     track_total_hits: true,
     _source: { includes: sourceIncludes, excludes: sourceExcludes },
     body,

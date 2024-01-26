@@ -58,7 +58,8 @@ const stixCyberObservableResolvers = {
     },
     stixCyberObservablesExportFiles: (_, { exportContext, first }, context) => {
       const path = `export/${exportContext.entity_type}${exportContext.entity_id ? `/${exportContext.entity_id}` : ''}`;
-      return paginatedForPathWithEnrichment(context, context.user, path, exportContext.entity_id, { first });
+      const opts = { first, entity_id: exportContext.entity_id, entity_type: exportContext.entity_type };
+      return paginatedForPathWithEnrichment(context, context.user, path, exportContext.entity_id, opts);
     },
   },
   StixCyberObservablesOrdering: stixCyberObservableOptions.StixCyberObservablesOrdering,
@@ -78,11 +79,13 @@ const stixCyberObservableResolvers = {
     toStix: (stixCyberObservable, _, context) => stixLoadByIdStringify(context, context.user, stixCyberObservable.id),
     importFiles: (stixCyberObservable, { first }, context) => {
       const path = `import/${stixCyberObservable.entity_type}/${stixCyberObservable.id}`;
-      return paginatedForPathWithEnrichment(context, context.user, path, stixCyberObservable.id, { first });
+      const opts = { first, entity_type: stixCyberObservable.entity_type };
+      return paginatedForPathWithEnrichment(context, context.user, path, stixCyberObservable.id, opts);
     },
     exportFiles: (stixCyberObservable, { first }, context) => {
       const path = `export/${stixCyberObservable.entity_type}/${stixCyberObservable.id}`;
-      return paginatedForPathWithEnrichment(context, context.user, path, stixCyberObservable.id, { first });
+      const opts = { first, entity_type: stixCyberObservable.entity_type };
+      return paginatedForPathWithEnrichment(context, context.user, path, stixCyberObservable.id, opts);
     },
   },
   Process: {

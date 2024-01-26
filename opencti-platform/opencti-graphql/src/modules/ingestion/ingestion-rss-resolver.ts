@@ -6,6 +6,7 @@ import { batchCreator } from '../../domain/user';
 import { storeLoadByIds } from '../../database/middleware-loader';
 import { ENTITY_TYPE_MARKING_DEFINITION } from '../../schema/stixMetaObject';
 import type { BasicStoreEntityMarkingDefinition } from '../../types/store';
+import { ENTITY_TYPE_IDENTITY } from '../../schema/general';
 
 const loadByIdLoader = batchLoader(elBatchIds);
 const creatorLoader = batchLoader(batchCreator);
@@ -16,7 +17,7 @@ const ingestionRssResolvers: Resolvers = {
     ingestionRsss: (_, args, context) => findAllPaginated(context, context.user, args),
   },
   IngestionRss: {
-    defaultCreatedBy: (ingestionRss, _, context) => loadByIdLoader.load(ingestionRss.created_by_ref, context, context.user),
+    defaultCreatedBy: (ingestionRss, _, context) => loadByIdLoader.load({ id: ingestionRss.created_by_ref, type: ENTITY_TYPE_IDENTITY }, context, context.user),
     // eslint-disable-next-line max-len
     defaultMarkingDefinitions: (ingestionRss, _, context) => storeLoadByIds<BasicStoreEntityMarkingDefinition>(context, context.user, ingestionRss.object_marking_refs ?? [], ENTITY_TYPE_MARKING_DEFINITION),
     user: (ingestionRss, _, context) => creatorLoader.load(ingestionRss.user_id, context, context.user),

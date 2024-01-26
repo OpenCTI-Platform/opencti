@@ -132,7 +132,7 @@ const FileImportViewer = createRefetchContainer(
       fragment FileImportViewer_entity on StixCoreObject {
         id
         entity_type
-        importFiles(first: 1000) @connection(key: "Pagination_importFiles") {
+        importFiles(first: 500) @connection(key: "Pagination_importFiles") {
           edges {
             node {
               id

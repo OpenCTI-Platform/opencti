@@ -128,7 +128,7 @@ export const importContentQuery = graphql`
     connectorsForImport {
       ...ImportContent_connectorsImport
     }
-    importFiles(first: 1000) @connection(key: "Pagination_global_importFiles") {
+    importFiles(first: 500) @connection(key: "Pagination_global_importFiles") {
       edges {
         node {
           id
@@ -139,7 +139,7 @@ export const importContentQuery = graphql`
         }
       }
     }
-    pendingFiles(first: 1000)
+    pendingFiles(first: 500)
       @connection(key: "Pagination_global_pendingFiles") {
       edges {
         node {

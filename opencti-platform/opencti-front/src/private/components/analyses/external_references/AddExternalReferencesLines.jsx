@@ -66,7 +66,7 @@ export const externalReferenceLinesMutationRelationAdd = graphql`
               active
               updated_at
             }
-            importFiles(first: 1000) {
+            importFiles(first: 500) {
               edges {
                 node {
                   id
@@ -308,7 +308,7 @@ const AddExternalReferencesLines = createPaginationContainer(
                 active
                 updated_at
               }
-              importFiles(first: 1000) {
+              importFiles(first: 500) {
                 edges {
                   node {
                     id

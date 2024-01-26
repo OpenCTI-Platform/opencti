@@ -183,13 +183,13 @@
   "elasticsearch": {
     "index_prefix": "opencti",
     "url": "http://localhost:9200",
+    "engine_selector": "auto",
     "index_creation_pattern": "-000001",
     "search_ignore_throttled": false,
-    "max_pagination_result": 5000,
-    "max_concurrency": 4,
+    "max_pagination_result": 500,
     "max_bulk_operations": 5000,
-    "max_bulk_resolutions": 500,
-    "engine_selector": "auto"
+    "max_runtime_resolutions": 5000,
+    "max_concurrency": 4
   },
   "minio": {
     "bucket_name": "opencti-bucket",

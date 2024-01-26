@@ -1,5 +1,5 @@
 import * as R from 'ramda';
-import { ES_IGNORE_THROTTLED, elRawSearch } from '../database/engine';
+import { elRawSearch } from '../database/engine';
 import { logApp } from '../config/conf';
 import { ABSTRACT_BASIC_RELATIONSHIP } from '../schema/general';
 import { deleteElementById } from '../database/middleware';
@@ -32,7 +32,6 @@ const computeMissingRelationsForType = async (context, relationType) => {
     }
     const query = {
       index: READ_RELATIONSHIPS_INDICES,
-      ignore_throttled: ES_IGNORE_THROTTLED,
       _source_includes: ['internal_id', 'entity_type', 'connections'],
       track_total_hits: true,
       body,
@@ -51,7 +50,6 @@ const computeMissingRelationsForType = async (context, relationType) => {
       });
       const findQuery = {
         index: READ_DATA_INDICES,
-        ignore_throttled: ES_IGNORE_THROTTLED,
         size: 2000,
         _source_includes: 'internal_id',
         body: {
