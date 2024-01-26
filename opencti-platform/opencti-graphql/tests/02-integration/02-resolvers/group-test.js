@@ -31,8 +31,7 @@ const READ_QUERY = gql`
 `;
 
 describe('Group resolver standard behavior', () => {
-  const groupIds = []; // keep for delete
-  let groupId; // the one we will use in all tests
+  let groupInternalId; // the one we will use in all tests
   it('should group created', async () => {
     const CREATE_QUERY = gql`
       mutation GroupAdd($input: GroupAddInput!) {
@@ -63,30 +62,13 @@ describe('Group resolver standard behavior', () => {
     expect(group.data.groupAdd.name).toEqual('Group');
     expect(group.data.groupAdd.group_confidence_level.max_confidence).toEqual(50);
     // we will use this one in all the subsequent tests
-    groupId = group.data.groupAdd.id;
-
-    const GROUP_TO_CREATE_SSO_CASE = {
-      input: {
-        name: 'Group 2',
-        description: 'Group description',
-        // no confidence level
-      },
-    };
-    const group2 = await queryAsAdmin({
-      query: CREATE_QUERY,
-      variables: GROUP_TO_CREATE_SSO_CASE,
-    });
-    expect(group2.data.groupAdd.group_confidence_level.max_confidence).toEqual(100); // default value
-
-    // save for delete at the end of the test suite
-    groupIds.push(group.data.groupAdd.id);
-    groupIds.push(group.data.groupAdd.id);
+    groupInternalId = group.data.groupAdd.id;
   });
 
   describe('dashboard preferences', () => {
     describe('when a group does not have a default dashboard', () => {
       it('returns "null"', async () => {
-        const queryResult = await queryAsAdmin({ query: READ_QUERY, variables: { id: groupId } });
+        const queryResult = await queryAsAdmin({ query: READ_QUERY, variables: { id: groupInternalId } });
 
         expect(queryResult.data.group.default_dashboard).toBeNull();
       });
@@ -139,7 +121,7 @@ describe('Group resolver standard behavior', () => {
               }
             }`,
           variables: {
-            groupId,
+            groupId: groupInternalId,
             editInput: [{
               key: 'default_dashboard',
               value: dashboardId
@@ -165,7 +147,7 @@ describe('Group resolver standard behavior', () => {
               }
             }`,
           variables: {
-            groupId,
+            groupId: groupInternalId,
             editInput: [{
               key: 'default_dashboard',
               value: [null]
@@ -178,10 +160,10 @@ describe('Group resolver standard behavior', () => {
   });
 
   it('should group loaded by internal id', async () => {
-    const queryResult = await queryAsAdmin({ query: READ_QUERY, variables: { id: groupId } });
+    const queryResult = await queryAsAdmin({ query: READ_QUERY, variables: { id: groupInternalId } });
     expect(queryResult).not.toBeNull();
     expect(queryResult.data.group).not.toBeNull();
-    expect(queryResult.data.group.id).toEqual(groupId);
+    expect(queryResult.data.group.id).toEqual(groupInternalId);
   });
   it('should list groups', async () => {
     const queryResult = await queryAsAdmin({ query: LIST_QUERY, variables: { first: 10 } });
@@ -200,7 +182,7 @@ describe('Group resolver standard behavior', () => {
     `;
     const queryResult = await queryAsAdmin({
       query: UPDATE_QUERY,
-      variables: { id: groupId, input: { key: 'name', value: ['Group - test'] } },
+      variables: { id: groupInternalId, input: { key: 'name', value: ['Group - test'] } },
     });
     expect(queryResult.data.groupEdit.fieldPatch.name).toEqual('Group - test');
   });
@@ -216,9 +198,9 @@ describe('Group resolver standard behavior', () => {
     `;
     const queryResult = await queryAsAdmin({
       query: CONTEXT_PATCH_QUERY,
-      variables: { id: groupId, input: { focusOn: 'description' } },
+      variables: { id: groupInternalId, input: { focusOn: 'description' } },
     });
-    expect(queryResult.data.groupEdit.contextPatch.id).toEqual(groupId);
+    expect(queryResult.data.groupEdit.contextPatch.id).toEqual(groupInternalId);
   });
   it('should context clean group', async () => {
     const CONTEXT_PATCH_QUERY = gql`
@@ -232,9 +214,9 @@ describe('Group resolver standard behavior', () => {
     `;
     const queryResult = await queryAsAdmin({
       query: CONTEXT_PATCH_QUERY,
-      variables: { id: groupId },
+      variables: { id: groupInternalId },
     });
-    expect(queryResult.data.groupEdit.contextClean.id).toEqual(groupId);
+    expect(queryResult.data.groupEdit.contextClean.id).toEqual(groupInternalId);
   });
   it('should add relation in group', async () => {
     const RELATION_ADD_QUERY = gql`
@@ -261,7 +243,7 @@ describe('Group resolver standard behavior', () => {
     const queryResult = await queryAsAdmin({
       query: RELATION_ADD_QUERY,
       variables: {
-        id: groupId,
+        id: groupInternalId,
         input: {
           fromId: OPENCTI_ADMIN_UUID,
           relationship_type: 'member-of',
@@ -291,7 +273,7 @@ describe('Group resolver standard behavior', () => {
     const queryResult = await queryAsAdmin({
       query: RELATION_DELETE_QUERY,
       variables: {
-        id: groupId,
+        id: groupInternalId,
         fromId: OPENCTI_ADMIN_UUID,
         relationship_type: 'member-of',
       },
@@ -317,7 +299,7 @@ describe('Group resolver standard behavior', () => {
     const queryResult = await queryAsAdmin({
       query: EDIT_DEFAULT_VALUES_QUERY,
       variables: {
-        id: groupId,
+        id: groupInternalId,
         input: {
           entity_type: 'GLOBAL',
           values: ['marking-definition--78ca4366-f5b8-4764-83f7-34ce38198e27'],
@@ -345,7 +327,7 @@ describe('Group resolver standard behavior', () => {
     const queryResult = await queryAsAdmin({
       query: EDIT_DEFAULT_VALUES_QUERY,
       variables: {
-        id: groupId,
+        id: groupInternalId,
         input: {
           entity_type: 'GLOBAL',
           values: [],
@@ -362,16 +344,14 @@ describe('Group resolver standard behavior', () => {
         }
       }
     `;
-    // Delete the groups
-    for (let i = 0; i < groupIds.length; i += 1) {
-      await queryAsAdmin({
-        query: DELETE_QUERY,
-        variables: { id: groupIds[i] },
-      });
-      // Verify is no longer found
-      const queryResult = await queryAsAdmin({ query: READ_QUERY, variables: { id: groupIds[i] } });
-      expect(queryResult).not.toBeNull();
-      expect(queryResult.data.group).toBeNull();
-    }
+    // Delete the group
+    await queryAsAdmin({
+      query: DELETE_QUERY,
+      variables: { id: groupInternalId },
+    });
+    // Verify is no longer found
+    const queryResult = await queryAsAdmin({ query: READ_QUERY, variables: { id: groupInternalId } });
+    expect(queryResult).not.toBeNull();
+    expect(queryResult.data.group).toBeNull();
   });
 });

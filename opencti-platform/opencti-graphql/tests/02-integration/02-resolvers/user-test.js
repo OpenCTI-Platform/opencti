@@ -150,7 +150,9 @@ describe('User resolver standard behavior', () => {
     expect(user.data.userAdd).not.toBeNull();
     expect(user.data.userAdd.name).toEqual('User');
     expect(user.data.userAdd.user_confidence_level).toBeNull();
-    expect(user.data.userAdd.effective_confidence_level).toBeNull(); // no group, no individual level
+    // user created with default group
+    expect(user.data.userAdd.effective_confidence_level.max_confidence).toEqual(100);
+    expect(user.data.userAdd.effective_confidence_level.source.entity_type).toEqual('Group');
     userInternalId = user.data.userAdd.id;
     userStandardId = user.data.userAdd.standard_id;
   });
