@@ -1847,10 +1847,12 @@ export const updateAttributeMetaResolved = async (context, user, initial, inputs
             const previous = currentValue ? [currentValue] : currentValue;
             updatedInputs.push({ key, value: [targetCreated], previous });
             updatedInstance[key] = targetCreated;
+            updatedInstance[relType] = targetCreated.internal_id;
           } else if (currentValue) {
             // Just replace by nothing
             updatedInputs.push({ key, value: null, previous: [currentValue] });
             updatedInstance[key] = null;
+            updatedInstance[relType] = null;
           }
         }
       } else {
@@ -1879,6 +1881,7 @@ export const updateAttributeMetaResolved = async (context, user, initial, inputs
             }
             updatedInputs.push({ key, value: refs, previous: updatedInstance[key] });
             updatedInstance[key] = refs;
+            updatedInstance[relType] = newTargetsIds;
           }
         }
         if (operation === UPDATE_OPERATION_ADD) {
@@ -1889,6 +1892,7 @@ export const updateAttributeMetaResolved = async (context, user, initial, inputs
             relationsToCreate.push(...newRelations);
             updatedInputs.push({ key, value: refsToCreate, operation });
             updatedInstance[key] = [...(updatedInstance[key] || []), ...refsToCreate];
+            updatedInstance[relType] = updatedInstance[key].map((u) => u.internal_id);
           }
         }
         if (operation === UPDATE_OPERATION_REMOVE) {
@@ -1899,6 +1903,7 @@ export const updateAttributeMetaResolved = async (context, user, initial, inputs
             relationsToDelete.push(...relsToDelete);
             updatedInputs.push({ key, value: refs, operation });
             updatedInstance[key] = (updatedInstance[key] || []).filter((c) => !targetIds.includes(c.internal_id));
+            updatedInstance[relType] = updatedInstance[key].map((u) => u.internal_id);
           }
         }
       }

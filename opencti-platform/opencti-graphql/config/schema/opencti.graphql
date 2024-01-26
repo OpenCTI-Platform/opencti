@@ -10623,7 +10623,7 @@ input StixRefRelationshipAddInput {
 input StixRefRelationshipsAddInput {
   relationship_type: String!
   fromIds: [StixRef]
-  toIds: [StixRef]
+  toIds: [StixRef!]!
 }
 
 ### QUERIES

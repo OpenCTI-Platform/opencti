@@ -1,6 +1,6 @@
-import { expect, it, describe } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import gql from 'graphql-tag';
-import { ADMIN_USER, testContext, editorQuery, participantQuery } from '../../utils/testQuery';
+import { ADMIN_USER, editorQuery, participantQuery, testContext } from '../../utils/testQuery';
 import { elLoadById } from '../../../src/database/engine';
 import { MARKING_TLP_GREEN, MARKING_TLP_RED } from '../../../src/schema/identifier';
 
@@ -247,6 +247,7 @@ describe('AdministrativeArea resolver standard behavior', () => {
         relationship_type: 'object-marking',
       },
     });
+    console.log(JSON.stringify(queryResult));
     expect(queryResult.data.administrativeAreaRelationDelete.objectMarking.length).toEqual(0);
   });
   it('should administrativeArea deleted', async () => {

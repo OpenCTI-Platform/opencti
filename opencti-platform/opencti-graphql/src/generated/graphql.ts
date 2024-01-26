@@ -22609,7 +22609,7 @@ export type StixRefRelationshipEditMutationsFieldPatchArgs = {
 export type StixRefRelationshipsAddInput = {
   fromIds?: InputMaybe<Array<InputMaybe<Scalars['StixRef']['input']>>>;
   relationship_type: Scalars['String']['input'];
-  toIds?: InputMaybe<Array<InputMaybe<Scalars['StixRef']['input']>>>;
+  toIds: Array<Scalars['StixRef']['input']>;
 };
 
 export enum StixRefRelationshipsOrdering {
