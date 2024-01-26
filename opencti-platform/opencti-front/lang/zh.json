@@ -2526,7 +2526,7 @@
   "our Slack channel": "我们的 Slack 频道",
   "and ... more": "和{count}更多。",
   "Open Settings": "打开设置",
-  "alert_GROUP_WITH_NULL_EFFECTIVE_LEVEL": "从 OpenCTI 6.0 开始，将为组和用户添加最大置信度。这将为平台管理员提供更多对导入数据影响的控制，并防止任何不必要的数据更新。请阅读 {link_blogpost} 获取更多信息。\n \n在本平台中，某些组的 \"max confidence level\" 目前未定义。这些组的成员将无法在 6.X 版平台中创建任何数据。为避免出现这种情况，请确保所有组都设置了最大置信度。更多信息请参见 {link_blogpost}。请特别注意与连接器、馈送和数据流相关联的用户；必要时，您可以设置个人置信度来覆盖组置信度。如果需要建议，请加入 {link_slack} 。",
+  "alert_GROUP_WITH_NULL_CONFIDENCE_LEVEL": "从 OpenCTI 6.0 开始，将为组和用户添加最大置信度。这将为平台管理员提供更多对导入数据影响的控制，并防止任何不必要的数据更新。请阅读 {link_blogpost} 获取更多信息。\n \n在本平台中，某些组的 \"max confidence level\" 目前未定义。这些组的成员将无法在 6.X 版平台中创建任何数据。为避免出现这种情况，请确保所有组都设置了最大置信度。更多信息请参见 {link_blogpost}。请特别注意与连接器、馈送和数据流相关联的用户；必要时，您可以设置个人置信度来覆盖组置信度。如果需要建议，请加入 {link_slack} 。",
   "Unknown configuration error in the platform.": "平台中存在未知配置错误。",
   "You can enable/disable default values for marking in the customization of each entity type.": "您可以在定制每个实体类型时启用/禁用标记的默认值。",
   "The user's max confidence level overrides the max confidence that might be set at groups level.": "用户的最大置信度高于组级可能设置的最大置信度。",

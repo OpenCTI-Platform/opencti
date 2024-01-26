@@ -1067,7 +1067,7 @@ type SettingsMessage {
 }
 
 enum PlatformCriticalAlertType {
-  GROUP_WITH_NULL_EFFECTIVE_LEVEL
+  GROUP_WITH_NULL_CONFIDENCE_LEVEL
 }
 type PlatformCriticalAlertDetails {
   groups: [Group!]!

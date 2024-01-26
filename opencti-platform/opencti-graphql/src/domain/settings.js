@@ -168,7 +168,7 @@ export const getCriticalAlerts = async (context, user) => {
       return [];
     }
     return [{
-      type: 'GROUP_WITH_NULL_EFFECTIVE_LEVEL',
+      type: 'GROUP_WITH_NULL_CONFIDENCE_LEVEL',
       // default message for API users
       message: 'Some groups have field group_confidence_level to null, members will not be able to use the platform properly.',
       details: {
