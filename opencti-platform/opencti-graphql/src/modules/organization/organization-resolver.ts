@@ -36,8 +36,8 @@ const organizationResolvers: Resolvers = {
   Organization: {
     sectors: (organization, args, context) => organizationSectorsPaginated<any>(context, context.user, organization.id, args),
     members: (organization, args, context) => organizationMembersPaginated<any>(context, context.user, organization.id, args),
-    subOrganizations: (organization, args, context) => parentOrganizationsPaginated<BasicStoreEntityOrganization>(context, context.user, organization.id, args),
-    parentOrganizations: (organization, args, context) => childOrganizationsPaginated<BasicStoreEntityOrganization>(context, context.user, organization.id, args),
+    subOrganizations: (organization, args, context) => childOrganizationsPaginated<BasicStoreEntityOrganization>(context, context.user, organization.id, args),
+    parentOrganizations: (organization, args, context) => parentOrganizationsPaginated<BasicStoreEntityOrganization>(context, context.user, organization.id, args),
     default_dashboard: (current, _, context) => loadByIdLoader.load({ id: current.default_dashboard, type: ENTITY_TYPE_WORKSPACE }, context, context.user),
     grantable_groups: (organization, _, context) => findGrantableGroups(context, context.user, organization),
   },

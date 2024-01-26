@@ -60,11 +60,7 @@ describe('StixDomainObject resolver standard behavior', () => {
           id
           standard_id
           objectLabel {
-            edges {
-              node {
-                id
-              }
-            }
+            id
           }
           ... on Tool {
             name
@@ -90,7 +86,7 @@ describe('StixDomainObject resolver standard behavior', () => {
     expect(stixDomainObject).not.toBeNull();
     expect(stixDomainObject.data.stixDomainObjectAdd).not.toBeNull();
     expect(stixDomainObject.data.stixDomainObjectAdd.name).toEqual('StixDomainObject');
-    expect(stixDomainObject.data.stixDomainObjectAdd.objectLabel.edges.length).toEqual(2);
+    expect(stixDomainObject.data.stixDomainObjectAdd.objectLabel.length).toEqual(2);
     stixDomainObjectInternalId = stixDomainObject.data.stixDomainObjectAdd.id;
   });
   it('should stixDomainObject upserted', async () => {
@@ -101,11 +97,7 @@ describe('StixDomainObject resolver standard behavior', () => {
           standard_id
           x_opencti_stix_ids
           objectLabel {
-            edges {
-              node {
-                id
-              }
-            }
+            id
           }
           ... on Tool {
             name
@@ -131,7 +123,7 @@ describe('StixDomainObject resolver standard behavior', () => {
     expect(stixDomainObject).not.toBeNull();
     expect(stixDomainObject.data.stixDomainObjectAdd).not.toBeNull();
     expect(stixDomainObject.data.stixDomainObjectAdd.name).toEqual('StixDomainObject');
-    expect(stixDomainObject.data.stixDomainObjectAdd.objectLabel.edges.length).toEqual(2);
+    expect(stixDomainObject.data.stixDomainObjectAdd.objectLabel.length).toEqual(2);
     expect(stixDomainObject.data.stixDomainObjectAdd.x_opencti_stix_ids).toEqual(
       expect.arrayContaining(['tool--84dddb68-f440-4cb5-b9f6-a59159079ef5'])
     );

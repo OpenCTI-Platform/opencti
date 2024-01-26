@@ -4,7 +4,7 @@ import { elLoadById } from '../../../src/database/engine';
 import { generateStandardId } from '../../../src/schema/identifier';
 import { ENTITY_TYPE_CAPABILITY, ENTITY_TYPE_GROUP, ENTITY_TYPE_USER } from '../../../src/schema/internalObject';
 import { ADMIN_USER, editorQuery, queryAsAdmin, testContext } from '../../utils/testQuery';
-import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from "../../../src/modules/organization/organization-types";
+import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../../../src/modules/organization/organization-types';
 
 const LIST_QUERY = gql`
   query users(
@@ -144,7 +144,6 @@ describe('User resolver standard behavior', () => {
     expect(queryResult.data.user).not.toBeNull();
     expect(queryResult.data.user.id).toEqual(userInternalId);
   });
-
   it('should user login', async () => {
     const res = await queryAsAdmin({
       query: LOGIN_QUERY,
@@ -308,8 +307,12 @@ describe('User resolver standard behavior', () => {
             from {
               ... on Group {
                 roles {
-                  id
-                  name
+                  edges {
+                    node {
+                      id
+                      name     
+                    }
+                  }
                 }
               }
             }
@@ -327,7 +330,7 @@ describe('User resolver standard behavior', () => {
         },
       },
     });
-    expect(queryResult.data.groupEdit.relationAdd.from.roles.length).toEqual(1);
+    expect(queryResult.data.groupEdit.relationAdd.from.roles.edges.length).toEqual(1);
   });
   it('should user roles to be accurate', async () => {
     const queryResult = await queryAsAdmin({ query: READ_QUERY, variables: { id: userInternalId } });
