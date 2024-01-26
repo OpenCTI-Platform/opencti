@@ -373,7 +373,7 @@ describe('User resolver standard behavior', () => {
         input: { key: 'user_confidence_level', value: [null] }
       },
     });
-    expect(queryResult.data.userEdit.fieldPatch.user_confidence_level.max_confidence).toBeNull;
+    expect(queryResult.data.userEdit.fieldPatch.user_confidence_level).toBeNull;
     // now effective level is the group's value
     expect(queryResult.data.userEdit.fieldPatch.effective_confidence_level.max_confidence).toEqual(60);
     expect(queryResult.data.userEdit.fieldPatch.effective_confidence_level.source.id).toEqual(groupInternalId);
