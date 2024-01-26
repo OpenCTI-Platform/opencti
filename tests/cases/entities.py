@@ -754,7 +754,7 @@ class StixCoreRelationshipTest(EntityTest):
             "relationship_type": "uses",
             "description": "We saw the attacker use Spearphishing Attachment.",
             "start_date": get_incident_start_date(),
-            "stop_date": get_incident_end_date()
+            "stop_date": get_incident_end_date(),
             # "lang": "en",
         }
 
@@ -810,7 +810,7 @@ class StixNestedRefRelationshipTest(EntityTest):
             "relationship_type": "related-to",
             "description": "We saw the attacker use Spearphishing Attachment.",
             "start_date": get_incident_start_date(),
-            "stop_date": get_incident_end_date()
+            "stop_date": get_incident_end_date(),
             # "lang": "en",
             # "object_refs": [self.ipv4["id"], self.domain["id"]],
         }
@@ -879,7 +879,7 @@ class StixSightingRelationshipTest(EntityTest):
             "description": "We saw the attacker use Spearphishing Attachment.",
             "start_date": get_incident_start_date(),
             "stop_date": get_incident_end_date(),
-            "count": 3
+            "count": 3,
             # "lang": "en",
         }
 

@@ -291,17 +291,17 @@ class MarkingDefinition:
                 and self.opencti.get_attribute_in_extension("order", stix_object)
                 is not None
             ):
-                stix_object[
-                    "x_opencti_order"
-                ] = self.opencti.get_attribute_in_extension("order", stix_object)
+                stix_object["x_opencti_order"] = (
+                    self.opencti.get_attribute_in_extension("order", stix_object)
+                )
             if "x_opencti_color" not in stix_object:
-                stix_object[
-                    "x_opencti_color"
-                ] = self.opencti.get_attribute_in_extension("color", stix_object)
+                stix_object["x_opencti_color"] = (
+                    self.opencti.get_attribute_in_extension("color", stix_object)
+                )
             if "x_opencti_stix_ids" not in stix_object:
-                stix_object[
-                    "x_opencti_stix_ids"
-                ] = self.opencti.get_attribute_in_extension("stix_ids", stix_object)
+                stix_object["x_opencti_stix_ids"] = (
+                    self.opencti.get_attribute_in_extension("stix_ids", stix_object)
+                )
 
             return self.opencti.marking_definition.create(
                 stix_id=stix_object["id"],
@@ -309,15 +309,21 @@ class MarkingDefinition:
                 modified=stix_object["modified"] if "modified" in stix_object else None,
                 definition_type=definition_type,
                 definition=definition,
-                x_opencti_order=stix_object["x_opencti_order"]
-                if "x_opencti_order" in stix_object
-                else 0,
-                x_opencti_color=stix_object["x_opencti_color"]
-                if "x_opencti_color" in stix_object
-                else None,
-                x_opencti_stix_ids=stix_object["x_opencti_stix_ids"]
-                if "x_opencti_stix_ids" in stix_object
-                else None,
+                x_opencti_order=(
+                    stix_object["x_opencti_order"]
+                    if "x_opencti_order" in stix_object
+                    else 0
+                ),
+                x_opencti_color=(
+                    stix_object["x_opencti_color"]
+                    if "x_opencti_color" in stix_object
+                    else None
+                ),
+                x_opencti_stix_ids=(
+                    stix_object["x_opencti_stix_ids"]
+                    if "x_opencti_stix_ids" in stix_object
+                    else None
+                ),
                 update=update,
             )
         else:

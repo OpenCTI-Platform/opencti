@@ -1,6 +1,7 @@
 """These are the custom STIX properties and observation types used internally by OpenCTI.
 
 """
+
 from enum import Enum
 
 from stix2 import CustomObject, CustomObservable, ExternalReference

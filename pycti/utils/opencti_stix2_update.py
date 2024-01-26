@@ -69,12 +69,16 @@ class OpenCTIStix2Update:
             external_reference_id = self.opencti.external_reference.create(
                 source_name=source_name,
                 url=url,
-                external_id=external_reference["external_id"]
-                if "external_id" in external_reference
-                else None,
-                description=external_reference["description"]
-                if "description" in external_reference
-                else None,
+                external_id=(
+                    external_reference["external_id"]
+                    if "external_id" in external_reference
+                    else None
+                ),
+                description=(
+                    external_reference["description"]
+                    if "description" in external_reference
+                    else None
+                ),
             )["id"]
             if entity_type == "relationship":
                 self.opencti.stix_core_relationship.add_external_reference(
@@ -111,9 +115,11 @@ class OpenCTIStix2Update:
             kill_chain_phase_id = self.opencti.kill_chain_phase.create(
                 kill_chain_name=kill_chain_phase["kill_chain_name"],
                 phase_name=kill_chain_phase["phase_name"],
-                x_opencti_order=kill_chain_phase["x_opencti_order"]
-                if "x_opencti_order" in kill_chain_phase
-                else 0,
+                x_opencti_order=(
+                    kill_chain_phase["x_opencti_order"]
+                    if "x_opencti_order" in kill_chain_phase
+                    else 0
+                ),
                 stix_id=kill_chain_phase["id"] if "id" in kill_chain_phase else None,
             )["id"]
             if entity_type == "relationship":
@@ -280,9 +286,11 @@ class OpenCTIStix2Update:
                         if type(current_val) is list:
                             values = list(
                                 map(
-                                    lambda x: x["value"]
-                                    if (type(current_val) is dict and "value" in x)
-                                    else x,
+                                    lambda x: (
+                                        x["value"]
+                                        if (type(current_val) is dict and "value" in x)
+                                        else x
+                                    ),
                                     str(current_val),
                                 )
                             )

@@ -299,11 +299,11 @@ class ListenQueue(threading.Thread):
                     port=self.port,
                     virtual_host=self.vhost,
                     credentials=self.pika_credentials,
-                    ssl_options=pika.SSLOptions(
-                        create_mq_ssl_context(self.config), self.host
-                    )
-                    if self.use_ssl
-                    else None,
+                    ssl_options=(
+                        pika.SSLOptions(create_mq_ssl_context(self.config), self.host)
+                        if self.use_ssl
+                        else None
+                    ),
                 )
                 self.pika_connection = pika.BlockingConnection(self.pika_parameters)
                 self.channel = self.pika_connection.channel()
@@ -1035,12 +1035,14 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
             port=self.connector_config["connection"]["port"],
             virtual_host=self.connector_config["connection"]["vhost"],
             credentials=pika_credentials,
-            ssl_options=pika.SSLOptions(
-                create_mq_ssl_context(self.config),
-                self.connector_config["connection"]["host"],
-            )
-            if self.connector_config["connection"]["use_ssl"]
-            else None,
+            ssl_options=(
+                pika.SSLOptions(
+                    create_mq_ssl_context(self.config),
+                    self.connector_config["connection"]["host"],
+                )
+                if self.connector_config["connection"]["use_ssl"]
+                else None
+            ),
         )
         pika_connection = pika.BlockingConnection(pika_parameters)
         channel = pika_connection.channel()

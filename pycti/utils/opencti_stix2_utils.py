@@ -76,9 +76,11 @@ class OpenCTIStix2Utils:
     def create_stix_pattern(observable_type, observable_value):
         if observable_type in PATTERN_MAPPING:
             lhs = ObjectPath(
-                observable_type.lower()
-                if "_" not in observable_type
-                else observable_type.split("_")[0].lower(),
+                (
+                    observable_type.lower()
+                    if "_" not in observable_type
+                    else observable_type.split("_")[0].lower()
+                ),
                 PATTERN_MAPPING[observable_type],
             )
             ece = ObservationExpression(
