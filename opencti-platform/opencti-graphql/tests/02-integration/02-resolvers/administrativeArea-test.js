@@ -209,11 +209,7 @@ describe('AdministrativeArea resolver standard behavior', () => {
                   from {
                       ... on AdministrativeArea {
                           objectMarking {
-                              edges {
-                                  node {
-                                      id
-                                  }
-                              }
+                              id
                           }
                       }
                   }
@@ -230,7 +226,7 @@ describe('AdministrativeArea resolver standard behavior', () => {
         },
       },
     });
-    expect(queryResult.data.administrativeAreaRelationAdd.from.objectMarking.edges.length).toEqual(1);
+    expect(queryResult.data.administrativeAreaRelationAdd.from.objectMarking.length).toEqual(1);
   });
   it('should delete relation in administrativeArea', async () => {
     const RELATION_DELETE_QUERY = gql`
@@ -238,11 +234,7 @@ describe('AdministrativeArea resolver standard behavior', () => {
                 administrativeAreaRelationDelete(id: $id, toId: $toId, relationship_type: $relationship_type) {
                     id
                     objectMarking {
-                        edges {
-                            node {
-                                id
-                            }
-                        }
+                        id
                     }
                 }
             }
@@ -255,7 +247,7 @@ describe('AdministrativeArea resolver standard behavior', () => {
         relationship_type: 'object-marking',
       },
     });
-    expect(queryResult.data.administrativeAreaRelationDelete.objectMarking.edges.length).toEqual(0);
+    expect(queryResult.data.administrativeAreaRelationDelete.objectMarking.length).toEqual(0);
   });
   it('should administrativeArea deleted', async () => {
     const DELETE_QUERY = gql`

@@ -256,11 +256,7 @@ describe('Grouping resolver standard behavior', () => {
           from {
             ... on Grouping {
               objectMarking {
-                edges {
-                  node {
-                    id
-                  }
-                }
+                id
               }
             }
           }
@@ -277,7 +273,7 @@ describe('Grouping resolver standard behavior', () => {
         },
       },
     });
-    expect(queryResult.data.groupingRelationAdd.from.objectMarking.edges.length).toEqual(1);
+    expect(queryResult.data.groupingRelationAdd.from.objectMarking.length).toEqual(1);
   });
   describe('investigationAdd', () => {
     afterAll(async () => {
@@ -326,11 +322,7 @@ describe('Grouping resolver standard behavior', () => {
         groupingRelationDelete(id: $id, toId: $toId, relationship_type: $relationship_type) {
           id
           objectMarking {
-            edges {
-              node {
-                id
-              }
-            }
+            id
           }
         }
       }
@@ -343,7 +335,7 @@ describe('Grouping resolver standard behavior', () => {
         relationship_type: 'object-marking',
       },
     });
-    expect(queryResult.data.groupingRelationDelete.objectMarking.edges.length).toEqual(0);
+    expect(queryResult.data.groupingRelationDelete.objectMarking.length).toEqual(0);
   });
   it('should grouping deleted', async () => {
     const DELETE_QUERY = gql`

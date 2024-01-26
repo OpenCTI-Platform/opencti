@@ -163,11 +163,7 @@ describe('Country resolver standard behavior', () => {
             from {
               ... on Country {
                 objectMarking {
-                  edges {
-                    node {
-                      id
-                    }
-                  }
+                  id
                 }
               }
             }
@@ -185,7 +181,7 @@ describe('Country resolver standard behavior', () => {
         },
       },
     });
-    expect(queryResult.data.countryEdit.relationAdd.from.objectMarking.edges.length).toEqual(1);
+    expect(queryResult.data.countryEdit.relationAdd.from.objectMarking.length).toEqual(1);
   });
   it('should delete relation in country', async () => {
     const RELATION_DELETE_QUERY = gql`
@@ -194,11 +190,7 @@ describe('Country resolver standard behavior', () => {
           relationDelete(toId: $toId, relationship_type: $relationship_type) {
             id
             objectMarking {
-              edges {
-                node {
-                  id
-                }
-              }
+              id
             }
           }
         }
@@ -212,7 +204,7 @@ describe('Country resolver standard behavior', () => {
         relationship_type: 'object-marking',
       },
     });
-    expect(queryResult.data.countryEdit.relationDelete.objectMarking.edges.length).toEqual(0);
+    expect(queryResult.data.countryEdit.relationDelete.objectMarking.length).toEqual(0);
   });
   it('should country deleted', async () => {
     const DELETE_QUERY = gql`

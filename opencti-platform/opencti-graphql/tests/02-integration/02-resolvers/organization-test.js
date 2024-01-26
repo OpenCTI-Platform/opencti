@@ -185,11 +185,7 @@ describe('Organization resolver standard behavior', () => {
           from {
             ... on Organization {
               objectMarking {
-                edges {
-                  node {
-                    id
-                  }
-                }
+                id
               }
             }
           }
@@ -206,7 +202,7 @@ describe('Organization resolver standard behavior', () => {
         },
       },
     });
-    expect(queryResult.data.organizationRelationAdd.from.objectMarking.edges.length).toEqual(1);
+    expect(queryResult.data.organizationRelationAdd.from.objectMarking.length).toEqual(1);
   });
   it('should delete relation in organization', async () => {
     const RELATION_DELETE_QUERY = gql`
@@ -214,11 +210,7 @@ describe('Organization resolver standard behavior', () => {
         organizationRelationDelete(id: $id, toId: $toId, relationship_type: $relationship_type) {
           id
           objectMarking {
-            edges {
-              node {
-                id
-              }
-            }
+            id
           }
         }
       }
@@ -231,7 +223,7 @@ describe('Organization resolver standard behavior', () => {
         relationship_type: 'object-marking',
       },
     });
-    expect(queryResult.data.organizationRelationDelete.objectMarking.edges.length).toEqual(0);
+    expect(queryResult.data.organizationRelationDelete.objectMarking.length).toEqual(0);
   });
   it('should organization deleted', async () => {
     const DELETE_QUERY = gql`

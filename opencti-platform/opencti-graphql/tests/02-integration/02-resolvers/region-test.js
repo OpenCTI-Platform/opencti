@@ -195,11 +195,7 @@ describe('Region resolver standard behavior', () => {
             from {
               ... on Region {
                 objectMarking {
-                  edges {
-                    node {
-                      id
-                    }
-                  }
+                  id
                 }
               }
             }
@@ -217,7 +213,7 @@ describe('Region resolver standard behavior', () => {
         },
       },
     });
-    expect(queryResult.data.regionEdit.relationAdd.from.objectMarking.edges.length).toEqual(1);
+    expect(queryResult.data.regionEdit.relationAdd.from.objectMarking.length).toEqual(1);
   });
   it('should delete relation in region', async () => {
     const RELATION_DELETE_QUERY = gql`
@@ -226,11 +222,7 @@ describe('Region resolver standard behavior', () => {
           relationDelete(toId: $toId, relationship_type: $relationship_type) {
             id
             objectMarking {
-              edges {
-                node {
-                  id
-                }
-              }
+              id
             }
           }
         }
@@ -244,7 +236,7 @@ describe('Region resolver standard behavior', () => {
         relationship_type: 'object-marking',
       },
     });
-    expect(queryResult.data.regionEdit.relationDelete.objectMarking.edges.length).toEqual(0);
+    expect(queryResult.data.regionEdit.relationDelete.objectMarking.length).toEqual(0);
   });
   it('should region deleted', async () => {
     const DELETE_QUERY = gql`

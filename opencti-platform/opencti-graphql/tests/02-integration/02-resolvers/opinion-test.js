@@ -374,11 +374,7 @@ describe('Opinion resolver standard behavior', () => {
             from {
               ... on Opinion {
                 objectMarking {
-                  edges {
-                    node {
-                      id
-                    }
-                  }
+                  id
                 }
               }
             }
@@ -396,7 +392,7 @@ describe('Opinion resolver standard behavior', () => {
         },
       },
     });
-    expect(queryResult.data.opinionEdit.relationAdd.from.objectMarking.edges.length).toEqual(1);
+    expect(queryResult.data.opinionEdit.relationAdd.from.objectMarking.length).toEqual(1);
   });
   it('should delete relation in opinion', async () => {
     const RELATION_DELETE_QUERY = gql`
@@ -405,11 +401,7 @@ describe('Opinion resolver standard behavior', () => {
           relationDelete(toId: $toId, relationship_type: $relationship_type) {
             id
             objectMarking {
-              edges {
-                node {
-                  id
-                }
-              }
+              id
             }
           }
         }
@@ -423,7 +415,7 @@ describe('Opinion resolver standard behavior', () => {
         relationship_type: 'object-marking',
       },
     });
-    expect(queryResult.data.opinionEdit.relationDelete.objectMarking.edges.length).toEqual(0);
+    expect(queryResult.data.opinionEdit.relationDelete.objectMarking.length).toEqual(0);
   });
   it('should opinion deleted', async () => {
     const DELETE_QUERY = gql`

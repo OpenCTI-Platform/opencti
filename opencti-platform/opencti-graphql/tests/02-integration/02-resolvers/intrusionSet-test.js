@@ -147,11 +147,7 @@ describe('Intrusion set resolver standard behavior', () => {
             from {
               ... on IntrusionSet {
                 objectMarking {
-                  edges {
-                    node {
-                      id
-                    }
-                  }
+                  id
                 }
               }
             }
@@ -169,7 +165,7 @@ describe('Intrusion set resolver standard behavior', () => {
         },
       },
     });
-    expect(queryResult.data.intrusionSetEdit.relationAdd.from.objectMarking.edges.length).toEqual(1);
+    expect(queryResult.data.intrusionSetEdit.relationAdd.from.objectMarking.length).toEqual(1);
   });
   it('should delete relation in intrusion set', async () => {
     const RELATION_DELETE_QUERY = gql`
@@ -178,11 +174,7 @@ describe('Intrusion set resolver standard behavior', () => {
           relationDelete(toId: $toId, relationship_type: $relationship_type) {
             id
             objectMarking {
-              edges {
-                node {
-                  id
-                }
-              }
+              id
             }
           }
         }
@@ -196,7 +188,7 @@ describe('Intrusion set resolver standard behavior', () => {
         relationship_type: 'object-marking',
       },
     });
-    expect(queryResult.data.intrusionSetEdit.relationDelete.objectMarking.edges.length).toEqual(0);
+    expect(queryResult.data.intrusionSetEdit.relationDelete.objectMarking.length).toEqual(0);
   });
   it('should intrusion set deleted', async () => {
     const DELETE_QUERY = gql`

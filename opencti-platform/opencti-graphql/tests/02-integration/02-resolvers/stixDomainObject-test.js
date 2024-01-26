@@ -268,11 +268,7 @@ describe('StixDomainObject resolver standard behavior', () => {
             from {
               ... on StixDomainObject {
                 objectMarking {
-                  edges {
-                    node {
-                      id
-                    }
-                  }
+                  id
                 }
               }
             }
@@ -290,7 +286,7 @@ describe('StixDomainObject resolver standard behavior', () => {
         },
       },
     });
-    expect(queryResult.data.stixDomainObjectEdit.relationAdd.from.objectMarking.edges.length).toEqual(1);
+    expect(queryResult.data.stixDomainObjectEdit.relationAdd.from.objectMarking.length).toEqual(1);
   });
   it('should delete relation in stixDomainObject', async () => {
     const RELATION_DELETE_QUERY = gql`
@@ -299,11 +295,7 @@ describe('StixDomainObject resolver standard behavior', () => {
           relationDelete(toId: $toId, relationship_type: $relationship_type) {
             id
             objectMarking {
-              edges {
-                node {
-                  id
-                }
-              }
+              id
             }
           }
         }
@@ -317,7 +309,7 @@ describe('StixDomainObject resolver standard behavior', () => {
         relationship_type: 'object-marking',
       },
     });
-    expect(queryResult.data.stixDomainObjectEdit.relationDelete.objectMarking.edges.length).toEqual(0);
+    expect(queryResult.data.stixDomainObjectEdit.relationDelete.objectMarking.length).toEqual(0);
   });
   it('should stixDomainObject deleted', async () => {
     const DELETE_QUERY = gql`
