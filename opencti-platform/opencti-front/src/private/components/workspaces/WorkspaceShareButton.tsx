@@ -2,7 +2,7 @@ import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
 import ToggleButton from '@mui/material/ToggleButton';
 import ShareIcon from '@mui/icons-material/Share';
 import Tooltip from '@mui/material/Tooltip';
-import React, { Suspense, useEffect, useState } from 'react';
+import React, { Suspense, useEffect, useRef, useState } from 'react';
 import Drawer from '@components/common/drawer/Drawer';
 import Typography from '@mui/material/Typography';
 import WorkspaceShareForm, { WorkspaceShareFormData } from '@components/workspaces/WorkspaceShareForm';
@@ -12,6 +12,8 @@ import { graphql, useMutation, useQueryLoader } from 'react-relay';
 import { FormikConfig } from 'formik/dist/types';
 import { useFormatter } from '../../../components/i18n';
 import Loader, { LoaderVariant } from '../../../components/Loader';
+import DeleteDialog from '../../../components/DeleteDialog';
+import useDeletion from '../../../utils/hooks/useDeletion';
 
 const workspaceShareButtonCreateMutation = graphql`
   mutation WorkspaceShareButtonCreateMutation($input: PublicDashboardAddInput!) {
@@ -34,6 +36,10 @@ interface WorkspaceShareButtonProps {
 
 const WorkspaceShareButton = ({ workspaceId }: WorkspaceShareButtonProps) => {
   const { t_i18n } = useFormatter();
+
+  const idToDelete = useRef<string>();
+  const deletion = useDeletion({});
+
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [commitCreateMutation] = useMutation(workspaceShareButtonCreateMutation);
   const [commitDeleteMutation] = useMutation(workspaceShareButtonDeleteMutation);
@@ -49,6 +55,7 @@ const WorkspaceShareButton = ({ workspaceId }: WorkspaceShareButtonProps) => {
         input: {
           name: values.name,
           dashboard_id: workspaceId,
+          allowed_markings: values.max_markings.map((marking) => marking.value),
         },
       },
       onCompleted: () => {
@@ -58,15 +65,26 @@ const WorkspaceShareButton = ({ workspaceId }: WorkspaceShareButtonProps) => {
     });
   };
 
-  const onDelete = (id: string) => {
-    commitDeleteMutation({
-      variables: {
-        id,
-      },
-      onCompleted: () => {
-        fetchList({}, { fetchPolicy: 'network-only' });
-      },
-    });
+  const confirmDelete = (id: string) => {
+    idToDelete.current = id;
+    deletion.handleOpenDelete();
+  };
+
+  const onDelete = () => {
+    if (idToDelete.current) {
+      deletion.setDeleting(true);
+      commitDeleteMutation({
+        variables: {
+          id: idToDelete.current,
+        },
+        onCompleted: () => {
+          deletion.setDeleting(false);
+          deletion.handleCloseDelete();
+          idToDelete.current = undefined;
+          fetchList({}, { fetchPolicy: 'network-only' });
+        },
+      });
+    }
   };
 
   return (
@@ -109,7 +127,7 @@ const WorkspaceShareButton = ({ workspaceId }: WorkspaceShareButtonProps) => {
             <Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
               <WorkspaceShareList
                 queryRef={publicDashboardsQueryRef}
-                onDelete={onDelete}
+                onDelete={confirmDelete}
               />
             </Suspense>
           )}
@@ -127,6 +145,12 @@ const WorkspaceShareButton = ({ workspaceId }: WorkspaceShareButtonProps) => {
           </section>
         </div>
       </Drawer>
+
+      <DeleteDialog
+        title={t_i18n('Are you sure you want to delete this dashboard link?')}
+        deletion={deletion}
+        submitDelete={onDelete}
+      />
     </>
   );
 };

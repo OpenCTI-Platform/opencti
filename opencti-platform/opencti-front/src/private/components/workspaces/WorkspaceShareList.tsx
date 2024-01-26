@@ -12,6 +12,7 @@ import { useTheme } from '@mui/styles';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { useFormatter } from '../../../components/i18n';
 import type { Theme } from '../../../components/Theme';
+import { copyToClipboard } from '../../../utils/utils';
 
 export const workspaceShareListQuery = graphql`
   query WorkspaceShareListQuery {
@@ -24,6 +25,7 @@ export const workspaceShareListQuery = graphql`
           user_id
           created_at
           updated_at
+          allowed_markings
         }
       }
     }
@@ -40,6 +42,13 @@ const WorkspaceShareList = ({ queryRef, onDelete }: WorkspaceShareListProps) => 
   const { t_i18n, fld } = useFormatter();
   const { publicDashboards } = usePreloadedQuery(workspaceShareListQuery, queryRef);
   const dashboards = publicDashboards?.edges.map((edge) => edge.node);
+
+  const copyLinkUrl = (uriKey: string) => {
+    copyToClipboard(
+      t_i18n,
+      `${window.location.origin}/public/dashboard/${uriKey}`,
+    );
+  };
 
   if (!dashboards || dashboards.length === 0) {
     return <p>{t_i18n('No links created yet')}</p>;
@@ -64,19 +73,20 @@ const WorkspaceShareList = ({ queryRef, onDelete }: WorkspaceShareListProps) => 
                   aria-label="Label"
                   size="small"
                   value="copy-link"
+                  onClick={() => copyLinkUrl(dashboard.uri_key)}
                 >
                   <ContentCopyIcon fontSize="small" color="primary" />
                 </ToggleButton>
               </Tooltip>
-              <Tooltip title={t_i18n('Disable link')}>
-                <ToggleButton
-                  aria-label="Label"
-                  size="small"
-                  value="disable-link"
-                >
-                  <DoNotDisturbAltIcon fontSize="small" color="primary" />
-                </ToggleButton>
-              </Tooltip>
+              {/* <Tooltip title={t_i18n('Disable link')}> */}
+              {/*  <ToggleButton */}
+              {/*    aria-label="Label" */}
+              {/*    size="small" */}
+              {/*    value="disable-link" */}
+              {/*  > */}
+              {/*    <DoNotDisturbAltIcon fontSize="small" color="primary" /> */}
+              {/*  </ToggleButton> */}
+              {/* </Tooltip> */}
               <Tooltip title={t_i18n('Delete link')}>
                 <ToggleButton
                   aria-label="Label"

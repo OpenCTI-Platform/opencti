@@ -2575,6 +2575,7 @@
   "Copy link": "Copy link",
   "Disable link": "Disable link",
   "Delete link": "Delete link",
+  "Are you sure you want to delete this dashboard link?": "Are you sure you want to delete this dashboard link?",
   "Please, verify the validity of the selected CSV mapper for the given URL.": "Please, verify the validity of the selected CSV mapper for the given URL.",
   "Only successful tests allow the ingestion creation.": "Only successful tests allow the ingestion creation.",
   "Only successful tests allow the ingestion edition.": "Only successful tests allow the ingestion edition.",
