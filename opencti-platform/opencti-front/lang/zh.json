@@ -1888,6 +1888,7 @@
   "HISTORY_MANAGER": "历史经理",
   "INGESTION_MANAGER": "摄取管理器",
   "FILE_INDEX_MANAGER": "文件索引管理器",
+  "INDICATOR_DECAY_MANAGER": "指标衰减管理器",
   "text/markdown": "MD",
   "application/json": "JSON",
   "text/csv": "CSV",
@@ -2547,6 +2548,5 @@
   "No default value set in Settings...": "实体设置中未为此属性设置默认值。您可以通过上面的输入提供一个。如果 CSV 文件中缺少数据，将使用此值。",
   "Default values set": "已设置默认值",
   "The following groups require your attention:": "请您关注以下群体：",
-  "entity_reported-in": "报道",
-  "INDICATOR_DECAY_MANAGER": "指标衰减管理器"
+  "entity_reported-in": "报道"
 }

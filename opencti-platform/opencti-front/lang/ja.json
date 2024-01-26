@@ -1931,6 +1931,7 @@
   "HISTORY_MANAGER": "ヒストリーマネージャ",
   "INGESTION_MANAGER": "インジェストマネージャー",
   "FILE_INDEX_MANAGER": "ファイル索引マネージャー",
+  "INDICATOR_DECAY_MANAGER": "インジケーター・ディケイ・マネージャー",
   "text/markdown": "MD",
   "application/json": "JSON",
   "text/csv": "CSV",
@@ -2547,6 +2548,5 @@
   "No default value set in Settings...": "エンティティ設定でこの属性にデフォルト値が設定されていません。上記の入力で指定できます。CSVファイルにデータがない場合、この値が使用されます。",
   "Default values set": "デフォルト値設定",
   "The following groups require your attention:": "以下のグループに注目してほしい：",
-  "entity_reported-in": "で報告されている。",
-  "INDICATOR_DECAY_MANAGER": "インジケーター減衰マネージャー"
+  "entity_reported-in": "で報告されている。"
 }

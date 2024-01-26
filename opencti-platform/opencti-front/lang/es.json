@@ -1981,6 +1981,7 @@
   "HISTORY_MANAGER": "Gestor del historial",
   "INGESTION_MANAGER": "Gestor del ingestion",
   "FILE_INDEX_MANAGER": "Gestor de índice de archivos",
+  "INDICATOR_DECAY_MANAGER": "Gestor de decaimiento de indicador",
   "text/markdown": "MD",
   "application/json": "JSON",
   "text/csv": "CSV",
@@ -2547,6 +2548,5 @@
   "No default value set in Settings...": "No hay valor por defecto para este atributo en la configuración de la entidad. Puede proporcionar uno con la entrada de arriba. Este valor se utilizará si faltan datos en el archivo CSV.",
   "Default values set": "Valores por defecto establecidos",
   "The following groups require your attention:": "Los siguientes grupos requieren su atención:",
-  "entity_reported-in": "Publicado en",
-  "INDICATOR_DECAY_MANAGER": "Gestor de caída de indicadores"
+  "entity_reported-in": "Publicado en"
 }

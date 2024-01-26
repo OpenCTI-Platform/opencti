@@ -1960,6 +1960,7 @@
   "INGESTION_MANAGER": "Manager d'ingestion",
   "PLAYBOOK_MANAGER": "Manager de playbook",
   "FILE_INDEX_MANAGER": "Manager d'indexation des fichiers",
+  "INDICATOR_DECAY_MANAGER": "Manager du déclin des indicateurs",
   "text/markdown": "MD",
   "application/json": "JSON",
   "text/csv": "CSV",
@@ -2547,6 +2548,5 @@
   "No default value set in Settings...": "Aucune valeur par défaut n'a été définie pour cet attribut dans les paramètres de l'entité. Vous pouvez en fournir une en remplissant le champ ci-dessus. Cette valeur sera utilisée si les données sont manquantes dans le fichier CSV.",
   "Default values set": "Valeurs par défaut définies",
   "The following groups require your attention:": "Les groupes suivants requièrent votre attention :",
-  "entity_reported-in": "Rapporté dans",
-  "INDICATOR_DECAY_MANAGER": "Gestionnaire de la dégradation des indicateurs"
+  "entity_reported-in": "Rapporté dans"
 }

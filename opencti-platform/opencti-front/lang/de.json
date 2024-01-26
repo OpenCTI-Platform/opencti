@@ -1695,6 +1695,7 @@
   "INGESTION_MANAGER": "Ingestion-Manager",
   "PLAYBOOK_MANAGER": "Spielbuch-Manager",
   "FILE_INDEX_MANAGER": "Datei-Index-Manager",
+  "INDICATOR_DECAY_MANAGER": "Indikator Abklingmanager",
   "text/markdown": "MD",
   "application/json": "JSON",
   "text/csv": "CSV",
@@ -2547,6 +2548,5 @@
   "No default value set in Settings...": "In den Entitätseinstellungen ist kein Standardwert für dieses Attribut festgelegt. Sie können einen Wert mit der obigen Eingabe angeben. Dieser Wert wird verwendet, wenn die Daten in der CSV-Datei fehlen.",
   "Default values set": "Standardwerte gesetzt",
   "The following groups require your attention:": "Die folgenden Gruppen erfordern Ihre Aufmerksamkeit:",
-  "entity_reported-in": "Berichtet in",
-  "INDICATOR_DECAY_MANAGER": "Indikator Abklingmanager"
+  "entity_reported-in": "Berichtet in"
 }
