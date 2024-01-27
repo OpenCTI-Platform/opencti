@@ -16,8 +16,6 @@ import {
   stixDomainObjectEditContext,
   stixDomainObjectEditField,
 } from '../domain/stixDomainObject';
-import { batchLoader } from '../database/middleware';
-import { batchInternalRels } from '../domain/stixCoreObject';
 import { loadThroughDenormalized } from './stix';
 import { INPUT_KILLCHAIN } from '../schema/general';
 
