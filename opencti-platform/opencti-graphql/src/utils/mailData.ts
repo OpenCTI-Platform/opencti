@@ -9,11 +9,14 @@ import { isStixCyberObservable } from '../schema/stixCyberObservable';
 // SHA256 LENGTH
 const DEFAULT_TRUNCATE_LIMIT = 64;
 
-export const truncate = (str: string, limit = DEFAULT_TRUNCATE_LIMIT) => {
+export const truncate = (str: string, limit = DEFAULT_TRUNCATE_LIMIT, withPoints = true) => {
   if (str === undefined || str === null || str.length <= limit) {
     return str;
   }
   const trimmedStr = str.substr(0, limit);
+  if (!withPoints) {
+    return trimmedStr;
+  }
   if (!trimmedStr.includes(' ')) {
     return `${trimmedStr}...`;
   }

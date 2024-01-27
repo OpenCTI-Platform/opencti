@@ -1,5 +1,6 @@
 import * as s3 from '@aws-sdk/client-s3';
 import * as R from 'ramda';
+import path from 'path';
 import { Upload } from '@aws-sdk/lib-storage';
 import { Promise as BluePromise } from 'bluebird';
 import { chain, CredentialsProviderError, memoize } from '@aws-sdk/property-provider';
@@ -16,6 +17,7 @@ import { pushToConnector } from './rabbitmq';
 import { elDeleteFilesByIds } from './file-search';
 import { isAttachmentProcessorEnabled } from './engine';
 import { allFilesForPaths, deleteDocumentIndex, indexFileToDocument } from '../modules/internal/document/document-domain';
+import { truncate } from '../utils/mailData';
 
 // Minio configuration
 const clientEndpoint = conf.get('minio:endpoint');
@@ -168,7 +170,8 @@ export const storeFileConverter = (user, file) => {
   };
 };
 
-export const loadFile = async (user, filename) => {
+export const loadFile = async (user, filename, opts = {}) => {
+  const { dontThrow = false } = opts;
   try {
     const object = await s3Client.send(new s3.HeadObjectCommand({
       Bucket: bucketName,
@@ -202,6 +205,10 @@ export const loadFile = async (user, filename) => {
       metaData,
     };
   } catch (err) {
+    if (dontThrow) {
+      logApp.error('Load file from storage fail', { cause: err, user_id: user.id, filename });
+      return undefined;
+    }
     throw UnsupportedError('Load file from storage fail', { cause: err, user_id: user.id, filename });
   }
 };
@@ -235,7 +242,7 @@ const filesAdaptation = (objects) => {
 };
 
 export const loadedFilesListing = async (user, directory, opts = {}) => {
-  const { recursive = false, callback = null } = opts;
+  const { recursive = false, callback = null, dontThrow = false } = opts;
   const files = [];
   if (isNotEmptyField(directory) && directory.startsWith('/')) {
     throw FunctionalError('File listing directory must not start with a /');
@@ -253,11 +260,11 @@ export const loadedFilesListing = async (user, directory, opts = {}) => {
     try {
       const response = await s3Client.send(new s3.ListObjectsV2Command(requestParams));
       const resultFiles = filesAdaptation(response.Contents ?? []);
-      const resultLoaded = await BluePromise.map(resultFiles, (f) => loadFile(user, f.Key), { concurrency: 5 });
+      const resultLoaded = await BluePromise.map(resultFiles, (f) => loadFile(user, f.Key, { dontThrow }), { concurrency: 5 });
       if (callback) {
-        callback(resultLoaded);
+        callback(resultLoaded.filter((n) => n !== undefined));
       } else {
-        files.push(...resultLoaded);
+        files.push(...resultLoaded.filter((n) => n !== undefined));
       }
       truncated = response.IsTruncated;
       if (truncated) {
@@ -315,10 +322,11 @@ export const uploadJobImport = async (context, user, fileId, fileMime, entityId,
   return connectors;
 };
 
-export const upload = async (context, user, path, fileUpload, opts) => {
+export const upload = async (context, user, filePath, fileUpload, opts) => {
   const { entity, meta = {}, noTriggerImport = false, errorOnExisting = false } = opts;
   const { createReadStream, filename, mimetype, encoding = '' } = await fileUpload;
-  const key = `${path}/${filename}`;
+  const truncatedFileName = `${truncate(path.parse(filename).name, 200, false)}${truncate(path.parse(filename).ext, 10, false)}`;
+  const key = `${filePath}/${truncatedFileName}`;
   let existingFile = null;
   try {
     existingFile = await loadFile(user, key);
@@ -337,7 +345,7 @@ export const upload = async (context, user, path, fileUpload, opts) => {
   }
   const fullMetadata = {
     ...metadata,
-    filename: encodeURIComponent(filename),
+    filename: encodeURIComponent(truncatedFileName),
     mimetype: fileMime,
     encoding,
     creator_id: user.id,
@@ -356,7 +364,7 @@ export const upload = async (context, user, path, fileUpload, opts) => {
   existingFile = await loadFile(user, key);
   const file = {
     id: key,
-    name: filename,
+    name: truncatedFileName,
     size: existingFile.size,
     information: '',
     lastModified: new Date(),
@@ -367,8 +375,8 @@ export const upload = async (context, user, path, fileUpload, opts) => {
   // Register in elastic
   await indexFileToDocument(file);
   // Trigger a enrich job for import file if needed
-  if (!noTriggerImport && path.startsWith('import/') && !path.startsWith('import/pending')
-      && !path.startsWith('import/External-Reference')) {
+  if (!noTriggerImport && filePath.startsWith('import/') && !filePath.startsWith('import/pending')
+      && !filePath.startsWith('import/External-Reference')) {
     await uploadJobImport(context, user, file.id, file.metaData.mimetype, file.metaData.entity_id);
   }
   return file;

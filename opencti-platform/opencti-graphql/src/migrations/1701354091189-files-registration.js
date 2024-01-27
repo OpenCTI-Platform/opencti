@@ -13,11 +13,17 @@ export const up = async (next) => {
   const callback = async (files) => {
     filesCount += files.length;
     logApp.info(`[MIGRATION] (${iteration}) ${files.length} files to register (total: ${filesCount})`);
-    const elements = files.map((file) => ({ _index: INDEX_INTERNAL_OBJECTS, ...buildFileDataForIndexing(file) }));
+    const elementNotIndexed = files.filter((n) => n.name.length > 200);
+    const elements = files
+      .filter((file) => file.name.length <= 200)
+      .map((file) => ({ _index: INDEX_INTERNAL_OBJECTS, ...buildFileDataForIndexing(file) }));
     await elIndexElements(context, SYSTEM_USER, 'Migration files registration', elements);
+    if (elementNotIndexed.length > 0) {
+      logApp.error('[MIGRATION] Some files were not indexed, you will need to re-upload them', { elementNotIndexed });
+    }
     iteration += 1;
   };
-  await loadedFilesListing(SYSTEM_USER, '', { recursive: true, callback });
+  await loadedFilesListing(SYSTEM_USER, '', { recursive: true, dontThrow: true, callback });
   logApp.info('[MIGRATION] Done 1701354091161-files-registration.js');
   next();
 };
