@@ -16,7 +16,7 @@ const infrastructureResolvers = {
     infrastructures: (_, args, context) => findAll(context, context.user, args),
   },
   Infrastructure: {
-    killChainPhases: (infrastructure, _, context) => loadThroughDenormalized(context, context.user, infrastructure, INPUT_KILLCHAIN),
+    killChainPhases: (infrastructure, _, context) => loadThroughDenormalized(context, context.user, infrastructure, INPUT_KILLCHAIN, { sortBy: 'phase_name' }),
   },
   Mutation: {
     infrastructureEdit: (_, { id }, context) => ({

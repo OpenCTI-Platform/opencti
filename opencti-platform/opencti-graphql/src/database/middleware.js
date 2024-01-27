@@ -206,14 +206,14 @@ export const batchLoader = (loader) => {
   const dataLoader = new DataLoader(
     (objects) => {
       const { context, user, args } = R.head(objects);
-      const ids = objects.map((i) => i.id);
-      return loader(context, user, ids, args);
+      const elements = objects.map((i) => i.element);
+      return loader(context, user, elements, args);
     },
     { maxBatchSize: MAX_BATCH_SIZE, cache: false }
   );
   return {
-    load: (id, context, user, args = {}) => {
-      return dataLoader.load({ id, context, user, args });
+    load: (element, context, user, args = {}) => {
+      return dataLoader.load({ element, context, user, args });
     },
   };
 };

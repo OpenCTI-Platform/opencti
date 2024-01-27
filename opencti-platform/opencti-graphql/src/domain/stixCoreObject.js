@@ -83,13 +83,17 @@ export const findById = async (context, user, stixCoreObjectId) => {
   return storeLoadById(context, user, stixCoreObjectId, ABSTRACT_STIX_CORE_OBJECT);
 };
 
-export const batchInternalRels = async (context, user, elements) => {
+export const batchInternalRels = async (context, user, elements, opts = {}) => {
   const relIds = elements.map(({ element, definition }) => element[definition.databaseName]).flat().filter((id) => isNotEmptyField(id));
   const resolvedElements = await internalFindByIds(context, user, relIds, { toMap: true });
   return elements.map(({ element, definition }) => {
     const relId = element[definition.databaseName];
     if (definition.multiple) {
-      return (relId ?? []).map((id) => resolvedElements[id]);
+      const relElements = (relId ?? []).map((id) => resolvedElements[id]);
+      if (opts.sortBy) {
+        return R.sortWith([R.ascend(R.prop(opts.sortBy))])(relElements);
+      }
+      return relElements;
     }
     return relId ? resolvedElements[relId] : undefined;
   });
@@ -98,7 +102,11 @@ export const batchInternalRels = async (context, user, elements) => {
 export const batchMarkingDefinitions = async (context, user, stixCoreObjects) => {
   const markingsFromCache = await getEntitiesMapFromCache(context, user, ENTITY_TYPE_MARKING_DEFINITION);
   return stixCoreObjects.map((s) => {
-    return (s[RELATION_OBJECT_MARKING] ?? []).map((id) => markingsFromCache.get(id));
+    const markings = (s[RELATION_OBJECT_MARKING] ?? []).map((id) => markingsFromCache.get(id));
+    return R.sortWith([
+      R.ascend(R.propOr('TLP', 'definition_type')),
+      R.descend(R.propOr(0, 'x_opencti_order')),
+    ])(markings);
   });
 };
 

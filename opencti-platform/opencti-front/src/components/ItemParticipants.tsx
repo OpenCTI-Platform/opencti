@@ -11,12 +11,9 @@ interface ItemParticipantsProps {
 }
 
 const ItemParticipants: FunctionComponent<ItemParticipantsProps> = ({ participants }) => {
-  const participantsData = (participants ?? []).slice()
-    .sort((a, b) => a.name.localeCompare(b.name));
-
   return (
-    <FieldOrEmpty source={participantsData}>
-      {participantsData.map((participant) => (
+    <FieldOrEmpty source={participants}>
+      {participants.map((participant) => (
         <Button
           key={participant.id}
           variant="outlined"

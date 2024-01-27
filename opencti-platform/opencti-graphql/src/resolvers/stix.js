@@ -6,15 +6,15 @@ import { batchInternalRels } from '../domain/stixCoreObject';
 import { schemaRelationsRefDefinition } from '../schema/schema-relationsRef';
 
 const creatorsLoader = batchLoader(batchCreators);
-const relBatchLoader = batchLoader(batchInternalRels);
-export const loadThroughDenormalized = (context, user, element, inputName) => {
+export const loadThroughDenormalized = (context, user, element, inputName, args = {}) => {
+  const relBatchLoader = batchLoader(batchInternalRels);
   if (element[inputName]) {
     // if element is already loaded, just send the data
     return element[inputName];
   }
   // If not, reload through denormalized relationships
   const ref = schemaRelationsRefDefinition.getRelationRef(element.entity_type, inputName);
-  return relBatchLoader.load({ element, definition: ref }, context, user);
+  return relBatchLoader.load({ element, definition: ref }, context, user, args);
 };
 
 const stixResolvers = {

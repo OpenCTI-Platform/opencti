@@ -1,6 +1,5 @@
 import React, { FunctionComponent } from 'react';
 import Button from '@mui/material/Button';
-import * as R from 'ramda';
 
 type Node = {
   readonly entity_type: string;
@@ -12,14 +11,11 @@ type Props = {
   assignees: ReadonlyArray<Node>;
 };
 
-const ItemAssignees: FunctionComponent<Props> = (props) => {
-  const { assignees } = props;
-  const sortBy = R.sortWith([R.ascend<Node>(R.prop('name'))]);
-  const sortedAssignees = R.pipe(sortBy)(assignees);
+const ItemAssignees: FunctionComponent<Props> = ({ assignees }) => {
   return (
     <div>
-      {sortedAssignees.length > 0
-        ? sortedAssignees.map((assignee) => (
+      {assignees.length > 0
+        ? assignees.map((assignee) => (
           <Button
             key={assignee.id}
             variant="outlined"

@@ -16,7 +16,7 @@ const toolResolvers = {
     tools: (_, args, context) => findAll(context, context.user, args),
   },
   Tool: {
-    killChainPhases: (tool, _, context) => loadThroughDenormalized(context, context.user, tool, INPUT_KILLCHAIN),
+    killChainPhases: (tool, _, context) => loadThroughDenormalized(context, context.user, tool, INPUT_KILLCHAIN, { sortBy: 'phase_name' }),
   },
   Mutation: {
     toolEdit: (_, { id }, context) => ({

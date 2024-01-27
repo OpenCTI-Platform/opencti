@@ -48,7 +48,7 @@ const indicatorResolvers: Resolvers = {
     },
   },
   Indicator: {
-    killChainPhases: (indicator, _, context) => loadThroughDenormalized(context, context.user, indicator, INPUT_KILLCHAIN),
+    killChainPhases: (indicator, _, context) => loadThroughDenormalized(context, context.user, indicator, INPUT_KILLCHAIN, { sortBy: 'phase_name' }),
     observables: (indicator, args, context) => observablesPaginated<any>(context, context.user, indicator.id, args),
     decayLiveDetails: (indicator, _, context) => getDecayDetails(context, context.user, indicator),
   },
