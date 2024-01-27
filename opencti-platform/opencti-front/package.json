@@ -21,7 +21,7 @@
     "@rjsf/utils": "5.16.1",
     "analytics": "0.8.9",
     "apexcharts": "3.45.2",
-    "axios": "1.6.6",
+    "axios": "1.6.7",
     "ckeditor5-custom-build": "0.0.1",
     "classnames": "2.5.1",
     "convert": "4.14.1",
