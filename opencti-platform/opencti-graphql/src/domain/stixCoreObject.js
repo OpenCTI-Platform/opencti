@@ -87,9 +87,10 @@ export const batchInternalRels = async (context, user, elements) => {
   const relIds = elements.map(({ element, type }) => element[type]).flat().filter((id) => isNotEmptyField(id));
   const resolvedElements = await internalFindByIds(context, user, relIds, { toMap: true });
   return elements.map(({ element, type }) => {
+    const relationRef = schemaRelationsRefDefinition.getRelationRef(element.entity_type, type);
     const relId = element[type];
-    if (Array.isArray(relId)) {
-      return relId.map((id) => resolvedElements[id]);
+    if (relationRef.multiple) {
+      return (relId ?? []).map((id) => resolvedElements[id]);
     }
     return relId ? resolvedElements[relId] : undefined;
   });

@@ -18,13 +18,11 @@ import {
   stixDomainObjectEditContext,
   stixDomainObjectEditField,
 } from '../../domain/stixDomainObject';
-import { batchLoader, distributionEntities } from '../../database/middleware';
+import { distributionEntities } from '../../database/middleware';
 import type { Resolvers } from '../../generated/graphql';
 import { ENTITY_TYPE_INDICATOR } from './indicator-types';
-import { RELATION_KILL_CHAIN_PHASE } from '../../schema/stixRefRelationship';
-import { batchInternalRels } from '../../domain/stixCoreObject';
-
-const relBatchLoader = batchLoader(batchInternalRels);
+import { loadThroughDenormalized } from '../../resolvers/stix';
+import { INPUT_KILLCHAIN } from '../../schema/general';
 
 const indicatorResolvers: Resolvers = {
   Query: {
@@ -50,7 +48,7 @@ const indicatorResolvers: Resolvers = {
     },
   },
   Indicator: {
-    killChainPhases: (indicator, _, context) => relBatchLoader.load({ element: indicator, type: RELATION_KILL_CHAIN_PHASE }, context, context.user),
+    killChainPhases: (indicator, _, context) => loadThroughDenormalized(context, context.user, indicator, INPUT_KILLCHAIN),
     observables: (indicator, args, context) => observablesPaginated<any>(context, context.user, indicator.id, args),
     decayLiveDetails: (indicator, _, context) => getDecayDetails(context, context.user, indicator),
   },

@@ -20,14 +20,13 @@ import {
 import { fetchEditContext, pubSubAsyncIterator } from '../database/redis';
 import withCancel from '../graphql/subscriptionWrapper';
 import { batchLoader, stixLoadByIdStringify, timeSeriesRelations } from '../database/middleware';
-import { ABSTRACT_STIX_CORE_RELATIONSHIP } from '../schema/general';
+import { ABSTRACT_STIX_CORE_RELATIONSHIP, INPUT_CREATED_BY, INPUT_GRANTED_REFS, INPUT_KILLCHAIN, INPUT_LABELS } from '../schema/general';
 import { elBatchIds } from '../database/engine';
 import { findById as findStatusById, getTypeStatuses } from '../domain/status';
 import { batchCreators } from '../domain/user';
 import { stixCoreRelationshipOptions } from '../schema/stixCoreRelationship';
 import { addOrganizationRestriction, removeOrganizationRestriction } from '../domain/stix';
 import {
-  batchInternalRels,
   batchMarkingDefinitions,
   casesPaginated,
   containersPaginated,
@@ -39,10 +38,9 @@ import {
 } from '../domain/stixCoreObject';
 import { numberOfContainersForObject } from '../domain/container';
 import { paginatedForPathWithEnrichment } from '../modules/internal/document/document-domain';
-import { RELATION_CREATED_BY, RELATION_GRANTED_TO, RELATION_KILL_CHAIN_PHASE, RELATION_OBJECT_LABEL } from '../schema/stixRefRelationship';
+import { loadThroughDenormalized } from './stix';
 
 const loadByIdLoader = batchLoader(elBatchIds);
-const relBatchLoader = batchLoader(batchInternalRels);
 const markingDefinitionsLoader = batchLoader(batchMarkingDefinitions);
 const creatorsLoader = batchLoader(batchCreators);
 
@@ -66,11 +64,11 @@ const stixCoreRelationshipResolvers = {
     from: (rel, _, context) => (rel.from ? rel.from : loadByIdLoader.load({ id: rel.fromId, type: rel.fromType }, context, context.user)),
     to: (rel, _, context) => (rel.to ? rel.to : loadByIdLoader.load({ id: rel.toId, type: rel.toType }, context, context.user)),
     // region batch loaded through rel de-normalization. Cant be ordered of filtered
+    createdBy: (rel, _, context) => loadThroughDenormalized(context, context.user, rel, INPUT_CREATED_BY),
+    objectOrganization: (rel, _, context) => loadThroughDenormalized(context, context.user, rel, INPUT_GRANTED_REFS),
+    objectLabel: (rel, _, context) => loadThroughDenormalized(context, context.user, rel, INPUT_LABELS),
+    killChainPhases: (rel, _, context) => loadThroughDenormalized(context, context.user, rel, INPUT_KILLCHAIN),
     creators: (rel, _, context) => creatorsLoader.load(rel.creator_id, context, context.user),
-    createdBy: (rel, _, context) => relBatchLoader.load({ element: rel, type: RELATION_CREATED_BY }, context, context.user),
-    objectOrganization: (rel, _, context) => relBatchLoader.load({ element: rel, type: RELATION_GRANTED_TO }, context, context.user),
-    objectLabel: (rel, _, context) => relBatchLoader.load({ element: rel, type: RELATION_OBJECT_LABEL }, context, context.user),
-    killChainPhases: (rel, _, context) => relBatchLoader.load({ element: rel, type: RELATION_KILL_CHAIN_PHASE }, context, context.user),
     objectMarking: (rel, _, context) => markingDefinitionsLoader.load(rel, context, context.user),
     // endregion
     // region inner listing - cant be batch loaded

@@ -7,11 +7,8 @@ import {
   stixDomainObjectEditContext,
   stixDomainObjectEditField,
 } from '../domain/stixDomainObject';
-import { RELATION_KILL_CHAIN_PHASE } from '../schema/stixRefRelationship';
-import { batchLoader } from '../database/middleware';
-import { batchInternalRels } from '../domain/stixCoreObject';
-
-const relBatchLoader = batchLoader(batchInternalRels);
+import { loadThroughDenormalized } from './stix';
+import { INPUT_KILLCHAIN } from '../schema/general';
 
 const infrastructureResolvers = {
   Query: {
@@ -19,7 +16,7 @@ const infrastructureResolvers = {
     infrastructures: (_, args, context) => findAll(context, context.user, args),
   },
   Infrastructure: {
-    killChainPhases: (infrastructure, _, context) => relBatchLoader.load({ element: infrastructure, type: RELATION_KILL_CHAIN_PHASE }, context, context.user),
+    killChainPhases: (infrastructure, _, context) => loadThroughDenormalized(context, context.user, infrastructure, INPUT_KILLCHAIN),
   },
   Mutation: {
     infrastructureEdit: (_, { id }, context) => ({

@@ -4,11 +4,8 @@ import type { Resolvers } from '../../generated/graphql';
 import { findAll, findById, upsertTemplateForCase } from './case-domain';
 import { caseTasksPaginated } from '../task/task-domain';
 import type { BasicStoreEntityTask } from '../task/task-types';
-import { RELATION_OBJECT_PARTICIPANT } from '../../schema/stixRefRelationship';
-import { batchLoader } from '../../database/middleware';
-import { batchInternalRels } from '../../domain/stixCoreObject';
-
-const relBatchLoader = batchLoader(batchInternalRels);
+import { loadThroughDenormalized } from '../../resolvers/stix';
+import { INPUT_PARTICIPANT } from '../../schema/general';
 
 const caseResolvers: Resolvers = {
   Query: {
@@ -25,7 +22,7 @@ const caseResolvers: Resolvers = {
       return 'Unknown';
     },
     tasks: (current, args, context) => caseTasksPaginated<BasicStoreEntityTask>(context, context.user, current.id, args),
-    objectParticipant: (container, _, context) => relBatchLoader.load({ element: container, type: RELATION_OBJECT_PARTICIPANT }, context, context.user),
+    objectParticipant: (container, _, context) => loadThroughDenormalized(context, context.user, container, INPUT_PARTICIPANT),
   },
   CasesOrdering: {
     creator: 'creator_id',

@@ -23,7 +23,6 @@ import { addOrganizationRestriction, removeOrganizationRestriction } from '../do
 import { batchCreators } from '../domain/user';
 import { numberOfContainersForObject } from '../domain/container';
 import {
-  batchInternalRels,
   batchMarkingDefinitions,
   casesPaginated,
   containersPaginated,
@@ -32,10 +31,10 @@ import {
   opinionsPaginated,
   reportsPaginated
 } from '../domain/stixCoreObject';
-import { RELATION_CREATED_BY, RELATION_GRANTED_TO, RELATION_OBJECT_LABEL } from '../schema/stixRefRelationship';
+import { loadThroughDenormalized } from './stix';
+import { INPUT_CREATED_BY, INPUT_GRANTED_REFS, INPUT_LABELS } from '../schema/general';
 
 const loadByIdLoader = batchLoader(elBatchIds);
-const relBatchLoader = batchLoader(batchInternalRels);
 const markingDefinitionsLoader = batchLoader(batchMarkingDefinitions);
 const creatorsLoader = batchLoader(batchCreators);
 
@@ -56,10 +55,10 @@ const stixSightingRelationshipResolvers = {
     to: (rel, _, context) => (rel.to ? rel.to : loadByIdLoader.load({ id: rel.toId, type: rel.toType }, context, context.user)),
     // region batch fully loaded through rel de-normalization. Cant be ordered of filtered
     creators: (rel, _, context) => creatorsLoader.load(rel.creator_id, context, context.user),
-    createdBy: (rel, _, context) => relBatchLoader.load({ element: rel, type: RELATION_CREATED_BY }, context, context.user),
-    objectLabel: (stixCoreObject, _, context) => relBatchLoader.load({ element: stixCoreObject, type: RELATION_OBJECT_LABEL }, context, context.user),
-    objectOrganization: (stixCoreObject, _, context) => relBatchLoader.load({ element: stixCoreObject, type: RELATION_GRANTED_TO }, context, context.user),
     objectMarking: (stixCoreObject, _, context) => markingDefinitionsLoader.load(stixCoreObject, context, context.user),
+    createdBy: (rel, _, context) => loadThroughDenormalized(context, context.user, rel, INPUT_CREATED_BY),
+    objectLabel: (rel, _, context) => loadThroughDenormalized(context, context.user, rel, INPUT_LABELS),
+    objectOrganization: (rel, _, context) => loadThroughDenormalized(context, context.user, rel, INPUT_GRANTED_REFS),
     // endregion
     // region inner listing - cant be batch loaded
     externalReferences: (rel, args, context) => externalReferencesPaginated(context, context.user, rel.id, args),

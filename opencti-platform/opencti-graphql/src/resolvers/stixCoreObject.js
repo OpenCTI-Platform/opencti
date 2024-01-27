@@ -1,7 +1,6 @@
 import { withFilter } from 'graphql-subscriptions';
 import {
   askElementEnrichmentForConnector,
-  batchInternalRels,
   batchMarkingDefinitions,
   casesPaginated,
   containersPaginated,
@@ -39,7 +38,7 @@ import { fetchEditContext, pubSubAsyncIterator } from '../database/redis';
 import { batchLoader, distributionRelations, stixLoadByIdStringify } from '../database/middleware';
 import { worksForSource } from '../domain/work';
 import { BUS_TOPICS } from '../config/conf';
-import { ABSTRACT_STIX_CORE_OBJECT } from '../schema/general';
+import { ABSTRACT_STIX_CORE_OBJECT, INPUT_CREATED_BY, INPUT_GRANTED_REFS, INPUT_LABELS } from '../schema/general';
 import withCancel from '../graphql/subscriptionWrapper';
 import { connectorsForEnrichment } from '../database/repository';
 import { addOrganizationRestriction, removeOrganizationRestriction } from '../domain/stix';
@@ -47,9 +46,8 @@ import { stixCoreObjectOptions } from '../schema/stixCoreObject';
 import { numberOfContainersForObject } from '../domain/container';
 import { paginatedForPathWithEnrichment } from '../modules/internal/document/document-domain';
 import { getSpecVersionOrDefault } from '../domain/stixRelationship';
-import { RELATION_CREATED_BY, RELATION_GRANTED_TO, RELATION_OBJECT_LABEL } from '../schema/stixRefRelationship';
+import { loadThroughDenormalized } from './stix';
 
-const relBatchLoader = batchLoader(batchInternalRels);
 const markingDefinitionsLoader = batchLoader(batchMarkingDefinitions);
 
 const stixCoreObjectResolvers = {
@@ -94,8 +92,9 @@ const stixCoreObjectResolvers = {
     toStix: (stixCoreObject, _, context) => stixLoadByIdStringify(context, context.user, stixCoreObject.id),
     editContext: (stixCoreObject) => fetchEditContext(stixCoreObject.id),
     // region batch loaded through rel de-normalization. Cant be ordered of filtered
-    createdBy: (stixCoreObject, _, context) => relBatchLoader.load({ element: stixCoreObject, type: RELATION_CREATED_BY }, context, context.user),
-    objectOrganization: (stixCoreObject, _, context) => relBatchLoader.load({ element: stixCoreObject, type: RELATION_GRANTED_TO }, context, context.user),
+    createdBy: (stixCoreObject, _, context) => loadThroughDenormalized(context, context.user, stixCoreObject, INPUT_CREATED_BY),
+    objectOrganization: (stixCoreObject, _, context) => loadThroughDenormalized(context, context.user, stixCoreObject, INPUT_GRANTED_REFS),
+    objectLabel: (stixCoreObject, _, context) => loadThroughDenormalized(context, context.user, stixCoreObject, INPUT_LABELS),
     objectMarking: (stixCoreObject, _, context) => markingDefinitionsLoader.load(stixCoreObject, context, context.user),
     // endregion
     // region inner listing - cant be batch loaded
@@ -107,7 +106,6 @@ const stixCoreObjectResolvers = {
     notes: (stixCoreObject, args, context) => notesPaginated(context, context.user, stixCoreObject.id, args),
     opinions: (stixCoreObject, args, context) => opinionsPaginated(context, context.user, stixCoreObject.id, args),
     observedData: (stixCoreObject, args, context) => observedDataPaginated(context, context.user, stixCoreObject.id, args),
-    objectLabel: (stixCoreObject, _, context) => relBatchLoader.load({ element: stixCoreObject, type: RELATION_OBJECT_LABEL }, context, context.user),
     // endregion
     // Files and connectors
     jobs: (stixCoreObject, args, context) => worksForSource(context, context.user, stixCoreObject.standard_id, args),

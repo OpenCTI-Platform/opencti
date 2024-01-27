@@ -21,12 +21,10 @@ import {
   stixDomainObjectEditContext,
   stixDomainObjectEditField,
 } from '../domain/stixDomainObject';
-import { batchLoader, distributionEntities } from '../database/middleware';
+import { distributionEntities } from '../database/middleware';
 import { ENTITY_TYPE_CONTAINER_REPORT } from '../schema/stixDomainObject';
-import { RELATION_OBJECT_PARTICIPANT } from '../schema/stixRefRelationship';
-import { batchInternalRels } from '../domain/stixCoreObject';
-
-const relBatchLoader = batchLoader(batchInternalRels);
+import { loadThroughDenormalized } from './stix';
+import { INPUT_PARTICIPANT } from '../schema/general';
 
 const reportResolvers = {
   Query: {
@@ -62,7 +60,7 @@ const reportResolvers = {
   },
   Report: {
     deleteWithElementsCount: (report, _, context) => reportDeleteElementsCount(context, context.user, report.id),
-    objectParticipant: (container, _, context) => relBatchLoader.load({ element: container, type: RELATION_OBJECT_PARTICIPANT }, context, context.user),
+    objectParticipant: (container, _, context) => loadThroughDenormalized(context, context.user, container, INPUT_PARTICIPANT),
   },
   Mutation: {
     reportEdit: (_, { id }, context) => ({

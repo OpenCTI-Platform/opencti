@@ -2781,7 +2781,7 @@ export const createRelationRaw = async (context, user, input, opts = {}) => {
       event = await storeCreateRelationEvent(context, user, createdRelation, opts);
     }
     // - TRANSACTION END
-    return { element: dataRel.element, event, isCreation: true };
+    return { element: { ...resolvedInput, ...dataRel.element }, event, isCreation: true };
   } catch (err) {
     if (err.name === TYPE_LOCK_ERROR) {
       throw LockTimeoutError({ participantIds });
@@ -3093,7 +3093,7 @@ const createEntityRaw = async (context, user, input, type, opts = {}) => {
     const createdElement = { ...resolvedInput, ...dataEntity.element };
     const event = await storeCreateEntityEvent(context, user, createdElement, dataEntity.message, opts);
     // Return created element after waiting for it.
-    return { element: dataEntity.element, event, isCreation: true };
+    return { element: createdElement, event, isCreation: true };
   } catch (err) {
     if (err.name === TYPE_LOCK_ERROR) {
       throw LockTimeoutError({ participantIds });

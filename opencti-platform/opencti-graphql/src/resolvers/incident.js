@@ -7,12 +7,9 @@ import {
   stixDomainObjectEditContext,
   stixDomainObjectEditField,
 } from '../domain/stixDomainObject';
-import { RELATION_OBJECT_ASSIGNEE, RELATION_OBJECT_PARTICIPANT } from '../schema/stixRefRelationship';
-import { buildRefRelationKey } from '../schema/general';
-import { batchLoader } from '../database/middleware';
-import { batchInternalRels } from '../domain/stixCoreObject';
-
-const relBatchLoader = batchLoader(batchInternalRels);
+import { RELATION_OBJECT_ASSIGNEE } from '../schema/stixRefRelationship';
+import { buildRefRelationKey, INPUT_PARTICIPANT } from '../schema/general';
+import { loadThroughDenormalized } from './stix';
 
 const incidentResolvers = {
   Query: {
@@ -26,7 +23,7 @@ const incidentResolvers = {
     },
   },
   Incident: {
-    objectParticipant: (container, _, context) => relBatchLoader.load({ element: container, type: RELATION_OBJECT_PARTICIPANT }, context, context.user),
+    objectParticipant: (container, _, context) => loadThroughDenormalized(context, context.user, container, INPUT_PARTICIPANT),
   },
   IncidentsOrdering: {
     objectAssignee: buildRefRelationKey(RELATION_OBJECT_ASSIGNEE),

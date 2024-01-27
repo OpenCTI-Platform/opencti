@@ -16,11 +16,10 @@ import {
   stixDomainObjectEditContext,
   stixDomainObjectEditField,
 } from '../domain/stixDomainObject';
-import { RELATION_KILL_CHAIN_PHASE } from '../schema/stixRefRelationship';
 import { batchLoader } from '../database/middleware';
 import { batchInternalRels } from '../domain/stixCoreObject';
-
-const relBatchLoader = batchLoader(batchInternalRels);
+import { loadThroughDenormalized } from './stix';
+import { INPUT_KILLCHAIN } from '../schema/general';
 
 const attackPatternResolvers = {
   Query: {
@@ -28,7 +27,7 @@ const attackPatternResolvers = {
     attackPatterns: (_, args, context) => findAll(context, context.user, args),
   },
   AttackPattern: {
-    killChainPhases: (attackPattern, _, context) => relBatchLoader.load({ element: attackPattern, type: RELATION_KILL_CHAIN_PHASE }, context, context.user),
+    killChainPhases: (attackPattern, _, context) => loadThroughDenormalized(context, context.user, attackPattern, INPUT_KILLCHAIN),
     coursesOfAction: (attackPattern, args, context) => coursesOfActionPaginated(context, context.user, attackPattern.id, args),
     parentAttackPatterns: (attackPattern, args, context) => parentAttackPatternsPaginated(context, context.user, attackPattern.id, args),
     subAttackPatterns: (attackPattern, args, context) => childAttackPatternsPaginated(context, context.user, attackPattern.id, args),
