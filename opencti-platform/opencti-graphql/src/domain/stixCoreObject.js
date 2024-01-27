@@ -84,12 +84,11 @@ export const findById = async (context, user, stixCoreObjectId) => {
 };
 
 export const batchInternalRels = async (context, user, elements) => {
-  const relIds = elements.map(({ element, type }) => element[type]).flat().filter((id) => isNotEmptyField(id));
+  const relIds = elements.map(({ element, definition }) => element[definition.databaseName]).flat().filter((id) => isNotEmptyField(id));
   const resolvedElements = await internalFindByIds(context, user, relIds, { toMap: true });
-  return elements.map(({ element, type }) => {
-    const relationRef = schemaRelationsRefDefinition.getRelationRef(element.entity_type, type);
-    const relId = element[type];
-    if (relationRef.multiple) {
+  return elements.map(({ element, definition }) => {
+    const relId = element[definition.databaseName];
+    if (definition.multiple) {
       return (relId ?? []).map((id) => resolvedElements[id]);
     }
     return relId ? resolvedElements[relId] : undefined;

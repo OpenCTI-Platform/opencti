@@ -14,7 +14,7 @@ export const loadThroughDenormalized = (context, user, element, inputName) => {
   }
   // If not, reload through denormalized relationships
   const ref = schemaRelationsRefDefinition.getRelationRef(element.entity_type, inputName);
-  return relBatchLoader.load({ element, type: ref.databaseName }, context, user);
+  return relBatchLoader.load({ element, definition: ref }, context, user);
 };
 
 const stixResolvers = {
