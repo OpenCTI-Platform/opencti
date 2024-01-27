@@ -1,6 +1,6 @@
 import { elLoadById } from '../database/engine';
 import { READ_PLATFORM_INDICES, UPDATE_OPERATION_ADD, UPDATE_OPERATION_REMOVE } from '../database/utils';
-import { storeLoadById } from '../database/middleware-loader';
+import { internalLoadById, storeLoadById } from '../database/middleware-loader';
 import { ABSTRACT_STIX_REF_RELATIONSHIP } from '../schema/general';
 import { FunctionalError, UnsupportedError } from '../config/errors';
 import { isStixRefRelationship } from '../schema/stixRefRelationship';
@@ -28,17 +28,15 @@ const patchElementWithRefRelationships = async (
   operation: 'add' | 'remove',
   opts = {}
 ) => {
-  const stixObjectOrRelationship = await storeLoadById(context, user, stixObjectOrRelationshipId, type);
-  const fromType = stixObjectOrRelationship.entity_type;
-  const fieldName = schemaRelationsRefDefinition.convertDatabaseNameToInputName(fromType, relationship_type);
+  const stixObjectOrRelationship = await internalLoadById(context, user, stixObjectOrRelationshipId, { type });
+  const fieldName = schemaRelationsRefDefinition.convertDatabaseNameToInputName(stixObjectOrRelationship.entity_type, relationship_type);
   if (!fieldName) {
     throw UnsupportedError('This relationship type is not supported', { relationship_type });
   }
   const patch = { [fieldName]: targets };
   const operations = { [fieldName]: operation };
-  // Update data
   const { element: patchedFrom } = await patchAttribute(context, user, stixObjectOrRelationshipId, type, patch, { ...opts, operations });
-  return patchedFrom as any;
+  return { ...stixObjectOrRelationship, ...patchedFrom }; // This concat is needed as rel_ must be kept in the result
 };
 
 export const stixObjectOrRelationshipAddRefRelation = async (
@@ -82,9 +80,5 @@ export const stixObjectOrRelationshipDeleteRefRelation = async (
   if (!isStixRefRelationship(relationshipType)) {
     throw FunctionalError(`Only ${ABSTRACT_STIX_REF_RELATIONSHIP} can be deleted through this method.`);
   }
-  // const { from, to } = await deleteRelationsByFromAndTo(context, user, stixObjectOrRelationshipId, toId, relationshipType, ABSTRACT_STIX_REF_RELATIONSHIP, opts);
-  // await notify((BUS_TOPICS[type as BusTopicsKeyType]).EDIT_TOPIC, from, user);
-  // return { ...stixObjectOrRelationship, from, to };
-  const test = await patchElementWithRefRelationships(context, user, stixObjectOrRelationshipId, type, relationshipType, [toId], UPDATE_OPERATION_REMOVE, opts);
-  return test;
+  return patchElementWithRefRelationships(context, user, stixObjectOrRelationshipId, type, relationshipType, [toId], UPDATE_OPERATION_REMOVE, opts);
 };
