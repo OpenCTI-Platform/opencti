@@ -1299,7 +1299,7 @@ export const mergeEntities = async (context, user, targetEntityId, sourceEntityI
   }
 };
 
-const transformPatchToInput = (patch, operations = {}) => {
+export const transformPatchToInput = (patch, operations = {}) => {
   return R.pipe(
     R.toPairs,
     R.map((t) => {

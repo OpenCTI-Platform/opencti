@@ -1,10 +1,10 @@
 import { elLoadById } from '../database/engine';
 import { READ_PLATFORM_INDICES, UPDATE_OPERATION_ADD, UPDATE_OPERATION_REMOVE } from '../database/utils';
-import { internalLoadById, storeLoadById } from '../database/middleware-loader';
+import { storeLoadById } from '../database/middleware-loader';
 import { ABSTRACT_STIX_REF_RELATIONSHIP } from '../schema/general';
 import { FunctionalError, UnsupportedError } from '../config/errors';
 import { isStixRefRelationship } from '../schema/stixRefRelationship';
-import { buildRelationData, patchAttribute } from '../database/middleware';
+import { buildRelationData, storeLoadByIdWithRefs, transformPatchToInput, updateAttributeFromLoadedWithRefs } from '../database/middleware';
 import { notify } from '../database/redis';
 import { BUS_TOPICS } from '../config/conf';
 import type { AuthContext, AuthUser } from '../types/user';
@@ -28,15 +28,14 @@ const patchElementWithRefRelationships = async (
   operation: 'add' | 'remove',
   opts = {}
 ) => {
-  const stixObjectOrRelationship = await internalLoadById(context, user, stixObjectOrRelationshipId, { type });
-  const fieldName = schemaRelationsRefDefinition.convertDatabaseNameToInputName(stixObjectOrRelationship.entity_type, relationship_type);
+  const initial = await storeLoadByIdWithRefs(context, user, stixObjectOrRelationshipId, { type });
+  const fieldName = schemaRelationsRefDefinition.convertDatabaseNameToInputName(initial.entity_type, relationship_type);
   if (!fieldName) {
     throw UnsupportedError('This relationship type is not supported', { relationship_type });
   }
-  const patch = { [fieldName]: targets };
-  const operations = { [fieldName]: operation };
-  const { element: patchedFrom } = await patchAttribute(context, user, stixObjectOrRelationshipId, type, patch, { ...opts, operations });
-  return { ...stixObjectOrRelationship, ...patchedFrom }; // This concat is needed as rel_ must be kept in the result
+  const inputs = transformPatchToInput({ [fieldName]: targets }, { [fieldName]: operation });
+  const { element: patchedFrom } = await updateAttributeFromLoadedWithRefs(context, user, initial, inputs, opts);
+  return patchedFrom;
 };
 
 export const stixObjectOrRelationshipAddRefRelation = async (

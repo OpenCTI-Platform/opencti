@@ -2,7 +2,7 @@ import * as R from 'ramda';
 import { v4 as uuidv4 } from 'uuid';
 import { RELATION_OBJECT } from '../schema/stixRefRelationship';
 import { listAllThings } from '../database/middleware';
-import { internalFindByIds, listEntities, listEntitiesThroughRelationsPaginated, storeLoadById } from '../database/middleware-loader';
+import { internalFindByIds, internalLoadById, listEntities, listEntitiesThroughRelationsPaginated, storeLoadById } from '../database/middleware-loader';
 import { ABSTRACT_BASIC_RELATIONSHIP, ABSTRACT_STIX_REF_RELATIONSHIP, ABSTRACT_STIX_RELATIONSHIP, buildRefRelationKey, ENTITY_TYPE_CONTAINER } from '../schema/general';
 import { isStixDomainObjectContainer } from '../schema/stixDomainObject';
 import { buildPagination, READ_ENTITIES_INDICES, READ_INDEX_STIX_DOMAIN_OBJECTS, READ_RELATIONSHIPS_INDICES } from '../database/utils';
@@ -141,5 +141,7 @@ export const knowledgeAddFromInvestigation = async (context, user, { containerId
   const ids = investigation.investigated_entities_ids?.filter((id) => id !== containerId);
   const toIds = await filterUnwantedEntitiesOut({ context, user, ids });
   const containerInput = { toIds, relationship_type: 'object' };
-  return await stixCoreObjectAddRelations(context, user, containerId, containerInput);
+  const patched = await stixCoreObjectAddRelations(context, user, containerId, containerInput);
+  // Reload on this is mandatory to get the rel_ from the element for accurate counting
+  return internalLoadById(context, user, patched.internal_id, patched.entity_type);
 };
