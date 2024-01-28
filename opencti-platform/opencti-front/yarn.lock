@@ -15209,7 +15209,7 @@ __metadata:
     uuid: 9.0.1
     vite: 5.0.12
     vite-plugin-relay: 2.0.0
-    vite-plugin-static-copy: 1.0.0
+    vite-plugin-static-copy: 1.0.1
     vitest: 1.2.1
     yup: 1.3.3
   languageName: unknown
@@ -20328,9 +20328,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"vite-plugin-static-copy@npm:1.0.0":
-  version: 1.0.0
-  resolution: "vite-plugin-static-copy@npm:1.0.0"
+"vite-plugin-static-copy@npm:1.0.1":
+  version: 1.0.1
+  resolution: "vite-plugin-static-copy@npm:1.0.1"
   dependencies:
     chokidar: ^3.5.3
     fast-glob: ^3.2.11
@@ -20338,7 +20338,7 @@ __metadata:
     picocolors: ^1.0.0
   peerDependencies:
     vite: ^5.0.0
-  checksum: 93fd2167e356b50d1d29f7f8809bb63ef078437f9e13bdaa2fedb1fde73b7488d87ccf1a8115c7616f94327ccbd9188c074a23c18d1264e513aa6f1eb9e10ce9
+  checksum: 0ab846f193a47e7460c63a778ddb8a51842003a3761ab9dadb4fcd88a10f8a31b0f5fc44be07dd577f2d7d637caf9ed3a28b7a3de5be491c1b394757c093763a
   languageName: node
   linkType: hard
 
