@@ -43,6 +43,7 @@ const stixCoreObjectSubscribersCountQuery = graphql`
     triggersKnowledge(filters: $filters, includeAuthorities: $includeAuthorities, search: $search) {
       edges {
         node {
+          id
           recipients {
             name
             id
@@ -86,9 +87,9 @@ const StixCoreObjectSubscribers: FunctionComponent<ContainerHeaderSharedProps> =
             onClose={() => setDisplaySubscribers(false)}
           >
             <List>
-              {triggersKnowledge?.edges.map((triggerNode) => (
-                <>
-                  {triggerNode?.node?.recipients?.map((recipient) => (
+              {triggersKnowledge?.edges.map((triggerEdge) => (
+                <React.Fragment key={triggerEdge.node.id}>
+                  {triggerEdge?.node?.recipients?.map((recipient) => (
                     <ListItem
                       classes={{ root: classes.item }}
                       key={recipient.id}
@@ -106,7 +107,7 @@ const StixCoreObjectSubscribers: FunctionComponent<ContainerHeaderSharedProps> =
                       </ListItemIcon>
                     </ListItem>
                   ))}
-                </>
+                </React.Fragment>
               ))}
             </List>
           </Drawer>
