@@ -2468,6 +2468,17 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#feed-configuration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Feed configuration
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#live-streams" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -2491,10 +2502,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#scenario" class="md-nav__link">
+  <a href="#illustrative-scenario" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Scenario
+        Illustrative scenario
       
     </span>
   </a>
@@ -4379,6 +4390,17 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#feed-configuration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Feed configuration
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#live-streams" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -4402,10 +4424,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#scenario" class="md-nav__link">
+  <a href="#illustrative-scenario" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Scenario
+        Illustrative scenario
       
     </span>
   </a>
@@ -4536,19 +4558,33 @@
 
 
 <h1 id="native-feeds">Native feeds</h1>
+<p>OpenCTI provides versatile mechanisms for sharing data through its built-in feeds, including Live Stream, TAXII collection, and CSV feeds.</p>
+<h2 id="feed-configuration">Feed configuration</h2>
+<p>Feeds are configured in the "Data &gt; Data sharing" window. Configuration for all feed types is uniform and relies on the following parameters:</p>
+<ul>
+<li>Filter setup: The feed can have specific filters to publish only a subset of the platform overall knowledge. Any data that meets the criteria established by the user's feed filters will be shared (e.g. specific types of entities, labels, marking definitions, etc.).</li>
+<li>Access control: A feed can be either public, i.e. accessible without authentication, or restricted. By default, it's accessible to any user with the "Access data sharing" capability, but it's possible to increase restrictions by limiting access to a specific user, group, or organization.</li>
+</ul>
+<p><a class="glightbox" href="../assets/feed-access-restriction.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="Feed access restriction" src="../assets/feed-access-restriction.png" /></a></p>
+<p>By carefully configuring filters and access controls, you can tailor the behavior of Live Stream, TAXII collection, and CSV feeds to align with your specific data-sharing needs.</p>
 <h2 id="live-streams">Live streams</h2>
 <h3 id="introduction">Introduction</h3>
-<p>The best way to consume OpenCTI data, whether it is through a <a href="../../deployment/connectors/#stream-section">stream connector</a> or within another OpenCTI instance, is to use the live streams. Live streams are like TAXII collection (ie. serving STIX 2.1 bundles) but <em>under steroids</em>. This means that live streams are supporting:</p>
+<p>Live Streams, an exclusive OpenCTI feature, increase the capacity for real-time data sharing by serving STIX 2.1 bundles as TAXII collections with advanced capabilities. What distinguishes them is their dynamic nature, which includes the creation, updating, and deletion of data. Unlike TAXII, Live Streams comprehensively resolve relationships and dependencies, ensuring a more nuanced and interconnected exchange of information. This is particularly beneficial in scenarios where sharing involves entities with complex relationships, providing a richer context for the shared data. When sharing data between two OpenCTI platforms, Live Streams are the preferred mechanism.</p>
+<p>In scenarios involving data sharing between two OpenCTI platforms, Live Streams emerge as the preferred mechanism. Consuming OpenCTI data, whether through a <a href="../../deployment/connectors/#stream-section">stream connector</a> or within another OpenCTI instance, is most efficiently achieved through Live Streams. These streams operate like TAXII collections but are notably enhanced, supporting:</p>
 <ul>
-<li>create, update and delete events depending on the filters ;</li>
-<li>caching already created entities in the last 5 minutes ;</li>
-<li>resolving relationships and dependencies even out of the filters ;</li>
-<li>they can be public (without authentication).</li>
+<li>create, update and delete events depending on the parameters,</li>
+<li>caching already created entities in the last 5 minutes,</li>
+<li>resolving relationships and dependencies even out of the filters,</li>
+<li>can be public (without authentication).</li>
 </ul>
 <p><a class="glightbox" href="../assets/live-stream.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="Live stream" src="../assets/live-stream.png" /></a></p>
-<h3 id="scenario">Scenario</h3>
+<div class="admonition warning">
+<p class="admonition-title">Resolve relationships and dependencies</p>
+<p>Dependencies and relationships of entities shared via Live Streams, as determined by specified filters, are automatically shared even beyond the confines of these filters. This means that interconnected data, which may not directly meet the filter criteria, is still included in the Live Stream. However, OpenCTI data segregation mechanisms are still applied. They allow to restrict access to shared data based on factors such as markings or organization. It's imperative to carefully configure and manage these access controls to ensure that no confidential data is shared.</p>
+</div>
+<h3 id="illustrative-scenario">Illustrative scenario</h3>
 <p>To better understand how live streams are working, let's take a few examples, from simple to complex.</p>
-<p>Given a live stream with filters <em>Entity type: Indicator</em> <code>AND</code> <em>Label: detection</em>. Let's see what happen with an indicator with:</p>
+<p>Given a live stream with filters <em>Entity type: Indicator</em> <code>AND</code> <em>Label: detection</em>. Let's see what happens with an indicator with:</p>
 <ul>
 <li>Marking definition: <code>TLP:GREEN</code></li>
 <li>Author <code>Crowdstrike</code></li>
@@ -4558,8 +4594,8 @@
 <thead>
 <tr>
 <th style="text-align: left;">Action</th>
-<th style="text-align: left;">Result in stream (<code>resolve-dependencies=false</code>)</th>
-<th style="text-align: left;">Result in stream (<code>resolve-dependencies=true</code>)</th>
+<th style="text-align: left;">Result in stream (with <code>Avoid dependencies resolution=true</code>)</th>
+<th style="text-align: left;">Result in stream (with <code>Avoid dependencies resolution=false</code>)</th>
 </tr>
 </thead>
 <tbody>
@@ -4576,7 +4612,7 @@
 <tr>
 <td style="text-align: left;">3. Remove the label <code>detection</code></td>
 <td style="text-align: left;">Delete the indicator</td>
-<td style="text-align: left;">Delete the indicator</td>
+<td style="text-align: left;">Delete the indicator and the relationship</td>
 </tr>
 <tr>
 <td style="text-align: left;">4. Add the label <code>detection</code></td>
@@ -4586,18 +4622,20 @@
 <tr>
 <td style="text-align: left;">5. Delete the indicator</td>
 <td style="text-align: left;">Delete the indicator</td>
-<td style="text-align: left;">Delete the indicator</td>
+<td style="text-align: left;">Delete the indicator  and the relationship</td>
 </tr>
 </tbody>
 </table>
+<p>Details on how to consume these Live Streams can be found on <a href="../import-automated/">the dedicated page</a>.</p>
 <h2 id="taxii-collections">TAXII Collections</h2>
 <p>OpenCTI has an embedded TAXII API endpoint which provides valid STIX 2.1 bundles. If you wish to know more about the TAXII standard, <a href="https://oasis-open.github.io/cti-documentation/taxii/intro.html">please read the official introduction</a>.</p>
-<p>In OpenCTI you can create as many TAXII 2.1 collections as needed. Each of them can have specific filters to publish only a subset of the platform overall knowledge (specific types of entities, labels, marking definitions, etc.).</p>
+<p>In OpenCTI you can create as many TAXII 2.1 collections as needed. </p>
 <p><a class="glightbox" href="../assets/taxii-collection.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="TAXII Collection" src="../assets/taxii-collection.png" /></a></p>
-<p>After creating a new collection, every systems with a proper access token can consume the collection using different kinds of authentication (basic, bearer, etc.)</p>
+<p>After creating a new collection, every system with a proper access token can consume the collection using different kinds of authentication (basic, bearer, etc.). </p>
 <p>As when using the GraphQL API, TAXII 2.1 collections have a classic pagination system that should be handled by the consumer. Also, it's important to understand that element dependencies (nested IDs) inside the collection are not always contained/resolved in the bundle, so consistency needs to be handled at the client level.</p>
 <h2 id="csv-feeds">CSV feeds</h2>
-<p>OpenCTI is able to publish data in CSV feeds on a rolling period.</p>
+<p>The CSV feed facilitates the automatic generation of a CSV file, accessible via a URL. The CSV file is regenerated and updated at user-defined intervals, providing flexibility.</p>
+<p><a class="glightbox" href="../assets/csv-feed.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="CSV feed" src="../assets/csv-feed.png" /></a></p>
 
 
 
@@ -4620,7 +4658,7 @@
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1-2.1-2M12.5 7v5.2l4 2.4-1 1L11 13V7h1.5M11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2v1.8Z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago"><span class="timeago" datetime="2023-09-08T12:32:09+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date">2023-09-08</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago"><span class="timeago" datetime="2024-01-25T01:35:09+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date">2024-01-25</span>
   </span>
 
     
@@ -4648,19 +4686,19 @@
     
     <nav>
       
+        <a href="https://github.com/Lhorus6" class="md-author" title="@Lhorus6">
+          
+          <img src="https://avatars.githubusercontent.com/u/70956706?v=4&size=72" alt="Lhorus6">
+        </a>
+      
         <a href="https://github.com/SamuelHassine" class="md-author" title="@SamuelHassine">
           
-          <img src="https://avatars.githubusercontent.com/u/1334279?size=72" alt="SamuelHassine">
+          <img src="https://avatars.githubusercontent.com/u/1334279?v=4&size=72" alt="SamuelHassine">
         </a>
       
         <a href="https://github.com/richard-julien" class="md-author" title="@richard-julien">
           
-          <img src="https://avatars.githubusercontent.com/u/285555?size=72" alt="richard-julien">
-        </a>
-      
-        <a href="https://github.com/Lhorus6" class="md-author" title="@Lhorus6">
-          
-          <img src="https://avatars.githubusercontent.com/u/70956706?size=72" alt="Lhorus6">
+          <img src="https://avatars.githubusercontent.com/u/285555?v=4&size=72" alt="richard-julien">
         </a>
       
       
