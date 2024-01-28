@@ -396,7 +396,7 @@ describe('Elasticsearch pagination', () => {
   it('should entity paginate everything', async () => {
     const data = await elPaginate(testContext, ADMIN_USER, READ_ENTITIES_INDICES, { first: ES_MAX_PAGINATION });
     expect(data).not.toBeNull();
-    expect(data.edges.length).toEqual(493);
+    expect(data.edges.length).toEqual(492);
     const filterBaseTypes = R.uniq(R.map((e) => e.node.base_type, data.edges));
     expect(filterBaseTypes.length).toEqual(1);
     expect(R.head(filterBaseTypes)).toEqual('ENTITY');
@@ -472,7 +472,7 @@ describe('Elasticsearch pagination', () => {
       filterGroups: [],
     };
     const data = await elPaginate(testContext, ADMIN_USER, READ_ENTITIES_INDICES, { filters, first: ES_MAX_PAGINATION });
-    expect(data.edges.length).toEqual(486);
+    expect(data.edges.length).toEqual(485);
   });
   it('should entity paginate with field exist filter', async () => {
     const filters = {
@@ -553,7 +553,7 @@ describe('Elasticsearch pagination', () => {
       orderMode: 'asc',
       first: ES_MAX_PAGINATION
     });
-    expect(data.edges.length).toEqual(493);
+    expect(data.edges.length).toEqual(492);
     const createdDates = R.map((e) => e.node.created, data.edges);
     let previousCreatedDate = null;
     for (let index = 0; index < createdDates.length; index += 1) {
