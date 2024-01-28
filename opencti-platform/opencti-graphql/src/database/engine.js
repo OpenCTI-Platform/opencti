@@ -69,6 +69,7 @@ import { getParentTypes, keepMostRestrictiveTypes } from '../schema/schemaUtils'
 import {
   ATTRIBUTE_ABSTRACT,
   ATTRIBUTE_DESCRIPTION,
+  ATTRIBUTE_DESCRIPTION_OPENCTI,
   ATTRIBUTE_EXPLANATION,
   ATTRIBUTE_NAME,
   ENTITY_TYPE_IDENTITY_INDIVIDUAL,
@@ -1315,8 +1316,11 @@ const BASE_SEARCH_ATTRIBUTES = [
   `${ATTRIBUTE_NAME}^5`,
   `${ATTRIBUTE_ABSTRACT}^5`,
   `${ATTRIBUTE_EXPLANATION}^5`,
+  `${ID_INTERNAL}^5`,
+  `${ID_STANDARD}^5`,
+  `${IDS_STIX}^5`,
   `${ATTRIBUTE_DESCRIPTION}^2`,
-  'x_opencti_description^2',
+  `${ATTRIBUTE_DESCRIPTION_OPENCTI}^2`,
   // Add all other attributes
   'aliases',
   'x_opencti_aliases',
