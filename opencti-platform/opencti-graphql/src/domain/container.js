@@ -60,7 +60,6 @@ export const objects = async (context, user, containerId, args) => {
         hasNextPage = false;
         paginatedElements.pageInfo = currentPagination.pageInfo;
         paginatedElements.edges = [...(paginatedElements.edges ?? []), ...currentPagination.edges];
-        return paginatedElements;
       }
       if (currentPagination.edges.length > 0) {
         const { cursor } = currentPagination.edges[currentPagination.edges.length - 1];
@@ -69,6 +68,7 @@ export const objects = async (context, user, containerId, args) => {
         paginatedElements.edges = [...(paginatedElements.edges ?? []), ...currentPagination.edges];
       }
     }
+    return paginatedElements;
   }
   return listEntitiesThroughRelationsPaginated(context, user, containerId, RELATION_OBJECT, types, false, baseOpts);
 };

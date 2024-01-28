@@ -60,14 +60,9 @@ const BasicRelationshipDetails: FunctionComponent<BasicRelationshipDetailsProps>
       <Typography variant="h3" gutterBottom={true} className={classes.label}>
         {t_i18n('Marking')}
       </Typography>
-      {relation.markedBy
-        && relation.markedBy.length > 0 ? (
-          <ItemMarkings markingDefinitions={relation.markedBy ?? []}
-            limit={2}
-          />
-        ) : (
-          '-'
-        )}
+      {relation.markedBy && relation.markedBy.length > 0 ? (
+        <ItemMarkings markingDefinitions={relation.markedBy} limit={2}/>
+      ) : ('-')}
     </div>
   );
 };

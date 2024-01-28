@@ -113,7 +113,7 @@ const CaseTaskOverview: FunctionComponent<CaseTaskOverviewProps> = ({
             {t_i18n('Processing status')}
           </Typography>
           <ItemStatus status={data.status} disabled={!data.workflowEnabled} />
-          {data.objectMarking && (
+          {data.objectMarking && data.objectMarking.length > 0 && (
             <>
               <Typography
                 variant="h3"
@@ -122,7 +122,7 @@ const CaseTaskOverview: FunctionComponent<CaseTaskOverviewProps> = ({
               >
                 {t_i18n('Marking')}
               </Typography>
-              <ItemMarkings markingDefinitions={data.objectMarking ?? []}/>
+              <ItemMarkings markingDefinitions={data.objectMarking}/>
             </>
           )}
         </Grid>
