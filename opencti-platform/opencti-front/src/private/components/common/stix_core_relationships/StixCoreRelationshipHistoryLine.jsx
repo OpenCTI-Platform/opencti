@@ -6,7 +6,7 @@ import { deepOrange, deepPurple, green, indigo, pink, red, teal, yellow } from '
 import withStyles from '@mui/styles/withStyles';
 import Paper from '@mui/material/Paper';
 import Avatar from '@mui/material/Avatar';
-import { AddOutlined, DeleteOutlined, EditOutlined, HelpOutlined, LanguageOutlined, LinkOffOutlined, LinkOutlined } from '@mui/icons-material';
+import { AddOutlined, DeleteOutlined, EditOutlined, HelpOutlined, LinkOffOutlined, LinkOutlined, OpenInBrowserOutlined } from '@mui/icons-material';
 import { LinkVariantPlus, LinkVariantRemove, Merge } from 'mdi-material-ui';
 import Tooltip from '@mui/material/Tooltip';
 import List from '@mui/material/List';
@@ -20,15 +20,14 @@ import DialogContent from '@mui/material/DialogContent';
 import DialogActions from '@mui/material/DialogActions';
 import Button from '@mui/material/Button';
 import DialogContentText from '@mui/material/DialogContentText';
-import Slide from '@mui/material/Slide';
+import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
+import IconButton from '@mui/material/IconButton';
+import { Link } from 'react-router-dom';
 import { truncate } from '../../../../utils/String';
 import inject18n from '../../../../components/i18n';
 import MarkdownDisplay from '../../../../components/MarkdownDisplay';
-
-const Transition = React.forwardRef((props, ref) => (
-  <Slide direction="up" ref={ref} {...props} />
-));
-Transition.displayName = 'TransitionSlide';
+import ItemIcon from '../../../../components/ItemIcon';
+import Transition from '../../../../components/Transition';
 
 const styles = (theme) => ({
   container: {
@@ -342,17 +341,15 @@ class StixCoreRelationshipHistoryLineComponent extends Component {
                       if (externalReference.url) {
                         return (
                           <ListItem
+                            component={Link}
                             key={externalReference.id}
+                            to={`/dashboard/analyses/external_references/${externalReference.id}`}
                             dense={true}
                             divider={true}
                             button={true}
-                            onClick={this.handleOpenExternalLink.bind(
-                              this,
-                              externalReference.url,
-                            )}
                           >
                             <ListItemIcon>
-                              <LanguageOutlined />
+                              <ItemIcon type="External-Reference" />
                             </ListItemIcon>
                             <ListItemText
                               primary={`${externalReference.source_name} ${externalReferenceId}`}
@@ -361,20 +358,34 @@ class StixCoreRelationshipHistoryLineComponent extends Component {
                                 90,
                               )}
                             />
+                            <ListItemSecondaryAction>
+                              <Tooltip title={t('Browse the link')}>
+                                <IconButton
+                                  onClick={this.handleOpenExternalLink.bind(
+                                    this,
+                                    externalReference.url,
+                                  )}
+                                  size="large"
+                                  color="primary"
+                                >
+                                  <OpenInBrowserOutlined />
+                                </IconButton>
+                              </Tooltip>
+                            </ListItemSecondaryAction>
                           </ListItem>
                         );
                       }
                       return (
                         <ListItem
+                          component={Link}
                           key={externalReference.id}
+                          to={`/dashboard/analyses/external_references/${externalReference.id}`}
                           dense={true}
                           divider={true}
-                          button={false}
+                          button={true}
                         >
                           <ListItemIcon>
-                            <Avatar classes={{ root: classes.avatar }}>
-                              {externalReference.source_name.substring(0, 1)}
-                            </Avatar>
+                            <ItemIcon type="External-Reference" />
                           </ListItemIcon>
                           <ListItemText
                             primary={`${externalReference.source_name} ${externalReferenceId}`}

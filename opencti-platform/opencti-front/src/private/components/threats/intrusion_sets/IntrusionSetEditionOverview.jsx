@@ -12,7 +12,7 @@ import MarkdownField from '../../../../components/MarkdownField';
 import ConfidenceField from '../../common/form/ConfidenceField';
 import CommitMessage from '../../common/form/CommitMessage';
 import { adaptFieldValue } from '../../../../utils/String';
-import { convertCreatedBy, convertKillChainPhases, convertMarkings, convertStatus } from '../../../../utils/edition';
+import { convertCreatedBy, convertMarkings, convertStatus } from '../../../../utils/edition';
 import StatusField from '../../common/form/StatusField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import { useSchemaEditionValidation } from '../../../../utils/hooks/useEntitySettings';
@@ -118,7 +118,6 @@ const IntrusionSetEditionOverviewComponent = (props) => {
       R.assoc('x_opencti_workflow_id', values.x_opencti_workflow_id?.value),
       R.assoc('createdBy', values.createdBy?.value),
       R.assoc('objectMarking', R.pluck('value', values.objectMarking)),
-      R.assoc('killChainPhases', R.pluck('value', values.killChainPhases)),
       R.toPairs,
       R.map((n) => ({
         key: n[0],
@@ -162,7 +161,6 @@ const IntrusionSetEditionOverviewComponent = (props) => {
 
   const initialValues = R.pipe(
     R.assoc('createdBy', convertCreatedBy(intrusionSet)),
-    R.assoc('killChainPhases', convertKillChainPhases(intrusionSet)),
     R.assoc('x_opencti_workflow_id', convertStatus(t_i18n, intrusionSet)),
     R.assoc('objectMarking', convertMarkings(intrusionSet)),
     R.assoc('references', []),
@@ -172,7 +170,6 @@ const IntrusionSetEditionOverviewComponent = (props) => {
       'confidence',
       'description',
       'createdBy',
-      'killChainPhases',
       'objectMarking',
       'x_opencti_workflow_id',
     ]),

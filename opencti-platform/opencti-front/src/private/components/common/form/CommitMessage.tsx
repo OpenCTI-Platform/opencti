@@ -15,11 +15,12 @@ import Security from '../../../../utils/Security';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 
 const useStyles = makeStyles(() => ({
-  flex: {
+  buttons: {
     marginTop: 20,
-    display: 'inline-flex',
-    justifyContent: 'space-between',
-    width: '100%',
+    textAlign: 'right',
+  },
+  button: {
+    marginLeft: 10,
   },
 }));
 
@@ -50,15 +51,12 @@ const CommitMessage: FunctionComponent<CommitMessageProps> = ({
 }) => {
   const { t_i18n } = useFormatter();
   const classes = useStyles();
-
   const [controlOpen, setControlOpen] = useState<boolean>(open ?? false);
   const handleOpenControl = () => setControlOpen(true);
   const handleCloseControl = () => setControlOpen(false);
-
   const validateReferences = (
     references: ExternalReferencesValues | undefined,
   ) => !!references && references.length > 0;
-
   const onSubmitFromDialog = async () => {
     await submitForm();
     handleClose?.();
@@ -70,17 +68,18 @@ const CommitMessage: FunctionComponent<CommitMessageProps> = ({
   // - BYPASSREFERENCE capa is defined --> user is able to bypass the ref selection + commit message, no dialog
 
   return (
-    <div>
+    <>
       {!handleClose && (
-        <div className={classes.flex}>
+        <div className={classes.buttons}>
           <Security needs={[BYPASSREFERENCE]}>
             <Button
-              variant="outlined"
-              color="primary"
+              variant="contained"
+              color="warning"
               onClick={submitForm} // directly submit
               disabled={disabled}
+              classes={{ root: classes.button }}
             >
-              {t_i18n('Direct Update')}
+              {t_i18n('Update without references')}
             </Button>
           </Security>
           <Button
@@ -88,6 +87,7 @@ const CommitMessage: FunctionComponent<CommitMessageProps> = ({
             color="primary"
             onClick={handleOpenControl}
             disabled={disabled}
+            classes={{ root: classes.button }}
           >
             {t_i18n('Update')}
           </Button>
@@ -129,7 +129,7 @@ const CommitMessage: FunctionComponent<CommitMessageProps> = ({
           </Button>
         </DialogActions>
       </Dialog>
-    </div>
+    </>
   );
 };
 

@@ -86,7 +86,7 @@ import { INTERNAL_FROM_FIELD, INTERNAL_TO_FIELD } from '../schema/identifier';
 import { BYPASS, computeUserMemberAccessIds, executionContext, INTERNAL_USERS, isBypassUser, MEMBER_ACCESS_ALL, SYSTEM_USER } from '../utils/access';
 import { isSingleRelationsRef, } from '../schema/stixEmbeddedRelationship';
 import { now, runtimeFieldObservableValueScript } from '../utils/format';
-import { ENTITY_TYPE_MARKING_DEFINITION, isStixMetaObject } from '../schema/stixMetaObject';
+import { ENTITY_TYPE_KILL_CHAIN_PHASE, ENTITY_TYPE_MARKING_DEFINITION, isStixMetaObject } from '../schema/stixMetaObject';
 import { getEntitiesListFromCache, getEntityFromCache } from './cache';
 import { ENTITY_TYPE_MIGRATION_STATUS, ENTITY_TYPE_SETTINGS, ENTITY_TYPE_STATUS, ENTITY_TYPE_USER, isInternalObject } from '../schema/internalObject';
 import { telemetry } from '../config/tracing';
@@ -976,6 +976,24 @@ export const RUNTIME_ATTRIBUTES = {
         }
     `,
     getParams: async (context, user) => getRuntimeMarkings(context, user),
+  },
+  killChainPhases: {
+    field: 'killChainPhases.keyword',
+    type: 'keyword',
+    getSource: async () => `
+        if (doc.containsKey('rel_kill-chain-phase.internal_id')) {
+          def killChainPhaseId = doc['rel_kill-chain-phase.internal_id.keyword'];
+          if (killChainPhaseId.size() >= 1) {
+            def killChainPhaseName = params[killChainPhaseId[0]];
+            emit(killChainPhaseName != null ? killChainPhaseName : 'Unknown')
+          } else {
+            emit('Unknown')
+          }
+        } else {
+          emit('Unknown')
+        }
+    `,
+    getParams: async (context, user) => getRuntimeEntities(context, user, ENTITY_TYPE_KILL_CHAIN_PHASE),
   },
   objectAssignee: {
     field: 'objectAssignee.keyword',
