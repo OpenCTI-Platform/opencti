@@ -41,6 +41,7 @@ const vulnerabilityQuery = graphql`
       standard_id
       entity_type
       name
+      x_opencti_aliases
       x_opencti_graph_data
       ...Vulnerability_vulnerability
       ...VulnerabilityKnowledge_vulnerability
@@ -128,6 +129,7 @@ class RootVulnerability extends Component {
                       stixDomainObject={vulnerability}
                       PopoverComponent={<VulnerabilityPopover />}
                       enableQuickSubscription={true}
+                      isOpenctiAlias={true}
                     />
                     <Box
                       sx={{
