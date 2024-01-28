@@ -4681,12 +4681,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/ramda@npm:0.29.9":
-  version: 0.29.9
-  resolution: "@types/ramda@npm:0.29.9"
+"@types/ramda@npm:0.29.10":
+  version: 0.29.10
+  resolution: "@types/ramda@npm:0.29.10"
   dependencies:
-    types-ramda: ^0.29.6
-  checksum: b4d3746f2770f05f276901e1490ed733cb8a2f2aea1bb8b651914cf89dee93832c1dc61914dad1b35054f0eb7597491963335d27cd98fe4f293a67529b66382d
+    types-ramda: ^0.29.7
+  checksum: 79450e385f25cc5766553879a46fdaab8e2ea06733ca755cbd5f41fb383de171d2c4612050e3fe83ce5bc68beae1cb3d5e016a2dd54042534c5b2906c8236784
   languageName: node
   linkType: hard
 
@@ -10938,7 +10938,7 @@ __metadata:
     "@types/express": 4.17.21
     "@types/graphql-upload": 16.0.7
     "@types/nconf": 0.10.6
-    "@types/ramda": 0.29.9
+    "@types/ramda": 0.29.10
     "@types/tough-cookie": 4.0.5
     "@types/turndown": 5.0.4
     "@types/uuid": 9.0.8
@@ -13294,12 +13294,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"types-ramda@npm:^0.29.6":
-  version: 0.29.6
-  resolution: "types-ramda@npm:0.29.6"
+"types-ramda@npm:^0.29.7":
+  version: 0.29.7
+  resolution: "types-ramda@npm:0.29.7"
   dependencies:
     ts-toolbelt: ^9.6.0
-  checksum: 1ac472aae8ca6f4b73668a7aeaac1560286f5176149ce8fd18e8f4dfb5485e46b13ca6ef626f1de94f42bf96509e0e21bfed98f0ff41d9e6ab51b7cfb36aed20
+  checksum: 4395a771c6f553bbd2641a0aa70b6c04c396c65678cc1921ef6b84d31298e8ad49adcb9271dd354c9348a6b29d9d4733b676a627652043f1f0403c316009e71d
   languageName: node
   linkType: hard
 
