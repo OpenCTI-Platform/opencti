@@ -33,18 +33,18 @@ Here are the configuration keys, for both containers (environment variables) and
 
 #### Basic parameters
 
-| Parameter                | Environment variable      | Default value         | Description                                                      |
-|:-------------------------|:--------------------------|:----------------------|:-----------------------------------------------------------------|
-| app:port                 | APP__PORT                 | 4000                  | Listen port of the application                                   |
-| app:base_path            | APP__BASE_PATH            |                       | Specific URI (ie. /opencti)                                      |
-| app:base_url             | APP__BASE_URL             | http://localhost:4000 | Full URL of the platform (should include the `base_path` if any) |
-| app:request_timeout      | APP__REQUEST_TIMEOUT      | 1200000               | Request timeout, in ms (default 20 minutes)                      |
-| app:session_timeout      | APP__SESSION_TIMEOUT      | 0                     | Session timeout, in ms (default 0 minute - disabled)             |
-| app:session_idle_timeout | APP__SESSION_IDLE_TIMEOUT | 1200000               | Idle timeout, in ms (default 20 minutes)                         |
-| app:session_cookie       | APP__SESSION_COOKIE       | false                 | Use memory/session cookie instead of persistent one              |
-| app:admin:email          | APP__ADMIN__EMAIL         | admin@opencti.io      | Default login email of the admin user                            |
-| app:admin:password       | APP__ADMIN__PASSWORD      | ChangeMe              | Default password of the admin user                               |
-| app:admin:token          | APP__ADMIN__TOKEN         | ChangeMe              | Default token (must be a valid UUIDv4)                           |
+| Parameter                | Environment variable      | Default value         | Description                                                                                                                                                     |
+|:-------------------------|:--------------------------|:----------------------|:----------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| app:port                 | APP__PORT                 | 4000                  | Listen port of the application                                                                                                                                  |
+| app:base_path            | APP__BASE_PATH            |                       | Specific URI (ie. /opencti)                                                                                                                                     |
+| app:base_url             | APP__BASE_URL             | http://localhost:4000 | Full URL of the platform (should include the `base_path` if any)                                                                                                |
+| app:request_timeout      | APP__REQUEST_TIMEOUT      | 1200000               | Request timeout, in ms (default 20 minutes)                                                                                                                     |
+| app:session_timeout      | APP__SESSION_TIMEOUT      | 1200000               | Session timeout, in ms (default 20 minutes)                                                                                                                     |
+| app:session_idle_timeout | APP__SESSION_IDLE_TIMEOUT | 0                     | Idle timeout (locking the screen), in ms (default 0 minute - disabled)                                                                                          |
+| app:session_cookie       | APP__SESSION_COOKIE       | false                 | Use memory/session cookie instead of persistent one                                                                                                             |
+| app:admin:email          | APP__ADMIN__EMAIL         | admin@opencti.io      | Default login email of the admin user                                                                                                                           |
+| app:admin:password       | APP__ADMIN__PASSWORD      | ChangeMe              | Default password of the admin user                                                                                                                              |
+| app:admin:token          | APP__ADMIN__TOKEN         | ChangeMe              | Default token (must be a valid UUIDv4)                                                                                                                          |
 | app:health_access_key    | APP__HEALTH_ACCESS_KEY    | ChangeMe              | Access key that enables access to the `/health` endpoint. Must be changed - will not respond to default value. Access with `/health?health_access_key=ChangeMe` |
 
 #### Network and security
