@@ -173,6 +173,11 @@ export const registerConnectorQueues = async (id, name, type, scope) => {
   return connectorConfig(id);
 };
 
+export const initializeInternalQueues = async () => {
+  await registerConnectorQueues(INTERNAL_PLAYBOOK_QUEUE, 'Internal playbook manager', 'internal', 'playbook');
+  await registerConnectorQueues(INTERNAL_SYNC_QUEUE, 'Internal sync manager', 'internal', 'sync');
+};
+
 export const unregisterConnector = async (id) => {
   const listen = await amqpExecute(async (channel) => {
     const deleteQueue = util.promisify(channel.deleteQueue).bind(channel);

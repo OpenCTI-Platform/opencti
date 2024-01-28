@@ -3,10 +3,9 @@ import { defineConfig } from 'vitest/config';
 import graphql from '@rollup/plugin-graphql';
 import type { PluginOption } from 'vite';
 import type { TestSequencer, WorkspaceSpec } from 'vitest/node';
-import vitestMigrationPlugin from './builder/plugin/vitestMigrationPlugin';
 
 export const buildTestConfig = (include: string[]) => defineConfig({
-  plugins: [graphql() as PluginOption, vitestMigrationPlugin() as PluginOption],
+  plugins: [graphql() as PluginOption],
   test: {
     include,
     testTimeout: 1200000,

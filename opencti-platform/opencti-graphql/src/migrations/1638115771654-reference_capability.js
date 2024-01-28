@@ -1,5 +1,5 @@
-import { createCapabilities } from '../initialization';
 import { BYPASS_REFERENCE, executionContext } from '../utils/access';
+import { createCapabilities } from '../database/data-initialization';
 
 export const up = async (next) => {
   const context = executionContext('migration');
