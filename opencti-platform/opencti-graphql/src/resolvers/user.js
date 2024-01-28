@@ -80,7 +80,7 @@ const userResolvers = {
   User: {
     roles: (current, args, context) => rolesUsersLoader.load(current.id, context, context.user, args),
     groups: (current, args, context) => userGroupsPaginated(context, context.user, current.id, args),
-    objectOrganization: (current, args, context) => userOrganizationsPaginated(current.id, context, context.user, args),
+    objectOrganization: (current, args, context) => userOrganizationsPaginated(context, context.user, current.id, args),
     editContext: (current) => fetchEditContext(current.id),
     sessions: (current) => findUserSessions(current.id),
   },
@@ -96,7 +96,7 @@ const userResolvers = {
     language: (current) => current.language ?? 'auto',
     unit_system: (current) => current.unit_system ?? 'auto',
     groups: (current, args, context) => userGroupsPaginated(context, context.user, current.id, args),
-    objectOrganization: (current, args, context) => userOrganizationsPaginated(current.id, context, context.user, args),
+    objectOrganization: (current, args, context) => userOrganizationsPaginated(context, context.user, current.id, args),
     default_dashboards: (current, _, context) => findDefaultDashboards(context, context.user, current),
     default_dashboard: (current, _, context) => findWorskpaceById(context, context.user, current.default_dashboard),
   },

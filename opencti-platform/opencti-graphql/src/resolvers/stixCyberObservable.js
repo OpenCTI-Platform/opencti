@@ -83,7 +83,7 @@ const stixCyberObservableResolvers = {
     indicators: (stixCyberObservable, args, context) => indicatorsPaginated(context, context.user, stixCyberObservable.id, args),
   },
   Process: {
-    serviceDlls: (process, _, context) => serviceDllsPaginated(process.id, context, context.user),
+    serviceDlls: (process, args, context) => serviceDllsPaginated(context, context.user, process.id, args),
   },
   StixFile: {
     obsContent: (stixFile, _, context) => stixFileObsArtifact(context, context.user, stixFile.id),

@@ -37,14 +37,7 @@ MembersListContainerProps
   const classes = useStyles();
   const { t_i18n } = useFormatter();
   const LOCAL_STORAGE_KEY = `organization-${organization.id}-users`;
-  const { viewStorage, helpers, paginationOptions } = usePaginationLocalStorage<SettingsOrganizationUsersLinesQuery$variables>(
-    LOCAL_STORAGE_KEY,
-    {
-      sortBy: 'name',
-      orderAsc: true,
-    },
-    true,
-  );
+  const { viewStorage, helpers, paginationOptions } = usePaginationLocalStorage<SettingsOrganizationUsersLinesQuery$variables>(LOCAL_STORAGE_KEY, { sortBy: 'name', orderAsc: true }, true);
   const { searchTerm, sortBy, orderAsc } = viewStorage;
   const queryRef = useQueryLoading<SettingsOrganizationUsersLinesQuery>(
     settingsOrganizationUsersLinesQuery,
@@ -116,6 +109,13 @@ MembersListContainerProps
       </div>
       <Paper classes={{ root: classes.paper }} variant="outlined">
         <ListLines
+          handleSort={helpers.handleSort}
+          handleSearch={helpers.handleSearch}
+          handleAddFilter={helpers.handleAddFilter}
+          handleRemoveFilter={helpers.handleRemoveFilter}
+          handleToggleExports={helpers.handleToggleExports}
+          handleSwitchLocalMode={helpers.handleSwitchLocalMode}
+          handleSwitchGlobalMode={helpers.handleSwitchGlobalMode}
           sortBy={sortBy}
           orderAsc={orderAsc}
           dataColumns={dataColumns}
