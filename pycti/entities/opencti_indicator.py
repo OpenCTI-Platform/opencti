@@ -42,13 +42,9 @@ class Indicator:
                     created
                     modified
                     objectLabel {
-                        edges {
-                            node {
-                                id
-                                value
-                                color
-                            }
-                        }
+                        id
+                        value
+                        color
                     }
                 }
                 ... on Organization {
@@ -61,28 +57,20 @@ class Indicator:
                 }
             }
             objectMarking {
-                edges {
-                    node {
-                        id
-                        standard_id
-                        entity_type
-                        definition_type
-                        definition
-                        created
-                        modified
-                        x_opencti_order
-                        x_opencti_color
-                    }
-                }
+                id
+                standard_id
+                entity_type
+                definition_type
+                definition
+                created
+                modified
+                x_opencti_order
+                x_opencti_color
             }
             objectLabel {
-                edges {
-                    node {
-                        id
-                        value
-                        color
-                    }
-                }
+                id
+                value
+                color
             }
             externalReferences {
                 edges {
@@ -126,18 +114,14 @@ class Indicator:
                 }
             }
             killChainPhases {
-                edges {
-                    node {
-                        id
-                        standard_id
-                        entity_type
-                        kill_chain_name
-                        phase_name
-                        x_opencti_order
-                        created
-                        modified
-                    }
-                }
+              id
+              standard_id
+              entity_type
+              kill_chain_name
+              phase_name
+              x_opencti_order
+              created
+              modified
             }
         """
         self.properties_with_files = """
@@ -168,13 +152,9 @@ class Indicator:
                     created
                     modified
                     objectLabel {
-                        edges {
-                            node {
-                                id
-                                value
-                                color
-                            }
-                        }
+                        id
+                        value
+                        color
                     }
                 }
                 ... on Organization {
@@ -187,28 +167,20 @@ class Indicator:
                 }
             }
             objectMarking {
-                edges {
-                    node {
-                        id
-                        standard_id
-                        entity_type
-                        definition_type
-                        definition
-                        created
-                        modified
-                        x_opencti_order
-                        x_opencti_color
-                    }
-                }
+                id
+                standard_id
+                entity_type
+                definition_type
+                definition
+                created
+                modified
+                x_opencti_order
+                x_opencti_color
             }
             objectLabel {
-                edges {
-                    node {
-                        id
-                        value
-                        color
-                    }
-                }
+                id
+                value
+                color
             }
             externalReferences {
                 edges {
@@ -265,18 +237,14 @@ class Indicator:
                 }
             }
             killChainPhases {
-                edges {
-                    node {
-                        id
-                        standard_id
-                        entity_type
-                        kill_chain_name
-                        phase_name
-                        x_opencti_order
-                        created
-                        modified
-                    }
-                }
+              id
+              standard_id
+              entity_type
+              kill_chain_name
+              phase_name
+              x_opencti_order
+              created
+              modified
             }
             importFiles {
                 edges {

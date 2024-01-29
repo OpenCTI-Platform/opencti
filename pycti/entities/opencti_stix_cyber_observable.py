@@ -39,13 +39,9 @@ class StixCyberObservable:
                     created
                     modified
                     objectLabel {
-                        edges {
-                            node {
-                                id
-                                value
-                                color
-                            }
-                        }
+                        id
+                        value
+                        color
                     }
                 }
                 ... on Organization {
@@ -58,28 +54,20 @@ class StixCyberObservable:
                 }
             }
             objectMarking {
-                edges {
-                    node {
-                        id
-                        standard_id
-                        entity_type
-                        definition_type
-                        definition
-                        created
-                        modified
-                        x_opencti_order
-                        x_opencti_color
-                    }
-                }
+                id
+                standard_id
+                entity_type
+                definition_type
+                definition
+                created
+                modified
+                x_opencti_order
+                x_opencti_color
             }
             objectLabel {
-                edges {
-                    node {
-                        id
-                        value
-                        color
-                    }
-                }
+                id
+                value
+                color
             }
             externalReferences {
                 edges {
@@ -331,13 +319,9 @@ class StixCyberObservable:
                     created
                     modified
                     objectLabel {
-                        edges {
-                            node {
-                                id
-                                value
-                                color
-                            }
-                        }
+                        id
+                        value
+                        color
                     }
                 }
                 ... on Organization {
@@ -350,28 +334,20 @@ class StixCyberObservable:
                 }
             }
             objectMarking {
-                edges {
-                    node {
-                        id
-                        standard_id
-                        entity_type
-                        definition_type
-                        definition
-                        created
-                        modified
-                        x_opencti_order
-                        x_opencti_color
-                    }
-                }
+                id
+                standard_id
+                entity_type
+                definition_type
+                definition
+                created
+                modified
+                x_opencti_order
+                x_opencti_color
             }
             objectLabel {
-                edges {
-                    node {
-                        id
-                        value
-                        color
-                    }
-                }
+                id
+                value
+                color
             }
             externalReferences {
                 edges {
@@ -1686,28 +1662,20 @@ class StixCyberObservable:
                             }
                         }
                         objectMarking {
-                            edges {
-                                node {
-                                    id
-                                    standard_id
-                                    entity_type
-                                    definition_type
-                                    definition
-                                    created
-                                    modified
-                                    x_opencti_order
-                                    x_opencti_color
-                                }
-                            }
+                            id
+                            standard_id
+                            entity_type
+                            definition_type
+                            definition
+                            created
+                            modified
+                            x_opencti_order
+                            x_opencti_color
                         }
                         objectLabel {
-                            edges {
-                                node {
-                                    id
-                                    value
-                                    color
-                                }
-                            }
+                            id
+                            value
+                            color
                         }
                         externalReferences {
                             edges {
@@ -1983,19 +1951,14 @@ class StixCyberObservable:
             custom_attributes = """
                 id
                 objectMarking {
-                    edges {
-                        node {
-                            id
-                            standard_id
-                            entity_type
-                            definition_type
-                            definition
-                            x_opencti_order
-                            x_opencti_color
-                            created
-                            modified
-                        }
-                    }
+                    standard_id
+                    entity_type
+                    definition_type
+                    definition
+                    x_opencti_order
+                    x_opencti_color
+                    created
+                    modified
                 }
             """
             stix_cyber_observable = self.read(id=id, customAttributes=custom_attributes)
@@ -2397,28 +2360,20 @@ class StixCyberObservable:
                                         }
                                     }
                                     objectMarking {
-                                        edges {
-                                            node {
-                                                id
-                                                standard_id
-                                                entity_type
-                                                definition_type
-                                                definition
-                                                created
-                                                modified
-                                                x_opencti_order
-                                                x_opencti_color
-                                            }
-                                        }
+                                        id
+                                        standard_id
+                                        entity_type
+                                        definition_type
+                                        definition
+                                        created
+                                        modified
+                                        x_opencti_order
+                                        x_opencti_color
                                     }
                                     objectLabel {
-                                        edges {
-                                            node {
-                                                id
-                                                value
-                                                color
-                                            }
-                                        }
+                                        id
+                                        value
+                                        color
                                     }
                                     externalReferences {
                                         edges {
@@ -2536,28 +2491,20 @@ class StixCyberObservable:
                                         }
                                     }
                                     objectMarking {
-                                        edges {
-                                            node {
-                                                id
-                                                standard_id
-                                                entity_type
-                                                definition_type
-                                                definition
-                                                created
-                                                modified
-                                                x_opencti_order
-                                                x_opencti_color
-                                            }
-                                        }
+                                        id
+                                        standard_id
+                                        entity_type
+                                        definition_type
+                                        definition
+                                        created
+                                        modified
+                                        x_opencti_order
+                                        x_opencti_color
                                     }
                                     objectLabel {
-                                        edges {
-                                            node {
-                                                id
-                                                value
-                                                color
-                                            }
-                                        }
+                                        id
+                                        value
+                                        color
                                     }
                                     externalReferences {
                                         edges {
@@ -2676,28 +2623,20 @@ class StixCyberObservable:
                                             }
                                         }
                                         objectMarking {
-                                            edges {
-                                                node {
-                                                    id
-                                                    standard_id
-                                                    entity_type
-                                                    definition_type
-                                                    definition
-                                                    created
-                                                    modified
-                                                    x_opencti_order
-                                                    x_opencti_color
-                                                }
-                                            }
+                                            id
+                                            standard_id
+                                            entity_type
+                                            definition_type
+                                            definition
+                                            created
+                                            modified
+                                            x_opencti_order
+                                            x_opencti_color
                                         }
                                         objectLabel {
-                                            edges {
-                                                node {
-                                                    id
-                                                    value
-                                                    color
-                                                }
-                                            }
+                                            id
+                                            value
+                                            color
                                         }
                                         externalReferences {
                                             edges {
