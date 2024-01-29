@@ -227,7 +227,8 @@ class ImportContentComponent extends Component {
     const { connector_id, configuration, objectMarking } = values;
     let config = configuration;
     // Dynamically inject the markings chosen by the user into the csv mapper.
-    if (configuration && objectMarking) {
+    const isCsvConnector = !!this.state.selectedConnector?.connector_scope?.includes('text/csv');
+    if (isCsvConnector && configuration && objectMarking) {
       const parsedConfig = JSON.parse(configuration);
       if (typeof parsedConfig === 'object') {
         parsedConfig.user_chosen_markings = objectMarking.map((marking) => marking.value);

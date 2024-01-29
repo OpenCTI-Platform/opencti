@@ -14,6 +14,8 @@ import DialogContent from '@mui/material/DialogContent';
 import DialogActions from '@mui/material/DialogActions';
 import Button from '@mui/material/Button';
 import * as R from 'ramda';
+import DialogContentText from '@mui/material/DialogContentText';
+import ObjectMarkingField from '../form/ObjectMarkingField';
 import FileExportViewer from './FileExportViewer';
 import FileImportViewer from './FileImportViewer';
 import SelectField from '../../../../components/SelectField';
@@ -151,12 +153,23 @@ const FileManager = ({
   const handleCloseExport = () => setOpenExport(false);
 
   const onSubmitImport = (values, { setSubmitting, resetForm }) => {
+    const { connector_id, configuration, objectMarking } = values;
+    let config = configuration;
+    // Dynamically inject the markings chosen by the user into the csv mapper.
+    const isCsvConnector = !!selectedConnector?.connector_scope?.includes('text/csv');
+    if (isCsvConnector && configuration && objectMarking) {
+      const parsedConfig = JSON.parse(configuration);
+      if (typeof parsedConfig === 'object') {
+        parsedConfig.user_chosen_markings = objectMarking.map((marking) => marking.value);
+        config = JSON.stringify(parsedConfig);
+      }
+    }
     commitMutation({
       mutation: fileManagerAskJobImportMutation,
       variables: {
         fileName: fileToImport.id,
-        connectorId: values.connector_id,
-        configuration: values.configuration,
+        connectorId: connector_id,
+        configuration: config,
       },
       onCompleted: () => {
         setSubmitting(false);
@@ -256,7 +269,7 @@ const FileManager = ({
       <div>
         <Formik
           enableReinitialize={true}
-          initialValues={{ connector_id: '', configuration: '' }}
+          initialValues={{ connector_id: '', configuration: '', objectMarking: [] }}
           validationSchema={importValidation(
             t,
             selectedConnector?.configurations?.length > 0,
@@ -323,6 +336,19 @@ const FileManager = ({
                       })}
                     </Field>
                   )}
+                  {selectedConnector?.connector_scope?.includes('text/csv')
+                    && (
+                      <>
+                        <ObjectMarkingField
+                          name="objectMarking"
+                          style={fieldSpacingContainerStyle}
+                        />
+                        <DialogContentText>
+                          {t('Marking definitions to use by the csv mapper...')}
+                        </DialogContentText>
+                      </>
+                    )
+                  }
                 </DialogContent>
                 <DialogActions>
                   <Button onClick={handleReset} disabled={isSubmitting}>
