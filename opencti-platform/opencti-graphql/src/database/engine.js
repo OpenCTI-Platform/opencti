@@ -17,7 +17,7 @@ import {
   offsetToCursor,
   pascalize,
   READ_DATA_INDICES,
-  READ_ENTITIES_INDICES_WITHOUT_INFERRED,
+  READ_ENTITIES_INDICES,
   READ_INDEX_INFERRED_ENTITIES,
   READ_INDEX_INFERRED_RELATIONSHIPS,
   READ_INDEX_INTERNAL_OBJECTS,
@@ -31,7 +31,6 @@ import {
   READ_INDEX_STIX_SIGHTING_RELATIONSHIPS,
   READ_PLATFORM_INDICES,
   READ_RELATIONSHIPS_INDICES,
-  READ_RELATIONSHIPS_INDICES_WITHOUT_INFERRED,
   UPDATE_OPERATION_ADD,
   waitInSec,
   WRITE_PLATFORM_INDICES
@@ -1156,11 +1155,7 @@ export const elConvertHits = async (data, opts = {}) => {
   return convertedHits;
 };
 
-const computeQueryIndices = (indices, types, includeInferences) => {
-  // If no indices explicitly defined, compute them on the types
-  // If no types specified, fallback to generic READ_DATA_INDICES
-  const entityInferIndex = includeInferences ? [READ_INDEX_INFERRED_ENTITIES] : [];
-  const relationshipInferIndex = includeInferences ? [READ_INDEX_INFERRED_RELATIONSHIPS] : [];
+const computeQueryIndices = (indices, types) => {
   // If indices are explicitly defined, just rely on the definition
   if (isEmptyField(indices)) {
     // If not and have no clue about the expected types, ask for all indices.
@@ -1174,33 +1169,33 @@ const computeQueryIndices = (indices, types, includeInferences) => {
       if (isAbstract(findType)) {
         // For objects
         if (isBasicObject(findType)) {
-          if (isInternalObject(findType)) return [...entityInferIndex, READ_INDEX_INTERNAL_OBJECTS];
-          if (isStixMetaObject(findType)) return [...entityInferIndex, READ_INDEX_STIX_META_OBJECTS];
-          if (isStixDomainObject(findType)) return [...entityInferIndex, READ_INDEX_STIX_DOMAIN_OBJECTS];
-          if (isStixCoreObject(findType)) return [...entityInferIndex, READ_INDEX_STIX_DOMAIN_OBJECTS, READ_INDEX_STIX_CYBER_OBSERVABLES];
-          if (isStixObject(findType)) return [...entityInferIndex, READ_INDEX_STIX_META_OBJECTS, READ_INDEX_STIX_DOMAIN_OBJECTS, READ_INDEX_STIX_CYBER_OBSERVABLES];
-          return [...entityInferIndex, READ_ENTITIES_INDICES_WITHOUT_INFERRED];
+          if (isInternalObject(findType)) return [READ_INDEX_INFERRED_ENTITIES, READ_INDEX_INTERNAL_OBJECTS];
+          if (isStixMetaObject(findType)) return [READ_INDEX_INFERRED_ENTITIES, READ_INDEX_STIX_META_OBJECTS];
+          if (isStixDomainObject(findType)) return [READ_INDEX_INFERRED_ENTITIES, READ_INDEX_STIX_DOMAIN_OBJECTS];
+          if (isStixCoreObject(findType)) return [READ_INDEX_INFERRED_ENTITIES, READ_INDEX_STIX_DOMAIN_OBJECTS, READ_INDEX_STIX_CYBER_OBSERVABLES];
+          if (isStixObject(findType)) return [READ_INDEX_INFERRED_ENTITIES, READ_INDEX_STIX_META_OBJECTS, READ_INDEX_STIX_DOMAIN_OBJECTS, READ_INDEX_STIX_CYBER_OBSERVABLES];
+          return READ_ENTITIES_INDICES;
         }
         // For relationships
         if (isBasicRelationship(findType)) {
-          if (isInternalRelationship(findType)) return [...relationshipInferIndex, READ_INDEX_INTERNAL_RELATIONSHIPS];
-          if (isStixSightingRelationship(findType)) return [...relationshipInferIndex, READ_INDEX_STIX_SIGHTING_RELATIONSHIPS];
-          if (isStixCoreRelationship(findType)) return [...relationshipInferIndex, READ_INDEX_STIX_CORE_RELATIONSHIPS];
-          if (isStixRefRelationship(findType)) return [...relationshipInferIndex, READ_INDEX_STIX_META_RELATIONSHIPS, READ_INDEX_STIX_CYBER_OBSERVABLE_RELATIONSHIPS];
+          if (isInternalRelationship(findType)) return [READ_INDEX_INFERRED_RELATIONSHIPS, READ_INDEX_INTERNAL_RELATIONSHIPS];
+          if (isStixSightingRelationship(findType)) return [READ_INDEX_INFERRED_RELATIONSHIPS, READ_INDEX_STIX_SIGHTING_RELATIONSHIPS];
+          if (isStixCoreRelationship(findType)) return [READ_INDEX_INFERRED_RELATIONSHIPS, READ_INDEX_STIX_CORE_RELATIONSHIPS];
+          if (isStixRefRelationship(findType)) return [READ_INDEX_INFERRED_RELATIONSHIPS, READ_INDEX_STIX_META_RELATIONSHIPS, READ_INDEX_STIX_CYBER_OBSERVABLE_RELATIONSHIPS];
           if (isStixRelationship(findType)) {
-            return [...relationshipInferIndex, READ_INDEX_STIX_CORE_RELATIONSHIPS, READ_INDEX_STIX_SIGHTING_RELATIONSHIPS, READ_INDEX_STIX_META_RELATIONSHIPS,
+            return [READ_INDEX_INFERRED_RELATIONSHIPS, READ_INDEX_STIX_CORE_RELATIONSHIPS, READ_INDEX_STIX_SIGHTING_RELATIONSHIPS, READ_INDEX_STIX_META_RELATIONSHIPS,
               READ_INDEX_STIX_CYBER_OBSERVABLE_RELATIONSHIPS];
           }
-          return [...relationshipInferIndex, ...READ_RELATIONSHIPS_INDICES_WITHOUT_INFERRED];
+          return READ_RELATIONSHIPS_INDICES;
         }
         // Fallback
         throw UnsupportedError('Fail to compute indices for unknown type', { type: findType });
       }
-      // If concrete type, infer the index from the type and add the inference index if needed
+      // If concrete type, infer the index from the type
       if (isBasicObject(findType)) {
-        return [...entityInferIndex, `${inferIndexFromConceptType(findType)}*`];
+        return [READ_INDEX_INFERRED_ENTITIES, `${inferIndexFromConceptType(findType)}*`];
       }
-      return [...relationshipInferIndex, `${inferIndexFromConceptType(findType)}*`];
+      return [READ_INDEX_INFERRED_RELATIONSHIPS, `${inferIndexFromConceptType(findType)}*`];
     }).flat());
   }
   return indices;
@@ -1209,7 +1204,7 @@ const computeQueryIndices = (indices, types, includeInferences) => {
 // elFindByIds is not defined to use ordering or sorting (ordering is forced by creation date)
 // It's a way to load a bunch of ids and use in list or map
 export const elFindByIds = async (context, user, ids, opts = {}) => {
-  const { indices, baseData = false, baseFields = BASE_FIELDS, includeInferences = false } = opts;
+  const { indices, baseData = false, baseFields = BASE_FIELDS } = opts;
   const { withoutRels = false, toMap = false, mapWithAllIds = false, type = null, forceAliases = false } = opts;
   const idsArray = Array.isArray(ids) ? ids : [ids];
   const types = (Array.isArray(type) || !type) ? type : [type];
@@ -1217,7 +1212,7 @@ export const elFindByIds = async (context, user, ids, opts = {}) => {
   if (processIds.length === 0) {
     return toMap ? {} : [];
   }
-  const computedIndices = computeQueryIndices(indices, types, includeInferences);
+  const computedIndices = computeQueryIndices(indices, types);
   const hits = [];
   const groupIds = R.splitEvery(MAX_TERMS_SPLIT, idsArray);
   for (let index = 0; index < groupIds.length; index += 1) {
