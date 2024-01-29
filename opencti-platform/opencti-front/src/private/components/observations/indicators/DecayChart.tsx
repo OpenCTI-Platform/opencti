@@ -139,6 +139,11 @@ const DecayChart : FunctionComponent<DecayChartProps> = ({ indicator }) => {
         style: {
           colors: chartInfoTextColor,
         },
+        datetimeFormatter: {
+          year: 'yyyy',
+          month: 'MMM yyyy',
+          day: 'dd MMM yyyy',
+        },
       },
     },
     yaxis: {
@@ -169,6 +174,10 @@ const DecayChart : FunctionComponent<DecayChartProps> = ({ indicator }) => {
     },
     tooltip: {
       theme: theme.palette.mode, // ApexChart uses 'dark'/'light', exactly the same values as we use in OpenCTI.
+      x: {
+        show: true,
+        format: 'dd MMM yyyy',
+      },
     },
   };
 
