@@ -31,7 +31,7 @@ const useStyles = makeStyles(() => ({
   paper: {
     height: '100%',
     minHeight: '100%',
-    margin: '10px 0 0 0',
+    margin: '10px 0 20px 0',
     padding: '15px',
     borderRadius: 6,
     position: 'relative',
@@ -127,25 +127,10 @@ const ConnectorWorksComponent: FunctionComponent<ConnectorWorksComponentProps> =
         <Paper
           classes={{ root: classes.paper }}
           variant="outlined"
-          style={{ marginBottom: 20 }}
         >
-          <div
-            style={{
-              display: 'table',
-              height: '100%',
-              width: '100%',
-            }}
-          >
-            <span
-              style={{
-                display: 'table-cell',
-                verticalAlign: 'middle',
-                textAlign: 'center',
-              }}
-            >
-              {t_i18n('No work')}
-            </span>
-          </div>
+          <Typography align='center'>
+            {t_i18n('No work')}
+          </Typography>
         </Paper>
       )}
       {works.map((workEdge) => {
@@ -157,7 +142,6 @@ const ConnectorWorksComponent: FunctionComponent<ConnectorWorksComponentProps> =
             key={work.id}
             classes={{ root: classes.paper }}
             variant="outlined"
-            style={{ marginBottom: 20 }}
           >
             <Grid container={true} spacing={3}>
               <Grid item={true} xs={5}>
@@ -251,9 +235,9 @@ const ConnectorWorksComponent: FunctionComponent<ConnectorWorksComponentProps> =
                 style={{ position: 'absolute', right: 10, bottom: 10 }}
                 onClick={() => handleDeleteWork(work.id)}
                 size="small"
+                startIcon={<Delete/>}
               >
-                <Delete fontSize="small" />
-                &nbsp;&nbsp;{t_i18n('Delete')}
+                {t_i18n('Delete')}
               </Button>
             </Grid>
           </Paper>
