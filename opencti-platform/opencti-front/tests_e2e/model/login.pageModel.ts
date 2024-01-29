@@ -10,6 +10,10 @@ export class LoginPage {
     getLoginInput() {
         return this.page.getByLabel('Login')
     }
+    async fillLoginInput(input: string) {
+        await this.getLoginInput().click();
+        return this.getLoginInput().fill(input);
+    }
     getPasswordInput() {
         return this.page.getByLabel('Password')
     }
