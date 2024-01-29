@@ -40,13 +40,9 @@ class StixSightingRelationship:
                     created
                     modified
                     objectLabel {
-                        edges {
-                            node {
-                                id
-                                value
-                                color
-                            }
-                        }
+                        id
+                        value
+                        color
                     }
                 }
                 ... on Organization {
@@ -59,28 +55,20 @@ class StixSightingRelationship:
                 }
             }
             objectMarking {
-                edges {
-                    node {
-                        id
-                        standard_id
-                        entity_type
-                        definition_type
-                        definition
-                        created
-                        modified
-                        x_opencti_order
-                        x_opencti_color
-                    }
-                }
+                id
+                standard_id
+                entity_type
+                definition_type
+                definition
+                created
+                modified
+                x_opencti_order
+                x_opencti_color
             }
             objectLabel {
-                edges {
-                    node {
-                        id
-                        value
-                        color
-                    }
-                }
+                id
+                value
+                color
             }
             externalReferences {
                 edges {
@@ -597,19 +585,15 @@ class StixSightingRelationship:
             custom_attributes = """
                 id
                 objectMarking {
-                    edges {
-                        node {
-                            id
-                            standard_id
-                            entity_type
-                            definition_type
-                            definition
-                            x_opencti_order
-                            x_opencti_color
-                            created
-                            modified
-                        }
-                    }
+                    id
+                    standard_id
+                    entity_type
+                    definition_type
+                    definition
+                    x_opencti_order
+                    x_opencti_color
+                    created
+                    modified
                 }
             """
             stix_core_relationship = self.read(

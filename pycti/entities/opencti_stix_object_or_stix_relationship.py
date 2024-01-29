@@ -28,13 +28,9 @@ class StixObjectOrStixRelationship:
                         created
                         modified
                         objectLabel {
-                            edges {
-                                node {
-                                    id
-                                    value
-                                    color
-                                }
-                            }
+                            id
+                            value
+                            color
                         }
                     }
                     ... on Organization {
@@ -47,28 +43,20 @@ class StixObjectOrStixRelationship:
                     }
                 }
                 objectMarking {
-                    edges {
-                        node {
-                            id
-                            standard_id
-                            entity_type
-                            definition_type
-                            definition
-                            created
-                            modified
-                            x_opencti_order
-                            x_opencti_color
-                        }
-                    }
+                    id
+                    standard_id
+                    entity_type
+                    definition_type
+                    definition
+                    created
+                    modified
+                    x_opencti_order
+                    x_opencti_color
                 }
                 objectLabel {
-                    edges {
-                        node {
-                            id
-                            value
-                            color
-                        }
-                    }
+                    id
+                    value
+                    color
                 }
                 externalReferences {
                     edges {
@@ -100,18 +88,14 @@ class StixObjectOrStixRelationship:
                 x_mitre_detection
                 x_mitre_id
                 killChainPhases {
-                    edges {
-                        node {
-                            id
-                            standard_id
-                            entity_type
-                            kill_chain_name
-                            phase_name
-                            x_opencti_order
-                            created
-                            modified
-                        }
-                    }
+                  id
+                  standard_id
+                  entity_type
+                  kill_chain_name
+                  phase_name
+                  x_opencti_order
+                  created
+                  modified
                 }
             }
             ... on Campaign {
@@ -256,18 +240,14 @@ class StixObjectOrStixRelationship:
                 implementation_languages
                 capabilities
                 killChainPhases {
-                    edges {
-                        node {
-                            id
-                            standard_id
-                            entity_type
-                            kill_chain_name
-                            phase_name
-                            x_opencti_order
-                            created
-                            modified
-                        }
-                    }
+                  id
+                  standard_id
+                  entity_type
+                  kill_chain_name
+                  phase_name
+                  x_opencti_order
+                  created
+                  modified
                 }
             }
             ... on ThreatActor {
@@ -292,18 +272,14 @@ class StixObjectOrStixRelationship:
                 tool_types
                 tool_version
                 killChainPhases {
-                    edges {
-                        node {
-                            id
-                            standard_id
-                            entity_type
-                            kill_chain_name
-                            phase_name
-                            x_opencti_order
-                            created
-                            modified
-                        }
-                    }
+                  id
+                  standard_id
+                  entity_type
+                  kill_chain_name
+                  phase_name
+                  x_opencti_order
+                  created
+                  modified
                 }
             }
             ... on Vulnerability {
@@ -375,28 +351,20 @@ class StixObjectOrStixRelationship:
                     }
                 }
                 objectMarking {
-                    edges {
-                        node {
-                            id
-                            standard_id
-                            entity_type
-                            definition_type
-                            definition
-                            created
-                            modified
-                            x_opencti_order
-                            x_opencti_color
-                        }
-                    }
+                    id
+                    standard_id
+                    entity_type
+                    definition_type
+                    definition
+                    created
+                    modified
+                    x_opencti_order
+                    x_opencti_color
                 }
                 objectLabel {
-                    edges {
-                        node {
-                            id
-                            value
-                            color
-                        }
-                    }
+                    id
+                    value
+                    color
                 }
                 externalReferences {
                     edges {
@@ -445,28 +413,20 @@ class StixObjectOrStixRelationship:
                     }
                 }
                 objectMarking {
-                    edges {
-                        node {
-                            id
-                            standard_id
-                            entity_type
-                            definition_type
-                            definition
-                            created
-                            modified
-                            x_opencti_order
-                            x_opencti_color
-                        }
-                    }
+                    id
+                    standard_id
+                    entity_type
+                    definition_type
+                    definition
+                    created
+                    modified
+                    x_opencti_order
+                    x_opencti_color
                 }
                 objectLabel {
-                    edges {
-                        node {
-                            id
-                            value
-                            color
-                        }
-                    }
+                    id
+                    value
+                    color
                 }
                 externalReferences {
                     edges {

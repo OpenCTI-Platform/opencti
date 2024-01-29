@@ -34,13 +34,9 @@ class Incident:
                     created
                     modified
                     objectLabel {
-                        edges {
-                            node {
-                                id
-                                value
-                                color
-                            }
-                        }
+                        id
+                        value
+                        color
                     }
                 }
                 ... on Organization {
@@ -53,28 +49,20 @@ class Incident:
                 }
             }
             objectMarking {
-                edges {
-                    node {
-                        id
-                        standard_id
-                        entity_type
-                        definition_type
-                        definition
-                        created
-                        modified
-                        x_opencti_order
-                        x_opencti_color
-                    }
-                }
+                id
+                standard_id
+                entity_type
+                definition_type
+                definition
+                created
+                modified
+                x_opencti_order
+                x_opencti_color
             }
             objectLabel {
-                edges {
-                    node {
-                        id
-                        value
-                        color
-                    }
-                }
+                id
+                value
+                color
             }
             externalReferences {
                 edges {
@@ -130,13 +118,9 @@ class Incident:
                     created
                     modified
                     objectLabel {
-                        edges {
-                            node {
-                                id
-                                value
-                                color
-                            }
-                        }
+                        id
+                        value
+                        color
                     }
                 }
                 ... on Organization {
@@ -149,28 +133,20 @@ class Incident:
                 }
             }
             objectMarking {
-                edges {
-                    node {
-                        id
-                        standard_id
-                        entity_type
-                        definition_type
-                        definition
-                        created
-                        modified
-                        x_opencti_order
-                        x_opencti_color
-                    }
-                }
+                id
+                standard_id
+                entity_type
+                definition_type
+                definition
+                created
+                modified
+                x_opencti_order
+                x_opencti_color
             }
             objectLabel {
-                edges {
-                    node {
-                        id
-                        value
-                        color
-                    }
-                }
+                id
+                value
+                color
             }
             externalReferences {
                 edges {

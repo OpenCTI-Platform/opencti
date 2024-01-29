@@ -33,13 +33,9 @@ class AttackPattern:
                     created
                     modified
                     objectLabel {
-                        edges {
-                            node {
-                                id
-                                value
-                                color
-                            }
-                        }
+                        id
+                        value
+                        color
                     }
                 }
                 ... on Organization {
@@ -52,28 +48,20 @@ class AttackPattern:
                 }
             }
             objectMarking {
-                edges {
-                    node {
-                        id
-                        standard_id
-                        entity_type
-                        definition_type
-                        definition
-                        created
-                        modified
-                        x_opencti_order
-                        x_opencti_color
-                    }
-                }
+                id
+                standard_id
+                entity_type
+                definition_type
+                definition
+                created
+                modified
+                x_opencti_order
+                x_opencti_color
             }
             objectLabel {
-                edges {
-                    node {
-                        id
-                        value
-                        color
-                    }
-                }
+                id
+                value
+                color
             }
             externalReferences {
                 edges {
@@ -103,18 +91,14 @@ class AttackPattern:
             x_mitre_detection
             x_mitre_id
             killChainPhases {
-                edges {
-                    node {
-                        id
-                        standard_id
-                        entity_type
-                        kill_chain_name
-                        phase_name
-                        x_opencti_order
-                        created
-                        modified
-                    }
-                }
+              id
+              standard_id
+              entity_type
+              kill_chain_name
+              phase_name
+              x_opencti_order
+              created
+              modified
             }
         """
         self.properties_with_files = """
@@ -141,13 +125,9 @@ class AttackPattern:
                     created
                     modified
                     objectLabel {
-                        edges {
-                            node {
-                                id
-                                value
-                                color
-                            }
-                        }
+                        id
+                        value
+                        color
                     }
                 }
                 ... on Organization {
@@ -160,28 +140,20 @@ class AttackPattern:
                 }
             }
             objectMarking {
-                edges {
-                    node {
-                        id
-                        standard_id
-                        entity_type
-                        definition_type
-                        definition
-                        created
-                        modified
-                        x_opencti_order
-                        x_opencti_color
-                    }
-                }
+                id
+                standard_id
+                entity_type
+                definition_type
+                definition
+                created
+                modified
+                x_opencti_order
+                x_opencti_color
             }
             objectLabel {
-                edges {
-                    node {
-                        id
-                        value
-                        color
-                    }
-                }
+                id
+                value
+                color
             }
             externalReferences {
                 edges {
@@ -224,18 +196,14 @@ class AttackPattern:
             x_mitre_detection
             x_mitre_id
             killChainPhases {
-                edges {
-                    node {
-                        id
-                        standard_id
-                        entity_type
-                        kill_chain_name
-                        phase_name
-                        x_opencti_order
-                        created
-                        modified
-                    }
-                }
+              id
+              standard_id
+              entity_type
+              kill_chain_name
+              phase_name
+              x_opencti_order
+              created
+              modified
             }
             importFiles {
                 edges {
