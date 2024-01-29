@@ -2385,6 +2385,7 @@ const upsertElement = async (context, user, element, type, basePatch, opts = {})
     const isInputAvailable = attributeKey in updatePatch;
     if (isInputAvailable) { // The attribute is explicitly available in the patch
       const inputData = updatePatch[attributeKey];
+      const isStructuralUpsert = attributeKey === IDS_STIX; // Ids consolidation is always granted
       const isFullSync = context.synchronizedUpsert; // In case of full synchronization, just update the data
       const isInputWithData = isNotEmptyField(inputData);
       const isCurrentlyEmpty = isEmptyField(element[attributeKey]) && isInputWithData; // If the element current data is empty, we always expect to put the value
@@ -2394,7 +2395,7 @@ const upsertElement = async (context, user, element, type, basePatch, opts = {})
       // 3. Data from the inputs is not empty to prevent any data cleaning
       const canBeUpsert = isConfidenceMatch && attribute.upsert && isInputWithData;
       // Upsert will be done if upsert is well-defined but also in full synchro mode or if the current value is empty
-      if (canBeUpsert || isFullSync || isCurrentlyEmpty) {
+      if (isStructuralUpsert || canBeUpsert || isFullSync || isCurrentlyEmpty) {
         inputs.push(...buildAttributeUpdate(isFullSync, attribute, element[attributeKey], inputData));
       }
     }
