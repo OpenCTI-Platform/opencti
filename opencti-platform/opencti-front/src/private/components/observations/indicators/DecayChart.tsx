@@ -99,26 +99,24 @@ const DecayChart : FunctionComponent<DecayChartProps> = ({ indicator }) => {
   });
 
   // circle on the curve that show first and last point
-  if (indicator.decayChartData?.live_score_serie) {
-    const serie = indicator.decayChartData?.live_score_serie;
+  if (indicator.decayChartData?.live_score_serie && indicator.decayChartData?.live_score_serie.length > 0) {
+    const series = indicator.decayChartData?.live_score_serie;
     pointAnnotations.push({
-      x: moment(serie[0].time).valueOf(),
-      y: serie[0].score,
+      x: moment(series[0].time).valueOf(),
+      y: series[0].score,
       marker: {
         fillColor: chartInfoTextColor,
       },
     });
 
     pointAnnotations.push({
-      x: moment(serie[serie.length - 1].time).valueOf(),
-      y: serie[serie.length - 1].score,
+      x: moment(series[series.length - 1].time).valueOf(),
+      y: series[series.length - 1].score,
       marker: {
         fillColor: chartInfoTextColor,
       },
     });
   }
-
-  console.log('pointAnnotations', pointAnnotations);
 
   const chartOptions: ApexOptions = {
     chart: {
