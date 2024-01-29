@@ -212,7 +212,6 @@ const ConnectorWorksComponent: FunctionComponent<ConnectorWorksComponentProps> =
                       classes={{ root: classes.progress }}
                       variant="determinate"
                       value={
-                        // eslint-disable-next-line no-nested-ternary
                         tracking && !!tracking.import_expected_number && !!tracking.import_processed_number
                           ? Math.round((tracking.import_processed_number / tracking.import_expected_number) * 100)
                           : 0
