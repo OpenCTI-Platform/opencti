@@ -96,7 +96,7 @@ const AddSoftwaresLines = createPaginationContainer(
       return {
         search: fragmentVariables.search,
         count,
-        cursor
+        cursor,
       };
     },
     query: addSoftwaresLinesQuery,
