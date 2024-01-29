@@ -17,8 +17,6 @@ import {
   computeTimeRangeInterval,
   computeTimeRangeValues,
   decodeGraphData,
-  defaultSecondaryValue,
-  defaultValue,
   encodeGraphData,
   linkPaint,
   nodeAreaPaint,
@@ -32,7 +30,6 @@ import LassoSelection from '../../../../utils/graph/LassoSelection';
 import { hexToRGB } from '../../../../utils/Colors';
 import { UserContext } from '../../../../utils/hooks/useAuth';
 import EntitiesDetailsRightsBar from '../../../../utils/graph/EntitiesDetailsRightBar';
-import { isNotEmptyField } from '../../../../utils/utils';
 
 const PARAMETERS$ = new Subject().pipe(debounce(() => timer(2000)));
 const POSITIONS$ = new Subject().pipe(debounce(() => timer(2000)));
@@ -247,49 +244,6 @@ class GroupingKnowledgeCorrelationComponent extends Component {
     );
     this.zoom = R.propOr(null, 'zoom', params);
     this.graphObjects = R.map((n) => n.node, props.grouping.objects.edges);
-    const stixCoreObjectsTypes = R.pipe(
-      R.map((n) => n.node.entity_type),
-      R.filter((n) => n && n.length > 0),
-      R.uniq,
-    )(props.grouping.objects.edges);
-    const markedBy = R.uniq(
-      R.concat(
-        R.pipe(
-          R.filter((m) => m.node.objectMarking),
-          R.map((m) => m.node.objectMarking),
-          R.flatten,
-          R.map((m) => m.id),
-        )(props.grouping.objects.edges),
-        R.pipe(
-          R.filter((m) => m.node.groupings),
-          R.map((m) => m.node.groupings.edges),
-          R.flatten,
-          R.map((m) => m.node.objectMarking),
-          R.flatten,
-          R.map((m) => m.id),
-        )(props.grouping.objects.edges),
-      ),
-    );
-    const createdBy = R.uniq(
-      R.concat(
-        R.pipe(
-          R.filter((m) => m.node.createdBy),
-          R.map((m) => m.node.createdBy),
-          R.flatten,
-          R.filter((m) => m.id),
-          R.map((n) => n.id),
-        )(props.grouping.objects.edges),
-        R.pipe(
-          R.filter((m) => m && m.node.groupings),
-          R.map((m) => m.node.groupings.edges),
-          R.flatten,
-          R.map((m) => m.node.createdBy),
-          R.flatten,
-          R.filter((m) => m && m.id),
-          R.map((n) => n.id),
-        )(props.grouping.objects.edges),
-      ),
-    );
     const timeRangeInterval = computeTimeRangeInterval(
       R.uniqBy(
         R.prop('id'),
@@ -319,18 +273,18 @@ class GroupingKnowledgeCorrelationComponent extends Component {
       modeFixed: R.propOr(false, 'modeFixed', params),
       modeTree: R.propOr('', 'modeTree', params),
       selectedTimeRangeInterval: timeRangeInterval,
-      stixCoreObjectsTypes,
-      markedBy,
-      createdBy,
+      stixCoreObjectsTypes: [],
+      markedBy: [],
+      createdBy: [],
       numberOfSelectedNodes: 0,
       numberOfSelectedLinks: 0,
       keyword: '',
       navOpen: localStorage.getItem('navOpen') === 'true',
     };
     const filterAdjust = {
-      markedBy,
-      createdBy,
-      stixCoreObjectsTypes,
+      markedBy: [],
+      createdBy: [],
+      stixCoreObjectsTypes: [],
       excludedStixCoreObjectsTypes: [],
       selectedTimeRangeInterval: timeRangeInterval,
     };
@@ -339,6 +293,7 @@ class GroupingKnowledgeCorrelationComponent extends Component {
       decodeGraphData(props.grouping.x_opencti_graph_data),
       props.t,
       filterAdjust,
+      'groupings',
     );
     this.state.graphData = { ...this.graphData };
   }
@@ -366,6 +321,10 @@ class GroupingKnowledgeCorrelationComponent extends Component {
       }
       this.initialized = true;
       this.zoomed += 1;
+      const currentCanvas = document.getElementsByTagName('canvas')[0];
+      if (!this.canvas) {
+        this.canvas = currentCanvas;
+      }
     }
   }
 
@@ -520,6 +479,7 @@ class GroupingKnowledgeCorrelationComponent extends Component {
           decodeGraphData(this.props.grouping.x_opencti_graph_data),
           this.props.t,
           filterAdjust,
+          'groupings',
         ),
       },
       () => this.saveParameters(false),
@@ -545,6 +505,7 @@ class GroupingKnowledgeCorrelationComponent extends Component {
           decodeGraphData(this.props.grouping.x_opencti_graph_data),
           this.props.t,
           filterAdjust,
+          'groupings',
         ),
       },
       () => this.saveParameters(false),
@@ -570,6 +531,7 @@ class GroupingKnowledgeCorrelationComponent extends Component {
           decodeGraphData(this.props.grouping.x_opencti_graph_data),
           this.props.t,
           filterAdjust,
+          'groupings',
         ),
       },
       () => this.saveParameters(false),
@@ -683,6 +645,7 @@ class GroupingKnowledgeCorrelationComponent extends Component {
             decodeGraphData(this.props.grouping.x_opencti_graph_data),
             this.props.t,
             this.state,
+            'groupings',
           );
           this.setState({
             graphData: { ...this.graphData },
@@ -708,6 +671,7 @@ class GroupingKnowledgeCorrelationComponent extends Component {
             decodeGraphData(this.props.grouping.x_opencti_graph_data),
             this.props.t,
             this.state,
+            'groupings',
           );
           this.setState({
             graphData: { ...this.graphData },
@@ -807,6 +771,7 @@ class GroupingKnowledgeCorrelationComponent extends Component {
       {},
       this.props.t,
       this.state,
+      'groupings',
     );
     this.setState(
       {
@@ -837,6 +802,7 @@ class GroupingKnowledgeCorrelationComponent extends Component {
           decodeGraphData(this.props.grouping.x_opencti_graph_data),
           this.props.t,
           filterAdjust,
+          'groupings',
         ),
       },
       () => this.saveParameters(false),
@@ -844,23 +810,26 @@ class GroupingKnowledgeCorrelationComponent extends Component {
   }
 
   handleSearch(keyword) {
-    this.selectedLinks.clear();
-    this.selectedNodes.clear();
-    if (isNotEmptyField(keyword)) {
-      const filterByKeyword = (n) => keyword === ''
-        || (defaultValue(n) || '').toLowerCase().indexOf(keyword.toLowerCase())
-          !== -1
-        || (defaultSecondaryValue(n) || '')
-          .toLowerCase()
-          .indexOf(keyword.toLowerCase()) !== -1
-        || (n.entity_type || '').toLowerCase().indexOf(keyword.toLowerCase())
-          !== -1;
-      R.map(
-        (n) => filterByKeyword(n) && this.selectedNodes.add(n),
-        this.state.graphData.nodes,
-      );
-      this.setState({ numberOfSelectedNodes: this.selectedNodes.size });
-    }
+    const filterAdjust = {
+      selectedTimeRangeInterval: this.state.selectedTimeRangeInterval,
+      markedBy: this.state.markedBy,
+      createdBy: this.state.createdBy,
+      stixCoreObjectsTypes: this.state.stixCoreObjectsTypes,
+      keyword,
+    };
+    this.setState(
+      {
+        selectedTimeRangeInterval: filterAdjust.selectedTimeRangeInterval,
+        graphData: buildCorrelationData(
+          this.graphObjects,
+          decodeGraphData(this.props.grouping.x_opencti_graph_data),
+          this.props.t,
+          filterAdjust,
+          'groupings',
+        ),
+      },
+      () => this.saveParameters(false),
+    );
   }
 
   render() {
@@ -883,8 +852,6 @@ class GroupingKnowledgeCorrelationComponent extends Component {
       navOpen,
     } = this.state;
     const selectedEntities = [...this.selectedLinks, ...this.selectedNodes];
-    const width = window.innerWidth - 210;
-    const height = window.innerHeight - 235;
     const sortByLabel = R.sortBy(R.compose(R.toLower, R.prop('tlabel')));
     const stixCoreObjectsTypes = R.pipe(
       R.map((n) => R.assoc(
@@ -1024,8 +991,8 @@ class GroupingKnowledgeCorrelationComponent extends Component {
               {mode3D ? (
                 <ForceGraph3D
                   ref={this.graph}
-                  width={width}
-                  height={height}
+                  width={graphWidth}
+                  height={graphHeight}
                   backgroundColor={theme.palette.background.default}
                   graphData={graphData}
                   nodeThreeObjectExtend={true}
@@ -1145,8 +1112,8 @@ class GroupingKnowledgeCorrelationComponent extends Component {
                   >
                     <ForceGraph2D
                       ref={this.graph}
-                      width={width}
-                      height={height}
+                      width={graphWidth}
+                      height={graphHeight}
                       graphData={graphData}
                       onZoom={this.onZoom.bind(this)}
                       onZoomEnd={this.handleZoomEnd.bind(this)}
@@ -1160,6 +1127,11 @@ class GroupingKnowledgeCorrelationComponent extends Component {
                       ) =>
                         // eslint-disable-next-line implicit-arrow-linebreak
                         nodePaint(
+                          {
+                            selected: theme.palette.secondary.main,
+                            inferred: theme.palette.warning.main,
+                            disabled: theme.palette.background.paper,
+                          },
                           node,
                           node.color,
                           ctx,
@@ -1229,7 +1201,9 @@ class GroupingKnowledgeCorrelationComponent extends Component {
                       }}
                       onLinkClick={this.handleLinkClick.bind(this)}
                       onBackgroundClick={this.handleBackgroundClick.bind(this)}
-                      cooldownTicks={modeFixed ? 0 : undefined}
+                      cooldownTicks={modeFixed ? 0 : 100}
+                      onEngineStop={() => this.setState({ selectModeFreeReady: true })
+                      }
                       dagMode={
                         // eslint-disable-next-line no-nested-ternary
                         modeTree === 'horizontal'

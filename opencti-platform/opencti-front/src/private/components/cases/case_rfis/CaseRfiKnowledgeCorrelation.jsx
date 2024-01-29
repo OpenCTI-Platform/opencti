@@ -14,12 +14,10 @@ import inject18n from '../../../../components/i18n';
 import { commitMutation, fetchQuery, MESSAGING$ } from '../../../../relay/environment';
 import { hexToRGB } from '../../../../utils/Colors';
 import {
-  buildCaseCorrelationData,
+  buildCorrelationData,
   computeTimeRangeInterval,
   computeTimeRangeValues,
   decodeGraphData,
-  defaultSecondaryValue,
-  defaultValue,
   encodeGraphData,
   linkPaint,
   nodeAreaPaint,
@@ -32,7 +30,6 @@ import { caseRfiMutationFieldPatch } from './CaseRfiEditionOverview';
 import { UserContext } from '../../../../utils/hooks/useAuth';
 import CaseRfiKnowledgeGraphBar from './CaseRfiKnowledgeGraphBar';
 import EntitiesDetailsRightsBar from '../../../../utils/graph/EntitiesDetailsRightBar';
-import { isNotEmptyField } from '../../../../utils/utils';
 
 const PARAMETERS$ = new Subject().pipe(debounce(() => timer(2000)));
 const POSITIONS$ = new Subject().pipe(debounce(() => timer(2000)));
@@ -137,6 +134,29 @@ const caseRfiKnowledgeCorrelationStixCoreObjectQuery = graphql`
         name
         first_seen
         last_seen
+      }
+      ... on Event {
+        name
+        start_time
+        stop_time
+      }
+      ... on Channel {
+        name
+      }
+      ... on Narrative {
+        name
+      }
+      ... on Language {
+        name
+      }
+      ... on DataComponent {
+        name
+      }
+      ... on DataSource {
+        name
+      }
+      ... on Case {
+        name
       }
       ... on StixCyberObservable {
         observable_value
@@ -268,14 +288,14 @@ class CaseRfiKnowledgeCorrelationComponent extends Component {
       excludedStixCoreObjectsTypes: [],
       selectedTimeRangeInterval: timeRangeInterval,
     };
-    this.graphData = buildCaseCorrelationData(
+    this.graphData = buildCorrelationData(
       this.graphObjects,
       decodeGraphData(props.caseData.x_opencti_graph_data),
       props.t,
       filterAdjust,
+      'cases',
     );
     this.state.graphData = { ...this.graphData };
-    this.canvas = null;
   }
 
   initialize() {
@@ -322,12 +342,13 @@ class CaseRfiKnowledgeCorrelationComponent extends Component {
   }
 
   componentWillUnmount() {
-    this.subscription.unsubscribe();
+    this.subscription1.unsubscribe();
+    this.subscription2.unsubscribe();
+    this.subscription3.unsubscribe();
   }
 
   saveParameters(refreshGraphData = false) {
     const LOCAL_STORAGE_KEY = `case-rfis-${this.props.caseData.id}-knowledge-correlation`;
-
     saveViewParameters(
       this.props.history,
       this.props.location,
@@ -453,11 +474,12 @@ class CaseRfiKnowledgeCorrelationComponent extends Component {
     this.setState(
       {
         stixCoreObjectsTypes: filterAdjust.stixCoreObjectsTypes,
-        graphData: buildCaseCorrelationData(
+        graphData: buildCorrelationData(
           this.graphObjects,
           decodeGraphData(this.props.caseData.x_opencti_graph_data),
           this.props.t,
           filterAdjust,
+          'cases',
         ),
       },
       () => this.saveParameters(false),
@@ -478,11 +500,12 @@ class CaseRfiKnowledgeCorrelationComponent extends Component {
     this.setState(
       {
         markedBy: filterAdjust.markedBy,
-        graphData: buildCaseCorrelationData(
+        graphData: buildCorrelationData(
           this.graphObjects,
           decodeGraphData(this.props.caseData.x_opencti_graph_data),
           this.props.t,
           filterAdjust,
+          'cases',
         ),
       },
       () => this.saveParameters(false),
@@ -503,11 +526,12 @@ class CaseRfiKnowledgeCorrelationComponent extends Component {
     this.setState(
       {
         createdBy: filterAdjust.createdBy,
-        graphData: buildCaseCorrelationData(
+        graphData: buildCorrelationData(
           this.graphObjects,
           decodeGraphData(this.props.caseData.x_opencti_graph_data),
           this.props.t,
           filterAdjust,
+          'cases',
         ),
       },
       () => this.saveParameters(false),
@@ -616,11 +640,12 @@ class CaseRfiKnowledgeCorrelationComponent extends Component {
             (n) => (n.id === stixCoreObject.id ? stixCoreObject : n),
             this.graphObjects,
           );
-          this.graphData = buildCaseCorrelationData(
+          this.graphData = buildCorrelationData(
             this.graphObjects,
             decodeGraphData(this.props.caseData.x_opencti_graph_data),
             this.props.t,
             this.state,
+            'cases',
           );
           this.setState({
             graphData: { ...this.graphData },
@@ -641,11 +666,12 @@ class CaseRfiKnowledgeCorrelationComponent extends Component {
             (n) => (n.id === stixCoreRelationship.id ? stixCoreRelationship : n),
             this.graphObjects,
           );
-          this.graphData = buildCaseCorrelationData(
+          this.graphData = buildCorrelationData(
             this.graphObjects,
             decodeGraphData(this.props.caseData.x_opencti_graph_data),
             this.props.t,
             this.state,
+            'cases',
           );
           this.setState({
             graphData: { ...this.graphData },
@@ -740,11 +766,12 @@ class CaseRfiKnowledgeCorrelationComponent extends Component {
   }
 
   handleResetLayout() {
-    this.graphData = buildCaseCorrelationData(
+    this.graphData = buildCorrelationData(
       this.graphObjects,
       {},
       this.props.t,
       this.state,
+      'cases',
     );
     this.setState(
       {
@@ -770,11 +797,12 @@ class CaseRfiKnowledgeCorrelationComponent extends Component {
     this.setState(
       {
         selectedTimeRangeInterval: filterAdjust.selectedTimeRangeInterval,
-        graphData: buildCaseCorrelationData(
+        graphData: buildCorrelationData(
           this.graphObjects,
           decodeGraphData(this.props.caseData.x_opencti_graph_data),
           this.props.t,
           filterAdjust,
+          'cases',
         ),
       },
       () => this.saveParameters(false),
@@ -782,23 +810,25 @@ class CaseRfiKnowledgeCorrelationComponent extends Component {
   }
 
   handleSearch(keyword) {
-    this.selectedLinks.clear();
-    this.selectedNodes.clear();
-    if (isNotEmptyField(keyword)) {
-      const filterByKeyword = (n) => keyword === ''
-        || (defaultValue(n) || '').toLowerCase().indexOf(keyword.toLowerCase())
-          !== -1
-        || (defaultSecondaryValue(n) || '')
-          .toLowerCase()
-          .indexOf(keyword.toLowerCase()) !== -1
-        || (n.entity_type || '').toLowerCase().indexOf(keyword.toLowerCase())
-          !== -1;
-      R.map(
-        (n) => filterByKeyword(n) && this.selectedNodes.add(n),
-        this.state.graphData.nodes,
-      );
-      this.setState({ numberOfSelectedNodes: this.selectedNodes.size });
-    }
+    const filterAdjust = {
+      selectedTimeRangeInterval: this.state.selectedTimeRangeInterval,
+      markedBy: this.state.markedBy,
+      createdBy: this.state.createdBy,
+      stixCoreObjectsTypes: this.state.stixCoreObjectsTypes,
+      keyword,
+    };
+    this.setState(
+      {
+        selectedTimeRangeInterval: filterAdjust.selectedTimeRangeInterval,
+        graphData: buildCorrelationData(
+          this.graphObjects,
+          decodeGraphData(this.props.grouping.x_opencti_graph_data),
+          this.props.t,
+          filterAdjust,
+        ),
+      },
+      () => this.saveParameters(false),
+    );
   }
 
   render() {
@@ -914,11 +944,11 @@ class CaseRfiKnowledgeCorrelationComponent extends Component {
                 handleToggleSelectModeFree={this.handleToggleSelectModeFree.bind(
                   this,
                 )}
-                selectModeFreeReady={selectModeFreeReady}
+                stixCoreObjectsTypes={stixCoreObjectsTypes}
                 currentStixCoreObjectsTypes={currentStixCoreObjectsTypes}
                 currentSelectRectangleModeFree={selectRectangleModeFree}
                 currentSelectModeFree={selectModeFree}
-                stixCoreObjectsTypes={stixCoreObjectsTypes}
+                selectModeFreeReady={selectModeFreeReady}
                 markedBy={markedBy}
                 currentMarkedBy={currentMarkedBy}
                 createdBy={createdBy}

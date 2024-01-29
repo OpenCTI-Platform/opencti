@@ -52,6 +52,7 @@ import { addFilter, extractFilterGroupValues, findFiltersFromKey } from '../util
 import { INSTANCE_REGARDING_OF, specialFilterKeysWhoseValueToResolve } from '../utils/filtering/filtering-constants';
 import { schemaRelationsRefDefinition } from '../schema/schema-relationsRef';
 import { getEntitiesMapFromCache } from '../database/cache';
+import {ENTITY_TYPE_CONTAINER_GROUPING} from "../modules/grouping/grouping-types";
 
 export const findAll = async (context, user, args) => {
   let types = [];
@@ -116,27 +117,31 @@ export const containersPaginated = async (context, user, stixCoreObjectId, opts)
   if (!finalEntityTypes.every((t) => isStixDomainObjectContainer(t))) {
     throw FunctionalError(`Only ${ENTITY_TYPE_CONTAINER} can be query through this method.`);
   }
-  return listEntitiesThroughRelationsPaginated(context, user, stixCoreObjectId, RELATION_OBJECT, finalEntityTypes, false, opts);
+  return listEntitiesThroughRelationsPaginated(context, user, stixCoreObjectId, RELATION_OBJECT, finalEntityTypes, true, opts);
 };
 
 export const reportsPaginated = async (context, user, stixCoreObjectId, opts) => {
-  return listEntitiesThroughRelationsPaginated(context, user, stixCoreObjectId, RELATION_OBJECT, ENTITY_TYPE_CONTAINER_REPORT, false, opts);
+  return listEntitiesThroughRelationsPaginated(context, user, stixCoreObjectId, RELATION_OBJECT, ENTITY_TYPE_CONTAINER_REPORT, true, opts);
+};
+
+export const groupingsPaginated = async (context, user, stixCoreObjectId, opts) => {
+  return listEntitiesThroughRelationsPaginated(context, user, stixCoreObjectId, RELATION_OBJECT, ENTITY_TYPE_CONTAINER_GROUPING, true, opts);
 };
 
 export const casesPaginated = async (context, user, stixCoreObjectId, opts) => {
-  return listEntitiesThroughRelationsPaginated(context, user, stixCoreObjectId, RELATION_OBJECT, ENTITY_TYPE_CONTAINER_CASE, false, opts);
+  return listEntitiesThroughRelationsPaginated(context, user, stixCoreObjectId, RELATION_OBJECT, ENTITY_TYPE_CONTAINER_CASE, true, opts);
 };
 
 export const notesPaginated = async (context, user, stixCoreObjectId, opts) => {
-  return listEntitiesThroughRelationsPaginated(context, user, stixCoreObjectId, RELATION_OBJECT, ENTITY_TYPE_CONTAINER_NOTE, false, opts);
+  return listEntitiesThroughRelationsPaginated(context, user, stixCoreObjectId, RELATION_OBJECT, ENTITY_TYPE_CONTAINER_NOTE, true, opts);
 };
 
 export const opinionsPaginated = async (context, user, stixCoreObjectId, opts) => {
-  return listEntitiesThroughRelationsPaginated(context, user, stixCoreObjectId, RELATION_OBJECT, ENTITY_TYPE_CONTAINER_OPINION, false, opts);
+  return listEntitiesThroughRelationsPaginated(context, user, stixCoreObjectId, RELATION_OBJECT, ENTITY_TYPE_CONTAINER_OPINION, true, opts);
 };
 
 export const observedDataPaginated = async (context, user, stixCoreObjectId, opts) => {
-  return listEntitiesThroughRelationsPaginated(context, user, stixCoreObjectId, RELATION_OBJECT, ENTITY_TYPE_CONTAINER_OBSERVED_DATA, false, opts);
+  return listEntitiesThroughRelationsPaginated(context, user, stixCoreObjectId, RELATION_OBJECT, ENTITY_TYPE_CONTAINER_OBSERVED_DATA, true, opts);
 };
 
 export const externalReferencesPaginated = async (context, user, stixCoreObjectId, opts) => {

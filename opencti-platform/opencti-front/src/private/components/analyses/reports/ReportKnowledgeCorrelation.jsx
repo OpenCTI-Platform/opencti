@@ -135,6 +135,29 @@ const reportKnowledgeCorrelationStixCoreObjectQuery = graphql`
         first_seen
         last_seen
       }
+      ... on Event {
+        name
+        start_time
+        stop_time
+      }
+      ... on Channel {
+        name
+      }
+      ... on Narrative {
+        name
+      }
+      ... on Language {
+        name
+      }
+      ... on DataComponent {
+        name
+      }
+      ... on DataSource {
+        name
+      }
+      ... on Case {
+        name
+      }
       ... on StixCyberObservable {
         observable_value
       }
@@ -1268,7 +1291,7 @@ const ReportKnowledgeCorrelation = createFragmentContainer(
                           entity_type
                         }
                       }
-                                            objectMarking {
+                      objectMarking {
                         id
                         definition_type
                         definition

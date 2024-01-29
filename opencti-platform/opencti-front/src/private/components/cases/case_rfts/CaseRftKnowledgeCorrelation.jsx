@@ -14,12 +14,10 @@ import inject18n from '../../../../components/i18n';
 import { commitMutation, fetchQuery, MESSAGING$ } from '../../../../relay/environment';
 import { hexToRGB } from '../../../../utils/Colors';
 import {
-  buildCaseCorrelationData,
+  buildCorrelationData,
   computeTimeRangeInterval,
   computeTimeRangeValues,
   decodeGraphData,
-  defaultSecondaryValue,
-  defaultValue,
   encodeGraphData,
   linkPaint,
   nodeAreaPaint,
@@ -32,7 +30,6 @@ import { caseRftMutationFieldPatch } from './CaseRftEditionOverview';
 import { UserContext } from '../../../../utils/hooks/useAuth';
 import CaseRftKnowledgeGraphBar from './CaseRftKnowledgeGraphBar';
 import EntitiesDetailsRightsBar from '../../../../utils/graph/EntitiesDetailsRightBar';
-import { isNotEmptyField } from '../../../../utils/utils';
 
 const PARAMETERS$ = new Subject().pipe(debounce(() => timer(2000)));
 const POSITIONS$ = new Subject().pipe(debounce(() => timer(2000)));
@@ -137,6 +134,29 @@ const caseRftKnowledgeCorrelationStixCoreObjectQuery = graphql`
         name
         first_seen
         last_seen
+      }
+      ... on Event {
+        name
+        start_time
+        stop_time
+      }
+      ... on Channel {
+        name
+      }
+      ... on Narrative {
+        name
+      }
+      ... on Language {
+        name
+      }
+      ... on DataComponent {
+        name
+      }
+      ... on DataSource {
+        name
+      }
+      ... on Case {
+        name
       }
       ... on StixCyberObservable {
         observable_value
@@ -268,11 +288,12 @@ class CaseRftKnowledgeCorrelationComponent extends Component {
       excludedStixCoreObjectsTypes: [],
       selectedTimeRangeInterval: timeRangeInterval,
     };
-    this.graphData = buildCaseCorrelationData(
+    this.graphData = buildCorrelationData(
       this.graphObjects,
       decodeGraphData(props.caseData.x_opencti_graph_data),
       props.t,
       filterAdjust,
+      'cases',
     );
     this.state.graphData = { ...this.graphData };
     this.canvas = null;
@@ -322,7 +343,9 @@ class CaseRftKnowledgeCorrelationComponent extends Component {
   }
 
   componentWillUnmount() {
-    this.subscription.unsubscribe();
+    this.subscription1.unsubscribe();
+    this.subscription2.unsubscribe();
+    this.subscription3.unsubscribe();
   }
 
   saveParameters(refreshGraphData = false) {
@@ -452,11 +475,12 @@ class CaseRftKnowledgeCorrelationComponent extends Component {
     this.setState(
       {
         stixCoreObjectsTypes: filterAdjust.stixCoreObjectsTypes,
-        graphData: buildCaseCorrelationData(
+        graphData: buildCorrelationData(
           this.graphObjects,
           decodeGraphData(this.props.caseData.x_opencti_graph_data),
           this.props.t,
           filterAdjust,
+          'cases',
         ),
       },
       () => this.saveParameters(false),
@@ -477,11 +501,12 @@ class CaseRftKnowledgeCorrelationComponent extends Component {
     this.setState(
       {
         markedBy: filterAdjust.markedBy,
-        graphData: buildCaseCorrelationData(
+        graphData: buildCorrelationData(
           this.graphObjects,
           decodeGraphData(this.props.caseData.x_opencti_graph_data),
           this.props.t,
           filterAdjust,
+          'cases',
         ),
       },
       () => this.saveParameters(false),
@@ -502,11 +527,12 @@ class CaseRftKnowledgeCorrelationComponent extends Component {
     this.setState(
       {
         createdBy: filterAdjust.createdBy,
-        graphData: buildCaseCorrelationData(
+        graphData: buildCorrelationData(
           this.graphObjects,
           decodeGraphData(this.props.caseData.x_opencti_graph_data),
           this.props.t,
           filterAdjust,
+          'cases',
         ),
       },
       () => this.saveParameters(false),
@@ -615,11 +641,12 @@ class CaseRftKnowledgeCorrelationComponent extends Component {
             (n) => (n.id === stixCoreObject.id ? stixCoreObject : n),
             this.graphObjects,
           );
-          this.graphData = buildCaseCorrelationData(
+          this.graphData = buildCorrelationData(
             this.graphObjects,
             decodeGraphData(this.props.caseData.x_opencti_graph_data),
             this.props.t,
             this.state,
+            'cases',
           );
           this.setState({
             graphData: { ...this.graphData },
@@ -640,11 +667,12 @@ class CaseRftKnowledgeCorrelationComponent extends Component {
             (n) => (n.id === stixCoreRelationship.id ? stixCoreRelationship : n),
             this.graphObjects,
           );
-          this.graphData = buildCaseCorrelationData(
+          this.graphData = buildCorrelationData(
             this.graphObjects,
             decodeGraphData(this.props.caseData.x_opencti_graph_data),
             this.props.t,
             this.state,
+            'cases',
           );
           this.setState({
             graphData: { ...this.graphData },
@@ -739,11 +767,12 @@ class CaseRftKnowledgeCorrelationComponent extends Component {
   }
 
   handleResetLayout() {
-    this.graphData = buildCaseCorrelationData(
+    this.graphData = buildCorrelationData(
       this.graphObjects,
       {},
       this.props.t,
       this.state,
+      'cases',
     );
     this.setState(
       {
@@ -769,11 +798,12 @@ class CaseRftKnowledgeCorrelationComponent extends Component {
     this.setState(
       {
         selectedTimeRangeInterval: filterAdjust.selectedTimeRangeInterval,
-        graphData: buildCaseCorrelationData(
+        graphData: buildCorrelationData(
           this.graphObjects,
           decodeGraphData(this.props.caseData.x_opencti_graph_data),
           this.props.t,
           filterAdjust,
+          'cases',
         ),
       },
       () => this.saveParameters(false),
@@ -781,23 +811,25 @@ class CaseRftKnowledgeCorrelationComponent extends Component {
   }
 
   handleSearch(keyword) {
-    this.selectedLinks.clear();
-    this.selectedNodes.clear();
-    if (isNotEmptyField(keyword)) {
-      const filterByKeyword = (n) => keyword === ''
-        || (defaultValue(n) || '').toLowerCase().indexOf(keyword.toLowerCase())
-          !== -1
-        || (defaultSecondaryValue(n) || '')
-          .toLowerCase()
-          .indexOf(keyword.toLowerCase()) !== -1
-        || (n.entity_type || '').toLowerCase().indexOf(keyword.toLowerCase())
-          !== -1;
-      R.map(
-        (n) => filterByKeyword(n) && this.selectedNodes.add(n),
-        this.state.graphData.nodes,
-      );
-      this.setState({ numberOfSelectedNodes: this.selectedNodes.size });
-    }
+    const filterAdjust = {
+      selectedTimeRangeInterval: this.state.selectedTimeRangeInterval,
+      markedBy: this.state.markedBy,
+      createdBy: this.state.createdBy,
+      stixCoreObjectsTypes: this.state.stixCoreObjectsTypes,
+      keyword,
+    };
+    this.setState(
+      {
+        selectedTimeRangeInterval: filterAdjust.selectedTimeRangeInterval,
+        graphData: buildCorrelationData(
+          this.graphObjects,
+          decodeGraphData(this.props.grouping.x_opencti_graph_data),
+          this.props.t,
+          filterAdjust,
+        ),
+      },
+      () => this.saveParameters(false),
+    );
   }
 
   render() {
@@ -913,8 +945,8 @@ class CaseRftKnowledgeCorrelationComponent extends Component {
                 handleToggleSelectModeFree={this.handleToggleSelectModeFree.bind(
                   this,
                 )}
-                stixCoreObjectsTypes={currentStixCoreObjectsTypes}
-                currentStixCoreObjectsTypes={stixCoreObjectsTypes}
+                stixCoreObjectsTypes={stixCoreObjectsTypes}
+                currentStixCoreObjectsTypes={currentStixCoreObjectsTypes}
                 currentSelectRectangleModeFree={selectRectangleModeFree}
                 currentSelectModeFree={selectModeFree}
                 selectModeFreeReady={selectModeFreeReady}
@@ -1105,6 +1137,7 @@ class CaseRftKnowledgeCorrelationComponent extends Component {
                           node.color,
                           ctx,
                           this.selectedNodes.has(node),
+                          false,
                           node.disabled,
                         )
                       }
@@ -1174,6 +1207,11 @@ class CaseRftKnowledgeCorrelationComponent extends Component {
                       cooldownTicks={modeFixed ? 0 : 100}
                       onEngineStop={() => this.setState({ selectModeFreeReady: true })
                       }
+                      onRenderFramePost={(ctx) => {
+                        if (!this.ctx) {
+                          this.ctx = ctx;
+                        }
+                      }}
                       dagMode={
                         // eslint-disable-next-line no-nested-ternary
                         modeTree === 'horizontal'
