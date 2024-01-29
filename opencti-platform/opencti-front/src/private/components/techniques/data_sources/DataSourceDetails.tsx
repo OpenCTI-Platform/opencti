@@ -28,13 +28,9 @@ const DataSourceDetailsFragment = graphql`
     x_mitre_platforms
     collection_layers
     objectLabel {
-      edges {
-        node {
-          id
-          value
-          color
-        }
-      }
+      id
+      value
+      color
     }
     ...DataSourceDataComponents_dataSource
   }

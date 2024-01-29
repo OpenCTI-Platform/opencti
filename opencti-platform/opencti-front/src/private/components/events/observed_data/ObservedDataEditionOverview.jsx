@@ -332,15 +332,11 @@ export default createFragmentContainer(ObservedDataEditionOverviewComponent, {
         }
       }
       objectMarking {
-        edges {
-          node {
-            id
-            definition_type
-            definition
-            x_opencti_order
-            x_opencti_color
-          }
-        }
+        id
+        definition_type
+        definition
+        x_opencti_order
+        x_opencti_color
       }
       is_inferred
       status {

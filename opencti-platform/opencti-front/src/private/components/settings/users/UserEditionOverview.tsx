@@ -332,8 +332,6 @@ const UserEditionOverview = createFragmentContainer(
     user: graphql`
       fragment UserEditionOverview_user on User
       @argumentDefinitions(
-        rolesOrderBy: { type: "RolesOrdering", defaultValue: name }
-        rolesOrderMode: { type: "OrderingMode", defaultValue: asc }
         organizationsOrderBy: { type: "OrganizationsOrdering", defaultValue: name }
         organizationsOrderMode: { type: "OrderingMode", defaultValue: asc }
       ) {
@@ -351,7 +349,7 @@ const UserEditionOverview = createFragmentContainer(
         otp_qr
         account_status
         account_lock_after_date
-        roles(orderBy: $rolesOrderBy, orderMode: $rolesOrderMode) {
+        roles {
           id
           name
         }

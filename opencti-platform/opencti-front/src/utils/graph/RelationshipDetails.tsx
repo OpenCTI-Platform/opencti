@@ -126,15 +126,11 @@ const relationshipDetailsQuery = graphql`
           name
         }
         objectMarking {
-          edges {
-            node {
-              id
-              definition_type
-              definition
-              x_opencti_order
-              x_opencti_color
-            }
-          }
+          id
+          definition_type
+          definition
+          x_opencti_order
+          x_opencti_color
         }
         externalReferences {
           edges {
@@ -212,15 +208,11 @@ const relationshipDetailsQuery = graphql`
           name
         }
         objectMarking {
-          edges {
-            node {
-              id
-              definition_type
-              definition
-              x_opencti_order
-              x_opencti_color
-            }
-          }
+          id
+          definition_type
+          definition
+          x_opencti_order
+          x_opencti_color
         }
         reports(first: 10) {
           edges {
@@ -292,15 +284,11 @@ const relationshipDetailsQuery = graphql`
           name
         }
         objectMarking {
-          edges {
-            node {
-              id
-              definition_type
-              definition
-              x_opencti_order
-              x_opencti_color
-            }
-          }
+          id
+          definition_type
+          definition
+          x_opencti_order
+          x_opencti_color
         }
         reports(first: 10) {
           edges {
@@ -411,15 +399,9 @@ RelationshipDetailsComponentProps
         <Typography variant="h3" gutterBottom={true} className={classes.label}>
           {t_i18n('Marking')}
         </Typography>
-        {stixRelationship.objectMarking
-        && stixRelationship.objectMarking.edges.length > 0 ? (
-          <ItemMarkings
-            markingDefinitionsEdges={stixRelationship.objectMarking.edges}
-            limit={2}
-          />
-          ) : (
-            '-'
-          )}
+        {stixRelationship.objectMarking && stixRelationship.objectMarking.length > 0 ? (
+          <ItemMarkings markingDefinitions={stixRelationship.objectMarking} limit={2}/>
+        ) : ('-')}
         <Typography variant="h3" gutterBottom={true} className={classes.label}>
           {t_i18n('Author')}
         </Typography>

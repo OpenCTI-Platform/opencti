@@ -46,33 +46,21 @@ const feedbackFragment = graphql`
       name
     }
     objectMarking {
-      edges {
-        node {
-          id
-          definition_type
-          definition
-          x_opencti_order
-          x_opencti_color
-        }
-      }
+      id
+      definition_type
+      definition
+      x_opencti_order
+      x_opencti_color
     }
     objectLabel {
-      edges {
-        node {
-          id
-          value
-          color
-        }
-      }
+      id
+      value
+      color
     }
     objectAssignee {
-      edges {
-        node {
-          id
-          name
-          entity_type
-        }
-      }
+      id
+      name
+      entity_type
     }
     x_opencti_stix_ids
     status {

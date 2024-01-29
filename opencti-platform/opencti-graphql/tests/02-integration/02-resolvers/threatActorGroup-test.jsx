@@ -146,11 +146,7 @@ describe('Threat actor group resolver standard behavior', () => {
               from {
                 ... on ThreatActorGroup {
                   objectMarking {
-                    edges {
-                      node {
-                        id
-                      }
-                    }
+                    id
                   }
                 }
               }
@@ -168,7 +164,7 @@ describe('Threat actor group resolver standard behavior', () => {
         },
       },
     });
-    expect(queryResult.data.threatActorGroupEdit.relationAdd.from.objectMarking.edges.length).toEqual(1);
+    expect(queryResult.data.threatActorGroupEdit.relationAdd.from.objectMarking.length).toEqual(1);
   });
   it('should delete relation in threat actor group', async () => {
     const RELATION_DELETE_QUERY = gql`
@@ -177,11 +173,7 @@ describe('Threat actor group resolver standard behavior', () => {
             relationDelete(toId: $toId, relationship_type: $relationship_type) {
               id
               objectMarking {
-                edges {
-                  node {
-                    id
-                  }
-                }
+                id
               }
             }
           }
@@ -195,7 +187,7 @@ describe('Threat actor group resolver standard behavior', () => {
         relationship_type: 'object-marking',
       },
     });
-    expect(queryResult.data.threatActorGroupEdit.relationDelete.objectMarking.edges.length).toEqual(0);
+    expect(queryResult.data.threatActorGroupEdit.relationDelete.objectMarking.length).toEqual(0);
   });
   it('should threat actor group deleted', async () => {
     const DELETE_QUERY = gql`

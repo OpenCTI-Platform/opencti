@@ -1,19 +1,17 @@
 import { withFilter } from 'graphql-subscriptions';
 import {
   askElementEnrichmentForConnector,
-  batchCases,
-  batchContainers,
-  batchCreatedBy,
-  batchExternalReferences,
-  batchLabels,
   batchMarkingDefinitions,
-  batchNotes,
-  batchObservedData,
-  batchOpinions,
-  batchReports,
+  casesPaginated,
+  containersPaginated,
+  externalReferencesPaginated,
   findAll,
   findById,
   findFiltersRepresentatives,
+  notesPaginated,
+  observedDataPaginated,
+  opinionsPaginated,
+  reportsPaginated,
   stixCoreObjectAddRelation,
   stixCoreObjectAddRelations,
   stixCoreObjectCleanContext,
@@ -34,32 +32,23 @@ import {
   stixCoreObjectsNumber,
   stixCoreObjectsTimeSeries,
   stixCoreObjectsTimeSeriesByAuthor,
-  stixCoreRelationships,
+  stixCoreRelationships
 } from '../domain/stixCoreObject';
 import { fetchEditContext, pubSubAsyncIterator } from '../database/redis';
 import { batchLoader, distributionRelations, stixLoadByIdStringify } from '../database/middleware';
 import { worksForSource } from '../domain/work';
 import { BUS_TOPICS } from '../config/conf';
-import { ABSTRACT_STIX_CORE_OBJECT } from '../schema/general';
+import { ABSTRACT_STIX_CORE_OBJECT, INPUT_CREATED_BY, INPUT_GRANTED_REFS, INPUT_LABELS } from '../schema/general';
 import withCancel from '../graphql/subscriptionWrapper';
 import { connectorsForEnrichment } from '../database/repository';
-import { addOrganizationRestriction, batchObjectOrganizations, removeOrganizationRestriction } from '../domain/stix';
+import { addOrganizationRestriction, removeOrganizationRestriction } from '../domain/stix';
 import { stixCoreObjectOptions } from '../schema/stixCoreObject';
 import { numberOfContainersForObject } from '../domain/container';
 import { paginatedForPathWithEnrichment } from '../modules/internal/document/document-domain';
 import { getSpecVersionOrDefault } from '../domain/stixRelationship';
+import { loadThroughDenormalized } from './stix';
 
-const createdByLoader = batchLoader(batchCreatedBy);
 const markingDefinitionsLoader = batchLoader(batchMarkingDefinitions);
-const labelsLoader = batchLoader(batchLabels);
-const externalReferencesLoader = batchLoader(batchExternalReferences);
-const containersLoader = batchLoader(batchContainers);
-const reportsLoader = batchLoader(batchReports);
-const notesLoader = batchLoader(batchNotes);
-const opinionsLoader = batchLoader(batchOpinions);
-const casesLoader = batchLoader(batchCases);
-const observedDataLoader = batchLoader(batchObservedData);
-const batchOrganizationsLoader = batchLoader(batchObjectOrganizations);
 
 const stixCoreObjectResolvers = {
   Query: {
@@ -102,21 +91,23 @@ const stixCoreObjectResolvers = {
     },
     toStix: (stixCoreObject, _, context) => stixLoadByIdStringify(context, context.user, stixCoreObject.id),
     editContext: (stixCoreObject) => fetchEditContext(stixCoreObject.id),
-    stixCoreObjectsDistribution: (stixCoreObject, args, context) => stixCoreObjectsDistributionByEntity(context, context.user, { ...args, objectId: stixCoreObject.id }),
+    // region batch loaded through rel de-normalization. Cant be ordered of filtered
+    createdBy: (stixCoreObject, _, context) => loadThroughDenormalized(context, context.user, stixCoreObject, INPUT_CREATED_BY),
+    objectOrganization: (stixCoreObject, _, context) => loadThroughDenormalized(context, context.user, stixCoreObject, INPUT_GRANTED_REFS, { sortBy: 'name' }),
+    objectLabel: (stixCoreObject, _, context) => loadThroughDenormalized(context, context.user, stixCoreObject, INPUT_LABELS, { sortBy: 'value' }),
+    objectMarking: (stixCoreObject, _, context) => markingDefinitionsLoader.load(stixCoreObject, context, context.user),
+    // endregion
+    // region inner listing - cant be batch loaded
     stixCoreRelationships: (stixCoreObject, args, context) => stixCoreRelationships(context, context.user, stixCoreObject.id, args),
-    stixCoreRelationshipsDistribution: (stixCoreObject, args, context) => distributionRelations(context, context.user, { ...args, fromOrToId: stixCoreObject.id }),
-    createdBy: (stixCoreObject, _, context) => createdByLoader.load(stixCoreObject.id, context, context.user),
-    objectMarking: (stixCoreObject, _, context) => markingDefinitionsLoader.load(stixCoreObject.id, context, context.user),
-    objectLabel: (stixCoreObject, _, context) => labelsLoader.load(stixCoreObject.id, context, context.user),
-    objectOrganization: (stixCoreObject, _, context) => batchOrganizationsLoader.load(stixCoreObject.id, context, context.user),
-    externalReferences: (stixCoreObject, _, context) => externalReferencesLoader.load(stixCoreObject.id, context, context.user),
-    containersNumber: (stixCoreObject, args, context) => numberOfContainersForObject(context, context.user, { ...args, objectId: stixCoreObject.id }),
-    containers: (stixCoreObject, args, context) => containersLoader.load(stixCoreObject.id, context, context.user, args),
-    reports: (stixCoreObject, args, context) => reportsLoader.load(stixCoreObject.id, context, context.user, args),
-    cases: (stixCoreObject, args, context) => casesLoader.load(stixCoreObject.id, context, context.user, args),
-    notes: (stixCoreObject, _, context) => notesLoader.load(stixCoreObject.id, context, context.user),
-    opinions: (stixCoreObject, _, context) => opinionsLoader.load(stixCoreObject.id, context, context.user),
-    observedData: (stixCoreObject, _, context) => observedDataLoader.load(stixCoreObject.id, context, context.user),
+    externalReferences: (stixCoreObject, args, context) => externalReferencesPaginated(context, context.user, stixCoreObject.id, args),
+    containers: (stixCoreObject, args, context) => containersPaginated(context, context.user, stixCoreObject.id, args),
+    reports: (stixCoreObject, args, context) => reportsPaginated(context, context.user, stixCoreObject.id, args),
+    cases: (stixCoreObject, args, context) => casesPaginated(context, context.user, stixCoreObject.id, args),
+    notes: (stixCoreObject, args, context) => notesPaginated(context, context.user, stixCoreObject.id, args),
+    opinions: (stixCoreObject, args, context) => opinionsPaginated(context, context.user, stixCoreObject.id, args),
+    observedData: (stixCoreObject, args, context) => observedDataPaginated(context, context.user, stixCoreObject.id, args),
+    // endregion
+    // Files and connectors
     jobs: (stixCoreObject, args, context) => worksForSource(context, context.user, stixCoreObject.standard_id, args),
     connectors: (stixCoreObject, { onlyAlive = false }, context) => connectorsForEnrichment(context, context.user, stixCoreObject.entity_type, onlyAlive),
     importFiles: (stixCoreObject, { first, prefixMimeType }, context) => {
@@ -131,7 +122,12 @@ const stixCoreObjectResolvers = {
       const opts = { first, entity_type: stixCoreObject.entity_type };
       return paginatedForPathWithEnrichment(context, context.user, `export/${stixCoreObject.entity_type}/${stixCoreObject.id}`, stixCoreObject.id, opts);
     },
+    // Figures
+    stixCoreObjectsDistribution: (stixCoreObject, args, context) => stixCoreObjectsDistributionByEntity(context, context.user, { ...args, objectId: stixCoreObject.id }),
+    stixCoreRelationshipsDistribution: (stixCoreObject, args, context) => distributionRelations(context, context.user, { ...args, fromOrToId: stixCoreObject.id }),
+    containersNumber: (stixCoreObject, args, context) => numberOfContainersForObject(context, context.user, { ...args, objectId: stixCoreObject.id }),
     numberOfConnectedElement: (stixCoreObject) => stixCoreObjectsConnectedNumber(stixCoreObject),
+    // Retro compatibility
     spec_version: getSpecVersionOrDefault
   },
   Mutation: {

@@ -1,5 +1,5 @@
 import type { Resolvers } from '../../generated/graphql';
-import { batchAttackPatterns, batchDataSource, dataComponentAdd, findAll, findById } from './dataComponent-domain';
+import { attackPatternsPaginated, dataComponentAdd, findAll, findById, withDataSource } from './dataComponent-domain';
 import {
   stixDomainObjectAddRelation,
   stixDomainObjectCleanContext,
@@ -8,10 +8,7 @@ import {
   stixDomainObjectEditContext,
   stixDomainObjectEditField
 } from '../../domain/stixDomainObject';
-import { batchLoader } from '../../database/middleware';
-
-const dataSourceLoader = batchLoader(batchDataSource);
-const attackPatternsLoader = batchLoader(batchAttackPatterns);
+import type { BasicStoreEntityDataSource } from '../dataSource/dataSource-types';
 
 const dataComponentResolvers: Resolvers = {
   Query: {
@@ -19,8 +16,8 @@ const dataComponentResolvers: Resolvers = {
     dataComponents: (_, args, context) => findAll(context, context.user, args),
   },
   DataComponent: {
-    dataSource: (dataComponent, _, context) => dataSourceLoader.load(dataComponent.id, context, context.user),
-    attackPatterns: (dataComponent, _, context) => attackPatternsLoader.load(dataComponent.id, context, context.user),
+    dataSource: (dataComponent, _, context) => withDataSource<BasicStoreEntityDataSource>(context, context.user, dataComponent.id),
+    attackPatterns: (dataComponent, args, context) => attackPatternsPaginated<any>(context, context.user, dataComponent.id, args),
   },
   Mutation: {
     dataComponentAdd: (_, { input }, context) => {

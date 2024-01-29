@@ -94,15 +94,11 @@ const stixCoreObjectOrStixCoreRelationshipNotesCardsFragment = graphql`
           id
           ...StixCoreObjectOrStixCoreRelationshipNoteCard_node
           objectMarking {
-            edges {
-              node {
-                id
-                definition_type
-                definition
-                x_opencti_order
-                x_opencti_color
-              }
-            }
+            id
+            definition_type
+            definition
+            x_opencti_order
+            x_opencti_color
           }
         }
       }
@@ -124,7 +120,7 @@ const toFinalValues = (values: NoteAddInput, id: string) => {
 };
 
 const toOptions = (
-  objectMarkings: { id: string; definition: string | null | undefined }[] = [],
+  objectMarkings: readonly DefaultMarking[] | undefined = [],
 ) => (objectMarkings ?? []).map(convertMarking);
 
 export interface NoteAddInput {
@@ -137,16 +133,20 @@ export interface NoteAddInput {
   objectLabel: Option[];
 }
 
+interface DefaultMarking {
+  readonly definition: string | null | undefined;
+  readonly definition_type: string | null | undefined;
+  readonly id: string;
+  readonly x_opencti_color: string | null | undefined;
+  readonly x_opencti_order?: number;
+}
+
 interface StixCoreObjectOrStixCoreRelationshipNotesCardsProps {
   id: string;
   marginTop?: number;
   queryRef: PreloadedQuery<StixCoreObjectOrStixCoreRelationshipNotesCardsQuery>;
   paginationOptions: StixCoreObjectOrStixCoreRelationshipNotesCardsQuery$variables;
-  defaultMarkings?: {
-    id: string;
-    definition: string | null | undefined;
-    x_opencti_color: string | null | undefined;
-  }[];
+  readonly defaultMarkings?: readonly DefaultMarking[]
   title: string;
 }
 

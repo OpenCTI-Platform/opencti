@@ -214,24 +214,16 @@ const stixCoreObjectsListQuery = graphql`
             }
           }
           objectLabel {
-            edges {
-              node {
-                id
-                value
-                color
-              }
-            }
+            id
+            value
+            color
           }
           objectMarking {
-            edges {
-              node {
-                id
-                definition_type
-                definition
-                x_opencti_order
-                x_opencti_color
-              }
-            }
+            id
+            definition_type
+            definition
+            x_opencti_order
+            x_opencti_color
           }
           ... on StixDomainObject {
             status {
@@ -354,9 +346,7 @@ const StixCoreObjectsList = ({
                               >
                                 <ItemMarkings
                                   variant="inList"
-                                  markingDefinitionsEdges={
-                                    stixCoreObject.objectMarking.edges
-                                  }
+                                  markingDefinitions={stixCoreObject.objectMarking ?? []}
                                   limit={1}
                                 />
                               </div>

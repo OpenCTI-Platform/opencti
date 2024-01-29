@@ -66,15 +66,11 @@ const investigationGraphStixCoreObjectQuery = graphql`
         }
       }
       objectMarking {
-        edges {
-          node {
-            id
-            definition_type
-            definition
-            x_opencti_order
-            x_opencti_color
-          }
-        }
+        id
+        definition_type
+        definition
+        x_opencti_order
+        x_opencti_color
       }
       ... on AttackPattern {
         name
@@ -252,15 +248,11 @@ const investigationGraphStixCoreRelationshipQuery = graphql`
         }
       }
       objectMarking {
-        edges {
-          node {
-            id
-            definition_type
-            definition
-            x_opencti_order
-            x_opencti_color
-          }
-        }
+        id
+        definition_type
+        definition
+        x_opencti_order
+        x_opencti_color
       }
     }
   }
@@ -316,15 +308,11 @@ const investigationGraphStixSightingRelationshipQuery = graphql`
         }
       }
       objectMarking {
-        edges {
-          node {
-            id
-            definition_type
-            definition
-            x_opencti_order
-            x_opencti_color
-          }
-        }
+        id
+        definition_type
+        definition
+        x_opencti_order
+        x_opencti_color
       }
     }
   }
@@ -386,15 +374,11 @@ const investigationGraphStixRelationshipsQuery = graphql`
               }
             }
             objectMarking {
-              edges {
-                node {
-                  id
-                  definition_type
-                  definition
-                  x_opencti_order
-                  x_opencti_color
-                }
-              }
+              id
+              definition_type
+              definition
+              x_opencti_order
+              x_opencti_color
             }
           }
           ... on StixSightingRelationship {
@@ -409,15 +393,11 @@ const investigationGraphStixRelationshipsQuery = graphql`
               }
             }
             objectMarking {
-              edges {
-                node {
-                  id
-                  definition_type
-                  definition
-                  x_opencti_order
-                  x_opencti_color
-                }
-              }
+              id
+              definition_type
+              definition
+              x_opencti_order
+              x_opencti_color
             }
           }
           ... on StixRefRelationship {
@@ -444,15 +424,11 @@ const investigationGraphStixRelationshipsQuery = graphql`
                 }
               }
               objectMarking {
-                edges {
-                  node {
-                    id
-                    definition_type
-                    definition
-                    x_opencti_order
-                    x_opencti_color
-                  }
-                }
+                id
+                definition_type
+                definition
+                x_opencti_order
+                x_opencti_color
               }
             }
             ... on StixDomainObject {
@@ -659,15 +635,11 @@ const investigationGraphStixRelationshipsQuery = graphql`
                 }
               }
               objectMarking {
-                edges {
-                  node {
-                    id
-                    definition_type
-                    definition
-                    x_opencti_order
-                    x_opencti_color
-                  }
-                }
+                id
+                definition_type
+                definition
+                x_opencti_order
+                x_opencti_color
               }
             }
           }
@@ -689,15 +661,11 @@ const investigationGraphStixRelationshipsQuery = graphql`
                 }
               }
               objectMarking {
-                edges {
-                  node {
-                    id
-                    definition_type
-                    definition
-                    x_opencti_order
-                    x_opencti_color
-                  }
-                }
+                id
+                definition_type
+                definition
+                x_opencti_order
+                x_opencti_color
               }
             }
             ... on StixDomainObject {
@@ -872,15 +840,11 @@ const investigationGraphStixRelationshipsQuery = graphql`
                 }
               }
               objectMarking {
-                edges {
-                  node {
-                    id
-                    definition_type
-                    definition
-                    x_opencti_order
-                    x_opencti_color
-                  }
-                }
+                id
+                definition_type
+                definition
+                x_opencti_order
+                x_opencti_color
               }
             }
           }
@@ -2422,15 +2386,11 @@ const InvestigationGraph = createFragmentContainer(
                   }
                 }
                 objectMarking {
-                  edges {
-                    node {
-                      id
-                      definition_type
-                      definition
-                      x_opencti_order
-                      x_opencti_color
-                    }
-                  }
+                  id
+                  definition_type
+                  definition
+                  x_opencti_order
+                  x_opencti_color
                 }
               }
               ... on StixDomainObject {
@@ -2634,15 +2594,11 @@ const InvestigationGraph = createFragmentContainer(
                   }
                 }
                 objectMarking {
-                  edges {
-                    node {
-                      id
-                      definition_type
-                      definition
-                      x_opencti_order
-                      x_opencti_color
-                    }
-                  }
+                  id
+                  definition_type
+                  definition
+                  x_opencti_order
+                  x_opencti_color
                 }
               }
             }

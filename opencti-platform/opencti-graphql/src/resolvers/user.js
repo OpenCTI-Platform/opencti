@@ -14,10 +14,6 @@ import {
   assignOrganizationToUser,
   authenticateUser,
   batchCreator,
-  batchGroups,
-  batchOrganizations,
-  batchRoleCapabilities,
-  batchRolesForGroups,
   batchRolesForUsers,
   bookmarks,
   deleteBookmark,
@@ -31,12 +27,14 @@ import {
   findParticipants,
   findRoleById,
   findRoles,
+  groupRolesPaginated,
   meEditField,
   otpUserActivation,
   otpUserDeactivation,
   otpUserGeneration,
   otpUserLogin,
   roleAddRelation,
+  roleCapabilities,
   roleCleanContext,
   roleDelete,
   roleDeleteRelation,
@@ -48,7 +46,9 @@ import {
   userDeleteOrganizationRelation,
   userEditContext,
   userEditField,
+  userGroupsPaginated,
   userIdDeleteRelation,
+  userOrganizationsPaginated,
   userRenewToken,
   userWithOrigin
 } from '../domain/user';
@@ -58,11 +58,7 @@ import { findById as findWorskpaceById } from '../modules/workspace/workspace-do
 import { ENTITY_TYPE_USER } from '../schema/internalObject';
 import { executionContext, REDACTED_USER } from '../utils/access';
 
-const groupsLoader = batchLoader(batchGroups);
-const organizationsLoader = batchLoader(batchOrganizations);
-const rolesGroupsLoader = batchLoader(batchRolesForGroups);
 const rolesUsersLoader = batchLoader(batchRolesForUsers);
-const rolesCapabilitiesLoader = batchLoader(batchRoleCapabilities);
 const creatorLoader = batchLoader(batchCreator);
 
 const userResolvers = {
@@ -83,8 +79,8 @@ const userResolvers = {
   },
   User: {
     roles: (current, args, context) => rolesUsersLoader.load(current.id, context, context.user, args),
-    groups: (current, args, context) => groupsLoader.load(current.id, context, context.user, args),
-    objectOrganization: (current, args, context) => organizationsLoader.load(current.id, context, context.user, { ...args, withInferences: false }),
+    groups: (current, args, context) => userGroupsPaginated(context, context.user, current.id, args),
+    objectOrganization: (current, args, context) => userOrganizationsPaginated(context, context.user, current.id, args),
     editContext: (current) => fetchEditContext(current.id),
     sessions: (current) => findUserSessions(current.id),
   },
@@ -99,8 +95,8 @@ const userResolvers = {
   MeUser: {
     language: (current) => current.language ?? 'auto',
     unit_system: (current) => current.unit_system ?? 'auto',
-    groups: (current, args, context) => groupsLoader.load(current.id, context, context.user, args),
-    objectOrganization: (current, _, context) => organizationsLoader.load(current.id, context, context.user, { withInferences: false }),
+    groups: (current, args, context) => userGroupsPaginated(context, context.user, current.id, args),
+    objectOrganization: (current, args, context) => userOrganizationsPaginated(context, context.user, current.id, args),
     default_dashboards: (current, _, context) => findDefaultDashboards(context, context.user, current),
     default_dashboard: (current, _, context) => findWorskpaceById(context, context.user, current.default_dashboard),
   },
@@ -109,10 +105,10 @@ const userResolvers = {
   },
   Role: {
     editContext: (role) => fetchEditContext(role.id),
-    capabilities: (role, _, context) => rolesCapabilitiesLoader.load(role.id, context, context.user),
+    capabilities: (role, _, context) => roleCapabilities(context, context.user, role.id),
   },
   Group: {
-    roles: (group, args, context) => rolesGroupsLoader.load(group.id, context, context.user, args),
+    roles: (group, args, context) => groupRolesPaginated(context, context.user, group.id, args),
   },
   Mutation: {
     otpActivation: (_, { input }, context) => otpUserActivation(context, context.user, input),

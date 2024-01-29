@@ -46,24 +46,16 @@ const cityFragment = graphql`
       name
     }
     objectMarking {
-      edges {
-        node {
-          id
-          definition_type
-          definition
-          x_opencti_order
-          x_opencti_color
-        }
-      }
+      id
+      definition_type
+      definition
+      x_opencti_order
+      x_opencti_color
     }
     objectLabel {
-      edges {
-        node {
-          id
-          value
-          color
-        }
-      }
+      id
+      value
+      color
     }
     name
     latitude
@@ -128,9 +120,7 @@ const City = ({ cityData }: { cityData: City_city$key }) => {
       </Grid>
       <StixCoreObjectOrStixCoreRelationshipNotes
         stixCoreObjectOrStixCoreRelationshipId={city.id}
-        defaultMarkings={(city.objectMarking?.edges ?? []).map(
-          (edge) => edge.node,
-        )}
+        defaultMarkings={city.objectMarking ?? []}
       />
       <Security needs={[KNOWLEDGE_KNUPDATE]}>
         <CityEdition cityId={city.id} />

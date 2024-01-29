@@ -21,7 +21,7 @@ export const convertMarking = (element) => ({
   },
 });
 
-export const convertMarkings = (element) => (element?.objectMarking?.edges ?? []).map((n) => convertMarking(n.node));
+export const convertMarkings = (element) => (element?.objectMarking ?? []).map((n) => convertMarking(n));
 
 export const convertMarkingsWithoutEdges = (element, field = 'objectMarking') => (element?.[field] ?? []).map((n) => convertMarking(n));
 
@@ -35,14 +35,14 @@ export const convertAuthorizedMembers = (element) => (element?.authorized_member
   label: name,
 }));
 
-export const convertAssignees = (element) => (element?.objectAssignee?.edges ?? []).map((n) => ({
-  label: n.node.name,
-  value: n.node.id,
+export const convertAssignees = (element) => (element?.objectAssignee ?? []).map((n) => ({
+  label: n.name,
+  value: n.id,
 }));
 
-export const convertParticipants = (element) => (element?.objectParticipant?.edges ?? []).map((n) => ({
-  label: n.node.name,
-  value: n.node.id,
+export const convertParticipants = (element) => (element?.objectParticipant ?? []).map((n) => ({
+  label: n.name,
+  value: n.id,
 }));
 
 export const convertOrganizations = (element) => (element?.objectOrganization?.edges ?? []).map((n) => ({
@@ -50,9 +50,9 @@ export const convertOrganizations = (element) => (element?.objectOrganization?.e
   value: n.node.id,
 }));
 
-export const convertKillChainPhases = (element) => (element?.killChainPhases?.edges ?? []).map((n) => ({
-  label: `[${n.node.kill_chain_name}] ${n.node.phase_name}`,
-  value: n.node.id,
+export const convertKillChainPhases = (element) => (element?.killChainPhases ?? []).map((n) => ({
+  label: `[${n.kill_chain_name}] ${n.phase_name}`,
+  value: n.id,
 }));
 
 export const convertExternalReferences = (element) => (element?.externalReferences?.edges ?? []).map((n) => ({

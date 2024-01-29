@@ -123,13 +123,9 @@ const CourseOfActionDetails = createFragmentContainer(
         x_opencti_threat_hunting
         x_opencti_log_sources
         objectLabel {
-          edges {
-            node {
-              id
-              value
-              color
-            }
-          }
+          id
+          value
+          color
         }
         ...CourseOfActionAttackPatterns_courseOfAction
       }

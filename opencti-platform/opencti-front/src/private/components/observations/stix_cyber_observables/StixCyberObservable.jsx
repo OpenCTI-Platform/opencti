@@ -64,9 +64,7 @@ class StixCyberObservableComponent extends Component {
         </Grid>
         <StixCoreObjectOrStixCoreRelationshipNotes
           stixCoreObjectOrStixCoreRelationshipId={stixCyberObservable.id}
-          defaultMarkings={(stixCyberObservable.objectMarking?.edges ?? []).map(
-            (edge) => edge.node,
-          )}
+          defaultMarkings={stixCyberObservable.objectMarking ?? []}
         />
         <Security needs={[KNOWLEDGE_KNUPDATE]}>
           <StixCyberObservableEdition
@@ -107,24 +105,16 @@ const StixCyberObservable = createFragmentContainer(
           name
         }
         objectMarking {
-          edges {
-            node {
-              id
-              definition_type
-              definition
-              x_opencti_order
-              x_opencti_color
-            }
-          }
+          id
+          definition_type
+          definition
+          x_opencti_order
+          x_opencti_color
         }
         objectLabel {
-          edges {
-            node {
-              id
-              value
-              color
-            }
-          }
+          id
+          value
+          color
         }
         observable_value
         x_opencti_score

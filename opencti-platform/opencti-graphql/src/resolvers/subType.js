@@ -16,7 +16,7 @@ const subTypeResolvers = {
       const statusesEdges = await getTypeStatuses(context, context.user, current.label);
       return statusesEdges.edges.length > 0;
     },
-    statuses: (current, _, context) => statusesByTypeLoader.load(current.id, context, context.user,),
+    statuses: (current, _, context) => statusesByTypeLoader.load(current.id, context, context.user),
     settings: (current, _, context) => entitySettingsByTypeLoader.load(current.id, context, context.user), // Simpler before moving workflow
   },
   Mutation: {

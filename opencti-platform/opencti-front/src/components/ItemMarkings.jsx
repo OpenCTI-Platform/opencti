@@ -95,18 +95,11 @@ const StyledBadge = styled(Badge)(() => ({
   },
 }));
 
-const ItemMarkings = ({ variant, markingDefinitionsEdges, limit }) => {
+const ItemMarkings = ({ variant, markingDefinitions, limit }) => {
+  const markings = markingDefinitions ?? [];
   const classes = useStyles();
   const theme = useTheme();
   const { t_i18n } = useFormatter();
-  const sortBy = R.sortWith([
-    R.ascend(R.propOr('TLP', 'definition_type')),
-    R.descend(R.propOr(0, 'x_opencti_order')),
-  ]);
-  const markings = R.pipe(
-    R.map((n) => n.node),
-    sortBy,
-  )(markingDefinitionsEdges);
   const renderChip = (markingDefinition, isTooltip = false) => {
     let className = classes.chip;
     if (isTooltip) {
@@ -243,7 +236,6 @@ const ItemMarkings = ({ variant, markingDefinitionsEdges, limit }) => {
 ItemMarkings.propTypes = {
   variant: PropTypes.string,
   limit: PropTypes.number,
-  markingDefinitions: PropTypes.array,
 };
 
 export default ItemMarkings;

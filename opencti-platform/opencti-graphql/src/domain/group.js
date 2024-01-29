@@ -1,15 +1,13 @@
 import * as R from 'ramda';
+import { createRelation, deleteElementById, deleteRelationsByFromAndTo, patchAttribute, updateAttribute } from '../database/middleware';
 import {
-  batchListThroughGetFrom,
-  batchListThroughGetTo,
-  createRelation,
-  deleteElementById,
-  deleteRelationsByFromAndTo,
-  listThroughGetFrom,
-  patchAttribute,
-  updateAttribute
-} from '../database/middleware';
-import { internalFindByIds, listEntities, storeLoadById } from '../database/middleware-loader';
+  internalFindByIds,
+  listAllFromEntitiesThroughRelations,
+  listAllToEntitiesThroughRelations,
+  listEntities,
+  listEntitiesThroughRelationsPaginated,
+  storeLoadById
+} from '../database/middleware-loader';
 import { BUS_TOPICS } from '../config/conf';
 import { delEditContext, notify, setEditContext } from '../database/redis';
 import { ENTITY_TYPE_GROUP, ENTITY_TYPE_ROLE, ENTITY_TYPE_USER } from '../schema/internalObject';
@@ -28,7 +26,7 @@ import { cleanMarkings } from '../utils/markingDefinition-utils';
 export const GROUP_DEFAULT = 'Default';
 
 const groupSessionRefresh = async (context, user, groupId) => {
-  const members = await listThroughGetFrom(context, user, [groupId], RELATION_MEMBER_OF, ENTITY_TYPE_USER);
+  const members = await listAllFromEntitiesThroughRelations(context, user, groupId, RELATION_MEMBER_OF, ENTITY_TYPE_USER);
   const sessions = await findSessionsForUsers(members.map((e) => e.internal_id));
   await Promise.all(sessions.map((s) => markSessionForRefresh(s.id)));
 };
@@ -45,13 +43,8 @@ export const findAll = async (context, user, args) => {
   return listEntities(context, user, [ENTITY_TYPE_GROUP], args);
 };
 
-export const batchMembers = async (context, user, groupIds, opts = {}) => {
-  return batchListThroughGetFrom(context, user, groupIds, RELATION_MEMBER_OF, ENTITY_TYPE_USER, opts);
-};
-
-export const batchMarkingDefinitions = async (context, user, groupIds) => {
-  const opts = { paginate: false };
-  return batchListThroughGetTo(context, user, groupIds, RELATION_ACCESSES_TO, ENTITY_TYPE_MARKING_DEFINITION, opts);
+export const groupAllowedMarkings = async (context, user, groupId) => {
+  return listAllToEntitiesThroughRelations(context, user, groupId, RELATION_ACCESSES_TO, ENTITY_TYPE_MARKING_DEFINITION);
 };
 
 export const defaultMarkingDefinitions = async (context, group) => {
@@ -106,9 +99,12 @@ export const defaultMarkingDefinitionsFromGroups = async (context, groupIds) => 
     });
 };
 
-export const batchRoles = async (context, user, groupIds) => {
-  const opts = { paginate: false };
-  return batchListThroughGetTo(context, user, groupIds, RELATION_HAS_ROLE, ENTITY_TYPE_ROLE, opts);
+export const rolesPaginated = async (context, user, groupId, args) => {
+  return listEntitiesThroughRelationsPaginated(context, user, groupId, RELATION_HAS_ROLE, ENTITY_TYPE_ROLE, false, args);
+};
+
+export const membersPaginated = async (context, user, groupId, args) => {
+  return listEntitiesThroughRelationsPaginated(context, user, groupId, RELATION_MEMBER_OF, ENTITY_TYPE_USER, true, args);
 };
 
 export const groupDelete = async (context, user, groupId) => {

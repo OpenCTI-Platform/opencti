@@ -80,10 +80,10 @@ class StixDomainObjectAttackPatternsKillChainLines extends Component {
       : { node: { ...n.node, to: n.node.from, from: n.node.to } }));
     const killChainPhases = R.pipe(
       // eslint-disable-next-line no-nested-ternary
-      R.map((n) => (n.node.killChainPhases.edges.length > 0
-        ? n.node.killChainPhases.edges[0].node
-        : n.node.to.killChainPhases.edges.length > 0
-          ? n.node.to.killChainPhases.edges[0].node
+      R.map((n) => (n.node.killChainPhases.length > 0
+        ? n.node.killChainPhases[0]
+        : n.node.to.killChainPhases.length > 0
+          ? n.node.to.killChainPhases[0]
           : { id: 'unknown', phase_name: t('Unknown'), x_opencti_order: 99 })),
       R.uniq,
       R.indexBy(R.prop('id')),
@@ -102,10 +102,10 @@ class StixDomainObjectAttackPatternsKillChainLines extends Component {
       R.map((n) => R.assoc(
         'killChainPhase',
         // eslint-disable-next-line no-nested-ternary
-        n.killChainPhases.edges.length > 0
-          ? n.killChainPhases.edges[0].node
-          : n.to.killChainPhases.edges.length > 0
-            ? n.to.killChainPhases.edges[0].node
+        n.killChainPhases.length > 0
+          ? n.killChainPhases[0]
+          : n.to.killChainPhases.length > 0
+            ? n.to.killChainPhases[0]
             : { id: 'unknown', phase_name: t('Unknown'), x_opencti_order: 99 },
         n,
       )),
@@ -216,8 +216,8 @@ class StixDomainObjectAttackPatternsKillChainLines extends Component {
                               />
                               <ItemMarkings
                                 variant="inList"
-                                markingDefinitionsEdges={
-                                  attackPattern.markingDefinitions?.edges ?? []
+                                markingDefinitions={
+                                  attackPattern.markingDefinitions ?? []
                                 }
                                 limit={1}
                               />

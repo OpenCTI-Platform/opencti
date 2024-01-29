@@ -57,21 +57,13 @@ const attackPatternLineFragment = graphql`
     created
     modified
     objectLabel {
-      edges {
-        node {
-          id
-          value
-          color
-        }
-      }
+      id
+      value
+      color
     }
     killChainPhases {
-      edges {
-        node {
-          kill_chain_name
-          phase_name
-        }
-      }
+      kill_chain_name
+      phase_name
     }
   }
 `;
@@ -102,8 +94,8 @@ export const AttackPatternLine: FunctionComponent<AttackPatternLineProps> = ({
               className={classes.bodyItem}
               style={{ width: dataColumns.killChainPhase.width }}
             >
-              {(data.killChainPhases?.edges && data.killChainPhases?.edges.length > 0)
-                ? `[${data.killChainPhases.edges[0].node.kill_chain_name}] ${data.killChainPhases.edges[0].node.phase_name}`
+              {(data.killChainPhases && data.killChainPhases.length > 0)
+                ? `[${data.killChainPhases[0].kill_chain_name}] ${data.killChainPhases[0].phase_name}`
                 : '-'}
             </div>
             <div

@@ -206,7 +206,7 @@ class EntityStixCoreRelationshipLineToComponent extends Component {
               >
                 <ItemMarkings
                   variant="inList"
-                  markingDefinitionsEdges={node.objectMarking.edges ?? []}
+                  markingDefinitions={node.objectMarking ?? []}
                   limit={1}
                 />
               </div>
@@ -273,28 +273,20 @@ const EntityStixCoreRelationshipLineToFragment = createFragmentContainer(
           }
         }
         objectMarking {
-          edges {
-            node {
-              id
-              definition_type
-              definition
-              x_opencti_order
-              x_opencti_color
-            }
-          }
+          id
+          definition_type
+          definition
+          x_opencti_order
+          x_opencti_color
         }
         creators {
           id
           name
         }
         killChainPhases {
-          edges {
-            node {
-              id
-              phase_name
-              x_opencti_order
-            }
-          }
+          id
+          phase_name
+          x_opencti_order
         }
         from {
           ... on StixCoreObject {
@@ -304,13 +296,9 @@ const EntityStixCoreRelationshipLineToFragment = createFragmentContainer(
             created_at
             updated_at
             objectLabel {
-              edges {
-                node {
-                  id
-                  value
-                  color
-                }
-              }
+              id
+              value
+              color
             }
             createdBy {
               ... on Identity {
@@ -318,15 +306,11 @@ const EntityStixCoreRelationshipLineToFragment = createFragmentContainer(
               }
             }
             objectMarking {
-              edges {
-                node {
-                  id
-                  definition_type
-                  definition
-                  x_opencti_order
-                  x_opencti_color
-                }
-              }
+              id
+              definition_type
+              definition
+              x_opencti_order
+              x_opencti_color
             }
             creators {
               id
@@ -342,13 +326,9 @@ const EntityStixCoreRelationshipLineToFragment = createFragmentContainer(
             description
             x_mitre_id
             killChainPhases {
-              edges {
-                node {
-                  id
-                  phase_name
-                  x_opencti_order
-                }
-              }
+              id
+              phase_name
+              x_opencti_order
             }
           }
           ... on Campaign {

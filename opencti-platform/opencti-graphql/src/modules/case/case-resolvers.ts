@@ -1,12 +1,11 @@
 import { Promise as BluePromise } from 'bluebird';
 import { stixDomainObjectDelete } from '../../domain/stixDomainObject';
 import type { Resolvers } from '../../generated/graphql';
-import { batchParticipants, findAll, findById, upsertTemplateForCase } from './case-domain';
-import { batchLoader } from '../../database/middleware';
-import { batchTasks } from '../task/task-domain';
-
-const taskLoader = batchLoader(batchTasks);
-const participantLoader = batchLoader(batchParticipants);
+import { findAll, findById, upsertTemplateForCase } from './case-domain';
+import { caseTasksPaginated } from '../task/task-domain';
+import type { BasicStoreEntityTask } from '../task/task-types';
+import { loadThroughDenormalized } from '../../resolvers/stix';
+import { INPUT_PARTICIPANT } from '../../schema/general';
 
 const caseResolvers: Resolvers = {
   Query: {
@@ -22,8 +21,8 @@ const caseResolvers: Resolvers = {
       }
       return 'Unknown';
     },
-    tasks: (current, _, context) => taskLoader.load(current.id, context, context.user),
-    objectParticipant: (current, _, context) => participantLoader.load(current.id, context, context.user),
+    tasks: (current, args, context) => caseTasksPaginated<BasicStoreEntityTask>(context, context.user, current.id, args),
+    objectParticipant: (container, _, context) => loadThroughDenormalized(context, context.user, container, INPUT_PARTICIPANT, { sortBy: 'user_email' }),
   },
   CasesOrdering: {
     creator: 'creator_id',

@@ -1,4 +1,4 @@
-import { addIndividual, batchOrganizations, findAll, findById, isUser } from '../domain/individual';
+import { addIndividual, findAll, findById, isUser, partOfOrganizationsPaginated } from '../domain/individual';
 import {
   stixDomainObjectAddRelation,
   stixDomainObjectCleanContext,
@@ -7,9 +7,6 @@ import {
   stixDomainObjectEditContext,
   stixDomainObjectEditField,
 } from '../domain/stixDomainObject';
-import { batchLoader } from '../database/middleware';
-
-const organizationsLoader = batchLoader(batchOrganizations);
 
 const individualResolvers = {
   Query: {
@@ -17,8 +14,8 @@ const individualResolvers = {
     individuals: (_, args, context) => findAll(context, context.user, args),
   },
   Individual: {
-    organizations: (individual, _, context) => organizationsLoader.load(individual.id, context, context.user),
-    isUser: (individual, _, context) => isUser(context, context.user, individual.contact_information),
+    organizations: (individual, args, context) => partOfOrganizationsPaginated(context, context.user, individual.id, args),
+    isUser: (individual, _, context) => isUser(context, individual.contact_information),
   },
   Mutation: {
     individualEdit: (_, { id }, context) => ({

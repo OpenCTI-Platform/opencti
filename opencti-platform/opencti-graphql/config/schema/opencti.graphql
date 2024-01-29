@@ -1178,10 +1178,7 @@ type Group implements InternalObject & BasicObject {
   ): UserConnection @auth(for: [SETTINGS_SETACCESSES])
   created_at: DateTime
   updated_at: DateTime
-  roles(
-    orderBy: RolesOrdering
-    orderMode: OrderingMode
-  ): [Role]
+  roles(orderBy: RolesOrdering, orderMode: OrderingMode): RoleConnection
   allowed_marking: [MarkingDefinition!]
   default_marking: [DefaultMarking!]
   default_hidden_types: [String!]
@@ -1306,10 +1303,7 @@ type User implements BasicObject & InternalObject {
   theme: String
   language: String
   external: Boolean
-  roles(
-    orderBy: RolesOrdering
-    orderMode: OrderingMode
-  ): [Role]!
+  roles: [Role!]!
   capabilities: [Capability]!
   default_hidden_types: [String!]!
   groups(
@@ -1414,7 +1408,7 @@ enum RolesOrdering {
 }
 type RoleConnection {
   pageInfo: PageInfo!
-  edges: [RoleEdge]
+  edges: [RoleEdge!]
 }
 type RoleEdge {
   cursor: String!
@@ -1924,9 +1918,9 @@ interface StixCoreObject {
   # StixCoreObject
   createdBy: Identity
   numberOfConnectedElement: Int!
-  objectMarking: MarkingDefinitionConnection
-  objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
-  objectLabel: LabelConnection
+  objectMarking: [MarkingDefinition!]
+  objectOrganization: [Organization!] @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
+  objectLabel: [Label!]
   externalReferences(first: Int): ExternalReferenceConnection
   containersNumber: Number
   containers(first: Int, entityTypes: [String!]): ContainerConnection
@@ -2072,9 +2066,9 @@ interface StixDomainObject {
   # StixCoreObject
   createdBy: Identity
   numberOfConnectedElement: Int!
-  objectMarking: MarkingDefinitionConnection
-  objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
-  objectLabel: LabelConnection
+  objectMarking: [MarkingDefinition!]
+  objectOrganization: [Organization!] @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
+  objectLabel: [Label!]
   externalReferences(first: Int): ExternalReferenceConnection
   containersNumber: Number
   containers(first: Int, entityTypes: [String!]): ContainerConnection
@@ -2148,7 +2142,7 @@ interface StixDomainObject {
   created: DateTime
   modified: DateTime
   x_opencti_graph_data: String
-  objectAssignee: AssigneeConnection
+  objectAssignee: [Assignee!]
   avatar: OpenCtiFile
   # Technical
   creators: [Creator!]
@@ -2221,9 +2215,9 @@ type AttackPattern implements BasicObject & StixObject & StixCoreObject & StixDo
   # StixCoreObject
   createdBy: Identity
   numberOfConnectedElement: Int!
-  objectMarking: MarkingDefinitionConnection
-  objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
-  objectLabel: LabelConnection
+  objectMarking: [MarkingDefinition!]
+  objectOrganization: [Organization!] @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
+  objectLabel: [Label!]
   externalReferences(first: Int): ExternalReferenceConnection
   containersNumber: Number
   containers(first: Int, entityTypes: [String!]): ContainerConnection
@@ -2297,7 +2291,7 @@ type AttackPattern implements BasicObject & StixObject & StixCoreObject & StixDo
   created: DateTime
   modified: DateTime
   x_opencti_graph_data: String
-  objectAssignee: AssigneeConnection
+  objectAssignee: [Assignee!]
   avatar: OpenCtiFile
   # AttackPattern
   name: String!
@@ -2307,7 +2301,7 @@ type AttackPattern implements BasicObject & StixObject & StixCoreObject & StixDo
   x_mitre_permissions_required: [String]
   x_mitre_detection: String
   x_mitre_id: String
-  killChainPhases: KillChainPhaseConnection
+  killChainPhases: [KillChainPhase!]
   coursesOfAction: CourseOfActionConnection
   parentAttackPatterns: AttackPatternConnection
   subAttackPatterns: AttackPatternConnection
@@ -2389,9 +2383,9 @@ type Campaign implements BasicObject & StixObject & StixCoreObject & StixDomainO
   # StixCoreObject
   createdBy: Identity
   numberOfConnectedElement: Int!
-  objectMarking: MarkingDefinitionConnection
-  objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
-  objectLabel: LabelConnection
+  objectMarking: [MarkingDefinition!]
+  objectOrganization: [Organization!] @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
+  objectLabel: [Label!]
   externalReferences(first: Int): ExternalReferenceConnection
   containersNumber: Number
   containers(first: Int, entityTypes: [String!]): ContainerConnection
@@ -2465,7 +2459,7 @@ type Campaign implements BasicObject & StixObject & StixCoreObject & StixDomainO
   created: DateTime
   modified: DateTime
   x_opencti_graph_data: String
-  objectAssignee: AssigneeConnection
+  objectAssignee: [Assignee!]
   avatar: OpenCtiFile
   # Campaign
   name: String!
@@ -2550,9 +2544,9 @@ interface Container {
   # StixCoreObject
   createdBy: Identity
   numberOfConnectedElement: Int!
-  objectMarking: MarkingDefinitionConnection
-  objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
-  objectLabel: LabelConnection
+  objectMarking: [MarkingDefinition!]
+  objectOrganization: [Organization!] @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
+  objectLabel: [Label!]
   externalReferences(first: Int): ExternalReferenceConnection
   containersNumber: Number
   containers(first: Int, entityTypes: [String!]): ContainerConnection
@@ -2626,7 +2620,7 @@ interface Container {
   created: DateTime
   modified: DateTime
   x_opencti_graph_data: String
-  objectAssignee: AssigneeConnection
+  objectAssignee: [Assignee!]
   avatar: OpenCtiFile
   # Container
   objects(
@@ -2693,9 +2687,9 @@ type Note implements BasicObject & StixObject & StixCoreObject & StixDomainObjec
   # StixCoreObject
   createdBy: Identity
   numberOfConnectedElement: Int!
-  objectMarking: MarkingDefinitionConnection
-  objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
-  objectLabel: LabelConnection
+  objectMarking: [MarkingDefinition!]
+  objectOrganization: [Organization!] @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
+  objectLabel: [Label!]
   externalReferences(first: Int): ExternalReferenceConnection
   containersNumber: Number
   containers(first: Int, entityTypes: [String!]): ContainerConnection
@@ -2769,7 +2763,7 @@ type Note implements BasicObject & StixObject & StixCoreObject & StixDomainObjec
   created: DateTime
   modified: DateTime
   x_opencti_graph_data: String
-  objectAssignee: AssigneeConnection
+  objectAssignee: [Assignee!]
   avatar: OpenCtiFile
   # Container
   objects(
@@ -2893,9 +2887,9 @@ type ObservedData implements BasicObject & StixObject & StixCoreObject & StixDom
   # StixCoreObject
   createdBy: Identity
   numberOfConnectedElement: Int!
-  objectMarking: MarkingDefinitionConnection
-  objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
-  objectLabel: LabelConnection
+  objectMarking: [MarkingDefinition!]
+  objectOrganization: [Organization!] @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
+  objectLabel: [Label!]
   externalReferences(first: Int): ExternalReferenceConnection
   containersNumber: Number
   containers(first: Int, entityTypes: [String!]): ContainerConnection
@@ -2969,7 +2963,7 @@ type ObservedData implements BasicObject & StixObject & StixCoreObject & StixDom
   created: DateTime
   modified: DateTime
   x_opencti_graph_data: String
-  objectAssignee: AssigneeConnection
+  objectAssignee: [Assignee!]
   avatar: OpenCtiFile
   # Container
   objects(
@@ -3069,9 +3063,9 @@ type Opinion implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   # StixCoreObject
   createdBy: Identity
   numberOfConnectedElement: Int!
-  objectMarking: MarkingDefinitionConnection
-  objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
-  objectLabel: LabelConnection
+  objectMarking: [MarkingDefinition!]
+  objectOrganization: [Organization!] @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
+  objectLabel: [Label!]
   externalReferences(first: Int): ExternalReferenceConnection
   containersNumber: Number
   containers(first: Int, entityTypes: [String!]): ContainerConnection
@@ -3145,7 +3139,7 @@ type Opinion implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   created: DateTime
   modified: DateTime
   x_opencti_graph_data: String
-  objectAssignee: AssigneeConnection
+  objectAssignee: [Assignee!]
   avatar: OpenCtiFile
   # Container
   objects(
@@ -3264,9 +3258,9 @@ type Report implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   # StixCoreObject
   createdBy: Identity
   numberOfConnectedElement: Int!
-  objectMarking: MarkingDefinitionConnection
-  objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
-  objectLabel: LabelConnection
+  objectMarking: [MarkingDefinition!]
+  objectOrganization: [Organization!] @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
+  objectLabel: [Label!]
   externalReferences(first: Int): ExternalReferenceConnection
   containersNumber: Number
   containers(first: Int, entityTypes: [String!]): ContainerConnection
@@ -3340,7 +3334,7 @@ type Report implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   created: DateTime
   modified: DateTime
   x_opencti_graph_data: String
-  objectAssignee: AssigneeConnection
+  objectAssignee: [Assignee!]
   avatar: OpenCtiFile
   # Container
   objects(
@@ -3371,7 +3365,7 @@ type Report implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   report_types: [String]
   x_opencti_reliability: String
   published: DateTime
-  objectParticipant: ParticipantConnection
+  objectParticipant: [Participant!]
   # Technical
   creators: [Creator!]
   toStix: String
@@ -3450,9 +3444,9 @@ type CourseOfAction implements BasicObject & StixObject & StixCoreObject & StixD
   # StixCoreObject
   createdBy: Identity
   numberOfConnectedElement: Int!
-  objectMarking: MarkingDefinitionConnection
-  objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
-  objectLabel: LabelConnection
+  objectMarking: [MarkingDefinition!]
+  objectOrganization: [Organization!] @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
+  objectLabel: [Label!]
   externalReferences(first: Int): ExternalReferenceConnection
   containersNumber: Number
   containers(first: Int, entityTypes: [String!]): ContainerConnection
@@ -3526,7 +3520,7 @@ type CourseOfAction implements BasicObject & StixObject & StixCoreObject & StixD
   created: DateTime
   modified: DateTime
   x_opencti_graph_data: String
-  objectAssignee: AssigneeConnection
+  objectAssignee: [Assignee!]
   avatar: OpenCtiFile
   # CourseOfAction
   name: String!
@@ -3609,9 +3603,9 @@ interface Identity {
   # StixCoreObject
   createdBy: Identity
   numberOfConnectedElement: Int!
-  objectMarking: MarkingDefinitionConnection
-  objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
-  objectLabel: LabelConnection
+  objectMarking: [MarkingDefinition!]
+  objectOrganization: [Organization!] @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
+  objectLabel: [Label!]
   externalReferences(first: Int): ExternalReferenceConnection
   containersNumber: Number
   containers(first: Int, entityTypes: [String!]): ContainerConnection
@@ -3685,7 +3679,7 @@ interface Identity {
   created: DateTime
   modified: DateTime
   x_opencti_graph_data: String
-  objectAssignee: AssigneeConnection
+  objectAssignee: [Assignee!]
   avatar: OpenCtiFile
   # Identity
   identity_class: String!
@@ -3765,9 +3759,9 @@ type Individual implements BasicObject & StixObject & StixCoreObject & StixDomai
   # StixCoreObject
   createdBy: Identity
   numberOfConnectedElement: Int!
-  objectMarking: MarkingDefinitionConnection
-  objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
-  objectLabel: LabelConnection
+  objectMarking: [MarkingDefinition!]
+  objectOrganization: [Organization!] @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
+  objectLabel: [Label!]
   externalReferences(first: Int): ExternalReferenceConnection
   containersNumber: Number
   containers(first: Int, entityTypes: [String!]): ContainerConnection
@@ -3841,7 +3835,7 @@ type Individual implements BasicObject & StixObject & StixCoreObject & StixDomai
   created: DateTime
   modified: DateTime
   x_opencti_graph_data: String
-  objectAssignee: AssigneeConnection
+  objectAssignee: [Assignee!]
   avatar: OpenCtiFile
   # Identity
   identity_class: String!
@@ -3866,7 +3860,7 @@ type Individual implements BasicObject & StixObject & StixCoreObject & StixDomai
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
-  isUser: Boolean
+  isUser: Boolean  @auth(for: [SETTINGS_SETACCESSES])
 }
 input IndividualAddInput {
   stix_id: StixId
@@ -3931,9 +3925,9 @@ type Sector implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   # StixCoreObject
   createdBy: Identity
   numberOfConnectedElement: Int!
-  objectMarking: MarkingDefinitionConnection
-  objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
-  objectLabel: LabelConnection
+  objectMarking: [MarkingDefinition!]
+  objectOrganization: [Organization!] @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
+  objectLabel: [Label!]
   externalReferences(first: Int): ExternalReferenceConnection
   containersNumber: Number
   containers(first: Int, entityTypes: [String!]): ContainerConnection
@@ -4007,7 +4001,7 @@ type Sector implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   created: DateTime
   modified: DateTime
   x_opencti_graph_data: String
-  objectAssignee: AssigneeConnection
+  objectAssignee: [Assignee!]
   avatar: OpenCtiFile
   # Identity
   identity_class: String!
@@ -4092,9 +4086,9 @@ type System implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   # StixCoreObject
   createdBy: Identity
   numberOfConnectedElement: Int!
-  objectMarking: MarkingDefinitionConnection
-  objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
-  objectLabel: LabelConnection
+  objectMarking: [MarkingDefinition!]
+  objectOrganization: [Organization!] @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
+  objectLabel: [Label!]
   externalReferences(first: Int): ExternalReferenceConnection
   containersNumber: Number
   containers(first: Int, entityTypes: [String!]): ContainerConnection
@@ -4168,7 +4162,7 @@ type System implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   created: DateTime
   modified: DateTime
   x_opencti_graph_data: String
-  objectAssignee: AssigneeConnection
+  objectAssignee: [Assignee!]
   avatar: OpenCtiFile
   # Identity
   identity_class: String!
@@ -4261,9 +4255,9 @@ type Infrastructure implements BasicObject & StixObject & StixCoreObject & StixD
   # StixCoreObject
   createdBy: Identity
   numberOfConnectedElement: Int!
-  objectMarking: MarkingDefinitionConnection
-  objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
-  objectLabel: LabelConnection
+  objectMarking: [MarkingDefinition!]
+  objectOrganization: [Organization!] @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
+  objectLabel: [Label!]
   externalReferences(first: Int): ExternalReferenceConnection
   containersNumber: Number
   containers(first: Int, entityTypes: [String!]): ContainerConnection
@@ -4337,7 +4331,7 @@ type Infrastructure implements BasicObject & StixObject & StixCoreObject & StixD
   created: DateTime
   modified: DateTime
   x_opencti_graph_data: String
-  objectAssignee: AssigneeConnection
+  objectAssignee: [Assignee!]
   avatar: OpenCtiFile
   # Infrastructure
   name: String!
@@ -4346,7 +4340,7 @@ type Infrastructure implements BasicObject & StixObject & StixCoreObject & StixD
   infrastructure_types: [String]
   first_seen: DateTime
   last_seen: DateTime
-  killChainPhases: KillChainPhaseConnection
+  killChainPhases: [KillChainPhase!]
   # Technical
   creators: [Creator!]
   toStix: String
@@ -4419,9 +4413,9 @@ type IntrusionSet implements BasicObject & StixObject & StixCoreObject & StixDom
   # StixCoreObject
   createdBy: Identity
   numberOfConnectedElement: Int!
-  objectMarking: MarkingDefinitionConnection
-  objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
-  objectLabel: LabelConnection
+  objectMarking: [MarkingDefinition!]
+  objectOrganization: [Organization!] @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
+  objectLabel: [Label!]
   externalReferences(first: Int): ExternalReferenceConnection
   containersNumber: Number
   containers(first: Int, entityTypes: [String!]): ContainerConnection
@@ -4495,7 +4489,7 @@ type IntrusionSet implements BasicObject & StixObject & StixCoreObject & StixDom
   created: DateTime
   modified: DateTime
   x_opencti_graph_data: String
-  objectAssignee: AssigneeConnection
+  objectAssignee: [Assignee!]
   avatar: OpenCtiFile
   # IntrusionSet
   name: String!
@@ -4583,9 +4577,9 @@ interface Location {
   # StixCoreObject
   createdBy: Identity
   numberOfConnectedElement: Int!
-  objectMarking: MarkingDefinitionConnection
-  objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
-  objectLabel: LabelConnection
+  objectMarking: [MarkingDefinition!]
+  objectOrganization: [Organization!] @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
+  objectLabel: [Label!]
   externalReferences(first: Int): ExternalReferenceConnection
   containersNumber: Number
   containers(first: Int, entityTypes: [String!]): ContainerConnection
@@ -4659,7 +4653,7 @@ interface Location {
   created: DateTime
   modified: DateTime
   x_opencti_graph_data: String
-  objectAssignee: AssigneeConnection
+  objectAssignee: [Assignee!]
   avatar: OpenCtiFile
   # Location
   name: String!
@@ -4739,9 +4733,9 @@ type Position implements BasicObject & StixObject & StixCoreObject & StixDomainO
   # StixCoreObject
   createdBy: Identity
   numberOfConnectedElement: Int!
-  objectMarking: MarkingDefinitionConnection
-  objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
-  objectLabel: LabelConnection
+  objectMarking: [MarkingDefinition!]
+  objectOrganization: [Organization!] @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
+  objectLabel: [Label!]
   externalReferences(first: Int): ExternalReferenceConnection
   containersNumber: Number
   containers(first: Int, entityTypes: [String!]): ContainerConnection
@@ -4815,7 +4809,7 @@ type Position implements BasicObject & StixObject & StixCoreObject & StixDomainO
   created: DateTime
   modified: DateTime
   x_opencti_graph_data: String
-  objectAssignee: AssigneeConnection
+  objectAssignee: [Assignee!]
   avatar: OpenCtiFile
   # Location
   name: String!
@@ -4903,9 +4897,9 @@ type City implements BasicObject & StixObject & StixCoreObject & StixDomainObjec
   # StixCoreObject
   createdBy: Identity
   numberOfConnectedElement: Int!
-  objectMarking: MarkingDefinitionConnection
-  objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
-  objectLabel: LabelConnection
+  objectMarking: [MarkingDefinition!]
+  objectOrganization: [Organization!] @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
+  objectLabel: [Label!]
   externalReferences(first: Int): ExternalReferenceConnection
   containersNumber: Number
   containers(first: Int, entityTypes: [String!]): ContainerConnection
@@ -4979,7 +4973,7 @@ type City implements BasicObject & StixObject & StixCoreObject & StixDomainObjec
   created: DateTime
   modified: DateTime
   x_opencti_graph_data: String
-  objectAssignee: AssigneeConnection
+  objectAssignee: [Assignee!]
   avatar: OpenCtiFile
   # Location
   name: String!
@@ -5060,9 +5054,9 @@ type Country implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   # StixCoreObject
   createdBy: Identity
   numberOfConnectedElement: Int!
-  objectMarking: MarkingDefinitionConnection
-  objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
-  objectLabel: LabelConnection
+  objectMarking: [MarkingDefinition!]
+  objectOrganization: [Organization!] @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
+  objectLabel: [Label!]
   externalReferences(first: Int): ExternalReferenceConnection
   containersNumber: Number
   containers(first: Int, entityTypes: [String!]): ContainerConnection
@@ -5136,7 +5130,7 @@ type Country implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   created: DateTime
   modified: DateTime
   x_opencti_graph_data: String
-  objectAssignee: AssigneeConnection
+  objectAssignee: [Assignee!]
   avatar: OpenCtiFile
   # Location
   name: String!
@@ -5217,9 +5211,9 @@ type Region implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   # StixCoreObject
   createdBy: Identity
   numberOfConnectedElement: Int!
-  objectMarking: MarkingDefinitionConnection
-  objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
-  objectLabel: LabelConnection
+  objectMarking: [MarkingDefinition!]
+  objectOrganization: [Organization!] @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
+  objectLabel: [Label!]
   externalReferences(first: Int): ExternalReferenceConnection
   containersNumber: Number
   containers(first: Int, entityTypes: [String!]): ContainerConnection
@@ -5293,7 +5287,7 @@ type Region implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   created: DateTime
   modified: DateTime
   x_opencti_graph_data: String
-  objectAssignee: AssigneeConnection
+  objectAssignee: [Assignee!]
   avatar: OpenCtiFile
   # Location
   name: String!
@@ -5305,7 +5299,6 @@ type Region implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   # Region
   parentRegions: RegionConnection
   subRegions: RegionConnection
-  isSubRegion: Boolean
   countries: CountryConnection
   # Technical
   creators: [Creator!]
@@ -5382,9 +5375,9 @@ type Malware implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   # StixCoreObject
   createdBy: Identity
   numberOfConnectedElement: Int!
-  objectMarking: MarkingDefinitionConnection
-  objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
-  objectLabel: LabelConnection
+  objectMarking: [MarkingDefinition!]
+  objectOrganization: [Organization!] @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
+  objectLabel: [Label!]
   externalReferences(first: Int): ExternalReferenceConnection
   containersNumber: Number
   containers(first: Int, entityTypes: [String!]): ContainerConnection
@@ -5458,7 +5451,7 @@ type Malware implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   created: DateTime
   modified: DateTime
   x_opencti_graph_data: String
-  objectAssignee: AssigneeConnection
+  objectAssignee: [Assignee!]
   avatar: OpenCtiFile
   # Malware
   name: String!
@@ -5471,7 +5464,7 @@ type Malware implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   architecture_execution_envs: [String]
   implementation_languages: [String]
   capabilities: [String]
-  killChainPhases: KillChainPhaseConnection
+  killChainPhases: [KillChainPhase!]
   # Technical
   creators: [Creator!]
   toStix: String
@@ -5552,9 +5545,9 @@ interface ThreatActor implements BasicObject & StixObject & StixCoreObject & Sti
   # StixCoreObject
   createdBy: Identity
   numberOfConnectedElement: Int!
-  objectMarking: MarkingDefinitionConnection
-  objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
-  objectLabel: LabelConnection
+  objectMarking: [MarkingDefinition!]
+  objectOrganization: [Organization!] @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
+  objectLabel: [Label!]
   externalReferences(first: Int): ExternalReferenceConnection
   containersNumber: Number
   containers(first: Int, entityTypes: [String!]): ContainerConnection
@@ -5628,7 +5621,7 @@ interface ThreatActor implements BasicObject & StixObject & StixCoreObject & Sti
   created: DateTime
   modified: DateTime
   x_opencti_graph_data: String
-  objectAssignee: AssigneeConnection
+  objectAssignee: [Assignee!]
   avatar: OpenCtiFile
   # ThreatActorGroup
   name: String!
@@ -5686,9 +5679,9 @@ type ThreatActorGroup implements BasicObject & StixObject & StixCoreObject & Sti
   # StixCoreObject
   createdBy: Identity
   numberOfConnectedElement: Int!
-  objectMarking: MarkingDefinitionConnection
-  objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
-  objectLabel: LabelConnection
+  objectMarking: [MarkingDefinition!]
+  objectOrganization: [Organization!] @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
+  objectLabel: [Label!]
   externalReferences(first: Int): ExternalReferenceConnection
   containersNumber: Number
   containers(first: Int, entityTypes: [String!]): ContainerConnection
@@ -5762,7 +5755,7 @@ type ThreatActorGroup implements BasicObject & StixObject & StixCoreObject & Sti
   created: DateTime
   modified: DateTime
   x_opencti_graph_data: String
-  objectAssignee: AssigneeConnection
+  objectAssignee: [Assignee!]
   avatar: OpenCtiFile
   # ThreatActorGroup
   name: String!
@@ -5860,9 +5853,9 @@ type Tool implements BasicObject & StixObject & StixCoreObject & StixDomainObjec
   # StixCoreObject
   createdBy: Identity
   numberOfConnectedElement: Int!
-  objectMarking: MarkingDefinitionConnection
-  objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
-  objectLabel: LabelConnection
+  objectMarking: [MarkingDefinition!]
+  objectOrganization: [Organization!] @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
+  objectLabel: [Label!]
   externalReferences(first: Int): ExternalReferenceConnection
   containersNumber: Number
   containers(first: Int, entityTypes: [String!]): ContainerConnection
@@ -5936,7 +5929,7 @@ type Tool implements BasicObject & StixObject & StixCoreObject & StixDomainObjec
   created: DateTime
   modified: DateTime
   x_opencti_graph_data: String
-  objectAssignee: AssigneeConnection
+  objectAssignee: [Assignee!]
   avatar: OpenCtiFile
   # Tool
   name: String!
@@ -5944,7 +5937,7 @@ type Tool implements BasicObject & StixObject & StixCoreObject & StixDomainObjec
   aliases: [String]
   tool_types: [String]
   tool_version: String
-  killChainPhases: KillChainPhaseConnection
+  killChainPhases: [KillChainPhase!]
   # Technical
   creators: [Creator!]
   toStix: String
@@ -6020,9 +6013,9 @@ type Vulnerability implements BasicObject & StixObject & StixCoreObject & StixDo
   # StixCoreObject
   createdBy: Identity
   numberOfConnectedElement: Int!
-  objectMarking: MarkingDefinitionConnection
-  objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
-  objectLabel: LabelConnection
+  objectMarking: [MarkingDefinition!]
+  objectOrganization: [Organization!] @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
+  objectLabel: [Label!]
   externalReferences(first: Int): ExternalReferenceConnection
   containersNumber: Number
   containers(first: Int, entityTypes: [String!]): ContainerConnection
@@ -6096,7 +6089,7 @@ type Vulnerability implements BasicObject & StixObject & StixCoreObject & StixDo
   created: DateTime
   modified: DateTime
   x_opencti_graph_data: String
-  objectAssignee: AssigneeConnection
+  objectAssignee: [Assignee!]
   avatar: OpenCtiFile
   # Vulnerability
   name: String!
@@ -6108,7 +6101,7 @@ type Vulnerability implements BasicObject & StixObject & StixCoreObject & StixDo
   x_opencti_cvss_integrity_impact: String
   x_opencti_cvss_availability_impact: String
   x_opencti_cvss_confidentiality_impact: String
-  softwares(first: Int): StixCyberObservableConnection
+  softwares(first: Int, after: ID, orderBy: StixCyberObservablesOrdering, orderMode: OrderingMode): StixCyberObservableConnection
   # Technical
   creators: [Creator!]
   toStix: String
@@ -6191,9 +6184,9 @@ type Incident implements BasicObject & StixObject & StixCoreObject & StixDomainO
   # StixCoreObject
   createdBy: Identity
   numberOfConnectedElement: Int!
-  objectMarking: MarkingDefinitionConnection
-  objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
-  objectLabel: LabelConnection
+  objectMarking: [MarkingDefinition!]
+  objectOrganization: [Organization!] @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
+  objectLabel: [Label!]
   externalReferences(first: Int): ExternalReferenceConnection
   containersNumber: Number
   containers(first: Int, entityTypes: [String!]): ContainerConnection
@@ -6267,7 +6260,7 @@ type Incident implements BasicObject & StixObject & StixCoreObject & StixDomainO
   created: DateTime
   modified: DateTime
   x_opencti_graph_data: String
-  objectAssignee: AssigneeConnection
+  objectAssignee: [Assignee!]
   avatar: OpenCtiFile
   # Incident
   name: String!
@@ -6279,7 +6272,7 @@ type Incident implements BasicObject & StixObject & StixCoreObject & StixDomainO
   incident_type: String
   severity: String
   source: String
-  objectParticipant: ParticipantConnection
+  objectParticipant: [Participant!]
   # Technical
   creators: [Creator!]
   toStix: String
@@ -6356,9 +6349,9 @@ interface StixCyberObservable {
   # StixCoreObject
   createdBy: Identity
   numberOfConnectedElement: Int!
-  objectMarking: MarkingDefinitionConnection
-  objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
-  objectLabel: LabelConnection
+  objectMarking: [MarkingDefinition!]
+  objectOrganization: [Organization!] @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
+  objectLabel: [Label!]
   externalReferences(first: Int): ExternalReferenceConnection
   containersNumber: Number
   containers(first: Int, entityTypes: [String!]): ContainerConnection
@@ -6457,9 +6450,9 @@ type AutonomousSystem implements BasicObject & StixObject & StixCoreObject & Sti
   # StixCoreObject
   createdBy: Identity
   numberOfConnectedElement: Int!
-  objectMarking: MarkingDefinitionConnection
-  objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
-  objectLabel: LabelConnection
+  objectMarking: [MarkingDefinition!]
+  objectOrganization: [Organization!] @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
+  objectLabel: [Label!]
   externalReferences(first: Int): ExternalReferenceConnection
   containersNumber: Number
   containers(first: Int, entityTypes: [String!]): ContainerConnection
@@ -6568,9 +6561,9 @@ type Directory implements BasicObject & StixObject & StixCoreObject & StixCyberO
   # StixCoreObject
   createdBy: Identity
   numberOfConnectedElement: Int!
-  objectMarking: MarkingDefinitionConnection
-  objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
-  objectLabel: LabelConnection
+  objectMarking: [MarkingDefinition!]
+  objectOrganization: [Organization!] @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
+  objectLabel: [Label!]
   externalReferences(first: Int): ExternalReferenceConnection
   containersNumber: Number
   containers(first: Int, entityTypes: [String!]): ContainerConnection
@@ -6683,9 +6676,9 @@ type DomainName implements BasicObject & StixObject & StixCoreObject & StixCyber
   # StixCoreObject
   createdBy: Identity
   numberOfConnectedElement: Int!
-  objectMarking: MarkingDefinitionConnection
-  objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
-  objectLabel: LabelConnection
+  objectMarking: [MarkingDefinition!]
+  objectOrganization: [Organization!] @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
+  objectLabel: [Label!]
   externalReferences(first: Int): ExternalReferenceConnection
   containersNumber: Number
   containers(first: Int, entityTypes: [String!]): ContainerConnection
@@ -6790,9 +6783,9 @@ type EmailAddr implements BasicObject & StixObject & StixCoreObject & StixCyberO
   # StixCoreObject
   createdBy: Identity
   numberOfConnectedElement: Int!
-  objectMarking: MarkingDefinitionConnection
-  objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
-  objectLabel: LabelConnection
+  objectMarking: [MarkingDefinition!]
+  objectOrganization: [Organization!] @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
+  objectLabel: [Label!]
   externalReferences(first: Int): ExternalReferenceConnection
   containersNumber: Number
   containers(first: Int, entityTypes: [String!]): ContainerConnection
@@ -6899,9 +6892,9 @@ type EmailMessage implements BasicObject & StixObject & StixCoreObject & StixCyb
   # StixCoreObject
   createdBy: Identity
   numberOfConnectedElement: Int!
-  objectMarking: MarkingDefinitionConnection
-  objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
-  objectLabel: LabelConnection
+  objectMarking: [MarkingDefinition!]
+  objectOrganization: [Organization!] @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
+  objectLabel: [Label!]
   externalReferences(first: Int): ExternalReferenceConnection
   containersNumber: Number
   containers(first: Int, entityTypes: [String!]): ContainerConnection
@@ -7018,9 +7011,9 @@ type EmailMimePartType implements BasicObject & StixObject & StixCoreObject & St
   # StixCoreObject
   createdBy: Identity
   numberOfConnectedElement: Int!
-  objectMarking: MarkingDefinitionConnection
-  objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
-  objectLabel: LabelConnection
+  objectMarking: [MarkingDefinition!]
+  objectOrganization: [Organization!] @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
+  objectLabel: [Label!]
   externalReferences(first: Int): ExternalReferenceConnection
   containersNumber: Number
   containers(first: Int, entityTypes: [String!]): ContainerConnection
@@ -7145,9 +7138,9 @@ interface HashedObservable {
   # StixCoreObject
   createdBy: Identity
   numberOfConnectedElement: Int!
-  objectMarking: MarkingDefinitionConnection
-  objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
-  objectLabel: LabelConnection
+  objectMarking: [MarkingDefinition!]
+  objectOrganization: [Organization!] @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
+  objectLabel: [Label!]
   externalReferences(first: Int): ExternalReferenceConnection
   containersNumber: Number
   containers(first: Int, entityTypes: [String!]): ContainerConnection
@@ -7248,9 +7241,9 @@ type Artifact implements BasicObject & StixObject & StixCoreObject & StixCyberOb
   # StixCoreObject
   createdBy: Identity
   numberOfConnectedElement: Int!
-  objectMarking: MarkingDefinitionConnection
-  objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
-  objectLabel: LabelConnection
+  objectMarking: [MarkingDefinition!]
+  objectOrganization: [Organization!] @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
+  objectLabel: [Label!]
   externalReferences(first: Int): ExternalReferenceConnection
   containersNumber: Number
   containers(first: Int, entityTypes: [String!]): ContainerConnection
@@ -7368,9 +7361,9 @@ type StixFile implements BasicObject & StixObject & StixCoreObject & StixCyberOb
   # StixCoreObject
   createdBy: Identity
   numberOfConnectedElement: Int!
-  objectMarking: MarkingDefinitionConnection
-  objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
-  objectLabel: LabelConnection
+  objectMarking: [MarkingDefinition!]
+  objectOrganization: [Organization!] @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
+  objectLabel: [Label!]
   externalReferences(first: Int): ExternalReferenceConnection
   containersNumber: Number
   containers(first: Int, entityTypes: [String!]): ContainerConnection
@@ -7497,9 +7490,9 @@ type X509Certificate implements BasicObject & StixObject & StixCoreObject & Stix
   # StixCoreObject
   createdBy: Identity
   numberOfConnectedElement: Int!
-  objectMarking: MarkingDefinitionConnection
-  objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
-  objectLabel: LabelConnection
+  objectMarking: [MarkingDefinition!]
+  objectOrganization: [Organization!] @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
+  objectLabel: [Label!]
   externalReferences(first: Int): ExternalReferenceConnection
   containersNumber: Number
   containers(first: Int, entityTypes: [String!]): ContainerConnection
@@ -7661,9 +7654,9 @@ type IPv4Addr implements BasicObject & StixObject & StixCoreObject & StixCyberOb
   # StixCoreObject
   createdBy: Identity
   numberOfConnectedElement: Int!
-  objectMarking: MarkingDefinitionConnection
-  objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
-  objectLabel: LabelConnection
+  objectMarking: [MarkingDefinition!]
+  objectOrganization: [Organization!] @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
+  objectLabel: [Label!]
   externalReferences(first: Int): ExternalReferenceConnection
   containersNumber: Number
   containers(first: Int, entityTypes: [String!]): ContainerConnection
@@ -7771,9 +7764,9 @@ type IPv6Addr implements BasicObject & StixObject & StixCoreObject & StixCyberOb
   # StixCoreObject
   createdBy: Identity
   numberOfConnectedElement: Int!
-  objectMarking: MarkingDefinitionConnection
-  objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
-  objectLabel: LabelConnection
+  objectMarking: [MarkingDefinition!]
+  objectOrganization: [Organization!] @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
+  objectLabel: [Label!]
   externalReferences(first: Int): ExternalReferenceConnection
   containersNumber: Number
   containers(first: Int, entityTypes: [String!]): ContainerConnection
@@ -7879,9 +7872,9 @@ type MacAddr implements BasicObject & StixObject & StixCoreObject & StixCyberObs
   # StixCoreObject
   createdBy: Identity
   numberOfConnectedElement: Int!
-  objectMarking: MarkingDefinitionConnection
-  objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
-  objectLabel: LabelConnection
+  objectMarking: [MarkingDefinition!]
+  objectOrganization: [Organization!] @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
+  objectLabel: [Label!]
   externalReferences(first: Int): ExternalReferenceConnection
   containersNumber: Number
   containers(first: Int, entityTypes: [String!]): ContainerConnection
@@ -7986,9 +7979,9 @@ type Mutex implements BasicObject & StixObject & StixCoreObject & StixCyberObser
   # StixCoreObject
   createdBy: Identity
   numberOfConnectedElement: Int!
-  objectMarking: MarkingDefinitionConnection
-  objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
-  objectLabel: LabelConnection
+  objectMarking: [MarkingDefinition!]
+  objectOrganization: [Organization!] @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
+  objectLabel: [Label!]
   externalReferences(first: Int): ExternalReferenceConnection
   containersNumber: Number
   containers(first: Int, entityTypes: [String!]): ContainerConnection
@@ -8093,9 +8086,9 @@ type NetworkTraffic implements BasicObject & StixObject & StixCoreObject & StixC
   # StixCoreObject
   createdBy: Identity
   numberOfConnectedElement: Int!
-  objectMarking: MarkingDefinitionConnection
-  objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
-  objectLabel: LabelConnection
+  objectMarking: [MarkingDefinition!]
+  objectOrganization: [Organization!] @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
+  objectLabel: [Label!]
   externalReferences(first: Int): ExternalReferenceConnection
   containersNumber: Number
   containers(first: Int, entityTypes: [String!]): ContainerConnection
@@ -8221,9 +8214,9 @@ type Process implements BasicObject & StixObject & StixCoreObject & StixCyberObs
   # StixCoreObject
   createdBy: Identity
   numberOfConnectedElement: Int!
-  objectMarking: MarkingDefinitionConnection
-  objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
-  objectLabel: LabelConnection
+  objectMarking: [MarkingDefinition!]
+  objectOrganization: [Organization!] @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
+  objectLabel: [Label!]
   externalReferences(first: Int): ExternalReferenceConnection
   containersNumber: Number
   containers(first: Int, entityTypes: [String!]): ContainerConnection
@@ -8374,9 +8367,9 @@ type Software implements BasicObject & StixObject & StixCoreObject & StixCyberOb
   # StixCoreObject
   createdBy: Identity
   numberOfConnectedElement: Int!
-  objectMarking: MarkingDefinitionConnection
-  objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
-  objectLabel: LabelConnection
+  objectMarking: [MarkingDefinition!]
+  objectOrganization: [Organization!] @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
+  objectLabel: [Label!]
   externalReferences(first: Int): ExternalReferenceConnection
   containersNumber: Number
   containers(first: Int, entityTypes: [String!]): ContainerConnection
@@ -8500,9 +8493,9 @@ type Url implements BasicObject & StixObject & StixCoreObject & StixCyberObserva
   # StixCoreObject
   createdBy: Identity
   numberOfConnectedElement: Int!
-  objectMarking: MarkingDefinitionConnection
-  objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
-  objectLabel: LabelConnection
+  objectMarking: [MarkingDefinition!]
+  objectOrganization: [Organization!] @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
+  objectLabel: [Label!]
   externalReferences(first: Int): ExternalReferenceConnection
   containersNumber: Number
   containers(first: Int, entityTypes: [String!]): ContainerConnection
@@ -8607,9 +8600,9 @@ type UserAccount implements BasicObject & StixObject & StixCoreObject & StixCybe
   # StixCoreObject
   createdBy: Identity
   numberOfConnectedElement: Int!
-  objectMarking: MarkingDefinitionConnection
-  objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
-  objectLabel: LabelConnection
+  objectMarking: [MarkingDefinition!]
+  objectOrganization: [Organization!] @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
+  objectLabel: [Label!]
   externalReferences(first: Int): ExternalReferenceConnection
   containersNumber: Number
   containers(first: Int, entityTypes: [String!]): ContainerConnection
@@ -8741,9 +8734,9 @@ type WindowsRegistryKey implements BasicObject & StixObject & StixCoreObject & S
   # StixCoreObject
   createdBy: Identity
   numberOfConnectedElement: Int!
-  objectMarking: MarkingDefinitionConnection
-  objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
-  objectLabel: LabelConnection
+  objectMarking: [MarkingDefinition!]
+  objectOrganization: [Organization!] @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
+  objectLabel: [Label!]
   externalReferences(first: Int): ExternalReferenceConnection
   containersNumber: Number
   containers(first: Int, entityTypes: [String!]): ContainerConnection
@@ -8852,9 +8845,9 @@ type WindowsRegistryValueType implements BasicObject & StixObject & StixCoreObje
   # StixCoreObject
   createdBy: Identity
   numberOfConnectedElement: Int!
-  objectMarking: MarkingDefinitionConnection
-  objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
-  objectLabel: LabelConnection
+  objectMarking: [MarkingDefinition!]
+  objectOrganization: [Organization!] @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
+  objectLabel: [Label!]
   externalReferences(first: Int): ExternalReferenceConnection
   containersNumber: Number
   containers(first: Int, entityTypes: [String!]): ContainerConnection
@@ -8963,9 +8956,9 @@ type CryptographicKey implements BasicObject & StixObject & StixCoreObject & Sti
   # StixCoreObject
   createdBy: Identity
   numberOfConnectedElement: Int!
-  objectMarking: MarkingDefinitionConnection
-  objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
-  objectLabel: LabelConnection
+  objectMarking: [MarkingDefinition!]
+  objectOrganization: [Organization!] @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
+  objectLabel: [Label!]
   externalReferences(first: Int): ExternalReferenceConnection
   containersNumber: Number
   containers(first: Int, entityTypes: [String!]): ContainerConnection
@@ -9070,9 +9063,9 @@ type CryptocurrencyWallet implements BasicObject & StixObject & StixCoreObject &
   # StixCoreObject
   createdBy: Identity
   numberOfConnectedElement: Int!
-  objectMarking: MarkingDefinitionConnection
-  objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
-  objectLabel: LabelConnection
+  objectMarking: [MarkingDefinition!]
+  objectOrganization: [Organization!] @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
+  objectLabel: [Label!]
   externalReferences(first: Int): ExternalReferenceConnection
   containersNumber: Number
   containers(first: Int, entityTypes: [String!]): ContainerConnection
@@ -9177,9 +9170,9 @@ type Hostname implements BasicObject & StixObject & StixCoreObject & StixCyberOb
   # StixCoreObject
   createdBy: Identity
   numberOfConnectedElement: Int!
-  objectMarking: MarkingDefinitionConnection
-  objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
-  objectLabel: LabelConnection
+  objectMarking: [MarkingDefinition!]
+  objectOrganization: [Organization!] @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
+  objectLabel: [Label!]
   externalReferences(first: Int): ExternalReferenceConnection
   containersNumber: Number
   containers(first: Int, entityTypes: [String!]): ContainerConnection
@@ -9284,9 +9277,9 @@ type Text implements BasicObject & StixObject & StixCoreObject & StixCyberObserv
   # StixCoreObject
   createdBy: Identity
   numberOfConnectedElement: Int!
-  objectMarking: MarkingDefinitionConnection
-  objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
-  objectLabel: LabelConnection
+  objectMarking: [MarkingDefinition!]
+  objectOrganization: [Organization!] @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
+  objectLabel: [Label!]
   externalReferences(first: Int): ExternalReferenceConnection
   containersNumber: Number
   containers(first: Int, entityTypes: [String!]): ContainerConnection
@@ -9391,9 +9384,9 @@ type UserAgent implements BasicObject & StixObject & StixCoreObject & StixCyberO
   # StixCoreObject
   createdBy: Identity
   numberOfConnectedElement: Int!
-  objectMarking: MarkingDefinitionConnection
-  objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
-  objectLabel: LabelConnection
+  objectMarking: [MarkingDefinition!]
+  objectOrganization: [Organization!] @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
+  objectLabel: [Label!]
   externalReferences(first: Int): ExternalReferenceConnection
   containersNumber: Number
   containers(first: Int, entityTypes: [String!]): ContainerConnection
@@ -9498,9 +9491,9 @@ type BankAccount implements BasicObject & StixObject & StixCoreObject & StixCybe
   # StixCoreObject
   createdBy: Identity
   numberOfConnectedElement: Int!
-  objectMarking: MarkingDefinitionConnection
-  objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
-  objectLabel: LabelConnection
+  objectMarking: [MarkingDefinition!]
+  objectOrganization: [Organization!] @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
+  objectLabel: [Label!]
   externalReferences(first: Int): ExternalReferenceConnection
   containersNumber: Number
   containers(first: Int, entityTypes: [String!]): ContainerConnection
@@ -9610,9 +9603,9 @@ type PhoneNumber implements BasicObject & StixObject & StixCoreObject & StixCybe
   # StixCoreObject
   createdBy: Identity
   numberOfConnectedElement: Int!
-  objectMarking: MarkingDefinitionConnection
-  objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
-  objectLabel: LabelConnection
+  objectMarking: [MarkingDefinition!]
+  objectOrganization: [Organization!] @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
+  objectLabel: [Label!]
   externalReferences(first: Int): ExternalReferenceConnection
   containersNumber: Number
   containers(first: Int, entityTypes: [String!]): ContainerConnection
@@ -9717,9 +9710,9 @@ type PaymentCard implements BasicObject & StixObject & StixCoreObject & StixCybe
   # StixCoreObject
   createdBy: Identity
   numberOfConnectedElement: Int!
-  objectMarking: MarkingDefinitionConnection
-  objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
-  objectLabel: LabelConnection
+  objectMarking: [MarkingDefinition!]
+  objectOrganization: [Organization!] @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
+  objectLabel: [Label!]
   externalReferences(first: Int): ExternalReferenceConnection
   containersNumber: Number
   containers(first: Int, entityTypes: [String!]): ContainerConnection
@@ -9830,9 +9823,9 @@ type MediaContent implements BasicObject & StixObject & StixCoreObject & StixCyb
   # StixCoreObject
   createdBy: Identity
   numberOfConnectedElement: Int!
-  objectMarking: MarkingDefinitionConnection
-  objectLabel: LabelConnection
-  objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
+  objectMarking: [MarkingDefinition!]
+  objectLabel: [Label!]
+  objectOrganization: [Organization!] @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
   externalReferences(first: Int): ExternalReferenceConnection
   containersNumber: Number
   containers(first: Int, entityTypes: [String!]): ContainerConnection
@@ -10292,7 +10285,7 @@ interface StixRelationship {
   confidence: Int
   relationship_type: String!
   createdBy: Identity
-  objectMarking: MarkingDefinitionConnection
+  objectMarking: [MarkingDefinition!]
   toStix: String
   # Technical
   creators: [Creator!]
@@ -10360,15 +10353,15 @@ type StixCoreRelationship implements BasicRelationship & StixRelationship {
   confidence: Int
   relationship_type: String!
   createdBy: Identity
-  objectMarking: MarkingDefinitionConnection
+  objectMarking: [MarkingDefinition!]
   # StixCoreRelationship
   description: String
   start_time: DateTime
   stop_time: DateTime
   revoked: Boolean!
   lang: String
-  objectLabel: LabelConnection
-  objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
+  objectLabel: [Label!]
+  objectOrganization: [Organization!] @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
   externalReferences(first: Int): ExternalReferenceConnection
   containersNumber: Number
   containers(first: Int, entityTypes: [String!]): ContainerConnection
@@ -10399,7 +10392,7 @@ type StixCoreRelationship implements BasicRelationship & StixRelationship {
     search: String
     filters: FilterGroup
   ): StixCoreRelationshipConnection
-  killChainPhases: KillChainPhaseConnection
+  killChainPhases: [KillChainPhase!]
   # Technical
   creators: [Creator!]
   toStix: String
@@ -10488,15 +10481,15 @@ type StixSightingRelationship implements BasicRelationship & StixRelationship {
   confidence: Int
   relationship_type: String!
   createdBy: Identity
-  objectMarking: MarkingDefinitionConnection
+  objectMarking: [MarkingDefinition!]
   # StixSightingRelationship
   description: String
   first_seen: DateTime
   last_seen: DateTime
   attribute_count: Int!
   x_opencti_negative: Boolean!
-  objectLabel: LabelConnection
-  objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
+  objectLabel: [Label!]
+  objectOrganization: [Organization!] @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
   externalReferences(first: Int): ExternalReferenceConnection
   containersNumber: Number
   containers(first: Int, entityTypes: [String!]): ContainerConnection
@@ -10584,7 +10577,7 @@ type StixRefRelationship implements BasicRelationship & StixRelationship {
   confidence: Int
   relationship_type: String!
   createdBy: Identity
-  objectMarking: MarkingDefinitionConnection
+  objectMarking: [MarkingDefinition!]
   # StixRefRelationship
   start_time: DateTime
   stop_time: DateTime
@@ -10630,7 +10623,7 @@ input StixRefRelationshipAddInput {
 input StixRefRelationshipsAddInput {
   relationship_type: String!
   fromIds: [StixRef]
-  toIds: [StixRef]
+  toIds: [StixRef!]!
 }
 
 ### QUERIES

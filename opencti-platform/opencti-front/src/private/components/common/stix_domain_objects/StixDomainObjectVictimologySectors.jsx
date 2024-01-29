@@ -452,8 +452,8 @@ class StixDomainObjectVictimologySectorsComponent extends Component {
                           />
                           <ItemMarkings
                             variant="inList"
-                            markingDefinitionsEdges={
-                              stixCoreRelationship.objectMarking.edges
+                            markingDefinitions={
+                              stixCoreRelationship.objectMarking ?? []
                             }
                             limit={1}
                           />
@@ -589,9 +589,8 @@ class StixDomainObjectVictimologySectorsComponent extends Component {
                                       />
                                       <ItemMarkings
                                         variant="inList"
-                                        markingDefinitionsEdges={
-                                          stixCoreRelationship.objectMarking
-                                            .edges
+                                        markingDefinitions={
+                                          stixCoreRelationship.objectMarking ?? []
                                         }
                                         limit={1}
                                       />
@@ -772,15 +771,11 @@ const StixDomainObjectVictimologySectorsSectorLines = createRefetchContainer(
                 }
               }
               objectMarking {
-                edges {
-                  node {
-                    id
-                    definition_type
-                    definition
-                    x_opencti_order
-                    x_opencti_color
-                  }
-                }
+                id
+                definition_type
+                definition
+                x_opencti_order
+                x_opencti_color
               }
             }
           }

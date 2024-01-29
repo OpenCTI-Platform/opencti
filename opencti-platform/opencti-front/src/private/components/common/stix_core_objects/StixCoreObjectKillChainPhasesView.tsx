@@ -19,18 +19,17 @@ const useStyles = makeStyles(() => ({
 }));
 
 interface StixCoreObjectKillChainPhasesViewProps {
-  killChainPhasesEdges: ReadonlyArray<{ node: {
+  killChainPhases: ReadonlyArray<{
     entity_type: string;
     id: string;
     kill_chain_name: string;
     phase_name: string;
     x_opencti_order?: number | null;
-  };
   }>;
   firstLine?: boolean,
 }
 
-const StixCoreObjectKillChainPhasesView: FunctionComponent<StixCoreObjectKillChainPhasesViewProps> = ({ killChainPhasesEdges, firstLine }) => {
+const StixCoreObjectKillChainPhasesView: FunctionComponent<StixCoreObjectKillChainPhasesViewProps> = ({ killChainPhases, firstLine }) => {
   const { t_i18n } = useFormatter();
   const classes = useStyles();
   return (
@@ -38,10 +37,9 @@ const StixCoreObjectKillChainPhasesView: FunctionComponent<StixCoreObjectKillCha
       <Typography variant="h3" gutterBottom={true} style={firstLine ? undefined : { marginTop: 20 }}>
         {t_i18n('Kill chain phases')}
       </Typography>
-      {killChainPhasesEdges.length > 0
+      {killChainPhases.length > 0
         ? <List>
-          {killChainPhasesEdges.map((killChainPhaseEdge) => {
-            const killChainPhase = killChainPhaseEdge.node;
+          {killChainPhases.map((killChainPhase) => {
             return (
               <ListItem
                 key={killChainPhase.phase_name}

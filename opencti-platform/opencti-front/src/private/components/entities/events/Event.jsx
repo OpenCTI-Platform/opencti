@@ -59,9 +59,7 @@ class EventComponent extends Component {
         </Grid>
         <StixCoreObjectOrStixCoreRelationshipNotes
           stixCoreObjectOrStixCoreRelationshipId={event.id}
-          defaultMarkings={(event.objectMarking?.edges ?? []).map(
-            (edge) => edge.node,
-          )}
+          defaultMarkings={event.objectMarking ?? []}
         />
         <Security needs={[KNOWLEDGE_KNUPDATE]}>
           <EventEdition eventId={event.id} />
@@ -104,24 +102,16 @@ const Event = createFragmentContainer(EventComponent, {
         name
       }
       objectMarking {
-        edges {
-          node {
-            id
-            definition_type
-            definition
-            x_opencti_order
-            x_opencti_color
-          }
-        }
+        id
+        definition_type
+        definition
+        x_opencti_order
+        x_opencti_color
       }
       objectLabel {
-        edges {
-          node {
-            id
-            value
-            color
-          }
-        }
+        id
+        value
+        color
       }
       name
       aliases

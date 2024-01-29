@@ -228,13 +228,9 @@ const StixCoreRelationshipCreationFromRelationStixDomainObjectsLines = createPag
                 parent_types
                 revoked
                 objectLabel {
-                  edges {
-                    node {
-                      id
-                      value
-                      color
-                    }
-                  }
+                  id
+                  value
+                  color
                 }
                 ... on AttackPattern {
                   name

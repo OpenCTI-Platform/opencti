@@ -60,15 +60,11 @@ const incidentKnowledgeCorrelationStixCoreObjectQuery = graphql`
         }
       }
       objectMarking {
-        edges {
-          node {
-            id
-            definition_type
-            definition
-            x_opencti_order
-            x_opencti_color
-          }
-        }
+        id
+        definition_type
+        definition
+        x_opencti_order
+        x_opencti_color
       }
       ... on StixDomainObject {
         created
@@ -202,15 +198,11 @@ const incidentKnowledgeCorrelationStixCoreRelationshipQuery = graphql`
         }
       }
       objectMarking {
-        edges {
-          node {
-            id
-            definition_type
-            definition
-            x_opencti_order
-            x_opencti_color
-          }
-        }
+        id
+        definition_type
+        definition
+        x_opencti_order
+        x_opencti_color
       }
     }
   }
@@ -850,17 +842,15 @@ class IncidentKnowledgeCorrelationComponent extends Component {
       R.concat(
         R.pipe(
           R.filter((m) => m.node.objectMarking),
-          R.map((m) => m.node.objectMarking.edges),
+          R.map((m) => m.node.objectMarking),
           R.flatten,
-          R.map((m) => m.node),
         )(caseData.objects.edges),
         R.pipe(
           R.filter((m) => m.node.cases),
           R.map((m) => m.node.cases.edges),
           R.flatten,
-          R.map((m) => m.node.objectMarking.edges),
+          R.map((m) => m.node.objectMarking),
           R.flatten,
-          R.map((m) => m.node),
         )(caseData.objects.edges),
       ),
     );
@@ -1229,15 +1219,11 @@ const IncidentKnowledgeCorrelation = createFragmentContainer(
           }
         }
         objectMarking {
-          edges {
-            node {
-              id
-              definition_type
-              definition
-              x_opencti_order
-              x_opencti_color
-            }
-          }
+          id
+          definition_type
+          definition
+          x_opencti_order
+          x_opencti_color
         }
         objects {
           edges {
@@ -1257,15 +1243,11 @@ const IncidentKnowledgeCorrelation = createFragmentContainer(
                   }
                 }
                 objectMarking {
-                  edges {
-                    node {
-                      id
-                      definition_type
-                      definition
-                      x_opencti_order
-                      x_opencti_color
-                    }
-                  }
+                  id
+                  definition_type
+                  definition
+                  x_opencti_order
+                  x_opencti_color
                 }
                 cases(first: 20) {
                   edges {
@@ -1283,16 +1265,12 @@ const IncidentKnowledgeCorrelation = createFragmentContainer(
                           entity_type
                         }
                       }
-                      objectMarking {
-                        edges {
-                          node {
-                            id
-                            definition_type
-                            definition
-                            x_opencti_order
-                            x_opencti_color
-                          }
-                        }
+                                            objectMarking {
+                        id
+                        definition_type
+                        definition
+                        x_opencti_order
+                        x_opencti_color
                       }
                     }
                   }
@@ -1391,16 +1369,12 @@ const IncidentKnowledgeCorrelation = createFragmentContainer(
                           entity_type
                         }
                       }
-                      objectMarking {
-                        edges {
-                          node {
-                            id
-                            definition_type
-                            definition
-                            x_opencti_order
-                            x_opencti_color
-                          }
-                        }
+                                            objectMarking {
+                        id
+                        definition_type
+                        definition
+                        x_opencti_order
+                        x_opencti_color
                       }
                     }
                   }

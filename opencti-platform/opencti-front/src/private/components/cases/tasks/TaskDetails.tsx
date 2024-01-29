@@ -38,31 +38,19 @@ const TaskDetailsFragment = graphql`
       }
     }
     objectMarking {
-      edges {
-        node {
-          definition
-          definition_type
-          id
-        }
-      }
+      definition
+      definition_type
+      id
     }
     objectLabel {
-      edges {
-        node {
-          id
-          value
-          color
-        }
-      }
+      id
+      value
+      color
     }
     objectAssignee {
-      edges {
-        node {
-          entity_type
-          id
-          name
-        }
-      }
+      entity_type
+      id
+      name
     }
     status {
       template {

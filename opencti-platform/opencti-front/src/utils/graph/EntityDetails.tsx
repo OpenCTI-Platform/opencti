@@ -91,15 +91,11 @@ const entityDetailsQuery = graphql`
         name
       }
       objectMarking {
-        edges {
-          node {
-            id
-            definition_type
-            definition
-            x_opencti_order
-            x_opencti_color
-          }
-        }
+        id
+        definition_type
+        definition
+        x_opencti_order
+        x_opencti_color
       }
       externalReferences {
         edges {
@@ -378,10 +374,10 @@ EntityDetailsComponentProps
       <Typography variant="h3" gutterBottom={true} className={classes.label}>
         {t_i18n('Marking')}
       </Typography>
-      {stixCoreObject.objectMarking?.edges
-      && stixCoreObject.objectMarking?.edges.length > 0 ? (
+      {stixCoreObject.objectMarking
+      && stixCoreObject.objectMarking.length > 0 ? (
         <ItemMarkings
-          markingDefinitionsEdges={stixCoreObject.objectMarking.edges}
+          markingDefinitions={stixCoreObject.objectMarking}
           limit={2}
         />
         ) : (

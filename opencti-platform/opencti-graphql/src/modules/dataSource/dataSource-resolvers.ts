@@ -1,5 +1,5 @@
 import type { Resolvers } from '../../generated/graphql';
-import { batchDataComponents, dataSourceAdd, dataSourceDataComponentAdd, dataSourceDataComponentDelete, findAll, findById } from './dataSource-domain';
+import { dataComponentsPaginated, dataSourceAdd, dataSourceDataComponentAdd, dataSourceDataComponentDelete, findAll, findById } from './dataSource-domain';
 import {
   stixDomainObjectAddRelation,
   stixDomainObjectCleanContext,
@@ -8,9 +8,7 @@ import {
   stixDomainObjectEditContext,
   stixDomainObjectEditField
 } from '../../domain/stixDomainObject';
-import { batchLoader } from '../../database/middleware';
-
-const dataComponentsLoader = batchLoader(batchDataComponents);
+import type { BasicStoreEntityDataComponent } from '../dataComponent/dataComponent-types';
 
 const dataSourceResolvers: Resolvers = {
   Query: {
@@ -18,7 +16,7 @@ const dataSourceResolvers: Resolvers = {
     dataSources: (_, args, context) => findAll(context, context.user, args),
   },
   DataSource: {
-    dataComponents: (dataSource, _, context) => dataComponentsLoader.load(dataSource.id, context, context.user),
+    dataComponents: (dataSource, args, context) => dataComponentsPaginated<BasicStoreEntityDataComponent>(context, context.user, dataSource.id, args),
   },
   Mutation: {
     dataSourceAdd: (_, { input }, context) => {

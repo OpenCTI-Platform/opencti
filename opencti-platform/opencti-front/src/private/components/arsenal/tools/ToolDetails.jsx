@@ -77,7 +77,7 @@ class ToolDetailsComponent extends Component {
                   ))}
                 </List>
               ) : ('-')}
-              <StixCoreObjectKillChainPhasesView killChainPhasesEdges={tool.killChainPhases.edges} />
+              <StixCoreObjectKillChainPhasesView killChainPhases={tool.killChainPhases} />
             </Grid>
           </Grid>
         </Paper>
@@ -101,15 +101,11 @@ const ToolDetails = createFragmentContainer(ToolDetailsComponent, {
       tool_version
       tool_types
       killChainPhases {
-        edges {
-          node {
-            id
-            entity_type
-            kill_chain_name
-            phase_name
-            x_opencti_order
-          }
-        }
+        id
+        entity_type
+        kill_chain_name
+        phase_name
+        x_opencti_order
       }
     }
   `,

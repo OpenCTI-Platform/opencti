@@ -1,6 +1,6 @@
 import { assoc } from 'ramda';
-import { createEntity, batchListThroughGetTo } from '../database/middleware';
-import { listEntities, storeLoadById } from '../database/middleware-loader';
+import { createEntity } from '../database/middleware';
+import { listEntities, listEntitiesThroughRelationsPaginated, storeLoadById } from '../database/middleware-loader';
 import { BUS_TOPICS } from '../config/conf';
 import { notify } from '../database/redis';
 import { ENTITY_TYPE_IDENTITY_SYSTEM } from '../schema/stixDomainObject';
@@ -26,6 +26,6 @@ export const addSystem = async (context, user, system) => {
   return notify(BUS_TOPICS[ABSTRACT_STIX_DOMAIN_OBJECT].ADDED_TOPIC, created, user);
 };
 
-export const batchOrganizations = (context, user, systemIds) => {
-  return batchListThroughGetTo(context, user, systemIds, RELATION_BELONGS_TO, ENTITY_TYPE_IDENTITY_ORGANIZATION);
+export const belongsToOrganizationsPaginated = async (context, user, stixCoreObjectId, opts) => {
+  return listEntitiesThroughRelationsPaginated(context, user, stixCoreObjectId, RELATION_BELONGS_TO, ENTITY_TYPE_IDENTITY_ORGANIZATION, false, opts);
 };

@@ -1,4 +1,4 @@
-import { addSector, batchIsSubSector, batchParentSectors, batchSubSectors, findAll, findById, targetedOrganizations } from '../domain/sector';
+import { addSector, childSectorsPaginated, findAll, findById, isSubSector, parentSectorsPaginated, targetedOrganizations } from '../domain/sector';
 import {
   stixDomainObjectAddRelation,
   stixDomainObjectCleanContext,
@@ -7,11 +7,6 @@ import {
   stixDomainObjectEditContext,
   stixDomainObjectEditField,
 } from '../domain/stixDomainObject';
-import { batchLoader } from '../database/middleware';
-
-const parentSectorsLoader = batchLoader(batchParentSectors);
-const subSectorsLoader = batchLoader(batchSubSectors);
-const isSubSectorLoader = batchLoader(batchIsSubSector);
 
 const sectorResolvers = {
   Query: {
@@ -19,9 +14,9 @@ const sectorResolvers = {
     sectors: (_, args, context) => findAll(context, context.user, args),
   },
   Sector: {
-    parentSectors: (sector, _, context) => parentSectorsLoader.load(sector.id, context, context.user),
-    subSectors: (sector, _, context) => subSectorsLoader.load(sector.id, context, context.user),
-    isSubSector: (sector, _, context) => isSubSectorLoader.load(sector.id, context, context.user),
+    parentSectors: (sector, args, context) => parentSectorsPaginated(context, context.user, sector.id, args),
+    subSectors: (sector, args, context) => childSectorsPaginated(context, context.user, sector.id, args),
+    isSubSector: (sector, _, context) => isSubSector(context, context.user, sector.id),
     targetedOrganizations: (sector, _, context) => targetedOrganizations(context, context.user, sector.id),
   },
   Mutation: {

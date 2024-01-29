@@ -1,7 +1,7 @@
 import * as R from 'ramda';
 import moment from 'moment/moment';
-import { batchListThroughGetTo, createEntity, createRelation, distributionEntities, patchAttribute, storeLoadByIdWithRefs, timeSeriesEntities } from '../../database/middleware';
-import { listAllEntities, listEntitiesPaginated, storeLoadById } from '../../database/middleware-loader';
+import { createEntity, createRelation, distributionEntities, patchAttribute, storeLoadByIdWithRefs, timeSeriesEntities } from '../../database/middleware';
+import { type EntityOptions, listAllEntities, listEntitiesPaginated, listEntitiesThroughRelationsPaginated, storeLoadById } from '../../database/middleware-loader';
 import { BUS_TOPICS, logApp } from '../../config/conf';
 import { notify } from '../../database/redis';
 import { checkIndicatorSyntax } from '../../python/pythonBridge';
@@ -25,7 +25,8 @@ import { addFilter } from '../../utils/filtering/filtering-utils';
 import type { AuthContext, AuthUser } from '../../types/user';
 import { type BasicStoreEntityIndicator, ENTITY_TYPE_INDICATOR, type StoreEntityIndicator } from './indicator-types';
 import type { IndicatorAddInput, QueryIndicatorsArgs, QueryIndicatorsNumberArgs } from '../../generated/graphql';
-import type { NumberResult } from '../../types/store';
+import { FilterMode, FilterOperator, OrderingMode } from '../../generated/graphql';
+import type { BasicStoreCommon, NumberResult } from '../../types/store';
 import {
   BUILT_IN_DECAY_RULES,
   computeLivePoints,
@@ -38,7 +39,6 @@ import {
 } from './decay-domain';
 import { isModuleActivated } from '../../domain/settings';
 import { prepareDate } from '../../utils/format';
-import { FilterMode, FilterOperator, OrderingMode } from '../../generated/graphql';
 
 export const findById = (context: AuthContext, user: AuthUser, indicatorId: string) => {
   return storeLoadById<BasicStoreEntityIndicator>(context, user, indicatorId, ENTITY_TYPE_INDICATOR);
@@ -318,6 +318,6 @@ export const indicatorsDistributionByEntity = async (context: AuthContext, user:
 };
 // endregion
 
-export const batchObservables = (context: AuthContext, user: AuthUser, indicatorIds: string[]) => {
-  return batchListThroughGetTo(context, user, indicatorIds, RELATION_BASED_ON, ABSTRACT_STIX_CYBER_OBSERVABLE);
+export const observablesPaginated = async <T extends BasicStoreCommon>(context: AuthContext, user: AuthUser, indicatorId: string, args: EntityOptions<T>) => {
+  return listEntitiesThroughRelationsPaginated<T>(context, user, indicatorId, RELATION_BASED_ON, ABSTRACT_STIX_CYBER_OBSERVABLE, false, args);
 };

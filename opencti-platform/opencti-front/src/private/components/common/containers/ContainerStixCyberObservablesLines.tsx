@@ -66,15 +66,11 @@ const ContainerStixCyberObservablesLinesFragment = graphql`
         }
       }
       objectMarking {
-        edges {
-          node {
-            id
-            definition_type
-            definition
-            x_opencti_order
-            x_opencti_color
-          }
-        }
+        id
+        definition_type
+        definition
+        x_opencti_order
+        x_opencti_color
       }
       objects(
         types: $types
@@ -191,9 +187,7 @@ ContainerStixCyberObservablesLinesProps
             onTypesChange={onTypesChange}
             openExports={openExports}
             defaultCreatedBy={data?.container.createdBy ?? null}
-            defaultMarkingDefinitions={(
-              data?.container.objectMarking?.edges ?? []
-            ).map((n) => n.node)}
+            defaultMarkingDefinitions={data?.container.objectMarking ?? []}
             confidence={data?.container.confidence}
           />
         </Security>

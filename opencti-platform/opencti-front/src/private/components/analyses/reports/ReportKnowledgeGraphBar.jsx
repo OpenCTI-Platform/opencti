@@ -864,9 +864,7 @@ class ReportKnowledgeGraphBar extends Component {
                         containerStixCoreObjects={report.objects.edges}
                         knowledgeGraph={true}
                         defaultCreatedBy={report.createdBy ?? null}
-                        defaultMarkingDefinitions={(
-                          report.objectMarking?.edges ?? []
-                        ).map((n) => n.node)}
+                        defaultMarkingDefinitions={report.objectMarking ?? []}
                         targetStixCoreObjectTypes={[
                           'Stix-Domain-Object',
                           'Stix-Cyber-Observable',
@@ -1005,9 +1003,7 @@ class ReportKnowledgeGraphBar extends Component {
                         handleReverseRelation={this.handleReverseNested.bind(
                           this,
                         )}
-                        defaultMarkingDefinitions={(
-                          report.objectMarking?.edges ?? []
-                        ).map((n) => n.node)}
+                        defaultMarkingDefinitions={report.objectMarking ?? []}
                       />
                     )}
                     {onAddRelation && (

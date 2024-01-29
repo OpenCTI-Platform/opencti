@@ -98,15 +98,11 @@ export const containerHeaderObjectsQuery = graphql`
         id
       }
       objectMarking {
-        edges {
-          node {
-            id
-            definition_type
-            definition
-            x_opencti_order
-            x_opencti_color
-          }
-        }
+        id
+        definition_type
+        definition
+        x_opencti_order
+        x_opencti_color
       }
       objects(all: true) {
         edges {
@@ -127,15 +123,11 @@ export const containerHeaderObjectsQuery = graphql`
                 }
               }
               objectMarking {
-                edges {
-                  node {
-                    id
-                    definition_type
-                    definition
-                    x_opencti_order
-                    x_opencti_color
-                  }
-                }
+                id
+                definition_type
+                definition
+                x_opencti_order
+                x_opencti_color
               }
             }
             ... on StixDomainObject {
@@ -344,15 +336,11 @@ export const containerHeaderObjectsQuery = graphql`
                 }
               }
               objectMarking {
-                edges {
-                  node {
-                    id
-                    definition_type
-                    definition
-                    x_opencti_order
-                    x_opencti_color
-                  }
-                }
+                id
+                definition_type
+                definition
+                x_opencti_order
+                x_opencti_color
               }
             }
             ... on StixRefRelationship {
@@ -393,15 +381,11 @@ export const containerHeaderObjectsQuery = graphql`
               }
               created_at
               objectMarking {
-                edges {
-                  node {
-                    id
-                    definition_type
-                    definition
-                    x_opencti_order
-                    x_opencti_color
-                  }
-                }
+                id
+                definition_type
+                definition
+                x_opencti_order
+                x_opencti_color
               }
             }
             ... on StixSightingRelationship {
@@ -450,15 +434,11 @@ export const containerHeaderObjectsQuery = graphql`
                 }
               }
               objectMarking {
-                edges {
-                  node {
-                    id
-                    definition_type
-                    definition
-                    x_opencti_order
-                    x_opencti_color
-                  }
-                }
+                id
+                definition_type
+                definition
+                x_opencti_order
+                x_opencti_color
               }
             }
           }
@@ -579,7 +559,7 @@ const ContainerHeader = (props) => {
             fromId: indicator.id,
             toId: selectedEntity[type],
             createdBy: container.createdBy?.id,
-            objectMarking: container.objectMarking.edges.map((m) => m.node.id),
+            objectMarking: container.objectMarking.map((m) => m.id),
           };
           return new Promise((resolve) => {
             commitMutation({
@@ -640,7 +620,7 @@ const ContainerHeader = (props) => {
             fromId: selectedEntity[type],
             toId: arsenal.id,
             createdBy: container.createdBy?.id,
-            objectMarking: container.objectMarking.edges.map((m) => m.node.id),
+            objectMarking: container.objectMarking.map((m) => m.id),
           };
           return new Promise((resolve) => {
             commitMutation({
@@ -696,7 +676,7 @@ const ContainerHeader = (props) => {
             fromId: selectedEntity[type],
             toId: target.id,
             createdBy: container.createdBy?.id,
-            objectMarking: container.objectMarking.edges.map((m) => m.node.id),
+            objectMarking: container.objectMarking.map((m) => m.id),
           };
           return new Promise((resolve) => {
             commitMutation({
@@ -1133,15 +1113,11 @@ export default createFragmentContainer(ContainerHeader, {
         id
       }
       objectMarking {
-        edges {
-          node {
-            id
-            definition_type
-            definition
-            x_opencti_order
-            x_opencti_color
-          }
-        }
+        id
+        definition_type
+        definition
+        x_opencti_order
+        x_opencti_color
       }
     }
   `,

@@ -163,15 +163,11 @@ export const stixCoreRelationshipCreationQuery = graphql`
             }
           }
           objectMarking {
-            edges {
-              node {
-                id
-                definition_type
-                definition
-                x_opencti_order
-                x_opencti_color
-              }
-            }
+            id
+            definition_type
+            definition
+            x_opencti_order
+            x_opencti_color
           }
         }
       }
@@ -231,15 +227,11 @@ export const stixCoreRelationshipCreationMutation = graphql`
         }
       }
       objectMarking {
-        edges {
-          node {
-            id
-            definition_type
-            definition
-            x_opencti_order
-            x_opencti_color
-          }
-        }
+        id
+        definition_type
+        definition
+        x_opencti_order
+        x_opencti_color
       }
     }
   }

@@ -167,20 +167,7 @@ const stixCoreRelationshipCreationFromEntityListRelationAdd = graphql`
           }
         }
         ... on Vulnerability {
-          id
-          softwares {
-            edges {
-              node {
-                id
-                entity_type
-                ... on Software {
-                  name
-                  version
-                  vendor
-                }
-              }
-            }
-          }
+          ...VulnerabilitySoftwares_vulnerability
         }
         ... on StixCyberObservable {
           id

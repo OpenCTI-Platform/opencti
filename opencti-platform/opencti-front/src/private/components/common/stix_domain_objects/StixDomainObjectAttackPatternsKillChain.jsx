@@ -419,13 +419,9 @@ const stixDomainObjectAttackPatternsKillChainLines = createRefetchContainer(
                                         }
                                     }
                                     killChainPhases {
-                                        edges {
-                                            node {
-                                                id
-                                                phase_name
-                                                x_opencti_order
-                                            }
-                                        }
+                                        id
+                                        phase_name
+                                        x_opencti_order
                                     }
                                 }
                             }
@@ -476,35 +472,23 @@ const stixDomainObjectAttackPatternsKillChainLines = createRefetchContainer(
                                         }
                                     }
                                     killChainPhases {
-                                        edges {
-                                            node {
-                                                id
-                                                phase_name
-                                                x_opencti_order
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                            killChainPhases {
-                                edges {
-                                    node {
                                         id
                                         phase_name
                                         x_opencti_order
                                     }
                                 }
                             }
+                            killChainPhases {
+                                id
+                                phase_name
+                                x_opencti_order
+                            }
                             objectMarking {
-                                edges {
-                                    node {
-                                        id
-                                        definition_type
-                                        definition
-                                        x_opencti_order
-                                        x_opencti_color
-                                    }
-                                }
+                                id
+                                definition_type
+                                definition
+                                x_opencti_order
+                                x_opencti_color
                             }
                         }
                     }

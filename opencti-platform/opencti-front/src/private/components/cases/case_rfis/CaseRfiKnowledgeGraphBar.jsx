@@ -864,9 +864,7 @@ class CaseRfiKnowledgeGraphBar extends Component {
                         containerStixCoreObjects={caseData.objects.edges}
                         knowledgeGraph={true}
                         defaultCreatedBy={caseData.createdBy ?? null}
-                        defaultMarkingDefinitions={(
-                          caseData.objectMarking?.edges ?? []
-                        ).map((n) => n.node)}
+                        defaultMarkings={caseData.objectMarking ?? []}
                         targetStixCoreObjectTypes={[
                           'Stix-Domain-Object',
                           'Stix-Cyber-Observable',
@@ -1005,9 +1003,7 @@ class CaseRfiKnowledgeGraphBar extends Component {
                         handleReverseRelation={this.handleReverseNested.bind(
                           this,
                         )}
-                        defaultMarkingDefinitions={(
-                          caseData.objectMarking?.edges ?? []
-                        ).map((n) => n.node)}
+                        defaultMarkings={caseData.objectMarking ?? []}
                       />
                     )}
                     {onAddRelation && (

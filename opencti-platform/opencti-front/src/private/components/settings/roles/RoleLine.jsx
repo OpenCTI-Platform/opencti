@@ -75,7 +75,7 @@ class RoleLineComponent extends Component {
                 }}
                 render={({ props }) => {
                   if (props) {
-                    const groupIds = props.groups.edges.map((group) => (group.node.roles.map((role) => role.id).includes(node.id)
+                    const groupIds = props.groups.edges.map((group) => (group.node.roles.edges.map((role) => role.node.id).includes(node.id)
                       ? group.node.id
                       : null));
                     const numberOfGroups = groupIds.filter(

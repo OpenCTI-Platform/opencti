@@ -1232,7 +1232,7 @@ type Group implements InternalObject & BasicObject {
   members(first: Int, after: ID, orderBy: UsersOrdering, orderMode: OrderingMode, search: String): UserConnection
   created_at: DateTime
   updated_at: DateTime
-  roles(orderBy: RolesOrdering, orderMode: OrderingMode): [Role]
+  roles(orderBy: RolesOrdering, orderMode: OrderingMode): RoleConnection
   allowed_marking: [MarkingDefinition!]
   default_marking: [DefaultMarking!]
   default_hidden_types: [String!]
@@ -1374,7 +1374,7 @@ type User implements BasicObject & InternalObject {
   theme: String
   language: String
   external: Boolean
-  roles(orderBy: RolesOrdering, orderMode: OrderingMode): [Role]!
+  roles: [Role!]!
   capabilities: [Capability]!
   default_hidden_types: [String!]!
   groups(orderBy: GroupsOrdering, orderMode: OrderingMode): GroupConnection
@@ -1475,7 +1475,7 @@ enum RolesOrdering {
 
 type RoleConnection {
   pageInfo: PageInfo!
-  edges: [RoleEdge]
+  edges: [RoleEdge!]
 }
 
 type RoleEdge {
@@ -1979,9 +1979,9 @@ interface StixCoreObject {
   updated_at: DateTime!
   createdBy: Identity
   numberOfConnectedElement: Int!
-  objectMarking: MarkingDefinitionConnection
-  objectOrganization: OrganizationConnection
-  objectLabel: LabelConnection
+  objectMarking: [MarkingDefinition!]
+  objectOrganization: [Organization!]
+  objectLabel: [Label!]
   externalReferences(first: Int): ExternalReferenceConnection
   containersNumber: Number
   containers(first: Int, entityTypes: [String!]): ContainerConnection
@@ -2071,9 +2071,9 @@ interface StixDomainObject {
   updated_at: DateTime!
   createdBy: Identity
   numberOfConnectedElement: Int!
-  objectMarking: MarkingDefinitionConnection
-  objectOrganization: OrganizationConnection
-  objectLabel: LabelConnection
+  objectMarking: [MarkingDefinition!]
+  objectOrganization: [Organization!]
+  objectLabel: [Label!]
   externalReferences(first: Int): ExternalReferenceConnection
   containersNumber: Number
   containers(first: Int, entityTypes: [String!]): ContainerConnection
@@ -2092,7 +2092,7 @@ interface StixDomainObject {
   created: DateTime
   modified: DateTime
   x_opencti_graph_data: String
-  objectAssignee: AssigneeConnection
+  objectAssignee: [Assignee!]
   avatar: OpenCtiFile
   creators: [Creator!]
   toStix: String
@@ -2164,9 +2164,9 @@ type AttackPattern implements BasicObject & StixObject & StixCoreObject & StixDo
   x_opencti_inferences: [Inference]
   createdBy: Identity
   numberOfConnectedElement: Int!
-  objectMarking: MarkingDefinitionConnection
-  objectOrganization: OrganizationConnection
-  objectLabel: LabelConnection
+  objectMarking: [MarkingDefinition!]
+  objectOrganization: [Organization!]
+  objectLabel: [Label!]
   externalReferences(first: Int): ExternalReferenceConnection
   containersNumber: Number
   containers(first: Int, entityTypes: [String!]): ContainerConnection
@@ -2185,7 +2185,7 @@ type AttackPattern implements BasicObject & StixObject & StixCoreObject & StixDo
   created: DateTime
   modified: DateTime
   x_opencti_graph_data: String
-  objectAssignee: AssigneeConnection
+  objectAssignee: [Assignee!]
   avatar: OpenCtiFile
   name: String!
   description: String
@@ -2194,7 +2194,7 @@ type AttackPattern implements BasicObject & StixObject & StixCoreObject & StixDo
   x_mitre_permissions_required: [String]
   x_mitre_detection: String
   x_mitre_id: String
-  killChainPhases: KillChainPhaseConnection
+  killChainPhases: [KillChainPhase!]
   coursesOfAction: CourseOfActionConnection
   parentAttackPatterns: AttackPatternConnection
   subAttackPatterns: AttackPatternConnection
@@ -2275,9 +2275,9 @@ type Campaign implements BasicObject & StixObject & StixCoreObject & StixDomainO
   x_opencti_inferences: [Inference]
   createdBy: Identity
   numberOfConnectedElement: Int!
-  objectMarking: MarkingDefinitionConnection
-  objectOrganization: OrganizationConnection
-  objectLabel: LabelConnection
+  objectMarking: [MarkingDefinition!]
+  objectOrganization: [Organization!]
+  objectLabel: [Label!]
   externalReferences(first: Int): ExternalReferenceConnection
   containersNumber: Number
   containers(first: Int, entityTypes: [String!]): ContainerConnection
@@ -2296,7 +2296,7 @@ type Campaign implements BasicObject & StixObject & StixCoreObject & StixDomainO
   created: DateTime
   modified: DateTime
   x_opencti_graph_data: String
-  objectAssignee: AssigneeConnection
+  objectAssignee: [Assignee!]
   avatar: OpenCtiFile
   name: String!
   description: String
@@ -2380,9 +2380,9 @@ interface Container {
   updated_at: DateTime!
   createdBy: Identity
   numberOfConnectedElement: Int!
-  objectMarking: MarkingDefinitionConnection
-  objectOrganization: OrganizationConnection
-  objectLabel: LabelConnection
+  objectMarking: [MarkingDefinition!]
+  objectOrganization: [Organization!]
+  objectLabel: [Label!]
   externalReferences(first: Int): ExternalReferenceConnection
   containersNumber: Number
   containers(first: Int, entityTypes: [String!]): ContainerConnection
@@ -2401,7 +2401,7 @@ interface Container {
   created: DateTime
   modified: DateTime
   x_opencti_graph_data: String
-  objectAssignee: AssigneeConnection
+  objectAssignee: [Assignee!]
   avatar: OpenCtiFile
   objects(first: Int, after: ID, orderBy: StixObjectOrStixRelationshipsOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String, types: [String], all: Boolean): StixObjectOrStixRelationshipRefConnection
   relatedContainers(first: Int, after: ID, orderBy: ContainersOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String, types: [String], viaTypes: [String]): ContainerConnection
@@ -2447,9 +2447,9 @@ type Note implements BasicObject & StixObject & StixCoreObject & StixDomainObjec
   x_opencti_inferences: [Inference]
   createdBy: Identity
   numberOfConnectedElement: Int!
-  objectMarking: MarkingDefinitionConnection
-  objectOrganization: OrganizationConnection
-  objectLabel: LabelConnection
+  objectMarking: [MarkingDefinition!]
+  objectOrganization: [Organization!]
+  objectLabel: [Label!]
   externalReferences(first: Int): ExternalReferenceConnection
   containersNumber: Number
   containers(first: Int, entityTypes: [String!]): ContainerConnection
@@ -2468,7 +2468,7 @@ type Note implements BasicObject & StixObject & StixCoreObject & StixDomainObjec
   created: DateTime
   modified: DateTime
   x_opencti_graph_data: String
-  objectAssignee: AssigneeConnection
+  objectAssignee: [Assignee!]
   avatar: OpenCtiFile
   objects(first: Int, after: ID, orderBy: StixObjectOrStixRelationshipsOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String, types: [String], all: Boolean): StixObjectOrStixRelationshipRefConnection
   relatedContainers(first: Int, after: ID, orderBy: ContainersOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String, types: [String], viaTypes: [String]): ContainerConnection
@@ -2574,9 +2574,9 @@ type ObservedData implements BasicObject & StixObject & StixCoreObject & StixDom
   x_opencti_inferences: [Inference]
   createdBy: Identity
   numberOfConnectedElement: Int!
-  objectMarking: MarkingDefinitionConnection
-  objectOrganization: OrganizationConnection
-  objectLabel: LabelConnection
+  objectMarking: [MarkingDefinition!]
+  objectOrganization: [Organization!]
+  objectLabel: [Label!]
   externalReferences(first: Int): ExternalReferenceConnection
   containersNumber: Number
   containers(first: Int, entityTypes: [String!]): ContainerConnection
@@ -2595,7 +2595,7 @@ type ObservedData implements BasicObject & StixObject & StixCoreObject & StixDom
   created: DateTime
   modified: DateTime
   x_opencti_graph_data: String
-  objectAssignee: AssigneeConnection
+  objectAssignee: [Assignee!]
   avatar: OpenCtiFile
   objects(first: Int, after: ID, orderBy: StixObjectOrStixRelationshipsOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String, types: [String], all: Boolean): StixObjectOrStixRelationshipRefConnection
   relatedContainers(first: Int, after: ID, orderBy: ContainersOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String, types: [String], viaTypes: [String]): ContainerConnection
@@ -2674,9 +2674,9 @@ type Opinion implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   x_opencti_inferences: [Inference]
   createdBy: Identity
   numberOfConnectedElement: Int!
-  objectMarking: MarkingDefinitionConnection
-  objectOrganization: OrganizationConnection
-  objectLabel: LabelConnection
+  objectMarking: [MarkingDefinition!]
+  objectOrganization: [Organization!]
+  objectLabel: [Label!]
   externalReferences(first: Int): ExternalReferenceConnection
   containersNumber: Number
   containers(first: Int, entityTypes: [String!]): ContainerConnection
@@ -2695,7 +2695,7 @@ type Opinion implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   created: DateTime
   modified: DateTime
   x_opencti_graph_data: String
-  objectAssignee: AssigneeConnection
+  objectAssignee: [Assignee!]
   avatar: OpenCtiFile
   objects(first: Int, after: ID, orderBy: StixObjectOrStixRelationshipsOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String, types: [String], all: Boolean): StixObjectOrStixRelationshipRefConnection
   relatedContainers(first: Int, after: ID, orderBy: ContainersOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String, types: [String], viaTypes: [String]): ContainerConnection
@@ -2794,9 +2794,9 @@ type Report implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   x_opencti_inferences: [Inference]
   createdBy: Identity
   numberOfConnectedElement: Int!
-  objectMarking: MarkingDefinitionConnection
-  objectOrganization: OrganizationConnection
-  objectLabel: LabelConnection
+  objectMarking: [MarkingDefinition!]
+  objectOrganization: [Organization!]
+  objectLabel: [Label!]
   externalReferences(first: Int): ExternalReferenceConnection
   containersNumber: Number
   containers(first: Int, entityTypes: [String!]): ContainerConnection
@@ -2815,7 +2815,7 @@ type Report implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   created: DateTime
   modified: DateTime
   x_opencti_graph_data: String
-  objectAssignee: AssigneeConnection
+  objectAssignee: [Assignee!]
   avatar: OpenCtiFile
   objects(first: Int, after: ID, orderBy: StixObjectOrStixRelationshipsOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String, types: [String], all: Boolean): StixObjectOrStixRelationshipRefConnection
   relatedContainers(first: Int, after: ID, orderBy: ContainersOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String, types: [String], viaTypes: [String]): ContainerConnection
@@ -2826,7 +2826,7 @@ type Report implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   report_types: [String]
   x_opencti_reliability: String
   published: DateTime
-  objectParticipant: ParticipantConnection
+  objectParticipant: [Participant!]
   creators: [Creator!]
   toStix: String
   importFiles(first: Int, prefixMimeType: String): FileConnection
@@ -2904,9 +2904,9 @@ type CourseOfAction implements BasicObject & StixObject & StixCoreObject & StixD
   x_opencti_inferences: [Inference]
   createdBy: Identity
   numberOfConnectedElement: Int!
-  objectMarking: MarkingDefinitionConnection
-  objectOrganization: OrganizationConnection
-  objectLabel: LabelConnection
+  objectMarking: [MarkingDefinition!]
+  objectOrganization: [Organization!]
+  objectLabel: [Label!]
   externalReferences(first: Int): ExternalReferenceConnection
   containersNumber: Number
   containers(first: Int, entityTypes: [String!]): ContainerConnection
@@ -2925,7 +2925,7 @@ type CourseOfAction implements BasicObject & StixObject & StixCoreObject & StixD
   created: DateTime
   modified: DateTime
   x_opencti_graph_data: String
-  objectAssignee: AssigneeConnection
+  objectAssignee: [Assignee!]
   avatar: OpenCtiFile
   name: String!
   description: String
@@ -3008,9 +3008,9 @@ interface Identity {
   updated_at: DateTime!
   createdBy: Identity
   numberOfConnectedElement: Int!
-  objectMarking: MarkingDefinitionConnection
-  objectOrganization: OrganizationConnection
-  objectLabel: LabelConnection
+  objectMarking: [MarkingDefinition!]
+  objectOrganization: [Organization!]
+  objectLabel: [Label!]
   externalReferences(first: Int): ExternalReferenceConnection
   containersNumber: Number
   containers(first: Int, entityTypes: [String!]): ContainerConnection
@@ -3029,7 +3029,7 @@ interface Identity {
   created: DateTime
   modified: DateTime
   x_opencti_graph_data: String
-  objectAssignee: AssigneeConnection
+  objectAssignee: [Assignee!]
   avatar: OpenCtiFile
   identity_class: String!
   name: String!
@@ -3107,9 +3107,9 @@ type Individual implements BasicObject & StixObject & StixCoreObject & StixDomai
   x_opencti_inferences: [Inference]
   createdBy: Identity
   numberOfConnectedElement: Int!
-  objectMarking: MarkingDefinitionConnection
-  objectOrganization: OrganizationConnection
-  objectLabel: LabelConnection
+  objectMarking: [MarkingDefinition!]
+  objectOrganization: [Organization!]
+  objectLabel: [Label!]
   externalReferences(first: Int): ExternalReferenceConnection
   containersNumber: Number
   containers(first: Int, entityTypes: [String!]): ContainerConnection
@@ -3128,7 +3128,7 @@ type Individual implements BasicObject & StixObject & StixCoreObject & StixDomai
   created: DateTime
   modified: DateTime
   x_opencti_graph_data: String
-  objectAssignee: AssigneeConnection
+  objectAssignee: [Assignee!]
   avatar: OpenCtiFile
   identity_class: String!
   name: String!
@@ -3215,9 +3215,9 @@ type Sector implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   x_opencti_inferences: [Inference]
   createdBy: Identity
   numberOfConnectedElement: Int!
-  objectMarking: MarkingDefinitionConnection
-  objectOrganization: OrganizationConnection
-  objectLabel: LabelConnection
+  objectMarking: [MarkingDefinition!]
+  objectOrganization: [Organization!]
+  objectLabel: [Label!]
   externalReferences(first: Int): ExternalReferenceConnection
   containersNumber: Number
   containers(first: Int, entityTypes: [String!]): ContainerConnection
@@ -3236,7 +3236,7 @@ type Sector implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   created: DateTime
   modified: DateTime
   x_opencti_graph_data: String
-  objectAssignee: AssigneeConnection
+  objectAssignee: [Assignee!]
   avatar: OpenCtiFile
   identity_class: String!
   name: String!
@@ -3318,9 +3318,9 @@ type System implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   x_opencti_inferences: [Inference]
   createdBy: Identity
   numberOfConnectedElement: Int!
-  objectMarking: MarkingDefinitionConnection
-  objectOrganization: OrganizationConnection
-  objectLabel: LabelConnection
+  objectMarking: [MarkingDefinition!]
+  objectOrganization: [Organization!]
+  objectLabel: [Label!]
   externalReferences(first: Int): ExternalReferenceConnection
   containersNumber: Number
   containers(first: Int, entityTypes: [String!]): ContainerConnection
@@ -3339,7 +3339,7 @@ type System implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   created: DateTime
   modified: DateTime
   x_opencti_graph_data: String
-  objectAssignee: AssigneeConnection
+  objectAssignee: [Assignee!]
   avatar: OpenCtiFile
   identity_class: String!
   name: String!
@@ -3429,9 +3429,9 @@ type Infrastructure implements BasicObject & StixObject & StixCoreObject & StixD
   x_opencti_inferences: [Inference]
   createdBy: Identity
   numberOfConnectedElement: Int!
-  objectMarking: MarkingDefinitionConnection
-  objectOrganization: OrganizationConnection
-  objectLabel: LabelConnection
+  objectMarking: [MarkingDefinition!]
+  objectOrganization: [Organization!]
+  objectLabel: [Label!]
   externalReferences(first: Int): ExternalReferenceConnection
   containersNumber: Number
   containers(first: Int, entityTypes: [String!]): ContainerConnection
@@ -3450,7 +3450,7 @@ type Infrastructure implements BasicObject & StixObject & StixCoreObject & StixD
   created: DateTime
   modified: DateTime
   x_opencti_graph_data: String
-  objectAssignee: AssigneeConnection
+  objectAssignee: [Assignee!]
   avatar: OpenCtiFile
   name: String!
   aliases: [String]
@@ -3458,7 +3458,7 @@ type Infrastructure implements BasicObject & StixObject & StixCoreObject & StixD
   infrastructure_types: [String]
   first_seen: DateTime
   last_seen: DateTime
-  killChainPhases: KillChainPhaseConnection
+  killChainPhases: [KillChainPhase!]
   creators: [Creator!]
   toStix: String
   importFiles(first: Int, prefixMimeType: String): FileConnection
@@ -3530,9 +3530,9 @@ type IntrusionSet implements BasicObject & StixObject & StixCoreObject & StixDom
   x_opencti_inferences: [Inference]
   createdBy: Identity
   numberOfConnectedElement: Int!
-  objectMarking: MarkingDefinitionConnection
-  objectOrganization: OrganizationConnection
-  objectLabel: LabelConnection
+  objectMarking: [MarkingDefinition!]
+  objectOrganization: [Organization!]
+  objectLabel: [Label!]
   externalReferences(first: Int): ExternalReferenceConnection
   containersNumber: Number
   containers(first: Int, entityTypes: [String!]): ContainerConnection
@@ -3551,7 +3551,7 @@ type IntrusionSet implements BasicObject & StixObject & StixCoreObject & StixDom
   created: DateTime
   modified: DateTime
   x_opencti_graph_data: String
-  objectAssignee: AssigneeConnection
+  objectAssignee: [Assignee!]
   avatar: OpenCtiFile
   name: String!
   description: String
@@ -3638,9 +3638,9 @@ interface Location {
   updated_at: DateTime!
   createdBy: Identity
   numberOfConnectedElement: Int!
-  objectMarking: MarkingDefinitionConnection
-  objectOrganization: OrganizationConnection
-  objectLabel: LabelConnection
+  objectMarking: [MarkingDefinition!]
+  objectOrganization: [Organization!]
+  objectLabel: [Label!]
   externalReferences(first: Int): ExternalReferenceConnection
   containersNumber: Number
   containers(first: Int, entityTypes: [String!]): ContainerConnection
@@ -3659,7 +3659,7 @@ interface Location {
   created: DateTime
   modified: DateTime
   x_opencti_graph_data: String
-  objectAssignee: AssigneeConnection
+  objectAssignee: [Assignee!]
   avatar: OpenCtiFile
   name: String!
   description: String
@@ -3737,9 +3737,9 @@ type Position implements BasicObject & StixObject & StixCoreObject & StixDomainO
   x_opencti_inferences: [Inference]
   createdBy: Identity
   numberOfConnectedElement: Int!
-  objectMarking: MarkingDefinitionConnection
-  objectOrganization: OrganizationConnection
-  objectLabel: LabelConnection
+  objectMarking: [MarkingDefinition!]
+  objectOrganization: [Organization!]
+  objectLabel: [Label!]
   externalReferences(first: Int): ExternalReferenceConnection
   containersNumber: Number
   containers(first: Int, entityTypes: [String!]): ContainerConnection
@@ -3758,7 +3758,7 @@ type Position implements BasicObject & StixObject & StixCoreObject & StixDomainO
   created: DateTime
   modified: DateTime
   x_opencti_graph_data: String
-  objectAssignee: AssigneeConnection
+  objectAssignee: [Assignee!]
   avatar: OpenCtiFile
   name: String!
   description: String
@@ -3843,9 +3843,9 @@ type City implements BasicObject & StixObject & StixCoreObject & StixDomainObjec
   x_opencti_inferences: [Inference]
   createdBy: Identity
   numberOfConnectedElement: Int!
-  objectMarking: MarkingDefinitionConnection
-  objectOrganization: OrganizationConnection
-  objectLabel: LabelConnection
+  objectMarking: [MarkingDefinition!]
+  objectOrganization: [Organization!]
+  objectLabel: [Label!]
   externalReferences(first: Int): ExternalReferenceConnection
   containersNumber: Number
   containers(first: Int, entityTypes: [String!]): ContainerConnection
@@ -3864,7 +3864,7 @@ type City implements BasicObject & StixObject & StixCoreObject & StixDomainObjec
   created: DateTime
   modified: DateTime
   x_opencti_graph_data: String
-  objectAssignee: AssigneeConnection
+  objectAssignee: [Assignee!]
   avatar: OpenCtiFile
   name: String!
   description: String
@@ -3943,9 +3943,9 @@ type Country implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   x_opencti_inferences: [Inference]
   createdBy: Identity
   numberOfConnectedElement: Int!
-  objectMarking: MarkingDefinitionConnection
-  objectOrganization: OrganizationConnection
-  objectLabel: LabelConnection
+  objectMarking: [MarkingDefinition!]
+  objectOrganization: [Organization!]
+  objectLabel: [Label!]
   externalReferences(first: Int): ExternalReferenceConnection
   containersNumber: Number
   containers(first: Int, entityTypes: [String!]): ContainerConnection
@@ -3964,7 +3964,7 @@ type Country implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   created: DateTime
   modified: DateTime
   x_opencti_graph_data: String
-  objectAssignee: AssigneeConnection
+  objectAssignee: [Assignee!]
   avatar: OpenCtiFile
   name: String!
   description: String
@@ -4042,9 +4042,9 @@ type Region implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   x_opencti_inferences: [Inference]
   createdBy: Identity
   numberOfConnectedElement: Int!
-  objectMarking: MarkingDefinitionConnection
-  objectOrganization: OrganizationConnection
-  objectLabel: LabelConnection
+  objectMarking: [MarkingDefinition!]
+  objectOrganization: [Organization!]
+  objectLabel: [Label!]
   externalReferences(first: Int): ExternalReferenceConnection
   containersNumber: Number
   containers(first: Int, entityTypes: [String!]): ContainerConnection
@@ -4063,7 +4063,7 @@ type Region implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   created: DateTime
   modified: DateTime
   x_opencti_graph_data: String
-  objectAssignee: AssigneeConnection
+  objectAssignee: [Assignee!]
   avatar: OpenCtiFile
   name: String!
   description: String
@@ -4073,7 +4073,6 @@ type Region implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   x_opencti_aliases: [String]
   parentRegions: RegionConnection
   subRegions: RegionConnection
-  isSubRegion: Boolean
   countries: CountryConnection
   creators: [Creator!]
   toStix: String
@@ -4149,9 +4148,9 @@ type Malware implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   x_opencti_inferences: [Inference]
   createdBy: Identity
   numberOfConnectedElement: Int!
-  objectMarking: MarkingDefinitionConnection
-  objectOrganization: OrganizationConnection
-  objectLabel: LabelConnection
+  objectMarking: [MarkingDefinition!]
+  objectOrganization: [Organization!]
+  objectLabel: [Label!]
   externalReferences(first: Int): ExternalReferenceConnection
   containersNumber: Number
   containers(first: Int, entityTypes: [String!]): ContainerConnection
@@ -4170,7 +4169,7 @@ type Malware implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   created: DateTime
   modified: DateTime
   x_opencti_graph_data: String
-  objectAssignee: AssigneeConnection
+  objectAssignee: [Assignee!]
   avatar: OpenCtiFile
   name: String!
   description: String
@@ -4182,7 +4181,7 @@ type Malware implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   architecture_execution_envs: [String]
   implementation_languages: [String]
   capabilities: [String]
-  killChainPhases: KillChainPhaseConnection
+  killChainPhases: [KillChainPhase!]
   creators: [Creator!]
   toStix: String
   importFiles(first: Int, prefixMimeType: String): FileConnection
@@ -4260,9 +4259,9 @@ interface ThreatActor implements BasicObject & StixObject & StixCoreObject & Sti
   x_opencti_inferences: [Inference]
   createdBy: Identity
   numberOfConnectedElement: Int!
-  objectMarking: MarkingDefinitionConnection
-  objectOrganization: OrganizationConnection
-  objectLabel: LabelConnection
+  objectMarking: [MarkingDefinition!]
+  objectOrganization: [Organization!]
+  objectLabel: [Label!]
   externalReferences(first: Int): ExternalReferenceConnection
   containersNumber: Number
   containers(first: Int, entityTypes: [String!]): ContainerConnection
@@ -4281,7 +4280,7 @@ interface ThreatActor implements BasicObject & StixObject & StixCoreObject & Sti
   created: DateTime
   modified: DateTime
   x_opencti_graph_data: String
-  objectAssignee: AssigneeConnection
+  objectAssignee: [Assignee!]
   avatar: OpenCtiFile
   name: String!
   description: String
@@ -4334,9 +4333,9 @@ type ThreatActorGroup implements BasicObject & StixObject & StixCoreObject & Sti
   x_opencti_inferences: [Inference]
   createdBy: Identity
   numberOfConnectedElement: Int!
-  objectMarking: MarkingDefinitionConnection
-  objectOrganization: OrganizationConnection
-  objectLabel: LabelConnection
+  objectMarking: [MarkingDefinition!]
+  objectOrganization: [Organization!]
+  objectLabel: [Label!]
   externalReferences(first: Int): ExternalReferenceConnection
   containersNumber: Number
   containers(first: Int, entityTypes: [String!]): ContainerConnection
@@ -4355,7 +4354,7 @@ type ThreatActorGroup implements BasicObject & StixObject & StixCoreObject & Sti
   created: DateTime
   modified: DateTime
   x_opencti_graph_data: String
-  objectAssignee: AssigneeConnection
+  objectAssignee: [Assignee!]
   avatar: OpenCtiFile
   name: String!
   description: String
@@ -4450,9 +4449,9 @@ type Tool implements BasicObject & StixObject & StixCoreObject & StixDomainObjec
   x_opencti_inferences: [Inference]
   createdBy: Identity
   numberOfConnectedElement: Int!
-  objectMarking: MarkingDefinitionConnection
-  objectOrganization: OrganizationConnection
-  objectLabel: LabelConnection
+  objectMarking: [MarkingDefinition!]
+  objectOrganization: [Organization!]
+  objectLabel: [Label!]
   externalReferences(first: Int): ExternalReferenceConnection
   containersNumber: Number
   containers(first: Int, entityTypes: [String!]): ContainerConnection
@@ -4471,14 +4470,14 @@ type Tool implements BasicObject & StixObject & StixCoreObject & StixDomainObjec
   created: DateTime
   modified: DateTime
   x_opencti_graph_data: String
-  objectAssignee: AssigneeConnection
+  objectAssignee: [Assignee!]
   avatar: OpenCtiFile
   name: String!
   description: String
   aliases: [String]
   tool_types: [String]
   tool_version: String
-  killChainPhases: KillChainPhaseConnection
+  killChainPhases: [KillChainPhase!]
   creators: [Creator!]
   toStix: String
   importFiles(first: Int, prefixMimeType: String): FileConnection
@@ -4553,9 +4552,9 @@ type Vulnerability implements BasicObject & StixObject & StixCoreObject & StixDo
   x_opencti_inferences: [Inference]
   createdBy: Identity
   numberOfConnectedElement: Int!
-  objectMarking: MarkingDefinitionConnection
-  objectOrganization: OrganizationConnection
-  objectLabel: LabelConnection
+  objectMarking: [MarkingDefinition!]
+  objectOrganization: [Organization!]
+  objectLabel: [Label!]
   externalReferences(first: Int): ExternalReferenceConnection
   containersNumber: Number
   containers(first: Int, entityTypes: [String!]): ContainerConnection
@@ -4574,7 +4573,7 @@ type Vulnerability implements BasicObject & StixObject & StixCoreObject & StixDo
   created: DateTime
   modified: DateTime
   x_opencti_graph_data: String
-  objectAssignee: AssigneeConnection
+  objectAssignee: [Assignee!]
   avatar: OpenCtiFile
   name: String!
   description: String
@@ -4585,7 +4584,7 @@ type Vulnerability implements BasicObject & StixObject & StixCoreObject & StixDo
   x_opencti_cvss_integrity_impact: String
   x_opencti_cvss_availability_impact: String
   x_opencti_cvss_confidentiality_impact: String
-  softwares(first: Int): StixCyberObservableConnection
+  softwares(first: Int, after: ID, orderBy: StixCyberObservablesOrdering, orderMode: OrderingMode): StixCyberObservableConnection
   creators: [Creator!]
   toStix: String
   importFiles(first: Int, prefixMimeType: String): FileConnection
@@ -4667,9 +4666,9 @@ type Incident implements BasicObject & StixObject & StixCoreObject & StixDomainO
   x_opencti_inferences: [Inference]
   createdBy: Identity
   numberOfConnectedElement: Int!
-  objectMarking: MarkingDefinitionConnection
-  objectOrganization: OrganizationConnection
-  objectLabel: LabelConnection
+  objectMarking: [MarkingDefinition!]
+  objectOrganization: [Organization!]
+  objectLabel: [Label!]
   externalReferences(first: Int): ExternalReferenceConnection
   containersNumber: Number
   containers(first: Int, entityTypes: [String!]): ContainerConnection
@@ -4688,7 +4687,7 @@ type Incident implements BasicObject & StixObject & StixCoreObject & StixDomainO
   created: DateTime
   modified: DateTime
   x_opencti_graph_data: String
-  objectAssignee: AssigneeConnection
+  objectAssignee: [Assignee!]
   avatar: OpenCtiFile
   name: String!
   description: String
@@ -4699,7 +4698,7 @@ type Incident implements BasicObject & StixObject & StixCoreObject & StixDomainO
   incident_type: String
   severity: String
   source: String
-  objectParticipant: ParticipantConnection
+  objectParticipant: [Participant!]
   creators: [Creator!]
   toStix: String
   importFiles(first: Int, prefixMimeType: String): FileConnection
@@ -4775,9 +4774,9 @@ interface StixCyberObservable {
   updated_at: DateTime!
   createdBy: Identity
   numberOfConnectedElement: Int!
-  objectMarking: MarkingDefinitionConnection
-  objectOrganization: OrganizationConnection
-  objectLabel: LabelConnection
+  objectMarking: [MarkingDefinition!]
+  objectOrganization: [Organization!]
+  objectLabel: [Label!]
   externalReferences(first: Int): ExternalReferenceConnection
   containersNumber: Number
   containers(first: Int, entityTypes: [String!]): ContainerConnection
@@ -4818,9 +4817,9 @@ type AutonomousSystem implements BasicObject & StixObject & StixCoreObject & Sti
   x_opencti_inferences: [Inference]
   createdBy: Identity
   numberOfConnectedElement: Int!
-  objectMarking: MarkingDefinitionConnection
-  objectOrganization: OrganizationConnection
-  objectLabel: LabelConnection
+  objectMarking: [MarkingDefinition!]
+  objectOrganization: [Organization!]
+  objectLabel: [Label!]
   externalReferences(first: Int): ExternalReferenceConnection
   containersNumber: Number
   containers(first: Int, entityTypes: [String!]): ContainerConnection
@@ -4871,9 +4870,9 @@ type Directory implements BasicObject & StixObject & StixCoreObject & StixCyberO
   x_opencti_inferences: [Inference]
   createdBy: Identity
   numberOfConnectedElement: Int!
-  objectMarking: MarkingDefinitionConnection
-  objectOrganization: OrganizationConnection
-  objectLabel: LabelConnection
+  objectMarking: [MarkingDefinition!]
+  objectOrganization: [Organization!]
+  objectLabel: [Label!]
   externalReferences(first: Int): ExternalReferenceConnection
   containersNumber: Number
   containers(first: Int, entityTypes: [String!]): ContainerConnection
@@ -4928,9 +4927,9 @@ type DomainName implements BasicObject & StixObject & StixCoreObject & StixCyber
   x_opencti_inferences: [Inference]
   createdBy: Identity
   numberOfConnectedElement: Int!
-  objectMarking: MarkingDefinitionConnection
-  objectOrganization: OrganizationConnection
-  objectLabel: LabelConnection
+  objectMarking: [MarkingDefinition!]
+  objectOrganization: [Organization!]
+  objectLabel: [Label!]
   externalReferences(first: Int): ExternalReferenceConnection
   containersNumber: Number
   containers(first: Int, entityTypes: [String!]): ContainerConnection
@@ -4977,9 +4976,9 @@ type EmailAddr implements BasicObject & StixObject & StixCoreObject & StixCyberO
   x_opencti_inferences: [Inference]
   createdBy: Identity
   numberOfConnectedElement: Int!
-  objectMarking: MarkingDefinitionConnection
-  objectOrganization: OrganizationConnection
-  objectLabel: LabelConnection
+  objectMarking: [MarkingDefinition!]
+  objectOrganization: [Organization!]
+  objectLabel: [Label!]
   externalReferences(first: Int): ExternalReferenceConnection
   containersNumber: Number
   containers(first: Int, entityTypes: [String!]): ContainerConnection
@@ -5028,9 +5027,9 @@ type EmailMessage implements BasicObject & StixObject & StixCoreObject & StixCyb
   x_opencti_inferences: [Inference]
   createdBy: Identity
   numberOfConnectedElement: Int!
-  objectMarking: MarkingDefinitionConnection
-  objectOrganization: OrganizationConnection
-  objectLabel: LabelConnection
+  objectMarking: [MarkingDefinition!]
+  objectOrganization: [Organization!]
+  objectLabel: [Label!]
   externalReferences(first: Int): ExternalReferenceConnection
   containersNumber: Number
   containers(first: Int, entityTypes: [String!]): ContainerConnection
@@ -5089,9 +5088,9 @@ type EmailMimePartType implements BasicObject & StixObject & StixCoreObject & St
   x_opencti_inferences: [Inference]
   createdBy: Identity
   numberOfConnectedElement: Int!
-  objectMarking: MarkingDefinitionConnection
-  objectOrganization: OrganizationConnection
-  objectLabel: LabelConnection
+  objectMarking: [MarkingDefinition!]
+  objectOrganization: [Organization!]
+  objectLabel: [Label!]
   externalReferences(first: Int): ExternalReferenceConnection
   containersNumber: Number
   containers(first: Int, entityTypes: [String!]): ContainerConnection
@@ -5165,9 +5164,9 @@ interface HashedObservable {
   updated_at: DateTime!
   createdBy: Identity
   numberOfConnectedElement: Int!
-  objectMarking: MarkingDefinitionConnection
-  objectOrganization: OrganizationConnection
-  objectLabel: LabelConnection
+  objectMarking: [MarkingDefinition!]
+  objectOrganization: [Organization!]
+  objectLabel: [Label!]
   externalReferences(first: Int): ExternalReferenceConnection
   containersNumber: Number
   containers(first: Int, entityTypes: [String!]): ContainerConnection
@@ -5209,9 +5208,9 @@ type Artifact implements BasicObject & StixObject & StixCoreObject & StixCyberOb
   x_opencti_inferences: [Inference]
   createdBy: Identity
   numberOfConnectedElement: Int!
-  objectMarking: MarkingDefinitionConnection
-  objectOrganization: OrganizationConnection
-  objectLabel: LabelConnection
+  objectMarking: [MarkingDefinition!]
+  objectOrganization: [Organization!]
+  objectLabel: [Label!]
   externalReferences(first: Int): ExternalReferenceConnection
   containersNumber: Number
   containers(first: Int, entityTypes: [String!]): ContainerConnection
@@ -5270,9 +5269,9 @@ type StixFile implements BasicObject & StixObject & StixCoreObject & StixCyberOb
   x_opencti_inferences: [Inference]
   createdBy: Identity
   numberOfConnectedElement: Int!
-  objectMarking: MarkingDefinitionConnection
-  objectOrganization: OrganizationConnection
-  objectLabel: LabelConnection
+  objectMarking: [MarkingDefinition!]
+  objectOrganization: [Organization!]
+  objectLabel: [Label!]
   externalReferences(first: Int): ExternalReferenceConnection
   containersNumber: Number
   containers(first: Int, entityTypes: [String!]): ContainerConnection
@@ -5340,9 +5339,9 @@ type X509Certificate implements BasicObject & StixObject & StixCoreObject & Stix
   x_opencti_inferences: [Inference]
   createdBy: Identity
   numberOfConnectedElement: Int!
-  objectMarking: MarkingDefinitionConnection
-  objectOrganization: OrganizationConnection
-  objectLabel: LabelConnection
+  objectMarking: [MarkingDefinition!]
+  objectOrganization: [Organization!]
+  objectLabel: [Label!]
   externalReferences(first: Int): ExternalReferenceConnection
   containersNumber: Number
   containers(first: Int, entityTypes: [String!]): ContainerConnection
@@ -5443,9 +5442,9 @@ type IPv4Addr implements BasicObject & StixObject & StixCoreObject & StixCyberOb
   x_opencti_inferences: [Inference]
   createdBy: Identity
   numberOfConnectedElement: Int!
-  objectMarking: MarkingDefinitionConnection
-  objectOrganization: OrganizationConnection
-  objectLabel: LabelConnection
+  objectMarking: [MarkingDefinition!]
+  objectOrganization: [Organization!]
+  objectLabel: [Label!]
   externalReferences(first: Int): ExternalReferenceConnection
   containersNumber: Number
   containers(first: Int, entityTypes: [String!]): ContainerConnection
@@ -5495,9 +5494,9 @@ type IPv6Addr implements BasicObject & StixObject & StixCoreObject & StixCyberOb
   x_opencti_inferences: [Inference]
   createdBy: Identity
   numberOfConnectedElement: Int!
-  objectMarking: MarkingDefinitionConnection
-  objectOrganization: OrganizationConnection
-  objectLabel: LabelConnection
+  objectMarking: [MarkingDefinition!]
+  objectOrganization: [Organization!]
+  objectLabel: [Label!]
   externalReferences(first: Int): ExternalReferenceConnection
   containersNumber: Number
   containers(first: Int, entityTypes: [String!]): ContainerConnection
@@ -5545,9 +5544,9 @@ type MacAddr implements BasicObject & StixObject & StixCoreObject & StixCyberObs
   x_opencti_inferences: [Inference]
   createdBy: Identity
   numberOfConnectedElement: Int!
-  objectMarking: MarkingDefinitionConnection
-  objectOrganization: OrganizationConnection
-  objectLabel: LabelConnection
+  objectMarking: [MarkingDefinition!]
+  objectOrganization: [Organization!]
+  objectLabel: [Label!]
   externalReferences(first: Int): ExternalReferenceConnection
   containersNumber: Number
   containers(first: Int, entityTypes: [String!]): ContainerConnection
@@ -5594,9 +5593,9 @@ type Mutex implements BasicObject & StixObject & StixCoreObject & StixCyberObser
   x_opencti_inferences: [Inference]
   createdBy: Identity
   numberOfConnectedElement: Int!
-  objectMarking: MarkingDefinitionConnection
-  objectOrganization: OrganizationConnection
-  objectLabel: LabelConnection
+  objectMarking: [MarkingDefinition!]
+  objectOrganization: [Organization!]
+  objectLabel: [Label!]
   externalReferences(first: Int): ExternalReferenceConnection
   containersNumber: Number
   containers(first: Int, entityTypes: [String!]): ContainerConnection
@@ -5643,9 +5642,9 @@ type NetworkTraffic implements BasicObject & StixObject & StixCoreObject & StixC
   x_opencti_inferences: [Inference]
   createdBy: Identity
   numberOfConnectedElement: Int!
-  objectMarking: MarkingDefinitionConnection
-  objectOrganization: OrganizationConnection
-  objectLabel: LabelConnection
+  objectMarking: [MarkingDefinition!]
+  objectOrganization: [Organization!]
+  objectLabel: [Label!]
   externalReferences(first: Int): ExternalReferenceConnection
   containersNumber: Number
   containers(first: Int, entityTypes: [String!]): ContainerConnection
@@ -5713,9 +5712,9 @@ type Process implements BasicObject & StixObject & StixCoreObject & StixCyberObs
   x_opencti_inferences: [Inference]
   createdBy: Identity
   numberOfConnectedElement: Int!
-  objectMarking: MarkingDefinitionConnection
-  objectOrganization: OrganizationConnection
-  objectLabel: LabelConnection
+  objectMarking: [MarkingDefinition!]
+  objectOrganization: [Organization!]
+  objectLabel: [Label!]
   externalReferences(first: Int): ExternalReferenceConnection
   containersNumber: Number
   containers(first: Int, entityTypes: [String!]): ContainerConnection
@@ -5804,9 +5803,9 @@ type Software implements BasicObject & StixObject & StixCoreObject & StixCyberOb
   x_opencti_inferences: [Inference]
   createdBy: Identity
   numberOfConnectedElement: Int!
-  objectMarking: MarkingDefinitionConnection
-  objectOrganization: OrganizationConnection
-  objectLabel: LabelConnection
+  objectMarking: [MarkingDefinition!]
+  objectOrganization: [Organization!]
+  objectLabel: [Label!]
   externalReferences(first: Int): ExternalReferenceConnection
   containersNumber: Number
   containers(first: Int, entityTypes: [String!]): ContainerConnection
@@ -5874,9 +5873,9 @@ type Url implements BasicObject & StixObject & StixCoreObject & StixCyberObserva
   x_opencti_inferences: [Inference]
   createdBy: Identity
   numberOfConnectedElement: Int!
-  objectMarking: MarkingDefinitionConnection
-  objectOrganization: OrganizationConnection
-  objectLabel: LabelConnection
+  objectMarking: [MarkingDefinition!]
+  objectOrganization: [Organization!]
+  objectLabel: [Label!]
   externalReferences(first: Int): ExternalReferenceConnection
   containersNumber: Number
   containers(first: Int, entityTypes: [String!]): ContainerConnection
@@ -5923,9 +5922,9 @@ type UserAccount implements BasicObject & StixObject & StixCoreObject & StixCybe
   x_opencti_inferences: [Inference]
   createdBy: Identity
   numberOfConnectedElement: Int!
-  objectMarking: MarkingDefinitionConnection
-  objectOrganization: OrganizationConnection
-  objectLabel: LabelConnection
+  objectMarking: [MarkingDefinition!]
+  objectOrganization: [Organization!]
+  objectLabel: [Label!]
   externalReferences(first: Int): ExternalReferenceConnection
   containersNumber: Number
   containers(first: Int, entityTypes: [String!]): ContainerConnection
@@ -5999,9 +5998,9 @@ type WindowsRegistryKey implements BasicObject & StixObject & StixCoreObject & S
   x_opencti_inferences: [Inference]
   createdBy: Identity
   numberOfConnectedElement: Int!
-  objectMarking: MarkingDefinitionConnection
-  objectOrganization: OrganizationConnection
-  objectLabel: LabelConnection
+  objectMarking: [MarkingDefinition!]
+  objectOrganization: [Organization!]
+  objectLabel: [Label!]
   externalReferences(first: Int): ExternalReferenceConnection
   containersNumber: Number
   containers(first: Int, entityTypes: [String!]): ContainerConnection
@@ -6052,9 +6051,9 @@ type WindowsRegistryValueType implements BasicObject & StixObject & StixCoreObje
   x_opencti_inferences: [Inference]
   createdBy: Identity
   numberOfConnectedElement: Int!
-  objectMarking: MarkingDefinitionConnection
-  objectOrganization: OrganizationConnection
-  objectLabel: LabelConnection
+  objectMarking: [MarkingDefinition!]
+  objectOrganization: [Organization!]
+  objectLabel: [Label!]
   externalReferences(first: Int): ExternalReferenceConnection
   containersNumber: Number
   containers(first: Int, entityTypes: [String!]): ContainerConnection
@@ -6105,9 +6104,9 @@ type CryptographicKey implements BasicObject & StixObject & StixCoreObject & Sti
   x_opencti_inferences: [Inference]
   createdBy: Identity
   numberOfConnectedElement: Int!
-  objectMarking: MarkingDefinitionConnection
-  objectOrganization: OrganizationConnection
-  objectLabel: LabelConnection
+  objectMarking: [MarkingDefinition!]
+  objectOrganization: [Organization!]
+  objectLabel: [Label!]
   externalReferences(first: Int): ExternalReferenceConnection
   containersNumber: Number
   containers(first: Int, entityTypes: [String!]): ContainerConnection
@@ -6154,9 +6153,9 @@ type CryptocurrencyWallet implements BasicObject & StixObject & StixCoreObject &
   x_opencti_inferences: [Inference]
   createdBy: Identity
   numberOfConnectedElement: Int!
-  objectMarking: MarkingDefinitionConnection
-  objectOrganization: OrganizationConnection
-  objectLabel: LabelConnection
+  objectMarking: [MarkingDefinition!]
+  objectOrganization: [Organization!]
+  objectLabel: [Label!]
   externalReferences(first: Int): ExternalReferenceConnection
   containersNumber: Number
   containers(first: Int, entityTypes: [String!]): ContainerConnection
@@ -6203,9 +6202,9 @@ type Hostname implements BasicObject & StixObject & StixCoreObject & StixCyberOb
   x_opencti_inferences: [Inference]
   createdBy: Identity
   numberOfConnectedElement: Int!
-  objectMarking: MarkingDefinitionConnection
-  objectOrganization: OrganizationConnection
-  objectLabel: LabelConnection
+  objectMarking: [MarkingDefinition!]
+  objectOrganization: [Organization!]
+  objectLabel: [Label!]
   externalReferences(first: Int): ExternalReferenceConnection
   containersNumber: Number
   containers(first: Int, entityTypes: [String!]): ContainerConnection
@@ -6252,9 +6251,9 @@ type Text implements BasicObject & StixObject & StixCoreObject & StixCyberObserv
   x_opencti_inferences: [Inference]
   createdBy: Identity
   numberOfConnectedElement: Int!
-  objectMarking: MarkingDefinitionConnection
-  objectOrganization: OrganizationConnection
-  objectLabel: LabelConnection
+  objectMarking: [MarkingDefinition!]
+  objectOrganization: [Organization!]
+  objectLabel: [Label!]
   externalReferences(first: Int): ExternalReferenceConnection
   containersNumber: Number
   containers(first: Int, entityTypes: [String!]): ContainerConnection
@@ -6301,9 +6300,9 @@ type UserAgent implements BasicObject & StixObject & StixCoreObject & StixCyberO
   x_opencti_inferences: [Inference]
   createdBy: Identity
   numberOfConnectedElement: Int!
-  objectMarking: MarkingDefinitionConnection
-  objectOrganization: OrganizationConnection
-  objectLabel: LabelConnection
+  objectMarking: [MarkingDefinition!]
+  objectOrganization: [Organization!]
+  objectLabel: [Label!]
   externalReferences(first: Int): ExternalReferenceConnection
   containersNumber: Number
   containers(first: Int, entityTypes: [String!]): ContainerConnection
@@ -6350,9 +6349,9 @@ type BankAccount implements BasicObject & StixObject & StixCoreObject & StixCybe
   x_opencti_inferences: [Inference]
   createdBy: Identity
   numberOfConnectedElement: Int!
-  objectMarking: MarkingDefinitionConnection
-  objectOrganization: OrganizationConnection
-  objectLabel: LabelConnection
+  objectMarking: [MarkingDefinition!]
+  objectOrganization: [Organization!]
+  objectLabel: [Label!]
   externalReferences(first: Int): ExternalReferenceConnection
   containersNumber: Number
   containers(first: Int, entityTypes: [String!]): ContainerConnection
@@ -6403,9 +6402,9 @@ type PhoneNumber implements BasicObject & StixObject & StixCoreObject & StixCybe
   x_opencti_inferences: [Inference]
   createdBy: Identity
   numberOfConnectedElement: Int!
-  objectMarking: MarkingDefinitionConnection
-  objectOrganization: OrganizationConnection
-  objectLabel: LabelConnection
+  objectMarking: [MarkingDefinition!]
+  objectOrganization: [Organization!]
+  objectLabel: [Label!]
   externalReferences(first: Int): ExternalReferenceConnection
   containersNumber: Number
   containers(first: Int, entityTypes: [String!]): ContainerConnection
@@ -6452,9 +6451,9 @@ type PaymentCard implements BasicObject & StixObject & StixCoreObject & StixCybe
   x_opencti_inferences: [Inference]
   createdBy: Identity
   numberOfConnectedElement: Int!
-  objectMarking: MarkingDefinitionConnection
-  objectOrganization: OrganizationConnection
-  objectLabel: LabelConnection
+  objectMarking: [MarkingDefinition!]
+  objectOrganization: [Organization!]
+  objectLabel: [Label!]
   externalReferences(first: Int): ExternalReferenceConnection
   containersNumber: Number
   containers(first: Int, entityTypes: [String!]): ContainerConnection
@@ -6507,9 +6506,9 @@ type MediaContent implements BasicObject & StixObject & StixCoreObject & StixCyb
   x_opencti_inferences: [Inference]
   createdBy: Identity
   numberOfConnectedElement: Int!
-  objectMarking: MarkingDefinitionConnection
-  objectLabel: LabelConnection
-  objectOrganization: OrganizationConnection
+  objectMarking: [MarkingDefinition!]
+  objectLabel: [Label!]
+  objectOrganization: [Organization!]
   externalReferences(first: Int): ExternalReferenceConnection
   containersNumber: Number
   containers(first: Int, entityTypes: [String!]): ContainerConnection
@@ -6680,7 +6679,7 @@ interface StixRelationship {
   confidence: Int
   relationship_type: String!
   createdBy: Identity
-  objectMarking: MarkingDefinitionConnection
+  objectMarking: [MarkingDefinition!]
   toStix: String
   creators: [Creator!]
 }
@@ -6748,14 +6747,14 @@ type StixCoreRelationship implements BasicRelationship & StixRelationship {
   confidence: Int
   relationship_type: String!
   createdBy: Identity
-  objectMarking: MarkingDefinitionConnection
+  objectMarking: [MarkingDefinition!]
   description: String
   start_time: DateTime
   stop_time: DateTime
   revoked: Boolean!
   lang: String
-  objectLabel: LabelConnection
-  objectOrganization: OrganizationConnection
+  objectLabel: [Label!]
+  objectOrganization: [Organization!]
   externalReferences(first: Int): ExternalReferenceConnection
   containersNumber: Number
   containers(first: Int, entityTypes: [String!]): ContainerConnection
@@ -6765,7 +6764,7 @@ type StixCoreRelationship implements BasicRelationship & StixRelationship {
   groupings(first: Int): GroupingConnection
   cases(first: Int): CaseConnection
   stixCoreRelationships(first: Int, after: ID, orderBy: StixCoreRelationshipsOrdering, orderMode: OrderingMode, fromId: StixRef, toId: StixRef, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: FilterGroup): StixCoreRelationshipConnection
-  killChainPhases: KillChainPhaseConnection
+  killChainPhases: [KillChainPhase!]
   creators: [Creator!]
   toStix: String
   editContext: [EditUserContext!]
@@ -6852,14 +6851,14 @@ type StixSightingRelationship implements BasicRelationship & StixRelationship {
   confidence: Int
   relationship_type: String!
   createdBy: Identity
-  objectMarking: MarkingDefinitionConnection
+  objectMarking: [MarkingDefinition!]
   description: String
   first_seen: DateTime
   last_seen: DateTime
   attribute_count: Int!
   x_opencti_negative: Boolean!
-  objectLabel: LabelConnection
-  objectOrganization: OrganizationConnection
+  objectLabel: [Label!]
+  objectOrganization: [Organization!]
   externalReferences(first: Int): ExternalReferenceConnection
   containersNumber: Number
   containers(first: Int, entityTypes: [String!]): ContainerConnection
@@ -6945,7 +6944,7 @@ type StixRefRelationship implements BasicRelationship & StixRelationship {
   confidence: Int
   relationship_type: String!
   createdBy: Identity
-  objectMarking: MarkingDefinitionConnection
+  objectMarking: [MarkingDefinition!]
   start_time: DateTime
   stop_time: DateTime
   datable: Boolean
@@ -6989,7 +6988,7 @@ input StixRefRelationshipAddInput {
 input StixRefRelationshipsAddInput {
   relationship_type: String!
   fromIds: [StixRef]
-  toIds: [StixRef]
+  toIds: [StixRef!]!
 }
 
 type Query {
@@ -8039,9 +8038,9 @@ type Channel implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   x_opencti_inferences: [Inference]
   createdBy: Identity
   numberOfConnectedElement: Int!
-  objectMarking: MarkingDefinitionConnection
-  objectOrganization: OrganizationConnection
-  objectLabel: LabelConnection
+  objectMarking: [MarkingDefinition!]
+  objectOrganization: [Organization!]
+  objectLabel: [Label!]
   externalReferences(first: Int): ExternalReferenceConnection
   containersNumber: Number
   containers(first: Int, entityTypes: [String!]): ContainerConnection
@@ -8060,7 +8059,7 @@ type Channel implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   created: DateTime
   modified: DateTime
   x_opencti_graph_data: String
-  objectAssignee: AssigneeConnection
+  objectAssignee: [Assignee!]
   avatar: OpenCtiFile
   name: String!
   description: String
@@ -8138,9 +8137,9 @@ type Language implements BasicObject & StixCoreObject & StixDomainObject & StixO
   x_opencti_inferences: [Inference]
   createdBy: Identity
   numberOfConnectedElement: Int!
-  objectMarking: MarkingDefinitionConnection
-  objectOrganization: OrganizationConnection
-  objectLabel: LabelConnection
+  objectMarking: [MarkingDefinition!]
+  objectOrganization: [Organization!]
+  objectLabel: [Label!]
   externalReferences(first: Int): ExternalReferenceConnection
   containersNumber: Number
   containers(first: Int, entityTypes: [String!]): ContainerConnection
@@ -8159,7 +8158,7 @@ type Language implements BasicObject & StixCoreObject & StixDomainObject & StixO
   created: DateTime
   modified: DateTime
   x_opencti_graph_data: String
-  objectAssignee: AssigneeConnection
+  objectAssignee: [Assignee!]
   avatar: OpenCtiFile
   name: String!
   aliases: [String]
@@ -8230,9 +8229,9 @@ type Event implements BasicObject & StixCoreObject & StixDomainObject & StixObje
   x_opencti_inferences: [Inference]
   createdBy: Identity
   numberOfConnectedElement: Int!
-  objectMarking: MarkingDefinitionConnection
-  objectOrganization: OrganizationConnection
-  objectLabel: LabelConnection
+  objectMarking: [MarkingDefinition!]
+  objectOrganization: [Organization!]
+  objectLabel: [Label!]
   externalReferences(first: Int): ExternalReferenceConnection
   containersNumber: Number
   containers(first: Int, entityTypes: [String!]): ContainerConnection
@@ -8251,7 +8250,7 @@ type Event implements BasicObject & StixCoreObject & StixDomainObject & StixObje
   created: DateTime
   modified: DateTime
   x_opencti_graph_data: String
-  objectAssignee: AssigneeConnection
+  objectAssignee: [Assignee!]
   avatar: OpenCtiFile
   name: String!
   description: String
@@ -8332,9 +8331,9 @@ type Grouping implements BasicObject & StixObject & StixCoreObject & StixDomainO
   x_opencti_inferences: [Inference]
   createdBy: Identity
   numberOfConnectedElement: Int!
-  objectMarking: MarkingDefinitionConnection
-  objectOrganization: OrganizationConnection
-  objectLabel: LabelConnection
+  objectMarking: [MarkingDefinition!]
+  objectOrganization: [Organization!]
+  objectLabel: [Label!]
   externalReferences(first: Int): ExternalReferenceConnection
   containersNumber: Number
   containers(first: Int, entityTypes: [String!]): ContainerConnection
@@ -8353,7 +8352,7 @@ type Grouping implements BasicObject & StixObject & StixCoreObject & StixDomainO
   created: DateTime
   modified: DateTime
   x_opencti_graph_data: String
-  objectAssignee: AssigneeConnection
+  objectAssignee: [Assignee!]
   avatar: OpenCtiFile
   objects(first: Int, after: ID, orderBy: StixObjectOrStixRelationshipsOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String, types: [String], all: Boolean): StixObjectOrStixRelationshipRefConnection
   relatedContainers(first: Int, after: ID, orderBy: ContainersOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String, types: [String], viaTypes: [String]): ContainerConnection
@@ -8439,9 +8438,9 @@ type Narrative implements BasicObject & StixCoreObject & StixDomainObject & Stix
   x_opencti_inferences: [Inference]
   createdBy: Identity
   numberOfConnectedElement: Int!
-  objectMarking: MarkingDefinitionConnection
-  objectOrganization: OrganizationConnection
-  objectLabel: LabelConnection
+  objectMarking: [MarkingDefinition!]
+  objectOrganization: [Organization!]
+  objectLabel: [Label!]
   externalReferences(first: Int): ExternalReferenceConnection
   containersNumber: Number
   containers(first: Int, entityTypes: [String!]): ContainerConnection
@@ -8460,7 +8459,7 @@ type Narrative implements BasicObject & StixCoreObject & StixDomainObject & Stix
   created: DateTime
   modified: DateTime
   x_opencti_graph_data: String
-  objectAssignee: AssigneeConnection
+  objectAssignee: [Assignee!]
   avatar: OpenCtiFile
   name: String!
   description: String
@@ -8700,9 +8699,9 @@ type DataComponent implements BasicObject & StixObject & StixCoreObject & StixDo
   x_opencti_inferences: [Inference]
   createdBy: Identity
   numberOfConnectedElement: Int!
-  objectMarking: MarkingDefinitionConnection
-  objectOrganization: OrganizationConnection
-  objectLabel: LabelConnection
+  objectMarking: [MarkingDefinition!]
+  objectOrganization: [Organization!]
+  objectLabel: [Label!]
   externalReferences(first: Int): ExternalReferenceConnection
   containersNumber: Number
   containers(first: Int, entityTypes: [String!]): ContainerConnection
@@ -8721,7 +8720,7 @@ type DataComponent implements BasicObject & StixObject & StixCoreObject & StixDo
   created: DateTime
   modified: DateTime
   x_opencti_graph_data: String
-  objectAssignee: AssigneeConnection
+  objectAssignee: [Assignee!]
   avatar: OpenCtiFile
   creators: [Creator!]
   toStix: String
@@ -8796,9 +8795,9 @@ type DataSource implements BasicObject & StixObject & StixCoreObject & StixDomai
   x_opencti_inferences: [Inference]
   createdBy: Identity
   numberOfConnectedElement: Int!
-  objectMarking: MarkingDefinitionConnection
-  objectOrganization: OrganizationConnection
-  objectLabel: LabelConnection
+  objectMarking: [MarkingDefinition!]
+  objectOrganization: [Organization!]
+  objectLabel: [Label!]
   externalReferences(first: Int): ExternalReferenceConnection
   containersNumber: Number
   containers(first: Int, entityTypes: [String!]): ContainerConnection
@@ -8817,7 +8816,7 @@ type DataSource implements BasicObject & StixObject & StixCoreObject & StixDomai
   created: DateTime
   modified: DateTime
   x_opencti_graph_data: String
-  objectAssignee: AssigneeConnection
+  objectAssignee: [Assignee!]
   avatar: OpenCtiFile
   creators: [Creator!]
   toStix: String
@@ -9008,9 +9007,9 @@ type AdministrativeArea implements BasicObject & StixCoreObject & StixDomainObje
   x_opencti_inferences: [Inference]
   createdBy: Identity
   numberOfConnectedElement: Int!
-  objectMarking: MarkingDefinitionConnection
-  objectOrganization: OrganizationConnection
-  objectLabel: LabelConnection
+  objectMarking: [MarkingDefinition!]
+  objectOrganization: [Organization!]
+  objectLabel: [Label!]
   externalReferences(first: Int): ExternalReferenceConnection
   containersNumber: Number
   containers(first: Int, entityTypes: [String!]): ContainerConnection
@@ -9028,7 +9027,7 @@ type AdministrativeArea implements BasicObject & StixCoreObject & StixDomainObje
   created: DateTime
   modified: DateTime
   x_opencti_graph_data: String
-  objectAssignee: AssigneeConnection
+  objectAssignee: [Assignee!]
   avatar: OpenCtiFile
   name: String!
   description: String
@@ -9108,9 +9107,9 @@ type Task implements Container & StixDomainObject & StixCoreObject & StixObject 
   x_opencti_inferences: [Inference]
   createdBy: Identity
   numberOfConnectedElement: Int!
-  objectMarking: MarkingDefinitionConnection
-  objectOrganization: OrganizationConnection
-  objectLabel: LabelConnection
+  objectMarking: [MarkingDefinition!]
+  objectOrganization: [Organization!]
+  objectLabel: [Label!]
   externalReferences(first: Int): ExternalReferenceConnection
   containersNumber: Number
   containers(first: Int, entityTypes: [String!]): ContainerConnection
@@ -9129,7 +9128,8 @@ type Task implements Container & StixDomainObject & StixCoreObject & StixObject 
   created: DateTime
   modified: DateTime
   x_opencti_graph_data: String
-  objectAssignee: AssigneeConnection
+  objectAssignee: [Assignee!]
+  objectParticipant: [Participant!]
   avatar: OpenCtiFile
   objects(first: Int, after: ID, orderBy: StixObjectOrStixRelationshipsOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String, types: [String], all: Boolean): StixObjectOrStixRelationshipRefConnection
   relatedContainers(first: Int, after: ID, orderBy: ContainersOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String, types: [String], viaTypes: [String]): ContainerConnection
@@ -9146,7 +9146,6 @@ type Task implements Container & StixDomainObject & StixCoreObject & StixObject 
   name: String!
   description: String
   due_date: DateTime
-  objectParticipant: ParticipantConnection
 }
 
 enum TasksOrdering {
@@ -9241,9 +9240,9 @@ interface Case implements BasicObject & StixObject & StixCoreObject & StixDomain
   x_opencti_inferences: [Inference]
   createdBy: Identity
   numberOfConnectedElement: Int!
-  objectMarking: MarkingDefinitionConnection
-  objectOrganization: OrganizationConnection
-  objectLabel: LabelConnection
+  objectMarking: [MarkingDefinition!]
+  objectOrganization: [Organization!]
+  objectLabel: [Label!]
   externalReferences(first: Int): ExternalReferenceConnection
   containersNumber: Number
   containers(first: Int, entityTypes: [String!]): ContainerConnection
@@ -9262,7 +9261,8 @@ interface Case implements BasicObject & StixObject & StixCoreObject & StixDomain
   created: DateTime
   modified: DateTime
   x_opencti_graph_data: String
-  objectAssignee: AssigneeConnection
+  objectAssignee: [Assignee!]
+  objectParticipant: [Participant!]
   avatar: OpenCtiFile
   objects(first: Int, after: ID, orderBy: StixObjectOrStixRelationshipsOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String, types: [String], all: Boolean): StixObjectOrStixRelationshipRefConnection
   relatedContainers(first: Int, after: ID, orderBy: ContainersOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String, types: [String], viaTypes: [String]): ContainerConnection
@@ -9281,7 +9281,6 @@ interface Case implements BasicObject & StixObject & StixCoreObject & StixDomain
   content: String
   content_mapping: String
   tasks: TaskConnection!
-  objectParticipant: ParticipantConnection
 }
 
 enum CasesOrdering {
@@ -9357,9 +9356,9 @@ type CaseIncident implements BasicObject & StixObject & StixCoreObject & StixDom
   x_opencti_inferences: [Inference]
   createdBy: Identity
   numberOfConnectedElement: Int!
-  objectMarking: MarkingDefinitionConnection
-  objectOrganization: OrganizationConnection
-  objectLabel: LabelConnection
+  objectMarking: [MarkingDefinition!]
+  objectOrganization: [Organization!]
+  objectLabel: [Label!]
   externalReferences(first: Int): ExternalReferenceConnection
   containersNumber: Number
   containers(first: Int, entityTypes: [String!]): ContainerConnection
@@ -9378,7 +9377,8 @@ type CaseIncident implements BasicObject & StixObject & StixCoreObject & StixDom
   created: DateTime
   modified: DateTime
   x_opencti_graph_data: String
-  objectAssignee: AssigneeConnection
+  objectAssignee: [Assignee!]
+  objectParticipant: [Participant!]
   avatar: OpenCtiFile
   objects(first: Int, after: ID, orderBy: StixObjectOrStixRelationshipsOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String, types: [String], all: Boolean): StixObjectOrStixRelationshipRefConnection
   relatedContainers(first: Int, after: ID, orderBy: ContainersOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String, types: [String], viaTypes: [String]): ContainerConnection
@@ -9397,7 +9397,6 @@ type CaseIncident implements BasicObject & StixObject & StixCoreObject & StixDom
   content: String
   content_mapping: String
   tasks: TaskConnection!
-  objectParticipant: ParticipantConnection
   rating: Int
   response_types: [String!]
   severity: String
@@ -9475,9 +9474,9 @@ type CaseRfi implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   x_opencti_inferences: [Inference]
   createdBy: Identity
   numberOfConnectedElement: Int!
-  objectMarking: MarkingDefinitionConnection
-  objectOrganization: OrganizationConnection
-  objectLabel: LabelConnection
+  objectMarking: [MarkingDefinition!]
+  objectOrganization: [Organization!]
+  objectLabel: [Label!]
   externalReferences(first: Int): ExternalReferenceConnection
   containersNumber: Number
   containers(first: Int, entityTypes: [String!]): ContainerConnection
@@ -9496,7 +9495,8 @@ type CaseRfi implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   created: DateTime
   modified: DateTime
   x_opencti_graph_data: String
-  objectAssignee: AssigneeConnection
+  objectAssignee: [Assignee!]
+  objectParticipant: [Participant!]
   avatar: OpenCtiFile
   objects(first: Int, after: ID, orderBy: StixObjectOrStixRelationshipsOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String, types: [String], all: Boolean): StixObjectOrStixRelationshipRefConnection
   relatedContainers(first: Int, after: ID, orderBy: ContainersOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String, types: [String], viaTypes: [String]): ContainerConnection
@@ -9515,7 +9515,6 @@ type CaseRfi implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   content: String
   content_mapping: String
   tasks: TaskConnection!
-  objectParticipant: ParticipantConnection
   information_types: [String!]
   severity: String
   priority: String
@@ -9590,9 +9589,9 @@ type CaseRft implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   x_opencti_inferences: [Inference]
   createdBy: Identity
   numberOfConnectedElement: Int!
-  objectMarking: MarkingDefinitionConnection
-  objectOrganization: OrganizationConnection
-  objectLabel: LabelConnection
+  objectMarking: [MarkingDefinition!]
+  objectOrganization: [Organization!]
+  objectLabel: [Label!]
   externalReferences(first: Int): ExternalReferenceConnection
   containersNumber: Number
   containers(first: Int, entityTypes: [String!]): ContainerConnection
@@ -9611,7 +9610,8 @@ type CaseRft implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   created: DateTime
   modified: DateTime
   x_opencti_graph_data: String
-  objectAssignee: AssigneeConnection
+  objectAssignee: [Assignee!]
+  objectParticipant: [Participant!]
   avatar: OpenCtiFile
   objects(first: Int, after: ID, orderBy: StixObjectOrStixRelationshipsOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String, types: [String], all: Boolean): StixObjectOrStixRelationshipRefConnection
   relatedContainers(first: Int, after: ID, orderBy: ContainersOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String, types: [String], viaTypes: [String]): ContainerConnection
@@ -9630,7 +9630,6 @@ type CaseRft implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   content: String
   content_mapping: String
   tasks: TaskConnection!
-  objectParticipant: ParticipantConnection
   takedown_types: [String!]
   severity: String
   priority: String
@@ -9706,9 +9705,9 @@ type Feedback implements BasicObject & StixObject & StixCoreObject & StixDomainO
   x_opencti_inferences: [Inference]
   createdBy: Identity
   numberOfConnectedElement: Int!
-  objectMarking: MarkingDefinitionConnection
-  objectOrganization: OrganizationConnection
-  objectLabel: LabelConnection
+  objectMarking: [MarkingDefinition!]
+  objectOrganization: [Organization!]
+  objectLabel: [Label!]
   externalReferences(first: Int): ExternalReferenceConnection
   containersNumber: Number
   containers(first: Int, entityTypes: [String!]): ContainerConnection
@@ -9727,7 +9726,8 @@ type Feedback implements BasicObject & StixObject & StixCoreObject & StixDomainO
   created: DateTime
   modified: DateTime
   x_opencti_graph_data: String
-  objectAssignee: AssigneeConnection
+  objectAssignee: [Assignee!]
+  objectParticipant: [Participant!]
   avatar: OpenCtiFile
   objects(first: Int, after: ID, orderBy: StixObjectOrStixRelationshipsOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String, types: [String], all: Boolean): StixObjectOrStixRelationshipRefConnection
   relatedContainers(first: Int, after: ID, orderBy: ContainersOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String, types: [String], viaTypes: [String]): ContainerConnection
@@ -9746,7 +9746,6 @@ type Feedback implements BasicObject & StixObject & StixCoreObject & StixDomainO
   content: String
   content_mapping: String
   tasks: TaskConnection!
-  objectParticipant: ParticipantConnection
   rating: Int
   authorized_members: [MemberAccess!]
   currentUserAccessRight: String
@@ -9946,9 +9945,9 @@ type MalwareAnalysis implements BasicObject & StixCoreObject & StixDomainObject 
   x_opencti_inferences: [Inference]
   createdBy: Identity
   numberOfConnectedElement: Int!
-  objectMarking: MarkingDefinitionConnection
-  objectOrganization: OrganizationConnection
-  objectLabel: LabelConnection
+  objectMarking: [MarkingDefinition!]
+  objectOrganization: [Organization!]
+  objectLabel: [Label!]
   externalReferences(first: Int): ExternalReferenceConnection
   containersNumber: Number
   containers(first: Int, entityTypes: [String!]): ContainerConnection
@@ -9967,7 +9966,7 @@ type MalwareAnalysis implements BasicObject & StixCoreObject & StixDomainObject 
   created: DateTime
   modified: DateTime
   x_opencti_graph_data: String
-  objectAssignee: AssigneeConnection
+  objectAssignee: [Assignee!]
   avatar: OpenCtiFile
   creators: [Creator!]
   toStix: String
@@ -10151,9 +10150,9 @@ type ThreatActorIndividual implements BasicObject & StixObject & StixCoreObject 
   x_opencti_inferences: [Inference]
   createdBy: Identity
   numberOfConnectedElement: Int!
-  objectMarking: MarkingDefinitionConnection
-  objectOrganization: OrganizationConnection
-  objectLabel: LabelConnection
+  objectMarking: [MarkingDefinition!]
+  objectOrganization: [Organization!]
+  objectLabel: [Label!]
   externalReferences(first: Int): ExternalReferenceConnection
   containersNumber: Number
   containers(first: Int, entityTypes: [String!]): ContainerConnection
@@ -10172,7 +10171,7 @@ type ThreatActorIndividual implements BasicObject & StixObject & StixCoreObject 
   created: DateTime
   modified: DateTime
   x_opencti_graph_data: String
-  objectAssignee: AssigneeConnection
+  objectAssignee: [Assignee!]
   avatar: OpenCtiFile
   name: String!
   description: String
@@ -10543,9 +10542,9 @@ type Indicator implements BasicObject & StixObject & StixCoreObject & StixDomain
   x_opencti_inferences: [Inference]
   createdBy: Identity
   numberOfConnectedElement: Int!
-  objectMarking: MarkingDefinitionConnection
-  objectOrganization: OrganizationConnection
-  objectLabel: LabelConnection
+  objectMarking: [MarkingDefinition!]
+  objectOrganization: [Organization!]
+  objectLabel: [Label!]
   externalReferences(first: Int): ExternalReferenceConnection
   containersNumber: Number
   containers(first: Int, entityTypes: [String!]): ContainerConnection
@@ -10564,7 +10563,7 @@ type Indicator implements BasicObject & StixObject & StixCoreObject & StixDomain
   created: DateTime
   modified: DateTime
   x_opencti_graph_data: String
-  objectAssignee: AssigneeConnection
+  objectAssignee: [Assignee!]
   avatar: OpenCtiFile
   pattern_type: String
   pattern_version: String
@@ -10578,7 +10577,7 @@ type Indicator implements BasicObject & StixObject & StixCoreObject & StixDomain
   x_opencti_detection: Boolean
   x_opencti_main_observable_type: String
   x_mitre_platforms: [String]
-  killChainPhases: KillChainPhaseConnection
+  killChainPhases: [KillChainPhase!]
   observables(first: Int): StixCyberObservableConnection
   decay_base_score: Int
   decay_base_score_date: DateTime
@@ -10644,9 +10643,9 @@ type Organization implements BasicObject & StixObject & StixCoreObject & StixDom
   x_opencti_inferences: [Inference]
   createdBy: Identity
   numberOfConnectedElement: Int!
-  objectMarking: MarkingDefinitionConnection
-  objectOrganization: OrganizationConnection
-  objectLabel: LabelConnection
+  objectMarking: [MarkingDefinition!]
+  objectOrganization: [Organization!]
+  objectLabel: [Label!]
   externalReferences(first: Int): ExternalReferenceConnection
   containersNumber: Number
   containers(first: Int, entityTypes: [String!]): ContainerConnection
@@ -10665,7 +10664,7 @@ type Organization implements BasicObject & StixObject & StixCoreObject & StixDom
   created: DateTime
   modified: DateTime
   x_opencti_graph_data: String
-  objectAssignee: AssigneeConnection
+  objectAssignee: [Assignee!]
   avatar: OpenCtiFile
   identity_class: String!
   name: String!

@@ -379,11 +379,7 @@ class StixCoreRelationshipContainer extends Component {
                     <Typography variant="h3" gutterBottom={true}>
                       {t('Marking')}
                     </Typography>
-                    <ItemMarkings
-                      markingDefinitionsEdges={
-                        stixCoreRelationship.objectMarking.edges
-                      }
-                    />
+                    <ItemMarkings markingDefinitions={stixCoreRelationship.objectMarking ?? []}/>
                     <Typography
                       variant="h3"
                       gutterBottom={true}
@@ -427,8 +423,8 @@ class StixCoreRelationshipContainer extends Component {
                       commonmark={true}
                     />
                     <StixCoreObjectKillChainPhasesView
-                      killChainPhasesEdges={
-                        stixCoreRelationship.killChainPhases.edges
+                      killChainPhases={
+                        stixCoreRelationship.killChainPhases
                       }
                     />
                   </Grid>
@@ -588,9 +584,7 @@ class StixCoreRelationshipContainer extends Component {
                 marginTop={55}
                 stixCoreObjectOrStixCoreRelationshipId={stixCoreRelationship.id}
                 isRelationship={true}
-                defaultMarkings={(
-                  stixCoreRelationship.objectMarking?.edges ?? []
-                ).map((edge) => edge.node)}
+                defaultMarkings={stixCoreRelationship.objectMarking ?? []}
               />
             </div>
           )}
@@ -695,15 +689,11 @@ const StixCoreRelationshipOverview = createFragmentContainer(
         }
         workflowEnabled
         killChainPhases {
-          edges {
-            node {
-              id
-              entity_type
-              kill_chain_name
-              phase_name
-              x_opencti_order
-            }
-          }
+          id
+          entity_type
+          kill_chain_name
+          phase_name
+          x_opencti_order
         }
         x_opencti_inferences {
           rule {
@@ -942,15 +932,11 @@ const StixCoreRelationshipOverview = createFragmentContainer(
                             }
                           }
                           objectMarking {
-                            edges {
-                              node {
-                                id
-                                definition_type
-                                definition
-                                x_opencti_order
-                                x_opencti_color
-                              }
-                            }
+                            id
+                            definition_type
+                            definition
+                            x_opencti_order
+                            x_opencti_color
                           }
                         }
                         ... on AttackPattern {
@@ -1332,15 +1318,11 @@ const StixCoreRelationshipOverview = createFragmentContainer(
                                 }
                               }
                               objectMarking {
-                                edges {
-                                  node {
-                                    id
-                                    definition_type
-                                    definition
-                                    x_opencti_order
-                                    x_opencti_color
-                                  }
-                                }
+                                id
+                                definition_type
+                                definition
+                                x_opencti_order
+                                x_opencti_color
                               }
                             }
                             ... on AttackPattern {
@@ -1623,14 +1605,10 @@ const StixCoreRelationshipOverview = createFragmentContainer(
                             }
                           }
                           objectMarking {
-                            edges {
-                              node {
-                                id
-                                definition
-                                x_opencti_order
-                                x_opencti_color
-                              }
-                            }
+                            id
+                            definition
+                            x_opencti_order
+                            x_opencti_color
                           }
                         }
                         ... on AttackPattern {
@@ -1914,14 +1892,10 @@ const StixCoreRelationshipOverview = createFragmentContainer(
                                 }
                               }
                               objectMarking {
-                                edges {
-                                  node {
-                                    id
-                                    definition
-                                    x_opencti_order
-                                    x_opencti_color
-                                  }
-                                }
+                                id
+                                definition
+                                x_opencti_order
+                                x_opencti_color
                               }
                             }
                             ... on AttackPattern {
@@ -2199,14 +2173,10 @@ const StixCoreRelationshipOverview = createFragmentContainer(
                                 }
                               }
                               objectMarking {
-                                edges {
-                                  node {
-                                    id
-                                    definition
-                                    x_opencti_order
-                                    x_opencti_color
-                                  }
-                                }
+                                id
+                                definition
+                                x_opencti_order
+                                x_opencti_color
                               }
                             }
                             ... on AttackPattern {
@@ -2492,14 +2462,10 @@ const StixCoreRelationshipOverview = createFragmentContainer(
                             }
                           }
                           objectMarking {
-                            edges {
-                              node {
-                                id
-                                definition
-                                x_opencti_order
-                                x_opencti_color
-                              }
-                            }
+                            id
+                            definition
+                            x_opencti_order
+                            x_opencti_color
                           }
                         }
                         ... on AttackPattern {
@@ -2881,14 +2847,10 @@ const StixCoreRelationshipOverview = createFragmentContainer(
                                 }
                               }
                               objectMarking {
-                                edges {
-                                  node {
-                                    id
-                                    definition
-                                    x_opencti_order
-                                    x_opencti_color
-                                  }
-                                }
+                                id
+                                definition
+                                x_opencti_order
+                                x_opencti_color
                               }
                             }
                             ... on AttackPattern {
@@ -3171,14 +3133,10 @@ const StixCoreRelationshipOverview = createFragmentContainer(
                             }
                           }
                           objectMarking {
-                            edges {
-                              node {
-                                id
-                                definition
-                                x_opencti_order
-                                x_opencti_color
-                              }
-                            }
+                            id
+                            definition
+                            x_opencti_order
+                            x_opencti_color
                           }
                         }
                         ... on AttackPattern {
@@ -3462,14 +3420,10 @@ const StixCoreRelationshipOverview = createFragmentContainer(
                                 }
                               }
                               objectMarking {
-                                edges {
-                                  node {
-                                    id
-                                    definition
-                                    x_opencti_order
-                                    x_opencti_color
-                                  }
-                                }
+                                id
+                                definition
+                                x_opencti_order
+                                x_opencti_color
                               }
                             }
                             ... on AttackPattern {
@@ -3747,14 +3701,10 @@ const StixCoreRelationshipOverview = createFragmentContainer(
                                 }
                               }
                               objectMarking {
-                                edges {
-                                  node {
-                                    id
-                                    definition
-                                    x_opencti_order
-                                    x_opencti_color
-                                  }
-                                }
+                                id
+                                definition
+                                x_opencti_order
+                                x_opencti_color
                               }
                             }
                             ... on AttackPattern {
@@ -3922,23 +3872,15 @@ const StixCoreRelationshipOverview = createFragmentContainer(
           }
         }
         objectMarking {
-          edges {
-            node {
-              id
-              definition
-              x_opencti_order
-              x_opencti_color
-            }
-          }
+          id
+          definition
+          x_opencti_order
+          x_opencti_color
         }
         objectLabel {
-          edges {
-            node {
-              id
-              value
-              color
-            }
-          }
+          id
+          value
+          color
         }
         from {
           ... on BasicObject {
@@ -4065,14 +4007,10 @@ const StixCoreRelationshipOverview = createFragmentContainer(
                       }
                     }
                     objectMarking {
-                      edges {
-                        node {
-                          id
-                          definition
-                          x_opencti_order
-                          x_opencti_color
-                        }
-                      }
+                      id
+                      definition
+                      x_opencti_order
+                      x_opencti_color
                     }
                   }
                   ... on AttackPattern {
@@ -4565,14 +4503,10 @@ const StixCoreRelationshipOverview = createFragmentContainer(
                       }
                     }
                     objectMarking {
-                      edges {
-                        node {
-                          id
-                          definition
-                          x_opencti_order
-                          x_opencti_color
-                        }
-                      }
+                      id
+                      definition
+                      x_opencti_order
+                      x_opencti_color
                     }
                   }
                   ... on AttackPattern {

@@ -154,11 +154,7 @@ describe('Indicator resolver standard behavior', () => {
                 from {
                     ... on Indicator {
                         objectMarking {
-                            edges {
-                                node {
-                                    id
-                                }
-                            }
+                            id
                         }
                     }
                 }
@@ -175,7 +171,7 @@ describe('Indicator resolver standard behavior', () => {
         },
       },
     });
-    expect(queryResult.data?.indicatorRelationAdd.from.objectMarking.edges.length).toEqual(1);
+    expect(queryResult.data?.indicatorRelationAdd.from.objectMarking.length).toEqual(1);
   });
   it('should delete relation in indicator', async () => {
     const RELATION_DELETE_QUERY = gql`
@@ -183,11 +179,7 @@ describe('Indicator resolver standard behavior', () => {
             indicatorRelationDelete(id: $id, toId: $toId, relationship_type: $relationship_type) {
                 id
                 objectMarking {
-                    edges {
-                        node {
-                            id
-                        }
-                    }
+                    id
                 }
             }
         }
@@ -200,7 +192,7 @@ describe('Indicator resolver standard behavior', () => {
         relationship_type: 'object-marking',
       },
     });
-    expect(queryResult.data?.indicatorRelationDelete.objectMarking.edges.length).toEqual(0);
+    expect(queryResult.data?.indicatorRelationDelete.objectMarking.length).toEqual(0);
   });
   it('should indicator deleted', async () => {
     const DELETE_QUERY = gql`

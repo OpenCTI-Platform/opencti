@@ -1,8 +1,8 @@
 import * as R from 'ramda';
 import { BUS_TOPICS } from '../config/conf';
 import { delEditContext, notify, setEditContext } from '../database/redis';
-import { batchListThroughGetTo, createEntity, deleteElementById, distributionEntities, listThroughGetTo, timeSeriesEntities, updateAttribute } from '../database/middleware';
-import { listEntities, storeLoadById } from '../database/middleware-loader';
+import { createEntity, deleteElementById, distributionEntities, timeSeriesEntities, updateAttribute } from '../database/middleware';
+import { listAllToEntitiesThroughRelations, listEntities, listEntitiesThroughRelationsPaginated, storeLoadById } from '../database/middleware-loader';
 import { elCount, elFindByIds } from '../database/engine';
 import { workToExportFile } from './work';
 import { FunctionalError, UnsupportedError } from '../config/errors';
@@ -50,8 +50,8 @@ export const batchStixDomainObjects = async (context, user, objectsIds) => {
   return objectsIds.map((id) => objects[id]);
 };
 
-export const batchAssignees = (context, user, stixDomainObjectIds) => {
-  return batchListThroughGetTo(context, user, stixDomainObjectIds, RELATION_OBJECT_ASSIGNEE, ENTITY_TYPE_USER);
+export const assigneesPaginated = async (context, user, stixDomainObjectId, args) => {
+  return listEntitiesThroughRelationsPaginated(context, user, stixDomainObjectId, RELATION_OBJECT_ASSIGNEE, ENTITY_TYPE_USER, false, args);
 };
 
 // region time series
@@ -193,16 +193,15 @@ export const stixDomainObjectEditField = async (context, user, stixObjectId, inp
     throw FunctionalError('Cannot edit the field, Stix-Domain-Object cannot be found.');
   }
   const { element: updatedElem } = await updateAttribute(context, user, stixObjectId, ABSTRACT_STIX_DOMAIN_OBJECT, input, opts);
+  // If indicator is score patched, we also patch the score of all observables attached to the indicator
   if (stixDomainObject.entity_type === ENTITY_TYPE_INDICATOR && input.key === 'x_opencti_score') {
-    const observables = await listThroughGetTo(context, user, [stixObjectId], RELATION_BASED_ON, ABSTRACT_STIX_CYBER_OBSERVABLE);
+    const observables = await listAllToEntitiesThroughRelations(context, user, stixObjectId, RELATION_BASED_ON, ABSTRACT_STIX_CYBER_OBSERVABLE);
     await Promise.all(
       observables.map((observable) => updateAttribute(context, user, observable.id, ABSTRACT_STIX_CYBER_OBSERVABLE, input, opts))
     );
   }
   // Check is a real update was done
-  const updateWithoutMeta = R.pipe(
-    R.omit(schemaRelationsRefDefinition.getInputNames(stixDomainObject.entity_type)),
-  )(updatedElem);
+  const updateWithoutMeta = R.pipe(R.omit(schemaRelationsRefDefinition.getInputNames(stixDomainObject.entity_type)),)(updatedElem);
   const isUpdated = !R.equals(stixDomainObject, updateWithoutMeta);
   if (isUpdated) {
     // Refresh user sessions for organization authorities

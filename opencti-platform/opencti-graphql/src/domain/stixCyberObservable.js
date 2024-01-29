@@ -7,19 +7,14 @@ import { streamToBuffer } from '@jorgeferrero/stream-to-buffer';
 import { fileTypeFromBuffer } from 'file-type';
 import { v4 as uuidv4 } from 'uuid';
 import { delEditContext, notify, setEditContext } from '../database/redis';
+import { createEntity, deleteElementById, distributionEntities, storeLoadByIdWithRefs, timeSeriesEntities, updateAttribute } from '../database/middleware';
 import {
-  batchListThroughGetFrom,
-  batchListThroughGetTo,
-  batchLoadThroughGetTo,
-  createEntity,
-  deleteElementById,
-  distributionEntities,
-  listThroughGetFrom,
-  storeLoadByIdWithRefs,
-  timeSeriesEntities,
-  updateAttribute
-} from '../database/middleware';
-import { listEntities, storeLoadById } from '../database/middleware-loader';
+  listAllFromEntitiesThroughRelations,
+  listEntities,
+  listEntitiesThroughRelationsPaginated,
+  loadEntityThroughRelationsPaginated,
+  storeLoadById
+} from '../database/middleware-loader';
 import { BUS_TOPICS, logApp } from '../config/conf';
 import { elCount } from '../database/engine';
 import { isEmptyField, isNotEmptyField, READ_INDEX_STIX_CYBER_OBSERVABLES } from '../database/utils';
@@ -38,8 +33,8 @@ import {
 } from '../schema/stixCyberObservable';
 import { ABSTRACT_STIX_CYBER_OBSERVABLE, buildRefRelationKey, INPUT_CREATED_BY, INPUT_LABELS, INPUT_MARKINGS } from '../schema/general';
 import { RELATION_CONTENT, RELATION_SERVICE_DLL } from '../schema/stixRefRelationship';
-import { RELATION_BASED_ON, RELATION_HAS, RELATION_LOCATED_AT } from '../schema/stixCoreRelationship';
-import { ENTITY_TYPE_LOCATION_COUNTRY, ENTITY_TYPE_VULNERABILITY } from '../schema/stixDomainObject';
+import { RELATION_BASED_ON, RELATION_HAS } from '../schema/stixCoreRelationship';
+import { ENTITY_TYPE_VULNERABILITY } from '../schema/stixDomainObject';
 import { inputHashesToStix } from '../schema/fieldDataAdapter';
 import { askEntityExport, askListExport, exportTransformFilters } from './stix';
 import { now, observableValue } from '../utils/format';
@@ -275,10 +270,10 @@ export const stixCyberObservableEditField = async (context, user, stixCyberObser
     opts
   );
   if (input[0].key === 'x_opencti_score') {
-    const indicators = await listThroughGetFrom(
+    const indicators = await listAllFromEntitiesThroughRelations(
       context,
       user,
-      [stixCyberObservableId],
+      stixCyberObservableId,
       RELATION_BASED_ON,
       ENTITY_TYPE_INDICATOR
     );
@@ -397,22 +392,18 @@ export const artifactImport = async (context, user, args) => {
   return artifact;
 };
 
-export const batchIndicators = (context, user, stixCyberObservableIds) => {
-  return batchListThroughGetFrom(context, user, stixCyberObservableIds, RELATION_BASED_ON, ENTITY_TYPE_INDICATOR);
+export const indicatorsPaginated = async (context, user, stixCyberObservableId, args) => {
+  return listEntitiesThroughRelationsPaginated(context, user, stixCyberObservableId, RELATION_BASED_ON, ENTITY_TYPE_INDICATOR, true, args);
 };
 
-export const batchVulnerabilities = (context, user, softwareIds) => {
-  return batchListThroughGetTo(context, user, softwareIds, RELATION_HAS, ENTITY_TYPE_VULNERABILITY);
+export const vulnerabilitiesPaginated = async (context, user, stixCyberObservableId, args) => {
+  return listEntitiesThroughRelationsPaginated(context, user, stixCyberObservableId, RELATION_HAS, ENTITY_TYPE_VULNERABILITY, false, args);
 };
 
-export const batchStixFiles = (user, softwareIds) => {
-  return batchListThroughGetTo(user, softwareIds, RELATION_SERVICE_DLL, ENTITY_HASHED_OBSERVABLE_STIX_FILE);
+export const serviceDllsPaginated = async (context, user, stixCyberObservableId, args) => {
+  return listEntitiesThroughRelationsPaginated(context, user, stixCyberObservableId, RELATION_SERVICE_DLL, ENTITY_HASHED_OBSERVABLE_STIX_FILE, false, args);
 };
 
-export const batchArtifacts = (context, user, softwareIds) => {
-  return batchLoadThroughGetTo(context, user, softwareIds, RELATION_CONTENT, ENTITY_HASHED_OBSERVABLE_ARTIFACT);
-};
-
-export const batchCountries = (context, user, ipIds) => {
-  return batchListThroughGetTo(context, user, ipIds, RELATION_LOCATED_AT, ENTITY_TYPE_LOCATION_COUNTRY);
+export const stixFileObsArtifact = async (context, user, stixCyberObservableId) => {
+  return loadEntityThroughRelationsPaginated(context, user, stixCyberObservableId, RELATION_CONTENT, ENTITY_HASHED_OBSERVABLE_ARTIFACT, false);
 };

@@ -128,13 +128,9 @@ const stixRelationshipsListQuery = graphql`
             stop_time
             description
             objectLabel {
-              edges {
-                node {
-                  id
-                  value
-                  color
-                }
-              }
+              id
+              value
+              color
             }
           }
           ... on StixSightingRelationship {
@@ -152,14 +148,10 @@ const stixRelationshipsListQuery = graphql`
             }
           }
           objectMarking {
-            edges {
-              node {
-                id
-                definition
-                x_opencti_order
-                x_opencti_color
-              }
-            }
+            id
+            definition
+            x_opencti_order
+            x_opencti_color
           }
           x_opencti_inferences {
             rule {
@@ -417,14 +409,10 @@ const stixRelationshipsListQuery = graphql`
                               }
                             }
                             objectMarking {
-                              edges {
-                                node {
-                                  id
-                                  definition
-                                  x_opencti_order
-                                  x_opencti_color
-                                }
-                              }
+                              id
+                              definition
+                              x_opencti_order
+                              x_opencti_color
                             }
                           }
                           ... on AttackPattern {
@@ -834,14 +822,10 @@ const stixRelationshipsListQuery = graphql`
                                   }
                                 }
                                 objectMarking {
-                                  edges {
-                                    node {
-                                      id
-                                      definition
-                                      x_opencti_order
-                                      x_opencti_color
-                                    }
-                                  }
+                                  id
+                                  definition
+                                  x_opencti_order
+                                  x_opencti_color
                                 }
                               }
                               ... on AttackPattern {
@@ -1116,14 +1100,10 @@ const stixRelationshipsListQuery = graphql`
                               }
                             }
                             objectMarking {
-                              edges {
-                                node {
-                                  id
-                                  definition
-                                  x_opencti_order
-                                  x_opencti_color
-                                }
-                              }
+                              id
+                              definition
+                              x_opencti_order
+                              x_opencti_color
                             }
                           }
                           ... on AttackPattern {
@@ -1415,14 +1395,10 @@ const stixRelationshipsListQuery = graphql`
                                   }
                                 }
                                 objectMarking {
-                                  edges {
-                                    node {
-                                      id
-                                      definition
-                                      x_opencti_order
-                                      x_opencti_color
-                                    }
-                                  }
+                                  id
+                                  definition
+                                  x_opencti_order
+                                  x_opencti_color
                                 }
                               }
                               ... on AttackPattern {
@@ -1698,14 +1674,10 @@ const stixRelationshipsListQuery = graphql`
                                   }
                                 }
                                 objectMarking {
-                                  edges {
-                                    node {
-                                      id
-                                      definition
-                                      x_opencti_order
-                                      x_opencti_color
-                                    }
-                                  }
+                                  id
+                                  definition
+                                  x_opencti_order
+                                  x_opencti_color
                                 }
                               }
                               ... on AttackPattern {
@@ -1988,14 +1960,10 @@ const stixRelationshipsListQuery = graphql`
                               }
                             }
                             objectMarking {
-                              edges {
-                                node {
-                                  id
-                                  definition
-                                  x_opencti_order
-                                  x_opencti_color
-                                }
-                              }
+                              id
+                              definition
+                              x_opencti_order
+                              x_opencti_color
                             }
                           }
                           ... on AttackPattern {
@@ -2383,14 +2351,10 @@ const stixRelationshipsListQuery = graphql`
                                   }
                                 }
                                 objectMarking {
-                                  edges {
-                                    node {
-                                      id
-                                      definition
-                                      x_opencti_order
-                                      x_opencti_color
-                                    }
-                                  }
+                                  id
+                                  definition
+                                  x_opencti_order
+                                  x_opencti_color
                                 }
                               }
                               ... on AttackPattern {
@@ -2660,14 +2624,10 @@ const stixRelationshipsListQuery = graphql`
                               }
                             }
                             objectMarking {
-                              edges {
-                                node {
-                                  id
-                                  definition
-                                  x_opencti_order
-                                  x_opencti_color
-                                }
-                              }
+                              id
+                              definition
+                              x_opencti_order
+                              x_opencti_color
                             }
                           }
                           ... on AttackPattern {
@@ -2959,14 +2919,10 @@ const stixRelationshipsListQuery = graphql`
                                   }
                                 }
                                 objectMarking {
-                                  edges {
-                                    node {
-                                      id
-                                      definition
-                                      x_opencti_order
-                                      x_opencti_color
-                                    }
-                                  }
+                                  id
+                                  definition
+                                  x_opencti_order
+                                  x_opencti_color
                                 }
                               }
                               ... on AttackPattern {
@@ -3245,14 +3201,10 @@ const stixRelationshipsListQuery = graphql`
                                   }
                                 }
                                 objectMarking {
-                                  edges {
-                                    node {
-                                      id
-                                      definition
-                                      x_opencti_order
-                                      x_opencti_color
-                                    }
-                                  }
+                                  id
+                                  definition
+                                  x_opencti_order
+                                  x_opencti_color
                                 }
                               }
                               ... on AttackPattern {
@@ -3406,14 +3358,10 @@ const stixRelationshipsListQuery = graphql`
             }
           }
           objectMarking {
-            edges {
-              node {
-                id
-                definition
-                x_opencti_order
-                x_opencti_color
-              }
-            }
+            id
+            definition
+            x_opencti_order
+            x_opencti_color
           }
           from {
             ... on BasicObject {
@@ -3557,14 +3505,10 @@ const stixRelationshipsListQuery = graphql`
                         }
                       }
                       objectMarking {
-                        edges {
-                          node {
-                            id
-                            definition
-                            x_opencti_order
-                            x_opencti_color
-                          }
-                        }
+                        id
+                        definition
+                        x_opencti_order
+                        x_opencti_color
                       }
                     }
                     ... on AttackPattern {
@@ -4106,14 +4050,10 @@ const stixRelationshipsListQuery = graphql`
                         }
                       }
                       objectMarking {
-                        edges {
-                          node {
-                            id
-                            definition
-                            x_opencti_order
-                            x_opencti_color
-                          }
-                        }
+                        id
+                        definition
+                        x_opencti_order
+                        x_opencti_color
                       }
                     }
                     ... on AttackPattern {
@@ -4673,8 +4613,8 @@ const StixRelationshipsList = ({
                               >
                                 <ItemMarkings
                                   variant="inList"
-                                  markingDefinitionsEdges={
-                                    stixRelationship.objectMarking.edges ?? []
+                                  markingDefinitions={
+                                    stixRelationship.objectMarking ?? []
                                   }
                                   limit={1}
                                 />

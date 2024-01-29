@@ -81,13 +81,9 @@ const stixRelationshipsTimelineStixRelationshipQuery = graphql`
             stop_time
             description
             killChainPhases {
-              edges {
-                node {
-                  id
-                  phase_name
-                  x_opencti_order
-                }
-              }
+              id
+              phase_name
+              x_opencti_order
             }
           }
           ... on StixSightingRelationship {
@@ -102,13 +98,9 @@ const stixRelationshipsTimelineStixRelationshipQuery = graphql`
               created_at
               updated_at
               objectLabel {
-                edges {
-                  node {
-                    id
-                    value
-                    color
-                  }
-                }
+                id
+                value
+                color
               }
             }
             ... on AttackPattern {
@@ -116,32 +108,20 @@ const stixRelationshipsTimelineStixRelationshipQuery = graphql`
               description
               x_mitre_id
               killChainPhases {
-                edges {
-                  node {
-                    id
-                    phase_name
-                    x_opencti_order
-                  }
-                }
+                id
+                phase_name
+                x_opencti_order
               }
               objectMarking {
-                edges {
-                  node {
-                    id
-                    definition
-                    x_opencti_order
-                    x_opencti_color
-                  }
-                }
+                id
+                definition
+                x_opencti_order
+                x_opencti_color
               }
               objectLabel {
-                edges {
-                  node {
-                    id
-                    value
-                    color
-                  }
-                }
+                id
+                value
+                color
               }
             }
             ... on Campaign {
@@ -257,23 +237,15 @@ const stixRelationshipsTimelineStixRelationshipQuery = graphql`
               parent_types
               observable_value
               objectMarking {
-                edges {
-                  node {
-                    id
-                    definition
-                    x_opencti_order
-                    x_opencti_color
-                  }
-                }
+                id
+                definition
+                x_opencti_order
+                x_opencti_color
               }
               objectLabel {
-                edges {
-                  node {
-                    id
-                    value
-                    color
-                  }
-                }
+                id
+                value
+                color
               }
             }
             ... on Indicator {
@@ -288,23 +260,15 @@ const stixRelationshipsTimelineStixRelationshipQuery = graphql`
               x_opencti_main_observable_type
               created
               objectMarking {
-                edges {
-                  node {
-                    id
-                    definition
-                    x_opencti_order
-                    x_opencti_color
-                  }
-                }
+                id
+                definition
+                x_opencti_order
+                x_opencti_color
               }
               objectLabel {
-                edges {
-                  node {
-                    id
-                    value
-                    color
-                  }
-                }
+                id
+                value
+                color
               }
             }
             ... on StixRelationship {
@@ -321,13 +285,9 @@ const stixRelationshipsTimelineStixRelationshipQuery = graphql`
                   created_at
                   updated_at
                   objectLabel {
-                    edges {
-                      node {
-                        id
-                        value
-                        color
-                      }
-                    }
+                    id
+                    value
+                    color
                   }
                 }
                 ... on AttackPattern {
@@ -335,32 +295,20 @@ const stixRelationshipsTimelineStixRelationshipQuery = graphql`
                   description
                   x_mitre_id
                   killChainPhases {
-                    edges {
-                      node {
-                        id
-                        phase_name
-                        x_opencti_order
-                      }
-                    }
+                    id
+                    phase_name
+                    x_opencti_order
                   }
                   objectMarking {
-                    edges {
-                      node {
-                        id
-                        definition
-                        x_opencti_order
-                        x_opencti_color
-                      }
-                    }
+                    id
+                    definition
+                    x_opencti_order
+                    x_opencti_color
                   }
                   objectLabel {
-                    edges {
-                      node {
-                        id
-                        value
-                        color
-                      }
-                    }
+                    id
+                    value
+                    color
                   }
                 }
                 ... on Campaign {
@@ -441,23 +389,15 @@ const stixRelationshipsTimelineStixRelationshipQuery = graphql`
                   parent_types
                   observable_value
                   objectMarking {
-                    edges {
-                      node {
-                        id
-                        definition
-                        x_opencti_order
-                        x_opencti_color
-                      }
-                    }
+                    id
+                    definition
+                    x_opencti_order
+                    x_opencti_color
                   }
                   objectLabel {
-                    edges {
-                      node {
-                        id
-                        value
-                        color
-                      }
-                    }
+                    id
+                    value
+                    color
                   }
                 }
                 ... on Indicator {
@@ -472,23 +412,15 @@ const stixRelationshipsTimelineStixRelationshipQuery = graphql`
                   x_opencti_main_observable_type
                   created
                   objectMarking {
-                    edges {
-                      node {
-                        id
-                        definition
-                        x_opencti_order
-                        x_opencti_color
-                      }
-                    }
+                    id
+                    definition
+                    x_opencti_order
+                    x_opencti_color
                   }
                   objectLabel {
-                    edges {
-                      node {
-                        id
-                        value
-                        color
-                      }
-                    }
+                    id
+                    value
+                    color
                   }
                 }
                 ... on StixRelationship {
@@ -507,13 +439,9 @@ const stixRelationshipsTimelineStixRelationshipQuery = graphql`
                   created_at
                   updated_at
                   objectLabel {
-                    edges {
-                      node {
-                        id
-                        value
-                        color
-                      }
-                    }
+                    id
+                    value
+                    color
                   }
                 }
                 ... on AttackPattern {
@@ -521,32 +449,20 @@ const stixRelationshipsTimelineStixRelationshipQuery = graphql`
                   description
                   x_mitre_id
                   killChainPhases {
-                    edges {
-                      node {
-                        id
-                        phase_name
-                        x_opencti_order
-                      }
-                    }
+                    id
+                    phase_name
+                    x_opencti_order
                   }
                   objectMarking {
-                    edges {
-                      node {
-                        id
-                        definition
-                        x_opencti_order
-                        x_opencti_color
-                      }
-                    }
+                    id
+                    definition
+                    x_opencti_order
+                    x_opencti_color
                   }
                   objectLabel {
-                    edges {
-                      node {
-                        id
-                        value
-                        color
-                      }
-                    }
+                    id
+                    value
+                    color
                   }
                 }
                 ... on Campaign {
@@ -627,23 +543,15 @@ const stixRelationshipsTimelineStixRelationshipQuery = graphql`
                   parent_types
                   observable_value
                   objectMarking {
-                    edges {
-                      node {
-                        id
-                        definition
-                        x_opencti_order
-                        x_opencti_color
-                      }
-                    }
+                    id
+                    definition
+                    x_opencti_order
+                    x_opencti_color
                   }
                   objectLabel {
-                    edges {
-                      node {
-                        id
-                        value
-                        color
-                      }
-                    }
+                    id
+                    value
+                    color
                   }
                 }
                 ... on Indicator {
@@ -658,23 +566,15 @@ const stixRelationshipsTimelineStixRelationshipQuery = graphql`
                   x_opencti_main_observable_type
                   created
                   objectMarking {
-                    edges {
-                      node {
-                        id
-                        definition
-                        x_opencti_order
-                        x_opencti_color
-                      }
-                    }
+                    id
+                    definition
+                    x_opencti_order
+                    x_opencti_color
                   }
                   objectLabel {
-                    edges {
-                      node {
-                        id
-                        value
-                        color
-                      }
-                    }
+                    id
+                    value
+                    color
                   }
                 }
                 ... on StixRelationship {
@@ -695,13 +595,9 @@ const stixRelationshipsTimelineStixRelationshipQuery = graphql`
               created_at
               updated_at
               objectLabel {
-                edges {
-                  node {
-                    id
-                    value
-                    color
-                  }
-                }
+                id
+                value
+                color
               }
             }
             ... on AttackPattern {
@@ -709,32 +605,20 @@ const stixRelationshipsTimelineStixRelationshipQuery = graphql`
               description
               x_mitre_id
               killChainPhases {
-                edges {
-                  node {
-                    id
-                    phase_name
-                    x_opencti_order
-                  }
-                }
+                id
+                phase_name
+                x_opencti_order
               }
               objectMarking {
-                edges {
-                  node {
-                    id
-                    definition
-                    x_opencti_order
-                    x_opencti_color
-                  }
-                }
+                id
+                definition
+                x_opencti_order
+                x_opencti_color
               }
               objectLabel {
-                edges {
-                  node {
-                    id
-                    value
-                    color
-                  }
-                }
+                id
+                value
+                color
               }
             }
             ... on Campaign {
@@ -815,23 +699,15 @@ const stixRelationshipsTimelineStixRelationshipQuery = graphql`
               parent_types
               observable_value
               objectMarking {
-                edges {
-                  node {
-                    id
-                    definition
-                    x_opencti_order
-                    x_opencti_color
-                  }
-                }
+                id
+                definition
+                x_opencti_order
+                x_opencti_color
               }
               objectLabel {
-                edges {
-                  node {
-                    id
-                    value
-                    color
-                  }
-                }
+                id
+                value
+                color
               }
             }
             ... on Indicator {
@@ -846,23 +722,15 @@ const stixRelationshipsTimelineStixRelationshipQuery = graphql`
               x_opencti_main_observable_type
               created
               objectMarking {
-                edges {
-                  node {
-                    id
-                    definition
-                    x_opencti_order
-                    x_opencti_color
-                  }
-                }
+                id
+                definition
+                x_opencti_order
+                x_opencti_color
               }
               objectLabel {
-                edges {
-                  node {
-                    id
-                    value
-                    color
-                  }
-                }
+                id
+                value
+                color
               }
             }
             ... on StixRelationship {
@@ -879,13 +747,9 @@ const stixRelationshipsTimelineStixRelationshipQuery = graphql`
                   created_at
                   updated_at
                   objectLabel {
-                    edges {
-                      node {
-                        id
-                        value
-                        color
-                      }
-                    }
+                    id
+                    value
+                    color
                   }
                 }
                 ... on AttackPattern {
@@ -893,32 +757,20 @@ const stixRelationshipsTimelineStixRelationshipQuery = graphql`
                   description
                   x_mitre_id
                   killChainPhases {
-                    edges {
-                      node {
-                        id
-                        phase_name
-                        x_opencti_order
-                      }
-                    }
+                    id
+                    phase_name
+                    x_opencti_order
                   }
                   objectMarking {
-                    edges {
-                      node {
-                        id
-                        definition
-                        x_opencti_order
-                        x_opencti_color
-                      }
-                    }
+                    id
+                    definition
+                    x_opencti_order
+                    x_opencti_color
                   }
                   objectLabel {
-                    edges {
-                      node {
-                        id
-                        value
-                        color
-                      }
-                    }
+                    id
+                    value
+                    color
                   }
                 }
                 ... on Campaign {
@@ -999,23 +851,15 @@ const stixRelationshipsTimelineStixRelationshipQuery = graphql`
                   parent_types
                   observable_value
                   objectMarking {
-                    edges {
-                      node {
-                        id
-                        definition
-                        x_opencti_order
-                        x_opencti_color
-                      }
-                    }
+                    id
+                    definition
+                    x_opencti_order
+                    x_opencti_color
                   }
                   objectLabel {
-                    edges {
-                      node {
-                        id
-                        value
-                        color
-                      }
-                    }
+                    id
+                    value
+                    color
                   }
                 }
                 ... on Indicator {
@@ -1030,23 +874,15 @@ const stixRelationshipsTimelineStixRelationshipQuery = graphql`
                   x_opencti_main_observable_type
                   created
                   objectMarking {
-                    edges {
-                      node {
-                        id
-                        definition
-                        x_opencti_order
-                        x_opencti_color
-                      }
-                    }
+                    id
+                    definition
+                    x_opencti_order
+                    x_opencti_color
                   }
                   objectLabel {
-                    edges {
-                      node {
-                        id
-                        value
-                        color
-                      }
-                    }
+                    id
+                    value
+                    color
                   }
                 }
                 ... on StixRelationship {
@@ -1065,13 +901,9 @@ const stixRelationshipsTimelineStixRelationshipQuery = graphql`
                   created_at
                   updated_at
                   objectLabel {
-                    edges {
-                      node {
-                        id
-                        value
-                        color
-                      }
-                    }
+                    id
+                    value
+                    color
                   }
                 }
                 ... on AttackPattern {
@@ -1079,32 +911,20 @@ const stixRelationshipsTimelineStixRelationshipQuery = graphql`
                   description
                   x_mitre_id
                   killChainPhases {
-                    edges {
-                      node {
-                        id
-                        phase_name
-                        x_opencti_order
-                      }
-                    }
+                    id
+                    phase_name
+                    x_opencti_order
                   }
                   objectMarking {
-                    edges {
-                      node {
-                        id
-                        definition
-                        x_opencti_order
-                        x_opencti_color
-                      }
-                    }
+                    id
+                    definition
+                    x_opencti_order
+                    x_opencti_color
                   }
                   objectLabel {
-                    edges {
-                      node {
-                        id
-                        value
-                        color
-                      }
-                    }
+                    id
+                    value
+                    color
                   }
                 }
                 ... on Campaign {
@@ -1185,23 +1005,15 @@ const stixRelationshipsTimelineStixRelationshipQuery = graphql`
                   parent_types
                   observable_value
                   objectMarking {
-                    edges {
-                      node {
-                        id
-                        definition
-                        x_opencti_order
-                        x_opencti_color
-                      }
-                    }
+                    id
+                    definition
+                    x_opencti_order
+                    x_opencti_color
                   }
                   objectLabel {
-                    edges {
-                      node {
-                        id
-                        value
-                        color
-                      }
-                    }
+                    id
+                    value
+                    color
                   }
                 }
                 ... on Indicator {
@@ -1216,24 +1028,16 @@ const stixRelationshipsTimelineStixRelationshipQuery = graphql`
                   x_opencti_main_observable_type
                   created
                   objectMarking {
-                    edges {
-                      node {
-                        id
-                        definition_type
-                        definition
-                        x_opencti_order
-                        x_opencti_color
-                      }
-                    }
+                    id
+                    definition_type
+                    definition
+                    x_opencti_order
+                    x_opencti_color
                   }
                   objectLabel {
-                    edges {
-                      node {
-                        id
-                        value
-                        color
-                      }
-                    }
+                    id
+                    value
+                    color
                   }
                 }
                 ... on StixRelationship {

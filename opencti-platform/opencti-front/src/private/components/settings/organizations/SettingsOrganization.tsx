@@ -93,9 +93,13 @@ const settingsOrganizationFragment = graphql`
       id
       name
       roles {
-        name
-        capabilities {
-          name
+        edges {
+          node {
+            name
+            capabilities {
+              name
+            }
+          }
         }
       }
     }
@@ -129,9 +133,7 @@ const SettingsOrganization = ({
   const capabilitiesPerGroup = new Map(
     organization.grantable_groups?.map((group) => [
       group.id,
-      group.roles
-        ?.map((role) => role?.capabilities?.map((capa) => capa?.name))
-        .flat(),
+      group.roles?.edges?.map(({ node }) => node?.capabilities?.map((capa) => capa?.name)).flat(),
     ]),
   );
   const isOrganizationAdmin = (me.administrated_organizations ?? [])

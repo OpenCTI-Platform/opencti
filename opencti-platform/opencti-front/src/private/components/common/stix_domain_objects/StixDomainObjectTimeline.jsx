@@ -223,24 +223,16 @@ const StixDomainObjectTimeline = createRefetchContainer(
                 start_time
                 stop_time
                 killChainPhases {
-                  edges {
-                    node {
-                      id
-                      phase_name
-                      x_opencti_order
-                    }
-                  }
+                  id
+                  phase_name
+                  x_opencti_order
                 }
                 objectMarking {
-                  edges {
-                    node {
-                      id
-                      definition_type
-                      definition
-                      x_opencti_order
-                      x_opencti_color
-                    }
-                  }
+                  id
+                  definition_type
+                  definition
+                  x_opencti_order
+                  x_opencti_color
                 }
               }
               ... on StixSightingRelationship {
@@ -248,15 +240,11 @@ const StixDomainObjectTimeline = createRefetchContainer(
                 first_seen
                 last_seen
                 objectMarking {
-                  edges {
-                    node {
-                      id
-                      definition_type
-                      definition
-                      x_opencti_order
-                      x_opencti_color
-                    }
-                  }
+                  id
+                  definition_type
+                  definition
+                  x_opencti_order
+                  x_opencti_color
                 }
               }
               from {
@@ -269,13 +257,9 @@ const StixDomainObjectTimeline = createRefetchContainer(
                   description
                   x_mitre_id
                   killChainPhases {
-                    edges {
-                      node {
-                        id
-                        phase_name
-                        x_opencti_order
-                      }
-                    }
+                    id
+                    phase_name
+                    x_opencti_order
                   }
                 }
                 ... on Campaign {
@@ -345,13 +329,9 @@ const StixDomainObjectTimeline = createRefetchContainer(
                   name
                   description
                   killChainPhases {
-                    edges {
-                      node {
-                        id
-                        phase_name
-                        x_opencti_order
-                      }
-                    }
+                    id
+                    phase_name
+                    x_opencti_order
                   }
                 }
                 ... on MalwareAnalysis {
@@ -365,13 +345,9 @@ const StixDomainObjectTimeline = createRefetchContainer(
                   name
                   description
                   killChainPhases {
-                    edges {
-                      node {
-                        id
-                        phase_name
-                        x_opencti_order
-                      }
-                    }
+                    id
+                    phase_name
+                    x_opencti_order
                   }
                 }
                 ... on Vulnerability {
@@ -448,13 +424,9 @@ const StixDomainObjectTimeline = createRefetchContainer(
                   description
                   x_mitre_id
                   killChainPhases {
-                    edges {
-                      node {
-                        id
-                        phase_name
-                        x_opencti_order
-                      }
-                    }
+                    id
+                    phase_name
+                    x_opencti_order
                   }
                 }
                 ... on Campaign {
@@ -524,13 +496,9 @@ const StixDomainObjectTimeline = createRefetchContainer(
                   name
                   description
                   killChainPhases {
-                    edges {
-                      node {
-                        id
-                        phase_name
-                        x_opencti_order
-                      }
-                    }
+                    id
+                    phase_name
+                    x_opencti_order
                   }
                 }
                 ... on MalwareAnalysis {
@@ -544,13 +512,9 @@ const StixDomainObjectTimeline = createRefetchContainer(
                   name
                   description
                   killChainPhases {
-                    edges {
-                      node {
-                        id
-                        phase_name
-                        x_opencti_order
-                      }
-                    }
+                    id
+                    phase_name
+                    x_opencti_order
                   }
                 }
                 ... on Vulnerability {

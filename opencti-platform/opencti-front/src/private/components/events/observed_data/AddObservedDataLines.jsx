@@ -150,7 +150,7 @@ class AddObservedDataLinesContainer extends Component {
               <div style={{ marginRight: 50 }}>
                 <ItemMarkings
                   variant="inList"
-                  markingDefinitionsEdges={observedData.objectMarking.edges}
+                  markingDefinitions={observedData.objectMarking ?? []}
                   limit={1}
                 />
               </div>

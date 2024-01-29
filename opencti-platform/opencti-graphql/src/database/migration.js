@@ -5,10 +5,11 @@ import { logApp, PLATFORM_VERSION } from '../config/conf';
 import { DatabaseError } from '../config/errors';
 import { RELATION_MIGRATES } from '../schema/internalRelationship';
 import { ENTITY_TYPE_MIGRATION_REFERENCE, ENTITY_TYPE_MIGRATION_STATUS } from '../schema/internalObject';
-import { createEntity, createRelation, listThroughGetTo, loadEntity, patchAttribute } from './middleware';
+import { createEntity, createRelation, loadEntity, patchAttribute } from './middleware';
 import { executionContext, SYSTEM_USER } from '../utils/access';
 // eslint-disable-next-line import/extensions,import/no-unresolved
 import migrations, { filenames as migrationsFilenames } from '../migrations/*.js';
+import { listAllToEntitiesThroughRelations } from './middleware-loader';
 
 const normalizeMigrationName = (rawName) => {
   if (rawName.startsWith('./')) {
@@ -42,7 +43,7 @@ const migrationStorage = {
     const context = executionContext('migration_manager');
     const migration = await loadEntity(context, SYSTEM_USER, [ENTITY_TYPE_MIGRATION_STATUS]);
     const migrationId = migration.internal_id;
-    const dbMigrations = await listThroughGetTo(
+    const dbMigrations = await listAllToEntitiesThroughRelations(
       context,
       SYSTEM_USER,
       migrationId,

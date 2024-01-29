@@ -93,9 +93,7 @@ const PositionComponent: FunctionComponent<PositionComponentProps> = ({
       </Grid>
       <StixCoreObjectOrStixCoreRelationshipNotes
         stixCoreObjectOrStixCoreRelationshipId={position.id}
-        defaultMarkings={(position.objectMarking?.edges ?? []).map(
-          (edge) => edge.node,
-        )}
+        defaultMarkings={position.objectMarking ?? []}
       />
       <Security needs={[KNOWLEDGE_KNUPDATE]}>
         <PositionEdition positionId={position.id} />
@@ -131,24 +129,16 @@ const Position = createFragmentContainer(PositionComponent, {
         name
       }
       objectMarking {
-        edges {
-          node {
-            id
-            definition_type
-            definition
-            x_opencti_order
-            x_opencti_color
-          }
-        }
+        id
+        definition_type
+        definition
+        x_opencti_order
+        x_opencti_color
       }
       objectLabel {
-        edges {
-          node {
-            id
-            value
-            color
-          }
-        }
+        id
+        value
+        color
       }
       name
       description

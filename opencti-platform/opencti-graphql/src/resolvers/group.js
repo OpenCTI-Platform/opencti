@@ -5,28 +5,25 @@ import { batchLoader } from '../database/middleware';
 import { fetchEditContext, pubSubAsyncIterator } from '../database/redis';
 import { addGroup } from '../domain/grant';
 import {
-  batchMarkingDefinitions,
-  batchMembers,
-  batchRoles,
   defaultMarkingDefinitions,
   findAll,
   findById,
   groupAddRelation,
+  groupAllowedMarkings,
   groupCleanContext,
   groupDelete,
   groupDeleteRelation,
   groupEditContext,
   groupEditDefaultMarking,
-  groupEditField
+  groupEditField,
+  membersPaginated,
+  rolesPaginated
 } from '../domain/group';
 import withCancel from '../graphql/subscriptionWrapper';
 import { ENTITY_TYPE_GROUP } from '../schema/internalObject';
 import { ENTITY_TYPE_WORKSPACE } from '../modules/workspace/workspace-types';
 
 const loadByIdLoader = batchLoader(elBatchIds);
-const markingsLoader = batchLoader(batchMarkingDefinitions);
-const membersLoader = batchLoader(batchMembers);
-const rolesLoader = batchLoader(batchRoles);
 
 const groupResolvers = {
   Query: {
@@ -34,12 +31,12 @@ const groupResolvers = {
     groups: (_, args, context) => findAll(context, context.user, args),
   },
   Group: {
-    allowed_marking: (stixCoreObject, _, context) => markingsLoader.load(stixCoreObject.id, context, context.user),
     default_marking: (group, _, context) => defaultMarkingDefinitions(context, group),
-    roles: (stixCoreObject, _, context) => rolesLoader.load(stixCoreObject.id, context, context.user),
-    members: (group, args, context) => membersLoader.load(group.id, context, context.user, args),
-    editContext: (group) => fetchEditContext(group.id),
+    allowed_marking: (stixCoreObject, _, context) => groupAllowedMarkings(context, context.user, stixCoreObject.id),
+    roles: (stixCoreObject, args, context) => rolesPaginated(context, context.user, stixCoreObject.id, args),
+    members: (group, args, context) => membersPaginated(context, context.user, group.id, args),
     default_dashboard: (current, _, context) => loadByIdLoader.load({ id: current.default_dashboard, type: ENTITY_TYPE_WORKSPACE }, context, context.user),
+    editContext: (group) => fetchEditContext(group.id),
   },
   Mutation: {
     groupEdit: (_, { id }, context) => ({

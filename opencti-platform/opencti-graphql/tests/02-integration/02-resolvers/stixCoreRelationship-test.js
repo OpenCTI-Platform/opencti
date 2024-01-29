@@ -146,11 +146,7 @@ describe('StixCoreRelationship resolver standard behavior', () => {
                     from {
                         ... on StixCoreRelationship {
                             objectMarking {
-                                edges {
-                                    node {
-                                        id
-                                    }
-                                }
+                                id
                             }
                         }
                     }
@@ -168,7 +164,7 @@ describe('StixCoreRelationship resolver standard behavior', () => {
         },
       },
     });
-    expect(queryResult.data.stixCoreRelationshipEdit.relationAdd.from.objectMarking.edges.length).toEqual(1);
+    expect(queryResult.data.stixCoreRelationshipEdit.relationAdd.from.objectMarking.length).toEqual(1);
   });
   it('should delete relation in stixCoreRelationship', async () => {
     const RELATION_DELETE_QUERY = gql`
@@ -177,11 +173,7 @@ describe('StixCoreRelationship resolver standard behavior', () => {
                 relationDelete(toId: $toId, relationship_type: $relationship_type) {
                     id
                     objectMarking {
-                        edges {
-                            node {
-                                id
-                            }
-                        }
+                        id
                     }
                 }
             }
@@ -195,7 +187,7 @@ describe('StixCoreRelationship resolver standard behavior', () => {
         relationship_type: 'object-marking',
       },
     });
-    expect(queryResult.data.stixCoreRelationshipEdit.relationDelete.objectMarking.edges.length).toEqual(0);
+    expect(queryResult.data.stixCoreRelationshipEdit.relationDelete.objectMarking.length).toEqual(0);
   });
   it('should add multiple relation in stixCoreRelationship', async () => {
     const RELATIONS_ADD_QUERY = gql`
@@ -203,11 +195,7 @@ describe('StixCoreRelationship resolver standard behavior', () => {
         stixCoreRelationshipEdit(id: $id) {
           relationsAdd(input: $input) {
             objectMarking {
-              edges {
-                node {
-                  id
-                }
-              }
+              id
             }
           }
         }
@@ -223,7 +211,7 @@ describe('StixCoreRelationship resolver standard behavior', () => {
         },
       },
     });
-    expect(queryResult.data.stixCoreRelationshipEdit.relationsAdd.objectMarking.edges.length).toEqual(1);
+    expect(queryResult.data.stixCoreRelationshipEdit.relationsAdd.objectMarking.length).toEqual(1);
   });
   it('should stixCoreRelationship deleted', async () => {
     const DELETE_QUERY = gql`

@@ -1,4 +1,4 @@
-import { addCountry, batchRegion, findAll, findById } from '../domain/country';
+import { addCountry, findAll, findById, locatedAtRegion } from '../domain/country';
 import {
   stixDomainObjectAddRelation,
   stixDomainObjectCleanContext,
@@ -7,9 +7,6 @@ import {
   stixDomainObjectEditContext,
   stixDomainObjectEditField,
 } from '../domain/stixDomainObject';
-import { batchLoader } from '../database/middleware';
-
-const batchRegionLoader = batchLoader(batchRegion);
 
 const countryResolvers = {
   Query: {
@@ -17,7 +14,7 @@ const countryResolvers = {
     countries: (_, args, context) => findAll(context, context.user, args),
   },
   Country: {
-    region: (country, _, context) => batchRegionLoader.load(country.id, context, context.user),
+    region: (country, _, context) => locatedAtRegion(context, context.user, country.id),
   },
   Mutation: {
     countryEdit: (_, { id }, context) => ({

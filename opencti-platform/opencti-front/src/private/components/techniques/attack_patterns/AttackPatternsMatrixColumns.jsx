@@ -337,14 +337,14 @@ class AttackPatternsMatrixColumnsComponent extends Component {
           )),
           sortByName,
         )(n.subAttackPatterns.edges),
-        killChainPhasesIds: R.map((o) => o.node.id, n.killChainPhases.edges),
+        killChainPhasesIds: R.map((o) => o.id, n.killChainPhases),
       })),
       R.filter(filterSubattackPattern),
       R.filter(filterByKeyword),
       R.filter((o) => (modeOnlyActive ? o.level > 0 : o.level >= 0)),
     )(data.attackPatterns.edges);
     const killChainPhases = R.pipe(
-      R.map((n) => R.map((o) => o.node, n.node.killChainPhases.edges)),
+      R.map((n) => n.node.killChainPhases),
       R.flatten,
       R.uniq,
       R.filter((n) => n.kill_chain_name === killChain),
@@ -353,7 +353,7 @@ class AttackPatternsMatrixColumnsComponent extends Component {
     const killChains = R.uniq([
       'mitre-attack',
       ...R.pipe(
-        R.map((n) => R.map((o) => o.node, n.node.killChainPhases.edges)),
+        R.map((n) => n.node.killChainPhases),
         R.flatten,
         R.map((n) => n.kill_chain_name),
       )(data.attackPatterns.edges),
@@ -604,14 +604,10 @@ const AttackPatternsMatrixColumns = createRefetchContainer(
                 }
               }
               killChainPhases {
-                edges {
-                  node {
-                    id
-                    kill_chain_name
-                    phase_name
-                    x_opencti_order
-                  }
-                }
+                id
+                kill_chain_name
+                phase_name
+                x_opencti_order
               }
             }
           }

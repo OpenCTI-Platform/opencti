@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import * as PropTypes from 'prop-types';
 import * as R from 'ramda';
-import { append, ascend, filter, map, pathOr, pipe, prop, sortWith, union } from 'ramda';
+import { append, filter, map, pathOr, pipe, union } from 'ramda';
 import { Field, Form, Formik } from 'formik';
 import Typography from '@mui/material/Typography';
 import Chip from '@mui/material/Chip';
@@ -98,7 +98,7 @@ const StixCoreObjectOrCoreRelationshipLabelsView = (props) => {
   };
 
   const onSubmit = (values, { setSubmitting, resetForm }) => {
-    const currentLabelsIds = map((label) => label.node.id, labels.edges);
+    const currentLabelsIds = (labels ?? []).map((label) => label.id);
     const labelsIds = pipe(
       map((value) => value.value),
       filter((value) => !currentLabelsIds.includes(value)),
@@ -146,10 +146,6 @@ const StixCoreObjectOrCoreRelationshipLabelsView = (props) => {
 
   const onReset = () => setOpenAdd(false);
 
-  const labelsNodes = pipe(
-    map((n) => n.node),
-    sortWith([ascend(prop('value'))]),
-  )(labels.edges);
   return (
     <div style={{ marginTop: marginTop || 0 }}>
       <Typography variant="h3" gutterBottom={true} style={{ float: 'left' }}>
@@ -213,7 +209,7 @@ const StixCoreObjectOrCoreRelationshipLabelsView = (props) => {
               </Tooltip>
             </Security>
           ),
-          labelsNodes,
+          (labels ?? []),
         )}
         {enableReferences && (
           <Formik initialValues={{}} onSubmit={onSubmitDeleteLabel}>

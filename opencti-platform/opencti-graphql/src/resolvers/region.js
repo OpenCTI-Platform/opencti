@@ -1,4 +1,4 @@
-import { addRegion, batchCountries, batchIsSubRegion, batchParentRegions, batchSubRegions, findAll, findById } from '../domain/region';
+import { addRegion, childRegionsPaginated, countriesPaginated, findAll, findById, parentRegionsPaginated } from '../domain/region';
 import {
   stixDomainObjectAddRelation,
   stixDomainObjectCleanContext,
@@ -7,12 +7,6 @@ import {
   stixDomainObjectEditContext,
   stixDomainObjectEditField,
 } from '../domain/stixDomainObject';
-import { batchLoader } from '../database/middleware';
-
-const countriesLoader = batchLoader(batchCountries);
-const parentRegionsLoader = batchLoader(batchParentRegions);
-const subRegionsLoader = batchLoader(batchSubRegions);
-const isSubRegionLoader = batchLoader(batchIsSubRegion);
 
 const regionResolvers = {
   Query: {
@@ -20,10 +14,9 @@ const regionResolvers = {
     regions: (_, args, context) => findAll(context, context.user, args),
   },
   Region: {
-    parentRegions: (region, _, context) => parentRegionsLoader.load(region.id, context, context.user),
-    subRegions: (region, _, context) => subRegionsLoader.load(region.id, context, context.user),
-    isSubRegion: (region, _, context) => isSubRegionLoader.load(region.id, context, context.user),
-    countries: (region, _, context) => countriesLoader.load(region.id, context, context.user),
+    parentRegions: (region, args, context) => parentRegionsPaginated(context, context.user, region.id, args),
+    subRegions: (region, args, context) => childRegionsPaginated(context, context.user, region.id, args),
+    countries: (region, args, context) => countriesPaginated(context, context.user, region.id, args),
   },
   Mutation: {
     regionEdit: (_, { id }, context) => ({

@@ -1,35 +1,16 @@
 import * as R from 'ramda';
 import { delEditContext, notify, setEditContext } from '../database/redis';
-import {
-  batchListThroughGetFrom,
-  batchListThroughGetTo,
-  createRelation,
-  deleteElementById,
-  deleteRelationsByFromAndTo,
-  distributionRelations,
-  timeSeriesRelations,
-  updateAttribute,
-} from '../database/middleware';
+import { createRelation, deleteElementById, deleteRelationsByFromAndTo, distributionRelations, timeSeriesRelations, updateAttribute } from '../database/middleware';
 import { BUS_TOPICS } from '../config/conf';
 import { FunctionalError } from '../config/errors';
 import { elCount } from '../database/engine';
 import { fillTimeSeries, isNotEmptyField, READ_INDEX_INFERRED_RELATIONSHIPS, READ_INDEX_STIX_CORE_RELATIONSHIPS } from '../database/utils';
 import { isStixCoreRelationship, stixCoreRelationshipOptions } from '../schema/stixCoreRelationship';
-import { ABSTRACT_STIX_CORE_RELATIONSHIP, buildRefRelationKey, ENTITY_TYPE_CONTAINER, ENTITY_TYPE_IDENTITY } from '../schema/general';
-import {
-  RELATION_CREATED_BY,
-  RELATION_EXTERNAL_REFERENCE,
-  RELATION_KILL_CHAIN_PHASE,
-  RELATION_OBJECT,
-  RELATION_OBJECT_LABEL,
-  RELATION_OBJECT_MARKING,
-} from '../schema/stixRefRelationship';
-import { ENTITY_TYPE_CONTAINER_NOTE, ENTITY_TYPE_CONTAINER_OPINION, ENTITY_TYPE_CONTAINER_REPORT } from '../schema/stixDomainObject';
-import { ENTITY_TYPE_EXTERNAL_REFERENCE, ENTITY_TYPE_KILL_CHAIN_PHASE, ENTITY_TYPE_LABEL, ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
+import { ABSTRACT_STIX_CORE_RELATIONSHIP, buildRefRelationKey } from '../schema/general';
+import { RELATION_CREATED_BY, } from '../schema/stixRefRelationship';
 import { buildRelationsFilter, listRelations, storeLoadById } from '../database/middleware-loader';
 import { askListExport, exportTransformFilters } from './stix';
 import { workToExportFile } from './work';
-import { ENTITY_TYPE_CONTAINER_CASE } from '../modules/case/case-types';
 import { stixObjectOrRelationshipAddRefRelation, stixObjectOrRelationshipAddRefRelations, stixObjectOrRelationshipDeleteRefRelation } from './stixObjectOrStixRelationship';
 import { addFilter } from '../utils/filtering/filtering-utils';
 import { buildArgsFromDynamicFilters } from './stixRelationship';
@@ -82,59 +63,6 @@ export const stixCoreRelationshipsMultiTimeSeries = async (context, user, args) 
   }));
 };
 // endregion
-
-export const batchCreatedBy = async (context, user, stixCoreRelationshipIds) => {
-  const batchCreators = await batchListThroughGetTo(
-    context,
-    user,
-    stixCoreRelationshipIds,
-    RELATION_CREATED_BY,
-    ENTITY_TYPE_IDENTITY
-  );
-  return batchCreators.map((b) => (b.edges.length > 0 ? R.head(b.edges).node : null));
-};
-
-export const batchContainers = async (context, user, stixCoreRelationshipIds) => {
-  return batchListThroughGetFrom(context, user, stixCoreRelationshipIds, RELATION_OBJECT, ENTITY_TYPE_CONTAINER);
-};
-
-export const batchReports = async (context, user, stixCoreRelationshipIds) => {
-  return batchListThroughGetFrom(context, user, stixCoreRelationshipIds, RELATION_OBJECT, ENTITY_TYPE_CONTAINER_REPORT);
-};
-
-export const batchCases = async (context, user, stixCoreRelationshipIds) => {
-  return batchListThroughGetFrom(context, user, stixCoreRelationshipIds, RELATION_OBJECT, ENTITY_TYPE_CONTAINER_CASE);
-};
-
-export const batchNotes = (context, user, stixCoreRelationshipIds) => {
-  return batchListThroughGetFrom(context, user, stixCoreRelationshipIds, RELATION_OBJECT, ENTITY_TYPE_CONTAINER_NOTE);
-};
-
-export const batchOpinions = (context, user, stixCoreRelationshipIds) => {
-  return batchListThroughGetFrom(context, user, stixCoreRelationshipIds, RELATION_OBJECT, ENTITY_TYPE_CONTAINER_OPINION);
-};
-
-export const batchLabels = (context, user, stixCoreRelationshipIds) => {
-  return batchListThroughGetTo(context, user, stixCoreRelationshipIds, RELATION_OBJECT_LABEL, ENTITY_TYPE_LABEL);
-};
-
-export const batchMarkingDefinitions = (context, user, stixCoreRelationshipIds) => {
-  return batchListThroughGetTo(context, user, stixCoreRelationshipIds, RELATION_OBJECT_MARKING, ENTITY_TYPE_MARKING_DEFINITION);
-};
-
-export const batchExternalReferences = (context, user, stixCoreRelationshipIds) => {
-  return batchListThroughGetTo(
-    context,
-    user,
-    stixCoreRelationshipIds,
-    RELATION_EXTERNAL_REFERENCE,
-    ENTITY_TYPE_EXTERNAL_REFERENCE
-  );
-};
-
-export const batchKillChainPhases = (context, user, stixCoreRelationshipIds) => {
-  return batchListThroughGetTo(context, user, stixCoreRelationshipIds, RELATION_KILL_CHAIN_PHASE, ENTITY_TYPE_KILL_CHAIN_PHASE);
-};
 
 export const stixRelations = (context, user, stixCoreObjectId, args) => {
   const finalArgs = R.assoc('fromId', stixCoreObjectId, args);

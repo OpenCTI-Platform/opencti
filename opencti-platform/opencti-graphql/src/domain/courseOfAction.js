@@ -1,5 +1,5 @@
-import { createEntity, batchListThroughGetTo } from '../database/middleware';
-import { listEntities, storeLoadById } from '../database/middleware-loader';
+import { createEntity } from '../database/middleware';
+import { listEntities, listEntitiesThroughRelationsPaginated, storeLoadById } from '../database/middleware-loader';
 import { BUS_TOPICS } from '../config/conf';
 import { notify } from '../database/redis';
 import { ENTITY_TYPE_ATTACK_PATTERN, ENTITY_TYPE_COURSE_OF_ACTION } from '../schema/stixDomainObject';
@@ -19,6 +19,6 @@ export const addCourseOfAction = async (context, user, courseOfAction) => {
   return notify(BUS_TOPICS[ABSTRACT_STIX_DOMAIN_OBJECT].ADDED_TOPIC, created, user);
 };
 
-export const batchAttackPatterns = async (context, user, courseOfActionIds) => {
-  return batchListThroughGetTo(context, user, courseOfActionIds, RELATION_MITIGATES, ENTITY_TYPE_ATTACK_PATTERN);
+export const attackPatternsPaginated = async (context, user, attackPatternId, args) => {
+  return listEntitiesThroughRelationsPaginated(context, user, attackPatternId, RELATION_MITIGATES, ENTITY_TYPE_ATTACK_PATTERN, false, args);
 };

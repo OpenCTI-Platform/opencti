@@ -1,4 +1,4 @@
-import { addIncident, batchParticipants, findAll, findById, incidentsTimeSeries, incidentsTimeSeriesByEntity } from '../domain/incident';
+import { addIncident, findAll, findById, incidentsTimeSeries, incidentsTimeSeriesByEntity } from '../domain/incident';
 import {
   stixDomainObjectAddRelation,
   stixDomainObjectCleanContext,
@@ -8,10 +8,8 @@ import {
   stixDomainObjectEditField,
 } from '../domain/stixDomainObject';
 import { RELATION_OBJECT_ASSIGNEE } from '../schema/stixRefRelationship';
-import { buildRefRelationKey } from '../schema/general';
-import { batchLoader } from '../database/middleware';
-
-const participantLoader = batchLoader(batchParticipants);
+import { buildRefRelationKey, INPUT_PARTICIPANT } from '../schema/general';
+import { loadThroughDenormalized } from './stix';
 
 const incidentResolvers = {
   Query: {
@@ -25,7 +23,7 @@ const incidentResolvers = {
     },
   },
   Incident: {
-    objectParticipant: (current, _, context) => participantLoader.load(current.id, context, context.user),
+    objectParticipant: (container, _, context) => loadThroughDenormalized(context, context.user, container, INPUT_PARTICIPANT, { sortBy: 'user_email' }),
   },
   IncidentsOrdering: {
     objectAssignee: buildRefRelationKey(RELATION_OBJECT_ASSIGNEE),

@@ -212,9 +212,7 @@ const ReportDetailsComponent = (props) => {
                   <div className={classes.itemMarking}>
                     <ItemMarkings
                       variant="inList"
-                      markingDefinitionsEdges={
-                          relatedContainer.objectMarking.edges
-                        }
+                      markingDefinitions={relatedContainer.objectMarking}
                       limit={1}
                     />
                   </div>
@@ -279,15 +277,11 @@ const ReportDetails = createFragmentContainer(ReportDetailsComponent, {
                 }
               }
               objectMarking {
-                edges {
-                  node {
-                    id
-                    definition_type
-                    definition
-                    x_opencti_order
-                    x_opencti_color
-                  }
-                }
+                id
+                definition_type
+                definition
+                x_opencti_order
+                x_opencti_color
               }
             }
           }

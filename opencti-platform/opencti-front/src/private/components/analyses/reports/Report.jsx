@@ -47,9 +47,7 @@ class ReportComponent extends Component {
         </Grid>
         <StixCoreObjectOrStixCoreRelationshipNotes
           stixCoreObjectOrStixCoreRelationshipId={report.id}
-          defaultMarkings={(report.objectMarking?.edges ?? []).map(
-            (edge) => edge.node,
-          )}
+          defaultMarkings={report.objectMarking ?? []}
         />
         <Security needs={[KNOWLEDGE_KNUPDATE]}>
           <ReportEdition reportId={report.id} />
@@ -92,42 +90,26 @@ const Report = createFragmentContainer(ReportComponent, {
         name
       }
       objectMarking {
-        edges {
-          node {
-            id
-            definition_type
-            definition
-            x_opencti_order
-            x_opencti_color
-          }
-        }
+        id
+        definition_type
+        definition
+        x_opencti_order
+        x_opencti_color
       }
       objectLabel {
-        edges {
-          node {
-            id
-            value
-            color
-          }
-        }
+        id
+        value
+        color
       }
       objectAssignee {
-        edges {
-          node {
-            id
-            name
-            entity_type
-          }
-        }
+        id
+        name
+        entity_type
       }
       objectParticipant {
-        edges {
-          node {
-            id
-            name
-            entity_type
-          }
-        }
+        id
+        name
+        entity_type
       }
       status {
         id

@@ -59,24 +59,16 @@ export const countryFragment = graphql`
       name
     }
     objectMarking {
-      edges {
-        node {
-          id
-          definition_type
-          definition
-          x_opencti_order
-          x_opencti_color
-        }
-      }
+      id
+      definition_type
+      definition
+      x_opencti_order
+      x_opencti_color
     }
     objectLabel {
-      edges {
-        node {
-          id
-          value
-          color
-        }
-      }
+      id
+      value
+      color
     }
     name
     latitude
@@ -148,9 +140,7 @@ const CountryComponent = ({
       </Grid>
       <StixCoreObjectOrStixCoreRelationshipNotes
         stixCoreObjectOrStixCoreRelationshipId={country.id}
-        defaultMarkings={(country.objectMarking?.edges ?? []).map(
-          (edge) => edge.node,
-        )}
+        defaultMarkings={country.objectMarking ?? []}
       />
       <Security needs={[KNOWLEDGE_KNUPDATE]}>
         <CountryEdition countryId={country.id} />

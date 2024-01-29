@@ -153,7 +153,7 @@ const MAX_AGGREGATION_SIZE = 100;
 
 export const ROLE_FROM = 'from';
 export const ROLE_TO = 'to';
-const UNIMPACTED_ENTITIES_ROLE = [
+export const UNIMPACTED_ENTITIES_ROLE = [
   `${RELATION_CREATED_BY}_${ROLE_TO}`,
   `${RELATION_OBJECT_MARKING}_${ROLE_TO}`,
   `${RELATION_OBJECT_ASSIGNEE}_${ROLE_TO}`,
@@ -1109,28 +1109,22 @@ const elDataConverter = (esHit, withoutRels = false) => {
 };
 // endregion
 
-export const elConvertHits = async (data, opts = {}) => {
-  const { toMap = false, mapWithAllIds = false, withoutRels = false } = opts;
+export const elConvertHitsToMap = async (elements, opts) => {
+  const { mapWithAllIds = false } = opts;
   const convertedHitsMap = {};
-  const convertedHits = [];
   let startProcessingTime = new Date().getTime();
-  for (let n = 0; n < data.length; n += 1) {
-    const hit = data[n];
-    const element = elDataConverter(hit, withoutRels);
-    if (toMap) {
-      convertedHitsMap[element.internal_id] = element;
-      if (mapWithAllIds) {
-        // Add the standard id key
-        if (element.standard_id) {
-          convertedHitsMap[element.standard_id] = element;
-        }
-        // Add the stix ids keys
-        (element.x_opencti_stix_ids ?? []).forEach((id) => {
-          convertedHitsMap[id] = element;
-        });
+  for (let n = 0; n < elements.length; n += 1) {
+    const element = elements[n];
+    convertedHitsMap[element.internal_id] = element;
+    if (mapWithAllIds) {
+      // Add the standard id key
+      if (element.standard_id) {
+        convertedHitsMap[element.standard_id] = element;
       }
-    } else {
-      convertedHits.push(element);
+      // Add the stix ids keys
+      (element.x_opencti_stix_ids ?? []).forEach((id) => {
+        convertedHitsMap[id] = element;
+      });
     }
     // Prevent event loop locking more than MAX_EVENT_LOOP_PROCESSING_TIME
     if (new Date().getTime() - startProcessingTime > MAX_EVENT_LOOP_PROCESSING_TIME) {
@@ -1140,8 +1134,24 @@ export const elConvertHits = async (data, opts = {}) => {
       });
     }
   }
-  if (toMap) {
-    return convertedHitsMap;
+  return convertedHitsMap;
+};
+
+export const elConvertHits = async (data, opts = {}) => {
+  const { withoutRels = false } = opts;
+  const convertedHits = [];
+  let startProcessingTime = new Date().getTime();
+  for (let n = 0; n < data.length; n += 1) {
+    const hit = data[n];
+    const element = elDataConverter(hit, withoutRels);
+    convertedHits.push(element);
+    // Prevent event loop locking more than MAX_EVENT_LOOP_PROCESSING_TIME
+    if (new Date().getTime() - startProcessingTime > MAX_EVENT_LOOP_PROCESSING_TIME) {
+      startProcessingTime = new Date().getTime();
+      await new Promise((resolve) => {
+        setImmediate(resolve);
+      });
+    }
   }
   return convertedHits;
 };
@@ -1196,6 +1206,8 @@ const computeQueryIndices = (indices, types, includeInferences) => {
   return indices;
 };
 
+// elFindByIds is not defined to use ordering or sorting (ordering is forced by creation date)
+// It's a way to load a bunch of ids and use in list or map
 export const elFindByIds = async (context, user, ids, opts = {}) => {
   const { indices, baseData = false, baseFields = BASE_FIELDS, includeInferences = false } = opts;
   const { withoutRels = false, toMap = false, mapWithAllIds = false, type = null, forceAliases = false } = opts;
@@ -1206,7 +1218,7 @@ export const elFindByIds = async (context, user, ids, opts = {}) => {
     return toMap ? {} : [];
   }
   const computedIndices = computeQueryIndices(indices, types, includeInferences);
-  let hits = {};
+  const hits = [];
   const groupIds = R.splitEvery(MAX_TERMS_SPLIT, idsArray);
   for (let index = 0; index < groupIds.length; index += 1) {
     const mustTerms = [];
@@ -1248,6 +1260,7 @@ export const elFindByIds = async (context, user, ids, opts = {}) => {
     const markingRestrictions = await buildDataRestrictions(context, user, restrictionOptions);
     mustTerms.push(...markingRestrictions.must);
     const body = {
+      sort: [{ created_at: 'asc' }],
       query: {
         bool: {
           must: mustTerms,
@@ -1255,17 +1268,6 @@ export const elFindByIds = async (context, user, ids, opts = {}) => {
         },
       },
     };
-    // TODO Remove orderBy criteria
-    // This method is here to resolve direct ids
-    // Not designed to do some ordering
-    if (opts.orderBy) {
-      const orderCriteria = opts.orderBy;
-      const isDateOrNumber = isDateNumericOrBooleanAttribute(orderCriteria);
-      const orderKey = isDateOrNumber || orderCriteria.startsWith('_') ? orderCriteria : `${orderCriteria}.keyword`;
-      body.sort = [{ [orderKey]: (opts.orderMode ?? 'asc') }];
-    } else {
-      body.sort = [{ created_at: 'asc' }];
-    }
     let searchAfter;
     let hasNextPage = true;
     while (hasNextPage) {
@@ -1285,8 +1287,8 @@ export const elFindByIds = async (context, user, ids, opts = {}) => {
       });
       const elements = data.hits.hits;
       if (elements.length > 0) {
-        const convertedHits = await elConvertHits(elements, { withoutRels, mapWithAllIds, toMap: true });
-        hits = { ...hits, ...convertedHits };
+        const convertedHits = await elConvertHits(elements, { withoutRels });
+        hits.push(...convertedHits);
         if (elements.length < ES_MAX_PAGINATION) {
           hasNextPage = false;
         } else {
@@ -1299,7 +1301,10 @@ export const elFindByIds = async (context, user, ids, opts = {}) => {
       }
     }
   }
-  return toMap ? hits : Object.values(hits);
+  if (toMap) {
+    return elConvertHitsToMap(hits, { mapWithAllIds });
+  }
+  return hits;
 };
 export const elLoadById = async (context, user, id, opts = {}) => {
   const hits = await elFindByIds(context, user, id, opts);

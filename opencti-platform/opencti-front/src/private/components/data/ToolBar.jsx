@@ -1883,8 +1883,8 @@ class ToolBar extends Component {
                       <div style={{ marginRight: 50 }}>
                         <ItemMarkings
                           variant="inList"
-                          markingDefinitionsEdges={
-                            element.objectMarking?.edges ?? []
+                          markingDefinitions={
+                            element.objectMarking ?? []
                           }
                         />
                       </div>
@@ -1962,8 +1962,8 @@ class ToolBar extends Component {
                       {t('Marking')}
                     </Typography>
                     <ItemMarkings
-                      markingDefinitionsEdges={
-                        keptElement?.markingDefinitions?.edges || []
+                      markingDefinitions={
+                        keptElement?.markingDefinitions || []
                       }
                     />
                   </>

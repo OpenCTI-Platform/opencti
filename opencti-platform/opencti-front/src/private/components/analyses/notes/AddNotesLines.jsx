@@ -153,7 +153,7 @@ class AddNotesLinesContainer extends Component {
               <div style={{ marginRight: 50 }}>
                 <ItemMarkings
                   variant="inList"
-                  markingDefinitionsEdges={note.objectMarking?.edges || []}
+                  markingDefinitions={data.objectMarking ?? []}
                 />
               </div>
             </ListItem>
@@ -200,15 +200,11 @@ const AddNotesLines = createPaginationContainer(
               attribute_abstract
               content
               objectMarking {
-                edges {
-                  node {
-                    id
-                    definition_type
-                    definition
-                    x_opencti_order
-                    x_opencti_color
-                  }
-                }
+                id
+                definition_type
+                definition
+                x_opencti_order
+                x_opencti_color
               }
             }
           }

@@ -130,15 +130,11 @@ const caseRfiKnowledgeGraphStixCoreObjectQuery = graphql`
         }
       }
       objectMarking {
-        edges {
-          node {
-            id
-            definition_type
-            definition
-            x_opencti_order
-            x_opencti_color
-          }
-        }
+        id
+        definition_type
+        definition
+        x_opencti_order
+        x_opencti_color
       }
       ... on StixDomainObject {
         created
@@ -336,15 +332,11 @@ const caseRfiKnowledgeGraphStixRelationshipQuery = graphql`
           }
         }
         objectMarking {
-          edges {
-            node {
-              id
-              definition_type
-              definition
-              x_opencti_order
-              x_opencti_color
-            }
-          }
+          id
+          definition_type
+          definition
+          x_opencti_order
+          x_opencti_color
         }
       }
       ... on StixRefRelationship {
@@ -385,15 +377,11 @@ const caseRfiKnowledgeGraphStixRelationshipQuery = graphql`
         }
         created_at
         objectMarking {
-          edges {
-            node {
-              id
-              definition_type
-              definition
-              x_opencti_order
-              x_opencti_color
-            }
-          }
+          id
+          definition_type
+          definition
+          x_opencti_order
+          x_opencti_color
         }
       }
       ... on StixSightingRelationship {
@@ -442,15 +430,11 @@ const caseRfiKnowledgeGraphStixRelationshipQuery = graphql`
           }
         }
         objectMarking {
-          edges {
-            node {
-              id
-              definition_type
-              definition
-              x_opencti_order
-              x_opencti_color
-            }
-          }
+          id
+          definition_type
+          definition
+          x_opencti_order
+          x_opencti_color
         }
       }
     }
@@ -1775,15 +1759,11 @@ const CaseRfiKnowledgeGraph = createFragmentContainer(
           }
         }
         objectMarking {
-          edges {
-            node {
-              id
-              definition_type
-              definition
-              x_opencti_order
-              x_opencti_color
-            }
-          }
+          id
+          definition_type
+          definition
+          x_opencti_order
+          x_opencti_color
         }
         objects(all: true) {
           edges {
@@ -1804,15 +1784,11 @@ const CaseRfiKnowledgeGraph = createFragmentContainer(
                   }
                 }
                 objectMarking {
-                  edges {
-                    node {
-                      id
-                      definition_type
-                      definition
-                      x_opencti_order
-                      x_opencti_color
-                    }
-                  }
+                  id
+                  definition_type
+                  definition
+                  x_opencti_order
+                  x_opencti_color
                 }
               }
               ... on StixDomainObject {
@@ -2030,15 +2006,11 @@ const CaseRfiKnowledgeGraph = createFragmentContainer(
                   }
                 }
                 objectMarking {
-                  edges {
-                    node {
-                      id
-                      definition_type
-                      definition
-                      x_opencti_order
-                      x_opencti_color
-                    }
-                  }
+                  id
+                  definition_type
+                  definition
+                  x_opencti_order
+                  x_opencti_color
                 }
               }
               ... on StixRefRelationship {
@@ -2079,15 +2051,11 @@ const CaseRfiKnowledgeGraph = createFragmentContainer(
                 }
                 created_at
                 objectMarking {
-                  edges {
-                    node {
-                      id
-                      definition_type
-                      definition
-                      x_opencti_order
-                      x_opencti_color
-                    }
-                  }
+                  id
+                  definition_type
+                  definition
+                  x_opencti_order
+                  x_opencti_color
                 }
               }
               ... on StixSightingRelationship {
@@ -2136,15 +2104,11 @@ const CaseRfiKnowledgeGraph = createFragmentContainer(
                   }
                 }
                 objectMarking {
-                  edges {
-                    node {
-                      id
-                      definition_type
-                      definition
-                      x_opencti_order
-                      x_opencti_color
-                    }
-                  }
+                  id
+                  definition_type
+                  definition
+                  x_opencti_order
+                  x_opencti_color
                 }
               }
             }

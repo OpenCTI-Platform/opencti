@@ -200,7 +200,7 @@ const ContainerStixCyberObservableLineComponent = (props) => {
             >
               <ItemMarkings
                 variant="inList"
-                markingDefinitionsEdges={node.objectMarking.edges}
+                markingDefinitions={node.objectMarking ?? []}
                 limit={1}
               />
             </div>
@@ -262,13 +262,9 @@ export const ContainerStixCyberObservableLine = createFragmentContainer(
           }
         }
         objectLabel {
-          edges {
-            node {
-              id
-              value
-              color
-            }
-          }
+          id
+          value
+          color
         }
         createdBy {
           ... on Identity {
@@ -278,15 +274,11 @@ export const ContainerStixCyberObservableLine = createFragmentContainer(
           }
         }
         objectMarking {
-          edges {
-            node {
-              id
-              definition_type
-              definition
-              x_opencti_order
-              x_opencti_color
-            }
-          }
+          id
+          definition_type
+          definition
+          x_opencti_order
+          x_opencti_color
         }
         containersNumber {
           total

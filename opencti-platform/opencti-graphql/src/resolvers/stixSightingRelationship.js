@@ -2,15 +2,6 @@ import { withFilter } from 'graphql-subscriptions';
 import { BUS_TOPICS } from '../config/conf';
 import {
   addStixSightingRelationship,
-  batchCases,
-  batchContainers,
-  batchCreatedBy,
-  batchExternalReferences,
-  batchLabels,
-  batchMarkingDefinitions,
-  batchNotes,
-  batchOpinions,
-  batchReports,
   findAll,
   findById,
   stixSightingRelationshipAddRelation,
@@ -28,22 +19,24 @@ import { batchLoader, distributionRelations, stixLoadByIdStringify, timeSeriesRe
 import { STIX_SIGHTING_RELATIONSHIP } from '../schema/stixSightingRelationship';
 import { elBatchIds } from '../database/engine';
 import { findById as findStatusById, getTypeStatuses } from '../domain/status';
-import { addOrganizationRestriction, batchObjectOrganizations, removeOrganizationRestriction } from '../domain/stix';
+import { addOrganizationRestriction, removeOrganizationRestriction } from '../domain/stix';
 import { batchCreators } from '../domain/user';
 import { numberOfContainersForObject } from '../domain/container';
+import {
+  batchMarkingDefinitions,
+  casesPaginated,
+  containersPaginated,
+  externalReferencesPaginated,
+  notesPaginated,
+  opinionsPaginated,
+  reportsPaginated
+} from '../domain/stixCoreObject';
+import { loadThroughDenormalized } from './stix';
+import { INPUT_CREATED_BY, INPUT_GRANTED_REFS, INPUT_LABELS } from '../schema/general';
 
-const createdByLoader = batchLoader(batchCreatedBy);
-const markingDefinitionsLoader = batchLoader(batchMarkingDefinitions);
-const labelsLoader = batchLoader(batchLabels);
-const externalReferencesLoader = batchLoader(batchExternalReferences);
-const notesLoader = batchLoader(batchNotes);
-const opinionsLoader = batchLoader(batchOpinions);
-const containersLoader = batchLoader(batchContainers);
-const reportsLoader = batchLoader(batchReports);
-const casesLoader = batchLoader(batchCases);
-const creatorsLoader = batchLoader(batchCreators);
-const batchOrganizationsLoader = batchLoader(batchObjectOrganizations);
 const loadByIdLoader = batchLoader(elBatchIds);
+const markingDefinitionsLoader = batchLoader(batchMarkingDefinitions);
+const creatorsLoader = batchLoader(batchCreators);
 
 const stixSightingRelationshipResolvers = {
   Query: {
@@ -58,28 +51,34 @@ const stixSightingRelationshipResolvers = {
     stixSightingRelationshipsNumber: (_, args, context) => stixSightingRelationshipsNumber(context, context.user, args),
   },
   StixSightingRelationship: {
-    relationship_type: () => 'stix-sighting-relationship',
     from: (rel, _, context) => (rel.from ? rel.from : loadByIdLoader.load({ id: rel.fromId, type: rel.fromType }, context, context.user)),
     to: (rel, _, context) => (rel.to ? rel.to : loadByIdLoader.load({ id: rel.toId, type: rel.toType }, context, context.user)),
-    toStix: (rel, _, context) => stixLoadByIdStringify(context, context.user, rel.id),
+    // region batch fully loaded through rel de-normalization. Cant be ordered of filtered
     creators: (rel, _, context) => creatorsLoader.load(rel.creator_id, context, context.user),
-    createdBy: (rel, _, context) => createdByLoader.load(rel.id, context, context.user),
-    objectMarking: (rel, _, context) => markingDefinitionsLoader.load(rel.id, context, context.user),
-    objectOrganization: (rel, _, context) => batchOrganizationsLoader.load(rel.id, context, context.user),
-    objectLabel: (rel, _, context) => labelsLoader.load(rel.id, context, context.user),
-    externalReferences: (rel, _, context) => externalReferencesLoader.load(rel.id, context, context.user),
-    containersNumber: (rel, args, context) => numberOfContainersForObject(context, context.user, { ...args, objectId: rel.id }),
-    containers: (rel, _, context) => containersLoader.load(rel.id, context, context.user),
-    reports: (rel, _, context) => reportsLoader.load(rel.id, context, context.user),
-    cases: (rel, _, context) => casesLoader.load(rel.id, context, context.user),
-    notes: (rel, _, context) => notesLoader.load(rel.id, context, context.user),
-    opinions: (rel, _, context) => opinionsLoader.load(rel.id, context, context.user),
+    objectMarking: (stixCoreObject, _, context) => markingDefinitionsLoader.load(stixCoreObject, context, context.user),
+    createdBy: (rel, _, context) => loadThroughDenormalized(context, context.user, rel, INPUT_CREATED_BY),
+    objectLabel: (rel, _, context) => loadThroughDenormalized(context, context.user, rel, INPUT_LABELS, { sortBy: 'value' }),
+    objectOrganization: (rel, _, context) => loadThroughDenormalized(context, context.user, rel, INPUT_GRANTED_REFS, { sortBy: 'name' }),
+    // endregion
+    // region inner listing - cant be batch loaded
+    externalReferences: (rel, args, context) => externalReferencesPaginated(context, context.user, rel.id, args),
+    containers: (rel, args, context) => containersPaginated(context, context.user, rel.id, args),
+    reports: (rel, args, context) => reportsPaginated(context, context.user, rel.id, args),
+    cases: (rel, args, context) => casesPaginated(context, context.user, rel.id, args),
+    notes: (rel, args, context) => notesPaginated(context, context.user, rel.id, args),
+    opinions: (rel, args, context) => opinionsPaginated(context, context.user, rel.id, args),
+    // endregion
+    // Utils
+    relationship_type: () => 'stix-sighting-relationship',
+    toStix: (rel, _, context) => stixLoadByIdStringify(context, context.user, rel.id),
     editContext: (rel) => fetchEditContext(rel.id),
     status: (entity, _, context) => (entity.x_opencti_workflow_id ? findStatusById(context, context.user, entity.x_opencti_workflow_id) : null),
     workflowEnabled: async (entity, _, context) => {
       const statusesEdges = await getTypeStatuses(context, context.user, entity.entity_type);
       return statusesEdges.edges.length > 0;
-    }
+    },
+    // Figures
+    containersNumber: (rel, args, context) => numberOfContainersForObject(context, context.user, { ...args, objectId: rel.id }),
   },
   Mutation: {
     stixSightingRelationshipEdit: (_, { id }, context) => ({

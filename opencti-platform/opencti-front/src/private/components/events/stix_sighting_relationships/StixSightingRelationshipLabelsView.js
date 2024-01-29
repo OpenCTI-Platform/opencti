@@ -18,13 +18,9 @@ const stixSightingRelationshipMutationRelationsAdd = graphql`
         references: $references
       ) {
         objectLabel {
-          edges {
-            node {
-              id
-              value
-              color
-            }
-          }
+          id
+          value
+          color
         }
       }
     }
@@ -48,13 +44,9 @@ const stixSightingRelationshipMutationRelationsDelete = graphql`
       ) {
         ... on StixSightingRelationship {
           objectLabel {
-            edges {
-              node {
-                id
-                value
-                color
-              }
-            }
+            id
+            value
+            color
           }
         }
       }

@@ -81,24 +81,16 @@ const artifactLineFragment = graphql`
         }
       }
       objectMarking {
-        edges {
-          node {
-            id
-            definition_type
-            definition
-            x_opencti_order
-            x_opencti_color
-          }
-        }
+        id
+        definition_type
+        definition
+        x_opencti_order
+        x_opencti_color
       }
       objectLabel {
-        edges {
-          node {
-            id
-            value
-            color
-          }
-        }
+        id
+        value
+        color
       }
       creators {
         id
@@ -227,7 +219,7 @@ export const ArtifactLine: FunctionComponent<ArtifactLineComponentProps> = ({
             >
               <ItemMarkings
                 variant="inList"
-                markingDefinitionsEdges={data.objectMarking?.edges ?? []}
+                markingDefinitions={data.objectMarking ?? []}
                 limit={1}
               />
             </div>

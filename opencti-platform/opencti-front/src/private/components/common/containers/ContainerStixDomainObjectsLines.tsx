@@ -85,15 +85,11 @@ export const containerStixDomainObjectsLinesFragment = graphql`
         }
       }
       objectMarking {
-        edges {
-          node {
-            id
-            definition_type
-            definition
-            x_opencti_order
-            x_opencti_color
-          }
-        }
+        id
+        definition_type
+        definition
+        x_opencti_order
+        x_opencti_color
       }
       objects(
         types: $types
@@ -184,9 +180,7 @@ const ContainerStixDomainObjectsLines: FunctionComponent<ContainerStixDomainObje
             onTypesChange={onTypesChange}
             openExports={openExports}
             defaultCreatedBy={container.createdBy ?? null}
-            defaultMarkingDefinitions={(
-              container.objectMarking?.edges ?? []
-            ).map((n) => n.node)}
+            defaultMarkingDefinitions={container.objectMarking ?? []}
             confidence={container.confidence}
           />
         </Security>

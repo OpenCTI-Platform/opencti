@@ -1,12 +1,12 @@
 import {
   addAttackPattern,
-  batchCoursesOfAction,
-  batchDataComponents,
-  batchIsSubAttackPattern,
-  batchParentAttackPatterns,
-  batchSubAttackPatterns,
+  childAttackPatternsPaginated,
+  coursesOfActionPaginated,
+  dataComponentsPaginated,
   findAll,
   findById,
+  isSubAttackPattern,
+  parentAttackPatternsPaginated
 } from '../domain/attackPattern';
 import {
   stixDomainObjectAddRelation,
@@ -16,15 +16,8 @@ import {
   stixDomainObjectEditContext,
   stixDomainObjectEditField,
 } from '../domain/stixDomainObject';
-import { batchKillChainPhases } from '../domain/stixCoreObject';
-import { batchLoader } from '../database/middleware';
-
-const killChainPhasesLoader = batchLoader(batchKillChainPhases);
-const coursesOfActionLoader = batchLoader(batchCoursesOfAction);
-const parentAttackPatternsLoader = batchLoader(batchParentAttackPatterns);
-const subAttackPatternsLoader = batchLoader(batchSubAttackPatterns);
-const isSubAttackPatternLoader = batchLoader(batchIsSubAttackPattern);
-const dataComponentsLoader = batchLoader(batchDataComponents);
+import { loadThroughDenormalized } from './stix';
+import { INPUT_KILLCHAIN } from '../schema/general';
 
 const attackPatternResolvers = {
   Query: {
@@ -32,12 +25,12 @@ const attackPatternResolvers = {
     attackPatterns: (_, args, context) => findAll(context, context.user, args),
   },
   AttackPattern: {
-    killChainPhases: (attackPattern, _, context) => killChainPhasesLoader.load(attackPattern.id, context, context.user),
-    coursesOfAction: (attackPattern, _, context) => coursesOfActionLoader.load(attackPattern.id, context, context.user),
-    parentAttackPatterns: (attackPattern, _, context) => parentAttackPatternsLoader.load(attackPattern.id, context, context.user),
-    subAttackPatterns: (attackPattern, _, context) => subAttackPatternsLoader.load(attackPattern.id, context, context.user),
-    isSubAttackPattern: (attackPattern, _, context) => isSubAttackPatternLoader.load(attackPattern.id, context, context.user),
-    dataComponents: (attackPattern, _, context) => dataComponentsLoader.load(attackPattern.id, context, context.user),
+    killChainPhases: (attackPattern, _, context) => loadThroughDenormalized(context, context.user, attackPattern, INPUT_KILLCHAIN, { sortBy: 'phase_name' }),
+    coursesOfAction: (attackPattern, args, context) => coursesOfActionPaginated(context, context.user, attackPattern.id, args),
+    parentAttackPatterns: (attackPattern, args, context) => parentAttackPatternsPaginated(context, context.user, attackPattern.id, args),
+    subAttackPatterns: (attackPattern, args, context) => childAttackPatternsPaginated(context, context.user, attackPattern.id, args),
+    dataComponents: (attackPattern, args, context) => dataComponentsPaginated(context, context.user, attackPattern.id, args),
+    isSubAttackPattern: (attackPattern, _, context) => isSubAttackPattern(context, context.user, attackPattern.id),
   },
   Mutation: {
     attackPatternEdit: (_, { id }, context) => ({

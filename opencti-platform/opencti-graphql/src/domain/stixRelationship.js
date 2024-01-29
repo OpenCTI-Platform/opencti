@@ -1,11 +1,9 @@
 import * as R from 'ramda';
-import { batchListThroughGetTo, deleteElementById, distributionRelations, timeSeriesRelations } from '../database/middleware';
-import { ABSTRACT_STIX_OBJECT, ABSTRACT_STIX_RELATIONSHIP, ENTITY_TYPE_IDENTITY } from '../schema/general';
+import { deleteElementById, distributionRelations, timeSeriesRelations } from '../database/middleware';
+import { ABSTRACT_STIX_OBJECT, ABSTRACT_STIX_RELATIONSHIP } from '../schema/general';
 import { buildRelationsFilter, listEntities, listRelations, storeLoadById } from '../database/middleware-loader';
 import { fillTimeSeries, READ_INDEX_INFERRED_RELATIONSHIPS, READ_INDEX_STIX_CORE_RELATIONSHIPS, READ_INDEX_STIX_SIGHTING_RELATIONSHIPS } from '../database/utils';
 import { elCount, MAX_RUNTIME_RESOLUTION_SIZE } from '../database/engine';
-import { RELATION_CREATED_BY, RELATION_OBJECT_MARKING } from '../schema/stixRefRelationship';
-import { ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
 import { STIX_SPEC_VERSION, stixCoreRelationshipsMapping } from '../database/stix';
 import { UnsupportedError } from '../config/errors';
 import { schemaTypesDefinition } from '../schema/schema-types';
@@ -94,21 +92,6 @@ export const stixRelationshipsMultiTimeSeries = async (context, user, args) => {
   }));
 };
 // endregion
-
-export const batchCreatedBy = async (context, user, stixCoreRelationshipIds) => {
-  const batchCreators = await batchListThroughGetTo(
-    context,
-    user,
-    stixCoreRelationshipIds,
-    RELATION_CREATED_BY,
-    ENTITY_TYPE_IDENTITY
-  );
-  return batchCreators.map((b) => (b.edges.length > 0 ? R.head(b.edges).node : null));
-};
-
-export const batchMarkingDefinitions = (context, user, stixCoreRelationshipIds) => {
-  return batchListThroughGetTo(context, user, stixCoreRelationshipIds, RELATION_OBJECT_MARKING, ENTITY_TYPE_MARKING_DEFINITION);
-};
 
 export const getSpecVersionOrDefault = ({ spec_version }) => spec_version ?? STIX_SPEC_VERSION;
 

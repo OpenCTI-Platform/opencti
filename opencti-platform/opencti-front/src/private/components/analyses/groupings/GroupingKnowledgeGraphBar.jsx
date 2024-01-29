@@ -851,9 +851,7 @@ class GroupingKnowledgeGraphBar extends Component {
                         containerStixCoreObjects={grouping.objects.edges}
                         knowledgeGraph={true}
                         defaultCreatedBy={grouping.createdBy ?? null}
-                        defaultMarkingDefinitions={(
-                          grouping.objectMarking?.edges ?? []
-                        ).map((n) => n.node)}
+                        defaultMarkingDefinitions={grouping.objectMarking ?? []}
                         targetStixCoreObjectTypes={[
                           'Stix-Domain-Object',
                           'Stix-Cyber-Observable',
@@ -992,9 +990,7 @@ class GroupingKnowledgeGraphBar extends Component {
                         handleReverseRelation={this.handleReverseNested.bind(
                           this,
                         )}
-                        defaultMarkingDefinitions={(
-                          grouping.objectMarking?.edges ?? []
-                        ).map((n) => n.node)}
+                        defaultMarkingDefinitions={grouping.objectMarking ?? []}
                       />
                     )}
                     {onAddRelation && (

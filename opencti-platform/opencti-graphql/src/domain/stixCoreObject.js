@@ -1,16 +1,6 @@
 import * as R from 'ramda';
-import {
-  batchListThroughGetFrom,
-  batchListThroughGetTo,
-  batchLoadThroughGetTo,
-  createEntity,
-  createRelationRaw,
-  deleteElementById,
-  distributionEntities,
-  storeLoadByIdWithRefs,
-  timeSeriesEntities,
-} from '../database/middleware';
-import { internalLoadById, listEntities, storeLoadById, storeLoadByIds } from '../database/middleware-loader';
+import { createEntity, createRelationRaw, deleteElementById, distributionEntities, storeLoadByIdWithRefs, timeSeriesEntities } from '../database/middleware';
+import { internalFindByIds, internalLoadById, listEntities, listEntitiesThroughRelationsPaginated, storeLoadById, storeLoadByIds } from '../database/middleware-loader';
 import { findAll as relationFindAll } from './stixCoreRelationship';
 import { delEditContext, lockResource, notify, setEditContext, storeUpdateEvent } from '../database/redis';
 import { BUS_TOPICS } from '../config/conf';
@@ -23,17 +13,13 @@ import {
   ABSTRACT_STIX_DOMAIN_OBJECT,
   buildRefRelationKey,
   ENTITY_TYPE_CONTAINER,
-  ENTITY_TYPE_IDENTITY,
   INPUT_EXTERNAL_REFS,
   REL_INDEX_PREFIX,
 } from '../schema/general';
 import {
-  RELATION_BORN_IN,
   RELATION_CREATED_BY,
-  RELATION_ETHNICITY,
   RELATION_EXTERNAL_REFERENCE,
   RELATION_GRANTED_TO,
-  RELATION_KILL_CHAIN_PHASE,
   RELATION_OBJECT,
   RELATION_OBJECT_LABEL,
   RELATION_OBJECT_MARKING
@@ -43,10 +29,9 @@ import {
   ENTITY_TYPE_CONTAINER_OBSERVED_DATA,
   ENTITY_TYPE_CONTAINER_OPINION,
   ENTITY_TYPE_CONTAINER_REPORT,
-  ENTITY_TYPE_LOCATION_COUNTRY,
-  isStixDomainObjectContainer,
+  isStixDomainObjectContainer
 } from '../schema/stixDomainObject';
-import { ENTITY_TYPE_EXTERNAL_REFERENCE, ENTITY_TYPE_KILL_CHAIN_PHASE, ENTITY_TYPE_LABEL, ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
+import { ENTITY_TYPE_EXTERNAL_REFERENCE, ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
 import { createWork, workToExportFile } from './work';
 import { pushToConnector } from '../database/rabbitmq';
 import { now } from '../utils/format';
@@ -66,6 +51,7 @@ import { extractEntityRepresentativeName } from '../database/entity-representati
 import { addFilter, extractFilterGroupValues, findFiltersFromKey } from '../utils/filtering/filtering-utils';
 import { INSTANCE_REGARDING_OF, specialFilterKeysWhoseValueToResolve } from '../utils/filtering/filtering-constants';
 import { schemaRelationsRefDefinition } from '../schema/schema-relationsRef';
+import { getEntitiesMapFromCache } from '../database/cache';
 
 export const findAll = async (context, user, args) => {
   let types = [];
@@ -97,61 +83,64 @@ export const findById = async (context, user, stixCoreObjectId) => {
   return storeLoadById(context, user, stixCoreObjectId, ABSTRACT_STIX_CORE_OBJECT);
 };
 
-export const batchCreatedBy = async (context, user, stixCoreObjectIds) => {
-  return batchLoadThroughGetTo(context, user, stixCoreObjectIds, RELATION_CREATED_BY, ENTITY_TYPE_IDENTITY);
+export const batchInternalRels = async (context, user, elements, opts = {}) => {
+  const relIds = elements.map(({ element, definition }) => element[definition.databaseName]).flat().filter((id) => isNotEmptyField(id));
+  const resolvedElements = await internalFindByIds(context, user, relIds, { toMap: true });
+  return elements.map(({ element, definition }) => {
+    const relId = element[definition.databaseName];
+    if (definition.multiple) {
+      const relElements = (relId ?? []).map((id) => resolvedElements[id]);
+      if (opts.sortBy) {
+        return R.sortWith([R.ascend(R.prop(opts.sortBy))])(relElements);
+      }
+      return relElements;
+    }
+    return relId ? resolvedElements[relId] : undefined;
+  });
 };
 
-export const batchBornIn = async (context, user, stixCoreObjectIds) => {
-  return batchLoadThroughGetTo(context, user, stixCoreObjectIds, RELATION_BORN_IN, ENTITY_TYPE_LOCATION_COUNTRY);
+export const batchMarkingDefinitions = async (context, user, stixCoreObjects) => {
+  const markingsFromCache = await getEntitiesMapFromCache(context, user, ENTITY_TYPE_MARKING_DEFINITION);
+  return stixCoreObjects.map((s) => {
+    const markings = (s[RELATION_OBJECT_MARKING] ?? []).map((id) => markingsFromCache.get(id));
+    return R.sortWith([
+      R.ascend(R.propOr('TLP', 'definition_type')),
+      R.descend(R.propOr(0, 'x_opencti_order')),
+    ])(markings);
+  });
 };
 
-export const batchEthnicity = async (context, user, stixCoreObjectIds) => {
-  return batchLoadThroughGetTo(context, user, stixCoreObjectIds, RELATION_ETHNICITY, ENTITY_TYPE_LOCATION_COUNTRY);
-};
-
-export const batchContainers = async (context, user, stixCoreObjectIds, args = {}) => {
-  const { entityTypes } = args;
+export const containersPaginated = async (context, user, stixCoreObjectId, opts) => {
+  const { entityTypes } = opts;
   const finalEntityTypes = entityTypes ?? [ENTITY_TYPE_CONTAINER];
   if (!finalEntityTypes.every((t) => isStixDomainObjectContainer(t))) {
     throw FunctionalError(`Only ${ENTITY_TYPE_CONTAINER} can be query through this method.`);
   }
-  return batchListThroughGetFrom(context, user, stixCoreObjectIds, RELATION_OBJECT, finalEntityTypes, args);
+  return listEntitiesThroughRelationsPaginated(context, user, stixCoreObjectId, RELATION_OBJECT, finalEntityTypes, false, opts);
 };
 
-export const batchReports = async (context, user, stixCoreObjectIds, args = {}) => {
-  return batchListThroughGetFrom(context, user, stixCoreObjectIds, RELATION_OBJECT, ENTITY_TYPE_CONTAINER_REPORT, args);
+export const reportsPaginated = async (context, user, stixCoreObjectId, opts) => {
+  return listEntitiesThroughRelationsPaginated(context, user, stixCoreObjectId, RELATION_OBJECT, ENTITY_TYPE_CONTAINER_REPORT, false, opts);
 };
 
-export const batchCases = async (context, user, stixCoreObjectIds, args = {}) => {
-  return batchListThroughGetFrom(context, user, stixCoreObjectIds, RELATION_OBJECT, ENTITY_TYPE_CONTAINER_CASE, args);
+export const casesPaginated = async (context, user, stixCoreObjectId, opts) => {
+  return listEntitiesThroughRelationsPaginated(context, user, stixCoreObjectId, RELATION_OBJECT, ENTITY_TYPE_CONTAINER_CASE, false, opts);
 };
 
-export const batchNotes = (context, user, stixCoreObjectIds, args = {}) => {
-  return batchListThroughGetFrom(context, user, stixCoreObjectIds, RELATION_OBJECT, ENTITY_TYPE_CONTAINER_NOTE, args);
+export const notesPaginated = async (context, user, stixCoreObjectId, opts) => {
+  return listEntitiesThroughRelationsPaginated(context, user, stixCoreObjectId, RELATION_OBJECT, ENTITY_TYPE_CONTAINER_NOTE, false, opts);
 };
 
-export const batchOpinions = (context, user, stixCoreObjectIds, args = {}) => {
-  return batchListThroughGetFrom(context, user, stixCoreObjectIds, RELATION_OBJECT, ENTITY_TYPE_CONTAINER_OPINION, args);
+export const opinionsPaginated = async (context, user, stixCoreObjectId, opts) => {
+  return listEntitiesThroughRelationsPaginated(context, user, stixCoreObjectId, RELATION_OBJECT, ENTITY_TYPE_CONTAINER_OPINION, false, opts);
 };
 
-export const batchObservedData = (context, user, stixCoreObjectIds, args = {}) => {
-  return batchListThroughGetFrom(context, user, stixCoreObjectIds, RELATION_OBJECT, ENTITY_TYPE_CONTAINER_OBSERVED_DATA, args);
+export const observedDataPaginated = async (context, user, stixCoreObjectId, opts) => {
+  return listEntitiesThroughRelationsPaginated(context, user, stixCoreObjectId, RELATION_OBJECT, ENTITY_TYPE_CONTAINER_OBSERVED_DATA, false, opts);
 };
 
-export const batchLabels = (context, user, stixCoreObjectIds) => {
-  return batchListThroughGetTo(context, user, stixCoreObjectIds, RELATION_OBJECT_LABEL, ENTITY_TYPE_LABEL);
-};
-
-export const batchMarkingDefinitions = (context, user, stixCoreObjectIds) => {
-  return batchListThroughGetTo(context, user, stixCoreObjectIds, RELATION_OBJECT_MARKING, ENTITY_TYPE_MARKING_DEFINITION);
-};
-
-export const batchExternalReferences = (context, user, stixDomainObjectIds) => {
-  return batchListThroughGetTo(context, user, stixDomainObjectIds, RELATION_EXTERNAL_REFERENCE, ENTITY_TYPE_EXTERNAL_REFERENCE);
-};
-
-export const batchKillChainPhases = (context, user, stixCoreObjectIds) => {
-  return batchListThroughGetTo(context, user, stixCoreObjectIds, RELATION_KILL_CHAIN_PHASE, ENTITY_TYPE_KILL_CHAIN_PHASE);
+export const externalReferencesPaginated = async (context, user, stixCoreObjectId, opts) => {
+  return listEntitiesThroughRelationsPaginated(context, user, stixCoreObjectId, RELATION_EXTERNAL_REFERENCE, ENTITY_TYPE_EXTERNAL_REFERENCE, false, opts);
 };
 
 export const stixCoreRelationships = (context, user, stixCoreObjectId, args) => {

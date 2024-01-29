@@ -1,4 +1,4 @@
-import { addIntrusionSet, batchLocations, findAll, findById } from '../domain/intrusionSet';
+import { addIntrusionSet, findAll, findById, locationsPaginated } from '../domain/intrusionSet';
 import {
   stixDomainObjectAddRelation,
   stixDomainObjectCleanContext,
@@ -7,9 +7,6 @@ import {
   stixDomainObjectEditContext,
   stixDomainObjectEditField,
 } from '../domain/stixDomainObject';
-import { batchLoader } from '../database/middleware';
-
-const locationsLoader = batchLoader(batchLocations);
 
 const intrusionSetResolvers = {
   Query: {
@@ -17,7 +14,7 @@ const intrusionSetResolvers = {
     intrusionSets: (_, args, context) => findAll(context, context.user, args),
   },
   IntrusionSet: {
-    locations: (intrusionSet, _, context) => locationsLoader.load(intrusionSet.id, context, context.user),
+    locations: (intrusionSet, args, context) => locationsPaginated(context, context.user, intrusionSet.id, args),
   },
   Mutation: {
     intrusionSetEdit: (_, { id }, context) => ({

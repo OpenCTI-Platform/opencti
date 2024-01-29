@@ -8,12 +8,9 @@ import {
   stixDomainObjectEditField
 } from '../../domain/stixDomainObject';
 import type { Resolvers } from '../../generated/graphql';
-import { batchLoader } from '../../database/middleware';
-import { batchBornIn, batchEthnicity } from '../../domain/stixCoreObject';
 import { utcDate } from '../../utils/format';
-
-const bornInLoader = batchLoader(batchBornIn);
-const ethnicityLoader = batchLoader(batchEthnicity);
+import { loadThroughDenormalized } from '../../resolvers/stix';
+import { INPUT_BORN_IN, INPUT_ETHNICITY } from '../../schema/general';
 
 const threatActorIndividualResolvers: Resolvers = {
   Query: {
@@ -21,8 +18,8 @@ const threatActorIndividualResolvers: Resolvers = {
     threatActorsIndividuals: (_, args, context) => findAll(context, context.user, args),
   },
   ThreatActorIndividual: {
-    bornIn: (threatActorIndividual, _, context) => bornInLoader.load(threatActorIndividual.id, context, context.user),
-    ethnicity: (threatActorIndividual, _, context) => ethnicityLoader.load(threatActorIndividual.id, context, context.user),
+    bornIn: (threatActorIndividual, _, context) => loadThroughDenormalized(context, context.user, threatActorIndividual, INPUT_BORN_IN),
+    ethnicity: (threatActorIndividual, _, context) => loadThroughDenormalized(context, context.user, threatActorIndividual, INPUT_ETHNICITY),
     height: (threatActorIndividual, _, __) => (threatActorIndividual.height ?? [])
       .map((height, index) => ({ ...height, index }))
       .sort((a, b) => utcDate(a.date_seen).diff(utcDate(b.date_seen))),

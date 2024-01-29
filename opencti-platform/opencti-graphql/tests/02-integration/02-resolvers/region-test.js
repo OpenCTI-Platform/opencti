@@ -54,7 +54,6 @@ const READ_QUERY = gql`
           }
         }
       }
-      isSubRegion
       toStix
     }
   }
@@ -112,7 +111,6 @@ describe('Region resolver standard behavior', () => {
     expect(queryResult).not.toBeNull();
     expect(queryResult.data.region).not.toBeNull();
     expect(queryResult.data.region.standard_id).toEqual('location--2e9ef300-a1ab-5c9f-9297-dde66b71cae2');
-    expect(queryResult.data.region.isSubRegion).toBeFalsy();
     expect(queryResult.data.region.subRegions.edges.length).toEqual(1);
     expect(queryResult.data.region.subRegions.edges[0].node.standard_id).toEqual(
       'location--a25f43bf-3e2d-55fe-ba09-c63a210f169d'
@@ -127,7 +125,6 @@ describe('Region resolver standard behavior', () => {
     expect(queryResult).not.toBeNull();
     expect(queryResult.data.region).not.toBeNull();
     expect(queryResult.data.region.standard_id).toEqual('location--a25f43bf-3e2d-55fe-ba09-c63a210f169d');
-    expect(queryResult.data.region.isSubRegion).toBeTruthy();
     expect(queryResult.data.region.parentRegions.edges.length).toEqual(1);
     expect(queryResult.data.region.parentRegions.edges[0].node.standard_id).toEqual(
       'location--2e9ef300-a1ab-5c9f-9297-dde66b71cae2'
@@ -195,11 +192,7 @@ describe('Region resolver standard behavior', () => {
             from {
               ... on Region {
                 objectMarking {
-                  edges {
-                    node {
-                      id
-                    }
-                  }
+                  id
                 }
               }
             }
@@ -217,7 +210,7 @@ describe('Region resolver standard behavior', () => {
         },
       },
     });
-    expect(queryResult.data.regionEdit.relationAdd.from.objectMarking.edges.length).toEqual(1);
+    expect(queryResult.data.regionEdit.relationAdd.from.objectMarking.length).toEqual(1);
   });
   it('should delete relation in region', async () => {
     const RELATION_DELETE_QUERY = gql`
@@ -226,11 +219,7 @@ describe('Region resolver standard behavior', () => {
           relationDelete(toId: $toId, relationship_type: $relationship_type) {
             id
             objectMarking {
-              edges {
-                node {
-                  id
-                }
-              }
+              id
             }
           }
         }
@@ -244,7 +233,7 @@ describe('Region resolver standard behavior', () => {
         relationship_type: 'object-marking',
       },
     });
-    expect(queryResult.data.regionEdit.relationDelete.objectMarking.edges.length).toEqual(0);
+    expect(queryResult.data.regionEdit.relationDelete.objectMarking.length).toEqual(0);
   });
   it('should region deleted', async () => {
     const DELETE_QUERY = gql`

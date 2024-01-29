@@ -655,15 +655,11 @@ const dashboardLastStixDomainObjectsQuery = graphql`
             }
           }
           objectMarking {
-            edges {
-              node {
-                id
-                definition_type
-                definition
-                x_opencti_order
-                x_opencti_color
-              }
-            }
+            id
+            definition_type
+            definition
+            x_opencti_order
+            x_opencti_color
           }
         }
       }
@@ -732,10 +728,7 @@ const LastIngestedAnalysesComponent = ({ queryRef }) => {
                 paddingRight: 20,
               }}
             >
-              <ItemMarkings
-                markingDefinitionsEdges={
-                  stixDomainObject.objectMarking.edges ?? []
-                }
+              <ItemMarkings markingDefinitions={stixDomainObject.objectMarking ?? []}
                 limit={1}
                 variant="inList"
               />

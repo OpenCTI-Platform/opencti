@@ -2,17 +2,17 @@ import { elBatchIds } from '../../database/engine';
 import { batchLoader } from '../../database/middleware';
 import {
   addOrganization,
-  batchMembers,
-  batchParentOrganizations,
-  batchSectors,
-  batchSubOrganizations,
   buildAdministratedOrganizations,
+  childOrganizationsPaginated,
   editAuthorizedAuthorities,
   findAll,
   findById,
   findGrantableGroups,
   organizationAdminAdd,
-  organizationAdminRemove
+  organizationAdminRemove,
+  organizationMembersPaginated,
+  organizationSectorsPaginated,
+  parentOrganizationsPaginated
 } from './organization-domain';
 import {
   stixDomainObjectAddRelation,
@@ -23,13 +23,10 @@ import {
   stixDomainObjectEditField
 } from '../../domain/stixDomainObject';
 import type { Resolvers } from '../../generated/graphql';
+import type { BasicStoreEntityOrganization } from './organization-types';
 import { ENTITY_TYPE_WORKSPACE } from '../workspace/workspace-types';
 
 const loadByIdLoader = batchLoader(elBatchIds);
-const sectorsLoader = batchLoader(batchSectors);
-const membersLoader = batchLoader(batchMembers);
-const subOrganizationsLoader = batchLoader(batchSubOrganizations);
-const parentOrganizationsLoader = batchLoader(batchParentOrganizations);
 
 const organizationResolvers: Resolvers = {
   Query: {
@@ -37,10 +34,10 @@ const organizationResolvers: Resolvers = {
     organizations: (_, args, context) => findAll(context, context.user, args),
   },
   Organization: {
-    sectors: (organization, _, context) => sectorsLoader.load(organization.id, context, context.user),
-    members: (organization, args, context) => membersLoader.load(organization.id, context, context.user, args),
-    subOrganizations: (organization, _, context) => subOrganizationsLoader.load(organization.id, context, context.user),
-    parentOrganizations: (organization, _, context) => parentOrganizationsLoader.load(organization.id, context, context.user),
+    sectors: (organization, args, context) => organizationSectorsPaginated<any>(context, context.user, organization.id, args),
+    members: (organization, args, context) => organizationMembersPaginated<any>(context, context.user, organization.id, args),
+    subOrganizations: (organization, args, context) => childOrganizationsPaginated<BasicStoreEntityOrganization>(context, context.user, organization.id, args),
+    parentOrganizations: (organization, args, context) => parentOrganizationsPaginated<BasicStoreEntityOrganization>(context, context.user, organization.id, args),
     default_dashboard: (current, _, context) => loadByIdLoader.load({ id: current.default_dashboard, type: ENTITY_TYPE_WORKSPACE }, context, context.user),
     grantable_groups: (organization, _, context) => findGrantableGroups(context, context.user, organization),
   },

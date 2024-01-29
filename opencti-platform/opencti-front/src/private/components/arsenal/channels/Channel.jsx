@@ -56,9 +56,7 @@ class ChannelComponent extends Component {
         </Grid>
         <StixCoreObjectOrStixCoreRelationshipNotes
           stixCoreObjectOrStixCoreRelationshipId={channel.id}
-          defaultMarkings={(channel.objectMarking?.edges ?? []).map(
-            (edge) => edge.node,
-          )}
+          defaultMarkings={channel.objectMarking ?? []}
         />
         <Security needs={[KNOWLEDGE_KNUPDATE]}>
           <ChannelEdition channelId={channel.id} />
@@ -101,24 +99,16 @@ const Channel = createFragmentContainer(ChannelComponent, {
         name
       }
       objectMarking {
-        edges {
-          node {
-            id
-            definition_type
-            definition
-            x_opencti_order
-            x_opencti_color
-          }
-        }
+        id
+        definition_type
+        definition
+        x_opencti_order
+        x_opencti_color
       }
       objectLabel {
-        edges {
-          node {
-            id
-            value
-            color
-          }
-        }
+        id
+        value
+        color
       }
       name
       aliases

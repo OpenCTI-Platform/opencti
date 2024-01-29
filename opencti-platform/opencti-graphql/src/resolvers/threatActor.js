@@ -1,4 +1,4 @@
-import { batchCountries, batchLocations, findAll as genericFindAll, findById as genericFindById } from '../domain/threatActor';
+import { findAll as genericFindAll, findById as genericFindById, threatActorCountriesPaginated, threatActorLocationsPaginated } from '../domain/threatActor';
 import { addThreatActorGroup, findAll as groupFindAll, findById as groupFindById } from '../domain/threatActorGroup';
 import {
   stixDomainObjectAddRelation,
@@ -8,10 +8,6 @@ import {
   stixDomainObjectEditContext,
   stixDomainObjectEditField,
 } from '../domain/stixDomainObject';
-import { batchLoader } from '../database/middleware';
-
-const locationsLoader = batchLoader(batchLocations);
-const countriesLoader = batchLoader(batchCountries);
 
 const threatActorGroupResolvers = {
   Query: {
@@ -21,8 +17,8 @@ const threatActorGroupResolvers = {
     threatActorsGroup: (_, args, context) => groupFindAll(context, context.user, args),
   },
   ThreatActor: {
-    locations: (threatActor, _, context) => locationsLoader.load(threatActor.id, context, context.user),
-    countries: (threatActor, _, context) => countriesLoader.load(threatActor.id, context, context.user),
+    locations: (threatActor, args, context) => threatActorLocationsPaginated(context, context.user, threatActor.id, args),
+    countries: (threatActor, args, context) => threatActorCountriesPaginated(context, context.user, threatActor.id, args),
     __resolveType(obj) {
       if (obj.entity_type) {
         return obj.entity_type.replace(/(?:^|-)(\w)/g, (matches, letter) => letter.toUpperCase());

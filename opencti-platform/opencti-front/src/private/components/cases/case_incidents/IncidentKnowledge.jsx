@@ -43,15 +43,11 @@ export const incidentKnowledgeAttackPatternsGraphQuery = graphql`
         }
       }
       objectMarking {
-        edges {
-          node {
-            id
-            definition_type
-            definition
-            x_opencti_order
-            x_opencti_color
-          }
-        }
+        id
+        definition_type
+        definition
+        x_opencti_order
+        x_opencti_color
       }
       objects(all: true, types: ["Attack-Pattern"]) {
         edges {
@@ -88,14 +84,10 @@ export const incidentKnowledgeAttackPatternsGraphQuery = graphql`
                 }
               }
               killChainPhases {
-                edges {
-                  node {
-                    id
-                    kill_chain_name
-                    phase_name
-                    x_opencti_order
-                  }
-                }
+                id
+                kill_chain_name
+                phase_name
+                x_opencti_order
               }
             }
           }

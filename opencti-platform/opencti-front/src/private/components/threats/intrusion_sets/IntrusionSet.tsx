@@ -46,24 +46,16 @@ const intrusionSetFragment = graphql`
       name
     }
     objectMarking {
-      edges {
-        node {
-          id
-          definition_type
-          definition
-          x_opencti_order
-          x_opencti_color
-        }
-      }
+      id
+      definition_type
+      definition
+      x_opencti_order
+      x_opencti_color
     }
     objectLabel {
-      edges {
-        node {
-          id
-          value
-          color
-        }
-      }
+      id
+      value
+      color
     }
     name
     aliases
@@ -122,9 +114,7 @@ const IntrusionSetComponent = ({
       </Grid>
       <StixCoreObjectOrStixCoreRelationshipNotes
         stixCoreObjectOrStixCoreRelationshipId={intrusionSetData.id}
-        defaultMarkings={(intrusionSetData.objectMarking?.edges ?? []).map(
-          (edge) => edge.node,
-        )}
+        defaultMarkings={intrusionSetData.objectMarking ?? []}
       />
       <Security needs={[KNOWLEDGE_KNUPDATE]}>
         <IntrusionSetEdition intrusionSetId={intrusionSetData.id} />

@@ -182,11 +182,7 @@ const NoteLineComponent: FunctionComponent<NoteLineComponentProps> = ({
               className={classes.bodyItem}
               style={{ width: dataColumns.objectMarking.width }}
             >
-              <ItemMarkings
-                variant="inList"
-                markingDefinitionsEdges={node.objectMarking?.edges ?? []}
-                limit={1}
-              />
+              <ItemMarkings variant="inList" markingDefinitions={node.objectMarking ?? []} limit={1}/>
             </div>
           </div>
         }
@@ -217,24 +213,16 @@ export const NoteLine = createFragmentContainer(NoteLineComponent, {
         }
       }
       objectMarking {
-        edges {
-          node {
-            id
-            definition_type
-            definition
-            x_opencti_order
-            x_opencti_color
-          }
-        }
+        id
+        definition_type
+        definition
+        x_opencti_order
+        x_opencti_color
       }
       objectLabel {
-        edges {
-          node {
-            id
-            value
-            color
-          }
-        }
+        id
+        value
+        color
       }
       creators {
         id

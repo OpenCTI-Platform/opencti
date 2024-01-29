@@ -190,15 +190,11 @@ export const stixNestedRefRelationshipCreationQuery = graphql`
           created_at
           updated_at
           objectMarking {
-            edges {
-              node {
-                id
-                definition_type
-                definition
-                x_opencti_order
-                x_opencti_color
-              }
-            }
+            id
+            definition_type
+            definition
+            x_opencti_order
+            x_opencti_color
           }
         }
       }
@@ -252,15 +248,11 @@ const stixNestedRefRelationshipCreationMutation = graphql`
       updated_at
       created
       objectMarking {
-        edges {
-          node {
-            id
-            definition_type
-            definition
-            x_opencti_order
-            x_opencti_color
-          }
-        }
+        id
+        definition_type
+        definition
+        x_opencti_order
+        x_opencti_color
       }
     }
   }

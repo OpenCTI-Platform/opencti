@@ -94,7 +94,7 @@ class AttackPatternDetailsComponent extends Component {
             </Grid>
             <Grid item={true} xs={6}>
               <StixCoreObjectKillChainPhasesView
-                killChainPhasesEdges={attackPattern.killChainPhases.edges}
+                killChainPhases={attackPattern.killChainPhases}
                 firstLine={true}
               />
               <Typography
@@ -157,24 +157,16 @@ const AttackPatternDetails = createFragmentContainer(
         x_mitre_detection
         isSubAttackPattern
         killChainPhases {
-          edges {
-            node {
-              id
-              entity_type
-              kill_chain_name
-              phase_name
-              x_opencti_order
-            }
-          }
+          id
+          entity_type
+          kill_chain_name
+          phase_name
+          x_opencti_order
         }
         objectLabel {
-          edges {
-            node {
-              id
-              value
-              color
-            }
-          }
+          id
+          value
+          color
         }
         ...AttackPatternSubAttackPatterns_attackPattern
         ...AttackPatternParentAttackPatterns_attackPattern

@@ -176,7 +176,7 @@ const IndicatorDetailsComponent: FunctionComponent<IndicatorDetailsComponentProp
               label={indicator.x_opencti_detection ? t_i18n('Yes') : t_i18n('No')}
               status={indicator.x_opencti_detection}
             />
-            <StixCoreObjectKillChainPhasesView killChainPhasesEdges={indicator.killChainPhases?.edges ?? []} />
+            <StixCoreObjectKillChainPhasesView killChainPhases={indicator.killChainPhases ?? []} />
             <Typography
               variant="h3"
               gutterBottom={true}
@@ -236,24 +236,16 @@ const IndicatorDetails = createFragmentContainer(IndicatorDetailsComponent, {
         }
       }
       objectLabel {
-        edges {
-          node {
-            id
-            value
-            color
-          }
-        }
+        id
+        value
+        color
       }
       killChainPhases {
-        edges {
-          node {
-            id
-            entity_type
-            kill_chain_name
-            phase_name
-            x_opencti_order
-          }
-        }
+        id
+        entity_type
+        kill_chain_name
+        phase_name
+        x_opencti_order
       }
       ...IndicatorObservables_indicator
     }

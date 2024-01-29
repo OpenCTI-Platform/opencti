@@ -58,12 +58,8 @@ const containerHeaderSharedQuery = graphql`
   query StixCoreObjectSharingQuery($id: String!) {
     stixCoreObject(id: $id) {
       objectOrganization {
-        edges {
-          node {
-            id
-            name
-          }
-        }
+        id
+        name
       }
     }
   }
@@ -78,12 +74,8 @@ const containerHeaderSharedQueryGroupDeleteMutation = graphql`
       restrictionOrganizationDelete(organizationId: $organizationId) {
         id
         objectOrganization {
-          edges {
-            node {
-              id
-              name
-            }
-          }
+          id
+          name
         }
       }
     }
@@ -99,12 +91,8 @@ const containerHeaderSharedGroupAddMutation = graphql`
       restrictionOrganizationAdd(organizationId: $organizationId) {
         id
         objectOrganization {
-          edges {
-            node {
-              id
-              name
-            }
-          }
+          id
+          name
         }
       }
     }
@@ -167,19 +155,19 @@ const StixCoreObjectSharing: FunctionComponent<ContainerHeaderSharedProps> = ({
     }
   };
   const render = ({ stixCoreObject }: StixCoreObjectSharingQuery$data) => {
-    const edges = stixCoreObject?.objectOrganization?.edges ?? [];
+    const edges = stixCoreObject?.objectOrganization ?? [];
     if (variant === 'header') {
       return (
         <React.Fragment>
           {edges.map((edge) => (
-            <Tooltip key={edge.node.id} title={edge.node.name}>
+            <Tooltip key={edge.id} title={edge.name}>
               <Chip
                 icon={<AccountBalanceOutlined />}
                 classes={{ root: classes.organizationInHeader }}
                 color="primary"
                 variant="outlined"
-                label={truncate(edge.node.name, 15)}
-                onDelete={() => removeOrganization(edge.node.id)}
+                label={truncate(edge.name, 15)}
+                onDelete={() => removeOrganization(edge.id)}
               />
             </Tooltip>
           ))}
@@ -255,14 +243,14 @@ const StixCoreObjectSharing: FunctionComponent<ContainerHeaderSharedProps> = ({
         </EETooltip>
         <div className="clearfix" />
         {edges.map((edge) => (
-          <Tooltip key={edge.node.id} title={edge.node.name}>
+          <Tooltip key={edge.id} title={edge.name}>
             <Chip
               icon={<AccountBalanceOutlined />}
               classes={{ root: classes.organization }}
               color="primary"
               variant="outlined"
-              label={truncate(edge.node.name, 15)}
-              onDelete={() => removeOrganization(edge.node.id)}
+              label={truncate(edge.name, 15)}
+              onDelete={() => removeOrganization(edge.id)}
             />
           </Tooltip>
         ))}

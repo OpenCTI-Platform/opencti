@@ -172,11 +172,7 @@ describe('CourseOfAction resolver standard behavior', () => {
             from {
               ... on CourseOfAction {
                 objectMarking {
-                  edges {
-                    node {
-                      id
-                    }
-                  }
+                  id
                 }
               }
             }
@@ -194,7 +190,7 @@ describe('CourseOfAction resolver standard behavior', () => {
         },
       },
     });
-    expect(queryResult.data.courseOfActionEdit.relationAdd.from.objectMarking.edges.length).toEqual(1);
+    expect(queryResult.data.courseOfActionEdit.relationAdd.from.objectMarking.length).toEqual(1);
   });
   it('should delete relation in courseOfAction', async () => {
     const RELATION_DELETE_QUERY = gql`
@@ -203,11 +199,7 @@ describe('CourseOfAction resolver standard behavior', () => {
           relationDelete(toId: $toId, relationship_type: $relationship_type) {
             id
             objectMarking {
-              edges {
-                node {
-                  id
-                }
-              }
+              id
             }
           }
         }
@@ -221,7 +213,7 @@ describe('CourseOfAction resolver standard behavior', () => {
         relationship_type: 'object-marking',
       },
     });
-    expect(queryResult.data.courseOfActionEdit.relationDelete.objectMarking.edges.length).toEqual(0);
+    expect(queryResult.data.courseOfActionEdit.relationDelete.objectMarking.length).toEqual(0);
   });
   it('should courseOfAction deleted', async () => {
     const DELETE_QUERY = gql`

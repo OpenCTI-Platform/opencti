@@ -39,12 +39,8 @@ const READ_QUERY = gql`
       name
       description
       killChainPhases {
-        edges {
-          node {
-            id
-            standard_id
-          }
-        }
+        id
+        standard_id
       }
       coursesOfAction {
         edges {
@@ -98,8 +94,8 @@ describe('AttackPattern resolver standard behavior', () => {
     expect(queryResult.data.attackPattern).not.toBeNull();
     expect(queryResult.data.attackPattern.id).toEqual(attackPatternInternalId);
     expect(queryResult.data.attackPattern.toStix.length).toBeGreaterThan(5);
-    expect(queryResult.data.attackPattern.killChainPhases.edges.length).toEqual(1);
-    expect(queryResult.data.attackPattern.killChainPhases.edges[0].node.standard_id).toEqual(
+    expect(queryResult.data.attackPattern.killChainPhases.length).toEqual(1);
+    expect(queryResult.data.attackPattern.killChainPhases[0].standard_id).toEqual(
       'kill-chain-phase--56330302-292c-5ad4-bece-bacaa99c16e0'
     );
   });
@@ -184,12 +180,8 @@ describe('AttackPattern resolver standard behavior', () => {
             from {
               ... on AttackPattern {
                 objectMarking {
-                  edges {
-                    node {
-                      id
-                      standard_id
-                    }
-                  }
+                  id
+                  standard_id
                 }
               }
             }
@@ -207,7 +199,7 @@ describe('AttackPattern resolver standard behavior', () => {
         },
       },
     });
-    expect(queryResult.data.attackPatternEdit.relationAdd.from.objectMarking.edges.length).toEqual(1);
+    expect(queryResult.data.attackPatternEdit.relationAdd.from.objectMarking.length).toEqual(1);
   });
   it('should delete relation in attackPattern', async () => {
     const RELATION_DELETE_QUERY = gql`
@@ -216,12 +208,8 @@ describe('AttackPattern resolver standard behavior', () => {
           relationDelete(toId: $toId, relationship_type: $relationship_type) {
             id
             objectMarking {
-              edges {
-                node {
-                  id
-                  standard_id
-                }
-              }
+              id
+              standard_id
             }
           }
         }
@@ -235,7 +223,7 @@ describe('AttackPattern resolver standard behavior', () => {
         relationship_type: 'object-marking',
       },
     });
-    expect(queryResult.data.attackPatternEdit.relationDelete.objectMarking.edges.length).toEqual(0);
+    expect(queryResult.data.attackPatternEdit.relationDelete.objectMarking.length).toEqual(0);
   });
   it('should attackPattern deleted', async () => {
     const DELETE_QUERY = gql`

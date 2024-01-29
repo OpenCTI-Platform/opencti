@@ -46,24 +46,16 @@ const administrativeAreaFragment = graphql`
       name
     }
     objectMarking {
-      edges {
-        node {
-          id
-          definition_type
-          definition
-          x_opencti_order
-          x_opencti_color
-        }
-      }
+      id
+      definition_type
+      definition
+      x_opencti_order
+      x_opencti_color
     }
     objectLabel {
-      edges {
-        node {
-          id
-          value
-          color
-        }
-      }
+      id
+      value
+      color
     }
     name
     latitude
@@ -139,9 +131,7 @@ const AdministrativeArea = ({
       </Grid>
       <StixCoreObjectOrStixCoreRelationshipNotes
         stixCoreObjectOrStixCoreRelationshipId={administrativeArea.id}
-        defaultMarkings={(administrativeArea.objectMarking?.edges ?? []).map(
-          (edge) => edge.node,
-        )}
+        defaultMarkings={administrativeArea.objectMarking ?? []}
       />
       <Security needs={[KNOWLEDGE_KNUPDATE]}>
         <AdministrativeAreaEdition

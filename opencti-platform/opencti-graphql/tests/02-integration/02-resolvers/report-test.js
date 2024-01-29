@@ -378,11 +378,7 @@ describe('Report resolver standard behavior', () => {
             from {
               ... on Report {
                 objectMarking {
-                  edges {
-                    node {
-                      id
-                    }
-                  }
+                  id
                 }
               }
             }
@@ -400,7 +396,7 @@ describe('Report resolver standard behavior', () => {
         },
       },
     });
-    expect(queryResult.data.reportEdit.relationAdd.from.objectMarking.edges.length).toEqual(1);
+    expect(queryResult.data.reportEdit.relationAdd.from.objectMarking.length).toEqual(1);
   });
   it('should delete relation in report', async () => {
     const RELATION_DELETE_QUERY = gql`
@@ -409,11 +405,7 @@ describe('Report resolver standard behavior', () => {
           relationDelete(toId: $toId, relationship_type: $relationship_type) {
             id
             objectMarking {
-              edges {
-                node {
-                  id
-                }
-              }
+              id
             }
           }
         }
@@ -427,7 +419,7 @@ describe('Report resolver standard behavior', () => {
         relationship_type: 'object-marking',
       },
     });
-    expect(queryResult.data.reportEdit.relationDelete.objectMarking.edges.length).toEqual(0);
+    expect(queryResult.data.reportEdit.relationDelete.objectMarking.length).toEqual(0);
   });
   describe('investigationAdd', () => {
     let investigationId;

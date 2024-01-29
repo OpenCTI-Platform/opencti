@@ -7,10 +7,8 @@ import {
   stixDomainObjectEditContext,
   stixDomainObjectEditField,
 } from '../domain/stixDomainObject';
-import { batchKillChainPhases } from '../domain/stixCoreObject';
-import { batchLoader } from '../database/middleware';
-
-const killChainPhaseLoader = batchLoader(batchKillChainPhases);
+import { loadThroughDenormalized } from './stix';
+import { INPUT_KILLCHAIN } from '../schema/general';
 
 const toolResolvers = {
   Query: {
@@ -18,7 +16,7 @@ const toolResolvers = {
     tools: (_, args, context) => findAll(context, context.user, args),
   },
   Tool: {
-    killChainPhases: (tool, _, context) => killChainPhaseLoader.load(tool.id, context, context.user),
+    killChainPhases: (tool, _, context) => loadThroughDenormalized(context, context.user, tool, INPUT_KILLCHAIN, { sortBy: 'phase_name' }),
   },
   Mutation: {
     toolEdit: (_, { id }, context) => ({

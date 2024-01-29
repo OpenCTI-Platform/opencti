@@ -95,13 +95,9 @@ const EntityStixSightingRelationshipLineFragment = graphql`
                 description
                 x_mitre_id
                 killChainPhases {
-                    edges {
-                        node {
-                            id
-                            phase_name
-                            x_opencti_order
-                        }
-                    }
+                    id
+                    phase_name
+                    x_opencti_order
                 }
             }
             ... on Campaign {

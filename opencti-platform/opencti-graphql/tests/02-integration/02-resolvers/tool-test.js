@@ -38,12 +38,8 @@ const READ_QUERY = gql`
       name
       description
       killChainPhases {
-        edges {
-          node {
-            id
-            standard_id
-          }
-        }
+        id
+        standard_id
       }
       toStix
     }
@@ -87,8 +83,8 @@ describe('Tool resolver standard behavior', () => {
     expect(queryResult.data.tool).not.toBeNull();
     expect(queryResult.data.tool.id).toEqual(toolInternalId);
     expect(queryResult.data.tool.toStix.length).toBeGreaterThan(5);
-    expect(queryResult.data.tool.killChainPhases.edges.length).toEqual(1);
-    expect(queryResult.data.tool.killChainPhases.edges[0].node.standard_id).toEqual(
+    expect(queryResult.data.tool.killChainPhases.length).toEqual(1);
+    expect(queryResult.data.tool.killChainPhases[0].standard_id).toEqual(
       'kill-chain-phase--56330302-292c-5ad4-bece-bacaa99c16e0'
     );
   });
@@ -160,11 +156,7 @@ describe('Tool resolver standard behavior', () => {
             from {
               ... on Tool {
                 objectMarking {
-                  edges {
-                    node {
-                      id
-                    }
-                  }
+                  id
                 }
               }
             }
@@ -182,7 +174,7 @@ describe('Tool resolver standard behavior', () => {
         },
       },
     });
-    expect(queryResult.data.toolEdit.relationAdd.from.objectMarking.edges.length).toEqual(1);
+    expect(queryResult.data.toolEdit.relationAdd.from.objectMarking.length).toEqual(1);
   });
   it('should delete relation in tool', async () => {
     const RELATION_DELETE_QUERY = gql`
@@ -191,11 +183,7 @@ describe('Tool resolver standard behavior', () => {
           relationDelete(toId: $toId, relationship_type: $relationship_type) {
             id
             objectMarking {
-              edges {
-                node {
-                  id
-                }
-              }
+              id
             }
           }
         }
@@ -209,7 +197,7 @@ describe('Tool resolver standard behavior', () => {
         relationship_type: 'object-marking',
       },
     });
-    expect(queryResult.data.toolEdit.relationDelete.objectMarking.edges.length).toEqual(0);
+    expect(queryResult.data.toolEdit.relationDelete.objectMarking.length).toEqual(0);
   });
   it('should tool deleted', async () => {
     const DELETE_QUERY = gql`

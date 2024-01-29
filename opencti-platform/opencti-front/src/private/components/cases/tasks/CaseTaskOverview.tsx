@@ -31,31 +31,19 @@ const CaseTaskOverviewFragment = graphql`
       }
     }
     objectMarking {
-      edges {
-        node {
-          definition
-          definition_type
-          id
-        }
-      }
+      definition
+      definition_type
+      id
     }
     objectLabel {
-      edges {
-        node {
-          id
-          value
-          color
-        }
-      }
+      id
+      value
+      color
     }
     objectAssignee {
-      edges {
-        node {
-          entity_type
-          id
-          name
-        }
-      }
+      entity_type
+      id
+      name
     }
     status {
       template {
@@ -98,7 +86,7 @@ const CaseTaskOverview: FunctionComponent<CaseTaskOverviewProps> = ({
           >
             {t_i18n('Assignees')}
           </Typography>
-          <ItemAssignees assigneesEdges={data.objectAssignee?.edges ?? []} />
+          <ItemAssignees assignees={data.objectAssignee ?? []} />
           <Typography
             variant="h3"
             gutterBottom={true}
@@ -125,7 +113,7 @@ const CaseTaskOverview: FunctionComponent<CaseTaskOverviewProps> = ({
             {t_i18n('Processing status')}
           </Typography>
           <ItemStatus status={data.status} disabled={!data.workflowEnabled} />
-          {data.objectMarking && (
+          {data.objectMarking && data.objectMarking.length > 0 && (
             <>
               <Typography
                 variant="h3"
@@ -134,9 +122,7 @@ const CaseTaskOverview: FunctionComponent<CaseTaskOverviewProps> = ({
               >
                 {t_i18n('Marking')}
               </Typography>
-              <ItemMarkings
-                markingDefinitionsEdges={data.objectMarking.edges ?? []}
-              />
+              <ItemMarkings markingDefinitions={data.objectMarking}/>
             </>
           )}
         </Grid>

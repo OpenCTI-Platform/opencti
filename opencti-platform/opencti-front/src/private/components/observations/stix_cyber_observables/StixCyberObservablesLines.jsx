@@ -184,14 +184,10 @@ export default createPaginationContainer(
               observable_value
               created_at
               objectMarking {
-                edges {
-                  node {
-                    id
-                    definition
-                    x_opencti_order
-                    x_opencti_color
-                  }
-                }
+                id
+                definition
+                x_opencti_order
+                x_opencti_color
               }
               ...StixCyberObservableLine_node
             }

@@ -28,13 +28,9 @@ const REPORT_LIST_QUERY = gql`
                     report_types
                     confidence
                     objectMarking {
-                        edges {
-                            node {
-                                id
-                                standard_id
-                                definition
-                            }
-                        }
+                      id
+                      standard_id
+                      definition
                     }
                 }
             }

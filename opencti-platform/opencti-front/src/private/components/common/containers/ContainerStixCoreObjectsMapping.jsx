@@ -167,9 +167,7 @@ const ContainerStixCoreObjectsMapping = ({
         openDrawer={openDrawer}
         handleClose={handleClose}
         defaultCreatedBy={container.createdBy ?? null}
-        defaultMarkingDefinitions={(
-          container.objectMarking?.edges ?? []
-        ).map((n) => n.node)}
+        defaultMarkingDefinitions={container.objectMarking ?? []}
         targetStixCoreObjectTypes={[
           'Stix-Domain-Object',
           'Stix-Cyber-Observable',

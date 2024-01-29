@@ -138,7 +138,7 @@ const ContainerStixObjectOrStixRelationshipLineComponent = ({
             >
               <ItemMarkings
                 variant="inList"
-                markingDefinitionsEdges={node.objectMarking?.edges ?? []}
+                markingDefinitions={node.objectMarking ?? []}
                 limit={1}
               />
             </div>
@@ -177,24 +177,16 @@ export const ContainerStixObjectOrStixRelationshipLine = createFragmentContainer
             }
           }
           objectMarking {
-            edges {
-              node {
-                id
-                definition_type
-                definition
-                x_opencti_order
-                x_opencti_color
-              }
-            }
+            id
+            definition_type
+            definition
+            x_opencti_order
+            x_opencti_color
           }
           objectLabel {
-            edges {
-              node {
-                id
-                value
-                color
-              }
-            }
+            id
+            value
+            color
           }
           creators {
             id
@@ -302,24 +294,16 @@ export const ContainerStixObjectOrStixRelationshipLine = createFragmentContainer
         ... on StixCoreRelationship {
           relationship_type
           objectMarking {
-            edges {
-              node {
-                id
-                definition_type
-                definition
-                x_opencti_order
-                x_opencti_color
-              }
-            }
+            id
+            definition_type
+            definition
+            x_opencti_order
+            x_opencti_color
           }
           objectLabel {
-            edges {
-              node {
-                id
-                value
-                color
-              }
-            }
+            id
+            value
+            color
           }
           creators {
             id
@@ -511,24 +495,16 @@ export const ContainerStixObjectOrStixRelationshipLine = createFragmentContainer
         ... on StixSightingRelationship {
           relationship_type
           objectMarking {
-            edges {
-              node {
-                id
-                definition_type
-                definition
-                x_opencti_order
-                x_opencti_color
-              }
-            }
+            id
+            definition_type
+            definition
+            x_opencti_order
+            x_opencti_color
           }
           objectLabel {
-            edges {
-              node {
-                id
-                value
-                color
-              }
-            }
+            id
+            value
+            color
           }
           creators {
             id

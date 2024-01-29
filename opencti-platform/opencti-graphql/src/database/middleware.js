@@ -206,14 +206,14 @@ export const batchLoader = (loader) => {
   const dataLoader = new DataLoader(
     (objects) => {
       const { context, user, args } = R.head(objects);
-      const ids = objects.map((i) => i.id);
-      return loader(context, user, ids, args);
+      const elements = objects.map((i) => i.element);
+      return loader(context, user, elements, args);
     },
     { maxBatchSize: MAX_BATCH_SIZE, cache: false }
   );
   return {
-    load: (id, context, user, args = {}) => {
-      return dataLoader.load({ id, context, user, args });
+    load: (element, context, user, args = {}) => {
+      return dataLoader.load({ element, context, user, args });
     },
   };
 };
@@ -227,131 +227,6 @@ const checkIfInferenceOperationIsValid = (user, element) => {
 };
 // endregion
 
-// region bulk loading method
-
-// Listing handle
-const batchListThrough = async (context, user, sources, sourceSide, relationType, targetEntityType, opts = {}) => {
-  const { paginate = true, withInferences = true, batched = true, first = null, search = null } = opts;
-  const opposite = sourceSide === 'from' ? 'to' : 'from';
-  // USING ELASTIC
-  const ids = Array.isArray(sources) ? sources : [sources];
-  // Filter on connection to get only relation coming from ids.
-  const directionInternalIdFilter = {
-    key: 'connections',
-    nested: [
-      { key: 'internal_id', values: ids },
-      { key: 'role', values: [`*_${sourceSide}`], operator: 'wildcard' },
-    ],
-  };
-  // Filter the other side of the relation to have expected toEntityType
-  const oppositeTypeFilter = {
-    key: 'connections',
-    nested: [
-      { key: 'types', values: Array.isArray(targetEntityType) ? targetEntityType : [targetEntityType] },
-      { key: 'role', values: [`*_${opposite}`], operator: 'wildcard' },
-    ],
-  };
-  const filtersContent = [directionInternalIdFilter, oppositeTypeFilter];
-  const filters = {
-    mode: 'and',
-    filters: filtersContent,
-    filterGroups: [],
-  };
-  // region Resolve all relations (can be inferred or not)
-  const indices = withInferences ? READ_RELATIONSHIPS_INDICES : READ_RELATIONSHIPS_INDICES_WITHOUT_INFERRED;
-  const relations = await elList(context, user, indices, {
-    filters,
-    types: [relationType],
-    connectionFormat: false,
-    noFiltersChecking: true,
-    search,
-  });
-  // endregion
-  // region Resolved all targets for all relations
-  const targetIds = R.uniq(relations.map((s) => s[`${opposite}Id`]));
-  const targets = await elFindByIds(context, user, targetIds, { ...opts, type: targetEntityType });
-  // endregion
-  // region Enrich all targets with internal types [manual and/or inferred]
-  const targetsWithTypes = {};
-  relations.forEach((relation) => {
-    const relationTarget = targets.find((i) => i.id === relation[`${opposite}Id`]);
-    if (relationTarget) { // Could be empty due to restriction on the entity but not on the relationship
-      const isInferred = isInferredIndex(relation._index);
-      const targetType = isInferred ? 'inferred' : 'manual';
-      if (targetsWithTypes[relationTarget.id] && !targetsWithTypes[relationTarget.id].i_types.includes(targetType)) {
-        targetsWithTypes[relationTarget.id].i_types.push(targetType);
-      } else {
-        targetsWithTypes[relationTarget.id] = { ...relationTarget, i_types: [targetType] };
-      }
-    }
-  });
-  // endregion
-  // Group and rebuild the result
-  const processedTargets = Object.values(targetsWithTypes);
-  const elGrouped = R.groupBy((e) => e[`${sourceSide}Id`], relations);
-  if (paginate) {
-    return ids.map((id) => {
-      const values = elGrouped[id];
-      const edges = [];
-      if (values) {
-        const data = first ? R.take(first, values) : values;
-        const filterIds = (data || []).map((i) => i[`${opposite}Id`]);
-        const filteredElements = processedTargets.filter((t) => filterIds.includes(t.internal_id));
-        edges.push(...filteredElements.map((n) => ({ node: n, types: n.i_types })));
-      }
-      return buildPagination(0, null, edges, edges.length);
-    });
-  }
-  const elements = ids.map((id) => {
-    const values = elGrouped[id];
-    const data = first ? R.take(first, values) : values;
-    const filterIds = (data || []).map((i) => i[`${opposite}Id`]);
-    return targets.filter((t) => filterIds.includes(t.internal_id));
-  });
-  if (batched) {
-    return elements;
-  }
-  return R.flatten(elements);
-};
-export const batchListThroughGetFrom = async (context, user, sources, relationType, targetEntityType, opts = {}) => {
-  return batchListThrough(context, user, sources, 'to', relationType, targetEntityType, opts);
-};
-export const listThroughGetFrom = async (context, user, sources, relationType, targetEntityType, opts = { paginate: false }) => {
-  const options = { ...opts, batched: false };
-  return batchListThrough(context, user, sources, 'to', relationType, targetEntityType, options);
-};
-export const batchListThroughGetTo = async (context, user, sources, relationType, targetEntityType, opts = {}) => {
-  return batchListThrough(context, user, sources, 'from', relationType, targetEntityType, opts);
-};
-export const listThroughGetTo = async (context, user, sources, relationType, targetEntityType, opts = { paginate: false }) => {
-  const options = { ...opts, batched: false };
-  return batchListThrough(context, user, sources, 'from', relationType, targetEntityType, options);
-};
-// Unary handle
-const loadThrough = async (context, user, sources, sourceSide, relationType, targetEntityType) => {
-  const elements = await batchListThrough(context, user, sources, sourceSide, relationType, targetEntityType, {
-    paginate: false,
-    batched: false,
-  });
-  if (elements.length > 1) {
-    throw DatabaseError('Expected one element only through relation', { sources, relationType, targetEntityType });
-  }
-  return R.head(elements);
-};
-export const batchLoadThroughGetFrom = async (context, user, sources, relationType, targetEntityType) => {
-  const data = await batchListThroughGetFrom(context, user, sources, relationType, targetEntityType, { paginate: false });
-  return data.map((b) => b && R.head(b));
-};
-export const loadThroughGetFrom = async (context, user, sources, relationType, targetEntityType) => {
-  return loadThrough(context, user, sources, 'to', relationType, targetEntityType);
-};
-export const batchLoadThroughGetTo = async (context, user, sources, relationType, targetEntityType) => {
-  const data = await batchListThroughGetTo(context, user, sources, relationType, targetEntityType, { paginate: false });
-  return data.map((b) => b && R.head(b));
-};
-export const loadThroughGetTo = async (context, user, sources, relationType, targetEntityType) => {
-  return loadThrough(context, user, sources, 'from', relationType, targetEntityType);
-};
 // Standard listing
 export const listThings = async (context, user, thingsTypes, args = {}) => {
   const { indices = READ_DATA_INDICES } = args;
@@ -1424,7 +1299,7 @@ export const mergeEntities = async (context, user, targetEntityId, sourceEntityI
   }
 };
 
-const transformPatchToInput = (patch, operations = {}) => {
+export const transformPatchToInput = (patch, operations = {}) => {
   return R.pipe(
     R.toPairs,
     R.map((t) => {
@@ -1972,10 +1847,12 @@ export const updateAttributeMetaResolved = async (context, user, initial, inputs
             const previous = currentValue ? [currentValue] : currentValue;
             updatedInputs.push({ key, value: [targetCreated], previous });
             updatedInstance[key] = targetCreated;
+            updatedInstance[relType] = targetCreated.internal_id;
           } else if (currentValue) {
             // Just replace by nothing
             updatedInputs.push({ key, value: null, previous: [currentValue] });
             updatedInstance[key] = null;
+            updatedInstance[relType] = null;
           }
         }
       } else {
@@ -2004,6 +1881,7 @@ export const updateAttributeMetaResolved = async (context, user, initial, inputs
             }
             updatedInputs.push({ key, value: refs, previous: updatedInstance[key] });
             updatedInstance[key] = refs;
+            updatedInstance[relType] = newTargetsIds;
           }
         }
         if (operation === UPDATE_OPERATION_ADD) {
@@ -2014,6 +1892,7 @@ export const updateAttributeMetaResolved = async (context, user, initial, inputs
             relationsToCreate.push(...newRelations);
             updatedInputs.push({ key, value: refsToCreate, operation });
             updatedInstance[key] = [...(updatedInstance[key] || []), ...refsToCreate];
+            updatedInstance[relType] = updatedInstance[key].map((u) => u.internal_id);
           }
         }
         if (operation === UPDATE_OPERATION_REMOVE) {
@@ -2024,6 +1903,7 @@ export const updateAttributeMetaResolved = async (context, user, initial, inputs
             relationsToDelete.push(...relsToDelete);
             updatedInputs.push({ key, value: refs, operation });
             updatedInstance[key] = (updatedInstance[key] || []).filter((c) => !targetIds.includes(c.internal_id));
+            updatedInstance[relType] = updatedInstance[key].map((u) => u.internal_id);
           }
         }
       }
@@ -2901,7 +2781,7 @@ export const createRelationRaw = async (context, user, input, opts = {}) => {
       event = await storeCreateRelationEvent(context, user, createdRelation, opts);
     }
     // - TRANSACTION END
-    return { element: dataRel.element, event, isCreation: true };
+    return { element: { ...resolvedInput, ...dataRel.element }, event, isCreation: true };
   } catch (err) {
     if (err.name === TYPE_LOCK_ERROR) {
       throw LockTimeoutError({ participantIds });
@@ -3213,7 +3093,7 @@ const createEntityRaw = async (context, user, input, type, opts = {}) => {
     const createdElement = { ...resolvedInput, ...dataEntity.element };
     const event = await storeCreateEntityEvent(context, user, createdElement, dataEntity.message, opts);
     // Return created element after waiting for it.
-    return { element: dataEntity.element, event, isCreation: true };
+    return { element: createdElement, event, isCreation: true };
   } catch (err) {
     if (err.name === TYPE_LOCK_ERROR) {
       throw LockTimeoutError({ participantIds });

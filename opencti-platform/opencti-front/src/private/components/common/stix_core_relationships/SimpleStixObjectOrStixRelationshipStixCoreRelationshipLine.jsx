@@ -158,7 +158,7 @@ class SimpleStixObjectOrStixRelationshipStixCoreRelationshipLineComponent extend
               >
                 <ItemMarkings
                   variant="inList"
-                  markingDefinitionsEdges={node.objectMarking.edges}
+                  markingDefinitions={node.objectMarking ?? []}
                   limit={1}
                 />
               </div>
@@ -224,15 +224,11 @@ const SimpleStixObjectOrStixRelationshipStixCoreRelationshipLineFragment = creat
             }
           }
           objectMarking {
-            edges {
-              node {
-                id
-                definition_type
-                definition
-                x_opencti_order
-                x_opencti_color
-              }
-            }
+            id
+            definition_type
+            definition
+            x_opencti_order
+            x_opencti_color
           }
           from {
             ... on StixDomainObject {
@@ -242,13 +238,9 @@ const SimpleStixObjectOrStixRelationshipStixCoreRelationshipLineFragment = creat
               created_at
               updated_at
               objectLabel {
-                edges {
-                  node {
-                    id
-                    value
-                    color
-                  }
-                }
+                id
+                value
+                color
               }
             }
             ... on AttackPattern {
@@ -256,33 +248,21 @@ const SimpleStixObjectOrStixRelationshipStixCoreRelationshipLineFragment = creat
               description
               x_mitre_id
               killChainPhases {
-                edges {
-                  node {
-                    id
-                    phase_name
-                    x_opencti_order
-                  }
-                }
+                id
+                phase_name
+                x_opencti_order
               }
               objectMarking {
-                edges {
-                  node {
-                    id
-                    definition_type
-                    definition
-                    x_opencti_order
-                    x_opencti_color
-                  }
-                }
+                id
+                definition_type
+                definition
+                x_opencti_order
+                x_opencti_color
               }
               objectLabel {
-                edges {
-                  node {
-                    id
-                    value
-                    color
-                  }
-                }
+                id
+                value
+                color
               }
             }
             ... on Campaign {
@@ -410,24 +390,16 @@ const SimpleStixObjectOrStixRelationshipStixCoreRelationshipLineFragment = creat
               parent_types
               observable_value
               objectMarking {
-                edges {
-                  node {
-                    id
-                    definition_type
-                    definition
-                    x_opencti_order
-                    x_opencti_color
-                  }
-                }
+                id
+                definition_type
+                definition
+                x_opencti_order
+                x_opencti_color
               }
               objectLabel {
-                edges {
-                  node {
-                    id
-                    value
-                    color
-                  }
-                }
+                id
+                value
+                color
               }
             }
             ... on Indicator {
@@ -442,24 +414,16 @@ const SimpleStixObjectOrStixRelationshipStixCoreRelationshipLineFragment = creat
               x_opencti_main_observable_type
               created
               objectMarking {
-                edges {
-                  node {
-                    id
-                    definition_type
-                    definition
-                    x_opencti_order
-                    x_opencti_color
-                  }
-                }
+                id
+                definition_type
+                definition
+                x_opencti_order
+                x_opencti_color
               }
               objectLabel {
-                edges {
-                  node {
-                    id
-                    value
-                    color
-                  }
-                }
+                id
+                value
+                color
               }
             }
             ... on BasicRelationship {
@@ -481,13 +445,9 @@ const SimpleStixObjectOrStixRelationshipStixCoreRelationshipLineFragment = creat
               created_at
               updated_at
               objectLabel {
-                edges {
-                  node {
-                    id
-                    value
-                    color
-                  }
-                }
+                id
+                value
+                color
               }
             }
             ... on AttackPattern {
@@ -495,33 +455,21 @@ const SimpleStixObjectOrStixRelationshipStixCoreRelationshipLineFragment = creat
               description
               x_mitre_id
               killChainPhases {
-                edges {
-                  node {
-                    id
-                    phase_name
-                    x_opencti_order
-                  }
-                }
+                id
+                phase_name
+                x_opencti_order
               }
               objectMarking {
-                edges {
-                  node {
-                    id
-                    definition_type
-                    definition
-                    x_opencti_order
-                    x_opencti_color
-                  }
-                }
+                id
+                definition_type
+                definition
+                x_opencti_order
+                x_opencti_color
               }
               objectLabel {
-                edges {
-                  node {
-                    id
-                    value
-                    color
-                  }
-                }
+                id
+                value
+                color
               }
             }
             ... on Campaign {
@@ -649,24 +597,16 @@ const SimpleStixObjectOrStixRelationshipStixCoreRelationshipLineFragment = creat
               parent_types
               observable_value
               objectMarking {
-                edges {
-                  node {
-                    id
-                    definition_type
-                    definition
-                    x_opencti_order
-                    x_opencti_color
-                  }
-                }
+                id
+                definition_type
+                definition
+                x_opencti_order
+                x_opencti_color
               }
               objectLabel {
-                edges {
-                  node {
-                    id
-                    value
-                    color
-                  }
-                }
+                id
+                value
+                color
               }
             }
             ... on Indicator {
@@ -681,24 +621,16 @@ const SimpleStixObjectOrStixRelationshipStixCoreRelationshipLineFragment = creat
               x_opencti_main_observable_type
               created
               objectMarking {
-                edges {
-                  node {
-                    id
-                    definition_type
-                    definition
-                    x_opencti_order
-                    x_opencti_color
-                  }
-                }
+                id
+                definition_type
+                definition
+                x_opencti_order
+                x_opencti_color
               }
               objectLabel {
-                edges {
-                  node {
-                    id
-                    value
-                    color
-                  }
-                }
+                id
+                value
+                color
               }
             }
             ... on BasicRelationship {
@@ -713,13 +645,9 @@ const SimpleStixObjectOrStixRelationshipStixCoreRelationshipLineFragment = creat
           toId
           toType
           killChainPhases {
-            edges {
-              node {
-                id
-                phase_name
-                x_opencti_order
-              }
-            }
+            id
+            phase_name
+            x_opencti_order
           }
         }
       `,

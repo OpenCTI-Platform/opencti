@@ -1,6 +1,6 @@
 import { BUS_TOPICS } from '../../config/conf';
-import { batchListThroughGetFrom, batchListThroughGetTo, createEntity, deleteElementById, updateAttribute } from '../../database/middleware';
-import { type EntityOptions, internalLoadById, listEntitiesPaginated, storeLoadById } from '../../database/middleware-loader';
+import { createEntity, deleteElementById, updateAttribute } from '../../database/middleware';
+import { type EntityOptions, internalLoadById, listEntitiesPaginated, listEntitiesThroughRelationsPaginated, storeLoadById } from '../../database/middleware-loader';
 import { notify } from '../../database/redis';
 import type { DomainFindById } from '../../domain/domainTypes';
 
@@ -11,9 +11,11 @@ import type { AuthContext, AuthUser } from '../../types/user';
 import { type BasicStoreEntityTask, ENTITY_TYPE_CONTAINER_TASK } from './task-types';
 import { stixObjectOrRelationshipAddRefRelation, stixObjectOrRelationshipDeleteRefRelation } from '../../domain/stixObjectOrStixRelationship';
 import type { EditInput, StixRefRelationshipAddInput, TaskAddInput } from '../../generated/graphql';
+import { FilterMode } from '../../generated/graphql';
 import { now } from '../../utils/format';
 import { ENTITY_TYPE_USER } from '../../schema/internalObject';
-import { FilterMode } from '../../generated/graphql';
+import type { BasicStoreEntityCase } from '../case/case-types';
+import type { BasicStoreCommon } from '../../types/store';
 
 export const findById: DomainFindById<BasicStoreEntityTask> = (context: AuthContext, user: AuthUser, templateId: string) => {
   return storeLoadById(context, user, templateId, ENTITY_TYPE_CONTAINER_TASK);
@@ -23,11 +25,12 @@ export const findAll = (context: AuthContext, user: AuthUser, opts: EntityOption
   return listEntitiesPaginated<BasicStoreEntityTask>(context, user, [ENTITY_TYPE_CONTAINER_TASK], opts);
 };
 
-export const batchTasks = async (context: AuthContext, user: AuthUser, caseIds: string[], args = {}) => {
-  return batchListThroughGetFrom(context, user, caseIds, RELATION_OBJECT, ENTITY_TYPE_CONTAINER_TASK, args);
+export const caseTasksPaginated = async <T extends BasicStoreCommon> (context: AuthContext, user: AuthUser, caseId: string, opts: EntityOptions<T>) => {
+  return listEntitiesThroughRelationsPaginated<T>(context, user, caseId, RELATION_OBJECT, ENTITY_TYPE_CONTAINER_TASK, false, opts);
 };
-export const batchParticipants = (context: AuthContext, user: AuthUser, taskIds: string[]) => {
-  return batchListThroughGetTo(context, user, taskIds, RELATION_OBJECT_PARTICIPANT, ENTITY_TYPE_USER);
+
+export const taskParticipantsPaginated = async (context: AuthContext, user: AuthUser, caseId: string, opts: EntityOptions<BasicStoreEntityCase>) => {
+  return listEntitiesThroughRelationsPaginated(context, user, caseId, RELATION_OBJECT_PARTICIPANT, ENTITY_TYPE_USER, false, opts);
 };
 
 export const taskAdd = async (context: AuthContext, user: AuthUser, input: TaskAddInput) => {

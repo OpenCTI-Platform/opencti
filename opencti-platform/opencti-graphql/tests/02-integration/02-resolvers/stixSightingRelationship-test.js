@@ -156,11 +156,7 @@ describe('stixSightingRelationship resolver standard behavior', () => {
             from {
               ... on StixSightingRelationship {
                 objectMarking {
-                  edges {
-                    node {
-                      id
-                    }
-                  }
+                  id
                 }
               }
             }
@@ -178,7 +174,7 @@ describe('stixSightingRelationship resolver standard behavior', () => {
         },
       },
     });
-    expect(queryResult.data.stixSightingRelationshipEdit.relationAdd.from.objectMarking.edges.length).toEqual(1);
+    expect(queryResult.data.stixSightingRelationshipEdit.relationAdd.from.objectMarking.length).toEqual(1);
   });
   it('should delete relation in stixSightingRelationship', async () => {
     const RELATION_DELETE_QUERY = gql`
@@ -187,11 +183,7 @@ describe('stixSightingRelationship resolver standard behavior', () => {
           relationDelete(toId: $toId, relationship_type: $relationship_type) {
             id
             objectMarking {
-              edges {
-                node {
-                  id
-                }
-              }
+              id
             }
           }
         }
@@ -205,7 +197,7 @@ describe('stixSightingRelationship resolver standard behavior', () => {
         relationship_type: 'object-marking',
       },
     });
-    expect(queryResult.data.stixSightingRelationshipEdit.relationDelete.objectMarking.edges.length).toEqual(0);
+    expect(queryResult.data.stixSightingRelationshipEdit.relationDelete.objectMarking.length).toEqual(0);
   });
   it('should add multiple relation in stixSightingRelationship', async () => {
     const RELATIONS_ADD_QUERY = gql`
@@ -213,11 +205,7 @@ describe('stixSightingRelationship resolver standard behavior', () => {
         stixSightingRelationshipEdit(id: $id) {
           relationsAdd(input: $input) {
             objectMarking {
-              edges {
-                node {
-                  id
-                }
-              }
+              id
             }
           }
         }
@@ -233,7 +221,7 @@ describe('stixSightingRelationship resolver standard behavior', () => {
         },
       },
     });
-    expect(queryResult.data.stixSightingRelationshipEdit.relationsAdd.objectMarking.edges.length).toEqual(1);
+    expect(queryResult.data.stixSightingRelationshipEdit.relationsAdd.objectMarking.length).toEqual(1);
   });
   it('should stixSightingRelationship deleted', async () => {
     const DELETE_QUERY = gql`

@@ -195,11 +195,7 @@ describe('Sector resolver standard behavior', () => {
             from {
               ... on Sector {
                 objectMarking {
-                  edges {
-                    node {
-                      id
-                    }
-                  }
+                  id
                 }
               }
             }
@@ -217,7 +213,7 @@ describe('Sector resolver standard behavior', () => {
         },
       },
     });
-    expect(queryResult.data.sectorEdit.relationAdd.from.objectMarking.edges.length).toEqual(1);
+    expect(queryResult.data.sectorEdit.relationAdd.from.objectMarking.length).toEqual(1);
   });
   it('should delete relation in sector', async () => {
     const RELATION_DELETE_QUERY = gql`
@@ -226,11 +222,7 @@ describe('Sector resolver standard behavior', () => {
           relationDelete(toId: $toId, relationship_type: $relationship_type) {
             id
             objectMarking {
-              edges {
-                node {
-                  id
-                }
-              }
+              id
             }
           }
         }
@@ -244,7 +236,7 @@ describe('Sector resolver standard behavior', () => {
         relationship_type: 'object-marking',
       },
     });
-    expect(queryResult.data.sectorEdit.relationDelete.objectMarking.edges.length).toEqual(0);
+    expect(queryResult.data.sectorEdit.relationDelete.objectMarking.length).toEqual(0);
   });
   it('should sector deleted', async () => {
     const DELETE_QUERY = gql`

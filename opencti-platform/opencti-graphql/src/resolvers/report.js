@@ -1,6 +1,5 @@
 import {
   addReport,
-  batchParticipants,
   findAll,
   findById,
   reportContainsStixObjectOrStixRelationship,
@@ -22,10 +21,10 @@ import {
   stixDomainObjectEditContext,
   stixDomainObjectEditField,
 } from '../domain/stixDomainObject';
-import { batchLoader, distributionEntities } from '../database/middleware';
+import { distributionEntities } from '../database/middleware';
 import { ENTITY_TYPE_CONTAINER_REPORT } from '../schema/stixDomainObject';
-
-const participantLoader = batchLoader(batchParticipants);
+import { loadThroughDenormalized } from './stix';
+import { INPUT_PARTICIPANT } from '../schema/general';
 
 const reportResolvers = {
   Query: {
@@ -60,8 +59,8 @@ const reportResolvers = {
     },
   },
   Report: {
-    deleteWithElementsCount: (report, args, context) => reportDeleteElementsCount(context, context.user, report.id),
-    objectParticipant: (current, _, context) => participantLoader.load(current.id, context, context.user),
+    deleteWithElementsCount: (report, _, context) => reportDeleteElementsCount(context, context.user, report.id),
+    objectParticipant: (container, _, context) => loadThroughDenormalized(context, context.user, container, INPUT_PARTICIPANT, { sortBy: 'user_email' }),
   },
   Mutation: {
     reportEdit: (_, { id }, context) => ({

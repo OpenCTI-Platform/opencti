@@ -206,11 +206,7 @@ describe('Incident resolver standard behavior', () => {
             from {
               ... on Incident {
                 objectMarking {
-                  edges {
-                    node {
-                      id
-                    }
-                  }
+                  id
                 }
               }
             }
@@ -228,7 +224,7 @@ describe('Incident resolver standard behavior', () => {
         },
       },
     });
-    expect(queryResult.data.incidentEdit.relationAdd.from.objectMarking.edges.length).toEqual(1);
+    expect(queryResult.data.incidentEdit.relationAdd.from.objectMarking.length).toEqual(1);
   });
   it('should delete relation in Incident', async () => {
     const RELATION_DELETE_QUERY = gql`
@@ -237,11 +233,7 @@ describe('Incident resolver standard behavior', () => {
           relationDelete(toId: $toId, relationship_type: $relationship_type) {
             id
             objectMarking {
-              edges {
-                node {
-                  id
-                }
-              }
+              id
             }
           }
         }
@@ -255,7 +247,7 @@ describe('Incident resolver standard behavior', () => {
         relationship_type: 'object-marking',
       },
     });
-    expect(queryResult.data.incidentEdit.relationDelete.objectMarking.edges.length).toEqual(0);
+    expect(queryResult.data.incidentEdit.relationDelete.objectMarking.length).toEqual(0);
   });
   it('should Incident deleted', async () => {
     const DELETE_QUERY = gql`

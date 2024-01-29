@@ -149,8 +149,8 @@ class StixDomainObjectDetectDuplicate extends Component {
                       <div style={{ marginRight: 50 }}>
                         <ItemMarkings
                           variant="inList"
-                          markingDefinitionsEdges={
-                            element.node.objectMarking.edges
+                          markingDefinitions={
+                            element.node.objectMarking ?? []
                           }
                         />
                       </div>

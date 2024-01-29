@@ -138,7 +138,7 @@ const SettingsOrganizationUserCreation = ({
         </Fab>
       ) : (
         <IconButton
-          color="secondary"
+          color="primary"
           aria-label="Add"
           onClick={() => setOpenAddUser(true)}
           classes={{ root: classes.createButton }}
@@ -177,7 +177,7 @@ const SettingsOrganizationUserCreation = ({
           onReset={onReset}
         >
           {({ submitForm, handleReset, isSubmitting }) => (
-            <Form>
+            <Form style={{ margin: '20px 0 20px 0' }}>
               <Field
                 component={TextField}
                 name="name"

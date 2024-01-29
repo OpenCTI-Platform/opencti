@@ -306,26 +306,18 @@ export default createFragmentContainer(ToolEditionOverviewComponent, {
           }
         }
         killChainPhases {
-          edges {
-            node {
-              id
-              entity_type
-              kill_chain_name
-              phase_name
-              x_opencti_order
-            }
-          }
+          id
+          entity_type
+          kill_chain_name
+          phase_name
+          x_opencti_order
         }
         objectMarking {
-          edges {
-            node {
-              id
-              definition_type
-              definition
-              x_opencti_order
-              x_opencti_color
-            }
-          }
+          id
+          definition_type
+          definition
+          x_opencti_order
+          x_opencti_color
         }
         status {
           id

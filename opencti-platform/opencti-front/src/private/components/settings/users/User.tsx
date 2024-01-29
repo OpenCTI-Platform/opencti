@@ -116,8 +116,6 @@ const UserAuditsTimeSeriesQuery = graphql`
 const UserFragment = graphql`
   fragment User_user on User
   @argumentDefinitions(
-    rolesOrderBy: { type: "RolesOrdering", defaultValue: name }
-    rolesOrderMode: { type: "OrderingMode", defaultValue: asc }
     groupsOrderBy: { type: "GroupsOrdering", defaultValue: name }
     groupsOrderMode: { type: "OrderingMode", defaultValue: asc }
     organizationsOrderBy: { type: "OrganizationsOrdering", defaultValue: name }
@@ -135,7 +133,7 @@ const UserFragment = graphql`
     language
     api_token
     otp_activated
-    roles(orderBy: $rolesOrderBy, orderMode: $rolesOrderMode) {
+    roles {
       id
       name
       description

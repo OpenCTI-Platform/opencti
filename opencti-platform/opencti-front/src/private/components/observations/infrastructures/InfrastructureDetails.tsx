@@ -41,24 +41,16 @@ const InfrastructureDetailsFragment = graphql`
     first_seen
     last_seen
     killChainPhases {
-      edges {
-        node {
-          id
-          entity_type
-          kill_chain_name
-          phase_name
-          x_opencti_order
-        }
-      }
+      id
+      entity_type
+      kill_chain_name
+      phase_name
+      x_opencti_order
     }
     objectLabel {
-      edges {
-        node {
-          id
-          value
-          color
-        }
-      }
+      id
+      value
+      color
     }
   }
 `;
@@ -77,7 +69,7 @@ const InfrastructureDetails: FunctionComponent<InfrastructureDetailsProps> = ({
     InfrastructureDetailsFragment,
     infrastructure,
   );
-  const killChainPhases = data.killChainPhases?.edges ?? [];
+  const killChainPhases = data.killChainPhases ?? [];
   const observablesDataSelection = [
     {
       attribute: 'entity_type',
@@ -145,9 +137,7 @@ const InfrastructureDetails: FunctionComponent<InfrastructureDetailsProps> = ({
             {data.last_seen ? fldt(data.last_seen) : '-'}
           </Grid>
           <Grid item={true} xs={6}>
-            <StixCoreObjectKillChainPhasesView
-              killChainPhasesEdges={killChainPhases}
-            />
+            <StixCoreObjectKillChainPhasesView killChainPhases={killChainPhases}/>
           </Grid>
         </Grid>
         <br />

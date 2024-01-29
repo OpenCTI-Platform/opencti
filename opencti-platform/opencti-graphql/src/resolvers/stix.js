@@ -2,8 +2,20 @@ import { stixDelete, stixObjectMerge } from '../domain/stix';
 import { batchLoader, stixLoadByIdStringify } from '../database/middleware';
 import { connectorsForEnrichment } from '../database/repository';
 import { batchCreators } from '../domain/user';
+import { batchInternalRels } from '../domain/stixCoreObject';
+import { schemaRelationsRefDefinition } from '../schema/schema-relationsRef';
 
 const creatorsLoader = batchLoader(batchCreators);
+export const loadThroughDenormalized = (context, user, element, inputName, args = {}) => {
+  const relBatchLoader = batchLoader(batchInternalRels);
+  if (element[inputName]) {
+    // if element is already loaded, just send the data
+    return element[inputName];
+  }
+  // If not, reload through denormalized relationships
+  const ref = schemaRelationsRefDefinition.getRelationRef(element.entity_type, inputName);
+  return relBatchLoader.load({ element, definition: ref }, context, user, args);
+};
 
 const stixResolvers = {
   Query: {
@@ -18,7 +30,7 @@ const stixResolvers = {
   },
   StixObject: {
     // eslint-disable-next-line
-    __resolveType(obj) {
+        __resolveType(obj) {
       if (obj.entity_type) {
         return obj.entity_type.replace(/(?:^|-|_)(\w)/g, (matches, letter) => letter.toUpperCase());
       }
