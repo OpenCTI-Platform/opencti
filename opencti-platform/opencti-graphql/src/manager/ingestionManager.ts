@@ -20,7 +20,7 @@ import { ENTITY_TYPE_CONTAINER_REPORT } from '../schema/stixDomainObject';
 import { pushToSync } from '../database/rabbitmq';
 import { OPENCTI_SYSTEM_UUID } from '../schema/general';
 import { findAllRssIngestions, patchRssIngestion } from '../modules/ingestion/ingestion-rss-domain';
-import type {AuthContext, AuthUser} from '../types/user';
+import type { AuthContext } from '../types/user';
 import type { BasicStoreEntityIngestionCsv, BasicStoreEntityIngestionRss, BasicStoreEntityIngestionTaxii } from '../modules/ingestion/ingestion-types';
 import { findAllTaxiiIngestions, patchTaxiiIngestion } from '../modules/ingestion/ingestion-taxii-domain';
 import { TaxiiVersion } from '../generated/graphql';
@@ -28,9 +28,8 @@ import { fetchCsvFromUrl, findAllCsvIngestions, patchCsvIngestion, testCsvIngest
 import type { BasicStoreEntityCsvMapper } from '../modules/internal/csvMapper/csvMapper-types';
 import { findById } from '../modules/internal/csvMapper/csvMapper-domain';
 import { bundleProcess } from '../parser/csv-bundler';
-import {createWork, updateExpectationsNumber, findById as findWorkById, deleteWork} from "../domain/work";
-import {IMPORT_CSV_CONNECTOR} from "../connector/importCsv/importCsv";
-import {elLoadById} from "../database/engine";
+import { createWork, updateExpectationsNumber } from '../domain/work';
+import { IMPORT_CSV_CONNECTOR } from '../connector/importCsv/importCsv';
 
 // Ingestion manager responsible to cleanup old data
 // Each API will start is ingestion manager.
@@ -309,7 +308,7 @@ const csvHttpGet = async (ingestion: BasicStoreEntityIngestionCsv): Promise<CsvR
   const { data, headers: resultHeaders } = await httpClient.get(ingestion.uri);
   return { data, addedLast: resultHeaders['x-csv-date-added-last'] };
 };
-const csvDataToObjects = async (data: string, ingestion: BasicStoreEntityIngestionCsv, csvMapper: BasicStoreEntityCsvMapper, context: AuthContext) => { // push bundle to queues
+const csvDataToObjects = async (data: string, ingestion: BasicStoreEntityIngestionCsv, csvMapper: BasicStoreEntityCsvMapper, context: AuthContext) => {
   const entitiesData = data.split('\n');
   const csvBuffer = await fetchCsvFromUrl(ingestion.uri, csvMapper.skipLineChar);
   const { objects } = await bundleProcess(context, context.user ?? SYSTEM_USER, csvBuffer, csvMapper);
@@ -321,13 +320,6 @@ const csvDataToObjects = async (data: string, ingestion: BasicStoreEntityIngesti
   return objects;
 };
 
-const csvIngestionWorks: string[] = []
-export const cleanCompletedWorks = async(context: AuthContext, user: AuthUser, csvIngestionWorks: string[]) => {
-  const allCsvIngestionWorks = await Promise.all(csvIngestionWorks.map(async(id) => await elLoadById(id)))
-  logApp.info(`[OPENCTI-MODULE] CSV ingestion execution - cleanCompletedWorks, allWorks = ${JSON.stringify(allCsvIngestionWorks, null, 2)}`);
-  const completedWorks = allCsvIngestionWorks.filter(({status}: Work) => status === 'complete')
-  completedWorks.forEach(({id}: Work) => deleteWork(context, user, id))
-};
 const csvDataHandler = async (context: AuthContext, ingestion: BasicStoreEntityIngestionCsv) => {
   const { data, addedLast } = await csvHttpGet(ingestion);
   const user = context.user ?? SYSTEM_USER;
@@ -339,32 +331,27 @@ const csvDataHandler = async (context: AuthContext, ingestion: BasicStoreEntityI
     logApp.error(error, { name: ingestion.name, context: 'CSV transform' });
   }
 
-  const hashedIncomingData = bcrypt.hashSync(data)
-  if(bcrypt.compareSync(data, ingestion.current_state_hash ?? '')){
-    logApp.info(`[OPENCTI-MODULE] CSV ingestion execution - csvDataHandler - hashedIncomingData === ingestion.current_state_hash`);
-    await cleanCompletedWorks(context, user, csvIngestionWorks)
-    return
+  const isUnchangedData = bcrypt.compareSync(data, ingestion.current_state_hash ?? '');
+  if (isUnchangedData) {
+    return;
   }
 
   const objects = await csvDataToObjects(data, ingestion, csvMapper, context);
   const bundleSize = 1000;
-  for (let index = 0; index < objects.length; index+=bundleSize) {
+  for (let index = 0; index < objects.length; index += bundleSize) {
     // Filter objects already added to queue
-    const splitBundle = objects.slice(index, index + bundleSize)
+    const splitBundle = objects.slice(index, index + bundleSize);
     const bundle = { type: 'bundle', id: `bundle--${uuidv4()}`, objects: splitBundle };
     const stixBundle = JSON.stringify(bundle);
     const content = Buffer.from(stixBundle, 'utf-8').toString('base64');
     const friendlyName = 'CSV feed Ingestion';
-    const work = await createWork(context, user, IMPORT_CSV_CONNECTOR, friendlyName, IMPORT_CSV_CONNECTOR.id) as unknown as Work
-    await updateExpectationsNumber(context, user, work.id, 1) // splitBundle.length -> needs import_processed_number =< 1000 -> currently 1 as string blocking status update to complete
+    const work = await createWork(context, user, IMPORT_CSV_CONNECTOR, friendlyName, IMPORT_CSV_CONNECTOR.id) as unknown as Work;
+    await updateExpectationsNumber(context, user, work.id, 1);
     await pushToSync({ type: 'bundle', applicant_id: ingestion.user_id ?? OPENCTI_SYSTEM_UUID, work_id: work.id, content, update: true });
-    csvIngestionWorks.push(work.id)
   }
-  await cleanCompletedWorks(context, user, csvIngestionWorks)
-  // Between ingestions, maintain list of objects added to queue
-  logApp.info(`[OPENCTI-MODULE] CSV ingestion execution - csvDataHandler, csvIngestionWorks = ${JSON.stringify(csvIngestionWorks, null, 2)}`);
 
   // Update the state
+  const hashedIncomingData = bcrypt.hashSync(data);
   await patchCsvIngestion(context, SYSTEM_USER, ingestion.internal_id, {
     current_state_hash: hashedIncomingData,
     added_after_start: utcDate(addedLast)
