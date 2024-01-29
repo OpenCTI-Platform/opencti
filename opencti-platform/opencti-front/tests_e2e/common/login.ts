@@ -1,6 +1,6 @@
 import { LoginPage } from "../model/login.pageModel";
 import { DashboardPage } from "../model/dashboard.pageModel";
-import { expect } from "@playwright/test";
+import { expect } from "../fixtures/baseFixtures";
 import { AlertDialog } from "../model/alertDialog.pageModel";
 import { SettingsPage } from "../model/settings.pageModel";
 

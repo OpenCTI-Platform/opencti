@@ -1,6 +1,5 @@
-import { expect, test } from '@playwright/test';
+import { expect, test } from "../fixtures/baseFixtures";
 import { login } from "../common/login";
-import { LoginPage } from "../model/login.pageModel";
 import { ReportPage } from "../model/report.pageModel";
 import { ReportDetailsPage } from "../model/reportDetails.pageModel";
 

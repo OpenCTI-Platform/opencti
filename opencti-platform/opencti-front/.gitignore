@@ -39,3 +39,4 @@ __generated__
 /playwright-report/
 /blob-report/
 /playwright/.cache/
+/.nyc_output/
