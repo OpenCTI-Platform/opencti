@@ -1122,7 +1122,7 @@ const DashboardComponent = ({ queryRef }) => {
   }
   return (
     <UserContext.Provider value={{ me: { ...currentMe, ...me }, ...context }}>
-      <div className={classes.root}>
+      <div className={classes.root} data-testid="dashboard-page">
         {defaultDashboard ? (
           <CustomDashboard
             dashboard={defaultDashboard}
