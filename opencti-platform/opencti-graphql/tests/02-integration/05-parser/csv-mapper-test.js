@@ -135,6 +135,15 @@ describe('CSV-MAPPER', () => {
     });
   });
 
+  describe('Manage hashes for files', () => {
+    it('should map files hashes correctly', async () => {
+      const filePath = './tests/02-integration/05-parser/default-values/data.csv'; // TODO
+      const data = (await mapData(filePath, csvMapperAreaMalware /* TODO use files mapper */)).flat();
+      console.log(data);
+      // TODO
+    });
+  });
+
   describe('Managing default values', () => {
     it('should use default values from settings', async () => {
       const filePath = './tests/02-integration/05-parser/default-values/data.csv';
