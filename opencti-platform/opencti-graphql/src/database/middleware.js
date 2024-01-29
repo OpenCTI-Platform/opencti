@@ -818,7 +818,9 @@ const rebuildAndMergeInputFromExistingData = (rawInput, instance) => {
     const preparedPath = object_path.startsWith('/') ? object_path : `/${object_path}`;
     const targetIsMultiple = isObjectPathTargetMultipleAttribute(instance, preparedPath);
     const patch = [{ op: operation, path: preparedPath, value: targetIsMultiple ? value : R.head(value) }];
-    const patchedInstance = jsonpatch.applyPatch(structuredClone(instance), patch).newDocument;
+    const clonedInstance = structuredClone(instance);
+    clonedInstance[key] = clonedInstance[key] ?? {}; // Patch on complete empty value is not supported by jsonpatch
+    const patchedInstance = jsonpatch.applyPatch(clonedInstance, patch).newDocument;
     if (compareUnsorted(patchedInstance[key], instance[key])) {
       return {}; // No need to update the attribute
     }
@@ -2072,8 +2074,7 @@ const upsertEntityRule = async (context, instance, input, opts = {}) => {
   const ruleInstance = R.mergeRight(instance, rulePatch);
   const innerPatch = createRuleDataPatch(ruleInstance);
   const patch = { ...rulePatch, ...innerPatch };
-  const patchOpts = { ...opts, includeInferences: true };
-  return await patchAttribute(context, RULE_MANAGER_USER, instance.id, instance.entity_type, patch, patchOpts);
+  return await patchAttribute(context, RULE_MANAGER_USER, instance.id, instance.entity_type, patch, opts);
 };
 const upsertRelationRule = async (context, instance, input, opts = {}) => {
   const { fromRule, ruleOverride = false } = opts;
@@ -2089,8 +2090,7 @@ const upsertRelationRule = async (context, instance, input, opts = {}) => {
   const innerPatch = createRuleDataPatch(ruleInstance);
   const patch = { ...rulePatch, ...innerPatch };
   logApp.info('Upsert inferred relation', { id: instance.id, relation: patch });
-  const patchOpts = { ...opts, includeInferences: true };
-  return await patchAttribute(context, RULE_MANAGER_USER, instance.id, instance.entity_type, patch, patchOpts);
+  return await patchAttribute(context, RULE_MANAGER_USER, instance.id, instance.entity_type, patch, opts);
 };
 // endregion
 
