@@ -205,6 +205,10 @@ const GROUP_CREATION_MUTATION = `
   mutation groupCreation($name: String!) {
     groupAdd(input: {
       name: $name
+      group_confidence_level: {
+        max_confidence: 100
+        overrides: []
+      }
     }) {
       id
     }

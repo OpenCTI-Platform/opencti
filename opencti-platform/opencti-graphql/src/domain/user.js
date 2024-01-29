@@ -501,6 +501,7 @@ export const addUser = async (context, user, newUser) => {
   } else { // If local user, check the password policy
     await checkPasswordFromPolicy(context, userPassword);
   }
+
   const userToCreate = R.pipe(
     R.assoc('user_email', userEmail),
     R.assoc('api_token', newUser.api_token ? newUser.api_token : uuid()),
@@ -511,7 +512,9 @@ export const addUser = async (context, user, newUser) => {
     R.assoc('account_status', newUser.account_status ? newUser.account_status : DEFAULT_ACCOUNT_STATUS),
     R.assoc('account_lock_after_date', newUser.account_lock_after_date),
     R.assoc('unit_system', newUser.unit_system),
-    R.dissoc('roles')
+    R.assoc('user_confidence_level', newUser.user_confidence_level ?? null), // can be null
+    R.dissoc('roles'),
+    R.dissoc('groups')
   )(newUser);
   const { element, isCreation } = await createEntity(context, user, userToCreate, ENTITY_TYPE_USER, { complete: true });
   // Link to organizations
@@ -522,19 +525,29 @@ export const addUser = async (context, user, newUser) => {
     relationship_type: RELATION_PARTICIPATE_TO,
   }));
   await Promise.all(relationOrganizations.map((relation) => createRelation(context, user, relation)));
-  // Assign default groups to user
-  const defaultAssignationFilter = {
-    mode: 'and',
-    filters: [{ key: 'default_assignation', values: [true] }],
-    filterGroups: [],
-  };
-  const defaultGroups = await findGroups(context, user, { filters: defaultAssignationFilter });
-  const relationGroups = defaultGroups.edges.map((e) => ({
-    fromId: element.id,
-    toId: e.node.internal_id,
-    relationship_type: RELATION_MEMBER_OF,
-  }));
-  await Promise.all(relationGroups.map((relation) => createRelation(context, user, relation)));
+
+  // Either use the provided groups or Assign the default groups to user (SSO)
+  if (newUser.groups?.length > 0) {
+    const relationGroups = newUser.groups.map((group) => ({
+      fromId: element.id,
+      toId: group,
+      relationship_type: RELATION_MEMBER_OF,
+    }));
+    await Promise.all(relationGroups.map((relation) => createRelation(context, user, relation)));
+  } else {
+    const defaultAssignationFilter = {
+      mode: 'and',
+      filters: [{ key: 'default_assignation', values: [true] }],
+      filterGroups: [],
+    };
+    const defaultGroups = await findGroups(context, user, { filters: defaultAssignationFilter });
+    const relationGroups = defaultGroups.edges.map((e) => ({
+      fromId: element.id,
+      toId: e.node.internal_id,
+      relationship_type: RELATION_MEMBER_OF,
+    }));
+    await Promise.all(relationGroups.map((relation) => createRelation(context, user, relation)));
+  }
   // Audit log
   if (isCreation) {
     const actionEmail = ENABLED_DEMO_MODE ? REDACTED_USER.user_email : newUser.user_email;
@@ -1201,6 +1214,10 @@ export const buildCompleteUser = async (context, client) => {
   const defaultHiddenTypesGroups = getDefaultHiddenTypes(groups);
   const defaultHiddenTypesOrgs = getDefaultHiddenTypes(allowed_organizations);
   const default_hidden_types = uniq(defaultHiddenTypesGroups.concat(defaultHiddenTypesOrgs));
+
+  // effective confidence level
+  const effective_confidence_level = computeUserEffectiveConfidenceLevel({ ...client, groups, organizations });
+
   return {
     ...client,
     roles,
@@ -1215,6 +1232,7 @@ export const buildCompleteUser = async (context, client) => {
     allowed_marking: marking.user,
     all_marking: marking.all,
     default_marking: marking.default,
+    effective_confidence_level,
   };
 };
 
@@ -1436,3 +1454,41 @@ export const userEditContext = async (context, user, userId, input) => {
   return storeLoadById(context, user, userId, ENTITY_TYPE_USER).then((userToReturn) => notify(BUS_TOPICS[ENTITY_TYPE_USER].EDIT_TOPIC, userToReturn, user));
 };
 // endregion
+
+export const getUserEffectiveConfidenceLevel = async (userId, context) => {
+  const user = await findById(context, context.user, userId);
+  return computeUserEffectiveConfidenceLevel(user);
+};
+
+export const computeUserEffectiveConfidenceLevel = (user) => {
+  // if user has a specific confidence level, it overrides everything and we return it
+  if (user.user_confidence_level) {
+    return {
+      ...user.user_confidence_level,
+      source: user,
+    };
+  }
+
+  // otherwise we get all groups for this user, and select the lowest max_confidence found
+  let minLevel = null;
+  let source = null;
+  for (let i = 0; i < user.groups.length; i += 1) {
+    const groupLevel = user.groups[i].group_confidence_level?.max_confidence ?? null;
+    if (minLevel === null || (groupLevel !== null && groupLevel < minLevel)) {
+      minLevel = groupLevel;
+      source = user.groups[i];
+    }
+  }
+
+  if (minLevel !== null) {
+    return {
+      max_confidence: minLevel,
+      // TODO: handle overrides and their sources
+      overrides: [],
+      source,
+    };
+  }
+
+  // finally, if this user has no effective confidence level, we can return null
+  return null;
+};

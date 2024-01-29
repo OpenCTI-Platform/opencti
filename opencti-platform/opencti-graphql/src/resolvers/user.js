@@ -27,6 +27,7 @@ import {
   findParticipants,
   findRoleById,
   findRoles,
+  getUserEffectiveConfidenceLevel,
   groupRolesPaginated,
   meEditField,
   otpUserActivation,
@@ -83,6 +84,7 @@ const userResolvers = {
     objectOrganization: (current, args, context) => userOrganizationsPaginated(context, context.user, current.id, args),
     editContext: (current) => fetchEditContext(current.id),
     sessions: (current) => findUserSessions(current.id),
+    effective_confidence_level: (current, args, context) => getUserEffectiveConfidenceLevel(current.id, context),
   },
   Member: {
     name: (current, _, context) => {
@@ -109,6 +111,14 @@ const userResolvers = {
   },
   Group: {
     roles: (group, args, context) => groupRolesPaginated(context, context.user, group.id, args),
+  },
+  EffectiveConfidenceLevelSource: {
+    __resolveType(obj) {
+      if (obj.entity_type) {
+        return obj.entity_type.replace(/(?:^|-)(\w)/g, (matches, letter) => letter.toUpperCase());
+      }
+      return 'Unknown';
+    },
   },
   Mutation: {
     otpActivation: (_, { input }, context) => otpUserActivation(context, context.user, input),

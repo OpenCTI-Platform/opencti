@@ -1,13 +1,13 @@
 import React from 'react';
 import { Field, Form, Formik } from 'formik';
 import Button from '@mui/material/Button';
-import * as R from 'ramda';
-import { omit } from 'ramda';
 import * as Yup from 'yup';
 import { makeStyles } from '@mui/styles';
 import { graphql } from 'react-relay';
 import Alert from '@mui/material/Alert';
 import MenuItem from '@mui/material/MenuItem';
+import GroupField from '../../common/form/GroupField';
+import UserConfidenceLevelField from './UserConfidenceLevelField';
 import Drawer, { DrawerVariant } from '../../common/drawer/Drawer';
 import { useFormatter } from '../../../../components/i18n';
 import { commitMutation } from '../../../../relay/environment';
@@ -20,6 +20,7 @@ import DateTimePickerField from '../../../../components/DateTimePickerField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import useAuth from '../../../../utils/hooks/useAuth';
 import { insertNode } from '../../../../utils/store';
+import useGranted, { SETTINGS_SETACCESSES } from '../../../../utils/hooks/useGranted';
 
 const useStyles = makeStyles((theme) => ({
   buttons: {
@@ -51,20 +52,40 @@ const userValidation = (t) => Yup.object().shape({
   confirmation: Yup.string()
     .oneOf([Yup.ref('password'), null], t('The values do not match'))
     .required(t('This field is required')),
+  user_confidence_level_enabled: Yup.boolean(),
+  user_confidence_level: Yup.number()
+    .min(0, t('The value must be greater than or equal to 0'))
+    .max(100, t('The value must be less than or equal to 100'))
+    .when('user_confidence_level_enabled', {
+      is: true,
+      then: (schema) => schema.required(t('This field is required')).nullable(),
+      otherwise: (schema) => schema.nullable(),
+    }),
 });
 
 const UserCreation = ({ paginationOptions }) => {
   const { settings } = useAuth();
   const { t_i18n } = useFormatter();
   const classes = useStyles();
+  const hasSetAccess = useGranted([SETTINGS_SETACCESSES]);
+
   const onSubmit = (values, { setSubmitting, resetForm }) => {
-    const finalValues = R.pipe(
-      omit(['confirmation']),
-      R.assoc(
-        'objectOrganization',
-        R.pluck('value', values.objectOrganization),
-      ),
-    )(values);
+    const { objectOrganization, groups, user_confidence_level, ...rest } = values;
+    const finalValues = {
+      ...rest,
+      objectOrganization: objectOrganization.map((n) => n.value),
+      groups: groups.map((n) => n.value),
+      user_confidence_level: user_confidence_level
+        ? {
+          max_confidence: parseInt(user_confidence_level, 10),
+          overrides: [],
+        }
+        : null,
+    };
+    // remove technical fields
+    delete finalValues.confirmation;
+    delete finalValues.user_confidence_level_enabled;
+
     commitMutation({
       mutation: userMutation,
       variables: {
@@ -87,7 +108,7 @@ const UserCreation = ({ paginationOptions }) => {
       {({ onClose }) => (
         <>
           <Alert severity="info">
-            {t_i18n('User will be created with default groups.')}
+            {t_i18n('Unless specific groups are selected, user will be created with default groups.')}
           </Alert>
           <br />
           <Formik
@@ -100,8 +121,10 @@ const UserCreation = ({ paginationOptions }) => {
               password: '',
               confirmation: '',
               objectOrganization: [],
+              groups: [],
               account_status: 'Active',
               account_lock_after_date: null,
+              user_confidence_level: null,
             }}
             validationSchema={userValidation(t_i18n)}
             onSubmit={onSubmit}
@@ -173,6 +196,12 @@ const UserCreation = ({ paginationOptions }) => {
                   label="Organizations"
                   style={fieldSpacingContainerStyle}
                 />
+                <GroupField
+                  name="groups"
+                  label="Groups"
+                  style={fieldSpacingContainerStyle}
+                  showConfidence={true}
+                />
                 <Field
                   component={SelectField}
                   variant="standard"
@@ -199,6 +228,12 @@ const UserCreation = ({ paginationOptions }) => {
                     fullWidth: true,
                   }}
                 />
+                {hasSetAccess && (
+                  <UserConfidenceLevelField
+                    name="user_confidence_level"
+                    label={t_i18n('Max Confidence Level')}
+                  />
+                )}
                 <div className={classes.buttons}>
                   <Button
                     variant="contained"

@@ -51,13 +51,7 @@ const groupUsersLinesFragment = graphql`
       ) @connection(key: "Pagination_group_members") {
         edges {
           node {
-            id
-            user_email
-            name
-            firstname
-            lastname
-            external
-            created_at
+            ...UserLine_node            
           }
         }
         pageInfo {

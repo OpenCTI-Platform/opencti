@@ -30,6 +30,9 @@ export const groupsSearchQuery = graphql`
               }
             }
           }
+          group_confidence_level {
+            max_confidence
+          }
         }
       }
     }
@@ -82,7 +85,7 @@ class Groups extends Component {
     const dataColumns = {
       name: {
         label: 'Name',
-        width: '35%',
+        width: '25%',
         isSortable: true,
       },
       default_assignation: {
@@ -93,6 +96,11 @@ class Groups extends Component {
       auto_new_marking: {
         label: 'Auto new markings',
         width: '15%',
+        isSortable: true,
+      },
+      group_confidence_level: {
+        label: 'Max Confidence',
+        width: '10%',
         isSortable: true,
       },
       created_at: {

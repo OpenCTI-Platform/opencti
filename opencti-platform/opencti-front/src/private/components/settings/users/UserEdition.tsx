@@ -32,6 +32,7 @@ const UserEdition: FunctionComponent<UserEditionProps> = ({
   const handleChangeTab = (value: number) => {
     setCurrentTab(value);
   };
+
   return (
     <Drawer
       title={t_i18n('Update a user')}
@@ -80,6 +81,8 @@ const UserEditionFragment = createFragmentContainer(UserEdition, {
       external
       ...UserEditionOverview_user
         @arguments(
+          groupsOrderBy: $groupsOrderBy
+          groupsOrderMode: $groupsOrderMode
           organizationsOrderBy: $organizationsOrderBy
           organizationsOrderMode: $organizationsOrderMode
         )

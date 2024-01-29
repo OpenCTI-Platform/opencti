@@ -31,7 +31,7 @@ const READ_QUERY = gql`
 `;
 
 describe('Group resolver standard behavior', () => {
-  let groupInternalId;
+  let groupInternalId; // the one we will use in all tests
   it('should group created', async () => {
     const CREATE_QUERY = gql`
       mutation GroupAdd($input: GroupAddInput!) {
@@ -39,6 +39,9 @@ describe('Group resolver standard behavior', () => {
           id
           name
           description
+          group_confidence_level { 
+            max_confidence 
+          }
         }
       }
     `;
@@ -47,6 +50,7 @@ describe('Group resolver standard behavior', () => {
       input: {
         name: 'Group',
         description: 'Group description',
+        group_confidence_level: { max_confidence: 50, overrides: [] },
       },
     };
     const group = await queryAsAdmin({
@@ -56,6 +60,8 @@ describe('Group resolver standard behavior', () => {
     expect(group).not.toBeNull();
     expect(group.data.groupAdd).not.toBeNull();
     expect(group.data.groupAdd.name).toEqual('Group');
+    expect(group.data.groupAdd.group_confidence_level.max_confidence).toEqual(50);
+    // we will use this one in all the subsequent tests
     groupInternalId = group.data.groupAdd.id;
   });
 

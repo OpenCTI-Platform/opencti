@@ -20,6 +20,7 @@ import { useTheme } from '@mui/styles';
 import makeStyles from '@mui/styles/makeStyles';
 import { ApexOptions } from 'apexcharts';
 import { SimplePaletteColorOptions } from '@mui/material/styles/createPalette';
+import UserConfidenceLevel from '@components/settings/users/UserConfidenceLevel';
 import FieldOrEmpty from '../../../../components/FieldOrEmpty';
 import { useFormatter } from '../../../../components/i18n';
 import UserEdition from './UserEdition';
@@ -152,6 +153,16 @@ const UserFragment = graphql`
       }
     }
     default_hidden_types
+    user_confidence_level {
+      max_confidence
+    }
+    effective_confidence_level {
+      max_confidence
+      source {
+        ... on User { entity_type id name }
+        ... on Group { entity_type id name }
+      }
+    }
     objectOrganization(
       orderBy: $organizationsOrderBy
       orderMode: $organizationsOrderMode
@@ -525,9 +536,22 @@ const User: FunctionComponent<UserProps> = ({ data }) => {
                   </List>
                 </FieldOrEmpty>
               </Grid>
-              <Grid item={true} xs={12}>
+              <Grid item={true} xs={6}>
                 <HiddenTypesChipList
                   hiddenTypes={user.default_hidden_types ?? []}
+                />
+              </Grid>
+              <Grid item={true} xs={6}>
+                <Typography
+                  variant="h3"
+                  gutterBottom={true}
+                  style={{ float: 'left' }}
+                >
+                  {t_i18n('Max Confidence Level')}
+                </Typography>
+                <div className="clearfix"/>
+                <UserConfidenceLevel
+                  confidenceLevel={user.effective_confidence_level}
                 />
               </Grid>
             </Grid>

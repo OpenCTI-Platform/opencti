@@ -2,9 +2,10 @@ import React, { FunctionComponent } from 'react';
 import { createFragmentContainer, graphql, useMutation } from 'react-relay';
 import { Field, Form, Formik } from 'formik';
 import * as R from 'ramda';
-import { pick } from 'ramda';
 import * as Yup from 'yup';
 import MenuItem from '@mui/material/MenuItem';
+import FormHelperText from '@mui/material/FormHelperText';
+import UserConfidenceLevelField from './UserConfidenceLevelField';
 import TextField from '../../../../components/TextField';
 import SelectField from '../../../../components/SelectField';
 import { SubscriptionFocus } from '../../../../components/Subscription';
@@ -16,7 +17,7 @@ import { UserEditionOverview_user$data } from './__generated__/UserEditionOvervi
 import DateTimePickerField from '../../../../components/DateTimePickerField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import useAuth from '../../../../utils/hooks/useAuth';
-import { isOnlyOrganizationAdmin } from '../../../../utils/hooks/useGranted';
+import useGranted, { isOnlyOrganizationAdmin, SETTINGS_SETACCESSES } from '../../../../utils/hooks/useGranted';
 
 const userMutationFieldPatch = graphql`
   mutation UserEditionOverviewFieldPatchMutation(
@@ -41,8 +42,8 @@ const userEditionOverviewFocus = graphql`
   }
 `;
 
-const userMutationGroupAdd = graphql`
-  mutation UserEditionOverviewGroupAddMutation($id: ID!, $organizationId: ID!) {
+const userMutationOrganizationAdd = graphql`
+  mutation UserEditionOverviewOrganizationAddMutation($id: ID!, $organizationId: ID!) {
     userEdit(id: $id) {
       organizationAdd(organizationId: $organizationId) {
         ...UserEditionOverview_user
@@ -51,8 +52,8 @@ const userMutationGroupAdd = graphql`
   }
 `;
 
-const userMutationGroupDelete = graphql`
-  mutation UserEditionOverviewGroupDeleteMutation(
+const userMutationOrganizationDelete = graphql`
+  mutation UserEditionOverviewOrganizationDeleteMutation(
     $id: ID!
     $organizationId: ID!
   ) {
@@ -76,13 +77,22 @@ const userValidation = (t: (value: string) => string, userIsOnlyOrganizationAdmi
   account_status: Yup.string(),
   account_lock_after_date: Yup.date().nullable(),
   objectOrganization: userIsOnlyOrganizationAdmin ? Yup.array().min(1, t('Minimum one organization')).required(t('This field is required')) : Yup.array(),
+  user_confidence_level_enabled: Yup.boolean(),
+  user_confidence_level: Yup.number()
+    .min(0, t('The value must be greater than or equal to 0'))
+    .max(100, t('The value must be less than or equal to 100'))
+    .when('user_confidence_level_enabled', {
+      is: true,
+      then: (schema) => schema.required(t('This field is required')).nullable(),
+      otherwise: (schema) => schema.nullable(),
+    }),
 });
 
 interface UserEditionOverviewComponentProps {
   user: UserEditionOverview_user$data;
   context:
   | readonly ({
-    readonly focusOn?: string | null;
+    readonly focusOn: string | null | undefined;
     readonly name: string;
   } | null)[]
   | null | undefined;
@@ -93,33 +103,31 @@ UserEditionOverviewComponentProps
 > = ({ user, context }) => {
   const { t_i18n } = useFormatter();
   const { me, settings } = useAuth();
+  const hasSetAccess = useGranted([SETTINGS_SETACCESSES]);
+
   const [commitFocus] = useMutation(userEditionOverviewFocus);
   const [commitFieldPatch] = useMutation(userMutationFieldPatch);
-  const [commitGroupAdd] = useMutation(userMutationGroupAdd);
-  const [commitGroupDelete] = useMutation(userMutationGroupDelete);
+  const [commitOrganizationAdd] = useMutation(userMutationOrganizationAdd);
+  const [commitOrganizationDelete] = useMutation(userMutationOrganizationDelete);
 
   const userIsOnlyOrganizationAdmin = isOnlyOrganizationAdmin();
   const external = user.external === true;
   const objectOrganization = convertOrganizations(user);
 
-  const initialValues = pick(
-    [
-      'name',
-      'user_email',
-      'firstname',
-      'lastname',
-      'language',
-      'api_token',
-      'objectOrganization',
-      'description',
-      'account_status',
-      'account_lock_after_date',
-    ],
-    {
-      ...user,
-      objectOrganization,
-    },
-  );
+  const initialValues = {
+    name: user.name,
+    user_email: user.user_email,
+    firstname: user.firstname,
+    lastname: user.lastname,
+    language: user.language,
+    api_token: user.api_token,
+    description: user.description,
+    account_status: user.account_status,
+    account_lock_after_date: user.account_lock_after_date,
+    user_confidence_level_enabled: !!user.user_confidence_level,
+    user_confidence_level: user.user_confidence_level?.max_confidence,
+    objectOrganization,
+  };
 
   const handleChangeFocus = (name: string) => {
     commitFocus({
@@ -132,16 +140,59 @@ UserEditionOverviewComponentProps
     });
   };
 
-  const handleSubmitField = (name: string, value: string | Date) => {
+  const handleSubmitField = (name: string, value: string | null) => {
     userValidation(t_i18n, userIsOnlyOrganizationAdmin)
       .validateAt(name, { [name]: value })
       .then(() => {
-        commitFieldPatch({
-          variables: {
-            id: user.id,
-            input: { key: name, value: value || '' },
-          },
-        });
+        // specific case for user confidence level: to update an object we have several use-cases
+        if (name === 'user_confidence_level') {
+          if (user.user_confidence_level && value) {
+            // We edit an existing value inside the object: use object_path
+            commitFieldPatch({
+              variables: {
+                id: user.id,
+                input: {
+                  key: 'user_confidence_level',
+                  object_path: '/user_confidence_level/max_confidence',
+                  value: parseInt(value, 10),
+                },
+              },
+            });
+          } else if (!user.user_confidence_level && value) {
+            // We have no user_confidence_level and we add one: push a complete object
+            commitFieldPatch({
+              variables: {
+                id: user.id,
+                input: {
+                  key: 'user_confidence_level',
+                  value: {
+                    max_confidence: parseInt(value, 10),
+                    overrides: [],
+                  },
+                },
+              },
+            });
+          } else if (user.user_confidence_level && !value) {
+            // we have an existing value but we want to remove it: push [null] (and not null!)
+            commitFieldPatch({
+              variables: {
+                id: user.id,
+                input: {
+                  key: 'user_confidence_level',
+                  value: [null],
+                },
+              },
+            });
+          } else {
+            // simple case for all flat attributes
+            commitFieldPatch({
+              variables: {
+                id: user.id,
+                input: { key: name, value: value || '' },
+              },
+            });
+          }
+        }
       })
       .catch(() => false);
   };
@@ -157,7 +208,7 @@ UserEditionOverviewComponentProps
     const added = R.difference(values, currentValues);
     const removed = R.difference(currentValues, values);
     if (added.length > 0) {
-      commitGroupAdd({
+      commitOrganizationAdd({
         variables: {
           id: user.id,
           organizationId: R.head(added)?.value,
@@ -165,7 +216,7 @@ UserEditionOverviewComponentProps
       });
     }
     if (removed.length > 0) {
-      commitGroupDelete({
+      commitOrganizationDelete({
         variables: {
           id: user.id,
           organizationId: R.head(removed)?.value,
@@ -259,9 +310,6 @@ UserEditionOverviewComponentProps
             containerstyle={fieldSpacingContainerStyle}
             onFocus={handleChangeFocus}
             onSubmit={handleSubmitField}
-            helpertext={
-              <SubscriptionFocus context={context} fieldName="language" />
-            }
           >
             <MenuItem value="auto">
               <em>{t_i18n('Automatic')}</em>
@@ -269,6 +317,9 @@ UserEditionOverviewComponentProps
             <MenuItem value="en">English</MenuItem>
             <MenuItem value="fr">Français</MenuItem>
           </Field>
+          <FormHelperText>
+            <SubscriptionFocus context={context} fieldName="language" />
+          </FormHelperText>
           <ObjectOrganizationField
             name="objectOrganization"
             label="Organizations"
@@ -300,14 +351,14 @@ UserEditionOverviewComponentProps
             containerstyle={fieldSpacingContainerStyle}
             onFocus={handleChangeFocus}
             onChange={handleSubmitField}
-            helperText={
-              <SubscriptionFocus context={context} fieldName="account_status" />
-              }
           >
             {settings.platform_user_statuses.map((s) => {
               return <MenuItem key={s.status} value={s.status}>{t_i18n(s.status)}</MenuItem>;
             })}
           </Field>
+          <FormHelperText>
+            <SubscriptionFocus context={context} fieldName="account_status" />
+          </FormHelperText>
           <Field
             component={DateTimePickerField}
             name="account_lock_after_date"
@@ -320,6 +371,17 @@ UserEditionOverviewComponentProps
             onFocus={handleChangeFocus}
             onChange={handleSubmitField}
           />
+          { hasSetAccess && (
+            <UserConfidenceLevelField
+              name="user_confidence_level"
+              label={t_i18n('Max Confidence Level')}
+              onFocus={handleChangeFocus}
+              onSubmit={handleSubmitField}
+              containerStyle={fieldSpacingContainerStyle}
+              editContext={context}
+              currentUser={user}
+            />
+          )}
         </Form>
       )}
     </Formik>
@@ -332,6 +394,8 @@ const UserEditionOverview = createFragmentContainer(
     user: graphql`
       fragment UserEditionOverview_user on User
       @argumentDefinitions(
+        groupsOrderBy: { type: "GroupsOrdering", defaultValue: name }
+        groupsOrderMode: { type: "OrderingMode", defaultValue: asc }
         organizationsOrderBy: { type: "OrganizationsOrdering", defaultValue: name }
         organizationsOrderMode: { type: "OrderingMode", defaultValue: asc }
       ) {
@@ -349,11 +413,29 @@ const UserEditionOverview = createFragmentContainer(
         otp_qr
         account_status
         account_lock_after_date
+        user_confidence_level {
+          max_confidence
+        }
+        effective_confidence_level {
+          max_confidence
+          source {
+            ... on User { entity_type id name }
+            ... on Group { entity_type id name }
+          }
+        }
         roles {
           id
           name
         }
         objectOrganization(orderBy: $organizationsOrderBy, orderMode: $organizationsOrderMode) {
+          edges {
+            node {
+              id
+              name
+            }
+          }
+        }
+        groups(orderBy: $groupsOrderBy, orderMode: $groupsOrderMode) {
           edges {
             node {
               id
