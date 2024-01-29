@@ -151,7 +151,7 @@ export const checkFileAccess = async (context: AuthContext, user: AuthUser, scop
 // In progress virtual files from export
 export const paginatedForPathWithEnrichment = async (context: AuthContext, user: AuthUser, path: string, entity_id: string, opts?: FilesOptions<BasicStoreEntityDocument>) => {
   const findOpts: EntityOptions<BasicStoreEntityDocument> = {
-    filters: buildFileFilters([path], { ...opts, entity_id }),
+    filters: buildFileFilters([path], opts),
     noFiltersChecking: true // No associated model
   };
   const orderOptions: any = {};
