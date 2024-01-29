@@ -52,7 +52,7 @@ import { addFilter, extractFilterGroupValues, findFiltersFromKey } from '../util
 import { INSTANCE_REGARDING_OF, specialFilterKeysWhoseValueToResolve } from '../utils/filtering/filtering-constants';
 import { schemaRelationsRefDefinition } from '../schema/schema-relationsRef';
 import { getEntitiesMapFromCache } from '../database/cache';
-import {ENTITY_TYPE_CONTAINER_GROUPING} from "../modules/grouping/grouping-types";
+import { ENTITY_TYPE_CONTAINER_GROUPING } from '../modules/grouping/grouping-types';
 
 export const findAll = async (context, user, args) => {
   let types = [];

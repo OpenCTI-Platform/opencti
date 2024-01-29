@@ -1087,24 +1087,6 @@ class ToolBar extends Component {
             )}
           />
         );
-      case 'confidence':
-        return (
-          <FormControl style={{ width: '100%' }}>
-            <InputLabel variant="standard">{t('Values')}</InputLabel>
-            <Select
-              variant="standard"
-              onChange={this.handleChangeActionInputValuesReplace.bind(this, i)}
-              label={t('Values')}
-              fullWidth={true}
-            >
-              <MenuItem value="0">{t('None')}</MenuItem>
-              <MenuItem value="15">{t('Low')}</MenuItem>
-              <MenuItem value="50">{t('Moderate')}</MenuItem>
-              <MenuItem value="75">{t('Good')}</MenuItem>
-              <MenuItem value="85">{t('Strong')}</MenuItem>
-            </Select>
-          </FormControl>
-        );
       case 'x_opencti_workflow_id':
         return (
           <Autocomplete
@@ -1183,6 +1165,18 @@ class ToolBar extends Component {
                 <div className={classes.text}>{option.label}</div>
               </li>
             )}
+          />
+        );
+      case 'x_opencti_score':
+      case 'confidence':
+        return (
+          <TextField
+            variant="standard"
+            disabled={disabled}
+            label={t('Values')}
+            fullWidth={true}
+            type="number"
+            onChange={this.handleChangeActionInputValuesReplace.bind(this, i)}
           />
         );
       default:
