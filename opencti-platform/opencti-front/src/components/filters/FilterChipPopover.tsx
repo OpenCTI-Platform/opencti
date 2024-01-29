@@ -367,7 +367,7 @@ export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({
         vertical: 'bottom',
         horizontal: 'left',
       }}
-      PaperProps={{ style: { marginTop: 10 } }}
+      PaperProps={{ elevation: 1, style: { marginTop: 10 } }}
     >
       {filterKey === 'regardingOf'
         ? <div

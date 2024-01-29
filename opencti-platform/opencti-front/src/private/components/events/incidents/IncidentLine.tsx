@@ -118,7 +118,6 @@ export const IncidentLine: FunctionComponent<IncidentLineComponentProps> = ({
   const classes = useStyles();
   const { fd, t_i18n } = useFormatter();
   const data = useFragment(IncidentLineFragment, node);
-
   return (
     <ListItem
       classes={{ root: classes.item }}
@@ -309,7 +308,7 @@ export const IncidentLineDummy = ({
             </div>
             <div
               className={classes.bodyItem}
-              style={{ width: dataColumns.creator.width }}
+              style={{ width: dataColumns.objectLabel.width }}
             >
               <Skeleton
                 animation="wave"
@@ -320,12 +319,12 @@ export const IncidentLineDummy = ({
             </div>
             <div
               className={classes.bodyItem}
-              style={{ width: dataColumns.objectLabel.width }}
+              style={{ width: dataColumns.created.width }}
             >
               <Skeleton
                 animation="wave"
                 variant="rectangular"
-                width={140}
+                width="90%"
                 height="100%"
               />
             </div>

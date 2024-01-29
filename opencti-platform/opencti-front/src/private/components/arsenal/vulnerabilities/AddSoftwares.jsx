@@ -69,12 +69,11 @@ class AddSoftwares extends Component {
     const { t, classes, vulnerability, vulnerabilitySoftwares } = this.props;
     const paginationOptions = {
       search: this.state.search,
-      count: 25,
     };
     return (
       <div>
         <IconButton
-          color="secondary"
+          color="primary"
           aria-label="Add"
           onClick={this.handleOpen.bind(this)}
           classes={{ root: classes.createButton }}
@@ -97,7 +96,7 @@ class AddSoftwares extends Component {
         >
           <QueryRenderer
             query={addSoftwaresLinesQuery}
-            variables={paginationOptions}
+            variables={{ ...paginationOptions, count: 25 }}
             render={({ props }) => {
               return (
                 <AddSoftwaresLines
@@ -113,7 +112,7 @@ class AddSoftwares extends Component {
           display={this.state.open}
           contextual={true}
           inputValue={this.state.search}
-          paginationOptions={paginationOptions}
+          paginationOptions={{ ...paginationOptions, types: ['Software'] }}
           paginationKey="Pagination_stixCyberObservables"
           type="Software"
         />
