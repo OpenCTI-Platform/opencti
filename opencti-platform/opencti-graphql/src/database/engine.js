@@ -1585,11 +1585,24 @@ const buildLocalMustFilter = async (validFilter) => {
     } else {
       valuesFiltering.push({
         bool: {
-          must_not: {
-            exists: {
-              field: R.head(arrayKeys)
+          should: [
+            {
+              bool: {
+                must_not: {
+                  exists: {
+                    field: R.head(arrayKeys)
+                  }
+                },
+              }
+            },
+            {
+              term: {
+                'description.keyword': {
+                  value: ''
+                }
+              }
             }
-          }
+          ]
         }
       });
     }
@@ -1597,7 +1610,29 @@ const buildLocalMustFilter = async (validFilter) => {
     if (arrayKeys.length > 1) {
       throw UnsupportedError('Filter must have only one field', { keys: arrayKeys });
     } else {
-      valuesFiltering.push({ exists: { field: R.head(arrayKeys) } });
+      valuesFiltering.push({
+        bool: {
+          must: [
+            {
+              bool: {
+                must_not: {
+                  term: {
+                    'description.keyword': {
+                      value: ''
+                    }
+                  }
+                },
+              }
+            },
+            {
+              exists: {
+                field: R.head(arrayKeys)
+              }
+            }
+          ]
+        }
+
+      });
     }
   }
   // 03. Handle values according to the operator
@@ -1636,7 +1671,7 @@ const buildLocalMustFilter = async (validFilter) => {
         if (key.includes(ATTRIBUTE_DESCRIPTION)) {
           targets.push({
             query_string: {
-              query: `*"${val}"*`,
+              query: `"${val}"`,
               analyze_wildcard: true,
               fields: arrayKeys,
             },
