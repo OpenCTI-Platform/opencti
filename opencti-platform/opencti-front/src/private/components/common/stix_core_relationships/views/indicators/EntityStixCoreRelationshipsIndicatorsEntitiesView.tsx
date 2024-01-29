@@ -151,6 +151,7 @@ const EntityStixCoreRelationshipsIndicatorsEntitiesView: FunctionComponent<Entit
         keyword={searchTerm}
         displayImport
         handleToggleExports={storageHelpers.handleToggleExports}
+        openExports={openExports}
         iconExtension
         filters={contextFilters}
         availableFilterKeys={availableFilterKeys}
