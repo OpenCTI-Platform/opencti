@@ -41,7 +41,7 @@ const UserConfidenceLevel: React.FC<UserConfidenceLevelProps> = ({ confidenceLev
           <Tooltip
             sx={{ marginLeft: 1 }}
             title={t_i18n('', {
-              id: 'The Max Confidence Level is currently inherited from the group {link}',
+              id: 'The Max Confidence Level is currently inherited from...',
               values: {
                 link: (
                   <Link to={`/dashboard/settings/accesses/groups/${source.id}`}>

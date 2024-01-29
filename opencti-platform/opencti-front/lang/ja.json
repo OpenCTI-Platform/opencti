@@ -2548,7 +2548,7 @@
   "Max Confidence": "マックス・コンフィデンス",
   "No Max Confidence Level": "最大信頼度なし",
   "The user’s Max Confidence Level overrides Max Confidence Level inherited from user’s groups": "ユーザーの最大信頼度はユーザーのグループから継承された最大信頼度より優先されます。",
-  "The Max Confidence Level is currently inherited from the group {link}.": "最大信頼度は現在グループ{link}から継承されています。",
+  "The Max Confidence Level is currently inherited from...": "最大信頼度は現在グループ{link}から継承されています。",
   "The Max Confidence Level is currently defined at the user level. It overrides Max Confidence Level from user’s groups.": "最大信頼度は現在ユーザーレベルで定義されています。これはユーザーグループの最大信頼度より優先されます。",
   "This user has no Max Confidence Level and does not inherit one from groups. Add a group to this user to resolve the issue.": "このユーザーには最大信頼度がなく、グループからの信頼度も継承していません。この問題を解決するには、このユーザーにグループを追加してください。"
 }

@@ -2548,7 +2548,7 @@
   "Max Confidence": "最大信心",
   "No Max Confidence Level": "无最大置信度",
   "The user’s Max Confidence Level overrides Max Confidence Level inherited from user’s groups": "用户的最大信任度高于从用户组继承的最大信任度",
-  "The Max Confidence Level is currently inherited from the group {link}.": "当前最大信心值是从组 {link} 继承的。",
+  "The Max Confidence Level is currently inherited from...": "当前最大信心值是从组 {link} 继承的。",
   "The Max Confidence Level is currently defined at the user level. It overrides Max Confidence Level from user’s groups.": "当前最大置信水平是在用户级别定义的。它优先于用户组的最大置信度。",
   "This user has no Max Confidence Level and does not inherit one from groups. Add a group to this user to resolve the issue.": "该用户没有最大信任度，也没有从组中继承最大信任度。为该用户添加一个组来解决问题。"
 }

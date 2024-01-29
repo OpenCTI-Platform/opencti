@@ -2548,7 +2548,7 @@
   "Max Confidence": "Confiance max",
   "No Max Confidence Level": "Pas de niveau de confiance max",
   "The user’s Max Confidence Level overrides Max Confidence Level inherited from user’s groups": "Le niveau de confiance maximum de l'utilisateur prévaut sur le niveau de confiance maximum hérité des groupes de l'utilisateur",
-  "The Max Confidence Level is currently inherited from the group {link}.": "Le niveau de confiance maximum est actuellement hérité du groupe {link}.",
+  "The Max Confidence Level is currently inherited from...": "Le niveau de confiance maximum est actuellement hérité du groupe {link}.",
   "The Max Confidence Level is currently defined at the user level. It overrides Max Confidence Level from user’s groups.": "Le niveau de confiance maximum est actuellement défini au niveau de l'utilisateur. Il est prioritaire sur le niveau de confiance maximum des groupes d'utilisateurs.",
   "This user has no Max Confidence Level and does not inherit one from groups. Add a group to this user to resolve the issue.": "Cet utilisateur n'a pas de niveau de confiance maximal et n'en hérite pas des groupes. Ajoutez un groupe à cet utilisateur pour résoudre le problème."
 }

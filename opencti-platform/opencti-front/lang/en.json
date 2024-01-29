@@ -2523,7 +2523,7 @@
   "No confidence level found in this user's groups, and no confidence level defined at the user level.": "No confidence level found in this user's groups, and no confidence level defined at the user level.",
   "This group does not have a Max Confidence Level, members might not be able to create data.": "This group does not have a Max Confidence Level, members might not be able to create data.",
   "This user has no effective confidence level from the groups assigned.": "This user has no effective confidence level from the groups assigned.",
-  "The Max Confidence Level is currently inherited from the group {link}.": "The Max Confidence Level is currently inherited from the group {link}.",
+  "The Max Confidence Level is currently inherited from...": "The Max Confidence Level is currently inherited from the group {link}.",
   "Unknown configuration error in the platform.": "Unknown configuration error in the platform.",
   "Effective Max Confidence Level:": "Effective Max Confidence Level:",
   "The Max Confidence Level is currently defined at the user level. It overrides Max Confidence Level from user's groups.": "The Max Confidence Level is currently defined at the user level. It overrides Max Confidence Level from user's groups.",
