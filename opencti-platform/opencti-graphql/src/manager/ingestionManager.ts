@@ -23,7 +23,10 @@ import type { AuthContext } from '../types/user';
 import type { BasicStoreEntityIngestionCsv, BasicStoreEntityIngestionRss, BasicStoreEntityIngestionTaxii } from '../modules/ingestion/ingestion-types';
 import { findAllTaxiiIngestions, patchTaxiiIngestion } from '../modules/ingestion/ingestion-taxii-domain';
 import { TaxiiVersion } from '../generated/graphql';
-import { findAllCsvIngestions, patchCsvIngestion } from '../modules/ingestion/ingestion-csv-domain';
+import { findAllCsvIngestions, testCsvIngestionMapping } from '../modules/ingestion/ingestion-csv-domain';
+import type { BasicStoreEntityCsvMapper } from '../modules/internal/csvMapper/csvMapper-types';
+import { createEntity } from '../database/middleware';
+import { findById } from '../modules/internal/csvMapper/csvMapper-domain';
 
 // Ingestion manager responsible to cleanup old data
 // Each API will start is ingestion manager.
@@ -298,27 +301,28 @@ const csvHttpGet = async (ingestion: BasicStoreEntityIngestionCsv): Promise<CsvR
   }
   const httpClientOptions: GetHttpClient = { headers, rejectUnauthorized: false, responseType: 'json', certificates };
   const httpClient = getHttpClient(httpClientOptions);
-
   const { data, headers: resultHeaders } = await httpClient.get(ingestion.uri);
   return { data, addedLast: resultHeaders['x-csv-date-added-last'] };
 };
+const csvDataToObjects = async (data: string, csvMapper: BasicStoreEntityCsvMapper, context: AuthContext) => { // push bundle to queues
+  const entitiesData = data.split(',');
+  logApp.info(`[OPENCTI-MODULE] CSV ingestion execution for ${entitiesData.length} items`);
+  return Promise.all(entitiesData.map(async (entityValue) => {
+    const type = csvMapper.representations[0].target.entity_type;
+    const { element, isCreation } = await createEntity(context, context.user ?? SYSTEM_USER, { value: entityValue }, type, { complete: true });
+    return isCreation ? element : null;
+  }).filter((element) => !!element));
+};
 const csvDataHandler = async (context: AuthContext, ingestion: BasicStoreEntityIngestionCsv) => {
-  const { data, addedLast } = await csvHttpGet(ingestion);
-  if (data.objects && data.objects.length > 0) {
-    logApp.info(`[OPENCTI-MODULE] Csv ingestion execution for ${data.objects.length} items`);
-    const bundle = { type: 'bundle', id: `bundle--${uuidv4()}`, objects: data.objects };
-    // Push the bundle to absorption queue
-    const stixBundle = JSON.stringify(bundle);
-    const content = Buffer.from(stixBundle, 'utf-8').toString('base64');
-    await pushToSync({ type: 'bundle', applicant_id: ingestion.user_id ?? OPENCTI_SYSTEM_UUID, content, update: true });
-    // Update the state
-    await patchCsvIngestion(context, SYSTEM_USER, ingestion.internal_id, {
-      current_state_cursor: data.next ? String(data.next) : undefined,
-      added_after_start: utcDate(addedLast)
-    });
-  } else if (data.objects === undefined) {
-    logApp.error(`[OPENCTI-MODULE] Csv ingestion execution error for ${ingestion.name}`, { error: data });
+  const { data } = await csvHttpGet(ingestion);
+  const csvMapper: BasicStoreEntityCsvMapper = await findById(context, context.user ?? SYSTEM_USER, ingestion.csvMapper_id);
+  const csvMappingTestResult = await testCsvIngestionMapping(context, ingestion);
+  if (!csvMappingTestResult) {
+    const error = UnknownError('Invalid data from URL', data);
+    logApp.error(error, { name: ingestion.name, context: 'CSV transform' });
   }
+  const bundle = { type: 'bundle', id: `bundle--${uuidv4()}`, objects: await csvDataToObjects(JSON.stringify(csvMappingTestResult), csvMapper, context) };
+  const stixBundle = JSON.stringify(bundle);
 };
 const csvExecutor = async (context: AuthContext) => {
   const filters = {

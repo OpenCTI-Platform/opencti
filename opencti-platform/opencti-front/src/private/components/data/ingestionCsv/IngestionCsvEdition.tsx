@@ -9,7 +9,8 @@ import MenuItem from '@mui/material/MenuItem';
 import CreatorField from '@components/common/form/CreatorField';
 import CommitMessage from '@components/common/form/CommitMessage';
 import { IngestionCsvEditionFragment_ingestionCsv$key } from '@components/data/ingestionCsv/__generated__/IngestionCsvEditionFragment_ingestionCsv.graphql';
-import { convertUser } from '../../../../utils/edition';
+import CsvMapperField from '@components/common/form/CsvMapperField';
+import {convertMapper, convertUser} from '../../../../utils/edition';
 import { useFormatter } from '../../../../components/i18n';
 import { useSchemaEditionValidation } from '../../../../utils/hooks/useEntitySettings';
 import { adaptFieldValue } from '../../../../utils/String';
@@ -36,7 +37,15 @@ const ingestionCsvEditionFragment = graphql`
     authentication_value
     ingestion_running
     current_state_date
-    csvMapper
+    csvMapper_id
+    csvMapper {
+      edges {
+        node {
+          id
+          name
+        }
+      }
+    }
     user {
       id
       entity_type
@@ -61,7 +70,7 @@ interface IngestionCsvEditionForm {
   authentication_value: string,
   current_state_date: Date | null
   ingestion_running: boolean,
-  csvMapper: Option[],
+  csvMapper_id: Option[],
   user_id: string | Option
 }
 
@@ -87,7 +96,7 @@ const IngestionCsvEdition: FunctionComponent<IngestionCsvEditionProps> = ({
     cert: Yup.string().nullable(),
     key: Yup.string().nullable(),
     ca: Yup.string().nullable(),
-    csvMapper: Yup.string().required(t('This field is required')),
+    csvMapper_id: Yup.array().required(t('This field is required')),
   };
 
   const ingestionCsvValidator = useSchemaEditionValidation('IngestionCsv', basicShape);
@@ -139,7 +148,7 @@ const IngestionCsvEdition: FunctionComponent<IngestionCsvEditionProps> = ({
     authentication_value: ingestionCsvData.authentication_value,
     current_state_date: ingestionCsvData.current_state_date,
     ingestion_running: ingestionCsvData.ingestion_running,
-    csvMapper: ingestionCsvData.csvMapper,
+    csvMapper: convertMapper(ingestionCsvData),
     user_id: convertUser(ingestionCsvData, 'user'),
   };
 
@@ -197,7 +206,10 @@ const IngestionCsvEdition: FunctionComponent<IngestionCsvEditionProps> = ({
               style: { marginTop: 20 },
             }}
           />
-
+          <CsvMapperField
+            name="csvMapper_id"
+            onChange={setFieldValue}
+          />
           <Field
             component={SelectField}
             variant="standard"

@@ -27,9 +27,8 @@ const useStyles = makeStyles(() => ({
 }));
 
 interface CsvMapperFieldComponentProps {
-  csvMapperId?: string;
   name: string;
-  onChange: (name: string, values: Option[]) => void;
+  onChange?: (name: string, value: Option) => void;
 }
 
 const CsvMapperQuery = graphql`
@@ -63,11 +62,11 @@ const CsvMapperField: FunctionComponent<CsvMapperFieldComponentProps> = ({
       .toPromise()
       .then((data) => {
         const newCsvMappers = (
-          data as CsvMapperFieldSearchQuery$data
-        )?.csvMappers?.edges?.map(({ node }) => ({
+          (data as CsvMapperFieldSearchQuery$data)?.csvMappers?.edges ?? []
+        ).map(({ node }) => ({
           value: node.id,
           label: node.name,
-        }) as Option) ?? [];
+        }));
         setCsvMappers(R.uniq([...csvMappers, ...newCsvMappers]));
       });
   };

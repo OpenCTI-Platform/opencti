@@ -46,7 +46,7 @@ interface IngestionCsvCreationForm {
   name: string
   description: string
   uri: string
-  csvMapper: Option[]
+  csvMapper_id: Option[]
   authentication_type: CsvAuthType
   authentication_value: string
   current_state_date: Date | null
@@ -71,7 +71,7 @@ const IngestionCsvCreation: FunctionComponent<IngestionCsvCreationProps> = ({ pa
     current_state_date: Yup.date()
       .typeError(t('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)'))
       .nullable(),
-    csvMapper: Yup.array().required(t('This field is required')),
+    csvMapper_id: Yup.array().required(t('This field is required')),
     username: Yup.string().nullable(),
     password: Yup.string().nullable(),
     cert: Yup.string().nullable(),
@@ -96,7 +96,7 @@ const IngestionCsvCreation: FunctionComponent<IngestionCsvCreationProps> = ({ pa
       name: values.name,
       description: values.description,
       uri: values.uri,
-      csvMapper: values.csvMapper[0]?.value,
+      csvMapper_id: values.csvMapper_id[0]?.value,
       authentication_type: values.authentication_type,
       authentication_value: authenticationValue,
       current_state_date: values.current_state_date,
@@ -131,7 +131,7 @@ const IngestionCsvCreation: FunctionComponent<IngestionCsvCreationProps> = ({ pa
             name: '',
             description: '',
             uri: '',
-            csvMapper: [],
+            csvMapper_id: [],
             authentication_type: 'none',
             authentication_value: '',
             current_state_date: null,
@@ -181,7 +181,7 @@ const IngestionCsvCreation: FunctionComponent<IngestionCsvCreationProps> = ({ pa
                 style={fieldSpacingContainerStyle}
               />
               <CsvMapperField
-                name="csvMapper"
+                name="csvMapper_id"
                 onChange={setFieldValue}
               />
               <Field

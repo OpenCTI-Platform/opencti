@@ -50,6 +50,11 @@ export const convertOrganizations = (element) => (element?.objectOrganization?.e
   value: n.node.id,
 }));
 
+export const convertMapper = (element) => {
+  const mapper = element?.csvMappers.edges ?? [];
+  return mapper.map((n) => n.value);
+};
+
 export const convertKillChainPhases = (element) => (element?.killChainPhases ?? []).map((n) => ({
   label: `[${n.kill_chain_name}] ${n.phase_name}`,
   value: n.id,

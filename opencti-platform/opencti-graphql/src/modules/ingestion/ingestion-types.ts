@@ -80,6 +80,7 @@ export interface BasicStoreEntityIngestionCsv extends BasicStoreEntity {
   description: string
   uri: string
   csvMapper: string[]
+  csvMapper_id: string
   authentication_type: 'none' | 'basic' | 'bearer' | 'certificate'
   authentication_value: string
   user_id: string | undefined

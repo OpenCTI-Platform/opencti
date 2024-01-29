@@ -1,7 +1,7 @@
 import { batchLoader } from '../../database/middleware';
 import { batchCreator } from '../../domain/user';
 import type { Resolvers } from '../../generated/graphql';
-import { addIngestionCsv, deleteIngestionCsv, findAllPaginated, findById, ingestionCsvEditField, testMapperCsvIngestion } from './ingestion-csv-domain';
+import { addIngestionCsv, deleteIngestionCsv, findAllPaginated, findById, ingestionCsvEditField, testCsvIngestionMapping } from './ingestion-csv-domain';
 
 const creatorLoader = batchLoader(batchCreator);
 
@@ -12,7 +12,7 @@ const ingestionCsvResolvers: Resolvers = {
   },
   IngestionCsv: {
     user: (ingestionCsv, _, context) => creatorLoader.load(ingestionCsv.user_id, context, context.user),
-    test_mapper: (ingestionCsv, _, delimiter) => testMapperCsvIngestion(ingestionCsv, delimiter),
+    test_mapper: (ingestionCsv, _, context) => testCsvIngestionMapping(context, ingestionCsv),
   },
   Mutation: {
     ingestionCsvAdd: (_, { input }, context) => {

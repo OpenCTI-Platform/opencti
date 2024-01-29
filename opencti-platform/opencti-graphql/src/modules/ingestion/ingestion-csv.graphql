@@ -15,14 +15,15 @@ type IngestionCsv implements InternalObject & BasicObject {
     name: String!
     description: String
     uri: String!
-    csvMapper: String!
+    csvMapper_id: String!
+    csvMapper: CsvMapperConnection
     authentication_type: CsvAuthType!
     authentication_value: String
     user_id: String!
     user: Creator
     ingestion_running: Boolean
     current_state_date: DateTime
-    test_mapper: String
+    test_mapper: CsvMapperTestResult
 }
 
 enum IngestionCsvOrdering {
@@ -65,7 +66,7 @@ input IngestionCsvAddInput {
     authentication_value: String
     current_state_date: DateTime
     uri: String! @constraint(minLength: 5)
-    csvMapper: String!
+    csvMapper_id: String!
     ingestion_running: Boolean
     user_id: String!
 }

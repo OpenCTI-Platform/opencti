@@ -37,7 +37,6 @@ const IngestionCsvPopover: FunctionComponent<IngestionCsvPopoverProps> = ({
   paginationOptions,
   running,
 }) => {
-  const classes = useStyles();
   const { t } = useFormatter();
   const [anchorEl, setAnchorEl] = useState<PopoverProps['anchorEl']>(null);
   const [displayStart, setDisplayStart] = useState(false);
@@ -134,7 +133,7 @@ const IngestionCsvPopover: FunctionComponent<IngestionCsvPopoverProps> = ({
   };
   return (
     <>
-      <div className={classes?.container}>
+      <div style={{ margin: 0 }}>
         <IconButton
           onClick={handleOpen}
           aria-haspopup="true"
