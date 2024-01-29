@@ -5,6 +5,7 @@ import { parsingProcess } from '../../../src/parser/csv-parser';
 import { mappingProcess } from '../../../src/parser/csv-mapper';
 import { ENTITY_TYPE_LOCATION_ADMINISTRATIVE_AREA } from '../../../src/modules/administrativeArea/administrativeArea-types';
 import { ENTITY_TYPE_MALWARE } from '../../../src/schema/stixDomainObject';
+import { csvMapperAreaMarking } from './default-values/mapper-area-marking';
 
 const ENTITY_SETTINGS_UPDATE = `
   mutation entitySettingsEdit($ids: [ID!]!, $input: [EditInput!]!) {
@@ -16,6 +17,14 @@ const ENTITY_SETTINGS_UPDATE = `
 
 const GET_QUERY = `
   query getQuery {
+    markingDefinitions {
+      edges {
+        node {
+          id
+          definition
+        }
+      }
+    }
     individuals {
       edges {
         node {
@@ -43,10 +52,10 @@ const GET_QUERY = `
   }
 `;
 
-const mapData = async (fileName, mapper) => {
+const mapData = async (fileName, mapper, user = ADMIN_USER) => {
   const [_, ...records] = await parsingProcess(fileName, mapper.separator);
   return await Promise.all((records.map(async (record) => {
-    return await mappingProcess(testContext, ADMIN_USER, mapper, record);
+    return await mappingProcess(testContext, user, mapper, record);
   })));
 };
 
@@ -65,6 +74,7 @@ describe('CSV-MAPPER', () => {
   let entitySettingArea;
   let entitySettingMalware;
   let killChainPhases;
+  let markings;
 
   afterAll(async () => {
     await adminQuery(ENTITY_SETTINGS_UPDATE, {
@@ -90,6 +100,7 @@ describe('CSV-MAPPER', () => {
     entitySettingArea = entitySettings.find((setting) => setting.target_type === ENTITY_TYPE_LOCATION_ADMINISTRATIVE_AREA);
     entitySettingMalware = entitySettings.find((setting) => setting.target_type === ENTITY_TYPE_MALWARE);
     killChainPhases = data.killChainPhases.edges.map((e) => e.node);
+    markings = data.markingDefinitions.edges.map((e) => e.node);
 
     const areaDefaultValues = [
       { name: 'createdBy', default_values: [individual.id], mandatory: false },
@@ -273,4 +284,156 @@ describe('CSV-MAPPER', () => {
       expect(octopusOnIleEtVilaine.confidence).toBe(77);
     });
   });
+
+  describe('Managing default values for marking definitions', () => {
+    let user;
+    let tlpAmber;
+    let tlpClear;
+
+    beforeAll(async () => {
+      tlpAmber = markings.find((marking) => marking.definition === 'TLP:AMBER');
+      tlpClear = markings.find((marking) => marking.definition === 'TLP:CLEAR');
+      user = {
+        ...ADMIN_USER,
+        default_marking: [{
+          entity_type: 'GLOBAL',
+          values: [tlpAmber.id]
+        }]
+      };
+    });
+
+    it('should retrieve marking from data', async () => {
+      const filePath = './tests/02-integration/05-parser/default-values/data-markings.csv';
+      const data = (await mapData(filePath, csvMapperAreaMarking())).flat();
+
+      const indre = data.find((object) => object.name === 'indre');
+      const indreMarkings = indre?.objectMarking;
+
+      expect(indre).toBeDefined();
+      expect(indreMarkings).toBeDefined();
+      expect(indreMarkings.length).toBe(1);
+      expect(indreMarkings[0].definition).toBe('TLP:GREEN');
+    });
+
+    it('should not set markings if no default policy in settings and mapper', async () => {
+      const filePath = './tests/02-integration/05-parser/default-values/data-markings.csv';
+      const data = (await mapData(filePath, csvMapperAreaMarking())).flat();
+
+      const indre = data.find((object) => object.name === 'indre');
+      const lot = data.find((object) => object.name === 'lot');
+      const indreMarkings = indre?.objectMarking;
+      const lotMarkings = lot?.objectMarking;
+
+      expect(indreMarkings.length).toBe(1);
+      expect(indreMarkings[0].definition).toBe('TLP:GREEN');
+
+      expect(lot).toBeDefined();
+      expect(lotMarkings).not.toBeDefined();
+    });
+
+    it('should set user default markings if policy in mapper is set to user default', async () => {
+      const filePath = './tests/02-integration/05-parser/default-values/data-markings.csv';
+      const data = (await mapData(filePath, csvMapperAreaMarking('user-default'), user)).flat();
+
+      const indre = data.find((object) => object.name === 'indre');
+      const lot = data.find((object) => object.name === 'lot');
+      const indreMarkings = indre?.objectMarking;
+      const lotMarkings = lot?.objectMarking;
+
+      expect(indreMarkings.length).toBe(1);
+      expect(indreMarkings[0].definition).toBe('TLP:GREEN');
+
+      expect(lot).toBeDefined();
+      expect(lotMarkings).toBeDefined();
+      expect(lotMarkings.length).toBe(1);
+      expect(lotMarkings[0]).toBe(tlpAmber.id);
+    });
+
+    it('should set user chosen markings if policy in mapper is set to user choice', async () => {
+      const filePath = './tests/02-integration/05-parser/default-values/data-markings.csv';
+      const data = (await mapData(
+        filePath,
+        csvMapperAreaMarking('user-choice', [tlpClear.id, tlpAmber.id]),
+      )).flat();
+
+      const indre = data.find((object) => object.name === 'indre');
+      const lot = data.find((object) => object.name === 'lot');
+      const indreMarkings = indre?.objectMarking;
+      const lotMarkings = lot?.objectMarking;
+
+      expect(indreMarkings.length).toBe(1);
+      expect(indreMarkings[0].definition).toBe('TLP:GREEN');
+
+      expect(lot).toBeDefined();
+      expect(lotMarkings).toBeDefined();
+      expect(lotMarkings.length).toBe(2);
+      expect(lotMarkings[0].id).toBe(tlpClear.id);
+      expect(lotMarkings[1].id).toBe(tlpAmber.id);
+    });
+  });
 });
+
+// describe.only('aaaaa', () => {
+//   let entitySettingArea;
+//   let markings;
+//   let user;
+//   let tlpAmber;
+//
+//   beforeAll(async () => {
+//     const { data } = await adminQuery(GET_QUERY);
+//     const entitySettings = data.entitySettings.edges.map((e) => e.node);
+//     entitySettingArea = entitySettings.find((setting) => setting.target_type === ENTITY_TYPE_LOCATION_ADMINISTRATIVE_AREA);
+//     markings = data.markingDefinitions.edges.map((e) => e.node);
+//
+//     await adminQuery(
+//       ENTITY_SETTINGS_UPDATE,
+//       {
+//         ids: [entitySettingArea.id],
+//         input: {
+//           key: 'attributes_configuration',
+//           value: JSON.stringify([
+//             { name: 'objectMarking', default_values: ['true'], mandatory: false }
+//           ])
+//         }
+//       }
+//     );
+//
+//     tlpAmber = markings.find((marking) => marking.definition === 'TLP:AMBER');
+//     user = {
+//       ...ADMIN_USER,
+//       default_marking: [{
+//         entity_type: 'GLOBAL',
+//         values: [tlpAmber.id]
+//       }]
+//     };
+//   });
+//
+//   afterAll(async () => {
+//     // Remove the custom config.
+//     await adminQuery(ENTITY_SETTINGS_UPDATE, {
+//       ids: [entitySettingArea.id],
+//       input: {
+//         key: 'attributes_configuration',
+//         value: entitySettingArea.attributes_configuration
+//       }
+//     });
+//   });
+//
+//   it('should set user default markings if policy in settings is activated', async () => {
+//     const filePath = './tests/02-integration/05-parser/default-values/data-markings.csv';
+//     const data = (await mapData(filePath, csvMapperAreaMarking(), user)).flat();
+//
+//     const indre = data.find((object) => object.name === 'indre');
+//     const lot = data.find((object) => object.name === 'lot');
+//     const indreMarkings = indre?.objectMarking;
+//     const lotMarkings = lot?.objectMarking;
+//
+//     expect(indreMarkings.length).toBe(1);
+//     expect(indreMarkings[0].definition).toBe('TLP:GREEN');
+//
+//     expect(lot).toBeDefined();
+//     expect(lotMarkings).toBeDefined();
+//     expect(lotMarkings.length).toBe(1);
+//     expect(lotMarkings[0]).toBe(tlpAmber.id);
+//   });
+// });

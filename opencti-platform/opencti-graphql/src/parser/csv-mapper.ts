@@ -165,7 +165,8 @@ const handleBasedOnAttribute = (
   otherEntities: Map<string, Record<string, InputType>>,
   refEntities: Record<string, BasicStoreObject>
 ) => {
-  if (definition && attribute.default_values && attribute.default_values.length > 0) {
+  // Handle default value based_on attribute except markings which are handled later on.
+  if (definition && attribute.default_values && attribute.default_values.length > 0 && attribute.key !== INPUT_MARKINGS) {
     if (definition.multiple) {
       input[attribute.key] = attribute.default_values.flatMap((id) => {
         const entity = refEntities[id];
@@ -229,10 +230,7 @@ const handleAttributes = (
       // Handle column attribute
       handleDirectAttribute(attribute, input, record, attributeDef);
     } else if (refDef || ['from', 'to'].includes(attribute.key)) {
-      // Handle based_on attribute except markings which are handled later on.
-      if (attribute.key !== INPUT_MARKINGS) {
-        handleBasedOnAttribute(attribute, input, refDef, otherEntities, refEntities);
-      }
+      handleBasedOnAttribute(attribute, input, refDef, otherEntities, refEntities);
     } else {
       throw UnsupportedError('Unknown schema for attribute:', { attribute });
     }
@@ -243,7 +241,7 @@ const handleAttributes = (
  * We handle markings in a specific function instead of doing it inside the
  * handleAttributes() one because we need to do specific logic for this attribute.
  */
-const handleMarkings = (
+const handleDefaultMarkings = (
   entitySetting: BasicStoreEntityEntitySetting | undefined,
   representation: CsvMapperRepresentation,
   input: Record<string, InputType>,
@@ -251,8 +249,13 @@ const handleMarkings = (
   chosenMarkings: string[],
   user: AuthUser,
 ) => {
+  if (input[INPUT_MARKINGS]) {
+    return;
+  }
+
   // Find default markings policy in entity settings ("true" or undefined).
   const settingAttributes = entitySetting ? getAttributesConfiguration(entitySetting) : undefined;
+  // console.log('pouet', representation.target.entity_type, settingAttributes);
   const settingMarkingValue = settingAttributes
     ?.find((attribute) => attribute.name === INPUT_MARKINGS)
     ?.default_values?.[0];
@@ -261,7 +264,7 @@ const handleMarkings = (
     .find((attribute) => attribute.key === INPUT_MARKINGS)
     ?.default_values?.[0];
 
-  // Retrieve markings given by the user when importing csv file.
+  // Retrieve default markings of the user.
   const userDefaultMarkings = (user.default_marking ?? [])
     .find((entry) => entry.entity_type === 'GLOBAL')
     ?.values ?? [];
@@ -302,15 +305,15 @@ const mapRecord = async (
   handleAttributes(record, representation, input, otherEntities, refEntities);
 
   const entitySetting = await getEntitySettingFromCache(context, entity_type);
+  handleDefaultMarkings(entitySetting, representation, input, refEntities, chosenMarkings, user);
+
   const filledInput = fillDefaultValues(user, input, entitySetting);
   if (!isValidInput(filledInput)) {
     return null;
   }
 
-  handleMarkings(entitySetting, representation, input, refEntities, chosenMarkings, user);
-
-  handleId(representation, input);
-  return input;
+  handleId(representation, filledInput);
+  return filledInput;
 };
 
 export const mappingProcess = async (
