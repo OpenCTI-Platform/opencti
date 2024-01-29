@@ -43,7 +43,7 @@ module.exports = {
     'jest.file.transform.js',
     'jest.relay.transform.js',
     'extract-i18n-keyword.js',
-    '**/test_e2e/**',
+    '**/tests_e2e/**',
   ],
   plugins: [
     'import-newlines',

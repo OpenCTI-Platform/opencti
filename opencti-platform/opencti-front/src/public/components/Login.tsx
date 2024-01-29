@@ -230,7 +230,7 @@ const Login: FunctionComponent<LoginProps> = ({ type, settings }) => {
   const isWhitemarkEnable = !settings.platform_whitemark || !isEnterpriseEdition;
 
   const loginScreen = () => (
-    <div style={{ marginBottom: 10 }}>
+    <div style={{ marginBottom: 10 }} data-testid="login-page">
       <img
         src={loginLogo && loginLogo.length > 0 ? loginLogo : fileUri(theme.palette.mode === 'dark' ? logoDark : logoLight)}
         alt="logo"
