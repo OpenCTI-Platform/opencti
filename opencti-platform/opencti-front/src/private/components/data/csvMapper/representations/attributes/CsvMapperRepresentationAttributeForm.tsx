@@ -9,9 +9,7 @@ import { FieldProps } from 'formik';
 import CsvMapperRepresentationDialogOption from '@components/data/csvMapper/representations/attributes/CsvMapperRepresentationDialogOption';
 import CsvMapperRepresentionAttributeSelectedConfigurations from '@components/data/csvMapper/representations/attributes/CsvMapperRepresentionAttributeSelectedConfigurations';
 import { CsvMapperRepresentationAttributeFormData } from '@components/data/csvMapper/representations/attributes/Attribute';
-import {
-  CsvMapperRepresentationAttributesForm_allSchemaAttributes$data,
-} from '@components/data/csvMapper/representations/attributes/__generated__/CsvMapperRepresentationAttributesForm_allSchemaAttributes.graphql';
+import { SchemaAttribute } from '@components/data/csvMapper/representations/attributes/CsvMapperRepresentationAttributesForm';
 import { useFormatter } from '../../../../../../components/i18n';
 import { isEmptyField } from '../../../../../../utils/utils';
 
@@ -39,7 +37,7 @@ export type RepresentationAttributeForm = CsvMapperRepresentationAttributeFormDa
 
 interface CsvMapperRepresentationAttributeFormProps
   extends FieldProps<RepresentationAttributeForm> {
-  schemaAttribute: CsvMapperRepresentationAttributesForm_allSchemaAttributes$data['csvMapperSchemaAttributes'][number]['attributes'][number];
+  schemaAttribute: SchemaAttribute;
   label: string;
   handleErrors: (key: string, value: string | null) => void;
 }

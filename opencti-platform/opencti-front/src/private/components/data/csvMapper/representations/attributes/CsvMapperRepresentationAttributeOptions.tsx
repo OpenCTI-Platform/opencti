@@ -3,15 +3,13 @@ import DialogContentText from '@mui/material/DialogContentText';
 import { Field, FormikProps } from 'formik';
 import DefaultValueField from '@components/common/form/DefaultValueField';
 import { CsvMapperFormData } from '@components/data/csvMapper/CsvMapper';
-import {
-  CsvMapperRepresentationAttributesForm_allSchemaAttributes$data,
-} from '@components/data/csvMapper/representations/attributes/__generated__/CsvMapperRepresentationAttributesForm_allSchemaAttributes.graphql';
+import { SchemaAttribute } from '@components/data/csvMapper/representations/attributes/CsvMapperRepresentationAttributesForm';
 import CsvMapperDefaultMarking from '@components/data/csvMapper/representations/attributes/CsvMapperDefaultMarking';
 import CsvMapperRepresentationAttributeOption from './CsvMapperRepresentationAttributeOption';
 import { useFormatter } from '../../../../../../components/i18n';
 
 interface CsvMapperRepresentationAttributeOptionsProps {
-  schemaAttribute: CsvMapperRepresentationAttributesForm_allSchemaAttributes$data['csvMapperSchemaAttributes'][number]['attributes'][number];
+  schemaAttribute: SchemaAttribute;
   attributeName: string;
   form: FormikProps<CsvMapperFormData>
 }

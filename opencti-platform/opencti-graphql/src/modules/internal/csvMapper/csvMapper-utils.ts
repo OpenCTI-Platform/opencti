@@ -23,6 +23,7 @@ export interface CsvMapperSchemaAttribute {
   multiple: boolean
   defaultValues?: { id: string, name:string }[]
   label?: string
+  mappings?: ObjectAttribute['mappings']
 }
 
 export interface CsvMapperSchemaAttributes {

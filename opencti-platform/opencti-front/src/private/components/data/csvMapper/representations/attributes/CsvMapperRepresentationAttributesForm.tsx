@@ -26,10 +26,28 @@ export const CsvMapperRepresentationAttributesFormFragment = graphql`
           name
           id
         }
+        mappings {
+          name
+          type
+          multiple
+          label
+          mandatory
+          editDefault
+        }
       }
     }
   }
 `;
+
+export interface SchemaAttribute {
+  type: string
+  name: string
+  label: string | null | undefined
+  mandatory: boolean
+  defaultValues: { readonly id: string, readonly name: string }[] | null
+  multiple: boolean
+  editDefault: boolean
+}
 
 interface CsvMapperRepresentationAttributesFormProps {
   handleErrors: (key: string, value: string | null) => void;
@@ -57,52 +75,24 @@ CsvMapperRepresentationAttributesFormProps
     (schema) => schema.name === representation.target_type,
   )?.attributes ?? [];
 
-  const mutableSchemaAttributes = entitySchemaAttributes.slice();
-  const indexToReplace = mutableSchemaAttributes.findIndex((a) => a.name === 'hashes');
+  const mutableSchemaAttributes: SchemaAttribute[] = entitySchemaAttributes.map((schema) => {
+    if (schema.name === 'hashes') {
+      return (schema.mappings ?? []).map((mapping) => ({
+        ...mapping,
+        defaultValues: null,
+      }));
+    }
+    return [{
+      type: schema.type,
+      name: schema.name,
+      label: schema.label,
+      mandatory: schema.mandatory,
+      multiple: schema.multiple,
+      editDefault: schema.editDefault,
+      defaultValues: schema.defaultValues ? [...schema.defaultValues] : null,
+    }];
+  }).flat();
 
-  if (indexToReplace !== -1) {
-    console.log(mutableSchemaAttributes[indexToReplace]);
-    mutableSchemaAttributes.splice(
-      indexToReplace,
-      1,
-      {
-        defaultValues: null,
-        editDefault: false,
-        label: null,
-        mandatory: false,
-        multiple: false,
-        name: 'MD5',
-        type: 'string',
-      },
-      {
-        defaultValues: null,
-        editDefault: false,
-        label: null,
-        mandatory: false,
-        multiple: false,
-        name: 'SHA-1',
-        type: 'string',
-      },
-      {
-        defaultValues: null,
-        editDefault: false,
-        label: null,
-        mandatory: false,
-        multiple: false,
-        name: 'SHA-256',
-        type: 'string',
-      },
-      {
-        defaultValues: null,
-        editDefault: false,
-        label: null,
-        mandatory: false,
-        multiple: false,
-        name: 'SHA-512',
-        type: 'string',
-      },
-    );
-  }
   return (
     <>
       {[...mutableSchemaAttributes]

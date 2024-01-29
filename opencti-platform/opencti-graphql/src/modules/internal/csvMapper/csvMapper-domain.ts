@@ -75,6 +75,12 @@ export const csvMapperSchemaAttributes = async (context: AuthContext, user: Auth
         mandatory: attribute.mandatoryType === 'external',
         editDefault: attribute.editDefault,
         multiple: attribute.multiple,
+        mappings: 'mappings' in attribute
+          ? attribute.mappings.map((mapping) => ({
+            ...mapping,
+            mandatory: mapping.mandatoryType === 'external',
+          }))
+          : undefined
       }];
     });
     if (isStixCoreRelationship(key)) {

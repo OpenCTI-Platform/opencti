@@ -10970,12 +10970,13 @@ type CsvMapperTestResult {
 type CsvMapperSchemaAttribute {
   name: String!
   type: String!
-  mandatory: Boolean!
   mandatoryType: String!
   editDefault: Boolean!
   multiple: Boolean!
   defaultValues: [DefaultValue!]
-  label: String
+  label: String!
+  mandatory: Boolean!
+  mappings: [CsvMapperSchemaAttribute!]
 }
 
 type CsvMapperSchemaAttributes {
