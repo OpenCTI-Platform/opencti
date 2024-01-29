@@ -54,7 +54,7 @@ export const connectorWorksWorkDeletionMutation = graphql`
   }
 `;
 
-type WorkMessages = NonNullable<NonNullable<NonNullable<NonNullable<ConnectorWorks_data$data['works']>['edges']>[0]>['node']['errors']>;
+type WorkMessages = NonNullable<NonNullable<NonNullable<ConnectorWorks_data$data['works']>['edges']>[0]>['node']['errors'];
 
 interface Options {
   count: number,
@@ -85,11 +85,10 @@ const ConnectorWorksComponent: FunctionComponent<ConnectorWorksComponentProps> =
   const [displayErrors, setDisplayErrors] = useState<boolean>(false);
   const [errors, setErrors] = useState<WorkMessages>([]);
 
-  const handleOpenErrors = (errorsList: WorkMessages | null) => {
-    if (errorsList !== null) {
-      setDisplayErrors(true);
-      setErrors(errorsList);
-    }
+  const handleOpenErrors = (errorsList: WorkMessages) => {
+    if (!errorsList) return;
+    setDisplayErrors(true);
+    setErrors(errorsList);
   };
 
   const handleCloseErrors = () => {
@@ -230,14 +229,8 @@ const ConnectorWorksComponent: FunctionComponent<ConnectorWorksComponentProps> =
                       variant="determinate"
                       value={
                         // eslint-disable-next-line no-nested-ternary
-                        tracking && tracking.import_expected_number !== null && tracking.import_processed_number !== null
-                          ? tracking.import_expected_number === 0
-                            ? 0
-                            : Math.round(
-                              (tracking.import_processed_number
-                                  / tracking.import_expected_number)
-                                  * 100,
-                            )
+                        tracking && !!tracking.import_expected_number && !!tracking.import_processed_number
+                          ? Math.round((tracking.import_processed_number / tracking.import_expected_number) * 100)
                           : 0
                       }
                     />
@@ -248,7 +241,7 @@ const ConnectorWorksComponent: FunctionComponent<ConnectorWorksComponentProps> =
                 style={{ position: 'absolute', right: 10, top: 10 }}
                 variant="contained"
                 color="secondary"
-                onClick={() => handleOpenErrors(work.errors)}
+                onClick={() => handleOpenErrors(work.errors ?? [])}
                 size="small"
               >
                 {work.errors?.length} {t_i18n('errors')}
@@ -286,7 +279,7 @@ const ConnectorWorksComponent: FunctionComponent<ConnectorWorksComponentProps> =
                   </TableRow>
                 </TableHead>
                 <TableBody>
-                  {errors.map((error) => error && (
+                  {errors?.map((error) => error && (
                     <TableRow key={error.timestamp}>
                       <TableCell>{nsdt(error.timestamp)}</TableCell>
                       <TableCell>{error.message}</TableCell>
