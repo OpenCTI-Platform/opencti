@@ -39,6 +39,18 @@ const stixCoreObjectsHorizontalBarsDistributionQuery = graphql`
     $types: [String]
     $filters: FilterGroup
     $search: String
+    $subDistributionRelationshipType: [String]
+    $subDistributionToTypes: [String]
+    $subDistributionField: String!
+    $subDistributionStartDate: DateTime
+    $subDistributionEndDate: DateTime
+    $subDistributionDateAttribute: String
+    $subDistributionOperation: StatsOperation!
+    $subDistributionLimit: Int
+    $subDistributionOrder: String
+    $subDistributionTypes: [String]
+    $subDistributionFilters: FilterGroup
+    $subDistributionSearch: String
   ) {
     stixCoreObjectsDistribution(
       objectId: $objectId
@@ -65,6 +77,166 @@ const stixCoreObjectsHorizontalBarsDistributionQuery = graphql`
         ... on BasicRelationship {
           entity_type
           id
+        }
+        ... on StixCoreObject {
+          stixCoreObjectsDistribution(
+            relationship_type: $subDistributionRelationshipType
+            toTypes: $subDistributionToTypes
+            field: $subDistributionField
+            startDate: $subDistributionStartDate
+            endDate: $subDistributionEndDate
+            dateAttribute: $subDistributionDateAttribute
+            operation: $subDistributionOperation
+            limit: $subDistributionLimit
+            order: $subDistributionOrder
+            types: $subDistributionTypes
+            filters: $subDistributionFilters
+            search: $subDistributionSearch
+          ) {
+            label
+            value
+            entity {
+              ... on BasicObject {
+                entity_type
+                id
+              }
+              ... on AttackPattern {
+                name
+                description
+              }
+              ... on Campaign {
+                name
+                description
+              }
+              ... on CourseOfAction {
+                name
+                description
+              }
+              ... on Individual {
+                name
+                description
+              }
+              ... on Organization {
+                name
+                description
+              }
+              ... on Sector {
+                name
+                description
+              }
+              ... on System {
+                name
+                description
+              }
+              ... on Indicator {
+                name
+                description
+              }
+              ... on Infrastructure {
+                name
+                description
+              }
+              ... on IntrusionSet {
+                name
+                description
+              }
+              ... on Position {
+                name
+                description
+              }
+              ... on City {
+                name
+                description
+              }
+              ... on Country {
+                name
+                description
+              }
+              ... on Region {
+                name
+                description
+              }
+              ... on Malware {
+                name
+                description
+              }
+              ... on MalwareAnalysis {
+                result_name
+              }
+              ... on ThreatActor {
+                name
+                description
+              }
+              ... on Tool {
+                name
+                description
+              }
+              ... on Vulnerability {
+                name
+                description
+              }
+              ... on Incident {
+                name
+                description
+              }
+              ... on Event {
+                name
+                description
+              }
+              ... on Channel {
+                name
+                description
+              }
+              ... on Narrative {
+                name
+                description
+              }
+              ... on Language {
+                name
+              }
+              ... on DataComponent {
+                name
+                description
+              }
+              ... on DataSource {
+                name
+                description
+              }
+              ... on Case {
+                name
+                description
+              }
+              ... on StixCyberObservable {
+                observable_value
+              }
+              ... on MarkingDefinition {
+                definition_type
+                definition
+              }
+              ... on Report {
+                name
+              }
+              ... on Grouping {
+                name
+              }
+              ... on Note {
+                attribute_abstract
+                content
+              }
+              ... on Opinion {
+                opinion
+              }
+              ... on Label {
+                value
+              }
+              ... on Status {
+                template {
+                  name
+                  color
+                }
+              }
+            }
+          }
         }
         ... on AttackPattern {
           name
@@ -230,6 +402,9 @@ const StixCoreObjectsHorizontalBars = ({
     const selection = dataSelection[0];
     const dataSelectionTypes = ['Stix-Core-Object'];
     const { filters, dataSelectionElementId, dataSelectionToTypes } = buildFiltersAndOptionsForWidgets(selection.filters);
+    const subSelection = dataSelection[1];
+    const subSelectionDataSelectionTypes = ['Stix-Core-Object'];
+    const { filters: subSelectionFilters, dataSelectionToTypes: subSelectionDataSelectionToTypes } = buildFiltersAndOptionsForWidgets(subSelection.filters);
     return (
       <QueryRenderer
         query={stixCoreObjectsHorizontalBarsDistributionQuery}
@@ -247,6 +422,19 @@ const StixCoreObjectsHorizontalBars = ({
               : 'created_at',
           filters,
           limit: selection.number ?? 10,
+          subDistributionToTypes: subSelectionDataSelectionToTypes,
+          subDistributionField: subSelection.attribute,
+          subDistributionStartDate: startDate,
+          subDistributionEndDate: endDate,
+          subDistributionDateAttribute:
+              subSelection.date_attribute
+              && subSelection.date_attribute.length > 0
+                ? subSelection.date_attribute
+                : 'created_at',
+          subDistributionOperation: 'count',
+          subDistributionLimit: subSelection.number ?? 10,
+          subDistributionTypes: subSelectionDataSelectionTypes,
+          subDistributionFilters: subSelectionFilters,
         }}
         render={({ props }) => {
           if (

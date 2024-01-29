@@ -168,12 +168,10 @@ const WorkspaceHeader = ({
       onCompleted: () => MESSAGING$.notifySuccess(t_i18n('The tag has been removed')),
     });
   };
-
   const { relativeDate } = config ?? {};
   const [displayManageAccess, setDisplayManageAccess] = useState(false);
   const handleOpenManageAccess = () => setDisplayManageAccess(true);
   const handleCloseManageAccess = () => setDisplayManageAccess(false);
-
   const handleDownloadAsStixReport = () => {
     fetchQuery(workspaceHeaderToStixReportBundleQuery, { id: workspace.id })
       .toPromise()
@@ -186,23 +184,18 @@ const WorkspaceHeader = ({
         }
       });
   };
-
   const handleExportDashboard = () => {
     handleExportJson(workspace);
   };
-
   const handleDashboardDuplication = () => {
     setDisplayDuplicate(true);
   };
-
   const [
     displayTurnToReportOrCaseContainer,
     setDisplayTurnToReportOrCaseContainer,
   ] = useState(false);
-
   const handleOpenTurnToReportOrCaseContainer = () => setDisplayTurnToReportOrCaseContainer(true);
   const handleCloseTurnToReportOrCaseContainer = () => setDisplayTurnToReportOrCaseContainer(false);
-
   return (
     <>
       <div style={{ margin: variant === 'dashboard' ? '0 20px 0 20px' : 0 }}>
@@ -440,7 +433,7 @@ const WorkspaceHeader = ({
               <Tooltip title={t_i18n('Add tag')}>
                 <IconButton
                   style={{ float: 'left', marginTop: '-5px' }}
-                  color={openTag ? 'primary' : 'secondary'}
+                  color="primary"
                   aria-tag="Tag"
                   onClick={handleOpenTag}
                   size="large"
