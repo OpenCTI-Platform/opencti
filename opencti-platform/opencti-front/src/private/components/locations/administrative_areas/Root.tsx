@@ -101,6 +101,7 @@ const RootAdministrativeAreaComponent = ({
               <AdministrativeAreaPopover id={administrativeArea.id} />
             }
             enableQuickSubscription={true}
+            isOpenctiAlias={true}
           />
           <Box
             sx={{

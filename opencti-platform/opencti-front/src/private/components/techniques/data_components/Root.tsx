@@ -101,6 +101,7 @@ const RootDataComponent = () => {
                     PopoverComponent={
                       <DataComponentPopover dataComponentId={dataComponentId} />
                     }
+                    noAliases={true}
                   />
                   <Box
                     sx={{

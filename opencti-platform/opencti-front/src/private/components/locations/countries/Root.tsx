@@ -95,6 +95,7 @@ const RootCountryComponent = ({ queryRef, countryId, link }) => {
             stixDomainObject={country}
             PopoverComponent={<CountryPopover id={country.id} />}
             enableQuickSubscription={true}
+            isOpenctiAlias={true}
           />
           <Box
             sx={{

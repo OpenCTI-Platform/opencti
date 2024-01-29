@@ -131,6 +131,7 @@ class RootPosition extends Component {
                       stixDomainObject={props.position}
                       PopoverComponent={<PositionPopover />}
                       enableQuickSubscription={true}
+                      isOpenctiAlias={true}
                     />
                     <Box
                       sx={{

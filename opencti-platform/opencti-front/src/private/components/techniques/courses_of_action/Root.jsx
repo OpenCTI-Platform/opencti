@@ -105,6 +105,7 @@ class RootCourseOfAction extends Component {
                       disableSharing={true}
                       stixDomainObject={props.courseOfAction}
                       PopoverComponent={<CourseOfActionPopover />}
+                      isOpenctiAlias={true}
                     />
                     <Box
                       sx={{

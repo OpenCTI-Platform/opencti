@@ -93,6 +93,7 @@ const RootCityComponent = ({ queryRef, cityId, link }) => {
             stixDomainObject={city}
             PopoverComponent={<CityPopover id={city.id} />}
             enableQuickSubscription={true}
+            isOpenctiAlias={true}
           />
           <Box
             sx={{

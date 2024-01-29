@@ -91,6 +91,7 @@ const RootDataSourceComponent = ({ queryRef, dataSourceId }) => {
           <StixDomainObjectHeader
             entityType={'Data-Source'}
             disableSharing={true}
+            noAliases={true}
             stixDomainObject={dataSource}
             PopoverComponent={<DataSourcePopover id={dataSource.id} />}
           />
