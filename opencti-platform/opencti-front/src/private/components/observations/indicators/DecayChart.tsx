@@ -100,7 +100,7 @@ const DecayChart : FunctionComponent<DecayChartProps> = ({ indicator }) => {
 
   // circle on the curve that show first and last point
   if (indicator.decayChartData?.live_score_serie && indicator.decayChartData?.live_score_serie.length > 0) {
-    const series = indicator.decayChartData?.live_score_serie;
+    const series = indicator.decayChartData.live_score_serie;
     pointAnnotations.push({
       x: moment(series[0].time).valueOf(),
       y: series[0].score,
