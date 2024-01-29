@@ -264,7 +264,7 @@ const WorkspaceHeader = ({
                   clearable={true}
                   disableFuture={true}
                   disabled={true}
-                  onChange={(value) => handleDateChange('startDate', value)}
+                  onChange={(value, context) => !context.validationError && handleDateChange('startDate', value)}
                   slotProps={{
                     textField: {
                       style: { marginRight: 20 },
@@ -281,7 +281,7 @@ const WorkspaceHeader = ({
                   clearable={true}
                   disabled={true}
                   disableFuture={true}
-                  onChange={(value) => handleDateChange('endDate', value)}
+                  onChange={(value, context) => !context.validationError && handleDateChange('endDate', value)}
                   slotProps={{
                     textField: {
                       style: { marginRight: 20 },
@@ -328,7 +328,7 @@ const WorkspaceHeader = ({
                 clearable={true}
                 disableFuture={true}
                 disabled={!!relativeDate}
-                onChange={(value) => handleDateChange('startDate', value)}
+                onChange={(value, context) => !context.validationError && handleDateChange('startDate', value)}
                 slotProps={{
                   textField: {
                     style: { marginRight: 20 },
@@ -344,7 +344,7 @@ const WorkspaceHeader = ({
                 clearable={true}
                 disabled={!!relativeDate}
                 disableFuture={true}
-                onChange={(value) => handleDateChange('endDate', value)}
+                onChange={(value, context) => !context.validationError && handleDateChange('endDate', value)}
                 slotProps={{
                   textField: {
                     style: { marginRight: 20 },
