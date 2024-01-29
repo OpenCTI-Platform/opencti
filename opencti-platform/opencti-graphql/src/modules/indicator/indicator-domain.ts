@@ -39,7 +39,7 @@ import {
 } from './decay-domain';
 import { isModuleActivated } from '../../domain/settings';
 import { prepareDate } from '../../utils/format';
-import { computeChartDecayAlgoSerie, computScoreList, type DecayChartData } from './decay-chart-domain';
+import { computeChartDecayAlgoSerie, computeScoreList, type DecayChartData } from './decay-chart-domain';
 
 export const findById = (context: AuthContext, user: AuthUser, indicatorId: string) => {
   return storeLoadById<BasicStoreEntityIndicator>(context, user, indicatorId, ENTITY_TYPE_INDICATOR);
@@ -70,7 +70,7 @@ export const getDecayChartData = async (context: AuthContext, user: AuthUser, in
   if (!indicator.decay_applied_rule) {
     return null;
   }
-  const scoreList = computScoreList(indicator.decay_base_score);
+  const scoreList = computeScoreList(indicator.decay_base_score);
   const liveScoreSerie = computeChartDecayAlgoSerie(indicator, scoreList);
 
   const chartData: DecayChartData = {

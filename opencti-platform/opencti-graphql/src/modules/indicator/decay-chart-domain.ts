@@ -40,7 +40,7 @@ export const computeChartDecayAlgoSerie = (indicator: BasicStoreEntityIndicator,
 /**
  * Compute all time scores needed to draw the chart from base score to 0.
  */
-export const computScoreList = (maxScore:number): number[] => {
+export const computeScoreList = (maxScore:number): number[] => {
   const scoreArray: number[] = [];
   for (let i = maxScore; i >= 0; i -= 1) {
     scoreArray.push(i);

@@ -13,7 +13,7 @@ import {
 } from '../../../src/modules/indicator/decay-domain';
 import { computeIndicatorDecayPatch, type IndicatorPatch } from '../../../src/modules/indicator/indicator-domain';
 import type { BasicStoreEntityIndicator } from '../../../src/modules/indicator/indicator-types';
-import { computeChartDecayAlgoSerie, computScoreList } from '../../../src/modules/indicator/decay-chart-domain';
+import { computeChartDecayAlgoSerie, computeScoreList } from '../../../src/modules/indicator/decay-chart-domain';
 
 describe('Decay formula testing', () => {
   it('should compute score', () => {
@@ -307,7 +307,7 @@ describe('Decay live detailed data testing (subset of indicatorDecayDetails quer
 
 describe('Decay chart data generation', () => {
   it('should compute score list correctly', () => {
-    const result: number[] = computScoreList(81);
+    const result: number[] = computeScoreList(81);
 
     expect(result.length).toBe(82); // from 81 to zero included
     expect(result[0]).toBe(81);
@@ -315,7 +315,7 @@ describe('Decay chart data generation', () => {
   });
 
   it('should compute nothing for score < 0', () => {
-    const result: number[] = computScoreList(-12);
+    const result: number[] = computeScoreList(-12);
     expect(result.length).toBe(0);
   });
 
@@ -323,7 +323,7 @@ describe('Decay chart data generation', () => {
     // YYYY-MM-DDTHH:mm:ss.sssZ
     const startDate = new Date('2023-12-15T00:00:00.000Z');
 
-    const timeSerie: number[] = computScoreList(100);
+    const timeSerie: number[] = computeScoreList(100);
     const indicator: Partial<BasicStoreEntityIndicator> = {
       x_opencti_score: 100,
       decay_base_score: 100,

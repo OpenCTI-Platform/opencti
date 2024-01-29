@@ -89,6 +89,7 @@ const DecayChart : FunctionComponent<DecayChartProps> = ({ indicator }) => {
   }
 
   const pointAnnotations = [];
+  // circle on the curve that show the live score
   pointAnnotations.push({
     x: new Date().getTime(),
     y: indicator.decayLiveDetails?.live_score,
@@ -96,6 +97,28 @@ const DecayChart : FunctionComponent<DecayChartProps> = ({ indicator }) => {
       fillColor: liveScoreColor,
     },
   });
+
+  // circle on the curve that show first and last point
+  if (indicator.decayChartData?.live_score_serie) {
+    const serie = indicator.decayChartData?.live_score_serie;
+    pointAnnotations.push({
+      x: moment(serie[0].time).valueOf(),
+      y: serie[0].score,
+      marker: {
+        fillColor: chartInfoTextColor,
+      },
+    });
+
+    pointAnnotations.push({
+      x: moment(serie[serie.length - 1].time).valueOf(),
+      y: serie[serie.length - 1].score,
+      marker: {
+        fillColor: chartInfoTextColor,
+      },
+    });
+  }
+
+  console.log('pointAnnotations', pointAnnotations);
 
   const chartOptions: ApexOptions = {
     chart: {
