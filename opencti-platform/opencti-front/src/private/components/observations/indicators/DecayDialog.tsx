@@ -1,6 +1,5 @@
 import React, { FunctionComponent } from 'react';
 import DialogContent from '@mui/material/DialogContent';
-import Typography from '@mui/material/Typography';
 import Grid from '@mui/material/Grid';
 import Table from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
@@ -14,6 +13,7 @@ import { Theme } from '@mui/material/styles/createTheme';
 import { useTheme } from '@mui/styles';
 import { IndicatorDetails_indicator$data } from '@components/observations/indicators/__generated__/IndicatorDetails_indicator.graphql';
 import DecayChart from '@components/observations/indicators/DecayChart';
+import moment from 'moment-timezone';
 import { useFormatter } from '../../../../components/i18n';
 
 interface DecayDialogContentProps {
@@ -29,58 +29,64 @@ export interface LabelledDecayHistory {
 
 const DecayDialogContent : FunctionComponent<DecayDialogContentProps> = ({ indicator }) => {
   const theme = useTheme<Theme>();
-  const { t_i18n, fldt } = useFormatter();
+  const { t_i18n } = useFormatter();
 
   const indicatorDecayDetails = indicator.decayLiveDetails;
 
   const decayHistory = indicator.decay_history ? [...indicator.decay_history] : [];
   const decayLivePoints = indicatorDecayDetails?.live_points ? [...indicatorDecayDetails.live_points] : [];
 
-  const currentLiveScoreLineStyle = {
-    color: theme.palette.success.main,
-    fontWeight: 'bold',
+  const getScoreLabelFor = (score: number) => {
+    if (score === indicator.decay_base_score) {
+      return 'Score at creation';
+    } if (score === indicator.x_opencti_score) {
+      return 'Current stable score';
+    } if (score === indicator.decay_applied_rule?.decay_revoke_score) {
+      return 'Revoke score';
+    }
+    return 'Stability threshold';
   };
 
-  const currentScoreLineStyle = {
-    color: theme.palette.info.main,
-    fontWeight: 'bold',
+  const getStyleFor = (score: number) => {
+    if (score === indicator.x_opencti_score) {
+      return {
+        color: theme.palette.success.main,
+        fontWeight: 'bold',
+      };
+    } if (score === indicator.decay_applied_rule?.decay_revoke_score) {
+      return { color: theme.palette.secondary.main };
+    }
+    return { color: theme.palette.text.primary };
   };
 
-  const revokeScoreLineStyle = {
-    color: theme.palette.secondary.main,
-  };
-
-  const normalHistoryLineStyle = {
-    color: theme.palette.text.primary,
+  const getDateAsTextFor = (history: LabelledDecayHistory) => {
+    console.log('getDateAsTextFor history:', history);
+    if (indicator.x_opencti_score === null || indicator.x_opencti_score === undefined) {
+      return 'N/A';
+    } if (history.score < indicator.x_opencti_score) {
+      return moment(history.updated_at).fromNow();
+    }
+    return moment(history.updated_at).format('DD MMM yyyy HH:mm A');
   };
 
   const decayFullHistory: LabelledDecayHistory[] = [];
-  decayHistory.map((history, index) => (
+  decayHistory.map((history) => (
     decayFullHistory.push({
       score: history.score,
       updated_at: history.updated_at,
-      label: index === 0 ? 'Score at creation' : 'Score updated',
-      style: history.score === indicator.x_opencti_score ? currentScoreLineStyle : normalHistoryLineStyle,
+      label: getScoreLabelFor(history.score),
+      style: getStyleFor(history.score),
     })
   ));
 
-  decayLivePoints.map((history, index) => (
+  decayLivePoints.map((history) => (
     decayFullHistory.push({
       score: history.score,
       updated_at: history.updated_at,
-      label: index === decayLivePoints.length - 1 ? 'Revoke score' : 'Score update planned',
-      style: index === decayLivePoints.length - 1 ? revokeScoreLineStyle : normalHistoryLineStyle,
+      label: getScoreLabelFor(history.score),
+      style: getStyleFor(history.score),
     })
   ));
-
-  if (indicatorDecayDetails && indicatorDecayDetails.live_score && indicatorDecayDetails.live_score !== indicator.x_opencti_score) {
-    decayFullHistory.push({
-      score: indicatorDecayDetails.live_score,
-      updated_at: new Date(),
-      label: 'Current live score',
-      style: currentLiveScoreLineStyle,
-    });
-  }
 
   decayFullHistory.sort((a, b) => {
     return new Date(a.updated_at).getTime() - new Date(b.updated_at).getTime();
@@ -97,9 +103,6 @@ const DecayDialogContent : FunctionComponent<DecayDialogContentProps> = ({ indic
           <DecayChart indicator={indicator}/>
         </Grid>
         <Grid item={true} xs={6}>
-          <Typography variant="h6">
-            {t_i18n('Lifecycle key information')}
-          </Typography>
           <TableContainer component={Paper}>
             <Table sx={{ maxHeight: 440 }} size="small" aria-label="lifecycle history">
               <TableHead>
@@ -115,7 +118,7 @@ const DecayDialogContent : FunctionComponent<DecayDialogContentProps> = ({ indic
                     <TableRow key={index}>
                       <TableCell sx={history.style}>{t_i18n(history.label)}</TableCell>
                       <TableCell sx={history.style}>{history.score}</TableCell>
-                      <TableCell sx={history.style}>{fldt(history.updated_at)}</TableCell>
+                      <TableCell sx={history.style}>{getDateAsTextFor(history)}</TableCell>
                     </TableRow>
                   );
                 })}

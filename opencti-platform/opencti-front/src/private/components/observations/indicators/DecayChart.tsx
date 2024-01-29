@@ -13,17 +13,34 @@ interface DecayChartProps {
 const DecayChart : FunctionComponent<DecayChartProps> = ({ indicator }) => {
   const theme = useTheme<Theme>();
 
-  const liveScoreColor = theme.palette.success.main;
+  const decayCurveColor = theme.palette.primary.main;
   const reactionPointColor = theme.palette.text.primary;
-  const scoreColor = theme.palette.info.main;
+  const scoreColor = theme.palette.success.main;
   const revokeColor = theme.palette.secondary.main;
 
-  const chartLabelsTextColor = theme.palette.info.contrastText;
+  const chartLabelBackgroundColor = theme.palette.background.paper;
   const chartInfoTextColor = theme.palette.text.primary;
   const chartBackgroundColor = theme.palette.background.default;
+  const graphLineThickness = 4;
+
+  // Time in millisecond cannot be set as number in GraphQL because it's too long
+  // So the time in data is stored as Date and must be converted to time in ms to be drawn on the chart.
+  const convertTimeForChart = (time: Date) => {
+    return moment(time).valueOf();
+  };
+
+  // This is the chart serie data, aka the curve.
+  const decayCurveDataPoints: { x: number; y: number }[] = [];
+  if (indicator.decayChartData && indicator.decayChartData.live_score_serie) {
+    indicator.decayChartData.live_score_serie.forEach((dataPoint) => {
+      decayCurveDataPoints.push({
+        x: convertTimeForChart(dataPoint.time),
+        y: dataPoint.score,
+      });
+    });
+  }
 
   const graphLinesAnnotations = [];
-
   // Horizontal lines that shows reaction points
   if (indicator.decay_applied_rule?.decay_points) {
     indicator.decay_applied_rule.decay_points.forEach((reactionPoint) => {
@@ -34,10 +51,10 @@ const DecayChart : FunctionComponent<DecayChartProps> = ({ indicator }) => {
           borderColor: reactionPoint === indicator.x_opencti_score ? scoreColor : reactionPointColor,
           offsetY: 0,
           style: {
-            color: chartLabelsTextColor,
-            background: reactionPoint === indicator.x_opencti_score ? scoreColor : reactionPointColor,
+            color: reactionPoint === indicator.x_opencti_score ? scoreColor : chartInfoTextColor,
+            background: chartLabelBackgroundColor,
           },
-          text: reactionPoint === indicator.x_opencti_score ? `Score: ${reactionPoint}` : `${reactionPoint}`,
+          text: `${reactionPoint}`,
         },
       };
       graphLinesAnnotations.push(lineReactionValue);
@@ -50,72 +67,58 @@ const DecayChart : FunctionComponent<DecayChartProps> = ({ indicator }) => {
       borderColor: revokeColor,
       fillColor: revokeColor,
       label: {
-        text: `Revoke zone: ${indicator.decay_applied_rule.decay_revoke_score}`,
+        text: `Revoke score: ${indicator.decay_applied_rule.decay_revoke_score}`,
         borderColor: revokeColor,
         style: {
-          color: chartLabelsTextColor,
-          background: revokeColor,
+          color: revokeColor,
+          background: chartLabelBackgroundColor,
         },
       },
     };
     graphLinesAnnotations.push(revokeScoreArea);
   }
 
-  // Horizontal line that the current / live score
-  const liveScoreLine = {
-    y: indicator.decayLiveDetails?.live_score,
-    borderColor: liveScoreColor,
-    label: {
-      borderColor: liveScoreColor,
-      style: {
-        color: chartLabelsTextColor,
-        background: liveScoreColor,
-      },
-      text: `Live score:${indicator.decayLiveDetails?.live_score}`,
-    },
-  };
-  graphLinesAnnotations.push(liveScoreLine);
-
-  // Time in millisecond cannot be set as number in GraphQL because it's too long
-  // So the time in data is stored as Date and must be converted to time in ms to be drawn on the chart.
-  const liveScoreApexFormat: { x: number; y: number }[] = [];
-  if (indicator.decayChartData && indicator.decayChartData.live_score_serie) {
-    indicator.decayChartData.live_score_serie.forEach((dataPoint) => {
-      liveScoreApexFormat.push({
-        x: moment(dataPoint.time).valueOf(),
-        y: dataPoint.score,
-      });
-    });
-  }
-
   const pointAnnotations = [];
-  // circle on the curve that show the live score
-  pointAnnotations.push({
-    x: new Date().getTime(),
-    y: indicator.decayLiveDetails?.live_score,
-    marker: {
-      fillColor: liveScoreColor,
-    },
-  });
-
-  // circle on the curve that show first and last point
   if (indicator.decayChartData?.live_score_serie && indicator.decayChartData?.live_score_serie.length > 0) {
-    const series = indicator.decayChartData.live_score_serie;
+    // circle on the curve that show the live score
     pointAnnotations.push({
-      x: moment(series[0].time).valueOf(),
-      y: series[0].score,
+      x: new Date().getTime(),
+      y: indicator.decayLiveDetails?.live_score,
       marker: {
-        fillColor: chartInfoTextColor,
+        fillColor: decayCurveColor,
+        strokeColor: chartInfoTextColor,
+        strokeWidth: 1,
+        size: graphLineThickness,
+        fillOpacity: 0.2,
       },
     });
 
-    pointAnnotations.push({
-      x: moment(series[series.length - 1].time).valueOf(),
-      y: series[series.length - 1].score,
-      marker: {
-        fillColor: chartInfoTextColor,
-      },
-    });
+    // circle on the curve that show the current stable score
+    const currentScore = indicator.decayChartData?.live_score_serie.find((point) => point.score === indicator.x_opencti_score);
+    if (currentScore !== undefined) {
+      pointAnnotations.push({
+        x: convertTimeForChart(currentScore.time),
+        y: currentScore.score,
+        marker: {
+          fillColor: scoreColor,
+          strokeColor: chartInfoTextColor,
+          size: graphLineThickness + 1,
+          strokeWidth: 1,
+          fillOpacity: 1,
+          radius: graphLineThickness,
+        },
+        label: {
+          text: `Score:${currentScore.score}`,
+          position: 'right',
+          borderColor: scoreColor,
+          borderWidth: 2,
+          style: {
+            color: scoreColor,
+            background: chartLabelBackgroundColor,
+          },
+        },
+      });
+    }
   }
 
   const chartOptions: ApexOptions = {
@@ -124,6 +127,9 @@ const DecayChart : FunctionComponent<DecayChartProps> = ({ indicator }) => {
       toolbar: { show: false },
       type: 'line',
       background: chartBackgroundColor,
+      selection: {
+        enabled: false,
+      },
     },
     xaxis: {
       type: 'datetime',
@@ -165,11 +171,8 @@ const DecayChart : FunctionComponent<DecayChartProps> = ({ indicator }) => {
     },
     grid: { show: false },
     colors: [
-      theme.palette.primary.main,
+      decayCurveColor,
     ],
-    stroke: {
-      curve: 'smooth',
-    },
     tooltip: {
       theme: theme.palette.mode, // ApexChart uses 'dark'/'light', exactly the same values as we use in OpenCTI.
       x: {
@@ -177,12 +180,19 @@ const DecayChart : FunctionComponent<DecayChartProps> = ({ indicator }) => {
         format: 'dd MMM yyyy',
       },
     },
+    forecastDataPoints: {
+      // this draw the dash line after live score point
+      count: indicator.decayLiveDetails?.live_score,
+      fillOpacity: 0.5,
+      strokeWidth: graphLineThickness,
+      dashArray: 8,
+    },
   };
 
   const series = [
     {
-      name: 'Score with decay', // this is the text on the popover
-      data: liveScoreApexFormat,
+      name: 'Score', // this is the text on the popover
+      data: decayCurveDataPoints,
     },
   ];
 
