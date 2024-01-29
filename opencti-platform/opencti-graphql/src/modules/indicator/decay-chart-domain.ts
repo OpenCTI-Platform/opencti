@@ -42,9 +42,8 @@ export const computeChartDecayAlgoSerie = (indicator: BasicStoreEntityIndicator,
  */
 export const computScoreList = (maxScore:number): number[] => {
   const scoreArray: number[] = [];
-  for (let i = maxScore;  i >= 0;  i -= 1) {
-   scoreArray.push(i);
-    scoreArray.push(maxScore - i);
+  for (let i = maxScore; i >= 0; i -= 1) {
+    scoreArray.push(i);
   }
   return scoreArray;
 };
