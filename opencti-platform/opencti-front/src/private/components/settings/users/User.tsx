@@ -298,7 +298,7 @@ const User: FunctionComponent<UserProps> = ({ data }) => {
                 <Typography
                   variant="h3"
                   gutterBottom={true}
-                  style={{ marginBottom: 7 }}
+                  style={{ marginBottom: user.otp_activated ? 7 : 5 }}
                 >
                   {t_i18n('Email address')}
                 </Typography>
@@ -315,7 +315,7 @@ const User: FunctionComponent<UserProps> = ({ data }) => {
                 {user.otp_activated && (
                   <IconButton
                     classes={{ root: classes.floatingButton }}
-                    color="secondary"
+                    color="primary"
                     onClick={otpUserDeactivation}
                     aria-label="Delete all"
                     size="small"
@@ -484,7 +484,7 @@ const User: FunctionComponent<UserProps> = ({ data }) => {
                 </Typography>
                 <Security needs={[SETTINGS]}>
                   <IconButton
-                    color="secondary"
+                    color="primary"
                     aria-label="Delete all"
                     onClick={handleOpenKillSessions}
                     classes={{ root: classes.floatingButton }}
