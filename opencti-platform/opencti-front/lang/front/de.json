@@ -2552,6 +2552,9 @@
   "The Max Confidence Level is currently inherited from...": "Die maximale Konfidenzstufe wird derzeit von der Gruppe {link} geerbt.",
   "This user has no Max Confidence Level and does not inherit one from groups. Add a group to this user to resolve the issue.": "Dieser Benutzer hat kein Max Confidence Level und erbt auch keines von Gruppen. Fügen Sie eine Gruppe zu diesem Benutzer hinzu, um das Problem zu beheben.",
   "The Max Confidence Level is currently defined at the user level. It overrides Max Confidence Level from user's groups.": "Das maximale Konfidenzniveau wird derzeit auf Benutzerebene definiert. Sie hat Vorrang vor dem Max Confidence Level der Benutzergruppen.",
+  "Marking definitions to use by the csv mapper...": "Markierungsdefinitionen, die vom csv-Mapper verwendet werden sollen, wenn für einige Markierungsattribute die folgende Richtlinie festgelegt ist: Der Benutzer kann die Markierungsdefinitionen auswählen.",
+  "This user has no Max Confidence Level and does not inherit one from groups. Add a group to this user to resolve the issue.": "Dieser Benutzer hat kein Max Confidence Level und erbt auch keines von Gruppen. Fügen Sie eine Gruppe zu diesem Benutzer hinzu, um das Problem zu beheben.",
+  "The Max Confidence Level is currently defined at the user level. It overrides Max Confidence Level from user's groups.": "Das maximale Konfidenzniveau wird derzeit auf Benutzerebene definiert. Sie hat Vorrang vor dem Max Confidence Level der Benutzergruppen.",
   "Update without references": "Update ohne Referenzen",
   "Max Confidence Level:": "Max. Konfidenzniveau:"
 }
