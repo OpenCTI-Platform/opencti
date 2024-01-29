@@ -340,11 +340,18 @@ const replaceFiltersIds = (filter: FilterGroup, resolvedMap: { [k: string]: Basi
   filter.filters.forEach((f) => {
     // Explicit reassign working by references
     if (toKeys(f.key).includes(INSTANCE_REGARDING_OF)) {
+      const regardingOfValues = [];
       const idInnerFilter = f.values.find((v) => toKeys(v.key).includes('id'));
-      idInnerFilter.values = filterValuesRemap(idInnerFilter, resolvedMap, from);
+      if (idInnerFilter) { // Id is not mandatory
+        idInnerFilter.values = filterValuesRemap(idInnerFilter, resolvedMap, from);
+        regardingOfValues.push(idInnerFilter);
+      }
       const typeInnerFilter = f.values.find((v) => toKeys(v.key).includes('type'));
+      if (typeInnerFilter) { // Type is not mandatory
+        regardingOfValues.push(typeInnerFilter);
+      }
       // eslint-disable-next-line no-param-reassign
-      f.values = [idInnerFilter, typeInnerFilter];
+      f.values = regardingOfValues;
     } else {
       // eslint-disable-next-line no-param-reassign
       f.values = filterValuesRemap(f, resolvedMap, from);
