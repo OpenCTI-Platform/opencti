@@ -113,7 +113,7 @@ const Reports: FunctionComponent = () => {
       },
     };
     return (
-      <>
+      <div data-testid="report-page">
         <ListLines
           helpers={storageHelpers}
           sortBy={sortBy}

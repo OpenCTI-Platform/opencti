@@ -9,7 +9,7 @@ export class DashboardPage {
     }
 
     getDashboardButton() {
-        return this.page.getByRole('link', { name: 'Dashboard', exact: true })
+        return this.page.getByLabel('Dashboard', { exact: true })
     }
 
 }
