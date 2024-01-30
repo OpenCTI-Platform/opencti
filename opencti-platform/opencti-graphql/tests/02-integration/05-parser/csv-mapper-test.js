@@ -5,6 +5,7 @@ import { parsingProcess } from '../../../src/parser/csv-parser';
 import { mappingProcess } from '../../../src/parser/csv-mapper';
 import { ENTITY_TYPE_LOCATION_ADMINISTRATIVE_AREA } from '../../../src/modules/administrativeArea/administrativeArea-types';
 import { ENTITY_TYPE_MALWARE } from '../../../src/schema/stixDomainObject';
+import { csvMapperFile } from './default-values/mapper-file';
 import { csvMapperAreaMarking } from './default-values/mapper-area-marking';
 
 const ENTITY_SETTINGS_UPDATE = `
@@ -137,9 +138,10 @@ describe('CSV-MAPPER', () => {
 
   describe('Manage hashes for files', () => {
     it('should map files hashes correctly', async () => {
-      const filePath = './tests/02-integration/05-parser/default-values/data.csv'; // TODO
-      const data = (await mapData(filePath, csvMapperAreaMalware /* TODO use files mapper */)).flat();
-      console.log(data);
+      const filePath = './tests/02-integration/05-parser/default-values/hashes.csv';
+      const data = (await mapData(filePath, csvMapperFile)).flat();
+      console.log('csvMapperFile', csvMapperFile);
+      console.log('hash data', data);
       // TODO
     });
   });
@@ -148,7 +150,7 @@ describe('CSV-MAPPER', () => {
     it('should use default values from settings', async () => {
       const filePath = './tests/02-integration/05-parser/default-values/data.csv';
       const data = (await mapData(filePath, csvMapperAreaMalware)).flat();
-
+      console.log('values data', data);
       const morbihan = data.find((object) => object.name === 'morbihan');
       const finistere = data.find((object) => object.name === 'finistere');
       const cotesDArmor = data.find((object) => object.name === 'cotes-darmor');
