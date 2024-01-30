@@ -40,12 +40,8 @@ const READ_QUERY = gql`
       description
       toStix
       objectParticipant {
-        edges {
-          node {
-            id
-            name
-          }
-        }
+        id
+        name
       }
     }
   }
