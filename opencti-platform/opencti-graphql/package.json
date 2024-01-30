@@ -200,5 +200,5 @@
     "domino": "patch:domino@2.1.6#./patch/domino-2.1.6.patch",
     "graphql": "patch:graphql@16.8.1#./patch/graphql-16.8.1.patch"
   },
-  "packageManager": "yarn@3.7.0"
+  "packageManager": "yarn@4.1.0"
 }
