@@ -756,11 +756,15 @@ export const meEditField = async (context, user, userId, inputs, password = null
   return userEditField(context, user, userId, inputs);
 };
 
-const isUserTheLastAdmin = (userId, authorized_members) => {
-  const currentUserIsAdmin = authorized_members.some(({ id, access_right }) => id === userId && access_right === 'admin');
-  const anotherUserIsAdmin = authorized_members.some(({ id, access_right }) => id !== userId && access_right === 'admin');
+export const isUserTheLastAdmin = (userId, authorized_members) => {
+  if (authorized_members !== null && authorized_members !== undefined) {
+    const currentUserIsAdmin = authorized_members.some(({ id, access_right }) => id === userId && access_right === 'admin');
+    const anotherUserIsAdmin = authorized_members.some(({ id, access_right }) => id !== userId && access_right === 'admin');
 
-  return currentUserIsAdmin && !anotherUserIsAdmin;
+    return currentUserIsAdmin && !anotherUserIsAdmin;
+  }
+  // if for some reason there is no authorized_member, then nothing prevent from deleting.
+  return false;
 };
 
 export const deleteAllWorkspaceForUser = async (context, authUser, userId) => {
