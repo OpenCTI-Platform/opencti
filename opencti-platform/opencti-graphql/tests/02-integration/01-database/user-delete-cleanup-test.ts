@@ -5,7 +5,7 @@ import { ENTITY_TYPE_USER } from '../../../src/schema/internalObject';
 import type { AuthContext, AuthUser } from '../../../src/types/user';
 import { addNotification, addTrigger, myNotificationsFind, triggerGet } from '../../../src/modules/notification/notification-domain';
 import type { MemberAccessInput, TriggerLiveAddInput, WorkspaceAddInput } from '../../../src/generated/graphql';
-import { addUser, assignGroupToUser, findById as findUserById, userDelete } from '../../../src/domain/user';
+import { addUser, assignGroupToUser, findById as findUserById, isUserTheLastAdmin, userDelete } from '../../../src/domain/user';
 import { addWorkspace, editAuthorizedMembers, findById as findWorkspaceById } from '../../../src/modules/workspace/workspace-domain';
 import type { NotificationAddInput } from '../../../src/modules/notification/notification-types';
 import { TriggerEventType, TriggerType } from '../../../src/generated/graphql';
@@ -146,5 +146,11 @@ describe('Testing user delete on cascade [issue/3720]', () => {
     } catch (e) {
       console.log(JSON.stringify(e));
     }
+  });
+  it('should data without authorized_member not throw exception during user deletion.', async () => {
+    // for some reason this can happend, see https://github.com/OpenCTI-Platform/opencti/issues/5580
+    const isLastAdminResult = isUserTheLastAdmin(ADMIN_USER.id, undefined);
+    expect(true, 'No exception should be raised here').toBe(true);
+    expect(isLastAdminResult, 'An entity without authorized_member data should not block deletion.').toBe(false);
   });
 });
