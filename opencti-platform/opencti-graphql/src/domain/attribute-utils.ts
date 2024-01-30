@@ -79,6 +79,12 @@ export const INTERNAL_ATTRIBUTES = [
   'x_opencti_cvss_availability_impact',
   'x_opencti_cvss_confidentiality_impact',
   'x_opencti_additional_names',
+  // Decay internal fields on Indicator
+  'decay_next_reaction_date',
+  'decay_base_score',
+  'decay_base_score_date',
+  'decay_history',
+  'decay_applied_rule',
 ];
 
 export const INTERNAL_REFS = [
