@@ -550,6 +550,12 @@ const PLAYBOOK_UPDATE_KNOWLEDGE_COMPONENT: PlaybookComponent<UpdateConfiguration
       if (relationRef) return relationRef.multiple;
       return undefined;
     };
+    // Compute if attribute is defined as numeric
+    const isAttributeNumeric = (entityType:string, attribute: string) => {
+      const baseAttribute = schemaAttributesDefinition.getAttribute(entityType, attribute);
+      if (baseAttribute) return baseAttribute.type === 'numeric';
+      return false;
+    };
     // Compute the access path for the attribute in the static matrix
     const computeAttributePath = (entityType:string, attribute: string) => {
       if (attributePathMapping[attribute]) {
@@ -572,15 +578,17 @@ const PLAYBOOK_UPDATE_KNOWLEDGE_COMPONENT: PlaybookComponent<UpdateConfiguration
           .map((action) => {
             const attrPath = computeAttributePath(type, action.attribute);
             const multiple = isAttributeMultiple(type, action.attribute);
-            return ({ action, multiple, attrPath, path: `/objects/${index}${attrPath}` });
+            const numeric = isAttributeNumeric(type, action.attribute);
+            return ({ action, multiple, numeric, attrPath, path: `/objects/${index}${attrPath}` });
           })
           // Unrecognized attributes must be filtered
           .filter(({ attrPath, multiple }) => isNotEmptyField(multiple) && isNotEmptyField(attrPath))
           // Map actions to data patches
-          .map(({ action, path, multiple }) => ({
+          .map(({ action, path, multiple, numeric }) => ({
             op: action.op,
             path,
-            value: multiple ? action.value.map((o) => o.patch_value) : R.head(action.value)?.patch_value
+            // eslint-disable-next-line no-nested-ternary,max-len
+            value: multiple ? action.value.map((o) => (numeric ? Number(o.patch_value) : o.patch_value)) : numeric ? Number(R.head(action.value)?.patch_value) : R.head(action.value)?.patch_value
           }));
         // Enlist operations to execute
         patchOperations.push(...elementOperations);
