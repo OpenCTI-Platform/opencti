@@ -10,14 +10,12 @@ import useQueryLoading from '../../utils/hooks/useQueryLoading';
 import { fromB64 } from '../../utils/String';
 import type { PublicManifest } from './dashboard/PublicManifest';
 import usePublicDashboardWidgets from './dashboard/usePublicDashboardWidgets';
+import PublicTopBar from './PublicTopBar';
+import PublicDashboardHeader from './dashboard/PublicDashboardHeader';
 
 const publicDashboardQuery = graphql`
-  query PublicDashboardQuery(
-    $uri_key: String!
-  ) {
-    publicDashboardByUriKey(
-      uri_key: $uri_key
-    ) {
+  query PublicDashboardQuery($uri_key: String!) {
+    publicDashboardByUriKey(uri_key: $uri_key) {
       name
       public_manifest
     }
@@ -35,8 +33,8 @@ const PublicDashboardComponent = ({
 }: PublicDashboardComponentProps) => {
   const ReactGridLayout = useMemo(() => WidthProvider(RGL), []);
 
-  const publicDashboard = usePreloadedQuery(publicDashboardQuery, queryRef);
-  const manifest = publicDashboard.publicDashboardByUriKey?.public_manifest;
+  const { publicDashboardByUriKey } = usePreloadedQuery(publicDashboardQuery, queryRef);
+  const manifest = publicDashboardByUriKey?.public_manifest;
   const parsedManifest: PublicManifest = JSON.parse(fromB64(manifest ?? '{}'));
   const { widgets, config } = parsedManifest;
 
@@ -46,8 +44,29 @@ const PublicDashboardComponent = ({
     rawWidget,
   } = usePublicDashboardWidgets(uriKey, config);
 
+  const onChangeRelativeDate = (value: string) => {
+    console.log('relative date', value);
+  };
+
+  const onChangeStartDate = (value: string | null) => {
+    console.log('start date', value);
+  };
+
+  const onChangeEndDate = (value: string | null) => {
+    console.log('end date', value);
+  };
+
   return (
     <>
+      <PublicTopBar />
+      <PublicDashboardHeader
+        title={publicDashboardByUriKey?.name ?? ''}
+        manifestConfig={parsedManifest.config}
+        onChangeRelativeDate={onChangeRelativeDate}
+        onChangeStartDate={onChangeStartDate}
+        onChangeEndDate={onChangeEndDate}
+      />
+
       <ReactGridLayout
         className="layout"
         margin={[20, 20]}
