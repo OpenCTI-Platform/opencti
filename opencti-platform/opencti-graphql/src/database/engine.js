@@ -10,6 +10,7 @@ import {
   buildPagination,
   cursorToOffset,
   ES_INDEX_PREFIX,
+  INDEX_INTERNAL_OBJECTS,
   inferIndexFromConceptType,
   isEmptyField,
   isInferredIndex,
@@ -847,6 +848,22 @@ export const elCreateIndices = async (indexesToCreate = WRITE_PLATFORM_INDICES) 
   }
   return createdIndices;
 };
+
+// Initialize
+export const initializeSchema = async () => {
+  // New platform so delete all indices to prevent conflict
+  const isInternalIndexExists = await elIndexExists(INDEX_INTERNAL_OBJECTS);
+  if (isInternalIndexExists) {
+    throw ConfigurationError('Fail initialize schema, index already exists, previous initialization fail '
+        + 'because you kill the platform before the end of the initialization. Please remove your '
+        + 'elastic/opensearch data and restart.');
+  }
+  // Create default indexes
+  await elCreateIndices();
+  logApp.info('[INIT] Search engine indexes loaded');
+  return true;
+};
+
 export const elDeleteIndices = async (indexesToDelete) => {
   return Promise.all(
     indexesToDelete.map((index) => {

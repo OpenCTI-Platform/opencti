@@ -1,4 +1,4 @@
-import { createCapabilities, SETTINGS_CAPABILITIES } from '../initialization';
+import { createCapabilities, SETTINGS_CAPABILITIES } from '../database/data-initialization';
 import { executionContext } from '../utils/access';
 
 export const up = async (next) => {
