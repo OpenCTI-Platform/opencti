@@ -7047,8 +7047,8 @@ __metadata:
 
 "domino@patch:domino@2.1.6#./patch/domino-2.1.6.patch::locator=opencti-graphql%40workspace%3A.":
   version: 2.1.6
-  resolution: "domino@patch:domino@npm%3A2.1.6#./patch/domino-2.1.6.patch::version=2.1.6&hash=d85c7f&locator=opencti-graphql%40workspace%3A."
-  checksum: 0403cefb550d648b0dcad8a47cb1d8b4b3ffe3710d2c6cca8e353bc6509dc71296c7344bb90b7ec5cf82e8032e4f163413cf82267d69e8d4ed500ac43220b3fa
+  resolution: "domino@patch:domino@npm%3A2.1.6#./patch/domino-2.1.6.patch::version=2.1.6&hash=a9a66b&locator=opencti-graphql%40workspace%3A."
+  checksum: dd37a2356730a5cf452cfa400fc227bcf6f165568b90f138dd45392e620601b6d00d1dd691ec00c0f125d49855700239f2b676b3c0c480bd1ccdb490e9dfd42c
   languageName: node
   linkType: hard
 
