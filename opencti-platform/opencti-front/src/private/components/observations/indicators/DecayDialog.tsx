@@ -60,7 +60,6 @@ const DecayDialogContent : FunctionComponent<DecayDialogContentProps> = ({ indic
   };
 
   const getDateAsTextFor = (history: LabelledDecayHistory) => {
-    console.log('getDateAsTextFor history:', history);
     if (indicator.x_opencti_score === null || indicator.x_opencti_score === undefined) {
       return 'N/A';
     } if (history.score < indicator.x_opencti_score) {
