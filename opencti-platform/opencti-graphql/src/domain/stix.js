@@ -9,7 +9,6 @@ import { findById as findMarkingDefinitionById } from './markingDefinition';
 import { now, observableValue } from '../utils/format';
 import { createWork } from './work';
 import { pushToConnector } from '../database/rabbitmq';
-import { RELATION_GRANTED_TO } from '../schema/stixRefRelationship';
 import { ENTITY_TYPE_CONTAINER_NOTE, ENTITY_TYPE_CONTAINER_OPINION, isStixDomainObjectShareableContainer, STIX_ORGANIZATIONS_UNRESTRICTED } from '../schema/stixDomainObject';
 import {
   ABSTRACT_STIX_CORE_OBJECT,
