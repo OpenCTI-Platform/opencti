@@ -121,7 +121,7 @@ const IndicatorDetailsComponent: FunctionComponent<IndicatorDetailsComponentProp
                   TransitionComponent={Transition}
                   onClose={onDecayLifecycleClose}
                   fullWidth
-                  maxWidth="md"
+                  maxWidth='lg'
                 >
                   <DialogTitle>{t_i18n('Lifecycle details')}</DialogTitle>
                   <DecayDialogContent indicator={indicator} />
@@ -233,6 +233,12 @@ const IndicatorDetails = createFragmentContainer(IndicatorDetailsComponent, {
         live_points {
           score
           updated_at
+        }
+      }
+      decayChartData {
+        live_score_serie {
+          time
+          score
         }
       }
       objectLabel {

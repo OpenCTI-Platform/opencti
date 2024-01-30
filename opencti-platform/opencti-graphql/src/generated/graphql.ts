@@ -5181,6 +5181,17 @@ export enum DataSourcesOrdering {
   XOpenctiWorkflowId = 'x_opencti_workflow_id'
 }
 
+export type DecayChartData = {
+  __typename?: 'DecayChartData';
+  live_score_serie?: Maybe<Array<DecayChartPoint>>;
+};
+
+export type DecayChartPoint = {
+  __typename?: 'DecayChartPoint';
+  score: Scalars['Int']['output'];
+  time: Scalars['DateTime']['output'];
+};
+
 export type DecayHistory = {
   __typename?: 'DecayHistory';
   score: Scalars['Int']['output'];
@@ -8852,6 +8863,7 @@ export type Indicator = BasicObject & StixCoreObject & StixDomainObject & StixOb
   createdBy?: Maybe<Identity>;
   created_at: Scalars['DateTime']['output'];
   creators?: Maybe<Array<Creator>>;
+  decayChartData?: Maybe<DecayChartData>;
   decayLiveDetails?: Maybe<DecayLiveDetails>;
   decay_applied_rule?: Maybe<DecayRule>;
   decay_base_score?: Maybe<Scalars['Int']['output']>;
@@ -27410,6 +27422,8 @@ export type ResolversTypes = ResolversObject<{
   DataSourceEdge: ResolverTypeWrapper<Omit<DataSourceEdge, 'node'> & { node: ResolversTypes['DataSource'] }>;
   DataSourcesOrdering: DataSourcesOrdering;
   DateTime: ResolverTypeWrapper<Scalars['DateTime']['output']>;
+  DecayChartData: ResolverTypeWrapper<DecayChartData>;
+  DecayChartPoint: ResolverTypeWrapper<DecayChartPoint>;
   DecayHistory: ResolverTypeWrapper<DecayHistory>;
   DecayLiveDetails: ResolverTypeWrapper<DecayLiveDetails>;
   DecayRule: ResolverTypeWrapper<DecayRule>;
@@ -28139,6 +28153,8 @@ export type ResolversParentTypes = ResolversObject<{
   DataSourceConnection: Omit<DataSourceConnection, 'edges'> & { edges?: Maybe<Array<Maybe<ResolversParentTypes['DataSourceEdge']>>> };
   DataSourceEdge: Omit<DataSourceEdge, 'node'> & { node: ResolversParentTypes['DataSource'] };
   DateTime: Scalars['DateTime']['output'];
+  DecayChartData: DecayChartData;
+  DecayChartPoint: DecayChartPoint;
   DecayHistory: DecayHistory;
   DecayLiveDetails: DecayLiveDetails;
   DecayRule: DecayRule;
@@ -30358,6 +30374,17 @@ export interface DateTimeScalarConfig extends GraphQLScalarTypeConfig<ResolversT
   name: 'DateTime';
 }
 
+export type DecayChartDataResolvers<ContextType = any, ParentType extends ResolversParentTypes['DecayChartData'] = ResolversParentTypes['DecayChartData']> = ResolversObject<{
+  live_score_serie?: Resolver<Maybe<Array<ResolversTypes['DecayChartPoint']>>, ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
+export type DecayChartPointResolvers<ContextType = any, ParentType extends ResolversParentTypes['DecayChartPoint'] = ResolversParentTypes['DecayChartPoint']> = ResolversObject<{
+  score?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  time?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
 export type DecayHistoryResolvers<ContextType = any, ParentType extends ResolversParentTypes['DecayHistory'] = ResolversParentTypes['DecayHistory']> = ResolversObject<{
   score?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
@@ -31538,6 +31565,7 @@ export type IndicatorResolvers<ContextType = any, ParentType extends ResolversPa
   createdBy?: Resolver<Maybe<ResolversTypes['Identity']>, ParentType, ContextType>;
   created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   creators?: Resolver<Maybe<Array<ResolversTypes['Creator']>>, ParentType, ContextType>;
+  decayChartData?: Resolver<Maybe<ResolversTypes['DecayChartData']>, ParentType, ContextType>;
   decayLiveDetails?: Resolver<Maybe<ResolversTypes['DecayLiveDetails']>, ParentType, ContextType>;
   decay_applied_rule?: Resolver<Maybe<ResolversTypes['DecayRule']>, ParentType, ContextType>;
   decay_base_score?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
@@ -36995,6 +37023,8 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   DataSourceConnection?: DataSourceConnectionResolvers<ContextType>;
   DataSourceEdge?: DataSourceEdgeResolvers<ContextType>;
   DateTime?: GraphQLScalarType;
+  DecayChartData?: DecayChartDataResolvers<ContextType>;
+  DecayChartPoint?: DecayChartPointResolvers<ContextType>;
   DecayHistory?: DecayHistoryResolvers<ContextType>;
   DecayLiveDetails?: DecayLiveDetailsResolvers<ContextType>;
   DecayRule?: DecayRuleResolvers<ContextType>;

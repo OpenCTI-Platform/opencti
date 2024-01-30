@@ -1,6 +1,5 @@
 import React, { FunctionComponent } from 'react';
 import DialogContent from '@mui/material/DialogContent';
-import Typography from '@mui/material/Typography';
 import Grid from '@mui/material/Grid';
 import Table from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
@@ -13,6 +12,8 @@ import { SxProps } from '@mui/material';
 import { Theme } from '@mui/material/styles/createTheme';
 import { useTheme } from '@mui/styles';
 import { IndicatorDetails_indicator$data } from '@components/observations/indicators/__generated__/IndicatorDetails_indicator.graphql';
+import DecayChart from '@components/observations/indicators/DecayChart';
+import moment from 'moment-timezone';
 import { useFormatter } from '../../../../components/i18n';
 
 interface DecayDialogContentProps {
@@ -28,48 +29,63 @@ export interface LabelledDecayHistory {
 
 const DecayDialogContent : FunctionComponent<DecayDialogContentProps> = ({ indicator }) => {
   const theme = useTheme<Theme>();
-  const { t_i18n, fldt } = useFormatter();
+  const { t_i18n } = useFormatter();
 
   const indicatorDecayDetails = indicator.decayLiveDetails;
 
   const decayHistory = indicator.decay_history ? [...indicator.decay_history] : [];
   const decayLivePoints = indicatorDecayDetails?.live_points ? [...indicatorDecayDetails.live_points] : [];
-  const decayReactionPoints = indicator.decay_applied_rule?.decay_points ?? [];
 
-  const currentScoreLineStyle = {
-    color: theme.palette.success.main,
-    fontWeight: 'bold',
+  const getScoreLabelFor = (score: number) => {
+    if (score === indicator.decay_base_score) {
+      return 'Score at creation';
+    } if (score === indicator.x_opencti_score) {
+      return 'Current stable score';
+    } if (score === indicator.decay_applied_rule?.decay_revoke_score) {
+      return 'Revoke score';
+    }
+    return 'Stability threshold';
   };
-  const revokeScoreLineStyle = {
-    color: theme.palette.error.main,
+
+  const getStyleFor = (score: number) => {
+    if (score === indicator.x_opencti_score) {
+      return {
+        color: theme.palette.success.main,
+        fontWeight: 'bold',
+      };
+    } if (score === indicator.decay_applied_rule?.decay_revoke_score) {
+      return { color: theme.palette.secondary.main };
+    }
+    return { color: theme.palette.text.primary };
   };
+
+  const getDateAsTextFor = (history: LabelledDecayHistory) => {
+    if (indicator.x_opencti_score === null || indicator.x_opencti_score === undefined) {
+      return 'N/A';
+    } if (history.score < indicator.x_opencti_score) {
+      return moment(history.updated_at).fromNow();
+    }
+    return moment(history.updated_at).format('DD MMM yyyy HH:mm A');
+  };
+
   const decayFullHistory: LabelledDecayHistory[] = [];
-  decayHistory.map((history, index) => (
+  decayHistory.map((history) => (
     decayFullHistory.push({
       score: history.score,
       updated_at: history.updated_at,
-      label: index === 0 ? 'Score at creation' : 'Score updated',
-      style: index === decayHistory.length - 1 ? currentScoreLineStyle : {},
+      label: getScoreLabelFor(history.score),
+      style: getStyleFor(history.score),
     })
   ));
 
-  decayLivePoints.map((history, index) => (
+  decayLivePoints.map((history) => (
     decayFullHistory.push({
       score: history.score,
       updated_at: history.updated_at,
-      label: index === decayLivePoints.length - 1 ? 'Revoke score' : 'Score update planned',
-      style: index === decayLivePoints.length - 1 ? revokeScoreLineStyle : {},
+      label: getScoreLabelFor(history.score),
+      style: getStyleFor(history.score),
     })
   ));
-
-  if (indicatorDecayDetails && indicatorDecayDetails.live_score && indicatorDecayDetails.live_score !== indicator.x_opencti_score) {
-    decayFullHistory.push({
-      score: indicatorDecayDetails.live_score,
-      updated_at: new Date(),
-      label: 'Current live score',
-      style: currentScoreLineStyle,
-    });
-  }
 
   decayFullHistory.sort((a, b) => {
     return new Date(a.updated_at).getTime() - new Date(b.updated_at).getTime();
@@ -82,10 +98,10 @@ const DecayDialogContent : FunctionComponent<DecayDialogContentProps> = ({ indic
         spacing={3}
         style={{ borderColor: 'white', borderWidth: 1 }}
       >
-        <Grid item={true} xs={8}>
-          <Typography variant="h6">
-            {t_i18n('Lifecycle key information')}
-          </Typography>
+        <Grid item={true} xs={6}>
+          <DecayChart indicator={indicator}/>
+        </Grid>
+        <Grid item={true} xs={6}>
           <TableContainer component={Paper}>
             <Table sx={{ maxHeight: 440 }} size="small" aria-label="lifecycle history">
               <TableHead>
@@ -101,7 +117,7 @@ const DecayDialogContent : FunctionComponent<DecayDialogContentProps> = ({ indic
                     <TableRow key={index}>
                       <TableCell sx={history.style}>{t_i18n(history.label)}</TableCell>
                       <TableCell sx={history.style}>{history.score}</TableCell>
-                      <TableCell sx={history.style}>{fldt(history.updated_at)}</TableCell>
+                      <TableCell sx={history.style}>{getDateAsTextFor(history)}</TableCell>
                     </TableRow>
                   );
                 })}
@@ -109,18 +125,7 @@ const DecayDialogContent : FunctionComponent<DecayDialogContentProps> = ({ indic
             </Table>
           </TableContainer>
         </Grid>
-        <Grid item={true} xs={4}>
-          <Typography variant="h6">
-            {t_i18n('Applied decay rule')}
-          </Typography>
-          <ul>
-            <li>{t_i18n('Base score:')} { indicator.decay_base_score }</li>
-            <li>{t_i18n('Lifetime (in days):')} { indicator.decay_applied_rule?.decay_lifetime ?? 'Not set'}</li>
-            <li>{t_i18n('Pound factor:')} { indicator.decay_applied_rule?.decay_pound ?? 'Not set'}</li>
-            <li>{t_i18n('Revoke score:')} { indicator.decay_applied_rule?.decay_revoke_score ?? 'Not set'}</li>
-            <li>{t_i18n('Reaction points:')} {decayReactionPoints.join(', ')}</li>
-          </ul>
-        </Grid>
+
       </Grid>
     </DialogContent>
   );

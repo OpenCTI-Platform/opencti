@@ -49,6 +49,16 @@ type DecayLiveDetails {
   live_points: [DecayHistory!]
 }
 
+# Do we merge with DecayHistory ?
+type DecayChartPoint {
+  time: DateTime!
+  score: Int!
+}
+
+type DecayChartData {
+  live_score_serie: [DecayChartPoint!]
+}
+
 type Indicator implements BasicObject & StixObject & StixCoreObject & StixDomainObject {
   id: ID! # internal_id
   standard_id: String!
@@ -165,6 +175,7 @@ type Indicator implements BasicObject & StixObject & StixCoreObject & StixDomain
   decay_applied_rule: DecayRule
   decay_history: [DecayHistory!]
   decayLiveDetails: DecayLiveDetails
+  decayChartData: DecayChartData
   # Technical
   creators: [Creator!]
   toStix: String

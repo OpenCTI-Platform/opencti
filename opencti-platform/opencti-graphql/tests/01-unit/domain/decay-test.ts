@@ -13,6 +13,7 @@ import {
 } from '../../../src/modules/indicator/decay-domain';
 import { computeIndicatorDecayPatch, type IndicatorPatch } from '../../../src/modules/indicator/indicator-domain';
 import type { BasicStoreEntityIndicator } from '../../../src/modules/indicator/indicator-types';
+import { computeChartDecayAlgoSerie, computeScoreList } from '../../../src/modules/indicator/decay-chart-domain';
 
 describe('Decay formula testing', () => {
   it('should compute score', () => {
@@ -94,40 +95,22 @@ describe('Decay formula testing', () => {
 });
 
 describe('Decay update testing', () => {
-  const getDefaultIndicatorEntity = () => {
-    const indicatorInput: Partial<BasicStoreEntityIndicator> = {
-      x_opencti_score: 50,
-      decay_base_score: 100,
-      decay_history: [],
-      valid_from: moment().subtract('5', 'days').toDate(),
-      valid_until: moment().add('5', 'days').toDate()
-    };
-    return indicatorInput as BasicStoreEntityIndicator;
-  };
-
-  const defaultDecayRule: DecayRule = {
-    decay_lifetime: 30,
-    decay_points: [80, 60, 20],
-    decay_pound: 0.5,
-    decay_revoke_score: 10,
-    enabled: true,
-    id: 'decay-test-next-score',
-    indicator_types: [],
-    order: 0
-  };
-
   it('should move to next score and update next reaction date for default rule', () => {
     // GIVEN an Indicator with decay that is on the first decay point and has next reaction point
-    const indicatorInput = getDefaultIndicatorEntity();
-    indicatorInput.decay_applied_rule = FALLBACK_DECAY_RULE;
-    indicatorInput.x_opencti_score = 50;
-    indicatorInput.decay_history = [{
-      updated_at: indicatorInput.valid_from,
-      score: 50,
-    }];
+    const indicatorInput: Partial<BasicStoreEntityIndicator> = {
+      decay_applied_rule: FALLBACK_DECAY_RULE,
+      decay_base_score: 100,
+      x_opencti_score: 50,
+      valid_from: moment().subtract('5', 'days').toDate(),
+      valid_until: moment().add('5', 'days').toDate(),
+      decay_history: [{
+        updated_at: moment().subtract('5', 'days').toDate(),
+        score: 50,
+      }],
+    };
 
     // WHEN next reaction point is computed
-    const patchResult = computeIndicatorDecayPatch(indicatorInput);
+    const patchResult = computeIndicatorDecayPatch(indicatorInput as BasicStoreEntityIndicator);
 
     // THEN
     expect(patchResult?.revoked, 'This indicator should not be revoked.').toBeUndefined();
@@ -139,15 +122,26 @@ describe('Decay update testing', () => {
 
   it('should move to next score and update next reaction date', () => {
     // GIVEN an Indicator with decay that is on the first decay point and has next reaction point
-    const indicatorInput = getDefaultIndicatorEntity();
-    indicatorInput.decay_applied_rule = defaultDecayRule;
-    indicatorInput.decay_applied_rule.decay_points = [100, 80, 50, 20];
-    indicatorInput.decay_applied_rule.decay_revoke_score = 10;
-    indicatorInput.x_opencti_score = 100;
-    indicatorInput.decay_history = [];
+    const indicatorInput : Partial<BasicStoreEntityIndicator> = {
+      x_opencti_score: 100,
+      decay_base_score: 100,
+      decay_history: [],
+      valid_from: moment().subtract('5', 'days').toDate(),
+      valid_until: moment().add('5', 'days').toDate(),
+      decay_applied_rule: {
+        decay_lifetime: 30,
+        decay_points: [100, 80, 50, 20],
+        decay_pound: 0.5,
+        decay_revoke_score: 10,
+        enabled: true,
+        id: 'decay-test-next-score',
+        indicator_types: [],
+        order: 0
+      }
+    };
 
     // WHEN next reaction point is computed
-    const patchResult = computeIndicatorDecayPatch(indicatorInput);
+    const patchResult = computeIndicatorDecayPatch(indicatorInput as BasicStoreEntityIndicator);
 
     // THEN
     expect(patchResult?.revoked, 'This indicator should not be revoked.').toBeUndefined();
@@ -159,16 +153,28 @@ describe('Decay update testing', () => {
 
   it('should be revoked when revoke score is reached', () => {
     // GIVEN an Indicator with decay that is on the last decay point and has next a revoke score
-    const indicatorInput = getDefaultIndicatorEntity();
-    indicatorInput.decay_applied_rule = defaultDecayRule;
-    indicatorInput.decay_applied_rule.decay_points = [100, 80, 50, 20];
-    indicatorInput.decay_applied_rule.decay_revoke_score = 10;
-    indicatorInput.x_opencti_score = 20;
-    indicatorInput.decay_history = [];
-    indicatorInput.decay_history.push({ updated_at: new Date(2023, 1), score: 100 });
+    const indicatorInput : Partial<BasicStoreEntityIndicator> = {
+      x_opencti_score: 20,
+      decay_base_score: 100,
+      decay_history: [
+        { updated_at: new Date(2023, 1), score: 100 },
+      ],
+      valid_from: moment().subtract('5', 'days').toDate(),
+      valid_until: moment().add('5', 'days').toDate(),
+      decay_applied_rule: {
+        decay_lifetime: 30,
+        decay_points: [100, 80, 50, 20],
+        decay_pound: 0.5,
+        decay_revoke_score: 10,
+        enabled: true,
+        id: 'decay-test-next-score',
+        indicator_types: [],
+        order: 0
+      }
+    };
 
     // WHEN next reaction point is computed
-    const patchResult = computeIndicatorDecayPatch(indicatorInput);
+    const patchResult = computeIndicatorDecayPatch(indicatorInput as BasicStoreEntityIndicator);
 
     // THEN
     expect(patchResult?.revoked, 'This indicator should be revoked.').toBeTruthy();
@@ -180,14 +186,26 @@ describe('Decay update testing', () => {
   it('should revoke when current score is already lower than revoke score', () => {
     // GIVEN an Indicator with a stable score that is already lower than revoke score
     // use case that should not happen with a normal usage
-    const indicatorInput = getDefaultIndicatorEntity();
-    indicatorInput.decay_applied_rule = defaultDecayRule;
-    indicatorInput.decay_applied_rule.decay_points = [100, 80, 50, 20];
-    indicatorInput.decay_applied_rule.decay_revoke_score = 50;
-    indicatorInput.x_opencti_score = 30;
+    const indicatorInput : Partial<BasicStoreEntityIndicator> = {
+      x_opencti_score: 30,
+      decay_base_score: 100,
+      decay_history: [],
+      valid_from: moment().subtract('5', 'days').toDate(),
+      valid_until: moment().add('5', 'days').toDate(),
+      decay_applied_rule: {
+        decay_lifetime: 30,
+        decay_points: [100, 80, 50, 20],
+        decay_pound: 0.5,
+        decay_revoke_score: 50,
+        enabled: true,
+        id: 'decay-test-next-score',
+        indicator_types: [],
+        order: 0
+      }
+    };
 
     // WHEN next reaction point is computed
-    const patchResult = computeIndicatorDecayPatch(indicatorInput);
+    const patchResult = computeIndicatorDecayPatch(indicatorInput as BasicStoreEntityIndicator);
 
     // THEN
     expect(patchResult?.revoked, 'This indicator should be revoked.').toBeTruthy();
@@ -198,14 +216,26 @@ describe('Decay update testing', () => {
   it('should revoke when revoke score is higher than all decay points', () => {
     // GIVEN an Indicator with revoke score higher than all decay points
     // use case that should not happen with a normal usage
-    const indicatorInput = getDefaultIndicatorEntity();
-    indicatorInput.decay_applied_rule = defaultDecayRule;
-    indicatorInput.decay_applied_rule.decay_points = [80, 50, 20];
-    indicatorInput.decay_applied_rule.decay_revoke_score = 100;
-    indicatorInput.x_opencti_score = 50;
+    const indicatorInput : Partial<BasicStoreEntityIndicator> = {
+      x_opencti_score: 50,
+      decay_base_score: 100,
+      decay_history: [],
+      valid_from: moment().subtract('5', 'days').toDate(),
+      valid_until: moment().add('5', 'days').toDate(),
+      decay_applied_rule: {
+        decay_lifetime: 30,
+        decay_points: [80, 50, 20],
+        decay_pound: 0.5,
+        decay_revoke_score: 100,
+        enabled: true,
+        id: 'decay-test-next-score',
+        indicator_types: [],
+        order: 0
+      }
+    };
 
     // WHEN next reaction point is computed
-    const patchResult = computeIndicatorDecayPatch(indicatorInput) as IndicatorPatch;
+    const patchResult = computeIndicatorDecayPatch(indicatorInput as BasicStoreEntityIndicator) as IndicatorPatch;
 
     // THEN
     expect(patchResult.revoked, 'This indicator should be revoked.').toBeTruthy();
@@ -215,10 +245,16 @@ describe('Decay update testing', () => {
 
   it('should do nothing when decay rule is null', () => {
     // GIVEN an Indicator with no decay rule
-    const indicatorInput = getDefaultIndicatorEntity();
+    const indicatorInput : Partial<BasicStoreEntityIndicator> = {
+      x_opencti_score: 50,
+      decay_base_score: 100,
+      decay_history: [],
+      valid_from: moment().subtract('5', 'days').toDate(),
+      valid_until: moment().add('5', 'days').toDate()
+    };
 
     // WHEN next reaction point is computed
-    const patchResult = computeIndicatorDecayPatch(indicatorInput) as IndicatorPatch;
+    const patchResult = computeIndicatorDecayPatch(indicatorInput as BasicStoreEntityIndicator) as IndicatorPatch;
 
     // THEN
     expect(patchResult, 'No database operation should be done.').toBeNull();
@@ -266,5 +302,49 @@ describe('Decay live detailed data testing (subset of indicatorDecayDetails quer
 
     const result = computeLivePoints(indicator as BasicStoreEntityIndicator);
     expect(result[0].score, 'The live score should be = score when data required for computation are missing.').toBe(40);
+  });
+});
+
+describe('Decay chart data generation', () => {
+  it('should compute score list correctly', () => {
+    const result: number[] = computeScoreList(81);
+
+    expect(result.length).toBe(82); // from 81 to zero included
+    expect(result[0]).toBe(81);
+    expect(result[81]).toBe(0);
+  });
+
+  it('should compute nothing for score < 0', () => {
+    const result: number[] = computeScoreList(-12);
+    expect(result.length).toBe(0);
+  });
+
+  it('should compute live score serie correctly', () => {
+    // YYYY-MM-DDTHH:mm:ss.sssZ
+    const startDate = new Date('2023-12-15T00:00:00.000Z');
+
+    const timeSerie: number[] = computeScoreList(100);
+    const indicator: Partial<BasicStoreEntityIndicator> = {
+      x_opencti_score: 100,
+      decay_base_score: 100,
+      decay_base_score_date: startDate,
+      decay_applied_rule: FALLBACK_DECAY_RULE,
+      valid_from: startDate,
+      valid_until: moment().add(FALLBACK_DECAY_RULE.decay_lifetime, 'days').toDate()
+    };
+
+    const result = computeChartDecayAlgoSerie(indicator as BasicStoreEntityIndicator, timeSerie);
+
+    expect(result[0].score).toBe(100);
+    expect(moment(result[0].time).format('DD/MM/YYYY'), 'Base core 100 should be at start date').toBe('15/12/2023');
+
+    expect(result[25].score).toBe(75);
+    expect(moment(result[25].time).format('DD/MM/YYYY'), 'expect 1').toBe('20/12/2023');
+
+    expect(result[50].score).toBe(50);
+    expect(moment(result[50].time).format('DD/MM/YYYY'), 'expect 1').toBe('29/01/2024');
+
+    expect(result[100].score).toBe(0);
+    expect(moment(result[100].time).format('DD/MM/YYYY'), 'expect 1').toBe('14/12/2024');
   });
 });

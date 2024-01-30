@@ -2,6 +2,7 @@ import {
   addIndicator,
   findAll,
   findById,
+  getDecayChartData,
   getDecayDetails,
   indicatorsDistributionByEntity,
   indicatorsNumber,
@@ -51,6 +52,7 @@ const indicatorResolvers: Resolvers = {
     killChainPhases: (indicator, _, context) => loadThroughDenormalized(context, context.user, indicator, INPUT_KILLCHAIN, { sortBy: 'phase_name' }),
     observables: (indicator, args, context) => observablesPaginated<any>(context, context.user, indicator.id, args),
     decayLiveDetails: (indicator, _, context) => getDecayDetails(context, context.user, indicator),
+    decayChartData: (indicator, _, context) => getDecayChartData(context, context.user, indicator),
   },
   Mutation: {
     indicatorAdd: (_, { input }, context) => addIndicator(context, context.user, input),
