@@ -1,5 +1,5 @@
 import React, { FunctionComponent, useEffect, useState } from 'react';
-import {graphql, createRefetchContainer, RelayRefetchProp, useMutation} from 'react-relay';
+import { graphql, createRefetchContainer, RelayRefetchProp, useMutation } from 'react-relay';
 import Grid from '@mui/material/Grid';
 import Typography from '@mui/material/Typography';
 import LinearProgress from '@mui/material/LinearProgress';
@@ -19,15 +19,12 @@ import { interval } from 'rxjs';
 import { Delete } from 'mdi-material-ui';
 import makeStyles from '@mui/styles/makeStyles';
 import { ConnectorWorks_data$data } from '@components/data/connectors/__generated__/ConnectorWorks_data.graphql';
+import { ConnectorWorksQuery$variables } from '@components/data/connectors/__generated__/ConnectorWorksQuery.graphql';
 import TaskStatus from '../../../../components/TaskStatus';
 import { useFormatter } from '../../../../components/i18n';
 import { FIVE_SECONDS } from '../../../../utils/Time';
-import {MESSAGING$} from '../../../../relay/environment';
+import { MESSAGING$ } from '../../../../relay/environment';
 import Transition from '../../../../components/Transition';
-import {
-  ConnectorWorks_WorkMessage$data
-} from "@components/data/connectors/__generated__/ConnectorWorks_WorkMessage.graphql";
-import {ConnectorWorksQuery$variables} from "@components/data/connectors/__generated__/ConnectorWorksQuery.graphql";
 
 const interval$ = interval(FIVE_SECONDS);
 
@@ -60,7 +57,7 @@ const useStyles = makeStyles(() => ({
     position: 'absolute',
     right: 10,
     bottom: 10,
-  }
+  },
 }));
 
 export const connectorWorksWorkDeletionMutation = graphql`
@@ -159,7 +156,7 @@ const ConnectorWorksComponent: FunctionComponent<ConnectorWorksComponentProps> =
                     <Typography
                       variant="h3"
                       gutterBottom={true}
-                      classes={{root: classes.bottomTypo}}
+                      classes={{ root: classes.bottomTypo }}
                     >
                       {t_i18n('Work start time')}
                     </Typography>
@@ -169,7 +166,7 @@ const ConnectorWorksComponent: FunctionComponent<ConnectorWorksComponentProps> =
                     <Typography
                       variant="h3"
                       gutterBottom={true}
-                      classes={{root: classes.bottomTypo}}
+                      classes={{ root: classes.bottomTypo }}
                     >
                       {t_i18n('Work end time')}
                     </Typography>
@@ -216,7 +213,7 @@ const ConnectorWorksComponent: FunctionComponent<ConnectorWorksComponentProps> =
                 </Grid>
               </Grid>
               <Button
-                classes={{root: classes.errorButton}}
+                classes={{ root: classes.errorButton }}
                 variant="contained"
                 color="secondary"
                 onClick={() => handleOpenErrors(work.errors ?? [])}
@@ -226,7 +223,7 @@ const ConnectorWorksComponent: FunctionComponent<ConnectorWorksComponentProps> =
               </Button>
               <Button
                 variant="outlined"
-                classes={{root: classes.deleteButton}}
+                classes={{ root: classes.deleteButton }}
                 onClick={() => handleDeleteWork(work.id)}
                 size="small"
                 startIcon={<Delete/>}
