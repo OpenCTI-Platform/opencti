@@ -4101,6 +4101,7 @@ const WorkbenchFileContentComponent = ({
                   label={t_i18n('Connector')}
                   fullWidth
                   containerstyle={{ width: '100%' }}
+                  disabled={connectors.filter((n) => n.active).length === 0}
                 >
                   {connectors.map((connector) => (
                     <MenuItem
@@ -4120,7 +4121,7 @@ const WorkbenchFileContentComponent = ({
                 <Button
                   color="secondary"
                   onClick={submitForm}
-                  disabled={isSubmitting}
+                  disabled={isSubmitting || connectors.filter((n) => n.active).length === 0}
                 >
                   {t_i18n('Create')}
                 </Button>

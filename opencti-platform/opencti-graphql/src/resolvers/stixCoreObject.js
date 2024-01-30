@@ -117,8 +117,8 @@ const stixCoreObjectResolvers = {
       return paginatedForPathWithEnrichment(context, context.user, `import/${stixCoreObject.entity_type}/${stixCoreObject.id}`, stixCoreObject.id, opts);
     },
     pendingFiles: (stixCoreObject, { first }, context) => {
-      const opts = { first, entity_type: stixCoreObject.entity_type };
-      return paginatedForPathWithEnrichment(context, context.user, `import/pending/${stixCoreObject.entity_type}/${stixCoreObject.id}`, stixCoreObject.id, opts);
+      const opts = { first, entity_type: stixCoreObject.entity_type, entity_id: stixCoreObject.id };
+      return paginatedForPathWithEnrichment(context, context.user, 'import/pending', stixCoreObject.id, opts);
     },
     exportFiles: (stixCoreObject, { first }, context) => {
       const opts = { first, entity_type: stixCoreObject.entity_type };

@@ -65,6 +65,7 @@ interface FilesOptions<T extends BasicStoreCommon> extends EntityOptions<T> {
   modifiedSince?: string | null
   prefixMimeTypes?: string[]
   maxFileSize?: number
+  isPending?: boolean
   excludedPaths?: string[]
   orderBy?: string
   orderMode?: OrderingMode

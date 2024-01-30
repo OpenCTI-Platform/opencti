@@ -63,7 +63,7 @@ const WorkbenchFileViewerBase = ({
           {t('Analyst workbenches')}
         </Typography>
         <IconButton
-          color="secondary"
+          color="primary"
           aria-label="Add"
           onClick={() => setOpenCreate(true)}
           classes={{ root: classes.createButton }}
