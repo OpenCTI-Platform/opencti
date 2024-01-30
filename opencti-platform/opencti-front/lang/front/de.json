@@ -2562,5 +2562,8 @@
   "Marking definitions to use by the csv mapper...": "Markierungsdefinitionen, die vom csv-Mapper nur verwendet werden, wenn für einige Markierungsattribute die Richtlinie 'Der Benutzer darf die Markierungsdefinitionen auswählen' festgelegt ist. Andernfalls wird diese Markierungsdefinition ignoriert.",
   "Option 'Let the user choose marking definitions'...": "Die Option 'Der Benutzer darf die Markierungsdefinitionen auswählen' fordert den Benutzer auf, beim Importieren der CSV-Datei auszuwählen, welche Markierungsdefinitionen angewendet werden sollen, wenn die Daten in der CSV-Datei fehlen.",
   "Update without references": "Update ohne Referenzen",
-  "Max Confidence Level:": "Max. Konfidenzniveau:"
+  "Max Confidence Level:": "Max. Konfidenzniveau:",
+  "Please, verify the validity of the selected CSV mapper for the given URL.": "Bitte überprüfen Sie die Gültigkeit des ausgewählten CSV-Mappers für die angegebene URL.",
+  "Only successful tests allow the ingestion creation.": "Nur erfolgreiche Tests ermöglichen die Erstellung der Aufnahme.",
+  "Only successful tests allow the ingestion edition.": "Nur erfolgreiche Tests erlauben die Ingestion-Edition."
 }

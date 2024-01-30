@@ -2562,5 +2562,9 @@
   "Marking definitions to use by the csv mapper...": "Les définitions de marquage ne sont utilisées par le mappeur csv que lorsque certains attributs de marquage ont la politique 'Laisser l'utilisateur choisir les définitions de marquage'. Dans le cas contraire, ces définitions de marquage sont ignorées.",
   "Option 'Let the user choose marking definitions'...": "L'option 'Let the user choose marking definitions' demandera à l'utilisateur de choisir (lors de l'importation du fichier CSV) les définitions de marquage à appliquer lorsque les données sont manquantes dans le fichier CSV.",
   "Update without references": "Mise à jour sans références",
-  "Max Confidence Level:": "Niveau de confiance maximum :"
+  "Max Confidence Level:": "Niveau de confiance maximum :",
+  "The Max Confidence Level is currently defined at the user level. It overrides Max Confidence Level from user’s groups.": "Le niveau de confiance maximum est actuellement défini au niveau de l'utilisateur. Il est prioritaire sur le niveau de confiance maximum des groupes d'utilisateurs.",
+  "Please, verify the validity of the selected CSV mapper for the given URL.": "Veuillez vérifier la validité du mappeur CSV sélectionné pour l'URL donnée.",
+  "Only successful tests allow the ingestion creation.": "Seuls les tests réussis permettent la création de l'ingestion.",
+  "Only successful tests allow the ingestion edition.": "Seuls les tests réussis permettent l'édition de l'ingestion."
 }

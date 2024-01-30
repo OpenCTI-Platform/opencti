@@ -113,7 +113,7 @@ const IngestionCsvMapperTestDialog: FunctionComponent<IngestionCsvMapperTestDial
         >
           <Button
             variant="contained"
-            color="secondary"
+            color={result?.test_mapper?.nbEntities ? 'primary' : 'secondary'}
             onClick={() => onTest(uri, typeof csvMapperId === 'string' ? csvMapperId : csvMapperId.value)}
           >
             {t_i18n('Test')}

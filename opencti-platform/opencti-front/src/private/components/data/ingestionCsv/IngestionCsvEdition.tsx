@@ -6,6 +6,8 @@ import { FormikConfig } from 'formik/dist/types';
 import { ExternalReferencesValues } from '@components/common/form/ExternalReferencesField';
 import { Field, Form, Formik } from 'formik';
 import MenuItem from '@mui/material/MenuItem';
+import Box from '@mui/material/Box';
+import Alert from '@mui/material/Alert';
 import CreatorField from '@components/common/form/CreatorField';
 import CommitMessage from '@components/common/form/CommitMessage';
 import { IngestionCsvEditionFragment_ingestionCsv$key } from '@components/data/ingestionCsv/__generated__/IngestionCsvEditionFragment_ingestionCsv.graphql';
@@ -24,6 +26,7 @@ import SelectField from '../../../../components/SelectField';
 import DateTimePickerField from '../../../../components/DateTimePickerField';
 import type { Theme } from '../../../../components/Theme';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
+import Loader, { LoaderVariant } from '../../../../components/Loader';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   buttons: {
@@ -222,12 +225,18 @@ const IngestionCsvEdition: FunctionComponent<IngestionCsvEditionProps> = ({
               style: { marginTop: 20 },
             }}
           />
-          !!queryRef && <CsvMapperField
-            name="csv_mapper_id"
-            isOptionEqualToValue={(option: Option, value: string) => option.value === value}
-            onChange={handleSubmitField}
-            queryRef={queryRef}
-                        />
+          {
+            queryRef
+            && <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
+              <CsvMapperField
+                name="csv_mapper_id"
+                isOptionEqualToValue={(option: Option, value: string) => option.value === value}
+                onChange={handleSubmitField}
+                queryRef={queryRef}
+              />
+            </React.Suspense>
+
+          }
           <Field
             component={SelectField}
             variant="standard"
@@ -328,10 +337,20 @@ const IngestionCsvEdition: FunctionComponent<IngestionCsvEditionProps> = ({
               id={ingestionCsvData.id}
             />
           )}
+          <Box sx={{ width: '100%', marginTop: 5 }}>
+            <Alert
+              severity="info"
+              variant="outlined"
+              style={{ padding: '0px 10px 0px 10px' }}
+            >
+              {t_i18n('Please, verify the validity of the selected CSV mapper for the given URL.')}<br/>
+              {t_i18n('Only successful tests allow the ingestion edition.')}
+            </Alert>
+          </Box>
           <div className={classes.buttons}>
             <Button
               variant="contained"
-              color="primary"
+              color="secondary"
               onClick={() => setOpen(true)}
               classes={{ root: classes.button }}
               disabled={!(values.uri && values.csv_mapper_id)}

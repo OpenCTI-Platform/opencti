@@ -5,6 +5,8 @@ import * as Yup from 'yup';
 import { graphql, useMutation } from 'react-relay';
 import MenuItem from '@mui/material/MenuItem';
 import makeStyles from '@mui/styles/makeStyles';
+import Alert from '@mui/material/Alert';
+import Box from '@mui/material/Box';
 import { IngestionCsvLinesPaginationQuery$variables } from '@components/data/ingestionCsv/__generated__/IngestionCsvLinesPaginationQuery.graphql';
 import { FormikConfig } from 'formik/dist/types';
 import { Option } from '@components/common/form/ReferenceField';
@@ -22,6 +24,7 @@ import SelectField from '../../../../components/SelectField';
 import type { Theme } from '../../../../components/Theme';
 import DateTimePickerField from '../../../../components/DateTimePickerField';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
+import Loader, { LoaderVariant } from '../../../../components/Loader';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   buttons: {
@@ -188,11 +191,16 @@ const IngestionCsvCreation: FunctionComponent<IngestionCsvCreationProps> = ({ pa
                 fullWidth={true}
                 style={fieldSpacingContainerStyle}
               />
-              <CsvMapperField
-                name="csv_mapper_id"
-                isOptionEqualToValue={(option: Option, value: string) => option.value === value}
-                queryRef={queryRef}
-              />
+              {
+                queryRef
+                && <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
+                  <CsvMapperField
+                    name="csv_mapper_id"
+                    isOptionEqualToValue={(option: Option, value: string) => option.value === value}
+                    queryRef={queryRef}
+                  />
+                </React.Suspense>
+              }
               <Field
                 component={SelectField}
                 variant="standard"
@@ -279,6 +287,16 @@ const IngestionCsvCreation: FunctionComponent<IngestionCsvCreationProps> = ({ pa
                 isOptionEqualToValue={(option: Option, value: string) => option.value === value}
                 containerStyle={fieldSpacingContainerStyle}
               />
+              <Box sx={{ width: '100%', marginTop: 5 }}>
+                <Alert
+                  severity="info"
+                  variant="outlined"
+                  style={{ padding: '0px 10px 0px 10px' }}
+                >
+                  {t_i18n('Please, verify the validity of the selected CSV mapper for the given URL.')}<br/>
+                  {t_i18n('Only successful tests allow the ingestion creation.')}
+                </Alert>
+              </Box>
               <div className={classes.buttons}>
                 <Button
                   variant="contained"
@@ -290,7 +308,7 @@ const IngestionCsvCreation: FunctionComponent<IngestionCsvCreationProps> = ({ pa
                 </Button>
                 <Button
                   variant="contained"
-                  color="primary"
+                  color={isCreateDisabled ? 'secondary' : 'primary'}
                   onClick={() => setOpen(true)}
                   classes={{ root: classes.button }}
                   disabled={!(values.uri && values.csv_mapper_id)}
