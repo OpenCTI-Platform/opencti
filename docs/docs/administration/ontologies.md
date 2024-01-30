@@ -2,6 +2,8 @@
 
 Taxonomies in OpenCTI refer to the structured classification systems that help in organizing and categorizing cyber threat intelligence data. They play a crucial role in the platform by allowing analysts to systematically tag and retrieve information based on predefined categories and terms.
 
+Along with the Customization page, these pages allow the administrator to customize the platform.
+
 ## Labels
 
 Labels in OpenCTI serve as a powerful tool for organizing, categorizing, and prioritizing data. Here’s how they can be used effectively:
@@ -35,6 +37,7 @@ You can add, edit, or delete kill chain phases in the settings page, and assign 
 ## Vocabularies
 
 Open vocabularies are sets of terms and definitions that are agreed upon by the CTI community. They help to standardize the communication documentation of cyber threat information.
+This section allows you to customize a set of available fields by adding vocabulary. Almost all of the drop-down menus available in the entities can be modified from this panel.
 
 Open vocabularies in OpenCTI are mainly based on the [STIX standard](https://docs.oasis-open.org/cti/stix/v2.1/os/stix-v2.1-os.html#_izngjy1g98l2).
 
