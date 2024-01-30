@@ -502,5 +502,10 @@
   "Tags": "标签",
   "Investigated entities": "调查实体",
   "from": "从",
-  "to": "到"
+  "to": "到",
+  "Group Confidence Level": "组别置信度",
+  "Max Confidence": "最大置信度",
+  "Overrides": "重写",
+  "Entity Type": "实体类型",
+  "User Confidence Level": "用户置信度"
 }

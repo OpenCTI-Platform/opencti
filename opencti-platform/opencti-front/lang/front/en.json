@@ -2549,5 +2549,7 @@
   "Subscription to specific object(s)": "Subscription to specific object(s)",
   "Settings default values usage...": "Settings default values usage...",
   "No default value set in Settings...": "No default value set in Settings...",
-  "Default values set": "Default values set"
+  "Default values set": "Default values set",
+  "Update without references": "Update without references",
+  "Max Confidence Level:": "Max Confidence Level:"
 }

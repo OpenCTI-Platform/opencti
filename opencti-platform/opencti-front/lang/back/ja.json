@@ -502,5 +502,10 @@
   "Tags": "調査対象",
   "Investigated entities": "",
   "from": "から",
-  "to": "から"
+  "to": "から",
+  "Group Confidence Level": "グループ信頼度",
+  "Max Confidence": "最大信頼度",
+  "Overrides": "オーバーライド",
+  "Entity Type": "エンティティタイプ",
+  "User Confidence Level": "ユーザーの信頼度"
 }

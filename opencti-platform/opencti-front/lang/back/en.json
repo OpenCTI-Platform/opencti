@@ -502,5 +502,10 @@
   "Tags": "Tags",
   "Investigated entities": "Investigated entities",
   "from": "from",
-  "to": "to"
+  "to": "to",
+  "Group Confidence Level": "Group Confidence Level",
+  "Max Confidence": "Max Confidence",
+  "Overrides": "Overrides",
+  "Entity Type": "Entity Type",
+  "User Confidence Level": "User Confidence Level"
 }

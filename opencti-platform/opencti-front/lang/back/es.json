@@ -500,5 +500,12 @@
   "Category": "Categoría",
   "Manifest": "Manifiesto",
   "Tags": "Etiquetas",
-  "Investigated entities": "Entidades investigadas"
+  "Investigated entities": "Entidades investigadas",
+  "from": "de",
+  "to": "a",
+  "Group Confidence Level": "Nivel de confianza del grupo",
+  "Max Confidence": "Confianza máxima",
+  "Overrides": "Anulaciones",
+  "Entity Type": "Tipo de entidad",
+  "User Confidence Level": "Nivel de confianza del usuario"
 }
