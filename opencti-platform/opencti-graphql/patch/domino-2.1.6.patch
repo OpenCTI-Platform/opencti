@@ -7,7 +7,7 @@ index b5d8950..e920db1 100644
    Window_run: function _run(code, file) {
 -    if (file) code += '\n//@ sourceURL=' + file;
 -    with(this) eval(code);
-+    console.log("Window_run removed")
++    // Do nothing
    },
    EventHandlerBuilder_build: function build() {
 -    try {
@@ -20,6 +20,6 @@ index b5d8950..e920db1 100644
 -    catch (err) {
 -      return function() { throw err; };
 -    }
-+    console.log("EventHandlerBuilder_build removed")
++    // Do nothing
    }
  };
