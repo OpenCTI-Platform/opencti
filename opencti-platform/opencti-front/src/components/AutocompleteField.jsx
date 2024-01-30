@@ -48,7 +48,7 @@ const AutocompleteField = (props) => {
   delete fieldProps.helperText;
   delete fieldProps.openCreate;
   // Properly handle no selected option
-  if(fieldProps.value === ''){
+  if (fieldProps.value === '') {
     fieldProps.value = null;
   }
   const defaultOptionToValue = (option, value) => option.value === value.value;
