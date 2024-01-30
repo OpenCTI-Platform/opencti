@@ -1,5 +1,5 @@
 import React, { FunctionComponent, useEffect, useState } from 'react';
-import { graphql, createRefetchContainer, RelayRefetchProp } from 'react-relay';
+import {graphql, createRefetchContainer, RelayRefetchProp, useMutation} from 'react-relay';
 import Grid from '@mui/material/Grid';
 import Typography from '@mui/material/Typography';
 import LinearProgress from '@mui/material/LinearProgress';
@@ -22,8 +22,12 @@ import { ConnectorWorks_data$data } from '@components/data/connectors/__generate
 import TaskStatus from '../../../../components/TaskStatus';
 import { useFormatter } from '../../../../components/i18n';
 import { FIVE_SECONDS } from '../../../../utils/Time';
-import { commitMutation, MESSAGING$ } from '../../../../relay/environment';
+import {MESSAGING$} from '../../../../relay/environment';
 import Transition from '../../../../components/Transition';
+import {
+  ConnectorWorks_WorkMessage$data
+} from "@components/data/connectors/__generated__/ConnectorWorks_WorkMessage.graphql";
+import {ConnectorWorksQuery$variables} from "@components/data/connectors/__generated__/ConnectorWorksQuery.graphql";
 
 const interval$ = interval(FIVE_SECONDS);
 
@@ -44,6 +48,19 @@ const useStyles = makeStyles(() => ({
     borderRadius: 5,
     height: 10,
   },
+  bottomTypo: {
+    marginTop: 20,
+  },
+  errorButton: {
+    position: 'absolute',
+    right: 10,
+    top: 10,
+  },
+  deleteButton: {
+    position: 'absolute',
+    right: 10,
+    bottom: 10,
+  }
 }));
 
 export const connectorWorksWorkDeletionMutation = graphql`
@@ -56,25 +73,9 @@ export const connectorWorksWorkDeletionMutation = graphql`
 
 type WorkMessages = NonNullable<NonNullable<NonNullable<ConnectorWorks_data$data['works']>['edges']>[0]>['node']['errors'];
 
-interface Options {
-  count: number,
-  filters: {
-    mode: string,
-    filters: [
-      {
-        key: string
-        values: string[]
-        operator: string
-        mode: string
-      },
-    ],
-    filterGroups: [],
-  },
-}
-
 interface ConnectorWorksComponentProps {
   data: ConnectorWorks_data$data
-  options: Options[]
+  options: ConnectorWorksQuery$variables[]
   relay: RelayRefetchProp
 }
 
@@ -84,6 +85,7 @@ const ConnectorWorksComponent: FunctionComponent<ConnectorWorksComponentProps> =
   const classes = useStyles();
   const [displayErrors, setDisplayErrors] = useState<boolean>(false);
   const [errors, setErrors] = useState<WorkMessages>([]);
+  const [commit] = useMutation(connectorWorksWorkDeletionMutation);
 
   const handleOpenErrors = (errorsList: WorkMessages) => {
     if (!errorsList) return;
@@ -96,21 +98,14 @@ const ConnectorWorksComponent: FunctionComponent<ConnectorWorksComponentProps> =
     setErrors([]);
   };
 
-  // eslint-disable-next-line class-methods-use-this
   const handleDeleteWork = (workId: string) => {
-    commitMutation({
-      mutation: connectorWorksWorkDeletionMutation,
+    commit({
       variables: {
         id: workId,
       },
-      updater: undefined,
-      optimisticUpdater: undefined,
-      optimisticResponse: undefined,
       onCompleted: () => {
         MESSAGING$.notifySuccess('The work has been deleted');
       },
-      onError: undefined,
-      setSubmitting: undefined,
     });
   };
 
@@ -164,7 +159,7 @@ const ConnectorWorksComponent: FunctionComponent<ConnectorWorksComponentProps> =
                     <Typography
                       variant="h3"
                       gutterBottom={true}
-                      style={{ marginTop: 20 }}
+                      classes={{root: classes.bottomTypo}}
                     >
                       {t_i18n('Work start time')}
                     </Typography>
@@ -174,7 +169,7 @@ const ConnectorWorksComponent: FunctionComponent<ConnectorWorksComponentProps> =
                     <Typography
                       variant="h3"
                       gutterBottom={true}
-                      style={{ marginTop: 20 }}
+                      classes={{root: classes.bottomTypo}}
                     >
                       {t_i18n('Work end time')}
                     </Typography>
@@ -221,7 +216,7 @@ const ConnectorWorksComponent: FunctionComponent<ConnectorWorksComponentProps> =
                 </Grid>
               </Grid>
               <Button
-                style={{ position: 'absolute', right: 10, top: 10 }}
+                classes={{root: classes.errorButton}}
                 variant="contained"
                 color="secondary"
                 onClick={() => handleOpenErrors(work.errors ?? [])}
@@ -231,7 +226,7 @@ const ConnectorWorksComponent: FunctionComponent<ConnectorWorksComponentProps> =
               </Button>
               <Button
                 variant="outlined"
-                style={{ position: 'absolute', right: 10, bottom: 10 }}
+                classes={{root: classes.deleteButton}}
                 onClick={() => handleDeleteWork(work.id)}
                 size="small"
                 startIcon={<Delete/>}
@@ -245,7 +240,6 @@ const ConnectorWorksComponent: FunctionComponent<ConnectorWorksComponentProps> =
       <Dialog
         PaperProps={{ elevation: 1 }}
         open={displayErrors}
-        keepMounted={true}
         TransitionComponent={Transition}
         onClose={handleCloseErrors}
         fullScreen={true}
