@@ -16,8 +16,6 @@ import MoreVert from '@mui/icons-material/MoreVert';
 import { ConnectionHandler } from 'relay-runtime';
 import inject18n from '../../../../components/i18n';
 import { commitMutation, QueryRenderer } from '../../../../relay/environment';
-
-import Loader from '../../../../components/Loader';
 import FeedEdition from './FeedEdition';
 
 const styles = () => ({
@@ -138,7 +136,6 @@ class FeedPopover extends Component {
           variables={{ id: feedId }}
           render={({ props }) => {
             if (props) {
-              // Done
               return (
                 <FeedEdition
                   feed={props.feed}
@@ -147,7 +144,7 @@ class FeedPopover extends Component {
                 />
               );
             }
-            return <Loader variant="inElement" />;
+            return <div />;
           }}
         />
         <Dialog

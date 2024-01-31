@@ -12,7 +12,6 @@ import { useFormatter } from '../../../../components/i18n';
 import DeleteDialog from '../../../../components/DeleteDialog';
 import useDeletion from '../../../../utils/hooks/useDeletion';
 import { deleteNode } from '../../../../utils/store';
-import Loader, { LoaderVariant } from '../../../../components/Loader';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 
 const csvMapperPopoverDelete = graphql`
@@ -84,7 +83,7 @@ const CsvMapperPopover: FunctionComponent<CsvMapperPopoverProps> = ({
         <MenuItem onClick={deletion.handleOpenDelete}>{t_i18n('Delete')}</MenuItem>
       </Menu>
       {queryRef && (
-        <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
+        <React.Suspense fallback={<div />}>
           <CsvMapperEditionContainer
             queryRef={queryRef}
             onClose={() => setDisplayUpdate(false)}
