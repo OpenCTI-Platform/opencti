@@ -17,8 +17,6 @@ import { ConnectionHandler } from 'relay-runtime';
 import Drawer from '../../common/drawer/Drawer';
 import inject18n from '../../../../components/i18n';
 import { commitMutation, QueryRenderer } from '../../../../relay/environment';
-
-import Loader from '../../../../components/Loader';
 import TaxiiCollectionEdition from './TaxiiCollectionEdition';
 
 const styles = (theme) => ({
@@ -160,14 +158,13 @@ class TaxiiCollectionPopover extends Component {
             variables={{ id: taxiiCollectionId }}
             render={({ props }) => {
               if (props) {
-                // Done
                 return (
                   <TaxiiCollectionEdition
                     taxiiCollection={props.taxiiCollection}
                   />
                 );
               }
-              return <Loader variant="inElement" />;
+              return <div />;
             }}
           />
         </Drawer>

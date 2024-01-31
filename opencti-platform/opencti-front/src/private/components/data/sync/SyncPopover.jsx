@@ -16,7 +16,6 @@ import MoreVert from '@mui/icons-material/MoreVert';
 import Drawer from '../../common/drawer/Drawer';
 import inject18n from '../../../../components/i18n';
 import { commitMutation, QueryRenderer } from '../../../../relay/environment';
-import Loader from '../../../../components/Loader';
 import SyncEdition from './SyncEdition';
 import { deleteNode } from '../../../../utils/store';
 
@@ -261,7 +260,7 @@ class SyncPopover extends Component {
                   />
                 );
               }
-              return <Loader variant="inElement" />;
+              return <div />;
             }}
           />
         </Drawer>

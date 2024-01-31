@@ -15,7 +15,6 @@ import Slide from '@mui/material/Slide';
 import MoreVert from '@mui/icons-material/MoreVert';
 import inject18n from '../../../../components/i18n';
 import { commitMutation, QueryRenderer } from '../../../../relay/environment';
-import Loader from '../../../../components/Loader';
 import IngestionTaxiiEdition, { ingestionTaxiiMutationFieldPatch } from './IngestionTaxiiEdition';
 import { deleteNode } from '../../../../utils/store';
 
@@ -208,7 +207,7 @@ class IngestionTaxiiPopover extends Component {
                 />
               );
             }
-            return <Loader variant="inElement" />;
+            return <div />;
           }}
         />
         <Dialog

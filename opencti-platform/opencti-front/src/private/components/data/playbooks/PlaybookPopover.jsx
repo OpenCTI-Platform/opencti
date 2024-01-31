@@ -27,7 +27,6 @@ import MoreVert from '@mui/icons-material/MoreVert';
 import makeStyles from '@mui/styles/makeStyles';
 import { useNavigate } from 'react-router-dom-v5-compat';
 import { commitMutation, QueryRenderer } from '../../../../relay/environment';
-import Loader from '../../../../components/Loader';
 import PlaybookEdition, { playbookMutationFieldPatch } from './PlaybookEdition';
 import { deleteNode } from '../../../../utils/store';
 import { useFormatter } from '../../../../components/i18n';
@@ -177,7 +176,7 @@ const PlaybookPopover = (props) => {
               />
             );
           }
-          return <Loader variant="inElement" />;
+          return <div />;
         }}
       />
       <Dialog
