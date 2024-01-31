@@ -142,7 +142,17 @@ describe('CSV-MAPPER', () => {
       const data = (await mapData(filePath, csvMapperFile)).flat();
       console.log('csvMapperFile', csvMapperFile);
       console.log('hash data', data);
-      // TODO
+
+      const { MD5 } = data[0].hashes;
+
+      console.log('MD5', MD5);
+
+      expect(MD5).toBeDefined();
+      expect(MD5).toBe('ba69669818ef9ccec174d647a8021a7b');
+      // expect(SHA1).toBeDefined();
+      // expect(SHA1).toBe('b8e74921d7923c808a0423e6e46807c4f0699b6e');
+      // expect(SHA256).toBeDefined();
+      // expect(SHA256).toBe('9e403e07a54437e37fe5dc47f10e93370e4b685fda8bf6fe00013a519bd228ce');
     });
   });
 
@@ -150,7 +160,7 @@ describe('CSV-MAPPER', () => {
     it('should use default values from settings', async () => {
       const filePath = './tests/02-integration/05-parser/default-values/data.csv';
       const data = (await mapData(filePath, csvMapperAreaMalware)).flat();
-      console.log('values data', data);
+
       const morbihan = data.find((object) => object.name === 'morbihan');
       const finistere = data.find((object) => object.name === 'finistere');
       const cotesDArmor = data.find((object) => object.name === 'cotes-darmor');
