@@ -255,7 +255,6 @@ const handleDefaultMarkings = (
 
   // Find default markings policy in entity settings ("true" or undefined).
   const settingAttributes = entitySetting ? getAttributesConfiguration(entitySetting) : undefined;
-  // console.log('pouet', representation.target.entity_type, settingAttributes);
   const settingMarkingValue = settingAttributes
     ?.find((attribute) => attribute.name === INPUT_MARKINGS)
     ?.default_values?.[0];

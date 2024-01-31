@@ -2553,6 +2553,8 @@
   "The Max Confidence Level is currently inherited from...": "当前最大信心值是从组 {link} 继承的。",
   "This user has no Max Confidence Level and does not inherit one from groups. Add a group to this user to resolve the issue.": "该用户没有最大信任度，也没有从组中继承最大信任度。为该用户添加一个组来解决问题。",
   "The Max Confidence Level is currently defined at the user level. It overrides Max Confidence Level from user's groups.": "最大置信度目前是在用户级别定义的。它覆盖用户组的最大置信度。",
+  "Marking definitions to use by the csv mapper...": "只有当某些标记属性的策略设置为'让用户选择标记定义'时，csv 映射器才会使用标记定义。否则，此标记定义将被忽略。",
+  "Option 'Let the user choose marking definitions'...": "选项 '让用户选择标记定义'将要求用户（在导入 CSV 文件时）选择在 CSV 文件中缺少数据时应用哪些标记定义。",
   "Marking definitions to use by the csv mapper...": "如果某些标记属性的策略设置为：让用户选择标记定义，csv 映射器将使用的标记定义。",
   "This user has no Max Confidence Level and does not inherit one from groups. Add a group to this user to resolve the issue.": "该用户没有最大信任度，也没有从组中继承最大信任度。为该用户添加一个组来解决问题。",
   "The Max Confidence Level is currently defined at the user level. It overrides Max Confidence Level from user's groups.": "最大置信度目前是在用户级别定义的。它覆盖用户组的最大置信度。",

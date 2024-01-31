@@ -28,7 +28,7 @@ const CsvMapperDefaultMarking = ({ name }: CsvMapperDefaultMarkingProps) => {
           {t_i18n('Use default marking definitions of the user')}
         </MenuItem>
       </Field>
-      <Tooltip title='pouet'>
+      <Tooltip title={t_i18n("Option 'Let the user choose marking definitions'...")}>
         <InformationOutline
           fontSize="small"
           color="primary"
