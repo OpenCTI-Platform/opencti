@@ -191,6 +191,7 @@ export const ReportCreationForm: FunctionComponent<ReportFormProps> = ({
             name="name"
             label={t_i18n('Name')}
             fullWidth={true}
+            detectDuplicate={['Report']}
             askAi={true}
           />
           <Field
