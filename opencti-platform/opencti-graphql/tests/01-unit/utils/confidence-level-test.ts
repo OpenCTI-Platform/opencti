@@ -94,6 +94,11 @@ describe('Confidence level utilities', () => {
       }
     };
 
+    const groupNull = {
+      id: 'groupNull',
+      group_confidence_level: null
+    };
+
     // minimal subset of a real User
     const userA = {
       id: 'userA',
@@ -120,17 +125,26 @@ describe('Confidence level utilities', () => {
       source: group70,
     });
 
+    const userC = {
+      user_confidence_level: null,
+      groups: [groupNull, group70, groupNull],
+    };
+    expect(computeUserEffectiveConfidenceLevel(userC as unknown as AuthUser)).toEqual({
+      max_confidence: 70,
+      overrides: [],
+      source: group70,
+    });
+
     const userD = {
       user_confidence_level: null,
-      groups: [{ group_confidence_level: null }, { group_confidence_level: null }],
+      groups: [groupNull, groupNull],
     };
+    expect(computeUserEffectiveConfidenceLevel(userD as unknown as AuthUser)).toBeNull();
 
     const userE = {
       user_confidence_level: null,
       groups: [],
     };
-      // ugly typecast to avoid having complete AuthUser objects
-    expect(computeUserEffectiveConfidenceLevel(userD as unknown as AuthUser)).toBeNull();
     expect(computeUserEffectiveConfidenceLevel(userE as unknown as AuthUser)).toBeNull();
   });
 });
