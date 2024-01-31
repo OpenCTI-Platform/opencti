@@ -684,7 +684,9 @@ class OpenCTIStix2:
                         )
                         reports[external_reference_id] = report
                 except:
-                    self.opencti.app_logger.warn("Cannot generate external reference")
+                    self.opencti.app_logger.warning(
+                        "Cannot generate external reference"
+                    )
         elif "x_opencti_external_references" in stix_object:
             for external_reference in stix_object["x_opencti_external_references"]:
                 url = external_reference["url"] if "url" in external_reference else None
