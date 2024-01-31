@@ -138,6 +138,7 @@ const initTaxiiApi = (app) => {
       const stix = await restCollectionStix(context, user, collection, req.query);
       res.set('X-TAXII-Date-Added-First', getUpdatedAt(R.head(stix.objects)));
       res.set('X-TAXII-Date-Added-Last', getUpdatedAt(R.last(stix.objects)));
+      res.set('Content-Type', TAXII_VERSION);
       res.json(stix);
     } catch (e) {
       const errorDetail = errorConverter(e);
