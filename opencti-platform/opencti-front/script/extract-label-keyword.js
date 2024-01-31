@@ -7,7 +7,7 @@ const stat = util.promisify(fs.stat);
 const readFile = util.promisify(fs.readFile);
 const writeFile = util.promisify(fs.writeFile);
 
-const srcDirectory = '../opencti-graphql/src/modules';
+const srcDirectory = '../opencti-graphql/src';
 const englishTranslationFiles = 'lang/back/en.json';
 const jsxTsxFileExtensions = ['.js', '.ts'];
 const searchPattern = /label: '[^']+'/g;
