@@ -149,10 +149,6 @@ describe('CSV-MAPPER', () => {
 
       expect(MD5).toBeDefined();
       expect(MD5).toBe('ba69669818ef9ccec174d647a8021a7b');
-      // expect(SHA1).toBeDefined();
-      // expect(SHA1).toBe('b8e74921d7923c808a0423e6e46807c4f0699b6e');
-      // expect(SHA256).toBeDefined();
-      // expect(SHA256).toBe('9e403e07a54437e37fe5dc47f10e93370e4b685fda8bf6fe00013a519bd228ce');
     });
   });
 

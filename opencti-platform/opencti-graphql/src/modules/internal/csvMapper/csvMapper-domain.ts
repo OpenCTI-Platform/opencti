@@ -77,8 +77,13 @@ export const csvMapperSchemaAttributes = async (context: AuthContext, user: Auth
         multiple: attribute.multiple,
         mappings: 'mappings' in attribute
           ? attribute.mappings.map((mapping) => ({
-            ...mapping,
+            name: mapping.name,
+            label: mapping.label,
+            type: mapping.type,
+            mandatoryType: mapping.mandatoryType,
             mandatory: mapping.mandatoryType === 'external',
+            editDefault: mapping.editDefault,
+            multiple: mapping.multiple,
           }))
           : undefined
       }];
