@@ -44,7 +44,6 @@ const ContentKnowledgeTimeLineBar = ({
   const [navOpen, setNavOpen] = useState(
     localStorage.getItem('navOpen') === 'true',
   );
-  // const [open, setOpen] = useState(false);
 
   useEffect(() => {
     const sub = MESSAGING$.toggleNav.subscribe({
@@ -153,13 +152,6 @@ const ContentKnowledgeTimeLineBar = ({
                   redirection
                 />
               </div>
-              {/* {timeLineFilters.filters.length > 0 ? ( */}
-              {/*  <IconButton style={{ height: 'fit-content' }} color="primary" onClick={() => setOpen(!open)}> */}
-              {/*    <KeyboardArrowDownIcon /> */}
-              {/*  </IconButton> */}
-              {/* ) : (<IconButton style={{ height: 'fit-content' }} aria-haspopup="false"> */}
-              {/*  <KeyboardArrowDownIcon /> */}
-              {/* </IconButton>)} */}
             </div>
           </div>
         </Drawer>)}
