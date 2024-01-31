@@ -6,6 +6,7 @@ import { CsvMapperFormData } from '@components/data/csvMapper/CsvMapper';
 import {
   CsvMapperRepresentationAttributesForm_allSchemaAttributes$data,
 } from '@components/data/csvMapper/representations/attributes/__generated__/CsvMapperRepresentationAttributesForm_allSchemaAttributes.graphql';
+import CsvMapperDefaultMarking from '@components/data/csvMapper/representations/attributes/CsvMapperDefaultMarking';
 import CsvMapperRepresentationAttributeOption from './CsvMapperRepresentationAttributeOption';
 import { useFormatter } from '../../../../../../components/i18n';
 
@@ -51,12 +52,18 @@ CsvMapperRepresentationAttributeOptionsProps
       )}
       {schemaAttribute.editDefault && (
       <>
-        <DefaultValueField
-          attribute={schemaAttribute}
-          setFieldValue={setFieldValue}
-          name={`${attributeName}.default_values`}
-          entityType={entityType}
-        />
+        {schemaAttribute.name === 'objectMarking' ? (
+          <CsvMapperDefaultMarking
+            name={`${attributeName}.default_values`}
+          />
+        ) : (
+          <DefaultValueField
+            attribute={schemaAttribute}
+            setFieldValue={setFieldValue}
+            name={`${attributeName}.default_values`}
+            entityType={entityType}
+          />
+        )}
 
         {settingsDefaultValues
           ? (

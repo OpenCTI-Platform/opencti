@@ -54,6 +54,11 @@ export interface CsvMapperRepresentation {
   from?: string
   to?: string
 }
+
+export type CsvMapperWithUserMarkings = BasicStoreEntityCsvMapper & {
+  user_chosen_markings?: string[]
+};
+
 export interface BasicStoreEntityCsvMapper extends BasicStoreEntity {
   name: string
   has_header: boolean

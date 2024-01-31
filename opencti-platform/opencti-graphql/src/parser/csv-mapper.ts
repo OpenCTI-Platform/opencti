@@ -9,14 +9,16 @@ import { schemaRelationsRefDefinition } from '../schema/schema-relationsRef';
 import { handleInnerType } from '../domain/stixDomainObject';
 import { extractValueFromCsv } from './csv-helper';
 import { isStixRelationshipExceptRef } from '../schema/stixRelationship';
-import type { AttributeColumn, BasicStoreEntityCsvMapper, CsvMapperRepresentation, CsvMapperRepresentationAttribute } from '../modules/internal/csvMapper/csvMapper-types';
+import type { AttributeColumn, CsvMapperRepresentation, CsvMapperRepresentationAttribute, CsvMapperWithUserMarkings } from '../modules/internal/csvMapper/csvMapper-types';
 import { CsvMapperRepresentationType, Operator } from '../modules/internal/csvMapper/csvMapper-types';
 import { isValidTargetType } from '../modules/internal/csvMapper/csvMapper-utils';
-import { fillDefaultValues, getEntitySettingFromCache } from '../modules/entitySetting/entitySetting-utils';
+import { fillDefaultValues, getAttributesConfiguration, getEntitySettingFromCache } from '../modules/entitySetting/entitySetting-utils';
 import type { AuthContext, AuthUser } from '../types/user';
 import { UnsupportedError } from '../config/errors';
 import { internalFindByIdsMapped } from '../database/middleware-loader';
 import type { BasicStoreObject } from '../types/store';
+import { INPUT_MARKINGS } from '../schema/general';
+import type { BasicStoreEntityEntitySetting } from '../modules/entitySetting/entitySetting-types';
 
 export type InputType = string | string[] | boolean | number | Record<string, any>;
 
@@ -163,7 +165,8 @@ const handleBasedOnAttribute = (
   otherEntities: Map<string, Record<string, InputType>>,
   refEntities: Record<string, BasicStoreObject>
 ) => {
-  if (definition && attribute.default_values && attribute.default_values.length > 0) {
+  // Handle default value based_on attribute except markings which are handled later on.
+  if (definition && attribute.default_values && attribute.default_values.length > 0 && attribute.key !== INPUT_MARKINGS) {
     if (definition.multiple) {
       input[attribute.key] = attribute.default_values.flatMap((id) => {
         const entity = refEntities[id];
@@ -227,12 +230,57 @@ const handleAttributes = (
       // Handle column attribute
       handleDirectAttribute(attribute, input, record, attributeDef);
     } else if (refDef || ['from', 'to'].includes(attribute.key)) {
-      // Handle based_on attribute
       handleBasedOnAttribute(attribute, input, refDef, otherEntities, refEntities);
     } else {
       throw UnsupportedError('Unknown schema for attribute:', { attribute });
     }
   });
+};
+
+/**
+ * We handle markings in a specific function instead of doing it inside the
+ * handleAttributes() one because we need to do specific logic for this attribute.
+ */
+const handleDefaultMarkings = (
+  entitySetting: BasicStoreEntityEntitySetting | undefined,
+  representation: CsvMapperRepresentation,
+  input: Record<string, InputType>,
+  refEntities: Record<string, BasicStoreObject>,
+  chosenMarkings: string[],
+  user: AuthUser,
+) => {
+  if (input[INPUT_MARKINGS]) {
+    return;
+  }
+
+  // Find default markings policy in entity settings ("true" or undefined).
+  const settingAttributes = entitySetting ? getAttributesConfiguration(entitySetting) : undefined;
+  const settingMarkingValue = settingAttributes
+    ?.find((attribute) => attribute.name === INPUT_MARKINGS)
+    ?.default_values?.[0];
+  // Find default markings policy in mapper representation ("user-default" or "user-choice"  or undefined).
+  const representationMarkingValue = representation.attributes
+    .find((attribute) => attribute.key === INPUT_MARKINGS)
+    ?.default_values?.[0];
+
+  // Retrieve default markings of the user.
+  const userDefaultMarkings = (user.default_marking ?? [])
+    .find((entry) => entry.entity_type === 'GLOBAL')
+    ?.values ?? [];
+
+  if (representationMarkingValue) {
+    if (representationMarkingValue === 'user-choice') {
+      input[INPUT_MARKINGS] = chosenMarkings.flatMap((id) => {
+        const entity = refEntities[id];
+        if (!entity) return [];
+        return [entity];
+      });
+    } else {
+      input[INPUT_MARKINGS] = userDefaultMarkings;
+    }
+  } else if (settingMarkingValue) {
+    input[INPUT_MARKINGS] = userDefaultMarkings;
+  }
 };
 
 const mapRecord = async (
@@ -241,7 +289,8 @@ const mapRecord = async (
   record: string[],
   representation: CsvMapperRepresentation,
   otherEntities: Map<string, Record<string, InputType>>,
-  refEntities: Record<string, BasicStoreObject>
+  refEntities: Record<string, BasicStoreObject>,
+  chosenMarkings: string[]
 ) => {
   if (!isValidTarget(record, representation)) {
     return null;
@@ -255,24 +304,24 @@ const mapRecord = async (
   handleAttributes(record, representation, input, otherEntities, refEntities);
 
   const entitySetting = await getEntitySettingFromCache(context, entity_type);
-  const filledInput = fillDefaultValues(user, input, entitySetting);
-  filledInput.objectMarking = []; // TODO manage markings
+  handleDefaultMarkings(entitySetting, representation, input, refEntities, chosenMarkings, user);
 
+  const filledInput = fillDefaultValues(user, input, entitySetting);
   if (!isValidInput(filledInput)) {
     return null;
   }
-  handleId(representation, filledInput);
 
+  handleId(representation, filledInput);
   return filledInput;
 };
 
 export const mappingProcess = async (
   context: AuthContext,
   user: AuthUser,
-  mapper: BasicStoreEntityCsvMapper,
+  mapper: CsvMapperWithUserMarkings,
   record: string[]
 ): Promise<Record<string, InputType>[]> => {
-  const { representations } = mapper;
+  const { representations, user_chosen_markings } = mapper;
   // IDs of entity refs retrieved from default values of based_on attributes in csv mapper.
   const refIdsToResolve = new Set(representations.flatMap((representation) => {
     const { target } = representation;
@@ -286,7 +335,15 @@ export const mappingProcess = async (
       return [];
     });
   }));
-  const refEntities = await internalFindByIdsMapped(context, user, [...refIdsToResolve]);
+  const refEntities = await internalFindByIdsMapped(
+    context,
+    user,
+    [
+      ...refIdsToResolve,
+      // Also resolve the markings chosen by the user if any.
+      ...(user_chosen_markings || []),
+    ]
+  );
 
   const representationEntities = representations
     .filter((r) => r.type === CsvMapperRepresentationType.entity)
@@ -297,7 +354,15 @@ export const mappingProcess = async (
   // 1. entities sort by no based on at first
   for (let i = 0; i < representationEntities.length; i += 1) {
     const representation = representationEntities[i];
-    const input = await mapRecord(context, user, record, representation, results, refEntities);
+    const input = await mapRecord(
+      context,
+      user,
+      record,
+      representation,
+      results,
+      refEntities,
+      user_chosen_markings ?? []
+    );
     if (input) {
       results.set(representation.id, input);
     }
@@ -306,7 +371,15 @@ export const mappingProcess = async (
   // 2. relationships
   for (let i = 0; i < representationRelationships.length; i += 1) {
     const representation = representationRelationships[i];
-    const input = await mapRecord(context, user, record, representation, results, refEntities);
+    const input = await mapRecord(
+      context,
+      user,
+      record,
+      representation,
+      results,
+      refEntities,
+      user_chosen_markings ?? []
+    );
     if (input) {
       results.set(representation.id, input);
     }

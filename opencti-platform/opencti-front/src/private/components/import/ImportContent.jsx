@@ -25,6 +25,8 @@ import Button from '@mui/material/Button';
 import * as Yup from 'yup';
 import Fab from '@mui/material/Fab';
 import { withRouter } from 'react-router-dom';
+import DialogContentText from '@mui/material/DialogContentText';
+import ObjectMarkingField from '../common/form/ObjectMarkingField';
 import SelectField from '../../../components/SelectField';
 import { FIVE_SECONDS } from '../../../utils/Time';
 import { fileManagerAskJobImportMutation, scopesConn } from '../common/files/FileManager';
@@ -37,6 +39,7 @@ import FreeTextUploader from '../common/files/FreeTextUploader';
 import WorkbenchFileCreator from '../common/files/workbench/WorkbenchFileCreator';
 import ManageImportConnectorMessage from './ManageImportConnectorMessage';
 import { truncate } from '../../../utils/String';
+import { fieldSpacingContainerStyle } from '../../../utils/field';
 
 const interval$ = interval(FIVE_SECONDS);
 
@@ -221,12 +224,23 @@ class ImportContentComponent extends Component {
   }
 
   onSubmitImport(values, { setSubmitting, resetForm }) {
+    const { connector_id, configuration, objectMarking } = values;
+    let config = configuration;
+    // Dynamically inject the markings chosen by the user into the csv mapper.
+    const isCsvConnector = !!this.state.selectedConnector?.connector_scope?.includes('text/csv');
+    if (isCsvConnector && configuration && objectMarking) {
+      const parsedConfig = JSON.parse(configuration);
+      if (typeof parsedConfig === 'object') {
+        parsedConfig.user_chosen_markings = objectMarking.map((marking) => marking.value);
+        config = JSON.stringify(parsedConfig);
+      }
+    }
     commitMutation({
       mutation: fileManagerAskJobImportMutation,
       variables: {
         fileName: this.state.fileToImport.id,
-        connectorId: values.connector_id,
-        configuration: values.configuration,
+        connectorId: connector_id,
+        configuration: config,
       },
       onCompleted: () => {
         setSubmitting(false);
@@ -500,7 +514,7 @@ class ImportContentComponent extends Component {
         <div>
           <Formik
             enableReinitialize={true}
-            initialValues={{ connector_id: '', configuration: '' }}
+            initialValues={{ connector_id: '', configuration: '', objectMarking: [] }}
             validationSchema={importValidation(t, !!this.state.selectedConnector?.configurations)}
             onSubmit={this.onSubmitImport.bind(this)}
             onReset={this.handleCloseImport.bind(this)}
@@ -564,6 +578,19 @@ class ImportContentComponent extends Component {
                         })}
                       </Field>
                       : <ManageImportConnectorMessage name={this.state.selectedConnector?.name }/>
+                    }
+                    {this.state.selectedConnector?.connector_scope?.includes('text/csv')
+                      && (
+                        <>
+                          <ObjectMarkingField
+                            name="objectMarking"
+                            style={fieldSpacingContainerStyle}
+                          />
+                          <DialogContentText>
+                            {t('Marking definitions to use by the csv mapper...')}
+                          </DialogContentText>
+                        </>
+                      )
                     }
                   </DialogContent>
                   <DialogActions>
