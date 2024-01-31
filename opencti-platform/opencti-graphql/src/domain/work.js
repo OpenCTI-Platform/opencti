@@ -3,7 +3,7 @@ import * as R from 'ramda';
 import { elDeleteInstances, elIndex, elLoadById, elPaginate, elRawDeleteByQuery, elUpdate, } from '../database/engine';
 import { generateWorkId } from '../schema/identifier';
 import { INDEX_HISTORY, isNotEmptyField, READ_INDEX_HISTORY } from '../database/utils';
-import { redisDeleteWorks, redisGetWork, redisUpdateActionExpectation, redisUpdateWorkFigures } from '../database/redis';
+import { isWorkCompleted, redisDeleteWorks, redisUpdateActionExpectation, redisUpdateWorkFigures } from '../database/redis';
 import { ENTITY_TYPE_CONNECTOR, ENTITY_TYPE_WORK } from '../schema/internalObject';
 import { now, sinceNowInMinutes } from '../utils/format';
 import { CONNECTOR_INTERNAL_EXPORT_FILE } from '../schema/general';
@@ -195,11 +195,6 @@ export const createWork = async (context, user, connector, friendlyName, sourceI
   };
   await elIndex(INDEX_HISTORY, work);
   return loadWorkById(context, user, workId);
-};
-
-const isWorkCompleted = async (workId) => {
-  const { import_processed_number: pn, import_expected_number: en } = await redisGetWork(workId);
-  return { isComplete: parseInt(pn, 10) === parseInt(en, 10), total: pn };
 };
 
 export const reportExpectation = async (context, user, workId, errorData) => {
