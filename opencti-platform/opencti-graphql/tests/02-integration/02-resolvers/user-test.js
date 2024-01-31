@@ -108,6 +108,7 @@ describe('User resolver standard behavior', () => {
   let userStandardId;
   let roleInternalId;
   let capabilityId;
+  const userToDeleteIds = [];
   it('should user created', async () => {
     const CREATE_QUERY = gql`
       mutation UserAdd($input: UserAddInput!) {
@@ -120,6 +121,10 @@ describe('User resolver standard behavior', () => {
           lastname
           user_confidence_level {
             max_confidence
+            overrides {
+              entity_type
+              max_confidence
+            }
           }
           effective_confidence_level {
             max_confidence
@@ -150,11 +155,36 @@ describe('User resolver standard behavior', () => {
     expect(user.data.userAdd).not.toBeNull();
     expect(user.data.userAdd.name).toEqual('User');
     expect(user.data.userAdd.user_confidence_level).toBeNull();
-    // user created with default group
+    // user created with default group, so effective confidence level shall be set
     expect(user.data.userAdd.effective_confidence_level.max_confidence).toEqual(100);
     expect(user.data.userAdd.effective_confidence_level.source.entity_type).toEqual('Group');
     userInternalId = user.data.userAdd.id;
     userStandardId = user.data.userAdd.standard_id;
+    userToDeleteIds.push(userInternalId);
+
+    const USER_TO_CREATE_WITH_CONFIDENCE = {
+      input: {
+        name: 'User Confidence',
+        password: 'user',
+        user_email: 'user_confidence@mail.com',
+        user_confidence_level: {
+          max_confidence: 50,
+          overrides: [{ entity_type: 'Report', max_confidence: 80 }],
+        }
+      },
+    };
+    const user2 = await queryAsAdmin({
+      query: CREATE_QUERY,
+      variables: USER_TO_CREATE_WITH_CONFIDENCE,
+    });
+    expect(user2.data.userAdd.user_confidence_level).toEqual({
+      max_confidence: 50,
+      overrides: [{ entity_type: 'Report', max_confidence: 80 }],
+    });
+    expect(user2.data.userAdd.effective_confidence_level.max_confidence).toEqual(50);
+    expect(user2.data.userAdd.effective_confidence_level.source.entity_type).toEqual('User');
+    expect(user2.data.userAdd.effective_confidence_level.source.id).toEqual(user2.data.userAdd.id);
+    userToDeleteIds.push(user2.data.userAdd.id);
   });
   it('should user loaded by internal id', async () => {
     const queryResult = await queryAsAdmin({ query: READ_QUERY, variables: { id: userInternalId } });
@@ -184,7 +214,7 @@ describe('User resolver standard behavior', () => {
   });
   it('should list users', async () => {
     const queryResult = await queryAsAdmin({ query: LIST_QUERY, variables: { first: 10 } });
-    expect(queryResult.data.users.edges.length).toEqual(5);
+    expect(queryResult.data.users.edges.length).toEqual(6);
   });
   it('should update user', async () => {
     const UPDATE_QUERY = gql`
@@ -532,15 +562,18 @@ describe('User resolver standard behavior', () => {
         }
       }
     `;
-    // Delete the user
-    await queryAsAdmin({
-      query: DELETE_QUERY,
-      variables: { id: userInternalId },
-    });
-    // Verify is no longer found
-    const queryResult = await queryAsAdmin({ query: READ_QUERY, variables: { id: userStandardId } });
-    expect(queryResult).not.toBeNull();
-    expect(queryResult.data.user).toBeNull();
+    // Delete the users
+    for (let i = 0; i < userToDeleteIds.length; i++) {
+      const userId = userToDeleteIds[i];
+      await queryAsAdmin({
+        query: DELETE_QUERY,
+        variables: { id: userId },
+      });
+      // Verify is no longer found
+      const queryResult = await queryAsAdmin({ query: READ_QUERY, variables: { id: userId } });
+      expect(queryResult).not.toBeNull();
+      expect(queryResult.data.user).toBeNull();
+    }
   });
 });
 
