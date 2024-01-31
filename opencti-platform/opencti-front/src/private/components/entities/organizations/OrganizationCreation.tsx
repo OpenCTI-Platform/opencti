@@ -36,6 +36,9 @@ const useStyles = makeStyles<Theme>((theme) => ({
   button: {
     marginLeft: theme.spacing(2),
   },
+  formContainer: {
+    margin: '20px 0 20px 0',
+  },
 }));
 
 const organizationMutation = graphql`
@@ -166,7 +169,7 @@ export const OrganizationCreationForm: FunctionComponent<OrganizationFormProps> 
       setFieldValue,
       values,
     }) => (
-      <Form style={{ margin: '20px 0 20px 0' }}>
+      <Form className={classes.formContainer}>
         <Field
           component={TextField}
           variant="standard"
@@ -182,7 +185,7 @@ export const OrganizationCreationForm: FunctionComponent<OrganizationFormProps> 
           fullWidth={true}
           multiline={true}
           rows="4"
-          style={{ marginTop: 20 }}
+          style={fieldSpacingContainerStyle}
         />
         { /* TODO Improve customization (vocab with letter range) 2662 */}
         <Field
@@ -234,7 +237,6 @@ export const OrganizationCreationForm: FunctionComponent<OrganizationFormProps> 
             variant="contained"
             onClick={handleReset}
             disabled={isSubmitting}
-            classes={{ root: classes.button }}
           >
             {t_i18n('Cancel')}
           </Button>
