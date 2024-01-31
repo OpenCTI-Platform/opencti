@@ -9,7 +9,7 @@ const writeFile = util.promisify(fs.writeFile);
 
 const srcDirectory = '../opencti-graphql/src';
 const englishTranslationFiles = 'lang/back/en.json';
-const jsxTsxFileExtensions = ['.js', '.ts'];
+const jsTsFileExtensions = ['.js', '.ts'];
 const searchPattern = /label: '[^']+'/g;
 const extractedValues = {};
 
@@ -31,7 +31,7 @@ async function extractI18nValues(directory) {
 
       if (stats.isDirectory()) {
         await extractI18nValues(filePath); // Recursively call the function for directories
-      } else if (stats.isFile() && jsxTsxFileExtensions.includes(path.extname(filePath))) {
+      } else if (stats.isFile() && jsTsFileExtensions.includes(path.extname(filePath))) {
         const data = await readFile(filePath, 'utf8');
         const matches = data.match(searchPattern);
 
