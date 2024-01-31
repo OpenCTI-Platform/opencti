@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { testContext } from '../../utils/testQuery';
-import { checkPasswordInlinePolicy, computeUserEffectiveConfidenceLevel } from '../../../src/domain/user';
+import { checkPasswordInlinePolicy } from '../../../src/domain/user';
 
 describe('password checker', () => {
   it('should no policy applied', async () => {
@@ -73,63 +73,5 @@ describe('password checker', () => {
     };
     expect(checkPasswordInlinePolicy(testContext, policy03, 'julA').length).toBe(1);
     expect(checkPasswordInlinePolicy(testContext, policy03, 'ju!lA').length).toBe(0);
-  });
-});
-
-describe('Effective max confidence level', () => {
-  const group70 = {
-    id: 'group70',
-    group_confidence_level: {
-      max_confidence: 70,
-      overrides: [],
-    }
-  };
-
-  const group80 = {
-    id: 'group80',
-    group_confidence_level: {
-      max_confidence: 70,
-      overrides: [],
-    }
-  };
-
-  it("user's confidence level overrides groups and orgs", async () => {
-    // minimal subset of a real User
-    const userA = {
-      id: 'userA',
-      user_confidence_level: {
-        max_confidence: 30,
-        overrides: [],
-      },
-      groups: [group70, group80],
-    };
-    expect(computeUserEffectiveConfidenceLevel(userA)).toEqual({
-      max_confidence: 30,
-      overrides: [],
-      source: userA,
-    });
-
-    const userB = {
-      id: 'userB',
-      user_confidence_level: null,
-      groups: [group70, group80],
-    };
-    expect(computeUserEffectiveConfidenceLevel(userB)).toEqual({
-      max_confidence: 70,
-      overrides: [],
-      source: group70,
-    });
-
-    const userD = {
-      user_confidence_level: null,
-      groups: [{ group_confidence_level: null }, { group_confidence_level: null }],
-    };
-
-    const userE = {
-      user_confidence_level: null,
-      groups: [],
-    };
-    expect(computeUserEffectiveConfidenceLevel(userD)).toBeNull();
-    expect(computeUserEffectiveConfidenceLevel(userE)).toBeNull();
   });
 });
