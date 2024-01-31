@@ -69,6 +69,7 @@ import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../modules/organization/organ
 import { ENTITY_TYPE_WORKSPACE } from '../modules/workspace/workspace-types';
 import { extractFilterKeys } from '../utils/filtering/filtering-utils';
 import { testFilterGroup, testStringFilter } from '../utils/filtering/boolean-logic-engine';
+import { computeUserEffectiveConfidenceLevel } from '../utils/confidence-level';
 
 const BEARER = 'Bearer ';
 const BASIC = 'Basic ';
@@ -1135,6 +1136,7 @@ const buildSessionUser = (origin, impersonate, provider, settings) => {
     account_lock_after_date: user.account_lock_after_date,
     unit_system: user.unit_system,
     groups: user.groups,
+    user_confidence_level: user.user_confidence_level,
     roles: user.roles,
     impersonate: impersonate !== undefined,
     impersonate_user_id: impersonate !== undefined ? origin.id : null,
@@ -1220,7 +1222,7 @@ export const buildCompleteUser = async (context, client) => {
   const default_hidden_types = uniq(defaultHiddenTypesGroups.concat(defaultHiddenTypesOrgs));
 
   // effective confidence level
-  const effective_confidence_level = computeUserEffectiveConfidenceLevel({ ...client, groups, organizations });
+  const effective_confidence_level = computeUserEffectiveConfidenceLevel({ ...client, groups });
 
   return {
     ...client,
@@ -1460,39 +1462,6 @@ export const userEditContext = async (context, user, userId, input) => {
 // endregion
 
 export const getUserEffectiveConfidenceLevel = async (userId, context) => {
-  const user = await findById(context, context.user, userId);
+  const user = await findById(context, context.user, userId); // this returns a complete user, with groups
   return computeUserEffectiveConfidenceLevel(user);
-};
-
-export const computeUserEffectiveConfidenceLevel = (user) => {
-  // if user has a specific confidence level, it overrides everything and we return it
-  if (user.user_confidence_level) {
-    return {
-      ...user.user_confidence_level,
-      source: user,
-    };
-  }
-
-  // otherwise we get all groups for this user, and select the lowest max_confidence found
-  let minLevel = null;
-  let source = null;
-  for (let i = 0; i < user.groups.length; i += 1) {
-    const groupLevel = user.groups[i].group_confidence_level?.max_confidence ?? null;
-    if (minLevel === null || (groupLevel !== null && groupLevel < minLevel)) {
-      minLevel = groupLevel;
-      source = user.groups[i];
-    }
-  }
-
-  if (minLevel !== null) {
-    return {
-      max_confidence: minLevel,
-      // TODO: handle overrides and their sources
-      overrides: [],
-      source,
-    };
-  }
-
-  // finally, if this user has no effective confidence level, we can return null
-  return null;
 };

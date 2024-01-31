@@ -32,6 +32,7 @@ const READ_QUERY = gql`
 
 describe('Group resolver standard behavior', () => {
   let groupInternalId; // the one we will use in all tests
+  const groupsToDeleteIds = []; // keep track for deletion at the end of the tests
   it('should group created', async () => {
     const CREATE_QUERY = gql`
       mutation GroupAdd($input: GroupAddInput!) {
@@ -40,7 +41,11 @@ describe('Group resolver standard behavior', () => {
           name
           description
           group_confidence_level { 
-            max_confidence 
+            max_confidence
+            overrides {
+              entity_type
+              max_confidence
+            }
           }
         }
       }
@@ -53,7 +58,7 @@ describe('Group resolver standard behavior', () => {
         group_confidence_level: { max_confidence: 50, overrides: [] },
       },
     };
-    const group = await queryAsAdmin({
+    let group = await queryAsAdmin({
       query: CREATE_QUERY,
       variables: GROUP_TO_CREATE,
     });
@@ -63,6 +68,22 @@ describe('Group resolver standard behavior', () => {
     expect(group.data.groupAdd.group_confidence_level.max_confidence).toEqual(50);
     // we will use this one in all the subsequent tests
     groupInternalId = group.data.groupAdd.id;
+    groupsToDeleteIds.push(group.data.groupAdd.id);
+
+    // create some more with different configuration of confidence level
+    const GROUP_TO_CREATE_WITH_OVERRIDES = {
+      input: {
+        name: 'Group with overrides',
+        description: 'Group description',
+        group_confidence_level: { max_confidence: 50, overrides: [{ entity_type: 'Report', max_confidence: 80 }] },
+      },
+    };
+    group = await queryAsAdmin({
+      query: CREATE_QUERY,
+      variables: GROUP_TO_CREATE_WITH_OVERRIDES,
+    });
+    expect(group.data.groupAdd.group_confidence_level.overrides[0]).toEqual({ entity_type: 'Report', max_confidence: 80 });
+    groupsToDeleteIds.push(group.data.groupAdd.id);
   });
 
   describe('dashboard preferences', () => {
@@ -167,7 +188,7 @@ describe('Group resolver standard behavior', () => {
   });
   it('should list groups', async () => {
     const queryResult = await queryAsAdmin({ query: LIST_QUERY, variables: { first: 10 } });
-    expect(queryResult.data.groups.edges.length).toEqual(6);
+    expect(queryResult.data.groups.edges.length).toEqual(8);
   });
   it('should update group', async () => {
     const UPDATE_QUERY = gql`
@@ -185,6 +206,60 @@ describe('Group resolver standard behavior', () => {
       variables: { id: groupInternalId, input: { key: 'name', value: ['Group - test'] } },
     });
     expect(queryResult.data.groupEdit.fieldPatch.name).toEqual('Group - test');
+  });
+  it('should update group confidence level', async () => {
+    const UPDATE_QUERY = gql`
+      mutation GroupEdit($id: ID!, $input: [EditInput]!) {
+        groupEdit(id: $id) {
+          fieldPatch(input: $input) {
+            id
+            group_confidence_level {
+              max_confidence
+              overrides { 
+                max_confidence 
+                entity_type 
+              }
+            }
+          }
+        }
+      }
+    `;
+    const group_confidence_level = {
+      max_confidence: 30,
+      overrides: [{ entity_type: 'Report', max_confidence: 50 }],
+    };
+    let queryResult = await queryAsAdmin({
+      query: UPDATE_QUERY,
+      variables: {
+        id: groupInternalId,
+        input: { key: 'group_confidence_level', value: [group_confidence_level] }
+      },
+    });
+    expect(queryResult.data.groupEdit.fieldPatch.group_confidence_level).toEqual(group_confidence_level);
+
+    // update by patching
+    queryResult = await queryAsAdmin({
+      query: UPDATE_QUERY,
+      variables: {
+        id: groupInternalId,
+        input: { key: 'group_confidence_level', object_path: '/group_confidence_level/max_confidence', value: [87] }
+      },
+    });
+    expect(queryResult.data.groupEdit.fieldPatch.group_confidence_level).toEqual({
+      max_confidence: 87,
+      overrides: [{ entity_type: 'Report', max_confidence: 50 }], // unchanged!
+    });
+    queryResult = await queryAsAdmin({
+      query: UPDATE_QUERY,
+      variables: {
+        id: groupInternalId,
+        input: { key: 'group_confidence_level', object_path: '/group_confidence_level/overrides/0/max_confidence', value: [63] }
+      },
+    });
+    expect(queryResult.data.groupEdit.fieldPatch.group_confidence_level).toEqual({
+      max_confidence: 87, // unchanged!
+      overrides: [{ entity_type: 'Report', max_confidence: 63 }],
+    });
   });
   it('should context patch group', async () => {
     const CONTEXT_PATCH_QUERY = gql`
@@ -344,14 +419,17 @@ describe('Group resolver standard behavior', () => {
         }
       }
     `;
-    // Delete the group
-    await queryAsAdmin({
-      query: DELETE_QUERY,
-      variables: { id: groupInternalId },
-    });
-    // Verify is no longer found
-    const queryResult = await queryAsAdmin({ query: READ_QUERY, variables: { id: groupInternalId } });
-    expect(queryResult).not.toBeNull();
-    expect(queryResult.data.group).toBeNull();
+    // Delete the groups
+    for (let i = 0; i < groupsToDeleteIds.length; i++) {
+      const groupId = groupsToDeleteIds[i];
+      await queryAsAdmin({
+        query: DELETE_QUERY,
+        variables: { id: groupId },
+      });
+      // Verify is no longer found
+      const queryResult = await queryAsAdmin({ query: READ_QUERY, variables: { id: groupInternalId } });
+      expect(queryResult).not.toBeNull();
+      expect(queryResult.data.group).toBeNull();
+    }
   });
 });
