@@ -7507,7 +7507,6 @@ export enum GroupsOrdering {
   AutoNewMarking = 'auto_new_marking',
   CreatedAt = 'created_at',
   DefaultAssignation = 'default_assignation',
-  GroupConfidenceLevel = 'group_confidence_level',
   Name = 'name',
   UpdatedAt = 'updated_at'
 }

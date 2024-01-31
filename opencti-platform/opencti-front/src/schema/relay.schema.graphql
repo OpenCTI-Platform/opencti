@@ -1212,7 +1212,6 @@ enum GroupsOrdering {
   auto_new_marking
   created_at
   updated_at
-  group_confidence_level
 }
 
 type GroupConnection {

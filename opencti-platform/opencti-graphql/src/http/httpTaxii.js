@@ -9,6 +9,11 @@ import { BYPASS, executionContext, SYSTEM_USER } from '../utils/access';
 
 const TAXII_VERSION = 'application/taxii+json;version=2.1';
 
+const sendJsonResponse = (res, data) => {
+  res.setHeader('content-type', TAXII_VERSION);
+  res.json(data);
+};
+
 const errorConverter = (e) => {
   const details = R.pipe(R.dissoc('reason'), R.dissoc('http_status'))(e.data);
   return {
@@ -24,7 +29,6 @@ const userHaveAccess = (user) => {
   return capabilities.includes(BYPASS) || capabilities.includes(TAXIIAPI);
 };
 const extractUserFromRequest = async (context, req, res) => {
-  res.setHeader('content-type', TAXII_VERSION);
   // noinspection UnnecessaryLocalVariableJS
   const user = await authenticateUserFromRequest(context, req, res);
   if (!user) {
@@ -70,7 +74,7 @@ const initTaxiiApi = (app) => {
         default: `${getBaseUrl(req)}/taxii2/root`,
         api_roots: [`${getBaseUrl(req)}/taxii2/root`],
       };
-      res.json(discovery);
+      sendJsonResponse(res, discovery);
     } catch (e) {
       const errorDetail = errorConverter(e);
       res.status(errorDetail.http_status).send(errorDetail);
@@ -87,7 +91,7 @@ const initTaxiiApi = (app) => {
         max_content_length: 100 * 1024 * 1024, // '100mb'
         versions: [TAXII_VERSION],
       };
-      res.json(rootContent);
+      sendJsonResponse(res, rootContent);
     } catch (e) {
       const errorDetail = errorConverter(e);
       res.status(errorDetail.http_status).send(errorDetail);
@@ -99,7 +103,7 @@ const initTaxiiApi = (app) => {
       const context = executionContext('taxii');
       const user = await extractUserFromRequest(context, req, res);
       const collections = await restAllCollections(context, user);
-      res.json({ collections });
+      sendJsonResponse(res, { collections });
     } catch (e) {
       const errorDetail = errorConverter(e);
       res.status(errorDetail.http_status).send(errorDetail);
@@ -110,7 +114,7 @@ const initTaxiiApi = (app) => {
     try {
       const context = executionContext('taxii');
       const { collection } = await extractUserAndCollection(context, req, res, id);
-      res.json(restBuildCollection(collection));
+      sendJsonResponse(res, restBuildCollection(collection));
     } catch (e) {
       const errorDetail = errorConverter(e);
       res.status(errorDetail.http_status).send(errorDetail);
@@ -124,7 +128,7 @@ const initTaxiiApi = (app) => {
       const manifest = await restCollectionManifest(context, user, collection, req.query);
       res.set('X-TAXII-Date-Added-First', R.head(manifest.objects)?.version);
       res.set('X-TAXII-Date-Added-Last', R.last(manifest.objects)?.version);
-      res.json(manifest);
+      sendJsonResponse(res, manifest);
     } catch (e) {
       const errorDetail = errorConverter(e);
       res.status(errorDetail.http_status).send(errorDetail);
@@ -138,7 +142,7 @@ const initTaxiiApi = (app) => {
       const stix = await restCollectionStix(context, user, collection, req.query);
       res.set('X-TAXII-Date-Added-First', getUpdatedAt(R.head(stix.objects)));
       res.set('X-TAXII-Date-Added-Last', getUpdatedAt(R.last(stix.objects)));
-      res.json(stix);
+      sendJsonResponse(res, stix);
     } catch (e) {
       const errorDetail = errorConverter(e);
       res.status(errorDetail.http_status).send(errorDetail);
@@ -153,7 +157,7 @@ const initTaxiiApi = (app) => {
       const stix = await restCollectionStix(context, user, collection, args);
       res.set('X-TAXII-Date-Added-First', getUpdatedAt(R.head(stix.objects)));
       res.set('X-TAXII-Date-Added-Last', getUpdatedAt(R.last(stix.objects)));
-      res.json(stix);
+      sendJsonResponse(res, stix);
     } catch (e) {
       const errorDetail = errorConverter(e);
       res.status(errorDetail.http_status).send(errorDetail);
@@ -171,7 +175,7 @@ const initTaxiiApi = (app) => {
       res.set('X-TAXII-Date-Added-First', updatedAt);
       res.set('X-TAXII-Date-Added-Last', updatedAt);
       const versions = data ? [updatedAt] : [];
-      res.json({ versions });
+      sendJsonResponse(res, { versions });
     } catch (e) {
       const errorDetail = errorConverter(e);
       res.status(errorDetail.http_status).send(errorDetail);
