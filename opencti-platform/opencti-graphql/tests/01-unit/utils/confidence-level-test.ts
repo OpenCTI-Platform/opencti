@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { computeUserEffectiveConfidenceLevel, cropMaxConfidenceInEditValue } from '../../../src/utils/confidence-level';
 import type { AuthUser } from '../../../src/types/user';
+import { FunctionalError } from '../../../src/config/errors';
 
 describe('Confidence level utilities', () => {
   it('sanitizeConfidenceInEditInput should crop value with various min/max inputs', () => {
@@ -62,6 +63,18 @@ describe('Confidence level utilities', () => {
     expect(cropMaxConfidenceInEditValue(50, '/user_confidence_level/overrides/8/max_confidence')).toEqual(50);
     expect(cropMaxConfidenceInEditValue(300, '/user_confidence_level/overrides/0/max_confidence')).toEqual(100);
     expect(cropMaxConfidenceInEditValue(-300, '/user_confidence_leve/overrides/41/max_confidence')).toEqual(0);
+
+    // throw error properly if patch is incorrect
+    expect(() => cropMaxConfidenceInEditValue(-300, '/user_confidence_leve/wrongkey/41/max_confidence'))
+      .toThrowError(FunctionalError(
+        'Unhandled object_path for patching a confidence level',
+        { object_path: '/user_confidence_level/wrongkey/41/max_confidence', value: -300 }
+      ));
+    expect(() => cropMaxConfidenceInEditValue({ entity_type: 'Report', max_confidence: 50 }, '/group_confidence_level/overrides/0/max_confidence'))
+      .toThrowError(FunctionalError(
+        'Cannot crop non-finite input value',
+        { value: { entity_type: 'Report', max_confidence: 50 } }
+      ));
   });
 
   it('computeUserEffectiveConfidenceLevel should correctly compute the effective level', async () => {

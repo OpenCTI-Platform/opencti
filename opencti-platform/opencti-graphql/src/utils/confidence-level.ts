@@ -24,7 +24,7 @@ export const cropMaxConfidenceInEditValue = (value: EditInputValue, object_path?
       // object_path ~= "user_confidence_level/overrides/[n]/max_confidence", value is a number
       sanitizedValue = cropNumber((value as number), { min: 0, max: 100 });
     } else {
-      throw FunctionalError('Incorrect use of object_path with a value that does not match the target.', { object_path, value });
+      throw FunctionalError('Unhandled object_path for patching a confidence level', { object_path, value });
     }
   } else if ((value as ConfidenceLevelInput).max_confidence !== undefined) {
     // edited as full object, value is a ConfidenceLevelInput
