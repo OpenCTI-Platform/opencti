@@ -5,7 +5,6 @@ import Tooltip from '@mui/material/Tooltip';
 import Drawer from '@mui/material/Drawer';
 import Divider from '@mui/material/Divider';
 import { makeStyles } from '@mui/styles';
-import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import SearchInput from '../../../../components/SearchInput';
 import { useFormatter } from '../../../../components/i18n';
 import { MESSAGING$ } from '../../../../relay/environment';
@@ -45,7 +44,7 @@ const ContentKnowledgeTimeLineBar = ({
   const [navOpen, setNavOpen] = useState(
     localStorage.getItem('navOpen') === 'true',
   );
-  const [open, setOpen] = useState(false);
+  // const [open, setOpen] = useState(false);
 
   useEffect(() => {
     const sub = MESSAGING$.toggleNav.subscribe({
@@ -73,8 +72,8 @@ const ContentKnowledgeTimeLineBar = ({
         >
           <div
             style={{
-              height: open ? 'auto' : 54,
-              minHeight: open ? 108 : 54,
+              height: 'auto',
+              maxHeight: 108,
               transition: 'min-height 0.2s linear',
               paddingTop: 3,
 
@@ -154,13 +153,13 @@ const ContentKnowledgeTimeLineBar = ({
                   redirection
                 />
               </div>
-              {timeLineFilters.filters.length > 0 ? (
-                <IconButton style={{ height: 'fit-content' }} color="primary" onClick={() => setOpen(!open)}>
-                  <KeyboardArrowDownIcon />
-                </IconButton>
-              ) : (<IconButton style={{ height: 'fit-content' }} aria-haspopup="false">
-                <KeyboardArrowDownIcon />
-              </IconButton>)}
+              {/* {timeLineFilters.filters.length > 0 ? ( */}
+              {/*  <IconButton style={{ height: 'fit-content' }} color="primary" onClick={() => setOpen(!open)}> */}
+              {/*    <KeyboardArrowDownIcon /> */}
+              {/*  </IconButton> */}
+              {/* ) : (<IconButton style={{ height: 'fit-content' }} aria-haspopup="false"> */}
+              {/*  <KeyboardArrowDownIcon /> */}
+              {/* </IconButton>)} */}
             </div>
           </div>
         </Drawer>)}
