@@ -69,6 +69,8 @@ import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../modules/organization/organ
 import { ENTITY_TYPE_WORKSPACE } from '../modules/workspace/workspace-types';
 import { extractFilterKeys } from '../utils/filtering/filtering-utils';
 import { testFilterGroup, testStringFilter } from '../utils/filtering/boolean-logic-engine';
+import { cropNumber } from '../utils/math';
+import { computeUserEffectiveConfidenceLevel, cropMaxConfidenceInEditValue } from '../utils/confidence-level';
 
 const BEARER = 'Bearer ';
 const BASIC = 'Basic ';
@@ -502,6 +504,17 @@ export const addUser = async (context, user, newUser) => {
     await checkPasswordFromPolicy(context, userPassword);
   }
 
+  // user confidence is between 0 and 100 (can be null)
+  const user_confidence_level = newUser.user_confidence_level
+    ? {
+      max_confidence: cropNumber(newUser.user_confidence_level.max_confidence, { min: 0, max: 100 }),
+      overrides: newUser.user_confidence_level.overrides.map((override) => ({
+        entity_type: override.entity_type,
+        max_confidence: cropNumber(override.max_confidence, { min: 0, max: 100 })
+      }))
+    }
+    : null;
+
   const userToCreate = R.pipe(
     R.assoc('user_email', userEmail),
     R.assoc('api_token', newUser.api_token ? newUser.api_token : uuid()),
@@ -512,7 +525,7 @@ export const addUser = async (context, user, newUser) => {
     R.assoc('account_status', newUser.account_status ? newUser.account_status : DEFAULT_ACCOUNT_STATUS),
     R.assoc('account_lock_after_date', newUser.account_lock_after_date),
     R.assoc('unit_system', newUser.unit_system),
-    R.assoc('user_confidence_level', newUser.user_confidence_level ?? null), // can be null
+    R.assoc('user_confidence_level', user_confidence_level),
     R.dissoc('roles'),
     R.dissoc('groups')
   )(newUser);
@@ -653,6 +666,10 @@ export const userEditField = async (context, user, userId, rawInputs) => {
     if (input.key === 'account_lock_after_date' && utcDate().isAfter(utcDate(R.head(input.value)))) {
       inputs.push({ key: 'account_status', value: [ACCOUNT_STATUS_EXPIRED] });
       await killUserSessions(userId);
+    }
+    if (input.key === 'user_confidence_level' && R.head(input.value)) {
+      // confidence values must be between 0 and 100
+      input.value = [cropMaxConfidenceInEditValue(R.head(input.value), input.object_path)];
     }
     inputs.push(input);
   }
@@ -1135,6 +1152,7 @@ const buildSessionUser = (origin, impersonate, provider, settings) => {
     account_lock_after_date: user.account_lock_after_date,
     unit_system: user.unit_system,
     groups: user.groups,
+    user_confidence_level: user.user_confidence_level,
     roles: user.roles,
     impersonate: impersonate !== undefined,
     impersonate_user_id: impersonate !== undefined ? origin.id : null,
@@ -1220,7 +1238,7 @@ export const buildCompleteUser = async (context, client) => {
   const default_hidden_types = uniq(defaultHiddenTypesGroups.concat(defaultHiddenTypesOrgs));
 
   // effective confidence level
-  const effective_confidence_level = computeUserEffectiveConfidenceLevel({ ...client, groups, organizations });
+  const effective_confidence_level = computeUserEffectiveConfidenceLevel({ ...client, groups });
 
   return {
     ...client,
@@ -1460,39 +1478,6 @@ export const userEditContext = async (context, user, userId, input) => {
 // endregion
 
 export const getUserEffectiveConfidenceLevel = async (userId, context) => {
-  const user = await findById(context, context.user, userId);
+  const user = await findById(context, context.user, userId); // this returns a complete user, with groups
   return computeUserEffectiveConfidenceLevel(user);
-};
-
-export const computeUserEffectiveConfidenceLevel = (user) => {
-  // if user has a specific confidence level, it overrides everything and we return it
-  if (user.user_confidence_level) {
-    return {
-      ...user.user_confidence_level,
-      source: user,
-    };
-  }
-
-  // otherwise we get all groups for this user, and select the lowest max_confidence found
-  let minLevel = null;
-  let source = null;
-  for (let i = 0; i < user.groups.length; i += 1) {
-    const groupLevel = user.groups[i].group_confidence_level?.max_confidence ?? null;
-    if (minLevel === null || (groupLevel !== null && groupLevel < minLevel)) {
-      minLevel = groupLevel;
-      source = user.groups[i];
-    }
-  }
-
-  if (minLevel !== null) {
-    return {
-      max_confidence: minLevel,
-      // TODO: handle overrides and their sources
-      overrides: [],
-      source,
-    };
-  }
-
-  // finally, if this user has no effective confidence level, we can return null
-  return null;
 };

@@ -5,6 +5,7 @@ import { ENTITY_TYPE_CAPABILITY, ENTITY_TYPE_GROUP, ENTITY_TYPE_ROLE } from '../
 import { RELATION_HAS_CAPABILITY } from '../schema/internalRelationship';
 import { generateStandardId } from '../schema/identifier';
 import { publishUserAction } from '../listener/UserActionListener';
+import { cropNumber } from '../utils/math';
 
 export const addCapability = async (context, user, capability) => {
   return createEntity(context, user, capability, ENTITY_TYPE_CAPABILITY);
@@ -41,6 +42,12 @@ export const addGroup = async (context, user, group) => {
     max_confidence: nconf.get('app:group_confidence_level:max_confidence_default') ?? 100,
     overrides: [],
   };
+  // sanitize value between 0 and 100
+  group_confidence_level.max_confidence = cropNumber(group_confidence_level.max_confidence, { min: 0, max: 100 });
+  group_confidence_level.overrides = group_confidence_level.overrides.map((override) => ({
+    entity_type: override.entity_type,
+    max_confidence: cropNumber(override.max_confidence, { min: 0, max: 100 })
+  }));
 
   const groupWithDefaultValues = {
     ...group,

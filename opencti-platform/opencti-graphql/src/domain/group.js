@@ -22,6 +22,7 @@ import { isUserHasCapability, SETTINGS_SET_ACCESSES, SYSTEM_USER } from '../util
 import { publishUserAction } from '../listener/UserActionListener';
 import { extractEntityRepresentativeName } from '../database/entity-representative';
 import { cleanMarkings } from '../utils/markingDefinition-utils';
+import { cropMaxConfidenceInEditValue } from '../utils/confidence-level';
 
 export const GROUP_DEFAULT = 'Default';
 
@@ -120,15 +121,25 @@ export const groupDelete = async (context, user, groupId) => {
   return groupId;
 };
 
-export const groupEditField = async (context, user, groupId, input) => {
-  const { element } = await updateAttribute(context, user, groupId, ENTITY_TYPE_GROUP, input);
+export const groupEditField = async (context, user, groupId, rawInputs) => {
+  const inputs = [];
+  for (let index = 0; index < rawInputs.length; index += 1) {
+    const input = rawInputs[index];
+    if (input.key === 'group_confidence_level' && R.head(input.value)) {
+      // confidence values must be between 0 and 100
+      input.value = [cropMaxConfidenceInEditValue(R.head(input.value), input.object_path)];
+    }
+    inputs.push(input);
+  }
+
+  const { element } = await updateAttribute(context, user, groupId, ENTITY_TYPE_GROUP, inputs);
   await publishUserAction({
     user,
     event_type: 'mutation',
     event_scope: 'update',
     event_access: 'administration',
-    message: `updates \`${input.map((i) => i.key).join(', ')}\` for group \`${element.name}\``,
-    context_data: { id: groupId, entity_type: ENTITY_TYPE_GROUP, input }
+    message: `updates \`${rawInputs.map((i) => i.key).join(', ')}\` for group \`${element.name}\``,
+    context_data: { id: groupId, entity_type: ENTITY_TYPE_GROUP, input: inputs }
   });
   return notify(BUS_TOPICS[ENTITY_TYPE_GROUP].EDIT_TOPIC, element, user);
 };
