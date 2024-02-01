@@ -34,6 +34,7 @@
   },
   "dependencies": {
     "@aws-sdk/client-s3": "3.504.0",
+    "@aws-sdk/client-sts": "3.504.0",
     "@aws-sdk/credential-provider-node": "3.504.0",
     "@aws-sdk/lib-storage": "3.504.0",
     "@aws-sdk/property-provider": "3.374.0",
