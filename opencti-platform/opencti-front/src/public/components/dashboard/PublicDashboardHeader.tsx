@@ -56,6 +56,7 @@ const PublicDashboardHeader = ({
           value={relativeDate ?? ''}
           onChange={(event) => onChangeRelativeDate(event.target.value)}
           variant="outlined"
+          disabled
         >
           <MenuItem value="none">{t_i18n('None')}</MenuItem>
           <MenuItem value="days-1">{t_i18n('Last 24 hours')}</MenuItem>
@@ -67,6 +68,7 @@ const PublicDashboardHeader = ({
         </Select>
       </FormControl>
       <DatePicker
+        disabled
         value={startDate ?? null}
         label={t_i18n('Start date')}
         sx={{ width: 220 }}
@@ -86,6 +88,7 @@ const PublicDashboardHeader = ({
         }}
       />
       <DatePicker
+        disabled
         value={endDate ?? null}
         label={t_i18n('End date')}
         disableFuture
