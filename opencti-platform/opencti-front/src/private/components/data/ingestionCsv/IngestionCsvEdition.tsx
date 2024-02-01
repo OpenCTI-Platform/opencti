@@ -174,7 +174,7 @@ const IngestionCsvEdition: FunctionComponent<IngestionCsvEditionProps> = ({
   return (
     <Formik<IngestionCsvEditionForm>
       enableReinitialize={true}
-      initialValues={initialValues as never}
+      initialValues={initialValues}
       validationSchema={ingestionCsvValidator}
       onSubmit={onSubmit}
     >
@@ -226,16 +226,16 @@ const IngestionCsvEdition: FunctionComponent<IngestionCsvEditionProps> = ({
             }}
           />
           {
-            queryRef
-            && <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
-              <CsvMapperField
-                name="csv_mapper_id"
-                isOptionEqualToValue={(option: Option, value: string) => option.value === value}
-                onChange={handleSubmitField}
-                queryRef={queryRef}
-              />
-            </React.Suspense>
-
+            queryRef && (
+              <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
+                <CsvMapperField
+                  name="csv_mapper_id"
+                  isOptionEqualToValue={(option: Option, { value }: Option) => option.value === value}
+                  onChange={handleSubmitField}
+                  queryRef={queryRef}
+                />
+              </React.Suspense>
+            )
           }
           <Field
             component={SelectField}

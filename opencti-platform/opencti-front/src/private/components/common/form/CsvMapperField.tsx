@@ -26,7 +26,7 @@ const useStyles = makeStyles(() => ({
 
 interface CsvMapperFieldComponentProps {
   name: string;
-  isOptionEqualToValue: (option: Option, value: string) => boolean;
+  isOptionEqualToValue: (option: Option, value: Option) => boolean;
   onChange?: (name: string, value: Option) => void;
   queryRef: PreloadedQuery<CsvMapperFieldSearchQuery>
 }
