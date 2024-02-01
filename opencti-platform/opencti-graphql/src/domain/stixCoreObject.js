@@ -53,7 +53,6 @@ import { INSTANCE_REGARDING_OF, specialFilterKeysWhoseValueToResolve } from '../
 import { schemaRelationsRefDefinition } from '../schema/schema-relationsRef';
 import { ENTITY_TYPE_CONTAINER_GROUPING } from '../modules/grouping/grouping-types';
 import { getEntitiesMapFromCache } from '../database/cache';
-import { getWidgetsUserAndMarkings } from '../modules/publicDashboard/publicDashboard-utils';
 
 export const findAll = async (context, user, args) => {
   let types = [];
@@ -255,42 +254,6 @@ export const stixCoreObjectsMultiTimeSeries = (context, user, args) => {
   }));
 };
 
-export const publicStixCoreObjectsMultiTimeSeries = async (context, args) => {
-  const { widgets, user, allowed_markings_ids } = await getWidgetsUserAndMarkings(context, args.uriKey);
-  const { dataSelection } = widgets[args.widgetId];
-
-  const markingFilters = {
-    key: [
-      'objectMarking'
-    ],
-    values: allowed_markings_ids,
-    operator: 'eq',
-    mode: 'or'
-  };
-
-  const timeSeriesParameters = dataSelection.map((selection) => {
-    const filters = {
-      filterGroups: [selection.filters],
-      filters: allowed_markings_ids ? [markingFilters] : [],
-      mode: 'and'
-    };
-    return {
-      field: selection.date_attribute,
-      filters,
-    };
-  });
-
-  const standardArgs = {
-    startDate: args.startDate,
-    endDate: args.endDate,
-    interval: args.interval,
-    timeSeriesParameters
-  };
-
-  // Use standard API
-  return stixCoreObjectsMultiTimeSeries(context, user, standardArgs);
-};
-
 export const stixCoreObjectsNumber = (context, user, args) => {
   let types = [];
   if (isNotEmptyField(args.types)) {
@@ -303,39 +266,6 @@ export const stixCoreObjectsNumber = (context, user, args) => {
     count: elCount(context, user, args.onlyInferred ? READ_INDEX_INFERRED_ENTITIES : READ_ENTITIES_INDICES, args),
     total: elCount(context, user, args.onlyInferred ? READ_INDEX_INFERRED_ENTITIES : READ_ENTITIES_INDICES, R.dissoc('endDate', args)),
   };
-};
-
-export const publicStixCoreObjectsNumber = async (context, args) => {
-  const { widgets, user, allowed_markings_ids } = await getWidgetsUserAndMarkings(context, args.uriKey);
-  const widgetConfig = widgets[args.widgetId].dataSelection[0];
-  const markingFilters = {
-    key: [
-      'objectMarking'
-    ],
-    values: allowed_markings_ids,
-    operator: 'eq',
-    mode: 'or'
-  };
-
-  const filters = {
-    filterGroups: [widgetConfig.filters],
-    filters: allowed_markings_ids ? [markingFilters] : [],
-    mode: 'and'
-  };
-
-  const parameters = {
-    startDate: args.startDate,
-    endDate: args.endDate,
-    filters,
-    onlyInferred: args.onlyInferred,
-    search: args.search,
-    types: [
-      ABSTRACT_STIX_CORE_OBJECT, // stixCoreObjectsNumber api needs types
-    ]
-  };
-
-  // Use standard API
-  return stixCoreObjectsNumber(context, user, parameters);
 };
 
 export const stixCoreObjectsMultiNumber = (context, user, args) => {

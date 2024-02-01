@@ -1810,7 +1810,7 @@ type MarkingDefinitionShort {
   id: ID!
   standard_id: String!
   entity_type: String!
-  representative: Representative!
+  representative: Representative
   definition_type: String
   definition: String
   x_opencti_order: Int!
@@ -7142,9 +7142,7 @@ type Query {
   stixCoreObjectsExportFiles(first: Int, exportContext: ExportContext!): FileConnection
   stixCoreObjectsTimeSeries(authorId: String, field: String!, operation: StatsOperation!, startDate: DateTime!, endDate: DateTime, interval: String!, onlyInferred: Boolean, types: [String], filters: FilterGroup, search: String): [TimeSeries]
   stixCoreObjectsMultiTimeSeries(startDate: DateTime!, endDate: DateTime, interval: String!, onlyInferred: Boolean, timeSeriesParameters: [StixCoreObjectsTimeSeriesParameters]): [MultiTimeSeries]
-  publicStixCoreObjectsMultiTimeSeries(startDate: DateTime!, endDate: DateTime, interval: String!, onlyInferred: Boolean, uriKey: String!, widgetId: String!): [MultiTimeSeries]
   stixCoreObjectsNumber(dateAttribute: String, types: [String], startDate: DateTime, endDate: DateTime, onlyInferred: Boolean, filters: FilterGroup, search: String): Number
-  publicStixCoreObjectsNumber(types: [String], startDate: DateTime, endDate: DateTime, onlyInferred: Boolean, search: String, uriKey: String!, widgetId: String!): Number
   stixCoreObjectsMultiNumber(dateAttribute: String, startDate: DateTime, endDate: DateTime, onlyInferred: Boolean, numberParameters: [StixCoreObjectsNumberParameters]): [Number]
   stixCoreObjectsDistribution(objectId: [String], relationship_type: [String], toTypes: [String], elementWithTargetTypes: [String], field: String!, startDate: DateTime, endDate: DateTime, dateAttribute: String, operation: StatsOperation!, limit: Int, order: String, types: [String], filters: FilterGroup, search: String): [Distribution]
   stixCoreObjectsMultiDistribution(field: String!, startDate: DateTime, endDate: DateTime, dateAttribute: String, operation: StatsOperation!, limit: Int, order: String, distributionParameters: StixCoreObjectsDistributionParameters): [MultiDistribution]
@@ -7353,6 +7351,8 @@ type Query {
   publicDashboard(id: String!): PublicDashboard
   publicDashboards(first: Int, after: ID, orderBy: PublicDashboardsOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): PublicDashboardConnection
   publicDashboardByUriKey(uri_key: String!): PublicDashboard
+  publicStixCoreObjectsNumber(types: [String], startDate: DateTime, endDate: DateTime, onlyInferred: Boolean, search: String, uriKey: String!, widgetId: String!): Number
+  publicStixCoreObjectsMultiTimeSeries(startDate: DateTime!, endDate: DateTime, interval: String!, onlyInferred: Boolean, uriKey: String!, widgetId: String!): [MultiTimeSeries]
 }
 
 type Subscription {

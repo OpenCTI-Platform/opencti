@@ -45,6 +45,23 @@ type Query {
     search: String
   ): PublicDashboardConnection @auth(for: [EXPLORE])
   publicDashboardByUriKey(uri_key: String!): PublicDashboard
+  publicStixCoreObjectsNumber(
+    types: [String]
+    startDate: DateTime
+    endDate: DateTime
+    onlyInferred: Boolean
+    search: String
+    uriKey: String!
+    widgetId : String!
+  ): Number
+  publicStixCoreObjectsMultiTimeSeries(
+    startDate: DateTime!
+    endDate: DateTime
+    interval: String!
+    onlyInferred: Boolean
+    uriKey: String!
+    widgetId : String!
+  ): [MultiTimeSeries]
 }
 
 type PublicDashboardEdge {
