@@ -26517,6 +26517,7 @@ export enum VocabularyCategory {
   MaritalStatusOv = 'marital_status_ov',
   NoteTypesOv = 'note_types_ov',
   OpinionOv = 'opinion_ov',
+  OrganizationTypeOv = 'organization_type_ov',
   PatternTypeOv = 'pattern_type_ov',
   PermissionsOv = 'permissions_ov',
   PlatformsOv = 'platforms_ov',

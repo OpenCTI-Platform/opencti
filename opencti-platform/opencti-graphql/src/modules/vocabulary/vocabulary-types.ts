@@ -238,6 +238,17 @@ export const vocabularyDefinitions: Record<VocabularyCategory, VocabularyDefinit
       multiple: false,
     }]
   },
+  // TODO : ajouter une description
+  // TODO : vérifier les ENTITY TYPE
+  organization_type_ov: {
+    description: 'A MODIFIER',
+    entity_types: [ENTITY_TYPE_IDENTITY_ORGANIZATION],
+    fields: [{
+      key: 'x_opencti_organization_type',
+      required: false,
+      multiple: false,
+    }]
+  },
   // P
   platforms_ov: {
     entity_types: [ENTITY_TYPE_DATA_SOURCE, ENTITY_TYPE_INDICATOR, ENTITY_TYPE_ATTACK_PATTERN],

@@ -767,6 +767,35 @@ export const openVocabularies: Record<VocabularyCategory, Array<{ key: string, d
       order: 5,
     },
   ],
+  // TODO : Modifier les descriptions
+  // TODO : vérifier les orders 0
+  organization_type_ov: [
+    {
+      key: 'constituent',
+      description: 'A MODIFIER',
+      order: 0,
+    },
+    {
+      key: 'csirt',
+      description: 'A MODIFIER',
+      order: 0,
+    },
+    {
+      key: 'partner',
+      description: 'A MODIFIER',
+      order: 0,
+    },
+    {
+      key: 'vendor',
+      description: 'A MODIFIER',
+      order: 0,
+    },
+    {
+      key: 'other',
+      description: 'A MODIFIER',
+      order: 0,
+    },
+  ],
   // P
   permissions_ov: [
     { key: 'User' },
