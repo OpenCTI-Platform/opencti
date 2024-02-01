@@ -93,6 +93,7 @@ import {
   SourcePull,
   Target,
 } from 'mdi-material-ui';
+import TableViewIcon from '@mui/icons-material/TableView';
 import { itemColor } from '../utils/Colors';
 
 const iconSelector = (type, variant, fontSize, color, isReversed) => {
@@ -158,6 +159,8 @@ const iconSelector = (type, variant, fontSize, color, isReversed) => {
         <AssignmentOutlined style={style} fontSize={fontSize} role="img" />
       );
     case 'work':
+    case 'csvmapper':
+      return <TableViewIcon style={style} fontSize={fontSize} role="img" />;
     case 'connector':
       return <ExtensionOutlined style={style} fontSize={fontSize} role="img" />;
     case 'marking-definition':

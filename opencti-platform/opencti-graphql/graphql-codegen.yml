@@ -43,6 +43,7 @@ generates:
         IngestionRss: ../modules/ingestion/ingestion-types#BasicStoreEntityIngestionRss
         IngestionTaxii: ../modules/ingestion/ingestion-types#BasicStoreEntityIngestionTaxii
         Indicator: ../modules/indicator/indicator-types#BasicStoreEntityIndicator
+        IngestionCsv: ../modules/ingestion/ingestion-types#BasicStoreEntityIngestionCsv
         Organization: ../modules/organization/organization-types#BasicStoreEntityOrganization
         CsvMapper: ../modules/internal/csvMapper/csvMapper-types#BasicStoreEntityCsvMapper
         Playbook: ../modules/playbook/playbook-types#BasicStoreEntityPlaybook

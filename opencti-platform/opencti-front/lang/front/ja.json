@@ -2437,6 +2437,12 @@
   "entity_Analyses": "エンティティ_分析",
   "There are no opinions. You should create some before.": "意見がない。事前にいくつか作っておくべきだ。",
   "workflow_id": "ステータス",
+  "Do you want to delete this CSV ingester?": "このCSVインガスターを削除しますか？",
+  "Do you want to start this CSV ingester?": "このCSVインガスターを開始しますか？",
+  "Do you want to stop this CSV ingester?": "このCSVインガスターを停止しますか？",
+  "Create a CSV Ingester": "CSVインガスターを作成する",
+  "Update a CSV Ingester": "CSVインガスターを更新する",
+  "Please, note that the test will be run on the 50 first lines": "50行目までのテストを実行することに注意してください",
   "regardingOf": "に関しては",
   "WITH": "WITH",
   "Pre-query to get data to be used as source entity of the relationship (limited to 5000)": "リレーションシップのソース・エンティティとして使用されるデータを取得するための事前クエリ（5000個まで）",
@@ -2556,5 +2562,9 @@
   "Marking definitions to use by the csv mapper...": "いくつかのマーキング属性が'ユーザーにマーキング定義を選択させる'にポリシーが設定されている場合にのみ、csvマッパーはマーキング定義を使用します。そうでない場合、このマーキング定義は無視されます。",
   "Option 'Let the user choose marking definitions'...": "オプション 'ユーザーにマーキング定義を選択させる' は、CSVファイルにデータがない場合に適用するマーキング定義を（CSVファイルのインポート時に）ユーザーに選択させます。",
   "Update without references": "参照なしで更新",
-  "Max Confidence Level:": "最大信頼度："
+  "Max Confidence Level:": "最大信頼度：",
+  "The Max Confidence Level is currently defined at the user level. It overrides Max Confidence Level from user’s groups.": "最大信頼度は現在ユーザーレベルで定義されています。これはユーザーグループの最大信頼度より優先されます。",
+  "Please, verify the validity of the selected CSV mapper for the given URL.": "指定された URL に対して選択した CSV マッパーが有効であることを確認してください。",
+  "Only successful tests allow the ingestion creation.": "成功したテストのみが取り込みの作成を許可します。",
+  "Only successful tests allow the ingestion edition.": "テストが成功した場合のみ、インジェスト エディションが許可されます。"
 }

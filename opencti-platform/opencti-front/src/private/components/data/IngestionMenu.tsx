@@ -15,6 +15,10 @@ const IngestionMenu = () => {
       path: '/dashboard/data/ingestion/rss',
       label: 'RSS Feeds',
     },
+    {
+      path: '/dashboard/data/ingestion/csv',
+      label: 'CSV Feeds',
+    },
   ];
   return <NavToolbarMenu entries={entries} />;
 };

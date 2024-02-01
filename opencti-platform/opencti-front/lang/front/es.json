@@ -2437,6 +2437,12 @@
   "entity_Analyses": "entity_Analyses",
   "There are no opinions. You should create some before.": "No hay opiniones. Deberías crear algunas antes.",
   "workflow_id": "Estado",
+  "Do you want to delete this CSV ingester?": "¿Quieres eliminar este importador CSV?",
+  "Do you want to start this CSV ingester?": "¿Quieres iniciar este importador CSV?",
+  "Do you want to stop this CSV ingester?": "¿Quieres detener este importador CSV?",
+  "Create a CSV Ingester": "Crear un Importador CSV",
+  "Update a CSV Ingester": "Actualizar un Importador CSV",
+  "Please, note that the test will be run on the 50 first lines": "Por favor, ten en cuenta que la prueba se ejecutará en las primeras 50 líneas",
   "regardingOf": "En cuanto a",
   "WITH": "CON",
   "Pre-query to get data to be used as source entity of the relationship (limited to 5000)": "Consulta previa para obtener los datos que se utilizarán como entidad fuente de la relación (limitada a 5000)",
@@ -2556,5 +2562,9 @@
   "Marking definitions to use by the csv mapper...": "Definiciones de marcado utilizadas por el mapeador csv sólo cuando algunos atributos de marcado tienen la política establecida en 'Dejar que el usuario elija las definiciones de marcado'. Si no, estas definiciones de marcado se ignoran.",
   "Option 'Let the user choose marking definitions'...": "La opción 'Dejar que el usuario elija las definiciones de marcado' pedirá al usuario que elija (al importar el archivo CSV) qué definiciones de marcado aplicar cuando falten datos en el archivo CSV.",
   "Update without references": "Actualizar sin referencias",
-  "Max Confidence Level:": "Nivel Máximo de Confianza:"
+  "Max Confidence Level:": "Nivel Máximo de Confianza:",
+  "The Max Confidence Level is currently defined at the user level. It overrides Max Confidence Level from user’s groups.": "El nivel de confianza máximo se define actualmente a nivel de usuario. Anula el nivel de confianza máximo de los grupos de usuarios.",
+  "Please, verify the validity of the selected CSV mapper for the given URL.": "Por favor, verifique la validez del asignador CSV seleccionado para la URL proporcionada.",
+  "Only successful tests allow the ingestion creation.": "Sólo las pruebas exitosas permiten la creación de la ingesta.",
+  "Only successful tests allow the ingestion edition.": "Sólo las pruebas exitosas permiten la edición de ingesta."
 }
