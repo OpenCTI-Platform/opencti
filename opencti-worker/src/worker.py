@@ -74,6 +74,36 @@ bundles_processing_time_gauge = meter.create_histogram(
     description="processing time of bundles",
 )
 
+class PingAlive(threading.Thread):
+    def __init__(self, worker_logger, api) -> None:
+        threading.Thread.__init__(self)
+        self.worker_logger = worker_logger
+        self.api = api
+        self.exit_event = threading.Event()
+
+    def ping(self) -> None:
+        while not self.exit_event.is_set():
+            try:
+                self.worker_logger.debug("PingAlive running.")
+                self.api.query("""
+                  query {
+                    me {
+                      id
+                    }
+                  }
+                """)
+            except Exception as e:  # pylint: disable=broad-except
+                self.in_error = True
+                self.worker_logger.error("Error pinging the API", {"reason": str(e)})
+            self.exit_event.wait(30)
+
+    def run(self) -> None:
+        self.worker_logger.info("Starting PingAlive thread")
+        self.ping()
+
+    def stop(self) -> None:
+        self.worker_logger.info("Preparing PingAlive for clean shutdown")
+        self.exit_event.set()
 
 @dataclass(unsafe_hash=True)
 class Consumer(Thread):  # pylint: disable=too-many-instance-attributes
@@ -95,6 +125,14 @@ class Consumer(Thread):  # pylint: disable=too-many-instance-attributes
             json_logging=self.json_logging,
         )
         self.worker_logger = self.api.logger_class("worker")
+
+        # Start ping
+        self.ping = PingAlive(
+            self.worker_logger,
+            self.api
+        )
+        self.ping.start()
+
         self.queue_name = self.connector["config"]["push"]
         self.pika_credentials = pika.PlainCredentials(
             self.connector["config"]["connection"]["user"],
