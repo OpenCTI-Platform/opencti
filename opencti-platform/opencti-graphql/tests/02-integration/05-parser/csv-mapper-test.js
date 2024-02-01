@@ -141,9 +141,6 @@ describe('CSV-MAPPER', () => {
       const filePath = './tests/02-integration/05-parser/files-hashes/data.csv';
       const data = (await mapData(filePath, csvMapperFile)).flat();
 
-      console.log('csvMapperFile', csvMapperFile);
-      console.log('hash data', data);
-
       const { MD5 } = data[0].hashes;
       const sha1Value = data[0].hashes['SHA-1'];
       const sha256Value = data[0].hashes['SHA-256'];

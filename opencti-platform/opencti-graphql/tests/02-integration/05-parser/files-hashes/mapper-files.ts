@@ -9,15 +9,3 @@ export const csvMapperFile: Partial<BasicStoreEntityCsvMapper> = {
     repFile
   ]
 };
-//
-// export const csvMapperFileDefault: (
-//   creator: string,
-//   kcf: string[]
-// ) => Partial<BasicStoreEntityCsvMapper> = (creator, kcf) => ({
-//   id: 'mapper-file-default',
-//   has_header: true,
-//   separator: ',',
-//   representations: [
-//     repFile
-//   ]
-// });
