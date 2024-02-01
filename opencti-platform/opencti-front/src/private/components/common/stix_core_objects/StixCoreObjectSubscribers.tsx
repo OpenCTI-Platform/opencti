@@ -89,7 +89,7 @@ const StixCoreObjectSubscribers: FunctionComponent<ContainerHeaderSharedProps> =
             <List>
               {triggersKnowledge?.edges.map((triggerEdge) => (
                 <React.Fragment key={triggerEdge.node.id}>
-                  {triggerEdge?.node?.recipients?.map((recipient) => (
+                  {triggerEdge.node.recipients?.map((recipient) => (
                     <ListItem
                       classes={{ root: classes.item }}
                       key={recipient.id}
