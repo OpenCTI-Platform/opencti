@@ -176,6 +176,7 @@ class Consumer(Thread):  # pylint: disable=too-many-instance-attributes
 
     def terminate(self) -> None:
         thread_id = self.id
+        self.ping.stop()
         res = ctypes.pythonapi.PyThreadState_SetAsyncExc(
             thread_id, ctypes.py_object(SystemExit)
         )
@@ -202,6 +203,7 @@ class Consumer(Thread):  # pylint: disable=too-many-instance-attributes
             )
 
     def stop_consume(self, channel: BlockingChannel) -> None:
+        self.ping.stop()
         if channel.is_open:
             channel.stop_consuming()
 
