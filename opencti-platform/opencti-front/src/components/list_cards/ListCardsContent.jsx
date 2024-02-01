@@ -125,7 +125,7 @@ class ListCardsContent extends Component {
     }
     const { node } = edge;
     return (
-      <div className={className} key={key} style={finalStyle}>
+      <div className={className} key={`${rowIndex}-${key}-${node.__id}`} style={finalStyle}>
         {/* TODO remove this when all components are pure function without compose() */}
         {!React.isValidElement(CardComponent) ? (
           <CardComponent

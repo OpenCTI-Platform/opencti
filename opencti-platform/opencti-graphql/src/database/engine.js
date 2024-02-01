@@ -1356,6 +1356,10 @@ const BASE_SEARCH_ATTRIBUTES = [
   `${IDS_STIX}^5`,
   `${ATTRIBUTE_DESCRIPTION}^2`,
   `${ATTRIBUTE_DESCRIPTION_OPENCTI}^2`,
+  // For activities
+  'event_type',
+  'event_scope',
+  'context_data.message',
   // Add all other attributes
   'aliases',
   'x_opencti_aliases',
