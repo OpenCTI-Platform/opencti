@@ -9,7 +9,7 @@ import { AxiosHeaders } from 'axios';
 import type { Moment } from 'moment';
 import { lockResource } from '../database/redis';
 import conf, { booleanConf, logApp } from '../config/conf';
-import { TYPE_LOCK_ERROR, UnknownError, UnsupportedError } from '../config/errors';
+import { FunctionalError, TYPE_LOCK_ERROR, UnknownError, UnsupportedError } from '../config/errors';
 import { executionContext, SYSTEM_USER } from '../utils/access';
 import { type GetHttpClient, getHttpClient } from '../utils/http-client';
 import { isEmptyField, isNotEmptyField } from '../database/utils';
@@ -23,6 +23,9 @@ import type { AuthContext } from '../types/user';
 import type { BasicStoreEntityIngestionRss, BasicStoreEntityIngestionTaxii } from '../modules/ingestion/ingestion-types';
 import { findAllTaxiiIngestions, patchTaxiiIngestion } from '../modules/ingestion/ingestion-taxii-domain';
 import { TaxiiVersion } from '../generated/graphql';
+import { storeLoadById } from '../database/middleware-loader';
+import { ENTITY_TYPE_USER } from '../schema/internalObject';
+import { buildCompleteUser } from '../domain/user';
 
 // Ingestion manager responsible to cleanup old data
 // Each API will start is ingestion manager.
@@ -74,6 +77,23 @@ interface DataItem {
   labels: string[]
   pubDate: Moment
 }
+
+const getApplicantEffectiveConfidenceLevel = async (context: AuthContext, ingestion: BasicStoreEntityIngestionRss | BasicStoreEntityIngestionTaxii) : Promise<[string, number]> => {
+  // if a feed has no associated user, we use SYSTEM with confidence 100
+  let applicantId = OPENCTI_SYSTEM_UUID;
+  let applicantMaxConfidence = 100; // TODO: configurable from platform config json?
+  if (ingestion.user_id) {
+    applicantId = ingestion.user_id;
+    const userData = await storeLoadById(context, SYSTEM_USER, applicantId, ENTITY_TYPE_USER);
+    const applicant = await buildCompleteUser(context, userData);
+    applicantMaxConfidence = applicant.effective_confidence_level?.max_confidence;
+    if (applicantMaxConfidence === null) {
+      throw FunctionalError(`User [${applicantId}] associated to feed [${ingestion.name}] has no effective confidence level, cannot ingest data.`);
+    }
+  }
+
+  return [applicantId, applicantMaxConfidence];
+};
 
 const rssItemV1Convert = (turndownService: TurndownService, feed: RssElement, entry: RssItem): DataItem => {
   const { updated } = feed;
@@ -139,7 +159,8 @@ const rssDataHandler = async (context: AuthContext, httpRssGet: Getter, turndown
   const items = await rssDataParser(turndownService, data, ingestion.current_state_date);
   // Build Stix bundle from items
   if (items.length > 0) {
-    logApp.info(`[OPENCTI-MODULE] Rss ingestion execution for ${items.length} items`);
+    logApp.info(`[OPENCTI-MODULE] Rss ingestion [${ingestion.name}] execution for [${items.length}] items | associated user is [${ingestion.user_id ?? 'SYSTEM'}]`);
+    const [applicant_id, applicantMaxConfidence] = await getApplicantEffectiveConfidenceLevel(context, ingestion);
     const reports = items.map((item) => {
       const report: any = {
         type: 'report',
@@ -150,6 +171,8 @@ const rssDataHandler = async (context: AuthContext, httpRssGet: Getter, turndown
         object_marking_refs: ingestion.object_marking_refs,
         report_types: ingestion.report_types,
         published: item.pubDate.toISOString(),
+        // items from rss feeds have no confidence ; no need to threshold by user's confidence
+        confidence: applicantMaxConfidence,
       };
       report.id = generateStandardId(ENTITY_TYPE_CONTAINER_REPORT, report);
       if (item.link) {
@@ -165,7 +188,7 @@ const rssDataHandler = async (context: AuthContext, httpRssGet: Getter, turndown
     // Push the bundle to absorption queue
     const stixBundle = JSON.stringify(bundle);
     const content = Buffer.from(stixBundle, 'utf-8').toString('base64');
-    await pushToSync({ type: 'bundle', applicant_id: ingestion.user_id ?? OPENCTI_SYSTEM_UUID, content, update: true });
+    await pushToSync({ type: 'bundle', applicant_id, content, update: true });
     // Update the state
     const lastPubDate = R.last(items)?.pubDate;
     await patchRssIngestion(context, SYSTEM_USER, ingestion.internal_id, { current_state_date: lastPubDate });
@@ -228,16 +251,24 @@ const taxiiHttpGet = async (ingestion: BasicStoreEntityIngestionTaxii): Promise<
   const { data, headers: resultHeaders } = await httpClient.get(url, { params });
   return { data, addedLast: resultHeaders['x-taxii-date-added-last'] };
 };
+
 type TaxiiHandlerFn = (context: AuthContext, ingestion: BasicStoreEntityIngestionTaxii) => Promise<void>;
 const taxiiV21DataHandler: TaxiiHandlerFn = async (context: AuthContext, ingestion: BasicStoreEntityIngestionTaxii) => {
   const { data, addedLast } = await taxiiHttpGet(ingestion);
   if (data.objects && data.objects.length > 0) {
-    logApp.info(`[OPENCTI-MODULE] Taxii ingestion execution for ${data.objects.length} items`);
-    const bundle = { type: 'bundle', id: `bundle--${uuidv4()}`, objects: data.objects };
+    logApp.info(`[OPENCTI-MODULE] Taxii ingestion [${ingestion.name}] execution for [${data.objects.length}] items | associated user is [${ingestion.user_id ?? 'SYSTEM'}]`);
+    const [applicant_id, applicantMaxConfidence] = await getApplicantEffectiveConfidenceLevel(context, ingestion);
+    const objectsWithConfidence = data.objects.map((object) => ({
+      ...object,
+      // object confidence is thresholded by the associated user's confidence
+      // if object has no confidence, it is set to the associated user's  max confidence
+      confidence: Math.min((object as { confidence?: number }).confidence ?? 100, applicantMaxConfidence)
+    }));
+    const bundle = { type: 'bundle', id: `bundle--${uuidv4()}`, objects: objectsWithConfidence };
     // Push the bundle to absorption queue
     const stixBundle = JSON.stringify(bundle);
     const content = Buffer.from(stixBundle, 'utf-8').toString('base64');
-    await pushToSync({ type: 'bundle', applicant_id: ingestion.user_id ?? OPENCTI_SYSTEM_UUID, content, update: true });
+    await pushToSync({ type: 'bundle', applicant_id, content, update: true });
     // Update the state
     await patchTaxiiIngestion(context, SYSTEM_USER, ingestion.internal_id, {
       current_state_cursor: data.next ? String(data.next) : undefined,
@@ -251,6 +282,7 @@ const taxiiV21DataHandler: TaxiiHandlerFn = async (context: AuthContext, ingesti
 const TAXII_HANDLERS: { [k: string]: TaxiiHandlerFn } = {
   [TaxiiVersion.V21]: taxiiV21DataHandler
 };
+
 const taxiiExecutor = async (context: AuthContext) => {
   const filters = {
     mode: 'and',
