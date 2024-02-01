@@ -376,7 +376,16 @@ class OpenCTIApiClient:
         :rtype: bool
         """
         try:
-            test = self.threat_actor.list(first=1)
+            self.app_logger.info("Health check (me)...")
+            test = self.query(
+                """
+              query {
+                me {
+                  id
+                }
+              }
+            """
+            )
             if test is not None:
                 return True
         except Exception as err:  # pylint: disable=broad-except
