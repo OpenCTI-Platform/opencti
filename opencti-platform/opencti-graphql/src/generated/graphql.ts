@@ -26859,7 +26859,7 @@ export type WindowsRegistryValueTypeAddInput = {
 
 export type Work = {
   __typename?: 'Work';
-  completed_number?: Maybe<Scalars['String']['output']>;
+  completed_number?: Maybe<Scalars['Int']['output']>;
   completed_time?: Maybe<Scalars['DateTime']['output']>;
   connector?: Maybe<Connector>;
   errors?: Maybe<Array<Maybe<WorkMessage>>>;
@@ -36904,7 +36904,7 @@ export type WindowsRegistryValueTypeResolvers<ContextType = any, ParentType exte
 }>;
 
 export type WorkResolvers<ContextType = any, ParentType extends ResolversParentTypes['Work'] = ResolversParentTypes['Work']> = ResolversObject<{
-  completed_number?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  completed_number?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   completed_time?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   connector?: Resolver<Maybe<ResolversTypes['Connector']>, ParentType, ContextType>;
   errors?: Resolver<Maybe<Array<Maybe<ResolversTypes['WorkMessage']>>>, ParentType, ContextType>;

@@ -189,7 +189,7 @@ export const createWork = async (context, user, connector, friendlyName, sourceI
     received_time: receivedTime,
     processed_time: null,
     completed_time: null,
-    completed_number: '0',
+    completed_number: 0,
     messages: [],
     errors: [],
   };
@@ -218,7 +218,7 @@ export const reportExpectation = async (context, user, workId, errorData) => {
     }
     // Update elastic
     const currentWork = await loadWorkById(context, user, workId);
-    await elUpdate(currentWork._index, workId, { script: { source: sourceScript, lang: 'painless', params } });
+    await elUpdate(currentWork?._index, workId, { script: { source: sourceScript, lang: 'painless', params } });
   }
   return workId;
 };
