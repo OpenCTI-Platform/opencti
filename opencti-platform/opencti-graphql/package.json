@@ -114,7 +114,7 @@
     "nconf": "0.12.1",
     "node-calls-python": "1.8.2",
     "node-fetch": "3.3.2",
-    "nodemailer": "6.9.8",
+    "nodemailer": "6.9.9",
     "openid-client": "5.6.4",
     "opentelemetry-node-metrics": "3.0.0",
     "otplib": "12.0.1",
