@@ -145,7 +145,7 @@ const ConnectorWorksComponent: FunctionComponent<ConnectorWorksComponentProps> =
                     </Typography>
                     <Tooltip title={work.name}>
                       <Typography sx={{ overflowX: 'hidden', textOverflow: 'ellipsis' }}>
-                        2023-12-07T09:24:11.118Z_TLP:ALL_(ExportFileStix2)_Malware_full.json
+                        {work.name}
                       </Typography>
                     </Tooltip>
                   </Grid>
