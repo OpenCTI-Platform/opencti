@@ -2651,5 +2651,18 @@
   "AI Powered": "KI-gesteuert",
   "Missing token": "Fehlendes Token",
   "Generative AI is a beta feature as we are currently fine-tuning our models. Consider checking important information.": "Die generative KI ist eine Betafunktion, da wir derzeit unsere Modelle feinabstimmen. Überprüfen Sie wichtige Informationen.",
-  "Accept": "Akzeptieren Sie"
+  "Accept": "Akzeptieren Sie",
+  "Share as public dashboard": "Als öffentliches Dashboard freigeben",
+  "Public dashboard links": "Öffentliche Dashboard-Links",
+  "Existing links for this dashboard": "Vorhandene Links für dieses Dashboard",
+  "No links created yet": "Noch keine Links erstellt",
+  "Create a new link": "Einen neuen Link erstellen",
+  "To prevent people seeing all the data...": "Um zu verhindern, dass andere Personen alle Daten im öffentlichen Dashboard sehen können, wählen Sie eine Markierungsdefinition, um die gemeinsamen Daten einzuschränken.",
+  "Max level markings": "Max Level Markierungen",
+  "Link ID": "Link-ID",
+  "Specify the ID of your link": "Geben Sie die ID Ihres Links an",
+  "Copy link": "Link kopieren",
+  "Disable link": "Link deaktivieren",
+  "Delete link": "Link löschen",
+  "Are you sure you want to delete this dashboard link?": "Sind Sie sicher, dass Sie diesen Dashboard-Link löschen möchten?"
 }
