@@ -5,7 +5,7 @@ import TextField from '@mui/material/TextField';
 import Checkbox from '@mui/material/Checkbox';
 import Tooltip from '@mui/material/Tooltip';
 import FilterDate from '@components/common/lists/FilterDate';
-import { MenuItem, Select } from '@mui/material';
+import { Autocomplete, MenuItem, Select } from '@mui/material';
 import { SelectChangeEvent } from '@mui/material/Select';
 import SearchScopeElement from '@components/common/lists/SearchScopeElement';
 import Chip from '@mui/material/Chip';
@@ -225,23 +225,36 @@ export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({
   );
 
   const buildAutocompleteFilter = (fKey: string, subKey?: string): ReactNode => {
+    const defaultValue = {
+      color: '#1001a9',
+      label: 'campaign',
+      type: 'Label',
+      value: 'c2a0a112-11af-45a7-8269-ed13155eb43b',
+    };
+
     return (
-      <MUIAutocomplete
-        disableCloseOnSelect
+      <Autocomplete
+        multiple
         key={fKey}
-        selectOnFocus={true}
-        autoSelect={false}
-        autoHighlight={true}
         getOptionLabel={(option) => option.label ?? ''}
         noOptionsText={t_i18n('No available options')}
         options={getOptionsFromEntities(entities, searchScope, fKey)}
         groupBy={
           isStixObjectTypes.includes(fKey)
             ? (option) => option.type
-            : (option) => t_i18n(option.group ? option.group : fKey)
+            : (option) => t_i18n(option?.group ? option?.group : fKey)
         }
-        onInputChange={(event) => searchEntities(fKey, cacheEntities, setCacheEntities, event)
+        defaultValue={[defaultValue]}
+        renderTags={(tagValue, getTagProps) => tagValue.map((option, index) => (
+          <Chip
+            size="small"
+            label={option.label}
+            {...getTagProps({ index })}
+          />
+        ))
         }
+
+        onInputChange={(event) => searchEntities(fKey, cacheEntities, setCacheEntities, event)}
         renderInput={(paramsInput) => (
           <TextField
             {...paramsInput}
@@ -331,6 +344,7 @@ export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({
     // for subkeys, we turn to the behavior of existing filter keys
     // we might use an alias if the subkey does not match the name of the existing key
     const finalFilterKey = subKey ? (aliasSubKey ?? subKey) : fKey;
+    console.log(availableOperators);
     return (
       <>
         <Select
