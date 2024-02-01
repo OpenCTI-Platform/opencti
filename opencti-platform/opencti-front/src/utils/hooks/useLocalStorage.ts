@@ -2,7 +2,7 @@ import * as R from 'ramda';
 import { Dispatch, SetStateAction, SyntheticEvent, useState } from 'react';
 import { v4 as uuid } from 'uuid';
 import { OrderMode, PaginationOptions } from '../../components/list_lines';
-import { Filter, FilterGroup, FilterValue, findFilterFromKey, isFilterGroupNotEmpty, isUniqFilter } from '../filters/filtersUtils';
+import { emptyFilterGroup, Filter, FilterGroup, FilterValue, findFilterFromKey, isFilterGroupNotEmpty, isUniqFilter } from '../filters/filtersUtils';
 import { isEmptyField, isNotEmptyField, removeEmptyFields } from '../utils';
 import { MESSAGING$ } from '../../relay/environment';
 import {
@@ -541,7 +541,7 @@ export const usePaginationLocalStorage = <U>(
         }));
       }
     },
-    handleChangeView: (value: string) => setValue((c) => ({ ...c, view: value })),
+    handleChangeView: (value: string) => setValue((c) => ({ ...c, filters: initialValue.filters ?? emptyFilterGroup, searchTerm: initialValue.searchTerm ?? '', view: value })),
     handleToggleExports: () => setValue((c) => ({ ...c, openExports: !c.openExports })),
     handleSetNumberOfElements: (nbElements: { number?: number | string; symbol?: string; original?: number; }) => {
       if (!R.equals(nbElements, viewStorage.numberOfElements)) {
@@ -572,7 +572,7 @@ export const usePaginationLocalStorage = <U>(
       setValue((c) => ({ ...c, types: [] }));
     },
     handleClearAllFilters: () => {
-      setValue(initialValue);
+      setValue((c) => ({ ...c, filters: initialValue.filters ?? emptyFilterGroup, searchTerm: initialValue.searchTerm ?? '' }));
     },
     handleAddFilterWithEmptyValue: (filter: Filter) => {
       if (viewStorage?.filters) {

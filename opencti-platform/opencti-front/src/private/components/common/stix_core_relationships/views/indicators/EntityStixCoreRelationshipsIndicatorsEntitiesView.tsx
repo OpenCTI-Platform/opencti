@@ -55,7 +55,6 @@ const EntityStixCoreRelationshipsIndicatorsEntitiesView: FunctionComponent<Entit
     'valid_until',
     'x_opencti_score',
     'createdBy',
-    'objects',
     'sightedBy',
     'x_opencti_detection',
     'based-on',
@@ -152,8 +151,8 @@ const EntityStixCoreRelationshipsIndicatorsEntitiesView: FunctionComponent<Entit
         displayImport
         handleToggleExports={storageHelpers.handleToggleExports}
         openExports={openExports}
-        iconExtension
-        filters={contextFilters}
+        iconExtension={true}
+        filters={filters}
         availableFilterKeys={availableFilterKeys}
         exportContext={{ entity_id: entityId, entity_type: 'Stix-Core-Object' }}
         numberOfElements={numberOfElements}
