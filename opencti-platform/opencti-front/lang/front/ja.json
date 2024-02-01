@@ -2555,9 +2555,6 @@
   "The Max Confidence Level is currently defined at the user level. It overrides Max Confidence Level from user's groups.": "現在、最大信頼度はユーザーレベルで定義されています。これはユーザーグループのMax Confidence Levelを上書きします。",
   "Marking definitions to use by the csv mapper...": "いくつかのマーキング属性が'ユーザーにマーキング定義を選択させる'にポリシーが設定されている場合にのみ、csvマッパーはマーキング定義を使用します。そうでない場合、このマーキング定義は無視されます。",
   "Option 'Let the user choose marking definitions'...": "オプション 'ユーザーにマーキング定義を選択させる' は、CSVファイルにデータがない場合に適用するマーキング定義を（CSVファイルのインポート時に）ユーザーに選択させます。",
-  "Marking definitions to use by the csv mapper...": "いくつかのマーキング属性に「ユーザーにマーキング定義を選択させる」というポリシーが設定されている場合、csvマッパーが使用するマーキング定義。",
-  "This user has no Max Confidence Level and does not inherit one from groups. Add a group to this user to resolve the issue.": "このユーザーには最大信頼度がなく、グループからの信頼度も継承していません。この問題を解決するには、このユーザーにグループを追加してください。",
-  "The Max Confidence Level is currently defined at the user level. It overrides Max Confidence Level from user's groups.": "現在、最大信頼度はユーザーレベルで定義されています。これはユーザーグループのMax Confidence Levelを上書きします。",
   "Update without references": "参照なしで更新",
   "Max Confidence Level:": "最大信頼度："
 }
