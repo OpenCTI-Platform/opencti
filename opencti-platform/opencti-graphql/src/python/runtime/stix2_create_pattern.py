@@ -1,7 +1,11 @@
 import sys
 
-from stix2 import (EqualityComparisonExpression, ObjectPath,
-                   ObservationExpression, OrBooleanExpression)
+from stix2 import (
+    EqualityComparisonExpression,
+    ObjectPath,
+    ObservationExpression,
+    OrBooleanExpression,
+)
 from stix2patterns.validator import run_validator
 
 from utils.runtime_utils import return_data
@@ -46,9 +50,11 @@ PATTERN_MAPPING = {
 def generate_part(observable_type, observable_value):
     if observable_type in PATTERN_MAPPING:
         lhs = ObjectPath(
-            observable_type.lower()
-            if "_" not in observable_type
-            else observable_type.split("_")[0].lower(),
+            (
+                observable_type.lower()
+                if "_" not in observable_type
+                else observable_type.split("_")[0].lower()
+            ),
             PATTERN_MAPPING[observable_type],
         )
         return EqualityComparisonExpression(lhs, observable_value)
@@ -77,18 +83,30 @@ def stix2_create_pattern(observable_type, observable_value):
     if pattern is not None:
         errors = run_validator(str(pattern))
         if len(errors) > 0:
-            return {"status": "error", "message": "Invalid generated pattern", "errors": errors}
+            return {
+                "status": "error",
+                "message": "Invalid generated pattern",
+                "errors": errors,
+            }
         else:
             return {"status": "success", "data": str(pattern)}
     else:
         errors = [{"FAIL": f"Cant process type {observable_type}"}]
-        return {"status": "unknown", "message": "Cant generate pattern", "errors": errors}
+        return {
+            "status": "unknown",
+            "message": "Cant generate pattern",
+            "errors": errors,
+        }
 
 
 if __name__ == "__main__":
     if len(sys.argv) <= 2:
         return_data(
-            {"status": "error", "message": "Missing argument to the Python script", "errors": []}
+            {
+                "status": "error",
+                "message": "Missing argument to the Python script",
+                "errors": [],
+            }
         )
 
     data = stix2_create_pattern(sys.argv[1], sys.argv[2])
