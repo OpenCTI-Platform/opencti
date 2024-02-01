@@ -196,7 +196,7 @@ const IngestionCsvCreation: FunctionComponent<IngestionCsvCreationProps> = ({ pa
                 && <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
                   <CsvMapperField
                     name="csv_mapper_id"
-                    isOptionEqualToValue={(option: Option, value: string) => option.value === value}
+                    isOptionEqualToValue={(option: Option, { value }: Option) => option.value === value}
                     queryRef={queryRef}
                   />
                 </React.Suspense>
