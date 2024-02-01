@@ -159,7 +159,7 @@ class ListLinesContent extends Component {
     }
     const { node, types } = edge;
     return (
-      <div key={`${index}-${key}`} style={style}>
+      <div key={`${index}-${key}-${node.__id}`} style={style}>
         {/* TODO remove this when all components are pure function without compose() */}
         {!React.isValidElement(LineComponent) ? (
           <LineComponent
