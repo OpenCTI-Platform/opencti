@@ -42,6 +42,7 @@ const WorkspaceShareForm = ({ onSubmit }: WorkspaceShareFormProps) => {
             style={fieldSpacingContainerStyle}
           />
           <Field
+            disabled
             name="uri_key"
             component={TextField}
             variant="standard"
