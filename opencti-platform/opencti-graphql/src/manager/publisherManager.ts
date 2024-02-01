@@ -30,7 +30,7 @@ import type { NotificationData } from '../utils/publisher-mock';
 import { type ActivityNotificationEvent, type DigestEvent, getNotifications, type KnowledgeNotificationEvent, type NotificationUser } from './notificationManager';
 import { getHttpClient } from '../utils/http-client';
 
-const DOC_URI = 'https://filigran.notion.site/OpenCTI-Public-Knowledge-Base-d411e5e477734c59887dad3649f20518';
+const DOC_URI = 'https://docs.opencti.io';
 const PUBLISHER_ENGINE_KEY = conf.get('publisher_manager:lock_key');
 const STREAM_SCHEDULE_TIME = 10000;
 
@@ -65,7 +65,7 @@ export const internalProcessNotification = async (
     // region data generation
     const background_color = (settings.platform_theme_dark_background ?? '#0a1929').substring(1);
     const platformOpts = { doc_uri: DOC_URI, platform_uri: getBaseUrl(), background_color };
-    const templateData = { content, notification, settings, user, data, ...platformOpts };
+    const templateData = { content, notification_content: content, notification, settings, user, data, ...platformOpts };
     // endregion
     if (notifier_connector_id === NOTIFIER_CONNECTOR_UI) {
       const createNotification = {
