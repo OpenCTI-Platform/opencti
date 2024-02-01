@@ -2539,9 +2539,12 @@
   "relationship_object-participant": "tiene participante",
   "relationship_object-assignee": "tiene cesionario",
   "relationship_granted": "compartido con",
+  "Settings default values": "Valor por defecto de la configuración de la entidad: {value}",
   "Settings default values usage...": "Si los datos no se encuentran en el archivo CSV, se utilizará el valor predeterminado establecido en Configuración > Personalización en su lugar. Puede anular este valor por defecto rellenando la entrada anterior.",
   "No default value set in Settings...": "No hay valor por defecto para este atributo en la configuración de la entidad. Puede proporcionar uno con la entrada de arriba. Este valor se utilizará si faltan datos en el archivo CSV.",
   "Default values set": "Valores por defecto establecidos",
+  "Let the user choose marking definitions": "Dejar que el usuario elija las definiciones de marcado",
+  "Use default marking definitions of the user": "Utilizar las definiciones de marcado por defecto del usuario",
   "The following groups require your attention:": "Los siguientes grupos requieren su atención:",
   "entity_reported-in": "Publicado en",
   "Max Confidence": "Max Confianza",
@@ -2550,6 +2553,8 @@
   "The Max Confidence Level is currently inherited from...": "El nivel de confianza máximo se hereda actualmente del grupo {link}.",
   "This user has no Max Confidence Level and does not inherit one from groups. Add a group to this user to resolve the issue.": "Este usuario no tiene Nivel de Confianza Máximo y no hereda uno de los grupos. Agregue un grupo a este usuario para resolver el problema.",
   "The Max Confidence Level is currently defined at the user level. It overrides Max Confidence Level from user's groups.": "El Nivel de Confianza Máximo se define actualmente a nivel de usuario. Anula el Nivel de Confianza Máximo de los grupos de usuarios.",
+  "Marking definitions to use by the csv mapper...": "Definiciones de marcado utilizadas por el mapeador csv sólo cuando algunos atributos de marcado tienen la política establecida en 'Dejar que el usuario elija las definiciones de marcado'. Si no, estas definiciones de marcado se ignoran.",
+  "Option 'Let the user choose marking definitions'...": "La opción 'Dejar que el usuario elija las definiciones de marcado' pedirá al usuario que elija (al importar el archivo CSV) qué definiciones de marcado aplicar cuando falten datos en el archivo CSV.",
   "Update without references": "Actualizar sin referencias",
   "Max Confidence Level:": "Nivel Máximo de Confianza:"
 }
