@@ -9,6 +9,7 @@ import { Autocomplete, MenuItem, Select } from '@mui/material';
 import { SelectChangeEvent } from '@mui/material/Select';
 import SearchScopeElement from '@components/common/lists/SearchScopeElement';
 import Chip from '@mui/material/Chip';
+import { OptionValue } from '@components/common/lists/FilterAutocomplete';
 import { dateFilters, Filter, getAvailableOperatorForFilter, integerFilters, isStixObjectTypes, textFilters } from '../../utils/filters/filtersUtils';
 import { useFormatter } from '../i18n';
 import ItemIcon from '../ItemIcon';
@@ -225,35 +226,36 @@ export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({
   );
 
   const buildAutocompleteFilter = (fKey: string, subKey?: string): ReactNode => {
-    const defaultValue = {
-      color: '#1001a9',
-      label: 'campaign',
-      type: 'Label',
-      value: 'c2a0a112-11af-45a7-8269-ed13155eb43b',
-    };
+    const entitiesOptions = getOptionsFromEntities(entities, searchScope, fKey);
+    const selectedOptions: OptionValue[] = filterValues.map((value) => {
+      const correspondingEntities = entitiesOptions.find((e) => e.value === value);
+      return {
+        ...correspondingEntities,
+        value,
+        type: correspondingEntities?.type ?? t_i18n('Selected'),
+        parentTypes: correspondingEntities?.parentTypes ?? [],
+        group: t_i18n('Selected'),
+        label: correspondingEntities?.label ?? t_i18n('Unknown'),
+      };
+    });
 
+    const groupByEntities = (option: OptionValue) => {
+      if (option?.group === 'Selected') {
+        return 'Selected';
+      }
+
+      return isStixObjectTypes.includes(fKey)
+        ? option.type
+        : t_i18n(option?.group ? option?.group : fKey);
+    };
     return (
       <Autocomplete
         multiple
         key={fKey}
         getOptionLabel={(option) => option.label ?? ''}
         noOptionsText={t_i18n('No available options')}
-        options={getOptionsFromEntities(entities, searchScope, fKey)}
-        groupBy={
-          isStixObjectTypes.includes(fKey)
-            ? (option) => option.type
-            : (option) => t_i18n(option?.group ? option?.group : fKey)
-        }
-        defaultValue={[defaultValue]}
-        renderTags={(tagValue, getTagProps) => tagValue.map((option, index) => (
-          <Chip
-            size="small"
-            label={option.label}
-            {...getTagProps({ index })}
-          />
-        ))
-        }
-
+        options={[...selectedOptions, ...entitiesOptions]}
+        groupBy={(option) => groupByEntities(option)}
         onInputChange={(event) => searchEntities(fKey, cacheEntities, setCacheEntities, event)}
         renderInput={(paramsInput) => (
           <TextField
@@ -344,7 +346,6 @@ export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({
     // for subkeys, we turn to the behavior of existing filter keys
     // we might use an alias if the subkey does not match the name of the existing key
     const finalFilterKey = subKey ? (aliasSubKey ?? subKey) : fKey;
-    console.log(availableOperators);
     return (
       <>
         <Select
