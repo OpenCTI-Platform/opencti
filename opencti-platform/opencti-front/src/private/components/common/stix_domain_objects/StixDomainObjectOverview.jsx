@@ -18,7 +18,6 @@ import IconButton from '@mui/material/IconButton';
 import { BrushOutlined, Delete } from '@mui/icons-material';
 import DialogActions from '@mui/material/DialogActions';
 import Button from '@mui/material/Button';
-import Slide from '@mui/material/Slide';
 import StixCoreObjectOpinions from '../../analyses/opinions/StixCoreObjectOpinions';
 import ItemMarkings from '../../../../components/ItemMarkings';
 import ItemPatternType from '../../../../components/ItemPatternType';
@@ -37,11 +36,7 @@ import ItemCopy from '../../../../components/ItemCopy';
 import ItemAssignees from '../../../../components/ItemAssignees';
 import ItemOpenVocab from '../../../../components/ItemOpenVocab';
 import ItemParticipants from '../../../../components/ItemParticipants';
-
-const Transition = React.forwardRef((props, ref) => (
-  <Slide direction="up" ref={ref} {...props} />
-));
-Transition.displayName = 'TransitionSlide';
+import Transition from '../../../../components/Transition';
 
 const styles = (theme) => ({
   paper: {
