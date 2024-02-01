@@ -75,7 +75,10 @@ export const CAPABILITIES = [
         name: 'EXUPDATE',
         description: 'Create  / Update exploration',
         attribute_order: 1100,
-        dependencies: [{ name: 'EXDELETE', description: 'Delete exploration', attribute_order: 1200 }],
+        dependencies: [
+          { name: 'EXDELETE', description: 'Delete exploration', attribute_order: 1200 },
+          { name: 'PUBLISH', description: 'Publish exploration', attribute_order: 1300 },
+        ],
       },
     ],
   },
