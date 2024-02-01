@@ -1,5 +1,15 @@
 import type { Resolvers } from '../../generated/graphql';
-import { addPublicDashboard, findById, findAll, publicDashboardDelete, publicDashboardEditField, getPublicDashboardByUriKey, getAllowedMarkings } from './publicDashboard-domain';
+import {
+  addPublicDashboard,
+  findById,
+  findAll,
+  publicDashboardDelete,
+  publicDashboardEditField,
+  getPublicDashboardByUriKey,
+  getAllowedMarkings,
+  publicStixCoreObjectsNumber,
+  publicStixCoreObjectsMultiTimeSeries
+} from './publicDashboard-domain';
 import { getAuthorizedMembers } from '../../utils/authorizedMembers';
 
 const publicDashboardResolvers: Resolvers = {
@@ -7,6 +17,8 @@ const publicDashboardResolvers: Resolvers = {
     publicDashboard: (_, { id }, context) => findById(context, context.user, id),
     publicDashboards: (_, args, context) => findAll(context, context.user, args),
     publicDashboardByUriKey: (_, { uri_key }, context) => getPublicDashboardByUriKey(context, uri_key),
+    publicStixCoreObjectsNumber: (_, args, context) => publicStixCoreObjectsNumber(context, args),
+    publicStixCoreObjectsMultiTimeSeries: (_, args, context) => publicStixCoreObjectsMultiTimeSeries(context, args),
   },
   PublicDashboard: {
     authorized_members: (publicDashboard, _, context) => getAuthorizedMembers(context, context.user, publicDashboard),

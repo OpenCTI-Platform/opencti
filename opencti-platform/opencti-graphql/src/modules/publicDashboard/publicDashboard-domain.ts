@@ -7,14 +7,24 @@ import { type BasicStoreEntityWorkspace } from '../workspace/workspace-types';
 import { fromBase64, isNotEmptyField, toBase64 } from '../../database/utils';
 import { notify } from '../../database/redis';
 import { BUS_TOPICS } from '../../config/conf';
-import type { EditInput, FilterGroup, PublicDashboardAddInput, QueryPublicDashboardsArgs } from '../../generated/graphql';
+import type {
+  EditInput,
+  FilterGroup,
+  PublicDashboardAddInput,
+  QueryPublicDashboardsArgs,
+  QueryPublicStixCoreObjectsNumberArgs,
+  QueryPublicStixCoreObjectsMultiTimeSeriesArgs
+} from '../../generated/graphql';
 import { FunctionalError, UnsupportedError } from '../../config/errors';
 import { SYSTEM_USER } from '../../utils/access';
 import { publishUserAction } from '../../listener/UserActionListener';
 import { initializeAuthorizedMembers } from '../workspace/workspace-domain';
 import { ENTITY_TYPE_MARKING_DEFINITION } from '../../schema/stixMetaObject';
 import { getEntitiesMapFromCache } from '../../database/cache';
-import type { StoreMarkingDefinition } from '../../types/store';
+import type { NumberResult, StoreMarkingDefinition } from '../../types/store';
+import { getWidgetsUserAndMarkings } from './publicDashboard-utils';
+import { stixCoreObjectsMultiTimeSeries, stixCoreObjectsNumber } from '../../domain/stixCoreObject';
+import { ABSTRACT_STIX_CORE_OBJECT } from '../../schema/general';
 
 export const findById = (
   context: AuthContext,
@@ -195,4 +205,82 @@ export const publicDashboardDelete = async (context: AuthContext, user: AuthUser
   });
 
   return notify(BUS_TOPICS[ENTITY_TYPE_PUBLIC_DASHBOARD].DELETE_TOPIC, deleted, user).then(() => id);
+};
+
+// Widgets Public API
+
+// Heatmap
+export const publicStixCoreObjectsMultiTimeSeries = async (context: AuthContext, args: QueryPublicStixCoreObjectsMultiTimeSeriesArgs) => {
+  const { widgets, user, allowed_markings_ids } = await getWidgetsUserAndMarkings(context, args.uriKey);
+  const { dataSelection } = widgets[args.widgetId];
+
+  const markingFilters = {
+    key: [
+      'objectMarking'
+    ],
+    values: allowed_markings_ids,
+    operator: 'eq',
+    mode: 'or'
+  };
+
+  const timeSeriesParameters = dataSelection.map((selection: { filters: any; date_attribute: any; }) => {
+    const filters = {
+      filterGroups: [selection.filters],
+      filters: allowed_markings_ids ? [markingFilters] : [],
+      mode: 'and'
+    };
+    return {
+      field: selection.date_attribute,
+      filters,
+    };
+  });
+
+  const standardArgs = {
+    startDate: args.startDate,
+    endDate: args.endDate,
+    interval: args.interval,
+    timeSeriesParameters
+  };
+
+  // Use standard API
+  return stixCoreObjectsMultiTimeSeries(context, user, standardArgs);
+};
+
+// Number
+export const publicStixCoreObjectsNumber = async (
+  context: AuthContext,
+  args: QueryPublicStixCoreObjectsNumberArgs
+): Promise<NumberResult> => {
+  const { widgets, user, allowed_markings_ids } = await getWidgetsUserAndMarkings(context, args.uriKey);
+  const widgetConfig = widgets[args.widgetId].dataSelection[0];
+  const markingFilters = {
+    key: [
+      'objectMarking'
+    ],
+    values: allowed_markings_ids,
+    operator: 'eq',
+    mode: 'or'
+  };
+
+  const filters = {
+    filterGroups: [widgetConfig.filters],
+    filters: allowed_markings_ids ? [markingFilters] : [],
+    mode: 'and'
+  };
+
+  const parameters = {
+    startDate: args.startDate,
+    endDate: args.endDate,
+    filters,
+    onlyInferred: args.onlyInferred,
+    search: args.search,
+    types: [
+      ABSTRACT_STIX_CORE_OBJECT, // stixCoreObjectsNumber api needs types
+    ]
+  };
+
+  // Use standard API
+  const { count: countPromise, total: totalPromise } = stixCoreObjectsNumber(context, user, parameters);
+  const [count, total] = await Promise.all([countPromise as Promise<number>, totalPromise as Promise<number>]);
+  return { count, total };
 };

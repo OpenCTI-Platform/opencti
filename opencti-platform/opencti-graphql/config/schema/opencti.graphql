@@ -1741,7 +1741,7 @@ type MarkingDefinitionShort {
   id: ID! # internal_id
   standard_id: String!
   entity_type: String!
-  representative: Representative!
+  representative: Representative
   definition_type: String
   definition: String
   x_opencti_order: Int!
@@ -10998,14 +10998,6 @@ type Query {
     onlyInferred: Boolean
     timeSeriesParameters: [StixCoreObjectsTimeSeriesParameters]
   ): [MultiTimeSeries] @auth(for: [KNOWLEDGE, EXPLORE])
-  publicStixCoreObjectsMultiTimeSeries(
-    startDate: DateTime!
-    endDate: DateTime
-    interval: String!
-    onlyInferred: Boolean
-    uriKey: String!
-    widgetId : String!
-  ): [MultiTimeSeries]
   stixCoreObjectsNumber(
     dateAttribute: String
     types: [String]
@@ -11015,15 +11007,6 @@ type Query {
     filters: FilterGroup
     search: String
   ): Number @auth(for: [KNOWLEDGE, EXPLORE])
-  publicStixCoreObjectsNumber(
-    types: [String]
-    startDate: DateTime
-    endDate: DateTime
-    onlyInferred: Boolean
-    search: String
-    uriKey: String!
-    widgetId : String!
-  ): Number
   stixCoreObjectsMultiNumber(
     dateAttribute: String
     startDate: DateTime

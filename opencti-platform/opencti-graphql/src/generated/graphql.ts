@@ -11739,7 +11739,7 @@ export type MarkingDefinitionShort = {
   definition_type?: Maybe<Scalars['String']['output']>;
   entity_type: Scalars['String']['output'];
   id: Scalars['ID']['output'];
-  representative: Representative;
+  representative?: Maybe<Representative>;
   standard_id: Scalars['String']['output'];
   x_opencti_color?: Maybe<Scalars['String']['output']>;
   x_opencti_order: Scalars['Int']['output'];
@@ -33123,7 +33123,7 @@ export type MarkingDefinitionShortResolvers<ContextType = any, ParentType extend
   definition_type?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
-  representative?: Resolver<ResolversTypes['Representative'], ParentType, ContextType>;
+  representative?: Resolver<Maybe<ResolversTypes['Representative']>, ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   x_opencti_color?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_order?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
