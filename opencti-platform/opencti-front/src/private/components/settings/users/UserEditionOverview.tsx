@@ -183,15 +183,15 @@ UserEditionOverviewComponentProps
                 },
               },
             });
-          } else {
-            // simple case for all flat attributes
-            commitFieldPatch({
-              variables: {
-                id: user.id,
-                input: { key: name, value: value || '' },
-              },
-            });
           }
+        } else {
+          // simple case for all flat attributes
+          commitFieldPatch({
+            variables: {
+              id: user.id,
+              input: { key: name, value: value || '' },
+            },
+          });
         }
       })
       .catch(() => false);
