@@ -5,7 +5,7 @@ import { parsingProcess } from '../../../src/parser/csv-parser';
 import { mappingProcess } from '../../../src/parser/csv-mapper';
 import { ENTITY_TYPE_LOCATION_ADMINISTRATIVE_AREA } from '../../../src/modules/administrativeArea/administrativeArea-types';
 import { ENTITY_TYPE_MALWARE } from '../../../src/schema/stixDomainObject';
-import { csvMapperFile } from './default-values/mapper-file';
+import { csvMapperFile } from './files-hashes/mapper-files';
 import { csvMapperAreaMarking } from './default-values/mapper-area-marking';
 
 const ENTITY_SETTINGS_UPDATE = `
