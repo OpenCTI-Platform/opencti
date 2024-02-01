@@ -1,0 +1,414 @@
+import * as R from 'ramda';
+import { graphql, useFragment } from 'react-relay';
+import makeStyles from '@mui/styles/makeStyles';
+import ListItemIcon from '@mui/material/ListItemIcon';
+import Checkbox from '@mui/material/Checkbox';
+import ListItemText from '@mui/material/ListItemText';
+import Chip from '@mui/material/Chip';
+import ListItem from '@mui/material/ListItem';
+import React from 'react';
+import { CircleOutlined } from '@mui/icons-material';
+import Skeleton from '@mui/material/Skeleton';
+import StixCoreObjectLabels from '../stix_core_objects/StixCoreObjectLabels';
+import { APP_BASE_PATH } from '../../../../relay/environment';
+import ItemIcon from '../../../../components/ItemIcon';
+import { hexToRGB, itemColor } from '../../../../utils/Colors';
+import { defaultValue } from '../../../../utils/Graph';
+import ItemMarkings from '../../../../components/ItemMarkings';
+import { useFormatter } from '../../../../components/i18n';
+
+const useStyles = makeStyles((theme) => ({
+  item: {
+    paddingLeft: 10,
+    height: 50,
+  },
+  itemIcon: {
+    color: theme.palette.primary.main,
+  },
+  bodyItem: {
+    height: 20,
+    fontSize: 13,
+    float: 'left',
+    whiteSpace: 'nowrap',
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
+    paddingRight: 10,
+  },
+  chip: {
+    fontSize: 13,
+    lineHeight: '12px',
+    height: 20,
+    textTransform: 'uppercase',
+    borderRadius: '0',
+  },
+  chipInList: {
+    fontSize: 12,
+    height: 20,
+    float: 'left',
+    width: 120,
+    textTransform: 'uppercase',
+    borderRadius: '0',
+  },
+}));
+
+const stixNestedRefRelationshipCreationFromEntityLineFragment = graphql`
+  fragment StixNestedRefRelationshipCreationFromEntityLine_node on StixCoreObject {
+    id
+    standard_id
+    parent_types
+    entity_type
+    created_at
+    ... on BasicObject {
+      id
+      entity_type
+      parent_types
+    }
+    ... on StixObject {
+      created_at
+      updated_at
+    }
+    ... on AttackPattern {
+      name
+      description
+    }
+    ... on Campaign {
+      name
+      description
+    }
+    ... on CourseOfAction {
+      name
+      description
+    }
+    ... on Individual {
+      name
+      description
+    }
+    ... on Organization {
+      name
+      description
+    }
+    ... on Sector {
+      name
+      description
+    }
+    ... on System {
+      name
+      description
+    }
+    ... on Indicator {
+      name
+    }
+    ... on Infrastructure {
+      name
+    }
+    ... on IntrusionSet {
+      name
+      description
+    }
+    ... on Position {
+      name
+      description
+    }
+    ... on City {
+      name
+      description
+    }
+    ... on Country {
+      name
+      description
+    }
+    ... on Region {
+      name
+      description
+    }
+    ... on Malware {
+      name
+      description
+    }
+    ... on ThreatActor {
+      name
+      description
+    }
+    ... on Tool {
+      name
+      description
+    }
+    ... on Vulnerability {
+      name
+      description
+    }
+    ... on Incident {
+      name
+      description
+    }
+    ... on MalwareAnalysis {
+      result_name 
+    } 
+    ... on StixCyberObservable {
+      x_opencti_description
+      observable_value
+    }
+    ... on Event {
+      name
+      description
+    }
+    ... on Channel {
+      name
+      description
+    }
+    ... on Narrative {
+      name
+      description
+    }
+    ... on Language {
+      name
+    }
+    ... on DataComponent {
+      name
+    }
+    ... on DataSource {
+      name
+    }
+    ... on Case {
+      name
+    }
+    ... on Report {
+      name
+    }
+    ... on Grouping {
+      name
+    }
+    ... on Note {
+      attribute_abstract
+      content
+    }
+    ... on Opinion {
+      opinion
+    }
+    ... on ObservedData {
+      name
+    }
+    createdBy {
+      id
+      entity_type
+      ... on Identity {
+        name
+      }
+    }
+    objectMarking {
+      id
+      definition_type
+      definition
+      x_opencti_order
+      x_opencti_color
+    }
+    objectLabel {
+      id
+      value
+      color
+    }
+    creators {
+      id
+      name
+    }
+    reports {
+      pageInfo {
+        globalCount
+      }
+    }
+  }
+`;
+
+export const StixNestedRefRelationshipCreationFromEntityLine = ({
+  node,
+  dataColumns,
+  onLabelClick,
+  onToggleEntity,
+  selectedElements,
+  deSelectedElements,
+  selectAll,
+  onToggleShiftEntity,
+  index,
+}) => {
+  const classes = useStyles();
+  const { t_i18n } = useFormatter();
+  const data = useFragment(stixNestedRefRelationshipCreationFromEntityLineFragment, node);
+  const flag = data.entity_type === 'Country'
+    && R.head((data.x_opencti_aliases ?? []).filter((n) => n?.length === 2));
+  return (
+    <ListItem
+      classes={{ root: classes.item }}
+      divider={true}
+      button={true}
+      onClick={(event) => (event.shiftKey
+        ? onToggleShiftEntity(index, data, event)
+        : onToggleEntity(data, event))
+      }
+    >
+      <ListItemIcon
+        classes={{ root: classes.itemIcon }}
+        style={{ minWidth: 40 }}
+        onClick={(event) => (event.shiftKey
+          ? onToggleShiftEntity(index, data, event)
+          : onToggleEntity(data, event))
+        }
+      >
+        <Checkbox
+          edge="start"
+          checked={
+            (selectAll && !(data.id in (deSelectedElements || {})))
+            || data.id in (selectedElements || {})
+          }
+          disableRipple={true}
+        />
+      </ListItemIcon>
+      <ListItemIcon classes={{ root: classes.itemIcon }}>
+        {flag ? (
+          <img
+            style={{ width: 20 }}
+            src={`${APP_BASE_PATH}/static/flags/4x3/${flag.toLowerCase()}.svg`}
+            alt={data.name}
+          />
+        ) : (
+          <ItemIcon type={data.entity_type} />
+        )}
+      </ListItemIcon>
+      <ListItemText
+        primary={
+          <div>
+            <div
+              className={classes.bodyItem}
+              style={{ width: dataColumns.entity_type.width }}
+            >
+              <Chip
+                classes={{ root: classes.chipInList }}
+                style={{
+                  backgroundColor: hexToRGB(itemColor(data.entity_type), 0.08),
+                  color: itemColor(data.entity_type),
+                  border: `1px solid ${itemColor(data.entity_type)}`,
+                }}
+                label={t_i18n(`entity_${data.entity_type}`)}
+              />
+            </div>
+            <div
+              className={classes.bodyItem}
+              style={{ width: dataColumns.value.width }}
+            >
+              {defaultValue(data, true)}
+            </div>
+            <div
+              className={classes.bodyItem}
+              style={{ width: dataColumns.createdBy.width }}
+            >
+              {R.pathOr('', ['createdBy', 'name'], data)}
+            </div>
+            <div
+              className={classes.bodyItem}
+              style={{ width: dataColumns.objectLabel.width }}
+            >
+              <StixCoreObjectLabels
+                variant="inList"
+                labels={data.objectLabel}
+                onClick={onLabelClick}
+              />
+            </div>
+            <div
+              className={classes.bodyItem}
+              style={{ width: dataColumns.objectMarking.width }}
+            >
+              <ItemMarkings
+                variant="inList"
+                markingDefinitions={data.objectMarking ?? []}
+                limit={1}
+              />
+            </div>
+          </div>
+        }
+      />
+    </ListItem>
+  );
+};
+
+export const StixNestedRefRelationshipCreationFromEntityLineDummy = ({
+  dataColumns,
+}) => {
+  const classes = useStyles();
+  return (
+    <ListItem
+      classes={{ root: classes.item }}
+      divider={true}
+      style={{ minWidth: 40 }}
+    >
+      <ListItemIcon
+        classes={{ root: classes.itemIconDisabled }}
+        style={{ minWidth: 40 }}
+      >
+        <CircleOutlined />
+      </ListItemIcon>
+      <ListItemIcon classes={{ root: classes.itemIcon }}>
+        <Skeleton animation="wave" variant="circular" width={30} height={30} />
+      </ListItemIcon>
+      <ListItemText
+        primary={
+          <div>
+            <div
+              className={classes.bodyItem}
+              style={{ width: dataColumns.entity_type.width }}
+            >
+              <Skeleton
+                animation="wave"
+                variant="rectangular"
+                width="90%"
+                height="100%"
+              />
+            </div>
+            <div
+              className={classes.bodyItem}
+              style={{ width: dataColumns.value.width }}
+            >
+              <Skeleton
+                animation="wave"
+                variant="rectangular"
+                width="90%"
+                height="100%"
+              />
+            </div>
+            <div
+              className={classes.bodyItem}
+              style={{ width: dataColumns.createdBy.width }}
+            >
+              <Skeleton
+                animation="wave"
+                variant="rectangular"
+                width="90%"
+                height="100%"
+              />
+            </div>
+            <div
+              className={classes.bodyItem}
+              style={{ width: dataColumns.objectLabel.width }}
+            >
+              <Skeleton
+                animation="wave"
+                variant="rectangular"
+                width="90%"
+                height="100%"
+              />
+            </div>
+            <div
+              className={classes.bodyItem}
+              style={{ width: dataColumns.objectMarking.width }}
+            >
+              <Skeleton
+                animation="wave"
+                variant="rectangular"
+                width={100}
+                height="100%"
+              />
+            </div>
+          </div>
+        }
+      />
+    </ListItem>
+  );
+};

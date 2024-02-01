@@ -39,6 +39,7 @@ import StixDomainObjectCreation from '../stix_domain_objects/StixDomainObjectCre
 import DateTimePickerField from '../../../../components/DateTimePickerField';
 import { onlyLinkedTo } from '../../../../utils/Relation';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
+import ListLines from '../../../../components/list_lines/ListLines';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -74,7 +75,9 @@ const styles = (theme) => ({
     color: 'inherit',
   },
   container: {
-    padding: 0,
+    padding: '15px 0 0 15px',
+    height: '100%',
+    width: '100%',
   },
   placeholder: {
     display: 'inline-block',
@@ -446,6 +449,10 @@ class StixNestedRefRelationshipCreationFromEntity extends Component {
     this.setState({ step: 1, targetEntity: stixDomainObject });
   }
 
+  onToggleEntity() {
+    return (console.log('onToggleEntity'))
+  }
+
   renderSelectEntity() {
     const {
       search,
@@ -453,6 +460,9 @@ class StixNestedRefRelationshipCreationFromEntity extends Component {
       openSpeedDial,
       openCreateEntity,
       openCreateObservable,
+      sortBy,
+      searchTerm,
+      orderAsc,
     } = this.state;
     const { classes, t, entityType, targetStixCoreObjectTypes } = this.props;
     const paginationOptions = {
@@ -460,6 +470,33 @@ class StixNestedRefRelationshipCreationFromEntity extends Component {
       orderBy: search.length > 0 ? null : 'created_at',
       orderMode: search.length > 0 ? null : 'desc',
       types: targetStixCoreObjectTypes,
+    };
+    const dataColumns = {
+      entity_type: {
+        label: 'Type',
+        width: '15%',
+        isSortable: true,
+      },
+      value: {
+        label: 'Value',
+        width: '32%',
+        isSortable: false,
+      },
+      createdBy: {
+        label: 'Author',
+        width: '15%',
+        isSortable: false,
+      },
+      objectLabel: {
+        label: 'Labels',
+        width: '22%',
+        isSortable: false,
+      },
+      objectMarking: {
+        label: 'Marking',
+        width: '15%',
+        isSortable: false,
+      },
     };
     return (
       <div>
@@ -475,77 +512,54 @@ class StixNestedRefRelationshipCreationFromEntity extends Component {
           <Typography variant="h6" classes={{ root: classes.title }}>
             {t('Create a relationship')}
           </Typography>
-          <div className={classes.search}>
-            <SearchInput
-              variant="inDrawer"
-              onSubmit={this.handleSearch.bind(this)}
-            />
-          </div>
           <div className="clearfix" />
         </div>
-        <div className={classes.containerList}>
-          {search.length === 0 && (
-            <Alert
-              severity="info"
-              variant="outlined"
-              style={{ margin: '15px 15px 0 15px' }}
-              classes={{ message: classes.info }}
+        <div className={classes.container}>
+          <>
+            <ListLines
+              sortBy={sortBy}
+              orderAsc={orderAsc}
+              dataColumns={dataColumns}
+              keyword={searchTerm}
+              disableCards={true}
+              handleSearch={this.handleSearch.bind(this)}
+              disableExport={true}
+              paginationOptions={paginationOptions}
+              iconExtension={true}
+              parametersWithPadding={true}
+              handleToggleSelectAll="no"
+              availableFilterKeys={[
+                'entity_type',
+                'objectMarking',
+                'objectLabel',
+                'createdBy',
+                'confidence',
+                'x_opencti_organization_type',
+                'created',
+                'created_at',
+                'creator_id',
+              ]}
             >
-              {t(
-                'This panel shows by default the latest created entities, use the search to find more.',
-              )}
-            </Alert>
-          )}
-          <QueryRenderer
-            query={stixNestedRefRelationshipCreationFromEntityLinesQuery}
-            variables={{ count: 25, ...paginationOptions }}
-            render={({ props }) => {
-              if (props) {
-                return (
-                  <StixNestedRefRelationCreationFromEntityLines
-                    entityType={entityType}
-                    handleSelect={this.handleSelectEntity.bind(this)}
-                    data={props}
-                  />
-                );
-              }
-              return (
-                <List>
-                  {Array.from(Array(20), (e, i) => (
-                    <ListItem key={i} divider={true} button={false}>
-                      <ListItemIcon>
-                        <Skeleton
-                          animation="wave"
-                          variant="circular"
-                          width={30}
-                          height={30}
-                        />
-                      </ListItemIcon>
-                      <ListItemText
-                        primary={
-                          <Skeleton
-                            animation="wave"
-                            variant="rectangular"
-                            width="90%"
-                            height={15}
-                            style={{ marginBottom: 10 }}
-                          />
-                        }
-                        secondary={
-                          <Skeleton
-                            animation="wave"
-                            variant="rectangular"
-                            width="90%"
-                            height={15}
-                          />
-                        }
+              <QueryRenderer
+                query={stixNestedRefRelationshipCreationFromEntityLinesQuery}
+                variables={{ count: 25, ...paginationOptions }}
+                render={({ props }) => {
+                  if (props) {
+                    console.log('props', props);
+                    return (
+                      <StixNestedRefRelationCreationFromEntityLines
+                        entityType={entityType}
+                        handleSelect={this.handleSelectEntity.bind(this)}
+                        data={props}
+                        dataColumns={dataColumns}
+                        onToggleEntity={this.onToggleEntity.bind(this)}
                       />
-                    </ListItem>
-                  ))}
-                </List>
-              );
-            }}
-          />
+                    );
+                  } return (<></>);
+                }}
+              />
+            </ListLines>
+          </>
           <SpeedDial
             className={classes.createButton}
             ariaLabel="Create"
@@ -603,6 +617,7 @@ class StixNestedRefRelationshipCreationFromEntity extends Component {
   renderForm(resolveEntityRef) {
     const { t, classes } = this.props;
     const { targetEntity } = this.state;
+    console.log('targetEntity', targetEntity);
     let fromEntity = resolveEntityRef.entity;
     let toEntity = targetEntity;
     let isRelationReversed = false;
@@ -849,6 +864,7 @@ class StixNestedRefRelationshipCreationFromEntity extends Component {
                   }}
                   render={({ props }) => {
                     if (props && props.stixSchemaRefRelationships) {
+                      console.log('propsStixRef', props.stixSchemaRefRelationships);
                       return (
                         <div>
                           {this.renderForm(props.stixSchemaRefRelationships)}
