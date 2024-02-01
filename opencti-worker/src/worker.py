@@ -74,6 +74,7 @@ bundles_processing_time_gauge = meter.create_histogram(
     description="processing time of bundles",
 )
 
+
 class PingAlive(threading.Thread):
     def __init__(self, worker_logger, api) -> None:
         threading.Thread.__init__(self)
@@ -85,13 +86,15 @@ class PingAlive(threading.Thread):
         while not self.exit_event.is_set():
             try:
                 self.worker_logger.debug("PingAlive running.")
-                self.api.query("""
+                self.api.query(
+                    """
                   query {
                     me {
                       id
                     }
                   }
-                """)
+                """
+                )
             except Exception as e:  # pylint: disable=broad-except
                 self.in_error = True
                 self.worker_logger.error("Error pinging the API", {"reason": str(e)})
@@ -104,6 +107,7 @@ class PingAlive(threading.Thread):
     def stop(self) -> None:
         self.worker_logger.info("Preparing PingAlive for clean shutdown")
         self.exit_event.set()
+
 
 @dataclass(unsafe_hash=True)
 class Consumer(Thread):  # pylint: disable=too-many-instance-attributes
@@ -127,10 +131,7 @@ class Consumer(Thread):  # pylint: disable=too-many-instance-attributes
         self.worker_logger = self.api.logger_class("worker")
 
         # Start ping
-        self.ping = PingAlive(
-            self.worker_logger,
-            self.api
-        )
+        self.ping = PingAlive(self.worker_logger, self.api)
         self.ping.start()
 
         self.queue_name = self.connector["config"]["push"]
@@ -361,9 +362,9 @@ class Consumer(Thread):  # pylint: disable=too-many-instance-attributes
                         work_id,
                         {
                             "error": error,
-                            "source": content
-                            if len(content) < 50000
-                            else "Bundle too large",
+                            "source": (
+                                content if len(content) < 50000 else "Bundle too large"
+                            ),
                         },
                     )
                 return False
@@ -391,9 +392,9 @@ class Consumer(Thread):  # pylint: disable=too-many-instance-attributes
                         work_id,
                         {
                             "error": error,
-                            "source": content
-                            if len(content) < 50000
-                            else "Bundle too large",
+                            "source": (
+                                content if len(content) < 50000 else "Bundle too large"
+                            ),
                         },
                     )
                 return False
