@@ -658,6 +658,10 @@ export const userEditField = async (context, user, userId, rawInputs) => {
       inputs.push({ key: 'account_status', value: [ACCOUNT_STATUS_EXPIRED] });
       await killUserSessions(userId);
     }
+    if (input.key === 'user_confidence_level') {
+      // user's effective level might have changed, we need to refresh session info
+      await userSessionRefresh(userId);
+    }
     inputs.push(input);
   }
   const { element } = await updateAttribute(context, user, userId, ENTITY_TYPE_USER, inputs);
