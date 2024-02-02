@@ -20684,6 +20684,8 @@ export type Representative = {
 
 export type RepresentativeWithId = {
   __typename?: 'RepresentativeWithId';
+  color?: Maybe<Scalars['String']['output']>;
+  entity_type?: Maybe<Scalars['String']['output']>;
   id: Scalars['String']['output'];
   value?: Maybe<Scalars['String']['output']>;
 };
@@ -35162,6 +35164,8 @@ export type RepresentativeResolvers<ContextType = any, ParentType extends Resolv
 }>;
 
 export type RepresentativeWithIdResolvers<ContextType = any, ParentType extends ResolversParentTypes['RepresentativeWithId'] = ResolversParentTypes['RepresentativeWithId']> = ResolversObject<{
+  color?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  entity_type?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   value?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;

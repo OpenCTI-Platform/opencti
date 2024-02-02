@@ -120,6 +120,8 @@ input Filter {
 type RepresentativeWithId {
   id: String!
   value: String
+  entity_type: String
+  color: String
 }
 
 ### EDIT
