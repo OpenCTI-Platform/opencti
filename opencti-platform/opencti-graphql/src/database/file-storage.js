@@ -3,9 +3,8 @@ import * as R from 'ramda';
 import path from 'path';
 import { Upload } from '@aws-sdk/lib-storage';
 import { Promise as BluePromise } from 'bluebird';
-import { chain, CredentialsProviderError, memoize } from '@aws-sdk/property-provider';
-import { remoteProvider } from '@aws-sdk/credential-provider-node/dist-es/remoteProvider';
-import { defaultProvider } from '@aws-sdk/credential-provider-node/dist-es/defaultProvider';
+import { defaultProvider } from '@aws-sdk/credential-provider-node';
+import { getDefaultRoleAssumerWithWebIdentity } from '@aws-sdk/client-sts';
 import mime from 'mime-types';
 import conf, { booleanConf, ENABLED_FILE_INDEX_MANAGER, logApp } from '../config/conf';
 import { now, sinceNowInMinutes } from '../utils/format';
@@ -29,34 +28,23 @@ const bucketName = conf.get('minio:bucket_name') || 'opencti-bucket';
 const bucketRegion = conf.get('minio:bucket_region') || 'us-east-1';
 const excludedFiles = conf.get('minio:excluded_files') || ['.DS_Store'];
 const useSslConnection = booleanConf('minio:use_ssl', false);
-const useAwsRole = booleanConf('minio:use_aws_role', false);
-const isDefaultAwsProvider = booleanConf('minio:use_aws_default_provider', false);
 
 export const specialTypesExtensions = {
   'application/vnd.oasis.stix+json': 'json',
   'application/vnd.mitre.navigator+json': 'json',
 };
 
-const credentialProvider = (init) => memoize(
-  chain(
-    async () => {
-      if (clientAccessKey && clientSecretKey && !useAwsRole) {
-        return {
-          accessKeyId: clientAccessKey,
-          secretAccessKey: clientSecretKey,
-          ...(clientSessionToken && { sessionToken: clientSessionToken })
-        };
-      }
-      throw new CredentialsProviderError('Unable to load credentials from OpenCTI config');
-    },
-    isDefaultAwsProvider ? defaultProvider(init) : remoteProvider(init),
-    async () => {
-      throw new CredentialsProviderError('Could not load credentials from any providers', false);
-    }
-  ),
-  (credentials) => credentials.expiration !== undefined && credentials.expiration.getTime() - Date.now() < 300000,
-  (credentials) => credentials.expiration !== undefined
-);
+const credentialProvider = () => {
+  if (clientAccessKey && clientSecretKey) {
+    return { accessKeyId: clientAccessKey, secretAccessKey: clientSecretKey, ...(clientSessionToken && { sessionToken: clientSessionToken }) };
+  }
+  return defaultProvider({
+    roleAssumerWithWebIdentity: getDefaultRoleAssumerWithWebIdentity({
+      // You must explicitly pass a region if you are not using us-east-1
+      region: bucketRegion
+    })
+  });
+};
 
 const getEndpoint = () => {
   // If using AWS S3, unset the endpoint to let the library choose the best endpoint
