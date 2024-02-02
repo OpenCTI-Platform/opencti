@@ -1,6 +1,5 @@
 import React, { FunctionComponent, ReactNode, useState } from 'react';
 import Popover from '@mui/material/Popover';
-import MUIAutocomplete from '@mui/material/Autocomplete';
 import TextField from '@mui/material/TextField';
 import Checkbox from '@mui/material/Checkbox';
 import Tooltip from '@mui/material/Tooltip';
@@ -233,7 +232,7 @@ export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({
         ...correspondingEntities,
         value,
         type: correspondingEntities?.type ?? t_i18n('Selected'),
-        parentTypes: correspondingEntities?.parentTypes ?? [],
+        parentTypes: [],
         group: t_i18n('Selected'),
         label: correspondingEntities?.label ?? t_i18n('Unknown'),
       };
