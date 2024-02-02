@@ -7316,9 +7316,9 @@ __metadata:
   linkType: hard
 
 "electron-to-chromium@npm:^1.4.648":
-  version: 1.4.653
-  resolution: "electron-to-chromium@npm:1.4.653"
-  checksum: 10/edc4138ab45127dfa71973135051ac57ff68b79a220a2f903512ab367a4266c297f441c95905a74499b77d9b08934bbda29557ca81834eb0f817f917e6d2b751
+  version: 1.4.655
+  resolution: "electron-to-chromium@npm:1.4.655"
+  checksum: 10/2d0f623288d2da9f943c331a6e2fd1a65de151d67c32d034478d6ced34fa6c4cb73d78af9852f5b67cb8d5b4aebc16ee21d52922f4b21f0ffdb9733a85d4b789
   languageName: node
   linkType: hard
 
@@ -9075,9 +9075,11 @@ __metadata:
   linkType: hard
 
 "has-tostringtag@npm:^1.0.0, has-tostringtag@npm:^1.0.1":
-  version: 1.0.1
-  resolution: "has-tostringtag@npm:1.0.1"
-  checksum: 10/7fc430bbf7af2a071ef78f3bfcf33f6f8a21e72271ad9f1e0534c01d23c7402d4039808f4e6f3b9b0661c0b3545e58333961a1a9376b06efd1612cb0d3482096
+  version: 1.0.2
+  resolution: "has-tostringtag@npm:1.0.2"
+  dependencies:
+    has-symbols: "npm:^1.0.3"
+  checksum: 10/c74c5f5ceee3c8a5b8bc37719840dc3749f5b0306d818974141dda2471a1a2ca6c8e46b9d6ac222c5345df7a901c9b6f350b1e6d62763fec877e26609a401bfe
   languageName: node
   linkType: hard
 
@@ -9664,11 +9666,11 @@ __metadata:
   linkType: hard
 
 "is-typed-array@npm:^1.1.10, is-typed-array@npm:^1.1.12, is-typed-array@npm:^1.1.9":
-  version: 1.1.12
-  resolution: "is-typed-array@npm:1.1.12"
+  version: 1.1.13
+  resolution: "is-typed-array@npm:1.1.13"
   dependencies:
-    which-typed-array: "npm:^1.1.11"
-  checksum: 10/d953adfd3c41618d5e01b2a10f21817e4cdc9572772fa17211100aebb3811b6e3c2e308a0558cc87d218a30504cb90154b833013437776551bfb70606fb088ca
+    which-typed-array: "npm:^1.1.14"
+  checksum: 10/f850ba08286358b9a11aee6d93d371a45e3c59b5953549ee1c1a9a55ba5c1dd1bd9952488ae194ad8f32a9cf5e79c8fa5f0cc4d78c00720aa0bbcf238b38062d
   languageName: node
   linkType: hard
 
@@ -11179,6 +11181,7 @@ __metadata:
   resolution: "opencti-graphql@workspace:."
   dependencies:
     "@aws-sdk/client-s3": "npm:3.504.0"
+    "@aws-sdk/client-sts": "npm:3.504.0"
     "@aws-sdk/credential-provider-node": "npm:3.504.0"
     "@aws-sdk/lib-storage": "npm:3.504.0"
     "@aws-sdk/property-provider": "npm:3.374.0"
@@ -14159,7 +14162,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"which-typed-array@npm:^1.1.11, which-typed-array@npm:^1.1.13, which-typed-array@npm:^1.1.9":
+"which-typed-array@npm:^1.1.13, which-typed-array@npm:^1.1.14, which-typed-array@npm:^1.1.9":
   version: 1.1.14
   resolution: "which-typed-array@npm:1.1.14"
   dependencies:
