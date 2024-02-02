@@ -1470,5 +1470,8 @@ export const userEditContext = async (context, user, userId, input) => {
 
 export const getUserEffectiveConfidenceLevel = async (userId, context) => {
   const user = await findById(context, context.user, userId); // this returns a complete user, with groups
+  if (!user) {
+    throw FunctionalError('User not found', { user_id: userId });
+  }
   return computeUserEffectiveConfidenceLevel(user);
 };

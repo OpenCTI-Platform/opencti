@@ -1,5 +1,15 @@
 import type { AuthUser } from '../types/user';
 import { cropNumber } from './math';
+import { isEmptyField, isNotEmptyField } from '../database/utils';
+import { FunctionalError } from '../config/errors';
+import { logApp } from '../config/conf';
+import { schemaAttributesDefinition } from '../schema/schema-attributes';
+
+type ObjectWithConfidence = {
+  id: string,
+  entity_type: string,
+  confidence?: number | null
+};
 
 export const computeUserEffectiveConfidenceLevel = (user: AuthUser) => {
   // if user has a specific confidence level, it overrides everything and we return it
@@ -41,4 +51,103 @@ export const computeUserEffectiveConfidenceLevel = (user: AuthUser) => {
 
   // finally, if this user has no effective confidence level, we can return null
   return null;
+};
+
+const capInputConfidenceWithUserMaxConfidence = (userMaxConfidence: number, inputConfidence?: number | null) => {
+  const input = cropNumber(inputConfidence ?? 100, 0, 100); // input always untrusted, crop in 0-100
+  return Math.min(userMaxConfidence, input); // will always equal userMaxConfidence if no inputConfidence
+};
+
+/**
+ * Assert the confidence control on an input object from create operations
+ * Returns the confidence to apply on the resulting element.
+ */
+export const controlCreateInputWithUserConfidence = <T extends ObjectWithConfidence>(user: AuthUser, inputElement: T) => {
+  if (isEmptyField(user.effective_confidence_level?.max_confidence)) {
+    throw FunctionalError('User has no effective max confidence level and cannot create this element', { user_id: user.id });
+  }
+  const userMaxConfidence = user.effective_confidence_level?.max_confidence as number;
+  const inputConfidence = inputElement.confidence;
+  const confidenceLevelToApply = capInputConfidenceWithUserMaxConfidence(userMaxConfidence, inputConfidence);
+  return {
+    confidenceLevelToApply,
+  };
+};
+
+/**
+ * Assert the confidence control on an input object from update or upsert operation.
+ * Returns a flag to know if the confidences match properly, plus the confidence to apply on the resulting element.
+ */
+export const controlUpsertInputWithUserConfidence = <T extends ObjectWithConfidence>(user: AuthUser, inputElementOrPatch: T, existingElement: T) => {
+  if (isEmptyField(user.effective_confidence_level?.max_confidence)) {
+    throw FunctionalError('User has no effective max confidence level and cannot update this element', { user_id: user.id, element_id: existingElement.id });
+  }
+  const userMaxConfidence = user.effective_confidence_level?.max_confidence as number;
+  const confidenceLevelToApply = capInputConfidenceWithUserMaxConfidence(userMaxConfidence, inputElementOrPatch.confidence);
+  const existing = cropNumber(existingElement.confidence ?? 0, 0, 100);
+  const isConfidenceMatch = confidenceLevelToApply >= existing; // always true if no existingConfidence
+
+  return {
+    confidenceLevelToApply,
+    isConfidenceMatch,
+  };
+};
+
+/**
+ * Assert the confidence control for a given user over a given object in the platform.
+ */
+export const controlUserConfidenceAgainstElement = <T extends ObjectWithConfidence>(user: AuthUser, existingElement: T) => {
+  if (isEmptyField(user.effective_confidence_level?.max_confidence)) {
+    throw FunctionalError('User has no effective max confidence level and cannot update this element', { user_id: user.id, element_id: existingElement.id });
+  }
+
+  const userMaxConfidence = user.effective_confidence_level?.max_confidence as number;
+  const existing = cropNumber(existingElement.confidence ?? 0, 0, 100);
+  const isConfidenceMatch = userMaxConfidence >= existing; // always true if no existingConfidence
+
+  // contrary to upsert (where we might still update fields that were empty even if confidence control is negative)
+  // a user cannot update an object without the right confidence
+  if (!isConfidenceMatch) {
+    throw FunctionalError('User effective max confidence level is insufficient to update this element', { user_id: user.id, element_id: existingElement.id });
+  }
+};
+
+type UpdateInput = {
+  key: string | string[]
+  value: string[]
+};
+
+export const adaptUpdateInputsConfidence = <T extends ObjectWithConfidence>(user: AuthUser, inputs: UpdateInput | UpdateInput[], element: T) => {
+  if (isEmptyField(user.effective_confidence_level?.max_confidence)) {
+    throw FunctionalError('User has no effective max confidence level and cannot update this element', { user_id: user.id, element_id: element.id });
+  }
+  const inputsArray = Array.isArray(inputs) ? inputs : [inputs];
+  const userMaxConfidenceLevel = user.effective_confidence_level?.max_confidence as number;
+  let hasConfidenceInput = false;
+
+  // cap confidence change with user's confidence
+  const newInputs = inputsArray.map((input) => {
+    const keysArray = Array.isArray(input.key) ? input.key : [input.key];
+    if (keysArray.includes('confidence')) {
+      const newValue = parseInt(input.value[0], 10);
+      if (userMaxConfidenceLevel < newValue) {
+        logApp.warn('Object confidence cannot be updated above user\'s max confidence level, the value has been capped.', { user_id: user.id, element_id: element.id });
+      }
+      hasConfidenceInput = true;
+      return {
+        ...input,
+        value: [Math.min(userMaxConfidenceLevel, newValue).toString()]
+      };
+    }
+    return input;
+  });
+
+  // if the initial element does not have any confidence prior to this update, and we are not setting one now
+  // then we force the element confidence to the user's confidence
+  const hasConfidenceAttribute = schemaAttributesDefinition.getAttribute(element.entity_type, 'confidence');
+  if (hasConfidenceAttribute && isNotEmptyField(element.confidence) && inputsArray.length > 0 && !hasConfidenceInput) {
+    newInputs.push({ key: 'confidence', value: [userMaxConfidenceLevel.toString()] });
+  }
+
+  return newInputs;
 };

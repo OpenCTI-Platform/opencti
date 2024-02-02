@@ -198,6 +198,12 @@ import { confidence } from '../schema/attribute-definition';
 import { ENTITY_TYPE_INDICATOR } from '../modules/indicator/indicator-types';
 import { FilterMode, FilterOperator } from '../generated/graphql';
 import { getMandatoryAttributesForSetting } from '../modules/entitySetting/entitySetting-attributeUtils';
+import {
+  controlCreateInputWithUserConfidence,
+  controlUserConfidenceAgainstElement,
+  controlUpsertInputWithUserConfidence,
+  adaptUpdateInputsConfidence
+} from '../utils/confidence-level';
 
 // region global variables
 const MAX_BATCH_SIZE = 300;
@@ -1982,12 +1988,15 @@ export const updateAttributeFromLoadedWithRefs = async (context, user, initial, 
   if (!initial) {
     throw FunctionalError('Cant update undefined element');
   }
-  const updates = Array.isArray(inputs) ? inputs : [inputs];
+  // region confidence control
+  controlUserConfidenceAgainstElement(user, initial);
+  const newInputs = adaptUpdateInputsConfidence(user, inputs, initial);
+  // endregion
   const metaKeys = [...schemaRelationsRefDefinition.getStixNames(initial.entity_type), ...schemaRelationsRefDefinition.getInputNames(initial.entity_type)];
-  const meta = updates.filter((e) => metaKeys.includes(e.key));
+  const meta = newInputs.filter((e) => metaKeys.includes(e.key));
   const metaIds = R.uniq(meta.map((i) => i.value ?? []).flat());
   const metaDependencies = await elFindByIds(context, user, metaIds, { toMap: true, mapWithAllIds: true });
-  const revolvedInputs = updates.map((input) => {
+  const revolvedInputs = newInputs.map((input) => {
     if (metaKeys.includes(input.key)) {
       const resolvedValues = (input.value ?? []).map((refId) => metaDependencies[refId]).filter((o) => isNotEmptyField(o));
       return { ...input, value: resolvedValues };
@@ -2002,30 +2011,7 @@ export const updateAttribute = async (context, user, id, type, inputs, opts = {}
   if (!initial) {
     throw FunctionalError('Cant find element to update', { id, type });
   }
-
-  // region confidence control
-  if (!user.effective_confidence_level) {
-    throw FunctionalError('User has no effective max confidence level and cannot update the element', { id });
-  }
-  const elementConfidence = Math.max(Math.min(initial.confidence ?? 0, 100), 0);
-  const userMaxConfidenceLevel = user.effective_confidence_level.max_confidence;
-  if (userMaxConfidenceLevel < elementConfidence) {
-    throw FunctionalError('User effective max confidence level is insufficient to update this element', { id });
-  }
-  // if the attribute updated is "confidence", new value cannot exceed user's max confidence
-  const newInputs = inputs.map((input) => {
-    if (input.key === 'confidence') {
-      const newValue = parseInt(input.value[0], 10);
-      return {
-        ...input,
-        value: [Math.min(userMaxConfidenceLevel, newValue).toString()]
-      };
-    }
-    return input;
-  });
-  // endregion
-
-  return updateAttributeFromLoadedWithRefs(context, user, initial, newInputs, opts);
+  return updateAttributeFromLoadedWithRefs(context, user, initial, inputs, opts);
 };
 
 export const patchAttribute = async (context, user, id, type, patch, opts = {}) => {
@@ -2428,19 +2414,11 @@ const upsertElement = async (context, user, element, type, basePatch, opts = {})
     inputs.push(fileImpact);
   }
 
-  // confidence control
-  if (!user.effective_confidence_level) {
-    // LockTimeoutError would make the worker retry (we do not want to lose messages in that case
-    // TODO: new error and update worker?
-    throw LockTimeoutError({ user }, 'User has no effective confidence level and cannot upsert data in the platform.');
-  }
-  const elementConfidence = Math.max(Math.min(element.confidence ?? 0, 100), 0);
-  const patchConfidence = Math.max(Math.min(updatePatch.confidence ?? 0, 100), 0);
-  const userMaxConfidenceLevel = user.effective_confidence_level.max_confidence;
-  // the user's level is a threshold for incoming data confidence
-  const effectivePatchConfidence = Math.min(userMaxConfidenceLevel, patchConfidence);
-  const isConfidenceMatch = effectivePatchConfidence >= elementConfidence;
-  updatePatch.confidence = effectivePatchConfidence;
+  // region confidence control / upsert
+  const { confidenceLevelToApply, isConfidenceMatch } = controlUpsertInputWithUserConfidence(user, updatePatch, element);
+  updatePatch.confidence = confidenceLevelToApply;
+  // note that if the existing data has no confidence (null) it will still be updated below, even if isConfidenceMatch = false
+  // endregion
 
   // -- Upsert attributes
   const attributes = Array.from(schemaAttributesDefinition.getAttributes(type).values());
@@ -2663,22 +2641,37 @@ export const buildRelationData = async (context, user, input, opts = {}) => {
   };
 };
 
-export const createRelationRaw = async (context, user, input, opts = {}) => {
+export const createRelationRaw = async (context, user, rawInput, opts = {}) => {
   let lock;
   const { fromRule, locks = [] } = opts;
-  const { fromId, toId, relationship_type: relationshipType } = input;
+  const { fromId, toId, relationship_type: relationshipType } = rawInput;
   // Pre-check before inputs resolution
   if (fromId === toId) {
     /* v8 ignore next */
-    const errorData = { from: input.fromId, relationshipType };
+    const errorData = { from: rawInput.fromId, relationshipType };
     throw UnsupportedError('Relation cant be created with the same source and target', errorData);
   }
   const entitySetting = await getEntitySettingFromCache(context, relationshipType);
-  const filledInput = fillDefaultValues(user, input, entitySetting);
+  const filledInput = fillDefaultValues(user, rawInput, entitySetting);
   await validateEntityAndRelationCreation(context, user, filledInput, relationshipType, entitySetting, opts);
   // We need to check existing dependencies
   const resolvedInput = await inputResolveRefs(context, user, filledInput, relationshipType, entitySetting);
   const { from, to } = resolvedInput;
+
+  // region confidence control
+  const input = structuredClone(rawInput);
+  const { confidenceLevelToApply } = controlCreateInputWithUserConfidence(user, input);
+  input.confidence = confidenceLevelToApply; // confidence of the new relation will be capped to user's confidence
+
+  // when creating stix ref, we must check confidence on from side (this count has modifying this element itself)
+  if (isStixRefRelationship(relationshipType)) {
+    const fromSideHasConfidenceAttribute = schemaAttributesDefinition.getAttribute(from.entity_type, 'confidence');
+    if (fromSideHasConfidenceAttribute) {
+      controlUserConfidenceAgainstElement(user, from);
+    }
+  }
+  // endregion
+
   // check if user has "edit" access on from and to
   if (!validateUserAccessOperation(user, from, 'edit') || !validateUserAccessOperation(user, to, 'edit')) {
     throw ForbiddenAccess();
@@ -2951,14 +2944,9 @@ const buildEntityData = async (context, user, input, type, opts = {}) => {
   // STIX-Core-Object
   // -- STIX-Domain-Object
   if (isStixDomainObject(type)) {
-    // confidence of the object is thresholded by the user's effective confidence level
-    const inputConfidence = Math.max(Math.min(input.confidence ?? 0, 100), 0);
-    const userMaxConfidenceLevel = user.effective_confidence_level.max_confidence;
-    const effectiveConfidence = Math.min(userMaxConfidenceLevel, inputConfidence);
-
     data = R.pipe(
       R.assoc('revoked', R.isNil(input.revoked) ? false : input.revoked),
-      R.assoc('confidence', effectiveConfidence),
+      R.assoc('confidence', R.isNil(input.confidence) ? 0 : input.confidence),
       R.assoc('lang', R.isNil(input.lang) ? 'en' : input.lang),
       R.assoc('created', R.isNil(input.created) ? today : input.created),
       R.assoc('modified', R.isNil(input.modified) ? today : input.modified)
@@ -3044,12 +3032,17 @@ const buildEntityData = async (context, user, input, type, opts = {}) => {
   };
 };
 
-const createEntityRaw = async (context, user, input, type, opts = {}) => {
-  // Region - Pre-Check
+const createEntityRaw = async (context, user, rawInput, type, opts = {}) => {
+  // region confidence control
+  const input = structuredClone(rawInput);
+  const { confidenceLevelToApply } = controlCreateInputWithUserConfidence(user, input);
+  input.confidence = confidenceLevelToApply; // confidence of new entity will be capped to user's confidence
+  // endregion
+  // region - Pre-Check
   const entitySetting = await getEntitySettingFromCache(context, type);
   const filledInput = fillDefaultValues(user, input, entitySetting);
   await validateEntityAndRelationCreation(context, user, filledInput, type, entitySetting, opts);
-  // Endregion
+  // endregion
   const { fromRule } = opts;
   // We need to check existing dependencies
   const resolvedInput = await inputResolveRefs(context, user, filledInput, type, entitySetting);
@@ -3209,6 +3202,19 @@ export const internalDeleteElementById = async (context, user, id, opts = {}) =>
   if (!element) {
     throw AlreadyDeletedError({ id });
   }
+  // region confidence control
+  const hasConfidenceAttribute = schemaAttributesDefinition.getAttribute(element.entity_type, 'confidence');
+  if (hasConfidenceAttribute) {
+    controlUserConfidenceAgainstElement(user, element);
+  }
+  // when deleting stix ref, we must check confidence on from side (this count has modifying this element itself)
+  if (isStixRefRelationship(element.entity_type)) {
+    const fromSideHasConfidenceAttribute = schemaAttributesDefinition.getAttribute(element.from.entity_type, 'confidence');
+    if (fromSideHasConfidenceAttribute) {
+      controlUserConfidenceAgainstElement(user, element.from);
+    }
+  }
+  // endregion
   // Prevent individual deletion if linked to a user
   if (element.entity_type === ENTITY_TYPE_IDENTITY_INDIVIDUAL && !isEmptyField(element.contact_information)) {
     const args = {
