@@ -23,6 +23,6 @@ export interface PublicManifestConfig {
 }
 
 export interface PublicManifest {
-  config: PublicManifestConfig
-  widgets: Record<string, PublicManifestWidget>
+  config?: PublicManifestConfig
+  widgets?: Record<string, PublicManifestWidget>
 }

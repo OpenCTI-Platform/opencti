@@ -3,9 +3,9 @@ import type { PublicManifestConfig, PublicManifestWidget } from './PublicManifes
 import { computerRelativeDate, dayStartDate, formatDate } from '../../../utils/Time';
 import PublicStixCoreObjectsNumber from './PublicStixCoreObjectsNumber';
 
-const usePublicDashboardWidgets = (uriKey: string, config: PublicManifestConfig) => {
-  const startDate = config.relativeDate ? computerRelativeDate(config.relativeDate) : config.startDate;
-  const endDate = config.relativeDate ? formatDate(dayStartDate(null, false)) : config.endDate;
+const usePublicDashboardWidgets = (uriKey: string, config?: PublicManifestConfig) => {
+  const startDate = config?.relativeDate ? computerRelativeDate(config.relativeDate) : config?.startDate;
+  const endDate = config?.relativeDate ? formatDate(dayStartDate(null, false)) : config?.endDate;
 
   const entityWidget = (widget: PublicManifestWidget) => {
     switch (widget.type) {

@@ -10,10 +10,12 @@ import WorkspaceShareList, { workspaceShareListQuery } from '@components/workspa
 import { WorkspaceShareListQuery } from '@components/workspaces/__generated__/WorkspaceShareListQuery.graphql';
 import { graphql, useMutation, useQueryLoader } from 'react-relay';
 import { FormikConfig } from 'formik/dist/types';
+import Alert from '@mui/material/Alert';
 import { useFormatter } from '../../../components/i18n';
 import Loader, { LoaderVariant } from '../../../components/Loader';
 import DeleteDialog from '../../../components/DeleteDialog';
 import useDeletion from '../../../utils/hooks/useDeletion';
+import { handleError } from '../../../relay/environment';
 
 const workspaceShareButtonCreateMutation = graphql`
   mutation WorkspaceShareButtonCreateMutation($input: PublicDashboardAddInput!) {
@@ -46,7 +48,18 @@ const WorkspaceShareButton = ({ workspaceId }: WorkspaceShareButtonProps) => {
 
   const [publicDashboardsQueryRef, fetchList] = useQueryLoader<WorkspaceShareListQuery>(workspaceShareListQuery);
   useEffect(() => {
-    fetchList({});
+    fetchList({
+      filters: {
+        mode: 'and',
+        filterGroups: [],
+        filters: [{
+          key: ['dashboard_id'],
+          mode: 'or',
+          operator: 'eq',
+          values: [workspaceId],
+        }],
+      },
+    });
   }, []);
 
   const onSubmit: FormikConfig<WorkspaceShareFormData>['onSubmit'] = (values, { setSubmitting }) => {
@@ -61,6 +74,10 @@ const WorkspaceShareButton = ({ workspaceId }: WorkspaceShareButtonProps) => {
       onCompleted: () => {
         setSubmitting(false);
         fetchList({}, { fetchPolicy: 'network-only' });
+      },
+      onError: (error) => {
+        setSubmitting(false);
+        handleError(error);
       },
     });
   };
@@ -103,51 +120,56 @@ const WorkspaceShareButton = ({ workspaceId }: WorkspaceShareButtonProps) => {
       </Tooltip>
 
       <Drawer
-        title={t_i18n('Public dashboard links')}
+        title={t_i18n('Public dashboards')}
         open={drawerOpen}
         onClose={() => setDrawerOpen(false)}
-        containerStyle={{ minHeight: '100%' }}
       >
         <div
           style={{
             display: 'flex',
             flexDirection: 'column',
-            minHeight: '100%',
-            padding: '20px 0',
+            paddingTop: '20px',
+            gap: '20px',
           }}
         >
-          <Typography
-            variant="h4"
-            gutterBottom={true}
-          >
-            {t_i18n('Existing links for this dashboard')}
-          </Typography>
-
-          {publicDashboardsQueryRef && (
-            <Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
-              <WorkspaceShareList
-                queryRef={publicDashboardsQueryRef}
-                onDelete={confirmDelete}
-              />
-            </Suspense>
-          )}
-
-          <section style={{ marginTop: 'auto' }}>
+          <section>
             <Typography
               variant="h4"
               gutterBottom={true}
-              style={{ marginTop: '20px' }}
             >
-              {t_i18n('Create a new link')}
+              {t_i18n('Create a new public dashboard')}
             </Typography>
 
             <WorkspaceShareForm onSubmit={onSubmit} />
+          </section>
+
+          <section>
+            <Typography
+              variant="h4"
+              gutterBottom={true}
+              sx={{ marginBottom: '12px' }}
+            >
+              {t_i18n('Existing public dashboards')}
+            </Typography>
+
+            <Alert severity="info" variant="outlined">
+              {t_i18n('A public dashboard is a snapshot...')}
+            </Alert>
+
+            {publicDashboardsQueryRef && (
+              <Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
+                <WorkspaceShareList
+                  queryRef={publicDashboardsQueryRef}
+                  onDelete={confirmDelete}
+                />
+              </Suspense>
+            )}
           </section>
         </div>
       </Drawer>
 
       <DeleteDialog
-        title={t_i18n('Are you sure you want to delete this dashboard link?')}
+        title={t_i18n('Are you sure you want to delete this public dashboard?')}
         deletion={deletion}
         submitDelete={onDelete}
       />

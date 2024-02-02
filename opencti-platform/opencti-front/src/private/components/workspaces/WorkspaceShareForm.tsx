@@ -5,6 +5,7 @@ import InputAdornment from '@mui/material/InputAdornment';
 import Button from '@mui/material/Button';
 import { Option } from '@components/common/form/ReferenceField';
 import { FormikConfig } from 'formik/dist/types';
+import * as Yup from 'yup';
 import { useFormatter } from '../../../components/i18n';
 import TextField from '../../../components/TextField';
 import { fieldSpacingContainerStyle } from '../../../utils/field';
@@ -22,9 +23,15 @@ interface WorkspaceShareFormProps {
 const WorkspaceShareForm = ({ onSubmit }: WorkspaceShareFormProps) => {
   const { t_i18n } = useFormatter();
 
+  const formValidation = Yup.object().shape({
+    name: Yup.string().required(t_i18n('This field is required')),
+    max_markings: Yup.array().min(1, 'This field is required').required(t_i18n('This field is required')),
+  });
+
   return (
     <Formik<WorkspaceShareFormData>
       enableReinitialize={true}
+      validationSchema={formValidation}
       initialValues={{
         name: '',
         uri_key: '',
@@ -32,22 +39,22 @@ const WorkspaceShareForm = ({ onSubmit }: WorkspaceShareFormProps) => {
       }}
       onSubmit={onSubmit}
     >
-      {({ isSubmitting, handleReset, submitForm }) => (
+      {({ isSubmitting, isValid, dirty, handleReset, submitForm }) => (
         <Form>
           <Field
             name="name"
             component={TextField}
             variant="standard"
             label={t_i18n('Name')}
-            style={fieldSpacingContainerStyle}
+            style={{ width: '100%' }}
           />
           <Field
             disabled
             name="uri_key"
             component={TextField}
             variant="standard"
-            label={t_i18n('Link ID')}
-            helperText={t_i18n('Specify the ID of your link')}
+            label={t_i18n('Public dashboard ID')}
+            helperText={t_i18n('Specify the ID of your public dashboard')}
             style={fieldSpacingContainerStyle}
             InputProps={{
               startAdornment: (
@@ -82,7 +89,7 @@ const WorkspaceShareForm = ({ onSubmit }: WorkspaceShareFormProps) => {
             <Button
               variant="contained"
               color="secondary"
-              disabled={isSubmitting}
+              disabled={isSubmitting || !isValid || !dirty}
               onClick={submitForm}
             >
               {t_i18n('Create')}
