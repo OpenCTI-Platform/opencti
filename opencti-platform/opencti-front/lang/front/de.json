@@ -2565,8 +2565,7 @@
   "Max Confidence Level:": "Max. Konfidenzniveau:",
   "Please, verify the validity of the selected CSV mapper for the given URL.": "Bitte überprüfen Sie die Gültigkeit des ausgewählten CSV-Mappers für die angegebene URL.",
   "Only successful tests allow the ingestion creation.": "Nur erfolgreiche Tests ermöglichen die Erstellung der Aufnahme.",
-  "Only successful tests allow the ingestion edition.": "Nur erfolgreiche Tests erlauben die Ingestion-Edition."
-  "Max Confidence Level:": "Max. Konfidenzniveau:",
+  "Only successful tests allow the ingestion edition.": "Nur erfolgreiche Tests erlauben die Ingestion-Edition.",
   "Share as public dashboard": "Als öffentliches Dashboard freigeben",
   "Public dashboard links": "Öffentliche Dashboard-Links",
   "Existing links for this dashboard": "Vorhandene Links für dieses Dashboard",

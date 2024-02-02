@@ -2562,7 +2562,6 @@
   "Marking definitions to use by the csv mapper...": "Definiciones de marcado utilizadas por el mapeador csv sólo cuando algunos atributos de marcado tienen la política establecida en 'Dejar que el usuario elija las definiciones de marcado'. Si no, estas definiciones de marcado se ignoran.",
   "Option 'Let the user choose marking definitions'...": "La opción 'Dejar que el usuario elija las definiciones de marcado' pedirá al usuario que elija (al importar el archivo CSV) qué definiciones de marcado aplicar cuando falten datos en el archivo CSV.",
   "Update without references": "Actualizar sin referencias",
-  "Max Confidence Level:": "Nivel Máximo de Confianza:",
   "Share as public dashboard": "Compartir como tablero público",
   "Public dashboard links": "Enlaces al panel público",
   "Existing links for this dashboard": "Enlaces existentes para este panel",
@@ -2575,7 +2574,7 @@
   "Copy link": "Copiar enlace",
   "Disable link": "Desactivar enlace",
   "Delete link": "Borrar enlace",
-  "Are you sure you want to delete this dashboard link?": "¿Está seguro de que desea eliminar este enlace del panel de control?"
+  "Are you sure you want to delete this dashboard link?": "¿Está seguro de que desea eliminar este enlace del panel de control?",
   "Max Confidence Level:": "Nivel Máximo de Confianza:",
   "The Max Confidence Level is currently defined at the user level. It overrides Max Confidence Level from user’s groups.": "El nivel de confianza máximo se define actualmente a nivel de usuario. Anula el nivel de confianza máximo de los grupos de usuarios.",
   "Please, verify the validity of the selected CSV mapper for the given URL.": "Por favor, verifique la validez del asignador CSV seleccionado para la URL proporcionada.",
