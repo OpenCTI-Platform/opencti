@@ -1,9 +1,10 @@
-import React, { useMemo } from 'react';
+import React, { useEffect, useMemo } from 'react';
 import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import { useParams } from 'react-router-dom';
 import RGL, { WidthProvider } from 'react-grid-layout';
 import { ErrorBoundary, SimpleError } from '@components/Error';
 import Paper from '@mui/material/Paper';
+import { redirect, useNavigate } from 'react-router-dom-v5-compat';
 import Loader, { LoaderVariant } from '../../components/Loader';
 import { PublicDashboardQuery } from './__generated__/PublicDashboardQuery.graphql';
 import useQueryLoading from '../../utils/hooks/useQueryLoading';
@@ -31,12 +32,19 @@ const PublicDashboardComponent = ({
   queryRef,
   uriKey,
 }: PublicDashboardComponentProps) => {
+  const navigate = useNavigate();
   const ReactGridLayout = useMemo(() => WidthProvider(RGL), []);
 
   const { publicDashboardByUriKey } = usePreloadedQuery(publicDashboardQuery, queryRef);
   const manifest = publicDashboardByUriKey?.public_manifest;
-  const parsedManifest: PublicManifest = JSON.parse(fromB64(manifest ?? '{}'));
+  const parsedManifest: PublicManifest = JSON.parse(manifest ? fromB64(manifest) : '{}');
   const { widgets, config } = parsedManifest;
+
+  useEffect(() => {
+    if (publicDashboardByUriKey === null) {
+      navigate('/');
+    }
+  }, [publicDashboardByUriKey]);
 
   const {
     entityWidget,
@@ -56,12 +64,16 @@ const PublicDashboardComponent = ({
     console.log('end date', value);
   };
 
+  if (!publicDashboardByUriKey || !config) {
+    return null;
+  }
+
   return (
     <>
       <PublicTopBar />
       <PublicDashboardHeader
         title={publicDashboardByUriKey?.name ?? ''}
-        manifestConfig={parsedManifest.config}
+        manifestConfig={config}
         onChangeRelativeDate={onChangeRelativeDate}
         onChangeStartDate={onChangeStartDate}
         onChangeEndDate={onChangeEndDate}
@@ -75,7 +87,7 @@ const PublicDashboardComponent = ({
         isDraggable={false}
         isResizable={false}
       >
-        {Object.values(widgets).map((widget) => (
+        {Object.values(widgets ?? {}).map((widget) => (
           <Paper
             key={widget.id}
             data-grid={widget.layout}

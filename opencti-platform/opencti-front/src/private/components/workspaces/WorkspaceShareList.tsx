@@ -14,8 +14,8 @@ import type { Theme } from '../../../components/Theme';
 import { copyToClipboard } from '../../../utils/utils';
 
 export const workspaceShareListQuery = graphql`
-  query WorkspaceShareListQuery {
-    publicDashboards {
+  query WorkspaceShareListQuery($filters: FilterGroup) {
+    publicDashboards(filters: $filters) {
       edges {
         node {
           id
@@ -40,7 +40,9 @@ const WorkspaceShareList = ({ queryRef, onDelete }: WorkspaceShareListProps) => 
   const theme = useTheme<Theme>();
   const { t_i18n, fld } = useFormatter();
   const { publicDashboards } = usePreloadedQuery(workspaceShareListQuery, queryRef);
-  const dashboards = publicDashboards?.edges.map((edge) => edge.node);
+  const dashboards = publicDashboards?.edges
+    .map((edge) => edge.node)
+    .sort((a, b) => a.created_at.localeCompare(b.created_at));
 
   const copyLinkUrl = (uriKey: string) => {
     copyToClipboard(
@@ -50,7 +52,7 @@ const WorkspaceShareList = ({ queryRef, onDelete }: WorkspaceShareListProps) => 
   };
 
   if (!dashboards || dashboards.length === 0) {
-    return <p>{t_i18n('No links created yet')}</p>;
+    return <p>{t_i18n('No public dashboard created yet')}</p>;
   }
 
   return (
@@ -77,7 +79,7 @@ const WorkspaceShareList = ({ queryRef, onDelete }: WorkspaceShareListProps) => 
                   <ContentCopyIcon fontSize="small" color="primary" />
                 </ToggleButton>
               </Tooltip>
-              {/* <Tooltip title={t_i18n('Disable link')}> */}
+              {/* <Tooltip title={t_i18n('Disable public dashboard')}> */}
               {/*  <ToggleButton */}
               {/*    aria-label="Label" */}
               {/*    size="small" */}
@@ -86,7 +88,7 @@ const WorkspaceShareList = ({ queryRef, onDelete }: WorkspaceShareListProps) => 
               {/*    <DoNotDisturbAltIcon fontSize="small" color="primary" /> */}
               {/*  </ToggleButton> */}
               {/* </Tooltip> */}
-              <Tooltip title={t_i18n('Delete link')}>
+              <Tooltip title={t_i18n('Delete public dashboard')}>
                 <ToggleButton
                   aria-label="Label"
                   size="small"

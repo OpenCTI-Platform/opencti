@@ -350,11 +350,11 @@ const WorkspaceHeader = ({
             </div>
           </Security>
         )}
-        <Security needs={[EXPLORE_EXUPDATE_PUBLISH]}>
-          <div style={{ margin: '-8px 0 0 4px', float: 'right' }}>
-            <WorkspaceShareButton workspaceId={workspace.id} />
-          </div>
-        </Security>
+        {/* <Security needs={[EXPLORE_EXUPDATE_PUBLISH]}> */}
+        {/*  <div style={{ margin: '-8px 0 0 4px', float: 'right' }}> */}
+        {/*    <WorkspaceShareButton workspaceId={workspace.id} /> */}
+        {/*  </div> */}
+        {/* </Security> */}
         <WorkspaceDuplicationDialog
           workspace={workspace}
           displayDuplicate={displayDuplicate}
