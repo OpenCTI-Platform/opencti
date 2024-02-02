@@ -120,6 +120,10 @@ class StixDomainObjectNestedEntities extends Component {
     this.setState({ sortBy: field, orderAsc });
   }
 
+  handleReverseRelation() {
+    this.setState({ relationReversed: !this.state.relationReversed });
+  }
+
   SortHeader(field, label, isSortable) {
     const { t } = this.props;
     const sortComponent = this.state.orderAsc ? (
@@ -146,8 +150,8 @@ class StixDomainObjectNestedEntities extends Component {
   }
 
   render() {
-    const { searchTerm, sortBy, orderAsc } = this.state;
-    const { entityId, t, entityType, targetStixCoreObjectTypes } = this.props;
+    const { searchTerm, sortBy, orderAsc, relationReversed } = this.state;
+    const { entityId, t, entityType, defaultStartTime, defaultStopTime, targetStixCoreObjectTypes } = this.props;
     const paginationOptions = {
       fromOrToId: entityId,
       search: searchTerm,
@@ -168,6 +172,10 @@ class StixDomainObjectNestedEntities extends Component {
             entityId={entityId}
             variant="inLine"
             entityType={entityType}
+            defaultStopTime={defaultStopTime}
+            defaultStartTime={defaultStartTime}
+            isRelationReversed={relationReversed}
+            handleReverseRelation={this.handleReverseRelation.bind(this)}
             targetStixCoreObjectTypes={targetStixCoreObjectTypes}
           />
         </Security>
@@ -197,6 +205,8 @@ StixDomainObjectNestedEntities.propTypes = {
   classes: PropTypes.object,
   t: PropTypes.func,
   history: PropTypes.object,
+  defaultStartTime: PropTypes.string,
+  defaultStopTime: PropTypes.string,
 };
 
 export default compose(

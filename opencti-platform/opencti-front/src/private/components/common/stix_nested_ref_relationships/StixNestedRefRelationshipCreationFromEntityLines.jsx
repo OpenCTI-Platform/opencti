@@ -120,6 +120,7 @@ export const stixNestedRefRelationshipCreationFromEntityLinesQuery = graphql`
     $cursor: ID
     $orderBy: StixCoreObjectsOrdering
     $orderMode: OrderingMode
+    $filters: FilterGroup
   ) {
     ...StixNestedRefRelationshipCreationFromEntityLines_data
     @arguments(
@@ -129,6 +130,7 @@ export const stixNestedRefRelationshipCreationFromEntityLinesQuery = graphql`
       cursor: $cursor
       orderBy: $orderBy
       orderMode: $orderMode
+      filters: $filters
     )
   }
 `;
@@ -145,6 +147,7 @@ const StixNestedRefRelationshipCreationFromEntityLines = createPaginationContain
           cursor: { type: "ID" }
           orderBy: { type: "StixCoreObjectsOrdering", defaultValue: created_at }
           orderMode: { type: "OrderingMode", defaultValue: asc }
+          filters: { type: "FilterGroup" }
         ) {
           stixCoreObjects(
             search: $search
@@ -153,6 +156,7 @@ const StixNestedRefRelationshipCreationFromEntityLines = createPaginationContain
             after: $cursor
             orderBy: $orderBy
             orderMode: $orderMode
+            filters: $filters
           ) @connection(key: "Pagination_stixCoreObjects") {
             edges {
               node {
@@ -182,6 +186,7 @@ const StixNestedRefRelationshipCreationFromEntityLines = createPaginationContain
         cursor,
         orderBy: fragmentVariables.orderBy,
         orderMode: fragmentVariables.orderMode,
+        filters: fragmentVariables.filters,
       };
     },
     query: stixNestedRefRelationshipCreationFromEntityLinesQuery,
