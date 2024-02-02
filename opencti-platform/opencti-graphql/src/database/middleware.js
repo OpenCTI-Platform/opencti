@@ -2002,7 +2002,30 @@ export const updateAttribute = async (context, user, id, type, inputs, opts = {}
   if (!initial) {
     throw FunctionalError('Cant find element to update', { id, type });
   }
-  return updateAttributeFromLoadedWithRefs(context, user, initial, inputs, opts);
+
+  // region confidence control
+  if (!user.effective_confidence_level) {
+    throw FunctionalError('User has no effective max confidence level and cannot update the element', { id });
+  }
+  const elementConfidence = Math.max(Math.min(initial.confidence ?? 0, 100), 0);
+  const userMaxConfidenceLevel = user.effective_confidence_level.max_confidence;
+  if (userMaxConfidenceLevel < elementConfidence) {
+    throw FunctionalError('User effective max confidence level is insufficient to update this element', { id });
+  }
+  // if the attribute updated is "confidence", new value cannot exceed user's max confidence
+  const newInputs = inputs.map((input) => {
+    if (input.key === 'confidence') {
+      const newValue = parseInt(input.value[0], 10);
+      return {
+        ...input,
+        value: [Math.min(userMaxConfidenceLevel, newValue).toString()]
+      };
+    }
+    return input;
+  });
+  // endregion
+
+  return updateAttributeFromLoadedWithRefs(context, user, initial, newInputs, opts);
 };
 
 export const patchAttribute = async (context, user, id, type, patch, opts = {}) => {
@@ -2404,8 +2427,21 @@ const upsertElement = async (context, user, element, type, basePatch, opts = {})
     const fileImpact = { key: 'x_opencti_files', value: [...(element.x_opencti_files ?? []), convertedFile] };
     inputs.push(fileImpact);
   }
-  // If confidence is passed at creation, just compare confidence
-  const isConfidenceMatch = (updatePatch.confidence ?? 0) >= (element.confidence ?? 0);
+
+  // confidence control
+  if (!user.effective_confidence_level) {
+    // LockTimeoutError would make the worker retry (we do not want to lose messages in that case
+    // TODO: new error and update worker?
+    throw LockTimeoutError({ user }, 'User has no effective confidence level and cannot upsert data in the platform.');
+  }
+  const elementConfidence = Math.max(Math.min(element.confidence ?? 0, 100), 0);
+  const patchConfidence = Math.max(Math.min(updatePatch.confidence ?? 0, 100), 0);
+  const userMaxConfidenceLevel = user.effective_confidence_level.max_confidence;
+  // the user's level is a threshold for incoming data confidence
+  const effectivePatchConfidence = Math.min(userMaxConfidenceLevel, patchConfidence);
+  const isConfidenceMatch = effectivePatchConfidence >= elementConfidence;
+  updatePatch.confidence = effectivePatchConfidence;
+
   // -- Upsert attributes
   const attributes = Array.from(schemaAttributesDefinition.getAttributes(type).values());
   for (let attrIndex = 0; attrIndex < attributes.length; attrIndex += 1) {
@@ -2915,9 +2951,14 @@ const buildEntityData = async (context, user, input, type, opts = {}) => {
   // STIX-Core-Object
   // -- STIX-Domain-Object
   if (isStixDomainObject(type)) {
+    // confidence of the object is thresholded by the user's effective confidence level
+    const inputConfidence = Math.max(Math.min(input.confidence ?? 0, 100), 0);
+    const userMaxConfidenceLevel = user.effective_confidence_level.max_confidence;
+    const effectiveConfidence = Math.min(userMaxConfidenceLevel, inputConfidence);
+
     data = R.pipe(
       R.assoc('revoked', R.isNil(input.revoked) ? false : input.revoked),
-      R.assoc('confidence', R.isNil(input.confidence) ? 0 : input.confidence),
+      R.assoc('confidence', effectiveConfidence),
       R.assoc('lang', R.isNil(input.lang) ? 'en' : input.lang),
       R.assoc('created', R.isNil(input.created) ? today : input.created),
       R.assoc('modified', R.isNil(input.modified) ? today : input.modified)

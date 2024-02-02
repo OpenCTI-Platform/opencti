@@ -1171,6 +1171,7 @@ const buildSessionUser = (origin, impersonate, provider, settings) => {
       definition_type: m.definition_type,
     })),
     session_version: PLATFORM_VERSION,
+    effective_confidence_level: user.effective_confidence_level,
     ...user.provider_metadata
   };
 };
