@@ -1,8 +1,9 @@
 import { type ModuleDefinition, registerDefinition } from '../../schema/module';
 import { ABSTRACT_STIX_DOMAIN_OBJECT } from '../../schema/general';
-import { ENTITY_TYPE_INDICATOR, type StixIndicator, type StoreEntityIndicator } from './indicator-types';
+import { ENTITY_TYPE_INDICATOR, INDICATOR_DECAY_FEATURE_FLAG, type StixIndicator, type StoreEntityIndicator } from './indicator-types';
 import convertIndicatorToStix from './indicator-converter';
 import { killChainPhases, objectOrganization } from '../../schema/stixRefRelationship';
+import { isFeatureEnabled } from '../../config/conf';
 
 const INDICATOR_DEFINITION: ModuleDefinition<StoreEntityIndicator, StixIndicator> = {
   type: {
@@ -92,4 +93,6 @@ const INDICATOR_DEFINITION: ModuleDefinition<StoreEntityIndicator, StixIndicator
   converter: convertIndicatorToStix
 };
 
-registerDefinition(INDICATOR_DEFINITION);
+if (isFeatureEnabled(INDICATOR_DECAY_FEATURE_FLAG)) {
+  registerDefinition(INDICATOR_DEFINITION);
+}

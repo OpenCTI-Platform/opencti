@@ -2,8 +2,8 @@ import { type ManagerDefinition, registerManager } from './managerModule';
 import conf, { booleanConf, isFeatureEnabled, logApp } from '../config/conf';
 import { executionContext, SYSTEM_USER } from '../utils/access';
 import { findIndicatorsForDecay, updateIndicatorDecayScore } from '../modules/indicator/indicator-domain';
+import { INDICATOR_DECAY_FEATURE_FLAG } from '../modules/indicator/indicator-types';
 
-const INDICATOR_DECAY = 'INDICATOR_DECAY';
 const INDICATOR_DECAY_MANAGER_ENABLED = booleanConf('indicator_decay_manager:enabled', false);
 const INDICATOR_DECAY_MANAGER_KEY = conf.get('indicator_decay_manager:lock_key') || 'indicator_decay_manager_lock';
 const SCHEDULE_TIME = conf.get('indicator_decay_manager:interval') || 60000; // 1 minute
@@ -52,6 +52,6 @@ const INDICATOR_DECAY_MANAGER_DEFINITION: ManagerDefinition = {
   }
 };
 
-if (isFeatureEnabled(INDICATOR_DECAY)) {
+if (isFeatureEnabled(INDICATOR_DECAY_FEATURE_FLAG)) {
   registerManager(INDICATOR_DECAY_MANAGER_DEFINITION);
 }

@@ -5,6 +5,7 @@ import type { BasicStoreEntity, StoreEntity } from '../../types/store';
 import type { DecayHistory } from './decay-domain';
 import type { DecayRule } from '../../generated/graphql';
 
+export const INDICATOR_DECAY_FEATURE_FLAG = 'INDICATOR_DECAY';
 export const ENTITY_TYPE_INDICATOR = 'Indicator';
 
 // Indicator Specific Properties
