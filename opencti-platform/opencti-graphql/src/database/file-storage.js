@@ -1,6 +1,6 @@
 import * as s3 from '@aws-sdk/client-s3';
 import * as R from 'ramda';
-import path from 'path';
+import path from 'node:path';
 import { Upload } from '@aws-sdk/lib-storage';
 import { Promise as BluePromise } from 'bluebird';
 import { defaultProvider } from '@aws-sdk/credential-provider-node';
@@ -28,6 +28,7 @@ const bucketName = conf.get('minio:bucket_name') || 'opencti-bucket';
 const bucketRegion = conf.get('minio:bucket_region') || 'us-east-1';
 const excludedFiles = conf.get('minio:excluded_files') || ['.DS_Store'];
 const useSslConnection = booleanConf('minio:use_ssl', false);
+const useAwsRole = booleanConf('minio:use_aws_role', false);
 
 export const specialTypesExtensions = {
   'application/vnd.oasis.stix+json': 'json',
@@ -35,15 +36,19 @@ export const specialTypesExtensions = {
 };
 
 const credentialProvider = () => {
-  if (clientAccessKey && clientSecretKey) {
-    return { accessKeyId: clientAccessKey, secretAccessKey: clientSecretKey, ...(clientSessionToken && { sessionToken: clientSessionToken }) };
+  if (useAwsRole) {
+    return defaultProvider({
+      roleAssumerWithWebIdentity: getDefaultRoleAssumerWithWebIdentity({
+        // You must explicitly pass a region if you are not using us-east-1
+        region: bucketRegion
+      })
+    });
   }
-  return defaultProvider({
-    roleAssumerWithWebIdentity: getDefaultRoleAssumerWithWebIdentity({
-      // You must explicitly pass a region if you are not using us-east-1
-      region: bucketRegion
-    })
-  });
+  return {
+    accessKeyId: clientAccessKey,
+    secretAccessKey: clientSecretKey,
+    ...(clientSessionToken && { sessionToken: clientSessionToken })
+  };
 };
 
 const getEndpoint = () => {
@@ -200,9 +205,11 @@ export const loadFile = async (user, filename, opts = {}) => {
     throw UnsupportedError('Load file from storage fail', { cause: err, user_id: user.id, filename });
   }
 };
+
 const getFileName = (fileId) => {
   return fileId?.includes('/') ? R.last(fileId.split('/')) : fileId;
 };
+
 const guessMimeType = (fileId) => {
   const fileName = getFileName(fileId);
   const mimeType = mime.lookup(fileName) || null;

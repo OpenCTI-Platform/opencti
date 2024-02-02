@@ -15,21 +15,15 @@ import { HEADERS_AUTHENTICATORS, initAdmin, login, loginFromProvider } from '../
 import conf, { logApp } from './conf';
 import { AuthenticationFailure, ConfigurationError, UnsupportedError } from './errors';
 import { isEmptyField, isNotEmptyField } from '../database/utils';
-
-export const empty = R.anyPass([R.isNil, R.isEmpty]);
+import { DEFAULT_INVALID_CONF_VALUE } from '../utils/access';
 
 // Admin user initialization
 export const initializeAdminUser = async (context) => {
-  const DEFAULT_CONF_VALUE = 'ChangeMe';
   const adminEmail = conf.get('app:admin:email');
   const adminPassword = conf.get('app:admin:password');
   const adminToken = conf.get('app:admin:token');
-  if (
-    empty(adminEmail)
-    || empty(adminPassword)
-    || empty(adminToken)
-    || adminPassword === DEFAULT_CONF_VALUE
-    || adminToken === DEFAULT_CONF_VALUE
+  if (isEmptyField(adminEmail) || isEmptyField(adminPassword) || isEmptyField(adminToken)
+    || adminPassword === DEFAULT_INVALID_CONF_VALUE || adminToken === DEFAULT_INVALID_CONF_VALUE
   ) {
     throw ConfigurationError('You need to configure the environment vars');
   } else {
@@ -41,7 +35,6 @@ export const initializeAdminUser = async (context) => {
       throw ConfigurationError('Token must be a valid UUID');
     }
     // Initialize the admin account
-    // noinspection JSIgnoredPromiseFromCall
     await initAdmin(context, adminEmail, adminPassword, adminToken);
     logApp.info('[INIT] admin user initialized');
   }

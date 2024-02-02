@@ -2,7 +2,6 @@
 import { URL } from 'node:url';
 import { readFileSync } from 'node:fs';
 import path from 'node:path';
-import * as R from 'ramda';
 import express from 'express';
 import bodyParser from 'body-parser';
 import compression from 'compression';
@@ -14,13 +13,13 @@ import archiverZipEncrypted from 'archiver-zip-encrypted';
 import rateLimit from 'express-rate-limit';
 import contentDisposition from 'content-disposition';
 import { basePath, booleanConf, DEV_MODE, logApp, OPENCTI_SESSION } from '../config/conf';
-import passport, { empty, isStrategyActivated, STRATEGY_CERT } from '../config/providers';
+import passport, { isStrategyActivated, STRATEGY_CERT } from '../config/providers';
 import { authenticateUser, authenticateUserFromRequest, HEADERS_AUTHENTICATORS, loginFromProvider, userWithOrigin } from '../domain/user';
 import { downloadFile, getFileContent, isStorageAlive, loadFile } from '../database/file-storage';
 import createSseMiddleware from '../graphql/sseMiddleware';
 import initTaxiiApi from './httpTaxii';
 import initHttpRollingFeeds from './httpRollingFeed';
-import { executionContext, SYSTEM_USER } from '../utils/access';
+import { DEFAULT_INVALID_CONF_VALUE, executionContext, SYSTEM_USER } from '../utils/access';
 import { ENTITY_TYPE_SETTINGS } from '../schema/internalObject';
 import { getEntityFromCache } from '../database/cache';
 import { isEmptyField, isNotEmptyField } from '../database/utils';
@@ -280,13 +279,13 @@ const createApp = async (app) => {
         res.redirect(redirect);
       } else {
         const cert = req.socket.getPeerCertificate();
-        if (!R.isEmpty(cert) && req.client.authorized) {
+        if (isNotEmptyField(cert) && req.client.authorized) {
           const { CN, emailAddress } = cert.subject;
-          if (empty(emailAddress)) {
+          if (isEmptyField(emailAddress)) {
             setCookieError(res, 'Client certificate need a correct emailAddress');
             res.redirect(redirect);
           } else {
-            const userInfo = { email: emailAddress, name: empty(CN) ? emailAddress : CN };
+            const userInfo = { email: emailAddress, name: isEmptyField(CN) ? emailAddress : CN };
             loginFromProvider(userInfo)
               .then(async (user) => {
                 await authenticateUser(context, req, user, 'cert');
@@ -414,7 +413,7 @@ const createApp = async (app) => {
         res.status(503).send({ status: 'error', error: 'request timeout' });
       });
       const configAccessKey = nconf.get('app:health_access_key');
-      if (configAccessKey === 'ChangeMe' || isEmptyField(configAccessKey)) {
+      if (configAccessKey === DEFAULT_INVALID_CONF_VALUE || isEmptyField(configAccessKey)) {
         res.status(401).send({ status: 'unauthorized' });
       } else {
         const { health_access_key: access_key } = req.query;

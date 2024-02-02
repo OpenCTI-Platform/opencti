@@ -17,6 +17,8 @@ import { telemetry } from '../config/tracing';
 import type { BasicStoreSettings } from '../types/settings';
 import { ACCOUNT_STATUS_ACTIVE } from '../config/conf';
 
+export const DEFAULT_INVALID_CONF_VALUE = 'ChangeMe';
+
 export const BYPASS = 'BYPASS';
 export const BYPASS_REFERENCE = 'BYPASSREFERENCE';
 export const SETTINGS_SET_ACCESSES = 'SETTINGS_SETACCESSES';
