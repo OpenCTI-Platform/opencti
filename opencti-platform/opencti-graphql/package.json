@@ -20,6 +20,8 @@
     "serv": "node build/back.js",
     "insert:dev": "node build/script-insert-dataset.js",
     "test:dev": "vitest watch --config vitest.config.dev.ts",
+    "test:dev-init-only": "ONLY_PLATFORM_INIT=1 vitest run --config vitest.config.dev.ts tests/02-integration/00-inject/loader-test.js",
+    "test:dev-no-cleanup": "SKIP_CLEANUP_PLATFORM_AT_START=1 vitest watch --config vitest.config.dev.ts",
     "test": "vitest --silent run --config vitest.config.test.ts --coverage"
   },
   "pkg": {

@@ -41,4 +41,3 @@ export const buildTestConfig = (include: string[]) => defineConfig({
 });
 
 export default buildTestConfig(['tests/**/*-test.{js,mjs,cjs,ts,mts,cts,jsx,tsx}']);
-// export default buildTestConfig(['tests/(02)-*/**/(loader|filterGroup|workspace)*-test.{js,mjs,cjs,ts,mts,cts,jsx,tsx}']);
