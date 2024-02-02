@@ -162,7 +162,6 @@ interface User {
   organizations?: Organization[],
   groups: Group[],
   client: AxiosInstance,
-  user_confidence_level?: ConfidenceLevel
 }
 
 export const ADMIN_USER: AuthUser = {
@@ -185,11 +184,7 @@ export const ADMIN_USER: AuthUser = {
   origin: { referer: 'test', user_id: '88ec0c6a-13ce-5e39-b486-354fe4a7084f' },
   api_token: 'd434ce02-e58e-4cac-8b4c-42bf16748e84',
   account_status: ACCOUNT_STATUS_ACTIVE,
-  account_lock_after_date: undefined,
-  user_confidence_level: {
-    max_confidence: 100,
-    overrides: [],
-  }
+  account_lock_after_date: undefined
 };
 const TESTING_USERS: User[] = [];
 export const USER_PARTICIPATE: User = {
@@ -458,11 +453,7 @@ export const buildStandardUser = (allowedMarkings: markingType[], allMarkings?: 
     origin: { referer: 'test', user_id: '98ec0c6a-13ce-5e39-b486-354fe4a7084f' },
     api_token: 'd434ce02-e58e-4cac-8b4c-42bf16748e85',
     account_status: ACCOUNT_STATUS_ACTIVE,
-    account_lock_after_date: undefined,
-    user_confidence_level: {
-      max_confidence: 100,
-      overrides: [],
-    }
+    account_lock_after_date: undefined
   };
 };
 
