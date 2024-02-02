@@ -110,6 +110,7 @@ class OpenCTIApiClient:
         json_logging=False,
         cert=None,
         auth=None,
+        perform_health_check=True,
     ):
         """Constructor method"""
 
@@ -196,7 +197,7 @@ class OpenCTIApiClient:
         self.indicator = Indicator(self)
 
         # Check if openCTI is available
-        if not self.health_check():
+        if perform_health_check and not self.health_check():
             raise ValueError(
                 "OpenCTI API is not reachable. Waiting for OpenCTI API to start or check your configuration..."
             )
