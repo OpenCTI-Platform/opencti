@@ -9,7 +9,7 @@ import { schemaRelationsRefDefinition } from '../schema/schema-relationsRef';
 import { handleInnerType } from '../domain/stixDomainObject';
 import { extractValueFromCsv } from './csv-helper';
 import { isStixRelationshipExceptRef } from '../schema/stixRelationship';
-import type { AttributeColumn, CsvMapperRepresentation, CsvMapperRepresentationAttribute, CsvMapperWithUserMarkings } from '../modules/internal/csvMapper/csvMapper-types';
+import type { AttributeColumn, CsvMapperParsed, CsvMapperRepresentation, CsvMapperRepresentationAttribute } from '../modules/internal/csvMapper/csvMapper-types';
 import { CsvMapperRepresentationType, Operator } from '../modules/internal/csvMapper/csvMapper-types';
 import { getHashesNames, isValidTargetType } from '../modules/internal/csvMapper/csvMapper-utils';
 import { fillDefaultValues, getAttributesConfiguration, getEntitySettingFromCache } from '../modules/entitySetting/entitySetting-utils';
@@ -92,11 +92,11 @@ const isValidTarget = (record: string[], representation: CsvMapperRepresentation
 
   // Column based
   const columnBased = representation.target.column_based;
-  if (columnBased) {
+  if (columnBased && columnBased.column_reference) {
     const recordValue = extractValueFromCsv(record, columnBased.column_reference);
-    if (columnBased.operator === Operator.eq) {
+    if (columnBased.operator === Operator.Eq) {
       return recordValue === columnBased.value;
-    } if (columnBased.operator === Operator.neq) {
+    } if (columnBased.operator === Operator.Neq) {
       return recordValue !== columnBased.value;
     }
     return false;
@@ -129,7 +129,7 @@ const isValidInput = (input: Record<string, InputType>) => {
 const handleType = (representation: CsvMapperRepresentation, input: Record<string, InputType>) => {
   const { entity_type } = representation.target;
   input[entityType.name] = entity_type;
-  if (representation.type === CsvMapperRepresentationType.relationship) {
+  if (representation.type === CsvMapperRepresentationType.Relationship) {
     input[relationshipType.name] = entity_type;
   }
 };
@@ -341,7 +341,7 @@ const mapRecord = async (
 export const mappingProcess = async (
   context: AuthContext,
   user: AuthUser,
-  mapper: CsvMapperWithUserMarkings,
+  mapper: CsvMapperParsed,
   record: string[]
 ): Promise<Record<string, InputType>[]> => {
   const { representations, user_chosen_markings } = mapper;
@@ -369,9 +369,9 @@ export const mappingProcess = async (
   );
 
   const representationEntities = representations
-    .filter((r) => r.type === CsvMapperRepresentationType.entity)
+    .filter((r) => r.type === CsvMapperRepresentationType.Entity)
     .sort((r1, r2) => r1.attributes.filter((attr) => attr.based_on).length - r2.attributes.filter((attr) => attr.based_on).length);
-  const representationRelationships = representations.filter((r) => r.type === CsvMapperRepresentationType.relationship);
+  const representationRelationships = representations.filter((r) => r.type === CsvMapperRepresentationType.Relationship);
   const results = new Map<string, Record<string, InputType>>();
 
   // 1. entities sort by no based on at first

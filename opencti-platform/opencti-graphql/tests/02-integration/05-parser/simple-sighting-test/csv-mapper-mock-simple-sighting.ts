@@ -1,16 +1,16 @@
 import { ENTITY_TYPE_THREAT_ACTOR_GROUP } from '../../../../src/schema/stixDomainObject';
 import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../../../../src/modules/organization/organization-types';
 import { STIX_SIGHTING_RELATIONSHIP } from '../../../../src/schema/stixSightingRelationship';
-import { type BasicStoreEntityCsvMapper, CsvMapperRepresentationType } from '../../../../src/modules/internal/csvMapper/csvMapper-types';
+import { type CsvMapperParsed, CsvMapperRepresentationType } from '../../../../src/modules/internal/csvMapper/csvMapper-types';
 
-export const csvMapperMockSimpleSighting: Partial<BasicStoreEntityCsvMapper> = {
+export const csvMapperMockSimpleSighting: Partial<CsvMapperParsed> = {
   id: 'mapper-mock-simple-relationship',
   has_header: true,
   separator: ';',
   representations: [
     {
       id: 'representation01',
-      type: CsvMapperRepresentationType.entity,
+      type: CsvMapperRepresentationType.Entity,
       target: {
         entity_type: ENTITY_TYPE_THREAT_ACTOR_GROUP,
       },
@@ -24,7 +24,7 @@ export const csvMapperMockSimpleSighting: Partial<BasicStoreEntityCsvMapper> = {
       ]
     }, {
       id: 'representation02',
-      type: CsvMapperRepresentationType.entity,
+      type: CsvMapperRepresentationType.Entity,
       target: {
         entity_type: ENTITY_TYPE_IDENTITY_ORGANIZATION,
       },
@@ -39,7 +39,7 @@ export const csvMapperMockSimpleSighting: Partial<BasicStoreEntityCsvMapper> = {
     },
     {
       id: 'representation01-SIGHTING-representation02',
-      type: CsvMapperRepresentationType.relationship,
+      type: CsvMapperRepresentationType.Relationship,
       target: {
         entity_type: STIX_SIGHTING_RELATIONSHIP,
       },

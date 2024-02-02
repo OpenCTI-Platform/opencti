@@ -4,7 +4,7 @@ import { type BasicStoreEntityCsvMapper, ENTITY_TYPE_CSV_MAPPER, type StoreEntit
 import type { CsvMapperAddInput, EditInput, QueryCsvMappersArgs } from '../../../generated/graphql';
 import { createInternalObject, deleteInternalObject, editInternalObject } from '../../../domain/internalObject';
 import { bundleProcess } from '../../../parser/csv-bundler';
-import { type CsvMapperSchemaAttribute, type CsvMapperSchemaAttributes, parseCsvMapperWithDefaultValues } from './csvMapper-utils';
+import { type CsvMapperSchemaAttribute, type CsvMapperSchemaAttributes, parseCsvMapper, parseCsvMapperWithDefaultValues } from './csvMapper-utils';
 import { schemaAttributesDefinition } from '../../../schema/schema-attributes';
 import { schemaRelationsRefDefinition } from '../../../schema/schema-relationsRef';
 import { INTERNAL_ATTRIBUTES, INTERNAL_REFS } from '../../../domain/attribute-utils';
@@ -20,7 +20,7 @@ import { isStixCoreRelationship } from '../../../schema/stixCoreRelationship';
 
 export const csvMapperTest = async (context: AuthContext, user: AuthUser, configuration: string, content: string) => {
   const limitedTestingText = content.split(/\r?\n/).slice(0, 100).join('\n'); // Get 100 lines max
-  const csvMapper = await parseCsvMapperWithDefaultValues(context, user, JSON.parse(configuration));
+  const csvMapper = parseCsvMapper(JSON.parse(configuration));
   const bundle = await bundleProcess(context, user, Buffer.from(limitedTestingText), csvMapper);
   return {
     objects: JSON.stringify(bundle.objects, null, 2),
@@ -32,8 +32,7 @@ export const csvMapperTest = async (context: AuthContext, user: AuthUser, config
 // -- CRUD --
 
 export const findById = async (context: AuthContext, user: AuthUser, csvMapperId: string) => {
-  const csvMapper = await storeLoadById<BasicStoreEntityCsvMapper>(context, user, csvMapperId, ENTITY_TYPE_CSV_MAPPER);
-  return parseCsvMapperWithDefaultValues(context, user, csvMapper);
+  return storeLoadById<BasicStoreEntityCsvMapper>(context, user, csvMapperId, ENTITY_TYPE_CSV_MAPPER);
 };
 
 export const findAll = (context: AuthContext, user: AuthUser, opts: QueryCsvMappersArgs) => {
@@ -41,17 +40,20 @@ export const findAll = (context: AuthContext, user: AuthUser, opts: QueryCsvMapp
 };
 
 export const createCsvMapper = async (context: AuthContext, user: AuthUser, csvMapperInput: CsvMapperAddInput) => {
-  return createInternalObject<StoreEntityCsvMapper>(context, user, csvMapperInput, ENTITY_TYPE_CSV_MAPPER)
-    .then((entity) => parseCsvMapperWithDefaultValues(context, user, entity));
+  return createInternalObject<StoreEntityCsvMapper>(context, user, csvMapperInput, ENTITY_TYPE_CSV_MAPPER);
 };
 
 export const fieldPatchCsvMapper = async (context: AuthContext, user: AuthUser, csvMapperId: string, input: EditInput[]) => {
-  return editInternalObject<StoreEntityCsvMapper>(context, user, csvMapperId, ENTITY_TYPE_CSV_MAPPER, input)
-    .then((entity) => parseCsvMapperWithDefaultValues(context, user, entity));
+  return editInternalObject<StoreEntityCsvMapper>(context, user, csvMapperId, ENTITY_TYPE_CSV_MAPPER, input);
 };
 
 export const deleteCsvMapper = async (context: AuthContext, user: AuthUser, csvMapperId: string) => {
   return deleteInternalObject(context, user, csvMapperId, ENTITY_TYPE_CSV_MAPPER);
+};
+
+export const getParsedRepresentations = async (context: AuthContext, user: AuthUser, csvMapper: BasicStoreEntityCsvMapper) => {
+  const parsedMapper = await parseCsvMapperWithDefaultValues(context, user, csvMapper);
+  return parsedMapper.representations;
 };
 
 // -- Schema

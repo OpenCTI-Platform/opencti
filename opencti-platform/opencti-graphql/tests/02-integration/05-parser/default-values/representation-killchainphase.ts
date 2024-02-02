@@ -3,7 +3,7 @@ import { ENTITY_TYPE_KILL_CHAIN_PHASE } from '../../../../src/schema/stixMetaObj
 
 export const repKillChainPhase: CsvMapperRepresentation = {
   id: 'representation-killchainphase',
-  type: CsvMapperRepresentationType.entity,
+  type: CsvMapperRepresentationType.Entity,
   target: {
     entity_type: ENTITY_TYPE_KILL_CHAIN_PHASE,
   },

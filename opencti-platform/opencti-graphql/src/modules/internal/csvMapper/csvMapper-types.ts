@@ -30,21 +30,21 @@ export interface CsvMapperRepresentationAttribute {
   ref?: AttributeRef
 }
 export enum Operator {
-  eq,
-  neq,
+  Eq = 'eq',
+  Neq = 'neq'
 }
 interface CsvMapperRepresentationTargetColumn {
-  column_reference: string
-  operator: Operator
-  value: string
+  column_reference?: string
+  operator?: Operator
+  value?: string
 }
 interface CsvMapperRepresentationTarget {
   entity_type: string
   column_based?: CsvMapperRepresentationTargetColumn
 }
 export enum CsvMapperRepresentationType {
-  entity = 'entity',
-  relationship = 'relationship',
+  Entity = 'entity',
+  Relationship = 'relationship',
 }
 export interface CsvMapperRepresentation {
   id: string
@@ -55,7 +55,29 @@ export interface CsvMapperRepresentation {
   to?: string
 }
 
-export type CsvMapperWithUserMarkings = BasicStoreEntityCsvMapper & {
+export interface CsvMapperRepresentationAttributeResolved {
+  key: string
+  column?: AttributeColumn
+  based_on?: AttributeBasedOn
+  default_values?: { id:string, name:string }[]
+  ref?: AttributeRef
+}
+export interface CsvMapperRepresentationResolved {
+  id: string
+  type: CsvMapperRepresentationType
+  target: CsvMapperRepresentationTarget
+  attributes: CsvMapperRepresentationAttributeResolved[]
+  from?: string
+  to?: string
+}
+
+export type CsvMapperParsed = Omit<BasicStoreEntityCsvMapper, 'representations'> & {
+  representations: CsvMapperRepresentation[]
+  user_chosen_markings?: string[]
+};
+
+export type CsvMapperResolved = Omit<BasicStoreEntityCsvMapper, 'representations'> & {
+  representations: CsvMapperRepresentationResolved[]
   user_chosen_markings?: string[]
 };
 
@@ -64,7 +86,7 @@ export interface BasicStoreEntityCsvMapper extends BasicStoreEntity {
   has_header: boolean
   separator: string
   skipLineChar: string
-  representations: CsvMapperRepresentation[]
+  representations: string
 }
 
 export interface StoreEntityCsvMapper extends BasicStoreEntityCsvMapper, StoreEntity {}
@@ -73,7 +95,7 @@ export interface StixCsvMapper extends StixObject {
   name: string
   has_header: boolean
   separator: string
-  representations: CsvMapperRepresentation[]
+  representations: string
   extensions: {
     [STIX_EXT_OCTI] : StixOpenctiExtensionSDO
   }

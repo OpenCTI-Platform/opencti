@@ -3,7 +3,7 @@ import { ENTITY_HASHED_OBSERVABLE_STIX_FILE } from '../../../../src/schema/stixC
 
 export const repFile: CsvMapperRepresentation = {
   id: 'representation-file',
-  type: CsvMapperRepresentationType.entity,
+  type: CsvMapperRepresentationType.Entity,
   target: {
     entity_type: ENTITY_HASHED_OBSERVABLE_STIX_FILE
   },

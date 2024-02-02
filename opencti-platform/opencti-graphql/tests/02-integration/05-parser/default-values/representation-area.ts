@@ -3,7 +3,7 @@ import { ENTITY_TYPE_LOCATION_ADMINISTRATIVE_AREA } from '../../../../src/module
 
 export const repArea: CsvMapperRepresentation = {
   id: 'representation-area',
-  type: CsvMapperRepresentationType.entity,
+  type: CsvMapperRepresentationType.Entity,
   target: {
     entity_type: ENTITY_TYPE_LOCATION_ADMINISTRATIVE_AREA,
   },
@@ -49,7 +49,7 @@ export const repArea: CsvMapperRepresentation = {
 
 export const repAreaWithDefault: (creator: string) => CsvMapperRepresentation = (creator) => ({
   id: 'representation-area-default',
-  type: CsvMapperRepresentationType.entity,
+  type: CsvMapperRepresentationType.Entity,
   target: {
     entity_type: ENTITY_TYPE_LOCATION_ADMINISTRATIVE_AREA,
   },
