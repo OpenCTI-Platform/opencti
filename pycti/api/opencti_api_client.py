@@ -215,7 +215,7 @@ class OpenCTIApiClient:
             "" if retry_number is None else str(retry_number)
         )
 
-    def query(self, query, variables={}):
+    def query(self, query, variables=None):
         """submit a query to the OpenCTI GraphQL API
 
         :param query: GraphQL query string
@@ -225,7 +225,7 @@ class OpenCTIApiClient:
         :return: returns the response json content
         :rtype: Any
         """
-
+        variables = variables or {}
         query_var = {}
         files_vars = []
         # Implementation of spec https://github.com/jaydenseric/graphql-multipart-request-spec
