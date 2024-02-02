@@ -36,7 +36,7 @@ const isFeatureEnable = (
 ) => {
   const flags = settings.platform_feature_flags ?? [];
   const feature = flags.find((f) => f.id === id);
-  return feature !== undefined && feature.enable === true;
+  return feature === undefined || feature.enable === true;
 };
 
 const isModuleEnable = (

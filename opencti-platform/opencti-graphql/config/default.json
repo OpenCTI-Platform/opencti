@@ -94,6 +94,7 @@
   "https_proxy": "",
   "no_proxy": "",
   "https_proxy_ca": [],
+  "disabled_dev_features": ["INDICATOR_DECAY"],
   "https_proxy_reject_unauthorized": false,
   "relations_deduplication": {
     "past_days": 30,

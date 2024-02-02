@@ -960,8 +960,7 @@ const Settings = () => {
                     </Typography>
                     <Paper classes={{ root: classes.paper }} variant="outlined">
                       <List style={{ marginTop: -20 }}>
-                        {/* TODO remove Decay feature flag */}
-                        {modules.filter((module) => module.id !== 'INDICATOR_DECAY_MANAGER').map((module) => {
+                        {modules.map((module) => {
                           const isEeModule = ['ACTIVITY_MANAGER', 'PLAYBOOK_MANAGER', 'FILE_INDEX_MANAGER'].includes(module.id);
                           let status = module.enable;
                           if (!isEnterpriseEdition && isEeModule) {
@@ -972,9 +971,7 @@ const Settings = () => {
                               <ListItemText primary={t_i18n(module.id)} />
                               <ItemBoolean
                                 variant="inList"
-                                label={
-                                  module.enable ? t_i18n('Enabled') : t_i18n('Disabled')
-                                }
+                                label={module.enable ? t_i18n('Enabled') : t_i18n('Disabled')}
                                 status={status}
                               />
                             </ListItem>
