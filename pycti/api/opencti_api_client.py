@@ -4,6 +4,7 @@ import datetime
 import io
 import json
 from typing import Union
+from urllib.parse import urljoin
 
 import magic
 import requests
@@ -129,7 +130,7 @@ class OpenCTIApiClient:
 
         # Define API
         self.api_token = token
-        self.api_url = url + "/graphql"
+        self.api_url = urljoin(url, "/graphql")
         self.request_headers = {
             "User-Agent": "pycti/" + __version__,
             "Authorization": "Bearer " + token,
