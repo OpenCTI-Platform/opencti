@@ -143,35 +143,35 @@ const ThemeDark = (
     MuiCssBaseline: {
       styleOverrides: {
         html: {
-          scrollbarColor: `${accent || THEME_DARK_DEFAULT_BACKGROUND} ${paper || THEME_DARK_DEFAULT_ACCENT}`,
+          scrollbarColor: `${background || THEME_DARK_DEFAULT_BACKGROUND} ${accent || THEME_DARK_DEFAULT_ACCENT}`,
           scrollbarWidth: 'thin',
         },
         body: {
-          scrollbarColor: `${accent || THEME_DARK_DEFAULT_BACKGROUND} ${paper || THEME_DARK_DEFAULT_ACCENT}`,
+          scrollbarColor: `${background || THEME_DARK_DEFAULT_BACKGROUND} ${accent || THEME_DARK_DEFAULT_ACCENT}`,
           scrollbarWidth: 'thin',
           '&::-webkit-scrollbar, & *::-webkit-scrollbar': {
             backgroundColor: paper || THEME_DARK_DEFAULT_ACCENT,
           },
           '&::-webkit-scrollbar-thumb, & *::-webkit-scrollbar-thumb': {
             borderRadius: 8,
-            backgroundColor: accent || THEME_DARK_DEFAULT_BACKGROUND,
+            backgroundColor: background || THEME_DARK_DEFAULT_BACKGROUND,
             minHeight: 24,
-            border: `3px solid ${paper || THEME_DARK_DEFAULT_ACCENT}`,
+            border: `3px solid ${accent || THEME_DARK_DEFAULT_ACCENT}`,
           },
           '&::-webkit-scrollbar-thumb:focus, & *::-webkit-scrollbar-thumb:focus':
             {
-              backgroundColor: accent || THEME_DARK_DEFAULT_BACKGROUND,
+              backgroundColor: background || THEME_DARK_DEFAULT_BACKGROUND,
             },
           '&::-webkit-scrollbar-thumb:active, & *::-webkit-scrollbar-thumb:active':
             {
-              backgroundColor: accent || THEME_DARK_DEFAULT_BACKGROUND,
+              backgroundColor: background || THEME_DARK_DEFAULT_BACKGROUND,
             },
           '&::-webkit-scrollbar-thumb:hover, & *::-webkit-scrollbar-thumb:hover':
             {
-              backgroundColor: accent || THEME_DARK_DEFAULT_BACKGROUND,
+              backgroundColor: background || THEME_DARK_DEFAULT_BACKGROUND,
             },
           '&::-webkit-scrollbar-corner, & *::-webkit-scrollbar-corner': {
-            backgroundColor: accent || THEME_DARK_DEFAULT_BACKGROUND,
+            backgroundColor: background || THEME_DARK_DEFAULT_BACKGROUND,
           },
           html: {
             WebkitFontSmoothing: 'auto',
