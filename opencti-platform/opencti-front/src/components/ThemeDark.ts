@@ -1,6 +1,6 @@
 import type { ExtendedThemeOptions } from './Theme';
 import { fileUri } from '../relay/environment';
-import LogoText from '../static/images/logo_text.png';
+import LogoText from '../static/images/logo_text_dark.png';
 import LogoCollapsed from '../static/images/logo_dark.png';
 import { hexToRGB } from '../utils/Colors';
 
