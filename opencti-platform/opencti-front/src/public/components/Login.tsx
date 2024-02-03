@@ -11,8 +11,9 @@ import { Alert, AlertTitle } from '@mui/material';
 import classNames from 'classnames';
 import Typography from '@mui/material/Typography';
 import { APP_BASE_PATH, fileUri } from '../../relay/environment';
-import logo from '../../static/images/logo.png';
-import logo_filigran from '../../static/images/logo_filigran.png';
+import logoDark from '../static/images/logo_dark.png';
+import logoLight from '../static/images/logo_light.png';
+import logoFiligran from '../../static/images/logo_filigran.png';
 import LoginForm from './LoginForm';
 import OTPForm from './OTPForm';
 import OtpActivationComponent from './OtpActivation';
@@ -231,7 +232,7 @@ const Login: FunctionComponent<LoginProps> = ({ type, settings }) => {
   const loginScreen = () => (
     <div style={{ marginBottom: 10 }}>
       <img
-        src={loginLogo && loginLogo.length > 0 ? loginLogo : fileUri(logo)}
+        src={loginLogo && loginLogo.length > 0 ? loginLogo : fileUri(theme.palette.mode === 'dark' ? logoDark : logoLight)}
         alt="logo"
         className={classNames({
           [classes.logo]: true,
@@ -245,7 +246,7 @@ const Login: FunctionComponent<LoginProps> = ({ type, settings }) => {
           <img
             width={20}
             height={20}
-            src={fileUri(logo_filigran)}
+            src={fileUri(logoFiligran)}
             className={classes.byFiligranLogo}
           />
           <Typography variant="h4" className={classes.byFiligranText}>
@@ -313,7 +314,7 @@ const Login: FunctionComponent<LoginProps> = ({ type, settings }) => {
       return (
         <>
           <img
-            src={loginLogo && loginLogo.length > 0 ? loginLogo : fileUri(logo)}
+            src={loginLogo && loginLogo.length > 0 ? loginLogo : fileUri(fileUri(theme.palette.mode === 'dark' ? logoDark : logoLight))}
             alt="logo"
             className={classes.logo}
           />
