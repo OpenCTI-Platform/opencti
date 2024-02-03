@@ -4,14 +4,14 @@ import LogoText from '../static/images/logo_text.png';
 import LogoCollapsed from '../static/images/logo_dark.png';
 import { hexToRGB } from '../utils/Colors';
 
-const EE_COLOR = '#aa00ff';
+const EE_COLOR = '#00f1bd';
 
-export const THEME_DARK_DEFAULT_BACKGROUND = '#0c0c14'; // 0a1929
-const THEME_DARK_DEFAULT_PRIMARY = '#7c4dff'; // 00b1ff
-const THEME_DARK_DEFAULT_SECONDARY = '#aa00ff'; // d81b60
-const THEME_DARK_DEFAULT_ACCENT = '#131322'; // 01478d
-const THEME_DARK_DEFAULT_PAPER = '#0c0c14'; // 001e3c
-const THEME_DARK_DEFAULT_NAV = '#0c0c14'; // 071a2e
+export const THEME_DARK_DEFAULT_BACKGROUND = '#01020e'; // 0a1929
+const THEME_DARK_DEFAULT_PRIMARY = '#0fbcff'; // 1c8eb6 // for road:
+const THEME_DARK_DEFAULT_SECONDARY = '#00f1bd'; // d81b60
+const THEME_DARK_DEFAULT_ACCENT = '#030721'; // 01478d // for building: 030721
+const THEME_DARK_DEFAULT_PAPER = '#01020e'; // 001e3c
+const THEME_DARK_DEFAULT_NAV = '#01020e'; // 071a2e
 
 const ThemeDark = (
   logo: string | null = null,

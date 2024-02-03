@@ -4,11 +4,11 @@ import LogoText from '../static/images/logo_text.png';
 import LogoCollapsed from '../static/images/logo_light.png';
 import { hexToRGB } from '../utils/Colors';
 
-const EE_COLOR = '#aa00ff';
+const EE_COLOR = '#0baf91';
 
 export const THEME_LIGHT_DEFAULT_BACKGROUND = '#f8f8f8'; // f8f8f8
-const THEME_LIGHT_DEFAULT_PRIMARY = '#7c4dff'; // 0066ff
-const THEME_LIGHT_DEFAULT_SECONDARY = '#aa00ff'; // d81b60
+const THEME_LIGHT_DEFAULT_PRIMARY = '#001bda'; // 0066ff
+const THEME_LIGHT_DEFAULT_SECONDARY = '#0baf91'; // d81b60
 const THEME_LIGHT_DEFAULT_ACCENT = '#c9c9c9'; // d3eaff
 const THEME_LIGHT_DEFAULT_PAPER = '#ffffff'; // ffffff
 const THEME_LIGHT_DEFAULT_NAV = '#ffffff'; // f5f5f5
