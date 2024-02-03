@@ -5,8 +5,7 @@ import { Link, useLocation } from 'react-router-dom-v5-compat';
 import AppBar from '@mui/material/AppBar';
 import Toolbar from '@mui/material/Toolbar';
 import IconButton from '@mui/material/IconButton';
-import { AccountCircleOutlined, BiotechOutlined, ContentPasteSearchOutlined, ExploreOutlined, InsertChartOutlined, NotificationsOutlined } from '@mui/icons-material';
-import { DatabaseCogOutline } from 'mdi-material-ui';
+import { AccountCircleOutlined, BiotechOutlined, ContentPasteSearchOutlined, NotificationsOutlined } from '@mui/icons-material';
 import Menu from '@mui/material/Menu';
 import Divider from '@mui/material/Divider';
 import MenuItem from '@mui/material/MenuItem';
@@ -38,7 +37,7 @@ import TopMenuLocation from './TopMenuLocation';
 import FeedbackCreation from '../cases/feedbacks/FeedbackCreation';
 import TopMenuCases from './TopMenuCases';
 import type { Theme } from '../../../components/Theme';
-import { EXPLORE, KNOWLEDGE, KNOWLEDGE_KNASKIMPORT } from '../../../utils/hooks/useGranted';
+import { KNOWLEDGE } from '../../../utils/hooks/useGranted';
 import TopMenuProfile from '../profile/TopMenuProfile';
 import TopMenuNotifications from '../profile/TopMenuNotifications';
 import { TopBarQuery } from './__generated__/TopBarQuery.graphql';
@@ -55,6 +54,9 @@ const useStyles = makeStyles<Theme>((theme) => ({
     background: 0,
     backgroundColor: theme.palette.background.nav,
     paddingTop: theme.spacing(0.2),
+    borderLeft: 0,
+    borderRight: 0,
+    borderTop: 0,
   },
   logoContainer: {
     margin: '2px 0 0 -8px',
@@ -220,8 +222,7 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
     <AppBar
       position="fixed"
       className={classes.appBar}
-      variant="elevation"
-      elevation={1}
+      variant="outlined"
     >
       {/* Header and Footer Banners containing classification level of system */}
       <Toolbar
@@ -261,7 +262,7 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
                     }
                     size={'medium'}
                   >
-                    <BiotechOutlined fontSize={'medium'}/>
+                    <BiotechOutlined fontSize='medium'/>
                   </IconButton>
                 </Tooltip>
                 <Tooltip title={t_i18n('Bulk search')}>
@@ -283,58 +284,6 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
             </React.Fragment>
           </Security>
           <div className={classes.barRightContainer}>
-            <Security needs={[EXPLORE]}>
-              <React.Fragment>
-                <Tooltip title={t_i18n('Custom dashboards')}>
-                  <IconButton
-                    component={Link}
-                    to="/dashboard/workspaces/dashboards"
-                    color={
-                      location.pathname.includes(
-                        '/dashboard/workspaces/dashboards',
-                      )
-                        ? 'primary'
-                        : 'default'
-                    }
-                    size="medium"
-                  >
-                    <InsertChartOutlined fontSize="medium"/>
-                  </IconButton>
-                </Tooltip>
-                <Tooltip title={t_i18n('Investigations')}>
-                  <IconButton
-                    component={Link}
-                    to="/dashboard/workspaces/investigations"
-                    color={
-                      location.pathname.includes(
-                        '/dashboard/workspaces/investigations',
-                      )
-                        ? 'primary'
-                        : 'default'
-                    }
-                    size="medium"
-                  >
-                    <ExploreOutlined fontSize="medium"/>
-                  </IconButton>
-                </Tooltip>
-              </React.Fragment>
-            </Security>
-            <Security needs={[KNOWLEDGE_KNASKIMPORT]}>
-              <Tooltip title={t_i18n('Data import and analyst workbenches')}>
-                <IconButton
-                  component={Link}
-                  to="/dashboard/import"
-                  color={
-                    location.pathname.includes('/dashboard/import')
-                      ? 'primary'
-                      : 'default'
-                  }
-                  size="medium"
-                >
-                  <DatabaseCogOutline fontSize="medium"/>
-                </IconButton>
-              </Tooltip>
-            </Security>
             <Security needs={[KNOWLEDGE]}>
               <Tooltip title={t_i18n('Notifications and triggers')}>
                 <IconButton

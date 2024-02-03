@@ -208,6 +208,10 @@ const stixRelationshipsDonutsDistributionQuery = graphql`
         ... on Opinion {
           opinion
         }
+        ... on Label {
+          value
+          color
+        }
       }
     }
   }
@@ -267,11 +271,34 @@ const StixRelationshipsDonut = ({
                 props.stixRelationshipsDistribution,
               );
             }
+            let chartColors = [];
+            if (data.at(0)?.entity?.color) {
+              chartColors = data.map((n) => (theme.palette.mode === 'light' && n.entity.color === '#ffffff'
+                ? '#000000'
+                : n.entity.color));
+            }
+            if (data.at(0)?.entity?.x_opencti_color) {
+              chartColors = data.map((n) => (theme.palette.mode === 'light'
+              && n.entity.x_opencti_color === '#ffffff'
+                ? '#000000'
+                : n.entity.x_opencti_color));
+            }
+            if (data.at(0)?.entity?.template?.color) {
+              chartColors = data.map((n) => (theme.palette.mode === 'light' && n.entity.template.color === '#ffffff'
+                ? '#000000'
+                : n.entity.template.color));
+            }
             const chartData = data.map((n) => n.value);
             const labels = data.map((n) => n.label);
             return (
               <Chart
-                options={donutChartOptions(theme, labels)}
+                options={donutChartOptions(
+                  theme,
+                  labels,
+                  'bottom',
+                  false,
+                  chartColors,
+                )}
                 series={chartData}
                 type="donut"
                 width="100%"

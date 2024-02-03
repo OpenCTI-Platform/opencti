@@ -243,6 +243,7 @@ const stixCoreObjectsListQuery = graphql`
 `;
 
 const StixCoreObjectsList = ({
+  title,
   variant,
   height,
   startDate,
@@ -404,7 +405,7 @@ const StixCoreObjectsList = ({
           textOverflow: 'ellipsis',
         }}
       >
-        {parameters.title ?? t_i18n('Entities list')}
+        {parameters.title || title || t_i18n('Entities list')}
       </Typography>
       {variant !== 'inLine' ? (
         <Paper classes={{ root: classes.paper }} variant="outlined">

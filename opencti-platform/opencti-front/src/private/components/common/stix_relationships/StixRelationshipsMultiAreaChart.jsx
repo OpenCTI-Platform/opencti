@@ -48,6 +48,7 @@ const stixRelationshipsMultiAreaChartTimeSeriesQuery = graphql`
 
 const StixRelationshipsMultiAreaChart = ({
   variant,
+  title,
   height,
   startDate,
   endDate,
@@ -167,7 +168,7 @@ const StixRelationshipsMultiAreaChart = ({
           textOverflow: 'ellipsis',
         }}
       >
-        {parameters.title ?? t_i18n('Entities history')}
+        {parameters.title || title || t_i18n('Entities history')}
       </Typography>
       {variant !== 'inLine' ? (
         <Paper classes={{ root: classes.paper }} variant="outlined">

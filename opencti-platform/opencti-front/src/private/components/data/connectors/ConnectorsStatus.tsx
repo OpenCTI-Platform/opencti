@@ -297,7 +297,7 @@ const ConnectorsStatusComponent: FunctionComponent<ConnectorsStatusComponentProp
               divider={true}
               button={true}
               component={Link}
-              to={`/dashboard/data/connectors/${connector.id}`}
+              to={`/dashboard/data/ingestion/connectors/${connector.id}`}
             >
               <ListItemIcon
                 style={{ color: connector.active ? '#4caf50' : '#f44336' }}

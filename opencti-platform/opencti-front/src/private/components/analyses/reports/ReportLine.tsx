@@ -50,6 +50,7 @@ const useStyles = makeStyles<Theme>((theme) => ({
     height: 20,
     float: 'left',
     width: 120,
+    borderRadius: 4,
   },
 }));
 

@@ -9,11 +9,21 @@ import ListItemText from '@mui/material/ListItemText';
 import Divider from '@mui/material/Divider';
 import Drawer from '@mui/material/Drawer';
 import Tooltip, { tooltipClasses } from '@mui/material/Tooltip';
-import { AssignmentOutlined, CasesOutlined, ChevronLeft, ChevronRight, ConstructionOutlined, DashboardOutlined, LayersOutlined } from '@mui/icons-material';
+import {
+  AssignmentOutlined,
+  CasesOutlined,
+  ChevronLeft,
+  ChevronRight,
+  ConstructionOutlined,
+  DashboardOutlined,
+  ExploreOutlined,
+  InsertChartOutlinedOutlined,
+  LayersOutlined,
+} from '@mui/icons-material';
 import { Binoculars, CogOutline, Database, FlaskOutline, FolderTableOutline, GlobeModel, Timetable } from 'mdi-material-ui';
 import { useFormatter } from '../../../components/i18n';
 import Security from '../../../utils/Security';
-import useGranted, { KNOWLEDGE, MODULES, SETTINGS, TAXIIAPI_SETCOLLECTIONS, VIRTUAL_ORGANIZATION_ADMIN } from '../../../utils/hooks/useGranted';
+import useGranted, { EXPLORE, KNOWLEDGE, MODULES, SETTINGS, TAXIIAPI_SETCOLLECTIONS, VIRTUAL_ORGANIZATION_ADMIN } from '../../../utils/hooks/useGranted';
 import { fileUri, MESSAGING$ } from '../../../relay/environment';
 import { useIsHiddenEntities } from '../../../utils/hooks/useEntitySettings';
 import useAuth from '../../../utils/hooks/useAuth';
@@ -209,7 +219,7 @@ const LeftBar = () => {
         component="nav"
         style={{ marginTop: bannerHeightNumber + settingsMessagesBannerHeight }}
       >
-        <StyledTooltip title={!navOpen && t_i18n('Dashboard')} placement="right">
+        <StyledTooltip title={!navOpen && t_i18n('Home')} placement="right">
           <MenuItem
             component={Link}
             to="/dashboard"
@@ -223,7 +233,7 @@ const LeftBar = () => {
             {navOpen && (
               <ListItemText
                 classes={{ primary: classes.menuItemText }}
-                primary={t_i18n('Dashboard')}
+                primary={t_i18n('Home')}
               />
             )}
           </MenuItem>
@@ -432,9 +442,47 @@ const LeftBar = () => {
           )}
         </MenuList>
       </Security>
-      <Security needs={[SETTINGS, MODULES, KNOWLEDGE, TAXIIAPI_SETCOLLECTIONS]}>
+      <Security needs={[EXPLORE]}>
         <Divider />
         <MenuList component="nav">
+          <StyledTooltip title={!navOpen && t_i18n('Dashboards')} placement="right">
+            <MenuItem
+              component={Link}
+              to="/dashboard/workspaces/dashboards"
+              selected={location.pathname.includes('/dashboard/workspaces/dashboards')}
+              dense={true}
+              classes={{ root: classes.menuItem }}
+            >
+              <ListItemIcon style={{ minWidth: 20 }}>
+                <InsertChartOutlinedOutlined />
+              </ListItemIcon>
+              {navOpen && (
+              <ListItemText
+                classes={{ primary: classes.menuItemText }}
+                primary={t_i18n('Dashboards')}
+              />
+              )}
+            </MenuItem>
+          </StyledTooltip>
+          <StyledTooltip title={!navOpen && t_i18n('Investigations')} placement="right">
+            <MenuItem
+              component={Link}
+              to="/dashboard/workspaces/investigations"
+              selected={location.pathname.includes('/dashboard/workspaces/investigations')}
+              dense={true}
+              classes={{ root: classes.menuItem }}
+            >
+              <ListItemIcon style={{ minWidth: 20 }}>
+                <ExploreOutlined />
+              </ListItemIcon>
+              {navOpen && (
+              <ListItemText
+                classes={{ primary: classes.menuItemText }}
+                primary={t_i18n('Investigations')}
+              />
+              )}
+            </MenuItem>
+          </StyledTooltip>
           <Security needs={[MODULES, KNOWLEDGE, TAXIIAPI_SETCOLLECTIONS]}>
             <StyledTooltip title={!navOpen && t_i18n('Data')} placement="right">
               <MenuItem
@@ -448,14 +496,19 @@ const LeftBar = () => {
                   <Database />
                 </ListItemIcon>
                 {navOpen && (
-                  <ListItemText
-                    classes={{ primary: classes.menuItemText }}
-                    primary={t_i18n('Data')}
-                  />
+                <ListItemText
+                  classes={{ primary: classes.menuItemText }}
+                  primary={t_i18n('Data')}
+                />
                 )}
               </MenuItem>
             </StyledTooltip>
           </Security>
+        </MenuList>
+      </Security>
+      <Security needs={[SETTINGS, MODULES, KNOWLEDGE, TAXIIAPI_SETCOLLECTIONS]}>
+        <Divider />
+        <MenuList component="nav">
           <Security needs={[SETTINGS, VIRTUAL_ORGANIZATION_ADMIN]}>
             {isOrganizationAdmin && !isGrantedToSettings ? (
               <StyledTooltip

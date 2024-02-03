@@ -11,7 +11,7 @@ const ItemAuthor = (props) => {
       {createdBy ? (
         <Button
           variant="outlined"
-          color="secondary"
+          color="primary"
           size="small"
           component={Link}
           to={`${resolveLink(createdBy.entity_type)}/${

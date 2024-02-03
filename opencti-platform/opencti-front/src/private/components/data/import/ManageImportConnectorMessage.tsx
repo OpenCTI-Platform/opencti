@@ -2,8 +2,8 @@ import React, { FunctionComponent } from 'react';
 import { Link } from 'react-router-dom';
 import Box from '@mui/material/Box';
 import { styled } from '@mui/material/styles';
-import { useFormatter } from '../../../components/i18n';
-import useGranted, { TAXIIAPI_SETCSVMAPPERS } from '../../../utils/hooks/useGranted';
+import { useFormatter } from '../../../../components/i18n';
+import useGranted, { TAXIIAPI_SETCSVMAPPERS } from '../../../../utils/hooks/useGranted';
 
 interface ManageImportConnectorMessageProps {
   name: string

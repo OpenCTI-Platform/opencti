@@ -8,14 +8,14 @@ const useStyles = makeStyles(() => ({
   chip: {
     fontSize: 12,
     marginRight: 7,
-    borderRadius: '0',
+    borderRadius: 4,
     width: 120,
   },
   chipInList: {
     fontSize: 12,
     height: 20,
     float: 'left',
-    borderRadius: '0',
+    borderRadius: 4,
     width: 80,
   },
 }));

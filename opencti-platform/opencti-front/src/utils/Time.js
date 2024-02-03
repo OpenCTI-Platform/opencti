@@ -51,6 +51,8 @@ export const dayAgo = () => moment().subtract(1, 'days').format();
 
 export const daysAgo = (number, date = null, fromStart = true) => moment(dayStartDate(date, fromStart)).subtract(number, 'days').format();
 
+export const lastDayOfThePreviousMonth = () => moment().subtract(1, 'months').endOf('month').format();
+
 export const daysAfter = (number, date = null, noFuture = true) => {
   const newDate = moment(date || dayStartDate())
     .add(number, 'days')

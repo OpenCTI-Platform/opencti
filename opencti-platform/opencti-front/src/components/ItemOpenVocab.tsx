@@ -22,7 +22,7 @@ const useStyles = makeStyles<Theme>((theme) => ({
   chip: {
     fontSize: 12,
     marginRight: 7,
-    borderRadius: '0',
+    borderRadius: 4,
     width: 120,
     height: 'auto',
     color: theme.palette.mode === 'dark' ? '#ffffff' : '#000000',

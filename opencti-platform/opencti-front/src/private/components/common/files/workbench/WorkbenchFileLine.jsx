@@ -177,7 +177,7 @@ class WorkbenchFileLineComponent extends Component {
           button={true}
           component={isOutdated ? null : Link}
           disabled={isProgress}
-          to={`/dashboard/import/pending/${toB64(file.id)}`}
+          to={`/dashboard/data/import/pending/${toB64(file.id)}`}
         >
           <ListItemIcon>
             {isProgress && (

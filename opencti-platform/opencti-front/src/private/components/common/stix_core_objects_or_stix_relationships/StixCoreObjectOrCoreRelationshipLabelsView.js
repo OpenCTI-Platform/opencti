@@ -30,6 +30,7 @@ import Transition from '../../../../components/Transition';
 const useStyles = makeStyles(() => ({
   label: {
     margin: '0 7px 7px 0',
+    borderRadius: 4,
   },
   icon: {
     paddingTop: 4,

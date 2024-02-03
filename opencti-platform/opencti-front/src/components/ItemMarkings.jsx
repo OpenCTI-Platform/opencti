@@ -15,7 +15,7 @@ const useStyles = makeStyles(() => ({
     lineHeight: '12px',
     height: 25,
     margin: '0 7px 7px 0',
-    borderRadius: 5,
+    borderRadius: 4,
     width: 120,
   },
   chipInList: {
@@ -24,7 +24,7 @@ const useStyles = makeStyles(() => ({
     height: 20,
     float: 'left',
     marginRight: 7,
-    borderRadius: 5,
+    borderRadius: 4,
     width: 90,
   },
   chipInToolTip: {
@@ -32,7 +32,7 @@ const useStyles = makeStyles(() => ({
     lineHeight: '12px',
     height: 25,
     margin: '0 7px 7px 0',
-    borderRadius: 5,
+    borderRadius: 4,
     width: '100%',
   },
 }));

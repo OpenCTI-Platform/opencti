@@ -18,17 +18,20 @@ const styles = () => ({
     height: 25,
     fontSize: 12,
     margin: '0 7px 7px 0',
+    borderRadius: 4,
   },
   labelInList: {
     fontSize: 12,
     height: 20,
     float: 'left',
     margin: '0 7px 0 0',
+    borderRadius: 4,
   },
   labelInSearch: {
     height: 25,
     fontSize: 12,
     margin: '0 7px 0 0',
+    borderRadius: 4,
   },
   labelInput: {
     margin: '4px 0 0 10px',

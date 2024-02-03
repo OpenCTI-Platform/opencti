@@ -1,17 +1,15 @@
 import React from 'react';
+import * as R from 'ramda';
 import { graphql } from 'react-relay';
 import CircularProgress from '@mui/material/CircularProgress';
 import Paper from '@mui/material/Paper';
 import Typography from '@mui/material/Typography';
-import makeStyles from '@mui/styles/makeStyles';
 import { useTheme } from '@mui/styles';
-import { useNavigate } from 'react-router-dom-v5-compat';
+import makeStyles from '@mui/styles/makeStyles';
 import Chart from '../charts/Chart';
 import { QueryRenderer } from '../../../../relay/environment';
 import { useFormatter } from '../../../../components/i18n';
-import { itemColor } from '../../../../utils/Colors';
-import { horizontalBarsChartOptions } from '../../../../utils/Charts';
-import { simpleNumberFormat } from '../../../../utils/Number';
+import { polarAreaChartOptions } from '../../../../utils/Charts';
 import { defaultValue } from '../../../../utils/Graph';
 import { buildFiltersAndOptionsForWidgets } from '../../../../utils/filters/filtersUtils';
 
@@ -19,13 +17,13 @@ const useStyles = makeStyles(() => ({
   paper: {
     height: '100%',
     margin: '10px 0 0 0',
-    padding: 0,
+    padding: '15px 0 0 0',
     borderRadius: 6,
   },
 }));
 
-const stixRelationshipsHorizontalBarsDistributionQuery = graphql`
-  query StixRelationshipsHorizontalBarsDistributionQuery(
+const stixRelationshipsPolarAreasDistributionQuery = graphql`
+  query StixRelationshipsPolarAreaDistributionQuery(
     $field: String!
     $operation: StatsOperation!
     $startDate: DateTime
@@ -173,15 +171,15 @@ const stixRelationshipsHorizontalBarsDistributionQuery = graphql`
         }
         ... on DataComponent {
           name
+          description
         }
         ... on DataSource {
           name
+          description
         }
         ... on Case {
           name
-        }
-        ... on Report {
-          name
+          description
         }
         ... on StixCyberObservable {
           observable_value
@@ -210,19 +208,14 @@ const stixRelationshipsHorizontalBarsDistributionQuery = graphql`
         ... on Opinion {
           opinion
         }
-        ... on Label {
-          value
-          color
-        }
       }
     }
   }
 `;
 
-const StixRelationshipsHorizontalBars = ({
+const StixRelationshipsPolarArea = ({
   title,
   variant,
-  withoutTitle,
   height,
   field,
   startDate,
@@ -236,18 +229,13 @@ const StixRelationshipsHorizontalBars = ({
   const classes = useStyles();
   const theme = useTheme();
   const { t_i18n } = useFormatter();
-  const navigate = useNavigate();
   const renderContent = () => {
     let selection = {};
     let filtersAndOptions;
-    let dataSelectionDateAttribute = 'created_at';
     if (dataSelection) {
       // eslint-disable-next-line prefer-destructuring
       selection = dataSelection[0];
       filtersAndOptions = buildFiltersAndOptionsForWidgets(selection.filters);
-      dataSelectionDateAttribute = selection.date_attribute && selection.date_attribute.length > 0
-        ? selection.date_attribute
-        : 'created_at';
     }
     const finalField = selection.attribute || field || 'entity_type';
     const variables = {
@@ -255,7 +243,7 @@ const StixRelationshipsHorizontalBars = ({
       operation: 'count',
       startDate,
       endDate,
-      dateAttribute: dateAttribute || dataSelectionDateAttribute,
+      dateAttribute,
       limit: selection.number ?? 10,
       filters: filtersAndOptions?.filters,
       isTo: selection.isTo,
@@ -264,63 +252,28 @@ const StixRelationshipsHorizontalBars = ({
     };
     return (
       <QueryRenderer
-        query={stixRelationshipsHorizontalBarsDistributionQuery}
+        query={stixRelationshipsPolarAreasDistributionQuery}
         variables={variables}
         render={({ props }) => {
-          if (
-            props
-            && props.stixRelationshipsDistribution
-            && props.stixRelationshipsDistribution.length > 0
-          ) {
-            const data = props.stixRelationshipsDistribution.map((n) => {
-              let color = selection.attribute.endsWith('_id')
-                ? itemColor(n.entity.entity_type)
-                : itemColor(n.label);
-              if (n.entity?.color) {
-                color = theme.palette.mode === 'light' && n.entity.color === '#ffffff'
-                  ? '#000000'
-                  : n.entity.color;
-              }
-              if (n.entity?.x_opencti_color) {
-                color = theme.palette.mode === 'light'
-                && n.entity.x_opencti_color === '#ffffff'
-                  ? '#000000'
-                  : n.entity.x_opencti_color;
-              }
-              if (n.entity?.template?.color) {
-                color = theme.palette.mode === 'light'
-                && n.entity.template.color === '#ffffff'
-                  ? '#000000'
-                  : n.entity.template.color;
-              }
-              return {
-                x: finalField.endsWith('_id')
-                  ? defaultValue(n.entity)
-                  : n.label,
-                y: n.value,
-                fillColor: color,
-              };
-            });
-            const chartData = [{ name: t_i18n('Number of relationships'), data }];
-            const redirectionUtils = finalField.endsWith('_id')
-              ? props.stixRelationshipsDistribution.map((n) => ({
-                id: n.label,
-                entity_type: n.entity.entity_type,
-              }))
-              : null;
+          if (props && props.stixRelationshipsDistribution && props.stixRelationshipsDistribution.length > 0) {
+            let data = props.stixRelationshipsDistribution;
+            if (finalField.endsWith('_id')) {
+              data = R.map(
+                (n) => R.assoc(
+                  'label',
+                  defaultValue(n.entity),
+                  n,
+                ),
+                props.stixRelationshipsDistribution,
+              );
+            }
+            const chartData = data.map((n) => n.value);
+            const labels = data.map((n) => n.label);
             return (
               <Chart
-                options={horizontalBarsChartOptions(
-                  theme,
-                  true,
-                  simpleNumberFormat,
-                  null,
-                  false,
-                  navigate,
-                  redirectionUtils,
-                )}
+                options={polarAreaChartOptions(theme, labels)}
                 series={chartData}
-                type="bar"
+                type="polarArea"
                 width="100%"
                 height="100%"
                 withExportPopover={withExportPopover}
@@ -352,7 +305,7 @@ const StixRelationshipsHorizontalBars = ({
                   textAlign: 'center',
                 }}
               >
-                <CircularProgress size={40} thickness={2} />
+                <CircularProgress size={40} thickness={2}/>
               </span>
             </div>
           );
@@ -362,20 +315,18 @@ const StixRelationshipsHorizontalBars = ({
   };
   return (
     <div style={{ height: height || '100%' }}>
-      {!withoutTitle && (
-        <Typography
-          variant="h4"
-          gutterBottom={true}
-          style={{
-            margin: variant !== 'inLine' ? '0 0 10px 0' : '-10px 0 10px -7px',
-            whiteSpace: 'nowrap',
-            overflow: 'hidden',
-            textOverflow: 'ellipsis',
-          }}
-        >
-          {parameters.title || title || t_i18n('Relationships distribution')}
-        </Typography>
-      )}
+      <Typography
+        variant="h4"
+        gutterBottom={true}
+        style={{
+          margin: variant !== 'inLine' ? '0 0 10px 0' : '-10px 0 10px -7px',
+          whiteSpace: 'nowrap',
+          overflow: 'hidden',
+          textOverflow: 'ellipsis',
+        }}
+      >
+        {parameters.title || title || t_i18n('Relationships distribution')}
+      </Typography>
       {variant !== 'inLine' ? (
         <Paper classes={{ root: classes.paper }} variant="outlined">
           {renderContent()}
@@ -387,4 +338,4 @@ const StixRelationshipsHorizontalBars = ({
   );
 };
 
-export default StixRelationshipsHorizontalBars;
+export default StixRelationshipsPolarArea;
