@@ -163,7 +163,7 @@ describe('Report resolver standard behavior', () => {
         report(id: $id) {
           id
           standard_id
-          objects {
+          objects(first: 30) {
             edges {
               node {
                 ... on BasicObject {

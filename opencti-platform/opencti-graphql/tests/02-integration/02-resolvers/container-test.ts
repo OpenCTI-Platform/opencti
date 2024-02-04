@@ -49,7 +49,7 @@ describe('Container resolver standard behavior', () => {
     expect(queryResult).not.toBeNull();
     expect(queryResult.data?.containers).not.toBeNull();
     expect(queryResult.data?.containers.edges.length).toEqual(1);
-    expect(queryResult.data?.containers.edges[0].node.standard_id).toEqual('report--01d982e0-4850-5e0c-b3cc-c9a25c1cf1b8');
+    expect(queryResult.data?.containers.edges[0].node.standard_id).toEqual('observed-data--d5c0414a-aeb6-5927-a2ae-e465846c206f');
   });
 
   it('should malware containersNumber accurate', async () => {
