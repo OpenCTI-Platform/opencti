@@ -9,19 +9,16 @@ import inject18n from './i18n';
 const styles = () => ({
   chip: {
     fontSize: 12,
-    lineHeight: '12px',
-    height: 25,
     marginRight: 7,
-    textTransform: 'uppercase',
-    borderRadius: '0',
+    borderRadius: 4,
+    width: 120,
   },
   chipInList: {
     fontSize: 12,
-    lineHeight: '12px',
     height: 20,
-    float: 'right',
-    textTransform: 'uppercase',
-    borderRadius: '0',
+    float: 'left',
+    borderRadius: 4,
+    width: 80,
   },
 });
 

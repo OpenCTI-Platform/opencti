@@ -7,7 +7,7 @@ import { resolveLink } from '../utils/Entity';
 const ItemAuthor = (props) => {
   const { createdBy } = props;
   return (
-    <div>
+    <>
       {createdBy ? (
         <Button
           variant="outlined"
@@ -23,7 +23,7 @@ const ItemAuthor = (props) => {
       ) : (
         '-'
       )}
-    </div>
+    </>
   );
 };
 

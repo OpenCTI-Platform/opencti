@@ -5,10 +5,8 @@ import makeStyles from '@mui/styles/makeStyles';
 const useStyles = makeStyles(() => ({
   chip: {
     fontSize: 12,
-    height: 25,
     marginRight: 7,
-    textTransform: 'uppercase',
-    borderRadius: '0',
+    borderRadius: 4,
     width: 150,
   },
 }));
