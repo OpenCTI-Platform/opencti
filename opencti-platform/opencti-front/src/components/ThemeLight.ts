@@ -149,30 +149,6 @@ const ThemeLight = (
         body: {
           scrollbarColor: `${accent || THEME_LIGHT_DEFAULT_ACCENT} ${paper || THEME_LIGHT_DEFAULT_PAPER}`,
           scrollbarWidth: 'thin',
-          '&::-webkit-scrollbar, & *::-webkit-scrollbar': {
-            backgroundColor: paper || THEME_LIGHT_DEFAULT_PAPER,
-          },
-          '&::-webkit-scrollbar-thumb, & *::-webkit-scrollbar-thumb': {
-            borderRadius: 8,
-            backgroundColor: accent || THEME_LIGHT_DEFAULT_ACCENT,
-            minHeight: 24,
-            border: `3px solid ${paper || THEME_LIGHT_DEFAULT_PAPER}`,
-          },
-          '&::-webkit-scrollbar-thumb:focus, & *::-webkit-scrollbar-thumb:focus':
-            {
-              backgroundColor: accent || THEME_LIGHT_DEFAULT_ACCENT,
-            },
-          '&::-webkit-scrollbar-thumb:active, & *::-webkit-scrollbar-thumb:active':
-            {
-              backgroundColor: accent || THEME_LIGHT_DEFAULT_ACCENT,
-            },
-          '&::-webkit-scrollbar-thumb:hover, & *::-webkit-scrollbar-thumb:hover':
-            {
-              backgroundColor: accent || THEME_LIGHT_DEFAULT_ACCENT,
-            },
-          '&::-webkit-scrollbar-corner, & *::-webkit-scrollbar-corner': {
-            backgroundColor: accent || THEME_LIGHT_DEFAULT_ACCENT,
-          },
           html: {
             WebkitFontSmoothing: 'auto',
           },

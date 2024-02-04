@@ -6,12 +6,12 @@ import { hexToRGB } from '../utils/Colors';
 
 const EE_COLOR = '#00f1bd';
 
-export const THEME_DARK_DEFAULT_BACKGROUND = '#01020e'; // 0a1929
+export const THEME_DARK_DEFAULT_BACKGROUND = '#00020c'; // 0a1929
 const THEME_DARK_DEFAULT_PRIMARY = '#0fbcff'; // 1c8eb6 // for road:
 const THEME_DARK_DEFAULT_SECONDARY = '#00f1bd'; // d81b60
-const THEME_DARK_DEFAULT_ACCENT = '#030721'; // 01478d // for building: 030721
-const THEME_DARK_DEFAULT_PAPER = '#01020e'; // 001e3c
-const THEME_DARK_DEFAULT_NAV = '#01020e'; // 071a2e
+const THEME_DARK_DEFAULT_ACCENT = '#04092a'; // 01478d // for building: 030721
+const THEME_DARK_DEFAULT_PAPER = '#00020c'; // 001e3c
+const THEME_DARK_DEFAULT_NAV = '#00020c'; // 071a2e
 
 const ThemeDark = (
   logo: string | null = null,
@@ -149,30 +149,6 @@ const ThemeDark = (
         body: {
           scrollbarColor: `${background || THEME_DARK_DEFAULT_BACKGROUND} ${accent || THEME_DARK_DEFAULT_ACCENT}`,
           scrollbarWidth: 'thin',
-          '&::-webkit-scrollbar, & *::-webkit-scrollbar': {
-            backgroundColor: paper || THEME_DARK_DEFAULT_ACCENT,
-          },
-          '&::-webkit-scrollbar-thumb, & *::-webkit-scrollbar-thumb': {
-            borderRadius: 8,
-            backgroundColor: background || THEME_DARK_DEFAULT_BACKGROUND,
-            minHeight: 24,
-            border: `3px solid ${accent || THEME_DARK_DEFAULT_ACCENT}`,
-          },
-          '&::-webkit-scrollbar-thumb:focus, & *::-webkit-scrollbar-thumb:focus':
-            {
-              backgroundColor: background || THEME_DARK_DEFAULT_BACKGROUND,
-            },
-          '&::-webkit-scrollbar-thumb:active, & *::-webkit-scrollbar-thumb:active':
-            {
-              backgroundColor: background || THEME_DARK_DEFAULT_BACKGROUND,
-            },
-          '&::-webkit-scrollbar-thumb:hover, & *::-webkit-scrollbar-thumb:hover':
-            {
-              backgroundColor: background || THEME_DARK_DEFAULT_BACKGROUND,
-            },
-          '&::-webkit-scrollbar-corner, & *::-webkit-scrollbar-corner': {
-            backgroundColor: background || THEME_DARK_DEFAULT_BACKGROUND,
-          },
           html: {
             WebkitFontSmoothing: 'auto',
           },

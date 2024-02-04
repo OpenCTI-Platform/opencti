@@ -56,125 +56,123 @@ class StixDomainObjectVictimology extends Component {
       relationship_type: 'targets',
     };
     return (
-      <div style={{ marginTop: 15 }}>
-        <div className={classes.stats}>
-          <Grid container={true} spacing={3}>
-            <Grid
-              item={true}
-              xs={6}
-              style={{ height: 300, minHeight: 300, paddingTop: 0 }}
-            >
-              <EntityStixCoreRelationshipsHorizontalBars
-                title={t('Victimology (sectors)')}
-                fromId={stixDomainObjectId}
-                toTypes={['Sector']}
-                relationshipType="targets"
-                field="internal_id"
-                isTo={true}
-              />
-            </Grid>
-            <Grid
-              item={true}
-              xs={6}
-              style={{ height: 300, minHeight: 300, paddingTop: 0 }}
-            >
-              <EntityStixCoreRelationshipsHorizontalBars
-                title={t('Victimology (regions)')}
-                fromId={stixDomainObjectId}
-                toTypes={['Region']}
-                relationshipType="targets"
-                field="internal_id"
-                isTo={true}
-              />
-            </Grid>
-            <Grid
-              item={true}
-              xs={6}
-              style={{
-                marginTop: 60,
-                height: 300,
-                minHeight: 300,
-                paddingTop: 0,
-              }}
-            >
-              <EntityStixCoreRelationshipsHorizontalBars
-                title={t('Victimology (countries)')}
-                fromId={stixDomainObjectId}
-                toTypes={['Country']}
-                relationshipType="targets"
-                field="internal_id"
-                isTo={true}
-              />
-            </Grid>
-            <Grid
-              item={true}
-              xs={6}
-              style={{
-                marginTop: 60,
-                height: 300,
-                minHeight: 300,
-                paddingTop: 0,
-              }}
-            >
-              <StixDomainObjectVictimologyMap
-                title={t('Victimology (countries)')}
-                stixDomainObjectId={stixDomainObjectId}
-              />
-            </Grid>
+      <>
+        <Grid container={true} spacing={3} style={{ marginTop: 15 }}>
+          <Grid
+            item={true}
+            xs={6}
+            style={{ height: 300, minHeight: 300, paddingTop: 0 }}
+          >
+            <EntityStixCoreRelationshipsHorizontalBars
+              title={t('Victimology (sectors)')}
+              fromId={stixDomainObjectId}
+              toTypes={['Sector']}
+              relationshipType="targets"
+              field="internal_id"
+              isTo={true}
+            />
           </Grid>
-          <Divider style={{ marginTop: 50 }} />
-          <div className={classes.container} id="container">
-            {(viewMode === 'entities' || viewMode === 'relationships') && (
-              <EntityStixCoreRelationships
-                entityLink={entityLink}
-                entityId={stixDomainObjectId}
-                stixCoreObjectTypes={[
-                  'System',
-                  'Individual',
-                  'Organization',
-                  'Sector',
-                  'City',
-                  'Country',
-                  'Region',
-                  'Position',
-                  'Event',
-                  'Administrative-Area',
-                ]}
-                relationshipTypes={['targets']}
-                isRelationReversed={false}
-                enableExport={true}
-                currentView={viewMode}
-                handleChangeView={this.handleChangeView.bind(this)}
-                enableNestedView={true}
-                defaultStartTime={defaultStartTime}
-                defaultStopTime={defaultStopTime}
-              />
-            )}
-            {viewMode === 'nested' && (
-              <QueryRenderer
-                query={
+          <Grid
+            item={true}
+            xs={6}
+            style={{ height: 300, minHeight: 300, paddingTop: 0 }}
+          >
+            <EntityStixCoreRelationshipsHorizontalBars
+              title={t('Victimology (regions)')}
+              fromId={stixDomainObjectId}
+              toTypes={['Region']}
+              relationshipType="targets"
+              field="internal_id"
+              isTo={true}
+            />
+          </Grid>
+          <Grid
+            item={true}
+            xs={6}
+            style={{
+              marginTop: 60,
+              height: 300,
+              minHeight: 300,
+              paddingTop: 0,
+            }}
+          >
+            <EntityStixCoreRelationshipsHorizontalBars
+              title={t('Victimology (countries)')}
+              fromId={stixDomainObjectId}
+              toTypes={['Country']}
+              relationshipType="targets"
+              field="internal_id"
+              isTo={true}
+            />
+          </Grid>
+          <Grid
+            item={true}
+            xs={6}
+            style={{
+              marginTop: 60,
+              height: 300,
+              minHeight: 300,
+              paddingTop: 0,
+            }}
+          >
+            <StixDomainObjectVictimologyMap
+              title={t('Victimology (countries)')}
+              stixDomainObjectId={stixDomainObjectId}
+            />
+          </Grid>
+        </Grid>
+        <Divider style={{ marginTop: 50 }} />
+        <div className={classes.container} id="container">
+          {(viewMode === 'entities' || viewMode === 'relationships') && (
+          <EntityStixCoreRelationships
+            entityLink={entityLink}
+            entityId={stixDomainObjectId}
+            stixCoreObjectTypes={[
+              'System',
+              'Individual',
+              'Organization',
+              'Sector',
+              'City',
+              'Country',
+              'Region',
+              'Position',
+              'Event',
+              'Administrative-Area',
+            ]}
+            relationshipTypes={['targets']}
+            isRelationReversed={false}
+            enableExport={true}
+            currentView={viewMode}
+            handleChangeView={this.handleChangeView.bind(this)}
+            enableNestedView={true}
+            defaultStartTime={defaultStartTime}
+            defaultStopTime={defaultStopTime}
+          />
+          )}
+          {viewMode === 'nested' && (
+          <QueryRenderer
+            query={
                   stixDomainObjectVictimologySectorsStixCoreRelationshipsQuery
                 }
-                variables={{ first: 500, ...paginationOptionsSectors }}
-                render={({ props }) => {
-                  if (props) {
-                    return (
-                      <StixDomainObjectVictimologySectors
-                        data={props}
-                        entityLink={entityLink}
-                        paginationOptions={paginationOptionsSectors}
-                        stixDomainObjectId={stixDomainObjectId}
-                        handleChangeView={this.handleChangeView.bind(this)}
-                      />
-                    );
-                  }
-                  return <div />;
-                }}
-              />
-            )}
-          </div>
+            variables={{ first: 500, ...paginationOptionsSectors }}
+            render={({ props }) => {
+              if (props) {
+                return (
+                  <StixDomainObjectVictimologySectors
+                    data={props}
+                    entityLink={entityLink}
+                    paginationOptions={paginationOptionsSectors}
+                    stixDomainObjectId={stixDomainObjectId}
+                    handleChangeView={this.handleChangeView.bind(this)}
+                  />
+                );
+              }
+              return <div />;
+            }}
+          />
+          )}
         </div>
-      </div>
+      </>
     );
   }
 }
