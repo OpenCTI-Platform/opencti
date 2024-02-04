@@ -21,7 +21,7 @@ import { EXPLORE, KNOWLEDGE } from '../../utils/hooks/useGranted';
 import { usePaginationLocalStorage } from '../../utils/hooks/useLocalStorage';
 import { computeLevel } from '../../utils/Number';
 import Security from '../../utils/Security';
-import { dayAgo, lastDayOfThePreviousMonth, monthsAgo, yearsAgo } from '../../utils/Time';
+import { lastDayOfThePreviousMonth, monthsAgo, yearsAgo } from '../../utils/Time';
 import LocationMiniMapTargets from './common/location/LocationMiniMapTargets';
 import StixRelationshipsHorizontalBars from './common/stix_relationships/StixRelationshipsHorizontalBars';
 import DashboardView from './workspaces/dashboards/Dashboard';
