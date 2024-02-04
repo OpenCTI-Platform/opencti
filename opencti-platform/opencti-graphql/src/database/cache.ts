@@ -9,6 +9,7 @@ import { ENTITY_TYPE_RESOLVED_FILTERS } from '../schema/stixDomainObject';
 import { ENTITY_TYPE_TRIGGER } from '../modules/notification/notification-types';
 import { convertStoreToStix } from './stix-converter';
 import { ENTITY_TYPE_PLAYBOOK } from '../modules/playbook/playbook-types';
+import { type BasicStoreEntityPublicDashboard, ENTITY_TYPE_PUBLIC_DASHBOARD } from '../modules/publicDashboard/publicDashboard-types';
 
 const STORE_ENTITIES_LINKS: Record<string, string[]> = {
   // Filters must be reset depending on stream and triggers modifications
@@ -36,6 +37,16 @@ const buildStoreEntityMap = <T extends BasicStoreIdentifier>(entities: Array<T>)
     }
   }
   return entityById;
+};
+
+const buildStorePublicDashboardMap = <T extends BasicStoreEntityPublicDashboard>(entities: Array<T>) => {
+  const entityByUriKey = new Map();
+  for (let i = 0; i < entities.length; i += 1) {
+    const entity = entities[i];
+    const { uri_key } = entity;
+    entityByUriKey.set(uri_key, entity);
+  }
+  return entityByUriKey;
 };
 
 export const writeCacheForEntity = (entityType: string, data: unknown) => {
@@ -106,6 +117,10 @@ export const getEntitiesMapFromCache = async <T extends BasicStoreIdentifier | S
 ): Promise<Map<string | StixId, T>> => {
   if (type === ENTITY_TYPE_RESOLVED_FILTERS) {
     return await getEntitiesFromCache(context, user, type) as Map<string, T>; // map of <standard_id, instance>
+  }
+  if (type === ENTITY_TYPE_PUBLIC_DASHBOARD) {
+    const data = await getEntitiesFromCache(context, user, type) as BasicStoreEntityPublicDashboard[];
+    return buildStorePublicDashboardMap(data); // map of <uri_key, instance>
   }
   const data = await getEntitiesFromCache(context, user, type) as BasicStoreIdentifier[];
   return buildStoreEntityMap(data); // map of <id, instance> for all the instance ids (internal_id, standard_id, stix ids)

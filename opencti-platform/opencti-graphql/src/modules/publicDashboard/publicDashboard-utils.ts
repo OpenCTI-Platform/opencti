@@ -1,22 +1,22 @@
-import { getEntitiesListFromCache, getEntitiesMapFromCache } from '../../database/cache';
+import { getEntitiesMapFromCache } from '../../database/cache';
 import { SYSTEM_USER } from '../../utils/access';
-import { type BasicStoreEntityPublicDashboard, ENTITY_TYPE_PUBLIC_DASHBOARD } from './publicDashboard-types';
-import { fromBase64 } from '../../database/utils';
+import { ENTITY_TYPE_PUBLIC_DASHBOARD, type PublicDashboardCached } from './publicDashboard-types';
 import { ENTITY_TYPE_USER } from '../../schema/internalObject';
 import type { AuthContext, AuthUser } from '../../types/user';
 import { UnsupportedError } from '../../config/errors';
 
-export const getWidgetsUserAndMarkings = async (
+export const getWidgetsConfigAndUser = async (
   context: AuthContext,
   uriKey: string,
-): Promise<{ user: AuthUser, widgets: any, allowed_markings_ids: string[] }> => {
+): Promise<{ user: AuthUser, widgets: any, config: any }> => {
   // Get publicDashboard from cache
-  const publicDashboards = await getEntitiesListFromCache<BasicStoreEntityPublicDashboard>(context, SYSTEM_USER, ENTITY_TYPE_PUBLIC_DASHBOARD);
-  const dashboard = publicDashboards.find((p) => p.uri_key === uriKey);
+  const publicDashboardsMapByUriKey = await getEntitiesMapFromCache<PublicDashboardCached>(context, SYSTEM_USER, ENTITY_TYPE_PUBLIC_DASHBOARD);
+  const dashboard = publicDashboardsMapByUriKey.get(uriKey);
   if (!dashboard) {
     throw UnsupportedError('Dashboard not found');
   }
-  const { user_id, private_manifest, allowed_markings_ids } = dashboard;
+
+  const { user_id, private_manifest, allowed_markings_ids }: PublicDashboardCached = dashboard;
 
   // Get user from cache
   const platformUsersMap = await getEntitiesMapFromCache<AuthUser>(context, SYSTEM_USER, ENTITY_TYPE_USER);
@@ -25,9 +25,9 @@ export const getWidgetsUserAndMarkings = async (
     throw UnsupportedError('User not found');
   }
   const user = { ...plateformUser, origin: { user_id: plateformUser.id, referer: 'public-dashboard' } };
+  // // TODO:  modifiy user marking
 
   // Get widget query configuration
-  const parsedManifest = JSON.parse(fromBase64(private_manifest) ?? '{}');
-  const { widgets } = parsedManifest;
-  return { user, widgets, allowed_markings_ids };
+  const { widgets, config } = private_manifest;
+  return { user, widgets, config };
 };
