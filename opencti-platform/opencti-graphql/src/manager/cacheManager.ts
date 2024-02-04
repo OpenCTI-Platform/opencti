@@ -38,9 +38,9 @@ import { ENTITY_TYPE_MANAGER_CONFIGURATION } from '../modules/managerConfigurati
 import type { BasicStoreEntityPlaybook, ComponentDefinition } from '../modules/playbook/playbook-types';
 import { ENTITY_TYPE_PLAYBOOK } from '../modules/playbook/playbook-types';
 import { ENTITY_TYPE_DECAY_RULE } from '../modules/decayRule/decayRule-types';
-import { isNotEmptyField } from '../database/utils';
+import { fromBase64, isNotEmptyField } from '../database/utils';
 import { findAllPlaybooks } from '../modules/playbook/playbook-domain';
-import { type BasicStoreEntityPublicDashboard, ENTITY_TYPE_PUBLIC_DASHBOARD } from '../modules/publicDashboard/publicDashboard-types';
+import { type BasicStoreEntityPublicDashboard, ENTITY_TYPE_PUBLIC_DASHBOARD, type PublicDashboardCached } from '../modules/publicDashboard/publicDashboard-types';
 
 const workflowStatuses = (context: AuthContext) => {
   const reloadStatuses = async () => {
@@ -190,7 +190,24 @@ const platformNotifiers = (context: AuthContext) => {
 };
 const platformPublicDashboards = (context: AuthContext) => {
   const reloadPublicDashboards = async () => {
-    return listAllEntities<BasicStoreEntityPublicDashboard>(context, SYSTEM_USER, [ENTITY_TYPE_PUBLIC_DASHBOARD], { connectionFormat: false });
+    const publicDashboards = await listAllEntities<BasicStoreEntityPublicDashboard>(context, SYSTEM_USER, [ENTITY_TYPE_PUBLIC_DASHBOARD], { connectionFormat: false });
+    const publicDashboardsForCache: PublicDashboardCached[] = [];
+    if (publicDashboards.length > 0) {
+      publicDashboards.map((dash) => {
+        return publicDashboardsForCache.push(
+          {
+            id: dash.id,
+            internal_id: dash.internal_id,
+            uri_key: dash.uri_key,
+            dashboard_id: dash.dashboard_id,
+            private_manifest: JSON.parse(fromBase64(dash.private_manifest) ?? ''),
+            user_id: dash.user_id,
+            allowed_markings_ids: dash.allowed_markings_ids,
+          }
+        );
+      });
+    }
+    return publicDashboardsForCache;
   };
   return { values: null, fn: reloadPublicDashboards };
 };

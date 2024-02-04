@@ -33,6 +33,18 @@ export interface StoreEntityPublicDashboard extends StoreEntity {
 }
 // endregion
 
+// region cache type
+export interface PublicDashboardCached {
+  id: string,
+  internal_id: string,
+  uri_key: string,
+  dashboard_id: string,
+  private_manifest: { widgets:any, config: any },
+  user_id: string,
+  allowed_markings_ids: string[],
+}
+// endregion
+
 // region Stix type
 export interface StixPublicDashboard extends StixDomainObject {
   name: string;
