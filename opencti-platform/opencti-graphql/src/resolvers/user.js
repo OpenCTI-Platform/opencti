@@ -64,6 +64,8 @@ const creatorLoader = batchLoader(batchCreator);
 
 const userResolvers = {
   Query: {
+    me: (_, __, context) => findById(context, context.user, context.user.id),
+    me_id: (_, __, context) => context.user.id, // Easy way to check and ping the user session
     user: (_, { id }, context) => findById(context, context.user, id),
     otpGeneration: (_, __, context) => otpUserGeneration(context.user),
     users: (_, args, context) => findAll(context, context.user, args),
@@ -75,7 +77,6 @@ const userResolvers = {
     members: (_, args, context) => findAllMembers(context, context.user, args),
     sessions: () => findSessions(),
     capabilities: (_, args, context) => findCapabilities(context, context.user, args),
-    me: (_, __, context) => findById(context, context.user, context.user.id),
     bookmarks: (_, args, context) => bookmarks(context, context.user, args),
   },
   User: {

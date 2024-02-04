@@ -17183,6 +17183,7 @@ export type Query = {
   markingDefinition?: Maybe<MarkingDefinition>;
   markingDefinitions?: Maybe<MarkingDefinitionConnection>;
   me: MeUser;
+  me_id: Scalars['ID']['output'];
   members?: Maybe<MemberConnection>;
   myNotifications?: Maybe<NotificationConnection>;
   myOpinion?: Maybe<Opinion>;
@@ -34248,6 +34249,7 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   markingDefinition?: Resolver<Maybe<ResolversTypes['MarkingDefinition']>, ParentType, ContextType, RequireFields<QueryMarkingDefinitionArgs, 'id'>>;
   markingDefinitions?: Resolver<Maybe<ResolversTypes['MarkingDefinitionConnection']>, ParentType, ContextType, Partial<QueryMarkingDefinitionsArgs>>;
   me?: Resolver<ResolversTypes['MeUser'], ParentType, ContextType>;
+  me_id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   members?: Resolver<Maybe<ResolversTypes['MemberConnection']>, ParentType, ContextType, Partial<QueryMembersArgs>>;
   myNotifications?: Resolver<Maybe<ResolversTypes['NotificationConnection']>, ParentType, ContextType, Partial<QueryMyNotificationsArgs>>;
   myOpinion?: Resolver<Maybe<ResolversTypes['Opinion']>, ParentType, ContextType, RequireFields<QueryMyOpinionArgs, 'id'>>;
