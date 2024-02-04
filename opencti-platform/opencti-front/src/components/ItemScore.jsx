@@ -14,7 +14,7 @@ const styles = () => ({
     height: 25,
     marginRight: 7,
     textTransform: 'uppercase',
-    borderRadius: '0',
+    borderRadius: 4,
   },
   chipInList: {
     fontSize: 12,
@@ -22,7 +22,7 @@ const styles = () => ({
     height: 20,
     float: 'right',
     textTransform: 'uppercase',
-    borderRadius: '0',
+    borderRadius: 4,
   },
 });
 

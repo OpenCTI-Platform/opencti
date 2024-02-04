@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { compose } from 'ramda';
 import withStyles from '@mui/styles/withStyles';
+import IngestionMenu from './IngestionMenu';
 import inject18n from '../../../components/i18n';
 import { QueryRenderer } from '../../../relay/environment';
 import WorkersStatus, { workersStatusQuery } from './connectors/WorkersStatus';
@@ -10,7 +11,7 @@ import Loader from '../../../components/Loader';
 
 const styles = () => ({
   container: {
-    margin: 0,
+    padding: '0 200px 50px 0',
   },
 });
 
@@ -19,6 +20,7 @@ class Connectors extends Component {
     const { classes } = this.props;
     return (
       <div className={classes.container}>
+        <IngestionMenu/>
         <QueryRenderer
           query={workersStatusQuery}
           render={({ props }) => {

@@ -12,7 +12,7 @@ import { buildFiltersAndOptionsForWidgets } from '../../../../utils/filters/filt
 
 const useStyles = makeStyles({
   paper: {
-    minHeight: 280,
+    minHeight: 110,
     height: '100%',
     margin: '4px 0 0 0',
     padding: '0 0 10px 0',
@@ -56,6 +56,7 @@ const StixCoreObjectsNumber = ({
   endDate,
   dataSelection,
   parameters = {},
+  withoutTitle,
 }) => {
   const classes = useStyles();
   const { t_i18n, n } = useFormatter();
@@ -124,7 +125,7 @@ const StixCoreObjectsNumber = ({
   };
   return (
     <div style={{ height: height || '100%' }}>
-      <Typography
+      {!withoutTitle && <Typography
         variant="h4"
         gutterBottom={true}
         style={{
@@ -133,9 +134,9 @@ const StixCoreObjectsNumber = ({
           overflow: 'hidden',
           textOverflow: 'ellipsis',
         }}
-      >
-        {parameters.title ?? t_i18n('Entities number')}
-      </Typography>
+                        >
+          {parameters.title ?? t_i18n('Entities number')}
+        </Typography>}
       {variant !== 'inLine' ? (
         <Paper classes={{ root: classes.paper }} variant="outlined">
           {renderContent()}

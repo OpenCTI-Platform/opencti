@@ -7,8 +7,8 @@ import { makeStyles } from '@mui/styles';
 import { useFormatter } from '../../../components/i18n';
 import useGranted, {
   KNOWLEDGE,
+  KNOWLEDGE_KNASKIMPORT,
   KNOWLEDGE_KNUPDATE,
-  MODULES,
   SETTINGS,
   SETTINGS_SETACCESSES,
   TAXIIAPI_SETCOLLECTIONS,
@@ -34,7 +34,7 @@ const TopMenuData = () => {
   const { platformModuleHelpers } = useAuth();
   const isKnowledgeReader = useGranted([KNOWLEDGE]);
   const isKnowledgeUpdater = useGranted([KNOWLEDGE_KNUPDATE]);
-  const isConnectorReader = useGranted([MODULES]);
+  const isKnowledgeImporter = useGranted([KNOWLEDGE_KNASKIMPORT]);
   const isSettingsManager = useGranted([SETTINGS]);
   const isAdministrator = useGranted([SETTINGS_SETACCESSES]);
   const isSharingManager = useGranted([TAXIIAPI_SETCOLLECTIONS]);
@@ -76,6 +76,17 @@ const TopMenuData = () => {
           {t_i18n('Ingestion')}
         </Button>
       )}
+      {isKnowledgeImporter && (
+      <Button
+        component={Link}
+        size="small"
+        to="/dashboard/data/import"
+        variant={getVariant('/dashboard/data/import')}
+        classes={{ root: classes.button }}
+      >
+        {t_i18n('Import')}
+      </Button>
+      )}
       {(isKnowledgeUpdater || isAdministrator || isCsvMapperUpdater) && (
         <Tooltip
           title={platformModuleHelpers.generateDisableMessage(TASK_MANAGER)}
@@ -106,17 +117,6 @@ const TopMenuData = () => {
           classes={{ root: classes.button }}
         >
           {t_i18n('Data sharing')}
-        </Button>
-      )}
-      {isConnectorReader && (
-        <Button
-          component={Link}
-          size="small"
-          to="/dashboard/data/connectors"
-          variant={getVariant('/dashboard/data/connectors')}
-          classes={{ root: classes.button }}
-        >
-          {t_i18n('Connectors')}
         </Button>
       )}
     </div>

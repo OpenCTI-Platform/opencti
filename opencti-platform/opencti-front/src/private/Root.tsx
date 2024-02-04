@@ -39,6 +39,9 @@ const rootSettingsFragment = graphql`
     }
     platform_map_tile_server_dark
     platform_map_tile_server_light
+    platform_openbas_url
+    platform_openerm_url
+    platform_openmtd_url
     platform_theme
     platform_whitemark
     platform_session_idle_timeout

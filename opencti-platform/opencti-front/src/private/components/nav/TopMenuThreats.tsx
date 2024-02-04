@@ -1,7 +1,8 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import Button from '@mui/material/Button';
-import { AccountMultipleOutline, ChessKnight, DiamondOutline, LaptopAccount } from 'mdi-material-ui';
+import { DiamondOutlined } from '@mui/icons-material';
+import { AccountMultipleOutline, ChessKnight, LaptopAccount } from 'mdi-material-ui';
 import makeStyles from '@mui/styles/makeStyles';
 import { useFormatter } from '../../../components/i18n';
 import type { Theme } from '../../../components/Theme';
@@ -73,7 +74,7 @@ const TopMenuThreats = () => {
           size="small"
           classes={{ root: classes.button }}
         >
-          <DiamondOutline className={classes.icon} fontSize="small" />
+          <DiamondOutlined className={classes.icon} fontSize="small" />
           {t_i18n('Intrusion sets')}
         </Button>
       )}

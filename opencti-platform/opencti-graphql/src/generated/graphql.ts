@@ -17219,7 +17219,6 @@ export type Query = {
   otpGeneration?: Maybe<OtpElement>;
   participants?: Maybe<ParticipantConnection>;
   pendingFiles?: Maybe<FileConnection>;
-  platform_theme?: Maybe<Scalars['String']['output']>;
   playbook?: Maybe<Playbook>;
   playbookComponents: Array<Maybe<PlaybookComponent>>;
   playbooks?: Maybe<PlaybookConnection>;
@@ -20816,6 +20815,9 @@ export type Settings = BasicObject & InternalObject & {
   platform_map_tile_server_light?: Maybe<Scalars['String']['output']>;
   platform_messages?: Maybe<Array<SettingsMessage>>;
   platform_modules?: Maybe<Array<Module>>;
+  platform_openbas_url?: Maybe<Scalars['String']['output']>;
+  platform_openerm_url?: Maybe<Scalars['String']['output']>;
+  platform_openmtd_url?: Maybe<Scalars['String']['output']>;
   platform_organization?: Maybe<Organization>;
   platform_providers: Array<Provider>;
   platform_reference_attachment?: Maybe<Scalars['Boolean']['output']>;
@@ -34285,7 +34287,6 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   otpGeneration?: Resolver<Maybe<ResolversTypes['OtpElement']>, ParentType, ContextType>;
   participants?: Resolver<Maybe<ResolversTypes['ParticipantConnection']>, ParentType, ContextType, Partial<QueryParticipantsArgs>>;
   pendingFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<QueryPendingFilesArgs>>;
-  platform_theme?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   playbook?: Resolver<Maybe<ResolversTypes['Playbook']>, ParentType, ContextType, RequireFields<QueryPlaybookArgs, 'id'>>;
   playbookComponents?: Resolver<Array<Maybe<ResolversTypes['PlaybookComponent']>>, ParentType, ContextType>;
   playbooks?: Resolver<Maybe<ResolversTypes['PlaybookConnection']>, ParentType, ContextType, Partial<QueryPlaybooksArgs>>;
@@ -34910,6 +34911,9 @@ export type SettingsResolvers<ContextType = any, ParentType extends ResolversPar
   platform_map_tile_server_light?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   platform_messages?: Resolver<Maybe<Array<ResolversTypes['SettingsMessage']>>, ParentType, ContextType>;
   platform_modules?: Resolver<Maybe<Array<ResolversTypes['Module']>>, ParentType, ContextType>;
+  platform_openbas_url?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  platform_openerm_url?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  platform_openmtd_url?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   platform_organization?: Resolver<Maybe<ResolversTypes['Organization']>, ParentType, ContextType>;
   platform_providers?: Resolver<Array<ResolversTypes['Provider']>, ParentType, ContextType>;
   platform_reference_attachment?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;

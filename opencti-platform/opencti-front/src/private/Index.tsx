@@ -33,7 +33,6 @@ const RootData = lazy(() => import('./components/data/Root'));
 const RootWorkspaces = lazy(() => import('./components/workspaces/Root'));
 const RootSettings = lazy(() => import('./components/settings/Root'));
 const RootActivity = lazy(() => import('./components/settings/activity/Root'));
-const RootImport = lazy(() => import('./components/import/Root'));
 const RootProfile = lazy(() => import('./components/profile/Root'));
 
 const useStyles = makeStyles((theme: Theme) => ({
@@ -150,7 +149,6 @@ const Index = ({ settings }: IndexProps) => {
                 component={RootSettings}
               />
               <BoundaryRoute path="/dashboard/audits" component={RootActivity} />
-              <BoundaryRoute path="/dashboard/import" component={RootImport} />
               <BoundaryRoute
                 path="/dashboard/profile"
                 component={RootProfile}

@@ -20,6 +20,7 @@ const IngestionRss = lazy(() => import('./IngestionRss'));
 const IngestionTaxiis = lazy(() => import('./IngestionTaxiis'));
 const Playbooks = lazy(() => import('./Playbooks'));
 const RootPlaybook = lazy(() => import('./playbooks/Root'));
+const RootImport = lazy(() => import('./import/Root'));
 
 const Root = () => {
   return (
@@ -39,15 +40,6 @@ const Root = () => {
           exact
           path="/dashboard/data/relationships"
           component={Relationships}
-        />
-        <BoundaryRoute
-          exact
-          path="/dashboard/data/connectors"
-          component={Connectors}
-        />
-        <BoundaryRoute
-          path="/dashboard/data/connectors/:connectorId"
-          render={(routeProps) => <RootConnector {...routeProps} />}
         />
         <BoundaryRoute
           exact
@@ -78,6 +70,19 @@ const Root = () => {
           exact
           path="/dashboard/data/ingestion/csv"
           component={IngestionCsv}
+        />
+        <BoundaryRoute
+          exact
+          path="/dashboard/data/ingestion/connectors"
+          component={Connectors}
+        />
+        <BoundaryRoute
+          path="/dashboard/data/ingestion/connectors/:connectorId"
+          render={(routeProps) => <RootConnector {...routeProps} />}
+        />
+        <BoundaryRoute
+          path="/dashboard/data/import"
+          component={RootImport}
         />
         <BoundaryRoute
           exact

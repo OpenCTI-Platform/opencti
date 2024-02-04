@@ -8,7 +8,8 @@ import PublicFeedLines from '@components/data/feeds/PublicFeedLines';
 import { ConnectedThemeProvider } from '../components/AppThemeProvider';
 import { ConnectedIntlProvider } from '../components/AppIntlProvider';
 import { environment, fileUri } from '../relay/environment';
-import logo from '../static/images/logo.png';
+import logoDark from '../static/images/logo_dark.png';
+import logoLight from '../static/images/logo_light.png';
 import type { Theme } from '../components/Theme';
 import { rootPublicQuery } from './LoginRoot';
 import PublicStreamLines from '../private/components/data/stream/PublicStreamLines';
@@ -44,7 +45,7 @@ const PublicRootWithStyle = ({
       <Message />
       <div className={classes.container}>
         <img
-          src={loginLogo && loginLogo.length > 0 ? loginLogo : fileUri(logo)}
+          src={loginLogo && loginLogo.length > 0 ? loginLogo : fileUri(theme.palette.mode === 'dark' ? logoDark : logoLight)}
           alt="logo"
           className={classes.logo}
         />

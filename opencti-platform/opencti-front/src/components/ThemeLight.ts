@@ -1,10 +1,17 @@
 import type { ExtendedThemeOptions } from './Theme';
 import { fileUri } from '../relay/environment';
-import LogoText from '../static/images/logo_text.png';
-import LogoCollapsed from '../static/images/logo.png';
+import LogoText from '../static/images/logo_text_light.png';
+import LogoCollapsed from '../static/images/logo_light.png';
 import { hexToRGB } from '../utils/Colors';
 
-const EE_COLOR = '#0066ff';
+const EE_COLOR = '#0baf91';
+
+export const THEME_LIGHT_DEFAULT_BACKGROUND = '#f8f8f8'; // f8f8f8
+const THEME_LIGHT_DEFAULT_PRIMARY = '#001bda'; // 0066ff
+const THEME_LIGHT_DEFAULT_SECONDARY = '#0baf91'; // d81b60
+const THEME_LIGHT_DEFAULT_ACCENT = '#c9c9c9'; // d3eaff
+const THEME_LIGHT_DEFAULT_PAPER = '#ffffff'; // ffffff
+const THEME_LIGHT_DEFAULT_NAV = '#ffffff'; // f5f5f5
 
 const ThemeLight = (
   logo: string | null,
@@ -27,8 +34,8 @@ const ThemeLight = (
       dark: '#c62828',
     },
     success: { main: '#03A847' },
-    primary: { main: primary || '#0066ff' },
-    secondary: { main: secondary || '#d81b60' },
+    primary: { main: THEME_LIGHT_DEFAULT_PRIMARY || '#0066ff' },
+    secondary: { main: secondary || THEME_LIGHT_DEFAULT_SECONDARY },
     chip: { main: '#000000' },
     ee: {
       main: EE_COLOR,
@@ -37,10 +44,10 @@ const ThemeLight = (
       contrastText: '#ffffff',
     },
     background: {
-      default: background || '#f8f8f8',
-      paper: paper || '#ffffff',
-      nav: nav || '#f5f5f5',
-      accent: accent || '#d3eaff',
+      default: background || THEME_LIGHT_DEFAULT_BACKGROUND,
+      paper: paper || THEME_LIGHT_DEFAULT_PAPER,
+      nav: nav || THEME_LIGHT_DEFAULT_NAV,
+      accent: accent || THEME_LIGHT_DEFAULT_ACCENT,
       shadow: 'rgba(0, 0, 0, .05)',
     },
   },
@@ -92,7 +99,7 @@ const ThemeLight = (
     h6: {
       fontWeight: 400,
       fontSize: 18,
-      color: primary || '#0066ff',
+      color: primary || THEME_LIGHT_DEFAULT_PRIMARY,
     },
     subtitle2: {
       fontWeight: 400,
@@ -136,41 +143,17 @@ const ThemeLight = (
     MuiCssBaseline: {
       styleOverrides: {
         html: {
-          scrollbarColor: `${accent || '#d3eaff'} ${paper || '#ffffff'}`,
+          scrollbarColor: `${accent || THEME_LIGHT_DEFAULT_ACCENT} ${paper || THEME_LIGHT_DEFAULT_PAPER}`,
           scrollbarWidth: 'thin',
         },
         body: {
-          scrollbarColor: `${accent || '#d3eaff'} ${paper || '#ffffff'}`,
+          scrollbarColor: `${accent || THEME_LIGHT_DEFAULT_ACCENT} ${paper || THEME_LIGHT_DEFAULT_PAPER}`,
           scrollbarWidth: 'thin',
-          '&::-webkit-scrollbar, & *::-webkit-scrollbar': {
-            backgroundColor: paper || '#ffffff',
-          },
-          '&::-webkit-scrollbar-thumb, & *::-webkit-scrollbar-thumb': {
-            borderRadius: 8,
-            backgroundColor: accent || '#d3eaff',
-            minHeight: 24,
-            border: `3px solid ${paper || '#ffffff'}`,
-          },
-          '&::-webkit-scrollbar-thumb:focus, & *::-webkit-scrollbar-thumb:focus':
-            {
-              backgroundColor: accent || '#d3eaff',
-            },
-          '&::-webkit-scrollbar-thumb:active, & *::-webkit-scrollbar-thumb:active':
-            {
-              backgroundColor: accent || '#d3eaff',
-            },
-          '&::-webkit-scrollbar-thumb:hover, & *::-webkit-scrollbar-thumb:hover':
-            {
-              backgroundColor: accent || '#d3eaff',
-            },
-          '&::-webkit-scrollbar-corner, & *::-webkit-scrollbar-corner': {
-            backgroundColor: accent || '#d3eaff',
-          },
           html: {
             WebkitFontSmoothing: 'auto',
           },
           a: {
-            color: primary || '#0066ff',
+            color: primary || THEME_LIGHT_DEFAULT_PRIMARY,
           },
           'input:-webkit-autofill': {
             WebkitAnimation: 'autofill 0s forwards',
@@ -185,16 +168,16 @@ const ThemeLight = (
           pre: {
             fontFamily: 'Consolas, monaco, monospace',
             color: '#000000 !important',
-            background: `${accent || '#c0dfff'} !important`,
+            background: `${accent || THEME_LIGHT_DEFAULT_ACCENT} !important`,
           },
           'pre.light': {
             fontFamily: 'Consolas, monaco, monospace',
-            background: `${nav || '#f9feff'} !important`,
+            background: `${nav || THEME_LIGHT_DEFAULT_NAV} !important`,
           },
           code: {
             fontFamily: 'Consolas, monaco, monospace',
             color: '#000000 !important',
-            background: `${accent || '#c0dfff'} !important`,
+            background: `${accent || THEME_LIGHT_DEFAULT_ACCENT} !important`,
             padding: 3,
             fontSize: 12,
             fontWeight: 400,
@@ -238,14 +221,14 @@ const ThemeLight = (
               borderBottom: '2px solid #000000 !important',
             },
             '&:focus': {
-              borderBottom: `2px solid ${primary || '#0066ff'} !important`,
+              borderBottom: `2px solid ${primary || THEME_LIGHT_DEFAULT_PRIMARY} !important`,
             },
           },
           '.mde-preview .mde-preview-content a': {
-            color: `${primary || '#0066ff'} !important`,
+            color: `${primary || THEME_LIGHT_DEFAULT_PRIMARY} !important`,
           },
           '.react-grid-placeholder': {
-            backgroundColor: `${accent || '#c0dfff'} !important`,
+            backgroundColor: `${accent || THEME_LIGHT_DEFAULT_ACCENT} !important`,
           },
           '.react_time_range__track': {
             backgroundColor: 'rgba(1, 226, 255, 0.1) !important',
@@ -272,12 +255,12 @@ const ThemeLight = (
             backgroundColor: 'rgba(0,0,0,0.04)',
           },
           '&.Mui-selected': {
-            boxShadow: `2px 0 ${primary || '#0066ff'} inset`,
-            backgroundColor: hexToRGB(primary || '#0066ff', 0.08),
+            boxShadow: `2px 0 ${primary || THEME_LIGHT_DEFAULT_PRIMARY} inset`,
+            backgroundColor: hexToRGB(primary || THEME_LIGHT_DEFAULT_PRIMARY, 0.08),
           },
           '&.Mui-selected:hover': {
-            boxShadow: `2px 0 ${primary || '#0066ff'} inset`,
-            backgroundColor: hexToRGB(primary || '#0066ff', 0.12),
+            boxShadow: `2px 0 ${primary || THEME_LIGHT_DEFAULT_PRIMARY} inset`,
+            backgroundColor: hexToRGB(primary || THEME_LIGHT_DEFAULT_PRIMARY, 0.12),
           },
         },
       },

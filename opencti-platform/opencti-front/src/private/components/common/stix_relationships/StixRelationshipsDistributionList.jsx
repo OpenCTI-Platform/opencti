@@ -17,11 +17,10 @@ import ItemIcon from '../../../../components/ItemIcon';
 import useGranted, { SETTINGS_SETACCESSES } from '../../../../utils/hooks/useGranted';
 import { buildFiltersAndOptionsForWidgets } from '../../../../utils/filters/filtersUtils';
 
-const useStyles = makeStyles({
+const useStyles = makeStyles((theme) => ({
   container: {
     width: '100%',
     height: '100%',
-    overflow: 'auto',
     paddingBottom: 10,
     marginBottom: 10,
   },
@@ -43,18 +42,17 @@ const useStyles = makeStyles({
     textOverflow: 'ellipsis',
     paddingRight: 10,
   },
-});
-
-const inlineStyles = {
   itemNumber: {
     float: 'right',
     marginRight: 20,
-    fontSize: 20,
+    fontSize: 18,
+    fontWeight: 600,
     whiteSpace: 'nowrap',
     overflow: 'hidden',
     textOverflow: 'ellipsis',
+    color: theme.palette.primary.main,
   },
-};
+}));
 
 const stixRelationshipsDistributionListDistributionQuery = graphql`
   query StixRelationshipsDistributionListDistributionQuery(
@@ -252,6 +250,7 @@ const stixRelationshipsDistributionListDistributionQuery = graphql`
 const StixRelationshipsDistributionList = ({
   title,
   variant,
+  overflow,
   height,
   field,
   startDate,
@@ -303,9 +302,9 @@ const StixRelationshipsDistributionList = ({
               type: finalField.endsWith('_id') ? o.entity.entity_type : o.label,
             }));
             return (
-              <div id="container" className={classes.container}>
+              <div id="container" className={classes.container} style={{ overflow: overflow ?? 'auto' }}>
                 <List style={{ marginTop: -10 }}>
-                  {data.map((entry) => {
+                  {data.map((entry, key) => {
                     // eslint-disable-next-line no-nested-ternary
                     const link = entry.type === 'User' && !hasSetAccess
                       ? null
@@ -319,6 +318,7 @@ const StixRelationshipsDistributionList = ({
                         button={!!link}
                         className="noDrag"
                         classes={{ root: classes.item }}
+                        style={overflow === 'hidden' && key === data.length - 1 ? { borderBottom: 0 } : {}}
                         divider={true}
                         component={link ? Link : null}
                         to={link || null}
@@ -333,7 +333,7 @@ const StixRelationshipsDistributionList = ({
                             </div>
                           }
                         />
-                        <div style={inlineStyles.itemNumber}>
+                        <div className={classes.itemNumber}>
                           {n(entry.value)}
                         </div>
                       </ListItem>

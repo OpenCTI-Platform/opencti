@@ -1,8 +1,8 @@
 import React from 'react';
 import * as PropTypes from 'prop-types';
-import { QueryRenderer } from '../../../relay/environment';
+import { QueryRenderer } from '../../../../relay/environment';
 import ImportContent, { importContentQuery } from './ImportContent';
-import Loader from '../../../components/Loader';
+import Loader from '../../../../components/Loader';
 
 const Import = () => (
   <QueryRenderer

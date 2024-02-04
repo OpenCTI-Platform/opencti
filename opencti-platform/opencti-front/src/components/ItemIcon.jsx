@@ -59,6 +59,7 @@ import {
   LinkOutlined,
   VisibilityOutlined,
   RouteOutlined,
+  DiamondOutlined,
 } from '@mui/icons-material';
 import {
   ArchiveOutline,
@@ -71,7 +72,6 @@ import {
   ChessKnight,
   CityVariantOutline,
   DatabaseExportOutline,
-  DiamondOutline,
   FileDelimitedOutline,
   FileOutline,
   Fire,
@@ -233,7 +233,7 @@ const iconSelector = (type, variant, fontSize, color, isReversed) => {
     case 'infrastructure':
       return <RouterOutlined style={style} fontSize={fontSize} role="img" />;
     case 'intrusion-set':
-      return <DiamondOutline style={style} fontSize={fontSize} role="img" />;
+      return <DiamondOutlined style={style} fontSize={fontSize} role="img" />;
     case 'city':
       return (
         <CityVariantOutline style={style} fontSize={fontSize} role="img" />

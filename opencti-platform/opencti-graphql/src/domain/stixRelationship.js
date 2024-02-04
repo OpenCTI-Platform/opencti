@@ -2,7 +2,7 @@ import * as R from 'ramda';
 import { deleteElementById, distributionRelations, timeSeriesRelations } from '../database/middleware';
 import { ABSTRACT_STIX_OBJECT, ABSTRACT_STIX_RELATIONSHIP } from '../schema/general';
 import { buildRelationsFilter, listEntities, listRelations, storeLoadById } from '../database/middleware-loader';
-import { fillTimeSeries, READ_INDEX_INFERRED_RELATIONSHIPS, READ_INDEX_STIX_CORE_RELATIONSHIPS, READ_INDEX_STIX_SIGHTING_RELATIONSHIPS } from '../database/utils';
+import { fillTimeSeries, isEmptyField, READ_INDEX_INFERRED_RELATIONSHIPS, READ_INDEX_STIX_CORE_RELATIONSHIPS, READ_INDEX_STIX_SIGHTING_RELATIONSHIPS } from '../database/utils';
 import { elCount, MAX_RUNTIME_RESOLUTION_SIZE } from '../database/engine';
 import { STIX_SPEC_VERSION, stixCoreRelationshipsMapping } from '../database/stix';
 import { UnsupportedError } from '../config/errors';
@@ -46,7 +46,7 @@ export const findAll = async (context, user, args) => {
   if (isEmptyDynamic) {
     return { edges: [] };
   }
-  const type = R.propOr(ABSTRACT_STIX_RELATIONSHIP, 'relationship_type', dynamicArgs);
+  const type = isEmptyField(dynamicArgs.relationship_type) ? ABSTRACT_STIX_RELATIONSHIP : dynamicArgs.relationship_type;
   return listRelations(context, user, type, R.dissoc('relationship_type', dynamicArgs));
 };
 

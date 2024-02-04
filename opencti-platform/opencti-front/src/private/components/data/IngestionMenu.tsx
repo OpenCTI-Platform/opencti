@@ -1,7 +1,9 @@
 import React from 'react';
 import NavToolbarMenu, { MenuEntry } from '@components/common/menus/NavToolbarMenu';
+import useGranted, { MODULES } from '../../../utils/hooks/useGranted';
 
 const IngestionMenu = () => {
+  const isConnectorReader = useGranted([MODULES]);
   const entries: MenuEntry[] = [
     {
       path: '/dashboard/data/ingestion/sync',
@@ -20,6 +22,12 @@ const IngestionMenu = () => {
       label: 'CSV Feeds',
     },
   ];
+  if (isConnectorReader) {
+    entries.push({
+      path: '/dashboard/data/ingestion/connectors',
+      label: 'Connectors',
+    });
+  }
   return <NavToolbarMenu entries={entries} />;
 };
 

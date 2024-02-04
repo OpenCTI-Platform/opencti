@@ -8,6 +8,7 @@ import Typography from '@mui/material/Typography';
 import List from '@mui/material/List';
 import Paper from '@mui/material/Paper';
 import Grid from '@mui/material/Grid';
+import { Link, withRouter } from 'react-router-dom';
 import { Add, ArrowDropDown, ArrowDropUp, Extension } from '@mui/icons-material';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
@@ -24,22 +25,21 @@ import { ListItemButton } from '@mui/material';
 import Button from '@mui/material/Button';
 import * as Yup from 'yup';
 import Fab from '@mui/material/Fab';
-import { withRouter } from 'react-router-dom';
 import DialogContentText from '@mui/material/DialogContentText';
-import ObjectMarkingField from '../common/form/ObjectMarkingField';
-import SelectField from '../../../components/SelectField';
-import { FIVE_SECONDS } from '../../../utils/Time';
-import { fileManagerAskJobImportMutation, scopesConn } from '../common/files/FileManager';
-import FileLine from '../common/files/FileLine';
-import inject18n from '../../../components/i18n';
-import FileUploader from '../common/files/FileUploader';
-import { commitMutation, MESSAGING$ } from '../../../relay/environment';
-import WorkbenchFileLine from '../common/files/workbench/WorkbenchFileLine';
-import FreeTextUploader from '../common/files/FreeTextUploader';
-import WorkbenchFileCreator from '../common/files/workbench/WorkbenchFileCreator';
+import ObjectMarkingField from '../../common/form/ObjectMarkingField';
+import SelectField from '../../../../components/SelectField';
+import { FIVE_SECONDS } from '../../../../utils/Time';
+import { fileManagerAskJobImportMutation, scopesConn } from '../../common/files/FileManager';
+import FileLine from '../../common/files/FileLine';
+import inject18n from '../../../../components/i18n';
+import FileUploader from '../../common/files/FileUploader';
+import { commitMutation, MESSAGING$ } from '../../../../relay/environment';
+import WorkbenchFileLine from '../../common/files/workbench/WorkbenchFileLine';
+import FreeTextUploader from '../../common/files/FreeTextUploader';
+import WorkbenchFileCreator from '../../common/files/workbench/WorkbenchFileCreator';
 import ManageImportConnectorMessage from './ManageImportConnectorMessage';
-import { truncate } from '../../../utils/String';
-import { fieldSpacingContainerStyle } from '../../../utils/field';
+import { truncate } from '../../../../utils/String';
+import { fieldSpacingContainerStyle } from '../../../../utils/field';
 
 const interval$ = interval(FIVE_SECONDS);
 
@@ -191,10 +191,6 @@ class ImportContentComponent extends Component {
 
   componentWillUnmount() {
     this.subscription.unsubscribe();
-  }
-
-  handleClickConnector(connectorId) {
-    this.props.history.push(`/dashboard/data/connectors/${connectorId}`);
   }
 
   handleOpenImport(file) {
@@ -402,11 +398,12 @@ class ImportContentComponent extends Component {
                     const connectorScope = connector.connector_scope.join(',');
                     return (
                       <ListItemButton
+                        component={Link}
+                        to={`/dashboard/data/connectors/${connector.id}`}
                         key={connector.id}
                         dense={true}
                         divider={true}
                         classes={{ root: classes.item }}
-                        onClick={this.handleClickConnector.bind(this, connector.id)}
                       >
                         <Tooltip
                           title={

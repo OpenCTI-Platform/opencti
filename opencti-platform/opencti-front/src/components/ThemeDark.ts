@@ -1,12 +1,17 @@
 import type { ExtendedThemeOptions } from './Theme';
 import { fileUri } from '../relay/environment';
-import LogoText from '../static/images/logo_text.png';
-import LogoCollapsed from '../static/images/logo.png';
+import LogoText from '../static/images/logo_text_dark.png';
+import LogoCollapsed from '../static/images/logo_dark.png';
 import { hexToRGB } from '../utils/Colors';
 
-const EE_COLOR = '#00b1ff';
+const EE_COLOR = '#00f1bd';
 
-export const THEME_DARK_DEFAULT_BACKGROUND = '#0a1929';
+export const THEME_DARK_DEFAULT_BACKGROUND = '#00020c'; // 0a1929
+const THEME_DARK_DEFAULT_PRIMARY = '#0fbcff'; // 1c8eb6 // for road:
+const THEME_DARK_DEFAULT_SECONDARY = '#00f1bd'; // d81b60
+const THEME_DARK_DEFAULT_ACCENT = '#04092d'; // 01478d // for building: 030721
+const THEME_DARK_DEFAULT_PAPER = '#00020c'; // 001e3c
+const THEME_DARK_DEFAULT_NAV = '#00020c'; // 071a2e
 
 const ThemeDark = (
   logo: string | null = null,
@@ -29,8 +34,8 @@ const ThemeDark = (
       dark: '#c62828',
     },
     success: { main: '#03A847' },
-    primary: { main: primary || '#00b1ff' },
-    secondary: { main: secondary || '#ec407a' },
+    primary: { main: primary || THEME_DARK_DEFAULT_PRIMARY },
+    secondary: { main: secondary || THEME_DARK_DEFAULT_SECONDARY },
     chip: { main: '#ffffff' },
     ee: {
       main: EE_COLOR,
@@ -40,9 +45,9 @@ const ThemeDark = (
     },
     background: {
       default: background || THEME_DARK_DEFAULT_BACKGROUND,
-      paper: paper || '#001e3c',
-      nav: nav || '#071a2e',
-      accent: accent || '#01478d',
+      paper: paper || THEME_DARK_DEFAULT_PAPER,
+      nav: nav || THEME_DARK_DEFAULT_NAV,
+      accent: accent || THEME_DARK_DEFAULT_ACCENT,
       shadow: 'rgba(255, 255, 255, 0)',
     },
   },
@@ -94,7 +99,7 @@ const ThemeDark = (
     h6: {
       fontWeight: 400,
       fontSize: 18,
-      color: primary || '#00b1ff',
+      color: primary || THEME_DARK_DEFAULT_PRIMARY,
     },
     subtitle2: {
       fontWeight: 400,
@@ -138,41 +143,17 @@ const ThemeDark = (
     MuiCssBaseline: {
       styleOverrides: {
         html: {
-          scrollbarColor: `${accent || '#01478d'} ${paper || '#001e3c'}`,
+          scrollbarColor: `${background || THEME_DARK_DEFAULT_BACKGROUND} ${accent || THEME_DARK_DEFAULT_ACCENT}`,
           scrollbarWidth: 'thin',
         },
         body: {
-          scrollbarColor: `${accent || '#01478d'} ${paper || '#001e3c'}`,
+          scrollbarColor: `${background || THEME_DARK_DEFAULT_BACKGROUND} ${accent || THEME_DARK_DEFAULT_ACCENT}`,
           scrollbarWidth: 'thin',
-          '&::-webkit-scrollbar, & *::-webkit-scrollbar': {
-            backgroundColor: paper || '#001e3c',
-          },
-          '&::-webkit-scrollbar-thumb, & *::-webkit-scrollbar-thumb': {
-            borderRadius: 8,
-            backgroundColor: accent || '#01478d',
-            minHeight: 24,
-            border: `3px solid ${paper || '#001e3c'}`,
-          },
-          '&::-webkit-scrollbar-thumb:focus, & *::-webkit-scrollbar-thumb:focus':
-            {
-              backgroundColor: accent || '#01478d',
-            },
-          '&::-webkit-scrollbar-thumb:active, & *::-webkit-scrollbar-thumb:active':
-            {
-              backgroundColor: accent || '#01478d',
-            },
-          '&::-webkit-scrollbar-thumb:hover, & *::-webkit-scrollbar-thumb:hover':
-            {
-              backgroundColor: accent || '#01478d',
-            },
-          '&::-webkit-scrollbar-corner, & *::-webkit-scrollbar-corner': {
-            backgroundColor: accent || '#01478d',
-          },
           html: {
             WebkitFontSmoothing: 'auto',
           },
           a: {
-            color: primary || '#00b1ff',
+            color: primary || THEME_DARK_DEFAULT_PRIMARY,
           },
           'input:-webkit-autofill': {
             WebkitAnimation: 'autofill 0s forwards',
@@ -187,16 +168,16 @@ const ThemeDark = (
           pre: {
             fontFamily: 'Consolas, monaco, monospace',
             color: '#ffffff !important',
-            background: `${accent || '#01478d'} !important`,
+            background: `${accent || THEME_DARK_DEFAULT_ACCENT} !important`,
           },
           'pre.light': {
             fontFamily: 'Consolas, monaco, monospace',
-            background: `${nav || '#071a2e'} !important`,
+            background: `${nav || THEME_DARK_DEFAULT_NAV} !important`,
           },
           code: {
             fontFamily: 'Consolas, monaco, monospace',
             color: '#ffffff !important',
-            background: `${accent || '#01478d'} !important`,
+            background: `${accent || THEME_DARK_DEFAULT_ACCENT} !important`,
             padding: 3,
             fontSize: 12,
             fontWeight: 400,
@@ -240,14 +221,14 @@ const ThemeDark = (
               borderBottom: '2px solid #ffffff !important',
             },
             '&:focus': {
-              borderBottom: `2px solid ${primary || '#00b1ff'} !important`,
+              borderBottom: `2px solid ${primary || THEME_DARK_DEFAULT_PRIMARY} !important`,
             },
           },
           '.mde-preview .mde-preview-content a': {
-            color: `${primary || '#00b1ff'} !important`,
+            color: `${primary || THEME_DARK_DEFAULT_PRIMARY} !important`,
           },
           '.react-grid-placeholder': {
-            backgroundColor: `${accent || '#01478d'} !important`,
+            backgroundColor: `${accent || THEME_DARK_DEFAULT_ACCENT} !important`,
           },
           '.react_time_range__track': {
             backgroundColor: 'rgba(1, 226, 255, 0.1) !important',
@@ -258,7 +239,7 @@ const ThemeDark = (
             backgroundColor: '#00bcd4 !important',
           },
           '.leaflet-container': {
-            backgroundColor: `${paper || '#001e3c'} !important`,
+            backgroundColor: `${paper || THEME_DARK_DEFAULT_PAPER} !important`,
           },
           '.react-grid-item .react-resizable-handle::after': {
             borderRight: '2px solid rgba(255, 255, 255, 0.4) !important',
@@ -271,10 +252,10 @@ const ThemeDark = (
       styleOverrides: {
         root: {
           '&.Mui-selected': {
-            boxShadow: `2px 0 ${primary || '#00b1ff'} inset`,
+            boxShadow: `2px 0 ${primary || THEME_DARK_DEFAULT_PRIMARY} inset`,
           },
           '&.Mui-selected:hover': {
-            boxShadow: `2px 0 ${primary || '#00b1ff'} inset`,
+            boxShadow: `2px 0 ${primary || THEME_DARK_DEFAULT_PRIMARY} inset`,
           },
         },
       },
