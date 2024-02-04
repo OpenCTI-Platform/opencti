@@ -385,9 +385,7 @@ class OpenCTIApiClient:
             test = self.query(
                 """
               query {
-                me {
-                  id
-                }
+                me_id
               }
             """
             )
