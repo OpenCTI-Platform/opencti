@@ -381,13 +381,15 @@ class OpenCTIApiClient:
         :rtype: bool
         """
         try:
-            self.app_logger.info("Health check (me)...")
+            self.app_logger.info("Health check (platform version)...")
             test = self.query(
                 """
-              query {
-                me_id
-              }
-            """
+                  query {
+                    about {
+                      version
+                    }
+                  }
+                """
             )
             if test is not None:
                 return True
