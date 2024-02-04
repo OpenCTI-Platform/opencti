@@ -145,7 +145,6 @@ const extractTokenFromBasicAuth = async (authorization) => {
 };
 
 export const findById = async (context, user, userId) => {
-  const data = await storeLoadById(context, user, userId, ENTITY_TYPE_USER);
   if (!isUserHasCapability(user, SETTINGS_SET_ACCESSES) && user.id !== userId) {
     // if no organization in common with the logged user
     const memberOrganizations = await listAllToEntitiesThroughRelations(context, user, userId, RELATION_PARTICIPATE_TO, ENTITY_TYPE_IDENTITY_ORGANIZATION);
@@ -154,6 +153,10 @@ export const findById = async (context, user, userId) => {
       throw ForbiddenAccess();
     }
   }
+  if (INTERNAL_USERS[userId]) {
+    return INTERNAL_USERS[userId];
+  }
+  const data = await storeLoadById(context, user, userId, ENTITY_TYPE_USER);
   const withoutPassword = data ? R.dissoc('password', data) : data;
   return buildCompleteUser(context, withoutPassword);
 };
