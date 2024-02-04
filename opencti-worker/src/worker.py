@@ -99,8 +99,7 @@ class PingAlive(threading.Thread):
                 self.in_error = True
                 self.worker_logger.error(
                     "Error pinging the API",
-                    {"reason": str(e), "user": str(self.api.get_request_headers)},
-                    {"reason": str(e), "headers": str(self.api.get_request_headers)},
+                    {"reason": str(e), "headers": str(self.api.get_request_headers())},
                 )
             self.exit_event.wait(30)
 
