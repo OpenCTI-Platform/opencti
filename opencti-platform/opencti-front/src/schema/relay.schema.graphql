@@ -7068,7 +7068,6 @@ type Query {
   groups(first: Int, after: ID, orderBy: GroupsOrdering, orderMode: OrderingMode, search: String): GroupConnection
   roles(first: Int, after: ID, orderBy: RolesOrdering, orderMode: OrderingMode, search: String): RoleConnection
   me: MeUser!
-  me_id: ID!
   otpGeneration: OtpElement
   user(id: String!): User
   creators(entityTypes: [String!]): CreatorConnection

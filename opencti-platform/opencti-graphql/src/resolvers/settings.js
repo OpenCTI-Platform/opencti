@@ -27,7 +27,7 @@ import { SYSTEM_USER } from '../utils/access';
 
 const settingsResolvers = {
   Query: {
-    about: (_, __, context) => getApplicationInfo(context),
+    about: () => getApplicationInfo(),
     settings: (_, __, context) => getSettings(context),
   },
   AppDebugStatistics: {
