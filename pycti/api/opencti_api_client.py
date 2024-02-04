@@ -211,6 +211,9 @@ class OpenCTIApiClient:
             "true" if synchronized is True else "false"
         )
 
+    def get_request_headers(self):
+        return self.request_headers
+
     def set_retry_number(self, retry_number):
         self.request_headers["opencti-retry-number"] = (
             "" if retry_number is None else str(retry_number)
