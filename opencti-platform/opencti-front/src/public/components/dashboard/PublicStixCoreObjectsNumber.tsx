@@ -11,14 +11,12 @@ import type { PublicManifestWidget } from './PublicManifest';
 
 const publicStixCoreObjectsNumberQuery = graphql`
   query PublicStixCoreObjectsNumberQuery(
-    $types: [String]
     $startDate: DateTime
     $endDate: DateTime
     $uriKey: String!
     $widgetId : String!
   ) {
     publicStixCoreObjectsNumber(
-      types: $types
       startDate: $startDate
       endDate: $endDate
       uriKey: $uriKey
@@ -69,7 +67,6 @@ const PublicStixCoreObjectsNumber = ({
     {
       uriKey,
       widgetId: id,
-      types: ['Stix-Core-Object'],
       startDate,
       endDate,
     },

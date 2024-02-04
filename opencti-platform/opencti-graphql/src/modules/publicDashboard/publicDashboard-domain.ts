@@ -22,7 +22,7 @@ import { initializeAuthorizedMembers } from '../workspace/workspace-domain';
 import { ENTITY_TYPE_MARKING_DEFINITION } from '../../schema/stixMetaObject';
 import { getEntitiesMapFromCache } from '../../database/cache';
 import type { NumberResult, StoreMarkingDefinition } from '../../types/store';
-import { getWidgetsUserAndMarkings } from './publicDashboard-utils';
+import { getWidgetsConfigAndUser } from './publicDashboard-utils';
 import { stixCoreObjectsMultiTimeSeries, stixCoreObjectsNumber } from '../../domain/stixCoreObject';
 import { ABSTRACT_STIX_CORE_OBJECT } from '../../schema/general';
 
@@ -211,22 +211,13 @@ export const publicDashboardDelete = async (context: AuthContext, user: AuthUser
 
 // Heatmap
 export const publicStixCoreObjectsMultiTimeSeries = async (context: AuthContext, args: QueryPublicStixCoreObjectsMultiTimeSeriesArgs) => {
-  const { widgets, user, allowed_markings_ids } = await getWidgetsUserAndMarkings(context, args.uriKey);
+  const { widgets, user, config } = await getWidgetsConfigAndUser(context, args.uriKey);
   const { dataSelection } = widgets[args.widgetId];
-
-  const markingFilters = {
-    key: [
-      'objectMarking'
-    ],
-    values: allowed_markings_ids,
-    operator: 'eq',
-    mode: 'or'
-  };
 
   const timeSeriesParameters = dataSelection.map((selection: { filters: any; date_attribute: any; }) => {
     const filters = {
       filterGroups: [selection.filters],
-      filters: allowed_markings_ids ? [markingFilters] : [],
+      filters: [],
       mode: 'and'
     };
     return {
@@ -238,7 +229,7 @@ export const publicStixCoreObjectsMultiTimeSeries = async (context: AuthContext,
   const standardArgs = {
     startDate: args.startDate,
     endDate: args.endDate,
-    interval: args.interval,
+    interval: config.interval,
     timeSeriesParameters
   };
 
@@ -251,20 +242,12 @@ export const publicStixCoreObjectsNumber = async (
   context: AuthContext,
   args: QueryPublicStixCoreObjectsNumberArgs
 ): Promise<NumberResult> => {
-  const { widgets, user, allowed_markings_ids } = await getWidgetsUserAndMarkings(context, args.uriKey);
+  const { widgets, user, config } = await getWidgetsConfigAndUser(context, args.uriKey);
   const widgetConfig = widgets[args.widgetId].dataSelection[0];
-  const markingFilters = {
-    key: [
-      'objectMarking'
-    ],
-    values: allowed_markings_ids,
-    operator: 'eq',
-    mode: 'or'
-  };
 
   const filters = {
     filterGroups: [widgetConfig.filters],
-    filters: allowed_markings_ids ? [markingFilters] : [],
+    filters: [],
     mode: 'and'
   };
 
@@ -272,15 +255,13 @@ export const publicStixCoreObjectsNumber = async (
     startDate: args.startDate,
     endDate: args.endDate,
     filters,
-    onlyInferred: args.onlyInferred,
-    search: args.search,
+    onlyInferred: config.onlyInferred,
+    search: config.search,
     types: [
-      ABSTRACT_STIX_CORE_OBJECT, // stixCoreObjectsNumber api needs types
+      ABSTRACT_STIX_CORE_OBJECT,
     ]
   };
 
   // Use standard API
-  const { count: countPromise, total: totalPromise } = stixCoreObjectsNumber(context, user, parameters);
-  const [count, total] = await Promise.all([countPromise as Promise<number>, totalPromise as Promise<number>]);
-  return { count, total };
+  return stixCoreObjectsNumber(context, user, parameters) as unknown as Promise<NumberResult>;
 };
