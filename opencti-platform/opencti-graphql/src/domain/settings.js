@@ -41,16 +41,16 @@ export const isModuleActivated = async (moduleId) => {
   return module ? module.enable : false;
 };
 
-export const getApplicationInfo = (context) => ({
+export const getApplicationInfo = () => ({
   version: PLATFORM_VERSION,
-  memory: getMemoryStatistics(),
-  dependencies: [
-    { name: 'Search engine', version: searchEngineVersion().then((v) => `${v.platform} - ${v.version}`) },
-    { name: 'RabbitMQ', version: getRabbitMQVersion(context) },
-    { name: 'Redis', version: getRedisVersion() },
-  ],
   debugStats: {}, // Lazy loaded
 });
+
+export const getApplicationDependencies = (context) => ([
+  { name: 'Search engine', version: searchEngineVersion().then((v) => `${v.platform} - ${v.version}`) },
+  { name: 'RabbitMQ', version: getRabbitMQVersion(context) },
+  { name: 'Redis', version: getRedisVersion() },
+]);
 
 export const getSettings = async (context) => {
   const platformSettings = await loadEntity(context, SYSTEM_USER, [ENTITY_TYPE_SETTINGS]);
@@ -66,6 +66,9 @@ export const getSettings = async (context) => {
     platform_reference_attachment: conf.get('app:reference_attachment'),
     platform_map_tile_server_dark: nconf.get('app:map_tile_server_dark'),
     platform_map_tile_server_light: nconf.get('app:map_tile_server_light'),
+    platform_openbas_url: nconf.get('xtm:openbas_url'),
+    platform_openerm_url: nconf.get('xtm:openerm_url'),
+    platform_openmtd_url: nconf.get('xtm:openmtd_url'),
     platform_feature_flags: [
       { id: 'RUNTIME_SORTING', enable: isRuntimeSortEnable() },
     ],

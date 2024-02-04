@@ -204,7 +204,7 @@ type AppInfo {
   """
   The OpenCTI application version
   """
-  version: String!
+  version: String! @auth
   """
   The OpenCTI api current memory usage
   """
@@ -1115,6 +1115,9 @@ type Settings implements InternalObject & BasicObject {
   platform_theme_light_logo_login: String
   platform_map_tile_server_dark: String
   platform_map_tile_server_light: String
+  platform_openbas_url: String
+  platform_openerm_url: String
+  platform_openmtd_url: String
   platform_login_message: String
   platform_consent_message: String
   platform_consent_confirm_text: String
@@ -10677,7 +10680,6 @@ type Query {
   enrichmentConnectors(type: String!): [Connector] @auth(for: [MODULES])
   ###### INTERNAL
 
-  platform_theme: String
   about: AppInfo
   logsWorkerConfig: LogsWorkerConfig @auth(for: [MODULES])
   rabbitMQMetrics(prefix: String): RabbitMQMetrics @auth(for: [MODULES])
@@ -10769,7 +10771,6 @@ type Query {
   roles(first: Int, after: ID, orderBy: RolesOrdering, orderMode: OrderingMode, search: String): RoleConnection
   @auth(for: [SETTINGS_SETACCESSES])
   me: MeUser! @auth
-  me_id: ID! @auth
   otpGeneration: OtpElement @auth
   user(id: String!): User @auth(for: [SETTINGS_SETACCESSES, VIRTUAL_ORGANIZATION_ADMIN])
   creators(entityTypes: [String!]): CreatorConnection @auth(for: [KNOWLEDGE])

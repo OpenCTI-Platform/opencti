@@ -5,8 +5,9 @@ import { Link, useLocation } from 'react-router-dom-v5-compat';
 import AppBar from '@mui/material/AppBar';
 import Toolbar from '@mui/material/Toolbar';
 import IconButton from '@mui/material/IconButton';
-import { AccountCircleOutlined, BiotechOutlined, ContentPasteSearchOutlined, NotificationsOutlined } from '@mui/icons-material';
+import { AccountCircleOutlined, BiotechOutlined, ContentPasteSearchOutlined, NotificationsOutlined, AppsOutlined } from '@mui/icons-material';
 import Menu from '@mui/material/Menu';
+import Grid from '@mui/material/Grid';
 import Divider from '@mui/material/Divider';
 import MenuItem from '@mui/material/MenuItem';
 import Tooltip from '@mui/material/Tooltip';
@@ -14,6 +15,8 @@ import { graphql, PreloadedQuery, usePreloadedQuery, useSubscription } from 'rea
 import { useTheme } from '@mui/styles';
 import makeStyles from '@mui/styles/makeStyles';
 import { usePage } from 'use-analytics';
+import Popover from '@mui/material/Popover';
+import Box from '@mui/material/Box';
 import { useFormatter } from '../../../components/i18n';
 import SearchInput from '../../../components/SearchInput';
 import TopMenuDashboard from './TopMenuDashboard';
@@ -28,7 +31,7 @@ import TopMenuEntities from './TopMenuEntities';
 import TopMenuData from './TopMenuData';
 import TopMenuSettings from './TopMenuSettings';
 import TopMenuTechniques from './TopMenuTechniques';
-import { APP_BASE_PATH, MESSAGING$ } from '../../../relay/environment';
+import { APP_BASE_PATH, fileUri, MESSAGING$ } from '../../../relay/environment';
 import Security from '../../../utils/Security';
 import TopMenuWorkspacesDashboards from './TopMenuWorkspacesDashboards';
 import TopMenuWorkspacesInvestigations from './TopMenuWorkspacesInvestigations';
@@ -46,6 +49,15 @@ import useAuth from '../../../utils/hooks/useAuth';
 import { useSettingsMessagesBannerHeight } from '../settings/settings_messages/SettingsMessagesBanner';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
 import { decodeSearchKeyword, handleSearchByKeyword } from '../../../utils/SearchUtils';
+import octiDark from '../../../static/images/xtm/octi_dark.png';
+import octiLight from '../../../static/images/xtm/octi_light.png';
+import obasDark from '../../../static/images/xtm/obas_dark.png';
+import obasLight from '../../../static/images/xtm/obas_light.png';
+import oermDark from '../../../static/images/xtm/oerm_dark.png';
+import oermLight from '../../../static/images/xtm/oerm_light.png';
+import omtdDark from '../../../static/images/xtm/omtd_dark.png';
+import omtdLight from '../../../static/images/xtm/omtd_light.png';
+import { isNotEmptyField } from '../../../utils/utils';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   appBar: {
@@ -90,6 +102,35 @@ const useStyles = makeStyles<Theme>((theme) => ({
     height: '100%',
     float: 'left',
     margin: '0 5px 0 5px',
+  },
+  subtitle: {
+    color: theme.palette.text?.secondary,
+    fontSize: '15px',
+    marginBottom: 20,
+  },
+  xtmItem: {
+    display: 'block',
+    color: theme.palette.text?.primary,
+    textAlign: 'center',
+    padding: '15px 0 10px 0',
+    borderRadius: 4,
+    '&:hover': {
+      backgroundColor: theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.05)',
+    },
+  },
+  xtmItemCurrent: {
+    display: 'block',
+    color: theme.palette.text?.primary,
+    textAlign: 'center',
+    cursor: 'normal',
+    padding: '15px 0 10px 0',
+    backgroundColor: theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.05)',
+    borderRadius: 4,
+  },
+  product: {
+    margin: '5px auto 0 auto',
+    textAlign: 'center',
+    fontSize: 15,
   },
 }));
 
@@ -146,6 +187,7 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
   const { t_i18n } = useFormatter();
   const {
     bannerSettings: { bannerHeightNumber },
+    settings: { platform_openbas_url: openBASUrl },
   } = useAuth();
   const settingsMessagesBannerHeight = useSettingsMessagesBannerHeight();
   const [notificationsNumber, setNotificationsNumber] = useState<null | number>(
@@ -185,6 +227,10 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
   useEffect(() => {
     page();
   }, [location.pathname]);
+  const [xtmOpen, setXtmOpen] = useState<{
+    open: boolean;
+    anchorEl: HTMLButtonElement | null;
+  }>({ open: false, anchorEl: null });
   const [menuOpen, setMenuOpen] = useState<{
     open: boolean;
     anchorEl: HTMLButtonElement | null;
@@ -199,6 +245,15 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
   };
   const handleCloseMenu = () => {
     setMenuOpen({ open: false, anchorEl: null });
+  };
+  const handleOpenXtm = (
+    event: React.MouseEvent<HTMLButtonElement, MouseEvent>,
+  ) => {
+    event.preventDefault();
+    setXtmOpen({ open: true, anchorEl: event.currentTarget });
+  };
+  const handleCloseXtm = () => {
+    setXtmOpen({ open: false, anchorEl: null });
   };
   const handleSearch = (searchKeyword: string) => {
     handleSearchByKeyword(searchKeyword, 'knowledge', history);
@@ -311,6 +366,75 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
                 </IconButton>
               </Tooltip>
             </Security>
+            <IconButton
+              size="medium"
+              classes={{ root: classes.button }}
+              aria-owns={xtmOpen.open ? 'menu-appbar' : undefined}
+              aria-haspopup="true"
+              id="xtm-menu-button"
+              onClick={handleOpenXtm}
+            >
+              <AppsOutlined fontSize="medium"/>
+            </IconButton>
+            <Popover
+              anchorEl={xtmOpen.anchorEl}
+              open={xtmOpen.open}
+              onClose={handleCloseXtm}
+              anchorOrigin={{
+                vertical: 'bottom',
+                horizontal: 'center',
+              }}
+              transformOrigin={{
+                vertical: 'top',
+                horizontal: 'center',
+              }}
+            >
+              <Box sx={{ width: '300px', padding: '15px', textAlign: 'center' }}>
+                <div className={classes.subtitle}>{t_i18n('Filigran eXtended Threat Management')}</div>
+                <Grid container={true} spacing={3}>
+                  <Grid item={true} xs={6}>
+                    <Tooltip title={t_i18n('Current platform')}>
+                      <a className={classes.xtmItemCurrent}>
+                        <Badge variant="dot" color="success">
+                          <img style={{ width: 40 }} src={fileUri(theme.palette.mode === 'dark' ? octiDark : octiLight)} alt="OCTI" />
+                        </Badge>
+                        <div className={classes.product}>OpenCTI</div>
+                      </a>
+                    </Tooltip>
+                  </Grid>
+                  <Grid item={true} xs={6}>
+                    <Tooltip title={isNotEmptyField(openBASUrl) ? t_i18n('Platform connected') : t_i18n('Get OpenBAS now')}>
+                      <a className={classes.xtmItem} href={isNotEmptyField(openBASUrl) ? openBASUrl : 'https://filigran.io/solutions/products/openex-adversary-simulation/'} target="_blank" rel="noreferrer">
+                        <Badge variant="dot" color={isNotEmptyField(openBASUrl) ? 'success' : 'warning'}>
+                          <img style={{ width: 40 }} src={fileUri(theme.palette.mode === 'dark' ? obasDark : obasLight)} alt="OBAS" />
+                        </Badge>
+                        <div className={classes.product}>OpenBAS</div>
+                      </a>
+                    </Tooltip>
+                  </Grid>
+                  <Grid item={true} xs={6}>
+                    <Tooltip title={t_i18n('Platform under construction, subscribe to update!')}>
+                      <a className={classes.xtmItem} href="https://filigran.io/solutions/products/opencrisis-crisis-management/" target="_blank" rel="noreferrer">
+                        <Badge variant="dot" color="info">
+                          <img style={{ width: 40 }} src={fileUri(theme.palette.mode === 'dark' ? oermDark : oermLight)} alt="OERM" />
+                        </Badge>
+                        <div className={classes.product}>OpenERM</div>
+                      </a>
+                    </Tooltip>
+                  </Grid>
+                  <Grid item={true} xs={6}>
+                    <Tooltip title={t_i18n('Platform under construction, subscribe to update!')}>
+                      <a className={classes.xtmItem} href="https://filigran.io/solutions/products/opencrisis-crisis-management/" target="_blank" rel="noreferrer">
+                        <Badge variant="dot" color="info">
+                          <img style={{ width: 40 }} src={fileUri(theme.palette.mode === 'dark' ? omtdDark : omtdLight)} alt="OMTD" />
+                        </Badge>
+                        <div className={classes.product}>OpenMTD</div>
+                      </a>
+                    </Tooltip>
+                  </Grid>
+                </Grid>
+              </Box>
+            </Popover>
             <IconButton
               size="medium"
               classes={{ root: classes.button }}

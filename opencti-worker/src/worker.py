@@ -88,12 +88,12 @@ class PingAlive(threading.Thread):
                 self.worker_logger.debug("PingAlive running.")
                 self.api.query(
                     """
-                  query {
-                    me {
-                      id
+                    query {
+                      about {
+                        version
+                      }
                     }
-                  }
-                """
+                  """
                 )
             except Exception as e:  # pylint: disable=broad-except
                 self.in_error = True

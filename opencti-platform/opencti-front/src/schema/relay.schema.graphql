@@ -1176,6 +1176,9 @@ type Settings implements InternalObject & BasicObject {
   platform_theme_light_logo_login: String
   platform_map_tile_server_dark: String
   platform_map_tile_server_light: String
+  platform_openbas_url: String
+  platform_openerm_url: String
+  platform_openmtd_url: String
   platform_login_message: String
   platform_consent_message: String
   platform_consent_confirm_text: String
@@ -7041,7 +7044,6 @@ input StixRefRelationshipsAddInput {
 type Query {
   stix(id: String!): String
   enrichmentConnectors(type: String!): [Connector]
-  platform_theme: String
   about: AppInfo
   logsWorkerConfig: LogsWorkerConfig
   rabbitMQMetrics(prefix: String): RabbitMQMetrics

@@ -179,7 +179,6 @@ const DefaultDashboard = ({ timeField }) => {
                 variant="inLine"
                 withoutTitle={true}
                 height={110}
-                endDate={dayAgo()}
                 dataSelection={[{
                   filters: {
                     mode: 'and',
@@ -212,7 +211,6 @@ const DefaultDashboard = ({ timeField }) => {
                 variant="inLine"
                 withoutTitle={true}
                 height={110}
-                endDate={dayAgo()}
                 dataSelection={[{
                   filters: {
                     mode: 'and',
@@ -240,12 +238,11 @@ const DefaultDashboard = ({ timeField }) => {
             variant="outlined"
           >
             <CardContent>
-              <div className={classes.title}>{t_i18n('Report')}</div>
+              <div className={classes.title}>{t_i18n('Reports')}</div>
               <StixCoreObjectsNumber
                 variant="inLine"
                 withoutTitle={true}
                 height={110}
-                endDate={dayAgo()}
                 dataSelection={[{
                   filters: {
                     mode: 'and',
@@ -278,7 +275,6 @@ const DefaultDashboard = ({ timeField }) => {
                 variant="inLine"
                 withoutTitle={true}
                 height={110}
-                endDate={dayAgo()}
                 dataSelection={[{
                   filters: {
                     mode: 'and',

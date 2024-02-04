@@ -100,6 +100,14 @@
     "next_days": 30,
     "created_by_based": false
   },
+  "xtm": {
+    "openbas_url": "",
+    "openbas_token": "",
+    "openerm_url": "",
+    "openrm_token": "",
+    "openmtd_url": "",
+    "openmtd_token": ""
+  },
   "data_sharing": {
     "max_csv_feed_result": 5000
   },
