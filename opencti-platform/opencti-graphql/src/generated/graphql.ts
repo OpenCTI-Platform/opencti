@@ -18881,8 +18881,6 @@ export type QueryPublicDashboardsArgs = {
 
 export type QueryPublicStixCoreObjectsMultiTimeSeriesArgs = {
   endDate?: InputMaybe<Scalars['DateTime']['input']>;
-  interval: Scalars['String']['input'];
-  onlyInferred?: InputMaybe<Scalars['Boolean']['input']>;
   startDate: Scalars['DateTime']['input'];
   uriKey: Scalars['String']['input'];
   widgetId: Scalars['String']['input'];
@@ -18891,10 +18889,7 @@ export type QueryPublicStixCoreObjectsMultiTimeSeriesArgs = {
 
 export type QueryPublicStixCoreObjectsNumberArgs = {
   endDate?: InputMaybe<Scalars['DateTime']['input']>;
-  onlyInferred?: InputMaybe<Scalars['Boolean']['input']>;
-  search?: InputMaybe<Scalars['String']['input']>;
   startDate?: InputMaybe<Scalars['DateTime']['input']>;
-  types?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   uriKey: Scalars['String']['input'];
   widgetId: Scalars['String']['input'];
 };
@@ -34803,7 +34798,7 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   publicDashboard?: Resolver<Maybe<ResolversTypes['PublicDashboard']>, ParentType, ContextType, RequireFields<QueryPublicDashboardArgs, 'id'>>;
   publicDashboardByUriKey?: Resolver<Maybe<ResolversTypes['PublicDashboard']>, ParentType, ContextType, RequireFields<QueryPublicDashboardByUriKeyArgs, 'uri_key'>>;
   publicDashboards?: Resolver<Maybe<ResolversTypes['PublicDashboardConnection']>, ParentType, ContextType, Partial<QueryPublicDashboardsArgs>>;
-  publicStixCoreObjectsMultiTimeSeries?: Resolver<Maybe<Array<Maybe<ResolversTypes['MultiTimeSeries']>>>, ParentType, ContextType, RequireFields<QueryPublicStixCoreObjectsMultiTimeSeriesArgs, 'interval' | 'startDate' | 'uriKey' | 'widgetId'>>;
+  publicStixCoreObjectsMultiTimeSeries?: Resolver<Maybe<Array<Maybe<ResolversTypes['MultiTimeSeries']>>>, ParentType, ContextType, RequireFields<QueryPublicStixCoreObjectsMultiTimeSeriesArgs, 'startDate' | 'uriKey' | 'widgetId'>>;
   publicStixCoreObjectsNumber?: Resolver<Maybe<ResolversTypes['Number']>, ParentType, ContextType, RequireFields<QueryPublicStixCoreObjectsNumberArgs, 'uriKey' | 'widgetId'>>;
   rabbitMQMetrics?: Resolver<Maybe<ResolversTypes['RabbitMQMetrics']>, ParentType, ContextType, Partial<QueryRabbitMqMetricsArgs>>;
   region?: Resolver<Maybe<ResolversTypes['Region']>, ParentType, ContextType, RequireFields<QueryRegionArgs, 'id'>>;

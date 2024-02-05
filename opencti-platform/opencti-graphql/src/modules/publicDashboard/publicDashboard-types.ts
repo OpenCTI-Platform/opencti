@@ -35,13 +35,14 @@ export interface StoreEntityPublicDashboard extends StoreEntity {
 
 // region cache type
 export interface PublicDashboardCached {
-  id: string,
-  internal_id: string,
-  uri_key: string,
-  dashboard_id: string,
-  private_manifest: { widgets:any, config: any },
-  user_id: string,
-  allowed_markings_ids: string[],
+  id: string;
+  internal_id: string;
+  uri_key: string;
+  dashboard_id: string;
+  private_manifest: { widgets:any, config: any };
+  user_id: string;
+  allowed_markings_ids: string[];
+  allowed_markings: Array<StoreMarkingDefinition>;
 }
 // endregion
 
