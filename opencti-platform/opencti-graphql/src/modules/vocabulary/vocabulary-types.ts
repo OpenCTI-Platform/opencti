@@ -238,10 +238,8 @@ export const vocabularyDefinitions: Record<VocabularyCategory, VocabularyDefinit
       multiple: false,
     }]
   },
-  // TODO : ajouter une description
-  // TODO : vérifier les ENTITY TYPE
   organization_type_ov: {
-    description: 'A MODIFIER',
+    description: 'The various types of organizations playing a role in CTI, whether as a source of information or as a victim or source of attack, or even a way t segregate users in the platform.',
     entity_types: [ENTITY_TYPE_IDENTITY_ORGANIZATION],
     fields: [{
       key: 'x_opencti_organization_type',
