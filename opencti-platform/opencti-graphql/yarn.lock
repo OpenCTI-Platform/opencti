@@ -3297,6 +3297,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@mistralai/mistralai@npm:0.0.10":
+  version: 0.0.10
+  resolution: "@mistralai/mistralai@npm:0.0.10"
+  dependencies:
+    node-fetch: "npm:^2.6.7"
+  checksum: 10/3757f304ca1bdb709eddc0a1712867e3113dc8759879b22907587ddc686fdd216ee402e736f19cba4142f845f882c67db26860a9f037988b0b339831f690f241
+  languageName: node
+  linkType: hard
+
 "@nodelib/fs.scandir@npm:2.1.5":
   version: 2.1.5
   resolution: "@nodelib/fs.scandir@npm:2.1.5"
@@ -11204,6 +11213,7 @@ __metadata:
     "@graphql-tools/utils": "npm:10.0.12"
     "@jorgeferrero/stream-to-buffer": "npm:2.0.6"
     "@luckycatfactory/esbuild-graphql-loader": "npm:3.8.1"
+    "@mistralai/mistralai": "npm:0.0.10"
     "@opensearch-project/opensearch": "npm:2.5.0"
     "@opentelemetry/api": "npm:1.7.0"
     "@opentelemetry/api-metrics": "npm:0.33.0"

@@ -10678,9 +10678,11 @@ input StixRefRelationshipsAddInput {
 type Query {
   stix(id: String!): String @auth(for: [KNOWLEDGE])
   enrichmentConnectors(type: String!): [Connector] @auth(for: [MODULES])
+
   ###### INTERNAL
 
   about: AppInfo
+  aiEndpoints: [String]
   logsWorkerConfig: LogsWorkerConfig @auth(for: [MODULES])
   rabbitMQMetrics(prefix: String): RabbitMQMetrics @auth(for: [MODULES])
   elasticSearchMetrics: ElasticSearchMetrics @auth(for: [MODULES])
