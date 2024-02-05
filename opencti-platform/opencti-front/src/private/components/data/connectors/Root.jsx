@@ -25,7 +25,7 @@ class RootConnector extends Component {
                   <div>
                     <Route
                       exact
-                      path="/dashboard/data/connectors/:connectorId"
+                      path="/dashboard/data/ingestion/connectors/:connectorId"
                       render={(routeProps) => (
                         <Connector
                           {...routeProps}
