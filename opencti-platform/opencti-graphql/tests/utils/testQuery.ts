@@ -14,6 +14,7 @@ import type { StoreMarkingDefinition } from '../../src/types/store';
 import { generateStandardId, MARKING_TLP_AMBER, MARKING_TLP_AMBER_STRICT, MARKING_TLP_GREEN } from '../../src/schema/identifier';
 import { ENTITY_TYPE_CAPABILITY, ENTITY_TYPE_GROUP, ENTITY_TYPE_ROLE, ENTITY_TYPE_USER } from '../../src/schema/internalObject';
 import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../../src/modules/organization/organization-types';
+import type { ConfidenceLevel } from '../../src/generated/graphql';
 // endregion
 
 export const SYNC_RAW_START_REMOTE_URI = conf.get('app:sync_raw_start_remote_uri');
@@ -105,7 +106,8 @@ interface Group {
   id: string,
   name: string,
   markings: string[],
-  roles: Role[]
+  roles: Role[],
+  group_confidence_level: ConfidenceLevel
 }
 
 export const GREEN_GROUP: Group = {
@@ -113,12 +115,20 @@ export const GREEN_GROUP: Group = {
   name: 'GREEN GROUP',
   markings: [MARKING_TLP_GREEN],
   roles: [ROLE_PARTICIPATE],
+  group_confidence_level: {
+    max_confidence: 100,
+    overrides: [],
+  }
 };
 export const AMBER_GROUP: Group = {
   id: generateStandardId(ENTITY_TYPE_GROUP, { name: 'AMBER GROUP' }),
   name: 'AMBER GROUP',
   markings: [MARKING_TLP_AMBER],
   roles: [ROLE_EDITOR],
+  group_confidence_level: {
+    max_confidence: 100,
+    overrides: [],
+  }
 };
 
 export const AMBER_STRICT_GROUP: Group = {
@@ -126,6 +136,10 @@ export const AMBER_STRICT_GROUP: Group = {
   name: 'AMBER STRICT GROUP',
   markings: [MARKING_TLP_AMBER_STRICT],
   roles: [ROLE_SECURITY],
+  group_confidence_level: {
+    max_confidence: 100,
+    overrides: [],
+  }
 };
 
 // Organization
@@ -147,7 +161,7 @@ interface User {
   roles?: Role[],
   organizations?: Organization[],
   groups: Group[],
-  client: AxiosInstance
+  client: AxiosInstance,
 }
 
 export const ADMIN_USER: AuthUser = {
@@ -170,7 +184,15 @@ export const ADMIN_USER: AuthUser = {
   origin: { referer: 'test', user_id: '88ec0c6a-13ce-5e39-b486-354fe4a7084f' },
   api_token: 'd434ce02-e58e-4cac-8b4c-42bf16748e84',
   account_status: ACCOUNT_STATUS_ACTIVE,
-  account_lock_after_date: undefined
+  account_lock_after_date: undefined,
+  effective_confidence_level: {
+    max_confidence: 100,
+    overrides: [],
+  },
+  user_confidence_level: {
+    max_confidence: 100,
+    overrides: [],
+  }
 };
 const TESTING_USERS: User[] = [];
 export const USER_PARTICIPATE: User = {
@@ -439,7 +461,15 @@ export const buildStandardUser = (allowedMarkings: markingType[], allMarkings?: 
     origin: { referer: 'test', user_id: '98ec0c6a-13ce-5e39-b486-354fe4a7084f' },
     api_token: 'd434ce02-e58e-4cac-8b4c-42bf16748e85',
     account_status: ACCOUNT_STATUS_ACTIVE,
-    account_lock_after_date: undefined
+    account_lock_after_date: undefined,
+    effective_confidence_level: {
+      max_confidence: 100,
+      overrides: [],
+    },
+    user_confidence_level: {
+      max_confidence: 100,
+      overrides: [],
+    }
   };
 };
 

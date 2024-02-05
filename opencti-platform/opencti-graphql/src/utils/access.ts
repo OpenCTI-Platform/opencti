@@ -77,6 +77,14 @@ export const SYSTEM_USER: AuthUser = {
   account_lock_after_date: undefined,
   account_status: ACCOUNT_STATUS_ACTIVE,
   administrated_organizations: [],
+  effective_confidence_level: {
+    max_confidence: 100,
+    overrides: [],
+  },
+  user_confidence_level: {
+    max_confidence: 100,
+    overrides: [],
+  },
 };
 
 export const RETENTION_MANAGER_USER: AuthUser = {
@@ -100,6 +108,14 @@ export const RETENTION_MANAGER_USER: AuthUser = {
   account_lock_after_date: undefined,
   account_status: ACCOUNT_STATUS_ACTIVE,
   administrated_organizations: [],
+  effective_confidence_level: {
+    max_confidence: 100,
+    overrides: [],
+  },
+  user_confidence_level: {
+    max_confidence: 100,
+    overrides: [],
+  },
 };
 
 export const RULE_MANAGER_USER: AuthUser = {
@@ -123,6 +139,14 @@ export const RULE_MANAGER_USER: AuthUser = {
   account_lock_after_date: undefined,
   account_status: ACCOUNT_STATUS_ACTIVE,
   administrated_organizations: [],
+  effective_confidence_level: {
+    max_confidence: 100,
+    overrides: [],
+  },
+  user_confidence_level: {
+    max_confidence: 100,
+    overrides: [],
+  },
 };
 
 export const AUTOMATION_MANAGER_USER: AuthUser = {
@@ -146,6 +170,14 @@ export const AUTOMATION_MANAGER_USER: AuthUser = {
   account_lock_after_date: undefined,
   account_status: ACCOUNT_STATUS_ACTIVE,
   administrated_organizations: [],
+  effective_confidence_level: {
+    max_confidence: 100,
+    overrides: [],
+  },
+  user_confidence_level: {
+    max_confidence: 100,
+    overrides: [],
+  },
 };
 
 export const REDACTED_USER: AuthUser = {
@@ -169,6 +201,8 @@ export const REDACTED_USER: AuthUser = {
   api_token: '',
   account_lock_after_date: undefined,
   account_status: ACCOUNT_STATUS_ACTIVE,
+  effective_confidence_level: null,
+  user_confidence_level: null,
 };
 
 export interface AuthorizedMember { id: string, access_right: string }
