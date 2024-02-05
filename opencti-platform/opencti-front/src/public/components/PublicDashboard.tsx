@@ -4,7 +4,7 @@ import { useParams } from 'react-router-dom';
 import RGL, { WidthProvider } from 'react-grid-layout';
 import { ErrorBoundary, SimpleError } from '@components/Error';
 import Paper from '@mui/material/Paper';
-import { redirect, useNavigate } from 'react-router-dom-v5-compat';
+import { useNavigate } from 'react-router-dom-v5-compat';
 import Loader, { LoaderVariant } from '../../components/Loader';
 import { PublicDashboardQuery } from './__generated__/PublicDashboardQuery.graphql';
 import useQueryLoading from '../../utils/hooks/useQueryLoading';
@@ -52,17 +52,9 @@ const PublicDashboardComponent = ({
     rawWidget,
   } = usePublicDashboardWidgets(uriKey, config);
 
-  const onChangeRelativeDate = (value: string) => {
-    console.log('relative date', value);
-  };
-
-  const onChangeStartDate = (value: string | null) => {
-    console.log('start date', value);
-  };
-
-  const onChangeEndDate = (value: string | null) => {
-    console.log('end date', value);
-  };
+  const onChangeRelativeDate = () => {};
+  const onChangeStartDate = () => {};
+  const onChangeEndDate = () => {};
 
   if (!publicDashboardByUriKey || !config) {
     return null;
