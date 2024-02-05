@@ -79,6 +79,7 @@ const StixCoreObjectsNumber = ({
       height={height}
       title={parameters.title ?? t_i18n('Entities number')}
       variant={variant}
+      withoutTitle={withoutTitle}
     >
       {renderContent()}
     </WidgetContainer>

@@ -5,7 +5,7 @@ import makeStyles from '@mui/styles/makeStyles';
 
 const useStyles = makeStyles({
   paper: {
-    minHeight: 280,
+    minHeight: 110,
     height: '100%',
     margin: '4px 0 0 0',
     padding: '0 0 10px 0',
@@ -18,6 +18,7 @@ interface WidgetContainerProps {
   height?: CSSProperties['height']
   title: string
   variant: string
+  withoutTitle?: boolean
 }
 
 const WidgetContainer = ({
@@ -25,23 +26,26 @@ const WidgetContainer = ({
   height,
   title,
   variant,
+  withoutTitle = false,
 }: WidgetContainerProps) => {
   const classes = useStyles();
 
   return (
     <div style={{ height: height || '100%' }}>
-      <Typography
-        variant="h4"
-        gutterBottom={true}
-        style={{
-          margin: variant !== 'inLine' ? '0 0 10px 0' : '-10px 0 10px -7px',
-          whiteSpace: 'nowrap',
-          overflow: 'hidden',
-          textOverflow: 'ellipsis',
-        }}
-      >
-        {title}
-      </Typography>
+      {!withoutTitle && (
+        <Typography
+          variant="h4"
+          gutterBottom={true}
+          style={{
+            margin: variant !== 'inLine' ? '0 0 10px 0' : '-10px 0 10px -7px',
+            whiteSpace: 'nowrap',
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+          }}
+        >
+          {title}
+        </Typography>
+      )}
       {variant !== 'inLine' ? (
         <Paper classes={{ root: classes.paper }} variant="outlined">
           {children}

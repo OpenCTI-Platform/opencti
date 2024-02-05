@@ -8,9 +8,10 @@ import { loadQuery, usePreloadedQuery } from 'react-relay';
 import type { Theme } from '../../components/Theme';
 import Message from '../../components/Message';
 import { environment, fileUri } from '../../relay/environment';
-import logo from '../../static/images/logo.png';
 import { LoginRootPublicQuery } from '../__generated__/LoginRootPublicQuery.graphql';
 import { rootPublicQuery } from '../LoginRoot';
+import logoLight from '../../static/images/logo_light.png';
+import logoDark from '../../static/images/logo_dark.png';
 
 const useStyles = makeStyles({
   container: {
@@ -49,7 +50,7 @@ const PublicDataSharing = () => {
       <Message />
       <div className={classes.container}>
         <img
-          src={loginLogo && loginLogo.length > 0 ? loginLogo : fileUri(logo)}
+          src={loginLogo && loginLogo.length > 0 ? loginLogo : fileUri(theme.palette.mode === 'dark' ? logoDark : logoLight)}
           alt="logo"
           className={classes.logo}
         />
