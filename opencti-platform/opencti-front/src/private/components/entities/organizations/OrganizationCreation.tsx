@@ -1,7 +1,6 @@
 import React, { FunctionComponent } from 'react';
 import { Field, Form, Formik } from 'formik';
 import Button from '@mui/material/Button';
-import MenuItem from '@mui/material/MenuItem';
 import * as Yup from 'yup';
 import { graphql, useMutation } from 'react-relay';
 import makeStyles from '@mui/styles/makeStyles';
@@ -11,7 +10,6 @@ import Drawer, { DrawerVariant } from '@components/common/drawer/Drawer';
 import { useFormatter } from '../../../../components/i18n';
 import { handleErrorInForm } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
-import SelectField from '../../../../components/SelectField';
 import CreatedByField from '../../common/form/CreatedByField';
 import ObjectLabelField from '../../common/form/ObjectLabelField';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
@@ -61,7 +59,7 @@ interface OrganizationAddInput {
   name: string
   description: string
   x_opencti_reliability: string | undefined
-  x_opencti_organization_type: string
+  x_opencti_organization_type: string | undefined
   createdBy: Option | undefined
   objectMarking: Option[]
   objectLabel: Option[]

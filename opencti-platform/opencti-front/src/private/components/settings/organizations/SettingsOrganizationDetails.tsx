@@ -53,11 +53,7 @@ SettingsOrganizationDetailsProps
             </Typography>
             <Chip
               classes={{ root: classes.chip }}
-              label={t_i18n(
-                organization.x_opencti_organization_type
-                  ? `organization_${organization.x_opencti_organization_type}`
-                  : 'organization_other',
-              )}
+              label={organization.x_opencti_organization_type ?? 'Other'}
             />
             <Typography
               variant="h3"
