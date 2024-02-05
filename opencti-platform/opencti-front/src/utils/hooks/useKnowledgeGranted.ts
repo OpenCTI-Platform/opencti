@@ -1,16 +1,11 @@
 import useAuth from './useAuth';
 import { BYPASS } from './useGranted';
 
-const useKnowledgeGranted = (
-  capabilities: string[],
-  entity: string,
-  matchAll = false,
-): boolean => {
+const useKnowledgeGranted = (capabilities: string[], entity: string, matchAll = false): boolean => {
   const { me } = useAuth();
   const groups = me.groups?.edges?.map((e) => e?.node) ?? [];
-  const roles = groups.flatMap((g) => g?.roles);
-  const overrides = roles.flatMap((r) => r?.capabilities_overrides)?.filter((o) => o);
-
+  const roles = groups.flatMap((g) => (g?.roles?.edges ?? []).map((e) => e.node));
+  const overrides = roles.flatMap((r) => r.capabilities_overrides);
   let userCapabilities = (me.capabilities ?? []).map((c) => c.name);
   if (entity) {
     const override = overrides.filter((o) => o?.entity === entity);

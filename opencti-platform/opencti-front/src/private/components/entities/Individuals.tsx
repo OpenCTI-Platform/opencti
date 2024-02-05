@@ -116,7 +116,7 @@ const Individuals = () => {
       <KnowledgeSecurity needs={[KNOWLEDGE_KNUPDATE]} entity='Individual'>
         <IndividualCreation paginationOptions={paginationOptions} />
       </KnowledgeSecurity>
-      </>
+    </>
   );
 };
 

@@ -96,10 +96,10 @@ const NotePopover: FunctionComponent<NotePopoverProps> = ({
     handleClose();
   };
   return (
-   <KnowledgeSecurity needs={[KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNUPDATE_KNDELETE]} entity='Note'>
-     <>
-      {variant === 'inLine' ? (
-        <IconButton
+    <KnowledgeSecurity needs={[KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNUPDATE_KNDELETE]} entity='Note'>
+      <>
+        {variant === 'inLine' ? (
+          <IconButton
             onClick={handleOpen}
             aria-haspopup="true"
             size={size || 'large'}
@@ -108,38 +108,25 @@ const NotePopover: FunctionComponent<NotePopoverProps> = ({
           >
             <MoreVert />
           </IconButton>
-      ) : (
-        <ToggleButton
-          value="popover"
-          size="small"
-          onClick={handleOpen}
-        >
-          <MoreVert fontSize="small" color="primary" />
-        </ToggleButton>
-      )}
-      <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleClose}>
-        <MenuItem onClick={handleOpenEdit}>{t_i18n('Update')}</MenuItem>
-        {handleOpenRemoveExternal && (
-          <MenuItem onClick={handleOpenRemove}>
-            {t_i18n('Remove from this entity')}
-          </MenuItem>
+        ) : (
+          <ToggleButton
+            value="popover"
+            size="small"
+            onClick={handleOpen}
+          >
+            <MoreVert fontSize="small" color="primary" />
+          </ToggleButton>
         )}
-        <CollaborativeSecurity
-          data={note}
-          needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}
-        >
-          <MoreVert />
-        </IconButton>
         <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleClose}>
           <KnowledgeSecurity needs={[KNOWLEDGE_KNUPDATE]} entity='Note'>
             <MenuItem onClick={handleOpenEdit}>{t_i18n('Update')}</MenuItem>
           </KnowledgeSecurity>
           {handleOpenRemoveExternal && (
-            <KnowledgeSecurity needs={[KNOWLEDGE_KNUPDATE]} entity='Note'>
-              <MenuItem onClick={handleOpenRemove}>
-                {t_i18n('Remove from this entity')}
-              </MenuItem>
-            </KnowledgeSecurity>
+          <KnowledgeSecurity needs={[KNOWLEDGE_KNUPDATE]} entity='Note'>
+            <MenuItem onClick={handleOpenRemove}>
+              {t_i18n('Remove from this entity')}
+            </MenuItem>
+          </KnowledgeSecurity>
           )}
           <KnowledgeSecurity needs={[KNOWLEDGE_KNUPDATE_KNDELETE]} entity='Note'>
             <CollaborativeSecurity
@@ -186,8 +173,8 @@ const NotePopover: FunctionComponent<NotePopoverProps> = ({
             return <div />;
           }}
         />
-     </>
-   </KnowledgeSecurity>
+      </>
+    </KnowledgeSecurity>
   );
 };
 

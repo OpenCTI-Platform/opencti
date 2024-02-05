@@ -113,18 +113,18 @@ class ChannelPopover extends Component {
               </MenuItem>
             </KnowledgeSecurity>
             <KnowledgeSecurity needs={[KNOWLEDGE_KNENRICHMENT]} entity='Channel'>
-            <MenuItem onClick={this.handleOpenEnrichment.bind(this)}>
-              {t('Enrich')}
-            </MenuItem>
-          </KnowledgeSecurity>
-          <KnowledgeSecurity needs={[KNOWLEDGE_KNUPDATE_KNDELETE]} entity='Channel'>
+              <MenuItem onClick={this.handleOpenEnrichment.bind(this)}>
+                {t('Enrich')}
+              </MenuItem>
+            </KnowledgeSecurity>
+            <KnowledgeSecurity needs={[KNOWLEDGE_KNUPDATE_KNDELETE]} entity='Channel'>
               <MenuItem onClick={this.handleOpenDelete.bind(this)}>
                 {t('Delete')}
               </MenuItem>
             </KnowledgeSecurity>
           </Menu>
           <StixCoreObjectEnrichment stixCoreObjectId={id} open={this.state.displayEnrichment} handleClose={this.handleCloseEnrichment.bind(this)} />
-        <Dialog
+          <Dialog
             PaperProps={{ elevation: 1 }}
             open={this.state.displayDelete}
             keepMounted={true}
