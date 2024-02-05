@@ -115,9 +115,9 @@ class IntrusionSetPopover extends Component {
               </MenuItem>
             </KnowledgeSecurity>
             <KnowledgeSecurity needs={[KNOWLEDGE_KNENRICHMENT]} entity='Intrusion-Set'>
-            <MenuItem onClick={this.handleOpenEnrichment.bind(this)}>
-              {t('Enrich')}
-            </MenuItem>
+              <MenuItem onClick={this.handleOpenEnrichment.bind(this)}>
+                {t('Enrich')}
+              </MenuItem>
             </KnowledgeSecurity>
             <KnowledgeSecurity needs={[KNOWLEDGE_KNUPDATE_KNDELETE]} entity='Intrusion-Set'>
               <MenuItem onClick={this.handleOpenDelete.bind(this)}>

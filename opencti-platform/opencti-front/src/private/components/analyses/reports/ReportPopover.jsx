@@ -42,13 +42,13 @@ const ReportPopover = ({ id }) => {
   return (
     <div>
       <KnowledgeSecurity needs={[KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNUPDATE_KNDELETE]} entity='Report'>
-      <ToggleButton
-        value="popover"
-        size="small"
-        onClick={handleOpen}
-      >
-        <MoreVert fontSize="small" color="primary" />
-      </ToggleButton>
+        <ToggleButton
+          value="popover"
+          size="small"
+          onClick={handleOpen}
+        >
+          <MoreVert fontSize="small" color="primary" />
+        </ToggleButton>
         <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleClose}>
           <KnowledgeSecurity needs={[KNOWLEDGE_KNUPDATE]} entity='Report'>
             <MenuItem onClick={handleOpenEdit}>{t_i18n('Update')}</MenuItem>

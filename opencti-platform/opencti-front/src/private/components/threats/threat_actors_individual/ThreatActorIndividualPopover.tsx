@@ -100,7 +100,7 @@ const ThreatActorIndividualPopover = ({ id }: { id: string }) => {
             <MenuItem onClick={handleOpenEdit}>{t_i18n('Update')}</MenuItem>
           </KnowledgeSecurity>
           <KnowledgeSecurity needs={[KNOWLEDGE_KNENRICHMENT]} entity='Threat-Actor-Individual'>
-          <MenuItem onClick={handleOpenEnrichment}>{t_i18n('Enrich')}</MenuItem>
+            <MenuItem onClick={handleOpenEnrichment}>{t_i18n('Enrich')}</MenuItem>
           </KnowledgeSecurity>
           <KnowledgeSecurity needs={[KNOWLEDGE_KNUPDATE_KNDELETE]} entity='Threat-Actor-Individual'>
             <MenuItem onClick={handleOpenDelete}>{t_i18n('Delete')}</MenuItem>

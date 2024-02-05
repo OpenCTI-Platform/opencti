@@ -124,7 +124,7 @@ const Organizations = () => {
       <KnowledgeSecurity needs={[KNOWLEDGE_KNUPDATE]} entity='Organization'>
         <OrganizationCreation paginationOptions={paginationOptions} />
       </KnowledgeSecurity>
-      </>
+    </>
   );
 };
 

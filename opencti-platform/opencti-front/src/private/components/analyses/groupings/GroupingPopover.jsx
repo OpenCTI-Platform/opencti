@@ -62,13 +62,13 @@ const GroupingPopover = (props) => {
       entity='Grouping'
     >
       <>
-      <ToggleButton
-        value="popover"
-        size="small"
-        onClick={handleOpen}
-      >
-        <MoreVert fontSize="small" color="primary" />
-      </ToggleButton>
+        <ToggleButton
+          value="popover"
+          size="small"
+          onClick={handleOpen}
+        >
+          <MoreVert fontSize="small" color="primary" />
+        </ToggleButton>
         <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleClose}>
           <KnowledgeSecurity needs={[KNOWLEDGE_KNUPDATE]} entity='Grouping'>
             <MenuItem onClick={handleOpenEdit}>{t_i18n('Update')}</MenuItem>

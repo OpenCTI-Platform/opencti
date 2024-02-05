@@ -113,7 +113,7 @@ const TaskPopover = ({
             style={{ marginTop: 3 }}
             size="large"
             color="primary"
-            >
+          >
             <MoreVert />
           </IconButton>
         ) : (

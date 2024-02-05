@@ -101,7 +101,7 @@ class ThreatActorGroupPopover extends Component {
     const { t, id } = this.props;
     return (
       <KnowledgeSecurity needs={[KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNUPDATE_KNDELETE]} entity='Threat-Actor-Group'>
-      <ToggleButton
+        <ToggleButton
           value="popover"
           size="small"
 

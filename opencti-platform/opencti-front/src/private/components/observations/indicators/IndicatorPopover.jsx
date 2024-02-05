@@ -116,18 +116,18 @@ class IndicatorPopover extends Component {
               </MenuItem>
             </KnowledgeSecurity>
             <KnowledgeSecurity needs={[KNOWLEDGE_KNENRICHMENT]} entity='Indicator'>
-            <MenuItem onClick={this.handleOpenEnrichment.bind(this)}>
-              {t('Enrich')}
-            </MenuItem>
-          </KnowledgeSecurity>
-          <KnowledgeSecurity needs={[KNOWLEDGE_KNUPDATE_KNDELETE]} entity='Indicator'>
+              <MenuItem onClick={this.handleOpenEnrichment.bind(this)}>
+                {t('Enrich')}
+              </MenuItem>
+            </KnowledgeSecurity>
+            <KnowledgeSecurity needs={[KNOWLEDGE_KNUPDATE_KNDELETE]} entity='Indicator'>
               <MenuItem onClick={this.handleOpenDelete.bind(this)}>
                 {t('Delete')}
               </MenuItem>
             </KnowledgeSecurity>
           </Menu>
           <StixCoreObjectEnrichment stixCoreObjectId={id} open={this.state.displayEnrichment} handleClose={this.handleCloseEnrichment.bind(this)} />
-        <Dialog
+          <Dialog
             open={this.state.displayDelete}
             PaperProps={{ elevation: 1 }}
             keepMounted={true}
