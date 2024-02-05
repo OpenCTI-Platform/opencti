@@ -1,19 +1,12 @@
 import { FunctionalError } from '../config/errors';
 
-export const cropNumber = (value: number, options: { min?: number, max?: number }) => {
-  if (!Number.isFinite(value)) {
-    throw FunctionalError('Cannot crop non-finite input value', { value });
+export const cropNumber = (value: number, min: number, max: number) => {
+  if (!Number.isFinite(value) || !Number.isFinite(min) || !Number.isFinite(max)) {
+    throw FunctionalError('Cannot process non-finite input');
   }
-  let newValue = value;
-  if (options.min !== undefined) {
-    if (options.max !== undefined && options.min > options.max) {
-      throw FunctionalError('Incorrect inputs to cropNumber, min cannot be greater than max');
-    }
-    newValue = Math.max(newValue, options.min);
-  }
-  if (options.max !== undefined) {
-    newValue = Math.min(newValue, options.max);
+  if (min > max) {
+    throw FunctionalError('min cannot be greater than max');
   }
 
-  return newValue;
+  return Math.max(Math.min(value, max), min);
 };
