@@ -152,7 +152,7 @@ RelationShipFromAndToComponentProps
       <Typography variant="h3" gutterBottom={true} className={classes.label}>
         {t_i18n(direction === 'From' ? 'Source' : 'Target')}
       </Typography>
-      <Tooltip title={defaultValue(stixCoreObject, true)}>
+      <Tooltip title={defaultValue(stixCoreObject)}>
         <span>{truncate(defaultValue(stixCoreObject), 40)}</span>
       </Tooltip>
     </React.Fragment>

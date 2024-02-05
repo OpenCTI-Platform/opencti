@@ -322,7 +322,7 @@ EntityDetailsComponentProps
       <Typography variant="h3" gutterBottom={true} className={classes.label}>
         {t_i18n('Value')}
       </Typography>
-      <Tooltip title={defaultValue(stixCoreObject, true)}>
+      <Tooltip title={defaultValue(stixCoreObject)}>
         <span>{truncate(defaultValue(stixCoreObject), 40)}</span>
       </Tooltip>
       <Typography variant="h3" gutterBottom={true} className={classes.label}>

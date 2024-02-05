@@ -97,14 +97,14 @@ StixMetaObjectDetailsComponentProps
         {t_i18n('Value')}
       </Typography>
       {stixMetaObject.entity_type === 'Marking-Definition' ? (
-        <Tooltip title={defaultValue(stixMetaObject, true)}>
+        <Tooltip title={defaultValue(stixMetaObject)}>
           <ItemMarkings
             markingDefinitions={[stixMetaObject]}
             limit={2}
           />
         </Tooltip>
       ) : (
-        <Tooltip title={defaultValue(stixMetaObject, true)}>
+        <Tooltip title={defaultValue(stixMetaObject)}>
           <span>{truncate(defaultValue(stixMetaObject), 40)}</span>
         </Tooltip>
       )}

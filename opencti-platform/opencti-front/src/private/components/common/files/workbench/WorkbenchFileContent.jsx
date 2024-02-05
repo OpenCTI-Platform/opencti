@@ -2816,7 +2816,7 @@ const WorkbenchFileContentComponent = ({
             || indexedStixObjects[n.where_sighted_refs?.at(0)]
             || {},
         ),
-      }),
+      }, null),
       markings: resolveMarkings(stixDomainObjects, n.object_marking_refs),
     }));
     const sort = R.sortWith(
@@ -2983,7 +2983,7 @@ const WorkbenchFileContentComponent = ({
     const resolvedStixDomainObjects = stixDomainObjects.map((n) => ({
       ...n,
       ttype: t_i18n(`entity_${convertFromStixType(n.type)}`),
-      default_value: defaultValue(n),
+      default_value: defaultValue(n, null),
       markings: resolveMarkings(stixDomainObjects, n.object_marking_refs),
     }));
     const sort = R.sortWith(
@@ -3120,8 +3120,7 @@ const WorkbenchFileContentComponent = ({
                         className={classes.bodyItem}
                         style={inlineStyles.in_platform}
                       >
-                        {object.default_value
-                        && object.type !== 'marking-definition' ? (
+                        {object.default_value ? (
                           <QueryRenderer
                             query={stixDomainObjectsLinesSearchQuery}
                             variables={{
@@ -3136,13 +3135,7 @@ const WorkbenchFileContentComponent = ({
                                       'x_opencti_aliases',
                                       'x_mitre_id',
                                     ],
-                                    values: [
-                                      object.name
-                                        || object.value
-                                        || object.pattern
-                                        || object.definition
-                                        || object.country,
-                                    ],
+                                    values: [object.default_value],
                                   },
                                 ],
                                 filterGroups: [],
@@ -3175,13 +3168,13 @@ const WorkbenchFileContentComponent = ({
                               );
                             }}
                           />
-                          ) : (
-                            <ItemBoolean
-                              variant="inList"
-                              status={null}
-                              label={t_i18n('Not applicable')}
-                            />
-                          )}
+                        ) : (
+                          <ItemBoolean
+                            variant="inList"
+                            status={null}
+                            label={t_i18n('Not applicable')}
+                          />
+                        )}
                       </div>
                     </div>
                   }
@@ -3233,7 +3226,7 @@ const WorkbenchFileContentComponent = ({
     const resolvedStixCyberObservables = stixCyberObservables.map((n) => ({
       ...n,
       ttype: t_i18n(`entity_${convertFromStixType(n.type)}`),
-      default_value: defaultValue(n),
+      default_value: defaultValue(n, null),
       markings: resolveMarkings(stixDomainObjects, n.object_marking_refs),
     }));
     const sort = R.sortWith(
@@ -3371,8 +3364,7 @@ const WorkbenchFileContentComponent = ({
                         className={classes.bodyItem}
                         style={inlineStyles.in_platform}
                       >
-                        {object.default_value
-                        && object.type !== 'marking-definition' ? (
+                        {object.default_value ? (
                           <QueryRenderer
                             query={stixCyberObservablesLinesSearchQuery}
                             variables={{
@@ -3421,13 +3413,13 @@ const WorkbenchFileContentComponent = ({
                               );
                             }}
                           />
-                          ) : (
-                            <ItemBoolean
-                              variant="inList"
-                              status={null}
-                              label={t_i18n('Not applicable')}
-                            />
-                          )}
+                        ) : (
+                          <ItemBoolean
+                            variant="inList"
+                            status={null}
+                            label={t_i18n('Not applicable')}
+                          />
+                        )}
                       </div>
                     </div>
                   }
@@ -3478,7 +3470,7 @@ const WorkbenchFileContentComponent = ({
         ...n,
         source_ref_name: defaultValue(indexedStixObjects[n.source_ref] || {}),
         target_ref_name: defaultValue(indexedStixObjects[n.target_ref] || {}),
-      }),
+      }, null),
       source_ref_name: defaultValue(indexedStixObjects[n.source_ref] || {}),
       target_ref_name: defaultValue(indexedStixObjects[n.target_ref] || {}),
       markings: resolveMarkings(stixDomainObjects, n.object_marking_refs),
@@ -3626,7 +3618,7 @@ const WorkbenchFileContentComponent = ({
         target_ref_name: defaultValue(
           indexedStixObjects[n.where_sighted_refs?.at(0)] || {},
         ),
-      }),
+      }, null),
       source_ref_name: defaultValue(
         indexedStixObjects[n.sighting_of_ref] || {},
       ),
@@ -3798,7 +3790,7 @@ const WorkbenchFileContentComponent = ({
     const resolvedContainers = containers.map((n) => ({
       ...n,
       ttype: t_i18n(`entity_${convertFromStixType(n.type)}`),
-      default_value: defaultValue(n),
+      default_value: defaultValue(n, null),
       markings: resolveMarkings(stixDomainObjects, n.object_marking_refs),
     }));
     const sort = R.sortWith(
@@ -3911,8 +3903,7 @@ const WorkbenchFileContentComponent = ({
                         className={classes.bodyItem}
                         style={inlineStyles.in_platform}
                       >
-                        {object.default_value
-                        && object.type !== 'marking-definition' ? (
+                        {object.default_value ? (
                           <QueryRenderer
                             query={stixDomainObjectsLinesSearchQuery}
                             variables={{
@@ -3927,12 +3918,7 @@ const WorkbenchFileContentComponent = ({
                                       'x_opencti_aliases',
                                       'x_mitre_id',
                                     ],
-                                    values: [
-                                      object.name
-                                        || object.value
-                                        || object.definition
-                                        || 'Unknown',
-                                    ],
+                                    values: [object.default_value],
                                   },
                                   {
                                     key: 'created',
@@ -3969,13 +3955,13 @@ const WorkbenchFileContentComponent = ({
                               );
                             }}
                           />
-                          ) : (
-                            <ItemBoolean
-                              variant="inList"
-                              status={null}
-                              label={t_i18n('Not applicable')}
-                            />
-                          )}
+                        ) : (
+                          <ItemBoolean
+                            variant="inList"
+                            status={null}
+                            label={t_i18n('Not applicable')}
+                          />
+                        )}
                       </div>
                     </div>
                   }

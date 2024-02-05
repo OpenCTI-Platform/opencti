@@ -128,7 +128,7 @@ const StixCoreRelationshipCreationFromEntityStixCoreObjectsLineComponent = ({
               className={classes.bodyItem}
               style={{ width: dataColumns.value.width }}
             >
-              {defaultValue(node, true)}
+              {defaultValue(node)}
             </div>
             <div
               className={classes.bodyItem}

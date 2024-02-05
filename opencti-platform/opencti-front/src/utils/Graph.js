@@ -381,15 +381,14 @@ export const defaultKey = (n) => {
   return null;
 };
 
-export const defaultValue = (n, tooltip = false) => {
+export const defaultValue = (n, fallback = 'Unknown') => {
   if (!n) return '';
   if (typeof n.definition === 'object') {
     return defaultValueMarking(n);
   }
-  if (tooltip) {
-    return `${n.x_mitre_id ? `[${n.x_mitre_id}] ` : ''}${
-      n.name
+  const mainValue = n.name
       || n.label
+      || n.observableName
       || n.observable_value
       || n.pattern
       || n.attribute_abstract
@@ -404,63 +403,25 @@ export const defaultValue = (n, tooltip = false) => {
       || (n.template && n.template.name)
       || (n.content && truncate(n.content, 30))
       || (n.hashes
-        && (n.hashes.MD5
-          || n.hashes['SHA-1']
-          || n.hashes['SHA-256']
-          || n.hashes['SHA-512']))
+          && (n.hashes.MD5
+              || n.hashes['SHA-1']
+              || n.hashes['SHA-256']
+              || n.hashes['SHA-512']))
       || (n.source_ref_name
-        && n.target_ref_name
-        && `${truncate(n.source_ref_name, 20)} ➡️ ${truncate(
-          n.target_ref_name,
-          20,
-        )}`)
+          && n.target_ref_name
+          && `${truncate(n.source_ref_name, 20)} ➡️ ${truncate(
+            n.target_ref_name,
+            20,
+          )}`)
       || defaultValue(R.head(R.pathOr([], ['objects', 'edges'], n))?.node)
       || (n.from
-        && n.to
-        && `${truncate(defaultValue(n.from), 20)} ➡️ ${truncate(
-          defaultValue(n.to),
-          20,
-        )}`)
-      || 'Unknown'
-    }`;
-  }
-  return `${n.x_mitre_id ? `[${n.x_mitre_id}] ` : ''}${
-    n.name
-    || n.label
-    || n.observableName
-    || n.observable_value
-    || n.pattern
-    || n.attribute_abstract
-    || n.opinion
-    || n.value
-    || n.definition
-    || n.source_name
-    || n.phase_name
-    || n.result_name
-    || n.country
-    || n.key
-    || (n.template && n.template.name)
-    || (n.content && truncate(n.content, 30))
-    || (n.hashes
-      && (n.hashes.MD5
-        || n.hashes['SHA-1']
-        || n.hashes['SHA-256']
-        || n.hashes['SHA-512']))
-    || (n.source_ref_name
-      && n.target_ref_name
-      && `${truncate(n.source_ref_name, 20)} ➡️ ${truncate(
-        n.target_ref_name,
-        20,
-      )}`)
-    || defaultValue(R.head(R.pathOr([], ['objects', 'edges'], n))?.node)
-    || (n.from
-      && n.to
-      && `${truncate(defaultValue(n.from), 20)} ➡️ ${truncate(
-        defaultValue(n.to),
-        20,
-      )}`)
-    || 'Unknown'
-  }`;
+          && n.to
+          && `${truncate(defaultValue(n.from), 20)} ➡️ ${truncate(
+            defaultValue(n.to),
+            20,
+          )}`)
+      || fallback;
+  return n.x_mitre_id ? `[${n.x_mitre_id}]${mainValue}` : mainValue;
 };
 
 export const defaultSecondaryValue = (n) => {
@@ -715,7 +676,7 @@ export const buildCorrelationData = (
       id: n.id,
       disabled: n.disabled,
       val: graphLevel[n.entity_type] || graphLevel.Unknown,
-      name: defaultValue(n, true),
+      name: defaultValue(n),
       defaultDate: jsDate(defaultDate(n)),
       label: truncate(
         defaultValue(n),
@@ -942,7 +903,7 @@ export const buildGraphData = (objects, graphData, t) => {
                 ? '-'
                 : dateFormat(n.stop_time || n.last_seen)
             }`
-            : defaultValue(n, true)
+            : defaultValue(n)
         }\n${dateFormat(defaultDate(n))}`,
         defaultDate: jsDate(defaultDate(n)),
         label: n.parent_types.includes('basic-relationship')

@@ -4538,7 +4538,7 @@ const StixRelationshipsList = ({
                               >
                                 <code>
                                   {stixRelationship.from
-                                    ? defaultValue(stixRelationship.from, true)
+                                    ? defaultValue(stixRelationship.from)
                                     : t_i18n('Restricted')}
                                 </code>
                               </div>
@@ -4587,7 +4587,7 @@ const StixRelationshipsList = ({
                               >
                                 <code>
                                   {stixRelationship.to
-                                    ? defaultValue(stixRelationship.to, true)
+                                    ? defaultValue(stixRelationship.to)
                                     : t_i18n('Restricted')}
                                 </code>
                               </div>
