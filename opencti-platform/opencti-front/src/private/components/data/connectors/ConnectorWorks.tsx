@@ -15,6 +15,7 @@ import TableCell from '@mui/material/TableCell';
 import TableContainer from '@mui/material/TableContainer';
 import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
+import Tooltip from '@mui/material/Tooltip';
 import { interval } from 'rxjs';
 import { Delete } from 'mdi-material-ui';
 import makeStyles from '@mui/styles/makeStyles';
@@ -136,23 +137,25 @@ const ConnectorWorksComponent: FunctionComponent<ConnectorWorksComponentProps> =
             variant="outlined"
           >
             <Grid container={true} spacing={3}>
-              <Grid item={true} xs={5}>
+              <Grid item={true} xs={7}>
                 <Grid container={true} spacing={1}>
-                  <Grid item={true} xs={6}>
+                  <Grid item={true} xs={8}>
                     <Typography variant="h3" gutterBottom={true}>
                       {t_i18n('Name')}
                     </Typography>
-                    <Typography>
-                      {work.name}
-                    </Typography>
+                    <Tooltip title={work.name}>
+                      <Typography sx={{ overflowX: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'noWrap' }}>
+                        {work.name}
+                      </Typography>
+                    </Tooltip>
                   </Grid>
-                  <Grid item={true} xs={6}>
+                  <Grid item={true} xs={4}>
                     <Typography variant="h3" gutterBottom={true}>
                       {t_i18n('Status')}
                     </Typography>
                     <TaskStatus status={work.status} label={t_i18n(work.status)} />
                   </Grid>
-                  <Grid item={true} xs={6}>
+                  <Grid item={true} xs={8}>
                     <Typography
                       variant="h3"
                       gutterBottom={true}
@@ -162,7 +165,7 @@ const ConnectorWorksComponent: FunctionComponent<ConnectorWorksComponentProps> =
                     </Typography>
                     {nsdt(work.received_time)}
                   </Grid>
-                  <Grid item={true} xs={6}>
+                  <Grid item={true} xs={4}>
                     <Typography
                       variant="h3"
                       gutterBottom={true}
@@ -174,7 +177,7 @@ const ConnectorWorksComponent: FunctionComponent<ConnectorWorksComponentProps> =
                   </Grid>
                 </Grid>
               </Grid>
-              <Grid item={true} xs={5}>
+              <Grid item={true} xs={4}>
                 <Grid container={true} spacing={3}>
                   <Grid item={true} xs={6}>
                     <Typography variant="h3" gutterBottom={true}>
@@ -196,7 +199,7 @@ const ConnectorWorksComponent: FunctionComponent<ConnectorWorksComponentProps> =
                         : tracking?.import_expected_number ?? '-'}
                     </span>
                   </Grid>
-                  <Grid item={true} xs={12}>
+                  <Grid item={true} xs={11}>
                     <Typography variant="h3" gutterBottom={true}>
                       {t_i18n('Progress')}
                     </Typography>
