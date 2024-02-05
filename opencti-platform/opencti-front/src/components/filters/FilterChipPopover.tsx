@@ -291,7 +291,8 @@ export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({
             ? filterValues.filter((fVal) => fVal && fVal.key === subKey && fVal.values.includes(option.value)).length > 0
             : filterValues.includes(option.value);
 
-          if (!option.value) {
+          // In case of No Label we would like to display it
+          if (!option.value && !option.label) {
             return null;
           }
           return (
