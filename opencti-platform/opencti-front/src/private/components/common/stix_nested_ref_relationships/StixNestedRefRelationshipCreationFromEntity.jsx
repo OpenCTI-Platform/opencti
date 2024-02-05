@@ -18,7 +18,6 @@ import SpeedDialIcon from '@mui/material/SpeedDialIcon';
 import SpeedDialAction from '@mui/material/SpeedDialAction';
 import { GlobeModel, HexagonOutline } from 'mdi-material-ui';
 import makeStyles from '@mui/styles/makeStyles';
-import StixCoreRelationshipCreationForm from '@components/common/stix_core_relationships/StixCoreRelationshipCreationForm';
 import { commitMutation, QueryRenderer } from '../../../../relay/environment';
 import { useFormatter } from '../../../../components/i18n';
 import { itemColor } from '../../../../utils/Colors';
@@ -325,9 +324,6 @@ const StixNestedRefRelationshipCreationFromEntity = ({
   targetStixCoreObjectTypes,
   variant,
   isRelationReversed,
-  handleReverseRelation,
-  defaultStartTime,
-  defaultStopTime,
 }) => {
   const classes = useStyles();
   const { t_i18n } = useFormatter();
@@ -419,7 +415,7 @@ const StixNestedRefRelationshipCreationFromEntity = ({
       : entityId;
     const toEntityId = isRelationReversed
       ? entityId
-      : targetEntity.id;
+      : targetEntity[0].id;
     const finalValues = R.pipe(
       R.assoc('fromId', fromEntityId),
       R.assoc('toId', toEntityId),
@@ -777,7 +773,7 @@ const StixNestedRefRelationshipCreationFromEntity = ({
                   </div>
                   <div className={classes.content}>
                     <span className={classes.name}>
-                      {truncate(defaultValue(toEntity), 20)}
+                      {truncate(defaultValue(toEntity[0]), 20)}
                     </span>
                   </div>
                 </div>
@@ -912,7 +908,6 @@ const StixNestedRefRelationshipCreationFromEntity = ({
                 }}
                 render={({ props }) => {
                   if (props && props.stixSchemaRefRelationships) {
-                    console.log('propsStixRef', props.stixSchemaRefRelationships);
                     return (
                       <div>
                         {renderForm(props.stixSchemaRefRelationships)}
