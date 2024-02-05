@@ -27,11 +27,14 @@ export const getWidgetsConfigAndUser = async (
   if (!plateformUser) {
     throw UnsupportedError('User not found');
   }
-  const user = { ...plateformUser, origin: { user_id: plateformUser.id, referer: 'public-dashboard' } };
 
   // replace User markings by publicDashboard allowed_markings
-  const allMarkings = await getEntitiesListFromCache<StoreMarkingDefinition>(context, user, ENTITY_TYPE_MARKING_DEFINITION);
-  user.allowed_marking = computeAvailableMarkings(allowed_markings, allMarkings); // TODO what if user is downgraded ??
+  const allMarkings = await getEntitiesListFromCache<StoreMarkingDefinition>(context, SYSTEM_USER, ENTITY_TYPE_MARKING_DEFINITION);
+  const user = {
+    ...plateformUser,
+    origin: { user_id: plateformUser.id, referer: 'public-dashboard' },
+    allowed_marking: computeAvailableMarkings(allowed_markings, allMarkings), // TODO what if user is downgraded ??
+  };
 
   // Get widget query configuration
   const { widgets, config } = private_manifest;
