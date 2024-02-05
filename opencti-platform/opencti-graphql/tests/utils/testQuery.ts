@@ -184,7 +184,15 @@ export const ADMIN_USER: AuthUser = {
   origin: { referer: 'test', user_id: '88ec0c6a-13ce-5e39-b486-354fe4a7084f' },
   api_token: 'd434ce02-e58e-4cac-8b4c-42bf16748e84',
   account_status: ACCOUNT_STATUS_ACTIVE,
-  account_lock_after_date: undefined
+  account_lock_after_date: undefined,
+  effective_confidence_level: {
+    max_confidence: 100,
+    overrides: [],
+  },
+  user_confidence_level: {
+    max_confidence: 100,
+    overrides: [],
+  }
 };
 const TESTING_USERS: User[] = [];
 export const USER_PARTICIPATE: User = {
@@ -453,7 +461,15 @@ export const buildStandardUser = (allowedMarkings: markingType[], allMarkings?: 
     origin: { referer: 'test', user_id: '98ec0c6a-13ce-5e39-b486-354fe4a7084f' },
     api_token: 'd434ce02-e58e-4cac-8b4c-42bf16748e85',
     account_status: ACCOUNT_STATUS_ACTIVE,
-    account_lock_after_date: undefined
+    account_lock_after_date: undefined,
+    effective_confidence_level: {
+      max_confidence: 100,
+      overrides: [],
+    },
+    user_confidence_level: {
+      max_confidence: 100,
+      overrides: [],
+    }
   };
 };
 

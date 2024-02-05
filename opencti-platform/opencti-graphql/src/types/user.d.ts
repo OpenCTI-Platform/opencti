@@ -1,5 +1,6 @@
 import type { BasicStoreCommon, BasicStoreIdentifier, StoreMarkingDefinition } from './store';
 import type { Group } from './group';
+import type { ConfidenceLevel } from '../generated/graphql';
 
 interface UserRole extends BasicStoreIdentifier {
   name: string;
@@ -41,6 +42,8 @@ interface AuthUser extends BasicStoreIdentifier {
   all_marking: Array<StoreMarkingDefinition>;
   api_token: string;
   account_status: string;
+  effective_confidence_level: ConfidenceLevel | null;
+  user_confidence_level: ConfidenceLevel | null;
 }
 
 interface AuthContext {
