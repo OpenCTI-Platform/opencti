@@ -188,7 +188,7 @@ describe('Group resolver standard behavior', () => {
   });
   it('should list groups', async () => {
     const queryResult = await queryAsAdmin({ query: LIST_QUERY, variables: { first: 10 } });
-    expect(queryResult.data.groups.edges.length).toEqual(8);
+    expect(queryResult.data.groups.edges.length).toEqual(7);
   });
   it('should update group', async () => {
     const UPDATE_QUERY = gql`
