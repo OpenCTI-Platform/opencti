@@ -4,6 +4,7 @@
     "base_path": "",
     "base_url": "http://localhost:4000/",
     "enabled": true,
+    "disabled_dev_features": ["INDICATOR_DECAY"],
     "https_cert": {
       "ca": [],
       "key": null,
@@ -94,7 +95,6 @@
   "https_proxy": "",
   "no_proxy": "",
   "https_proxy_ca": [],
-  "disabled_dev_features": ["INDICATOR_DECAY"],
   "https_proxy_reject_unauthorized": false,
   "relations_deduplication": {
     "past_days": 30,

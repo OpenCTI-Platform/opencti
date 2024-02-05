@@ -535,7 +535,7 @@ export const setStoppingState = (state) => {
   platformState.stopping = state;
 };
 
-export const DISABLED_FEATURE_FLAGS = nconf.get('disabled_dev_features') ?? [];
+export const DISABLED_FEATURE_FLAGS = nconf.get('app:disabled_dev_features') ?? [];
 export const isFeatureEnabled = (feature) => {
   const isActivated = DISABLED_FEATURE_FLAGS.length === 0 || !DISABLED_FEATURE_FLAGS.includes(feature);
   if (!isActivated) {
