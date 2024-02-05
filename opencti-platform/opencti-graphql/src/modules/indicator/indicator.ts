@@ -9,7 +9,7 @@ const INDICATOR_DEFINITION: ModuleDefinition<StoreEntityIndicator, StixIndicator
     id: 'indicator',
     name: ENTITY_TYPE_INDICATOR,
     category: ABSTRACT_STIX_DOMAIN_OBJECT,
-    aliased: true
+    aliased: false
   },
   identifier: {
     definition: {
