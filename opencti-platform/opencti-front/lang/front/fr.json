@@ -2566,5 +2566,6 @@
   "The Max Confidence Level is currently defined at the user level. It overrides Max Confidence Level from user’s groups.": "Le niveau de confiance maximum est actuellement défini au niveau de l'utilisateur. Il est prioritaire sur le niveau de confiance maximum des groupes d'utilisateurs.",
   "Please, verify the validity of the selected CSV mapper for the given URL.": "Veuillez vérifier la validité du mappeur CSV sélectionné pour l'URL donnée.",
   "Only successful tests allow the ingestion creation.": "Seuls les tests réussis permettent la création de l'ingestion.",
-  "Only successful tests allow the ingestion edition.": "Seuls les tests réussis permettent l'édition de l'ingestion."
+  "Only successful tests allow the ingestion edition.": "Seuls les tests réussis permettent l'édition de l'ingestion.",
+  "Home": "Accueil"
 }

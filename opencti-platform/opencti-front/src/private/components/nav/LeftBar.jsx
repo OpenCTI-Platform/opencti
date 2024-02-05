@@ -46,6 +46,9 @@ const useStyles = makeStyles((theme) => createStyles({
     backgroundColor: theme.palette.background.nav,
     overflowX: 'hidden',
   },
+  menuItemIcon: {
+    color: theme.palette.text.primary,
+  },
   menuItem: {
     height: 35,
     fontWeight: 500,
@@ -227,7 +230,7 @@ const LeftBar = () => {
             dense={true}
             classes={{ root: classes.menuItem }}
           >
-            <ListItemIcon style={{ minWidth: 20 }}>
+            <ListItemIcon classes={{ root: classes.menuItemIcon }} style={{ minWidth: 20 }}>
               <DashboardOutlined />
             </ListItemIcon>
             {navOpen && (
@@ -251,7 +254,7 @@ const LeftBar = () => {
                 dense={true}
                 classes={{ root: classes.menuItem }}
               >
-                <ListItemIcon style={{ minWidth: 20 }}>
+                <ListItemIcon classes={{ root: classes.menuItemIcon }} style={{ minWidth: 20 }}>
                   <AssignmentOutlined />
                 </ListItemIcon>
                 {navOpen && (
@@ -272,7 +275,7 @@ const LeftBar = () => {
                 dense={true}
                 classes={{ root: classes.menuItem }}
               >
-                <ListItemIcon style={{ minWidth: 20 }}>
+                <ListItemIcon classes={{ root: classes.menuItemIcon }} style={{ minWidth: 20 }}>
                   <CasesOutlined />
                 </ListItemIcon>
                 {navOpen && (
@@ -293,7 +296,7 @@ const LeftBar = () => {
                 dense={true}
                 classes={{ root: classes.menuItem }}
               >
-                <ListItemIcon style={{ minWidth: 20 }}>
+                <ListItemIcon classes={{ root: classes.menuItemIcon }} style={{ minWidth: 20 }}>
                   <Timetable />
                 </ListItemIcon>
                 {navOpen && (
@@ -317,7 +320,7 @@ const LeftBar = () => {
                 dense={true}
                 classes={{ root: classes.menuItem }}
               >
-                <ListItemIcon style={{ minWidth: 20 }}>
+                <ListItemIcon classes={{ root: classes.menuItemIcon }} style={{ minWidth: 20 }}>
                   <Binoculars />
                 </ListItemIcon>
                 {navOpen && (
@@ -341,7 +344,7 @@ const LeftBar = () => {
                 dense={true}
                 classes={{ root: classes.menuItem }}
               >
-                <ListItemIcon style={{ minWidth: 20 }}>
+                <ListItemIcon classes={{ root: classes.menuItemIcon }} style={{ minWidth: 20 }}>
                   <FlaskOutline />
                 </ListItemIcon>
                 {navOpen && (
@@ -362,7 +365,7 @@ const LeftBar = () => {
                 dense={true}
                 classes={{ root: classes.menuItem }}
               >
-                <ListItemIcon style={{ minWidth: 20 }}>
+                <ListItemIcon classes={{ root: classes.menuItemIcon }} style={{ minWidth: 20 }}>
                   <LayersOutlined />
                 </ListItemIcon>
                 {navOpen && (
@@ -386,7 +389,7 @@ const LeftBar = () => {
                 dense={true}
                 classes={{ root: classes.menuItem }}
               >
-                <ListItemIcon style={{ minWidth: 20 }}>
+                <ListItemIcon classes={{ root: classes.menuItemIcon }} style={{ minWidth: 20 }}>
                   <ConstructionOutlined />
                 </ListItemIcon>
                 {navOpen && (
@@ -407,7 +410,7 @@ const LeftBar = () => {
                 dense={true}
                 classes={{ root: classes.menuItem }}
               >
-                <ListItemIcon style={{ minWidth: 20 }}>
+                <ListItemIcon classes={{ root: classes.menuItemIcon }} style={{ minWidth: 20 }}>
                   <FolderTableOutline />
                 </ListItemIcon>
                 {navOpen && (
@@ -428,7 +431,7 @@ const LeftBar = () => {
                 dense={true}
                 classes={{ root: classes.menuItem }}
               >
-                <ListItemIcon style={{ minWidth: 20 }}>
+                <ListItemIcon classes={{ root: classes.menuItemIcon }} style={{ minWidth: 20 }}>
                   <GlobeModel />
                 </ListItemIcon>
                 {navOpen && (
@@ -453,7 +456,7 @@ const LeftBar = () => {
               dense={true}
               classes={{ root: classes.menuItem }}
             >
-              <ListItemIcon style={{ minWidth: 20 }}>
+              <ListItemIcon classes={{ root: classes.menuItemIcon }} style={{ minWidth: 20 }}>
                 <InsertChartOutlinedOutlined />
               </ListItemIcon>
               {navOpen && (
@@ -472,7 +475,7 @@ const LeftBar = () => {
               dense={true}
               classes={{ root: classes.menuItem }}
             >
-              <ListItemIcon style={{ minWidth: 20 }}>
+              <ListItemIcon classes={{ root: classes.menuItemIcon }} style={{ minWidth: 20 }}>
                 <ExploreOutlined />
               </ListItemIcon>
               {navOpen && (
@@ -492,7 +495,7 @@ const LeftBar = () => {
                 dense={true}
                 classes={{ root: classes.menuItem }}
               >
-                <ListItemIcon style={{ minWidth: 20 }}>
+                <ListItemIcon classes={{ root: classes.menuItemIcon }} style={{ minWidth: 20 }}>
                   <Database />
                 </ListItemIcon>
                 {navOpen && (
@@ -523,7 +526,7 @@ const LeftBar = () => {
                   classes={{ root: classes.menuItem }}
                   style={{ marginBottom: 50 }}
                 >
-                  <ListItemIcon style={{ minWidth: 20 }}>
+                  <ListItemIcon classes={{ root: classes.menuItemIcon }} style={{ minWidth: 20 }}>
                     <CogOutline />
                   </ListItemIcon>
                   {navOpen && (
@@ -547,7 +550,7 @@ const LeftBar = () => {
                   classes={{ root: classes.menuItem }}
                   style={{ marginBottom: 50 }}
                 >
-                  <ListItemIcon style={{ minWidth: 20 }}>
+                  <ListItemIcon classes={{ root: classes.menuItemIcon }} style={{ minWidth: 20 }}>
                     <CogOutline />
                   </ListItemIcon>
                   {navOpen && (
@@ -572,7 +575,7 @@ const LeftBar = () => {
           onClick={() => window.open('https://filigran.io/', '_blank')}
         >
           <Tooltip title={'By Filigran'}>
-            <ListItemIcon style={{ minWidth: 20 }}>
+            <ListItemIcon classes={{ root: classes.menuItemIcon }} style={{ minWidth: 20 }}>
               <img
                 src={fileUri(logo_filigran)}
                 alt="logo"
@@ -596,7 +599,7 @@ const LeftBar = () => {
         }}
         onClick={() => handleToggle()}
       >
-        <ListItemIcon style={{ minWidth: 20 }}>
+        <ListItemIcon classes={{ root: classes.menuItemIcon }} style={{ minWidth: 20 }}>
           {navOpen ? <ChevronLeft /> : <ChevronRight />}
         </ListItemIcon>
         {navOpen && (

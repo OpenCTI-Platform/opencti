@@ -69,6 +69,7 @@ const useStyles = makeStyles<Theme>((theme) => ({
     borderLeft: 0,
     borderRight: 0,
     borderTop: 0,
+    color: theme.palette.text?.primary,
   },
   logoContainer: {
     margin: '2px 0 0 -8px',
@@ -313,7 +314,7 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
                       location.pathname.includes('/dashboard/search')
                       && !location.pathname.includes('/dashboard/search_bulk')
                         ? 'secondary'
-                        : 'default'
+                        : 'inherit'
                     }
                     size={'medium'}
                   >
@@ -327,7 +328,7 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
                     color={
                       location.pathname.includes('/dashboard/search_bulk')
                         ? 'primary'
-                        : 'default'
+                        : 'inherit'
                     }
                     size="medium"
                   >
@@ -343,7 +344,6 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
               <Tooltip title={t_i18n('Notifications and triggers')}>
                 <IconButton
                   size="medium"
-                  classes={{ root: classes.button }}
                   aria-haspopup="true"
                   component={Link}
                   to="/dashboard/profile/notifications"
@@ -353,7 +353,7 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
                       '/dashboard/profile/triggers',
                     ].includes(location.pathname)
                       ? 'primary'
-                      : 'default'
+                      : 'inherit'
                   }
                 >
                   <Badge
@@ -367,8 +367,8 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
               </Tooltip>
             </Security>
             <IconButton
+              color="inherit"
               size="medium"
-              classes={{ root: classes.button }}
               aria-owns={xtmOpen.open ? 'menu-appbar' : undefined}
               aria-haspopup="true"
               id="xtm-menu-button"
@@ -437,7 +437,6 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
             </Popover>
             <IconButton
               size="medium"
-              classes={{ root: classes.button }}
               aria-owns={menuOpen.open ? 'menu-appbar' : undefined}
               aria-haspopup="true"
               id="profile-menu-button"
@@ -445,7 +444,7 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
               color={
                 location.pathname === '/dashboard/profile/me'
                   ? 'primary'
-                  : 'default'
+                  : 'inherit'
               }
             >
               <AccountCircleOutlined fontSize="medium"/>
