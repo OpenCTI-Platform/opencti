@@ -1,4 +1,3 @@
-import MenuItem from '@mui/material/MenuItem';
 import { Field, Form, Formik } from 'formik';
 import { FormikConfig } from 'formik/dist/types';
 import React from 'react';
@@ -9,8 +8,8 @@ import GroupField from '@components/common/form/GroupField';
 import EEChip from '@components/common/entreprise_edition/EEChip';
 import { GenericContext } from '@components/common/model/GenericContextModel';
 import { useFormatter } from '../../../../components/i18n';
+import OpenVocabField from '@components/common/form/OpenVocabField';
 import MarkdownField from '../../../../components/MarkdownField';
-import SelectField from '../../../../components/SelectField';
 import { SubscriptionFocus } from '../../../../components/Subscription';
 import TextField from '../../../../components/TextField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
@@ -167,16 +166,16 @@ const SettingsOrganizationEdition = ({
       },
     });
   };
-  const handleSubmitField = (key: string, value: string) => {
+  const handleSubmitField = (name: string, value: string | string[]) => {
     if (!enableReferences) {
       organizationValidator
-        .validateAt(key, { [key]: value })
+        .validateAt(name, { [name]: value })
         .then(() => {
           editor.fieldPatch({
             variables: {
               id: organization.id,
               input: {
-                key,
+                key: name,
                 value: value ?? '',
               },
             },
@@ -239,31 +238,18 @@ const SettingsOrganizationEdition = ({
                   />
                 }
               />
-              <Field
-                component={SelectField}
-                variant="standard"
-                name="x_opencti_organization_type"
-                onChange={handleSubmitField}
+              <OpenVocabField
                 label={t_i18n('Organization type')}
-                fullWidth={true}
-                inputProps={{
-                  name: 'x_opencti_organization_type',
-                  id: 'x_opencti_organization_type',
-                }}
-                containerstyle={fieldSpacingContainerStyle}
-                helpertext={
-                  <SubscriptionFocus
-                    context={context}
-                    fieldName="x_opencti_organization_type"
-                  />
-                }
-              >
-                <MenuItem value="constituent">{t_i18n('Constituent')}</MenuItem>
-                <MenuItem value="csirt">{t_i18n('CSIRT')}</MenuItem>
-                <MenuItem value="partner">{t_i18n('Partner')}</MenuItem>
-                <MenuItem value="vendor">{t_i18n('Vendor')}</MenuItem>
-                <MenuItem value="other">{t_i18n('Other')}</MenuItem>
-              </Field>
+                type="organization_type_ov"
+                name="x_opencti_organization_type"
+                onChange={setFieldValue}
+                onFocus={editor.changeFocus}
+                onSubmit={handleSubmitField}
+                multiple={false}
+                editContext={context}
+                variant="edit"
+                containerStyle={fieldSpacingContainerStyle}
+              />
               <Field
                 component={TextField}
                 variant="standard"
