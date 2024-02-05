@@ -11,6 +11,7 @@ import { Filter } from '../../utils/filters/filtersUtils';
 import { handleFilterHelpers } from '../../utils/hooks/useLocalStorage';
 import { truncate } from '../../utils/String';
 import FilterValuesContent from '../FilterValuesContent';
+import { FilterRepresentatives } from './FiltersModel';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   inlineOperator: {
@@ -48,7 +49,7 @@ interface FilterValuesProps {
   label: string | React.JSX.Element;
   tooltip?: boolean;
   currentFilter: Filter;
-  filtersRepresentativesMap: Map<string, string | null | undefined>;
+  filtersRepresentativesMap: Map<string, FilterRepresentatives>;
   redirection?: boolean;
   handleSwitchLocalMode?: (filter: Filter) => void;
   onClickLabel?: (event: React.MouseEvent<HTMLButtonElement>) => void;
@@ -104,7 +105,7 @@ const FilterValues: FunctionComponent<FilterValuesProps> = ({
           isFilterTooltip={!!tooltip}
           filterKey={filterKey}
           id={id}
-          value={filtersRepresentativesMap.get(id) ?? id}
+          value={filtersRepresentativesMap.get(id) ? filtersRepresentativesMap.get(id)?.value : id}
         />
         {filterKey !== 'regardingOf' && last(filterValues) !== id && (
           <div

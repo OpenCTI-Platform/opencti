@@ -17,6 +17,7 @@ import DisplayFilterGroup from './filters/DisplayFilterGroup';
 import { handleFilterHelpers } from '../utils/hooks/useLocalStorage';
 import FilterIconButtonGlobalOperator from './FilterIconButtonGlobalOperator';
 import { filterValuesContentQuery } from './FilterValuesContent';
+import { FilterRepresentatives } from './filters/FiltersModel';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   filter3: {
@@ -147,8 +148,8 @@ FilterIconButtonContainerProps
   const itemRefToPopover = useRef(null);
   const oldItemRefToPopover = useRef(null);
   let classFilter = classes.filter1;
-  const filtersRepresentativesMap = new Map(
-    filtersRepresentatives.map((n) => [n.id, n.value]),
+  const filtersRepresentativesMap = new Map<string, FilterRepresentatives>(
+    filtersRepresentatives.map((n: FilterRepresentatives) => [n.id, n]),
   );
   const [filterChipsParams, setFilterChipsParams] = React.useState<FilterChipsParameter>({
     filter: undefined,
@@ -383,6 +384,7 @@ FilterIconButtonContainerProps
             handleClose={handleClose}
             open={open}
             helpers={helpers}
+            filtersRepresentativesMap={filtersRepresentativesMap}
             availableRelationFilterTypes={availableRelationFilterTypes}
           />
         </Box>

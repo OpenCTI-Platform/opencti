@@ -12,11 +12,12 @@ import Typography from '@mui/material/Typography';
 import Chip from '@mui/material/Chip';
 import { useFormatter } from '../i18n';
 import { Filter, FilterGroup } from '../../utils/filters/filtersUtils';
+import { FilterRepresentatives } from './FiltersModel';
 
 interface DisplayFilterGroupProps {
   filterObj: FilterGroup;
   filterMode: string;
-  filtersRepresentativesMap: Map<string, string | null | undefined>;
+  filtersRepresentativesMap: Map<string, FilterRepresentatives>;
   classFilter: string;
   classChipLabel: string;
 }
@@ -93,7 +94,7 @@ const DisplayFilterGroup: FunctionComponent<DisplayFilterGroupProps> = ({
               <Fragment key={value}>
                 <span key={value}>
                   {' '}
-                  {filtersRepresentativesMap.get(value) ?? value}{' '}
+                  {filtersRepresentativesMap.get(value) ? filtersRepresentativesMap.get(value)?.value : value}{' '}
                 </span>
                 {j + 1 < values.length && (
                   <Box

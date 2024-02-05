@@ -14,6 +14,7 @@ import { useFormatter } from '../i18n';
 import ItemIcon from '../ItemIcon';
 import { getOptionsFromEntities, getUseSearch } from '../../utils/filters/SearchEntitiesUtil';
 import { handleFilterHelpers } from '../../utils/hooks/useLocalStorage';
+import { FilterRepresentatives } from './FiltersModel';
 
 interface FilterChipMenuProps {
   handleClose: () => void;
@@ -22,6 +23,7 @@ interface FilterChipMenuProps {
   filters: Filter[];
   helpers?: handleFilterHelpers;
   availableRelationFilterTypes?: Record<string, string[]>;
+  filtersRepresentativesMap: Map<string, FilterRepresentatives>;
 }
 
 export interface FilterChipsParameter {
@@ -128,6 +130,7 @@ export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({
   filters,
   helpers,
   availableRelationFilterTypes,
+  filtersRepresentativesMap,
 }) => {
   const filter = filters.find((f) => f.id === params.filterId);
   const filterKey = filter?.key ?? '';
@@ -225,17 +228,21 @@ export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({
   );
 
   const buildAutocompleteFilter = (fKey: string, subKey?: string): ReactNode => {
-    const entitiesOptions = getOptionsFromEntities(entities, searchScope, fKey);
-    const selectedOptions: OptionValue[] = filterValues.map((value) => {
-      const correspondingEntities = entitiesOptions.find((e) => e.value === value);
-      return {
-        ...correspondingEntities,
-        value,
-        type: correspondingEntities?.type ?? t_i18n('Selected'),
-        parentTypes: [],
-        group: t_i18n('Selected'),
-        label: correspondingEntities?.label ?? t_i18n('Unknown'),
-      };
+    const entitiesOptions = getOptionsFromEntities(entities, searchScope, fKey)
+      .filter((option) => !filterValues.includes(option.value));
+    const selectedOptions: OptionValue[] = [...filterValues].map((value) => {
+      const filterRepresentative = filtersRepresentativesMap.get(value);
+      if (filterRepresentative) {
+        return {
+          value,
+          type: filterRepresentative?.entity_type ?? t_i18n('Selected'),
+          parentTypes: [],
+          group: t_i18n('Selected'),
+          label: filterRepresentative?.value ?? t_i18n('Unknown'),
+          color: filterRepresentative?.color,
+        };
+      }
+      return value;
     });
 
     const groupByEntities = (option: OptionValue) => {
@@ -283,6 +290,10 @@ export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({
           const checked = subKey
             ? filterValues.filter((fVal) => fVal && fVal.key === subKey && fVal.values.includes(option.value)).length > 0
             : filterValues.includes(option.value);
+
+          if (!option.value) {
+            return null;
+          }
           return (
             <Tooltip title={option.label} key={option.label}>
               <li
