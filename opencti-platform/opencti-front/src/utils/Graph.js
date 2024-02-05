@@ -391,6 +391,7 @@ export const defaultValue = (n, tooltip = false) => {
       n.name
       || n.label
       || n.observable_value
+      || n.pattern
       || n.attribute_abstract
       || n.opinion
       || n.value
@@ -428,6 +429,7 @@ export const defaultValue = (n, tooltip = false) => {
     || n.label
     || n.observableName
     || n.observable_value
+    || n.pattern
     || n.attribute_abstract
     || n.opinion
     || n.value
