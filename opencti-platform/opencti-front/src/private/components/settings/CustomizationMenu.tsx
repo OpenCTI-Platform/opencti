@@ -1,9 +1,7 @@
 import React, { FunctionComponent } from 'react';
 import NavToolbarMenu, { MenuEntry } from '../common/menus/NavToolbarMenu';
-import useHelper from '../../../utils/hooks/useHelper';
 
 const CustomizationMenu: FunctionComponent = () => {
-  const { isFeatureEnable } = useHelper();
   const entries: MenuEntry[] = [
     {
       path: '/dashboard/settings/customization/entity_types',
@@ -21,10 +19,6 @@ const CustomizationMenu: FunctionComponent = () => {
       path: '/dashboard/settings/customization/retention',
       label: 'Retention policies',
     },
-    ...(isFeatureEnable('INDICATOR_DECAY') ? [{
-      path: '/dashboard/settings/customization/decay',
-      label: 'Decay rules',
-    }] : []),
   ];
   return <NavToolbarMenu entries={entries} />;
 };
