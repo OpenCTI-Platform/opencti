@@ -1,7 +1,7 @@
 import { v4 as uuidv4 } from 'uuid';
 import type { AuthContext, AuthUser } from '../../types/user';
 import { internalLoadById, listEntitiesPaginated, storeLoadById } from '../../database/middleware-loader';
-import { ENTITY_TYPE_PUBLIC_DASHBOARD, type BasicStoreEntityPublicDashboard } from './publicDashboard-types';
+import { ENTITY_TYPE_PUBLIC_DASHBOARD, type BasicStoreEntityPublicDashboard, type PublicDashboardCached } from './publicDashboard-types';
 import { createEntity, deleteElementById, loadEntity, updateAttribute } from '../../database/middleware';
 import { type BasicStoreEntityWorkspace } from '../workspace/workspace-types';
 import { fromBase64, isNotEmptyField, toBase64 } from '../../database/utils';
@@ -75,7 +75,7 @@ export const getPublicDashboardByUriKey = (
 export const getAllowedMarkings = async (
   context: AuthContext,
   user: AuthUser,
-  publicDashboard: BasicStoreEntityPublicDashboard,
+  publicDashboard: BasicStoreEntityPublicDashboard | PublicDashboardCached,
 ): Promise<StoreMarkingDefinition[]> => {
   // get markings from cache
   const markingsMap = await getEntitiesMapFromCache<StoreMarkingDefinition>(context, user, ENTITY_TYPE_MARKING_DEFINITION);

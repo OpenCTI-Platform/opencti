@@ -7351,8 +7351,8 @@ type Query {
   publicDashboard(id: String!): PublicDashboard
   publicDashboards(first: Int, after: ID, orderBy: PublicDashboardsOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): PublicDashboardConnection
   publicDashboardByUriKey(uri_key: String!): PublicDashboard
-  publicStixCoreObjectsNumber(types: [String], startDate: DateTime, endDate: DateTime, onlyInferred: Boolean, search: String, uriKey: String!, widgetId: String!): Number
-  publicStixCoreObjectsMultiTimeSeries(startDate: DateTime!, endDate: DateTime, interval: String!, onlyInferred: Boolean, uriKey: String!, widgetId: String!): [MultiTimeSeries]
+  publicStixCoreObjectsNumber(startDate: DateTime, endDate: DateTime, uriKey: String!, widgetId: String!): Number
+  publicStixCoreObjectsMultiTimeSeries(startDate: DateTime!, endDate: DateTime, uriKey: String!, widgetId: String!): [MultiTimeSeries]
 }
 
 type Subscription {
