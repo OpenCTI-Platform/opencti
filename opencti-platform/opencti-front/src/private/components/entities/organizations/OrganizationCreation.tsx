@@ -147,7 +147,7 @@ export const OrganizationCreationForm: FunctionComponent<OrganizationFormProps> 
       name: '',
       description: '',
       x_opencti_reliability: undefined,
-      x_opencti_organization_type: 'other',
+      x_opencti_organization_type: undefined,
       createdBy: defaultCreatedBy,
       objectMarking: defaultMarkingDefinitions ?? [],
       objectLabel: [],
@@ -196,22 +196,6 @@ export const OrganizationCreationForm: FunctionComponent<OrganizationFormProps> 
           multiple={false}
           onChange={setFieldValue}
         />
-
-        {/*<Field*/}
-        {/*  component={SelectField}*/}
-        {/*  variant="standard"*/}
-        {/*  name="x_opencti_organization_type"*/}
-        {/*  label={t_i18n('Organization type')}*/}
-        {/*  fullWidth={true}*/}
-        {/*  containerstyle={fieldSpacingContainerStyle}*/}
-        {/*>*/}
-        {/*  <MenuItem value="constituent">{t_i18n('Constituent')}</MenuItem>*/}
-        {/*  <MenuItem value="csirt">{t_i18n('CSIRT')}</MenuItem>*/}
-        {/*  <MenuItem value="partner">{t_i18n('Partner')}</MenuItem>*/}
-        {/*  <MenuItem value="vendor">{t_i18n('Vendor')}</MenuItem>*/}
-        {/*  <MenuItem value="other">{t_i18n('Other')}</MenuItem>*/}
-        {/*</Field>*/}
-
         <OpenVocabField
           label={t_i18n('Reliability')}
           type="reliability_ov"

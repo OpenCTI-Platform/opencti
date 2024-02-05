@@ -221,29 +221,18 @@ const OrganizationEditionOverviewComponent = (props) => {
               <SubscriptionFocus context={context} fieldName="contact_information" />
               }
           />
-          <Field
-            component={SelectField}
-            variant="standard"
-            name="x_opencti_organization_type"
-            onFocus={editor.changeFocus}
-            onChange={handleSubmitField}
+          <OpenVocabField
             label={t_i18n('Organization type')}
-            fullWidth={true}
-            inputProps={{
-              name: 'x_opencti_organization_type',
-              id: 'x_opencti_organization_type',
-            }}
-            containerstyle={fieldSpacingContainerStyle}
-            helpertext={
-              <SubscriptionFocus context={context} fieldName="x_opencti_organization_type" />
-              }
-          >
-            <MenuItem value="constituent">{t_i18n('Constituent')}</MenuItem>
-            <MenuItem value="csirt">{t_i18n('CSIRT')}</MenuItem>
-            <MenuItem value="partner">{t_i18n('Partner')}</MenuItem>
-            <MenuItem value="vendor">{t_i18n('Vendor')}</MenuItem>
-            <MenuItem value="other">{t_i18n('Other')}</MenuItem>
-          </Field>
+            type="organization_type_ov"
+            name="x_opencti_organization_type"
+            onChange={setFieldValue}
+            onFocus={editor.changeFocus}
+            onSubmit={handleSubmitField}
+            multiple={false}
+            editContext={context}
+            variant="edit"
+            containerStyle={fieldSpacingContainerStyle}
+          />
           <OpenVocabField
             label={t_i18n('Reliability')}
             type="reliability_ov"
