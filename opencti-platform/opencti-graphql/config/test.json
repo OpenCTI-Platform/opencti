@@ -2,6 +2,7 @@
   "app": {
     "port": 4010,
     "performance_logger": false,
+    "disabled_dev_features": [],
     "sync_raw_start_remote_uri": "http://localhost:4200/graphql",
     "sync_live_start_remote_uri": "http://localhost:4200/graphql",
     "sync_direct_start_remote_uri": "http://localhost:4200/graphql",
