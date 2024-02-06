@@ -82,15 +82,14 @@ class IndicatorPopover extends Component {
     const { t, id } = this.props;
     return (
       <>
-        <IconButton
+        <ToggleButton
+          value="popover"
+          size="small"
+
           onClick={this.handleOpen.bind(this)}
-          aria-haspopup="true"
-          style={{ marginTop: 3 }}
-          size="large"
-          color="primary"
         >
-          <MoreVert />
-        </IconButton>
+          <MoreVert fontSize="small" color="primary" />
+        </ToggleButton>
         <Menu
           anchorEl={this.state.anchorEl}
           open={Boolean(this.state.anchorEl)}

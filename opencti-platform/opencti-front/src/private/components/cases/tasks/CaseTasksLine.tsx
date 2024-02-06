@@ -119,6 +119,7 @@ export const CaseTasksLine: FunctionComponent<CaseTasksLineProps> = ({
             id={task.id}
             objectId={entityId}
             paginationOptions={paginationOptions}
+            variant="inLine"
           />
         </ListItemSecondaryAction>
       </ListItem>

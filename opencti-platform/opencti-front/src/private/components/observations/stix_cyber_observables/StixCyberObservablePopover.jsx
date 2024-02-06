@@ -107,7 +107,7 @@ class StixCyberObservablePopover extends Component {
         <ToggleButton
           value="popover"
           size="small"
-          style={{ marginRight: 3 }}
+
           onClick={this.handleOpen.bind(this)}
         >
           <MoreVert fontSize="small" color="primary" />

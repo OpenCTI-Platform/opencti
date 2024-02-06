@@ -157,6 +157,7 @@ StixCoreObjectOrStixCoreRelationshipNoteCardComponentProps
               handleOpenRemoveExternal={handleOpenDialog}
               size="small"
               paginationOptions={paginationOptions}
+              variant="inLine"
             />
           </CollaborativeSecurity>
         }

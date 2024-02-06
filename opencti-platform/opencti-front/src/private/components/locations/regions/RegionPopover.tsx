@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 import Button from '@mui/material/Button';
-import IconButton from '@mui/material/IconButton';
+import ToggleButton from '@mui/material/ToggleButton';
 import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
@@ -82,7 +82,6 @@ const RegionPopover = ({ id }: { id: string }) => {
       <ToggleButton
         value="popover"
         size="small"
-        style={{ marginRight: 3 }}
         onClick={handleOpen}
       >
         <MoreVert fontSize="small" color="primary" />

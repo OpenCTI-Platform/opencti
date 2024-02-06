@@ -3,6 +3,7 @@ import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 import Button from '@mui/material/Button';
 import IconButton from '@mui/material/IconButton';
+import ToggleButton from '@mui/material/ToggleButton';
 import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
@@ -40,10 +41,12 @@ const TaskPopover = ({
   id,
   objectId,
   paginationOptions,
+  variant,
 }: {
   id: string;
   objectId?: string;
   paginationOptions?: CaseTasksLinesQuery$variables;
+  variant?: string;
 }) => {
   const classes = useStyles();
   const { t_i18n } = useFormatter();
@@ -99,14 +102,25 @@ const TaskPopover = ({
   };
   return (
     <div className={classes.container}>
-      <ToggleButton
-        value="popover"
-        size="small"
-        style={{ marginRight: 3 }}
-        onClick={handleOpen}
-      >
-        <MoreVert fontSize="small" color="primary" />
-      </ToggleButton>
+      {variant === 'inLine' ? (
+        <IconButton
+          onClick={handleOpen}
+          aria-haspopup="true"
+          style={{ marginTop: 3 }}
+          size="large"
+          color="primary"
+        >
+          <MoreVert />
+        </IconButton>
+      ) : (
+        <ToggleButton
+          value="popover"
+          size="small"
+          onClick={handleOpen}
+        >
+          <MoreVert fontSize="small" color="primary" />
+        </ToggleButton>
+      )}
       <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleClose}>
         <MenuItem onClick={handleOpenEdit}>{t_i18n('Update')}</MenuItem>
         <Security needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}>

@@ -62,6 +62,7 @@ const useStyles = makeStyles((theme) => ({
     height: 10,
   },
   paper: {
+    margin: '10px 0 0 0',
     padding: 0,
     overflow: 'hidden',
     height: '100%',
@@ -400,7 +401,7 @@ const RulesListComponent = ({ relay, data, keyword }) => {
           <Paper
             variant="outlined"
             classes={{ root: classes.paper }}
-            style={{ maxHeight: 262, minHeight: 262 }}
+            style={{ maxHeight: 252, minHeight: 252, marginTop: 0 }}
           >
             <div className={classes.graphContainer}>
               <Chart

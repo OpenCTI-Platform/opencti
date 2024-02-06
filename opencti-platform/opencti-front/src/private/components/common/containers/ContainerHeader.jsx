@@ -49,12 +49,12 @@ const useStyles = makeStyles({
   },
   containerKnowledge: {
     position: 'absolute',
-    top: 140,
+    top: 135,
     right: 24,
   },
   containerGraph: {
     position: 'absolute',
-    top: 140,
+    top: 135,
     right: 24,
   },
   title: {
@@ -731,7 +731,7 @@ const ContainerHeader = (props) => {
     // container knowledge / graph style
     containerStyle = {
       position: 'absolute',
-      top: 140 + settingsMessagesBannerHeight,
+      top: 135 + settingsMessagesBannerHeight,
       right: 24,
     };
   }
@@ -764,13 +764,6 @@ const ContainerHeader = (props) => {
             )}
           </Typography>
         </Tooltip>
-      )}
-      {!knowledge && (
-        <Security needs={popoverSecurity || [KNOWLEDGE_KNUPDATE]}>
-          <div className={classes.popover}>
-            {React.cloneElement(PopoverComponent, { id: container.id })}
-          </div>
-        </Security>
       )}
       {knowledge && (
         <div className={classes.export}>
@@ -1047,17 +1040,20 @@ const ContainerHeader = (props) => {
               }}
             />
           )}
-          <>
-            {enableQuickSubscription && (
-              <StixCoreObjectQuickSubscription
-                instanceId={container.id}
-                instanceName={defaultValue(container)}
-              />
-            )}
-            {!knowledge && (
-              <StixCoreObjectEnrichment stixCoreObjectId={container.id} />
-            )}
-          </>
+          {enableQuickSubscription && (
+          <StixCoreObjectQuickSubscription
+            instanceId={container.id}
+            instanceName={defaultValue(container)}
+          />
+          )}
+          {!knowledge && (
+          <StixCoreObjectEnrichment stixCoreObjectId={container.id} />
+          )}
+          {!knowledge && (
+            <Security needs={popoverSecurity || [KNOWLEDGE_KNUPDATE]}>
+              {React.cloneElement(PopoverComponent, { id: container.id })}
+            </Security>
+          )}
         </div>
       </div>
       <div className="clearfix" />

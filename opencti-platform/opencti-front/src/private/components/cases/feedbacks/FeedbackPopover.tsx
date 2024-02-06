@@ -89,7 +89,6 @@ const FeedbackPopover = ({ id }: { id: string }) => {
       <ToggleButton
         value="popover"
         size="small"
-        style={{ marginRight: 3 }}
         onClick={handleOpen}
       >
         <MoreVert fontSize="small" color="primary" />

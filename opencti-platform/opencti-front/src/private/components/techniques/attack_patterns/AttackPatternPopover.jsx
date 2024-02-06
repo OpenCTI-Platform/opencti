@@ -12,6 +12,7 @@ import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
 import MoreVert from '@mui/icons-material/MoreVert';
 import { graphql } from 'react-relay';
+import ToggleButton from '@mui/material/ToggleButton';
 import inject18n from '../../../../components/i18n';
 import { commitMutation, QueryRenderer } from '../../../../relay/environment';
 import { attackPatternEditionQuery } from './AttackPatternEdition';
@@ -84,14 +85,14 @@ class AttackPatternPopover extends Component {
     const { t, id } = this.props;
     return (
       <>
-        <IconButton
+        <ToggleButton
+          value="popover"
+          size="small"
+
           onClick={this.handleOpen.bind(this)}
-          aria-haspopup="true"
-          style={{ marginTop: 3 }}
-          size="large"
         >
-          <MoreVert />
-        </IconButton>
+          <MoreVert fontSize="small" color="primary" />
+        </ToggleButton>
         <Menu
           anchorEl={this.state.anchorEl}
           open={Boolean(this.state.anchorEl)}
