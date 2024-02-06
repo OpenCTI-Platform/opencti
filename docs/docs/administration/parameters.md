@@ -52,7 +52,7 @@ This option can be deactivated to have a permanent announcement.
 
     [Please read the dedicated page to have more information](enterprise.md)
 
-This is where you can configure analytics providers. At the moment only Google analytics v4 is supported.
+This is where you can configure analytics providers. At the moment only Google Analytics v4 is supported.
 
 ## Theme customization
 

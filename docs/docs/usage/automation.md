@@ -9,7 +9,7 @@
 
 OpenCTI playbooks are flexible automation scenarios which can be fully customized and enabled by platform administrators to enrich, filter and modify the data created or updated in the platform. 
 
-Playbook automation is accessible in the user interface under Data/Processing/Playbooks.
+Playbook automation is accessible in the user interface under Data > Processing > Automation.
 
 You need the "Manage credentials" [capability](../administration/users.md) to use the Playbooks automation, because you will be able to manipulate data simple users cannot access.
 
