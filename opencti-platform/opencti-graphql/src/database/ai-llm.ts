@@ -1,5 +1,5 @@
 import MistralClient from '@mistralai/mistralai';
-import conf, { logApp } from '../config/conf';
+import conf from '../config/conf';
 import { isEmptyField, isNotEmptyField } from './utils';
 
 const MISTRALAI_ENDPOINT = conf.get('ai:mistralai:endpoint');
