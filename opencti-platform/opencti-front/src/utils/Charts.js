@@ -38,6 +38,15 @@ const toolbarOptions = {
   },
 };
 
+/**
+ * @param {Theme} theme
+ * @param {boolean} isTimeSeries
+ * @param {function} xFormatter
+ * @param {function} yFormatter
+ * @param {number | 'dataPoints'} tickAmount
+ * @param {boolean} dataLabels
+ * @param {boolean} legend
+ */
 export const lineChartOptions = (
   theme,
   isTimeSeries = false,
@@ -128,7 +137,7 @@ export const lineChartOptions = (
  * @param {boolean} isTimeSeries
  * @param {function} xFormatter
  * @param {function} yFormatter
- * @param {number} tickAmount
+ * @param {number | 'dataPoints'} tickAmount
  * @param {boolean} isStacked
  * @param {boolean} legend
  */
@@ -231,10 +240,20 @@ export const areaChartOptions = (
   },
 });
 
+/**
+ * @param {Theme} theme
+ * @param {function} xFormatter
+ * @param {function} yFormatter
+ * @param {boolean} distributed
+ * @param {boolean} isTimeSeries
+ * @param {boolean} isStacked
+ * @param {boolean} legend
+ * @param {number | 'dataPoints'} tickAmount
+ */
 export const verticalBarsChartOptions = (
   theme,
-  xFormatter = null,
-  yFormatter = null,
+  xFormatter,
+  yFormatter,
   distributed = false,
   isTimeSeries = false,
   isStacked = false,
@@ -495,6 +514,13 @@ export const horizontalBarsChartOptions = (
   },
 });
 
+/**
+ * @param {Theme} theme
+ * @param {string[]} labels
+ * @param {string[]} chartColors
+ * @param {boolean} legend
+ * @param {boolean} offset
+ */
 export const radarChartOptions = (
   theme,
   labels,
@@ -657,6 +683,13 @@ export const polarAreaChartOptions = (
   },
 });
 
+/**
+ * @param {Theme} theme
+ * @param {string[]} labels
+ * @param {string} legendPosition
+ * @param {boolean} reversed
+ * @param {string[]} chartColors
+ */
 export const donutChartOptions = (
   theme,
   labels,
@@ -747,6 +780,12 @@ export const donutChartOptions = (
   };
 };
 
+/**
+ *
+ * @param {Theme} theme
+ * @param {string} legendPosition
+ * @param {boolean} distributed
+ */
 export const treeMapOptions = (
   theme,
   legendPosition = 'bottom',
@@ -813,6 +852,15 @@ export const treeMapOptions = (
   };
 };
 
+/**
+ * @param {Theme} theme
+ * @param {boolean} isTimeSeries
+ * @param {function} xFormatter
+ * @param {function} yFormatter
+ * @param {number | 'dataPoints'} tickAmount
+ * @param {boolean} isStacked
+ * @param {object[]} ranges
+ */
 export const heatMapOptions = (
   theme,
   isTimeSeries = false,

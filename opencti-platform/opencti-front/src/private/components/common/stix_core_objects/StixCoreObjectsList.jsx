@@ -1,24 +1,12 @@
 import React from 'react';
-import * as R from 'ramda';
 import { graphql } from 'react-relay';
-import CircularProgress from '@mui/material/CircularProgress';
-import Paper from '@mui/material/Paper';
-import Typography from '@mui/material/Typography';
-import ListItem from '@mui/material/ListItem';
-import { Link } from 'react-router-dom';
-import ListItemIcon from '@mui/material/ListItemIcon';
-import ListItemText from '@mui/material/ListItemText';
-import List from '@mui/material/List';
-import makeStyles from '@mui/styles/makeStyles';
-import StixCoreObjectLabels from './StixCoreObjectLabels';
-import ItemIcon from '../../../../components/ItemIcon';
 import { useFormatter } from '../../../../components/i18n';
 import { QueryRenderer } from '../../../../relay/environment';
-import { resolveLink } from '../../../../utils/Entity';
-import { defaultValue } from '../../../../utils/Graph';
-import ItemMarkings from '../../../../components/ItemMarkings';
-import ItemStatus from '../../../../components/ItemStatus';
 import { buildFiltersAndOptionsForWidgets } from '../../../../utils/filters/filtersUtils';
+import WidgetContainer from '../../../../components/dashboard/WidgetContainer';
+import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
+import WidgetLoader from '../../../../components/dashboard/WidgetLoader';
+import WidgetListCoreObjects from '../../../../components/dashboard/WidgetListCoreObjects';
 
 const useStyles = makeStyles({
   container: {
@@ -251,8 +239,7 @@ const StixCoreObjectsList = ({
   dataSelection,
   parameters = {},
 }) => {
-  const classes = useStyles();
-  const { t_i18n, fsd } = useFormatter();
+  const { t_i18n } = useFormatter();
   const renderContent = () => {
     const selection = dataSelection[0];
     const dataSelectionTypes = ['Stix-Core-Object'];
@@ -277,144 +264,24 @@ const StixCoreObjectsList = ({
             && props.stixCoreObjects.edges.length > 0
           ) {
             const data = props.stixCoreObjects.edges;
-            return (
-              <div id="container" className={classes.container}>
-                <List style={{ marginTop: -10 }}>
-                  {data.map((stixCoreObjectEdge) => {
-                    const stixCoreObject = stixCoreObjectEdge.node;
-                    return (
-                      <ListItem
-                        key={stixCoreObject.id}
-                        className="noDrag"
-                        classes={{ root: classes.item }}
-                        divider={true}
-                        button={true}
-                        component={Link}
-                        to={`${resolveLink(stixCoreObject.entity_type)}/${
-                          stixCoreObject.id
-                        }`}
-                      >
-                        <ListItemIcon>
-                          <ItemIcon type={stixCoreObject.entity_type} />
-                        </ListItemIcon>
-                        <ListItemText
-                          primary={
-                            <>
-                              <div
-                                className={classes.bodyItem}
-                                style={{ width: '30%' }}
-                              >
-                                {defaultValue(stixCoreObject)}
-                              </div>
-                              <div
-                                className={classes.bodyItem}
-                                style={{ width: '10%' }}
-                              >
-                                {fsd(stixCoreObject[dateAttribute])}
-                              </div>
-                              <div
-                                className={classes.bodyItem}
-                                style={{ width: '15%' }}
-                              >
-                                {R.pathOr(
-                                  '',
-                                  ['createdBy', 'name'],
-                                  stixCoreObject,
-                                )}
-                              </div>
-                              <div
-                                className={classes.bodyItem}
-                                style={{ width: '15%' }}
-                              >
-                                <StixCoreObjectLabels
-                                  variant="inList"
-                                  labels={stixCoreObject.objectLabel}
-                                />
-                              </div>
-                              <div
-                                className={classes.bodyItem}
-                                style={{ width: '15%' }}
-                              >
-                                <ItemStatus
-                                  status={stixCoreObject.status}
-                                  variant="inList"
-                                  disabled={!stixCoreObject.workflowEnabled}
-                                />
-                              </div>
-                              <div
-                                className={classes.bodyItem}
-                                style={{ width: '15%' }}
-                              >
-                                <ItemMarkings
-                                  variant="inList"
-                                  markingDefinitions={stixCoreObject.objectMarking ?? []}
-                                  limit={1}
-                                />
-                              </div>
-                            </>
-                          }
-                        />
-                      </ListItem>
-                    );
-                  })}
-                </List>
-              </div>
-            );
+            return <WidgetListCoreObjects data={data} dateAttribute={dateAttribute} />;
           }
           if (props) {
-            return (
-              <div style={{ display: 'table', height: '100%', width: '100%' }}>
-                <span
-                  style={{
-                    display: 'table-cell',
-                    verticalAlign: 'middle',
-                    textAlign: 'center',
-                  }}
-                >
-                  {t_i18n('No entities of this type has been found.')}
-                </span>
-              </div>
-            );
+            return <WidgetNoData />;
           }
-          return (
-            <div style={{ display: 'table', height: '100%', width: '100%' }}>
-              <span
-                style={{
-                  display: 'table-cell',
-                  verticalAlign: 'middle',
-                  textAlign: 'center',
-                }}
-              >
-                <CircularProgress size={40} thickness={2} />
-              </span>
-            </div>
-          );
+          return <WidgetLoader />;
         }}
       />
     );
   };
   return (
-    <div style={{ height: height || '100%' }}>
-      <Typography
-        variant="h4"
-        gutterBottom={true}
-        style={{
-          margin: variant !== 'inLine' ? '0 0 10px 0' : '-10px 0 10px -7px',
-          whiteSpace: 'nowrap',
-          overflow: 'hidden',
-          textOverflow: 'ellipsis',
-        }}
-      >
-        {parameters.title || title || t_i18n('Entities list')}
-      </Typography>
-      {variant !== 'inLine' ? (
-        <Paper classes={{ root: classes.paper }} variant="outlined">
-          {renderContent()}
-        </Paper>
-      ) : (
-        renderContent()
-      )}
-    </div>
+    <WidgetContainer
+      height={height}
+      title={parameters.title ?? title ?? t_i18n('Entities list')}
+      variant={variant}
+    >
+      {renderContent()}
+    </WidgetContainer>
   );
 };
 
