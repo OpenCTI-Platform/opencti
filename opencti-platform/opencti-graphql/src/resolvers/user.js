@@ -101,6 +101,7 @@ const userResolvers = {
     objectOrganization: (current, args, context) => userOrganizationsPaginated(context, context.user, current.id, args),
     default_dashboards: (current, _, context) => findDefaultDashboards(context, context.user, current),
     default_dashboard: (current, _, context) => findWorskpaceById(context, context.user, current.default_dashboard),
+    effective_confidence_level: (current, args, context) => getUserEffectiveConfidenceLevel(current.id, context),
   },
   UserSession: {
     user: (session, _, context) => creatorLoader.load(session.user_id, context, context.user),

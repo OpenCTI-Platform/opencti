@@ -11790,6 +11790,7 @@ export type MeUser = BasicObject & InternalObject & {
   default_marking?: Maybe<Array<DefaultMarking>>;
   default_time_field?: Maybe<Scalars['String']['output']>;
   description?: Maybe<Scalars['String']['output']>;
+  effective_confidence_level?: Maybe<EffectiveConfidenceLevel>;
   entity_type: Scalars['String']['output'];
   external?: Maybe<Scalars['Boolean']['output']>;
   firstname?: Maybe<Scalars['String']['output']>;
@@ -11807,6 +11808,7 @@ export type MeUser = BasicObject & InternalObject & {
   standard_id: Scalars['String']['output'];
   theme?: Maybe<Scalars['String']['output']>;
   unit_system?: Maybe<UnitSystem>;
+  user_confidence_level?: Maybe<ConfidenceLevel>;
   user_email: Scalars['String']['output'];
 };
 
@@ -33162,6 +33164,7 @@ export type MeUserResolvers<ContextType = any, ParentType extends ResolversParen
   default_marking?: Resolver<Maybe<Array<ResolversTypes['DefaultMarking']>>, ParentType, ContextType>;
   default_time_field?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  effective_confidence_level?: Resolver<Maybe<ResolversTypes['EffectiveConfidenceLevel']>, ParentType, ContextType>;
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   external?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   firstname?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -33179,6 +33182,7 @@ export type MeUserResolvers<ContextType = any, ParentType extends ResolversParen
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   theme?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   unit_system?: Resolver<Maybe<ResolversTypes['UnitSystem']>, ParentType, ContextType>;
+  user_confidence_level?: Resolver<Maybe<ResolversTypes['ConfidenceLevel']>, ParentType, ContextType>;
   user_email?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
