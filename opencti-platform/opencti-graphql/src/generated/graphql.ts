@@ -7190,6 +7190,7 @@ export enum FilterOperator {
   NotNil = 'not_nil',
   NotStartsWith = 'not_starts_with',
   Script = 'script',
+  Search = 'search',
   StartsWith = 'starts_with',
   Wildcard = 'wildcard'
 }
