@@ -1,7 +1,7 @@
 import { describe, expect, it, afterAll, beforeAll } from 'vitest';
 import { testContext } from '../../utils/testQuery';
 import { addMarkingDefinition, markingDefinitionDelete } from '../../../src/domain/markingDefinition';
-import { cleanMarkingsForEditing, handleMarkingOperations } from '../../../src/utils/markingDefinition-utils';
+import { cleanMarkingsForEditing, cleanMarkingsForReading, handleMarkingOperations } from '../../../src/utils/markingDefinition-utils';
 import { SYSTEM_USER } from '../../../src/utils/access';
 import { UPDATE_OPERATION_ADD, UPDATE_OPERATION_REMOVE, UPDATE_OPERATION_REPLACE } from '../../../src/database/utils';
 
@@ -70,7 +70,7 @@ describe('Marking Definition', () => {
     statementMarking1 = await createMarking(markings[2]);
     statementMarking2 = await createMarking(markings[3]);
   });
-  describe('Clean Markings', async () => {
+  describe('Clean Markings use for editing', async () => {
     it('Case add only one marking => output one marking added', async () => {
       const result = await cleanMarkingsForEditing(testContext, [clearPAPMarking]);
       expect(result.map((r) => r.id)).toEqual([clearPAPMarking.id]);
@@ -87,6 +87,17 @@ describe('Marking Definition', () => {
     it('Case add 2 markings same type AND order different AND another type => output marking with higher rank added AND the other type', async () => {
       const result = await cleanMarkingsForEditing(testContext, [redPAPMarking, clearPAPMarking, statementMarking1]);
       expect(result.map((r) => r.id)).toEqual([redPAPMarking.id, statementMarking1.id]);
+    });
+  });
+
+  describe('Clean Markings use for reading', async () => {
+    it('Case add only one marking => output one marking added', async () => {
+      const result = await cleanMarkingsForReading(testContext, ['fa4abe14-fdd5-4c73-b7fb-e47d5d7ee9e8']);
+      expect(result.map((r) => r.id)).toEqual(['fa4abe14-fdd5-4c73-b7fb-e47d5d7ee9e8']);
+    });
+    it('Case add three markings with an two unknown => output one marking added', async () => {
+      const result = await cleanMarkingsForReading(testContext, ['fa4abe14-fdd5-4c73-b7fb-e47d5d7ee9e8', 'unknown-id', 'deleted-id']);
+      expect(result.map((r) => r.id)).toEqual(['fa4abe14-fdd5-4c73-b7fb-e47d5d7ee9e8']);
     });
   });
 
