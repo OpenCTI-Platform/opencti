@@ -527,13 +527,15 @@ const StixCyberObservableEntitiesLines = createPaginationContainer(
                 ... on Case {
                   name
                 }
+                ... on MalwareAnalysis {
+                  result_name
+                }
                 ... on StixCyberObservable {
                   observable_value
                 }
                 ... on StixCoreRelationship {
                   from {
-                    ... on BasicObject {
-                      id
+                    ... on BasicObject { id
                       entity_type
                       parent_types
                     }
@@ -888,6 +890,9 @@ const StixCyberObservableEntitiesLines = createPaginationContainer(
                 }
                 ... on Case {
                   name
+                }
+                ... on MalwareAnalysis {
+                  result_name
                 }
                 ... on StixCyberObservable {
                   observable_value

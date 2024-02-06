@@ -3014,8 +3014,17 @@ export const RelationshipsStixCoreRelationshipLine = createFragmentContainer(
           ... on CaseRft {
             name
           }
+          ... on MalwareAnalysis {
+              result_name
+          }
           ... on StixCyberObservable {
             observable_value
+          }
+          ... on DataComponent {
+              name
+          }
+          ... on DataSource {
+              name
           }
           ... on ObservedData {
             name
@@ -3442,6 +3451,15 @@ export const RelationshipsStixCoreRelationshipLine = createFragmentContainer(
           }
           ... on CaseRft {
             name
+          }
+          ... on MalwareAnalysis {
+              result_name
+          }
+          ... on DataComponent {
+              name
+          }
+          ... on DataSource {
+              name
           }
           ... on StixCyberObservable {
             observable_value
