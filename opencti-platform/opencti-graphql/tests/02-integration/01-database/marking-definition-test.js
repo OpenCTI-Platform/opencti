@@ -1,7 +1,7 @@
 import { describe, expect, it, afterAll, beforeAll } from 'vitest';
 import { testContext } from '../../utils/testQuery';
 import { addMarkingDefinition, markingDefinitionDelete } from '../../../src/domain/markingDefinition';
-import { cleanMarkings, handleMarkingOperations } from '../../../src/utils/markingDefinition-utils';
+import { cleanMarkingsForEditing, handleMarkingOperations } from '../../../src/utils/markingDefinition-utils';
 import { SYSTEM_USER } from '../../../src/utils/access';
 import { UPDATE_OPERATION_ADD, UPDATE_OPERATION_REMOVE, UPDATE_OPERATION_REPLACE } from '../../../src/database/utils';
 
@@ -72,20 +72,20 @@ describe('Marking Definition', () => {
   });
   describe('Clean Markings', async () => {
     it('Case add only one marking => output one marking added', async () => {
-      const result = await cleanMarkings(testContext, [clearPAPMarking]);
+      const result = await cleanMarkingsForEditing(testContext, [clearPAPMarking]);
       expect(result.map((r) => r.id)).toEqual([clearPAPMarking.id]);
     });
     it('Case add 2 markings same type AND order different => output marking with higher rank added', async () => {
       // Case input 2 markings same type AND order different: output marking with higher rank added
-      const result = await cleanMarkings(testContext, [clearPAPMarking, redPAPMarking]);
+      const result = await cleanMarkingsForEditing(testContext, [clearPAPMarking, redPAPMarking]);
       expect(result.map((r) => r.id)).toEqual([redPAPMarking.id]);
     });
     it('Case add 2 markings different type => output both markings added', async () => {
-      const result = await cleanMarkings(testContext, [clearPAPMarking, statementMarking1]);
+      const result = await cleanMarkingsForEditing(testContext, [clearPAPMarking, statementMarking1]);
       expect(result.map((r) => r.id)).toEqual([clearPAPMarking.id, statementMarking1.id]);
     });
     it('Case add 2 markings same type AND order different AND another type => output marking with higher rank added AND the other type', async () => {
-      const result = await cleanMarkings(testContext, [redPAPMarking, clearPAPMarking, statementMarking1]);
+      const result = await cleanMarkingsForEditing(testContext, [redPAPMarking, clearPAPMarking, statementMarking1]);
       expect(result.map((r) => r.id)).toEqual([redPAPMarking.id, statementMarking1.id]);
     });
   });
