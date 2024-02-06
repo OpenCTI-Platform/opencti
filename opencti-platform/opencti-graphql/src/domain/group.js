@@ -49,11 +49,10 @@ export const groupAllowedMarkings = async (context, user, groupId) => {
 
 export const defaultMarkingDefinitions = async (context, group) => {
   const defaultMarking = group.default_marking ?? [];
-  const markingsMap = await getEntitiesMapFromCache(context, SYSTEM_USER, ENTITY_TYPE_MARKING_DEFINITION);
-  return defaultMarking.map((entry) => {
+  return defaultMarking.map(async (entry) => {
     return {
       entity_type: entry.entity_type,
-      values: entry.values?.map((d) => markingsMap.get(d)),
+      values: await cleanMarkings(context, entry.values),
     };
   });
 };
