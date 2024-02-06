@@ -24,6 +24,16 @@ import type { MutationAiContainerGenerateReportArgs } from '../../generated/grap
 import { isNotEmptyField } from '../../database/utils';
 import { FROM_START_STR, UNTIL_END_STR } from '../../utils/format';
 import { query } from '../../database/ai-llm';
+import {
+  RELATION_AMPLIFIES,
+  RELATION_ATTRIBUTED_TO,
+  RELATION_COMPROMISES,
+  RELATION_COOPERATES_WITH,
+  RELATION_HAS,
+  RELATION_LOCATED_AT,
+  RELATION_TARGETS,
+  RELATION_USES
+} from '../../schema/stixCoreRelationship';
 
 export const generateContainerReport = async (context: AuthContext, user: AuthUser, args: MutationAiContainerGenerateReportArgs) => {
   const { id, paragraphs = 10, tone = 'technical', format = 'HTML' } = args;
@@ -42,7 +52,17 @@ export const generateContainerReport = async (context: AuthContext, user: AuthUs
   });
 
   // generate relationships sentences
-  const relationshipsSentences = relationships.map((n) => {
+  const meaningfulRelationships = [
+    RELATION_TARGETS,
+    RELATION_USES,
+    RELATION_ATTRIBUTED_TO,
+    RELATION_AMPLIFIES,
+    RELATION_COMPROMISES,
+    RELATION_COOPERATES_WITH,
+    RELATION_LOCATED_AT,
+    RELATION_HAS
+  ];
+  const relationshipsSentences = relationships.filter((n) => meaningfulRelationships.includes(n.relationship_type)).map((n) => {
     const from = indexedEntities[n.fromId];
     const to = indexedEntities[n.toId];
     if (isNotEmptyField(from) && isNotEmptyField(to)) {
