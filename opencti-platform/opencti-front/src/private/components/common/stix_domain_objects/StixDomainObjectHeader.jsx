@@ -43,7 +43,7 @@ import Transition from '../../../../components/Transition';
 const useStyles = makeStyles(() => ({
   title: {
     float: 'left',
-    marginRight: 5,
+    marginRight: 10,
   },
   aliases: {
     float: 'left',

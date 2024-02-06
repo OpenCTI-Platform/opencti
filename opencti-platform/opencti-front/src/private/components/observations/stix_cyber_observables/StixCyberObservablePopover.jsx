@@ -6,7 +6,6 @@ import withStyles from '@mui/styles/withStyles';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 import Button from '@mui/material/Button';
-import IconButton from '@mui/material/IconButton';
 import Drawer from '@mui/material/Drawer';
 import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';

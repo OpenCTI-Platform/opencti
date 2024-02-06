@@ -3,7 +3,6 @@ import * as R from 'ramda';
 import { CloudRefreshOutline } from 'mdi-material-ui';
 import Tooltip from '@mui/material/Tooltip';
 import ToggleButton from '@mui/material/ToggleButton';
-import MenuItem from '@mui/material/MenuItem';
 import Drawer from '../drawer/Drawer';
 import { QueryRenderer } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
