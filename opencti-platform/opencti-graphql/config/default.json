@@ -4,7 +4,7 @@
     "base_path": "",
     "base_url": "http://localhost:4000/",
     "enabled": true,
-    "disabled_dev_features": ["INDICATOR_DECAY"],
+    "disabled_dev_features": ["INDICATOR_DECAY", "PUBLIC_DASHBOARD"],
     "https_cert": {
       "ca": [],
       "key": null,
