@@ -5,7 +5,6 @@ import { withRouter } from 'react-router-dom';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 import Button from '@mui/material/Button';
-import IconButton from '@mui/material/IconButton';
 import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
@@ -20,6 +19,8 @@ import AttackPatternEditionContainer from './AttackPatternEditionContainer';
 import Security from '../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
 import Transition from '../../../../components/Transition';
+
+7;
 
 const AttackPatternPopoverDeletionMutation = graphql`
   mutation AttackPatternPopoverDeletionMutation($id: ID!) {
@@ -88,7 +89,6 @@ class AttackPatternPopover extends Component {
         <ToggleButton
           value="popover"
           size="small"
-
           onClick={this.handleOpen.bind(this)}
         >
           <MoreVert fontSize="small" color="primary" />

@@ -190,13 +190,13 @@ const Notes: FunctionComponent = () => {
     );
   };
   return (
-    <>
+    <ExportContextProvider>
       <Breadcrumbs variant="list" elements={[{ label: t_i18n('Analyses') }, { label: t_i18n('Notes'), current: true }]} />
       {renderLines()}
       <Security needs={[KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNPARTICIPATE]}>
         <NoteCreation paginationOptions={queryPaginationOptions} />
       </Security>
-    </>
+    </ExportContextProvider>
   );
 };
 

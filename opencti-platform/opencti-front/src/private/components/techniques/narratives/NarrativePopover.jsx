@@ -85,7 +85,6 @@ class NarrativePopover extends Component {
         <ToggleButton
           value="popover"
           size="small"
-
           onClick={this.handleOpen.bind(this)}
         >
           <MoreVert fontSize="small" color="primary" />

@@ -5,7 +5,6 @@ import { withRouter } from 'react-router-dom';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 import Button from '@mui/material/Button';
-import IconButton from '@mui/material/IconButton';
 import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
@@ -89,7 +88,6 @@ class SystemPopover extends Component {
           disabled={disabled}
           value="popover"
           size="small"
-
           onClick={this.handleOpen.bind(this)}
         >
           <MoreVert fontSize="small" color="primary" />

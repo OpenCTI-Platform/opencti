@@ -134,7 +134,7 @@ const RootThreatActorIndividualComponent = ({
             <Breadcrumbs variant="object" elements={[
               { label: t_i18n('Threats') },
               { label: t_i18n('Threat actors (individual)'), link: '/dashboard/threats/threat_actors_individual' },
-              { label: threatActorGroup.name, current: true },
+              { label: data.name, current: true },
             ]}
             />
             <StixDomainObjectHeader
