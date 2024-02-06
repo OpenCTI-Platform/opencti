@@ -1,27 +1,13 @@
 import React from 'react';
 import { graphql } from 'react-relay';
-import CircularProgress from '@mui/material/CircularProgress';
-import Paper from '@mui/material/Paper';
-import Typography from '@mui/material/Typography';
-import makeStyles from '@mui/styles/makeStyles';
-import { useTheme } from '@mui/styles';
-import Chart from '../charts/Chart';
 import { QueryRenderer } from '../../../../relay/environment';
 import { useFormatter } from '../../../../components/i18n';
 import { monthsAgo, now } from '../../../../utils/Time';
-import { lineChartOptions } from '../../../../utils/Charts';
-import { simpleNumberFormat } from '../../../../utils/Number';
 import { buildFiltersAndOptionsForWidgets } from '../../../../utils/filters/filtersUtils';
-
-const useStyles = makeStyles(() => ({
-  paper: {
-    minHeight: 280,
-    height: '100%',
-    margin: '4px 0 0 0',
-    padding: '0 0 10px 0',
-    borderRadius: 4,
-  },
-}));
+import WidgetContainer from '../../../../components/dashboard/WidgetContainer';
+import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
+import WidgetLoader from '../../../../components/dashboard/WidgetLoader';
+import WidgetMultiLines from '../../../../components/dashboard/WidgetMultiLines';
 
 const stixCoreObjectsMultiLineChartTimeSeriesQuery = graphql`
   query StixCoreObjectsMultiLineChartTimeSeriesQuery(
@@ -54,9 +40,7 @@ const StixCoreObjectsMultiLineChart = ({
   withExportPopover = false,
   isReadOnly = false,
 }) => {
-  const theme = useTheme();
-  const classes = useStyles();
-  const { t_i18n, fsd, mtdy, yd } = useFormatter();
+  const { t_i18n } = useFormatter();
   const renderContent = () => {
     const timeSeriesParameters = dataSelection.map((selection) => {
       const dataSelectionTypes = ['Stix-Core-Object'];
@@ -70,13 +54,7 @@ const StixCoreObjectsMultiLineChart = ({
         filters,
       };
     });
-    let formatter = fsd;
-    if (parameters.interval === 'month' || parameters.interval === 'quarter') {
-      formatter = mtdy;
-    }
-    if (parameters.interval === 'year') {
-      formatter = yd;
-    }
+
     return (
       <QueryRenderer
         query={stixCoreObjectsMultiLineChartTimeSeriesQuery}
@@ -89,20 +67,7 @@ const StixCoreObjectsMultiLineChart = ({
         render={({ props }) => {
           if (props && props.stixCoreObjectsMultiTimeSeries) {
             return (
-              <Chart
-                options={lineChartOptions(
-                  theme,
-                  !parameters.interval
-                    || ['day', 'week'].includes(parameters.interval),
-                  formatter,
-                  simpleNumberFormat,
-                  parameters.interval
-                    && !['day', 'week'].includes(parameters.interval)
-                    ? 'dataPoints'
-                    : undefined,
-                  false,
-                  parameters.legend,
-                )}
+              <WidgetMultiLines
                 series={dataSelection.map((selection, i) => ({
                   name: selection.label ?? t_i18n('Number of entities'),
                   data: props.stixCoreObjectsMultiTimeSeries[i].data.map(
@@ -112,68 +77,29 @@ const StixCoreObjectsMultiLineChart = ({
                     }),
                   ),
                 }))}
-                type="line"
-                width="100%"
-                height="100%"
-                withExportPopover={withExportPopover}
-                isReadOnly={isReadOnly}
+                interval={parameters.interval}
+                hasLegend={parameters.legend}
+                withExport={withExportPopover}
+                readonly={isReadOnly}
               />
             );
           }
           if (props) {
-            return (
-              <div style={{ display: 'table', height: '100%', width: '100%' }}>
-                <span
-                  style={{
-                    display: 'table-cell',
-                    verticalAlign: 'middle',
-                    textAlign: 'center',
-                  }}
-                >
-                  {t_i18n('No entities of this type has been found.')}
-                </span>
-              </div>
-            );
+            return <WidgetNoData />;
           }
-          return (
-            <div style={{ display: 'table', height: '100%', width: '100%' }}>
-              <span
-                style={{
-                  display: 'table-cell',
-                  verticalAlign: 'middle',
-                  textAlign: 'center',
-                }}
-              >
-                <CircularProgress size={40} thickness={2} />
-              </span>
-            </div>
-          );
+          return <WidgetLoader />;
         }}
       />
     );
   };
   return (
-    <div style={{ height: height || '100%' }}>
-      <Typography
-        variant="h4"
-        gutterBottom={true}
-        style={{
-          margin: variant !== 'inLine' ? '0 0 10px 0' : '-10px 0 10px -7px',
-          whiteSpace: 'nowrap',
-          overflow: 'hidden',
-          textOverflow: 'ellipsis',
-        }}
-      >
-        {parameters.title ?? t_i18n('Entities history')}
-      </Typography>
-      {variant !== 'inLine' ? (
-        <Paper classes={{ root: classes.paper }} variant="outlined">
-          {renderContent()}
-        </Paper>
-      ) : (
-        renderContent()
-      )}
-    </div>
+    <WidgetContainer
+      height={height}
+      title={parameters.title ?? t_i18n('Entities history')}
+      variant={variant}
+    >
+      {renderContent()}
+    </WidgetContainer>
   );
 };
 

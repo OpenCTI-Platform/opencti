@@ -1,54 +1,12 @@
 import React from 'react';
 import { graphql } from 'react-relay';
-import CircularProgress from '@mui/material/CircularProgress';
-import Paper from '@mui/material/Paper';
-import Typography from '@mui/material/Typography';
-import { Link } from 'react-router-dom';
-import Grid from '@mui/material/Grid';
-import makeStyles from '@mui/styles/makeStyles';
-import CardActionArea from '@mui/material/CardActionArea';
-import CardHeader from '@mui/material/CardHeader';
-import Avatar from '@mui/material/Avatar';
-import Card from '@mui/material/Card';
-import { useTheme } from '@mui/styles';
-import ItemIcon from '../../../../components/ItemIcon';
 import { useFormatter } from '../../../../components/i18n';
 import { QueryRenderer } from '../../../../relay/environment';
-import { resolveLink } from '../../../../utils/Entity';
 import { removeEntityTypeAllFromFilterGroup } from '../../../../utils/filters/filtersUtils';
-
-const useStyles = makeStyles((theme) => ({
-  container: {
-    width: '100%',
-    height: '100%',
-    overflow: 'auto',
-    paddingBottom: 10,
-    marginBottom: 10,
-  },
-  paper: {
-    height: '100%',
-    margin: '10px 0 0 0',
-    padding: 0,
-    borderRadius: 4,
-  },
-  card: {
-    width: '100%',
-    height: 70,
-    borderRadius: 4,
-  },
-  avatar: {
-    backgroundColor: theme.palette.primary.main,
-  },
-  area: {
-    width: '100%',
-    height: '100%',
-  },
-  header: {
-    height: 55,
-    paddingBottom: 0,
-    marginBottom: 0,
-  },
-}));
+import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
+import WidgetLoader from '../../../../components/dashboard/WidgetLoader';
+import WidgetContainer from '../../../../components/dashboard/WidgetContainer';
+import WidgetBookmarks from '../../../../components/dashboard/WidgetBookmarks';
 
 const stixDomainObjectBookmarksListQuery = graphql`
   query StixDomainObjectBookmarksListQuery($types: [String], $first: Int, $filters: FilterGroup) {
@@ -209,9 +167,7 @@ const StixDomainObjectBookmarksList = ({
   dataSelection,
   parameters = {},
 }) => {
-  const classes = useStyles();
-  const theme = useTheme();
-  const { t_i18n, fsd } = useFormatter();
+  const { t_i18n } = useFormatter();
   const renderContent = () => {
     const selection = dataSelection[0];
     return (
@@ -224,101 +180,24 @@ const StixDomainObjectBookmarksList = ({
         render={({ props }) => {
           if (props && props.bookmarks && props.bookmarks.edges.length > 0) {
             const data = props.bookmarks.edges;
-            return (
-              <div id="container" className={classes.container}>
-                <Grid container={true} spacing={3}>
-                  {data.map((bookmarkEdge) => {
-                    const bookmark = bookmarkEdge.node;
-                    const link = resolveLink(bookmark.entity_type);
-                    return (
-                      <Grid item={true} xs={4} key={bookmark.id}>
-                        <Card
-                          classes={{ root: classes.card }}
-                          variant="outlined"
-                        >
-                          <CardActionArea
-                            classes={{ root: classes.area }}
-                            component={Link}
-                            to={`${link}/${bookmark.id}`}
-                          >
-                            <CardHeader
-                              classes={{ root: classes.header }}
-                              avatar={
-                                <Avatar className={classes.avatar}>
-                                  <ItemIcon
-                                    type={bookmark.entity_type}
-                                    color={theme.palette.background.default}
-                                  />
-                                </Avatar>
-                              }
-                              title={bookmark.name}
-                              subheader={`${t_i18n('Updated on')} ${fsd(
-                                bookmark.modified,
-                              )}`}
-                            />
-                          </CardActionArea>
-                        </Card>
-                      </Grid>
-                    );
-                  })}
-                </Grid>
-              </div>
-            );
+            return <WidgetBookmarks bookmarks={data} />;
           }
           if (props) {
-            return (
-              <div style={{ display: 'table', height: '100%', width: '100%' }}>
-                <span
-                  style={{
-                    display: 'table-cell',
-                    verticalAlign: 'middle',
-                    textAlign: 'center',
-                  }}
-                >
-                  {t_i18n('No entities of this type has been found.')}
-                </span>
-              </div>
-            );
+            return <WidgetNoData />;
           }
-          return (
-            <div style={{ display: 'table', height: '100%', width: '100%' }}>
-              <span
-                style={{
-                  display: 'table-cell',
-                  verticalAlign: 'middle',
-                  textAlign: 'center',
-                }}
-              >
-                <CircularProgress size={40} thickness={2} />
-              </span>
-            </div>
-          );
+          return <WidgetLoader />;
         }}
       />
     );
   };
   return (
-    <div style={{ height: height || '100%' }}>
-      <Typography
-        variant="h4"
-        gutterBottom={true}
-        style={{
-          margin: variant !== 'inLine' ? '0 0 10px 0' : '-10px 0 10px -7px',
-          whiteSpace: 'nowrap',
-          overflow: 'hidden',
-          textOverflow: 'ellipsis',
-        }}
-      >
-        {parameters.title ?? t_i18n('Entities list')}
-      </Typography>
-      {variant !== 'inLine' ? (
-        <Paper classes={{ root: classes.paper }} variant="outlined">
-          {renderContent()}
-        </Paper>
-      ) : (
-        renderContent()
-      )}
-    </div>
+    <WidgetContainer
+      height={height}
+      title={parameters.title ?? t_i18n('Entities list')}
+      variant={variant}
+    >
+      {renderContent()}
+    </WidgetContainer>
   );
 };
 
