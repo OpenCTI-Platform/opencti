@@ -14,6 +14,8 @@ import { OpinionLine_node$data } from './opinions/__generated__/OpinionLine_node
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
 import { OpinionLineDummy } from './opinions/OpinionLine';
 import { buildEntityTypeBasedFilterContext, emptyFilterGroup } from '../../../utils/filters/filtersUtils';
+import { useFormatter } from '../../../components/i18n';
+import Breadcrumbs from '../../../components/Breadcrumps';
 
 const LOCAL_STORAGE_KEY = 'opinions';
 
@@ -26,6 +28,7 @@ interface OpinionsProps {
 const Opinions: FunctionComponent<OpinionsProps> = ({
   onChangeOpenExports,
 }) => {
+  const { t_i18n } = useFormatter();
   const {
     platformModuleHelpers: { isRuntimeFieldEnable },
   } = useAuth();
@@ -188,6 +191,7 @@ const Opinions: FunctionComponent<OpinionsProps> = ({
 
   return (
     <ExportContextProvider>
+      <Breadcrumbs variant="list" elements={[{ label: t_i18n('Analyses') }, { label: t_i18n('Opinions'), current: true }]} />
       {renderLines()}
       <Security needs={[KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNPARTICIPATE]}>
         <OpinionCreation paginationOptions={queryPaginationOptions} />

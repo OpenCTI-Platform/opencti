@@ -431,8 +431,8 @@ const LeftBar = () => {
               selected={!navOpen && location.pathname.includes('/dashboard/analyses')}
               dense={true}
               classes={{ root: classes.menuItem }}
-              onClick={(event) => handleSelectedMenuToggle('analyses', event.currentTarget)}
-              onMouseEnter={(event) => !navOpen && handleSelectedMenuOpen('analyses', event.currentTarget)}
+              onClick={() => handleSelectedMenuToggle('analyses')}
+              onMouseEnter={() => !navOpen && handleSelectedMenuOpen('analyses')}
               onMouseLeave={() => !navOpen && handleSelectedMenuClose()}
             >
               <ListItemIcon classes={{ root: classes.menuItemIcon }} style={{ minWidth: 20 }}>
@@ -463,8 +463,8 @@ const LeftBar = () => {
               selected={!navOpen && location.pathname.includes('/dashboard/cases')}
               dense={true}
               classes={{ root: classes.menuItem }}
-              onClick={(event) => handleSelectedMenuToggle('cases', event.currentTarget)}
-              onMouseEnter={(event) => !navOpen && handleSelectedMenuOpen('cases', event.currentTarget)}
+              onClick={() => handleSelectedMenuToggle('cases')}
+              onMouseEnter={() => !navOpen && handleSelectedMenuOpen('cases')}
               onMouseLeave={() => !navOpen && handleSelectedMenuClose()}
             >
               <ListItemIcon classes={{ root: classes.menuItemIcon }} style={{ minWidth: 20 }}>
@@ -495,8 +495,8 @@ const LeftBar = () => {
               selected={!navOpen && location.pathname.includes('/dashboard/events')}
               dense={true}
               classes={{ root: classes.menuItem }}
-              onClick={(event) => handleSelectedMenuToggle('events', event.currentTarget)}
-              onMouseEnter={(event) => !navOpen && handleSelectedMenuOpen('events', event.currentTarget)}
+              onClick={() => handleSelectedMenuToggle('events')}
+              onMouseEnter={() => !navOpen && handleSelectedMenuOpen('events')}
               onMouseLeave={() => !navOpen && handleSelectedMenuClose()}
             >
               <ListItemIcon classes={{ root: classes.menuItemIcon }} style={{ minWidth: 20 }}>
@@ -525,8 +525,8 @@ const LeftBar = () => {
               selected={!navOpen && location.pathname.includes('/dashboard/observations')}
               dense={true}
               classes={{ root: classes.menuItem }}
-              onClick={(event) => handleSelectedMenuToggle('observations', event.currentTarget)}
-              onMouseEnter={(event) => !navOpen && handleSelectedMenuOpen('observations', event.currentTarget)}
+              onClick={() => handleSelectedMenuToggle('observations')}
+              onMouseEnter={() => !navOpen && handleSelectedMenuOpen('observations')}
               onMouseLeave={() => !navOpen && handleSelectedMenuClose()}
             >
               <ListItemIcon classes={{ root: classes.menuItemIcon }} style={{ minWidth: 20 }}>
@@ -559,8 +559,8 @@ const LeftBar = () => {
               selected={!navOpen && location.pathname.includes('/dashboard/threats')}
               dense={true}
               classes={{ root: classes.menuItem }}
-              onClick={(event) => handleSelectedMenuToggle('threats', event.currentTarget)}
-              onMouseEnter={(event) => !navOpen && handleSelectedMenuOpen('threats', event.currentTarget)}
+              onClick={() => handleSelectedMenuToggle('threats')}
+              onMouseEnter={() => !navOpen && handleSelectedMenuOpen('threats')}
               onMouseLeave={() => !navOpen && handleSelectedMenuClose()}
             >
               <ListItemIcon classes={{ root: classes.menuItemIcon }} style={{ minWidth: 20 }}>
@@ -590,8 +590,8 @@ const LeftBar = () => {
               selected={!navOpen && location.pathname.includes('/dashboard/arsenal')}
               dense={true}
               classes={{ root: classes.menuItem }}
-              onClick={(event) => handleSelectedMenuToggle('arsenal', event.currentTarget)}
-              onMouseEnter={(event) => !navOpen && handleSelectedMenuOpen('arsenal', event.currentTarget)}
+              onClick={() => handleSelectedMenuToggle('arsenal')}
+              onMouseEnter={() => !navOpen && handleSelectedMenuOpen('arsenal')}
               onMouseLeave={() => !navOpen && handleSelectedMenuClose()}
             >
               <ListItemIcon classes={{ root: classes.menuItemIcon }} style={{ minWidth: 20 }}>
@@ -621,8 +621,8 @@ const LeftBar = () => {
               selected={!navOpen && location.pathname.includes('/dashboard/techniques')}
               dense={true}
               classes={{ root: classes.menuItem }}
-              onClick={(event) => handleSelectedMenuToggle('techniques', event.currentTarget)}
-              onMouseEnter={(event) => !navOpen && handleSelectedMenuOpen('techniques', event.currentTarget)}
+              onClick={() => handleSelectedMenuToggle('techniques')}
+              onMouseEnter={() => !navOpen && handleSelectedMenuOpen('techniques')}
               onMouseLeave={() => !navOpen && handleSelectedMenuClose()}
             >
               <ListItemIcon classes={{ root: classes.menuItemIcon }} style={{ minWidth: 20 }}>
@@ -653,8 +653,8 @@ const LeftBar = () => {
               selected={!navOpen && location.pathname.includes('/dashboard/entities')}
               dense={true}
               classes={{ root: classes.menuItem }}
-              onClick={(event) => handleSelectedMenuToggle('entities', event.currentTarget)}
-              onMouseEnter={(event) => !navOpen && handleSelectedMenuOpen('entities', event.currentTarget)}
+              onClick={() => handleSelectedMenuToggle('entities')}
+              onMouseEnter={() => !navOpen && handleSelectedMenuOpen('entities')}
               onMouseLeave={() => !navOpen && handleSelectedMenuClose()}
             >
               <ListItemIcon classes={{ root: classes.menuItemIcon }} style={{ minWidth: 20 }}>
@@ -685,8 +685,8 @@ const LeftBar = () => {
               selected={!navOpen && location.pathname.includes('/dashboard/locations')}
               dense={true}
               classes={{ root: classes.menuItem }}
-              onClick={(event) => handleSelectedMenuToggle('locations', event.currentTarget)}
-              onMouseEnter={(event) => !navOpen && handleSelectedMenuOpen('locations', event.currentTarget)}
+              onClick={() => handleSelectedMenuToggle('locations')}
+              onMouseEnter={() => !navOpen && handleSelectedMenuOpen('locations')}
               onMouseLeave={() => !navOpen && handleSelectedMenuClose()}
             >
               <ListItemIcon classes={{ root: classes.menuItemIcon }} style={{ minWidth: 20 }}>
@@ -760,8 +760,8 @@ const LeftBar = () => {
               selected={!navOpen && location.pathname.includes('/dashboard/data')}
               dense={true}
               classes={{ root: classes.menuItem }}
-              onClick={(event) => handleSelectedMenuToggle('data', event.currentTarget)}
-              onMouseEnter={(event) => !navOpen && handleSelectedMenuOpen('data', event.currentTarget)}
+              onClick={() => handleSelectedMenuToggle('data')}
+              onMouseEnter={() => !navOpen && handleSelectedMenuOpen('data')}
               onMouseLeave={() => !navOpen && handleSelectedMenuClose()}
             >
               <ListItemIcon classes={{ root: classes.menuItemIcon }} style={{ minWidth: 20 }}>
@@ -822,8 +822,8 @@ const LeftBar = () => {
                 selected={!navOpen && location.pathname.includes('/dashboard/settings')}
                 dense={true}
                 classes={{ root: classes.menuItem }}
-                onClick={(event) => handleSelectedMenuToggle('settings', event.currentTarget)}
-                onMouseEnter={(event) => !navOpen && handleSelectedMenuOpen('settings', event.currentTarget)}
+                onClick={() => handleSelectedMenuToggle('settings')}
+                onMouseEnter={() => !navOpen && handleSelectedMenuOpen('settings')}
                 onMouseLeave={() => !navOpen && handleSelectedMenuClose()}
               >
                 <ListItemIcon classes={{ root: classes.menuItemIcon }} style={{ minWidth: 20 }}>

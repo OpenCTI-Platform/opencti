@@ -13,6 +13,9 @@ import { GroupingsLinesPaginationQuery, GroupingsLinesPaginationQuery$variables 
 import { GroupingLine_node$data } from './groupings/__generated__/GroupingLine_node.graphql';
 import { GroupingLineDummy } from './groupings/GroupingLine';
 import { buildEntityTypeBasedFilterContext, emptyFilterGroup, getDefaultFilterObjFromArray } from '../../../utils/filters/filtersUtils';
+import { useFormatter } from '../../../components/i18n';
+import ExportContextProvider from '../../../utils/ExportContextProvider';
+import Breadcrumbs from '../../../components/Breadcrumps';
 
 const LOCAL_STORAGE_KEY = 'groupings';
 
@@ -21,6 +24,7 @@ interface GroupingsProps {
 }
 
 const Groupings: FunctionComponent<GroupingsProps> = () => {
+  const { t_i18n } = useFormatter();
   const {
     platformModuleHelpers: { isRuntimeFieldEnable },
   } = useAuth();
@@ -76,7 +80,6 @@ const Groupings: FunctionComponent<GroupingsProps> = () => {
       numberOfSelectedElements = (numberOfElements?.original ?? 0)
         - Object.keys(deSelectedElements || {}).length;
     }
-
     const isRuntimeSort = isRuntimeFieldEnable() ?? false;
     const dataColumns = {
       name: {
@@ -196,12 +199,13 @@ const Groupings: FunctionComponent<GroupingsProps> = () => {
     );
   };
   return (
-    <>
+    <ExportContextProvider>
+      <Breadcrumbs variant="list" elements={[{ label: t_i18n('Analyses') }, { label: t_i18n('Groupings'), current: true }]} />
       {renderLines()}
       <Security needs={[KNOWLEDGE_KNUPDATE]}>
         <GroupingCreation paginationOptions={queryPaginationOptions} />
       </Security>
-    </>
+    </ExportContextProvider>
   );
 };
 

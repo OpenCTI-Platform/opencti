@@ -10,10 +10,13 @@ import { KNOWLEDGE_KNUPDATE } from '../../../utils/hooks/useGranted';
 import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
 import { emptyFilterGroup } from '../../../utils/filters/filtersUtils';
+import Breadcrumbs from '../../../components/Breadcrumps';
+import { useFormatter } from '../../../components/i18n';
 
 const LOCAL_STORAGE_KEY = 'campaigns';
 
 const Campaigns = () => {
+  const { t_i18n } = useFormatter();
   const { viewStorage, helpers, paginationOptions } = usePaginationLocalStorage<CampaignsCardsPaginationQuery$variables>(
     LOCAL_STORAGE_KEY,
     {
@@ -121,6 +124,7 @@ const Campaigns = () => {
 
   return (
     <>
+      <Breadcrumbs variant="list" elements={[{ label: t_i18n('Threats') }, { label: t_i18n('Campaigns'), current: true }]} />
       {renderCards()}
       <Security needs={[KNOWLEDGE_KNUPDATE]}>
         <CampaignCreation paginationOptions={paginationOptions} />

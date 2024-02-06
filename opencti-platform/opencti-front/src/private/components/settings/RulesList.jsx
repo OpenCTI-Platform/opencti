@@ -35,7 +35,6 @@ const interval$ = interval(FIVE_SECONDS);
 const useStyles = makeStyles((theme) => ({
   card: {
     width: '100%',
-    margin: '10px 0 10px 0',
     borderRadius: 4,
     position: 'relative',
   },
@@ -63,7 +62,6 @@ const useStyles = makeStyles((theme) => ({
     height: 10,
   },
   paper: {
-    margin: '10px 0 0 0',
     padding: 0,
     overflow: 'hidden',
     height: '100%',
@@ -302,7 +300,7 @@ const RulesListComponent = ({ relay, data, keyword }) => {
   const totalEntities = data.stixDomainObjectsNumber.total;
   const differenceEntities = totalEntities - data.stixDomainObjectsNumber.count;
   return (
-    <div className={classes.container}>
+    <>
       <Grid container={true} spacing={3}>
         <Grid item={true} xs={6}>
           <Grid container={true} spacing={3}>
@@ -693,7 +691,7 @@ const RulesListComponent = ({ relay, data, keyword }) => {
           </Button>
         </DialogActions>
       </Dialog>
-    </div>
+    </>
   );
 };
 

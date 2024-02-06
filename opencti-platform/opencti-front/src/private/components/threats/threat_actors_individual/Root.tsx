@@ -24,6 +24,7 @@ import StixCoreObjectOrStixCoreRelationshipContainers from '../../common/contain
 import ThreatActorIndividualKnowledge from './ThreatActorIndividualKnowledge';
 import StixCoreObjectKnowledgeBar from '../../common/stix_core_objects/StixCoreObjectKnowledgeBar';
 import { useFormatter } from '../../../../components/i18n';
+import Breadcrumbs from '../../../../components/Breadcrumps';
 
 const subscription = graphql`
   subscription RootThreatActorIndividualSubscription($id: ID!) {
@@ -130,6 +131,12 @@ const RootThreatActorIndividualComponent = ({
                 : 0,
             }}
           >
+            <Breadcrumbs variant="object" elements={[
+              { label: t_i18n('Threats') },
+              { label: t_i18n('Threat actors (individual)'), link: '/dashboard/threats/threat_actors_individual' },
+              { label: threatActorGroup.name, current: true },
+            ]}
+            />
             <StixDomainObjectHeader
               entityType="Threat-Actor-Individual"
               stixDomainObject={data}

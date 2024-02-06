@@ -18,6 +18,7 @@ import StixCoreObjectOrStixCoreRelationshipContainers from '../../common/contain
 import ErrorNotFound from '../../../../components/ErrorNotFound';
 import StixCoreObjectKnowledgeBar from '../../common/stix_core_objects/StixCoreObjectKnowledgeBar';
 import inject18n from '../../../../components/i18n';
+import Breadcrumbs from '../../../../components/Breadcrumps';
 
 const subscription = graphql`
   subscription RootIntrusionSetSubscription($id: ID!) {
@@ -129,6 +130,12 @@ class RootIntrusionSet extends Component {
                         : 0,
                     }}
                   >
+                    <Breadcrumbs variant="object" elements={[
+                      { label: t('Threats') },
+                      { label: t('Intrusion sets'), link: '/dashboard/threats/intrusion_sets' },
+                      { label: intrusionSet.name, current: true },
+                    ]}
+                    />
                     <StixDomainObjectHeader
                       entityType="Intrusion-Set"
                       stixDomainObject={intrusionSet}

@@ -79,15 +79,14 @@ const RegionPopover = ({ id }: { id: string }) => {
   };
   return (
     <div className={classes.container}>
-      <IconButton
+      <ToggleButton
+        value="popover"
+        size="small"
+        style={{ marginRight: 3 }}
         onClick={handleOpen}
-        aria-haspopup="true"
-        style={{ marginTop: 3 }}
-        size="large"
-        color="primary"
       >
-        <MoreVert />
-      </IconButton>
+        <MoreVert fontSize="small" color="primary" />
+      </ToggleButton>
       <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleClose}>
         <MenuItem onClick={handleOpenEdit}>{t_i18n('Update')}</MenuItem>
         <Security needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}>
