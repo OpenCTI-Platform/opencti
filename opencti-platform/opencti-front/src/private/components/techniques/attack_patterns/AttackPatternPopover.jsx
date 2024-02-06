@@ -20,8 +20,6 @@ import Security from '../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
 import Transition from '../../../../components/Transition';
 
-7;
-
 const AttackPatternPopoverDeletionMutation = graphql`
   mutation AttackPatternPopoverDeletionMutation($id: ID!) {
     attackPatternEdit(id: $id) {
