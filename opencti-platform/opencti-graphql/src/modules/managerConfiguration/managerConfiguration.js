@@ -1,0 +1,35 @@
+import { registerDefinition } from '../../schema/module';
+import { ENTITY_TYPE_MANAGER_CONFIGURATION } from './managerConfiguration-types';
+import { ABSTRACT_INTERNAL_OBJECT } from '../../schema/general';
+import convertManagerConfigurationToStix from './managerConfiguration-converter';
+const MANAGER_CONFIGURATION_DEFINITION = {
+    type: {
+        id: 'managerConfigurations',
+        name: ENTITY_TYPE_MANAGER_CONFIGURATION,
+        category: ABSTRACT_INTERNAL_OBJECT,
+        aliased: false
+    },
+    identifier: {
+        definition: {
+            [ENTITY_TYPE_MANAGER_CONFIGURATION]: [{ src: 'manager_id' }]
+        },
+        resolvers: {
+            manager_id(data) {
+                return data.toUpperCase();
+            },
+        },
+    },
+    attributes: [
+        { name: 'manager_id', label: 'Manager ID', type: 'string', format: 'short', mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false, isFilterable: false },
+        { name: 'manager_running', label: 'Running', type: 'boolean', mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false, isFilterable: true },
+        { name: 'manager_setting', label: 'Setting', type: 'object', format: 'flat', mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false, isFilterable: false },
+        { name: 'last_run_start_date', label: 'Last run start date', type: 'date', mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false, isFilterable: true },
+        { name: 'last_run_end_date', label: 'Last run end date', type: 'date', mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false, isFilterable: true },
+    ],
+    relations: [],
+    representative: (stix) => {
+        return stix.manager_id;
+    },
+    converter: convertManagerConfigurationToStix
+};
+registerDefinition(MANAGER_CONFIGURATION_DEFINITION);

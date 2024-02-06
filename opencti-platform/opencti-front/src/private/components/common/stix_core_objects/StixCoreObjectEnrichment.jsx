@@ -3,6 +3,7 @@ import * as R from 'ramda';
 import { CloudRefreshOutline } from 'mdi-material-ui';
 import Tooltip from '@mui/material/Tooltip';
 import ToggleButton from '@mui/material/ToggleButton';
+import MenuItem from '@mui/material/MenuItem';
 import Drawer from '../drawer/Drawer';
 import { QueryRenderer } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
@@ -15,6 +16,9 @@ class StixCoreObjectEnrichment extends Component {
   }
 
   handleOpen() {
+    if (this.props.closeMenu) {
+      this.props.closeMenu();
+    }
     this.setState({ open: true });
   }
 
@@ -23,21 +27,24 @@ class StixCoreObjectEnrichment extends Component {
   }
 
   render() {
-    const { t, stixCoreObjectId } = this.props;
+    const { t, stixCoreObjectId, handleClose, open } = this.props;
     return (
-      <React.Fragment>
-        <Tooltip title={t('Enrichment')}>
-          <ToggleButton
-            onClick={this.handleOpen.bind(this)}
-            value="enrich"
-            size="small"
-          >
-            <CloudRefreshOutline fontSize="small" color="primary" />
-          </ToggleButton>
-        </Tooltip>
+      <>
+        {!handleClose
+          && <Tooltip title={t('Enrichment')}>
+            <ToggleButton
+              onClick={this.handleOpen.bind(this)}
+              value="enrich"
+              size="small"
+              style={{ marginRight: 3 }}
+            >
+              <CloudRefreshOutline fontSize="small" color="primary" />
+            </ToggleButton>
+          </Tooltip>
+        }
         <Drawer
-          open={this.state.open}
-          onClose={this.handleClose.bind(this)}
+          open={open || this.state.open}
+          onClose={handleClose || this.handleClose.bind(this)}
           title={t('Enrichment connectors')}
         >
           <QueryRenderer
@@ -60,7 +67,7 @@ class StixCoreObjectEnrichment extends Component {
             }}
           />
         </Drawer>
-      </React.Fragment>
+      </>
     );
   }
 }

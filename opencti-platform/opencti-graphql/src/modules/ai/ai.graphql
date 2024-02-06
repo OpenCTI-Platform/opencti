@@ -1,0 +1,3 @@
+type Mutation {
+    aiContainerGenerateReport(id: ID!, paragraphs: Int, tone: String, format: String): String @auth(for: [KNOWLEDGE_KNUPDATE])
+}

@@ -2,8 +2,23 @@ import * as R from 'ramda';
 import { v4 as uuidv4 } from 'uuid';
 import { RELATION_OBJECT } from '../schema/stixRefRelationship';
 import { listAllThings } from '../database/middleware';
-import { internalFindByIds, internalLoadById, listEntities, listEntitiesThroughRelationsPaginated, storeLoadById } from '../database/middleware-loader';
-import { ABSTRACT_BASIC_RELATIONSHIP, ABSTRACT_STIX_REF_RELATIONSHIP, ABSTRACT_STIX_RELATIONSHIP, buildRefRelationKey, ENTITY_TYPE_CONTAINER } from '../schema/general';
+import {
+  internalFindByIds,
+  internalLoadById,
+  listAllEntitiesThroughRelations,
+  listEntities,
+  listEntitiesThroughRelationsPaginated,
+  storeLoadById
+} from '../database/middleware-loader';
+import {
+  ABSTRACT_BASIC_RELATIONSHIP,
+  ABSTRACT_STIX_CORE_OBJECT,
+  ABSTRACT_STIX_CORE_RELATIONSHIP,
+  ABSTRACT_STIX_REF_RELATIONSHIP,
+  ABSTRACT_STIX_RELATIONSHIP,
+  buildRefRelationKey,
+  ENTITY_TYPE_CONTAINER
+} from '../schema/general';
 import { isStixDomainObjectContainer } from '../schema/stixDomainObject';
 import { buildPagination, READ_ENTITIES_INDICES, READ_INDEX_STIX_DOMAIN_OBJECTS, READ_RELATIONSHIPS_INDICES } from '../database/utils';
 import { now } from '../utils/format';
@@ -11,6 +26,7 @@ import { elFindByIds, elCount, ES_MAX_PAGINATION, MAX_RELATED_CONTAINER_RESOLUTI
 import { findById as findInvestigationById } from '../modules/workspace/workspace-domain';
 import { stixCoreObjectAddRelations } from './stixCoreObject';
 import { addFilter } from '../utils/filtering/filtering-utils';
+import { extractEntityRepresentativeName, extractRepresentativeDescription } from '../database/entity-representative';
 
 export const findById = async (context, user, containerId) => {
   return storeLoadById(context, user, containerId, ENTITY_TYPE_CONTAINER);

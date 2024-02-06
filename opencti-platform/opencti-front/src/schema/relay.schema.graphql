@@ -7045,6 +7045,7 @@ type Query {
   stix(id: String!): String
   enrichmentConnectors(type: String!): [Connector]
   about: AppInfo
+  aiEndpoints: [String]
   logsWorkerConfig: LogsWorkerConfig
   rabbitMQMetrics(prefix: String): RabbitMQMetrics
   elasticSearchMetrics: ElasticSearchMetrics
@@ -8077,6 +8078,7 @@ type Mutation {
   csvMapperAdd(input: CsvMapperAddInput!): CsvMapper
   csvMapperDelete(id: ID!): ID
   csvMapperFieldPatch(id: ID!, input: [EditInput!]!): CsvMapper
+  aiContainerGenerateReport(id: ID!, paragraphs: Int, tone: String, format: String): String
 }
 
 type Channel implements BasicObject & StixObject & StixCoreObject & StixDomainObject {

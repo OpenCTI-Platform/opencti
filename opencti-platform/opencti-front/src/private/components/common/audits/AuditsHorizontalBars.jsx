@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2021-2023 Filigran SAS
+Copyright (c) 2021-2024 Filigran SAS
 
 This file is part of the OpenCTI Enterprise Edition ("EE") and is
 licensed under the OpenCTI Non-Commercial License (the "License");

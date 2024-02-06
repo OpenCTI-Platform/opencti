@@ -1,0 +1,5 @@
+type Mutation {
+    obasContainerGenerateScenario(id: ID!, level: String): String @auth(for: [KNOWLEDGE_KNUPDATE])
+    obasThreatGenerateScenario(id: ID!, level: String): String @auth(for: [KNOWLEDGE_KNUPDATE])
+    obasVictimGenerateScenario(id: ID!, level: String): String @auth(for: [KNOWLEDGE_KNUPDATE])
+}

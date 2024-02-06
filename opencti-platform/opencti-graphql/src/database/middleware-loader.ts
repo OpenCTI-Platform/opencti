@@ -370,7 +370,7 @@ export const listAllEntities = async <T extends BasicStoreEntity>(context: AuthC
   return elList(context, user, indices, paginateArgs);
 };
 
-interface ListAllEntitiesThroughRelation {
+export interface ListAllEntitiesThroughRelation {
   type: string | string[]
   fromOrToId: string | string[]
   fromOrToType: string | string[]
@@ -380,7 +380,7 @@ interface ListAllEntitiesThroughRelation {
 }
 // This method is designed to fetch all entities
 // If you need to paginate, order and sort, use listEntitiesThroughRelationsPaginated
-export const listAllEntitiesThroughRelations = async <T extends BasicStoreEntity> (context: AuthContext, user: AuthUser,
+export const listAllEntitiesThroughRelations = async <T extends BasicStoreCommon> (context: AuthContext, user: AuthUser,
   relation: ListAllEntitiesThroughRelation): Promise<Array<T>> => {
   const { type, sourceSide, fromOrToId, fromOrToType, withInferences = false, filters: argsFilters } = relation;
   const opposite = sourceSide === 'from' ? 'to' : 'from';
@@ -422,7 +422,7 @@ export const listAllEntitiesThroughRelations = async <T extends BasicStoreEntity
 };
 
 interface ListAllOpts { withInferences?: boolean, filters?: FilterGroupWithNested | null }
-export const listAllToEntitiesThroughRelations = async <T extends BasicStoreEntity> (context: AuthContext, user: AuthUser,
+export const listAllToEntitiesThroughRelations = async <T extends BasicStoreCommon> (context: AuthContext, user: AuthUser,
   fromId: string | string[], relationship_type: string, toType: string | string[], opts: ListAllOpts = {}): Promise<Array<T>> => {
   const rel: ListAllEntitiesThroughRelation = {
     type: relationship_type,

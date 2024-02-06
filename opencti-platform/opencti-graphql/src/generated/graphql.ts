@@ -12017,6 +12017,7 @@ export type Mutation = {
   administrativeAreaFieldPatch?: Maybe<AdministrativeArea>;
   administrativeAreaRelationAdd?: Maybe<StixRefRelationship>;
   administrativeAreaRelationDelete?: Maybe<AdministrativeArea>;
+  aiContainerGenerateReport?: Maybe<Scalars['String']['output']>;
   artifactImport?: Maybe<Artifact>;
   askJobImport?: Maybe<File>;
   attackPatternAdd?: Maybe<AttackPattern>;
@@ -12168,6 +12169,9 @@ export type Mutation = {
   notifierAdd?: Maybe<Notifier>;
   notifierDelete?: Maybe<Scalars['ID']['output']>;
   notifierFieldPatch?: Maybe<Notifier>;
+  obasContainerGenerateScenario?: Maybe<Scalars['String']['output']>;
+  obasThreatGenerateScenario?: Maybe<Scalars['String']['output']>;
+  obasVictimGenerateScenario?: Maybe<Scalars['String']['output']>;
   observedDataAdd?: Maybe<ObservedData>;
   observedDataEdit?: Maybe<ObservedDataEditMutations>;
   opinionAdd?: Maybe<Opinion>;
@@ -12355,6 +12359,14 @@ export type MutationAdministrativeAreaRelationDeleteArgs = {
   id: Scalars['ID']['input'];
   relationship_type: Scalars['String']['input'];
   toId: Scalars['StixRef']['input'];
+};
+
+
+export type MutationAiContainerGenerateReportArgs = {
+  format?: InputMaybe<Scalars['String']['input']>;
+  id: Scalars['ID']['input'];
+  paragraphs?: InputMaybe<Scalars['Int']['input']>;
+  tone?: InputMaybe<Scalars['String']['input']>;
 };
 
 
@@ -13196,6 +13208,24 @@ export type MutationNotifierDeleteArgs = {
 export type MutationNotifierFieldPatchArgs = {
   id: Scalars['ID']['input'];
   input: Array<EditInput>;
+};
+
+
+export type MutationObasContainerGenerateScenarioArgs = {
+  id: Scalars['ID']['input'];
+  level?: InputMaybe<Scalars['String']['input']>;
+};
+
+
+export type MutationObasThreatGenerateScenarioArgs = {
+  id: Scalars['ID']['input'];
+  level?: InputMaybe<Scalars['String']['input']>;
+};
+
+
+export type MutationObasVictimGenerateScenarioArgs = {
+  id: Scalars['ID']['input'];
+  level?: InputMaybe<Scalars['String']['input']>;
 };
 
 
@@ -17058,6 +17088,7 @@ export type Query = {
   about?: Maybe<AppInfo>;
   administrativeArea?: Maybe<AdministrativeArea>;
   administrativeAreas?: Maybe<AdministrativeAreaConnection>;
+  aiEndpoints?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
   assignees?: Maybe<AssigneeConnection>;
   attackPattern?: Maybe<AttackPattern>;
   attackPatterns?: Maybe<AttackPatternConnection>;
@@ -32853,6 +32884,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   administrativeAreaFieldPatch?: Resolver<Maybe<ResolversTypes['AdministrativeArea']>, ParentType, ContextType, RequireFields<MutationAdministrativeAreaFieldPatchArgs, 'id' | 'input'>>;
   administrativeAreaRelationAdd?: Resolver<Maybe<ResolversTypes['StixRefRelationship']>, ParentType, ContextType, RequireFields<MutationAdministrativeAreaRelationAddArgs, 'id' | 'input'>>;
   administrativeAreaRelationDelete?: Resolver<Maybe<ResolversTypes['AdministrativeArea']>, ParentType, ContextType, RequireFields<MutationAdministrativeAreaRelationDeleteArgs, 'id' | 'relationship_type' | 'toId'>>;
+  aiContainerGenerateReport?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType, RequireFields<MutationAiContainerGenerateReportArgs, 'id'>>;
   artifactImport?: Resolver<Maybe<ResolversTypes['Artifact']>, ParentType, ContextType, RequireFields<MutationArtifactImportArgs, 'file'>>;
   askJobImport?: Resolver<Maybe<ResolversTypes['File']>, ParentType, ContextType, RequireFields<MutationAskJobImportArgs, 'fileName'>>;
   attackPatternAdd?: Resolver<Maybe<ResolversTypes['AttackPattern']>, ParentType, ContextType, RequireFields<MutationAttackPatternAddArgs, 'input'>>;
@@ -33004,6 +33036,9 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   notifierAdd?: Resolver<Maybe<ResolversTypes['Notifier']>, ParentType, ContextType, RequireFields<MutationNotifierAddArgs, 'input'>>;
   notifierDelete?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType, RequireFields<MutationNotifierDeleteArgs, 'id'>>;
   notifierFieldPatch?: Resolver<Maybe<ResolversTypes['Notifier']>, ParentType, ContextType, RequireFields<MutationNotifierFieldPatchArgs, 'id' | 'input'>>;
+  obasContainerGenerateScenario?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType, RequireFields<MutationObasContainerGenerateScenarioArgs, 'id'>>;
+  obasThreatGenerateScenario?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType, RequireFields<MutationObasThreatGenerateScenarioArgs, 'id'>>;
+  obasVictimGenerateScenario?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType, RequireFields<MutationObasVictimGenerateScenarioArgs, 'id'>>;
   observedDataAdd?: Resolver<Maybe<ResolversTypes['ObservedData']>, ParentType, ContextType, RequireFields<MutationObservedDataAddArgs, 'input'>>;
   observedDataEdit?: Resolver<Maybe<ResolversTypes['ObservedDataEditMutations']>, ParentType, ContextType, RequireFields<MutationObservedDataEditArgs, 'id'>>;
   opinionAdd?: Resolver<Maybe<ResolversTypes['Opinion']>, ParentType, ContextType, RequireFields<MutationOpinionAddArgs, 'input'>>;
@@ -34125,6 +34160,7 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   about?: Resolver<Maybe<ResolversTypes['AppInfo']>, ParentType, ContextType>;
   administrativeArea?: Resolver<Maybe<ResolversTypes['AdministrativeArea']>, ParentType, ContextType, RequireFields<QueryAdministrativeAreaArgs, 'id'>>;
   administrativeAreas?: Resolver<Maybe<ResolversTypes['AdministrativeAreaConnection']>, ParentType, ContextType, Partial<QueryAdministrativeAreasArgs>>;
+  aiEndpoints?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
   assignees?: Resolver<Maybe<ResolversTypes['AssigneeConnection']>, ParentType, ContextType, Partial<QueryAssigneesArgs>>;
   attackPattern?: Resolver<Maybe<ResolversTypes['AttackPattern']>, ParentType, ContextType, Partial<QueryAttackPatternArgs>>;
   attackPatterns?: Resolver<Maybe<ResolversTypes['AttackPatternConnection']>, ParentType, ContextType, Partial<QueryAttackPatternsArgs>>;
