@@ -110,7 +110,7 @@ const ImageCarousel: FunctionComponent<ImageCarouselProps> = ({ data }) => {
                 style={{
                   height: '100%',
                   maxHeight: '100%',
-                  borderRadius: 5,
+                  borderRadius: 4,
                 }}
                 src={file.imageSrc}
                 alt={file.altText}

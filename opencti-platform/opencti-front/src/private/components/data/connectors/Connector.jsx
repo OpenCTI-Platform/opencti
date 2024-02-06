@@ -57,12 +57,12 @@ const styles = (theme) => ({
     minHeight: '100%',
     margin: '10px 0 0 0',
     padding: '15px',
-    borderRadius: 6,
+    borderRadius: 4,
   },
   card: {
     width: '100%',
     marginBottom: 20,
-    borderRadius: 6,
+    borderRadius: 4,
     position: 'relative',
   },
   chip: {
@@ -77,7 +77,7 @@ const styles = (theme) => ({
     fontSize: 18,
   },
   progress: {
-    borderRadius: 5,
+    borderRadius: 4,
     height: 10,
   },
 });

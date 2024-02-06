@@ -59,7 +59,7 @@ const useStyles = makeStyles<Theme>((theme) => ({
     minHeight: '100%',
     margin: '10px 0 0 0',
     padding: '15px',
-    borderRadius: 6,
+    borderRadius: 4,
   },
   title: {
     textTransform: 'uppercase',
@@ -112,9 +112,9 @@ interface FileIndexingMonitoringComponentProps {
 
 const BorderLinearProgress = styled(LinearProgress)(({ theme }) => ({
   height: 10,
-  borderRadius: 5,
+  borderRadius: 4,
   [`& .${linearProgressClasses.bar}`]: {
-    borderRadius: 5,
+    borderRadius: 4,
     backgroundColor: theme.palette.primary.main,
   },
 }));

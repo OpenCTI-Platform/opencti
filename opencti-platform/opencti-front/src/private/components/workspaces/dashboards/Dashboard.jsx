@@ -64,7 +64,7 @@ const useStyles = makeStyles(() => ({
     height: '100%',
     margin: 0,
     padding: 20,
-    borderRadius: 6,
+    borderRadius: 4,
     display: 'relative',
     overflow: 'hidden',
   },

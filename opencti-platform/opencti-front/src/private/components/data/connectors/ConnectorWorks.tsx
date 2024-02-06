@@ -35,7 +35,7 @@ const useStyles = makeStyles(() => ({
     minHeight: '100%',
     margin: '10px 0 20px 0',
     padding: '15px',
-    borderRadius: 6,
+    borderRadius: 4,
     position: 'relative',
   },
   number: {
@@ -43,7 +43,7 @@ const useStyles = makeStyles(() => ({
     fontSize: 18,
   },
   progress: {
-    borderRadius: 5,
+    borderRadius: 4,
     height: 10,
   },
   bottomTypo: {

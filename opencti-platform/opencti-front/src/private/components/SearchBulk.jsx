@@ -72,7 +72,7 @@ const useStyles = makeStyles((theme) => ({
     lineHeight: '12px',
     height: 20,
     textTransform: 'uppercase',
-    borderRadius: '0',
+    borderRadius: 4,
     cursor: 'pointer',
     '&:hover': {
       backgroundColor: theme.palette.primary.main,
@@ -83,7 +83,7 @@ const useStyles = makeStyles((theme) => ({
     lineHeight: '12px',
     height: 20,
     textTransform: 'uppercase',
-    borderRadius: '0',
+    borderRadius: 4,
   },
   chipInList: {
     fontSize: 12,
@@ -91,7 +91,7 @@ const useStyles = makeStyles((theme) => ({
     float: 'left',
     width: 120,
     textTransform: 'uppercase',
-    borderRadius: '0',
+    borderRadius: 4,
   },
 }));
 

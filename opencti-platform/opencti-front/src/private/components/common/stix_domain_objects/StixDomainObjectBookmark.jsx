@@ -69,13 +69,13 @@ const styles = (theme) => ({
   card: {
     width: '100%',
     height: 70,
-    borderRadius: 6,
+    borderRadius: 4,
   },
   cardDummy: {
     width: '100%',
     height: 70,
     color: theme.palette.grey[700],
-    borderRadius: 6,
+    borderRadius: 4,
   },
   avatar: {
     backgroundColor: theme.palette.primary.main,

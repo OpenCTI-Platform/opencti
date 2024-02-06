@@ -57,7 +57,7 @@ const useStyles = makeStyles<Theme>(() => ({
     minHeight: '100%',
     margin: '10px 0 0 0',
     padding: 20,
-    borderRadius: 6,
+    borderRadius: 4,
   },
 }));
 

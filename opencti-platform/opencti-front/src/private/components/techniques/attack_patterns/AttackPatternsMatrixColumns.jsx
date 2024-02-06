@@ -128,7 +128,7 @@ const styles = (theme) => ({
     backgroundColor: theme.palette.background.paper,
     padding: '0 10px 2px 10px',
     zIndex: 1000,
-    borderRadius: 5,
+    borderRadius: 4,
     border: `1px solid ${theme.palette.primary.main}`,
   },
   switchKillChainNavOpen: {
@@ -138,7 +138,7 @@ const styles = (theme) => ({
     backgroundColor: theme.palette.background.paper,
     padding: '0 10px 2px 10px',
     zIndex: 1000,
-    borderRadius: 5,
+    borderRadius: 4,
     border: `1px solid ${theme.palette.primary.main}`,
   },
 });

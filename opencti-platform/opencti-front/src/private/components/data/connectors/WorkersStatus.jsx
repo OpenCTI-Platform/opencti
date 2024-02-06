@@ -17,7 +17,7 @@ const interval$ = interval(FIVE_SECONDS);
 const styles = (theme) => ({
   card: {
     marginBottom: 20,
-    borderRadius: 6,
+    borderRadius: 4,
   },
   metric: {
     margin: '0 auto',

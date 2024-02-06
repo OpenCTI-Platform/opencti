@@ -36,7 +36,7 @@ const useStyles = makeStyles((theme) => ({
   card: {
     width: '100%',
     margin: '10px 0 10px 0',
-    borderRadius: 6,
+    borderRadius: 4,
     position: 'relative',
   },
   number: {
@@ -59,7 +59,7 @@ const useStyles = makeStyles((theme) => ({
   },
   progress: {
     width: '100%',
-    borderRadius: 5,
+    borderRadius: 4,
     height: 10,
   },
   paper: {

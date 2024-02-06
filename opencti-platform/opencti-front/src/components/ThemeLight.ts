@@ -25,7 +25,7 @@ const ThemeLight = (
 ): ExtendedThemeOptions => ({
   logo: logo || fileUri(LogoText),
   logo_collapsed: logo_collapsed || fileUri(LogoCollapsed),
-  borderRadius: 2,
+  borderRadius: 4,
   palette: {
     mode: 'light',
     common: { white: '#ffffff' },

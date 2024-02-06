@@ -35,7 +35,7 @@ const useStyles = makeStyles((theme) => ({
   },
   card: {
     width: '100%',
-    borderRadius: 6,
+    borderRadius: 4,
     position: 'relative',
   },
   paper: {

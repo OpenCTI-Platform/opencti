@@ -27,7 +27,7 @@ const useStyles = makeStyles<Theme>((theme) => ({
     minHeight: '100%',
     margin: '10px 0 0 0',
     padding: '15px',
-    borderRadius: 6,
+    borderRadius: 4,
     position: 'relative',
   },
   chip: {
@@ -36,7 +36,7 @@ const useStyles = makeStyles<Theme>((theme) => ({
     backgroundColor: theme.palette.background.accent,
     color: theme.palette.text?.primary,
     textTransform: 'uppercase',
-    borderRadius: '0',
+    borderRadius: 4,
     margin: '0 5px 5px 0',
   },
   item: {

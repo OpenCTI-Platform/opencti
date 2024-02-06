@@ -53,7 +53,7 @@ const useStyles = makeStyles<Theme>((theme) => ({
   card: {
     width: '100%',
     marginBottom: 20,
-    borderRadius: 6,
+    borderRadius: 4,
     position: 'relative',
   },
   number: {

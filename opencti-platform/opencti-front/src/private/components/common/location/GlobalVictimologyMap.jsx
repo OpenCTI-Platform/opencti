@@ -55,7 +55,7 @@ const styles = () => ({
   paper: {
     margin: '10px 0 0 0',
     padding: 0,
-    borderRadius: 6,
+    borderRadius: 4,
   },
 });
 

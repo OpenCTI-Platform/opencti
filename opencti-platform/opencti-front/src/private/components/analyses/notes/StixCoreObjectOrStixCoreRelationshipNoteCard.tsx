@@ -38,7 +38,7 @@ const useStyles = makeStyles<Theme>((theme) => ({
     width: '100%',
     height: '100%',
     marginBottom: 30,
-    borderRadius: 6,
+    borderRadius: 4,
     padding: 0,
     position: 'relative',
   },

@@ -127,7 +127,7 @@ const useStyles = makeStyles((theme) => ({
     padding: 15,
     verticalAlign: 'middle',
     border: `1px solid ${theme.palette.secondary.main}`,
-    borderRadius: 5,
+    borderRadius: 4,
   },
   step_relationship: {
     position: 'relative',
@@ -136,7 +136,7 @@ const useStyles = makeStyles((theme) => ({
     padding: 15,
     verticalAlign: 'middle',
     border: `1px solid ${theme.palette.primary.main}`,
-    borderRadius: 5,
+    borderRadius: 4,
   },
   step_audit: {
     position: 'relative',
@@ -145,7 +145,7 @@ const useStyles = makeStyles((theme) => ({
     padding: 15,
     verticalAlign: 'middle',
     border: `1px solid ${theme.palette.secondary.main}`,
-    borderRadius: 5,
+    borderRadius: 4,
   },
 }));
 

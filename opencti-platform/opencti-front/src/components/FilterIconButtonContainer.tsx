@@ -26,7 +26,7 @@ const useStyles = makeStyles<Theme>((theme) => ({
     lineHeight: '32px',
   },
   operator1: {
-    borderRadius: 5,
+    borderRadius: 4,
     fontFamily: 'Consolas, monaco, monospace',
     backgroundColor: theme.palette.action?.selected,
     padding: '0 8px',
@@ -39,7 +39,7 @@ const useStyles = makeStyles<Theme>((theme) => ({
     },
   },
   operator1ReadOnly: {
-    borderRadius: 5,
+    borderRadius: 4,
     fontFamily: 'Consolas, monaco, monospace',
     backgroundColor: theme.palette.action?.selected,
     padding: '0 8px',
@@ -47,7 +47,7 @@ const useStyles = makeStyles<Theme>((theme) => ({
     alignItems: 'center',
   },
   operator2: {
-    borderRadius: 5,
+    borderRadius: 4,
     fontFamily: 'Consolas, monaco, monospace',
     backgroundColor: theme.palette.action?.selected,
     padding: '0 8px',
@@ -60,7 +60,7 @@ const useStyles = makeStyles<Theme>((theme) => ({
     },
   },
   operator2ReadOnly: {
-    borderRadius: 5,
+    borderRadius: 4,
     fontFamily: 'Consolas, monaco, monospace',
     backgroundColor: theme.palette.action?.selected,
     padding: '0 8px',
@@ -68,7 +68,7 @@ const useStyles = makeStyles<Theme>((theme) => ({
     alignItems: 'center',
   },
   operator3: {
-    borderRadius: 5,
+    borderRadius: 4,
     fontFamily: 'Consolas, monaco, monospace',
     backgroundColor: theme.palette.action?.selected,
     height: 20,
@@ -82,7 +82,7 @@ const useStyles = makeStyles<Theme>((theme) => ({
     },
   },
   operator3ReadOnly: {
-    borderRadius: 5,
+    borderRadius: 4,
     fontFamily: 'Consolas, monaco, monospace',
     backgroundColor: theme.palette.action?.selected,
     height: 20,

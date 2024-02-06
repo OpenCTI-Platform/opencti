@@ -9,31 +9,38 @@ import inject18n from './i18n';
 
 const styles = (theme) => ({
   searchRoot: {
-    borderRadius: 5,
+    borderRadius: 4,
     padding: '0 10px 0 10px',
     backgroundColor: theme.palette.background.paper,
   },
   searchRootTopBar: {
-    borderRadius: 5,
+    borderRadius: 4,
     padding: '1px 10px 0 10px',
     marginRight: 5,
     backgroundColor: theme.palette.background.paper,
   },
   searchRootInDrawer: {
-    borderRadius: 5,
+    borderRadius: 4,
     padding: '0 10px 0 10px',
     height: 30,
   },
   searchRootThin: {
-    borderRadius: 5,
+    borderRadius: 4,
     padding: '0 10px 0 10px',
     height: 30,
     backgroundColor: theme.palette.background.paper,
   },
   searchRootNoAnimation: {
-    borderRadius: 5,
+    borderRadius: 4,
     padding: '0 10px 0 10px',
     backgroundColor: theme.palette.background.default,
+  },
+  searchInputTopBar: {
+    transition: theme.transitions.create('width'),
+    width: 300,
+    '&:focus': {
+      width: 450,
+    },
   },
   searchInput: {
     transition: theme.transitions.create('width'),
@@ -73,6 +80,14 @@ class SearchInput extends Component {
     } else if (variant === 'thin') {
       classRoot = classes.searchRootThin;
     }
+    let classInput = classes.searchInput;
+    if (variant === 'small' || variant === 'thin') {
+      classInput = classes.searchInputSmall;
+    } else if (variant === 'topBar') {
+      classInput = classes.searchInputTopBar;
+    } else if (variant === 'noAnimation') {
+      classInput = classes.searchInputNoAnimation;
+    }
     return (
       <TextField
         fullWidth={fullWidth}
@@ -101,13 +116,7 @@ class SearchInput extends Component {
           ),
           classes: {
             root: classRoot,
-            input:
-              // eslint-disable-next-line no-nested-ternary
-              variant === 'small' || variant === 'thin'
-                ? classes.searchInputSmall
-                : variant !== 'noAnimation'
-                  ? classes.searchInput
-                  : classes.searchInputNoAnimation,
+            input: classInput,
           },
         }}
         autoComplete="off"

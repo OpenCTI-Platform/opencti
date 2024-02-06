@@ -2,7 +2,7 @@ import React from 'react';
 import { graphql, createFragmentContainer } from 'react-relay';
 import Typography from '@mui/material/Typography';
 import makeStyles from '@mui/styles/makeStyles';
-import StixCoreObjectContainer from '@components/common/stix_core_objects/StixCoreObjectContainer';
+import StixCoreObjectContainer from '../../common/stix_core_objects/StixCoreObjectContainer';
 import StixCyberObservablePopover from './StixCyberObservablePopover';
 import { truncate } from '../../../../utils/String';
 import StixCoreObjectEnrichment from '../../common/stix_core_objects/StixCoreObjectEnrichment';

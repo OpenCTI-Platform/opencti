@@ -59,7 +59,7 @@ const useStyles = makeStyles(() => ({
     lineHeight: '12px',
     height: 25,
     textTransform: 'uppercase',
-    borderRadius: '0',
+    borderRadius: 4,
   },
   activity: {
     marginTop: -10,

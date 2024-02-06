@@ -15,13 +15,13 @@ const styles = () => ({
   paper: {
     height: '100%',
     margin: '4px 0 0 0',
-    borderRadius: 6,
+    borderRadius: 4,
   },
   paperExplore: {
     height: '100%',
     margin: 0,
     padding: '0 0 10px 0',
-    borderRadius: 6,
+    borderRadius: 4,
   },
   chip: {
     fontSize: 10,

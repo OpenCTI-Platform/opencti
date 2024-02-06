@@ -106,20 +106,20 @@ const styles = (theme) => ({
     minHeight: '100%',
     margin: '10px 0 0 0',
     padding: '15px',
-    borderRadius: 6,
+    borderRadius: 4,
   },
   paperWithoutPadding: {
     height: '100%',
     minHeight: '100%',
     margin: '10px 0 0 0',
     padding: 0,
-    borderRadius: 6,
+    borderRadius: 4,
   },
   paperReports: {
     minHeight: '100%',
     margin: '10px 0 0 0',
     padding: '25px 15px 15px 15px',
-    borderRadius: 6,
+    borderRadius: 4,
   },
   gridContainer: {
     marginBottom: 20,

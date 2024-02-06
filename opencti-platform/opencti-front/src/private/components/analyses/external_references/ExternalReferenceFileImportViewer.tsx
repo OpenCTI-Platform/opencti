@@ -37,7 +37,7 @@ const useStyles = makeStyles(() => ({
     minHeight: '100%',
     marginTop: -7,
     padding: '10px 15px 10px 15px',
-    borderRadius: 6,
+    borderRadius: 4,
   },
 }));
 
