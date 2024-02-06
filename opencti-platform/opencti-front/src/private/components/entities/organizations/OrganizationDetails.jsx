@@ -55,7 +55,7 @@ class OrganizationDetailsComponent extends Component {
               </Typography>
               <Chip
                 classes={{ root: classes.chip }}
-                label={organization.x_opencti_organization_type ?? 'Other'}
+                label={organization.x_opencti_organization_type ?? 'Unknown'}
               />
               <Typography
                 variant="h3"
