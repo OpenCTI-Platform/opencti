@@ -164,6 +164,7 @@ nav:
       - Dashboards:
         - Custom dashboards: usage/dashboards.md
         - Widget creation: usage/widgets.md
+        - Tips for widget creation: usage/tips-widget-creation.md
       - Workflows and assignation: usage/workflows.md
       - Indicators lifecycle: usage/indicators-lifecycle.md
       - Automation: usage/automation.md

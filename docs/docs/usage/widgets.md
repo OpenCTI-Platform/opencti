@@ -17,23 +17,37 @@ Users can select from 15 diverse visualization options to highlight different as
 
 #### 2. Perspective
 
-Dashboards offer three distinct perspectives:
+A perspective is the way the platform will count the data to display in your widgets:
 
-- **Entities Perspective:** Focuses on entities, allowing observation of simple knowledge based on defined filters and criteria.
-- **Knowledge Graph Perspective:** Concentrates on relationships, displaying intricate knowledge derived from relationships between entities and specified filters.
+- **Entities Perspective:** Focuses on entities, allowing observation of simple knowledge based on defined filters and criteria. The count will be based on entities only.
+- **Knowledge Graph Perspective:** Concentrates on relationships, displaying intricate knowledge derived from relationships between entities and specified filters.  The count will be based on relations only.
 - **Activity & History Perspective:** Centers on activities within the platform, not the knowledge content. This perspective is valuable for monitoring user and connector activities, evaluating data sources, and more.
 
 ![Widget perspective](assets/widget-perspective.png)
 
 #### 3. Filters
 
+#### Generic knowledge
+
 Filters vary based on the selected perspective, defining the dataset to be utilized in the widget. Filters are instrumental in narrowing down the scope of data for a more focused analysis.
 
-While filters in the "Entities" and "Activity & History" perspectives align with the platform's familiar search and feed creation filters, the "Knowledge Graph" perspective introduces a more intricate filter configuration.Therefore, they need to be addressed in more detail. Three types of filters are available in the Knowledge Graph perspective:
+While filters in the "Entities" and "Activity & History" perspectives align with the platform's familiar search and feed creation filters, the "Knowledge Graph" perspective introduces a more intricate filter configuration.Therefore, they need to be addressed in more detail.
 
-- **Classic filters (gray):** Define the relationships to be retrieved, forming the basis on which the widget displays data. Remember, statistics in the Knowledge Graph perspective are based on relationships.
-- **Dynamic filters on the source (orange):** Refine data by filtering on entities positioned as the source (in the "from" position) of the relationship.
-- **Dynamic filters on the target (green):** Refine data by filtering on entities positioned as the target (in the "to" position) of the relationship.
+#### Filter in the context of Knowledge Graph
+
+Two types of filters are available in the Knowledge Graph perspective:
+
+- **Main query filter**
+    - **Classic filters (gray):** Define the relationships to be retrieved, forming the basis on which the widget displays data. Remember, statistics in the Knowledge Graph perspective are based on relationships.
+  
+- **Pre-query filters**
+    - Pre-query filters are used to **provide to your main query** a specific dataset. In other words, instead of making a query on the whole data set of your platform, you can already target a subset of data that will match certain criteria. They are two types of pre-query filters:
+        - **Dynamic filters on the source (orange):** Refine data by filtering on entities positioned as the source (in the "from" position) of the relationship.
+        - **Dynamic filters on the target (green):** Refine data by filtering on entities positioned as the target (in the "to" position) of the relationship.
+
+!!! warning "Pre-query limitation"
+
+    The pre-query is limited to 5000 results. If your pre-query results in having more than 5000 results, your widget will only display statistics based on these 5000 results matching your pre-query, resulting in a wrong view. To avoid this issue, be specific in your pre-query filters.
 
 **Example scenario:**
 
