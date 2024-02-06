@@ -57,6 +57,7 @@ const OperatorKeyValues: {
   not_starts_with: 'Not starts with',
   ends_with: 'Ends with',
   not_ends_with: 'Not ends with',
+  search: 'Search',
 };
 
 interface BasicNumberInputProps {
