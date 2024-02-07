@@ -156,6 +156,7 @@ const StixCoreObjectAskAI: FunctionComponent<StixCoreObjectAskAiProps> = ({ inst
         });
         break;
       case 'convert-files':
+        setDestination('file');
         commitMutationConvertFilesToStix({
           variables: {
             id,

@@ -342,6 +342,7 @@ export const convertFilesToStix = async (context: AuthContext, user: AuthUser, a
   - You should analyze the grammar and the syntax of the reports to create meaningful STIX 2.1 relationships such as targets, attributed-to, uses, etc.
   - Do your best to convert even if it is challenging and not accurate.
   - Your response should be in JSON STIX 2.1 format. Just output the JSON and nothing else.
+  - Always consider threat actors as intrusion sets, the bundle should not contain any threat actor.
   - Response should only contain the JSON output with no other sentences in English nor explanation.
   
   # Content
