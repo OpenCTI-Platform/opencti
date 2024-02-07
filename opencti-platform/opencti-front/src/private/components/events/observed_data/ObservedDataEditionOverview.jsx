@@ -3,6 +3,7 @@ import { createFragmentContainer, graphql } from 'react-relay';
 import { Field, Form, Formik } from 'formik';
 import * as Yup from 'yup';
 import * as R from 'ramda';
+import Alert from '@mui/material/Alert';
 import { useFormatter } from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
 import { SubscriptionFocus } from '../../../../components/Subscription';
@@ -18,6 +19,7 @@ import DateTimePickerField from '../../../../components/DateTimePickerField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import { useSchemaEditionValidation } from '../../../../utils/hooks/useEntitySettings';
 import useFormEditor from '../../../../utils/hooks/useFormEditor';
+import useConfidenceLevel from '../../../../utils/hooks/useConfidenceLevel';
 
 export const observedDataMutationFieldPatch = graphql`
   mutation ObservedDataEditionOverviewFieldPatchMutation(
@@ -83,6 +85,7 @@ const observedDataMutationRelationDelete = graphql`
 const ObservedDataEditionOverviewComponent = (props) => {
   const { observedData, enableReferences, context, handleClose } = props;
   const { t_i18n } = useFormatter();
+  const { checkConfidenceForEntity } = useConfidenceLevel();
 
   const basicShape = {
     first_observed: Yup.date()
@@ -203,6 +206,15 @@ const ObservedDataEditionOverviewComponent = (props) => {
       }) => (
         <div>
           <Form style={{ margin: '20px 0 20px 0' }}>
+            {(!checkConfidenceForEntity(observedData) && (
+              <Alert severity="warning" variant="outlined"
+                style={{ marginTop: 20, marginBottom: 20 }}
+              >
+                {t_i18n(
+                  'Your maximum confidence level is insufficient to edit this object.',
+                )}
+              </Alert>
+            ))}
             <Field
               component={DateTimePickerField}
               name="first_observed"

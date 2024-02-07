@@ -3,6 +3,7 @@ import * as R from 'ramda';
 import { createFragmentContainer, graphql } from 'react-relay';
 import { Field, Form, Formik } from 'formik';
 import * as Yup from 'yup';
+import Alert from '@mui/material/Alert';
 import TextField from '../../../../components/TextField';
 import { SubscriptionFocus } from '../../../../components/Subscription';
 import CreatedByField from '../../common/form/CreatedByField';
@@ -18,6 +19,7 @@ import { useFormatter } from '../../../../components/i18n';
 import { useSchemaEditionValidation } from '../../../../utils/hooks/useEntitySettings';
 import useFormEditor from '../../../../utils/hooks/useFormEditor';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
+import useConfidenceLevel from '../../../../utils/hooks/useConfidenceLevel';
 
 const ThreatActorGroupMutationFieldPatch = graphql`
   mutation ThreatActorGroupEditionOverviewFieldPatchMutation(
@@ -52,7 +54,7 @@ export const ThreatActorGroupEditionOverviewFocus = graphql`
   }
 `;
 
-const ThreatActorGroupMutationRelationAdd = graphql`
+export const ThreatActorGroupMutationRelationAdd = graphql`
   mutation ThreatActorGroupEditionOverviewRelationAddMutation(
     $id: ID!
     $input: StixRefRelationshipAddInput!
@@ -67,7 +69,7 @@ const ThreatActorGroupMutationRelationAdd = graphql`
   }
 `;
 
-const ThreatActorGroupMutationRelationDelete = graphql`
+export const ThreatActorGroupMutationRelationDelete = graphql`
   mutation ThreatActorGroupEditionOverviewRelationDeleteMutation(
     $id: ID!
     $toId: StixRef!
@@ -84,6 +86,7 @@ const ThreatActorGroupMutationRelationDelete = graphql`
 const ThreatActorGroupEditionOverviewComponent = (props) => {
   const { threatActorGroup, enableReferences, context, handleClose } = props;
   const { t_i18n } = useFormatter();
+  const { checkConfidenceForEntity } = useConfidenceLevel();
   const basicShape = {
     name: Yup.string().min(2).required(t_i18n('This field is required')),
     threat_actor_types: Yup.array().nullable(),
@@ -193,6 +196,15 @@ const ThreatActorGroupEditionOverviewComponent = (props) => {
         dirty,
       }) => (
         <Form style={{ margin: '20px 0 20px 0' }}>
+          {(!checkConfidenceForEntity(threatActorGroup) && (
+            <Alert severity="warning" variant="outlined"
+              style={{ marginTop: 20, marginBottom: 20 }}
+            >
+              {t_i18n(
+                'Your maximum confidence level is insufficient to edit this object.',
+              )}
+            </Alert>
+          ))}
           <Field
             component={TextField}
             name="name"

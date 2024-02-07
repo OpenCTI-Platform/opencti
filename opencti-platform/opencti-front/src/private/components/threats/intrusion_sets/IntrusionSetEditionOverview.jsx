@@ -3,6 +3,7 @@ import { createFragmentContainer, graphql } from 'react-relay';
 import { Field, Form, Formik } from 'formik';
 import * as Yup from 'yup';
 import * as R from 'ramda';
+import Alert from '@mui/material/Alert';
 import { useFormatter } from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
 import { SubscriptionFocus } from '../../../../components/Subscription';
@@ -17,6 +18,7 @@ import StatusField from '../../common/form/StatusField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import { useSchemaEditionValidation } from '../../../../utils/hooks/useEntitySettings';
 import useFormEditor from '../../../../utils/hooks/useFormEditor';
+import useConfidenceLevel from '../../../../utils/hooks/useConfidenceLevel';
 
 const intrusionSetMutationFieldPatch = graphql`
   mutation IntrusionSetEditionOverviewFieldPatchMutation(
@@ -51,7 +53,7 @@ export const intrusionSetEditionOverviewFocus = graphql`
   }
 `;
 
-const intrusionSetMutationRelationAdd = graphql`
+export const intrusionSetMutationRelationAdd = graphql`
   mutation IntrusionSetEditionOverviewRelationAddMutation(
     $id: ID!
     $input: StixRefRelationshipAddInput!
@@ -66,7 +68,7 @@ const intrusionSetMutationRelationAdd = graphql`
   }
 `;
 
-const intrusionSetMutationRelationDelete = graphql`
+export const intrusionSetMutationRelationDelete = graphql`
   mutation IntrusionSetEditionOverviewRelationDeleteMutation(
     $id: ID!
     $toId: StixRef!
@@ -83,6 +85,7 @@ const intrusionSetMutationRelationDelete = graphql`
 const IntrusionSetEditionOverviewComponent = (props) => {
   const { intrusionSet, enableReferences, context, handleClose } = props;
   const { t_i18n } = useFormatter();
+  const { checkConfidenceForEntity } = useConfidenceLevel();
 
   const basicShape = {
     name: Yup.string().min(2).required(t_i18n('This field is required')),
@@ -190,6 +193,15 @@ const IntrusionSetEditionOverviewComponent = (props) => {
         dirty,
       }) => (
         <Form style={{ margin: '20px 0 20px 0' }}>
+          {(!checkConfidenceForEntity(intrusionSet) && (
+            <Alert severity="warning" variant="outlined"
+              style={{ marginTop: 20, marginBottom: 20 }}
+            >
+              {t_i18n(
+                'Your maximum confidence level is insufficient to edit this object.',
+              )}
+            </Alert>
+          ))}
           <Field
             component={TextField}
             name="name"

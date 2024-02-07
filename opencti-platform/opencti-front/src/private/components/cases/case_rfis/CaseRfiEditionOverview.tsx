@@ -4,6 +4,7 @@ import React, { FunctionComponent } from 'react';
 import { graphql, useFragment } from 'react-relay';
 import * as Yup from 'yup';
 import { GenericContext } from '@components/common/model/GenericContextModel';
+import Alert from '@mui/material/Alert';
 import DateTimePickerField from '../../../../components/DateTimePickerField';
 import { useFormatter } from '../../../../components/i18n';
 import MarkdownField from '../../../../components/MarkdownField';
@@ -25,6 +26,7 @@ import { Option } from '../../common/form/ReferenceField';
 import StatusField from '../../common/form/StatusField';
 import { CaseRfiEditionOverview_case$key } from './__generated__/CaseRfiEditionOverview_case.graphql';
 import ObjectParticipantField from '../../common/form/ObjectParticipantField';
+import useConfidenceLevel from '../../../../utils/hooks/useConfidenceLevel';
 
 export const caseRfiMutationFieldPatch = graphql`
   mutation CaseRfiEditionOverviewCaseFieldPatchMutation(
@@ -167,6 +169,7 @@ const CaseRfiEditionOverview: FunctionComponent<CaseRfiEditionOverviewProps> = (
   handleClose,
 }) => {
   const { t_i18n } = useFormatter();
+  const { checkConfidenceForEntity } = useConfidenceLevel();
   const caseData = useFragment(caseRfiEditionOverviewFragment, caseRef);
 
   const basicShape = {
@@ -265,6 +268,15 @@ const CaseRfiEditionOverview: FunctionComponent<CaseRfiEditionOverviewProps> = (
         dirty,
       }) => (
         <Form style={{ margin: '20px 0 20px 0' }}>
+          {(!checkConfidenceForEntity(caseData) && (
+            <Alert severity="warning" variant="outlined"
+              style={{ marginTop: 20, marginBottom: 20 }}
+            >
+              {t_i18n(
+                'Your maximum confidence level is insufficient to edit this object.',
+              )}
+            </Alert>
+          ))}
           <Field
             component={TextField}
             variant="standard"

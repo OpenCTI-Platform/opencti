@@ -3,6 +3,7 @@ import { createFragmentContainer, graphql } from 'react-relay';
 import { Field, Form, Formik } from 'formik';
 import * as Yup from 'yup';
 import * as R from 'ramda';
+import Alert from '@mui/material/Alert';
 import { buildDate, parse } from '../../../../utils/Time';
 import { useFormatter } from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
@@ -22,6 +23,7 @@ import ObjectAssigneeField from '../../common/form/ObjectAssigneeField';
 import { useSchemaEditionValidation } from '../../../../utils/hooks/useEntitySettings';
 import useFormEditor from '../../../../utils/hooks/useFormEditor';
 import ObjectParticipantField from '../../common/form/ObjectParticipantField';
+import useConfidenceLevel from '../../../../utils/hooks/useConfidenceLevel';
 
 export const reportMutationFieldPatch = graphql`
   mutation ReportEditionOverviewFieldPatchMutation(
@@ -86,6 +88,7 @@ const reportMutationRelationDelete = graphql`
 const ReportEditionOverviewComponent = (props) => {
   const { report, enableReferences, context, handleClose } = props;
   const { t_i18n } = useFormatter();
+  const { checkConfidenceForEntity } = useConfidenceLevel();
 
   const basicShape = {
     name: Yup.string().min(2).required(t_i18n('This field is required')),
@@ -209,6 +212,15 @@ const ReportEditionOverviewComponent = (props) => {
         dirty,
       }) => (
         <Form style={{ margin: '20px 0 20px 0' }}>
+          {(!checkConfidenceForEntity(report) && (
+            <Alert severity="warning" variant="outlined"
+              style={{ marginTop: 20, marginBottom: 20 }}
+            >
+              {t_i18n(
+                'Your maximum confidence level is insufficient to edit this object.',
+              )}
+            </Alert>
+          ))}
           <Field
             component={TextField}
             name="name"

@@ -3,6 +3,7 @@ import { graphql, useFragment } from 'react-relay';
 import { Field, Form, Formik } from 'formik';
 import * as Yup from 'yup';
 import { FormikConfig } from 'formik/dist/types';
+import Alert from '@mui/material/Alert';
 import { useFormatter } from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
 import { SubscriptionFocus } from '../../../../components/Subscription';
@@ -23,6 +24,7 @@ import { useSchemaEditionValidation } from '../../../../utils/hooks/useEntitySet
 import useFormEditor, { GenericData } from '../../../../utils/hooks/useFormEditor';
 import ObjectParticipantField from '../../common/form/ObjectParticipantField';
 import { GenericContext } from '../../common/model/GenericContextModel';
+import useConfidenceLevel from '../../../../utils/hooks/useConfidenceLevel';
 
 const incidentMutationFieldPatch = graphql`
   mutation IncidentEditionOverviewFieldPatchMutation(
@@ -154,6 +156,7 @@ const IncidentEditionOverviewComponent: FunctionComponent<
 IncidentEditionOverviewProps
 > = ({ incidentRef, context, enableReferences = false, handleClose }) => {
   const { t_i18n } = useFormatter();
+  const { checkConfidenceForEntity } = useConfidenceLevel();
   const incident = useFragment(incidentEditionOverviewFragment, incidentRef);
   const basicShape = {
     name: Yup.string().min(2).required(t_i18n('This field is required')),
@@ -255,6 +258,15 @@ IncidentEditionOverviewProps
         dirty,
       }) => (
         <Form style={{ margin: '20px 0 20px 0' }}>
+          {(!checkConfidenceForEntity(incident) && (
+            <Alert severity="warning" variant="outlined"
+              style={{ marginTop: 20, marginBottom: 20 }}
+            >
+              {t_i18n(
+                'Your maximum confidence level is insufficient to edit this object.',
+              )}
+            </Alert>
+          ))}
           <Field
             component={TextField}
             variant="standard"

@@ -8,6 +8,7 @@ import { Close } from '@mui/icons-material';
 import * as Yup from 'yup';
 import makeStyles from '@mui/styles/makeStyles';
 import { FormikConfig } from 'formik/dist/types';
+import Alert from '@mui/material/Alert';
 import { buildDate, formatDate } from '../../../../utils/Time';
 import { useFormatter } from '../../../../components/i18n';
 import MarkdownField from '../../../../components/MarkdownField';
@@ -32,6 +33,7 @@ import {
 import { Option } from '../form/ReferenceField';
 import type { Theme } from '../../../../components/Theme';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
+import useConfidenceLevel from '../../../../utils/hooks/useConfidenceLevel';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   header: {
@@ -205,6 +207,7 @@ Omit<StixCoreRelationshipEditionOverviewProps, 'queryRef'>
   const stixCoreRelationshipType = 'stix-core-relationship';
 
   const { t_i18n } = useFormatter();
+  const { checkConfidenceForEntity } = useConfidenceLevel();
   const classes = useStyles();
   const enableReferences = useIsEnforceReference(stixCoreRelationshipType);
 
@@ -331,6 +334,15 @@ Omit<StixCoreRelationshipEditionOverviewProps, 'queryRef'>
             dirty,
           }) => (
             <Form style={{ margin: '20px 0 20px 0' }}>
+              {(!checkConfidenceForEntity(stixCoreRelationship) && (
+                <Alert severity="warning" variant="outlined"
+                  style={{ marginTop: 20, marginBottom: 20 }}
+                >
+                  {t_i18n(
+                    'Your maximum confidence level is insufficient to edit this object.',
+                  )}
+                </Alert>
+              ))}
               <ConfidenceField
                 variant="edit"
                 onFocus={editor.changeFocus}

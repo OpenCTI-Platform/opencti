@@ -3,6 +3,8 @@ import { createFragmentContainer, graphql } from 'react-relay';
 import { Field, Form, Formik } from 'formik';
 import * as Yup from 'yup';
 import * as R from 'ramda';
+import Alert from '@mui/material/Alert';
+import { campaignEditionOverviewFocus, campaignMutationRelationAdd, campaignMutationRelationDelete } from './CampaignEditionOverview';
 import { useFormatter } from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
 import { SubscriptionFocus } from '../../../../components/Subscription';
@@ -11,6 +13,9 @@ import { buildDate, parse } from '../../../../utils/Time';
 import CommitMessage from '../../common/form/CommitMessage';
 import { adaptFieldValue } from '../../../../utils/String';
 import DateTimePickerField from '../../../../components/DateTimePickerField';
+import useConfidenceLevel from '../../../../utils/hooks/useConfidenceLevel';
+import { useSchemaEditionValidation } from '../../../../utils/hooks/useEntitySettings';
+import useFormEditor from '../../../../utils/hooks/useFormEditor';
 
 const campaignMutationFieldPatch = graphql`
   mutation CampaignEditionDetailsFieldPatchMutation(
@@ -42,20 +47,38 @@ const campaignEditionDetailsFocus = graphql`
   }
 `;
 
-const campaignValidation = (t) => Yup.object().shape({
-  first_seen: Yup.date()
-    .nullable()
-    .typeError(t('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)')),
-  last_seen: Yup.date()
-    .nullable()
-    .typeError(t('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)')),
-  objective: Yup.string().nullable(),
-  references: Yup.array(),
-});
-
 const CampaignEditionDetailsComponent = (props) => {
   const { campaign, enableReferences, context, handleClose } = props;
   const { t_i18n } = useFormatter();
+  const { checkConfidenceForEntity } = useConfidenceLevel();
+
+  const basicShape = {
+    first_seen: Yup.date()
+      .nullable()
+      .typeError(t_i18n('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)')),
+    last_seen: Yup.date()
+      .nullable()
+      .typeError(t_i18n('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)')),
+    objective: Yup.string().nullable(),
+    references: Yup.array(),
+  };
+  const campaignValidator = useSchemaEditionValidation(
+    'Campaign',
+    basicShape,
+  );
+
+  const queries = {
+    fieldPatch: campaignMutationFieldPatch,
+    addRelation: campaignMutationRelationAdd,
+    deleteRelation: campaignMutationRelationDelete,
+    editionFocus: campaignEditionOverviewFocus,
+  };
+  const editor = useFormEditor(
+    campaign,
+    enableReferences,
+    queries,
+    campaignValidator,
+  );
 
   const handleChangeFocus = (name) => commitMutation({
     mutation: campaignEditionDetailsFocus,
@@ -87,8 +110,7 @@ const CampaignEditionDetailsComponent = (props) => {
         value: adaptFieldValue(n[1]),
       })),
     )(values);
-    commitMutation({
-      mutation: campaignMutationFieldPatch,
+    editor.fieldPatch({
       variables: {
         id: campaign.id,
         input: inputValues,
@@ -106,11 +128,10 @@ const CampaignEditionDetailsComponent = (props) => {
 
   const handleSubmitField = (name, value) => {
     if (!enableReferences) {
-      campaignValidation(t_i18n)
+      campaignValidator
         .validateAt(name, { [name]: value })
         .then(() => {
-          commitMutation({
-            mutation: campaignMutationFieldPatch,
+          editor.fieldPatch({
             variables: {
               id: campaign.id,
               input: { key: name, value: value || '' },
@@ -130,7 +151,7 @@ const CampaignEditionDetailsComponent = (props) => {
     <Formik
       enableReinitialize={true}
       initialValues={initialValues}
-      validationSchema={campaignValidation(t_i18n)}
+      validationSchema={campaignValidator}
       onSubmit={onSubmit}
     >
       {({
@@ -142,6 +163,15 @@ const CampaignEditionDetailsComponent = (props) => {
         dirty,
       }) => (
         <Form style={{ margin: '20px 0 20px 0' }}>
+          {(!checkConfidenceForEntity(campaign) && (
+            <Alert severity="warning" variant="outlined"
+              style={{ marginTop: 20, marginBottom: 20 }}
+            >
+              {t_i18n(
+                'Your maximum confidence level is insufficient to edit this object.',
+              )}
+            </Alert>
+          ))}
           <Field
             component={DateTimePickerField}
             name="first_seen"
@@ -208,6 +238,7 @@ export default createFragmentContainer(CampaignEditionDetailsComponent, {
       first_seen
       last_seen
       objective
+      confidence
     }
   `,
 });

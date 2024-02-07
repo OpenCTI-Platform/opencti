@@ -3,6 +3,7 @@ import { createFragmentContainer, graphql } from 'react-relay';
 import { Field, Form, Formik } from 'formik';
 import * as Yup from 'yup';
 import * as R from 'ramda';
+import Alert from '@mui/material/Alert';
 import { useFormatter } from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
 import { SubscriptionFocus } from '../../../../components/Subscription';
@@ -17,6 +18,7 @@ import { convertCreatedBy, convertMarkings, convertStatus } from '../../../../ut
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import { useSchemaEditionValidation } from '../../../../utils/hooks/useEntitySettings';
 import useFormEditor from '../../../../utils/hooks/useFormEditor';
+import useConfidenceLevel from '../../../../utils/hooks/useConfidenceLevel';
 
 const campaignMutationFieldPatch = graphql`
   mutation CampaignEditionOverviewFieldPatchMutation(
@@ -51,7 +53,7 @@ export const campaignEditionOverviewFocus = graphql`
   }
 `;
 
-const campaignMutationRelationAdd = graphql`
+export const campaignMutationRelationAdd = graphql`
   mutation CampaignEditionOverviewRelationAddMutation(
     $id: ID!
     $input: StixRefRelationshipAddInput!
@@ -66,7 +68,7 @@ const campaignMutationRelationAdd = graphql`
   }
 `;
 
-const campaignMutationRelationDelete = graphql`
+export const campaignMutationRelationDelete = graphql`
   mutation CampaignEditionOverviewRelationDeleteMutation(
     $id: ID!
     $toId: StixRef!
@@ -83,6 +85,7 @@ const campaignMutationRelationDelete = graphql`
 const CampaignEditionOverviewComponent = (props) => {
   const { campaign, enableReferences, context, handleClose } = props;
   const { t_i18n } = useFormatter();
+  const { checkConfidenceForEntity } = useConfidenceLevel();
 
   const basicShape = {
     name: Yup.string().min(2).required(t_i18n('This field is required')),
@@ -181,6 +184,15 @@ const CampaignEditionOverviewComponent = (props) => {
         dirty,
       }) => (
         <Form style={{ margin: '20px 0 20px 0' }}>
+          {(!checkConfidenceForEntity(campaign) && (
+            <Alert severity="warning" variant="outlined"
+              style={{ marginTop: 20, marginBottom: 20 }}
+            >
+              {t_i18n(
+                'Your maximum confidence level is insufficient to edit this object.',
+              )}
+            </Alert>
+          ))}
           <Field
             component={TextField}
             name="name"

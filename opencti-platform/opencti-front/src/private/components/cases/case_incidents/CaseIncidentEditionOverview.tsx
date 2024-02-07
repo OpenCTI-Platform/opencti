@@ -4,6 +4,7 @@ import React, { FunctionComponent } from 'react';
 import { graphql, useFragment } from 'react-relay';
 import * as Yup from 'yup';
 import { GenericContext } from '@components/common/model/GenericContextModel';
+import Alert from '@mui/material/Alert';
 import DateTimePickerField from '../../../../components/DateTimePickerField';
 import { useFormatter } from '../../../../components/i18n';
 import MarkdownField from '../../../../components/MarkdownField';
@@ -25,6 +26,7 @@ import { Option } from '../../common/form/ReferenceField';
 import StatusField from '../../common/form/StatusField';
 import { CaseIncidentEditionOverview_case$key } from './__generated__/CaseIncidentEditionOverview_case.graphql';
 import ObjectParticipantField from '../../common/form/ObjectParticipantField';
+import useConfidenceLevel from '../../../../utils/hooks/useConfidenceLevel';
 
 export const caseIncidentMutationFieldPatch = graphql`
   mutation CaseIncidentEditionOverviewCaseFieldPatchMutation(
@@ -168,6 +170,7 @@ const CaseIncidentEditionOverview: FunctionComponent<CaseIncidentEditionOverview
   handleClose,
 }) => {
   const { t_i18n } = useFormatter();
+  const { checkConfidenceForEntity } = useConfidenceLevel();
   const caseData = useFragment(caseIncidentEditionOverviewFragment, caseRef);
 
   const basicShape = {
@@ -266,6 +269,15 @@ const CaseIncidentEditionOverview: FunctionComponent<CaseIncidentEditionOverview
         dirty,
       }) => (
         <Form style={{ margin: '20px 0 20px 0' }}>
+          {(!checkConfidenceForEntity(caseData) && (
+            <Alert severity="warning" variant="outlined"
+              style={{ marginTop: 20, marginBottom: 20 }}
+            >
+              {t_i18n(
+                'Your maximum confidence level is insufficient to edit this object.',
+              )}
+            </Alert>
+          ))}
           <Field
             component={TextField}
             variant="standard"

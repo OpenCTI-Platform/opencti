@@ -3,6 +3,11 @@ import { graphql, useFragment, useMutation } from 'react-relay';
 import * as Yup from 'yup';
 import { Field, Form, Formik } from 'formik';
 import { FormikConfig } from 'formik/dist/types';
+import Alert from '@mui/material/Alert';
+import {
+  ThreatActorIndividualMutationRelationDelete,
+  threatActorIndividualRelationAddMutation,
+} from '@components/threats/threat_actors_individual/ThreatActorIndividualEditionOverview';
 import { GenericContext } from '../../common/model/GenericContextModel';
 import { isNone, useFormatter } from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
@@ -16,8 +21,9 @@ import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import { Option } from '../../common/form/ReferenceField';
 import { ThreatActorIndividualEditionDetails_ThreatActorIndividual$key } from './__generated__/ThreatActorIndividualEditionDetails_ThreatActorIndividual.graphql';
 import { ThreatActorIndividualEditionDetailsFocusMutation } from './__generated__/ThreatActorIndividualEditionDetailsFocusMutation.graphql';
-import { ThreatActorIndividualEditionDetailsFieldPatchMutation } from './__generated__/ThreatActorIndividualEditionDetailsFieldPatchMutation.graphql';
 import { useSchemaEditionValidation } from '../../../../utils/hooks/useEntitySettings';
+import useConfidenceLevel from '../../../../utils/hooks/useConfidenceLevel';
+import useFormEditor, { GenericData } from '../../../../utils/hooks/useFormEditor';
 
 const threatActorIndividualMutationFieldPatch = graphql`
   mutation ThreatActorIndividualEditionDetailsFieldPatchMutation(
@@ -61,13 +67,21 @@ const threatActorIndividualEditionDetailsFragment = graphql`
     personal_motivations
     goals
     roles
+    confidence
+    objectMarking {
+      id
+      definition_type
+      definition
+      x_opencti_order
+      x_opencti_color
+    }
   }
 `;
 
 interface ThreatActorIndividualEditionDetailsProps {
   threatActorIndividualRef: ThreatActorIndividualEditionDetails_ThreatActorIndividual$key;
   context?: readonly (GenericContext | null)[] | null;
-  enableReferences?: boolean;
+  enableReferences: boolean;
   handleClose: () => void;
 }
 
@@ -83,12 +97,10 @@ const ThreatActorIndividualEditionDetailsComponent: FunctionComponent<
 ThreatActorIndividualEditionDetailsProps
 > = ({ threatActorIndividualRef, context, enableReferences, handleClose }) => {
   const { t_i18n } = useFormatter();
+  const { checkConfidenceForEntity } = useConfidenceLevel();
   const threatActorIndividual = useFragment(
     threatActorIndividualEditionDetailsFragment,
     threatActorIndividualRef,
-  );
-  const [commitFieldPatch] = useMutation<ThreatActorIndividualEditionDetailsFieldPatchMutation>(
-    threatActorIndividualMutationFieldPatch,
   );
   const [commitEditionDetailsFocus] = useMutation<ThreatActorIndividualEditionDetailsFocusMutation>(
     ThreatActorIndividualEditionDetailsFocus,
@@ -112,6 +124,20 @@ ThreatActorIndividualEditionDetailsProps
   const individualThreatActorValidator = useSchemaEditionValidation(
     'Threat-Actor-Individual',
     basicShape,
+  );
+
+  const queries = {
+    fieldPatch: threatActorIndividualMutationFieldPatch,
+    relationAdd: threatActorIndividualRelationAddMutation,
+    relationDelete: ThreatActorIndividualMutationRelationDelete,
+    editionFocus: ThreatActorIndividualEditionDetailsFocus,
+  };
+
+  const editor = useFormEditor(
+    threatActorIndividual as GenericData,
+    enableReferences,
+    queries,
+    individualThreatActorValidator,
   );
 
   const handleChangeFocus = (name: string) => {
@@ -139,7 +165,7 @@ ThreatActorIndividualEditionDetailsProps
           values.goals && values.goals.length ? values.goals.split('\n') : [],
     }).map(([key, value]) => ({ key, value: adaptFieldValue(value) }));
 
-    commitFieldPatch({
+    editor.fieldPatch({
       variables: {
         id: threatActorIndividual.id,
         input: inputValues,
@@ -158,7 +184,7 @@ ThreatActorIndividualEditionDetailsProps
       individualThreatActorValidator
         .validateAt(name, { [name]: value })
         .then(() => {
-          commitFieldPatch({
+          editor.fieldPatch({
             variables: {
               id: threatActorIndividual.id,
               input: [
@@ -177,7 +203,7 @@ ThreatActorIndividualEditionDetailsProps
       individualThreatActorValidator
         .validateAt(name, { [name]: value })
         .then(() => {
-          commitFieldPatch({
+          editor.fieldPatch({
             variables: {
               id: threatActorIndividual.id,
               input: [{ key: name, value: finalValue }],
@@ -221,6 +247,15 @@ ThreatActorIndividualEditionDetailsProps
         }) => (
           <div>
             <Form style={{ margin: '20px 0 20px 0' }}>
+              {(!checkConfidenceForEntity(threatActorIndividual) && (
+                <Alert severity="warning" variant="outlined"
+                  style={{ marginTop: 20, marginBottom: 20 }}
+                >
+                  {t_i18n(
+                    'Your maximum confidence level is insufficient to edit this object.',
+                  )}
+                </Alert>
+              ))}
               <Field
                 component={DateTimePickerField}
                 name="first_seen"

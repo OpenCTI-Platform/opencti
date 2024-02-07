@@ -4,6 +4,7 @@ import { createFragmentContainer, graphql } from 'react-relay';
 import { Field, Form, Formik } from 'formik';
 import * as Yup from 'yup';
 import * as R from 'ramda';
+import Alert from '@mui/material/Alert';
 import TextField from '../../../../components/TextField';
 import { SubscriptionFocus } from '../../../../components/Subscription';
 import CreatedByField from '../../common/form/CreatedByField';
@@ -23,6 +24,7 @@ import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import { useFormatter } from '../../../../components/i18n';
 import { useSchemaEditionValidation } from '../../../../utils/hooks/useEntitySettings';
 import useFormEditor from '../../../../utils/hooks/useFormEditor';
+import useConfidenceLevel from '../../../../utils/hooks/useConfidenceLevel';
 
 const indicatorMutationFieldPatch = graphql`
   mutation IndicatorEditionOverviewFieldPatchMutation(
@@ -81,6 +83,7 @@ const IndicatorEditionOverviewComponent = ({
   enableReferences,
 }) => {
   const { t_i18n } = useFormatter();
+  const { checkConfidenceForEntity } = useConfidenceLevel();
 
   const basicShape = {
     name: Yup.string().min(2).required(t_i18n('This field is required')),
@@ -224,6 +227,15 @@ const IndicatorEditionOverviewComponent = ({
         dirty,
       }) => (
         <Form style={{ margin: '20px 0 20px 0' }}>
+          {(!checkConfidenceForEntity(indicator) && (
+            <Alert severity="warning" variant="outlined"
+              style={{ marginTop: 20, marginBottom: 20 }}
+            >
+              {t_i18n(
+                'Your maximum confidence level is insufficient to edit this object.',
+              )}
+            </Alert>
+          ))}
           <Field
             component={TextField}
             variant="standard"

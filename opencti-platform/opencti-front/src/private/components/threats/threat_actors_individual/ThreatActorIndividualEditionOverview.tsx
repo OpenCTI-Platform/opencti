@@ -3,6 +3,7 @@ import { graphql, useFragment } from 'react-relay';
 import { Field, Form, Formik } from 'formik';
 import * as Yup from 'yup';
 import { FormikConfig } from 'formik/dist/types';
+import Alert from '@mui/material/Alert';
 import TextField from '../../../../components/TextField';
 import { SubscriptionFocus } from '../../../../components/Subscription';
 import CreatedByField from '../../common/form/CreatedByField';
@@ -21,6 +22,7 @@ import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import { Option } from '../../common/form/ReferenceField';
 import { ThreatActorIndividualEditionOverview_ThreatActorIndividual$key } from './__generated__/ThreatActorIndividualEditionOverview_ThreatActorIndividual.graphql';
 import { GenericContext } from '../../common/model/GenericContextModel';
+import useConfidenceLevel from '../../../../utils/hooks/useConfidenceLevel';
 
 const ThreatActorIndividualMutationFieldPatch = graphql`
   mutation ThreatActorIndividualEditionOverviewFieldPatchMutation(
@@ -52,7 +54,7 @@ export const ThreatActorIndividualEditionOverviewFocus = graphql`
   }
 `;
 
-const threatActorIndividualRelationAddMutation = graphql`
+export const threatActorIndividualRelationAddMutation = graphql`
   mutation ThreatActorIndividualEditionOverviewRelationAddMutation(
     $id: ID!
     $input: StixRefRelationshipAddInput!
@@ -65,7 +67,7 @@ const threatActorIndividualRelationAddMutation = graphql`
   }
 `;
 
-const ThreatActorIndividualMutationRelationDelete = graphql`
+export const ThreatActorIndividualMutationRelationDelete = graphql`
   mutation ThreatActorIndividualEditionOverviewRelationDeleteMutation(
     $id: ID!
     $toId: StixRef!
@@ -136,6 +138,7 @@ const ThreatActorIndividualEditionOverviewComponent: FunctionComponent<
 ThreatActorIndividualEditionOverviewProps
 > = ({ threatActorIndividualRef, enableReferences, handleClose, context }) => {
   const { t_i18n } = useFormatter();
+  const { checkConfidenceForEntity } = useConfidenceLevel();
   const threatActorIndividual = useFragment(
     threatActorIndividualEditionOverviewFragment,
     threatActorIndividualRef,
@@ -247,6 +250,15 @@ ThreatActorIndividualEditionOverviewProps
         dirty,
       }) => (
         <Form style={{ margin: '20px 0 20px 0' }}>
+          {(!checkConfidenceForEntity(threatActorIndividual) && (
+            <Alert severity="warning" variant="outlined"
+              style={{ marginTop: 20, marginBottom: 20 }}
+            >
+              {t_i18n(
+                'Your maximum confidence level is insufficient to edit this object.',
+              )}
+            </Alert>
+          ))}
           <Field
             component={TextField}
             name="name"

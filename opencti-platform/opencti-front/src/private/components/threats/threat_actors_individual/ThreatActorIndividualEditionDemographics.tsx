@@ -4,6 +4,12 @@ import { graphql, useFragment } from 'react-relay';
 import * as Yup from 'yup';
 import CountryField from '@components/common/form/CountryField';
 import { Option } from '@components/common/form/ReferenceField';
+import Alert from '@mui/material/Alert';
+import {
+  ThreatActorIndividualEditionOverviewFocus,
+  ThreatActorIndividualMutationRelationDelete,
+  threatActorIndividualRelationAddMutation,
+} from '@components/threats/threat_actors_individual/ThreatActorIndividualEditionOverview';
 import { GenericContext } from '../../common/model/GenericContextModel';
 import { useFormatter } from '../../../../components/i18n';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
@@ -17,6 +23,9 @@ import { EditOperation } from './__generated__/ThreatActorIndividualEditionDetai
 import OpenVocabField from '../../common/form/OpenVocabField';
 import { isEmptyField } from '../../../../utils/utils';
 import DateTimePickerField from '../../../../components/DateTimePickerField';
+import useConfidenceLevel from '../../../../utils/hooks/useConfidenceLevel';
+import useFormEditor, { GenericData } from '../../../../utils/hooks/useFormEditor';
+import { useSchemaEditionValidation } from '../../../../utils/hooks/useEntitySettings';
 
 const threatActorIndividualEditionDemographicsFocus = graphql`
   mutation ThreatActorIndividualEditionDemographicsFocusMutation(
@@ -48,6 +57,7 @@ const threatActorIndividualEditionDemographicsFragment = graphql`
     gender
     marital_status
     job_title
+    confidence
     bornIn {
       id
       name
@@ -56,21 +66,15 @@ const threatActorIndividualEditionDemographicsFragment = graphql`
       id
       name
     }
+    objectMarking {
+      id
+      definition_type
+      definition
+      x_opencti_order
+      x_opencti_color
+    }
   }
 `;
-
-const threatActorIndividualValidation = (t: (s: string) => string) => Yup.object().shape({
-  date_of_birth: Yup.date()
-    .nullable()
-    .typeError(t('The value must be a date (yyyy-MM-dd)')),
-  gender: Yup.string().nullable().typeError(t('The value must be a string')),
-  marital_status: Yup.string()
-    .nullable()
-    .typeError(t('The value must be a string')),
-  job_title: Yup.string().nullable().max(250, t('The value is too long')),
-  bornIn: Yup.object().nullable(),
-  ethnicity: Yup.object().nullable(),
-});
 
 interface ThreatActorIndividualEditionDemographicsComponentProps {
   threatActorIndividualRef: ThreatActorIndividualEditionDemographics_ThreatActorIndividual$key;
@@ -84,9 +88,40 @@ const ThreatActorIndividualEditionDemographicsComponent = ({
   context,
 }: ThreatActorIndividualEditionDemographicsComponentProps) => {
   const { t_i18n } = useFormatter();
+  const { checkConfidenceForEntity } = useConfidenceLevel();
   const threatActorIndividual = useFragment(
     threatActorIndividualEditionDemographicsFragment,
     threatActorIndividualRef,
+  );
+  const basicShape = {
+    date_of_birth: Yup.date()
+      .nullable()
+      .typeError(t_i18n('The value must be a date (yyyy-MM-dd)')),
+    gender: Yup.string().nullable().typeError(t_i18n('The value must be a string')),
+    marital_status: Yup.string()
+      .nullable()
+      .typeError(t_i18n('The value must be a string')),
+    job_title: Yup.string().nullable().max(250, t_i18n('The value is too long')),
+    bornIn: Yup.object().nullable(),
+    ethnicity: Yup.object().nullable(),
+  };
+  const threatActorIndividualValidator = useSchemaEditionValidation(
+    'Threat-Actor-Individual',
+    basicShape,
+  );
+
+  const queries = {
+    fieldPatch: threatActorIndividualMutationFieldPatch,
+    relationAdd: threatActorIndividualRelationAddMutation,
+    relationDelete: ThreatActorIndividualMutationRelationDelete,
+    editionFocus: ThreatActorIndividualEditionOverviewFocus,
+  };
+
+  const editor = useFormEditor(
+    threatActorIndividual as GenericData,
+    enableReferences,
+    queries,
+    threatActorIndividualValidator,
   );
 
   const handleChangeFocus = (name: string) => commitMutation({
@@ -105,16 +140,14 @@ const ThreatActorIndividualEditionDemographicsComponent = ({
     value: string | string[] | Option | null,
     operation: EditOperation = 'replace',
   ) => {
-    threatActorIndividualValidation(t_i18n)
+    threatActorIndividualValidator
       .validateAt(name, { [name]: value })
       .then(() => {
         let finalValue = value;
         if (name === 'bornIn' || name === 'ethnicity') {
           finalValue = (value as Option)?.value ?? '';
         }
-        commitMutation({
-          ...defaultCommitMutation,
-          mutation: threatActorIndividualMutationFieldPatch,
+        editor.fieldPatch({
           variables: {
             id: threatActorIndividual.id,
             input: {
@@ -148,12 +181,21 @@ const ThreatActorIndividualEditionDemographicsComponent = ({
       <Formik
         enableReinitialize={true}
         initialValues={initialValues}
-        validationSchema={threatActorIndividualValidation(t_i18n)}
+        validationSchema={threatActorIndividualValidator}
         onSubmit={() => {}}
       >
         {({ submitForm, isSubmitting, setFieldValue, isValid, dirty }) => (
           <div>
             <Form style={{ margin: '20px 0 20px 0' }}>
+              {(!checkConfidenceForEntity(threatActorIndividual) && (
+                <Alert severity="warning" variant="outlined"
+                  style={{ marginTop: 20, marginBottom: 20 }}
+                >
+                  {t_i18n(
+                    'Your maximum confidence level is insufficient to edit this object.',
+                  )}
+                </Alert>
+              ))}
               <CountryField
                 id="PlaceOfBirth"
                 name="bornIn"

@@ -78,6 +78,9 @@ const rootPrivateQuery = graphql`
       theme
       user_email
       individual_id
+      effective_confidence_level {
+        max_confidence
+      }
       capabilities {
         name
       }

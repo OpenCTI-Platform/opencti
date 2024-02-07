@@ -2,6 +2,7 @@ import React from 'react';
 import { createFragmentContainer, graphql } from 'react-relay';
 import { Field, Form, Formik } from 'formik';
 import * as Yup from 'yup';
+import Alert from '@mui/material/Alert';
 import { useFormatter } from '../../../../components/i18n';
 import { SubscriptionFocus } from '../../../../components/Subscription';
 import CreatedByField from '../../common/form/CreatedByField';
@@ -15,6 +16,7 @@ import OpenVocabField from '../../common/form/OpenVocabField';
 import { useSchemaEditionValidation } from '../../../../utils/hooks/useEntitySettings';
 import useFormEditor from '../../../../utils/hooks/useFormEditor';
 import useGranted, { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
+import useConfidenceLevel from '../../../../utils/hooks/useConfidenceLevel';
 
 export const opinionMutationFieldPatch = graphql`
     mutation OpinionEditionOverviewFieldPatchMutation(
@@ -72,6 +74,7 @@ const opinionMutationRelationDelete = graphql`
 const OpinionEditionOverviewComponent = (props) => {
   const { opinion, context } = props;
   const { t_i18n } = useFormatter();
+  const { checkConfidenceForEntity } = useConfidenceLevel();
   const userIsKnowledgeEditor = useGranted([KNOWLEDGE_KNUPDATE]);
   const basicShape = {
     opinion: Yup.string().required(t_i18n('This field is required')),
@@ -126,6 +129,15 @@ const OpinionEditionOverviewComponent = (props) => {
       {({ setFieldValue }) => (
         <div>
           <Form style={{ margin: '20px 0 20px 0' }}>
+            {(!checkConfidenceForEntity(opinion) && (
+              <Alert severity="warning" variant="outlined"
+                style={{ marginTop: 20, marginBottom: 20 }}
+              >
+                {t_i18n(
+                  'Your maximum confidence level is insufficient to edit this object.',
+                )}
+              </Alert>
+            ))}
             <OpenVocabField
               label={t_i18n('Opinion')}
               type="opinion-ov"
