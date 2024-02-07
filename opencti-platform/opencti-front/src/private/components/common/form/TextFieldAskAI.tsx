@@ -14,7 +14,7 @@ import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
 // region types
 interface TextFieldAskAiProps {
   currentValue: string;
-  setFieldValue: (value) => void;
+  setFieldValue: (value: string) => void;
   format: 'text' | 'html' | 'markdown'
 }
 
@@ -99,6 +99,7 @@ const TextFieldAskAI: FunctionComponent<TextFieldAskAiProps> = ({ currentValue, 
           }}
           handleFollowUp={handleCloseAskAI}
           followUpActions={[{ key: 'retry', label: t_i18n('Retry') }]}
+          format={format}
         />
       )}
     </InputAdornment>
