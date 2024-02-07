@@ -91,8 +91,12 @@ describe('Marking Definition', () => {
   });
 
   describe('Clean Markings use for reading', async () => {
-    it('Case add two markings with an two unknown id => output no marking added', async () => {
-      const result = await cleanMarkingsForReading(testContext, ['unknown-id', 'deleted-id']);
+    it('Case add a marking with an an unknown id => output no marking added', async () => {
+      const result = await cleanMarkingsForReading(testContext, ['unknown-id']);
+      expect(result.map((r) => r.id)).toEqual([]);
+    });
+    it('Case add a marking with as undefined (deleted case) => output no marking added', async () => {
+      const result = await cleanMarkingsForReading(testContext, [undefined]);
       expect(result.map((r) => r.id)).toEqual([]);
     });
   });
