@@ -24,6 +24,10 @@ import TextField from '@mui/material/TextField';
 import { stixDomainObjectContentFilesUploadStixDomainObjectMutation } from '@components/common/stix_domain_objects/StixDomainObjectContentFiles';
 import { createSearchParams, useNavigate } from 'react-router-dom-v5-compat';
 import { stixDomainObjectContentFieldPatchMutation } from '@components/common/stix_domain_objects/StixDomainObjectContent';
+import type {
+  StixDomainObjectContentFilesUploadStixDomainObjectMutation,
+  StixDomainObjectContentFilesUploadStixDomainObjectMutation$data,
+} from '../stix_domain_objects/__generated__/StixDomainObjectContentFilesUploadStixDomainObjectMutation.graphql';
 import { useFormatter } from '../../../../components/i18n';
 import ResponseDialog from '../../../../utils/ai/ResponseDialog';
 import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
@@ -82,7 +86,7 @@ const StixCoreObjectAskAI: FunctionComponent<StixCoreObjectAskAiProps> = ({ inst
   const handleOpenAskAI = () => setDisplayAskAI(true);
   const handleCloseAskAI = () => setDisplayAskAI(false);
   const [commitMutationUpdateContent] = useMutation(stixDomainObjectContentFieldPatchMutation);
-  const [commitMutationCreateFile] = useMutation(stixDomainObjectContentFilesUploadStixDomainObjectMutation);
+  const [commitMutationCreateFile] = useMutation<StixDomainObjectContentFilesUploadStixDomainObjectMutation>(stixDomainObjectContentFilesUploadStixDomainObjectMutation);
   const [commitMutationContainerReport] = useMutation(stixCoreObjectAskAIContainerReportMutation);
   const handleAskAi = () => {
     handleCloseOptions();
@@ -114,6 +118,7 @@ const StixCoreObjectAskAI: FunctionComponent<StixCoreObjectAskAiProps> = ({ inst
     setDisplayAskAI(true);
   };
   const submitAcceptedResult = () => {
+    setIsSubmitting(true);
     if (destination === 'content') {
       const inputValues = [{ key: 'content', value: acceptedResult }];
       commitMutationUpdateContent({
@@ -123,6 +128,7 @@ const StixCoreObjectAskAI: FunctionComponent<StixCoreObjectAskAiProps> = ({ inst
         },
         onCompleted: () => {
           setAcceptedResult(null);
+          setIsSubmitting(false);
           navigate({
             pathname: `${resolveLink(instanceType)}/${instanceId}/content`,
             search: `${createSearchParams({ contentSelected: 'true' })}`,
@@ -149,12 +155,12 @@ const StixCoreObjectAskAI: FunctionComponent<StixCoreObjectAskAiProps> = ({ inst
         id: instanceId,
         file,
       },
-      onCompleted: (response) => {
-        console.log(response);
+      onCompleted: (response: StixDomainObjectContentFilesUploadStixDomainObjectMutation$data) => {
         setAcceptedResult(null);
+        setIsSubmitting(false);
         navigate({
           pathname: `${resolveLink(instanceType)}/${instanceId}/content`,
-          search: `${createSearchParams({ currentFileId: response.stixDomainObjectEdit.importPush.id })}`,
+          search: `${createSearchParams({ currentFileId: response?.stixDomainObjectEdit?.importPush?.id ?? '' })}`,
         });
       },
     });

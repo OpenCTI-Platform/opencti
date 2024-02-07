@@ -42,6 +42,9 @@ import { SYSTEM_USER } from '../../utils/access';
 import { ENTITY_TYPE_SETTINGS } from '../../schema/internalObject';
 import { UnsupportedError } from '../../config/errors';
 import { Format } from '../../generated/graphql';
+import { notify } from '../../database/redis';
+import { BUS_TOPICS } from '../../config/conf';
+import { AI_BUS } from './ai-types';
 
 const RESOLUTION_LIMIT = 200;
 
@@ -77,6 +80,7 @@ export const generateContainerReport = async (context: AuthContext, user: AuthUs
   const entities = R.take(RESOLUTION_LIMIT, elements.filter((n) => n.parent_types.includes(ABSTRACT_STIX_CORE_OBJECT))) as Array<BasicStoreEntity>;
   const indexedEntities = R.indexBy(R.prop('id'), entities);
   if (entities.length < 3) {
+    await notify(BUS_TOPICS[AI_BUS].EDIT_TOPIC, { bus_id: id, content: 'AI model unable to generate a report for containers with less than 3 entities.' }, user);
     return 'AI model unable to generate a report for containers with less than 3 entities.';
   }
   // generate entities involved

@@ -119,6 +119,7 @@ const RootCaseRfiComponent = ({ queryRef, caseId }) => {
             container={caseData}
             PopoverComponent={<CaseRfiPopover id={caseData.id} />}
             enableQuickSubscription={true}
+            enableAskAi={true}
           />
           <Box
             sx={{

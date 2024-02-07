@@ -2,8 +2,9 @@ import React, { FunctionComponent, useMemo, useState } from 'react';
 import DialogActions from '@mui/material/DialogActions';
 import LoadingButton from '@mui/lab/LoadingButton';
 import Dialog from '@mui/material/Dialog';
-import { DialogTitle } from '@mui/material';
+import DialogTitle from '@mui/material/DialogTitle';
 import DialogContent from '@mui/material/DialogContent';
+import Alert from '@mui/material/Alert';
 import { graphql, useSubscription } from 'react-relay';
 import { GraphQLSubscriptionConfig } from 'relay-runtime';
 import { CKEditor } from '@ckeditor/ckeditor5-react';
@@ -131,6 +132,9 @@ const ResponseDialog: FunctionComponent<ResponseDialogProps> = ({
             />
             )}
           </div>
+          <Alert severity="warning" variant="outlined">
+            {t_i18n('Generative AI is a beta feature as we are currently fine-tuning our models. Consider checking important information.')}
+          </Alert>
         </DialogContent>
         <DialogActions>
           <LoadingButton onClick={handleClose} disabled={isDisabled}>

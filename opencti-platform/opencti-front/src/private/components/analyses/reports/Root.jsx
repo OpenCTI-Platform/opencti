@@ -42,6 +42,7 @@ const reportQuery = graphql`
     report(id: $id) {
       id
       standard_id
+      entity_type
       name
       ...Report_report
       ...ReportDetails_report

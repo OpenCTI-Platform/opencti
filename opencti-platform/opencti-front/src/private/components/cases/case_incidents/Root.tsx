@@ -120,6 +120,7 @@ const RootCaseIncidentComponent = ({ queryRef, caseId }) => {
             container={caseData}
             PopoverComponent={<CaseIncidentPopover id={caseData.id} />}
             enableQuickSubscription={true}
+            enableAskAi={true}
           />
           <Box
             sx={{

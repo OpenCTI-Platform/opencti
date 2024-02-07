@@ -129,6 +129,7 @@ class RootGrouping extends Component {
                       PopoverComponent={<GroupingPopover />}
                       enableQuickSubscription={true}
                       enableQuickExport={true}
+                      enableAskAi={true}
                     />
                     <Box
                       sx={{
