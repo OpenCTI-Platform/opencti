@@ -1073,6 +1073,24 @@ describe('Complex filters combinations for elastic queries', () => {
         },
       } });
     expect(queryResult.data.globalSearch.edges.length).toEqual(6);
+    // (source_reliability != A - Completely reliable)
+    queryResult = await queryAsAdmin({ query: LIST_QUERY,
+      variables: {
+        first: 20,
+        filters: {
+          mode: 'or',
+          filters: [
+            {
+              key: SOURCE_RELIABILITY_FILTER,
+              operator: 'not_eq',
+              values: ['A - Completely reliable'],
+              mode: 'or',
+            }
+          ],
+          filterGroups: [],
+        },
+      } });
+    expect(queryResult.data.globalSearch.edges.length).toEqual(35); // 41 entities - 6 entities with source reliability equals to A = 35
     // (source_reliability = A - Completely reliable OR B - Usually reliable)
     queryResult = await queryAsAdmin({ query: LIST_QUERY,
       variables: {
