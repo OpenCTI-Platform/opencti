@@ -12,12 +12,12 @@ import Typography from '@mui/material/Typography';
 import Chip from '@mui/material/Chip';
 import { useFormatter } from '../i18n';
 import { Filter, FilterGroup } from '../../utils/filters/filtersUtils';
-import { FilterRepresentatives } from './FiltersModel';
+import { FilterRepresentative } from './FiltersModel';
 
 interface DisplayFilterGroupProps {
   filterObj: FilterGroup;
   filterMode: string;
-  filtersRepresentativesMap: Map<string, FilterRepresentatives>;
+  filtersRepresentativesMap: Map<string, FilterRepresentative>;
   classFilter: string;
   classChipLabel: string;
 }

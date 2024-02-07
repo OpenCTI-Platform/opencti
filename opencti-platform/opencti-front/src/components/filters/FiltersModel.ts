@@ -1,4 +1,4 @@
-export interface FilterRepresentatives {
+export interface FilterRepresentative {
   readonly color: string | null | undefined;
   readonly entity_type: string | null | undefined;
   readonly id: string;

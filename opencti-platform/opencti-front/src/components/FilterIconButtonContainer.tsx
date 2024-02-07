@@ -17,7 +17,7 @@ import DisplayFilterGroup from './filters/DisplayFilterGroup';
 import { handleFilterHelpers } from '../utils/hooks/useLocalStorage';
 import FilterIconButtonGlobalOperator from './FilterIconButtonGlobalOperator';
 import { filterValuesContentQuery } from './FilterValuesContent';
-import { FilterRepresentatives } from './filters/FiltersModel';
+import { FilterRepresentative } from './filters/FiltersModel';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   filter3: {
@@ -148,8 +148,8 @@ FilterIconButtonContainerProps
   const itemRefToPopover = useRef(null);
   const oldItemRefToPopover = useRef(null);
   let classFilter = classes.filter1;
-  const filtersRepresentativesMap = new Map<string, FilterRepresentatives>(
-    filtersRepresentatives.map((n: FilterRepresentatives) => [n.id, n]),
+  const filtersRepresentativesMap = new Map<string, FilterRepresentative>(
+    filtersRepresentatives.map((n: FilterRepresentative) => [n.id, n]),
   );
   const [filterChipsParams, setFilterChipsParams] = React.useState<FilterChipsParameter>({
     filter: undefined,

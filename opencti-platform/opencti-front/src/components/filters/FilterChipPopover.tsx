@@ -14,7 +14,7 @@ import { useFormatter } from '../i18n';
 import ItemIcon from '../ItemIcon';
 import { getOptionsFromEntities, getUseSearch } from '../../utils/filters/SearchEntitiesUtil';
 import { handleFilterHelpers } from '../../utils/hooks/useLocalStorage';
-import { FilterRepresentatives } from './FiltersModel';
+import { FilterRepresentative } from './FiltersModel';
 
 interface FilterChipMenuProps {
   handleClose: () => void;
@@ -23,7 +23,7 @@ interface FilterChipMenuProps {
   filters: Filter[];
   helpers?: handleFilterHelpers;
   availableRelationFilterTypes?: Record<string, string[]>;
-  filtersRepresentativesMap: Map<string, FilterRepresentatives>;
+  filtersRepresentativesMap: Map<string, FilterRepresentative>;
 }
 
 export interface FilterChipsParameter {
@@ -230,7 +230,8 @@ export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({
   const buildAutocompleteFilter = (fKey: string, subKey?: string): ReactNode => {
     const entitiesOptions = getOptionsFromEntities(entities, searchScope, fKey)
       .filter((option) => !filterValues.includes(option.value));
-    const selectedOptions: OptionValue[] = [...filterValues].map((value) => {
+
+    const selectedOptions: OptionValue[] = filterValues.map((value: string) => {
       const filterRepresentative = filtersRepresentativesMap.get(value);
       if (filterRepresentative) {
         return {
@@ -242,8 +243,11 @@ export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({
           color: filterRepresentative?.color,
         };
       }
-      return value;
-    });
+
+      // due to some async between action and the graphql call
+      // it's possible that the filterRepresentative do not know every filterValues
+      return undefined;
+    }).filter((d) => !!d) as OptionValue[];
 
     const groupByEntities = (option: OptionValue) => {
       if (option?.group === 'Selected') {
