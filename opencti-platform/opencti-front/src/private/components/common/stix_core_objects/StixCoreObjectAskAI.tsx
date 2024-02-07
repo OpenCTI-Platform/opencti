@@ -10,6 +10,7 @@ import { PopoverProps } from '@mui/material/Popover';
 import { useFormatter } from '../../../../components/i18n';
 import ResponseDialog from '../../../../utils/ai/ResponseDialog';
 import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
+import useAI from '../../../../utils/hooks/useAI';
 
 // region types
 interface StixCoreObjectAskAiProps {
@@ -28,6 +29,7 @@ const stixCoreObjectAskAIContainerReportMutation = graphql`
 const StixCoreObjectAskAI: FunctionComponent<StixCoreObjectAskAiProps> = ({ instanceId, type, onChange, format = 'html' }) => {
   const { t_i18n } = useFormatter();
   const isEnterpriseEdition = useEnterpriseEdition();
+  const { enabled, configured } = useAI();
   const [disableResponse, setDisableResponse] = useState(false);
   const [menuOpen, setMenuOpen] = useState<{ open: boolean; anchorEl: PopoverProps['anchorEl'] }>({ open: false, anchorEl: null });
   const [busId, setBusId] = useState<string | null>(null);
@@ -71,9 +73,9 @@ const StixCoreObjectAskAI: FunctionComponent<StixCoreObjectAskAiProps> = ({ inst
   };
   return (
     <>
-      <EETooltip title={t_i18n('Ask AI')}>
+      <EETooltip forAi={true} title={t_i18n('Ask AI')}>
         <ToggleButton
-          onClick={handleOpenMenu}
+          onClick={(event) => ((isEnterpriseEdition && enabled && configured) ? handleOpenMenu(event) : null)}
           value="ask-ai"
           size="small"
           style={{ marginRight: 3 }}

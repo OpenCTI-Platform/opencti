@@ -102,7 +102,7 @@
     "created_by_based": false
   },
   "ai": {
-    "enabled": false,
+    "enabled": true,
     "type": "mistralai",
     "endpoint": "",
     "token": "",

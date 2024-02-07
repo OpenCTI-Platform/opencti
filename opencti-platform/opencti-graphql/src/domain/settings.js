@@ -69,8 +69,9 @@ export const getSettings = async (context) => {
     platform_openbas_url: nconf.get('xtm:openbas_url'),
     platform_openerm_url: nconf.get('xtm:openerm_url'),
     platform_openmtd_url: nconf.get('xtm:openmtd_url'),
-    platform_ai_enabled: nconf.get('ai:enabled'),
+    platform_ai_enabled: nconf.get('ai:enabled') ?? false,
     platform_ai_type: nconf.get('ai:type'),
+    platform_ai_model: nconf.get('ai:model'),
     platform_ai_has_token: !!isNotEmptyField(nconf.get('ai:token')),
     platform_feature_flags: [
       { id: 'RUNTIME_SORTING', enable: isRuntimeSortEnable() },

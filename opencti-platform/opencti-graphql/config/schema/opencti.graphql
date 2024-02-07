@@ -1118,9 +1118,10 @@ type Settings implements InternalObject & BasicObject {
   platform_openbas_url: String
   platform_openerm_url: String
   platform_openmtd_url: String
-  platform_ai_enabled: Boolean
+  platform_ai_enabled: Boolean!
   platform_ai_type: String
-  platform_ai_has_token: Boolean
+  platform_ai_model: String
+  platform_ai_has_token: Boolean!
   platform_login_message: String
   platform_consent_message: String
   platform_consent_confirm_text: String

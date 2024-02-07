@@ -47,8 +47,6 @@ const ResponseDialog: FunctionComponent<ResponseDialogProps> = ({
   isDisabled,
   handleClose,
   handleAccept,
-  handleFollowUp,
-  followUpActions,
   format,
 }) => {
   const { t_i18n } = useFormatter();

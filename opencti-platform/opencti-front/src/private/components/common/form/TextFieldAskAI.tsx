@@ -10,6 +10,7 @@ import { graphql, useMutation } from 'react-relay';
 import { useFormatter } from '../../../../components/i18n';
 import ResponseDialog from '../../../../utils/ai/ResponseDialog';
 import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
+import useAI from '../../../../utils/hooks/useAI';
 
 // region types
 interface TextFieldAskAiProps {
@@ -27,6 +28,7 @@ const textFieldAskAIFixSpellingMutation = graphql`
 const TextFieldAskAI: FunctionComponent<TextFieldAskAiProps> = ({ currentValue, setFieldValue, format = 'text' }) => {
   const { t_i18n } = useFormatter();
   const isEnterpriseEdition = useEnterpriseEdition();
+  const { enabled, configured } = useAI();
   const [disableResponse, setDisableResponse] = useState(false);
   const [menuOpen, setMenuOpen] = useState<{ open: boolean; anchorEl: HTMLButtonElement | null; }>({ open: false, anchorEl: null });
   const [busId, setBusId] = useState<string | null>(null);
@@ -68,11 +70,11 @@ const TextFieldAskAI: FunctionComponent<TextFieldAskAiProps> = ({ currentValue, 
   };
   return (
     <InputAdornment position="end">
-      <EETooltip title={t_i18n('Ask AI')}>
+      <EETooltip forAi={true} title={t_i18n('Ask AI')}>
         <IconButton
           size="medium"
           color="secondary"
-          onClick={handleOpenMenu}
+          onClick={(event) => ((isEnterpriseEdition && enabled && configured) ? handleOpenMenu(event) : null)}
         >
           <AutoAwesomeOutlined fontSize='medium'/>
         </IconButton>
