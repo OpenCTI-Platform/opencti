@@ -20,6 +20,7 @@ const MarkdownField = (props) => {
     controlledSelectedTab,
     controlledSetSelectTab,
     height,
+    askAi,
   } = props;
   const { t_i18n } = useFormatter();
   const [selectedTab, setSelectedTab] = useState('write');

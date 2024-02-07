@@ -30,6 +30,7 @@ import useGranted, { KNOWLEDGE_KNGETEXPORT } from '../../utils/hooks/useGranted'
 import { hexToRGB, itemColor } from '../../utils/Colors';
 import ItemMarkings from '../../components/ItemMarkings';
 import { export_max_size } from '../../utils/utils';
+import Breadcrumbs from '../../components/Breadcrumps';
 
 const SEARCH$ = new Subject().pipe(debounce(() => timer(500)));
 
@@ -432,256 +433,252 @@ const SearchBulk = () => {
     ? sort(resolvedEntities)
     : resolvedEntities;
   return (
-    <div className={classes.container}>
-      <Typography
-        variant="h1"
-        gutterBottom={true}
-        style={{ marginBottom: 18, float: 'left' }}
-      >
-        {t_i18n('Search for multiple entities')}
-      </Typography>
-      <ToggleButtonGroup
-        size="small"
-        color="primary"
-        style={{ float: 'right', marginTop: -5 }}
-      >
-        {!exportDisabled && (
-          <ToggleButton
-            value="export"
-            aria-label="export"
-            size="small"
-            onClick={() => setOpenExports(true)}
-          >
-            <Tooltip title={t_i18n('Open export panel')}>
-              <FileDownloadOutlined
-                fontSize="small"
-                color={openExports ? 'secondary' : 'primary'}
-              />
-            </Tooltip>
-          </ToggleButton>
-        )}
-        {exportDisabled && (
-          <Tooltip
-            title={`${
-              t_i18n(
-                'Export is disabled because too many entities are targeted (maximum number of entities is: ',
-              ) + export_max_size
-            })`}
-          >
-            <span>
-              <ToggleButton
-                value="export"
-                aria-label="export"
-                size="small"
-                disabled={true}
-              >
-                <FileDownloadOutlined fontSize="small" />
-              </ToggleButton>
-            </span>
-          </Tooltip>
-        )}
-      </ToggleButtonGroup>
-      <div className="clearfix" />
-      {isGrantedToExports && (
-        <StixCoreObjectsExports
-          open={openExports}
-          handleToggle={() => setOpenExports(!openExports)}
-          paginationOptions={paginationOptions}
-          exportContext={{ entity_type: 'Stix-Core-Object' }}
-          variant="persistent"
-        />
-      )}
-      <Grid
-        container={true}
-        spacing={3}
-        classes={{ container: classes.gridContainer }}
-      >
-        <Grid item={true} xs={2} style={{ marginTop: -20 }}>
-          <TextField
-            onChange={handleChangeTextField}
-            value={textFieldValue}
-            multiline={true}
-            fullWidth={true}
-            minRows={20}
-            placeholder={t_i18n('One keyword by line or separated by commas')}
-            variant="outlined"
-          />
-        </Grid>
-        <Grid item={true} xs={10} style={{ marginTop: -20 }}>
-          <Box style={{ width: '100%', marginTop: 2 }}>
-            <LinearProgress
-              variant={loading ? 'indeterminate' : 'determinate'}
-              value={0}
-            />
-          </Box>
-          <List classes={{ root: classes.linesContainer }}>
-            <ListItem
-              classes={{ root: classes.itemHead }}
-              divider={false}
-              style={{ paddingTop: 0 }}
+    <>
+      <Breadcrumbs variant="standard" elements={[{ label: t_i18n('Search') }, { label: t_i18n('Bulk search'), current: true }]} />
+      <div className={classes.container}>
+        <ToggleButtonGroup
+          size="small"
+          color="primary"
+          style={{ float: 'right', marginTop: -5 }}
+        >
+          {!exportDisabled && (
+            <ToggleButton
+              value="export"
+              aria-label="export"
+              size="small"
+              onClick={() => setOpenExports(true)}
             >
-              <ListItemIcon>
-                <span
-                  style={{
-                    padding: '0 8px 0 8px',
-                    fontWeight: 700,
-                    fontSize: 12,
-                  }}
+              <Tooltip title={t_i18n('Open export panel')}>
+                <FileDownloadOutlined
+                  fontSize="small"
+                  color={openExports ? 'secondary' : 'primary'}
+                />
+              </Tooltip>
+            </ToggleButton>
+          )}
+          {exportDisabled && (
+            <Tooltip
+              title={`${
+                t_i18n(
+                  'Export is disabled because too many entities are targeted (maximum number of entities is: ',
+                ) + export_max_size
+              })`}
+            >
+              <span>
+                <ToggleButton
+                  value="export"
+                  aria-label="export"
+                  size="small"
+                  disabled={true}
                 >
-                  #
-                </span>
-              </ListItemIcon>
-              <ListItemText
-                primary={
-                  <div>
-                    {SortHeader('type', 'Type', true)}
-                    {SortHeader('value', 'Value', true)}
-                    {SortHeader('author', 'Author', true)}
-                    {SortHeader('creator', 'Creators', true)}
-                    {SortHeader('labels', 'Labels', true)}
-                    {SortHeader('created_at', 'Creation date', true)}
-                    {SortHeader('analyses', 'Analyses', true)}
-                    {SortHeader('markings', 'Markings', true)}
-                  </div>
-                }
+                  <FileDownloadOutlined fontSize="small" />
+                </ToggleButton>
+              </span>
+            </Tooltip>
+          )}
+        </ToggleButtonGroup>
+        <div className="clearfix" />
+        {isGrantedToExports && (
+          <StixCoreObjectsExports
+            open={openExports}
+            handleToggle={() => setOpenExports(!openExports)}
+            paginationOptions={paginationOptions}
+            exportContext={{ entity_type: 'Stix-Core-Object' }}
+            variant="persistent"
+          />
+        )}
+        <Grid
+          container={true}
+          spacing={3}
+          classes={{ container: classes.gridContainer }}
+        >
+          <Grid item={true} xs={2} style={{ marginTop: -20 }}>
+            <TextField
+              onChange={handleChangeTextField}
+              value={textFieldValue}
+              multiline={true}
+              fullWidth={true}
+              minRows={20}
+              placeholder={t_i18n('One keyword by line or separated by commas')}
+              variant="outlined"
+            />
+          </Grid>
+          <Grid item={true} xs={10} style={{ marginTop: -20 }}>
+            <Box style={{ width: '100%', marginTop: 2 }}>
+              <LinearProgress
+                variant={loading ? 'indeterminate' : 'determinate'}
+                value={0}
               />
-              <ListItemIcon classes={{ root: classes.goIcon }}>
+            </Box>
+            <List classes={{ root: classes.linesContainer }}>
+              <ListItem
+                classes={{ root: classes.itemHead }}
+                divider={false}
+                style={{ paddingTop: 0 }}
+              >
+                <ListItemIcon>
+                  <span
+                    style={{
+                      padding: '0 8px 0 8px',
+                      fontWeight: 700,
+                      fontSize: 12,
+                    }}
+                  >
+                    #
+                  </span>
+                </ListItemIcon>
+                <ListItemText
+                  primary={
+                    <div>
+                      {SortHeader('type', 'Type', true)}
+                      {SortHeader('value', 'Value', true)}
+                      {SortHeader('author', 'Author', true)}
+                      {SortHeader('creator', 'Creators', true)}
+                      {SortHeader('labels', 'Labels', true)}
+                      {SortHeader('created_at', 'Creation date', true)}
+                      {SortHeader('analyses', 'Analyses', true)}
+                      {SortHeader('markings', 'Markings', true)}
+                    </div>
+                }
+                />
+                <ListItemIcon classes={{ root: classes.goIcon }}>
                 &nbsp;
-              </ListItemIcon>
-            </ListItem>
-            {sortedResolvedEntities.map((entity) => {
-              const inPlatform = entity.in_platform;
-              const link = inPlatform && `${resolveLink(entity.type)}/${entity.id}`;
-              const linkAnalyses = `${link}/analyses`;
-              return (
-                <ListItem
-                  key={entity.id}
-                  classes={{ root: classes.item }}
-                  divider={true}
-                  button={inPlatform}
-                  component={inPlatform && Link}
-                  to={inPlatform && link}
-                >
-                  <ListItemIcon classes={{ root: classes.itemIcon }}>
-                    <ItemIcon type={entity.type} />
-                  </ListItemIcon>
-                  <ListItemText
-                    primary={
-                      <>
-                        <div
-                          className={classes.bodyItem}
-                          style={inlineStyles.type}
-                        >
-                          {entity.in_platform ? (
-                            <Chip
-                              classes={{ root: classes.chipInList }}
-                              style={{
-                                backgroundColor: hexToRGB(
-                                  itemColor(entity.type),
-                                  0.08,
-                                ),
-                                color: itemColor(entity.type),
-                                border: `1px solid ${itemColor(entity.type)}`,
-                              }}
-                              label={t_i18n(`entity_${entity.type}`)}
-                            />
-                          ) : (
-                            <Chip
-                              classes={{ root: classes.chipInList }}
-                              variant="outlined"
-                              color="error"
-                              label={t_i18n('Unknown')}
-                            />
-                          )}
-                        </div>
-                        <div
-                          className={classes.bodyItem}
-                          style={inlineStyles.value}
-                        >
-                          {entity.value}
-                        </div>
-                        <div
-                          className={classes.bodyItem}
-                          style={inlineStyles.author}
-                        >
-                          {entity.in_platform && entity.author}
-                        </div>
-                        <div
-                          className={classes.bodyItem}
-                          style={inlineStyles.creator}
-                        >
-                          {entity.in_platform && entity.creators}
-                        </div>
-                        <div
-                          className={classes.bodyItem}
-                          style={inlineStyles.labels}
-                        >
-                          {entity.in_platform && (
-                            <StixCoreObjectLabels
-                              variant="inList"
-                              labels={entity.labels}
-                            />
-                          )}
-                        </div>
-                        <div
-                          className={classes.bodyItem}
-                          style={inlineStyles.created_at}
-                        >
-                          {entity.in_platform && nsd(entity.created_at)}
-                        </div>
-                        <div
-                          className={classes.bodyItem}
-                          style={inlineStyles.analyses}
-                        >
-                          {entity.in_platform && (
-                            <>
-                              {[
-                                'Note',
-                                'Opinion',
-                                'Course-Of-Action',
-                                'Data-Component',
-                                'Data-Source',
-                              ].includes(entity.type) ? (
-                                <Chip
-                                  classes={{ root: classes.chipNoLink }}
-                                  label={n(entity.containersNumber.total)}
-                                />
-                                ) : (
+                </ListItemIcon>
+              </ListItem>
+              {sortedResolvedEntities.map((entity) => {
+                const inPlatform = entity.in_platform;
+                const link = inPlatform && `${resolveLink(entity.type)}/${entity.id}`;
+                const linkAnalyses = `${link}/analyses`;
+                return (
+                  <ListItem
+                    key={entity.id}
+                    classes={{ root: classes.item }}
+                    divider={true}
+                    button={inPlatform}
+                    component={inPlatform && Link}
+                    to={inPlatform && link}
+                  >
+                    <ListItemIcon classes={{ root: classes.itemIcon }}>
+                      <ItemIcon type={entity.type} />
+                    </ListItemIcon>
+                    <ListItemText
+                      primary={
+                        <>
+                          <div
+                            className={classes.bodyItem}
+                            style={inlineStyles.type}
+                          >
+                            {entity.in_platform ? (
+                              <Chip
+                                classes={{ root: classes.chipInList }}
+                                style={{
+                                  backgroundColor: hexToRGB(
+                                    itemColor(entity.type),
+                                    0.08,
+                                  ),
+                                  color: itemColor(entity.type),
+                                  border: `1px solid ${itemColor(entity.type)}`,
+                                }}
+                                label={t_i18n(`entity_${entity.type}`)}
+                              />
+                            ) : (
+                              <Chip
+                                classes={{ root: classes.chipInList }}
+                                variant="outlined"
+                                color="error"
+                                label={t_i18n('Unknown')}
+                              />
+                            )}
+                          </div>
+                          <div
+                            className={classes.bodyItem}
+                            style={inlineStyles.value}
+                          >
+                            {entity.value}
+                          </div>
+                          <div
+                            className={classes.bodyItem}
+                            style={inlineStyles.author}
+                          >
+                            {entity.in_platform && entity.author}
+                          </div>
+                          <div
+                            className={classes.bodyItem}
+                            style={inlineStyles.creator}
+                          >
+                            {entity.in_platform && entity.creators}
+                          </div>
+                          <div
+                            className={classes.bodyItem}
+                            style={inlineStyles.labels}
+                          >
+                            {entity.in_platform && (
+                              <StixCoreObjectLabels
+                                variant="inList"
+                                labels={entity.labels}
+                              />
+                            )}
+                          </div>
+                          <div
+                            className={classes.bodyItem}
+                            style={inlineStyles.created_at}
+                          >
+                            {entity.in_platform && nsd(entity.created_at)}
+                          </div>
+                          <div
+                            className={classes.bodyItem}
+                            style={inlineStyles.analyses}
+                          >
+                            {entity.in_platform && (
+                              <>
+                                {[
+                                  'Note',
+                                  'Opinion',
+                                  'Course-Of-Action',
+                                  'Data-Component',
+                                  'Data-Source',
+                                ].includes(entity.type) ? (
                                   <Chip
-                                    classes={{ root: classes.chip }}
+                                    classes={{ root: classes.chipNoLink }}
                                     label={n(entity.containersNumber.total)}
-                                    component={Link}
-                                    to={linkAnalyses}
                                   />
-                                )}
-                            </>
-                          )}
-                        </div>
-                        <div
-                          className={classes.bodyItem}
-                          style={inlineStyles.markings}
-                        >
-                          {entity.in_platform && (
-                            <ItemMarkings
-                              variant="inList"
-                              markingDefinitions={entity.markings ?? []}
-                              limit={1}
-                            />
-                          )}
-                        </div>
-                      </>
+                                  ) : (
+                                    <Chip
+                                      classes={{ root: classes.chip }}
+                                      label={n(entity.containersNumber.total)}
+                                      component={Link}
+                                      to={linkAnalyses}
+                                    />
+                                  )}
+                              </>
+                            )}
+                          </div>
+                          <div
+                            className={classes.bodyItem}
+                            style={inlineStyles.markings}
+                          >
+                            {entity.in_platform && (
+                              <ItemMarkings
+                                variant="inList"
+                                markingDefinitions={entity.markings ?? []}
+                                limit={1}
+                              />
+                            )}
+                          </div>
+                        </>
                     }
-                  />
-                  <ListItemIcon classes={{ root: classes.goIcon }}>
-                    {entity.in_platform && <KeyboardArrowRightOutlined />}
-                  </ListItemIcon>
-                </ListItem>
-              );
-            })}
-          </List>
+                    />
+                    <ListItemIcon classes={{ root: classes.goIcon }}>
+                      {entity.in_platform && <KeyboardArrowRightOutlined />}
+                    </ListItemIcon>
+                  </ListItem>
+                );
+              })}
+            </List>
+          </Grid>
         </Grid>
-      </Grid>
-    </div>
+      </div>
+    </>
   );
 };
 

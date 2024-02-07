@@ -14,6 +14,8 @@ import { CaseRftLineCase_node$data } from './case_rfts/__generated__/CaseRftLine
 import { CaseRftLineDummy } from './case_rfts/CaseRftLine';
 import CaseRftCreation from './case_rfts/CaseRftCreation';
 import { buildEntityTypeBasedFilterContext, emptyFilterGroup } from '../../../utils/filters/filtersUtils';
+import { useFormatter } from '../../../components/i18n';
+import Breadcrumbs from '../../../components/Breadcrumps';
 
 interface CaseRftsProps {
   inputValue?: string;
@@ -22,6 +24,7 @@ interface CaseRftsProps {
 export const LOCAL_STORAGE_KEY = 'caseRfts';
 
 const CaseRfts: FunctionComponent<CaseRftsProps> = () => {
+  const { t_i18n } = useFormatter();
   const {
     platformModuleHelpers: { isRuntimeFieldEnable },
   } = useAuth();
@@ -194,6 +197,7 @@ const CaseRfts: FunctionComponent<CaseRftsProps> = () => {
   };
   return (
     <ExportContextProvider>
+      <Breadcrumbs variant="list" elements={[{ label: t_i18n('Cases') }, { label: t_i18n('Requests for takedown'), current: true }]} />
       {renderLines()}
       <Security needs={[KNOWLEDGE_KNUPDATE]}>
         <CaseRftCreation paginationOptions={queryPaginationOptions} />

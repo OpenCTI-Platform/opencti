@@ -25,6 +25,7 @@ import ContainerStixDomainObjects from '../../common/containers/ContainerStixDom
 import ContainerStixCyberObservables from '../../common/containers/ContainerStixCyberObservables';
 import CaseRfiKnowledge from './CaseRfiKnowledge';
 import { useFormatter } from '../../../../components/i18n';
+import Breadcrumbs from '../../../../components/Breadcrumps';
 
 const subscription = graphql`
   subscription RootCaseRfiCaseSubscription($id: ID!) {
@@ -108,6 +109,12 @@ const RootCaseRfiComponent = ({ queryRef, caseId }) => {
     <>
       {caseData ? (
         <div style={{ paddingRight }}>
+          <Breadcrumbs variant="object" elements={[
+            { label: t_i18n('Cases') },
+            { label: t_i18n('Requests for information'), link: '/dashboard/cases/rfis' },
+            { label: caseData.name, current: true },
+          ]}
+          />
           <ContainerHeader
             container={caseData}
             PopoverComponent={<CaseRfiPopover id={caseData.id} />}

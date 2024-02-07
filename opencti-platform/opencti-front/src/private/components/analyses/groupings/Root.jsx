@@ -18,6 +18,7 @@ import ContainerStixCyberObservables from '../../common/containers/ContainerStix
 import ErrorNotFound from '../../../../components/ErrorNotFound';
 import StixCoreObjectFilesAndHistory from '../../common/stix_core_objects/StixCoreObjectFilesAndHistory';
 import inject18n from '../../../../components/i18n';
+import Breadcrumbs from '../../../../components/Breadcrumps';
 
 const subscription = graphql`
   subscription RootGroupingSubscription($id: ID!) {
@@ -41,6 +42,7 @@ const groupingQuery = graphql`
       id
       standard_id
       entity_type
+      name
       ...Grouping_grouping
       ...GroupingDetails_grouping
       ...GroupingKnowledge_grouping
@@ -116,6 +118,12 @@ class RootGrouping extends Component {
                 }
                 return (
                   <div style={{ paddingRight }}>
+                    <Breadcrumbs variant="object" elements={[
+                      { label: t('Analyses') },
+                      { label: t('Groupings'), link: '/dashboard/analyses/groupings' },
+                      { label: grouping.name, current: true },
+                    ]}
+                    />
                     <ContainerHeader
                       container={grouping}
                       PopoverComponent={<GroupingPopover />}

@@ -1,13 +1,13 @@
-import React, { Component } from 'react';
-import * as PropTypes from 'prop-types';
-import withStyles from '@mui/styles/withStyles';
+import React from 'react';
 import TextField from '@mui/material/TextField';
 import InputAdornment from '@mui/material/InputAdornment';
-import { Search } from '@mui/icons-material';
-import { compose } from 'ramda';
-import inject18n from './i18n';
+import { BiotechOutlined, ContentPasteSearchOutlined, Search } from '@mui/icons-material';
+import IconButton from '@mui/material/IconButton';
+import { Link, useLocation } from 'react-router-dom-v5-compat';
+import makeStyles from '@mui/styles/makeStyles';
+import { useFormatter } from './i18n';
 
-const styles = (theme) => ({
+const useStyles = makeStyles((theme) => ({
   searchRoot: {
     borderRadius: 4,
     padding: '0 10px 0 10px',
@@ -37,10 +37,7 @@ const styles = (theme) => ({
   },
   searchInputTopBar: {
     transition: theme.transitions.create('width'),
-    width: 300,
-    '&:focus': {
-      width: 450,
-    },
+    width: 450,
   },
   searchInput: {
     transition: theme.transitions.create('width'),
@@ -56,84 +53,101 @@ const styles = (theme) => ({
       width: 250,
     },
   },
-});
+}));
 
-class SearchInput extends Component {
-  render() {
-    const {
-      t,
-      classes,
-      onChange,
-      onSubmit,
-      variant,
-      keyword,
-      fullWidth,
-      placeholder = `${t('Search these results')}...`,
-    } = this.props;
-    let classRoot = classes.searchRoot;
-    if (variant === 'inDrawer') {
-      classRoot = classes.searchRootInDrawer;
-    } else if (variant === 'noAnimation') {
-      classRoot = classes.searchRootNoAnimation;
-    } else if (variant === 'topBar') {
-      classRoot = classes.searchRootTopBar;
-    } else if (variant === 'thin') {
-      classRoot = classes.searchRootThin;
-    }
-    let classInput = classes.searchInput;
-    if (variant === 'small' || variant === 'thin') {
-      classInput = classes.searchInputSmall;
-    } else if (variant === 'topBar') {
-      classInput = classes.searchInputTopBar;
-    } else if (variant === 'noAnimation') {
-      classInput = classes.searchInputNoAnimation;
-    }
-    return (
-      <TextField
-        fullWidth={fullWidth}
-        name="keyword"
-        defaultValue={keyword}
-        variant="outlined"
-        size="small"
-        placeholder={placeholder}
-        onChange={(event) => {
-          const { value } = event.target;
-          if (typeof onChange === 'function') {
-            onChange(value);
-          }
-        }}
-        onKeyPress={(event) => {
-          const { value } = event.target;
-          if (typeof onSubmit === 'function' && event.key === 'Enter') {
-            onSubmit(value);
-          }
-        }}
-        InputProps={{
-          startAdornment: (
-            <InputAdornment position="start">
-              <Search fontSize="small" />
-            </InputAdornment>
-          ),
-          classes: {
-            root: classRoot,
-            input: classInput,
-          },
-        }}
-        autoComplete="off"
-      />
-    );
+const SearchInput = (props) => {
+  const classes = useStyles();
+  const location = useLocation();
+  const { t_i18n } = useFormatter();
+  const {
+    onChange,
+    onSubmit,
+    variant,
+    keyword,
+    fullWidth,
+    placeholder = `${t_i18n('Search these results')}...`,
+  } = props;
+  let classRoot = classes.searchRoot;
+  if (variant === 'inDrawer') {
+    classRoot = classes.searchRootInDrawer;
+  } else if (variant === 'noAnimation') {
+    classRoot = classes.searchRootNoAnimation;
+  } else if (variant === 'topBar') {
+    classRoot = classes.searchRootTopBar;
+  } else if (variant === 'thin') {
+    classRoot = classes.searchRootThin;
   }
-}
-
-SearchInput.propTypes = {
-  keyword: PropTypes.string,
-  t: PropTypes.func.isRequired,
-  classes: PropTypes.object.isRequired,
-  onChange: PropTypes.func,
-  onSubmit: PropTypes.func,
-  variant: PropTypes.string,
-  fullWidth: PropTypes.bool,
-  placeholder: PropTypes.string,
+  let classInput = classes.searchInput;
+  if (variant === 'small' || variant === 'thin') {
+    classInput = classes.searchInputSmall;
+  } else if (variant === 'topBar') {
+    classInput = classes.searchInputTopBar;
+  } else if (variant === 'noAnimation') {
+    classInput = classes.searchInputNoAnimation;
+  }
+  return (
+    <TextField
+      fullWidth={fullWidth}
+      name="keyword"
+      defaultValue={keyword}
+      variant="outlined"
+      size="small"
+      placeholder={placeholder}
+      onChange={(event) => {
+        const { value } = event.target;
+        if (typeof onChange === 'function') {
+          onChange(value);
+        }
+      }}
+      onKeyPress={(event) => {
+        const { value } = event.target;
+        if (typeof onSubmit === 'function' && event.key === 'Enter') {
+          onSubmit(value);
+        }
+      }}
+      InputProps={{
+        startAdornment: (
+          <InputAdornment position="start">
+            <Search fontSize="small" />
+          </InputAdornment>
+        ),
+        endAdornment: variant === 'topBar' && (
+          <InputAdornment position="end">
+            <IconButton
+              component={Link}
+              to="/dashboard/search"
+              size="medium"
+              color={
+                location.pathname.includes('/dashboard/search')
+                && !location.pathname.includes('/dashboard/search_bulk')
+                  ? 'primary'
+                  : 'inherit'
+              }
+            >
+              <BiotechOutlined fontSize='medium'/>
+            </IconButton>
+            <IconButton
+              component={Link}
+              to="/dashboard/search_bulk"
+              size="medium"
+              color={
+                location.pathname.includes('/dashboard/search_bulk')
+                  ? 'primary'
+                  : 'inherit'
+              }
+            >
+              <ContentPasteSearchOutlined fontSize="medium"/>
+            </IconButton>
+          </InputAdornment>
+        ),
+        classes: {
+          root: classRoot,
+          input: classInput,
+        },
+      }}
+      autoComplete="off"
+    />
+  );
 };
 
-export default compose(inject18n, withStyles(styles))(SearchInput);
+export default SearchInput;

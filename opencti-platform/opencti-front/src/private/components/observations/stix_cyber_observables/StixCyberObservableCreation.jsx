@@ -637,10 +637,10 @@ const StixCyberObservableCreation = ({
 
   const renderClassic = () => {
     return (
-      <div>
+      <>
         <Fab
           onClick={handleOpen}
-          color="secondary"
+          color="primary"
           aria-label="Add"
           className={classes.createButton}
         >
@@ -670,7 +670,7 @@ const StixCyberObservableCreation = ({
             {!status.type ? renderList() : renderForm()}
           </div>
         </Drawer>
-      </div>
+      </>
     );
   };
 
@@ -680,7 +680,7 @@ const StixCyberObservableCreation = ({
         {!speeddial && (
           <Fab
             onClick={handleOpen}
-            color="secondary"
+            color="primary"
             aria-label="Add"
             className={classes.createButtonContextual}
           >

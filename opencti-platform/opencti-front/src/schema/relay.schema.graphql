@@ -7356,6 +7356,7 @@ type Subscription {
   entitySetting(id: ID!): EntitySetting
   workspace(id: ID!): Workspace
   managerConfiguration(id: ID!): ManagerConfiguration
+  aiBus(id: ID!): AIBus
 }
 
 type WorkEditMutations {
@@ -8078,7 +8079,17 @@ type Mutation {
   csvMapperAdd(input: CsvMapperAddInput!): CsvMapper
   csvMapperDelete(id: ID!): ID
   csvMapperFieldPatch(id: ID!, input: [EditInput!]!): CsvMapper
-  aiContainerGenerateReport(id: ID!, paragraphs: Int, tone: String, format: String): String
+  aiContainerGenerateReport(id: ID!, containerId: String!, paragraphs: Int, tone: Tone, format: Format): String
+  aiThreatGenerateReport(id: ID!, threatId: String!, paragraphs: Int, tone: Tone, format: Format): String
+  aiVictimGenerateReport(id: ID!, victimId: String!, paragraphs: Int, tone: Tone, format: Format): String
+  aiConvertIndicator(id: ID!, indicatorId: String!, format: IndicatorFormat!): String
+  aiImproveWriting(id: ID!, content: String!, format: Format): String
+  aiFixSpelling(id: ID!, content: String!, format: Format): String
+  aiMakeShorter(id: ID!, content: String!, format: Format): String
+  aiMakeLonger(id: ID!, content: String!, format: Format): String
+  aiChangeTone(id: ID!, content: String!, format: Format, tone: Tone): String
+  aiSummarize(id: ID!, content: String!, format: Format): String
+  aiExplain(id: ID!, content: String!, format: Format): String
 }
 
 type Channel implements BasicObject & StixObject & StixCoreObject & StixDomainObject {
@@ -11041,4 +11052,27 @@ input CsvMapperAddInput {
   separator: String!
   representations: String!
   skipLineChar: String
+}
+
+enum Tone {
+  technical
+  tactical
+  strategical
+}
+
+enum Format {
+  text
+  html
+  markdown
+}
+
+enum IndicatorFormat {
+  stix
+  sigma
+  yara
+}
+
+type AIBus {
+  bus_id: String!
+  content: String!
 }

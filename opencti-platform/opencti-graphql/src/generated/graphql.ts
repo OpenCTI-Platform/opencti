@@ -54,6 +54,12 @@ export type Scalars = {
   Upload: { input: any; output: any; }
 };
 
+export type AiBus = {
+  __typename?: 'AIBus';
+  bus_id: Scalars['String']['output'];
+  content: Scalars['String']['output'];
+};
+
 export type AckDetails = {
   __typename?: 'AckDetails';
   rate?: Maybe<Scalars['Float']['output']>;
@@ -7147,6 +7153,12 @@ export enum FilterOperator {
   Wildcard = 'wildcard'
 }
 
+export enum Format {
+  Html = 'html',
+  Markdown = 'markdown',
+  Text = 'text'
+}
+
 export type GetMetrics = {
   __typename?: 'GetMetrics';
   total?: Maybe<Scalars['String']['output']>;
@@ -9107,6 +9119,12 @@ export type IndicatorEdge = {
   cursor: Scalars['String']['output'];
   node: Indicator;
 };
+
+export enum IndicatorFormat {
+  Sigma = 'sigma',
+  Stix = 'stix',
+  Yara = 'yara'
+}
 
 export enum IndicatorsOrdering {
   Confidence = 'confidence',
@@ -12017,7 +12035,17 @@ export type Mutation = {
   administrativeAreaFieldPatch?: Maybe<AdministrativeArea>;
   administrativeAreaRelationAdd?: Maybe<StixRefRelationship>;
   administrativeAreaRelationDelete?: Maybe<AdministrativeArea>;
+  aiChangeTone?: Maybe<Scalars['String']['output']>;
   aiContainerGenerateReport?: Maybe<Scalars['String']['output']>;
+  aiConvertIndicator?: Maybe<Scalars['String']['output']>;
+  aiExplain?: Maybe<Scalars['String']['output']>;
+  aiFixSpelling?: Maybe<Scalars['String']['output']>;
+  aiImproveWriting?: Maybe<Scalars['String']['output']>;
+  aiMakeLonger?: Maybe<Scalars['String']['output']>;
+  aiMakeShorter?: Maybe<Scalars['String']['output']>;
+  aiSummarize?: Maybe<Scalars['String']['output']>;
+  aiThreatGenerateReport?: Maybe<Scalars['String']['output']>;
+  aiVictimGenerateReport?: Maybe<Scalars['String']['output']>;
   artifactImport?: Maybe<Artifact>;
   askJobImport?: Maybe<File>;
   attackPatternAdd?: Maybe<AttackPattern>;
@@ -12362,11 +12390,87 @@ export type MutationAdministrativeAreaRelationDeleteArgs = {
 };
 
 
+export type MutationAiChangeToneArgs = {
+  content: Scalars['String']['input'];
+  format?: InputMaybe<Format>;
+  id: Scalars['ID']['input'];
+  tone?: InputMaybe<Tone>;
+};
+
+
 export type MutationAiContainerGenerateReportArgs = {
-  format?: InputMaybe<Scalars['String']['input']>;
+  containerId: Scalars['String']['input'];
+  format?: InputMaybe<Format>;
   id: Scalars['ID']['input'];
   paragraphs?: InputMaybe<Scalars['Int']['input']>;
-  tone?: InputMaybe<Scalars['String']['input']>;
+  tone?: InputMaybe<Tone>;
+};
+
+
+export type MutationAiConvertIndicatorArgs = {
+  format: IndicatorFormat;
+  id: Scalars['ID']['input'];
+  indicatorId: Scalars['String']['input'];
+};
+
+
+export type MutationAiExplainArgs = {
+  content: Scalars['String']['input'];
+  format?: InputMaybe<Format>;
+  id: Scalars['ID']['input'];
+};
+
+
+export type MutationAiFixSpellingArgs = {
+  content: Scalars['String']['input'];
+  format?: InputMaybe<Format>;
+  id: Scalars['ID']['input'];
+};
+
+
+export type MutationAiImproveWritingArgs = {
+  content: Scalars['String']['input'];
+  format?: InputMaybe<Format>;
+  id: Scalars['ID']['input'];
+};
+
+
+export type MutationAiMakeLongerArgs = {
+  content: Scalars['String']['input'];
+  format?: InputMaybe<Format>;
+  id: Scalars['ID']['input'];
+};
+
+
+export type MutationAiMakeShorterArgs = {
+  content: Scalars['String']['input'];
+  format?: InputMaybe<Format>;
+  id: Scalars['ID']['input'];
+};
+
+
+export type MutationAiSummarizeArgs = {
+  content: Scalars['String']['input'];
+  format?: InputMaybe<Format>;
+  id: Scalars['ID']['input'];
+};
+
+
+export type MutationAiThreatGenerateReportArgs = {
+  format?: InputMaybe<Format>;
+  id: Scalars['ID']['input'];
+  paragraphs?: InputMaybe<Scalars['Int']['input']>;
+  threatId: Scalars['String']['input'];
+  tone?: InputMaybe<Tone>;
+};
+
+
+export type MutationAiVictimGenerateReportArgs = {
+  format?: InputMaybe<Format>;
+  id: Scalars['ID']['input'];
+  paragraphs?: InputMaybe<Scalars['Int']['input']>;
+  tone?: InputMaybe<Tone>;
+  victimId: Scalars['String']['input'];
 };
 
 
@@ -23224,6 +23328,7 @@ export enum SubTypesOrdering {
 
 export type Subscription = {
   __typename?: 'Subscription';
+  aiBus?: Maybe<AiBus>;
   entitySetting?: Maybe<EntitySetting>;
   externalReference?: Maybe<ExternalReference>;
   group?: Maybe<Group>;
@@ -23245,6 +23350,11 @@ export type Subscription = {
   stixSightingRelationship?: Maybe<StixSightingRelationship>;
   user?: Maybe<User>;
   workspace?: Maybe<Workspace>;
+};
+
+
+export type SubscriptionAiBusArgs = {
+  id: Scalars['ID']['input'];
 };
 
 
@@ -24981,6 +25091,12 @@ export type TimeSeries = {
   date: Scalars['DateTime']['output'];
   value: Scalars['Int']['output'];
 };
+
+export enum Tone {
+  Strategical = 'strategical',
+  Tactical = 'tactical',
+  Technical = 'technical'
+}
 
 export type Tool = BasicObject & StixCoreObject & StixDomainObject & StixObject & {
   __typename?: 'Tool';
@@ -27392,6 +27508,7 @@ export type ResolversInterfaceTypes<RefType extends Record<string, unknown>> = R
 
 /** Mapping between all available schema types and the resolvers types */
 export type ResolversTypes = ResolversObject<{
+  AIBus: ResolverTypeWrapper<AiBus>;
   AckDetails: ResolverTypeWrapper<AckDetails>;
   AdministrativeArea: ResolverTypeWrapper<BasicStoreEntityAdministrativeArea>;
   AdministrativeAreaAddInput: AdministrativeAreaAddInput;
@@ -27635,6 +27752,7 @@ export type ResolversTypes = ResolversObject<{
   FilterMode: FilterMode;
   FilterOperator: FilterOperator;
   Float: ResolverTypeWrapper<Scalars['Float']['output']>;
+  Format: Format;
   GetMetrics: ResolverTypeWrapper<GetMetrics>;
   Group: ResolverTypeWrapper<Omit<Group, 'default_dashboard' | 'members'> & { default_dashboard?: Maybe<ResolversTypes['Workspace']>, members?: Maybe<ResolversTypes['UserConnection']> }>;
   GroupAddInput: GroupAddInput;
@@ -27680,6 +27798,7 @@ export type ResolversTypes = ResolversObject<{
   IndicatorAddInput: IndicatorAddInput;
   IndicatorConnection: ResolverTypeWrapper<Omit<IndicatorConnection, 'edges'> & { edges?: Maybe<Array<Maybe<ResolversTypes['IndicatorEdge']>>> }>;
   IndicatorEdge: ResolverTypeWrapper<Omit<IndicatorEdge, 'node'> & { node: ResolversTypes['Indicator'] }>;
+  IndicatorFormat: IndicatorFormat;
   IndicatorsOrdering: IndicatorsOrdering;
   Individual: ResolverTypeWrapper<Omit<Individual, 'cases' | 'containers' | 'createdBy' | 'groupings' | 'notes' | 'objectOrganization' | 'observedData' | 'opinions' | 'organizations' | 'reports' | 'stixCoreRelationships'> & { cases?: Maybe<ResolversTypes['CaseConnection']>, containers?: Maybe<ResolversTypes['ContainerConnection']>, createdBy?: Maybe<ResolversTypes['Identity']>, groupings?: Maybe<ResolversTypes['GroupingConnection']>, notes?: Maybe<ResolversTypes['NoteConnection']>, objectOrganization?: Maybe<Array<ResolversTypes['Organization']>>, observedData?: Maybe<ResolversTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversTypes['OpinionConnection']>, organizations?: Maybe<ResolversTypes['OrganizationConnection']>, reports?: Maybe<ResolversTypes['ReportConnection']>, stixCoreRelationships?: Maybe<ResolversTypes['StixCoreRelationshipConnection']> }>;
   IndividualAddInput: IndividualAddInput;
@@ -28079,6 +28198,7 @@ export type ResolversTypes = ResolversObject<{
   ThreatActorsIndividualOrdering: ThreatActorsIndividualOrdering;
   ThreatActorsOrdering: ThreatActorsOrdering;
   TimeSeries: ResolverTypeWrapper<TimeSeries>;
+  Tone: Tone;
   Tool: ResolverTypeWrapper<Omit<Tool, 'cases' | 'containers' | 'createdBy' | 'groupings' | 'notes' | 'objectOrganization' | 'observedData' | 'opinions' | 'reports' | 'stixCoreRelationships'> & { cases?: Maybe<ResolversTypes['CaseConnection']>, containers?: Maybe<ResolversTypes['ContainerConnection']>, createdBy?: Maybe<ResolversTypes['Identity']>, groupings?: Maybe<ResolversTypes['GroupingConnection']>, notes?: Maybe<ResolversTypes['NoteConnection']>, objectOrganization?: Maybe<Array<ResolversTypes['Organization']>>, observedData?: Maybe<ResolversTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversTypes['OpinionConnection']>, reports?: Maybe<ResolversTypes['ReportConnection']>, stixCoreRelationships?: Maybe<ResolversTypes['StixCoreRelationshipConnection']> }>;
   ToolAddInput: ToolAddInput;
   ToolConnection: ResolverTypeWrapper<Omit<ToolConnection, 'edges'> & { edges?: Maybe<Array<Maybe<ResolversTypes['ToolEdge']>>> }>;
@@ -28154,6 +28274,7 @@ export type ResolversTypes = ResolversObject<{
 
 /** Mapping between all available schema types and the resolvers parents */
 export type ResolversParentTypes = ResolversObject<{
+  AIBus: AiBus;
   AckDetails: AckDetails;
   AdministrativeArea: BasicStoreEntityAdministrativeArea;
   AdministrativeAreaAddInput: AdministrativeAreaAddInput;
@@ -28829,6 +28950,12 @@ export type ConstraintDirectiveArgs = {
 };
 
 export type ConstraintDirectiveResolver<Result, Parent, ContextType = any, Args = ConstraintDirectiveArgs> = DirectiveResolverFn<Result, Parent, ContextType, Args>;
+
+export type AiBusResolvers<ContextType = any, ParentType extends ResolversParentTypes['AIBus'] = ResolversParentTypes['AIBus']> = ResolversObject<{
+  bus_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  content?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
 
 export type AckDetailsResolvers<ContextType = any, ParentType extends ResolversParentTypes['AckDetails'] = ResolversParentTypes['AckDetails']> = ResolversObject<{
   rate?: Resolver<Maybe<ResolversTypes['Float']>, ParentType, ContextType>;
@@ -32884,7 +33011,17 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   administrativeAreaFieldPatch?: Resolver<Maybe<ResolversTypes['AdministrativeArea']>, ParentType, ContextType, RequireFields<MutationAdministrativeAreaFieldPatchArgs, 'id' | 'input'>>;
   administrativeAreaRelationAdd?: Resolver<Maybe<ResolversTypes['StixRefRelationship']>, ParentType, ContextType, RequireFields<MutationAdministrativeAreaRelationAddArgs, 'id' | 'input'>>;
   administrativeAreaRelationDelete?: Resolver<Maybe<ResolversTypes['AdministrativeArea']>, ParentType, ContextType, RequireFields<MutationAdministrativeAreaRelationDeleteArgs, 'id' | 'relationship_type' | 'toId'>>;
-  aiContainerGenerateReport?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType, RequireFields<MutationAiContainerGenerateReportArgs, 'id'>>;
+  aiChangeTone?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType, RequireFields<MutationAiChangeToneArgs, 'content' | 'id'>>;
+  aiContainerGenerateReport?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType, RequireFields<MutationAiContainerGenerateReportArgs, 'containerId' | 'id'>>;
+  aiConvertIndicator?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType, RequireFields<MutationAiConvertIndicatorArgs, 'format' | 'id' | 'indicatorId'>>;
+  aiExplain?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType, RequireFields<MutationAiExplainArgs, 'content' | 'id'>>;
+  aiFixSpelling?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType, RequireFields<MutationAiFixSpellingArgs, 'content' | 'id'>>;
+  aiImproveWriting?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType, RequireFields<MutationAiImproveWritingArgs, 'content' | 'id'>>;
+  aiMakeLonger?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType, RequireFields<MutationAiMakeLongerArgs, 'content' | 'id'>>;
+  aiMakeShorter?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType, RequireFields<MutationAiMakeShorterArgs, 'content' | 'id'>>;
+  aiSummarize?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType, RequireFields<MutationAiSummarizeArgs, 'content' | 'id'>>;
+  aiThreatGenerateReport?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType, RequireFields<MutationAiThreatGenerateReportArgs, 'id' | 'threatId'>>;
+  aiVictimGenerateReport?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType, RequireFields<MutationAiVictimGenerateReportArgs, 'id' | 'victimId'>>;
   artifactImport?: Resolver<Maybe<ResolversTypes['Artifact']>, ParentType, ContextType, RequireFields<MutationArtifactImportArgs, 'file'>>;
   askJobImport?: Resolver<Maybe<ResolversTypes['File']>, ParentType, ContextType, RequireFields<MutationAskJobImportArgs, 'fileName'>>;
   attackPatternAdd?: Resolver<Maybe<ResolversTypes['AttackPattern']>, ParentType, ContextType, RequireFields<MutationAttackPatternAddArgs, 'input'>>;
@@ -35798,6 +35935,7 @@ export type SubTypeEditMutationsResolvers<ContextType = any, ParentType extends 
 }>;
 
 export type SubscriptionResolvers<ContextType = any, ParentType extends ResolversParentTypes['Subscription'] = ResolversParentTypes['Subscription']> = ResolversObject<{
+  aiBus?: SubscriptionResolver<Maybe<ResolversTypes['AIBus']>, "aiBus", ParentType, ContextType, RequireFields<SubscriptionAiBusArgs, 'id'>>;
   entitySetting?: SubscriptionResolver<Maybe<ResolversTypes['EntitySetting']>, "entitySetting", ParentType, ContextType, RequireFields<SubscriptionEntitySettingArgs, 'id'>>;
   externalReference?: SubscriptionResolver<Maybe<ResolversTypes['ExternalReference']>, "externalReference", ParentType, ContextType, RequireFields<SubscriptionExternalReferenceArgs, 'id'>>;
   group?: SubscriptionResolver<Maybe<ResolversTypes['Group']>, "group", ParentType, ContextType, RequireFields<SubscriptionGroupArgs, 'id'>>;
@@ -37108,6 +37246,7 @@ export type X509CertificateResolvers<ContextType = any, ParentType extends Resol
 }>;
 
 export type Resolvers<ContextType = any> = ResolversObject<{
+  AIBus?: AiBusResolvers<ContextType>;
   AckDetails?: AckDetailsResolvers<ContextType>;
   AdministrativeArea?: AdministrativeAreaResolvers<ContextType>;
   AdministrativeAreaConnection?: AdministrativeAreaConnectionResolvers<ContextType>;

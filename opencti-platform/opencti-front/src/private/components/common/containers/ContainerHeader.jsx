@@ -35,8 +35,7 @@ import { defaultValue } from '../../../../utils/Graph';
 import { stixCoreRelationshipCreationMutation } from '../stix_core_relationships/StixCoreRelationshipCreation';
 import { containerAddStixCoreObjectsLinesRelationAddMutation } from './ContainerAddStixCoreObjectsLines';
 import StixCoreObjectSharing from '../stix_core_objects/StixCoreObjectSharing';
-import useGranted, { KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS } from '../../../../utils/hooks/useGranted';
-import StixCoreObjectEnrichment from '../stix_core_objects/StixCoreObjectEnrichment';
+import useGranted, { KNOWLEDGE_KNENRICHMENT, KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS } from '../../../../utils/hooks/useGranted';
 import StixCoreObjectQuickSubscription from '../stix_core_objects/StixCoreObjectQuickSubscription';
 import MarkdownDisplay from '../../../../components/MarkdownDisplay';
 import StixCoreObjectFileExport from '../stix_core_objects/StixCoreObjectFileExport';
@@ -46,16 +45,6 @@ import { authorizedMembersToOptions } from '../../../../utils/authorizedMembers'
 const useStyles = makeStyles({
   containerDefault: {
     marginTop: 0,
-  },
-  containerKnowledge: {
-    position: 'absolute',
-    top: 135,
-    right: 24,
-  },
-  containerGraph: {
-    position: 'absolute',
-    top: 135,
-    right: 24,
   },
   title: {
     float: 'left',
@@ -731,7 +720,7 @@ const ContainerHeader = (props) => {
     // container knowledge / graph style
     containerStyle = {
       position: 'absolute',
-      top: 135 + settingsMessagesBannerHeight,
+      top: 165 + settingsMessagesBannerHeight,
       right: 24,
     };
   }
@@ -1047,10 +1036,7 @@ const ContainerHeader = (props) => {
           />
           )}
           {!knowledge && (
-          <StixCoreObjectEnrichment stixCoreObjectId={container.id} />
-          )}
-          {!knowledge && (
-            <Security needs={popoverSecurity || [KNOWLEDGE_KNUPDATE]}>
+            <Security needs={popoverSecurity || [KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNENRICHMENT]}>
               {React.cloneElement(PopoverComponent, { id: container.id })}
             </Security>
           )}

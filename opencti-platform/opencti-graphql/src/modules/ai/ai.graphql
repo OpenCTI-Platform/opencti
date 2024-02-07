@@ -1,3 +1,45 @@
+enum Tone {
+    technical
+    tactical
+    strategical
+}
+
+enum Format {
+    text
+    html
+    markdown
+}
+
+enum IndicatorFormat {
+    stix
+    sigma
+    yara
+}
+
+type AIBus {
+    bus_id: String!
+    content: String!
+}
+
 type Mutation {
-    aiContainerGenerateReport(id: ID!, paragraphs: Int, tone: String, format: String): String @auth(for: [KNOWLEDGE_KNUPDATE])
+    # Based on knowledge
+    aiContainerGenerateReport(id: ID!, containerId: String!, paragraphs: Int, tone: Tone, format: Format): String @auth(for: [KNOWLEDGE_KNUPDATE])
+    aiThreatGenerateReport(id: ID!, threatId: String!, paragraphs: Int, tone: Tone, format: Format): String @auth(for: [KNOWLEDGE_KNUPDATE])
+    aiVictimGenerateReport(id: ID!, victimId: String!, paragraphs: Int, tone: Tone, format: Format): String @auth(for: [KNOWLEDGE_KNUPDATE])
+
+    # Indicators
+    aiConvertIndicator(id: ID!, indicatorId: String!, format: IndicatorFormat!): String @auth(for: [KNOWLEDGE_KNUPDATE])
+
+    # Generic text
+    aiImproveWriting(id: ID!, content: String!, format: Format): String @auth(for: [KNOWLEDGE_KNUPDATE])
+    aiFixSpelling(id: ID!, content: String!, format: Format): String @auth(for: [KNOWLEDGE_KNUPDATE])
+    aiMakeShorter(id: ID!, content: String!, format: Format): String @auth(for: [KNOWLEDGE_KNUPDATE])
+    aiMakeLonger(id: ID!, content: String!, format: Format): String @auth(for: [KNOWLEDGE_KNUPDATE])
+    aiChangeTone(id: ID!, content: String!, format: Format, tone: Tone): String @auth(for: [KNOWLEDGE_KNUPDATE])
+    aiSummarize(id: ID!, content: String!, format: Format): String @auth(for: [KNOWLEDGE_KNUPDATE])
+    aiExplain(id: ID!, content: String!, format: Format): String @auth(for: [KNOWLEDGE])
+}
+
+type Subscription {
+    aiBus(id: ID!): AIBus @auth(for: [KNOWLEDGE_KNUPDATE])
 }

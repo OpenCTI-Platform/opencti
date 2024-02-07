@@ -3,8 +3,7 @@ import MUIBreadcrumbs from '@mui/material/Breadcrumbs';
 import { Link } from 'react-router-dom';
 import Typography from '@mui/material/Typography';
 import makeStyles from '@mui/styles/makeStyles';
-import { useTheme } from '@mui/styles';
-import type { Theme } from '@mui/material/styles/createTheme';
+import { truncate } from '../utils/String';
 
 interface element {
   label: string;
@@ -13,7 +12,7 @@ interface element {
 }
 
 interface BreadcrumpsProps {
-  variant: 'list' | 'object',
+  variant: 'standard' | 'list' | 'object',
   elements: element[],
 }
 
@@ -26,26 +25,34 @@ const useStyles = makeStyles(() => ({
     marginTop: -5,
     marginBottom: 15,
   },
+  breadcrumbsStandard: {
+    marginTop: -5,
+  },
 }));
 
 const Breadcrumps: FunctionComponent<BreadcrumpsProps> = ({ elements, variant }) => {
-  const theme = useTheme<Theme>();
   const classes = useStyles();
+  let className = classes.breadcrumbsStandard;
+  if (variant === 'list') {
+    className = classes.breadcrumbsList;
+  } else if (variant === 'object') {
+    className = classes.breadcrumbsObject;
+  }
   return (
-    <MUIBreadcrumbs classes={{ root: variant === 'list' ? classes.breadcrumbsList : classes.breadcrumbsObject }}>
+    <MUIBreadcrumbs classes={{ root: className }}>
       {elements.map((element) => {
         if (element.current) {
           return (
-            <Typography key={element.label} color="text.primary">{element.label}</Typography>
+            <Typography key={element.label} color="text.primary">{truncate(element.label, 25)}</Typography>
           );
         }
         if (!element.link) {
           return (
-            <Typography key={element.label} color="inherit">{element.label}</Typography>
+            <Typography key={element.label} color="inherit">{truncate(element.label, 25)}</Typography>
           );
         }
         return (
-          <Link key={element.label} to={element.link} style={{ color: theme.palette.text.secondary }}>{element.label}</Link>
+          <Link key={element.label} to={element.link}>{truncate(element.label, 25)}</Link>
         );
       })}
     </MUIBreadcrumbs>

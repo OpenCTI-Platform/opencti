@@ -587,7 +587,7 @@ export const polarAreaChartOptions = (
   theme,
   labels,
   formatter = null,
-  legendPosition = 'right',
+  legendPosition = 'bottom',
 ) => ({
   chart: {
     type: 'polarArea',

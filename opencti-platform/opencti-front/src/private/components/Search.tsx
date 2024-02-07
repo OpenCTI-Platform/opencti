@@ -200,7 +200,7 @@ const Search = () => {
   };
   return (
     <ExportContextProvider>
-      <div>
+      <>
         {renderLines()}
         {resultsCount <= 5 && searchTerm && (
         <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
@@ -215,7 +215,7 @@ const Search = () => {
           </Button>
         </div>
         )}
-      </div>
+      </>
     </ExportContextProvider>
   );
 };

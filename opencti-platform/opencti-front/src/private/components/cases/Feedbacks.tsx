@@ -11,6 +11,8 @@ import ExportContextProvider from '../../../utils/ExportContextProvider';
 import { FeedbacksLinesPaginationQuery, FeedbacksLinesPaginationQuery$variables } from './feedbacks/__generated__/FeedbacksLinesPaginationQuery.graphql';
 import { FeedbackLine_node$data } from './feedbacks/__generated__/FeedbackLine_node.graphql';
 import { buildEntityTypeBasedFilterContext, emptyFilterGroup } from '../../../utils/filters/filtersUtils';
+import { useFormatter } from '../../../components/i18n';
+import Breadcrumbs from '../../../components/Breadcrumps';
 
 interface FeedbacksProps {
   inputValue?: string;
@@ -19,6 +21,7 @@ interface FeedbacksProps {
 export const LOCAL_STORAGE_KEY_FEEDBACK = 'feedbacks';
 
 const Feedbacks: FunctionComponent<FeedbacksProps> = () => {
+  const { t_i18n } = useFormatter();
   const {
     platformModuleHelpers: { isRuntimeFieldEnable },
   } = useAuth();
@@ -179,7 +182,12 @@ const Feedbacks: FunctionComponent<FeedbacksProps> = () => {
       </ListLines>
     );
   };
-  return <ExportContextProvider>{renderLines()}</ExportContextProvider>;
+  return (
+    <ExportContextProvider>
+      <Breadcrumbs variant="list" elements={[{ label: t_i18n('Cases') }, { label: t_i18n('Requests for takedown'), current: true }]} />
+      {renderLines()}
+    </ExportContextProvider>
+  );
 };
 
 export default Feedbacks;

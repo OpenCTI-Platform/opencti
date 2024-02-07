@@ -22,6 +22,7 @@ import StixCoreObjectHistory from '../../common/stix_core_objects/StixCoreObject
 import StixDomainObjectContent from '../../common/stix_domain_objects/StixDomainObjectContent';
 import Feedback from './Feedback';
 import { useFormatter } from '../../../../components/i18n';
+import Breadcrumbs from '../../../../components/Breadcrumps';
 
 const subscription = graphql`
   subscription RootFeedbackSubscription($id: ID!) {
@@ -116,13 +117,17 @@ const RootFeedbackComponent = ({ queryRef, caseId }) => {
       paddingRight = 350;
     }
   }
-
   const canManage = feedbackData?.currentUserAccessRight === 'admin';
-
   return (
     <>
       {feedbackData ? (
         <div style={{ paddingRight }}>
+          <Breadcrumbs variant="object" elements={[
+            { label: t_i18n('Cases') },
+            { label: t_i18n('Feedbacks'), link: '/dashboard/cases/feedbacks' },
+            { label: feedbackData.name, current: true },
+          ]}
+          />
           <ContainerHeader
             container={feedbackData}
             PopoverComponent={<FeedbackPopover id={feedbackData.id} />}

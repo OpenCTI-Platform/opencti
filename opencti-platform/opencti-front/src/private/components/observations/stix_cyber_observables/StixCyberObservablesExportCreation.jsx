@@ -146,7 +146,7 @@ class StixCyberObservablesExportCreationComponent extends Component {
       <ExportContext.Consumer>
         {({ selectedIds }) => {
           return (
-            <div>
+            <>
               <Tooltip
                 title={
                   isExportPossible
@@ -157,7 +157,7 @@ class StixCyberObservablesExportCreationComponent extends Component {
               >
                 <Fab
                   onClick={this.handleOpen.bind(this)}
-                  color="secondary"
+                  color="primary"
                   aria-label="Add"
                   className={classes.createButton}
                   disabled={!isExportPossible}
@@ -273,7 +273,7 @@ class StixCyberObservablesExportCreationComponent extends Component {
                   </Form>
                 )}
               </Formik>
-            </div>
+            </>
           );
         }}
       </ExportContext.Consumer>

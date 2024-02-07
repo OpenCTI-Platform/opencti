@@ -315,7 +315,7 @@ const LeftBar = () => {
                 <MenuItem
                   component={Link}
                   to={entry.link}
-                  selected={location.pathname.includes(entry.link)}
+                  selected={entry.exact ? location.pathname === entry.link : location.pathname.includes(entry.link)}
                   dense={true}
                   classes={{ root: classes.menuSubItem }}
                 >
@@ -841,7 +841,7 @@ const LeftBar = () => {
             {isGrantedToSettings && generateSubMenu(
               'settings',
               [
-                { granted: isGrantedToSettings, link: '/dashboard/settings', label: 'Parameters' },
+                { granted: isGrantedToSettings, link: '/dashboard/settings', label: 'Parameters', exact: true },
                 { granted: isGrantedToSecurity, link: '/dashboard/settings/accesses', label: 'Security' },
                 { granted: isGrantedToSettings, link: '/dashboard/settings/customization', label: 'Customization' },
                 { granted: isGrantedToLabels, link: '/dashboard/settings/vocabularies', label: 'Taxonomies' },

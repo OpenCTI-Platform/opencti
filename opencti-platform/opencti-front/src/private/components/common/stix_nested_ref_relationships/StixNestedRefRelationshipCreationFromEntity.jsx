@@ -809,10 +809,10 @@ class StixNestedRefRelationshipCreationFromEntity extends Component {
     const { classes, entityId, variant } = this.props;
     const { open, step } = this.state;
     return (
-      <div>
+      <>
         {variant === 'inLine' ? (
           <IconButton
-            color="secondary"
+            color="primary"
             aria-label="Label"
             onClick={this.handleOpen.bind(this)}
             style={{ float: 'left', margin: '-15px 0 0 -2px' }}
@@ -823,7 +823,7 @@ class StixNestedRefRelationshipCreationFromEntity extends Component {
         ) : (
           <Fab
             onClick={this.handleOpen.bind(this)}
-            color="secondary"
+            color="primary"
             aria-label="Add"
             className={classes.createButton}
           >
@@ -838,7 +838,7 @@ class StixNestedRefRelationshipCreationFromEntity extends Component {
           classes={{ paper: this.props.classes.drawerPaper }}
           onClose={this.handleClose.bind(this)}
         >
-          <div>
+          <>
             {step === 0 ? this.renderSelectEntity() : ''}
             {step === 1
               ? <QueryRenderer
@@ -859,9 +859,9 @@ class StixNestedRefRelationshipCreationFromEntity extends Component {
                   }}
                 />
               : ''}
-          </div>
+          </>
         </Drawer>
-      </div>
+      </>
     );
   }
 }

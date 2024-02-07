@@ -25,6 +25,7 @@ import IncidentKnowledge from './IncidentKnowledge';
 import { RootIncidentQuery } from '../../events/incidents/__generated__/RootIncidentQuery.graphql';
 import { RootIncidentSubscription } from '../../events/incidents/__generated__/RootIncidentSubscription.graphql';
 import { useFormatter } from '../../../../components/i18n';
+import Breadcrumbs from '../../../../components/Breadcrumps';
 
 const subscription = graphql`
   subscription RootIncidentCaseSubscription($id: ID!) {
@@ -109,6 +110,12 @@ const RootCaseIncidentComponent = ({ queryRef, caseId }) => {
     <>
       {caseData ? (
         <div style={{ paddingRight }}>
+          <Breadcrumbs variant="object" elements={[
+            { label: t_i18n('Cases') },
+            { label: t_i18n('Incidents'), link: '/dashboard/cases/incidents' },
+            { label: caseData.name, current: true },
+          ]}
+          />
           <ContainerHeader
             container={caseData}
             PopoverComponent={<CaseIncidentPopover id={caseData.id} />}

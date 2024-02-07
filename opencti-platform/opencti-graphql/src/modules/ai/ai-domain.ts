@@ -20,10 +20,10 @@ import { RELATION_OBJECT } from '../../schema/stixRefRelationship';
 import { extractEntityRepresentativeName, extractRepresentativeDescription } from '../../database/entity-representative';
 import type { AuthContext, AuthUser } from '../../types/user';
 import type { BasicStoreEntity, BasicStoreRelation } from '../../types/store';
-import type { MutationAiContainerGenerateReportArgs } from '../../generated/graphql';
+import type { InputMaybe, MutationAiContainerGenerateReportArgs } from '../../generated/graphql';
 import { isNotEmptyField } from '../../database/utils';
 import { FROM_START_STR, UNTIL_END_STR } from '../../utils/format';
-import { query } from '../../database/ai-llm';
+import { compute } from '../../database/ai-llm';
 import {
   RELATION_AMPLIFIES,
   RELATION_ATTRIBUTED_TO,
@@ -34,8 +34,38 @@ import {
   RELATION_TARGETS,
   RELATION_USES
 } from '../../schema/stixCoreRelationship';
+import { ENTITY_TYPE_CONTAINER_REPORT } from '../../schema/stixDomainObject';
+import { ENTITY_TYPE_CONTAINER_CASE_INCIDENT } from '../case/case-incident/case-incident-types';
+import { getEntityFromCache } from '../../database/cache';
+import type { BasicStoreSettings } from '../../types/settings';
+import { SYSTEM_USER } from '../../utils/access';
+import { ENTITY_TYPE_SETTINGS } from '../../schema/internalObject';
+import { UnsupportedError } from '../../config/errors';
+import { Format } from '../../generated/graphql';
+
+export const checkEnterpriseEdition = async (context: AuthContext) => {
+  const settings = await getEntityFromCache<BasicStoreSettings>(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
+  const enterpriseEditionEnabled = isNotEmptyField(settings?.enterprise_edition);
+  if (!enterpriseEditionEnabled) {
+    throw UnsupportedError('Enterprise edition is not enabled');
+  }
+};
+
+export const fixSpelling = async (context: AuthContext, user: AuthUser, id: string, content: string, format: InputMaybe<Format> = Format.Text) => {
+  await checkEnterpriseEdition(context);
+  const prompt = `
+  # Instructions
+  Examine the provided English text for any spelling mistakes and correct them accordingly. Ensure that all words are accurately spelled and that the grammar is correct. Your response should match the provided content in the same format which is ${format} and should be placed in Response.
+
+  # Content
+  ${content}
+  `;
+  const response = await compute(id, prompt, user);
+  return response;
+};
 
 export const generateContainerReport = async (context: AuthContext, user: AuthUser, args: MutationAiContainerGenerateReportArgs) => {
+  await checkEnterpriseEdition(context);
   const { id, paragraphs = 10, tone = 'technical', format = 'HTML' } = args;
   const container = await storeLoadById(context, user, id, ENTITY_TYPE_CONTAINER) as BasicStoreEntity;
   const elements = await listAllToEntitiesThroughRelations(context, user, id, RELATION_OBJECT, [ABSTRACT_STIX_CORE_OBJECT, ABSTRACT_STIX_CORE_RELATIONSHIP]);
@@ -43,14 +73,15 @@ export const generateContainerReport = async (context: AuthContext, user: AuthUs
   const relationships = elements.filter((n) => n.parent_types.includes(ABSTRACT_STIX_CORE_RELATIONSHIP)) as Array<BasicStoreRelation>;
   const entities = elements.filter((n) => n.parent_types.includes(ABSTRACT_STIX_CORE_OBJECT)) as Array<BasicStoreEntity>;
   const indexedEntities = R.indexBy(R.prop('id'), entities);
-
+  if (entities.length < 3) {
+    return 'AI model unable to generate a report for containers with less than 3 entities.';
+  }
   // generate entities involved
   const entitiesInvolved = R.values(indexedEntities).map((n) => {
     return `
       - The ${n.entity_type} ${extractEntityRepresentativeName(n)} (${n.id}) description is: ${extractRepresentativeDescription(n)}.
     `;
   });
-
   // generate relationships sentences
   const meaningfulRelationships = [
     RELATION_TARGETS,
@@ -78,22 +109,28 @@ export const generateContainerReport = async (context: AuthContext, user: AuthUs
     }
     return '';
   });
-
+  // Meaningful type
+  let meaningfulType = '';
+  if (container.entity_type === ENTITY_TYPE_CONTAINER_REPORT) {
+    meaningfulType = `cyber threat intelligence report published on ${container.published}`;
+  } else if (container.entity_type === ENTITY_TYPE_CONTAINER_CASE_INCIDENT) {
+    meaningfulType = `case related to an incident response most likely internal and containing alerts, cyber observables and behaviours and created on${container.created}`;
+  }
   // build sentences
   const prompt = `
-    Generate a cyber threat intelligence report in ${format} format with a title and a content of ${paragraphs} paragraphs of approximately 300 words each without using bullet points. The cyber threat intelligence report 
+    # Instructions
+    We are in a context of ${meaningfulType}. You must generate a cyber threat intelligence report in ${format} format with a title and a content of ${paragraphs} paragraphs of approximately 300 words each without using bullet points. The cyber threat intelligence report 
     should be focused on ${tone} aspects and should be divided into meaningful parts such as: victims, techniques or vulnerabilities used for intrusion, then execution, then persistence and then infrastructure. 
     You should take examples of well-known cyber threat intelligence reports available everywhere. Also, if any indicators of compromise are present in this report, you must generate a table with all of them at the end of the report, including
-    file hashes, IP addresses and any relevant technical artifacts.
+    file hashes, IP addresses and any relevant technical artifacts. The report is about ${container.name}. Details are: ${container.description}.
     
-    The report is about ${container.name}. Details are: ${container.description}.
-    
-    Here are the facts of the report:
+    # Facts
     ${relationshipsSentences}
     
-    Here are more information that precise elements involved in the above facts:
+    # Contextual information about the above facts
     ${entitiesInvolved}
   `;
 
-  return query(prompt);
+  const content = await compute(prompt);
+  return content;
 };

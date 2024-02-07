@@ -88,9 +88,9 @@ class IndicatorAddObservables extends Component {
       orderMode: 'desc',
     };
     return (
-      <div>
+      <>
         <IconButton
-          color="secondary"
+          color="primary"
           aria-label="Add"
           onClick={this.handleOpen.bind(this)}
           classes={{ root: classes.createButton }}
@@ -192,7 +192,7 @@ class IndicatorAddObservables extends Component {
           paginationKey="Pagination_stixCyberObservables"
           paginationOptions={paginationOptions}
         />
-      </div>
+      </>
     );
   }
 }

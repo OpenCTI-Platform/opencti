@@ -5,10 +5,9 @@ import { Link, useLocation } from 'react-router-dom-v5-compat';
 import AppBar from '@mui/material/AppBar';
 import Toolbar from '@mui/material/Toolbar';
 import IconButton from '@mui/material/IconButton';
-import { AccountCircleOutlined, BiotechOutlined, ContentPasteSearchOutlined, NotificationsOutlined, AppsOutlined } from '@mui/icons-material';
+import { AccountCircleOutlined, AppsOutlined, NotificationsOutlined } from '@mui/icons-material';
 import Menu from '@mui/material/Menu';
 import Grid from '@mui/material/Grid';
-import Divider from '@mui/material/Divider';
 import MenuItem from '@mui/material/MenuItem';
 import Tooltip from '@mui/material/Tooltip';
 import { graphql, PreloadedQuery, usePreloadedQuery, useSubscription } from 'react-relay';
@@ -77,12 +76,6 @@ const useStyles = makeStyles<Theme>((theme) => ({
     float: 'left',
     height: '100%',
     paddingTop: 12,
-  },
-  divider: {
-    display: 'table-cell',
-    height: '100%',
-    float: 'left',
-    margin: '0 5px 0 5px',
   },
   subtitle: {
     color: theme.palette.text?.secondary,
@@ -252,42 +245,6 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
           />
         </div>
         <div className={classes.barRight}>
-          <Security needs={[KNOWLEDGE]}>
-            <React.Fragment>
-              <div className={classes.barRightContainer}>
-                <Tooltip title={t_i18n('Advanced search')}>
-                  <IconButton
-                    component={Link}
-                    to="/dashboard/search"
-                    color={
-                      location.pathname.includes('/dashboard/search')
-                      && !location.pathname.includes('/dashboard/search_bulk')
-                        ? 'secondary'
-                        : 'inherit'
-                    }
-                    size={'medium'}
-                  >
-                    <BiotechOutlined fontSize='medium'/>
-                  </IconButton>
-                </Tooltip>
-                <Tooltip title={t_i18n('Bulk search')}>
-                  <IconButton
-                    component={Link}
-                    to="/dashboard/search_bulk"
-                    color={
-                      location.pathname.includes('/dashboard/search_bulk')
-                        ? 'primary'
-                        : 'inherit'
-                    }
-                    size="medium"
-                  >
-                    <ContentPasteSearchOutlined fontSize="medium"/>
-                  </IconButton>
-                </Tooltip>
-              </div>
-              <Divider className={classes.divider} orientation="vertical"/>
-            </React.Fragment>
-          </Security>
           <div className={classes.barRightContainer}>
             <Security needs={[KNOWLEDGE]}>
               <Tooltip title={t_i18n('Notifications and triggers')}>
@@ -337,6 +294,7 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
                 vertical: 'top',
                 horizontal: 'center',
               }}
+              disableScrollLock={true}
             >
               <Box sx={{ width: '300px', padding: '15px', textAlign: 'center' }}>
                 <div className={classes.subtitle}>{t_i18n('Filigran eXtended Threat Management')}</div>

@@ -3,6 +3,9 @@ import MuiTextField from '@mui/material/TextField';
 import { fieldToTextField } from 'formik-mui';
 import { useField } from 'formik';
 import { isNil } from 'ramda';
+import TextFieldAskAI from '@components/common/form/TextFieldAskAI';
+import InputAdornment from '@mui/material/InputAdornment';
+import { Search } from '@mui/icons-material';
 import StixDomainObjectDetectDuplicate from '../private/components/common/stix_domain_objects/StixDomainObjectDetectDuplicate';
 
 const TextField = (props) => {
@@ -13,6 +16,7 @@ const TextField = (props) => {
     onFocus,
     onSubmit,
     detectDuplicate,
+    askAi,
   } = props;
   const internalOnChange = React.useCallback(
     (event) => {
@@ -41,7 +45,6 @@ const TextField = (props) => {
   );
   const [, meta] = useField(name);
   const { value, ...otherProps } = fieldToTextField(props);
-
   return (
     <MuiTextField
       {...otherProps}
@@ -63,6 +66,15 @@ const TextField = (props) => {
       onChange={internalOnChange}
       onFocus={internalOnFocus}
       onBlur={internalOnBlur}
+      InputProps={{
+        endAdornment: askAi && (
+          <TextFieldAskAI
+            currentValue={value}
+            setFieldValue={(val) => setFieldValue(name, val)}
+            format="text"
+          />
+        ),
+      }}
     />
   );
 };

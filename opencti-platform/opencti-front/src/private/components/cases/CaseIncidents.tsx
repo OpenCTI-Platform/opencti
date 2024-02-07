@@ -17,6 +17,8 @@ import {
 } from './case_incidents/__generated__/CaseIncidentsLinesCasesPaginationQuery.graphql';
 import { CaseIncidentLineCase_node$data } from './case_incidents/__generated__/CaseIncidentLineCase_node.graphql';
 import { buildEntityTypeBasedFilterContext, emptyFilterGroup } from '../../../utils/filters/filtersUtils';
+import { useFormatter } from '../../../components/i18n';
+import Breadcrumbs from '../../../components/Breadcrumps';
 
 interface CaseIncidentsProps {
   inputValue?: string;
@@ -25,6 +27,7 @@ interface CaseIncidentsProps {
 export const LOCAL_STORAGE_KEY_CASE_INCIDENT = 'caseIncidents';
 
 const CaseIncidents: FunctionComponent<CaseIncidentsProps> = () => {
+  const { t_i18n } = useFormatter();
   const {
     platformModuleHelpers: { isRuntimeFieldEnable },
   } = useAuth();
@@ -202,6 +205,7 @@ const CaseIncidents: FunctionComponent<CaseIncidentsProps> = () => {
   };
   return (
     <ExportContextProvider>
+      <Breadcrumbs variant="list" elements={[{ label: t_i18n('Cases') }, { label: t_i18n('Incidents'), current: true }]} />
       {renderLines()}
       <Security needs={[KNOWLEDGE_KNUPDATE]}>
         <CaseIncidentCreation paginationOptions={queryPaginationOptions} />

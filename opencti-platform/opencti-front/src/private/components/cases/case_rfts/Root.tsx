@@ -24,6 +24,7 @@ import ContainerStixCyberObservables from '../../common/containers/ContainerStix
 import ContainerStixDomainObjects from '../../common/containers/ContainerStixDomainObjects';
 import { RootCaseRftCaseQuery } from './__generated__/RootCaseRftCaseQuery.graphql';
 import { useFormatter } from '../../../../components/i18n';
+import Breadcrumbs from '../../../../components/Breadcrumps';
 
 const subscription = graphql`
   subscription RootCaseRftCaseSubscription($id: ID!) {
@@ -107,6 +108,12 @@ const RootCaseRftComponent = ({ queryRef, caseId }) => {
     <>
       {caseData ? (
         <div style={{ paddingRight }}>
+          <Breadcrumbs variant="object" elements={[
+            { label: t_i18n('Cases') },
+            { label: t_i18n('Requests for takedown'), link: '/dashboard/cases/rfts' },
+            { label: caseData.name, current: true },
+          ]}
+          />
           <ContainerHeader
             container={caseData}
             PopoverComponent={<CaseRftPopover id={caseData.id} />}
