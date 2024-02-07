@@ -19,13 +19,13 @@ if (AI_ENABLED && AI_TOKEN) {
     case 'mistralai':
       client = new MistralClient(AI_TOKEN, isEmptyField(AI_ENDPOINT) ? undefined : AI_ENDPOINT);
       break;
-    case 'chatgpt':
+    case 'openai':
       client = new OpenAI({
         apiKey: AI_TOKEN,
       });
       break;
     default:
-      throw UnsupportedError('Not supported AI type (currently support: mistralai, chatgpt)', { type: AI_TYPE });
+      throw UnsupportedError('Not supported AI type (currently support: mistralai, openai)', { type: AI_TYPE });
   }
 }
 
@@ -64,7 +64,7 @@ export const queryChatGpt = async (busId: string, question: string, user: AuthUs
     throw UnsupportedError('Incorrect AI configuration', { enabled: AI_ENABLED, type: AI_TYPE, endpoint: AI_ENDPOINT, model: AI_MODEL });
   }
   try {
-    logApp.info('[AI] Querying ChatGPT with prompt', { question });
+    logApp.info('[AI] Querying OpenAI with prompt', { question });
     const response = await (client as OpenAI)?.chat.completions.create({
       model: AI_MODEL,
       messages: [{ role: 'user', content: question }],
@@ -82,10 +82,10 @@ export const queryChatGpt = async (busId: string, question: string, user: AuthUs
       }
       return content;
     }
-    logApp.error('[AI] No response from ChatGPT', { busId, question });
+    logApp.error('[AI] No response from OpenAI', { busId, question });
     return '';
   } catch (err) {
-    logApp.error('[AI] Cannot query ChatGPT', { error: err });
+    logApp.error('[AI] Cannot query OpenAI', { error: err });
     return '';
   }
 };
@@ -94,7 +94,7 @@ export const compute = async (busId: string, question: string, user: AuthUser) =
   switch (AI_TYPE) {
     case 'mistralai':
       return queryMistralAi(busId, question, user);
-    case 'chatgpt':
+    case 'openai':
       return queryChatGpt(busId, question, user);
     default:
       throw UnsupportedError('Not supported AI type', { type: AI_TYPE });

@@ -4,9 +4,9 @@ import Autocomplete from '@mui/material/Autocomplete';
 import TextField from '@mui/material/TextField';
 import { FilesNativeFieldQuery$data } from '@components/common/form/__generated__/FilesNativeFieldQuery.graphql';
 import makeStyles from '@mui/styles/makeStyles';
+import { FileOutline } from 'mdi-material-ui';
 import { fetchQuery } from '../../../../relay/environment';
 import { truncate } from '../../../../utils/String';
-import ItemIcon from '../../../../components/ItemIcon';
 
 interface FilesFieldProps {
   stixCoreObjectId: string;
@@ -107,13 +107,14 @@ const FilesNativeField: FunctionComponent<FilesFieldProps> = ({
         ) => (
           <li {...props}>
             <div className={classes.icon}>
-              <ItemIcon type="Country" />
+              <FileOutline />
             </div>
             <div className={classes.text}>{option.label ?? ''}</div>
           </li>
         )}
         classes={{ clearIndicator: classes.autoCompleteIndicator }}
         options={files}
+        onFocus={searchFiles}
         onInputChange={searchFiles}
         onChange={(_, value) => (onChange ? onChange(value) : null)}
       />

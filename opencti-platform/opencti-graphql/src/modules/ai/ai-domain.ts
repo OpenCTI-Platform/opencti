@@ -92,7 +92,7 @@ export const makeShorter = async (context: AuthContext, user: AuthUser, id: stri
   # Instructions
   - Examine the provided English text related to cybersecurity and cyber threat intelligence and make it shorter by dividing by 2 the size / length of the text.
   - Make it shorter by dividing by 2 the number of lines but you should keep the main ideas and concepts.
-  - Do NOT summarize or enumerate points.
+  - Do NOT summarize nor enumerate points.
   - Do NOT change the length of the text.
   - Ensure that all words are accurately spelled and that the grammar is correct. 
   - Your response should match the provided content format which is ${format}, be sure to respect this format.
@@ -115,7 +115,7 @@ export const makeLonger = async (context: AuthContext, user: AuthUser, id: strin
   # Instructions
   - Examine the provided English text related to cybersecurity and cyber threat intelligence and make it longer by doubling the size / length of the text.
   - Make it longer by doubling the number of lines by explaining concepts and developing the ideas but NOT too long, the final size should be twice the initial one.
-  - Do NOT summarize or enumerate points. 
+  - Do NOT summarize nor enumerate points. 
   - Ensure that all words are accurately spelled and that the grammar is correct. 
   - Your response should match the provided content format which is ${format}, be sure to respect this format.
 
@@ -138,7 +138,7 @@ export const changeTone = async (context: AuthContext, user: AuthUser, id: strin
   # Instructions
   - Examine the provided English text related to cybersecurity and cyber threat intelligence and change its tone to be more ${tone}.
   - Do NOT change the length of the text, the size of the output should be the same as the input.
-  - Do NOT summarize or enumerate points. 
+  - Do NOT summarize nor enumerate points. 
   - Ensure that all words are accurately spelled and that the grammar is correct. 
   - Your response should match the provided content in the same format which is ${format}.
 
@@ -341,7 +341,8 @@ export const convertFilesToStix = async (context: AuthContext, user: AuthUser, a
   - You should recognize the STIX entities such as intrusion sets, malware, locations, identities in the reports and convert them.
   - You should analyze the grammar and the syntax of the reports to create meaningful STIX 2.1 relationships such as targets, attributed-to, uses, etc.
   - Do your best to convert even if it is challenging and not accurate.
-  - Your response should be in JSON STIX 2.1 format.
+  - Your response should be in JSON STIX 2.1 format. Just output the JSON and nothing else.
+  - Response should only contain the JSON output with no other sentences in English nor explanation.
   
   # Content
   ${filesContent.join('')}

@@ -65,9 +65,15 @@ const stixCoreObjectAskAIConvertFilesToStixMutation = graphql`
 `;
 
 const actionsOptions = {
-  'container-report': ['paragraphs', 'tone', 'format'],
-  'summarize-files': ['paragraphs', 'tone', 'format', 'files'],
-  'convert-files': ['files'],
+  'container-report': ['format', 'paragraphs', 'tone'],
+  'summarize-files': ['format', 'paragraphs', 'tone', 'files'],
+  'convert-files': ['format', 'files'],
+};
+
+const actionsFormat = {
+  'container-report': ['html', 'markdown', 'text'],
+  'summarize-files': ['html', 'markdown', 'text'],
+  'convert-files': ['json'],
 };
 
 const StixCoreObjectAskAI: FunctionComponent<StixCoreObjectAskAiProps> = ({ instanceId, instanceType, instanceName, type }) => {
@@ -81,7 +87,7 @@ const StixCoreObjectAskAI: FunctionComponent<StixCoreObjectAskAiProps> = ({ inst
   const [destination, setDestination] = useState<'content' | 'file'>('content');
   const [optionsOpen, setOptionsOpen] = useState(false);
   const [tone, setTone] = useState<'technical' | 'tactical' | 'strategical'>('technical');
-  const [format, setFormat] = useState<'html' | 'markdown' | 'text'>('html');
+  const [format, setFormat] = useState<'html' | 'markdown' | 'text' | 'json'>('html');
   const [paragraphs, setParagraphs] = useState(10);
   const [files, setFiles] = useState<{ label: string, value: string }[]>([]);
   const [disableResponse, setDisableResponse] = useState(false);
@@ -100,6 +106,7 @@ const StixCoreObjectAskAI: FunctionComponent<StixCoreObjectAskAiProps> = ({ inst
   const handleOpenOptions = (selectedAction: 'container-report' | 'summarize-files' | 'convert-files') => {
     handleCloseMenu();
     setAction(selectedAction);
+    setFormat(actionsFormat[selectedAction][0] as 'html' | 'markdown' | 'text' | 'json' ?? 'html');
     setOptionsOpen(true);
   };
   const handleCloseOptions = () => {
@@ -194,6 +201,8 @@ const StixCoreObjectAskAI: FunctionComponent<StixCoreObjectAskAiProps> = ({ inst
       name += '.html';
     } else if (format === 'markdown') {
       name += '.md';
+    } else if (format === 'json') {
+      name += '.json';
     }
     const blob = new Blob([acceptedResult ?? ''], {
       type,
@@ -205,12 +214,13 @@ const StixCoreObjectAskAI: FunctionComponent<StixCoreObjectAskAiProps> = ({ inst
       variables: {
         id: instanceId,
         file,
+        noTriggerImport: false,
       },
       onCompleted: (response: StixDomainObjectContentFilesUploadStixDomainObjectMutation$data) => {
         setAcceptedResult(null);
         setIsSubmitting(false);
         navigate({
-          pathname: `${resolveLink(instanceType)}/${instanceId}/${type === 'container' ? 'content' : 'data'}`,
+          pathname: `${resolveLink(instanceType)}/${instanceId}/${type === 'container' && format !== 'json' ? 'content' : 'files'}`,
           search: `${createSearchParams({ currentFileId: response?.stixDomainObjectEdit?.importPush?.id ?? '' })}`,
         });
       },
@@ -255,20 +265,34 @@ const StixCoreObjectAskAI: FunctionComponent<StixCoreObjectAskAiProps> = ({ inst
       >
         <DialogTitle>{t_i18n('Select options')}</DialogTitle>
         <DialogContent>
-          {action && actionsOptions[action].includes('tone') && (
           <FormControl style={{ width: '100%' }}>
-            <InputLabel id="tone">{t_i18n('Tone')}</InputLabel>
+            <InputLabel id="format">{t_i18n('Format')}</InputLabel>
             <Select
-              labelId="tone"
-              value={tone}
-              onChange={(event) => setTone(event.target.value as unknown as 'technical' | 'tactical' | 'strategical')}
+              labelId="format"
+              value={format}
+              onChange={(event) => setFormat(event.target.value as unknown as 'html' | 'markdown' | 'text' | 'json')}
               fullWidth={true}
             >
-              <MenuItem value="technical">{t_i18n('Technical')}</MenuItem>
-              <MenuItem value="tactical">{t_i18n('Tactical')}</MenuItem>
-              <MenuItem value="strategical">{t_i18n('Strategical')}</MenuItem>
+              {action && actionsFormat[action].includes('html') && <MenuItem value="html">{t_i18n('HTML')}</MenuItem>}
+              {action && actionsFormat[action].includes('markdown') && <MenuItem value="markdown">{t_i18n('Markdown')}</MenuItem>}
+              {action && actionsFormat[action].includes('text') && <MenuItem value="text">{t_i18n('Plain text')}</MenuItem>}
+              {action && actionsFormat[action].includes('json') && <MenuItem value="json">{t_i18n('JSON')}</MenuItem>}
             </Select>
           </FormControl>
+          {action && actionsOptions[action].includes('tone') && (
+            <FormControl style={fieldSpacingContainerStyle}>
+              <InputLabel id="tone">{t_i18n('Tone')}</InputLabel>
+              <Select
+                labelId="tone"
+                value={tone}
+                onChange={(event) => setTone(event.target.value as unknown as 'technical' | 'tactical' | 'strategical')}
+                fullWidth={true}
+              >
+                <MenuItem value="technical">{t_i18n('Technical')}</MenuItem>
+                <MenuItem value="tactical">{t_i18n('Tactical')}</MenuItem>
+                <MenuItem value="strategical">{t_i18n('Strategical')}</MenuItem>
+              </Select>
+            </FormControl>
           )}
           {action && actionsOptions[action].includes('paragraphs') && (
             <TextField
@@ -279,21 +303,6 @@ const StixCoreObjectAskAI: FunctionComponent<StixCoreObjectAskAiProps> = ({ inst
               onChange={(event) => setParagraphs(event.target.value as unknown as number)}
               style={fieldSpacingContainerStyle}
             />
-          )}
-          {action && actionsOptions[action].includes('format') && (
-            <FormControl style={fieldSpacingContainerStyle}>
-              <InputLabel id="format">{t_i18n('Format')}</InputLabel>
-              <Select
-                labelId="format"
-                value={format}
-                onChange={(event) => setFormat(event.target.value as unknown as 'html' | 'markdown' | 'text')}
-                fullWidth={true}
-              >
-                <MenuItem value="html">{t_i18n('HTML')}</MenuItem>
-                <MenuItem value="markdown">{t_i18n('Markdown')}</MenuItem>
-                <MenuItem value="text">{t_i18n('Plain text')}</MenuItem>
-              </Select>
-            </FormControl>
           )}
           {action && actionsOptions[action].includes('files') && (
             <FilesNativeField
@@ -332,7 +341,7 @@ const StixCoreObjectAskAI: FunctionComponent<StixCoreObjectAskAiProps> = ({ inst
         <DialogTitle>{t_i18n('Select destination')}</DialogTitle>
         <DialogContent>
           <List>
-            {isContainerWithContent(instanceType) && (
+            {isContainerWithContent(instanceType) && format !== 'json' && (
               <ListItem dense={true} divider={true}>
                 <ListItemText
                   primary={t_i18n('Main content')}

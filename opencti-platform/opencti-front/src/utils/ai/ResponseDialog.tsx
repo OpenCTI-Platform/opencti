@@ -1,4 +1,4 @@
-import React, { FunctionComponent, useMemo, useState } from 'react';
+import React, { FunctionComponent, useMemo, useState, useRef } from 'react';
 import DialogActions from '@mui/material/DialogActions';
 import LoadingButton from '@mui/lab/LoadingButton';
 import Dialog from '@mui/material/Dialog';
@@ -18,6 +18,7 @@ import TextField from '@mui/material/TextField';
 import { ResponseDialogAskAISubscription, ResponseDialogAskAISubscription$data } from './__generated__/ResponseDialogAskAISubscription.graphql';
 import { useFormatter } from '../../components/i18n';
 import MarkdownDisplay from '../../components/MarkdownDisplay';
+import { isNotEmptyField } from '../utils';
 
 // region types
 interface ResponseDialogProps {
@@ -27,7 +28,7 @@ interface ResponseDialogProps {
   handleClose: () => void;
   handleAccept: (content: string) => void;
   handleFollowUp: () => void;
-  format: 'text' | 'html' | 'markdown';
+  format: 'text' | 'html' | 'markdown' | 'json';
   isAcceptable?: boolean;
   followUpActions: {
     key: string;
@@ -52,11 +53,27 @@ const ResponseDialog: FunctionComponent<ResponseDialogProps> = ({
   format,
   isAcceptable = true,
 }) => {
+  const textFieldRef = useRef<HTMLTextAreaElement>(null);
+  const markdownFieldRef = useRef<HTMLTextAreaElement>(null);
   const { t_i18n } = useFormatter();
   const [content, setContent] = useState('');
   const [markdownSelectedTab, setMarkdownSelectedTab] = useState<'write' | 'preview' | undefined>('write');
   const handleResponse = (response: ResponseDialogAskAISubscription$data | null | undefined | unknown) => {
     const newContent = response ? (response as ResponseDialogAskAISubscription$data).aiBus?.content : null;
+    if (format === 'text' || format === 'json') {
+      if (isNotEmptyField(textFieldRef?.current?.scrollTop)) {
+        textFieldRef.current.scrollTop = textFieldRef.current.scrollHeight;
+      }
+    } else if (format === 'markdown') {
+      if (isNotEmptyField(markdownFieldRef?.current?.scrollTop)) {
+        markdownFieldRef.current.scrollTop = markdownFieldRef.current.scrollHeight;
+      }
+    } else if (format === 'html') {
+      const elementCkEditor = document.querySelector(
+        '.ck-content.ck-editor__editable.ck-editor__editable_inline',
+      );
+      elementCkEditor?.lastElementChild?.scrollIntoView();
+    }
     return setContent(newContent ?? '');
   };
   const subConfig = useMemo<
@@ -86,8 +103,9 @@ const ResponseDialog: FunctionComponent<ResponseDialogProps> = ({
         <DialogTitle>{t_i18n('Ask AI')}</DialogTitle>
         <DialogContent>
           <div style={{ width: '100%', minHeight: height, height }}>
-            {format === 'text' && (
+            {(format === 'text' || format === 'json') && (
               <TextField
+                inputRef={textFieldRef}
                 disabled={isDisabled}
                 rows={Math.round(height / 23)}
                 value={content}
@@ -97,20 +115,26 @@ const ResponseDialog: FunctionComponent<ResponseDialogProps> = ({
               />
             )}
             {format === 'html' && (
-            <CKEditor
-              editor={Editor}
-              config={{ language: 'en' }}
-              data={content}
-              onChange={(_, editor) => {
-                // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-                // @ts-ignore
-                setContent(editor.getData());
-              }}
-              disabled={isDisabled}
-            />
+              <CKEditor
+                editor={Editor}
+                config={{ language: 'en' }}
+                data={content}
+                onChange={(_, editor) => {
+                  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                  // @ts-ignore
+                  setContent(editor.getData());
+                }}
+                disabled={isDisabled}
+                disableWatchdog={true}
+              />
             )}
             {format === 'markdown' && (
             <ReactMde
+              childProps={{
+                textArea: {
+                  ref: markdownFieldRef,
+                },
+              }}
               readOnly={isDisabled}
               value={content}
               minEditorHeight={height - 80}

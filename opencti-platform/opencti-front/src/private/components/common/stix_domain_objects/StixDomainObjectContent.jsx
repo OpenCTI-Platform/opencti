@@ -389,7 +389,7 @@ class StixDomainObjectContentComponent extends Component {
       mutation: isExternalReference
         ? stixDomainObjectContentUploadExternalReferenceMutation
         : stixDomainObjectContentFilesUploadStixDomainObjectMutation,
-      variables: { file, id: currentId },
+      variables: { file, id: currentId, noTriggerImport: true },
       onCompleted: () => this.setState({ changed: false }),
     });
   }

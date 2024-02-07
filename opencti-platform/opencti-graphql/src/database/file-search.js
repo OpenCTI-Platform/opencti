@@ -20,7 +20,7 @@ import { RELATION_GRANTED_TO, RELATION_OBJECT_MARKING } from '../schema/stixRefR
 import { buildPagination, cursorToOffset, INDEX_FILES, READ_DATA_INDICES_WITHOUT_INTERNAL, READ_INDEX_FILES } from './utils';
 import { DatabaseError } from '../config/errors';
 import { logApp } from '../config/conf';
-import { buildDataRestrictions, elFindByIds, elIndex, elRawCount, elRawDeleteByQuery, elRawSearch, elRawUpdateByQuery, ES_MAX_PAGINATION } from './engine';
+import { buildDataRestrictions, elFindByIds, elIndex, elRawCount, elRawDeleteByQuery, elRawSearch, elRawUpdateByQuery } from './engine';
 
 const buildIndexFileBody = (documentId, file, entity = null) => {
   const documentBody = {
