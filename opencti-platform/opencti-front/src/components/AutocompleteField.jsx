@@ -10,7 +10,7 @@ import { truncate } from '../utils/String';
 
 const AutocompleteField = (props) => {
   const {
-    form: { setFieldValue, setTouched },
+    form: { setFieldValue, setFieldTouched },
     field: { name },
     onChange,
     onFocus,
@@ -41,9 +41,9 @@ const AutocompleteField = (props) => {
       onFocus(name);
     }
   }, [onFocus, name]);
-  const internalOnBlur = React.useCallback(() => {
-    setTouched(true);
-  }, [setTouched]);
+  const internalOnBlur = React.useCallback(async () => {
+    await setFieldTouched(name, true);
+  }, [setFieldTouched]);
   const fieldProps = fieldToAutocomplete(props);
   delete fieldProps.helperText;
   delete fieldProps.openCreate;
@@ -74,7 +74,7 @@ const AutocompleteField = (props) => {
             value={value}
             name={name}
             fullWidth={true}
-            error={!isNil(meta.error)}
+            error={!isNil(meta.error) && meta.touched}
             helperText={meta.error || textfieldprops.helperText}
           />
         )}
