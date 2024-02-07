@@ -6,11 +6,19 @@ import MenuItem from '@mui/material/MenuItem';
 import Menu from '@mui/material/Menu';
 import { v4 as uuid } from 'uuid';
 import { graphql, useMutation } from 'react-relay';
-import EETooltip from '../entreprise_edition/EETooltip';
-import { useFormatter } from '../../../../components/i18n';
-import ResponseDialog from '../../../../utils/ai/ResponseDialog';
-import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
+import Dialog from '@mui/material/Dialog';
+import { DialogTitle } from '@mui/material';
+import DialogContent from '@mui/material/DialogContent';
+import FormControl from '@mui/material/FormControl';
+import InputLabel from '@mui/material/InputLabel';
+import Select from '@mui/material/Select';
+import DialogActions from '@mui/material/DialogActions';
+import Button from '@mui/material/Button';
 import useAI from '../../../../utils/hooks/useAI';
+import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
+import ResponseDialog from '../../../../utils/ai/ResponseDialog';
+import { useFormatter } from '../../../../components/i18n';
+import EETooltip from '../entreprise_edition/EETooltip';
 
 // region types
 interface TextFieldAskAiProps {
@@ -39,8 +47,8 @@ const textFieldAskAIMakeLongerMutation = graphql`
 `;
 
 const textFieldAskAIChangeToneMutation = graphql`
-  mutation TextFieldAskAIChangeToneMutation($id: ID!, $content: String!, $format: Format) {
-    aiChangeTone(id: $id, content: $content, format: $format)
+  mutation TextFieldAskAIChangeToneMutation($id: ID!, $content: String!, $format: Format, $tone: Tone) {
+    aiChangeTone(id: $id, content: $content, format: $format, tone: $tone)
   }
 `;
 
@@ -61,6 +69,8 @@ const TextFieldAskAI: FunctionComponent<TextFieldAskAiProps> = ({ currentValue, 
   const isEnterpriseEdition = useEnterpriseEdition();
   const { enabled, configured } = useAI();
   const [disableResponse, setDisableResponse] = useState(false);
+  const [openToneOptions, setOpenToneOptions] = useState(false);
+  const [tone, setTone] = useState<'technical' | 'tactical' | 'strategical'>('technical');
   const [isAcceptable, setIsAcceptable] = useState(true);
   const [menuOpen, setMenuOpen] = useState<{ open: boolean; anchorEl: HTMLButtonElement | null; }>({ open: false, anchorEl: null });
   const [busId, setBusId] = useState<string | null>(null);
@@ -74,6 +84,11 @@ const TextFieldAskAI: FunctionComponent<TextFieldAskAiProps> = ({ currentValue, 
   const handleCloseMenu = () => {
     setMenuOpen({ open: false, anchorEl: null });
   };
+  const handleOpenToneOptions = () => {
+    handleCloseMenu();
+    setOpenToneOptions(true);
+  };
+  const handleCloseToneOptions = () => setOpenToneOptions(false);
   const handleOpenAskAI = () => setDisplayAskAI(true);
   const handleCloseAskAI = () => setDisplayAskAI(false);
   const [commitMutationFixSpelling] = useMutation(textFieldAskAIFixSpellingMutation);
@@ -132,6 +147,7 @@ const TextFieldAskAI: FunctionComponent<TextFieldAskAiProps> = ({ currentValue, 
             id,
             content: currentValue,
             format,
+            tone,
           },
           onCompleted: () => {
             setDisableResponse(false);
@@ -194,7 +210,7 @@ const TextFieldAskAI: FunctionComponent<TextFieldAskAiProps> = ({ currentValue, 
           <MenuItem onClick={() => handleAskAi('longer')}>
             {t_i18n('Make it longer')}
           </MenuItem>
-          <MenuItem onClick={() => handleAskAi('tone')}>
+          <MenuItem onClick={handleOpenToneOptions}>
             {t_i18n('Change tone')}
           </MenuItem>
           <MenuItem onClick={() => handleAskAi('summarize')}>
@@ -220,6 +236,44 @@ const TextFieldAskAI: FunctionComponent<TextFieldAskAiProps> = ({ currentValue, 
           isAcceptable={isAcceptable}
         />
         )}
+        <Dialog
+          PaperProps={{ elevation: 1 }}
+          open={openToneOptions}
+          onClose={handleCloseToneOptions}
+          fullWidth={true}
+          maxWidth="xs"
+        >
+          <DialogTitle>{t_i18n('Select options')}</DialogTitle>
+          <DialogContent>
+            <FormControl style={{ width: '100%' }}>
+              <InputLabel id="tone">{t_i18n('Tone')}</InputLabel>
+              <Select
+                labelId="tone"
+                value={tone}
+                onChange={(event) => setTone(event.target.value as unknown as 'technical' | 'tactical' | 'strategical')}
+                fullWidth={true}
+              >
+                <MenuItem value="technical">{t_i18n('Technical')}</MenuItem>
+                <MenuItem value="tactical">{t_i18n('Tactical')}</MenuItem>
+                <MenuItem value="strategical">{t_i18n('Strategical')}</MenuItem>
+              </Select>
+            </FormControl>
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={handleCloseToneOptions}>
+              {t_i18n('Cancel')}
+            </Button>
+            <Button
+              onClick={() => {
+                handleCloseToneOptions();
+                handleAskAi('tone');
+              }}
+              color="secondary"
+            >
+              {t_i18n('Generate')}
+            </Button>
+          </DialogActions>
+        </Dialog>
       </>
     );
   };

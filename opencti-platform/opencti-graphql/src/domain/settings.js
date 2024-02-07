@@ -52,7 +52,15 @@ export const getApplicationDependencies = (context) => ([
   { name: 'Redis', version: getRedisVersion() },
 ]);
 
-const getAIEndpointType = () => (isEmptyField(nconf.get('ai:endpoint')) || nconf.get('ai:endpoint').includes('filigran.io') ? 'Filigran' : 'Custom');
+const getAIEndpointType = () => {
+  if (isEmptyField(nconf.get('ai:endpoint'))) {
+    return '';
+  }
+  if (nconf.get('ai:endpoint').includes('filigran.io')) {
+    return 'Filigran';
+  }
+  return 'Custom';
+};
 export const getSettings = async (context) => {
   const platformSettings = await loadEntity(context, SYSTEM_USER, [ENTITY_TYPE_SETTINGS]);
   const clusterInfo = await getClusterInformation();

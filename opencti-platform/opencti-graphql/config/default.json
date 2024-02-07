@@ -106,7 +106,8 @@
     "type": "mistralai",
     "endpoint": "",
     "token": "",
-    "model": ""
+    "model": "",
+    "model_images": ""
   },
   "xtm": {
     "openbas_url": "",

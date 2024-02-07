@@ -12044,6 +12044,7 @@ export type Mutation = {
   aiMakeLonger?: Maybe<Scalars['String']['output']>;
   aiMakeShorter?: Maybe<Scalars['String']['output']>;
   aiSummarize?: Maybe<Scalars['String']['output']>;
+  aiSummarizeFiles?: Maybe<Scalars['String']['output']>;
   aiThreatGenerateReport?: Maybe<Scalars['String']['output']>;
   aiVictimGenerateReport?: Maybe<Scalars['String']['output']>;
   artifactImport?: Maybe<Artifact>;
@@ -12452,6 +12453,16 @@ export type MutationAiSummarizeArgs = {
   content: Scalars['String']['input'];
   format?: InputMaybe<Format>;
   id: Scalars['ID']['input'];
+};
+
+
+export type MutationAiSummarizeFilesArgs = {
+  elementId: Scalars['String']['input'];
+  fileIds?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  format?: InputMaybe<Format>;
+  id: Scalars['ID']['input'];
+  paragraphs?: InputMaybe<Scalars['Int']['input']>;
+  tone?: InputMaybe<Tone>;
 };
 
 
@@ -33023,6 +33034,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   aiMakeLonger?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType, RequireFields<MutationAiMakeLongerArgs, 'content' | 'id'>>;
   aiMakeShorter?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType, RequireFields<MutationAiMakeShorterArgs, 'content' | 'id'>>;
   aiSummarize?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType, RequireFields<MutationAiSummarizeArgs, 'content' | 'id'>>;
+  aiSummarizeFiles?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType, RequireFields<MutationAiSummarizeFilesArgs, 'elementId' | 'id'>>;
   aiThreatGenerateReport?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType, RequireFields<MutationAiThreatGenerateReportArgs, 'id' | 'threatId'>>;
   aiVictimGenerateReport?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType, RequireFields<MutationAiVictimGenerateReportArgs, 'id' | 'victimId'>>;
   artifactImport?: Resolver<Maybe<ResolversTypes['Artifact']>, ParentType, ContextType, RequireFields<MutationArtifactImportArgs, 'file'>>;

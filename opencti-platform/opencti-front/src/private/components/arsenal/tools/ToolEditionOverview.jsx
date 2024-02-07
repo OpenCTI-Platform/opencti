@@ -196,6 +196,7 @@ const ToolEditionOverviewComponent = (props) => {
             fullWidth={true}
             onFocus={editor.changeFocus}
             onSubmit={handleSubmitField}
+            askAi={true}
             helperText={
               <SubscriptionFocus context={context} fieldName="name" />
               }
@@ -210,6 +211,7 @@ const ToolEditionOverviewComponent = (props) => {
             style={{ marginTop: 20 }}
             onFocus={editor.changeFocus}
             onSubmit={handleSubmitField}
+            askAi={true}
             helperText={
               <SubscriptionFocus context={context} fieldName="description" />
               }

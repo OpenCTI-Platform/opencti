@@ -98,8 +98,8 @@ const ContainerContentComponent = ({ containerData }) => {
   }, []);
   const enableReferences = useIsEnforceReference(containerData.entity_type);
   const { innerHeight } = window;
-  const enrichedEditorHeight = innerHeight - 590;
-  const listHeight = innerHeight - 390;
+  const enrichedEditorHeight = innerHeight - 620;
+  const listHeight = innerHeight - 420;
   const queries = {
     fieldPatch: contentMutationFieldPatch,
   };

@@ -368,7 +368,7 @@ class AttackPatternsMatrixColumnsComponent extends Component {
       }),
       killChainPhases,
     );
-    let heightCalc = 280;
+    let heightCalc = 310;
     let className = navOpen ? classes.containerNavOpen : classes.container;
     if (marginRight) {
       if (hideBar) {

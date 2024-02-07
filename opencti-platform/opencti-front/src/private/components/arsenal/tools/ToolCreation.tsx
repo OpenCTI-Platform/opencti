@@ -169,6 +169,7 @@ export const ToolCreationForm: FunctionComponent<ToolFormProps> = ({
             label={t_i18n('Name')}
             fullWidth={true}
             detectDuplicate={['Tool', 'Malware']}
+            askAi={true}
           />
           <Field
             component={MarkdownField}
@@ -178,6 +179,7 @@ export const ToolCreationForm: FunctionComponent<ToolFormProps> = ({
             multiline={true}
             rows="4"
             style={{ marginTop: 20 }}
+            askAi={true}
           />
           <ConfidenceField
             entityType="Tool"

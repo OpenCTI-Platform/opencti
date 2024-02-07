@@ -1,11 +1,11 @@
 import { Tooltip } from '@mui/material';
 import React, { ReactElement, useState } from 'react';
-import FeedbackCreation from '@components/cases/feedbacks/FeedbackCreation';
 import DialogTitle from '@mui/material/DialogTitle';
 import Dialog from '@mui/material/Dialog';
 import DialogContent from '@mui/material/DialogContent';
 import Button from '@mui/material/Button';
 import DialogActions from '@mui/material/DialogActions';
+import FeedbackCreation from '../../cases/feedbacks/FeedbackCreation';
 import EnterpriseEditionAgreement from './EnterpriseEditionAgreement';
 import { useFormatter } from '../../../../components/i18n';
 import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';

@@ -20,7 +20,7 @@ import { RELATION_OBJECT } from '../../schema/stixRefRelationship';
 import { extractEntityRepresentativeName, extractRepresentativeDescription } from '../../database/entity-representative';
 import type { AuthContext, AuthUser } from '../../types/user';
 import type { BasicStoreEntity, BasicStoreRelation } from '../../types/store';
-import type { InputMaybe, MutationAiContainerGenerateReportArgs } from '../../generated/graphql';
+import type { InputMaybe, MutationAiContainerGenerateReportArgs, MutationAiSummarizeFilesArgs } from '../../generated/graphql';
 import { isNotEmptyField } from '../../database/utils';
 import { FROM_START_STR, UNTIL_END_STR } from '../../utils/format';
 import { compute } from '../../database/ai-llm';
@@ -45,6 +45,7 @@ import { Format, Tone } from '../../generated/graphql';
 import { notify } from '../../database/redis';
 import { BUS_TOPICS } from '../../config/conf';
 import { AI_BUS } from './ai-types';
+import { findById, paginatedForPathWithEnrichment } from '../internal/document/document-domain';
 
 const RESOLUTION_LIMIT = 200;
 
@@ -68,6 +69,7 @@ export const fixSpelling = async (context: AuthContext, user: AuthUser, id: stri
   - Examine the provided English text for any spelling mistakes and correct them accordingly.
   - Ensure that all words are accurately spelled and that the grammar is correct.
   - If no mistake is detected, just return the original text without anything else.
+  - Do NOT change the length of the text.
   - Your response should match the provided content format which is ${format}, be sure to respect this format.
 
   # Content
@@ -86,9 +88,10 @@ export const makeShorter = async (context: AuthContext, user: AuthUser, id: stri
   }
   const prompt = `
   # Instructions
-  - Examine the provided English text related to cybersecurity and cyber threat intelligence and make it shorter (decrease by 20% the number of words).
-  - Make it shorter with a decrease of 20% of the number of words but you should keep the main ideas and concepts.
-  - Do not summarize or enumerate points.
+  - Examine the provided English text related to cybersecurity and cyber threat intelligence and make it shorter by dividing by 2 the size / length of the text.
+  - Make it shorter by dividing by 2 the number of lines but you should keep the main ideas and concepts.
+  - Do NOT summarize or enumerate points.
+  - Do NOT change the length of the text.
   - Ensure that all words are accurately spelled and that the grammar is correct. 
   - Your response should match the provided content format which is ${format}, be sure to respect this format.
 
@@ -108,9 +111,10 @@ export const makeLonger = async (context: AuthContext, user: AuthUser, id: strin
   }
   const prompt = `
   # Instructions
-  - Examine the provided English text related to cybersecurity and cyber threat intelligence and make it longer (increase by 20% the number of words).
-  - Make it longer with an increase of 20% of the number of words by explaining concepts and developing the ideas. 
-  - Do not summarize or enumerate points. Ensure that all words are accurately spelled and that the grammar is correct. 
+  - Examine the provided English text related to cybersecurity and cyber threat intelligence and make it longer by doubling the size / length of the text.
+  - Make it longer by doubling the number of lines by explaining concepts and developing the ideas. 
+  - Do NOT summarize or enumerate points. 
+  - Ensure that all words are accurately spelled and that the grammar is correct. 
   - Your response should match the provided content format which is ${format}, be sure to respect this format.
 
   # Content
@@ -131,8 +135,8 @@ export const changeTone = async (context: AuthContext, user: AuthUser, id: strin
   const prompt = `
   # Instructions
   - Examine the provided English text related to cybersecurity and cyber threat intelligence and change its tone to be more ${tone}.
-  - Do not change the length of the text. 
-  - Do not summarize or enumerate points. 
+  - Do NOT change the length of the text. 
+  - Do NOT summarize or enumerate points. 
   - Ensure that all words are accurately spelled and that the grammar is correct. 
   - Your response should match the provided content in the same format which is ${format}.
 
@@ -247,19 +251,51 @@ export const generateContainerReport = async (context: AuthContext, user: AuthUs
   // build sentences
   const prompt = `
     # Instructions
-    We are in a context of ${meaningfulType}. You must generate a cyber threat intelligence report in ${format} with a title and a content of ${paragraphsNumber} paragraphs of approximately 300 words each without using bullet points. The cyber threat intelligence report 
-    should be focused on ${tone} aspects and should be divided into meaningful parts such as: victims, techniques or vulnerabilities used for intrusion, then execution, then persistence and then infrastructure. 
-    You should take examples of well-known cyber threat intelligence reports available everywhere. The report is about ${container.name}. Details are: ${container.description}.
+    - We are in a context of a ${meaningfulType}.
+    - You must generate a cyber threat intelligence report in ${format} with a title and a content of ${paragraphsNumber} paragraphs of approximately 5 lines each without using bullet points.
+    - The cyber threat intelligence report should be focused on ${tone} aspects and should be divided into meaningful parts such as: victims, techniques or vulnerabilities used for intrusion, then execution, then persistence and then infrastructure. 
+    - You should take examples of well-known cyber threat intelligence reports available everywhere. The report is about ${container.name}. Details are: ${container.description}.
     
     # Formatting
-    The report should be in ${format?.toUpperCase() ?? 'TEXT'} format.
-    For all found technical indicators of compromise and or observables, you must generate a table with all of them at the end of the report, including file hashes, IP addresses, domain names, etc.
+    - The report should be in ${format?.toUpperCase() ?? 'TEXT'} format.
+    - For all found technical indicators of compromise and or observables, you must generate a table with all of them at the end of the report, including file hashes, IP addresses, domain names, etc.
     
     # Facts
     ${relationshipsSentences.join('')}
     
     # Contextual information about the above facts
     ${entitiesInvolved.join('')}
+  `;
+  const response = await compute(id, prompt, user);
+  return response;
+};
+
+export const summarizeFiles = async (context: AuthContext, user: AuthUser, args: MutationAiSummarizeFilesArgs) => {
+  await checkEnterpriseEdition(context);
+  const { id, elementId, paragraphs = 10, tone = 'technical', format = 'HTML' } = args;
+  const paragraphsNumber = !paragraphs || paragraphs > 20 ? 20 : paragraphs;
+  const stixCoreObject = await storeLoadById(context, user, elementId, ABSTRACT_STIX_CORE_OBJECT) as BasicStoreEntity;
+  const opts = { first: 20, prefixMimeTypes: undefined, entity_id: stixCoreObject.id, entity_type: stixCoreObject.entity_type };
+  const importFiles = await paginatedForPathWithEnrichment(context, user, `import/${stixCoreObject.entity_type}/${stixCoreObject.id}`, stixCoreObject.id, opts);
+  const filesContent = await Promise.all(importFiles.edges.map((n) => findById(context, user, n.node.id)));
+  const files = filesContent.map((n) => {
+    return `
+    -------------------
+    ${n.content}
+    -------------------
+    `;
+  });
+  const prompt = `
+  # Instructions
+  - Examine the one or multiple cyber threat intelligence reports below and summarize them with main ideas and concepts in ${format} format.
+  - Make a lot more shorter and summarize key points highlighting the deep meaning of the text.
+  - The cyber threat intelligence summary should be focused on ${tone} aspects
+  - The summary should have ${paragraphsNumber} of approximately 5 lines each.
+  - Ensure that all words are accurately spelled and that the grammar is correct. 
+  - Your response should in the given format which is ${format}, be sure to respect this format.
+  
+  # Content
+  ${files.join('')}
   `;
   const response = await compute(id, prompt, user);
   return response;

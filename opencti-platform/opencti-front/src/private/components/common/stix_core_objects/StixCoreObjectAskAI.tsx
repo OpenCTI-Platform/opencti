@@ -43,9 +43,17 @@ interface StixCoreObjectAskAiProps {
   type: 'container' | 'threat' | 'victim' | 'unsupported';
 }
 
+const isContainerWithContent = (type: string) => ['Report', 'Grouping', 'Case-Incident', 'Case-Rfi', 'Case-Rft'].includes(type);
+
 const stixCoreObjectAskAIContainerReportMutation = graphql`
   mutation StixCoreObjectAskAIContainerReportMutation($id: ID!, $containerId: String!, $paragraphs: Int, $tone: Tone, $format: Format) {
     aiContainerGenerateReport(id: $id, containerId: $containerId, paragraphs: $paragraphs, tone: $tone, format: $format)
+  }
+`;
+
+const stixCoreObjectAskAISummarizeFilesMutation = graphql`
+  mutation StixCoreObjectAskAISummarizeFilesMutation($id: ID!, $elementId: String!, $paragraphs: Int, $tone: Tone, $format: Format, $fileIds: [String]) {
+    aiSummarizeFiles(id: $id, elementId: $elementId, paragraphs: $paragraphs, tone: $tone, format: $format, fileIds: $fileIds)
   }
 `;
 
@@ -54,7 +62,7 @@ const StixCoreObjectAskAI: FunctionComponent<StixCoreObjectAskAiProps> = ({ inst
   const navigate = useNavigate();
   const isEnterpriseEdition = useEnterpriseEdition();
   const { enabled, configured } = useAI();
-  const [action, setAction] = useState<'container-report' | null>(null);
+  const [action, setAction] = useState<'container-report' | 'summarize-files' | null>(null);
   const [acceptedResult, setAcceptedResult] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [destination, setDestination] = useState<'content' | 'file'>('content');
@@ -75,7 +83,7 @@ const StixCoreObjectAskAI: FunctionComponent<StixCoreObjectAskAiProps> = ({ inst
   const handleCloseMenu = () => {
     setMenuOpen({ open: false, anchorEl: null });
   };
-  const handleOpenOptions = (selectedAction: 'container-report') => {
+  const handleOpenOptions = (selectedAction: 'container-report' | 'summarize-files') => {
     handleCloseMenu();
     setAction(selectedAction);
     setOptionsOpen(true);
@@ -88,6 +96,7 @@ const StixCoreObjectAskAI: FunctionComponent<StixCoreObjectAskAiProps> = ({ inst
   const [commitMutationUpdateContent] = useMutation(stixDomainObjectContentFieldPatchMutation);
   const [commitMutationCreateFile] = useMutation<StixDomainObjectContentFilesUploadStixDomainObjectMutation>(stixDomainObjectContentFilesUploadStixDomainObjectMutation);
   const [commitMutationContainerReport] = useMutation(stixCoreObjectAskAIContainerReportMutation);
+  const [commitMutationSummarizeFiles] = useMutation(stixCoreObjectAskAISummarizeFilesMutation);
   const handleAskAi = () => {
     handleCloseOptions();
     setDisableResponse(true);
@@ -100,8 +109,22 @@ const StixCoreObjectAskAI: FunctionComponent<StixCoreObjectAskAiProps> = ({ inst
           variables: {
             id,
             containerId: instanceId,
-            paragraphs: 10,
-            tone: 'technical',
+            paragraphs,
+            tone,
+            format,
+          },
+          onCompleted: () => {
+            setDisableResponse(false);
+          },
+        });
+        break;
+      case 'summarize-files':
+        commitMutationSummarizeFiles({
+          variables: {
+            id,
+            elementId: instanceId,
+            paragraphs,
+            tone,
             format,
           },
           onCompleted: () => {
@@ -159,7 +182,7 @@ const StixCoreObjectAskAI: FunctionComponent<StixCoreObjectAskAiProps> = ({ inst
         setAcceptedResult(null);
         setIsSubmitting(false);
         navigate({
-          pathname: `${resolveLink(instanceType)}/${instanceId}/content`,
+          pathname: `${resolveLink(instanceType)}/${instanceId}/${type === 'container' ? 'content' : 'data'}`,
           search: `${createSearchParams({ currentFileId: response?.stixDomainObjectEdit?.importPush?.id ?? '' })}`,
         });
       },
@@ -188,6 +211,9 @@ const StixCoreObjectAskAI: FunctionComponent<StixCoreObjectAskAiProps> = ({ inst
             {t_i18n('Generate report document')}
           </MenuItem>
         )}
+        <MenuItem onClick={() => handleOpenOptions('summarize-files')}>
+          {t_i18n('Summarize associated files')}
+        </MenuItem>
       </Menu>
       <Dialog
         PaperProps={{ elevation: 1 }}
@@ -259,21 +285,23 @@ const StixCoreObjectAskAI: FunctionComponent<StixCoreObjectAskAiProps> = ({ inst
         <DialogTitle>{t_i18n('Select destination')}</DialogTitle>
         <DialogContent>
           <List>
-            <ListItem dense={true} divider={true}>
-              <ListItemText
-                primary={t_i18n('Main content')}
-                secondary={t_i18n('Put in the embedded content of the entity')}
-              />
-              <ListItemSecondaryAction>
-                <Radio
-                  checked={destination === 'content'}
-                  onChange={() => setDestination('content')}
-                  value="content"
-                  name="destination"
-                  inputProps={{ 'aria-label': 'destination' }}
+            {isContainerWithContent(instanceType) && (
+              <ListItem dense={true} divider={true}>
+                <ListItemText
+                  primary={t_i18n('Main content')}
+                  secondary={t_i18n('Put in the embedded content of the entity')}
                 />
-              </ListItemSecondaryAction>
-            </ListItem>
+                <ListItemSecondaryAction>
+                  <Radio
+                    checked={destination === 'content'}
+                    onChange={() => setDestination('content')}
+                    value="content"
+                    name="destination"
+                    inputProps={{ 'aria-label': 'destination' }}
+                  />
+                </ListItemSecondaryAction>
+              </ListItem>
+            )}
             <ListItem dense={true} divider={true}>
               <ListItemText
                 primary={t_i18n('New file')}

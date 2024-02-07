@@ -165,6 +165,7 @@ ThreatActorGroupFormProps
             name="name"
             label={t_i18n('Name')}
             fullWidth={true}
+            askAi={true}
             detectDuplicate={[
               'Threat-Actor',
               'Intrusion-Set',
@@ -192,6 +193,7 @@ ThreatActorGroupFormProps
             multiline={true}
             rows="4"
             style={{ marginTop: 20 }}
+            askAi={true}
           />
           <CreatedByField
             name="createdBy"

@@ -371,7 +371,7 @@ const LeftBar = () => {
                 key={entry.label}
                 component={Link}
                 to={entry.link}
-                selected={location.pathname.includes(entry.link)}
+                selected={entry.exact ? location.pathname === entry.link : location.pathname.includes(entry.link)}
                 dense={true}
                 classes={{ root: classes.menuHoverItem }}
                 onClick={handleSelectedMenuClose}

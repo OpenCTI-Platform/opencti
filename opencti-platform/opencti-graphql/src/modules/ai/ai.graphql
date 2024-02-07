@@ -26,6 +26,7 @@ type Mutation {
     aiContainerGenerateReport(id: ID!, containerId: String!, paragraphs: Int, tone: Tone, format: Format): String @auth(for: [KNOWLEDGE_KNUPDATE])
     aiThreatGenerateReport(id: ID!, threatId: String!, paragraphs: Int, tone: Tone, format: Format): String @auth(for: [KNOWLEDGE_KNUPDATE])
     aiVictimGenerateReport(id: ID!, victimId: String!, paragraphs: Int, tone: Tone, format: Format): String @auth(for: [KNOWLEDGE_KNUPDATE])
+    aiSummarizeFiles(id: ID!, elementId: String!, paragraphs: Int, tone: Tone, format: Format, fileIds: [String]): String @auth(for: [KNOWLEDGE_KNUPDATE])
 
     # Indicators
     aiConvertIndicator(id: ID!, indicatorId: String!, format: IndicatorFormat!): String @auth(for: [KNOWLEDGE_KNUPDATE])

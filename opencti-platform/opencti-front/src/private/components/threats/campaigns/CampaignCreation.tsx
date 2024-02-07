@@ -158,6 +158,7 @@ export const CampaignCreationForm: FunctionComponent<CampaignFormProps> = ({
             name="name"
             label={t_i18n('Name')}
             fullWidth={true}
+            askAi={true}
             detectDuplicate={[
               'Threat-Actor',
               'Intrusion-Set',
@@ -177,6 +178,7 @@ export const CampaignCreationForm: FunctionComponent<CampaignFormProps> = ({
             multiline={true}
             rows="4"
             style={{ marginTop: 20 }}
+            askAi={true}
           />
           <CreatedByField
             name="createdBy"
