@@ -175,6 +175,7 @@ export const GroupingCreationForm: FunctionComponent<GroupingFormProps> = ({
             name="name"
             label={t_i18n('Name')}
             fullWidth={true}
+            detectDuplicate={['Grouping']}
             askAi={true}
           />
           <ConfidenceField
