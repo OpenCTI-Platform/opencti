@@ -21,7 +21,7 @@ import { getEntitiesMapFromCache } from '../database/cache';
 import { isUserHasCapability, SETTINGS_SET_ACCESSES, SYSTEM_USER } from '../utils/access';
 import { publishUserAction } from '../listener/UserActionListener';
 import { extractEntityRepresentativeName } from '../database/entity-representative';
-import { cleanMarkingsForEditing, cleanMarkingsForReading } from '../utils/markingDefinition-utils';
+import { cleanMarkings } from '../utils/markingDefinition-utils';
 
 export const GROUP_DEFAULT = 'Default';
 
@@ -52,7 +52,7 @@ export const defaultMarkingDefinitions = async (context, group) => {
   return defaultMarking.map(async (entry) => {
     return {
       entity_type: entry.entity_type,
-      values: await cleanMarkingsForReading(context, entry.values),
+      values: await cleanMarkings(context, entry.values),
     };
   });
 };
@@ -92,7 +92,7 @@ export const defaultMarkingDefinitionsFromGroups = async (context, groupIds) => 
       return Promise.all(defaultMarkings.map(async (d) => {
         return {
           entity_type: d.entity_type,
-          values: await cleanMarkingsForReading(context, d.values),
+          values: await cleanMarkings(context, d.values),
         };
       }));
     });
@@ -193,7 +193,7 @@ export const groupDeleteRelation = async (context, user, groupId, fromId, toId, 
 
 // -- DEFAULT MARKING --
 export const groupEditDefaultMarking = async (context, user, groupId, defaultMarking) => {
-  const values = (await cleanMarkingsForEditing(context, defaultMarking.values)).map((m) => m.id);
+  const values = (await cleanMarkings(context, defaultMarking.values)).map((m) => m.id);
 
   const group = await storeLoadById(context, user, groupId, ENTITY_TYPE_GROUP);
   const existingDefaultMarking = group.default_marking ?? [];

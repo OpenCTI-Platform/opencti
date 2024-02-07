@@ -5,30 +5,27 @@ import { SYSTEM_USER } from './access';
 import { UPDATE_OPERATION_ADD, UPDATE_OPERATION_REMOVE, UPDATE_OPERATION_REPLACE } from '../database/utils';
 import { UnsupportedError } from '../config/errors';
 
-const getUniqueMaxMarkingsByDefinitionType = (defaultMarkingValues) => {
+export const cleanMarkings = async (context, values) => {
+  const markingsMap = await getEntitiesMapFromCache(context, SYSTEM_USER, ENTITY_TYPE_MARKING_DEFINITION);
+
+  const defaultMarkingValues = [];
+  values.filter((d) => !!d).forEach((d) => {
+    if (typeof d === 'string') {
+      const marking = markingsMap.get(d);
+      if (marking) {
+        defaultMarkingValues.push(marking);
+      }
+    } else {
+      defaultMarkingValues.push(d);
+    }
+  });
+  values?.map((d) => markingsMap.get(d) ?? d);
   const defaultGroupedMarkings = R.groupBy((m) => m.definition_type, defaultMarkingValues);
   return Object.entries(defaultGroupedMarkings).map(([_, markingValues]) => {
     const max = Math.max(...markingValues.map((m) => m.x_opencti_order));
     const results = markingValues.filter((m) => m.x_opencti_order === max);
     return R.uniqWith((a, b) => a.id === b.id, results);
   }).flat();
-};
-export const cleanMarkingsForEditing = async (context, values) => {
-  const markingsMap = await getEntitiesMapFromCache(context, SYSTEM_USER, ENTITY_TYPE_MARKING_DEFINITION);
-  const defaultMarkingValues = values?.map((d) => markingsMap.get(d) ?? d) ?? [];
-  return getUniqueMaxMarkingsByDefinitionType(defaultMarkingValues);
-};
-
-export const cleanMarkingsForReading = async (context, values) => {
-  const markingsMap = await getEntitiesMapFromCache(context, SYSTEM_USER, ENTITY_TYPE_MARKING_DEFINITION);
-  const defaultMarkingValues = [];
-  values?.forEach((d) => {
-    const marking = markingsMap.get(d);
-    if (marking) {
-      defaultMarkingValues.push(marking);
-    }
-  });
-  return getUniqueMaxMarkingsByDefinitionType(defaultMarkingValues);
 };
 
 export const handleMarkingOperations = async (context, currentMarkings, refs, operation) => {
@@ -39,7 +36,7 @@ export const handleMarkingOperations = async (context, currentMarkings, refs, op
   const markingsAdded = refs.filter((r) => markingsMap.has(r.internal_id)).map((r) => markingsMap.get(r.internal_id));
   // const markingsAdded = markingsMap.values().filter((m) => refs.includes(m.id));
   // If multiple markings is added, filter and keep the highest rank
-  const markingsAddedCleaned = await cleanMarkingsForEditing(context, markingsAdded);
+  const markingsAddedCleaned = await cleanMarkings(context, markingsAdded);
   const operationUpdated = { operation, refs };
 
   const markingsInCommon = markings.filter((item) => markingsAddedCleaned.some((m) => m.definition_type === item.definition_type));
@@ -54,7 +51,7 @@ export const handleMarkingOperations = async (context, currentMarkings, refs, op
 
     // We have some type in common with different order
     if (markingsAddedCleaned.some((mark) => markings.some((mark2) => mark2.definition_type === mark.definition_type && mark2.x_opencti_order !== mark.x_opencti_order))) {
-      const markingsToKeep = await cleanMarkingsForEditing(context, [...markings, ...markingsAddedCleaned]);
+      const markingsToKeep = await cleanMarkings(context, [...markings, ...markingsAddedCleaned]);
 
       const markingsAddedHasHigherOrder = markingsToKeep
         .some((markingAdded) => markings

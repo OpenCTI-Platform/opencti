@@ -190,7 +190,7 @@ import { fillDefaultValues, getAttributesConfiguration, getEntitySettingFromCach
 import { schemaRelationsRefDefinition } from '../schema/schema-relationsRef';
 import { validateInputCreation, validateInputUpdate } from '../schema/schema-validator';
 import { telemetry } from '../config/tracing';
-import { cleanMarkingsForEditing, cleanMarkingsForReading, handleMarkingOperations } from '../utils/markingDefinition-utils';
+import { cleanMarkings, handleMarkingOperations } from '../utils/markingDefinition-utils';
 import { generateCreateMessage, generateUpdateMessage } from './generate-message';
 import { confidence } from '../schema/attribute-definition';
 import { ENTITY_TYPE_INDICATOR } from '../modules/indicator/indicator-types';
@@ -923,7 +923,7 @@ const filterTargetByExisting = async (context, targetEntity, redirectSide, sourc
   const markingSources = sources.filter((r) => r.i_relation.entity_type === RELATION_OBJECT_MARKING);
   const markingTargets = targets.filter((r) => r.i_relation.entity_type === RELATION_OBJECT_MARKING);
   const markings = [...markingSources, ...markingTargets];
-  const filteredMarkings = await cleanMarkingsForReading(context, markings.map((m) => m.internal_id));
+  const filteredMarkings = await cleanMarkings(context, markings.map((m) => m.internal_id));
   const filteredMarkingIds = filteredMarkings.map((m) => m.internal_id);
   const markingTargetDeletions = markingTargets.filter((m) => !filteredMarkingIds.includes(m.internal_id)).map((m) => m.i_relation);
   for (let index = 0; index < sources.length; index += 1) {
@@ -2563,7 +2563,7 @@ export const buildRelationData = async (context, user, input, opts = {}) => {
       // If user is not part of the platform organization, put its own organizations
       relToCreate.push(...buildInnerRelation(data, user.organizations, RELATION_GRANTED_TO));
     }
-    const markingsFiltered = await cleanMarkingsForEditing(context, input.objectMarking);
+    const markingsFiltered = await cleanMarkings(context, input.objectMarking);
     relToCreate.push(...buildInnerRelation(data, markingsFiltered, RELATION_OBJECT_MARKING));
   }
   if (isStixCoreRelationship(relationshipType)) {
@@ -2927,7 +2927,7 @@ const buildEntityData = async (context, user, input, type, opts = {}) => {
           relToCreate.push(...buildInnerRelation(data, user.organizations, RELATION_GRANTED_TO));
         }
       } else if (relType === RELATION_OBJECT_MARKING) {
-        const markingsFiltered = await cleanMarkingsForEditing(context, input[inputField]);
+        const markingsFiltered = await cleanMarkings(context, input[inputField]);
         relToCreate.push(...buildInnerRelation(data, markingsFiltered, relType));
       } else if (input[inputField]) {
         const instancesToCreate = Array.isArray(input[inputField]) ? input[inputField] : [input[inputField]];
