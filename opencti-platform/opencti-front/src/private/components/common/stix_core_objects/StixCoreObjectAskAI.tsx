@@ -21,9 +21,10 @@ import FormControl from '@mui/material/FormControl';
 import InputLabel from '@mui/material/InputLabel';
 import Select from '@mui/material/Select';
 import TextField from '@mui/material/TextField';
-import { stixDomainObjectContentFilesUploadStixDomainObjectMutation } from '@components/common/stix_domain_objects/StixDomainObjectContentFiles';
 import { createSearchParams, useNavigate } from 'react-router-dom-v5-compat';
-import { stixDomainObjectContentFieldPatchMutation } from '@components/common/stix_domain_objects/StixDomainObjectContent';
+import { stixDomainObjectContentFilesUploadStixDomainObjectMutation } from '../stix_domain_objects/StixDomainObjectContentFiles';
+import { stixDomainObjectContentFieldPatchMutation } from '../stix_domain_objects/StixDomainObjectContent';
+import FilesNativeField from '../form/FilesNativeField';
 import type {
   StixDomainObjectContentFilesUploadStixDomainObjectMutation,
   StixDomainObjectContentFilesUploadStixDomainObjectMutation$data,
@@ -57,12 +58,24 @@ const stixCoreObjectAskAISummarizeFilesMutation = graphql`
   }
 `;
 
+const stixCoreObjectAskAIConvertFilesToStixMutation = graphql`
+  mutation StixCoreObjectAskAIConvertFilesToStixMutation($id: ID!, $elementId: String!, $fileIds: [String]) {
+    aiConvertFilesToStix(id: $id, elementId: $elementId, fileIds: $fileIds)
+  }
+`;
+
+const actionsOptions = {
+  'container-report': ['paragraphs', 'tone', 'format'],
+  'summarize-files': ['paragraphs', 'tone', 'format', 'files'],
+  'convert-files': ['files'],
+};
+
 const StixCoreObjectAskAI: FunctionComponent<StixCoreObjectAskAiProps> = ({ instanceId, instanceType, instanceName, type }) => {
   const { t_i18n } = useFormatter();
   const navigate = useNavigate();
   const isEnterpriseEdition = useEnterpriseEdition();
   const { enabled, configured } = useAI();
-  const [action, setAction] = useState<'container-report' | 'summarize-files' | null>(null);
+  const [action, setAction] = useState<'container-report' | 'summarize-files' | 'convert-files' | null>(null);
   const [acceptedResult, setAcceptedResult] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [destination, setDestination] = useState<'content' | 'file'>('content');
@@ -70,6 +83,7 @@ const StixCoreObjectAskAI: FunctionComponent<StixCoreObjectAskAiProps> = ({ inst
   const [tone, setTone] = useState<'technical' | 'tactical' | 'strategical'>('technical');
   const [format, setFormat] = useState<'html' | 'markdown' | 'text'>('html');
   const [paragraphs, setParagraphs] = useState(10);
+  const [files, setFiles] = useState<{ label: string, value: string }[]>([]);
   const [disableResponse, setDisableResponse] = useState(false);
   const [menuOpen, setMenuOpen] = useState<{ open: boolean; anchorEl: PopoverProps['anchorEl'] }>({ open: false, anchorEl: null });
   const [busId, setBusId] = useState<string | null>(null);
@@ -83,7 +97,7 @@ const StixCoreObjectAskAI: FunctionComponent<StixCoreObjectAskAiProps> = ({ inst
   const handleCloseMenu = () => {
     setMenuOpen({ open: false, anchorEl: null });
   };
-  const handleOpenOptions = (selectedAction: 'container-report' | 'summarize-files') => {
+  const handleOpenOptions = (selectedAction: 'container-report' | 'summarize-files' | 'convert-files') => {
     handleCloseMenu();
     setAction(selectedAction);
     setOptionsOpen(true);
@@ -97,6 +111,7 @@ const StixCoreObjectAskAI: FunctionComponent<StixCoreObjectAskAiProps> = ({ inst
   const [commitMutationCreateFile] = useMutation<StixDomainObjectContentFilesUploadStixDomainObjectMutation>(stixDomainObjectContentFilesUploadStixDomainObjectMutation);
   const [commitMutationContainerReport] = useMutation(stixCoreObjectAskAIContainerReportMutation);
   const [commitMutationSummarizeFiles] = useMutation(stixCoreObjectAskAISummarizeFilesMutation);
+  const [commitMutationConvertFilesToStix] = useMutation(stixCoreObjectAskAIConvertFilesToStixMutation);
   const handleAskAi = () => {
     handleCloseOptions();
     setDisableResponse(true);
@@ -126,6 +141,19 @@ const StixCoreObjectAskAI: FunctionComponent<StixCoreObjectAskAiProps> = ({ inst
             paragraphs,
             tone,
             format,
+            fileIds: files.map((n) => n.value),
+          },
+          onCompleted: () => {
+            setDisableResponse(false);
+          },
+        });
+        break;
+      case 'convert-files':
+        commitMutationConvertFilesToStix({
+          variables: {
+            id,
+            elementId: instanceId,
+            fileIds: files.map((n) => n.value),
           },
           onCompleted: () => {
             setDisableResponse(false);
@@ -214,6 +242,9 @@ const StixCoreObjectAskAI: FunctionComponent<StixCoreObjectAskAiProps> = ({ inst
         <MenuItem onClick={() => handleOpenOptions('summarize-files')}>
           {t_i18n('Summarize associated files')}
         </MenuItem>
+        <MenuItem onClick={() => handleOpenOptions('convert-files')}>
+          {t_i18n('Convert associated files to STIX')}
+        </MenuItem>
       </Menu>
       <Dialog
         PaperProps={{ elevation: 1 }}
@@ -224,6 +255,7 @@ const StixCoreObjectAskAI: FunctionComponent<StixCoreObjectAskAiProps> = ({ inst
       >
         <DialogTitle>{t_i18n('Select options')}</DialogTitle>
         <DialogContent>
+          {action && actionsOptions[action].includes('tone') && (
           <FormControl style={{ width: '100%' }}>
             <InputLabel id="tone">{t_i18n('Tone')}</InputLabel>
             <Select
@@ -237,27 +269,42 @@ const StixCoreObjectAskAI: FunctionComponent<StixCoreObjectAskAiProps> = ({ inst
               <MenuItem value="strategical">{t_i18n('Strategical')}</MenuItem>
             </Select>
           </FormControl>
-          <TextField
-            label={t_i18n('Number of paragraphs')}
-            fullWidth={true}
-            type="number"
-            value={paragraphs}
-            onChange={(event) => setParagraphs(event.target.value as unknown as number)}
-            style={fieldSpacingContainerStyle}
-          />
-          <FormControl style={fieldSpacingContainerStyle}>
-            <InputLabel id="format">{t_i18n('Format')}</InputLabel>
-            <Select
-              labelId="format"
-              value={format}
-              onChange={(event) => setFormat(event.target.value as unknown as 'html' | 'markdown' | 'text')}
+          )}
+          {action && actionsOptions[action].includes('paragraphs') && (
+            <TextField
+              label={t_i18n('Number of paragraphs')}
               fullWidth={true}
-            >
-              <MenuItem value="html">{t_i18n('HTML')}</MenuItem>
-              <MenuItem value="markdown">{t_i18n('Markdown')}</MenuItem>
-              <MenuItem value="text">{t_i18n('Plain text')}</MenuItem>
-            </Select>
-          </FormControl>
+              type="number"
+              value={paragraphs}
+              onChange={(event) => setParagraphs(event.target.value as unknown as number)}
+              style={fieldSpacingContainerStyle}
+            />
+          )}
+          {action && actionsOptions[action].includes('format') && (
+            <FormControl style={fieldSpacingContainerStyle}>
+              <InputLabel id="format">{t_i18n('Format')}</InputLabel>
+              <Select
+                labelId="format"
+                value={format}
+                onChange={(event) => setFormat(event.target.value as unknown as 'html' | 'markdown' | 'text')}
+                fullWidth={true}
+              >
+                <MenuItem value="html">{t_i18n('HTML')}</MenuItem>
+                <MenuItem value="markdown">{t_i18n('Markdown')}</MenuItem>
+                <MenuItem value="text">{t_i18n('Plain text')}</MenuItem>
+              </Select>
+            </FormControl>
+          )}
+          {action && actionsOptions[action].includes('files') && (
+            <FilesNativeField
+              stixCoreObjectId={instanceId}
+              name="fileIds"
+              label={t_i18n('Files')}
+              currentValue={files}
+              onChange={(value) => value && setFiles(value)}
+              containerStyle={fieldSpacingContainerStyle}
+            />
+          )}
         </DialogContent>
         <DialogActions>
           <Button

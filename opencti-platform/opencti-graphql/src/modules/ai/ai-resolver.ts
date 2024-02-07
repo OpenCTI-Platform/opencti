@@ -24,6 +24,7 @@ const aiResolvers: Resolvers = {
   Mutation: {
     aiContainerGenerateReport: (_, args, context) => generateContainerReport(context, context.user, args),
     aiSummarizeFiles: (_, args, context) => summarizeFiles(context, context.user, args),
+    aiConvertFilesToStix: (_, args, context) => summarizeFiles(context, context.user, args),
     aiFixSpelling: (_, { id, content, format }, context) => fixSpelling(context, context.user, id, content, format),
     aiMakeShorter: (_, { id, content, format }, context) => makeShorter(context, context.user, id, content, format),
     aiMakeLonger: (_, { id, content, format }, context) => makeLonger(context, context.user, id, content, format),

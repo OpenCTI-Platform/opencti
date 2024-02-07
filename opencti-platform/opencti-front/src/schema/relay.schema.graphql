@@ -8087,6 +8087,7 @@ type Mutation {
   aiThreatGenerateReport(id: ID!, threatId: String!, paragraphs: Int, tone: Tone, format: Format): String
   aiVictimGenerateReport(id: ID!, victimId: String!, paragraphs: Int, tone: Tone, format: Format): String
   aiSummarizeFiles(id: ID!, elementId: String!, paragraphs: Int, tone: Tone, format: Format, fileIds: [String]): String
+  aiConvertFilesToStix(id: ID!, elementId: String!, fileIds: [String]): String
   aiConvertIndicator(id: ID!, indicatorId: String!, format: IndicatorFormat!): String
   aiImproveWriting(id: ID!, content: String!, format: Format): String
   aiFixSpelling(id: ID!, content: String!, format: Format): String
@@ -11069,6 +11070,7 @@ enum Format {
   text
   html
   markdown
+  json
 }
 
 enum IndicatorFormat {

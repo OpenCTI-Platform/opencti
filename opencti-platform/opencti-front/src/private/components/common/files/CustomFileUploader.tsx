@@ -4,8 +4,8 @@ import Button from '@mui/material/Button';
 import { Theme } from '@mui/material/styles/createTheme';
 import makeStyles from '@mui/styles/makeStyles';
 import classNames from 'classnames';
-import VisuallyHiddenInput from '@components/common/VisuallyHiddenInput';
 import InputLabel from '@mui/material/InputLabel';
+import VisuallyHiddenInput from '../VisuallyHiddenInput';
 import { useFormatter } from '../../../../components/i18n';
 import { truncate } from '../../../../utils/String';
 

@@ -7155,6 +7155,7 @@ export enum FilterOperator {
 
 export enum Format {
   Html = 'html',
+  Json = 'json',
   Markdown = 'markdown',
   Text = 'text'
 }
@@ -12037,6 +12038,7 @@ export type Mutation = {
   administrativeAreaRelationDelete?: Maybe<AdministrativeArea>;
   aiChangeTone?: Maybe<Scalars['String']['output']>;
   aiContainerGenerateReport?: Maybe<Scalars['String']['output']>;
+  aiConvertFilesToStix?: Maybe<Scalars['String']['output']>;
   aiConvertIndicator?: Maybe<Scalars['String']['output']>;
   aiExplain?: Maybe<Scalars['String']['output']>;
   aiFixSpelling?: Maybe<Scalars['String']['output']>;
@@ -12405,6 +12407,13 @@ export type MutationAiContainerGenerateReportArgs = {
   id: Scalars['ID']['input'];
   paragraphs?: InputMaybe<Scalars['Int']['input']>;
   tone?: InputMaybe<Tone>;
+};
+
+
+export type MutationAiConvertFilesToStixArgs = {
+  elementId: Scalars['String']['input'];
+  fileIds?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  id: Scalars['ID']['input'];
 };
 
 
@@ -33027,6 +33036,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   administrativeAreaRelationDelete?: Resolver<Maybe<ResolversTypes['AdministrativeArea']>, ParentType, ContextType, RequireFields<MutationAdministrativeAreaRelationDeleteArgs, 'id' | 'relationship_type' | 'toId'>>;
   aiChangeTone?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType, RequireFields<MutationAiChangeToneArgs, 'content' | 'id'>>;
   aiContainerGenerateReport?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType, RequireFields<MutationAiContainerGenerateReportArgs, 'containerId' | 'id'>>;
+  aiConvertFilesToStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType, RequireFields<MutationAiConvertFilesToStixArgs, 'elementId' | 'id'>>;
   aiConvertIndicator?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType, RequireFields<MutationAiConvertIndicatorArgs, 'format' | 'id' | 'indicatorId'>>;
   aiExplain?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType, RequireFields<MutationAiExplainArgs, 'content' | 'id'>>;
   aiFixSpelling?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType, RequireFields<MutationAiFixSpellingArgs, 'content' | 'id'>>;

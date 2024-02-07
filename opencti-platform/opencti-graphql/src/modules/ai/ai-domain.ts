@@ -21,7 +21,7 @@ import { extractEntityRepresentativeName, extractRepresentativeDescription } fro
 import type { AuthContext, AuthUser } from '../../types/user';
 import type { BasicStoreEntity, BasicStoreRelation } from '../../types/store';
 import type { InputMaybe, MutationAiContainerGenerateReportArgs, MutationAiSummarizeFilesArgs } from '../../generated/graphql';
-import { isNotEmptyField } from '../../database/utils';
+import { isEmptyField, isNotEmptyField } from '../../database/utils';
 import { FROM_START_STR, UNTIL_END_STR } from '../../utils/format';
 import { compute } from '../../database/ai-llm';
 import {
@@ -45,7 +45,9 @@ import { Format, Tone } from '../../generated/graphql';
 import { notify } from '../../database/redis';
 import { BUS_TOPICS } from '../../config/conf';
 import { AI_BUS } from './ai-types';
-import { findById as findFileById, paginatedForPathWithEnrichment } from '../internal/document/document-domain';
+import { paginatedForPathWithEnrichment } from '../internal/document/document-domain';
+import { elSearchFiles } from '../../database/file-search';
+import type { BasicStoreEntityDocument } from '../internal/document/document-types';
 
 const RESOLUTION_LIMIT = 200;
 
@@ -272,19 +274,28 @@ export const generateContainerReport = async (context: AuthContext, user: AuthUs
 
 export const summarizeFiles = async (context: AuthContext, user: AuthUser, args: MutationAiSummarizeFilesArgs) => {
   await checkEnterpriseEdition(context);
-  const { id, elementId, paragraphs = 10, tone = 'technical', format = 'HTML' } = args;
+  const { id, elementId, paragraphs = 10, fileIds, tone = 'technical', format = 'HTML' } = args;
   const paragraphsNumber = !paragraphs || paragraphs > 20 ? 20 : paragraphs;
   const stixCoreObject = await storeLoadById(context, user, elementId, ABSTRACT_STIX_CORE_OBJECT) as BasicStoreEntity;
-  const opts = { first: 20, prefixMimeTypes: undefined, entity_id: stixCoreObject.id, entity_type: stixCoreObject.entity_type };
-  const importFiles = await paginatedForPathWithEnrichment(context, user, `import/${stixCoreObject.entity_type}/${stixCoreObject.id}`, stixCoreObject.id, opts);
-  const filesContent = await Promise.all(importFiles.edges.map((n) => findFileById(context, user, n.node.id)));
-  const files = filesContent.map((n) => {
-    return `
-    -------------------
-    ${n.content}
-    -------------------
-    `;
+  let finalFilesIds = fileIds;
+  if (isEmptyField(fileIds)) {
+    const opts = {
+      first: 20,
+      prefixMimeTypes: undefined,
+      entity_id: stixCoreObject.id,
+      entity_type: stixCoreObject.entity_type
+    };
+    const importFiles = await paginatedForPathWithEnrichment(context, user, `import/${stixCoreObject.entity_type}/${stixCoreObject.id}`, stixCoreObject.id, opts);
+    finalFilesIds = importFiles.edges.map((n) => n.node.id);
+  }
+  const files = await elSearchFiles(context, user, {
+    first: 10,
+    fileIds: finalFilesIds,
+    connectionFormat: false,
+    excludeFields: [],
+    includeContent: true
   });
+  const filesContent = files.map((n: BasicStoreEntityDocument) => n.content);
   const prompt = `
   # Instructions
   - Examine the one or multiple cyber threat intelligence reports below and summarize them with main ideas and concepts in ${format} format.
@@ -295,7 +306,45 @@ export const summarizeFiles = async (context: AuthContext, user: AuthUser, args:
   - Your response should in the given format which is ${format}, be sure to respect this format.
   
   # Content
-  ${files.join('')}
+  ${filesContent.join('')}
+  `;
+  const response = await compute(id, prompt, user);
+  return response;
+};
+
+export const convertFilesToStix = async (context: AuthContext, user: AuthUser, args: MutationAiSummarizeFilesArgs) => {
+  await checkEnterpriseEdition(context);
+  const { id, elementId, fileIds } = args;
+  const stixCoreObject = await storeLoadById(context, user, elementId, ABSTRACT_STIX_CORE_OBJECT) as BasicStoreEntity;
+  let finalFilesIds = fileIds;
+  if (isEmptyField(fileIds)) {
+    const opts = {
+      first: 20,
+      prefixMimeTypes: undefined,
+      entity_id: stixCoreObject.id,
+      entity_type: stixCoreObject.entity_type
+    };
+    const importFiles = await paginatedForPathWithEnrichment(context, user, `import/${stixCoreObject.entity_type}/${stixCoreObject.id}`, stixCoreObject.id, opts);
+    finalFilesIds = importFiles.edges.map((n) => n.node.id);
+  }
+  const files = await elSearchFiles(context, user, {
+    first: 10,
+    fileIds: finalFilesIds,
+    connectionFormat: false,
+    excludeFields: [],
+    includeContent: true
+  });
+  const filesContent = files.map((n: BasicStoreEntityDocument) => n.content);
+  const prompt = `
+  # Instructions
+  - Examine the one or multiple cyber threat intelligence reports below and convert them to Oasis Open STIX 2.1 JSON format.
+  - You should recognize the STIX entities such as intrusion sets, malware, locations, identities in the reports and convert them.
+  - You should analyze the grammar and the syntax of the reports to create meaningful STIX 2.1 relationships such as targets, attributed-to, uses, etc.
+  - Do your best to convert even if it is challenging and not accurate.
+  - Your response should be in JSON STIX 2.1 format.
+  
+  # Content
+  ${filesContent.join('')}
   `;
   const response = await compute(id, prompt, user);
   return response;

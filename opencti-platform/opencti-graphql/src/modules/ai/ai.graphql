@@ -8,6 +8,7 @@ enum Format {
     text
     html
     markdown
+    json
 }
 
 enum IndicatorFormat {
@@ -27,6 +28,7 @@ type Mutation {
     aiThreatGenerateReport(id: ID!, threatId: String!, paragraphs: Int, tone: Tone, format: Format): String @auth(for: [KNOWLEDGE_KNUPDATE])
     aiVictimGenerateReport(id: ID!, victimId: String!, paragraphs: Int, tone: Tone, format: Format): String @auth(for: [KNOWLEDGE_KNUPDATE])
     aiSummarizeFiles(id: ID!, elementId: String!, paragraphs: Int, tone: Tone, format: Format, fileIds: [String]): String @auth(for: [KNOWLEDGE_KNUPDATE])
+    aiConvertFilesToStix(id: ID!, elementId: String!, fileIds: [String]): String @auth(for: [KNOWLEDGE_KNUPDATE])
 
     # Indicators
     aiConvertIndicator(id: ID!, indicatorId: String!, format: IndicatorFormat!): String @auth(for: [KNOWLEDGE_KNUPDATE])
