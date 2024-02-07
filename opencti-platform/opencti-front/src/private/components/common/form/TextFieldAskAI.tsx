@@ -10,13 +10,12 @@ import { graphql, useMutation } from 'react-relay';
 import { useFormatter } from '../../../../components/i18n';
 import ResponseDialog from '../../../../utils/ai/ResponseDialog';
 import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
-import { MESSAGING$ } from '../../../../relay/environment';
 
 // region types
 interface TextFieldAskAiProps {
   currentValue: string;
-  setFieldValue: () => void;
-  format: 'text plain' | 'HTML' | 'Markdown'
+  setFieldValue: (value) => void;
+  format: 'text' | 'html' | 'markdown'
 }
 
 const textFieldAskAIFixSpellingMutation = graphql`
@@ -94,7 +93,10 @@ const TextFieldAskAI: FunctionComponent<TextFieldAskAiProps> = ({ currentValue, 
           isDisabled={disableResponse}
           isOpen={displayAskAI}
           handleClose={handleCloseAskAI}
-          handleAccept={setFieldValue}
+          handleAccept={(value) => {
+            setFieldValue(value);
+            handleCloseAskAI();
+          }}
           handleFollowUp={handleCloseAskAI}
           followUpActions={[{ key: 'retry', label: t_i18n('Retry') }]}
         />

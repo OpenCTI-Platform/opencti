@@ -70,7 +70,12 @@ const TextField = (props) => {
         endAdornment: askAi && (
           <TextFieldAskAI
             currentValue={value}
-            setFieldValue={(val) => setFieldValue(name, val)}
+            setFieldValue={(val) => {
+              setFieldValue(name, val);
+              if (typeof onSubmit === 'function') {
+                onSubmit(name, val || '');
+              }
+            }}
             format="text"
           />
         ),

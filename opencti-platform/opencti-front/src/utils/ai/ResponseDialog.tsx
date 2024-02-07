@@ -1,5 +1,6 @@
 import React, { FunctionComponent, useMemo, useState } from 'react';
 import DialogActions from '@mui/material/DialogActions';
+import LoadingButton from '@mui/lab/LoadingButton';
 import Button from '@mui/material/Button';
 import Dialog from '@mui/material/Dialog';
 import { DialogTitle } from '@mui/material';
@@ -12,8 +13,11 @@ import { CKEditor } from '@ckeditor/ckeditor5-react';
 import Editor from 'ckeditor5-custom-build/build/ckeditor';
 import 'ckeditor5-custom-build/build/translations/fr';
 import 'ckeditor5-custom-build/build/translations/zh-cn';
+import ReactMde from 'react-mde';
+import TextField from '@mui/material/TextField';
 import { ResponseDialogAskAISubscription, ResponseDialogAskAISubscription$data } from './__generated__/ResponseDialogAskAISubscription.graphql';
 import { useFormatter } from '../../components/i18n';
+import MarkdownDisplay from '../../components/MarkdownDisplay';
 
 // region types
 interface ResponseDialogProps {
@@ -21,8 +25,9 @@ interface ResponseDialogProps {
   isOpen: boolean;
   isDisabled: boolean;
   handleClose: () => void;
-  handleAccept: () => void;
+  handleAccept: (content: string) => void;
   handleFollowUp: () => void;
+  format: 'text' | 'html' | 'markdown';
   followUpActions: {
     key: string;
     label: string;
@@ -37,9 +42,19 @@ const subscription = graphql`
     }
 `;
 
-const ResponseDialog: FunctionComponent<ResponseDialogProps> = ({ id, isOpen, isDisabled, handleClose, handleAccept, handleFollowUp, followUpActions }) => {
+const ResponseDialog: FunctionComponent<ResponseDialogProps> = ({
+  id,
+  isOpen,
+  isDisabled,
+  handleClose,
+  handleAccept,
+  handleFollowUp,
+  followUpActions,
+  format,
+}) => {
   const { t_i18n } = useFormatter();
   const [content, setContent] = useState('');
+  const [markdownSelectedTab, setMarkdownSelectedTab] = useState<'write' | 'preview' | undefined>('write');
   const handleResponse = (response: ResponseDialogAskAISubscription$data | null | undefined | unknown) => {
     const newContent = response ? (response as ResponseDialogAskAISubscription$data).aiBus?.content : null;
     return setContent(newContent ?? '');
@@ -55,6 +70,7 @@ const ResponseDialog: FunctionComponent<ResponseDialogProps> = ({ id, isOpen, is
     [id],
   );
   useSubscription(subConfig);
+  const height = 500;
   return (
     <>
       <Dialog
@@ -65,7 +81,17 @@ const ResponseDialog: FunctionComponent<ResponseDialogProps> = ({ id, isOpen, is
       >
         <DialogTitle>{t_i18n('Ask AI')}</DialogTitle>
         <DialogContent>
-          <div style={{ width: '100%', minHeight: 500, height: 500 }}>
+          <div style={{ width: '100%', minHeight: height, height }}>
+            {format === 'text' && (
+              <TextField
+                rows={Math.round(height / 23)}
+                value={content}
+                multiline={true}
+                onChange={(event) => setContent(event.target.value)}
+                fullWidth={true}
+              />
+            )}
+            {format === 'html' && (
             <CKEditor
               editor={Editor}
               config={{ language: 'en' }}
@@ -77,18 +103,42 @@ const ResponseDialog: FunctionComponent<ResponseDialogProps> = ({ id, isOpen, is
               }}
               disabled={isDisabled}
             />
+            )}
+            {format === 'markdown' && (
+            <ReactMde
+              value={content}
+              minEditorHeight={height - 80}
+              maxEditorHeight={height - 80}
+              onChange={setContent}
+              selectedTab={markdownSelectedTab}
+              onTabChange={setMarkdownSelectedTab}
+              generateMarkdownPreview={(markdown) => Promise.resolve(
+                <MarkdownDisplay
+                  content={markdown}
+                  remarkGfmPlugin={true}
+                  commonmark={true}
+                />,
+              )}
+              l18n={{
+                write: t_i18n('Write'),
+                preview: t_i18n('Preview'),
+                uploadingImage: t_i18n('Uploading image'),
+                pasteDropSelect: t_i18n('Paste'),
+              }}
+            />
+            )}
           </div>
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleClose}>
+          <Button onClick={handleClose} disabled={isDisabled}>
             {t_i18n('Close')}
           </Button>
-          <Button color="secondary">
+          <Button color="secondary" disabled={true}>
             {t_i18n('Continue')}
           </Button>
-          <Button onClick={handleAccept} color="secondary">
+          <LoadingButton loading={isDisabled} color="secondary" onClick={() => handleAccept(content)}>
             {t_i18n('Accept')}
-          </Button>
+          </LoadingButton>
         </DialogActions>
       </Dialog>
     </>
