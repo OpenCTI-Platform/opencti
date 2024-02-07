@@ -45,6 +45,7 @@ export const queryMistralAi = async (busId: string, question: string, user: Auth
       return content;
     }
     logApp.error('[AI] No response from MistralAI', { busId, question });
+    return '';
   } catch (err) {
     logApp.error('[AI] Cannot query MistralAI', { error: err });
     return '';

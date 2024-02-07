@@ -3,9 +3,7 @@ import MuiTextField from '@mui/material/TextField';
 import { fieldToTextField } from 'formik-mui';
 import { useField } from 'formik';
 import { isNil } from 'ramda';
-import TextFieldAskAI from '@components/common/form/TextFieldAskAI';
-import InputAdornment from '@mui/material/InputAdornment';
-import { Search } from '@mui/icons-material';
+import TextFieldAskAI from '../private/components/common/form/TextFieldAskAI';
 import StixDomainObjectDetectDuplicate from '../private/components/common/stix_domain_objects/StixDomainObjectDetectDuplicate';
 
 const TextField = (props) => {

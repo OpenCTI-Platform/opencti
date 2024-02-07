@@ -3,7 +3,6 @@ import Box from '@mui/material/Box';
 import Tab from '@mui/material/Tab';
 import Tabs from '@mui/material/Tabs';
 import { Link, Redirect, Switch, useParams } from 'react-router-dom';
-import Typography from '@mui/material/Typography';
 import { BoundaryRoute } from '@components/Error';
 import Search from '@components/Search';
 import SearchIndexedFiles from '@components/search/SearchIndexedFiles';
