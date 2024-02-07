@@ -150,7 +150,7 @@ const RelationshipsStixCoreRelationshipLineComponent = ({
               className={classes.bodyItem}
               style={{ width: dataColumns.fromName.width }}
             >
-              {node.from ? defaultValue(node.from, true) : t_i18n('Restricted')}
+              {node.from ? defaultValue(node.from) : t_i18n('Restricted')}
             </div>
             <div
               className={classes.bodyItem}
@@ -204,7 +204,7 @@ const RelationshipsStixCoreRelationshipLineComponent = ({
               className={classes.bodyItem}
               style={{ width: dataColumns.toName.width }}
             >
-              {node.to ? defaultValue(node.to, true) : t_i18n('Restricted')}
+              {node.to ? defaultValue(node.to) : t_i18n('Restricted')}
             </div>
             <div
               className={classes.bodyItem}
