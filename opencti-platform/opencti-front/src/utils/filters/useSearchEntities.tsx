@@ -869,7 +869,22 @@ const useSearchEntities = ({
           && !availableEntityTypes.includes('Stix-Domain-Object')
           && !availableEntityTypes.includes('Stix-Core-Object')
         ) {
-          const entitiesTypes = availableEntityTypes
+          let completedAvailableEntityTypes = availableEntityTypes;
+          if (availableEntityTypes.includes('Container')) {
+            completedAvailableEntityTypes = completedAvailableEntityTypes
+              .filter((type) => type !== 'Container')
+              .concat([
+                'Report',
+                'Grouping',
+                'Note',
+                'Feedback',
+                'Case-Incident',
+                'Case-Rfi',
+                'Case-Rft',
+                'Task',
+              ]);
+          }
+          const entitiesTypes = completedAvailableEntityTypes
             .map((n) => ({
               label: t_i18n(
                 n.toString()[0] === n.toString()[0].toUpperCase()
