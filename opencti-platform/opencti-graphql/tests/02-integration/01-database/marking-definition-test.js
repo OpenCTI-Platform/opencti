@@ -92,6 +92,11 @@ describe('Marking Definition', () => {
       const result = await cleanMarkings(testContext, [undefined]);
       expect(result.map((r) => r.id)).toEqual([]);
     });
+    it('Case add 2 markings same type AND order different AND a deleted marking => output marking with higher rank added', async () => {
+      // Case input 2 markings same type AND order different: output marking with higher rank added
+      const result = await cleanMarkings(testContext, [clearPAPMarking, undefined, redPAPMarking]);
+      expect(result.map((r) => r.id)).toEqual([redPAPMarking.id]);
+    });
   });
 
   describe('Markings to replace filtered', () => {
