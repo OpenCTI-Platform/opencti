@@ -32,7 +32,6 @@ import TextField from '../../../../components/TextField';
 import withHooksSettingsMessagesBannerHeight from '../../settings/settings_messages/withHooksSettingsMessagesBannerHeight';
 import SelectField from '../../../../components/SelectField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
-import { truncate } from '../../../../utils/String';
 
 const styles = (theme) => ({
   drawerPaper: {
