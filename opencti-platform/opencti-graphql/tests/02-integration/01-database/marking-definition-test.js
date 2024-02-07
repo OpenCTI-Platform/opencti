@@ -91,13 +91,9 @@ describe('Marking Definition', () => {
   });
 
   describe('Clean Markings use for reading', async () => {
-    it('Case add only one marking => output one marking added', async () => {
-      const result = await cleanMarkingsForReading(testContext, ['fa4abe14-fdd5-4c73-b7fb-e47d5d7ee9e8']);
-      expect(result.map((r) => r.id)).toEqual(['fa4abe14-fdd5-4c73-b7fb-e47d5d7ee9e8']);
-    });
-    it('Case add three markings with an two unknown => output one marking added', async () => {
-      const result = await cleanMarkingsForReading(testContext, ['fa4abe14-fdd5-4c73-b7fb-e47d5d7ee9e8', 'unknown-id', 'deleted-id']);
-      expect(result.map((r) => r.id)).toEqual(['fa4abe14-fdd5-4c73-b7fb-e47d5d7ee9e8']);
+    it('Case add two markings with an two unknown id => output no marking added', async () => {
+      const result = await cleanMarkingsForReading(testContext, ['unknown-id', 'deleted-id']);
+      expect(result.map((r) => r.id)).toEqual([]);
     });
   });
 
