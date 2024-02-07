@@ -24,6 +24,7 @@ import MenuItem from '@mui/material/MenuItem';
 import * as R from 'ramda';
 import * as Yup from 'yup';
 import makeStyles from '@mui/styles/makeStyles';
+import StixCoreObjectAskAI from '@components/common/stix_core_objects/StixCoreObjectAskAI';
 import StixCoreObjectSubscribers from '../stix_core_objects/StixCoreObjectSubscribers';
 import StixCoreObjectFileExport from '../stix_core_objects/StixCoreObjectFileExport';
 import StixCoreObjectContainer from '../stix_core_objects/StixCoreObjectContainer';
@@ -189,6 +190,7 @@ const StixDomainObjectHeader = (props) => {
     noAliases,
     entityType, // Should migrate all the parent component to call the useIsEnforceReference as the top
     enableQuickSubscription,
+    enableAskAi,
   } = props;
   const openAliasesCreate = false;
   const [openAlias, setOpenAlias] = useState(false);
@@ -482,6 +484,12 @@ const StixDomainObjectHeader = (props) => {
               instanceId={stixDomainObject.id}
               instanceName={defaultValue(stixDomainObject)}
             />
+          )}
+          {enableAskAi && (
+          <StixCoreObjectAskAI
+            instanceId={stixDomainObject.id}
+            instanceName={defaultValue(stixDomainObject)}
+          />
           )}
           {(isKnowledgeUpdater || isKnowledgeEnricher) && (
           <div className={classes.popover}>

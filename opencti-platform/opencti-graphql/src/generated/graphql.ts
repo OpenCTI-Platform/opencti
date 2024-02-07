@@ -20933,6 +20933,9 @@ export type Settings = BasicObject & InternalObject & {
   password_policy_min_symbols?: Maybe<Scalars['Int']['output']>;
   password_policy_min_uppercase?: Maybe<Scalars['Int']['output']>;
   password_policy_min_words?: Maybe<Scalars['Int']['output']>;
+  platform_ai_enabled?: Maybe<Scalars['Boolean']['output']>;
+  platform_ai_has_token?: Maybe<Scalars['Boolean']['output']>;
+  platform_ai_type?: Maybe<Scalars['String']['output']>;
   platform_banner_level?: Maybe<Scalars['String']['output']>;
   platform_banner_text?: Maybe<Scalars['String']['output']>;
   platform_cluster: Cluster;
@@ -35066,6 +35069,9 @@ export type SettingsResolvers<ContextType = any, ParentType extends ResolversPar
   password_policy_min_symbols?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   password_policy_min_uppercase?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   password_policy_min_words?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
+  platform_ai_enabled?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
+  platform_ai_has_token?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
+  platform_ai_type?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   platform_banner_level?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   platform_banner_text?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   platform_cluster?: Resolver<ResolversTypes['Cluster'], ParentType, ContextType>;

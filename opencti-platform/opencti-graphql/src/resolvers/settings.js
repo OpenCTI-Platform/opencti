@@ -24,13 +24,11 @@ import { READ_DATA_INDICES } from '../database/utils';
 import { internalFindByIds } from '../database/middleware-loader';
 import { getEntityFromCache } from '../database/cache';
 import { SYSTEM_USER } from '../utils/access';
-import { availableEndpoints } from '../database/ai-llm';
 
 const settingsResolvers = {
   Query: {
     about: () => getApplicationInfo(),
     settings: (_, __, context) => getSettings(context),
-    aiEndpoints: () => availableEndpoints(),
   },
   AppDebugStatistics: {
     objects: (_, __, context) => elAggregationCount(context, context.user, READ_DATA_INDICES, { types: ['Stix-Object'], field: 'entity_type' }),

@@ -43,6 +43,8 @@ import { ENTITY_TYPE_SETTINGS } from '../../schema/internalObject';
 import { UnsupportedError } from '../../config/errors';
 import { Format } from '../../generated/graphql';
 
+const RESOLUTION_LIMIT = 200;
+
 export const checkEnterpriseEdition = async (context: AuthContext) => {
   const settings = await getEntityFromCache<BasicStoreSettings>(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
   const enterpriseEditionEnabled = isNotEmptyField(settings?.enterprise_edition);
@@ -66,12 +68,12 @@ export const fixSpelling = async (context: AuthContext, user: AuthUser, id: stri
 
 export const generateContainerReport = async (context: AuthContext, user: AuthUser, args: MutationAiContainerGenerateReportArgs) => {
   await checkEnterpriseEdition(context);
-  const { id, paragraphs = 10, tone = 'technical', format = 'HTML' } = args;
-  const container = await storeLoadById(context, user, id, ENTITY_TYPE_CONTAINER) as BasicStoreEntity;
-  const elements = await listAllToEntitiesThroughRelations(context, user, id, RELATION_OBJECT, [ABSTRACT_STIX_CORE_OBJECT, ABSTRACT_STIX_CORE_RELATIONSHIP]);
+  const { id, containerId, paragraphs = 10, tone = 'technical', format = 'HTML' } = args;
+  const container = await storeLoadById(context, user, containerId, ENTITY_TYPE_CONTAINER) as BasicStoreEntity;
+  const elements = await listAllToEntitiesThroughRelations(context, user, containerId, RELATION_OBJECT, [ABSTRACT_STIX_CORE_OBJECT, ABSTRACT_STIX_CORE_RELATIONSHIP]);
   // generate mappings
-  const relationships = elements.filter((n) => n.parent_types.includes(ABSTRACT_STIX_CORE_RELATIONSHIP)) as Array<BasicStoreRelation>;
-  const entities = elements.filter((n) => n.parent_types.includes(ABSTRACT_STIX_CORE_OBJECT)) as Array<BasicStoreEntity>;
+  const relationships = R.take(RESOLUTION_LIMIT, elements.filter((n) => n.parent_types.includes(ABSTRACT_STIX_CORE_RELATIONSHIP))) as Array<BasicStoreRelation>;
+  const entities = R.take(RESOLUTION_LIMIT, elements.filter((n) => n.parent_types.includes(ABSTRACT_STIX_CORE_OBJECT))) as Array<BasicStoreEntity>;
   const indexedEntities = R.indexBy(R.prop('id'), entities);
   if (entities.length < 3) {
     return 'AI model unable to generate a report for containers with less than 3 entities.';
@@ -79,7 +81,9 @@ export const generateContainerReport = async (context: AuthContext, user: AuthUs
   // generate entities involved
   const entitiesInvolved = R.values(indexedEntities).map((n) => {
     return `
-      - The ${n.entity_type} ${extractEntityRepresentativeName(n)} (${n.id}) description is: ${extractRepresentativeDescription(n)}.
+      -------------------
+      - The ${n.entity_type} ${extractEntityRepresentativeName(n)} described / detailed with the description: ${extractRepresentativeDescription(n)}.
+      -------------------
     `;
   });
   // generate relationships sentences
@@ -104,7 +108,9 @@ export const generateContainerReport = async (context: AuthContext, user: AuthUs
       // @ts-expect-error
       const stopTime = n.stop_time === UNTIL_END_STR ? 'unknown date' : n.stop_time;
       return `
-        - The ${from.entity_type} ${extractEntityRepresentativeName(from)} (${from.id}) ${n.relationship_type} the ${to.entity_type} ${extractEntityRepresentativeName(to)} (${to.id}) from ${startTime} to ${stopTime} (${n.description}).
+        -------------------
+        - The ${from.entity_type} ${extractEntityRepresentativeName(from)} ${n.relationship_type} the ${to.entity_type} ${extractEntityRepresentativeName(to)} from ${startTime} to ${stopTime} (${n.description}).
+        -------------------
       `;
     }
     return '';
@@ -119,18 +125,20 @@ export const generateContainerReport = async (context: AuthContext, user: AuthUs
   // build sentences
   const prompt = `
     # Instructions
-    We are in a context of ${meaningfulType}. You must generate a cyber threat intelligence report in ${format} format with a title and a content of ${paragraphs} paragraphs of approximately 300 words each without using bullet points. The cyber threat intelligence report 
+    We are in a context of ${meaningfulType}. You must generate a cyber threat intelligence report in ${format} with a title and a content of ${paragraphs} paragraphs of approximately 300 words each without using bullet points. The cyber threat intelligence report 
     should be focused on ${tone} aspects and should be divided into meaningful parts such as: victims, techniques or vulnerabilities used for intrusion, then execution, then persistence and then infrastructure. 
-    You should take examples of well-known cyber threat intelligence reports available everywhere. Also, if any indicators of compromise are present in this report, you must generate a table with all of them at the end of the report, including
-    file hashes, IP addresses and any relevant technical artifacts. The report is about ${container.name}. Details are: ${container.description}.
+    You should take examples of well-known cyber threat intelligence reports available everywhere. The report is about ${container.name}. Details are: ${container.description}.
+    
+    # Formatting
+    The report should be in ${format?.toUpperCase() ?? 'TEXT'} format.
+    For all found technical indicators of compromise and or observables, you must generate a table with all of them at the end of the report, including file hashes, IP addresses, domain names, etc.
     
     # Facts
-    ${relationshipsSentences}
+    ${relationshipsSentences.join('')}
     
     # Contextual information about the above facts
-    ${entitiesInvolved}
+    ${entitiesInvolved.join('')}
   `;
-
-  const content = await compute(prompt);
-  return content;
+  const response = await compute(id, prompt, user);
+  return response;
 };

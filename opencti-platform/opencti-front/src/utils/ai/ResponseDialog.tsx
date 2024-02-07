@@ -1,7 +1,6 @@
 import React, { FunctionComponent, useMemo, useState } from 'react';
 import DialogActions from '@mui/material/DialogActions';
 import LoadingButton from '@mui/lab/LoadingButton';
-import Button from '@mui/material/Button';
 import Dialog from '@mui/material/Dialog';
 import { DialogTitle } from '@mui/material';
 import DialogContent from '@mui/material/DialogContent';
@@ -76,14 +75,19 @@ const ResponseDialog: FunctionComponent<ResponseDialogProps> = ({
       <Dialog
         PaperProps={{ elevation: 1 }}
         open={isOpen}
-        onClose={handleClose}
+        onClose={() => {
+          setContent('');
+          handleClose();
+        }}
         fullWidth={true}
+        maxWidth="lg"
       >
         <DialogTitle>{t_i18n('Ask AI')}</DialogTitle>
         <DialogContent>
           <div style={{ width: '100%', minHeight: height, height }}>
             {format === 'text' && (
               <TextField
+                disabled={isDisabled}
                 rows={Math.round(height / 23)}
                 value={content}
                 multiline={true}
@@ -106,6 +110,7 @@ const ResponseDialog: FunctionComponent<ResponseDialogProps> = ({
             )}
             {format === 'markdown' && (
             <ReactMde
+              readOnly={isDisabled}
               value={content}
               minEditorHeight={height - 80}
               maxEditorHeight={height - 80}
@@ -130,12 +135,12 @@ const ResponseDialog: FunctionComponent<ResponseDialogProps> = ({
           </div>
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleClose} disabled={isDisabled}>
+          <LoadingButton onClick={handleClose} disabled={isDisabled}>
             {t_i18n('Close')}
-          </Button>
-          <Button color="secondary" disabled={true}>
+          </LoadingButton>
+          <LoadingButton color="secondary" disabled={true}>
             {t_i18n('Continue')}
-          </Button>
+          </LoadingButton>
           <LoadingButton loading={isDisabled} color="secondary" onClick={() => handleAccept(content)}>
             {t_i18n('Accept')}
           </LoadingButton>

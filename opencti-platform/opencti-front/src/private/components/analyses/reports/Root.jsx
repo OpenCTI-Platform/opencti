@@ -130,6 +130,7 @@ class RootReport extends Component {
                       PopoverComponent={<ReportPopover />}
                       enableQuickSubscription={true}
                       enableQuickExport={true}
+                      enableAskAi={true}
                     />
                     <Box
                       sx={{

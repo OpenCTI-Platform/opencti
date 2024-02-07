@@ -15,7 +15,7 @@ import { getEntityFromCache } from '../database/cache';
 import { now } from '../utils/format';
 import { generateInternalId } from '../schema/identifier';
 import { UnsupportedError } from '../config/errors';
-import { isEmptyField } from '../database/utils';
+import { isEmptyField, isNotEmptyField } from '../database/utils';
 
 export const getMemoryStatistics = () => {
   return { ...process.memoryUsage(), ...getHeapStatistics() };
@@ -69,6 +69,9 @@ export const getSettings = async (context) => {
     platform_openbas_url: nconf.get('xtm:openbas_url'),
     platform_openerm_url: nconf.get('xtm:openerm_url'),
     platform_openmtd_url: nconf.get('xtm:openmtd_url'),
+    platform_ai_enabled: nconf.get('ai:enabled'),
+    platform_ai_type: nconf.get('ai:type'),
+    platform_ai_has_token: !!isNotEmptyField(nconf.get('ai:token')),
     platform_feature_flags: [
       { id: 'RUNTIME_SORTING', enable: isRuntimeSortEnable() },
       ...(DISABLED_FEATURE_FLAGS.map((feature) => ({ id: feature, enable: false })))

@@ -23,6 +23,7 @@ import MenuItem from '@mui/material/MenuItem';
 import CircularProgress from '@mui/material/CircularProgress';
 import { makeStyles } from '@mui/styles';
 import Box from '@mui/material/Box';
+import StixCoreObjectAskAI from '../stix_core_objects/StixCoreObjectAskAI';
 import { useSettingsMessagesBannerHeight } from '../../settings/settings_messages/SettingsMessagesBanner';
 import StixCoreObjectSubscribers from '../stix_core_objects/StixCoreObjectSubscribers';
 import FormAuthorizedMembersDialog from '../form/FormAuthorizedMembersDialog';
@@ -454,6 +455,7 @@ const ContainerHeader = (props) => {
     investigationAddFromContainer,
     enableManageAuthorizedMembers,
     authorizedMembersMutation,
+    enableAskAi,
   } = props;
   const classes = useStyles();
   const { t_i18n, fd } = useFormatter();
@@ -1030,10 +1032,17 @@ const ContainerHeader = (props) => {
             />
           )}
           {enableQuickSubscription && (
-          <StixCoreObjectQuickSubscription
-            instanceId={container.id}
-            instanceName={defaultValue(container)}
-          />
+            <StixCoreObjectQuickSubscription
+              instanceId={container.id}
+              instanceName={defaultValue(container)}
+            />
+          )}
+          {enableAskAi && (
+            <StixCoreObjectAskAI
+              instanceId={container.id}
+              instanceName={defaultValue(container)}
+              type="container"
+            />
           )}
           {!knowledge && (
             <Security needs={popoverSecurity || [KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNENRICHMENT]}>

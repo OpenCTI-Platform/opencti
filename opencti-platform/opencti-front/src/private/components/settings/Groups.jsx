@@ -11,6 +11,7 @@ import ListLines from '../../../components/list_lines/ListLines';
 import GroupsLines, { groupsLinesQuery } from './groups/GroupsLines';
 import GroupCreation from './groups/GroupCreation';
 import AccessesMenu from './AccessesMenu';
+import Breadcrumbs from '../../../components/Breadcrumps';
 
 export const groupsSearchQuery = graphql`
   query GroupsSearchQuery($search: String) {
@@ -143,7 +144,7 @@ class Groups extends Component {
 
   render() {
     const { view, sortBy, orderAsc, searchTerm } = this.state;
-    const { classes } = this.props;
+    const { t, classes } = this.props;
     const paginationOptions = {
       search: searchTerm,
       orderBy: sortBy,
@@ -151,6 +152,7 @@ class Groups extends Component {
     };
     return (
       <div className={classes.container}>
+        <Breadcrumbs variant="list" elements={[{ label: t('Settings') }, { label: t('Security') }, { label: t('Groups'), current: true }]} />
         <AccessesMenu />
         {view === 'lines' ? this.renderLines(paginationOptions) : ''}
         <GroupCreation paginationOptions={paginationOptions} />

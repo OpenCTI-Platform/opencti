@@ -10,6 +10,7 @@ import ListLines from '../../../components/list_lines/ListLines';
 import MarkingDefinitionsLines, { markingDefinitionsLinesQuery } from './marking_definitions/MarkingDefinitionsLines';
 import MarkingDefinitionCreation from './marking_definitions/MarkingDefinitionCreation';
 import AccessesMenu from './AccessesMenu';
+import Breadcrumbs from '../../../components/Breadcrumps';
 
 const styles = () => ({
   container: {
@@ -109,7 +110,7 @@ class MarkingDefinitions extends Component {
   }
 
   render() {
-    const { classes } = this.props;
+    const { t, classes } = this.props;
     const { view, sortBy, orderAsc, searchTerm } = this.state;
     const paginationOptions = {
       search: searchTerm,
@@ -118,6 +119,7 @@ class MarkingDefinitions extends Component {
     };
     return (
       <div className={classes.container}>
+        <Breadcrumbs variant="list" elements={[{ label: t('Settings') }, { label: t('Security') }, { label: t('Marking definitions'), current: true }]} />
         <AccessesMenu />
         {view === 'lines' ? this.renderLines(paginationOptions) : ''}
         <MarkingDefinitionCreation paginationOptions={paginationOptions} />

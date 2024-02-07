@@ -1,41 +1,61 @@
 import MistralClient from '@mistralai/mistralai';
-import conf, { BUS_TOPICS } from '../config/conf';
-import { isEmptyField, isNotEmptyField } from './utils';
+import conf, { BUS_TOPICS, logApp } from '../config/conf';
+import { isEmptyField } from './utils';
 import { notify } from './redis';
 import { AI_BUS } from '../modules/ai/ai-types';
 import type { AuthUser } from '../types/user';
+import { UnsupportedError } from '../config/errors';
 
-const MISTRALAI_ENDPOINT = conf.get('ai:mistralai:endpoint');
-const MISTRALAI_TOKEN = conf.get('ai:mistralai:token');
-const MISTRALAI_MODEL = conf.get('ai:mistralai:model');
+const AI_ENABLED = conf.get('ai:enabled');
+const AI_TYPE = conf.get('ai:type');
+const AI_ENDPOINT = conf.get('ai:endpoint');
+const AI_TOKEN = conf.get('ai:token');
+const AI_MODEL = conf.get('ai:model');
 
-export const availableEndpoints = () => {
-  const endpoints = [];
-  if (isNotEmptyField(MISTRALAI_ENDPOINT) && isNotEmptyField(MISTRALAI_TOKEN) && isNotEmptyField(MISTRALAI_MODEL)) {
-    endpoints.push(`MistralAI - ${MISTRALAI_MODEL}`);
+let client: MistralClient | null = null;
+if (AI_ENABLED && AI_TOKEN) {
+  switch (AI_TYPE) {
+    case 'mistralai':
+      client = new MistralClient(AI_TOKEN, isEmptyField(AI_ENDPOINT) ? undefined : AI_ENDPOINT);
+      break;
+    default:
+      throw UnsupportedError('Not supported AI type', { type: AI_TYPE });
   }
-  return endpoints;
-};
+}
 
-const client = new MistralClient(MISTRALAI_TOKEN, isEmptyField(MISTRALAI_ENDPOINT) ? undefined : MISTRALAI_ENDPOINT);
-
-export const listModels = async () => {
-  return client.listModels();
+export const queryMistralAi = async (busId: string, question: string, user: AuthUser) => {
+  if (!client) {
+    throw UnsupportedError('Incorrect AI configuration', { enabled: AI_ENABLED, type: AI_TYPE, endpoint: AI_ENDPOINT, model: AI_MODEL });
+  }
+  try {
+    const response = client?.chatStream({
+      model: AI_MODEL,
+      messages: [{ role: 'user', content: question }],
+    });
+    let content = '';
+    if (response) {
+      // eslint-disable-next-line no-restricted-syntax
+      for await (const chunk of response) {
+        if (chunk.choices[0].delta.content !== undefined) {
+          const streamText = chunk.choices[0].delta.content;
+          content += streamText;
+          await notify(BUS_TOPICS[AI_BUS].EDIT_TOPIC, { bus_id: busId, content }, user);
+        }
+      }
+      return content;
+    }
+    logApp.error('[AI] No response from MistralAI', { busId, question });
+  } catch (err) {
+    logApp.error('[AI] Cannot query MistralAI', { error: err });
+    return '';
+  }
 };
 
 export const compute = async (busId: string, question: string, user: AuthUser) => {
-  const response = client.chatStream({
-    model: MISTRALAI_MODEL,
-    messages: [{ role: 'user', content: question }],
-  });
-  let content = '';
-  // eslint-disable-next-line no-restricted-syntax
-  for await (const chunk of response) {
-    if (chunk.choices[0].delta.content !== undefined) {
-      const streamText = chunk.choices[0].delta.content;
-      content += streamText;
-      await notify(BUS_TOPICS[AI_BUS].EDIT_TOPIC, { bus_id: busId, content }, user);
-    }
+  switch (AI_TYPE) {
+    case 'mistralai':
+      return queryMistralAi(busId, question, user);
+    default:
+      throw UnsupportedError('Not supported AI type', { type: AI_TYPE });
   }
-  return content;
 };
