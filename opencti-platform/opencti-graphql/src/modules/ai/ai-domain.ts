@@ -58,6 +58,11 @@ export const checkEnterpriseEdition = async (context: AuthContext) => {
 
 export const fixSpelling = async (context: AuthContext, user: AuthUser, id: string, content: string, format: InputMaybe<Format> = Format.Text) => {
   await checkEnterpriseEdition(context);
+  if (content.length < 5) {
+    const message = `Content is too short${content.length}`;
+    await notify(BUS_TOPICS[AI_BUS].EDIT_TOPIC, { bus_id: id, content: message }, user);
+    return message;
+  }
   const prompt = `
   # Instructions
   Examine the provided English text for any spelling mistakes and correct them accordingly. Ensure that all words are accurately spelled and that the grammar is correct. Your response should match the provided content in the same format which is ${format} and should be placed in Response.
@@ -80,8 +85,9 @@ export const generateContainerReport = async (context: AuthContext, user: AuthUs
   const entities = R.take(RESOLUTION_LIMIT, elements.filter((n) => n.parent_types.includes(ABSTRACT_STIX_CORE_OBJECT))) as Array<BasicStoreEntity>;
   const indexedEntities = R.indexBy(R.prop('id'), entities);
   if (entities.length < 3) {
-    await notify(BUS_TOPICS[AI_BUS].EDIT_TOPIC, { bus_id: id, content: 'AI model unable to generate a report for containers with less than 3 entities.' }, user);
-    return 'AI model unable to generate a report for containers with less than 3 entities.';
+    const message = 'AI model unable to generate a report for containers with less than 3 entities.';
+    await notify(BUS_TOPICS[AI_BUS].EDIT_TOPIC, { bus_id: id, content: message }, user);
+    return message;
   }
   // generate entities involved
   const entitiesInvolved = R.values(indexedEntities).map((n) => {

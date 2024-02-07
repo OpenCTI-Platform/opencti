@@ -16,7 +16,8 @@ import useAI from '../../../../utils/hooks/useAI';
 interface TextFieldAskAiProps {
   currentValue: string;
   setFieldValue: (value: string) => void;
-  format: 'text' | 'html' | 'markdown'
+  format: 'text' | 'html' | 'markdown';
+  variant: 'markdown' | null;
 }
 
 const textFieldAskAIFixSpellingMutation = graphql`
@@ -25,7 +26,7 @@ const textFieldAskAIFixSpellingMutation = graphql`
   }
 `;
 
-const TextFieldAskAI: FunctionComponent<TextFieldAskAiProps> = ({ currentValue, setFieldValue, format = 'text' }) => {
+const TextFieldAskAI: FunctionComponent<TextFieldAskAiProps> = ({ currentValue, setFieldValue, variant, format = 'text' }) => {
   const { t_i18n } = useFormatter();
   const isEnterpriseEdition = useEnterpriseEdition();
   const { enabled, configured } = useAI();
@@ -68,10 +69,51 @@ const TextFieldAskAI: FunctionComponent<TextFieldAskAiProps> = ({ currentValue, 
         // do nothing
     }
   };
+  if (variant === 'markdown') {
+    return (
+      <div style={{ position: 'absolute', top: 15, right: -5 }}>
+        <EETooltip forAi={true} title={t_i18n('Ask AI')}>
+          <IconButton
+            size="medium"
+            color="secondary"
+            onClick={(event) => ((isEnterpriseEdition && enabled && configured) ? handleOpenMenu(event) : null)}
+          >
+            <AutoAwesomeOutlined fontSize='medium'/>
+          </IconButton>
+        </EETooltip>
+        <Menu
+          id="menu-appbar"
+          anchorEl={menuOpen.anchorEl}
+          open={menuOpen.open}
+          onClose={handleCloseMenu}
+        >
+          <MenuItem onClick={() => handleAskAi('spelling')}>
+            {t_i18n('Fix spelling & grammar')}
+          </MenuItem>
+        </Menu>
+        {busId && (
+          <ResponseDialog
+            id={busId}
+            isDisabled={disableResponse}
+            isOpen={displayAskAI}
+            handleClose={handleCloseAskAI}
+            handleAccept={(value) => {
+              setFieldValue(value);
+              handleCloseAskAI();
+            }}
+            handleFollowUp={handleCloseAskAI}
+            followUpActions={[{ key: 'retry', label: t_i18n('Retry') }]}
+            format={format}
+          />
+        )}
+      </div>
+    );
+  }
   return (
     <InputAdornment position="end">
       <EETooltip forAi={true} title={t_i18n('Ask AI')}>
         <IconButton
+          style={{ marginRight: -10 }}
           size="medium"
           color="secondary"
           onClick={(event) => ((isEnterpriseEdition && enabled && configured) ? handleOpenMenu(event) : null)}
