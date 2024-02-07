@@ -330,16 +330,16 @@ class StixDomainObjectContentComponent extends Component {
     });
   }
 
-  handleFileChange(fileName = null) {
+  handleFileChange(fileName = null, isDelete = false) {
     const { t, stixDomainObject } = this.props;
     this.props.relay.refetch({ id: stixDomainObject.id });
-    if (fileName && fileName === this.state.currentFileId) {
+    if (fileName && fileName === this.state.currentFileId && isDelete) {
       this.setState({
         currentFileId: null,
         contentSelected: isContainerWithContent(stixDomainObject.entity_type),
         currentContent: isContainerWithContent(stixDomainObject.entity_type) ? stixDomainObject.contentField ?? t('Write something awesome...') : '',
       }, () => this.saveView());
-    } else if (fileName) {
+    } else if (fileName && !isDelete) {
       this.setState({ currentFileId: fileName, contentSelected: false }, () => {
         this.loadFileContent();
         this.saveView();
@@ -515,7 +515,7 @@ class StixDomainObjectContentComponent extends Component {
           bolditalics: `${url}${APP_BASE_PATH}/static/ext/Roboto-BoldItalic.ttf`,
         },
       };
-      const fragment = (currentFileId || stixDomainObject.name).split('/');
+      const fragment = (currentFileId ?? stixDomainObject.name).split('/');
       const currentName = R.last(fragment);
       pdfMake.createPdf(pdfData, null, fonts).download(`${currentName}.pdf`);
     });
@@ -746,6 +746,7 @@ const StixDomainObjectContent = createRefetchContainer(
         id
         entity_type
         ... on Report {
+          name
           description
           contentField: content
           content_mapping
@@ -755,6 +756,7 @@ const StixDomainObjectContent = createRefetchContainer(
           }
         }
         ... on Case {
+          name
           description
           contentField: content
           content_mapping
@@ -764,6 +766,7 @@ const StixDomainObjectContent = createRefetchContainer(
           }
         }
         ... on Grouping {
+          name
           description
           contentField: content
           content_mapping

@@ -122,7 +122,7 @@ class StixDomainObjectContentFiles extends Component {
       },
       onCompleted: () => {
         this.setState({ deleting: null });
-        this.props.onFileChange(fileName);
+        this.props.onFileChange(fileName, true);
       },
     });
   }
@@ -269,6 +269,8 @@ class StixDomainObjectContentFiles extends Component {
                       '.MuiListItemText-primary': {
                         overflowX: 'hidden',
                         textOverflow: 'ellipsis',
+                        whiteSpace: 'nowrap',
+                        marginRight: '20px',
                       },
                     }}
                     primary={file.name}
