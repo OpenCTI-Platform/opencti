@@ -45,7 +45,7 @@ import { Format, Tone } from '../../generated/graphql';
 import { notify } from '../../database/redis';
 import { BUS_TOPICS } from '../../config/conf';
 import { AI_BUS } from './ai-types';
-import { findById, paginatedForPathWithEnrichment } from '../internal/document/document-domain';
+import { findById as findFileById, paginatedForPathWithEnrichment } from '../internal/document/document-domain';
 
 const RESOLUTION_LIMIT = 200;
 
@@ -112,7 +112,7 @@ export const makeLonger = async (context: AuthContext, user: AuthUser, id: strin
   const prompt = `
   # Instructions
   - Examine the provided English text related to cybersecurity and cyber threat intelligence and make it longer by doubling the size / length of the text.
-  - Make it longer by doubling the number of lines by explaining concepts and developing the ideas. 
+  - Make it longer by doubling the number of lines by explaining concepts and developing the ideas but NOT too long, the final size should be twice the initial one.
   - Do NOT summarize or enumerate points. 
   - Ensure that all words are accurately spelled and that the grammar is correct. 
   - Your response should match the provided content format which is ${format}, be sure to respect this format.
@@ -135,7 +135,7 @@ export const changeTone = async (context: AuthContext, user: AuthUser, id: strin
   const prompt = `
   # Instructions
   - Examine the provided English text related to cybersecurity and cyber threat intelligence and change its tone to be more ${tone}.
-  - Do NOT change the length of the text. 
+  - Do NOT change the length of the text, the size of the output should be the same as the input.
   - Do NOT summarize or enumerate points. 
   - Ensure that all words are accurately spelled and that the grammar is correct. 
   - Your response should match the provided content in the same format which is ${format}.
@@ -277,7 +277,7 @@ export const summarizeFiles = async (context: AuthContext, user: AuthUser, args:
   const stixCoreObject = await storeLoadById(context, user, elementId, ABSTRACT_STIX_CORE_OBJECT) as BasicStoreEntity;
   const opts = { first: 20, prefixMimeTypes: undefined, entity_id: stixCoreObject.id, entity_type: stixCoreObject.entity_type };
   const importFiles = await paginatedForPathWithEnrichment(context, user, `import/${stixCoreObject.entity_type}/${stixCoreObject.id}`, stixCoreObject.id, opts);
-  const filesContent = await Promise.all(importFiles.edges.map((n) => findById(context, user, n.node.id)));
+  const filesContent = await Promise.all(importFiles.edges.map((n) => findFileById(context, user, n.node.id)));
   const files = filesContent.map((n) => {
     return `
     -------------------

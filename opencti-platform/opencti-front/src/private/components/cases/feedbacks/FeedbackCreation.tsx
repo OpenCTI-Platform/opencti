@@ -1,6 +1,5 @@
 import React, { FunctionComponent } from 'react';
 import { Field, Form, Formik } from 'formik';
-import Drawer from '@components/common/drawer/Drawer';
 import Button from '@mui/material/Button';
 import * as Yup from 'yup';
 import { graphql, useMutation } from 'react-relay';
@@ -22,6 +21,7 @@ import { FeedbackCreationMutation$variables } from './__generated__/FeedbackCrea
 import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
 import CustomFileUploader from '../../common/files/CustomFileUploader';
 import SimpleMarkdownField from '../../../../components/SimpleMarkdownField';
+import Drawer from '../../common/drawer/Drawer';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   buttons: {
