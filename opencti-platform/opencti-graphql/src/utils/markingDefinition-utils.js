@@ -7,19 +7,7 @@ import { UnsupportedError } from '../config/errors';
 
 export const cleanMarkings = async (context, values) => {
   const markingsMap = await getEntitiesMapFromCache(context, SYSTEM_USER, ENTITY_TYPE_MARKING_DEFINITION);
-
-  const defaultMarkingValues = [];
-  values.filter((d) => !!d).forEach((d) => {
-    if (typeof d === 'string') {
-      const marking = markingsMap.get(d);
-      if (marking) {
-        defaultMarkingValues.push(marking);
-      }
-    } else {
-      defaultMarkingValues.push(d);
-    }
-  });
-  values?.map((d) => markingsMap.get(d) ?? d);
+  const defaultMarkingValues = values?.filter((d) => !!d).map((d) => markingsMap.get(d) ?? d) ?? [];
   const defaultGroupedMarkings = R.groupBy((m) => m.definition_type, defaultMarkingValues);
   return Object.entries(defaultGroupedMarkings).map(([_, markingValues]) => {
     const max = Math.max(...markingValues.map((m) => m.x_opencti_order));

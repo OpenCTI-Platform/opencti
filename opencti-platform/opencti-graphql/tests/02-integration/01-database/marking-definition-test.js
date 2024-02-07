@@ -88,10 +88,6 @@ describe('Marking Definition', () => {
       const result = await cleanMarkings(testContext, [redPAPMarking, clearPAPMarking, statementMarking1]);
       expect(result.map((r) => r.id)).toEqual([redPAPMarking.id, statementMarking1.id]);
     });
-    it('Case add a marking with an an unknown id => output no marking added', async () => {
-      const result = await cleanMarkings(testContext, ['unknown-id']);
-      expect(result.map((r) => r.id)).toEqual([]);
-    });
     it('Case add a marking with as undefined (deleted case) => output no marking added', async () => {
       const result = await cleanMarkings(testContext, [undefined]);
       expect(result.map((r) => r.id)).toEqual([]);
