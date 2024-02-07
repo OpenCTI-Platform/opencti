@@ -265,7 +265,13 @@ class StixDomainObjectContentFiles extends Component {
                     {this.renderIcon(file.metaData.mimetype)}
                   </ListItemIcon>
                   <ListItemText
-                    primary={truncate(file.name, 30)}
+                    sx={{
+                      '.MuiListItemText-primary': {
+                        overflowX: 'hidden',
+                        textOverflow: 'ellipsis',
+                      },
+                    }}
+                    primary={file.name}
                     secondary={fld(R.propOr(moment(), 'lastModified', file))}
                   />
                   <ListItemSecondaryAction>

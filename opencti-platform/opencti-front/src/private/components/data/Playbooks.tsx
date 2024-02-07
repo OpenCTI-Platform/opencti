@@ -41,10 +41,8 @@ const useStyles = makeStyles<Theme>(() => ({
 
 const Playbooks: FunctionComponent = () => {
   const classes = useStyles();
-
   const isEnterpriseEdition = useEnterpriseEdition();
   const { t_i18n } = useFormatter();
-
   const { viewStorage, helpers, paginationOptions } = usePaginationLocalStorage<PlaybooksLinesPaginationQuery$variables>(
     LOCAL_STORAGE_KEY_PLAYBOOKS,
     {

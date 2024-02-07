@@ -1040,6 +1040,7 @@ const ContainerHeader = (props) => {
           {enableAskAi && (
             <StixCoreObjectAskAI
               instanceId={container.id}
+              instanceType={container.entity_type}
               instanceName={defaultValue(container)}
               type="container"
             />

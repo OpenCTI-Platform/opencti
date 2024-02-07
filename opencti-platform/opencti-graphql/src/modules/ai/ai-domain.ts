@@ -69,6 +69,7 @@ export const fixSpelling = async (context: AuthContext, user: AuthUser, id: stri
 export const generateContainerReport = async (context: AuthContext, user: AuthUser, args: MutationAiContainerGenerateReportArgs) => {
   await checkEnterpriseEdition(context);
   const { id, containerId, paragraphs = 10, tone = 'technical', format = 'HTML' } = args;
+  const paragraphsNumber = !paragraphs || paragraphs > 20 ? 20 : paragraphs;
   const container = await storeLoadById(context, user, containerId, ENTITY_TYPE_CONTAINER) as BasicStoreEntity;
   const elements = await listAllToEntitiesThroughRelations(context, user, containerId, RELATION_OBJECT, [ABSTRACT_STIX_CORE_OBJECT, ABSTRACT_STIX_CORE_RELATIONSHIP]);
   // generate mappings
@@ -125,7 +126,7 @@ export const generateContainerReport = async (context: AuthContext, user: AuthUs
   // build sentences
   const prompt = `
     # Instructions
-    We are in a context of ${meaningfulType}. You must generate a cyber threat intelligence report in ${format} with a title and a content of ${paragraphs} paragraphs of approximately 300 words each without using bullet points. The cyber threat intelligence report 
+    We are in a context of ${meaningfulType}. You must generate a cyber threat intelligence report in ${format} with a title and a content of ${paragraphsNumber} paragraphs of approximately 300 words each without using bullet points. The cyber threat intelligence report 
     should be focused on ${tone} aspects and should be divided into meaningful parts such as: victims, techniques or vulnerabilities used for intrusion, then execution, then persistence and then infrastructure. 
     You should take examples of well-known cyber threat intelligence reports available everywhere. The report is about ${container.name}. Details are: ${container.description}.
     

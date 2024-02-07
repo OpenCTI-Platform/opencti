@@ -202,10 +202,10 @@ class StixDomainObjectContentComponent extends Component {
     const isContentCompatible = isContainerWithContent(stixDomainObject.entity_type);
     const files = getFiles(stixDomainObject);
     const exportFiles = getExportFiles(stixDomainObject);
-    let currentFileId = isEmptyField(stixDomainObject.fieldContent) ? R.head(files)?.id : null;
+    let currentFileId = isEmptyField(stixDomainObject.contentField) ? R.head(files)?.id : null;
     let isLoading = false;
     let onProgressExportFileName;
-    if (params.currentFileId) {
+    if (params.currentFileId && !params.contentSelected) {
       const onProgressExportFile = exportFiles.find(
         (file) => file.id === params.currentFileId && file.uploadStatus === 'progress',
       );
@@ -216,14 +216,14 @@ class StixDomainObjectContentComponent extends Component {
       currentFileId = params.currentFileId;
     }
     this.state = {
-      currentFileId,
-      contentSelected: isContentCompatible && isEmptyField(currentFileId),
+      currentFileId: isContentCompatible && params.contentSelected ? null : currentFileId,
+      contentSelected: isContentCompatible && (params.contentSelected || isEmptyField(currentFileId)),
       totalPdfPageNumber: null,
       currentPdfPageNumber: 1,
       pdfViewerZoom: 1.2,
       markdownSelectedTab: 'write',
-      initialContent: props.t('Write something awesome...'),
-      currentContent: props.t('Write something awesome...'),
+      initialContent: isContentCompatible && params.contentSelected ? stixDomainObject.contentField : props.t('Write something awesome...'),
+      currentContent: isContentCompatible && params.contentSelected ? stixDomainObject.contentField : props.t('Write something awesome...'),
       navOpen: localStorage.getItem('navOpen') === 'true',
       changed: false,
       isLoading,
@@ -318,7 +318,7 @@ class StixDomainObjectContentComponent extends Component {
 
   handleSelectContent() {
     const { stixDomainObject, t } = this.props;
-    this.setState({ currentFileId: null, changed: false, contentSelected: true, currentContent: stixDomainObject.fieldContent ?? t('Write something awesome...') }, () => {
+    this.setState({ currentFileId: null, changed: false, contentSelected: true, currentContent: stixDomainObject.contentField ?? t('Write something awesome...') }, () => {
       this.saveView();
     });
   }
@@ -337,7 +337,7 @@ class StixDomainObjectContentComponent extends Component {
       this.setState({
         currentFileId: null,
         contentSelected: isContainerWithContent(stixDomainObject.entity_type),
-        currentContent: isContainerWithContent(stixDomainObject.entity_type) ? stixDomainObject.fieldContent ?? t('Write something awesome...') : '',
+        currentContent: isContainerWithContent(stixDomainObject.entity_type) ? stixDomainObject.contentField ?? t('Write something awesome...') : '',
       }, () => this.saveView());
     } else if (fileName) {
       this.setState({ currentFileId: fileName, contentSelected: false }, () => {
@@ -425,6 +425,7 @@ class StixDomainObjectContentComponent extends Component {
 
   handleDownloadPdf() {
     const { currentFileId, currentContent } = this.state;
+    const { stixDomainObject } = this.props;
     const regex = /<img[^>]+src=(\\?["'])[^'"]+\.gif\1[^>]*\/?>/gi;
     const htmlData = currentContent
       .replaceAll('id="undefined" ', '')
@@ -514,7 +515,7 @@ class StixDomainObjectContentComponent extends Component {
           bolditalics: `${url}${APP_BASE_PATH}/static/ext/Roboto-BoldItalic.ttf`,
         },
       };
-      const fragment = currentFileId.split('/');
+      const fragment = (currentFileId || stixDomainObject.name).split('/');
       const currentName = R.last(fragment);
       pdfMake.createPdf(pdfData, null, fonts).download(`${currentName}.pdf`);
     });

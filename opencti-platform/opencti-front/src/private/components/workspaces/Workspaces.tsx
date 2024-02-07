@@ -9,6 +9,8 @@ import { EXPLORE_EXUPDATE } from '../../../utils/hooks/useGranted';
 import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
 import { GqlFilterGroup } from '../../../utils/filters/filtersUtils';
+import Breadcrumbs from '../../../components/Breadcrumps';
+import { useFormatter } from '../../../components/i18n';
 
 interface WorkspacesProps {
   type: string;
@@ -17,6 +19,7 @@ interface WorkspacesProps {
 const Workspaces: FunctionComponent<WorkspacesProps> = ({
   type,
 }) => {
+  const { t_i18n } = useFormatter();
   const {
     viewStorage,
     paginationOptions,
@@ -124,6 +127,7 @@ const Workspaces: FunctionComponent<WorkspacesProps> = ({
 
   return (
     <>
+      <Breadcrumbs variant="list" elements={[{ label: type === 'dashboard' ? t_i18n('Dashboards') : t_i18n('Investigations'), current: true }]} />
       {renderLines()}
       <Security needs={[EXPLORE_EXUPDATE]}>
         <WorkspaceCreation

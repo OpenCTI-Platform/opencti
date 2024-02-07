@@ -90,11 +90,11 @@ const NotifierTestDialog: FunctionComponent<NotifierTestDialogProps> = ({
             onChange={(e) => setTarget(e.target.value)}
             fullWidth={true}
           >
-            <MenuItem value={'default_notification'}>
+            <MenuItem value='default_notification'>
               {t_i18n('Sample Notification')}
             </MenuItem>
-            <MenuItem value={'default_digest'}>{t_i18n('Sample Digest')}</MenuItem>
-            <MenuItem value={'default_activity'}>
+            <MenuItem value='default_digest'>{t_i18n('Sample Digest')}</MenuItem>
+            <MenuItem value='default_activity'>
               {t_i18n('Sample Activity Alert')}
             </MenuItem>
           </Select>

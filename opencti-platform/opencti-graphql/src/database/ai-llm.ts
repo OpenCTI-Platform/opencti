@@ -28,6 +28,7 @@ export const queryMistralAi = async (busId: string, question: string, user: Auth
     throw UnsupportedError('Incorrect AI configuration', { enabled: AI_ENABLED, type: AI_TYPE, endpoint: AI_ENDPOINT, model: AI_MODEL });
   }
   try {
+    logApp.info('[AI] Querying MistralAI with prompt', { question });
     const response = client?.chatStream({
       model: AI_MODEL,
       messages: [{ role: 'user', content: question }],

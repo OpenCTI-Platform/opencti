@@ -201,7 +201,14 @@ const StixDomainObjectHeader = (props) => {
   const [aliasToDelete, setAliasToDelete] = useState(null);
   const isKnowledgeUpdater = useGranted([KNOWLEDGE_KNUPDATE]);
   const isKnowledgeEnricher = useGranted([KNOWLEDGE_KNENRICHMENT]);
-
+  let type = 'unsupported';
+  const isThreat = ['Threat-Actor-Group', 'Threat-Actor-Individual', 'Intrusion-Set', 'Campaign', 'Incident', 'Malware', 'Tool'].includes(stixDomainObject.entity_type);
+  const isVictim = ['Sector', 'Organization', 'System', 'Individual', 'Region', 'Country', 'Administrative-Area', 'City', 'Position'].includes(stixDomainObject.entity_type);
+  if (isThreat) {
+    type = 'threat';
+  } else if (isVictim) {
+    type = 'victim';
+  }
   const handleToggleOpenAliases = () => {
     setOpenAliases(!openAliases);
   };
@@ -488,7 +495,9 @@ const StixDomainObjectHeader = (props) => {
           {enableAskAi && (
           <StixCoreObjectAskAI
             instanceId={stixDomainObject.id}
+            instanceType={stixDomainObject.entity_type}
             instanceName={defaultValue(stixDomainObject)}
+            type={type}
           />
           )}
           {(isKnowledgeUpdater || isKnowledgeEnricher) && (
