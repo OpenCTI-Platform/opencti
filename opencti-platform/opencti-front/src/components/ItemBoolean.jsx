@@ -17,6 +17,15 @@ const styles = () => ({
     borderRadius: 4,
     width: 120,
   },
+  chipLarge: {
+    fontSize: 12,
+    lineHeight: '12px',
+    height: 25,
+    marginRight: 7,
+    textTransform: 'uppercase',
+    borderRadius: 4,
+    width: 150,
+  },
   chipInList: {
     fontSize: 12,
     lineHeight: '12px',
@@ -50,7 +59,12 @@ const computeInlineStyles = (theme) => ({
 const ItemBoolean = (props) => {
   const { classes, label, neutralLabel, status, variant, t, reverse } = props;
   const theme = useTheme();
-  const style = variant === 'inList' ? classes.chipInList : classes.chip;
+  let style = classes.chip;
+  if (variant === 'inList') {
+    style = classes.chipInList;
+  } else if (variant === 'large') {
+    style = classes.chipLarge;
+  }
   const inlineStyles = computeInlineStyles(theme);
   if (status === true) {
     return (

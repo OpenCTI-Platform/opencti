@@ -79,6 +79,9 @@ const settingsQuery = graphql`
       platform_theme_light_logo
       platform_theme_light_logo_collapsed
       platform_theme_light_logo_login
+      platform_ai_enabled
+      platform_ai_type
+      platform_ai_has_token
       platform_organization {
         id
         name
@@ -446,7 +449,7 @@ const Settings = () => {
                               <ListItem divider={true}>
                                 <ListItemText primary={t_i18n('Version')} />
                                 <ItemBoolean
-                                  variant="inList"
+                                  variant="large"
                                   neutralLabel={version}
                                   status={null}
                                 />
@@ -454,7 +457,7 @@ const Settings = () => {
                               <ListItem divider={true}>
                                 <ListItemText primary={t_i18n('Edition')} />
                                 <ItemBoolean
-                                  variant="inList"
+                                  variant="large"
                                   neutralLabel={
                                     isEnterpriseEdition
                                       ? t_i18n('Enterprise')
@@ -468,7 +471,7 @@ const Settings = () => {
                                   primary={t_i18n('Architecture mode')}
                                 />
                                 <ItemBoolean
-                                  variant="inList"
+                                  variant="large"
                                   neutralLabel={
                                     settings.platform_cluster.instances_number
                                     > 1
@@ -483,10 +486,23 @@ const Settings = () => {
                                   primary={t_i18n('Number of node(s)')}
                                 />
                                 <ItemBoolean
-                                  variant="inList"
+                                  variant="large"
                                   neutralLabel={
                                     `${settings.platform_cluster.instances_number}`
                                   }
+                                  status={null}
+                                />
+                              </ListItem>
+                              <ListItem divider={true}>
+                                <ListItemText
+                                  primary={t_i18n('AI Powered')}
+                                />
+                                <ItemBoolean
+                                  variant="large"
+                                  neutralLabel={
+                                    // eslint-disable-next-line no-nested-ternary
+                                  !settings.platform_ai_enabled ? t_i18n('Disabled') : settings.platform_ai_has_token
+                                    ? settings.platform_ai_type : t_i18n('Missing token')}
                                   status={null}
                                 />
                               </ListItem>
@@ -972,7 +988,7 @@ const Settings = () => {
                             <ListItem key={module.id} divider={true}>
                               <ListItemText primary={t_i18n(module.id)} />
                               <ItemBoolean
-                                variant="inList"
+                                variant="large"
                                 label={module.enable ? t_i18n('Enabled') : t_i18n('Disabled')}
                                 status={status}
                               />
@@ -983,7 +999,7 @@ const Settings = () => {
                           <ListItem key={dep.name} divider={true}>
                             <ListItemText primary={t_i18n(dep.name)} />
                             <ItemBoolean
-                              variant="inList"
+                              variant="large"
                               neutralLabel={dep.version}
                               status={null}
                             />
