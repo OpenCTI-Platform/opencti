@@ -41,7 +41,7 @@ import type { BasicStoreSettings } from '../../types/settings';
 import { SYSTEM_USER } from '../../utils/access';
 import { ENTITY_TYPE_SETTINGS } from '../../schema/internalObject';
 import { UnsupportedError } from '../../config/errors';
-import { Format } from '../../generated/graphql';
+import { Format, Tone } from '../../generated/graphql';
 import { notify } from '../../database/redis';
 import { BUS_TOPICS } from '../../config/conf';
 import { AI_BUS } from './ai-types';
@@ -65,7 +65,118 @@ export const fixSpelling = async (context: AuthContext, user: AuthUser, id: stri
   }
   const prompt = `
   # Instructions
-  Examine the provided English text for any spelling mistakes and correct them accordingly. Ensure that all words are accurately spelled and that the grammar is correct. Your response should match the provided content in the same format which is ${format} and should be placed in Response.
+  - Examine the provided English text for any spelling mistakes and correct them accordingly.
+  - Ensure that all words are accurately spelled and that the grammar is correct.
+  - If no mistake is detected, just return the original text without anything else.
+  - Your response should match the provided content format which is ${format}, be sure to respect this format.
+
+  # Content
+  ${content}
+  `;
+  const response = await compute(id, prompt, user);
+  return response;
+};
+
+export const makeShorter = async (context: AuthContext, user: AuthUser, id: string, content: string, format: InputMaybe<Format> = Format.Text) => {
+  await checkEnterpriseEdition(context);
+  if (content.length < 5) {
+    const message = `Content is too short${content.length}`;
+    await notify(BUS_TOPICS[AI_BUS].EDIT_TOPIC, { bus_id: id, content: message }, user);
+    return message;
+  }
+  const prompt = `
+  # Instructions
+  - Examine the provided English text related to cybersecurity and cyber threat intelligence and make it shorter (decrease by 20% the number of words).
+  - Make it shorter with a decrease of 20% of the number of words but you should keep the main ideas and concepts.
+  - Do not summarize or enumerate points.
+  - Ensure that all words are accurately spelled and that the grammar is correct. 
+  - Your response should match the provided content format which is ${format}, be sure to respect this format.
+
+  # Content
+  ${content}
+  `;
+  const response = await compute(id, prompt, user);
+  return response;
+};
+
+export const makeLonger = async (context: AuthContext, user: AuthUser, id: string, content: string, format: InputMaybe<Format> = Format.Text) => {
+  await checkEnterpriseEdition(context);
+  if (content.length < 5) {
+    const message = `Content is too short${content.length}`;
+    await notify(BUS_TOPICS[AI_BUS].EDIT_TOPIC, { bus_id: id, content: message }, user);
+    return message;
+  }
+  const prompt = `
+  # Instructions
+  - Examine the provided English text related to cybersecurity and cyber threat intelligence and make it longer (increase by 20% the number of words).
+  - Make it longer with an increase of 20% of the number of words by explaining concepts and developing the ideas. 
+  - Do not summarize or enumerate points. Ensure that all words are accurately spelled and that the grammar is correct. 
+  - Your response should match the provided content format which is ${format}, be sure to respect this format.
+
+  # Content
+  ${content}
+  `;
+  const response = await compute(id, prompt, user);
+  return response;
+};
+
+// eslint-disable-next-line max-len
+export const changeTone = async (context: AuthContext, user: AuthUser, id: string, content: string, format: InputMaybe<Format> = Format.Text, tone: InputMaybe<Tone> = Tone.Technical) => {
+  await checkEnterpriseEdition(context);
+  if (content.length < 5) {
+    const message = `Content is too short${content.length}`;
+    await notify(BUS_TOPICS[AI_BUS].EDIT_TOPIC, { bus_id: id, content: message }, user);
+    return message;
+  }
+  const prompt = `
+  # Instructions
+  - Examine the provided English text related to cybersecurity and cyber threat intelligence and change its tone to be more ${tone}.
+  - Do not change the length of the text. 
+  - Do not summarize or enumerate points. 
+  - Ensure that all words are accurately spelled and that the grammar is correct. 
+  - Your response should match the provided content in the same format which is ${format}.
+
+  # Content
+  ${content}
+  `;
+  const response = await compute(id, prompt, user);
+  return response;
+};
+
+export const summarize = async (context: AuthContext, user: AuthUser, id: string, content: string, format: InputMaybe<Format> = Format.Text) => {
+  await checkEnterpriseEdition(context);
+  if (content.length < 5) {
+    const message = `Content is too short${content.length}`;
+    await notify(BUS_TOPICS[AI_BUS].EDIT_TOPIC, { bus_id: id, content: message }, user);
+    return message;
+  }
+  const prompt = `
+  # Instructions
+  - Examine the provided English text related to cybersecurity and cyber threat intelligence and summarize it with main ideas and concepts.
+  - Make it shorter and summarize key points highlighting the deep meaning of the text.
+  - Ensure that all words are accurately spelled and that the grammar is correct. 
+  - Your response should match the provided content format which is ${format}, be sure to respect this format.
+
+  # Content
+  ${content}
+  `;
+  const response = await compute(id, prompt, user);
+  return response;
+};
+
+export const explain = async (context: AuthContext, user: AuthUser, id: string, content: string) => {
+  await checkEnterpriseEdition(context);
+  if (content.length < 5) {
+    const message = `Content is too short${content.length}`;
+    await notify(BUS_TOPICS[AI_BUS].EDIT_TOPIC, { bus_id: id, content: message }, user);
+    return message;
+  }
+  const prompt = `
+  # Instructions
+  - Examine the provided English text related to cybersecurity and cyber threat intelligence and explain it.
+  - Popularize the text to enlighten non-specialist by explaining key concepts and overall meaning.
+  - Ensure that all words are accurately spelled and that the grammar is correct. 
+  - Your response should be done in plain text english regardless of the original format.
 
   # Content
   ${content}

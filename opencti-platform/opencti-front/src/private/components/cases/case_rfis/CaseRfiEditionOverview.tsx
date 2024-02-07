@@ -273,10 +273,10 @@ const CaseRfiEditionOverview: FunctionComponent<CaseRfiEditionOverviewProps> = (
             fullWidth={true}
             onFocus={editor.changeFocus}
             onSubmit={handleSubmitField}
+            askAi={true}
             helperText={
               <SubscriptionFocus context={context} fieldName="name" />
             }
-            style={{ marginBottom: '20px' }}
           />
           <Field
             component={DateTimePickerField}
@@ -290,6 +290,7 @@ const CaseRfiEditionOverview: FunctionComponent<CaseRfiEditionOverviewProps> = (
               helperText: (
                 <SubscriptionFocus context={context} fieldName="created"/>
               ),
+              style: { marginTop: 20 },
             }}
           />
           <OpenVocabField
@@ -343,6 +344,7 @@ const CaseRfiEditionOverview: FunctionComponent<CaseRfiEditionOverviewProps> = (
             style={fieldSpacingContainerStyle}
             onFocus={editor.changeFocus}
             onSubmit={handleSubmitField}
+            askAi={true}
             helperText={
               <SubscriptionFocus context={context} fieldName="description" />
             }

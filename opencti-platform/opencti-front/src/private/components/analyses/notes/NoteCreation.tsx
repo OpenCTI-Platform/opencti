@@ -218,6 +218,7 @@ export const NoteCreationForm: FunctionComponent<NoteFormProps> = ({
             label={t_i18n('Abstract')}
             fullWidth={true}
             style={{ marginTop: 20 }}
+            askAi={true}
           />
           <Field
             component={MarkdownField}
@@ -227,6 +228,7 @@ export const NoteCreationForm: FunctionComponent<NoteFormProps> = ({
             multiline={true}
             rows="4"
             style={{ marginTop: 20 }}
+            askAi={true}
           />
           <OpenVocabField
             label={t_i18n('Note types')}

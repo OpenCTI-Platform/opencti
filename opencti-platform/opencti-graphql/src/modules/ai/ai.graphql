@@ -37,7 +37,7 @@ type Mutation {
     aiMakeLonger(id: ID!, content: String!, format: Format): String @auth(for: [KNOWLEDGE_KNUPDATE])
     aiChangeTone(id: ID!, content: String!, format: Format, tone: Tone): String @auth(for: [KNOWLEDGE_KNUPDATE])
     aiSummarize(id: ID!, content: String!, format: Format): String @auth(for: [KNOWLEDGE_KNUPDATE])
-    aiExplain(id: ID!, content: String!, format: Format): String @auth(for: [KNOWLEDGE])
+    aiExplain(id: ID!, content: String!): String @auth(for: [KNOWLEDGE])
 }
 
 type Subscription {

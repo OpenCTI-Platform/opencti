@@ -28,6 +28,7 @@ interface ResponseDialogProps {
   handleAccept: (content: string) => void;
   handleFollowUp: () => void;
   format: 'text' | 'html' | 'markdown';
+  isAcceptable?: boolean;
   followUpActions: {
     key: string;
     label: string;
@@ -49,6 +50,7 @@ const ResponseDialog: FunctionComponent<ResponseDialogProps> = ({
   handleClose,
   handleAccept,
   format,
+  isAcceptable = true,
 }) => {
   const { t_i18n } = useFormatter();
   const [content, setContent] = useState('');
@@ -143,9 +145,11 @@ const ResponseDialog: FunctionComponent<ResponseDialogProps> = ({
           <LoadingButton color="secondary" disabled={true}>
             {t_i18n('Continue')}
           </LoadingButton>
-          <LoadingButton loading={isDisabled} color="secondary" onClick={() => handleAccept(content)}>
-            {t_i18n('Accept')}
-          </LoadingButton>
+          {isAcceptable && (
+            <LoadingButton loading={isDisabled} color="secondary" onClick={() => handleAccept(content)}>
+              {t_i18n('Accept')}
+            </LoadingButton>
+          )}
         </DialogActions>
       </Dialog>
     </>

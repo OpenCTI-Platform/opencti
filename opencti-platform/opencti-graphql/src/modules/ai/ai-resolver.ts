@@ -15,7 +15,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 
 import { withFilter } from 'graphql-subscriptions';
 import type { Resolvers } from '../../generated/graphql';
-import { fixSpelling, generateContainerReport } from './ai-domain';
+import { changeTone, explain, fixSpelling, generateContainerReport, makeLonger, makeShorter, summarize } from './ai-domain';
 import { pubSubAsyncIterator } from '../../database/redis';
 import { BUS_TOPICS } from '../../config/conf';
 import { AI_BUS } from './ai-types';
@@ -24,6 +24,11 @@ const aiResolvers: Resolvers = {
   Mutation: {
     aiContainerGenerateReport: (_, args, context) => generateContainerReport(context, context.user, args),
     aiFixSpelling: (_, { id, content, format }, context) => fixSpelling(context, context.user, id, content, format),
+    aiMakeShorter: (_, { id, content, format }, context) => makeShorter(context, context.user, id, content, format),
+    aiMakeLonger: (_, { id, content, format }, context) => makeLonger(context, context.user, id, content, format),
+    aiChangeTone: (_, { id, content, format, tone }, context) => changeTone(context, context.user, id, content, format, tone),
+    aiSummarize: (_, { id, content, format }, context) => summarize(context, context.user, id, content, format),
+    aiExplain: (_, { id, content }, context) => explain(context, context.user, id, content),
   },
   Subscription: {
     aiBus: {

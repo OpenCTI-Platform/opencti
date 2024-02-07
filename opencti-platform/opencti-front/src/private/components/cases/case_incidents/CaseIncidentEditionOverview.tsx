@@ -274,10 +274,10 @@ const CaseIncidentEditionOverview: FunctionComponent<CaseIncidentEditionOverview
             fullWidth={true}
             onFocus={editor.changeFocus}
             onSubmit={editor.changeField}
+            askAi={true}
             helperText={
               <SubscriptionFocus context={context} fieldName="name" />
             }
-            style={{ marginBottom: '20px' }}
           />
           <Field
             component={DateTimePickerField}
@@ -291,6 +291,7 @@ const CaseIncidentEditionOverview: FunctionComponent<CaseIncidentEditionOverview
               helperText: (
                 <SubscriptionFocus context={context} fieldName="created"/>
               ),
+              style: { marginTop: 20 },
             }}
             containerStyle={fieldSpacingContainerStyle}
           />
@@ -345,6 +346,7 @@ const CaseIncidentEditionOverview: FunctionComponent<CaseIncidentEditionOverview
             style={fieldSpacingContainerStyle}
             onFocus={editor.changeFocus}
             onSubmit={editor.changeField}
+            askAi={true}
             helperText={
               <SubscriptionFocus context={context} fieldName="description" />
             }

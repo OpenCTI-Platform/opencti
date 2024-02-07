@@ -276,7 +276,6 @@ const CaseRftEditionOverview: FunctionComponent<CaseRftEditionOverviewProps> = (
             helperText={
               <SubscriptionFocus context={context} fieldName="name" />
             }
-            style={{ marginBottom: '20px' }}
           />
           <Field
             component={DateTimePickerField}
@@ -284,9 +283,10 @@ const CaseRftEditionOverview: FunctionComponent<CaseRftEditionOverviewProps> = (
             onFocus={editor.changeFocus}
             onSubmit={handleSubmitField}
             textFieldProps={{
-              label: t_i18n('Request for Takedown date'),
+              label: t_i18n('Request for takedown date'),
               variant: 'standard',
               fullWidth: true,
+              style: { marginTop: 20 },
               helperText: (
                 <SubscriptionFocus context={context} fieldName="created"/>
               ),

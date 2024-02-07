@@ -12416,7 +12416,6 @@ export type MutationAiConvertIndicatorArgs = {
 
 export type MutationAiExplainArgs = {
   content: Scalars['String']['input'];
-  format?: InputMaybe<Format>;
   id: Scalars['ID']['input'];
 };
 

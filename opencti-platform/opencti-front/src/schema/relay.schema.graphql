@@ -8093,7 +8093,7 @@ type Mutation {
   aiMakeLonger(id: ID!, content: String!, format: Format): String
   aiChangeTone(id: ID!, content: String!, format: Format, tone: Tone): String
   aiSummarize(id: ID!, content: String!, format: Format): String
-  aiExplain(id: ID!, content: String!, format: Format): String
+  aiExplain(id: ID!, content: String!): String
 }
 
 type Channel implements BasicObject & StixObject & StixCoreObject & StixDomainObject {

@@ -192,7 +192,6 @@ export const CaseRftCreationForm: FunctionComponent<CaseRftFormProps> = ({
             label={t_i18n('Name')}
             fullWidth={true}
             detectDuplicate={['Case-Rft']}
-            style={{ marginBottom: '20px' }}
           />
           <Field
             component={DateTimePickerField}
@@ -201,6 +200,7 @@ export const CaseRftCreationForm: FunctionComponent<CaseRftFormProps> = ({
               label: t_i18n('Request For Takedown Date'),
               variant: 'standard',
               fullWidth: true,
+              style: { marginTop: 20 },
             }}
           />
           <OpenVocabField
