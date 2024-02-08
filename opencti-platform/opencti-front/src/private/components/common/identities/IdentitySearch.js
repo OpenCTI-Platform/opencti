@@ -14,9 +14,6 @@ export const identitySearchIdentitiesSearchQuery = graphql`
           identity_class
           name
           entity_type
-          ... on Individual {
-            isUser
-          }
         }
       }
     }
