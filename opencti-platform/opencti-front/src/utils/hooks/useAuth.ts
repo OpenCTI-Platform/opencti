@@ -17,9 +17,9 @@ export type FilterDefinition = {
   label: string;
   type: string; // boolean, date, integer, float, id, string, text, or object
   multiple: boolean;
-  subEntityTypes: readonly string[];
+  subEntityTypes: string[];
   elementsForFilterValuesSearch: string[]; // not empty if type = 'id', type = 'enum' or type = 'vocabulary'
-  subFilters?: FilterDefinition[];
+  subFilters?: FilterDefinition[] | null;
 };
 
 export interface UserContextType {

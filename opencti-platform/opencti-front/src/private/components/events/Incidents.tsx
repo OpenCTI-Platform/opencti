@@ -13,7 +13,7 @@ import { IncidentLine_node$data } from './incidents/__generated__/IncidentLine_n
 import ToolBar from '../data/ToolBar';
 import ExportContextProvider from '../../../utils/ExportContextProvider';
 import { IncidentsLinesPaginationQuery, IncidentsLinesPaginationQuery$variables } from './incidents/__generated__/IncidentsLinesPaginationQuery.graphql';
-import { buildEntityTypeBasedFilterContext, emptyFilterGroup } from '../../../utils/filters/filtersUtils';
+import { useBuildEntityTypeBasedFilterContext, emptyFilterGroup } from '../../../utils/filters/filtersUtils';
 import { useFormatter } from '../../../components/i18n';
 import Breadcrumbs from '../../../components/Breadcrumbs';
 
@@ -52,7 +52,7 @@ const Incidents: FunctionComponent = () => {
     selectAll,
   } = useEntityToggle<IncidentLine_node$data>(LOCAL_STORAGE_KEY);
 
-  const contextFilters = buildEntityTypeBasedFilterContext('Incident', filters);
+  const contextFilters = useBuildEntityTypeBasedFilterContext('Incident', filters);
   const queryPaginationOptions = {
     ...paginationOptions,
     filters: contextFilters,

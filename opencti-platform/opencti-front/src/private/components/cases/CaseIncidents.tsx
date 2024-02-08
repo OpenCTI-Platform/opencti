@@ -16,7 +16,7 @@ import {
   CaseIncidentsLinesCasesPaginationQuery$variables,
 } from './case_incidents/__generated__/CaseIncidentsLinesCasesPaginationQuery.graphql';
 import { CaseIncidentLineCase_node$data } from './case_incidents/__generated__/CaseIncidentLineCase_node.graphql';
-import { buildEntityTypeBasedFilterContext, emptyFilterGroup } from '../../../utils/filters/filtersUtils';
+import { useBuildEntityTypeBasedFilterContext, emptyFilterGroup } from '../../../utils/filters/filtersUtils';
 import { useFormatter } from '../../../components/i18n';
 import Breadcrumbs from '../../../components/Breadcrumbs';
 
@@ -55,7 +55,7 @@ const CaseIncidents: FunctionComponent<CaseIncidentsProps> = () => {
     numberOfElements,
   } = viewStorage;
 
-  const contextFilters = buildEntityTypeBasedFilterContext('Case-Incident', filters);
+  const contextFilters = useBuildEntityTypeBasedFilterContext('Case-Incident', filters);
   const queryPaginationOptions = {
     ...paginationOptions,
     filters: contextFilters,

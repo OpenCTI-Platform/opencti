@@ -30,7 +30,7 @@ import { commitMutation } from '../../../../relay/environment';
 import usePreloadedFragment from '../../../../utils/hooks/usePreloadedFragment';
 import { CaseTemplateLine_node$key } from './__generated__/CaseTemplateLine_node.graphql';
 import { CaseTemplateLineFragment } from './CaseTemplateLine';
-import { FilterGroup, isFilterGroupNotEmpty, removeIdFromFilterGroupObject } from '../../../../utils/filters/filtersUtils';
+import { FilterGroup, isFilterGroupNotEmpty, useRemoveIdAndIncorrectKeysFromFilterGroupObject } from '../../../../utils/filters/filtersUtils';
 
 const useStyles = makeStyles(() => ({
   container: {
@@ -187,7 +187,7 @@ const CaseTemplateTasks = () => {
     },
   );
   const { filters } = viewStorage;
-  const userFilters = removeIdFromFilterGroupObject(filters);
+  const userFilters = useRemoveIdAndIncorrectKeysFromFilterGroupObject(filters, 'Case-Template');
   const contextTaskFilters: FilterGroup = {
     mode: 'and',
     filters: [

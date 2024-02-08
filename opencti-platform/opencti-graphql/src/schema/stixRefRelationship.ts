@@ -126,7 +126,7 @@ export const operatingSystems: RefAttribute = {
   datable: true,
   label: 'Operating System',
   isFilterable: true,
-  isRefExistingForTypes(_, toType) {
+  isRefExistingForTypes(this, _, toType) {
     return this.toTypes.includes(toType);
   },
   toTypes: [ENTITY_SOFTWARE],
@@ -144,7 +144,7 @@ export const samples: RefAttribute = {
   datable: true,
   label: 'Sample',
   isFilterable: true,
-  isRefExistingForTypes(_, toType) {
+  isRefExistingForTypes(this, _, toType) {
     return this.toTypes.includes(toType);
   },
   toTypes: [ENTITY_HASHED_OBSERVABLE_ARTIFACT, ENTITY_HASHED_OBSERVABLE_STIX_FILE],
@@ -154,7 +154,7 @@ export const contains: RefAttribute = {
   name: INPUT_CONTAINS,
   type: 'ref',
   databaseName: RELATION_CONTAINS,
-  label: 'Contains',
+  label: 'Contains observable',
   stixName: 'contains_refs',
   mandatoryType: 'no',
   editDefault: false,
@@ -162,7 +162,7 @@ export const contains: RefAttribute = {
   upsert: true,
   datable: true,
   isFilterable: true,
-  isRefExistingForTypes(_, toType) {
+  isRefExistingForTypes(this, _, toType) {
     return this.toTypes.includes(toType);
   },
   toTypes: ['Stix-Core-Object'],
@@ -179,7 +179,7 @@ export const resolvesTo: RefAttribute = {
   upsert: true,
   datable: true,
   isFilterable: true,
-  isRefExistingForTypes(_, toType) {
+  isRefExistingForTypes(this, _, toType) {
     return this.toTypes.includes(toType);
   },
   toTypes: [ENTITY_DOMAIN_NAME, ENTITY_IPV4_ADDR, ENTITY_IPV6_ADDR, ENTITY_MAC_ADDR],
@@ -196,7 +196,7 @@ export const belongsTo: RefAttribute = {
   upsert: true,
   datable: true,
   isFilterable: true,
-  isRefExistingForTypes(_, toType) {
+  isRefExistingForTypes(this, _, toType) {
     return this.toTypes.includes(toType);
   },
   toTypes: [ENTITY_USER_ACCOUNT, ENTITY_AUTONOMOUS_SYSTEM],
@@ -213,7 +213,7 @@ export const from: RefAttribute = {
   upsert: true,
   datable: true,
   isFilterable: true,
-  isRefExistingForTypes(_, toType) {
+  isRefExistingForTypes(this, _, toType) {
     return this.toTypes.includes(toType);
   },
   toTypes: [ENTITY_EMAIL_ADDR],
@@ -230,7 +230,7 @@ export const sender: RefAttribute = {
   upsert: true,
   datable: true,
   isFilterable: true,
-  isRefExistingForTypes(_, toType) {
+  isRefExistingForTypes(this, _, toType) {
     return this.toTypes.includes(toType);
   },
   toTypes: [ENTITY_EMAIL_ADDR],
@@ -247,7 +247,7 @@ export const to: RefAttribute = {
   upsert: true,
   datable: true,
   isFilterable: true,
-  isRefExistingForTypes(_, toType) {
+  isRefExistingForTypes(this, _, toType) {
     return this.toTypes.includes(toType);
   },
   toTypes: [ENTITY_EMAIL_ADDR],
@@ -264,7 +264,7 @@ export const cc: RefAttribute = {
   upsert: true,
   datable: true,
   isFilterable: true,
-  isRefExistingForTypes(_, toType) {
+  isRefExistingForTypes(this, _, toType) {
     return this.toTypes.includes(toType);
   },
   toTypes: [ENTITY_EMAIL_ADDR],
@@ -281,7 +281,7 @@ export const bcc: RefAttribute = {
   upsert: true,
   datable: true,
   isFilterable: true,
-  isRefExistingForTypes(_, toType) {
+  isRefExistingForTypes(this, _, toType) {
     return this.toTypes.includes(toType);
   },
   toTypes: [ENTITY_EMAIL_ADDR],
@@ -298,7 +298,7 @@ export const rawEmail: RefAttribute = {
   upsert: true,
   datable: true,
   isFilterable: true,
-  isRefExistingForTypes(_, toType) {
+  isRefExistingForTypes(this, _, toType) {
     return this.toTypes.includes(toType);
   },
   toTypes: [ENTITY_HASHED_OBSERVABLE_ARTIFACT],
@@ -315,7 +315,7 @@ export const bodyRaw: RefAttribute = {
   upsert: true,
   datable: true,
   isFilterable: true,
-  isRefExistingForTypes(_, toType) {
+  isRefExistingForTypes(this, _, toType) {
     return this.toTypes.includes(toType);
   },
   toTypes: [ENTITY_HASHED_OBSERVABLE_ARTIFACT, ENTITY_HASHED_OBSERVABLE_STIX_FILE],
@@ -332,7 +332,7 @@ export const parentDirectory: RefAttribute = {
   upsert: true,
   datable: true,
   isFilterable: true,
-  isRefExistingForTypes(_, toType) {
+  isRefExistingForTypes(this, _, toType) {
     return this.toTypes.includes(toType);
   },
   toTypes: [ENTITY_DIRECTORY],
@@ -341,7 +341,7 @@ export const obsContent: RefAttribute = {
   name: INPUT_CONTENT,
   type: 'ref',
   databaseName: RELATION_CONTENT,
-  label: 'Content',
+  label: 'Artifact content',
   stixName: 'content_ref',
   mandatoryType: 'no',
   editDefault: false,
@@ -349,7 +349,7 @@ export const obsContent: RefAttribute = {
   upsert: true,
   datable: true,
   isFilterable: true,
-  isRefExistingForTypes(_, toType) {
+  isRefExistingForTypes(this, _, toType) {
     return this.toTypes.includes(toType);
   },
   toTypes: [ENTITY_HASHED_OBSERVABLE_ARTIFACT],
@@ -366,7 +366,7 @@ export const src: RefAttribute = {
   upsert: true,
   datable: true,
   isFilterable: true,
-  isRefExistingForTypes(_, toType) {
+  isRefExistingForTypes(this, _, toType) {
     return this.toTypes.includes(toType);
   },
   toTypes: [ENTITY_DOMAIN_NAME, ENTITY_IPV4_ADDR, ENTITY_IPV6_ADDR, ENTITY_MAC_ADDR],
@@ -383,7 +383,7 @@ export const dst: RefAttribute = {
   upsert: true,
   datable: true,
   isFilterable: true,
-  isRefExistingForTypes(_, toType) {
+  isRefExistingForTypes(this, _, toType) {
     return this.toTypes.includes(toType);
   },
   toTypes: [ENTITY_DOMAIN_NAME, ENTITY_IPV4_ADDR, ENTITY_IPV6_ADDR, ENTITY_MAC_ADDR],
@@ -400,7 +400,7 @@ export const srcPayload: RefAttribute = {
   upsert: true,
   datable: true,
   isFilterable: true,
-  isRefExistingForTypes(_, toType) {
+  isRefExistingForTypes(this, _, toType) {
     return this.toTypes.includes(toType);
   },
   toTypes: [ENTITY_HASHED_OBSERVABLE_ARTIFACT],
@@ -417,7 +417,7 @@ export const dstPayload: RefAttribute = {
   upsert: true,
   datable: true,
   isFilterable: true,
-  isRefExistingForTypes(_, toType) {
+  isRefExistingForTypes(this, _, toType) {
     return this.toTypes.includes(toType);
   },
   toTypes: [ENTITY_HASHED_OBSERVABLE_ARTIFACT],
@@ -434,7 +434,7 @@ export const encapsulates: RefAttribute = {
   upsert: true,
   datable: true,
   isFilterable: true,
-  isRefExistingForTypes(_, toType) {
+  isRefExistingForTypes(this, _, toType) {
     return this.toTypes.includes(toType);
   },
   toTypes: [ENTITY_NETWORK_TRAFFIC],
@@ -451,7 +451,7 @@ export const encapsulatedBy: RefAttribute = {
   upsert: true,
   datable: true,
   isFilterable: true,
-  isRefExistingForTypes(_, toType) {
+  isRefExistingForTypes(this, _, toType) {
     return this.toTypes.includes(toType);
   },
   toTypes: [ENTITY_NETWORK_TRAFFIC],
@@ -468,7 +468,7 @@ export const openedConnections: RefAttribute = {
   upsert: true,
   datable: true,
   isFilterable: true,
-  isRefExistingForTypes(_, toType) {
+  isRefExistingForTypes(this, _, toType) {
     return this.toTypes.includes(toType);
   },
   toTypes: [ENTITY_NETWORK_TRAFFIC],
@@ -485,7 +485,7 @@ export const creatorUser: RefAttribute = {
   upsert: true,
   datable: true,
   isFilterable: true,
-  isRefExistingForTypes(_, toType) {
+  isRefExistingForTypes(this, _, toType) {
     return this.toTypes.includes(toType);
   },
   toTypes: [ENTITY_USER_ACCOUNT],
@@ -502,7 +502,7 @@ export const image: RefAttribute = {
   upsert: true,
   datable: true,
   isFilterable: true,
-  isRefExistingForTypes(_, toType) {
+  isRefExistingForTypes(this, _, toType) {
     return this.toTypes.includes(toType);
   },
   toTypes: [ENTITY_HASHED_OBSERVABLE_STIX_FILE],
@@ -519,7 +519,7 @@ export const parent: RefAttribute = {
   upsert: true,
   datable: true,
   isFilterable: true,
-  isRefExistingForTypes(_, toType) {
+  isRefExistingForTypes(this, _, toType) {
     return this.toTypes.includes(toType);
   },
   toTypes: [ENTITY_PROCESS],
@@ -536,7 +536,7 @@ export const child: RefAttribute = {
   upsert: true,
   datable: true,
   isFilterable: true,
-  isRefExistingForTypes(_, toType) {
+  isRefExistingForTypes(this, _, toType) {
     return this.toTypes.includes(toType);
   },
   toTypes: [ENTITY_PROCESS],
@@ -553,7 +553,7 @@ export const bodyMultipart: RefAttribute = {
   upsert: true,
   datable: true,
   isFilterable: true,
-  isRefExistingForTypes(_, toType) {
+  isRefExistingForTypes(this, _, toType) {
     return this.toTypes.includes(toType);
   },
   toTypes: [ENTITY_EMAIL_MIME_PART_TYPE],
@@ -570,7 +570,7 @@ export const values: RefAttribute = {
   upsert: true,
   datable: true,
   isFilterable: true,
-  isRefExistingForTypes(_, toType) {
+  isRefExistingForTypes(this, _, toType) {
     return this.toTypes.includes(toType);
   },
   toTypes: [ENTITY_WINDOWS_REGISTRY_VALUE_TYPE],
@@ -585,7 +585,7 @@ export const xOpenctiLinkedTo: RefAttribute = {
   editDefault: false,
   multiple: true,
   upsert: true,
-  isRefExistingForTypes(_, toType) {
+  isRefExistingForTypes(this, _, toType) {
     return this.toTypes.includes(toType);
   },
   datable: true,
@@ -604,7 +604,7 @@ export const serviceDlls: RefAttribute = {
   upsert: true,
   datable: true,
   isFilterable: true,
-  isRefExistingForTypes(_, toType) {
+  isRefExistingForTypes(this, _, toType) {
     return this.toTypes.includes(toType);
   },
   toTypes: [ENTITY_HASHED_OBSERVABLE_STIX_FILE],
@@ -668,13 +668,13 @@ export const createdBy: RefAttribute = {
   editDefault: true,
   multiple: false,
   upsert: true,
-  isRefExistingForTypes(_, toType) {
+  isRefExistingForTypes(this, _, toType) {
     return this.toTypes.includes(toType);
   },
   label: 'Author',
   datable: false,
   isFilterable: true,
-  toTypes: [ENTITY_TYPE_IDENTITY_INDIVIDUAL, ENTITY_TYPE_IDENTITY_SECTOR, ENTITY_TYPE_IDENTITY_SYSTEM],
+  toTypes: [ENTITY_TYPE_IDENTITY_INDIVIDUAL, ENTITY_TYPE_IDENTITY_SECTOR, ENTITY_TYPE_IDENTITY_SYSTEM, ENTITY_TYPE_IDENTITY_ORGANIZATION],
 };
 
 export const objectMarking: RefAttribute = {
@@ -686,7 +686,7 @@ export const objectMarking: RefAttribute = {
   editDefault: true,
   multiple: true,
   upsert: true,
-  isRefExistingForTypes(_, toType) {
+  isRefExistingForTypes(this, _, toType) {
     return this.toTypes.includes(toType);
   },
   label: 'Markings',
@@ -705,8 +705,8 @@ export const objects: RefAttribute = {
   editDefault: false,
   multiple: true,
   upsert: true,
-  isRefExistingForTypes(fromType, toType) {
-    return isStixDomainObjectContainer(fromType) && this.toTypes.includes(toType);
+  isRefExistingForTypes(this, fromType, _) {
+    return isStixDomainObjectContainer(fromType);
   },
   datable: false,
   isFilterable: true,
@@ -723,7 +723,7 @@ export const objectOrganization: RefAttribute = {
   editDefault: false,
   multiple: true,
   upsert: true,
-  isRefExistingForTypes(fromType, toType) {
+  isRefExistingForTypes(this, fromType, toType) {
     return !(fromType === ENTITY_TYPE_EVENT || isStixDomainObjectIdentity(fromType)
         || isStixDomainObjectLocation(fromType))
       && this.toTypes.includes(toType);
@@ -742,7 +742,7 @@ export const objectAssignee: RefAttribute = {
   editDefault: true,
   multiple: true,
   upsert: true,
-  isRefExistingForTypes(_, toType) {
+  isRefExistingForTypes(this, _, toType) {
     return this.toTypes.includes(toType);
   },
   label: 'Assignees',
@@ -760,7 +760,7 @@ export const objectParticipant: RefAttribute = {
   editDefault: true,
   multiple: true,
   upsert: true,
-  isRefExistingForTypes(_, toType) {
+  isRefExistingForTypes(this, _, toType) {
     return this.toTypes.includes(toType);
   },
   label: 'Participants',
@@ -778,7 +778,7 @@ export const bornIn: RefAttribute = {
   editDefault: false,
   multiple: false,
   upsert: true,
-  isRefExistingForTypes(fromType, toType) {
+  isRefExistingForTypes(this, fromType, toType) {
     return ENTITY_TYPE_THREAT_ACTOR_INDIVIDUAL === fromType && this.toTypes.includes(toType);
   },
   label: 'Born In',
@@ -796,7 +796,7 @@ export const ethnicity: RefAttribute = {
   editDefault: false,
   multiple: false,
   upsert: true,
-  isRefExistingForTypes(fromType, toType) {
+  isRefExistingForTypes(this, fromType, toType) {
     return ENTITY_TYPE_THREAT_ACTOR_INDIVIDUAL === fromType && this.toTypes.includes(toType);
   },
   label: 'Ethnicity',
@@ -816,7 +816,7 @@ export const objectLabel: RefAttribute = {
   editDefault: false,
   multiple: true,
   upsert: true,
-  isRefExistingForTypes(_, toType) {
+  isRefExistingForTypes(this, _, toType) {
     return this.toTypes.includes(toType);
   },
   label: 'Label',
@@ -834,7 +834,7 @@ export const externalReferences: RefAttribute = {
   editDefault: false,
   multiple: true,
   upsert: true,
-  isRefExistingForTypes(_, toType) {
+  isRefExistingForTypes(this, _, toType) {
     return this.toTypes.includes(toType);
   },
   label: 'External reference',
@@ -851,7 +851,7 @@ export const killChainPhases: RefAttribute = {
   editDefault: true,
   multiple: true,
   upsert: true,
-  isRefExistingForTypes(_, toType) {
+  isRefExistingForTypes(this, _, toType) {
     return this.toTypes.includes(toType);
   },
   label: 'Kill chain phase',

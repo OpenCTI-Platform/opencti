@@ -21,7 +21,7 @@ import useAuth from '../../../../utils/hooks/useAuth';
 import Filters from '../lists/Filters';
 import FilterIconButton from '../../../../components/FilterIconButton';
 import { usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStorage';
-import { emptyFilterGroup, isFilterGroupNotEmpty, removeIdFromFilterGroupObject } from '../../../../utils/filters/filtersUtils';
+import { emptyFilterGroup, isFilterGroupNotEmpty, useRemoveIdAndIncorrectKeysFromFilterGroupObject } from '../../../../utils/filters/filtersUtils';
 import { useFormatter } from '../../../../components/i18n';
 
 const useStyles = makeStyles(() => ({
@@ -75,7 +75,7 @@ const StixCoreObjectOrStixCoreRelationshipContainers = ({
   } = viewStorage;
 
   const reportFilterClass = reportType !== 'all' && reportType !== undefined ? reportType.replace(/_/g, ' ') : '';
-  const userFilters = removeIdFromFilterGroupObject(filters);
+  const userFilters = useRemoveIdAndIncorrectKeysFromFilterGroupObject(filters, 'Stix-Core-Object');
   const contextFilters = {
     mode: 'and',
     filters: [

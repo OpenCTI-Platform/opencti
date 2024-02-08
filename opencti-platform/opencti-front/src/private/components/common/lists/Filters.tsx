@@ -49,8 +49,6 @@ const Filters: FunctionComponent<FiltersProps> = ({
   helpers,
   entityType,
 }) => {
-  console.log('searchContext', searchContext);
-  console.log('entityTYpe', entityType);
   const navigate = useNavigate();
   const [open, setOpen] = useState(false);
   const [anchorEl, setAnchorEl] = useState<Element | null>(null);

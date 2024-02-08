@@ -13,7 +13,7 @@ import useEntityToggle from '../../../utils/hooks/useEntityToggle';
 import { ObservedDataLine_node$data } from './observed_data/__generated__/ObservedDataLine_node.graphql';
 import { ObservedDatasLinesPaginationQuery$data, ObservedDatasLinesPaginationQuery$variables } from './observed_data/__generated__/ObservedDatasLinesPaginationQuery.graphql';
 import { ModuleHelper } from '../../../utils/platformModulesHelper';
-import { buildEntityTypeBasedFilterContext, emptyFilterGroup } from '../../../utils/filters/filtersUtils';
+import { useBuildEntityTypeBasedFilterContext, emptyFilterGroup } from '../../../utils/filters/filtersUtils';
 import { useFormatter } from '../../../components/i18n';
 import Breadcrumbs from '../../../components/Breadcrumbs';
 
@@ -53,7 +53,7 @@ const ObservedDatas: FunctionComponent = () => {
     selectAll,
   } = useEntityToggle<ObservedDataLine_node$data>(LOCAL_STORAGE_KEY);
 
-  const contextFilters = buildEntityTypeBasedFilterContext('Observed-Data', filters);
+  const contextFilters = useBuildEntityTypeBasedFilterContext('Observed-Data', filters);
   const queryPaginationOptions = {
     ...paginationOptions, filters: contextFilters,
   } as unknown as ObservedDatasLinesPaginationQuery$variables;

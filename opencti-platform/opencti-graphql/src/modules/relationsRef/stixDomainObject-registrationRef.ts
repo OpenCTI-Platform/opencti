@@ -25,6 +25,10 @@ import {
   ENTITY_TYPE_INCIDENT,
   ENTITY_TYPE_INFRASTRUCTURE,
   ENTITY_TYPE_INTRUSION_SET,
+  ENTITY_TYPE_LOCATION_CITY,
+  ENTITY_TYPE_LOCATION_COUNTRY,
+  ENTITY_TYPE_LOCATION_POSITION,
+  ENTITY_TYPE_LOCATION_REGION,
   ENTITY_TYPE_MALWARE,
   ENTITY_TYPE_THREAT_ACTOR_GROUP,
   ENTITY_TYPE_TOOL,
@@ -59,3 +63,8 @@ schemaRelationsRefDefinition.registerRelationsRef(ENTITY_TYPE_CONTAINER_OPINION,
 schemaRelationsRefDefinition.registerRelationsRef(ENTITY_TYPE_COURSE_OF_ACTION, [{ ...objectOrganization, isFilterable: false }]);
 schemaRelationsRefDefinition.registerRelationsRef(ENTITY_TYPE_CONTAINER_GROUPING, [objectOrganization]);
 schemaRelationsRefDefinition.registerRelationsRef(ENTITY_TYPE_VULNERABILITY, [objectOrganization]);
+
+schemaRelationsRefDefinition.registerRelationsRef(ENTITY_TYPE_LOCATION_REGION, []);
+schemaRelationsRefDefinition.registerRelationsRef(ENTITY_TYPE_LOCATION_CITY, []);
+schemaRelationsRefDefinition.registerRelationsRef(ENTITY_TYPE_LOCATION_COUNTRY, []);
+schemaRelationsRefDefinition.registerRelationsRef(ENTITY_TYPE_LOCATION_POSITION, []);

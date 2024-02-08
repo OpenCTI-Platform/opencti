@@ -141,7 +141,7 @@ type FilterDefinition {
   type: String!
   multiple: Boolean!
   subEntityTypes: [String!]!
-  elementsForFilterValuesSearch: [String!]
+  elementsForFilterValuesSearch: [String!]!
   subFilters: [FilterDefinition!]
 }
 

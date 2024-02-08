@@ -1,7 +1,7 @@
 import React, { FunctionComponent, useEffect, useRef } from 'react';
 import { ChipOwnProps } from '@mui/material/Chip/Chip';
 import { DataColumns } from './list_lines';
-import { Filter, FilterGroup, GqlFilterGroup, isFilterGroupNotEmpty, removeIdFromFilterGroupObject } from '../utils/filters/filtersUtils';
+import { Filter, FilterGroup, GqlFilterGroup, isFilterGroupNotEmpty, useRemoveIdAndIncorrectKeysFromFilterGroupObject } from '../utils/filters/filtersUtils';
 import useQueryLoading from '../utils/hooks/useQueryLoading';
 import FilterIconButtonContainer from './FilterIconButtonContainer';
 import { handleFilterHelpers } from '../utils/hooks/useLocalStorage';
@@ -47,7 +47,7 @@ const FilterIconButtonWithRepresentativesQuery: FunctionComponent<FilterIconButt
   const filtersRepresentativesQueryRef = useQueryLoading<FilterValuesContentQuery>(
     filterValuesContentQuery,
     {
-      filters: removeIdFromFilterGroupObject(filters) as unknown as GqlFilterGroup,
+      filters: useRemoveIdAndIncorrectKeysFromFilterGroupObject(filters, entityType) as unknown as GqlFilterGroup,
     },
   );
   return (

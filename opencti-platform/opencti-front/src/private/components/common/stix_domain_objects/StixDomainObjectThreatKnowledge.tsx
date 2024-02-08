@@ -47,7 +47,7 @@ import {
   FilterGroup,
   getDefaultFilterObject,
   isFilterGroupNotEmpty,
-  removeIdFromFilterGroupObject,
+  useRemoveIdAndIncorrectKeysFromFilterGroupObject,
   useFilterDefinition,
 } from '../../../../utils/filters/filtersUtils';
 import FilterIconButton from '../../../../components/FilterIconButton';
@@ -238,7 +238,7 @@ StixDomainObjectThreatKnowledgeProps
       ? ['stix-relationship']
       : ['stix-core-relationship', 'stix-sighting-relationship'];
   }
-  const userFilters = removeIdFromFilterGroupObject(filters);
+  const userFilters = useRemoveIdAndIncorrectKeysFromFilterGroupObject(filters, 'stix-core-relationship');
   const contextFilters: FilterGroup = {
     mode: 'and',
     filters: [

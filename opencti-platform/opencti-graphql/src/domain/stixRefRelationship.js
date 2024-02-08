@@ -32,12 +32,12 @@ export const schemaRefRelationships = async (context, user, id, toType) => {
     .then((entity) => {
       const from = schemaRelationsRefDefinition.getRelationsRef(entity.entity_type)
         .filter((ref) => !notNestedRefRelation.includes(ref.databaseName))
-        .filter((ref) => (!ref.isRefExistingForTypes ? true : ref.isRefExistingForTypes.bind(this, entity.entity_type, toType)))
+        .filter((ref) => (!ref.isRefExistingForTypes ? true : ref.isRefExistingForTypes(entity.entity_type, toType)))
         .map((ref) => ref.databaseName)
         .sort();
       const to = schemaRelationsRefDefinition.getRelationsRef(toType)
         .filter((ref) => !notNestedRefRelation.includes(ref.databaseName))
-        .filter((ref) => (!ref.isRefExistingForTypes ? true : ref.isRefExistingForTypes.bind(this, toType, entity.entity_type)))
+        .filter((ref) => (!ref.isRefExistingForTypes ? true : ref.isRefExistingForTypes(toType, entity.entity_type)))
         .map((ref) => ref.databaseName)
         .sort();
       return { entity, from, to };

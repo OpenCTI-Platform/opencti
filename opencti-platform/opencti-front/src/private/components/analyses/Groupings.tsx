@@ -12,7 +12,7 @@ import useQueryLoading from '../../../utils/hooks/useQueryLoading';
 import { GroupingsLinesPaginationQuery, GroupingsLinesPaginationQuery$variables } from './groupings/__generated__/GroupingsLinesPaginationQuery.graphql';
 import { GroupingLine_node$data } from './groupings/__generated__/GroupingLine_node.graphql';
 import { GroupingLineDummy } from './groupings/GroupingLine';
-import { buildEntityTypeBasedFilterContext, emptyFilterGroup, getDefaultFilterObjFromArray, useFilterDefinition } from '../../../utils/filters/filtersUtils';
+import { useBuildEntityTypeBasedFilterContext, emptyFilterGroup, getDefaultFilterObjFromArray, useFilterDefinition } from '../../../utils/filters/filtersUtils';
 import { useFormatter } from '../../../components/i18n';
 import ExportContextProvider from '../../../utils/ExportContextProvider';
 import Breadcrumbs from '../../../components/Breadcrumbs';
@@ -65,7 +65,7 @@ const Groupings: FunctionComponent<GroupingsProps> = () => {
     onToggleEntity,
   } = useEntityToggle<GroupingLine_node$data>(LOCAL_STORAGE_KEY);
 
-  const contextFilters = buildEntityTypeBasedFilterContext('Grouping', filters);
+  const contextFilters = useBuildEntityTypeBasedFilterContext('Grouping', filters);
   const queryPaginationOptions = {
     ...paginationOptions,
     filters: contextFilters,

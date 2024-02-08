@@ -75,7 +75,7 @@ import { hexToRGB } from '../../../utils/Colors';
 import { externalReferencesQueriesSearchQuery } from '../analyses/external_references/ExternalReferencesQueries';
 import StixDomainObjectCreation from '../common/stix_domain_objects/StixDomainObjectCreation';
 import ItemMarkings from '../../../components/ItemMarkings';
-import { findFilterFromKey, removeIdFromFilterGroupObject, serializeFilterGroupForBackend } from '../../../utils/filters/filtersUtils';
+import { findFilterFromKey, serializeFilterGroupForBackend, removeIdAndIncorrectKeysFromFilterGroupObject } from '../../../utils/filters/filtersUtils';
 
 const styles = (theme) => ({
   bottomNav: {
@@ -587,7 +587,7 @@ class ToolBar extends Component {
     return t('Copy');
   }
 
-  submitTask() {
+  submitTask(availableFilterKeys) {
     this.setState({ processing: true });
     const { actions, mergingElement, scope } = this.state;
     const {
@@ -602,7 +602,7 @@ class ToolBar extends Component {
     } = this.props;
     if (numberOfSelectedElements === 0) return;
     const jsonFilters = serializeFilterGroupForBackend(
-      removeIdFromFilterGroupObject(filters),
+      removeIdAndIncorrectKeysFromFilterGroupObject(filters, availableFilterKeys),
     );
     const finalActions = R.map(
       (n) => ({
@@ -1332,6 +1332,7 @@ class ToolBar extends Component {
             && selectedTypes.length > 0
             && selectedTypes.every((type) => promotionTypes.includes(type));
           const promoteDisable = !isManualPromoteSelect && !promotionTypesFiltered;
+          const availableFilterKeys = Array.from(schema.filterKeysSchema.get('Basic-Object')?.keys ?? []);
           // endregion
           return (
             <Drawer
@@ -1723,7 +1724,7 @@ class ToolBar extends Component {
                     {t('Cancel')}
                   </Button>
                   <Button
-                    onClick={this.submitTask.bind(this)}
+                    onClick={this.submitTask.bind(this, availableFilterKeys)}
                     color="secondary"
                     disabled={this.state.processing}
                   >
@@ -1879,7 +1880,7 @@ class ToolBar extends Component {
                           <ItemMarkings
                             variant="inList"
                             markingDefinitions={
-                              element.objectMarking?? []
+                              element.objectMarking ?? []
                             }
                           />
                         </div>

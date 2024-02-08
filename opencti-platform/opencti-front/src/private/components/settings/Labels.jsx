@@ -12,7 +12,6 @@ import LabelsLines, { labelsLinesQuery } from './labels/LabelsLines';
 import LabelCreation from './labels/LabelCreation';
 import LabelsVocabulariesMenu from './LabelsVocabulariesMenu';
 import ToolBar from '../data/ToolBar';
-import { buildEntityTypeBasedFilterContext } from '../../../utils/filters/filtersUtils';
 import Breadcrumbs from '../../../components/Breadcrumbs';
 
 const styles = () => ({
@@ -224,7 +223,18 @@ class Labels extends Component {
   render() {
     const { t, classes } = this.props;
     const { view, sortBy, orderAsc, searchTerm } = this.state;
-    const contextFilters = buildEntityTypeBasedFilterContext('Label', undefined);
+    const contextFilters = {
+      mode: 'and',
+      filters: [
+        {
+          key: 'entity_type',
+          values: ['Label'],
+          operator: 'eq',
+          mode: 'or',
+        },
+      ],
+      filterGroups: [],
+    };
     const paginationOptions = {
       search: searchTerm,
       orderBy: sortBy,

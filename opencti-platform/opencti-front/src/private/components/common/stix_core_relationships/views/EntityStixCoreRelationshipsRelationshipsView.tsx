@@ -13,7 +13,7 @@ import Security from '../../../../../utils/Security';
 import { computeTargetStixCyberObservableTypes, computeTargetStixDomainObjectTypes, isStixCyberObservables } from '../../../../../utils/stixTypeUtils';
 import { PaginationLocalStorage } from '../../../../../utils/hooks/useLocalStorage';
 import { DataColumns, PaginationOptions } from '../../../../../components/list_lines';
-import { FilterGroup, isFilterGroupNotEmpty, removeIdFromFilterGroupObject } from '../../../../../utils/filters/filtersUtils';
+import { FilterGroup, isFilterGroupNotEmpty, useRemoveIdAndIncorrectKeysFromFilterGroupObject } from '../../../../../utils/filters/filtersUtils';
 
 interface EntityStixCoreRelationshipsRelationshipsViewProps {
   entityId: string
@@ -127,7 +127,7 @@ const EntityStixCoreRelationshipsRelationshipsView: FunctionComponent<EntityStix
   };
 
   // Filters due to screen context
-  const userFilters = removeIdFromFilterGroupObject(filters);
+  const userFilters = useRemoveIdAndIncorrectKeysFromFilterGroupObject(filters, 'stix-core-relationship');
   const predefinedFilters = [{ key: 'relationship_type', values: relationshipTypes }];
   if (allDirections) {
     predefinedFilters.push({ key: 'fromOrToId', values: [entityId] });

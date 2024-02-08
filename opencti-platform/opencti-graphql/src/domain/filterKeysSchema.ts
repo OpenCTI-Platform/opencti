@@ -1,3 +1,4 @@
+import { uniq } from 'ramda';
 import { schemaAttributesDefinition } from '../schema/schema-attributes';
 import { schemaTypesDefinition } from '../schema/schema-types';
 import type {
@@ -91,6 +92,34 @@ const buildFilterDefinitionFromRelationRefDefinition = (refDefinition: RefAttrib
   };
 };
 
+// complete a filter definition (attribute or relation ref) in an under-construction map of filter definitions
+// - if the filter key is not present: add the filter definition in the map
+// - if it is already present: add the entity types in 'subEntityTypes' of the associated filter definition of the map
+const completeFilterDefinitionMapWithElement = (
+  filterKeyDefinitionMap: Map<string, FilterDefinition>,
+  types: string[],
+  elementName: string,
+  elementDefinition: AttributeDefinition | RefAttribute,
+  elementDefinitionType: string, // 'attribute' or 'relationRef'
+) => {
+  const filterDefinition = filterKeyDefinitionMap.get(elementName);
+  if (!filterDefinition) { // case 1.2.2: the attribute is in the types but not in the map
+    const newFilterDefinition = elementDefinitionType === 'attribute'
+      ? buildFilterDefinitionFromAttributeDefinition(elementDefinition as AttributeDefinition, types)
+      : buildFilterDefinitionFromRelationRefDefinition(elementDefinition as RefAttribute, types);
+    filterKeyDefinitionMap.set( // add it in the map
+      elementName,
+      newFilterDefinition,
+    );
+  } else if (filterDefinition && !types.every((type) => filterDefinition.subEntityTypes.includes(type))) {
+    // 1.2.1 the filter definition is in the map but all the types are not in subEntityTypes
+    filterKeyDefinitionMap.set(
+      elementName,
+      { ...filterDefinition, subEntityTypes: uniq(filterDefinition.subEntityTypes.concat(types)) }, // add types in subEntityTypes of the filter definition
+    );
+  }
+};
+
 const completeFilterDefinitionMapWithNestedAttribute = (
   attributesMapWithFilterDefinition: Map<string, FilterDefinition>, // map in construction
   nestedAttributeDefinition: NestedObjectAttribute, // nested attribute to study
@@ -104,58 +133,30 @@ const completeFilterDefinitionMapWithNestedAttribute = (
       } else if (mappingAttributeDefinition.associatedFilterKeys) { // case 2: not nested attribute and associatedFilterKeys is set
         // the keys to add are the ones in associatedFilterKeys
         mappingAttributeDefinition.associatedFilterKeys.forEach(({ key, label }) => {
-          attributesMapWithFilterDefinition.set(
-            key,
-            buildFilterDefinitionFromAttributeDefinition({ ...mappingAttributeDefinition, name: key, label }, types),
-          );
+          completeFilterDefinitionMapWithElement(attributesMapWithFilterDefinition, types, key, { ...mappingAttributeDefinition, name: key, label }, 'attribute');
         });
       } else { // case 3: not nested attribute and the key to add is composed with the attribute name and the mapping attribute name
         const composedMappingName = `${nestedAttributeDefinition.name}.${mappingAttributeDefinition.name}`;
-        attributesMapWithFilterDefinition.set(
-          composedMappingName,
-          buildFilterDefinitionFromAttributeDefinition({ ...mappingAttributeDefinition, name: composedMappingName }, types),
-        );
+        completeFilterDefinitionMapWithElement(attributesMapWithFilterDefinition, types, composedMappingName, { ...mappingAttributeDefinition, name: composedMappingName }, 'attribute');
       }
     }
   });
 };
 
-const completeFilterDefinitionMapWithElement = (
-  filterKeyDefinitionMap: Map<string, FilterDefinition>,
-  type: string,
-  elementName: string,
-  elementDefinition: AttributeDefinition | RefAttribute,
-  elementDefinitionType: string, // 'attribute' or 'relationRef'
-) => {
-  const filterDefinition = filterKeyDefinitionMap.get(elementName);
-  if (!filterDefinition) { // case 1.2.2: the attribute is in the type but not in the map
-    const newFilterDefinition = elementDefinitionType === 'attribute'
-      ? buildFilterDefinitionFromAttributeDefinition(elementDefinition as AttributeDefinition, [type])
-      : buildFilterDefinitionFromRelationRefDefinition(elementDefinition as RefAttribute, [type]);
-    filterKeyDefinitionMap.set( // add it in the map
-      elementName,
-      newFilterDefinition,
-    );
-  } else if (filterDefinition && !filterDefinition.subEntityTypes.includes(type)) { // 1.2.1 the filter definition is in the map but the type is not in the subEntityTypes
-    filterKeyDefinitionMap.set(
-      elementName,
-      { ...filterDefinition, subEntityTypes: filterDefinition.subEntityTypes.concat([type]) }, // add type in subEntityTypes of the filter definition
-    );
-  }
-};
-
 const completeFilterDefinitionMapForType = (
   filterDefinitionMap: Map<string, FilterDefinition>, // filter definition map to complete
   type: string, // type whose attributes and relations refs to study (eventually add them in the map or complete subEntityTypes)
+  subTypes?: string[]
 ) => {
   // 01. add the attributes
   const attributesMap = schemaAttributesDefinition.getAttributes(type);
+  const types = subTypes ? subTypes.concat(type) : [type];
   attributesMap.forEach((attributeDefinition, attributeName) => {
     if (attributeDefinition.isFilterable) { // if it is filterable
       if (attributeDefinition.type === 'object' && ['nested', 'standard'].includes(attributeDefinition.format)) { // case 1.1: attribute with mappings
-        completeFilterDefinitionMapWithNestedAttribute(filterDefinitionMap, attributeDefinition as NestedObjectAttribute, [type]);
+        completeFilterDefinitionMapWithNestedAttribute(filterDefinitionMap, attributeDefinition as NestedObjectAttribute, types);
       } else { // case 1.2: not nested attribute
-        completeFilterDefinitionMapWithElement(filterDefinitionMap, type, attributeName, attributeDefinition, 'attribute');
+        completeFilterDefinitionMapWithElement(filterDefinitionMap, types, attributeName, attributeDefinition, 'attribute');
       }
     }
   });
@@ -164,7 +165,7 @@ const completeFilterDefinitionMapForType = (
     const relationRefs = schemaRelationsRefDefinition.getRelationsRef(type);
     relationRefs.forEach((ref) => {
       if (ref.isFilterable) {
-        completeFilterDefinitionMapWithElement(filterDefinitionMap, type, ref.name, ref, 'relationRef');
+        completeFilterDefinitionMapWithElement(filterDefinitionMap, types, ref.name, ref, 'relationRef');
       }
     });
   }
@@ -178,7 +179,7 @@ const completeFilterDefinitionMapWithSpecialKeys = (
 ) => {
   if (isStixCoreObject(type)) {
     // In regards of (exist relationship of the given relationship types for the given entities)
-    filterDefinitionsMap.set('regardingOf', {
+    filterDefinitionsMap.set(INSTANCE_REGARDING_OF, {
       filterKey: INSTANCE_REGARDING_OF,
       type: 'nested',
       label: 'In regards of',
@@ -254,10 +255,10 @@ export const generateFilterKeysSchema = async () => {
   // A. build filterKeysSchema map
   const registeredTypes = schemaAttributesDefinition.getRegisteredTypes();
   registeredTypes.forEach((type) => {
-    const filterDefinitionsMap: Map<string, FilterDefinition> = new Map(); // map that will contains the filterKeys schema for the entity type
+    const filterDefinitionsMap: Map<string, FilterDefinition> = new Map(); // map that will contain the filterKeys schema for the entity type
     const subTypes = schemaTypesDefinition.hasChildren(type) ? schemaTypesDefinition.get(type) : []; // fetch the subtypes
     // 01. add attributes and relations refs of type
-    completeFilterDefinitionMapForType(filterDefinitionsMap, type);
+    completeFilterDefinitionMapForType(filterDefinitionsMap, type, subTypes);
     // 02. add or remove some special keys
     completeFilterDefinitionMapWithSpecialKeys(type, filterDefinitionsMap, subTypes.concat([type]), isNotEnterpriseEdition);
     // 03. handle the attributes and relations refs of the subtypes

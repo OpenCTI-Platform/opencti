@@ -46,7 +46,6 @@ import { ENTITY_TYPE_EVENT } from '../event/event-types';
 import { ENTITY_HASHED_OBSERVABLE_STIX_FILE } from '../../schema/stixCyberObservable';
 import { ENTITY_TYPE_LOCATION_ADMINISTRATIVE_AREA } from '../administrativeArea/administrativeArea-types';
 import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../organization/organization-types';
-import { lang, revoked } from '../../schema/attribute-definition';
 
 interface Measures {
   measure: number | null
@@ -133,8 +132,8 @@ const THREAT_ACTOR_INDIVIDUAL_DEFINITION: ModuleDefinition<StoreEntityThreatActo
       ]
     },
     { name: 'confidence', label: 'Confidence', type: 'numeric', precision: 'integer', mandatoryType: 'no', editDefault: true, multiple: false, upsert: false, isFilterable: true },
-    { ...revoked, editDefault: true, upsert: false, isFilterable: false },
-    { ...lang, editDefault: true, upsert: true },
+    { name: 'revoked', label: 'Revoked', type: 'boolean', mandatoryType: 'no', editDefault: true, multiple: false, upsert: false, isFilterable: true },
+    { name: 'lang', label: 'Lang', type: 'string', format: 'short', mandatoryType: 'no', editDefault: true, multiple: false, upsert: true, isFilterable: false },
   ],
   relations: [
     {

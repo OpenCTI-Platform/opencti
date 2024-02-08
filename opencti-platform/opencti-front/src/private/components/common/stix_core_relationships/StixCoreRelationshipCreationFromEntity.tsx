@@ -30,7 +30,7 @@ import StixCoreRelationshipCreationForm from './StixCoreRelationshipCreationForm
 import { resolveRelationsTypes } from '../../../../utils/Relation';
 import { UserContext } from '../../../../utils/hooks/useAuth';
 import ListLines from '../../../../components/list_lines/ListLines';
-import { emptyFilterGroup, removeIdFromFilterGroupObject } from '../../../../utils/filters/filtersUtils';
+import { emptyFilterGroup, useRemoveIdAndIncorrectKeysFromFilterGroupObject } from '../../../../utils/filters/filtersUtils';
 import StixCoreRelationshipCreationFromEntityStixCoreObjectsLines, {
   stixCoreRelationshipCreationFromEntityStixCoreObjectsLinesQuery,
 } from './StixCoreRelationshipCreationFromEntityStixCoreObjectsLines';
@@ -504,7 +504,7 @@ const StixCoreRelationshipCreationFromEntity: FunctionComponent<StixCoreRelation
   const renderSelectEntity = () => {
     const searchPaginationOptions = {
       search: searchTerm,
-      filters: removeIdFromFilterGroupObject(filters),
+      filters: useRemoveIdAndIncorrectKeysFromFilterGroupObject(filters, 'stix-core-relationship'),
       orderBy: sortBy,
       orderMode: orderAsc ? 'asc' : 'desc',
     };

@@ -12,7 +12,7 @@ import { computeTargetStixCyberObservableTypes, computeTargetStixDomainObjectTyp
 import { PaginationLocalStorage } from '../../../../../utils/hooks/useLocalStorage';
 import { DataColumns, PaginationOptions } from '../../../../../components/list_lines';
 import { EntityStixCoreRelationshipsEntitiesViewLinesPaginationQuery$variables } from './__generated__/EntityStixCoreRelationshipsEntitiesViewLinesPaginationQuery.graphql';
-import { Filter, FilterGroup, isFilterGroupNotEmpty, removeIdFromFilterGroupObject } from '../../../../../utils/filters/filtersUtils';
+import { Filter, FilterGroup, isFilterGroupNotEmpty, useRemoveIdAndIncorrectKeysFromFilterGroupObject } from '../../../../../utils/filters/filtersUtils';
 
 interface EntityStixCoreRelationshipsEntitiesViewProps {
   entityId: string;
@@ -123,7 +123,7 @@ EntityStixCoreRelationshipsEntitiesViewProps
   };
 
   // Filters due to screen context
-  const userFilters = removeIdFromFilterGroupObject(filters);
+  const userFilters = useRemoveIdAndIncorrectKeysFromFilterGroupObject(filters, 'Stix-Core-Object');
   const stixCoreObjectFilter: Filter[] = stixCoreObjectTypes.length > 0 ? [{ key: 'entity_type', operator: 'eq', mode: 'or', values: stixCoreObjectTypes }] : [];
   const contextFilters: FilterGroup = {
     mode: 'and',

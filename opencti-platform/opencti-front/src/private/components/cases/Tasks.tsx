@@ -9,7 +9,7 @@ import TasksLines, { tasksLinesQuery } from './tasks/TasksLines';
 import { tasksDataColumns, TasksLineDummy } from './tasks/TasksLine';
 import { TasksLinesPaginationQuery, TasksLinesPaginationQuery$variables } from './tasks/__generated__/TasksLinesPaginationQuery.graphql';
 import { TasksLine_node$data } from './tasks/__generated__/TasksLine_node.graphql';
-import { buildEntityTypeBasedFilterContext, emptyFilterGroup } from '../../../utils/filters/filtersUtils';
+import { useBuildEntityTypeBasedFilterContext, emptyFilterGroup } from '../../../utils/filters/filtersUtils';
 import { useFormatter } from '../../../components/i18n';
 import Breadcrumbs from '../../../components/Breadcrumbs';
 
@@ -50,7 +50,7 @@ const Tasks = () => {
       numberOfElements,
     } = viewStorage;
 
-    const contextFilters = buildEntityTypeBasedFilterContext('Task', filters);
+    const contextFilters = useBuildEntityTypeBasedFilterContext('Task', filters);
     const queryPaginationOptions = {
       ...paginationOptions,
       filters: contextFilters,

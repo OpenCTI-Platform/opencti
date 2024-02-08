@@ -16,7 +16,7 @@ const CaseTemplateToTaskTemplateRelation: RefAttribute = {
   mandatoryType: 'internal',
   editDefault: false,
   multiple: true,
-  isRefExistingForTypes(_, toType) {
+  isRefExistingForTypes(this, _, toType) {
     return this.toTypes.includes(toType);
   },
   datable: false,

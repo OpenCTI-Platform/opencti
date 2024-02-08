@@ -34,9 +34,8 @@ import { defaultValue } from '../Graph';
 import { fetchQuery } from '../../relay/environment';
 import { useSearchEntitiesSchemaSCOSearchQuery$data } from './__generated__/useSearchEntitiesSchemaSCOSearchQuery.graphql';
 import type { Theme } from '../../components/Theme';
-import { containerTypes } from '../hooks/useAttributes';
+import useAttributes, { containerTypes } from '../hooks/useAttributes';
 import { contextFilters, entityTypesFilters } from './filtersUtils';
-import useAttributes from '../hooks/useAttributes';
 
 const filtersStixCoreObjectsSearchQuery = graphql`
   query useSearchEntitiesStixCoreObjectsSearchQuery(
@@ -841,7 +840,7 @@ const useSearchEntities = ({
           break;
         case 'id':
           // eslint-disable-next-line no-case-declarations
-          const idEntityTypes = filterDefinition?.elementsForFilterValuesSearch;
+          const idEntityTypes = filterDefinition?.elementsForFilterValuesSearch ?? [];
           if (idEntityTypes) {
             if (idEntityTypes.every((typeOfId) => completedStixCoreObjectTypes.includes(typeOfId))) { // Stix Core Objects
               buildOptionsFromStixCoreObjectTypes(filterKey, idEntityTypes);

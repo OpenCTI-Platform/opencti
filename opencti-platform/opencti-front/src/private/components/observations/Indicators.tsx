@@ -16,7 +16,7 @@ import { IndicatorLine_node$data } from './indicators/__generated__/IndicatorLin
 import { IndicatorsLinesPaginationQuery, IndicatorsLinesPaginationQuery$variables } from './indicators/__generated__/IndicatorsLinesPaginationQuery.graphql';
 import { ModuleHelper } from '../../../utils/platformModulesHelper';
 import { IndicatorLineDummyComponent } from './indicators/IndicatorLine';
-import { buildEntityTypeBasedFilterContext, emptyFilterGroup, findFilterFromKey, getDefaultFilterObjFromArray, useFilterDefinition } from '../../../utils/filters/filtersUtils';
+import { useBuildEntityTypeBasedFilterContext, emptyFilterGroup, findFilterFromKey, getDefaultFilterObjFromArray, useFilterDefinition } from '../../../utils/filters/filtersUtils';
 import { useFormatter } from '../../../components/i18n';
 import Breadcrumbs from '../../../components/Breadcrumbs';
 
@@ -68,7 +68,7 @@ const Indicators = () => {
     onToggleEntity,
   } = useEntityToggle<IndicatorLine_node$data>(LOCAL_STORAGE_KEY);
 
-  const contextFilters = buildEntityTypeBasedFilterContext('Indicator', filters);
+  const contextFilters = useBuildEntityTypeBasedFilterContext('Indicator', filters);
   const queryPaginationOptions = {
     ...paginationOptions,
     filters: contextFilters,

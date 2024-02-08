@@ -13,7 +13,7 @@ import ExportContextProvider from '../../../utils/ExportContextProvider';
 import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
 import useEntityToggle from '../../../utils/hooks/useEntityToggle';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
-import { buildEntityTypeBasedFilterContext, emptyFilterGroup, getDefaultFilterObjFromArray, useFilterDefinition } from '../../../utils/filters/filtersUtils';
+import { useBuildEntityTypeBasedFilterContext, emptyFilterGroup, getDefaultFilterObjFromArray, useFilterDefinition } from '../../../utils/filters/filtersUtils';
 import { useFormatter } from '../../../components/i18n';
 import Breadcrumbs from '../../../components/Breadcrumbs';
 
@@ -61,7 +61,7 @@ const Relationships = () => {
     LOCAL_STORAGE_KEY,
   );
 
-  const contextFilters = buildEntityTypeBasedFilterContext('stix-core-relationship', filters);
+  const contextFilters = useBuildEntityTypeBasedFilterContext('stix-core-relationship', filters);
   const queryPaginationOptions = {
     ...paginationOptions,
     filters: contextFilters,

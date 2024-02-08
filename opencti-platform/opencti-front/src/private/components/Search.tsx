@@ -17,7 +17,7 @@ import useEntityToggle from '../../utils/hooks/useEntityToggle';
 import useQueryLoading from '../../utils/hooks/useQueryLoading';
 import useAuth from '../../utils/hooks/useAuth';
 import useEnterpriseEdition from '../../utils/hooks/useEnterpriseEdition';
-import { buildEntityTypeBasedFilterContext, emptyFilterGroup, getDefaultFilterObjFromArray, useFilterDefinition } from '../../utils/filters/filtersUtils';
+import { useBuildEntityTypeBasedFilterContext, emptyFilterGroup, getDefaultFilterObjFromArray, useFilterDefinition } from '../../utils/filters/filtersUtils';
 import { decodeSearchKeyword, handleSearchByKeyword } from '../../utils/SearchUtils';
 import { useFormatter } from '../../components/i18n';
 
@@ -62,7 +62,7 @@ const Search = () => {
     numberOfSelectedElements,
   } = useEntityToggle<SearchStixCoreObjectLine_node$data>(LOCAL_STORAGE_KEY);
 
-  const contextFilters = buildEntityTypeBasedFilterContext('Stix-Core-Object', filters);
+  const contextFilters = useBuildEntityTypeBasedFilterContext('Stix-Core-Object', filters);
   const queryPaginationOptions = {
     ...paginationOptions,
     filters: contextFilters,

@@ -12,7 +12,7 @@ import Security from '../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 import { usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStorage';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
-import { FilterGroup, emptyFilterGroup, removeIdFromFilterGroupObject } from '../../../../utils/filters/filtersUtils';
+import { FilterGroup, emptyFilterGroup, useRemoveIdAndIncorrectKeysFromFilterGroupObject } from '../../../../utils/filters/filtersUtils';
 
 export const LOCAL_STORAGE_KEY = 'sightings';
 
@@ -60,7 +60,7 @@ const EntityStixSightingRelationships: FunctionComponent<EntityStixSightingRelat
   } = viewStorage;
   const finalPaginationOptions = {
     ...paginationOptions,
-    filters: removeIdFromFilterGroupObject(paginationOptions.filters as unknown as FilterGroup),
+    filters: useRemoveIdAndIncorrectKeysFromFilterGroupObject(paginationOptions.filters as unknown as FilterGroup, 'stix-core-relationship'),
   } as EntityStixSightingRelationshipsLinesPaginationQuery$variables;
   if (isTo) {
     finalPaginationOptions.toId = entityId;

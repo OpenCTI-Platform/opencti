@@ -7166,7 +7166,7 @@ export type Filter = {
 
 export type FilterDefinition = {
   __typename?: 'FilterDefinition';
-  elementsForFilterValuesSearch?: Maybe<Array<Scalars['String']['output']>>;
+  elementsForFilterValuesSearch: Array<Scalars['String']['output']>;
   filterKey: Scalars['String']['output'];
   label: Scalars['String']['output'];
   multiple: Scalars['Boolean']['output'];
@@ -31640,7 +31640,7 @@ export type FilesMetricsResolvers<ContextType = any, ParentType extends Resolver
 }>;
 
 export type FilterDefinitionResolvers<ContextType = any, ParentType extends ResolversParentTypes['FilterDefinition'] = ResolversParentTypes['FilterDefinition']> = ResolversObject<{
-  elementsForFilterValuesSearch?: Resolver<Maybe<Array<ResolversTypes['String']>>, ParentType, ContextType>;
+  elementsForFilterValuesSearch?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   filterKey?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   label?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   multiple?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;

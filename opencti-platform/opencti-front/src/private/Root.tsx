@@ -6,7 +6,7 @@ import Analytics from 'analytics';
 import { ConnectedIntlProvider } from '../components/AppIntlProvider';
 import { ConnectedThemeProvider } from '../components/AppThemeProvider';
 import { SYSTEM_BANNER_HEIGHT } from '../public/components/SystemBanners';
-import { UserContext } from '../utils/hooks/useAuth';
+import { FilterDefinition, UserContext } from '../utils/hooks/useAuth';
 import platformModuleHelper from '../utils/platformModulesHelper';
 import { ONE_SECOND } from '../utils/Time';
 import { isNotEmptyField } from '../utils/utils';
@@ -242,7 +242,7 @@ const RootComponent: FunctionComponent<RootComponentProps> = ({ queryRef }) => {
     schemaRelationsTypesMapping: new Map(schemaRelationsTypesMapping.map((n) => [n.key, n.values])),
     schemaRelationsRefTypesMapping: new Map(schemaRelationsRefTypesMapping.map((n) => [n.key, n.values])),
     filterKeysSchema: new Map(filterKeysSchema.map((n) => {
-      const filtersSchema = new Map(n.filters_schema.map((o) => [o.filterKey, o.filterDefinition]));
+      const filtersSchema = new Map(n.filters_schema.map((o) => [o.filterKey, o.filterDefinition as FilterDefinition]));
       return [n.entity_type, filtersSchema];
     })),
   };

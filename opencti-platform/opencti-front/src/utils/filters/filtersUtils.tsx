@@ -2,14 +2,14 @@ import * as R from 'ramda';
 import { v4 as uuid } from 'uuid';
 import { OptionValue } from '@components/common/lists/FilterAutocomplete';
 import { useFormatter } from '../../components/i18n';
-import type { FilterGroup as GqlFilterGroup } from './__generated__/useSearchEntitiesStixCoreObjectsContainersSearchQuery.graphql';
+import type { FilterGroup as GqlFilterGroup } from './__generated__/useSearchEntitiesStixCoreObjectsSearchQuery.graphql';
 import useAuth, { FilterDefinition } from '../hooks/useAuth';
 import { capitalizeFirstLetter } from '../String';
 import { FilterRepresentative } from '../../components/filters/FiltersModel';
 
 //----------------------------------------------------------------------------------------------------------------------
 
-export type { FilterGroup as GqlFilterGroup } from './__generated__/useSearchEntitiesStixCoreObjectsContainersSearchQuery.graphql';
+export type { FilterGroup as GqlFilterGroup } from './__generated__/useSearchEntitiesStixCoreObjectsSearchQuery.graphql';
 
 // usually string, but can be a combined filter like regardingOf
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -630,25 +630,47 @@ export const getAvailableOperatorForFilter = (
   return getAvailableOperatorForFilterKey(filterDefinition);
 };
 
-export const removeIdFromFilterGroupObject = (filters?: FilterGroup | null): FilterGroup | undefined => {
+export const useRemoveIdAndIncorrectKeysFromFilterGroupObject = (filters?: FilterGroup | null, entityType = 'Basic-Object'): FilterGroup | undefined => {
+  const { filterKeysSchema } = useAuth().schema;
+  const availableFilterKeys = Array.from(filterKeysSchema.get(entityType)?.keys() ?? []);
   if (!filters) {
     return undefined;
   }
   return {
     mode: filters.mode,
     filters: filters.filters
+      .filter((f) => availableFilterKeys.includes(f.key))
       .filter((f) => ['nil', 'not_nil'].includes(f.operator ?? 'eq') || f.values.length > 0)
       .map((f) => {
         const newFilter = { ...f };
         delete newFilter.id;
         return newFilter;
       }),
-    filterGroups: filters.filterGroups.map((group) => removeIdFromFilterGroupObject(group)) as FilterGroup[],
+    filterGroups: filters.filterGroups.map((group) => useRemoveIdAndIncorrectKeysFromFilterGroupObject(group)) as FilterGroup[],
   };
 };
 
-export const buildEntityTypeBasedFilterContext = (entityType: string, filters: FilterGroup | undefined): FilterGroup => {
-  const userFilters = removeIdFromFilterGroupObject(filters);
+// TODO use useRemoveIdAndIncorrectKeysFromFilterGroupObject instead when all the calling files are in pure function
+export const removeIdAndIncorrectKeysFromFilterGroupObject = (filters?: FilterGroup | null, availableFilterKeys?: string[]): FilterGroup | undefined => {
+  if (!filters) {
+    return undefined;
+  }
+  return {
+    mode: filters.mode,
+    filters: filters.filters
+      .filter((f) => availableFilterKeys && availableFilterKeys?.includes(f.key))
+      .filter((f) => ['nil', 'not_nil'].includes(f.operator ?? 'eq') || f.values.length > 0)
+      .map((f) => {
+        const newFilter = { ...f };
+        delete newFilter.id;
+        return newFilter;
+      }),
+    filterGroups: filters.filterGroups.map((group) => removeIdAndIncorrectKeysFromFilterGroupObject(group)) as FilterGroup[],
+  };
+};
+
+export const useBuildEntityTypeBasedFilterContext = (entityType: string, filters: FilterGroup | undefined): FilterGroup => {
+  const userFilters = useRemoveIdAndIncorrectKeysFromFilterGroupObject(filters, entityType);
   return {
     mode: 'and',
     filters: [

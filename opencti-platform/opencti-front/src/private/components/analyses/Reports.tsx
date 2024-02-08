@@ -12,7 +12,7 @@ import { ReportLine_node$data } from './reports/__generated__/ReportLine_node.gr
 import useEntityToggle from '../../../utils/hooks/useEntityToggle';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
 import { ReportLineDummy } from './reports/ReportLine';
-import { buildEntityTypeBasedFilterContext, emptyFilterGroup } from '../../../utils/filters/filtersUtils';
+import { useBuildEntityTypeBasedFilterContext, emptyFilterGroup } from '../../../utils/filters/filtersUtils';
 import { useFormatter } from '../../../components/i18n';
 import Breadcrumbs from '../../../components/Breadcrumbs';
 import ExportContextProvider from '../../../utils/ExportContextProvider';
@@ -58,7 +58,7 @@ const Reports: FunctionComponent = () => {
     numberOfSelectedElements,
   } = useEntityToggle<ReportLine_node$data>(LOCAL_STORAGE_KEY);
 
-  const contextFilters = buildEntityTypeBasedFilterContext('Report', filters);
+  const contextFilters = useBuildEntityTypeBasedFilterContext('Report', filters);
   const queryPaginationOptions = {
     ...paginationOptions,
     filters: contextFilters,

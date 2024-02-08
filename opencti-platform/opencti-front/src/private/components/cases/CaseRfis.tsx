@@ -13,7 +13,7 @@ import CaseRfisLines, { caseRfisLinesQuery } from './case_rfis/CaseRfiLines';
 import { CaseRfiLineDummy } from './case_rfis/CaseRfiLine';
 import { CaseRfiLinesCasesPaginationQuery, CaseRfiLinesCasesPaginationQuery$variables } from './case_rfis/__generated__/CaseRfiLinesCasesPaginationQuery.graphql';
 import { CaseRfiLineCase_node$data } from './case_rfis/__generated__/CaseRfiLineCase_node.graphql';
-import { buildEntityTypeBasedFilterContext, emptyFilterGroup } from '../../../utils/filters/filtersUtils';
+import { useBuildEntityTypeBasedFilterContext, emptyFilterGroup } from '../../../utils/filters/filtersUtils';
 import { useFormatter } from '../../../components/i18n';
 import Breadcrumbs from '../../../components/Breadcrumbs';
 
@@ -51,7 +51,7 @@ const CaseRfis: FunctionComponent<CaseRfisProps> = () => {
     openExports,
     numberOfElements,
   } = viewStorage;
-  const contextFilters = buildEntityTypeBasedFilterContext('Case-Rfi', filters);
+  const contextFilters = useBuildEntityTypeBasedFilterContext('Case-Rfi', filters);
   const queryPaginationOptions = {
     ...paginationOptions,
     filters: contextFilters,

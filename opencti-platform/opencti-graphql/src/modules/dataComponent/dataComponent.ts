@@ -53,7 +53,7 @@ const DATA_COMPONENT_DEFINITION: ModuleDefinition<StoreEntityDataComponent, Stix
       editDefault: false,
       multiple: false,
       upsert: true,
-      isRefExistingForTypes(_, toType) {
+      isRefExistingForTypes(this, _, toType) {
         return this.toTypes.includes(toType);
       },
       isFilterable: true,
