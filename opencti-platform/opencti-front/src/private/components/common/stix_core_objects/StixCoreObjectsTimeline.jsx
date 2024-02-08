@@ -7,6 +7,7 @@ import WidgetContainer from '../../../../components/dashboard/WidgetContainer';
 import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
 import WidgetLoader from '../../../../components/dashboard/WidgetLoader';
 import WidgetTimeline from '../../../../components/dashboard/WidgetTimeline';
+import { resolveLink } from '../../../../utils/Entity';
 
 const stixCoreObjectsTimelineQuery = graphql`
   query StixCoreObjectsTimelineQuery(
@@ -224,7 +225,15 @@ const StixCoreObjectsTimeline = ({
             && props.stixCoreObjects.edges.length > 0
           ) {
             const stixCoreObjectsEdges = props.stixCoreObjects.edges;
-            return <WidgetTimeline data={stixCoreObjectsEdges} />;
+            const data = stixCoreObjectsEdges.map((stixCoreObjectEdge) => {
+              const stixCoreObject = stixCoreObjectEdge.node;
+              const link = `${resolveLink(stixCoreObject.entity_type)}/${stixCoreObject.id}`;
+              return {
+                value: stixCoreObject,
+                link,
+              };
+            });
+            return <WidgetTimeline data={data} />;
           }
           if (props) {
             return <WidgetNoData />;

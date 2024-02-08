@@ -24,12 +24,15 @@ const bodyItemStyle = (width: string): CSSProperties => ({
   width,
 });
 
-interface WidgetListProps {
+interface WidgetListCoreObjectsProps {
   data: any[]
   dateAttribute: string
 }
 
-const WidgetList = ({ data, dateAttribute }: WidgetListProps) => {
+const WidgetListCoreObjects = ({
+  data,
+  dateAttribute,
+}: WidgetListCoreObjectsProps) => {
   const { fsd } = useFormatter();
 
   return (
@@ -109,4 +112,4 @@ const WidgetList = ({ data, dateAttribute }: WidgetListProps) => {
   );
 };
 
-export default WidgetList;
+export default WidgetListCoreObjects;

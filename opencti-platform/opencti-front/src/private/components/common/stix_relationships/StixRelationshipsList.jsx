@@ -1,57 +1,12 @@
 import React from 'react';
-import * as R from 'ramda';
 import { graphql } from 'react-relay';
-import CircularProgress from '@mui/material/CircularProgress';
-import Paper from '@mui/material/Paper';
-import Typography from '@mui/material/Typography';
-import ListItem from '@mui/material/ListItem';
-import { Link } from 'react-router-dom';
-import ListItemIcon from '@mui/material/ListItemIcon';
-import ListItemText from '@mui/material/ListItemText';
-import List from '@mui/material/List';
-import makeStyles from '@mui/styles/makeStyles';
-import ItemIcon from '../../../../components/ItemIcon';
 import { useFormatter } from '../../../../components/i18n';
 import { QueryRenderer } from '../../../../relay/environment';
-import { computeLink } from '../../../../utils/Entity';
-import { defaultValue } from '../../../../utils/Graph';
-import ItemMarkings from '../../../../components/ItemMarkings';
 import { buildFiltersAndOptionsForWidgets } from '../../../../utils/filters/filtersUtils';
-
-const useStyles = makeStyles((theme) => ({
-  container: {
-    width: '100%',
-    height: '100%',
-    overflow: 'auto',
-    paddingBottom: 10,
-    marginBottom: 10,
-  },
-  paper: {
-    height: '100%',
-    margin: '10px 0 0 0',
-    padding: 0,
-    borderRadius: 4,
-  },
-  item: {
-    height: 50,
-    minHeight: 50,
-    maxHeight: 50,
-    paddingRight: 0,
-  },
-  bodyItem: {
-    height: 20,
-    fontSize: 13,
-    float: 'left',
-    whiteSpace: 'nowrap',
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-    paddingRight: 10,
-  },
-  itemIcon: {
-    marginRight: 0,
-    color: theme.palette.primary.main,
-  },
-}));
+import WidgetContainer from '../../../../components/dashboard/WidgetContainer';
+import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
+import WidgetLoader from '../../../../components/dashboard/WidgetLoader';
+import WidgetListRelationships from '../../../../components/dashboard/WidgetListRelationships';
 
 export const stixRelationshipsListSearchQuery = graphql`
   query StixRelationshipsListSearchQuery(
@@ -4445,8 +4400,7 @@ const StixRelationshipsList = ({
   dataSelection,
   parameters = {},
 }) => {
-  const classes = useStyles();
-  const { t_i18n, fsd } = useFormatter();
+  const { t_i18n } = useFormatter();
   const renderContent = () => {
     if (!dataSelection) {
       return 'No data selection';
@@ -4474,215 +4428,24 @@ const StixRelationshipsList = ({
             && props.stixRelationships.edges.length > 0
           ) {
             const data = props.stixRelationships.edges;
-            return (
-              <div id="container" className={classes.container}>
-                <List style={{ minWidth: 800, marginTop: -10 }}>
-                  {data.map((stixRelationshipEdge) => {
-                    const stixRelationship = stixRelationshipEdge.node;
-                    const remoteNode = stixRelationship.from
-                      ? stixRelationship.from
-                      : stixRelationship.to;
-                    let link = null;
-                    if (remoteNode) {
-                      link = computeLink(remoteNode);
-                    }
-                    return (
-                      <ListItem
-                        key={stixRelationship.id}
-                        dense={true}
-                        button={true}
-                        className="noDrag"
-                        classes={{ root: classes.item }}
-                        divider={true}
-                        component={Link}
-                        to={link}
-                      >
-                        <ListItemIcon classes={{ root: classes.itemIcon }}>
-                          <ItemIcon
-                            type={stixRelationship.entity_type}
-                            color="primary"
-                          />
-                        </ListItemIcon>
-                        <ListItemText
-                          primary={
-                            <div>
-                              <div
-                                className={classes.bodyItem}
-                                style={{
-                                  width: '10%',
-                                  display: 'flex',
-                                  paddingRight: 2,
-                                }}
-                              >
-                                <ItemIcon
-                                  type={
-                                    stixRelationship.from
-                                    && stixRelationship.from.entity_type
-                                  }
-                                  variant="inline"
-                                />
-                                {/* eslint-disable-next-line no-nested-ternary */}
-                                {stixRelationship.from
-                                  ? stixRelationship.from.relationship_type
-                                    ? t_i18n(
-                                      `relationship_${stixRelationship.from.entity_type}`,
-                                    )
-                                    : t_i18n(
-                                      `entity_${stixRelationship.from.entity_type}`,
-                                    )
-                                  : t_i18n('Restricted')}
-                              </div>
-                              <div
-                                className={classes.bodyItem}
-                                style={{ width: '18%', paddingRight: 2 }}
-                              >
-                                <code>
-                                  {stixRelationship.from
-                                    ? defaultValue(stixRelationship.from)
-                                    : t_i18n('Restricted')}
-                                </code>
-                              </div>
-                              <div
-                                className={classes.bodyItem}
-                                style={{
-                                  width: '10%',
-                                  paddingRight: 2,
-                                }}
-                              >
-                                <i>
-                                  {t_i18n(
-                                    `relationship_${stixRelationship.relationship_type}`,
-                                  )}
-                                </i>
-                              </div>
-                              <div
-                                className={classes.bodyItem}
-                                style={{
-                                  width: '10%',
-                                  display: 'flex',
-                                  paddingRight: 2,
-                                }}
-                              >
-                                <ItemIcon
-                                  type={
-                                    stixRelationship.to
-                                    && stixRelationship.to.entity_type
-                                  }
-                                  variant="inline"
-                                />
-                                {/* eslint-disable-next-line no-nested-ternary */}
-                                {stixRelationship.to
-                                  ? stixRelationship.to.relationship_type
-                                    ? t_i18n(
-                                      `relationship_${stixRelationship.to.entity_type}`,
-                                    )
-                                    : t_i18n(
-                                      `entity_${stixRelationship.to.entity_type}`,
-                                    )
-                                  : t_i18n('Restricted')}
-                              </div>
-                              <div
-                                className={classes.bodyItem}
-                                style={{ width: '18%', paddingRight: 2 }}
-                              >
-                                <code>
-                                  {stixRelationship.to
-                                    ? defaultValue(stixRelationship.to)
-                                    : t_i18n('Restricted')}
-                                </code>
-                              </div>
-                              <div
-                                className={classes.bodyItem}
-                                style={{ width: '10%', paddingRight: 2 }}
-                              >
-                                {fsd(stixRelationship[dateAttribute])}
-                              </div>
-                              <div
-                                className={classes.bodyItem}
-                                style={{ width: '12%', paddingRight: 2 }}
-                              >
-                                {R.pathOr(
-                                  '',
-                                  ['createdBy', 'name'],
-                                  stixRelationship,
-                                )}
-                              </div>
-                              <div
-                                className={classes.bodyItem}
-                                style={{ width: '10%', paddingRight: 2 }}
-                              >
-                                <ItemMarkings
-                                  variant="inList"
-                                  markingDefinitions={
-                                    stixRelationship.objectMarking ?? []
-                                  }
-                                  limit={1}
-                                />
-                              </div>
-                            </div>
-                          }
-                        />
-                      </ListItem>
-                    );
-                  })}
-                </List>
-              </div>
-            );
+            return <WidgetListRelationships data={data} dateAttribute={dateAttribute} />;
           }
           if (props) {
-            return (
-              <div style={{ display: 'table', height: '100%', width: '100%' }}>
-                <span
-                  style={{
-                    display: 'table-cell',
-                    verticalAlign: 'middle',
-                    textAlign: 'center',
-                  }}
-                >
-                  {t_i18n('No entities of this type has been found.')}
-                </span>
-              </div>
-            );
+            return <WidgetNoData />;
           }
-          return (
-            <div style={{ display: 'table', height: '100%', width: '100%' }}>
-              <span
-                style={{
-                  display: 'table-cell',
-                  verticalAlign: 'middle',
-                  textAlign: 'center',
-                }}
-              >
-                <CircularProgress size={40} thickness={2} />
-              </span>
-            </div>
-          );
+          return <WidgetLoader />;
         }}
       />
     );
   };
   return (
-    <div style={{ height: height || '100%' }}>
-      <Typography
-        variant="h4"
-        gutterBottom={true}
-        style={{
-          margin: variant !== 'inLine' ? '0 0 10px 0' : '-10px 0 10px -7px',
-          whiteSpace: 'nowrap',
-          overflow: 'hidden',
-          textOverflow: 'ellipsis',
-        }}
-      >
-        {parameters.title ?? t_i18n('Relationships list')}
-      </Typography>
-      {variant !== 'inLine' ? (
-        <Paper classes={{ root: classes.paper }} variant="outlined">
-          {renderContent()}
-        </Paper>
-      ) : (
-        renderContent()
-      )}
-    </div>
+    <WidgetContainer
+      height={height}
+      title={parameters.title ?? t_i18n('Relationships list')}
+      variant={variant}
+    >
+      {renderContent()}
+    </WidgetContainer>
   );
 };
 

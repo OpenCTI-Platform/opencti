@@ -27,7 +27,7 @@ const WidgetDonut = ({
   // eslint-disable-next-line no-nested-ternary
   const labels = data.map((n) => (groupBy.endsWith('_id')
     ? defaultValue(n.entity)
-    : groupBy === 'entity_type'
+    : groupBy === 'entity_type' && t_i18n(`entity_${n.label}`) !== `entity_${n.label}`
       ? t_i18n(`entity_${n.label}`)
       : n.label));
 

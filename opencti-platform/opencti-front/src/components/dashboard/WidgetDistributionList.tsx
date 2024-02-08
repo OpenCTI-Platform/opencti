@@ -13,11 +13,13 @@ import { useFormatter } from '../i18n';
 interface WidgetDistributionListProps {
   data: any[]
   hasSettingAccess?: boolean
+  overflow?: string
 }
 
 const WidgetDistributionList = ({
   data,
   hasSettingAccess = false,
+  overflow = 'auto',
 }: WidgetDistributionListProps) => {
   const theme = useTheme<Theme>();
   const { n } = useFormatter();
@@ -28,13 +30,13 @@ const WidgetDistributionList = ({
       style={{
         width: '100%',
         height: '100%',
-        overflow: 'auto',
         paddingBottom: 10,
         marginBottom: 10,
+        overflow,
       }}
     >
       <List style={{ marginTop: -10 }}>
-        {data.map((entry) => {
+        {data.map((entry, key) => {
           let link: string | null = null;
           if (entry.type !== 'User' || hasSettingAccess) {
             link = entry.id ? computeLink(entry) : null;
@@ -53,6 +55,7 @@ const WidgetDistributionList = ({
                 maxHeight: 50,
                 paddingRight: 0,
               }}
+              style={overflow === 'hidden' && key === data.length - 1 ? { borderBottom: 0 } : {}}
             >
               <ListItemIcon>
                 <ItemIcon
@@ -83,10 +86,12 @@ const WidgetDistributionList = ({
                 style={{
                   float: 'right',
                   marginRight: 20,
-                  fontSize: 20,
+                  fontSize: 18,
+                  fontWeight: 600,
                   whiteSpace: 'nowrap',
                   overflow: 'hidden',
                   textOverflow: 'ellipsis',
+                  color: theme.palette.primary.main,
                 }}
               >
                 {n(entry.value)}

@@ -1,36 +1,13 @@
 import React from 'react';
 import { graphql } from 'react-relay';
-import CircularProgress from '@mui/material/CircularProgress';
-import Paper from '@mui/material/Paper';
-import Typography from '@mui/material/Typography';
-import Timeline from '@mui/lab/Timeline';
-import TimelineItem from '@mui/lab/TimelineItem';
-import TimelineOppositeContent from '@mui/lab/TimelineOppositeContent';
-import TimelineSeparator from '@mui/lab/TimelineSeparator';
-import { Link } from 'react-router-dom';
-import TimelineDot from '@mui/lab/TimelineDot';
-import TimelineConnector from '@mui/lab/TimelineConnector';
-import TimelineContent from '@mui/lab/TimelineContent';
-import makeStyles from '@mui/styles/makeStyles';
-import { defaultValue } from '../../../../utils/Graph';
-import ItemIcon from '../../../../components/ItemIcon';
 import { resolveLink } from '../../../../utils/Entity';
 import { useFormatter } from '../../../../components/i18n';
 import { QueryRenderer } from '../../../../relay/environment';
-import { itemColor } from '../../../../utils/Colors';
-import MarkdownDisplay from '../../../../components/MarkdownDisplay';
 import { buildFiltersAndOptionsForWidgets } from '../../../../utils/filters/filtersUtils';
-
-const useStyles = makeStyles({
-  container: {
-    width: '100%',
-    height: '100%',
-    overflow: 'auto',
-  },
-  paper: {
-    padding: 15,
-  },
-});
+import WidgetContainer from '../../../../components/dashboard/WidgetContainer';
+import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
+import WidgetLoader from '../../../../components/dashboard/WidgetLoader';
+import WidgetTimeline from '../../../../components/dashboard/WidgetTimeline';
 
 const stixRelationshipsTimelineStixRelationshipQuery = graphql`
   query StixRelationshipsTimelineStixRelationshipQuery(
@@ -1064,8 +1041,7 @@ const StixRelationshipsTimeline = ({
   dataSelection,
   parameters = {},
 }) => {
-  const classes = useStyles();
-  const { t_i18n, fldt } = useFormatter();
+  const { t_i18n } = useFormatter();
   const renderContent = () => {
     const selection = dataSelection[0];
     const dateAttribute = selection.date_attribute && selection.date_attribute.length > 0
@@ -1091,119 +1067,45 @@ const StixRelationshipsTimeline = ({
             && props.stixRelationships.edges.length > 0
           ) {
             const stixRelationshipsEdges = props.stixRelationships.edges;
-            return (
-              <div id="container" className={classes.container}>
-                <Timeline position="alternate">
-                  {stixRelationshipsEdges.map((stixRelationshipEdge) => {
-                    const stixRelationship = stixRelationshipEdge.node;
-                    const remoteNode = stixRelationship.from
-                      && stixRelationship.from.id === fromId
-                      && selection.isTo !== false
-                      ? stixRelationship.to
-                      : stixRelationship.from;
-                    const restricted = stixRelationship.from === null
-                      || stixRelationship.to === null;
-                    const link = restricted
-                      ? null
-                      : `${resolveLink(remoteNode.entity_type)}/${
-                        remoteNode.id
-                      }/knowledge/relations/${stixRelationship.id}`;
-                    return (
-                      <TimelineItem key={stixRelationship.id}>
-                        <TimelineOppositeContent
-                          sx={{ paddingTop: '18px' }}
-                          color="text.secondary"
-                        >
-                          {fldt(stixRelationship.created)}
-                        </TimelineOppositeContent>
-                        <TimelineSeparator>
-                          <Link to={link}>
-                            <TimelineDot
-                              sx={{
-                                borderColor: itemColor(remoteNode.entity_type),
-                              }}
-                              variant="outlined"
-                              className="noDrag"
-                            >
-                              <ItemIcon type={remoteNode.entity_type} />
-                            </TimelineDot>
-                          </Link>
-                          <TimelineConnector />
-                        </TimelineSeparator>
-                        <TimelineContent>
-                          <Paper variant="outlined" classes={{ root: classes.paper }} className="noDrag">
-                            <Typography variant="h2">
-                              {defaultValue(remoteNode)}
-                            </Typography>
-                            <div style={{ marginTop: -5, color: '#a8a8a8' }}>
-                              <MarkdownDisplay
-                                content={remoteNode.description}
-                                limit={150}
-                              />
-                            </div>
-                          </Paper>
-                        </TimelineContent>
-                      </TimelineItem>
-                    );
-                  })}
-                </Timeline>
-              </div>
-            );
+            const data = stixRelationshipsEdges.flatMap((stixRelationshipEdge) => {
+              const stixRelationship = stixRelationshipEdge.node;
+              const remoteNode = stixRelationship.from
+              && stixRelationship.from.id === fromId
+              && selection.isTo !== false
+                ? stixRelationship.to
+                : stixRelationship.from;
+              if (!remoteNode) return [];
+
+              const restricted = stixRelationship.from === null
+                || stixRelationship.to === null;
+              const link = restricted
+                ? null
+                : `${resolveLink(remoteNode.entity_type)}/${
+                  remoteNode.id
+                }/knowledge/relations/${stixRelationship.id}`;
+              return {
+                value: remoteNode,
+                link,
+              };
+            });
+            return <WidgetTimeline data={data} />;
           }
           if (props) {
-            return (
-              <div style={{ display: 'table', height: '100%', width: '100%' }}>
-                <span
-                  style={{
-                    display: 'table-cell',
-                    verticalAlign: 'middle',
-                    textAlign: 'center',
-                  }}
-                >
-                  {t_i18n('No entities of this type has been found.')}
-                </span>
-              </div>
-            );
+            return <WidgetNoData />;
           }
-          return (
-            <div style={{ display: 'table', height: '100%', width: '100%' }}>
-              <span
-                style={{
-                  display: 'table-cell',
-                  verticalAlign: 'middle',
-                  textAlign: 'center',
-                }}
-              >
-                <CircularProgress size={40} thickness={2} />
-              </span>
-            </div>
-          );
+          return <WidgetLoader />;
         }}
       />
     );
   };
   return (
-    <div style={{ height: height || '100%' }}>
-      <Typography
-        variant="h4"
-        gutterBottom={true}
-        style={{
-          margin: variant !== 'inLine' ? '0 0 10px 0' : '-10px 0 10px -7px',
-          whiteSpace: 'nowrap',
-          overflow: 'hidden',
-          textOverflow: 'ellipsis',
-        }}
-      >
-        {parameters.title ?? t_i18n('Relationships timeline')}
-      </Typography>
-      {variant !== 'inLine' ? (
-        <Paper classes={{ root: classes.paper }} variant="outlined">
-          {renderContent()}
-        </Paper>
-      ) : (
-        renderContent()
-      )}
-    </div>
+    <WidgetContainer
+      height={height}
+      title={parameters.title ?? t_i18n('Relationships timeline')}
+      variant={variant}
+    >
+      {renderContent()}
+    </WidgetContainer>
   );
 };
 

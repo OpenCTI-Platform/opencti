@@ -6,7 +6,7 @@ import { buildFiltersAndOptionsForWidgets } from '../../../../utils/filters/filt
 import WidgetContainer from '../../../../components/dashboard/WidgetContainer';
 import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
 import WidgetLoader from '../../../../components/dashboard/WidgetLoader';
-import WidgetList from '../../../../components/dashboard/WidgetList';
+import WidgetListCoreObjects from '../../../../components/dashboard/WidgetListCoreObjects';
 
 const useStyles = makeStyles({
   container: {
@@ -264,7 +264,7 @@ const StixCoreObjectsList = ({
             && props.stixCoreObjects.edges.length > 0
           ) {
             const data = props.stixCoreObjects.edges;
-            return <WidgetList data={data} dateAttribute={dateAttribute} />;
+            return <WidgetListCoreObjects data={data} dateAttribute={dateAttribute} />;
           }
           if (props) {
             return <WidgetNoData />;

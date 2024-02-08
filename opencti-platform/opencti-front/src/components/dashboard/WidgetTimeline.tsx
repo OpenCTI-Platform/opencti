@@ -13,11 +13,10 @@ import { defaultValue } from '../../utils/Graph';
 import MarkdownDisplay from '../MarkdownDisplay';
 import ItemIcon from '../ItemIcon';
 import { itemColor } from '../../utils/Colors';
-import { resolveLink } from '../../utils/Entity';
 import { useFormatter } from '../i18n';
 
 interface WidgetTimelineProps {
-  data: any[]
+  data: { value: any, link: string }[]
 }
 
 const WidgetTimeline = ({ data }: WidgetTimelineProps) => {
@@ -33,25 +32,23 @@ const WidgetTimeline = ({ data }: WidgetTimelineProps) => {
       }}
     >
       <Timeline position="alternate">
-        {data.map((stixCoreObjectEdge) => {
-          const stixCoreObject = stixCoreObjectEdge.node;
-          const link = `${resolveLink(stixCoreObject.entity_type)}/${stixCoreObject.id}`;
+        {data.map(({ value, link }) => {
           return (
-            <TimelineItem key={stixCoreObject.id}>
+            <TimelineItem key={value.id}>
               <TimelineOppositeContent
                 sx={{ paddingTop: '18px' }}
                 color="text.secondary"
               >
-                {fldt(stixCoreObject.created)}
+                {fldt(value.created)}
               </TimelineOppositeContent>
               <TimelineSeparator>
                 <Link to={link}>
                   <TimelineDot
-                    sx={{ borderColor: itemColor(stixCoreObject.entity_type) }}
+                    sx={{ borderColor: itemColor(value.entity_type) }}
                     variant="outlined"
                     className="noDrag"
                   >
-                    <ItemIcon type={stixCoreObject.entity_type} />
+                    <ItemIcon type={value.entity_type} />
                   </TimelineDot>
                 </Link>
                 <TimelineConnector />
@@ -59,11 +56,11 @@ const WidgetTimeline = ({ data }: WidgetTimelineProps) => {
               <TimelineContent>
                 <Paper variant="outlined" sx={{ padding: '15px' }} className="noDrag">
                   <Typography variant="h2">
-                    {defaultValue(stixCoreObject)}
+                    {defaultValue(value)}
                   </Typography>
                   <div style={{ marginTop: -5, color: '#a8a8a8' }}>
                     <MarkdownDisplay
-                      content={stixCoreObject.description}
+                      content={value.description}
                       limit={150}
                     />
                   </div>
