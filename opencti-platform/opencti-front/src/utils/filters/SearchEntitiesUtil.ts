@@ -18,15 +18,24 @@ export const getOptionsFromEntities = (
   if (isStixObjectTypes.includes(filterKey)) {
     if (searchScope[filterKey] && searchScope[filterKey].length > 0) {
       filteredOptions = (entities[filterKey] || [])
-        .filter((n) => searchScope[filterKey].some((s) => (n.parentTypes ?? []).concat(n.type).includes(s)))
-        .sort((a, b) => (b.type ? -b.type.localeCompare(a.type) : 0));
+        .filter((n) => searchScope[filterKey].some((s) => (n.parentTypes ?? []).concat(n.type).includes(s)));
     } else {
-      filteredOptions = (entities[filterKey] || []).sort((a, b) => (b.type ? -b.type.localeCompare(a.type) : 0));
+      filteredOptions = (entities[filterKey] || []);
     }
   } else if (entities[filterKey]) {
     filteredOptions = entities[filterKey];
   }
-  return filteredOptions;
+  return filteredOptions.map((f) => (f.group ? f : { ...f, group: f.type }))
+    .sort((a, b) => {
+    // In case value is null, for "no label" case we want it at the top of the list
+      if (!b.value) {
+        return 1;
+      }
+      if (a.group && b.group && a.group !== b.group) {
+        return a.group.localeCompare(b.group);
+      }
+      return a.label.localeCompare(b.label);
+    });
 };
 
 export const getUseSearch = (searchScope?: Record<string, string[]>) => {

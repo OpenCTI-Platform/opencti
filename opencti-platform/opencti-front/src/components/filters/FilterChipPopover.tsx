@@ -258,17 +258,7 @@ export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({
   const buildAutocompleteFilter = (fKey: string, subKey?: string): ReactNode => {
     const getOptions = getOptionsFromEntities(entities, searchScope, fKey);
     const entitiesOptions = getOptions
-      .filter((option) => !filterValues.includes(option.value))
-      .sort((a, b) => {
-      // In case value is null, for "no label" case we want it at the top of the list
-        if (!b.value) {
-          return 1;
-        }
-        if (a.group && b.group && a.group !== b.group) {
-          return a.group.localeCompare(b.group);
-        }
-        return a.label.localeCompare(b.label);
-      });
+      .filter((option) => !filterValues.includes(option.value));
 
     const selectedOptions: OptionValue[] = getSelectedOptions(getOptions);
 
