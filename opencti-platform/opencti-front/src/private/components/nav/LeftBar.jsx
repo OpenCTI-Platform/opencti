@@ -438,7 +438,7 @@ const LeftBar = () => {
               selected={!navOpen && location.pathname.includes('/dashboard/analyses')}
               dense={true}
               classes={{ root: classes.menuItem }}
-              onClick={() => (isMobile ? handleSelectedMenuToggle('analyses') : handleGoToPage('/dashboard/analyses'))}
+              onClick={() => (isMobile || navOpen ? handleSelectedMenuToggle('analyses') : handleGoToPage('/dashboard/analyses'))}
               onMouseEnter={() => !navOpen && handleSelectedMenuOpen('analyses')}
               onMouseLeave={() => !navOpen && handleSelectedMenuClose()}
             >
@@ -470,7 +470,7 @@ const LeftBar = () => {
               selected={!navOpen && location.pathname.includes('/dashboard/cases')}
               dense={true}
               classes={{ root: classes.menuItem }}
-              onClick={() => (isMobile ? handleSelectedMenuToggle('cases') : handleGoToPage('/dashboard/cases'))}
+              onClick={() => (isMobile || navOpen ? handleSelectedMenuToggle('cases') : handleGoToPage('/dashboard/cases'))}
               onMouseEnter={() => !navOpen && handleSelectedMenuOpen('cases')}
               onMouseLeave={() => !navOpen && handleSelectedMenuClose()}
             >
@@ -502,7 +502,7 @@ const LeftBar = () => {
               selected={!navOpen && location.pathname.includes('/dashboard/events')}
               dense={true}
               classes={{ root: classes.menuItem }}
-              onClick={() => (isMobile ? handleSelectedMenuToggle('events') : handleGoToPage('/dashboard/event'))}
+              onClick={() => (isMobile || navOpen ? handleSelectedMenuToggle('events') : handleGoToPage('/dashboard/event'))}
               onMouseEnter={() => !navOpen && handleSelectedMenuOpen('events')}
               onMouseLeave={() => !navOpen && handleSelectedMenuClose()}
             >
@@ -532,7 +532,7 @@ const LeftBar = () => {
               selected={!navOpen && location.pathname.includes('/dashboard/observations')}
               dense={true}
               classes={{ root: classes.menuItem }}
-              onClick={() => (isMobile ? handleSelectedMenuToggle('observations') : handleGoToPage('/dashboard/observations'))}
+              onClick={() => (isMobile || navOpen ? handleSelectedMenuToggle('observations') : handleGoToPage('/dashboard/observations'))}
               onMouseEnter={() => !navOpen && handleSelectedMenuOpen('observations')}
               onMouseLeave={() => !navOpen && handleSelectedMenuClose()}
             >
@@ -566,7 +566,7 @@ const LeftBar = () => {
               selected={!navOpen && location.pathname.includes('/dashboard/threats')}
               dense={true}
               classes={{ root: classes.menuItem }}
-              onClick={() => (isMobile ? handleSelectedMenuToggle('threats') : handleGoToPage('/dashboard/threats'))}
+              onClick={() => (isMobile || navOpen ? handleSelectedMenuToggle('threats') : handleGoToPage('/dashboard/threats'))}
               onMouseEnter={() => !navOpen && handleSelectedMenuOpen('threats')}
               onMouseLeave={() => !navOpen && handleSelectedMenuClose()}
             >
@@ -597,7 +597,7 @@ const LeftBar = () => {
               selected={!navOpen && location.pathname.includes('/dashboard/arsenal')}
               dense={true}
               classes={{ root: classes.menuItem }}
-              onClick={() => (isMobile ? handleSelectedMenuToggle('arsenal') : handleGoToPage('/dashboard/arsenal'))}
+              onClick={() => (isMobile || navOpen ? handleSelectedMenuToggle('arsenal') : handleGoToPage('/dashboard/arsenal'))}
               onMouseEnter={() => !navOpen && handleSelectedMenuOpen('arsenal')}
               onMouseLeave={() => !navOpen && handleSelectedMenuClose()}
             >
@@ -628,7 +628,7 @@ const LeftBar = () => {
               selected={!navOpen && location.pathname.includes('/dashboard/techniques')}
               dense={true}
               classes={{ root: classes.menuItem }}
-              onClick={() => (isMobile ? handleSelectedMenuToggle('techniques') : handleGoToPage('/dashboard/techniques'))}
+              onClick={() => (isMobile || navOpen ? handleSelectedMenuToggle('techniques') : handleGoToPage('/dashboard/techniques'))}
               onMouseEnter={() => !navOpen && handleSelectedMenuOpen('techniques')}
               onMouseLeave={() => !navOpen && handleSelectedMenuClose()}
             >
@@ -660,7 +660,7 @@ const LeftBar = () => {
               selected={!navOpen && location.pathname.includes('/dashboard/entities')}
               dense={true}
               classes={{ root: classes.menuItem }}
-              onClick={() => (isMobile ? handleSelectedMenuToggle('entities') : handleGoToPage('/dashboard/entities'))}
+              onClick={() => (isMobile || navOpen ? handleSelectedMenuToggle('entities') : handleGoToPage('/dashboard/entities'))}
               onMouseEnter={() => !navOpen && handleSelectedMenuOpen('entities')}
               onMouseLeave={() => !navOpen && handleSelectedMenuClose()}
             >
@@ -692,7 +692,7 @@ const LeftBar = () => {
               selected={!navOpen && location.pathname.includes('/dashboard/locations')}
               dense={true}
               classes={{ root: classes.menuItem }}
-              onClick={() => (isMobile ? handleSelectedMenuToggle('locations') : handleGoToPage('/dashboard/locations'))}
+              onClick={() => (isMobile || navOpen ? handleSelectedMenuToggle('locations') : handleGoToPage('/dashboard/locations'))}
               onMouseEnter={() => !navOpen && handleSelectedMenuOpen('locations')}
               onMouseLeave={() => !navOpen && handleSelectedMenuClose()}
             >
@@ -767,7 +767,7 @@ const LeftBar = () => {
               selected={!navOpen && location.pathname.includes('/dashboard/data')}
               dense={true}
               classes={{ root: classes.menuItem }}
-              onClick={() => (isMobile ? handleSelectedMenuToggle('data') : handleGoToPage('/dashboard/data'))}
+              onClick={() => (isMobile || navOpen ? handleSelectedMenuToggle('data') : handleGoToPage('/dashboard/data'))}
               onMouseEnter={() => !navOpen && handleSelectedMenuOpen('data')}
               onMouseLeave={() => !navOpen && handleSelectedMenuClose()}
             >
@@ -829,7 +829,7 @@ const LeftBar = () => {
                 selected={!navOpen && location.pathname.includes('/dashboard/settings')}
                 dense={true}
                 classes={{ root: classes.menuItem }}
-                onClick={() => (isMobile ? handleSelectedMenuToggle('settings') : handleGoToPage('/dashboard/settings'))}
+                onClick={() => (isMobile || navOpen ? handleSelectedMenuToggle('settings') : handleGoToPage('/dashboard/settings'))}
                 onMouseEnter={() => !navOpen && handleSelectedMenuOpen('settings')}
                 onMouseLeave={() => !navOpen && handleSelectedMenuClose()}
               >

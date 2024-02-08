@@ -12,10 +12,13 @@ import { KNOWLEDGE_KNUPDATE } from '../../../utils/hooks/useGranted';
 import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
 import { emptyFilterGroup } from '../../../utils/filters/filtersUtils';
+import { useFormatter } from '../../../components/i18n';
+import Breadcrumbs from '../../../components/Breadcrumps';
 
 const LOCAL_STORAGE_KEY = 'coursesOfAction';
 
 const CoursesOfAction = () => {
+  const { t_i18n } = useFormatter();
   const { viewStorage, helpers, paginationOptions } = usePaginationLocalStorage<CoursesOfActionLinesPaginationQuery$variables>(
     LOCAL_STORAGE_KEY,
     {
@@ -121,12 +124,13 @@ const CoursesOfAction = () => {
   };
 
   return (
-    <div>
+    <>
+      <Breadcrumbs variant="list" elements={[{ label: t_i18n('Techniques') }, { label: t_i18n('Courses of action'), current: true }]} />
       {renderLines()}
       <Security needs={[KNOWLEDGE_KNUPDATE]}>
         <CourseOfActionCreation paginationOptions={paginationOptions} />
       </Security>
-    </div>
+    </>
   );
 };
 

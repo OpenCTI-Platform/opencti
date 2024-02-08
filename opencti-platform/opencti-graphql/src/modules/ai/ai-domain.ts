@@ -93,7 +93,6 @@ export const makeShorter = async (context: AuthContext, user: AuthUser, id: stri
   - Examine the provided English text related to cybersecurity and cyber threat intelligence and make it shorter by dividing by 2 the size / length of the text.
   - Make it shorter by dividing by 2 the number of lines but you should keep the main ideas and concepts.
   - Do NOT summarize nor enumerate points.
-  - Do NOT change the length of the text.
   - Ensure that all words are accurately spelled and that the grammar is correct. 
   - Your response should match the provided content format which is ${format}, be sure to respect this format.
 

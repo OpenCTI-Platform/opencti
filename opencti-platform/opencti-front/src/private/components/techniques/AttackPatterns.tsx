@@ -12,10 +12,13 @@ import { KNOWLEDGE_KNUPDATE } from '../../../utils/hooks/useGranted';
 import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
 import { emptyFilterGroup } from '../../../utils/filters/filtersUtils';
+import { useFormatter } from '../../../components/i18n';
+import Breadcrumbs from '../../../components/Breadcrumps';
 
 const LOCAL_STORAGE_KEY = 'attackPattern';
 
 const AttackPatterns = () => {
+  const { t_i18n } = useFormatter();
   const { viewStorage, helpers, paginationOptions } = usePaginationLocalStorage<AttackPatternsLinesPaginationQuery$variables>(
     LOCAL_STORAGE_KEY,
     {
@@ -134,6 +137,7 @@ const AttackPatterns = () => {
 
   return (
     <>
+      <Breadcrumbs variant="list" elements={[{ label: t_i18n('Techniques') }, { label: t_i18n('Attack patterns'), current: true }]} />
       {renderLines()}
       <Security needs={[KNOWLEDGE_KNUPDATE]}>
         <AttackPatternCreation paginationOptions={paginationOptions} />
