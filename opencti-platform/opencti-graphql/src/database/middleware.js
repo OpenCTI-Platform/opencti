@@ -30,6 +30,7 @@ import {
   isInferredIndex,
   isNotEmptyField,
   isObjectPathTargetMultipleAttribute,
+  MAX_EVENT_LOOP_PROCESSING_TIME,
   READ_DATA_INDICES,
   READ_DATA_INDICES_INFERRED,
   READ_INDEX_HISTORY,
@@ -53,6 +54,7 @@ import {
   elUpdateEntityConnections,
   elUpdateRelationConnections,
   ES_MAX_CONCURRENCY,
+  ES_MAX_PAGINATION,
   isImpactedTypeAndSide,
   MAX_BULK_OPERATIONS,
   ROLE_FROM,
@@ -258,11 +260,17 @@ const loadElementMetaDependencies = async (context, user, elements, args = {}) =
   const { onlyMarking = true } = args;
   const workingElements = Array.isArray(elements) ? elements : [elements];
   const workingElementsMap = new Map(workingElements.map((i) => [i.internal_id, i]));
-  const workingIds = workingElements.map((element) => element.internal_id);
+  const workingIds = Array.from(workingElementsMap.keys());
   const relTypes = onlyMarking ? [RELATION_OBJECT_MARKING] : STIX_REF_RELATIONSHIP_TYPES;
-  // Resolve all relations
-  const relationFilter = { mode: FilterMode.And, filters: [{ key: ['fromId'], values: workingIds }], filterGroups: [] };
-  const refsRelations = await listAllRelations(context, user, relTypes, { filters: relationFilter });
+  // Resolve all relations, huge filters are inefficient, splitting will maximize the query speed
+  const refsRelations = [];
+  const groupOfWorkingIds = R.splitEvery(ES_MAX_PAGINATION, workingIds);
+  for (let i = 0; i < groupOfWorkingIds.length; i += 1) {
+    const fromIds = groupOfWorkingIds[i];
+    const relationFilter = { mode: FilterMode.And, filters: [{ key: ['fromId'], values: fromIds }], filterGroups: [] };
+    const refsListed = await listAllRelations(context, user, relTypes, { filters: relationFilter });
+    refsRelations.push(...refsListed);
+  }
   const refsPerElements = R.groupBy((r) => r.fromId, refsRelations);
   // Parallel resolutions
   const toResolvedIds = R.uniq(refsRelations.map((rel) => rel.toId));
@@ -305,6 +313,7 @@ const loadElementMetaDependencies = async (context, user, elements, args = {}) =
   }
   return loadedElementMap;
 };
+
 const loadElementsWithDependencies = async (context, user, elements, opts = {}) => {
   const elementsToDeps = [...elements];
   let fromAndToPromise = Promise.resolve();
@@ -325,6 +334,7 @@ const loadElementsWithDependencies = async (context, user, elements, opts = {}) 
   }
   const [fromAndToMap, depsElementsMap] = await Promise.all([fromAndToPromise, depsPromise]);
   const loadedElements = [];
+  let startProcessingTime = new Date().getTime();
   for (let i = 0; i < elements.length; i += 1) {
     const element = elements[i];
     const isRelation = element.base_type === BASE_TYPE_RELATION;
@@ -353,6 +363,13 @@ const loadElementsWithDependencies = async (context, user, elements, opts = {}) 
     } else {
       const deps = depsElementsMap.get(element.id);
       loadedElements.push(R.mergeRight(element, { ...deps }));
+    }
+    // Prevent event loop locking more than MAX_EVENT_LOOP_PROCESSING_TIME
+    if (new Date().getTime() - startProcessingTime > MAX_EVENT_LOOP_PROCESSING_TIME) {
+      startProcessingTime = new Date().getTime();
+      await new Promise((resolve) => {
+        setImmediate(resolve);
+      });
     }
   }
   return loadedElements;
