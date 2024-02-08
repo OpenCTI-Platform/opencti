@@ -233,9 +233,9 @@ export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({
       if (filterRepresentative) {
         mapFilterValues.push({
           value,
-          type: filterRepresentative?.entity_type ?? t_i18n('Selected'),
+          type: filterRepresentative?.entity_type ?? t_i18n('selected'),
           parentTypes: [],
-          group: t_i18n('Selected'),
+          group: t_i18n('selected'),
           label: filterRepresentative?.value ?? t_i18n('Unknown'),
           color: filterRepresentative?.color ?? undefined,
         });
@@ -247,15 +247,17 @@ export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({
   const buildAutocompleteFilter = (fKey: string, subKey?: string): ReactNode => {
     const entitiesOptions = getOptionsFromEntities(entities, searchScope, fKey)
       .filter((option) => !filterValues.includes(option.value))
-      .sort((a, b) => a.label.localeCompare(b.label));
+      .sort((a, b) => {
+        // In case value is null, for "no label" case we want it at the top of the list
+        if (!b.value) {
+          return 1;
+        }
+        return a.label.localeCompare(b.label);
+      });
 
     const selectedOptions: OptionValue[] = getSelectedOptions();
 
     const groupByEntities = (option: OptionValue) => {
-      if (option?.group === 'Selected') {
-        return 'Selected';
-      }
-
       return isStixObjectTypes.includes(fKey)
         ? option.type
         : t_i18n(option?.group ? option?.group : fKey);
@@ -296,11 +298,6 @@ export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({
           const checked = subKey
             ? filterValues.filter((fVal) => fVal && fVal.key === subKey && fVal.values.includes(option.value)).length > 0
             : filterValues.includes(option.value);
-
-          // In case of No Label we would like to display it
-          if (!option.value && !option.label) {
-            return null;
-          }
           return (
             <Tooltip title={option.label} key={option.label}>
               <li
