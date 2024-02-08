@@ -3,27 +3,29 @@ import IconButton from '@mui/material/IconButton';
 import Paper from '@mui/material/Paper';
 import Typography from '@mui/material/Typography';
 import { makeStyles } from '@mui/styles';
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import { graphql, useFragment } from 'react-relay';
 import Tooltip from '@mui/material/Tooltip';
 import { SettingsMessagesLine_settingsMessage$data } from '@components/settings/settings_messages/__generated__/SettingsMessagesLine_settingsMessage.graphql';
 import { useFormatter } from '../../../../components/i18n';
 import { DataColumns } from '../../../../components/list_lines';
-import ListLines from '../../../../components/list_lines/ListLines';
 import type { Theme } from '../../../../components/Theme';
 import { generateBannerMessageColors } from '../../../../utils/Colors';
 import { SettingsMessages_settingsMessages$key } from './__generated__/SettingsMessages_settingsMessages.graphql';
 import SettingsMessageCreation from './SettingsMessageCreation';
 import SettingsMessagesLines from './SettingsMessagesLines';
 import ItemBoolean from '../../../../components/ItemBoolean';
+import ColumnsLinesTitles from '../../../../components/ColumnsLinesTitles';
 
-const useStyles = makeStyles<Theme>((theme) => ({
+const useStyles = makeStyles<Theme>(() => ({
   paper: {
     height: '100%',
     minHeight: '100%',
-    marginTop: theme.spacing(1.5),
-    padding: '10px 20px 10px 20px',
+    margin: 0,
+    padding: '15px',
     borderRadius: 4,
+    position: 'relative',
+    listStyleType: 'none',
   },
 }));
 
@@ -41,6 +43,7 @@ const SettingsMessages = ({
   settings: SettingsMessages_settingsMessages$key & { readonly id: string };
 }) => {
   const { t_i18n } = useFormatter();
+  const ref = useRef(null);
   const classes = useStyles();
   const messages = useFragment<SettingsMessages_settingsMessages$key>(
     settingsMessagesFragment,
@@ -134,22 +137,21 @@ const SettingsMessages = ({
       </IconButton>
       <div className="clearfix" />
       <Paper
+        ref={ref}
         classes={{ root: classes.paper }}
         variant="outlined"
         style={{ marginTop: 0 }}
       >
-        <ListLines
+        <ColumnsLinesTitles
           dataColumns={dataColumns}
-          noFilters
-          noPadding
-          secondaryAction
-        >
-          <SettingsMessagesLines
-            settingsId={settings.id}
-            datas={datas}
-            dataColumns={dataColumns}
-          />
-        </ListLines>
+          secondaryAction={true}
+        />
+        <SettingsMessagesLines
+          settingsId={settings.id}
+          datas={datas}
+          dataColumns={dataColumns}
+          containerRef={ref}
+        />
       </Paper>
       <SettingsMessageCreation
         settingsId={settings.id}

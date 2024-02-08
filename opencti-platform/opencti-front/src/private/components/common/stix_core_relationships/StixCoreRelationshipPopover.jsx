@@ -141,15 +141,15 @@ class StixCoreRelationshipPopover extends Component {
             {t('Delete')}
           </MenuItem>
         </Menu>
-        {stixCoreRelationshipId
-          && <StixCoreRelationshipEdition
+        {stixCoreRelationshipId && this.state.displayUpdate && (
+          <StixCoreRelationshipEdition
             variant="noGraph"
             stixCoreRelationshipId={stixCoreRelationshipId}
             open={this.state.displayUpdate}
             handleClose={this.handleCloseUpdate.bind(this)}
             noStoreUpdate={true}
-             />
-        }
+          />
+        )}
         <Dialog
           PaperProps={{ elevation: 1 }}
           open={this.state.displayDelete}

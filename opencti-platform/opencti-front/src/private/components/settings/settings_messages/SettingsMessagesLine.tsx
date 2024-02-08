@@ -60,13 +60,10 @@ const SettingsMessagesLine = ({
   dataColumns: DataColumns;
 }) => {
   const classes = useStyles();
-
   const message = useFragment(settingsMessageFragment, node);
-
   if (!node || !message) {
     return <ErrorNotFound />;
   }
-
   return (
     <ListItem key={message.id} divider={true} classes={{ root: classes.item }}>
       <ListItemIcon classes={{ root: classes.itemIcon }}>

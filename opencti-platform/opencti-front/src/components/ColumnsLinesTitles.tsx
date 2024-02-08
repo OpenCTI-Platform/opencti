@@ -36,7 +36,7 @@ interface TriggerLineTitlesProps {
   dataColumns: DataColumns;
   sortBy?: string;
   orderAsc?: boolean;
-  handleSort: (field: string, orderAsc: boolean) => void;
+  handleSort?: (field: string, orderAsc: boolean) => void;
   secondaryAction?: boolean;
 }
 
@@ -50,7 +50,9 @@ const ColumnsLinesTitles: FunctionComponent<TriggerLineTitlesProps> = ({
   const classes = useStyles();
   const { t_i18n } = useFormatter();
   const reverseBy = (field: string) => {
-    handleSort(field, !orderAsc);
+    if (handleSort) {
+      handleSort(field, !orderAsc);
+    }
   };
   const renderHeaderElement = (
     field: string,

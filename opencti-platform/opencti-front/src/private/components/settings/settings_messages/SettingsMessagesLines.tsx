@@ -1,4 +1,5 @@
-import React from 'react';
+import React, { MutableRefObject } from 'react';
+import { GridTypeMap } from '@mui/material';
 import { DataColumns } from '../../../../components/list_lines';
 import ListLinesContent from '../../../../components/list_lines/ListLinesContent';
 import SettingsMessagesLine, { SettingsMessagesLineDummy } from './SettingsMessagesLine';
@@ -8,23 +9,27 @@ const SettingsMessagesLines = ({
   settingsId,
   datas,
   dataColumns,
+  containerRef,
 }: {
   settingsId: string,
   datas: { node: SettingsMessagesLine_settingsMessage$key }[]
   dataColumns: DataColumns,
+  containerRef: MutableRefObject<GridTypeMap | null>;
 }) => {
   return (
     <ListLinesContent
       initialLoading={false}
-      loadMore={() => {}}
-      hasMore={() => {}}
       isLoading={() => false}
-      dataList={datas}
-      globalCount={datas.length}
+      loadMore={() => null}
+      hasMore={() => false}
+      dataList={datas ?? []}
+      globalCount={datas.length ?? 1}
+      nbOfRowsToLoad={50}
       LineComponent={SettingsMessagesLine}
       DummyLineComponent={SettingsMessagesLineDummy}
       dataColumns={dataColumns}
       entityId={settingsId}
+      containerRef={containerRef}
     />
   );
 };

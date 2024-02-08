@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useLayoutEffect } from 'react';
 import { Link, useHistory, useLocation } from 'react-router-dom';
 import { createStyles, makeStyles, styled, useTheme } from '@mui/styles';
 import Toolbar from '@mui/material/Toolbar';
@@ -150,36 +150,24 @@ const useStyles = makeStyles((theme) => createStyles({
     height: 35,
     fontWeight: 500,
     fontSize: 14,
-    position: 'fixed',
-    left: 0,
-    bottom: 10,
   },
   menuCollapse: {
     width: 55,
     height: 35,
     fontWeight: 500,
     fontSize: 14,
-    position: 'fixed',
-    left: 0,
-    bottom: 10,
   },
   menuLogoOpen: {
     width: 180,
     height: 35,
     fontWeight: 500,
     fontSize: 14,
-    position: 'fixed',
-    left: 0,
-    bottom: 45,
   },
   menuLogo: {
     width: 55,
     height: 35,
     fontWeight: 500,
     fontSize: 14,
-    position: 'fixed',
-    left: 0,
-    bottom: 45,
   },
   menuItemSmallText: {
     padding: '1px 0 0 20px',
@@ -200,6 +188,7 @@ const StyledTooltip = styled(({ className, ...props }) => (
 const LeftBar = () => {
   const theme = useTheme();
   const location = useLocation();
+  const ref = useRef();
   const { t_i18n } = useFormatter();
   const { settings: { platform_whitemark } } = useAuth();
   const history = useHistory();
@@ -312,6 +301,10 @@ const LeftBar = () => {
   } = useAuth();
   const settingsMessagesBannerHeight = useSettingsMessagesBannerHeight();
   const { dimension } = useDimensions();
+  const [height, setHeight] = useState(0);
+  useLayoutEffect(() => {
+    setHeight(ref.current.offsetHeight);
+  }, [selectedMenu]);
   const isMobile = dimension.width < 768;
   const generateSubMenu = (menu, entries) => {
     return navOpen ? (
@@ -366,7 +359,7 @@ const LeftBar = () => {
         } }}
       >
         <MenuList component="nav">
-          {entries.map((entry) => {
+          {entries.filter((entry) => entry.granted !== false && !hiddenEntities.includes(entry.type)).map((entry) => {
             return (
               <MenuItem
                 key={entry.label}
@@ -406,34 +399,35 @@ const LeftBar = () => {
       }}
     >
       <Toolbar />
-      <MenuList
-        component="nav"
-        style={{ marginTop: bannerHeightNumber + settingsMessagesBannerHeight }}
-      >
-        <StyledTooltip title={!navOpen && t_i18n('Home')} placement="right">
-          <MenuItem
-            component={Link}
-            to="/dashboard"
-            selected={location.pathname === '/dashboard'}
-            dense={true}
-            classes={{ root: classes.menuItem }}
-          >
-            <ListItemIcon classes={{ root: classes.menuItemIcon }} style={{ minWidth: 20 }}>
-              <DashboardOutlined />
-            </ListItemIcon>
-            {navOpen && (
+      <div ref={ref}>
+        <MenuList
+          component="nav"
+          style={{ marginTop: bannerHeightNumber + settingsMessagesBannerHeight }}
+        >
+          <StyledTooltip title={!navOpen && t_i18n('Home')} placement="right">
+            <MenuItem
+              component={Link}
+              to="/dashboard"
+              selected={location.pathname === '/dashboard'}
+              dense={true}
+              classes={{ root: classes.menuItem }}
+            >
+              <ListItemIcon classes={{ root: classes.menuItemIcon }} style={{ minWidth: 20 }}>
+                <DashboardOutlined />
+              </ListItemIcon>
+              {navOpen && (
               <ListItemText
                 classes={{ primary: classes.menuItemText }}
                 primary={t_i18n('Home')}
               />
-            )}
-          </MenuItem>
-        </StyledTooltip>
-      </MenuList>
-      <Divider />
-      <Security needs={[KNOWLEDGE]}>
-        <MenuList component="nav">
-          {!hideAnalyses && (
+              )}
+            </MenuItem>
+          </StyledTooltip>
+        </MenuList>
+        <Divider />
+        <Security needs={[KNOWLEDGE]}>
+          <MenuList component="nav">
+            {!hideAnalyses && (
             <MenuItem
               ref={anchors.analyses}
               selected={!navOpen && location.pathname.includes('/dashboard/analyses')}
@@ -454,18 +448,18 @@ const LeftBar = () => {
               )}
               {navOpen && (selectedMenu === 'analyses' ? <ExpandLessOutlined /> : <ExpandMoreOutlined />)}
             </MenuItem>
-          )}
-          {!hideAnalyses && generateSubMenu(
-            'analyses',
-            [
-              { type: 'Report', link: '/dashboard/analyses/reports', label: 'Reports', icon: <DescriptionOutlined fontSize="small" /> },
-              { type: 'Grouping', link: '/dashboard/analyses/groupings', label: 'Groupings', icon: <WorkspacesOutlined fontSize="small" /> },
-              { type: 'Malware-Analysis', link: '/dashboard/analyses/malware_analyses', label: 'Malware analyses', icon: <BiotechOutlined fontSize="small" /> },
-              { type: 'Note', link: '/dashboard/analyses/notes', label: 'Notes', icon: <SubjectOutlined fontSize="inherit" /> },
-              { type: 'External-Reference', link: '/dashboard/analyses/external_references', label: 'External references', icon: <LocalOfferOutlined fontSize="small" /> },
-            ],
-          )}
-          {!hideCases && (
+            )}
+            {!hideAnalyses && generateSubMenu(
+              'analyses',
+              [
+                { type: 'Report', link: '/dashboard/analyses/reports', label: 'Reports', icon: <DescriptionOutlined fontSize="small" /> },
+                { type: 'Grouping', link: '/dashboard/analyses/groupings', label: 'Groupings', icon: <WorkspacesOutlined fontSize="small" /> },
+                { type: 'Malware-Analysis', link: '/dashboard/analyses/malware_analyses', label: 'Malware analyses', icon: <BiotechOutlined fontSize="small" /> },
+                { type: 'Note', link: '/dashboard/analyses/notes', label: 'Notes', icon: <SubjectOutlined fontSize="inherit" /> },
+                { type: 'External-Reference', link: '/dashboard/analyses/external_references', label: 'External references', icon: <LocalOfferOutlined fontSize="small" /> },
+              ],
+            )}
+            {!hideCases && (
             <MenuItem
               ref={anchors.cases}
               selected={!navOpen && location.pathname.includes('/dashboard/cases')}
@@ -486,18 +480,18 @@ const LeftBar = () => {
               )}
               {navOpen && (selectedMenu === 'cases' ? <ExpandLessOutlined /> : <ExpandMoreOutlined />)}
             </MenuItem>
-          )}
-          {!hideCases && generateSubMenu(
-            'cases',
-            [
-              { type: 'Case-Incident', link: '/dashboard/cases/incidents', label: 'Incident responses', icon: <BriefcaseEyeOutline fontSize="small" /> },
-              { type: 'Case-Rfi', link: '/dashboard/cases/rfis', label: 'Requests for information', icon: <BriefcaseSearchOutline fontSize="small" /> },
-              { type: 'Case-Rft', link: '/dashboard/cases/rfts', label: 'Requests for takedown', icon: <BriefcaseRemoveOutline fontSize="small" /> },
-              { type: 'Task', link: '/dashboard/cases/tasks', label: 'Tasks', icon: <TaskAltOutlined fontSize="small" /> },
-              { type: 'Feedback', link: '/dashboard/cases/feedbacks', label: 'Feedbacks', icon: <BriefcaseEditOutline fontSize="small" /> },
-            ],
-          )}
-          {!hideEvents && (
+            )}
+            {!hideCases && generateSubMenu(
+              'cases',
+              [
+                { type: 'Case-Incident', link: '/dashboard/cases/incidents', label: 'Incident responses', icon: <BriefcaseEyeOutline fontSize="small" /> },
+                { type: 'Case-Rfi', link: '/dashboard/cases/rfis', label: 'Requests for information', icon: <BriefcaseSearchOutline fontSize="small" /> },
+                { type: 'Case-Rft', link: '/dashboard/cases/rfts', label: 'Requests for takedown', icon: <BriefcaseRemoveOutline fontSize="small" /> },
+                { type: 'Task', link: '/dashboard/cases/tasks', label: 'Tasks', icon: <TaskAltOutlined fontSize="small" /> },
+                { type: 'Feedback', link: '/dashboard/cases/feedbacks', label: 'Feedbacks', icon: <BriefcaseEditOutline fontSize="small" /> },
+              ],
+            )}
+            {!hideEvents && (
             <MenuItem
               ref={anchors.events}
               selected={!navOpen && location.pathname.includes('/dashboard/events')}
@@ -518,16 +512,16 @@ const LeftBar = () => {
               )}
               {navOpen && (selectedMenu === 'events' ? <ExpandLessOutlined /> : <ExpandMoreOutlined />)}
             </MenuItem>
-          )}
-          {!hideEvents && generateSubMenu(
-            'events',
-            [
-              { type: 'Incident', link: '/dashboard/events/incidents', label: 'Incidents', icon: <Fire fontSize="small" /> },
-              { type: 'stix-sighting-relationship', link: '/dashboard/events/sightings', label: 'Sightings', icon: <VisibilityOutlined fontSize="small" /> },
-              { type: 'Observed-Data', link: '/dashboard/events/observed_data', label: 'Observed datas', icon: <WifiTetheringOutlined fontSize="small" /> },
-            ],
-          )}
-          {!hideObservations && (
+            )}
+            {!hideEvents && generateSubMenu(
+              'events',
+              [
+                { type: 'Incident', link: '/dashboard/events/incidents', label: 'Incidents', icon: <Fire fontSize="small" /> },
+                { type: 'stix-sighting-relationship', link: '/dashboard/events/sightings', label: 'Sightings', icon: <VisibilityOutlined fontSize="small" /> },
+                { type: 'Observed-Data', link: '/dashboard/events/observed_data', label: 'Observed datas', icon: <WifiTetheringOutlined fontSize="small" /> },
+              ],
+            )}
+            {!hideObservations && (
             <MenuItem
               ref={anchors.observations}
               selected={!navOpen && location.pathname.includes('/dashboard/observations')}
@@ -548,20 +542,20 @@ const LeftBar = () => {
               )}
               {navOpen && (selectedMenu === 'observations' ? <ExpandLessOutlined /> : <ExpandMoreOutlined />)}
             </MenuItem>
-          )}
-          {!hideObservations && generateSubMenu(
-            'observations',
-            [
-              { type: 'Stix-Cyber-Observable', link: '/dashboard/observations/observables', label: 'Observables', icon: <HexagonOutline fontSize="small" /> },
-              { type: 'Artifact', link: '/dashboard/observations/artifacts', label: 'Artifacts', icon: <ArchiveOutline fontSize="small" /> },
-              { type: 'Indicator', link: '/dashboard/observations/indicators', label: 'Indicators', icon: <ShieldSearch fontSize="small" /> },
-              { type: 'Infrastructure', link: '/dashboard/observations/infrastructures', label: 'Infrastructures', icon: <ServerNetwork fontSize="small" /> },
-            ],
-          )}
-        </MenuList>
-        <Divider />
-        <MenuList component="nav">
-          {!hideThreats && (
+            )}
+            {!hideObservations && generateSubMenu(
+              'observations',
+              [
+                { type: 'Stix-Cyber-Observable', link: '/dashboard/observations/observables', label: 'Observables', icon: <HexagonOutline fontSize="small" /> },
+                { type: 'Artifact', link: '/dashboard/observations/artifacts', label: 'Artifacts', icon: <ArchiveOutline fontSize="small" /> },
+                { type: 'Indicator', link: '/dashboard/observations/indicators', label: 'Indicators', icon: <ShieldSearch fontSize="small" /> },
+                { type: 'Infrastructure', link: '/dashboard/observations/infrastructures', label: 'Infrastructures', icon: <ServerNetwork fontSize="small" /> },
+              ],
+            )}
+          </MenuList>
+          <Divider />
+          <MenuList component="nav">
+            {!hideThreats && (
             <MenuItem
               ref={anchors.threats}
               selected={!navOpen && location.pathname.includes('/dashboard/threats')}
@@ -582,17 +576,17 @@ const LeftBar = () => {
               )}
               {navOpen && (selectedMenu === 'threats' ? <ExpandLessOutlined /> : <ExpandMoreOutlined />)}
             </MenuItem>
-          )}
-          {!hideThreats && generateSubMenu(
-            'threats',
-            [
-              { type: 'Threat-Actor-Group', link: '/dashboard/threats/threat_actors_group', label: 'Threat actors (group)', icon: <AccountMultipleOutline fontSize="small" /> },
-              { type: 'Threat-Actor-Individual', link: '/dashboard/threats/threat_actors_individual', label: 'Threat actors (individual)', icon: <LaptopAccount fontSize="small" /> },
-              { type: 'Intrusion-Set', link: '/dashboard/threats/intrusion_sets', label: 'Intrusion sets', icon: <DiamondOutlined fontSize="small" /> },
-              { type: 'Campaign', link: '/dashboard/threats/campaigns', label: 'Campaigns', icon: <ChessKnight fontSize="small" /> },
-            ],
-          )}
-          {!hideArsenal && (
+            )}
+            {!hideThreats && generateSubMenu(
+              'threats',
+              [
+                { type: 'Threat-Actor-Group', link: '/dashboard/threats/threat_actors_group', label: 'Threat actors (group)', icon: <AccountMultipleOutline fontSize="small" /> },
+                { type: 'Threat-Actor-Individual', link: '/dashboard/threats/threat_actors_individual', label: 'Threat actors (individual)', icon: <LaptopAccount fontSize="small" /> },
+                { type: 'Intrusion-Set', link: '/dashboard/threats/intrusion_sets', label: 'Intrusion sets', icon: <DiamondOutlined fontSize="small" /> },
+                { type: 'Campaign', link: '/dashboard/threats/campaigns', label: 'Campaigns', icon: <ChessKnight fontSize="small" /> },
+              ],
+            )}
+            {!hideArsenal && (
             <MenuItem
               ref={anchors.arsenal}
               selected={!navOpen && location.pathname.includes('/dashboard/arsenal')}
@@ -613,17 +607,17 @@ const LeftBar = () => {
               )}
               {navOpen && (selectedMenu === 'arsenal' ? <ExpandLessOutlined /> : <ExpandMoreOutlined />)}
             </MenuItem>
-          )}
-          {!hideArsenal && generateSubMenu(
-            'arsenal',
-            [
-              { type: 'Malware', link: '/dashboard/arsenal/malwares', label: 'Malwares', icon: <Biohazard fontSize="small" /> },
-              { type: 'Channel', link: '/dashboard/arsenal/channels', label: 'Channels', icon: <SurroundSoundOutlined fontSize="small" /> },
-              { type: 'Tool', link: '/dashboard/arsenal/tools', label: 'Tools', icon: <WebAssetOutlined fontSize="small" /> },
-              { type: 'Vulnerability', link: '/dashboard/arsenal/vulnerabilities', label: 'Vulnerabilities', icon: <BugReportOutlined fontSize="small" /> },
-            ],
-          )}
-          {!hideTechniques && (
+            )}
+            {!hideArsenal && generateSubMenu(
+              'arsenal',
+              [
+                { type: 'Malware', link: '/dashboard/arsenal/malwares', label: 'Malwares', icon: <Biohazard fontSize="small" /> },
+                { type: 'Channel', link: '/dashboard/arsenal/channels', label: 'Channels', icon: <SurroundSoundOutlined fontSize="small" /> },
+                { type: 'Tool', link: '/dashboard/arsenal/tools', label: 'Tools', icon: <WebAssetOutlined fontSize="small" /> },
+                { type: 'Vulnerability', link: '/dashboard/arsenal/vulnerabilities', label: 'Vulnerabilities', icon: <BugReportOutlined fontSize="small" /> },
+              ],
+            )}
+            {!hideTechniques && (
             <MenuItem
               ref={anchors.techniques}
               selected={!navOpen && location.pathname.includes('/dashboard/techniques')}
@@ -644,18 +638,18 @@ const LeftBar = () => {
               )}
               {navOpen && (selectedMenu === 'techniques' ? <ExpandLessOutlined /> : <ExpandMoreOutlined />)}
             </MenuItem>
-          )}
-          {!hideTechniques && generateSubMenu(
-            'techniques',
-            [
-              { type: 'Attack-Pattern', link: '/dashboard/techniques/attack_patterns', label: 'Attack patterns', icon: <LockPattern fontSize="small" /> },
-              { type: 'Narrative', link: '/dashboard/techniques/narratives', label: 'Narratives', icon: <SpeakerNotesOutlined fontSize="small" /> },
-              { type: 'Course-Of-Action', link: '/dashboard/techniques/courses_of_action', label: 'Courses of action', icon: <ProgressWrench fontSize="small" /> },
-              { type: 'Data-Component', link: '/dashboard/techniques/data_components', label: 'Data components', icon: <SourceOutlined fontSize="small" /> },
-              { type: 'Data-Source', link: '/dashboard/techniques/data_sources', label: 'Data sources', icon: <StreamOutlined fontSize="small" /> },
-            ],
-          )}
-          {!hideEntities && (
+            )}
+            {!hideTechniques && generateSubMenu(
+              'techniques',
+              [
+                { type: 'Attack-Pattern', link: '/dashboard/techniques/attack_patterns', label: 'Attack patterns', icon: <LockPattern fontSize="small" /> },
+                { type: 'Narrative', link: '/dashboard/techniques/narratives', label: 'Narratives', icon: <SpeakerNotesOutlined fontSize="small" /> },
+                { type: 'Course-Of-Action', link: '/dashboard/techniques/courses_of_action', label: 'Courses of action', icon: <ProgressWrench fontSize="small" /> },
+                { type: 'Data-Component', link: '/dashboard/techniques/data_components', label: 'Data components', icon: <SourceOutlined fontSize="small" /> },
+                { type: 'Data-Source', link: '/dashboard/techniques/data_sources', label: 'Data sources', icon: <StreamOutlined fontSize="small" /> },
+              ],
+            )}
+            {!hideEntities && (
             <MenuItem
               ref={anchors.entities}
               selected={!navOpen && location.pathname.includes('/dashboard/entities')}
@@ -676,18 +670,18 @@ const LeftBar = () => {
               )}
               {navOpen && (selectedMenu === 'entities' ? <ExpandLessOutlined /> : <ExpandMoreOutlined />)}
             </MenuItem>
-          )}
-          {!hideEntities && generateSubMenu(
-            'entities',
-            [
-              { type: 'Sector', link: '/dashboard/entities/sectors', label: 'Sectors', icon: <DomainOutlined fontSize="small" /> },
-              { type: 'Event', link: '/dashboard/entities/events', label: 'Events', icon: <EventOutlined fontSize="small" /> },
-              { type: 'Organization', link: '/dashboard/entities/organizations', label: 'Organizations', icon: <AccountBalanceOutlined fontSize="small" /> },
-              { type: 'System', link: '/dashboard/entities/systems', label: 'Systems', icon: <StorageOutlined fontSize="small" /> },
-              { type: 'Individual', link: '/dashboard/entities/individuals', label: 'Individuals', icon: <PersonOutlined fontSize="small" /> },
-            ],
-          )}
-          {!hideLocations && (
+            )}
+            {!hideEntities && generateSubMenu(
+              'entities',
+              [
+                { type: 'Sector', link: '/dashboard/entities/sectors', label: 'Sectors', icon: <DomainOutlined fontSize="small" /> },
+                { type: 'Event', link: '/dashboard/entities/events', label: 'Events', icon: <EventOutlined fontSize="small" /> },
+                { type: 'Organization', link: '/dashboard/entities/organizations', label: 'Organizations', icon: <AccountBalanceOutlined fontSize="small" /> },
+                { type: 'System', link: '/dashboard/entities/systems', label: 'Systems', icon: <StorageOutlined fontSize="small" /> },
+                { type: 'Individual', link: '/dashboard/entities/individuals', label: 'Individuals', icon: <PersonOutlined fontSize="small" /> },
+              ],
+            )}
+            {!hideLocations && (
             <MenuItem
               ref={anchors.locations}
               selected={!navOpen && location.pathname.includes('/dashboard/locations')}
@@ -708,203 +702,207 @@ const LeftBar = () => {
               )}
               {navOpen && (selectedMenu === 'locations' ? <ExpandLessOutlined /> : <ExpandMoreOutlined />)}
             </MenuItem>
-          )}
-          {!hideLocations && generateSubMenu(
-            'locations',
-            [
-              { type: 'Region', link: '/dashboard/locations/regions', label: 'Regions', icon: <PublicOutlined fontSize="small" /> },
-              { type: 'Country', link: '/dashboard/locations/countries', label: 'Countries', icon: <FlagOutlined fontSize="small" /> },
-              { type: 'Administrative-Area', link: '/dashboard/locations/administrative_areas', label: 'Administrative areas', icon: <MapOutlined fontSize="small" /> },
-              { type: 'City', link: '/dashboard/locations/cities', label: 'Cities', icon: <CityVariantOutline fontSize="small" /> },
-              { type: 'Position', link: '/dashboard/locations/positions', label: 'Positions', icon: <PlaceOutlined fontSize="small" /> },
-            ],
-          )}
-        </MenuList>
-      </Security>
-      <Security needs={[EXPLORE]}>
-        <Divider />
-        <MenuList component="nav">
-          <StyledTooltip title={!navOpen && t_i18n('Dashboards')} placement="right">
-            <MenuItem
-              component={Link}
-              to="/dashboard/workspaces/dashboards"
-              selected={!navOpen && location.pathname.includes('/dashboard/workspaces/dashboards')}
-              dense={true}
-              classes={{ root: classes.menuItem }}
-            >
-              <ListItemIcon classes={{ root: classes.menuItemIcon }} style={{ minWidth: 20 }}>
-                <InsertChartOutlinedOutlined />
-              </ListItemIcon>
-              {navOpen && (
-              <ListItemText
-                classes={{ primary: classes.menuItemText }}
-                primary={t_i18n('Dashboards')}
-              />
-              )}
-            </MenuItem>
-          </StyledTooltip>
-          <StyledTooltip title={!navOpen && t_i18n('Investigations')} placement="right">
-            <MenuItem
-              component={Link}
-              to="/dashboard/workspaces/investigations"
-              selected={!navOpen && location.pathname.includes('/dashboard/workspaces/investigations')}
-              dense={true}
-              classes={{ root: classes.menuItem }}
-            >
-              <ListItemIcon classes={{ root: classes.menuItemIcon }} style={{ minWidth: 20 }}>
-                <ExploreOutlined />
-              </ListItemIcon>
-              {navOpen && (
-              <ListItemText
-                classes={{ primary: classes.menuItemText }}
-                primary={t_i18n('Investigations')}
-              />
-              )}
-            </MenuItem>
-          </StyledTooltip>
-          <Security needs={[MODULES, KNOWLEDGE, TAXIIAPI_SETCOLLECTIONS]}>
-            <MenuItem
-              ref={anchors.data}
-              selected={!navOpen && location.pathname.includes('/dashboard/data')}
-              dense={true}
-              classes={{ root: classes.menuItem }}
-              onClick={() => (isMobile || navOpen ? handleSelectedMenuToggle('data') : handleGoToPage('/dashboard/data'))}
-              onMouseEnter={() => !navOpen && handleSelectedMenuOpen('data')}
-              onMouseLeave={() => !navOpen && handleSelectedMenuClose()}
-            >
-              <ListItemIcon classes={{ root: classes.menuItemIcon }} style={{ minWidth: 20 }}>
-                <Database />
-              </ListItemIcon>
-              {navOpen && (
+            )}
+            {!hideLocations && generateSubMenu(
+              'locations',
+              [
+                { type: 'Region', link: '/dashboard/locations/regions', label: 'Regions', icon: <PublicOutlined fontSize="small" /> },
+                { type: 'Country', link: '/dashboard/locations/countries', label: 'Countries', icon: <FlagOutlined fontSize="small" /> },
+                { type: 'Administrative-Area', link: '/dashboard/locations/administrative_areas', label: 'Administrative areas', icon: <MapOutlined fontSize="small" /> },
+                { type: 'City', link: '/dashboard/locations/cities', label: 'Cities', icon: <CityVariantOutline fontSize="small" /> },
+                { type: 'Position', link: '/dashboard/locations/positions', label: 'Positions', icon: <PlaceOutlined fontSize="small" /> },
+              ],
+            )}
+          </MenuList>
+        </Security>
+        <Security needs={[EXPLORE]}>
+          <Divider />
+          <MenuList component="nav">
+            <StyledTooltip title={!navOpen && t_i18n('Dashboards')} placement="right">
+              <MenuItem
+                component={Link}
+                to="/dashboard/workspaces/dashboards"
+                selected={!navOpen && location.pathname.includes('/dashboard/workspaces/dashboards')}
+                dense={true}
+                classes={{ root: classes.menuItem }}
+              >
+                <ListItemIcon classes={{ root: classes.menuItemIcon }} style={{ minWidth: 20 }}>
+                  <InsertChartOutlinedOutlined />
+                </ListItemIcon>
+                {navOpen && (
+                <ListItemText
+                  classes={{ primary: classes.menuItemText }}
+                  primary={t_i18n('Dashboards')}
+                />
+                )}
+              </MenuItem>
+            </StyledTooltip>
+            <StyledTooltip title={!navOpen && t_i18n('Investigations')} placement="right">
+              <MenuItem
+                component={Link}
+                to="/dashboard/workspaces/investigations"
+                selected={!navOpen && location.pathname.includes('/dashboard/workspaces/investigations')}
+                dense={true}
+                classes={{ root: classes.menuItem }}
+              >
+                <ListItemIcon classes={{ root: classes.menuItemIcon }} style={{ minWidth: 20 }}>
+                  <ExploreOutlined />
+                </ListItemIcon>
+                {navOpen && (
+                <ListItemText
+                  classes={{ primary: classes.menuItemText }}
+                  primary={t_i18n('Investigations')}
+                />
+                )}
+              </MenuItem>
+            </StyledTooltip>
+            <Security needs={[MODULES, KNOWLEDGE, TAXIIAPI_SETCOLLECTIONS]}>
+              <MenuItem
+                ref={anchors.data}
+                selected={!navOpen && location.pathname.includes('/dashboard/data')}
+                dense={true}
+                classes={{ root: classes.menuItem }}
+                onClick={() => (isMobile || navOpen ? handleSelectedMenuToggle('data') : handleGoToPage('/dashboard/data'))}
+                onMouseEnter={() => !navOpen && handleSelectedMenuOpen('data')}
+                onMouseLeave={() => !navOpen && handleSelectedMenuClose()}
+              >
+                <ListItemIcon classes={{ root: classes.menuItemIcon }} style={{ minWidth: 20 }}>
+                  <Database />
+                </ListItemIcon>
+                {navOpen && (
                 <ListItemText
                   classes={{ primary: classes.menuItemText }}
                   primary={t_i18n('Data')}
                 />
+                )}
+                {navOpen && (selectedMenu === 'data' ? <ExpandLessOutlined /> : <ExpandMoreOutlined />)}
+              </MenuItem>
+              {generateSubMenu(
+                'data',
+                [
+                  { granted: isGrantedToKnowledge, link: '/dashboard/data/entities', label: 'Entities' },
+                  { granted: isGrantedToKnowledge, link: '/dashboard/data/relationships', label: 'Relationships' },
+                  { granted: isGrantedToSettings, link: '/dashboard/data/ingestion', label: 'Ingestion' },
+                  { granted: isGrantedToImport, link: '/dashboard/data/import', label: 'Import' },
+                  { granted: isGrantedToProcessing, link: '/dashboard/data/processing', label: 'Processing' },
+                  { granted: isGrantedToSharing, link: '/dashboard/data/sharing', label: 'Data sharing' },
+                ],
               )}
-              {navOpen && (selectedMenu === 'data' ? <ExpandLessOutlined /> : <ExpandMoreOutlined />)}
-            </MenuItem>
-            {generateSubMenu(
-              'data',
-              [
-                { granted: isGrantedToKnowledge, link: '/dashboard/data/entities', label: 'Entities' },
-                { granted: isGrantedToKnowledge, link: '/dashboard/data/relationships', label: 'Relationships' },
-                { granted: isGrantedToSettings, link: '/dashboard/data/ingestion', label: 'Ingestion' },
-                { granted: isGrantedToImport, link: '/dashboard/data/import', label: 'Import' },
-                { granted: isGrantedToProcessing, link: '/dashboard/data/processing', label: 'Processing' },
-                { granted: isGrantedToSharing, link: '/dashboard/data/sharing', label: 'Data sharing' },
-              ],
-            )}
-          </Security>
-        </MenuList>
-      </Security>
-      <Security needs={[SETTINGS, MODULES, KNOWLEDGE, TAXIIAPI_SETCOLLECTIONS]}>
-        <Divider />
-        <MenuList component="nav">
-          <Security needs={[SETTINGS, VIRTUAL_ORGANIZATION_ADMIN]}>
-            {isOrganizationAdmin && !isGrantedToSettings ? (
-              <StyledTooltip
-                title={!navOpen && t_i18n('Settings')}
-                placement="right"
-              >
+            </Security>
+          </MenuList>
+        </Security>
+        <Security needs={[SETTINGS, MODULES, KNOWLEDGE, TAXIIAPI_SETCOLLECTIONS]}>
+          <Divider />
+          <MenuList component="nav">
+            <Security needs={[SETTINGS, VIRTUAL_ORGANIZATION_ADMIN]}>
+              {isOrganizationAdmin && !isGrantedToSettings ? (
+                <StyledTooltip
+                  title={!navOpen && t_i18n('Settings')}
+                  placement="right"
+                >
+                  <MenuItem
+                    component={Link}
+                    to="/dashboard/settings/accesses/organizations"
+                    selected={!navOpen && location.pathname.includes('/dashboard/settings')}
+                    dense={true}
+                    classes={{ root: classes.menuItem }}
+                  >
+                    <ListItemIcon classes={{ root: classes.menuItemIcon }} style={{ minWidth: 20 }}>
+                      <CogOutline />
+                    </ListItemIcon>
+                    {navOpen && (
+                    <ListItemText
+                      classes={{ primary: classes.menuItemText }}
+                      primary={t_i18n('Settings')}
+                    />
+                    )}
+                  </MenuItem>
+                </StyledTooltip>
+              ) : (
                 <MenuItem
-                  component={Link}
-                  to="/dashboard/settings/accesses/organizations"
+                  ref={anchors.settings}
                   selected={!navOpen && location.pathname.includes('/dashboard/settings')}
                   dense={true}
                   classes={{ root: classes.menuItem }}
+                  onClick={() => (isMobile || navOpen ? handleSelectedMenuToggle('settings') : handleGoToPage('/dashboard/settings'))}
+                  onMouseEnter={() => !navOpen && handleSelectedMenuOpen('settings')}
+                  onMouseLeave={() => !navOpen && handleSelectedMenuClose()}
                 >
                   <ListItemIcon classes={{ root: classes.menuItemIcon }} style={{ minWidth: 20 }}>
                     <CogOutline />
                   </ListItemIcon>
                   {navOpen && (
-                    <ListItemText
-                      classes={{ primary: classes.menuItemText }}
-                      primary={t_i18n('Settings')}
-                    />
-                  )}
-                </MenuItem>
-              </StyledTooltip>
-            ) : (
-              <MenuItem
-                ref={anchors.settings}
-                selected={!navOpen && location.pathname.includes('/dashboard/settings')}
-                dense={true}
-                classes={{ root: classes.menuItem }}
-                onClick={() => (isMobile || navOpen ? handleSelectedMenuToggle('settings') : handleGoToPage('/dashboard/settings'))}
-                onMouseEnter={() => !navOpen && handleSelectedMenuOpen('settings')}
-                onMouseLeave={() => !navOpen && handleSelectedMenuClose()}
-              >
-                <ListItemIcon classes={{ root: classes.menuItemIcon }} style={{ minWidth: 20 }}>
-                  <CogOutline />
-                </ListItemIcon>
-                {navOpen && (
                   <ListItemText
                     classes={{ primary: classes.menuItemText }}
                     primary={t_i18n('Settings')}
                   />
-                )}
-                {navOpen && (selectedMenu === 'settings' ? <ExpandLessOutlined /> : <ExpandMoreOutlined />)}
-              </MenuItem>
-            )}
-            {isGrantedToSettings && generateSubMenu(
-              'settings',
-              [
-                { granted: isGrantedToSettings, link: '/dashboard/settings', label: 'Parameters', exact: true },
-                { granted: isGrantedToSecurity, link: '/dashboard/settings/accesses', label: 'Security' },
-                { granted: isGrantedToSettings, link: '/dashboard/settings/customization', label: 'Customization' },
-                { granted: isGrantedToLabels, link: '/dashboard/settings/vocabularies', label: 'Taxonomies' },
-                { granted: isGrantedToSettings, link: '/dashboard/settings/activity', label: 'Activity' },
-                { granted: isGrantedToSettings, link: '/dashboard/settings/file_indexing', label: 'File indexing' },
-              ],
-            )}
-          </Security>
-        </MenuList>
-      </Security>
-      <div style={{ height: 50 }} />
-      {(!platform_whitemark || !isEnterpriseEdition) && (
-        <MenuItem
-          dense={true}
-          style={{ marginBottom: bannerHeightNumber }}
-          classes={{
-            root: navOpen ? classes.menuLogoOpen : classes.menuLogo,
-          }}
-          onClick={() => window.open('https://filigran.io/', '_blank')}
-        >
-          <Tooltip title={'By Filigran'}>
-            <ListItemIcon classes={{ root: classes.menuItemIcon }} style={{ minWidth: 20 }}>
-              <img
-                src={fileUri(logo_filigran)}
-                alt="logo"
-                width={20}
-              />
-            </ListItemIcon>
-          </Tooltip>
-          {navOpen && (
+                  )}
+                  {navOpen && (selectedMenu === 'settings' ? <ExpandLessOutlined /> : <ExpandMoreOutlined />)}
+                </MenuItem>
+              )}
+              {isGrantedToSettings && generateSubMenu(
+                'settings',
+                [
+                  { granted: isGrantedToSettings, link: '/dashboard/settings', label: 'Parameters', exact: true },
+                  { granted: isGrantedToSecurity, link: '/dashboard/settings/accesses', label: 'Security' },
+                  { granted: isGrantedToSettings, link: '/dashboard/settings/customization', label: 'Customization' },
+                  { granted: isGrantedToLabels, link: '/dashboard/settings/vocabularies', label: 'Taxonomies' },
+                  { granted: isGrantedToSettings, link: '/dashboard/settings/activity', label: 'Activity' },
+                  { granted: isGrantedToSettings, link: '/dashboard/settings/file_indexing', label: 'File indexing' },
+                ],
+              )}
+            </Security>
+          </MenuList>
+        </Security>
+      </div>
+      <div style={height + (navOpen && selectedMenu ? 300 : 130) < dimension.height ? { position: 'fixed', bottom: 10, left: 0 } : {}}>
+        <MenuList component="nav">
+          {(!platform_whitemark || !isEnterpriseEdition) && (
+          <MenuItem
+            dense={true}
+            style={{ marginBottom: bannerHeightNumber }}
+            classes={{
+              root: navOpen ? classes.menuLogoOpen : classes.menuLogo,
+            }}
+            onClick={() => window.open('https://filigran.io/', '_blank')}
+          >
+            <Tooltip title={'By Filigran'}>
+              <ListItemIcon classes={{ root: classes.menuItemIcon }} style={{ minWidth: 20 }}>
+                <img
+                  src={fileUri(logo_filigran)}
+                  alt="logo"
+                  width={20}
+                />
+              </ListItemIcon>
+            </Tooltip>
+            {navOpen && (
             <ListItemText
               classes={{ primary: classes.menuItemSmallText }}
               primary={'by Filigran'}
             />
+            )}
+          </MenuItem>
           )}
-        </MenuItem>
-      )}
-      <MenuItem
-        dense={true}
-        style={{ marginBottom: bannerHeightNumber }}
-        classes={{
-          root: navOpen ? classes.menuCollapseOpen : classes.menuCollapse,
-        }}
-        onClick={() => handleToggle()}
-      >
-        <ListItemIcon classes={{ root: classes.menuItemIcon }} style={{ minWidth: 20 }}>
-          {navOpen ? <ChevronLeft /> : <ChevronRight />}
-        </ListItemIcon>
-        {navOpen && (
-          <ListItemText
-            classes={{ primary: classes.menuItemText }}
-            primary={t_i18n('Collapse')}
-          />
-        )}
-      </MenuItem>
+          <MenuItem
+            dense={true}
+            style={{ marginBottom: bannerHeightNumber }}
+            classes={{
+              root: navOpen ? classes.menuCollapseOpen : classes.menuCollapse,
+            }}
+            onClick={() => handleToggle()}
+          >
+            <ListItemIcon classes={{ root: classes.menuItemIcon }} style={{ minWidth: 20 }}>
+              {navOpen ? <ChevronLeft /> : <ChevronRight />}
+            </ListItemIcon>
+            {navOpen && (
+            <ListItemText
+              classes={{ primary: classes.menuItemText }}
+              primary={t_i18n('Collapse')}
+            />
+            )}
+          </MenuItem>
+        </MenuList>
+      </div>
     </Drawer>
   );
 };
