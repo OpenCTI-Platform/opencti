@@ -207,7 +207,7 @@ const initFileIndexManager = () => {
     start: async () => {
       logApp.info('[OPENCTI-MODULE] Starting file index manager');
       scheduler = setIntervalAsync(async () => {
-        await fileIndexHandler(); // here
+        await fileIndexHandler();
       }, SCHEDULE_TIME);
       // stream to index updates on entities
       streamScheduler = setIntervalAsync(async () => {
