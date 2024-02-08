@@ -36,6 +36,7 @@ import { useVocabularyCategoryQuery$data } from '../hooks/__generated__/useVocab
 import { useSearchEntitiesStixCoreObjectsContainersSearchQuery$data } from './__generated__/useSearchEntitiesStixCoreObjectsContainersSearchQuery.graphql';
 import { useSearchEntitiesSchemaSCOSearchQuery$data } from './__generated__/useSearchEntitiesSchemaSCOSearchQuery.graphql';
 import type { Theme } from '../../components/Theme';
+import { containerTypes } from '../hooks/useAttributes';
 
 const filtersStixCoreObjectsContainersSearchQuery = graphql`
   query useSearchEntitiesStixCoreObjectsContainersSearchQuery(
@@ -873,16 +874,7 @@ const useSearchEntities = ({
           if (availableEntityTypes.includes('Container')) {
             completedAvailableEntityTypes = completedAvailableEntityTypes
               .filter((type) => type !== 'Container')
-              .concat([
-                'Report',
-                'Grouping',
-                'Note',
-                'Feedback',
-                'Case-Incident',
-                'Case-Rfi',
-                'Case-Rft',
-                'Task',
-              ]);
+              .concat(containerTypes);
           }
           const entitiesTypes = completedAvailableEntityTypes
             .map((n) => ({

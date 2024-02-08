@@ -250,6 +250,19 @@ export const typesContainers = [
   'task',
 ];
 
+export const containerTypes = [
+  'Report',
+  'Grouping',
+  'Note',
+  'Feedback',
+  'Case-Incident',
+  'Case-Rfi',
+  'Case-Rft',
+  'Task',
+  'Opinion',
+  'Observed-Data',
+];
+
 const useAttributes = () => {
   const vocabularies = useVocabularyCategory();
   return {
@@ -270,6 +283,7 @@ const useAttributes = () => {
     typesWithoutName,
     typesContainers,
     vocabularyAttributes: vocabularies.fields,
+    containerTypes,
   };
 };
 
