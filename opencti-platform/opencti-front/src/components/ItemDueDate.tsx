@@ -5,14 +5,14 @@ import { useFormatter } from './i18n';
 
 const useStyles = makeStyles(() => ({
   chip: {
-    borderRadius: 5,
+    borderRadius: 4,
   },
   chipInList: {
     fontSize: 12,
     height: 20,
     float: 'left',
     width: 120,
-    borderRadius: 5,
+    borderRadius: 4,
   },
 }));
 

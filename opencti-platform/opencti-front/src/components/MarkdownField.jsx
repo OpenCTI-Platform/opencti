@@ -4,6 +4,7 @@ import { useField } from 'formik';
 import InputLabel from '@mui/material/InputLabel';
 import FormHelperText from '@mui/material/FormHelperText';
 import * as R from 'ramda';
+import TextFieldAskAI from '../private/components/common/form/TextFieldAskAI';
 import { useFormatter } from './i18n';
 import MarkdownDisplay from './MarkdownDisplay';
 
@@ -20,6 +21,7 @@ const MarkdownField = (props) => {
     controlledSelectedTab,
     controlledSetSelectTab,
     height,
+    askAi,
   } = props;
   const { t_i18n } = useFormatter();
   const [selectedTab, setSelectedTab] = useState('write');
@@ -54,7 +56,7 @@ const MarkdownField = (props) => {
   };
   return (
     <div
-      style={style}
+      style={{ ...style, position: 'relative' }}
       className={!R.isNil(meta.error) ? 'error' : 'main'}
       onBlur={internalOnBlur}
       onFocus={internalOnFocus}
@@ -95,6 +97,19 @@ const MarkdownField = (props) => {
       />
       {!R.isNil(meta.error) && (
         <FormHelperText error={true}>{meta.error}</FormHelperText>
+      )}
+      {askAi && (
+        <TextFieldAskAI
+          currentValue={field.value ?? ''}
+          setFieldValue={(val) => {
+            setFieldValue(name, val);
+            if (typeof onSubmit === 'function') {
+              onSubmit(name, val || '');
+            }
+          }}
+          format="markdown"
+          variant="markdown"
+        />
       )}
     </div>
   );

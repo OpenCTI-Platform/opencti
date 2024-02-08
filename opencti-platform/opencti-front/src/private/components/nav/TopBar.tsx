@@ -5,10 +5,9 @@ import { Link, useLocation } from 'react-router-dom-v5-compat';
 import AppBar from '@mui/material/AppBar';
 import Toolbar from '@mui/material/Toolbar';
 import IconButton from '@mui/material/IconButton';
-import { AccountCircleOutlined, BiotechOutlined, ContentPasteSearchOutlined, NotificationsOutlined, AppsOutlined } from '@mui/icons-material';
+import { AccountCircleOutlined, AppsOutlined, NotificationsOutlined } from '@mui/icons-material';
 import Menu from '@mui/material/Menu';
 import Grid from '@mui/material/Grid';
-import Divider from '@mui/material/Divider';
 import MenuItem from '@mui/material/MenuItem';
 import Tooltip from '@mui/material/Tooltip';
 import { graphql, PreloadedQuery, usePreloadedQuery, useSubscription } from 'react-relay';
@@ -19,30 +18,11 @@ import Popover from '@mui/material/Popover';
 import Box from '@mui/material/Box';
 import { useFormatter } from '../../../components/i18n';
 import SearchInput from '../../../components/SearchInput';
-import TopMenuDashboard from './TopMenuDashboard';
-import TopMenuSearch from './TopMenuSearch';
-import TopMenuAnalyses from './TopMenuAnalyses';
-import TopMenuOpinion from './TopMenuOpinion';
-import TopMenuEvents from './TopMenuEvents';
-import TopMenuObservations from './TopMenuObservations';
-import TopMenuThreats from './TopMenuThreats';
-import TopMenuArsenal from './TopMenuArsenal';
-import TopMenuEntities from './TopMenuEntities';
-import TopMenuData from './TopMenuData';
-import TopMenuSettings from './TopMenuSettings';
-import TopMenuTechniques from './TopMenuTechniques';
 import { APP_BASE_PATH, fileUri, MESSAGING$ } from '../../../relay/environment';
 import Security from '../../../utils/Security';
-import TopMenuWorkspacesDashboards from './TopMenuWorkspacesDashboards';
-import TopMenuWorkspacesInvestigations from './TopMenuWorkspacesInvestigations';
-import TopMenuImport from './TopMenuImport';
-import TopMenuLocation from './TopMenuLocation';
 import FeedbackCreation from '../cases/feedbacks/FeedbackCreation';
-import TopMenuCases from './TopMenuCases';
 import type { Theme } from '../../../components/Theme';
 import { KNOWLEDGE } from '../../../utils/hooks/useGranted';
-import TopMenuProfile from '../profile/TopMenuProfile';
-import TopMenuNotifications from '../profile/TopMenuNotifications';
 import { TopBarQuery } from './__generated__/TopBarQuery.graphql';
 import { TopBarNotificationNumberSubscription$data } from './__generated__/TopBarNotificationNumberSubscription.graphql';
 import useAuth from '../../../utils/hooks/useAuth';
@@ -85,7 +65,6 @@ const useStyles = makeStyles<Theme>((theme) => ({
   },
   menuContainer: {
     float: 'left',
-    marginLeft: 30,
   },
   barRight: {
     position: 'absolute',
@@ -97,12 +76,6 @@ const useStyles = makeStyles<Theme>((theme) => ({
     float: 'left',
     height: '100%',
     paddingTop: 12,
-  },
-  divider: {
-    display: 'table-cell',
-    height: '100%',
-    float: 'left',
-    margin: '0 5px 0 5px',
   },
   subtitle: {
     color: theme.palette.text?.secondary,
@@ -152,31 +125,6 @@ const topBarQuery = graphql`
     myUnreadNotificationsCount
   }
 `;
-
-const routes = {
-  // ME
-  '/dashboard/profile/me': () => <TopMenuProfile/>,
-  '/dashboard/profile/': () => <TopMenuNotifications/>,
-  '/dashboard/cases': () => <TopMenuCases/>,
-  '/dashboard/analyses/opinions/': (id: string) => <TopMenuOpinion id={id}/>,
-  '/dashboard/analyses': () => <TopMenuAnalyses/>,
-  '/dashboard/events': () => <TopMenuEvents/>,
-  '/dashboard/observations': () => <TopMenuObservations/>,
-  '/dashboard/threats': () => <TopMenuThreats/>,
-  '/dashboard/arsenal': () => <TopMenuArsenal/>,
-  '/dashboard/entities': () => <TopMenuEntities/>,
-  '/dashboard/locations': () => <TopMenuLocation/>,
-  '/dashboard/techniques': () => <TopMenuTechniques/>,
-  '/dashboard/data': () => <TopMenuData/>,
-  '/dashboard/settings': () => <TopMenuSettings/>,
-  '/dashboard/workspaces/dashboards': () => <TopMenuWorkspacesDashboards/>,
-  '/dashboard/workspaces/investigations': () => (
-    <TopMenuWorkspacesInvestigations/>
-  ),
-  '/dashboard/search': () => <TopMenuSearch/>,
-  '/dashboard/import': () => <TopMenuImport/>,
-  '/dashboard': () => <TopMenuDashboard/>,
-};
 
 const TopBarComponent: FunctionComponent<TopBarProps> = ({
   queryRef,
@@ -267,13 +215,8 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
     setOpenDrawer(false);
     handleCloseMenu();
   };
-
   // global search keyword
   const keyword = decodeSearchKeyword(location.pathname.match(/(?:\/dashboard\/search\/(?:knowledge|files)\/(.*))/)?.[1] ?? '');
-
-  const extractId = (path = '') => location.pathname.split(path)[1].split('/')[0];
-  const [routePath, routeFn] = Object.entries(routes).find(([path]) => location.pathname.includes(path))
-  ?? [];
   return (
     <AppBar
       position="fixed"
@@ -293,52 +236,15 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
             />
           </Link>
         </div>
-        <div className={classes.menuContainer}>
-          {routeFn?.(extractId(routePath))}
+        <div className={classes.menuContainer} style={{ marginLeft: navOpen ? 25 : 30 }}>
+          <SearchInput
+            onSubmit={handleSearch}
+            keyword={keyword}
+            variant="topBar"
+            placeholder={`${t_i18n('Search the platform')}...`}
+          />
         </div>
         <div className={classes.barRight}>
-          <Security needs={[KNOWLEDGE]}>
-            <React.Fragment>
-              <div className={classes.barRightContainer}>
-                <SearchInput
-                  onSubmit={handleSearch}
-                  keyword={keyword}
-                  variant="topBar"
-                  placeholder={`${t_i18n('Search the platform')}...`}
-                />
-                <Tooltip title={t_i18n('Advanced search')}>
-                  <IconButton
-                    component={Link}
-                    to="/dashboard/search"
-                    color={
-                      location.pathname.includes('/dashboard/search')
-                      && !location.pathname.includes('/dashboard/search_bulk')
-                        ? 'secondary'
-                        : 'inherit'
-                    }
-                    size={'medium'}
-                  >
-                    <BiotechOutlined fontSize='medium'/>
-                  </IconButton>
-                </Tooltip>
-                <Tooltip title={t_i18n('Bulk search')}>
-                  <IconButton
-                    component={Link}
-                    to="/dashboard/search_bulk"
-                    color={
-                      location.pathname.includes('/dashboard/search_bulk')
-                        ? 'primary'
-                        : 'inherit'
-                    }
-                    size="medium"
-                  >
-                    <ContentPasteSearchOutlined fontSize="medium"/>
-                  </IconButton>
-                </Tooltip>
-              </div>
-              <Divider className={classes.divider} orientation="vertical"/>
-            </React.Fragment>
-          </Security>
           <div className={classes.barRightContainer}>
             <Security needs={[KNOWLEDGE]}>
               <Tooltip title={t_i18n('Notifications and triggers')}>
@@ -388,6 +294,7 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
                 vertical: 'top',
                 horizontal: 'center',
               }}
+              disableScrollLock={true}
             >
               <Box sx={{ width: '300px', padding: '15px', textAlign: 'center' }}>
                 <div className={classes.subtitle}>{t_i18n('Filigran eXtended Threat Management')}</div>

@@ -5,7 +5,7 @@ import { withRouter } from 'react-router-dom';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 import Button from '@mui/material/Button';
-import IconButton from '@mui/material/IconButton';
+import ToggleButton from '@mui/material/ToggleButton';
 import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
@@ -84,15 +84,14 @@ class SectorPopover extends Component {
     const { t, id } = this.props;
     return (
       <>
-        <IconButton
+        <ToggleButton
+          value="popover"
+          size="small"
+
           onClick={this.handleOpen.bind(this)}
-          aria-haspopup="true"
-          style={{ marginTop: 3 }}
-          size="large"
-          color="primary"
         >
-          <MoreVert />
-        </IconButton>
+          <MoreVert fontSize="small" color="primary" />
+        </ToggleButton>
         <Menu
           anchorEl={this.state.anchorEl}
           open={Boolean(this.state.anchorEl)}

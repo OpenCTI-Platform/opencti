@@ -10,10 +10,13 @@ import { KNOWLEDGE_KNUPDATE } from '../../../utils/hooks/useGranted';
 import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
 import { emptyFilterGroup } from '../../../utils/filters/filtersUtils';
+import Breadcrumbs from '../../../components/Breadcrumps';
+import { useFormatter } from '../../../components/i18n';
 
 const LOCAL_STORAGE_KEY = 'intrusionSets';
 
 const IntrusionSets = () => {
+  const { t_i18n } = useFormatter();
   const { viewStorage, helpers, paginationOptions } = usePaginationLocalStorage<IntrusionSetsCardsPaginationQuery$variables>(
     LOCAL_STORAGE_KEY,
     {
@@ -114,6 +117,7 @@ const IntrusionSets = () => {
 
   return (
     <>
+      <Breadcrumbs variant="list" elements={[{ label: t_i18n('Threats') }, { label: t_i18n('Intrusion sets'), current: true }]} />
       {renderCards()}
       <Security needs={[KNOWLEDGE_KNUPDATE]}>
         <IntrusionSetCreation paginationOptions={paginationOptions} />

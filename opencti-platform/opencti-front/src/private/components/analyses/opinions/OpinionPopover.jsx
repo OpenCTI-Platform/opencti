@@ -3,7 +3,6 @@ import { useHistory } from 'react-router-dom';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 import Button from '@mui/material/Button';
-import IconButton from '@mui/material/IconButton';
 import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
@@ -11,6 +10,7 @@ import DialogContentText from '@mui/material/DialogContentText';
 import Slide from '@mui/material/Slide';
 import MoreVert from '@mui/icons-material/MoreVert';
 import { graphql, useMutation } from 'react-relay';
+import ToggleButton from '@mui/material/ToggleButton';
 import { useFormatter } from '../../../../components/i18n';
 import { QueryRenderer } from '../../../../relay/environment';
 import { opinionEditionQuery } from './OpinionEdition';
@@ -64,15 +64,13 @@ const OpinionPopover = (data) => {
   const handleCloseEdit = () => setDisplayEdit(false);
   return (
     <>
-      <IconButton
+      <ToggleButton
+        value="popover"
+        size="small"
         onClick={handleOpen}
-        aria-haspopup="true"
-        style={{ marginTop: 3 }}
-        size="large"
-        color="primary"
       >
-        <MoreVert />
-      </IconButton>
+        <MoreVert fontSize="small" color="primary" />
+      </ToggleButton>
       <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleClose}>
         <MenuItem onClick={handleOpenEdit}>{t_i18n('Update')}</MenuItem>
         <CollaborativeSecurity

@@ -12,7 +12,7 @@ const styles = (theme) => ({
     minHeight: 280,
     height: '100%',
     margin: '10px 0 0 0',
-    borderRadius: 6,
+    borderRadius: 4,
   },
   avatar: {
     width: 24,

@@ -14,10 +14,13 @@ import { NoteLine_node$data } from './notes/__generated__/NoteLine_node.graphql'
 import { NotesLinesPaginationQuery, NotesLinesPaginationQuery$variables } from './notes/__generated__/NotesLinesPaginationQuery.graphql';
 import NoteCreation from './notes/NoteCreation';
 import { buildEntityTypeBasedFilterContext, emptyFilterGroup, getDefaultFilterObjFromArray } from '../../../utils/filters/filtersUtils';
+import { useFormatter } from '../../../components/i18n';
+import Breadcrumbs from '../../../components/Breadcrumps';
 
 const LOCAL_STORAGE_KEY = 'notes';
 
 const Notes: FunctionComponent = () => {
+  const { t_i18n } = useFormatter();
   const {
     platformModuleHelpers: { isRuntimeFieldEnable },
   } = useAuth();
@@ -170,24 +173,25 @@ const Notes: FunctionComponent = () => {
                 selectAll={selectAll}
                 setNumberOfElements={storageHelpers.handleSetNumberOfElements}
               />
-              <ToolBar
-                selectedElements={selectedElements}
-                deSelectedElements={deSelectedElements}
-                numberOfSelectedElements={numberOfSelectedElements}
-                selectAll={selectAll}
-                search={searchTerm}
-                filters={contextFilters}
-                handleClearSelectedElements={handleClearSelectedElements}
-                type="Note"
-              />
             </React.Suspense>
           )}
         </ListLines>
+        <ToolBar
+          selectedElements={selectedElements}
+          deSelectedElements={deSelectedElements}
+          numberOfSelectedElements={numberOfSelectedElements}
+          selectAll={selectAll}
+          search={searchTerm}
+          filters={contextFilters}
+          handleClearSelectedElements={handleClearSelectedElements}
+          type="Note"
+        />
       </>
     );
   };
   return (
     <ExportContextProvider>
+      <Breadcrumbs variant="list" elements={[{ label: t_i18n('Analyses') }, { label: t_i18n('Notes'), current: true }]} />
       {renderLines()}
       <Security needs={[KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNPARTICIPATE]}>
         <NoteCreation paginationOptions={queryPaginationOptions} />

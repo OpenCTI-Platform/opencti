@@ -188,6 +188,7 @@ const CampaignEditionOverviewComponent = (props) => {
             fullWidth={true}
             onFocus={editor.changeFocus}
             onSubmit={handleSubmitField}
+            askAi={true}
             helperText={
               <SubscriptionFocus context={context} fieldName="name" />
             }
@@ -199,6 +200,7 @@ const CampaignEditionOverviewComponent = (props) => {
             containerStyle={fieldSpacingContainerStyle}
             editContext={context}
             variant="edit"
+            askAi={true}
           />
           <Field
             component={MarkdownField}

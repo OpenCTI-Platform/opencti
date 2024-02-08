@@ -18,7 +18,6 @@ const DeleteDialog = ({
   submitDelete: () => void
 }) => {
   const { t_i18n } = useFormatter();
-
   return (
     <Dialog
       open={deletion.displayDelete}

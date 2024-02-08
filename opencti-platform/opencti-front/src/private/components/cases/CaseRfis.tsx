@@ -14,6 +14,8 @@ import { CaseRfiLineDummy } from './case_rfis/CaseRfiLine';
 import { CaseRfiLinesCasesPaginationQuery, CaseRfiLinesCasesPaginationQuery$variables } from './case_rfis/__generated__/CaseRfiLinesCasesPaginationQuery.graphql';
 import { CaseRfiLineCase_node$data } from './case_rfis/__generated__/CaseRfiLineCase_node.graphql';
 import { buildEntityTypeBasedFilterContext, emptyFilterGroup } from '../../../utils/filters/filtersUtils';
+import { useFormatter } from '../../../components/i18n';
+import Breadcrumbs from '../../../components/Breadcrumps';
 
 interface CaseRfisProps {
   inputValue?: string;
@@ -22,6 +24,7 @@ interface CaseRfisProps {
 export const LOCAL_STORAGE_KEY = 'caseRfis';
 
 const CaseRfis: FunctionComponent<CaseRfisProps> = () => {
+  const { t_i18n } = useFormatter();
   const {
     platformModuleHelpers: { isRuntimeFieldEnable },
   } = useAuth();
@@ -193,6 +196,7 @@ const CaseRfis: FunctionComponent<CaseRfisProps> = () => {
   };
   return (
     <ExportContextProvider>
+      <Breadcrumbs variant="list" elements={[{ label: t_i18n('Cases') }, { label: t_i18n('Requests for information'), current: true }]} />
       {renderLines()}
       <Security needs={[KNOWLEDGE_KNUPDATE]}>
         <CaseRfiCreation paginationOptions={queryPaginationOptions} />

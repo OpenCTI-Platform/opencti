@@ -78,7 +78,7 @@ class StixCyberObservableEdition extends Component {
       <>
         <Fab
           onClick={this.handleOpen.bind(this)}
-          color="secondary"
+          color="primary"
           aria-label="Edit"
           className={classes.editButton}
         >

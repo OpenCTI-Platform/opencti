@@ -22,6 +22,7 @@ import TasksPopover from './TaskPopover';
 import { RootTaskQuery } from './__generated__/RootTaskQuery.graphql';
 import { RootTaskSubscription } from './__generated__/RootTaskSubscription.graphql';
 import { useFormatter } from '../../../../components/i18n';
+import Breadcrumbs from '../../../../components/Breadcrumps';
 
 const subscription = graphql`
   subscription RootTaskSubscription($id: ID!) {
@@ -88,6 +89,12 @@ const RootTaskComponent = ({ queryRef, taskId }) => {
     <>
       {data ? (
         <div style={{ paddingRight }}>
+          <Breadcrumbs variant="object" elements={[
+            { label: t_i18n('Cases') },
+            { label: t_i18n('Tasks'), link: '/dashboard/cases/tasks' },
+            { label: data.name, current: true },
+          ]}
+          />
           <ContainerHeader
             container={data}
             PopoverComponent={<TasksPopover id={data.id} />}

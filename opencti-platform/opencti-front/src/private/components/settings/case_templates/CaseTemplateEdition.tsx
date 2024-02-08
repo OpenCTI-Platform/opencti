@@ -156,7 +156,6 @@ const CaseTemplateEdition: FunctionComponent<CaseTemplateEditionProps> = ({
               label={t_i18n('Name')}
               fullWidth
               onSubmit={handleSubmitField}
-              style={{ marginBottom: '20px' }}
             />
             <Field
               component={MarkdownField}

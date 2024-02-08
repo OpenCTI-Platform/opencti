@@ -29,7 +29,7 @@ const useStyles = makeStyles(() => ({
     minHeight: '100%',
     margin: 0,
     padding: '15px',
-    borderRadius: 6,
+    borderRadius: 4,
     position: 'relative',
     listStyleType: 'none',
   },

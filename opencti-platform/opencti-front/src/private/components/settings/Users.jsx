@@ -11,6 +11,8 @@ import AccessesMenu from './AccessesMenu';
 import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
 import useGranted, { SETTINGS_SETACCESSES, VIRTUAL_ORGANIZATION_ADMIN } from '../../../utils/hooks/useGranted';
 import useEnterpriseEdition from '../../../utils/hooks/useEnterpriseEdition';
+import { useFormatter } from '../../../components/i18n';
+import Breadcrumbs from '../../../components/Breadcrumps';
 
 const useStyles = makeStyles(() => ({
   container: {
@@ -23,6 +25,7 @@ const LOCAL_STORAGE_KEY = 'users';
 
 const Users = () => {
   const classes = useStyles();
+  const { t_i18n } = useFormatter();
   const { viewStorage, paginationOptions, helpers } = usePaginationLocalStorage(
     LOCAL_STORAGE_KEY,
     {
@@ -101,6 +104,7 @@ const Users = () => {
 
   return (
     <div className={classes.container}>
+      <Breadcrumbs variant="list" elements={[{ label: t_i18n('Settings') }, { label: t_i18n('Security') }, { label: t_i18n('Users'), current: true }]} />
       <AccessesMenu />
       {isSetAccess || isEnterpriseEdition ? (
         renderLines()

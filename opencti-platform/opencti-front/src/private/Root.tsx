@@ -62,6 +62,9 @@ const rootSettingsFragment = graphql`
     ...PasswordPolicies
     ...Policies
     analytics_google_analytics_v4
+    platform_ai_enabled
+    platform_ai_type
+    platform_ai_has_token
   }
 `;
 

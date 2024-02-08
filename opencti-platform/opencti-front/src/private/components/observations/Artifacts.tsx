@@ -14,10 +14,13 @@ import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage'
 import useEntityToggle from '../../../utils/hooks/useEntityToggle';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
 import { buildEntityTypeBasedFilterContext, emptyFilterGroup } from '../../../utils/filters/filtersUtils';
+import { useFormatter } from '../../../components/i18n';
+import Breadcrumbs from '../../../components/Breadcrumps';
 
 const LOCAL_STORAGE_KEY = 'artifacts';
 
 const Artifacts: FunctionComponent = () => {
+  const { t_i18n } = useFormatter();
   const {
     platformModuleHelpers: { isRuntimeFieldEnable },
   } = useAuth();
@@ -182,14 +185,13 @@ const Artifacts: FunctionComponent = () => {
 
   return (
     <ExportContextProvider>
-      <div>
-        {renderLines()}
-        <Security needs={[KNOWLEDGE_KNUPDATE]}>
-          <ArtifactCreation
-            paginationOptions={queryPaginationOptions}
-          />
-        </Security>
-      </div>
+      <Breadcrumbs variant="list" elements={[{ label: t_i18n('Observations') }, { label: t_i18n('Artifacts'), current: true }]} />
+      {renderLines()}
+      <Security needs={[KNOWLEDGE_KNUPDATE]}>
+        <ArtifactCreation
+          paginationOptions={queryPaginationOptions}
+        />
+      </Security>
     </ExportContextProvider>
   );
 };

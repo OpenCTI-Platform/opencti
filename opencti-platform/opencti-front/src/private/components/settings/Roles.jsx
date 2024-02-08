@@ -10,6 +10,7 @@ import ListLines from '../../../components/list_lines/ListLines';
 import RolesLines, { rolesLinesQuery } from './roles/RolesLines';
 import AccessesMenu from './AccessesMenu';
 import RoleCreation from './roles/RoleCreation';
+import Breadcrumbs from '../../../components/Breadcrumps';
 
 const styles = () => ({
   container: {
@@ -106,7 +107,7 @@ class Roles extends Component {
 
   render() {
     const { view, sortBy, orderAsc, searchTerm } = this.state;
-    const { classes } = this.props;
+    const { classes, t } = this.props;
     const paginationOptions = {
       search: searchTerm,
       orderBy: sortBy,
@@ -114,6 +115,7 @@ class Roles extends Component {
     };
     return (
       <div className={classes.container}>
+        <Breadcrumbs variant="list" elements={[{ label: t('Settings') }, { label: t('Security') }, { label: t('Roles'), current: true }]} />
         <AccessesMenu />
         {view === 'lines' ? this.renderLines(paginationOptions) : ''}
         <RoleCreation paginationOptions={paginationOptions} />

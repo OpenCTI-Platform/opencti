@@ -36,7 +36,7 @@ class StixDomainObjectsExportsContentComponent extends Component {
     const { t, data, exportContext, paginationOptions } = this.props;
     const stixDomainObjectsExportFiles = data?.stixDomainObjectsExportFiles?.edges ?? [];
     return (
-      <div>
+      <>
         <List>
           {stixDomainObjectsExportFiles.length > 0 ? (
             stixDomainObjectsExportFiles.map(
@@ -72,7 +72,7 @@ class StixDomainObjectsExportsContentComponent extends Component {
             onExportAsk={() => this.props.relay.refetch({ count: 25, exportContext: this.props.exportContext })}
           />
         </Security>
-      </div>
+      </>
     );
   }
 }

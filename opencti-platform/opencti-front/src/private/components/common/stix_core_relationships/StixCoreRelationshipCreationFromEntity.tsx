@@ -763,7 +763,7 @@ const StixCoreRelationshipCreationFromEntity: FunctionComponent<StixCoreRelation
       {/* eslint-disable-next-line no-nested-ternary */}
       {variant === 'inLine' ? (
         <IconButton
-          color="secondary"
+          color="primary"
           aria-label="Label"
           onClick={() => setOpen(true)}
           style={{ float: 'left', margin: '-15px 0 0 -2px' }}
@@ -774,7 +774,7 @@ const StixCoreRelationshipCreationFromEntity: FunctionComponent<StixCoreRelation
       ) : !openExports ? (
         <Fab
           onClick={() => setOpen(true)}
-          color="secondary"
+          color="primary"
           aria-label="Add"
           className={classes.createButton}
           style={{ right: paddingRight || 30 }}

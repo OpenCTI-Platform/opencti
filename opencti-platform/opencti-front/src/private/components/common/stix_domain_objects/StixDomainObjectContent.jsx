@@ -33,58 +33,58 @@ const styles = () => ({
   container: {
     width: '100%',
     height: '100%',
-    margin: '20px 0 0 0',
+    margin: '10px 0 0 0',
   },
   documentContainer: {
-    margin: '15px 0 0 0',
+    margin: '5px 0 0 0',
     overflow: 'scroll',
     whiteSpace: 'nowrap',
     minWidth: 'calc(100vw - 455px)',
-    minHeight: 'calc(100vh - 280px)',
+    minHeight: 'calc(100vh - 300px)',
     width: 'calc(100vw - 455px)',
-    height: 'calc(100vh - 280px)',
+    height: 'calc(100vh - 300px)',
     maxWidth: 'calc(100vw - 455px)',
-    maxHeight: 'calc(100vh - 280px)',
+    maxHeight: 'calc(100vh - 300px)',
     display: 'flex',
     justifyContent: 'center',
   },
   adjustedContainer: {
-    margin: '15px 0 0 0',
+    margin: '5px 0 0 0',
     overflow: 'hidden',
     whiteSpace: 'nowrap',
     minWidth: 'calc(100vw - 465px)',
-    minHeight: 'calc(100vh - 280px)',
+    minHeight: 'calc(100vh - 310px)',
     width: 'calc(100vw - 465px)',
-    height: 'calc(100vh - 280px)',
+    height: 'calc(100vh - 310px)',
     maxWidth: 'calc(100vw - 465px)',
-    maxHeight: 'calc(100vh - 280px)',
+    maxHeight: 'calc(100vh - 310px)',
     display: 'flex',
     justifyContent: 'center',
     position: 'relative',
   },
   documentContainerNavOpen: {
-    margin: '15px 0 0 0',
+    margin: '5px 0 0 0',
     overflow: 'scroll',
     whiteSpace: 'nowrap',
     minWidth: 'calc(100vw - 580px)',
-    minHeight: 'calc(100vh - 280px)',
+    minHeight: 'calc(100vh - 310px)',
     width: 'calc(100vw - 580px)',
-    height: 'calc(100vh - 280px)',
+    height: 'calc(100vh - 310px)',
     maxWidth: 'calc(100vw - 580px)',
-    maxHeight: 'calc(100vh - 280px)',
+    maxHeight: 'calc(100vh - 310px)',
     display: 'flex',
     justifyContent: 'center',
   },
   adjustedContainerNavOpen: {
-    margin: '15px 0 0 0',
+    margin: '5px 0 0 0',
     overflow: 'hidden',
     whiteSpace: 'nowrap',
     minWidth: 'calc(100vw - 590px)',
-    minHeight: 'calc(100vh - 280px)',
+    minHeight: 'calc(100vh - 310px)',
     width: 'calc(100vw - 590px)',
-    height: 'calc(100vh - 280px)',
+    height: 'calc(100vh - 310px)',
     maxWidth: 'calc(100vw - 590px)',
-    maxHeight: 'calc(100vh - 280px)',
+    maxHeight: 'calc(100vh - 310px)',
     display: 'flex',
     justifyContent: 'center',
     position: 'relative',
@@ -94,11 +94,26 @@ const styles = () => ({
     minHeight: '100%',
     margin: '20px 0 0 0',
     padding: '0 0 15px 0',
-    borderRadius: 6,
+    borderRadius: 4,
   },
 });
 
 const interval$ = interval(FIVE_SECONDS);
+
+export const stixDomainObjectContentFieldPatchMutation = graphql`
+  mutation StixDomainObjectContentFieldPatchMutation(
+    $id: ID!
+    $input: [EditInput]!
+    $commitMessage: String
+    $references: [String]
+  ) {
+    stixDomainObjectEdit(id: $id) {
+      fieldPatch(input: $input, commitMessage: $commitMessage, references: $references) {
+        ...StixDomainObjectContent_stixDomainObject
+      }
+    }
+  }
+`;
 
 const stixDomainObjectContentUploadExternalReferenceMutation = graphql`
   mutation StixDomainObjectContentUploadExternalReferenceMutation(
@@ -172,6 +187,8 @@ const getExportFiles = (stixDomainObject) => {
   );
 };
 
+const isContainerWithContent = (type) => ['Report', 'Grouping', 'Case-Incident', 'Case-Rfi', 'Case-Rft'].includes(type);
+
 class StixDomainObjectContentComponent extends Component {
   constructor(props) {
     const LOCAL_STORAGE_KEY = `stix-domain-object-content-${props.stixDomainObject.id}`;
@@ -181,12 +198,14 @@ class StixDomainObjectContentComponent extends Component {
       props.location,
       LOCAL_STORAGE_KEY,
     );
-    const files = getFiles(props.stixDomainObject);
-    const exportFiles = getExportFiles(props.stixDomainObject);
-    let currentFileId = R.head(files)?.id;
+    const { stixDomainObject } = props;
+    const isContentCompatible = isContainerWithContent(stixDomainObject.entity_type);
+    const files = getFiles(stixDomainObject);
+    const exportFiles = getExportFiles(stixDomainObject);
+    let currentFileId = isEmptyField(stixDomainObject.contentField) ? R.head(files)?.id : null;
     let isLoading = false;
     let onProgressExportFileName;
-    if (params.currentFileId) {
+    if (params.currentFileId && !params.contentSelected) {
       const onProgressExportFile = exportFiles.find(
         (file) => file.id === params.currentFileId && file.uploadStatus === 'progress',
       );
@@ -197,13 +216,14 @@ class StixDomainObjectContentComponent extends Component {
       currentFileId = params.currentFileId;
     }
     this.state = {
-      currentFileId,
+      currentFileId: isContentCompatible && params.contentSelected ? null : currentFileId,
+      contentSelected: isContentCompatible && (params.contentSelected || isEmptyField(currentFileId)),
       totalPdfPageNumber: null,
       currentPdfPageNumber: 1,
       pdfViewerZoom: 1.2,
       markdownSelectedTab: 'write',
-      initialContent: props.t('Write something awesome...'),
-      currentContent: props.t('Write something awesome...'),
+      initialContent: isContentCompatible && params.contentSelected ? stixDomainObject.contentField : props.t('Write something awesome...'),
+      currentContent: isContentCompatible && params.contentSelected ? stixDomainObject.contentField : props.t('Write something awesome...'),
       navOpen: localStorage.getItem('navOpen') === 'true',
       changed: false,
       isLoading,
@@ -296,19 +316,31 @@ class StixDomainObjectContentComponent extends Component {
     this.subscription.unsubscribe();
   }
 
+  handleSelectContent() {
+    const { stixDomainObject, t } = this.props;
+    this.setState({ currentFileId: null, changed: false, contentSelected: true, currentContent: stixDomainObject.contentField ?? t('Write something awesome...') }, () => {
+      this.saveView();
+    });
+  }
+
   handleSelectFile(fileId) {
-    this.setState({ currentFileId: fileId, changed: false }, () => {
+    this.setState({ currentFileId: fileId, changed: false, contentSelected: false }, () => {
       this.loadFileContent();
       this.saveView();
     });
   }
 
-  handleFileChange(fileName = null) {
-    this.props.relay.refetch({ id: this.props.stixDomainObject.id });
-    if (fileName && fileName === this.state.currentFileId) {
-      this.setState({ currentFileId: null }, () => this.saveView());
-    } else if (fileName) {
-      this.setState({ currentFileId: fileName }, () => {
+  handleFileChange(fileName = null, isDelete = false) {
+    const { t, stixDomainObject } = this.props;
+    this.props.relay.refetch({ id: stixDomainObject.id });
+    if (fileName && fileName === this.state.currentFileId && isDelete) {
+      this.setState({
+        currentFileId: null,
+        contentSelected: isContainerWithContent(stixDomainObject.entity_type),
+        currentContent: isContainerWithContent(stixDomainObject.entity_type) ? stixDomainObject.contentField ?? t('Write something awesome...') : '',
+      }, () => this.saveView());
+    } else if (fileName && !isDelete) {
+      this.setState({ currentFileId: fileName, contentSelected: false }, () => {
         this.loadFileContent();
         this.saveView();
       });
@@ -357,7 +389,20 @@ class StixDomainObjectContentComponent extends Component {
       mutation: isExternalReference
         ? stixDomainObjectContentUploadExternalReferenceMutation
         : stixDomainObjectContentFilesUploadStixDomainObjectMutation,
-      variables: { file, id: currentId },
+      variables: { file, id: currentId, noTriggerImport: true },
+      onCompleted: () => this.setState({ changed: false }),
+    });
+  }
+
+  saveContent() {
+    const { id } = this.props.stixDomainObject;
+    const inputValues = [{ key: 'content', value: this.state.currentContent }];
+    commitMutation({
+      mutation: stixDomainObjectContentFieldPatchMutation,
+      variables: {
+        id,
+        input: inputValues,
+      },
       onCompleted: () => this.setState({ changed: false }),
     });
   }
@@ -380,6 +425,7 @@ class StixDomainObjectContentComponent extends Component {
 
   handleDownloadPdf() {
     const { currentFileId, currentContent } = this.state;
+    const { stixDomainObject } = this.props;
     const regex = /<img[^>]+src=(\\?["'])[^'"]+\.gif\1[^>]*\/?>/gi;
     const htmlData = currentContent
       .replaceAll('id="undefined" ', '')
@@ -469,7 +515,7 @@ class StixDomainObjectContentComponent extends Component {
           bolditalics: `${url}${APP_BASE_PATH}/static/ext/Roboto-BoldItalic.ttf`,
         },
       };
-      const fragment = currentFileId.split('/');
+      const fragment = (currentFileId ?? stixDomainObject.name).split('/');
       const currentName = R.last(fragment);
       pdfMake.createPdf(pdfData, null, fonts).download(`${currentName}.pdf`);
     });
@@ -477,7 +523,6 @@ class StixDomainObjectContentComponent extends Component {
 
   render() {
     const { classes, stixDomainObject, t } = this.props;
-
     const {
       currentFileId,
       totalPdfPageNumber,
@@ -486,28 +531,29 @@ class StixDomainObjectContentComponent extends Component {
       markdownSelectedTab,
       navOpen,
       changed,
+      contentSelected,
     } = this.state;
-
     const files = getFiles(stixDomainObject);
     const exportFiles = getExportFiles(stixDomainObject);
     const currentUrl = currentFileId
       && `${APP_BASE_PATH}/storage/view/${encodeURIComponent(currentFileId)}`;
     const currentGetUrl = currentFileId
       && `${APP_BASE_PATH}/storage/get/${encodeURIComponent(currentFileId)}`;
-
     const currentFile = currentFileId
       && [...files, ...exportFiles].find((n) => n.id === currentFileId);
     const currentFileType = currentFile && currentFile.metaData.mimetype;
-
     const { innerHeight } = window;
-    const height = innerHeight - 190;
-
+    const height = innerHeight - 270;
+    const isContentCompatible = isContainerWithContent(stixDomainObject.entity_type);
     return (
       <div className={classes.container}>
         <StixDomainObjectContentFiles
           stixDomainObjectId={stixDomainObject.id}
+          content={isContentCompatible ? stixDomainObject.contentField ?? '' : null}
+          contentSelected={contentSelected}
           files={files}
           exportFiles={exportFiles}
+          handleSelectContent={this.handleSelectContent.bind(this)}
           handleSelectFile={this.handleSelectFile.bind(this)}
           handleSelectExportFile={this.handleSelectFile.bind(this)}
           currentFileId={currentFileId}
@@ -542,12 +588,12 @@ class StixDomainObjectContentComponent extends Component {
                 </div>
               </>
             )}
-            {currentFileType === 'text/html' && (
+            {(currentFileType === 'text/html' || contentSelected) && (
               <>
                 <StixDomainObjectContentBar
                   directDownload={currentGetUrl}
                   handleDownloadPdf={this.handleDownloadPdf.bind(this)}
-                  handleSave={this.saveFile.bind(this)}
+                  handleSave={() => (contentSelected ? this.saveContent() : this.saveFile())}
                   changed={changed}
                   navOpen={navOpen}
                 />
@@ -565,7 +611,7 @@ class StixDomainObjectContentComponent extends Component {
                       },
                     }}
                     data={currentContent}
-                    onChange={(event, editor) => {
+                    onChange={(_, editor) => {
                       this.onHtmlFieldChange(editor.getData());
                     }}
                   />
@@ -698,6 +744,37 @@ const StixDomainObjectContent = createRefetchContainer(
     stixDomainObject: graphql`
       fragment StixDomainObjectContent_stixDomainObject on StixDomainObject {
         id
+        entity_type
+        ... on Report {
+          name
+          description
+          contentField: content
+          content_mapping
+          editContext {
+            name
+            focusOn
+          }
+        }
+        ... on Case {
+          name
+          description
+          contentField: content
+          content_mapping
+          editContext {
+            name
+            focusOn
+          }
+        }
+        ... on Grouping {
+          name
+          description
+          contentField: content
+          content_mapping
+          editContext {
+            name
+            focusOn
+          }
+        }
         importFiles(first: 500) {
           edges {
             node {

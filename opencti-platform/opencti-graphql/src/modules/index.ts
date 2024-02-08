@@ -91,5 +91,6 @@ import './ingestion/ingestion-csv-graphql';
 import './indicator/indicator-graphql';
 import './organization/organization-graphql';
 import './internal/csvMapper/csvMapper-graphql';
+import './ai/ai-graphql';
 // import './internal/document/document-graphql'; # Not needed as document is not fully registered
 // endregion

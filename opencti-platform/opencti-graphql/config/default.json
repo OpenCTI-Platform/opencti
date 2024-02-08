@@ -102,10 +102,12 @@
     "created_by_based": false
   },
   "ai": {
-    "mistralai_endpoint": "",
-    "mistralai_token": "",
-    "openai_endpoint": "",
-    "openai_token": ""
+    "enabled": true,
+    "type": "mistralai",
+    "endpoint": "",
+    "token": "",
+    "model": "",
+    "model_images": ""
   },
   "xtm": {
     "openbas_url": "",

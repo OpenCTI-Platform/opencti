@@ -29,6 +29,7 @@ import SettingsMessages from './settings_messages/SettingsMessages';
 import SettingsAnalytics from './settings_analytics/SettingsAnalytics';
 import ItemBoolean from '../../../components/ItemBoolean';
 import { availableLanguage } from '../../../components/AppIntlProvider';
+import Breadcrumbs from '../../../components/Breadcrumps';
 
 const useStyles = makeStyles(() => ({
   container: {
@@ -39,7 +40,7 @@ const useStyles = makeStyles(() => ({
     minHeight: '100%',
     margin: '10px 0 0 0',
     padding: 20,
-    borderRadius: 6,
+    borderRadius: 4,
   },
   button: {
     float: 'right',
@@ -78,6 +79,10 @@ const settingsQuery = graphql`
       platform_theme_light_logo
       platform_theme_light_logo_collapsed
       platform_theme_light_logo_login
+      platform_ai_enabled
+      platform_ai_type
+      platform_ai_model
+      platform_ai_has_token
       platform_organization {
         id
         name
@@ -290,6 +295,7 @@ const Settings = () => {
             );
             return (
               <>
+                <Breadcrumbs variant="object" elements={[{ label: t_i18n('Settings') }, { label: t_i18n('Parameters'), current: true }]} />
                 <Grid container={true} spacing={3}>
                   <Grid item={true} xs={6}>
                     <Typography variant="h4" gutterBottom={true}>
@@ -444,7 +450,7 @@ const Settings = () => {
                               <ListItem divider={true}>
                                 <ListItemText primary={t_i18n('Version')} />
                                 <ItemBoolean
-                                  variant="inList"
+                                  variant="large"
                                   neutralLabel={version}
                                   status={null}
                                 />
@@ -452,7 +458,7 @@ const Settings = () => {
                               <ListItem divider={true}>
                                 <ListItemText primary={t_i18n('Edition')} />
                                 <ItemBoolean
-                                  variant="inList"
+                                  variant="large"
                                   neutralLabel={
                                     isEnterpriseEdition
                                       ? t_i18n('Enterprise')
@@ -466,7 +472,7 @@ const Settings = () => {
                                   primary={t_i18n('Architecture mode')}
                                 />
                                 <ItemBoolean
-                                  variant="inList"
+                                  variant="large"
                                   neutralLabel={
                                     settings.platform_cluster.instances_number
                                     > 1
@@ -481,11 +487,25 @@ const Settings = () => {
                                   primary={t_i18n('Number of node(s)')}
                                 />
                                 <ItemBoolean
-                                  variant="inList"
+                                  variant="large"
                                   neutralLabel={
                                     `${settings.platform_cluster.instances_number}`
                                   }
                                   status={null}
+                                />
+                              </ListItem>
+                              <ListItem divider={true}>
+                                <ListItemText
+                                  primary={t_i18n('AI Powered')}
+                                />
+                                <ItemBoolean
+                                  variant="large"
+                                  label={
+                                    // eslint-disable-next-line no-nested-ternary
+                                  !settings.platform_ai_enabled ? t_i18n('Disabled') : settings.platform_ai_has_token
+                                    ? settings.platform_ai_type : `${settings.platform_ai_type} - ${t_i18n('Missing token')}`}
+                                  status={settings.platform_ai_enabled && settings.platform_ai_has_token}
+                                  tooltip={settings.platform_ai_has_token ? `${settings.platform_ai_type} - ${settings.platform_ai_model}` : t_i18n('The token is missing in your platform configuration, please ask your Filigran representative to provide you with it or with on-premise deployment instructions. Your can open a support ticket to do so.')}
                                 />
                               </ListItem>
                               <ListItem divider={true}>
@@ -970,7 +990,7 @@ const Settings = () => {
                             <ListItem key={module.id} divider={true}>
                               <ListItemText primary={t_i18n(module.id)} />
                               <ItemBoolean
-                                variant="inList"
+                                variant="large"
                                 label={module.enable ? t_i18n('Enabled') : t_i18n('Disabled')}
                                 status={status}
                               />
@@ -981,7 +1001,7 @@ const Settings = () => {
                           <ListItem key={dep.name} divider={true}>
                             <ListItemText primary={t_i18n(dep.name)} />
                             <ItemBoolean
-                              variant="inList"
+                              variant="large"
                               neutralLabel={dep.version}
                               status={null}
                             />

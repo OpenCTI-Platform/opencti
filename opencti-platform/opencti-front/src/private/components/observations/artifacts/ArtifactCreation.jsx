@@ -141,10 +141,10 @@ const ArtifactCreation = ({
   };
 
   return (
-    <div>
+    <>
       <Fab
         onClick={handleOpen}
-        color="secondary"
+        color="primary"
         aria-label="Add"
         className={classes.createButton}
       >
@@ -240,7 +240,7 @@ const ArtifactCreation = ({
           </Formik>
         </div>
       </Drawer>
-    </div>
+    </>
   );
 };
 

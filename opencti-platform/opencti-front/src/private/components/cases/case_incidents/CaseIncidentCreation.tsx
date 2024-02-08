@@ -195,7 +195,7 @@ export const CaseIncidentCreationForm: FunctionComponent<IncidentFormProps> = ({
             label={t_i18n('Name')}
             fullWidth={true}
             detectDuplicate={['Case-Incident']}
-            style={{ marginBottom: '20px' }}
+            askAi={true}
           />
           <Field
             component={DateTimePickerField}
@@ -245,12 +245,14 @@ export const CaseIncidentCreationForm: FunctionComponent<IncidentFormProps> = ({
             multiline={true}
             rows="4"
             style={fieldSpacingContainerStyle}
+            askAi={true}
           />
           <Field
             component={RichTextField}
             name="content"
             label={t_i18n('Content')}
             fullWidth={true}
+            askAi={true}
             style={{
               ...fieldSpacingContainerStyle,
               minHeight: 200,

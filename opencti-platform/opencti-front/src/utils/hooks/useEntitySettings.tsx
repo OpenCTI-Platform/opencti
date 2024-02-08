@@ -48,6 +48,12 @@ const useEntitySettings = (entityType?: string | string[]): EntitySetting[] => {
     .filter(({ target_type }) => (entityType ? entityTypes.includes(target_type) : true));
 };
 
+export const useHiddenEntities = () => {
+  const { me } = useAuth();
+  const platformHiddenTypes = useEntitySettings().filter((n) => n.platform_hidden_type === true).map((n) => n.target_type);
+  return [...platformHiddenTypes, ...me.default_hidden_types];
+};
+
 export const useIsHiddenEntities = (...types: string[]): boolean => {
   const { me } = useAuth();
   return useEntitySettings(types)

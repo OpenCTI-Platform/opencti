@@ -1,7 +1,7 @@
 import { Field, FieldProps } from 'formik';
 import React, { FunctionComponent } from 'react';
 import { Grid, MenuItem, Select, SelectChangeEvent, Slider } from '@mui/material';
-import TextField from './TextField';
+import SimpleTextField from './SimpleTextField';
 import { SubscriptionFocus } from './Subscription';
 import { buildScaleLevel, useLevel } from '../utils/hooks/useScale';
 
@@ -61,7 +61,7 @@ InputSliderFieldProps & FieldProps
         <Grid container={true} spacing={3} >
           <Grid item={true} xs={6}>
             <Field
-              component={TextField}
+              component={SimpleTextField}
               fullWidth
               type="number"
               name={name}
@@ -117,7 +117,7 @@ InputSliderFieldProps & FieldProps
       <Grid container={true} spacing={3} >
         <Grid item={true} xs={6}>
           <Field
-            component={TextField}
+            component={SimpleTextField}
             fullWidth
             type="number"
             name={name}

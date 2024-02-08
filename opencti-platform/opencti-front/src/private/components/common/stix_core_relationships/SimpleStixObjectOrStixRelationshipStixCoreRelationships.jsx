@@ -21,7 +21,7 @@ const styles = (theme) => ({
     minHeight: '100%',
     margin: '10px 0 0 0',
     padding: 0,
-    borderRadius: 6,
+    borderRadius: 4,
   },
   item: {
     height: 50,

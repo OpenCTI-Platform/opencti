@@ -38,11 +38,11 @@ const useStyles = makeStyles((theme) => ({
     minHeight: '100%',
     margin: '10px 0 0 0',
     padding: '15px',
-    borderRadius: 6,
+    borderRadius: 4,
     position: 'relative',
   },
   progress: {
-    borderRadius: 5,
+    borderRadius: 4,
     height: 10,
   },
   filter: {

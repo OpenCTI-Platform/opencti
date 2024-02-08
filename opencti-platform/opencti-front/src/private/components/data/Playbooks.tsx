@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2021-2023 Filigran SAS
+Copyright (c) 2021-2024 Filigran SAS
 
 This file is part of the OpenCTI Enterprise Edition ("EE") and is
 licensed under the OpenCTI Non-Commercial License (the "License");
@@ -41,10 +41,8 @@ const useStyles = makeStyles<Theme>(() => ({
 
 const Playbooks: FunctionComponent = () => {
   const classes = useStyles();
-
   const isEnterpriseEdition = useEnterpriseEdition();
   const { t_i18n } = useFormatter();
-
   const { viewStorage, helpers, paginationOptions } = usePaginationLocalStorage<PlaybooksLinesPaginationQuery$variables>(
     LOCAL_STORAGE_KEY_PLAYBOOKS,
     {

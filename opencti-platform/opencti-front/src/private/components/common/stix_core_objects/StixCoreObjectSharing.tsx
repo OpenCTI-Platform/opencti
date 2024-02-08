@@ -44,6 +44,7 @@ const useStyles = makeStyles<Theme>(() => ({
     fontSize: 12,
     lineHeight: '12px',
     height: 28,
+    borderRadius: 4,
   },
   organization: {
     margin: '0 7px 0 0',
@@ -51,6 +52,7 @@ const useStyles = makeStyles<Theme>(() => ({
     fontSize: 12,
     lineHeight: '12px',
     height: 28,
+    borderRadius: 4,
   },
 }));
 
@@ -158,7 +160,7 @@ const StixCoreObjectSharing: FunctionComponent<ContainerHeaderSharedProps> = ({
     const edges = stixCoreObject?.objectOrganization ?? [];
     if (variant === 'header') {
       return (
-        <React.Fragment>
+        <>
           {edges.map((edge) => (
             <Tooltip key={edge.id} title={edge.name}>
               <Chip
@@ -222,11 +224,11 @@ const StixCoreObjectSharing: FunctionComponent<ContainerHeaderSharedProps> = ({
               </Dialog>
             )}
           </Formik>
-        </React.Fragment>
+        </>
       );
     }
     return (
-      <React.Fragment>
+      <>
         <Typography variant="h3" gutterBottom={true} style={{ float: 'left' }}>
           {t_i18n('Organizations sharing')}
         </Typography>
@@ -293,7 +295,7 @@ const StixCoreObjectSharing: FunctionComponent<ContainerHeaderSharedProps> = ({
             </Dialog>
           )}
         </Formik>
-      </React.Fragment>
+      </>
     );
   };
   return (

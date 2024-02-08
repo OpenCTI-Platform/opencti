@@ -2,7 +2,7 @@ import React, { FunctionComponent, useState } from 'react';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 import Button from '@mui/material/Button';
-import IconButton from '@mui/material/IconButton';
+import ToggleButton from '@mui/material/ToggleButton';
 import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
@@ -65,15 +65,13 @@ const DataComponentPopover: FunctionComponent<{ dataComponentId: string }> = ({
   const handleCloseEdit = () => setDisplayEdit(false);
   return (
     <>
-      <IconButton
+      <ToggleButton
+        value="popover"
+        size="small"
         onClick={handleOpen}
-        aria-haspopup="true"
-        style={{ marginTop: 3 }}
-        size="large"
-        color="primary"
       >
-        <MoreVert />
-      </IconButton>
+        <MoreVert fontSize="small" color="primary" />
+      </ToggleButton>
       <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleClose}>
         <MenuItem onClick={handleOpenEdit}>{t_i18n('Update')}</MenuItem>
         <Security needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}>

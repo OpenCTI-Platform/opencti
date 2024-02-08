@@ -29,6 +29,7 @@ import { ENTITY_TYPE_MANAGER_CONFIGURATION } from '../modules/managerConfigurati
 import { ENTITY_TYPE_WORKSPACE } from '../modules/workspace/workspace-types';
 import { ENTITY_TYPE_NOTIFIER } from '../modules/notifier/notifier-types';
 import { UnknownError, UnsupportedError } from './errors';
+import { AI_BUS } from '../modules/ai/ai-types';
 
 // https://golang.org/src/crypto/x509/root_linux.go
 const LINUX_CERTFILES = [
@@ -169,6 +170,9 @@ export const BUS_TOPICS = {
   },
   [NOTIFICATION_NUMBER]: {
     EDIT_TOPIC: `${TOPIC_PREFIX}ENTITY_TYPE_NOTIFICATION_NUMBER_EDIT_TOPIC`,
+  },
+  [AI_BUS]: {
+    EDIT_TOPIC: `${TOPIC_PREFIX}ENTITY_TYPE_AI_BUS_EDIT_TOPIC`,
   },
 };
 

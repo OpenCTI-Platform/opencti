@@ -6,12 +6,12 @@ import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import ListItemText from '@mui/material/ListItemText';
 import Drawer from '@mui/material/Drawer';
-import ListSubheader from '@mui/material/ListSubheader';
 import ListItemIcon from '@mui/material/ListItemIcon';
-import { FilePdfBox, LanguageHtml5, NoteTextOutline, FileOutline, LanguageMarkdownOutline } from 'mdi-material-ui';
+import { FileOutline, FilePdfBox, LanguageHtml5, LanguageMarkdownOutline, NoteTextOutline } from 'mdi-material-ui';
 import moment from 'moment';
 import IconButton from '@mui/material/IconButton';
-import { DeleteOutlined, AddOutlined } from '@mui/icons-material';
+import Tooltip from '@mui/material/Tooltip';
+import { AddOutlined, DeleteOutlined } from '@mui/icons-material';
 import { Field, Form, Formik } from 'formik';
 import Dialog from '@mui/material/Dialog';
 import DialogTitle from '@mui/material/DialogTitle';
@@ -20,13 +20,18 @@ import DialogActions from '@mui/material/DialogActions';
 import Button from '@mui/material/Button';
 import * as Yup from 'yup';
 import { graphql } from 'react-relay';
-import Divider from '@mui/material/Divider';
+import ListItemButton from '@mui/material/ListItemButton';
+import Typography from '@mui/material/Typography';
+import MenuItem from '@mui/material/MenuItem';
+import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
 import inject18n from '../../../../components/i18n';
 import FileUploader from '../files/FileUploader';
-import FileLine, { FileLineDeleteMutation } from '../files/FileLine';
+import { FileLineDeleteMutation } from '../files/FileLine';
 import { commitMutation } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
 import withHooksSettingsMessagesBannerHeight from '../../settings/settings_messages/withHooksSettingsMessagesBannerHeight';
+import SelectField from '../../../../components/SelectField';
+import { fieldSpacingContainerStyle } from '../../../../utils/field';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -36,27 +41,10 @@ const styles = (theme) => ({
     position: 'fixed',
     zIndex: 1100,
   },
-  drawerPaperExports: {
-    minHeight: '100vh',
-    width: 250,
-    right: 310,
-    padding: '0 0 20px 0',
-    transition: theme.transitions.create('right', {
-      easing: theme.transitions.easing.easeOut,
-      duration: theme.transitions.duration.leavingScreen,
-    }),
-  },
-  listIcon: {
-    marginRight: 0,
-  },
-  itemField: {
-    padding: '0 15px 0 15px',
-  },
   toolbar: theme.mixins.toolbar,
   subHeader: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: 5,
+    margin: '5px 0 0 20px',
+    width: '100%',
   },
 });
 
@@ -64,9 +52,10 @@ export const stixDomainObjectContentFilesUploadStixDomainObjectMutation = graphq
   mutation StixDomainObjectContentFilesUploadStixDomainObjectMutation(
     $id: ID!
     $file: Upload!
+    $noTriggerImport: Boolean
   ) {
     stixDomainObjectEdit(id: $id) {
-      importPush(file: $file, noTriggerImport: true) {
+      importPush(file: $file, noTriggerImport: $noTriggerImport) {
         id
         name
         uploadStatus
@@ -102,16 +91,15 @@ class StixDomainObjectContentFiles extends Component {
     this.state = {
       deleting: null,
       displayCreate: false,
-      selectedType: null,
     };
   }
 
-  handleOpenCreate(selectedType) {
-    this.setState({ displayCreate: true, selectedType });
+  handleOpenCreate() {
+    this.setState({ displayCreate: true });
   }
 
   handleCloseCreate() {
-    this.setState({ displayCreate: false, selectedType: null });
+    this.setState({ displayCreate: false });
   }
 
   renderNoFiles() {
@@ -134,7 +122,7 @@ class StixDomainObjectContentFiles extends Component {
       },
       onCompleted: () => {
         this.setState({ deleting: null });
-        this.props.onFileChange(fileName);
+        this.props.onFileChange(fileName, true);
       },
     });
   }
@@ -145,25 +133,26 @@ class StixDomainObjectContentFiles extends Component {
 
   onSubmit(values, { setSubmitting, resetForm }) {
     const { t, stixDomainObjectId } = this.props;
-    let { name } = values;
-    if (this.state.selectedType === 'text/plain' && !name.endsWith('.txt')) {
+    // eslint-disable-next-line prefer-const
+    let { name, type } = values;
+    if (type === 'text/plain' && !name.endsWith('.txt')) {
       name += '.txt';
     } else if (
-      this.state.selectedType === 'text/html'
+      type === 'text/html'
       && !name.endsWith('.html')
     ) {
       name += '.html';
     } else if (
-      this.state.selectedType === 'text/markdown'
+      type === 'text/markdown'
       && !name.endsWith('.md')
     ) {
       name += '.md';
     }
     const blob = new Blob([t('Write something awesome...')], {
-      type: this.state.selectedType,
+      type,
     });
     const file = new File([blob], name, {
-      type: this.state.selectedType,
+      type,
     });
     commitMutation({
       mutation: stixDomainObjectContentFilesUploadStixDomainObjectMutation,
@@ -178,13 +167,32 @@ class StixDomainObjectContentFiles extends Component {
     });
   }
 
+  // eslint-disable-next-line class-methods-use-this
+  renderIcon(mimeType) {
+    switch (mimeType) {
+      case 'text/plain':
+        return <NoteTextOutline />;
+      case 'application/pdf':
+        return <FilePdfBox />;
+      case 'text/markdown':
+        return <LanguageMarkdownOutline />;
+      case 'text/html':
+        return <LanguageHtml5 />;
+      default:
+        return <FileOutline />;
+    }
+  }
+
   render() {
     const {
       classes,
       t,
       files,
       stixDomainObjectId,
+      content,
       handleSelectFile,
+      handleSelectContent,
+      contentSelected,
       fld,
       currentFileId,
       onFileChange,
@@ -193,15 +201,7 @@ class StixDomainObjectContentFiles extends Component {
       handleSelectExportFile,
     } = this.props;
     const { deleting, displayCreate } = this.state;
-    const textFiles = files.filter((n) => n.metaData.mimetype === 'text/plain');
-    const htmlFiles = files.filter((n) => n.metaData.mimetype === 'text/html');
-    const markdownFiles = files.filter(
-      (n) => n.metaData.mimetype === 'text/markdown',
-    );
-    const pdfFiles = files.filter(
-      (n) => n.metaData.mimetype === 'application/pdf',
-    );
-
+    const filesList = [...files, ...exportFiles.map((n) => ({ ...n, perspective: 'export' }))].sort((a, b) => b.name.localeCompare(a.name));
     return (
       <Drawer
         variant="permanent"
@@ -211,274 +211,84 @@ class StixDomainObjectContentFiles extends Component {
         classes={{ paper: classes.drawerPaper }}
       >
         <div className={classes.toolbar} />
-        <List
-          style={{ marginBottom: 30, marginTop: settingsMessagesBannerHeight }}
-          subheader={
-            <ListSubheader component="div">
-              <div style={{ float: 'left', margin: '5px 5px 0 0' }}>
-                <FilePdfBox />
-              </div>
-              <div style={{ float: 'left' }}>{t('Uploaded PDF files')}</div>
-              <div style={{ float: 'right' }}>
-                <FileUploader
-                  entityId={stixDomainObjectId}
-                  onUploadSuccess={onFileChange.bind(this)}
-                  accept="application/pdf"
-                  size="small"
-                  nameInCallback={true}
-                />
-              </div>
-            </ListSubheader>
-          }
-        >
-          {pdfFiles.length > 0
-            ? pdfFiles.map((file) => (
-              <ListItem
-                key={file.id}
-                dense={true}
-                button={true}
-                divider={true}
-                selected={file.id === currentFileId}
-                onClick={handleSelectFile.bind(this, file.id)}
-                disabled={deleting === file.id}
-                secondaryAction={
-                  <IconButton
-                    onClick={this.submitDelete.bind(this, file.id)}
-                    size="small"
-                  >
-                    <DeleteOutlined color="primary" fontSize="small" />
-                  </IconButton>
-                }
-              >
-                <ListItemIcon>
-                  <div style={{ float: 'right' }}>
-                    <FileOutline />
-                  </div>
-                </ListItemIcon>
-                <ListItemText
-                  primary={file.name}
-                  secondary={fld(R.propOr(moment(), 'lastModified', file))}
-                />
-              </ListItem>
-            )).reverse()
-            : this.renderNoFiles()}
-        </List>
-        <Divider />
-        <List
-          style={{ marginBottom: 30 }}
-          subheader={
-            <ListSubheader
-              component="div"
-              classes={{
-                root: classes.subHeader,
-              }}
+        {!R.isNil(content) && (
+        <>
+          <Typography variant="body2" style={{ margin: '5px 0 0 15px' }}>{t('Content')}</Typography>
+          <List style={{ marginBottom: 30, marginTop: settingsMessagesBannerHeight }}>
+            <ListItemButton
+              dense={true}
+              divider={true}
+              selected={contentSelected}
+              onClick={handleSelectContent.bind(this)}
             >
-              <FilePdfBox />
-              <div>{t('Exported PDF files ')}</div>
-            </ListSubheader>
-          }
-        >
-          {exportFiles.map((file) => {
+              <ListItemIcon>
+                <FileOutline fontSize="small" />
+              </ListItemIcon>
+              <ListItemText
+                primary={t('Main content')}
+                secondary={t('Embedded content in the entity')}
+              />
+            </ListItemButton>
+          </List>
+        </>
+        )}
+        <div>
+          <Typography variant="body2" style={{ margin: '5px 0 0 15px', float: 'left' }}>{t('Files')}</Typography>
+          <div style={{ float: 'right', display: 'flex', margin: '-4px 15px 0 0' }}>
+            <FileUploader
+              entityId={stixDomainObjectId}
+              onUploadSuccess={onFileChange.bind(this)}
+              size="small"
+              nameInCallback={true}
+            />
+            <IconButton
+              onClick={this.handleOpenCreate.bind(this)}
+              color="primary"
+              size="small"
+            >
+              <AddOutlined />
+            </IconButton>
+          </div>
+        </div>
+        <List style={{ marginBottom: 30 }}>
+          {filesList.map((file) => {
             return (
-              file && (
-                <FileLine
-                  key={file?.id}
-                  file={file}
+              <Tooltip key={file.id} title={file.name}>
+                <ListItemButton
+                  dense={true}
                   divider={true}
-                  onClick={handleSelectExportFile.bind(this, file.id)}
-                  disableImport={true}
-                  disabled={deleting === file?.id}
-                  directDownload={true}
-                />
-              )
+                  selected={file.id === currentFileId}
+                  onClick={() => (file.perspective === 'export' ? handleSelectExportFile(file.id) : handleSelectFile(file.id))}
+                  disabled={deleting === file.id}
+                >
+                  <ListItemIcon>
+                    {this.renderIcon(file.metaData.mimetype)}
+                  </ListItemIcon>
+                  <ListItemText
+                    sx={{
+                      '.MuiListItemText-primary': {
+                        overflowX: 'hidden',
+                        textOverflow: 'ellipsis',
+                        whiteSpace: 'nowrap',
+                        marginRight: '20px',
+                      },
+                    }}
+                    primary={file.name}
+                    secondary={fld(R.propOr(moment(), 'lastModified', file))}
+                  />
+                  <ListItemSecondaryAction>
+                    <IconButton onClick={this.submitDelete.bind(this, file.id)} size="small">
+                      <DeleteOutlined color="primary" fontSize="small"/>
+                    </IconButton>
+                  </ListItemSecondaryAction>
+                </ListItemButton>
+              </Tooltip>
             );
-          }).reverse()}
-
-          {exportFiles.length === 0 && this.renderNoFiles()}
-        </List>
-        <Divider />
-        <List
-          style={{ marginBottom: 30 }}
-          subheader={
-            <ListSubheader component="div">
-              <div style={{ float: 'left', margin: '5px 5px 0 0' }}>
-                <NoteTextOutline />
-              </div>
-              <div style={{ float: 'left' }}>{t('Text files')}</div>
-              <div style={{ float: 'right' }}>
-                <FileUploader
-                  entityId={stixDomainObjectId}
-                  onUploadSuccess={onFileChange.bind(this)}
-                  accept="text/plain"
-                  size="small"
-                  nameInCallback={true}
-                />
-                <div style={{ float: 'right' }}>
-                  <IconButton
-                    onClick={this.handleOpenCreate.bind(this, 'text/plain')}
-                    color="secondary"
-                  >
-                    <AddOutlined />
-                  </IconButton>
-                </div>
-              </div>
-            </ListSubheader>
-          }
-        >
-          {textFiles.length > 0
-            ? textFiles.map((file) => (
-              <ListItem
-                key={file.id}
-                dense={true}
-                divider={true}
-                button={true}
-                selected={file.id === currentFileId}
-                onClick={handleSelectFile.bind(this, file.id)}
-                classes={{ root: classes.item }}
-                disabled={deleting === file.id}
-                secondaryAction={
-                  <IconButton
-                    onClick={this.submitDelete.bind(this, file.id)}
-                    size="small"
-                  >
-                    <DeleteOutlined color="primary" fontSize="small" />
-                  </IconButton>
-                }
-              >
-                <ListItemIcon>
-                  <FileOutline />
-                </ListItemIcon>
-                <ListItemText
-                  primary={file.name}
-                  secondary={fld(R.propOr(moment(), 'lastModified', file))}
-                />
-              </ListItem>
-            ))
-            : this.renderNoFiles()}
-        </List>
-        <Divider />
-        <List
-          style={{ marginBottom: 30 }}
-          subheader={
-            <ListSubheader component="div">
-              <div style={{ float: 'left', margin: '5px 5px 0 0' }}>
-                <LanguageHtml5 />
-              </div>
-              <div style={{ float: 'left' }}>{t('HTML files')}</div>
-              <div style={{ float: 'right' }}>
-                <FileUploader
-                  entityId={stixDomainObjectId}
-                  onUploadSuccess={onFileChange.bind(this)}
-                  accept="text/html"
-                  size="small"
-                  nameInCallback={true}
-                />
-                <div style={{ float: 'right' }}>
-                  <IconButton
-                    onClick={this.handleOpenCreate.bind(this, 'text/html')}
-                    color="secondary"
-                  >
-                    <AddOutlined />
-                  </IconButton>
-                </div>
-              </div>
-            </ListSubheader>
-          }
-        >
-          {htmlFiles.length > 0
-            ? htmlFiles.map((file) => (
-              <ListItem
-                key={file.id}
-                dense={true}
-                button={true}
-                divider={true}
-                selected={file.id === currentFileId}
-                onClick={handleSelectFile.bind(this, file.id)}
-                classes={{ root: classes.item }}
-                disabled={deleting === file.id}
-                secondaryAction={
-                  <IconButton
-                    onClick={this.submitDelete.bind(this, file.id)}
-                    size="small"
-                  >
-                    <DeleteOutlined color="primary" fontSize="small"/>
-                  </IconButton>
-                }
-              >
-                <ListItemIcon>
-                  <FileOutline />
-                </ListItemIcon>
-                <ListItemText
-                  primary={file.name}
-                  secondary={fld(R.propOr(moment(), 'lastModified', file))}
-                />
-              </ListItem>
-            ))
-            : this.renderNoFiles()}
-        </List>
-        <Divider />
-        <List
-          style={{ marginBottom: 30 }}
-          subheader={
-            <ListSubheader component="div">
-              <div style={{ float: 'left', margin: '5px 5px 0 0' }}>
-                <LanguageMarkdownOutline />
-              </div>
-              <div style={{ float: 'left' }}>{t('Markdown files')}</div>
-              <div style={{ float: 'right' }}>
-                <FileUploader
-                  entityId={stixDomainObjectId}
-                  onUploadSuccess={onFileChange.bind(this)}
-                  accept="text/markdown"
-                  size="small"
-                  nameInCallback={true}
-                />
-                <div style={{ float: 'right' }}>
-                  <IconButton
-                    onClick={this.handleOpenCreate.bind(this, 'text/markdown')}
-                    color="secondary"
-                  >
-                    <AddOutlined />
-                  </IconButton>
-                </div>
-              </div>
-            </ListSubheader>
-          }
-        >
-          {markdownFiles.length > 0
-            ? markdownFiles.map((file) => (
-              <ListItem
-                key={file.id}
-                dense={true}
-                button={true}
-                divider={true}
-                selected={file.id === currentFileId}
-                onClick={handleSelectFile.bind(this, file.id)}
-                classes={{ root: classes.item }}
-                disabled={deleting === file.id}
-                secondaryAction={
-                  <IconButton
-                    onClick={this.submitDelete.bind(this, file.id)}
-                    size="small"
-                  >
-                    <DeleteOutlined color="primary" fontSize="small"/>
-                  </IconButton>
-                }
-              >
-                <ListItemIcon>
-                  <FileOutline />
-                </ListItemIcon>
-                <ListItemText
-                  primary={file.name}
-                  secondary={fld(R.propOr(moment(), 'lastModified', file))}
-                />
-              </ListItem>
-            ))
-            : this.renderNoFiles()}
+          })}
         </List>
         <Formik
           enableReinitialize={true}
-          initialValues={{ name: '' }}
+          initialValues={{ name: '', type: 'text/html' }}
           validationSchema={fileValidation(t)}
           onSubmit={this.onSubmit.bind(this)}
           onReset={this.onReset.bind(this)}
@@ -500,6 +310,18 @@ class StixDomainObjectContentFiles extends Component {
                     label={t('Name')}
                     fullWidth={true}
                   />
+                  <Field
+                    component={SelectField}
+                    variant="standard"
+                    name="type"
+                    label={t('Type')}
+                    fullWidth={true}
+                    containerstyle={fieldSpacingContainerStyle}
+                  >
+                    <MenuItem value="text/html">{t('HTML')}</MenuItem>
+                    <MenuItem value="text/markdown">{t('Markdown')}</MenuItem>
+                    <MenuItem value="text/plain">{t('Text')}</MenuItem>
+                  </Field>
                 </DialogContent>
                 <DialogActions>
                   <Button onClick={handleReset} disabled={isSubmitting}>

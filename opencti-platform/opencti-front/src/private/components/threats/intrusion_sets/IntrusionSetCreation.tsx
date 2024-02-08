@@ -157,6 +157,7 @@ IntrusionSetFormProps
             name="name"
             label={t_i18n('Name')}
             fullWidth={true}
+            askAi={true}
             detectDuplicate={[
               'Threat-Actor',
               'Intrusion-Set',

@@ -3,6 +3,7 @@ import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 import Button from '@mui/material/Button';
 import IconButton from '@mui/material/IconButton';
+import ToggleButton from '@mui/material/ToggleButton';
 import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
@@ -36,6 +37,7 @@ interface NotePopoverProps {
   size?: 'medium' | 'large' | 'small' | undefined;
   note: StixCoreObjectOrStixCoreRelationshipNoteCard_node$data;
   paginationOptions: StixCoreObjectOrStixCoreRelationshipNotesCardsQuery$variables;
+  variant?: string;
 }
 
 const NotePopover: FunctionComponent<NotePopoverProps> = ({
@@ -44,6 +46,7 @@ const NotePopover: FunctionComponent<NotePopoverProps> = ({
   size,
   note,
   paginationOptions,
+  variant,
 }) => {
   const { t_i18n } = useFormatter();
   const navigate = useNavigate();
@@ -94,15 +97,25 @@ const NotePopover: FunctionComponent<NotePopoverProps> = ({
   };
   return (
     <>
-      <IconButton
-        onClick={handleOpen}
-        aria-haspopup="true"
-        size={size || 'large'}
-        style={{ marginTop: size === 'small' ? -3 : 3 }}
-        color="primary"
-      >
-        <MoreVert />
-      </IconButton>
+      {variant === 'inLine' ? (
+        <IconButton
+          onClick={handleOpen}
+          aria-haspopup="true"
+          size={size || 'large'}
+          style={{ marginTop: size === 'small' ? -3 : 3 }}
+          color="primary"
+        >
+          <MoreVert />
+        </IconButton>
+      ) : (
+        <ToggleButton
+          value="popover"
+          size="small"
+          onClick={handleOpen}
+        >
+          <MoreVert fontSize="small" color="primary" />
+        </ToggleButton>
+      )}
       <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleClose}>
         <MenuItem onClick={handleOpenEdit}>{t_i18n('Update')}</MenuItem>
         {handleOpenRemoveExternal && (

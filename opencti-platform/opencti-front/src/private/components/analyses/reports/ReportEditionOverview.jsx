@@ -216,6 +216,7 @@ const ReportEditionOverviewComponent = (props) => {
             fullWidth={true}
             onFocus={editor.changeFocus}
             onSubmit={handleSubmitField}
+            askAi={true}
             helperText={
               <SubscriptionFocus context={context} fieldName="name" />
             }
@@ -276,6 +277,7 @@ const ReportEditionOverviewComponent = (props) => {
             style={{ marginTop: 20 }}
             onFocus={editor.changeFocus}
             onSubmit={handleSubmitField}
+            askAi={true}
           />
           <ObjectAssigneeField
             name="objectAssignee"

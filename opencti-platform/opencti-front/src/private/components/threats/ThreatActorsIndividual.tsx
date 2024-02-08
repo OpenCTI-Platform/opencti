@@ -13,10 +13,13 @@ import {
 } from './threat_actors_individual/__generated__/ThreatActorsIndividualCardsPaginationQuery.graphql';
 import ThreatActorIndividualCreation from './threat_actors_individual/ThreatActorIndividualCreation';
 import { emptyFilterGroup } from '../../../utils/filters/filtersUtils';
+import Breadcrumbs from '../../../components/Breadcrumps';
+import { useFormatter } from '../../../components/i18n';
 
 const LOCAL_STORAGE_KEY_THREAT_ACTORS_INDIVIDUAL = 'threatActorsIndividuals';
 
 const ThreatActorsIndividual = () => {
+  const { t_i18n } = useFormatter();
   const { viewStorage, helpers, paginationOptions } = usePaginationLocalStorage<ThreatActorsIndividualCardsPaginationQuery$variables>(
     LOCAL_STORAGE_KEY_THREAT_ACTORS_INDIVIDUAL,
     {
@@ -118,6 +121,7 @@ const ThreatActorsIndividual = () => {
   };
   return (
     <>
+      <Breadcrumbs variant="list" elements={[{ label: t_i18n('Threats') }, { label: t_i18n('Threat actors (individual)'), current: true }]} />
       {renderCards()}
       <Security needs={[KNOWLEDGE_KNUPDATE]}>
         <ThreatActorIndividualCreation paginationOptions={paginationOptions} />

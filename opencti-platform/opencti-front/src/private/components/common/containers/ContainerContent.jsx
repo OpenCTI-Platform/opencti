@@ -65,7 +65,7 @@ const useStyles = makeStyles(() => ({
     minHeight: '100%',
     margin: '10px 0 0 0',
     padding: '15px',
-    borderRadius: 6,
+    borderRadius: 4,
   },
   clearButton: {
     float: 'right',
@@ -98,8 +98,8 @@ const ContainerContentComponent = ({ containerData }) => {
   }, []);
   const enableReferences = useIsEnforceReference(containerData.entity_type);
   const { innerHeight } = window;
-  const enrichedEditorHeight = innerHeight - 590;
-  const listHeight = innerHeight - 390;
+  const enrichedEditorHeight = innerHeight - 620;
+  const listHeight = innerHeight - 420;
   const queries = {
     fieldPatch: contentMutationFieldPatch,
   };

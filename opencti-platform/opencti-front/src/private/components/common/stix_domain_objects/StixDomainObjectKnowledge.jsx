@@ -22,7 +22,7 @@ const styles = (theme) => ({
   card: {
     width: '100%',
     marginBottom: 20,
-    borderRadius: 6,
+    borderRadius: 4,
     position: 'relative',
   },
   itemIcon: {
@@ -55,7 +55,7 @@ const styles = (theme) => ({
     minHeight: '100%',
     margin: '10px 0 70px 0',
     padding: '15px 15px 15px 15px',
-    borderRadius: 6,
+    borderRadius: 4,
   },
 });
 

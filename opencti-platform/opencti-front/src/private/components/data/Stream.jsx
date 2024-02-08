@@ -11,6 +11,7 @@ import ListLines from '../../../components/list_lines/ListLines';
 import StreamLines, { StreamLinesQuery } from './stream/StreamLines';
 import StreamCollectionCreation from './stream/StreamCollectionCreation';
 import SharingMenu from './SharingMenu';
+import Breadcrumbs from '../../../components/Breadcrumps';
 
 const styles = () => ({
   container: {
@@ -115,7 +116,7 @@ class Stream extends Component {
   }
 
   render() {
-    const { classes } = this.props;
+    const { classes, t } = this.props;
     const { view, sortBy, orderAsc, searchTerm } = this.state;
     const paginationOptions = {
       search: searchTerm,
@@ -124,6 +125,7 @@ class Stream extends Component {
     };
     return (
       <div className={classes.container}>
+        <Breadcrumbs variant="list" elements={[{ label: t('Data') }, { label: t('Data sharing') }, { label: t('Live streams'), current: true }]} />
         <SharingMenu/>
         {view === 'lines' ? this.renderLines(paginationOptions) : ''}
         <StreamCollectionCreation paginationOptions={paginationOptions}/>

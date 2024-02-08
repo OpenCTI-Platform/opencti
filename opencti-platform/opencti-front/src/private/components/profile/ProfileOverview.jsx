@@ -42,7 +42,7 @@ const styles = () => ({
     marginBottom: 30,
     padding: 20,
     textAlign: 'left',
-    borderRadius: 6,
+    borderRadius: 4,
     position: 'relative',
   },
 });

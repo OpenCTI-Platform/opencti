@@ -1179,6 +1179,10 @@ type Settings implements InternalObject & BasicObject {
   platform_openbas_url: String
   platform_openerm_url: String
   platform_openmtd_url: String
+  platform_ai_enabled: Boolean!
+  platform_ai_type: String
+  platform_ai_model: String
+  platform_ai_has_token: Boolean!
   platform_login_message: String
   platform_consent_message: String
   platform_consent_confirm_text: String
@@ -7045,6 +7049,7 @@ type Query {
   stix(id: String!): String
   enrichmentConnectors(type: String!): [Connector]
   about: AppInfo
+  aiEndpoints: [String]
   logsWorkerConfig: LogsWorkerConfig
   rabbitMQMetrics(prefix: String): RabbitMQMetrics
   elasticSearchMetrics: ElasticSearchMetrics
@@ -7355,6 +7360,7 @@ type Subscription {
   entitySetting(id: ID!): EntitySetting
   workspace(id: ID!): Workspace
   managerConfiguration(id: ID!): ManagerConfiguration
+  aiBus(id: ID!): AIBus
 }
 
 type WorkEditMutations {
@@ -8077,6 +8083,19 @@ type Mutation {
   csvMapperAdd(input: CsvMapperAddInput!): CsvMapper
   csvMapperDelete(id: ID!): ID
   csvMapperFieldPatch(id: ID!, input: [EditInput!]!): CsvMapper
+  aiContainerGenerateReport(id: ID!, containerId: String!, paragraphs: Int, tone: Tone, format: Format): String
+  aiThreatGenerateReport(id: ID!, threatId: String!, paragraphs: Int, tone: Tone, format: Format): String
+  aiVictimGenerateReport(id: ID!, victimId: String!, paragraphs: Int, tone: Tone, format: Format): String
+  aiSummarizeFiles(id: ID!, elementId: String!, paragraphs: Int, tone: Tone, format: Format, fileIds: [String]): String
+  aiConvertFilesToStix(id: ID!, elementId: String!, fileIds: [String]): String
+  aiConvertIndicator(id: ID!, indicatorId: String!, format: IndicatorFormat!): String
+  aiImproveWriting(id: ID!, content: String!, format: Format): String
+  aiFixSpelling(id: ID!, content: String!, format: Format): String
+  aiMakeShorter(id: ID!, content: String!, format: Format): String
+  aiMakeLonger(id: ID!, content: String!, format: Format): String
+  aiChangeTone(id: ID!, content: String!, format: Format, tone: Tone): String
+  aiSummarize(id: ID!, content: String!, format: Format): String
+  aiExplain(id: ID!, content: String!): String
 }
 
 type Channel implements BasicObject & StixObject & StixCoreObject & StixDomainObject {
@@ -11039,4 +11058,28 @@ input CsvMapperAddInput {
   separator: String!
   representations: String!
   skipLineChar: String
+}
+
+enum Tone {
+  technical
+  tactical
+  strategical
+}
+
+enum Format {
+  text
+  html
+  markdown
+  json
+}
+
+enum IndicatorFormat {
+  stix
+  sigma
+  yara
+}
+
+type AIBus {
+  bus_id: String!
+  content: String!
 }

@@ -23,13 +23,13 @@ const useStyles = makeStyles<Theme>((theme) => ({
   card: {
     width: '100%',
     height: 330,
-    borderRadius: 6,
+    borderRadius: 4,
   },
   cardDummy: {
     width: '100%',
     height: 330,
     color: theme.palette.grey?.[700],
-    borderRadius: 6,
+    borderRadius: 4,
   },
   area: {
     width: '100%',
@@ -158,7 +158,7 @@ export const GenericAttackCard: FunctionComponent<GenericAttackCardProps> = ({
           avatar={
             cardData.avatar ? (
               <img
-                style={{ height: 37, maxWidth: 100, borderRadius: 5 }}
+                style={{ height: 37, maxWidth: 100, borderRadius: 4 }}
                 src={getFileUri(cardData.avatar.id)}
                 alt={cardData.avatar.name}
               />

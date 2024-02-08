@@ -10,8 +10,11 @@ import TaxiiLines, { TaxiiLinesQuery } from './taxii/TaxiiLines';
 import TaxiiCollectionCreation from './taxii/TaxiiCollectionCreation';
 import SharingMenu from './SharingMenu';
 import { OrderMode, PaginationOptions } from '../../../components/list_lines';
+import Breadcrumbs from '../../../components/Breadcrumps';
+import { useFormatter } from '../../../components/i18n';
 
 const Taxii = () => {
+  const { t_i18n } = useFormatter();
   const LOCAL_STORAGE_KEY = 'taxii';
   const history = useHistory();
   const location = useLocation();
@@ -113,6 +116,7 @@ const Taxii = () => {
       padding: '0 200px 50px 0',
     }}
     >
+      <Breadcrumbs variant="list" elements={[{ label: t_i18n('Data') }, { label: t_i18n('Data sharing') }, { label: t_i18n('TAXII collections'), current: true }]} />
       <SharingMenu/>
       {taxiiState.view === 'lines' ? renderLines(paginationOptions) : null}
       <TaxiiCollectionCreation paginationOptions={paginationOptions}/>

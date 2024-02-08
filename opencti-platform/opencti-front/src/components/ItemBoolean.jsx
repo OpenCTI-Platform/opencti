@@ -2,6 +2,7 @@ import React from 'react';
 import * as PropTypes from 'prop-types';
 import withStyles from '@mui/styles/withStyles';
 import Chip from '@mui/material/Chip';
+import Tooltip from '@mui/material/Tooltip';
 import { compose } from 'ramda';
 import CircularProgress from '@mui/material/CircularProgress';
 import { useTheme } from '@mui/styles';
@@ -16,6 +17,15 @@ const styles = () => ({
     textTransform: 'uppercase',
     borderRadius: 4,
     width: 120,
+  },
+  chipLarge: {
+    fontSize: 12,
+    lineHeight: '12px',
+    height: 25,
+    marginRight: 7,
+    textTransform: 'uppercase',
+    borderRadius: 4,
+    width: 150,
   },
   chipInList: {
     fontSize: 12,
@@ -47,10 +57,15 @@ const computeInlineStyles = (theme) => ({
   },
 });
 
-const ItemBoolean = (props) => {
+const renderChip = (props) => {
   const { classes, label, neutralLabel, status, variant, t, reverse } = props;
   const theme = useTheme();
-  const style = variant === 'inList' ? classes.chipInList : classes.chip;
+  let style = classes.chip;
+  if (variant === 'inList') {
+    style = classes.chipInList;
+  } else if (variant === 'large') {
+    style = classes.chipLarge;
+  }
   const inlineStyles = computeInlineStyles(theme);
   if (status === true) {
     return (
@@ -95,6 +110,17 @@ const ItemBoolean = (props) => {
       label={label}
     />
   );
+};
+const ItemBoolean = (props) => {
+  const { tooltip } = props;
+  if (tooltip) {
+    return (
+      <Tooltip title={tooltip}>
+        {renderChip(props)}
+      </Tooltip>
+    );
+  }
+  return renderChip(props);
 };
 
 ItemBoolean.propTypes = {

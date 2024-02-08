@@ -190,7 +190,7 @@ export const CaseRfiCreationForm: FunctionComponent<CaseRfiFormProps> = ({
             label={t_i18n('Name')}
             fullWidth={true}
             detectDuplicate={['Case-Rfi']}
-            style={{ marginBottom: '20px' }}
+            askAi={true}
           />
           <Field
             component={DateTimePickerField}
@@ -199,6 +199,7 @@ export const CaseRfiCreationForm: FunctionComponent<CaseRfiFormProps> = ({
               label: t_i18n('Request For Information Date'),
               variant: 'standard',
               fullWidth: true,
+              style: { marginTop: 20 },
             }}
           />
           <OpenVocabField
@@ -239,12 +240,14 @@ export const CaseRfiCreationForm: FunctionComponent<CaseRfiFormProps> = ({
             multiline={true}
             rows="4"
             style={fieldSpacingContainerStyle}
+            askAi={true}
           />
           <Field
             component={RichTextField}
             name="content"
             label={t_i18n('Content')}
             fullWidth={true}
+            askAi={true}
             style={{
               ...fieldSpacingContainerStyle,
               minHeight: 200,

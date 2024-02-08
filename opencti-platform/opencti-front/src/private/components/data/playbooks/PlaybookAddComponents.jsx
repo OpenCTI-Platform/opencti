@@ -66,7 +66,7 @@ const useStyles = makeStyles((theme) => ({
     padding: 15,
     verticalAlign: 'middle',
     border: `1px solid ${theme.palette.background.accent}`,
-    borderRadius: 5,
+    borderRadius: 4,
     display: 'flex',
   },
   formControl: {

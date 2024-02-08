@@ -58,7 +58,7 @@ const styles = (theme) => ({
     height: '100%',
     minHeight: '100%',
     padding: '10px 15px 10px 15px',
-    borderRadius: 6,
+    borderRadius: 4,
     marginTop: 2,
   },
   item: {

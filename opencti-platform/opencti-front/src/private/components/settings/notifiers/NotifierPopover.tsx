@@ -57,7 +57,7 @@ const NotifierPopover = ({ data, paginationOptions }: { data: NotifierLine_node$
   };
   // Loader
   return (
-    <div>
+    <>
       <IconButton
         onClick={handleOpen}
         aria-haspopup="true"
@@ -87,7 +87,7 @@ const NotifierPopover = ({ data, paginationOptions }: { data: NotifierLine_node$
           </React.Suspense>
         )}
       </Drawer>
-    </div>
+    </>
   );
 };
 

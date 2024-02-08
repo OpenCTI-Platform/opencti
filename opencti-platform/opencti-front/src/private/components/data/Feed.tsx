@@ -10,8 +10,11 @@ import FeedLines, { FeedLinesQuery } from './feeds/FeedLines';
 import FeedCreation from './feeds/FeedCreation';
 import SharingMenu from './SharingMenu';
 import { OrderMode, PaginationOptions } from '../../../components/list_lines';
+import Breadcrumbs from '../../../components/Breadcrumps';
+import { useFormatter } from '../../../components/i18n';
 
 const Feed = () => {
+  const { t_i18n } = useFormatter();
   const LOCAL_STORAGE_KEY = 'feed';
   const history = useHistory();
   const location = useLocation();
@@ -113,6 +116,7 @@ const Feed = () => {
       padding: '0 200px 50px 0',
     }}
     >
+      <Breadcrumbs variant="list" elements={[{ label: t_i18n('Data') }, { label: t_i18n('Data sharing') }, { label: t_i18n('CSV feeds'), current: true }]} />
       <SharingMenu/>
       {feedState.view === 'lines' ? renderLines(paginationOptions) : ''}
       <FeedCreation paginationOptions={paginationOptions}/>

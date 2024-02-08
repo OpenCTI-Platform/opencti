@@ -2,18 +2,16 @@ import React from 'react';
 import { graphql, createFragmentContainer } from 'react-relay';
 import Typography from '@mui/material/Typography';
 import makeStyles from '@mui/styles/makeStyles';
+import StixCoreObjectContainer from '../../common/stix_core_objects/StixCoreObjectContainer';
 import StixCyberObservablePopover from './StixCyberObservablePopover';
 import { truncate } from '../../../../utils/String';
 import StixCoreObjectEnrichment from '../../common/stix_core_objects/StixCoreObjectEnrichment';
 import StixCoreObjectSharing from '../../common/stix_core_objects/StixCoreObjectSharing';
+import useGranted, { KNOWLEDGE_KNENRICHMENT, KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 
 const useStyles = makeStyles(() => ({
   title: {
     float: 'left',
-  },
-  popover: {
-    float: 'left',
-    marginTop: '-13px',
   },
   actions: {
     margin: '-6px 0 0 0',
@@ -30,8 +28,10 @@ const StixCyberObservableHeaderComponent = ({
   disableSharing,
 }) => {
   const classes = useStyles();
+  const isKnowledgeUpdater = useGranted([KNOWLEDGE_KNUPDATE]);
+  const isKnowledgeEnricher = useGranted([KNOWLEDGE_KNENRICHMENT]);
   return (
-    <div>
+    <>
       <Typography
         variant="h1"
         gutterBottom={true}
@@ -39,12 +39,6 @@ const StixCyberObservableHeaderComponent = ({
       >
         {truncate(stixCyberObservable.observable_value, 50)}
       </Typography>
-      <div className={classes.popover}>
-        <StixCyberObservablePopover
-          stixCyberObservableId={stixCyberObservable.id}
-          isArtifact={isArtifact}
-        />
-      </div>
       <div className={classes.actions}>
         <div className={classes.actionButtons}>
           {disableSharing !== true && (
@@ -53,11 +47,20 @@ const StixCyberObservableHeaderComponent = ({
               variant="header"
             />
           )}
-          <StixCoreObjectEnrichment stixCoreObjectId={stixCyberObservable.id} />
+          {isKnowledgeUpdater && (
+            <StixCoreObjectContainer elementId={stixCyberObservable.id} />
+          )}
+          {isKnowledgeEnricher && (
+            <StixCoreObjectEnrichment stixCoreObjectId={stixCyberObservable.id} variant="button" />
+          )}
+          <StixCyberObservablePopover
+            stixCyberObservableId={stixCyberObservable.id}
+            isArtifact={isArtifact}
+          />
         </div>
       </div>
       <div className="clearfix" />
-    </div>
+    </>
   );
 };
 

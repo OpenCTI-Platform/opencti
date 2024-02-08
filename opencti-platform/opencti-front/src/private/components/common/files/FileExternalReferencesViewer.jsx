@@ -20,7 +20,7 @@ const styles = () => ({
     minHeight: '100%',
     padding: '10px 15px 10px 15px',
     marginTop: 8,
-    borderRadius: 6,
+    borderRadius: 4,
   },
 });
 

@@ -13,7 +13,7 @@ const styles = () => ({
     lineHeight: '12px',
     height: 25,
     margin: '0 7px 7px 0',
-    borderRadius: '0',
+    borderRadius: 4,
     width: 90,
   },
   chipInList: {
@@ -22,7 +22,7 @@ const styles = () => ({
     height: 20,
     float: 'left',
     marginRight: 7,
-    borderRadius: '0',
+    borderRadius: 4,
     width: 90,
   },
 });

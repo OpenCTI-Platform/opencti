@@ -17,6 +17,8 @@ import { IndicatorsLinesPaginationQuery, IndicatorsLinesPaginationQuery$variable
 import { ModuleHelper } from '../../../utils/platformModulesHelper';
 import { IndicatorLineDummyComponent } from './indicators/IndicatorLine';
 import { buildEntityTypeBasedFilterContext, emptyFilterGroup, findFilterFromKey, getDefaultFilterObjFromArray } from '../../../utils/filters/filtersUtils';
+import { useFormatter } from '../../../components/i18n';
+import Breadcrumbs from '../../../components/Breadcrumps';
 
 const useStyles = makeStyles(() => ({
   container: {
@@ -27,8 +29,8 @@ const useStyles = makeStyles(() => ({
 const LOCAL_STORAGE_KEY = 'indicators-list';
 
 const Indicators = () => {
+  const { t_i18n } = useFormatter();
   const classes = useStyles();
-
   const {
     viewStorage,
     paginationOptions,
@@ -238,6 +240,7 @@ const Indicators = () => {
       {({ platformModuleHelpers }) => (
         <ExportContextProvider>
           <div className={classes.container}>
+            <Breadcrumbs variant="list" elements={[{ label: t_i18n('Observations') }, { label: t_i18n('Indicators'), current: true }]} />
             {renderLines(platformModuleHelpers)}
             <Security needs={[KNOWLEDGE_KNUPDATE]}>
               <IndicatorCreation paginationOptions={queryPaginationOptions}/>

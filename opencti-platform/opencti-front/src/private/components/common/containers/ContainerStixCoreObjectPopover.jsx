@@ -13,7 +13,6 @@ import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
-import Slide from '@mui/material/Slide';
 import MoreVert from '@mui/icons-material/MoreVert';
 import { ConnectionHandler } from 'relay-runtime';
 import Alert from '@mui/material/Alert';
@@ -23,6 +22,7 @@ import { KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted'
 import Security from '../../../../utils/Security';
 import { encodeMappingData } from '../../../../utils/Graph';
 import { deleteElementByValue } from '../../../../utils/utils';
+import Transition from '../../../../components/Transition';
 
 const styles = (theme) => ({
   container: {
@@ -40,11 +40,6 @@ const styles = (theme) => ({
     padding: 0,
   },
 });
-
-const Transition = React.forwardRef((props, ref) => (
-  <Slide direction="up" ref={ref} {...props} />
-));
-Transition.displayName = 'TransitionSlide';
 
 export const containerStixCoreObjectPopoverRemoveMutation = graphql`
   mutation ContainerStixCoreObjectPopoverRemoveMutation(

@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2021-2023 Filigran SAS
+Copyright (c) 2021-2024 Filigran SAS
 
 This file is part of the OpenCTI Enterprise Edition ("EE") and is
 licensed under the OpenCTI Non-Commercial License (the "License");
@@ -57,7 +57,7 @@ const useStyles = makeStyles<Theme>(() => ({
     minHeight: '100%',
     margin: '10px 0 0 0',
     padding: 20,
-    borderRadius: 6,
+    borderRadius: 4,
   },
 }));
 

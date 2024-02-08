@@ -190,6 +190,7 @@ export const ReportCreationForm: FunctionComponent<ReportFormProps> = ({
             name="name"
             label={t_i18n('Name')}
             fullWidth={true}
+            askAi={true}
           />
           <Field
             component={DateTimePickerField}
@@ -229,6 +230,7 @@ export const ReportCreationForm: FunctionComponent<ReportFormProps> = ({
             multiline={true}
             rows="4"
             style={{ marginTop: 20 }}
+            askAi={true}
           />
           <Field
             component={RichTextField}

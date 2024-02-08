@@ -69,13 +69,13 @@ const StixCoreObjectSubscribers: FunctionComponent<ContainerHeaderSharedProps> =
           size="small"
           variant="text"
           color={hasSetAccess ? 'primary' : 'inherit'}
-          style={{ cursor: hasSetAccess ? 'pointer' : 'default', marginRight: 10 }}
+          style={{ cursor: hasSetAccess && triggersKnowledgeCount && triggersKnowledgeCount > 0 ? 'pointer' : 'default', marginRight: 10 }}
           sx={!hasSetAccess ? {
             '&.MuiButtonBase-root:hover': {
               bgcolor: 'transparent',
             },
           } : undefined}
-          onClick={() => (hasSetAccess ? setDisplaySubscribers(true) : null)}
+          onClick={() => (hasSetAccess && triggersKnowledgeCount && triggersKnowledgeCount > 0 ? setDisplaySubscribers(true) : null)}
           disableRipple={!hasSetAccess}
         >
           {triggersKnowledgeCount ?? '0'} {t_i18n('subscribers')}

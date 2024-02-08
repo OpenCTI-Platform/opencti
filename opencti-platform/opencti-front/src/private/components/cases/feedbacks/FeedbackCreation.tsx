@@ -1,13 +1,11 @@
 import React, { FunctionComponent } from 'react';
 import { Field, Form, Formik } from 'formik';
-import Drawer from '@components/common/drawer/Drawer';
 import Button from '@mui/material/Button';
 import * as Yup from 'yup';
 import { graphql, useMutation } from 'react-relay';
 import makeStyles from '@mui/styles/makeStyles';
 import { FormikConfig } from 'formik/dist/types';
 import { useFormatter } from '../../../../components/i18n';
-import MarkdownField from '../../../../components/MarkdownField';
 import type { Theme } from '../../../../components/Theme';
 import { MESSAGING$ } from '../../../../relay/environment';
 import StixCoreObjectsField from '../../common/form/StixCoreObjectsField';
@@ -22,6 +20,8 @@ import { useSchemaCreationValidation } from '../../../../utils/hooks/useEntitySe
 import { FeedbackCreationMutation$variables } from './__generated__/FeedbackCreationMutation.graphql';
 import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
 import CustomFileUploader from '../../common/files/CustomFileUploader';
+import SimpleMarkdownField from '../../../../components/SimpleMarkdownField';
+import Drawer from '../../common/drawer/Drawer';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   buttons: {
@@ -133,7 +133,7 @@ const FeedbackCreation: FunctionComponent<{
         }) => (
           <Form style={{ margin: '20px 0 20px 0' }}>
             <Field
-              component={MarkdownField}
+              component={SimpleMarkdownField}
               name="description"
               label={t_i18n('Description')}
               fullWidth={true}

@@ -9,10 +9,13 @@ import { DataComponentsLinesPaginationQuery, DataComponentsLinesPaginationQuery$
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
 import DataComponentLineDummy from './data_components/DataComponentLineDummy';
 import { emptyFilterGroup } from '../../../utils/filters/filtersUtils';
+import { useFormatter } from '../../../components/i18n';
+import Breadcrumbs from '../../../components/Breadcrumps';
 
 const LOCAL_STORAGE_KEY_DATA_COMPONENTS = 'dataComponents';
 
 const DataComponents: FunctionComponent = () => {
+  const { t_i18n } = useFormatter();
   const { viewStorage, helpers, paginationOptions } = usePaginationLocalStorage<DataComponentsLinesPaginationQuery$variables>(
     LOCAL_STORAGE_KEY_DATA_COMPONENTS,
     {
@@ -123,6 +126,7 @@ const DataComponents: FunctionComponent = () => {
   };
   return (
     <>
+      <Breadcrumbs variant="list" elements={[{ label: t_i18n('Techniques') }, { label: t_i18n('Data components'), current: true }]} />
       {renderLines()}
       <Security needs={[KNOWLEDGE_KNUPDATE]}>
         <DataComponentCreation paginationOptions={paginationOptions} />

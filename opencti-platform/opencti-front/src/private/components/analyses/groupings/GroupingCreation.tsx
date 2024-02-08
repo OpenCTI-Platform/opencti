@@ -175,6 +175,7 @@ export const GroupingCreationForm: FunctionComponent<GroupingFormProps> = ({
             name="name"
             label={t_i18n('Name')}
             fullWidth={true}
+            askAi={true}
           />
           <ConfidenceField
             entityType="Grouping"
@@ -196,6 +197,7 @@ export const GroupingCreationForm: FunctionComponent<GroupingFormProps> = ({
             multiline={true}
             rows="4"
             style={{ marginTop: 20 }}
+            askAi={true}
           />
           <Field
             component={RichTextField}
@@ -207,6 +209,7 @@ export const GroupingCreationForm: FunctionComponent<GroupingFormProps> = ({
               minHeight: 200,
               height: 200,
             }}
+            askAi={true}
           />
           <CreatedByField
             name="createdBy"

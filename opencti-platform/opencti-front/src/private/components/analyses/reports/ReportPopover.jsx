@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
-import IconButton from '@mui/material/IconButton';
 import MoreVert from '@mui/icons-material/MoreVert';
+import ToggleButton from '@mui/material/ToggleButton';
 import { useFormatter } from '../../../../components/i18n';
 import { reportEditionQuery } from './ReportEdition';
 import ReportEditionContainer from './ReportEditionContainer';
@@ -32,15 +32,13 @@ const ReportPopover = ({ id }) => {
   const handleCloseEdit = () => setDisplayEdit(false);
   return (
     <>
-      <IconButton
+      <ToggleButton
+        value="popover"
+        size="small"
         onClick={handleOpen}
-        aria-haspopup="true"
-        style={{ marginTop: 3 }}
-        size="large"
-        color="primary"
       >
-        <MoreVert />
-      </IconButton>
+        <MoreVert fontSize="small" color="primary" />
+      </ToggleButton>
       <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleClose}>
         <MenuItem onClick={handleOpenEdit}>{t_i18n('Update')}</MenuItem>
         <Security needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}>

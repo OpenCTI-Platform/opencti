@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2021-2023 Filigran SAS
+Copyright (c) 2021-2024 Filigran SAS
 
 This file is part of the OpenCTI Enterprise Edition ("EE") and is
 licensed under the OpenCTI Non-Commercial License (the "License");
@@ -59,7 +59,7 @@ const useStyles = makeStyles<Theme>((theme) => ({
     minHeight: '100%',
     margin: '10px 0 0 0',
     padding: '15px',
-    borderRadius: 6,
+    borderRadius: 4,
   },
   title: {
     textTransform: 'uppercase',
@@ -112,9 +112,9 @@ interface FileIndexingMonitoringComponentProps {
 
 const BorderLinearProgress = styled(LinearProgress)(({ theme }) => ({
   height: 10,
-  borderRadius: 5,
+  borderRadius: 4,
   [`& .${linearProgressClasses.bar}`]: {
-    borderRadius: 5,
+    borderRadius: 4,
     backgroundColor: theme.palette.primary.main,
   },
 }));

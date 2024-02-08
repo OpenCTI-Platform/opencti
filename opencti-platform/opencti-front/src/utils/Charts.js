@@ -314,7 +314,7 @@ export const verticalBarsChartOptions = (
     bar: {
       horizontal: false,
       barHeight: '30%',
-      borderRadius: 5,
+      borderRadius: 4,
       borderRadiusApplication: 'end',
       borderRadiusWhenStacked: 'last',
       distributed,
@@ -472,7 +472,7 @@ export const horizontalBarsChartOptions = (
     bar: {
       horizontal: true,
       barHeight: '30%',
-      borderRadius: 5,
+      borderRadius: 4,
       borderRadiusApplication: 'end',
       borderRadiusWhenStacked: 'last',
       distributed,
@@ -587,7 +587,7 @@ export const polarAreaChartOptions = (
   theme,
   labels,
   formatter = null,
-  legendPosition = 'right',
+  legendPosition = 'bottom',
 ) => ({
   chart: {
     type: 'polarArea',

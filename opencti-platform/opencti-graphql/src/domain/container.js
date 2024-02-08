@@ -7,7 +7,7 @@ import { ABSTRACT_BASIC_RELATIONSHIP, ABSTRACT_STIX_REF_RELATIONSHIP, ABSTRACT_S
 import { isStixDomainObjectContainer } from '../schema/stixDomainObject';
 import { buildPagination, READ_ENTITIES_INDICES, READ_INDEX_STIX_DOMAIN_OBJECTS, READ_RELATIONSHIPS_INDICES } from '../database/utils';
 import { now } from '../utils/format';
-import { elFindByIds, elCount, ES_MAX_PAGINATION, MAX_RELATED_CONTAINER_RESOLUTION } from '../database/engine';
+import { elCount, elFindByIds, ES_MAX_PAGINATION, MAX_RELATED_CONTAINER_RESOLUTION } from '../database/engine';
 import { findById as findInvestigationById } from '../modules/workspace/workspace-domain';
 import { stixCoreObjectAddRelations } from './stixCoreObject';
 import { addFilter } from '../utils/filtering/filtering-utils';

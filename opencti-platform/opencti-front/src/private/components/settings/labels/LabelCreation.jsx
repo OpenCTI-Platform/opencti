@@ -12,7 +12,7 @@ import DialogTitle from '@mui/material/DialogTitle';
 import DialogContent from '@mui/material/DialogContent';
 import DialogActions from '@mui/material/DialogActions';
 import Drawer, { DrawerVariant } from '../../common/drawer/Drawer';
-import TextField from '../../../../components/TextField';
+import SimpleTextField from '../../../../components/SimpleTextField';
 import ColorPickerField from '../../../../components/ColorPickerField';
 import { commitMutation } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
@@ -155,7 +155,7 @@ class LabelCreation extends Component {
             {({ submitForm, handleReset, isSubmitting }) => (
               <Form style={{ margin: '20px 0 20px 0' }}>
                 <Field
-                  component={TextField}
+                  component={SimpleTextField}
                   variant="standard"
                   name="value"
                   label={t('Value')}
@@ -220,7 +220,7 @@ class LabelCreation extends Component {
                 <DialogTitle>{t('Create a label')}</DialogTitle>
                 <DialogContent classes={{ root: classes.dialog }}>
                   <Field
-                    component={TextField}
+                    component={SimpleTextField}
                     variant="standard"
                     name="value"
                     label={t('Value')}

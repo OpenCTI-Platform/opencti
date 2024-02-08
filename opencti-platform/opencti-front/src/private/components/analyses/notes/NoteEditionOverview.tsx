@@ -177,6 +177,7 @@ NoteEditionOverviewProps
             style={{ marginTop: 20 }}
             onFocus={editor.changeFocus}
             onSubmit={handleSubmitField}
+            askAi={true}
             helperText={
               <SubscriptionFocus
                 context={context}
@@ -194,6 +195,7 @@ NoteEditionOverviewProps
             style={{ marginTop: 20 }}
             onFocus={editor.changeFocus}
             onSubmit={handleSubmitField}
+            askAi={true}
             helperText={
               <SubscriptionFocus context={context} fieldName="content" />
             }

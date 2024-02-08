@@ -143,7 +143,7 @@ StixDomainObjectContentBarProps
             </Tooltip>
           ) : (
             <Tooltip title={'Download this file'}>
-              <IconButton color="primary" onClick={handleDownload}>
+              <IconButton color="primary" onClick={handleDownload} size="large">
                 <CloudDownloadOutlined />
               </IconButton>
             </Tooltip>

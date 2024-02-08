@@ -9,7 +9,7 @@ const useStyles = makeStyles(() => ({
     height: 25,
     marginRight: 7,
     textTransform: 'uppercase',
-    borderRadius: '0',
+    borderRadius: 4,
     width: 130,
   },
 }));

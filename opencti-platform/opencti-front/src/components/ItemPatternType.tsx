@@ -8,7 +8,7 @@ const useStyles = makeStyles(() => ({
     lineHeight: '18px',
     height: 30,
     margin: '0 7px 7px 0',
-    borderRadius: 5,
+    borderRadius: 4,
     width: 130,
   },
   chipInList: {
@@ -17,7 +17,7 @@ const useStyles = makeStyles(() => ({
     height: 20,
     float: 'left',
     marginRight: 7,
-    borderRadius: 5,
+    borderRadius: 4,
     width: 80,
   },
 }));

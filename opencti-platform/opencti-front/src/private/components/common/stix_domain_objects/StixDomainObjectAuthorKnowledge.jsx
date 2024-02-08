@@ -25,13 +25,13 @@ const styles = (theme) => ({
   card: {
     width: '100%',
     marginBottom: 20,
-    borderRadius: 6,
+    borderRadius: 4,
     position: 'relative',
   },
   paper: {
     margin: '10px 0 0 0',
     padding: '20px 20px 0 20px',
-    borderRadius: 6,
+    borderRadius: 4,
   },
   itemIcon: {
     color: theme.palette.primary.main,

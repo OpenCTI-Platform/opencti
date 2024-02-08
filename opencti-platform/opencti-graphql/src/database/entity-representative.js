@@ -5,7 +5,7 @@ import { ENTITY_TYPE_CAPABILITY, ENTITY_TYPE_STATUS } from '../schema/internalOb
 import { isStixCyberObservable } from '../schema/stixCyberObservable';
 import { observableValue } from '../utils/format';
 
-const extractRepresentativeDescription = (entityData) => {
+export const extractRepresentativeDescription = (entityData) => {
   let secondValue;
 
   // BasicStoreRelation | BasicStoreEntity

@@ -9,10 +9,13 @@ import DataSourcesLines, { dataSourcesLinesQuery } from './data_sources/DataSour
 import { DataSourcesLinesPaginationQuery, DataSourcesLinesPaginationQuery$variables } from './data_sources/__generated__/DataSourcesLinesPaginationQuery.graphql';
 import { DataSourceLineDummy } from './data_sources/DataSourceLine';
 import { emptyFilterGroup } from '../../../utils/filters/filtersUtils';
+import { useFormatter } from '../../../components/i18n';
+import Breadcrumbs from '../../../components/Breadcrumps';
 
 export const LOCAL_STORAGE_KEY_DATA_SOURCES = 'dataSources';
 
 const DataSources: FunctionComponent = () => {
+  const { t_i18n } = useFormatter();
   const { viewStorage, helpers, paginationOptions } = usePaginationLocalStorage<DataSourcesLinesPaginationQuery$variables>(
     LOCAL_STORAGE_KEY_DATA_SOURCES,
     {
@@ -119,6 +122,7 @@ const DataSources: FunctionComponent = () => {
   };
   return (
     <>
+      <Breadcrumbs variant="list" elements={[{ label: t_i18n('Techniques') }, { label: t_i18n('Data sources'), current: true }]} />
       {renderLines()}
       <Security needs={[KNOWLEDGE_KNUPDATE]}>
         <DataSourceCreation paginationOptions={paginationOptions} />

@@ -35,8 +35,7 @@ const interval$ = interval(FIVE_SECONDS);
 const useStyles = makeStyles((theme) => ({
   card: {
     width: '100%',
-    margin: '10px 0 10px 0',
-    borderRadius: 6,
+    borderRadius: 4,
     position: 'relative',
   },
   number: {
@@ -59,7 +58,7 @@ const useStyles = makeStyles((theme) => ({
   },
   progress: {
     width: '100%',
-    borderRadius: 5,
+    borderRadius: 4,
     height: 10,
   },
   paper: {
@@ -302,7 +301,7 @@ const RulesListComponent = ({ relay, data, keyword }) => {
   const totalEntities = data.stixDomainObjectsNumber.total;
   const differenceEntities = totalEntities - data.stixDomainObjectsNumber.count;
   return (
-    <div className={classes.container}>
+    <>
       <Grid container={true} spacing={3}>
         <Grid item={true} xs={6}>
           <Grid container={true} spacing={3}>
@@ -402,7 +401,7 @@ const RulesListComponent = ({ relay, data, keyword }) => {
           <Paper
             variant="outlined"
             classes={{ root: classes.paper }}
-            style={{ maxHeight: 262, minHeight: 262 }}
+            style={{ maxHeight: 252, minHeight: 252, marginTop: 0 }}
           >
             <div className={classes.graphContainer}>
               <Chart
@@ -693,7 +692,7 @@ const RulesListComponent = ({ relay, data, keyword }) => {
           </Button>
         </DialogActions>
       </Dialog>
-    </div>
+    </>
   );
 };
 

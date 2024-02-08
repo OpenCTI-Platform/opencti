@@ -18,6 +18,7 @@ import ErrorNotFound from '../../../../components/ErrorNotFound';
 import StixCoreObjectFilesAndHistory from '../../common/stix_core_objects/StixCoreObjectFilesAndHistory';
 import StixDomainObjectContent from '../../common/stix_domain_objects/StixDomainObjectContent';
 import inject18n from '../../../../components/i18n';
+import Breadcrumbs from '../../../../components/Breadcrumps';
 
 const subscription = graphql`
   subscription RootReportSubscription($id: ID!) {
@@ -26,6 +27,7 @@ const subscription = graphql`
         ...Report_report
         ...ReportKnowledgeGraph_report
         ...ReportEditionContainer_report
+        ...StixDomainObjectContent_stixDomainObject
       }
       ...FileImportViewer_entity
       ...FileExportViewer_entity
@@ -40,6 +42,8 @@ const reportQuery = graphql`
     report(id: $id) {
       id
       standard_id
+      entity_type
+      name
       ...Report_report
       ...ReportDetails_report
       ...ReportKnowledge_report
@@ -116,11 +120,18 @@ class RootReport extends Component {
                 }
                 return (
                   <div style={{ paddingRight }}>
+                    <Breadcrumbs variant="object" elements={[
+                      { label: t('Analyses') },
+                      { label: t('Reports'), link: '/dashboard/analyses/reports' },
+                      { label: report.name, current: true },
+                    ]}
+                    />
                     <ContainerHeader
                       container={report}
                       PopoverComponent={<ReportPopover />}
                       enableQuickSubscription={true}
                       enableQuickExport={true}
+                      enableAskAi={true}
                     />
                     <Box
                       sx={{

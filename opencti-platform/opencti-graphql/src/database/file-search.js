@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2021-2023 Filigran SAS
+Copyright (c) 2021-2024 Filigran SAS
 
 This file is part of the OpenCTI Enterprise Edition ("EE") and is
 licensed under the OpenCTI Non-Commercial License (the "License");
@@ -103,12 +103,12 @@ export const elUpdateFilesWithEntityRestrictions = async (entity) => {
   });
 };
 
-const buildFilesSearchResult = (data, first, searchAfter, connectionFormat = true) => {
+const buildFilesSearchResult = (data, first, searchAfter, connectionFormat = true, includeContent = false) => {
   const convertedHits = data.hits.hits.map((hit) => {
     const elementData = hit._source;
     const searchOccurrences = (hit.highlight && hit.highlight['attachment.content'])
       ? hit.highlight['attachment.content'].length : 0;
-    return {
+    const element = {
       _index: hit._index,
       id: elementData.internal_id,
       internal_id: elementData.internal_id,
@@ -120,6 +120,10 @@ const buildFilesSearchResult = (data, first, searchAfter, connectionFormat = tru
       searchOccurrences,
       sort: hit.sort,
     };
+    if (includeContent) {
+      return { ...element, content: elementData.attachment.content };
+    }
+    return element;
   });
   if (connectionFormat) {
     const nodeHits = R.map((n) => ({ node: n, sort: n.sort }), convertedHits);
@@ -168,7 +172,7 @@ const elBuildSearchFilesQueryBody = async (context, user, options = {}) => {
   };
 };
 export const elSearchFiles = async (context, user, options = {}) => {
-  const { search = null, first = 20, after, connectionFormat = true, orderBy = null, orderMode = 'asc' } = options;
+  const { search = null, first = 20, after, connectionFormat = true, includeContent = false, orderBy = null, orderMode = 'asc' } = options;
   const { fields = [], excludeFields = ['attachment.content'], highlight = true } = options; // results format options
   const searchAfter = after ? cursorToOffset(after) : undefined;
   const body = await elBuildSearchFilesQueryBody(context, user, options);
@@ -207,7 +211,7 @@ export const elSearchFiles = async (context, user, options = {}) => {
   logApp.debug('[SEARCH] search files', { query });
   return elRawSearch(context, user, null, query)
     .then((data) => {
-      return buildFilesSearchResult(data, first, body.search_after, connectionFormat);
+      return buildFilesSearchResult(data, first, body.search_after, connectionFormat, includeContent);
     })
     .catch((err) => {
       throw DatabaseError('Files search pagination fail', { cause: err, query });

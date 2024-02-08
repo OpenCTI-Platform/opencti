@@ -68,7 +68,7 @@ const PictureLine: FunctionComponent<PictureLineComponentProps> = ({
       >
         <ListItemIcon classes={{ root: classes.itemIcon }}>
           <img
-            style={{ height: 33, width: 33, borderRadius: 5 }}
+            style={{ height: 33, width: 33, borderRadius: 4 }}
             src={getFileUri(data.id)}
             alt={data.name}
           />

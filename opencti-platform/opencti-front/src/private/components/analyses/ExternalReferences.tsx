@@ -16,6 +16,9 @@ import ToolBar from '../data/ToolBar';
 import { ExternalReferenceLineDummy } from './external_references/ExternalReferenceLine';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
 import { buildEntityTypeBasedFilterContext, emptyFilterGroup } from '../../../utils/filters/filtersUtils';
+import { useFormatter } from '../../../components/i18n';
+import ExportContextProvider from '../../../utils/ExportContextProvider';
+import Breadcrumbs from '../../../components/Breadcrumps';
 
 const LOCAL_STORAGE_KEY = 'externalReferences';
 
@@ -25,6 +28,7 @@ interface ExternalReferencesProps {
 }
 
 const ExternalReferences: FunctionComponent<ExternalReferencesProps> = () => {
+  const { t_i18n } = useFormatter();
   const {
     platformModuleHelpers: { isRuntimeFieldEnable },
   } = useAuth();
@@ -39,34 +43,6 @@ const ExternalReferences: FunctionComponent<ExternalReferencesProps> = () => {
     },
   );
   const { sortBy, orderAsc, searchTerm, filters, numberOfElements } = viewStorage;
-  const isRuntimeSort = isRuntimeFieldEnable() ?? false;
-  const dataColumns = {
-    source_name: {
-      label: 'Source name',
-      width: '15%',
-      isSortable: true,
-    },
-    external_id: {
-      label: 'External ID',
-      width: '10%',
-      isSortable: true,
-    },
-    url: {
-      label: 'URL',
-      width: '45%',
-      isSortable: true,
-    },
-    creator: {
-      label: 'Creator',
-      width: '12%',
-      isSortable: isRuntimeSort,
-    },
-    created: {
-      label: 'Date',
-      width: '15%',
-      isSortable: true,
-    },
-  };
   const {
     onToggleEntity,
     numberOfSelectedElements,
@@ -86,50 +62,77 @@ const ExternalReferences: FunctionComponent<ExternalReferencesProps> = () => {
     externalReferencesLinesQuery,
     queryPaginationOptions,
   );
-
-  return (
-    <>
-      <ListLines
-        helpers={helpers}
-        sortBy={sortBy}
-        orderAsc={orderAsc}
-        dataColumns={dataColumns}
-        handleSort={helpers.handleSort}
-        handleSearch={helpers.handleSearch}
-        handleAddFilter={helpers.handleAddFilter}
-        handleRemoveFilter={helpers.handleRemoveFilter}
-        handleSwitchLocalMode={helpers.handleSwitchLocalMode}
-        handleSwitchGlobalMode={helpers.handleSwitchGlobalMode}
-        handleToggleSelectAll={handleToggleSelectAll}
-        selectAll={selectAll}
-        displayImport={true}
-        secondaryAction={true}
-        filters={filters}
-        keyword={searchTerm}
-        iconExtension={true}
-        paginationOptions={queryPaginationOptions}
-        numberOfElements={numberOfElements}
-        availableFilterKeys={[
-          'creator_id',
-          'created',
-        ]}
-      >
-        {queryRef && (
-          <React.Suspense
-            fallback={
-              <>
-                {Array(20)
-                  .fill(0)
-                  .map((_, idx) => (
-                    <ExternalReferenceLineDummy
-                      key={idx}
-                      dataColumns={dataColumns}
-                    />
-                  ))}
-              </>
-            }
-          >
-            <>
+  const renderLines = () => {
+    const isRuntimeSort = isRuntimeFieldEnable() ?? false;
+    const dataColumns = {
+      source_name: {
+        label: 'Source name',
+        width: '15%',
+        isSortable: true,
+      },
+      external_id: {
+        label: 'External ID',
+        width: '10%',
+        isSortable: true,
+      },
+      url: {
+        label: 'URL',
+        width: '45%',
+        isSortable: true,
+      },
+      creator: {
+        label: 'Creator',
+        width: '12%',
+        isSortable: isRuntimeSort,
+      },
+      created: {
+        label: 'Date',
+        width: '15%',
+        isSortable: true,
+      },
+    };
+    return (
+      <>
+        <ListLines
+          helpers={helpers}
+          sortBy={sortBy}
+          orderAsc={orderAsc}
+          dataColumns={dataColumns}
+          handleSort={helpers.handleSort}
+          handleSearch={helpers.handleSearch}
+          handleAddFilter={helpers.handleAddFilter}
+          handleRemoveFilter={helpers.handleRemoveFilter}
+          handleSwitchLocalMode={helpers.handleSwitchLocalMode}
+          handleSwitchGlobalMode={helpers.handleSwitchGlobalMode}
+          handleToggleSelectAll={handleToggleSelectAll}
+          selectAll={selectAll}
+          displayImport={true}
+          secondaryAction={true}
+          filters={filters}
+          keyword={searchTerm}
+          iconExtension={true}
+          paginationOptions={queryPaginationOptions}
+          numberOfElements={numberOfElements}
+          availableFilterKeys={[
+            'creator_id',
+            'created',
+          ]}
+        >
+          {queryRef && (
+            <React.Suspense
+              fallback={
+                <>
+                  {Array(20)
+                    .fill(0)
+                    .map((_, idx) => (
+                      <ExternalReferenceLineDummy
+                        key={idx}
+                        dataColumns={dataColumns}
+                      />
+                    ))}
+                </>
+                    }
+            >
               <ExternalReferencesLines
                 queryRef={queryRef}
                 paginationOptions={queryPaginationOptions}
@@ -140,27 +143,33 @@ const ExternalReferences: FunctionComponent<ExternalReferencesProps> = () => {
                 onToggleEntity={onToggleEntity}
                 selectAll={selectAll}
               />
-              <ToolBar
-                selectedElements={selectedElements}
-                deSelectedElements={deSelectedElements}
-                numberOfSelectedElements={numberOfSelectedElements}
-                handleClearSelectedElements={handleClearSelectedElements}
-                selectAll={selectAll}
-                search={searchTerm}
-                filters={contextFilters}
-                type="External-Reference"
-              />
-            </>
-          </React.Suspense>
-        )}
-      </ListLines>
+            </React.Suspense>
+          )}
+        </ListLines>
+        <ToolBar
+          selectedElements={selectedElements}
+          deSelectedElements={deSelectedElements}
+          numberOfSelectedElements={numberOfSelectedElements}
+          handleClearSelectedElements={handleClearSelectedElements}
+          selectAll={selectAll}
+          search={searchTerm}
+          filters={contextFilters}
+          type="External-Reference"
+        />
+      </>
+    );
+  };
+  return (
+    <ExportContextProvider>
+      <Breadcrumbs variant="list" elements={[{ label: t_i18n('Analyses') }, { label: t_i18n('External references'), current: true }]} />
+      {renderLines()}
       <Security needs={[KNOWLEDGE_KNUPDATE]}>
         <ExternalReferenceCreation
           paginationOptions={queryPaginationOptions}
           openContextual={false}
         />
       </Security>
-    </>
+    </ExportContextProvider>
   );
 };
 
