@@ -3904,7 +3904,7 @@ type Individual implements BasicObject & StixObject & StixCoreObject & StixDomai
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
-  isUser: Boolean  @auth(for: [SETTINGS_SETACCESSES])
+  isUser: Boolean @auth(for: [KNOWLEDGE, EXPLORE])
 }
 input IndividualAddInput {
   stix_id: StixId
