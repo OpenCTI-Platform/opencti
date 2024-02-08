@@ -45,7 +45,7 @@ const SettingsOrganizations = () => {
   };
 
   const queryRef = useQueryLoading<SettingsOrganizationsLinesPaginationQuery>(settingsOrganizationsLinesQuery, paginationOptions);
-  const { fd, t_i18n } = useFormatter();
+  const { fd } = useFormatter();
 
   const dataColumns = {
     name: {

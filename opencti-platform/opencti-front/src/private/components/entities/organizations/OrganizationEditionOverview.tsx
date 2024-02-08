@@ -1,9 +1,13 @@
-import React from 'react';
+import React, { FunctionComponent } from 'react';
 import { createFragmentContainer, graphql } from 'react-relay';
 import { Field, Form, Formik } from 'formik';
-import * as R from 'ramda';
 import * as Yup from 'yup';
-import { useFormatter } from '../../../../components/i18n';
+import { OrganizationEditionOverview_organization$data } from '@components/entities/organizations/__generated__/OrganizationEditionOverview_organization.graphql';
+import { OrganizationEditionContainer_organization$data } from '@components/entities/organizations/__generated__/OrganizationEditionContainer_organization.graphql';
+import { FormikConfig } from 'formik/dist/types';
+import { Option } from '@components/common/form/ReferenceField';
+import { ExternalReferencesValues } from '@components/common/form/ExternalReferencesField';
+import makeStyles from '@mui/styles/makeStyles';
 import TextField from '../../../../components/TextField';
 import { SubscriptionFocus } from '../../../../components/Subscription';
 import CreatedByField from '../../common/form/CreatedByField';
@@ -15,8 +19,15 @@ import { convertCreatedBy, convertMarkings, convertStatus } from '../../../../ut
 import OpenVocabField from '../../common/form/OpenVocabField';
 import StatusField from '../../common/form/StatusField';
 import { useSchemaEditionValidation } from '../../../../utils/hooks/useEntitySettings';
-import useFormEditor from '../../../../utils/hooks/useFormEditor';
+import useFormEditor, { GenericData } from '../../../../utils/hooks/useFormEditor';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
+import { useFormatter } from '../../../../components/i18n';
+
+const useStyles = makeStyles(() => ({
+  formContainer: {
+    margin: '20px 0 20px 0',
+  },
+}));
 
 const organizationMutationFieldPatch = graphql`
   mutation OrganizationEditionOverviewFieldPatchMutation(
@@ -73,8 +84,30 @@ const organizationMutationRelationDelete = graphql`
   }
 `;
 
-const OrganizationEditionOverviewComponent = (props) => {
-  const { organization, enableReferences, context, handleClose } = props;
+type OrganizationGenericData = OrganizationEditionOverview_organization$data & GenericData;
+
+interface OrganizationEditionOverviewComponentProps {
+  organization: OrganizationGenericData;
+  enableReferences: boolean;
+  context: OrganizationEditionContainer_organization$data['editContext'];
+  handleClose: () => void;
+}
+
+interface OrganizationEditionFormValues {
+  message?: string;
+  createdBy?: Option;
+  objectMarking?: Option[];
+  x_opencti_workflow_id: Option;
+  references: ExternalReferencesValues | undefined;
+}
+
+const OrganizationEditionOverviewComponent: FunctionComponent<OrganizationEditionOverviewComponentProps> = ({
+  organization,
+  enableReferences,
+  context,
+  handleClose,
+}) => {
+  const classes = useStyles();
   const { t_i18n } = useFormatter();
 
   const basicShape = {
@@ -96,25 +129,23 @@ const OrganizationEditionOverviewComponent = (props) => {
   };
   const editor = useFormEditor(organization, enableReferences, queries, organizationValidator);
 
-  const onSubmit = (values, { setSubmitting }) => {
-    const commitMessage = values.message;
-    const references = R.pluck('value', values.references || []);
-    const inputValues = R.pipe(
-      R.dissoc('message'),
-      R.dissoc('references'),
-      R.assoc('x_opencti_workflow_id', values.x_opencti_workflow_id?.value),
-      R.assoc('createdBy', values.createdBy?.value),
-      R.assoc('objectMarking', R.pluck('value', values.objectMarking)),
-      R.toPairs,
-      R.map((n) => ({ key: n[0], value: adaptFieldValue(n[1]) })),
-    )(values);
+  const onSubmit: FormikConfig<OrganizationEditionFormValues>['onSubmit'] = (values, { setSubmitting }) => {
+    const { message, references, ...otherValues } = values;
+    const commitMessage = message ?? '';
+    const commitReferences = (references ?? []).map(({ value }) => value);
+    const inputValues = Object.entries({
+      ...otherValues,
+      createdBy: values.createdBy?.value,
+      x_opencti_workflow_id: values.x_opencti_workflow_id?.value,
+      objectMarking: (values.objectMarking ?? []).map(({ value }) => value),
+    }).map(([key, value]) => ({ key, value: adaptFieldValue(value) }));
     editor.fieldPatch({
       variables: {
         id: organization.id,
         input: inputValues,
         commitMessage:
           commitMessage && commitMessage.length > 0 ? commitMessage : null,
-        references,
+        references: commitReferences,
       },
       onCompleted: () => {
         setSubmitting(false);
@@ -123,11 +154,11 @@ const OrganizationEditionOverviewComponent = (props) => {
     });
   };
 
-  const handleSubmitField = (name, value) => {
+  const handleSubmitField = (name: string, value: string | string[] | number | number[] | null) => {
     if (!enableReferences) {
       let finalValue = value;
       if (name === 'x_opencti_workflow_id') {
-        finalValue = value.value;
+        finalValue = (value as unknown as Option).value;
       }
       organizationValidator
         .validateAt(name, { [name]: value })
@@ -146,25 +177,21 @@ const OrganizationEditionOverviewComponent = (props) => {
     }
   };
 
-  const initialValues = R.pipe(
-    R.assoc('createdBy', convertCreatedBy(organization)),
-    R.assoc('objectMarking', convertMarkings(organization)),
-    R.assoc('x_opencti_workflow_id', convertStatus(t_i18n, organization)),
-    R.assoc('references', []),
-    R.pick([
-      'name',
-      'description',
-      'references',
-      'contact_information',
-      'x_opencti_organization_type',
-      'x_opencti_reliability',
-      'createdBy',
-      'objectMarking',
-      'x_opencti_workflow_id',
-    ]),
-  )(organization);
+  const initialValues = {
+    name: organization.name,
+    description: organization.description,
+    contact_information: organization.contact_information,
+    x_opencti_organization_type: organization.x_opencti_organization_type,
+    x_opencti_reliability: organization.x_opencti_reliability,
+    x_opencti_workflow_id: convertStatus(t_i18n, organization) as Option,
+    createdBy: convertCreatedBy(organization) as Option,
+    objectMarking: convertMarkings(organization),
+    references: [],
+  };
+
   return (
-    <Formik enableReinitialize={true}
+    <Formik
+      enableReinitialize={true}
       initialValues={initialValues}
       validationSchema={organizationValidator}
       onSubmit={onSubmit}
@@ -177,7 +204,7 @@ const OrganizationEditionOverviewComponent = (props) => {
         isValid,
         dirty,
       }) => (
-        <Form style={{ margin: '20px 0 20px 0' }}>
+        <Form className={classes.formContainer}>
           <Field
             component={TextField}
             variant="standard"
@@ -197,7 +224,7 @@ const OrganizationEditionOverviewComponent = (props) => {
             fullWidth={true}
             multiline={true}
             rows="4"
-            style={{ marginTop: 20 }}
+            style={fieldSpacingContainerStyle}
             onFocus={editor.changeFocus}
             onSubmit={handleSubmitField}
             helperText={
@@ -212,7 +239,7 @@ const OrganizationEditionOverviewComponent = (props) => {
             fullWidth={true}
             multiline={true}
             rows="4"
-            style={{ marginTop: 20 }}
+            style={fieldSpacingContainerStyle}
             onFocus={editor.changeFocus}
             onSubmit={handleSubmitField}
             helperText={

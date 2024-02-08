@@ -75,7 +75,7 @@ export const OrganizationLine: FunctionComponent<OrganizationLineProps> = ({
   onLabelClick,
 }) => {
   const classes = useStyles();
-  const { t_i18n, fd } = useFormatter();
+  const { fd } = useFormatter();
   const data = useFragment(organizationLineFragment, node);
   return (
     <ListItem
