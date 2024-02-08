@@ -7,6 +7,7 @@ import LabelsVocabulariesMenu from './LabelsVocabulariesMenu';
 import { useVocabularyCategoryAsQuery, VocabularyDefinition } from '../../../utils/hooks/useVocabularyCategory';
 import ListLinesContent from '../../../components/list_lines/ListLinesContent';
 import { VocabularyCategoryLine, VocabularyCategoryLineDummy } from './attributes/VocabularyCategoryLine';
+import Breadcrumbs from '../../../components/Breadcrumps';
 
 const useStyles = makeStyles(() => ({
   container: {
@@ -85,6 +86,7 @@ const VocabularyCategories = () => {
   return (
     <div className={classes.container}>
       <LabelsVocabulariesMenu />
+      <Breadcrumbs variant="list" elements={[{ label: t_i18n('Settings') }, { label: t_i18n('Taxonomies') }, { label: t_i18n('Vocabularies'), current: true }]} />
       {renderLines()}
     </div>
   );

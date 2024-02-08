@@ -9,6 +9,8 @@ import { CaseTemplateLinesPaginationQuery, CaseTemplateLinesPaginationQuery$vari
 import CaseTemplateCreation from './CaseTemplateCreation';
 import CaseTemplateLineDummy from './CaseTemplateLineDummy';
 import CaseTemplateLines, { caseTemplatesLinesQuery } from './CaseTemplateLines';
+import Breadcrumbs from '../../../../components/Breadcrumps';
+import { useFormatter } from '../../../../components/i18n';
 
 const useStyles = makeStyles(() => ({
   container: {
@@ -20,6 +22,7 @@ const useStyles = makeStyles(() => ({
 const LOCAL_STORAGE_KEY_CASE_TEMPLATES = 'case-templates';
 
 const CaseTemplates = () => {
+  const { t_i18n } = useFormatter();
   const classes = useStyles();
   const { viewStorage, helpers, paginationOptions } = usePaginationLocalStorage<CaseTemplateLinesPaginationQuery$variables>(
     LOCAL_STORAGE_KEY_CASE_TEMPLATES,
@@ -100,6 +103,7 @@ const CaseTemplates = () => {
   return (
     <div className={classes.container}>
       <LabelsVocabulariesMenu />
+      <Breadcrumbs variant="list" elements={[{ label: t_i18n('Settings') }, { label: t_i18n('Taxonomies') }, { label: t_i18n('Case templates'), current: true }]} />
       {renderLines()}
       <CaseTemplateCreation
         paginationOptions={paginationOptions}

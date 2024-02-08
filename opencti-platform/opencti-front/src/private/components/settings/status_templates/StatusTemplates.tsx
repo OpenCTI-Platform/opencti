@@ -8,6 +8,8 @@ import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import StatusTemplateLineDummy from './StatusTemplateLineDummy';
 import { StatusTemplatesLinesPaginationQuery, StatusTemplatesLinesPaginationQuery$variables } from './__generated__/StatusTemplatesLinesPaginationQuery.graphql';
 import LabelsVocabulariesMenu from '../LabelsVocabulariesMenu';
+import { useFormatter } from '../../../../components/i18n';
+import Breadcrumbs from '../../../../components/Breadcrumps';
 
 const useStyles = makeStyles(() => ({
   container: {
@@ -19,6 +21,7 @@ const useStyles = makeStyles(() => ({
 const LOCAL_STORAGE_KEY = 'status-templates';
 
 const StatusTemplates = () => {
+  const { t_i18n } = useFormatter();
   const classes = useStyles();
   const { viewStorage, helpers, paginationOptions } = usePaginationLocalStorage<StatusTemplatesLinesPaginationQuery$variables>(
     LOCAL_STORAGE_KEY,
@@ -92,6 +95,7 @@ const StatusTemplates = () => {
   return (
     <div className={classes.container}>
       <LabelsVocabulariesMenu />
+      <Breadcrumbs variant="list" elements={[{ label: t_i18n('Settings') }, { label: t_i18n('Taxonomies') }, { label: t_i18n('Status templates'), current: true }]} />
       {renderLines()}
       <StatusTemplateCreation
         paginationOptions={paginationOptions}

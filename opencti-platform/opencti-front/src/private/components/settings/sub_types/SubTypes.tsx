@@ -9,6 +9,8 @@ import { SubTypesLinesQuery, SubTypesLinesQuery$variables } from './__generated_
 import useEntityToggle from '../../../../utils/hooks/useEntityToggle';
 import ToolBar from './ToolBar';
 import CustomizationMenu from '../CustomizationMenu';
+import Breadcrumbs from '../../../../components/Breadcrumps';
+import { useFormatter } from '../../../../components/i18n';
 
 const LOCAL_STORAGE_KEY_SUB_TYPES = 'sub-types';
 
@@ -21,6 +23,7 @@ const useStyles = makeStyles(() => ({
 
 const SubTypes = () => {
   const classes = useStyles();
+  const { t_i18n } = useFormatter();
   const { viewStorage, helpers, paginationOptions } = usePaginationLocalStorage<SubTypesLinesQuery$variables>(
     LOCAL_STORAGE_KEY_SUB_TYPES,
     { searchTerm: '' },
@@ -69,6 +72,7 @@ const SubTypes = () => {
   return (
     <div className={classes.container}>
       <CustomizationMenu />
+      <Breadcrumbs variant="list" elements={[{ label: t_i18n('Settings') }, { label: t_i18n('Customization') }, { label: t_i18n('Entity types'), current: true }]} />
       <ListLines
         handleSearch={helpers.handleSearch}
         keyword={searchTerm}

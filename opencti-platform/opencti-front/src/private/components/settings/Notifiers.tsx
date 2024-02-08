@@ -13,6 +13,7 @@ import NotifierCreation from './notifiers/NotifierCreation';
 import { useFormatter } from '../../../components/i18n';
 import CustomizationMenu from './CustomizationMenu';
 import { emptyFilterGroup } from '../../../utils/filters/filtersUtils';
+import Breadcrumbs from '../../../components/Breadcrumps';
 
 const LOCAL_STORAGE_KEY = 'notifiers';
 
@@ -68,6 +69,7 @@ const Notifiers = () => {
   return (
     <div className={classes.container}>
       <CustomizationMenu />
+      <Breadcrumbs variant="list" elements={[{ label: t_i18n('Settings') }, { label: t_i18n('Customization') }, { label: t_i18n('Notifiers'), current: true }]} />
       <NotifierCreation paginationOptions={paginationOptions} />
       <ListLines
         helpers={storageHelpers}

@@ -14,6 +14,8 @@ import { AlertingLines_data$key } from './__generated__/AlertingLines_data.graph
 import { AlertingLineComponent, AlertingLineDummy } from './AlertingLine';
 import type { Theme } from '../../../../../components/Theme';
 import { emptyFilterGroup } from '../../../../../utils/filters/filtersUtils';
+import Breadcrumbs from '../../../../../components/Breadcrumps';
+import { useFormatter } from '../../../../../components/i18n';
 
 export const LOCAL_STORAGE_KEY_DATA_SOURCES = 'alerting';
 const nbOfRowsToLoad = 50;
@@ -126,6 +128,7 @@ const AlertingLines: FunctionComponent<AlertingLinesProps> = ({
 };
 
 const Alerting: FunctionComponent = () => {
+  const { t_i18n } = useFormatter();
   const classes = useStyles();
   const { viewStorage, helpers, paginationOptions } = usePaginationLocalStorage<AlertingPaginationQuery$variables>(
     LOCAL_STORAGE_KEY_DATA_SOURCES,
@@ -216,6 +219,7 @@ const Alerting: FunctionComponent = () => {
   return (
     <div className={classes.container}>
       <ActivityMenu/>
+      <Breadcrumbs variant="list" elements={[{ label: t_i18n('Settings') }, { label: t_i18n('Activity') }, { label: t_i18n('Alerting'), current: true }]} />
       {renderLines()}
       <AlertCreation paginationOptions={paginationOptions}/>
     </div>

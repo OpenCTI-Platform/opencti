@@ -11,6 +11,7 @@ import { dayAgo, yearsAgo } from '../../../utils/Time';
 import { RULE_ENGINE } from '../../../utils/platformModulesHelper';
 import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
 import CustomizationMenu from './CustomizationMenu';
+import Breadcrumbs from '../../../components/Breadcrumps';
 
 const LOCAL_STORAGE_KEY = 'rules';
 
@@ -40,6 +41,7 @@ const Rules = () => {
   return (
     <div className={classes.container}>
       <CustomizationMenu />
+      <Breadcrumbs variant="list" elements={[{ label: t_i18n('Settings') }, { label: t_i18n('Customization') }, { label: t_i18n('Rules engine'), current: true }]} />
       <UserContext.Consumer>
         {({ platformModuleHelpers }) => {
           if (!platformModuleHelpers.isRuleEngineEnable()) {

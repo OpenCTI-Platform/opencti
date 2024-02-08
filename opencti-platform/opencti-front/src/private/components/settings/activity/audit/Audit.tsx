@@ -34,6 +34,7 @@ import useAuth from '../../../../../utils/hooks/useAuth';
 import { useFormatter } from '../../../../../components/i18n';
 import { emptyFilterGroup } from '../../../../../utils/filters/filtersUtils';
 import { fetchQuery } from '../../../../../relay/environment';
+import Breadcrumbs from '../../../../../components/Breadcrumps';
 
 const useStyles = makeStyles<Theme>(() => ({
   container: {
@@ -208,6 +209,7 @@ const Audit = () => {
   return (
     <div className={classes.container}>
       <ActivityMenu />
+      <Breadcrumbs variant="list" elements={[{ label: t_i18n('Settings') }, { label: t_i18n('Activity') }, { label: t_i18n('Events'), current: true }]} />
       {settings.platform_demo && (
         <Alert severity="info" variant="outlined" style={{ marginBottom: 30 }}>
           {t_i18n(

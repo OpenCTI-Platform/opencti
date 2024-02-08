@@ -11,6 +11,7 @@ import ListLines from '../../../components/list_lines/ListLines';
 import KillChainPhasesLines, { killChainPhasesLinesQuery } from './kill_chain_phases/KillChainPhasesLines';
 import KillChainPhaseCreation from './kill_chain_phases/KillChainPhaseCreation';
 import LabelsVocabulariesMenu from './LabelsVocabulariesMenu';
+import Breadcrumbs from '../../../components/Breadcrumps';
 
 const styles = () => ({
   container: {
@@ -121,7 +122,7 @@ class KillChainPhases extends Component {
   }
 
   render() {
-    const { classes } = this.props;
+    const { t, classes } = this.props;
     const { view, sortBy, orderAsc, searchTerm } = this.state;
     const paginationOptions = {
       search: searchTerm,
@@ -131,6 +132,7 @@ class KillChainPhases extends Component {
     return (
       <div className={classes.container}>
         <LabelsVocabulariesMenu />
+        <Breadcrumbs variant="list" elements={[{ label: t('Settings') }, { label: t('Taxonomies') }, { label: t('Kill chain phases'), current: true }]} />
         {view === 'lines' ? this.renderLines(paginationOptions) : ''}
         <KillChainPhaseCreation paginationOptions={paginationOptions} />
       </div>

@@ -42,6 +42,7 @@ import ObjectOrganizationField from '../../../common/form/ObjectOrganizationFiel
 import { Option } from '../../../common/form/ReferenceField';
 import { isEmptyField } from '../../../../../utils/utils';
 import EnterpriseEdition from '../../../common/entreprise_edition/EnterpriseEdition';
+import Breadcrumbs from '../../../../../components/Breadcrumps';
 
 const useStyles = makeStyles<Theme>(() => ({
   alert: {
@@ -124,6 +125,7 @@ ConfigurationComponentProps
   return (
     <div className={classes.container}>
       <ActivityMenu />
+      <Breadcrumbs variant="object" elements={[{ label: t_i18n('Settings') }, { label: t_i18n('Activity') }, { label: t_i18n('Configuration'), current: true }]} />
       <Grid container={true} spacing={3}>
         <Grid item={true} xs={12}>
           <Typography variant="h4" gutterBottom={true}>

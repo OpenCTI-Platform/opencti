@@ -26,6 +26,7 @@ import Loader, { LoaderVariant } from '../../../../components/Loader';
 import { FileIndexingConfigurationQuery } from './__generated__/FileIndexingConfigurationQuery.graphql';
 import { TEN_SECONDS } from '../../../../utils/Time';
 import { useFormatter } from '../../../../components/i18n';
+import Breadcrumbs from '../../../../components/Breadcrumps';
 
 const interval$ = interval(TEN_SECONDS);
 
@@ -89,6 +90,7 @@ const FileIndexingComponent: FunctionComponent<FileIndexingComponentProps> = ({
   }, []);
   return (
     <>
+      <Breadcrumbs variant="object" elements={[{ label: t_i18n('Settings') }, { label: t_i18n('File indexing'), current: true }]} />
       {!isEnterpriseEdition ? (
         <EnterpriseEdition feature="File indexing" />
       ) : (

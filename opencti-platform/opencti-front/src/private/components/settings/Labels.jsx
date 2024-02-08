@@ -13,6 +13,7 @@ import LabelCreation from './labels/LabelCreation';
 import LabelsVocabulariesMenu from './LabelsVocabulariesMenu';
 import ToolBar from '../data/ToolBar';
 import { buildEntityTypeBasedFilterContext } from '../../../utils/filters/filtersUtils';
+import Breadcrumbs from '../../../components/Breadcrumps';
 
 const styles = () => ({
   container: {
@@ -221,7 +222,7 @@ class Labels extends Component {
   }
 
   render() {
-    const { classes } = this.props;
+    const { t, classes } = this.props;
     const { view, sortBy, orderAsc, searchTerm } = this.state;
     const contextFilters = buildEntityTypeBasedFilterContext('Label', undefined);
     const paginationOptions = {
@@ -233,6 +234,7 @@ class Labels extends Component {
     return (
       <div className={classes.container}>
         <LabelsVocabulariesMenu />
+        <Breadcrumbs variant="list" elements={[{ label: t('Settings') }, { label: t('Taxonomies') }, { label: t('Labels'), current: true }]} />
         {view === 'lines' ? this.renderLines(paginationOptions, contextFilters) : ''}
         <LabelCreation paginationOptions={paginationOptions} />
       </div>
