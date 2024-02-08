@@ -5,30 +5,26 @@ import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 import DialogTitle from '@mui/material/DialogTitle';
 import FormControl from '@mui/material/FormControl';
-import IconButton from '@mui/material/IconButton';
 import InputLabel from '@mui/material/InputLabel';
 import ListSubheader from '@mui/material/ListSubheader';
 import MenuItem from '@mui/material/MenuItem';
 import Select from '@mui/material/Select';
-import Slide from '@mui/material/Slide';
 import React, { useState } from 'react';
 import { graphql, useMutation } from 'react-relay';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import makeStyles from '@mui/styles/makeStyles';
+import Fab from '@mui/material/Fab';
+import { createStyles } from '@mui/styles';
 import { useFormatter } from '../../components/i18n';
 import { QueryRenderer } from '../../relay/environment';
 import useAuth from '../../utils/hooks/useAuth';
 import { EXPLORE } from '../../utils/hooks/useGranted';
 import Security from '../../utils/Security';
 import ItemIcon from '../../components/ItemIcon';
+import Transition from '../../components/Transition';
 
-const Transition = React.forwardRef((props, ref) => (
-  <Slide direction="up" ref={ref} {...props} />
-));
-Transition.displayName = 'TransitionSlide';
-
-const useStyles = makeStyles({
+const useStyles = makeStyles(() => createStyles({
   muiSelect: {
     display: 'flex',
     alignItems: 'center',
@@ -36,7 +32,12 @@ const useStyles = makeStyles({
   muiSelectIcon: {
     minWidth: 36,
   },
-});
+  mainButton: ({ bannerHeightNumber }) => ({
+    position: 'fixed',
+    bottom: `${bannerHeightNumber + 30}px`,
+    right: 30,
+  }),
+}));
 
 export const dashboardSettingsDashboardsQuery = graphql`
   query DashboardSettingsDashboardsQuery(
@@ -70,7 +71,10 @@ const dashboardSettingsMutation = graphql`
 `;
 
 const DashboardSettings = () => {
-  const classes = useStyles();
+  const {
+    bannerSettings: { bannerHeightNumber },
+  } = useAuth();
+  const classes = useStyles({ bannerHeightNumber });
   const { t_i18n } = useFormatter();
   const {
     me: {
@@ -92,9 +96,15 @@ const DashboardSettings = () => {
   const handleClose = () => setOpen(false);
   return (
     <>
-      <IconButton onClick={handleOpen} size="medium" color="primary">
+      <Fab
+        onClick={handleOpen}
+        color="primary"
+        aria-label='Settings'
+        className={classes.mainButton}
+        size="small"
+      >
         <SettingsOutlined fontSize="small" />
-      </IconButton>
+      </Fab>
       <Dialog
         open={open}
         PaperProps={{ elevation: 1 }}

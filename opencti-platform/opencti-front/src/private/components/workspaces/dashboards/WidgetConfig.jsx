@@ -73,10 +73,10 @@ const useStyles = makeStyles((theme) => ({
     marginLeft: theme.spacing(2),
   },
   speedDialButton: {
-    backgroundColor: theme.palette.secondary.main,
-    color: '#ffffff',
+    backgroundColor: theme.palette.primary.main,
+    color: theme.palette.primary.contrastText,
     '&:hover': {
-      backgroundColor: theme.palette.secondary.main,
+      backgroundColor: theme.palette.primary.main,
     },
   },
   card: {
