@@ -233,7 +233,7 @@ const LeftBar = () => {
   );
   const classes = useStyles({ navOpen });
   const handleToggle = () => {
-    selectedMenu(null);
+    setSelectedMenu(null);
     localStorage.setItem('navOpen', String(!navOpen));
     setNavOpen(!navOpen);
     MESSAGING$.toggleNav.next('toggle');

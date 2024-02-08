@@ -12,6 +12,8 @@ import ListLines from '../../../components/list_lines/ListLines';
 import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
 import Loader, { LoaderVariant } from '../../../components/Loader';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
+import Breadcrumbs from '../../../components/Breadcrumps';
+import { useFormatter } from '../../../components/i18n';
 
 const LOCAL_STORAGE_KEY_CSV_MAPPERS = 'csvMappers';
 
@@ -23,7 +25,7 @@ const useStyles = makeStyles(() => ({
 
 const CsvMappers = () => {
   const classes = useStyles();
-
+  const { t_i18n } = useFormatter();
   const { viewStorage, paginationOptions, helpers } = usePaginationLocalStorage<csvMappers_MappersQuery$variables>(
     LOCAL_STORAGE_KEY_CSV_MAPPERS,
     {
@@ -71,6 +73,7 @@ const CsvMappers = () => {
           schemaAttributesQueryRef={queryRefSchemaAttributes}
         >
           <div className={classes.container}>
+            <Breadcrumbs variant="list" elements={[{ label: t_i18n('Data') }, { label: t_i18n('Processing') }, { label: t_i18n('CSV mappers'), current: true }]} />
             <ProcessingMenu />
             <ListLines
               helpers={helpers}

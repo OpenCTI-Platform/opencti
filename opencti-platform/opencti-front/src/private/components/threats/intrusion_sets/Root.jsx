@@ -141,6 +141,7 @@ class RootIntrusionSet extends Component {
                       stixDomainObject={intrusionSet}
                       PopoverComponent={<IntrusionSetPopover />}
                       enableQuickSubscription={true}
+                      enableAskAi={true}
                     />
                     <Box
                       sx={{

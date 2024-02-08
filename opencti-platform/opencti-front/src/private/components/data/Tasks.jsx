@@ -9,6 +9,7 @@ import Loader from '../../../components/Loader';
 import useAuth from '../../../utils/hooks/useAuth';
 import { TASK_MANAGER } from '../../../utils/platformModulesHelper';
 import ProcessingMenu from './ProcessingMenu';
+import Breadcrumbs from '../../../components/Breadcrumps';
 
 const useStyles = makeStyles(() => ({
   container: {
@@ -52,6 +53,7 @@ const Tasks = () => {
   }
   return (
     <div className={classes.container}>
+      <Breadcrumbs variant="list" elements={[{ label: t_i18n('Data') }, { label: t_i18n('Processing') }, { label: t_i18n('Tasks'), current: true }]} />
       <ProcessingMenu />
       <Typography variant="h4" gutterBottom={true}>
         {t_i18n('In progress tasks')}

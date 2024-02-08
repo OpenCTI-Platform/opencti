@@ -204,6 +204,7 @@ class SessionsListComponent extends Component {
                             userSession.id,
                           )}
                           size="large"
+                          color="primary"
                         >
                           <DeleteOutlined />
                         </IconButton>

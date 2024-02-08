@@ -3,18 +3,13 @@ import * as PropTypes from 'prop-types';
 import { compose, propOr } from 'ramda';
 import { withRouter } from 'react-router-dom';
 import withStyles from '@mui/styles/withStyles';
-import Slide from '@mui/material/Slide';
 import AccessesMenu from './AccessesMenu';
 import inject18n from '../../../components/i18n';
 import { QueryRenderer } from '../../../relay/environment';
 import SessionsList, { sessionsListQuery } from './SessionsList';
 import SearchInput from '../../../components/SearchInput';
 import { buildViewParamsFromUrlAndStorage, saveViewParameters } from '../../../utils/ListParameters';
-
-const Transition = React.forwardRef((props, ref) => (
-  <Slide direction="up" ref={ref} {...props} />
-));
-Transition.displayName = 'TransitionSlide';
+import Breadcrumbs from '../../../components/Breadcrumps';
 
 const styles = () => ({
   container: {
@@ -58,10 +53,11 @@ class Sessions extends Component {
 
   render() {
     const { searchTerm } = this.state;
-    const { classes } = this.props;
+    const { t, classes } = this.props;
     return (
       <div className={classes.container}>
         <AccessesMenu />
+        <Breadcrumbs variant="list" elements={[{ label: t('Settings') }, { label: t('Security') }, { label: t('Sessions'), current: true }]} />
         <div className={classes.parameters}>
           <div style={{ float: 'left', marginRight: 20 }}>
             <SearchInput

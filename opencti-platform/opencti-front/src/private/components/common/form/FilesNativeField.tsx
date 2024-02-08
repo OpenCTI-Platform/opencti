@@ -15,6 +15,7 @@ interface FilesFieldProps {
   currentValue: { label: string, value: string }[];
   onChange?: (value: { label: string, value: string }[] | null) => void;
   containerStyle?: Record<string, string | number>;
+  helperText?: string;
 }
 
 const useStyles = makeStyles(() => ({
@@ -54,6 +55,7 @@ const FilesNativeField: FunctionComponent<FilesFieldProps> = ({
   containerStyle,
   currentValue,
   onChange,
+  helperText,
 }) => {
   const classes = useStyles();
   const [files, setFiles] = useState<{
@@ -99,6 +101,7 @@ const FilesNativeField: FunctionComponent<FilesFieldProps> = ({
             name={name}
             fullWidth={true}
             style={containerStyle}
+            helperText={helperText}
           />
         )}
         renderOption={(

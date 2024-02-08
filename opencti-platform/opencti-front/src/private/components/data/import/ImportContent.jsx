@@ -40,6 +40,7 @@ import WorkbenchFileCreator from '../../common/files/workbench/WorkbenchFileCrea
 import ManageImportConnectorMessage from './ManageImportConnectorMessage';
 import { truncate } from '../../../../utils/String';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
+import Breadcrumbs from '../../../../components/Breadcrumps';
 
 const interval$ = interval(FIVE_SECONDS);
 
@@ -316,15 +317,8 @@ class ImportContentComponent extends Component {
       this.setState({ selectedConnector: connectors.find((c) => c.id === value) });
     };
     return (
-      <div className={classes.container}>
-        <Typography
-          variant="h1"
-          gutterBottom={true}
-          classes={{ root: classes.title }}
-        >
-          {t('Data import')}
-        </Typography>
-        <div className="clearfix" />
+      <>
+        <Breadcrumbs variant="list" elements={[{ label: t('Data') }, { label: t('Import'), current: true }]} />
         <Grid
           container={true}
           spacing={3}
@@ -675,13 +669,13 @@ class ImportContentComponent extends Component {
         </div>
         <Fab
           onClick={this.handleOpenCreate.bind(this)}
-          color="secondary"
+          color="primary"
           aria-label="Add"
           className={classes.createButton}
         >
           <Add />
         </Fab>
-      </div>
+      </>
     );
   }
 }

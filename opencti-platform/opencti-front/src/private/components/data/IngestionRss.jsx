@@ -10,6 +10,7 @@ import useAuth from '../../../utils/hooks/useAuth';
 import { useFormatter } from '../../../components/i18n';
 import { INGESTION_MANAGER } from '../../../utils/platformModulesHelper';
 import IngestionMenu from './IngestionMenu';
+import Breadcrumbs from '../../../components/Breadcrumps';
 
 const LOCAL_STORAGE_KEY = 'ingestionRss';
 
@@ -64,6 +65,7 @@ const IngestionRss = () => {
   }
   return (
     <div className={classes.container}>
+      <Breadcrumbs variant="list" elements={[{ label: t_i18n('Data') }, { label: t_i18n('Ingestion') }, { label: t_i18n('RSS feeds'), current: true }]} />
       <IngestionMenu/>
       <ListLines
         helpers={storageHelpers}

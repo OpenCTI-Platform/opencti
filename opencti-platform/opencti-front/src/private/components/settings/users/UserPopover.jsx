@@ -9,18 +9,13 @@ import IconButton from '@mui/material/IconButton';
 import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
-import Slide from '@mui/material/Slide';
 import MoreVert from '@mui/icons-material/MoreVert';
 import { withRouter } from 'react-router-dom';
 import DialogTitle from '@mui/material/DialogTitle';
 import inject18n from '../../../../components/i18n';
 import { commitMutation, QueryRenderer } from '../../../../relay/environment';
 import UserEdition from './UserEdition';
-
-const Transition = React.forwardRef((props, ref) => (
-  <Slide direction="up" ref={ref} {...props} />
-));
-Transition.displayName = 'TransitionSlide';
+import Transition from '../../../../components/Transition';
 
 const userPopoverDeletionMutation = graphql`
   mutation UserPopoverDeletionMutation($id: ID!) {
@@ -99,6 +94,7 @@ class UserPopover extends Component {
           aria-haspopup="true"
           style={{ marginTop: 3 }}
           size="large"
+          color="primary"
         >
           <MoreVert />
         </IconButton>

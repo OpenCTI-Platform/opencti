@@ -22,6 +22,7 @@ import InputLabel from '@mui/material/InputLabel';
 import Select from '@mui/material/Select';
 import TextField from '@mui/material/TextField';
 import { createSearchParams, useNavigate } from 'react-router-dom-v5-compat';
+import Alert from '@mui/material/Alert';
 import { stixDomainObjectContentFilesUploadStixDomainObjectMutation } from '../stix_domain_objects/StixDomainObjectContentFiles';
 import { stixDomainObjectContentFieldPatchMutation } from '../stix_domain_objects/StixDomainObjectContent';
 import FilesNativeField from '../form/FilesNativeField';
@@ -74,6 +75,12 @@ const actionsFormat = {
   'container-report': ['html', 'markdown', 'text'],
   'summarize-files': ['html', 'markdown', 'text'],
   'convert-files': ['json'],
+};
+
+const actionsExplanation = {
+  'container-report': 'Generate a text report based on the knowledge graph (entities and relationships) of this container.',
+  'summarize-files': 'Generate a summary of the selected files (or all files associated to this entity).',
+  'convert-files': 'Try to convert the selected files (or all files associated to this entity) in a STIX 2.1 bundle.',
 };
 
 const StixCoreObjectAskAI: FunctionComponent<StixCoreObjectAskAiProps> = ({ instanceId, instanceType, instanceName, type }) => {
@@ -266,7 +273,10 @@ const StixCoreObjectAskAI: FunctionComponent<StixCoreObjectAskAiProps> = ({ inst
       >
         <DialogTitle>{t_i18n('Select options')}</DialogTitle>
         <DialogContent>
-          <FormControl style={{ width: '100%' }}>
+          <Alert severity="info">
+            {action && t_i18n(actionsExplanation[action])}
+          </Alert>
+          <FormControl style={fieldSpacingContainerStyle}>
             <InputLabel id="format">{t_i18n('Format')}</InputLabel>
             <Select
               labelId="format"
@@ -313,6 +323,7 @@ const StixCoreObjectAskAI: FunctionComponent<StixCoreObjectAskAiProps> = ({ inst
               currentValue={files}
               onChange={(value) => value && setFiles(value)}
               containerStyle={fieldSpacingContainerStyle}
+              helperText={t_i18n('By default, all files will be used to generate the response.')}
             />
           )}
         </DialogContent>

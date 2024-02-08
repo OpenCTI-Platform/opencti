@@ -29,6 +29,7 @@ import useQueryLoading from '../../../utils/hooks/useQueryLoading';
 import Loader, { LoaderVariant } from '../../../components/Loader';
 import useEnterpriseEdition from '../../../utils/hooks/useEnterpriseEdition';
 import ItemBoolean from '../../../components/ItemBoolean';
+import Breadcrumbs from '../../../components/Breadcrumps';
 
 const useStyles = makeStyles(() => ({
   container: {
@@ -161,6 +162,7 @@ const PoliciesComponent: FunctionComponent<PoliciesComponentProps> = ({
   return (
     <div className={classes.container}>
       <AccessesMenu />
+      <Breadcrumbs variant="list" elements={[{ label: t_i18n('Settings') }, { label: t_i18n('Security') }, { label: t_i18n('Policies'), current: true }]} />
       <Grid container={true} spacing={3}>
         <Grid item={true} xs={12}>
           <Formik

@@ -8,7 +8,6 @@ import Typography from '@mui/material/Typography';
 import Paper from '@mui/material/Paper';
 import Button from '@mui/material/Button';
 import Chip from '@mui/material/Chip';
-import Slide from '@mui/material/Slide';
 import { interval } from 'rxjs';
 import Tooltip from '@mui/material/Tooltip';
 import IconButton from '@mui/material/IconButton';
@@ -28,6 +27,7 @@ import { commitMutation, MESSAGING$, QueryRenderer } from '../../../../relay/env
 import ConnectorWorks, { connectorWorksQuery } from './ConnectorWorks';
 import Loader from '../../../../components/Loader';
 import ItemCopy from '../../../../components/ItemCopy';
+import Transition from '../../../../components/Transition';
 
 const interval$ = interval(FIVE_SECONDS);
 
@@ -69,6 +69,7 @@ const styles = (theme) => ({
     height: 30,
     float: 'left',
     margin: '0 10px 10px 0',
+    borderRadius: 4,
     backgroundColor: theme.palette.background.accent,
     color: theme.palette.text.primary,
   },
@@ -81,11 +82,6 @@ const styles = (theme) => ({
     height: 10,
   },
 });
-
-const Transition = React.forwardRef((props, ref) => (
-  <Slide direction="up" ref={ref} {...props} />
-));
-Transition.displayName = 'TransitionSlide';
 
 export const connectorResetStateMutation = graphql`
   mutation ConnectorResetStateMutation($id: ID!) {
@@ -221,8 +217,8 @@ class ConnectorComponent extends Component {
       },
     };
     return (
-      <div className={classes.container}>
-        <div>
+      <>
+        <>
           <Typography
             variant="h1"
             gutterBottom={true}
@@ -271,7 +267,7 @@ class ConnectorComponent extends Component {
             </Security>
           </div>
           <div className="clearfix" />
-        </div>
+        </>
         <Grid
           container={true}
           spacing={3}
@@ -290,7 +286,7 @@ class ConnectorComponent extends Component {
                   <Button
                     style={{ cursor: 'default' }}
                     variant="outlined"
-                    color="secondary"
+                    color="primary"
                   >
                     {connector.connector_type}
                   </Button>
@@ -491,7 +487,7 @@ class ConnectorComponent extends Component {
             return <Loader variant="inElement" />;
           }}
         />
-      </div>
+      </>
     );
   }
 }

@@ -18,6 +18,7 @@ import User from './User';
 import UserAnalytics from './UserAnalytics';
 import { useFormatter } from '../../../../components/i18n';
 import useAuth from '../../../../utils/hooks/useAuth';
+import Breadcrumbs from '../../../../components/Breadcrumps';
 
 const useStyles = makeStyles(() => ({
   title: {
@@ -67,6 +68,7 @@ const userQuery = graphql`
     user(id: $id) {
       id
       name
+      user_email
       ...User_user
         @arguments(
           groupsOrderBy: $groupsOrderBy
@@ -98,6 +100,13 @@ const RootUserComponent = ({ queryRef, userId, refetch }) => {
       {data ? (
         <div style={{ paddingRight: 200 }}>
           <AccessesMenu />
+          <Breadcrumbs variant="object" elements={[
+            { label: t_i18n('Settings') },
+            { label: t_i18n('Security') },
+            { label: t_i18n('Users'), link: '/dashboard/settings/security/users' },
+            { label: data.name || data.user_email, current: true },
+          ]}
+          />
           <>
             <Typography
               variant="h1"
