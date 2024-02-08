@@ -70,7 +70,7 @@ describe('Marking Definition', () => {
     statementMarking1 = await createMarking(markings[2]);
     statementMarking2 = await createMarking(markings[3]);
   });
-  describe('Clean Markings', async () => {
+  describe('Clean Markings use for editing', async () => {
     it('Case add only one marking => output one marking added', async () => {
       const result = await cleanMarkings(testContext, [clearPAPMarking]);
       expect(result.map((r) => r.id)).toEqual([clearPAPMarking.id]);
@@ -87,6 +87,15 @@ describe('Marking Definition', () => {
     it('Case add 2 markings same type AND order different AND another type => output marking with higher rank added AND the other type', async () => {
       const result = await cleanMarkings(testContext, [redPAPMarking, clearPAPMarking, statementMarking1]);
       expect(result.map((r) => r.id)).toEqual([redPAPMarking.id, statementMarking1.id]);
+    });
+    it('Case add a marking with as undefined (deleted case) => output no marking added', async () => {
+      const result = await cleanMarkings(testContext, [undefined]);
+      expect(result.map((r) => r.id)).toEqual([]);
+    });
+    it('Case add 2 markings same type AND order different AND a deleted marking => output marking with higher rank added', async () => {
+      // Case input 2 markings same type AND order different: output marking with higher rank added
+      const result = await cleanMarkings(testContext, [clearPAPMarking, undefined, redPAPMarking]);
+      expect(result.map((r) => r.id)).toEqual([redPAPMarking.id]);
     });
   });
 
