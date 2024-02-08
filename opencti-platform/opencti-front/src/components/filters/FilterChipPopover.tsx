@@ -9,7 +9,7 @@ import { SelectChangeEvent } from '@mui/material/Select';
 import SearchScopeElement from '@components/common/lists/SearchScopeElement';
 import Chip from '@mui/material/Chip';
 import { OptionValue } from '@components/common/lists/FilterAutocomplete';
-import { dateFilters, Filter, getAvailableOperatorForFilter, integerFilters, isStixObjectTypes, textFilters } from '../../utils/filters/filtersUtils';
+import { dateFilters, Filter, FilterValue, getAvailableOperatorForFilter, integerFilters, isStixObjectTypes, textFilters } from '../../utils/filters/filtersUtils';
 import { useFormatter } from '../i18n';
 import ItemIcon from '../ItemIcon';
 import { getOptionsFromEntities, getUseSearch } from '../../utils/filters/SearchEntitiesUtil';
@@ -226,28 +226,30 @@ export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({
       availableRelationFilterTypes={availableRelationFilterTypes}
     />
   );
-
-  const buildAutocompleteFilter = (fKey: string, subKey?: string): ReactNode => {
-    const entitiesOptions = getOptionsFromEntities(entities, searchScope, fKey)
-      .filter((option) => !filterValues.includes(option.value));
-
-    const selectedOptions: OptionValue[] = filterValues.map((value: string) => {
+  const getSelectedOptions = (): OptionValue[] => {
+    const mapFilterValues: OptionValue[] = [];
+    filterValues.forEach((value: string) => {
       const filterRepresentative = filtersRepresentativesMap.get(value);
       if (filterRepresentative) {
-        return {
+        mapFilterValues.push({
           value,
           type: filterRepresentative?.entity_type ?? t_i18n('Selected'),
           parentTypes: [],
           group: t_i18n('Selected'),
           label: filterRepresentative?.value ?? t_i18n('Unknown'),
-          color: filterRepresentative?.color,
-        };
+          color: filterRepresentative?.color ?? undefined,
+        });
       }
+    });
+    return mapFilterValues.sort((a, b) => a.label.localeCompare(b.label));
+  };
 
-      // due to some async between action and the graphql call
-      // it's possible that the filterRepresentative do not know every filterValues
-      return undefined;
-    }).filter((d) => !!d) as OptionValue[];
+  const buildAutocompleteFilter = (fKey: string, subKey?: string): ReactNode => {
+    const entitiesOptions = getOptionsFromEntities(entities, searchScope, fKey)
+      .filter((option) => !filterValues.includes(option.value))
+      .sort((a, b) => a.label.localeCompare(b.label));
+
+    const selectedOptions: OptionValue[] = getSelectedOptions();
 
     const groupByEntities = (option: OptionValue) => {
       if (option?.group === 'Selected') {
