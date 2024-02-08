@@ -393,7 +393,7 @@ class ImportContentComponent extends Component {
                     return (
                       <ListItemButton
                         component={Link}
-                        to={`/dashboard/data/connectors/${connector.id}`}
+                        to={`/dashboard/data/ingestion/connectors/${connector.id}`}
                         key={connector.id}
                         dense={true}
                         divider={true}

@@ -187,7 +187,7 @@ class ConnectorComponent extends Component {
       },
       onCompleted: () => {
         this.handleCloseDelete();
-        this.props.history.push('/dashboard/data/connectors');
+        this.props.history.push('/dashboard/data/ingestion/connectors');
       },
     });
   }

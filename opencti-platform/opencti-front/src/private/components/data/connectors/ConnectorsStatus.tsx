@@ -197,7 +197,7 @@ const ConnectorsStatusComponent: FunctionComponent<ConnectorsStatusComponentProp
       },
       onCompleted: () => {
         MESSAGING$.notifySuccess('The connector has been cleared');
-        history.push('/dashboard/data/connectors');
+        history.push('/dashboard/data/ingestion/connectors');
       },
       updater: undefined,
       optimisticResponse: undefined,
