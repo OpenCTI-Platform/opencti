@@ -59,6 +59,14 @@ $ cd docker
 
 ### Configure the environment
 
+!!! warning "ElasticSearch / OpenSearch configuration"
+
+    We highly recommend to put the ElasticSearch / OpenSearch following parameter:
+
+    ```bash
+    thread_pool.search.queue_size=5000
+    ```
+
 Before running the `docker-compose` command, the `docker-compose.yml` file should be configured. By default, the `docker-compose.yml` file is using environment variables available in the file `.env.sample`.
 
 You can either rename the file `.env.sample` in `.env` and put the expected values or just fill directly the `docker-compose.yml` with the values corresponding to your environment.
@@ -99,8 +107,6 @@ If your `docker-compose` deployment does not support `.env` files, just export a
 $ export $(cat .env | grep -v "#" | xargs)
 ```
 
-²
-
 As OpenCTI has a dependency on ElasticSearch, you have to set the `vm.max_map_count` before running the containers, as mentioned in the [ElasticSearch documentation](https://www.elastic.co/guide/en/elasticsearch/reference/current/docker.html#docker-cli-run-prod-mode).
 
 ```bash
@@ -112,6 +118,7 @@ To make this parameter persistent, add the following to the end of your `/etc/sy
 ```bash
 $ vm.max_map_count=1048575
 ```
+    
 
 ### Persist data
 
