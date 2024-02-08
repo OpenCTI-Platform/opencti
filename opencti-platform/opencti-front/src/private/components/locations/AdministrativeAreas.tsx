@@ -12,10 +12,13 @@ import {
   AdministrativeAreasLinesPaginationQuery$variables,
 } from './administrative_areas/__generated__/AdministrativeAreasLinesPaginationQuery.graphql';
 import { emptyFilterGroup } from '../../../utils/filters/filtersUtils';
+import { useFormatter } from '../../../components/i18n';
+import Breadcrumbs from '../../../components/Breadcrumps';
 
 const LOCAL_STORAGE_KEY = 'administrative-areas';
 
 const AdministrativeAreas: FunctionComponent = () => {
+  const { t_i18n } = useFormatter();
   const { viewStorage, helpers, paginationOptions } = usePaginationLocalStorage<AdministrativeAreasLinesPaginationQuery$variables>(
     LOCAL_STORAGE_KEY,
     {
@@ -113,6 +116,7 @@ const AdministrativeAreas: FunctionComponent = () => {
   };
   return (
     <>
+      <Breadcrumbs variant="list" elements={[{ label: t_i18n('Locations') }, { label: t_i18n('Administrative areas'), current: true }]} />
       {renderLines()}
       <Security needs={[KNOWLEDGE_KNUPDATE]}>
         <AdministrativeAreaCreation paginationOptions={paginationOptions} />

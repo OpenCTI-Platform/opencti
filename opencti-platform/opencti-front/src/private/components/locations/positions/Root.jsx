@@ -19,6 +19,7 @@ import StixCoreObjectKnowledgeBar from '../../common/stix_core_objects/StixCoreO
 import ErrorNotFound from '../../../../components/ErrorNotFound';
 import EntityStixSightingRelationships from '../../events/stix_sighting_relationships/EntityStixSightingRelationships';
 import inject18n from '../../../../components/i18n';
+import Breadcrumbs from '../../../../components/Breadcrumps';
 
 const subscription = graphql`
   subscription RootPositionsSubscription($id: ID!) {
@@ -125,6 +126,12 @@ class RootPosition extends Component {
                         : 0,
                     }}
                   >
+                    <Breadcrumbs variant="object" elements={[
+                      { label: t('Locations') },
+                      { label: t('Positions'), link: '/dashboard/locations/positions' },
+                      { label: position.name, current: true },
+                    ]}
+                    />
                     <StixDomainObjectHeader
                       entityType="Position"
                       disableSharing={true}

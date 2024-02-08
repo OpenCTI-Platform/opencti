@@ -11,6 +11,7 @@ import SectorCreation from './sectors/SectorCreation';
 import SearchInput from '../../../components/SearchInput';
 import Security from '../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE } from '../../../utils/hooks/useGranted';
+import Breadcrumbs from '../../../components/Breadcrumps';
 
 const styles = () => ({
   parameters: {
@@ -54,9 +55,10 @@ class Sectors extends Component {
 
   render() {
     const { searchTerm } = this.state;
-    const { classes } = this.props;
+    const { t, classes } = this.props;
     return (
-      <div>
+      <>
+        <Breadcrumbs variant="list" elements={[{ label: t('Entities') }, { label: t('Sectors'), current: true }]} />
         <div className={classes.parameters}>
           <div style={{ float: 'left', marginRight: 20 }}>
             <SearchInput
@@ -77,7 +79,7 @@ class Sectors extends Component {
         <Security needs={[KNOWLEDGE_KNUPDATE]}>
           <SectorCreation />
         </Security>
-      </div>
+      </>
     );
   }
 }

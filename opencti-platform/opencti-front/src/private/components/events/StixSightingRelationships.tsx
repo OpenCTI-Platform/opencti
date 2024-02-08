@@ -12,6 +12,8 @@ import { StixSightingRelationshipLine_node$data } from './stix_sighting_relation
 import ToolBar from '../data/ToolBar';
 import ExportContextProvider from '../../../utils/ExportContextProvider';
 import { buildEntityTypeBasedFilterContext, emptyFilterGroup, getDefaultFilterObjFromArray } from '../../../utils/filters/filtersUtils';
+import { useFormatter } from '../../../components/i18n';
+import Breadcrumbs from '../../../components/Breadcrumps';
 
 const dataColumns = {
   x_opencti_negative: {
@@ -63,6 +65,7 @@ const dataColumns = {
 const LOCAL_STORAGE_KEY = 'stixSightingRelationships';
 
 const StixSightingRelationships = () => {
+  const { t_i18n } = useFormatter();
   const {
     viewStorage,
     paginationOptions,
@@ -179,6 +182,7 @@ const StixSightingRelationships = () => {
 
   return (
     <ExportContextProvider>
+      <Breadcrumbs variant="list" elements={[{ label: t_i18n('Events') }, { label: t_i18n('Sightings'), current: true }]} />
       {renderLines()}
     </ExportContextProvider>
   );

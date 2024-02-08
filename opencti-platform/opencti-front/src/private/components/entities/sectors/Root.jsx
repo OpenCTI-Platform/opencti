@@ -19,6 +19,7 @@ import StixCoreObjectKnowledgeBar from '../../common/stix_core_objects/StixCoreO
 import ErrorNotFound from '../../../../components/ErrorNotFound';
 import EntityStixSightingRelationships from '../../events/stix_sighting_relationships/EntityStixSightingRelationships';
 import inject18n from '../../../../components/i18n';
+import Breadcrumbs from '../../../../components/Breadcrumps';
 
 const subscription = graphql`
   subscription RootSectorSubscription($id: ID!) {
@@ -123,6 +124,12 @@ class RootSector extends Component {
                         : 0,
                     }}
                   >
+                    <Breadcrumbs variant="object" elements={[
+                      { label: t('Entities') },
+                      { label: t('Sectors'), link: '/dashboard/entities/sectors' },
+                      { label: sector.name, current: true },
+                    ]}
+                    />
                     <StixDomainObjectHeader
                       entityType="Sector"
                       disableSharing={true}

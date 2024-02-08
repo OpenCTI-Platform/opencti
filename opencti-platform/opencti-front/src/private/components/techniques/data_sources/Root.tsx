@@ -22,6 +22,7 @@ import DataSource from './DataSource';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import { useFormatter } from '../../../../components/i18n';
+import Breadcrumbs from '../../../../components/Breadcrumps';
 
 const subscription = graphql`
   subscription RootDataSourcesSubscription($id: ID!) {
@@ -88,6 +89,12 @@ const RootDataSourceComponent = ({ queryRef, dataSourceId }) => {
               : 0,
           }}
         >
+          <Breadcrumbs variant="object" elements={[
+            { label: t_i18n('Techniques') },
+            { label: t_i18n('Data sources'), link: '/dashboard/techniques/data_sources' },
+            { label: dataSource.name, current: true },
+          ]}
+          />
           <StixDomainObjectHeader
             entityType={'Data-Source'}
             disableSharing={true}

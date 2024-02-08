@@ -18,6 +18,7 @@ import StixCoreObjectOrStixCoreRelationshipContainers from '../../common/contain
 import StixCoreObjectKnowledgeBar from '../../common/stix_core_objects/StixCoreObjectKnowledgeBar';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
 import inject18n from '../../../../components/i18n';
+import Breadcrumbs from '../../../../components/Breadcrumps';
 
 const subscription = graphql`
   subscription RootAttackPatternSubscription($id: ID!) {
@@ -123,6 +124,12 @@ class RootAttackPattern extends Component {
                         : 0,
                     }}
                   >
+                    <Breadcrumbs variant="object" elements={[
+                      { label: t('Techniques') },
+                      { label: t('Attack patterns'), link: '/dashboard/techniques/attack_patterns' },
+                      { label: attackPattern.name, current: true },
+                    ]}
+                    />
                     <StixDomainObjectHeader
                       entityType="AttackPattern"
                       disableSharing={true}

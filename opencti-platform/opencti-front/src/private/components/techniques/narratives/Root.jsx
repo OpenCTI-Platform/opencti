@@ -18,6 +18,7 @@ import StixCoreObjectOrStixCoreRelationshipContainers from '../../common/contain
 import StixCoreObjectKnowledgeBar from '../../common/stix_core_objects/StixCoreObjectKnowledgeBar';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
 import inject18n from '../../../../components/i18n';
+import Breadcrumbs from '../../../../components/Breadcrumps';
 
 const subscription = graphql`
   subscription RootNarrativeSubscription($id: ID!) {
@@ -87,7 +88,7 @@ class RootNarrative extends Component {
     } = this.props;
     const link = `/dashboard/techniques/narratives/${narrativeId}/knowledge`;
     return (
-      <div>
+      <>
         <Route path="/dashboard/techniques/narratives/:narrativeId/knowledge">
           <StixCoreObjectKnowledgeBar
             stixCoreObjectLink={link}
@@ -119,6 +120,12 @@ class RootNarrative extends Component {
                         : 0,
                     }}
                   >
+                    <Breadcrumbs variant="object" elements={[
+                      { label: t('Techniques') },
+                      { label: t('Narratives'), link: '/dashboard/techniques/narratives' },
+                      { label: narrative.name, current: true },
+                    ]}
+                    />
                     <StixDomainObjectHeader
                       entityType="Narrative"
                       disableSharing={true}
@@ -246,7 +253,7 @@ class RootNarrative extends Component {
             return <Loader />;
           }}
         />
-      </div>
+      </>
     );
   }
 }

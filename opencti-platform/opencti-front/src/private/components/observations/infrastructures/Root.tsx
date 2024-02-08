@@ -23,6 +23,7 @@ import { RootInfrastructureQuery } from './__generated__/RootInfrastructureQuery
 import Infrastructure from './Infrastructure';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import { useFormatter } from '../../../../components/i18n';
+import Breadcrumbs from '../../../../components/Breadcrumps';
 
 const subscription = graphql`
   subscription RootInfrastructureSubscription($id: ID!) {
@@ -90,6 +91,12 @@ const RootInfrastructureComponent = ({ queryRef, infrastructureId }) => {
               : 0,
           }}
         >
+          <Breadcrumbs variant="object" elements={[
+            { label: t_i18n('Observations') },
+            { label: t_i18n('Infrastructures'), link: '/dashboard/observations/infrastructures' },
+            { label: infrastructure.name, current: true },
+          ]}
+          />
           <StixDomainObjectHeader
             entityType="Infrastructure"
             stixDomainObject={infrastructure}

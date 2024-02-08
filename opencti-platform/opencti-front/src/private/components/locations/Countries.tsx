@@ -9,10 +9,13 @@ import { CountriesLinesPaginationQuery, CountriesLinesPaginationQuery$variables 
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
 import { CountryLineDummy } from './countries/CountryLine';
 import { emptyFilterGroup } from '../../../utils/filters/filtersUtils';
+import { useFormatter } from '../../../components/i18n';
+import Breadcrumbs from '../../../components/Breadcrumps';
 
 const LOCAL_STORAGE_KEY = 'countries';
 
 const Countries: FunctionComponent = () => {
+  const { t_i18n } = useFormatter();
   const { viewStorage, helpers, paginationOptions } = usePaginationLocalStorage<CountriesLinesPaginationQuery$variables>(
     LOCAL_STORAGE_KEY,
     {
@@ -107,6 +110,7 @@ const Countries: FunctionComponent = () => {
   };
   return (
     <>
+      <Breadcrumbs variant="list" elements={[{ label: t_i18n('Locations') }, { label: t_i18n('Countries'), current: true }]} />
       {renderLines()}
       <Security needs={[KNOWLEDGE_KNUPDATE]}>
         <CountryCreation paginationOptions={paginationOptions} />

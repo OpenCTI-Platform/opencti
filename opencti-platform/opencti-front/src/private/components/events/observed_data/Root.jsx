@@ -16,6 +16,7 @@ import Loader from '../../../../components/Loader';
 import ContainerStixDomainObjects from '../../common/containers/ContainerStixDomainObjects';
 import ContainerStixCyberObservables from '../../common/containers/ContainerStixCyberObservables';
 import inject18n from '../../../../components/i18n';
+import Breadcrumbs from '../../../../components/Breadcrumps';
 
 const subscription = graphql`
   subscription RootObservedDataSubscription($id: ID!) {
@@ -105,6 +106,12 @@ class RootObservedData extends Component {
                         : 0,
                   }}
                 >
+                  <Breadcrumbs variant="object" elements={[
+                    { label: t('Events') },
+                    { label: t('Observed datas'), link: '/dashboard/events/observed_data' },
+                    { label: observedData.name, current: true },
+                  ]}
+                  />
                   <ContainerHeader
                     container={observedData}
                     PopoverComponent={<ObservedDataPopover />}

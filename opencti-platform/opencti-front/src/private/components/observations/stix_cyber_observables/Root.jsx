@@ -19,6 +19,7 @@ import StixSightingRelationship from '../../events/stix_sighting_relationships/S
 import StixCoreObjectOrStixCoreRelationshipContainers from '../../common/containers/StixCoreObjectOrStixCoreRelationshipContainers';
 import FileManager from '../../common/files/FileManager';
 import inject18n from '../../../../components/i18n';
+import Breadcrumbs from '../../../../components/Breadcrumps';
 
 const subscription = graphql`
   subscription RootStixCyberObservableSubscription($id: ID!) {
@@ -40,6 +41,7 @@ const stixCyberObservableQuery = graphql`
       id
       standard_id
       entity_type
+      observable_value
       ...StixCyberObservable_stixCyberObservable
       ...StixCyberObservableHeader_stixCyberObservable
       ...StixCyberObservableDetails_stixCyberObservable
@@ -97,6 +99,12 @@ class RootStixCyberObservable extends Component {
                 const { stixCyberObservable } = props;
                 return (
                   <>
+                    <Breadcrumbs variant="object" elements={[
+                      { label: t('Observations') },
+                      { label: t('Observables'), link: '/dashboard/observations/observables' },
+                      { label: stixCyberObservable.observable_value, current: true },
+                    ]}
+                    />
                     <StixCyberObservableHeader
                       stixCyberObservable={stixCyberObservable}
                     />

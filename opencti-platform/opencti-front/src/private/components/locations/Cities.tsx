@@ -9,10 +9,13 @@ import { CityLineDummy } from './cities/CityLine';
 import { KNOWLEDGE_KNUPDATE } from '../../../utils/hooks/useGranted';
 import { CitiesLinesPaginationQuery, CitiesLinesPaginationQuery$variables } from './cities/__generated__/CitiesLinesPaginationQuery.graphql';
 import { emptyFilterGroup } from '../../../utils/filters/filtersUtils';
+import { useFormatter } from '../../../components/i18n';
+import Breadcrumbs from '../../../components/Breadcrumps';
 
 const LOCAL_STORAGE_KEY = 'cities';
 
 const Cities: FunctionComponent = () => {
+  const { t_i18n } = useFormatter();
   const { viewStorage, helpers, paginationOptions } = usePaginationLocalStorage<CitiesLinesPaginationQuery$variables>(
     LOCAL_STORAGE_KEY,
     {
@@ -107,6 +110,7 @@ const Cities: FunctionComponent = () => {
   };
   return (
     <>
+      <Breadcrumbs variant="list" elements={[{ label: t_i18n('Locations') }, { label: t_i18n('Cities'), current: true }]} />
       {renderLines()}
       <Security needs={[KNOWLEDGE_KNUPDATE]}>
         <CityCreation paginationOptions={paginationOptions} />

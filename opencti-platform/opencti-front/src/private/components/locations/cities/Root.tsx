@@ -23,6 +23,7 @@ import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import { useFormatter } from '../../../../components/i18n';
 import CityPopover from './CityPopover';
+import Breadcrumbs from '../../../../components/Breadcrumps';
 
 const subscription = graphql`
   subscription RootCitiesSubscription($id: ID!) {
@@ -87,6 +88,12 @@ const RootCityComponent = ({ queryRef, cityId, link }) => {
               : 0,
           }}
         >
+          <Breadcrumbs variant="object" elements={[
+            { label: t_i18n('Locations') },
+            { label: t_i18n('Cities'), link: '/dashboard/locations/cities' },
+            { label: city.name, current: true },
+          ]}
+          />
           <StixDomainObjectHeader
             entityType="City"
             disableSharing={true}

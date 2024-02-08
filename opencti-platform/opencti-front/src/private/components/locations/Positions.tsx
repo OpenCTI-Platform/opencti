@@ -9,10 +9,13 @@ import useQueryLoading from '../../../utils/hooks/useQueryLoading';
 import { PositionLineDummy } from './positions/PositionLine';
 import PositionsLines, { positionsLinesQuery } from './positions/PositionsLines';
 import { emptyFilterGroup } from '../../../utils/filters/filtersUtils';
+import { useFormatter } from '../../../components/i18n';
+import Breadcrumbs from '../../../components/Breadcrumps';
 
 const LOCAL_STORAGE_KEY_POSITIONS = 'positions';
 
 const Positions: FunctionComponent = () => {
+  const { t_i18n } = useFormatter();
   const { viewStorage, helpers, paginationOptions } = usePaginationLocalStorage<PositionsLinesPaginationQuery$variables>(
     LOCAL_STORAGE_KEY_POSITIONS,
     {
@@ -107,6 +110,7 @@ const Positions: FunctionComponent = () => {
   };
   return (
     <>
+      <Breadcrumbs variant="list" elements={[{ label: t_i18n('Locations') }, { label: t_i18n('Positions'), current: true }]} />
       {renderLines()}
       <Security needs={[KNOWLEDGE_KNUPDATE]}>
         <PositionCreation paginationOptions={paginationOptions} />

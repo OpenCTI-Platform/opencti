@@ -25,6 +25,7 @@ import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import { RootIncidentQuery } from './__generated__/RootIncidentQuery.graphql';
 import { RootIncidentSubscription } from './__generated__/RootIncidentSubscription.graphql';
 import { useFormatter } from '../../../../components/i18n';
+import Breadcrumbs from '../../../../components/Breadcrumps';
 
 const subscription = graphql`
   subscription RootIncidentSubscription($id: ID!) {
@@ -95,6 +96,12 @@ const RootIncidentComponent = ({ queryRef }) => {
               : 0,
           }}
         >
+          <Breadcrumbs variant="object" elements={[
+            { label: t_i18n('Events') },
+            { label: t_i18n('Incidents'), link: '/dashboard/events/incidents' },
+            { label: incident.name, current: true },
+          ]}
+          />
           <StixDomainObjectHeader
             entityType="Incident"
             stixDomainObject={incident}

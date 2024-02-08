@@ -19,6 +19,7 @@ import StixCoreObjectKnowledgeBar from '../../common/stix_core_objects/StixCoreO
 import ErrorNotFound from '../../../../components/ErrorNotFound';
 import EntityStixSightingRelationships from '../../events/stix_sighting_relationships/EntityStixSightingRelationships';
 import inject18n from '../../../../components/i18n';
+import Breadcrumbs from '../../../../components/Breadcrumps';
 
 const subscription = graphql`
   subscription RootEventsSubscription($id: ID!) {
@@ -121,6 +122,12 @@ class RootEvent extends Component {
                         : 0,
                     }}
                   >
+                    <Breadcrumbs variant="object" elements={[
+                      { label: t('Entities') },
+                      { label: t('Events'), link: '/dashboard/entities/events' },
+                      { label: event.name, current: true },
+                    ]}
+                    />
                     <StixDomainObjectHeader
                       entityType="Event"
                       stixDomainObject={event}

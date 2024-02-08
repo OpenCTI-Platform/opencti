@@ -23,6 +23,7 @@ import { RootAdministrativeAreasSubscription } from './__generated__/RootAdminis
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import { useFormatter } from '../../../../components/i18n';
+import Breadcrumbs from '../../../../components/Breadcrumps';
 
 const subscription = graphql`
   subscription RootAdministrativeAreasSubscription($id: ID!) {
@@ -93,6 +94,12 @@ const RootAdministrativeAreaComponent = ({
               : 0,
           }}
         >
+          <Breadcrumbs variant="object" elements={[
+            { label: t_i18n('Locations') },
+            { label: t_i18n('Administrative areas'), link: '/dashboard/locations/administrative_areas' },
+            { label: administrativeArea.name, current: true },
+          ]}
+          />
           <StixDomainObjectHeader
             entityType="Administrative-Area"
             disableSharing={true}

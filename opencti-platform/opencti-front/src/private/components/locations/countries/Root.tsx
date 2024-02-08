@@ -23,6 +23,7 @@ import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import { useFormatter } from '../../../../components/i18n';
 import CountryPopover from './CountryPopover';
+import Breadcrumbs from '../../../../components/Breadcrumps';
 
 const subscription = graphql`
   subscription RootCountriesSubscription($id: ID!) {
@@ -89,6 +90,12 @@ const RootCountryComponent = ({ queryRef, countryId, link }) => {
               : 0,
           }}
         >
+          <Breadcrumbs variant="object" elements={[
+            { label: t_i18n('Locations') },
+            { label: t_i18n('Countries'), link: '/dashboard/locations/countries' },
+            { label: country.name, current: true },
+          ]}
+          />
           <StixDomainObjectHeader
             entityType="Country"
             disableSharing={true}

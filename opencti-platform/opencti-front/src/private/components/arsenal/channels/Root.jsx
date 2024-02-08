@@ -18,6 +18,7 @@ import StixCoreObjectOrStixCoreRelationshipContainers from '../../common/contain
 import StixCoreObjectKnowledgeBar from '../../common/stix_core_objects/StixCoreObjectKnowledgeBar';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
 import inject18n from '../../../../components/i18n';
+import Breadcrumbs from '../../../../components/Breadcrumps';
 
 const subscription = graphql`
   subscription RootChannelSubscription($id: ID!) {
@@ -123,6 +124,12 @@ class RootChannel extends Component {
                         : 0,
                     }}
                   >
+                    <Breadcrumbs variant="object" elements={[
+                      { label: t('Arsenal') },
+                      { label: t('Channels'), link: '/dashboard/arsenal/channels' },
+                      { label: channel.name, current: true },
+                    ]}
+                    />
                     <StixDomainObjectHeader
                       entityType="Channel"
                       stixDomainObject={channel}

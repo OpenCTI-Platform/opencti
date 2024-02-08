@@ -24,6 +24,7 @@ import { RootRegionQuery } from './__generated__/RootRegionQuery.graphql';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import { useFormatter } from '../../../../components/i18n';
+import Breadcrumbs from '../../../../components/Breadcrumps';
 
 const subscription = graphql`
   subscription RootRegionsSubscription($id: ID!) {
@@ -90,6 +91,12 @@ const RootRegionComponent = ({ queryRef, regionId, link }) => {
               : 0,
           }}
         >
+          <Breadcrumbs variant="object" elements={[
+            { label: t_i18n('Locations') },
+            { label: t_i18n('Regions'), link: '/dashboard/locations/regions' },
+            { label: region.name, current: true },
+          ]}
+          />
           <StixDomainObjectHeader
             entityType="Region"
             disableSharing={true}

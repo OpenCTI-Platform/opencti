@@ -22,6 +22,7 @@ import { RootDataComponentQuery$data } from './__generated__/RootDataComponentQu
 import DataComponentKnowledge from './DataComponentKnowledge';
 import { RootDataComponentSubscription } from './__generated__/RootDataComponentSubscription.graphql';
 import { useFormatter } from '../../../../components/i18n';
+import Breadcrumbs from '../../../../components/Breadcrumps';
 
 const subscription = graphql`
   subscription RootDataComponentSubscription($id: ID!) {
@@ -95,6 +96,12 @@ const RootDataComponent = () => {
                       : 0,
                   }}
                 >
+                  <Breadcrumbs variant="object" elements={[
+                    { label: t_i18n('Techniques') },
+                    { label: t_i18n('Data components'), link: '/dashboard/techniques/data_components' },
+                    { label: dataComponent.name, current: true },
+                  ]}
+                  />
                   <StixDomainObjectHeader
                     entityType="Data-Component"
                     stixDomainObject={props.dataComponent}

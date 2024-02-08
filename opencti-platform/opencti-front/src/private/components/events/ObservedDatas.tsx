@@ -14,10 +14,13 @@ import { ObservedDataLine_node$data } from './observed_data/__generated__/Observ
 import { ObservedDatasLinesPaginationQuery$data, ObservedDatasLinesPaginationQuery$variables } from './observed_data/__generated__/ObservedDatasLinesPaginationQuery.graphql';
 import { ModuleHelper } from '../../../utils/platformModulesHelper';
 import { buildEntityTypeBasedFilterContext, emptyFilterGroup } from '../../../utils/filters/filtersUtils';
+import { useFormatter } from '../../../components/i18n';
+import Breadcrumbs from '../../../components/Breadcrumps';
 
 const LOCAL_STORAGE_KEY = 'observedDatas';
 
 const ObservedDatas: FunctionComponent = () => {
+  const { t_i18n } = useFormatter();
   const {
     viewStorage,
     helpers: storageHelpers,
@@ -167,12 +170,11 @@ const ObservedDatas: FunctionComponent = () => {
     <UserContext.Consumer>
       {({ platformModuleHelpers }) => (
         <ExportContextProvider>
-          <div>
-            {renderLines(platformModuleHelpers)}
-            <Security needs={[KNOWLEDGE_KNUPDATE]}>
-              <ObservedDataCreation paginationOptions={queryPaginationOptions}/>
-            </Security>
-          </div>
+          <Breadcrumbs variant="list" elements={[{ label: t_i18n('Events') }, { label: t_i18n('Observed datas'), current: true }]} />
+          {renderLines(platformModuleHelpers)}
+          <Security needs={[KNOWLEDGE_KNUPDATE]}>
+            <ObservedDataCreation paginationOptions={queryPaginationOptions}/>
+          </Security>
         </ExportContextProvider>
       )}
     </UserContext.Consumer>

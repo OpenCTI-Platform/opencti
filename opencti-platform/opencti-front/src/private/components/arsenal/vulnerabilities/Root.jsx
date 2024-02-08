@@ -18,6 +18,7 @@ import StixCoreObjectOrStixCoreRelationshipContainers from '../../common/contain
 import StixCoreObjectKnowledgeBar from '../../common/stix_core_objects/StixCoreObjectKnowledgeBar';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
 import inject18n from '../../../../components/i18n';
+import Breadcrumbs from '../../../../components/Breadcrumps';
 
 const subscription = graphql`
   subscription RootVulnerabilitySubscription($id: ID!) {
@@ -124,6 +125,12 @@ class RootVulnerability extends Component {
                         : 0,
                     }}
                   >
+                    <Breadcrumbs variant="object" elements={[
+                      { label: t('Arsenal') },
+                      { label: t('Vulnerabilities'), link: '/dashboard/arsenal/vulnerabilities' },
+                      { label: vulnerability.name, current: true },
+                    ]}
+                    />
                     <StixDomainObjectHeader
                       entityType="Vulnerability"
                       stixDomainObject={vulnerability}

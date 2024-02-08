@@ -16,6 +16,7 @@ import StixCoreObjectHistory from '../../common/stix_core_objects/StixCoreObject
 import ErrorNotFound from '../../../../components/ErrorNotFound';
 import CourseOfActionKnowledge from './CourseOfActionKnowledge';
 import inject18n from '../../../../components/i18n';
+import Breadcrumbs from '../../../../components/Breadcrumps';
 
 const subscription = graphql`
   subscription RootCoursesOfActionSubscription($id: ID!) {
@@ -100,6 +101,12 @@ class RootCourseOfAction extends Component {
                         : 0,
                     }}
                   >
+                    <Breadcrumbs variant="object" elements={[
+                      { label: t('Techniques') },
+                      { label: t('Courses of action'), link: '/dashboard/techniques/courses_of_action' },
+                      { label: courseOfAction.name, current: true },
+                    ]}
+                    />
                     <StixDomainObjectHeader
                       entityType="Course-Of-Action"
                       disableSharing={true}

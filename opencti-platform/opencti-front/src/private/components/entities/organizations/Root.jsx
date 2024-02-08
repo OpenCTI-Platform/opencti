@@ -21,6 +21,7 @@ import { buildViewParamsFromUrlAndStorage, saveViewParameters } from '../../../.
 import StixCoreObjectKnowledgeBar from '../../common/stix_core_objects/StixCoreObjectKnowledgeBar';
 import EntityStixSightingRelationships from '../../events/stix_sighting_relationships/EntityStixSightingRelationships';
 import inject18n from '../../../../components/i18n';
+import Breadcrumbs from '../../../../components/Breadcrumps';
 
 const subscription = graphql`
   subscription RootOrganizationSubscription($id: ID!) {
@@ -161,6 +162,12 @@ class RootOrganization extends Component {
                         : 0,
                     }}
                   >
+                    <Breadcrumbs variant="object" elements={[
+                      { label: t('Entities') },
+                      { label: t('Organizations'), link: '/dashboard/entities/organizations' },
+                      { label: organization.name, current: true },
+                    ]}
+                    />
                     <StixDomainObjectHeader
                       entityType="Organization"
                       disableSharing={true}

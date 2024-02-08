@@ -233,6 +233,7 @@ const LeftBar = () => {
   );
   const classes = useStyles({ navOpen });
   const handleToggle = () => {
+    selectedMenu(null);
     localStorage.setItem('navOpen', String(!navOpen));
     setNavOpen(!navOpen);
     MESSAGING$.toggleNav.next('toggle');
@@ -502,7 +503,7 @@ const LeftBar = () => {
               selected={!navOpen && location.pathname.includes('/dashboard/events')}
               dense={true}
               classes={{ root: classes.menuItem }}
-              onClick={() => (isMobile || navOpen ? handleSelectedMenuToggle('events') : handleGoToPage('/dashboard/event'))}
+              onClick={() => (isMobile || navOpen ? handleSelectedMenuToggle('events') : handleGoToPage('/dashboard/events'))}
               onMouseEnter={() => !navOpen && handleSelectedMenuOpen('events')}
               onMouseLeave={() => !navOpen && handleSelectedMenuClose()}
             >

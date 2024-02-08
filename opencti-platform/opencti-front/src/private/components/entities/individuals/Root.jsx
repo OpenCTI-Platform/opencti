@@ -21,6 +21,7 @@ import { buildViewParamsFromUrlAndStorage, saveViewParameters } from '../../../.
 import StixCoreObjectKnowledgeBar from '../../common/stix_core_objects/StixCoreObjectKnowledgeBar';
 import EntityStixSightingRelationships from '../../events/stix_sighting_relationships/EntityStixSightingRelationships';
 import inject18n from '../../../../components/i18n';
+import Breadcrumbs from '../../../../components/Breadcrumps';
 
 const subscription = graphql`
   subscription RootIndividualsSubscription($id: ID!) {
@@ -158,6 +159,12 @@ class RootIndividual extends Component {
                         : 0,
                     }}
                   >
+                    <Breadcrumbs variant="object" elements={[
+                      { label: t('Entities') },
+                      { label: t('Individuals'), link: '/dashboard/entities/individuals' },
+                      { label: individual.name, current: true },
+                    ]}
+                    />
                     <StixDomainObjectHeader
                       entityType="Individual"
                       disableSharing={true}
