@@ -14,29 +14,15 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 */
 
 import React from 'react';
-import * as R from 'ramda';
 import { graphql } from 'react-relay';
-import CircularProgress from '@mui/material/CircularProgress';
-import Paper from '@mui/material/Paper';
-import Typography from '@mui/material/Typography';
-import makeStyles from '@mui/styles/makeStyles';
-import { useTheme } from '@mui/styles';
-import Chart from '../charts/Chart';
 import { QueryRenderer } from '../../../../relay/environment';
 import { useFormatter } from '../../../../components/i18n';
-import { radarChartOptions } from '../../../../utils/Charts';
 import useGranted, { SETTINGS } from '../../../../utils/hooks/useGranted';
 import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
-import { defaultValue } from '../../../../utils/Graph';
-
-const useStyles = makeStyles(() => ({
-  paper: {
-    height: '100%',
-    margin: '10px 0 0 0',
-    padding: 0,
-    borderRadius: 4,
-  },
-}));
+import WidgetContainer from '../../../../components/dashboard/WidgetContainer';
+import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
+import WidgetLoader from '../../../../components/dashboard/WidgetLoader';
+import WidgetRadar from '../../../../components/dashboard/WidgetRadar';
 
 const auditsRadarDistributionQuery = graphql`
   query AuditsRadarDistributionQuery(
@@ -201,8 +187,6 @@ const AuditsRadar = ({
   withExportPopover = false,
   isReadOnly = false,
 }) => {
-  const classes = useStyles();
-  const theme = useTheme();
   const { t_i18n } = useFormatter();
   const isGrantedToSettings = useGranted([SETTINGS]);
   const isEnterpriseEdition = useEnterpriseEdition();
@@ -249,91 +233,32 @@ const AuditsRadar = ({
             && props.auditsDistribution
             && props.auditsDistribution.length > 0
           ) {
-            let data = props.auditsDistribution;
-            if (
-              selection.attribute.endsWith('.id')
-              || selection.attribute.endsWith('_id')
-              || selection.attribute.endsWith('_ids')
-            ) {
-              data = R.map(
-                (n) => R.assoc('label', defaultValue(n.entity), n),
-                props.auditsDistribution,
-              );
-            }
-            const valueData = data.map((n) => n.value);
-            const chartData = [
-              {
-                name: selection.label || t_i18n('Number of history entries'),
-                data: valueData,
-              },
-            ];
-            const labels = data.map((n) => n.label);
             return (
-              <Chart
-                options={radarChartOptions(theme, labels, [], true, false)}
-                series={chartData}
-                type="radar"
-                width="100%"
-                height="120%"
-                withExportPopover={withExportPopover}
-                isReadOnly={isReadOnly}
+              <WidgetRadar
+                data={props.auditsDistribution}
+                label={selection.label || t_i18n('Number of history entries')}
+                groupBy={selection.attribute}
+                withExport={withExportPopover}
+                readonly={isReadOnly}
               />
             );
           }
           if (props) {
-            return (
-              <div style={{ display: 'table', height: '100%', width: '100%' }}>
-                <span
-                  style={{
-                    display: 'table-cell',
-                    verticalAlign: 'middle',
-                    textAlign: 'center',
-                  }}
-                >
-                  {t_i18n('No entities of this type has been found.')}
-                </span>
-              </div>
-            );
+            return <WidgetNoData />;
           }
-          return (
-            <div style={{ display: 'table', height: '100%', width: '100%' }}>
-              <span
-                style={{
-                  display: 'table-cell',
-                  verticalAlign: 'middle',
-                  textAlign: 'center',
-                }}
-              >
-                <CircularProgress size={40} thickness={2} />
-              </span>
-            </div>
-          );
+          return <WidgetLoader />;
         }}
       />
     );
   };
   return (
-    <div style={{ height: height || '100%' }}>
-      <Typography
-        variant="h4"
-        gutterBottom={true}
-        style={{
-          margin: variant !== 'inLine' ? '0 0 10px 0' : '-10px 0 10px -7px',
-          whiteSpace: 'nowrap',
-          overflow: 'hidden',
-          textOverflow: 'ellipsis',
-        }}
-      >
-        {parameters.title || t_i18n('Distribution of entities')}
-      </Typography>
-      {variant === 'inLine' ? (
-        renderContent()
-      ) : (
-        <Paper classes={{ root: classes.paper }} variant="outlined">
-          {renderContent()}
-        </Paper>
-      )}
-    </div>
+    <WidgetContainer
+      height={height}
+      title={parameters.title ?? t_i18n('Distribution of entities')}
+      variant={variant}
+    >
+      {renderContent()}
+    </WidgetContainer>
   );
 };
 
