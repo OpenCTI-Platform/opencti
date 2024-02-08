@@ -98,6 +98,7 @@ const CsvMapperTestDialog: FunctionComponent<CsvMapperTestDialogProps> = ({
           <CustomFileUploader
             setFieldValue={(field, v) => onChange(field, v)}
             label={'Your testing file limited to 100 lines (csv only, max 1MB)'}
+            // we also accept application/vnd.ms-excel type because that's how csv's seem to be seen as under WindowsOS + Firefox browser
             acceptMimeTypes={'text/csv,application/vnd.ms-excel'}
             // we limit the file size so the upload does not take too long for a simple test
             sizeLimit={1000000}
