@@ -61,32 +61,40 @@ const loadFilesToIndex = async (file: FileToIndexObject) => {
   };
 };
 
-const indexImportedFiles = async (context: AuthContext, indexFromDate: string | null) => {
+export const indexImportedFiles = async (context: AuthContext, indexFromDate: string | null) => {
   const fileOptions = await buildOptionsFromFileManager(context);
   const opts = { ...fileOptions.opts, modifiedSince: indexFromDate };
   const allFiles = await allFilesForPaths(context, SYSTEM_USER, fileOptions.paths ?? [], opts);
+
   if (allFiles.length === 0) {
     return;
   }
   const filesBulk = R.splitEvery(20, allFiles);
   for (let index = 0; index < filesBulk.length; index += 1) {
-    const managerConfiguration = await getManagerConfigurationFromCache(context, SYSTEM_USER, 'FILE_INDEX_MANAGER');
-    if (managerConfiguration?.manager_running) {
-      const filesToLoad: FileToIndexObject[] = filesBulk[index].map((file) => {
-        const internalId = generateFileIndexId(file.id);
-        const entityId = file.metaData.entity_id;
-        return {
-          id: file.id,
-          internalId,
-          entityId,
-          name: file.name,
-          uploaded_at: file.lastModified,
-        };
-      });
-      const filesToIndex = await BluePromise.map(filesToLoad, loadFilesToIndex, { concurrency: 5 });
-      // index all files one by one
-      await elIndexFiles(context, SYSTEM_USER, filesToIndex);
-      await waitInSec(1);
+    try {
+      const managerConfiguration = await getManagerConfigurationFromCache(context, SYSTEM_USER, 'FILE_INDEX_MANAGER');
+      if (managerConfiguration?.manager_running) {
+        const filesToLoad: FileToIndexObject[] = filesBulk[index].map((file) => {
+          const internalId = generateFileIndexId(file.id);
+          const entityId = file.metaData.entity_id;
+          return {
+            id: file.id,
+            internalId,
+            entityId,
+            name: file.name,
+            uploaded_at: file.lastModified,
+          };
+        });
+        const filesToIndex = await BluePromise.map(filesToLoad, loadFilesToIndex, { concurrency: 5 })
+          .catch((error) => logApp.error(error, { manager: 'FILE_INDEX_MANAGER' }));
+
+        // index all files one by one
+        await elIndexFiles(context, SYSTEM_USER, filesToIndex);
+        await waitInSec(1);
+      }
+    } catch (e) {
+      // if one file processing raise an exception, we log and skip the bulk.
+      logApp.error(e, { manager: 'FILE_INDEX_MANAGER' });
     }
   }
 };
@@ -199,7 +207,7 @@ const initFileIndexManager = () => {
     start: async () => {
       logApp.info('[OPENCTI-MODULE] Starting file index manager');
       scheduler = setIntervalAsync(async () => {
-        await fileIndexHandler();
+        await fileIndexHandler(); // here
       }, SCHEDULE_TIME);
       // stream to index updates on entities
       streamScheduler = setIntervalAsync(async () => {
