@@ -2257,6 +2257,33 @@
 
               
             
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../usage/tips-widget-creation/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    
+  
+    Tips for widget creation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
           </ul>
         </nav>
       
@@ -2841,10 +2868,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#configuration" class="md-nav__link">
+  <a href="#the-configuration-section" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Configuration
+        The "Configuration" section
       
     </span>
   </a>
@@ -2874,10 +2901,32 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#analytics" class="md-nav__link">
+  <a href="#third-party-analytics" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Analytics
+        Third-party Analytics
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#theme-customization" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Theme customization
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#tools" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Tools
       
     </span>
   </a>
@@ -4384,10 +4433,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#configuration" class="md-nav__link">
+  <a href="#the-configuration-section" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Configuration
+        The "Configuration" section
       
     </span>
   </a>
@@ -4417,10 +4466,32 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#analytics" class="md-nav__link">
+  <a href="#third-party-analytics" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Analytics
+        Third-party Analytics
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#theme-customization" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Theme customization
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#tools" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Tools
       
     </span>
   </a>
@@ -4527,27 +4598,45 @@
 <h2 id="description">Description</h2>
 <p>This part of the interface wil let you configure global platform settings, like title, favicon, etc.</p>
 <p>It will also give you important information about the platform.</p>
-<h2 id="configuration">Configuration</h2>
-<p>Configure global platform settings, like title, favicon, etc.</p>
+<h2 id="the-configuration-section">The "Configuration" section</h2>
+<p><a class="glightbox" href="../assets/parameters_configuration.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="parameters_configuration.png" src="../assets/parameters_configuration.png" /></a></p>
+<p>This section allows the administrator to edit the following settings:</p>
+<ul>
+<li>Platform title</li>
+<li>Platform favicon URL</li>
+<li>Sender email address: email address displayed as sender when sending notifications. The technical sender is defined in the <a href="../../deployment/configuration/#smtp-service">SMTP configuration</a>.</li>
+<li>Theme</li>
+<li>Language</li>
+<li>Hidden entity types: allows you to customize which types of entities you want to see or hide in the platform. This can help you focus on the relevant information and avoid cluttering the platform with unnecessary data.</li>
+</ul>
 <h2 id="opencti-platform">OpenCTI Platform</h2>
-<p>Important information about the platform.</p>
-<p>It's also the place to activate the <a href="../enterprise/">Enterprise edition</a></p>
+<p><a class="glightbox" href="../assets/parameters_platform.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="parameters_platform" src="../assets/parameters_platform.png" /></a></p>
+<p>This is where the <a href="../enterprise/">Enterprise edition</a> can be enabled.</p>
+<p>This section gives important information about the platform like the used version, the edition, the architecture mode (can be Standalone or Cluster) and the number used nodes.</p>
+<p>Through the "Remove Filigran logos" toggle, the administrator has the option to hide the Filigran logo on the login page and the sidebar.</p>
 <h2 id="platform-announcement">Platform Announcement</h2>
 <p>This section gives you the possibility to set and display Announcements in the platform. Those announcements will be visible to every user in the platform, on top of the interface.</p>
-<p>They can be used to inform all your users' community of important information, like a scheduled downtime, an incoming upgrade, or even an important tips regarding the usage of the platform.</p>
-<p><a class="glightbox" href="../assets/broadcast_message_configuration.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="Broadcast message configuration" src="../assets/broadcast_message_configuration.png" /></a></p>
-<p>An Announcement can be accompanied by a "Dismiss” button. When click by a user, it makes the message disappear for this user.</p>
-<p><a class="glightbox" href="../assets/broadcast_message_display_dismissible.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="Broadcast message display dismissible" src="../assets/broadcast_message_display_dismissible.png" /></a></p>
-<p>This option can be deactivated to have a permanent Announcement.</p>
-<p><a class="glightbox" href="../assets/broadcast_message_display_notdismissible.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="Broadcast message display not dismissible" src="../assets/broadcast_message_display_notdismissible.png" /></a></p>
-<p>⚠️ Only one Announcement is displayed at a time. Dismissible Announcements are displayed first, then the latest not dismissible Announcement.</p>
-<h2 id="analytics">Analytics</h2>
+<p>They can be used to inform some of your users or all of important information, like a scheduled downtime, an incoming upgrade, or even to share important tips regarding the usage of the platform.</p>
+<p>An Announcement can be accompanied by a "Dismiss” button. When clicked by a user, it makes the message disappear for this user.</p>
+<p><a class="glightbox" href="../assets/parameters_broadcast_message_dismissible.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="parameters_broadcast_message_dismissible" src="../assets/parameters_broadcast_message_dismissible.png" /></a></p>
+<p>This option can be deactivated to have a permanent announcement.</p>
+<p><a class="glightbox" href="../assets/parameters_broadcast_message_non-dismissible.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="parameters_broadcast_message_non-dismissible" src="../assets/parameters_broadcast_message_non-dismissible.png" /></a>
+⚠️ Only one announcement is shown at a time, with priority given to dismissible ones. If there are no dismissible announcements, the most recent non-dismissible one is shown.</p>
+<h2 id="third-party-analytics">Third-party Analytics</h2>
 <div class="admonition tip">
 <p class="admonition-title">Enterprise edition</p>
 <p>Analytics is available under the "Filigran entreprise edition" license.</p>
-<p><a href="../enterprise/">Please read the dedicated page to have all information</a></p>
+<p><a href="../enterprise/">Please read the dedicated page to have more information</a></p>
 </div>
-<p>Configure analytics providers (at the moment only Google analytics v4).</p>
+<p>This is where you can configure analytics providers. At the moment only Google Analytics v4 is supported.</p>
+<h2 id="theme-customization">Theme customization</h2>
+<p>In this section, the administrator can customize the two OpenCTI themes
+<a class="glightbox" href="../assets/parameters_theme_customization.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="parameters_theme_customization" src="../assets/parameters_theme_customization.png" /></a></p>
+<h2 id="tools">Tools</h2>
+<p>This section informs the administrator of the statuses of the different managers used in the Platform. More information about the managers can be found <a href="../../deployment/managers/">here</a>.
+It shows also the used versions of the search engine database, RabbitMQ and Redis.</p>
+<p>In cluster mode, the fact that a manager appears as enabled means that it is active in at least one node. </p>
+<p><a class="glightbox" href="../assets/parameters_tools.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="parameters_tools" src="../assets/parameters_tools.png" /></a></p>
 
 
 
@@ -4570,7 +4659,7 @@
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1-2.1-2M12.5 7v5.2l4 2.4-1 1L11 13V7h1.5M11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2v1.8Z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago"><span class="timeago" datetime="2023-10-14T13:10:45+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date">2023-10-14</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago"><span class="timeago" datetime="2024-02-06T10:00:10+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date">2024-02-06</span>
   </span>
 
     
@@ -4598,24 +4687,24 @@
     
     <nav>
       
+        <a href="https://github.com/yassine-ouaamou" class="md-author" title="@yassine-ouaamou">
+          
+          <img src="https://avatars.githubusercontent.com/u/7083405?v=4&size=72" alt="yassine-ouaamou">
+        </a>
+      
         <a href="https://github.com/SamuelHassine" class="md-author" title="@SamuelHassine">
           
-          <img src="https://avatars.githubusercontent.com/u/1334279?size=72" alt="SamuelHassine">
-        </a>
-      
-        <a href="https://github.com/RomuDeuxfois" class="md-author" title="@RomuDeuxfois">
-          
-          <img src="https://avatars.githubusercontent.com/u/53513584?size=72" alt="RomuDeuxfois">
-        </a>
-      
-        <a href="https://github.com/richard-julien" class="md-author" title="@richard-julien">
-          
-          <img src="https://avatars.githubusercontent.com/u/285555?size=72" alt="richard-julien">
+          <img src="https://avatars.githubusercontent.com/u/1334279?v=4&size=72" alt="SamuelHassine">
         </a>
       
         <a href="https://github.com/guillaumejparis" class="md-author" title="@guillaumejparis">
           
-          <img src="https://avatars.githubusercontent.com/u/4204277?size=72" alt="guillaumejparis">
+          <img src="https://avatars.githubusercontent.com/u/4204277?v=4&size=72" alt="guillaumejparis">
+        </a>
+      
+        <a href="https://github.com/richard-julien" class="md-author" title="@richard-julien">
+          
+          <img src="https://avatars.githubusercontent.com/u/285555?v=4&size=72" alt="richard-julien">
         </a>
       
       

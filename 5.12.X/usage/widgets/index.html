@@ -18,7 +18,7 @@
         <link rel="prev" href="../dashboards/">
       
       
-        <link rel="next" href="../workflows/">
+        <link rel="next" href="../tips-widget-creation/">
       
       
         
@@ -2340,6 +2340,28 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#generic-knowledge" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Generic knowledge
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#filter-in-the-context-of-knowledge-graph" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Filter in the context of Knowledge Graph
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#4-parameters" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -2387,6 +2409,33 @@
   
 </nav>
       
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../tips-widget-creation/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    
+  
+    Tips for widget creation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
     </li>
   
 
@@ -4452,6 +4501,28 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#generic-knowledge" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Generic knowledge
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#filter-in-the-context-of-knowledge-graph" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Filter in the context of Knowledge Graph
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#4-parameters" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -4621,21 +4692,41 @@
 </ul>
 <p><a class="glightbox" href="../assets/widget-visualization.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="Widget visualization" src="../assets/widget-visualization.png" /></a></p>
 <h4 id="2-perspective">2. Perspective</h4>
-<p>Dashboards offer three distinct perspectives:</p>
+<p>A perspective is the way the platform will count the data to display in your widgets:</p>
 <ul>
-<li><strong>Entities Perspective:</strong> Focuses on entities, allowing observation of simple knowledge based on defined filters and criteria.</li>
-<li><strong>Knowledge Graph Perspective:</strong> Concentrates on relationships, displaying intricate knowledge derived from relationships between entities and specified filters.</li>
+<li><strong>Entities Perspective:</strong> Focuses on entities, allowing observation of simple knowledge based on defined filters and criteria. The count will be based on entities only.</li>
+<li><strong>Knowledge Graph Perspective:</strong> Concentrates on relationships, displaying intricate knowledge derived from relationships between entities and specified filters.  The count will be based on relations only.</li>
 <li><strong>Activity &amp; History Perspective:</strong> Centers on activities within the platform, not the knowledge content. This perspective is valuable for monitoring user and connector activities, evaluating data sources, and more.</li>
 </ul>
 <p><a class="glightbox" href="../assets/widget-perspective.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="Widget perspective" src="../assets/widget-perspective.png" /></a></p>
 <h4 id="3-filters">3. Filters</h4>
+<h4 id="generic-knowledge">Generic knowledge</h4>
 <p>Filters vary based on the selected perspective, defining the dataset to be utilized in the widget. Filters are instrumental in narrowing down the scope of data for a more focused analysis.</p>
-<p>While filters in the "Entities" and "Activity &amp; History" perspectives align with the platform's familiar search and feed creation filters, the "Knowledge Graph" perspective introduces a more intricate filter configuration.Therefore, they need to be addressed in more detail. Three types of filters are available in the Knowledge Graph perspective:</p>
+<p>While filters in the "Entities" and "Activity &amp; History" perspectives align with the platform's familiar search and feed creation filters, the "Knowledge Graph" perspective introduces a more intricate filter configuration.Therefore, they need to be addressed in more detail.</p>
+<h4 id="filter-in-the-context-of-knowledge-graph">Filter in the context of Knowledge Graph</h4>
+<p>Two types of filters are available in the Knowledge Graph perspective:</p>
+<ul>
+<li>
+<p><strong>Main query filter</strong></p>
 <ul>
 <li><strong>Classic filters (gray):</strong> Define the relationships to be retrieved, forming the basis on which the widget displays data. Remember, statistics in the Knowledge Graph perspective are based on relationships.</li>
+</ul>
+</li>
+<li>
+<p><strong>Pre-query filters</strong></p>
+<ul>
+<li>Pre-query filters are used to <strong>provide to your main query</strong> a specific dataset. In other words, instead of making a query on the whole data set of your platform, you can already target a subset of data that will match certain criteria. They are two types of pre-query filters:<ul>
 <li><strong>Dynamic filters on the source (orange):</strong> Refine data by filtering on entities positioned as the source (in the "from" position) of the relationship.</li>
 <li><strong>Dynamic filters on the target (green):</strong> Refine data by filtering on entities positioned as the target (in the "to" position) of the relationship.</li>
 </ul>
+</li>
+</ul>
+</li>
+</ul>
+<div class="admonition warning">
+<p class="admonition-title">Pre-query limitation</p>
+<p>The pre-query is limited to 5000 results. If your pre-query results in having more than 5000 results, your widget will only display statistics based on these 5000 results matching your pre-query, resulting in a wrong view. To avoid this issue, be specific in your pre-query filters.</p>
+</div>
 <p><strong>Example scenario:</strong></p>
 <p>Let's consider an example scenario: Analyzing the initial access attack patterns used by intrusion sets targeting the finance sector.</p>
 <ol>
@@ -4691,7 +4782,7 @@
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1-2.1-2M12.5 7v5.2l4 2.4-1 1L11 13V7h1.5M11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2v1.8Z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago"><span class="timeago" datetime="2023-12-11T13:30:37+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date">2023-12-11</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago"><span class="timeago" datetime="2024-02-06T21:39:55+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date">2024-02-06</span>
   </span>
 
     
@@ -4719,9 +4810,14 @@
     
     <nav>
       
+        <a href="https://github.com/nino-filigran" class="md-author" title="@nino-filigran">
+          
+          <img src="https://avatars.githubusercontent.com/u/148041607?v=4&size=72" alt="nino-filigran">
+        </a>
+      
         <a href="https://github.com/Lhorus6" class="md-author" title="@Lhorus6">
           
-          <img src="https://avatars.githubusercontent.com/u/70956706?size=72" alt="Lhorus6">
+          <img src="https://avatars.githubusercontent.com/u/70956706?v=4&size=72" alt="Lhorus6">
         </a>
       
       
@@ -4772,13 +4868,13 @@
         
         
           
-          <a href="../workflows/" class="md-footer__link md-footer__link--next" aria-label="Next: Workflows and assignation">
+          <a href="../tips-widget-creation/" class="md-footer__link md-footer__link--next" aria-label="Next: Tips for widget creation">
             <div class="md-footer__title">
               <span class="md-footer__direction">
                 Next
               </span>
               <div class="md-ellipsis">
-                Workflows and assignation
+                Tips for widget creation
               </div>
             </div>
             <div class="md-footer__button md-icon">
