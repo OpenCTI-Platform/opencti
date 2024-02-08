@@ -541,7 +541,7 @@ export const findFiltersRepresentatives = async (context, user, inputFilters) =>
       id: idsToResolve[index],
       value: (entity ? extractEntityRepresentativeName(entity) : null),
       entity_type: entity?.entity_type ?? null,
-      color: entity?.color ?? null
+      color: entity?.color || entity?.x_opencti_color || null
     });
   }
   // add ids that don't require a resolution

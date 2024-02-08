@@ -226,41 +226,54 @@ export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({
       availableRelationFilterTypes={availableRelationFilterTypes}
     />
   );
-  const getSelectedOptions = (): OptionValue[] => {
+  const getSelectedOptions = (entitiesOptions: OptionValue[]): OptionValue[] => {
+    // we try to get first the element from the search
+    // and if we did not find we tried one from filterReprensentative
+    // Most of the time element from search should be sufficient
     const mapFilterValues: OptionValue[] = [];
     filterValues.forEach((value: string) => {
-      const filterRepresentative = filtersRepresentativesMap.get(value);
-      if (filterRepresentative) {
+      const mapRepresentative = entitiesOptions.find((f) => f.value === value);
+      if (mapRepresentative) {
         mapFilterValues.push({
-          value,
-          type: filterRepresentative?.entity_type ?? t_i18n('selected'),
-          parentTypes: [],
+          ...mapRepresentative,
           group: t_i18n('selected'),
-          label: filterRepresentative?.value ?? t_i18n('Unknown'),
-          color: filterRepresentative?.color ?? undefined,
         });
+      } else {
+        const filterRepresentative = filtersRepresentativesMap.get(value);
+        if (filterRepresentative) {
+          mapFilterValues.push({
+            value,
+            type: filterRepresentative?.entity_type || t_i18n('Unknown'),
+            parentTypes: [],
+            group: t_i18n('selected'),
+            label: filterRepresentative?.value ?? t_i18n('Unknown'),
+            color: filterRepresentative?.color ?? undefined,
+          });
+        }
       }
     });
     return mapFilterValues.sort((a, b) => a.label.localeCompare(b.label));
   };
 
   const buildAutocompleteFilter = (fKey: string, subKey?: string): ReactNode => {
-    const entitiesOptions = getOptionsFromEntities(entities, searchScope, fKey)
+    const getOptions = getOptionsFromEntities(entities, searchScope, fKey);
+    const entitiesOptions = getOptions
       .filter((option) => !filterValues.includes(option.value))
       .sort((a, b) => {
-        // In case value is null, for "no label" case we want it at the top of the list
+      // In case value is null, for "no label" case we want it at the top of the list
         if (!b.value) {
           return 1;
+        }
+        if (a.group && b.group && a.group !== b.group) {
+          return a.group.localeCompare(b.group);
         }
         return a.label.localeCompare(b.label);
       });
 
-    const selectedOptions: OptionValue[] = getSelectedOptions();
+    const selectedOptions: OptionValue[] = getSelectedOptions(getOptions);
 
     const groupByEntities = (option: OptionValue) => {
-      return isStixObjectTypes.includes(fKey)
-        ? option.type
-        : t_i18n(option?.group ? option?.group : fKey);
+      return t_i18n(option?.group ? option?.group : fKey);
     };
     return (
       <Autocomplete
