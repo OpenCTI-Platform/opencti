@@ -167,6 +167,15 @@ export const startAllManagers = async () => {
   }
 };
 
+export const shutdownAllManagers = async () => {
+  for (let i = 0; i < managersModule.managers.length; i += 1) {
+    const managerModule = managersModule.managers[i];
+    if (managerModule.manager.enabledToStart()) {
+      await managerModule.shutdown();
+    }
+  }
+};
+
 export const getAllManagersStatuses = (settings?: BasicStoreSettings) => {
   return [...managersModule.managers.map((module) => module.status(settings))];
 };

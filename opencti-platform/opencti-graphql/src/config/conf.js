@@ -22,6 +22,7 @@ import {
 } from '../schema/general';
 import { STIX_SIGHTING_RELATIONSHIP } from '../schema/stixSightingRelationship';
 import pjson from '../../package.json';
+import { ENTITY_TYPE_DECAY_RULE } from '../modules/decayRule/decayRule-types';
 import { ENTITY_TYPE_NOTIFICATION, ENTITY_TYPE_TRIGGER, NOTIFICATION_NUMBER } from '../modules/notification/notification-types';
 import { ENTITY_TYPE_VOCABULARY } from '../modules/vocabulary/vocabulary-types';
 import { ENTITY_TYPE_ENTITY_SETTING } from '../modules/entitySetting/entitySetting-types';
@@ -150,6 +151,11 @@ export const BUS_TOPICS = {
     DELETE_TOPIC: `${TOPIC_PREFIX}ABSTRACT_STIX_REF_RELATIONSHIP_DELETE_TOPIC`,
     ADDED_TOPIC: `${TOPIC_PREFIX}ABSTRACT_STIX_REF_RELATIONSHIP_ADDED_TOPIC`,
   },
+  [ENTITY_TYPE_DECAY_RULE]: {
+    EDIT_TOPIC: `${TOPIC_PREFIX}ENTITY_TYPE_DECAY_RULE_EDIT_TOPIC`,
+    DELETE_TOPIC: `${TOPIC_PREFIX}ENTITY_TYPE_DECAY_RULE_DELETE_TOPIC`,
+    ADDED_TOPIC: `${TOPIC_PREFIX}ENTITY_TYPE_DECAY_RULE_ADDED_TOPIC`,
+  },
   [ENTITY_TYPE_MANAGER_CONFIGURATION]: {
     EDIT_TOPIC: `${TOPIC_PREFIX}ENTITY_TYPE_MANAGER_CONFIGURATION_EDIT_TOPIC`,
     ADDED_TOPIC: `${TOPIC_PREFIX}ENTITY_TYPE_MANAGER_CONFIGURATION_ADDED_TOPIC`,
@@ -174,6 +180,10 @@ export const BUS_TOPICS = {
   [AI_BUS]: {
     EDIT_TOPIC: `${TOPIC_PREFIX}ENTITY_TYPE_AI_BUS_EDIT_TOPIC`,
   },
+};
+
+export const getBusTopicForEntityType = (entityType) => {
+  return BUS_TOPICS[entityType];
 };
 
 export const PLATFORM_VERSION = pjson.version;

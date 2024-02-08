@@ -2,8 +2,7 @@ import type { StixDate, StixDomainObject, StixMitreExtension, StixOpenctiExtensi
 import type { StixKillChainPhase } from '../../types/stix-smo';
 import { STIX_EXT_MITRE, STIX_EXT_OCTI } from '../../types/stix-extensions';
 import type { BasicStoreEntity, StoreEntity } from '../../types/store';
-import type { DecayHistory } from './decay-domain';
-import type { DecayRule } from '../../generated/graphql';
+import type { DecayHistory } from '../decayRule/decayRule-domain';
 
 export const INDICATOR_DECAY_FEATURE_FLAG = 'INDICATOR_DECAY';
 export const ENTITY_TYPE_INDICATOR = 'Indicator';
@@ -31,6 +30,14 @@ export interface StixIndicator extends StixDomainObject {
   };
 }
 
+export interface IndicatorDecayRule {
+  decay_rule_id: string;
+  decay_lifetime: number;
+  decay_pound: number;
+  decay_points: number[]
+  decay_revoke_score: number
+}
+
 export interface BasicStoreEntityIndicator extends BasicStoreEntity {
   name: string;
   description: string;
@@ -41,7 +48,7 @@ export interface BasicStoreEntityIndicator extends BasicStoreEntity {
   valid_from: Date;
   valid_until: Date;
   kill_chain_phases: Array<StixKillChainPhase>;
-  decay_applied_rule: DecayRule;
+  decay_applied_rule: IndicatorDecayRule;
   decay_history: Array<DecayHistory>;
   decay_base_score: number;
   decay_base_score_date: Date;
@@ -57,7 +64,7 @@ export interface StoreEntityIndicator extends StoreEntity {
   valid_from: Date;
   valid_until: Date;
   kill_chain_phases: Array<StixKillChainPhase>;
-  decay_applied_rule: DecayRule;
+  decay_applied_rule: IndicatorDecayRule;
   decay_history: Array<DecayHistory>;
   decay_base_score: number;
   decay_base_score_date: Date;

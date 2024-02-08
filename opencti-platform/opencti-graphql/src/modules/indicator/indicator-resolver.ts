@@ -4,6 +4,7 @@ import {
   findById,
   getDecayChartData,
   getDecayDetails,
+  indicatorEditField,
   indicatorsDistributionByEntity,
   indicatorsNumber,
   indicatorsNumberByEntity,
@@ -17,7 +18,6 @@ import {
   stixDomainObjectDelete,
   stixDomainObjectDeleteRelation,
   stixDomainObjectEditContext,
-  stixDomainObjectEditField,
 } from '../../domain/stixDomainObject';
 import { distributionEntities } from '../../database/middleware';
 import type { Resolvers } from '../../generated/graphql';
@@ -59,7 +59,7 @@ const indicatorResolvers: Resolvers = {
     indicatorDelete: (_, { id }, context) => {
       return stixDomainObjectDelete(context, context.user, id);
     },
-    indicatorFieldPatch: (_, { id, input, commitMessage, references }, context) => stixDomainObjectEditField(context, context.user, id, input, { commitMessage, references }),
+    indicatorFieldPatch: (_, { id, input, commitMessage, references }, context) => indicatorEditField(context, context.user, id, input, { commitMessage, references }),
     indicatorContextPatch: (_, { id, input }, context) => stixDomainObjectEditContext(context, context.user, id, input),
     indicatorContextClean: (_, { id }, context) => stixDomainObjectCleanContext(context, context.user, id),
     indicatorRelationAdd: (_, { id, input }, context) => stixDomainObjectAddRelation(context, context.user, id, input),

@@ -1,3 +1,4 @@
+import moment from 'moment-timezone';
 import React, { FunctionComponent } from 'react';
 import DialogContent from '@mui/material/DialogContent';
 import Grid from '@mui/material/Grid';
@@ -12,8 +13,7 @@ import { SxProps } from '@mui/material';
 import { Theme } from '@mui/material/styles/createTheme';
 import { useTheme } from '@mui/styles';
 import { IndicatorDetails_indicator$data } from '@components/observations/indicators/__generated__/IndicatorDetails_indicator.graphql';
-import DecayChart from '@components/observations/indicators/DecayChart';
-import moment from 'moment-timezone';
+import DecayChart, { DecayHistory } from '@components/settings/decay/DecayChart';
 import { useFormatter } from '../../../../components/i18n';
 
 interface DecayDialogContentProps {
@@ -21,7 +21,7 @@ interface DecayDialogContentProps {
 }
 
 export interface LabelledDecayHistory {
-  updated_at: Date
+  updated_at: string
   score: number
   label: string
   style: SxProps<Theme>
@@ -36,60 +36,80 @@ const DecayDialogContent : FunctionComponent<DecayDialogContentProps> = ({ indic
   const decayHistory = indicator.decay_history ? [...indicator.decay_history] : [];
   const decayLivePoints = indicatorDecayDetails?.live_points ? [...indicatorDecayDetails.live_points] : [];
 
-  const getScoreLabelFor = (score: number) => {
-    if (score === indicator.decay_base_score) {
-      return 'Score at creation';
-    } if (score === indicator.x_opencti_score) {
-      return 'Current stable score';
-    } if (score === indicator.decay_applied_rule?.decay_revoke_score) {
-      return 'Revoke score';
-    }
-    return 'Stability threshold';
-  };
-
-  const getStyleFor = (score: number) => {
-    if (score === indicator.x_opencti_score) {
-      return {
-        color: theme.palette.success.main,
-        fontWeight: 'bold',
-      };
-    } if (score === indicator.decay_applied_rule?.decay_revoke_score) {
-      return { color: theme.palette.secondary.main };
-    }
-    return { color: theme.palette.text.primary };
-  };
-
-  const getDateAsTextFor = (history: LabelledDecayHistory) => {
+  const getDateAsTextFor = (history: DecayHistory) => {
     if (indicator.x_opencti_score === null || indicator.x_opencti_score === undefined) {
       return 'N/A';
-    } if (history.score < indicator.x_opencti_score) {
+    } if (history.score < indicator.x_opencti_score && history.updated_at > indicator.decay_base_score_date) {
       return moment(history.updated_at).fromNow();
     }
     return moment(history.updated_at).format('DD MMM yyyy HH:mm A');
   };
 
-  const decayFullHistory: LabelledDecayHistory[] = [];
-  decayHistory.map((history) => (
-    decayFullHistory.push({
+  const getDisplayFor = (history: DecayHistory) => {
+    if (history.updated_at < indicator.decay_base_score_date) {
+      // Anything before base score reset is just "score"
+      return {
+        label: 'Score',
+        style: { color: theme.palette.text.primary },
+        score: history.score,
+        updated_at: getDateAsTextFor(history),
+      };
+    }
+    if (history.score === indicator.x_opencti_score) {
+      return {
+        label: 'Current stable score',
+        style: {
+          color: theme.palette.success.main,
+          fontWeight: 'bold',
+        },
+        score: history.score,
+        updated_at: getDateAsTextFor(history),
+      };
+    } if (history.score === indicator.decay_base_score) {
+      return {
+        label: 'Base score',
+        style: { color: theme.palette.text.primary },
+        score: history.score,
+        updated_at: getDateAsTextFor(history),
+      };
+    } if (history.score === indicator.decay_applied_rule?.decay_revoke_score) {
+      return {
+        label: 'Revoke score',
+        style: { color: theme.palette.secondary.main },
+        score: history.score,
+        updated_at: getDateAsTextFor(history),
+      };
+    }
+    return {
+      label: 'Stability threshold',
+      style: { color: theme.palette.text.primary },
       score: history.score,
-      updated_at: history.updated_at,
-      label: getScoreLabelFor(history.score),
-      style: getStyleFor(history.score),
-    })
+      updated_at: getDateAsTextFor(history),
+    };
+  };
+
+  const labelledHistoryList: LabelledDecayHistory[] = [];
+  decayHistory.map((history) => (
+    labelledHistoryList.push(getDisplayFor(history))
   ));
 
   decayLivePoints.map((history) => (
-    decayFullHistory.push({
-      score: history.score,
-      updated_at: history.updated_at,
-      label: getScoreLabelFor(history.score),
-      style: getStyleFor(history.score),
-    })
+    labelledHistoryList.push(getDisplayFor(history))
   ));
 
-  decayFullHistory.sort((a, b) => {
+  labelledHistoryList.sort((a, b) => {
     return new Date(a.updated_at).getTime() - new Date(b.updated_at).getTime();
   });
+
+  let chartCurvePoints: DecayHistory[] = [];
+  if (indicator.decayChartData?.live_score_serie) {
+    chartCurvePoints = indicator.decayChartData.live_score_serie.map((historyPoint) => historyPoint);
+  }
+
+  let chartDecayReactionPoints: number[] = [];
+  if (indicator.decay_applied_rule?.decay_points) {
+    chartDecayReactionPoints = indicator.decay_applied_rule?.decay_points.map((point) => point);
+  }
 
   return (
     <DialogContent>
@@ -99,7 +119,13 @@ const DecayDialogContent : FunctionComponent<DecayDialogContentProps> = ({ indic
         style={{ borderColor: 'white', borderWidth: 1 }}
       >
         <Grid item={true} xs={6}>
-          <DecayChart indicator={indicator}/>
+          <DecayChart
+            currentScore={indicator.x_opencti_score || 0}
+            revokeScore={indicator.decay_applied_rule?.decay_revoke_score || 0}
+            reactionPoints={chartDecayReactionPoints}
+            decayCurvePoint={chartCurvePoints || []}
+            decayLiveScore={indicator.decayLiveDetails?.live_score}
+          />
         </Grid>
         <Grid item={true} xs={6}>
           <TableContainer component={Paper}>
@@ -112,12 +138,12 @@ const DecayDialogContent : FunctionComponent<DecayDialogContentProps> = ({ indic
                 </TableRow>
               </TableHead>
               <TableBody>
-                {decayFullHistory.map((history, index) => {
+                {labelledHistoryList.map((history, index) => {
                   return (
                     <TableRow key={index}>
                       <TableCell sx={history.style}>{t_i18n(history.label)}</TableCell>
                       <TableCell sx={history.style}>{history.score}</TableCell>
-                      <TableCell sx={history.style}>{getDateAsTextFor(history)}</TableCell>
+                      <TableCell sx={history.style}>{history.updated_at}</TableCell>
                     </TableRow>
                   );
                 })}

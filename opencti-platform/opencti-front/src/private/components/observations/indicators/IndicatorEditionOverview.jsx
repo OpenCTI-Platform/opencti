@@ -27,7 +27,7 @@ import useFormEditor from '../../../../utils/hooks/useFormEditor';
 const indicatorMutationFieldPatch = graphql`
   mutation IndicatorEditionOverviewFieldPatchMutation(
     $id: ID!
-    $input: [EditInput]!
+    $input: [EditInput!]!
     $commitMessage: String
     $references: [String]
   ) {

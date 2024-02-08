@@ -84,6 +84,10 @@
   "retention_manager": {
     "enabled": true
   },
+  "indicator_decay_manager": {
+    "enabled": true,
+    "interval": 6000000
+  },
   "providers": {
     "local": {
       "strategy": "LocalStrategy"

@@ -3,9 +3,8 @@ import type { StoreEntity } from '../types/store';
 import { createEntity, deleteElementById, updateAttribute } from '../database/middleware';
 import { publishUserAction } from '../listener/UserActionListener';
 import { delEditContext, notify, setEditContext } from '../database/redis';
-import { BUS_TOPICS } from '../config/conf';
+import { BUS_TOPICS, getBusTopicForEntityType } from '../config/conf';
 import { ABSTRACT_INTERNAL_OBJECT } from '../schema/general';
-import { ENTITY_TYPE_FEED } from '../schema/internalObject';
 import type { EditInput, EditContext } from '../generated/graphql';
 import { FunctionalError } from '../config/errors';
 import { storeLoadById } from '../database/middleware-loader';
@@ -26,7 +25,8 @@ export const createInternalObject = async <T extends StoreEntity>(context: AuthC
       context_data: { id: element.id, entity_type: element.entity_type, input }
     });
   }
-  return notify(BUS_TOPICS[ABSTRACT_INTERNAL_OBJECT].ADDED_TOPIC, element, user);
+  const notifyTopic = getBusTopicForEntityType(entityType)?.ADDED_TOPIC ?? BUS_TOPICS[ABSTRACT_INTERNAL_OBJECT].ADDED_TOPIC;
+  return notify(notifyTopic, element, user);
 };
 
 export const editInternalObject = async <T extends StoreEntity>(context: AuthContext, user: AuthUser, id: string, entityType: string, input: EditInput[]): Promise<T> => {
@@ -41,9 +41,10 @@ export const editInternalObject = async <T extends StoreEntity>(context: AuthCon
     event_scope: 'update',
     event_access: 'administration',
     message: `updates \`${input.map((i) => i.key).join(', ')}\` for ${humanReadableFormatEntityType(entityType)} \`${element.name}\``,
-    context_data: { id, entity_type: ENTITY_TYPE_FEED, input }
+    context_data: { id, entity_type: entityType, input }
   });
-  return notify(BUS_TOPICS[ABSTRACT_INTERNAL_OBJECT].EDIT_TOPIC, element, user);
+  const notifyTopic = getBusTopicForEntityType(entityType)?.EDIT_TOPIC ?? BUS_TOPICS[ABSTRACT_INTERNAL_OBJECT].EDIT_TOPIC;
+  return notify(notifyTopic, element, user);
 };
 
 export const deleteInternalObject = async (context: AuthContext, user: AuthUser, id: string, entityType: string) => {
@@ -60,7 +61,8 @@ export const deleteInternalObject = async (context: AuthContext, user: AuthUser,
     message: `deletes ${humanReadableFormatEntityType(entityType)} \`${deleted.name}\``,
     context_data: { id, entity_type: entityType, input: deleted }
   });
-  await notify(BUS_TOPICS[ABSTRACT_INTERNAL_OBJECT].DELETE_TOPIC, internalObject, user);
+  const notifyTopic = getBusTopicForEntityType(entityType)?.DELETE_TOPIC ?? BUS_TOPICS[ABSTRACT_INTERNAL_OBJECT].DELETE_TOPIC;
+  await notify(notifyTopic, internalObject, user);
   return id;
 };
 

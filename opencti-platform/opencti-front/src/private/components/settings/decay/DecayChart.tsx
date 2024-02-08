@@ -1,16 +1,24 @@
 import React, { FunctionComponent } from 'react';
-import { IndicatorDetails_indicator$data } from '@components/observations/indicators/__generated__/IndicatorDetails_indicator.graphql';
 import Chart from '@components/common/charts/Chart';
 import { ApexOptions } from 'apexcharts';
 import moment from 'moment';
 import { useTheme } from '@mui/styles';
 import { Theme } from '@mui/material/styles/createTheme';
 
-interface DecayChartProps {
-  indicator: IndicatorDetails_indicator$data,
+export interface DecayHistory {
+  score: number,
+  updated_at: Date,
 }
 
-const DecayChart : FunctionComponent<DecayChartProps> = ({ indicator }) => {
+interface DecayChartProps {
+  currentScore?: number,
+  decayCurvePoint?: DecayHistory[],
+  decayLiveScore?: number,
+  revokeScore: number,
+  reactionPoints?: number[],
+}
+
+const DecayChart : FunctionComponent<DecayChartProps> = ({ currentScore, decayCurvePoint, decayLiveScore, revokeScore, reactionPoints }) => {
   const theme = useTheme<Theme>();
 
   const decayCurveColor = theme.palette.primary.main;
@@ -21,7 +29,7 @@ const DecayChart : FunctionComponent<DecayChartProps> = ({ indicator }) => {
   const chartLabelBackgroundColor = theme.palette.background.paper;
   const chartInfoTextColor = theme.palette.text.primary;
   const chartBackgroundColor = theme.palette.background.default;
-  const graphLineThickness = 4;
+  const graphLineThickness = 3;
 
   // Time in millisecond cannot be set as number in GraphQL because it's too long
   // So the time in data is stored as Date and must be converted to time in ms to be drawn on the chart.
@@ -31,10 +39,10 @@ const DecayChart : FunctionComponent<DecayChartProps> = ({ indicator }) => {
 
   // This is the chart serie data, aka the curve.
   const decayCurveDataPoints: { x: number; y: number }[] = [];
-  if (indicator.decayChartData && indicator.decayChartData.live_score_serie) {
-    indicator.decayChartData.live_score_serie.forEach((dataPoint) => {
+  if (decayCurvePoint) {
+    decayCurvePoint.forEach((dataPoint) => {
       decayCurveDataPoints.push({
-        x: convertTimeForChart(dataPoint.time),
+        x: convertTimeForChart(dataPoint.updated_at),
         y: dataPoint.score,
       });
     });
@@ -42,16 +50,16 @@ const DecayChart : FunctionComponent<DecayChartProps> = ({ indicator }) => {
 
   const graphLinesAnnotations = [];
   // Horizontal lines that shows reaction points
-  if (indicator.decay_applied_rule?.decay_points) {
-    indicator.decay_applied_rule.decay_points.forEach((reactionPoint) => {
+  if (reactionPoints) {
+    reactionPoints.forEach((reactionPoint) => {
       const lineReactionValue = {
         y: reactionPoint,
-        borderColor: reactionPoint === indicator.x_opencti_score ? scoreColor : reactionPointColor,
+        borderColor: reactionPoint === currentScore ? scoreColor : reactionPointColor,
         label: {
-          borderColor: reactionPoint === indicator.x_opencti_score ? scoreColor : reactionPointColor,
+          borderColor: reactionPoint === currentScore ? scoreColor : reactionPointColor,
           offsetY: 0,
           style: {
-            color: reactionPoint === indicator.x_opencti_score ? scoreColor : chartInfoTextColor,
+            color: reactionPoint === currentScore ? scoreColor : chartInfoTextColor,
             background: chartLabelBackgroundColor,
           },
           text: `${reactionPoint}`,
@@ -62,12 +70,12 @@ const DecayChart : FunctionComponent<DecayChartProps> = ({ indicator }) => {
 
     // Horizontal "red" area that show the revoke zone
     const revokeScoreArea = {
-      y: indicator.decay_applied_rule.decay_revoke_score + 1, // trick to have a red line even if revoke score is 0
+      y: revokeScore + 1, // trick to have a red line even if revoke score is 0
       y2: 0,
       borderColor: revokeColor,
       fillColor: revokeColor,
       label: {
-        text: `Revoke score: ${indicator.decay_applied_rule.decay_revoke_score}`,
+        text: `Revoke score: ${revokeScore}`,
         borderColor: revokeColor,
         style: {
           color: revokeColor,
@@ -79,11 +87,11 @@ const DecayChart : FunctionComponent<DecayChartProps> = ({ indicator }) => {
   }
 
   const pointAnnotations = [];
-  if (indicator.decayChartData?.live_score_serie && indicator.decayChartData?.live_score_serie.length > 0) {
+  if (decayCurvePoint && decayCurvePoint.length > 0) {
     // circle on the curve that show the live score
     pointAnnotations.push({
       x: new Date().getTime(),
-      y: indicator.decayLiveDetails?.live_score,
+      y: decayLiveScore,
       marker: {
         fillColor: decayCurveColor,
         strokeColor: chartInfoTextColor,
@@ -94,11 +102,11 @@ const DecayChart : FunctionComponent<DecayChartProps> = ({ indicator }) => {
     });
 
     // circle on the curve that show the current stable score
-    const currentScore = indicator.decayChartData?.live_score_serie.find((point) => point.score === indicator.x_opencti_score);
-    if (currentScore !== undefined) {
+    const currentScoreData = decayCurvePoint.find((point) => point.score === currentScore);
+    if (currentScoreData !== undefined) {
       pointAnnotations.push({
-        x: convertTimeForChart(currentScore.time),
-        y: currentScore.score,
+        x: convertTimeForChart(currentScoreData.updated_at),
+        y: currentScoreData.score,
         marker: {
           fillColor: scoreColor,
           strokeColor: chartInfoTextColor,
@@ -108,7 +116,7 @@ const DecayChart : FunctionComponent<DecayChartProps> = ({ indicator }) => {
           radius: graphLineThickness,
         },
         label: {
-          text: `Score:${currentScore.score}`,
+          text: `Score:${currentScoreData.score}`,
           position: 'right',
           borderColor: scoreColor,
           borderWidth: 2,
@@ -182,7 +190,7 @@ const DecayChart : FunctionComponent<DecayChartProps> = ({ indicator }) => {
     },
     forecastDataPoints: {
       // this draw the dash line after live score point
-      count: indicator.decayLiveDetails?.live_score,
+      count: decayLiveScore && decayLiveScore > 1 ? decayLiveScore - 2 : 0,
       fillOpacity: 0.5,
       strokeWidth: graphLineThickness,
       dashArray: 8,

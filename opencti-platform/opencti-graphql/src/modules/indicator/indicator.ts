@@ -1,10 +1,8 @@
 import { type ModuleDefinition, registerDefinition } from '../../schema/module';
 import { ABSTRACT_STIX_DOMAIN_OBJECT } from '../../schema/general';
-import { ENTITY_TYPE_INDICATOR, INDICATOR_DECAY_FEATURE_FLAG, type StixIndicator, type StoreEntityIndicator } from './indicator-types';
+import { ENTITY_TYPE_INDICATOR, type StixIndicator, type StoreEntityIndicator } from './indicator-types';
 import convertIndicatorToStix from './indicator-converter';
 import { killChainPhases, objectOrganization } from '../../schema/stixRefRelationship';
-import { isFeatureEnabled } from '../../config/conf';
-import type { AttributeDefinition } from '../../schema/attribute-definition';
 
 const INDICATOR_DEFINITION: ModuleDefinition<StoreEntityIndicator, StixIndicator> = {
   type: {
@@ -32,61 +30,59 @@ const INDICATOR_DEFINITION: ModuleDefinition<StoreEntityIndicator, StixIndicator
     { name: 'x_opencti_detection', label: 'Detection', type: 'boolean', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: true },
     { name: 'x_opencti_main_observable_type', label: 'Main observable type', type: 'string', format: 'short', mandatoryType: 'external', editDefault: true, multiple: false, upsert: true, isFilterable: true },
     { name: 'x_mitre_platforms', label: 'Platforms', type: 'string', format: 'short', mandatoryType: 'customizable', editDefault: true, multiple: true, upsert: true, isFilterable: true },
-    ...(isFeatureEnabled(INDICATOR_DECAY_FEATURE_FLAG) ? [
-      {
-        name: 'decay_next_reaction_date',
-        type: 'date',
-        mandatoryType: 'no',
-        editDefault: false,
-        multiple: false,
-        upsert: false,
-        label: 'Decay next reaction date',
-        isFilterable: false
-      },
-      {
-        name: 'decay_base_score',
-        type: 'numeric',
-        mandatoryType: 'no',
-        editDefault: true,
-        multiple: false,
-        upsert: true,
-        label: 'Decay base score',
-        isFilterable: true,
-        precision: 'integer',
-      },
-      {
-        name: 'decay_base_score_date',
-        type: 'date',
-        mandatoryType: 'no',
-        editDefault: true,
-        multiple: false,
-        upsert: true,
-        label: 'Decay base score date',
-        isFilterable: false,
-      },
-      {
-        name: 'decay_history',
-        type: 'object',
-        mandatoryType: 'no',
-        editDefault: false,
-        multiple: true,
-        upsert: false,
-        label: 'Decay history',
-        isFilterable: false,
-        format: 'flat'
-      },
-      {
-        name: 'decay_applied_rule',
-        type: 'object',
-        mandatoryType: 'no',
-        editDefault: false,
-        multiple: false,
-        upsert: false,
-        label: 'Decay applied rule',
-        isFilterable: false,
-        format: 'flat'
-      }
-    ] as AttributeDefinition[] : []),
+    {
+      name: 'decay_next_reaction_date',
+      type: 'date',
+      mandatoryType: 'no',
+      editDefault: false,
+      multiple: false,
+      upsert: true,
+      label: 'Decay next reaction date',
+      isFilterable: false
+    },
+    {
+      name: 'decay_base_score',
+      type: 'numeric',
+      mandatoryType: 'no',
+      editDefault: true,
+      multiple: false,
+      upsert: true,
+      label: 'Decay base score',
+      isFilterable: true,
+      precision: 'integer',
+    },
+    {
+      name: 'decay_base_score_date',
+      type: 'date',
+      mandatoryType: 'no',
+      editDefault: true,
+      multiple: false,
+      upsert: true,
+      label: 'Decay base score date',
+      isFilterable: false,
+    },
+    {
+      name: 'decay_history',
+      type: 'object',
+      mandatoryType: 'no',
+      editDefault: false,
+      multiple: true,
+      upsert: true,
+      label: 'Decay history',
+      isFilterable: false,
+      format: 'flat'
+    },
+    {
+      name: 'decay_applied_rule',
+      type: 'object',
+      mandatoryType: 'no',
+      editDefault: false,
+      multiple: false,
+      upsert: true,
+      label: 'Decay applied rule',
+      isFilterable: false,
+      format: 'flat'
+    }
   ],
   relations: [],
   relationsRefs: [objectOrganization, killChainPhases],

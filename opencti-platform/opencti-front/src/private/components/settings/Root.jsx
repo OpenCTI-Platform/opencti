@@ -20,6 +20,8 @@ const Retention = lazy(() => import('./Retention'));
 const Roles = lazy(() => import('./Roles'));
 const RootRole = lazy(() => import('./roles/Root'));
 const Rules = lazy(() => import('./Rules'));
+const Decay = lazy(() => import('./decay/DecayRules'));
+const RootDecay = lazy(() => import('./decay/Root'));
 const Sessions = lazy(() => import('./Sessions'));
 const Settings = lazy(() => import('./Settings'));
 const SettingsOrganizations = lazy(() => import('./SettingsOrganizations'));
@@ -214,6 +216,15 @@ const Root = () => {
             exact
             path="/dashboard/settings/customization/rules"
             component={Rules}
+          />
+          <BoundaryRoute
+            exact
+            path="/dashboard/settings/customization/decay"
+            component={Decay}
+          />
+          <BoundaryRoute
+            path="/dashboard/settings/customization/decay/:decayRuleId"
+            component={RootDecay}
           />
           <BoundaryRoute
             path="/dashboard/settings/customization/notifiers"

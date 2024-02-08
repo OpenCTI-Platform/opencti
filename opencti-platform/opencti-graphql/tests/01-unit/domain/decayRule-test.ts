@@ -1,78 +1,129 @@
 import { describe, it, expect } from 'vitest';
 import moment from 'moment';
+import { computeIndicatorDecayPatch, computeLivePoints, computeLiveScore, type IndicatorPatch } from '../../../src/modules/indicator/indicator-domain';
+import type { BasicStoreEntityIndicator, IndicatorDecayRule } from '../../../src/modules/indicator/indicator-types';
 import {
-  BUILT_IN_DECAY_RULES,
-  computeLivePoints,
-  computeLiveScore,
+  type DecayRuleConfiguration,
+  selectDecayRuleForIndicator,
   computeNextScoreReactionDate,
   computeScoreFromExpectedTime,
   computeTimeFromExpectedScore,
-  type DecayRule,
-  FALLBACK_DECAY_RULE,
-  findDecayRuleForIndicator
-} from '../../../src/modules/indicator/decay-domain';
-import { computeIndicatorDecayPatch, type IndicatorPatch } from '../../../src/modules/indicator/indicator-domain';
-import type { BasicStoreEntityIndicator } from '../../../src/modules/indicator/indicator-types';
-import { computeChartDecayAlgoSerie, computeScoreList } from '../../../src/modules/indicator/decay-chart-domain';
+  computeScoreList,
+  computeChartDecayAlgoSerie,
+  type ComputeDecayChartInput
+} from '../../../src/modules/decayRule/decayRule-domain';
+
+const indicator_fallback_applied_rule: IndicatorDecayRule = {
+  decay_rule_id: 'fake-rule-id',
+  decay_lifetime: 365,
+  decay_pound: 1.0,
+  decay_points: [80, 60, 40, 20],
+  decay_revoke_score: 0,
+};
+
+const TEST_DEFAULT_DECAY_RULE: DecayRuleConfiguration = {
+  id: 'test-defaut-rule',
+  name: 'Default Decay Rule',
+  description: 'Built-in decay rule for all indicators',
+  decay_lifetime: 365, // 1 year
+  decay_pound: 1.0,
+  decay_points: [80, 60, 40, 20],
+  decay_revoke_score: 0,
+  decay_observable_types: [], // no observable means any
+  order: 0,
+  active: true,
+};
+
+export const TEST_URL_DECAY_RULE: DecayRuleConfiguration = {
+  id: 'test-url-rule',
+  name: 'URL Decay Rule',
+  description: 'Built-in decay rule for URL indicators',
+  decay_lifetime: 180,
+  decay_pound: 1.0,
+  decay_points: [80, 60, 40, 20],
+  decay_revoke_score: 0,
+  decay_observable_types: ['Url'],
+  order: 1,
+  active: true,
+};
+
+export const TEST_IP_DECAY_RULE: DecayRuleConfiguration = {
+  id: 'test-ip-rule',
+  name: 'IP Decay Rule',
+  description: 'Built-in decay rule for IPs indicators',
+  decay_lifetime: 60,
+  decay_pound: 1.0,
+  decay_points: [80, 60, 40, 20],
+  decay_revoke_score: 0,
+  decay_observable_types: ['IPv4-Addr', 'IPv6-Addr'],
+  order: 1,
+  active: true,
+};
+
+const BUILT_IN_DECAY_RULES_FOR_TEST = [TEST_DEFAULT_DECAY_RULE, TEST_IP_DECAY_RULE, TEST_URL_DECAY_RULE];
 
 describe('Decay formula testing', () => {
   it('should compute score', () => {
     const baseScore = 100;
-    const compute20Score = computeScoreFromExpectedTime(baseScore, 20, FALLBACK_DECAY_RULE);
+    const compute20Score = computeScoreFromExpectedTime(baseScore, 20, TEST_DEFAULT_DECAY_RULE);
     expect(Math.round(compute20Score)).toBe(62);
-    const compute28Score = computeScoreFromExpectedTime(baseScore, 28, FALLBACK_DECAY_RULE);
+    const compute28Score = computeScoreFromExpectedTime(baseScore, 28, TEST_DEFAULT_DECAY_RULE);
     expect(Math.round(compute28Score)).toBe(58);
-    const compute31Score = computeScoreFromExpectedTime(baseScore, 31, FALLBACK_DECAY_RULE);
+    const compute31Score = computeScoreFromExpectedTime(baseScore, 31, TEST_DEFAULT_DECAY_RULE);
     expect(Math.round(compute31Score)).toBe(56);
-    const compute366Score = computeScoreFromExpectedTime(baseScore, 366, FALLBACK_DECAY_RULE);
+    const compute366Score = computeScoreFromExpectedTime(baseScore, 366, TEST_DEFAULT_DECAY_RULE);
     expect(Math.round(compute366Score)).toBe(0);
-    const computeBadScore = computeScoreFromExpectedTime(baseScore, -5, FALLBACK_DECAY_RULE);
+    const computeBadScore = computeScoreFromExpectedTime(baseScore, -5, TEST_DEFAULT_DECAY_RULE);
     expect(Math.round(computeBadScore)).toBe(100);
   });
 
   it('should compute score and time', () => {
     const baseScore = 100;
-    const compute20Score = computeScoreFromExpectedTime(baseScore, 20, FALLBACK_DECAY_RULE);
-    expect(Math.round(computeTimeFromExpectedScore(baseScore, compute20Score, FALLBACK_DECAY_RULE))).toBe(20);
+    const compute20Score = computeScoreFromExpectedTime(baseScore, 20, TEST_DEFAULT_DECAY_RULE);
+    expect(Math.round(computeTimeFromExpectedScore(baseScore, compute20Score, TEST_DEFAULT_DECAY_RULE))).toBe(20);
   });
 
   it('should find the right rule for indicator type', () => {
     // GIVEN the type is unknown or not filled, WHEN getting decay rule, THEN the FALLBACK one is return.
-    let decayRule: DecayRule = findDecayRuleForIndicator('', BUILT_IN_DECAY_RULES);
-    expect(decayRule.id).toBe('FALLBACK_DECAY_RULE');
+    let decayRule: DecayRuleConfiguration = selectDecayRuleForIndicator('', BUILT_IN_DECAY_RULES_FOR_TEST);
+    expect(decayRule.id).toBe(TEST_DEFAULT_DECAY_RULE.id);
 
     // GIVEN the type is IP, WHEN getting decay rule, THEN the IP one is return.
-    decayRule = findDecayRuleForIndicator('IPv6-Addr', BUILT_IN_DECAY_RULES);
-    expect(decayRule.id).toBe('IP_DECAY_RULE');
+    decayRule = selectDecayRuleForIndicator('IPv6-Addr', BUILT_IN_DECAY_RULES_FOR_TEST);
+    expect(decayRule.id).toBe(TEST_IP_DECAY_RULE.id);
 
     // GIVEN the type is URL, WHEN getting decay rule, THEN the URL one is return.
-    decayRule = findDecayRuleForIndicator('Url', BUILT_IN_DECAY_RULES);
-    expect(decayRule.id).toBe('URL_DECAY_RULE');
+    decayRule = selectDecayRuleForIndicator('Url', BUILT_IN_DECAY_RULES_FOR_TEST);
+    expect(decayRule.id).toBe(TEST_URL_DECAY_RULE.id);
 
     // GIVEN the type 'Url' that matched 2 rules
-    const rulesWithTwoUrls: DecayRule[] = [];
+    const rulesWithTwoUrls: DecayRuleConfiguration[] = [];
     rulesWithTwoUrls.push({
       id: 'URL_DECAY_RULE_IS_LESS_IMPORTANT',
+      name: 'URL_DECAY_RULE_IS_LESS_IMPORTANT',
+      description: 'URL_DECAY_RULE_IS_LESS_IMPORTANT',
       decay_lifetime: 60,
       decay_pound: 0.33,
       decay_points: [60],
       decay_revoke_score: 0,
-      indicator_types: ['Url'],
+      decay_observable_types: ['Url'],
       order: 2,
-      enabled: true,
+      active: true,
     });
     rulesWithTwoUrls.push({
       id: 'URL_DECAY_RULE',
+      name: 'URL_DECAY_RULE',
+      description: 'URL_DECAY_RULE',
       decay_lifetime: 180,
       decay_pound: 1.0,
       decay_points: [80, 60, 40, 20],
       decay_revoke_score: 0,
-      indicator_types: ['Url'],
+      decay_observable_types: ['Url'],
       order: 3,
-      enabled: true,
+      active: true,
     });
     // WHEN getting decay rule
-    decayRule = findDecayRuleForIndicator('Url', rulesWithTwoUrls);
+    decayRule = selectDecayRuleForIndicator('Url', rulesWithTwoUrls);
     // THEN the rule is the one with lower value in order
     expect(decayRule.id, 'When several rules matches, the one with lower order value should be taken.').toBe('URL_DECAY_RULE');
   });
@@ -81,15 +132,15 @@ describe('Decay formula testing', () => {
     const startDate = moment('2023-01-01');
 
     // GIVEN a decay based on fallback, WHEN stable score is the last reaction point
-    let nextReactionDate = computeNextScoreReactionDate(100, 20, FALLBACK_DECAY_RULE, startDate);
+    let nextReactionDate = computeNextScoreReactionDate(100, 20, TEST_DEFAULT_DECAY_RULE, startDate);
     // THEN the next reaction date should be the revoke day, 1 year after the start date.
     expect((moment(nextReactionDate)).format('YYYY-MM-DD'), 'Next reaction date should be the revoke date.').toBe('2024-01-01');
 
     // GIVEN a decay based on fallback, WHEN stable score is the first stable score
-    nextReactionDate = computeNextScoreReactionDate(100, 100, FALLBACK_DECAY_RULE, startDate);
+    nextReactionDate = computeNextScoreReactionDate(100, 100, TEST_DEFAULT_DECAY_RULE, startDate);
     // THEN the next reaction date should be the one for score 80 => after 2.9 days
     expect((moment(nextReactionDate)).format('YYYY-MM-DD'), 'Next reaction date should be after two days').toBe('2023-01-03');
-    const expected80ScoreDays = computeTimeFromExpectedScore(100, 80, FALLBACK_DECAY_RULE);
+    const expected80ScoreDays = computeTimeFromExpectedScore(100, 80, TEST_DEFAULT_DECAY_RULE);
     expect(expected80ScoreDays).toBeCloseTo(2.9, 1);
   });
 });
@@ -98,7 +149,7 @@ describe('Decay update testing', () => {
   it('should move to next score and update next reaction date for default rule', () => {
     // GIVEN an Indicator with decay that is on the first decay point and has next reaction point
     const indicatorInput: Partial<BasicStoreEntityIndicator> = {
-      decay_applied_rule: FALLBACK_DECAY_RULE,
+      decay_applied_rule: indicator_fallback_applied_rule,
       decay_base_score: 100,
       x_opencti_score: 50,
       valid_from: moment().subtract('5', 'days').toDate(),
@@ -129,14 +180,11 @@ describe('Decay update testing', () => {
       valid_from: moment().subtract('5', 'days').toDate(),
       valid_until: moment().add('5', 'days').toDate(),
       decay_applied_rule: {
+        decay_rule_id: 'decay-test-next-score',
         decay_lifetime: 30,
         decay_points: [100, 80, 50, 20],
         decay_pound: 0.5,
         decay_revoke_score: 10,
-        enabled: true,
-        id: 'decay-test-next-score',
-        indicator_types: [],
-        order: 0
       }
     };
 
@@ -162,14 +210,11 @@ describe('Decay update testing', () => {
       valid_from: moment().subtract('5', 'days').toDate(),
       valid_until: moment().add('5', 'days').toDate(),
       decay_applied_rule: {
+        decay_rule_id: 'decay-test-next-score',
         decay_lifetime: 30,
         decay_points: [100, 80, 50, 20],
         decay_pound: 0.5,
         decay_revoke_score: 10,
-        enabled: true,
-        id: 'decay-test-next-score',
-        indicator_types: [],
-        order: 0
       }
     };
 
@@ -193,14 +238,11 @@ describe('Decay update testing', () => {
       valid_from: moment().subtract('5', 'days').toDate(),
       valid_until: moment().add('5', 'days').toDate(),
       decay_applied_rule: {
+        decay_rule_id: 'decay-test-next-score',
         decay_lifetime: 30,
         decay_points: [100, 80, 50, 20],
         decay_pound: 0.5,
         decay_revoke_score: 50,
-        enabled: true,
-        id: 'decay-test-next-score',
-        indicator_types: [],
-        order: 0
       }
     };
 
@@ -223,14 +265,11 @@ describe('Decay update testing', () => {
       valid_from: moment().subtract('5', 'days').toDate(),
       valid_until: moment().add('5', 'days').toDate(),
       decay_applied_rule: {
+        decay_rule_id: 'decay-test-next-score',
         decay_lifetime: 30,
         decay_points: [80, 50, 20],
         decay_pound: 0.5,
         decay_revoke_score: 100,
-        enabled: true,
-        id: 'decay-test-next-score',
-        indicator_types: [],
-        order: 0
       }
     };
 
@@ -267,7 +306,7 @@ describe('Decay live detailed data testing (subset of indicatorDecayDetails quer
       x_opencti_score: 100,
       decay_base_score: 100,
       decay_base_score_date: moment().subtract('5', 'days').toDate(),
-      decay_applied_rule: FALLBACK_DECAY_RULE,
+      decay_applied_rule: indicator_fallback_applied_rule,
       valid_from: moment().subtract('5', 'days').toDate(),
       valid_until: moment().add('5', 'days').toDate()
     };
@@ -295,7 +334,7 @@ describe('Decay live detailed data testing (subset of indicatorDecayDetails quer
       decay_base_score: 100,
       decay_base_score_date: moment().subtract('5', 'days').toDate(),
       decay_history: [],
-      decay_applied_rule: FALLBACK_DECAY_RULE,
+      decay_applied_rule: indicator_fallback_applied_rule,
       valid_from: moment().subtract('5', 'days').toDate(),
       valid_until: moment().add('5', 'days').toDate()
     };
@@ -323,28 +362,55 @@ describe('Decay chart data generation', () => {
     // YYYY-MM-DDTHH:mm:ss.sssZ
     const startDate = new Date('2023-12-15T00:00:00.000Z');
 
-    const timeSerie: number[] = computeScoreList(100);
-    const indicator: Partial<BasicStoreEntityIndicator> = {
-      x_opencti_score: 100,
-      decay_base_score: 100,
-      decay_base_score_date: startDate,
-      decay_applied_rule: FALLBACK_DECAY_RULE,
-      valid_from: startDate,
-      valid_until: moment().add(FALLBACK_DECAY_RULE.decay_lifetime, 'days').toDate()
-    };
+    const computedScoreList: number[] = computeScoreList(100);
 
-    const result = computeChartDecayAlgoSerie(indicator as BasicStoreEntityIndicator, timeSerie);
+    const computeChartInput: ComputeDecayChartInput = {
+      decayBaseScore: 100,
+      decayBaseScoreDate: startDate,
+      decayRule: indicator_fallback_applied_rule,
+      scoreList: computedScoreList,
+      decayHistory: []
+    };
+    const result = computeChartDecayAlgoSerie(computeChartInput);
 
     expect(result[0].score).toBe(100);
-    expect(moment(result[0].time).format('DD/MM/YYYY'), 'Base core 100 should be at start date').toBe('15/12/2023');
+    expect(moment(result[0].updated_at).format('DD/MM/YYYY'), 'Base core 100 should be at start date').toBe('15/12/2023');
 
     expect(result[25].score).toBe(75);
-    expect(moment(result[25].time).format('DD/MM/YYYY'), 'expect 1').toBe('20/12/2023');
+    expect(moment(result[25].updated_at).format('DD/MM/YYYY'), 'expect 1').toBe('20/12/2023');
 
     expect(result[50].score).toBe(50);
-    expect(moment(result[50].time).format('DD/MM/YYYY'), 'expect 1').toBe('29/01/2024');
+    expect(moment(result[50].updated_at).format('DD/MM/YYYY'), 'expect 1').toBe('29/01/2024');
 
     expect(result[100].score).toBe(0);
-    expect(moment(result[100].time).format('DD/MM/YYYY'), 'expect 1').toBe('14/12/2024');
+    expect(moment(result[100].updated_at).format('DD/MM/YYYY'), 'expect 1').toBe('14/12/2024');
+  });
+
+  it('should compute live score serie with Decay reset', () => {
+    const computedScoreList: number[] = computeScoreList(99);
+    const computeChartInput: ComputeDecayChartInput = {
+      decayBaseScore: 99,
+      decayBaseScoreDate: moment().subtract('5', 'days').toDate(),
+      decayRule: indicator_fallback_applied_rule,
+      scoreList: computedScoreList,
+      decayHistory: [
+        { updated_at: moment().subtract('10', 'days').toDate(), score: 100 }, // score in time before decay reset
+        { updated_at: moment().subtract('8', 'days').toDate(), score: 80 }, // score in time before decay reset
+        { updated_at: moment().subtract('5', 'days').toDate(), score: 99 }, // reset at D-5
+        { updated_at: moment().subtract('4', 'days').toDate(), score: 70 }, // reaction after reset
+      ],
+    };
+
+    const result = computeChartDecayAlgoSerie(computeChartInput);
+    expect(result.length, 'Chart should have 100 point for the current decay, + 2 back in the past').toBe(104);
+
+    // Verify that's it's ordered by Date, with some sample.
+    const orderedDataByDateAsc = [...result].sort((a, b) => (a.updated_at?.getTime() || 0) - (b.updated_at?.getTime() || 0));
+    expect(result[0].updated_at).toBe(orderedDataByDateAsc[0].updated_at);
+    expect(result[1].updated_at).toBe(orderedDataByDateAsc[1].updated_at);
+    expect(result[2].updated_at).toBe(orderedDataByDateAsc[2].updated_at);
+    expect(result[50].updated_at).toBe(orderedDataByDateAsc[50].updated_at);
+    expect(result[100].updated_at).toBe(orderedDataByDateAsc[100].updated_at);
+    expect(result[101].updated_at).toBe(orderedDataByDateAsc[101].updated_at);
   });
 });

@@ -101,7 +101,7 @@ import {
 
 import '../../../src/modules/index';
 import { ADMIN_USER, testContext } from '../../utils/testQuery';
-import { isDateNumericOrBooleanAttribute, isMultipleAttribute, isObjectAttribute, schemaAttributesDefinition } from '../../../src/schema/schema-attributes';
+import { isDateNumericOrBooleanAttribute, isMultipleAttribute, isObjectAttribute, isObjectFlatAttribute, schemaAttributesDefinition } from '../../../src/schema/schema-attributes';
 import { ENTITY_TYPE_ENTITY_SETTING } from '../../../src/modules/entitySetting/entitySetting-types';
 import { ENTITY_TYPE_CHANNEL } from '../../../src/modules/channel/channel-types';
 import { ENTITY_TYPE_INDICATOR } from '../../../src/modules/indicator/indicator-types';
@@ -225,6 +225,10 @@ describe('Testing schema attributes definition', () => {
     expect(isDateNumericOrBooleanAttribute('platform_hidden_type')).toBe(true);
     expect(isMultipleAttribute(ENTITY_TYPE_ENTITY_SETTING, 'platform_hidden_type')).toBe(false);
     expect(isMultipleAttribute(ENTITY_TYPE_CHANNEL, 'channel_types')).toBe(true);
+    expect(isObjectFlatAttribute('decay_applied_rule')).toBe(true);
+    expect(isObjectFlatAttribute('decay_applied_rule.decay_rule_id')).toBe(true);
+    expect(isObjectFlatAttribute('undefined_attribute')).toBe(false);
+    expect(isObjectFlatAttribute('bookmarks')).toBe(false); // standard format, not flat
   });
   it('Attributes upsert testing', () => {
     const availableAttributes = Array.from(schemaAttributesDefinition.getAttributes(ENTITY_TYPE_CONTAINER_REPORT).values());
