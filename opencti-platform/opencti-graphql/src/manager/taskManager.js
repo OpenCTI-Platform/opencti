@@ -32,7 +32,7 @@ import {
   storeLoadByIdWithRefs,
 } from '../database/middleware';
 import { now } from '../utils/format';
-import { EVENT_TYPE_CREATE, READ_DATA_INDICES, READ_DATA_INDICES_WITHOUT_INFERRED, UPDATE_OPERATION_ADD, UPDATE_OPERATION_REMOVE } from '../database/utils';
+import { EVENT_TYPE_CREATE, READ_DATA_INDICES_WITHOUT_INFERRED, UPDATE_OPERATION_ADD, UPDATE_OPERATION_REMOVE } from '../database/utils';
 import { elPaginate, elUpdate, ES_MAX_CONCURRENCY } from '../database/engine';
 import { FunctionalError, TYPE_LOCK_ERROR, UnknownError, UnsupportedError } from '../config/errors';
 import {
@@ -124,7 +124,7 @@ const computeRuleTaskElements = async (context, user, task) => {
     after: task_position,
     filters,
   };
-  const { edges: elements } = await elPaginate(context, RULE_MANAGER_USER, READ_DATA_INDICES, options);
+  const { edges: elements } = await elPaginate(context, RULE_MANAGER_USER, READ_DATA_INDICES_WITHOUT_INFERRED, options);
   // Apply the actions for each element
   for (let elementIndex = 0; elementIndex < elements.length; elementIndex += 1) {
     const element = elements[elementIndex];
