@@ -645,7 +645,7 @@ export const getDefaultOperatorFilter = (filterKey: string) => {
     return 'starts_with';
   }
   if (longTextFilters.includes(filterKey)) {
-    return 'contains';
+    return 'search';
   }
   return 'eq';
 };
