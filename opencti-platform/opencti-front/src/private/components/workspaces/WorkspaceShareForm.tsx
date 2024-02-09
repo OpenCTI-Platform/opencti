@@ -39,7 +39,7 @@ const WorkspaceShareForm = ({ onSubmit }: WorkspaceShareFormProps) => {
       }}
       onSubmit={onSubmit}
     >
-      {({ isSubmitting, isValid, dirty, handleReset, submitForm }) => (
+      {({ isSubmitting, isValid, dirty, handleReset, submitForm, setFieldValue }) => (
         <Form>
           <Field
             name="name"
@@ -69,6 +69,8 @@ const WorkspaceShareForm = ({ onSubmit }: WorkspaceShareFormProps) => {
             label={t_i18n('Max level markings')}
             helpertext={t_i18n('To prevent people seeing all the data...')}
             style={fieldSpacingContainerStyle}
+            onChange={() => {}}
+            setFieldValue={setFieldValue}
           />
 
           <div

@@ -96,9 +96,6 @@ const ObjectMarkingField: FunctionComponent<ObjectMarkingFieldProps> = ({
       const { currentValues } = newMarking as OptionValues;
       currentValues.pop();
       setFieldValue?.(name, currentValues);
-    } else {
-      (newMarking as Option[]).pop();
-      setFieldValue?.(name, newMarking as Option[]);
     }
     handleClose();
   };
@@ -113,10 +110,8 @@ const ObjectMarkingField: FunctionComponent<ObjectMarkingFieldProps> = ({
         .concat([markingAdded]);
 
       onChange?.(name, markingsReplace as Option[], operation);
+      setFieldValue?.(name, markingsReplace);
       setOperation(undefined);
-      handleClose();
-    } else {
-      onChange?.(name, newMarking as Option[], operation);
       handleClose();
     }
   };
@@ -128,16 +123,8 @@ const ObjectMarkingField: FunctionComponent<ObjectMarkingFieldProps> = ({
     );
 
     if (valueToReplace) {
-      if (
-        (valueToReplace.x_opencti_order ?? 0)
-        > (valueAdded.x_opencti_order ?? 0)
-      ) {
-        setOperation('replace');
-        setNewMarking({ currentValues: values, valueToReplace });
-      } else {
-        setNewMarking(values);
-        setOperation(undefined);
-      }
+      setOperation('replace');
+      setNewMarking({ currentValues: values, valueToReplace });
     } else onChange?.(name, values);
   };
 

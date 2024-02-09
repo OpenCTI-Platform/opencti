@@ -22,7 +22,7 @@ import { initializeAuthorizedMembers } from '../workspace/workspace-domain';
 import { ENTITY_TYPE_MARKING_DEFINITION } from '../../schema/stixMetaObject';
 import { getEntitiesMapFromCache } from '../../database/cache';
 import type { NumberResult, StoreMarkingDefinition } from '../../types/store';
-import { getWidgetsConfigAndUser } from './publicDashboard-utils';
+import { getWidgetArguments } from './publicDashboard-utils';
 import { stixCoreObjectsMultiTimeSeries, stixCoreObjectsNumber } from '../../domain/stixCoreObject';
 import { ABSTRACT_STIX_CORE_OBJECT } from '../../schema/general';
 
@@ -211,20 +211,7 @@ export const publicDashboardDelete = async (context: AuthContext, user: AuthUser
 
 // Heatmap
 export const publicStixCoreObjectsMultiTimeSeries = async (context: AuthContext, args: QueryPublicStixCoreObjectsMultiTimeSeriesArgs) => {
-  const { widgets, user, config } = await getWidgetsConfigAndUser(context, args.uriKey);
-  const { dataSelection } = widgets[args.widgetId];
-
-  const timeSeriesParameters = dataSelection.map((selection: { filters: any; date_attribute: any; }) => {
-    const filters = {
-      filterGroups: [selection.filters],
-      filters: [],
-      mode: 'and'
-    };
-    return {
-      field: selection.date_attribute,
-      filters,
-    };
-  });
+  const { user, config, timeSeriesParameters } = await getWidgetArguments(context, args.uriKey, args.widgetId, true);
 
   const standardArgs = {
     startDate: args.startDate,
@@ -242,16 +229,10 @@ export const publicStixCoreObjectsNumber = async (
   context: AuthContext,
   args: QueryPublicStixCoreObjectsNumberArgs
 ): Promise<NumberResult> => {
-  const { widgets, user, config } = await getWidgetsConfigAndUser(context, args.uriKey);
-  const widgetConfig = widgets[args.widgetId].dataSelection[0];
-
-  const filters = {
-    filterGroups: [widgetConfig.filters],
-    filters: [],
-    mode: 'and'
-  };
+  const { user, config, filters, dateAttribute } = await getWidgetArguments(context, args.uriKey, args.widgetId);
 
   const parameters = {
+    dateAttribute,
     startDate: args.startDate,
     endDate: args.endDate,
     filters,
