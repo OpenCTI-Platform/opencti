@@ -36,6 +36,7 @@ import { useVocabularyCategoryQuery$data } from '../hooks/__generated__/useVocab
 import { useSearchEntitiesStixCoreObjectsContainersSearchQuery$data } from './__generated__/useSearchEntitiesStixCoreObjectsContainersSearchQuery.graphql';
 import { useSearchEntitiesSchemaSCOSearchQuery$data } from './__generated__/useSearchEntitiesSchemaSCOSearchQuery.graphql';
 import type { Theme } from '../../components/Theme';
+import { containerTypes } from '../hooks/useAttributes';
 
 const filtersStixCoreObjectsContainersSearchQuery = graphql`
   query useSearchEntitiesStixCoreObjectsContainersSearchQuery(
@@ -869,7 +870,13 @@ const useSearchEntities = ({
           && !availableEntityTypes.includes('Stix-Domain-Object')
           && !availableEntityTypes.includes('Stix-Core-Object')
         ) {
-          const entitiesTypes = availableEntityTypes
+          let completedAvailableEntityTypes = availableEntityTypes;
+          if (availableEntityTypes.includes('Container')) {
+            completedAvailableEntityTypes = completedAvailableEntityTypes
+              .filter((type) => type !== 'Container')
+              .concat(containerTypes);
+          }
+          const entitiesTypes = completedAvailableEntityTypes
             .map((n) => ({
               label: t_i18n(
                 n.toString()[0] === n.toString()[0].toUpperCase()
