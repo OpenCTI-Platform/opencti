@@ -3,7 +3,7 @@ import { MESSAGING$ } from '../../relay/environment';
 
 const useConfidenceLevel = () => {
   const { me } = useAuth();
-  const effectiveConfidenceLevel = me?.effective_confidence_level;
+  const effectiveConfidenceLevel = me.effective_confidence_level;
 
   const checkConfidenceForEntity = (entity: { confidence?: number | null }, notifyError = false) => {
     if (effectiveConfidenceLevel && entity.confidence && effectiveConfidenceLevel.max_confidence < entity.confidence) {
