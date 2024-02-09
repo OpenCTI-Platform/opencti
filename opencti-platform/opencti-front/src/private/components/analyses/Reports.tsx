@@ -12,18 +12,16 @@ import { ReportLine_node$data } from './reports/__generated__/ReportLine_node.gr
 import useEntityToggle from '../../../utils/hooks/useEntityToggle';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
 import { ReportLineDummy } from './reports/ReportLine';
-import { buildEntityTypeBasedFilterContext, emptyFilterGroup } from '../../../utils/filters/filtersUtils';
-import { useFormatter } from '../../../components/i18n';
-import Breadcrumbs from '../../../components/Breadcrumps';
 import ExportContextProvider from '../../../utils/ExportContextProvider';
+import { buildEntityTypeBasedFilterContext, emptyFilterGroup } from '../../../utils/filters/filtersUtils';
 
 const LOCAL_STORAGE_KEY = 'reports';
 
 const Reports: FunctionComponent = () => {
-  const { t_i18n } = useFormatter();
   const {
     platformModuleHelpers: { isRuntimeFieldEnable },
   } = useAuth();
+
   const {
     viewStorage,
     paginationOptions,
@@ -113,7 +111,7 @@ const Reports: FunctionComponent = () => {
       },
     };
     return (
-      <div data-testid="report-page">
+      <>
         <ListLines
           helpers={storageHelpers}
           sortBy={sortBy}
@@ -161,7 +159,7 @@ const Reports: FunctionComponent = () => {
                   {Array(20)
                     .fill(0)
                     .map((_, idx) => (
-                      <ReportLineDummy key={idx} dataColumns={dataColumns} />
+                      <ReportLineDummy key={idx} dataColumns={dataColumns}/>
                     ))}
                 </>
               }
@@ -178,25 +176,24 @@ const Reports: FunctionComponent = () => {
                 setNumberOfElements={storageHelpers.handleSetNumberOfElements}
                 redirectionMode={redirectionMode}
               />
+              <ToolBar
+                selectedElements={selectedElements}
+                deSelectedElements={deSelectedElements}
+                numberOfSelectedElements={numberOfSelectedElements}
+                selectAll={selectAll}
+                search={searchTerm}
+                filters={contextFilters}
+                handleClearSelectedElements={handleClearSelectedElements}
+                type="Report"
+              />
             </React.Suspense>
           )}
         </ListLines>
-        <ToolBar
-          selectedElements={selectedElements}
-          deSelectedElements={deSelectedElements}
-          numberOfSelectedElements={numberOfSelectedElements}
-          selectAll={selectAll}
-          search={searchTerm}
-          filters={contextFilters}
-          handleClearSelectedElements={handleClearSelectedElements}
-          type="Report"
-        />
       </>
     );
   };
   return (
     <ExportContextProvider>
-      <Breadcrumbs variant="list" elements={[{ label: t_i18n('Analyses') }, { label: t_i18n('Reports'), current: true }]} />
       {renderLines()}
       <Security needs={[KNOWLEDGE_KNUPDATE]}>
         <ReportCreation paginationOptions={queryPaginationOptions} />
