@@ -1417,23 +1417,27 @@ const BASE_SEARCH_ATTRIBUTES = [
   'result_name',
 ];
 
-export const elGenerateFullTextSearchShould = (search, args = {}) => {
+function processSearch(search, args) {
   const { useWildcardPrefix = ES_DEFAULT_WILDCARD_PREFIX } = args;
   let decodedSearch;
   try {
-    decodedSearch = decodeURIComponent(search).trim();
+    decodedSearch = decodeURIComponent(search)
+      .trim();
   } catch (e) {
     decodedSearch = search.trim();
   }
   let remainingSearch = decodedSearch;
   const exactSearch = (decodedSearch.match(/"[^"]+"/g) || []) //
-    .filter((e) => isNotEmptyField(e.replace(/"/g, '').trim()));
+    .filter((e) => isNotEmptyField(e.replace(/"/g, '')
+      .trim()));
   for (let index = 0; index < exactSearch.length; index += 1) {
     remainingSearch = remainingSearch.replace(exactSearch[index], '');
   }
   const querySearch = [];
 
-  const partialSearch = remainingSearch.replace(/"/g, '').trim().split(' ');
+  const partialSearch = remainingSearch.replace(/"/g, '')
+    .trim()
+    .split(' ');
 
   for (let searchIndex = 0; searchIndex < partialSearch.length; searchIndex += 1) {
     const partialElement = partialSearch[searchIndex];
@@ -1445,6 +1449,14 @@ export const elGenerateFullTextSearchShould = (search, args = {}) => {
       }
     }
   }
+  return {
+    exactSearch,
+    querySearch
+  };
+}
+
+export const elGenerateFullTextSearchShould = (search, args = {}) => {
+  const { exactSearch, querySearch } = processSearch(search, args);
   // Return the elastic search engine expected bool should terms
   // Build the search for all exact match (between double quotes)
   const shouldSearch = [];
@@ -1523,34 +1535,9 @@ export const elGenerateFullTextSearchShould = (search, args = {}) => {
 };
 
 export const elGenerateFieldTextSearchShould = (search, arrayKeys, args = {}) => {
-  const { useWildcardPrefix = false, useWildcardSuffix = true } = args;
-  let decodedSearch;
-  try {
-    decodedSearch = decodeURIComponent(search).trim();
-  } catch (e) {
-    decodedSearch = search.trim();
-  }
-  let remainingSearch = decodedSearch;
-  const exactSearch = (decodedSearch.match(/"[^"]+"/g) || []) //
-    .filter((e) => isNotEmptyField(e.replace(/"/g, '').trim()));
-  for (let index = 0; index < exactSearch.length; index += 1) {
-    remainingSearch = remainingSearch.replace(exactSearch[index], '');
-  }
-  const querySearch = [];
-
-  const partialSearch = remainingSearch.replace(/"/g, '').trim().split(' ');
-
-  for (let searchIndex = 0; searchIndex < partialSearch.length; searchIndex += 1) {
-    const partialElement = partialSearch[searchIndex];
-    const cleanElement = specialElasticCharsEscape(partialElement);
-    if (isNotEmptyField(cleanElement)) {
-      querySearch.push(`${useWildcardPrefix ? '*' : ''}${cleanElement}${useWildcardSuffix ? '*' : ''}`);
-    }
-  }
-  // Return the elastic search engine expected bool should terms
-  // Build the search for all exact match (between double quotes)
-  const shouldSearch = [];
+  const { exactSearch, querySearch } = processSearch(search, args);
   const cleanExactSearch = R.uniq(exactSearch.map((e) => e.replace(/"|http?:/g, '')));
+  const shouldSearch = [];
   shouldSearch.push(
     ...cleanExactSearch.map((ex) => [
       {
@@ -1649,28 +1636,22 @@ const buildLocalMustFilter = async (validFilter) => {
     if (arrayKeys.length > 1) {
       throw UnsupportedError('Filter must have only one field', { keys: arrayKeys });
     } else {
-      valuesFiltering.push({
+      const schemaKey = schemaAttributesDefinition.getAttributeByName(R.head(arrayKeys));
+      valuesFiltering.push(schemaKey?.type === 'string' && schemaKey?.format === 'text' ? {
         bool: {
-          should: [
-            {
-              bool: {
-                must_not: {
-                  exists: {
-                    field: R.head(arrayKeys)
-                  }
-                },
-              }
-            },
-            {
-              bool: {
-                must_not: {
-                  wildcard: {
-                    [R.head(arrayKeys)]: '*'
-                  }
-                },
-              }
-            },
-          ]
+          must_not: {
+            wildcard: {
+              [R.head(arrayKeys)]: '*'
+            }
+          },
+        }
+      } : {
+        bool: {
+          must_not: {
+            exists: {
+              field: R.head(arrayKeys)
+            }
+          }
         }
       });
     }
@@ -1678,22 +1659,20 @@ const buildLocalMustFilter = async (validFilter) => {
     if (arrayKeys.length > 1) {
       throw UnsupportedError('Filter must have only one field', { keys: arrayKeys });
     } else {
-      valuesFiltering.push({
+      const schemaKey = schemaAttributesDefinition.getAttributeByName(R.head(arrayKeys));
+      valuesFiltering.push(schemaKey?.type === 'string' && schemaKey?.format === 'text' ? {
         bool: {
-          must: [
+          must:
             {
               wildcard: {
                 [R.head(arrayKeys)]: '*'
               }
             },
-            {
-              exists: {
-                field: R.head(arrayKeys)
-              }
-            }
-          ]
         }
-
+      } : {
+        exists: {
+          field: R.head(arrayKeys)
+        }
       });
     }
   }
