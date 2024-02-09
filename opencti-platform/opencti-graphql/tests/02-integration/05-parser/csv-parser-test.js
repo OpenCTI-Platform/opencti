@@ -145,6 +145,16 @@ describe('CSV-PARSER', () => {
       .toBe(2);
   });
 
+  it('Parse CSV - Simple skip double quoted data line test on Simple entity ', async () => {
+    const filPath = './tests/02-integration/05-parser/simple-skip-line-test/Threat-Actor-Group_list_skip_double_quoted_data_line.csv';
+    const bundle = await bundleProcess(testContext, ADMIN_USER, filPath, csvMapperMockSimpleSkipLine);
+    const { objects } = bundle;
+    expect(objects.length)
+      .toBe(3);
+    expect(objects.filter((o) => isNotEmptyField(o.name)).length)
+      .toBe(3);
+  });
+
   it('Parse CSV - manage boolean values', async () => {
     const filPath = './tests/02-integration/05-parser/entities-with-booleans/malwares.csv';
     const bundle = await bundleProcess(testContext, ADMIN_USER, filPath, csvMapperMalware);
