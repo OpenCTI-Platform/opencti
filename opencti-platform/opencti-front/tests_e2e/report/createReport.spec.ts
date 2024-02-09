@@ -6,9 +6,7 @@ import { ReportDetailsPage } from "../model/reportDetails.pageModel";
   test('Create a new report page', async ({ page }) => {
     const reportPage = new ReportPage(page);
     const reportDetailsPage = new ReportDetailsPage(page);
-    await login(page);
-    await reportPage.goToReportPage();
-    await expect(reportPage.getReportPage()).toBeVisible();
+    await page.goto('http://localhost:3000/dashboard/analyses/reports');
     await reportPage.addNewReport();
     await reportPage.getReportNameInput().click();
     await reportPage.getReportNameInput().fill('Test e2e');

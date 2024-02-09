@@ -62,7 +62,7 @@ steps:
       - apk add git tini gcc g++ make musl-dev cargo python3 python3-dev postfix postfix-pcre
       - npm install -g node-gyp
       - cd opencti-platform/opencti-front
-      - yarn install --pure-lockfile
+      - yarn install
       - yarn build
       - yarn check-ts
       - yarn lint
@@ -80,7 +80,7 @@ steps:
       - apt-get install git tini gcc g++ make musl-dev cargo python3 python3-dev postfix postfix-pcre
       - npm install -g node-gyp
       - cd opencti-platform/opencti-front
-      - yarn install --pure-lockfile
+      - yarn install
       - yarn build
       - yarn dev &
       - yarn test:e2e
