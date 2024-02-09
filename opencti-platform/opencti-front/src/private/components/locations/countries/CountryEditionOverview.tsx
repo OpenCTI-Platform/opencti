@@ -1,7 +1,6 @@
 import React, { FunctionComponent } from 'react';
 import { graphql, useFragment } from 'react-relay';
 import { Field, Form, Formik } from 'formik';
-import * as R from 'ramda';
 import * as Yup from 'yup';
 import { FormikConfig } from 'formik/dist/types';
 import ConfidenceField from '@components/common/form/ConfidenceField';
@@ -123,7 +122,7 @@ interface CountryEditionOverviewProps {
 interface CountryEditionFormValues {
   name: string;
   description: string | null;
-  confidence: number | undefined;
+  confidence: number | undefined | null;
   createdBy: Option | undefined;
   objectMarking: Option[];
   x_opencti_workflow_id: Option;
@@ -160,28 +159,23 @@ CountryEditionOverviewProps
     values,
     { setSubmitting },
   ) => {
-    const commitMessage = values.message;
-    const references = R.pluck('value', values.references || []);
-    const inputValues = R.pipe(
-      R.dissoc('message'),
-      R.dissoc('references'),
-      R.assoc('confidence', parseInt(values.confidence, 10)),
-      R.assoc('x_opencti_workflow_id', values.x_opencti_workflow_id?.value),
-      R.assoc('createdBy', values.createdBy?.value),
-      R.assoc('objectMarking', R.pluck('value', values.objectMarking)),
-      R.toPairs,
-      R.map((n) => ({
-        key: n[0],
-        value: adaptFieldValue(n[1]),
-      })),
-    )(values);
+    const { message, references, ...otherValues } = values;
+    const commitMessage = message ?? '';
+    const commitReferences = (references ?? []).map(({ value }) => value);
+    const inputValues = Object.entries({
+      ...otherValues,
+      createdBy: values.createdBy?.value,
+      confidence: parseInt(String(values.confidence), 10),
+      x_opencti_workflow_id: values.x_opencti_workflow_id?.value,
+      objectMarking: (values.objectMarking ?? []).map(({ value }) => value),
+    }).map(([key, value]) => ({ key, value: adaptFieldValue(value) }));
     editor.fieldPatch({
       variables: {
         id: country.id,
         input: inputValues,
         commitMessage:
           commitMessage && commitMessage.length > 0 ? commitMessage : null,
-        references,
+        references: commitReferences,
       },
       onCompleted: () => {
         setSubmitting(false);
