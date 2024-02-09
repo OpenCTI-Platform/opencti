@@ -327,7 +327,6 @@
   "Report types": "脅威ハンティング",
   "Threat hunting": "ログソース",
   "Log sources": "インフラの種類",
-  "Infrastrcture types": "目標",
   "Goals": "リソースレベル",
   "Resource level": "主な動機",
   "Primary motivation": "二次的動機",
@@ -353,7 +352,6 @@
   "Incident type": "重大度",
   "Severity": "ソース",
   "Source": "有効",
-  "Obective": "定義",
   "Definition": "ソース名",
   "Source name": "ハッシュ",
   "Hash": "外部ID",
@@ -572,5 +570,6 @@
   "Csv_mapper_id": "Csv_mapper_id",
   "Ingestion_running": "Ingestion_running（インジェスト実行中",
   "Added_after_start": "追加_開始後",
-  "Current_state_hash": "現在の状態_ハッシュ"
+  "Current_state_hash": "現在の状態_ハッシュ",
+  "Infrastructure types": "インフラの種類"
 }

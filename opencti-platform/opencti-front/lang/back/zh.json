@@ -327,7 +327,6 @@
   "Report types": "报告类型",
   "Threat hunting": "威胁猎取",
   "Log sources": "日志来源",
-  "Infrastrcture types": "基础设施类型",
   "Goals": "目标",
   "Resource level": "资源水平",
   "Primary motivation": "主要动机",
@@ -353,7 +352,6 @@
   "Incident type": "事件类型",
   "Severity": "严重性",
   "Source": "来源",
-  "Obective": "影响",
   "Definition": "定义",
   "Source name": "源名称",
   "Hash": "散列",
@@ -572,5 +570,6 @@
   "Csv_mapper_id": "Csv_mapper_id",
   "Ingestion_running": "正在摄取",
   "Added_after_start": "开始后添加",
-  "Current_state_hash": "当前状态哈希值"
+  "Current_state_hash": "当前状态哈希值",
+  "Infrastructure types": "基础设施类型"
 }

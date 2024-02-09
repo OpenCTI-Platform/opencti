@@ -30,7 +30,6 @@ export const INTERNAL_ATTRIBUTES = [
   internalId.name,
   standardId.name,
   xOpenctiStixIds.name,
-  'external_id',
   iAliasedIds.name,
   // Auditing
   createdAt.name,
@@ -58,6 +57,8 @@ export const INTERNAL_ATTRIBUTES = [
   'grantable_groups',
   'authorized_members',
   'authorized_authorities',
+  'precision',
+  'pattern_version',
   // X - Mitre
   'x_mitre_permissions_required',
   'x_mitre_detection',
@@ -72,9 +73,6 @@ export const INTERNAL_ATTRIBUTES = [
   'x_opencti_firstname',
   'x_opencti_lastname',
   'x_opencti_score',
-  'x_opencti_cvss_base_score',
-  'x_opencti_cvss_base_severity',
-  'x_opencti_cvss_attack_vector',
   'x_opencti_cvss_integrity_impact',
   'x_opencti_cvss_availability_impact',
   'x_opencti_cvss_confidentiality_impact',

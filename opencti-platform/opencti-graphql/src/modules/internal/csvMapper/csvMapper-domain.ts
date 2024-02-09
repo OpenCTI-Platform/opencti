@@ -15,6 +15,8 @@ import { getAttributesConfiguration } from '../../entitySetting/entitySetting-ut
 import { isNotEmptyField } from '../../../database/utils';
 import { extractRepresentative } from '../../../database/entity-representative';
 import { isStixCoreRelationship } from '../../../schema/stixCoreRelationship';
+import { schemaTypesDefinition } from '../../../schema/schema-types';
+import { ABSTRACT_STIX_CORE_RELATIONSHIP, ABSTRACT_STIX_CYBER_OBSERVABLE, ABSTRACT_STIX_DOMAIN_OBJECT, ABSTRACT_STIX_META_OBJECT } from '../../../schema/general';
 
 // -- UTILS --
 
@@ -61,10 +63,16 @@ export const deleteCsvMapper = async (context: AuthContext, user: AuthUser, csvM
 export const csvMapperSchemaAttributes = async (context: AuthContext, user: AuthUser) => {
   const schemaAttributes: CsvMapperSchemaAttributes[] = [];
 
+  const types = [
+    ...schemaTypesDefinition.get(ABSTRACT_STIX_CYBER_OBSERVABLE),
+    ...schemaTypesDefinition.get(ABSTRACT_STIX_DOMAIN_OBJECT),
+    ...schemaTypesDefinition.get(ABSTRACT_STIX_META_OBJECT),
+    ...schemaTypesDefinition.get(ABSTRACT_STIX_CORE_RELATIONSHIP)
+  ].sort();
+
   // Add attribute definitions
-  const attributesDefinitions = schemaAttributesDefinition.attributes;
-  Object.keys(attributesDefinitions).forEach((key) => {
-    const attributesDef = schemaAttributesDefinition.getAttributes(key);
+  types.forEach((type) => {
+    const attributesDef = schemaAttributesDefinition.getAttributes(type);
     const attributes: CsvMapperSchemaAttribute[] = Array.from(attributesDef.values()).flatMap((attribute) => {
       if (INTERNAL_ATTRIBUTES.includes(attribute.name)) return [];
       return [{
@@ -77,7 +85,7 @@ export const csvMapperSchemaAttributes = async (context: AuthContext, user: Auth
         multiple: attribute.multiple,
       }];
     });
-    if (isStixCoreRelationship(key)) {
+    if (isStixCoreRelationship(type)) {
       attributes.push({
         name: 'from',
         label: 'from',
@@ -98,17 +106,16 @@ export const csvMapperSchemaAttributes = async (context: AuthContext, user: Auth
       });
     }
     schemaAttributes.push({
-      name: key,
+      name: type,
       attributes
     });
   });
   // Add refs definitions
   const refsNames = schemaRelationsRefDefinition.getAllInputNames();
-  const refsDefinitions = schemaRelationsRefDefinition.relationsRef;
-  Object.keys(refsDefinitions).forEach((key) => {
-    const refs = schemaRelationsRefDefinition.getRelationsRef(key);
-    const schemaAttribute = schemaAttributes.find((a) => a.name === key) ?? {
-      name: key,
+  types.forEach((type) => {
+    const refs = schemaRelationsRefDefinition.getRelationsRef(type);
+    const schemaAttribute = schemaAttributes.find((a) => a.name === type) ?? {
+      name: type,
       attributes: []
     };
     schemaAttribute.attributes.push(...Array.from(refs.values()).flatMap((ref) => {
