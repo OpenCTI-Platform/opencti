@@ -7,6 +7,7 @@ import makeStyles from '@mui/styles/makeStyles';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
 import { FormikConfig } from 'formik/dist/types';
 import Drawer, { DrawerVariant } from '@components/common/drawer/Drawer';
+import ConfidenceField from '@components/common/form/ConfidenceField';
 import { useFormatter } from '../../../../components/i18n';
 import { handleErrorInForm } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
@@ -43,6 +44,7 @@ const systemMutation = graphql`
       standard_id
       name
       description
+      confidence
       entity_type
       parent_types
       ...SystemLine_node
@@ -55,6 +57,7 @@ const SYSTEM_TYPE = 'System';
 interface SystemAddInput {
   name: string;
   description: string;
+  confidence: number | undefined;
   x_opencti_reliability: string | undefined;
   createdBy: Option | undefined;
   objectMarking: Option[];
@@ -88,6 +91,7 @@ export const SystemCreationForm: FunctionComponent<SystemFormProps> = ({
       .required(t_i18n('This field is required')),
     description: Yup.string()
       .nullable(),
+    confidence: Yup.number().nullable(),
     x_opencti_reliability: Yup.string()
       .nullable(),
   };
@@ -108,6 +112,7 @@ export const SystemCreationForm: FunctionComponent<SystemFormProps> = ({
       description: values.description,
       x_opencti_reliability: values.x_opencti_reliability,
       createdBy: values.createdBy?.value,
+      confidence: parseInt(String(values.confidence), 10),
       objectMarking: values.objectMarking.map((v) => v.value),
       objectLabel: values.objectLabel.map((v) => v.value),
       externalReferences: values.externalReferences.map(({ value }) => value),
@@ -141,6 +146,7 @@ export const SystemCreationForm: FunctionComponent<SystemFormProps> = ({
     {
       name: inputValue ?? '',
       description: '',
+      confidence: undefined,
       x_opencti_reliability: undefined,
       createdBy: defaultCreatedBy,
       objectMarking: defaultMarkingDefinitions ?? [],
@@ -181,6 +187,10 @@ export const SystemCreationForm: FunctionComponent<SystemFormProps> = ({
             multiline={true}
             rows="4"
             style={{ marginTop: 20 }}
+          />
+          <ConfidenceField
+            entityType="System"
+            containerStyle={fieldSpacingContainerStyle}
           />
           <OpenVocabField
             label={t_i18n('Reliability')}

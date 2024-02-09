@@ -6,6 +6,7 @@ import { OrganizationEditionOverview_organization$data } from '@components/entit
 import { OrganizationEditionContainer_organization$data } from '@components/entities/organizations/__generated__/OrganizationEditionContainer_organization.graphql';
 import { FormikConfig } from 'formik/dist/types';
 import { Option } from '@components/common/form/ReferenceField';
+import ConfidenceField from '../../common/form/ConfidenceField';
 import { ExternalReferencesValues } from '@components/common/form/ExternalReferencesField';
 import makeStyles from '@mui/styles/makeStyles';
 import TextField from '../../../../components/TextField';
@@ -113,6 +114,7 @@ const OrganizationEditionOverviewComponent: FunctionComponent<OrganizationEditio
   const basicShape = {
     name: Yup.string().min(2).required(t_i18n('This field is required')),
     description: Yup.string().nullable(),
+    confidence: Yup.number().nullable(),
     contact_information: Yup.string().nullable(),
     x_opencti_organization_type: Yup.string().nullable(),
     x_opencti_reliability: Yup.string().nullable(),
@@ -231,6 +233,14 @@ const OrganizationEditionOverviewComponent: FunctionComponent<OrganizationEditio
               <SubscriptionFocus context={context} fieldName="description" />
               }
           />
+          <ConfidenceField
+            onFocus={editor.changeFocus}
+            onSubmit={handleSubmitField}
+            entityType="Organization"
+            containerStyle={fieldSpacingContainerStyle}
+            editContext={context}
+            variant="edit"
+          />
           <Field
             component={TextField}
             variant="standard"
@@ -323,6 +333,7 @@ export default createFragmentContainer(OrganizationEditionOverviewComponent, {
         id
         name
         description
+        confidence
         contact_information
         x_opencti_organization_type
         x_opencti_reliability

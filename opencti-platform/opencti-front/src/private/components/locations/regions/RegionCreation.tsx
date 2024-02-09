@@ -8,6 +8,7 @@ import { FormikConfig } from 'formik/dist/types';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
 import CustomFileUploader from '@components/common/files/CustomFileUploader';
 import Drawer, { DrawerVariant } from '@components/common/drawer/Drawer';
+import ConfidenceField from '@components/common/form/ConfidenceField';
 import { useFormatter } from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
 import CreatedByField from '../../common/form/CreatedByField';
@@ -40,6 +41,7 @@ const regionMutation = graphql`
       id
       standard_id
       name
+      confidence
       description
       entity_type
       parent_types
@@ -51,6 +53,7 @@ const regionMutation = graphql`
 interface RegionAddInput {
   name: string;
   description: string;
+  confidence: number | undefined;
   createdBy: Option | undefined;
   objectMarking: Option[];
   objectLabel: Option[];
@@ -82,6 +85,7 @@ export const RegionCreationForm: FunctionComponent<RegionFormProps> = ({
   const basicShape = {
     name: Yup.string().min(2).required(t_i18n('This field is required')),
     description: Yup.string().nullable(),
+    confidence: Yup.number().nullable(),
   };
   const regionValidator = useSchemaCreationValidation(REGION_TYPE, basicShape);
   const [commit] = useMutation(regionMutation);
@@ -93,6 +97,7 @@ export const RegionCreationForm: FunctionComponent<RegionFormProps> = ({
     const input: RegionCreationMutation$variables['input'] = {
       name: values.name,
       description: values.description,
+      confidence: parseInt(String(values.confidence), 10),
       objectMarking: values.objectMarking.map(({ value }) => value),
       objectLabel: values.objectLabel.map(({ value }) => value),
       externalReferences: values.externalReferences.map(({ value }) => value),
@@ -120,6 +125,7 @@ export const RegionCreationForm: FunctionComponent<RegionFormProps> = ({
   const initialValues = useDefaultValues(REGION_TYPE, {
     name: inputValue ?? '',
     description: '',
+    confidence: undefined,
     createdBy: defaultCreatedBy,
     objectMarking: defaultMarkingDefinitions ?? [],
     objectLabel: [],
@@ -152,6 +158,10 @@ export const RegionCreationForm: FunctionComponent<RegionFormProps> = ({
             multiline={true}
             rows="4"
             style={{ marginTop: 20 }}
+          />
+          <ConfidenceField
+            entityType="Region"
+            containerStyle={fieldSpacingContainerStyle}
           />
           <CreatedByField
             name="createdBy"

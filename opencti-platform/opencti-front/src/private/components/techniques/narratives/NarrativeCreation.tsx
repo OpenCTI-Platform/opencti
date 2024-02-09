@@ -12,6 +12,7 @@ import makeStyles from '@mui/styles/makeStyles';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
 import { FormikConfig } from 'formik/dist/types';
 import Drawer, { DrawerVariant } from '@components/common/drawer/Drawer';
+import ConfidenceField from '@components/common/form/ConfidenceField';
 import { useFormatter } from '../../../../components/i18n';
 import { handleErrorInForm } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
@@ -61,6 +62,7 @@ const narrativeMutation = graphql`
       entity_type
       parent_types
       isSubNarrative
+      confidence
       objectMarking {
         id
         definition_type
@@ -208,6 +210,10 @@ export const NarrativeCreationForm: FunctionComponent<NarrativeFormProps> = ({
             multiline={true}
             rows="4"
             style={{ marginTop: 20 }}
+          />
+          <ConfidenceField
+            entityType="Narratives"
+            containerStyle={fieldSpacingContainerStyle}
           />
           <CreatedByField
             name="createdBy"

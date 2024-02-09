@@ -3,6 +3,7 @@ import { createFragmentContainer, graphql } from 'react-relay';
 import { Field, Form, Formik } from 'formik';
 import * as R from 'ramda';
 import * as Yup from 'yup';
+import ConfidenceField from '../../common/form/ConfidenceField';
 import { useFormatter } from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
 import { SubscriptionFocus } from '../../../../components/Subscription';
@@ -83,6 +84,7 @@ const SectorEditionOverviewComponent = (props) => {
   const basicShape = {
     name: Yup.string().min(2).required(t_i18n('This field is required')),
     description: Yup.string().nullable(),
+    confidence: Yup.number().nullable(),
     references: Yup.array(),
     x_opencti_workflow_id: Yup.object(),
   };
@@ -102,6 +104,7 @@ const SectorEditionOverviewComponent = (props) => {
     const inputValues = R.pipe(
       R.dissoc('message'),
       R.dissoc('references'),
+      R.assoc('confidence', parseInt(values.confidence, 10)),
       R.assoc('x_opencti_workflow_id', values.x_opencti_workflow_id?.value),
       R.assoc('createdBy', values.createdBy?.value),
       R.assoc('objectMarking', R.pluck('value', values.objectMarking)),
@@ -156,6 +159,7 @@ const SectorEditionOverviewComponent = (props) => {
       'references',
       'description',
       'createdBy',
+      'confidence',
       'objectMarking',
       'x_opencti_workflow_id',
     ]),
@@ -201,6 +205,14 @@ const SectorEditionOverviewComponent = (props) => {
             helperText={
               <SubscriptionFocus context={context} fieldName="description" />
               }
+          />
+          <ConfidenceField
+            onFocus={editor.changeFocus}
+            onSubmit={handleSubmitField}
+            entityType="Sector"
+            containerStyle={fieldSpacingContainerStyle}
+            editContext={context}
+            variant="edit"
           />
           {sector.workflowEnabled && (
           <StatusField
@@ -256,6 +268,7 @@ export default createFragmentContainer(SectorEditionOverviewComponent, {
         name
         description
         isSubSector
+        confidence
         createdBy {
           ... on Identity {
             id

@@ -7,6 +7,7 @@ import makeStyles from '@mui/styles/makeStyles';
 import { FormikConfig } from 'formik/dist/types';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
 import Drawer, { DrawerVariant } from '@components/common/drawer/Drawer';
+import ConfidenceField from '@components/common/form/ConfidenceField';
 import { useFormatter } from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
 import CreatedByField from '../../common/form/CreatedByField';
@@ -42,6 +43,7 @@ const cityMutation = graphql`
       name
       description
       entity_type
+      confidence
       parent_types
       ...CityLine_node
     }
@@ -53,6 +55,7 @@ interface CityAddInput {
   description: string;
   latitude: string;
   longitude: string;
+  confidence: number | undefined;
   createdBy: Option | undefined;
   objectMarking: Option[];
   objectLabel: Option[];
@@ -83,6 +86,7 @@ export const CityCreationForm: FunctionComponent<CityFormProps> = ({
   const basicShape = {
     name: Yup.string().min(2).required(t_i18n('This field is required')),
     description: Yup.string().nullable(),
+    confidence: Yup.number().nullable(),
     latitude: Yup.number()
       .typeError(t_i18n('This field must be a number'))
       .nullable(),
@@ -101,6 +105,7 @@ export const CityCreationForm: FunctionComponent<CityFormProps> = ({
       description: values.description,
       latitude: parseFloat(values.latitude),
       longitude: parseFloat(values.longitude),
+      confidence: parseInt(String(values.confidence), 10),
       objectMarking: values.objectMarking.map(({ value }) => value),
       objectLabel: values.objectLabel.map(({ value }) => value),
       externalReferences: values.externalReferences.map(({ value }) => value),
@@ -130,6 +135,7 @@ export const CityCreationForm: FunctionComponent<CityFormProps> = ({
     description: '',
     latitude: '',
     longitude: '',
+    confidence: undefined,
     createdBy: defaultCreatedBy,
     objectMarking: defaultMarkingDefinitions ?? [],
     objectLabel: [],
@@ -160,6 +166,10 @@ export const CityCreationForm: FunctionComponent<CityFormProps> = ({
             multiline={true}
             rows={4}
             style={{ marginTop: 20 }}
+          />
+          <ConfidenceField
+            entityType="City"
+            containerStyle={fieldSpacingContainerStyle}
           />
           <Field
             component={TextField}

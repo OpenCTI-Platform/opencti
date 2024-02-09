@@ -7,6 +7,7 @@ import makeStyles from '@mui/styles/makeStyles';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
 import { FormikConfig } from 'formik/dist/types';
 import Drawer, { DrawerVariant } from '@components/common/drawer/Drawer';
+import ConfidenceField from '@components/common/form/ConfidenceField';
 import { useFormatter } from '../../../../components/i18n';
 import { handleErrorInForm } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
@@ -42,6 +43,7 @@ const individualMutation = graphql`
       id
       standard_id
       name
+      confidence
       description
       entity_type
       parent_types
@@ -55,6 +57,7 @@ const INDIVIDUAL_TYPE = 'Individual';
 interface IndividualAddInput {
   name: string
   description: string
+  confidence: number | undefined
   x_opencti_reliability: string | undefined
   createdBy: Option | undefined
   objectMarking: Option[]
@@ -87,6 +90,7 @@ export const IndividualCreationForm: FunctionComponent<IndividualFormProps> = ({
       .required(t_i18n('This field is required')),
     description: Yup.string()
       .nullable(),
+    confidence: Yup.number().nullable(),
     x_opencti_reliability: Yup.string()
       .nullable(),
   };
@@ -104,6 +108,7 @@ export const IndividualCreationForm: FunctionComponent<IndividualFormProps> = ({
       description: values.description,
       x_opencti_reliability: values.x_opencti_reliability,
       createdBy: values.createdBy?.value,
+      confidence: parseInt(String(values.confidence), 10),
       objectMarking: values.objectMarking.map((v) => v.value),
       objectLabel: values.objectLabel.map((v) => v.value),
       externalReferences: values.externalReferences.map(({ value }) => value),
@@ -138,6 +143,7 @@ export const IndividualCreationForm: FunctionComponent<IndividualFormProps> = ({
       name: '',
       description: '',
       x_opencti_reliability: undefined,
+      confidence: undefined,
       createdBy: defaultCreatedBy,
       objectMarking: defaultMarkingDefinitions ?? [],
       objectLabel: [],
@@ -176,6 +182,10 @@ export const IndividualCreationForm: FunctionComponent<IndividualFormProps> = ({
           multiline={true}
           rows="4"
           style={{ marginTop: 20 }}
+        />
+        <ConfidenceField
+          entityType="Individual"
+          containerStyle={fieldSpacingContainerStyle}
         />
         <OpenVocabField
           label={t_i18n('Reliability')}

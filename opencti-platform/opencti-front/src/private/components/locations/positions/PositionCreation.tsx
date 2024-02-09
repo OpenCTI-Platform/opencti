@@ -7,6 +7,7 @@ import makeStyles from '@mui/styles/makeStyles';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
 import { FormikConfig } from 'formik/dist/types';
 import Drawer, { DrawerVariant } from '@components/common/drawer/Drawer';
+import ConfidenceField from '@components/common/form/ConfidenceField';
 import { useFormatter } from '../../../../components/i18n';
 import { handleErrorInForm } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
@@ -42,6 +43,7 @@ const positionMutation = graphql`
       standard_id
       name
       description
+      confidence
       entity_type
       parent_types
       ...PositionLine_node
@@ -54,6 +56,7 @@ const POSITION_TYPE = 'Position';
 interface PositionAddInput {
   name: string;
   description: string;
+  confidence: number | undefined;
   latitude: string;
   longitude: string;
   street_address: string;
@@ -86,6 +89,7 @@ export const PositionCreationForm: FunctionComponent<PositionFormProps> = ({
   const basicShape = {
     name: Yup.string().min(2).required(t_i18n('This field is required')),
     description: Yup.string().nullable(),
+    confidence: Yup.number().nullable(),
     latitude: Yup.number()
       .typeError(t_i18n('This field must be a number'))
       .nullable(),
@@ -109,6 +113,7 @@ export const PositionCreationForm: FunctionComponent<PositionFormProps> = ({
     const input: PositionCreationMutation$variables['input'] = {
       name: values.name,
       description: values.description,
+      confidence: parseInt(String(values.confidence), 10),
       latitude: parseFloat(values.latitude),
       longitude: parseFloat(values.longitude),
       street_address: values.street_address,
@@ -144,6 +149,7 @@ export const PositionCreationForm: FunctionComponent<PositionFormProps> = ({
   const initialValues = useDefaultValues(POSITION_TYPE, {
     name: '',
     description: '',
+    confidence: undefined,
     latitude: '',
     longitude: '',
     street_address: '',
@@ -179,6 +185,10 @@ export const PositionCreationForm: FunctionComponent<PositionFormProps> = ({
             multiline={true}
             rows={4}
             style={{ marginTop: 20 }}
+          />
+          <ConfidenceField
+            entityType="Position"
+            containerStyle={fieldSpacingContainerStyle}
           />
           <Field
             component={TextField}

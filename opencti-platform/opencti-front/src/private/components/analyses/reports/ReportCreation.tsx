@@ -50,6 +50,7 @@ export const reportCreationMutation = graphql`
       name
       description
       entity_type
+      confidence
       parent_types
       ...ReportLine_node
     }

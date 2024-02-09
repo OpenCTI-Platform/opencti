@@ -4,6 +4,7 @@ import { Field, Form, Formik } from 'formik';
 import * as Yup from 'yup';
 import { FormikConfig } from 'formik/dist/types';
 import { GenericContext } from '@components/common/model/GenericContextModel';
+import ConfidenceField from '@components/common/form/ConfidenceField';
 import TextField from '../../../../components/TextField';
 import { SubscriptionFocus } from '../../../../components/Subscription';
 import CreatedByField from '../../common/form/CreatedByField';
@@ -84,6 +85,7 @@ export const cityEditionOverviewFragment = graphql`
     id
     name
     description
+    confidence
     latitude
     longitude
     createdBy {
@@ -138,6 +140,7 @@ const CityEditionOverview: FunctionComponent<CityEditionOverviewProps> = ({
   const basicShape = {
     name: Yup.string().min(2).required(t_i18n('This field is required')),
     description: Yup.string().nullable().max(5000, t_i18n('The value is too long')),
+    confidence: Yup.number().nullable(),
     latitude: Yup.number()
       .typeError(t_i18n('This field must be a number'))
       .nullable(),
@@ -204,6 +207,7 @@ const CityEditionOverview: FunctionComponent<CityEditionOverviewProps> = ({
   const initialValues = {
     name: city.name,
     description: city.description,
+    confidence: city.confidence,
     latitude: city.latitude,
     longitude: city.longitude,
     references: [],
@@ -252,6 +256,14 @@ const CityEditionOverview: FunctionComponent<CityEditionOverviewProps> = ({
             helperText={
               <SubscriptionFocus context={context} fieldName="description" />
             }
+          />
+          <ConfidenceField
+            onFocus={editor.changeFocus}
+            onSubmit={handleSubmitField}
+            entityType="City"
+            containerStyle={fieldSpacingContainerStyle}
+            editContext={context}
+            variant="edit"
           />
           <Field
             component={TextField}

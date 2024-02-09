@@ -7,6 +7,7 @@ import makeStyles from '@mui/styles/makeStyles';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
 import { FormikConfig } from 'formik/dist/types';
 import Drawer, { DrawerVariant } from '@components/common/drawer/Drawer';
+import ConfidenceField from '@components/common/form/ConfidenceField';
 import { useFormatter } from '../../../../components/i18n';
 import { handleErrorInForm } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
@@ -44,6 +45,7 @@ const sectorMutation = graphql`
       description
       entity_type
       parent_types
+      confidence
       isSubSector
       objectMarking {
         id
@@ -75,6 +77,7 @@ const SECTOR_TYPE = 'Sector';
 interface SectorAddInput {
   name: string;
   description: string;
+  confidence: number | undefined;
   createdBy: Option | undefined;
   objectMarking: Option[];
   objectLabel: Option[];
@@ -107,6 +110,7 @@ export const SectorCreationForm: FunctionComponent<SectorFormProps> = ({
       .required(t_i18n('This field is required')),
     description: Yup.string()
       .nullable(),
+    confidence: Yup.number().nullable(),
   };
   const sectorValidator = useSchemaCreationValidation(SECTOR_TYPE, basicShape);
 
@@ -123,6 +127,7 @@ export const SectorCreationForm: FunctionComponent<SectorFormProps> = ({
       name: values.name,
       description: values.description,
       createdBy: values.createdBy?.value,
+      confidence: parseInt(String(values.confidence), 10),
       objectMarking: values.objectMarking.map((v) => v.value),
       objectLabel: values.objectLabel.map((v) => v.value),
       externalReferences: values.externalReferences.map(({ value }) => value),
@@ -156,6 +161,7 @@ export const SectorCreationForm: FunctionComponent<SectorFormProps> = ({
     {
       name: inputValue ?? '',
       description: '',
+      confidence: undefined,
       createdBy: defaultCreatedBy,
       objectMarking: defaultMarkingDefinitions ?? [],
       objectLabel: [],
@@ -195,6 +201,10 @@ export const SectorCreationForm: FunctionComponent<SectorFormProps> = ({
             multiline={true}
             rows="4"
             style={{ marginTop: 20 }}
+          />
+          <ConfidenceField
+            entityType="Sector"
+            containerStyle={fieldSpacingContainerStyle}
           />
           <CreatedByField
             name="createdBy"

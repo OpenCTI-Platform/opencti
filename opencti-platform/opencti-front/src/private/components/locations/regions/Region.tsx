@@ -108,7 +108,6 @@ const RegionComponent = ({ regionData }: { regionData: Region_region$key }) => {
         <Grid item={true} xs={6} style={{ paddingTop: 10 }}>
           <StixDomainObjectOverview
             stixDomainObject={region}
-            displayConfidence={false}
           />
         </Grid>
         <Grid item={true} xs={6} style={{ marginTop: 30 }}>

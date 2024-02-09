@@ -42,8 +42,6 @@ class SystemComponent extends Component {
           <Grid item={true} xs={6} style={{ paddingTop: 10 }}>
             <StixDomainObjectOverview
               stixDomainObject={system}
-              displayConfidence={false}
-              displayReliability={false}
             />
           </Grid>
           {viewAs === 'knowledge' && (

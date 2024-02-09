@@ -4,6 +4,7 @@ import { Grid, MenuItem, Select, SelectChangeEvent, Slider } from '@mui/material
 import SimpleTextField from './SimpleTextField';
 import { SubscriptionFocus } from './Subscription';
 import { buildScaleLevel, useLevel } from '../utils/hooks/useScale';
+import useConfidenceLevel from '../utils/hooks/useConfidenceLevel';
 
 interface InputSliderFieldProps {
   label: string;
@@ -36,13 +37,17 @@ InputSliderFieldProps & FieldProps
   attributeName,
   disabled,
 }) => {
+  const { effectiveConfidenceLevel } = useConfidenceLevel();
   const {
     level: { color },
     marks,
     scale,
   } = useLevel(entityType, attributeName, value);
   const min = scale?.min ? scale.min.value : 0;
-  const max = scale?.max ? scale.max.value : 0;
+  const defaultMaxValue = scale?.max ? scale.max.value : 0;
+  const max = effectiveConfidenceLevel
+    ? effectiveConfidenceLevel.max_confidence
+    : defaultMaxValue;
   const sliderStyle = {
     color,
     '& .MuiSlider-rail': {
@@ -68,7 +73,7 @@ InputSliderFieldProps & FieldProps
               label={label}
               onSubmit={onSubmit}
               onFocus={onFocus}
-              disabled={disabled}
+              disabled={disabled || value > max}
               helpertext={
                 <SubscriptionFocus context={editContext} fieldName={name} />
               }
@@ -80,7 +85,7 @@ InputSliderFieldProps & FieldProps
               labelId={name}
               value={currentLevel.level.value?.toString() ?? ''}
               onChange={updateFromSelect}
-              disabled={disabled}
+              disabled={disabled || value > max}
               sx={{ marginTop: 2 }} // to align field with the number input, that has a label
             >
               {marks.map((mark, i: number) => {
@@ -107,7 +112,7 @@ InputSliderFieldProps & FieldProps
           valueLabelDisplay="off"
           size="small"
           valueLabelFormat={() => currentLevel.level.label}
-          disabled={disabled}
+          disabled={disabled || value > max}
         />
       </>
     );

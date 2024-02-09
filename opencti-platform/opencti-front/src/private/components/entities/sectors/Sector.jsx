@@ -36,7 +36,6 @@ class SectorComponent extends Component {
           <Grid item={true} xs={6} style={{ paddingTop: 10 }}>
             <StixDomainObjectOverview
               stixDomainObject={sector}
-              displayConfidence={false}
             />
           </Grid>
           <Grid item={true} xs={6} style={{ marginTop: 30 }}>

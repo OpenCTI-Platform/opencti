@@ -4,6 +4,7 @@ import { Field, Form, Formik } from 'formik';
 import * as R from 'ramda';
 import * as Yup from 'yup';
 import { FormikConfig } from 'formik/dist/types';
+import ConfidenceField from '@components/common/form/ConfidenceField';
 import { useFormatter } from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
 import { SubscriptionFocus } from '../../../../components/Subscription';
@@ -85,6 +86,7 @@ const countryEditionOverviewFragment = graphql`
     id
     name
     description
+    confidence
     createdBy {
       ... on Identity {
         id
@@ -121,6 +123,7 @@ interface CountryEditionOverviewProps {
 interface CountryEditionFormValues {
   name: string;
   description: string | null;
+  confidence: number | undefined;
   createdBy: Option | undefined;
   objectMarking: Option[];
   x_opencti_workflow_id: Option;
@@ -136,6 +139,7 @@ CountryEditionOverviewProps
   const basicShape = {
     name: Yup.string().min(2).required(t_i18n('This field is required')),
     description: Yup.string().nullable(),
+    confidence: Yup.number().nullable(),
     references: Yup.array(),
     x_opencti_workflow_id: Yup.object(),
   };
@@ -161,6 +165,7 @@ CountryEditionOverviewProps
     const inputValues = R.pipe(
       R.dissoc('message'),
       R.dissoc('references'),
+      R.assoc('confidence', parseInt(values.confidence, 10)),
       R.assoc('x_opencti_workflow_id', values.x_opencti_workflow_id?.value),
       R.assoc('createdBy', values.createdBy?.value),
       R.assoc('objectMarking', R.pluck('value', values.objectMarking)),
@@ -207,6 +212,7 @@ CountryEditionOverviewProps
     name: country.name,
     description: country.description ?? '',
     references: [],
+    confidence: country.confidence,
     createdBy: convertCreatedBy(country) as Option,
     objectMarking: convertMarkings(country),
     x_opencti_workflow_id: convertStatus(t_i18n, country) as Option,
@@ -252,6 +258,14 @@ CountryEditionOverviewProps
             helperText={
               <SubscriptionFocus context={context} fieldName="description" />
             }
+          />
+          <ConfidenceField
+            onFocus={editor.changeFocus}
+            onSubmit={handleSubmitField}
+            entityType="Country"
+            containerStyle={fieldSpacingContainerStyle}
+            editContext={context}
+            variant="edit"
           />
           {country?.workflowEnabled && (
             <StatusField

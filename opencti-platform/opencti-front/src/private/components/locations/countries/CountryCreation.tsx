@@ -8,6 +8,7 @@ import { FormikConfig } from 'formik/dist/types';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
 import CustomFileUploader from '@components/common/files/CustomFileUploader';
 import Drawer, { DrawerVariant } from '@components/common/drawer/Drawer';
+import ConfidenceField from '@components/common/form/ConfidenceField';
 import { useFormatter } from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
 import CreatedByField from '../../common/form/CreatedByField';
@@ -40,6 +41,7 @@ const countryMutation = graphql`
       id
       standard_id
       name
+      confidence
       description
       entity_type
       parent_types
@@ -51,6 +53,7 @@ const countryMutation = graphql`
 interface CountryAddInput {
   name: string;
   description: string;
+  confidence: number | undefined;
   createdBy: Option | undefined;
   objectMarking: Option[];
   objectLabel: Option[];
@@ -81,6 +84,7 @@ export const CountryCreationForm: FunctionComponent<CountryFormProps> = ({
   const basicShape = {
     name: Yup.string().min(2).required(t_i18n('This field is required')),
     description: Yup.string().nullable(),
+    confidence: Yup.number().nullable(),
   };
   const countryValidator = useSchemaCreationValidation(
     COUNTRY_TYPE,
@@ -94,6 +98,7 @@ export const CountryCreationForm: FunctionComponent<CountryFormProps> = ({
     const input: CountryCreationMutation$variables['input'] = {
       name: values.name,
       description: values.description,
+      confidence: parseInt(String(values.confidence), 10),
       objectMarking: values.objectMarking.map(({ value }) => value),
       objectLabel: values.objectLabel.map(({ value }) => value),
       externalReferences: values.externalReferences.map(({ value }) => value),
@@ -121,6 +126,7 @@ export const CountryCreationForm: FunctionComponent<CountryFormProps> = ({
   const initialValues = useDefaultValues<CountryAddInput>(COUNTRY_TYPE, {
     name: '',
     description: '',
+    confidence: undefined,
     createdBy: defaultCreatedBy,
     objectMarking: defaultMarkingDefinitions ?? [],
     objectLabel: [],
@@ -152,6 +158,10 @@ export const CountryCreationForm: FunctionComponent<CountryFormProps> = ({
             multiline={true}
             rows="4"
             style={{ marginTop: 20 }}
+          />
+          <ConfidenceField
+            entityType="Country"
+            containerStyle={fieldSpacingContainerStyle}
           />
           <CreatedByField
             name="createdBy"
