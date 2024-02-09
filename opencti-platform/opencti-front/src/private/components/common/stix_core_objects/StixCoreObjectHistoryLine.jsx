@@ -23,15 +23,16 @@ import ListItem from '@mui/material/ListItem';
 import DialogContentText from '@mui/material/DialogContentText';
 import IconButton from '@mui/material/IconButton';
 import { Link } from 'react-router-dom';
+import withTheme from '@mui/styles/withTheme';
 import { truncate } from '../../../../utils/String';
 import inject18n from '../../../../components/i18n';
 import MarkdownDisplay from '../../../../components/MarkdownDisplay';
 import Transition from '../../../../components/Transition';
 import ItemIcon from '../../../../components/ItemIcon';
 
-const styles = (theme) => ({
+const styles = () => ({
   container: {
-    marginBottom: 20,
+    marginBottom: 5,
   },
   line: {
     content: ' ',
@@ -44,9 +45,9 @@ const styles = (theme) => ({
   },
   avatar: {
     float: 'left',
-    width: 40,
-    height: 40,
-    margin: '5px 10px 0 0',
+    width: 30,
+    height: 30,
+    margin: '7px 0 0 0',
   },
   content: {
     width: 'auto',
@@ -61,7 +62,7 @@ const styles = (theme) => ({
     width: '100%',
     height: '100%',
     padding: '8px 15px 0 15px',
-    backgroundColor: theme.palette.background.shadow,
+    background: 0,
   },
   description: {
     height: '100%',
@@ -110,20 +111,22 @@ class StixCoreObjectHistoryLineComponent extends Component {
   }
 
   renderIcon(eventScope, isRelation, eventMesage, commit) {
+    const { theme } = this.props;
     if (isRelation) {
       if (eventScope === 'create') {
         return (
           <Avatar
             sx={{
-              width: 30,
-              height: 30,
-              backgroundColor: pink[500],
-              color: '#ffffff',
+              width: 25,
+              height: 25,
+              backgroundColor: 'transparent',
+              border: `1px solid ${pink[500]}`,
+              color: theme.palette.text.primary,
               cursor: commit ? 'pointer' : 'auto',
             }}
             onClick={() => commit && this.handleOpen()}
           >
-            <LinkOutlined fontSize="small" />
+            <LinkOutlined style={{ fontSize: 12 }} />
           </Avatar>
         );
       }
@@ -131,15 +134,16 @@ class StixCoreObjectHistoryLineComponent extends Component {
         return (
           <Avatar
             sx={{
-              width: 30,
-              height: 30,
-              backgroundColor: deepPurple[500],
-              color: '#ffffff',
+              width: 25,
+              height: 25,
+              backgroundColor: 'transparent',
+              border: `1px solid ${deepPurple[500]}`,
+              color: theme.palette.text.primary,
               cursor: commit ? 'pointer' : 'auto',
             }}
             onClick={() => commit && this.handleOpen()}
           >
-            <LinkOffOutlined fontSize="small" />
+            <LinkOffOutlined style={{ fontSize: 12 }} />
           </Avatar>
         );
       }
@@ -148,15 +152,16 @@ class StixCoreObjectHistoryLineComponent extends Component {
         return (
           <Avatar
             sx={{
-              width: 30,
-              height: 30,
-              backgroundColor: pink[500],
-              color: '#ffffff',
+              width: 25,
+              height: 25,
+              backgroundColor: 'transparent',
+              border: `1px solid ${pink[500]}`,
+              color: theme.palette.text.primary,
               cursor: commit ? 'pointer' : 'auto',
             }}
             onClick={() => commit && this.handleOpen()}
           >
-            <AddOutlined fontSize="small" />
+            <AddOutlined style={{ fontSize: 12 }} />
           </Avatar>
         );
       }
@@ -164,15 +169,16 @@ class StixCoreObjectHistoryLineComponent extends Component {
         return (
           <Avatar
             sx={{
-              width: 30,
-              height: 30,
-              backgroundColor: teal[500],
-              color: '#ffffff',
+              width: 25,
+              height: 25,
+              backgroundColor: 'transparent',
+              border: `1px solid ${teal[500]}`,
+              color: theme.palette.text.primary,
               cursor: commit ? 'pointer' : 'auto',
             }}
             onClick={() => commit && this.handleOpen()}
           >
-            <Merge fontSize="small" />
+            <Merge style={{ fontSize: 12 }} />
           </Avatar>
         );
       }
@@ -180,15 +186,16 @@ class StixCoreObjectHistoryLineComponent extends Component {
         return (
           <Avatar
             sx={{
-              width: 30,
-              height: 30,
-              backgroundColor: green[500],
-              color: '#ffffff',
+              width: 25,
+              height: 25,
+              backgroundColor: 'transparent',
+              border: `1px solid ${green[500]}`,
+              color: theme.palette.text.primary,
               cursor: commit ? 'pointer' : 'auto',
             }}
             onClick={() => commit && this.handleOpen()}
           >
-            <EditOutlined fontSize="small" />
+            <EditOutlined style={{ fontSize: 12 }} />
           </Avatar>
         );
       }
@@ -196,15 +203,16 @@ class StixCoreObjectHistoryLineComponent extends Component {
         return (
           <Avatar
             sx={{
-              width: 30,
-              height: 30,
-              backgroundColor: green[500],
-              color: '#ffffff',
+              width: 25,
+              height: 25,
+              backgroundColor: 'transparent',
+              border: `1px solid ${green[500]}`,
+              color: theme.palette.text.primary,
               cursor: commit ? 'pointer' : 'auto',
             }}
             onClick={() => commit && this.handleOpen()}
           >
-            <EditOutlined fontSize="small" />
+            <EditOutlined style={{ fontSize: 12 }} />
           </Avatar>
         );
       }
@@ -212,15 +220,16 @@ class StixCoreObjectHistoryLineComponent extends Component {
         return (
           <Avatar
             sx={{
-              width: 30,
-              height: 30,
-              backgroundColor: indigo[500],
-              color: '#ffffff',
+              width: 25,
+              height: 25,
+              backgroundColor: 'transparent',
+              border: `1px solid ${indigo[500]}`,
+              color: theme.palette.text.primary,
               cursor: commit ? 'pointer' : 'auto',
             }}
             onClick={() => commit && this.handleOpen()}
           >
-            <LinkVariantPlus fontSize="small" />
+            <LinkVariantPlus style={{ fontSize: 12 }} />
           </Avatar>
         );
       }
@@ -228,15 +237,16 @@ class StixCoreObjectHistoryLineComponent extends Component {
         return (
           <Avatar
             sx={{
-              width: 30,
-              height: 30,
-              backgroundColor: deepOrange[500],
-              color: '#ffffff',
+              width: 25,
+              height: 25,
+              backgroundColor: 'transparent',
+              border: `1px solid ${deepOrange[500]}`,
+              color: theme.palette.text.primary,
               cursor: commit ? 'pointer' : 'auto',
             }}
             onClick={() => commit && this.handleOpen()}
           >
-            <LinkVariantRemove fontSize="small" />
+            <LinkVariantRemove style={{ fontSize: 12 }} />
           </Avatar>
         );
       }
@@ -244,13 +254,14 @@ class StixCoreObjectHistoryLineComponent extends Component {
         return (
           <Avatar
             sx={{
-              width: 30,
-              height: 30,
-              backgroundColor: red[500],
-              color: '#ffffff',
+              width: 25,
+              height: 25,
+              backgroundColor: 'transparent',
+              border: `1px solid ${red[500]}`,
+              color: theme.palette.text.primary,
             }}
           >
-            <DeleteOutlined fontSize="small" />
+            <DeleteOutlined style={{ fontSize: 12 }} />
           </Avatar>
         );
       }
@@ -258,15 +269,16 @@ class StixCoreObjectHistoryLineComponent extends Component {
     return (
       <Avatar
         style={{
-          width: 30,
-          height: 30,
-          backgroundColor: yellow[800],
-          color: '#ffffff',
+          width: 25,
+          height: 25,
+          backgroundColor: 'transparent',
+          border: `1px solid ${yellow[500]}`,
+          color: theme.palette.text.primary,
           cursor: commit ? 'pointer' : 'auto',
         }}
         onClick={() => commit && this.handleOpen()}
       >
-        <HelpOutlined fontSize="small" />
+        <HelpOutlined style={{ fontSize: 12 }} />
       </Avatar>
     );
   }
@@ -493,5 +505,6 @@ const StixCoreObjectHistoryLine = createFragmentContainer(
 
 export default compose(
   inject18n,
+  withTheme,
   withStyles(styles),
 )(StixCoreObjectHistoryLine);

@@ -4,14 +4,14 @@ import LogoText from '../static/images/logo_text_light.png';
 import LogoCollapsed from '../static/images/logo_light.png';
 import { hexToRGB } from '../utils/Colors';
 
-const EE_COLOR = '#115f51';
+const EE_COLOR = '#0c7e69';
 
-export const THEME_LIGHT_DEFAULT_BACKGROUND = '#f8f8f8'; // f8f8f8
-const THEME_LIGHT_DEFAULT_PRIMARY = '#001bda'; // 0066ff
-const THEME_LIGHT_DEFAULT_SECONDARY = '#115f51'; // d81b60
-const THEME_LIGHT_DEFAULT_ACCENT = '#c9c9c9'; // d3eaff
-const THEME_LIGHT_DEFAULT_PAPER = '#ffffff'; // ffffff
-const THEME_LIGHT_DEFAULT_NAV = '#ffffff'; // f5f5f5
+export const THEME_LIGHT_DEFAULT_BACKGROUND = '#f8f8f8';
+const THEME_LIGHT_DEFAULT_PRIMARY = '#001bda';
+const THEME_LIGHT_DEFAULT_SECONDARY = '#0c7e69';
+const THEME_LIGHT_DEFAULT_ACCENT = '#d9d9d9';
+const THEME_LIGHT_DEFAULT_PAPER = '#ffffff';
+const THEME_LIGHT_DEFAULT_NAV = '#ffffff';
 
 const ThemeLight = (
   logo: string | null,

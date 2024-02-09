@@ -13,13 +13,14 @@ import DialogActions from '@mui/material/DialogActions';
 import Button from '@mui/material/Button';
 import makeStyles from '@mui/styles/makeStyles';
 import { UserHistoryLine_node$key } from '@components/settings/users/__generated__/UserHistoryLine_node.graphql';
+import { useTheme } from '@mui/styles';
 import { useFormatter } from '../../../../components/i18n';
 import MarkdownDisplay from '../../../../components/MarkdownDisplay';
 import type { Theme } from '../../../../components/Theme';
 
-const useStyles = makeStyles<Theme>((theme) => ({
+const useStyles = makeStyles(() => ({
   container: {
-    marginBottom: 20,
+    marginBottom: 5,
   },
   line: {
     content: ' ',
@@ -32,9 +33,9 @@ const useStyles = makeStyles<Theme>((theme) => ({
   },
   avatar: {
     float: 'left',
-    width: 40,
-    height: 40,
-    margin: '5px 10px 0 0',
+    width: 30,
+    height: 30,
+    margin: '7px 0 0 0',
   },
   content: {
     width: 'auto',
@@ -49,7 +50,7 @@ const useStyles = makeStyles<Theme>((theme) => ({
     width: '100%',
     height: '100%',
     padding: '8px 15px 0 15px',
-    backgroundColor: theme.palette.background.shadow,
+    background: 0,
   },
   description: {
     height: '100%',
@@ -94,30 +95,28 @@ interface UserHistoryLineProps {
 }
 
 const UserHistoryLine: FunctionComponent<UserHistoryLineProps> = ({ node }) => {
+  const theme = useTheme<Theme>();
   const classes = useStyles();
   const { t_i18n, nsdt } = useFormatter();
   const [open, setOpen] = useState(false);
-
   const log = useFragment<UserHistoryLine_node$key>(userHistoryLineFragment, node);
-
   const handleOpen = () => {
     setOpen(true);
   };
-
   const handleClose = () => {
     setOpen(false);
   };
-
   const renderIcon = (eventScope: string | null | undefined, isRelation: boolean, eventMessage: string | undefined, commit: string | null | undefined) => {
     if (isRelation) {
       if (eventScope === 'create') {
         return (
           <Avatar
             sx={{
-              width: 30,
-              height: 30,
-              backgroundColor: pink[500],
-              color: '#ffffff',
+              width: 25,
+              height: 25,
+              backgroundColor: 'transparent',
+              border: `1px solid ${pink[500]}`,
+              color: theme.palette.text?.primary,
               cursor: commit ? 'pointer' : 'auto',
             }}
             onClick={() => commit && handleOpen()}
@@ -130,10 +129,11 @@ const UserHistoryLine: FunctionComponent<UserHistoryLineProps> = ({ node }) => {
         return (
           <Avatar
             sx={{
-              width: 30,
-              height: 30,
-              backgroundColor: deepPurple[500],
-              color: '#ffffff',
+              width: 25,
+              height: 25,
+              backgroundColor: 'transparent',
+              border: `1px solid ${deepPurple[500]}`,
+              color: theme.palette.text?.primary,
               cursor: commit ? 'pointer' : 'auto',
             }}
             onClick={() => commit && handleOpen()}
@@ -147,10 +147,11 @@ const UserHistoryLine: FunctionComponent<UserHistoryLineProps> = ({ node }) => {
         return (
           <Avatar
             sx={{
-              width: 30,
-              height: 30,
-              backgroundColor: pink[500],
-              color: '#ffffff',
+              width: 25,
+              height: 25,
+              backgroundColor: 'transparent',
+              border: `1px solid ${pink[500]}`,
+              color: theme.palette.text?.primary,
               cursor: commit ? 'pointer' : 'auto',
             }}
             onClick={() => commit && handleOpen()}
@@ -163,10 +164,11 @@ const UserHistoryLine: FunctionComponent<UserHistoryLineProps> = ({ node }) => {
         return (
           <Avatar
             sx={{
-              width: 30,
-              height: 30,
-              backgroundColor: teal[500],
-              color: '#ffffff',
+              width: 25,
+              height: 25,
+              backgroundColor: 'transparent',
+              border: `1px solid ${teal[500]}`,
+              color: theme.palette.text?.primary,
               cursor: commit ? 'pointer' : 'auto',
             }}
             onClick={() => commit && handleOpen()}
@@ -182,10 +184,11 @@ const UserHistoryLine: FunctionComponent<UserHistoryLineProps> = ({ node }) => {
         return (
           <Avatar
             sx={{
-              width: 30,
-              height: 30,
-              backgroundColor: green[500],
-              color: '#ffffff',
+              width: 25,
+              height: 25,
+              backgroundColor: 'transparent',
+              border: `1px solid ${green[500]}`,
+              color: theme.palette.text?.primary,
               cursor: commit ? 'pointer' : 'auto',
             }}
             onClick={() => commit && handleOpen()}
@@ -198,10 +201,11 @@ const UserHistoryLine: FunctionComponent<UserHistoryLineProps> = ({ node }) => {
         return (
           <Avatar
             sx={{
-              width: 30,
-              height: 30,
-              backgroundColor: green[500],
-              color: '#ffffff',
+              width: 25,
+              height: 25,
+              backgroundColor: 'transparent',
+              border: `1px solid ${green[500]}`,
+              color: theme.palette.text?.primary,
               cursor: commit ? 'pointer' : 'auto',
             }}
             onClick={() => commit && handleOpen()}
@@ -214,10 +218,11 @@ const UserHistoryLine: FunctionComponent<UserHistoryLineProps> = ({ node }) => {
         return (
           <Avatar
             sx={{
-              width: 30,
-              height: 30,
-              backgroundColor: indigo[500],
-              color: '#ffffff',
+              width: 25,
+              height: 25,
+              backgroundColor: 'transparent',
+              border: `1px solid ${indigo[500]}`,
+              color: theme.palette.text?.primary,
               cursor: commit ? 'pointer' : 'auto',
             }}
             onClick={() => commit && handleOpen()}
@@ -230,10 +235,11 @@ const UserHistoryLine: FunctionComponent<UserHistoryLineProps> = ({ node }) => {
         return (
           <Avatar
             sx={{
-              width: 30,
-              height: 30,
-              backgroundColor: deepOrange[500],
-              color: '#ffffff',
+              width: 25,
+              height: 25,
+              backgroundColor: 'transparent',
+              border: `1px solid ${deepOrange[500]}`,
+              color: theme.palette.text?.primary,
               cursor: commit ? 'pointer' : 'auto',
             }}
             onClick={() => commit && handleOpen()}
@@ -246,10 +252,11 @@ const UserHistoryLine: FunctionComponent<UserHistoryLineProps> = ({ node }) => {
         return (
           <Avatar
             sx={{
-              width: 30,
-              height: 30,
-              backgroundColor: red[500],
-              color: '#ffffff',
+              width: 25,
+              height: 25,
+              backgroundColor: 'transparent',
+              border: `1px solid ${red[500]}`,
+              color: theme.palette.text?.primary,
             }}
           >
             <DeleteOutlined fontSize="small" />
@@ -260,10 +267,12 @@ const UserHistoryLine: FunctionComponent<UserHistoryLineProps> = ({ node }) => {
         return (
           <Avatar
             sx={{
-              width: 30,
-              height: 30,
-              backgroundColor: lightGreen[700],
-              color: '#ffffff',
+              width: 25,
+              height: 25,
+              backgroundColor: 'transparent',
+              border: `1px solid ${lightGreen[500]}`,
+              color: theme.palette.text?.primary,
+              cursor: commit ? 'pointer' : 'auto',
             }}
           >
             <VisibilityOutlined fontSize="small" />
@@ -274,10 +283,12 @@ const UserHistoryLine: FunctionComponent<UserHistoryLineProps> = ({ node }) => {
         return (
           <Avatar
             sx={{
-              width: 30,
-              height: 30,
-              backgroundColor: orange[800],
-              color: '#ffffff',
+              width: 25,
+              height: 25,
+              backgroundColor: 'transparent',
+              border: `1px solid ${orange[500]}`,
+              color: theme.palette.text?.primary,
+              cursor: commit ? 'pointer' : 'auto',
             }}
           >
             <DownloadOutlined fontSize="small" />
@@ -288,10 +299,11 @@ const UserHistoryLine: FunctionComponent<UserHistoryLineProps> = ({ node }) => {
     return (
       <Avatar
         sx={{
-          width: 30,
-          height: 30,
-          backgroundColor: yellow[500],
-          color: '#ffffff',
+          width: 25,
+          height: 25,
+          backgroundColor: 'transparent',
+          border: `1px solid ${yellow[500]}`,
+          color: theme.palette.text?.primary,
         }}
         onClick={() => commit && handleOpen()}
       >

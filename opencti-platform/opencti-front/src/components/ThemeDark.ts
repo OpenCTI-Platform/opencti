@@ -6,12 +6,12 @@ import { hexToRGB } from '../utils/Colors';
 
 const EE_COLOR = '#00f1bd';
 
-export const THEME_DARK_DEFAULT_BACKGROUND = '#00020c'; // 0a1929
-const THEME_DARK_DEFAULT_PRIMARY = '#0fbcff'; // 1c8eb6 // for road:
-const THEME_DARK_DEFAULT_SECONDARY = '#00f1bd'; // d81b60
-const THEME_DARK_DEFAULT_ACCENT = '#001e4e'; // 01478d // for building: 030721
-const THEME_DARK_DEFAULT_PAPER = '#00020c'; // 001e3c
-const THEME_DARK_DEFAULT_NAV = '#00020c'; // 071a2e
+export const THEME_DARK_DEFAULT_BACKGROUND = '#070d19';
+const THEME_DARK_DEFAULT_PRIMARY = '#0fbcff';
+const THEME_DARK_DEFAULT_SECONDARY = '#00f1bd';
+const THEME_DARK_DEFAULT_ACCENT = '#0f1e38';
+const THEME_DARK_DEFAULT_PAPER = '#070d19';
+const THEME_DARK_DEFAULT_NAV = '#070d19';
 
 const ThemeDark = (
   logo: string | null = null,
