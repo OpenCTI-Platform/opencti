@@ -21,7 +21,7 @@
     "insert:dev": "node build/script-insert-dataset.js",
     "test:watch": "vitest watch --config vitest.config.dev.ts",
     "test:dev": "vitest run --config vitest.config.dev.ts",
-    "test": "vitest run --config vitest.config.test.ts --coverage"
+    "test": "vitest --silent run --config vitest.config.test.ts --coverage"
   },
   "pkg": {
     "scripts": "dist/**/*.js",
