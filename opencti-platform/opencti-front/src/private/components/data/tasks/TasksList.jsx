@@ -391,8 +391,9 @@ const TasksList = ({ data }) => {
               </Grid>
               <Button
                 style={{ position: 'absolute', right: 10, top: 10 }}
-                variant="contained"
-                color="secondary"
+                variant={task.errors.length > 0 ? 'contained' : 'outlined'}
+                color={'secondary'}
+                disabled={task.errors.length === 0}
                 onClick={() => handleOpenErrors(task.errors)}
                 size="small"
               >
