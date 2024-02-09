@@ -8,6 +8,7 @@ import { internalLoadById, listEntities } from '../../src/database/middleware-lo
 import { queryAsAdmin, testContext } from './testQuery';
 import { fetchStreamInfo } from '../../src/database/redis';
 import { logApp } from '../../src/config/conf';
+import cacheManager from '../../src/manager/cacheManager';
 
 export const inferenceLookup = async (inferences, fromStandardId, toStandardId, type) => {
   for (let index = 0; index < inferences.length; index += 1) {
@@ -39,6 +40,8 @@ const RULE_MUTATION = gql`
 
 export const changeRule = async (ruleId, active) => {
   const start = new Date().getTime();
+  // Clean the cache
+  cacheManager.init();
   // Change the status
   await queryAsAdmin({ query: RULE_MUTATION, variables: { id: ruleId, enable: active } });
   // Wait for rule to finish activation
