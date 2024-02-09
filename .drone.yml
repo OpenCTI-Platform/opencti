@@ -81,6 +81,7 @@ steps:
       - npm install -g node-gyp
       - cd opencti-platform/opencti-front
       - yarn install
+      - npx playwright install --with-deps
       - yarn build
       - yarn dev &
       - yarn test:e2e
