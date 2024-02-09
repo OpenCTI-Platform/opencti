@@ -81,7 +81,7 @@ import {
   STIX_ORGANIZATIONS_UNRESTRICTED
 } from '../schema/stixDomainObject';
 import { isBasicObject, isStixCoreObject, isStixObject } from '../schema/stixCoreObject';
-import { isBasicRelationship, isStixRelationship, isStixRelationshipExceptRef } from '../schema/stixRelationship';
+import { isBasicRelationship, isStixRelationship } from '../schema/stixRelationship';
 import { isStixCoreRelationship, RELATION_INDICATES, STIX_CORE_RELATIONSHIPS } from '../schema/stixCoreRelationship';
 import { INTERNAL_FROM_FIELD, INTERNAL_TO_FIELD } from '../schema/identifier';
 import { BYPASS, computeUserMemberAccessIds, executionContext, INTERNAL_USERS, isBypassUser, MEMBER_ACCESS_ALL, SYSTEM_USER } from '../utils/access';
@@ -2825,16 +2825,9 @@ const computeDeleteElementsImpacts = async (cleanupRelations, toBeRemovedIds, re
   return elementsImpact;
 };
 
-export const elDeleteElements = async (context, user, elements, loadByIdsWithRefs) => {
-  if (elements.length === 0) return [];
-  const dependencyDeletions = [];
+export const elDeleteElements = async (context, user, elements) => {
+  if (elements.length === 0) return;
   const { relations, relationsToRemoveMap } = await getRelationsToRemove(context, user, elements);
-  const stixRelations = relations.filter((r) => isStixRelationshipExceptRef(r.relationship_type));
-  if (loadByIdsWithRefs) {
-    const dependencyRelationIds = stixRelations.map((s) => s.internal_id);
-    const dependencies = await loadByIdsWithRefs(context, user, dependencyRelationIds);
-    dependencyDeletions.push(...dependencies);
-  }
   // Compute the id that needs to be removed from rel
   const basicCleanup = elements.filter((f) => isBasicRelationship(f.entity_type));
   // Remove all related relations and elements
@@ -2846,9 +2839,6 @@ export const elDeleteElements = async (context, user, elements, loadByIdsWithRef
   const toBeRemovedIds = elements.map((e) => e.internal_id);
   const elementsImpact = await computeDeleteElementsImpacts(cleanupRelations, toBeRemovedIds, relationsToRemoveMap);
   await elRemoveRelationConnection(context, user, elementsImpact);
-  // logApp.debug(`[SEARCH] Updating connected elements ${relsFromToImpacts.length}`);
-  // Return the relations deleted because of the entity deletion
-  return dependencyDeletions;
 };
 
 export const prepareElementForIndexing = (element) => {

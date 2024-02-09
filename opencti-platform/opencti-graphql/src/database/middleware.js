@@ -1118,7 +1118,6 @@ const mergeEntitiesRaw = async (context, user, targetEntity, sourceEntities, tar
     logApp.info(`[OPENCTI] Merging, updating relations ${currentRelsUpdateCount} / ${updateConnections.length}`);
   };
   await Promise.map(groupsOfRelsUpdate, concurrentRelsUpdate, { concurrency: ES_MAX_CONCURRENCY });
-  const updatedRelations = updateConnections.filter((u) => isStixRelationshipExceptRef(u.entity_type)).map((c) => c.standard_id);
   // Update all impacted entities
   logApp.info(`[OPENCTI] Merging impacting ${updateEntities.length} entities for ${targetEntity.internal_id}`);
   const updatesByEntity = R.groupBy((i) => i.id, updateEntities);
@@ -1162,7 +1161,7 @@ const mergeEntitiesRaw = async (context, user, targetEntity, sourceEntities, tar
   // Take care of relations deletions to prevent duplicate marking definitions.
   const elementToRemoves = [...sourceEntities, ...fromDeletions, ...toDeletions];
   // All not move relations will be deleted, so we need to remove impacted rel in entities.
-  const dependencyDeletions = await elDeleteElements(context, user, elementToRemoves, storeLoadByIdsWithRefs);
+  await elDeleteElements(context, user, elementToRemoves);
   // Everything if fine update remaining attributes
   const updateAttributes = [];
   // 1. Update all possible attributes
@@ -1219,8 +1218,6 @@ const mergeEntitiesRaw = async (context, user, targetEntity, sourceEntities, tar
     await elUpdateElement(updateAsInstance);
     logApp.info(`[OPENCTI] Merging attributes success for ${targetEntity.internal_id}`, { update: updateAsInstance });
   }
-  // Return extra deleted stix relations
-  return { updatedRelations, dependencyDeletions };
 };
 
 const loadMergeEntitiesDependencies = async (context, user, entityIds) => {
@@ -1299,9 +1296,9 @@ export const mergeEntities = async (context, user, targetEntityId, sourceEntityI
     const targetDependencies = await loadMergeEntitiesDependencies(context, SYSTEM_USER, [initialInstance.internal_id]);
     // - TRANSACTION PART
     lock.signal.throwIfAborted();
-    const mergeImpacts = await mergeEntitiesRaw(context, user, target, sources, targetDependencies, sourcesDependencies, opts);
+    await mergeEntitiesRaw(context, user, target, sources, targetDependencies, sourcesDependencies, opts);
     const mergedInstance = await storeLoadByIdWithRefs(context, user, targetEntityId);
-    await storeMergeEvent(context, user, initialInstance, mergedInstance, sources, mergeImpacts, opts);
+    await storeMergeEvent(context, user, initialInstance, mergedInstance, sources, opts);
     // Temporary stored the deleted elements to prevent concurrent problem at creation
     await redisAddDeletions(sources.map((s) => s.internal_id));
     // - END TRANSACTION
@@ -3223,9 +3220,9 @@ export const internalDeleteElementById = async (context, user, id, opts = {}) =>
       // Start by deleting external files
       await deleteAllObjectFiles(context, user, element);
       // Delete all linked elements
-      const dependencyDeletions = await elDeleteElements(context, user, [element], storeLoadByIdsWithRefs);
+      await elDeleteElements(context, user, [element]);
       // Publish event in the stream
-      event = await storeDeleteEvent(context, user, element, dependencyDeletions, opts);
+      event = await storeDeleteEvent(context, user, element, opts);
     }
     // Temporary stored the deleted elements to prevent concurrent problem at creation
     await redisAddDeletions(participantIds);

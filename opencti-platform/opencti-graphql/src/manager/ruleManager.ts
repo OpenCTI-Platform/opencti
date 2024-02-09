@@ -5,7 +5,7 @@ import * as jsonpatch from 'fast-json-patch';
 import { clearIntervalAsync, setIntervalAsync, type SetIntervalAsyncTimer } from 'set-interval-async/fixed';
 import { createStreamProcessor, EVENT_CURRENT_VERSION, lockResource, REDIS_STREAM_NAME, type StreamProcessor } from '../database/redis';
 import conf, { booleanConf, logApp } from '../config/conf';
-import { createEntity, patchAttribute, stixLoadById, storeLoadByIdWithRefs } from '../database/middleware';
+import { createEntity, patchAttribute, storeLoadByIdWithRefs } from '../database/middleware';
 import { EVENT_TYPE_CREATE, EVENT_TYPE_DELETE, EVENT_TYPE_MERGE, EVENT_TYPE_UPDATE, isEmptyField, isNotEmptyField, READ_DATA_INDICES } from '../database/utils';
 import { RULE_PREFIX } from '../schema/general';
 import { ENTITY_TYPE_RULE_MANAGER } from '../schema/internalObject';
@@ -55,29 +55,10 @@ export const buildInternalEvent = (type: 'update' | 'create' | 'delete', stix: S
 const ruleMergeHandler = async (context: AuthContext, event: MergeEvent): Promise<Array<BaseEvent>> => {
   const { data, context: eventContext } = event;
   const events: Array<BaseEvent> = [];
-  // region 01 - Generate events for deletion
+  // region 01 - Generate events for sources deletion
   // -- sources
   const sourceDeleteEvents = (eventContext.sources || []).map((s) => buildInternalEvent(EVENT_TYPE_DELETE, s));
   events.push(...sourceDeleteEvents);
-  // -- derived deletions
-  const derivedDeleteEvents = (eventContext.deletions || []).map((s) => buildInternalEvent(EVENT_TYPE_DELETE, s));
-  events.push(...derivedDeleteEvents);
-  // endregion
-  // region 02 - Generate events for shifted relations
-  if ((eventContext.shifts ?? []).length > 0) {
-    const shifts = eventContext.shifts ?? [];
-    for (let index = 0; index < shifts.length; index += 1) {
-      const shift = shifts[index];
-      const shiftedElement = await stixLoadById(context, RULE_MANAGER_USER, shift) as StixCoreObject;
-      // In past reprocess the shift element can already have been deleted.
-      if (shiftedElement) {
-        // We need to clean the element associated with this relation and then rescan it
-        events.push(buildInternalEvent(EVENT_TYPE_DELETE, shiftedElement));
-        // Then we need to generate event for redo rule on shifted relations
-        events.push(buildInternalEvent(EVENT_TYPE_CREATE, shiftedElement));
-      }
-    }
-  }
   // endregion
   // region 03 - Generate event for merged entity
   const updateEvent = buildInternalEvent(EVENT_TYPE_UPDATE, data) as UpdateEvent;
@@ -196,9 +177,7 @@ export const rulesApplyHandler = async (context: AuthContext, user: AuthUser, ev
       if (type === EVENT_TYPE_DELETE) {
         const deleteEvent = event as DeleteEvent;
         const internalId = deleteEvent.data.extensions[STIX_EXT_OCTI].id;
-        const contextDeletionsIds = (deleteEvent.context?.deletions ?? []).map((d) => d.extensions[STIX_EXT_OCTI].id);
-        const deletionIds = [internalId, ...contextDeletionsIds];
-        await applyCleanupOnDependencyIds(deletionIds);
+        await applyCleanupOnDependencyIds([internalId]);
       }
       // In case of update apply the event on every rules
       if (type === EVENT_TYPE_UPDATE) {

@@ -424,14 +424,8 @@ const pushToStream = async (context: AuthContext, user: AuthUser, client: Cluste
 };
 
 // Merge
-interface MergeImpacts {
-  updatedRelations: Array<string>;
-  dependencyDeletions: Array<StoreObject>;
-}
-
-const buildMergeEvent = async (user: AuthUser, previous: StoreObject, instance: StoreObject, sourceEntities: Array<StoreObject>, impacts: MergeImpacts): Promise<MergeEvent> => {
+const buildMergeEvent = async (user: AuthUser, previous: StoreObject, instance: StoreObject, sourceEntities: Array<StoreObject>): Promise<MergeEvent> => {
   const message = generateMergeMessage(instance, sourceEntities);
-  const { updatedRelations, dependencyDeletions } = impacts;
   const previousStix = convertStoreToStix(previous) as StixCoreObject;
   const currentStix = convertStoreToStix(instance) as StixCoreObject;
   return {
@@ -445,8 +439,6 @@ const buildMergeEvent = async (user: AuthUser, previous: StoreObject, instance: 
       patch: jsonpatch.compare(previousStix, currentStix),
       reverse_patch: jsonpatch.compare(currentStix, previousStix),
       sources: await asyncListTransformation(sourceEntities, convertStoreToStix),
-      deletions: await asyncListTransformation(dependencyDeletions, convertStoreToStix),
-      shifts: updatedRelations,
     }
   };
 };
@@ -456,11 +448,10 @@ export const storeMergeEvent = async (
   initialInstance: StoreObject,
   mergedInstance: StoreObject,
   sourceEntities: Array<StoreObject>,
-  impacts: MergeImpacts,
   opts: EventOpts,
 ) => {
   try {
-    const event = await buildMergeEvent(user, initialInstance, mergedInstance, sourceEntities, impacts);
+    const event = await buildMergeEvent(user, initialInstance, mergedInstance, sourceEntities);
     await pushToStream(context, user, getClientBase(), event, opts);
     return event;
   } catch (e) {
@@ -557,7 +548,6 @@ export const buildDeleteEvent = async (
   user: AuthUser,
   instance: StoreObject,
   message: string,
-  deletions: Array<StoreObject>,
 ): Promise<DeleteEvent> => {
   const stix = convertStoreToStix(instance) as StixCoreObject;
   return {
@@ -566,17 +556,14 @@ export const buildDeleteEvent = async (
     scope: 'external',
     message,
     origin: user.origin,
-    data: stix,
-    context: {
-      deletions: await asyncListTransformation(deletions, convertStoreToStix)
-    }
+    data: stix
   };
 };
-export const storeDeleteEvent = async (context: AuthContext, user: AuthUser, instance: StoreObject, deletions: Array<StoreObject>, opts: EventOpts = {}) => {
+export const storeDeleteEvent = async (context: AuthContext, user: AuthUser, instance: StoreObject, opts: EventOpts = {}) => {
   try {
     if (isStixExportableData(instance)) {
       const message = generateDeleteMessage(instance);
-      const event = await buildDeleteEvent(user, instance, message, deletions);
+      const event = await buildDeleteEvent(user, instance, message);
       await pushToStream(context, user, getClientBase(), event, opts);
       return event;
     }
