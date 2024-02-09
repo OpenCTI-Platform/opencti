@@ -383,6 +383,9 @@ export interface ListAllEntitiesThroughRelation {
 export const listAllEntitiesThroughRelations = async <T extends BasicStoreCommon> (context: AuthContext, user: AuthUser,
   relation: ListAllEntitiesThroughRelation): Promise<Array<T>> => {
   const { type, sourceSide, fromOrToId, fromOrToType, withInferences = false, filters: argsFilters } = relation;
+  if (isEmptyField(fromOrToId) || isEmptyField(fromOrToType)) {
+    return [];
+  }
   const opposite = sourceSide === 'from' ? 'to' : 'from';
   const fromOrToIds = Array.isArray(fromOrToId) ? fromOrToId : [fromOrToId];
   // Filter on connection to get only relation coming from ids.

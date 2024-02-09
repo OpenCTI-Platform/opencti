@@ -1,5 +1,5 @@
 import gql from 'graphql-tag';
-import { describe, expect, it } from 'vitest';
+import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { elLoadById } from '../../../src/database/engine';
 import { generateStandardId } from '../../../src/schema/identifier';
 import { ENTITY_TYPE_CAPABILITY, ENTITY_TYPE_GROUP, ENTITY_TYPE_USER } from '../../../src/schema/internalObject';
@@ -102,6 +102,62 @@ const LIST_MEMBERS_QUERY = gql`
   }
 `;
 
+const CREATE_QUERY = gql`
+  mutation UserAdd($input: UserAddInput!) {
+    userAdd(input: $input) {
+      id
+      standard_id
+      name
+      user_email
+      firstname
+      lastname
+      user_confidence_level {
+        max_confidence
+        overrides {
+          entity_type
+          max_confidence
+        }
+      }
+      effective_confidence_level {
+        max_confidence
+        source {
+          ... on User { entity_type id name }
+          ... on Group { entity_type id name }
+        }
+      }
+    }
+  }
+`;
+
+const GROUP_ADD_QUERY = gql`
+  mutation GroupAdd($input: GroupAddInput!) {
+    groupAdd(input: $input) {
+      id
+      name
+      description
+      group_confidence_level {
+        max_confidence
+      }
+    }
+  }
+`;
+
+const DELETE_QUERY = gql`
+  mutation userDelete($id: ID!) {
+    userEdit(id: $id) {
+      delete
+    }
+  }
+`;
+
+const DELETE_GROUP_QUERY = gql`
+  mutation groupDelete($id: ID!) {
+    groupEdit(id: $id) {
+      delete
+    }
+  }
+`;
+
 describe('User resolver standard behavior', () => {
   let userInternalId;
   let groupInternalId;
@@ -110,32 +166,6 @@ describe('User resolver standard behavior', () => {
   let capabilityId;
   const userToDeleteIds = [];
   it('should user created', async () => {
-    const CREATE_QUERY = gql`
-      mutation UserAdd($input: UserAddInput!) {
-        userAdd(input: $input) {
-          id
-          standard_id
-          name
-          user_email
-          firstname
-          lastname
-          user_confidence_level {
-            max_confidence
-            overrides {
-              entity_type
-              max_confidence
-            }
-          }
-          effective_confidence_level {
-            max_confidence
-            source {
-              ... on User { entity_type id name }
-              ... on Group { entity_type id name }
-            }
-          }
-        }
-      }
-    `;
     // Create the user
     const USER_TO_CREATE = {
       input: {
@@ -297,18 +327,6 @@ describe('User resolver standard behavior', () => {
     expect(queryResult.data.userEdit.contextClean.id).toEqual(userInternalId);
   });
   it('should add user in group', async () => {
-    const GROUP_ADD_QUERY = gql`
-      mutation GroupAdd($input: GroupAddInput!) {
-        groupAdd(input: $input) {
-          id
-          name
-          description
-          group_confidence_level {
-            max_confidence
-          }
-        }
-      }
-    `;
     // Create the group
     const GROUP_TO_CREATE = {
       input: {
@@ -443,7 +461,7 @@ describe('User resolver standard behavior', () => {
                   edges {
                     node {
                       id
-                      name     
+                      name
                     }
                   }
                 }
@@ -555,13 +573,6 @@ describe('User resolver standard behavior', () => {
     });
   });
   it('should user deleted', async () => {
-    const DELETE_QUERY = gql`
-      mutation userDelete($id: ID!) {
-        userEdit(id: $id) {
-          delete
-        }
-      }
-    `;
     // Delete the users
     for (let i = 0; i < userToDeleteIds.length; i++) {
       const userId = userToDeleteIds[i];
@@ -584,5 +595,59 @@ describe('User list members query behavior', () => {
     expect(queryResult.data.members.edges.filter(({ node: { entity_type } }) => entity_type === ENTITY_TYPE_USER).length).toEqual(4);
     expect(queryResult.data.members.edges.filter(({ node: { entity_type } }) => entity_type === ENTITY_TYPE_GROUP).length).toEqual(5);
     expect(queryResult.data.members.edges.filter(({ node: { entity_type } }) => entity_type === ENTITY_TYPE_IDENTITY_ORGANIZATION).length).toEqual(7);
+  });
+});
+
+describe('User has no capability query behavior', () => {
+  let groupId;
+  let userWithoutRoleInternalId;
+  beforeAll(async () => {
+    // Create the group
+    const GROUP_WITHOUT_ROLE = {
+      input: {
+        name: 'Group without role',
+        group_confidence_level: {
+          max_confidence: 60,
+          overrides: [],
+        }
+      },
+    };
+    const groupAddResult = await queryAsAdmin({
+      query: GROUP_ADD_QUERY,
+      variables: GROUP_WITHOUT_ROLE,
+    });
+    groupId = groupAddResult.data.groupAdd.id;
+
+    // Create the user
+    const USER_TO_CREATE = {
+      input: {
+        name: 'UserWithoutRole',
+        password: 'UserWithoutRole',
+        user_email: 'UserWithoutRole@mail.com',
+        groups: [groupId],
+      },
+    };
+    const userAddResult = await queryAsAdmin({
+      query: CREATE_QUERY,
+      variables: USER_TO_CREATE,
+    });
+    userWithoutRoleInternalId = userAddResult.data.userAdd.id;
+  });
+
+  it('should has no capability if no role', async () => {
+    const queryResult = await queryAsAdmin({ query: READ_QUERY, variables: { id: userWithoutRoleInternalId } });
+    expect(queryResult.data.user.capabilities.length).toEqual(0);
+  });
+
+  afterAll(async () => {
+    await queryAsAdmin({
+      query: DELETE_QUERY,
+      variables: { id: userWithoutRoleInternalId },
+    });
+
+    await queryAsAdmin({
+      query: DELETE_GROUP_QUERY,
+      variables: { id: groupId },
+    });
   });
 });
