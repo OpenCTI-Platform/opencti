@@ -57,6 +57,7 @@ import { promoteIndicatorToObservable } from '../modules/indicator/indicator-dom
 import { askElementEnrichmentForConnector } from '../domain/stixCoreObject';
 import { RELATION_GRANTED_TO, RELATION_OBJECT } from '../schema/stixRefRelationship';
 import { ACTION_TYPE_DELETE, ACTION_TYPE_SHARE, ACTION_TYPE_UNSHARE, TASK_TYPE_LIST, TASK_TYPE_QUERY, TASK_TYPE_RULE } from '../domain/backgroundTask-common';
+import { controlUserConfidenceAgainstElement } from '../utils/confidence-level';
 
 // Task manager responsible to execute long manual tasks
 // Each API will start is task manager.
@@ -155,12 +156,24 @@ const computeListTaskElements = async (context, user, task) => {
   const isUndefinedPosition = R.isNil(task_position) || R.isEmpty(task_position);
   const startIndex = isUndefinedPosition ? 0 : task_ids.findIndex((id) => task_position === id) + 1;
   const ids = R.take(MAX_TASK_ELEMENTS, task_ids.slice(startIndex));
+  let lastError;
   for (let indexId = 0; indexId < ids.length; indexId += 1) {
     const elementToResolve = ids[indexId];
     const element = await internalLoadById(context, user, elementToResolve, { type: DEFAULT_ALLOWED_TASK_ENTITY_TYPES });
     if (element) {
-      processingElements.push({ element, next: element.id });
+      try {
+        controlUserConfidenceAgainstElement(user, element);
+        processingElements.push({ element, next: element.id });
+      } catch (error) {
+        lastError = error;
+      }
     }
+  }
+  if (lastError) {
+    await appendTaskErrors(
+      task,
+      [{ id: 'error--confidence-control', message: lastError.message }]
+    );
   }
   return { actions, elements: processingElements };
 };

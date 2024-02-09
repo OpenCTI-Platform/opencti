@@ -195,4 +195,39 @@ describe('Confidence level utilities', () => {
     expect(adaptUpdateInputsConfidence(makeUser(10), makeConfidenceInput(30), makeElement(null)))
       .toEqual([{ key: 'confidence', value: ['10'] }]); // capped / no need to inject user's confidence
   });
+
+  it('getConfidenceFilterForUser shall produce correct filters', () => {
+    const emptyFilterGroup: FilterGroup = {
+      mode: FilterMode.And,
+      filterGroups: [],
+      filters: [],
+    };
+    const exampleFilterGroup: FilterGroup = {
+      mode: FilterMode.Or,
+      filterGroups: [],
+      filters: [
+        { key: ['name'], operator: FilterOperator.Contains, mode: FilterMode.Or, values: ['aa', 'bb', 'cc'] },
+        { key: ['score'], operator: FilterOperator.Gte, mode: FilterMode.And, values: [70] }
+      ],
+    };
+    const filter50: Filter = {
+      mode: FilterMode.And,
+      operator: FilterOperator.Lte,
+      key: ['confidence'],
+      values: [50]
+    };
+
+    expect(adaptFiltersWithUserConfidence(makeUser(50), emptyFilterGroup))
+      .toEqual({
+        mode: FilterMode.And,
+        filters: [filter50],
+        filterGroups: []
+      });
+    expect(adaptFiltersWithUserConfidence(makeUser(50), exampleFilterGroup))
+      .toEqual({
+        mode: FilterMode.And,
+        filters: [filter50],
+        filterGroups: [exampleFilterGroup]
+      });
+  });
 });

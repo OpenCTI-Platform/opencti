@@ -1,6 +1,6 @@
 import type { AuthUser } from '../types/user';
 import { cropNumber } from './math';
-import { isEmptyField, isNotEmptyField } from '../database/utils';
+import { isEmptyField } from '../database/utils';
 import { FunctionalError } from '../config/errors';
 import { logApp } from '../config/conf';
 import { schemaAttributesDefinition } from '../schema/schema-attributes';
@@ -152,4 +152,24 @@ export const adaptUpdateInputsConfidence = <T extends ObjectWithConfidence>(user
   }
 
   return newInputs;
+};
+
+export const adaptFiltersWithUserConfidence = (user: AuthUser, filters: FilterGroup): FilterGroup => {
+  if (isEmptyField(user.effective_confidence_level?.max_confidence)) {
+    throw FunctionalError('User has no effective max confidence level and cannot run this filter', { user_id: user.id });
+  }
+  const userMaxConfidenceLevel = user.effective_confidence_level?.max_confidence as number;
+  const confidenceFilter: Filter = {
+    key: ['confidence'],
+    mode: FilterMode.And,
+    operator: FilterOperator.Lte,
+    values: [userMaxConfidenceLevel]
+  };
+
+  // nest: this filter AND the input filters
+  return {
+    mode: FilterMode.And,
+    filters: [confidenceFilter],
+    filterGroups: isFilterGroupNotEmpty(filters) ? [filters] : [],
+  };
 };

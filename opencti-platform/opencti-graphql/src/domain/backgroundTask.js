@@ -13,6 +13,7 @@ import { ENTITY_TYPE_VOCABULARY } from '../modules/vocabulary/vocabulary-types';
 import { ENTITY_TYPE_NOTIFICATION } from '../modules/notification/notification-types';
 import { ENTITY_TYPE_CASE_TEMPLATE } from '../modules/case/case-template/case-template-types';
 import { ENTITY_TYPE_LABEL } from '../schema/stixMetaObject';
+import { adaptFiltersWithUserConfidence } from '../utils/confidence-level';
 
 export const DEFAULT_ALLOWED_TASK_ENTITY_TYPES = [
   ABSTRACT_STIX_CORE_OBJECT,
@@ -44,7 +45,9 @@ export const findAll = (context, user, args) => {
   return listEntities(context, user, [ENTITY_TYPE_BACKGROUND_TASK], args);
 };
 
-const buildQueryFilters = async (rawFilters, search, taskPosition) => {
+const buildQueryFilters = async (user, filters, search, taskPosition) => {
+  const inputFilters = filters ? JSON.parse(filters) : undefined;
+  const finalFilters = adaptFiltersWithUserConfidence(user, inputFilters);
   // Construct filters
   return {
     types: DEFAULT_ALLOWED_TASK_ENTITY_TYPES,
@@ -52,12 +55,12 @@ const buildQueryFilters = async (rawFilters, search, taskPosition) => {
     orderMode: 'asc',
     orderBy: 'created_at',
     after: taskPosition,
-    filters: rawFilters ? JSON.parse(rawFilters) : undefined,
+    filters: finalFilters,
     search: search && search.length > 0 ? search : null,
   };
 };
 export const executeTaskQuery = async (context, user, filters, search, start = null) => {
-  const options = await buildQueryFilters(filters, search, start);
+  const options = await buildQueryFilters(user, filters, search, start);
   return elPaginate(context, user, READ_DATA_INDICES_WITHOUT_INFERRED, options);
 };
 
