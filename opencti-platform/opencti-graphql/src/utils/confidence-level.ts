@@ -4,6 +4,8 @@ import { isEmptyField, isNotEmptyField } from '../database/utils';
 import { FunctionalError } from '../config/errors';
 import { logApp } from '../config/conf';
 import { schemaAttributesDefinition } from '../schema/schema-attributes';
+import { type Filter, type FilterGroup, FilterMode, FilterOperator } from '../generated/graphql';
+import { isFilterGroupNotEmpty } from './filtering/filtering-utils';
 
 type ObjectWithConfidence = {
   id: string,
@@ -145,7 +147,7 @@ export const adaptUpdateInputsConfidence = <T extends ObjectWithConfidence>(user
   // if the initial element does not have any confidence prior to this update, and we are not setting one now
   // then we force the element confidence to the user's confidence
   const hasConfidenceAttribute = schemaAttributesDefinition.getAttribute(element.entity_type, 'confidence');
-  if (hasConfidenceAttribute && isNotEmptyField(element.confidence) && inputsArray.length > 0 && !hasConfidenceInput) {
+  if (hasConfidenceAttribute && isEmptyField(element.confidence) && inputsArray.length > 0 && !hasConfidenceInput) {
     newInputs.push({ key: 'confidence', value: [userMaxConfidenceLevel.toString()] });
   }
 
