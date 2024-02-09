@@ -12,6 +12,7 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import { useFormatter } from '../../../components/i18n';
 import type { Theme } from '../../../components/Theme';
 import { copyToClipboard } from '../../../utils/utils';
+import ItemMarkings from '../../../components/ItemMarkings';
 
 export const workspaceShareListQuery = graphql`
   query WorkspaceShareListQuery($filters: FilterGroup) {
@@ -24,7 +25,11 @@ export const workspaceShareListQuery = graphql`
           user_id
           created_at
           updated_at
-          allowed_markings_ids
+          allowed_markings {
+            id
+            definition
+            x_opencti_color
+          }
         }
       }
     }
@@ -63,10 +68,21 @@ const WorkspaceShareList = ({ queryRef, onDelete }: WorkspaceShareListProps) => 
           variant="outlined"
           sx={{ padding: '12px' }}
         >
-          <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-            <Typography variant="body1" gutterBottom>
-              {dashboard.name}
-            </Typography>
+          <div style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'start',
+            marginBottom: '8px',
+          }}
+          >
+            <div>
+              <Typography variant="body1">
+                {dashboard.name}
+              </Typography>
+              <Typography variant="body2">
+                public/dashboard/{dashboard.uri_key}
+              </Typography>
+            </div>
 
             <ToggleButtonGroup size="small">
               <Tooltip title={t_i18n('Copy link')}>
@@ -101,14 +117,17 @@ const WorkspaceShareList = ({ queryRef, onDelete }: WorkspaceShareListProps) => 
             </ToggleButtonGroup>
           </div>
 
-          <Typography variant="body2" gutterBottom>
-            public/dashboard/{dashboard.uri_key}
-          </Typography>
-
-          <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-            <Typography variant="body2" sx={{ color: theme.palette.text?.secondary }}>
-              {t_i18n('Shared by')} {dashboard.user_id}
-            </Typography>
+          <div
+            style={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'end',
+            }}
+          >
+            <ItemMarkings
+              variant="inList"
+              markingDefinitions={dashboard.allowed_markings ?? []}
+            />
             <Typography variant="body2" sx={{ color: theme.palette.text?.secondary }}>
               {t_i18n('Link created')} {fld(dashboard.created_at)}
             </Typography>

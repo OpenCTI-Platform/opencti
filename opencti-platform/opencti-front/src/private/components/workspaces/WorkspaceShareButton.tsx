@@ -8,7 +8,7 @@ import Typography from '@mui/material/Typography';
 import WorkspaceShareForm, { WorkspaceShareFormData } from '@components/workspaces/WorkspaceShareForm';
 import WorkspaceShareList, { workspaceShareListQuery } from '@components/workspaces/WorkspaceShareList';
 import { WorkspaceShareListQuery } from '@components/workspaces/__generated__/WorkspaceShareListQuery.graphql';
-import { graphql, useMutation, useQueryLoader } from 'react-relay';
+import { graphql, useMutation, useQueryLoader, UseQueryLoaderLoadQueryOptions } from 'react-relay';
 import { FormikConfig } from 'formik/dist/types';
 import Alert from '@mui/material/Alert';
 import { useFormatter } from '../../../components/i18n';
@@ -47,22 +47,29 @@ const WorkspaceShareButton = ({ workspaceId }: WorkspaceShareButtonProps) => {
   const [commitDeleteMutation] = useMutation(workspaceShareButtonDeleteMutation);
 
   const [publicDashboardsQueryRef, fetchList] = useQueryLoader<WorkspaceShareListQuery>(workspaceShareListQuery);
-  useEffect(() => {
-    fetchList({
-      filters: {
-        mode: 'and',
-        filterGroups: [],
-        filters: [{
-          key: ['dashboard_id'],
-          mode: 'or',
-          operator: 'eq',
-          values: [workspaceId],
-        }],
+  const fetchWithFilters = (options?: UseQueryLoaderLoadQueryOptions) => {
+    fetchList(
+      {
+        filters: {
+          mode: 'and',
+          filterGroups: [],
+          filters: [{
+            key: ['dashboard_id'],
+            mode: 'or',
+            operator: 'eq',
+            values: [workspaceId],
+          }],
+        },
       },
-    });
+      options,
+    );
+  };
+
+  useEffect(() => {
+    fetchWithFilters();
   }, []);
 
-  const onSubmit: FormikConfig<WorkspaceShareFormData>['onSubmit'] = (values, { setSubmitting }) => {
+  const onSubmit: FormikConfig<WorkspaceShareFormData>['onSubmit'] = (values, { setSubmitting, resetForm }) => {
     commitCreateMutation({
       variables: {
         input: {
@@ -73,7 +80,8 @@ const WorkspaceShareButton = ({ workspaceId }: WorkspaceShareButtonProps) => {
       },
       onCompleted: () => {
         setSubmitting(false);
-        fetchList({}, { fetchPolicy: 'network-only' });
+        resetForm();
+        fetchWithFilters({ fetchPolicy: 'network-only' });
       },
       onError: (error) => {
         setSubmitting(false);
