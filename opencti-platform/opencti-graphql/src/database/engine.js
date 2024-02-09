@@ -1584,6 +1584,7 @@ export const elGenerateFieldTextSearchShould = (search, arrayKeys, args = {}) =>
       }
     ]);
   }
+
   return shouldSearch;
 };
 
@@ -1661,12 +1662,14 @@ const buildLocalMustFilter = async (validFilter) => {
               }
             },
             {
-              term: {
-                'description.keyword': {
-                  value: ''
-                }
+              bool: {
+                must_not: {
+                  wildcard: {
+                    [R.head(arrayKeys)]: '*'
+                  }
+                },
               }
-            }
+            },
           ]
         }
       });
@@ -1679,14 +1682,8 @@ const buildLocalMustFilter = async (validFilter) => {
         bool: {
           must: [
             {
-              bool: {
-                must_not: {
-                  term: {
-                    'description.keyword': {
-                      value: ''
-                    }
-                  }
-                },
+              wildcard: {
+                [R.head(arrayKeys)]: '*'
               }
             },
             {
