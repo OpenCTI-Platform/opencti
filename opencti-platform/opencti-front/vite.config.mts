@@ -156,7 +156,7 @@ logger.error = (msg, options) => {
 const basePath = "";
 
 const backProxy = (ws = false) => ({
-  target: "http://localhost:4000",
+  target: "http://opencti-raw-start:4100",
   changeOrigin: true,
   ws,
 })
