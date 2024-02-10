@@ -7,7 +7,7 @@ import { useFormatter } from '../../../components/i18n';
 import WidgetLoader from '../../../components/dashboard/WidgetLoader';
 import WidgetNumber from '../../../components/dashboard/WidgetNumber';
 import WidgetNoData from '../../../components/dashboard/WidgetNoData';
-import type { PublicManifestWidget } from './PublicManifest';
+import type { PublicWidgetContainerProps } from './publicWidgetContainerProps';
 
 const publicStixCoreObjectsNumberQuery = graphql`
   query PublicStixCoreObjectsNumberQuery(
@@ -47,19 +47,13 @@ const PublicStixCoreObjectsNumberComponent = ({
   return <WidgetNoData />;
 };
 
-interface PublicStixCoreObjectsNumberProps {
-  startDate: string | null | undefined
-  endDate: string | null | undefined
-  uriKey: string
-  widget: PublicManifestWidget
-}
-
 const PublicStixCoreObjectsNumber = ({
   uriKey,
   widget,
   startDate,
   endDate,
-}: PublicStixCoreObjectsNumberProps) => {
+  title,
+}: PublicWidgetContainerProps) => {
   const { t_i18n } = useFormatter();
   const { id, parameters } = widget;
   const queryRef = useQueryLoading<PublicStixCoreObjectsNumberQuery>(
@@ -74,7 +68,7 @@ const PublicStixCoreObjectsNumber = ({
 
   return (
     <WidgetContainer
-      title={parameters.title ?? t_i18n('Entities number')}
+      title={parameters.title ?? title ?? t_i18n('Entities number')}
       variant="inLine"
     >
       {queryRef ? (

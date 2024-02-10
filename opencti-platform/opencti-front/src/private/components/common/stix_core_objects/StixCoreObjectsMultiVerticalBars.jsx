@@ -69,7 +69,7 @@ const StixCoreObjectsMultiVerticalBars = ({
             return (
               <WidgetVerticalBars
                 series={dataSelection.map((selection, i) => ({
-                  name: selection.label ?? t_i18n('Number of entities'),
+                  name: selection.label || t_i18n('Number of entities'),
                   data: props.stixCoreObjectsMultiTimeSeries[i].data.map(
                     (entry) => ({
                       x: new Date(entry.date),

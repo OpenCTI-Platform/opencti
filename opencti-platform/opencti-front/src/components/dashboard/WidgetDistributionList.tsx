@@ -65,7 +65,7 @@ const WidgetDistributionList = ({
                       ? '#000000'
                       : entry.color
                   }
-                  type={entry.type}
+                  type={entry.id ? entry.type : 'default'}
                 />
               </ListItemIcon>
               <ListItemText

@@ -106,7 +106,7 @@ const AuditsMultiHeatMap = ({
           if (props && props.auditsMultiTimeSeries) {
             const chartData = dataSelection
               .map((selection, i) => ({
-                name: selection.label ?? t_i18n('Number of history entries'),
+                name: selection.label || t_i18n('Number of history entries'),
                 data: props.auditsMultiTimeSeries[i].data.map((entry) => ({
                   x: new Date(entry.date),
                   y: entry.value,

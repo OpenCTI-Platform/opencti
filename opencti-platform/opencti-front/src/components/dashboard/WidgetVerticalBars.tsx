@@ -9,7 +9,7 @@ import { useFormatter } from '../i18n';
 
 interface WidgetVerticalBarsProps {
   series: ApexAxisChartSeries
-  interval: string
+  interval?: string
   isStacked?: boolean
   hasLegend?: boolean
   withExport?: boolean

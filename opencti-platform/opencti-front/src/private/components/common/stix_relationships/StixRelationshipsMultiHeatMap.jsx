@@ -70,7 +70,7 @@ const StixRelationshipsMultiHeatMap = ({
           if (props && props.stixRelationshipsMultiTimeSeries) {
             const chartData = dataSelection
               .map((selection, i) => ({
-                name: selection.label ?? t_i18n('Number of relationships'),
+                name: selection.label || t_i18n('Number of relationships'),
                 data: props.stixRelationshipsMultiTimeSeries[i].data.map(
                   (entry) => ({
                     x: new Date(entry.date),

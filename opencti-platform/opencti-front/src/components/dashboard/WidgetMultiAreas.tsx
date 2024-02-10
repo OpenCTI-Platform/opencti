@@ -9,7 +9,7 @@ import { simpleNumberFormat } from '../../utils/Number';
 
 interface WidgetMultiAreasProps {
   series: ApexAxisChartSeries
-  interval: string
+  interval?: string
   isStacked?: boolean
   hasLegend?: boolean
   withExport?: boolean

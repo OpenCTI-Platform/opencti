@@ -49,6 +49,8 @@ const WidgetListCoreObjects = ({
       <List style={{ marginTop: -10 }}>
         {data.map((stixCoreObjectEdge) => {
           const stixCoreObject = stixCoreObjectEdge.node;
+          const date = stixCoreObject[dateAttribute];
+
           return (
             <ListItem
               key={stixCoreObject.id}
@@ -72,7 +74,7 @@ const WidgetListCoreObjects = ({
                       {defaultValue(stixCoreObject)}
                     </div>
                     <div style={bodyItemStyle('10%')}>
-                      {fsd(stixCoreObject[dateAttribute])}
+                      {fsd(date)}
                     </div>
                     <div style={bodyItemStyle('15%')}>
                       {R.pathOr(

@@ -11,17 +11,14 @@ import { elLoadById } from '../../database/engine';
 
 interface WidgetArguments {
   user: AuthUser,
-  dateAttribute?: string,
-  config: any,
-  filters?: any,
-  timeSeriesParameters?: any
+  dataSelection: any,
+  parameters: any,
 }
 
 export const getWidgetArguments = async (
   context: AuthContext,
   uriKey: string,
   widgetId: string,
-  multiTime = false,
 ): Promise<WidgetArguments> => {
   // Get publicDashboard from cache
   const publicDashboardsMapByUriKey = await getEntitiesMapFromCache<PublicDashboardCached>(context, SYSTEM_USER, ENTITY_TYPE_PUBLIC_DASHBOARD);
@@ -53,37 +50,12 @@ export const getWidgetArguments = async (
   };
 
   // Get widget query configuration
-  const { widgets, config } = private_manifest;
-
-  // if multiTimeSerie
-  if (multiTime) {
-    const { dataSelection } = widgets[widgetId];
-    const timeSeriesParameters = dataSelection.map((selection: { filters: any; date_attribute: any; }) => {
-      const filters = {
-        filterGroups: [selection.filters],
-        filters: [],
-        mode: 'and'
-      };
-      return {
-        field: selection.date_attribute,
-        filters,
-      };
-    });
-
-    return { user, config, timeSeriesParameters };
-  }
-
-  const widgetConfig = widgets[widgetId].dataSelection[0];
-  const filters = {
-    filterGroups: [widgetConfig.filters],
-    filters: [],
-    mode: 'and'
-  };
+  const { widgets } = private_manifest;
+  const { dataSelection, parameters } = widgets[widgetId];
 
   return {
     user,
-    config,
-    filters,
-    dateAttribute: widgetConfig.date_attribute
+    parameters,
+    dataSelection
   };
 };

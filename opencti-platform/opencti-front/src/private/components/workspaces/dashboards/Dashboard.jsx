@@ -693,23 +693,13 @@ const DashboardComponent = ({ workspace, noToolbar }) => {
         return 'Not implemented yet';
     }
   };
-  const renderRawVisualization = (widget, config) => {
-    const { relativeDate } = config;
-    const startDate = relativeDate
-      ? computerRelativeDate(relativeDate)
-      : config.startDate;
-    const endDate = relativeDate ? getDayStartDate() : config.endDate;
+  const renderRawVisualization = (widget) => {
     switch (widget.type) {
       case 'text':
         return (
           <WidgetText
-            startDate={startDate}
-            endDate={endDate}
-            dataSelection={widget.dataSelection}
             parameters={widget.parameters}
             variant="inLine"
-            withExportPopover={true}
-            isReadOnly={!isWrite}
           />
         );
       default:

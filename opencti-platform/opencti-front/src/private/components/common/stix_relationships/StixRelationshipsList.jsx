@@ -3926,6 +3926,9 @@ const stixRelationshipsListQuery = graphql`
             ... on City {
               name
             }
+            ... on AdministrativeArea {
+              name
+            }
             ... on Country {
               name
             }

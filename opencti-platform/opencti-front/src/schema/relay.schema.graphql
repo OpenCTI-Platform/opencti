@@ -7390,8 +7390,15 @@ type Query {
   publicDashboard(id: String!): PublicDashboard
   publicDashboards(first: Int, after: ID, orderBy: PublicDashboardsOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): PublicDashboardConnection
   publicDashboardByUriKey(uri_key: String!): PublicDashboard
-  publicStixCoreObjectsNumber(startDate: DateTime, endDate: DateTime, uriKey: String!, widgetId: String!): Number
-  publicStixCoreObjectsMultiTimeSeries(startDate: DateTime!, endDate: DateTime, uriKey: String!, widgetId: String!): [MultiTimeSeries]
+  publicStixCoreObjectsNumber(uriKey: String!, widgetId: String!, startDate: DateTime, endDate: DateTime): Number
+  publicStixRelationshipsNumber(uriKey: String!, widgetId: String!, startDate: DateTime, endDate: DateTime): Number
+  publicStixCoreObjectsMultiTimeSeries(uriKey: String!, widgetId: String!, startDate: DateTime, endDate: DateTime): [MultiTimeSeries]
+  publicStixRelationshipsMultiTimeSeries(uriKey: String!, widgetId: String!, startDate: DateTime, endDate: DateTime): [MultiTimeSeries]
+  publicStixCoreObjectsDistribution(uriKey: String!, widgetId: String!, startDate: DateTime, endDate: DateTime): [Distribution]
+  publicStixRelationshipsDistribution(uriKey: String!, widgetId: String!, startDate: DateTime, endDate: DateTime): [Distribution]
+  publicBookmarks(uriKey: String!, widgetId: String!, startDate: DateTime, endDate: DateTime): StixDomainObjectConnection
+  publicStixCoreObjects(uriKey: String!, widgetId: String!, startDate: DateTime, endDate: DateTime): StixCoreObjectConnection
+  publicStixRelationships(uriKey: String!, widgetId: String!, startDate: DateTime, endDate: DateTime): StixRelationshipConnection
 }
 
 type Subscription {

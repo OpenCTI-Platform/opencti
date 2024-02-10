@@ -11,6 +11,7 @@ import { rootPublicQuery } from './LoginRoot';
 import { LoginRootPublicQuery } from './__generated__/LoginRootPublicQuery.graphql';
 import PublicDataSharing from './components/PublicDataSharing';
 import PublicDashboard from './components/PublicDashboard';
+import PublicSettingsProvider from './PublicSettingsProvider';
 
 const queryRef = loadQuery<LoginRootPublicQuery>(
   environment,
@@ -24,17 +25,19 @@ const PublicRoot = () => {
     queryRef,
   );
   return (
-    <StyledEngineProvider injectFirst={true}>
-      <ConnectedThemeProvider settings={settings}>
-        <CssBaseline />
-        <ConnectedIntlProvider settings={settings}>
-          <Switch>
-            <BoundaryRoute exact path="/public" component={PublicDataSharing} />
-            <BoundaryRoute exact path="/public/dashboard/:uriKey" component={PublicDashboard} />
-          </Switch>
-        </ConnectedIntlProvider>
-      </ConnectedThemeProvider>
-    </StyledEngineProvider>
+    <PublicSettingsProvider settings={settings}>
+      <StyledEngineProvider injectFirst={true}>
+        <ConnectedThemeProvider settings={settings}>
+          <CssBaseline />
+          <ConnectedIntlProvider settings={settings}>
+            <Switch>
+              <BoundaryRoute exact path="/public" component={PublicDataSharing} />
+              <BoundaryRoute exact path="/public/dashboard/:uriKey" component={PublicDashboard} />
+            </Switch>
+          </ConnectedIntlProvider>
+        </ConnectedThemeProvider>
+      </StyledEngineProvider>
+    </PublicSettingsProvider>
   );
 };
 

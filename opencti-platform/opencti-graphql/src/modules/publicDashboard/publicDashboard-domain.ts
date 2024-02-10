@@ -13,7 +13,14 @@ import type {
   PublicDashboardAddInput,
   QueryPublicDashboardsArgs,
   QueryPublicStixCoreObjectsNumberArgs,
-  QueryPublicStixCoreObjectsMultiTimeSeriesArgs
+  QueryPublicStixCoreObjectsMultiTimeSeriesArgs,
+  QueryPublicStixRelationshipsMultiTimeSeriesArgs,
+  QueryPublicStixRelationshipsNumberArgs,
+  QueryPublicStixCoreObjectsDistributionArgs,
+  QueryPublicStixRelationshipsDistributionArgs,
+  QueryPublicBookmarksArgs,
+  QueryPublicStixCoreObjectsArgs,
+  QueryPublicStixRelationshipsArgs,
 } from '../../generated/graphql';
 import { FunctionalError, UnsupportedError } from '../../config/errors';
 import { SYSTEM_USER } from '../../utils/access';
@@ -23,8 +30,10 @@ import { ENTITY_TYPE_MARKING_DEFINITION } from '../../schema/stixMetaObject';
 import { getEntitiesMapFromCache } from '../../database/cache';
 import type { NumberResult, StoreMarkingDefinition } from '../../types/store';
 import { getWidgetArguments } from './publicDashboard-utils';
-import { stixCoreObjectsMultiTimeSeries, stixCoreObjectsNumber } from '../../domain/stixCoreObject';
+import { stixCoreObjectsDistribution, stixCoreObjectsMultiTimeSeries, stixCoreObjectsNumber, findAll as stixCoreObjects } from '../../domain/stixCoreObject';
 import { ABSTRACT_STIX_CORE_OBJECT } from '../../schema/general';
+import { stixRelationshipsDistribution, stixRelationshipsMultiTimeSeries, stixRelationshipsNumber, findAll as stixRelationships } from '../../domain/stixRelationship';
+import { bookmarks } from '../../domain/user';
 
 export const findById = (
   context: AuthContext,
@@ -102,10 +111,21 @@ export const addPublicDashboard = async (
   }
 
   const parsedManifest = JSON.parse(fromBase64(dashboard.manifest) ?? '{}');
-  // Removing the "dataSelection" key
   if (parsedManifest && isNotEmptyField(parsedManifest.widgets)) {
     Object.keys(parsedManifest.widgets).forEach((widgetId) => {
-      delete parsedManifest.widgets[widgetId].dataSelection;
+      parsedManifest.widgets[widgetId].dataSelection = parsedManifest
+        .widgets[widgetId]
+        .dataSelection.map((selection: any) => {
+          return {
+            ...(selection.label && { label: selection.label }),
+            ...(selection.attribute && { attribute: selection.attribute }),
+            ...(selection.date_attribute && { date_attribute: selection.date_attribute }),
+            ...(selection.number && { number: selection.number }),
+            ...(selection.centerLat && { centerLat: selection.centerLat }),
+            ...(selection.centerLng && { centerLng: selection.centerLng }),
+            ...(selection.zoom && { zoom: selection.zoom }),
+          };
+        });
     });
   }
 
@@ -207,16 +227,27 @@ export const publicDashboardDelete = async (context: AuthContext, user: AuthUser
   return notify(BUS_TOPICS[ENTITY_TYPE_PUBLIC_DASHBOARD].DELETE_TOPIC, deleted, user).then(() => id);
 };
 
-// Widgets Public API
+// region Widgets Public API
 
-// Heatmap
+// heatmap & vertical-bar & line & area
 export const publicStixCoreObjectsMultiTimeSeries = async (context: AuthContext, args: QueryPublicStixCoreObjectsMultiTimeSeriesArgs) => {
-  const { user, config, timeSeriesParameters } = await getWidgetArguments(context, args.uriKey, args.widgetId, true);
+  const { user, parameters, dataSelection } = await getWidgetArguments(context, args.uriKey, args.widgetId);
+  const timeSeriesParameters = dataSelection.map((selection: { filters: any; date_attribute: any; }) => {
+    const filters = {
+      filterGroups: [selection.filters],
+      filters: [],
+      mode: 'and'
+    };
+    return {
+      field: selection.date_attribute,
+      filters,
+    };
+  });
 
   const standardArgs = {
     startDate: args.startDate,
     endDate: args.endDate,
-    interval: config.interval,
+    interval: parameters?.interval ?? 'day',
     timeSeriesParameters
   };
 
@@ -224,20 +255,50 @@ export const publicStixCoreObjectsMultiTimeSeries = async (context: AuthContext,
   return stixCoreObjectsMultiTimeSeries(context, user, standardArgs);
 };
 
-// Number
+export const publicStixRelationshipsMultiTimeSeries = async (
+  context: AuthContext,
+  args: QueryPublicStixRelationshipsMultiTimeSeriesArgs,
+) => {
+  const { user, parameters, dataSelection } = await getWidgetArguments(context, args.uriKey, args.widgetId);
+  const timeSeriesParameters = dataSelection.map((selection: { filters: any; date_attribute: any; }) => {
+    const filters = {
+      filterGroups: [selection.filters],
+      filters: [],
+      mode: 'and'
+    };
+    return {
+      field: selection.date_attribute,
+      filters,
+    };
+  });
+
+  const standardArgs = {
+    operation: 'count',
+    startDate: args.startDate,
+    endDate: args.endDate,
+    interval: parameters?.interval ? parameters?.interval : 'month',
+    timeSeriesParameters
+  };
+
+  // Use standard API
+  return stixRelationshipsMultiTimeSeries(context, user, standardArgs);
+};
+
+// number
 export const publicStixCoreObjectsNumber = async (
   context: AuthContext,
   args: QueryPublicStixCoreObjectsNumberArgs
 ): Promise<NumberResult> => {
-  const { user, config, filters, dateAttribute } = await getWidgetArguments(context, args.uriKey, args.widgetId);
+  const { user, dataSelection } = await getWidgetArguments(context, args.uriKey, args.widgetId);
+
+  const selection = dataSelection[0];
+  const { filters } = selection;
 
   const parameters = {
-    dateAttribute,
+    dateAttribute: selection.date_attribute,
     startDate: args.startDate,
     endDate: args.endDate,
     filters,
-    onlyInferred: config.onlyInferred,
-    search: config.search,
     types: [
       ABSTRACT_STIX_CORE_OBJECT,
     ]
@@ -246,3 +307,150 @@ export const publicStixCoreObjectsNumber = async (
   // Use standard API
   return stixCoreObjectsNumber(context, user, parameters) as unknown as Promise<NumberResult>;
 };
+
+export const publicStixRelationshipsNumber = async (
+  context: AuthContext,
+  args: QueryPublicStixRelationshipsNumberArgs
+): Promise<NumberResult> => {
+  const { user, dataSelection } = await getWidgetArguments(context, args.uriKey, args.widgetId);
+
+  const selection = dataSelection[0];
+  const { filters } = selection;
+
+  const parameters = {
+    startDate: args.startDate,
+    endDate: args.endDate,
+    filters,
+    dateAttribute: selection.date_attribute,
+    dynamicFrom: selection.dynamicFrom,
+    dynamicTo: selection.dynamicTo,
+  };
+
+  // Use standard API
+  return stixRelationshipsNumber(context, user, parameters) as unknown as Promise<NumberResult>;
+};
+
+// donut & horizontal-bar & distribution-list & radar & tree
+export const publicStixCoreObjectsDistribution = async (
+  context: AuthContext,
+  args: QueryPublicStixCoreObjectsDistributionArgs
+) => {
+  const { user, dataSelection } = await getWidgetArguments(context, args.uriKey, args.widgetId);
+
+  const selection = dataSelection[0];
+  const { filters } = selection;
+
+  const parameters = {
+    startDate: args.startDate,
+    endDate: args.endDate,
+    filters,
+    toTypes: selection.toTypes,
+    field: selection.attribute,
+    dateAttribute: selection.date_attribute || 'created_at',
+    operation: 'count',
+    limit: selection.number ?? 10,
+    types: [
+      ABSTRACT_STIX_CORE_OBJECT,
+    ],
+  };
+
+  // Use standard API
+  return stixCoreObjectsDistribution(context, user, parameters);
+};
+
+export const publicStixRelationshipsDistribution = async (
+  context: AuthContext,
+  args: QueryPublicStixRelationshipsDistributionArgs
+) => {
+  const { user, dataSelection } = await getWidgetArguments(context, args.uriKey, args.widgetId);
+  context.user = user;
+
+  const selection = dataSelection[0];
+  const { filters } = selection;
+
+  const parameters = {
+    operation: 'count',
+    field: selection.attribute || 'entity_type', // TODO check for StixRelationshipsDonut
+    startDate: args.startDate,
+    endDate: args.endDate,
+    filters,
+    dynamicFrom: selection.dynamicFrom,
+    dynamicTo: selection.dynamicTo,
+    dateAttribute: selection.date_attribute,
+    isTo: selection.isTo,
+    limit: selection.number ?? 10,
+  };
+
+  // Use standard API
+  return stixRelationshipsDistribution(context, user, parameters);
+};
+
+// bookmarks
+export const publicBookmarks = async (
+  context: AuthContext,
+  args: QueryPublicBookmarksArgs
+) => {
+  const { user, dataSelection } = await getWidgetArguments(context, args.uriKey, args.widgetId);
+
+  const selection = dataSelection[0];
+  const { filters } = selection;
+
+  const parameters = {
+    filters
+  };
+
+  // Use standard API
+  return bookmarks(context, user, parameters);
+};
+
+// list & timeline
+export const publicStixCoreObjects = async (
+  context: AuthContext,
+  args: QueryPublicStixCoreObjectsArgs
+) => {
+  const { user, dataSelection } = await getWidgetArguments(context, args.uriKey, args.widgetId);
+  context.user = user; // context.user is used in standard api
+  const selection = dataSelection[0];
+  const { filters } = selection;
+
+  const parameters = {
+    startDate: args.startDate,
+    endDate: args.endDate,
+    types: [
+      ABSTRACT_STIX_CORE_OBJECT,
+    ],
+    filters,
+    orderBy: selection.date_attribute,
+    orderMode: 'desc',
+    first: selection.number ?? 10,
+  };
+
+  // Use standard API
+  return stixCoreObjects(context, user, parameters);
+};
+
+export const publicStixRelationships = async (
+  context: AuthContext,
+  args: QueryPublicStixRelationshipsArgs
+) => {
+  const { user, dataSelection } = await getWidgetArguments(context, args.uriKey, args.widgetId);
+  context.user = user;
+
+  const selection = dataSelection[0];
+  const { filters } = selection;
+
+  const parameters = {
+    startDate: args.startDate,
+    endDate: args.endDate,
+    filters,
+    dynamicFrom: selection.dynamicFrom,
+    dynamicTo: selection.dynamicTo,
+    orderBy: selection.date_attribute,
+    orderMode: 'desc',
+    first: 50,
+  };
+
+  // Use standard API
+  return stixRelationships(context, user, parameters);
+};
+// endregion

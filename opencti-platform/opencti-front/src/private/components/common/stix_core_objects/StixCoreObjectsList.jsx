@@ -8,35 +8,6 @@ import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
 import WidgetLoader from '../../../../components/dashboard/WidgetLoader';
 import WidgetListCoreObjects from '../../../../components/dashboard/WidgetListCoreObjects';
 
-const useStyles = makeStyles({
-  container: {
-    width: '100%',
-    height: '100%',
-    overflow: 'auto',
-    paddingBottom: 10,
-    marginBottom: 10,
-  },
-  paper: {
-    height: '100%',
-    margin: '10px 0 0 0',
-    padding: 0,
-    borderRadius: 4,
-  },
-  item: {
-    paddingLeft: 10,
-    height: 50,
-  },
-  bodyItem: {
-    height: 20,
-    fontSize: 13,
-    float: 'left',
-    whiteSpace: 'nowrap',
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-    paddingRight: 10,
-  },
-});
-
 const stixCoreObjectsListQuery = graphql`
   query StixCoreObjectsListQuery(
     $types: [String]

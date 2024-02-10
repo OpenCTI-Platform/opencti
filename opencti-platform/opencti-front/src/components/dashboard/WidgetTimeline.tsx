@@ -16,7 +16,7 @@ import { itemColor } from '../../utils/Colors';
 import { useFormatter } from '../i18n';
 
 interface WidgetTimelineProps {
-  data: { value: any, link: string }[]
+  data: { value: any, link?: string }[]
 }
 
 const WidgetTimeline = ({ data }: WidgetTimelineProps) => {
@@ -42,7 +42,17 @@ const WidgetTimeline = ({ data }: WidgetTimelineProps) => {
                 {fldt(value.created)}
               </TimelineOppositeContent>
               <TimelineSeparator>
-                <Link to={link}>
+                {link ? (
+                  <Link to={link}>
+                    <TimelineDot
+                      sx={{ borderColor: itemColor(value.entity_type) }}
+                      variant="outlined"
+                      className="noDrag"
+                    >
+                      <ItemIcon type={value.entity_type} />
+                    </TimelineDot>
+                  </Link>
+                ) : (
                   <TimelineDot
                     sx={{ borderColor: itemColor(value.entity_type) }}
                     variant="outlined"
@@ -50,7 +60,7 @@ const WidgetTimeline = ({ data }: WidgetTimelineProps) => {
                   >
                     <ItemIcon type={value.entity_type} />
                   </TimelineDot>
-                </Link>
+                )}
                 <TimelineConnector />
               </TimelineSeparator>
               <TimelineContent>

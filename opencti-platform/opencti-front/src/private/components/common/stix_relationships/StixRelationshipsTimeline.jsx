@@ -1079,12 +1079,15 @@ const StixRelationshipsTimeline = ({
               const restricted = stixRelationship.from === null
                 || stixRelationship.to === null;
               const link = restricted
-                ? null
+                ? undefined
                 : `${resolveLink(remoteNode.entity_type)}/${
                   remoteNode.id
                 }/knowledge/relations/${stixRelationship.id}`;
               return {
-                value: remoteNode,
+                value: {
+                  ...remoteNode,
+                  created: stixRelationship.created,
+                },
                 link,
               };
             });

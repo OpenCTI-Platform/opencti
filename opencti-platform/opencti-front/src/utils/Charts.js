@@ -342,6 +342,19 @@ export const verticalBarsChartOptions = (
   },
 });
 
+/**
+ * @param {Theme} theme
+ * @param {boolean} adjustTicks
+ * @param {function} xFormatter
+ * @param {function} yFormatter
+ * @param {boolean} distributed
+ * @param {function} navigate
+ * @param {object[]} redirectionUtils
+ * @param {boolean} stacked
+ * @param {boolean} total
+ * @param {string[]} categories
+ * @param {boolean} legend
+ */
 export const horizontalBarsChartOptions = (
   theme,
   adjustTicks = false,

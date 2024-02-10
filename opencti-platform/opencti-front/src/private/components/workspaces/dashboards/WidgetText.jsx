@@ -1,19 +1,8 @@
 import React from 'react';
-import Paper from '@mui/material/Paper';
-import makeStyles from '@mui/styles/makeStyles';
 import MarkdownDisplay from '../../../../components/MarkdownDisplay';
+import WidgetContainer from '../../../../components/dashboard/WidgetContainer';
 
-const useStyles = makeStyles(() => ({
-  paper: {
-    height: '100%',
-    margin: '10px 0 0 0',
-    padding: 0,
-    borderRadius: 4,
-  },
-}));
-
-const WidgetText = ({ variant, height, parameters = {} }) => {
-  const classes = useStyles();
+const WidgetText = ({ variant, height = undefined, parameters = {} }) => {
   const renderContent = () => {
     return (
       <MarkdownDisplay
@@ -24,20 +13,13 @@ const WidgetText = ({ variant, height, parameters = {} }) => {
     );
   };
   return (
-    <div
-      style={{
-        height: height || '100%',
-        marginTop: variant === 'inLine' ? -20 : 0,
-      }}
+    <WidgetContainer
+      height={height}
+      variant={variant}
+      withoutTitle
     >
-      {variant !== 'inLine' ? (
-        <Paper classes={{ root: classes.paper }} variant="outlined">
-          {renderContent()}
-        </Paper>
-      ) : (
-        renderContent()
-      )}
-    </div>
+      {renderContent()}
+    </WidgetContainer>
   );
 };
 

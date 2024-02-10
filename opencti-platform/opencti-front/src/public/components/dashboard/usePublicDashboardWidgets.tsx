@@ -1,7 +1,33 @@
 import React from 'react';
+import WidgetText from '@components/workspaces/dashboards/WidgetText';
 import type { PublicManifestConfig, PublicManifestWidget } from './PublicManifest';
 import { computerRelativeDate, dayStartDate, formatDate } from '../../../utils/Time';
 import PublicStixCoreObjectsNumber from './PublicStixCoreObjectsNumber';
+import PublicStixCoreObjectsList from './PublicStixCoreObjectsList';
+import PublicStixCoreObjectsDistributionList from './PublicStixCoreObjectsDistributionList';
+import PublicStixCoreObjectsMultiVerticalBars from './PublicStixCoreObjectsMultiVerticalBars';
+import PublicStixCoreObjectsMultiLineChart from './PublicStixCoreObjectsMultiLineChart';
+import PublicStixCoreObjectsMultiAreaChart from './PublicStixCoreObjectsMultiAreaChart';
+import PublicStixCoreObjectsTimeline from './PublicStixCoreObjectsTimeline';
+import PublicStixCoreObjectsDonut from './PublicStixCoreObjectsDonut';
+import PublicStixCoreObjectsRadar from './PublicStixCoreObjectsRadar';
+import PublicStixCoreObjectsMultiHeatMap from './PublicStixCoreObjectsMultiHeatMap';
+import PublicStixCoreObjectsTreeMap from './PublicStixCoreObjectsTreeMap';
+import PublicStixCoreRelationshipsNumber from './PublicStixRelationshipsNumber';
+import PublicStixRelationshipsList from './PublicStixRelationshipsList';
+import PublicStixRelationshipsDistributionList from './PublicStixRelationshipsDistributionList';
+import PublicStixRelationshipsMultiVerticalBars from './PublicStixRelationshipsMultiVerticalBars';
+import PublicStixRelationshipsMultiLineChart from './PublicStixRelationshipsMultiLineChart';
+import PublicStixRelationshipsMultiAreaChart from './PublicStixRelationshipsMultiAreaChart';
+import PublicStixRelationshipsTimeline from './PublicStixRelationshipsTimeline';
+import PublicStixRelationshipsDonut from './PublicStixRelationshipsDonut';
+import PublicStixRelationshipsRadar from './PublicStixRelationshipsRadar';
+import PublicStixRelationshipsMultiHeatMap from './PublicStixRelationshipsMultiHeatMap';
+import PublicStixRelationshipsTreeMap from './PublicStixRelationshipsTreeMap';
+import PublicStixRelationshipsMap from './PublicStixRelationshipsMap';
+import PublicStixCoreObjectsHorizontalBars from './PublicStixCoreObjectsHorizontalBars';
+import PublicStixRelationshipsHorizontalBars from './PublicStixRelationshipsHorizontalBars';
+import PublicStixDomainObjectBookmarksList from './PublicStixDomainObjectBookmarksList';
 
 const usePublicDashboardWidgets = (uriKey: string, config?: PublicManifestConfig) => {
   const startDate = config?.relativeDate ? computerRelativeDate(config.relativeDate) : config?.startDate;
@@ -10,7 +36,12 @@ const usePublicDashboardWidgets = (uriKey: string, config?: PublicManifestConfig
   const entityWidget = (widget: PublicManifestWidget) => {
     switch (widget.type) {
       case 'bookmark':
-        return 'Not implemented yet';
+        return (
+          <PublicStixDomainObjectBookmarksList
+            uriKey={uriKey}
+            widget={widget}
+          />
+        );
       case 'number':
         return (
           <PublicStixCoreObjectsNumber
@@ -21,27 +52,108 @@ const usePublicDashboardWidgets = (uriKey: string, config?: PublicManifestConfig
           />
         );
       case 'list':
-        return 'Not implemented yet';
+        return (
+          <PublicStixCoreObjectsList
+            startDate={startDate}
+            endDate={endDate}
+            uriKey={uriKey}
+            widget={widget}
+          />
+        );
       case 'distribution-list':
-        return 'Not implemented yet';
+        return (
+          <PublicStixCoreObjectsDistributionList
+            startDate={startDate}
+            endDate={endDate}
+            uriKey={uriKey}
+            widget={widget}
+          />
+        );
       case 'vertical-bar':
-        return 'Not implemented yet';
+        return (
+          <PublicStixCoreObjectsMultiVerticalBars
+            startDate={startDate}
+            endDate={endDate}
+            uriKey={uriKey}
+            widget={widget}
+          />
+        );
       case 'line':
-        return 'Not implemented yet';
+        return (
+          <PublicStixCoreObjectsMultiLineChart
+            startDate={startDate}
+            endDate={endDate}
+            uriKey={uriKey}
+            widget={widget}
+          />
+        );
       case 'area':
-        return 'Not implemented yet';
+        return (
+          <PublicStixCoreObjectsMultiAreaChart
+            startDate={startDate}
+            endDate={endDate}
+            uriKey={uriKey}
+            widget={widget}
+          />
+        );
       case 'timeline':
-        return 'Not implemented yet';
+        return (
+          <PublicStixCoreObjectsTimeline
+            startDate={startDate}
+            endDate={endDate}
+            uriKey={uriKey}
+            widget={widget}
+          />
+        );
       case 'donut':
-        return 'Not implemented yet';
+        return (
+          <PublicStixCoreObjectsDonut
+            startDate={startDate}
+            endDate={endDate}
+            uriKey={uriKey}
+            widget={widget}
+          />
+        );
       case 'horizontal-bar':
-        return 'Not implemented yet';
+        if (false) {
+          // TODO implement multi horizontal bars with breakdowns
+          return 'Not implemented yet';
+        }
+        return (
+          <PublicStixCoreObjectsHorizontalBars
+            startDate={startDate}
+            endDate={endDate}
+            uriKey={uriKey}
+            widget={widget}
+          />
+        );
       case 'radar':
-        return 'Not implemented yet';
+        return (
+          <PublicStixCoreObjectsRadar
+            startDate={startDate}
+            endDate={endDate}
+            uriKey={uriKey}
+            widget={widget}
+          />
+        );
       case 'heatmap':
-        return 'Not implemented yet';
+        return (
+          <PublicStixCoreObjectsMultiHeatMap
+            startDate={startDate}
+            endDate={endDate}
+            uriKey={uriKey}
+            widget={widget}
+          />
+        );
       case 'tree':
-        return 'Not implemented yet';
+        return (
+          <PublicStixCoreObjectsTreeMap
+            startDate={startDate}
+            endDate={endDate}
+            uriKey={uriKey}
+            widget={widget}
+          />
+        );
       default:
         return 'Not implemented yet';
     }
@@ -50,31 +162,126 @@ const usePublicDashboardWidgets = (uriKey: string, config?: PublicManifestConfig
   const relationshipWidget = (widget: PublicManifestWidget) => {
     switch (widget.type) {
       case 'number':
-        return 'Not implemented yet';
+        return (
+          <PublicStixCoreRelationshipsNumber
+            startDate={startDate}
+            endDate={endDate}
+            uriKey={uriKey}
+            widget={widget}
+          />
+        );
       case 'list':
-        return 'Not implemented yet';
+        return (
+          <PublicStixRelationshipsList
+            startDate={startDate}
+            endDate={endDate}
+            uriKey={uriKey}
+            widget={widget}
+          />
+        );
       case 'distribution-list':
-        return 'Not implemented yet';
+        return (
+          <PublicStixRelationshipsDistributionList
+            startDate={startDate}
+            endDate={endDate}
+            uriKey={uriKey}
+            widget={widget}
+          />
+        );
       case 'vertical-bar':
-        return 'Not implemented yet';
+        return (
+          <PublicStixRelationshipsMultiVerticalBars
+            startDate={startDate}
+            endDate={endDate}
+            uriKey={uriKey}
+            widget={widget}
+          />
+        );
       case 'line':
-        return 'Not implemented yet';
+        return (
+          <PublicStixRelationshipsMultiLineChart
+            startDate={startDate}
+            endDate={endDate}
+            uriKey={uriKey}
+            widget={widget}
+          />
+        );
       case 'area':
-        return 'Not implemented yet';
+        return (
+          <PublicStixRelationshipsMultiAreaChart
+            startDate={startDate}
+            endDate={endDate}
+            uriKey={uriKey}
+            widget={widget}
+          />
+        );
       case 'timeline':
-        return 'Not implemented yet';
+        return (
+          <PublicStixRelationshipsTimeline
+            startDate={startDate}
+            endDate={endDate}
+            uriKey={uriKey}
+            widget={widget}
+          />
+        );
       case 'donut':
-        return 'Not implemented yet';
+        return (
+          <PublicStixRelationshipsDonut
+            startDate={startDate}
+            endDate={endDate}
+            uriKey={uriKey}
+            widget={widget}
+          />
+        );
       case 'horizontal-bar':
-        return 'Not implemented yet';
+        if (false) {
+          // TODO implement multi horizontal bars with breakdowns
+          return 'Not implemented yet';
+        }
+        return (
+          <PublicStixRelationshipsHorizontalBars
+            startDate={startDate}
+            endDate={endDate}
+            uriKey={uriKey}
+            widget={widget}
+          />
+        );
       case 'radar':
-        return 'Not implemented yet';
+        return (
+          <PublicStixRelationshipsRadar
+            startDate={startDate}
+            endDate={endDate}
+            uriKey={uriKey}
+            widget={widget}
+          />
+        );
       case 'heatmap':
-        return 'Not implemented yet';
+        return (
+          <PublicStixRelationshipsMultiHeatMap
+            startDate={startDate}
+            endDate={endDate}
+            uriKey={uriKey}
+            widget={widget}
+          />
+        );
       case 'tree':
-        return 'Not implemented yet';
+        return (
+          <PublicStixRelationshipsTreeMap
+            startDate={startDate}
+            endDate={endDate}
+            uriKey={uriKey}
+            widget={widget}
+          />
+        );
       case 'map':
-        return 'Not implemented yet';
+        return (
+          <PublicStixRelationshipsMap
+            startDate={startDate}
+            endDate={endDate}
+            uriKey={uriKey}
+            widget={widget}
+          />
+        );
       default:
         return 'Not implemented yet';
     }
@@ -83,7 +290,12 @@ const usePublicDashboardWidgets = (uriKey: string, config?: PublicManifestConfig
   const rawWidget = (widget: PublicManifestWidget) => {
     switch (widget.type) {
       case 'text':
-        return 'Not implemented yet';
+        return (
+          <WidgetText
+            parameters={widget.parameters}
+            variant="inLine"
+          />
+        );
       default:
         return 'Not implemented yet';
     }

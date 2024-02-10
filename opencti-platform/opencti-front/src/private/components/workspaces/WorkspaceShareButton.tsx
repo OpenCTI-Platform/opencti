@@ -106,7 +106,7 @@ const WorkspaceShareButton = ({ workspaceId }: WorkspaceShareButtonProps) => {
           deletion.setDeleting(false);
           deletion.handleCloseDelete();
           idToDelete.current = undefined;
-          fetchList({}, { fetchPolicy: 'network-only' });
+          fetchWithFilters({ fetchPolicy: 'network-only' });
         },
       });
     }

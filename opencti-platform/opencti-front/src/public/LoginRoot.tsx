@@ -28,6 +28,7 @@ export const rootPublicQuery = graphql`
       }
       ...AppThemeProvider_settings
       ...AppIntlProvider_settings
+      ...PublicSettingsProvider_settings
     }
   }
 `;

@@ -73,7 +73,7 @@ const StixRelationshipsMultiAreaChart = ({
             return (
               <WidgetMultiAreas
                 series={dataSelection.map((selection, i) => ({
-                  name: selection.label ?? t_i18n('Number of entities'),
+                  name: selection.label || t_i18n('Number of entities'),
                   data: props.stixRelationshipsMultiTimeSeries[i].data.map(
                     (entry) => ({
                       x: new Date(entry.date),

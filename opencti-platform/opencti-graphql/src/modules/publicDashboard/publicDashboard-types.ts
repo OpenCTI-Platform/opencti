@@ -39,7 +39,7 @@ export interface PublicDashboardCached {
   internal_id: string;
   uri_key: string;
   dashboard_id: string;
-  private_manifest: { widgets:any, config: any };
+  private_manifest: { widgets:any, parameters: any };
   user_id: string;
   allowed_markings_ids: string[];
   allowed_markings: Array<StoreMarkingDefinition>;

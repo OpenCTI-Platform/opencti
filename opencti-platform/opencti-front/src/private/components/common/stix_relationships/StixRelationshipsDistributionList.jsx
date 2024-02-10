@@ -124,6 +124,10 @@ const stixRelationshipsDistributionListDistributionQuery = graphql`
           name
           description
         }
+        ... on AdministrativeArea {
+          name
+          description
+        }
         ... on Malware {
           name
           description
