@@ -177,7 +177,6 @@ export const rulesApplyHandler = async (context: AuthContext, user: AuthUser, ev
       if (type === EVENT_TYPE_DELETE) {
         const deleteEvent = event as DeleteEvent;
         const internalId = deleteEvent.data.extensions[STIX_EXT_OCTI].id;
-        logApp.info(`[OPENCTI] applyCleanupOnDependencyIds ${internalId}`);
         await applyCleanupOnDependencyIds([internalId], rules);
       }
       // In case of update apply the event on every rules
