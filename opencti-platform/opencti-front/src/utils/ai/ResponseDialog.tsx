@@ -15,8 +15,11 @@ import 'ckeditor5-custom-build/build/translations/fr';
 import 'ckeditor5-custom-build/build/translations/zh-cn';
 import ReactMde from 'react-mde';
 import TextField from '@mui/material/TextField';
-import TextFieldAskAI from '@components/common/form/TextFieldAskAI';
 import Button from '@mui/material/Button';
+// As we can ask AI after and follow up, there is a dependency lifecycle here that can be accepted
+// TODO: Cleanup a bit in upcoming version
+// eslint-disable-next-line import/no-cycle
+import TextFieldAskAI from '../../private/components/common/form/TextFieldAskAI';
 import { ResponseDialogAskAISubscription, ResponseDialogAskAISubscription$data } from './__generated__/ResponseDialogAskAISubscription.graphql';
 import { useFormatter } from '../../components/i18n';
 import MarkdownDisplay from '../../components/MarkdownDisplay';
@@ -87,10 +90,11 @@ const ResponseDialog: FunctionComponent<ResponseDialogProps> = ({
     () => ({
       subscription,
       variables: { id },
-      onNext: (response: ResponseDialogAskAISubscription$data | null | undefined) => handleResponse(response),
+      onNext: handleResponse,
     }),
     [id],
   );
+  // TODO: Check by the engineering team
   // eslint-disable-next-line @typescript-eslint/ban-ts-comment
   // @ts-ignore
   useSubscription(subConfig);

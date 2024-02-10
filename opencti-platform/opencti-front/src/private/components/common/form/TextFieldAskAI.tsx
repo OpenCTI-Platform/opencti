@@ -22,6 +22,7 @@ import { TextFieldAskAISummarizeMutation, TextFieldAskAISummarizeMutation$data }
 import { TextFieldAskAIExplainMutation, TextFieldAskAIExplainMutation$data } from '@components/common/form/__generated__/TextFieldAskAIExplainMutation.graphql';
 import EETooltip from '../entreprise_edition/EETooltip';
 import { useFormatter } from '../../../../components/i18n';
+// eslint-disable-next-line import/no-cycle
 import ResponseDialog from '../../../../utils/ai/ResponseDialog';
 import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
 import useAI from '../../../../utils/hooks/useAI';
