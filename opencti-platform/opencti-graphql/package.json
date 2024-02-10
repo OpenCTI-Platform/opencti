@@ -150,11 +150,11 @@
     "xml2js": "0.6.2"
   },
   "devDependencies": {
-    "@graphql-codegen/cli": "5.0.0",
-    "@graphql-codegen/client-preset": "4.1.0",
-    "@graphql-codegen/introspection": "4.0.0",
-    "@graphql-codegen/typescript": "4.0.1",
-    "@graphql-codegen/typescript-resolvers": "4.0.1",
+    "@graphql-codegen/cli": "5.0.2",
+    "@graphql-codegen/client-preset": "4.2.2",
+    "@graphql-codegen/introspection": "4.0.2",
+    "@graphql-codegen/typescript": "4.0.4",
+    "@graphql-codegen/typescript-resolvers": "4.0.4",
     "@luckycatfactory/esbuild-graphql-loader": "3.8.1",
     "@rollup/plugin-graphql": "2.0.4",
     "@types/bcryptjs": "2.4.6",
