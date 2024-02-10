@@ -11598,10 +11598,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"html-to-pdfmake@npm:2.5.1":
-  version: 2.5.1
-  resolution: "html-to-pdfmake@npm:2.5.1"
-  checksum: 10/ee7e5a3a83aa35077757790944d9ed90ed63ec867131a571fc356f19b7601fbed9be5aebaffcf090805804ed98240f970d08c05d20e2f283da10d1c925279f98
+"html-to-pdfmake@npm:2.5.2":
+  version: 2.5.2
+  resolution: "html-to-pdfmake@npm:2.5.2"
+  checksum: 10/caeacefa7c9b7d402171091b8f2d2573a0144ef11a84efb592d3b19dc17156d131c2f0d507e61f782b00158a99d777a1149dff7f19f84d1f6876499713124a3b
   languageName: node
   linkType: hard
 
@@ -15281,7 +15281,7 @@ __metadata:
     fs-extra: "npm:11.2.0"
     graphql: "npm:16.8.1"
     html-to-image: "npm:1.11.11"
-    html-to-pdfmake: "npm:2.5.1"
+    html-to-pdfmake: "npm:2.5.2"
     http-proxy-middleware: "npm:2.0.6"
     i18n-auto-translation: "npm:1.3.7"
     invert-color: "npm:2.0.0"
