@@ -5416,12 +5416,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/node@npm:20.11.5":
-  version: 20.11.5
-  resolution: "@types/node@npm:20.11.5"
+"@types/node@npm:20.11.17":
+  version: 20.11.17
+  resolution: "@types/node@npm:20.11.17"
   dependencies:
     undici-types: "npm:~5.26.4"
-  checksum: 10/9f31c471047d7b3e240ce7b77ff29b0d15e83be7e3feafb3d0b0d0931122b438b1eefa302a5a2e1e9849914ff3fd76aafbd8ccb372efb1331ba048da63bce6f8
+  checksum: 10/3342df87258d1c56154bcd4b85180f48675427b235971e6e6e2e037353f5a2ae9aaa05ba5df0fe1e2d2f1022c8d856fd39056b9d7f50ea30c0ca3214137cae1d
   languageName: node
   linkType: hard
 
@@ -15316,7 +15316,7 @@ __metadata:
     "@rjsf/utils": "npm:5.16.1"
     "@rollup/plugin-graphql": "npm:2.0.4"
     "@testing-library/react": "npm:14.1.2"
-    "@types/node": "npm:20.11.5"
+    "@types/node": "npm:20.11.17"
     "@types/qrcode": "npm:1.5.5"
     "@types/ramda": "npm:0.29.10"
     "@types/react": "npm:18.2.55"
