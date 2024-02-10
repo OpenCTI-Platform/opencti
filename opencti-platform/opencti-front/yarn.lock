@@ -15303,7 +15303,7 @@ __metadata:
     react-cookie: "npm:7.0.2"
     react-csv: "npm:2.2.2"
     react-dom: "npm:18.2.0"
-    react-force-graph-2d: "npm:1.25.3"
+    react-force-graph-2d: "npm:1.25.4"
     react-force-graph-3d: "npm:1.24.1"
     react-grid-layout: "npm:1.4.4"
     react-intl: "npm:6.6.2"
@@ -16713,16 +16713,16 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-force-graph-2d@npm:1.25.3":
-  version: 1.25.3
-  resolution: "react-force-graph-2d@npm:1.25.3"
+"react-force-graph-2d@npm:1.25.4":
+  version: 1.25.4
+  resolution: "react-force-graph-2d@npm:1.25.4"
   dependencies:
     force-graph: "npm:1"
     prop-types: "npm:15"
     react-kapsule: "npm:2"
   peerDependencies:
     react: "*"
-  checksum: 10/9a08ef517ea365995d02e669390bb10a8e3c983c2281d7ea912874828c432fc439a1a49f9fd38627fe514a7aff93928592a69ac35846050aa37348f3fe02e230
+  checksum: 10/7c8177add096374425dd64e6a835d0e4c8ba04affb1dc095f8dbd3d16bef76ac46b24c6c355bc7a9ce144bba07bd3b7f668e57e5a505e647a2da40b3f099073b
   languageName: node
   linkType: hard
 
