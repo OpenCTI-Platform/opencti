@@ -52,7 +52,7 @@ export const buildInternalEvent = (type: 'update' | 'create' | 'delete', stix: S
   };
 };
 
-const ruleMergeHandler = async (context: AuthContext, event: MergeEvent): Promise<Array<BaseEvent>> => {
+const ruleMergeHandler = async (event: MergeEvent): Promise<Array<BaseEvent>> => {
   const { data, context: eventContext } = event;
   const events: Array<BaseEvent> = [];
   // region 01 - Generate events for sources deletion
@@ -169,7 +169,7 @@ export const rulesApplyHandler = async (context: AuthContext, user: AuthUser, ev
       // In case of merge convert the events to basic events and restart the process
       if (type === EVENT_TYPE_MERGE) {
         const mergeEvent = event as MergeEvent;
-        const mergeEvents = await ruleMergeHandler(context, mergeEvent);
+        const mergeEvents = await ruleMergeHandler(mergeEvent);
         // eslint-disable-next-line @typescript-eslint/no-use-before-define
         await rulesApplyHandler(context, user, mergeEvents);
       }
