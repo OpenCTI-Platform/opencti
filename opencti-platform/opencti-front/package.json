@@ -68,7 +68,7 @@
     "react-relay": "16.2.0",
     "react-relay-network-modern": "6.2.2",
     "react-router-dom": "5.3.4",
-    "react-router-dom-v5-compat": "6.21.3",
+    "react-router-dom-v5-compat": "6.22.0",
     "react-syntax-highlighter": "15.5.0",
     "react-timeline-range-slider": "1.4.1",
     "react-virtualized": "9.22.5",
