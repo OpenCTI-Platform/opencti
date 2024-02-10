@@ -128,7 +128,7 @@
     "react-test-renderer": "18.2.0",
     "relay-compiler": "16.1.0",
     "relay-test-utils": "16.1.0",
-    "tap": "18.6.1",
+    "tap": "18.7.0",
     "typescript": "5.3.3",
     "vite": "5.0.12",
     "vite-plugin-relay": "2.0.0",
