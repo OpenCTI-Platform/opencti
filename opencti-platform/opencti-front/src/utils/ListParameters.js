@@ -72,6 +72,7 @@ const saveParamsToLocalStorage = (localStorageKey, params) => {
     dissoc('allStixCoreObjectsTypes'),
     dissoc('rectSelected'),
     dissoc('navOpen'),
+    dissoc('forceFile'),
   )(params);
   localStorage.setItem(localStorageKey, JSON.stringify(storageParams));
 };
@@ -152,6 +153,9 @@ export const buildViewParamsFromUrlAndStorage = (
   }
   if (finalParams.contentSelected) {
     finalParams.contentSelected = finalParams.contentSelected.toString() === 'true';
+  }
+  if (finalParams.forceFile) {
+    finalParams.forceFile = finalParams.forceFile.toString() === 'true';
   }
   if (typeof finalParams.stixDomainObjectsTypes === 'string') {
     finalParams.stixDomainObjectsTypes = finalParams.stixDomainObjectsTypes

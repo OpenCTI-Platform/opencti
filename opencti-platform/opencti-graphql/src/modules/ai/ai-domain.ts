@@ -42,9 +42,6 @@ import { SYSTEM_USER } from '../../utils/access';
 import { ENTITY_TYPE_SETTINGS } from '../../schema/internalObject';
 import { UnsupportedError } from '../../config/errors';
 import { Format, Tone } from '../../generated/graphql';
-import { notify } from '../../database/redis';
-import { BUS_TOPICS } from '../../config/conf';
-import { AI_BUS } from './ai-types';
 import { paginatedForPathWithEnrichment } from '../internal/document/document-domain';
 import { elSearchFiles } from '../../database/file-search';
 import type { BasicStoreEntityDocument } from '../internal/document/document-types';
@@ -62,9 +59,7 @@ export const checkEnterpriseEdition = async (context: AuthContext) => {
 export const fixSpelling = async (context: AuthContext, user: AuthUser, id: string, content: string, format: InputMaybe<Format> = Format.Text) => {
   await checkEnterpriseEdition(context);
   if (content.length < 5) {
-    const message = `Content is too short${content.length}`;
-    await notify(BUS_TOPICS[AI_BUS].EDIT_TOPIC, { bus_id: id, content: message }, user);
-    return message;
+    return `Content is too short (${content.length})`;
   }
   const prompt = `
   # Instructions
@@ -72,7 +67,7 @@ export const fixSpelling = async (context: AuthContext, user: AuthUser, id: stri
   - Ensure that all words are accurately spelled and that the grammar is correct.
   - If no mistake is detected, just return the original text without anything else.
   - Do NOT change the length of the text.
-  - Your response should match the provided content format which is ${format}, be sure to respect this format.
+  - Your response should match the provided content format which is ${format}. Be sure to respect this format and to NOT output anything else than the format.
 
   # Content
   ${content}
@@ -84,17 +79,15 @@ export const fixSpelling = async (context: AuthContext, user: AuthUser, id: stri
 export const makeShorter = async (context: AuthContext, user: AuthUser, id: string, content: string, format: InputMaybe<Format> = Format.Text) => {
   await checkEnterpriseEdition(context);
   if (content.length < 5) {
-    const message = `Content is too short${content.length}`;
-    await notify(BUS_TOPICS[AI_BUS].EDIT_TOPIC, { bus_id: id, content: message }, user);
-    return message;
+    return `Content is too short (${content.length})`;
   }
   const prompt = `
   # Instructions
-  - Examine the provided English text related to cybersecurity and cyber threat intelligence and make it shorter by dividing by 2 the size / length of the text.
+  - Examine the provided English text related to cybersecurity and cyber threat intelligence and make it shorter by dividing by 2 the size / length of the text or the number of paragraphs.
   - Make it shorter by dividing by 2 the number of lines but you should keep the main ideas and concepts.
   - Do NOT summarize nor enumerate points.
   - Ensure that all words are accurately spelled and that the grammar is correct. 
-  - Your response should match the provided content format which is ${format}, be sure to respect this format.
+  - Your response should match the provided content format which is ${format}. Be sure to respect this format and to NOT output anything else than the format.
 
   # Content
   ${content}
@@ -106,17 +99,15 @@ export const makeShorter = async (context: AuthContext, user: AuthUser, id: stri
 export const makeLonger = async (context: AuthContext, user: AuthUser, id: string, content: string, format: InputMaybe<Format> = Format.Text) => {
   await checkEnterpriseEdition(context);
   if (content.length < 5) {
-    const message = `Content is too short${content.length}`;
-    await notify(BUS_TOPICS[AI_BUS].EDIT_TOPIC, { bus_id: id, content: message }, user);
-    return message;
+    return `Content is too short (${content.length})`;
   }
   const prompt = `
   # Instructions
-  - Examine the provided English text related to cybersecurity and cyber threat intelligence and make it longer by doubling the size / length of the text.
+  - Examine the provided English text related to cybersecurity and cyber threat intelligence and make it longer by doubling the size / length of the text or the number of paragraphs.
   - Make it longer by doubling the number of lines by explaining concepts and developing the ideas but NOT too long, the final size should be twice the initial one.
   - Do NOT summarize nor enumerate points. 
   - Ensure that all words are accurately spelled and that the grammar is correct. 
-  - Your response should match the provided content format which is ${format}, be sure to respect this format.
+  - Your response should match the provided content format which is ${format}. Be sure to respect this format and to NOT output anything else than the format.
 
   # Content
   ${content}
@@ -129,9 +120,7 @@ export const makeLonger = async (context: AuthContext, user: AuthUser, id: strin
 export const changeTone = async (context: AuthContext, user: AuthUser, id: string, content: string, format: InputMaybe<Format> = Format.Text, tone: InputMaybe<Tone> = Tone.Technical) => {
   await checkEnterpriseEdition(context);
   if (content.length < 5) {
-    const message = `Content is too short${content.length}`;
-    await notify(BUS_TOPICS[AI_BUS].EDIT_TOPIC, { bus_id: id, content: message }, user);
-    return message;
+    return `Content is too short (${content.length})`;
   }
   const prompt = `
   # Instructions
@@ -139,7 +128,7 @@ export const changeTone = async (context: AuthContext, user: AuthUser, id: strin
   - Do NOT change the length of the text, the size of the output should be the same as the input.
   - Do NOT summarize nor enumerate points. 
   - Ensure that all words are accurately spelled and that the grammar is correct. 
-  - Your response should match the provided content in the same format which is ${format}.
+  - Your response should match the provided content in the same format which is ${format}. Be sure to respect this format and to NOT output anything else than the format.
 
   # Content
   ${content}
@@ -151,16 +140,14 @@ export const changeTone = async (context: AuthContext, user: AuthUser, id: strin
 export const summarize = async (context: AuthContext, user: AuthUser, id: string, content: string, format: InputMaybe<Format> = Format.Text) => {
   await checkEnterpriseEdition(context);
   if (content.length < 5) {
-    const message = `Content is too short${content.length}`;
-    await notify(BUS_TOPICS[AI_BUS].EDIT_TOPIC, { bus_id: id, content: message }, user);
-    return message;
+    return `Content is too short (${content.length})`;
   }
   const prompt = `
   # Instructions
   - Examine the provided English text related to cybersecurity and cyber threat intelligence and summarize it with main ideas and concepts.
   - Make it shorter and summarize key points highlighting the deep meaning of the text.
   - Ensure that all words are accurately spelled and that the grammar is correct. 
-  - Your response should match the provided content format which is ${format}, be sure to respect this format.
+  - Your response should match the provided content format which is ${format}. Be sure to respect this format and to NOT output anything else than the format.
 
   # Content
   ${content}
@@ -172,9 +159,7 @@ export const summarize = async (context: AuthContext, user: AuthUser, id: string
 export const explain = async (context: AuthContext, user: AuthUser, id: string, content: string) => {
   await checkEnterpriseEdition(context);
   if (content.length < 5) {
-    const message = `Content is too short${content.length}`;
-    await notify(BUS_TOPICS[AI_BUS].EDIT_TOPIC, { bus_id: id, content: message }, user);
-    return message;
+    return `Content is too short (${content.length})`;
   }
   const prompt = `
   # Instructions
@@ -201,9 +186,7 @@ export const generateContainerReport = async (context: AuthContext, user: AuthUs
   const entities = R.take(RESOLUTION_LIMIT, elements.filter((n) => n.parent_types.includes(ABSTRACT_STIX_CORE_OBJECT))) as Array<BasicStoreEntity>;
   const indexedEntities = R.indexBy(R.prop('id'), entities);
   if (entities.length < 3) {
-    const message = 'AI model unable to generate a report for containers with less than 3 entities.';
-    await notify(BUS_TOPICS[AI_BUS].EDIT_TOPIC, { bus_id: id, content: message }, user);
-    return message;
+    return 'AI model unable to generate a report for containers with less than 3 entities.';
   }
   // generate entities involved
   const entitiesInvolved = R.values(indexedEntities).map((n) => {
@@ -248,12 +231,15 @@ export const generateContainerReport = async (context: AuthContext, user: AuthUs
     meaningfulType = `cyber threat intelligence report published on ${container.published}`;
   } else if (container.entity_type === ENTITY_TYPE_CONTAINER_CASE_INCIDENT) {
     meaningfulType = `case related to an incident response most likely internal and containing alerts, cyber observables and behaviours and created on${container.created}`;
+  } else {
+    meaningfulType = `cyber threat intelligence report published on ${container.created}`;
   }
   // build sentences
   const prompt = `
     # Instructions
     - We are in a context of a ${meaningfulType}.
-    - You must generate a cyber threat intelligence report in ${format} with a title and a content of ${paragraphsNumber} paragraphs of approximately 5 lines each without using bullet points.
+    - You must generate a cyber threat intelligence report in ${format} with a title and a content without using bullet points.
+    - The report should be ${paragraphsNumber} paragraphs long. Each paragraph must be 30 words.
     - The cyber threat intelligence report should be focused on ${tone} aspects and should be divided into meaningful parts such as: victims, techniques or vulnerabilities used for intrusion, then execution, then persistence and then infrastructure. 
     - You should take examples of well-known cyber threat intelligence reports available everywhere. The report is about ${container.name}. Details are: ${container.description}.
     
@@ -286,6 +272,9 @@ export const summarizeFiles = async (context: AuthContext, user: AuthUser, args:
     };
     const importFiles = await paginatedForPathWithEnrichment(context, user, `import/${stixCoreObject.entity_type}/${stixCoreObject.id}`, stixCoreObject.id, opts);
     finalFilesIds = importFiles.edges.map((n) => n.node.id);
+  }
+  if (isEmptyField(finalFilesIds) || finalFilesIds?.length === 0) {
+    return 'Unable to summarize files as no file is associated to this entity.';
   }
   const files = await elSearchFiles(context, user, {
     first: 10,
@@ -325,6 +314,9 @@ export const convertFilesToStix = async (context: AuthContext, user: AuthUser, a
     };
     const importFiles = await paginatedForPathWithEnrichment(context, user, `import/${stixCoreObject.entity_type}/${stixCoreObject.id}`, stixCoreObject.id, opts);
     finalFilesIds = importFiles.edges.map((n) => n.node.id);
+  }
+  if (isEmptyField(finalFilesIds) || finalFilesIds?.length === 0) {
+    return 'Unable to summarize files as no file is associated to this entity.';
   }
   const files = await elSearchFiles(context, user, {
     first: 10,

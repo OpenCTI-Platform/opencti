@@ -109,6 +109,7 @@ const MarkdownField = (props) => {
           }}
           format="markdown"
           variant="markdown"
+          disabled={props.disabled}
         />
       )}
     </div>

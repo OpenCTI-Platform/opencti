@@ -14,18 +14,25 @@ import InputLabel from '@mui/material/InputLabel';
 import Select from '@mui/material/Select';
 import DialogActions from '@mui/material/DialogActions';
 import Button from '@mui/material/Button';
-import useAI from '../../../../utils/hooks/useAI';
-import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
-import ResponseDialog from '../../../../utils/ai/ResponseDialog';
-import { useFormatter } from '../../../../components/i18n';
+import { TextFieldAskAIFixSpellingMutation, TextFieldAskAIFixSpellingMutation$data } from '@components/common/form/__generated__/TextFieldAskAIFixSpellingMutation.graphql';
+import { TextFieldAskAIMakeShorterMutation, TextFieldAskAIMakeShorterMutation$data } from '@components/common/form/__generated__/TextFieldAskAIMakeShorterMutation.graphql';
+import { TextFieldAskAIMakeLongerMutation, TextFieldAskAIMakeLongerMutation$data } from '@components/common/form/__generated__/TextFieldAskAIMakeLongerMutation.graphql';
+import { TextFieldAskAIChangeToneMutation, TextFieldAskAIChangeToneMutation$data } from '@components/common/form/__generated__/TextFieldAskAIChangeToneMutation.graphql';
+import { TextFieldAskAISummarizeMutation, TextFieldAskAISummarizeMutation$data } from '@components/common/form/__generated__/TextFieldAskAISummarizeMutation.graphql';
+import { TextFieldAskAIExplainMutation, TextFieldAskAIExplainMutation$data } from '@components/common/form/__generated__/TextFieldAskAIExplainMutation.graphql';
 import EETooltip from '../entreprise_edition/EETooltip';
+import { useFormatter } from '../../../../components/i18n';
+import ResponseDialog from '../../../../utils/ai/ResponseDialog';
+import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
+import useAI from '../../../../utils/hooks/useAI';
 
 // region types
 interface TextFieldAskAiProps {
   currentValue: string;
   setFieldValue: (value: string) => void;
   format: 'text' | 'html' | 'markdown';
-  variant: 'markdown' | null;
+  variant: 'markdown' | 'html' | 'text' | null;
+  disabled?: boolean;
 }
 
 const textFieldAskAIFixSpellingMutation = graphql`
@@ -64,10 +71,11 @@ const textFieldAskAIExplainMutation = graphql`
   }
 `;
 
-const TextFieldAskAI: FunctionComponent<TextFieldAskAiProps> = ({ currentValue, setFieldValue, variant, format = 'text' }) => {
+const TextFieldAskAI: FunctionComponent<TextFieldAskAiProps> = ({ currentValue, setFieldValue, variant, format = 'text', disabled }) => {
   const { t_i18n } = useFormatter();
   const isEnterpriseEdition = useEnterpriseEdition();
   const { enabled, configured } = useAI();
+  const [content, setContent] = useState('');
   const [disableResponse, setDisableResponse] = useState(false);
   const [openToneOptions, setOpenToneOptions] = useState(false);
   const [tone, setTone] = useState<'technical' | 'tactical' | 'strategical'>('technical');
@@ -91,12 +99,12 @@ const TextFieldAskAI: FunctionComponent<TextFieldAskAiProps> = ({ currentValue, 
   const handleCloseToneOptions = () => setOpenToneOptions(false);
   const handleOpenAskAI = () => setDisplayAskAI(true);
   const handleCloseAskAI = () => setDisplayAskAI(false);
-  const [commitMutationFixSpelling] = useMutation(textFieldAskAIFixSpellingMutation);
-  const [commitMutationMakeShorter] = useMutation(textFieldAskAIMakeShorterMutation);
-  const [commitMutationMakeLonger] = useMutation(textFieldAskAIMakeLongerMutation);
-  const [commitMutationChangeTone] = useMutation(textFieldAskAIChangeToneMutation);
-  const [commitMutationSummarize] = useMutation(textFieldAskAISummarizeMutation);
-  const [commitMutationExplain] = useMutation(textFieldAskAIExplainMutation);
+  const [commitMutationFixSpelling] = useMutation<TextFieldAskAIFixSpellingMutation>(textFieldAskAIFixSpellingMutation);
+  const [commitMutationMakeShorter] = useMutation<TextFieldAskAIMakeShorterMutation>(textFieldAskAIMakeShorterMutation);
+  const [commitMutationMakeLonger] = useMutation<TextFieldAskAIMakeLongerMutation>(textFieldAskAIMakeLongerMutation);
+  const [commitMutationChangeTone] = useMutation<TextFieldAskAIChangeToneMutation>(textFieldAskAIChangeToneMutation);
+  const [commitMutationSummarize] = useMutation<TextFieldAskAISummarizeMutation>(textFieldAskAISummarizeMutation);
+  const [commitMutationExplain] = useMutation<TextFieldAskAIExplainMutation>(textFieldAskAIExplainMutation);
   const handleAskAi = (action: string, canBeAccepted = true) => {
     setDisableResponse(true);
     handleCloseMenu();
@@ -112,7 +120,12 @@ const TextFieldAskAI: FunctionComponent<TextFieldAskAiProps> = ({ currentValue, 
             content: currentValue,
             format,
           },
-          onCompleted: () => {
+          onCompleted: (response: TextFieldAskAIFixSpellingMutation$data) => {
+            setContent(response?.aiFixSpelling ?? '');
+            setDisableResponse(false);
+          },
+          onError: (error: Error) => {
+            setContent(t_i18n(`An unknown error occurred, please ask your platform administrator: ${error.toString()}`));
             setDisableResponse(false);
           },
         });
@@ -124,7 +137,12 @@ const TextFieldAskAI: FunctionComponent<TextFieldAskAiProps> = ({ currentValue, 
             content: currentValue,
             format,
           },
-          onCompleted: () => {
+          onCompleted: (response: TextFieldAskAIMakeShorterMutation$data) => {
+            setContent(response?.aiMakeShorter ?? '');
+            setDisableResponse(false);
+          },
+          onError: (error: Error) => {
+            setContent(t_i18n(`An unknown error occurred, please ask your platform administrator: ${error.toString()}`));
             setDisableResponse(false);
           },
         });
@@ -136,7 +154,12 @@ const TextFieldAskAI: FunctionComponent<TextFieldAskAiProps> = ({ currentValue, 
             content: currentValue,
             format,
           },
-          onCompleted: () => {
+          onCompleted: (response: TextFieldAskAIMakeLongerMutation$data) => {
+            setContent(response?.aiMakeLonger ?? '');
+            setDisableResponse(false);
+          },
+          onError: (error: Error) => {
+            setContent(t_i18n(`An unknown error occurred, please ask your platform administrator: ${error.toString()}`));
             setDisableResponse(false);
           },
         });
@@ -149,7 +172,12 @@ const TextFieldAskAI: FunctionComponent<TextFieldAskAiProps> = ({ currentValue, 
             format,
             tone,
           },
-          onCompleted: () => {
+          onCompleted: (response: TextFieldAskAIChangeToneMutation$data) => {
+            setContent(response?.aiChangeTone ?? '');
+            setDisableResponse(false);
+          },
+          onError: (error: Error) => {
+            setContent(t_i18n(`An unknown error occurred, please ask your platform administrator: ${error.toString()}`));
             setDisableResponse(false);
           },
         });
@@ -161,7 +189,12 @@ const TextFieldAskAI: FunctionComponent<TextFieldAskAiProps> = ({ currentValue, 
             content: currentValue,
             format,
           },
-          onCompleted: () => {
+          onCompleted: (response: TextFieldAskAISummarizeMutation$data) => {
+            setContent(response?.aiSummarize ?? '');
+            setDisableResponse(false);
+          },
+          onError: (error: Error) => {
+            setContent(t_i18n(`An unknown error occurred, please ask your platform administrator: ${error.toString()}`));
             setDisableResponse(false);
           },
         });
@@ -172,7 +205,12 @@ const TextFieldAskAI: FunctionComponent<TextFieldAskAiProps> = ({ currentValue, 
             id,
             content: currentValue,
           },
-          onCompleted: () => {
+          onCompleted: (response: TextFieldAskAIExplainMutation$data) => {
+            setContent(response?.aiExplain ?? '');
+            setDisableResponse(false);
+          },
+          onError: (error: Error) => {
+            setContent(t_i18n(`An unknown error occurred, please ask your platform administrator: ${error.toString()}`));
             setDisableResponse(false);
           },
         });
@@ -189,7 +227,7 @@ const TextFieldAskAI: FunctionComponent<TextFieldAskAiProps> = ({ currentValue, 
             size="medium"
             color="secondary"
             onClick={(event) => ((isEnterpriseEdition && enabled && configured) ? handleOpenMenu(event) : null)}
-            disabled={currentValue.length < 10}
+            disabled={disabled || currentValue.length < 10}
             style={{ marginRight: -10 }}
           >
             <AutoAwesomeOutlined fontSize='medium'/>
@@ -226,6 +264,8 @@ const TextFieldAskAI: FunctionComponent<TextFieldAskAiProps> = ({ currentValue, 
           isDisabled={disableResponse}
           isOpen={displayAskAI}
           handleClose={handleCloseAskAI}
+          content={content}
+          setContent={setContent}
           handleAccept={(value) => {
             setFieldValue(value);
             handleCloseAskAI();
@@ -280,6 +320,13 @@ const TextFieldAskAI: FunctionComponent<TextFieldAskAiProps> = ({ currentValue, 
   if (variant === 'markdown') {
     return (
       <div style={{ position: 'absolute', top: 15, right: 0 }}>
+        {renderButton()}
+      </div>
+    );
+  }
+  if (variant === 'html') {
+    return (
+      <div style={{ position: 'absolute', top: 0, right: 10 }}>
         {renderButton()}
       </div>
     );

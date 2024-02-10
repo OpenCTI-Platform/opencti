@@ -17,6 +17,7 @@ import 'react-pdf/dist/esm/Page/TextLayer.css';
 import 'react-pdf/dist/esm/Page/AnnotationLayer.css';
 import ReactMde from 'react-mde';
 import { interval } from 'rxjs';
+import TextFieldAskAI from '../form/TextFieldAskAI';
 import inject18n from '../../../../components/i18n';
 import StixDomainObjectContentFiles, { stixDomainObjectContentFilesUploadStixDomainObjectMutation } from './StixDomainObjectContentFiles';
 import { APP_BASE_PATH, commitMutation, MESSAGING$ } from '../../../../relay/environment';
@@ -95,6 +96,7 @@ const styles = () => ({
     margin: '20px 0 0 0',
     padding: '0 0 15px 0',
     borderRadius: 4,
+    position: 'relative',
   },
 });
 
@@ -205,7 +207,7 @@ class StixDomainObjectContentComponent extends Component {
     let currentFileId = isEmptyField(stixDomainObject.contentField) ? R.head(files)?.id : null;
     let isLoading = false;
     let onProgressExportFileName;
-    if (params.currentFileId && !params.contentSelected) {
+    if (params.currentFileId && (!params.contentSelected || params.forceFile)) {
       const onProgressExportFile = exportFiles.find(
         (file) => file.id === params.currentFileId && file.uploadStatus === 'progress',
       );
@@ -216,8 +218,8 @@ class StixDomainObjectContentComponent extends Component {
       currentFileId = params.currentFileId;
     }
     this.state = {
-      currentFileId: isContentCompatible && params.contentSelected ? null : currentFileId,
-      contentSelected: isContentCompatible && (params.contentSelected || isEmptyField(currentFileId)),
+      currentFileId: isContentCompatible && params.contentSelected && params.forceFile !== true ? null : currentFileId,
+      contentSelected: isContentCompatible && params.forceFile !== true && (params.contentSelected || isEmptyField(currentFileId)),
       totalPdfPageNumber: null,
       currentPdfPageNumber: 1,
       pdfViewerZoom: 1.2,
@@ -584,6 +586,18 @@ class StixDomainObjectContentComponent extends Component {
                     multiline={true}
                     onChange={this.onTextFieldChange.bind(this)}
                     fullWidth={true}
+                    InputProps={{
+                      endAdornment: (
+                        <TextFieldAskAI
+                          currentValue={currentContent}
+                          setFieldValue={(val) => {
+                            this.onTextFieldChange({ target: { value: val } });
+                          }}
+                          format="text"
+                          variant="text"
+                        />
+                      ),
+                    }}
                   />
                 </div>
               </>
@@ -604,16 +618,21 @@ class StixDomainObjectContentComponent extends Component {
                   <CKEditor
                     editor={Editor}
                     config={{
-                      width: '100%',
                       language: 'en',
-                      image: {
-                        resizeUnit: 'px',
-                      },
+                      toolbar: { shouldNotGroupWhenFull: true },
                     }}
                     data={currentContent}
                     onChange={(_, editor) => {
                       this.onHtmlFieldChange(editor.getData());
                     }}
+                  />
+                  <TextFieldAskAI
+                    currentValue={currentContent ?? ''}
+                    setFieldValue={(val) => {
+                      this.onHtmlFieldChange(val);
+                    }}
+                    format="html"
+                    variant="html"
                   />
                 </div>
               </>
@@ -652,6 +671,14 @@ class StixDomainObjectContentComponent extends Component {
                       uploadingImage: t('Uploading image'),
                       pasteDropSelect: t('Paste'),
                     }}
+                  />
+                  <TextFieldAskAI
+                    currentValue={currentContent ?? ''}
+                    setFieldValue={(val) => {
+                      this.onMarkDownFieldChange(val);
+                    }}
+                    format="markdown"
+                    variant="markdown"
                   />
                 </div>
               </>

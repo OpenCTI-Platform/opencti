@@ -14,6 +14,7 @@ import Button from '@mui/material/Button';
 import Dialog from '@mui/material/Dialog';
 import Typography from '@mui/material/Typography';
 import makeStyles from '@mui/styles/makeStyles';
+import TextFieldAskAI from '../private/components/common/form/TextFieldAskAI';
 import { useFormatter } from './i18n';
 
 const useStyles = makeStyles((theme) => ({
@@ -43,6 +44,7 @@ const RichTextField = (props) => {
     label,
     style,
     disabled,
+    askAi,
   } = props;
   const editorReference = useRef();
   const classes = useStyles();
@@ -108,7 +110,7 @@ const RichTextField = (props) => {
   );
 
   return (
-    <div style={style} className={!R.isNil(meta.error) ? 'error' : 'main'}>
+    <div style={{ ...style, position: 'relative' }} className={!R.isNil(meta.error) ? 'error' : 'main'}>
       <InputLabel shrink={true} style={{ float: 'left' }}>
         {label}
       </InputLabel>
@@ -152,6 +154,20 @@ const RichTextField = (props) => {
       ) : CKEditorInstance}
       {!R.isNil(meta.error) && (
         <FormHelperText error={true}>{meta.error}</FormHelperText>
+      )}
+      {askAi && (
+      <TextFieldAskAI
+        currentValue={field.value ?? ''}
+        setFieldValue={(val) => {
+          setFieldValue(name, val);
+          if (typeof onSubmit === 'function') {
+            onSubmit(name, val || '');
+          }
+        }}
+        format="html"
+        variant="html"
+        disabled={props.disabled}
+      />
       )}
     </div>
   );

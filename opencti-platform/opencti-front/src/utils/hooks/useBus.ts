@@ -8,9 +8,7 @@ const subscribe = (channel: string, callback: useBusCallback) => {
   if (!channel || !callback) {
     return undefined;
   }
-
   subscribers.push([channel, callback]);
-
   return () => {
     subscribers = subscribers.filter((subscriber) => subscriber[1] !== callback);
   };
@@ -25,7 +23,6 @@ export const dispatch = (channel: string, event: any) => {
 
 const useBus = (channel: string, callback: useBusCallback, deps: any[] = []) => {
   useEffect(() => subscribe(channel, callback), deps);
-
   return dispatch;
 };
 

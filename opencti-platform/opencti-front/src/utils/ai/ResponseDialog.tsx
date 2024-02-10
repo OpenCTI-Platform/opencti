@@ -15,6 +15,8 @@ import 'ckeditor5-custom-build/build/translations/fr';
 import 'ckeditor5-custom-build/build/translations/zh-cn';
 import ReactMde from 'react-mde';
 import TextField from '@mui/material/TextField';
+import TextFieldAskAI from '@components/common/form/TextFieldAskAI';
+import Button from '@mui/material/Button';
 import { ResponseDialogAskAISubscription, ResponseDialogAskAISubscription$data } from './__generated__/ResponseDialogAskAISubscription.graphql';
 import { useFormatter } from '../../components/i18n';
 import MarkdownDisplay from '../../components/MarkdownDisplay';
@@ -28,6 +30,8 @@ interface ResponseDialogProps {
   handleClose: () => void;
   handleAccept: (content: string) => void;
   handleFollowUp: () => void;
+  content: string;
+  setContent: (content: string) => void;
   format: 'text' | 'html' | 'markdown' | 'json';
   isAcceptable?: boolean;
   followUpActions: {
@@ -52,11 +56,12 @@ const ResponseDialog: FunctionComponent<ResponseDialogProps> = ({
   handleAccept,
   format,
   isAcceptable = true,
+  content,
+  setContent,
 }) => {
   const textFieldRef = useRef<HTMLTextAreaElement>(null);
   const markdownFieldRef = useRef<HTMLTextAreaElement>(null);
   const { t_i18n } = useFormatter();
-  const [content, setContent] = useState('');
   const [markdownSelectedTab, setMarkdownSelectedTab] = useState<'write' | 'preview' | undefined>('write');
   const handleResponse = (response: ResponseDialogAskAISubscription$data | null | undefined | unknown) => {
     const newContent = response ? (response as ResponseDialogAskAISubscription$data).aiBus?.content : null;
@@ -87,7 +92,7 @@ const ResponseDialog: FunctionComponent<ResponseDialogProps> = ({
     [id],
   );
   useSubscription(subConfig);
-  const height = 500;
+  const height = 400;
   return (
     <>
       <Dialog
@@ -102,7 +107,7 @@ const ResponseDialog: FunctionComponent<ResponseDialogProps> = ({
       >
         <DialogTitle>{t_i18n('Ask AI')}</DialogTitle>
         <DialogContent>
-          <div style={{ width: '100%', minHeight: height, height }}>
+          <div style={{ width: '100%', minHeight: height, height, position: 'relative' }}>
             {(format === 'text' || format === 'json') && (
               <TextField
                 inputRef={textFieldRef}
@@ -112,12 +117,26 @@ const ResponseDialog: FunctionComponent<ResponseDialogProps> = ({
                 multiline={true}
                 onChange={(event) => setContent(event.target.value)}
                 fullWidth={true}
+                InputProps={{
+                  endAdornment: (
+                    <TextFieldAskAI
+                      currentValue={content}
+                      setFieldValue={(val) => {
+                        setContent(val);
+                      }}
+                      format="text"
+                      variant="text"
+                      disabled={isDisabled}
+                    />
+                  ),
+                }}
               />
             )}
             {format === 'html' && (
               <CKEditor
+                id="response-dialog-editor"
                 editor={Editor}
-                config={{ language: 'en' }}
+                config={{ language: 'en', toolbar: { shouldNotGroupWhenFull: true } }}
                 data={content}
                 onChange={(_, editor) => {
                   // eslint-disable-next-line @typescript-eslint/ban-ts-comment
@@ -157,18 +176,27 @@ const ResponseDialog: FunctionComponent<ResponseDialogProps> = ({
               }}
             />
             )}
+            {(format === 'markdown' || format === 'html') && (
+              <TextFieldAskAI
+                currentValue={content ?? ''}
+                setFieldValue={(val) => {
+                  setContent(val);
+                }}
+                format={format}
+                variant={format}
+                disabled={isDisabled}
+              />
+            )}
           </div>
-          <Alert severity="warning" variant="outlined">
+          <div className="clearfix" />
+          <Alert severity="warning" variant="outlined" style={ format === 'html' ? { marginTop: 30 } : {}}>
             {t_i18n('Generative AI is a beta feature as we are currently fine-tuning our models. Consider checking important information.')}
           </Alert>
         </DialogContent>
         <DialogActions>
-          <LoadingButton onClick={handleClose} disabled={isDisabled}>
+          <Button onClick={handleClose}>
             {t_i18n('Close')}
-          </LoadingButton>
-          <LoadingButton color="secondary" disabled={true}>
-            {t_i18n('Continue')}
-          </LoadingButton>
+          </Button>
           {isAcceptable && (
             <LoadingButton loading={isDisabled} color="secondary" onClick={() => handleAccept(content)}>
               {t_i18n('Accept')}

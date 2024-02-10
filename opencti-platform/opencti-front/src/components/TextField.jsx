@@ -75,6 +75,7 @@ const TextField = (props) => {
               }
             }}
             format="text"
+            disabled={props.disabled}
           />
         ),
       }}

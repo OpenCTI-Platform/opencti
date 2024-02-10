@@ -23,6 +23,19 @@ import Select from '@mui/material/Select';
 import TextField from '@mui/material/TextField';
 import { createSearchParams, useNavigate } from 'react-router-dom-v5-compat';
 import Alert from '@mui/material/Alert';
+import {
+  StixCoreObjectAskAISummarizeFilesMutation,
+  StixCoreObjectAskAISummarizeFilesMutation$data,
+} from '@components/common/stix_core_objects/__generated__/StixCoreObjectAskAISummarizeFilesMutation.graphql';
+import { StixDomainObjectContentFieldPatchMutation } from '@components/common/stix_domain_objects/__generated__/StixDomainObjectContentFieldPatchMutation.graphql';
+import {
+  StixCoreObjectAskAIContainerReportMutation,
+  StixCoreObjectAskAIContainerReportMutation$data,
+} from '@components/common/stix_core_objects/__generated__/StixCoreObjectAskAIContainerReportMutation.graphql';
+import {
+  StixCoreObjectAskAIConvertFilesToStixMutation,
+  StixCoreObjectAskAIConvertFilesToStixMutation$data,
+} from '@components/common/stix_core_objects/__generated__/StixCoreObjectAskAIConvertFilesToStixMutation.graphql';
 import { stixDomainObjectContentFilesUploadStixDomainObjectMutation } from '../stix_domain_objects/StixDomainObjectContentFiles';
 import { stixDomainObjectContentFieldPatchMutation } from '../stix_domain_objects/StixDomainObjectContent';
 import FilesNativeField from '../form/FilesNativeField';
@@ -89,9 +102,11 @@ const StixCoreObjectAskAI: FunctionComponent<StixCoreObjectAskAiProps> = ({ inst
   const isEnterpriseEdition = useEnterpriseEdition();
   const { enabled, configured } = useAI();
   const [action, setAction] = useState<'container-report' | 'summarize-files' | 'convert-files' | null>(null);
+  const [content, setContent] = useState('');
   const [acceptedResult, setAcceptedResult] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [destination, setDestination] = useState<'content' | 'file'>('content');
+  const [newFileName, setNewFileName] = useState<string | null>(null);
   const [optionsOpen, setOptionsOpen] = useState(false);
   const [tone, setTone] = useState<'technical' | 'tactical' | 'strategical'>('technical');
   const [format, setFormat] = useState<'html' | 'markdown' | 'text' | 'json'>('html');
@@ -121,11 +136,11 @@ const StixCoreObjectAskAI: FunctionComponent<StixCoreObjectAskAiProps> = ({ inst
   };
   const handleOpenAskAI = () => setDisplayAskAI(true);
   const handleCloseAskAI = () => setDisplayAskAI(false);
-  const [commitMutationUpdateContent] = useMutation(stixDomainObjectContentFieldPatchMutation);
+  const [commitMutationUpdateContent] = useMutation<StixDomainObjectContentFieldPatchMutation>(stixDomainObjectContentFieldPatchMutation);
   const [commitMutationCreateFile] = useMutation<StixDomainObjectContentFilesUploadStixDomainObjectMutation>(stixDomainObjectContentFilesUploadStixDomainObjectMutation);
-  const [commitMutationContainerReport] = useMutation(stixCoreObjectAskAIContainerReportMutation);
-  const [commitMutationSummarizeFiles] = useMutation(stixCoreObjectAskAISummarizeFilesMutation);
-  const [commitMutationConvertFilesToStix] = useMutation(stixCoreObjectAskAIConvertFilesToStixMutation);
+  const [commitMutationContainerReport] = useMutation<StixCoreObjectAskAIContainerReportMutation>(stixCoreObjectAskAIContainerReportMutation);
+  const [commitMutationSummarizeFiles] = useMutation<StixCoreObjectAskAISummarizeFilesMutation>(stixCoreObjectAskAISummarizeFilesMutation);
+  const [commitMutationConvertFilesToStix] = useMutation<StixCoreObjectAskAIConvertFilesToStixMutation>(stixCoreObjectAskAIConvertFilesToStixMutation);
   const handleAskAi = () => {
     handleCloseOptions();
     setDisableResponse(true);
@@ -142,7 +157,12 @@ const StixCoreObjectAskAI: FunctionComponent<StixCoreObjectAskAiProps> = ({ inst
             tone,
             format,
           },
-          onCompleted: () => {
+          onCompleted: (response: StixCoreObjectAskAIContainerReportMutation$data) => {
+            setContent(response?.aiContainerGenerateReport ?? '');
+            setDisableResponse(false);
+          },
+          onError: (error: Error) => {
+            setContent(t_i18n(`An unknown error occurred, please ask your platform administrator: ${error.toString()}`));
             setDisableResponse(false);
           },
         });
@@ -157,7 +177,12 @@ const StixCoreObjectAskAI: FunctionComponent<StixCoreObjectAskAiProps> = ({ inst
             format,
             fileIds: files.map((n) => n.value),
           },
-          onCompleted: () => {
+          onCompleted: (response: StixCoreObjectAskAISummarizeFilesMutation$data) => {
+            setContent(response?.aiSummarizeFiles ?? '');
+            setDisableResponse(false);
+          },
+          onError: (error: Error) => {
+            setContent(t_i18n(`An unknown error occurred, please ask your platform administrator: ${error.toString()}`));
             setDisableResponse(false);
           },
         });
@@ -170,7 +195,12 @@ const StixCoreObjectAskAI: FunctionComponent<StixCoreObjectAskAiProps> = ({ inst
             elementId: instanceId,
             fileIds: files.map((n) => n.value),
           },
-          onCompleted: () => {
+          onCompleted: (response: StixCoreObjectAskAIConvertFilesToStixMutation$data) => {
+            setContent(response?.aiConvertFilesToStix ?? '');
+            setDisableResponse(false);
+          },
+          onError: (error: Error) => {
+            setContent(t_i18n(`An unknown error occurred, please ask your platform administrator: ${error.toString()}`));
             setDisableResponse(false);
           },
         });
@@ -186,7 +216,7 @@ const StixCoreObjectAskAI: FunctionComponent<StixCoreObjectAskAiProps> = ({ inst
   const submitAcceptedResult = () => {
     setIsSubmitting(true);
     if (destination === 'content') {
-      const inputValues = [{ key: 'content', value: acceptedResult }];
+      const inputValues = [{ key: 'content', value: [acceptedResult] }];
       commitMutationUpdateContent({
         variables: {
           id: instanceId,
@@ -202,20 +232,20 @@ const StixCoreObjectAskAI: FunctionComponent<StixCoreObjectAskAiProps> = ({ inst
         },
       });
     }
-    let name = instanceName;
+    let fileName = newFileName ?? instanceName;
     if (format === 'text') {
-      name += '.txt';
+      fileName += '.txt';
     } else if (format === 'html') {
-      name += '.html';
+      fileName += '.html';
     } else if (format === 'markdown') {
-      name += '.md';
+      fileName += '.md';
     } else if (format === 'json') {
-      name += '.json';
+      fileName += '.json';
     }
     const blob = new Blob([acceptedResult ?? ''], {
       type,
     });
-    const file = new File([blob], name, {
+    const file = new File([blob], fileName, {
       type,
     });
     commitMutationCreateFile({
@@ -229,7 +259,7 @@ const StixCoreObjectAskAI: FunctionComponent<StixCoreObjectAskAiProps> = ({ inst
         setIsSubmitting(false);
         navigate({
           pathname: `${resolveLink(instanceType)}/${instanceId}/${type === 'container' && format !== 'json' ? 'content' : 'files'}`,
-          search: `${createSearchParams({ currentFileId: response?.stixDomainObjectEdit?.importPush?.id ?? '' })}`,
+          search: `${createSearchParams({ forceFile: 'true', currentFileId: response?.stixDomainObjectEdit?.importPush?.id ?? '' })}`,
         });
       },
     });
@@ -261,7 +291,7 @@ const StixCoreObjectAskAI: FunctionComponent<StixCoreObjectAskAiProps> = ({ inst
           {t_i18n('Summarize associated files')}
         </MenuItem>
         <MenuItem onClick={() => handleOpenOptions('convert-files')}>
-          {t_i18n('Convert associated files to STIX')}
+          {t_i18n('Convert associated files to STIX 2.1')}
         </MenuItem>
       </Menu>
       <Dialog
@@ -386,6 +416,15 @@ const StixCoreObjectAskAI: FunctionComponent<StixCoreObjectAskAiProps> = ({ inst
               </ListItemSecondaryAction>
             </ListItem>
           </List>
+          {destination === 'file' && (
+            <TextField
+              label={t_i18n('File name')}
+              fullWidth={true}
+              value={newFileName ?? instanceName}
+              onChange={(event) => setNewFileName(event.target.value as unknown as string)}
+              style={fieldSpacingContainerStyle}
+            />
+          )}
         </DialogContent>
         <DialogActions>
           <Button onClick={handleCancelDestination} disabled={isSubmitting}>
@@ -406,6 +445,8 @@ const StixCoreObjectAskAI: FunctionComponent<StixCoreObjectAskAiProps> = ({ inst
           isDisabled={disableResponse}
           isOpen={displayAskAI}
           handleClose={handleCloseAskAI}
+          content={content}
+          setContent={setContent}
           handleAccept={(value) => {
             setAcceptedResult(value);
             handleCloseAskAI();

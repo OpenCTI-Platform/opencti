@@ -389,12 +389,11 @@ const DefaultDashboard = ({ timeField }) => {
                 filters: [
                   {
                     key: 'fromTypes',
-                    mode: 'or',
                     values: ['Malware'],
                   },
                   {
                     key: 'entity_type',
-                    values: ['stix-core-relationship'],
+                    values: ['uses'],
                   },
                 ],
                 filterGroups: [],
@@ -417,8 +416,11 @@ const DefaultDashboard = ({ timeField }) => {
                 mode: 'and',
                 filters: [
                   {
+                    key: 'entity_type',
+                    values: ['targets'],
+                  },
+                  {
                     key: 'toTypes',
-                    mode: 'or',
                     values: ['Vulnerability'],
                   },
                 ],
