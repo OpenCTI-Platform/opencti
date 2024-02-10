@@ -51,12 +51,126 @@ type Query {
     uriKey: String!
     widgetId : String!
   ): Number
+  publicStixRelationshipsNumber(
+    uriKey: String!
+    widgetId : String!
+    startDate: DateTime
+    endDate: DateTime
+    dateAttribute: String
+    authorId: String
+    noDirection: Boolean
+    onlyInferred: Boolean
+    fromOrToId: [String]
+    elementWithTargetTypes: [String]
+    fromId: [String]
+    fromRole: String
+    fromTypes: [String]
+    toId: [String]
+    toRole: String
+    toTypes: [String]
+    relationship_type: [String]
+    confidences: [Int]
+    search: String
+    dynamicFrom: FilterGroup
+    dynamicTo: FilterGroup
+  ): Number
   publicStixCoreObjectsMultiTimeSeries(
-    startDate: DateTime!
+    startDate: DateTime
     endDate: DateTime
     uriKey: String!
     widgetId : String!
   ): [MultiTimeSeries]
+  publicStixRelationshipsMultiTimeSeries(
+    startDate: DateTime
+    endDate: DateTime
+    uriKey: String!
+    widgetId : String!
+  ): [MultiTimeSeries]
+  publicStixCoreObjectsDistribution(
+    uriKey: String!
+    widgetId : String!
+    startDate: DateTime
+    endDate: DateTime
+    relationship_type: [String]
+    toTypes: [String]
+    field: String!
+    dateAttribute: String
+    operation: StatsOperation!
+    limit: Int
+    order: String
+    search: String
+  ): [Distribution]
+  publicStixRelationshipsDistribution(
+    uriKey: String!
+    widgetId : String!
+    startDate: DateTime
+    endDate: DateTime
+    dateAttribute: String
+    isTo: Boolean
+    limit: Int
+    order: String
+    fromOrToId: [String]
+    elementWithTargetTypes: [String]
+    fromId: [String]
+    fromRole: String
+    fromTypes: [String]
+    toId: [String]
+    toRole: String
+    toTypes: [String]
+    relationship_type: [String]
+    confidences: [Int]
+    search: String
+    dynamicFrom: FilterGroup
+    dynamicTo: FilterGroup
+    aggregateOnConnections: Boolean
+  ): [Distribution]
+  publicBookmarks(
+    first: Int
+    after: ID
+    types: [String]
+    uriKey: String!
+    widgetId : String!
+  ): StixDomainObjectConnection
+  publicStixCoreObjects(
+    uriKey: String!
+    widgetId : String!
+    first: Int
+    after: ID
+    orderBy: StixCoreObjectsOrdering
+    orderMode: OrderingMode
+  ): StixCoreObjectConnection
+  publicStixRelationships(
+    uriKey: String!
+    widgetId : String!
+    first: Int
+    after: ID
+    orderBy: StixRelationshipsOrdering
+    orderMode: OrderingMode
+    fromOrToId: String
+    elementWithTargetTypes: [String]
+    fromId: [String]
+    fromRole: String
+    fromTypes: [String]
+    toId: [String]
+    toRole: String
+    toTypes: [String]
+    relationship_type: [String]
+    startTimeStart: DateTime
+    startTimeStop: DateTime
+    stopTimeStart: DateTime
+    stopTimeStop: DateTime
+    firstSeenStart: DateTime
+    firstSeenStop: DateTime
+    lastSeenStart: DateTime
+    lastSeenStop: DateTime
+    startDate: DateTime
+    endDate: DateTime
+    confidences: [Int]
+    search: String
+    dynamicFrom: FilterGroup
+    dynamicTo: FilterGroup
+    stix: Boolean
+  ): StixRelationshipConnection
 }
 
 type PublicDashboardEdge {

@@ -13,7 +13,16 @@ import type {
   PublicDashboardAddInput,
   QueryPublicDashboardsArgs,
   QueryPublicStixCoreObjectsNumberArgs,
-  QueryPublicStixCoreObjectsMultiTimeSeriesArgs
+  QueryPublicStixCoreObjectsMultiTimeSeriesArgs,
+  QueryPublicStixRelationshipsMultiTimeSeriesArgs,
+  QueryPublicStixRelationshipsNumberArgs,
+  QueryPublicStixCoreObjectsDistributionArgs,
+  QueryPublicStixRelationshipsDistributionArgs,
+  QueryPublicBookmarksArgs,
+  QueryPublicStixCoreObjectsArgs,
+  QueryPublicStixRelationshipsArgs,
+  Distribution,
+  StixDomainObjectConnection,
 } from '../../generated/graphql';
 import { FunctionalError, UnsupportedError } from '../../config/errors';
 import { SYSTEM_USER } from '../../utils/access';
@@ -23,8 +32,10 @@ import { ENTITY_TYPE_MARKING_DEFINITION } from '../../schema/stixMetaObject';
 import { getEntitiesMapFromCache } from '../../database/cache';
 import type { NumberResult, StoreMarkingDefinition } from '../../types/store';
 import { getWidgetArguments } from './publicDashboard-utils';
-import { stixCoreObjectsMultiTimeSeries, stixCoreObjectsNumber } from '../../domain/stixCoreObject';
+import { stixCoreObjectsDistribution, stixCoreObjectsMultiTimeSeries, stixCoreObjectsNumber, findAll as stixCoreObjects } from '../../domain/stixCoreObject';
 import { ABSTRACT_STIX_CORE_OBJECT } from '../../schema/general';
+import { stixRelationshipsDistribution, stixRelationshipsMultiTimeSeries, stixRelationshipsNumber, findAll as stixRelationships } from '../../domain/stixRelationship';
+import { bookmarks } from '../../domain/user';
 
 export const findById = (
   context: AuthContext,
@@ -207,9 +218,9 @@ export const publicDashboardDelete = async (context: AuthContext, user: AuthUser
   return notify(BUS_TOPICS[ENTITY_TYPE_PUBLIC_DASHBOARD].DELETE_TOPIC, deleted, user).then(() => id);
 };
 
-// Widgets Public API
+// region Widgets Public API
 
-// Heatmap
+// heatmap & vertical-bar & line & area
 export const publicStixCoreObjectsMultiTimeSeries = async (context: AuthContext, args: QueryPublicStixCoreObjectsMultiTimeSeriesArgs) => {
   const { user, config, timeSeriesParameters } = await getWidgetArguments(context, args.uriKey, args.widgetId, true);
 
@@ -224,7 +235,26 @@ export const publicStixCoreObjectsMultiTimeSeries = async (context: AuthContext,
   return stixCoreObjectsMultiTimeSeries(context, user, standardArgs);
 };
 
-// Number
+export const publicStixRelationshipsMultiTimeSeries = async (
+  context: AuthContext,
+  args: QueryPublicStixRelationshipsMultiTimeSeriesArgs,
+) => {
+  const { user, config, timeSeriesParameters } = await getWidgetConfig(context, args.uriKey, args.widgetId, true);
+
+  const standardArgs = {
+    operation: '', // todo needed?
+    startDate: args.startDate,
+    endDate: args.endDate,
+    interval: config.interval ? config.interval : 'month', // Todo should be in config but is is not
+    onlyInferred: config.onlyInferred, // todo needed?
+    timeSeriesParameters
+  };
+
+  // Use standard API
+  return stixRelationshipsMultiTimeSeries(context, user, standardArgs);
+};
+
+// number
 export const publicStixCoreObjectsNumber = async (
   context: AuthContext,
   args: QueryPublicStixCoreObjectsNumberArgs
@@ -246,3 +276,184 @@ export const publicStixCoreObjectsNumber = async (
   // Use standard API
   return stixCoreObjectsNumber(context, user, parameters) as unknown as Promise<NumberResult>;
 };
+
+export const publicStixRelationshipsNumber = async (
+  context: AuthContext,
+  args: QueryPublicStixRelationshipsNumberArgs
+): Promise<NumberResult> => {
+  const { user, config, filters } = await getWidgetConfig(context, args.uriKey, args.widgetId);
+
+  const parameters = { // TODO check args really needed given from front
+    dateAttribute: args.dateAttribute,
+    authorId: args.authorId,
+    noDirection: args.noDirection,
+    startDate: args.startDate,
+    endDate: args.endDate,
+    filters,
+    onlyInferred: config.onlyInferred,
+    search: config.search,
+    fromOrToId: args.fromOrToId,
+    elementWithTargetTypes: args.elementWithTargetTypes,
+    fromId: args.fromId,
+    fromRole: args.fromRole,
+    fromTypes: args.fromTypes,
+    toId: args.toId,
+    toRole: args.toRole,
+    toTypes: args.toTypes,
+    relationship_type: args.relationship_type,
+    confidences: args.confidences,
+    dynamicFrom: args.dynamicFrom, // TODO args??
+    dynamicTo: args.dynamicTo, // TODO args??
+  };
+
+  // Use standard API
+  return stixRelationshipsNumber(context, user, parameters) as unknown as Promise<NumberResult>;
+};
+
+// donut & horizontal-bar & distribution-list & radar & tree
+export const publicStixCoreObjectsDistribution = async (
+  context: AuthContext,
+  args: QueryPublicStixCoreObjectsDistributionArgs
+) => {
+  const { user, config, filters } = await getWidgetConfig(context, args.uriKey, args.widgetId);
+
+  const parameters = {
+    startDate: args.startDate,
+    endDate: args.endDate,
+    filters,
+    relationship_type: args.relationship_type,
+    toTypes: args.toTypes,
+    field: 'entity_type', // TODO check: harcoded because it has always this value in front network
+    dateAttribute: args.dateAttribute,
+    operation: args.operation ? args.operation : 'count', // TODO check
+    limit: args.limit,
+    order: args.order,
+    types: [
+      ABSTRACT_STIX_CORE_OBJECT,
+    ],
+    search: config.search,
+  };
+
+  // Use standard API
+  return stixCoreObjectsDistribution(context, user, parameters);
+};
+
+export const publicStixRelationshipsDistribution = async (
+  context: AuthContext,
+  args: QueryPublicStixRelationshipsDistributionArgs
+) => {
+  const { user, config, filters } = await getWidgetConfig(context, args.uriKey, args.widgetId);
+
+  const parameters = {
+    operation: 'count', // TODO check
+    field: 'entity_type', // TODO check
+    startDate: args.startDate,
+    endDate: args.endDate,
+    filters,
+    dynamicFrom: args.dynamicFrom, // TODO check
+    dynamicTo: args.dynamicTo, // TODO check
+    dateAttribute: args.dateAttribute,
+    isTo: args.isTo,
+    limit: args.limit,
+    elementWithTargetTypes: args.elementWithTargetTypes,
+    fromRole: args.fromRole,
+    fromTypes: args.fromTypes,
+    toId: args.toId,
+    toRole: args.toRole,
+    toTypes: args.toTypes,
+    relationship_type: args.relationship_type,
+    confidences: args.confidences,
+    order: args.order,
+    search: config.search,
+  };
+
+  // Use standard API
+  return stixRelationshipsDistribution(context, user, parameters);
+};
+
+// bookmarks
+export const publicBookmarks = async (
+  context: AuthContext,
+  args: QueryPublicBookmarksArgs
+) => {
+  const { user, filters } = await getWidgetConfig(context, args.uriKey, args.widgetId);
+
+  const parameters = {
+    first: args.first,
+    after: args.after,
+    types: args.types,
+    filters
+  };
+
+  // Use standard API
+  return bookmarks(context, user, parameters);
+};
+
+// list & timeline
+export const publicStixCoreObjects = async (
+  context: AuthContext,
+  args: QueryPublicStixCoreObjectsArgs
+) => {
+  const { user, config, filters } = await getWidgetConfig(context, args.uriKey, args.widgetId);
+
+  const parameters = {
+    first: args.first,
+    after: args.after,
+    types: [
+      ABSTRACT_STIX_CORE_OBJECT,
+    ],
+    filters,
+    orderBy: args.orderBy,
+    orderMode: args.orderMode,
+    search: config.search,
+  };
+
+  // Use standard API
+  return stixCoreObjects(context, user, parameters);
+};
+
+export const publicStixRelationships = async (
+  context: AuthContext,
+  args: QueryPublicStixRelationshipsArgs
+) => {
+  const { user, config, filters } = await getWidgetConfig(context, args.uriKey, args.widgetId);
+
+  const parameters = {
+    first: args.first,
+    after: args.after,
+    types: [
+      ABSTRACT_STIX_CORE_OBJECT,
+    ],
+    filters,
+    dynamicFrom: args.dynamicFrom, // TODO check
+    dynamicTo: args.dynamicTo, // TODO check
+    startDate: args.startDate,
+    endDate: args.endDate,
+    orderBy: args.orderBy,
+    orderMode: args.orderMode,
+    search: config.search,
+    fromOrToId: args.fromOrToId,
+    elementWithTargetTypes: args.elementWithTargetTypes,
+    fromId: args.fromId,
+    fromRole: args.fromRole,
+    fromTypes: args.fromTypes,
+    toId: args.toId,
+    toRole: args.toRole,
+    toTypes: args.toTypes,
+    relationship_type: args.relationship_type,
+    startTimeStart: args.startTimeStart,
+    startTimeStop: args.startTimeStop,
+    stopTimeStart: args.stopTimeStart,
+    stopTimeStop: args.stopTimeStop,
+    firstSeenStart: args.firstSeenStart,
+    firstSeenStop: args.firstSeenStop,
+    lastSeenStart: args.lastSeenStart,
+    lastSeenStop: args.lastSeenStop,
+    confidences: args.confidences,
+    stix: args.stix,
+  };
+
+  // Use standard API
+  return stixRelationships(context, user, parameters);
+};
+// endregion

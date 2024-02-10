@@ -17457,11 +17457,18 @@ export type Query = {
   playbooks?: Maybe<PlaybookConnection>;
   position?: Maybe<Position>;
   positions?: Maybe<PositionConnection>;
+  publicBookmarks?: Maybe<StixDomainObjectConnection>;
   publicDashboard?: Maybe<PublicDashboard>;
   publicDashboardByUriKey?: Maybe<PublicDashboard>;
   publicDashboards?: Maybe<PublicDashboardConnection>;
+  publicStixCoreObjects?: Maybe<StixCoreObjectConnection>;
+  publicStixCoreObjectsDistribution?: Maybe<Array<Maybe<Distribution>>>;
   publicStixCoreObjectsMultiTimeSeries?: Maybe<Array<Maybe<MultiTimeSeries>>>;
   publicStixCoreObjectsNumber?: Maybe<Number>;
+  publicStixRelationships?: Maybe<StixRelationshipConnection>;
+  publicStixRelationshipsDistribution?: Maybe<Array<Maybe<Distribution>>>;
+  publicStixRelationshipsMultiTimeSeries?: Maybe<Array<Maybe<MultiTimeSeries>>>;
+  publicStixRelationshipsNumber?: Maybe<Number>;
   rabbitMQMetrics?: Maybe<RabbitMqMetrics>;
   region?: Maybe<Region>;
   regions?: Maybe<RegionConnection>;
@@ -18775,6 +18782,15 @@ export type QueryPositionsArgs = {
 };
 
 
+export type QueryPublicBookmarksArgs = {
+  after?: InputMaybe<Scalars['ID']['input']>;
+  first?: InputMaybe<Scalars['Int']['input']>;
+  types?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  uriKey: Scalars['String']['input'];
+  widgetId: Scalars['String']['input'];
+};
+
+
 export type QueryPublicDashboardArgs = {
   id: Scalars['String']['input'];
 };
@@ -18795,9 +18811,35 @@ export type QueryPublicDashboardsArgs = {
 };
 
 
+export type QueryPublicStixCoreObjectsArgs = {
+  after?: InputMaybe<Scalars['ID']['input']>;
+  first?: InputMaybe<Scalars['Int']['input']>;
+  orderBy?: InputMaybe<StixCoreObjectsOrdering>;
+  orderMode?: InputMaybe<OrderingMode>;
+  uriKey: Scalars['String']['input'];
+  widgetId: Scalars['String']['input'];
+};
+
+
+export type QueryPublicStixCoreObjectsDistributionArgs = {
+  dateAttribute?: InputMaybe<Scalars['String']['input']>;
+  endDate?: InputMaybe<Scalars['DateTime']['input']>;
+  field: Scalars['String']['input'];
+  limit?: InputMaybe<Scalars['Int']['input']>;
+  operation: StatsOperation;
+  order?: InputMaybe<Scalars['String']['input']>;
+  relationship_type?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  search?: InputMaybe<Scalars['String']['input']>;
+  startDate?: InputMaybe<Scalars['DateTime']['input']>;
+  toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  uriKey: Scalars['String']['input'];
+  widgetId: Scalars['String']['input'];
+};
+
+
 export type QueryPublicStixCoreObjectsMultiTimeSeriesArgs = {
   endDate?: InputMaybe<Scalars['DateTime']['input']>;
-  startDate: Scalars['DateTime']['input'];
+  startDate?: InputMaybe<Scalars['DateTime']['input']>;
   uriKey: Scalars['String']['input'];
   widgetId: Scalars['String']['input'];
 };
@@ -18806,6 +18848,99 @@ export type QueryPublicStixCoreObjectsMultiTimeSeriesArgs = {
 export type QueryPublicStixCoreObjectsNumberArgs = {
   endDate?: InputMaybe<Scalars['DateTime']['input']>;
   startDate?: InputMaybe<Scalars['DateTime']['input']>;
+  uriKey: Scalars['String']['input'];
+  widgetId: Scalars['String']['input'];
+};
+
+
+export type QueryPublicStixRelationshipsArgs = {
+  after?: InputMaybe<Scalars['ID']['input']>;
+  confidences?: InputMaybe<Array<InputMaybe<Scalars['Int']['input']>>>;
+  dynamicFrom?: InputMaybe<FilterGroup>;
+  dynamicTo?: InputMaybe<FilterGroup>;
+  elementWithTargetTypes?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  endDate?: InputMaybe<Scalars['DateTime']['input']>;
+  first?: InputMaybe<Scalars['Int']['input']>;
+  firstSeenStart?: InputMaybe<Scalars['DateTime']['input']>;
+  firstSeenStop?: InputMaybe<Scalars['DateTime']['input']>;
+  fromId?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  fromOrToId?: InputMaybe<Scalars['String']['input']>;
+  fromRole?: InputMaybe<Scalars['String']['input']>;
+  fromTypes?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  lastSeenStart?: InputMaybe<Scalars['DateTime']['input']>;
+  lastSeenStop?: InputMaybe<Scalars['DateTime']['input']>;
+  orderBy?: InputMaybe<StixRelationshipsOrdering>;
+  orderMode?: InputMaybe<OrderingMode>;
+  relationship_type?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  search?: InputMaybe<Scalars['String']['input']>;
+  startDate?: InputMaybe<Scalars['DateTime']['input']>;
+  startTimeStart?: InputMaybe<Scalars['DateTime']['input']>;
+  startTimeStop?: InputMaybe<Scalars['DateTime']['input']>;
+  stix?: InputMaybe<Scalars['Boolean']['input']>;
+  stopTimeStart?: InputMaybe<Scalars['DateTime']['input']>;
+  stopTimeStop?: InputMaybe<Scalars['DateTime']['input']>;
+  toId?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  toRole?: InputMaybe<Scalars['String']['input']>;
+  toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  uriKey: Scalars['String']['input'];
+  widgetId: Scalars['String']['input'];
+};
+
+
+export type QueryPublicStixRelationshipsDistributionArgs = {
+  aggregateOnConnections?: InputMaybe<Scalars['Boolean']['input']>;
+  confidences?: InputMaybe<Array<InputMaybe<Scalars['Int']['input']>>>;
+  dateAttribute?: InputMaybe<Scalars['String']['input']>;
+  dynamicFrom?: InputMaybe<FilterGroup>;
+  dynamicTo?: InputMaybe<FilterGroup>;
+  elementWithTargetTypes?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  endDate?: InputMaybe<Scalars['DateTime']['input']>;
+  fromId?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  fromOrToId?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  fromRole?: InputMaybe<Scalars['String']['input']>;
+  fromTypes?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  isTo?: InputMaybe<Scalars['Boolean']['input']>;
+  limit?: InputMaybe<Scalars['Int']['input']>;
+  order?: InputMaybe<Scalars['String']['input']>;
+  relationship_type?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  search?: InputMaybe<Scalars['String']['input']>;
+  startDate?: InputMaybe<Scalars['DateTime']['input']>;
+  toId?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  toRole?: InputMaybe<Scalars['String']['input']>;
+  toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  uriKey: Scalars['String']['input'];
+  widgetId: Scalars['String']['input'];
+};
+
+
+export type QueryPublicStixRelationshipsMultiTimeSeriesArgs = {
+  endDate?: InputMaybe<Scalars['DateTime']['input']>;
+  startDate?: InputMaybe<Scalars['DateTime']['input']>;
+  uriKey: Scalars['String']['input'];
+  widgetId: Scalars['String']['input'];
+};
+
+
+export type QueryPublicStixRelationshipsNumberArgs = {
+  authorId?: InputMaybe<Scalars['String']['input']>;
+  confidences?: InputMaybe<Array<InputMaybe<Scalars['Int']['input']>>>;
+  dateAttribute?: InputMaybe<Scalars['String']['input']>;
+  dynamicFrom?: InputMaybe<FilterGroup>;
+  dynamicTo?: InputMaybe<FilterGroup>;
+  elementWithTargetTypes?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  endDate?: InputMaybe<Scalars['DateTime']['input']>;
+  fromId?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  fromOrToId?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  fromRole?: InputMaybe<Scalars['String']['input']>;
+  fromTypes?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  noDirection?: InputMaybe<Scalars['Boolean']['input']>;
+  onlyInferred?: InputMaybe<Scalars['Boolean']['input']>;
+  relationship_type?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  search?: InputMaybe<Scalars['String']['input']>;
+  startDate?: InputMaybe<Scalars['DateTime']['input']>;
+  toId?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  toRole?: InputMaybe<Scalars['String']['input']>;
+  toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   uriKey: Scalars['String']['input'];
   widgetId: Scalars['String']['input'];
 };
@@ -34667,11 +34802,18 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   playbooks?: Resolver<Maybe<ResolversTypes['PlaybookConnection']>, ParentType, ContextType, Partial<QueryPlaybooksArgs>>;
   position?: Resolver<Maybe<ResolversTypes['Position']>, ParentType, ContextType, RequireFields<QueryPositionArgs, 'id'>>;
   positions?: Resolver<Maybe<ResolversTypes['PositionConnection']>, ParentType, ContextType, Partial<QueryPositionsArgs>>;
+  publicBookmarks?: Resolver<Maybe<ResolversTypes['StixDomainObjectConnection']>, ParentType, ContextType, RequireFields<QueryPublicBookmarksArgs, 'uriKey' | 'widgetId'>>;
   publicDashboard?: Resolver<Maybe<ResolversTypes['PublicDashboard']>, ParentType, ContextType, RequireFields<QueryPublicDashboardArgs, 'id'>>;
   publicDashboardByUriKey?: Resolver<Maybe<ResolversTypes['PublicDashboard']>, ParentType, ContextType, RequireFields<QueryPublicDashboardByUriKeyArgs, 'uri_key'>>;
   publicDashboards?: Resolver<Maybe<ResolversTypes['PublicDashboardConnection']>, ParentType, ContextType, Partial<QueryPublicDashboardsArgs>>;
-  publicStixCoreObjectsMultiTimeSeries?: Resolver<Maybe<Array<Maybe<ResolversTypes['MultiTimeSeries']>>>, ParentType, ContextType, RequireFields<QueryPublicStixCoreObjectsMultiTimeSeriesArgs, 'startDate' | 'uriKey' | 'widgetId'>>;
+  publicStixCoreObjects?: Resolver<Maybe<ResolversTypes['StixCoreObjectConnection']>, ParentType, ContextType, RequireFields<QueryPublicStixCoreObjectsArgs, 'uriKey' | 'widgetId'>>;
+  publicStixCoreObjectsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<QueryPublicStixCoreObjectsDistributionArgs, 'field' | 'operation' | 'uriKey' | 'widgetId'>>;
+  publicStixCoreObjectsMultiTimeSeries?: Resolver<Maybe<Array<Maybe<ResolversTypes['MultiTimeSeries']>>>, ParentType, ContextType, RequireFields<QueryPublicStixCoreObjectsMultiTimeSeriesArgs, 'uriKey' | 'widgetId'>>;
   publicStixCoreObjectsNumber?: Resolver<Maybe<ResolversTypes['Number']>, ParentType, ContextType, RequireFields<QueryPublicStixCoreObjectsNumberArgs, 'uriKey' | 'widgetId'>>;
+  publicStixRelationships?: Resolver<Maybe<ResolversTypes['StixRelationshipConnection']>, ParentType, ContextType, RequireFields<QueryPublicStixRelationshipsArgs, 'uriKey' | 'widgetId'>>;
+  publicStixRelationshipsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<QueryPublicStixRelationshipsDistributionArgs, 'uriKey' | 'widgetId'>>;
+  publicStixRelationshipsMultiTimeSeries?: Resolver<Maybe<Array<Maybe<ResolversTypes['MultiTimeSeries']>>>, ParentType, ContextType, RequireFields<QueryPublicStixRelationshipsMultiTimeSeriesArgs, 'uriKey' | 'widgetId'>>;
+  publicStixRelationshipsNumber?: Resolver<Maybe<ResolversTypes['Number']>, ParentType, ContextType, RequireFields<QueryPublicStixRelationshipsNumberArgs, 'uriKey' | 'widgetId'>>;
   rabbitMQMetrics?: Resolver<Maybe<ResolversTypes['RabbitMQMetrics']>, ParentType, ContextType, Partial<QueryRabbitMqMetricsArgs>>;
   region?: Resolver<Maybe<ResolversTypes['Region']>, ParentType, ContextType, RequireFields<QueryRegionArgs, 'id'>>;
   regions?: Resolver<Maybe<ResolversTypes['RegionConnection']>, ParentType, ContextType, Partial<QueryRegionsArgs>>;

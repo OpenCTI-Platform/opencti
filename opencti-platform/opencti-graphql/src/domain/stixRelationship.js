@@ -8,6 +8,7 @@ import { STIX_SPEC_VERSION, stixCoreRelationshipsMapping } from '../database/sti
 import { UnsupportedError } from '../config/errors';
 import { schemaTypesDefinition } from '../schema/schema-types';
 import { isFilterGroupNotEmpty } from '../utils/filtering/filtering-utils';
+import { logApp } from '../config/conf';
 
 export const buildArgsFromDynamicFilters = async (context, user, args) => {
   const { dynamicFrom, dynamicTo } = args;

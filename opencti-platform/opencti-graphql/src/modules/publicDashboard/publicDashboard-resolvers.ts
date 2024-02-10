@@ -8,7 +8,14 @@ import {
   getPublicDashboardByUriKey,
   getAllowedMarkings,
   publicStixCoreObjectsNumber,
-  publicStixCoreObjectsMultiTimeSeries
+  publicStixCoreObjectsMultiTimeSeries,
+  publicStixRelationshipsMultiTimeSeries,
+  publicStixRelationshipsNumber,
+  publicStixCoreObjectsDistribution,
+  publicStixRelationshipsDistribution,
+  publicBookmarks,
+  publicStixCoreObjects,
+  publicStixRelationships
 } from './publicDashboard-domain';
 import { getAuthorizedMembers } from '../../utils/authorizedMembers';
 
@@ -19,6 +26,13 @@ const publicDashboardResolvers: Resolvers = {
     publicDashboardByUriKey: (_, { uri_key }, context) => getPublicDashboardByUriKey(context, uri_key),
     publicStixCoreObjectsNumber: (_, args, context) => publicStixCoreObjectsNumber(context, args),
     publicStixCoreObjectsMultiTimeSeries: (_, args, context) => publicStixCoreObjectsMultiTimeSeries(context, args),
+    publicStixRelationshipsMultiTimeSeries: (_, args, context) => publicStixRelationshipsMultiTimeSeries(context, args),
+    publicStixRelationshipsNumber: (_, args, context) => publicStixRelationshipsNumber(context, args),
+    publicStixCoreObjectsDistribution: (_, args, context) => publicStixCoreObjectsDistribution(context, args),
+    publicStixRelationshipsDistribution: (_, args, context) => publicStixRelationshipsDistribution(context, args),
+    publicBookmarks: (_, args, context) => publicBookmarks(context, args),
+    publicStixCoreObjects: (_, args, context) => publicStixCoreObjects(context, args),
+    publicStixRelationships: (_, args, context) => publicStixRelationships(context, args),
   },
   PublicDashboard: {
     authorized_members: (publicDashboard, _, context) => getAuthorizedMembers(context, context.user, publicDashboard),
