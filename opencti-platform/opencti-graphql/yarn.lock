@@ -9964,10 +9964,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"jose@npm:5.2.0":
-  version: 5.2.0
-  resolution: "jose@npm:5.2.0"
-  checksum: 10/40712b3f6149aa6fbb43630bc510485d17561d2c9adcaf25ec663f092ea587c3e2776826eccc2a12e82be9ad1a54e1266bc035aa5a35db1470ee7ff5082f45c6
+"jose@npm:5.2.1":
+  version: 5.2.1
+  resolution: "jose@npm:5.2.1"
+  checksum: 10/a3526af02f1ea713b48743aadb4198080c8eb3281d53907224e70021d8c02e69ae43e27ace4ef9a196fec8fa6fa22272e2a6aa035cba16adf631af36564a07d2
   languageName: node
   linkType: hard
 
