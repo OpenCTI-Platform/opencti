@@ -63,7 +63,7 @@ const ResponseDialog: FunctionComponent<ResponseDialogProps> = ({
   const markdownFieldRef = useRef<HTMLTextAreaElement>(null);
   const { t_i18n } = useFormatter();
   const [markdownSelectedTab, setMarkdownSelectedTab] = useState<'write' | 'preview' | undefined>('write');
-  const handleResponse = (response: ResponseDialogAskAISubscription$data | null | undefined | unknown) => {
+  const handleResponse = (response: ResponseDialogAskAISubscription$data | null | undefined) => {
     const newContent = response ? (response as ResponseDialogAskAISubscription$data).aiBus?.content : null;
     if (format === 'text' || format === 'json') {
       if (isNotEmptyField(textFieldRef?.current?.scrollTop)) {
@@ -87,10 +87,12 @@ const ResponseDialog: FunctionComponent<ResponseDialogProps> = ({
     () => ({
       subscription,
       variables: { id },
-      onNext: handleResponse,
+      onNext: (response: ResponseDialogAskAISubscription$data | null | undefined) => handleResponse(response),
     }),
     [id],
   );
+  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+  // @ts-ignore
   useSubscription(subConfig);
   const height = 400;
   return (
