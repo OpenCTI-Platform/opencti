@@ -18,14 +18,14 @@ import type { RuleDefinition, RuleRuntime, RuleScope } from '../types/rules';
 import type { BasicManagerEntity, BasicStoreCommon, BasicStoreEntity, StoreObject } from '../types/store';
 import type { AuthContext, AuthUser } from '../types/user';
 import type { RuleManager } from '../generated/graphql';
+import { FilterMode, FilterOperator } from '../generated/graphql';
 import type { StixCoreObject } from '../types/stix-common';
 import { STIX_EXT_OCTI } from '../types/stix-extensions';
 import type { StixRelation, StixSighting } from '../types/stix-sro';
 import type { BaseEvent, DataEvent, DeleteEvent, MergeEvent, SseEvent, StreamDataEvent, UpdateEvent } from '../types/event';
-import { getActivatedRules, RULES_DECLARATION } from '../domain/rules';
+import { getActivatedRules } from '../domain/rules';
 import { executionContext, RULE_MANAGER_USER } from '../utils/access';
 import { isModuleActivated } from '../domain/settings';
-import { FilterMode, FilterOperator } from '../generated/graphql';
 import { elList } from '../database/engine';
 
 const MIN_LIVE_STREAM_EVENT_VERSION = 4;
@@ -141,7 +141,7 @@ const handleRuleError = async (event: BaseEvent, error: unknown) => {
   logApp.error(error, { event, type });
 };
 
-const applyCleanupOnDependencyIds = async (deletionIds: Array<string>) => {
+const applyCleanupOnDependencyIds = async (deletionIds: Array<string>, rules: Array<RuleRuntime>) => {
   const context = executionContext('rule_cleaner', RULE_MANAGER_USER);
   const filters = {
     mode: FilterMode.And,
@@ -150,7 +150,7 @@ const applyCleanupOnDependencyIds = async (deletionIds: Array<string>) => {
   };
   const callback = async (elements: Array<BasicStoreCommon>) => {
     // eslint-disable-next-line @typescript-eslint/no-use-before-define
-    await rulesCleanHandler(context, RULE_MANAGER_USER, elements, RULES_DECLARATION, deletionIds);
+    await rulesCleanHandler(context, RULE_MANAGER_USER, elements, rules, deletionIds);
   };
   const opts = { filters, noFiltersChecking: true, callback };
   await elList(context, RULE_MANAGER_USER, READ_DATA_INDICES, opts);
@@ -177,7 +177,8 @@ export const rulesApplyHandler = async (context: AuthContext, user: AuthUser, ev
       if (type === EVENT_TYPE_DELETE) {
         const deleteEvent = event as DeleteEvent;
         const internalId = deleteEvent.data.extensions[STIX_EXT_OCTI].id;
-        await applyCleanupOnDependencyIds([internalId]);
+        logApp.info(`[OPENCTI] applyCleanupOnDependencyIds ${internalId}`);
+        await applyCleanupOnDependencyIds([internalId], rules);
       }
       // In case of update apply the event on every rules
       if (type === EVENT_TYPE_UPDATE) {
@@ -193,7 +194,7 @@ export const rulesApplyHandler = async (context: AuthContext, user: AuthUser, ev
           const impactDependencies = isAttributesImpactDependencies(rule, previousPatch);
           // Rule doesn't match anymore, need to clean up
           if (impactDependencies || (isPreviouslyMatched && !isCurrentMatched)) {
-            await applyCleanupOnDependencyIds([internalId]);
+            await applyCleanupOnDependencyIds([internalId], [rule]);
           }
           // Rule match, need to apply
           if (isCurrentMatched) {

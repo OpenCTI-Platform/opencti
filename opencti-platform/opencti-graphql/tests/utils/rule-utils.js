@@ -8,7 +8,6 @@ import { internalLoadById, listEntities } from '../../src/database/middleware-lo
 import { queryAsAdmin, testContext } from './testQuery';
 import { fetchStreamInfo } from '../../src/database/redis';
 import { logApp } from '../../src/config/conf';
-import ruleEngine from '../../src/manager/ruleManager';
 
 export const inferenceLookup = async (inferences, fromStandardId, toStandardId, type) => {
   for (let index = 0; index < inferences.length; index += 1) {
@@ -40,11 +39,6 @@ const RULE_MUTATION = gql`
 
 export const changeRule = async (ruleId, active) => {
   const start = new Date().getTime();
-  if (active) {
-    await ruleEngine.start();
-  } else {
-    await ruleEngine.shutdown();
-  }
   // Change the status
   await queryAsAdmin({ query: RULE_MUTATION, variables: { id: ruleId, enable: active } });
   // Wait for rule to finish activation
