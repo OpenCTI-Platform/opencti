@@ -80,7 +80,7 @@
     "remark-parse": "11.0.0",
     "rxjs": "7.8.1",
     "subscriptions-transport-ws": "0.11.0",
-    "three-spritetext": "1.8.1",
+    "three-spritetext": "1.8.2",
     "typeface-ibm-plex-sans": "1.1.13",
     "typeface-roboto": "1.1.13",
     "unified": "11.0.4",

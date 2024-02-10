@@ -15333,7 +15333,7 @@ __metadata:
     rxjs: "npm:7.8.1"
     subscriptions-transport-ws: "npm:0.11.0"
     tap: "npm:18.6.1"
-    three-spritetext: "npm:1.8.1"
+    three-spritetext: "npm:1.8.2"
     typeface-ibm-plex-sans: "npm:1.1.13"
     typeface-roboto: "npm:1.1.13"
     typescript: "npm:5.3.3"
@@ -19377,12 +19377,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"three-spritetext@npm:1.8.1":
-  version: 1.8.1
-  resolution: "three-spritetext@npm:1.8.1"
+"three-spritetext@npm:1.8.2":
+  version: 1.8.2
+  resolution: "three-spritetext@npm:1.8.2"
   peerDependencies:
     three: ">=0.86.0"
-  checksum: 10/dad6c3bfa404fcd70269b9937b9a93f2f07aa70b92b8f01b5fd885333fcac2d2c0e760c25617d6076ae46e72ada659fd82647275bf423492948b6e74e0aa0367
+  checksum: 10/70d7dfc4fd3acf4f8587e47075fecd8b315d6ca2d81a168d60cda11e191304c4218f6a3442f056a0851cfff09e3a3088b6c720b993ae6ef68dd4731243c6bde2
   languageName: node
   linkType: hard
 
