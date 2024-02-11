@@ -1978,7 +1978,7 @@ const completeSpecialFilterKeys = async (context, user, inputFilters) => {
           throw UnsupportedError('regardingOf only support types equality restriction');
         }
         const types = type?.values;
-        const keys = isEmptyField(types) ? buildRefRelationKey('*') : types.map((t) => buildRefRelationKey(t));
+        const keys = isEmptyField(types) ? buildRefRelationKey('*', '*') : types.map((t) => buildRefRelationKey(t, '*'));
         if (isEmptyField(ids)) {
           keys.forEach((relKey) => {
             regardingFilters.push({ key: [relKey], operator, values: ['EXISTS'] });
