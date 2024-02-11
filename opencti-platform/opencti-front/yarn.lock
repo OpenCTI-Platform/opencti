@@ -8895,15 +8895,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"dom-helpers@npm:^3.4.0":
-  version: 3.4.0
-  resolution: "dom-helpers@npm:3.4.0"
-  dependencies:
-    "@babel/runtime": "npm:^7.1.2"
-  checksum: 10/63ce62469be8cb481c41811f6b463a1b071dce8a7cd73a39cd4fdaa1e570201af6e7a895a502f4db414e2cc0533e44096ad95c13f303e5a3c3a036f0a43798e4
-  languageName: node
-  linkType: hard
-
 "dom-helpers@npm:^5.0.1, dom-helpers@npm:^5.1.3":
   version: 5.2.1
   resolution: "dom-helpers@npm:5.2.1"
@@ -10345,7 +10336,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"fast-equals@npm:^5.0.0":
+"fast-equals@npm:^5.0.1":
   version: 5.0.1
   resolution: "fast-equals@npm:5.0.1"
   checksum: 10/9dc1ef767903600e5694a89a787782fc3a4f56cc04d235afc13616c848c33563b8f415b1c6a248b2a236424f624aa1a7513f46b7fa69590a640e7784f1296bce
@@ -15256,7 +15247,7 @@ __metadata:
     react-timeline-range-slider: "npm:1.4.1"
     react-virtualized: "npm:9.22.5"
     reactflow: "npm:11.10.3"
-    recharts: "npm:2.10.4"
+    recharts: "npm:2.12.0"
     relay-compiler: "npm:16.1.0"
     relay-runtime: "npm:16.2.0"
     relay-test-utils: "npm:16.2.0"
@@ -17002,17 +16993,17 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-smooth@npm:^2.0.5":
-  version: 2.0.5
-  resolution: "react-smooth@npm:2.0.5"
+"react-smooth@npm:^4.0.0":
+  version: 4.0.0
+  resolution: "react-smooth@npm:4.0.0"
   dependencies:
-    fast-equals: "npm:^5.0.0"
-    react-transition-group: "npm:2.9.0"
+    fast-equals: "npm:^5.0.1"
+    prop-types: "npm:^15.8.1"
+    react-transition-group: "npm:^4.4.5"
   peerDependencies:
-    prop-types: ^15.6.0
-    react: ^15.0.0 || ^16.0.0 || ^17.0.0 || ^18.0.0
-    react-dom: ^15.0.0 || ^16.0.0 || ^17.0.0 || ^18.0.0
-  checksum: 10/a8e44f55e4ee7ebd911f982da7f0966e676aaa5a17314bb8c44106eddc4e430c8a6e26f23015836a5dca4e92a5ce0ab0622aa020ba4f87195a7f19fed02357ad
+    react: ^16.8.0 || ^17.0.0 || ^18.0.0
+    react-dom: ^16.8.0 || ^17.0.0 || ^18.0.0
+  checksum: 10/d7f31fe71d179f5d0d434cd71cc264b2a84b1cda4f5a2f6d2f2b4d78733e8641bdd738a6c53bcf3a228b6e3351fb56e15baf295c2bcf7bee902aeeb643e3325b
   languageName: node
   linkType: hard
 
@@ -17057,21 +17048,6 @@ __metadata:
     react: ^17.0.2
     react-dom: ^17.0.2
   checksum: 10/0b09f74ac1fd4b7240e7a7b5ed9ffd68f27a00f2bdd96f2fcda992b03dcd281c8810bb2385477b9847487136dad12b8be636e325a8426db71a77d0f26d22d0c7
-  languageName: node
-  linkType: hard
-
-"react-transition-group@npm:2.9.0":
-  version: 2.9.0
-  resolution: "react-transition-group@npm:2.9.0"
-  dependencies:
-    dom-helpers: "npm:^3.4.0"
-    loose-envify: "npm:^1.4.0"
-    prop-types: "npm:^15.6.2"
-    react-lifecycles-compat: "npm:^3.0.4"
-  peerDependencies:
-    react: ">=15.0.0"
-    react-dom: ">=15.0.0"
-  checksum: 10/1c26e2f7807547d7ebb9c317b8b63c0edaa7542bf2734309c9036484af4825cebb7e32e0ecdd94d7fbffa3c65666530bde9a84f673d438acf9a4d49e0aaed180
   languageName: node
   linkType: hard
 
@@ -17268,23 +17244,22 @@ __metadata:
   languageName: node
   linkType: hard
 
-"recharts@npm:2.10.4":
-  version: 2.10.4
-  resolution: "recharts@npm:2.10.4"
+"recharts@npm:2.12.0":
+  version: 2.12.0
+  resolution: "recharts@npm:2.12.0"
   dependencies:
     clsx: "npm:^2.0.0"
     eventemitter3: "npm:^4.0.1"
     lodash: "npm:^4.17.19"
     react-is: "npm:^16.10.2"
-    react-smooth: "npm:^2.0.5"
+    react-smooth: "npm:^4.0.0"
     recharts-scale: "npm:^0.4.4"
     tiny-invariant: "npm:^1.3.1"
     victory-vendor: "npm:^36.6.8"
   peerDependencies:
-    prop-types: ^15.6.0
     react: ^16.0.0 || ^17.0.0 || ^18.0.0
     react-dom: ^16.0.0 || ^17.0.0 || ^18.0.0
-  checksum: 10/e1ed7b97c5d02225e226a86ec371ea01b2c19ada6a5538cef5930d3a72a2e534de718d78b20ccd948b036fd4588d13bf875a5ea1d6a58162afaa3db2b9b80020
+  checksum: 10/080cdd9128fb180f96f9bc6480614094b8ac19af452f5dd6e200c5d630610ab1b584532deac8bc87baa3e19d25345c817496b595ed904a01782e94a2d29c15ff
   languageName: node
   linkType: hard
 
