@@ -84,6 +84,7 @@ const ContainerStixDomainObjects = ({
   const contextFilters: FilterGroup = {
     mode: 'and',
     filters: [
+      { key: 'objects', values: [containerData.id], operator: 'eq' },
       { key: 'entity_type', values: ['Stix-Domain-Object'], operator: 'eq' },
     ],
     filterGroups: userFilters && isFilterGroupNotEmpty(userFilters) ? [userFilters] : [],

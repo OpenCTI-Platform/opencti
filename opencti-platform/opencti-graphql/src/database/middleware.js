@@ -1845,7 +1845,7 @@ export const updateAttributeMetaResolved = async (context, user, initial, inputs
       const relDef = schemaRelationsRefDefinition.getRelationRef(updatedInstance.entity_type, key);
       const relType = relDef.databaseName;
       // ref and _refs are expecting direct identifier in the value
-      // We dont care about the operation here, the only thing we can do is replace
+      // We don't care about the operation here, the only thing we can do is replace
       if (!relDef.multiple) {
         const currentValue = updatedInstance[key];
         const { value: targetsCreated } = meta[metaIndex];
@@ -1883,7 +1883,7 @@ export const updateAttributeMetaResolved = async (context, user, initial, inputs
         }
         if (operation === UPDATE_OPERATION_REPLACE) {
           // Delete all relations
-          const currentRels = await listAllRelations(context, user, relType, { fromId: initial.internal_id });
+          const currentRels = await listAllRelations(context, user, relType, { indices: READ_RELATIONSHIPS_INDICES_WITHOUT_INFERRED, fromId: initial.internal_id });
           const currentRelsToIds = currentRels.map((n) => n.toId);
           const newTargetsIds = refs.map((n) => n.id);
           if (R.symmetricDifference(newTargetsIds, currentRelsToIds).length > 0) {
@@ -1901,7 +1901,8 @@ export const updateAttributeMetaResolved = async (context, user, initial, inputs
           }
         }
         if (operation === UPDATE_OPERATION_ADD) {
-          const currentIds = (updatedInstance[key] || []).map((o) => [o.id, o.standard_id]).flat();
+          const filteredList = (updatedInstance[key] || []).filter((d) => !isInferredIndex(d.i_relation._index));
+          const currentIds = filteredList.map((o) => [o.id, o.standard_id]).flat();
           const refsToCreate = refs.filter((r) => !currentIds.includes(r.internal_id));
           if (refsToCreate.length > 0) {
             const newRelations = buildInstanceRelTo(refsToCreate, relType);
@@ -1913,7 +1914,7 @@ export const updateAttributeMetaResolved = async (context, user, initial, inputs
         }
         if (operation === UPDATE_OPERATION_REMOVE) {
           const targetIds = refs.map((t) => t.internal_id);
-          const currentRels = await listAllRelations(context, user, relType, { fromId: initial.internal_id });
+          const currentRels = await listAllRelations(context, user, relType, { indices: READ_RELATIONSHIPS_INDICES_WITHOUT_INFERRED, fromId: initial.internal_id });
           const relsToDelete = currentRels.filter((c) => targetIds.includes(c.toId));
           if (relsToDelete.length > 0) {
             relationsToDelete.push(...relsToDelete);
@@ -3319,7 +3320,7 @@ export const deleteRelationsByFromAndTo = async (context, user, fromId, toId, re
   if (!validateUserAccessOperation(user, fromThing, 'edit') || !validateUserAccessOperation(user, toThing, 'edit')) {
     throw ForbiddenAccess();
   }
-  // Looks like the caller doesnt give the correct from, to currently
+  // Looks like the caller doesn't give the correct from, to currently
   const relationsCallback = async (relationsToDelete) => {
     for (let i = 0; i < relationsToDelete.length; i += 1) {
       const r = relationsToDelete[i];
