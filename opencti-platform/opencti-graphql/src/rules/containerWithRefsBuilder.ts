@@ -36,6 +36,7 @@ const buildContainerRefsRule = (ruleDefinition: RuleDefinition, containerType: s
       `${partOfFromId}_ref`,
       partOfId,
       partOfTargetId,
+      `${partOfTargetId}_ref`,
     ];
   };
   type ArrayRefs = Array<{ partOfFromId: string, partOfId: string, partOfStandardId: StixId; partOfTargetId: string; partOfTargetStandardId: StixId }>;
