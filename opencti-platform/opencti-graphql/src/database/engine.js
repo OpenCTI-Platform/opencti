@@ -2830,15 +2830,18 @@ export const elDeleteElements = async (context, user, elements) => {
   const { relations, relationsToRemoveMap } = await getRelationsToRemove(context, user, elements);
   // Compute the id that needs to be removed from rel
   const basicCleanup = elements.filter((f) => isBasicRelationship(f.entity_type));
-  // Remove all related relations and elements
-  const elementsToDelete = [...elements, ...relations];
-  logApp.debug(`[SEARCH] Deleting related relations ${elementsToDelete.length}`);
-  await elDeleteInstances(elementsToDelete);
   // Update all rel connections that will remain
   const cleanupRelations = relations.concat(basicCleanup);
   const toBeRemovedIds = elements.map((e) => e.internal_id);
   const elementsImpact = await computeDeleteElementsImpacts(cleanupRelations, toBeRemovedIds, relationsToRemoveMap);
+  // 01. Start by clearing connections rel
   await elRemoveRelationConnection(context, user, elementsImpact);
+  // 02. Remove all related relations and elements
+  logApp.debug('[SEARCH] Deleting related relations', { size: relations.length });
+  await elDeleteInstances(relations);
+  // 03/ Remove all elements
+  logApp.debug('[SEARCH] Deleting elements', { size: elements.length });
+  await elDeleteInstances(elements);
 };
 
 export const prepareElementForIndexing = (element) => {
