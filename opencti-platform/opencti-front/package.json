@@ -131,7 +131,7 @@
     "tap": "18.7.0",
     "typescript": "5.3.3",
     "vite": "5.1.1",
-    "vite-plugin-relay": "2.0.0",
+    "vite-plugin-relay": "2.1.0",
     "vite-plugin-static-copy": "1.0.1",
     "vitest": "1.2.2"
   },
