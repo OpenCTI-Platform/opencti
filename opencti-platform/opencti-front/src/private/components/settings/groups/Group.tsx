@@ -27,6 +27,7 @@ import GroupEdition from './GroupEdition';
 import GroupPopover from './GroupPopover';
 import ItemIcon from '../../../../components/ItemIcon';
 import GroupHiddenTypesChipList from './GroupHiddenTypesChipList';
+import ExpandableMarkdown from '../../../../components/ExpandableMarkdown';
 
 const useStyles = makeStyles(() => ({
   container: {
@@ -157,7 +158,10 @@ const Group = ({ groupData }: { groupData: Group_group$key }) => {
                 <Typography variant="h3" gutterBottom={true}>
                   {t_i18n('Description')}
                 </Typography>
-                {group.description}
+                <ExpandableMarkdown
+                  source={group.description}
+                  limit={400}
+                />
               </Grid>
               <Grid item={true} xs={12}>
                 <GroupHiddenTypesChipList groupData={group} />

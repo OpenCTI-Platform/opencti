@@ -23,6 +23,7 @@ import CapabilitiesList from './CapabilitiesList';
 import { groupsSearchQuery } from '../Groups';
 import { GroupsSearchQuery } from '../__generated__/GroupsSearchQuery.graphql';
 import ItemIcon from '../../../../components/ItemIcon';
+import ExpandableMarkdown from '../../../../components/ExpandableMarkdown';
 
 const useStyles = makeStyles(() => ({
   container: {
@@ -116,7 +117,10 @@ const Role = ({
                 <Typography variant="h3" gutterBottom={true}>
                   {t_i18n('Description')}
                 </Typography>
-                {role.description}
+                <ExpandableMarkdown
+                  source={role.description}
+                  limit={400}
+                />
               </Grid>
               <Grid item={true} xs={12}>
                 <Typography variant="h3" gutterBottom={true}>
