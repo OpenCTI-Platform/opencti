@@ -561,5 +561,16 @@
   "Ethnicity": "Ethnicity",
   "Label": "Label",
   "External reference": "External reference",
-  "Kill chain phase": "Kill chain phase"
+  "Kill chain phase": "Kill chain phase",
+  "Lifetime": "Lifetime",
+  "Decay factor": "Decay factor",
+  "Reaction points": "Reaction points",
+  "Revoke score": "Revoke score",
+  "Indicator observable types": "Indicator observable types",
+  "Uri": "Uri",
+  "User_id": "User_id",
+  "Csv_mapper_id": "Csv_mapper_id",
+  "Ingestion_running": "Ingestion_running",
+  "Added_after_start": "Added_after_start",
+  "Current_state_hash": "Current_state_hash"
 }
