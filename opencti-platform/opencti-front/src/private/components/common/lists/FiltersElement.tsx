@@ -48,7 +48,6 @@ export interface FiltersElementProps {
   availableEntityTypes?: string[];
   availableRelationshipTypes?: string[];
   availableRelationFilterTypes?: Record<string, string[]>;
-  entityType?: string;
 }
 
 const FiltersElement: FunctionComponent<FiltersElementProps> = ({
@@ -63,11 +62,11 @@ const FiltersElement: FunctionComponent<FiltersElementProps> = ({
   availableEntityTypes,
   availableRelationshipTypes,
   availableRelationFilterTypes,
-  entityType,
 }) => {
   const { t_i18n } = useFormatter();
   const classes = useStyles();
-  const filterKeysMap = useBuildFilterKeysMapFromEntityType(entityType);
+  const { entityTypes } = searchContext;
+  const filterKeysMap = useBuildFilterKeysMapFromEntityType(entityTypes);
   const displayedFilters = availableFilterKeys
     .map((key) => {
       if (filterKeysMap.get(key)?.type === 'date') {

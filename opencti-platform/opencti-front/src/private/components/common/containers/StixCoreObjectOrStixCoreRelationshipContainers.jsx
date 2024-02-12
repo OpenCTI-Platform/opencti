@@ -75,7 +75,7 @@ const StixCoreObjectOrStixCoreRelationshipContainers = ({
   } = viewStorage;
 
   const reportFilterClass = reportType !== 'all' && reportType !== undefined ? reportType.replace(/_/g, ' ') : '';
-  const userFilters = useRemoveIdAndIncorrectKeysFromFilterGroupObject(filters, 'Stix-Core-Object');
+  const userFilters = useRemoveIdAndIncorrectKeysFromFilterGroupObject(filters, ['Container']);
   const contextFilters = {
     mode: 'and',
     filters: [

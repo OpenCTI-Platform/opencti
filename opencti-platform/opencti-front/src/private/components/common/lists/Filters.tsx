@@ -28,7 +28,6 @@ interface FiltersProps {
   };
   type?: string;
   helpers?: handleFilterHelpers;
-  entityType?: string;
 }
 
 const Filters: FunctionComponent<FiltersProps> = ({
@@ -47,7 +46,6 @@ const Filters: FunctionComponent<FiltersProps> = ({
   searchContext,
   type,
   helpers,
-  entityType,
 }) => {
   const navigate = useNavigate();
   const [open, setOpen] = useState(false);
@@ -76,7 +74,7 @@ const Filters: FunctionComponent<FiltersProps> = ({
       ],
     },
   );
-  const entityTypes = entityType ? [entityType] : ['Stix-Core-Object'];
+  const entityTypes = searchContext?.entityTypes ?? ['Stix-Core-Object'];
   setSearchEntitiesScope({
     searchContext: searchContext ?? { entityTypes },
     searchScope,
@@ -133,7 +131,6 @@ const Filters: FunctionComponent<FiltersProps> = ({
       availableEntityTypes={availableEntityTypes}
       availableRelationshipTypes={availableRelationshipTypes}
       availableRelationFilterTypes={availableRelationFilterTypes}
-      entityType={entityType}
     />
   );
   if (variant === FiltersVariant.dialog) {
@@ -169,7 +166,7 @@ const Filters: FunctionComponent<FiltersProps> = ({
           variant={variant}
           type={type}
           helpers={helpers}
-          entityType={entityType}
+          entityTypes={entityTypes}
         />
       ) : (
         <ListFiltersWithoutLocalStorage

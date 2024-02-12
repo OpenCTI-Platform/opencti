@@ -80,7 +80,7 @@ const ContainerStixDomainObjects = ({
     types,
   } = viewStorage;
 
-  const userFilters = useRemoveIdAndIncorrectKeysFromFilterGroupObject(filters, 'Stix-Domain-Object');
+  const userFilters = useRemoveIdAndIncorrectKeysFromFilterGroupObject(filters, ['Stix-Domain-Object']);
   const contextFilters: FilterGroup = {
     mode: 'and',
     filters: [

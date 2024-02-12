@@ -60,7 +60,7 @@ const CaseIncidentComponent: FunctionComponent<CaseIncidentProps> = ({ data }) =
     },
   );
   const { sortBy, orderAsc, filters } = viewStorage;
-  const userFilters = useRemoveIdAndIncorrectKeysFromFilterGroupObject(filters, 'Case-Incident');
+  const userFilters = useRemoveIdAndIncorrectKeysFromFilterGroupObject(filters, ['Case-Incident']);
   const contextTaskFilters: FilterGroup = {
     mode: 'and',
     filters: [

@@ -60,7 +60,7 @@ const EntityStixSightingRelationships: FunctionComponent<EntityStixSightingRelat
   } = viewStorage;
   const finalPaginationOptions = {
     ...paginationOptions,
-    filters: useRemoveIdAndIncorrectKeysFromFilterGroupObject(paginationOptions.filters as unknown as FilterGroup, 'stix-core-relationship'),
+    filters: useRemoveIdAndIncorrectKeysFromFilterGroupObject(paginationOptions.filters as unknown as FilterGroup, ['stix-core-relationship']),
   } as EntityStixSightingRelationshipsLinesPaginationQuery$variables;
   if (isTo) {
     finalPaginationOptions.toId = entityId;

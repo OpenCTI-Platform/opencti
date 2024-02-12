@@ -749,9 +749,9 @@ const DashboardComponent = ({ workspace, noToolbar }) => {
               ...widget,
               dataSelection: widget.dataSelection.map((data) => ({
                 ...data,
-                filters: useRemoveIdAndIncorrectKeysFromFilterGroupObject(data.filters, 'Stix-Core-Object'),
-                dynamicFrom: useRemoveIdAndIncorrectKeysFromFilterGroupObject(data.dynamicFrom, 'Stix-Core-Object'),
-                dynamicTo: useRemoveIdAndIncorrectKeysFromFilterGroupObject(data.dynamicTo, 'Stix-Core-Object'),
+                filters: useRemoveIdAndIncorrectKeysFromFilterGroupObject(data.filters, ['Stix-Core-Object']),
+                dynamicFrom: useRemoveIdAndIncorrectKeysFromFilterGroupObject(data.dynamicFrom, ['Stix-Core-Object']),
+                dynamicTo: useRemoveIdAndIncorrectKeysFromFilterGroupObject(data.dynamicTo, ['Stix-Core-Object']),
               })),
             };
             return <Paper
@@ -804,9 +804,9 @@ const DashboardComponent = ({ workspace, noToolbar }) => {
               ...widget,
               dataSelection: widget.dataSelection.map((data) => ({
                 ...data,
-                filters: useRemoveIdAndIncorrectKeysFromFilterGroupObject(data.filters, 'Stix-Core-Object'),
-                dynamicFrom: useRemoveIdAndIncorrectKeysFromFilterGroupObject(data.dynamicFrom, 'Stix-Core-Object'),
-                dynamicTo: useRemoveIdAndIncorrectKeysFromFilterGroupObject(data.dynamicTo, 'Stix-Core-Object'),
+                filters: useRemoveIdAndIncorrectKeysFromFilterGroupObject(data.filters, ['Stix-Core-Object']),
+                dynamicFrom: useRemoveIdAndIncorrectKeysFromFilterGroupObject(data.dynamicFrom, ['Stix-Core-Object']),
+                dynamicTo: useRemoveIdAndIncorrectKeysFromFilterGroupObject(data.dynamicTo, ['Stix-Core-Object']),
               })),
             };
             return <Paper

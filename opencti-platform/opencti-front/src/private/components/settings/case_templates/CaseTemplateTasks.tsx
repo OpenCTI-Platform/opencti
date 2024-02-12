@@ -187,7 +187,7 @@ const CaseTemplateTasks = () => {
     },
   );
   const { filters } = viewStorage;
-  const userFilters = useRemoveIdAndIncorrectKeysFromFilterGroupObject(filters, 'Case-Template');
+  const userFilters = useRemoveIdAndIncorrectKeysFromFilterGroupObject(filters, ['Case-Template']);
   const contextTaskFilters: FilterGroup = {
     mode: 'and',
     filters: [

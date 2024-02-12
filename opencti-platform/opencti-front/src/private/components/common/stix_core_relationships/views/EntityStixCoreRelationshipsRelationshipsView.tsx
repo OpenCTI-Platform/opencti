@@ -127,7 +127,7 @@ const EntityStixCoreRelationshipsRelationshipsView: FunctionComponent<EntityStix
   };
 
   // Filters due to screen context
-  const userFilters = useRemoveIdAndIncorrectKeysFromFilterGroupObject(filters, 'stix-core-relationship');
+  const userFilters = useRemoveIdAndIncorrectKeysFromFilterGroupObject(filters, ['stix-core-relationship']);
   const predefinedFilters = [{ key: 'relationship_type', values: relationshipTypes }];
   if (allDirections) {
     predefinedFilters.push({ key: 'fromOrToId', values: [entityId] });

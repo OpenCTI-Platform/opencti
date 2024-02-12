@@ -238,7 +238,7 @@ StixDomainObjectThreatKnowledgeProps
       ? ['stix-relationship']
       : ['stix-core-relationship', 'stix-sighting-relationship'];
   }
-  const userFilters = useRemoveIdAndIncorrectKeysFromFilterGroupObject(filters, 'stix-core-relationship');
+  const userFilters = useRemoveIdAndIncorrectKeysFromFilterGroupObject(filters, ['stix-core-relationship']);
   const contextFilters: FilterGroup = {
     mode: 'and',
     filters: [

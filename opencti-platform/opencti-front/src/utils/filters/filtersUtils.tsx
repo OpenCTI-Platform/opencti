@@ -630,9 +630,22 @@ export const getAvailableOperatorForFilter = (
   return getAvailableOperatorForFilterKey(filterDefinition);
 };
 
-export const useRemoveIdAndIncorrectKeysFromFilterGroupObject = (filters?: FilterGroup | null, entityType = 'Basic-Object'): FilterGroup | undefined => {
+export const useBuildFilterKeysMapFromEntityType = (entityTypes = ['Stix-Core-Object']): Map<string, FilterDefinition> => {
   const { filterKeysSchema } = useAuth().schema;
-  const availableFilterKeys = Array.from(filterKeysSchema.get(entityType)?.keys() ?? []);
+  if (entityTypes.length === 1) {
+    return filterKeysSchema.get(entityTypes[0]) ?? new Map();
+  }
+  const filterKeysMap = new Map();
+  entityTypes.forEach((entityType) => {
+    const currentMap = filterKeysSchema.get(entityType);
+    currentMap?.forEach((value, key) => filterKeysMap.set(key, value));
+  });
+  return filterKeysMap;
+};
+
+export const useRemoveIdAndIncorrectKeysFromFilterGroupObject = (filters?: FilterGroup | null, entityTypes = ['Basic-Object']): FilterGroup | undefined => {
+  const filterKeysMap = useBuildFilterKeysMapFromEntityType(entityTypes);
+  const availableFilterKeys = Array.from(filterKeysMap.keys() ?? []);
   if (!filters) {
     return undefined;
   }
@@ -670,7 +683,7 @@ export const removeIdAndIncorrectKeysFromFilterGroupObject = (filters?: FilterGr
 };
 
 export const useBuildEntityTypeBasedFilterContext = (entityType: string, filters: FilterGroup | undefined): FilterGroup => {
-  const userFilters = useRemoveIdAndIncorrectKeysFromFilterGroupObject(filters, entityType);
+  const userFilters = useRemoveIdAndIncorrectKeysFromFilterGroupObject(filters, [entityType]);
   return {
     mode: 'and',
     filters: [
@@ -685,14 +698,8 @@ export const useBuildEntityTypeBasedFilterContext = (entityType: string, filters
   };
 };
 
-export const useBuildFilterKeysMapFromEntityType = (entityType = 'Stix-Core-Object'): Map<string, FilterDefinition> => {
-  const { filterKeysSchema } = useAuth().schema;
-  const filterKeysMap = filterKeysSchema.get(entityType);
-  return filterKeysMap ?? new Map();
-};
-
 export const useFilterDefinition = (filterKey: string, entityType = 'Stix-Core-Object', subKey?: string): FilterDefinition | undefined => {
-  const filterDefinition = useBuildFilterKeysMapFromEntityType(entityType).get(filterKey);
+  const filterDefinition = useBuildFilterKeysMapFromEntityType([entityType]).get(filterKey);
   if (subKey) {
     const subFilterDefinition = filterDefinition?.subFilters
       ? filterDefinition.subFilters.filter((subFilter: FilterDefinition) => subFilter.filterKey === subKey)

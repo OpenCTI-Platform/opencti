@@ -207,7 +207,7 @@ const EntityStixCoreRelationshipsIndicatorsContextualViewComponent: FunctionComp
   const containers = stixDomainObject.containers?.edges?.map((e) => e?.node)
     .filter((r) => isNotEmptyField(r)) as { id: string }[] ?? [];
 
-  const userFilters = useRemoveIdAndIncorrectKeysFromFilterGroupObject(filters, 'Stix-Core-Object');
+  const userFilters = useRemoveIdAndIncorrectKeysFromFilterGroupObject(filters, stixCoreObjectTypes);
   const contextFilters: FilterGroup = {
     mode: 'and',
     filters: [

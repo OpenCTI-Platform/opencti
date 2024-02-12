@@ -123,7 +123,7 @@ EntityStixCoreRelationshipsEntitiesViewProps
   };
 
   // Filters due to screen context
-  const userFilters = useRemoveIdAndIncorrectKeysFromFilterGroupObject(filters, 'Stix-Core-Object');
+  const userFilters = useRemoveIdAndIncorrectKeysFromFilterGroupObject(filters, stixCoreObjectTypes);
   const stixCoreObjectFilter: Filter[] = stixCoreObjectTypes.length > 0 ? [{ key: 'entity_type', operator: 'eq', mode: 'or', values: stixCoreObjectTypes }] : [];
   const contextFilters: FilterGroup = {
     mode: 'and',

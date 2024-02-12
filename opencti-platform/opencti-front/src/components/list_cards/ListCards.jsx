@@ -100,9 +100,8 @@ class ListCards extends Component {
                   handleSwitchGlobalMode={handleSwitchGlobalMode}
                   handleSwitchLocalMode={handleSwitchLocalMode}
                   searchContext={{
-                    entityTypes: exportContext.entity_type ? [exportContext.entity_type] : [],
+                    entityTypes: entityType ? [entityType] : [],
                   }}
-                  entityType={entityType}
                 />
                 )}
                 <InputLabel classes={{ root: classes.sortFieldLabel }}>

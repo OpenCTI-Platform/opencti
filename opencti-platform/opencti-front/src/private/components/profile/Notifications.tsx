@@ -9,7 +9,13 @@ import useEntityToggle from '../../../utils/hooks/useEntityToggle';
 import { NotificationLine_node$data } from './notifications/__generated__/NotificationLine_node.graphql';
 import useAuth from '../../../utils/hooks/useAuth';
 import NotificationsToolBar from './notifications/NotificationsToolBar';
-import { emptyFilterGroup, getDefaultFilterObjFromArray, isFilterGroupNotEmpty, useRemoveIdAndIncorrectKeysFromFilterGroupObject, useFilterDefinition } from '../../../utils/filters/filtersUtils';
+import {
+  emptyFilterGroup,
+  getDefaultFilterObjFromArray,
+  isFilterGroupNotEmpty,
+  useRemoveIdAndIncorrectKeysFromFilterGroupObject,
+  useFilterDefinition,
+} from '../../../utils/filters/filtersUtils';
 import Breadcrumbs from '../../../components/Breadcrumbs';
 import { useFormatter } from '../../../components/i18n';
 
@@ -70,7 +76,7 @@ const Notifications: FunctionComponent = () => {
       },
     };
 
-    const userFilters = useRemoveIdAndIncorrectKeysFromFilterGroupObject(filters, 'Notification');
+    const userFilters = useRemoveIdAndIncorrectKeysFromFilterGroupObject(filters, ['Notification']);
     const contextFilters = {
       mode: 'and',
       filters: [

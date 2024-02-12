@@ -35,7 +35,7 @@ const StixDomainObjectAttackPatterns = ({
     view: 'matrix',
   });
   const { searchTerm, filters, view, openExports } = viewStorage;
-  const userFilters = useRemoveIdAndIncorrectKeysFromFilterGroupObject(filters, 'Stix-Core-Object');
+  const userFilters = useRemoveIdAndIncorrectKeysFromFilterGroupObject(filters, ['stix-core-relationship']);
   const contextFilters = {
     mode: 'and',
     filters: [

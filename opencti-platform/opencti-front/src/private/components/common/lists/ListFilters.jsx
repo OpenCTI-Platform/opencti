@@ -30,10 +30,10 @@ const ListFilters = ({
   variant,
   type,
   helpers,
-  entityType,
+  entityTypes,
 }) => {
   const { t_i18n } = useFormatter();
-  const filterKeysMap = useBuildFilterKeysMapFromEntityType(entityType);
+  const filterKeysMap = useBuildFilterKeysMapFromEntityType(entityTypes);
   const [inputValue, setInputValue] = React.useState('');
   const classes = useStyles();
   let icon = <FilterListOutlined fontSize={fontSize || 'medium'} />;
@@ -57,11 +57,11 @@ const ListFilters = ({
   const handleChange = (value) => {
     helpers.handleAddFilterWithEmptyValue(getDefaultFilterObject(value, filterKeysMap.get(value)));
   };
-  const sortFiltersByOccurence = ['Stix-Core-Object', 'Stix-Domain-Object', 'Stix-Cyber-Observable', 'Container'].includes(entityType);
+  const sortFiltersByOccurence = ['Stix-Core-Object', 'Stix-Domain-Object', 'Stix-Cyber-Observable', 'Container'].some((abstractType) => entityTypes.includes(abstractType));
   const options = sortFiltersByOccurence ? availableFilterKeys
     .map((key) => {
       const subEntityTypes = filterKeysMap.get(key)?.subEntityTypes ?? [];
-      const isFilterKeyForAllTypes = subEntityTypes.includes(entityType);
+      const isFilterKeyForAllTypes = subEntityTypes.some((subType) => entityTypes.includes(subType));
       return {
         value: key,
         label: t_i18n(filterKeysMap.get(key)?.label ?? key),

@@ -259,13 +259,13 @@ const StixCoreRelationshipCreationFromEntity: FunctionComponent<StixCoreRelation
     ...(targetStixDomainObjectTypes ?? []),
     ...(targetStixCyberObservableTypes ?? []),
   ];
-  let virtualTypeFilter = ['Stix-Domain-Object', 'Stix-Cyber-Observable'];
+  let virtualEntityTypes = ['Stix-Domain-Object', 'Stix-Cyber-Observable'];
   if (
     (targetStixDomainObjectTypes ?? []).length > 0
         && (targetStixCyberObservableTypes ?? []).length === 0
   ) {
     isOnlySDOs = true;
-    virtualTypeFilter = targetStixDomainObjectTypes;
+    virtualEntityTypes = targetStixDomainObjectTypes;
     if (!targetStixDomainObjectTypes.includes('Stix-Domain-Object')) {
       actualTypeFilter = targetStixDomainObjectTypes;
     }
@@ -274,7 +274,7 @@ const StixCoreRelationshipCreationFromEntity: FunctionComponent<StixCoreRelation
         && (targetStixDomainObjectTypes ?? []).length === 0
   ) {
     isOnlySCOs = true;
-    virtualTypeFilter = targetStixCyberObservableTypes;
+    virtualEntityTypes = targetStixCyberObservableTypes;
     if (!targetStixDomainObjectTypes.includes('Stix-Cyber-Observable')) {
       actualTypeFilter = targetStixCyberObservableTypes;
     }
@@ -282,7 +282,7 @@ const StixCoreRelationshipCreationFromEntity: FunctionComponent<StixCoreRelation
     (targetStixCyberObservableTypes ?? []).length > 0
         && (targetStixDomainObjectTypes ?? []).length > 0
   ) {
-    virtualTypeFilter = [
+    virtualEntityTypes = [
       ...targetStixDomainObjectTypes,
       ...targetStixCyberObservableTypes,
     ];
@@ -504,7 +504,7 @@ const StixCoreRelationshipCreationFromEntity: FunctionComponent<StixCoreRelation
   const renderSelectEntity = () => {
     const searchPaginationOptions = {
       search: searchTerm,
-      filters: useRemoveIdAndIncorrectKeysFromFilterGroupObject(filters, 'stix-core-relationship'),
+      filters: useRemoveIdAndIncorrectKeysFromFilterGroupObject(filters, virtualEntityTypes),
       orderBy: sortBy,
       orderMode: orderAsc ? 'asc' : 'desc',
     };
@@ -543,7 +543,7 @@ const StixCoreRelationshipCreationFromEntity: FunctionComponent<StixCoreRelation
                   numberOfElements={numberOfElements}
                   iconExtension={true}
                   parametersWithPadding={true}
-                  availableEntityTypes={virtualTypeFilter}
+                  availableEntityTypes={virtualEntityTypes}
                   handleToggleSelectAll="no"
                 >
                   <QueryRenderer

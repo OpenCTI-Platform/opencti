@@ -60,7 +60,7 @@ const CaseRfiComponent: FunctionComponent<CaseRfiProps> = ({ data }) => {
   );
   const { sortBy, orderAsc, filters } = viewStorage;
 
-  const userFilters = useRemoveIdAndIncorrectKeysFromFilterGroupObject(filters, 'Case-Rfi');
+  const userFilters = useRemoveIdAndIncorrectKeysFromFilterGroupObject(filters, ['Case-Rfi']);
   const contextTaskFilters: FilterGroup = {
     mode: 'and',
     filters: [

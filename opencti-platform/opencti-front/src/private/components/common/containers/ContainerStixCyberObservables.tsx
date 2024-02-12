@@ -130,7 +130,7 @@ ContainerStixCyberObservablesComponentProps
       .filter((o) => o.id) as { id: string; value: string }[];
   };
 
-  const userFilters = useRemoveIdAndIncorrectKeysFromFilterGroupObject(filters, 'Stix-Core-Object');
+  const userFilters = useRemoveIdAndIncorrectKeysFromFilterGroupObject(filters, ['Stix-Cyber-Observable']);
   const contextFilters = {
     mode: 'and',
     filters: [

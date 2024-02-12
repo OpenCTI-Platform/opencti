@@ -220,7 +220,7 @@ const EntityStixCoreRelationshipsContextualViewComponent: FunctionComponent<Enti
     .filter((r) => isNotEmptyField(r)) as { id: string }[] ?? [];
 
   // Filters due to screen context
-  const userFilters = useRemoveIdAndIncorrectKeysFromFilterGroupObject(filters, 'Stix-Core-Object');
+  const userFilters = useRemoveIdAndIncorrectKeysFromFilterGroupObject(filters, stixCoreObjectTypes);
   const contextFilters: FilterGroup = {
     mode: 'and',
     filters: [

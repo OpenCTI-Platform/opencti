@@ -47,7 +47,7 @@ const FilterIconButtonWithRepresentativesQuery: FunctionComponent<FilterIconButt
   const filtersRepresentativesQueryRef = useQueryLoading<FilterValuesContentQuery>(
     filterValuesContentQuery,
     {
-      filters: useRemoveIdAndIncorrectKeysFromFilterGroupObject(filters, entityType) as unknown as GqlFilterGroup,
+      filters: useRemoveIdAndIncorrectKeysFromFilterGroupObject(filters, entityType ? [entityType] : undefined) as unknown as GqlFilterGroup,
     },
   );
   return (

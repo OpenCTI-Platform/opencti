@@ -208,8 +208,7 @@ class ListLines extends Component {
       helpers,
       inline,
     } = this.props;
-    const entityType = exportContext?.entity_type ?? this.props.entityType;
-    const exportEntityType = exportContext?.entity_type;
+    const entityType = this.props.entityType ?? exportContext?.entity_type;
     const exportDisabled = numberOfElements
       && ((selectedIds.length > export_max_size
         && numberOfElements.number > export_max_size)
@@ -217,7 +216,7 @@ class ListLines extends Component {
           && numberOfElements.number > export_max_size));
     const searchContextFinal = {
       ...(searchContext ?? {}),
-      entityTypes: exportEntityType ? [exportEntityType] : [],
+      entityTypes: entityType ? [entityType] : [],
     };
     return (
       <div className={noPadding ? classes.containerNoPadding : classes.container}>
@@ -250,7 +249,6 @@ class ListLines extends Component {
                 availableEntityTypes={availableEntityTypes}
                 availableRelationshipTypes={availableRelationshipTypes}
                 availableRelationFilterTypes={availableRelationFilterTypes}
-                entityType={entityType}
               />
             )}
             <div className={classes.filler} />
@@ -443,7 +441,7 @@ class ListLines extends Component {
           handleSwitchLocalMode={handleSwitchLocalMode}
           availableRelationFilterTypes={availableRelationFilterTypes}
           redirection
-          entityType={entityType ?? 'Stix-Core-Object'}
+          entityType={entityType}
         />
         <ErrorBoundary key={keyword}>
           {message && (
@@ -625,7 +623,7 @@ class ListLines extends Component {
       <UserContext.Consumer>
         {({ schema }) => {
           const filterKeysMap = schema.filterKeysSchema.get(entityType) ?? new Map();
-          const availableFilterKeys = Array.from(filterKeysMap.keys()); // keys for the entity type according to the schema
+          const availableFilterKeys = this.props.availableFilterKeys ?? Array.from(filterKeysMap.keys()); // keys of the entity type if availableFilterKeys is not specified
           if (disableExport) {
             return this.renderContent(availableFilterKeys);
           }
@@ -690,6 +688,7 @@ ListLines.propTypes = {
   searchContext: PropTypes.object,
   handleExportCsv: PropTypes.func,
   helpers: PropTypes.object,
+  availableFilterKeys: PropTypes.array,
 };
 
 export default compose(inject18n, withStyles(styles))(ListLines);

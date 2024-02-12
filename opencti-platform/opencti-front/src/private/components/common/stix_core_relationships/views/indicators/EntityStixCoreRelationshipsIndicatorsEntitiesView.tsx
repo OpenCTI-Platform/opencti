@@ -101,7 +101,7 @@ const EntityStixCoreRelationshipsIndicatorsEntitiesView: FunctionComponent<Entit
     },
   };
 
-  const userFilters = useRemoveIdAndIncorrectKeysFromFilterGroupObject(filters, 'Indicator');
+  const userFilters = useRemoveIdAndIncorrectKeysFromFilterGroupObject(filters, ['Indicator']);
   const contextFilters: FilterGroup = {
     mode: 'and',
     filters: [
