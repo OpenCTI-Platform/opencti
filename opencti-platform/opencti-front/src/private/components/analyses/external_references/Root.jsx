@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { Route } from 'react-router-dom';
+import { Route, Routes } from 'react-router-dom';
 import { graphql } from 'react-relay';
 import { QueryRenderer, requestSubscription } from '../../../../relay/environment';
 import ExternalReference from './ExternalReference';
@@ -32,9 +32,7 @@ class RootExternalReference extends Component {
   constructor(props) {
     super(props);
     const {
-      match: {
-        params: { externalReferenceId },
-      },
+      params: { externalReferenceId },
     } = props;
     this.sub = requestSubscription({
       subscription,
@@ -48,9 +46,7 @@ class RootExternalReference extends Component {
 
   render() {
     const {
-      match: {
-        params: { externalReferenceId },
-      },
+      params: { externalReferenceId },
     } = this.props;
     return (
       <div>
@@ -61,19 +57,16 @@ class RootExternalReference extends Component {
             if (props) {
               if (props.externalReference && props.connectorsForImport) {
                 return (
-                  <div>
+                  <Routes>
                     <Route
-                      exact
-                      path="/dashboard/analyses/external_references/:externalReferenceId"
-                      render={(routeProps) => (
+                      path="/"
+                      element={
                         <ExternalReference
-                          {...routeProps}
                           externalReference={props.externalReference}
                           connectorsImport={props.connectorsForImport}
-                        />
-                      )}
+                        />}
                     />
-                  </div>
+                  </Routes>
                 );
               }
               return <ErrorNotFound />;

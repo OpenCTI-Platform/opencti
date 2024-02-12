@@ -1000,6 +1000,7 @@ class GroupingKnowledgeGraphComponent extends Component {
       timeRangeInterval,
       this.graphObjects,
     );
+
     return (
       <UserContext.Consumer>
         {({ bannerSettings }) => {

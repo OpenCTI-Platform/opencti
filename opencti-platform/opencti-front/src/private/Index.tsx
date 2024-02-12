@@ -99,7 +99,7 @@ const Index = ({ settings }: IndexProps) => {
             <Routes>
               <Route path="/" Component={boundaryWrapper(Dashboard)}/>
 
-              {/* Searhc need to be rework */}
+              {/* Search need to be rework */}
               <Route path="/search/*" Component={boundaryWrapper(SearchRoot)} />
               <Route
                 path="/id/:id"
@@ -109,11 +109,11 @@ const Index = ({ settings }: IndexProps) => {
                 path="/search_bulk"
                 Component={boundaryWrapper(SearchBulk)}
               />
-              {/* Need to refactor below */}
               <Route
                 path="/analyses/*"
                 Component={boundaryWrapper(RootAnalyses)}
               />
+              {/* Need to refactor below */}
               <Route path="/cases" Component={boundaryWrapper(RootCases)} />
               <Route path="/events" Component={boundaryWrapper(RootEvents)} />
 
