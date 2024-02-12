@@ -232,7 +232,7 @@ export const useFormatter = () => {
   };
 
   /**
-   * Relaive from now in word. Like "2 months ago", "in 3 minutes"...
+   * Relative from now in word. Like "2 months ago", "in 3 minutes"...
    * @param date
    * @returns {string}
    */

@@ -7,6 +7,7 @@ import type { BasicStoreEntityEdge } from '../../../src/types/store';
 import type { BasicStoreEntityIndicator } from '../../../src/modules/indicator/indicator-types';
 import { queryAsAdminWithSuccess } from '../../utils/testQueryHelper';
 import type { DecayHistory } from '../../../src/modules/decayRule/decayRule-domain';
+import { BUILT_IN_DECAY_RULE_DOMAIN_NAME } from '../../../src/modules/decayRule/decayRule-domain';
 
 const LIST_QUERY = gql`
     query indicators(
@@ -163,7 +164,7 @@ describe('Indicator resolver standard behavior', () => {
     expect(indicator.data?.indicatorAdd.id).toEqual(firstIndicatorInternalId);
   });
 
-  it('should indicator loaded by internal id', async () => {
+  it('should indicator loaded by internal id, with decay data', async () => {
     const queryResult = await queryAsAdminWithSuccess({ query: READ_QUERY, variables: { id: firstIndicatorInternalId } });
     expect(queryResult.data?.indicator).toBeDefined();
     expect(queryResult.data?.indicator.id).toEqual(firstIndicatorInternalId);
@@ -172,8 +173,8 @@ describe('Indicator resolver standard behavior', () => {
     // Validating some Decay rule data in indicator.
     expect(queryResult.data?.indicator.decay_applied_rule).toBeDefined();
     const decayRule = queryResult.data?.indicator.decay_applied_rule;
-    expect(decayRule.decay_lifetime).toBe(90); // Domain name decay rule
-    expect(decayRule.decay_revoke_score).toBe(20); // Domain name decay rule
+    expect(decayRule.decay_lifetime).toBe(BUILT_IN_DECAY_RULE_DOMAIN_NAME.decay_lifetime); // Domain name decay rule
+    expect(decayRule.decay_revoke_score).toBe(BUILT_IN_DECAY_RULE_DOMAIN_NAME.decay_revoke_score); // Domain name decay rule
 
     expect(queryResult.data?.indicator.decay_base_score).toBe(50);
     const startDecayDate: Date = queryResult.data?.indicator.decay_base_score_date;

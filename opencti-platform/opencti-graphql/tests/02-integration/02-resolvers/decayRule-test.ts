@@ -3,7 +3,7 @@ import gql from 'graphql-tag';
 import { ADMIN_USER, queryAsAdmin } from '../../utils/testQuery';
 import { ENTITY_BANK_ACCOUNT, ENTITY_EMAIL_ADDR, ENTITY_EMAIL_MESSAGE, ENTITY_IPV6_ADDR, ENTITY_SOFTWARE } from '../../../src/schema/stixCyberObservable';
 import {
-  BUILT_IN_DECAY_RULE_1,
+  BUILT_IN_DECAY_RULE_IP_URL,
   type DecayRuleConfiguration,
   FALLBACK_DECAY_RULE,
   findDecayRuleForIndicator,
@@ -60,7 +60,7 @@ export const DECAY_RULE_READ_QUERY = gql`
 `;
 
 // To help when built-in decay rule are changing
-const TEST_IP_DECAY_RULE = BUILT_IN_DECAY_RULE_1;
+const TEST_IP_DECAY_RULE = BUILT_IN_DECAY_RULE_IP_URL;
 const TEST_FALLBACK_DECAY_RULE = FALLBACK_DECAY_RULE;
 describe('DecayRule resolver standard behavior', () => {
   const adminContext: AuthContext = { user: ADMIN_USER, tracing: undefined, source: 'decay-integration-test', otp_mandatory: false };
@@ -315,7 +315,7 @@ describe('DecayRule resolver standard behavior', () => {
       variables: { id: defaultDecayRuleId }
     });
     expect(queryResult.data?.decayRule).toBeDefined();
-    expect(queryResult.data?.decayRule.decay_lifetime).toBe(365);
+    expect(queryResult.data?.decayRule.decay_lifetime).toBe(TEST_FALLBACK_DECAY_RULE.decay_lifetime);
   });
 
   it('should all Indicators created in this test file be deleted.', async () => {

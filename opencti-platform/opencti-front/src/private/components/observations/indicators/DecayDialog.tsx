@@ -1,4 +1,3 @@
-import moment from 'moment-timezone';
 import React, { FunctionComponent } from 'react';
 import DialogContent from '@mui/material/DialogContent';
 import Grid from '@mui/material/Grid';

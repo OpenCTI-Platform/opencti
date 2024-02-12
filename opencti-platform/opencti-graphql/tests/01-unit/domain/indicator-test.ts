@@ -93,7 +93,7 @@ describe('indicator utils', () => {
       created: '2023-01-21T17:57:09.266Z'
     }, FALLBACK_DECAY_RULE.decay_lifetime);
     expect(validFrom.toISOString()).toBe('2023-01-21T17:57:09.266Z');
-    expect(validUntil.toISOString()).toBe('2024-01-21T17:57:09.266Z');
+    expect(validUntil.toISOString()).toBe('2024-05-05T17:57:09.266Z');
   });
   it('should valid_from itself', async () => {
     const { validFrom, validUntil } = await computeValidPeriod({
@@ -102,7 +102,7 @@ describe('indicator utils', () => {
       created: '2023-01-21T17:57:09.266Z'
     }, FALLBACK_DECAY_RULE.decay_lifetime);
     expect(validFrom.toISOString()).toBe('2023-02-21T17:57:09.266Z');
-    expect(validUntil.toISOString()).toBe('2024-02-21T17:57:09.266Z');
+    expect(validUntil.toISOString()).toBe('2024-06-05T17:57:09.266Z');
   });
   it('should ttl default', async () => {
     let ttl = await computeValidTTL(testContext, ADMIN_USER, { ...DEFAULT_PARAM });

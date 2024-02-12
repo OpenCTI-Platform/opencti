@@ -17,16 +17,11 @@ import { ABSTRACT_INTERNAL_OBJECT } from '../../schema/general';
 import { notify } from '../../database/redis';
 import {
   ENTITY_DOMAIN_NAME,
-  ENTITY_EMAIL_ADDR,
   ENTITY_HASHED_OBSERVABLE_ARTIFACT,
   ENTITY_HASHED_OBSERVABLE_STIX_FILE,
-  ENTITY_HOSTNAME,
   ENTITY_IPV4_ADDR,
   ENTITY_IPV6_ADDR,
-  ENTITY_PROCESS,
   ENTITY_URL,
-  ENTITY_USER_AGENT,
-  ENTITY_WINDOWS_REGISTRY_KEY
 } from '../../schema/stixCyberObservable';
 
 const DECAY_FACTOR: number = 3.0;
@@ -188,7 +183,6 @@ export const computeChartDecayAlgoSerie = (computeChartInput: ComputeDecayChartI
 
     // When decay has been reset, we add stable score before the start point of last decay.
     if (computeChartInput.decayHistory && computeChartInput.decayHistory.length > 0) {
-      // TODO .sort((a, b) => (a.updated_at ? a.updated_at.getTime() : 0) - (b.updated_at ? b.updated_at.getTime() : 0));
       const orderedDecayHistoryAsc = [...computeChartInput.decayHistory];
 
       let i = 0;
@@ -228,91 +222,65 @@ export const getDecaySettingsChartData = async (context: AuthContext, user: Auth
 // region init built-in decay rules
 export const FALLBACK_DECAY_RULE: DecayRuleConfiguration = {
   name: 'Default Decay Rule',
-  description: 'Built-in decay rule for all indicators',
-  decay_lifetime: 365, // 1 year
-  decay_pound: 0.4,
-  decay_points: [60],
+  description: 'Built-in decay rule for all indicators that does not match any other decay rules.',
+  decay_lifetime: 470, // 1 year
+  decay_pound: 0.35,
+  decay_points: [80, 50],
   decay_revoke_score: 20,
   decay_observable_types: [], // Matches all
   order: 0,
   active: true,
 };
-export const BUILT_IN_DECAY_RULE_1: DecayRuleConfiguration = {
-  name: 'Built-in fast decay rule.',
-  description: 'Built-in decay rule with strong acceleration for indicators of type: IP, Domain name, URL, email address, user agent and hostname',
-  decay_lifetime: 90,
-  decay_pound: 2.0,
-  decay_points: [],
+export const BUILT_IN_DECAY_RULE_FILE_ARTEFACT: DecayRuleConfiguration = {
+  name: 'Built-in files and artefact decay rule.',
+  description: 'Built-in decay rule for indicator with files or artefact for main observable.',
+  decay_lifetime: 460,
+  decay_pound: 0.3,
+  decay_points: [80],
+  decay_revoke_score: 20,
+  decay_observable_types: [
+    ENTITY_HASHED_OBSERVABLE_STIX_FILE,
+    ENTITY_HASHED_OBSERVABLE_ARTIFACT
+  ],
+  order: 1,
+  active: true,
+};
+
+export const BUILT_IN_DECAY_RULE_IP_URL: DecayRuleConfiguration = {
+  name: 'Built-in IP and URL decay rule.',
+  description: 'Built-in decay rule for indicator with IP or URL for main observable.',
+  decay_lifetime: 47,
+  decay_pound: 0.55,
+  decay_points: [80, 50],
   decay_revoke_score: 20,
   decay_observable_types: [
     ENTITY_IPV4_ADDR,
     ENTITY_IPV6_ADDR,
-    ENTITY_DOMAIN_NAME,
     ENTITY_URL,
-    ENTITY_EMAIL_ADDR,
-    ENTITY_USER_AGENT,
-    ENTITY_HOSTNAME
   ],
   order: 1,
   active: true,
 };
-export const BUILT_IN_DECAY_RULE_2: DecayRuleConfiguration = {
-  name: 'Built-in smooth decay rule.',
-  description: 'Built-in decay rule for indicators of type: File, Artifact, Process, Registry key', // or pattern_type=pcre ??
-  decay_lifetime: 365,
-  decay_pound: 0.4,
-  decay_points: [60],
+
+export const BUILT_IN_DECAY_RULE_DOMAIN_NAME: DecayRuleConfiguration = {
+  name: 'Built-in domain-name decay rule.',
+  description: 'Built-in decay rule for indicator with domain-name for main observable.',
+  decay_lifetime: 300,
+  decay_pound: 0.7,
+  decay_points: [80, 50],
   decay_revoke_score: 20,
   decay_observable_types: [
-    ENTITY_HASHED_OBSERVABLE_ARTIFACT,
-    ENTITY_HASHED_OBSERVABLE_STIX_FILE, /* File ?? */
-    ENTITY_PROCESS,
-    ENTITY_WINDOWS_REGISTRY_KEY,
+    ENTITY_DOMAIN_NAME
   ],
   order: 1,
   active: true,
 };
 
-/* export const FALLBACK_DECAY_RULE: DecayRuleConfiguration = {
-  name: 'Default Decay Rule',
-  description: 'Built-in decay rule for all indicators',
-  decay_lifetime: 365, // 1 year
-  decay_pound: 1.0,
-  decay_points: [80, 60, 40, 20],
-  decay_revoke_score: 0,
-  decay_observable_types: [],
-  order: 0,
-  active: true,
-}; */
-export const IP_DECAY_RULE: DecayRuleConfiguration = {
-  name: 'IP Decay Rule',
-  description: 'Built-in decay rule for IPs indicators',
-  decay_lifetime: 60,
-  decay_pound: 1.0,
-  decay_points: [80, 60, 40, 20],
-  decay_revoke_score: 0,
-  decay_observable_types: ['IPv4-Addr', 'IPv6-Addr'],
-  order: 1,
-  active: true,
-};
-export const URL_DECAY_RULE: DecayRuleConfiguration = {
-  name: 'URL Decay Rule',
-  description: 'Built-in decay rule for URL indicators',
-  decay_lifetime: 180,
-  decay_pound: 1.0,
-  decay_points: [80, 60, 40, 20],
-  decay_revoke_score: 0,
-  decay_observable_types: ['Url'],
-  order: 1,
-  active: true,
-};
-
-// export const BUILT_IN_DECAY_RULES = [
-//  URL_DECAY_RULE, IP_DECAY_RULE, FALLBACK_DECAY_RULE,
-// ];
-
 export const BUILT_IN_DECAY_RULES = [
-  BUILT_IN_DECAY_RULE_1, BUILT_IN_DECAY_RULE_2, FALLBACK_DECAY_RULE,
+  BUILT_IN_DECAY_RULE_DOMAIN_NAME,
+  BUILT_IN_DECAY_RULE_IP_URL,
+  BUILT_IN_DECAY_RULE_FILE_ARTEFACT,
+  FALLBACK_DECAY_RULE,
 ];
 
 /**
