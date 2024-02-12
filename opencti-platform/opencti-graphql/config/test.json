@@ -15,6 +15,10 @@
       "logs_files": false,
       "logs_console": false
     },
+    "event_loop_logs": {
+      "enabled": true,
+      "max_time": 1000
+    },
     "telemetry": {
       "tracing": {
         "enabled": false,

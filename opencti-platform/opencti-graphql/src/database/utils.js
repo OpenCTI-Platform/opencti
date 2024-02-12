@@ -1,5 +1,6 @@
 import * as R from 'ramda';
 import moment from 'moment';
+import { Promise } from 'bluebird';
 import { DatabaseError, UnsupportedError } from '../config/errors';
 import { isHistoryObject, isInternalObject } from '../schema/internalObject';
 import { isStixMetaObject } from '../schema/stixMetaObject';
@@ -16,6 +17,8 @@ import { schemaAttributesDefinition } from '../schema/schema-attributes';
 export const ES_INDEX_PREFIX = conf.get('elasticsearch:index_prefix') || 'opencti';
 const rabbitmqPrefix = conf.get('rabbitmq:queue_prefix');
 export const RABBIT_QUEUE_PREFIX = rabbitmqPrefix ? `${rabbitmqPrefix}_` : '';
+
+export const MAX_EVENT_LOOP_PROCESSING_TIME = 50;
 
 export const INTERNAL_SYNC_QUEUE = 'sync';
 export const INTERNAL_PLAYBOOK_QUEUE = 'playbook';
@@ -310,4 +313,22 @@ export const isObjectPathTargetMultipleAttribute = (instance, object_path) => {
     return currentAttr.multiple && noMultipleRestriction;
   }
   throw UnsupportedError('Invalid schema pointer for partial update', { path: object_path });
+};
+
+export const asyncListTransformation = async (elements, preparatoryFunction, opts = {}) => {
+  const preparedElements = [];
+  let startProcessingTime = new Date().getTime();
+  for (let n = 0; n < elements.length; n += 1) {
+    const element = elements[n];
+    const preparedElement = await preparatoryFunction(element, opts);
+    preparedElements.push(preparedElement);
+    // Prevent event loop locking more than MAX_EVENT_LOOP_PROCESSING_TIME
+    if (new Date().getTime() - startProcessingTime > MAX_EVENT_LOOP_PROCESSING_TIME) {
+      startProcessingTime = new Date().getTime();
+      await new Promise((resolve) => {
+        setImmediate(resolve);
+      });
+    }
+  }
+  return preparedElements;
 };

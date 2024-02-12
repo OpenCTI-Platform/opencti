@@ -30,6 +30,7 @@ import {
   isInferredIndex,
   isNotEmptyField,
   isObjectPathTargetMultipleAttribute,
+  MAX_EVENT_LOOP_PROCESSING_TIME,
   READ_DATA_INDICES,
   READ_DATA_INDICES_INFERRED,
   READ_INDEX_HISTORY,
@@ -53,6 +54,7 @@ import {
   elUpdateEntityConnections,
   elUpdateRelationConnections,
   ES_MAX_CONCURRENCY,
+  ES_MAX_PAGINATION,
   isImpactedTypeAndSide,
   MAX_BULK_OPERATIONS,
   ROLE_FROM,
@@ -258,11 +260,17 @@ const loadElementMetaDependencies = async (context, user, elements, args = {}) =
   const { onlyMarking = true } = args;
   const workingElements = Array.isArray(elements) ? elements : [elements];
   const workingElementsMap = new Map(workingElements.map((i) => [i.internal_id, i]));
-  const workingIds = workingElements.map((element) => element.internal_id);
+  const workingIds = Array.from(workingElementsMap.keys());
   const relTypes = onlyMarking ? [RELATION_OBJECT_MARKING] : STIX_REF_RELATIONSHIP_TYPES;
-  // Resolve all relations
-  const relationFilter = { mode: FilterMode.And, filters: [{ key: ['fromId'], values: workingIds }], filterGroups: [] };
-  const refsRelations = await listAllRelations(context, user, relTypes, { filters: relationFilter });
+  // Resolve all relations, huge filters are inefficient, splitting will maximize the query speed
+  const refsRelations = [];
+  const groupOfWorkingIds = R.splitEvery(ES_MAX_PAGINATION, workingIds);
+  for (let i = 0; i < groupOfWorkingIds.length; i += 1) {
+    const fromIds = groupOfWorkingIds[i];
+    const relationFilter = { mode: FilterMode.And, filters: [{ key: ['fromId'], values: fromIds }], filterGroups: [] };
+    const refsListed = await listAllRelations(context, user, relTypes, { filters: relationFilter });
+    refsRelations.push(...refsListed);
+  }
   const refsPerElements = R.groupBy((r) => r.fromId, refsRelations);
   // Parallel resolutions
   const toResolvedIds = R.uniq(refsRelations.map((rel) => rel.toId));
@@ -305,6 +313,7 @@ const loadElementMetaDependencies = async (context, user, elements, args = {}) =
   }
   return loadedElementMap;
 };
+
 const loadElementsWithDependencies = async (context, user, elements, opts = {}) => {
   const elementsToDeps = [...elements];
   let fromAndToPromise = Promise.resolve();
@@ -325,6 +334,7 @@ const loadElementsWithDependencies = async (context, user, elements, opts = {}) 
   }
   const [fromAndToMap, depsElementsMap] = await Promise.all([fromAndToPromise, depsPromise]);
   const loadedElements = [];
+  let startProcessingTime = new Date().getTime();
   for (let i = 0; i < elements.length; i += 1) {
     const element = elements[i];
     const isRelation = element.base_type === BASE_TYPE_RELATION;
@@ -353,6 +363,13 @@ const loadElementsWithDependencies = async (context, user, elements, opts = {}) 
     } else {
       const deps = depsElementsMap.get(element.id);
       loadedElements.push(R.mergeRight(element, { ...deps }));
+    }
+    // Prevent event loop locking more than MAX_EVENT_LOOP_PROCESSING_TIME
+    if (new Date().getTime() - startProcessingTime > MAX_EVENT_LOOP_PROCESSING_TIME) {
+      startProcessingTime = new Date().getTime();
+      await new Promise((resolve) => {
+        setImmediate(resolve);
+      });
     }
   }
   return loadedElements;
@@ -1101,7 +1118,6 @@ const mergeEntitiesRaw = async (context, user, targetEntity, sourceEntities, tar
     logApp.info(`[OPENCTI] Merging, updating relations ${currentRelsUpdateCount} / ${updateConnections.length}`);
   };
   await Promise.map(groupsOfRelsUpdate, concurrentRelsUpdate, { concurrency: ES_MAX_CONCURRENCY });
-  const updatedRelations = updateConnections.filter((u) => isStixRelationshipExceptRef(u.entity_type)).map((c) => c.standard_id);
   // Update all impacted entities
   logApp.info(`[OPENCTI] Merging impacting ${updateEntities.length} entities for ${targetEntity.internal_id}`);
   const updatesByEntity = R.groupBy((i) => i.id, updateEntities);
@@ -1145,7 +1161,7 @@ const mergeEntitiesRaw = async (context, user, targetEntity, sourceEntities, tar
   // Take care of relations deletions to prevent duplicate marking definitions.
   const elementToRemoves = [...sourceEntities, ...fromDeletions, ...toDeletions];
   // All not move relations will be deleted, so we need to remove impacted rel in entities.
-  const dependencyDeletions = await elDeleteElements(context, user, elementToRemoves, storeLoadByIdsWithRefs);
+  await elDeleteElements(context, user, elementToRemoves);
   // Everything if fine update remaining attributes
   const updateAttributes = [];
   // 1. Update all possible attributes
@@ -1202,8 +1218,6 @@ const mergeEntitiesRaw = async (context, user, targetEntity, sourceEntities, tar
     await elUpdateElement(updateAsInstance);
     logApp.info(`[OPENCTI] Merging attributes success for ${targetEntity.internal_id}`, { update: updateAsInstance });
   }
-  // Return extra deleted stix relations
-  return { updatedRelations, dependencyDeletions };
 };
 
 const loadMergeEntitiesDependencies = async (context, user, entityIds) => {
@@ -1282,9 +1296,9 @@ export const mergeEntities = async (context, user, targetEntityId, sourceEntityI
     const targetDependencies = await loadMergeEntitiesDependencies(context, SYSTEM_USER, [initialInstance.internal_id]);
     // - TRANSACTION PART
     lock.signal.throwIfAborted();
-    const mergeImpacts = await mergeEntitiesRaw(context, user, target, sources, targetDependencies, sourcesDependencies, opts);
+    await mergeEntitiesRaw(context, user, target, sources, targetDependencies, sourcesDependencies, opts);
     const mergedInstance = await storeLoadByIdWithRefs(context, user, targetEntityId);
-    await storeMergeEvent(context, user, initialInstance, mergedInstance, sources, mergeImpacts, opts);
+    await storeMergeEvent(context, user, initialInstance, mergedInstance, sources, opts);
     // Temporary stored the deleted elements to prevent concurrent problem at creation
     await redisAddDeletions(sources.map((s) => s.internal_id));
     // - END TRANSACTION
@@ -1831,7 +1845,7 @@ export const updateAttributeMetaResolved = async (context, user, initial, inputs
       const relDef = schemaRelationsRefDefinition.getRelationRef(updatedInstance.entity_type, key);
       const relType = relDef.databaseName;
       // ref and _refs are expecting direct identifier in the value
-      // We dont care about the operation here, the only thing we can do is replace
+      // We don't care about the operation here, the only thing we can do is replace
       if (!relDef.multiple) {
         const currentValue = updatedInstance[key];
         const { value: targetsCreated } = meta[metaIndex];
@@ -1869,7 +1883,7 @@ export const updateAttributeMetaResolved = async (context, user, initial, inputs
         }
         if (operation === UPDATE_OPERATION_REPLACE) {
           // Delete all relations
-          const currentRels = await listAllRelations(context, user, relType, { fromId: initial.internal_id });
+          const currentRels = await listAllRelations(context, user, relType, { indices: READ_RELATIONSHIPS_INDICES_WITHOUT_INFERRED, fromId: initial.internal_id });
           const currentRelsToIds = currentRels.map((n) => n.toId);
           const newTargetsIds = refs.map((n) => n.id);
           if (R.symmetricDifference(newTargetsIds, currentRelsToIds).length > 0) {
@@ -1887,7 +1901,8 @@ export const updateAttributeMetaResolved = async (context, user, initial, inputs
           }
         }
         if (operation === UPDATE_OPERATION_ADD) {
-          const currentIds = (updatedInstance[key] || []).map((o) => [o.id, o.standard_id]).flat();
+          const filteredList = (updatedInstance[key] || []).filter((d) => !isInferredIndex(d.i_relation._index));
+          const currentIds = filteredList.map((o) => [o.id, o.standard_id]).flat();
           const refsToCreate = refs.filter((r) => !currentIds.includes(r.internal_id));
           if (refsToCreate.length > 0) {
             const newRelations = buildInstanceRelTo(refsToCreate, relType);
@@ -1899,7 +1914,7 @@ export const updateAttributeMetaResolved = async (context, user, initial, inputs
         }
         if (operation === UPDATE_OPERATION_REMOVE) {
           const targetIds = refs.map((t) => t.internal_id);
-          const currentRels = await listAllRelations(context, user, relType, { fromId: initial.internal_id });
+          const currentRels = await listAllRelations(context, user, relType, { indices: READ_RELATIONSHIPS_INDICES_WITHOUT_INFERRED, fromId: initial.internal_id });
           const relsToDelete = currentRels.filter((c) => targetIds.includes(c.toId));
           if (relsToDelete.length > 0) {
             relationsToDelete.push(...relsToDelete);
@@ -3206,9 +3221,9 @@ export const internalDeleteElementById = async (context, user, id, opts = {}) =>
       // Start by deleting external files
       await deleteAllObjectFiles(context, user, element);
       // Delete all linked elements
-      const dependencyDeletions = await elDeleteElements(context, user, [element], storeLoadByIdsWithRefs);
+      await elDeleteElements(context, user, [element]);
       // Publish event in the stream
-      event = await storeDeleteEvent(context, user, element, dependencyDeletions, opts);
+      event = await storeDeleteEvent(context, user, element, opts);
     }
     // Temporary stored the deleted elements to prevent concurrent problem at creation
     await redisAddDeletions(participantIds);
@@ -3305,7 +3320,7 @@ export const deleteRelationsByFromAndTo = async (context, user, fromId, toId, re
   if (!validateUserAccessOperation(user, fromThing, 'edit') || !validateUserAccessOperation(user, toThing, 'edit')) {
     throw ForbiddenAccess();
   }
-  // Looks like the caller doesnt give the correct from, to currently
+  // Looks like the caller doesn't give the correct from, to currently
   const relationsCallback = async (relationsToDelete) => {
     for (let i = 0; i < relationsToDelete.length; i += 1) {
       const r = relationsToDelete[i];

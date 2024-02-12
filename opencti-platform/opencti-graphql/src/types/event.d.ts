@@ -56,26 +56,14 @@ interface UpdateEvent extends StreamDataEvent {
 
 interface DeleteEvent extends StreamDataEvent {
   type: 'delete';
-  context: {
-    deletions: Array<StixCoreObject>;
-  };
 }
 
 interface MergeEvent extends StreamDataEvent {
   type: 'merge';
   context: {
-    patch: Array<Operation>;
-    reverse_patch: Array<Operation>;
-    deletions: Array<StixCoreObject>;
-    sources: Array<StixCoreObject>;
-    shifts: Array<string>;
-  };
-}
-
-interface DependenciesDeleteEvent extends BaseEvent {
-  type: 'delete-dependencies';
-  data: {
-    ids: Array<string>
+    patch: Array<Operation>
+    reverse_patch: Array<Operation>
+    sources: Array<StixCoreObject>
   };
 }
 

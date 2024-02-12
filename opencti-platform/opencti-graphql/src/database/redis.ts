@@ -7,7 +7,7 @@ import * as R from 'ramda';
 import type { ChainableCommander } from 'ioredis/built/utils/RedisCommander';
 import type { ClusterOptions } from 'ioredis/built/cluster/ClusterOptions';
 import conf, { booleanConf, configureCA, DEV_MODE, getStoppingState, loadCert, logApp } from '../config/conf';
-import { EVENT_TYPE_CREATE, EVENT_TYPE_DELETE, EVENT_TYPE_MERGE, EVENT_TYPE_UPDATE, isEmptyField, waitInSec } from './utils';
+import { asyncListTransformation, EVENT_TYPE_CREATE, EVENT_TYPE_DELETE, EVENT_TYPE_MERGE, EVENT_TYPE_UPDATE, isEmptyField, waitInSec } from './utils';
 import { isStixExportableData } from '../schema/stixCoreObject';
 import { DatabaseError, LockTimeoutError, UnsupportedError } from '../config/errors';
 import { mergeDeepRightAll, now, utcDate } from '../utils/format';
@@ -424,14 +424,8 @@ const pushToStream = async (context: AuthContext, user: AuthUser, client: Cluste
 };
 
 // Merge
-interface MergeImpacts {
-  updatedRelations: Array<string>;
-  dependencyDeletions: Array<StoreObject>;
-}
-
-const buildMergeEvent = (user: AuthUser, previous: StoreObject, instance: StoreObject, sourceEntities: Array<StoreObject>, impacts: MergeImpacts): MergeEvent => {
+const buildMergeEvent = async (user: AuthUser, previous: StoreObject, instance: StoreObject, sourceEntities: Array<StoreObject>): Promise<MergeEvent> => {
   const message = generateMergeMessage(instance, sourceEntities);
-  const { updatedRelations, dependencyDeletions } = impacts;
   const previousStix = convertStoreToStix(previous) as StixCoreObject;
   const currentStix = convertStoreToStix(instance) as StixCoreObject;
   return {
@@ -444,9 +438,7 @@ const buildMergeEvent = (user: AuthUser, previous: StoreObject, instance: StoreO
     context: {
       patch: jsonpatch.compare(previousStix, currentStix),
       reverse_patch: jsonpatch.compare(currentStix, previousStix),
-      sources: R.map((s) => convertStoreToStix(s) as StixCoreObject, sourceEntities),
-      deletions: R.map((s) => convertStoreToStix(s) as StixCoreObject, dependencyDeletions),
-      shifts: updatedRelations,
+      sources: await asyncListTransformation(sourceEntities, convertStoreToStix),
     }
   };
 };
@@ -456,11 +448,10 @@ export const storeMergeEvent = async (
   initialInstance: StoreObject,
   mergedInstance: StoreObject,
   sourceEntities: Array<StoreObject>,
-  impacts: MergeImpacts,
   opts: EventOpts,
 ) => {
   try {
-    const event = buildMergeEvent(user, initialInstance, mergedInstance, sourceEntities, impacts);
+    const event = await buildMergeEvent(user, initialInstance, mergedInstance, sourceEntities);
     await pushToStream(context, user, getClientBase(), event, opts);
     return event;
   } catch (e) {
@@ -557,7 +548,6 @@ export const buildDeleteEvent = async (
   user: AuthUser,
   instance: StoreObject,
   message: string,
-  deletions: Array<StoreObject>,
 ): Promise<DeleteEvent> => {
   const stix = convertStoreToStix(instance) as StixCoreObject;
   return {
@@ -566,17 +556,14 @@ export const buildDeleteEvent = async (
     scope: 'external',
     message,
     origin: user.origin,
-    data: stix,
-    context: {
-      deletions: R.map((s) => convertStoreToStix(s) as StixCoreObject, deletions)
-    }
+    data: stix
   };
 };
-export const storeDeleteEvent = async (context: AuthContext, user: AuthUser, instance: StoreObject, deletions: Array<StoreObject>, opts: EventOpts = {}) => {
+export const storeDeleteEvent = async (context: AuthContext, user: AuthUser, instance: StoreObject, opts: EventOpts = {}) => {
   try {
     if (isStixExportableData(instance)) {
       const message = generateDeleteMessage(instance);
-      const event = await buildDeleteEvent(user, instance, message, deletions);
+      const event = await buildDeleteEvent(user, instance, message);
       await pushToStream(context, user, getClientBase(), event, opts);
       return event;
     }
