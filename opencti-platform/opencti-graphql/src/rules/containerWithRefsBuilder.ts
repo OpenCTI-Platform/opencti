@@ -33,8 +33,10 @@ const buildContainerRefsRule = (ruleDefinition: RuleDefinition, containerType: s
     return [
       reportId,
       partOfFromId,
+      `${partOfFromId}_ref`,
       partOfId,
       partOfTargetId,
+      `${partOfTargetId}_ref`,
     ];
   };
   type ArrayRefs = Array<{ partOfFromId: string, partOfId: string, partOfStandardId: StixId; partOfTargetId: string; partOfTargetStandardId: StixId }>;
@@ -140,7 +142,7 @@ const buildContainerRefsRule = (ruleDefinition: RuleDefinition, containerType: s
     const deletedTargets: Array<BasicStoreRelation> = [];
     if (removedRefs.length > 0) {
       const removedRefIdentities = await internalFindByIds(context, RULE_MANAGER_USER, removedRefs) as Array<StoreObject>;
-      const removedIds = removedRefIdentities.map((i) => i.internal_id);
+      const removedIds = removedRefIdentities.map((i) => `${i.internal_id}_ref`);
       const filters = {
         mode: FilterMode.And,
         filters: [{ key: [`${RULE_PREFIX}*.dependencies`], values: removedIds, operator: FilterOperator.Wildcard }],

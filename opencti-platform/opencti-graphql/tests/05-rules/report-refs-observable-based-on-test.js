@@ -1,5 +1,6 @@
 import { expect, it, describe } from 'vitest';
-import { FIVE_MINUTES, TEN_SECONDS, testContext } from '../utils/testQuery';
+import gql from 'graphql-tag';
+import { FIVE_MINUTES, queryAsAdmin, TEN_SECONDS, testContext } from '../utils/testQuery';
 import { activateRule, disableRule, getInferences, inferenceLookup } from '../utils/rule-utils';
 import { createRelation, deleteElementById, deleteRelationsByFromAndTo } from '../../src/database/middleware';
 import { SYSTEM_USER } from '../../src/utils/access';
@@ -138,8 +139,45 @@ describe('Report refs observable rule', () => {
       await wait(TEN_SECONDS); // let some time to rule manager to create the elements
       const afterAddMoreRelations = await getInferences(RELATION_OBJECT);
       expect(afterAddMoreRelations.length).toBe(6);
+      // endregion
 
-      // region 4............................ Remove a ref from report
+      // region 4............................ Add manual relation on top of inference
+      await createRelation(testContext, SYSTEM_USER, {
+        fromId: report.internal_id,
+        toId: 'indicator--b05c9d26-46f2-59f5-9db6-eda706a523cd',
+        relationship_type: RELATION_OBJECT
+      });
+      const REPORT_STIX_DOMAIN_ENTITIES = gql`
+            query report($id: String!) {
+                report(id: $id) {
+                    id
+                    standard_id
+                    objects(orderBy: created_at, orderMode: asc) {
+                        edges {
+                            types
+                            node {
+                                __typename
+                                ... on StixObject {
+                                    standard_id
+                                }
+                                ... on StixRelationship {
+                                    standard_id
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        `;
+      const queryResult = await queryAsAdmin({ query: REPORT_STIX_DOMAIN_ENTITIES, variables: { id: report.internal_id } });
+      expect(queryResult).not.toBeNull();
+      expect(queryResult.data.report).not.toBeNull();
+      expect(queryResult.data.report.objects.edges.length).toEqual(8); // 2 Observables + 6 inferences
+      const inferenceEdge = queryResult.data.report.objects.edges.find((e) => e.node.standard_id === 'indicator--b05c9d26-46f2-59f5-9db6-eda706a523cd');
+      expect(inferenceEdge.types.sort()).toEqual(['manual', 'inferred'].sort());
+      // endregion
+
+      // region 5............................ Remove a ref from report
       await deleteRelationsByFromAndTo(
         testContext,
         SYSTEM_USER,
@@ -153,7 +191,7 @@ describe('Report refs observable rule', () => {
       expect(afterDeleteARelations.length).toBe(4);
       // endregion
 
-      // region 5............................ Remove a based on relation
+      // region 6............................ Remove a based on relation
       await deleteElementById(testContext, SYSTEM_USER, indicatorDBasedOnObservableC.internal_id, indicatorDBasedOnObservableC.entity_type);
       await wait(TEN_SECONDS); // let some time to rule-manager to delete the elements
       const afterDeleteDERelations = await getInferences(RELATION_OBJECT);

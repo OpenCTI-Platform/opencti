@@ -15,6 +15,7 @@ import {
   isEmptyField,
   isInferredIndex,
   isNotEmptyField,
+  MAX_EVENT_LOOP_PROCESSING_TIME,
   offsetToCursor,
   pascalize,
   READ_DATA_INDICES,
@@ -80,7 +81,7 @@ import {
   STIX_ORGANIZATIONS_UNRESTRICTED
 } from '../schema/stixDomainObject';
 import { isBasicObject, isStixCoreObject, isStixObject } from '../schema/stixCoreObject';
-import { isBasicRelationship, isStixRelationship, isStixRelationshipExceptRef } from '../schema/stixRelationship';
+import { isBasicRelationship, isStixRelationship } from '../schema/stixRelationship';
 import { isStixCoreRelationship, RELATION_INDICATES, STIX_CORE_RELATIONSHIPS } from '../schema/stixCoreRelationship';
 import { INTERNAL_FROM_FIELD, INTERNAL_TO_FIELD } from '../schema/identifier';
 import { BYPASS, computeUserMemberAccessIds, executionContext, INTERNAL_USERS, isBypassUser, MEMBER_ACCESS_ALL, SYSTEM_USER } from '../utils/access';
@@ -149,7 +150,6 @@ export const BULK_TIMEOUT = '5m';
 const MAX_TERMS_SPLIT = 65000; // By default, Elasticsearch limits the terms query to a maximum of 65,536 terms. You can change this limit using the index.
 const ES_MAX_MAPPINGS = 3000;
 const ES_RETRY_ON_CONFLICT = 5;
-const MAX_EVENT_LOOP_PROCESSING_TIME = 50;
 const MAX_AGGREGATION_SIZE = 100;
 
 export const ROLE_FROM = 'from';
@@ -1978,7 +1978,7 @@ const completeSpecialFilterKeys = async (context, user, inputFilters) => {
           throw UnsupportedError('regardingOf only support types equality restriction');
         }
         const types = type?.values;
-        const keys = isEmptyField(types) ? buildRefRelationKey('*') : types.map((t) => buildRefRelationKey(t));
+        const keys = isEmptyField(types) ? buildRefRelationKey('*', '*') : types.map((t) => buildRefRelationKey(t, '*'));
         if (isEmptyField(ids)) {
           keys.forEach((relKey) => {
             regardingFilters.push({ key: [relKey], operator, values: ['EXISTS'] });
@@ -2705,15 +2705,15 @@ const getRelatedRelations = async (context, user, targetIds, elements, level, ca
   };
   const foundRelations = [];
   const callback = async (hits) => {
-    for (let index = 0; index < hits.length; index += 1) {
-      elements.unshift(...hits.map((s) => ({ ...s, level })));
-      const internalIds = hits.map((g) => g.internal_id);
-      const resolvedIds = internalIds.filter((f) => !cache[f]);
-      foundRelations.push(...resolvedIds);
-      resolvedIds.forEach((id) => {
-        cache.set(id, '');
-      });
-    }
+    const preparedElements = [];
+    hits.forEach((hit) => {
+      if (!cache.has(hit.internal_id)) {
+        foundRelations.push(hit.internal_id);
+        cache.set(hit.internal_id, '');
+      }
+      preparedElements.push({ ...hit, level });
+    });
+    elements.unshift(...preparedElements);
   };
   const opts = { filters, connectionFormat: false, callback, types: [ABSTRACT_BASIC_RELATIONSHIP] };
   await elList(context, user, READ_RELATIONSHIPS_INDICES, opts);
@@ -2735,98 +2735,113 @@ export const elDeleteInstances = async (instances) => {
   // If nothing to delete, return immediately to prevent elastic to delete everything
   if (instances.length > 0) {
     logApp.debug(`[SEARCH] Deleting ${instances.length} instances`);
-    const bodyDelete = instances.flatMap((doc) => {
-      return [{ delete: { _index: doc._index, _id: doc.internal_id, retry_on_conflict: ES_RETRY_ON_CONFLICT } }];
-    });
-    await elBulk({ refresh: true, timeout: BULK_TIMEOUT, body: bodyDelete });
+    const groupsOfInstances = R.splitEvery(MAX_BULK_OPERATIONS, instances);
+    for (let i = 0; i < groupsOfInstances.length; i += 1) {
+      const instancesBulk = groupsOfInstances[i];
+      const bodyDelete = instancesBulk.flatMap((doc) => {
+        return [{ delete: { _index: doc._index, _id: doc.internal_id, retry_on_conflict: ES_RETRY_ON_CONFLICT } }];
+      });
+      await elBulk({ refresh: true, timeout: BULK_TIMEOUT, body: bodyDelete });
+    }
   }
 };
 const elRemoveRelationConnection = async (context, user, elementsImpact) => {
   const impacts = Object.entries(elementsImpact);
   if (impacts.length > 0) {
     const idsToResolve = impacts.map(([k]) => k);
-    const dataIds = await elFindByIds(context, user, idsToResolve);
+    const dataIds = await elFindByIds(context, user, idsToResolve, { baseData: true });
     const indexCache = R.mergeAll(dataIds.map((element) => ({ [element.internal_id]: element._index })));
-    const bodyUpdateRaw = impacts.map(([impactId, elementMeta]) => {
-      return Object.entries(elementMeta).map(([typeAndIndex, cleanupIds]) => {
-        const [relationType, relationIndex] = typeAndIndex.split('|');
-        const refField = isStixRefRelationship(relationType) && isInferredIndex(relationIndex) ? ID_INFERRED : ID_INTERNAL;
-        const rel_key = buildRefRelationKey(relationType, refField);
-        const updates = [];
-        let source = `if (ctx._source['${rel_key}'] != null) ctx._source['${rel_key}'] = ctx._source['${rel_key}'].stream().filter(id -> !params.cleanupIds.contains(id)).collect(Collectors.toList());`;
-        if (isStixRefRelationship(relationType)) {
-          source += 'ctx._source[\'updated_at\'] = params.updated_at;';
-        }
-        const script = { source, params: { cleanupIds, updated_at: now() } };
-        const fromIndex = indexCache[impactId];
-        updates.push([
-          { update: { _index: fromIndex, _id: impactId, retry_on_conflict: ES_RETRY_ON_CONFLICT } },
-          { script },
-        ]);
-        return updates;
+    const groupsOfImpacts = R.splitEvery(MAX_BULK_OPERATIONS, impacts);
+    for (let i = 0; i < groupsOfImpacts.length; i += 1) {
+      const impactsBulk = groupsOfImpacts[i];
+      const bodyUpdateRaw = impactsBulk.map(([impactId, elementMeta]) => {
+        return Object.entries(elementMeta).map(([typeAndIndex, cleanupIds]) => {
+          const [relationType, relationIndex] = typeAndIndex.split('|');
+          const refField = isStixRefRelationship(relationType) && isInferredIndex(relationIndex) ? ID_INFERRED : ID_INTERNAL;
+          const rel_key = buildRefRelationKey(relationType, refField);
+          const updates = [];
+          let source = `if (ctx._source['${rel_key}'] != null) ctx._source['${rel_key}'] = ctx._source['${rel_key}'].stream().filter(id -> !params.cleanupIds.contains(id)).collect(Collectors.toList());`;
+          if (isStixRefRelationship(relationType)) {
+            source += 'ctx._source[\'updated_at\'] = params.updated_at;';
+          }
+          const script = { source, params: { cleanupIds, updated_at: now() } };
+          const fromIndex = indexCache[impactId];
+          updates.push([
+            { update: { _index: fromIndex, _id: impactId, retry_on_conflict: ES_RETRY_ON_CONFLICT } },
+            { script },
+          ]);
+          return updates;
+        });
       });
-    });
-    const bodyUpdate = R.flatten(bodyUpdateRaw);
-    await elBulk({ refresh: true, timeout: BULK_TIMEOUT, body: bodyUpdate });
+      const bodyUpdate = R.flatten(bodyUpdateRaw);
+      await elBulk({ refresh: true, timeout: BULK_TIMEOUT, body: bodyUpdate });
+    }
   }
 };
 
-export const elDeleteElements = async (context, user, elements, loadByIdsWithRefs) => {
-  if (elements.length === 0) return [];
-  const dependencyDeletions = [];
-  const toBeRemovedIds = elements.map((e) => e.internal_id);
-  const { relations, relationsToRemoveMap } = await getRelationsToRemove(context, user, elements);
-  const stixRelations = relations.filter((r) => isStixRelationshipExceptRef(r.relationship_type));
-  if (loadByIdsWithRefs) {
-    const dependencyRelationIds = stixRelations.map((s) => s.internal_id);
-    const dependencies = await loadByIdsWithRefs(context, user, dependencyRelationIds);
-    dependencyDeletions.push(...dependencies);
-  }
-  // Compute the id that needs to be remove from rel
-  const basicCleanup = elements.filter((f) => isBasicRelationship(f.entity_type));
-  const cleanupRelations = relations.concat(basicCleanup);
-  // Remove all related relations and elements
-  const elementsToDelete = [...elements, ...relations];
-  logApp.debug(`[SEARCH] Deleting related relations ${elementsToDelete.length}`);
-  await elDeleteInstances(elementsToDelete);
+const computeDeleteElementsImpacts = async (cleanupRelations, toBeRemovedIds, relationsToRemoveMap) => {
   // Update all rel connections that will remain
   const elementsImpact = {};
-  cleanupRelations.forEach((r) => {
-    const fromWillNotBeRemoved = !relationsToRemoveMap.has(r.fromId) && !toBeRemovedIds.includes(r.fromId);
-    const isFromCleanup = fromWillNotBeRemoved && isImpactedTypeAndSide(r.entity_type, ROLE_FROM);
-    const cleanKey = `${r.entity_type}|${r._index}`;
+  let startProcessingTime = new Date().getTime();
+  for (let i = 0; i < cleanupRelations.length; i += 1) {
+    const relation = cleanupRelations[i];
+    const fromWillNotBeRemoved = !relationsToRemoveMap.has(relation.fromId) && !toBeRemovedIds.includes(relation.fromId);
+    const isFromCleanup = fromWillNotBeRemoved && isImpactedTypeAndSide(relation.entity_type, ROLE_FROM);
+    const cleanKey = `${relation.entity_type}|${relation._index}`;
     if (isFromCleanup) {
-      if (isEmptyField(elementsImpact[r.fromId])) {
-        elementsImpact[r.fromId] = { [cleanKey]: [r.toId] };
+      if (isEmptyField(elementsImpact[relation.fromId])) {
+        elementsImpact[relation.fromId] = { [cleanKey]: [relation.toId] };
       } else {
-        const current = elementsImpact[r.fromId];
-        if (current[cleanKey] && !current[cleanKey].includes(r.toId)) {
-          elementsImpact[r.fromId][cleanKey].push(r.toId);
+        const current = elementsImpact[relation.fromId];
+        if (current[cleanKey] && !current[cleanKey].includes(relation.toId)) {
+          elementsImpact[relation.fromId][cleanKey].push(relation.toId);
         } else {
-          elementsImpact[r.fromId][cleanKey] = [r.toId];
+          elementsImpact[relation.fromId][cleanKey] = [relation.toId];
         }
       }
     }
-    const toWillNotBeRemoved = !relationsToRemoveMap.has(r.toId) && !toBeRemovedIds.includes(r.toId);
-    const isToCleanup = toWillNotBeRemoved && isImpactedTypeAndSide(r.entity_type, ROLE_TO);
+    const toWillNotBeRemoved = !relationsToRemoveMap.has(relation.toId) && !toBeRemovedIds.includes(relation.toId);
+    const isToCleanup = toWillNotBeRemoved && isImpactedTypeAndSide(relation.entity_type, ROLE_TO);
     if (isToCleanup) {
-      if (isEmptyField(elementsImpact[r.toId])) {
-        elementsImpact[r.toId] = { [cleanKey]: [r.fromId] };
+      if (isEmptyField(elementsImpact[relation.toId])) {
+        elementsImpact[relation.toId] = { [cleanKey]: [relation.fromId] };
       } else {
-        const current = elementsImpact[r.toId];
-        if (current[cleanKey] && !current[cleanKey].includes(r.fromId)) {
-          elementsImpact[r.toId][cleanKey].push(r.fromId);
+        const current = elementsImpact[relation.toId];
+        if (current[cleanKey] && !current[cleanKey].includes(relation.fromId)) {
+          elementsImpact[relation.toId][cleanKey].push(relation.fromId);
         } else {
-          elementsImpact[r.toId][cleanKey] = [r.fromId];
+          elementsImpact[relation.toId][cleanKey] = [relation.fromId];
         }
       }
     }
-  });
-  // Impacted must be grouped by ids to impacts
+    // Prevent event loop locking more than MAX_EVENT_LOOP_PROCESSING_TIME
+    if (new Date().getTime() - startProcessingTime > MAX_EVENT_LOOP_PROCESSING_TIME) {
+      startProcessingTime = new Date().getTime();
+      await new Promise((resolve) => {
+        setImmediate(resolve);
+      });
+    }
+  }
+  return elementsImpact;
+};
+
+export const elDeleteElements = async (context, user, elements) => {
+  if (elements.length === 0) return;
+  const { relations, relationsToRemoveMap } = await getRelationsToRemove(context, user, elements);
+  // Compute the id that needs to be removed from rel
+  const basicCleanup = elements.filter((f) => isBasicRelationship(f.entity_type));
+  // Update all rel connections that will remain
+  const cleanupRelations = relations.concat(basicCleanup);
+  const toBeRemovedIds = elements.map((e) => e.internal_id);
+  const elementsImpact = await computeDeleteElementsImpacts(cleanupRelations, toBeRemovedIds, relationsToRemoveMap);
+  // 01. Start by clearing connections rel
   await elRemoveRelationConnection(context, user, elementsImpact);
-  // logApp.debug(`[SEARCH] Updating connected elements ${relsFromToImpacts.length}`);
-  // Return the relations deleted because of the entity deletion
-  return dependencyDeletions;
+  // 02. Remove all related relations and elements
+  logApp.debug('[SEARCH] Deleting related relations', { size: relations.length });
+  await elDeleteInstances(relations);
+  // 03/ Remove all elements
+  logApp.debug('[SEARCH] Deleting elements', { size: elements.length });
+  await elDeleteInstances(elements);
 };
 
 export const prepareElementForIndexing = (element) => {

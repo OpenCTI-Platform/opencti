@@ -3,7 +3,7 @@ import { executionContext, SYSTEM_USER, TAXIIAPI_SETCOLLECTIONS } from '../utils
 import { RELATION_ACCESSES_TO, RELATION_HAS_CAPABILITY } from '../schema/internalRelationship';
 import { ENTITY_TYPE_GROUP, ENTITY_TYPE_STREAM_COLLECTION } from '../schema/internalObject';
 import { elDeleteElements, elLoadById, elReplace } from '../database/engine';
-import { createRelationRaw, storeLoadByIdsWithRefs } from '../database/middleware';
+import { createRelationRaw } from '../database/middleware';
 
 export const up = async (next) => {
   // 01. Stream accesses-to migration to use authorized_members and authorized_authorities
@@ -17,7 +17,7 @@ export const up = async (next) => {
       const authorized_members = relations.map((r) => ({ id: r.fromId, access_right: 'view' }));
       const patch = { authorized_members, authorized_authorities: [TAXIIAPI_SETCOLLECTIONS] };
       await elReplace(stream._index, stream.internal_id, { doc: patch });
-      await elDeleteElements(context, SYSTEM_USER, relations, storeLoadByIdsWithRefs);
+      await elDeleteElements(context, SYSTEM_USER, relations);
     }
   }
   // 02. Migrate capability STREAMAPI to TAXIIAPI

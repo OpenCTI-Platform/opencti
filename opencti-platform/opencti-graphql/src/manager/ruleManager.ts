@@ -5,7 +5,7 @@ import * as jsonpatch from 'fast-json-patch';
 import { clearIntervalAsync, setIntervalAsync, type SetIntervalAsyncTimer } from 'set-interval-async/fixed';
 import { createStreamProcessor, EVENT_CURRENT_VERSION, lockResource, REDIS_STREAM_NAME, type StreamProcessor } from '../database/redis';
 import conf, { booleanConf, logApp } from '../config/conf';
-import { createEntity, patchAttribute, stixLoadById, storeLoadByIdWithRefs } from '../database/middleware';
+import { createEntity, patchAttribute, storeLoadByIdWithRefs } from '../database/middleware';
 import { EVENT_TYPE_CREATE, EVENT_TYPE_DELETE, EVENT_TYPE_MERGE, EVENT_TYPE_UPDATE, isEmptyField, isNotEmptyField, READ_DATA_INDICES } from '../database/utils';
 import { RULE_PREFIX } from '../schema/general';
 import { ENTITY_TYPE_RULE_MANAGER } from '../schema/internalObject';
@@ -18,14 +18,14 @@ import type { RuleDefinition, RuleRuntime, RuleScope } from '../types/rules';
 import type { BasicManagerEntity, BasicStoreCommon, BasicStoreEntity, StoreObject } from '../types/store';
 import type { AuthContext, AuthUser } from '../types/user';
 import type { RuleManager } from '../generated/graphql';
+import { FilterMode, FilterOperator } from '../generated/graphql';
 import type { StixCoreObject } from '../types/stix-common';
 import { STIX_EXT_OCTI } from '../types/stix-extensions';
 import type { StixRelation, StixSighting } from '../types/stix-sro';
 import type { BaseEvent, DataEvent, DeleteEvent, MergeEvent, SseEvent, StreamDataEvent, UpdateEvent } from '../types/event';
-import { getActivatedRules, RULES_DECLARATION } from '../domain/rules';
+import { getActivatedRules } from '../domain/rules';
 import { executionContext, RULE_MANAGER_USER } from '../utils/access';
 import { isModuleActivated } from '../domain/settings';
-import { FilterMode, FilterOperator } from '../generated/graphql';
 import { elList } from '../database/engine';
 
 const MIN_LIVE_STREAM_EVENT_VERSION = 4;
@@ -52,32 +52,13 @@ export const buildInternalEvent = (type: 'update' | 'create' | 'delete', stix: S
   };
 };
 
-const ruleMergeHandler = async (context: AuthContext, event: MergeEvent): Promise<Array<BaseEvent>> => {
+const ruleMergeHandler = async (event: MergeEvent): Promise<Array<BaseEvent>> => {
   const { data, context: eventContext } = event;
   const events: Array<BaseEvent> = [];
-  // region 01 - Generate events for deletion
+  // region 01 - Generate events for sources deletion
   // -- sources
   const sourceDeleteEvents = (eventContext.sources || []).map((s) => buildInternalEvent(EVENT_TYPE_DELETE, s));
   events.push(...sourceDeleteEvents);
-  // -- derived deletions
-  const derivedDeleteEvents = (eventContext.deletions || []).map((s) => buildInternalEvent(EVENT_TYPE_DELETE, s));
-  events.push(...derivedDeleteEvents);
-  // endregion
-  // region 02 - Generate events for shifted relations
-  if ((eventContext.shifts ?? []).length > 0) {
-    const shifts = eventContext.shifts ?? [];
-    for (let index = 0; index < shifts.length; index += 1) {
-      const shift = shifts[index];
-      const shiftedElement = await stixLoadById(context, RULE_MANAGER_USER, shift) as StixCoreObject;
-      // In past reprocess the shift element can already have been deleted.
-      if (shiftedElement) {
-        // We need to clean the element associated with this relation and then rescan it
-        events.push(buildInternalEvent(EVENT_TYPE_DELETE, shiftedElement));
-        // Then we need to generate event for redo rule on shifted relations
-        events.push(buildInternalEvent(EVENT_TYPE_CREATE, shiftedElement));
-      }
-    }
-  }
   // endregion
   // region 03 - Generate event for merged entity
   const updateEvent = buildInternalEvent(EVENT_TYPE_UPDATE, data) as UpdateEvent;
@@ -160,7 +141,7 @@ const handleRuleError = async (event: BaseEvent, error: unknown) => {
   logApp.error(error, { event, type });
 };
 
-const applyCleanupOnDependencyIds = async (deletionIds: Array<string>) => {
+const applyCleanupOnDependencyIds = async (deletionIds: Array<string>, rules: Array<RuleRuntime>) => {
   const context = executionContext('rule_cleaner', RULE_MANAGER_USER);
   const filters = {
     mode: FilterMode.And,
@@ -169,7 +150,7 @@ const applyCleanupOnDependencyIds = async (deletionIds: Array<string>) => {
   };
   const callback = async (elements: Array<BasicStoreCommon>) => {
     // eslint-disable-next-line @typescript-eslint/no-use-before-define
-    await rulesCleanHandler(context, RULE_MANAGER_USER, elements, RULES_DECLARATION, deletionIds);
+    await rulesCleanHandler(context, RULE_MANAGER_USER, elements, rules, deletionIds);
   };
   const opts = { filters, noFiltersChecking: true, callback };
   await elList(context, RULE_MANAGER_USER, READ_DATA_INDICES, opts);
@@ -188,7 +169,7 @@ export const rulesApplyHandler = async (context: AuthContext, user: AuthUser, ev
       // In case of merge convert the events to basic events and restart the process
       if (type === EVENT_TYPE_MERGE) {
         const mergeEvent = event as MergeEvent;
-        const mergeEvents = await ruleMergeHandler(context, mergeEvent);
+        const mergeEvents = await ruleMergeHandler(mergeEvent);
         // eslint-disable-next-line @typescript-eslint/no-use-before-define
         await rulesApplyHandler(context, user, mergeEvents);
       }
@@ -196,9 +177,7 @@ export const rulesApplyHandler = async (context: AuthContext, user: AuthUser, ev
       if (type === EVENT_TYPE_DELETE) {
         const deleteEvent = event as DeleteEvent;
         const internalId = deleteEvent.data.extensions[STIX_EXT_OCTI].id;
-        const contextDeletionsIds = (deleteEvent.context?.deletions ?? []).map((d) => d.extensions[STIX_EXT_OCTI].id);
-        const deletionIds = [internalId, ...contextDeletionsIds];
-        await applyCleanupOnDependencyIds(deletionIds);
+        await applyCleanupOnDependencyIds([internalId], rules);
       }
       // In case of update apply the event on every rules
       if (type === EVENT_TYPE_UPDATE) {
@@ -214,7 +193,7 @@ export const rulesApplyHandler = async (context: AuthContext, user: AuthUser, ev
           const impactDependencies = isAttributesImpactDependencies(rule, previousPatch);
           // Rule doesn't match anymore, need to clean up
           if (impactDependencies || (isPreviouslyMatched && !isCurrentMatched)) {
-            await applyCleanupOnDependencyIds([internalId]);
+            await applyCleanupOnDependencyIds([internalId], [rule]);
           }
           // Rule match, need to apply
           if (isCurrentMatched) {

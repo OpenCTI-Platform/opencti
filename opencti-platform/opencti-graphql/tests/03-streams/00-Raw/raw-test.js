@@ -105,29 +105,4 @@ describe('Raw streams tests', () => {
     },
     FIVE_MINUTES
   );
-
-  // Based on all events of a specific element, can we reconstruct the final state correctly?
-  it(
-    'Should events dependencies available',
-    async () => {
-      const events = await fetchStreamEvents(`http://localhost:${PORT}/stream`, { from: '0' });
-      const contextWithDeletionEvents = events.filter(
-        (e) => {
-          const { context } = e.data;
-          return (context?.deletions || []).length > 0 || (context?.sources || []).length > 0;
-        }
-      );
-      const deletions = R.flatten(
-        contextWithDeletionEvents.map((e) => {
-          const { context } = e.data;
-          return [...(context?.deletions || []), ...(context?.sources || [])];
-        })
-      );
-      const byTypes = R.groupBy((e) => e.type, deletions);
-      expect(byTypes.relationship.length).toBe(11); // Due to merge and sub deletions
-      expect(byTypes['threat-actor'].length).toBe(6); // Merge of threat actors in test
-      expect(byTypes.file.length).toBe(2); // Merge of files in test
-    },
-    FIVE_MINUTES
-  );
 });
