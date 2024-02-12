@@ -1,11 +1,13 @@
 import React from 'react';
-import { graphql, useFragment } from 'react-relay';
+import { graphql, PreloadedQuery, useFragment, usePreloadedQuery } from 'react-relay';
 import Typography from '@mui/material/Typography';
 import Box from '@mui/material/Box';
 import Grid from '@mui/material/Grid';
 import Paper from '@mui/material/Paper';
 import makeStyles from '@mui/styles/makeStyles';
 import DecayChart, { DecayHistory } from '@components/settings/decay/DecayChart';
+import { useParams } from 'react-router-dom';
+import { DecayRuleQuery } from '@components/settings/decay/__generated__/DecayRuleQuery.graphql';
 import DecayRuleEdition from './DecayRuleEdition';
 import DecayRulePopover from './DecayRulePopover';
 import ExpandableMarkdown from '../../../../components/ExpandableMarkdown';
@@ -13,6 +15,8 @@ import { useFormatter } from '../../../../components/i18n';
 import ItemBoolean from '../../../../components/ItemBoolean';
 import CustomizationMenu from '../CustomizationMenu';
 import { DecayRule_decayRule$key } from './__generated__/DecayRule_decayRule.graphql';
+import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
+import Loader, { LoaderVariant } from '../../../../components/Loader';
 
 const useStyles = makeStyles(() => ({
   container: {
@@ -42,6 +46,14 @@ const useStyles = makeStyles(() => ({
   },
 }));
 
+const decayRuleQuery = graphql`
+  query DecayRuleQuery($id: String!) {
+    decayRule(id: $id) {
+      ...DecayRule_decayRule
+    }
+  }
+`;
+
 const decayRuleFragment = graphql`
   fragment DecayRule_decayRule on DecayRule {
     id
@@ -67,10 +79,17 @@ const decayRuleFragment = graphql`
   }
 `;
 
-const DecayRule = ({ data }: { data: DecayRule_decayRule$key }) => {
+interface DecayRuleComponentProps {
+  queryRef: PreloadedQuery<DecayRuleQuery>
+}
+
+const DecayRuleComponent = ({ queryRef }: DecayRuleComponentProps) => {
   const { t_i18n } = useFormatter();
   const classes = useStyles();
-  const decayRule = useFragment(decayRuleFragment, data);
+  const queryResult = usePreloadedQuery(decayRuleQuery, queryRef);
+  const decayRule = useFragment<DecayRule_decayRule$key>(decayRuleFragment, queryResult.decayRule);
+
+  if (!decayRule) return null;
 
   let chartCurvePoints: DecayHistory[] = [];
   if (decayRule.decaySettingsChartData?.live_score_serie) {
@@ -175,6 +194,24 @@ const DecayRule = ({ data }: { data: DecayRule_decayRule$key }) => {
         </Grid>
       </Grid>
     </div>
+  );
+};
+
+const DecayRule = () => {
+  const { decayRuleId } = useParams();
+  if (!decayRuleId) return null;
+
+  const queryRef = useQueryLoading<DecayRuleQuery>(
+    decayRuleQuery,
+    { id: decayRuleId },
+  );
+
+  return queryRef ? (
+    <React.Suspense fallback={<Loader variant={LoaderVariant.container} />}>
+      <DecayRuleComponent queryRef={queryRef} />
+    </React.Suspense>
+  ) : (
+    <Loader variant={LoaderVariant.container} />
   );
 };
 
