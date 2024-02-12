@@ -4,6 +4,7 @@ import { ApexOptions } from 'apexcharts';
 import moment from 'moment';
 import { useTheme } from '@mui/styles';
 import { Theme } from '@mui/material/styles/createTheme';
+import { useFormatter } from '../../../../components/i18n';
 
 export interface DecayHistory {
   score: number,
@@ -20,6 +21,7 @@ interface DecayChartProps {
 
 const DecayChart : FunctionComponent<DecayChartProps> = ({ currentScore, decayCurvePoint, decayLiveScore, revokeScore, reactionPoints }) => {
   const theme = useTheme<Theme>();
+  const { t_i18n } = useFormatter();
 
   const decayCurveColor = theme.palette.primary.main;
   const reactionPointColor = theme.palette.text.primary;
@@ -75,7 +77,7 @@ const DecayChart : FunctionComponent<DecayChartProps> = ({ currentScore, decayCu
       borderColor: revokeColor,
       fillColor: revokeColor,
       label: {
-        text: `Revoke score: ${revokeScore}`,
+        text: `${t_i18n('Revoke score:')} ${revokeScore}`,
         borderColor: revokeColor,
         style: {
           color: revokeColor,
@@ -116,7 +118,7 @@ const DecayChart : FunctionComponent<DecayChartProps> = ({ currentScore, decayCu
           radius: graphLineThickness,
         },
         label: {
-          text: `Score:${currentScoreData.score}`,
+          text: `${t_i18n('Score:')} ${currentScoreData.score}`,
           position: 'right',
           borderColor: scoreColor,
           borderWidth: 2,
@@ -142,7 +144,7 @@ const DecayChart : FunctionComponent<DecayChartProps> = ({ currentScore, decayCu
     xaxis: {
       type: 'datetime',
       title: {
-        text: 'Days',
+        text: t_i18n('Days'),
         style: {
           color: chartInfoTextColor,
         },
@@ -162,7 +164,7 @@ const DecayChart : FunctionComponent<DecayChartProps> = ({ currentScore, decayCu
       min: 0,
       max: 100,
       title: {
-        text: 'Score',
+        text: t_i18n('Score'),
         style: {
           color: chartInfoTextColor,
         },
@@ -199,7 +201,7 @@ const DecayChart : FunctionComponent<DecayChartProps> = ({ currentScore, decayCu
 
   const series = [
     {
-      name: 'Score', // this is the text on the popover
+      name: t_i18n('Score'), // this is the text on the popover
       data: decayCurveDataPoints,
     },
   ];

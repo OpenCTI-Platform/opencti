@@ -52,25 +52,25 @@ const DecayRules = () => {
   const renderLines = () => {
     const dataColumns = {
       name: {
-        label: 'Name',
+        label: t_i18n('Name'),
         width: '30%',
         isSortable: false,
         render: (node: DecayRulesLine_node$data) => node.name,
       },
       created_at: {
-        label: 'Creation date',
+        label: t_i18n('Creation date'),
         width: '20%',
         isSortable: false,
         render: (node: DecayRulesLine_node$data) => fd(node.created_at),
       },
       appliedIndicatorsCount: {
-        label: 'Impacted indicators',
+        label: t_i18n('Impacted indicators'),
         width: '20%',
         isSortable: false,
         render: (node: DecayRulesLine_node$data) => node.appliedIndicatorsCount,
       },
       active: {
-        label: 'Active',
+        label: t_i18n('Active'),
         width: '15%',
         isSortable: false,
         render: (node: DecayRulesLine_node$data) => (
@@ -82,7 +82,7 @@ const DecayRules = () => {
         ),
       },
       order: {
-        label: 'Order',
+        label: t_i18n('Order'),
         width: '10%',
         isSortable: false,
         render: (node: DecayRulesLine_node$data) => node.order,

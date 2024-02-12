@@ -29,7 +29,7 @@ export interface LabelledDecayHistory {
 
 const DecayDialogContent : FunctionComponent<DecayDialogContentProps> = ({ indicator }) => {
   const theme = useTheme<Theme>();
-  const { t_i18n } = useFormatter();
+  const { t_i18n, mhd, rd } = useFormatter();
 
   const indicatorDecayDetails = indicator.decayLiveDetails;
 
@@ -38,18 +38,18 @@ const DecayDialogContent : FunctionComponent<DecayDialogContentProps> = ({ indic
 
   const getDateAsTextFor = (history: DecayHistory) => {
     if (indicator.x_opencti_score === null || indicator.x_opencti_score === undefined) {
-      return 'N/A';
+      return '-';
     } if (history.score < indicator.x_opencti_score && history.updated_at > indicator.decay_base_score_date) {
-      return moment(history.updated_at).fromNow();
+      return rd(history.updated_at);
     }
-    return moment(history.updated_at).format('DD MMM yyyy HH:mm A');
+    return mhd(history.updated_at);
   };
 
   const getDisplayFor = (history: DecayHistory) => {
     if (history.updated_at < indicator.decay_base_score_date) {
       // Anything before base score reset is just "score"
       return {
-        label: 'Score',
+        label: t_i18n('Score'),
         style: { color: theme.palette.text.primary },
         score: history.score,
         updated_at: getDateAsTextFor(history),
@@ -57,7 +57,7 @@ const DecayDialogContent : FunctionComponent<DecayDialogContentProps> = ({ indic
     }
     if (history.score === indicator.x_opencti_score) {
       return {
-        label: 'Current stable score',
+        label: t_i18n('Current stable score'),
         style: {
           color: theme.palette.success.main,
           fontWeight: 'bold',
@@ -67,21 +67,21 @@ const DecayDialogContent : FunctionComponent<DecayDialogContentProps> = ({ indic
       };
     } if (history.score === indicator.decay_base_score) {
       return {
-        label: 'Base score',
+        label: t_i18n('Base score'),
         style: { color: theme.palette.text.primary },
         score: history.score,
         updated_at: getDateAsTextFor(history),
       };
     } if (history.score === indicator.decay_applied_rule?.decay_revoke_score) {
       return {
-        label: 'Revoke score',
+        label: t_i18n('Revoke score'),
         style: { color: theme.palette.secondary.main },
         score: history.score,
         updated_at: getDateAsTextFor(history),
       };
     }
     return {
-      label: 'Stability threshold',
+      label: t_i18n('Stability threshold'),
       style: { color: theme.palette.text.primary },
       score: history.score,
       updated_at: getDateAsTextFor(history),

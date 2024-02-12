@@ -2,6 +2,11 @@ import React, { Component } from 'react';
 import { useIntl, injectIntl } from 'react-intl';
 import moment from 'moment-timezone';
 import { bytesFormat, numberFormat } from '../utils/Number';
+import 'moment/locale/de';
+import 'moment/locale/es';
+import 'moment/locale/fr';
+import 'moment/locale/ja';
+import 'moment/locale/zh-cn'; // 'moment/locale/zh' does not exists.
 
 export const isDateStringNone = (dateString) => {
   if (!dateString) return true;
@@ -213,6 +218,33 @@ export const useFormatter = () => {
       year: 'numeric',
     });
   };
+
+  /**
+   * A date that stop precision at minute. For example "06 Feb 2024 11:54 AM".
+   * @param date
+   * @returns {string}
+   */
+  const minuteHourDate = (date) => {
+    if (isNone(date)) {
+      return '-';
+    }
+    return moment(date).format('DD MMM yyyy HH:mm A');
+  };
+
+  /**
+   * Relaive from now in word. Like "2 months ago", "in 3 minutes"...
+   * @param date
+   * @returns {string}
+   */
+  const relativeDate = (date) => {
+    if (isNone(date)) {
+      return '-';
+    }
+    moment.locale(intl.locale);
+    const momentDate = moment(date);
+    return momentDate.fromNow();
+  };
+
   const shortNumericDateTime = (date) => {
     if (isNone(date)) {
       return '-';
@@ -302,6 +334,8 @@ export const useFormatter = () => {
     mtdy: monthTextYearDate,
     yd: yearDate,
     nt: numericTime,
+    mhd: minuteHourDate,
+    rd: relativeDate,
   };
 };
 
