@@ -14,6 +14,7 @@ export const buildArgsFromDynamicFilters = async (context, user, args) => {
   const listEntitiesWithFilters = async (filters) => listEntities(context, user, [ABSTRACT_STIX_OBJECT], {
     connectionFormat: false,
     first: MAX_RUNTIME_RESOLUTION_SIZE,
+    bypassSizeLimit: true,
     baseData: true,
     filters
   });

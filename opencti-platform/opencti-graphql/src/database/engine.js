@@ -132,7 +132,8 @@ import { rule_definitions } from '../rules/rules-definition';
 const ELK_ENGINE = 'elk';
 const OPENSEARCH_ENGINE = 'opensearch';
 export const ES_MAX_CONCURRENCY = conf.get('elasticsearch:max_concurrency');
-export const ES_MAX_PAGINATION = conf.get('elasticsearch:max_pagination_result') || 500;
+export const ES_DEFAULT_PAGINATION = conf.get('elasticsearch:default_pagination_result') || 500;
+export const ES_MAX_PAGINATION = conf.get('elasticsearch:max_pagination_result') || 5000;
 export const MAX_BULK_OPERATIONS = conf.get('elasticsearch:max_bulk_operations') || 5000;
 export const MAX_RUNTIME_RESOLUTION_SIZE = conf.get('elasticsearch:max_runtime_resolutions') || 5000;
 export const MAX_RELATED_CONTAINER_RESOLUTION = conf.get('elasticsearch:max_container_resolutions') || 1000;
@@ -892,6 +893,7 @@ const getRuntimeEntities = async (context, user, entityType) => {
   const elements = await elPaginate(context, user, READ_INDEX_STIX_DOMAIN_OBJECTS, {
     types: [entityType],
     first: MAX_RUNTIME_RESOLUTION_SIZE,
+    bypassSizeLimit: true,
     connectionFormat: false,
   });
   return R.mergeAll(elements.map((i) => ({ [i.internal_id]: i.name })));
@@ -2095,7 +2097,7 @@ const completeSpecialFilterKeys = async (context, user, inputFilters) => {
 
 const elQueryBodyBuilder = async (context, user, options) => {
   // eslint-disable-next-line no-use-before-define
-  const { ids = [], first = ES_MAX_PAGINATION, after, orderBy = null, orderMode = 'asc', noSize = false, noSort = false, intervalInclude = false } = options;
+  const { ids = [], first = ES_DEFAULT_PAGINATION, after, orderBy = null, orderMode = 'asc', noSize = false, noSort = false, intervalInclude = false } = options;
   const { types = null, search = null } = options;
   const filters = checkAndConvertFilters(options.filters, { noFiltersChecking: options.noFiltersChecking });
   const { startDate = null, endDate = null, dateAttribute = null } = options;
@@ -2494,10 +2496,10 @@ export const elAggregationsList = async (context, user, indexName, aggregations,
 
 export const elPaginate = async (context, user, indexName, options = {}) => {
   // eslint-disable-next-line no-use-before-define
-  const { baseData = false, first = ES_MAX_PAGINATION } = options;
+  const { baseData = false, bypassSizeLimit = false, first = ES_DEFAULT_PAGINATION } = options;
   const { types = null, connectionFormat = true } = options;
   const body = await elQueryBodyBuilder(context, user, options);
-  if (body.size > ES_MAX_PAGINATION) {
+  if (body.size > ES_MAX_PAGINATION && !bypassSizeLimit) {
     logApp.warn('[SEARCH] Pagination limited to max result config', { size: body.size, max: ES_MAX_PAGINATION });
     body.size = ES_MAX_PAGINATION;
   }
@@ -2521,7 +2523,7 @@ export const elPaginate = async (context, user, indexName, options = {}) => {
     );
 };
 export const elList = async (context, user, indexName, opts = {}) => {
-  const { first = ES_MAX_PAGINATION, maxSize = undefined } = opts;
+  const { first = ES_DEFAULT_PAGINATION, maxSize = undefined } = opts;
   let emitSize = 0;
   let hasNextPage = true;
   let continueProcess = true;
