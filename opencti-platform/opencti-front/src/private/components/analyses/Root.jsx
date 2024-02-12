@@ -1,5 +1,5 @@
 import React, { Suspense, lazy } from 'react';
-import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
+import { Routes, Route, Navigate } from 'react-router-dom';
 
 import { boundaryWrapper } from '@components/Error';
 import { useIsHiddenEntity } from '../../../utils/hooks/useEntitySettings';
