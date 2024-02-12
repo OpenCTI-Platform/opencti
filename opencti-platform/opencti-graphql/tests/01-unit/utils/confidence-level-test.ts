@@ -162,7 +162,7 @@ describe('Confidence level utilities', () => {
           confidenceLevelToApply: 30,
         });
       expect(() => controlUpsertInputWithUserConfidence(makeUser(null), makeElement(30), makeElement(50)))
-        .toThrowError('User has no effective max confidence level and cannot update this element');
+        .toThrowError('User has no effective max confidence level and cannot upsert this element');
     });
   });
 

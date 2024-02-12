@@ -2672,7 +2672,6 @@ export const createRelationRaw = async (context, user, rawInput, opts = {}) => {
       controlUserConfidenceAgainstElement(user, from);
     }
   }
-  // endregion
 
   // check if user has "edit" access on from and to
   if (!validateUserAccessOperation(user, from, 'edit') || !validateUserAccessOperation(user, to, 'edit')) {
