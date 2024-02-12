@@ -561,5 +561,16 @@
   "Ethnicity": "Ethnizität",
   "Label": "Etikett",
   "External reference": "Externe Referenz",
-  "Kill chain phase": "Phase der Tötungskette"
+  "Kill chain phase": "Phase der Tötungskette",
+  "Lifetime": "Lebenszeit",
+  "Decay factor": "Zerfallsfaktor",
+  "Reaction points": "Reaktionspunkte",
+  "Revoke score": "Widerrufener Punktestand",
+  "Indicator observable types": "Indikator beobachtbare Typen",
+  "Uri": "Uri",
+  "User_id": "Benutzer_id",
+  "Csv_mapper_id": "Csv_mapper_id",
+  "Ingestion_running": "Ingestion_running",
+  "Added_after_start": "Hinzugefügt_nach_Start",
+  "Current_state_hash": "Aktueller_Zustand_Hash"
 }

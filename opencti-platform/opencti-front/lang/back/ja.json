@@ -561,5 +561,16 @@
   "Ethnicity": "民族",
   "Label": "ラベル",
   "External reference": "外部参照",
-  "Kill chain phase": "キルチェーンフェーズ"
+  "Kill chain phase": "キルチェーンフェーズ",
+  "Lifetime": "生涯",
+  "Decay factor": "減衰係数",
+  "Reaction points": "反応点",
+  "Revoke score": "失効点数",
+  "Indicator observable types": "インジケータの観測可能なタイプ",
+  "Uri": "ウリ",
+  "User_id": "ユーザID",
+  "Csv_mapper_id": "Csv_mapper_id",
+  "Ingestion_running": "Ingestion_running（インジェスト実行中",
+  "Added_after_start": "追加_開始後",
+  "Current_state_hash": "現在の状態_ハッシュ"
 }
