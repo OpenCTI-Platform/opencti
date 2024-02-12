@@ -63,9 +63,7 @@ class RootNote extends Component {
   constructor(props) {
     super(props);
     const {
-      match: {
-        params: { noteId },
-      },
+      params: { noteId },
     } = props;
     this.sub = requestSubscription({
       subscription,
@@ -81,9 +79,7 @@ class RootNote extends Component {
     const {
       t,
       location,
-      match: {
-        params: { noteId },
-      },
+      params: { noteId },
     } = this.props;
     return (
       <>
@@ -157,35 +153,30 @@ class RootNote extends Component {
                     </Box>
                     <Routes>
                       <Route
-                        exact
-                        path="/dashboard/analyses/notes/:noteId"
-                        render={(routeProps) => (
-                          <Note {...routeProps} note={props.note} />
-                        )}
+                        path="/"
+                        element={
+                          <Note note={props.note} />
+                        }
                       />
                       <Route
-                        exact
-                        path="/dashboard/analyses/notes/:noteId/files"
-                        render={(routeProps) => (
+                        path="/files"
+                        element={
                           <FileManager
-                            {...routeProps}
                             id={noteId}
                             connectorsExport={props.connectorsForExport}
                             connectorsImport={props.connectorsForImport}
                             entity={props.note}
                           />
-                        )}
+                        }
                       />
                       <Route
-                        exact
-                        path="/dashboard/analyses/notes/:noteId/history"
-                        render={(routeProps) => (
+                        path="/history"
+                        element={
                           <StixCoreObjectHistory
-                            {...routeProps}
                             stixCoreObjectId={noteId}
                             withoutRelations={true}
                           />
-                        )}
+                        }
                       />
                     </Routes>
                   </div>

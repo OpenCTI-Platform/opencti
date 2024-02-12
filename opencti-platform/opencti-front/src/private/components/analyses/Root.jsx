@@ -51,7 +51,7 @@ const Root = () => {
           Component={boundaryWrapper(Groupings)}
         />
         <Route
-          path="/groupings/:groupingId"
+          path="/groupings/:groupingId/*"
           Component={boundaryWrapper(RootGrouping)}
         />
         <Route
@@ -59,7 +59,7 @@ const Root = () => {
           Component={boundaryWrapper(MalwareAnalyses)}
         />
         <Route
-          path="/malware_analyses/:malwareAnalysisId"
+          path="/malware_analyses/:malwareAnalysisId/*"
           Component={boundaryWrapper(RootMalwareAnalysis)}
         />
         <Route
@@ -67,7 +67,7 @@ const Root = () => {
           Component={boundaryWrapper(Notes)}
         />
         <Route
-          path="/notes/:noteId"
+          path="/notes/:noteId/*"
           Component={boundaryWrapper(RootNote)}
         />
         <Route
@@ -83,7 +83,7 @@ const Root = () => {
           Component={boundaryWrapper(ExternalReferences)}
         />
         <Route
-          path="/external_references/:externalReferenceId"
+          path="/external_references/:externalReferenceId/*"
           Component={boundaryWrapper(RootExternalReference)}
         />
       </Routes>
