@@ -893,7 +893,7 @@ const getRuntimeEntities = async (context, user, entityType) => {
   const elements = await elPaginate(context, user, READ_INDEX_STIX_DOMAIN_OBJECTS, {
     types: [entityType],
     first: MAX_RUNTIME_RESOLUTION_SIZE,
-    bypassSizeLimit: true,
+    bypassSizeLimit: true, // ensure that max runtime prevent on ES_MAX_PAGINATION
     connectionFormat: false,
   });
   return R.mergeAll(elements.map((i) => ({ [i.internal_id]: i.name })));
