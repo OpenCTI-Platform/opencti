@@ -18,7 +18,7 @@ import { ModuleHelper } from '../../../utils/platformModulesHelper';
 import { IndicatorLineDummyComponent } from './indicators/IndicatorLine';
 import { buildEntityTypeBasedFilterContext, emptyFilterGroup, findFilterFromKey, getDefaultFilterObjFromArray } from '../../../utils/filters/filtersUtils';
 import { useFormatter } from '../../../components/i18n';
-import Breadcrumbs from '../../../components/Breadcrumps';
+import Breadcrumbs from '../../../components/Breadcrumbs';
 
 const useStyles = makeStyles(() => ({
   container: {

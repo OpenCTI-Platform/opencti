@@ -29,7 +29,7 @@ import { PlaybookLineDummy } from './playbooks/PlaybookLine';
 import type { Theme } from '../../../components/Theme';
 import useEnterpriseEdition from '../../../utils/hooks/useEnterpriseEdition';
 import { useFormatter } from '../../../components/i18n';
-import Breadcrumbs from '../../../components/Breadcrumps';
+import Breadcrumbs from '../../../components/Breadcrumbs';
 
 export const LOCAL_STORAGE_KEY_PLAYBOOKS = 'playbooks';
 

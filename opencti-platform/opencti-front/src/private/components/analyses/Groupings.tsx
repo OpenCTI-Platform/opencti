@@ -15,7 +15,7 @@ import { GroupingLineDummy } from './groupings/GroupingLine';
 import { buildEntityTypeBasedFilterContext, emptyFilterGroup, getDefaultFilterObjFromArray } from '../../../utils/filters/filtersUtils';
 import { useFormatter } from '../../../components/i18n';
 import ExportContextProvider from '../../../utils/ExportContextProvider';
-import Breadcrumbs from '../../../components/Breadcrumps';
+import Breadcrumbs from '../../../components/Breadcrumbs';
 
 const LOCAL_STORAGE_KEY = 'groupings';
 

@@ -24,7 +24,7 @@ import StixCoreObjectOrStixCoreRelationshipContainers from '../../common/contain
 import ThreatActorIndividualKnowledge from './ThreatActorIndividualKnowledge';
 import StixCoreObjectKnowledgeBar from '../../common/stix_core_objects/StixCoreObjectKnowledgeBar';
 import { useFormatter } from '../../../../components/i18n';
-import Breadcrumbs from '../../../../components/Breadcrumps';
+import Breadcrumbs from '../../../../components/Breadcrumbs';
 
 const subscription = graphql`
   subscription RootThreatActorIndividualSubscription($id: ID!) {

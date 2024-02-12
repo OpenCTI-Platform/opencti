@@ -22,7 +22,7 @@ import { RootDataComponentQuery$data } from './__generated__/RootDataComponentQu
 import DataComponentKnowledge from './DataComponentKnowledge';
 import { RootDataComponentSubscription } from './__generated__/RootDataComponentSubscription.graphql';
 import { useFormatter } from '../../../../components/i18n';
-import Breadcrumbs from '../../../../components/Breadcrumps';
+import Breadcrumbs from '../../../../components/Breadcrumbs';
 
 const subscription = graphql`
   subscription RootDataComponentSubscription($id: ID!) {

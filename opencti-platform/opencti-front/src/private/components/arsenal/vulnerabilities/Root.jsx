@@ -18,7 +18,7 @@ import StixCoreObjectOrStixCoreRelationshipContainers from '../../common/contain
 import StixCoreObjectKnowledgeBar from '../../common/stix_core_objects/StixCoreObjectKnowledgeBar';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
 import inject18n from '../../../../components/i18n';
-import Breadcrumbs from '../../../../components/Breadcrumps';
+import Breadcrumbs from '../../../../components/Breadcrumbs';
 
 const subscription = graphql`
   subscription RootVulnerabilitySubscription($id: ID!) {

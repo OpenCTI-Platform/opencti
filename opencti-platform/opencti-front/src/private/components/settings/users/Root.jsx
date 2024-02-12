@@ -18,7 +18,7 @@ import User from './User';
 import UserAnalytics from './UserAnalytics';
 import { useFormatter } from '../../../../components/i18n';
 import useAuth from '../../../../utils/hooks/useAuth';
-import Breadcrumbs from '../../../../components/Breadcrumps';
+import Breadcrumbs from '../../../../components/Breadcrumbs';
 
 const useStyles = makeStyles(() => ({
   title: {

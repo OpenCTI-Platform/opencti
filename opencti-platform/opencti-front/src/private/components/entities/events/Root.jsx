@@ -19,7 +19,7 @@ import StixCoreObjectKnowledgeBar from '../../common/stix_core_objects/StixCoreO
 import ErrorNotFound from '../../../../components/ErrorNotFound';
 import EntityStixSightingRelationships from '../../events/stix_sighting_relationships/EntityStixSightingRelationships';
 import inject18n from '../../../../components/i18n';
-import Breadcrumbs from '../../../../components/Breadcrumps';
+import Breadcrumbs from '../../../../components/Breadcrumbs';
 
 const subscription = graphql`
   subscription RootEventsSubscription($id: ID!) {

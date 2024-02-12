@@ -10,7 +10,7 @@ import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage'
 import { useFormatter } from '../../../components/i18n';
 import { RETENTION_MANAGER } from '../../../utils/platformModulesHelper';
 import CustomizationMenu from './CustomizationMenu';
-import Breadcrumbs from '../../../components/Breadcrumps';
+import Breadcrumbs from '../../../components/Breadcrumbs';
 
 const LOCAL_STORAGE_KEY = 'retention';
 

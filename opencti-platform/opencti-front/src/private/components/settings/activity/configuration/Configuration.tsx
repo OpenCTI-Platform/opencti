@@ -42,7 +42,7 @@ import ObjectOrganizationField from '../../../common/form/ObjectOrganizationFiel
 import { Option } from '../../../common/form/ReferenceField';
 import { isEmptyField } from '../../../../../utils/utils';
 import EnterpriseEdition from '../../../common/entreprise_edition/EnterpriseEdition';
-import Breadcrumbs from '../../../../../components/Breadcrumps';
+import Breadcrumbs from '../../../../../components/Breadcrumbs';
 
 const useStyles = makeStyles<Theme>(() => ({
   alert: {

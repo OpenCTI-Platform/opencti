@@ -20,7 +20,7 @@ import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainO
 import IndicatorPopover from './IndicatorPopover';
 import StixCoreObjectOrStixCoreRelationshipContainers from '../../common/containers/StixCoreObjectOrStixCoreRelationshipContainers';
 import inject18n from '../../../../components/i18n';
-import Breadcrumbs from '../../../../components/Breadcrumps';
+import Breadcrumbs from '../../../../components/Breadcrumbs';
 
 const subscription = graphql`
   subscription RootIndicatorSubscription($id: ID!) {

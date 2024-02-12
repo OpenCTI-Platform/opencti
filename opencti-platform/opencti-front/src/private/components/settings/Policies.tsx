@@ -29,7 +29,7 @@ import useQueryLoading from '../../../utils/hooks/useQueryLoading';
 import Loader, { LoaderVariant } from '../../../components/Loader';
 import useEnterpriseEdition from '../../../utils/hooks/useEnterpriseEdition';
 import ItemBoolean from '../../../components/ItemBoolean';
-import Breadcrumbs from '../../../components/Breadcrumps';
+import Breadcrumbs from '../../../components/Breadcrumbs';
 
 const useStyles = makeStyles(() => ({
   container: {

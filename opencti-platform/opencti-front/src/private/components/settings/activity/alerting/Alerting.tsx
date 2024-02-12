@@ -14,7 +14,7 @@ import { AlertingLines_data$key } from './__generated__/AlertingLines_data.graph
 import { AlertingLineComponent, AlertingLineDummy } from './AlertingLine';
 import type { Theme } from '../../../../../components/Theme';
 import { emptyFilterGroup } from '../../../../../utils/filters/filtersUtils';
-import Breadcrumbs from '../../../../../components/Breadcrumps';
+import Breadcrumbs from '../../../../../components/Breadcrumbs';
 import { useFormatter } from '../../../../../components/i18n';
 
 export const LOCAL_STORAGE_KEY_DATA_SOURCES = 'alerting';

@@ -10,7 +10,7 @@ import ListLines from '../../../components/list_lines/ListLines';
 import MarkingDefinitionsLines, { markingDefinitionsLinesQuery } from './marking_definitions/MarkingDefinitionsLines';
 import MarkingDefinitionCreation from './marking_definitions/MarkingDefinitionCreation';
 import AccessesMenu from './AccessesMenu';
-import Breadcrumbs from '../../../components/Breadcrumps';
+import Breadcrumbs from '../../../components/Breadcrumbs';
 
 const styles = () => ({
   container: {

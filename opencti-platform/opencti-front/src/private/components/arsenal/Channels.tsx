@@ -9,7 +9,7 @@ import useQueryLoading from '../../../utils/hooks/useQueryLoading';
 import { ChannelLineDummy } from './channels/ChannelLine';
 import { ChannelsLinesPaginationQuery, ChannelsLinesPaginationQuery$variables } from './channels/__generated__/ChannelsLinesPaginationQuery.graphql';
 import { buildEntityTypeBasedFilterContext, emptyFilterGroup, getDefaultFilterObjFromArray } from '../../../utils/filters/filtersUtils';
-import Breadcrumbs from '../../../components/Breadcrumps';
+import Breadcrumbs from '../../../components/Breadcrumbs';
 import { useFormatter } from '../../../components/i18n';
 
 const LOCAL_STORAGE_KEY = 'channels';

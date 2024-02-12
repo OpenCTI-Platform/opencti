@@ -10,7 +10,7 @@ import useAuth from '../../../utils/hooks/useAuth';
 import { useFormatter } from '../../../components/i18n';
 import { INGESTION_MANAGER } from '../../../utils/platformModulesHelper';
 import IngestionMenu from './IngestionMenu';
-import Breadcrumbs from '../../../components/Breadcrumps';
+import Breadcrumbs from '../../../components/Breadcrumbs';
 
 const LOCAL_STORAGE_KEY = 'ingestionTaxii';
 

@@ -17,7 +17,7 @@ import useEntityToggle from '../../../utils/hooks/useEntityToggle';
 import { StixCyberObservableLine_node$data } from './stix_cyber_observables/__generated__/StixCyberObservableLine_node.graphql';
 import { buildEntityTypeBasedFilterContext, emptyFilterGroup, getDefaultFilterObjFromArray } from '../../../utils/filters/filtersUtils';
 import { useFormatter } from '../../../components/i18n';
-import Breadcrumbs from '../../../components/Breadcrumps';
+import Breadcrumbs from '../../../components/Breadcrumbs';
 
 const LOCAL_STORAGE_KEY = 'stixCyberObservables';
 

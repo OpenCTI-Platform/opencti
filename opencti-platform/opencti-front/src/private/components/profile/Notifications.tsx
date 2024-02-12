@@ -10,7 +10,7 @@ import { NotificationLine_node$data } from './notifications/__generated__/Notifi
 import useAuth from '../../../utils/hooks/useAuth';
 import NotificationsToolBar from './notifications/NotificationsToolBar';
 import { emptyFilterGroup, getDefaultFilterObjFromArray, isFilterGroupNotEmpty, removeIdFromFilterGroupObject } from '../../../utils/filters/filtersUtils';
-import Breadcrumbs from '../../../components/Breadcrumps';
+import Breadcrumbs from '../../../components/Breadcrumbs';
 import { useFormatter } from '../../../components/i18n';
 
 export const LOCAL_STORAGE_KEY = 'notifiers';

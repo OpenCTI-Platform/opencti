@@ -12,7 +12,7 @@ import { FeedbacksLinesPaginationQuery, FeedbacksLinesPaginationQuery$variables 
 import { FeedbackLine_node$data } from './feedbacks/__generated__/FeedbackLine_node.graphql';
 import { buildEntityTypeBasedFilterContext, emptyFilterGroup } from '../../../utils/filters/filtersUtils';
 import { useFormatter } from '../../../components/i18n';
-import Breadcrumbs from '../../../components/Breadcrumps';
+import Breadcrumbs from '../../../components/Breadcrumbs';
 
 interface FeedbacksProps {
   inputValue?: string;

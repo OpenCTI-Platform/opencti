@@ -10,7 +10,7 @@ import FeedLines, { FeedLinesQuery } from './feeds/FeedLines';
 import FeedCreation from './feeds/FeedCreation';
 import SharingMenu from './SharingMenu';
 import { OrderMode, PaginationOptions } from '../../../components/list_lines';
-import Breadcrumbs from '../../../components/Breadcrumps';
+import Breadcrumbs from '../../../components/Breadcrumbs';
 import { useFormatter } from '../../../components/i18n';
 
 const Feed = () => {

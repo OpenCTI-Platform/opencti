@@ -23,7 +23,7 @@ import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import { useFormatter } from '../../../../components/i18n';
 import CityPopover from './CityPopover';
-import Breadcrumbs from '../../../../components/Breadcrumps';
+import Breadcrumbs from '../../../../components/Breadcrumbs';
 
 const subscription = graphql`
   subscription RootCitiesSubscription($id: ID!) {

@@ -13,7 +13,7 @@ import {
 } from './threat_actors_individual/__generated__/ThreatActorsIndividualCardsPaginationQuery.graphql';
 import ThreatActorIndividualCreation from './threat_actors_individual/ThreatActorIndividualCreation';
 import { emptyFilterGroup } from '../../../utils/filters/filtersUtils';
-import Breadcrumbs from '../../../components/Breadcrumps';
+import Breadcrumbs from '../../../components/Breadcrumbs';
 import { useFormatter } from '../../../components/i18n';
 
 const LOCAL_STORAGE_KEY_THREAT_ACTORS_INDIVIDUAL = 'threatActorsIndividuals';

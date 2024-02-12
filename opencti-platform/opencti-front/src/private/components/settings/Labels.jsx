@@ -13,7 +13,7 @@ import LabelCreation from './labels/LabelCreation';
 import LabelsVocabulariesMenu from './LabelsVocabulariesMenu';
 import ToolBar from '../data/ToolBar';
 import { buildEntityTypeBasedFilterContext } from '../../../utils/filters/filtersUtils';
-import Breadcrumbs from '../../../components/Breadcrumps';
+import Breadcrumbs from '../../../components/Breadcrumbs';
 
 const styles = () => ({
   container: {

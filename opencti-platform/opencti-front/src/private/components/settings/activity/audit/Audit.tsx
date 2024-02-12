@@ -34,7 +34,7 @@ import useAuth from '../../../../../utils/hooks/useAuth';
 import { useFormatter } from '../../../../../components/i18n';
 import { emptyFilterGroup } from '../../../../../utils/filters/filtersUtils';
 import { fetchQuery } from '../../../../../relay/environment';
-import Breadcrumbs from '../../../../../components/Breadcrumps';
+import Breadcrumbs from '../../../../../components/Breadcrumbs';
 
 const useStyles = makeStyles<Theme>(() => ({
   container: {

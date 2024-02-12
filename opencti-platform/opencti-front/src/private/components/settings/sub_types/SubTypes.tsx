@@ -9,7 +9,7 @@ import { SubTypesLinesQuery, SubTypesLinesQuery$variables } from './__generated_
 import useEntityToggle from '../../../../utils/hooks/useEntityToggle';
 import ToolBar from './ToolBar';
 import CustomizationMenu from '../CustomizationMenu';
-import Breadcrumbs from '../../../../components/Breadcrumps';
+import Breadcrumbs from '../../../../components/Breadcrumbs';
 import { useFormatter } from '../../../../components/i18n';
 
 const LOCAL_STORAGE_KEY_SUB_TYPES = 'sub-types';

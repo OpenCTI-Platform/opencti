@@ -24,7 +24,7 @@ import ContainerStixCyberObservables from '../../common/containers/ContainerStix
 import ContainerStixDomainObjects from '../../common/containers/ContainerStixDomainObjects';
 import { RootCaseRftCaseQuery } from './__generated__/RootCaseRftCaseQuery.graphql';
 import { useFormatter } from '../../../../components/i18n';
-import Breadcrumbs from '../../../../components/Breadcrumps';
+import Breadcrumbs from '../../../../components/Breadcrumbs';
 
 const subscription = graphql`
   subscription RootCaseRftCaseSubscription($id: ID!) {

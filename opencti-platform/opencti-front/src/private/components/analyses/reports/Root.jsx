@@ -18,7 +18,7 @@ import ErrorNotFound from '../../../../components/ErrorNotFound';
 import StixCoreObjectFilesAndHistory from '../../common/stix_core_objects/StixCoreObjectFilesAndHistory';
 import StixDomainObjectContent from '../../common/stix_domain_objects/StixDomainObjectContent';
 import inject18n from '../../../../components/i18n';
-import Breadcrumbs from '../../../../components/Breadcrumps';
+import Breadcrumbs from '../../../../components/Breadcrumbs';
 
 const subscription = graphql`
   subscription RootReportSubscription($id: ID!) {

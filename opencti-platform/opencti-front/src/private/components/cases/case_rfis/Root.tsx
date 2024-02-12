@@ -25,7 +25,7 @@ import ContainerStixDomainObjects from '../../common/containers/ContainerStixDom
 import ContainerStixCyberObservables from '../../common/containers/ContainerStixCyberObservables';
 import CaseRfiKnowledge from './CaseRfiKnowledge';
 import { useFormatter } from '../../../../components/i18n';
-import Breadcrumbs from '../../../../components/Breadcrumps';
+import Breadcrumbs from '../../../../components/Breadcrumbs';
 
 const subscription = graphql`
   subscription RootCaseRfiCaseSubscription($id: ID!) {

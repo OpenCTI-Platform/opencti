@@ -15,7 +15,7 @@ import ToolBar from '../data/ToolBar';
 import { InfrastructureLine_node$data } from './infrastructures/__generated__/InfrastructureLine_node.graphql';
 import { buildEntityTypeBasedFilterContext, emptyFilterGroup } from '../../../utils/filters/filtersUtils';
 import { useFormatter } from '../../../components/i18n';
-import Breadcrumbs from '../../../components/Breadcrumps';
+import Breadcrumbs from '../../../components/Breadcrumbs';
 
 export const LOCAL_STORAGE_KEY_INFRASTRUCTURES = 'infrastructures';
 

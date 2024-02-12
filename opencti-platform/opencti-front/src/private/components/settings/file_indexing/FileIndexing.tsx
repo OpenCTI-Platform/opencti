@@ -26,7 +26,7 @@ import Loader, { LoaderVariant } from '../../../../components/Loader';
 import { FileIndexingConfigurationQuery } from './__generated__/FileIndexingConfigurationQuery.graphql';
 import { TEN_SECONDS } from '../../../../utils/Time';
 import { useFormatter } from '../../../../components/i18n';
-import Breadcrumbs from '../../../../components/Breadcrumps';
+import Breadcrumbs from '../../../../components/Breadcrumbs';
 
 const interval$ = interval(TEN_SECONDS);
 

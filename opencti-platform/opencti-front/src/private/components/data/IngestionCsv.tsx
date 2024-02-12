@@ -14,7 +14,7 @@ import ListLines from '../../../components/list_lines/ListLines';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
 import { KNOWLEDGE_KNUPDATE } from '../../../utils/hooks/useGranted';
 import Security from '../../../utils/Security';
-import Breadcrumbs from '../../../components/Breadcrumps';
+import Breadcrumbs from '../../../components/Breadcrumbs';
 
 const LOCAL_STORAGE_KEY = 'ingestionCsvs';
 

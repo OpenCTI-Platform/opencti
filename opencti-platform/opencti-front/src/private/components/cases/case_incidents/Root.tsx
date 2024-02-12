@@ -25,7 +25,7 @@ import IncidentKnowledge from './IncidentKnowledge';
 import { RootIncidentQuery } from '../../events/incidents/__generated__/RootIncidentQuery.graphql';
 import { RootIncidentSubscription } from '../../events/incidents/__generated__/RootIncidentSubscription.graphql';
 import { useFormatter } from '../../../../components/i18n';
-import Breadcrumbs from '../../../../components/Breadcrumps';
+import Breadcrumbs from '../../../../components/Breadcrumbs';
 
 const subscription = graphql`
   subscription RootIncidentCaseSubscription($id: ID!) {

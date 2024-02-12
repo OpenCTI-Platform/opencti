@@ -40,7 +40,7 @@ import WorkbenchFileCreator from '../../common/files/workbench/WorkbenchFileCrea
 import ManageImportConnectorMessage from './ManageImportConnectorMessage';
 import { truncate } from '../../../../utils/String';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
-import Breadcrumbs from '../../../../components/Breadcrumps';
+import Breadcrumbs from '../../../../components/Breadcrumbs';
 
 const interval$ = interval(FIVE_SECONDS);
 

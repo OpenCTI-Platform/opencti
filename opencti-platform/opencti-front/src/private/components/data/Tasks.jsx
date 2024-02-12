@@ -9,7 +9,7 @@ import Loader from '../../../components/Loader';
 import useAuth from '../../../utils/hooks/useAuth';
 import { TASK_MANAGER } from '../../../utils/platformModulesHelper';
 import ProcessingMenu from './ProcessingMenu';
-import Breadcrumbs from '../../../components/Breadcrumps';
+import Breadcrumbs from '../../../components/Breadcrumbs';
 
 const useStyles = makeStyles(() => ({
   container: {

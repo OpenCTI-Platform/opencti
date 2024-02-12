@@ -9,7 +9,7 @@ import { CaseTemplateLinesPaginationQuery, CaseTemplateLinesPaginationQuery$vari
 import CaseTemplateCreation from './CaseTemplateCreation';
 import CaseTemplateLineDummy from './CaseTemplateLineDummy';
 import CaseTemplateLines, { caseTemplatesLinesQuery } from './CaseTemplateLines';
-import Breadcrumbs from '../../../../components/Breadcrumps';
+import Breadcrumbs from '../../../../components/Breadcrumbs';
 import { useFormatter } from '../../../../components/i18n';
 
 const useStyles = makeStyles(() => ({

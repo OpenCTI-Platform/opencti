@@ -10,7 +10,7 @@ import { DataSourcesLinesPaginationQuery, DataSourcesLinesPaginationQuery$variab
 import { DataSourceLineDummy } from './data_sources/DataSourceLine';
 import { emptyFilterGroup } from '../../../utils/filters/filtersUtils';
 import { useFormatter } from '../../../components/i18n';
-import Breadcrumbs from '../../../components/Breadcrumps';
+import Breadcrumbs from '../../../components/Breadcrumbs';
 
 export const LOCAL_STORAGE_KEY_DATA_SOURCES = 'dataSources';
 

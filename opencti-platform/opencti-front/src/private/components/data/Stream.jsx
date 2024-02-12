@@ -11,7 +11,7 @@ import ListLines from '../../../components/list_lines/ListLines';
 import StreamLines, { StreamLinesQuery } from './stream/StreamLines';
 import StreamCollectionCreation from './stream/StreamCollectionCreation';
 import SharingMenu from './SharingMenu';
-import Breadcrumbs from '../../../components/Breadcrumps';
+import Breadcrumbs from '../../../components/Breadcrumbs';
 
 const styles = () => ({
   container: {

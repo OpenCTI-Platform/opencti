@@ -10,7 +10,7 @@ import ListLines from '../../../components/list_lines/ListLines';
 import RolesLines, { rolesLinesQuery } from './roles/RolesLines';
 import AccessesMenu from './AccessesMenu';
 import RoleCreation from './roles/RoleCreation';
-import Breadcrumbs from '../../../components/Breadcrumps';
+import Breadcrumbs from '../../../components/Breadcrumbs';
 
 const styles = () => ({
   container: {

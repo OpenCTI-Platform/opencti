@@ -19,7 +19,7 @@ import StixSightingRelationship from '../../events/stix_sighting_relationships/S
 import StixCoreObjectOrStixCoreRelationshipContainers from '../../common/containers/StixCoreObjectOrStixCoreRelationshipContainers';
 import FileManager from '../../common/files/FileManager';
 import inject18n from '../../../../components/i18n';
-import Breadcrumbs from '../../../../components/Breadcrumps';
+import Breadcrumbs from '../../../../components/Breadcrumbs';
 
 const subscription = graphql`
   subscription RootStixCyberObservableSubscription($id: ID!) {

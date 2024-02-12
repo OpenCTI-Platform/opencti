@@ -9,7 +9,7 @@ import { QueryRenderer } from '../../../relay/environment';
 import SessionsList, { sessionsListQuery } from './SessionsList';
 import SearchInput from '../../../components/SearchInput';
 import { buildViewParamsFromUrlAndStorage, saveViewParameters } from '../../../utils/ListParameters';
-import Breadcrumbs from '../../../components/Breadcrumps';
+import Breadcrumbs from '../../../components/Breadcrumbs';
 
 const styles = () => ({
   container: {

@@ -10,7 +10,7 @@ import { PositionLineDummy } from './positions/PositionLine';
 import PositionsLines, { positionsLinesQuery } from './positions/PositionsLines';
 import { emptyFilterGroup } from '../../../utils/filters/filtersUtils';
 import { useFormatter } from '../../../components/i18n';
-import Breadcrumbs from '../../../components/Breadcrumps';
+import Breadcrumbs from '../../../components/Breadcrumbs';
 
 const LOCAL_STORAGE_KEY_POSITIONS = 'positions';
 

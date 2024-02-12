@@ -16,7 +16,7 @@ import StixCoreObjectHistory from '../../common/stix_core_objects/StixCoreObject
 import ErrorNotFound from '../../../../components/ErrorNotFound';
 import CourseOfActionKnowledge from './CourseOfActionKnowledge';
 import inject18n from '../../../../components/i18n';
-import Breadcrumbs from '../../../../components/Breadcrumps';
+import Breadcrumbs from '../../../../components/Breadcrumbs';
 
 const subscription = graphql`
   subscription RootCoursesOfActionSubscription($id: ID!) {
