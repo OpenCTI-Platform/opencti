@@ -1,5 +1,5 @@
 import React, { useRef, useState } from 'react';
-import { Link, useHistory, useLocation } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { createStyles, makeStyles, styled, useTheme } from '@mui/styles';
 import Toolbar from '@mui/material/Toolbar';
 import MenuList from '@mui/material/MenuList';
@@ -194,7 +194,7 @@ const LeftBar = () => {
   const ref = useRef();
   const { t_i18n } = useFormatter();
   const { settings: { platform_whitemark } } = useAuth();
-  const history = useHistory();
+  const navigate = useNavigate();
   const isEnterpriseEdition = useEnterpriseEdition();
   const isGrantedToKnowledge = useGranted([KNOWLEDGE]);
   const isGrantedToImport = useGranted([KNOWLEDGE_KNASKIMPORT]);
@@ -241,7 +241,7 @@ const LeftBar = () => {
     setSelectedMenu(selectedMenu === menu ? null : menu);
   };
   const handleGoToPage = (link) => {
-    history.push(link);
+    navigate(link);
   };
   const hiddenEntities = useHiddenEntities();
   const hideAnalyses = useIsHiddenEntities(
