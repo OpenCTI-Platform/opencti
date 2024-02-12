@@ -334,13 +334,10 @@ class Consumer(Thread):  # pylint: disable=too-many-instance-attributes
         except Exception as ex:  # pylint: disable=broad-except
             error = str(ex)
             error_msg = traceback.format_exc()
-            if (
-                "LOCK_ERROR" in error_msg
-                and self.processing_count < MAX_PROCESSING_COUNT
-            ):
+            if "LOCK_ERROR" in error_msg:
                 bundles_lock_error_counter.add(1)
                 # Platform is under heavy load:
-                # wait for unlock & retry almost indefinitely.
+                # wait for unlock & retry indefinitely.
                 sleep_jitter = round(random.uniform(10, 30), 2)
                 time.sleep(sleep_jitter)
                 self.data_handler(connection, channel, delivery_tag, data)

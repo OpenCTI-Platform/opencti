@@ -1,7 +1,7 @@
 import type { AuthUser } from '../types/user';
 import { cropNumber } from './math';
 import { isEmptyField } from '../database/utils';
-import { FunctionalError } from '../config/errors';
+import { FunctionalError, LockTimeoutError } from '../config/errors';
 import { logApp } from '../config/conf';
 import { schemaAttributesDefinition } from '../schema/schema-attributes';
 import { type Filter, type FilterGroup, FilterMode, FilterOperator } from '../generated/graphql';
@@ -66,7 +66,9 @@ const capInputConfidenceWithUserMaxConfidence = (userMaxConfidence: number, inpu
  */
 export const controlCreateInputWithUserConfidence = <T extends ObjectWithConfidence>(user: AuthUser, inputElement: T) => {
   if (isEmptyField(user.effective_confidence_level?.max_confidence)) {
-    throw FunctionalError('User has no effective max confidence level and cannot create this element', { user_id: user.id });
+    // using LockTimeoutError allows us to leverage the worker infinite auto-retry, so that connectors and feeds won't lose messages
+    // this is a configuration error that might appear when upgrading to 6.X, but shall disappear in future when everyone has confidence level set up.
+    throw LockTimeoutError({ user_id: user.id }, 'User has no effective max confidence level and cannot create this element');
   }
   const userMaxConfidence = user.effective_confidence_level?.max_confidence as number;
   const inputConfidence = inputElement.confidence;
@@ -82,7 +84,7 @@ export const controlCreateInputWithUserConfidence = <T extends ObjectWithConfide
  */
 export const controlUpsertInputWithUserConfidence = <T extends ObjectWithConfidence>(user: AuthUser, inputElementOrPatch: T, existingElement: T) => {
   if (isEmptyField(user.effective_confidence_level?.max_confidence)) {
-    throw FunctionalError('User has no effective max confidence level and cannot update this element', { user_id: user.id, element_id: existingElement.id });
+    throw LockTimeoutError({ user_id: user.id, element_id: existingElement.id }, 'User has no effective max confidence level and cannot upsert this element');
   }
   const userMaxConfidence = user.effective_confidence_level?.max_confidence as number;
   const confidenceLevelToApply = capInputConfidenceWithUserMaxConfidence(userMaxConfidence, inputElementOrPatch.confidence);
@@ -100,7 +102,7 @@ export const controlUpsertInputWithUserConfidence = <T extends ObjectWithConfide
  */
 export const controlUserConfidenceAgainstElement = <T extends ObjectWithConfidence>(user: AuthUser, existingElement: T) => {
   if (isEmptyField(user.effective_confidence_level?.max_confidence)) {
-    throw FunctionalError('User has no effective max confidence level and cannot update this element', { user_id: user.id, element_id: existingElement.id });
+    throw LockTimeoutError({ user_id: user.id, element_id: existingElement.id }, 'User has no effective max confidence level and cannot update this element');
   }
 
   const userMaxConfidence = user.effective_confidence_level?.max_confidence as number;
@@ -121,7 +123,7 @@ type UpdateInput = {
 
 export const adaptUpdateInputsConfidence = <T extends ObjectWithConfidence>(user: AuthUser, inputs: UpdateInput | UpdateInput[], element: T) => {
   if (isEmptyField(user.effective_confidence_level?.max_confidence)) {
-    throw FunctionalError('User has no effective max confidence level and cannot update this element', { user_id: user.id, element_id: element.id });
+    throw LockTimeoutError({ user_id: user.id, element_id: element.id }, 'User has no effective max confidence level and cannot update this element');
   }
   const inputsArray = Array.isArray(inputs) ? inputs : [inputs];
   const userMaxConfidenceLevel = user.effective_confidence_level?.max_confidence as number;
@@ -156,7 +158,7 @@ export const adaptUpdateInputsConfidence = <T extends ObjectWithConfidence>(user
 
 export const adaptFiltersWithUserConfidence = (user: AuthUser, filters: FilterGroup): FilterGroup => {
   if (isEmptyField(user.effective_confidence_level?.max_confidence)) {
-    throw FunctionalError('User has no effective max confidence level and cannot run this filter', { user_id: user.id });
+    throw LockTimeoutError({ user_id: user.id }, 'User has no effective max confidence level and cannot run this filter');
   }
   const userMaxConfidenceLevel = user.effective_confidence_level?.max_confidence as number;
   const confidenceFilter: Filter = {
