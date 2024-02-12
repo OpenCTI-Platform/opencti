@@ -2645,23 +2645,25 @@ export const createRelationRaw = async (context, user, rawInput, opts = {}) => {
   let lock;
   const { fromRule, locks = [] } = opts;
   const { fromId, toId, relationship_type: relationshipType } = rawInput;
-  // Pre-check before inputs resolution
-  if (fromId === toId) {
-    /* v8 ignore next */
-    const errorData = { from: rawInput.fromId, relationshipType };
-    throw UnsupportedError('Relation cant be created with the same source and target', errorData);
-  }
-  const entitySetting = await getEntitySettingFromCache(context, relationshipType);
-  const filledInput = fillDefaultValues(user, rawInput, entitySetting);
-  await validateEntityAndRelationCreation(context, user, filledInput, relationshipType, entitySetting, opts);
-  // We need to check existing dependencies
-  const resolvedInput = await inputResolveRefs(context, user, filledInput, relationshipType, entitySetting);
-  const { from, to } = resolvedInput;
 
   // region confidence control
   const input = structuredClone(rawInput);
   const { confidenceLevelToApply } = controlCreateInputWithUserConfidence(user, input);
   input.confidence = confidenceLevelToApply; // confidence of the new relation will be capped to user's confidence
+  // endregion
+
+  // Pre-check before inputs resolution
+  if (fromId === toId) {
+    /* v8 ignore next */
+    const errorData = { from: input.fromId, relationshipType };
+    throw UnsupportedError('Relation cant be created with the same source and target', errorData);
+  }
+  const entitySetting = await getEntitySettingFromCache(context, relationshipType);
+  const filledInput = fillDefaultValues(user, input, entitySetting);
+  await validateEntityAndRelationCreation(context, user, filledInput, relationshipType, entitySetting, opts);
+  // We need to check existing dependencies
+  const resolvedInput = await inputResolveRefs(context, user, filledInput, relationshipType, entitySetting);
+  const { from, to } = resolvedInput;
 
   // when creating stix ref, we must check confidence on from side (this count has modifying this element itself)
   if (isStixRefRelationship(relationshipType)) {
