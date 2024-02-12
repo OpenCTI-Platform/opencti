@@ -49,10 +49,13 @@ describe('Observed sighting rule', () => {
         x_opencti_detection: false,
         start_time: '2020-01-10T00:00:00.000Z',
         stop_time: '2020-02-20T00:00:00.000Z',
-        confidence: 100,
+        confidence: 50,
         relationship_type: RELATION_BASED_ON,
         objectMarking: [TLP_CLEAR_ID],
       });
+      // base: OBSERVED_FILE sighted in ANSSI (confidence 100)
+      // Create relation CBRICKSDOC based on OBSERVED_FILE (confidence 50)
+      // inferred: CBRICKSDOC sighted in ANSII
       const afterLiveRelations = await fetchInferences();
       expect(afterLiveRelations.length).toBe(1);
       const cbrickToAnssi = await inferenceLookup(afterLiveRelations, CBRICKSDOC, ANSSI, STIX_SIGHTING_RELATIONSHIP);
@@ -61,7 +64,7 @@ describe('Observed sighting rule', () => {
       expect(cbrickToAnssi.first_seen).toBe('2020-02-25T09:02:29.040Z');
       expect(cbrickToAnssi.last_seen).toBe('2020-02-25T09:02:29.040Z');
       expect(cbrickToAnssi.attribute_count).toBe(1);
-      expect(cbrickToAnssi.confidence).toBe(0);
+      expect(cbrickToAnssi.confidence).toBe(100); // RULE_MANAGER_USER has confidence 100
       expect(cbrickToAnssi.i_inference_weight).toBe(1);
       expect((cbrickToAnssi.object_marking_refs || []).length).toBe(0);
       // Change the organization
@@ -86,7 +89,7 @@ describe('Observed sighting rule', () => {
       expect(cbrickToMitreRescan.first_seen).toBe('2020-02-25T09:02:29.040Z');
       expect(cbrickToMitreRescan.last_seen).toBe('2020-02-25T09:02:29.040Z');
       expect(cbrickToMitreRescan.attribute_count).toBe(1);
-      expect(cbrickToMitreRescan.confidence).toBe(0);
+      expect(cbrickToMitreRescan.confidence).toBe(100);
       expect(cbrickToMitreRescan.i_inference_weight).toBe(1);
       expect((cbrickToMitreRescan.object_marking_refs || []).length).toBe(0);
       // Cleanup

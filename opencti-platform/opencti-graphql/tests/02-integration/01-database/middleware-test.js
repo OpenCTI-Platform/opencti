@@ -745,6 +745,7 @@ describe('Upsert and merge entities', () => {
       description: 'MALWARE_TEST DESCRIPTION',
       stix_id: 'malware--907bb632-e3c2-52fa-b484-cf166a7d377e',
       objectMarking: [clearMarking, mitreMarking],
+      confidence: 15, // not set, it would fallback to user's confidence which is 100
     };
     const createdMalware = await addMalware(testContext, ADMIN_USER, malware);
     expect(createdMalware).not.toBeNull();
@@ -755,7 +756,11 @@ describe('Upsert and merge entities', () => {
     expect(loadMalware).not.toBeNull();
     expect(loadMalware['object-marking'].length).toEqual(2);
     // Upsert TLP by name
-    let upMalware = { name: 'MALWARE_TEST', objectMarking: [testMarking] };
+    let upMalware = {
+      name: 'MALWARE_TEST',
+      objectMarking: [testMarking],
+      confidence: 15,
+    };
     let upsertedMalware = await addMalware(testContext, ADMIN_USER, upMalware);
     expect(upsertedMalware).not.toBeNull();
     expect(upsertedMalware.id).toEqual(createdMalware.id);
@@ -768,7 +773,7 @@ describe('Upsert and merge entities', () => {
       description: 'MALWARE_TEST NEW',
       stix_id: 'malware--907bb632-e3c2-52fa-b484-cf166a7d377e',
       aliases: ['NEW MALWARE ALIAS'],
-      confidence: 90,
+      confidence: 90, // 90 > 15, so it's upserted
     };
     upsertedMalware = await addMalware(testContext, ADMIN_USER, upMalware);
     expect(upsertedMalware.name).toEqual('NEW NAME');
