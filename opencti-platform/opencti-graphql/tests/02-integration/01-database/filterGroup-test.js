@@ -1233,7 +1233,7 @@ describe('Complex filters combinations for elastic queries', () => {
         filters: {
           mode: 'and',
           filters: [{
-            key: ['description'],
+            key: 'description',
             // Look for this description value 'Report for testing purposes (random data).'
             values: ['rt for testing purposes (rando'],
             operator: 'search',
@@ -1243,40 +1243,6 @@ describe('Complex filters combinations for elastic queries', () => {
         },
       } });
     expect(queryResult.data.reports.edges.length).toEqual(1);
-
-    queryResult = await queryAsAdmin({ query: REPORT_LIST_QUERY,
-      variables: {
-        first: 25,
-        filters: {
-          mode: 'and',
-          filters: [{
-            key: ['description'],
-            // Look for this description value'Report for testing purposes (random data).'
-            values: ['for rt testing (rando purposes '],
-            operator: 'search',
-            mode: 'or',
-          }],
-          filterGroups: [],
-        },
-      } });
-    expect(queryResult.data.reports.edges.length).toEqual(1);
-
-    queryResult = await queryAsAdmin({ query: REPORT_LIST_QUERY,
-      variables: {
-        first: 25,
-        filters: {
-          mode: 'and',
-          filters: [{
-            key: ['description'],
-            // Look for this description value'Report for testing purposes (random data).'
-            values: ['"rt for testing purposes (rando"'],
-            operator: 'search',
-            mode: 'or',
-          }],
-          filterGroups: [],
-        },
-      } });
-    expect(queryResult.data.reports.edges.length).toEqual(0);
   });
 
   it('should list entities according to search filters with trunc word and any order', async () => {
@@ -1286,7 +1252,7 @@ describe('Complex filters combinations for elastic queries', () => {
         filters: {
           mode: 'and',
           filters: [{
-            key: ['description'],
+            key: 'description',
             // Look for this description value'Report for testing purposes (random data).'
             values: ['for rt testing (rando purposes '],
             operator: 'search',
@@ -1305,7 +1271,7 @@ describe('Complex filters combinations for elastic queries', () => {
         filters: {
           mode: 'and',
           filters: [{
-            key: ['description'],
+            key: 'description',
             // Look for this description value'Report for testing purposes (random data).'
             values: ['"rt for testing purposes (rando"'],
             operator: 'search',
@@ -1323,7 +1289,7 @@ describe('Complex filters combinations for elastic queries', () => {
         filters: {
           mode: 'and',
           filters: [{
-            key: ['description'],
+            key: 'description',
             // Look for this description value'Report for testing purposes (random data).'
             values: ['"for testing purposes"'],
             operator: 'search',
