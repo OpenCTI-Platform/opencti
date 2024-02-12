@@ -20,7 +20,6 @@ export const indicatorDecayHandler = async () => {
   for (let i = 0; i < indicatorsToUpdate.length; i += 1) {
     try {
       const indicator = indicatorsToUpdate[i];
-      logApp.info('[ANGIE DEBUG TESTS] Processing decay for:', { indicator }); // FIXME
       await updateIndicatorDecayScore(context, SYSTEM_USER, indicator);
     } catch (e) {
       logApp.warn(e, `[OPENCTI-MODULE] Error when processing decay for ${indicatorsToUpdate[i].id}, skipping.`);

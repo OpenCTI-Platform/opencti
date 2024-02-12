@@ -228,7 +228,13 @@ export const useFormatter = () => {
     if (isNone(date)) {
       return '-';
     }
-    return moment(date).format('DD MMM yyyy HH:mm A');
+    return intl.formatDate(date, {
+      minute: 'numeric',
+      hour: 'numeric',
+      day: 'numeric',
+      month: 'short',
+      year: 'numeric',
+    });
   };
 
   /**

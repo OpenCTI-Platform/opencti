@@ -145,7 +145,7 @@ describe('DecayRule resolver standard behavior', () => {
         active: true,
         decay_lifetime: 42,
         decay_observable_types: [ENTITY_EMAIL_MESSAGE, ENTITY_EMAIL_ADDR],
-        decay_points: [90, 45, 15],
+        decay_points: [90, 15, 45, -1], // disorder and negative number in purpose, to check of ordering is done correctly.
         decay_pound: 0.5,
         decay_revoke_score: 10,
         description: 'Decay rule for email message and email address.',
@@ -163,12 +163,13 @@ describe('DecayRule resolver standard behavior', () => {
       expect(customDecayRule.id).toBeDefined();
       customDecayRuleId = customDecayRule.id;
     }
-    logApp.info('Custom decay rule is', { customDecayRule });
+    logApp.info('[TEST]Custom decay rule is', { customDecayRule });
 
     // Verify that this decay rule is find for observable
     const indicatorDecayRule = await findDecayRuleForIndicator(adminContext, ENTITY_EMAIL_ADDR);
     expect(indicatorDecayRule).toBeDefined();
     expect(indicatorDecayRule.name).toBe('decay rule email');
+    expect(indicatorDecayRule.decay_points, 'Decay point should be ordered and positive numbers.').toStrictEqual([90, 45, 15]);
 
     // Verify that other observable got the right decay rule
     // No built-in for ENTITY_SOFTWARE, so should be FALLBACK
@@ -179,6 +180,37 @@ describe('DecayRule resolver standard behavior', () => {
     const indicatorDecayRuleIP = await findDecayRuleForIndicator(adminContext, ENTITY_IPV6_ADDR);
     expect(indicatorDecayRuleIP).toBeDefined();
     expect(indicatorDecayRuleIP.name).toBe(TEST_IP_DECAY_RULE.name);
+  });
+
+  it('should DecayRule be field patch', async () => {
+    const PATCH_QUERY = gql`
+      mutation decayRuleFieldPatch($id: ID!, $input: [EditInput!]!) {
+        decayRuleFieldPatch(id: $id, input: $input) {
+            id
+        }
+      }
+    `;
+
+    const FIELD_PATCH_DECAY_RULE = {
+      id: customDecayRuleId,
+      input: { key: 'decay_points', value: [80, 20, 60, -5] }
+    };
+
+    await queryAsAdminWithSuccess({
+      query: PATCH_QUERY,
+      variables: FIELD_PATCH_DECAY_RULE,
+    });
+
+    const queryResult = await queryAsAdminWithSuccess({
+      query: DECAY_RULE_READ_QUERY,
+      variables: { id: customDecayRuleId }
+    });
+
+    const customDecayRule = queryResult.data?.decayRule;
+    if (customDecayRule) {
+      expect(customDecayRule.id).toBe(customDecayRuleId);
+      expect(customDecayRule.decay_points).toStrictEqual([80, 60, 20]);
+    }
   });
 
   it('should indicator with custom DecayRule created', async () => {

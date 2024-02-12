@@ -1,11 +1,11 @@
 import moment, { type Moment } from 'moment/moment';
 import type { AuthContext, AuthUser } from '../../types/user';
 import { countAllThings, listAllEntities, listEntitiesPaginated, storeLoadById } from '../../database/middleware-loader';
-import type { EditInput, QueryDecayRulesArgs, DecayRuleAddInput } from '../../generated/graphql';
+import type { DecayRuleAddInput, EditInput, QueryDecayRulesArgs } from '../../generated/graphql';
+import { FilterMode } from '../../generated/graphql';
 import { type BasicStoreEntityDecayRule, ENTITY_TYPE_DECAY_RULE, type StoreEntityDecayRule } from './decayRule-types';
 import { createInternalObject } from '../../domain/internalObject';
 import { now } from '../../utils/format';
-import { FilterMode } from '../../generated/graphql';
 import { getEntitiesListFromCache } from '../../database/cache';
 import { READ_INDEX_STIX_DOMAIN_OBJECTS } from '../../database/utils';
 import { SYSTEM_USER } from '../../utils/access';
@@ -75,6 +75,24 @@ export const findAll = (context: AuthContext, user: AuthUser, args: QueryDecayRu
   return listEntitiesPaginated<BasicStoreEntityDecayRule>(context, user, [ENTITY_TYPE_DECAY_RULE], args);
 };
 
+/**
+ * Change content of input array:
+ * - order desc
+ * - remove value < 0
+ */
+const reorderDecayPoints = (decayPoints: number[]) => {
+  if (decayPoints) {
+    decayPoints.sort().reverse();
+
+    // cannot use array.filter on a read-only array.
+    for (let i = decayPoints.length - 1; i >= 0; i -= 1) {
+      if (decayPoints[i] < 0) {
+        decayPoints.splice(i, 1);
+      }
+    }
+  }
+};
+
 export const addDecayRule = async (context: AuthContext, user: AuthUser, input: DecayRuleAddInput, builtIn?: boolean) => {
   const defaultOps = {
     created_at: now(),
@@ -82,11 +100,17 @@ export const addDecayRule = async (context: AuthContext, user: AuthUser, input: 
     active: input.active || false,
     built_in: builtIn || false,
   };
+
+  if (input.decay_points) {
+    reorderDecayPoints(input.decay_points);
+  }
+
   const decayRuleInput = { ...input, ...defaultOps };
   return createInternalObject<StoreEntityDecayRule>(context, user, decayRuleInput, ENTITY_TYPE_DECAY_RULE);
 };
 
 export const fieldPatchDecayRule = async (context: AuthContext, user: AuthUser, id: string, input: EditInput[]) => {
+  const finalInput = [...input];
   const decayRule = await findById(context, user, id);
   if (!decayRule) {
     throw FunctionalError(`Decay rule ${id} cannot be found`);
@@ -94,7 +118,28 @@ export const fieldPatchDecayRule = async (context: AuthContext, user: AuthUser, 
   if (decayRule.built_in) {
     throw FunctionalError(`Cannot update built-in decay rule ${id}`);
   }
-  const { element } = await updateAttribute(context, user, id, ENTITY_TYPE_DECAY_RULE, input);
+
+  console.log('fieldPatchDecayRule - finalInput:', finalInput);
+  const decayPointsInput = finalInput.find((editInput) => editInput.key === 'decay_points');
+  console.log('fieldPatchDecayRule - decayPoints:', decayPointsInput);
+  if (decayPointsInput) {
+    const newOrder: number[] = [...decayPointsInput.value];
+    console.log('fieldPatchDecayRule - before reorder:', newOrder);
+    // reorderDecayPoints(decayPointsInput.value);
+    newOrder.sort().reverse();
+
+    // cannot use array.filter on a read-only array.
+    for (let i = newOrder.length - 1; i >= 0; i -= 1) {
+      if (newOrder[i] < 0) {
+        newOrder.splice(i, 1);
+      }
+    }
+    console.log('fieldPatchDecayRule - reordered ?', newOrder);
+    decayPointsInput.value = newOrder;
+  }
+
+  console.log('fieldPatchDecayRule - finalInput:', finalInput);
+  const { element } = await updateAttribute(context, user, id, ENTITY_TYPE_DECAY_RULE, finalInput);
   await publishUserAction({
     user,
     event_type: 'mutation',
