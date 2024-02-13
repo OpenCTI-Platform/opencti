@@ -12,6 +12,7 @@ import { supportedMimeTypes } from '../modules/managerConfiguration/managerConfi
 import { SYSTEM_USER } from '../utils/access';
 import { isEmptyField, isNotEmptyField, READ_INDEX_FILES } from '../database/utils';
 import { getStats } from '../database/engine';
+import { controlUserConfidenceAgainstElement } from '../utils/confidence-level';
 
 export const buildOptionsFromFileManager = async (context) => {
   let importPaths = ['import/'];
@@ -71,6 +72,12 @@ export const askJobImport = async (context, user, args) => {
   const entityId = bypassEntityId || file.metaData.entity_id;
   const opts = { manual: true, connectorId, configuration, bypassValidation };
   const entity = await internalLoadById(context, user, entityId);
+
+  // This is a manual request for import, we have to check confidence and throw on error
+  if (entity) {
+    controlUserConfidenceAgainstElement(user, entity);
+  }
+
   const connectors = await uploadJobImport(context, user, file.id, file.metaData.mimetype, entityId, opts);
   const entityName = entityId ? extractEntityRepresentativeName(entity) : 'global';
   const entityType = entityId ? entity.entity_type : 'global';

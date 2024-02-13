@@ -17,6 +17,7 @@ import { elDeleteFilesByIds } from './file-search';
 import { isAttachmentProcessorEnabled } from './engine';
 import { allFilesForPaths, deleteDocumentIndex, indexFileToDocument } from '../modules/internal/document/document-domain';
 import { truncate } from '../utils/mailData';
+import { controlUserConfidenceAgainstElement } from '../utils/confidence-level';
 
 // Minio configuration
 const clientEndpoint = conf.get('minio:endpoint');
@@ -369,9 +370,20 @@ export const upload = async (context, user, filePath, fileUpload, opts) => {
   };
   // Register in elastic
   await indexFileToDocument(file);
+
+  // confidence control on the context entity (like a report) if we want auto-enrichment
+  let isConfidenceMatch = true;
+  if (entity) {
+    // noThrow ; we do not want to fail here as it's an automatic process.
+    // we will simply not start the job
+    isConfidenceMatch = controlUserConfidenceAgainstElement(user, entity, true);
+  }
+  const isFilePathForImportEnrichment = filePath.startsWith('import/')
+    && !filePath.startsWith('import/pending')
+    && !filePath.startsWith('import/External-Reference');
+
   // Trigger a enrich job for import file if needed
-  if (!noTriggerImport && filePath.startsWith('import/') && !filePath.startsWith('import/pending')
-      && !filePath.startsWith('import/External-Reference')) {
+  if (!noTriggerImport && isConfidenceMatch && isFilePathForImportEnrichment) {
     await uploadJobImport(context, user, file.id, file.metaData.mimetype, file.metaData.entity_id);
   }
   return file;

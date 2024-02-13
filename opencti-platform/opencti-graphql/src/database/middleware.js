@@ -2667,10 +2667,7 @@ export const createRelationRaw = async (context, user, rawInput, opts = {}) => {
 
   // when creating stix ref, we must check confidence on from side (this count has modifying this element itself)
   if (isStixRefRelationship(relationshipType)) {
-    const fromSideHasConfidenceAttribute = schemaAttributesDefinition.getAttribute(from.entity_type, 'confidence');
-    if (fromSideHasConfidenceAttribute) {
-      controlUserConfidenceAgainstElement(user, from);
-    }
+    controlUserConfidenceAgainstElement(user, from);
   }
 
   // check if user has "edit" access on from and to
@@ -3204,16 +3201,10 @@ export const internalDeleteElementById = async (context, user, id, opts = {}) =>
     throw AlreadyDeletedError({ id });
   }
   // region confidence control
-  const hasConfidenceAttribute = schemaAttributesDefinition.getAttribute(element.entity_type, 'confidence');
-  if (hasConfidenceAttribute) {
-    controlUserConfidenceAgainstElement(user, element);
-  }
+  controlUserConfidenceAgainstElement(user, element);
   // when deleting stix ref, we must check confidence on from side (this count has modifying this element itself)
   if (isStixRefRelationship(element.entity_type)) {
-    const fromSideHasConfidenceAttribute = schemaAttributesDefinition.getAttribute(element.from.entity_type, 'confidence');
-    if (fromSideHasConfidenceAttribute) {
-      controlUserConfidenceAgainstElement(user, element.from);
-    }
+    controlUserConfidenceAgainstElement(user, element.from);
   }
   // endregion
   // Prevent individual deletion if linked to a user

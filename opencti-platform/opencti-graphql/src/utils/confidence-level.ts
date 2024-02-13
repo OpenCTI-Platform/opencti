@@ -100,8 +100,16 @@ export const controlUpsertInputWithUserConfidence = <T extends ObjectWithConfide
 /**
  * Assert the confidence control for a given user over a given object in the platform.
  */
-export const controlUserConfidenceAgainstElement = <T extends ObjectWithConfidence>(user: AuthUser, existingElement: T) => {
+export const controlUserConfidenceAgainstElement = <T extends ObjectWithConfidence>(user: AuthUser, existingElement: T, noThrow = false) => {
+  const hasConfidenceAttribute = schemaAttributesDefinition.getAttribute(existingElement.entity_type, 'confidence');
+  if (!hasConfidenceAttribute) {
+    return true; // no confidence to check, it's ok
+  }
+
   if (isEmptyField(user.effective_confidence_level?.max_confidence)) {
+    if (noThrow) {
+      return false;
+    }
     throw LockTimeoutError({ user_id: user.id, element_id: existingElement.id }, 'User has no effective max confidence level and cannot update this element');
   }
 
@@ -112,8 +120,13 @@ export const controlUserConfidenceAgainstElement = <T extends ObjectWithConfiden
   // contrary to upsert (where we might still update fields that were empty even if confidence control is negative)
   // a user cannot update an object without the right confidence
   if (!isConfidenceMatch) {
+    if (noThrow) {
+      return false;
+    }
     throw FunctionalError('User effective max confidence level is insufficient to update this element', { user_id: user.id, element_id: existingElement.id });
   }
+
+  return true; // ok
 };
 
 type UpdateInput = {

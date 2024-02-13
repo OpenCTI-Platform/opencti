@@ -91,6 +91,22 @@ describe('Confidence level utilities', () => {
         .not.toThrowError();
       expect(() => controlUserConfidenceAgainstElement(makeUser(null), makeElement(30)))
         .toThrowError('User has no effective max confidence level and cannot update this element');
+      expect(() => controlUserConfidenceAgainstElement(makeUser(50), {
+        id: 'object_no_confidence',
+        entity_type: 'Artifact',
+      })).not.toThrowError();
+      expect(() => controlUserConfidenceAgainstElement(makeUser(null), {
+        id: 'object_no_confidence',
+        entity_type: 'Artifact',
+      })).not.toThrowError(); // existence of user level is not even checked
+    });
+    it('on any element (noThrow)', () => {
+      expect(controlUserConfidenceAgainstElement(makeUser(50), makeElement(30), true)).toEqual(true);
+      expect(controlUserConfidenceAgainstElement(makeUser(30), makeElement(50), true)).toEqual(false);
+      expect(controlUserConfidenceAgainstElement(makeUser(50), makeElement(null), true)).toEqual(true);
+      expect(controlUserConfidenceAgainstElement(makeUser(null), makeElement(30), true)).toEqual(false);
+      expect(controlUserConfidenceAgainstElement(makeUser(50), { id: 'object_no_confidence', entity_type: 'Artifact' }, true)).toEqual(true);
+      expect(controlUserConfidenceAgainstElement(makeUser(null), { id: 'object_no_confidence', entity_type: 'Artifact' }, true)).toEqual(true);
     });
     it('on create input', () => {
       expect(controlCreateInputWithUserConfidence(makeUser(50), makeElement(30))).toEqual({
