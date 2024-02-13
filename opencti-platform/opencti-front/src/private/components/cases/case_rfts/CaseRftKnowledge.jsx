@@ -4,7 +4,7 @@ import * as R from 'ramda';
 import { propOr } from 'ramda';
 import { createFragmentContainer, graphql } from 'react-relay';
 import withStyles from '@mui/styles/withStyles';
-import { Route } from 'react-router-dom';
+import { Route, Routes } from 'react-router-dom';
 import { QueryRenderer } from '../../../../relay/environment';
 import ContainerHeader from '../../common/containers/ContainerHeader';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
@@ -219,9 +219,7 @@ class CaseRftKnowledgeComponent extends Component {
       classes,
       caseData,
       location,
-      match: {
-        params: { mode },
-      },
+      params: { '*': mode },
       enableReferences,
     } = this.props;
     const {
@@ -270,69 +268,20 @@ class CaseRftKnowledgeComponent extends Component {
           investigationAddFromContainer={investigationAddFromContainer}
         />
         )}
-        <Route
-          exact
-          path="/dashboard/cases/rfts/:caseId/knowledge/graph"
-          render={() => (
-            <QueryRenderer
-              query={caseRftKnowledgeGraphQuery}
-              variables={{ id: caseData.id }}
-              render={({ props }) => {
-                if (props && props.caseRft) {
-                  return (
-                    <CaseRftKnowledgeGraph
-                      caseData={props.caseRft}
-                      mode={mode}
-                      enableReferences={enableReferences}
-                    />
-                  );
-                }
-                return (
-                  <Loader
-                    variant={LoaderVariant.inElement}
-                    withTopMargin={true}
-                  />
-                );
-              }}
-            />
-          )}
-        />
-        <Route
-          exact
-          path="/dashboard/cases/rfts/:caseId/knowledge/timeline"
-          render={() => (
-            <>
-              <ContentKnowledgeTimeLineBar
-                handleTimeLineSearch={this.handleTimeLineSearch.bind(this)}
-                timeLineSearchTerm={timeLineSearchTerm}
-                timeLineDisplayRelationships={timeLineDisplayRelationships}
-                handleToggleTimeLineDisplayRelationships={this.handleToggleTimeLineDisplayRelationships.bind(
-                  this,
-                )}
-                timeLineFunctionalDate={timeLineFunctionalDate}
-                handleToggleTimeLineFunctionalDate={this.handleToggleTimeLineFunctionalDate.bind(
-                  this,
-                )}
-                timeLineFilters={timeLineFilters}
-                handleAddTimeLineFilter={this.handleAddTimeLineFilter.bind(
-                  this,
-                )}
-                handleRemoveTimeLineFilter={this.handleRemoveTimeLineFilter.bind(
-                  this,
-                )}
-                handleSwitchFilterLocalMode={this.handleSwitchFilterLocalMode.bind(this)}
-                handleSwitchFilterGlobalMode={this.handleSwitchFilterGlobalMode.bind(this)}
-              />
+        <Routes>
+          <Route
+            path="/graph"
+            element={(
               <QueryRenderer
-                query={caseRftKnowledgeTimeLineQuery}
-                variables={{ id: caseData.id, ...timeLinePaginationOptions }}
+                query={caseRftKnowledgeGraphQuery}
+                variables={{ id: caseData.id }}
                 render={({ props }) => {
                   if (props && props.caseRft) {
                     return (
-                      <CaseRftKnowledgeTimeLine
+                      <CaseRftKnowledgeGraph
                         caseData={props.caseRft}
-                        dateAttribute={orderBy}
-                        displayRelationships={timeLineDisplayRelationships}
+                        mode={mode}
+                        enableReferences={enableReferences}
                       />
                     );
                   }
@@ -344,75 +293,122 @@ class CaseRftKnowledgeComponent extends Component {
                   );
                 }}
               />
-            </>
           )}
-        />
-        <Route
-          exact
-          path="/dashboard/cases/rfts/:caseId/knowledge/correlation"
-          render={() => (
-            <QueryRenderer
-              query={caseRftKnowledgeCorrelationQuery}
-              variables={{ id: caseData.id }}
-              render={({ props }) => {
-                if (props && props.caseRft) {
-                  return (
-                    <CaseRftKnowledgeCorrelation caseData={props.caseRft} enableReferences={enableReferences} />
-                  );
-                }
-                return (
-                  <Loader
-                    variant={LoaderVariant.inElement}
-                    withTopMargin={true}
-                  />
-                );
-              }}
-            />
+          />
+          <Route
+            path="/timeline"
+            element={(
+              <>
+                <ContentKnowledgeTimeLineBar
+                  handleTimeLineSearch={this.handleTimeLineSearch.bind(this)}
+                  timeLineSearchTerm={timeLineSearchTerm}
+                  timeLineDisplayRelationships={timeLineDisplayRelationships}
+                  handleToggleTimeLineDisplayRelationships={this.handleToggleTimeLineDisplayRelationships.bind(
+                    this,
+                  )}
+                  timeLineFunctionalDate={timeLineFunctionalDate}
+                  handleToggleTimeLineFunctionalDate={this.handleToggleTimeLineFunctionalDate.bind(
+                    this,
+                  )}
+                  timeLineFilters={timeLineFilters}
+                  handleAddTimeLineFilter={this.handleAddTimeLineFilter.bind(
+                    this,
+                  )}
+                  handleRemoveTimeLineFilter={this.handleRemoveTimeLineFilter.bind(
+                    this,
+                  )}
+                  handleSwitchFilterLocalMode={this.handleSwitchFilterLocalMode.bind(this)}
+                  handleSwitchFilterGlobalMode={this.handleSwitchFilterGlobalMode.bind(this)}
+                />
+                <QueryRenderer
+                  query={caseRftKnowledgeTimeLineQuery}
+                  variables={{ id: caseData.id, ...timeLinePaginationOptions }}
+                  render={({ props }) => {
+                    if (props && props.caseRft) {
+                      return (
+                        <CaseRftKnowledgeTimeLine
+                          caseData={props.caseRft}
+                          dateAttribute={orderBy}
+                          displayRelationships={timeLineDisplayRelationships}
+                        />
+                      );
+                    }
+                    return (
+                      <Loader
+                        variant={LoaderVariant.inElement}
+                        withTopMargin={true}
+                      />
+                    );
+                  }}
+                />
+              </>
           )}
-        />
-        <Route
-          exact
-          path="/dashboard/cases/rfts/:caseId/knowledge/matrix"
-          render={() => (
-            <QueryRenderer
-              query={caseRftKnowledgeAttackPatternsGraphQuery}
-              variables={{ id: caseData.id }}
-              render={({ props }) => {
-                if (props && props.caseRft) {
-                  const attackPatterns = R.pipe(
-                    R.map((n) => n.node),
-                    R.filter((n) => n.entity_type === 'Attack-Pattern'),
-                  )(props.caseRft.objects.edges);
+          />
+          <Route
+            path="/correlation"
+            element={(
+              <QueryRenderer
+                query={caseRftKnowledgeCorrelationQuery}
+                variables={{ id: caseData.id }}
+                render={({ props }) => {
+                  if (props && props.caseRft) {
+                    return (
+                      <CaseRftKnowledgeCorrelation caseData={props.caseRft} />
+                    );
+                  }
                   return (
-                    <AttackPatternsMatrix
-                      entity={caseData}
-                      attackPatterns={attackPatterns}
-                      searchTerm=""
-                      currentKillChain={currentKillChain}
-                      currentModeOnlyActive={currentModeOnlyActive}
-                      currentColorsReversed={currentColorsReversed}
-                      handleChangeKillChain={this.handleChangeKillChain.bind(
-                        this,
-                      )}
-                      handleToggleColorsReversed={this.handleToggleColorsReversed.bind(
-                        this,
-                      )}
-                      handleToggleModeOnlyActive={this.handleToggleModeOnlyActive.bind(
-                        this,
-                      )}
+                    <Loader
+                      variant={LoaderVariant.inElement}
+                      withTopMargin={true}
                     />
                   );
-                }
-                return (
-                  <Loader
-                    variant={LoaderVariant.inElement}
-                    withTopMargin={true}
-                  />
-                );
-              }}
-            />
+                }}
+              />
           )}
-        />
+          />
+          <Route
+            path="/matrix"
+            element={(
+              <QueryRenderer
+                query={caseRftKnowledgeAttackPatternsGraphQuery}
+                variables={{ id: caseData.id }}
+                render={({ props }) => {
+                  if (props && props.caseRft) {
+                    const attackPatterns = R.pipe(
+                      R.map((n) => n.node),
+                      R.filter((n) => n.entity_type === 'Attack-Pattern'),
+                    )(props.caseRft.objects.edges);
+                    return (
+                      <AttackPatternsMatrix
+                        entity={caseData}
+                        attackPatterns={attackPatterns}
+                        searchTerm=""
+                        currentKillChain={currentKillChain}
+                        currentModeOnlyActive={currentModeOnlyActive}
+                        currentColorsReversed={currentColorsReversed}
+                        handleChangeKillChain={this.handleChangeKillChain.bind(
+                          this,
+                        )}
+                        handleToggleColorsReversed={this.handleToggleColorsReversed.bind(
+                          this,
+                        )}
+                        handleToggleModeOnlyActive={this.handleToggleModeOnlyActive.bind(
+                          this,
+                        )}
+                      />
+                    );
+                  }
+                  return (
+                    <Loader
+                      variant={LoaderVariant.inElement}
+                      withTopMargin={true}
+                    />
+                  );
+                }}
+              />
+          )}
+          />
+        </Routes>
       </div>
     );
   }
