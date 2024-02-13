@@ -185,7 +185,7 @@ StixDomainObjectThreatKnowledgeProps
         ...emptyFilterGroup,
         filters: [
           {
-            ...getDefaultFilterObject('elementWithTargetTypes', useFilterDefinition('elementWithTargetTypes', 'Stix-Core-Object')),
+            ...getDefaultFilterObject('elementWithTargetTypes', useFilterDefinition('elementWithTargetTypes', ['Stix-Core-Object'])),
             // For now its impossible to use the current element type for filtering
             // The filter will be always true as the element is always part of the relations
             // TODO Implement a new composite filter for relationships

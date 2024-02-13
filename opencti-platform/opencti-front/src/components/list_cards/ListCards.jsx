@@ -78,7 +78,7 @@ class ListCards extends Component {
       helpers,
     } = this.props;
     const exportDisabled = numberOfElements && numberOfElements.number > export_max_size;
-    const entityType = exportContext?.entity_type ?? this.props.entityType;
+    const entityType = exportContext?.entity_type;
     return (
       <UserContext.Consumer>
         {({ schema }) => {
@@ -218,7 +218,7 @@ class ListCards extends Component {
                 handleSwitchGlobalMode={handleSwitchGlobalMode}
                 handleSwitchLocalMode={handleSwitchLocalMode}
                 redirection
-                entityType={entityType}
+                entityTypes={entityType ? [entityType] : undefined}
               />
               {typeof handleToggleExports === 'function' && (
               <Security needs={[KNOWLEDGE_KNGETEXPORT]}>
@@ -252,7 +252,6 @@ ListCards.propTypes = {
   openExports: PropTypes.bool,
   views: PropTypes.array,
   exportContext: PropTypes.object,
-  entityType: PropTypes.string,
   keyword: PropTypes.string,
   filters: PropTypes.object,
   sortBy: PropTypes.string.isRequired,

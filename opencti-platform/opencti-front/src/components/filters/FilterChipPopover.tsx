@@ -25,7 +25,7 @@ interface FilterChipMenuProps {
   helpers?: handleFilterHelpers;
   availableRelationFilterTypes?: Record<string, string[]>;
   filtersRepresentativesMap: Map<string, FilterRepresentative>;
-  entityType?: string;
+  entityTypes?: string[];
 }
 
 export interface FilterChipsParameter {
@@ -135,14 +135,14 @@ export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({
   helpers,
   availableRelationFilterTypes,
   filtersRepresentativesMap,
-  entityType,
+  entityTypes,
 }) => {
   const { t_i18n } = useFormatter();
   const filter = filters.find((f) => f.id === params.filterId);
   const filterKey = filter?.key ?? '';
   const filterOperator = filter?.operator ?? '';
   const filterValues = filter?.values ?? [];
-  const filterDefinition = useFilterDefinition(filterKey, entityType);
+  const filterDefinition = useFilterDefinition(filterKey, entityTypes);
   const filterLabel = t_i18n(filterDefinition?.label ?? filterKey);
   const [inputValues, setInputValues] = useState<
   {
@@ -178,7 +178,7 @@ export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({
       ],
     },
   );
-  const [entities, searchEntities] = getUseSearch(searchScope, entityType);
+  const [entities, searchEntities] = getUseSearch(searchScope, entityTypes);
   const handleChange = (checked: boolean, value: string, childKey?: string) => {
     if (childKey) { // case 'regardingOf' filter
       const childFilters = filter?.values.filter((val) => val.key === childKey) as Filter[];
@@ -343,7 +343,7 @@ export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({
 
   const displayOperatorAndFilter = (fKey: string, subKey?: string) => {
     const availableOperators = getAvailableOperatorForFilter(filterDefinition, subKey);
-    const finalFilterDefinition = useFilterDefinition(fKey, entityType, subKey);
+    const finalFilterDefinition = useFilterDefinition(fKey, entityTypes, subKey);
     return (
       <>
         <Select

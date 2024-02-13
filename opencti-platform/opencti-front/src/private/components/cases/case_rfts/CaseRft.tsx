@@ -59,7 +59,7 @@ const CaseRftComponent: FunctionComponent<CaseRftProps> = ({ data }) => {
   );
   const { sortBy, orderAsc, filters } = viewStorage;
 
-  const userFilters = useRemoveIdAndIncorrectKeysFromFilterGroupObject(filters, 'Case-Rft');
+  const userFilters = useRemoveIdAndIncorrectKeysFromFilterGroupObject(filters, ['Case-Rft']);
   const contextTaskFilters: FilterGroup = {
     mode: 'and',
     filters: [

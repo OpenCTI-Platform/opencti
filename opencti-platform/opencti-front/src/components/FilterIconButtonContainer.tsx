@@ -118,7 +118,7 @@ interface FilterIconButtonContainerProps {
   hasRenderedRef: boolean;
   setHasRenderedRef: () => void;
   availableRelationFilterTypes?: Record<string, string[]>;
-  entityType?: string;
+  entityTypes?: string[];
 }
 
 const FilterIconButtonContainer: FunctionComponent<
@@ -137,7 +137,7 @@ FilterIconButtonContainerProps
   hasRenderedRef,
   setHasRenderedRef,
   availableRelationFilterTypes,
-  entityType,
+  entityTypes,
 }) => {
   const { t_i18n } = useFormatter();
   const classes = useStyles();
@@ -267,7 +267,7 @@ FilterIconButtonContainerProps
     >
       {displayedFilters.map((currentFilter, index) => {
         const filterKey = currentFilter.key;
-        const filterLabel = t_i18n(useFilterDefinition(filterKey, entityType)?.label ?? filterKey);
+        const filterLabel = t_i18n(useFilterDefinition(filterKey, entityTypes)?.label ?? filterKey);
         const filterOperator = currentFilter.operator ?? 'eq';
         const isOperatorDisplayed = operatorIcon.includes(filterOperator ?? 'eq');
         const keyLabel = (
@@ -308,7 +308,7 @@ FilterIconButtonContainerProps
                   filtersRepresentativesMap={filtersRepresentativesMap}
                   helpers={helpers}
                   redirection={redirection}
-                  entityType={entityType}
+                  entityTypes={entityTypes}
                 />
               }
             >
@@ -340,7 +340,7 @@ FilterIconButtonContainerProps
                       onClickLabel={(event) => handleChipClick(event, currentFilter?.id)}
                       isReadWriteFilter={isReadWriteFilter}
                       chipColor={chipColor}
-                      entityType={entityType}
+                      entityTypes={entityTypes}
                     />
                   }
                   disabled={
@@ -391,7 +391,7 @@ FilterIconButtonContainerProps
             helpers={helpers}
             filtersRepresentativesMap={filtersRepresentativesMap}
             availableRelationFilterTypes={availableRelationFilterTypes}
-            entityType={entityType}
+            entityTypes={entityTypes}
           />
         </Box>
       )}

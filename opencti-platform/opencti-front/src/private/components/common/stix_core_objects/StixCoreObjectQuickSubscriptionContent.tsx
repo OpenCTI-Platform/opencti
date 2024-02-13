@@ -361,7 +361,7 @@ StixCoreObjectQuickSubscriptionContentProps
                     filters={instanceTriggerFilters}
                     styleNumber={3}
                     redirection
-                    entityType={'Stix-Core-Object'}
+                    entityTypes={['Stix-Core-Object']}
                   />
                 </div>
               )}

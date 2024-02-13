@@ -21,7 +21,7 @@ interface FilterIconButtonProps {
   redirection?: boolean;
   helpers?: handleFilterHelpers;
   availableRelationFilterTypes?: Record<string, string[]>;
-  entityType?: string;
+  entityTypes?: string[];
 }
 
 interface FilterIconButtonIfFiltersProps extends FilterIconButtonProps {
@@ -42,12 +42,12 @@ const FilterIconButtonWithRepresentativesQuery: FunctionComponent<FilterIconButt
   availableRelationFilterTypes,
   hasRenderedRef,
   setHasRenderedRef,
-  entityType,
+  entityTypes,
 }) => {
   const filtersRepresentativesQueryRef = useQueryLoading<FilterValuesContentQuery>(
     filterValuesContentQuery,
     {
-      filters: useRemoveIdAndIncorrectKeysFromFilterGroupObject(filters, entityType ? [entityType] : undefined) as unknown as GqlFilterGroup,
+      filters: useRemoveIdAndIncorrectKeysFromFilterGroupObject(filters, entityTypes) as unknown as GqlFilterGroup,
     },
   );
   return (
@@ -68,7 +68,7 @@ const FilterIconButtonWithRepresentativesQuery: FunctionComponent<FilterIconButt
             hasRenderedRef={hasRenderedRef}
             setHasRenderedRef={setHasRenderedRef}
             availableRelationFilterTypes={availableRelationFilterTypes}
-            entityType={entityType}
+            entityTypes={entityTypes}
           />
         </React.Suspense>
       )}
@@ -95,7 +95,7 @@ const FilterIconButton: FunctionComponent<FilterIconButtonProps> = ({
   chipColor,
   helpers,
   availableRelationFilterTypes,
-  entityType,
+  entityTypes,
 }) => {
   const hasRenderedRef = useRef(false);
   const setHasRenderedRef = () => {
@@ -121,7 +121,7 @@ const FilterIconButton: FunctionComponent<FilterIconButtonProps> = ({
         availableRelationFilterTypes={availableRelationFilterTypes}
         hasRenderedRef={hasRenderedRef.current}
         setHasRenderedRef={setHasRenderedRef}
-        entityType={entityType}
+        entityTypes={entityTypes}
       />
     );
   }

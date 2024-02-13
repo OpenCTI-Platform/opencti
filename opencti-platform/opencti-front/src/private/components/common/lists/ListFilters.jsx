@@ -57,8 +57,9 @@ const ListFilters = ({
   const handleChange = (value) => {
     helpers.handleAddFilterWithEmptyValue(getDefaultFilterObject(value, filterKeysMap.get(value)));
   };
-  const sortFiltersByOccurence = ['Stix-Core-Object', 'Stix-Domain-Object', 'Stix-Cyber-Observable', 'Container'].some((abstractType) => entityTypes.includes(abstractType));
-  const options = sortFiltersByOccurence ? availableFilterKeys
+  const isNotUniqEntityTypes = (entityTypes.length === 1 && ['Stix-Core-Object', 'Stix-Domain-Object', 'Stix-Cyber-Observable', 'Container'].includes(entityTypes[0]))
+    || (entityTypes.length > 1);
+  const options = isNotUniqEntityTypes ? availableFilterKeys
     .map((key) => {
       const subEntityTypes = filterKeysMap.get(key)?.subEntityTypes ?? [];
       const isFilterKeyForAllTypes = subEntityTypes.some((subType) => entityTypes.includes(subType));
@@ -101,7 +102,7 @@ const ListFilters = ({
           <MUIAutocomplete
             id="list-filters-combo-box"
             options={options}
-            groupBy={sortFiltersByOccurence ? (option) => option.groupLabel : undefined}
+            groupBy={isNotUniqEntityTypes ? (option) => option.groupLabel : undefined}
             sx={{ width: 200 }}
             value={null}
             onChange={(event, selectOptionValue) => {

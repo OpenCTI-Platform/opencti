@@ -17,7 +17,7 @@ import useEntityToggle from '../../utils/hooks/useEntityToggle';
 import useQueryLoading from '../../utils/hooks/useQueryLoading';
 import useAuth from '../../utils/hooks/useAuth';
 import useEnterpriseEdition from '../../utils/hooks/useEnterpriseEdition';
-import { useBuildEntityTypeBasedFilterContext, emptyFilterGroup, getDefaultFilterObjFromArray, useFilterDefinition } from '../../utils/filters/filtersUtils';
+import { useBuildEntityTypeBasedFilterContext, emptyFilterGroup, getDefaultFilterObjFromFilterDefinitions, useFilterDefinition } from '../../utils/filters/filtersUtils';
 import { decodeSearchKeyword, handleSearchByKeyword } from '../../utils/SearchUtils';
 import { useFormatter } from '../../components/i18n';
 
@@ -41,7 +41,7 @@ const Search = () => {
       openExports: false,
       filters: {
         ...emptyFilterGroup,
-        filters: getDefaultFilterObjFromArray([useFilterDefinition('entity_type', 'Stix-Core-Object')]),
+        filters: getDefaultFilterObjFromFilterDefinitions([useFilterDefinition('entity_type', ['Stix-Core-Object'])]),
       },
     },
   );

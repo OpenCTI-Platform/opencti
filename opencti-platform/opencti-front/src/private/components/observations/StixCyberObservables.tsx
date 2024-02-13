@@ -15,7 +15,7 @@ import { KNOWLEDGE_KNUPDATE } from '../../../utils/hooks/useGranted';
 import ExportContextProvider from '../../../utils/ExportContextProvider';
 import useEntityToggle from '../../../utils/hooks/useEntityToggle';
 import { StixCyberObservableLine_node$data } from './stix_cyber_observables/__generated__/StixCyberObservableLine_node.graphql';
-import { useBuildEntityTypeBasedFilterContext, emptyFilterGroup, getDefaultFilterObjFromArray, useFilterDefinition } from '../../../utils/filters/filtersUtils';
+import { useBuildEntityTypeBasedFilterContext, emptyFilterGroup, getDefaultFilterObjFromFilterDefinitions, useFilterDefinition } from '../../../utils/filters/filtersUtils';
 import { useFormatter } from '../../../components/i18n';
 import Breadcrumbs from '../../../components/Breadcrumbs';
 
@@ -33,7 +33,7 @@ const StixCyberObservables: FunctionComponent = () => {
     {
       filters: {
         ...emptyFilterGroup,
-        filters: getDefaultFilterObjFromArray([useFilterDefinition('entity_type', 'Stix-Cyber-Observable'), useFilterDefinition('sightedBy', 'Stix-Cyber-Observable')]),
+        filters: getDefaultFilterObjFromFilterDefinitions([useFilterDefinition('entity_type', ['Stix-Cyber-Observable']), useFilterDefinition('sightedBy', ['Stix-Cyber-Observable'])]),
       },
       searchTerm: '',
       sortBy: 'created_at',

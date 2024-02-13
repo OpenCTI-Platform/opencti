@@ -199,7 +199,7 @@ export const TriggerLineComponent: FunctionComponent<TriggerLineProps> = ({
                     dataColumns={dataColumns}
                     styleNumber={3}
                     redirection
-                    entityType={'Trigger'}
+                    entityTypes={['Trigger']}
                   />
                 )}
               </div>

@@ -113,7 +113,7 @@ const ExternalReferences: FunctionComponent<ExternalReferencesProps> = () => {
           iconExtension={true}
           paginationOptions={queryPaginationOptions}
           numberOfElements={numberOfElements}
-          entityType={'External-Reference'}
+          entityTypes={['External-Reference']}
         >
           {queryRef && (
             <React.Suspense

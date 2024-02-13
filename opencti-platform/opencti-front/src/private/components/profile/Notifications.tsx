@@ -11,7 +11,7 @@ import useAuth from '../../../utils/hooks/useAuth';
 import NotificationsToolBar from './notifications/NotificationsToolBar';
 import {
   emptyFilterGroup,
-  getDefaultFilterObjFromArray,
+  getDefaultFilterObjFromFilterDefinitions,
   isFilterGroupNotEmpty,
   useRemoveIdAndIncorrectKeysFromFilterGroupObject,
   useFilterDefinition,
@@ -32,7 +32,7 @@ const Notifications: FunctionComponent = () => {
       orderAsc: false,
       filters: {
         ...emptyFilterGroup,
-        filters: getDefaultFilterObjFromArray([useFilterDefinition('is_read', 'Notification')]),
+        filters: getDefaultFilterObjFromFilterDefinitions([useFilterDefinition('is_read', ['Notification'])]),
       },
       numberOfElements: {
         number: 0,
@@ -124,7 +124,7 @@ const Notifications: FunctionComponent = () => {
         secondaryAction={true}
         paginationOptions={queryPaginationOptions}
         numberOfElements={numberOfElements}
-        entityType={'Notification'}
+        entityTypes={['Notification']}
       >
         {queryRef && (
         <React.Suspense

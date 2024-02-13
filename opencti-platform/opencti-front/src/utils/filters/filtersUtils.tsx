@@ -566,7 +566,7 @@ export const getDefaultFilterObject = (
   };
 };
 
-export const getDefaultFilterObjFromArray = (
+export const getDefaultFilterObjFromFilterDefinitions = (
   filtersDefinition: (FilterDefinition | undefined)[],
 ) => {
   return (filtersDefinition
@@ -698,8 +698,8 @@ export const useBuildEntityTypeBasedFilterContext = (entityType: string, filters
   };
 };
 
-export const useFilterDefinition = (filterKey: string, entityType = 'Stix-Core-Object', subKey?: string): FilterDefinition | undefined => {
-  const filterDefinition = useBuildFilterKeysMapFromEntityType([entityType]).get(filterKey);
+export const useFilterDefinition = (filterKey: string, entityTypes = ['Stix-Core-Object'], subKey?: string): FilterDefinition | undefined => {
+  const filterDefinition = useBuildFilterKeysMapFromEntityType(entityTypes).get(filterKey);
   if (subKey) {
     const subFilterDefinition = filterDefinition?.subFilters
       ? filterDefinition.subFilters.filter((subFilter: FilterDefinition) => subFilter.filterKey === subKey)

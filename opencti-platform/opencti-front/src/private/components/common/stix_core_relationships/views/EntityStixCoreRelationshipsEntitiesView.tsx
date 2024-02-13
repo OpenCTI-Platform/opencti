@@ -61,21 +61,6 @@ EntityStixCoreRelationshipsEntitiesViewProps
     openExports,
   } = viewStorage;
 
-  const availableFilterKeys = [
-    // regardingOf|partial|type,
-    // entity_type|readonly,
-    'objectMarking',
-    'confidence',
-    'objectLabel',
-    'createdBy',
-    'creator_id',
-    'created',
-  ];
-  const typesWithTargetsFilter = ['Campaign', 'Threat-Actor', 'Incident', 'Intrusion-Set'];
-  if ((relationshipTypes ?? []).includes('targets') || stixCoreObjectTypes.some((type) => typesWithTargetsFilter.includes(type))) {
-    availableFilterKeys.push('targets');
-  }
-
   const { platformModuleHelpers } = useAuth();
   const isRuntimeSort = platformModuleHelpers.isRuntimeFieldEnable();
   const isObservables = isStixCyberObservables(stixCoreObjectTypes);
@@ -123,7 +108,7 @@ EntityStixCoreRelationshipsEntitiesViewProps
   };
 
   // Filters due to screen context
-  const userFilters = useRemoveIdAndIncorrectKeysFromFilterGroupObject(filters, stixCoreObjectTypes);
+  const userFilters = useRemoveIdAndIncorrectKeysFromFilterGroupObject(filters, stixCoreObjectTypes.length > 0 ? stixCoreObjectTypes : ['Stix-Core-Object']);
   const stixCoreObjectFilter: Filter[] = stixCoreObjectTypes.length > 0 ? [{ key: 'entity_type', operator: 'eq', mode: 'or', values: stixCoreObjectTypes }] : [];
   const contextFilters: FilterGroup = {
     mode: 'and',
@@ -184,7 +169,6 @@ EntityStixCoreRelationshipsEntitiesViewProps
         exportContext={{ entity_id: entityId, entity_type: 'Stix-Core-Object' }}
         iconExtension={true}
         filters={filters}
-        availableFilterKeys={availableFilterKeys}
         availableRelationFilterTypes={{
           targets: isRelationReversed
             ? [
@@ -218,6 +202,7 @@ EntityStixCoreRelationshipsEntitiesViewProps
         enableNestedView={enableNestedView}
         enableContextualView={enableContextualView}
         currentView={finalView}
+        entityTypes={stixCoreObjectTypes.length > 0 ? stixCoreObjectTypes : ['Stix-Core-Object']}
       >
         <EntityStixCoreRelationshipsEntitiesViewLines
           paginationOptions={paginationOptions}

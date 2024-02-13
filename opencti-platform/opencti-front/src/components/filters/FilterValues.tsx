@@ -57,7 +57,7 @@ interface FilterValuesProps {
   isReadWriteFilter?: boolean;
   chipColor?: ChipOwnProps['color'];
   noLabelDisplay?: boolean;
-  entityType?: string;
+  entityTypes?: string[];
 }
 
 const FilterValues: FunctionComponent<FilterValuesProps> = ({
@@ -72,7 +72,7 @@ const FilterValues: FunctionComponent<FilterValuesProps> = ({
   isReadWriteFilter,
   chipColor,
   noLabelDisplay,
-  entityType,
+  entityTypes,
 }) => {
   const { t_i18n } = useFormatter();
   const filterKey = currentFilter.key;
@@ -97,7 +97,7 @@ const FilterValues: FunctionComponent<FilterValuesProps> = ({
       </>
     );
   }
-  const filterDefinition = useFilterDefinition(filterKey, entityType);
+  const filterDefinition = useFilterDefinition(filterKey, entityTypes);
   const values = filterValues.map((id) => {
     const operatorClassName = (isReadWriteFilter && handleSwitchLocalMode) ? classes.inlineOperator : classes.inlineOperatorReadOnly;
     const operatorOnClick = (isReadWriteFilter && handleSwitchLocalMode) ? () => handleSwitchLocalMode(currentFilter) : undefined;

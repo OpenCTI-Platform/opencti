@@ -161,7 +161,7 @@ class ListLines extends Component {
     );
   }
 
-  renderContent(availableFilterKeys, selectedIds = []) {
+  renderContent(availableFilterKeys, entityTypes, selectedIds = []) {
     const {
       t,
       classes,
@@ -208,7 +208,6 @@ class ListLines extends Component {
       helpers,
       inline,
     } = this.props;
-    const entityType = this.props.entityType ?? exportContext?.entity_type;
     const exportDisabled = numberOfElements
       && ((selectedIds.length > export_max_size
         && numberOfElements.number > export_max_size)
@@ -216,7 +215,7 @@ class ListLines extends Component {
           && numberOfElements.number > export_max_size));
     const searchContextFinal = {
       ...(searchContext ?? {}),
-      entityTypes: entityType ? [entityType] : [],
+      entityTypes: entityTypes ?? [],
     };
     return (
       <div className={noPadding ? classes.containerNoPadding : classes.container}>
@@ -441,7 +440,7 @@ class ListLines extends Component {
           handleSwitchLocalMode={handleSwitchLocalMode}
           availableRelationFilterTypes={availableRelationFilterTypes}
           redirection
-          entityType={entityType}
+          entityTypes={entityTypes}
         />
         <ErrorBoundary key={keyword}>
           {message && (
@@ -618,19 +617,26 @@ class ListLines extends Component {
 
   render() {
     const { disableExport, exportContext } = this.props;
-    const entityType = exportContext?.entity_type ?? this.props.entityType;
+    const entityTypes = this.props.entityTypes ?? (exportContext?.entity_type ? [exportContext?.entity_type] : undefined);
     return (
       <UserContext.Consumer>
         {({ schema }) => {
-          const filterKeysMap = schema.filterKeysSchema.get(entityType) ?? new Map();
-          const availableFilterKeys = this.props.availableFilterKeys ?? Array.from(filterKeysMap.keys()); // keys of the entity type if availableFilterKeys is not specified
+          let availableFilterKeys = this.props.availableFilterKeys ?? [];
+          if (availableFilterKeys.length === 0 && entityTypes) {
+            const filterKeysMap = new Map();
+            entityTypes.forEach((entityType) => {
+              const currentMap = schema.filterKeysSchema.get(entityType);
+              currentMap?.forEach((value, key) => filterKeysMap.set(key, value));
+              availableFilterKeys = Array.from(filterKeysMap.keys()); // keys of the entity type if availableFilterKeys is not specified
+            });
+          }
           if (disableExport) {
-            return this.renderContent(availableFilterKeys);
+            return this.renderContent(availableFilterKeys, entityTypes);
           }
           return (
             <ExportContext.Consumer>
               {({ selectedIds }) => {
-                return this.renderContent(availableFilterKeys, selectedIds);
+                return this.renderContent(availableFilterKeys, entityTypes, selectedIds);
               }}
             </ExportContext.Consumer>
           );
@@ -689,6 +695,7 @@ ListLines.propTypes = {
   handleExportCsv: PropTypes.func,
   helpers: PropTypes.object,
   availableFilterKeys: PropTypes.array,
+  entityTypes: PropTypes.array,
 };
 
 export default compose(inject18n, withStyles(styles))(ListLines);
