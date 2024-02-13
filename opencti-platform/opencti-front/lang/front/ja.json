@@ -2647,6 +2647,7 @@
   "Indicator observable types": "指標タイプ",
   "Lifetime (in days)": "ライフタイム（日）",
   "Decay factor": "減衰係数",
+  "Decay rules": "減衰ルール",
   "Reaction points": "反応点",
   "Impact": "衝撃",
   "indicators currently impacted by this rule": "現在このルールの影響を受けている指標",

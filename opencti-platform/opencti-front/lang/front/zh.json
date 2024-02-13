@@ -2647,6 +2647,7 @@
   "Indicator observable types": "指标观测类型",
   "Lifetime (in days)": "寿命（天数）",
   "Decay factor": "衰减系数",
+  "Decay rules": "衰变规则",
   "Reaction points": "反应点",
   "Impact": "影响",
   "indicators currently impacted by this rule": "目前受此规则影响的指标",
