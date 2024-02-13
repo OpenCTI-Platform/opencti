@@ -2462,16 +2462,19 @@ const upsertElement = async (context, user, element, type, basePatch, opts = {})
           // In full synchro, just replace everything
           if (isUpsertSynchro) {
             inputs.push({ key: inputField, value: patchInputData ?? [], operation: UPDATE_OPERATION_REPLACE });
-          } else if (isInputWithData && diffTargets.length > 0) {
-            // If data is provided and different from existing data, apply an add operation
+          } else if (isInputWithData && diffTargets.length > 0 && isConfidenceMatch) {
+            // If data is provided, different from existing data, and confidence is ok, apply an add operation
             inputs.push({ key: inputField, value: diffTargets, operation: UPDATE_OPERATION_ADD });
           }
         }
       } else {
         const currentData = element[relDef.databaseName];
-        const updatable = isUpsertSynchro || (isInputWithData && isEmptyField(currentData));
+        const updatable = isUpsertSynchro || (isInputWithData && isEmptyField(currentData)) || isConfidenceMatch;
         // If expected data is different from current data
-        // And data can be updated (complete a null value or forced through synchro upsert option
+        // And data can be updated:
+        //   forced synchro
+        //   OR the field was null -> better than nothing !
+        //   OR the confidence matches -> new value is "better" than existing value
         if (!R.equals(currentData, patchInputData) && updatable) {
           inputs.push({ key: inputField, value: [patchInputData] });
         }
