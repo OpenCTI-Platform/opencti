@@ -170,8 +170,7 @@ nav:
       - Automation: usage/automation.md
     - Sharing and exports:
       - Native feeds: usage/feeds.md
-      - Export in structured format: usage/export-structured.md
-      - Export in documents: usage/export-documents.md
+      - Manual export: usage/export.md
   - Administration:
     - Introduction: administration/introduction.md
     - Enterprise edition: administration/enterprise.md

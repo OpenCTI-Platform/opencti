@@ -14,7 +14,7 @@ From the `Observations` section, users can access the following tabs:
 
 ### General presentation
 
-An Observable is a distinct entity from the Indicator within OpenCTI and represents an immutable object. Observables can encompass a wide range of entities such as IPv4 addresses, domain names, email addresses, and more. Importantly, Observables doesn't inherently imply malicious intent, they can include items like legitimate IP addresses or domains associated with an organization. Additionally, they serve as raw data points without the additional detection context found in Indicators.
+An Observable is a distinct entity from the Indicator within OpenCTI and represents an immutable object. Observables can encompass a wide range of entities such as IPv4 addresses, domain names, email addresses, and more. Importantly, Observables don't inherently imply malicious intent, they can include items like legitimate IP addresses or domains associated with an organization. Additionally, they serve as raw data points without the additional detection context found in Indicators.
 
 When clicking on the Observables tab at the top left, you see the list of all the Observables you have access to, in respect with your [allowed marking definitions](../administration/users.md).
 
@@ -91,7 +91,7 @@ When clicking on an `Indicator` in the list, you land on its Overview tab. For a
 
 ### General presentation
 
-An Infrastructure refers to a set of resources, tools, systems, or services employed by a threat to conduct their activities. It represents the underlying framework or support system that facilitates malicious operations, such as the command and control (C2) servers in an attack. Notably, like Observables, Infrastructure doesn't inherently imply malicious intent. It can also represent legitimate resources affiliated with an organization (e.g. devices or servers that are part of defense, database servers targeted by an attack, etc.).
+An Infrastructure refers to a set of resources, tools, systems, or services employed by a threat to conduct their activities. It represents the underlying framework or support system that facilitates malicious operations, such as the command and control (C2) servers in an attack. Notably, like Observables, an Infrastructure doesn't inherently imply malicious intent. It can also represent legitimate resources affiliated with an organization (e.g. devices or servers that are part of defense, database servers targeted by an attack, etc.).
 
 When clicking on the Infrastructures tab at the top left, you see the list of all the Infrastructures you have access to, in respect with your [allowed marking definitions](../administration/users.md).
 

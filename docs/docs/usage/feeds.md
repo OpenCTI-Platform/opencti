@@ -1,6 +1,6 @@
 # Native feeds
 
-OpenCTI provides versatile mechanisms for sharing data through its built-in feeds, including Live Stream, TAXII collection, and CSV feeds.
+OpenCTI provides versatile mechanisms for sharing data through its built-in feeds, including Live streams, TAXII collections, and CSV feeds.
 
 ## Feed configuration
 
@@ -11,16 +11,16 @@ Feeds are configured in the "Data > Data sharing" window. Configuration for all 
 
 ![Feed access restriction](assets/feed-access-restriction.png)
 
-By carefully configuring filters and access controls, you can tailor the behavior of Live Stream, TAXII collection, and CSV feeds to align with your specific data-sharing needs.
+By carefully configuring filters and access controls, you can tailor the behavior of Live streams, TAXII collections, and CSV feeds to align with your specific data-sharing needs.
 
 
 ## Live streams
 
 ### Introduction
 
-Live Streams, an exclusive OpenCTI feature, increase the capacity for real-time data sharing by serving STIX 2.1 bundles as TAXII collections with advanced capabilities. What distinguishes them is their dynamic nature, which includes the creation, updating, and deletion of data. Unlike TAXII, Live Streams comprehensively resolve relationships and dependencies, ensuring a more nuanced and interconnected exchange of information. This is particularly beneficial in scenarios where sharing involves entities with complex relationships, providing a richer context for the shared data. When sharing data between two OpenCTI platforms, Live Streams are the preferred mechanism.
+Live streams, an exclusive OpenCTI feature, increase the capacity for real-time data sharing by serving STIX 2.1 bundles as TAXII collections with advanced capabilities. What distinguishes them is their dynamic nature, which includes the creation, updating, and deletion of data. Unlike TAXII, Live streams comprehensively resolve relationships and dependencies, ensuring a more nuanced and interconnected exchange of information. This is particularly beneficial in scenarios where sharing involves entities with complex relationships, providing a richer context for the shared data.
 
-In scenarios involving data sharing between two OpenCTI platforms, Live Streams emerge as the preferred mechanism. Consuming OpenCTI data, whether through a [stream connector](../deployment/connectors.md#stream-section) or within another OpenCTI instance, is most efficiently achieved through Live Streams. These streams operate like TAXII collections but are notably enhanced, supporting:
+In scenarios involving data sharing between two OpenCTI platforms, Live streams emerge as the preferred mechanism. These streams operate like TAXII collections but are notably enhanced, supporting:
 
 * create, update and delete events depending on the parameters,
 * caching already created entities in the last 5 minutes,
@@ -31,7 +31,7 @@ In scenarios involving data sharing between two OpenCTI platforms, Live Streams 
 
 !!! warning "Resolve relationships and dependencies"
 
-    Dependencies and relationships of entities shared via Live Streams, as determined by specified filters, are automatically shared even beyond the confines of these filters. This means that interconnected data, which may not directly meet the filter criteria, is still included in the Live Stream. However, OpenCTI data segregation mechanisms are still applied. They allow to restrict access to shared data based on factors such as markings or organization. It's imperative to carefully configure and manage these access controls to ensure that no confidential data is shared.
+    Dependencies and relationships of entities shared via Live streams, as determined by specified filters, are automatically shared even beyond the confines of these filters. This means that interconnected data, which may not directly meet the filter criteria, is still included in the Live stream. However, OpenCTI data segregation mechanisms are still applied. They allow to restrict access to shared data based on factors such as markings or organization. It's imperative to carefully configure and manage these access controls to ensure that no confidential data is shared.
 
 ### Illustrative scenario
 
@@ -51,7 +51,7 @@ Given a live stream with filters *Entity type: Indicator* `AND` *Label: detectio
 | 4. Add the label `detection`    | Create the indicator                                           | Create the indicator, create the relationship `indicates`                                                                        |
 | 5. Delete the indicator         | Delete the indicator                                           | Delete the indicator  and the relationship                                                                                       |
 
-Details on how to consume these Live Streams can be found on [the dedicated page](import-automated.md).
+Details on how to consume these Live streams can be found on [the dedicated page](import-automated.md).
 
 
 ## TAXII Collections
