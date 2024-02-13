@@ -10,7 +10,7 @@ import { KNOWLEDGE_KNUPDATE } from '../../../utils/hooks/useGranted';
 import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
 import { emptyFilterGroup } from '../../../utils/filters/filtersUtils';
-import Breadcrumbs from '../../../components/Breadcrumps';
+import Breadcrumbs from '../../../components/Breadcrumbs';
 import { useFormatter } from '../../../components/i18n';
 
 const LOCAL_STORAGE_KEY = 'campaigns';

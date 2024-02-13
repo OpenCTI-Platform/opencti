@@ -15,7 +15,7 @@ import { CaseRftLineDummy } from './case_rfts/CaseRftLine';
 import CaseRftCreation from './case_rfts/CaseRftCreation';
 import { buildEntityTypeBasedFilterContext, emptyFilterGroup } from '../../../utils/filters/filtersUtils';
 import { useFormatter } from '../../../components/i18n';
-import Breadcrumbs from '../../../components/Breadcrumps';
+import Breadcrumbs from '../../../components/Breadcrumbs';
 
 interface CaseRftsProps {
   inputValue?: string;

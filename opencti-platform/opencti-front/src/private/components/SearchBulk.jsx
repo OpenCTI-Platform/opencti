@@ -29,7 +29,7 @@ import useGranted, { KNOWLEDGE_KNGETEXPORT } from '../../utils/hooks/useGranted'
 import { hexToRGB, itemColor } from '../../utils/Colors';
 import ItemMarkings from '../../components/ItemMarkings';
 import { export_max_size } from '../../utils/utils';
-import Breadcrumbs from '../../components/Breadcrumps';
+import Breadcrumbs from '../../components/Breadcrumbs';
 
 const SEARCH$ = new Subject().pipe(debounce(() => timer(500)));
 

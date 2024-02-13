@@ -15,7 +15,7 @@ import { CaseRfiLinesCasesPaginationQuery, CaseRfiLinesCasesPaginationQuery$vari
 import { CaseRfiLineCase_node$data } from './case_rfis/__generated__/CaseRfiLineCase_node.graphql';
 import { buildEntityTypeBasedFilterContext, emptyFilterGroup } from '../../../utils/filters/filtersUtils';
 import { useFormatter } from '../../../components/i18n';
-import Breadcrumbs from '../../../components/Breadcrumps';
+import Breadcrumbs from '../../../components/Breadcrumbs';
 
 interface CaseRfisProps {
   inputValue?: string;

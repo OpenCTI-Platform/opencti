@@ -12,7 +12,7 @@ import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage'
 import useGranted, { SETTINGS_SETACCESSES, VIRTUAL_ORGANIZATION_ADMIN } from '../../../utils/hooks/useGranted';
 import useEnterpriseEdition from '../../../utils/hooks/useEnterpriseEdition';
 import { useFormatter } from '../../../components/i18n';
-import Breadcrumbs from '../../../components/Breadcrumps';
+import Breadcrumbs from '../../../components/Breadcrumbs';
 
 const useStyles = makeStyles(() => ({
   container: {

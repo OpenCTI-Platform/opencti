@@ -13,7 +13,7 @@ import {
 } from './administrative_areas/__generated__/AdministrativeAreasLinesPaginationQuery.graphql';
 import { emptyFilterGroup } from '../../../utils/filters/filtersUtils';
 import { useFormatter } from '../../../components/i18n';
-import Breadcrumbs from '../../../components/Breadcrumps';
+import Breadcrumbs from '../../../components/Breadcrumbs';
 
 const LOCAL_STORAGE_KEY = 'administrative-areas';
 

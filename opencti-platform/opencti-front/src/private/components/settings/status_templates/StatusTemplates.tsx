@@ -9,7 +9,7 @@ import StatusTemplateLineDummy from './StatusTemplateLineDummy';
 import { StatusTemplatesLinesPaginationQuery, StatusTemplatesLinesPaginationQuery$variables } from './__generated__/StatusTemplatesLinesPaginationQuery.graphql';
 import LabelsVocabulariesMenu from '../LabelsVocabulariesMenu';
 import { useFormatter } from '../../../../components/i18n';
-import Breadcrumbs from '../../../../components/Breadcrumps';
+import Breadcrumbs from '../../../../components/Breadcrumbs';
 
 const useStyles = makeStyles(() => ({
   container: {

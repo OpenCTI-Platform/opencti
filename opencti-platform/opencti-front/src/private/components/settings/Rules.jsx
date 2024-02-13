@@ -11,7 +11,7 @@ import { dayAgo, yearsAgo } from '../../../utils/Time';
 import { RULE_ENGINE } from '../../../utils/platformModulesHelper';
 import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
 import CustomizationMenu from './CustomizationMenu';
-import Breadcrumbs from '../../../components/Breadcrumps';
+import Breadcrumbs from '../../../components/Breadcrumbs';
 
 const LOCAL_STORAGE_KEY = 'rules';
 

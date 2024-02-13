@@ -18,7 +18,7 @@ import {
 import { CaseIncidentLineCase_node$data } from './case_incidents/__generated__/CaseIncidentLineCase_node.graphql';
 import { buildEntityTypeBasedFilterContext, emptyFilterGroup } from '../../../utils/filters/filtersUtils';
 import { useFormatter } from '../../../components/i18n';
-import Breadcrumbs from '../../../components/Breadcrumps';
+import Breadcrumbs from '../../../components/Breadcrumbs';
 
 interface CaseIncidentsProps {
   inputValue?: string;

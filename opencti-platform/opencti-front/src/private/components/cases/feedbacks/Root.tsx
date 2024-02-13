@@ -22,7 +22,7 @@ import StixCoreObjectHistory from '../../common/stix_core_objects/StixCoreObject
 import StixDomainObjectContent from '../../common/stix_domain_objects/StixDomainObjectContent';
 import Feedback from './Feedback';
 import { useFormatter } from '../../../../components/i18n';
-import Breadcrumbs from '../../../../components/Breadcrumps';
+import Breadcrumbs from '../../../../components/Breadcrumbs';
 
 const subscription = graphql`
   subscription RootFeedbackSubscription($id: ID!) {

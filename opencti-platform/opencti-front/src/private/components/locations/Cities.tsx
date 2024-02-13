@@ -10,7 +10,7 @@ import { KNOWLEDGE_KNUPDATE } from '../../../utils/hooks/useGranted';
 import { CitiesLinesPaginationQuery, CitiesLinesPaginationQuery$variables } from './cities/__generated__/CitiesLinesPaginationQuery.graphql';
 import { emptyFilterGroup } from '../../../utils/filters/filtersUtils';
 import { useFormatter } from '../../../components/i18n';
-import Breadcrumbs from '../../../components/Breadcrumps';
+import Breadcrumbs from '../../../components/Breadcrumbs';
 
 const LOCAL_STORAGE_KEY = 'cities';
 

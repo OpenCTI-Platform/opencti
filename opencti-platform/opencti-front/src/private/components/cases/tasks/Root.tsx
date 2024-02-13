@@ -22,7 +22,7 @@ import TasksPopover from './TaskPopover';
 import { RootTaskQuery } from './__generated__/RootTaskQuery.graphql';
 import { RootTaskSubscription } from './__generated__/RootTaskSubscription.graphql';
 import { useFormatter } from '../../../../components/i18n';
-import Breadcrumbs from '../../../../components/Breadcrumps';
+import Breadcrumbs from '../../../../components/Breadcrumbs';
 
 const subscription = graphql`
   subscription RootTaskSubscription($id: ID!) {

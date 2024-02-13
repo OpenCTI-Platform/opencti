@@ -10,7 +10,7 @@ import { ToolLineDummy } from './tools/ToolLine';
 import { ToolsLinesPaginationQuery, ToolsLinesPaginationQuery$variables } from './tools/__generated__/ToolsLinesPaginationQuery.graphql';
 import { buildEntityTypeBasedFilterContext, emptyFilterGroup } from '../../../utils/filters/filtersUtils';
 import { useFormatter } from '../../../components/i18n';
-import Breadcrumbs from '../../../components/Breadcrumps';
+import Breadcrumbs from '../../../components/Breadcrumbs';
 
 const LOCAL_STORAGE_KEY = 'tools';
 

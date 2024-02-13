@@ -15,7 +15,7 @@ import ExportContextProvider from '../../../utils/ExportContextProvider';
 import { IncidentsLinesPaginationQuery, IncidentsLinesPaginationQuery$variables } from './incidents/__generated__/IncidentsLinesPaginationQuery.graphql';
 import { buildEntityTypeBasedFilterContext, emptyFilterGroup } from '../../../utils/filters/filtersUtils';
 import { useFormatter } from '../../../components/i18n';
-import Breadcrumbs from '../../../components/Breadcrumps';
+import Breadcrumbs from '../../../components/Breadcrumbs';
 
 export const LOCAL_STORAGE_KEY = 'incidents';
 

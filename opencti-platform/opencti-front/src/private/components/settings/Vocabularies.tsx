@@ -17,7 +17,7 @@ import useEntityToggle from '../../../utils/hooks/useEntityToggle';
 import ToolBar from '../data/ToolBar';
 import useVocabularyCategory from '../../../utils/hooks/useVocabularyCategory';
 import { emptyFilterGroup } from '../../../utils/filters/filtersUtils';
-import Breadcrumbs from '../../../components/Breadcrumps';
+import Breadcrumbs from '../../../components/Breadcrumbs';
 
 const useStyles = makeStyles(() => ({
   container: {

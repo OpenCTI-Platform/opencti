@@ -6,7 +6,7 @@ import { QueryRenderer } from '../../../../relay/environment';
 import Connector, { connectorQuery } from './Connector';
 import Loader from '../../../../components/Loader';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
-import Breadcrumbs from '../../../../components/Breadcrumps';
+import Breadcrumbs from '../../../../components/Breadcrumbs';
 import inject18n from '../../../../components/i18n';
 
 class RootConnector extends Component {

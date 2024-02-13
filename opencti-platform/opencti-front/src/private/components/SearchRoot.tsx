@@ -14,7 +14,7 @@ import { useFormatter } from '../../components/i18n';
 import { decodeSearchKeyword } from '../../utils/SearchUtils';
 import useAuth from '../../utils/hooks/useAuth';
 import { SearchRootFilesCountQuery } from './__generated__/SearchRootFilesCountQuery.graphql';
-import Breadcrumbs from '../../components/Breadcrumps';
+import Breadcrumbs from '../../components/Breadcrumbs';
 
 const searchRootFilesCountQuery = graphql`
   query SearchRootFilesCountQuery($search: String) {

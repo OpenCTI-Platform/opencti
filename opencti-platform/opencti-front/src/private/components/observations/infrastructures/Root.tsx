@@ -23,7 +23,7 @@ import { RootInfrastructureQuery } from './__generated__/RootInfrastructureQuery
 import Infrastructure from './Infrastructure';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import { useFormatter } from '../../../../components/i18n';
-import Breadcrumbs from '../../../../components/Breadcrumps';
+import Breadcrumbs from '../../../../components/Breadcrumbs';
 
 const subscription = graphql`
   subscription RootInfrastructureSubscription($id: ID!) {

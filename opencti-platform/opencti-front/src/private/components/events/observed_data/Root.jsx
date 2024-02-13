@@ -16,7 +16,7 @@ import Loader from '../../../../components/Loader';
 import ContainerStixDomainObjects from '../../common/containers/ContainerStixDomainObjects';
 import ContainerStixCyberObservables from '../../common/containers/ContainerStixCyberObservables';
 import inject18n from '../../../../components/i18n';
-import Breadcrumbs from '../../../../components/Breadcrumps';
+import Breadcrumbs from '../../../../components/Breadcrumbs';
 
 const subscription = graphql`
   subscription RootObservedDataSubscription($id: ID!) {

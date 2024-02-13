@@ -11,7 +11,7 @@ import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage'
 import useAuth from '../../../utils/hooks/useAuth';
 import { buildEntityTypeBasedFilterContext, emptyFilterGroup } from '../../../utils/filters/filtersUtils';
 import { useFormatter } from '../../../components/i18n';
-import Breadcrumbs from '../../../components/Breadcrumps';
+import Breadcrumbs from '../../../components/Breadcrumbs';
 
 const LOCAL_STORAGE_KEY = 'vulnerabilities';
 

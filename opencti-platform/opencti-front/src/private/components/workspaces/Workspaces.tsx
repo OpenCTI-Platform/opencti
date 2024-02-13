@@ -9,7 +9,7 @@ import { EXPLORE_EXUPDATE } from '../../../utils/hooks/useGranted';
 import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
 import { GqlFilterGroup } from '../../../utils/filters/filtersUtils';
-import Breadcrumbs from '../../../components/Breadcrumps';
+import Breadcrumbs from '../../../components/Breadcrumbs';
 import { useFormatter } from '../../../components/i18n';
 
 interface WorkspacesProps {

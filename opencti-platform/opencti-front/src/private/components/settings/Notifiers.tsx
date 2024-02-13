@@ -13,7 +13,7 @@ import NotifierCreation from './notifiers/NotifierCreation';
 import { useFormatter } from '../../../components/i18n';
 import CustomizationMenu from './CustomizationMenu';
 import { emptyFilterGroup } from '../../../utils/filters/filtersUtils';
-import Breadcrumbs from '../../../components/Breadcrumps';
+import Breadcrumbs from '../../../components/Breadcrumbs';
 
 const LOCAL_STORAGE_KEY = 'notifiers';
 

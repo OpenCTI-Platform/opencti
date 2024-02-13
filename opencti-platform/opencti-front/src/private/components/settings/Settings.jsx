@@ -29,7 +29,7 @@ import SettingsMessages from './settings_messages/SettingsMessages';
 import SettingsAnalytics from './settings_analytics/SettingsAnalytics';
 import ItemBoolean from '../../../components/ItemBoolean';
 import { availableLanguage } from '../../../components/AppIntlProvider';
-import Breadcrumbs from '../../../components/Breadcrumps';
+import Breadcrumbs from '../../../components/Breadcrumbs';
 
 const useStyles = makeStyles(() => ({
   container: {

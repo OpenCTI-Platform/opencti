@@ -7,7 +7,7 @@ import { TriggersLinesPaginationQuery, TriggersLinesPaginationQuery$variables } 
 import { TriggerLineDummy } from './triggers/TriggerLine';
 import TriggerCreation from './triggers/TriggerCreation';
 import { emptyFilterGroup, getDefaultFilterObjFromArray } from '../../../utils/filters/filtersUtils';
-import Breadcrumbs from '../../../components/Breadcrumps';
+import Breadcrumbs from '../../../components/Breadcrumbs';
 import { useFormatter } from '../../../components/i18n';
 
 export const LOCAL_STORAGE_KEY_TRIGGERS = 'triggers';

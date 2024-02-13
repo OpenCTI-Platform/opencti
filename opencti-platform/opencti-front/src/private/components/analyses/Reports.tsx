@@ -14,7 +14,7 @@ import useQueryLoading from '../../../utils/hooks/useQueryLoading';
 import { ReportLineDummy } from './reports/ReportLine';
 import { buildEntityTypeBasedFilterContext, emptyFilterGroup } from '../../../utils/filters/filtersUtils';
 import { useFormatter } from '../../../components/i18n';
-import Breadcrumbs from '../../../components/Breadcrumps';
+import Breadcrumbs from '../../../components/Breadcrumbs';
 import ExportContextProvider from '../../../utils/ExportContextProvider';
 
 const LOCAL_STORAGE_KEY = 'reports';

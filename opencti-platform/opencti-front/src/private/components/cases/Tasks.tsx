@@ -11,7 +11,7 @@ import { TasksLinesPaginationQuery, TasksLinesPaginationQuery$variables } from '
 import { TasksLine_node$data } from './tasks/__generated__/TasksLine_node.graphql';
 import { buildEntityTypeBasedFilterContext, emptyFilterGroup } from '../../../utils/filters/filtersUtils';
 import { useFormatter } from '../../../components/i18n';
-import Breadcrumbs from '../../../components/Breadcrumps';
+import Breadcrumbs from '../../../components/Breadcrumbs';
 
 export const LOCAL_STORAGE_KEY_TASKS = 'cases-casesTasks';
 

@@ -7,7 +7,7 @@ import LabelsVocabulariesMenu from './LabelsVocabulariesMenu';
 import { useVocabularyCategoryAsQuery, VocabularyDefinition } from '../../../utils/hooks/useVocabularyCategory';
 import ListLinesContent from '../../../components/list_lines/ListLinesContent';
 import { VocabularyCategoryLine, VocabularyCategoryLineDummy } from './attributes/VocabularyCategoryLine';
-import Breadcrumbs from '../../../components/Breadcrumps';
+import Breadcrumbs from '../../../components/Breadcrumbs';
 
 const useStyles = makeStyles(() => ({
   container: {

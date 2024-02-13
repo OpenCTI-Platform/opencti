@@ -11,7 +11,7 @@ interface element {
   current?: boolean;
 }
 
-interface BreadcrumpsProps {
+interface BreadcrumbsProps {
   variant: 'standard' | 'list' | 'object',
   elements: element[],
 }
@@ -30,7 +30,7 @@ const useStyles = makeStyles(() => ({
   },
 }));
 
-const Breadcrumps: FunctionComponent<BreadcrumpsProps> = ({ elements, variant }) => {
+const Breadcrumbs: FunctionComponent<BreadcrumbsProps> = ({ elements, variant }) => {
   const classes = useStyles();
   let className = classes.breadcrumbsStandard;
   if (variant === 'list') {
@@ -59,4 +59,4 @@ const Breadcrumps: FunctionComponent<BreadcrumpsProps> = ({ elements, variant })
   );
 };
 
-export default Breadcrumps;
+export default Breadcrumbs;

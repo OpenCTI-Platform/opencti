@@ -13,7 +13,7 @@ import ToolBar from '../data/ToolBar';
 import ExportContextProvider from '../../../utils/ExportContextProvider';
 import { buildEntityTypeBasedFilterContext, emptyFilterGroup, getDefaultFilterObjFromArray } from '../../../utils/filters/filtersUtils';
 import { useFormatter } from '../../../components/i18n';
-import Breadcrumbs from '../../../components/Breadcrumps';
+import Breadcrumbs from '../../../components/Breadcrumbs';
 
 const dataColumns = {
   x_opencti_negative: {

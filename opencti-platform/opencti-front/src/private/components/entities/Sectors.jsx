@@ -11,7 +11,7 @@ import SectorCreation from './sectors/SectorCreation';
 import SearchInput from '../../../components/SearchInput';
 import Security from '../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE } from '../../../utils/hooks/useGranted';
-import Breadcrumbs from '../../../components/Breadcrumps';
+import Breadcrumbs from '../../../components/Breadcrumbs';
 
 const styles = () => ({
   parameters: {

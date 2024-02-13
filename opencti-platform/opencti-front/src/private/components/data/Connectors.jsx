@@ -8,7 +8,7 @@ import { QueryRenderer } from '../../../relay/environment';
 import WorkersStatus, { workersStatusQuery } from './connectors/WorkersStatus';
 import ConnectorsStatus, { connectorsStatusQuery } from './connectors/ConnectorsStatus';
 import Loader from '../../../components/Loader';
-import Breadcrumbs from '../../../components/Breadcrumps';
+import Breadcrumbs from '../../../components/Breadcrumbs';
 
 const styles = () => ({
   container: {

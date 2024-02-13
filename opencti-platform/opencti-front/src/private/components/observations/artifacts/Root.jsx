@@ -18,7 +18,7 @@ import ErrorNotFound from '../../../../components/ErrorNotFound';
 import FileManager from '../../common/files/FileManager';
 import StixSightingRelationship from '../../events/stix_sighting_relationships/StixSightingRelationship';
 import inject18n from '../../../../components/i18n';
-import Breadcrumbs from '../../../../components/Breadcrumps';
+import Breadcrumbs from '../../../../components/Breadcrumbs';
 
 const subscription = graphql`
   subscription RootArtifactSubscription($id: ID!) {

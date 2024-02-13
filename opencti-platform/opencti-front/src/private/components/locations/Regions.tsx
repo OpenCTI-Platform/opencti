@@ -10,7 +10,7 @@ import RegionCreation from './regions/RegionCreation';
 import { RegionLineDummy } from './regions/RegionLine';
 import { emptyFilterGroup } from '../../../utils/filters/filtersUtils';
 import { useFormatter } from '../../../components/i18n';
-import Breadcrumbs from '../../../components/Breadcrumps';
+import Breadcrumbs from '../../../components/Breadcrumbs';
 
 const LOCAL_STORAGE_KEY = 'regions';
 

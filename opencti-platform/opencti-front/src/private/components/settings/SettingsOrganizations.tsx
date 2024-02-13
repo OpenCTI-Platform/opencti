@@ -13,7 +13,7 @@ import AccessesMenu from './AccessesMenu';
 import { useFormatter } from '../../../components/i18n';
 import { SettingsOrganizationLine_node$data as Organization } from './organizations/__generated__/SettingsOrganizationLine_node.graphql';
 import useAuth from '../../../utils/hooks/useAuth';
-import Breadcrumbs from '../../../components/Breadcrumps';
+import Breadcrumbs from '../../../components/Breadcrumbs';
 
 const useStyles = makeStyles(() => ({
   container: {

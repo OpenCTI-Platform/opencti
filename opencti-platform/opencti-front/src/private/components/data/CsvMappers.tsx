@@ -12,7 +12,7 @@ import ListLines from '../../../components/list_lines/ListLines';
 import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
 import Loader, { LoaderVariant } from '../../../components/Loader';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
-import Breadcrumbs from '../../../components/Breadcrumps';
+import Breadcrumbs from '../../../components/Breadcrumbs';
 import { useFormatter } from '../../../components/i18n';
 
 const LOCAL_STORAGE_KEY_CSV_MAPPERS = 'csvMappers';
