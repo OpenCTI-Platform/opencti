@@ -132,6 +132,7 @@ import { rule_definitions } from '../rules/rules-definition';
 const ELK_ENGINE = 'elk';
 const OPENSEARCH_ENGINE = 'opensearch';
 export const ES_MAX_CONCURRENCY = conf.get('elasticsearch:max_concurrency');
+export const ES_MINIMUM_FIXED_PAGINATION = 20; // When really low pagination is better by default
 export const ES_DEFAULT_PAGINATION = conf.get('elasticsearch:default_pagination_result') || 500;
 export const ES_MAX_PAGINATION = conf.get('elasticsearch:max_pagination_result') || 5000;
 export const MAX_BULK_OPERATIONS = conf.get('elasticsearch:max_bulk_operations') || 5000;
@@ -2189,7 +2190,6 @@ const elQueryBodyBuilder = async (context, user, options) => {
     ordering.push({ 'standard_id.keyword': 'asc' });
   }
   // Build query
-  const querySize = first || 10;
   const body = {
     query: {
       bool: {
@@ -2199,7 +2199,7 @@ const elQueryBodyBuilder = async (context, user, options) => {
     },
   };
   if (!noSize) {
-    body.size = querySize;
+    body.size = first;
   }
   if (!noSort) {
     body.sort = ordering;
@@ -2543,7 +2543,7 @@ export const elList = async (context, user, indexName, opts = {}) => {
     const paginateOpts = { ...opts, first, after: searchAfter, connectionFormat: false };
     const elements = await elPaginate(context, user, indexName, paginateOpts);
     emitSize += elements.length;
-    const noMoreElements = elements.length === 0 || elements.length < (first ?? ES_MAX_PAGINATION);
+    const noMoreElements = elements.length === 0 || elements.length < (first ?? ES_DEFAULT_PAGINATION);
     const moreThanMax = maxSize ? emitSize >= maxSize : false;
     if (noMoreElements || moreThanMax) {
       if (elements.length > 0) {
@@ -2598,7 +2598,7 @@ export const elAttributeValues = async (context, user, field, opts = {}) => {
       values: {
         terms: {
           field: isDateOrNumber ? field : `${field}.keyword`,
-          size: first ?? ES_MAX_PAGINATION,
+          size: first ?? ES_DEFAULT_PAGINATION,
           order: { _key: orderMode },
         },
       },

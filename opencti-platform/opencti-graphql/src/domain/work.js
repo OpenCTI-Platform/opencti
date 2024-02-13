@@ -1,6 +1,6 @@
 import moment from 'moment';
 import * as R from 'ramda';
-import { elDeleteInstances, elIndex, elLoadById, elPaginate, elRawDeleteByQuery, elUpdate, } from '../database/engine';
+import { elDeleteInstances, elIndex, elLoadById, elPaginate, elRawDeleteByQuery, elUpdate, ES_MINIMUM_FIXED_PAGINATION } from '../database/engine';
 import { generateWorkId } from '../schema/identifier';
 import { INDEX_HISTORY, isNotEmptyField, READ_INDEX_HISTORY } from '../database/utils';
 import { isWorkCompleted, redisDeleteWorks, redisUpdateActionExpectation, redisUpdateWorkFigures } from '../database/redis';
@@ -48,7 +48,7 @@ export const findAll = (context, user, args = {}) => {
 };
 
 export const worksForConnector = async (context, user, connectorId, args = {}) => {
-  const { first = 10, filters = null } = args;
+  const { first = ES_MINIMUM_FIXED_PAGINATION, filters = null } = args;
   const finalFilters = addFilter(filters, 'connector_id', connectorId);
   return elPaginate(context, user, READ_INDEX_HISTORY, {
     type: ENTITY_TYPE_WORK,
@@ -61,7 +61,7 @@ export const worksForConnector = async (context, user, connectorId, args = {}) =
 };
 
 export const worksForSource = async (context, user, sourceId, args = {}) => {
-  const { first = 10, filters = null, type } = args;
+  const { first = ES_MINIMUM_FIXED_PAGINATION, filters = null, type } = args;
   let finalFilters = addFilter(filters, 'event_source_id', sourceId);
   if (type) {
     finalFilters = addFilter(finalFilters, 'event_type', type);

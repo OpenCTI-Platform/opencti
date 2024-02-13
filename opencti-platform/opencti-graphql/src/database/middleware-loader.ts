@@ -10,7 +10,7 @@ import {
   READ_RELATIONSHIPS_INDICES,
   READ_RELATIONSHIPS_INDICES_WITHOUT_INFERRED
 } from './utils';
-import { elAggregationsList, elCount, elFindByIds, elList, elLoadById, elPaginate, UNIMPACTED_ENTITIES_ROLE } from './engine';
+import { elAggregationsList, elCount, elFindByIds, elList, elLoadById, elPaginate, ES_MINIMUM_FIXED_PAGINATION, UNIMPACTED_ENTITIES_ROLE } from './engine';
 import { ABSTRACT_STIX_CORE_OBJECT, ABSTRACT_STIX_CORE_RELATIONSHIP, ABSTRACT_STIX_OBJECT, ABSTRACT_STIX_RELATIONSHIP, buildRefRelationKey } from '../schema/general';
 import type { AuthContext, AuthUser } from '../types/user';
 import type {
@@ -286,32 +286,6 @@ export const listRelations = async <T extends StoreProxyRelation>(context: AuthC
   return elPaginate(context, user, indices, paginateArgs);
 };
 
-export const listRelationsFromElement = async <T extends StoreProxyRelation>(context: AuthContext, user: AuthUser, type: string | Array<string>,
-  elementSourceId: string, elementTargetTypes: string[], args: RelationOptions<T> = {}): Promise<Array<T>> => {
-  const opts = {
-    ...args,
-    fromId: elementSourceId,
-    toTypes: elementTargetTypes,
-    first: args.first ?? 10,
-    orderBy: args.orderBy ?? 'created_at',
-    orderMode: args.orderMode ?? OrderingMode.Desc
-  };
-  return listRelations(context, user, type, opts);
-};
-
-export const listRelationsToElement = async <T extends StoreProxyRelation>(context: AuthContext, user: AuthUser, type: string | Array<string>,
-  elementTargetId: string, elementFromTypes: string[], args: RelationOptions<T> = {}): Promise<Array<T>> => {
-  const opts = {
-    ...args,
-    toId: elementTargetId,
-    fromTypes: elementFromTypes,
-    first: args.first ?? 10,
-    orderBy: args.orderBy ?? 'created_at',
-    orderMode: args.orderMode ?? OrderingMode.Desc
-  };
-  return listRelations(context, user, type, opts);
-};
-
 export const listAllRelations = async <T extends StoreProxyRelation>(context: AuthContext, user: AuthUser, type: string | Array<string>,
   args: RelationOptions<T> = {}): Promise<Array<T>> => {
   const { indices = READ_RELATIONSHIPS_INDICES } = args;
@@ -485,7 +459,7 @@ export const listEntitiesThroughRelationsPaginated = async <T extends BasicStore
   };
   const paginateArgs = buildEntityFilters(entityType, {
     ...args,
-    first: args.first ?? 20,
+    first: args.first ?? ES_MINIMUM_FIXED_PAGINATION,
     orderBy: args.orderBy ?? 'created_at',
     orderMode: args.orderMode ?? OrderingMode.Desc,
     filters: connectedFilters

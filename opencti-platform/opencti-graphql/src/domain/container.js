@@ -7,7 +7,7 @@ import { ABSTRACT_BASIC_RELATIONSHIP, ABSTRACT_STIX_REF_RELATIONSHIP, ABSTRACT_S
 import { isStixDomainObjectContainer } from '../schema/stixDomainObject';
 import { buildPagination, READ_ENTITIES_INDICES, READ_INDEX_STIX_DOMAIN_OBJECTS, READ_RELATIONSHIPS_INDICES } from '../database/utils';
 import { now } from '../utils/format';
-import { elCount, elFindByIds, ES_MAX_PAGINATION, MAX_RELATED_CONTAINER_RESOLUTION } from '../database/engine';
+import { elCount, elFindByIds, ES_DEFAULT_PAGINATION, MAX_RELATED_CONTAINER_RESOLUTION } from '../database/engine';
 import { findById as findInvestigationById } from '../modules/workspace/workspace-domain';
 import { stixCoreObjectAddRelations } from './stixCoreObject';
 import { addFilter } from '../utils/filtering/filtering-utils';
@@ -53,7 +53,7 @@ export const objects = async (context, user, containerId, args) => {
     const paginatedElements = {};
     while (hasNextPage) {
       // Force options to prevent connection format and manage search after
-      const paginateOpts = { ...baseOpts, first: args.first ?? ES_MAX_PAGINATION, after: searchAfter };
+      const paginateOpts = { ...baseOpts, first: args.first ?? ES_DEFAULT_PAGINATION, after: searchAfter };
       const currentPagination = await listEntitiesThroughRelationsPaginated(context, user, containerId, RELATION_OBJECT, types, false, paginateOpts);
       const noMoreElements = currentPagination.edges.length === 0 || currentPagination.edges.length < paginateOpts.first;
       if (noMoreElements) {
