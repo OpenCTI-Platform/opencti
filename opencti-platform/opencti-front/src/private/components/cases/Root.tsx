@@ -49,7 +49,7 @@ const Root = () => {
           Component={boundaryWrapper(CaseRfis)}
         />
         <Route
-          path="/rfis/:caseId"
+          path="/rfis/:caseId/*"
           Component={boundaryWrapper(RootCaseRfi)}
         />
         <Route
@@ -57,7 +57,7 @@ const Root = () => {
           Component={boundaryWrapper(CaseRfts)}
         />
         <Route
-          path="/rfts/:caseId"
+          path="/rfts/:caseId/*"
           Component={boundaryWrapper(RootCaseRft)}
         />
         <Route

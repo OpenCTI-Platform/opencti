@@ -3,7 +3,7 @@
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-nocheck
 import React, { useMemo } from 'react';
-import { Link, Redirect, Route, Routes, useParams, useLocation } from 'react-router-dom';
+import { Link, Navigate, Route, Routes, useParams, useLocation } from 'react-router-dom';
 import { graphql, usePreloadedQuery, useSubscription } from 'react-relay';
 import { GraphQLSubscriptionConfig } from 'relay-runtime';
 import Box from '@mui/material/Box';
@@ -176,62 +176,49 @@ const RootCaseRfiComponent = ({ queryRef, caseId }) => {
           </Box>
           <Routes>
             <Route
-              exact
-              path="/dashboard/cases/rfis/:caseId"
-              render={() => <CaseRfi data={caseData} />}
+              path="/"
+              element={<CaseRfi data={caseData} />}
             />
             <Route
-              exact
-              path="/dashboard/cases/rfis/:caseId/entities"
-              render={(routeProps) => (
+              path="/entities"
+              element={
                 <ContainerStixDomainObjects
-                  {...routeProps}
                   container={caseData}
                 />
-              )}
+              }
             />
             <Route
-              exact
-              path="/dashboard/cases/rfis/:caseId/observables"
-              render={(routeProps) => (
+              path="/observables"
+              element={
                 <ContainerStixCyberObservables
-                  {...routeProps}
                   container={caseData}
                 />
-              )}
+              }
             />
             <Route
-              exact
-              path="/dashboard/cases/rfis/:caseId/knowledge"
-              render={() => (
-                <Redirect
-                  to={`/dashboard/cases/rfis/${caseId}/knowledge/graph`}
-                />
-              )}
+              path="/knowledge"
+              element={
+                <Navigate to={`/dashboard/cases/rfis/${caseId}/knowledge/graph`}/>
+              }
             />
             <Route
-              exact
-              path="/dashboard/cases/rfis/:caseId/content"
-              render={(routeProps) => (
+              path="/content"
+              element={
                 <StixDomainObjectContent
-                  {...routeProps}
                   stixDomainObject={caseData}
                 />
-              )}
+              }
             />
             <Route
-              exact
-              path="/dashboard/cases/rfis/:caseId/knowledge/:mode"
-              render={(routeProps) => (
-                <CaseRfiKnowledge {...routeProps} caseData={caseData} />
-              )}
+              path="/knowledge/*"
+              element={
+                <CaseRfiKnowledge caseData={caseData} />
+              }
             />
             <Route
-              exact
-              path="/dashboard/cases/rfis/:caseId/files"
-              render={(routeProps) => (
+              path="/files"
+              element={
                 <StixCoreObjectFilesAndHistory
-                  {...routeProps}
                   id={caseId}
                   connectorsExport={connectorsForExport}
                   connectorsImport={connectorsForImport}
@@ -239,17 +226,15 @@ const RootCaseRfiComponent = ({ queryRef, caseId }) => {
                   withoutRelations={true}
                   bypassEntityId={true}
                 />
-              )}
+              }
             />
             <Route
-              exact
-              path="/dashboard/cases/rfis/:caseId/history"
-              render={(routeProps: any) => (
+              path="/history"
+              element={
                 <StixCoreObjectHistory
-                  {...routeProps}
                   stixCoreObjectId={caseId}
                 />
-              )}
+              }
             />
           </Routes>
         </div>
