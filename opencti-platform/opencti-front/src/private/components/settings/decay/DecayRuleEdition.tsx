@@ -108,7 +108,6 @@ const DecayRuleEditionForm: FunctionComponent<DecayRuleEditionFormProps> = ({
   const handleSubmitDecayPoints = (decayPoints: number[]) => {
     const decayPointsFiltered = R.uniq(decayPoints.map((p) => parseInt(String(p), 10)));
     decayPointsFiltered.sort().reverse();
-    console.log('Submit decay_points:', decayPointsFiltered);
     handleSubmitField('decay_points', decayPointsFiltered);
   };
 
