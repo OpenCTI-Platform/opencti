@@ -8,7 +8,7 @@ const stixMetaObjectsAttributes: { [k: string]: Array<AttributeDefinition> } = {
     { name: 'definition_type', label: 'Type', type: 'string', format: 'short', mandatoryType: 'external', editDefault: false, multiple: false, upsert: false, isFilterable: true },
     { name: 'definition', label: 'Definition', type: 'string', format: 'short', mandatoryType: 'external', editDefault: false, multiple: false, upsert: true, isFilterable: true },
     { name: 'x_opencti_order', label: 'Order', type: 'numeric', precision: 'integer', mandatoryType: 'external', editDefault: false, multiple: false, upsert: false, isFilterable: true },
-    { name: 'x_opencti_color', label: 'Color', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
+    { name: 'x_opencti_color', label: 'Marking color', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
   ],
   [ENTITY_TYPE_LABEL]: [
     { name: 'value', label: 'Value', type: 'string', format: 'short', mandatoryType: 'external', editDefault: false, multiple: false, upsert: true, isFilterable: true },

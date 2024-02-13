@@ -108,7 +108,7 @@ export const creators: AttributeDefinition = {
 
 export const standardId: AttributeDefinition = {
   name: 'standard_id',
-  label: 'Id',
+  label: 'Standard id',
   type: 'string',
   format: 'short',
   update: false,
@@ -303,7 +303,7 @@ export const xOpenctiStixIds: AttributeDefinition = {
 
 export const xOpenctiAliases: AttributeDefinition = {
   name: 'x_opencti_aliases',
-  label: 'Aliases',
+  label: 'X_Aliases',
   type: 'string',
   format: 'short',
   mandatoryType: 'no',

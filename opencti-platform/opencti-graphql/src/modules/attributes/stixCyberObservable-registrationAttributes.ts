@@ -36,7 +36,7 @@ import { ABSTRACT_STIX_CYBER_OBSERVABLE } from '../../schema/general';
 import { ENTITY_TYPE_USER } from '../../schema/internalObject';
 
 const stixCyberObservableAttributes: Array<AttributeDefinition> = [
-  { name: 'x_opencti_description', label: 'Description', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: true },
+  { name: 'x_opencti_description', label: 'Observable description', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: true },
   { name: 'x_opencti_score', label: 'Score', type: 'numeric', precision: 'integer', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: true },
 ];
 schemaAttributesDefinition.registerAttributes(ABSTRACT_STIX_CYBER_OBSERVABLE, stixCyberObservableAttributes);
@@ -244,7 +244,7 @@ const stixCyberObservablesAttributes: { [k: string]: Array<AttributeDefinition> 
   ],
   [ENTITY_WINDOWS_REGISTRY_KEY]: [
     { name: 'attribute_key', label: 'Key', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: true },
-    { name: 'modified_time', label: 'Modification date', type: 'date', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: true },
+    { name: 'modified_time', label: 'Key modification date', type: 'date', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: true },
     { name: 'number_of_subkeys', label: 'Number of sub-keys', type: 'numeric', precision: 'integer', editDefault: false, mandatoryType: 'no', multiple: false, upsert: true, isFilterable: true },
   ],
   [ENTITY_WINDOWS_REGISTRY_VALUE_TYPE]: [
