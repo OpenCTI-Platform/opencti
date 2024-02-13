@@ -804,7 +804,7 @@ const WorkbenchFileContentComponent = ({
                 )}/${file.metaData.entity.id}`;
                 history.push(`${entityLink}/files`);
               } else {
-                history.push('/dashboard/import');
+                history.push('/dashboard/data/import');
               }
             },
           });
