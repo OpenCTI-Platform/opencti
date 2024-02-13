@@ -1308,7 +1308,7 @@ const WidgetConfig = ({ workspace, widget, onComplete, closeMenu }) => {
             className={classes.createButton}
             ariaLabel="Create"
             icon={<SpeedDialIcon />}
-            FabProps={{ color: 'secondary' }}
+            FabProps={{ color: 'primary' }}
           >
             <SpeedDialAction
               title={t_i18n('Create a widget')}

@@ -36,8 +36,7 @@ const useStyles = makeStyles((theme) => ({
     backgroundColor: theme.palette.background.default,
   },
   searchInputTopBar: {
-    transition: theme.transitions.create('width'),
-    width: 450,
+    width: '100%',
   },
   searchInput: {
     transition: theme.transitions.create('width'),

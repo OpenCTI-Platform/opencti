@@ -7,10 +7,13 @@ import { TriggersLinesPaginationQuery, TriggersLinesPaginationQuery$variables } 
 import { TriggerLineDummy } from './triggers/TriggerLine';
 import TriggerCreation from './triggers/TriggerCreation';
 import { emptyFilterGroup, getDefaultFilterObjFromArray } from '../../../utils/filters/filtersUtils';
+import Breadcrumbs from '../../../components/Breadcrumps';
+import { useFormatter } from '../../../components/i18n';
 
 export const LOCAL_STORAGE_KEY_TRIGGERS = 'triggers';
 
 const Triggers: FunctionComponent = () => {
+  const { t_i18n } = useFormatter();
   const { viewStorage, helpers, paginationOptions } = usePaginationLocalStorage<TriggersLinesPaginationQuery$variables>(
     LOCAL_STORAGE_KEY_TRIGGERS,
     {
@@ -108,10 +111,11 @@ const Triggers: FunctionComponent = () => {
   };
 
   return (
-    <div>
+    <>
+      <Breadcrumbs variant="list" elements={[{ label: t_i18n('Triggers'), current: true }]} />
       {renderLines()}
       <TriggerCreation paginationOptions={paginationOptions} />
-    </div>
+    </>
   );
 };
 

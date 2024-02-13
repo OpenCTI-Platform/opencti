@@ -72,7 +72,7 @@ const TriggerCreation: FunctionComponent<TriggerCreationProps> = ({
           onClose={() => setOpenSpeedDial(false)}
           onOpen={() => setOpenSpeedDial(true)}
           open={openSpeedDial}
-          FabProps={{ color: 'secondary' }}
+          FabProps={{ color: 'primary' }}
         >
           <SpeedDialAction
             title={t_i18n('Live trigger')}

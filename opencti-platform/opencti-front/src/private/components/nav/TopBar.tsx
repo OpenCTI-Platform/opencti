@@ -5,7 +5,7 @@ import { Link, useLocation } from 'react-router-dom-v5-compat';
 import AppBar from '@mui/material/AppBar';
 import Toolbar from '@mui/material/Toolbar';
 import IconButton from '@mui/material/IconButton';
-import { AccountCircleOutlined, AppsOutlined, NotificationsOutlined } from '@mui/icons-material';
+import { AccountCircleOutlined, AppsOutlined, AlarmOnOutlined, NotificationsOutlined } from '@mui/icons-material';
 import Menu from '@mui/material/Menu';
 import Grid from '@mui/material/Grid';
 import MenuItem from '@mui/material/MenuItem';
@@ -64,6 +64,7 @@ const useStyles = makeStyles<Theme>((theme) => ({
     marginRight: 4,
   },
   menuContainer: {
+    width: '50%',
     float: 'left',
   },
   barRight: {
@@ -242,35 +243,48 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
             keyword={keyword}
             variant="topBar"
             placeholder={`${t_i18n('Search the platform')}...`}
+            fullWidth={true}
           />
         </div>
         <div className={classes.barRight}>
           <div className={classes.barRightContainer}>
             <Security needs={[KNOWLEDGE]}>
-              <Tooltip title={t_i18n('Notifications and triggers')}>
-                <IconButton
-                  size="medium"
-                  aria-haspopup="true"
-                  component={Link}
-                  to="/dashboard/profile/notifications"
-                  color={
-                    [
-                      '/dashboard/profile/notifications',
-                      '/dashboard/profile/triggers',
-                    ].includes(location.pathname)
-                      ? 'primary'
-                      : 'inherit'
-                  }
-                >
-                  <Badge
-                    color="secondary"
-                    variant="dot"
-                    invisible={!isNewNotification}
+              <>
+                <Tooltip title={t_i18n('Notifications')}>
+                  <IconButton
+                    size="medium"
+                    aria-haspopup="true"
+                    component={Link}
+                    to="/dashboard/profile/notifications"
+                    color={location.pathname === '/dashboard/profile/notifications' ? 'primary' : 'inherit'}
                   >
-                    <NotificationsOutlined fontSize="medium"/>
-                  </Badge>
-                </IconButton>
-              </Tooltip>
+                    <Badge
+                      color="secondary"
+                      variant="dot"
+                      invisible={!isNewNotification}
+                    >
+                      <NotificationsOutlined fontSize="medium"/>
+                    </Badge>
+                  </IconButton>
+                </Tooltip>
+                <Tooltip title={t_i18n('Triggers')}>
+                  <IconButton
+                    size="medium"
+                    aria-haspopup="true"
+                    component={Link}
+                    to="/dashboard/profile/triggers"
+                    color={location.pathname === '/dashboard/profile/triggers' ? 'primary' : 'inherit'}
+                  >
+                    <Badge
+                      color="secondary"
+                      variant="dot"
+                      invisible={!isNewNotification}
+                    >
+                      <AlarmOnOutlined fontSize="medium" />
+                    </Badge>
+                  </IconButton>
+                </Tooltip>
+              </>
             </Security>
             <IconButton
               color="inherit"
