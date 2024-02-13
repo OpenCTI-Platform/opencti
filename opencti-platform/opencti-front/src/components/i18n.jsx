@@ -2,11 +2,6 @@ import React, { Component } from 'react';
 import { useIntl, injectIntl } from 'react-intl';
 import moment from 'moment-timezone';
 import { bytesFormat, numberFormat } from '../utils/Number';
-import 'moment/locale/de';
-import 'moment/locale/es';
-import 'moment/locale/fr';
-import 'moment/locale/ja';
-import 'moment/locale/zh-cn'; // 'moment/locale/zh' does not exists.
 
 export const isDateStringNone = (dateString) => {
   if (!dateString) return true;
@@ -237,6 +232,24 @@ export const useFormatter = () => {
     });
   };
 
+  const MONTH_IN_MILLIS = 2.592e9;
+  const WEEK_IN_MILLIS = 6.048e8;
+  const DAY_IN_MILLIS = 8.64e7;
+  const HOUR_IN_MILLIS = 3.6e6;
+  const MIN_IN_MILLIS = 6e4;
+  const SEC_IN_MILLIS = 1e3;
+
+  const timeUnits = [
+    { unit: 'month', interval: MONTH_IN_MILLIS },
+    { unit: 'week', interval: WEEK_IN_MILLIS },
+    { unit: 'day', interval: DAY_IN_MILLIS },
+    { unit: 'hour', interval: HOUR_IN_MILLIS },
+    { unit: 'minute', interval: MIN_IN_MILLIS },
+    { unit: 'second', interval: SEC_IN_MILLIS },
+  ];
+
+  const roundedValue = (diff, interval) => Math.round(diff / interval);
+
   /**
    * Relative from now in word. Like "2 months ago", "in 3 minutes"...
    * @param date
@@ -246,9 +259,16 @@ export const useFormatter = () => {
     if (isNone(date)) {
       return '-';
     }
-    moment.locale(intl.locale);
-    const momentDate = moment(date);
-    return momentDate.fromNow();
+    const diff = new Date(date) - new Date();
+    for (const { unit, interval } of timeUnits) {
+      if (Math.abs(diff) > interval) {
+        const rounded = roundedValue(diff, interval);
+        return intl.formatRelativeTime(rounded, unit);
+      }
+    }
+
+    const rounded = roundedValue(diff, SEC_IN_MILLIS);
+    return intl.formatRelativeTime(rounded, 'second');
   };
 
   const shortNumericDateTime = (date) => {
