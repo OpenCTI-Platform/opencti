@@ -240,7 +240,7 @@ const StixDomainObjectHeader = (props) => {
 
   const getCurrentAliases = () => {
     return isOpenctiAlias
-      ? stixDomainObject.x_opencti_aliases7
+      ? stixDomainObject.x_opencti_aliases
       : stixDomainObject.aliases;
   };
 
