@@ -3,7 +3,7 @@ import conf, { booleanConf, logApp } from '../config/conf';
 import { executionContext, SYSTEM_USER } from '../utils/access';
 import { findIndicatorsForDecay, updateIndicatorDecayScore } from '../modules/indicator/indicator-domain';
 
-const INDICATOR_DECAY_MANAGER_ENABLED = booleanConf('indicator_decay_manager:enabled', false);
+const INDICATOR_DECAY_MANAGER_ENABLED = booleanConf('indicator_decay_manager:enabled', true);
 const INDICATOR_DECAY_MANAGER_KEY = conf.get('indicator_decay_manager:lock_key') || 'indicator_decay_manager_lock';
 const SCHEDULE_TIME = conf.get('indicator_decay_manager:interval') || 60000; // 1 minute
 const BATCH_SIZE = conf.get('indicator_decay_manager:batch_size') || 10000;
