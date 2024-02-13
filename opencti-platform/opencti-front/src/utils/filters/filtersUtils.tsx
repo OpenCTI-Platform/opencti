@@ -643,9 +643,9 @@ export const useBuildFilterKeysMapFromEntityType = (entityTypes = ['Stix-Core-Ob
   return filterKeysMap;
 };
 
-export const useRemoveIdAndIncorrectKeysFromFilterGroupObject = (filters?: FilterGroup | null, entityTypes = ['Basic-Object']): FilterGroup | undefined => {
+export const useRemoveIdAndIncorrectKeysFromFilterGroupObject = (filters?: FilterGroup | null, entityTypes = ['Stix-Core-Object']): FilterGroup | undefined => {
   const filterKeysMap = useBuildFilterKeysMapFromEntityType(entityTypes);
-  const availableFilterKeys = Array.from(filterKeysMap.keys() ?? []);
+  const availableFilterKeys = Array.from(filterKeysMap.keys() ?? []).concat('entity_type');
   if (!filters) {
     return undefined;
   }
@@ -660,6 +660,23 @@ export const useRemoveIdAndIncorrectKeysFromFilterGroupObject = (filters?: Filte
         return newFilter;
       }),
     filterGroups: filters.filterGroups.map((group) => useRemoveIdAndIncorrectKeysFromFilterGroupObject(group)) as FilterGroup[],
+  };
+};
+
+export const removeIdFromFilterGroupObject = (filters?: FilterGroup | null): FilterGroup | undefined => {
+  if (!filters) {
+    return undefined;
+  }
+  return {
+    mode: filters.mode,
+    filters: filters.filters
+      .filter((f) => ['nil', 'not_nil'].includes(f.operator ?? 'eq') || f.values.length > 0)
+      .map((f) => {
+        const newFilter = { ...f };
+        delete newFilter.id;
+        return newFilter;
+      }),
+    filterGroups: filters.filterGroups.map((group) => removeIdFromFilterGroupObject(group)) as FilterGroup[],
   };
 };
 

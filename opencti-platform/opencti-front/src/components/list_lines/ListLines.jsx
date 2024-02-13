@@ -627,9 +627,10 @@ class ListLines extends Component {
             entityTypes.forEach((entityType) => {
               const currentMap = schema.filterKeysSchema.get(entityType);
               currentMap?.forEach((value, key) => filterKeysMap.set(key, value));
-              availableFilterKeys = Array.from(filterKeysMap.keys()); // keys of the entity type if availableFilterKeys is not specified
             });
+            availableFilterKeys = Array.from(filterKeysMap.keys()); // keys of the entity type if availableFilterKeys is not specified
           }
+          if (this.props.additionalFilterKeys) availableFilterKeys = availableFilterKeys.concat(this.props.additionalFilterKeys);
           if (disableExport) {
             return this.renderContent(availableFilterKeys, entityTypes);
           }
@@ -695,6 +696,7 @@ ListLines.propTypes = {
   handleExportCsv: PropTypes.func,
   helpers: PropTypes.object,
   availableFilterKeys: PropTypes.array,
+  additionalFilterKeys: PropTypes.array,
   entityTypes: PropTypes.array,
 };
 

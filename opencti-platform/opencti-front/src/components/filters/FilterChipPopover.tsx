@@ -365,7 +365,7 @@ export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({
           <>{getSpecificFilter(finalFilterDefinition)}</>
         )}
         {noValueOperator && !isSpecificFilter(finalFilterDefinition) && (
-          <>{buildAutocompleteFilter(subKey ?? fKey, finalFilterDefinition?.label, subKey)}</>
+          <>{buildAutocompleteFilter(subKey ?? fKey, finalFilterDefinition?.label ?? t_i18n(fKey), subKey)}</>
         )}
       </>
     );

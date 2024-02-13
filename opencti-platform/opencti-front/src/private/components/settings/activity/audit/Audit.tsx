@@ -32,7 +32,7 @@ import { AuditLine_node$data } from './__generated__/AuditLine_node.graphql';
 import { AuditLineDummy } from './AuditLine';
 import useAuth from '../../../../../utils/hooks/useAuth';
 import { useFormatter } from '../../../../../components/i18n';
-import { contextFilters, emptyFilterGroup } from '../../../../../utils/filters/filtersUtils';
+import { emptyFilterGroup } from '../../../../../utils/filters/filtersUtils';
 import { fetchQuery } from '../../../../../relay/environment';
 import Breadcrumbs from '../../../../../components/Breadcrumbs';
 
@@ -118,7 +118,7 @@ const Audit = () => {
   const { selectedElements, deSelectedElements, selectAll, onToggleEntity } = useEntityToggle<AuditLine_node$data>(LOCAL_STORAGE_KEY);
   const dataColumns = {
     timestamp: {
-      label: 'Date',
+      label: 'Timestamp',
       width: '15%',
       isSortable: true,
     },
@@ -235,14 +235,7 @@ const Audit = () => {
         paginationOptions={paginationOptions}
         numberOfElements={numberOfElements}
         handleExportCsv={handleExportCsv}
-        availableFilterKeys={[
-          'event_type',
-          'event_scope',
-          'members_group',
-          'members_organization',
-          'members_user',
-          'created',
-        ].concat(contextFilters)}
+        entityTypes={['History']}
       >
         {queryRef && (
           <React.Suspense

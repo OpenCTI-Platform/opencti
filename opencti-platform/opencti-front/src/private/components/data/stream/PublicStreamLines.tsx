@@ -116,7 +116,6 @@ const dataColumns: DataColumns = {
               filters={nodeFilters}
               dataColumns={this}
               styleNumber={3}
-              entityTypes={['Stream']}
             />
           )}
         </>

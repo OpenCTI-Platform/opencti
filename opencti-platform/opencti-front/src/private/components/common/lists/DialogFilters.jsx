@@ -45,7 +45,6 @@ const DialogFilters = ({
       >
         <DialogTitle>{t_i18n('Advanced search')}</DialogTitle>
         <DialogContent style={{ paddingTop: 10 }}>
-
           <FilterIconButton
             filters={filters}
             handleRemoveFilter={defaultHandleRemoveFilter}

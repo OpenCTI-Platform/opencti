@@ -201,6 +201,7 @@ const TriggerActivityLiveCreation: FunctionComponent<TriggerLiveCreationProps> =
               'members_organization',
             ]}
             handleAddFilter={handleAddFilter}
+            searchContext={{ entityTypes: ['History'] }}
           />
         </div>
         <div className="clearfix"/>

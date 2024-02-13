@@ -500,14 +500,14 @@ const StixCoreRelationshipCreationFromEntity: FunctionComponent<StixCoreRelation
       },
     };
   };
+  const searchPaginationOptions = {
+    search: searchTerm,
+    filters: useRemoveIdAndIncorrectKeysFromFilterGroupObject(filters, virtualEntityTypes),
+    orderBy: sortBy,
+    orderMode: orderAsc ? 'asc' : 'desc',
+  };
 
   const renderSelectEntity = () => {
-    const searchPaginationOptions = {
-      search: searchTerm,
-      filters: useRemoveIdAndIncorrectKeysFromFilterGroupObject(filters, virtualEntityTypes),
-      orderBy: sortBy,
-      orderMode: orderAsc ? 'asc' : 'desc',
-    };
     return (
       <>
         <div className={classes.header}>
@@ -545,6 +545,8 @@ const StixCoreRelationshipCreationFromEntity: FunctionComponent<StixCoreRelation
                   parametersWithPadding={true}
                   availableEntityTypes={virtualEntityTypes}
                   handleToggleSelectAll="no"
+                  entityTypes={virtualEntityTypes}
+                  additionalFilterKeys={['entity_type']}
                 >
                   <QueryRenderer
                     query={stixCoreRelationshipCreationFromEntityStixCoreObjectsLinesQuery}

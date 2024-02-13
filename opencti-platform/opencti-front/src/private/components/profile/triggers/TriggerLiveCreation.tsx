@@ -333,6 +333,7 @@ const TriggerLiveCreation: FunctionComponent<TriggerLiveCreationProps> = ({
             handleRemoveFilter={handleRemoveFilter}
             styleNumber={2}
             redirection
+            entityTypes={['Instance']}
           />
         : <FilterIconButton
             filters={filters}

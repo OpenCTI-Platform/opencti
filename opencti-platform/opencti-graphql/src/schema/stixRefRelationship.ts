@@ -142,7 +142,7 @@ export const samples: RefAttribute = {
   multiple: true,
   upsert: true,
   datable: true,
-  label: 'Sample',
+  label: 'Samples',
   isFilterable: true,
   isRefExistingForTypes(this, _, toType) {
     return this.toTypes.includes(toType);

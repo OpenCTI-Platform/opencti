@@ -105,6 +105,7 @@ export const schemaAttributesDefinition = {
           entityType
         });
       }
+      // set attribute
       directAttributes.set(attribute.name, attribute);
       // add the attribute name and type in the map of all the attributes
       // to do so, we overwrite an eventual attribute having the same name for an other entity type
