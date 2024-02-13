@@ -2455,6 +2455,7 @@ const upsertElement = async (context, user, element, type, basePatch, opts = {})
       const isUpsertSynchro = (context.synchronizedUpsert || inputField === INPUT_GRANTED_REFS); // Granted Refs are always fully sync
       if (relDef.multiple) {
         const currentData = element[relDef.databaseName] ?? [];
+        const isCurrentWithData = isNotEmptyField(currentData);
         const targetData = (patchInputData ?? []).map((n) => n.internal_id);
         // If expected data is different from current data
         if (R.symmetricDifference(currentData, targetData).length > 0) {
@@ -2462,12 +2463,17 @@ const upsertElement = async (context, user, element, type, basePatch, opts = {})
           // In full synchro, just replace everything
           if (isUpsertSynchro) {
             inputs.push({ key: inputField, value: patchInputData ?? [], operation: UPDATE_OPERATION_REPLACE });
-          } else if (isInputWithData && diffTargets.length > 0 && isConfidenceMatch) {
-            // If data is provided, different from existing data, and confidence is ok, apply an add operation
+          } else if (
+            (isCurrentWithData && isInputWithData && diffTargets.length > 0 && isConfidenceMatch)
+            || (isInputWithData && !isCurrentWithData)
+          ) {
+            // If data is provided, different from existing data, and of higher confidence
+            // OR if existing data is empty and data is provided (even if lower confidence, it's better than nothing),
+            // --> apply an add operation
             inputs.push({ key: inputField, value: diffTargets, operation: UPDATE_OPERATION_ADD });
           }
         }
-      } else {
+      } else { // not multiple
         const currentData = element[relDef.databaseName];
         const updatable = isUpsertSynchro || (isInputWithData && isEmptyField(currentData)) || isConfidenceMatch;
         // If expected data is different from current data

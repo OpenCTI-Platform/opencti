@@ -245,7 +245,7 @@ describe('Relations listing', () => {
     expect(stixCoreRelationships.edges.length).toEqual(24);
     const stixRefRelationships = await listRelations(testContext, ADMIN_USER, 'stix-ref-relationship');
     expect(stixRefRelationships).not.toBeNull();
-    expect(stixRefRelationships.edges.length).toEqual(124);
+    expect(stixRefRelationships.edges.length).toEqual(125);
   });
   it('should list relations with roles', async () => {
     const stixRelations = await listRelations(testContext, ADMIN_USER, 'uses', {
@@ -1135,6 +1135,7 @@ describe('Elements impacts deletions', () => {
 describe('Elements upsert behaviors', () => {
   it('should upsert empty values', async () => {
     const clearMarking = 'marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9';
+    const greenMarking = 'marking-definition--34098fce-860f-48ae-8e50-ebd3cc5e41da';
     const stixId = 'malware--78ca4366-f5b8-4764-83f7-34ce38198e28';
 
     // Create entities
@@ -1162,6 +1163,7 @@ describe('Elements upsert behaviors', () => {
     expect(malware.first_seen).toEqual('1970-01-01T00:00:00.000Z');
     expect(malware.malware_types).toEqual(['downloader', 'trojan']);
     expect(malware.objectMarking.length).toEqual(1);
+
     // Test on existing value [same confidence level]
     malware = await addMalware(testContext, ADMIN_USER, { ...base, description: 'TO DESC UPGRADE', first_seen: '2023-09-21T22:04:09.409Z' });
     expect(malware.confidence).toEqual(10);
@@ -1175,6 +1177,42 @@ describe('Elements upsert behaviors', () => {
     malware = await addMalware(testContext, ADMIN_USER, { ...base, confidence: 11, description: 'TO DESC UPPER' });
     expect(malware.confidence).toEqual(11);
     expect(malware.description).toEqual('TO DESC UPPER');
+
+    // on "multiple" attribute
+    // if confidence is lower, data should not be added to the list
+    malware = await addMalware(testContext, ADMIN_USER, {
+      ...base,
+      confidence: 1,
+      malware_types: ['rootkit'],
+    });
+    expect(malware.confidence).toEqual(11);
+    expect(malware.malware_types).toEqual(['downloader', 'trojan']);
+    // if confidence is higher or equal, data should be added to the list
+    malware = await addMalware(testContext, ADMIN_USER, {
+      ...base,
+      confidence: 11,
+      malware_types: ['rootkit'],
+    });
+    expect(malware.confidence).toEqual(11);
+    expect(malware.malware_types).toEqual(['downloader', 'trojan', 'rootkit']);
+
+    // on "multiple" refs
+    // if confidence is lower, data should not be added to the list
+    malware = await addMalware(testContext, ADMIN_USER, {
+      ...base,
+      confidence: 1,
+      objectMarking: [greenMarking],
+    });
+    expect(malware.confidence).toEqual(11);
+    expect(malware.objectMarking[0].standard_id).toEqual(clearMarking);
+    // if confidence is higher or equal, data should be added to the list
+    malware = await addMalware(testContext, ADMIN_USER, {
+      ...base,
+      confidence: 11,
+      objectMarking: [greenMarking],
+    });
+    expect(malware.confidence).toEqual(11);
+    expect(malware.objectMarking[0].standard_id).toEqual(greenMarking);
 
     // Upsert forcing the synchronization
     const syncContext = { ...testContext, synchronizedUpsert: true };
