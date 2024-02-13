@@ -86,7 +86,7 @@ class WorkbenchFilePopover extends Component {
           )}/${this.props.file.metaData.entity.id}`;
           this.props.history.push(`${entityLink}/files`);
         } else {
-          this.props.history.push('/dashboard/import');
+          this.props.history.push('/dashboard/data/import');
         }
       },
     });
