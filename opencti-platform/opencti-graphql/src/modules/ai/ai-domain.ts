@@ -117,7 +117,7 @@ export const makeLonger = async (context: AuthContext, user: AuthUser, id: strin
 };
 
 // eslint-disable-next-line max-len
-export const changeTone = async (context: AuthContext, user: AuthUser, id: string, content: string, format: InputMaybe<Format> = Format.Text, tone: InputMaybe<Tone> = Tone.Technical) => {
+export const changeTone = async (context: AuthContext, user: AuthUser, id: string, content: string, format: InputMaybe<Format> = Format.Text, tone: InputMaybe<Tone> = Tone.Tactical) => {
   await checkEnterpriseEdition(context);
   if (content.length < 5) {
     return `Content is too short (${content.length})`;

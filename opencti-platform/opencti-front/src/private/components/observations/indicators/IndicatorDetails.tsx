@@ -90,7 +90,6 @@ const IndicatorDetailsComponent: FunctionComponent<IndicatorDetailsComponentProp
             />
             <Grid container columnSpacing={1} sx={{ marginTop: '20px' }}>
               <Grid item xs={4}>
-
                 <Typography variant="h3" gutterBottom={true}>
                   <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
                     <span>{t_i18n('Score')}</span>

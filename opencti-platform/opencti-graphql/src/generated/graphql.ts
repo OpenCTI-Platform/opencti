@@ -25200,9 +25200,9 @@ export type TimeSeries = {
 };
 
 export enum Tone {
-  Strategical = 'strategical',
-  Tactical = 'tactical',
-  Technical = 'technical'
+  Operational = 'operational',
+  Strategic = 'strategic',
+  Tactical = 'tactical'
 }
 
 export type Tool = BasicObject & StixCoreObject & StixDomainObject & StixObject & {

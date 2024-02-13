@@ -108,7 +108,7 @@ const StixCoreObjectAskAI: FunctionComponent<StixCoreObjectAskAiProps> = ({ inst
   const [destination, setDestination] = useState<'content' | 'file'>('content');
   const [newFileName, setNewFileName] = useState<string | null>(null);
   const [optionsOpen, setOptionsOpen] = useState(false);
-  const [tone, setTone] = useState<'technical' | 'tactical' | 'strategical'>('technical');
+  const [tone, setTone] = useState<'tactical' | 'operational' | 'strategic'>('tactical');
   const [format, setFormat] = useState<'html' | 'markdown' | 'text' | 'json'>('html');
   const [paragraphs, setParagraphs] = useState(10);
   const [files, setFiles] = useState<{ label: string, value: string }[]>([]);
@@ -326,12 +326,12 @@ const StixCoreObjectAskAI: FunctionComponent<StixCoreObjectAskAiProps> = ({ inst
               <Select
                 labelId="tone"
                 value={tone}
-                onChange={(event) => setTone(event.target.value as unknown as 'technical' | 'tactical' | 'strategical')}
+                onChange={(event) => setTone(event.target.value as unknown as 'tactical' | 'operational' | 'strategic')}
                 fullWidth={true}
               >
-                <MenuItem value="technical">{t_i18n('Technical')}</MenuItem>
                 <MenuItem value="tactical">{t_i18n('Tactical')}</MenuItem>
-                <MenuItem value="strategical">{t_i18n('Strategical')}</MenuItem>
+                <MenuItem value="operational">{t_i18n('Operational')}</MenuItem>
+                <MenuItem value="strategic">{t_i18n('Strategic')}</MenuItem>
               </Select>
             </FormControl>
           )}

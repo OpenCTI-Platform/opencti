@@ -79,7 +79,7 @@ const TextFieldAskAI: FunctionComponent<TextFieldAskAiProps> = ({ currentValue, 
   const [content, setContent] = useState('');
   const [disableResponse, setDisableResponse] = useState(false);
   const [openToneOptions, setOpenToneOptions] = useState(false);
-  const [tone, setTone] = useState<'technical' | 'tactical' | 'strategical'>('technical');
+  const [tone, setTone] = useState<'tactical' | 'operational' | 'strategic'>('tactical');
   const [isAcceptable, setIsAcceptable] = useState(true);
   const [menuOpen, setMenuOpen] = useState<{ open: boolean; anchorEl: HTMLButtonElement | null; }>({ open: false, anchorEl: null });
   const [busId, setBusId] = useState<string | null>(null);
@@ -291,12 +291,12 @@ const TextFieldAskAI: FunctionComponent<TextFieldAskAiProps> = ({ currentValue, 
               <Select
                 labelId="tone"
                 value={tone}
-                onChange={(event) => setTone(event.target.value as unknown as 'technical' | 'tactical' | 'strategical')}
+                onChange={(event) => setTone(event.target.value as unknown as 'tactical' | 'operational' | 'strategic')}
                 fullWidth={true}
               >
-                <MenuItem value="technical">{t_i18n('Technical')}</MenuItem>
                 <MenuItem value="tactical">{t_i18n('Tactical')}</MenuItem>
-                <MenuItem value="strategical">{t_i18n('Strategical')}</MenuItem>
+                <MenuItem value="operational">{t_i18n('Operational')}</MenuItem>
+                <MenuItem value="strategic">{t_i18n('Strategic')}</MenuItem>
               </Select>
             </FormControl>
           </DialogContent>

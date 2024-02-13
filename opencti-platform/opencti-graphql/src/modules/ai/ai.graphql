@@ -1,7 +1,7 @@
 enum Tone {
-    technical
     tactical
-    strategical
+    operational
+    strategic
 }
 
 enum Format {
