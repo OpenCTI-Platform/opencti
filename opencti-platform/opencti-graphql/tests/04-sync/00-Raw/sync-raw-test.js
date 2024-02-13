@@ -85,7 +85,7 @@ describe('Database sync raw', () => {
       expect(maaaap.get('Indicator')).toEqual(28);
       expect(maaaap.get('Malware')).toEqual(27);
       expect(maaaap.get('Label')).toEqual(13);
-      expect(maaaap.get('Vocabulary')).toEqual(330);
+      expect(maaaap.get('Vocabulary')).toEqual(335);
 
       // Post check
       await checkPostSyncContent(SYNC_RAW_START_REMOTE_URI, objectMap, relMap, initStixReport);
