@@ -189,7 +189,8 @@
     "engine_selector": "auto",
     "index_creation_pattern": "-000001",
     "search_ignore_throttled": false,
-    "max_pagination_result": 500,
+    "max_pagination_result": 5000,
+    "default_pagination_result": 500,
     "max_bulk_operations": 5000,
     "max_runtime_resolutions": 5000,
     "max_concurrency": 4

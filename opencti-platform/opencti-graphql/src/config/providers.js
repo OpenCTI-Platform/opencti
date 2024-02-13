@@ -155,7 +155,7 @@ for (let i = 0; i < providerKeys.length; i += 1) {
       const allowSelfSigned = mappedConfig.allow_self_signed || mappedConfig.allow_self_signed === 'true';
       mappedConfig = R.assoc('tlsOptions', { rejectUnauthorized: !allowSelfSigned }, mappedConfig);
       const ldapOptions = { server: mappedConfig };
-      const ldapStrategy = new LdapStrategy(ldapOptions, async (user, done) => {
+      const ldapStrategy = new LdapStrategy(ldapOptions, (user, done) => {
         logApp.info('[LDAP] Successfully logged', { user });
         const userMail = mappedConfig.mail_attribute ? user[mappedConfig.mail_attribute] : user.mail;
         const userName = mappedConfig.account_attribute ? user[mappedConfig.account_attribute] : user.givenName;
