@@ -20,7 +20,7 @@ import { RELATION_GRANTED_TO, RELATION_OBJECT_MARKING } from '../schema/stixRefR
 import { buildPagination, cursorToOffset, INDEX_FILES, READ_DATA_INDICES_WITHOUT_INTERNAL, READ_INDEX_FILES } from './utils';
 import { DatabaseError } from '../config/errors';
 import { logApp } from '../config/conf';
-import { buildDataRestrictions, elFindByIds, elIndex, elRawCount, elRawDeleteByQuery, elRawSearch, elRawUpdateByQuery } from './engine';
+import { buildDataRestrictions, elFindByIds, elIndex, elRawCount, elRawDeleteByQuery, elRawSearch, elRawUpdateByQuery, ES_MINIMUM_FIXED_PAGINATION } from './engine';
 
 const buildIndexFileBody = (documentId, file, entity = null) => {
   const documentBody = {
@@ -172,7 +172,7 @@ const elBuildSearchFilesQueryBody = async (context, user, options = {}) => {
   };
 };
 export const elSearchFiles = async (context, user, options = {}) => {
-  const { search = null, first = 20, after, connectionFormat = true, includeContent = false, orderBy = null, orderMode = 'asc' } = options;
+  const { search = null, first = ES_MINIMUM_FIXED_PAGINATION, after, connectionFormat = true, includeContent = false, orderBy = null, orderMode = 'asc' } = options;
   const { fields = [], excludeFields = ['attachment.content'], highlight = true } = options; // results format options
   const searchAfter = after ? cursorToOffset(after) : undefined;
   const body = await elBuildSearchFilesQueryBody(context, user, options);
