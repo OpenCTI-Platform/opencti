@@ -51,8 +51,8 @@ import { extractEntityRepresentativeName } from '../database/entity-representati
 import { addFilter, extractFilterGroupValues, findFiltersFromKey } from '../utils/filtering/filtering-utils';
 import { INSTANCE_REGARDING_OF, specialFilterKeysWhoseValueToResolve } from '../utils/filtering/filtering-constants';
 import { schemaRelationsRefDefinition } from '../schema/schema-relationsRef';
-import { getEntitiesMapFromCache } from '../database/cache';
 import { ENTITY_TYPE_CONTAINER_GROUPING } from '../modules/grouping/grouping-types';
+import { getEntitiesMapFromCache } from '../database/cache';
 
 export const findAll = async (context, user, args) => {
   let types = [];

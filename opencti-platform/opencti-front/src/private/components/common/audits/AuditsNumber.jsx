@@ -15,31 +15,17 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 
 import React from 'react';
 import { graphql } from 'react-relay';
-import CircularProgress from '@mui/material/CircularProgress';
-import Paper from '@mui/material/Paper';
-import Typography from '@mui/material/Typography';
-import makeStyles from '@mui/styles/makeStyles';
 import { QueryRenderer } from '../../../../relay/environment';
 import { useFormatter } from '../../../../components/i18n';
-import ItemNumberDifference from '../../../../components/ItemNumberDifference';
 import { dayAgo } from '../../../../utils/Time';
 import useGranted, { SETTINGS } from '../../../../utils/hooks/useGranted';
 import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
 import { buildFiltersAndOptionsForWidgets } from '../../../../utils/filters/filtersUtils';
-
-const useStyles = makeStyles({
-  paper: {
-    minHeight: 280,
-    height: '100%',
-    margin: '4px 0 0 0',
-    padding: '0 0 10px 0',
-    borderRadius: 4,
-  },
-  number: {
-    float: 'left',
-    fontSize: 40,
-  },
-});
+import WidgetContainer from '../../../../components/dashboard/WidgetContainer';
+import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
+import WidgetLoader from '../../../../components/dashboard/WidgetLoader';
+import WidgetNumber from '../../../../components/dashboard/WidgetNumber';
+import WidgetAccessDenied from '../../../../components/dashboard/WidgetAccessDenied';
 
 const auditsNumberNumberQuery = graphql`
   query AuditsNumberNumberSeriesQuery(
@@ -72,29 +58,12 @@ const AuditsNumber = ({
   dataSelection,
   parameters = {},
 }) => {
-  const classes = useStyles();
-  const { t_i18n, n } = useFormatter();
+  const { t_i18n } = useFormatter();
   const isGrantedToSettings = useGranted([SETTINGS]);
   const isEnterpriseEdition = useEnterpriseEdition();
   const renderContent = () => {
     if (!isGrantedToSettings || !isEnterpriseEdition) {
-      return (
-        <div style={{ display: 'table', height: '100%', width: '100%' }}>
-          <span
-            style={{
-              display: 'table-cell',
-              verticalAlign: 'middle',
-              textAlign: 'center',
-            }}
-          >
-            {!isEnterpriseEdition
-              ? t_i18n(
-                'This feature is only available in OpenCTI Enterprise Edition.',
-              )
-              : t_i18n('You are not authorized to see this data.')}
-          </span>
-        </div>
-      );
+      return <WidgetAccessDenied />;
     }
     const selection = dataSelection[0];
     const types = ['History', 'Activity'];
@@ -108,72 +77,25 @@ const AuditsNumber = ({
         variables={{ types, filters, startDate, endDate: dayAgo() }}
         render={({ props }) => {
           if (props && props.auditsNumber) {
-            const { total } = props.auditsNumber;
-            const difference = total - props.auditsNumber.count;
-            return (
-              <div>
-                <div className={classes.number}>{n(total)}</div>
-                <ItemNumberDifference
-                  difference={difference}
-                  description={t_i18n('24 hours')}
-                />
-              </div>
-            );
+            const { total, count } = props.auditsNumber;
+            return <WidgetNumber total={total} value={count} />;
           }
           if (props) {
-            return (
-              <div style={{ display: 'table', height: '100%', width: '100%' }}>
-                <span
-                  style={{
-                    display: 'table-cell',
-                    verticalAlign: 'middle',
-                    textAlign: 'center',
-                  }}
-                >
-                  {t_i18n('No entities of this type has been found.')}
-                </span>
-              </div>
-            );
+            return <WidgetNoData />;
           }
-          return (
-            <div style={{ display: 'table', height: '100%', width: '100%' }}>
-              <span
-                style={{
-                  display: 'table-cell',
-                  verticalAlign: 'middle',
-                  textAlign: 'center',
-                }}
-              >
-                <CircularProgress size={40} thickness={2} />
-              </span>
-            </div>
-          );
+          return <WidgetLoader />;
         }}
       />
     );
   };
   return (
-    <div style={{ height: height || '100%' }}>
-      <Typography
-        variant="h4"
-        gutterBottom={true}
-        style={{
-          margin: variant !== 'inLine' ? '0 0 10px 0' : '-10px 0 10px -7px',
-          whiteSpace: 'nowrap',
-          overflow: 'hidden',
-          textOverflow: 'ellipsis',
-        }}
-      >
-        {parameters.title ?? t_i18n('Entities number')}
-      </Typography>
-      {variant !== 'inLine' ? (
-        <Paper classes={{ root: classes.paper }} variant="outlined">
-          {renderContent()}
-        </Paper>
-      ) : (
-        renderContent()
-      )}
-    </div>
+    <WidgetContainer
+      height={height}
+      title={parameters.title ?? t_i18n('Entities number')}
+      variant={variant}
+    >
+      {renderContent()}
+    </WidgetContainer>
   );
 };
 

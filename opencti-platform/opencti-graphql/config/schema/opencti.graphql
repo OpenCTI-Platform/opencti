@@ -51,6 +51,7 @@ enum Capabilities {
   EXPLORE
   EXPLORE_EXUPDATE
   EXPLORE_EXUPDATE_EXDELETE
+  EXPLORE_EXUPDATE_PUBLISH
   MODULES
   MODULES_MODMANAGE
   SETTINGS
@@ -1735,6 +1736,16 @@ input MarkingDefinitionAddInput {
   modified: DateTime
   clientMutationId: String
   update: Boolean
+}
+type MarkingDefinitionShort {
+  id: ID! # internal_id
+  standard_id: String!
+  entity_type: String!
+  representative: Representative
+  definition_type: String
+  definition: String
+  x_opencti_order: Int!
+  x_opencti_color: String
 }
 
 ############## Labels
@@ -10128,6 +10139,7 @@ union StixObjectOrStixRelationshipOrCreator =
   | Workspace
   | CsvMapper
   | Status
+  | PublicDashboard
 union StixObjectOrStixRelationship =
   MarkingDefinition
   | Label
@@ -10208,6 +10220,7 @@ union StixObjectOrStixRelationship =
   | ManagerConfiguration
   | Workspace
   | CsvMapper
+  | PublicDashboard
 union StixCoreObjectOrStixCoreRelationship =
 #### Stix Core Objects
 ## Stix Domain Objects
@@ -10282,6 +10295,7 @@ union StixCoreObjectOrStixCoreRelationship =
   | EntitySetting
   | ManagerConfiguration
   | Workspace
+  | PublicDashboard
 
 enum StixRelationshipsOrdering {
   entity_type
@@ -10978,7 +10992,6 @@ type Query {
     search: String
   ): [TimeSeries] @auth(for: [KNOWLEDGE, EXPLORE])
   stixCoreObjectsMultiTimeSeries(
-    operation: StatsOperation!
     startDate: DateTime!
     endDate: DateTime
     interval: String!

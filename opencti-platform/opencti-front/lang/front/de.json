@@ -2651,5 +2651,19 @@
   "AI Powered": "KI-gesteuert",
   "Missing token": "Fehlendes Token",
   "Generative AI is a beta feature as we are currently fine-tuning our models. Consider checking important information.": "Die generative KI ist eine Betafunktion, da wir derzeit unsere Modelle feinabstimmen. Überprüfen Sie wichtige Informationen.",
-  "Accept": "Akzeptieren Sie"
+  "Accept": "Akzeptieren Sie",
+  "Share as public dashboard": "Als öffentliches Dashboard freigeben",
+  "To prevent people seeing all the data...": "Um zu verhindern, dass andere Personen alle Daten im öffentlichen Dashboard sehen können, wählen Sie eine Markierungsdefinition, um die gemeinsamen Daten einzuschränken.",
+  "Max level markings": "Max Level Markierungen",
+  "Copy link": "Link kopieren",
+  "Public dashboards": "Öffentliche Dashboards",
+  "Existing public dashboards": "Vorhandene öffentliche Dashboards",
+  "No public dashboard created yet": "Noch kein öffentliches Dashboard erstellt",
+  "Create a new public dashboard": "Erstellen Sie ein neues öffentliches Dashboard",
+  "Public dashboard ID": "Öffentliche Dashboard-ID",
+  "Specify the ID of your public dashboard": "Geben Sie die ID Ihres öffentlichen Dashboards an",
+  "Disable public dashboard": "Öffentliches Dashboard deaktivieren",
+  "Delete public dashboard": "Öffentliches Dashboard löschen",
+  "Are you sure you want to delete this public dashboard?": "Sind Sie sicher, dass Sie dieses öffentliche Dashboard löschen möchten?",
+  "A public dashboard is a snapshot...": "Ein öffentliches Dashboard ist ein Schnappschuss eines privaten Dashboards zu einem bestimmten Zeitpunkt. Wenn Sie das private Dashboard ändern, werden die bereits erstellten öffentlichen Dashboards nicht geändert."
 }

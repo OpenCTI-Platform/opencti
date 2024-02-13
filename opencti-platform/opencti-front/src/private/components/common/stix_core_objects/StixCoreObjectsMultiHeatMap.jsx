@@ -52,14 +52,12 @@ const lightColors = [
 
 const stixCoreObjectsMultiHeatMapTimeSeriesQuery = graphql`
   query StixCoreObjectsMultiHeatMapTimeSeriesQuery(
-    $operation: StatsOperation!
     $startDate: DateTime!
     $endDate: DateTime!
     $interval: String!
     $timeSeriesParameters: [StixCoreObjectsTimeSeriesParameters]
   ) {
     stixCoreObjectsMultiTimeSeries(
-      operation: $operation
       startDate: $startDate
       endDate: $endDate
       interval: $interval
@@ -101,7 +99,6 @@ const StixCoreObjectsMultiHeatMap = ({
       <QueryRenderer
         query={stixCoreObjectsMultiHeatMapTimeSeriesQuery}
         variables={{
-          operation: 'count',
           startDate: startDate ?? monthsAgo(12),
           endDate: endDate ?? now(),
           interval: parameters.interval ?? 'day',

@@ -48,6 +48,7 @@ generates:
         Organization: ../modules/organization/organization-types#BasicStoreEntityOrganization
         CsvMapper: ../modules/internal/csvMapper/csvMapper-types#BasicStoreEntityCsvMapper
         Playbook: ../modules/playbook/playbook-types#BasicStoreEntityPlaybook
+        PublicDashboard: ../modules/publicDashboard/publicDashboard-types#BasicStoreEntityPublicDashboard
   ./graphql.schema.json:
     plugins:
       - "introspection"

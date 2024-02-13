@@ -38,8 +38,10 @@ import { ENTITY_TYPE_MANAGER_CONFIGURATION } from '../modules/managerConfigurati
 import type { BasicStoreEntityPlaybook, ComponentDefinition } from '../modules/playbook/playbook-types';
 import { ENTITY_TYPE_PLAYBOOK } from '../modules/playbook/playbook-types';
 import { ENTITY_TYPE_DECAY_RULE } from '../modules/decayRule/decayRule-types';
-import { isNotEmptyField } from '../database/utils';
+import { fromBase64, isNotEmptyField } from '../database/utils';
 import { findAllPlaybooks } from '../modules/playbook/playbook-domain';
+import { type BasicStoreEntityPublicDashboard, ENTITY_TYPE_PUBLIC_DASHBOARD, type PublicDashboardCached } from '../modules/publicDashboard/publicDashboard-types';
+import { getAllowedMarkings } from '../modules/publicDashboard/publicDashboard-domain';
 
 const workflowStatuses = (context: AuthContext) => {
   const reloadStatuses = async () => {
@@ -187,6 +189,30 @@ const platformNotifiers = (context: AuthContext) => {
   };
   return { values: null, fn: reloadNotifiers };
 };
+const platformPublicDashboards = (context: AuthContext) => {
+  const reloadPublicDashboards = async () => {
+    const publicDashboards = await listAllEntities<BasicStoreEntityPublicDashboard>(context, SYSTEM_USER, [ENTITY_TYPE_PUBLIC_DASHBOARD], { connectionFormat: false });
+    const publicDashboardsForCache: PublicDashboardCached[] = [];
+    for (let i = 0; i < publicDashboards.length; i += 1) {
+      const dash = publicDashboards[i];
+      const markings = await getAllowedMarkings(context, SYSTEM_USER, dash);
+      publicDashboardsForCache.push(
+        {
+          id: dash.id,
+          internal_id: dash.internal_id,
+          uri_key: dash.uri_key,
+          dashboard_id: dash.dashboard_id,
+          private_manifest: JSON.parse(fromBase64(dash.private_manifest) ?? ''),
+          user_id: dash.user_id,
+          allowed_markings_ids: dash.allowed_markings_ids,
+          allowed_markings: markings,
+        }
+      );
+    }
+    return publicDashboardsForCache;
+  };
+  return { values: null, fn: reloadPublicDashboards };
+};
 
 const initCacheManager = () => {
   let subscribeIdentifier: { topic: string; unsubscribe: () => void; };
@@ -207,6 +233,7 @@ const initCacheManager = () => {
     writeCacheForEntity(ENTITY_TYPE_RESOLVED_FILTERS, platformResolvedFilters(context));
     writeCacheForEntity(ENTITY_TYPE_STREAM_COLLECTION, platformStreams(context));
     writeCacheForEntity(ENTITY_TYPE_NOTIFIER, platformNotifiers(context));
+    writeCacheForEntity(ENTITY_TYPE_PUBLIC_DASHBOARD, platformPublicDashboards(context));
   };
   const resetCacheContent = async (event: { instance: StoreEntity | StoreRelation }) => {
     const { instance } = event;
