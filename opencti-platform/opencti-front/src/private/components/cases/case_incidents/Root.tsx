@@ -4,7 +4,7 @@
 // @ts-nocheck
 import React, { useMemo } from 'react';
 import { graphql, usePreloadedQuery, useSubscription } from 'react-relay';
-import { Link, Redirect, Route, Routes, useParams, useLocation } from 'react-router-dom';
+import { Link, Redirect, Route, Routes, useParams, useLocation, Navigate } from 'react-router-dom';
 import { GraphQLSubscriptionConfig } from 'relay-runtime';
 import Box from '@mui/material/Box';
 import Tabs from '@mui/material/Tabs';
@@ -177,70 +177,53 @@ const RootCaseIncidentComponent = ({ queryRef, caseId }) => {
           </Box>
           <Routes>
             <Route
-              exact
-              path="/dashboard/cases/incidents/:caseId"
-              render={() => <CaseIncident data={caseData} />}
+              path="/"
+              element={<CaseIncident data={caseData} />}
             />
             <Route
-              exact
-              path="/dashboard/cases/incidents/:caseId/entities"
-              render={(routeProps) => (
+              path="/entities"
+              element={
                 <ContainerStixDomainObjects
-                  {...routeProps}
                   container={caseData}
-                />
-              )}
+                />}
             />
             <Route
-              exact
-              path="/dashboard/cases/incidents/:caseId/observables"
-              render={(routeProps) => (
+              path="/observables"
+              element={
                 <ContainerStixCyberObservables
-                  {...routeProps}
                   container={caseData}
-                />
-              )}
+                />}
             />
             <Route
-              exact
-              path="/dashboard/cases/incidents/:caseId/knowledge"
-              render={() => (
-                <Redirect
+              path="/knowledge"
+              element={
+                <Navigate
                   to={`/dashboard/cases/incidents/${caseId}/knowledge/graph`}
-                />
-              )}
+                />}
             />
             <Route
-              exact
-              path="/dashboard/cases/incidents/:caseId/content"
-              render={(routeProps) => (
+              path="/content"
+              element={
                 <StixDomainObjectContent
-                  {...routeProps}
                   stixDomainObject={caseData}
-                />
-              )}
+                />}
             />
             <Route
-              exact
-              path="/dashboard/cases/incidents/:caseId/knowledge/:mode"
-              render={(routeProps) => (
-                <IncidentKnowledge {...routeProps} caseData={caseData} />
-              )}
+              path="/knowledge/*"
+              element={
+                <IncidentKnowledge caseData={caseData} />}
             />
             <Route
-              exact
-              path="/dashboard/cases/incidents/:caseId/files"
-              render={(routeProps) => (
+              path="/files"
+              element={
                 <StixCoreObjectFilesAndHistory
-                  {...routeProps}
                   id={caseId}
                   connectorsExport={connectorsForExport}
                   connectorsImport={connectorsForImport}
                   entity={caseData}
                   withoutRelations={true}
                   bypassEntityId={true}
-                />
-              )}
+                />}
             />
           </Routes>
         </div>

@@ -114,7 +114,7 @@ const Index = ({ settings }: IndexProps) => {
                 Component={boundaryWrapper(RootAnalyses)}
               />
               {/* Need to refactor below */}
-              <Route path="/cases" Component={boundaryWrapper(RootCases)} />
+              <Route path="/cases/*" Component={boundaryWrapper(RootCases)} />
               <Route path="/events" Component={boundaryWrapper(RootEvents)} />
 
               <Route path="/threats" Component={boundaryWrapper(RootThreats)} />
