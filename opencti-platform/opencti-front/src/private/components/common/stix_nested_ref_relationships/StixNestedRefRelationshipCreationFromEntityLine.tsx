@@ -6,9 +6,13 @@ import Checkbox from '@mui/material/Checkbox';
 import ListItemText from '@mui/material/ListItemText';
 import Chip from '@mui/material/Chip';
 import ListItem from '@mui/material/ListItem';
-import React from 'react';
+import React, { FunctionComponent } from 'react';
 import { CircleOutlined } from '@mui/icons-material';
 import Skeleton from '@mui/material/Skeleton';
+import {
+  StixNestedRefRelationshipCreationFromEntityLine_node$data,
+  StixNestedRefRelationshipCreationFromEntityLine_node$key,
+} from '@components/common/stix_nested_ref_relationships/__generated__/StixNestedRefRelationshipCreationFromEntityLine_node.graphql';
 import StixCoreObjectLabels from '../stix_core_objects/StixCoreObjectLabels';
 import { APP_BASE_PATH } from '../../../../relay/environment';
 import ItemIcon from '../../../../components/ItemIcon';
@@ -16,8 +20,11 @@ import { hexToRGB, itemColor } from '../../../../utils/Colors';
 import { defaultValue } from '../../../../utils/Graph';
 import ItemMarkings from '../../../../components/ItemMarkings';
 import { useFormatter } from '../../../../components/i18n';
+import type { Theme } from '../../../../components/Theme';
+import { DataColumns } from '../../../../components/list_lines';
+import { HandleAddFilter } from '../../../../utils/hooks/useLocalStorage';
 
-const useStyles = makeStyles((theme) => ({
+const useStyles = makeStyles<Theme>((theme) => ({
   item: {
     paddingLeft: 10,
     height: 50,
@@ -116,8 +123,13 @@ const stixNestedRefRelationshipCreationFromEntityLineFragment = graphql`
     ... on Country {
       name
       description
+      x_opencti_aliases
     }
     ... on Region {
+      name
+      description
+    }
+    ... on AdministrativeArea {
       name
       description
     }
@@ -219,7 +231,26 @@ const stixNestedRefRelationshipCreationFromEntityLineFragment = graphql`
   }
 `;
 
-export const StixNestedRefRelationshipCreationFromEntityLine = ({
+interface StixNestedRefRelationshipCreationFromEntityLineProps {
+  node: StixNestedRefRelationshipCreationFromEntityLine_node$key,
+  dataColumns: DataColumns;
+  onLabelClick: HandleAddFilter;
+  onToggleEntity: (
+    entity: StixNestedRefRelationshipCreationFromEntityLine_node$data,
+    event?: React.SyntheticEvent
+  ) => void;
+  selectedElements: Record<string, StixNestedRefRelationshipCreationFromEntityLine_node$data>;
+  deSelectedElements: Record<string, StixNestedRefRelationshipCreationFromEntityLine_node$data>;
+  selectAll: boolean;
+  onToggleShiftEntity: (
+    index: number,
+    entity: StixNestedRefRelationshipCreationFromEntityLine_node$data,
+    event?: React.SyntheticEvent
+  ) => void;
+  index: number;
+}
+
+export const StixNestedRefRelationshipCreationFromEntityLine: FunctionComponent<StixNestedRefRelationshipCreationFromEntityLineProps> = ({
   node,
   dataColumns,
   onLabelClick,
@@ -294,7 +325,7 @@ export const StixNestedRefRelationshipCreationFromEntityLine = ({
               className={classes.bodyItem}
               style={{ width: dataColumns.value.width }}
             >
-              {defaultValue(data, true)}
+              {defaultValue(data)}
             </div>
             <div
               className={classes.bodyItem}
@@ -331,7 +362,7 @@ export const StixNestedRefRelationshipCreationFromEntityLine = ({
 
 export const StixNestedRefRelationshipCreationFromEntityLineDummy = ({
   dataColumns,
-}) => {
+}: { dataColumns: DataColumns }) => {
   const classes = useStyles();
   return (
     <ListItem
