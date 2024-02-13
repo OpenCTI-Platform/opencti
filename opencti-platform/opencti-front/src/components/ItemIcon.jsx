@@ -59,6 +59,7 @@ import {
   LinkOutlined,
   VisibilityOutlined,
   RouteOutlined,
+  TroubleshootOutlined,
   DiamondOutlined,
 } from '@mui/icons-material';
 import {
@@ -344,6 +345,8 @@ const iconSelector = (type, variant, fontSize, color, isReversed) => {
           role="img"
         />
       );
+    case 'decayrule':
+      return <TroubleshootOutlined style={style} fontSize={fontSize} role="img" />;
     case 'edit':
       return <EditOutlined style={style} fontSize={fontSize} role="img" />;
     case 'container':

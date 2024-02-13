@@ -561,5 +561,16 @@
   "Ethnicity": "种族",
   "Label": "标签",
   "External reference": "外部参考",
-  "Kill chain phase": "杀伤链阶段"
+  "Kill chain phase": "杀伤链阶段",
+  "Lifetime": "一生",
+  "Decay factor": "衰减系数",
+  "Reaction points": "反应点",
+  "Revoke score": "撤销得分",
+  "Indicator observable types": "指标观测类型",
+  "Uri": "Uri",
+  "User_id": "用户id",
+  "Csv_mapper_id": "Csv_mapper_id",
+  "Ingestion_running": "正在摄取",
+  "Added_after_start": "开始后添加",
+  "Current_state_hash": "当前状态哈希值"
 }

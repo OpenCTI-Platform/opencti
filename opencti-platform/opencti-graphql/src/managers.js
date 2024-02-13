@@ -31,7 +31,7 @@ import publisherManager from './manager/publisherManager';
 import playbookManager from './manager/playbookManager';
 import { isAttachmentProcessorEnabled } from './database/engine';
 import fileIndexManager from './manager/fileIndexManager';
-import { startAllManagers } from './manager/managerModule';
+import { shutdownAllManagers, startAllManagers } from './manager/managerModule';
 import clusterManager from './manager/clusterManager';
 import activityListener from './manager/activityListener';
 import activityManager from './manager/activityManager';
@@ -208,6 +208,17 @@ export const shutdownModules = async () => {
   if (ENABLED_PLAYBOOK_MANAGER) {
     stoppingPromises.push(playbookManager.shutdown());
   }
+  // endregion
+  // region file index manager
+  if (ENABLED_FILE_INDEX_MANAGER && isAttachmentProcessorEnabled()) {
+    await fileIndexManager.shutdown();
+  }
+  // endregion
+
+  // refactoring in module in progress
+  // all managers will be started only in this method
+  await shutdownAllManagers();
+
   // endregion
   // region Cluster manager
   stoppingPromises.push(clusterManager.shutdown());

@@ -2364,6 +2364,20 @@ const upsertElement = async (context, user, element, type, basePatch, opts = {})
       updatePatch.number_observed = element.number_observed + updatePatch.number_observed;
     }
   }
+
+  if (type === ENTITY_TYPE_INDICATOR) {
+    if (updatePatch.decay_applied_rule && updatePatch.decay_base_score === element.decay_base_score) {
+      logApp.debug('UPSERT INDICATOR -- no decay reset because no score change', { element, basePatch });
+      // Do not compute decay again when base score does not change
+      updatePatch.decay_base_score_date = element.decay_base_score_date;
+      updatePatch.decay_applied_rule = element.decay_applied_rule;
+      updatePatch.decay_history = [];
+      updatePatch.decay_next_reaction_date = element.decay_next_reaction_date;
+    } else {
+      logApp.debug('UPSERT INDICATOR -- Decay is reset', { element, basePatch });
+    }
+  }
+
   // Upsert relations with times extensions
   if (isStixCoreRelationship(type)) {
     const { date: cStartTime } = computeExtendedDateValues(updatePatch.start_time, element.start_time, ALIGN_OLDEST);

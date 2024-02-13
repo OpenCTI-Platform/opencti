@@ -213,20 +213,21 @@ const IndicatorDetails = createFragmentContainer(IndicatorDetailsComponent, {
       valid_from
       valid_until
       x_opencti_score
-      decay_base_score
       x_opencti_detection
       x_mitre_platforms
       indicator_types
+      decay_base_score
+      decay_base_score_date
       decay_history {
         score
         updated_at
       }
       decay_applied_rule {
+        decay_rule_id
         decay_lifetime
         decay_pound
         decay_points
         decay_revoke_score
-        indicator_types
       }
       decayLiveDetails {
         live_score
@@ -237,7 +238,7 @@ const IndicatorDetails = createFragmentContainer(IndicatorDetailsComponent, {
       }
       decayChartData {
         live_score_serie {
-          time
+          updated_at
           score
         }
       }

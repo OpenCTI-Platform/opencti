@@ -37,6 +37,7 @@ import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../modules/organization/organ
 import { ENTITY_TYPE_MANAGER_CONFIGURATION } from '../modules/managerConfiguration/managerConfiguration-types';
 import type { BasicStoreEntityPlaybook, ComponentDefinition } from '../modules/playbook/playbook-types';
 import { ENTITY_TYPE_PLAYBOOK } from '../modules/playbook/playbook-types';
+import { ENTITY_TYPE_DECAY_RULE } from '../modules/decayRule/decayRule-types';
 import { isNotEmptyField } from '../database/utils';
 import { findAllPlaybooks } from '../modules/playbook/playbook-domain';
 
@@ -103,6 +104,12 @@ const platformRules = (context: AuthContext) => {
     return listAllEntities(context, SYSTEM_USER, [ENTITY_TYPE_RULE], { connectionFormat: false });
   };
   return { values: null, fn: reloadRules };
+};
+const platformDecayRules = (context: AuthContext) => {
+  const reloadDecayRules = () => {
+    return listAllEntities(context, SYSTEM_USER, [ENTITY_TYPE_DECAY_RULE], { connectionFormat: false });
+  };
+  return { values: null, fn: reloadDecayRules };
 };
 const platformMarkings = (context: AuthContext) => {
   const reloadMarkings = () => {
@@ -195,6 +202,7 @@ const initCacheManager = () => {
     writeCacheForEntity(ENTITY_TYPE_TRIGGER, platformTriggers(context));
     writeCacheForEntity(ENTITY_TYPE_PLAYBOOK, platformRunningPlaybooks(context));
     writeCacheForEntity(ENTITY_TYPE_RULE, platformRules(context));
+    writeCacheForEntity(ENTITY_TYPE_DECAY_RULE, platformDecayRules(context));
     writeCacheForEntity(ENTITY_TYPE_IDENTITY_ORGANIZATION, platformOrganizations(context));
     writeCacheForEntity(ENTITY_TYPE_RESOLVED_FILTERS, platformResolvedFilters(context));
     writeCacheForEntity(ENTITY_TYPE_STREAM_COLLECTION, platformStreams(context));

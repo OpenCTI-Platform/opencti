@@ -5,6 +5,9 @@ import { ENTITY_DOMAIN_NAME } from '../../../src/schema/stixCyberObservable';
 import { MARKING_TLP_GREEN } from '../../../src/schema/identifier';
 import type { BasicStoreEntityEdge } from '../../../src/types/store';
 import type { BasicStoreEntityIndicator } from '../../../src/modules/indicator/indicator-types';
+import { queryAsAdminWithSuccess } from '../../utils/testQueryHelper';
+import type { DecayHistory } from '../../../src/modules/decayRule/decayRule-domain';
+import { BUILT_IN_DECAY_RULE_DOMAIN_NAME } from '../../../src/modules/decayRule/decayRule-domain';
 
 const LIST_QUERY = gql`
     query indicators(
@@ -43,6 +46,32 @@ const READ_QUERY = gql`
             name
             description
             toStix
+            decay_base_score
+            decay_base_score_date
+            decay_applied_rule {
+                decay_rule_id
+                decay_lifetime
+                decay_pound
+                decay_points
+                decay_revoke_score
+            }
+            decay_history {
+                updated_at
+                score
+            }
+            decayLiveDetails {
+                live_score
+                live_points {
+                    updated_at
+                    score
+                }
+            }
+            decayChartData {
+                live_score_serie {
+                    updated_at
+                    score
+                }
+            }
         }
     }
 `;
@@ -80,15 +109,14 @@ describe('Indicator resolver standard behavior', () => {
         description: 'Indicator created for test purpose that will be deleted at the end of this test file.',
         pattern: "[domain-name:value = 'www.payah.rest']",
         pattern_type: 'stix',
-        x_opencti_main_observable_type: 'Domain-Name',
+        x_opencti_main_observable_type: ENTITY_DOMAIN_NAME,
       },
     };
-    const indicator = await queryAsAdmin({
+    const indicator = await queryAsAdminWithSuccess({
       query: CREATE_QUERY,
       variables: INDICATOR_TO_CREATE,
     });
-    expect(indicator).not.toBeNull();
-    expect(indicator.data?.indicatorAdd).not.toBeNull();
+    expect(indicator.data?.indicatorAdd).toBeDefined();
     expect(indicator.data?.indicatorAdd.name).toEqual(indicatorForTestName);
     expect(indicator.data?.indicatorAdd.observables.edges.length).toEqual(0);
     firstIndicatorInternalId = indicator.data?.indicatorAdd.id;
@@ -133,22 +161,41 @@ describe('Indicator resolver standard behavior', () => {
     expect(indicator.data?.indicatorAdd.name).toEqual(`New name for ${indicatorForTestName}`);
     expect(indicator.data?.indicatorAdd.observables.edges.length).toEqual(0);
     expect(indicator.data?.indicatorAdd.id).toEqual(firstIndicatorInternalId);
+    expect(indicator.data?.indicatorAdd.id).toEqual(firstIndicatorInternalId);
   });
-  it('should indicator loaded by internal id', async () => {
-    const queryResult = await queryAsAdmin({ query: READ_QUERY, variables: { id: firstIndicatorInternalId } });
-    expect(queryResult).not.toBeNull();
-    expect(queryResult.data?.indicator).not.toBeNull();
+
+  it('should indicator loaded by internal id, with decay data', async () => {
+    const queryResult = await queryAsAdminWithSuccess({ query: READ_QUERY, variables: { id: firstIndicatorInternalId } });
+    expect(queryResult.data?.indicator).toBeDefined();
     expect(queryResult.data?.indicator.id).toEqual(firstIndicatorInternalId);
     expect(queryResult.data?.indicator.toStix.length).toBeGreaterThan(5);
+
+    // Validating some Decay rule data in indicator.
+    expect(queryResult.data?.indicator.decay_applied_rule).toBeDefined();
+    const decayRule = queryResult.data?.indicator.decay_applied_rule;
+    expect(decayRule.decay_lifetime).toBe(BUILT_IN_DECAY_RULE_DOMAIN_NAME.decay_lifetime); // Domain name decay rule
+    expect(decayRule.decay_revoke_score).toBe(BUILT_IN_DECAY_RULE_DOMAIN_NAME.decay_revoke_score); // Domain name decay rule
+
+    expect(queryResult.data?.indicator.decay_base_score).toBe(50);
+    const startDecayDate: Date = queryResult.data?.indicator.decay_base_score_date;
+    expect(startDecayDate.getTime() / 1000).toBeCloseTo(new Date().getTime() / 1000, 0); // approximately now
+
+    const historyRecords: DecayHistory[] = queryResult.data?.indicator.decay_history;
+    expect(historyRecords.length).toBe(1); // just created, should just have creation date
+
+    const decayLiveDetails = queryResult.data?.indicator.decayLiveDetails;
+    expect(decayLiveDetails.live_score).toBeLessThanOrEqual(50); // default score is 50
+    expect(decayLiveDetails.live_points.length).toBe(1);
+
+    expect(queryResult.data?.indicator.decayChartData.live_score_serie.length).toBe(51); // all scores from 50 -> 0
   });
   it('should indicator loaded by stix id', async () => {
-    const queryResult = await queryAsAdmin({ query: READ_QUERY, variables: { id: indicatorStixId } });
-    expect(queryResult).not.toBeNull();
-    expect(queryResult.data?.indicator).not.toBeNull();
+    const queryResult = await queryAsAdminWithSuccess({ query: READ_QUERY, variables: { id: indicatorStixId } });
+    expect(queryResult.data?.indicator).toBeDefined();
     expect(queryResult.data?.indicator.id).toEqual(firstIndicatorInternalId);
   });
   it('should list indicators', async () => {
-    const queryResult = await queryAsAdmin({ query: LIST_QUERY, variables: { first: 10 } });
+    const queryResult = await queryAsAdminWithSuccess({ query: LIST_QUERY, variables: { first: 10 } });
     const indicatorList: [] = queryResult.data?.indicators.edges;
     expect(indicatorList).toBeDefined();
     if (indicatorList) {
@@ -158,14 +205,14 @@ describe('Indicator resolver standard behavior', () => {
   });
   it('should update indicator', async () => {
     const UPDATE_QUERY = gql`
-        mutation IndicatorFieldPatch($id: ID!, $input: [EditInput]!) {
+        mutation IndicatorFieldPatch($id: ID!, $input: [EditInput!]!) {
             indicatorFieldPatch(id: $id, input: $input) {
                 id
                 name
             }
         }
     `;
-    const queryResult = await queryAsAdmin({
+    const queryResult = await queryAsAdminWithSuccess({
       query: UPDATE_QUERY,
       variables: { id: firstIndicatorInternalId, input: { key: 'name', value: ['Indicator - test'] } },
     });
@@ -179,7 +226,7 @@ describe('Indicator resolver standard behavior', () => {
             }
         }
     `;
-    const queryResult = await queryAsAdmin({
+    const queryResult = await queryAsAdminWithSuccess({
       query: CONTEXT_PATCH_QUERY,
       variables: { id: firstIndicatorInternalId, input: { focusOn: 'description' } },
     });
@@ -193,7 +240,7 @@ describe('Indicator resolver standard behavior', () => {
             }
         }
     `;
-    const queryResult = await queryAsAdmin({
+    const queryResult = await queryAsAdminWithSuccess({
       query: CONTEXT_PATCH_QUERY,
       variables: { id: firstIndicatorInternalId },
     });
@@ -214,7 +261,7 @@ describe('Indicator resolver standard behavior', () => {
             }
         }
     `;
-    const queryResult = await queryAsAdmin({
+    const queryResult = await queryAsAdminWithSuccess({
       query: RELATION_ADD_QUERY,
       variables: {
         id: firstIndicatorInternalId,
@@ -226,6 +273,7 @@ describe('Indicator resolver standard behavior', () => {
     });
     expect(queryResult.data?.indicatorRelationAdd.from.objectMarking.length).toEqual(1);
   });
+
   it('should delete relation in indicator', async () => {
     const RELATION_DELETE_QUERY = gql`
         mutation IndicatorRelationDelete($id: ID!, $toId: StixRef!, $relationship_type: String!) {
@@ -237,7 +285,7 @@ describe('Indicator resolver standard behavior', () => {
             }
         }
     `;
-    const queryResult = await queryAsAdmin({
+    const queryResult = await queryAsAdminWithSuccess({
       query: RELATION_DELETE_QUERY,
       variables: {
         id: firstIndicatorInternalId,
@@ -247,25 +295,26 @@ describe('Indicator resolver standard behavior', () => {
     });
     expect(queryResult.data?.indicatorRelationDelete.objectMarking.length).toEqual(0);
   });
-  it('should indicator deleted', async () => {
+  it('should indicators be deleted', async () => {
     const DELETE_QUERY = gql`
         mutation indicatorDelete($id: ID!) {
             indicatorDelete(id: $id)
         }
     `;
     // Delete the indicator
-    await queryAsAdmin({
+    await queryAsAdminWithSuccess({
       query: DELETE_QUERY,
       variables: { id: firstIndicatorInternalId },
     });
 
-    await queryAsAdmin({
+    await queryAsAdminWithSuccess({
       query: DELETE_QUERY,
       variables: { id: secondIndicatorInternalId },
     });
+
     // Verify is no longer found
     const queryResult = await queryAsAdmin({ query: READ_QUERY, variables: { id: indicatorStixId } });
-    expect(queryResult).not.toBeNull();
+    expect(queryResult).toBeDefined();
     expect(queryResult.data?.indicator).toBeNull();
   });
 });

@@ -4,7 +4,7 @@
     "base_path": "",
     "base_url": "http://localhost:4000/",
     "enabled": true,
-    "disabled_dev_features":  ["INDICATOR_DECAY"],
+    "disabled_dev_features":  [],
     "https_cert": {
       "ca": [],
       "key": null,
@@ -163,6 +163,12 @@
   "playbook_manager": {
     "enabled": true,
     "lock_key": "playbook_manager_lock",
+    "interval": 60000
+  },
+  "indicator_decay_manager": {
+    "enabled": true,
+    "lock_key": "indicator_decay_manager_lock",
+    "batch_size": 10000,
     "interval": 60000
   },
   "publisher_manager": {

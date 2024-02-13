@@ -33,15 +33,12 @@ type DecayHistory {
   score: Int!
 }
 
-type DecayRule {
-  id: String!
+type IndicatorDecayRule {
+  decay_rule_id: String
   decay_lifetime: Int!
   decay_pound: Float!
   decay_points: [Int!]
   decay_revoke_score: Int!
-  indicator_types: [String!]
-  order: Int!
-  enabled: Boolean!
 }
 
 type DecayLiveDetails {
@@ -49,14 +46,8 @@ type DecayLiveDetails {
   live_points: [DecayHistory!]
 }
 
-# Do we merge with DecayHistory ?
-type DecayChartPoint {
-  time: DateTime!
-  score: Int!
-}
-
 type DecayChartData {
-  live_score_serie: [DecayChartPoint!]
+  live_score_serie: [DecayHistory!]
 }
 
 type Indicator implements BasicObject & StixObject & StixCoreObject & StixDomainObject {
@@ -172,7 +163,7 @@ type Indicator implements BasicObject & StixObject & StixCoreObject & StixDomain
   #Decay
   decay_base_score : Int
   decay_base_score_date : DateTime
-  decay_applied_rule: DecayRule
+  decay_applied_rule: IndicatorDecayRule
   decay_history: [DecayHistory!]
   decayLiveDetails: DecayLiveDetails
   decayChartData: DecayChartData
@@ -257,7 +248,7 @@ type Query {
 type Mutation {
   indicatorAdd(input: IndicatorAddInput!): Indicator @auth(for: [KNOWLEDGE_KNUPDATE])
   indicatorDelete(id: ID!): ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
-  indicatorFieldPatch(id: ID!, input: [EditInput]!, commitMessage: String, references: [String]): Indicator @auth(for: [KNOWLEDGE_KNUPDATE])
+  indicatorFieldPatch(id: ID!, input: [EditInput!]!, commitMessage: String, references: [String]): Indicator @auth(for: [KNOWLEDGE_KNUPDATE])
   indicatorContextPatch(id: ID!, input: EditContext): Indicator @auth(for: [KNOWLEDGE_KNUPDATE])
   indicatorContextClean(id: ID!): Indicator @auth(for: [KNOWLEDGE_KNUPDATE])
   indicatorRelationAdd(id: ID!, input: StixRefRelationshipAddInput!): StixRefRelationship @auth(for: [KNOWLEDGE_KNUPDATE])

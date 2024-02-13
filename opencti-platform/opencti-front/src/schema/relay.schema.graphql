@@ -7330,6 +7330,8 @@ type Query {
   indicatorsTimeSeries(objectId: String, field: String!, operation: StatsOperation!, startDate: DateTime!, endDate: DateTime!, interval: String!, filters: FilterGroup): [TimeSeries]
   indicatorsNumber(pattern_type: String, objectId: String, endDate: DateTime): Number
   indicatorsDistribution(objectId: String, field: String!, operation: StatsOperation!, limit: Int, order: String, startDate: DateTime, endDate: DateTime, dateAttribute: String): [Distribution]
+  decayRule(id: String!): DecayRule
+  decayRules(first: Int, after: ID, orderBy: DecayRuleOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): DecayRuleConnection
   organization(id: String!): Organization
   organizations(first: Int, after: ID, orderBy: OrganizationsOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String, toStix: Boolean): OrganizationConnection
   csvMapper(id: String!): CsvMapper
@@ -8065,11 +8067,14 @@ type Mutation {
   ingestionCsvFieldPatch(id: ID!, input: [EditInput!]!): IngestionCsv
   indicatorAdd(input: IndicatorAddInput!): Indicator
   indicatorDelete(id: ID!): ID
-  indicatorFieldPatch(id: ID!, input: [EditInput]!, commitMessage: String, references: [String]): Indicator
+  indicatorFieldPatch(id: ID!, input: [EditInput!]!, commitMessage: String, references: [String]): Indicator
   indicatorContextPatch(id: ID!, input: EditContext): Indicator
   indicatorContextClean(id: ID!): Indicator
   indicatorRelationAdd(id: ID!, input: StixRefRelationshipAddInput!): StixRefRelationship
   indicatorRelationDelete(id: ID!, toId: StixRef!, relationship_type: String!): Indicator
+  decayRuleAdd(input: DecayRuleAddInput!): DecayRule
+  decayRuleDelete(id: ID!): ID
+  decayRuleFieldPatch(id: ID!, input: [EditInput!]!): DecayRule
   organizationAdd(input: OrganizationAddInput!): Organization
   organizationDelete(id: ID!): ID
   organizationFieldPatch(id: ID!, input: [EditInput]!, commitMessage: String, references: [String]): Organization
@@ -10643,15 +10648,12 @@ type DecayHistory {
   score: Int!
 }
 
-type DecayRule {
-  id: String!
+type IndicatorDecayRule {
+  decay_rule_id: String
   decay_lifetime: Int!
   decay_pound: Float!
   decay_points: [Int!]
   decay_revoke_score: Int!
-  indicator_types: [String!]
-  order: Int!
-  enabled: Boolean!
 }
 
 type DecayLiveDetails {
@@ -10659,13 +10661,8 @@ type DecayLiveDetails {
   live_points: [DecayHistory!]
 }
 
-type DecayChartPoint {
-  time: DateTime!
-  score: Int!
-}
-
 type DecayChartData {
-  live_score_serie: [DecayChartPoint!]
+  live_score_serie: [DecayHistory!]
 }
 
 type Indicator implements BasicObject & StixObject & StixCoreObject & StixDomainObject {
@@ -10721,7 +10718,7 @@ type Indicator implements BasicObject & StixObject & StixCoreObject & StixDomain
   observables(first: Int): StixCyberObservableConnection
   decay_base_score: Int
   decay_base_score_date: DateTime
-  decay_applied_rule: DecayRule
+  decay_applied_rule: IndicatorDecayRule
   decay_history: [DecayHistory!]
   decayLiveDetails: DecayLiveDetails
   decayChartData: DecayChartData
@@ -10768,6 +10765,58 @@ input IndicatorAddInput {
   createObservables: Boolean
   file: Upload
   basedOn: [String!]
+}
+
+type DecayRule implements InternalObject & BasicObject {
+  id: ID!
+  standard_id: String!
+  entity_type: String!
+  parent_types: [String]!
+  created_at: DateTime!
+  updated_at: DateTime!
+  name: String!
+  description: String
+  order: Int!
+  active: Boolean!
+  built_in: Boolean
+  appliedIndicatorsCount: Int!
+  decay_lifetime: Int!
+  decay_pound: Float!
+  decay_points: [Int!]
+  decay_revoke_score: Int!
+  decay_observable_types: [String!]
+  decaySettingsChartData: DecayData
+}
+
+type DecayData {
+  live_score_serie: [DecayHistory!]
+}
+
+enum DecayRuleOrdering {
+  name
+  order
+}
+
+type DecayRuleConnection {
+  pageInfo: PageInfo!
+  edges: [DecayRuleEdge!]!
+}
+
+type DecayRuleEdge {
+  cursor: String!
+  node: DecayRule!
+}
+
+input DecayRuleAddInput {
+  name: name_String_NotNull_minLength_2!
+  description: String
+  order: Int!
+  active: Boolean!
+  decay_lifetime: Int!
+  decay_pound: Float!
+  decay_points: [Int!]
+  decay_revoke_score: Int!
+  decay_observable_types: [String!]
 }
 
 type Organization implements BasicObject & StixObject & StixCoreObject & StixDomainObject & Identity {

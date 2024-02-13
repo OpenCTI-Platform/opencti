@@ -1,10 +1,9 @@
 import { type ManagerDefinition, registerManager } from './managerModule';
-import conf, { booleanConf, isFeatureEnabled, logApp } from '../config/conf';
+import conf, { booleanConf, logApp } from '../config/conf';
 import { executionContext, SYSTEM_USER } from '../utils/access';
 import { findIndicatorsForDecay, updateIndicatorDecayScore } from '../modules/indicator/indicator-domain';
-import { INDICATOR_DECAY_FEATURE_FLAG } from '../modules/indicator/indicator-types';
 
-const INDICATOR_DECAY_MANAGER_ENABLED = booleanConf('indicator_decay_manager:enabled', false);
+const INDICATOR_DECAY_MANAGER_ENABLED = booleanConf('indicator_decay_manager:enabled', true);
 const INDICATOR_DECAY_MANAGER_KEY = conf.get('indicator_decay_manager:lock_key') || 'indicator_decay_manager_lock';
 const SCHEDULE_TIME = conf.get('indicator_decay_manager:interval') || 60000; // 1 minute
 const BATCH_SIZE = conf.get('indicator_decay_manager:batch_size') || 10000;
@@ -22,8 +21,8 @@ export const indicatorDecayHandler = async () => {
     try {
       const indicator = indicatorsToUpdate[i];
       await updateIndicatorDecayScore(context, SYSTEM_USER, indicator);
-    } catch (e: any) {
-      logApp.warn(`[OPENCTI-MODULE] Error when processing decay for ${indicatorsToUpdate[i].id}, skipping.`);
+    } catch (e) {
+      logApp.warn(e, `[OPENCTI-MODULE] Error when processing decay for ${indicatorsToUpdate[i].id}, skipping.`);
       errorCount += 1;
     }
   }
@@ -52,6 +51,4 @@ const INDICATOR_DECAY_MANAGER_DEFINITION: ManagerDefinition = {
   }
 };
 
-if (isFeatureEnabled(INDICATOR_DECAY_FEATURE_FLAG)) {
-  registerManager(INDICATOR_DECAY_MANAGER_DEFINITION);
-}
+registerManager(INDICATOR_DECAY_MANAGER_DEFINITION);

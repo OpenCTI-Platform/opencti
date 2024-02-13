@@ -19,6 +19,10 @@ const CustomizationMenu: FunctionComponent = () => {
       path: '/dashboard/settings/customization/retention',
       label: 'Retention policies',
     },
+    {
+      path: '/dashboard/settings/customization/decay',
+      label: 'Decay rules',
+    },
   ];
   return <NavToolbarMenu entries={entries} />;
 };

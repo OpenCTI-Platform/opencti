@@ -24,22 +24,32 @@ import { computeValidPeriod } from './indicator-utils';
 import { addFilter } from '../../utils/filtering/filtering-utils';
 import type { AuthContext, AuthUser } from '../../types/user';
 import { type BasicStoreEntityIndicator, ENTITY_TYPE_INDICATOR, type StoreEntityIndicator } from './indicator-types';
-import type { IndicatorAddInput, QueryIndicatorsArgs, QueryIndicatorsNumberArgs } from '../../generated/graphql';
-import { FilterMode, FilterOperator, OrderingMode } from '../../generated/graphql';
+import {
+  type IndicatorAddInput,
+  type QueryIndicatorsArgs,
+  type QueryIndicatorsNumberArgs,
+  type EditInput,
+  FilterMode,
+  FilterOperator,
+  OrderingMode
+} from '../../generated/graphql';
 import type { BasicStoreCommon, NumberResult } from '../../types/store';
 import {
-  BUILT_IN_DECAY_RULES,
-  computeLivePoints,
-  computeLiveScore,
+  findDecayRuleForIndicator,
   computeNextScoreReactionDate,
   type DecayHistory,
   type DecayLiveDetails,
-  type DecayRule,
-  findDecayRuleForIndicator
-} from './decay-domain';
+  computeScoreList,
+  computeChartDecayAlgoSerie,
+  type DecayChartData,
+  type ComputeDecayChartInput,
+  computeScoreFromExpectedTime,
+  computeTimeFromExpectedScore,
+  computeDecayPointReactionDate
+} from '../decayRule/decayRule-domain';
 import { isModuleActivated } from '../../domain/settings';
-import { prepareDate } from '../../utils/format';
-import { computeChartDecayAlgoSerie, computeScoreList, type DecayChartData } from './decay-chart-domain';
+import { stixDomainObjectEditField } from '../../domain/stixDomainObject';
+import { prepareDate, utcDate } from '../../utils/format';
 
 export const findById = (context: AuthContext, user: AuthUser, indicatorId: string) => {
   return storeLoadById<BasicStoreEntityIndicator>(context, user, indicatorId, ENTITY_TYPE_INDICATOR);
@@ -47,6 +57,43 @@ export const findById = (context: AuthContext, user: AuthUser, indicatorId: stri
 
 export const findAll = (context: AuthContext, user: AuthUser, args: QueryIndicatorsArgs) => {
   return listEntitiesPaginated<BasicStoreEntityIndicator>(context, user, [ENTITY_TYPE_INDICATOR], args);
+};
+
+/**
+ * Compute real actual value of score for an indicator.
+ * @param indicator
+ */
+export const computeLiveScore = (indicator: BasicStoreEntityIndicator) => {
+  if (indicator.decay_base_score_date && indicator.decay_base_score && indicator.decay_applied_rule) {
+    const decayRule = indicator.decay_applied_rule;
+    const daysSinceDecayStart = moment().diff(moment(indicator.decay_base_score_date), 'days', true);
+    return Math.round(computeScoreFromExpectedTime(indicator.decay_base_score, daysSinceDecayStart, decayRule));
+  }
+  // by default return current score
+  return indicator.x_opencti_score;
+};
+
+/**
+ * Compute next expected date for reactions point of this indicator.
+ * Only score in future are calculated (ie: score that are lower than actual score)
+ * @param indicator
+ */
+export const computeLivePoints = (indicator: BasicStoreEntityIndicator) => {
+  if (indicator.decay_applied_rule && indicator.decay_applied_rule.decay_points && indicator.decay_base_score_date) {
+    const result: DecayHistory[] = [];
+    const nextKeyPoints = [...indicator.decay_applied_rule.decay_points, indicator.decay_applied_rule.decay_revoke_score];
+    for (let i = 0; i < nextKeyPoints.length; i += 1) {
+      const scorePoint = nextKeyPoints[i];
+      if (scorePoint < indicator.x_opencti_score) {
+        const elapsedTimeInDays = computeTimeFromExpectedScore(indicator.decay_base_score, scorePoint, indicator.decay_applied_rule);
+        const duration = moment.duration(elapsedTimeInDays, 'days');
+        const scoreDate = moment(indicator.decay_base_score_date).add(duration.asMilliseconds(), 'ms');
+        result.push({ updated_at: scoreDate.toDate(), score: scorePoint });
+      }
+    }
+    return result;
+  }
+  return [];
 };
 
 /**
@@ -70,8 +117,16 @@ export const getDecayChartData = async (context: AuthContext, user: AuthUser, in
   if (!indicator.decay_applied_rule) {
     return null;
   }
-  const scoreList = computeScoreList(indicator.decay_base_score);
-  const liveScoreSerie = computeChartDecayAlgoSerie(indicator, scoreList);
+  const scoreListForChart = computeScoreList(indicator.decay_base_score);
+
+  const chartDataInput: ComputeDecayChartInput = {
+    decayBaseScore: indicator.decay_base_score,
+    decayBaseScoreDate: indicator.decay_base_score_date,
+    decayRule: indicator.decay_applied_rule,
+    scoreList: scoreListForChart,
+    decayHistory: indicator.decay_history,
+  };
+  const liveScoreSerie = computeChartDecayAlgoSerie(chartDataInput);
 
   const chartData: DecayChartData = {
     live_score_serie: liveScoreSerie,
@@ -163,8 +218,8 @@ export const addIndicator = async (context: AuthContext, user: AuthUser, indicat
   const indicatorBaseScore = indicator.x_opencti_score ?? 50;
   const isDecayActivated = await isModuleActivated('INDICATOR_DECAY_MANAGER');
   // find default decay rule (even if decay is not activated, it is used to compute default validFrom and validUntil)
-  const decayRule = findDecayRuleForIndicator(observableType, BUILT_IN_DECAY_RULES);
-  const { validFrom, validUntil, revoked, validPeriod } = await computeValidPeriod(indicator, decayRule);
+  const decayRule = await findDecayRuleForIndicator(context, observableType);
+  const { validFrom, validUntil, revoked, validPeriod } = await computeValidPeriod(indicator, decayRule.decay_lifetime);
   const indicatorToCreate = R.pipe(
     R.dissoc('createObservables'),
     R.dissoc('basedOn'),
@@ -177,8 +232,9 @@ export const addIndicator = async (context: AuthContext, user: AuthUser, indicat
     R.assoc('revoked', revoked),
   )(indicator);
   let finalIndicatorToCreate;
-  if (isDecayActivated) {
+  if (isDecayActivated && !revoked) {
     const indicatorDecayRule = {
+      decay_rule_id: decayRule.id,
       decay_lifetime: decayRule.decay_lifetime,
       decay_pound: decayRule.decay_pound,
       decay_points: [...decayRule.decay_points],
@@ -190,6 +246,7 @@ export const addIndicator = async (context: AuthContext, user: AuthUser, indicat
       updated_at: validFrom.toDate(),
       score: indicatorBaseScore,
     });
+    const revokeDate = computeDecayPointReactionDate(indicatorBaseScore, indicatorBaseScore, decayRule, validFrom, decayRule.decay_revoke_score);
     finalIndicatorToCreate = {
       ...indicatorToCreate,
       decay_next_reaction_date: nextScoreReactionDate,
@@ -197,6 +254,7 @@ export const addIndicator = async (context: AuthContext, user: AuthUser, indicat
       decay_base_score_date: validFrom.toISOString(),
       decay_applied_rule: indicatorDecayRule,
       decay_history: decayHistory,
+      valid_until: revokeDate.toISOString(),
     };
   } else {
     finalIndicatorToCreate = { ...indicatorToCreate };
@@ -222,6 +280,38 @@ export const addIndicator = async (context: AuthContext, user: AuthUser, indicat
     await createObservablesFromIndicator(context, user, indicator, created);
   }
   return notify(BUS_TOPICS[ABSTRACT_STIX_DOMAIN_OBJECT].ADDED_TOPIC, created, user);
+};
+
+export const indicatorEditField = async (context: AuthContext, user: AuthUser, id: string, input: EditInput[], opts = {}) => {
+  const finalInput = [...input];
+  const scoreEditInput = input.find((e) => e.key === 'x_opencti_score');
+  if (scoreEditInput) {
+    const indicator = await findById(context, user, id);
+    if (!indicator) {
+      throw FunctionalError('Cannot edit the field, Indicator cannot be found.');
+    }
+    if (indicator.decay_applied_rule && !scoreEditInput.value.includes(indicator.decay_base_score)) {
+      const newScore = scoreEditInput.value[0];
+      const updateDate = utcDate();
+      finalInput.push({ key: 'decay_base_score', value: [newScore] });
+      finalInput.push({ key: 'decay_base_score_date', value: [updateDate.toISOString()] });
+      const decayHistory: DecayHistory[] = [...(indicator.decay_history ?? [])];
+      decayHistory.push({
+        updated_at: updateDate.toDate(),
+        score: newScore,
+      });
+      finalInput.push({ key: 'decay_history', value: decayHistory });
+      const model = indicator.decay_applied_rule;
+      const nextScoreReactionDate = computeNextScoreReactionDate(newScore, newScore, model, updateDate);
+      if (nextScoreReactionDate) {
+        finalInput.push({ key: 'decay_next_reaction_date', value: [nextScoreReactionDate.toISOString()] });
+      }
+      const newValidUntilDate = computeDecayPointReactionDate(newScore, newScore, model, updateDate, model.decay_revoke_score);
+      finalInput.push({ key: 'valid_until', value: [newValidUntilDate.toISOString()] });
+    }
+  }
+  logApp.info('indicatorEditField finalInput', { finalInput });
+  return stixDomainObjectEditField(context, context.user, id, finalInput, opts);
 };
 
 export interface IndicatorPatch {
@@ -251,7 +341,7 @@ export const computeIndicatorDecayPatch = (indicator: BasicStoreEntityIndicator)
     if (newStableScore <= model.decay_revoke_score) {
       patch = { ...patch, revoked: true };
     } else {
-      const nextScoreReactionDate = computeNextScoreReactionDate(indicator.decay_base_score, newStableScore, model as DecayRule, moment(indicator.valid_from));
+      const nextScoreReactionDate = computeNextScoreReactionDate(indicator.decay_base_score, newStableScore, model, moment(indicator.valid_from));
       if (nextScoreReactionDate) {
         patch = { ...patch, decay_next_reaction_date: nextScoreReactionDate };
       }

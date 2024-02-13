@@ -16,6 +16,7 @@ import { LockTimeoutError, TYPE_LOCK_ERROR, UnsupportedError } from './config/er
 import { executionContext, SYSTEM_USER } from './utils/access';
 import { smtpIsAlive } from './database/smtp';
 import { initCreateEntitySettings } from './modules/entitySetting/entitySetting-domain';
+import { initDecayRules } from './modules/decayRule/decayRule-domain';
 import { initManagerConfigurations } from './modules/managerConfiguration/managerConfiguration-domain';
 import { initializeData } from './database/data-initialization';
 
@@ -106,6 +107,7 @@ const platformInit = async (withMarkings = true) => {
       await applyMigration(context);
       await initCreateEntitySettings(context, SYSTEM_USER);
       await initManagerConfigurations(context, SYSTEM_USER);
+      await initDecayRules(context, SYSTEM_USER);
     }
   } catch (e) {
     if (e.name === TYPE_LOCK_ERROR) {

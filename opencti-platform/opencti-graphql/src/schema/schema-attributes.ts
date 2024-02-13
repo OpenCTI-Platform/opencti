@@ -178,6 +178,12 @@ export const isDateNumericOrBooleanAttribute = (k: string): boolean => (
   schemaAttributesDefinition.isSpecificTypeAttribute(k, 'date', 'numeric', 'boolean')
 );
 
+export const isObjectFlatAttribute = (k: string): boolean => {
+  const definition = schemaAttributesDefinition.getAttributeByName(k.split('.')[0]);
+  if (!definition) return false;
+  return definition.type === 'object' && definition.format === 'flat';
+};
+
 // -- MULTIPLE --
 
 export const isMultipleAttribute = (entityType: string, k: string): boolean => (
