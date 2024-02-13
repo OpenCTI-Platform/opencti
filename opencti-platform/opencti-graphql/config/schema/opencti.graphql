@@ -204,7 +204,7 @@ type AppInfo {
   """
   The OpenCTI application version
   """
-  version: String!
+  version: String! @auth
   """
   The OpenCTI api current memory usage
   """

@@ -41,16 +41,16 @@ export const isModuleActivated = async (moduleId) => {
   return module ? module.enable : false;
 };
 
-export const getApplicationInfo = (context) => ({
+export const getApplicationInfo = () => ({
   version: PLATFORM_VERSION,
-  memory: getMemoryStatistics(),
-  dependencies: [
-    { name: 'Search engine', version: searchEngineVersion().then((v) => `${v.platform} - ${v.version}`) },
-    { name: 'RabbitMQ', version: getRabbitMQVersion(context) },
-    { name: 'Redis', version: getRedisVersion() },
-  ],
   debugStats: {}, // Lazy loaded
 });
+
+export const getApplicationDependencies = (context) => ([
+  { name: 'Search engine', version: searchEngineVersion().then((v) => `${v.platform} - ${v.version}`) },
+  { name: 'RabbitMQ', version: getRabbitMQVersion(context) },
+  { name: 'Redis', version: getRedisVersion() },
+]);
 
 export const getSettings = async (context) => {
   const platformSettings = await loadEntity(context, SYSTEM_USER, [ENTITY_TYPE_SETTINGS]);

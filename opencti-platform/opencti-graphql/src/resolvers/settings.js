@@ -3,8 +3,10 @@ import * as R from 'ramda';
 import nconf from 'nconf';
 import { BUS_TOPICS } from '../config/conf';
 import {
+  getApplicationDependencies,
   getApplicationInfo,
   getCriticalAlerts,
+  getMemoryStatistics,
   getMessagesFilteredByRecipients,
   getSettings,
   settingDeleteMessage,
@@ -25,7 +27,7 @@ import { SYSTEM_USER } from '../utils/access';
 
 const settingsResolvers = {
   Query: {
-    about: (_, __, context) => getApplicationInfo(context),
+    about: () => getApplicationInfo(),
     settings: (_, __, context) => getSettings(context),
   },
   AppDebugStatistics: {
@@ -49,6 +51,10 @@ const settingsResolvers = {
     editContext: (settings) => fetchEditContext(settings.id),
     platform_messages: (settings, _, context) => getMessagesFilteredByRecipients(context.user, settings),
     messages_administration: (settings) => JSON.parse(settings.platform_messages ?? '[]'),
+  },
+  AppInfo: {
+    memory: getMemoryStatistics(),
+    dependencies: (_, __, context) => getApplicationDependencies(context)
   },
   SettingsMessage: {
     recipients: (message, _, context) => internalFindByIds(context, context.user, message.recipients),
