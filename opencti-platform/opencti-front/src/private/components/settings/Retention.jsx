@@ -56,9 +56,12 @@ const Retention = () => {
   };
   if (!platformModuleHelpers.isRetentionManagerEnable()) {
     return (
+    <div>
       <Alert severity="info">
         {t_i18n(platformModuleHelpers.generateDisableMessage(RETENTION_MANAGER))}
       </Alert>
+      <CustomizationMenu />
+    </div>
     );
   }
   return (

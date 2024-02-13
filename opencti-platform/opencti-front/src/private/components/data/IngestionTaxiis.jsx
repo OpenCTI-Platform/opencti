@@ -63,9 +63,12 @@ const IngestionTaxii = () => {
   };
   if (!platformModuleHelpers.isIngestionManagerEnable()) {
     return (
-      <Alert severity="info">
-        {t_i18n(platformModuleHelpers.generateDisableMessage(INGESTION_MANAGER))}
-      </Alert>
+      <div>
+        <Alert severity="info">
+          {t_i18n(platformModuleHelpers.generateDisableMessage(INGESTION_MANAGER))}
+        </Alert>
+        <IngestionMenu/>
+      </div>
     );
   }
   return (
