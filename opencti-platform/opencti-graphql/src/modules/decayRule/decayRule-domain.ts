@@ -75,24 +75,6 @@ export const findAll = (context: AuthContext, user: AuthUser, args: QueryDecayRu
   return listEntitiesPaginated<BasicStoreEntityDecayRule>(context, user, [ENTITY_TYPE_DECAY_RULE], args);
 };
 
-/**
- * Change content of input array:
- * - order desc
- * - remove value < 0
- */
-const reorderDecayPoints = (decayPoints: number[]) => {
-  if (decayPoints) {
-    decayPoints.sort().reverse();
-
-    // cannot use array.filter on a read-only array.
-    for (let i = decayPoints.length - 1; i >= 0; i -= 1) {
-      if (decayPoints[i] < 0) {
-        decayPoints.splice(i, 1);
-      }
-    }
-  }
-};
-
 export const addDecayRule = async (context: AuthContext, user: AuthUser, input: DecayRuleAddInput, builtIn?: boolean) => {
   const defaultOps = {
     created_at: now(),
@@ -102,7 +84,14 @@ export const addDecayRule = async (context: AuthContext, user: AuthUser, input: 
   };
 
   if (input.decay_points) {
-    reorderDecayPoints(input.decay_points);
+    input.decay_points.sort().reverse();
+
+    // cannot use array.filter on a read-only array.
+    for (let i = input.decay_points.length - 1; i >= 0; i -= 1) {
+      if (input.decay_points[i] < 0) {
+        input.decay_points.splice(i, 1);
+      }
+    }
   }
 
   const decayRuleInput = { ...input, ...defaultOps };
@@ -119,26 +108,18 @@ export const fieldPatchDecayRule = async (context: AuthContext, user: AuthUser, 
     throw FunctionalError(`Cannot update built-in decay rule ${id}`);
   }
 
-  console.log('fieldPatchDecayRule - finalInput:', finalInput);
   const decayPointsInput = finalInput.find((editInput) => editInput.key === 'decay_points');
-  console.log('fieldPatchDecayRule - decayPoints:', decayPointsInput);
   if (decayPointsInput) {
-    const newOrder: number[] = [...decayPointsInput.value];
-    console.log('fieldPatchDecayRule - before reorder:', newOrder);
-    // reorderDecayPoints(decayPointsInput.value);
-    newOrder.sort().reverse();
+    decayPointsInput.value.sort().reverse();
 
     // cannot use array.filter on a read-only array.
-    for (let i = newOrder.length - 1; i >= 0; i -= 1) {
-      if (newOrder[i] < 0) {
-        newOrder.splice(i, 1);
+    for (let i = decayPointsInput.value.length - 1; i >= 0; i -= 1) {
+      if (decayPointsInput.value[i] < 0) {
+        decayPointsInput.value.splice(i, 1);
       }
     }
-    console.log('fieldPatchDecayRule - reordered ?', newOrder);
-    decayPointsInput.value = newOrder;
   }
 
-  console.log('fieldPatchDecayRule - finalInput:', finalInput);
   const { element } = await updateAttribute(context, user, id, ENTITY_TYPE_DECAY_RULE, finalInput);
   await publishUserAction({
     user,
