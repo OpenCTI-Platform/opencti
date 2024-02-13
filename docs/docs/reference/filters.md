@@ -107,10 +107,14 @@ The available operators are:
 * `lt` / `lte` for 'lower than' / 'lower than or equal',
 * `nil` for 'empty', and `not_nil` for non-empty (any value),
   * Note that `nil` and `not_nil` are the only operators that do not require anything inside `values`.
+* `starts_with` / `not_starts_with` / `ends_with` / `not_ends_with` / `contains` / `not contains` are available for searching in short string fields (name, value, title...).
+* `search`  is available in short string and text fields.
 
 When using a numerical comparison operators (`gt` and the like) against textual values, the alphabetical ordering is used.
 
 Some operator may not be allowed for some key, for additional information please navigate to the "Special keys" section.
+
+There is a small differences between `search` and `contains`. `search` finds any occurrence of specified words, regardless of order, while "contains" specifically looks for the exact sequence of words you provide.
 
 Also note that GraphQL input coercion makes possible using a simple `string` key instead of an array.
 Multi-key filters are not supported across the platform and are reserved to specific, internal cases.
