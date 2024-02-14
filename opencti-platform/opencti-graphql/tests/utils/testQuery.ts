@@ -101,6 +101,13 @@ export const ROLE_SECURITY: Role = {
   capabilities: ['KNOWLEDGE_KNUPDATE_KNDELETE', 'EXPLORE_EXUPDATE_EXDELETE', 'SETTINGS_SETACCESSES']
 };
 
+const ROLE_ADMIN: Role = {
+  id: generateStandardId(ENTITY_TYPE_ROLE, { name: 'Superuser' }),
+  name: 'Superuser',
+  description: 'Superuser',
+  capabilities: ['BYPASS']
+};
+
 // Groups
 interface Group {
   id: string,
@@ -142,19 +149,35 @@ export const AMBER_STRICT_GROUP: Group = {
   }
 };
 
+export const ADMIN_GROUP: Group = {
+  id: generateStandardId(ENTITY_TYPE_GROUP, { name: 'Superuser' }),
+  name: 'Superuser',
+  markings: [],
+  roles: [ROLE_ADMIN],
+  group_confidence_level: {
+    max_confidence: 100,
+    overrides: [],
+  }
+};
+
 // Organization
 interface Organization {
   name: string,
   id: string
 }
 
-const TEST_ORGANIZATION: Organization = {
+export const TEST_MAIN_ORGANIZATION: Organization = {
   name: 'TestOrganization',
   id: generateStandardId(ENTITY_TYPE_IDENTITY_ORGANIZATION, { name: 'TestOrganization', identity_class: 'organization' }),
 };
 
+export const TEST_EXTERNAL_ORGANIZATION: Organization = {
+  name: 'TestExtOrganization',
+  id: generateStandardId(ENTITY_TYPE_IDENTITY_ORGANIZATION, { name: 'TestExtOrganization', identity_class: 'organization' }),
+};
+
 // Users
-interface User {
+export interface User {
   id: string,
   email: string,
   password: string,
@@ -207,7 +230,7 @@ export const USER_EDITOR: User = {
   id: generateStandardId(ENTITY_TYPE_USER, { user_email: 'editor@opencti.io' }),
   email: 'editor@opencti.io',
   password: 'editor',
-  organizations: [TEST_ORGANIZATION],
+  organizations: [TEST_MAIN_ORGANIZATION],
   groups: [AMBER_GROUP],
   client: createHttpClient('editor@opencti.io', 'editor')
 };
@@ -221,6 +244,16 @@ export const USER_SECURITY: User = {
   client: createHttpClient('security@opencti.io', 'security')
 };
 TESTING_USERS.push(USER_SECURITY);
+
+export const USER_ADMIN_EXT: User = {
+  id: generateStandardId(ENTITY_TYPE_USER, { user_email: 'admin@ext.io' }),
+  email: 'admin@ext.io',
+  password: 'admin',
+  groups: [ADMIN_GROUP],
+  client: createHttpClient('admin@ext.io', 'admin'),
+  organizations: [TEST_EXTERNAL_ORGANIZATION]
+};
+TESTING_USERS.push(USER_ADMIN_EXT);
 
 // region group management
 const GROUP_CREATION_MUTATION = `
@@ -313,7 +346,7 @@ const ORGANIZATION_ASSIGN_MUTATION = `
     }
   }
 `;
-const createOrganization = async (input: { name: string }): Promise<string> => {
+export const createOrganization = async (input: { name: string }): Promise<string> => {
   const organization = await adminQuery(ORGANIZATION_CREATION_MUTATION, input);
   return organization.data.organizationAdd.id;
 };
