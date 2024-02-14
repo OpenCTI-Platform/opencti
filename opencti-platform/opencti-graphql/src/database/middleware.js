@@ -1857,7 +1857,7 @@ export const updateAttributeMetaResolved = async (context, user, initial, inputs
         const { value: targetsCreated } = meta[metaIndex];
         const targetCreated = R.head(targetsCreated);
         // If asking for a real change
-        if (currentValue?.standard_id !== targetCreated?.internal_id && currentValue?.id !== targetCreated?.internal_id) {
+        if (currentValue?.id !== targetCreated?.internal_id) {
           // Delete the current relation
           if (currentValue?.standard_id) {
             const currentRels = await listAllRelations(context, user, relType, { fromId: initial.id });
@@ -2476,7 +2476,7 @@ const upsertElement = async (context, user, element, type, basePatch, opts = {})
       } else { // not multiple
         // If expected data is different from current data...
         const currentData = element[relDef.databaseName];
-        const isInputDifferentFromCurrent = !R.equals(currentData, patchInputData?.internal_id);
+        const isInputDifferentFromCurrent = !R.equals(currentData, patchInputData);
         // ... and data can be updated:
         //   forced synchro
         //   OR the field was null -> better than nothing !
@@ -2779,10 +2779,8 @@ export const createRelationRaw = async (context, user, rawInput, opts = {}) => {
         });
       }
       // TODO Handling merging relation when updating to prevent multiple relations finding
-      existingRelationship = R.head(filteredRelations);
-      // We can use the resolved input from/to to complete the element
-      existingRelationship.from = from;
-      existingRelationship.to = to;
+      // resolve all refs so we can upsert properly
+      existingRelationship = await storeLoadByIdWithRefs(context, user, R.head(filteredRelations).internal_id);
     }
     // endregion
     if (existingRelationship) {
