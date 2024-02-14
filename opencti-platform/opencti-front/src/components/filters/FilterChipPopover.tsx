@@ -15,6 +15,7 @@ import ItemIcon from '../ItemIcon';
 import { getOptionsFromEntities, getUseSearch } from '../../utils/filters/SearchEntitiesUtil';
 import { handleFilterHelpers } from '../../utils/hooks/useLocalStorage';
 import { FilterRepresentative } from './FiltersModel';
+import { capitalizeFirstLetter } from '../../utils/String';
 
 interface FilterChipMenuProps {
   handleClose: () => void;
@@ -236,17 +237,17 @@ export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({
       if (mapRepresentative) {
         mapFilterValues.push({
           ...mapRepresentative,
-          group: t_i18n('selected'),
+          group: capitalizeFirstLetter(t_i18n('selected')),
         });
       } else {
         const filterRepresentative = filtersRepresentativesMap.get(value);
         if (filterRepresentative) {
           mapFilterValues.push({
             value,
-            type: filterRepresentative?.entity_type || t_i18n('Unknown'),
+            type: filterRepresentative?.entity_type || t_i18n('deleted'),
             parentTypes: [],
-            group: t_i18n('selected'),
-            label: filterRepresentative?.value ?? t_i18n('Unknown'),
+            group: capitalizeFirstLetter(t_i18n('selected')),
+            label: filterRepresentative?.value ?? t_i18n('deleted'),
             color: filterRepresentative?.color ?? undefined,
           });
         }
