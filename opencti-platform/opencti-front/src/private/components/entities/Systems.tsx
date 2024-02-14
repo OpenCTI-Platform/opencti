@@ -120,7 +120,7 @@ const Systems = () => {
 
   return (
     <>
-      <Breadcrumbs variant="list" elements={[{ label: t_i18n('Entities') }, { label: t_i18n('Organizations'), current: true }]} />
+      <Breadcrumbs variant="list" elements={[{ label: t_i18n('Entities') }, { label: t_i18n('Systems'), current: true }]} />
       {renderLines()}
       <Security needs={[KNOWLEDGE_KNUPDATE]}>
         <SystemCreation paginationOptions={paginationOptions} />
