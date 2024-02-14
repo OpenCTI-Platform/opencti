@@ -79,7 +79,7 @@ export const controlCreateInputWithUserConfidence = <T extends ObjectWithConfide
 };
 
 /**
- * Assert the confidence control on an input object from update or upsert operation.
+ * Assert the confidence control on an input object during upsert operation.
  * Returns a flag to know if the confidences match properly, plus the confidence to apply on the resulting element.
  */
 export const controlUpsertInputWithUserConfidence = <T extends ObjectWithConfidence>(user: AuthUser, inputElementOrPatch: T, existingElement: T) => {
@@ -99,6 +99,7 @@ export const controlUpsertInputWithUserConfidence = <T extends ObjectWithConfide
 
 /**
  * Assert the confidence control for a given user over a given object in the platform.
+ * Throw errors by default, use the flag noThrow to return a boolean instead (false in case of error).
  */
 export const controlUserConfidenceAgainstElement = <T extends ObjectWithConfidence>(user: AuthUser, existingElement: T, noThrow = false) => {
   const hasConfidenceAttribute = schemaAttributesDefinition.getAttribute(existingElement.entity_type, 'confidence');
@@ -134,6 +135,11 @@ type UpdateInput = {
   value: string[]
 };
 
+/**
+ * Adapt the input data during an update operation, according to confidence control.
+ *   1) If input contains a new confidence level, it is capped by user's level,
+ *   2) if the element has no confidence, we make sure it has one after update (fallback to user's level)
+ */
 export const adaptUpdateInputsConfidence = <T extends ObjectWithConfidence>(user: AuthUser, inputs: UpdateInput | UpdateInput[], element: T) => {
   if (isEmptyField(user.effective_confidence_level?.max_confidence)) {
     throw LockTimeoutError({ user_id: user.id, element_id: element.id }, 'User has no effective max confidence level and cannot update this element');
@@ -169,6 +175,10 @@ export const adaptUpdateInputsConfidence = <T extends ObjectWithConfidence>(user
   return newInputs;
 };
 
+/**
+ * Narrow the input filter with a AND on the user's max confidence.
+ * Result filter will filter out any element without the required confidence (+ input filter).
+ */
 export const adaptFiltersWithUserConfidence = (user: AuthUser, filters: FilterGroup): FilterGroup => {
   if (isEmptyField(user.effective_confidence_level?.max_confidence)) {
     throw LockTimeoutError({ user_id: user.id }, 'User has no effective max confidence level and cannot run this filter');
