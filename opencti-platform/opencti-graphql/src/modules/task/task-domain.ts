@@ -26,7 +26,7 @@ export const findAll = (context: AuthContext, user: AuthUser, opts: EntityOption
 };
 
 export const caseTasksPaginated = async <T extends BasicStoreCommon> (context: AuthContext, user: AuthUser, caseId: string, opts: EntityOptions<T>) => {
-  return listEntitiesThroughRelationsPaginated<T>(context, user, caseId, RELATION_OBJECT, ENTITY_TYPE_CONTAINER_TASK, false, opts);
+  return listEntitiesThroughRelationsPaginated<T>(context, user, caseId, RELATION_OBJECT, ENTITY_TYPE_CONTAINER_TASK, true, opts);
 };
 
 export const taskParticipantsPaginated = async (context: AuthContext, user: AuthUser, caseId: string, opts: EntityOptions<BasicStoreEntityCase>) => {
