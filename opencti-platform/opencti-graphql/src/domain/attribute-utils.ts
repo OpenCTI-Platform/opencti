@@ -72,7 +72,6 @@ export const INTERNAL_ATTRIBUTES = [
   'x_opencti_log_sources',
   'x_opencti_firstname',
   'x_opencti_lastname',
-  'x_opencti_score',
   'x_opencti_cvss_integrity_impact',
   'x_opencti_cvss_availability_impact',
   'x_opencti_cvss_confidentiality_impact',
