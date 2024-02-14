@@ -156,24 +156,16 @@ const computeListTaskElements = async (context, user, task) => {
   const isUndefinedPosition = R.isNil(task_position) || R.isEmpty(task_position);
   const startIndex = isUndefinedPosition ? 0 : task_ids.findIndex((id) => task_position === id) + 1;
   const ids = R.take(MAX_TASK_ELEMENTS, task_ids.slice(startIndex));
-  let lastError;
   for (let indexId = 0; indexId < ids.length; indexId += 1) {
     const elementToResolve = ids[indexId];
     const element = await internalLoadById(context, user, elementToResolve, { type: DEFAULT_ALLOWED_TASK_ENTITY_TYPES });
     if (element) {
-      try {
-        controlUserConfidenceAgainstElement(user, element);
+      // only process elements allowed by confidence control (no throw)
+      const isConfidenceMatch = controlUserConfidenceAgainstElement(user, element, true);
+      if (isConfidenceMatch) {
         processingElements.push({ element, next: element.id });
-      } catch (error) {
-        lastError = error;
       }
     }
-  }
-  if (lastError) {
-    await appendTaskErrors(
-      task,
-      [{ id: 'error--confidence-control', message: lastError.message }]
-    );
   }
   return { actions, elements: processingElements };
 };
