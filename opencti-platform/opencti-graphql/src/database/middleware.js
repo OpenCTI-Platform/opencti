@@ -2474,14 +2474,15 @@ const upsertElement = async (context, user, element, type, basePatch, opts = {})
           }
         }
       } else { // not multiple
+        // If expected data is different from current data...
         const currentData = element[relDef.databaseName];
-        const updatable = isUpsertSynchro || (isInputWithData && isEmptyField(currentData)) || isConfidenceMatch;
-        // If expected data is different from current data
-        // And data can be updated:
+        const isInputDifferentFromCurrent = !R.equals(currentData, patchInputData?.internal_id);
+        // ... and data can be updated:
         //   forced synchro
         //   OR the field was null -> better than nothing !
         //   OR the confidence matches -> new value is "better" than existing value
-        if (!R.equals(currentData, patchInputData) && updatable) {
+        const updatable = isUpsertSynchro || (isInputWithData && isEmptyField(currentData)) || isConfidenceMatch;
+        if (isInputDifferentFromCurrent && updatable) {
           inputs.push({ key: inputField, value: [patchInputData] });
         }
       }

@@ -245,7 +245,7 @@ describe('Relations listing', () => {
     expect(stixCoreRelationships.edges.length).toEqual(24);
     const stixRefRelationships = await listRelations(testContext, ADMIN_USER, 'stix-ref-relationship');
     expect(stixRefRelationships).not.toBeNull();
-    expect(stixRefRelationships.edges.length).toEqual(125);
+    expect(stixRefRelationships.edges.length).toEqual(124);
   });
   it('should list relations with roles', async () => {
     const stixRelations = await listRelations(testContext, ADMIN_USER, 'uses', {
@@ -1213,6 +1213,7 @@ describe('Elements upsert behaviors', () => {
     });
     expect(malware.confidence).toEqual(11);
     expect(malware.objectMarking[0].standard_id).toEqual(greenMarking);
+    // in case of marking, the highest rank is kept so we'll have only one
 
     // Upsert forcing the synchronization
     const syncContext = { ...testContext, synchronizedUpsert: true };
