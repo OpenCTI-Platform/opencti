@@ -64,12 +64,12 @@ const Sync = () => {
   };
   if (!platformModuleHelpers.isSyncManagerEnable()) {
     return (
-        <div>
-          <Alert severity="info">
-            {t_i18n(platformModuleHelpers.generateDisableMessage(SYNC_MANAGER))}
-          </Alert>
-          <IngestionMenu/>
-        </div>
+      <div>
+        <Alert severity="info">
+          {t_i18n(platformModuleHelpers.generateDisableMessage(SYNC_MANAGER))}
+        </Alert>
+        <IngestionMenu/>
+      </div>
     );
   }
   return (

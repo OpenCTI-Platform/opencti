@@ -46,12 +46,12 @@ const Tasks = () => {
   };
   if (!platformModuleHelpers.isTasksManagerEnable()) {
     return (
-    <div>
-      <Alert severity="info">
-        {t_i18n(platformModuleHelpers.generateDisableMessage(TASK_MANAGER))}
-      </Alert>
-      <ProcessingMenu />
-    </div>
+      <div>
+        <Alert severity="info">
+          {t_i18n(platformModuleHelpers.generateDisableMessage(TASK_MANAGER))}
+        </Alert>
+        <ProcessingMenu />
+      </div>
     );
   }
   return (
