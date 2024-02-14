@@ -696,7 +696,7 @@ export const getAvailableOperatorForFilterKey = (filterKey: string): string[] =>
       'starts_with', 'not_starts_with', 'ends_with', 'not_ends_with'];
   }
   if (longTextFilters.includes(filterKey)) {
-    return ['eq', 'not_eq', 'nil', 'not_nil', 'search'];
+    return ['search'];
   }
 
   return ['eq', 'not_eq', 'nil', 'not_nil'];
