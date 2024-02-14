@@ -92,9 +92,8 @@ CsvMapperRepresentationAttributeRefFormProps
 
   let options: CsvMapperRepresentationFormData[] = [];
 
-  // For both entity types, whether they are related-to or revoked-by,
-  // we don't need to resolve the different types, as they can link any entity between them.
-  if (representation.target_type === 'related-to' || representation.target_type === 'revoked-by') {
+  // We don't need to resolve those different types, as they can link any entity between them.
+  if (representation.target_type === 'related-to' || representation.target_type === 'revoked-by' || representation.target_type === 'stix-sighting-relationship') {
     options = filterOptions(entity_representations);
   } else if (representation.target_type) {
     const relationshipTypes = resolveTypesForRelationship(

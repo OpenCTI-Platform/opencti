@@ -15,6 +15,7 @@ import { getAttributesConfiguration } from '../../entitySetting/entitySetting-ut
 import { isNotEmptyField } from '../../../database/utils';
 import { extractRepresentative } from '../../../database/entity-representative';
 import { isStixCoreRelationship } from '../../../schema/stixCoreRelationship';
+import { isStixSightingRelationship, STIX_SIGHTING_RELATIONSHIP } from '../../../schema/stixSightingRelationship';
 import { schemaTypesDefinition } from '../../../schema/schema-types';
 import { ABSTRACT_STIX_CORE_RELATIONSHIP, ABSTRACT_STIX_CYBER_OBSERVABLE, ABSTRACT_STIX_DOMAIN_OBJECT, ABSTRACT_STIX_META_OBJECT } from '../../../schema/general';
 
@@ -67,7 +68,8 @@ export const csvMapperSchemaAttributes = async (context: AuthContext, user: Auth
     ...schemaTypesDefinition.get(ABSTRACT_STIX_CYBER_OBSERVABLE),
     ...schemaTypesDefinition.get(ABSTRACT_STIX_DOMAIN_OBJECT),
     ...schemaTypesDefinition.get(ABSTRACT_STIX_META_OBJECT),
-    ...schemaTypesDefinition.get(ABSTRACT_STIX_CORE_RELATIONSHIP)
+    ...schemaTypesDefinition.get(ABSTRACT_STIX_CORE_RELATIONSHIP),
+    STIX_SIGHTING_RELATIONSHIP
   ].sort();
 
   // Add attribute definitions
@@ -85,7 +87,7 @@ export const csvMapperSchemaAttributes = async (context: AuthContext, user: Auth
         multiple: attribute.multiple,
       }];
     });
-    if (isStixCoreRelationship(type)) {
+    if (isStixCoreRelationship(type) || isStixSightingRelationship(type)) {
       attributes.push({
         name: 'from',
         label: 'from',

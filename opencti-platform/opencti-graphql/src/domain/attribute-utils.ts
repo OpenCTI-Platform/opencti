@@ -49,6 +49,8 @@ export const INTERNAL_ATTRIBUTES = [
   lang.name,
   revoked.name,
   aliases.name,
+  'fromType',
+  'toType',
   'i_inference_weight',
   'content_mapping',
   'caseTemplate',
