@@ -88,11 +88,11 @@ const DecayDialogContent : FunctionComponent<DecayDialogContentProps> = ({ indic
   };
 
   const labelledHistoryList: LabelledDecayHistory[] = [];
-  decayHistory.map((history) => (
+  decayHistory.forEach((history) => (
     labelledHistoryList.push(getDisplayFor(history))
   ));
 
-  decayLivePoints.map((history) => (
+  decayLivePoints.forEach((history) => (
     labelledHistoryList.push(getDisplayFor(history))
   ));
 

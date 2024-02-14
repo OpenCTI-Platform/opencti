@@ -137,9 +137,8 @@ const DecayChart : FunctionComponent<DecayChartProps> = ({ currentScore, decayCu
       toolbar: { show: false },
       type: 'line',
       background: chartBackgroundColor,
-      selection: {
-        enabled: false,
-      },
+      selection: { enabled: false },
+      zoom: { enabled: false },
     },
     xaxis: {
       type: 'datetime',
