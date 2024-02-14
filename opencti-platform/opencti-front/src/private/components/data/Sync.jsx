@@ -64,7 +64,7 @@ const Sync = () => {
   };
   if (!platformModuleHelpers.isSyncManagerEnable()) {
     return (
-      <div>
+      <div className={classes.container}>
         <Alert severity="info">
           {t_i18n(platformModuleHelpers.generateDisableMessage(SYNC_MANAGER))}
         </Alert>

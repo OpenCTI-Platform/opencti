@@ -56,7 +56,7 @@ const Retention = () => {
   };
   if (!platformModuleHelpers.isRetentionManagerEnable()) {
     return (
-      <div>
+      <div className={classes.container}>
         <Alert severity="info">
           {t_i18n(platformModuleHelpers.generateDisableMessage(RETENTION_MANAGER))}
         </Alert>

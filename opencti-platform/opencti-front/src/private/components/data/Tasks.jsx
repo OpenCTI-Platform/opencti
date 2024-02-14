@@ -46,7 +46,7 @@ const Tasks = () => {
   };
   if (!platformModuleHelpers.isTasksManagerEnable()) {
     return (
-      <div>
+      <div className={classes.container}>
         <Alert severity="info">
           {t_i18n(platformModuleHelpers.generateDisableMessage(TASK_MANAGER))}
         </Alert>

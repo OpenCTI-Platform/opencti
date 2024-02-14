@@ -58,7 +58,7 @@ const IngestionRss = () => {
   };
   if (!platformModuleHelpers.isIngestionManagerEnable()) {
     return (
-      <div>
+      <div className={classes.container}>
         <Alert severity="info">
           {t_i18n(platformModuleHelpers.generateDisableMessage(INGESTION_MANAGER))}
         </Alert>
