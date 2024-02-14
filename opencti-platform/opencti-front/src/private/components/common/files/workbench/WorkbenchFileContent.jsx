@@ -807,6 +807,12 @@ const WorkbenchFileContentComponent = ({
                 history.push('/dashboard/data/import');
               }
             },
+            onError: ({ res }) => {
+              MESSAGING$.notifyError(res.errors?.[0]?.message || t_i18n('An unknown error has occurred! Please try again later.'));
+              setSubmitting(false);
+              resetForm();
+              setDisplayValidate(false);
+            },
           });
         }, 2000);
       },
