@@ -47,10 +47,6 @@ export const findById = (context, user, stixCyberObservableId) => {
 };
 
 export const findAll = async (context, user, args) => {
-
-  console.log('ANGIE - user:', user);
-  console.log('ANGIE - user.capabilities:', user.capabilities);
-
   let types = [];
   if (args.types && args.types.length > 0) {
     types = args.types.filter((type) => isStixCyberObservable(type));
