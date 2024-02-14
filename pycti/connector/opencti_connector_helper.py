@@ -641,13 +641,7 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
         self.connect_name = get_config_variable(
             "CONNECTOR_NAME", ["connector", "name"], config
         )
-        self.connect_confidence_level = get_config_variable(
-            "CONNECTOR_CONFIDENCE_LEVEL",
-            ["connector", "confidence_level"],
-            config,
-            True,
-            50,
-        )
+        self.connect_confidence_level = None  # Deprecated since OpenCTI version >= 6.0
         self.connect_scope = get_config_variable(
             "CONNECTOR_SCOPE", ["connector", "scope"], config
         )
