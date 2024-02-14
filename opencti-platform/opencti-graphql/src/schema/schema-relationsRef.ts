@@ -47,12 +47,12 @@ export const schemaRelationsRefDefinition = {
         this.allRelationsRef.push(relationRefDefinition.name);
       }
     });
-    this.relationsRef[entityType] = directRefs;
     // Register inheritance attributes
     const parentRefs = new Map(getParentTypes(entityType)
       .map((type) => Array.from((this.relationsRef[type] ?? new Map()).values()))
       .flat().map((e) => [e.name, e]));
     const computedWithParentsRefs = new Map([...parentRefs, ...directRefs]);
+    this.relationsRef[entityType] = computedWithParentsRefs;
     this.relationsRefCacheMap.set(entityType, computedWithParentsRefs);
 
     // Generate cache map

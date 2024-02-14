@@ -327,7 +327,6 @@
   "Report types": "Tipos de informe",
   "Threat hunting": "Caza de amenazas",
   "Log sources": "Fuentes de registro",
-  "Infrastrcture types": "Tipos de infraestructuras",
   "Goals": "Objetivos",
   "Resource level": "Nivel de recursos",
   "Primary motivation": "Motivación principal",
@@ -353,7 +352,6 @@
   "Incident type": "Tipo de incidente",
   "Severity": "Gravedad",
   "Source": "Fuente",
-  "Obective": "Objetivo",
   "Definition": "Definición",
   "Source name": "Nombre de la fuente",
   "Hash": "Hash",
@@ -572,5 +570,6 @@
   "Csv_mapper_id": "Csv_mapper_id",
   "Ingestion_running": "Ingestion_running",
   "Added_after_start": "Added_after_start",
-  "Current_state_hash": "Estado_actual"
+  "Current_state_hash": "Estado_actual",
+  "Infrastructure types": "Tipos de infraestructuras"
 }
