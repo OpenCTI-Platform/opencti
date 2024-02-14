@@ -497,7 +497,7 @@ interface UpdateValueConfiguration {
   patch_value: string
 }
 interface UpdateConfiguration extends PlaybookComponentConfiguration {
-  actions: { op: 'add' | 'replace' | 'remove', attribute: string, value: UpdateValueConfiguration[] }[]
+  actions: { op: 'add' | 'replace', attribute: string, value: UpdateValueConfiguration[] }[]
   all: boolean
 }
 const PLAYBOOK_UPDATE_KNOWLEDGE_COMPONENT_SCHEMA: JSONSchemaType<UpdateConfiguration> = {
@@ -508,7 +508,7 @@ const PLAYBOOK_UPDATE_KNOWLEDGE_COMPONENT_SCHEMA: JSONSchemaType<UpdateConfigura
       items: {
         type: 'object',
         properties: {
-          op: { type: 'string', enum: ['add', 'replace', 'remove'] },
+          op: { type: 'string', enum: ['add', 'replace'] },
           attribute: { type: 'string' },
           value: {
             type: 'array',

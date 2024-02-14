@@ -37,6 +37,7 @@ import SwitchField from '../../../../components/SwitchField';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import ObjectLabelField from '../../common/form/ObjectLabelField';
 import StatusField from '../../common/form/StatusField';
+import { capitalizeFirstLetter } from '../../../../utils/String';
 import { numberAttributes } from '../../../../utils/hooks/useAttributes';
 import AutocompleteField from '../../../../components/AutocompleteField';
 
@@ -528,15 +529,11 @@ const PlaybookAddComponentsContent = ({
                                       )
                                       }
                                     >
-                                      <MenuItem value="add">
-                                        {t_i18n('Add')}
-                                      </MenuItem>
-                                      <MenuItem value="replace">
-                                        {t_i18n('Replace')}
-                                      </MenuItem>
-                                      <MenuItem value="remove">
-                                        {t_i18n('Remove')}
-                                      </MenuItem>
+                                      {(v.items?.properties?.op?.enum ?? ['add, replace, remove']).map((op) => (
+                                        <MenuItem key={op} value={op}>
+                                          {t_i18n(capitalizeFirstLetter(op))}
+                                        </MenuItem>
+                                      ))}
                                     </Select>
                                   </FormControl>
                                 </Grid>
