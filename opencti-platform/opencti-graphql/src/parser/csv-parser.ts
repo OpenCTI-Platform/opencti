@@ -5,13 +5,15 @@ import { parse } from 'csv-parse/sync';
 import * as readline from 'readline';
 import { Readable } from 'stream';
 
-const parserOption = (delimiter: string) => ({
+const parserOption = (delimiter: string, comment: string) => ({
   delimiter,
+  comment,
+  comment_no_infix: true,
   // https://csv.js.org/parse/options/
   relax_column_count: true,
 });
 
-const parseCsvFile = (filePath: string, delimiter: string): Promise<string[][]> => {
+const parseCsvFile = (filePath: string, delimiter: string, skipLineChar: string): Promise<string[][]> => {
   return new Promise((resolve, reject) => {
     const readLine = readline.createInterface({
       input: fs.createReadStream(filePath),
@@ -26,7 +28,7 @@ const parseCsvFile = (filePath: string, delimiter: string): Promise<string[][]> 
       })
       .on('close', () => {
         try {
-          const parsing = parse(records.join(''), parserOption(delimiter));
+          const parsing = parse(records.join(''), parserOption(delimiter, skipLineChar));
           resolve(parsing);
         } catch (err) {
           reject(err);
@@ -35,7 +37,7 @@ const parseCsvFile = (filePath: string, delimiter: string): Promise<string[][]> 
   });
 };
 
-export const parseCsvBufferContent = (buffer: Buffer, delimiter: string): Promise<string[][]> => {
+export const parseCsvBufferContent = (buffer: Buffer, delimiter: string, skipLineChar: string): Promise<string[][]> => {
   return new Promise((resolve, reject) => {
     const readable = Readable.from(buffer);
     const chunks: Uint8Array[] = [];
@@ -47,7 +49,7 @@ export const parseCsvBufferContent = (buffer: Buffer, delimiter: string): Promis
       })
       .on('end', () => {
         try {
-          const parsing = parse(Buffer.concat(chunks).toString('utf8'), parserOption(delimiter));
+          const parsing = parse(Buffer.concat(chunks).toString('utf8'), parserOption(delimiter, skipLineChar));
           resolve(parsing);
         } catch (error) {
           reject(error);
@@ -56,9 +58,9 @@ export const parseCsvBufferContent = (buffer: Buffer, delimiter: string): Promis
   });
 };
 
-export const parsingProcess = async (content: Buffer | string, delimiter: string): Promise<string[][]> => {
+export const parsingProcess = async (content: Buffer | string, delimiter: string, skipLineChar: string): Promise<string[][]> => {
   if (content instanceof Buffer) {
-    return parseCsvBufferContent(content, delimiter);
+    return parseCsvBufferContent(content, delimiter, skipLineChar);
   }
-  return parseCsvFile(content, delimiter);
+  return parseCsvFile(content, delimiter, skipLineChar);
 };
