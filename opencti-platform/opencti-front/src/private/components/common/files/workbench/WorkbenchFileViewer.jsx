@@ -14,6 +14,7 @@ import { TEN_SECONDS } from '../../../../../utils/Time';
 import inject18n from '../../../../../components/i18n';
 import WorkbenchFileLine from './WorkbenchFileLine';
 import WorkbenchFileCreator from './WorkbenchFileCreator';
+import useGranted, { KNOWLEDGE_KNASKIMPORT } from '../../../../../utils/hooks/useGranted';
 
 const interval$ = interval(TEN_SECONDS);
 
@@ -41,7 +42,7 @@ const WorkbenchFileViewerBase = ({
   const { id, pendingFiles } = entity;
   const { edges } = pendingFiles;
   const [openCreate, setOpenCreate] = useState(false);
-
+  const isAuthorize = useGranted([KNOWLEDGE_KNASKIMPORT]);
   useEffect(() => {
     // Refresh the export viewer every interval
     const subscription = interval$.subscribe(() => {
@@ -68,15 +69,19 @@ const WorkbenchFileViewerBase = ({
           onClick={() => setOpenCreate(true)}
           classes={{ root: classes.createButton }}
           size="large"
+          disabled={!isAuthorize}
         >
           <Add fontSize="small" />
         </IconButton>
-        <WorkbenchFileCreator
-          handleCloseCreate={() => setOpenCreate(false)}
-          openCreate={openCreate}
-          onCompleted={onCreateWorkbenchCompleted}
-          entity={entity}
-        />
+
+        {
+          isAuthorize && <WorkbenchFileCreator
+            handleCloseCreate={() => setOpenCreate(false)}
+            openCreate={openCreate}
+            onCompleted={onCreateWorkbenchCompleted}
+            entity={entity}
+                         />
+        }
         <div className="clearfix" />
         <Paper classes={{ root: classes.paper }} variant="outlined">
           {edges.length ? (
@@ -90,6 +95,7 @@ const WorkbenchFileViewerBase = ({
                     connectors && connectors[file.node.metaData.mimetype]
                   }
                   handleOpenImport={handleOpenImport}
+                  isAuthorizeUser={isAuthorize}
                 />
               ))}
             </List>

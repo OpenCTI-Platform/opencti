@@ -41,6 +41,7 @@ import ManageImportConnectorMessage from './ManageImportConnectorMessage';
 import { truncate } from '../../../../utils/String';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
+import useGranted, { KNOWLEDGE_KNASKIMPORT } from '../../../../utils/hooks/useGranted';
 
 const interval$ = interval(FIVE_SECONDS);
 
@@ -316,6 +317,7 @@ class ImportContentComponent extends Component {
     const handleSelectConnector = (_, value) => {
       this.setState({ selectedConnector: connectors.find((c) => c.id === value) });
     };
+    const isAuthorize = useGranted([KNOWLEDGE_KNASKIMPORT]);
     return (
       <>
         <Breadcrumbs variant="list" elements={[{ label: t('Data') }, { label: t('Import'), current: true }]} />
@@ -495,6 +497,7 @@ class ImportContentComponent extends Component {
                         importConnsPerFormat[file.node.metaData.mimetype]
                       }
                       handleOpenImport={this.handleOpenValidate.bind(this)}
+                      isAuthorizeUser={isAuthorize}
                     />
                   ))}
                 </List>

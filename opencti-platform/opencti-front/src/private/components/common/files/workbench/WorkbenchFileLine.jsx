@@ -161,7 +161,7 @@ class WorkbenchFileLineComponent extends Component {
   }
 
   render() {
-    const { classes, t, file, dense, directDownload, nested, nsdt } = this.props;
+    const { classes, t, file, dense, directDownload, nested, nsdt, isAuthorizeUser } = this.props;
     const { displayDelete } = this.state;
     const { uploadStatus, metaData } = file;
     const { errors } = metaData;
@@ -176,7 +176,7 @@ class WorkbenchFileLineComponent extends Component {
           classes={{ root: nested ? classes.itemNested : classes.item }}
           button={true}
           component={isOutdated ? null : Link}
-          disabled={isProgress}
+          disabled={isProgress || !isAuthorizeUser}
           to={`/dashboard/data/import/pending/${toB64(file.id)}`}
         >
           <ListItemIcon>
@@ -234,7 +234,7 @@ class WorkbenchFileLineComponent extends Component {
               <Tooltip title={t('Download this file')}>
                 <span>
                   <IconButton
-                    disabled={isProgress}
+                    disabled={isProgress || !isAuthorizeUser}
                     href={`${APP_BASE_PATH}/storage/get/${encodeURIComponent(
                       file.id,
                     )}`}
@@ -250,7 +250,7 @@ class WorkbenchFileLineComponent extends Component {
             <Tooltip title={t('Delete this workbench')}>
               <span>
                 <IconButton
-                  disabled={isProgress}
+                  disabled={isProgress || !isAuthorizeUser}
                   color={nested ? 'inherit' : 'primary'}
                   onClick={this.handleOpenDelete.bind(this)}
                   size="small"
@@ -300,6 +300,7 @@ WorkbenchFileLineComponent.propTypes = {
   directDownload: PropTypes.bool,
   handleOpenImport: PropTypes.func,
   nested: PropTypes.bool,
+  isAuthorizeUser: PropTypes.bool,
 };
 
 const WorkbenchFileLine = createFragmentContainer(WorkbenchFileLineComponent, {
