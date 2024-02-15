@@ -166,12 +166,6 @@ const PlaybookAddComponentsContent = ({
       ];
     } else if (actionsInputs[i]?.op === 'replace') {
       options = [
-        {
-          label: t_i18n('Marking definitions'),
-          value: 'objectMarking',
-          isMultiple: true,
-        },
-        { label: t_i18n('Labels'), value: 'objectLabel', isMultiple: true },
         { label: t_i18n('Author'), value: 'createdBy', isMultiple: false },
         { label: t_i18n('Confidence'), value: 'confidence', isMultiple: false },
         { label: t_i18n('Score'), value: 'x_opencti_score', isMultiple: false },
