@@ -75,7 +75,7 @@ export const OrganizationLine: FunctionComponent<OrganizationLineProps> = ({
   onLabelClick,
 }) => {
   const classes = useStyles();
-  const { t_i18n, fd } = useFormatter();
+  const { fd } = useFormatter();
   const data = useFragment(organizationLineFragment, node);
   return (
     <ListItem
@@ -101,9 +101,7 @@ export const OrganizationLine: FunctionComponent<OrganizationLineProps> = ({
               className={classes.bodyItem}
               style={{ width: dataColumns.x_opencti_organization_type.width }}
             >
-              {data.x_opencti_organization_type
-                ? t_i18n(`organization_${data.x_opencti_organization_type}`)
-                : ''}
+              {data.x_opencti_organization_type ?? ''}
             </div>
             <div
               className={classes.bodyItem}

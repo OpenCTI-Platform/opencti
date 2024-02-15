@@ -1,7 +1,6 @@
 import React, { FunctionComponent } from 'react';
 import { Field, Form, Formik } from 'formik';
 import Button from '@mui/material/Button';
-import MenuItem from '@mui/material/MenuItem';
 import * as Yup from 'yup';
 import { graphql, useMutation } from 'react-relay';
 import makeStyles from '@mui/styles/makeStyles';
@@ -11,7 +10,6 @@ import Drawer, { DrawerVariant } from '@components/common/drawer/Drawer';
 import { useFormatter } from '../../../../components/i18n';
 import { handleErrorInForm } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
-import SelectField from '../../../../components/SelectField';
 import CreatedByField from '../../common/form/CreatedByField';
 import ObjectLabelField from '../../common/form/ObjectLabelField';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
@@ -36,6 +34,9 @@ const useStyles = makeStyles<Theme>((theme) => ({
   button: {
     marginLeft: theme.spacing(2),
   },
+  formContainer: {
+    margin: '20px 0 20px 0',
+  },
 }));
 
 const organizationMutation = graphql`
@@ -58,7 +59,7 @@ interface OrganizationAddInput {
   name: string
   description: string
   x_opencti_reliability: string | undefined
-  x_opencti_organization_type: string
+  x_opencti_organization_type: string | undefined
   createdBy: Option | undefined
   objectMarking: Option[]
   objectLabel: Option[]
@@ -144,7 +145,7 @@ export const OrganizationCreationForm: FunctionComponent<OrganizationFormProps> 
       name: '',
       description: '',
       x_opencti_reliability: undefined,
-      x_opencti_organization_type: 'other',
+      x_opencti_organization_type: undefined,
       createdBy: defaultCreatedBy,
       objectMarking: defaultMarkingDefinitions ?? [],
       objectLabel: [],
@@ -166,7 +167,7 @@ export const OrganizationCreationForm: FunctionComponent<OrganizationFormProps> 
       setFieldValue,
       values,
     }) => (
-      <Form style={{ margin: '20px 0 20px 0' }}>
+      <Form className={classes.formContainer}>
         <Field
           component={TextField}
           variant="standard"
@@ -182,23 +183,17 @@ export const OrganizationCreationForm: FunctionComponent<OrganizationFormProps> 
           fullWidth={true}
           multiline={true}
           rows="4"
-          style={{ marginTop: 20 }}
+          style={fieldSpacingContainerStyle}
         />
         { /* TODO Improve customization (vocab with letter range) 2662 */}
-        <Field
-          component={SelectField}
-          variant="standard"
-          name="x_opencti_organization_type"
+        <OpenVocabField
           label={t_i18n('Organization type')}
-          fullWidth={true}
-          containerstyle={fieldSpacingContainerStyle}
-        >
-          <MenuItem value="constituent">{t_i18n('Constituent')}</MenuItem>
-          <MenuItem value="csirt">{t_i18n('CSIRT')}</MenuItem>
-          <MenuItem value="partner">{t_i18n('Partner')}</MenuItem>
-          <MenuItem value="vendor">{t_i18n('Vendor')}</MenuItem>
-          <MenuItem value="other">{t_i18n('Other')}</MenuItem>
-        </Field>
+          type="organization_type_ov"
+          name="x_opencti_organization_type"
+          containerStyle={fieldSpacingContainerStyle}
+          multiple={false}
+          onChange={setFieldValue}
+        />
         <OpenVocabField
           label={t_i18n('Reliability')}
           type="reliability_ov"
@@ -234,7 +229,6 @@ export const OrganizationCreationForm: FunctionComponent<OrganizationFormProps> 
             variant="contained"
             onClick={handleReset}
             disabled={isSubmitting}
-            classes={{ root: classes.button }}
           >
             {t_i18n('Cancel')}
           </Button>

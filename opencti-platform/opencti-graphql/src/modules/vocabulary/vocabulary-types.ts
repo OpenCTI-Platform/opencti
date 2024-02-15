@@ -238,6 +238,15 @@ export const vocabularyDefinitions: Record<VocabularyCategory, VocabularyDefinit
       multiple: false,
     }]
   },
+  organization_type_ov: {
+    description: 'The various types of organizations playing a role in CTI, whether as a source of information or as a victim or source of attack, or even a way t segregate users in the platform.',
+    entity_types: [ENTITY_TYPE_IDENTITY_ORGANIZATION],
+    fields: [{
+      key: 'x_opencti_organization_type',
+      required: false,
+      multiple: false,
+    }]
+  },
   // P
   platforms_ov: {
     entity_types: [ENTITY_TYPE_DATA_SOURCE, ENTITY_TYPE_INDICATOR, ENTITY_TYPE_ATTACK_PATTERN],

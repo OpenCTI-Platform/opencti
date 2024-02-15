@@ -767,6 +767,28 @@ export const openVocabularies: Record<VocabularyCategory, Array<{ key: string, d
       order: 5,
     },
   ],
+  organization_type_ov: [
+    {
+      key: 'constituent',
+      description: 'Group, or entity that is a part of or associated with the organization, often having a stake or interest in its activities, decisions, or outcomes.',
+    },
+    {
+      key: 'csirt',
+      description: 'Computer Security Incident Response Team. Specialized team or unit responsible for responding to and managing incidents that pose a threat to the security of an organization\'s information technology systems.',
+    },
+    {
+      key: 'partner',
+      description: 'Entity, organization, or individual with whom a collaboration or a working relationship is established to address or enhance various aspects of information sharing.',
+    },
+    {
+      key: 'vendor',
+      description: 'Organizations often collaborate with cybersecurity vendors or solution providers to implement security technologies, tools, or services to protect their systems and data.',
+    },
+    {
+      key: 'other',
+      description: 'Other type of Organizations',
+    },
+  ],
   // P
   permissions_ov: [
     { key: 'User' },
