@@ -5,6 +5,7 @@ import * as Yup from 'yup';
 import { FormikConfig } from 'formik/dist/types';
 import { GenericContext } from '@components/common/model/GenericContextModel';
 import ConfidenceField from '@components/common/form/ConfidenceField';
+import Alert from '@mui/material/Alert';
 import TextField from '../../../../components/TextField';
 import { SubscriptionFocus } from '../../../../components/Subscription';
 import CreatedByField from '../../common/form/CreatedByField';
@@ -20,6 +21,7 @@ import { CityEditionOverview_city$key } from './__generated__/CityEditionOvervie
 import { useSchemaEditionValidation } from '../../../../utils/hooks/useEntitySettings';
 import useFormEditor, { GenericData } from '../../../../utils/hooks/useFormEditor';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
+import useConfidenceLevel from '../../../../utils/hooks/useConfidenceLevel';
 
 const cityMutationFieldPatch = graphql`
   mutation CityEditionOverviewFieldPatchMutation(
@@ -136,6 +138,7 @@ const CityEditionOverview: FunctionComponent<CityEditionOverviewProps> = ({
   handleClose,
 }) => {
   const { t_i18n } = useFormatter();
+  const { checkConfidenceForEntity } = useConfidenceLevel();
   const city = useFragment(cityEditionOverviewFragment, cityRef);
   const basicShape = {
     name: Yup.string().min(2).required(t_i18n('This field is required')),
@@ -231,6 +234,15 @@ const CityEditionOverview: FunctionComponent<CityEditionOverviewProps> = ({
         dirty,
       }) => (
         <Form style={{ margin: '20px 0 20px 0' }}>
+          {(!checkConfidenceForEntity(city) && (
+            <Alert severity="warning" variant="outlined"
+              style={{ marginTop: 20, marginBottom: 20 }}
+            >
+              {t_i18n(
+                'Your maximum confidence level is insufficient to edit this object.',
+              )}
+            </Alert>
+          ))}
           <Field
             component={TextField}
             variant="standard"

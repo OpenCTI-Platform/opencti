@@ -2560,7 +2560,6 @@
   "Max Confidence Level:": "Max. Konfidenzniveau:",
   "Please, verify the validity of the selected CSV mapper for the given URL.": "Bitte überprüfen Sie die Gültigkeit des ausgewählten CSV-Mappers für die angegebene URL.",
   "Only successful tests allow the ingestion creation.": "Nur erfolgreiche Tests ermöglichen die Erstellung der Aufnahme.",
-  "Only successful tests allow the ingestion edition.": "Nur erfolgreiche Tests erlauben die Ingestion-Edition.",
   "Request for takedown date": "Antrag auf Übernahmedatum",
   "Enable AI powered platform": "KI-gestützte Plattform aktivieren",
   "To use AI, please enable it in the configuration of your platform.": "Um AI zu nutzen, aktivieren Sie es bitte in der Konfiguration Ihrer Plattform.",
@@ -2663,4 +2662,7 @@
   "Delete public dashboard": "Öffentliches Dashboard löschen",
   "Are you sure you want to delete this public dashboard?": "Sind Sie sicher, dass Sie dieses öffentliche Dashboard löschen möchten?",
   "A public dashboard is a snapshot...": "Ein öffentliches Dashboard ist ein Schnappschuss eines privaten Dashboards zu einem bestimmten Zeitpunkt. Wenn Sie das private Dashboard ändern, werden die bereits erstellten öffentlichen Dashboards nicht geändert."
+  "Only successful tests allow the ingestion edition.": "Nur erfolgreiche Tests erlauben die Ingestion-Edition.",
+  "Your maximum confidence level is insufficient to edit this object.": "Dein maximales Vertrauensniveau ist unzureichend, um dieses Objekt zu bearbeiten.",
+  "You need a maximum confidence level to edit objects in the platform.": "Du benötigst ein maximales Vertrauensniveau, um Objekte auf der Plattform zu bearbeiten."
 }

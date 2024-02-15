@@ -6,6 +6,7 @@ import { OrganizationEditionOverview_organization$data } from '@components/entit
 import { OrganizationEditionContainer_organization$data } from '@components/entities/organizations/__generated__/OrganizationEditionContainer_organization.graphql';
 import { FormikConfig } from 'formik/dist/types';
 import { Option } from '@components/common/form/ReferenceField';
+import Alert from '@mui/material/Alert';
 import ConfidenceField from '../../common/form/ConfidenceField';
 import { ExternalReferencesValues } from '@components/common/form/ExternalReferencesField';
 import makeStyles from '@mui/styles/makeStyles';
@@ -110,6 +111,7 @@ const OrganizationEditionOverviewComponent: FunctionComponent<OrganizationEditio
 }) => {
   const classes = useStyles();
   const { t_i18n } = useFormatter();
+  const { checkConfidenceForEntity } = useConfidenceLevel();
 
   const basicShape = {
     name: Yup.string().min(2).required(t_i18n('This field is required')),
@@ -207,6 +209,15 @@ const OrganizationEditionOverviewComponent: FunctionComponent<OrganizationEditio
         dirty,
       }) => (
         <Form className={classes.formContainer}>
+          {(!checkConfidenceForEntity(organization) && (
+            <Alert severity="warning" variant="outlined"
+              style={{ marginTop: 20, marginBottom: 20 }}
+            >
+              {t_i18n(
+                'Your maximum confidence level is insufficient to edit this object.',
+              )}
+            </Alert>
+          ))}
           <Field
             component={TextField}
             variant="standard"

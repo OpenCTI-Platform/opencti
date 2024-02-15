@@ -2564,7 +2564,6 @@
   "Copy link": "复制链接",
   "Please, verify the validity of the selected CSV mapper for the given URL.": "请验证给定 URL 所选 CSV 映射器的有效性。",
   "Only successful tests allow the ingestion creation.": "只有成功的测试才允许创建摄取。",
-  "Only successful tests allow the ingestion edition.": "只有成功的测试才允许摄取版本。",
   "Public dashboards": "公共仪表板",
   "Existing public dashboards": "现有公共仪表盘",
   "No public dashboard created yet": "尚未创建公共仪表盘",
@@ -2662,5 +2661,7 @@
   "AI Powered": "人工智能技术",
   "Missing token": "丢失的令牌",
   "Generative AI is a beta feature as we are currently fine-tuning our models. Consider checking important information.": "生成式人工智能是一项测试功能，因为我们目前正在对模型进行微调。请考虑检查重要信息。",
-  "Accept": "接受"
+  "Accept": "接受",
+  "Your maximum confidence level is insufficient to edit this object.": "编辑此对象需要更高的最大信心水平。",
+  "You need a maximum confidence level to edit objects in the platform.": "在平台上编辑对象需要最高信心水平。"
 }

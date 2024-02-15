@@ -2564,7 +2564,6 @@
   "Copy link": "リンクをコピー",
   "Please, verify the validity of the selected CSV mapper for the given URL.": "指定された URL に対して選択した CSV マッパーが有効であることを確認してください。",
   "Only successful tests allow the ingestion creation.": "成功したテストのみが取り込みの作成を許可します。",
-  "Only successful tests allow the ingestion edition.": "テストが成功した場合のみ、インジェスト エディションが許可されます。",
   "Public dashboards": "公開ダッシュボード",
   "Existing public dashboards": "既存の公開ダッシュボード",
   "No public dashboard created yet": "まだ作成されていない公開ダッシュボード",
@@ -2662,5 +2661,7 @@
   "AI Powered": "AI搭載",
   "Missing token": "トークンの紛失",
   "Generative AI is a beta feature as we are currently fine-tuning our models. Consider checking important information.": "ジェネレーティブAIは現在モデルを微調整しているベータ機能です。重要な情報を確認してください。",
-  "Accept": "受け入れる"
+  "Accept": "受け入れる",
+  "Your maximum confidence level is insufficient to edit this object.": "このオブジェクトを編集するためには、最大の自信レベルが不足しています。",
+  "You need a maximum confidence level to edit objects in the platform.": "プラットフォーム上でオブジェクトを編集するには、最大の自信レベルが必要です。"
 }
