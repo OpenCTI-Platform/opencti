@@ -9,13 +9,12 @@ import { SelectChangeEvent } from '@mui/material/Select';
 import SearchScopeElement from '@components/common/lists/SearchScopeElement';
 import Chip from '@mui/material/Chip';
 import { OptionValue } from '@components/common/lists/FilterAutocomplete';
-import { dateFilters, Filter, getAvailableOperatorForFilter, integerFilters, isStixObjectTypes, textFilters } from '../../utils/filters/filtersUtils';
+import { dateFilters, Filter, getAvailableOperatorForFilter, getSelectedOptions, integerFilters, isStixObjectTypes, textFilters } from '../../utils/filters/filtersUtils';
 import { useFormatter } from '../i18n';
 import ItemIcon from '../ItemIcon';
 import { getOptionsFromEntities, getUseSearch } from '../../utils/filters/SearchEntitiesUtil';
 import { handleFilterHelpers } from '../../utils/hooks/useLocalStorage';
 import { FilterRepresentative } from './FiltersModel';
-import { capitalizeFirstLetter } from '../../utils/String';
 
 interface FilterChipMenuProps {
   handleClose: () => void;
@@ -227,41 +226,13 @@ export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({
       availableRelationFilterTypes={availableRelationFilterTypes}
     />
   );
-  const getSelectedOptions = (entitiesOptions: OptionValue[]): OptionValue[] => {
-    // we try to get first the element from the search
-    // and if we did not find we tried one from filterReprensentative
-    // Most of the time element from search should be sufficient
-    const mapFilterValues: OptionValue[] = [];
-    filterValues.forEach((value: string) => {
-      const mapRepresentative = entitiesOptions.find((f) => f.value === value);
-      if (mapRepresentative) {
-        mapFilterValues.push({
-          ...mapRepresentative,
-          group: capitalizeFirstLetter(t_i18n('selected')),
-        });
-      } else {
-        const filterRepresentative = filtersRepresentativesMap.get(value);
-        if (filterRepresentative) {
-          mapFilterValues.push({
-            value,
-            type: filterRepresentative?.entity_type || t_i18n('deleted'),
-            parentTypes: [],
-            group: capitalizeFirstLetter(t_i18n('selected')),
-            label: filterRepresentative?.value ?? t_i18n('deleted'),
-            color: filterRepresentative?.color ?? undefined,
-          });
-        }
-      }
-    });
-    return mapFilterValues.sort((a, b) => a.label.localeCompare(b.label));
-  };
 
   const buildAutocompleteFilter = (fKey: string, subKey?: string): ReactNode => {
     const getOptions = getOptionsFromEntities(entities, searchScope, fKey);
-    const entitiesOptions = getOptions
-      .filter((option) => !filterValues.includes(option.value));
+    const optionsValues = subKey ? filterValues.find((f) => f.key === subKey).values : filterValues;
+    const entitiesOptions = getOptions.filter((option) => !optionsValues.includes(option.value));
 
-    const selectedOptions: OptionValue[] = getSelectedOptions(getOptions);
+    const selectedOptions: OptionValue[] = getSelectedOptions(getOptions, optionsValues, filtersRepresentativesMap, t_i18n);
 
     const groupByEntities = (option: OptionValue) => {
       return t_i18n(option?.group ? option?.group : fKey);

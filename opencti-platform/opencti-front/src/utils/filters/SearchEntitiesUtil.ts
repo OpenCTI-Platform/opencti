@@ -25,7 +25,16 @@ export const getOptionsFromEntities = (
   } else if (entities[filterKey]) {
     filteredOptions = entities[filterKey];
   }
-  return filteredOptions.map((f) => (f.group ? f : { ...f, group: f.type }))
+  return filteredOptions.map((f) => {
+    if (f.group) {
+      return f;
+    } if (f.parentTypes) {
+      // In case of entity we group by type
+      return { ...f, group: f.type };
+    }
+    // In the other case like relathionship_type we keep the filterKey as the type will be different everytime
+    return { ...f, group: filterKey };
+  })
     .sort((a, b) => {
     // In case value is null, for "no label" case we want it at the top of the list
       if (!b.value) {
