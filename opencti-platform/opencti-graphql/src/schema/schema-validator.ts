@@ -190,8 +190,8 @@ export const validateInputCreation = async (
 const validateUpdatableAttribute = (instanceType: string, input: Record<string, unknown>) => {
   Object.entries(input).forEach(([key]) => {
     const attribute = schemaAttributesDefinition.getAttribute(instanceType, key);
-    if (attribute?.update === false) {
-      throw ValidationError(attribute.name, { message: `You cannot update ${attribute.name} attribute` });
+    if (!attribute || attribute.update === false) {
+      throw ValidationError(key, { message: 'You cannot update incompatible attribute' });
     }
   });
 };

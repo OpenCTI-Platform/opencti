@@ -1354,13 +1354,9 @@ const innerUpdateAttribute = (instance, rawInput) => {
   // Check consistency
   checkAttributeConsistency(instance.entity_type, key);
   const input = rebuildAndMergeInputFromExistingData(rawInput, instance);
-  if (R.isEmpty(input)) return undefined;
-  // const updatedInputs = [input];
-  // // Specific case for Report
-  // if (instance.entity_type === ENTITY_TYPE_CONTAINER_REPORT && key === 'published') {
-  //   const createdInput = { key: 'created', value: input.value };
-  //   updatedInputs.push(createdInput);
-  // }
+  if (R.isEmpty(input)) {
+    return undefined;
+  }
   return input;
 };
 const prepareAttributesForUpdate = (instance, elements, upsert) => {
@@ -1434,10 +1430,7 @@ const prepareAttributesForUpdate = (instance, elements, upsert) => {
     if (input.key === ATTRIBUTE_ALIASES || input.key === ATTRIBUTE_ALIASES_OPENCTI) {
       const filteredValues = input.value.filter((e) => normalizeName(e) !== normalizeName(instance.name));
       const uniqAliases = R.uniqBy((e) => normalizeName(e), filteredValues);
-      return {
-        key: input.key,
-        value: uniqAliases
-      };
+      return { key: input.key, value: uniqAliases };
     }
     // No need to rework the input
     return input;

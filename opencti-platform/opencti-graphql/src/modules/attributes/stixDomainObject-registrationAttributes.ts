@@ -43,7 +43,7 @@ const stixDomainObjectAttributes: Array<AttributeDefinition> = [
   lang,
   confidence,
   revoked,
-  { ...files, update: true },
+  files,
   { name: 'x_opencti_graph_data', label: 'Graph data', type: 'string', format: 'text', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true },
   { name: 'x_opencti_workflow_id', label: 'Workflow status', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: true }
 ];

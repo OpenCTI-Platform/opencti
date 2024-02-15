@@ -85,12 +85,19 @@ describe('Loaders', () => {
 });
 
 describe('Attribute updater', () => {
-  it.skip('should update fail for unknown attributes', async () => {
+  it('should update fail for protected attributes', async () => {
+    const campaign = await elLoadById(testContext, ADMIN_USER, 'campaign--92d46985-17a6-4610-8be8-cc70c82ed214');
+    const campaignId = campaign.internal_id;
+    const input = { id: '92d46985-17a6-4610-8be8-cc70c82ed214' };
+    const dataPromise = patchAttribute(testContext, ADMIN_USER, campaignId, ENTITY_TYPE_CAMPAIGN, input);
+    expect(dataPromise).rejects.toThrow();
+  });
+  it('should update fail for unknown attributes', async () => {
     const campaign = await elLoadById(testContext, ADMIN_USER, 'campaign--92d46985-17a6-4610-8be8-cc70c82ed214');
     const campaignId = campaign.internal_id;
     const input = { observable_value: 'test' };
-    const { element: update } = await patchAttribute(testContext, ADMIN_USER, campaignId, ENTITY_TYPE_CAMPAIGN, input);
-    expect(update).rejects.toThrow();
+    const dataPromise = patchAttribute(testContext, ADMIN_USER, campaignId, ENTITY_TYPE_CAMPAIGN, input);
+    expect(dataPromise).rejects.toThrow();
   });
   it('should update dont do anything if already the same', async () => {
     const campaign = await elLoadById(testContext, ADMIN_USER, 'campaign--92d46985-17a6-4610-8be8-cc70c82ed214');
