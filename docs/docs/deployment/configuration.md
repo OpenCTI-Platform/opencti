@@ -128,7 +128,7 @@ Here are the configuration keys, for both containers (environment variables) and
 | redis:use_ssl   | REDIS__USE_SSL       | `false`       | Is the Redis Server has TLS enabled                                       |
 | redis:username  | REDIS__USERNAME      |               | Username of the Redis Server                                              |
 | redis:password  | REDIS__PASSWORD      |               | Password of the Redis Server                                              |
-| redis:ca        | REDIS__CA            | [}            | List of path(s) of the CA certificate(s)                                  |
+| redis:ca        | REDIS__CA            | []            | List of path(s) of the CA certificate(s)                                  |
 | redis:trimming  | REDIS__TRIMMING      | 2000000       | Number of elements to maintain in the stream. (0 = unlimited)             |
 
 #### RabbitMQ
@@ -146,7 +146,7 @@ Here are the configuration keys, for both containers (environment variables) and
 | rabbitmq:use_ssl_cert                       | RABBITMQ__USE_SSL_CERT            |                | Path or cert content                        |
 | rabbitmq:use_ssl_key                        | RABBITMQ__USE_SSL_KEY             |                | Path or key content                         |
 | rabbitmq:use_ssl_pfx                        | RABBITMQ__USE_SSL_PFX             |                | Path or pfx content                         |
-| rabbitmq:use_ssl_ca                         | RABBITMQ__USE_SSL_CA              |                | Path or cacert content                      |
+| rabbitmq:use_ssl_ca                         | RABBITMQ__USE_SSL_CA              | []             | List of path(s) of the CA certificate(s)    |
 | rabbitmq:use_ssl_passphrase                 | RABBITMQ__SSL_PASSPHRASE          |                | Passphrase for the key certificate          |
 | rabbitmq:use_ssl_reject_unauthorized        | RABBITMQ__SSL_REJECT_UNAUTHORIZED | `false`        | Reject rabbit self signed certificate       |
 | -                                           | -                                 | -              | -                                           |
