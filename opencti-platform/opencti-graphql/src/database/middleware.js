@@ -1695,9 +1695,6 @@ export const updateAttributeMetaResolved = async (context, user, initial, inputs
   if ((opts.references ?? []).length > 0 && references.length !== (opts.references ?? []).length) {
     throw FunctionalError('Cant find element references for commit', { id: initial.internal_id, references: opts.references });
   }
-  // Validate input attributes
-  const entitySetting = await getEntitySettingFromCache(context, initial.entity_type);
-  await validateInputUpdate(context, user, initial.entity_type, initial, updates, entitySetting);
   // Endregion
   // Individual check
   const { bypassIndividualUpdate } = opts;
@@ -1735,6 +1732,7 @@ export const updateAttributeMetaResolved = async (context, user, initial, inputs
   const updated = mergeInstanceWithUpdateInputs(initial, inputs);
   const keys = R.map((t) => t.key, attributes);
   if (opts.bypassValidation !== true) { // Allow creation directly from the back-end
+    const entitySetting = await getEntitySettingFromCache(context, initial.entity_type);
     const isAllowedToByPass = isUserHasCapability(user, BYPASS_REFERENCE);
     if (!isAllowedToByPass && entitySetting?.enforce_reference) {
       const isNoReferenceKey = noReferenceAttributes.includes(R.head(keys)) && keys.length === 1;
@@ -2004,6 +2002,10 @@ export const updateAttribute = async (context, user, id, type, inputs, opts = {}
   if (!initial) {
     throw FunctionalError('Cant find element to update', { id, type });
   }
+  // Validate input attributes
+  const entitySetting = await getEntitySettingFromCache(context, initial.entity_type);
+  await validateInputUpdate(context, user, initial.entity_type, initial, inputs, entitySetting);
+  // Continue update
   return updateAttributeFromLoadedWithRefs(context, user, initial, inputs, opts);
 };
 
