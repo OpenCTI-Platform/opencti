@@ -103,6 +103,7 @@ enum FilterOperator {
   script
   nil
   not_nil
+  search
 }
 
 input FilterGroup {

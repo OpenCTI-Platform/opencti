@@ -54,9 +54,12 @@ export const integerFilters = [
 
 export const textFilters = [
   'name',
-  'description',
   'value',
   'pattern',
+];
+
+export const longTextFilters = [
+  'description',
 ];
 
 // filters that can have 'eq' or 'not_eq' operator
@@ -641,6 +644,9 @@ export const getDefaultOperatorFilter = (filterKey: string) => {
   if (textFilters.includes(filterKey)) {
     return 'starts_with';
   }
+  if (longTextFilters.includes(filterKey)) {
+    return 'search';
+  }
   return 'eq';
 };
 
@@ -689,6 +695,10 @@ export const getAvailableOperatorForFilterKey = (filterKey: string): string[] =>
     return ['eq', 'not_eq', 'nil', 'not_nil', 'contains', 'not_contains',
       'starts_with', 'not_starts_with', 'ends_with', 'not_ends_with'];
   }
+  if (longTextFilters.includes(filterKey)) {
+    return ['search'];
+  }
+
   return ['eq', 'not_eq', 'nil', 'not_nil'];
 };
 

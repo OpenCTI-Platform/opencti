@@ -1226,6 +1226,229 @@ describe('Complex filters combinations for elastic queries', () => {
       } });
     expect(queryResult.errors.length).toEqual(1);
   });
+  it('should list entities according to search filters with trunc word', async () => {
+    const queryResult = await queryAsAdmin({ query: REPORT_LIST_QUERY,
+      variables: {
+        first: 25,
+        filters: {
+          mode: 'and',
+          filters: [{
+            key: 'description',
+            // Look for this description value 'Report for testing purposes (random data).'
+            values: ['rt for testing purposes (rando'],
+            operator: 'search',
+            mode: 'or',
+          }],
+          filterGroups: [],
+        },
+      } });
+    expect(queryResult.data.reports.edges.length).toEqual(1);
+  });
+
+  it('should list entities according to search filters with trunc word and unordered', async () => {
+    const queryResult = await queryAsAdmin({ query: REPORT_LIST_QUERY,
+      variables: {
+        first: 25,
+        filters: {
+          mode: 'and',
+          filters: [{
+            key: 'description',
+            // Look for this description value'Report for testing purposes (random data).'
+            values: ['for rt testing (rando purposes '],
+            operator: 'search',
+            mode: 'or',
+          }],
+          filterGroups: [],
+        },
+      } });
+    expect(queryResult.data.reports.edges.length).toEqual(1);
+  });
+
+  it('should not find entities according to search filters with trunc word and double quote', async () => {
+    const queryResult = await queryAsAdmin({ query: REPORT_LIST_QUERY,
+      variables: {
+        first: 25,
+        filters: {
+          mode: 'and',
+          filters: [{
+            key: 'description',
+            // Look for this description value'Report for testing purposes (random data).'
+            values: ['"rt for testing purposes (rando"'],
+            operator: 'search',
+            mode: 'or',
+          }],
+          filterGroups: [],
+        },
+      } });
+    expect(queryResult.data.reports.edges.length).toEqual(0);
+  });
+  it('should find entities according to search filters with double quote', async () => {
+    const queryResult = await queryAsAdmin({ query: REPORT_LIST_QUERY,
+      variables: {
+        first: 25,
+        filters: {
+          mode: 'and',
+          filters: [{
+            key: 'description',
+            // Look for this description value'Report for testing purposes (random data).'
+            values: ['"for testing purposes"'],
+            operator: 'search',
+            mode: 'or',
+          }],
+          filterGroups: [],
+        },
+      } });
+    expect(queryResult.data.reports.edges.length).toEqual(1);
+  });
+
+  it('should not find any entities according to search filters which is not in any description', async () => {
+    const queryResult = await queryAsAdmin({ query: REPORT_LIST_QUERY,
+      variables: {
+        first: 25,
+        filters: {
+          mode: 'and',
+          filters: [{
+            key: 'description',
+            values: ['Abracadabra'],
+            operator: 'search',
+            mode: 'or',
+          }],
+          filterGroups: [],
+        },
+      } });
+    expect(queryResult.data.reports.edges.length).toEqual(0);
+  });
+
+  it('should find entities according to search filters with one existing word and another word which is not present in any description', async () => {
+    const queryResult = await queryAsAdmin({ query: REPORT_LIST_QUERY,
+      variables: {
+        first: 25,
+        filters: {
+          mode: 'and',
+          filters: [{
+            key: 'description',
+            values: ['Abracadabra report'],
+            operator: 'search',
+            mode: 'or',
+          }],
+          filterGroups: [],
+        },
+      } });
+    expect(queryResult.data.reports.edges.length).toEqual(3);
+  });
+
+  it('should find entities according to search filters on short string', async () => {
+    const queryResult = await queryAsAdmin({ query: REPORT_LIST_QUERY,
+      variables: {
+        first: 25,
+        filters: {
+          mode: 'and',
+          filters: [{
+            key: 'name',
+            // Look for this name value 'A demo report for testing purposes'
+            values: ['port for testi'],
+            operator: 'search',
+            mode: 'or',
+          }],
+          filterGroups: [],
+        },
+      } });
+    expect(queryResult.data.reports.edges.length).toEqual(1);
+  });
+
+  it('should find entities according to search filters on unordered short string', async () => {
+    const queryResult = await queryAsAdmin({ query: REPORT_LIST_QUERY,
+      variables: {
+        first: 25,
+        filters: {
+          mode: 'and',
+          filters: [{
+            key: 'name',
+            // Look for this name value 'A demo report for testing purposes'
+            values: ['testi port for'],
+            operator: 'search',
+            mode: 'or',
+          }],
+          filterGroups: [],
+        },
+      } });
+    expect(queryResult.data.reports.edges.length).toEqual(1);
+  });
+
+  it('should not find entities according to search filters on trunc short string and double quotes', async () => {
+    const queryResult = await queryAsAdmin({ query: REPORT_LIST_QUERY,
+      variables: {
+        first: 25,
+        filters: {
+          mode: 'and',
+          filters: [{
+            key: 'name',
+            // Look for this name value 'A demo report for testing purposes'
+            values: ['"eport for tes"'],
+            operator: 'search',
+            mode: 'or',
+          }],
+          filterGroups: [],
+        },
+      } });
+    expect(queryResult.data.reports.edges.length).toEqual(0);
+  });
+
+  it('should find entities according to search filters on short string with double quotes', async () => {
+    const queryResult = await queryAsAdmin({ query: REPORT_LIST_QUERY,
+      variables: {
+        first: 25,
+        filters: {
+          mode: 'and',
+          filters: [{
+            key: 'name',
+            // Look for this name value 'A demo report for testing purposes'
+            values: ['"report for testing"'],
+            operator: 'search',
+            mode: 'or',
+          }],
+          filterGroups: [],
+        },
+      } });
+    expect(queryResult.data.reports.edges.length).toEqual(1);
+  });
+
+  it('should not find any entities according to search filters on abracadra', async () => {
+    const queryResult = await queryAsAdmin({ query: REPORT_LIST_QUERY,
+      variables: {
+        first: 25,
+        filters: {
+          mode: 'and',
+          filters: [{
+            key: 'name',
+            values: ['abracadra'],
+            operator: 'search',
+            mode: 'or',
+          }],
+          filterGroups: [],
+        },
+      } });
+    expect(queryResult.data.reports.edges.length).toEqual(0);
+  });
+
+  it('should find one entity according to search filters on abracadra and testing', async () => {
+    const queryResult = await queryAsAdmin({ query: REPORT_LIST_QUERY,
+      variables: {
+        first: 25,
+        filters: {
+          mode: 'and',
+          filters: [{
+            key: 'name',
+            values: ['abracadra testing'],
+            operator: 'search',
+            mode: 'or',
+          }],
+          filterGroups: [],
+        },
+      } });
+    expect(queryResult.data.reports.edges.length).toEqual(1);
+  });
+
   it('should test environment deleted', async () => {
     const DELETE_REPORT_QUERY = gql`
         mutation reportDelete($id: ID!) {

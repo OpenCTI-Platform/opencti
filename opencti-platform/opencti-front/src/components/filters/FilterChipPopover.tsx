@@ -9,7 +9,16 @@ import { SelectChangeEvent } from '@mui/material/Select';
 import SearchScopeElement from '@components/common/lists/SearchScopeElement';
 import Chip from '@mui/material/Chip';
 import { OptionValue } from '@components/common/lists/FilterAutocomplete';
-import { dateFilters, Filter, getAvailableOperatorForFilter, getSelectedOptions, integerFilters, isStixObjectTypes, textFilters } from '../../utils/filters/filtersUtils';
+import {
+  dateFilters,
+  Filter,
+  getAvailableOperatorForFilter,
+  getSelectedOptions,
+  integerFilters,
+  isStixObjectTypes,
+  longTextFilters,
+  textFilters,
+} from '../../utils/filters/filtersUtils';
 import { useFormatter } from '../i18n';
 import ItemIcon from '../ItemIcon';
 import { getOptionsFromEntities, getUseSearch } from '../../utils/filters/SearchEntitiesUtil';
@@ -48,6 +57,7 @@ const OperatorKeyValues: {
   not_starts_with: 'Not starts with',
   ends_with: 'Ends with',
   not_ends_with: 'Not ends with',
+  search: 'Search',
 };
 
 interface BasicNumberInputProps {
@@ -204,6 +214,7 @@ export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({
       dateFilters.includes(fKey)
       || integerFilters.includes(fKey)
       || textFilters.includes(fKey)
+      || longTextFilters.includes(fKey)
     );
   };
 
@@ -316,7 +327,7 @@ export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({
         />
       );
     }
-    if (textFilters.includes(fKey)) {
+    if (textFilters.includes(fKey) || longTextFilters.includes(fKey)) {
       return (
         <BasicTextInput
           filter={filter}
