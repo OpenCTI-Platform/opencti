@@ -160,6 +160,9 @@ const UserEditionGroups = createFragmentContainer(UserEditionGroupsComponent, {
             grantable_groups {
               id
               name
+              group_confidence_level{
+                max_confidence
+              }
             }
           }
         }
