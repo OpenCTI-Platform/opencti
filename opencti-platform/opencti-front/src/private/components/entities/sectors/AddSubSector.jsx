@@ -9,6 +9,7 @@ import inject18n from '../../../../components/i18n';
 import { QueryRenderer } from '../../../../relay/environment';
 import AddSubSectorsLines, { addSubSectorsLinesQuery } from './AddSubSectorsLines';
 import SectorCreation from './SectorCreation';
+import SearchInput from '../../../../components/SearchInput';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -95,6 +96,11 @@ class AddSubSector extends Component {
           onClose={this.handleClose.bind(this)}
         >
           <>
+            <SearchInput
+              variant="small"
+              onSubmit={this.handleSearch.bind(this)}
+              keyword={this.state.search}
+            />
             <QueryRenderer
               query={addSubSectorsLinesQuery}
               variables={{
