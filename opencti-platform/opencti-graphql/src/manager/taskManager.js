@@ -137,6 +137,7 @@ const computeQueryTaskElements = async (context, user, task) => {
   const { actions, task_position, task_filters, task_search = null, task_excluded_ids = [] } = task;
   const processingElements = [];
   // Fetch the information
+  // note that the query is filtered to allow only elements with matching confidence level
   const data = await executeTaskQuery(context, user, task_filters, task_search, task_position);
   // const expectedNumber = data.pageInfo.globalCount;
   const elements = data.edges;

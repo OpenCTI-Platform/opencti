@@ -184,17 +184,38 @@ export const adaptFiltersWithUserConfidence = (user: AuthUser, filters: FilterGr
     throw LockTimeoutError({ user_id: user.id }, 'User has no effective max confidence level and cannot run this filter');
   }
   const userMaxConfidenceLevel = user.effective_confidence_level?.max_confidence as number;
-  const confidenceFilter: Filter = {
+
+  // we will filter to get only elements that have...
+  // ... no confidence attribute (no control to do)
+  const entitiesWithoutConfidence: Filter = {
+    key: [
+      'entity_type'
+    ],
+    operator: FilterOperator.NotEq,
+    values: ['Stix-Domain-Object', 'Stix-Relationship'] // only types with confidence judging from schema
+  };
+  // ... a confidence level lower or equal to the user's level
+  const userConfidenceFilter: Filter = {
     key: ['confidence'],
-    mode: FilterMode.And,
     operator: FilterOperator.Lte,
     values: [userMaxConfidenceLevel]
+  };
+  // ... or no confidence level at all (might happen when inserting data with the API with version <6.0, we consider zero)
+  const nilConfidenceFilter: Filter = {
+    key: ['confidence'],
+    operator: FilterOperator.Nil,
+    values: [],
+  };
+  const orFilterGroup: FilterGroup = {
+    mode: FilterMode.Or,
+    filters: [entitiesWithoutConfidence, userConfidenceFilter, nilConfidenceFilter,],
+    filterGroups: [],
   };
 
   // nest: this filter AND the input filters
   return {
     mode: FilterMode.And,
-    filters: [confidenceFilter],
-    filterGroups: isFilterGroupNotEmpty(filters) ? [filters] : [],
+    filters: [],
+    filterGroups: isFilterGroupNotEmpty(filters) ? [orFilterGroup, filters] : [orFilterGroup],
   };
 };

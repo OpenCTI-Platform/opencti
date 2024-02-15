@@ -1,14 +1,14 @@
 import { describe, expect, it } from 'vitest';
 import {
+  adaptFiltersWithUserConfidence,
   adaptUpdateInputsConfidence,
   computeUserEffectiveConfidenceLevel,
   controlCreateInputWithUserConfidence,
   controlUpsertInputWithUserConfidence,
-  controlUserConfidenceAgainstElement,
-  adaptFiltersWithUserConfidence
+  controlUserConfidenceAgainstElement
 } from '../../../src/utils/confidence-level';
 import type { AuthUser } from '../../../src/types/user';
-import { type Filter, type FilterGroup, FilterMode, FilterOperator } from '../../../src/generated/graphql';
+import { type FilterGroup, FilterMode, FilterOperator } from '../../../src/generated/graphql';
 
 const makeUser = (confidence: number | null) => ({
   id: `user_${confidence}`,
@@ -226,24 +226,39 @@ describe('Confidence level utilities', () => {
         { key: ['score'], operator: FilterOperator.Gte, mode: FilterMode.And, values: [70] }
       ],
     };
-    const filter50: Filter = {
-      mode: FilterMode.And,
-      operator: FilterOperator.Lte,
-      key: ['confidence'],
-      values: [50]
+    const injectedFilters: FilterGroup = {
+      mode: FilterMode.Or,
+      filterGroups: [],
+      filters: [
+        {
+          key: ['entity_type'],
+          operator: FilterOperator.NotEq,
+          values: ['Stix-Domain-Object', 'Stix-Relationship'],
+        },
+        {
+          key: ['confidence'],
+          operator: FilterOperator.Lte,
+          values: [50],
+        },
+        {
+          key: ['confidence'],
+          operator: FilterOperator.Nil,
+          values: [],
+        },
+      ],
     };
 
     expect(adaptFiltersWithUserConfidence(makeUser(50), emptyFilterGroup))
       .toEqual({
         mode: FilterMode.And,
-        filters: [filter50],
-        filterGroups: []
+        filters: [],
+        filterGroups: [injectedFilters]
       });
     expect(adaptFiltersWithUserConfidence(makeUser(50), exampleFilterGroup))
       .toEqual({
         mode: FilterMode.And,
-        filters: [filter50],
-        filterGroups: [exampleFilterGroup]
+        filters: [],
+        filterGroups: [injectedFilters, exampleFilterGroup]
       });
   });
 });
