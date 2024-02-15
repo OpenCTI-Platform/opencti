@@ -392,7 +392,7 @@ const TasksList = ({ data }) => {
               <Button
                 style={{ position: 'absolute', right: 10, top: 10 }}
                 variant={task.errors.length > 0 ? 'contained' : 'outlined'}
-                color={'secondary'}
+                color={'error'}
                 disabled={task.errors.length === 0}
                 onClick={() => handleOpenErrors(task.errors)}
                 size="small"
