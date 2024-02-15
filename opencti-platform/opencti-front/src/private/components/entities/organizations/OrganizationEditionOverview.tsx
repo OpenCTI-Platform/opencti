@@ -6,9 +6,9 @@ import { OrganizationEditionOverview_organization$data } from '@components/entit
 import { OrganizationEditionContainer_organization$data } from '@components/entities/organizations/__generated__/OrganizationEditionContainer_organization.graphql';
 import { FormikConfig } from 'formik/dist/types';
 import { Option } from '@components/common/form/ReferenceField';
-import ConfidenceField from '../../common/form/ConfidenceField';
 import { ExternalReferencesValues } from '@components/common/form/ExternalReferencesField';
 import makeStyles from '@mui/styles/makeStyles';
+import ConfidenceField from '../../common/form/ConfidenceField';
 import TextField from '../../../../components/TextField';
 import { SubscriptionFocus } from '../../../../components/Subscription';
 import CreatedByField from '../../common/form/CreatedByField';
@@ -23,6 +23,7 @@ import { useSchemaEditionValidation } from '../../../../utils/hooks/useEntitySet
 import useFormEditor, { GenericData } from '../../../../utils/hooks/useFormEditor';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import { useFormatter } from '../../../../components/i18n';
+import AlertConfidenceForEntity from '../../../../components/AlertConfidenceForEntity';
 
 const useStyles = makeStyles(() => ({
   formContainer: {
