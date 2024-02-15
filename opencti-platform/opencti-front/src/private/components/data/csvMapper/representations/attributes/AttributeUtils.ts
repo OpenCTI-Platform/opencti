@@ -7,7 +7,7 @@ import { CsvMapperRepresentationFormData } from '@components/data/csvMapper/repr
 import {
   CsvMapperRepresentationAttributesForm_allSchemaAttributes$data,
 } from '@components/data/csvMapper/representations/attributes/__generated__/CsvMapperRepresentationAttributesForm_allSchemaAttributes.graphql';
-import { SchemaAttribute } from '@components/data/csvMapper/representations/attributes/CsvMapperRepresentationAttributesForm';
+import { SchemaAttribute } from './CsvMapperRepresentationAttributesForm';
 import { isNotEmptyField } from '../../../../../../utils/utils';
 import { defaultValuesToStringArray } from '../../../../../../utils/defaultValues';
 import { useComputeDefaultValues } from '../../../../../../utils/hooks/useDefaultValues';
