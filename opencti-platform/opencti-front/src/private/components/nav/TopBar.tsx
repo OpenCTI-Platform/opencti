@@ -275,13 +275,7 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
                     to="/dashboard/profile/triggers"
                     color={location.pathname === '/dashboard/profile/triggers' ? 'primary' : 'inherit'}
                   >
-                    <Badge
-                      color="secondary"
-                      variant="dot"
-                      invisible={!isNewNotification}
-                    >
-                      <AlarmOnOutlined fontSize="medium" />
-                    </Badge>
+                    <AlarmOnOutlined fontSize="medium" />
                   </IconButton>
                 </Tooltip>
               </>
