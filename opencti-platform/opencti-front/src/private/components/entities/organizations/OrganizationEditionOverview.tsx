@@ -154,11 +154,11 @@ const OrganizationEditionOverviewComponent: FunctionComponent<OrganizationEditio
     });
   };
 
-  const handleSubmitField = (name: string, value: string | string[] | number | number[] | null) => {
+  const handleSubmitField = (name: string, value: string | string[] | number | number[] | Option | null) => {
     if (!enableReferences) {
       let finalValue = value;
       if (name === 'x_opencti_workflow_id') {
-        finalValue = (value as unknown as Option).value;
+        finalValue = (value as Option).value;
       }
       organizationValidator
         .validateAt(name, { [name]: value })
