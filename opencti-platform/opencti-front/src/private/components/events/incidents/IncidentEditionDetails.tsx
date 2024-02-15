@@ -3,7 +3,6 @@ import { graphql, useFragment, useMutation } from 'react-relay';
 import { Field, Form, Formik } from 'formik';
 import * as Yup from 'yup';
 import { FormikConfig } from 'formik/dist/types';
-import Alert from '@mui/material/Alert';
 import { isNone, useFormatter } from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
 import { SubscriptionFocus } from '../../../../components/Subscription';
@@ -16,7 +15,7 @@ import { Option } from '../../common/form/ReferenceField';
 import { IncidentEditionDetails_incident$key } from './__generated__/IncidentEditionDetails_incident.graphql';
 import { parse } from '../../../../utils/Time';
 import { GenericContext } from '../../common/model/GenericContextModel';
-import useConfidenceLevel from '../../../../utils/hooks/useConfidenceLevel';
+import AlertConfidenceForEntity from '../../../../components/AlertConfidenceForEntity';
 
 const incidentMutationFieldPatch = graphql`
   mutation IncidentEditionDetailsFieldPatchMutation(
@@ -92,7 +91,6 @@ const IncidentEditionDetails: FunctionComponent<
 IncidentEditionDetailsProps
 > = ({ incidentRef, context, enableReferences = false, handleClose }) => {
   const { t_i18n } = useFormatter();
-  const { checkConfidenceForEntity } = useConfidenceLevel();
 
   const incident = useFragment(incidentEditionDetailsFragment, incidentRef);
   const isInferred = incident.is_inferred;
@@ -180,15 +178,7 @@ IncidentEditionDetailsProps
         dirty,
       }) => (
         <Form style={{ margin: '20px 0 20px 0' }}>
-          {(!checkConfidenceForEntity(incident) && (
-            <Alert severity="warning" variant="outlined"
-              style={{ marginTop: 20, marginBottom: 20 }}
-            >
-              {t_i18n(
-                'Your maximum confidence level is insufficient to edit this object.',
-              )}
-            </Alert>
-          ))}
+          <AlertConfidenceForEntity entity={incident} />
           <Field
             component={DateTimePickerField}
             name="first_seen"

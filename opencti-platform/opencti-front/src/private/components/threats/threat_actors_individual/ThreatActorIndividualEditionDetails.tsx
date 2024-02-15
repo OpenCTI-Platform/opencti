@@ -3,7 +3,6 @@ import { graphql, useFragment, useMutation } from 'react-relay';
 import * as Yup from 'yup';
 import { Field, Form, Formik } from 'formik';
 import { FormikConfig } from 'formik/dist/types';
-import Alert from '@mui/material/Alert';
 import {
   ThreatActorIndividualMutationRelationDelete,
   threatActorIndividualRelationAddMutation,
@@ -22,8 +21,8 @@ import { Option } from '../../common/form/ReferenceField';
 import { ThreatActorIndividualEditionDetails_ThreatActorIndividual$key } from './__generated__/ThreatActorIndividualEditionDetails_ThreatActorIndividual.graphql';
 import { ThreatActorIndividualEditionDetailsFocusMutation } from './__generated__/ThreatActorIndividualEditionDetailsFocusMutation.graphql';
 import { useSchemaEditionValidation } from '../../../../utils/hooks/useEntitySettings';
-import useConfidenceLevel from '../../../../utils/hooks/useConfidenceLevel';
 import useFormEditor, { GenericData } from '../../../../utils/hooks/useFormEditor';
+import AlertConfidenceForEntity from '../../../../components/AlertConfidenceForEntity';
 
 const threatActorIndividualMutationFieldPatch = graphql`
   mutation ThreatActorIndividualEditionDetailsFieldPatchMutation(
@@ -97,7 +96,6 @@ const ThreatActorIndividualEditionDetailsComponent: FunctionComponent<
 ThreatActorIndividualEditionDetailsProps
 > = ({ threatActorIndividualRef, context, enableReferences, handleClose }) => {
   const { t_i18n } = useFormatter();
-  const { checkConfidenceForEntity } = useConfidenceLevel();
   const threatActorIndividual = useFragment(
     threatActorIndividualEditionDetailsFragment,
     threatActorIndividualRef,
@@ -247,15 +245,7 @@ ThreatActorIndividualEditionDetailsProps
         }) => (
           <div>
             <Form style={{ margin: '20px 0 20px 0' }}>
-              {(!checkConfidenceForEntity(threatActorIndividual) && (
-                <Alert severity="warning" variant="outlined"
-                  style={{ marginTop: 20, marginBottom: 20 }}
-                >
-                  {t_i18n(
-                    'Your maximum confidence level is insufficient to edit this object.',
-                  )}
-                </Alert>
-              ))}
+              <AlertConfidenceForEntity entity={threatActorIndividual} />
               <Field
                 component={DateTimePickerField}
                 name="first_seen"

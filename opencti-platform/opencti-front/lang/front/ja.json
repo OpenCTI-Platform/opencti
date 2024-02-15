@@ -2662,6 +2662,6 @@
   "Missing token": "トークンの紛失",
   "Generative AI is a beta feature as we are currently fine-tuning our models. Consider checking important information.": "ジェネレーティブAIは現在モデルを微調整しているベータ機能です。重要な情報を確認してください。",
   "Accept": "受け入れる",
-  "Your maximum confidence level is insufficient to edit this object.": "このオブジェクトを編集するためには、最大の自信レベルが不足しています。",
-  "You need a maximum confidence level to edit objects in the platform.": "プラットフォーム上でオブジェクトを編集するには、最大の自信レベルが必要です。"
+  "Your confidence level is insufficient to edit this object.": "このオブジェクトを編集するためには、最大の自信レベルが不足しています。",
+  "You need a confidence level to edit objects in the platform.": "プラットフォーム上でオブジェクトを編集するには、最大の自信レベルが必要です。"
 }

@@ -23,7 +23,7 @@ const AlertConfidenceForEntity: React.FC<AlertConfidenceForEntityProps> = ({ ent
       variant="outlined"
       style={{ marginTop: 20, marginBottom: 20 }}
     >
-      {t_i18n('Your maximum confidence level is insufficient to edit this object.')}
+      {t_i18n('Your confidence level is insufficient to edit this object.')}
     </Alert>
   );
 };

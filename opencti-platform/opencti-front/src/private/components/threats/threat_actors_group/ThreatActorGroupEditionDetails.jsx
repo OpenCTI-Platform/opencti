@@ -3,7 +3,6 @@ import { createFragmentContainer, graphql } from 'react-relay';
 import * as Yup from 'yup';
 import * as R from 'ramda';
 import { Field, Form, Formik } from 'formik';
-import Alert from '@mui/material/Alert';
 import { ThreatActorGroupEditionOverviewFocus, ThreatActorGroupMutationRelationAdd, ThreatActorGroupMutationRelationDelete } from './ThreatActorGroupEditionOverview';
 import { useFormatter } from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
@@ -15,9 +14,9 @@ import CommitMessage from '../../common/form/CommitMessage';
 import { adaptFieldValue } from '../../../../utils/String';
 import DateTimePickerField from '../../../../components/DateTimePickerField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
-import useConfidenceLevel from '../../../../utils/hooks/useConfidenceLevel';
 import { useSchemaEditionValidation } from '../../../../utils/hooks/useEntitySettings';
 import useFormEditor from '../../../../utils/hooks/useFormEditor';
+import AlertConfidenceForEntity from '../../../../components/AlertConfidenceForEntity';
 
 const ThreatActorGroupMutationFieldPatch = graphql`
   mutation ThreatActorGroupEditionDetailsFieldPatchMutation(
@@ -59,7 +58,6 @@ const ThreatActorGroupEditionDetailsComponent = ({
   handleClose,
 }) => {
   const { t_i18n } = useFormatter();
-  const { checkConfidenceForEntity } = useConfidenceLevel();
   const basicShape = {
     first_seen: Yup.date()
       .nullable()
@@ -210,15 +208,7 @@ const ThreatActorGroupEditionDetailsComponent = ({
         }) => (
           <div>
             <Form style={{ margin: '20px 0 20px 0' }}>
-              {(!checkConfidenceForEntity(threatActorGroup) && (
-                <Alert severity="warning" variant="outlined"
-                  style={{ marginTop: 20, marginBottom: 20 }}
-                >
-                  {t_i18n(
-                    'Your maximum confidence level is insufficient to edit this object.',
-                  )}
-                </Alert>
-              ))}
+              <AlertConfidenceForEntity entity={threatActorGroup} />
               <Field
                 component={DateTimePickerField}
                 name="first_seen"

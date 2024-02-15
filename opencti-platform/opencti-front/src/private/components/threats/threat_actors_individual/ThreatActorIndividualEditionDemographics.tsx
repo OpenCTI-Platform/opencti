@@ -4,7 +4,6 @@ import { graphql, useFragment } from 'react-relay';
 import * as Yup from 'yup';
 import CountryField from '@components/common/form/CountryField';
 import { Option } from '@components/common/form/ReferenceField';
-import Alert from '@mui/material/Alert';
 import {
   ThreatActorIndividualEditionOverviewFocus,
   ThreatActorIndividualMutationRelationDelete,
@@ -23,9 +22,9 @@ import { EditOperation } from './__generated__/ThreatActorIndividualEditionDetai
 import OpenVocabField from '../../common/form/OpenVocabField';
 import { isEmptyField } from '../../../../utils/utils';
 import DateTimePickerField from '../../../../components/DateTimePickerField';
-import useConfidenceLevel from '../../../../utils/hooks/useConfidenceLevel';
 import useFormEditor, { GenericData } from '../../../../utils/hooks/useFormEditor';
 import { useSchemaEditionValidation } from '../../../../utils/hooks/useEntitySettings';
+import AlertConfidenceForEntity from '../../../../components/AlertConfidenceForEntity';
 
 const threatActorIndividualEditionDemographicsFocus = graphql`
   mutation ThreatActorIndividualEditionDemographicsFocusMutation(
@@ -88,7 +87,6 @@ const ThreatActorIndividualEditionDemographicsComponent = ({
   context,
 }: ThreatActorIndividualEditionDemographicsComponentProps) => {
   const { t_i18n } = useFormatter();
-  const { checkConfidenceForEntity } = useConfidenceLevel();
   const threatActorIndividual = useFragment(
     threatActorIndividualEditionDemographicsFragment,
     threatActorIndividualRef,
@@ -187,15 +185,7 @@ const ThreatActorIndividualEditionDemographicsComponent = ({
         {({ submitForm, isSubmitting, setFieldValue, isValid, dirty }) => (
           <div>
             <Form style={{ margin: '20px 0 20px 0' }}>
-              {(!checkConfidenceForEntity(threatActorIndividual) && (
-                <Alert severity="warning" variant="outlined"
-                  style={{ marginTop: 20, marginBottom: 20 }}
-                >
-                  {t_i18n(
-                    'Your maximum confidence level is insufficient to edit this object.',
-                  )}
-                </Alert>
-              ))}
+              <AlertConfidenceForEntity entity={threatActorIndividual} />
               <CountryField
                 id="PlaceOfBirth"
                 name="bornIn"

@@ -2,7 +2,6 @@ import React from 'react';
 import * as Yup from 'yup';
 import { Form, Formik } from 'formik';
 import { graphql, useFragment } from 'react-relay';
-import Alert from '@mui/material/Alert';
 import {
   ThreatActorIndividualEditionOverviewFocus,
   ThreatActorIndividualMutationRelationDelete,
@@ -18,9 +17,9 @@ import CommitMessage from '../../common/form/CommitMessage';
 import { ThreatActorIndividualEditionBiographics_ThreatActorIndividual$key } from './__generated__/ThreatActorIndividualEditionBiographics_ThreatActorIndividual.graphql';
 import OpenVocabField from '../../common/form/OpenVocabField';
 import useUserMetric from '../../../../utils/hooks/useUserMetric';
-import useConfidenceLevel from '../../../../utils/hooks/useConfidenceLevel';
 import { useSchemaEditionValidation } from '../../../../utils/hooks/useEntitySettings';
 import useFormEditor, { GenericData } from '../../../../utils/hooks/useFormEditor';
+import AlertConfidenceForEntity from '../../../../components/AlertConfidenceForEntity';
 
 const threatActorIndividualEditionBiographicsFocus = graphql`
   mutation ThreatActorIndividualEditionBiographicsFocusMutation(
@@ -85,7 +84,6 @@ ThreatActorIndividualEditionBiographicsComponentProps
   context,
 }: ThreatActorIndividualEditionBiographicsComponentProps) => {
   const { t_i18n } = useFormatter();
-  const { checkConfidenceForEntity } = useConfidenceLevel();
   const { heightsConverterLoad, weightsConverterLoad } = useUserMetric();
   const threatActorIndividual = useFragment(
     threatActorIndividualEditionBiographicsFragment,
@@ -169,15 +167,7 @@ ThreatActorIndividualEditionBiographicsComponentProps
         }) => (
           <div>
             <Form style={{ margin: '20px 0 20px 0' }}>
-              {(!checkConfidenceForEntity(threatActorIndividual) && (
-                <Alert severity="warning" variant="outlined"
-                  style={{ marginTop: 20, marginBottom: 20 }}
-                >
-                  {t_i18n(
-                    'Your maximum confidence level is insufficient to edit this object.',
-                  )}
-                </Alert>
-              ))}
+              <AlertConfidenceForEntity entity={threatActorIndividual} />
               <OpenVocabField
                 name="eye_color"
                 label={t_i18n('Eye Color')}

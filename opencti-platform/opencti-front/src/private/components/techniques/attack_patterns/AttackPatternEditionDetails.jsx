@@ -3,7 +3,6 @@ import { createFragmentContainer, graphql } from 'react-relay';
 import { Field, Form, Formik } from 'formik';
 import * as R from 'ramda';
 import * as Yup from 'yup';
-import Alert from '@mui/material/Alert';
 import { attackPatternMutationRelationAdd, attackPatternMutationRelationDelete } from './AttackPatternEditionOverview';
 import { useFormatter } from '../../../../components/i18n';
 import { SubscriptionFocus } from '../../../../components/Subscription';
@@ -12,9 +11,9 @@ import OpenVocabField from '../../common/form/OpenVocabField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import { adaptFieldValue } from '../../../../utils/String';
 import CommitMessage from '../../common/form/CommitMessage';
-import useConfidenceLevel from '../../../../utils/hooks/useConfidenceLevel';
 import { useSchemaEditionValidation } from '../../../../utils/hooks/useEntitySettings';
 import useFormEditor from '../../../../utils/hooks/useFormEditor';
+import AlertConfidenceForEntity from '../../../../components/AlertConfidenceForEntity';
 
 const attackPatternMutationFieldPatch = graphql`
   mutation AttackPatternEditionDetailsFieldPatchMutation(
@@ -52,7 +51,6 @@ export const attackPatternEditionDetailsFocus = graphql`
 const AttackPatternEditionDetailsComponent = (props) => {
   const { attackPattern, enableReferences, context, handleClose } = props;
   const { t_i18n } = useFormatter();
-  const { checkConfidenceForEntity } = useConfidenceLevel();
 
   const basicShape = {
     x_mitre_platforms: Yup.array(),
@@ -165,15 +163,7 @@ const AttackPatternEditionDetailsComponent = (props) => {
         dirty,
       }) => (
         <Form style={{ margin: '20px 0 20px 0' }}>
-          {(!checkConfidenceForEntity(attackPattern) && (
-            <Alert severity="warning" variant="outlined"
-              style={{ marginTop: 20, marginBottom: 20 }}
-            >
-              {t_i18n(
-                'Your maximum confidence level is insufficient to edit this object.',
-              )}
-            </Alert>
-          ))}
+          <AlertConfidenceForEntity entity={attackPattern} />
           <OpenVocabField
             label={t_i18n('Platforms')}
             type="platforms_ov"

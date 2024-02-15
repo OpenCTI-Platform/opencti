@@ -3,7 +3,6 @@ import { createFragmentContainer, graphql } from 'react-relay';
 import { Field, Form, Formik } from 'formik';
 import * as Yup from 'yup';
 import * as R from 'ramda';
-import Alert from '@mui/material/Alert';
 import ConfidenceField from '../../common/form/ConfidenceField';
 import { useFormatter } from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
@@ -18,7 +17,7 @@ import StatusField from '../../common/form/StatusField';
 import { useSchemaEditionValidation } from '../../../../utils/hooks/useEntitySettings';
 import useFormEditor from '../../../../utils/hooks/useFormEditor';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
-import useConfidenceLevel from '../../../../utils/hooks/useConfidenceLevel';
+import AlertConfidenceForEntity from '../../../../components/AlertConfidenceForEntity';
 
 const positionMutationFieldPatch = graphql`
   mutation PositionEditionOverviewFieldPatchMutation(
@@ -85,7 +84,6 @@ const positionMutationRelationDelete = graphql`
 const PositionEditionOverviewComponent = (props) => {
   const { position, enableReferences, context, handleClose } = props;
   const { t_i18n } = useFormatter();
-  const { checkConfidenceForEntity } = useConfidenceLevel();
   const basicShape = {
     name: Yup.string().min(2).required(t_i18n('This field is required')),
     description: Yup.string().nullable().max(5000, t_i18n('The value is too long')),
@@ -200,15 +198,8 @@ const PositionEditionOverviewComponent = (props) => {
         dirty,
       }) => (
         <Form style={{ margin: '20px 0 20px 0' }}>
-          {(!checkConfidenceForEntity(position) && (
-            <Alert severity="warning" variant="outlined"
-              style={{ marginTop: 20, marginBottom: 20 }}
-            >
-              {t_i18n(
-                'Your maximum confidence level is insufficient to edit this object.',
-              )}
-            </Alert>
-          ))}          <Field
+          <AlertConfidenceForEntity entity={position} />
+          <Field
             component={TextField}
             variant="standard"
             name="name"
@@ -219,7 +210,7 @@ const PositionEditionOverviewComponent = (props) => {
             helperText={
               <SubscriptionFocus context={context} fieldName="name" />
             }
-                       />
+          />
           <Field
             component={MarkdownField}
             name="description"

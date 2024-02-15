@@ -4,7 +4,6 @@ import { Field, Form, Formik } from 'formik';
 import * as Yup from 'yup';
 import { FormikConfig } from 'formik/dist/types';
 import { GenericContext } from '@components/common/model/GenericContextModel';
-import Alert from '@mui/material/Alert';
 import { useFormatter } from '../../../../components/i18n';
 import { SubscriptionFocus } from '../../../../components/Subscription';
 import { convertAssignees, convertCreatedBy, convertMarkings, convertStatus } from '../../../../utils/edition';
@@ -23,7 +22,7 @@ import CommitMessage from '../../common/form/CommitMessage';
 import ObjectAssigneeField from '../../common/form/ObjectAssigneeField';
 import ConfidenceField from '../../common/form/ConfidenceField';
 import { useSchemaEditionValidation } from '../../../../utils/hooks/useEntitySettings';
-import useConfidenceLevel from '../../../../utils/hooks/useConfidenceLevel';
+import AlertConfidenceForEntity from '../../../../components/AlertConfidenceForEntity';
 
 const feedbackMutationFieldPatch = graphql`
   mutation FeedbackEditionOverviewFieldPatchMutation(
@@ -149,7 +148,6 @@ const FeedbackEditionOverviewComponent: FunctionComponent<
 FeedbackEditionOverviewProps
 > = ({ feedbackRef, context, enableReferences = false, handleClose }) => {
   const { t_i18n } = useFormatter();
-  const { checkConfidenceForEntity } = useConfidenceLevel();
   const feedbackData = useFragment(feedbackEditionOverviewFragment, feedbackRef);
 
   const basicShape = {
@@ -247,15 +245,7 @@ FeedbackEditionOverviewProps
         dirty,
       }) => (
         <Form style={{ margin: '20px 0 20px 0' }}>
-          {(!checkConfidenceForEntity(feedbackData) && (
-            <Alert severity="warning" variant="outlined"
-              style={{ marginTop: 20, marginBottom: 20 }}
-            >
-              {t_i18n(
-                'Your maximum confidence level is insufficient to edit this object.',
-              )}
-            </Alert>
-          ))}
+          <AlertConfidenceForEntity entity={feedbackData} />
           <Field
             component={TextField}
             variant="standard"
