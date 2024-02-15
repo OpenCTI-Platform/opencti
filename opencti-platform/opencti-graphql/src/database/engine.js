@@ -133,6 +133,8 @@ import { rule_definitions } from '../rules/rules-definition';
 const ELK_ENGINE = 'elk';
 const OPENSEARCH_ENGINE = 'opensearch';
 export const ES_MAX_CONCURRENCY = conf.get('elasticsearch:max_concurrency');
+export const ES_DEFAULT_WILDCARD_PREFIX = booleanConf('elasticsearch:search_wildcard_prefix', false);
+export const ES_DEFAULT_FUZZY = booleanConf('elasticsearch:search_fuzzy', false);
 export const ES_MINIMUM_FIXED_PAGINATION = 20; // When really low pagination is better by default
 export const ES_DEFAULT_PAGINATION = conf.get('elasticsearch:default_pagination_result') || 500;
 export const ES_MAX_PAGINATION = conf.get('elasticsearch:max_pagination_result') || 5000;
@@ -1412,10 +1414,11 @@ const BASE_SEARCH_ATTRIBUTES = [
   'card_number',
   'holder_name',
   'title',
+  'result_name',
 ];
 
 export const elGenerateFullTextSearchShould = (search, args = {}) => {
-  const { useWildcardPrefix = false, useWildcardSuffix = true } = args;
+  const { useWildcardPrefix = ES_DEFAULT_WILDCARD_PREFIX } = args;
   let decodedSearch;
   try {
     decodedSearch = decodeURIComponent(search).trim();
@@ -1436,7 +1439,10 @@ export const elGenerateFullTextSearchShould = (search, args = {}) => {
     const partialElement = partialSearch[searchIndex];
     const cleanElement = specialElasticCharsEscape(partialElement);
     if (isNotEmptyField(cleanElement)) {
-      querySearch.push(`${useWildcardPrefix ? '*' : ''}${cleanElement}${useWildcardSuffix ? '*' : ''}`);
+      querySearch.push(`${useWildcardPrefix ? '*' : ''}${cleanElement}*`);
+      if (ES_DEFAULT_FUZZY) {
+        querySearch.push(`${cleanElement}~`);
+      }
     }
   }
   // Return the elastic search engine expected bool should terms
