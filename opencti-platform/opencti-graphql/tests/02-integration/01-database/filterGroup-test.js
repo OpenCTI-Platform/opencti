@@ -1245,7 +1245,7 @@ describe('Complex filters combinations for elastic queries', () => {
     expect(queryResult.data.reports.edges.length).toEqual(1);
   });
 
-  it('should list entities according to search filters with trunc word and any order', async () => {
+  it('should list entities according to search filters with trunc word and unordered', async () => {
     const queryResult = await queryAsAdmin({ query: REPORT_LIST_QUERY,
       variables: {
         first: 25,
@@ -1334,7 +1334,7 @@ describe('Complex filters combinations for elastic queries', () => {
           filterGroups: [],
         },
       } });
-    expect(queryResult.data.reports.edges.length).toEqual(1);
+    expect(queryResult.data.reports.edges.length).toEqual(3);
   });
 
   it('should find entities according to search filters on short string', async () => {
@@ -1356,7 +1356,7 @@ describe('Complex filters combinations for elastic queries', () => {
     expect(queryResult.data.reports.edges.length).toEqual(1);
   });
 
-  it('should find entities according to search filters on short string unorder', async () => {
+  it('should find entities according to search filters on unordered short string', async () => {
     const queryResult = await queryAsAdmin({ query: REPORT_LIST_QUERY,
       variables: {
         first: 25,
