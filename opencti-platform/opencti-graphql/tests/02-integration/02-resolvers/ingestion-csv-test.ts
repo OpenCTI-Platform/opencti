@@ -191,4 +191,34 @@ describe('CSV ingestion resolver standard behavior', () => {
     expect(participantCreateResult.errors.length, 'TAXIIAPI_SETCSVMAPPERS should be required to create csv mapper.').toBe(1);
     expect(participantCreateResult.errors[0].name).toBe(FORBIDDEN_ACCESS);
   });
+
+  it('should participant forbidden to list csv mapper', async () => {
+    const participantListResult = await participantQuery({
+      query: gql`
+        query listCsvMappers(
+          $first: Int
+          $after: ID
+          $orderBy: CsvMapperOrdering
+          $orderMode: OrderingMode
+          $filters: FilterGroup
+          $search: String) {
+          csvMappers(
+            first: $first
+            after: $after
+            orderBy: $orderBy
+            orderMode: $orderMode
+            filters: $filters
+            search: $search) {
+              edges {
+                  node {
+                      id
+                  }
+              }
+          }
+        }
+      `
+    });
+    expect(participantListResult.errors.length, 'TAXIIAPI_SETCSVMAPPERS should be required to list csv mapper.').toBe(1);
+    expect(participantListResult.errors[0].name).toBe(FORBIDDEN_ACCESS);
+  });
 });
